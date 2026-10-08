@@ -37,13 +37,15 @@ import { Rider } from './rider.js';
 import { rootOf } from '../../tools/moveset.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
-const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3();
+const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
 const qA = new THREE.Quaternion(), qB = new THREE.Quaternion(), qC = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), qFace = new THREE.Quaternion().setFromAxisAngle(UP, -Math.PI / 2);
 const clamp = THREE.MathUtils.clamp, damp = THREE.MathUtils.damp;
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 // the phases that are not the ride: their clip, their length (s); the deck rides this far over the sand (hover 0.5 + 0.1)
 const PHASE = { summon: ['Skiff_Summon', 2.2], mount: ['Skiff_Mount', 0.96], dismount: ['Skiff_Dismount', 0.83], recall: ['Skiff_Recall', 0.96], bail: ['Skiff_Bail', 1.3], getup: ['getUp', 1.5] };
+// the board's own clip in each phase (its partner of the rider's: courier/skiff/boatpose.js); getting up, it idles where it slid to
+const BOAT_CLIP = { summon: 'Skiff_Summon', mount: 'Skiff_Mount', dismount: 'Skiff_Dismount', recall: 'Skiff_Recall', bail: 'Skiff_Bail', getup: 'Skiff_RideIdle' };
 const BAIL = { wall: 14, land: 17, crooked: 3.6 }; // (m/s into a wall, m/s down onto the sand, radians of spin landed off square)
 // how much of the wind's push the sail uses, by cos(angle between the heading and where the wind goes): 1 dead downwind .. -1 into it
 const POLAR = [[-1, 0.28], [-0.6, 0.42], [-0.2, 0.7], [0.2, 0.92], [0.7, 1.0], [1, 1.0]];
@@ -73,7 +75,7 @@ export class Skiffing extends Tech {
     this.unit = null; // the rigid frame the rider is placed in: { pos, quat }
     this.poses = null;
     const game = mgr.game;
-    this.skiff = new Skiff(game.scene);
+    this.skiff = new Skiff(game.scene); // (the owner's model, parsed on first use: courier/skiff/boat.js load)
     this.wake = new Wake(game.scene, game.fx);
     this.phase = 'ride'; this.phaseT = 0; this.next = null;
     this.parked = null; // { pos, heading }: the board left hovering, to be mounted again (F) or replaced by a summon (Y)
@@ -132,7 +134,7 @@ export class Skiffing extends Tech {
     this.hoistDir = 0; this.pumpReady = true; this.pumpFresh = true; this.steer = 0; this.roll = 0;
     this.nS.copy(UP);
     this.animT = 0; this.popT = null; this.landT = null; this.rider.dy = 0;
-    this.skiff.visible = true;
+    this.skiff.load(this.game); this.skiff.visible = true; // (the model is asked for on the way into the Dunes, tick; a ride begun before it is parsed rides an undrawn board)
     this.wake.clear();
     this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
     this.sfxLoop = sfx.skiffLoop?.();
@@ -196,6 +198,8 @@ export class Skiffing extends Tech {
     const P = this.P, D = this.dunes, g = this.game, t = (this.phaseT += dt), [, len] = PHASE[this.phase];
     const sand = D.rideHeight(P.pos.x, P.pos.z), hover = this.cfg.hover + 0.1;
     this.v.multiplyScalar(Math.exp(-6 * dt)); P.vel.x = this.v.x; P.vel.z = this.v.z;
+    if (this.phase === 'recall') this.L = Math.max(0, this.L - dt / 0.15); // (the sail down before the mast folds: the board's Skiff_Recall, frame 5)
+    else if (this.phase !== 'summon' && this.phase !== 'mount') this.L = Math.max(0, this.L - dt / this.cfg.furlTime); // (stepped off or thrown off: it is let down, and parks furled)
     if (this.phase === 'summon' || this.phase === 'mount') {
       let x = P.pos.x, z = P.pos.z;
       if (this.phase === 'mount') { const k = smooth(0, 0.35, t); x = this.mountFrom.x + (this.parked.pos.x - this.mountFrom.x) * k; z = this.mountFrom.z + (this.parked.pos.z - this.mountFrom.z) * k; }
@@ -209,7 +213,7 @@ export class Skiffing extends Tech {
       this.rider.dy = hover * smooth(0.35, 0.8, t); P.vel.y = 0;
       if (t >= len) {
         const e = rootOf(g.character.clips, 'Skiff_Dismount')?.end;
-        this.parked = { pos: this.board.pos.clone(), heading: this.board.heading };
+        this.parked = { pos: this.board.pos.clone(), heading: this.board.heading, boom: this.boom };
         _v3.copy(this.rider.pos); if (e) _v3.add(_v.set(e.x, 0, e.z).applyQuaternion(this.rider.q));
         _v3.y = D.rideHeight(_v3.x, _v3.z);
         if (this.clearAt(_v3.x, _v3.y, _v3.z)) P.pos.copy(_v3); // (stepped off into a wall: they stay where they stood)
@@ -224,7 +228,7 @@ export class Skiffing extends Tech {
       { const y = D.rideHeight(this.rider.pos.x, this.rider.pos.z); if (this.clearAt(this.rider.pos.x, y, this.rider.pos.z)) P.pos.set(this.rider.pos.x, y, this.rider.pos.z); else this.rider.pos.set(P.pos.x, this.rider.pos.y, P.pos.z); } P.vel.set(0, 0, 0);
       const done = this.phase === 'getup' ? t >= len : t >= len && !g.character.clips.clips.getUp;
       if (this.phase === 'bail' && t >= len && !done) this.enter('getup');
-      if (done) { this.parked = { pos: b.pos.clone(), heading: b.heading }; P.bodyYaw = P.yaw = this.heading - Math.PI / 2; return false; }
+      if (done) { this.parked = { pos: b.pos.clone(), heading: b.heading, boom: this.boom }; P.bodyYaw = P.yaw = this.heading - Math.PI / 2; return false; }
     }
     P.move(dt);
     P.grounded = this.phase !== 'summon' || t > 1.35;
@@ -347,7 +351,7 @@ export class Skiffing extends Tech {
 
     this.speed = this.v.length();
     // (the lean: into the turn, and out of a slide; roll about the boat's own long axis)
-    const wantRoll = clamp(this.steer * 0.24 * clamp(this.speed / 12, 0.15, 1), -0.3, 0.3) + (this.air ? 0 : clamp(-vl * 0.03, -0.2, 0.2)); // (half the lean it had: the rider's carve leans the rest, rider.js)
+    const wantRoll = clamp(this.steer * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? 0 : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest)
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0);
     g.events?.emit('skiff.tick', { speed: this.speed });
@@ -383,6 +387,7 @@ export class Skiffing extends Tech {
   tick(dt) {
     const P = this.P, D = this.dunes;
     this.time += dt; this.offer();
+    if (!this.skiff.loading && (this.dunes?.active || this.game.overture?.active)) this.skiff.load(this.game); // (parsed on the way into the Dunes, or as the trailer begins, which mounts it 16 s in: never for a session that does not go; only the drawing waits on it, never the simulation, which a replay plays again the same)
     if (!this.active) { this.drawParked(); return; }
     this.animT += dt;
     if (this.landT != null && (this.landT += dt) > 0.5) this.landT = null;
@@ -415,27 +420,27 @@ export class Skiffing extends Tech {
     unitQ.multiply(qC);
     qC.setFromAxisAngle(X, this.air ? -clamp(P.vel.y * 0.035, -0.45, 0.45) : 0);
     unitQ.multiply(qC);
-    // hover bob at rest: slow, small and local
-    const bob = Math.sin(this.time * 1.7) * 0.025 * (1 - clamp(this.speed / 6, 0, 1)), ph = this.phase, pt = this.phaseT, off = ph === 'dismount' || ph === 'bail' || ph === 'getup';
+    // (no bob of the group's own: the board's clips bob the hull, and the rider's the body on it, together)
+    const ph = this.phase, pt = this.phaseT, off = ph === 'dismount' || ph === 'bail' || ph === 'getup';
     const G = this.skiff.group;
-    if (off) { G.position.copy(this.board.pos).setY(this.board.pos.y + bob); G.quaternion.setFromAxisAngle(UP, this.board.heading); }
-    else { G.position.set(pos.x, pos.y + bob, pos.z); G.quaternion.copy(unitQ); }
-    // the summon: up out of the sand and grown to size, the mast telescoping up after (the .blend's summon); the recall: the mast in,
-    // and the whole board shrunk into the raised right hand
-    let scale = 1, fold = 1;
-    if (ph === 'summon') { const k = smooth(0, 0.5, pt); scale = 0.35 + 0.65 * k; G.position.y -= 1.3 * (1 - k); fold = smooth(1.35, 1.75, pt); }
-    else if (ph === 'mount') fold = 1;
-    else if (ph === 'recall') { fold = 1 - smooth(0.05, 0.35, pt); scale = 1 - smooth(0.35, 0.68, pt); if (scale < 1 && this.handAt) G.position.lerp(this.handAt, smooth(0.35, 0.68, pt)); }
-    G.scale.setScalar(Math.max(0.001, scale)); this.skiff.fold(fold);
-    this.skiff.group.visible = scale > 0.01;
+    if (off) { G.position.copy(this.board.pos); G.quaternion.setFromAxisAngle(UP, this.board.heading); }
+    else if (ph === 'mount' && this.parked) { G.position.copy(this.parked.pos); G.quaternion.setFromAxisAngle(UP, this.parked.heading); } // (the board waits where it was left: the rider comes to it)
+    else { G.position.set(pos.x, pos.y, pos.z); G.quaternion.copy(unitQ); }
+    // the summon (up out of the sand, the doors, the mast telescoping, the boom) and the recall (the fold, and the flight into the raised
+    // right hand) are the board's own clips; in the recall it comes down with the rider stepping off, so its root lands in their hand
+    if (ph === 'recall') G.position.y -= this.rider.dy;
+    G.visible = this.skiff.ready && !(ph === 'recall' && pt > 0.8);
     G.updateMatrixWorld(true);
     // the rider stands on the deck, facing out over the starboard side: a rigid child of the unit (unless thrown off it, or stepping down)
     this.unit = this.unit || { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
     if (ph === 'bail' || ph === 'getup') { this.unit.pos.copy(this.rider.pos).setY(this.rider.pos.y - this.rider.dy); this.unit.quat.copy(this.rider.q); }
     else if (ph === 'dismount') { this.unit.pos.copy(this.rider.pos).setY(this.rider.pos.y - this.rider.dy); this.unit.quat.copy(this.rider.q); }
-    else {
-      this.unit.pos.set(0, SKIFF.deck, SKIFF.rider.z).applyQuaternion(ph === 'ride' ? unitQ : G.quaternion).add(ph === 'summon' ? _v4.set(pos.x, pos.y + bob, pos.z) : G.position);
-      this.unit.pos.y -= this.rider.dy;
+    else if (ph === 'mount') { // (from where they stood onto the deck's spot, as the step carries them to the board and up: stepPhase)
+      this.unit.pos.set(0, SKIFF.deck, SKIFF.rider.z * smooth(0, 0.35, pt)).applyQuaternion(G.quaternion).add(pos);
+      this.unit.quat.copy(G.quaternion).multiply(qFace);
+    } else {
+      this.unit.pos.set(0, SKIFF.deck, SKIFF.rider.z).applyQuaternion(ph === 'ride' ? unitQ : G.quaternion).add(G.position);
+      if (ph !== 'recall') this.unit.pos.y -= this.rider.dy; // (in the recall the group came down with them already)
       this.unit.quat.copy(ph === 'ride' ? unitQ : G.quaternion).multiply(qFace);
     }
     // the pennant at the masthead (the wind, shown), and the wake from the bow
@@ -444,6 +449,16 @@ export class Skiffing extends Tech {
     const bow = _v.copy(pos).addScaledVector(f, SKIFF.half + 0.2);
     if (ph === 'ride') this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air, glow: this.boosting, ground: (x, z) => D.rideHeight(x, z) });
     else this.wake.update(dt, { bow, fwd: f, right, speed: 0, air: true, glow: 0, ground: (x, z) => D.rideHeight(x, z) });
+    this.skiff.ground = D.rideHeight(G.position.x, G.position.z) - G.position.y; // (the sand under the board, in its frame: the summon's sigil lies on it)
+    this.poseBoat(); // (posed again after the rider in the ride: animate)
+  }
+
+  /** The board's own clip for this phase (or the ride's, by the rider's last weights), then the code's word on it (boat.js). */
+  poseBoat() {
+    const R = this.rider.R;
+    if (this.phase !== 'ride') this.skiff.posePhase(BOAT_CLIP[this.phase], this.phase === 'getup' ? this.time : this.phaseT);
+    else if (R) this.skiff.pose(R, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L });
+    else this.skiff.posePhase('Skiff_RideIdle', this.animT);
   }
 
   /** Not ridden: the board left parked hovers where it was, its sail down, ready to be mounted (F) or replaced by a summon (Y). */
@@ -452,20 +467,24 @@ export class Skiffing extends Tech {
     if (!k || !this.dunes.active) { if (this.skiff.group.visible) this.skiff.visible = false; return; }
     this.skiff.visible = true; this.skiff.rope.visible = false;
     k.pos.y = this.dunes.rideHeight(k.pos.x, k.pos.z) + this.cfg.hover + 0.1;
-    G.position.copy(k.pos).setY(k.pos.y + Math.sin(this.time * 1.7) * 0.025); G.quaternion.setFromAxisAngle(UP, k.heading); G.scale.setScalar(1); this.skiff.fold(1);
-    this.skiff.set({ sail: 0, side: 1, fill: 0, boom: 0.3, glow: 0, t: this.time, speed: 0 });
+    G.position.copy(k.pos); G.quaternion.setFromAxisAngle(UP, k.heading); G.scale.setScalar(1); // (its bob is its idle clip's)
+    this.skiff.set({ sail: 0, side: 1, fill: 0, boom: k.boom ?? 0.3, glow: 0, t: this.time, speed: 0 });
     G.updateMatrixWorld(true);
     this.skiff.placePennant(this.dunes.wind.dir, this.dunes.wind.speed / 10, this.time);
+    this.skiff.posePhase('Skiff_RideIdle', this.time);
   }
 
   // ------------------------------------------------------------------ the rider (the Courier's own skiff clips: rider.js)
   animate(ch, base, dt) {
     this.rider.R ||= new Rider(ch);
     const R = this.rider.R;
-    if (this.phase === 'ride') { R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT }, dt); return; }
+    if (this.phase === 'ride') {
+      R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT }, dt);
+      if (this.active) this.poseBoat(); // (the board's clips by the rider's weights of this very frame)
+      return;
+    }
     const [clip] = PHASE[this.phase];
     R.phase(base, clip, this.phaseT, this.w);
-    if (this.phase === 'recall') { ch.root.updateMatrixWorld(true); this.handAt = (this.handAt || new THREE.Vector3()); ch.bones.handR.getWorldPosition(this.handAt); }
   }
 
   /** Once the body is posed: the sheet runs from the boom's end to the rider's high hand (while they ride). */
