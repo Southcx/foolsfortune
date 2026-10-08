@@ -397,8 +397,7 @@ export class Course {
       { axis: 'z', at: -4.5, a0: -33.2, a1: -26.8, y: [2, 8] },
     ];
     this.prev = new THREE.Vector3();
-    this.el = document.getElementById('course');
-    if (this.el) { this.el.style.display = 'none'; this.elShown = false; } // (shown only while a station is run)
+    // (no banner: the course's timing is the log's: every station, split and lap is said there; the owner, 2026-10-07)
     this.buildConsole();
     this.buildBoard();
   }
@@ -659,7 +658,7 @@ export class Course {
   update(dt) {
     const g = this.game, p = g.player, inp = g.input;
     const here = this.inBasement();
-    if (!here) { this.running = false; this.prev.copy(p.pos); if (this.el && this.elShown) { this.elShown = false; this.el.style.display = 'none'; } return; } // (the banner is shown only while a station is run, below: it stayed on, frozen, in the siege and the hand, SWEEPS group 6)
+    if (!here) { this.running = false; this.prev.copy(p.pos); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
 
@@ -694,18 +693,9 @@ export class Course {
     }
     this.prev.copy(feet);
 
-    // the banner is the course's own: the station and its clock while a station is being run. What the keys do in each place is said
-    // once by the log on arriving there (room.help -> tracking.js), not kept on the screen (CLAUDE.md, Feedback; docs/LOOK.md 7)
-    const cp = this.cps[this.current], running = !!(cp && this.running && !g.circuits?.active && !g.god?.active && !inSiege(p.pos));
+    // what the keys do in each place is said once by the log on arriving there (room.help -> tracking.js), not kept on the screen
     const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'skiff' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
     if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
     signHelp(g, p.pos);
-    if (this.el) {
-      if (running !== this.elShown) { this.elShown = running; this.el.style.display = running ? 'block' : 'none'; } // ('' fell back to the stylesheet's none: the banner never showed, the basement sweep)
-      if (running) {
-        const best = this.best[`room${cp.room}`];
-        this.el.innerHTML = `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`;
-      }
-    }
   }
 }

@@ -56,7 +56,7 @@ const CSS = `
 #chatlog .tab.on { color: #fff1e0; background: rgba(196,106,69,.30); border-color: #9a5a44; }
 #chatlog .tab.new { color: #ffd67e; }
 #chatlog .tab.on.new { color: #fff1e0; }
-#chatlog .body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 3px 6px 4px; font-size: 16px; line-height: 18px; scrollbar-width: thin; scrollbar-color: #9a5a44 transparent; }
+#chatlog .body { flex: 1; overflow-y: auto; overflow-anchor: none; overflow-x: hidden; padding: 3px 6px 4px; font-size: 16px; line-height: 18px; scrollbar-width: thin; scrollbar-color: #9a5a44 transparent; }
 #chatlog .ln { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,.6); word-wrap: break-word; }
 #chatlog .ts { color: #a98572; margin-right: 8px; }
 #chatlog .ln.ach { color: #ffd45e; }
@@ -98,7 +98,13 @@ export class GameLog {
     this.root = root;
     this.body = root.querySelector('.body');
     this.pinned = true; // (following the newest line; let go while they scroll back to read)
-    this.body.addEventListener('scroll', () => { this.pinned = this.body.scrollHeight - this.body.scrollTop - this.body.clientHeight < 40; }, { passive: true });
+    // (it lets go only when you scroll back yourself: the wheel up, PageUp, a drag on the bar; reaching the end again takes it back.
+    //  A scroll the log makes itself, or one the browser makes when old lines are dropped at the cap, never lets go: SWEEPS.md, the log)
+    const atEnd = () => this.body.scrollHeight - this.body.scrollTop - this.body.clientHeight < 40;
+    this.body.addEventListener('wheel', (e) => { if (e.deltaY < 0) this.pinned = false; else if (atEnd()) this.pinned = true; }, { passive: true });
+    this.body.addEventListener('pointerdown', () => { this.dragging = true; });
+    addEventListener('pointerup', () => { if (this.dragging) { this.dragging = false; this.pinned = atEnd(); } });
+    this.body.addEventListener('scroll', () => { if (this.dragging || !this.pinned) this.pinned = atEnd(); }, { passive: true });
     this.tabEls = [...root.querySelectorAll('.tab')];
     this.foot = root.querySelector('.n');
     // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
@@ -175,10 +181,10 @@ export class GameLog {
     if ((e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Slash') && !e.repeat && (this.canOpen?.() ?? true)) {
       e.preventDefault(); this.open(e.code === 'Slash' ? '/' : ''); return;
     }
-    if (e.code === 'PageUp') { this.body.scrollTop -= this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
-    else if (e.code === 'PageDown') { this.body.scrollTop += this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
-    else if (e.code === 'End') { this.body.scrollTop = this.body.scrollHeight; this.wake(); }
-    else if (e.code === 'Backslash') this.setMini(!this.mini);
+    if (e.code === 'PageUp') { this.pinned = false; this.body.scrollTop -= this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
+    else if (e.code === 'PageDown') { this.body.scrollTop += this.body.clientHeight * 0.8; this.pinned = this.body.scrollHeight - this.body.scrollTop - this.body.clientHeight < 40; this.wake(); e.preventDefault(); }
+    else if (e.code === 'End') { this.pinned = true; this.body.scrollTop = this.body.scrollHeight; this.wake(); }
+    else if (e.code === 'Backslash' || e.code === 'IntlBackslash') this.setMini(!this.mini); // (IntlBackslash: the \\ key by the left Shift on UK and other ISO keyboards)
     else if (e.code === 'BracketRight') this.setTab((this.tab + 1) % TABS.length);
     else if (e.code === 'BracketLeft') this.setTab((this.tab + TABS.length - 1) % TABS.length);
   }
@@ -229,6 +235,7 @@ export class GameLog {
       p.n++; p.t = now;
       p.text = fmt ? fmt(p.n) : p.text;
       if (p.el) p.el.lastChild.textContent = p.text;
+      if (this.pinned !== false) this.toEnd = true; // (a merged line can grow onto a second row: follow it)
       this.afterSay(p);
       return p;
     }

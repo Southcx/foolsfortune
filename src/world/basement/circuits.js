@@ -51,14 +51,6 @@ export const MILL_RACE_DEF = {
 
 export const CIRCUIT_DEFS = [BRAID_DEF, MILL_RACE_DEF, SPINDLE_DEF];
 
-const css = `
-#circuit { position: absolute; left: 24px; top: 58px; min-width: 230px; font-size: 13px; letter-spacing: .06em; background: rgba(28,13,8,.55);
-  padding: 7px 12px; border-radius: 3px; display: none; font-variant-numeric: tabular-nums; color: #f5d9bd; line-height: 1.55; pointer-events: none; }
-#circuit b { color: #fff1dc; font-size: 20px; font-weight: normal; }
-#circuit .n { color: #ffb27a; letter-spacing: .12em; }
-#circuit .d { opacity: .8; }
-#circuit .good { color: #ffd98a; } #circuit .bad { color: #ff8a70; }
-#circuit .medal { font-size: 15px; letter-spacing: .14em; }`;
 
 export class Circuits {
   constructor(game) {
@@ -67,9 +59,6 @@ export class Circuits {
     this.run = null;
     this.best = {};
     try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
-    const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
-    this.el = document.createElement('div'); this.el.id = 'circuit';
-    document.body.appendChild(this.el);
     this.beacons = new Map(); // gate -> beacon
     this.buildBeacons();
   }
@@ -117,7 +106,7 @@ export class Circuits {
     g.course.teleport(new THREE.Vector3(s.at[0] + (def.origin?.[0] || 0), B + s.at[1], s.at[2] + (def.origin?.[1] || 0)), s.yaw);
     g.course.running = false; g.course.current = -1; g.course.lapT = null;
     this.arm(def);
-    g.events?.emit('circuit.enter', { id: def.id, title: def.name });
+    g.events?.emit('circuit.enter', { id: def.id, title: def.name, par: def.par, best: this.best[def.id]?.time ?? null }); // (the medal times and your best are said by the log: the panel is gone, the owner, 2026-10-07)
   }
 
   arm(def) {
@@ -136,7 +125,6 @@ export class Circuits {
     if (!this.run) return;
     this.run = null;
     this.showBeacons(null);
-    this.el.style.display = 'none';
   }
 
   // ---- per frame
@@ -148,7 +136,7 @@ export class Circuits {
     if (p.x < bx0 || p.x > bx1 || p.z < bz0 || p.z > bz1 || p.y > B + 60 || p.y < B - 30) { this.leave(); return; }
     // (a fall)
     if (!r.done && p.y < B + def.resetY) { this.fall(); return; }
-    if (r.done) { r.doneT += dt; this.draw(); return; }
+    if (r.done) { r.doneT += dt; return; }
     if (r.started) r.t += dt;
     const stage = def.stages[r.stage];
     for (const gate of stage) {
@@ -157,7 +145,6 @@ export class Circuits {
       this.pass(gate);
       break;
     }
-    this.draw();
   }
 
   pass(gate) {
@@ -209,20 +196,4 @@ export class Circuits {
     sfx.lockOn?.(3);
   }
 
-  draw() {
-    const r = this.run, def = r.def;
-    this.el.style.display = 'block';
-    const t = r.t + r.penalty, best = this.best[def.id];
-    const stagesN = def.stages.length;
-    let h = `<span class="n">${def.name}</span><br>`;
-    if (r.done) {
-      h += `<b>${r.total.toFixed(2)}</b>s <span class="medal ${r.medal === '—' ? 'bad' : 'good'}">${r.medal}</span>${r.clean ? ' · clean' : ''}${r.pb ? ' · best' : ''}<br>`;
-      h += `<span class="d">gold ${def.par.gold}s · silver ${def.par.silver}s · bronze ${def.par.bronze}s${r.routes.length ? ` · route ${r.routes.join(' ')}` : ''}</span>`;
-    } else {
-      h += `<b>${r.started ? t.toFixed(2) : '0.00'}</b>s ${r.penalty ? `<span class="bad">+${r.penalty}s</span>` : ''}${r.clean ? '' : ' · not clean'}<br>`;
-      const next = def.stages[r.stage].map((g) => g.label).join(' or ');
-      h += `<span class="d">${r.started ? `gate ${r.stage}/${stagesN - 1}` : 'cross the line to start'} · next: ${next}${best ? ` · best ${best.time.toFixed(2)}s` : ''}</span>`;
-    }
-    this.el.innerHTML = h;
-  }
 }
