@@ -160,6 +160,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (the draught a leg leaves trumping the next waypoint's foes: `draughtTrump`); **a storm mark** (Slay the Spire's burning elite: a
   threat waypoint a class stronger, always shown, never unavoidable; `STORM`). *Not:* the weather's storm (there is none: the eyewall
   is a leg), the vessel's cracks (the hull is the ship's), a chain (the ledger's or the rail's).
+- **a leg's schedule** (`schedule`, `LEGS`, `src/progress/rail/legs.js`, Dovina's): what a waypoint's leg throws at the ship bar by bar
+  (its waves, its patterns and their throwers, lights to lock, its director's entrance), in its phases (open, build, peak, release),
+  shaped by the waypoint (class, feeling, storm) and held to the pacing law (`idle`: no two bars with nothing in reach; `node
+  scripts/legs.mjs`). **the leg runner** (`LegRunner`, `world/emocean/legrunner.js`) plays it; **the pattern player** (`PatternPlayer`,
+  `world/emocean/patternplayer.js`) releases a pattern's shots from its thrower, turned onto the ship as they fire; **the shot field**
+  (`ShotField`, `world/emocean/shotfield.js`) flies every foe's shot (400 at most) and says what a shot meeting the ship means (drunk,
+  turned, sent home, taken). **a light** (`rail.light`): a thing adrift to lock for its pay, never firing (the calm's, the release's).
+  **a thrower**: the foe (or fixed point, `AHEAD`) a pattern fires from; downed, its unfired volleys go with it. *Not:* the old
+  `courier/ship/shots.js` (the ship's own gun and lances, kept).
 - **the Astral form**, **the Umbral form**, **the surge** (`docs/plans/RAIL-OVERHAUL.md`; the owner's names, 2026-10-08): the ship above
   the Emocean and below it, Q to breach or dive (was polarity: a shot of your form's kind is absorbed, the other hurts; an **astral
   shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
