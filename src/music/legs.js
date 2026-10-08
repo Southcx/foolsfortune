@@ -29,7 +29,7 @@
 //
 // Prior art: Rez (Mizuguchi, 2001: the stage's music built from the player's own shots, layer by layer), Child of Eden, Panzer Dragoon
 // Orta's forms, Star Fox 64's leg-by-leg score, KH2's Gummi missions, the trance arrangement (open, build, drop, breakdown), Crywolf's
-// drop and the owner's holes (docs/OST.md section 6), and this game's own motifs and Crude Sea (music/emocean.js), whose parts it keeps.
+// drop and the owner's holes (docs/archive/2026-10-06-ost-the-owners-ear.md), and this game's own motifs and Crude Sea (music/emocean.js), whose parts it keeps.
 //
 //   import { tripCue, tripLayout, railHeat, HEAT, LEGS, setEncounter } from './legs.js'
 //   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
