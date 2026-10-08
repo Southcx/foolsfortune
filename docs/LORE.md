@@ -483,11 +483,10 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
 - **pursersBarge: the Bourse.** The purser is named for the purse (Latin *bursa*); so is the bourse, the exchange. A purse that is a
   market, lit with aqua regia. "Lanterns on the crude: the Purser's barge, the Bourse." "Purser : Posted prices, as at the dock. The sea
   does not change them." · *Trade casks.* · *Buy fuel.* · *Buy today's rutter.* (each said as the counter says it now).
-- **mirrorSea: the Glass, and your fetch.** Sailors call a flat sea "glass". A **fetch** is three things: the double of you seen as an
-  omen (Irish folklore), the run of open water a wind blows over (the sea's word for how waves grow), and the Crib Sheet's gloss of
-  FETA (the verb). Fallback if the owner keeps "fetch" for FETA alone: **your double**. "The sea goes flat as glass. Your fetch sails
-  beside you." · *Race it.* (won) "You beat your fetch. The leg's rank goes up a step." (lost) "Your fetch beats you, and fades." ·
-  *Let it pass.* "Your fetch sails on, and is gone."
+- **mirrorSea: the Glass, and your double.** Sailors call a flat sea "glass". The ghost is **your double** ("fetch", the folklore's
+  double, stays the Crib Sheet's gloss of FETA: Dovina's ruling, one word one meaning). "The sea goes flat as glass. Your double sails
+  beside you." · *Race it.* (won) "You beat your double. The leg's rank goes up a step." (lost) "Your double beats you, and fades." ·
+  *Let it pass.* "Your double sails on, and is gone."
 - **driftBottle: a drift bottle.** The real oceanographers' tool: bottles set adrift to map the currents, found years later. Who writes
   these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a
   portent) "Inside, a note in a steady hand: the graveyard is ahead."
