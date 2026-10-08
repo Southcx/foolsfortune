@@ -12,27 +12,30 @@
 //
 // What each is, and its numbers (aData.yzw):
 //   0 TILE    rank 0..10, yohen stars 0..10, its index (the inward rings and the stars' seed)        aCol2: the clay body
+//             (the one firing, `uFire`: its kiln heat running out from the bead and its crazing: vfx/alchemy/firing.js)
 //   1 SEAL    atlas cell, lit 0..1, gold 0..1 (a true firing's warmth)                              aCol2: the glaze lit
-//   2 BEAD    gloss 0..1, shown 0..1, breathing                                                     (the soul bead)
+//   2 BEAD    gloss 0..1, shown 0..1, its meniscus 0..1 (a true firing fades it: the edge lost)       (the soul bead)
 //   3 GHOST   gloss 0..1, shown 0..1                                                                (the ghost bead: a hollow ring)
 //   4 DROP    -, shown 0..1                                                                         (the line blend)
 //   5 RIBBON  shown 0..1                                                                            aCol2: the colour at its far end
 //   6 RING    shown 0..1, its ring's width (share of its radius)
 //   7 LUMP    glint 0..1 (a rarer lump)
+//   8 GLOW    -, strength 0..1                                                                      (the burning glass's pinpoint)
 //
 // Prior art: instanced decals and "uber" sprite shaders (one material, a kind per instance: the particle sheets of every engine since
 // Unreal's Cascade), signed-distance discs drawn in the fragment with derivative antialiasing (Inigo Quilez), and the press's own
 // labels in 4.26 (glaze test tiles, Yaozhou's carved celadon, yohen tenmoku's stars).
 //
 //   const M = new Marks(group)   M.put(i, matrix, what, col, col2?, data?)   M.hide(i)   M.flush()   M.lumpMesh(geometry, max)
-//   RANGE.<layer> = [first, count]   MARK.<what>   M.uniforms (uRing: the active tile's inward rings, uTime)   M.update()   M.dispose()
+//   RANGE.<layer> = [first, count]   MARK.<what>   M.uniforms (uRing: the active tile's inward rings; uFire, uFireAt: the firing; uTime)
+//   M.update()   M.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SELF_LIT_GLSL, selfLitUniforms, syncSelfLit } from '../selflit.js';
 import { sealAtlas } from './seals.js';
 
-export const MARK = { tile: 0, seal: 1, bead: 2, ghost: 3, drop: 4, ribbon: 5, ring: 6, lump: 7 };
-const layout = [['tiles', 7], ['seals', 7], ['drops', 96], ['queue', 240], ['qrings', 5], ['ghost', 120], ['ghostBead', 1], ['stopRing', 1], ['bead', 1]];
+export const MARK = { tile: 0, seal: 1, bead: 2, ghost: 3, drop: 4, ribbon: 5, ring: 6, lump: 7, glow: 8 };
+const layout = [['tiles', 7], ['seals', 7], ['drops', 96], ['queue', 240], ['qrings', 5], ['ghost', 120], ['cursor', 1], ['ghostBead', 1], ['stopRing', 1], ['crawl', 1], ['bead', 1], ['glow', 1]]; // (cursor: the hand's shadow dot; crawl: the bared ring of a refusal; glow: the burning glass)
 export const RANGE = {}; let N = 0; for (const [k, n] of layout) { RANGE[k] = [N, n]; N += n; }
 export const MARKS = N;
 export const RING_K = 40; // (the inward rings' wavenumber, radians a metre: crests about 16 cm apart, 8 px at the widest view)
@@ -47,10 +50,17 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * ( instanceMatrix * vec4( position, 1.0 ) );
 }`;
 const FRAG = /* glsl */`
-uniform sampler2D uAtlas; uniform vec4 uRing; uniform float uTime;
+uniform sampler2D uAtlas; uniform vec4 uRing, uFire, uGlintT; uniform vec2 uFireAt; uniform float uTime;
 varying vec3 vCol, vCol2, vN; varying vec4 vData; varying vec2 vP; varying float vScale;
 ${SELF_LIT_GLSL}
 float band( float d, float hw, float px ) { return 1.0 - smoothstep( hw, hw + px, abs( d ) ); }
+vec2 h2( vec2 p ) { return fract( sin( vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) ) ) * 43758.5453 ); }
+/** Crazing's net: the distance to the nearest edge between Voronoi cells (the second nearest point less the nearest), in cell units. */
+float crazeEdge( vec2 p ) {
+  vec2 i = floor( p ), f = fract( p ); float d1 = 8.0, d2 = 8.0;
+  for ( int y = -1; y <= 1; y++ ) for ( int x = -1; x <= 1; x++ ) { vec2 o = vec2( float( x ), float( y ) ), q = o + 0.15 + 0.7 * h2( i + o ) - f; float d = dot( q, q ); if ( d < d1 ) { d2 = d1; d1 = d; } else if ( d < d2 ) d2 = d; }
+  return sqrt( d2 ) - sqrt( d1 );
+}
 void main() {
   int what = int( vData.x + 0.5 );
   float px = max( fwidth( vP.x ), fwidth( vP.y ) ), rho = length( vP );
@@ -78,6 +88,16 @@ void main() {
     }
     float hw = min( 0.06, max( 0.016, 0.75 * px ) );
     c = mix( c, mix( vCol, vec3( 1.0 ), 0.5 ), band( rho - 0.25, hw, px ) );
+    // a refusal's glint on a tile with no spread (its rim is its break): the side facing the bead catches the light once
+    if ( abs( vData.w - uGlintT.x ) < 0.5 && uGlintT.y > 0.001 ) c = mix( c, vec3( 0.85 ), uGlintT.y * pow( max( dot( vP / max( rho, 1e-4 ), uGlintT.zw ), 0.0 ), 10.0 ) * smoothstep( 1.0 - bw, 1.0 - 0.3 * bw, rho ) );
+    // the firing (one tile at a time): a white kiln heat running out from the bead across the tile and cooling back to its glaze, and
+    // the crazing it leaves, a net of fine dark lines spreading as fresh glaze cools (2 px and never finer: casebook rule 1's marks)
+    if ( abs( vData.w - uFire.x ) < 0.5 && uFire.y + uFire.z > 0.001 ) {
+      float df = length( vP - uFireAt ), front = uFire.w;
+      c = mix( c, vec3( 0.85, 0.83, 0.77 ), uFire.y * ( 1.0 - smoothstep( front - 0.45, front, df ) ) * a );
+      float pc = 3.4 * px, e = crazeEdge( vP * 3.4 + vData.w * 7.31 );
+      c = mix( c, c * 0.5, uFire.z * ( 1.0 - smoothstep( front - 0.2, front, df ) ) * band( e, max( 0.035, 0.8 * pc ), pc ) * ( 1.0 - t ) );
+    }
     // the yohen stars: one a true firing, 2 px and never smaller, silver-blue with a dark halo, kept on the face
     for ( int i = 0; i < 10; i++ ) {
       if ( float( i ) >= vData.z || px > 0.12 ) break; // (the stars show while the tile is 8 px across or more)
@@ -93,13 +113,13 @@ void main() {
     float wall = tx.g * 2.0 - 1.0, depth = tx.b, lit = vData.z;
     c = mix( vCol * ( 0.8 - 0.3 * depth ), vCol2 * ( 0.92 + 0.12 * depth ), lit );
     c *= 1.0 + 0.4 * wall * ( 1.0 - 0.7 * lit );
-    c = mix( c, vec3( 1.0, 0.8, 0.42 ), vData.w * 0.6 );
+    c = mix( c, vec3( 0.85, 0.6, 0.2 ), vData.w * 0.85 ); // (a true firing's gold: a warmth for a beat)
   } else if ( what == 2 ) {
     // the soul bead: its colour exactly, a dark meniscus a sixth of its width (2 px at least), one white glint at its point
     float r = min( 0.9, max( 0.5, 5.0 * px ) ), q = rho / r;
     a = ( 1.0 - smoothstep( 1.0, 1.0 + px / r, q ) ) * vData.z; if ( a <= 0.0 ) discard; // (its soft edge falls outside it: seated true, it hides a tile's heart all round)
-    float men = max( 0.333, 2.0 * px / r ) * ( 1.0 + 0.06 * sin( uTime * 2.3 + vData.w ) );
-    c = mix( vCol, vCol * 0.32, smoothstep( 1.0 - men - px / r, 1.0 - men, q ) );
+    float men = max( 0.333, 2.0 * px / r ) * ( 1.0 + 0.06 * sin( uTime * 2.3 ) );
+    c = mix( vCol, vCol * 0.32, smoothstep( 1.0 - men - px / r, 1.0 - men, q ) * vData.w ); // (a true firing fades the meniscus: the bead's edge lost in the heart)
     float g = max( 0.16, 1.0 * px / r );
     c = mix( c, vec3( 0.86 ), ( 1.0 - smoothstep( g, g + px / r, q ) ) * vData.y );
   } else if ( what == 3 ) {
@@ -122,6 +142,11 @@ void main() {
   } else if ( what == 6 ) {
     float w = max( vData.z, 2.0 * px );
     a = band( rho - ( 1.0 - w * 0.5 - px ), w * 0.5, px ) * vData.y; if ( a <= 0.0 ) discard;
+  } else if ( what == 8 ) {
+    // the burning glass's pinpoint: a hot point (2 px at least) in a soft halo, laid on the bead by the press's eye
+    float cr = max( 0.1, 1.2 * px ), core = 1.0 - smoothstep( cr, cr + px, rho ), halo = exp( -rho * rho * 6.0 );
+    a = clamp( core + 0.55 * halo, 0.0, 1.0 ) * vData.z; if ( a <= 0.003 ) discard;
+    c = mix( vCol, vec3( 0.85 ), 0.4 + 0.6 * core );
   } else {
     // a lump: solid, its colour under a fixed key light from the south-west (where the press view looks from), so the hue holds
     vec3 L = normalize( vec3( -0.35, 1.0, 0.55 ) ), n = normalize( vN );
@@ -136,7 +161,7 @@ const _z = new THREE.Matrix4().makeScale(0, 0, 0);
 export class Marks {
   constructor(group) {
     this.group = group;
-    this.uniforms = { uAtlas: { value: sealAtlas() }, uRing: { value: new THREE.Vector4(-1, 0, 0, 0) }, uTime: { value: 0 }, ...selfLitUniforms() };
+    this.uniforms = { uAtlas: { value: sealAtlas() }, uRing: { value: new THREE.Vector4(-1, 0, 0, 0) }, uFire: { value: new THREE.Vector4(-1, 0, 0, 0) }, uFireAt: { value: new THREE.Vector2() }, uGlintT: { value: new THREE.Vector4(-1, 0, 1, 0) }, uTime: { value: 0 }, ...selfLitUniforms() }; // (uFire: the firing tile, its heat, its crazing, the front's reach; uFireAt: the bead on it, in its own units)
     const mk = (o) => new THREE.ShaderMaterial({ name: 'press-marks', uniforms: this.uniforms, vertexShader: VERT, fragmentShader: FRAG, transparent: true, toneMapped: false, fog: false, ...o });
     this.mat = mk({ depthWrite: false }); this.lumpMat = mk({ depthWrite: true }); // (one program: the same shader and state, only the depth write differs)
     const geo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);

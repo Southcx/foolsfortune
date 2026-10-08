@@ -11,6 +11,7 @@
 //   const B = new PressBath(frame, parent)   frame: { O, U, N, E, R (the bath's radius) }   B.at(h, s, out) -> world point
 //   B.tiles(list)   B.bead(c, { viewing, draught, walking }?)   B.ghost(trail)   B.queue(trail, ends?)   B.drop(c)   B.clearDrops()
 //   B.lumps(list)   B.dispose()   (the options and `ends` are optional: without them the bead always shows and the queue has no rings)
+//   B.look (set by Calissa's vfx/alchemy/presslook.js: a firing's hold on the tile it fires, and each seal's light, ember and gold)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { wheelColour } from '../../vfx/wheelcolour.js';
@@ -38,10 +39,10 @@ export class PressBath {
   at(h, s, out = new THREE.Vector3()) { return this.group.localToWorld(this.local(h, s, out)); }
 
   /** The tiles: [{ h, s, r (radius now), bare (the rank's radius), rank?, stars? }] (distance units: half the wheel's chord). */
-  tiles(list) { if (!this.sealed) { this.basin.seals(list.map((t) => t.h)); this.sealed = true; } this.bath.tiles(list); }
+  tiles(list) { if (!this.sealed) { this.basin.seals(list.map((t) => t.h)); this.sealed = true; } this.bath.tiles(this.look ? this.look.tilesFor(list) : list); }
   bead(c, opts = {}) {
     const now = performance.now(), dt = Math.min(0.1, (now - this.t0) / 1000); this.t0 = now;
-    this.basin.update(dt, opts.viewing === false ? 0 : 1); this.bath.bead(c, opts); this.marks.update();
+    this.basin.update(dt, this.look ? this.look.sealLit : opts.viewing === false ? 0 : 1, this.look?.sealFx); this.bath.bead(c, opts); this.marks.update();
   }
   /** The hovered lump's ghost path and its ghost bead (null: none): drawn from where the waiting lumps leave the bead. */
   ghost(trail) {

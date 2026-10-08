@@ -132,7 +132,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, the **spread's break** at its edge, **a tile's heart**,
   always in full; a **yohen star** on its face for each true firing), the **soul bead**, the **ghost path** and **ghost bead** ahead of
   it, the **line blend** a press leaves, and **the draught's current** (sheen drifting toward the draught's bearing, never a tint);
-  the press 4.35 m north, the plate shrine in its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+  the press 4.35 m north on **the press's footing** (a round of the basin's stone, level with the bath: `FOOTING`), the plate shrine in
+  its own **hokora** on the east shoulder (`Hokora`, `src/vfx/garden/hokora.js`: a roadside hokora in small, its plate leant at the
+  doors). **The press's look** (`PressLook`, `src/vfx/alchemy/presslook.js`) is everything the station shows, read from it each frame:
+  **a firing's look** (`src/vfx/alchemy/firing.js`): the **hit-stop**, the **burning glass** (the eye's pinpoint on the bead), the
+  **kiln heat** and the **crazing** it leaves on the tile, the tile shrinking a step; and **the refusals' look**: **the crawl** (the
+  bead beaded up tight, bared clay round it; *not* the aliasing crawl), **a break's glint** (the nearest spread's break catching the
+  light on the side facing the bead; always so qualified, *not* the water's glints or the shoal's), **the gutter** (the press's lantern
+  going out in a thread of smoke); and after a true firing **the Jar's breath** (`jar.breath`: the Pneuka Jar's mouth breathing the soul colour). Its **formation** (`press.formation()`) is fire's, counting the Athanor's
   features, the ground under it and the water at it; a firing's fuel is divided by it (Dovina's ruling 3). *Not:* the plate shrine (its hokora).
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
@@ -488,7 +495,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the garden's views** (`realm.camera`, `src/world/garden/gardencam.js`): **behind** the Jar (as it opens), **first person** (Z, the
   same setting as the world's), **overhead** (`: the god hand's view in the garden, straight down; W A S D moves the view, not the Jar).
   **The press view** (F at the Athanor's bath: `press`, SOUL-ALCHEMY.md 4.3): the spirit press's own framing, north locked to the press,
-  left with F, Esc or W A S D. *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
+  left with F, Esc or W A S D; while it is open **the grey surround** (`GardenSky.surround`) eases the garden's sky, haze and fog to the
+  grey of their own lightness (0.8 s in, 0.5 s out), the HUD steps out but for the log (`game.ui.want(id, on, { log })`), and the god
+  hand is **half-dithered** over the bath (`HAND_FADE`, a screen door) so it never hides the soul bead. *Not:* the god hand's isometric
+  view (the world's, `godhand/godhand.js`), which the garden never uses.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
   the stroke began), carve, **roughen**; a stroke's **size** (Shift and the wheel); **undo** (Ctrl+Z, ten strokes).
 - **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by a stand-in, `watermesh.js`): Lachryma running on a
@@ -612,9 +622,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
   is the hourglass in the pool. **the drum's pool**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired (it
-  was "the bath" until 2026-10-08: the bath is the press's basin now). **the hue
-  ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
-  **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+  was "the bath" until 2026-10-08: the bath is the press's basin now). **the root spout**: a root grown from the drum's front lip over
+  the ware ring and the kerb to the bath's north lip (the tsukubai's kakei); **the thread**: the soul running from the eye's drop down
+  through the hourglass and along the root into the bath while it presses. **the ball** (the lever's): up after a press, down at its
+  stop after a firing; its **ember** warms in it while the bead is inside a spread. **the press's lantern** (never
+  "the lantern" alone: the garden has stone lanterns): tall when your cubes cover a firing here, low when not. **the hue ring** (`HueRing`, `src/vfx/alchemy/huering.js`): seven lights circling the press, one per
+  attribute at its hue; away from the press view the one the soul colour is inside comes close and burns; in it they **settle** into
+  their seals (one at a time, clockwise from Willpower), **lift** over the tile whose spread the bead enters, **dive** into it at a
+  firing, and go home. **soul glow**: the vessel's skin lit from inside in the soul colour, drawn by wheelColour's Oklab at one
+  lightness for every hue: the soul's chroma at one strength once off grey, never its brightness (none while grey); brighter for a few
+  real seconds after a true firing.
 - **wheelColour** (`src/vfx/wheelcolour.js`, SOUL-ALCHEMY.md 4.16): the one colour function of the colour wheel, in Oklab: every colour
   at the press is drawn by it (the tiles, the seals' glaze, the soul bead, the paths, the droplets, the lumps), so a bead and its tile
   are the same colour when they are the same place. **self-lit** (`selfLit`, `src/vfx/selflit.js`): a surface drawn with the frame's

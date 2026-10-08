@@ -60,7 +60,11 @@ also sets gems with their real optics, hair finishes and skin tones.
   Lachryma over a dished clay floor, pale over the grey centre and black at the lip, never lit in the soul colour. Every colour on it is
   `wheelColour` (`vfx/wheelcolour.js`, Oklab) and self-lit through `selfLit` (`vfx/selflit.js`, the tone curve and grade undone), so a
   tile shows its glaze exactly and the bead dead on it vanishes. Distinctions are carried four ways before colour: bearing and distance,
-  the seals' shapes, value and gloss, motion.
+  the seals' shapes, value and gloss, motion. **The surround is grey while you judge** (4.3): the press view eases the garden's sky,
+  haze and fog to the grey of their own lightness, and the HUD steps out but for the folded log. **Everything that answers is
+  physical** (4.12, 4.13): the lever's ball up or down and warming, the eye brightening, the press's lantern tall or guttering; a firing
+  is a hit-stop, a burning glass, a white kiln heat cooling to crazing and the tile shrinking a step; a refusal is a crawl, a break's
+  glint or a gutter, never a flash or a word. The hokora is the garden's palette in small: grey stone, plum-dark wood, a moss roof.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples

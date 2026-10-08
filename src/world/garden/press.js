@@ -27,6 +27,8 @@ import { ATTRIBUTES, targetOf, heartRadius, radiusAt } from '../../progress/alch
 import { formation } from '../../progress/realm.js';
 import { ECON } from '../../progress/econ/table.js';
 import { PressBath, NORTH_HUE } from './pressbath.js';
+import { PressLook } from '../../vfx/alchemy/presslook.js';
+import { FOOTING } from '../../vfx/alchemy/basin.js';
 
 const IDS = Object.keys(ATTRIBUTES);
 const BATH = { r: 2.5, kerb: 0.45, ware: 0.5, press: 4.35, reach: 3.6, hopper: 5 }; // (metres; the hopper's queue)
@@ -46,13 +48,14 @@ export class GardenPress {
       const along = q.dot(U), h = (P.radiusAt ? P.radiusAt(q.normalize()) : P.r) * Math.max(0, q.dot(U)) - ground0; if (along > 0) lift = Math.max(lift, h); }
     this.frame = { O: at.clone().addScaledVector(U, lift + 0.05), U, N, E, R: BATH.r, planet: P };
     this.bath = new PressBath(this.frame, realm.site.group);
-    // the press: 4.35 m north on the ground, its front (+Z) toward the bath
+    // the press: 4.35 m north, its front (+Z) toward the bath, level with it on the basin's footing (vfx/alchemy/basin.js: the ground
+    // falls a metre from the bath to the press on a planetoid this small, and a spout has to pour down into its basin)
     this.model = new SpiritPress({ hues: IDS.map((id) => ATTRIBUTES[id].hue) }); this.model.group.name = 'garden-press';
-    const dir = _v.copy(this.frame.O).addScaledVector(N, BATH.press).sub(P.c).normalize(), up = dir.clone(), ground = P.radiusAt ? P.radiusAt(dir) : P.r;
-    const front = this.frame.O.clone().sub(P.c.clone().addScaledVector(dir, ground)).projectOnPlane(up).normalize();
-    this.model.group.position.copy(P.c).addScaledVector(dir, ground - 0.05);
-    this.model.group.quaternion.setFromRotationMatrix(_m.makeBasis(new THREE.Vector3().crossVectors(up, front).normalize(), up, front));
+    const front = N.clone().negate();
+    this.model.group.position.copy(this.frame.O).addScaledVector(N, BATH.press).addScaledVector(U, FOOTING.top);
+    this.model.group.quaternion.setFromRotationMatrix(_m.makeBasis(new THREE.Vector3().crossVectors(U, front).normalize(), U, front));
     realm.site.group.add(this.model.group);
+    this.look = new PressLook(this); // (Calissa's: the press, the bath, the sky, the HUD and the hand as they answer the station, vfx/alchemy/presslook.js)
     this.hopper = []; this.viewing = false; this.walk = null; this.carry = null; this.lever = null; this.hover = null; this.inside = null;
     this.fire = 0; this.pull = 0; this.pressT = 0; this.openedAt = -1; this.frameN = 0; this.beatT = null; this.walked = false;
   }
@@ -120,9 +123,10 @@ export class GardenPress {
       for (const k of ['KeyW', 'KeyA', 'KeyS', 'KeyD']) if (I.wasPressed(k)) return this.leave('walk');
     }
     const { o, d } = hand.ray(), at = this.onBath(o, d), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
-    if (at) hand.point.copy(at); this.lean = at;
+    this.lean = at;
     const mouth = this.mouthAt(), ball = this.ballAt();
     const overMouth = GardenPress.miss(o, d, mouth) < 0.5, overBall = GardenPress.miss(o, d, ball) < 0.35;
+    const hp = this.look.handPoint(at, overMouth, overBall); if (hp) hand.point.copy(hp); // (the hand on the ball, before the mouth, or over the bath: the look's)
     if (this.lever) { // the ball pinched and dragged down: let go past the mark and it fires, short of it and it springs back
       this.pull = THREE.MathUtils.clamp((I.my - this.lever.y0) / LEVER.px, 0, 1);
       if (!I.isDown('Mouse0')) { const fired = this.pull >= LEVER.fire; this.lever = null; if (fired) this.fireLever(); }
@@ -146,7 +150,6 @@ export class GardenPress {
       }
       if (I.wasPressed('Mouse2') && this.hopper.length) this.flick(o, d, overMouth);
     }
-    hand.held = !!this.carry; // (the hand's pose: pinching what it carries)
   }
   nearLump(o, d) { let best = null, bd = 0.3; for (const L of this.lumps()) { const m = GardenPress.miss(o, d, L.pos); if (m < bd) { bd = m; best = L; } } return best; }
   /** A flick: the lump circling the mouth nearest the ray springs back to the ring (the last loaded, if none is near). */
@@ -211,11 +214,10 @@ export class GardenPress {
     if (now !== this.inside) { this.inside = now; this.game.events?.emit('alchemy.enter', { attribute: near?.id ?? null, heart: !!now?.endsWith(':heart'), by: 'courier' }); }
     // the model: the queue in the mouth, the soul in the bath, the light the bead is inside, the press and the pull
     this.fire = Math.max(0, this.fire - raw * 0.5); if (!this.lever) this.pull = Math.max(0, this.pull - raw * 1.5); this.pressT = W ? 1 : Math.max(0, this.pressT - raw * 0.5);
-    this.model.set({ soul: bead, fire: this.fire, press: this.pressT, pull: this.pull, near: near ? IDS.indexOf(near.id) : -1, queue: queued.map((m) => m.hue) });
-    this.model.update(performance.now() / 1000);
+    this.look.update(raw, { soul: bead, walking: !!W }); // (the model, the lights, the firing's look, the sky, the HUD, the hand)
   }
 
   /** The Jar within reach of the kerb (F opens the press view there). */
   inReach(pos) { return pos.distanceTo(this.frame.O) < BATH.reach + 0.6; }
-  dispose() { this.model.group.removeFromParent(); this.model.dispose?.(); this.bath.dispose(); }
+  dispose() { this.look.dispose(); this.model.group.removeFromParent(); this.model.dispose?.(); this.bath.dispose(); }
 }

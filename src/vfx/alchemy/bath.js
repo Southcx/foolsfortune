@@ -14,6 +14,7 @@
 //                        motes, mirth's thrown facets, desire's wind-ripples, grief's long streaks, dread's smoke), never a tint; the
 //                        meniscus brims and trembles with it
 //   the STIR             three slow arms of sheen while the press runs
+//   a GLINT              a refusal's: the nearest spread's break catching the light once, on the side facing the bead (the way)
 // The bath is self-lit and neutral (Albers: a colour is judged on a grey ground), unfogged, and its colour is undone from the frame's
 // grade (vfx/selflit.js), so the black stays black and not the grade's indigo. Over it lie the marks (vfx/alchemy/marks.js), which this
 // module fills for the seven TILES (their glaze, their clay body by rank, gilt at 10, a tile's heart, the yohen stars), the SOUL BEAD
@@ -24,7 +25,9 @@
 // beating made visible (the rings stilling at a tile's heart), and the oil film of the game's Lachryma (vfx/liquid.js) kept to the edge.
 //
 //   const B = new Bath(group, marks, { R })   B.tiles([{ h, s, r, bare, rank?, stars? }])   B.bead({ h, s }, { viewing, draught, walking })
-//   B.ghostBead({ h, s } | null, greys)   B.active (the tile the soul bead is in, or -1)   B.dispose()
+//   B.ghostBead({ h, s } | null, greys)   B.active (the tile the soul bead is in, or -1)   B.beadAt { x, z }   B.T [{ x, z, bare, now }]
+//   B.fx { shown, scale, men, crawl } (the firing's hold on the bead: vfx/alchemy/firing.js)   B.ring(x, z)   B.glint(i, k)
+//   B.cursor({ x, z } | null)   B.glow(k)   B.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SELF_LIT_GLSL, selfLitUniforms, syncSelfLit } from '../selflit.js';
@@ -41,7 +44,7 @@ const BEAD = { r: 0.06, ghost: 0.07 }; // (metres: the soul bead is 12 cm across
 const VERT = /* glsl */`varying vec2 vP; void main() { vP = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`;
 const FRAG = /* glsl */`
 uniform float uR, uTime, uStir, uBrim; uniform vec4 uTile[ 7 ]; uniform vec3 uGlaze[ 7 ]; uniform float uBreak[ 7 ];
-uniform vec4 uRing; uniform vec2 uFold; uniform vec4 uCurrent; uniform vec3 uClay; uniform vec4 uDish;
+uniform vec4 uRing; uniform vec2 uFold; uniform vec4 uCurrent; uniform vec3 uClay; uniform vec4 uDish; uniform vec4 uGlint; uniform vec2 uGlintAt;
 varying vec2 vP;
 ${SELF_LIT_GLSL}
 float hash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
@@ -92,6 +95,11 @@ void main() {
       c = mix( c, mix( uGlaze[ i ], vec3( 1.0 ), 0.42 + 0.4 * uBreak[ i ] ), line( d - T.w + bw, bw, px ) * ( 0.75 + 0.25 * uBreak[ i ] ) );
     }
   }
+  // a refusal's glint: the nearest spread's break catching the light once, on the side that faces the bead
+  if ( uGlint.w > 0.001 ) {
+    vec2 q = vP - uGlint.xy; float d = length( q ), bw = max( 0.012, 1.2 * px );
+    c = mix( c, vec3( 0.85 ), uGlint.w * pow( max( dot( q / max( d, 1e-4 ), uGlintAt ), 0.0 ), 10.0 ) * line( d - uGlint.z + bw, bw, px ) );
+  }
   // the fold: a dull grey ring closing on the grey centre while a complement greys the bead
   c = mix( c, uClay * 0.42, uFold.y * line( rho - uFold.x, max( 0.012, 1.0 * px ), px ) );
   // the meniscus: the liquid climbing the kerb; the oil film's colours live here and nowhere else
@@ -114,12 +122,14 @@ export class Bath {
       uTile: { value: Array.from({ length: 7 }, () => new THREE.Vector4()) }, uGlaze: { value: Array.from({ length: 7 }, () => new THREE.Color()) }, uBreak: { value: new Array(7).fill(0) },
       uRing: marks.uniforms.uRing, uFold: { value: new THREE.Vector2() }, uCurrent: { value: new THREE.Vector4() },
       uClay: { value: wheelColour(0, 0) }, uDish: { value: new THREE.Vector4(DISH.centre, DISH.depth, DISH.lines[0], DISH.lines[1]) }, ...selfLitUniforms(),
+      uGlint: { value: new THREE.Vector4() }, uGlintAt: { value: new THREE.Vector2(1, 0) }, // (the break's centre and radius, its strength; the way to the bead)
     };
     const geo = new THREE.CircleGeometry(R + 0.04, 160).rotateX(-Math.PI / 2); // (its rim runs under the kerb's arris: the two cross on a line, never share a plane)
     this.mat = new THREE.ShaderMaterial({ name: 'press-bath', uniforms: this.u, vertexShader: VERT, fragmentShader: FRAG, toneMapped: false, fog: false });
     const m = (this.mesh = new THREE.Mesh(geo, this.mat)); m.name = 'press-bath-liquid'; m.renderOrder = 1; group.add(m);
     this.T = []; this.active = -1; this.shown = 1; this.gloss = 1; this.last = null; this.still = 0; this.moving = false;
     this.phase = 0; this.amp = 0; this.fold = null; this.stop = null; this.brk = new Array(7).fill(0); this.brkTo = -1; this.cur = 0; this.t0 = performance.now();
+    this.fx = { shown: 1, scale: 1, men: 1, crawl: 0 }; this.beadAt = { x: 0, z: 0 };
   }
 
   /** The seven tiles: each at its target's place, its width its rank's radius, its spread out to its radius now. */
@@ -141,7 +151,7 @@ export class Bath {
     this.u.uTime.value = now / 1000; syncSelfLit(this.u);
     const R = this.R; wheelPoint(c.h, c.s, R, _p); const len = Math.hypot(_p.x, _p.z), lip = R - BEAD.r * 0.85;
     if (len > lip) { _p.x *= lip / len; _p.z *= lip / len; } // (at the lip it rides up against the kerb: it can get no more vivid)
-    const bx = _p.x, bz = _p.z;
+    const bx = _p.x, bz = _p.z; this.beadAt.x = bx; this.beadAt.z = bz;
     // moving, greying, stopping
     const L = this.last, step = L ? Math.hypot(_p.x - L.x, _p.z - L.z) : 0, greying = !!L && walking && c.s < L.s - 1e-4;
     if (step > 1e-4) { this.moving = true; this.still = 0; } else if (this.moving && ++this.still > 2) { this.moving = false; this.stop = { x: bx, z: bz, t: 0 }; }
@@ -150,7 +160,11 @@ export class Bath {
     this.gloss = ease(this.gloss, greying ? 0.15 : this.moving && this.gloss < 0.9 ? this.gloss : 1, dt * (greying ? 8 : 3));
     this.shown = ease(this.shown, viewing ? 1 : 0, dt / 0.3);
     const [ib] = RANGE.bead; wheelColour(c.h, c.s, _c);
-    if (this.shown > 0.002) { _m.compose(_p.set(bx, H.bead, bz), _q.identity(), _s.set(BEAD.r * 2, 1, BEAD.r * 2)); this.marks.put(ib, _m, MARK.bead, _c, _c, [this.gloss, this.shown, 0]); } else this.marks.hide(ib);
+    const fx = this.fx, br = BEAD.r * 2 * fx.scale;
+    if (this.shown * fx.shown > 0.002) { _m.compose(_p.set(bx, H.bead, bz), _q.identity(), _s.set(br, 1, br)); this.marks.put(ib, _m, MARK.bead, _c, _c, [this.gloss, this.shown * fx.shown, fx.men]); } else this.marks.hide(ib);
+    // a refusal's crawl: the bead beaded up tight, a ring of bared clay round it (the dish's own grey, as crawling glaze bares its body)
+    const [ic] = RANGE.crawl;
+    if (fx.crawl > 0.01) { const r = BEAD.r * (1.25 + 0.9 * fx.crawl); _m.compose(_p.set(bx, H.ring, bz), _q.identity(), _s.set(r, 1, r)); this.marks.put(ic, _m, MARK.ring, _c2.copy(this.u.uClay.value).multiplyScalar(0.9), _c2, [fx.crawl, 0.3, 0]); } else this.marks.hide(ic);
     // the fold (0.4 s) and the stop's ring (0.6 s)
     if (this.fold) { this.fold.t += dt / 0.4; this.u.uFold.value.set(this.fold.r * (1 - this.fold.t), 0.7 * Math.sin(Math.PI * Math.min(1, this.fold.t))); if (this.fold.t >= 1) { this.fold = null; this.u.uFold.value.set(0, 0); } }
     const [is] = RANGE.stopRing;
@@ -185,6 +199,25 @@ export class Bath {
     _m.compose(_p, _q.identity(), _s.set(BEAD.ghost * 2, 1, BEAD.ghost * 2)); this.marks.put(ig, _m, MARK.ghost, _c, _c, [greys ? 0 : 1, 1, 0]);
     this.brkTo = -1; let bd = Infinity; // (the spread it lands in brightens its break, and holds it)
     this.T.forEach((T, i) => { const d = Math.hypot(_p.x - T.x, _p.z - T.z); if (d <= T.now && d / T.now < bd) { bd = d / T.now; this.brkTo = i; } });
+  }
+  /** A small ring spreading from a point on the bath (the bead dipping into its tile at a firing). */
+  ring(x, z) { this.stop = { x, z, t: 0 }; }
+  /** The break of tile `i`'s spread glinting (k 0..1) on the side facing the bead. */
+  glint(i, k) {
+    const T = this.T[i], u = this.u.uGlint.value, ut = this.marks.uniforms.uGlintT.value; if (!T || k <= 0.001) { u.w = 0; ut.y = 0; return; }
+    const dx = this.beadAt.x - T.x, dz = this.beadAt.z - T.z, d = Math.hypot(dx, dz) || 1, bare = T.now <= T.bare + 0.005;
+    u.set(T.x, T.z, T.now, bare ? 0 : k); this.u.uGlintAt.value.set(dx / d, dz / d); // (a spread's break is on the bath; a tile with none, its rim: the marks)
+    ut.set(i, bare ? k : 0, dx / d, dz / d);
+  }
+  /** The hand's shadow dot on the bath (the cursor), or null. */
+  cursor(p) {
+    const [i] = RANGE.cursor; if (!p) { this.marks.hide(i); return; }
+    _m.compose(_p.set(p.x, H.tile + 0.004, p.z), _q.identity(), _s.set(0.09, 1, 0.09)); this.marks.put(i, _m, MARK.drop, _c2.setRGB(0.42, 0.42, 0.43), _c2, [0, 0.85, 0]); // (a neutral grey spot with the drop's darker rim: it reads on the black lip and on the pale grey centre alike)
+  }
+  /** The burning glass's pinpoint on the bead (k 0..1), in the soul colour run hot. */
+  glow(k, c) {
+    const [i] = RANGE.glow; if (k <= 0.003) { this.marks.hide(i); return; }
+    wheelColour(c.h, c.s, _c); _m.compose(_p.set(this.beadAt.x, H.bead + 0.006, this.beadAt.z), _q.identity(), _s.set(0.34, 1, 0.34)); this.marks.put(i, _m, MARK.glow, _c, _c, [0, k, 0]);
   }
   dispose() { this.mesh.removeFromParent(); this.mesh.geometry.dispose(); this.mat.dispose(); }
 }

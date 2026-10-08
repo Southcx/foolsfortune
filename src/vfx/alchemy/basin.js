@@ -4,8 +4,10 @@
 // three throwing lines, a third of the way out, on the tiles' circle and at the lip: the bath's shader draws them through the liquid,
 // vfx/alchemy/bath.js), its KERB (a ring of dark basalt 0.45 m wide, its inner arris rounded down into the liquid and in shadow), the
 // WARE RING (a step 0.5 m wide just outside the kerb, a hand lower) and a skirt below it, a plinth sloping into the ground so the level
-// basin sits into a round planetoid with no gap (the glossary's skirt: its foot takes the Athanor's own ground colour). One lathe, one
-// lit material shared with the planetoids' (vertex colours, so no new program). Each attribute's SEAL is carved into the kerb at its
+// basin sits into a round planetoid with no gap (the glossary's skirt: its foot takes the Athanor's own ground colour); and THE PRESS'S
+// FOOTING, a round of the same stone 4.35 m north, 2 cm under the ware ring, that the spirit press stands on level with its bath (the
+// ground falls a metre between them on the Athanor), with its own skirt. Two lathes merged, one lit material shared with the
+// planetoids' (vertex colours, so no new program). Each attribute's SEAL is carved into the kerb at its
 // tile's bearing, 16 px at the press view's widest, upright toward the press and never turned round the circle, filled with its
 // tile's glaze (a seal mark, vfx/alchemy/marks.js: self-lit, so it reads on the stone in grey and for every eye).
 //
@@ -17,9 +19,13 @@
 // slope (a skirt hung below the edge).
 //
 //   NORTH_HUE   wheelPoint(h, s, R, out) -> the bath's frame (x east, y up, -z north)   DISH { centre, lines, depth, lipDark }
-//   KERB { w, top }   WARE { w, y }   const B = new Basin(group, marks, { R })   B.seals(hues)   B.update(dt, lit)   B.dispose()
+//   KERB { w, top }   WARE { w, y }   FOOTING { at, r, top }   const B = new Basin(group, marks, { R })   B.seals(hues)   B.update(dt, lit, { ember, gold }?)
+//   B.sealAt(i, out) (a seal's place, the bath's frame)   B.dispose()
+//   (lit: one number, or one a seal (each light landing in its own); ember: a seal whose light has lifted out, dimmed so it still
+//   reads; gold: a true firing's warmth, a beat)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RANGE, MARK } from './marks.js';
 import { oklabColour, wheelOklab, wheelColour } from '../wheelcolour.js';
 
@@ -27,6 +33,7 @@ export const NORTH_HUE = 354.5; // (4.4: the press stands over the gap between R
 export const DISH = { centre: 0.125, lines: [1 / 3, 0.65, 0.985], depth: 4.8 }; // (metres; saturations; the floor's darkening: linear (1 - s)^depth)
 export const KERB = { w: 0.45, top: 0.07 }; // (metres: its width; its top over the liquid)
 export const WARE = { w: 0.5, y: -0.03 }; // (metres: its width; its height, a hand under the kerb's top and 2 cm over the highest ground the press found)
+export const FOOTING = { at: 4.35, r: 1.2, top: -0.05 }; // (metres: north of the centre, its radius, its top under the liquid: 2 cm under the ware ring, so the two never share a plane)
 const SEAL = { size: 0.34, lift: 0.015 }; // (metres: 16 px at the press view's widest; over the kerb's top: casebook rule 1)
 const STONE = { kerb: 0x222126, arris: 0x121114, ware: 0x4a4448, skirt: 0x3a3440, foot: 0x6a5a6a }; // (basalt; the arris in shadow; the step; the Athanor's rock and its top, vfx/garden/planetoid.js)
 
@@ -39,7 +46,7 @@ export function wheelPoint(h, s, R, out = new THREE.Vector3()) {
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color();
 export class Basin {
   constructor(group, marks, { R = 2.5 } = {}) {
-    this.R = R; this.marks = marks; this.lit = 0; this.hues = null;
+    this.R = R; this.marks = marks; this.lit = new Array(7).fill(0); this.ember = new Array(7).fill(0); this.gold = new Array(7).fill(0); this.hues = null;
     // the lathe: [radius, height, colour] from the skirt's foot in the ground, up to the ware ring, up the kerb, over it and down its
     // arris into the liquid (a lathe's faces look to the left of the way the profile runs: inward and up, here)
     const k = R + KERB.w, w = k + WARE.w, P = [
@@ -47,10 +54,14 @@ export class Basin {
       [k - 0.03, KERB.top, STONE.kerb], [k, KERB.top - 0.025, STONE.kerb], [k + 0.004, WARE.y + 0.004, STONE.arris], [k + 0.02, WARE.y, STONE.ware],
       [w - 0.03, WARE.y, STONE.ware], [w, WARE.y - 0.03, STONE.skirt], [w + 0.08, -0.3, STONE.skirt], [w + 0.4, -1.8, STONE.foot],
     ].reverse();
-    const pts = P.map(([r, y]) => new THREE.Vector2(r, y)), geo = new THREE.LatheGeometry(pts, 128);
-    const col = new Float32Array(geo.attributes.position.count * 3);
-    for (let i = 0; i < geo.attributes.position.count; i++) { _c.setHex(P[i % P.length][2]); col.set([_c.r, _c.g, _c.b], i * 3); }
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const lathe = (Q, seg) => {
+      const g = new THREE.LatheGeometry(Q.map(([r, y]) => new THREE.Vector2(r, y)), seg), col = new Float32Array(g.attributes.position.count * 3);
+      for (let i = 0; i < g.attributes.position.count; i++) { _c.setHex(Q[i % Q.length][2]); col.set([_c.r, _c.g, _c.b], i * 3); }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3)); return g;
+    };
+    const f = FOOTING, foot = lathe([[0, f.top, STONE.ware], [f.r - 0.03, f.top, STONE.ware], [f.r, f.top - 0.03, STONE.skirt], [f.r + 0.08, -0.3, STONE.skirt], [f.r + 0.55, -2.3, STONE.foot]].reverse(), 48);
+    foot.translate(0, 0, -f.at); // (north is -z here)
+    const geo = mergeGeometries([lathe(P, 128), foot], false);
     this.mat = new THREE.MeshStandardMaterial({ name: 'press-basin', vertexColors: true, roughness: 0.85 }); // (as the planetoids' own: the same program)
     const m = (this.mesh = new THREE.Mesh(geo, this.mat)); m.name = 'press-basin'; m.receiveShadow = true; m.castShadow = true; group.add(m);
   }
@@ -60,16 +71,23 @@ export class Basin {
     const H = this.hues; if (!H) return;
     const r = this.R + KERB.w * 0.52, [i0] = RANGE.seals;
     H.forEach((h, i) => {
-      wheelPoint(h, 1, r, _p); _p.y = KERB.top + SEAL.lift;
+      this.sealAt(i, _p);
       _m.compose(_p, _q.identity(), _s.set(SEAL.size / 2, 1, SEAL.size / 2)); // (upright toward the press: never turned round the circle)
       wheelColour(h, 0.65, _c); const [, a, b] = wheelOklab(h, 0.65); oklabColour(0.83, a, b, _c2, 0.86); // (lit from within: the glaze at a lightness that stands 6.7:1 or more on the basalt, measured; no channel past 0.86, so none blooms)
-      this.marks.put(i0 + i, _m, MARK.seal, _c, _c2, [i, this.lit, 0]);
+      this.marks.put(i0 + i, _m, MARK.seal, _c, _c2, [i, this.lit[i] * (1 - 0.6 * this.ember[i]), this.gold[i]]);
     });
   }
-  /** The light in the seals: eased toward `lit` (1 while the press view is open). */
-  update(dt, lit) {
-    const was = this.lit; this.lit += (lit - this.lit) * Math.min(1, dt * 4); if (Math.abs(this.lit - lit) < 0.003) this.lit = lit;
-    if (this.lit !== was) this.draw();
+  /** Where seal `i` is carved, in the bath's frame. */
+  sealAt(i, out = new THREE.Vector3()) { wheelPoint(this.hues?.[i] ?? 0, 1, this.R + KERB.w * 0.52, out); out.y = KERB.top + SEAL.lift; return out; }
+  /** The light in the seals, eased toward `lit` (1 while the press view is open; or one a seal), their embers and their gold. */
+  update(dt, lit, { ember = null, gold = null } = {}) {
+    let moved = false;
+    const ease = (arr, i, to, k) => { const v = arr[i], n = Math.abs(to - v) < 0.003 ? to : v + (to - v) * Math.min(1, k); if (n !== v) { arr[i] = n; moved = true; } };
+    for (let i = 0; i < 7; i++) {
+      ease(this.lit, i, Array.isArray(lit) ? lit[i] : lit, dt * 10);
+      ease(this.ember, i, ember ? ember[i] : 0, dt * 6); ease(this.gold, i, gold ? gold[i] : 0, 1);
+    }
+    if (moved) this.draw();
   }
   dispose() { this.mesh.removeFromParent(); this.mesh.geometry.dispose(); this.mat.dispose(); }
 }

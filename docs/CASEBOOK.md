@@ -180,7 +180,31 @@ the rules before building in the same area; a rule a machine can check goes into
 69. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
     scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
+70. **A mode never writes another mode's state to borrow its look.** A field one system keeps (the garden hand's `held`: the body it
+    holds) is set by that system alone; a pose wanted elsewhere is read from the borrower's own state by whoever draws it.
+71. **Parts that meet are placed in one frame.** A spout and its basin, a press and its bath: stood each on its own ground, a planetoid's
+    curve puts them a metre apart; stand them in the frame of the one that must be level, and give the other a footing.
 ## Cases
+
+### 2026-10-08 · Leaving the press view with a lump in the hand threw on the next frame (found headless, Calissa)
+- **Seen:** with a lump carried at the spirit press, F (or Esc, or W A S D) left the press view, and the next frame the garden's grab
+  threw `Cannot read properties of undefined (reading 'radius')`; reproduced headless by setting what the station set and leaving.
+- **Cause:** the station wrote its carry into the garden hand's own `held` (`hand.held = !!this.carry`, a boolean where the hand keeps
+  the body it holds) to get a pinching pose, and the leave returned before the line that set it back; the garden's grab then read
+  `held.body.radius` off `true`. The same flag also sent the hand to the last thing it had held and played the garden's grab clip.
+- **Fix:** the station no longer touches the hand's state: the hand's clips read the station's own `carry`, `hover`, `lever` and
+  `walk` (`godhand/godhandclips.js` `atPress`), and where the hand stands is the press's look (`vfx/alchemy/presslook.js` `handPoint`).
+- **Rule:** 70.
+
+### 2026-10-08 · The spirit press stood a metre under its bath, its drum inside the basin's plinth (Calissa, from the side renders)
+- **Seen:** from the side the press's drum was hidden behind the basin's plinth, its front lip 0.28 m under the liquid and 3.22 m from
+  the centre, inside the ware ring (measured headless), so no spout could pour from it into the bath.
+- **Cause:** the bath was laid level over the highest ground under its footprint, the press stood on the ground 4.35 m north, and on
+  the Athanor (10 m across) the ground falls 1.06 m in that distance: two parts that work together were each placed on their own ground.
+- **Fix:** the press stands in the bath's own frame, 4.35 m north and 5 cm under the liquid, on **the press's footing** (a round of the
+  basin's stone with its own skirt into the ground, merged into the basin's mesh: `vfx/alchemy/basin.js` `FOOTING`); the root spout
+  then reaches from the drum's lip over the ware ring and the kerb, and the thread falls into the bath at north.
+- **Rule:** 71.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame
