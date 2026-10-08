@@ -180,6 +180,7 @@ export class Workbench {
     out.push({ id: 'garden:cocoon', grp: 'the Spirit Garden', label: 'the cocoon tree (a spirit cocooned, two merging into one, a pod opening; on a loop)' });
     out.push({ id: 'garden:fossils', grp: 'the Spirit Garden', label: 'Lachrymite fossils (buried, dug, woken by the song, breaking open; on a loop)' });
     out.push({ id: 'garden:kiln', grp: 'the Spirit Garden', label: 'the Heavenly Kiln over the Peak (opening, bolts traced then striking)' });
+    out.push({ id: 'garden:strains', grp: 'the Spirit Garden', label: "the five strains' spore beds (lichen, koji, inkcap, oyster, witches' butter: growing in, foxfire at night, fairy rings), keepsake pots, sporelings; day to night" });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
     out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });
@@ -312,7 +313,7 @@ export class Workbench {
 
   clearHolder() {
     if (!this.holder) return;
-    for (const c of [...this.holder.children]) this.holder.remove(c);
+    for (const c of [...this.holder.children]) { c.userData.dispose?.(); this.holder.remove(c); } // (a stage that changed the stage puts it back: its lights)
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }
 

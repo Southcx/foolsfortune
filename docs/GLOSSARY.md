@@ -775,6 +775,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
   gets (34 joints; its eighteen clips: idle, five floats, cast, hit, death, five mood loops, three emotes, a dance). The mood loops are
   a feeling's basic ring, the emotes its onset; its flame carries the strength. *Not:* the hue ring's lights (the spirit press's).
+- **the strains' looks** (`strainBed`, `STRAIN_FUNGI`, `src/vfx/garden/strains.js`; the mycelium is Dovina's, `docs/plans/MYCELIUM.md`):
+  a spore bed drawn as its strain's real fungus on what it grows on: the **lichen** (wonder: crusts, leafy **rosettes** and pixie cups on
+  boulders and bark), **koji** (mirth: Aspergillus oryzae over rice in two cedar trays, a **koji-buta** each), the **inkcap** (desire:
+  shaggy inkcaps on loam, dissolving into **ink** from the rim), the **oyster** (grief: shelves on a rotting log and a stump), **witches'
+  butter** (dread: yellow-orange jelly on dead branches); in code a strain is its feeling, its fungus `lichen` .. `butter`. Its
+  **growth** (0 inoculated .. 1 full) brings each part up from its foot. **Foxfire** (`foxfireColour`): what glows at night in the
+  garden's fungi (the strains, a fairy ring's fruit, a sporeling's gills), the feeling's canon colour lifted to a glow's lightness, a
+  slow breath and never a flicker; *not* a light (no lamp is lent). **A fairy ring**: round a spore bed, a narrow dead edge, a darker
+  lusher **sward** outside it and the strain's own small growths on it; *not* the ring of bought planetoids, the hue ring, a ripple.
+- **the keepsake pot's look** (`lekythos`, `src/vfx/garden/lekythos.js`): a white-ground **lekythos** (the Athenian funerary oil flask), in
+  its spirit's colour: the spirit's **likeness** and its grave **stele** in **the white-ground hand** (`paintLikeness`, `paintStele`,
+  `src/vfx/blackfigure.js`: the black-figure painter's figures outlined on a white ground and washed in a colour), a meander border and
+  a ribbon (a **taenia**) in the colour. *Not:* a glaze, the press's tiles.
+- **a sporeling's look** (`sporeling`, `src/vfx/garden/sporeling.js`): a cap for a head in its fruit's colour, spotted; labradorite
+  gills edged in gold; a stem body with two eyes; hyphae for limbs; an idle sway, a waddle, a **hop** of its own (a squash, a stretch,
+  feet tucked; *not* the Emocean's hop, nor the Jar's hop). Its mind is Petra's.
 - **the shore's look** (`game.shore`, `src/vfx/shore.js`): what is seen where the Dunes meet the Emocean (Petra's beach): the crude sea
   in the shore's sector, the **swash** (the crude coming up the sand and drawing back, its oil film bright at the lip, never foam) and
   the **wet sand** behind it. The island's weather ends at the waterline.
@@ -958,7 +974,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save; a rig's hold (the stretch of a clip rocked back and forth while a move is held: `RigClips`, `hold: [18, 32]`) | "the ship's hold"; "hold the save"; "the clip's hold" |
 | move | a blow of the combo engine (the moveset, `kick.hit`); a rig's move (`RigClips`: a named clip choice, the hand's `snap`, the Jar's `hop`; its `release()` lets a held one go on) | "a blow" or "the kick's move"; "a rig's move" |
-| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`); a sporeling's bounce (its look's `hop()`, `vfx/garden/sporeling.js`) | "a hop" is the Emocean's; "the Jar's hop", "a sporeling's hop" in full. A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (the air slam, the ground slam); the Great Slip Jelly's; the god hand's clip (the flat palm brought down) | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry (a Lachryma shot swallowed); a mount on the rail; the Pneuka Jar's clip (a Figment swallowed) | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
