@@ -5,8 +5,10 @@
 //
 //   WASD      the ship in the view's plane: a critically damped approach to 14 m/s (Star Fox 64's Arwing settles, it never wobbles);
 //             it banks into a sideways move and pitches into a climb, so it shows its intent before it arrives
-//   mouse     the reticle (chase, free, astern): two marks on one line from the nose, at 12 m and 36 m (Star Fox 64: depth read without
-//             stereo); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
+//   mouse     the reticle (chase, free, astern): a cursor over the whole screen (the mouse's pixels, kept through a swing: the owner's
+//             bug, RAIL-OVERHAUL.md 1.4), and a ray from the camera through it each frame: the gun aims where it meets the plane 36 m
+//             ahead, or at the first foe it crosses; two marks on the nose's line, at 12 m and there (Star Fox 64: depth read without
+//             stereo, Sin & Punishment's free cursor); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
 //             abeam (into the screen) in the side view while a set piece runs alongside (the brig's broadside, Old Nobody's flank)
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
@@ -39,13 +41,14 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
 const VIEW_FWD = { chase: [0, 0, 1], free: [0, 0, 1], astern: [0, 0, -1], above: [0, 0, 1], side: [0, 0, 1] };
 const VIEW_RIGHT = { chase: 1, free: 1, astern: -1, above: 1, side: 1 };
-const RET = { chase: [9, 6], free: [15, 9], astern: [9, 6] }; // (how far the reticle may stray at 36 m, across and up)
+const RET = { chase: 1, free: 1, astern: 1 }; // (the views with a free cursor; above and side fire along the scroll)
+const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Ship {
   constructor(game, rail) {
     this.game = game; this.rail = rail;
     this.local = new THREE.Vector3(0, CRUISE, 0); this.vel = new THREE.Vector3();
-    this.ret = { x: 0, y: 0 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
+    this.cursor = { x: 0, y: 0.15 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
     this.aspect = 'mirth'; this.home = 'mirth';
     this.boostZ = 0; this.bank = 0; this.pitch = 0;
     this.rollT = 0; this.spin = 0; this.charges = T.ship.roll.charges; this.rechargeT = 0;
@@ -71,7 +74,7 @@ export class Ship {
   /** A crossing begins: the ship at the rail point, its feeling yours (the stones' draught, else the island's mood). */
   begin(aspect = 'mirth') {
     this.home = this.aspect = aspect;
-    this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.ret.x = this.ret.y = 0;
+    this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15;
     this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
@@ -103,7 +106,7 @@ export class Ship {
     const sx = (pl === 'wall' ? this.vel.z : this.vel.x * (VIEW_RIGHT[view] || 1)), sy = this.vel.y;
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
     this.pitch = damp(this.pitch, clamp(sy * S.pitch, -S.pitchMax, S.pitchMax) * D2R, 10, dt);
-    this.aimAt(view, I, abeam && view === 'side');
+    this.aimAt(view, I, abeam && view === 'side', waves);
     // the roll, its charges, the parry's window, the mercy after a hit
     const R = S.roll;
     if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
@@ -138,18 +141,29 @@ export class Ship {
   }
 
   /** Where the gun points: from the nose to the reticle at 36 m (free views), or along the scroll (above, side). */
-  aimAt(view, I, abeam = false) {
-    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, lim = RET[view]; // (abeam: a set piece alongside, the gun at it, into the screen)
+  aimAt(view, I, abeam = false, waves = null) {
+    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, free = RET[view] && VIEW_RIGS[view] != null; // (abeam: a set piece alongside, the gun at it, into the screen)
     this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
-    if (!lim || VIEW_RIGS[view] == null) { this.ret.x = damp(this.ret.x, 0, 8, 1 / 60); this.ret.y = damp(this.ret.y, 0, 8, 1 / 60); this.aim.set(...f); }
-    else {
-      const k = 0.035;
-      this.ret.x = clamp(this.ret.x + (I?.dx || 0) * k, -lim[0], lim[0]); this.ret.y = clamp(this.ret.y - (I?.dy || 0) * k, -lim[1], lim[1]);
-      _b.set(f[0], f[1], f[2]).multiplyScalar(d2).add(this.nose); _b.x += this.ret.x * (VIEW_RIGHT[view] || 1); _b.y += this.ret.y;
-      this.aim.copy(_b).sub(this.nose).normalize();
+    // the cursor: the mouse's pixels as a share of the screen, so it covers all of it and never moves with the camera (a swing keeps it)
+    const W = innerWidth || 960, H = innerHeight || 540, C = this.cursor;
+    C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1);
+    const cam = this.game.camera, R = this.rail, far = _st.copy(this.nose).addScaledVector(_b.set(...f), d2);
+    if (free && cam && R.toLocal) {
+      cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(C.x, C.y), cam);
+      R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
+      const t = Math.abs(_d.z) > 1e-4 ? (far.z - _o.z) / _d.z : -1; // (the plane 36 m ahead of the nose, square to the view)
+      if (t > 0) far.copy(_o).addScaledVector(_d, t);
+      // the first foe the ray crosses, nearer than that plane, is aimed at there (what is under the cursor is what is shot)
+      let best = t > 0 ? t : Infinity;
+      for (const foe of waves?.foes || []) {
+        if (!foe.alive) continue;
+        R.toLocal(foe.pos, _w); const tt = _w.clone().sub(_o).dot(_d); if (tt <= 0 || tt >= best) continue;
+        if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0)) { best = tt; far.copy(_a); } // (the point on the ray, in its reach: the reticle stays under the cursor, a big hull's centre may be far off it)
+      }
     }
+    this.aim.copy(far).sub(this.nose).normalize();
     this.retNear = _sp.copy(this.nose).addScaledVector(this.aim, d1).clone();
-    this.retFar = _st.copy(this.nose).addScaledVector(this.aim, d2).clone();
+    this.retFar = far.clone();
   }
 
   /** The sweep: the foe nearest the far reticle on the screen, within reach and not painted yet. */

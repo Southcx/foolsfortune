@@ -23,7 +23,7 @@
 // as a line the camera rides and looks round from), the arcade's CONTINUE? screen, Squirrel Eiserloh's "Juicing Your Cameras With Math".
 //
 //   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
-//   .stage { active, seconds, setPieces }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld }
+//   .stage { active, seconds, setPieces }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }
 //   .blow(n, { by, what, rollable })   .endPay(end)   (the set pieces')
 //   /crossing shoal,pirates,leviathan   (the chat line: the next crossing's set pieces, for testing them on demand; the dice and the deck otherwise)
 // ---------------------------------------------------------------------------------------
@@ -62,6 +62,8 @@ export class Emocean {
       Q, speed: T.ship.speed,
       toWorld: (l, out) => out.set(Q.x - l.x, Q.y + l.y, Q.z + l.z), // (R is world -X: the chase view's screen right)
       dirWorld: (v, out) => out.set(-v.x, v.y, v.z),
+      toLocal: (w, out) => out.set(Q.x - w.x, w.y - Q.y, w.z - Q.z), // (the inverse: the aim's camera ray into the rail's frame)
+      dirLocal: (v, out) => out.set(-v.x, v.y, v.z),
     };
     this.ship = new Ship(game, this.rail); this.shots = new Shots(game, this.rail); this.waves = new Waves(game, this.rail);
     this.mounts = new Mounts(game, this);
