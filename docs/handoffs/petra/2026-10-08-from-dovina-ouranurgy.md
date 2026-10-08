@@ -7,3 +7,7 @@ One new widening for you to read: **`ouranurgy.still`**, x1.3 at level 99. It se
 duration, the reprogramming window, and Celestial mode. Read it where each of the three sets its time.
 
 The Crucibelle's visual metronome (`docs/plans/CRUCIBELLE-UI.md`) is Calissa's and Wanda's. Delete this note in your branch when done.
+
+**Also, for the Crucibelle's visual metronome** (`docs/plans/CRUCIBELLE-UI.md` section 5, Wanda's measure): in `crucibelle.js`,
+`crucibelle.note` gains `note`, `octave` and `by: 'courier'` beside `degree`, and `song.play` gains `by: 'courier'`. Calissa's HUD reads
+the bell's own `grid()` and `fever`.

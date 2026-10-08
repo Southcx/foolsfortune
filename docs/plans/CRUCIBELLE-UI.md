@@ -42,10 +42,18 @@ and four beats to a bar, and the window teaches how early or late "on the beat" 
 read left to right: the first sight of notation, without a staff. Keeping it is Spellscription's (transcribing actions to time, the
 owner's ruling).
 
-## 5. The events it reads (all exist or are Wanda's to add)
+## 5. What it reads (Wanda's measure of main, 2026-10-08)
 
-`game.music` grid (`t0`, `spb`: the eighth), `crucibelle.note { note, octave, onBeat, by }`, the fever (`crucibelle.fever`), a song taken
-(`song.play { song, fever, by }`), the fever's peak. If one of these is missing, Calissa names it and Wanda or Petra emits it.
+- **The clock: the bell's own `grid()`** (`tools/crucibelle/crucibelle.js:99`), never `game.music.grid()`: with no music the bell keeps
+  its own 96 and the music's grid is null, which is exactly when a player practises. `spb` is seconds a **beat**, `t0` a bar line on the
+  audio clock; the pendulum's phase is `(now - t0) / (spb / 2)` (half-beats), as the fob's at line 281.
+- **The fever's level: the bell's `fever` (0 .. 1), read every frame**: it changes on every note and decays between them, so no event
+  carries it.
+- **Events** (Petra's file, `src/tools/`; the fields to add):
+  - `crucibelle.note`: today `{ degree, onBeat }`. Add `note: degree, octave: high ? 1 : 0, by: 'courier'` (the octave is known at
+    `note(d, high)`, line 140), keeping `degree` until the trackers move off it.
+  - `song.play { song, fever, power, instrument, n }`: add `by: 'courier'`.
+  - `crucibelle.fever` fires only at the peak (fever reaches 1 on a beat, once until it cools): it **is** the fever's peak.
 
 ## 6. Acceptance (each a check in the tools sweep)
 
