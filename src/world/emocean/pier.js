@@ -17,6 +17,7 @@ import { NODES } from '../../progress/econ/emocean.js';
 import { MOUNTS, slotsOf, mountable } from '../../progress/rail/mounts.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
+import { SeaChart } from './seachart.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
 
@@ -25,7 +26,7 @@ const UNCHARTED = (ship) => `Uncharted: a ${ship} sails only a passage charted i
 
 export class Pier {
   constructor(game) {
-    this.game = game; this.ship = 'sloop'; this.piers = new Map(); this.chosen = null;
+    this.game = game; this.ship = 'sloop'; this.chart = new SeaChart(game, this); this.piers = new Map(); this.chosen = null;
     game.interact?.add('pier', () => {
       const P = game.player;
       if (game.emocean?.stage.active || game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
@@ -75,6 +76,10 @@ export class Pier {
         const d = el('div', 'room', `<span class="n">${ok ? '⚓' : '·'}</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${sub}</s></span>`);
         if (ok) d.onclick = () => this.sail(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
+        if (ok) { // (the sea chart: draft the passage, read the sea, then cast off: world/emocean/seachart.js)
+          const ch = el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>draft your passage and read the sea before you sail</s></span>`);
+          ch.onclick = () => this.chart.open(at, id); box.appendChild(ch);
+        }
       }
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
@@ -103,12 +108,19 @@ export class Pier {
     return r ? r.data : null;
   }
 
+  /** Cast off on the drafted passage (the sea chart's): its threats are the crossing's legs, and a passage sailed to its end makes a
+   *  rutter (voyage.stageResult). */
+  castOff(from, to) {
+    const C = this.chart; if (!C.done()) return false;
+    return this.sail(from, to, { ids: [...C.path], legs: C.path.map((id) => C.chart.waypoints[id].type), pieces: C.legs(), route: `${from}>${to}`, read: +this.game.voyage.reckoning(from, to).toFixed(2) });
+  }
+
   /** Board and go: the voyage pays the fuel and draws the set pieces; the stage takes the Courier aboard. */
-  sail(from, to) {
+  sail(from, to, passage = null) {
     const g = this.game, V = g.voyage;
     const s = canSail(this.ship, { route: `${from}>${to}`, day: today(), rutter: this.rutter(from, to) });
     if (!s.ok) { g.log?.say('warn', UNCHARTED(this.ship), { key: 'pier', throttle: 1 }); return false; }
-    const r = V.board(from, to, this.ship, this.mounts().chosen);
+    const r = V.board(from, to, this.ship, this.mounts().chosen, passage);
     if (!r.ok) { g.log?.say('warn', r.why, { key: 'pier', throttle: 1 }); return false; }
     this.menu?.close();
     g.emocean?.begin();

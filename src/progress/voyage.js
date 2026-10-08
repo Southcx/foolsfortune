@@ -33,6 +33,7 @@ import { rankOf, medalOf } from './rail/score.js';
 import { mountable, slotsOf } from './rail/mounts.js';
 import { deckDraw } from './econ/deck.js';
 import { stageWx } from './weather.js';
+import { rutterWorth } from './econ/passage.js';
 import { crudeGrade } from './shop/catalogue.js';
 import { today } from '../core/calendar.js';
 import { stream } from '../core/rng.js';
@@ -105,7 +106,7 @@ export class Voyage {
   }
 
   /** Cast off: the fuel is paid, and the ship is at sea until the stage is sailed. */
-  board(from = this.s.at, to, ship = 'sloop', mounts = []) {
+  board(from = this.s.at, to, ship = 'sloop', mounts = [], passage = null) {
     const c = this.canBoard(from, to, ship);
     if (!c.ok) return c;
     if (!this.game.cubes.spend(c.hop.fuel, 'fuel')) return { ok: false, why: `The crossing burns ${c.hop.fuel} cubes of fuel.` };
@@ -114,7 +115,7 @@ export class Voyage {
     const wx = stageWx(from), aspect = this.game.weather?.at?.(from)?.aspect || null;
     const leviathan = this.game.ledger ? deckDraw(this.game.ledger, 'emocean.leviathan', leviathanDeck(c.hop.danger + wx.danger, aspect)) : false;
     const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)); // (the tools that can be mounted: the ones worn)
-    this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: mounts.filter((t, i) => mounts.indexOf(t) === i && mountable(worn).includes(t)).slice(0, slotsOf(ship)) }; // (the hull's worth: mounts by hull)
+    this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: mounts.filter((t, i) => mounts.indexOf(t) === i && mountable(worn).includes(t)).slice(0, slotsOf(ship)), passage }; // (the hull's worth: mounts by hull; passage: the sea chart's drafted one, or null)
     const plan = this.crossing();
     this.s.sailing.setPiece = plan?.setPiece || 'shoal'; this.s.sailing.setPieces = plan?.setPieces || ['shoal'];
     this.dirty();
@@ -139,7 +140,7 @@ export class Voyage {
   /** The crossing as it will play (Petra's rail reads this: its acts, views, swings, beats and waves): progress/rail/crossing.js script. */
   crossing() {
     const V = this.s.sailing;
-    return V ? script(V.from, V.to, V.day, { casks: V.casks, leviathan: V.leviathan, wx: V.wx, open: (id) => this.isOpen(id) }) : null;
+    return V ? script(V.from, V.to, V.day, { casks: V.casks, leviathan: V.leviathan, wx: V.wx, open: (id) => this.isOpen(id), pieces: V.passage?.pieces || null }) : null; // (a drafted passage's threats are the legs)
   }
 
   /** The stage is over (Petra's rail calls this with the run): a failed one costs cargo and may spill; either way the ship makes port.
@@ -176,6 +177,12 @@ export class Voyage {
     const medal = !continues && medalOf({ passed, downed, spawned });
     this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
       chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
+    // a drafted passage sailed to its end (not broken up, not continued twice) makes a rutter: the passage's map (PASSAGE.md 6)
+    if (V.passage && passed && continues < 2) {
+      const P = V.passage, minutes = +(((this.game.emocean?.t ?? 120) / 60)).toFixed(2);
+      const data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: P.ids, legs: P.legs, rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read }) };
+      if (this.game.pneuka?.add('rutter', 'passage', 0, data) >= 0) this.game.events.emit('rutter.get', { from: V.from, to: V.to, rank, worth: data.worth, by: 'courier' });
+    }
     return { lost, spilled };
   }
   lose(grade, n) {
