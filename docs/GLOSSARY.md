@@ -24,7 +24,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   baseline; every other stone is a trade. One set at a time. *Not:* a stone in the world (say what it is), Strawman's or a cairn's.
 - **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
   damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
-- **mental state**, the Courier's (`COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
+- **mental state**, the Courier's (`game.courierMind`, `src/courier/mind.js`, kept with the pool; `COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
   up by Lachryma drunk, settled by quiet; Prismatic is power and fragility, Stoic the reverse. The player reads "your mental state".
 - **brimming** (Espada's word): the push of overflow, a vessel full past its brim (four times a drink's); the log says "You are
   brimming." and "You settle." *Not:* "drunk", which never appears in player text.
