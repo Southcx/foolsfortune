@@ -60,6 +60,15 @@ export class Crystals {
     game.scene.add(this.mesh);
     // what the world can sense of them (signatures.js): a formation still whole, loudly; a veiled one as loudly (it is there)
     for (const e of this.list) game.signatures?.add({ pos: e.pos, strength: 4 + e.size * 3, kind: 'crystal', ref: e, alive: () => e.hp > 0 });
+
+    // Perfect Pitch (a knack, progress/knacks.js): a pick's swing begun at a ringing crystal sounds its reference once more, a beat before
+    // the strike lands; switched off, nothing is played
+    game.events?.on('dreamvane.swing', () => {
+      if (!this.game.knacks?.on('perfectPitch') || !this.game.dunes?.active) return;
+      const e = this.near(this.game.player.pos, 2.4).find((x) => x.ringT > 0 && x.hp > 0); if (!e) return;
+      const ref = refNote(e.tune); if (sfx.crystalRef) sfx.crystalRef(ref); else placeholderTone(ref, 0, 0.6, 0.1);
+      this.game.events?.emit('crystal.ref', { note: ref, again: true }); // (`again`: not a fork's ring, never counted)
+    });
   }
 
   build() {

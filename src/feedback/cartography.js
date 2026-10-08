@@ -16,6 +16,9 @@
 //
 // Also here: the compass (top right: a dial with the local map, heading, room, waypoint) and the
 // map screen (M; drag to pan, wheel to zoom, click to set a waypoint, right click to clear it).
+// Ariadne's Thread (a knack, progress/knacks.js): the way walked since the last Shrine rested at, a point every 3 m, a loop cut off
+// where the way crosses itself (so it is the way back, not the way wandered), drawn on the map from you to that Shrine; switched off,
+// nothing is drawn. Prior art: the thread itself, and Hansel's pebbles; kept for the session only (after a reload, a straight line).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
@@ -67,6 +70,8 @@ export class Cartography {
     this.cells = Object.fromEntries(LAYERS.map((l) => [l.id, new Map()]));
     this.anchors = []; // { name, tag, x, y, z, layer, covered }
     this.waypoint = null; // { x, z, layer }
+    this.thread = []; // (Ariadne's Thread: { x, y, z } walked since the last rest)
+    for (const n of ['shrine.rest', 'shrine.travel']) game.events?.on(n, () => { this.thread.length = 0; }); // (travel makes that Shrine the last)
     this.tickT = 0;
     this.saveT = 0;
     this.dirty = false;
@@ -171,10 +176,36 @@ export class Cartography {
     this.pulseCool -= dt;
     this.stepPulses(dt);
     this.tickT -= dt;
-    if (this.tickT <= 0) { this.tickT = 0.16; this.passive(0.16); }
+    if (this.tickT <= 0) { this.tickT = 0.16; this.passive(0.16); this.spool(P.pos); }
     if (this.dirty && (this.saveT -= dt) <= 0) { this.saveT = 6; this.save(); }
     this.updateHud(dt);
     if (this.open) this.drawMap();
+  }
+
+  /** Ariadne's Thread: a point every 3 m; where the way comes back within 3 m of an older point, the loop between is cut. */
+  spool(p) {
+    if (this.game.realm?.active) return;
+    const T = this.thread, last = T[T.length - 1];
+    if (last && Math.hypot(p.x - last.x, p.z - last.z) < 3 && Math.abs(p.y - last.y) < 3) return;
+    for (let i = 0; i < T.length - 2; i++) if (Math.hypot(p.x - T[i].x, p.z - T[i].z) < 3 && Math.abs(p.y - T[i].y) < 3) { T.length = i; break; }
+    T.push({ x: p.x, y: p.y, z: p.z });
+    if (T.length > 800) T.splice(0, T.length - 800); // (a very long way: its oldest end let go)
+  }
+
+  /** The thread drawn on the map's layer: from the Shrine rested at, along the way walked, to you. */
+  drawThread(c, l, V, P) {
+    const s = this.game.shrines, sh = s?.get?.(s.last); if (!sh || !this.game.knacks?.on('ariadnesThread')) return;
+    const pts = [sh.pos, ...this.thread, P.pos];
+    c.save(); c.strokeStyle = 'rgba(231,196,106,.85)'; c.lineWidth = 2; c.lineJoin = 'round';
+    if (!this.thread.length) c.setLineDash([4, 5]); // (after a reload: only the way it lies)
+    c.beginPath(); let pen = false, prev = null;
+    for (const q of pts) {
+      if (this.layerOf(q.y).id !== l.id) { pen = false; prev = q; continue; }
+      if (prev && this.thread.length && q !== pts[1] && Math.hypot(q.x - prev.x, q.z - prev.z) > 30) pen = false; // (a seam or a fall: no line across it)
+      const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale;
+      if (pen) c.lineTo(sx, sy); else c.moveTo(sx, sy); pen = true; prev = q;
+    }
+    c.stroke(); c.restore();
   }
 
   /** Walking about: what is near and in sight is slowly sensed, and charted with a little time (never past .5). */
@@ -581,6 +612,7 @@ export class Cartography {
       const sx = (this.waypoint.x - V.x) * V.scale, sy = (this.waypoint.z - V.z) * V.scale;
       c.fillStyle = '#ffe0a0'; c.save(); c.translate(sx, sy); c.rotate(Math.PI / 4); c.fillRect(-6, -6, 12, 12); c.restore();
     }
+    this.drawThread(c, l, V, P);
     // you (and the jar's tether)
     if (this.layerOf(P.pos.y).id === l.id) {
       const sx = (P.pos.x - V.x) * V.scale, sy = (P.pos.z - V.z) * V.scale;

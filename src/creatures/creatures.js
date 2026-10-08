@@ -40,6 +40,7 @@ import { TYPES, BUILD, typeOf, multiplier } from '../progress/combat/types.js';
 import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
 import { sfx } from '../audio/sfx.js';
+import { blowWindow } from '../courier/parry.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -125,8 +126,12 @@ export class Creatures {
   /** An outlined windup run out unanswered with the Courier in its reach: a parry missed (the feat's run starts over: TRAINING.md 6). */
   missed(c, w) { const P = this.game.player; if (P && w.at.distanceTo(P.pos) <= w.radius + 1) this.game.events?.emit('parry.missed', { kind: c.kind, by: 'creature' }); }
   /** The eta a windup's mark is shown with: Perception draws the outline's thickening out over a longer lead (x its widening), and the
-   *  last quarter second, the window, is never moved (vfx/parrymark.js thickens over the 0.8 s before it; SOUL-ALCHEMY.md 6). */
-  shownEta(e) { const w = this.game.alchemy?.widen?.('perception.notice') ?? 1; return e <= 0.25 ? e : 0.25 + (e - 0.25) / w; }
+   *  window is never moved (vfx/parrymark.js thickens over the 0.8 s before it; SOUL-ALCHEMY.md 6). Held Breath's longer window is
+   *  shown fullest from its own start: the mark's last quarter second is laid over the whole window. */
+  shownEta(e) {
+    const w = this.game.alchemy?.widen?.('perception.notice') ?? 1, W = blowWindow(this.game);
+    return e <= W ? (e * 0.25) / W : 0.25 + (e - W) / w;
+  }
   /** The answerable blows winding up within r of pos (nearest first). */
   windups(pos, r) {
     const out = [];

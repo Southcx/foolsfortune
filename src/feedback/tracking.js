@@ -428,6 +428,7 @@ export class Tracking {
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
+    on('knack.open', (e) => log.say('system', `You have the knack of it: ${KNACKS[e.knack]?.name || e.knack}, ${KNACKS[e.knack]?.does || ''}. (/knack ${e.knack} to switch it off.)`));
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
     on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
@@ -474,7 +475,7 @@ export class Tracking {
     on('crystal.reveal', (e) => { if (e.by === 'courier') L.inc('crystal.reveal'); log.say('find', e.how === 'pick' ? 'Crystal rises out of the sand where the pick went in.' : 'Crystal rises out of the sand at the song.', { key: 'xrev', throttle: 1 }); first('crystal', 'Logged: your first crystal. Lachryma set hard: the Dreamvane\'s pick takes it a blow at a time, and its fork, rung into it first, doubles what it gives and sounds the note it is set in. Struck where it answers in that note, it opens all at once.'); });
     let sweetRun = 0; // (sweet spots struck in a row: Perfect Pitch's feat)
     on('crystal.strike', (e) => { if (e.by === 'courier') { L.inc('crystal.strike'); sweetRun = e.sweet ? sweetRun + 1 : 0; L.hi('crystal.sweet.run', sweetRun); } if (e.ringing) L.inc('crystal.strike.ringing'); });
-    on('crystal.ref', () => L.inc('crystal.ref'));
+    on('crystal.ref', (e) => { if (!e.again) L.inc('crystal.ref'); }); // (Perfect Pitch's second reference is not a ring)
     on('crystal.harvest', (e) => {
       if (e.by !== 'courier') return;
       L.inc('crystal.harvest'); if (e.ringing) L.inc('crystal.harvest.ringing'); if (e.shard) L.inc('crystal.shard'); if (e.key) L.inc('crystal.key');

@@ -9,6 +9,7 @@
 // (progress/skills.js: opened by the ledger).
 //
 //   KNACKS[id] = { name, does, opens(L) -> bool }   const K = new Knacks(game)   K.open(id)   K.on(id)   K.set(id, on)   /knack [id] [on|off]
+//   K.update(dt): a knack the ledger has just opened is said once (`knack.open { knack, by }`; the ones said are kept in the save)
 // ---------------------------------------------------------------------------------------
 import { CRIB } from './ostraca.js';
 
@@ -54,9 +55,21 @@ export const KNACKS = {
 
 export class Knacks {
   constructor(game) {
-    this.game = game; this.off = new Set();
-    game.save?.section('knacks', { scope: 'player', version: 1, dump: () => ({ off: [...this.off] }), load: (d) => { this.off = new Set(Array.isArray(d?.off) ? d.off : []); }, reset: () => { this.off.clear(); } });
+    this.game = game; this.off = new Set(); this.heard = new Set(); this.lookT = 1;
+    game.save?.section('knacks', { scope: 'player', version: 2,
+      dump: () => ({ off: [...this.off], heard: [...this.heard] }),
+      load: (d) => { this.off = new Set(Array.isArray(d?.off) ? d.off : []); this.heard = new Set(Array.isArray(d?.heard) ? d.heard : []); },
+      reset: () => { this.off.clear(); this.heard.clear(); } });
     game.chat?.add?.('knack', { help: 'your knacks (assists you have earned): /knack, or /knack <id> on|off', run: (args) => this.command(args) });
+  }
+  /** Once a real second: a knack the ledger has opened since the last look is said, once (the ledger decides; this only notices). */
+  update(dt = 0) {
+    if ((this.lookT -= dt) > 0) return; this.lookT = 1;
+    for (const id of Object.keys(KNACKS)) {
+      if (this.heard.has(id) || !this.open(id)) continue;
+      this.heard.add(id); this.game.save?.dirty('knacks');
+      this.game.events?.emit('knack.open', { knack: id, by: 'courier' });
+    }
   }
   /** Opened: the ledger says so. */
   open(id) { const k = KNACKS[id], L = this.game.ledger; return !!(k && L && k.opens(L)); }
