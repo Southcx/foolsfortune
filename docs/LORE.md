@@ -442,8 +442,8 @@ roly-poly toy that rights itself, and a cup).
   (class 3, Dovina's) is **Charybdis** (*Odyssey* XII: the whirlpool that swallows the sea and spits it out again, Scylla's neighbour;
   Old Nobody already wears Odysseus's false name, so the crossing keeps to one book). It rises out of the maelstrom (Astral) and dives
   back into it (Umbral), as Homer's swallows and spits. One name for every mood: its feeling is the waypoint's weather, so the log
-  names the mood beside it ("Charybdis rises, in grief."). Whether every maelstrom holds the same Charybdis (an Egregore, then, not a
-  Figment) is Dovina's call and a blank until then. The log: "Charybdis rises, in <feeling>." · "Charybdis dives." (at its first dive
+  names the mood beside it ("Charybdis rises, in grief."). Every maelstrom holds the same Charybdis: **an Egregore**, authored by
+  no one, wearing the feeling of wherever it rises (Dovina's ruling, 2026-10-08), so a bounty under Letty's marque may post it one day. The log: "Charybdis rises, in <feeling>." · "Charybdis dives." (at its first dive
   only) · "Charybdis sinks into the maelstrom. The sea goes still." (when it is beaten).
 - **A calm** stays (the homonym already holds it). Its buoy is **the Purser's buoy**, where the King's tender sells fuel.
 - **The log** (`passage.*`, `rutter.*`; STE, counts but no percentages):

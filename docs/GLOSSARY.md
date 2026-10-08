@@ -842,7 +842,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   log says "the Great Slip Jelly".
 - **Charybdis** (the owner, 2026-10-08; LORE.md, "The passage"): the Whale (class 3) of the maelstrom, after Homer's whirlpool that
   swallows the sea and spits it out: it rises out of the maelstrom (Astral) and dives back in (Umbral); one name for its five moods, its
-  feeling the waypoint's weather ("Charybdis rises, in grief."). Whether it is one Egregore or a Figment of each sea is open. **the
+  feeling the waypoint's weather ("Charybdis rises, in grief."). One Egregore in every maelstrom (Dovina's ruling). **the
   Drowned Light**: the graveyard's drowned lighthouse, the False Light's twin below. *Not:* the maelstrom (the leg, a place).
 - **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
   hours. The Solar Skiffing trial races its shadow.
