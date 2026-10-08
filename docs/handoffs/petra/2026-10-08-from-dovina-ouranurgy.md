@@ -11,3 +11,4 @@ The Crucibelle's visual metronome (`docs/plans/CRUCIBELLE-UI.md`) is Calissa's a
 **Also, for the Crucibelle's visual metronome** (`docs/plans/CRUCIBELLE-UI.md` section 5, Wanda's measure): in `crucibelle.js`,
 `crucibelle.note` gains `note`, `octave` and `by: 'courier'` beside `degree`, and `song.play` gains `by: 'courier'`. Calissa's HUD reads
 the bell's own `grid()` and `fever`.
+- And export the bell's `WINDOW` (0.085 real seconds) from `crucibelle.js`: Calissa's pendulum (`vfx/crucibellehud.js`) mirrors it today (2026-10-08).

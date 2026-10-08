@@ -14,25 +14,28 @@ screen. A player who cannot hear the music cannot play the bell. The Dreamvane a
 compass** (`vfx/vanehud.js`): line-drawn, wordless, numberless marks hung on the wire compass's tape, in the colour of what the tool
 is doing. The Crucibelle gets its own, **the bell on the compass**, in the same hand.
 
-## 2. What it shows (one look with the vane's: lines, no words, no numbers)
+## 2. What it shows: built (Calissa, `src/vfx/crucibellehud.js`, 01268f8 on her branch; lines, no words, no numbers)
 
-| mark | shows | how (the grammar) |
+| mark | shows | as built |
 |---|---|---|
-| **The pendulum** | the beat: the music's eighths, the tempo, the bar | a line pendulum hung from the tape's centre, swinging so each end lands on an eighth (as the fob does, as a real metronome does); a heavier tick at the bar's downbeat. It moves; it never flashes |
-| **The window** | when a note counts as on the beat | a short notch at each end of the swing's arc, as wide as the on-beat window; the arc between is plain line |
-| **The notes** | which of the five you played, and whether it landed | a note pressed draws its sigil at the arc where the bob was: inside the notch it lands solid and bright, outside it hollow. Five sigils, one a note, each its own shape and colour (shape first, so a colour-blind player reads them); an octave up (RMB) doubles the sigil's line |
-| **The motif** | the song being played | the last notes' sigils trail behind the bob along the tape like a phrase; when they make a song, the trail draws together into that song's own sigil and is taken into the bell (the song cast) |
-| **Fever** | how hot the bell runs | the bob is an ember: its glow and a thin line of smoke above it rise with fever; at the peak the smoke rings out once round the tape |
-| **Silence** | no music playing | the pendulum keeps the bell's own time (96) and its line is drawn fainter: still playable, honestly marked |
+| **The bell's mark** | where the pendulum hangs | on the wire compass's tape, at its centre |
+| **The pendulum** (*not* the metronome: that is the fob on the bell) | the beat: the eighths, the tempo, the bar | hangs below the tape, swinging AMP x cos(pi x phase) on the bell's own `grid()`: each end lands on an eighth (measured: worst 2 ms off the music's grid at 75 bpm), easing into the ends. On the downbeat the rod and bob thicken and that end's mark stands taller: shape, never a flash |
+| **The notches** | when a note counts as on the beat | a forked groove at each end, exactly the angle the bob sweeps inside the bell's window (plus or minus 0.085 real seconds): the notch is the window |
+| **The neumes** (*not* sigils: those are the Soul Brush's) | which note you played, and whether it landed | each press draws its neume on the arc where the bob was: solid inside the notch, hollow outside; an octave up (RMB) doubles its line. Aikin's shape notes: root a **square**, 2 a **triangle**, 3 a **bowl**, 4 a **diamond**, 5 a **circle**, each in its degree's colour, distinct in greyscale at 13 px |
+| **The motif** | the song being played | the last neumes trail along the tape as a phrase; when they make a song they gather into **that song's neume** (heads heighted by pitch, joined in one ligature: chant's compound neume) and are taken into the bell's mark; too dry to sing, they fall |
+| **Fever** | how hot the bell runs | the bob is an ember trailing smoke that rises with fever; at the peak a ring of smoke travels round the tape once |
+| **Silence** | no music playing | the bell's own 96, the line drawn fainter |
 
-Shown while the Crucibelle is drawn, gone when it is stowed (as the vane's); never in the rhythm mode, which has its own note chart.
+Shown while the Crucibelle is drawn, gone when it is stowed; never in the rhythm mode. A faint dark keyline under the lines at the
+default contrast (additive lines vanish on the Dunes' noon sky).
 
 ## 3. Accessibility (the reason it exists)
 
 - **Every beat the ear gets, the eye gets:** the downbeat, the eighths, the window, the hit and the miss, fever, a song taken. Nothing
   about playing the bell needs sound.
-- **Half Time** (the knack, Wanda's rule): the pendulum swings on every other beat, never slower, so it stays on the music's grid.
-- **Settings, not knacks** (owner's rule via Wanda): the pendulum's size and the tape's contrast are settings, from the start.
+- **Half Time** (the knack, Wanda's rule; the name stays, the owner approved it): the ends land on quarters and a centre notch marks the
+  off-eighth, never slower than the music's grid. Wired to `game.knacks?.halfTime`; the knack itself is built with the knacks.
+- **Settings, not knacks** (owner's rule via Wanda): `visual.pendulumSize` and `visual.compassContrast`, from the start (built).
 - **No flash, ever** (the owner's, 2026-10-06): motion carries the beat; a landed note brightens, it does not blink.
 
 ## 4. What it teaches (the commandment)
@@ -54,6 +57,7 @@ owner's ruling).
     `note(d, high)`, line 140), keeping `degree` until the trackers move off it.
   - `song.play { song, fever, power, instrument, n }`: add `by: 'courier'`.
   - `crucibelle.fever` fires only at the peak (fever reaches 1 on a beat, once until it cools): it **is** the fever's peak.
+  - Export the bell's `WINDOW` (0.085 real seconds), which the pendulum mirrors today (Calissa).
 
 ## 6. Acceptance (each a check in the tools sweep)
 
@@ -62,4 +66,6 @@ owner's ruling).
 2. A note on the beat lands solid inside the notch; off the beat, hollow outside it.
 3. Five sigils, distinguishable in greyscale.
 4. A song played draws its trail together and the song is cast.
-5. With the sound muted, a sweep can play a song on the beat by reading only the pendulum (the accessibility test).
+5. With the sound muted, a sweep can play a song on the beat by reading only the pendulum (the accessibility test). Built: the tools
+   sweep's `pendulum` part plays THE RALLY (1 3 5) off `game.crucibelleHud.read()` alone (Calissa measured 19/19 on her branch;
+   on main once her branch lands). 1 to 4 were measured headless by Calissa.
