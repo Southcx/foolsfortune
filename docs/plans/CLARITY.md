@@ -208,3 +208,39 @@ file path.
    - `scripts/clarity.mjs` joins the gate.
 3. **Then:** each window in the traffic order of section 9, one a round. A window is done when it passes the check and the owner
    reads it cold.
+
+## 13. The wiki's house style (from the OSRS wiki)
+
+The owner, 2026-10-08: the wiki (`docs/wiki/`) follows the Old School RuneScape wiki's style guide
+(`oldschool.runescape.wiki/w/RuneScape:Style_guide`), the best-kept game wiki there is. What we took, and where we differ:
+
+- **A page's shape:**
+  - an **infobox** first: a small table of the thing's stats, its key, where it is, what it costs;
+  - then a **lead** of two or three sentences: what it is and why you care;
+  - then the sections, with strategy and trivia in their own sections at the end.
+  - A topic with its own page gets one line under its heading, "Main page: [The Emocean](emocean.md)", never a repeat of it.
+- **Headings** in sentence case (only the first word and names capitalised), short, with no links in them.
+- **Names** exactly as the game shows them. A thing's label from section 9 is its name on the wiki, with its lore name once beside it.
+  Proper nouns are capitalised (places, the folk, the tools, the domains). Items and creatures are lower case unless they hold a name
+  ("a slip jelly", "the Great Slip Jelly").
+- **No abbreviations or shorthand** ("the Lockheart", never "LH"), no "&" for "and", the serial comma in lists.
+- **British spelling** (colour, armour, travelled), as the game already writes it.
+- **Tense:** present for what the game does; past only for what was removed; "not built yet" for the planned (never the future tense,
+  which reads as a promise).
+- **Person:** "you" (our wiki is a guide, and the game says "you"); never "I" or "we".
+- **Numbers:** a comma between thousands (1,920 cubes); a unit on every number; dates as 8 October 2026.
+- **Rarity** in the OSRS bands, with the odds beside the word:
+
+  | band | odds |
+  |---|---|
+  | Always | 100% |
+  | Common | 1/2 to 1/25 |
+  | Uncommon | 1/26 to 1/99 |
+  | Rare | 1/100 to 1/999 |
+  | Very rare | 1/1,000 or rarer |
+  | Varies | it depends on something (say what) |
+
+  A drop list runs from most to least common; quantities are written out ("5, 17 or 35 cubes"), never in brackets.
+- **Bold** only for the page's subject on its first mention, and the keywords of section 5.
+- **Not taken:** the OSRS wiki writes in-world pages without "you" and bans AI-written text. Ours is a guide, written by the
+  divisions, checked against the code.
