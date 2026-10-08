@@ -394,8 +394,15 @@ found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of
   boomtown's orders, chores and reminders, the first reprogramming, done to clay. That is why the jellies answer it. Who taught them the
   language stays blank.
 - **Where**: buried in the Dunes (the survey shows a glint; the pick lifts it), in the Great Dunemaw's forgotten pots, at the ruins'
-  columns, and a few in plain sight for the one who reads walls. A larger find, **a ledger stone** (the town's own record, many words
-  and one sentence), stands at the end of a harder path: La-Mulana's tablets, Spelunky's hidden rooms.
+  columns, under the workshop's plaster (Dovina's numbers, `progress/ostraca.js`). Rarer, **two stelae** (Greek *stēlē*, a standing
+  stone; Dovina's word, since "ledger" is the game's counts) at the end of harder paths: La-Mulana's tablets, Spelunky's hidden rooms.
+  Each carries three words no ostracon does, inside a sentence that teaches them by context (`STELE_TEXT`, `npc/neuralese.js`):
+  - the ruins' sealed room, the town's rule: *DIPSA SIVA. GULA GRAV. VOYD STIL.* (Thirst: drink. Hunger: forage. To forget: be still.)
+  - the great cavern's upper ring, above the bowl, its last word to its kin: *AMI KITH. HEMA LON. MOR DEO.* (You are kin. Home is
+    long. Grief runs deep.)
+- **The log**: "You find an ostracon: SIVA (drink)." · "You read the stele: AMI KITH. HEMA LON. MOR DEO. New words: AMI (kin), LON
+  (long), DEO (deep)." **The achievements**: First Word, Small Talk, Broken English (every ostracon: broken pots, and a language
+  pieced together), Set in Stone, Epigrapher (*epi* + *graphein*, writing upon: the title).
 - **Monster Rancher's disc stone stays the plates' job** (a Veritome photograph awakens a spirit at the Athanor); ostraca are words only.
 
 ### The round robin's proposals *(Espada's, for the owner)*

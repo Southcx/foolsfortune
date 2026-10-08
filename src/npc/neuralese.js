@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // NEURALESE, THE LEXICON: the English of every neuralese word (the Functions of tools/veritome/mind/functions.js), what the Crib Sheet
-// shows beside a word once it is glossed, and the OSTRACA: the potsherds the town that was wrote on, each one word beside a painted
-// picture of what it does (docs/LORE.md, "Digging for words: the ostraca"). Data only; the words are Espada's. The dig and the item are
-// Petra's, where they lie Dovina's, the look Calissa's (vfx/ostracon.js: Attic black-figure).
+// shows beside a word once it is glossed, the pictures on the ostraca (the potsherds the town that was wrote on, each one word beside a
+// painted picture of what it does) and the stelae's sentences (docs/LORE.md, "Digging for words: the ostraca"). Data only; the words are Espada's. The dig and the item are
+// Petra's, where they lie and which words Dovina's (progress/ostraca.js), the look Calissa's (vfx/ostracon.js: Attic black-figure).
 //
 // A word is glossed three ways: it is a Function the player has learned (seen a mind do it), it is in the realm's name they chose, or
 // an ostracon of it has been found. Without the Crib Sheet a word stands bare; with it, its gloss stands beside it.
@@ -11,7 +11,7 @@
 // receipts, a pupil's lines), La-Mulana's tablets read with its glyph reader, Chants of Sennaar's glossary filled by deduction.
 //
 //   LEXICON[WORD] = { gloss, place }   (place: the gloss said as a place would be, for a realm's name)
-//   OSTRACA = [{ word, picture }]      glossOf(word) -> 'drink' | null
+//   OSTRACON_PICTURES[WORD] -> what its ostracon shows    STELE_TEXT[stele id] = { words, text, gloss }    glossOf(word)
 // ---------------------------------------------------------------------------------------
 
 export const LEXICON = {
@@ -25,20 +25,23 @@ export const LEXICON = {
   LON: { gloss: 'long', place: 'long', mod: true }, DEO: { gloss: 'deep', place: 'deep', mod: true },
 };
 
-// the first ostraca: the town's orders to its slip, each a word that paints (picture: what Calissa's black-figure scene shows)
-export const OSTRACA = [
-  { word: 'SIVA', picture: 'a jelly drinking at a pool' },
-  { word: 'LUNO', picture: 'a jelly lying in shade' },
-  { word: 'GRAV', picture: 'a jelly nosing the sand' },
-  { word: 'PEXA', picture: 'a jelly in the shallows, a fish caught' },
-  { word: 'KITH', picture: 'three jellies huddled together' },
-  { word: 'ROMI', picture: 'two jellies bouncing' },
-  { word: 'HEMA', picture: 'a jelly going in at a doorway' },
-  { word: 'FETA', picture: 'a jelly carrying a bauble to a figure' },
-  { word: 'TALO', picture: 'a jelly behind a walking figure' },
-  { word: 'STIL', picture: 'a jelly upright, its motion lines stopped' },
-  { word: 'EZA', picture: 'a jelly lying open beside a figure' },
-  { word: 'HUSA', picture: 'a jelly curled up under a crescent moon' },
-];
+// what each word's ostracon shows (Calissa's black-figure scene), for every word, so any split of the words onto ostraca has a picture
+export const OSTRACON_PICTURES = {
+  SIVA: 'a jelly drinking at a pool', LUNO: 'a jelly lying in shade', GRAV: 'a jelly nosing the sand',
+  PEXA: 'a jelly in the shallows, a fish caught', KITH: 'three jellies huddled together', ROMI: 'two jellies bouncing',
+  HEMA: 'a jelly going in at a doorway', FETA: 'a jelly carrying a bauble to a figure', TALO: 'a jelly behind a walking figure',
+  STIL: 'a jelly upright, its motion lines stopped', EZA: 'a jelly lying open beside a figure', HUSA: 'a jelly curled up under a crescent moon',
+  MELU: 'a jelly spread flat as a puddle', SHAI: 'a jelly running from a raised hand', MOR: 'a jelly bowed over a burst one',
+  RIVA: 'two jellies butting heads', AMI: 'a jelly and a figure the same shape, side by side', DIPSA: 'a jelly with its mouth open at a dry pool',
+  GULA: 'a jelly with its mouth open at an empty bowl', VOYD: 'a figure fading out of a jelly\'s eye', LON: 'a long line of footprints',
+  DEO: 'a jelly sinking deep into water',
+};
+
+// the two stelae's sentences: each carries its three new words among words already known, so a sentence teaches them by context
+// (comprehensible input). The sealed room's is the town's rule; the upper ring's, above the bowl, is its last word to its kin.
+export const STELE_TEXT = {
+  'stele.sealed': { words: ['DIPSA', 'GULA', 'VOYD'], text: 'DIPSA SIVA. GULA GRAV. VOYD STIL.', gloss: 'Thirst: drink. Hunger: forage. To forget: be still.' },
+  'stele.ring': { words: ['AMI', 'LON', 'DEO'], text: 'AMI KITH. HEMA LON. MOR DEO.', gloss: 'You are kin. Home is long. Grief runs deep.' },
+};
 
 export const glossOf = (word) => LEXICON[String(word).toUpperCase()]?.gloss ?? null;
