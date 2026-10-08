@@ -29,22 +29,23 @@ const ground = (g, x, y, z) => g.physics?.raycast(_o.set(x, y + 1.5, z), _down, 
 /** The Shrines (Espada's names: docs/GLOSSARY.md). `at(game)`: where the stone stands and which way it faces, or null while its place
  *  is not built (Margarite's dock waits on the slice's dock). The first is found from the start. */
 export const SHRINES = [
-  { id: 'workshop', name: 'the Bisque Shrine', start: true, ground: 'clay_floor', at: (g) => { const s = g.player.spawn, x = s.x + 2.2, z = s.z - 1.5; return { pos: new THREE.Vector3(x, ground(g, x, s.y, z), z), yaw: 0 }; } },
-  { id: 'dunemaw', name: 'the Lamp Shrine', at: (g) => { const s = g.well?.mouthSpot?.(); if (!s) return null; const a = s.yaw + Math.PI / 2, x = s.pos.x + Math.sin(a) * 3, z = s.pos.z + Math.cos(a) * 3; return { pos: new THREE.Vector3(x, g.dunes.heightAt(x, z), z), yaw: s.yaw }; } },
-  { id: 'pier', name: 'the Float Shrine', ground: 'stone_flags', at: (g) => { const [x, y, z] = WEIR_SPAWN.pos; return { pos: new THREE.Vector3(x + 6.5, ground(g, x + 6.5, y, z + 1), z + 1), yaw: -Math.PI / 2 }; } }, // (beside Old Grog: npc/people.js)
-  { id: 'margarite', name: 'the Pearl Shrine', at: (g) => g.margarite?.spot('shrine') ?? null }, // (Margarite's dock: world/emocean/margarite.js)
+  { id: 'bisque', name: 'the Bisque Shrine', start: true, ground: 'clay_floor', at: (g) => { const s = g.player.spawn, x = s.x + 2.2, z = s.z - 1.5; return { pos: new THREE.Vector3(x, ground(g, x, s.y, z), z), yaw: 0 }; } },
+  { id: 'lamp', name: 'the Lamp Shrine', at: (g) => { const s = g.well?.mouthSpot?.(); if (!s) return null; const a = s.yaw + Math.PI / 2, x = s.pos.x + Math.sin(a) * 3, z = s.pos.z + Math.cos(a) * 3; return { pos: new THREE.Vector3(x, g.dunes.heightAt(x, z), z), yaw: s.yaw }; } },
+  { id: 'float', name: 'the Float Shrine', ground: 'stone_flags', at: (g) => { const [x, y, z] = WEIR_SPAWN.pos; return { pos: new THREE.Vector3(x + 6.5, ground(g, x + 6.5, y, z + 1), z + 1), yaw: -Math.PI / 2 }; } }, // (beside Old Grog: npc/people.js)
+  { id: 'pearl', name: 'the Pearl Shrine', at: (g) => g.margarite?.spot('shrine') ?? null }, // (Margarite's dock: world/emocean/margarite.js)
 ];
 
 export class Shrines {
   constructor(game) {
     this.game = game;
-    this.found = new Set(SHRINES.filter((s) => s.start).map((s) => s.id)); this.last = 'workshop';
+    this.found = new Set(SHRINES.filter((s) => s.start).map((s) => s.id)); this.last = 'bisque';
     this.list = []; this.built = false;
     game.save?.section('shrines', {
-      scope: 'player', version: 1,
+      scope: 'player', version: 2, // (2: the ids are the Shrines' own names, not their places': Dovina's ruling, 2026-10-08)
+      migrate: (d) => { const M = { workshop: 'bisque', dunemaw: 'lamp', pier: 'float', margarite: 'pearl' }; return { found: (d?.found || []).map((id) => M[id] || id), last: M[d?.last] || d?.last }; },
       dump: () => ({ found: [...this.found], last: this.last }),
-      load: (d) => { this.found = new Set([...SHRINES.filter((s) => s.start).map((s) => s.id), ...(d.found || []).filter((id) => SHRINES.some((s) => s.id === id))]); this.last = this.found.has(d.last) ? d.last : 'workshop'; },
-      reset: () => { this.found = new Set(SHRINES.filter((s) => s.start).map((s) => s.id)); this.last = 'workshop'; },
+      load: (d) => { this.found = new Set([...SHRINES.filter((s) => s.start).map((s) => s.id), ...(d.found || []).filter((id) => SHRINES.some((s) => s.id === id))]); this.last = this.found.has(d.last) ? d.last : 'bisque'; },
+      reset: () => { this.found = new Set(SHRINES.filter((s) => s.start).map((s) => s.id)); this.last = 'bisque'; },
     });
     game.interact?.add('shrine', () => {
       if (game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
@@ -120,7 +121,7 @@ export class Shrines {
 
   /** Where a shatter makes them whole: before the last Shrine rested at (the workshop's until another). */
   reformAt() {
-    const s = this.get(this.last) || this.get('workshop'); if (!s) return null;
+    const s = this.get(this.last) || this.get('bisque'); if (!s) return null;
     const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
     return { pos: s.pos.clone().addScaledVector(f, 1.4).setY(s.pos.y + 0.05), yaw: s.yaw + Math.PI };
   }

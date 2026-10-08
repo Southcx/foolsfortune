@@ -188,10 +188,10 @@ export function script(from, to, day = 0, { casks = 0, leviathan = false, wx = n
  *  continued crossing keeps its score, but never ranks above C and never medals (the high-score table's honesty). */
 export const CONTINUE = { repair: 2, double: 2, rankCap: 'C' }; // (repair: minutes of play)
 /** Where each Shrine is (world/shrines.js SHRINES, Petra's): the island a shatter would make you whole on. */
-export const SHRINE_ISLAND = { workshop: 'anagami', dunemaw: 'anagami', pier: 'anagami', margarite: 'margarite' };
+export const SHRINE_ISLAND = { bisque: 'anagami', lamp: 'anagami', float: 'anagami', pearl: 'margarite' }; // (the Shrines' own ids: Dovina's ruling, 2026-10-08)
 /** Where the ship is on the line at a share 0..1 of the crossing, and how far that is (hop distance units) from an island. */
 export const shipLaw = (from, to, share) => NODES[from].law + (NODES[to].law - NODES[from].law) * Math.max(0, Math.min(1, share));
-export function continueCost(from, to, share, shrine = 'workshop', continues = 0) {
+export function continueCost(from, to, share, shrine = 'bisque', continues = 0) {
   const home = NODES[SHRINE_ISLAND[shrine] || 'anagami'], d = Math.abs(shipLaw(from, to, share) - home.law) * CHART.perLaw;
   return Math.round((ECON.perMinute * CONTINUE.repair + fuel(d)) * CONTINUE.double ** continues);
 }

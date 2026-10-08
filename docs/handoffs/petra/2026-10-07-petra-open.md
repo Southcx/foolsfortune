@@ -1,7 +1,6 @@
 **Petra's open items** (the folder's done notes cleared 2026-10-07; what was still open in them is here)
-- **The Courier's mental state** is not kept in play (`game.courierMind`): the garden's rain reads it and stays dry until it is.
-- **The great cavern's walked trips** add 182 objects over three (the Dunemaw sweep); scripted trips add none: trace with the sweep's own path.
-- **The kiln's F/Esc spam** fails only after the full workshop sweep (pointer-lock timing); alone it passes.
+- **The renames' pass** (SWEEPS.md: room -> station, lab -> movementLab, testroom -> throwingRoom, game.emocean -> game.rail, the rail's foe -> hostile, the Veritome's film -> memory, rank.up -> standing.up, the weir.js move): the Shrine ids are done (v112); the rest in one round, with the mapping to every division first.
+- **The slip jelly mount** (gj3's drop): a feature of its own, open.
 - **Publishing binaries**: the host serves no .bin; Calissa's packs go as application/wasm under their own names.
 - **The draught**: nothing sets `game.draught` (Dovina's stones, `progress/stones.js`, are the Courier's Lachryma intake; the intake itself
   belongs in `courier/lachryma.js`). Wanda's garden cue and Calissa's garden sky read it; both default to wonder until it exists.
