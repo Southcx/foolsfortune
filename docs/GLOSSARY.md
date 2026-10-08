@@ -284,6 +284,13 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
+- **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`) — one choosable thing shown as its icon, label, one line, stat chips, key and
+  state, its detail on hover; **compare** arrows on what would change; **the slot row** (`slotRow`) a loadout as a bar. *Not:* a card (the
+  Veritome's). → detail
+- **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
+  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive. *Not:* a label. → detail
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each thing does, in the icons'
+  hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -356,11 +363,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | word | its meanings | say |
 | --- | --- | --- |
 | mind | a creature's (`Brain`); THE MIND (the macro shelf); Mind Mapping (the map) | "a creature's mind", "THE MIND shelf", "the map" |
-| charge | the psygun's beam; the Lockheart's fill; the Veritome's capture | whose charge |
+| charge | the psygun's beam; the Lockheart's fill; the Veritome's capture; a mount's charges (uses a crossing: the Charges keyword) | whose charge; "charges" (plural) is a mount's |
 | key | a keyboard key; a Possibilikey | "Possibilikey", in full |
 | station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
-| card | a Veritome card; the tarot cards falling on the title | "card" is the Veritome's; the title's are scenery |
+| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |

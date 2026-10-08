@@ -938,6 +938,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **the busking body** (`src/courier/moves/rhythmhold.js`): the Courier playing it, the Crucibelle kept in hand: a **gesture** on each judged
   press (the lane's note), the **jam** (a groove of the whole body) while a rhythm combo runs at ten or more, the fever's peak at every
   twenty-fifth note.
+- **a choice card** (`ChoiceCard`, `choiceCard`, `cardList`, `src/ui/choicecard.js`; Calissa's look, docs/plans/CLARITY.md section 4): one
+  choosable thing shown so its use reads in two seconds, its parts always in one order: the **icon** (the UI icons), the **label** (the
+  row's `name`, big), **one line of effect** (`does`: its keywords marked, its numbers in colour), the **stat chips** (a small icon, a
+  number and its unit: range m, angle °, energy, charges ×n, cooldown s, duration s; real seconds only, a table in bars turned to
+  seconds first: `ui/mountcards.js`), the **key** ([1], [LMB], or the Passive keyword) and the **state** (equipped, ready, locked with its
+  one **opening line**; the words placeholders for Espada's). Its **detail** (the lore name and the whole text) shows only on hover, on
+  keyboard focus, or while the card is **held** (a press kept down). **Compare** (`compareTo(base)`): the card against what it would
+  replace, an arrow on each chip that changes, solid for better and hollow for worse as well as green and red. **The slot row**
+  (`slotRow`): a loadout's slots as a bar (Gradius), the one always fitted first, each slot with what fills it and the key that fires
+  it. Every window may use it in place of the index's row (a glyph, a title, a grey sentence). *Not:* a card (the Veritome's), the
+  Pneuka Box's 56 slots, the Spirit Garden's slots.
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
@@ -972,6 +983,13 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **caustics** (`liqCaustics`, `causticTexture()` in `src/vfx/liquid.js`): the net of light on a pool's floor, a Voronoi cell texture
   drawn in two layers a little apart (white where they meet, split into colour where they part); **glints**: the water's sparkle
   where the sun catches it.
+- **a keyword** (`KEYWORDS`, `keywordEl`, `keyworded`, `src/ui/keywords.js`; CLARITY.md section 5, Dovina's table, Espada's words): one
+  of twelve genre words the UI explains on hover wherever it stands (Slay the Spire's): **Absorb**, **Parry**, **Bomb**, **Lock-on**,
+  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**. In text it is bold, in the window's
+  gold, its icon before it; a hover or keyboard focus opens **its tip** (`#kwtip`: the icon, the word, what it means in one line). A new
+  mechanic reuses one if it can; adding one is an entry here first. Each names in the UI a thing the glossary already has: Energy is
+  the pool, Lock-on the lock-on, Hull the ship's hull (its `bears`), Fuel the bunker, Charges a mount's uses a crossing (*not* the
+  homonym charge), Parry the parry. *Not:* a label (a thing's own genre word, `name`).
 - **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
 - **the map** (M): called **Mind Mapping** in the game (`src/feedback/cartography.js`).
@@ -1035,6 +1053,14 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
   textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
   stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
+- **the UI icons** (`uiIcon`, `iconEl`, `ICON_IDS`, `src/ui/icons/`; Calissa's): the pixel art of the choice card and the keywords, 16 px
+  (8 for a chip's), each a picture of what its thing DOES (a mount's at sea, never the tool ashore): the twelve keywords
+  (`icons/keywordart.js`), the seven mounts (`icons/mountart.js`), the chips and the card's marks (`icons/chipart.js`: lock, check, the
+  compare arrows). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
+  bevelled from the top left, and the hand adds **the keyline** (a pixel of the darkest grey round it, so every icon has a light part and
+  a dark part: casebook rule 105); recoloured by a palette (**gold** its own, **grey** a locked card, **better** and **worse** a compared
+  arrow, **line** the sea chart's) and scaled by whole numbers. *Not:* the sea chart's icons (`ui/seachart/icons.js`), a glyph (the
+  glyph pop's), the Pneuka Box's item icons (`pneuka/icons.js`).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
   dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**

@@ -14,7 +14,9 @@
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { MOUNTS, slotsOf, mountable } from '../../progress/rail/mounts.js';
+import { slotsOf, mountable } from '../../progress/rail/mounts.js';
+import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
+import { mountRow, mountRows } from '../../ui/mountcards.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
@@ -88,14 +90,11 @@ export class Pier {
         d.onclick = () => { this.ship = id; this.open(at); };
         sb.appendChild(d);
       }
-      // the mounts: the hull's worth of worn tools aboard (click to take one aboard or ashore)
-      const { can, chosen } = this.mounts(), mb = el('div', 'rooms'), n = slotsOf(this.ship);
-      for (const t of can) {
-        const on = chosen.includes(t), M = MOUNTS[t];
-        const d = el('div', 'room', `<span class="n">${on ? `${chosen.indexOf(t) + 1}` : '·'}</span><span><b>${M.name}</b><s>${on ? 'aboard' : 'ashore'}: ${M.does}</s></span>`);
-        d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
-        mb.appendChild(d);
-      }
+      // the mounts: the hull's worth of worn tools aboard, as the slot row and a choice card each (click one to take it aboard or ashore: ui/choicecard.js)
+      const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
+      const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
+      mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(mountRows(can, chosen).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }))));
+      mb.firstChild.style.marginBottom = '6px';
       const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes' });
