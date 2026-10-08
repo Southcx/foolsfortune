@@ -143,7 +143,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
   Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Wet Ink and Ariadne's Thread proposed). It is said once when the ledger opens it (`knack.open`), and is on until switched off. **The thread** (Ariadne's Thread's, `cartography.thread`): the way walked since the last Shrine rested at, a loop cut where it crosses itself, drawn on the map. *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **the sea chart**, **the passage**, **a waypoint**, **a portent**, **the reckoning** (of the sea), **a rutter** (`docs/plans/PASSAGE.md`;
-  `src/progress/econ/passage.js`, Dovina's; player words Espada's to change): the sea chart is the constellation of waypoints laid
+  `src/progress/econ/passage.js`, Dovina's; the words Espada's, approved by the owner 2026-10-08): the sea chart is the constellation of waypoints laid
   between two islands at the pier (lanes that merge, never cross; a pure function of the route and the game day); the passage is the
   path you draft through it, a waypoint a column; a waypoint is one leg (its set piece, or a calm); a portent is what Divination shows
   of a waypoint, a shortlist of candidates that narrows as its confidence grows and fades with depth; the reckoning is the
