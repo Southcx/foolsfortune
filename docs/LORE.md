@@ -498,6 +498,37 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
   these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a
   portent) "Inside, a note in a steady hand: the graveyard is ahead."
 
+### The trip's pressures *(Espada's words for Dovina's five rules, PASSAGE.md section 14; proposed, 2026-10-08)*
+- **The hull** stays (it carries its hits from leg to leg).
+- **The tank becomes the bunker.** A ship's fuel store is its bunker, and taking fuel on is **bunkering** (coal bunkers first, oil
+  bunkers since): the Purser's buoy bunkers you mid-sea. "Tank" is refused twice over: the tanker is a ship, and the Lachrymato Bottle is
+  never a tank.
+- **A measure** stays (plain; this house says "bar" for music's measure, so no clash).
+- **Burn** stays; **adrift** stays.
+- **The campfire becomes heaving to**: a ship at sea stops and rides easy by setting her sails against each other (the sailor's rest;
+  no fire aboard a wooden ship). Its two choices: *Caulk the hull.* (caulking: oakum driven into the seams, the old mend; half the hull
+  back) or *Reckon the sea.* (the reckoning's canon verb; the portents ahead a quarter sharper).
+- **The day's best becomes high water** (the high-water mark: the furthest the tide reached that day, and a new tide every game day).
+- **The draught's trump becomes a following sea** (the blessing "fair winds and following seas": a sea running your way; "fair" is the
+  weather's word for no feeling, so only the second half is taken).
+- **A storm mark becomes a squall**: a sudden, violent, local storm, which is what it is (the weather has no storm; the eyewall is a
+  leg). Shown as a flame on its waypoint (Calissa's).
+- **Why the sea between two islands carries their feelings** (proposed): an island's weather falls on it and runs off into the
+  Emocean, and the run-off spreads out from its shore as a **plume**, as a great river's fresh water colours the sea for miles past its
+  mouth. Between two islands the plumes meet, so the sea's feeling slides from one island's to the other's along the way; far from both,
+  a tenth of the sea is fair, the Emocean's own water that no island has reached. The sea chart is laid from the game day's first
+  weather because a plume takes a game day to cross.
+- **Why squalls gather where they do** (proposed): a squall rises where two plumes meet and one shoulders into the other: a **front**,
+  as storms form where warm and cold air meet. The stronger feeling wins the front, so a squall is one feeling at full strength, and
+  Figments are drawn to it and come out of it a class bigger. A front lies across the open lanes, never in a narrows, so a squall can
+  always be sailed round. (The lesson, unsaid: weather fronts.)
+- **The log:** low: "The bunker runs low: 2 measures left." · adrift: "Your bunker is dry. You are adrift. The current takes you." and
+  ended: "You take on fuel. You are under way again." · the buoy: "The Purser's buoy bunkers you: 6 measures, 30 cubes." · a calm:
+  "A calm. You heave to." · *Caulk the hull.* "You caulk the hull: 3 hits mended." · *Reckon the sea.* "You reckon the sea. The
+  portents ahead sharpen." · a squall cleared: "The squall breaks. Its leg scores a quarter more." · high water: "High water on this sea
+  today: 4,820." and beaten: "High water on this sea today: 5,140, over 4,820." · a following sea: "A following sea: your draught trumps
+  what waits ahead."
+
 ## 12. Where the words live
 
 | Words | File |
