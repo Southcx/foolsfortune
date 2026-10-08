@@ -49,7 +49,7 @@ export class Raid {
     this.rec = { hitBy: {}, mirrored: 0, clutchesLeft: null };
     // Calissa's: each cast's windup read from the body, the sherds' split and threads, the flood (vfx/foelook.js)
     this.look = new FoeLook({ root: this.F.c.root, crown: this.F.crown, fx: game.fx, floor: { center: this.B.world(0, 0.05, 0), radius: ARENA.radius - 1, depth: 0.6 } });
-    this.timers = []; this.lobs = []; this.sherds = null; this.feeding = [];
+    this.timers = []; this.lobs = []; this.sherds = null; this.spent = []; this.feeding = []; // (spent: sherds down or mended, taken down once their pop is over)
     this.sodden = 0; this.slowed = 0; this.held = 0; this.slideT = 0; this.slideV = 0; this.overflow = false; this.skip = null;
   }
 
@@ -233,16 +233,18 @@ export class Raid {
       this.sherdT -= dt; this.look.mend(1 - this.sherdT / (CASTS.calving.area.within || 30));
       if (!up.length || this.sherdT <= 0) {
         if (up.length) { for (const c of up) { c.alive = false; this.g.jellies.dispose(c); } F.heal(this.sherdHeal); this.moment('mend'); }
-        this.sherds = null; this.look.mend(0); F.show(0);
+        this.spent.push(...this.sherds); this.sherds = null; this.look.mend(0); F.show(0);
       }
     }
+    // a sherd struck down stays in the scene until its pop is over; then it is taken down (a `once` jelly is never re-formed: casebook rule 63)
+    if (this.spent.length) this.spent = this.spent.filter((c) => { if (c.alive || c.dying != null) return true; this.g.jellies?.dispose(c); return false; });
   }
 
   dispose() {
     this.look.dispose();
     for (const L of this.lobs) this.g.scene.remove(L.mesh);
     this.dropGeo?.dispose();
-    for (const c of this.sherds || []) if (c.alive) this.g.jellies?.dispose(c);
-    this.sherds = null; this.T.stop();
+    for (const c of [...(this.sherds || []), ...this.spent]) this.g.jellies?.dispose(c); // (alive or dead: every sherd it made)
+    this.sherds = null; this.spent = []; this.T.stop();
   }
 }

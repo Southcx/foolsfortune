@@ -160,6 +160,8 @@ the rules before building in the same area; a rule a machine can check goes into
     menu left open) can be any length: a fall that grows with it is bounded by an easing that ends above whatever it falls toward, and
     the stage after it reads where it hung, never its own start again.
 
+63. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
+    scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool).
 ## Cases
 
 ### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
@@ -822,3 +824,13 @@ the rules before building in the same area; a rule a machine can check goes into
   the board after 600 real seconds (measured in the running title); the dive carries on from where they hung and ends 2.9 m over it
   at the worst.
 - **Rule:** 62.
+
+### 2026-10-08 · The four sherds stayed in the scene after they burst (Calissa's survey of the room sweeps)
+- **Seen:** strike the four sherds down and leave the bowl: four more bodies, colliders, jellies and creatures than before, the sherds
+  still in the scene, out of sight (measured on main 7d7a594 by Calissa).
+- **Cause:** `raid.js` set `sherds = null` once none was alive without taking the dead ones down, and `dispose()` took down only the
+  live ones; a dead `once` jelly is never re-formed (`slipjelly.js`), so nothing else did.
+- **Fix:** the sherds go to `spent` when the moment ends; each is taken down once its pop is over (`dying == null`); `dispose()` takes
+  down every sherd, alive or dead. Measured headless (a temporary check in a copy of the Dunemaw sweep): four burst, jellies 12 before
+  and 12 after the pops, `spent` empty; after leaving, bodies 840 to 816 and jellies 12 to 3, as before the cavern.
+- **Rule:** 63. (The check belongs in the Dunemaw sweep: Dovina's.)
