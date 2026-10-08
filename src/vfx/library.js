@@ -113,6 +113,15 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== POOFS
+  // a plaster patch knocked off the workshop's wall (vfx/plasterpatch.js: its own flakes fall with it): grit of the skim, and its dust
+  // falling slowly and spreading, the colour of the wall's lime (`floor`: the caller's floor, where the grit stops)
+  'plaster.break': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [9, 13], shape: 'chip', dir: 'cone', axis: 'normal', cone: 55, speed: [1, 3], size: [0.02, 0.045], life: [0.6, 1], gravity: 12, drag: 1, color: [0xb98a72, 0xa66f58, 0xd1ad96], alphaEnd: 0.8, spin: [-14, 14], floor: 'ground' }),
+    L({ type: 'sprites', pool: 'alpha', count: [6, 8], shape: 'puff', dir: 'cone', axis: 'normal', cone: 70, speed: [0.3, 0.9], size: [0.18, 0.28], sizeEnd: 0.75, life: [1.1, 1.7], drag: 2.5, gravity: 0.35, color: 0xc9a28c, alpha: 0.42, spin: [-0.8, 0.8] }),
+  ] },
+  'plaster.land': { layers: [ // (one of its flakes landing on the floor: a breath of the same dust)
+    L({ type: 'sprites', pool: 'alpha', count: [2, 3], shape: 'puff', spawn: 'disc', r: 0.06, dir: 'up', speed: [0.1, 0.3], size: [0.08, 0.12], sizeEnd: 0.32, life: [0.6, 0.9], drag: 2, color: 0xc9a28c, alpha: 0.3 }),
+  ] },
   // =============================================================================================== DAMAGE LOOKS (vfx.hit's `type`)
   // what a blow is made of, laid over its hit (which says the tool and the material): one colour and one motif per damage type along the
   // Law-Chaos line, so the type reads with the HUD hidden and without colour vision (each has its own shape and lightness, not only

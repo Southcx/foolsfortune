@@ -744,6 +744,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
   each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
   counts).
+- **the stele's sandstone, laid** (`sandstoneMaterial`, `layStone`, `src/vfx/ostracon.js`): the stele's own stone on boxes, their UVs in
+  metres along the axis each face looks down, so courses run on from box to box: **ashlar** (the town's isodomic courses, 0.7 m high, each block cut from the stone at its own place, sand in the
+  joints: the sealed room's walls and roof) or **plain** (one monolith: the sealed room's door slab). *Not:* the ruins' columns (stone of
+  their own), nor the surfaces (`render/triplanar.js`).
+- **a plaster patch's look** (`PlasterPatch`, `src/vfx/plasterpatch.js`; the patch and its blow are Petra's, `world/ostraca.js`): the
+  **skim**, newer plaster a shade off the workshop's old wall, the trowel's arcs in it, its rim feathered to the wall's colour and a
+  **hairline crack** round it (always so called: a crack alone is the vessel's), so only a careful eye spots it; struck, it comes away in a few **flakes** of itself (they lie on the floor a
+  few real seconds, then shrink away) and a puff of dust (`plaster.break`, `plaster.land` in the library), leaving the **scar**: the
+  old wall bared, the skim's pale cut round it, and the hollow the ostracon was set in. *Not:* the plaster surface (`triplanar.js`'s
+  texture, or `vfx/surfaces.js`'s pattern).
 - **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
   *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
 - **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a

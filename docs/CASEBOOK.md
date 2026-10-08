@@ -225,8 +225,59 @@ the rules before building in the same area; a rule a machine can check goes into
     with the depth test off (drawn after what it lights) wherever it sits within its own radius of a surface.
 85. **A fold the player did not choose never goes through the setter that keeps their choice.** A feature that folds a window while it is
     up asks for the fold without keeping it (`log.setMini(v, false)`), so closing the tab mid-feature leaves their saved choice as it was.
+86. **A dressing laid on the ground ends at its own edge, never in a margin of its colour at zero height.** A bank of sand, a drift, a
+    stain that falls to nothing still shows its colour where it is flat; on a floor not its colour that margin is a pale square. Cut
+    it away along a wandering line (or fade it, if a program can be spared), and look at it on every floor it can stand on.
+87. **A canvas painted from a `THREE.Color` takes the colour's sRGB values.** `.r .g .b` are the renderer's linear working values: written
+    as CSS they paint far too dark. Use `getRGB(target, SRGBColorSpace)` or `getStyle()`, and shift a shade in sRGB (`getHSL` /
+    `setHSL` with `SRGBColorSpace`), where the eye judges it.
+88. **What is not drawn is not offered.** A thing hidden for a reason (a shut room's stele, a floor that is gone) is left out of what F
+    can take or read: the offer asks `visible` as well as the distance, or the interact chevron stands over a wall and the find is
+    made through it.
 
 ## Cases
+
+### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
+- **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
+  while the sand under it did not: measured against the drawn sand at the dig on a 21.6 degree slope, its rim stood 4.6 cm above it at
+  one edge and 3.3 cm under it at the other, so a third of the painted face was covered and the rest hung over the slope. At the
+  24.5 degree dig the sand's height function stands 15 cm above the sand that is drawn (and walked on), so the veiled mound hung in the air
+  and jumped down to the ground when the pick lifted it.
+- **Cause:** the dig put the ostracon at the function's height (`heightAt`) and turned it about the world's up only (CASEBOOK 64 said so).
+- **Fix:** `build()` and `drop()` take the point and the normal from a ray down onto the sand (the one `drop` already cast), and
+  `Ostracon.lieOn(normal, yaw)` turns the look's up to the normal (never past 40 degrees); the veiled look, the one rising and the one
+  lying all use it. Measured after on the three steepest digs: the look's origin 0.0 cm over the drawn sand, its rim under it 0.0 cm, over
+  it 2.9 cm at most (the ostracon's own curve is 1.6 cm of that); the face shows whole.
+- **Rule:** 64 (a look that lies on a surface is given the surface's normal and height by whoever places it).
+
+### 2026-10-08 · The sealed room's stele was drawn inside its shut walls and offered to F through the back wall (found in review)
+- **Seen:** with the sealed room's door shut, `Ostraca.near()` offered the stele from outside the back wall: it stands 0.8 m inside a
+  0.4 m wall and the reach is 2.2 m, so the chevron stood over the wall and `stele.read` fired without the fork ever ringing in the
+  door (measured: `near()` from 1.9 m behind the stele returned it). Its 9,000 triangles and shadow calls were drawn for no one.
+- **Cause:** the stele was always drawn, and `near()` asked only the distance; the guard on `look.group.visible` (made for the cavern's
+  stele) had nothing to read for the sealed one.
+- **Fix:** the sealed stele is hidden while the door is shut and shown by `open()` (and at load, when the door was opened before);
+  `near()` offers a stele only while its look is drawn. Measured after: shut, `near()` from the same spot returns nothing; open, the
+  stele inside is offered.
+- **Rule:** 88.
+
+### 2026-10-08 · A stele's sand bank was a pale square on the great cavern's stone (found headless, swapping in the ostraca's looks)
+- **Seen:** the stele in the great cavern's upper ring stood in a bright rectangle 1.8 m by 1.4 m on the gallery's dark stone
+  (the builder's headless shot); in the Dunes it never showed, sand on sand.
+- **Cause:** the bank (`vfx/ostracon.js` `bankGeometry`) is a plane whose height falls to nothing toward its edge, but every vertex kept
+  the sand's colour at full strength: its flat margin is sand-coloured floor laid over whatever floor it stands on.
+- **Fix:** the triangles of the margin are cut away where the bank is under 4 to 12 mm high (the line wandering by noise), so it ends
+  as a drift on the gallery's stone and on the Dunes' sand alike, in the mound's own sand material. (A vertex-alpha fade was tried
+  first: it looked softer but cost a transparent shader program, and the Dunes stood at the 160-program budget.)
+- **Rule:** 86.
+
+### 2026-10-08 · The plaster patch was painted far too dark (found headless, before it shipped)
+- **Seen:** the first plaster patch on the workshop's west wall rendered near black (measured RGB 45, 0, 10 against the wall's 125, 32, 22).
+- **Cause:** its canvas was painted from `THREE.Color` channels read raw (`c.r * 255`): with colour management on those are linear
+  values, so every colour went onto the canvas as if much darker, and the HSL shifts were made in linear space too.
+- **Fix:** `vfx/plasterpatch.js` reads `getRGB(target, SRGBColorSpace)` and shifts shades with `getHSL`/`setHSL` in `SRGBColorSpace`;
+  measured after: the skim 129, 37, 23 against the wall's 125, 32, 22, a shade off as meant.
+- **Rule:** 87.
 
 ### 2026-10-08 · A burning light showed as a hard polygon, then as a glow cut straight (found in the firing's frames, review of the press)
 - **Seen:** at a firing the attribute's light hung over its tile, and a pale flat 12-sided disc lay round the tile, its edges straight; in
