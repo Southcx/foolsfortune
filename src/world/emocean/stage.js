@@ -23,7 +23,7 @@
 // as a line the camera rides and looks round from), the arcade's CONTINUE? screen, Squirrel Eiserloh's "Juicing Your Cameras With Math".
 //
 //   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
-//   .stage { active, seconds, setPieces }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }
+//   .stage { active, seconds, setPieces, foe: { id, under } | null }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }
 //   .blow(n, { by, what, rollable })   .endPay(end)   (the set pieces')
 //   /crossing shoal,pirates,leviathan   (the chat line: the next crossing's set pieces, for testing them on demand; the dice and the deck otherwise)
 // ---------------------------------------------------------------------------------------
@@ -39,6 +39,7 @@ import { SCORE, chain, chainDown, volleyBonus, downScore } from '../../progress/
 import { STAGE } from '../../progress/econ/emocean.js';
 import { blendRig, rig } from '../../courier/ship/views.js';
 import { Ship } from '../../courier/ship/ship.js';
+import { SHIPS } from '../../progress/rail/ships.js';
 import { Shots } from '../../courier/ship/shots.js';
 import { Mounts } from '../../courier/ship/mounts.js';
 import { Waves } from './waves.js';
@@ -118,11 +119,12 @@ export class Emocean {
     const aspect = g.weather?.at?.(V.from)?.aspect || 'mirth'; // (your draught when the stones keep one; until then the island's mood)
     const go = () => {
       Object.assign(this.stage, { setPieces: plan.setPieces, setPiece: plan.setPiece, seconds: plan.seconds || plan.bars * BAR_S }); // (the cue chained to them: music/choose.js)
-      this.stage.active = true;
+      this.stage.active = true; this.stage.foe = null; // (a boss's state for the music: { id, under }, set by its set piece)
       this.t = 0; this.bar = 0; this.ending = false; this.trauma = 0; this.volleys = []; this.beaten = new Set(); this.mended = new Set(); this.piece = null; this.offering = false;
-      this.run = { passed: true, hits: 0, bears: STAGE.bears + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
+      this.run = { passed: true, hits: 0, bears: (SHIPS[V.ship]?.bears ?? STAGE.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), // (by hull: progress/rail/ships.js)
+        ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
       this.rail.Q.set(SEA_AT.x, SEA_AT.y, SEA_AT.z);
-      this.ship.begin(aspect); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
+      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(plan, aspect); this.mounts.begin(V.mounts || []);
       this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
@@ -323,7 +325,7 @@ export class Emocean {
    *  (the ship broken) made whole at their last Shrine, as a shatter does. */
   finish(passed) {
     if (!this.stage.active || this.ending) return;
-    this.ending = true;
+    this.ending = true; this.stage.foe = null;
     const g = this.game, r = this.run;
     if (this.piece) { const end = this.piece.finish(); if (end) r.end = end; this.piece = null; }
     r.passed = passed && r.hits < r.bears;

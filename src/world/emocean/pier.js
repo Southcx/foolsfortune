@@ -14,13 +14,18 @@
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { MOUNTS, SLOTS, mountable } from '../../progress/rail/mounts.js';
+import { MOUNTS, slotsOf, mountable } from '../../progress/rail/mounts.js';
+import { SHIPS, canSail } from '../../progress/rail/ships.js';
+import { today } from '../../core/calendar.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
 
+/** The refusal for a heavy hull with no rutter of the route (placeholder words for Espada's; `uncharted`, ships.js). */
+const UNCHARTED = (ship) => `Uncharted: a ${ship} sails only a passage charted in a rutter.`;
+
 export class Pier {
   constructor(game) {
-    this.game = game; this.piers = new Map(); this.chosen = null;
+    this.game = game; this.ship = 'sloop'; this.piers = new Map(); this.chosen = null;
     game.interact?.add('pier', () => {
       const P = game.player;
       if (game.emocean?.stage.active || game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
@@ -52,8 +57,8 @@ export class Pier {
 
   /** The worn tools that can go to sea, and the two chosen (the first two, until the Courier picks). */
   mounts() {
-    const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)), can = mountable(worn);
-    this.chosen = (this.chosen || can.slice(0, SLOTS)).filter((t) => can.includes(t)).slice(0, SLOTS);
+    const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)), can = mountable(worn), n = slotsOf(this.ship);
+    this.chosen = (this.chosen || can.slice(0, n)).filter((t) => can.includes(t)).slice(0, n); // (the mounts by hull: the owner's ruling, mounts.js slotsOf)
     return { can, chosen: this.chosen };
   }
 
@@ -65,29 +70,45 @@ export class Pier {
       const box = el('div', 'rooms');
       for (const id of Object.keys(NODES)) {
         if (id === at) continue;
-        const N = NODES[id], c = V.canBoard(at, id, 'sloop'), open = V.isOpen(id), ok = c.ok;
+        const N = NODES[id], b = V.canBoard(at, id, this.ship), s = canSail(this.ship, { route: `${at}>${id}`, day: today(), rutter: this.rutter(at, id) }), c = b.ok && !s.ok ? { ok: false, why: UNCHARTED(this.ship) } : b, open = V.isOpen(id), ok = c.ok;
         const sub = c.ok ? `fuel: ${c.hop.fuel} cubes` : c.why;
         const d = el('div', 'room', `<span class="n">${ok ? '⚓' : '·'}</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${sub}</s></span>`);
         if (ok) d.onclick = () => this.sail(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
-      // the mounts: two worn tools aboard (click to take one aboard or ashore)
-      const { can, chosen } = this.mounts(), mb = el('div', 'rooms');
+      // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
+      const sb = el('div', 'rooms');
+      for (const [id, H] of Object.entries(SHIPS)) {
+        const on = id === this.ship, d = el('div', 'room', `<span class="n">${on ? '⚓' : '·'}</span><span><b>${id.toUpperCase()}</b><s>bears ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · a charted passage only' : ''}${H.dive ? '' : ' · cannot dive'}</s></span>`);
+        d.onclick = () => { this.ship = id; this.open(at); };
+        sb.appendChild(d);
+      }
+      // the mounts: the hull's worth of worn tools aboard (click to take one aboard or ashore)
+      const { can, chosen } = this.mounts(), mb = el('div', 'rooms'), n = slotsOf(this.ship);
       for (const t of can) {
         const on = chosen.includes(t), M = MOUNTS[t];
         const d = el('div', 'room', `<span class="n">${on ? `${chosen.indexOf(t) + 1}` : '·'}</span><span><b>${M.name}</b><s>${on ? 'aboard' : 'ashore'}: ${M.does}</s></span>`);
-        d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-SLOTS); this.open(at); };
+        d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
         mb.appendChild(d);
       }
-      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', can.length ? 'MOUNTS: KEYS 1 AND 2 AT SEA' : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes' });
+  }
+
+  /** A rutter of this route and game day in the Pneuka Box (the charted passage a heavy hull sails; none exist until the rutter item
+   *  lands: then a tanker is refused as uncharted, the owner's rule). */
+  rutter(from, to) {
+    const r = this.game.pneuka?.slots.find((s) => s?.id === 'rutter' && s.data?.route === `${from}>${to}` && s.data?.day === today());
+    return r ? r.data : null;
   }
 
   /** Board and go: the voyage pays the fuel and draws the set pieces; the stage takes the Courier aboard. */
   sail(from, to) {
     const g = this.game, V = g.voyage;
-    const r = V.board(from, to, 'sloop', this.mounts().chosen);
+    const s = canSail(this.ship, { route: `${from}>${to}`, day: today(), rutter: this.rutter(from, to) });
+    if (!s.ok) { g.log?.say('warn', UNCHARTED(this.ship), { key: 'pier', throttle: 1 }); return false; }
+    const r = V.board(from, to, this.ship, this.mounts().chosen);
     if (!r.ok) { g.log?.say('warn', r.why, { key: 'pier', throttle: 1 }); return false; }
     this.menu?.close();
     g.emocean?.begin();

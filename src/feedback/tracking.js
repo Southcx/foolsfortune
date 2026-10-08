@@ -430,6 +430,7 @@ export class Tracking {
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
     on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${e.knack} off to switch it off.`));
+    on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} rides the surface: it cannot dive.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; the words are placeholders for Espada's)
     on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; the words are placeholders for Espada's; nothing counted)
       if (e.first) log.say('system', `Debug chest: ${e.kit}. What it gives is not counted.`);
       log.say('system', e.n ? `The debug chest gives: ${e.what.join(', ')}.` : 'The debug chest has nothing more to give: you hold all it keeps.', { key: `debug.${e.kit}`, throttle: 0.5 });

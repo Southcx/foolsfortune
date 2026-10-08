@@ -125,7 +125,7 @@ export class Shots {
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0 || s.p.z < -40 || Math.abs(s.p.x) > 80) { s.on = false; continue; }
       if (s.turned || !ship) continue;
-      if (s.p.distanceTo(ship.local) < T.ship.hurt + FOE_R) {
+      if (s.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + FOE_R) {
         if (s.aspect && s.aspect === ship.aspect) { ship.absorb(s); s.on = false; } // (of the ship's feeling: drunk)
         else if (ship.turning) { s.turned = true; s.v.set(s.v.x * -0.4 + (s.p.x - ship.local.x) * 8, 6, -s.v.z * 0.3); ship.turned(s); } // (the roll turns it aside)
         else if (ship.hit(s)) s.on = false;
@@ -138,7 +138,7 @@ export class Shots {
       if (r.back && r.from?.alive) { _d.copy(r.from.local).sub(r.p); const sp = r.v.length(); r.v.lerp(_d.multiplyScalar(sp / Math.max(_d.length(), 0.001)), Math.min(1, dt * 6)); } // (home: Sin & Punishment's return finds its thrower)
       // (sent home: a part says what its own shot does to it, the brig's bow 6, a gill 5; else it downs its thrower)
       if (r.back) { const f = waves?.hitAt(r.p, OUT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: r.p, dir: r.v, returned: true }); this.endOutlined(r); } continue; }
-      if (ship && r.p.distanceTo(ship.local) < T.ship.hurt + OUT_R && ship.hit(r)) this.endOutlined(r);
+      if (ship && r.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + OUT_R && ship.hit(r)) this.endOutlined(r);
     }
     this.draw();
   }

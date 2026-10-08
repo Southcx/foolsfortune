@@ -96,6 +96,9 @@ export class LeviathanPiece {
     else if (rel < 26) this.sound(rel, dt);
     else this.maw(rel, dt);
     this.place();
+    // below the surface or above it: the music dives with it (the owner's ruling: Wanda filters the boss line while `under`); the hook
+    // every boss of the rail sets, Charybdis's too when it lands (stage.foe)
+    st.stage.foe = { id: 'nobody', under: !this.ended && L.group.visible && L.group.position.y < st.rail.Q.y - 0.5 };
     if (bar !== this.lastBar && !this.ended) { this.lastBar = bar; this.onBar(bar, rel); }
     if (this.throatT > 0 && (this.throatT -= dt) <= 0) L.throat(0);
     L.update(raw, st.sea);

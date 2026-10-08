@@ -30,7 +30,7 @@ import { spillChance } from './econ/islands.js';
 import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.js';
 import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
-import { loadout } from './rail/mounts.js';
+import { mountable, slotsOf } from './rail/mounts.js';
 import { deckDraw } from './econ/deck.js';
 import { stageWx } from './weather.js';
 import { crudeGrade } from './shop/catalogue.js';
@@ -114,7 +114,7 @@ export class Voyage {
     const wx = stageWx(from), aspect = this.game.weather?.at?.(from)?.aspect || null;
     const leviathan = this.game.ledger ? deckDraw(this.game.ledger, 'emocean.leviathan', leviathanDeck(c.hop.danger + wx.danger, aspect)) : false;
     const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)); // (the tools that can be mounted: the ones worn)
-    this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: loadout(mounts, worn) };
+    this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: mounts.filter((t, i) => mounts.indexOf(t) === i && mountable(worn).includes(t)).slice(0, slotsOf(ship)) }; // (the hull's worth: mounts by hull)
     const plan = this.crossing();
     this.s.sailing.setPiece = plan?.setPiece || 'shoal'; this.s.sailing.setPieces = plan?.setPieces || ['shoal'];
     this.dirty();

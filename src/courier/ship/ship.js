@@ -34,6 +34,7 @@ import { sfx } from '../../audio/sfx.js';
 import { Sloop } from '../../vfx/sloop.js';
 import { COLOR, OPPOSITE } from '../../progress/weather.js';
 import { axes, planeOf, VIEW_RIGS, CRUISE } from './views.js';
+import { SHIPS } from '../../progress/rail/ships.js';
 
 const D2R = Math.PI / 180, SCALE = 0.24; // (the sloop is 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
 const damp = THREE.MathUtils.damp, clamp = THREE.MathUtils.clamp;
@@ -72,8 +73,11 @@ export class Ship {
   }
 
   /** A crossing begins: the ship at the rail point, its feeling yours (the stones' draught, else the island's mood). */
-  begin(aspect = 'mirth') {
-    this.home = this.aspect = aspect;
+  begin(aspect = 'mirth', ship = 'sloop') {
+    this.home = this.aspect = aspect; this.qSaid = false;
+    // the hull (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether it dives
+    const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
+    this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
     this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15;
     this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
@@ -89,7 +93,8 @@ export class Ship {
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
     const want = _a.set(0, 0, 0);
-    want[ax.k] += h * ax.s * S.top; want[ay.k] += v * ay.s * S.top;
+    const hull = this.hull || { pace: 1, box: 1 };
+    want[ax.k] += h * ax.s * S.top * hull.pace; want[ay.k] += v * ay.s * S.top * hull.pace;
     const pl = planeOf(plane);
     // boost and brake: the place along the rail (in the screen plane, where z is otherwise pinned)
     const bz = keys.has('ShiftLeft') || keys.has('ShiftRight') ? S.boost.ahead : keys.has('KeyC') ? -S.boost.behind : 0;
@@ -100,8 +105,8 @@ export class Ship {
     else if (pl === 'wall') want.x = (0 - this.local.x) * 4;
     for (const k of ['x', 'y', 'z']) this.vel[k] = damp(this.vel[k], want[k], S.spring, dt);
     this.local.addScaledVector(this.vel, dt);
-    const B = S.box, zc = pl === 'screen' ? this.boostZ : 0;
-    this.local.x = clamp(this.local.x, -B.x, B.x); this.local.y = clamp(this.local.y, B.yLo, B.yHi); this.local.z = clamp(this.local.z, zc - B.z, zc + B.z);
+    const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0;
+    this.local.x = clamp(this.local.x, -B.x * k, B.x * k); this.local.y = clamp(this.local.y, B.yLo, B.yLo + (B.yHi - B.yLo) * k); this.local.z = clamp(this.local.z, zc - B.z * k, zc + B.z * k);
     // bank and pitch show the intent (screen-right in the view, so the astern view banks the right way)
     const sx = (pl === 'wall' ? this.vel.z : this.vel.x * (VIEW_RIGHT[view] || 1)), sy = this.vel.y;
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
@@ -120,7 +125,8 @@ export class Ship {
       else { this.parryT -= raw; if (this.parryT <= 0) this.recover = 0.35; } // (a parry into nothing costs a breath: no mashing through a wall)
     }
     this.mercy = Math.max(0, this.mercy - dt);
-    if (hit.has('KeyQ')) { this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
+    if (hit.has('KeyQ') && this.hull && !this.hull.dive) { if (!this.qSaid) { this.qSaid = true; this.game.events?.emit('rail.refuse', { what: 'dive', ship: this.hull.id, by: 'courier' }); } } // (a heavy hull rides the surface: ships.js dive)
+    else if (hit.has('KeyQ')) { this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
     // the gun, the sweep and the volley, all on the sixteenth (Rez)
     if (sixteenth !== this.lastSixteenth) {
       this.lastSixteenth = sixteenth;
@@ -169,7 +175,7 @@ export class Ship {
   /** The sweep: the foe nearest the far reticle on the screen, within reach and not painted yet. */
   paint(waves) {
     const L = T.ship.lock, cam = this.game.camera;
-    if (!waves || !cam || this.locks.length >= L.max) return;
+    if (!waves || !cam || this.locks.length >= (this.hull?.locks ?? L.max)) return;
     const rp = this.rail.toWorld(this.retFar, _a).project(cam), asp = cam.aspect || 16 / 9;
     let best = null, bd = L.reach;
     for (const f of waves.foes) {
