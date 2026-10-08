@@ -87,6 +87,10 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
   goes away when you leave. The Zone of Influence is the ground explored. The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
   (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check); a bug fixed in a room gets its check.
+- **A debug chest beside every feature sent for a test session** (the owner, 2026-10-08; `docs/plans/DEBUG-CHESTS.md`): what its QAIS
+  tests need (items and cubes, never state), within a few metres of the thing, in the magenta-and-black missing-texture checker so it
+  is never mistaken for the game's; the asking division writes its kit beside the QAIS test, nothing it gives is counted, and it goes
+  when its tests pass.
 - Progress (unlocks, Codex, ledger, achievements) resets on every new build; settings are kept.
 
 ## Git and publishing

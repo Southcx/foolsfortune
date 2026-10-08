@@ -378,6 +378,7 @@ export class Tracking {
     // ---- the Pneuka Box: what they carry (src/pneuka/)
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
+      if (e.from === 'debug') return; // (a debug chest's gift is never counted: docs/plans/DEBUG-CHESTS.md)
       L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
       if (e.used >= SLOTS) L.inc('pneuka.filled'); // (every slot of the Pneuka Box: pneuka/box.js SLOTS)
       if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
@@ -648,7 +649,7 @@ export class Tracking {
     });
     on('tuning.tuned', (e) => log.say('info', `${e.count} tuning ${e.count === 1 ? 'knob stands' : 'knobs stand'} away from the defaults (Tab): what you see is not the stock game.`)); // (debug/tuned.js)
     on('domain.level', (e) => { if (e.by === 'courier') log.say('gain', `Your ${DOMAIN_NAME(e.domain)} reaches level ${e.level}.`); }); // (progress/psyche.js)
-    on('cube.earn', (e) => { L.inc(`cube.src.${e.why}`, e.n); if (e.why === 'busk') log.say('gain', `Busking tip: ${plural(e.n, 'cube')}.`); }); // (busking: Dovina's buskPay)
+    on('cube.earn', (e) => { if (e.why === 'debug') return; L.inc(`cube.src.${e.why}`, e.n); if (e.why === 'busk') log.say('gain', `Busking tip: ${plural(e.n, 'cube')}.`); }); // (busking: Dovina's buskPay)
     on('cube.spend', (e) => { L.inc(`cube.use.${e.why}`, e.n); });
     on('cube.spill', (e) => { L.inc(`cube.spill.${e.from}`, e.n); if (e.from === 'zandatsu') log.say('loot', `The core condenses into ${plural(e.n, 'Lachryma cube')}.`, { key: 'zcube', win: 1.2, fmt: () => 'The cores condense into cubes.' }); });
     on('curio.get', (e) => {

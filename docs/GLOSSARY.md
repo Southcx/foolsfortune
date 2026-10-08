@@ -720,6 +720,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
   events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its
   attachments).
+- **debug chest** (`DebugChest`, `DEBUG_KITS` in `src/debug/kits.js`; `docs/plans/DEBUG-CHESTS.md`): a crate in the magenta-and-black
+  missing-texture checker left beside a feature sent for a test session, its **kit** (the items and cubes that feature's QAIS tests need)
+  topped up at each F; nothing it gives is counted; place id `debug.<kit>`. Always "debug chest" in full. *Not:* a chest (the Tithe's,
+  the world's, with tiers), the all-arts switch (it lends arts, not things).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the

@@ -200,7 +200,7 @@ export const ECON = {
     // in `sat`, bent by its kind's `wind`; `draughtPull`: each material pressed while a draught lasts pulls this share x the draught's
     // strength more toward the draught's feeling (keyed on game.draught, which fades over a real minute; brimming lasts 2 real seconds).
     seasonMax: 100, seasonCeiling: 0.13, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, formationClamp: [0.5, 2],
-    pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08 }, // (each feeling's hue: weather.js COLOR, the one table)
+    pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08, memory: 0.3 }, // (memory: a drop's saturation leans this far toward the weather's strength it was won in, the owner's 7a, A) // (each feeling's hue: weather.js COLOR, the one table)
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
