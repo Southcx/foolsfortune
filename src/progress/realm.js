@@ -54,15 +54,15 @@ export const PLANETOID_PLOTS = {
  *  third room for more spirits, once a few are caught; the fourth the drills, once there are spirits worth training (Monster
  *  Rancher opens its harder drills late). Never a number on the Courier: a Firing opens verbs. */
 export const FEATURES = {
-  terrace:    { size: 'medium', job: 'grow',    does: 'a bed: a material planted grows more of its kind', n: 1, firing: 1 },
-  pavilion:   { size: 'large',  job: 'work',    does: 'a dividend slot: a mastered encounter works it', n: 1, firing: 2 },
-  spiritHouse:{ size: 'medium', job: 'shelter', does: 'room for two more spirits', n: 2, firing: 3 },
-  pond:       { size: 'medium', job: 'water',   does: 'a pond of Lachryma; visitors drink; led downhill by sculpting', n: 1, firing: 1 },
-  lantern:    { size: 'small',  job: 'light',   does: 'light: the moonflower blooms in it, visitors of the night come to it', n: 1, firing: 1 },
-  incense:    { size: 'small',  job: 'calm',    does: 'the draught settles faster while the Jar rests near it (a tenth of a game hour sooner a burner)', n: 0.1, firing: 2 },
-  stone:      { size: 'small',  job: 'empower', does: 'a formation stone: its neighbours count it twice in their formation', n: 2, firing: 2 },
-  drillYard:  { size: 'large',  job: 'drill',   does: 'the spirits drill here (DRILLS)', n: 1, firing: 4 },
-  sporebed:   { size: 'small',  job: 'transmute', does: 'a spore bed: a strain of fungus works what you set in it (progress/sporebeds.js); placed in a feeling you hold spores of, it takes that strain', n: 1, firing: 1 },
+  terrace:    { name: 'Herb Terrace', size: 'medium', job: 'grow',    does: 'Grows more of a material you plant', n: 1, firing: 1 },
+  pavilion:   { name: 'Pavilion', size: 'large',  job: 'work',    does: 'Pays cubes for a fight you beat', n: 1, firing: 2 },
+  spiritHouse:{ name: 'Spirit House', size: 'medium', job: 'shelter', does: 'Room for two more spirits', n: 2, firing: 3 },
+  pond:       { name: 'Pond', size: 'medium', job: 'water',   does: 'Water that flows downhill; visitors drink here', n: 1, firing: 1 },
+  lantern:    { name: 'Lantern', size: 'small',  job: 'light',   does: 'Light at night; night visitors come', n: 1, firing: 1 },
+  incense:    { name: 'Incense Burner', size: 'small',  job: 'calm',    does: 'Calms you faster while you rest near it', n: 0.1, firing: 2 },
+  stone:      { name: 'Booster Stone', size: 'small',  job: 'empower', does: 'Boosts the features next to it', n: 2, firing: 2 },
+  drillYard:  { name: 'Drill Yard', size: 'large',  job: 'drill',   does: 'Spirits train here', n: 1, firing: 4 },
+  sporebed:   { name: 'Spore Bed', size: 'small',  job: 'transmute', does: 'Fungus that transforms what you put in it', n: 1, firing: 1 },
 };
 const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch' };
 /** What placing a feature costs: cubes by its size, and one material of its feeling's kind. */
