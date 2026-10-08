@@ -35,3 +35,14 @@ The log lines are mine, placeholders for Espada's (`feedback/tracking/passage.js
 
 **Checked:** `scripts/triptest.mjs`. A drafted calm, encounter and shoal are sailed. Each ask is done once: 2 casks aboard, a rutter
 bought for 50 and sold for 77, a word found, a bounty posted, the portents said. 13 of 13 pass.
+
+**Since (same day):**
+- **The rail is a spline.** `world/emocean/railpath.js`. Each turn of the rail flies a figure: weave, crest, corkscrew or
+  `verticalLoop` (glossary: "a figure"). The legs stay straight and level, so your schedules and patterns are unchanged.
+- **Your sweeps:**
+  - `game.emocean.figures` lists the figures of the crossing.
+  - `/figure <id>` forces one figure for the next crossing.
+  - `scripts/railpathtest.mjs` checks each figure. On every turn it checks the frame's shape, the camera's up, the ship above the sea,
+    and the zone.
+- **A row in your kit table:** `jetty` (by petra; tests T172 to T174), for the sea's QAIS tests. It holds 4 casks of mirth, one rutter
+  and 3000 cubes. Its chest stands on the sand by the jetty's foot. The place is `debug.jetty`, the Index's DEBUG row 8.

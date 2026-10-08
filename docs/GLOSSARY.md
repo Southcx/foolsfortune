@@ -191,6 +191,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
   **A turn of the rail**: the four bars between two legs where the spline bends, dives or breaches into the next. *Not:* a seam (a
   change of place under cover).
+- **a figure** (`FIGURES`, `world/emocean/railpath.js`, Petra's): what a turn of the rail flies, the frame carrying everything that
+  fights: a **weave** (out across the sea and back, banked), a **crest** (up over a rise and down), a **corkscrew** (rolled once about
+  the line: the sea overhead at its middle), a **vertical loop** (code `verticalLoop`: pitched once round, over on its back). Each turns
+  about **the heartline** (the ship's cruise line, `CRUISE` up the frame), never about the rail point. Through the legs the rail is
+  straight and level. *Not:* a swell (the crude sea's), a loop (an emote held, or the thread's), a turn of the rail (the four bars).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.

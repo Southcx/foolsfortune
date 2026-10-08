@@ -71,6 +71,7 @@ export class DebugChests {
       case 'sealed': { const R = g.ostraca?.room; if (!R) return null; const p = R.position, x = p.x + 2.6, z = p.z + 4.2; return { pos: new THREE.Vector3(x, sand(x, z, p.y), z), face: p.clone().setZ(p.z + 4.2) }; } // (outside its door, a step aside)
       case 'busk.weir': { const m = MATS.find((x) => x.id === 'weir')?.at(g); if (!m) return null; return { pos: m.pos.clone().setZ(m.pos.z - 1.8), face: m.pos.clone() }; }
       case 'well.mouth': { const M = g.well?.mouthPos; if (!M) return null; const x = M.x + 3.4, z = M.z + 1.4; return { pos: new THREE.Vector3(x, sand(x, z, M.y), z), face: M.clone() }; }
+      case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'testroom.index': return g.testroom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
       default: return null;
     }
@@ -115,7 +116,7 @@ export class DebugChests {
       else if (data?.tier != null) have = box.slots.filter((s) => s?.id === id && s.data?.tier === data.tier).length;
       else have = box.held(id);
       for (let n = have; n < count; n++) {
-        const d = data?.tier != null ? makeMaterial(id.slice(4), 101 + n, data.tier) : null;
+        const d = data?.tier != null ? makeMaterial(id.slice(4), 101 + n, data.tier) : data ? { ...data } : null; // (a material by tier; anything else its data as the kit gives it: a rutter's)
         if (box.add(id, 'debug', 0, d) < 0) break; // (a full box: it stops, the rest at the feet as box.add does)
         gave.push(it.name || id);
       }
