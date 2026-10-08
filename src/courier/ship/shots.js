@@ -30,7 +30,7 @@ import { ItanoRibbons } from '../../vfx/itano.js';
 import { TelegraphMarks } from '../../vfx/telegraph.js';
 import { stream } from '../../core/rng.js';
 
-const CAP = { gun: 128, lance: 16, plain: 192, outlined: 24 };
+const CAP = { gun: 128, lance: 48, plain: 192, outlined: 24 }; // (lances: a volley's eight and the surge's swarm, a lance at everything on the screen)
 const FOE_R = 0.3, OUT_R = 0.36;
 const _w = new THREE.Vector3(), _d = new THREE.Vector3(), _c3 = new THREE.Vector3();
 const LANCE_COLOR = 0x9ff3ff; // (the lances' ribbons: the lock marks' colour, courier/ship/ship.js)
@@ -53,7 +53,7 @@ export class Shots {
   /** The looks (at boot, parked hidden: their one program compiled with the warm-up). */
   build(scene) {
     this.look = new RailShots({ cap: 400, guns: CAP.gun }).build(scene); // (400: the heaviest peak the overhaul plans, RAIL-OVERHAUL.md section 5)
-    this.ribbons = new ItanoRibbons({ max: 40 }); scene.add(this.ribbons.mesh); // (a volley's eight and those still running out behind; the surge's swarm to come)
+    this.ribbons = new ItanoRibbons({ max: 64 }); scene.add(this.ribbons.mesh); // (a volley's eight and those still running out behind, and the surge's swarm: vfx/crossinglook.js)
     this.telegraphs = new TelegraphMarks(); scene.add(this.telegraphs.mesh);
     for (const r of this.outlines) { r.mesh = new THREE.Object3D(); r.mesh.visible = false; } // (a handle, not drawn: the look draws the outlined; mounts.js asks `s.mesh`)
     this.meshes = [this.look.mesh, this.ribbons.mesh, this.telegraphs.mesh];

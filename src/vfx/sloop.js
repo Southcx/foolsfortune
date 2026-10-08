@@ -14,6 +14,7 @@
 //
 //   const s = new Sloop({ env })   scene.add(s.group)   s.set({ sail 0..1, heel rad, side -1|1, glow 0..1, t })   s.dispose()
 //   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   (the crossing: docs/plans/RAIL.md)
+//   s.scars({ open, gilt })   the hull's cracks carried leg to leg, and the gold they turn to when caulked (PASSAGE.md 14.1)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; about 7 m long)
 // Under the storm and in the Umbral (vfx/stormwarp.js, vfx/umbral.js): the ship is never bent, the veil leaves its glows true
 // (`keepTrue`; its opaque body flies in the veil's quiet middle), and below the surface the caustics play over its hull and deck (a
@@ -185,6 +186,14 @@ export class Sloop {
       m.transparent = b.transparent || k > 0.01; m.opacity = b.opacity * (1 - 0.45 * k); m.depthWrite = k > 0.01 ? false : b.depthWrite;
       m.emissive.copy(b.em).lerp(_pc.setRGB(0.85, 0.9, 1.0), 0.5 * k); m.emissiveIntensity = b.emI + 0.6 * k;
     }
+  }
+
+  /** The hull's scars (PASSAGE.md 14.1, the hull carries; the owner's kintsugi: the ship's cracks are the Courier's own): `open` 0..1,
+   *  the share of the hull's hits still open, as dark seams with the crude's violet in them on the cells the gold has not reached;
+   *  `gilt` 0..1, how much has been caulked on this trip, as more of the net turned gold. At 0 and 0 the hull is as it was. */
+  scars({ open = 0, gilt = 0 } = {}) {
+    this.glaze.uCgCrack.value = 0.38 * THREE.MathUtils.clamp(open, 0, 1); // (0.38: the cells the base gold (uGlaze 3.45) leaves bare)
+    this.glaze.uGlaze.value = 3.45 + 0.45 * THREE.MathUtils.clamp(gilt, 0, 1);
   }
 
   /** The tally (RAIL.md): the medal run up the mast as the pennant's colour (a mark, no number: the log says the tally). */

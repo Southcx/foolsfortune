@@ -23,6 +23,7 @@
 //   const sea = new CrudeSea({ env })   scene.add(sea.mesh)   sea.update(t, camera.position)   sea.set({ calm, swell, film, current })
 //   (swell 0.38 by default: about a metre and a half crest to trough, a sloop's sea)
 //   sea.heightAt(x, z, t) -> y   (for a ship: its bob and its pitch)   sea.dispose()
+//   sea.lift (metres: the drawn surface raised over the fight, the Umbral form's)   sea.surfaceAt(x, z, t) -> y (the drawn surface)
 //   new CrudeSea({ geometry, y })   a surface of its own shape, laid in world xz (a shore's sector): it does not follow the eye
 //   sea.clipSector({ center, angle, half, r0 })   only the sector of a shore is sea (the shore, vfx/shore.js): elsewhere it is not drawn
 //   sea.under(on)   the eye is under the surface (vfx/umbral.js asks): the same mesh, its winding turned to face down, drawn as THE
@@ -44,7 +45,7 @@ const G = 9.8;
 
 export class CrudeSea {
   constructor({ env = null, size = 900, cells = 180, y = 0, geometry = null } = {}) {
-    this.y = y; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put)
+    this.y = y; this.lift = 0; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put; lift: the Umbral form's, below)
     this.k = { calm: 0, swell: 0.38, film: 1, current: new THREE.Vector2(1, 0.25).normalize() };
     let geo = geometry;
     if (!geo) { geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2); }
@@ -162,8 +163,13 @@ if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding tu
   /** Per frame: the time, and the grid kept under the camera in whole cells (the waves are the world's: nothing swims). */
   update(t, camPos) {
     this.t = t; this.u.uT.value = t;
-    if (camPos && !this.fixed) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
+    if (camPos && !this.fixed) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y + this.lift, Math.round(camPos.z / this.cell) * this.cell);
   }
+
+  /** Where the surface is DRAWN at a point: the height the logic rides (`heightAt`) plus the lift, the drawn surface raised over the
+   *  fight while the ship is in the Umbral form (vfx/crossinglook.js), so the eye and the ship are under it with nothing in the fight
+   *  moved. What asks where the eye is against the surface (the meniscus, the splash, the caustics: vfx/umbral.js) asks here. */
+  surfaceAt(x, z, t = this.t) { return this.heightAt(x, z, t) + this.lift; }
 
   /** The surface's height at a point (the same sum as the shader's, near the eye): what a ship rides. */
   heightAt(x, z, t = this.t) {

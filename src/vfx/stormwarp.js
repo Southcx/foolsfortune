@@ -110,7 +110,8 @@ function storm(mat, bend) {
     Object.assign(sh.uniforms, STORM_U, DEEP_U, { uStormOn: on });
     let v = sh.vertexShader, f = sh.fragmentShader;
     if (v.includes('#include <project_vertex>')) {
-      v = v.replace('#include <common>', `#include <common>\n${STORM_GLSL}\nvarying vec3 vDeepW;`)
+      const head = `${STORM_GLSL}\nvarying vec3 vDeepW;`; // (a ShaderMaterial that ends in project_vertex without three's common chunk, the Mind's geometry: the head goes first)
+      v = (v.includes('#include <common>') ? v.replace('#include <common>', `#include <common>\n${head}`) : `${head}\n${v}`)
         .replace('#include <project_vertex>', `#include <project_vertex>
 { vec4 dw = vec4(transformed, 1.0);
 #ifdef USE_BATCHING

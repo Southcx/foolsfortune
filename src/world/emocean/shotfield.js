@@ -16,9 +16,9 @@
 //   ship.local (Vector3)  ship.form ('astral' | 'umbral')  ship.turning (bool: the roll's window)  ship.hurtR? (the hurtbox: T.ship.hurt
 //   x SHIPS[hull].hurtbox)  ship.vel? (for a leading homer)  ship.hit(s) -> taken?  ship.absorb(s)  ship.turned?(s)  ship.returned?(s)
 //
-// Drawn as instanced meshes, one draw a kind (astral, umbral, the outline's ring, the warning line, the beam), every instance written
-// each frame since the frame moves with the rail (as courier/ship/shots.js does). Looks are placeholders for Calissa (section 8:
-// astral bright, white-gold cored; umbral black, a pale rim; the outline Cuphead's pink).
+// Drawn by Calissa's look (vfx/railshots.js, section 8: astral a white-gold core and a dark rim, umbral a black core and a pale rim,
+// the outlined in the parry mark's ink and film, a laser's warning thread and its hot beam), one instanced draw, every shot written
+// each frame since the frame moves with the rail (as courier/ship/shots.js does).
 //
 // Prior art: every shmup's bullet pool (a fixed array, nothing allocated in the loop), BulletML's actions (accel, changeDirection, fire
 // on a timer), proportional navigation (a missile turns at N times the line of sight's rate: the Itano circus's homers), Ikaruga's
@@ -29,12 +29,12 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
+import { RailShots } from '../../vfx/railshots.js';
 
 export const CAP = 400;
 const LASERS = 16, TRAIL = 18, SHOT_R = 0.3, BEAM_R = 0.45;
-const UP = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
+const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3();
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 const v3 = (a, out) => (Array.isArray(a) ? out.set(a[0], a[1], a[2]) : out.copy(a));
 
 /** The side axis of a heading (up x dir), for waves and turns: patterns.js's own. */
@@ -52,18 +52,10 @@ export class ShotField {
     this.live = 0; this.peak = 0; this.counts = { absorbed: 0, hit: 0, spent: 0, turned: 0, returned: 0, fired: 0, dropped: 0 };
   }
 
-  // ---------------------------------------------------------------- the looks (placeholders: Calissa's)
+  // ---------------------------------------------------------------- the look (Calissa's: vfx/railshots.js, the rail's one mark program)
   build(scene) {
-    const add = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, n); m.count = 0; m.frustumCulled = false; m.userData.zoneFree = true; m.visible = false; scene.add(m); return m; };
-    const ball = new THREE.IcosahedronGeometry(SHOT_R, 1), n = this.cap + LASERS * TRAIL;
-    this.astralMesh = add(ball, new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }), n);
-    this.umbralMesh = add(ball, new THREE.MeshBasicMaterial({ color: 0x120a18 }), n);
-    const ring = new THREE.TorusGeometry(SHOT_R * 1.5, 0.06, 4, 12);
-    this.outlineMesh = add(ring, new THREE.MeshBasicMaterial({ color: 0xff4fa0 }), this.cap);
-    const rod = new THREE.CylinderGeometry(1, 1, 1, 6); rod.rotateX(Math.PI / 2); rod.translate(0, 0, 0.5);
-    this.warnMesh = add(rod, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false }), LASERS);
-    this.beamMesh = add(rod, new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), LASERS);
-    this.meshes = [this.astralMesh, this.umbralMesh, this.outlineMesh, this.warnMesh, this.beamMesh];
+    this.look = new RailShots({ cap: this.cap + LASERS * TRAIL, guns: 0, beams: LASERS }).build(scene); this.look.show(false);
+    this.meshes = [this.look.mesh];
     return this.meshes;
   }
   show(on) { for (const m of this.meshes || []) m.visible = on; }
@@ -204,29 +196,25 @@ export class ShotField {
   clear() { for (const x of this.shots) this.kill(x); for (const b of this.beams) b.on = false; this.draw(); }
 
   // ---------------------------------------------------------------- drawing
+  /** Every live shot and beam written to the look in the world (the frame moves with the rail, so every one, every frame): a shot as a
+   *  capsule of its kind along its flight (outlined: the parry mark round it), swelling in its glint before a dash, faded once turned
+   *  or sent home; a snake's trail as its kind's capsules; a laser as its warning thread, then hot. */
   draw() {
-    if (!this.astralMesh || !this.rail) return;
-    const R = this.rail, A = this.astralMesh, U = this.umbralMesh, O = this.outlineMesh;
-    let na = 0, nu = 0, no = 0;
-    const put = (mesh, k, p, dir, scale) => {
-      R.toWorld(p, _w); R.dirWorld(dir, _d); _q.setFromUnitVectors(Z, _d.lengthSq() > 1e-8 ? _d.normalize() : Z);
-      _m.compose(_w, _q, _s.setScalar(scale)); mesh.setMatrixAt(k, _m);
-    };
+    if (!this.look || !this.rail) return;
+    const R = this.rail, L = this.look, dt = 1 / 60;
+    let n = 0, nb = 0;
     for (const x of this.shots) {
       if (!x.on) continue;
-      const mesh = x.kind === 'umbral' ? U : A, k = x.kind === 'umbral' ? nu++ : na++;
-      put(mesh, k, x.p, x.dir, x.t < x.warn ? 1.6 : 1); // (a glint swells before it dashes)
-      if (x.outlined && !x.back) put(O, no++, x.p, x.dir, 1);
-      if (x.m.type === 'snake') for (let j = 0; j < x.trailN; j++) { const q = j * 3; _b.set(x.trail[q], x.trail[q + 1], x.trail[q + 2]); put(mesh, x.kind === 'umbral' ? nu++ : na++, _b, x.dir, 0.8); }
+      R.toWorld(x.p, _w); R.dirWorld(x.dir, _d).multiplyScalar(x.t < x.warn ? 0 : x.speed);
+      L.set(n++, _w, _d, x.kind, x.outlined && !x.back, x.t < x.warn ? 0.36 * 1.6 : 0.36, x.back || x.turned ? 0.45 : 1, (x.i * 0.618034) % 1); // (a glint swells before it dashes)
+      if (x.m.type === 'snake') for (let j = 0; j < x.trailN; j++) { const q = j * 3; _b.set(x.trail[q], x.trail[q + 1], x.trail[q + 2]); L.set(n++, R.toWorld(_b, _w), _d, x.kind, false, 0.3, 0.8); }
     }
-    let nw = 0, nb = 0;
     for (const b of this.beams) {
       if (!b.on) continue;
-      const hot = b.t > b.warn, mesh = hot ? this.beamMesh : this.warnMesh;
-      R.toWorld(b.a, _w); R.toWorld(b.b, _c); _d.subVectors(_c, _w); const len = _d.length();
-      _q.setFromUnitVectors(Z, _d.divideScalar(len || 1)); const r = hot ? BEAM_R : 0.06;
-      _m.compose(_w, _q, _s.set(r, r, len)); mesh.setMatrixAt(hot ? nb++ : nw++, _m);
+      const hot = b.t > b.warn;
+      L.beam(nb++, R.toWorld(b.a, _w), R.toWorld(b.b, _c), hot ? BEAM_R : 0.06, b.kind, hot ? 1 : 0.8, !hot);
     }
-    for (const [mesh, n] of [[A, na], [U, nu], [O, no], [this.warnMesh, nw], [this.beamMesh, nb]]) { mesh.count = n; mesh.instanceMatrix.needsUpdate = true; }
+    L.count = n; L.beams = nb;
+    L.update(dt);
   }
 }
