@@ -8,7 +8,10 @@ crossing"). Proposals until the owner rules.
 - **Changed:** the reading of the sea becomes **the reckoning** (one word for one thing: `RECKON` already is it; "you reckon the sea";
   the formula's `reading` becomes `reckoning`). The storm wall becomes **the eyewall** (the real word for the ring round a storm's eye).
 - **Named:** the drowned lighthouse is **the Drowned Light** (the False Light's twin below); the calm's buoy is **the Purser's buoy**.
-- **Blank:** the maelstrom's Figment (give it a class and I will name it); why the Light drowned.
+- **Named:** the maelstrom's Whale is **Charybdis** (Homer's whirlpool, which swallows and spits: it rises Astral, dives Umbral). One
+  name for all five moods; the log says the mood beside it ("Charybdis rises, in grief."). If every maelstrom holds the same one, it
+  is an Egregore, not a Figment: your call.
+- **Blank:** why the Light drowned.
 - **For your glossary entry:** the sandfall entry's "a side passage" stays "side passage", so "the passage" alone is yours.
 
 Delete this note when the glossary carries the words.
