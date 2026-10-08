@@ -18,6 +18,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { spawn } from 'child_process';
 
 const argv = process.argv.slice(2);
 export const args = Object.fromEntries(argv.reduce((a, x, i) => { if (x.startsWith('--')) a.push([x.slice(2), argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : true]); return a; }, []));
@@ -62,10 +63,22 @@ window.__sw = (() => {
 `;
 
 /** Open the game for one room's sweep. Returns the sweep's kit. */
+/** The dev server up, or started (detached, left running for the next sweep) when the URL answers nothing: a sweep never fails because
+ *  the server died between runs. */
+async function serverUp(url) {
+  const ok = async () => { try { return (await fetch(url)).ok; } catch { return false; } };
+  if (await ok()) return;
+  if (process.env.URL) throw new Error(`nothing answers at ${url}`);
+  spawn('npx', ['vite', '--port', '5173', '--strictPort'], { cwd: path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..'), detached: true, stdio: 'ignore' }).unref();
+  for (let i = 0; i < 60; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await ok()) return; }
+  throw new Error('the dev server did not start in 60 real seconds');
+}
+
 export async function open(room) {
   const OUT = path.resolve(args.out || path.join(os.tmpdir(), 'sweeps', room)), SHOTS = path.join(OUT, 'shots');
   fs.mkdirSync(SHOTS, { recursive: true });
   const url = process.env.URL || 'http://127.0.0.1:5173/', seed = +args.seed || 1;
+  await serverUp(url);
   const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
   const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const errors = [], warnings = [], results = [];
