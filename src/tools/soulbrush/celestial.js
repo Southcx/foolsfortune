@@ -61,9 +61,10 @@ export class Celestial {
   /** The frame, in real seconds (`raw`): the paper, the brush, the reading. */
   update(raw, inp) {
     const g = this.game, cv = this.canvas;
-    const took = g.lachryma.drain(DRAIN * raw, 'brush');
+    const ask = DRAIN * raw / (g.psyche?.widen?.('ouranurgy.still') || 1); // (Ouranurgy: the canvas stays open longer on the same Lachryma)
+    const took = g.lachryma.drain(ask, 'brush');
     if (!inp.isDown('Mouse2')) return this.exit('let go');
-    if (took < DRAIN * raw * 0.5) return this.exit('empty');
+    if (took < ask * 0.5) return this.exit('empty');
     // the brush's point follows the mouse
     const W = cv.size.w, H = cv.size.h;
     this.x = Math.min(W - 2, Math.max(2, this.x + inp.dx * SENS));

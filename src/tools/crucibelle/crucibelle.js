@@ -46,7 +46,8 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
-const WINDOW = 0.085, OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown)
+export const WINDOW = 0.085; // (a note on the beat: within this many real seconds; Calissa's pendulum reads it, vfx/crucibellehud.js)
+const OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown)
 // The toll string, a table for the combo engine (tools/moveset.js). Each move is a toll at `at` (clip seconds: the swing's fastest moment,
 // measured), begun near it (`from`) so the bell rings with the press: a rhythm game's blow lands on the input, never a windup later.
 // The chain windows are the old cooldown (0.4 s between tolls) reshaped to the string: the next toll may begin 0.3 s after this one, so
@@ -154,7 +155,7 @@ export class Crucibelle extends HeldTool {
     this.history.push(d); if (this.history.length > 8) this.history.shift();
     const song = match(this.history);
     if (song) { this.history = []; this.sing(song); }
-    g.events?.emit('crucibelle.note', { degree: d, onBeat: on });
+    g.events?.emit('crucibelle.note', { degree: d, note: G.root + SCALE[d - 1] + (high ? 12 : 0), octave: high ? 1 : 0, onBeat: on, by: 'courier' }); // (note: the MIDI pitch; CRUCIBELLE-UI.md 5)
   }
   /** The fever's peak, once a fever: the ring at its widest, Dovina's feverPeak row (its power to all within its radius, once earned). */
   peak() {
@@ -218,7 +219,7 @@ export class Crucibelle extends HeldTool {
     if (!this.moves.busy) this.gesture('Bell_SongCast', { fadeOut: 0.3 }); // (the song thrown out of the bell, arms wide)
     sfx.chime?.(1);
     g.ai?.stimuli.emit('noise', P.pos, { radius: 18, strength: 0.5, by: 'courier' });
-    g.events?.emit('song.play', { song: id, fever: +this.fever.toFixed(2), power: +power.toFixed(2), instrument: this.instrument, n });
+    g.events?.emit('song.play', { song: id, fever: +this.fever.toFixed(2), power: +power.toFixed(2), instrument: this.instrument, n, by: 'courier' });
   }
 
   // ---------------------------------------------------------------- the toll

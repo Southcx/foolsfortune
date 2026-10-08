@@ -145,7 +145,7 @@ export class Reprogram {
     const m = o.c;
     this.macro = o.i; this.compiled = m;
     this.line = m.words.join(' ').toLowerCase(); this.typed = ''; this.bad = 0;
-    this.total = this.t = (BASE + PER * this.line.length) * (0.8 + 0.5 * m.q);
+    this.total = this.t = (BASE + PER * this.line.length) * (0.8 + 0.5 * m.q) * (this.game.psyche?.widen?.('ouranurgy.still') || 1); // (Ouranurgy: the window held open longer)
     this.phase = 'type';
     this.does.textContent = m.effects.map((e) => FUNCTIONS[e.fn].does).join(' ');
     this.el.classList.add('typing');
