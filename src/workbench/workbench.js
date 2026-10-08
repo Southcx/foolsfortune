@@ -314,6 +314,7 @@ export class Workbench {
   clearHolder() {
     if (!this.holder) return;
     if (this.floor) this.floor.visible = true;
+    if (this.bareHid) { this.figure.visible = true; this.bareHid = false; } // (a stage with grounds of its own hid the figure: it comes back with the next thing shown)
     for (const c of [...this.holder.children]) this.holder.remove(c);
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }
@@ -337,7 +338,7 @@ export class Workbench {
     // standing on the floor, its middle over the centre
     const box = new THREE.Box3().setFromObject(obj), c = box.getCenter(new THREE.Vector3());
     obj.position.x -= c.x; obj.position.z -= c.z; obj.position.y -= box.min.y;
-    if (obj.userData.bare) { this.floor.visible = false; this.figure.visible = false; } // (a stage with grounds of its own: the crossing's sky and sea)
+    if (obj.userData.bare) { this.floor.visible = false; this.figure.visible = false; this.bareHid = true; } // (a stage with grounds of its own: the crossing's sky and sea)
     this.applyView();
     const V = obj.userData.view; // (a stage that says where its camera starts, in its own frame: the rail's chase view)
     if (V) { obj.updateMatrixWorld(true); this.controls.target.copy(obj.localToWorld(V.look.clone())); this.camera.position.copy(obj.localToWorld(V.pos.clone())); this.controls.update(); } else this.frameModel();

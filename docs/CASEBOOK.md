@@ -188,8 +188,36 @@ the rules before building in the same area; a rule a machine can check goes into
     a danger drawn only dark (ink on the ink sea) or only as added light (white on the gold) vanishes on one of them. Give it both (an
     astral shot's dark rim, an umbral shot's pale rim, the outline's film beside its ink, a ribbon's shade at its edges) and render it
     over both grounds before calling it done.
+73. **What a mark draws from a number, it draws from the thing's own, never its place in a list.** A packed list is rewritten every
+    frame: when one entry ends, every entry after it takes the one before's index. A film's phase, a flicker's offset, a wobble's seed
+    taken from the index changes colour for every mark behind the one that ended; take it from the record (its pool slot).
+74. **A mark that says "this, now" is asked whether it is still true, every frame.** A telegraph closes on a part that can act and on
+    a bar that will fire; the part downed, the fight ended or the volley that will not come takes the mark with it (`alive`), or the
+    player learns to ignore the one mark they must not.
 
 ## Cases
+
+### 2026-10-08 · An outlined shot's film changed colour whenever another shot ended, and a shot passing the eye filled the screen (found in review of the shots' look)
+- **Seen (headless, the shoal's crossing, the shots' buffer read before and after):** an outlined shot's film phase read 0.236 with
+  three shots flying and 0.618 the frame the shot in front of it in the pool ended: a jump of 0.38 of a hue cycle, every outlined shot
+  at once, every time any plain shot ended ahead of them (several times a second in a pattern). And one astral shot set a metre from
+  the eye drew a head 230 px across, at sixty centimetres a third of the screen: a white-gold core, past the glow's threshold, with its dark rim.
+- **Cause:** the film's seed was `(i * 0.618) % 1` with `i` the shot's place in this frame's packed list (plains first, outlined
+  after), which moves when any earlier shot ends. The capsule is drawn true to perspective and nothing limited it near the eye.
+- **Fix:** `RailShots.set` takes a `seed` (the outlined shot's own pool slot, kept for its whole flight; `courier/ship/shots.js`
+  passes it); the capsule's alpha fades over its last four metres from the eye (`vfx/railmark.js` `nearFade`: 1.2 m gone, 5 m whole;
+  the nearest view's camera is 7.5 m from the ship, so nothing a player must read is touched).
+- **Rule:** 73, and the law "no flash, ever" (a large bright shape that comes and goes in a few frames is one).
+
+### 2026-10-08 · The brig's last telegraph closed on nothing, and a port downed under its ring kept the ring (found in review of the shots' look)
+- **Seen (headless, the pirates' broadside, the marks counted bar by bar):** rings stood at bars 9, 11, 13 ... 21 of the set piece and
+  the volleys fired at 10, 12 ... 20: the ring at bar 21 closed at 22 on a volley that does not come (`rel < 22`). A port shot down
+  while its ring was closing (the counterplay: its lid is open, so it can be hit) left the ring closing on the stump.
+- **Cause:** the call site asked "is this the bar before a volley" and not "will it fire", and a mark had no way to ask whether its
+  part was still there.
+- **Fix:** the call asks `rel < 21` (the next bar must fire) and hands the mark `alive: () => p.alive && !this.ended`
+  (`vfx/telegraph.js`, `world/emocean/pirates.js`).
+- **Rule:** 74.
 
 ### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)
 - **Seen (headless, the crossing's pincer from above):** eight lances flown, `ribbons.active` 8, and nothing on screen; the same

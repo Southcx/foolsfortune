@@ -9,9 +9,11 @@ scene's, so the world.
 ```js
 const S = new RailShots({ cap: 400, guns: 128 }); S.build(scene);   // or parent.add(S.mesh); S.parked() -> [mesh]
 // each frame:
-S.set(i, pos, vel, kind, outlined, radius = 0.36, alpha = 1);      // i < n; pos: the hit sphere's centre (world); vel: m/s in the
-                                                                    // frame the eye rides (the rail's), world axes; kind 'astral' |
-                                                                    // 'umbral' (or 0 | 1); alpha 0.45 for a spent shot
+S.set(i, pos, vel, kind, outlined, radius = 0.36, alpha = 1, seed = 0); // i < n; pos: the hit sphere's centre (world); vel: m/s in
+                                                                    // the frame the eye rides (the rail's), world axes; kind 'astral' |
+                                                                    // 'umbral' (or 0 | 1); alpha 0.45 for a spent shot; seed 0..1: an
+                                                                    // outlined shot's own number (its record's), never its index in
+                                                                    // this frame's list (its film would change colour when another ends)
 S.count = n;
 S.gun(i, pos, vel); S.guns = m;                                     // the psygun's needles (the ship's colour: S.color(hex))
 S.hurtbox(pos, T.ship.hurt);                                        // or S.hurtbox(null); drawn its true size, on top
@@ -20,7 +22,9 @@ S.show(on);
 ```
 The capsule's head is `pos` (drawn at `radius`, a touch over the 0.3 m hit sphere), its tail behind it along `vel` (0.06 s of flight,
 at most 3 m). Today `courier/ship/shots.js` maps a plain shot of the ship's home feeling to astral and any other to umbral (null
-feeling, the broadside's round shot: umbral); an outlined shot takes its thrower's. Replace that with your kinds.
+feeling, the broadside's round shot: umbral); an outlined shot takes its thrower's. Replace that with your kinds. Until the forms
+exist the ship shows its polarity (Q) only by its keel's tint, which no shot wears now: after Q, the shots of the opposite feeling
+(drawn umbral) are absorbed and the home feeling's (drawn astral) hurt. The sloop's form look (Calissa's) closes that; do not read it as a bug in the kinds.
 
 ## `vfx/itano.js`: the lances' ribbons (up to 40 at once)
 ```js
@@ -35,7 +39,8 @@ The fan, the overshoot and the proportional navigation are yours: the ribbon fol
 ## `vfx/telegraph.js`: the shrinking mark on a part about to act
 ```js
 const T = new TelegraphMarks(); scene.add(T.mesh);   // today: emocean.shots.telegraphs
-const h = T.mark(target, seconds, { radius, from }); // target: an Object3D, a Vector3, or (out) => out (world); h.cancel()
+const h = T.mark(target, seconds, { radius, from, alive }); // target: an Object3D, a Vector3, or (out) => out (world); h.cancel();
+                                                       // alive: () => bool, asked every frame: the mark goes when it says false (part downed)
 T.update(rawDt);
 ```
 A boss's part: `T.mark(partObject, windupSeconds, { radius: partRadius })` when its windup starts; it closes linearly on the part's own

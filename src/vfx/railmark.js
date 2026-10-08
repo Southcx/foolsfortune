@@ -8,7 +8,7 @@
 //             way it flies
 //   umbral    a foe's umbral shot: a black core and a pale rim (under the glow's threshold: no glow), the same capsule
 //             (either outlined: the parry mark round it, vfx/parrymark.js's two parts, its ink and its oil film, at the parry mark's
-//             3.6 px; the film is set at the band's outer edge, bright enough to read on the black crude)
+//             3.6 px; the film is set at the outline's outer edge, bright enough to read on the black crude)
 //   gun       the psygun's shot on the rail: a needle in the ship's colour, white at its heart, light added (no rim: never a foe's)
 //   ribbon    one segment of a ribbon (an Itano lance's: vfx/itano.js): its two ends turned by its neighbours (P before A, N after B),
 //             so the segments of a strip meet edge to edge, never overlapping (the screen-space polyline of MeshLine and Matt
@@ -20,7 +20,9 @@
 //             than what is hit), the ring edged pale outside so it reads on the black crude too
 //
 // Everything is in pixels of the target being drawn (the 480-line present: render/present.js): every mark at least a few pixels (a
-// far shot is the same shape scaled up, so it reads the same), every line of the parry mark's 3.6 px. Drawn over everything (no depth
+// far shot is the same shape scaled up, so it reads the same), every line of the parry mark's 3.6 px. A shot (a capsule) within five metres
+// of the eye fades out as it nears it (a head at a metre across is a hundred pixels and white: a flash); no shot a player must read is
+// ever that near (the nearest view's camera is seven metres from the ship). Drawn over everything (no depth
 // test), never fogged, never bent: a mesh made here carries `userData.unbent` (the storm's warp leaves it alone, it must) and
 // `userData.zoneFree`. One blend for all of it: premultiplied alpha, so a body covers (alpha 1) and a glow adds (alpha 0) in one draw.
 //
@@ -98,9 +100,10 @@ void main() {
     float halo = st == 0 ? rb * 1.1 : 0.0;                              // (room for the astral glow)
     float R = max(ra, rb) + ow + halo + 1.0;
     float s = position.x < 0.5 ? -R : L + R;
+    float nearFade = smoothstep(1.2, 5.0, -b.z);                        // (a shot at the eye is a screen-wide flash: it fades out over its last four metres)
     pos = sa + t * s + nrm * position.y * R;
     vL = vec4(s, position.y * R, L, 0.0);
-    vR = vec4(ra, rb, ow, iN.w);
+    vR = vec4(ra, rb, ow, iN.w * nearFade);
   }
   gl_Position = vec4(pos / (0.5 * uRes), 0.0, 1.0);
 }`;
@@ -132,11 +135,11 @@ void main() {
       col = mix(rim, core, inner) * body * al; a = body * al;
       if (vS.y > 0.5) {
         float ow = vR.z, e = d - r;
-        float band = cover(e) * cover(ow - e) * al;
+        float outline = cover(e) * cover(ow - e) * al;
         float ph = atan(t, dx + 1e-4) * 0.159 + vS.w + uTime * 0.35;     // (the film runs round the outline, slowly and at one rate)
         vec3 f = film(ph);
         vec3 oc = mix(INK + f * 0.1, f * 0.95 + 0.05, smoothstep(ow - 2.4, ow - 0.6, e));
-        col += oc * band * (1.0 - a); a += band * (1.0 - a);
+        col += oc * outline * (1.0 - a); a += outline * (1.0 - a);
       }
       if (astral) { float e = max(d - r - vR.z, 0.0) / max(r * 0.5, 1.0); col += vec3(1.0, 0.72, 0.3) * 0.22 * exp(-e * e) * (1.0 - a) * al; } // (a soft glow, gone before the quad's edge)
     }

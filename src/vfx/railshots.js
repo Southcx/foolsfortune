@@ -19,12 +19,13 @@
 // the enemy's), Ikaruga's two polarities read by value as much as hue, Rez's player lasers, the hitbox dot of every modern danmaku.
 //
 //   const S = new RailShots({ cap: 400, guns: 128 })   parent.add(S.mesh)   (or S.build(scene))   S.parked() -> [mesh] (the warm-up)
-//   every frame: S.set(i, pos, vel, kind, outlined, radius?, alpha?) for i < n, then S.count = n
+//   every frame: S.set(i, pos, vel, kind, outlined, radius?, alpha?, seed?) for i < n, then S.count = n
 //                S.gun(i, pos, vel) for i < m, then S.guns = m         S.hurtbox(pos, radius) | S.hurtbox(null)
 //                S.update(rawDt, camera)   (sorts, writes, sends; camera optional: the last one that drew it)
 //   S.color(hex)   the psygun's shots' colour (the ship's)         S.show(on)
 //   (pos: the hit sphere's centre; vel: m/s in the frame the eye rides with (the rail's); both in the parent's frame: the world in the
-//    game. kind: 'astral' | 'umbral' (or 0 | 1). radius: the drawn head, 0.36 m by default. alpha: 0.45 for a spent shot.)
+//    game. kind: 'astral' | 'umbral' (or 0 | 1). radius: the drawn head, 0.36 m by default. alpha: 0.45 for a spent shot. seed: 0 to 1, an
+//    outlined shot's own number (its record's index), so its film never changes colour when another shot ends.)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MarkBuffer, STYLE, kindOf } from './railmark.js';
@@ -45,7 +46,7 @@ export class RailShots {
     this.cap = cap; this.gunCap = guns; this.count = 0; this.guns = 0;
     this.buf = new MarkBuffer(guns + cap + 1, { renderOrder: 43 });
     this.mesh = this.buf.mesh;
-    this.fp = new Float32Array(cap * 3); this.fv = new Float32Array(cap * 3); this.fs = new Float32Array(cap * 4); // (kind, outlined, radius, alpha)
+    this.fp = new Float32Array(cap * 3); this.fv = new Float32Array(cap * 3); this.fs = new Float32Array(cap * 5); // (kind, outlined, radius, alpha, seed)
     this.gp = new Float32Array(guns * 3); this.gv = new Float32Array(guns * 3);
     this.key = new Float32Array(cap); this.idx = new Uint16Array(cap);
     this.hb = { on: false, p: new THREE.Vector3(), r: 0.35 };
@@ -60,12 +61,13 @@ export class RailShots {
   show(on) { this.mesh.visible = on; }
   color(hex) { this.gunRGB.set(hex); }
 
-  /** A foe's shot, the i-th this frame. */
-  set(i, pos, vel, kind = 'astral', outlined = false, radius = RAIL_SHOT.radius, alpha = 1) {
+  /** A foe's shot, the i-th this frame. `seed` (0 to 1) is the outline film's phase: a number the shot keeps for its whole flight (its
+   *  record's own), never its place in this frame's list, or the film's colour jumps whenever another shot ends ahead of it. */
+  set(i, pos, vel, kind = 'astral', outlined = false, radius = RAIL_SHOT.radius, alpha = 1, seed = 0) {
     if (i >= this.cap) return;
-    const o = i * 3, f = this.fp, v = this.fv, s = this.fs, q = i * 4;
+    const o = i * 3, f = this.fp, v = this.fv, s = this.fs, q = i * 5;
     f[o] = pos.x; f[o + 1] = pos.y; f[o + 2] = pos.z; v[o] = vel.x; v[o + 1] = vel.y; v[o + 2] = vel.z;
-    s[q] = kindOf(kind); s[q + 1] = outlined ? 1 : 0; s[q + 2] = radius; s[q + 3] = alpha;
+    s[q] = kindOf(kind); s[q + 1] = outlined ? 1 : 0; s[q + 2] = radius; s[q + 3] = alpha; s[q + 4] = seed;
   }
   /** The psygun's shot, the i-th this frame. */
   gun(i, pos, vel) {
@@ -93,11 +95,11 @@ export class RailShots {
     for (let i = 0; i < n; i++) { const o = i * 3; this.idx[i] = i; this.key[i] = cam ? (this.fp[o] - _e.x) ** 2 + (this.fp[o + 1] - _e.y) ** 2 + (this.fp[o + 2] - _e.z) ** 2 : 0; }
     if (cam && n > 1) { const key = this.key; this.idx.subarray(0, n).sort((a, b) => key[b] - key[a]); }
     for (let j = 0; j < n; j++, k++) {
-      const i = this.idx[j], o = i * 3, q = i * 4, x = this.fp[o], y = this.fp[o + 1], z = this.fp[o + 2];
+      const i = this.idx[j], o = i * 3, q = i * 5, x = this.fp[o], y = this.fp[o + 1], z = this.fp[o + 2];
       const vx = this.fv[o], vy = this.fv[o + 1], vz = this.fv[o + 2], sp = Math.hypot(vx, vy, vz);
       const len = sp > 1e-3 ? Math.min(sp * Z.tail, Z.tailMax) / sp : 0, r = this.fs[q + 2];
       const ax = x - vx * len, ay = y - vy * len, az = z - vz * len, al = this.fs[q + 3];
-      B.put(k, ax, ay, az, r * Z.taper, x, y, z, r, ax, ay, az, al, x, y, z, al, this.fs[q], this.fs[q + 1], 0, (i * 0.618034) % 1);
+      B.put(k, ax, ay, az, r * Z.taper, x, y, z, r, ax, ay, az, al, x, y, z, al, this.fs[q], this.fs[q + 1], 0, this.fs[q + 4]);
     }
     // the hurtbox, over all of it
     if (this.hb.on) { const p = this.hb.p; B.put(k++, p.x, p.y, p.z, this.hb.r, p.x, p.y, p.z, 0, p.x, p.y, p.z, 1, p.x, p.y, p.z, 1, STYLE.hurtbox); }

@@ -10,10 +10,11 @@
 // linear shrink reads as a clock), Sekiro's perilous kanji and Elden Ring's glint (a windup that marks itself).
 //
 //   const T = new TelegraphMarks({ max: 16 })   parent.add(T.mesh)   T.parked() -> [mesh]
-//   const h = T.mark(target, seconds, { radius, from }?)   target: an Object3D (followed), a Vector3 (read each frame) or a function
+//   const h = T.mark(target, seconds, { radius, from, alive }?)   target: an Object3D (followed), a Vector3 (read each frame) or a function
 //            (out) -> out, the part's place in the world; radius: the part's (m: by default the Object3D's bounding sphere, else 1);
-//            from: where the ring starts (m: three radii and 2.5 m by default)
-//   h.cancel()   the part was downed, or its act called off          T.update(rawDt)   T.clear()   T.show(on)
+//            from: where the ring starts (m: three radii and 2.5 m by default); alive: () -> bool, asked every frame: the mark is gone
+//            the frame it says false (the part was downed, or the fight ended: a ring never closes on what can no longer act)
+//   h.cancel()   the act was called off          T.update(rawDt)   T.clear()   T.show(on)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MarkBuffer, STYLE } from './railmark.js';
@@ -30,9 +31,9 @@ export class TelegraphMarks {
   parked() { return [this.mesh]; }
   show(on) { this.mesh.visible = on; }
 
-  mark(target, seconds = 1, { radius = null, from = null } = {}) {
+  mark(target, seconds = 1, { radius = null, from = null, alive = null } = {}) {
     if (radius == null) radius = target?.isObject3D ? (_b.setFromObject(target).isEmpty() ? 1 : _b.getBoundingSphere(_s).radius) : 1;
-    const h = { target, seconds: Math.max(0.05, seconds), radius, from: from ?? radius * 3 + 2.5, age: 0, done: false, cancel: () => { h.done = true; } };
+    const h = { target, seconds: Math.max(0.05, seconds), radius, from: from ?? radius * 3 + 2.5, alive, age: 0, done: false, cancel: () => { h.done = true; } };
     this.marks.push(h);
     if (this.marks.length > this.max) this.marks.shift().done = true;
     return h;
@@ -55,6 +56,7 @@ export class TelegraphMarks {
     let k = 0;
     for (const h of this.marks) {
       if (h.done) continue;
+      if (h.alive && !h.alive()) { h.done = true; continue; } // (its part is gone: no ring closes on nothing)
       h.age += raw;
       const u = h.age / h.seconds;
       if (u >= 1) { h.done = true; continue; } // (the act: the part's own, and the mark is gone)

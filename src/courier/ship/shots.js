@@ -153,7 +153,7 @@ export class Shots {
     let n = 0, m = 0;
     for (const s of this.guns) if (s.on) L.gun(m++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d));
     for (const s of this.plains) if (s.on) L.set(n++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d), s.aspect && s.aspect === home ? 'astral' : 'umbral', false, undefined, s.turned ? 0.45 : 1);
-    for (const r of this.outlines) if (r.on) L.set(n++, R.toWorld(r.p, _w), R.dirWorld(r.v, _d), r.from?.aspect && r.from.aspect === home ? 'astral' : 'umbral', true, OUT_R, r.back ? 0.45 : 1);
+    for (const [k, r] of this.outlines.entries()) if (r.on) L.set(n++, R.toWorld(r.p, _w), R.dirWorld(r.v, _d), r.from?.aspect && r.from.aspect === home ? 'astral' : 'umbral', true, OUT_R, r.back ? 0.45 : 1, (k * 0.618034) % 1); // (its film's phase is its record's own: the same through its flight)
     L.count = n; L.guns = m;
     L.color(COLOR[S?.aspect] ?? 0xffc65c);
     L.hurtbox(S && this.look.mesh.visible ? R.toWorld(S.local, _c3) : null, T.ship.hurt);
