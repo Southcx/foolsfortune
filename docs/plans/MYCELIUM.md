@@ -234,3 +234,25 @@ Each step lands when the one before runs clean in the garden sweep.
   - `/tree feed | pick | hang | dawn`.
 - **`node scripts/mycelium.mjs`:** the rules, plus the services played against a stand-in game (a bed's whole life, the tree's
   feeding, dawn, picking and hanging, a pot on release). All pass.
+
+### The world side (Dovina's, by Petra's split, 2026-10-08)
+
+- **`src/world/garden/mycelium.js`** (`game.gardenMycelium`):
+  - **Myggdrasil's planetoid:** given at Sinter, at `GARDEN_AT + (0, -60, -160)`. Its radius is 26. It clears every planetoid by 67.8 m
+    and the ring's slots by 40.9 m, both measured. It has 6 plots and lotuses to its two nearest.
+  - **The tree:** a stand-in, 54.7 m from root to cap. A labradorite trunk and a gold cap lit in the tincture's colour, the ten fruiting
+    bodies on the Tree of Life's pillars, the crop under the cap's rim. Calissa's canopy replaces it.
+  - **The spore bed:** a `sporebed` feature (`FEATURES`, Firing 1). Placed in a feeling whose spores you hold, it takes that strain. Its
+    fairy ring is drawn in that strain's colour and lights when the bed is ready. Its page reads: inoculate, set (two curios for the
+    lichen), working (with "take it back" in the first game hour), harvest. Its neighbours are read from the plots. Moved by the hand,
+    the colony goes with it.
+  - **Myggdrasil's page at the roots:** pick the crown, feed it, hang a card.
+  - **The keepsake pots:** a ring at the Chimney's foot, white-ground, washed in their feeling.
+- **`src/feedback/codex/grimoire.js`:** the Grimoire of Echoes. It shows only what you have met: the strains held, every graft made
+  (`spore.graft.pair.<a>+<b>><made>`), the tree's girth, tincture and open bodies, the branches (???), and the pots.
+- **Petra's hooks still to land** (`docs/handoffs/petra/dovina-mycelium.md`):
+  - `realm.use` asking the mycelium first (until then F does nothing at a bed or at the roots);
+  - its `update`;
+  - the Codex tab;
+  - the clay of a planetoid made after the realm loads.
+- **Checked:** the garden sweep's "mycelium" section, 15 checks, all pass (144/0 in the whole sweep).
