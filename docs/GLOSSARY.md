@@ -123,6 +123,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
+- **the mycelium** (`src/progress/mycelium.js`, Dovina's; `docs/plans/MYCELIUM.md`; working names, Espada's to give): the garden's fungi
+  as transmutators. A thing's **colour signature** (`SIGNATURE`, `signatureOf`: its hue and saturation on Soul Alchemy's wheel: a
+  material its own, a curio its blurb's, a fish its feeling's). A **spore bed**: a garden bed a **strain** has colonised (its fairy
+  ring drawn round it; *not* the ring of bought planetoids, nor the hue ring); a strain works one **verb** by its feeling: **graft**
+  (wonder: two curios into one, by a chart), **ferment** (mirth: a material's saturation up), **print** (desire: anything into a
+  **spore print**, a material of exactly its colour, one straight pull), **rot** (grief: anything into materials of its colour, six
+  tenths of its worth), **dissolve** (dread: saturation down). **The World Mushroom** (`TREE`; working name): the tree fed anything at
+  its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
+  and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
+  a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
+  spirit fired at the Chimney into a pot that stays (proposed). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
 - **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
   station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
   materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
