@@ -81,6 +81,10 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **The trip's pressures:** a waypoint's feeling recolours its leg by mode, never by key (each note to the same degree: wonder Lydian,
   mirth major, desire Dorian, grief as written, dread Locrian), so the themes stay recognisable; a storm leg is a part thicker; low
   fuel lays a heartbeat under it; adrift, the drums go; a calm is a campfire, its release holding for the choice.
+- **The turn of the rail flies a figure** (`game.emocean.figures`): a crest rises into its top and crashes; a corkscrew or a loop drops the
+  floor out at its inverted bar (weightless: no kick, no bass, a reversed swell); a weave swells a cymbal on each bank.
+- **Relaid mid-play** (adrift: the current choosing the legs ahead): a score of the same `family` whose sections so far match carries on
+  from the bar playing (`Arranger.swap`, by itself in `follow`).
 - **Under the surface** (the rail's Umbral form): the music and the world through a low-pass, the breach lifting the air back
   (`arranger.setUnder`, `sfx.setUnder`, read from `game.emocean.form`).
 

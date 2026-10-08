@@ -61,7 +61,7 @@ export class IndexMenu {
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { this.sel = (this.sel + 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.sel = (this.sel + this.rooms.length - 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'Enter' || e.code === 'Space') { this.pick(this.sel); e.preventDefault(); }
-      else if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); }
+      else if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); e.stopImmediatePropagation(); }
       else { const i = this.rooms.findIndex((r) => r.code === e.code); if (i >= 0) this.pick(i); }
     });
   }

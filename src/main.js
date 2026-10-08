@@ -507,6 +507,9 @@ async function main() {
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
+  // an Esc pressed while a window is open is that window's (it closes it): marked before any window's own handler runs (capture), so the
+  // pointer's unlock it may bring is not read as you leaving (onLockChange: casebook 125)
+  addEventListener('keydown', (e) => { if (e.code === 'Escape' && (modalOpen() || game.kilnUI?.open || game.dialogue?.open)) input.escSpentAt = performance.now(); }, true);
   game.windowOpen = windowOpen; // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
@@ -858,6 +861,7 @@ async function main() {
     // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
     if (locked && (modalOpen() || game.kilnUI?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
     if (!locked && selfRelease) { selfRelease = false; return; } // (a release the game made itself is not you leaving: no pause, the kiln sweep's F and Esc spam)
+    if (!locked && performance.now() - (input.escSpentAt ?? -1e9) < 500) return; // (an Esc a window spent closing itself is not you leaving either: casebook 125)
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';

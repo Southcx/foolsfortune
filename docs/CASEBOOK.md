@@ -341,13 +341,14 @@ the rules before building in the same area; a rule a machine can check goes into
 123. **A height asked of the crude sea is the world's, its own y in it.** `CrudeSea.heightAt` returns `this.y + the swell` (the Emocean's sea
     lies at -420), so a thing placed *relative* to a parent that already stands on the sea takes `heightAt(...) - parent.y`, never the bare value.
     On the workbench the sea lies at y 0 and the two are the same, which is how the wrong one passed there.
-
 124. **A wrapper that adds to a program's key makes a new program of every program it touches; a look of a few lines shares its family's.**
      The storm's `warpMaterial` (and any chained `onBeforeCompile` with its own key) on a material of the game's shared basic-map
      program is a program of its own, two if it is transparent and both-sided: give a mark that rides a body the body's seat instead,
      and wrap only materials whose program is already their own. A flat look with the same settings and vertex shader as another
      (a ribbon, a band, a smoke thread) is a branch on a uniform in that one program (`vfx/ribbonlight.js`), never a ShaderMaterial of
      its own. List the boot's programs by name and cache key against main's before calling a branch's count its own.
+125. **An Esc a window spends is not a pause.** The pointer's unlock can land after the window has closed; a lock change read
+    alone cannot tell it from the player leaving, so the window marks the moment and the pause waits past it.
 
 ## Cases
 ### 2026-10-08 · Five shader programs over main's at boot, two of them one shadow (perf over the program budget, Calissa's program diet, round two)
@@ -1778,3 +1779,13 @@ the rules before building in the same area; a rule a machine can check goes into
   inside the window; in play, any two casts within 1.6 real seconds would have lost the second's name.
 - **Fix:** a line folds only into an identical one (or one with a counter format, `fmt`). Checked by the Dunemaw sweep.
 - **Rule:** 102.
+
+### 2026-10-08 · Esc closing the Index sometimes opened the pause menu too (the basement sweep, 1 run in 2)
+- **Seen:** "Index: Esc does not also open the pause menu" failed once and passed on the re-run.
+- **Cause:** read, not measured frame by frame: the pause is opened by the pointer's unlock (`onLockChange(false)`), not by the key;
+  an unlock landing after the Index had closed found no window open and read as the player leaving. Its timing is the browser's, so
+  the failure came and went.
+- **Fix:** an Esc pressed while any window is open is marked (`input.escSpentAt`, a capture listener in main.js, before the window's
+  own handler closes it); an unlock within 0.5 real seconds of it is not a pause. The Index's list also stops the Esc's propagation,
+  as its pages did (GARDEN-SWEEP #9). The workshop sweep then showed the same with the map: one fix for every window.
+- **Rule:** 125.
