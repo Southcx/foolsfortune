@@ -40,7 +40,11 @@ export class GardenPress {
     const P = feature.planet, at = feature.pos.clone(), U = at.clone().sub(P.c).normalize();
     const N = new THREE.Vector3(0, 0, -1).projectOnPlane(U); if (N.lengthSq() < 1e-4) N.set(1, 0, 0).projectOnPlane(U); N.normalize();
     const E = new THREE.Vector3().crossVectors(N, U).normalize();
-    this.frame = { O: at.clone().addScaledVector(U, 0.05), U, N, E, R: BATH.r, planet: P };
+    // the bath lies level over the highest ground under its footprint (the Athanor's basalt columns stand up to 0.4 m: sampled, not assumed)
+    let lift = 0; const ground0 = at.distanceTo(P.c);
+    for (let k = 0; k < 64; k++) { const a = k * 2.39996, r = (BATH.r + BATH.kerb + BATH.ware) * Math.sqrt((k + 0.5) / 64), q = _v.copy(at).addScaledVector(N, Math.cos(a) * r).addScaledVector(E, Math.sin(a) * r).sub(P.c);
+      const along = q.dot(U), h = (P.radiusAt ? P.radiusAt(q.normalize()) : P.r) * Math.max(0, q.dot(U)) - ground0; if (along > 0) lift = Math.max(lift, h); }
+    this.frame = { O: at.clone().addScaledVector(U, lift + 0.05), U, N, E, R: BATH.r, planet: P };
     this.bath = new PressBath(this.frame, realm.site.group);
     // the press: 4.35 m north on the ground, its front (+Z) toward the bath
     this.model = new SpiritPress({ hues: IDS.map((id) => ATTRIBUTES[id].hue) }); this.model.group.name = 'garden-press';
