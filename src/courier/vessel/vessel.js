@@ -20,7 +20,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
-import { dressFinish } from '../../vfx/finish.js';
+import { dressFinish, ownLight } from '../../vfx/finish.js';
+import { wheelOklab, oklabColour } from '../../vfx/wheelcolour.js';
 import { addKintsugi, kintsugiUniforms } from './kintsugi.js';
 import { tagRegions } from './damage.js';
 import { ECON } from '../../progress/econ/table.js';
@@ -30,6 +31,7 @@ import { sfx } from '../../audio/sfx.js';
 const KEY = 'foolsfortune.vessel.v1';
 const LEARNED_MAX = 8;
 const _c = new THREE.Color(), _h = {};
+const SOUL = { L: 0.72, chroma: 1.2, strength: 0.8, off: [0.02, 0.12], bright: 0.8, boost: 6 }; // (the soul glow: Oklab lightness for every hue; chroma x the wheel's (so the lip, 1, still reads past the tiles' 0.65 inside the gamut); strength once off grey (saturation 0.02 .. 0.12); a true firing's x1.8, fading over 6 real seconds seen)
 
 export class Vessel {
   constructor(game) {
@@ -41,6 +43,7 @@ export class Vessel {
     this.kinU = kintsugiUniforms();
     this.t = 0; this.fireT = 0;
     this.soul = new THREE.Vector4(0, 0, 0, 0); // (the soul colour's glow, shared by every skin dressed: rgb, strength)
+    this.soulBoost = 0; game.events?.on?.('alchemy.fire', (e) => { if (e.true) this.soulBoost = 1; }); // (a true firing: brighter for a few real seconds once they are seen again)
     this.load();
   }
   get cost() { return Math.round(ECON.firing * ECON.perMinute); }
@@ -80,11 +83,11 @@ export class Vessel {
       } else {
         U.uFinA.value.setHex(g.color); U.uFinB.value.setHex(g.color2 ?? g.color);
         const sh = REGIONS[r].shader, P = U.uFinP.value;
-        if (sh === 'glaze') P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale)
+        if (sh === 'glaze') { P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); U.uFinPart.value = r === 'mask' ? 2 : r === 'trim' ? 1 : 0; } // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale; which part, for a pattern laid out on the body)
         else if (sh === 'hair') { const b = hairSpan(ch); P.set(g.kind === 'hair' ? g.p[0] : 0, b.h, g.kind === 'hair' ? g.p[2] : 0, b.y0); if (g.kind !== 'hair') U.uFinB.value.setHex(g.color); }
         else P.set(...(g.p || [0, 0, 0, 0]));
         m.color.setHex(0xffffff); m.roughness = g.rough; m.metalness = g.metal;
-        m.userData.rest = sh === 'glaze' && m.map ? { em: g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
+        m.userData.rest = sh === 'glaze' && m.map ? { em: ownLight(g.pattern) ? 0xffffff : g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 }; // (a pattern in colours of its own lights them itself: vfx/finish.js ownLight)
       }
       if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
       if (r === 'skin') U.uFinS.value = this.soul;
@@ -158,12 +161,16 @@ export class Vessel {
     }
   }
 
-  /** The soul colour (Soul Alchemy, `game.alchemy.colour`) as the Lachryma's own light: its hue, as strong as it is saturated, so the grey
-   *  soul they start with glows not at all. It slides to a new colour over about a second, so a press is seen to move it. */
+  /** The soul colour (Soul Alchemy, `game.alchemy.colour`) as the Lachryma's own light, drawn by the colour wheel's one function
+   *  (wheelColour's Oklab, SOUL-ALCHEMY.md 4.14 and 4.16): it carries the soul's chroma (its hue, as vivid as it is saturated) at one
+   *  lightness for every hue and one strength once off grey, so it never carries brightness (a yellow soul no brighter than a violet
+   *  one); the grey soul they start with glows not at all. After a true firing it is brighter for a few real seconds once the Courier is
+   *  seen again. It slides to a new colour over about a second, so a press is seen to move it. */
   soulGlow(dt) {
-    const c = this.game.alchemy?.colour;
-    const w = c ? 0.9 * THREE.MathUtils.smoothstep(c.s, 0.05, 0.65) : 0;
-    if (c) _c.setHSL((((c.h % 360) + 360) % 360) / 360, 0.85, 0.55); else _c.setRGB(0, 0, 0);
+    const c = this.game.alchemy?.colour, seen = !this.game.realm?.active;
+    if (seen && this.soulBoost > 0) this.soulBoost = Math.max(0, this.soulBoost - dt / SOUL.boost);
+    const w = c ? SOUL.strength * THREE.MathUtils.smoothstep(c.s, SOUL.off[0], SOUL.off[1]) * (1 + SOUL.bright * this.soulBoost) : 0;
+    if (c) { const [, a, b] = wheelOklab(c.h, c.s); oklabColour(SOUL.L, a * SOUL.chroma, b * SOUL.chroma, _c); } else _c.setRGB(0, 0, 0);
     const k = 1 - Math.exp(-dt * 3), S = this.soul;
     S.set(S.x + (_c.r - S.x) * k, S.y + (_c.g - S.y) * k, S.z + (_c.b - S.z) * k, S.w + (w - S.w) * k);
     if (S.w < 1e-3 && w === 0) S.w = 0;

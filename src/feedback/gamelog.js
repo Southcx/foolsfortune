@@ -192,11 +192,12 @@ export class GameLog {
 
   wake() { this.idleT = 0; this.root.classList.remove('idle'); }
 
-  setMini(v) {
+  /** Fold the log to its tab strip (or open it). `keep` false is a fold that is not the player's choice (the spirit press view's: vfx/alchemy/presslook.js), so their saved choice stays. */
+  setMini(v, keep = true) {
     this.mini = v;
     this.root.classList.toggle('mini', v);
     this.minEl.textContent = v ? '+' : '–';
-    try { localStorage.setItem('foolsfortune.log.mini', v ? '1' : '0'); } catch { /* storage unavailable */ }
+    if (keep) { try { localStorage.setItem('foolsfortune.log.mini', v ? '1' : '0'); } catch { /* storage unavailable */ } }
     if (!v) { this.minEl.classList.remove('new'); this.body.scrollTop = this.body.scrollHeight; this.wake(); }
   }
 

@@ -20,6 +20,7 @@ import { LachrymatoBottle } from '../vfx/bottle.js';
 import { Stain } from '../vfx/stains.js';
 import { coat } from '../vfx/coat.js';
 import { ShrineModel } from '../vfx/shrine.js';
+import { Hokora } from '../vfx/garden/hokora.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
 import { Pillar, Stalactite, slipMaterial, Clutch, dressBrood } from '../vfx/cavekit.js';
 import { bowlSand, bowlSandTick, PoolRing } from '../vfx/bowl.js';
@@ -38,6 +39,9 @@ import { Fossil } from '../vfx/garden/fossil.js';
 import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
+import { Ostracon, Stele } from '../vfx/ostracon.js';
+import { debugChestModel } from '../vfx/debugchest.js';
+import { PICTURES } from '../vfx/blackfigure.js';
 
 export function buildStage(id) {
   let obj = null;
@@ -141,6 +145,14 @@ export function buildStage(id) {
     obj = new THREE.Group(); const R = [0, 1, 2, 3].map((i) => { const r = new SolarRing({ radius: 1 }); r.group.position.set(-3.3 + i * 2.2, 1.2, 0); obj.add(r.group); return r; });
     R[0].set({ lit: true, next: true }); R[1].set({ lit: true }); R[2].set({ lit: false }); let pt = 0; obj.userData.tick = (t) => { if (t % 3 < pt % 3) R[3].pass(); R.forEach((r) => r.update(Math.max(0, t - pt))); pt = t; };
   }
+  else if (id === 'dunes:ostraca') { // (the sixteen words with pictures in two rows, one word with none (the meander), a stele behind with twelve of them as stand-in words; dug, buried and dug again)
+    obj = new THREE.Group(); const words = Object.keys(PICTURES), n = words.length, row = Math.ceil(n / 2);
+    const O = [...words, 'VOYD'].map((w, i) => { const o = new Ostracon({ word: w }); o.group.position.set(i < n ? -0.16 * (row - 1) + (i % row) * 0.32 : 0.16 * (row + 1.5), 0, i < n ? 0.3 + Math.floor(i / row) * 0.3 : 0.45); obj.add(o.group); return o; });
+    const S = new Stele({ words: words.slice(0, 12) }); S.group.position.set(0, 0, -1.0); obj.add(S.group);
+    let pt = 0; obj.userData.ostraca = O; obj.userData.stele = S;
+    obj.userData.tick = (t) => { const k = t % 12, b = k < 4 ? 0 : k < 6 ? (k - 4) / 2 : k < 10 ? 1 : 1 - (k - 10) / 2, dt = Math.max(0, t - pt); pt = t; for (const o of O) { o.set({ buried: b }); o.update(dt); } S.set({ buried: b }); S.update(dt); };
+  }
+  else if (id === 'debug:chest') { const C = debugChestModel(); obj = C.group; let pt = 0; obj.userData.tick = (t) => { if (t % 2 < pt % 2) C.bump(); C.update(Math.max(0, t - pt)); pt = t; }; } // (the debug chest's look: its lid hopping every 2 s, as each F tops it up)
   else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } U.tell(k < 1.5 ? k / 1.5 : 0); if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'brush:bottles') { obj = new THREE.Group(); const B = ['small', 'medium', 'large'].map((sz, i) => { const b = new LachrymatoBottle({ size: sz }); b.group.position.x = -0.3 + i * 0.3; b.set({ fill: [0.9, 0.55, 0.3][i], crack: i === 2 }); obj.add(b.group); return b; }); const acc = new THREE.Vector3(); let pt = 0; obj.userData.tick = (t) => { acc.set(Math.sin(t * 1.3) > 0.9 ? 9 : 0, 0, Math.cos(t * 0.9) > 0.95 ? 7 : 0); for (const b of B) b.update(Math.max(0, t - pt), acc); pt = t; }; }
@@ -149,6 +161,7 @@ export function buildStage(id) {
   else if (id === 'workshop:strawman') { const S = new StrawmanModel(); obj = S.group; let last = 0, pt = 0; obj.userData.tick = (t) => { if (t - last > 2) { last = t; S.group.updateMatrixWorld(true); const p = S.body.localToWorld(new THREE.Vector3(0, -0.53, -0.4)); S.hit(p, new THREE.Vector3(Math.sin(t), 0, -1).normalize(), 1); } S.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'garden:regia') { const P = new SpiritPress(); P.set({ soul: { h: 40, s: 0.6 }, fire: 0.5, near: 2 }); obj = P.group; obj.userData.tick = (t) => { if (t % 6 < 0.05) P.set({ regia: 1 }); P.update(t); }; }
   else if (id === 'garden:shrine') { const S = new ShrineModel({ ground: 'stone_flags' }); obj = S.group; let pt = 0; obj.userData.tick = (t) => { const k = t % 12; S.set({ found: k > 2, resting: k > 4 && k < 7, open: k > 7.5 }); S.update(Math.max(0, t - pt)); pt = t; }; }
+  else if (id === 'garden:hokora') { obj = new Hokora().group; }
   else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
   else if (id === 'folk:purser') obj = buildPurser().group;
   else if (id === 'folk:board') obj = buildBountyBoard().group;

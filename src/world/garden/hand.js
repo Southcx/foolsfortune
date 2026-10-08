@@ -8,9 +8,9 @@
 // material with the left button, none with the right: world/garden/clay.js). R turns the choice: PAINT's ground, WATER's feeling. GRAB
 // also lifts a placed feature and sets it in the free plot it is let go over (its formation worked out again there, free). Shift and the
 // wheel size the stroke (1 to 12 m); Ctrl+Z undoes the last of ten; Ctrl+Backspace twice within three real seconds puts the planetoid
-// under the hand back to its rest shape (its clay, its paint and its water: free). The model is the god hand's own (godhand/godhand.js: its fingers posed there); the strokes are the
-// clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's pose says the rest (open over the
-// ground, pinched to sculpt, curled to grab).
+// under the hand back to its rest shape (its clay, its paint and its water: free). The model is the god hand's own (godhand/godhand.js; its clips: godhand/godhandclips.js); the strokes are the
+// clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's clip says the rest (a snap for the
+// art, pulling, patting, shooing, pointing to carve and place, a pat for a pet, a flick, a backhand for an undo, the grip to hold).
 //
 // Prior art: Black & White's hand (the cursor as your whole presence: pick up, throw, pat and slap), Populous's raise and lower,
 // From Dust's carved channels, and Animal Crossing's placing on a grid of plots.
@@ -242,16 +242,14 @@ export class GardenHand {
     }, { title: 'PLACE', sub: 'click a feeling beside a feature · F closes' });
   }
 
-  // ---- the model: over what it holds, or the ground under the cursor, its fingers by the art
+  // ---- the model: over what it holds, or the ground under the cursor; its clip by the art
   pose(dt) {
     const R = this.R, god = R.god, hand = god?.hand; if (!hand?.root) return;
     const at = this.held ? this.at : this.point, n = R.site.planets.reduce((b, P) => (at.distanceTo(P.c) - P.r < at.distanceTo(b.c) - b.r ? P : b)).c;
-    const up = _w.copy(at).sub(n).normalize(), fwd = R.camera.fwd.clone().projectOnPlane(up).normalize();
+    const up = _w.copy(at).sub(n).normalize(), fwd = (R.press?.viewing ? R.press.frame.N : R.camera.fwd).clone().projectOnPlane(up).normalize(); // (at the press, the view's north: SOUL-ALCHEMY.md 4.3)
     const fingers = fwd.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(up, -Math.sin(0.5)).normalize(), back = up.clone().addScaledVector(fingers, -up.dot(fingers)).normalize();
     _m.makeBasis(new THREE.Vector3().crossVectors(fingers, back).normalize(), fingers, back); hand.root.quaternion.setFromRotationMatrix(_m);
-    hand.root.position.copy(at).addScaledVector(up, this.held ? 0.6 : this.stroke ? 0.5 : HAND.lift).addScaledVector(fingers, -hand.tip.length());
-    const want = this.held ? 1 : this.stroke ? 0.65 : this.art === 'grab' ? 0.15 : 0.4;
-    hand.grab += (want - hand.grab) * Math.min(1, dt * 12); hand.point = this.art === 'place' ? 1 : 0;
-    god.t = (god.t || 0) + dt; god.poseHand?.(dt);
+    hand.root.position.copy(at).addScaledVector(up, this.held ? 0.6 : this.stroke ? 0.5 : R.press?.viewing ? R.press.look.handLift : HAND.lift).addScaledVector(fingers, -hand.tip.length()); // (at the press, raised over the bath: vfx/alchemy/presslook.js)
+    god.handClips?.update(dt); // (its clips by the art, the stroke and what is held: godhand/godhandclips.js)
   }
 }

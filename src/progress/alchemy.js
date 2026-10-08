@@ -54,9 +54,10 @@ export const SEASONING = [
   { event: 'mind.settle',     attribute: 'willpower',     points: 2, when: () => true },                         // (brimming, and settling back)
   { event: 'creature.status', attribute: 'focus',         points: 1, when: (e) => e.by === 'courier' },          // (a status built on a creature)
   { event: 'rhythm.score',    attribute: 'focus',         points: 3, when: (e) => (e.combo || e.maxCombo || 0) >= 25 },
+  { event: 'angle.catch',     attribute: 'focus',         points: 2, when: () => true },                         // (patience: a snapped line loses the fish, so a catch is a line held: Petra)
   { event: 'npc.talk',        attribute: 'charisma',      points: 1, when: () => true },
   { event: 'shop.sell',       attribute: 'charisma',      points: 1, when: (e) => e.by !== 'environment' },
-  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.won !== false },
+  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.step === 'deal' },          // (a haggle struck, not each step: Petra, v114)
   { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
   { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
   { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned?.length },            // (a Throwing Room drill finished, untuned: `tuned` is the list of knobs away from default)
@@ -89,7 +90,7 @@ export const FEELING_HUE = Object.fromEntries(Object.entries(COLOR).map(([k, hex
   return [k, Math.round(((h * 60) + 360) % 360)];
 }));
 
-const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing)
+const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false, stars: {} }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing; stars: each attribute's true firings, ten at most)
 const GAME_HOUR = DAY_MS / 24, wrapH = (h) => ((h % 360) + 360) % 360;
 export class SoulAlchemy {
   constructor(game) {
@@ -102,6 +103,10 @@ export class SoulAlchemy {
   get colour() { return { ...this.s.colour }; }
   rank(id) { return this.s.ranks[id] || 0; }
   seasoning(id) { return this.s.season[id] || 0; }
+  /** A tile's yohen stars: its true firings, kept, ten at most (SOUL-ALCHEMY.md 3.3, 4.13). */
+  stars(id) { return this.s.stars?.[id] || 0; }
+  /** Pressed since the last firing: the lever's ball is up (one firing a press). */
+  get cocked() { return !!this.s.cocked; }
   widen(key) { return widenAtRank(key, KNOB[key] ? this.rank(KNOB[key].attr) : 0); }
   /** The press's formation where it stands (the Athanor's features and ground: world/garden/press.js), 1 when there is no press. */
   formation() { return this.game.realm?.press?.formation?.() ?? 1; }
@@ -144,7 +149,7 @@ export class SoulAlchemy {
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);
     this.s.colour = { h: +r.colour.h.toFixed(1), s: +r.colour.s.toFixed(3) }; this.s.cocked = true; // (pressing cocks the lever: one firing a press, ruling 5)
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.press', { count: mats.length, hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
+    this.game.events.emit('alchemy.press', { count: mats.length, kinds: mats.map((x) => x.m.kind), hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
     return { colour: this.colour, trail: r.trail };
   }
 
@@ -162,7 +167,7 @@ export class SoulAlchemy {
   /** The igniter: raise the attribute the colour is inside, for its aimed fuel over the press's formation. Its seasoning is spent, and
    *  the lever is let down until the next press. Refused, with `code` (outside | full | poor | spent) and why. */
   fire() {
-    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The press is spent: press something into the bath first.' };
+    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The bath is empty. Press a material first.' };
     const N = this.nearest();
     if (!N) return { ok: false, code: 'outside', why: 'The press does not fire: the colour is outside every swatch.' };
     const { id, d, r: rad } = N, r = this.rank(id);
@@ -171,6 +176,7 @@ export class SoulAlchemy {
     if (!this.game.cubes?.spend(fuel, 'alchemy')) return { ok: false, code: 'poor', why: `The press does not fire: it needs ${fuel} cubes.` };
     const isT = isTrue(d, r);
     this.s.ranks[id] = r + 1; this.s.season[id] = 0; this.s.cocked = false;
+    if (isT) (this.s.stars ||= {})[id] = Math.min(A.ranks, (this.s.stars[id] || 0) + 1); // (kept as a yohen star on the tile)
     this.game.save?.dirty('alchemy');
     this.game.events.emit('alchemy.fire', { attribute: id, rank: r + 1, fuel, true: isT, d: +(d / rad).toFixed(2), by: 'courier' });
     return { ok: true, attribute: id, rank: r + 1, true: isT, fuel };

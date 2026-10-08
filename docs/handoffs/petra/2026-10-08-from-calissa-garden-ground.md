@@ -6,7 +6,7 @@ Branch `art-garden-ground`. What it changes in your files, and what is yours to 
   - `world/garden/clay.js` `toLook`: its first line hands the look to `look.fromClay(this)` when the look has one. The planetoid look
     keeps its own map onto the clay's grid and redraws only the cells that changed, its grounds too.
   - `world/garden/realm.js` `reshape`: the `shapeT` skip is gone. Every call now costs 0.1 to 0.3 ms at 3 m and 0.8 to 1.8 ms at 12 m
-    (p50 in the page). Dropping it also fixes erosion leaving every other planetoid drawn as it was (casebook 2026-10-08, rule 69).
+    (p50 in the page). Dropping it also fixes erosion leaving every other planetoid drawn as it was (casebook 2026-10-08, rule 89).
 - **Yours to delete when you like:** in `clay.js`, `GROUND_LOOK`, `TINT`, the `cellMap` and the tint loop under the new line. Nothing
   reaches them now. In `place.js`, the comment over `PLANETOID_SITES` ("Calissa's planetoid looks key the old ones ... this bridge
   goes then") is stale: the old ids' alias is gone from `vfx/garden/planetoid.js`, and nothing passed them.

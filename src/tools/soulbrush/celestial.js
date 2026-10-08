@@ -82,8 +82,11 @@ export class Celestial {
       this.restT = -1;
     } else if (cv.drawing) { cv.lift(); this.restT = 0; }
     // the hand rests: read what it drew
-    if (this.restT >= 0) { this.restT += raw; if (this.restT >= REST) { this.restT = -1; this.read(); } }
+    if (this.restT >= 0) { this.restT += raw; if (this.restT >= this.rest()) { this.restT = -1; this.read(); } }
   }
+
+  /** How long the hand rests before the drawing is read: Wet Ink (a knack, progress/knacks.js) waits 0.7 real seconds. */
+  rest() { return this.game.knacks?.on('wetInk') ? 0.7 : REST; }
 
   /** Read the pending drawing: plan it, pay for it, and let it take (or run). */
   read() {

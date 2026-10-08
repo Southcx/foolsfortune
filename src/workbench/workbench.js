@@ -164,11 +164,13 @@ export class Workbench {
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
-    out.push({ id: 'garden:press', grp: 'the Spirit Garden', label: 'the spirit press' }, { id: 'garden:shrine', grp: 'the Spirit Garden', label: 'a Shrine (found, rested at, its door into the Spirit Garden opening; on a loop)' });
+    out.push({ id: 'garden:press', grp: 'the Spirit Garden', label: 'the spirit press' }, { id: 'garden:shrine', grp: 'the Spirit Garden', label: 'a Shrine (found, rested at, its door into the Spirit Garden opening; on a loop)' }, { id: 'garden:hokora', grp: 'the Spirit Garden', label: 'the plate shrine\'s hokora (the Athanor\'s east shoulder)' });
     out.push({ id: 'slice:cave', grp: 'the slice', label: "the Great Dunemaw's cave kit (a pillar cracking, stone, brittle and warped stalactites, the slip, a clutch)" });
     out.push({ id: 'slice:finds', grp: 'the slice', label: "the Great Dunemaw's finds (the lamp, the ewer, the mask, the coins; the lamp warped)" });
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
+    out.push({ id: 'debug:chest', grp: 'debug', label: 'a debug chest (the missing-texture crate; its lid hops at each top-up)' });
+    out.push({ id: 'dunes:ostraca', grp: 'the Dunes', label: 'the ostraca (the sixteen words and their pictures, one word with none) and a stele (twelve of them as stand-in words): dug, buried, dug; on a loop' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
     out.push({ id: 'slice:foe', grp: 'the slice', label: "the Great Slip Jelly's windups (each cast in turn, read from the body; then the Sherds and the Overflow)" });
     out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });

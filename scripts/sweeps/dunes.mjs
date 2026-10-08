@@ -395,14 +395,14 @@ await run('geyser', async () => {
   await goFoot('dunes');
   // the one nearest its eruption (a person waits by the one that rumbles): its index, where it stands, the seconds until its column
   const G0 = await S.ev(() => { const L = __game.game.geysers?.list || []; if (!L.length) return null;
-    const until = (G) => G.look.state === 'rumble' ? G.look.left : G.look.state === 'dormant' ? G.look.left + 2 : G.look.state === 'erupt' ? 0 : G.look.left + 40;
+    const until = (G) => G.look.state === 'rumble' ? G.look.left : G.look.state === 'dormant' ? G.look.left + 2 : G.look.state === 'erupt' ? (G.look.launching ? 0 : 60) : G.look.left + 40; // (an eruption already spent is a cycle away: the full run picked one mid-erupt and waited 6 s, Petra v114)
     const i = L.map((G, i) => [i, until(G)]).sort((a, b) => a[1] - b[1])[0][0]; return { i, pos: L[i].pos.toArray(), until: +until(L[i]).toFixed(1), state: L[i].look.state }; });
   S.check('geyser: the slip geysers stand', !!G0, G0);
   if (!G0) return;
   await ds(`standOn(${G0.pos[0] + 1}, ${G0.pos[2]}, 0)`);
   const m = await ds('mark()');
   let launched = null;
-  for (let i = 0; i < Math.ceil((G0.until + 6) * 6) && !launched; i++) {
+  for (let i = 0; i < Math.ceil((G0.until + 30) * 6) && !launched; i++) { // (a generous wait: the loop ends at the launch)
     await S.ticks(10);
     const st = await S.ev((k) => { const g = __game.game, Gy = g.geysers.list[k]; return { state: Gy.look.state, launching: !!Gy.look.launching, y: g.player.pos.y, vy: g.player.vel.y }; }, G0.i);
     if (st.launching) { await S.ticks(20); const y = await S.ev(() => __game.game.player.pos.y); launched = { ...st, rise: +(y - G0.pos[1]).toFixed(1) }; }

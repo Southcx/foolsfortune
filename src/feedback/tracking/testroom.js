@@ -16,7 +16,7 @@ export function testroomRules({ on, L, log }) {
     const s = score(e.id, e.run), medal = medalOf(e.id, s), tuned = (e.tuned || []).length > 0;
     const said = `${D.name}: ${s} ${D.unit}${medal ? `, ${medal}` : ''}`;
     if (tuned) { log.say('info', `${said} (tuned: not recorded).`); return; }
-    L.inc(KEYS.runs(e.id));
+    L.inc(KEYS.runs(e.id)); L.inc('drill.hits', e.run?.hits || 0); // (Steady Hand's count: knacks.js)
     if (D.better === 'lo') L.lo(KEYS.best(e.id), s); else L.hi(KEYS.best(e.id), s);
     if (medal) L.inc(KEYS.medal(e.id, medal));
     log.say('gain', `${said}.`);

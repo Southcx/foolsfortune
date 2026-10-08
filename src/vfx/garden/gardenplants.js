@@ -17,7 +17,7 @@
 //   THE MOTION   a slow sway along the planetoid's tangent, more at the tip than the foot (the vertex shader, its phase by hash)
 //   WHEN         placed again when the green changes, when the clay under a planetoid with green on it changes (a stroke, erosion:
 //                never a tuft left floating), or when the eye has moved PLANT_LOOK.move; at most every PLANT_LOOK.every real seconds, the
-//                debt kept until it is paid (CASEBOOK rule 69)
+//                debt kept until it is paid (CASEBOOK rule 89)
 // One material for every kind (one program; plantsParked for the warm-up).
 //
 // Prior art: GPU-instanced grass and foliage scattered by a density map (Ghost of Tsushima's grass, Breath of the Wild's, Horizon's

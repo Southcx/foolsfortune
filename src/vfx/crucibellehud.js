@@ -23,7 +23,7 @@
 // Read, not driven: the bell's own clock and judgement (`crucibelle.grid()`, `now()`, `fever`), its events (`crucibelle.note`,
 // `song.play`, `crucibelle.fever`) and its songs (tools/crucibelle/songs.js). Settings: `visual.pendulumSize`, `visual.compassContrast`
 // (the lines fainter or brighter, and a dark keyline under them that grows with it: light lines alone vanish on a noon sky). The tape
-// opens a gap below its line for the swing, and round the bell's mark (wirecompass.js `hole`). The Half Time knack (`game.knacks.halfTime`): the ends land on every other
+// opens a gap below its line for the swing, and round the bell's mark (wirecompass.js `hole`). The Half Time knack (`game.knacks.on('halfTime')`, progress/knacks.js): the ends land on every other
 // eighth, the quarters, never a slower tempo, and a third notch in the middle marks the off-eighth the bell still counts.
 //
 // Prior art, as on a museum label:
@@ -44,11 +44,11 @@
 import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { SONGS, DEGREE_COLOR, match } from '../tools/crucibelle/songs.js';
+import { WINDOW as BELL_WINDOW } from '../tools/crucibelle/crucibelle.js';
 
 const R = 10;              // (the tape's radius: wirecompass.js)
 const LINES = 480;         // (the HUD is drawn in pixels of the sixth generation's 480 lines, whatever the resolution: render/present.js)
-// The bell's on-beat window, seconds either side of an eighth (WINDOW in tools/crucibelle/crucibelle.js, mirrored until it is exported).
-const BELL_WINDOW = 0.085;
+// The bell's on-beat window, seconds either side of an eighth, is the bell's own (WINDOW, tools/crucibelle/crucibelle.js), so the notch never lies.
 const AMP = 0.62;          // the swing's half-arc, radians (the fob's is 0.55)
 const LEN = 64;            // the pendulum's length, pixels
 const NEUME = 6.5;         // a neume's half-size, pixels: 13 across, 17 with the octave's line
@@ -147,7 +147,7 @@ export class CrucibelleHud {
 
   /** The swing at time `t` on the bell's grid `G`: the angle and everything the eye can read off it. */
   swing(t, G) {
-    const e = G.spb / 2, ph = (t - G.t0) / e, half = !!this.game.knacks?.halfTime;
+    const e = G.spb / 2, ph = (t - G.t0) / e, half = !!this.game.knacks?.on?.('halfTime');
     const sw = half ? ph / 2 : ph, th = AMP * Math.cos(Math.PI * sw);
     const wE = Math.min(BELL_WINDOW / e, half ? 1 : 0.5);
     const notch = AMP * Math.cos(Math.PI * Math.min(half ? wE / 2 : wE, 0.5));
