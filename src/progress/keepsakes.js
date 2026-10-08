@@ -8,7 +8,7 @@
 // memorials, and the white-ground lekythoi of Athens.
 //
 //   game.keepsakes = new Keepsakes(game)   .pots -> [{ spirit, kind, colour, at }]   (made on spirit.release; placed by the world)
-// events: keepsake.pot { spirit, kind, pot }, with `by`
+// events: keepsake.pot { spirit, kind, feeling, pot }, with `by` (feeling from spirit.release's, which creatures/bound.js is asked to carry)
 // ---------------------------------------------------------------------------------------
 import * as calendar from '../core/calendar.js';
 
@@ -23,9 +23,9 @@ export class Keepsakes {
   get pots() { return this.s.pots; }
   /** A pot fired for a spirit let go: its name and kind, and the colour it had taken (its body's, when the raising keeps one). */
   make(e) {
-    const pot = { spirit: e.spirit || null, kind: e.kind || null, colour: e.colour || null, at: calendar.now() };
+    const pot = { spirit: e.spirit || null, kind: e.kind || null, feeling: e.feeling || null, colour: e.colour || null, at: calendar.now() };
     this.s.pots.push(pot); this.game.save?.dirty('keepsakes');
-    this.game.events?.emit('keepsake.pot', { spirit: pot.spirit, kind: pot.kind, pot: this.s.pots.length - 1, by: 'courier' });
+    this.game.events?.emit('keepsake.pot', { spirit: pot.spirit, kind: pot.kind, feeling: pot.feeling, pot: this.s.pots.length - 1, by: 'courier' }); // (feeling: its song's mode, Wanda's; from spirit.release's `feeling`)
     return pot;
   }
 }

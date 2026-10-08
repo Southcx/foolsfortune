@@ -34,3 +34,7 @@
 5. **The Codex's Grimoire of Echoes page:** the graft pairs found (`spore.graft.made.*`), the strains held, the branches hung.
 
 The looks are Calissa's (the model BIG) and the words Espada's.
+
+**One small ask for `creatures/bound.js` (yours):** add `feeling: e.sp?.feeling` to `spirit.release`'s payload. A keepsake pot passes it on
+in `keepsake.pot { feeling }`, so the pot's song sings in its spirit's real mode (Wanda's ask: `audio/mycelium.js`). Until then it is
+null, and Wanda draws a mode from the kind.
