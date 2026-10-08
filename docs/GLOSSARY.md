@@ -74,6 +74,18 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **Old Nobody** (the rogue Leviathan, an Egregore: rare, a deck; **driven off** or **felled**; then Letty's "WANTED: NOBODY"). The
   names are Espada's (`docs/LORE.md`, "The crossing's cast"). *Not:* an
   encounter (the Spirit Garden's: an achievement group mastered).
+- **a glint's spark** (`vfx/shoal.js`): how a glint is drawn far off, two triangles along its heading, never under 2 px; near, it is
+  a fish; between, the fish shrinks into its spark. In the frenzy a striking glint's spark is drawn behind it as a **streak**.
+  *Not:* the Vessoul's soulspark.
+- **the shoal's silhouette** (`silhouetteTargets`, `vfx/shoalsilhouette.js`; the owner's plan, RAIL-OVERHAUL.md section 6): at the shoal
+  leg's peak the school drawn up into one giant body, a Leviathan's profile (the class's great body, not Old Nobody), lit from within
+  (`glow`); its **eye** (`SilhouetteEye`), a labradorite lens that opens, burns while it is locked and cracks as it is hurt, is the one
+  place that breaks it. The player's words for both are Espada's (placeholders). *Not:* Old Nobody's shadow on the sea.
+- **the ambient geometry** (`RailGeometry`, `vfx/railgeometry.js`; Calissa's): the Mind's furniture the rail runs through, drawn in
+  labradorite and wire: **rail rings** (`G.ring`: tori to thread, lit in the storm's gold when threaded), **folding lattices**
+  (`G.lattice`: Miura-ori sheets that fold and open as the rail passes), **monoliths** (`G.monolith`: black labradorite slabs, 1 : 4 : 9,
+  rising out of the crude) and **the folded sea** (`G.ceiling`: the crude's surface turned up over the horizon like a page, lying
+  overhead). *Not:* the Solar Skiffing rings (`SolarRing`), the macro lattice (reprogramming's), a ceiling of a room.
 - **leg** (`LEG`, `legsOf`, `progress/econ/emocean.js`): one set piece of a long crossing; a crossing has one to three (the owner,
   2026-10-07), a **breather** between two whose flotsam **mends** the ship.
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
@@ -1057,10 +1069,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint |
+| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass); Old Nobody's (milky, blind: `vfx/leviathan.js`); the shoal's silhouette's (the lens shot to break it: `SilhouetteEye`) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint; "Old Nobody's eye"; "the silhouette's eye" |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`); the colour wheel (Soul Alchemy's: hue the bearing, saturation the distance out; in play it is the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
 | sigil | the Soul Brush's: strokes drawn in Celestial mode and read (Spellscription); the Solar Skiff's: the ring of marks laid on the sand the boat rises out of (the model's `sigil` bone) | "a sigil" is the brush's; "the skiff's sigil" in full |
 | dome | the sky's (`vfx/sky.js`, where the night alive is drawn); the stern of the Solar Skiff's hull (the model's own word) | "the sky's dome", "the skiff's dome" |
+| lattice | reprogramming's lattice of Functions (a macro's); the ambient geometry's folding lattice (`G.lattice`, the rail's) | "the macro lattice"; "a folding lattice" |
+| ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`, the ambient geometry's); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots round the Dantian, `ORBIT`) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring" |
 
 ## Retired words
 

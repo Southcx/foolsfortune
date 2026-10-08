@@ -277,8 +277,76 @@ the rules before building in the same area; a rule a machine can check goes into
 101. **A mark that says "this, now" is asked whether it is still true, every frame.** A telegraph closes on a part that can act and on
     a bar that will fire; the part downed, the fight ended or the volley that will not come takes the mark with it (`alive`), or the
     player learns to ignore the one mark they must not.
+102. **A warm-up puts back what it moved.** Whatever is moved, scaled or re-parented to be compiled is put back where it is hidden
+    again; never trust each owner to reposition its look every frame (a look drawn in the world's own frame never does).
+103. **A quad built in screen space keeps its winding.** Its across axis is the along axis turned clockwise on the screen ((x, y) to
+    (y, -x)); turned the other way the quad is mirrored, faces away and is culled on a one-sided material.
+104. **A warp's door names who is not let in.** The storm bends the world, never the danger: whatever is shot at, hurt by or locked on
+    (an eye, a shot, a hurtbox) is made outside the warp's family and is handed only to its own hook (`warpWith`'s `keepTrue`).
+105. **A colour pinned to the world is for things that stand.** Anything the rail carries through the world (the school, the geometry
+    placed in the rail's frame) takes its stone's phase from itself (its local position at its size, plus its own seed), or the colours
+    cycle at the rail's speed.
+106. **A mark sized from a projection is clamped, and a flag that draws a mark is eased before it reaches the look.** A streak as long as
+    five fish, however close the camera, and a strike's 0 / 1 flag, are a flash on the screen in the one frame a group turns on. And a
+    rate is never driven by an eased number: the phase swings by the clock times the change.
 
 ## Cases
+
+### 2026-10-08 · The silhouette's eye, which is shot at, was handed to the storm to bend (Calissa, reviewing the swarm)
+- **Seen (read, then run in the workbench with a recording hook):** `warpWith(fn)` gave `fn` every material the Mind's geometry made, and
+  the silhouette's eye (the lens a player locks on, its ring, its shards) is made of them. The storm's droop alone at 50 m ahead and full
+  strength (`STORM.bend` 0.1) is 2.7 m, nearly the eye's own radius (3 m): drawn off the outline of glints it sits in and off where a
+  shot lands, the one thing the order says the storm never does.
+- **Cause:** one `track()` for the whole family; nothing named what is not let in.
+- **Fix:** `mindGeoMaterial(kind, { warped: false })` for the eye's three (`vfx/shoalsilhouette.js`); `warpWith(fn, { keepTrue })` hands
+  those to `keepTrue` instead (the storm's `keepTrue` and `deepMaterial`: the veil leaves it, and no new program). Recording hook: 3 eye
+  materials made, 0 given to the warp, 3 to `keepTrue`.
+- **Rule:** 104.
+
+### 2026-10-08 · The stone's colour on the school and the eye would have cycled a few times a second (Calissa, reviewing the swarm)
+- **Seen (read, then computed from the rail's own numbers):** the glints' and the geometry's colour (`labPhase`) took the fragment's world
+  position. The rail carries the school through the world at 26 m/s along +z, and the phase moves 0.057 a metre along it: 1.5 a second,
+  three of the stone's bands a second across a glint's back, and about three turns of its whole palette a second on the eye's iris, the
+  one thing the player hunts. The workbench stages never showed it: nothing there moves through the world.
+- **Cause:** the Mind's family anchors to the world (right for the things that stand: the Dunemaw, the cave).
+- **Fix:** the glints take it from their own local position and a per-fish offset (`vfx/shoal.js`, `vL`); the geometry from its local
+  position at its instance's size and its seed (`vfx/railgeometry.js`, `vP`).
+- **Rule:** 105.
+
+### 2026-10-08 · A dashing glint near the camera threw a streak across the screen, and every strike's streak came on in one frame (Calissa, reviewing the swarm)
+- **Seen (a glint set 2.5 m from the rail's camera with dash 1, rendered after the fix; the old length computed at 137 px a metre; and the
+  call site read):** the streak was five of the glint's projected lengths behind it, 470 px long and 22 px wide in gold-white; and the
+  dash was the mood's 0 / 1, so a bar's group of strikes turned its streaks on in a single frame.
+  And, once the dash was eased, the tail's beat (its rate was 13 + 10 dash a second) swung its phase by the clock times the change at
+  every step of the ease, hundreds of radians: a tail fluttering at random through every ease (computed; a rate is never driven by a
+  number that moves).
+- **Cause:** a mark sized by a projected length with no limit, fed by a flag; and a rate driven by an eased number.
+- **Fix:** the beat keeps its rate and a dash beats harder and tighter; the length stops growing at 30 px (a streak at most 156 px,
+  7 px wide), both in `vfx/shoal.js`; the dash is a per-member number eased in and out beside the roll, 12 a real second
+  (`world/emocean/shoal.js`, five lines: CROSSING). The first try, an expression of the mood's clock and the roll, stepped by up to
+  0.49 on a strike that began behind the ship: measured, so replaced.
+- **Rule:** 106.
+
+### 2026-10-08 · The shoal's glints, its boil and the ship's wake were drawn 50 m under the crude (Calissa, wiring 600 glints)
+- **Seen (headless, a crossing under /crossing shoal, the set piece at bar 72):** no glint, no Conductor, no boil round the ship in
+  any view, and no wake behind it; the shoal's look reported 54 glints drawn, its group visible, every glint within 6 m of the ship
+  (world y -421.9 .. -419 against the sea at -420.7). The same with the look as it was before this change.
+- **Cause (measured):** main.js's warm-up moved every parked sea look to (0, -50, 0) to compile it and, after, only hid them again.
+  The looks that place their group every frame (the sea, the sloop, the brig, Old Nobody, the boarders) recovered; the two that draw
+  in the world's own frame from a group left where it was (`vfx/shoal.js` ShoalLook, `vfx/rail.js` ShipWake's two lines) kept the
+  -50 m, so every glint and the wake were drawn 50 m down, under the opaque crude.
+- **Fix:** the warm-up keeps each parked sea look's position and puts it back as it hides it (`src/main.js`, two lines). The glints,
+  the boil and both wake lines are on the sea (screenshots `rail_shoal_above`, `rail_shoal_chase`).
+- **Rule:** 102. (A check for the Emocean sweep is handed to Dovina: the shoal look's and the wake's world matrices at the origin's
+  height while a set piece runs.)
+
+### 2026-10-08 · The far glints' sparks and the frenzy's streaks were never drawn (found headless, before it shipped)
+- **Seen:** a striking glint stretched but left no streak behind it; past the fish's distance the school thinned to nothing.
+- **Cause:** the spark's quad was laid on the screen along the heading and across it, the across axis turned counter-clockwise: a
+  mirrored basis, so the quad's triangles faced away and the one-sided material culled them.
+- **Fix:** the across axis turned clockwise (`vfx/shoal.js`, the spark's `ac`); the streaks and the far sparks are drawn
+  (`wb_shoal_dash`).
+- **Rule:** 103.
 
 ### 2026-10-08 · An outlined shot's film changed colour whenever another shot ended, and a shot passing the eye filled the screen (found in review of the shots' look)
 - **Seen (headless, the shoal's crossing, the shots' buffer read before and after):** an outlined shot's film phase read 0.236 with

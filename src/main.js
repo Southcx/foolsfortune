@@ -899,6 +899,7 @@ async function main() {
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
+  const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
   // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
@@ -912,7 +913,7 @@ async function main() {
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain(); parkCracks();
   for (const o of brushLooks) o.visible = false;
-  for (const o of seaLooks) o.visible = false;
+  seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
