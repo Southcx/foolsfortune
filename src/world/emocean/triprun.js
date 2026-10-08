@@ -96,7 +96,7 @@ export class TripRun {
     this.layout.legs.forEach((L, k) => {
       const plan = legs[k].plan;
       if (!plan) { this.views.push({ from: L.at, to: L.end, view: 'chase' }); return; }
-      for (const ph of plan.phases) this.views.push({ from: L.at + ph.from, to: L.at + ph.to, view: ph.view || 'chase' });
+      for (const ph of plan.phases) this.views.push({ from: L.at + ph.from, to: L.at + ph.to, view: legs[k].type === 'maelstrom' && ph.id === 'peak' ? 'side' : ph.view || 'chase' }); // (the arena: Charybdis abeam, seen across the ship from outside the circle)
     });
     this.swings = [];
     for (const v of this.views) { if (v.view !== prev) this.swings.push({ bar: v.from, from: prev, to: v.view }); prev = v.view; }

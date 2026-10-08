@@ -5,19 +5,20 @@
 // the whirlpool's heart, the arena's centre, as Charybdis: it RISES out of the maelstrom (the Astral: above the crude) and DIVES back in
 // (the Umbral: under it) by turns, four bars each, `stage.foe = { id: 'charybdis', under }` all the while (Wanda's boss line dives with
 // it). It wears the waypoint's feeling, which the log names as it first rises (Espada's line: "Charybdis rises, in grief."). Its look
-// is a stand-in (the heavy's own) until Calissa's; its numbers are the schedule's until Dovina's.
+// is a stand-in (the heavy's own) until Calissa's. Its numbers and its hit rule are Dovina's (setpieces.js CHARYBDIS, charybdisHurt):
+// hurt only from the world it is in, twice as it crosses the surface; felled, two crystal shards; driven off, nothing more.
 //
 // Prior art: Homer's Charybdis (Odyssey XII: thrice a day it swallows the sea and spits it out), Rez's Area X and Star Fox 64's
 // all-range mode (the arena off the rail), Ikaruga's bosses that change their polarity on a beat.
 //
 //   const C = new Charybdis(stage)   C.begin(k, waypoint)   C.update(dt, bar)   C.end()   C.active
+//   events: charybdis.rise { feel }, charybdis.felled { feel, shards }, charybdis.driven { feel, hp }, all with `by`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { arenaCentre } from './railpath.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
+import { CHARYBDIS, charybdisHurt } from '../../progress/rail/setpieces.js'; // (its numbers and its hit rule: Dovina's)
 
-/** Four bars risen, four dived; how high it stands over the crude and how deep it lies; how fast it goes between (bars). */
-export const CHARYBDIS = { bars: 4, rise: 7, depth: -6, swing: 1 };
 const _c = new THREE.Vector3();
 
 export class Charybdis {
@@ -26,10 +27,13 @@ export class Charybdis {
   /** The maelstrom leg `k` begins: its arena found (stage.arenas), its heavy taken when it comes. */
   begin(k, w) {
     const S = this.st;
-    this.k = k; this.w = w; this.arena = (S.arenas || []).find((t) => t.k === k) || null; this.foe = null; this.said = false;
+    this.k = k; this.w = w; this.arena = (S.arenas || []).find((t) => t.k === k) || null; this.foe = null; this.said = false; this.done = false;
     this.active = !!this.arena; this.y = CHARYBDIS.depth;
     return this.active;
   }
+
+  /** Whether Charybdis is held in the arena now (the ship's aim turns abeam, the cursor free: stage.js). */
+  get holding() { return this.active && !!this.foe?.alive; }
 
   update(dt, bar) {
     if (!this.active) return;
@@ -49,14 +53,30 @@ export class Charybdis {
   take() {
     const W = this.st.waves, f = (W?.foes || []).find((x) => x.alive && x.role === 'heavy');
     if (!f) return;
-    this.foe = f; f.name = 'Charybdis'; f.solid = true;
+    this.foe = f; f.name = 'Charybdis'; f.solid = true; f.hp = f.maxHp = CHARYBDIS.hp; f.cls = Math.max(f.cls ?? 0, 4);
     f.tick = (dt, foe) => { arenaCentre(this.arena, _c); foe.local.set(_c.x, this.y, _c.z); return true; };
+    // hurt only from the world it is in, twice over as it crosses the surface (setpieces.js charybdisHurt); a shot from the other world
+    // glances off with the resist mark (the ward), once a fifth of a real second at most
+    f.armour = (foe) => {
+      const k = charybdisHurt(this.st.ship.form, this.y), now = performance.now();
+      if (k <= 0 && now - (this.wardAt ?? -1e9) > 200) { this.wardAt = now; this.game.glyphs?.pop?.('ward', foe.pos.clone(), { color: 0xffffff, size: 1.4, life: 0.6, float: 0.3, burst: true, ring: true }); }
+      return k;
+    };
+    const down = f.onDown; f.onDown = (foe) => { down?.(foe); this.felled(); };
+  }
+
+  /** Felled before the peak ends: its class's down pay (the waves'), and CHARYBDIS.pay.felled crystal shards. */
+  felled() {
+    if (this.done) return; this.done = true;
+    for (let i = 0; i < (CHARYBDIS.pay?.felled ?? 0); i++) this.game.pneuka?.add('mat.shard', 'loot');
+    this.game.events?.emit('charybdis.felled', { feel: this.w?.feel || null, shards: CHARYBDIS.pay?.felled ?? 0, by: 'courier' });
   }
 
   end() {
     if (!this.active) return;
     this.active = false;
-    if (this.foe) { this.foe.tick = null; this.foe = null; }
+    if (this.foe?.alive && !this.done) { this.done = true; this.game.events?.emit('charybdis.driven', { feel: this.w?.feel || null, hp: Math.round(this.foe.hp), by: 'creature' }); } // (alive at the release: it goes down, nothing more paid)
+    if (this.foe) { this.foe.tick = null; this.foe.armour = null; this.foe = null; }
     if (this.st.stage.foe?.id === 'charybdis') this.st.stage.foe = null;
   }
 }
