@@ -162,6 +162,8 @@ the rules before building in the same area; a rule a machine can check goes into
 
 63. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
     scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool).
+64. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
+    or with a line in the reader's reply saying why not.
 ## Cases
 
 ### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
@@ -834,3 +836,15 @@ the rules before building in the same area; a rule a machine can check goes into
   down every sherd, alive or dead. Measured headless (a temporary check in a copy of the Dunemaw sweep): four burst, jellies 12 before
   and 12 after the pops, `spent` empty; after leaving, bodies 840 to 816 and jellies 12 to 3, as before the cavern.
 - **Rule:** 63. (The check belongs in the Dunemaw sweep: Dovina's.)
+
+### 2026-10-08 · The Veritome would stop for good after 48 photographs (Calissa's survey; Espada's list)
+- **Seen:** the shutter still spent a roll of film (`mat.film`) though the owner retired film on 2026-10-06 and Old Grog no longer
+  sells it: the start kit's one roll and the camera's own gave 48 plates, then "You have no film. (Old Grog sells it on the pier.)",
+  a line no longer true, and no way past it.
+- **Cause:** the glossary and the shop changed; the code did not. The handoff that asked for it was deleted from `docs/handoffs/petra/`
+  without the work.
+- **Fix:** `film.js` is `memory.js` (`VeritomeMemory`, `MEMORY_PLATES`); `loadFilm`, `useShot`, the Book's `shots`, the item, its kit
+  entry, `film.load` and its rule are gone; the one refusal is a full memory. `npm run check` refuses the film's names (two lines left
+  in Wanda's and Calissa's files, baselined, theirs to take out). Measured headless: an empty memory takes a plate with no film in the
+  box; a full one refuses; one plate appraised and it takes again.
+- **Rule:** 64.

@@ -4,7 +4,7 @@
 // cover. It is how they ground themself against what is not real: it gathers information, it does not rewrite anything.
 //
 //  - THE LENS. RMB raises the open book before the eyes (first person; the wheel zooms) and LMB exposes a plate. A photograph is
-//    a PLATE on the film (tools/veritome/film.js, twenty-four to a roll), stored as it was taken; nothing is judged at the shutter.
+//    a PLATE in its memory (tools/veritome/memory.js, twenty-four at most), stored as it was taken; nothing is judged at the shutter.
 //    The plates are APPRAISED later, as many at once as you like, in the darkroom (the Codex's VERITOME shelf: tools/veritome/darkroom.js),
 //    where they become Compendium entries, bestiary facts (tools/veritome/bestiary.js) and cards (the Arcana's sittings, creature portraits).
 //    That is Wind Waker's Picto Box and Dark Cloud 2's camera: go and look, then sit down with what you saw.
@@ -14,7 +14,7 @@
 //    photographed candidly, which is how its habits are learned. (Fatal Frame's Camera Obscura, made gentler: it never kills.)
 //  - THE TRUTH. A photograph undoes whatever the Soul Brush wrote on what it shows (the photograph is of the thing as it is).
 //  - THE BOOK (tools/veritome/book.js), the Courier's bank. While it is held open, the Pneuka Box (P: pneuka/box.js) opens beside it, and
-//    things are stored in it as cards or taken out as things. The binder, the film, the bestiary and the Compendium are the Codex's
+//    things are stored in it as cards or taken out as things. The binder, the memory, the bestiary and the Compendium are the Codex's
 //    VERITOME shelf (B): the Codex is the Veritome's own pages.
 //  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: they read the ground off it.
 //  - THE BOOK BASH. LMB with the lens down: the book clapped shut and swung, a forehand and a backhand (the combo engine: tools/moveset.js).
@@ -24,7 +24,7 @@
 //    the book (hold.js handsFrame), so every clip moves it; the hands then close on its edges.
 //
 //   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash     P (while it is out)  the box and the bank
-//   B      the Codex: the binder (Take out, Condense), the film (appraise), the bestiary, the Compendium
+//   B      the Codex: the binder (Take out, Condense), the memory (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
 import * as THREE from 'three';
@@ -36,7 +36,7 @@ import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { VeritomeModel } from './model.js';
 import { Book } from './book.js';
-import { ROLL } from './film.js';
+import { MEMORY_PLATES } from './memory.js';
 import { scorePhoto, serial } from './photo.js';
 import { kindOf, appraise } from './darkroom.js';
 import { ENGAGED } from './subjects.js';
@@ -88,7 +88,7 @@ export class Veritome extends Tech {
       id: 'veritome', moves: MOVES, strings: STRINGS, tip: 0.3, reach: 0.3, pot: 30, k: 1.0, cause: 'bashed', events: { swing: 'veritome.swing', hit: 'veritome.hit' },
       segment: (a, b) => { this.model.group.getWorldPosition(a); b.set(0, 0.3, 0).applyMatrix4(this.model.group.matrixWorld); },
     });
-    const last = this.book.film.plates[this.book.film.plates.length - 1];
+    const last = this.book.memory.plates[this.book.memory.plates.length - 1];
     if (last?.thumb) this.model.setPhoto(last.thumb);
     // the Survey reads the ground off the open book (the same hold, in third person)
     g.events?.on('map.pulse', (e) => { if (e.god) return; this.read(1.5); if (this.readT > 0 || this.held) this.gesture('Tome_Survey'); });
@@ -103,7 +103,7 @@ export class Veritome extends Tech {
   get stance() { return this.toolOut && (this.lens || this.moves.busy); }
   get busy() { return this.moves.busy; }
   get slow() { return this.toolOut && this.lens ? 0.55 : 1; }
-  get film() { return this.book.film; }
+  get memory() { return this.book.memory; }
 
   /** Hold the book open for a moment and read from it (the Survey), if the hands are free. */
   read(dur = 1.5) {
@@ -177,7 +177,7 @@ export class Veritome extends Tech {
     this.model.setHeading(P.yaw);
     this.model.setOpen(Math.max(smooth(HOLD, 1, this.drawT), smooth(0.2, 0.9, this.readW)) * (1 - this.bashK)); // (shut to be swung)
     this.model.setGlow(this.lens ? 0.4 + 0.6 * this.charge : 0);
-    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, film: { left: Math.min(this.film.left, this.book.shots || (this.game.pneuka?.count('mat.film') ? ROLL : 0)), roll: ROLL } });
+    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, memory: { left: this.memory.left, of: MEMORY_PLATES } });
     const shells = document.getElementById('shells'); // (the Psygun's shells are not the book's)
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
     else if (shells && this.wasShellsHidden) shells.style.display = '';
@@ -241,9 +241,7 @@ export class Veritome extends Tech {
 
   shutter() {
     const g = this.game, P = this.P;
-    if (this.film.full) { sfx.fizzle?.(); g.log?.say('info', 'The roll is full. Appraise it in the Book (B).', { key: 'filmfull', throttle: 3 }); this.shotCool = 0.4; return; }
-    if (!this.book.loadFilm()) { sfx.fizzle?.(); g.log?.say('warn', 'You have no film. (Old Grog sells it on the pier.)', { key: 'nofilm', throttle: 3 }); this.shotCool = 0.4; return; }
-    this.book.useShot();
+    if (this.memory.full) { sfx.fizzle?.(); g.log?.say('info', 'The Veritome\'s memory is full. Appraise its plates in the Book (B).', { key: 'memoryfull', throttle: 3 }); this.shotCool = 0.4; return; } // (the one refusal: room, never film. The words are placeholders for Espada's)
     this.shotCool = 0.6;
     this.gesture('Tome_Shutter', { fadeOut: 0.12 });
     const report = scorePhoto(g, g.camera);
@@ -287,13 +285,13 @@ export class Veritome extends Tech {
     }
     this.vf.flash(thumb);
     const { held, unwritten, kind, ...plate } = q; // (plate.swatch rides along)
-    this.film.expose({ ...plate, thumb, held });
+    this.memory.expose({ ...plate, thumb, held });
     this.book.save();
     if (thumb) this.model.setPhoto(thumb);
-    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.film.left });
+    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left });
   }
   /** Appraise plates off the roll (all of them, or those ids): the darkroom's batch (the Codex calls it). */
-  appraise(ids = null) { return appraise(this.game, this.book, this.film.take(ids)); }
+  appraise(ids = null) { return appraise(this.game, this.book, this.memory.take(ids)); }
   posOf(s) { return s.ref?.pos?.isVector3 ? s.ref.pos : s.ref?.body?.translation ? new THREE.Vector3().copy(s.ref.body.translation()) : s.ref?.center?.isVector3 ? s.ref.center : null; }
 
   // ---------------------------------------------------------------- animation and the hands

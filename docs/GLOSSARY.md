@@ -248,7 +248,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; the **book bash** (LMB
   with the lens down: the book shut and swung, two blows on the combo engine); a **plate** is one photograph; its
-  **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
+  **memory** (`VeritomeMemory`, `MEMORY_PLATES`, `tools/veritome/memory.js`; a digital camera's: it holds 24 plates until they are
+  appraised, never a consumable, and a full one is the shutter's one refusal; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
   and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
@@ -823,6 +824,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | (gone; kept: the owner's own word) |
+| film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`; the owner, 2026-10-06) | `audio/cues.js` (Wanda's), `pneuka/thingmodels.js` (Calissa's) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |

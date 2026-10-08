@@ -337,17 +337,17 @@ export class Tracking {
     });
 
 
-    // ---- the Veritome: the film, the darkroom, the bestiary, the Book (src/tools/veritome/veritome.js, src/tools/veritome/)
+    // ---- the Veritome: the memory, the darkroom, the bestiary, the Book (src/tools/veritome/veritome.js, src/tools/veritome/)
     const CARD = (id) => VCARD[id]?.name || id;
     const subj = (k) => (k === 'nothing' ? null : k === 'sky' ? 'the open sky' : k === 'sun' ? 'the sun' : SUBJECTS[k]?.name ? an(SUBJECTS[k].name) : k);
     on('veritome.draw', () => { L.inc('veritome.draw'); log.say('info', 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
     on('veritome.lens', () => L.inc('veritome.lens'));
     on('photo.take', (e) => {
       L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
-      first('photo', 'Logged: your first photograph. It waits on the film to be appraised (B, the Veritome).');
+      first('photo', 'Logged: your first photograph. It waits in the memory of the Veritome to be appraised (B).');
       if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
-      if (e.left === 0) log.say('info', 'That was the last plate on the roll.', { key: 'filmlast', throttle: 5 });
+      if (e.left === 0) log.say('info', 'That was the last plate the memory holds.', { key: 'memorylast', throttle: 5 });
     });
     on('photo.discard', (e) => L.inc('photo.discard', e.n));
     on('photo.appraise', (e) => {
@@ -661,7 +661,6 @@ export class Tracking {
       log.say('loot', `${SHOPNAME(e.shop)} buys the ${ITEM(e.item)} for ${plural(e.price, 'cube')}.`, { tone: '#ffd98a', key: `sell.${e.shop}`, win: 1.5, fmt: (n) => `${SHOPNAME(e.shop)} buys ${n} things from you.` });
     });
     on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
-    on('film.load', (e) => { L.inc('film.rolls'); log.say('info', `You load a fresh roll of film.${e.left ? ` (${e.left} more in your box)` : ' It is your last.'}`, {}); });
     // the psygun's kind and its chambers (tools/psygun/kinds.js)
     on('psygun.change', (e) => { L.inc('psygun.change'); log.say('system', `You carry ${PSYGUNS[e.gun]?.name || 'another psygun'}: ${PSYGUNS[e.gun]?.chambers ?? '?'} chambers.`); });
     on('psygun.chamber', (e) => { L.inc('psygun.chamber'); const i = SHELL_TYPES.findIndex((t) => t.id === e.shell); log.say('info', `Chamber ${e.chamber + 1} takes ${SHELL_TYPES[i]?.no || ''} ${SHELL_TYPES[i]?.name || ''}.`, { key: 'chamber', win: 1.2, fmt: (n) => `${n} chambers loaded.` }); });
