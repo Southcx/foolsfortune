@@ -856,6 +856,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
+| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words

@@ -146,11 +146,15 @@ const COLOR = {
 const SURFACE = {
   glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);`,
 };
-const LIGHT = {
+// per kind: before the emissive map, and so before anything else adds light (the kintsugi's seams and the cracks' Lachryma,
+// courier/vessel/kintsugi.js, are added right after the map and must never be multiplied by a part's colour)
+const LIGHT_BEFORE = {
   glaze: `if (uFinOn > 0.5 && uFinP.z > 5.5) { // an ownLight pattern: its painted light in its own colours (the vessel gave it white); the firing's glow kept
       float fireK = clamp(1.0 - emissive.b / max(emissive.r, 1e-4), 0.0, 1.0); // (the kiln-orange the firing lerps from: vessel.js update)
-      totalEmissiveRadiance *= mix(finEmC, vec3(1.0), fireK); }
-    totalEmissiveRadiance += finPatE;
+      totalEmissiveRadiance *= mix(finEmC, vec3(1.0), fireK); }`,
+};
+const LIGHT = {
+  glaze: `totalEmissiveRadiance += finPatE;
     if (finPatS > 0.0) { float sl = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition)));
       if (uFinP.z < 1.5) totalEmissiveRadiance += finSpectrum(0.5 + finPatH * 0.12 + sl * 0.25) * finPatS * 0.3;  // yohen's film: cyan to blue to violet as it turns
       else totalEmissiveRadiance += uFinB * finPatS * 0.35 * sl * sl; }                                           // leaf gold, lit at a slant`,
@@ -198,7 +202,7 @@ export function dressFinish(m, kind) {
       .replace('#include <common>', `#include <common>\n${HEAD}`)
       .replace('#include <color_fragment>', `#include <color_fragment>\n${COLOR[kind] || ''}`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${SURFACE[kind] || ''}`)
-      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n${LIGHT[kind] || ''}`);
+      .replace('#include <emissivemap_fragment>', `${LIGHT_BEFORE[kind] || ''}\n#include <emissivemap_fragment>\n${LIGHT[kind] || ''}`);
   };
   m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fin-${kind}`;
   m.needsUpdate = true;

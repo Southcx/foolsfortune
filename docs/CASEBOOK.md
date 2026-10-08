@@ -176,8 +176,22 @@ the rules before building in the same area; a rule a machine can check goes into
     timing too (a windup's eta), or holding the button early answers what has not yet come.
 68. **A look in colours of its own owns its glow too.** The armour and the mask glow back their painting in the emissive, which every
     other glaze sets to its own colour; a kiln pattern that paints a part in several colours gives each its own glow, and anything
-    else that borrows the emissive (the firing's kiln-orange) is looked at on it before it ships.
+    else that borrows the emissive (the firing's kiln-orange) is looked at on it before it ships. What it does to the emissive is done
+    before the emissive map (`LIGHT_BEFORE`), never after: the light other code adds right behind the map (the cracks' Lachryma, the
+    mend's gold, `kintsugi.js`) is nobody's colour to multiply.
 ## Cases
+
+### 2026-10-08 · A cracked vessel in EYE CUP or JELLY-CROWN lost the violet thread in its cracks, and its mending gold read orange and green (Calissa, the reviewer of the Great Slip Jelly's glazes)
+- **Seen (headless, cracks 0.85 on every region, then mending, four looks side by side: terracotta, guan, EYE CUP, JELLY-CROWN):**
+  terracotta's and guan's cracks carry a bright violet thread of Lachryma and, mending, a cream-gold line; EYE CUP's threads were a
+  faint orange scratch (none at all over its black) and its gold orange, JELLY-CROWN's a dull green and its gold green.
+- **Cause (measured):** `kintsugi.js` adds the cracks' Lachryma and the mend's gold to `totalEmissiveRadiance` straight after
+  `#include <emissivemap_fragment>`, and the glaze's `ownLight` multiply (`totalEmissiveRadiance *= finEmC`, put there for the firing)
+  came after it in the same program, so it multiplied the violet by the clay's or the celadon's colour and the black's black.
+- **Fix:** the multiply moved ahead of the emissive map (`LIGHT_BEFORE` in `vfx/finish.js`): it scales only what the map then
+  multiplies (the painting's own glow and the firing's), commutatively, so the firing frames are unchanged and the cracks' light is
+  added whole behind it. Both now read as terracotta's and guan's.
+- **Rule:** 68 (amended).
 
 ### 2026-10-08 · Fired in EYE CUP or JELLY-CROWN, the vessel barely warmed where yohen glowed kiln-orange (Calissa, the Great Slip Jelly's glazes)
 - **Seen (headless, before it shipped):** the firing's frames (vessel.fireT 2.5, 1.3, 0.25, the workshop): yohen's body kiln-orange
