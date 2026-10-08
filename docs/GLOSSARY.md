@@ -651,6 +651,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
   (the beds grow materials); *not* the moss ground (the paint) or a herb terrace (a feature).
+- **the leaf canopy** (`LeafCanopy`, `canopyGeometry`, `src/vfx/garden/leafcanopy.js`; the owner, 2026-10-08): a tree's crown drawn from a
+  few spheres whose every vertex is a **leaf** (a quad turned to the eye, swaying, lit by its sphere's normal, a clump from the **leaf
+  atlas**: gingko, willow, round, mulberry, gill, cap), in labradorite edged and veined in gold. One program for every canopy; a canopy
+  may take a **tint** (Myggdrasil's tincture: its flash leaned to a colour). *Not:* the plants (the green on the clay), a bed.
+- **Myggdrasil's look** (`WorldMushroom`, `src/vfx/garden/myggdrasil.js`, Calissa's; grown by its planetoid's look, `Planetoid.growMushroom`,
+  and reading `game.myggdrasil` itself): the World Mushroom 48 m from its ground to its crown's top. **The stipe** (its trunk of pale
+  clay, fibred, a gold **veil ring** under the crown) on **the roots** (buttresses running out over the ground, half sunk); between two of
+  them **Myggdrasil's mouth** (`mouthWorld`: a cup of its clay lipped in gold, its floor a pool in the tincture's colour; where it is fed,
+  and where the world's F stands; *not* the Jar's mouth, nor a Well's); above it **its face** (two round eyes with a glint, a smile, a
+  blush: drawn, never carved). **The arms** carry the side caps (`CAP_SITES`: the Tree of Life's places, spiralling round the stipe); each
+  cap is a leaf canopy, a dome of **scales** over a disc of **gills**, shut a **bud**, opening from its middle out by its slot's **gate**
+  (`canopyOpen`; *not* the Dantian's gate), one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's
+  paths between the caps) run gold when a card is hung, a ghost before. **The mycelium's threads** run from the roots' ends over the
+  ground to each spore bed on its planetoid (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on threads
+  under the caps, glowing in the tincture's colour; **perches** (shelf brackets on the stipe) are where sporelings sit (`perchWorld`).
+- **a garden tree** (`GardenTree`, `plantGrove`, `src/vfx/garden/gardentree.js`): a trunk of the garden's plum-dark bark, a few branches
+  and a leaf canopy at their ends; the Mulberry Grove's eighteen spirit trees are a grove of them (two draws). *Not:* the cocoon tree (its
+  own model, wearing a leaf canopy), nor Myggdrasil.
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),

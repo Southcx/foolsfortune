@@ -326,7 +326,41 @@ the rules before building in the same area; a rule a machine can check goes into
     stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
     handed a number that is not one.
 
+120. **A camera-facing quad is never square to the eye, never at it, and never trusted to alpha to coverage on a software rasterizer.**
+     Lean billboards a little in depth (toward the surface they stand for), shrink them away near the eye, and ask the renderer's name
+     before turning on alpha to coverage: SwiftShader, which every headless check runs on, stripes the first and speckles the last, and a
+     look that cannot be verified headless cannot be judged.
+
 ## Cases
+
+### 2026-10-08 · Myggdrasil's fruit hung under caps that were still buds, and its mouth was drawn where the ground hid it (found in review)
+- **Seen:** feeding the tree a step (caps 3 to 4) hung its next fruit at once under the fourth cap while that cap was still a shut bud,
+  for as long as the cap took to open (2.6 real seconds a cap, so up to 23 for the last); fruit on a thread from a bud is a mark that
+  lies about what is open. Earlier in the same build the mouth, a throat sunk in the ground, was covered by the planetoid's skin, and the
+  world's F stood at `dirOf(78, 0)`, inside the stipe's foot, not where anything was drawn.
+- **Cause:** the fruit's hosts were read from the state's cap count, not from the caps as drawn (`cap.k`); the mouth and the F point
+  were each placed from a number, not from the other.
+- **Fix:** fruit is rebuilt when the number of caps that have begun to open changes, and hangs only under those; the mouth is a raised
+  cup on the ground and the world's F point is read from its drawn centre (`mouthAt`), so the two cannot disagree (`myggdrasil.js`,
+  `world/garden/mycelium.js`).
+- **Rule:** a thing shown for a state is hung on the thing as drawn, not on the count that will draw it; a place the Courier stands at
+  is read from the model that marks it.
+
+### 2026-10-08 · The new leaf canopy's leaves near the eye were striped in rows, and every leaf was speckled with what was behind it (found in the build)
+- **Seen:** in the workbench's grove and inside the cocoon tree's crown (headless, SwiftShader), leaves within about 3 m of the camera
+  rendered in horizontal rows with gaps (whole quads as ladders of dashes over the floor; long lines across the screen once the near
+  fade was off), and with alpha to coverage on, the inside of every leaf, where its alpha is exactly one, was dotted in rows with the sky
+  behind it.
+- **Cause, measured:** two things, each switched off on its own. The rows went with depth writes (gone with `depthWrite` off), with
+  back-face culling (gone with `DoubleSide`) and with a quad lying square to the eye (gone when its corners were tilted in depth by 1%):
+  SwiftShader rasterizes a triangle of one view depth near the eye in broken rows; the quads' corners agreed on their centre to the last
+  bit (a JS replay of the vertex shader: worst disagreement 0). The dots went only with `alphaToCoverage` off: SwiftShader drops samples
+  in an ordered pattern even at an alpha of one, where the spec intends full coverage.
+- **Fix:** each leaf leans a third of the way to its sphere's surface plus a 1% tilt (never one depth, and leaves now shingle instead of
+  cutting through each other in a line); leaves shrink away between 2.2 and 0.8 m of the eye; alpha to coverage is used only where the
+  renderer is not a software one (`coverageTrusted`, asked once of a throwaway context), else a plain cut at one half, kept stable by
+  mips that preserve each cell's coverage (`src/vfx/garden/leafcanopy.js`).
+- **Rule:** see rule 120.
 
 ### 2026-10-08 · The fairy rings were black hoops on the garden's pale ground (found in review, placing the strains in the real garden)
 - **Seen:** on the workbench's dark stage the sward round a spore bed (0x18241a to 0x2c3c2a) read as dark moss. Stood by hand on the

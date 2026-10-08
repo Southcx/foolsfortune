@@ -3,7 +3,8 @@
 // section 5: "set a spirit in the cocoon tree; set two together to merge", Jade Cocoon's way). It grows on the Mulberry Grove, the oldest
 // thing in the garden, and its silk is the Lachryma's: what is wrapped in it is remade.
 //
-//   THE TREE     a great twisted trunk, roots gripping the planetoid, a broad low canopy; silk hanging in its boughs
+//   THE TREE     a great twisted trunk of plum-dark bark, roots gripping the planetoid, a broad low canopy of mulberry leaves in
+//                labradorite and gold (vfx/garden/leafcanopy.js); silk hanging in its boughs
 //   A COCOON     a pod of pale silk hanging from a bough on a thread. cocoon(i, { feeling, k }): the silk winds round (k 0..1) and the
 //                pod glows from within with the spirit's feeling, breathing slowly
 //   A MERGING    merge(i, j, k): two pods drawn toward each other along their threads, twining, the light passing between them in a
@@ -19,11 +20,12 @@
 import * as THREE from 'three';
 import { COLOR } from '../weather.js';
 import { mergeStatic } from '../../render/merge.js';
+import { LeafCanopy } from './leafcanopy.js';
 
 export class CocoonTree {
   constructor({ slots = 3 } = {}) {
     const g = (this.group = new THREE.Group()); g.name = 'cocoon-tree'; this.t = 0;
-    const bark = new THREE.MeshStandardMaterial({ name: 'cocoon-bark', color: 0x7a5a4a, roughness: 0.95, flatShading: true });
+    const bark = new THREE.MeshStandardMaterial({ name: 'cocoon-bark', color: 0x4a3638, roughness: 0.95, flatShading: true }); // (the garden's plum-dark bark)
     // the trunk: a twisted column, flaring to its roots
     const tg = new THREE.CylinderGeometry(0.7, 1.4, 5, 10, 10); tg.translate(0, 2.5, 0); const P = tg.attributes.position;
     for (let i = 0; i < P.count; i++) { const y = P.getY(i), a = y * 0.5, x = P.getX(i), z = P.getZ(i), flare = 1 + 0.5 * Math.max(0, 1 - y) ** 2; P.setXYZ(i, (x * Math.cos(a) - z * Math.sin(a)) * flare * (1 + 0.08 * Math.sin(y * 3 + x)), y, (x * Math.sin(a) + z * Math.cos(a)) * flare); }
@@ -37,9 +39,11 @@ export class CocoonTree {
       const tip = new THREE.Vector3(Math.cos(a) * len * 0.92, 4.4 + len * 0.4, Math.sin(a) * len * 0.92);
       this.slots.push({ a, tip, pod: null, k: 0, feeling: null, mix: 0, open: -1 });
     }
-    // the canopy: soft round crowns, pale green and a blossom's pink
-    const leaf = [new THREE.MeshStandardMaterial({ color: 0x9fd4a8, roughness: 0.9 }), new THREE.MeshStandardMaterial({ color: 0xf2c8d8, roughness: 0.9 })];
-    for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, r = i % 3 === 0 ? 1.2 : 2.6, c = new THREE.Mesh(new THREE.SphereGeometry(1.5 + (i % 2) * 0.5, 8, 6), leaf[i % 4 === 0 ? 1 : 0]); c.scale.y = 0.6; c.position.set(Math.cos(a) * r, 6.6 + (i % 3) * 0.4, Math.sin(a) * r); g.add(c); }
+    // the canopy: a broad low crown of mulberry leaves (the silk moth's tree) in labradorite and gold, the owner's billboarded leaves
+    // (vfx/garden/leafcanopy.js): a sphere over the trunk and a ring of nine round it, low and wide as the old tree's crown is
+    const crown = [{ c: [0, 7.1, 0], r: 2.1 }];
+    for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, r = i % 3 === 0 ? 1.5 : 2.8; crown.push({ c: [Math.cos(a) * r, 6.3 + (i % 3) * 0.35, Math.sin(a) * r], r: 1.25 + (i % 2) * 0.35 }); }
+    this.canopy = new LeafCanopy({ spheres: crown, leaf: 'mulberry', seed: 7, density: 1.1 }); g.add(this.canopy.mesh);
     mergeStatic(g);
     // the threads and pods
     this.threadMat = new THREE.LineBasicMaterial({ color: 0xe8e2d8 });
@@ -77,6 +81,6 @@ export class CocoonTree {
     if (M && M.k >= 1) { const A = this.slots[M.i], B = this.slots[M.j]; A.pos.lerp(B.pos, 0.5).setY(Math.min(A.pos.y, B.pos.y) - 0.3); B.k = 0; B.pos.copy(B.rest); B.pod.visible = B.thread.visible = false; this.slots[M.i].mixing = false; B.mixing = false; this.merging = null; } // (one pod now: the merged child hangs where they met)
   }
 
-  dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); }
+  dispose() { this.group.parent?.remove(this.group); this.canopy.dispose(); this.group.traverse((o) => { o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }); } // (the canopy's material is everyone's: casebook rule 24)
 }
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();

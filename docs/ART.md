@@ -117,7 +117,10 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   reeds with a cattail; lit by up-turned normals like the ground they grow from, shrinking away past 18 m so the ground carries the
   green. **A cascade is a ribbon** (`gardencascade.js`): its feeling's colour scrolled down the fall, frayed white at the edges, spray
   at the foot. **The bought four** (`boughtplanetoids.js`) each keep one idea: the Moon's craters, the Koi Pond's teal crown, the Drill
-  Yard's ring of posts, the Bone Bed's ribs.
+  Yard's ring of posts, the Bone Bed's ribs. **The trees are grown, not built** (`leafcanopy.js`, `gardentree.js`; the owner's
+  billboarded leaves): a crown is a few spheres of leaf clumps lit as one soft round mass, never leaf green but labradorite (dark stone
+  walking ultramarine, blue, peacock and green as you go round it) edged and veined in gold, on plum-dark bark; the gold glows a little
+  more by night, low and steady. A crown may take a tint (Myggdrasil's tincture), which leans its flash and keeps its value.
 
 ## 6. The Courier's face
 
