@@ -40,7 +40,8 @@ import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
 import { SCORE, chain, chainDown, volleyBonus, downScore } from '../../progress/rail/score.js';
 import { STAGE } from '../../progress/econ/emocean.js';
 import { blendRig, rig, CRUISE } from '../../courier/ship/views.js';
-import { RailPath, figureFor, FIGURES } from './railpath.js';
+import { RailPath, figureFor, FIGURES, arenaLaps } from './railpath.js';
+import { Charybdis } from './charybdis.js';
 import { stream } from '../../core/rng.js';
 import { Ship } from '../../courier/ship/ship.js';
 import { SHIPS } from '../../progress/rail/ships.js';
@@ -80,6 +81,7 @@ export class Emocean {
     this.ship = new Ship(game, this.rail); this.shots = new Shots(game, this.rail); this.waves = new Waves(game, this.rail);
     this.mounts = new Mounts(game, this);
     this.trip = new TripRun(this); // (a drafted passage sailed as the rollercoaster: Dovina's legs, patterns and shot field; world/emocean/triprun.js)
+    this.charybdis = new Charybdis(this); // (the maelstrom's director: charybdis.js)
     this.looks = new CrossingLook(this); // (Calissa's storm, Umbral, surge, geometry and the trip's pressures on the ship: vfx/crossinglook.js)
     this.pieces = { shoal: new ShoalPiece(this), pirates: new PiratesPiece(this), leviathan: new LeviathanPiece(this) };
     this.t = 0; this.bar = 0; this.run = null; this.plan = null; this.trauma = 0; this.volleys = []; this.piece = null;
@@ -102,7 +104,7 @@ export class Emocean {
     this.built = true;
   }
   /** What is parked for the warm-up's compile (main.js shows them for one draw, then hides them again). */
-  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked(), ...this.looks.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
+  parked() { return [this.sea.mesh, this.waves.parked, this.ship.look.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked(), ...this.looks.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
   show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; this.looks?.show(on); }
 
   /** What the ship and the waves tell the run. */
@@ -145,7 +147,7 @@ export class Emocean {
       this.run = { passed: true, hits: 0, bears: (SHIPS[V.ship]?.bears ?? STAGE.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), // (by hull: progress/rail/ships.js)
         ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
       this.lay(trip); this.rail.seat(0);
-      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
+      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.look?.polarity?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(this.plan, aspect); this.mounts.begin(V.mounts || []);
       this.looks.begin(); this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
@@ -260,8 +262,10 @@ export class Emocean {
   lay(trip, keep = null) {
     const sp = this.rail.speed, len = 4 * BAR_S * sp, rng = stream('rail/path'), L = this.trip.layout;
     const turns = trip && L ? L.turns.map((bar, i) => { const at = bar * BAR_S * sp, was = keep?.find((t) => Math.abs(t.at - at) < 1e-6); return was || { at, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 }; }) : [];
+    // a maelstrom's peak leaves the line for its arena: whole laps round the whirlpool (railpath.js `arena`; charybdis.js holds it)
+    if (trip && L) L.legs.forEach((lg, k) => { if (this.trip.legs[k]?.type !== 'maelstrom' || lg.peak == null) return; const at = lg.peak * BAR_S * sp, was = keep?.find((t) => t.figure === 'arena' && Math.abs(t.at - at) < 1e-6), alen = (lg.release - lg.peak) * BAR_S * sp; turns.push(was || { at, len: alen, figure: 'arena', laps: arenaLaps(alen), sign: rng() < 0.5 ? -1 : 1, k }); });
     this.rail.path.lay({ start: new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), length: (this.plan.seconds || STAGE.seconds) * sp + 400, turns, heart: CRUISE });
-    this.turns = turns; this.figures = turns.map((t) => t.figure);
+    this.turns = turns; this.figures = turns.filter((t) => t.figure !== 'arena').map((t) => t.figure); this.arenas = turns.filter((t) => t.figure === 'arena');
   }
   /** The legs ahead relaid mid-trip (adrift: triprun.js driftOn): the plan's bars and seconds, its swings, and the rail laid again
    *  with every turn already flown kept as it was (its figure and its place), so the line behind and under the ship does not move. */
@@ -302,7 +306,7 @@ export class Emocean {
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
     this.looks.update(raw, bar); // (the storm by the leg, the Umbral's surface, the geometry, the wake, the hull and the bunker: vfx/crossinglook.js)
     this.sea.set({ calm: this.calm }); this.sea.update(this.t, g.camera.position);
-    const sl = S.sloop;
+    const sl = S.look;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
       if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.polarity?.(COLOR[S.aspect] ?? 0xffc65c); }

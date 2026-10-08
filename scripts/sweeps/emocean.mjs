@@ -275,6 +275,15 @@ if (part('crossing')) {
     S.check(`crossing: ${a.id} (bar ${a.from}) holds the ${a.view} view`, off < 3, { bar: s.bar, cam: cl, rig: exp.map((x) => +x.toFixed(2)), off: +off.toFixed(2) });
     await S.common(`crossing: ${a.id} in the ${a.view} view`, { courier: false });
     if (a.id === 'setpiece') S.note('crossing: the shoal round the ship', await S.ev(() => { const E = __game.game.emocean, fish = E.waves.foes.filter((f) => f.alive && f.role === 'glint'); if (!fish.length) return 'no glints'; const c = fish.reduce((o, f) => o.add(f.local), new __game.THREE.Vector3()).multiplyScalar(1 / fish.length); return { glints: fish.length, bar: +E.bar.toFixed(1), centreFromShip: __sw.v(c.sub(E.ship.local)) }; }));
+    if (a.id === 'setpiece') { // (Calissa's checks, casebook 2026-10-08 rules 72 and 76: the shoal drawn at the sea, not 50 m under it; a strike's dash eased, never a flag)
+      const y = await S.ev(() => { const E = __game.game.emocean; return { shoal: +E.pieces.shoal.look.group.position.y.toFixed(3), wake: (E.wake?.lines || []).map((l) => +l.m.position.y.toFixed(3)) }; });
+      S.check('crossing: the shoal and the ship\'s wake are drawn at the sea, not parked under it', y.shoal === 0 && y.wake.every((v) => v === 0), y);
+      await sailTo(70);
+      const dz = await S.ev(() => { const E = __game.game.emocean, P = E.pieces.shoal, D = P.look?.dash || P.dash, prev = new Float32Array(D.length); prev.set(D); let peak = 0, jump = 0, frames = 0;
+        for (let f = 0; f < 240 && E.stage.active && !E.offering; f++) { __em.sail(1, 1 / 30); frames++; for (let k = 0; k < D.length; k++) { if (!P.flock.alive[k]) { prev[k] = D[k]; continue; } peak = Math.max(peak, D[k]); jump = Math.max(jump, Math.abs(D[k] - prev[k])); prev[k] = D[k]; } }
+        return { frames, peak: +peak.toFixed(2), jump: +jump.toFixed(2) }; });
+      S.check('crossing: a strike\'s dash runs up and dies away (above 0.5, never more than 0.35 a frame)', dz.peak > 0.5 && dz.jump <= 0.35, dz);
+    }
   }
   // the verbs, in the breather or wherever the clock is (no threats needed for most)
   s = await st();

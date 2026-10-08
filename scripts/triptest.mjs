@@ -46,6 +46,12 @@ for (let i = 0; i < 600; i++) {
     seen.forms = await g.page.evaluate(() => { const G = __game.game, sh = G.emocean.ship, out = { before: sh.form };
       sh.form = 'umbral'; out.umbral = sh.form; const s0 = sh.surge; for (let k = 0; k < 30; k++) sh.absorb({ kind: 'umbral' }); out.surge = [s0, sh.surge];
       sh.letGo(G.emocean.waves, G.emocean.shots); out.after = sh.surge; out.mercy = sh.mercy > 0; sh.form = 'astral'; return out; });
+    // the storm and the deep (Calissa's crossing look, vfx/crossinglook.js): the storm applied while sailing; the Umbral form's look below, and back above
+    seen.sea = await g.page.evaluate(() => { const G = __game.game; G.emocean.ship.form = 'umbral'; return { k: G.stormWarp?.k ?? null }; });
+    await g.step(40);
+    seen.sea.below = await g.page.evaluate(() => { const G = __game.game, b = G.umbral?.below ?? null; G.emocean.ship.form = 'astral'; return b; });
+    await g.step(40);
+    seen.sea.above = await g.page.evaluate(() => __game.game.umbral?.below ?? null);
     // an encounter's asks done in the world (triprun.js act): casks, a rutter bought then sold, a word from a bottle, a bounty posted
     seen.asks = await g.page.evaluate(() => { const G = __game.game, T = G.emocean.trip, B = G.pneuka, lines = [], out = {};
       const say = G.log.say.bind(G.log); G.log.say = (k, s, o) => { lines.push(s); return say(k, s, o); };
@@ -58,7 +64,8 @@ for (let i = 0; i < 600; i++) {
       G.log.say = say; out.lines = lines; return out; });
   }
 }
-const r2 = await g.page.evaluate(() => { const G = __game.game; return { active: G.emocean.stage.active, at: G.voyage.s.at, rutter: !!G.pneuka.slots.find((s) => s?.id === 'rutter') }; });
+await g.step(120);
+const r2 = await g.page.evaluate(() => { const G = __game.game, R = G.pneuka.slots.find((s) => s?.id === 'rutter'); return { active: G.emocean.stage.active, at: G.voyage.s.at, rutter: !!R, rutterData: R ? { strengths: R.data.strengths, feels: R.data.feels, stormsAt: R.data.stormsAt } : null, below: G.umbral?.below ?? null, storm: G.stormWarp?.k ?? null }; });
 check('cast off on a drafted passage', r0.cast, r0.types);
 check('the trip runs: its legs laid for the cue', r1.active && r1.trip && r1.legs.length === r0.types.length, r1);
 check('the old waves are quiet on the new legs', r1.quiet === true, r1.quiet);
@@ -71,6 +78,10 @@ check('an encounter\'s asks: two casks aboard, a rutter bought (50) then sold (7
 check('each said in the log', (seen.asks?.lines || []).length >= 6, seen.asks?.lines);
 check('the ship makes port at the end of the trip', !r2.active && r2.at === 'margarite', r2);
 check('and a rutter of the passage comes home', r2.rutter, r2.rutter);
+check('the storm is applied while sailing', seen.sea?.k > 0, seen.sea);
+check('the Umbral form looks below, and the Astral back above', seen.sea?.below > 0.8 && seen.sea.above < 0.2, seen.sea);
+check('at port the storm bends nothing (outside the rail\'s zone)', r2.storm < 0.01, { storm: r2.storm, below: r2.below });
+check('the rutter keeps the sailed waypoints\' strengths and feelings', Array.isArray(r2.rutterData?.strengths) && r2.rutterData.strengths.length === r0.types.length && Array.isArray(r2.rutterData.feels), r2.rutterData);
 check('no page errors', g.errors.length === 0, g.errors.slice(0, 3));
 console.log(fails ? `trip: ${fails} FAILED` : 'trip: all passed'); process.exitCode = fails ? 1 : 0;
 await g.close();

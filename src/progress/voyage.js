@@ -32,6 +32,7 @@ import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.j
 import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
 import { raceRank } from './rail/encounters.js';
+import { TRIP } from './rail/trip.js';
 import { mountable, slotsOf } from './rail/mounts.js';
 import { boardKey, better } from './rail/trip.js';
 import { deckDraw } from './econ/deck.js';
@@ -176,7 +177,7 @@ export class Voyage {
     this.s.at = passed ? V.to : home; this.s.sailing = null;
     this.dirty();
     const continues = V.continues || 0, setPieces = V.setPieces || [V.setPiece || 'shoal'], setPiece = setPieces[setPieces.length - 1];
-    const ranked = raceRank(rankOf(score, setPiece), !!V.passage?.race?.beat), rank = continues && 'SAB'.includes(ranked) ? CONTINUE.rankCap : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed run still tops out at C)
+    const ranked = raceRank(rankOf(score, setPiece), !!V.passage?.race?.beat), rank = (continues || V.passage?.adrift) && 'SAB'.includes(ranked) ? (continues ? CONTINUE.rankCap : TRIP.driftRank) : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed or adrift run still tops out at C)
     const medal = !continues && medalOf({ passed, downed, spawned });
     this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
       chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
@@ -184,7 +185,7 @@ export class Voyage {
     // a drafted passage sailed to its end (not broken up, not continued twice) makes a rutter: the passage's map (PASSAGE.md 6)
     if (V.passage && passed && continues < 2) {
       const P = V.passage, minutes = +(((this.game.emocean?.t ?? 120) / 60)).toFixed(2);
-      const data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: P.ids, legs: P.legs, rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read, storms: P.storms || 0 }) }; // (P.storms: the squalls cleared, the trip's state.storms, set by triprun.js)
+      const W = P.sailed || P.waypoints || [], data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: W.length ? W.map((w) => w.id) : P.ids, legs: W.length ? W.map((w) => w.type) : P.legs, strengths: W.map((w) => w.strength ?? 1), feels: W.map((w) => w.feel ?? null), stormsAt: W.filter((w) => w.storm).map((w) => w.id), rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read, storms: P.storms || 0 }) }; // (P.sailed: the waypoints sailed, adrift's route if the current took one: triprun.js; strengths, feels, stormsAt read by Calissa's rutter) // (P.storms: the squalls cleared, the trip's state.storms, set by triprun.js)
       if (this.game.pneuka?.add('rutter', 'passage', 0, data) >= 0) this.game.events.emit('rutter.get', { from: V.from, to: V.to, rank, worth: data.worth, by: 'courier' });
     }
     return { lost, spilled };

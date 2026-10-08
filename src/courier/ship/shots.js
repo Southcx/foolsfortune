@@ -164,14 +164,15 @@ export class Shots {
   endOutlined(r) { r.on = false; r.from = null; r.mesh.visible = false; }
 
   /** Each live shot placed in the world (the frame moves with the rail every frame, so every one is written every frame): a plain shot
-   *  of the ship's own feeling is drawn astral, any other umbral (until the forms: RAIL-OVERHAUL.md section 4); turned or sent home, it
+   *  of the ship's feeling now (absorbed) is drawn in the ship's form's kind, any other in the other's (RAIL-OVERHAUL.md section 4); turned or sent home, it
    *  is drawn spent. */
   draw() {
-    const R = this.rail, L = this.look, S = this.ship, raw = this.game.rawDt ?? 1 / 60, home = S?.home;
+    const R = this.rail, L = this.look, S = this.ship, raw = this.game.rawDt ?? 1 / 60, form = S?.form || 'astral', other = form === 'astral' ? 'umbral' : 'astral';
+    const kindOf = (aspect) => (aspect && aspect === S?.aspect ? form : other); // (the kind it is to you now: a shot you would drink wears your form's, every other the other's: RAIL-OVERHAUL.md 4)
     let n = 0, m = 0;
     for (const s of this.guns) if (s.on) L.gun(m++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d));
-    for (const s of this.plains) if (s.on) L.set(n++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d), s.aspect && s.aspect === home ? 'astral' : 'umbral', false, undefined, s.turned ? 0.45 : 1);
-    for (const [k, r] of this.outlines.entries()) if (r.on) L.set(n++, R.toWorld(r.p, _w), R.dirWorld(r.v, _d), r.from?.aspect && r.from.aspect === home ? 'astral' : 'umbral', true, OUT_R, r.back ? 0.45 : 1, (k * 0.618034) % 1); // (its film's phase is its record's own: the same through its flight)
+    for (const s of this.plains) if (s.on) L.set(n++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d), kindOf(s.aspect), false, undefined, s.turned ? 0.45 : 1);
+    for (const [k, r] of this.outlines.entries()) if (r.on) L.set(n++, R.toWorld(r.p, _w), R.dirWorld(r.v, _d), kindOf(r.from?.aspect), true, OUT_R, r.back ? 0.45 : 1, (k * 0.618034) % 1); // (its film's phase is its record's own: the same through its flight)
     L.count = n; L.guns = m;
     L.color(COLOR[S?.aspect] ?? 0xffc65c);
     L.hurtbox(S && this.look.mesh.visible ? R.toWorld(S.local, _c3) : null, S?.hull?.hurt ?? T.ship.hurt);

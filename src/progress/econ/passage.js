@@ -180,17 +180,20 @@ export const confidence = (depth, s, level = 1) => (depth <= 1 ? 1 : Math.max(0,
 export const tierOf = (c, depth = 2) => (depth <= 1 || c >= 0.85 ? 'exact' : c >= 0.6 ? 'two' : c >= 0.35 ? 'three' : c >= 0.15 ? 'class' : 'star');
 
 /** The portent of a waypoint at a depth: its tier, its candidates (the true type always among them, decoys drawn by the day's dice from
- *  the other types as the pool weighs them, the order shuffled so the first is not the truth), its class, its confidence. */
+ *  the other types of its own class first, then the rest when the class runs out, the order shuffled so the first is not the truth), its
+ *  class (only when every candidate shares it: a shortlist never says more than it shows), its confidence. Knowing grows one way: from
+ *  the silhouette tier up the class is known, and a sharper tier never knows less (Calissa's ask, 2026-10-08). */
 export function portent(chart, w, depth, s, level = 1) {
   const c = confidence(depth, s, level), tier = tierOf(c, depth), cls = classOf(w.type);
   const n = tier === 'exact' ? 1 : tier === 'two' ? 2 : tier === 'three' ? 3 : 0;
   const feel = tier !== 'star' ? w.feel ?? null : undefined, storm = !!w.storm; // (the feeling shows from the silhouette up; a storm always)
   if (!n) return { tier, candidates: [], cls: tier === 'class' ? cls : null, confidence: +c.toFixed(3), feel, storm };
-  const r = rngOf(`portent:${chart.route}:${chart.day}:${w.id}`), others = Object.keys(PASSAGE.types).filter((t) => t !== w.type && PASSAGE.types[t].share);
-  const out = [w.type];
-  while (out.length < n && others.length) out.push(others.splice(pick(r, others.length), 1)[0]);
+  const r = rngOf(`portent:${chart.route}:${chart.day}:${w.id}`), pool = Object.keys(PASSAGE.types).filter((t) => t !== w.type && PASSAGE.types[t].share);
+  const kin = pool.filter((t) => classOf(t) === cls), rest = pool.filter((t) => classOf(t) !== cls), out = [w.type];
+  while (out.length < n && kin.length) out.push(kin.splice(pick(r, kin.length), 1)[0]);
+  while (out.length < n && rest.length) out.push(rest.splice(pick(r, rest.length), 1)[0]);
   for (let i = out.length - 1; i > 0; i--) { const j = pick(r, i + 1); [out[i], out[j]] = [out[j], out[i]]; }
-  return { tier, candidates: out, cls, confidence: +c.toFixed(3), feel, storm };
+  return { tier, candidates: out, cls: out.every((t) => classOf(t) === cls) ? cls : null, confidence: +c.toFixed(3), feel, storm };
 }
 
 // ---- the rutter

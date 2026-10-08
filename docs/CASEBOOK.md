@@ -349,6 +349,8 @@ the rules before building in the same area; a rule a machine can check goes into
      its own. List the boot's programs by name and cache key against main's before calling a branch's count its own.
 125. **An Esc a window spends is not a pause.** The pointer's unlock can land after the window has closed; a lock change read
     alone cannot tell it from the player leaving, so the window marks the moment and the pause waits past it.
+126. **A test's seed names no game day.** What the calendar lays (a sea chart, a Well's floors) changes with the real hour; a test that
+    depends on it pins the clock (`?clock=`) as perf does, or its seed means a different world each hour.
 
 ## Cases
 ### 2026-10-08 · Five shader programs over main's at boot, two of them one shadow (perf over the program budget, Calissa's program diet, round two)
@@ -1789,3 +1791,11 @@ the rules before building in the same area; a rule a machine can check goes into
   own handler closes it); an unlock within 0.5 real seconds of it is not a pause. The Index's list also stops the Esc's propagation,
   as its pages did (GARDEN-SWEEP #9). The workshop sweep then showed the same with the map: one fix for every window.
 - **Rule:** 125.
+
+### 2026-10-08 · The adrift test passed, then failed an hour later (the v123 gate)
+- **Seen:** "the current took another way" passed at 15:00 and failed at 18:00 with the same seed: the drafted lane was different.
+- **Cause:** the sea chart is a pure function of the route and the game day (a real hour); the seed fixed the current's draw but not
+  the sea it drew on.
+- **Fix:** the adrift and Charybdis tests open the game with the clock pinned (`&clock=1791160275000`, perf's), the seed re-found
+  for it. Both pass.
+- **Rule:** 126.

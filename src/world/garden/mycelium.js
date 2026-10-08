@@ -7,10 +7,12 @@
 //                           one (orbit.js's way), with plots of its own. The tree on its crown is BIG (the owner: 48 m): Calissa's
 //                           World Mushroom (vfx/garden/myggdrasil.js, grown by the planetoid's look and reading game.myggdrasil
 //                           itself), its threads sent to the spore beds here. F at its roots' mouth: feed it, pick the crown, hang a card.
-//   THE SPORE BEDS          a placed feature (`sporebed`, progress/realm.js FEATURES); a fairy ring of caps in its strain's colour, lit
-//                           when what it works is ready. F at one: inoculate it, set what it eats, take it back, harvest. Its
+//   THE SPORE BEDS          a placed feature (`sporebed`, progress/realm.js FEATURES); Calissa's strain bed (vfx/garden/strains.js) in its
+//                           strain, its colony grown as what it works comes ready, its foxfire by night. F at one: inoculate it, set what it eats, take it back, harvest. Its
 //                           neighbours' strains pace it (sporebeds.js near), worked out from the plots whenever the garden changes.
-//   THE KEEPSAKE POTS       every pot fired for a spirit let go stands in a ring at the Chimney's foot, in its feeling's colour.
+//   THE KEEPSAKE POTS       every pot fired for a spirit let go stands in a ring at the Chimney's foot: the newest as Calissa's painted
+//                           lekythos (vfx/garden/lekythos.js), the older as plain pots washed in their feeling.
+//   THE SPORELINGS          the tree's sporelings (Calissa's, vfx/garden/sporeling.js) round its roots, in the tincture's colour.
 //   (THE GRIMOIRE OF ECHOES the Codex page: feedback/codex/grimoire.js.)
 // The pages are the Index's window (the garden's shed, the plate shrine): no other window of words.
 //
@@ -31,20 +33,42 @@ import { thingOf } from '../../progress/sporebeds.js';
 import { COLOR } from '../../progress/weather.js';
 import * as calendar from '../../core/calendar.js';
 import { GARDEN_AT, dirOf } from './place.js';
+import { phaseAt } from '../../progress/weather.js';
+import { strainBed, strainsParked } from '../../vfx/garden/strains.js';
+import * as Lekythos from '../../vfx/garden/lekythos.js'; // (a namespace: lekythosShared is read when it lands, Calissa's cdd5ccd)
+const { lekythos, lekythosParked } = Lekythos;
+import { sporeling, sporelingParked } from '../../vfx/garden/sporeling.js';
 
 /** Where Myggdrasil's planetoid hangs from the garden's heart (below the Dantian and behind the Chimney: clear of the ring's ten slots,
  *  ORBIT.radius 95 round the Dantian, and of every first planetoid by 60 m and more), the plots it gives, its roots' clearing, the
  *  trunk's foot, and how many keepsake pots the Chimney's ring shows. */
-export const MYGG = { at: [0, -60, -160], plots: 6, roots: 6, trunk: 3.2, pots: 64 };
+export const MYGG = { at: [0, -60, -160], plots: 6, roots: 6, trunk: 3.2, pots: 64, painted: 6, sporelings: 6 };
+// (painted: the newest pots drawn as Calissa's lekythos while each painting is its own, about 5 MB; once pots of one kind and feeling
+//  share a painting (Calissa's lekythosShared) every pot is painted. sporelings: as many of the tree's sporelings stand round its roots.)
+const PAINTED = () => (Lekythos.lekythosShared ? MYGG.pots : MYGG.painted);
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, UP = new THREE.Vector3(0, 1, 0);
 const colorOf = (feeling) => new THREE.Color(COLOR[feeling] ?? 0xd8d0c8);
+/** The garden's night, 0 day .. 1 night, as the realm's sky reads it (dusk and dawn half). */
+const nightNow = () => { const ph = phaseAt(); return ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0; };
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _t1 = new THREE.Vector3(), _t2 = new THREE.Vector3();
+/** The ground's own normal on planetoid P at direction `dir` (three samples of its radiusAt: Calissa's rule 64), and the point there. */
+function groundAt(P, dir) {
+  const d = dir.clone().normalize(), at = P.c.clone().addScaledVector(d, P.radiusAt(d)), e = 0.6 / P.r;
+  _t1.set(0, 1, 0).cross(d); if (_t1.lengthSq() < 1e-6) _t1.set(1, 0, 0).cross(d); _t1.normalize(); _t2.crossVectors(d, _t1).normalize();
+  const da = d.clone().addScaledVector(_t1, e).normalize(), db = d.clone().addScaledVector(_t2, e).normalize();
+  _a.copy(P.c).addScaledVector(da, P.radiusAt(da)).sub(at); _b.copy(P.c).addScaledVector(db, P.radiusAt(db)).sub(at);
+  const n = new THREE.Vector3().crossVectors(_a, _b).normalize(); if (n.dot(d) < 0) n.negate();
+  return { at, n };
+}
+/** Stand a group on the ground at `dir` of P, its +Y the ground's normal. */
+function stand(group, P, dir, yaw = 0) { const { at, n } = groundAt(P, dir); group.position.copy(at); group.quaternion.setFromUnitVectors(UP, n).multiply(new THREE.Quaternion().setFromAxisAngle(UP, yaw)); }
 
 export class GardenMycelium {
   constructor(realm) {
-    this.R = realm; this.game = realm.game; this.planet = null; this.tree = null; this.rings = new Map();
+    this.R = realm; this.game = realm.game; this.planet = null; this.tree = null; this.beds = new Map(); this.painted = []; this.sporelings = [];
     const ev = this.game.events;
-    ev?.on?.('garden.enter', () => { this.give(); this.sync(); });
-    for (const n of ['garden.place', 'garden.move', 'spore.inoculate', 'spore.set', 'spore.back', 'spore.harvest', 'myggdrasil.feed', 'myggdrasil.fruit', 'myggdrasil.pick', 'myggdrasil.hang', 'keepsake.pot']) ev?.on?.(n, () => { if (this.R.active) this.sync(); });
+    ev?.on?.('garden.enter', () => { for (const o of this.parkedLooks || []) o.visible = false; this.give(); this.sync(); });
+    for (const n of ['garden.place', 'garden.move', 'spore.inoculate', 'spore.set', 'spore.back', 'spore.harvest', 'myggdrasil.feed', 'myggdrasil.fruit', 'myggdrasil.pick', 'myggdrasil.hang', 'myggdrasil.sporeling', 'keepsake.pot']) ev?.on?.(n, () => { if (this.R.active) this.sync(); });
   }
   get G() { return this.game.sporeBeds; }
   get T() { return this.game.myggdrasil; }
@@ -74,34 +98,41 @@ export class GardenMycelium {
    *  the pots. Cheap: a few dozen objects, called on entering and when anything changes. */
   sync() {
     if (!this.R.site) return;
-    this.syncBeds(); this.syncTree(); this.syncPots();
+    this.syncBeds(); this.syncTree(); this.syncPots(); this.syncSporelings();
   }
   syncBeds() {
     const S = this.G, plots = this.R.plots?.plots || [], site = this.R.site; if (!S) return;
     site.features = site.features.filter((f) => f.kind !== 'sporebed');
     for (const p of plots) {
-      if (p.placed?.feature !== 'sporebed') { this.dropRing(p); continue; }
+      if (p.placed?.feature !== 'sporebed') { this.dropBed(p.id); continue; }
       let i = S.bedOf(p.id); if (i < 0) i = S.grant(p.id); // (a bed placed before its colony was kept: a world from before this round)
       site.features.push({ kind: 'sporebed', plot: p.id, bed: i, planet: p.planet, pos: p.pos });
       const near = this.R.plots.neighbours(p).filter((q) => q.placed?.feature === 'sporebed').map((q) => S.beds[S.bedOf(q.id)]?.strain).filter(Boolean);
       if (JSON.stringify(near) !== JSON.stringify(S.beds[i].near)) S.near(i, near);
-      this.ring(p, S.beds[i], S.ready(i));
+      this.bed(p, S.beds[i], this.growthOf(i));
     }
   }
-  /** A bed's fairy ring of caps on its plot, in its strain's colour (grey while it has none), lit when it is ready. */
-  ring(p, b, ready) {
-    let r = this.rings.get(p.id);
-    if (!r || r.group.parent !== p.group) {
-      this.dropRing(p); if (!p.group) return;
-      const mat = new THREE.MeshStandardMaterial({ color: 0xbbb4a8, emissive: 0x000000, roughness: 0.6, name: 'sporebed-ring' }), group = new THREE.Group(); group.name = 'sporebed-ring';
-      const capGeo = new THREE.SphereGeometry(0.22, 8, 5, 0, Math.PI * 2, 0, Math.PI / 2), stemGeo = new THREE.CylinderGeometry(0.05, 0.07, 0.25, 6);
-      for (let k = 0; k < 9; k++) { const a = (k / 9) * Math.PI * 2, x = Math.sin(a) * 0.95, z = Math.cos(a) * 0.95, s = 0.8 + 0.4 * ((k * 37) % 7) / 7; const c = new THREE.Mesh(capGeo, mat); c.position.set(x, 0.24 * s, z); c.scale.setScalar(s); const st = new THREE.Mesh(stemGeo, mat); st.position.set(x, 0.12 * s, z); st.scale.setScalar(s); group.add(c, st); }
-      p.group.add(group); r = { group, mat }; this.rings.set(p.id, r);
-    }
-    r.mat.color.copy(b?.strain ? colorOf(b.strain) : new THREE.Color(0xbbb4a8));
-    r.mat.emissive.copy(ready && b?.strain ? colorOf(b.strain) : new THREE.Color(0x000000)); r.mat.emissiveIntensity = ready ? 0.9 : 0;
+  /** How grown a bed's colony looks, 0..1: bare 0, colonised and idle 0.35, working toward 1, ready 1 (Calissa's `growth`). */
+  growthOf(i) {
+    const S = this.G, b = S.beds[i]; if (!b?.strain) return 0;
+    if (!b.set) return 0.35;
+    if (S.ready(i)) return 1;
+    const total = b.hours * GAME_HOUR; return 0.35 + 0.6 * (1 - S.left(i) / Math.max(1, total));
   }
-  dropRing(p) { const r = this.rings.get(p.id); if (!r) return; r.group.parent?.remove(r.group); r.group.traverse((o) => o.geometry?.dispose?.()); r.mat.dispose(); this.rings.delete(p.id); }
+  /** A bed's look: Calissa's strain bed (vfx/garden/strains.js) in its strain, or in the feeling it was placed in while it has none, stood
+   *  on the ground's own normal at its plot; its growth and the night set each time. */
+  bed(p, b, growth) {
+    const strain = b?.strain || p.placed?.feeling || 'wonder';
+    let r = this.beds.get(p.id);
+    if (r && (r.strain !== strain || r.planet !== p.planet || !r.at.equals(p.pos))) { this.dropBed(p.id); r = null; }
+    if (!r) {
+      const B = strainBed(strain, { radius: 1.2, growth, night: nightNow(), seed: (p.i ?? 0) + 1, curve: p.planet.r });
+      stand(B.group, p.planet, p.pos.clone().sub(p.planet.c)); this.R.site.group.add(B.group);
+      r = { B, strain, planet: p.planet, at: p.pos.clone(), growth }; this.beds.set(p.id, r);
+    }
+    r.growth = growth; r.B.set({ growth, night: nightNow() });
+  }
+  dropBed(plot) { const r = this.beds.get(plot); if (!r) return; r.B.dispose(); this.beds.delete(plot); }
   syncTree() {
     const T = this.T, t = this.tree; if (!T || !t) return;
     T.dawn?.();
@@ -110,7 +141,8 @@ export class GardenMycelium {
   }
 
   // ------------------------------------------------------------------ the keepsake pots
-  /** The pots in a ring (two, then three) at the Chimney's foot, each a white-ground lekythos banded in its spirit's feeling. */
+  /** The pots in a ring (two, then three) at the Chimney's foot: the newest MYGG.painted as Calissa's white-ground lekythos (its painting
+   *  its spirit's), the older as plain pots washed in their feeling (one instanced mesh), each stood on the ground's normal. */
   syncPots() {
     const pots = this.game.keepsakes?.pots || [], C = this.R.site.by.chimney; if (!C) return;
     if (!this.pots) {
@@ -119,13 +151,36 @@ export class GardenMycelium {
       this.pots = new THREE.InstancedMesh(new THREE.LatheGeometry(pts, 12), mat, MYGG.pots); this.pots.count = 0; this.pots.name = 'keepsake-pots';
       this.pots.castShadow = true; this.R.site.group.add(this.pots);
     }
-    const n = Math.min(MYGG.pots, pots.length), m = new THREE.Matrix4(), q = new THREE.Quaternion();
-    for (let i = 0; i < n; i++) {
-      const row = Math.floor(i / 20), dir = dirOf(18 + row * 8, (i % 20) * 18 + row * 9), pos = C.c.clone().addScaledVector(dir, C.radiusAt(dir));
-      q.setFromUnitVectors(UP, dir); m.compose(pos, q, new THREE.Vector3(1, 1, 1)); this.pots.setMatrixAt(i, m);
+    const n = Math.min(MYGG.pots, pots.length), first = Math.max(0, n - PAINTED()), dirOfPot = (i) => { const row = Math.floor(i / 20); return dirOf(18 + row * 8, (i % 20) * 18 + row * 9); };
+    // the painted: one lekythos a pot, kept while it stays among the newest
+    const want = new Set(); for (let i = first; i < n; i++) want.add(i);
+    this.painted = this.painted.filter((x) => { if (want.has(x.i) && x.pot === pots[x.i]) return true; x.P.dispose(); return false; });
+    for (const i of want) if (!this.painted.some((x) => x.i === i)) { const P = lekythos({ spirit: pots[i], seed: i + 1 }); stand(P.group, C, dirOfPot(i)); this.R.site.group.add(P.group); this.painted.push({ i, pot: pots[i], P }); }
+    // the plain ones
+    const m = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1), g = new THREE.Group();
+    for (let i = 0; i < first; i++) {
+      stand(g, C, dirOfPot(i)); m.compose(g.position, g.quaternion, one); this.pots.setMatrixAt(i, m);
       this.pots.setColorAt(i, colorOf(pots[i].feeling).lerp(new THREE.Color(0xf4efe4), 0.55)); // (white ground, a wash of its feeling)
     }
-    this.pots.count = n; this.pots.instanceMatrix.needsUpdate = true; if (this.pots.instanceColor) this.pots.instanceColor.needsUpdate = true;
+    this.pots.count = first; this.pots.instanceMatrix.needsUpdate = true; if (this.pots.instanceColor) this.pots.instanceColor.needsUpdate = true;
+  }
+
+  // ------------------------------------------------------------------ the sporelings
+  /** The tree's sporelings (game.myggdrasil.s.sporeling, one each time its crown gives one) stand round its roots, swaying, in the
+   *  tincture's colour, a few at most; each hops now and then (Calissa's sporeling: a look without a body, so it lifts itself). */
+  syncSporelings() {
+    const T = this.T, P = this.planet; if (!T || !P) return;
+    const n = Math.min(MYGG.sporelings, T.s?.sporeling || 0), sap = T.tincture, colour = sap?.mass ? new THREE.Color().setHSL((((sap.h % 360) + 360) % 360) / 360, Math.max(0.2, sap.s), 0.5).getHex() : 0xd8584a;
+    while (this.sporelings.length > n) this.sporelings.pop().S.dispose();
+    for (let i = this.sporelings.length; i < n; i++) { const S = sporeling({ colour, seed: i + 1 }); stand(S.group, P, dirOf(62 - (i % 2) * 8, i * 61 + 20), i * 1.3); this.R.site.group.add(S.group); this.sporelings.push({ S, next: 2 + i }); }
+    for (const x of this.sporelings) x.S.set({ colour, night: nightNow(), sway: 1 });
+  }
+
+  /** The looks parked for the warm-up (main.js compiles them with the garden's; hidden on the first entry, never disposed: Calissa's). */
+  parked() {
+    const g = this.R.site.group, D = this.R.site.by.dantian, L = [strainsParked(), lekythosParked(), sporelingParked()];
+    for (const o of L) { o.position.copy(D.c); g.add(o); }
+    this.parkedLooks = L; return L;
   }
 
   // ------------------------------------------------------------------ F at one of its places
@@ -191,9 +246,12 @@ export class GardenMycelium {
 
   /** Once a frame while the garden is open: a bed coming ready lights its ring (checked once a real second). */
   update(raw) {
+    for (const r of this.beds.values()) r.B.update(raw);
+    for (const x of this.sporelings) { x.S.update(raw); if ((x.next -= raw) <= 0) { x.S.hop(0.35); x.k = (x.k || 0) + 1; x.next = 3 + ((x.k * 37) % 5); } } // (a hop every 3 to 7 real seconds, each its own)
     if ((this.tick = (this.tick ?? 0) - raw) > 0) return;
     this.tick = 1;
     const S = this.G; if (!S) return;
-    for (const [plot, r] of this.rings) { const i = S.bedOf(plot); if (i >= 0 && S.ready(i) && !(r.mat.emissiveIntensity > 0)) { this.syncBeds(); break; } }
+    const night = nightNow(); for (const x of this.sporelings) x.S.set({ night });
+    for (const [plot, r] of this.beds) { const i = S.bedOf(plot); if (i >= 0) { const gw = this.growthOf(i); if (Math.abs(gw - r.growth) > 0.01 || night !== r.night) { r.growth = gw; r.night = night; r.B.set({ growth: gw, night }); } } }
   }
 }

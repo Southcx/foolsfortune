@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------------------
 import { openGame } from './playtest/game.mjs';
 
-const g = await openGame({ seed: 13 });
+const g = await openGame({ seed: 13, query: '&clock=1791160275000' }); // (the clock pinned: the sea chart is the game day's, so a seed alone names no sea)
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
 await g.step(60);
 const r0 = await g.page.evaluate(async () => {
