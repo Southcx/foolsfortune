@@ -43,10 +43,23 @@ export class RigClips {
   /** The current clip's time in frames. */
   get frame() { return this.action ? this.action.time * this.fps : 0; }
 
+  /** The stretch of `clip` from frame `a` to `b` as a clip of its own, each track sampled at every frame through its own interpolant. (Not
+   *  AnimationUtils.subclip: that keeps only the keys inside the stretch, and the exported clips are lean, a straight line of poses
+   *  being one pair of keys: a bone with none inside dropped out of the held clip and fell to its rest pose, 102 degrees on the pointing
+   *  hand's ring finger. CASEBOOK, 2026-10-08.) */
   cut(clip, a, b) {
     const key = `${clip.name}:${a}-${b}`;
     let s = this.cuts.get(key);
-    if (!s) { s = THREE.AnimationUtils.subclip(clip, key, a, b + 1, this.fps); this.cuts.set(key, s); }
+    if (!s) {
+      const n = b - a + 1, times = Array.from({ length: n }, (_, i) => i / this.fps);
+      const tracks = clip.tracks.map((t) => {
+        const I = t.createInterpolant(), k = t.getValueSize(), values = new Float32Array(n * k);
+        for (let i = 0; i < n; i++) values.set(I.evaluate(Math.min(clip.duration, (a + i) / this.fps)), i * k);
+        return new t.constructor(t.name, times, values);
+      });
+      s = new THREE.AnimationClip(key, (n - 1) / this.fps, tracks);
+      this.cuts.set(key, s);
+    }
     return s;
   }
 

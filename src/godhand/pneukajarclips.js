@@ -98,7 +98,7 @@ export class PneukaJarClips {
     if (!J.alive) return;
     if (this.hit && R.move !== 'summon') R.play(this.hit, { again: true }); // (a blow by how hard)
     else if (J.hp > this.lastHp + 0.5 && R.move !== 'summon' && R.move !== 'happy' && !G.catch?.held) R.play('happy', { again: true }); // (mended)
-    if (G.catch?.held) return this.choose('open');
+    if (G.catch?.held || this.game.catchLook?.state === 'take') return this.choose('open'); // (drawn down the tether, 0.45 s, `held` is already let go of: the lid stays open for the gulp)
     if (this.game.pneukaUI?.open) return this.choose('rummage');
     if (G.cursor?.over === 'jar') return this.choose('curious');
     this.choose(J.hp < J.max * LOW ? 'sad' : 'idle');

@@ -12,7 +12,7 @@ keeps two keys; then `lean()` drops the sampled keys a straight line gives back 
 normalized shorts and packs the keys in one buffer view (the hand 714,260 -> 428,428 bytes; the Jar 189,304 -> 174,360). The armature stays in POSE: REST flattens every clip to two keys of the rest pose (jar.md, measured). The Jar keeps
 its `root` (it carries the hop's height and the summon and dismiss scale), so non-deforming bones are exported. The Solidify outline
 shells are dropped: the game draws its own outlines (render/outline.js). The textures are not embedded: the game paints them
-(godhand/godpaint.js, from src/assets/courier/).
+(vfx/vessoulpaint.js, from src/assets/courier/).
 """
 import os
 import bpy
