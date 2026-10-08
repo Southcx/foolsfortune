@@ -24,7 +24,7 @@ cast, *temper* the body's mental state; *ageing* clay is idling).
    whispers "SHAI" before running. This is Chants of Sennaar's and Tunic's method: the meaning is deduced, never handed over.
 2. *EXP:* `reprogram.run` to Spellscription. Quality 1 when the macro holds first time and the challenge is typed without an error;
    0.4 when it holds after a refusal or a mistyped word. Petra owns the event; it needs `held` and `typos` on it.
-3. *Knack:* **Crib**, the English gloss beside every neuralese word on the lattice and in the log. A crib is a student's translation,
+3. *Knack:* **Crib Sheet** (the owner, 2026-10-08), the English gloss beside every neuralese word on the lattice and in the log. A crib is a student's translation,
    and a crib is a cradle. Opened by 100 macros spoken (count) or a five-Function macro held at the first try (feat).
 4. *No home:* none. Spellscription is the writing of things that hold, and that covers this.
 
