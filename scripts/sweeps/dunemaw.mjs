@@ -46,9 +46,9 @@ window.__dm = (() => {
   const shown = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
   const D = {
     seen,
-    mark() { return { ev: seen.length, log: g.log.lines.length }; },
+    mark() { return { ev: seen.length, log: g.log.said || 0 }; }, // (the log keeps its last 400 lines; each line has its seq: Petra, v114)
     eventsSince(m) { return seen.slice(m.ev).map((e) => ({ name: e.name, keys: e.keys, by: e.by, d: e.d })); },
-    logSince(m) { return g.log.lines.slice(m.log).map((l) => l.text); },
+    logSince(m) { return g.log.lines.filter((l) => l.seq > m.log).map((l) => l.text); },
     logTail(n = 6) { return g.log.lines.slice(-n).map((l) => l.text); },
     win() {
       const ov = document.getElementById('overlay');
@@ -361,9 +361,9 @@ if (part('whistle')) {
 }
 
 // =====================================================================================================================================
-let cav = null;
+let cav = null, preCavern = null;
 const toCavern = async () => { // (a fresh run straight to the great cavern: floors 1 to 3 by the way down, under the seam)
-  await reset(); await enterByF();
+  await reset(); preCavern = await dm('counts()'); await enterByF();
   for (let n = 1; n <= 3; n++) await downByF();
   await S.ticks(60);
   for (let i = 0; i < 20 && await S.ev(() => !!__game.game.flythrough?.active); i++) await S.ticks(30);
@@ -472,6 +472,9 @@ if (part('fight')) {
   await S.ticks(12); await S.press('KeyF', 4); await S.settle(); await S.ticks(30);
   const w = await dm('well()'), box1 = await dm('box()');
   S.check('accept 8: up the way up out of the cavern', !w.active && w.zone === 'dunes', W0(w));
+  // the sherds burst and the fight over, nothing of the cavern stays behind (Calissa's survey; Petra's fix, e0730dd and b45367d)
+  await S.ticks(60); const postCavern = await dm('counts()'), K = ['bodies', 'colliders', 'jellies', 'creatures'];
+  S.check('fight: left, the bodies, colliders, jellies and creatures are back to before the cavern', preCavern && K.every((k) => postCavern[k] <= preCavern[k]), Object.fromEntries(K.map((k) => [k, [preCavern?.[k], postCavern[k]]])));
   const DROP = ['glaze.jellycrown', 'curio.crown', 'mount.slipjelly', 'title.jellybane', 'pattern.crowneye'];
   const got = await S.ev(async (ids) => { const g = __game.game, { ITEMS } = await import('/src/pneuka/items.js'), { GLAZES } = await import('/src/courier/vessel/glazes.js');
     return ids.map((id) => ({ id, item: !!ITEMS[id], glaze: !!(GLAZES[id] || GLAZES[id.replace(/^glaze\./, '')]), inBox: g.pneuka.count(id), ledger: g.ledger.get(`foe.drop.${id}`) })); }, DROP);

@@ -37,14 +37,14 @@ never needed and never forced. The number that would do the skill for you is opt
 | Wide Bore | the psygun's shots a third wider | Psychokinesis 30 / a 25 chain | Petra |
 | Thick Walls | the shield takes a tenth more before the clay | 200 cracks mended at the kiln / a Well run without a crack | Petra |
 | Perfect Pitch | a crystal's target note sounds once more before you strike | 300 crystals struck / ten struck perfect in a row | Wanda |
-| **Held Breath** (was Early Tell; the name Espada's) | a blow's parry window a beat longer (0.25 to 0.40 real seconds), its glint with it | 500 parries / 50 clean parries (`lead` 0.25 or less) | Petra, Calissa |
+| **Held Breath** (was Early Tell; Espada kept the name) | a blow's parry window a beat longer (0.25 to 0.40 real seconds), its glint with it | 500 parries / 50 clean parries (`lead` 0.25 or less) | Petra, Calissa |
 | Rule of Thirds | the Veritome's frame shows its thirds (only after the score credits the thirds: today it rewards the centre) | 300 plates appraised / four four-star plates of four kinds | Calissa |
 | Half Time | the metronome swings on every other beat (never slower: it stays on the music's grid, Wanda) | 1,000 notes on the beat / fever full for eight bars | Wanda |
 | Guide Tone | the next charted note sounds a beat early | 50 songs played / a song at accuracy 0.95 or more | Wanda |
 | Crib Sheet | the English gloss beside each neuralese word that is glossed (its reach grows by digging up ostraca: the owner, 2026-10-08) | 100 macros spoken / a five-Function macro held at the first try / six ostraca found (the explorer's way) | Espada, Petra |
 | Two-Tone | both of an agate's colours shown on a creature's body | 300 agates seen / 20 named right in a row | Calissa, Espada |
-| Slow Hand (Calissa's; the name Espada's) | Celestial mode waits longer after the last stroke (0.42 to 0.7 real seconds), so a two-stroke mark is not cut off | 100 marks misread (`brush.miss`: persistence through failure) / `bg3` | Calissa, Petra |
-| (Petra's; the name Espada's) | Mind Mapping shows the way back to the last Shrine you rested at | 50 rooms charted / a Cogitomap drawn on a first run of the Great Dunemaw | Petra |
+| **Wet Ink** (Calissa's; Espada's name: the ink stays wet; "Slow Hand" collided with the hands) | Celestial mode waits longer after the last stroke (0.42 to 0.7 real seconds), so a two-stroke mark is not cut off | 100 marks misread (`brush.miss`: persistence through failure) / `bg3` | Calissa, Petra |
+| **Ariadne's Thread** (Petra's; Espada's name) | Mind Mapping shows the way back to the last Shrine you rested at | 50 rooms charted / a Cogitomap drawn on a first run of the Great Dunemaw | Petra |
 
 Calibration, key bindings and volume stay **settings**, never knacks (Wanda): what makes the game playable at all is never earned.
 

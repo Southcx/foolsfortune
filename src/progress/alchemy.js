@@ -56,7 +56,7 @@ export const SEASONING = [
   { event: 'rhythm.score',    attribute: 'focus',         points: 3, when: (e) => (e.combo || e.maxCombo || 0) >= 25 },
   { event: 'npc.talk',        attribute: 'charisma',      points: 1, when: () => true },
   { event: 'shop.sell',       attribute: 'charisma',      points: 1, when: (e) => e.by !== 'environment' },
-  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.won !== false },
+  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.step === 'deal' },          // (a haggle struck, not each step: Petra, v114)
   { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
   { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
   { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned?.length },            // (a Throwing Room drill finished, untuned: `tuned` is the list of knobs away from default)
@@ -162,7 +162,7 @@ export class SoulAlchemy {
   /** The igniter: raise the attribute the colour is inside, for its aimed fuel over the press's formation. Its seasoning is spent, and
    *  the lever is let down until the next press. Refused, with `code` (outside | full | poor | spent) and why. */
   fire() {
-    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The press is spent: press something into the bath first.' };
+    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The bath is empty. Press a material first.' };
     const N = this.nearest();
     if (!N) return { ok: false, code: 'outside', why: 'The press does not fire: the colour is outside every swatch.' };
     const { id, d, r: rad } = N, r = this.rank(id);
