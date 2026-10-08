@@ -31,3 +31,6 @@ to 0.014), so it is seen across the arena from below; at 0.034 a thing 45 m off 
 **Which way it turns (the review, casebook 129):** the whirlpool and Charybdis turn the way the ship laps, `looks.mael.sense = -arena.sign`
 (measured on both signs: the ship, the beast's eye and sheath and the bands all fall in `atan2(z, x)` at sign +1, all rise at -1). If you
 change what `arena.sign` means, the look follows it from that one line (`vfx/crossinglook.js`, `maelstrom`).
+A check for your `charybdistest.mjs` (yours, so I have not written it): through the arena, read the world angle of the ship, of
+`looks.beast.eyes[0].root` and of `sea.whirl.phi[0]` about `looks.mael.heart` over a few frames; the first two move by the same sign
+(`atan2(z, x)`, and `sign * d(ship angle) < 0`) and `sea.whirl.sense === looks.mael.sense === -arena.sign`.
