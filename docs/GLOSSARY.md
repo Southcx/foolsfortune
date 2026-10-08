@@ -123,7 +123,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
-- **the mycelium** (`src/progress/mycelium.js`, Dovina's; `docs/plans/MYCELIUM.md`; working names, Espada's to give): the garden's fungi
+- **the mycelium** (`src/progress/mycelium.js`, Dovina's; `docs/plans/MYCELIUM.md`; Espada's names, proposed 2026-10-08, LORE.md "The mycelium": the strains are the **lichen** (graft), **koji** (ferment), the **inkcap** (print), the **oyster** (rot) and **witches' butter** (dissolve); the tree is **Myggdrasil**, its sap **the tincture**, its fruiting bodies **the caps** (named for the sephiroth, `CAPS`), its branches kept (`BRANCHES`)): the garden's fungi
   as transmutators. A thing's **colour signature** (`SIGNATURE`, `signatureOf`: its hue and saturation on Soul Alchemy's wheel: a
   material its own, a curio its blurb's, a fish its feeling's). A **spore bed**: a garden bed a **strain** has colonised (its fairy
   ring drawn round it; *not* the ring of bought planetoids, nor the hue ring); a strain works one **verb** by its feeling: **graft**

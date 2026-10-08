@@ -99,7 +99,18 @@ So a row of beds in the generating order is a fast line, and the garden's layout
 - the World Mushroom's seventh body (4.3);
 - a spirit of a feeling, tending a bare bed, seeds its own strain there in time (5).
 
-## 4. The World Mushroom (working name; Espada's to name)
+## 4. Myggdrasil, the World Mushroom (Espada's name, proposed: myco, my, Yggdrasil)
+
+Espada's words (LORE.md "The mycelium"):
+- the sap is **the tincture**;
+- the fruiting bodies are **the caps**, named for the sephiroth from the root up (the Kingdom to the Crown);
+- the strains are the **lichen** (graft), **koji** (ferment), the **inkcap** (print), the **oyster** (rot: real oyster mushrooms eat
+  oil spills, so it cleans the crude) and **witches' butter** (dissolve);
+- the twenty-two branches follow the Golden Dawn's paths 11 to 32 (`BRANCHES`): eight add a fruit, five a sharper tincture, five a
+  strain's seed (the Lovers the lichen, the Hanged Man witches' butter, Death the oyster, Judgement koji, the World the inkcap) and
+  four a sporeling;
+- the keepsake pot is a white-ground lekythos (Calissa's look).
+
 
 Legend of Mana's Trent and its orchard; Yggdrasil the world-ash; Eden's two trees, Knowledge and Life; the Siberian shamans' world
 tree, under whose birch the fly agaric grows; the Kabbalists' Tree of Life.

@@ -20,7 +20,7 @@
 //   Spore beds in the GENERATING order next to each other (wonder, mirth, desire, grief, dread, round again) work faster; a bed next to the
 //   one that OVERCOMES it works slower (SPIRIT-GARDEN.md section 1, the phases). What a bed gives waits in it, never spoils.
 //
-//   THE TREE (working name: the World Mushroom; Legend of Mana's Trent and its orchard, Yggdrasil, Eden's two trees, the Siberian
+//   THE TREE (Espada's name: MYGGDRASIL, its sap the TINCTURE, its fruiting bodies the CAPS; was "the World Mushroom"; Legend of Mana's Trent and its orchard, Yggdrasil, Eden's two trees, the Siberian
 //   world tree under which the fly agaric grows): fed anything at its roots, it keeps the colour of all it has eaten as its SAP (the
 //   centre of gravity of what it ate, each weighed by its worth), grows in GIRTH as it eats, and at each dawn fruits: materials of its sap's
 //   colour, leaned toward the game day's feeling (Legend of Mana's days of the week). Its ten FRUITING BODIES (the Kabbalists' sephiroth) open
@@ -34,7 +34,7 @@
 //
 //   SIGNATURE   signatureOf(item) -> { h, s, worth, tier }   STRAINS[feeling]   bedHours(feeling, neighbours) -> game hours
 //   digest(feeling, inputs, seed) -> { ok, why?, out: [item] }   graftOf(a, b) -> curio id   TREE   sapAfter(sap, item) -> sap
-//   fruit(tree, weekday, seed) -> { fruit: [material], sap }   treeGirth(fed) -> n   bodiesOpen(girth) -> n   WEEKDAY_FEELING   kindOfHue(h)
+//   BRANCHES[arcana] = { adds, strain? }   CAPS   fruit(tree, weekday, seed) -> { fruit: [material], sap }   treeGirth(fed) -> n   bodiesOpen(girth) -> n   WEEKDAY_FEELING   kindOfHue(h)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { KINDS, makeMaterial, pullStep, distance } from './econ/materials.js';
@@ -189,3 +189,17 @@ export function fruit(tree, weekday = 0, seed = 1) {
   }
   return { fruit: out, sap: s };
 }
+
+/** The twenty-two branches, each opened by hanging its Major Arcana card (Espada's pairing, the Golden Dawn's paths 11 to 32 with its
+ *  Strength and Justice swap, LORE.md "The mycelium"): what each adds. `fruit` a fruit a dawn, `sharp` a sharper tincture (the sap's
+ *  lean toward the day halved again), `seed` a strain's seed (which strain), `sporeling` a sporeling's visit. */
+export const BRANCHES = {
+  fool: { adds: 'sporeling' }, magician: { adds: 'sharp' }, priestess: { adds: 'sharp' }, empress: { adds: 'sporeling' },
+  emperor: { adds: 'fruit' }, hierophant: { adds: 'fruit' }, lovers: { adds: 'seed', strain: 'wonder' }, chariot: { adds: 'fruit' },
+  strength: { adds: 'fruit' }, hermit: { adds: 'sharp' }, wheel: { adds: 'fruit' }, justice: { adds: 'sharp' },
+  hanged: { adds: 'seed', strain: 'dread' }, death: { adds: 'seed', strain: 'grief' }, temperance: { adds: 'sharp' },
+  devil: { adds: 'fruit' }, tower: { adds: 'fruit' }, star: { adds: 'sporeling' }, moon: { adds: 'fruit' },
+  sun: { adds: 'sporeling' }, judgement: { adds: 'seed', strain: 'mirth' }, world: { adds: 'seed', strain: 'desire' },
+};
+/** The ten caps (the fruiting bodies), from the root up, as Espada names them for the sephiroth: the seventh, Mercy, seeds strains. */
+export const CAPS = ['the Kingdom', 'the Foundation', 'Splendour', 'Victory', 'Beauty', 'Severity', 'Mercy', 'Understanding', 'Wisdom', 'the Crown'];

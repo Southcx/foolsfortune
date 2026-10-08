@@ -7,8 +7,9 @@
 //   - the spore beds' pace follows the cycles; the tree's sap is steerable to any attribute's tile, and its fruit lands in it;
 //   - every attribute's tile heart is reachable by a print of something you can hold (the colour road is open everywhere).
 // ---------------------------------------------------------------------------------------
-import { SIGNATURE, signatureOf, digest, graftOf, bedHours, STRAINS, MYCO, sapAfter, fruit, treeGirth, bodiesOpen, TREE, FEELING_HUE } from '../src/progress/mycelium.js';
+import { BRANCHES, CAPS, SIGNATURE, signatureOf, digest, graftOf, bedHours, STRAINS, MYCO, sapAfter, fruit, treeGirth, bodiesOpen, TREE, FEELING_HUE } from '../src/progress/mycelium.js';
 import { CURIOS } from '../src/world/treasure/treasure.js';
+import { ARCANA } from '../src/tools/veritome/arcana.js';
 import { ATTRIBUTES } from '../src/progress/alchemy.js';
 import { makeMaterial, KIND_IDS, distance } from '../src/progress/econ/materials.js';
 import { ECON } from '../src/progress/econ/table.js';
@@ -77,4 +78,8 @@ check('the tree grows a step of girth as its meals double, and opens a fruiting 
 { const all = [...CURIOS.map((c) => SIGNATURE[c.id]), ...Object.values(FEELING_HUE).map((h) => ({ h, s: 0.7 }))];
   const far = Object.values(ATTRIBUTES).map((A) => ({ id: A.id, d: Math.min(...all.map((s) => Math.abs(((s.h - A.hue + 540) % 360) - 180))) })).filter((x) => x.d > 30);
   check('every attribute\'s hue has a curio or a fish within 30 degrees to print', !far.length, far); }
+{ const ids = ARCANA.map((a) => a.id), n = (k) => Object.values(BRANCHES).filter((b) => b.adds === k).length, seeds = Object.values(BRANCHES).filter((b) => b.strain).map((b) => b.strain).sort();
+  check('twenty-two branches, one for each Major Arcana card, and ten caps', ids.length === 22 && ids.every((id) => BRANCHES[id]) && Object.keys(BRANCHES).length === 22 && CAPS.length === TREE.bodies,
+    { fruit: n('fruit'), sharp: n('sharp'), seed: n('seed'), sporeling: n('sporeling') });
+  check('each strain has its branch to seed it', seeds.join() === Object.keys(STRAINS).sort().join(), seeds); }
 console.log(fails ? `mycelium: ${fails} FAILED` : 'mycelium: all passed'); process.exitCode = fails ? 1 : 0;
