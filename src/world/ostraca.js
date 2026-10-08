@@ -45,6 +45,11 @@ export class Ostraca {
     for (const place of ['dunes', 'dunemaw', 'ruins', 'workshop']) { this.at[place] = words.slice(i, i + P[place].n); i += P[place].n; }
     this.stoneMat = sandstoneMaterial({ ashlar: true }); // (the looks are Calissa's, vfx/ostracon.js: an ostracon of its word, a stele, the sealed room in the stele's sandstone)
     this.built = { dunes: false, workshop: false };
+    // a sherd left lying on a Great Dunemaw floor goes with the floor (another floor entered, or the Well left): its word may be drawn again
+    for (const n of ['well.floor', 'well.leave']) game.events?.on?.(n, () => this.forget('dunemaw'));
+  }
+  forget(place) {
+    for (let i = this.loose.length - 1; i >= 0; i--) { const s = this.loose[i]; if (s.place !== place) continue; s.look?.dispose(); this.game.signatures?.remove?.(s.sig); this.loose.splice(i, 1); }
   }
 
   found(word) { return (this.game.ledger?.get(`ostracon.${word}`) || 0) > 0; }

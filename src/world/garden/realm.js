@@ -46,6 +46,7 @@ import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
+const _pm = new THREE.Matrix4(), _p = new THREE.Vector3(); // (the keepsake pots read for their song)
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
 const LOTUS = { r: 1.3, seconds: 2 };
@@ -263,6 +264,7 @@ export class Realm {
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
+    this.hearMycelium(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -320,6 +322,28 @@ export class Realm {
     P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
     P.look.group.visible = true;
   }
+  /** The mycelium heard where the Pneuka Jar stands (Wanda's sounds, audio/mycelium.js; the state Dovina's): a bed at work within 12 m
+   *  (a phrase now and then: it limits itself), Myggdrasil's drone while on its planetoid, a keepsake pot's line within 4 m. */
+  hearMycelium(raw) {
+    const g = this.game, J = this.jarBody, M = g.gardenMycelium; if (!M || !J) return;
+    if ((this.myceliumT = (this.myceliumT ?? 0) - raw) <= 0) {
+      this.myceliumT = 0.5;
+      const S = g.sporeBeds;
+      for (const f of this.site.features) {
+        if (f.kind !== 'sporebed' || !S) continue;
+        const b = S.beds[f.bed], d = f.pos.distanceTo(J.pos);
+        if (b?.strain && b.set && d < 12 && !S.ready(f.bed)) sfx.sporeBed?.(b.strain, d);
+      }
+      const pots = g.keepsakes?.pots || [], C = this.site.by.chimney;
+      if (C && pots.length && J.planet === C) {
+        let best = null, bd = 4;
+        for (let i = 0; i < Math.min(pots.length, M.pots?.count ?? 0); i++) { M.pots.getMatrixAt(i, _pm); _p.setFromMatrixPosition(_pm); const d = _p.distanceTo(J.pos); if (d < bd) { bd = d; best = pots[i]; } }
+        if (best) sfx.keepsakeSong?.({ feeling: best.feeling }, bd);
+      }
+    }
+    if (M.planet && J.planet === M.planet) sfx.myggDrone?.(g.myggdrasil?.tincture ?? null, Math.max(0, J.pos.distanceTo(M.planet.c) - M.planet.r)); // (every frame: it fades by itself half a real second after the last)
+  }
+
   /** The shed: the Pneuka Box (P opens it anywhere), and the next planetoid to buy (world/garden/orbit.js). */
   shed() {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) { g.pneukaUI?.toggle(); return; }
