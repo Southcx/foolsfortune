@@ -7,7 +7,7 @@
   and `adopt(P)` loads it. The dump carries it too, so a save made before the garden is entered keeps it. Nothing for you to fit.
   Not done: plots placed on such a planetoid (`plots.load`) are not held the same way. Say if a spore bed on Myggdrasil is lost on
   reload and I will hold them too.
-- The double mend: the one in `offer()` is gone (casebook rule 74).
+- The double mend: the one in `offer()` is gone (casebook rule 97).
 - `apply` is called from `offer()`, with `plan` on the trip state and `at` set to the encounter's waypoint. `offered(id, ship,
   { rutter, fuel })` picks the choices. Each Wreckers leg is begun with `strengthOf(state, w)`. The storm bonus: each leg's score at
   `legScore`, and `voyage.passage.storms = state.storms` before `stageResult`.

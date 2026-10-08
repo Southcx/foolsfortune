@@ -10,7 +10,7 @@
 // look (vfx/garden/planetoid.js) is the base shape under it and is redrawn from it, and the planetoid bodies stand on the sum (world/garden/planetbody.js asks `radiusAt`). Water led from a pond runs down the
 // slope the hand carved, cell by cell, until it pools (From Dust's water, a ribbon of Lachryma). Each cell also keeps its ground's
 // material (SPIRIT-GARDEN.md item 6, Dovina's GROUND: moss, ash, loam, slate, silt, one a phase), painted by the hand and free; the look
-// is tinted toward it (a stand-in tint until Calissa's five grounds: GROUND_LOOK).
+// draws each ground (Calissa's five, vfx/garden/planetoid.js `fromClay`).
 //
 // Prior art: Populous's raise and lower, From Dust's sculpted ground and its water that finds the low path, Spore's planet editor
 // (a sphere's height field under a brush), and the potter's thumb on a pot's wall.
@@ -24,10 +24,8 @@ import * as THREE from 'three';
 import { GROUND } from '../../progress/realm.js';
 
 export const NX = 128, NY = 64;
-const _d = new THREE.Vector3(), _c = new THREE.Color();
+const _d = new THREE.Vector3();
 export const GROUNDS = Object.keys(GROUND); // (moss, ash, loam, slate, silt: a cell keeps its index plus one, 0 for none)
-const GROUND_LOOK = { moss: 0x5f8f4e, ash: 0xbab2a8, loam: 0x6b4a32, slate: 0x4f5866, silt: 0x8f8670 }; // (stand-ins: Calissa's five grounds, item 29)
-const TINT = 0.8; // (how far a painted vertex's colour goes toward its ground's)
 /** The grid cell's direction (unit vector) for a column and row. */
 export const dirOf = (i, j, out = new THREE.Vector3()) => { const lon = (i / NX) * Math.PI * 2, lat = ((j + 0.5) / NY - 0.5) * Math.PI; return out.set(Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)); };
 /** Every cell's direction, worked out once (x, y, z a cell; the brushes and the water walk these, never the trigonometry). */
@@ -68,7 +66,12 @@ export class Clay {
   heightAt(dir) {
     const [u, v] = uvOf(dir), i0 = Math.floor(u), j0 = THREE.MathUtils.clamp(Math.floor(v), 0, NY - 1), j1 = Math.min(NY - 1, j0 + 1);
     const fu = u - i0, fv = THREE.MathUtils.clamp(v - j0, 0, 1), i1 = (i0 + 1) % NX, H = this.h;
-    return (H[j0 * NX + i0] * (1 - fu) + H[j0 * NX + i1] * fu) * (1 - fv) + (H[j1 * NX + i0] * (1 - fu) + H[j1 * NX + i1] * fu) * fv;
+    const h = (H[j0 * NX + i0] * (1 - fu) + H[j0 * NX + i1] * fu) * (1 - fv) + (H[j1 * NX + i0] * (1 - fu) + H[j1 * NX + i1] * fu) * fv;
+    // within half a row of a pole (88.6 degrees on), toward the mean of the last row round it: read along one longitude, a pull there creased
+    const past = v > NY - 1 ? (v - (NY - 1)) / 0.5 : v < 0 ? -v / 0.5 : 0;
+    if (past <= 0) return h;
+    const row = v > 0 ? NY - 1 : 0; let m = 0; for (let i = 0; i < NX; i++) m += H[row * NX + i];
+    return h + (m / NX - h) * Math.min(1, past);
   }
   radiusAt(dir) { return (this.P.base ? this.P.base(dir) : this.P.r) + this.heightAt(dir); } // (the unsculpted shape, Calissa's, under the clay)
   /** Hold the ground still within `r` metres of a direction (a feature stands there). */
@@ -121,18 +124,7 @@ export class Clay {
   }
 
   /** A look made to follow the grid (vfx/garden/planetoid.js: its vertices' directions `dir`, heights `h` in units of its radius `R`). */
-  toLook(look) {
-    if (look.fromClay) return look.fromClay(this); // (Calissa's look keeps its own maps and redraws only what changed, its grounds too)
-    const D = look.dir, H = look.h;
-    for (let i = 0; i < H.length; i++) H[i] = this.heightAt(_d.set(D[i * 3], D[i * 3 + 1], D[i * 3 + 2])) / look.R;
-    look.rebuild();
-    if (!this.painted && !look.tinted) return;
-    // the painted grounds: each vertex's colour toward its cell's ground (the vertex-to-cell map worked out once a look)
-    if (look.cellMap?.length !== H.length) { look.cellMap = new Int32Array(H.length); for (let i = 0; i < H.length; i++) look.cellMap[i] = this.cellOf(_d.set(D[i * 3], D[i * 3 + 1], D[i * 3 + 2])); }
-    const C = look.geo.attributes.color, M = look.cellMap, G = this.ground;
-    for (let i = 0; i < H.length; i++) { const v = G[M[i]]; if (!v) continue; _c.setHex(GROUND_LOOK[GROUNDS[v - 1]]); C.setXYZ(i, C.getX(i) + (_c.r - C.getX(i)) * TINT, C.getY(i) + (_c.g - C.getY(i)) * TINT, C.getZ(i) + (_c.b - C.getZ(i)) * TINT); }
-    C.needsUpdate = true; look.tinted = this.painted > 0;
-  }
+  toLook(look) { return look.fromClay(this); } // (Calissa's look keeps its own maps onto the grid and redraws only what changed, its grounds too)
 
   /** Kept as whole centimetres (a planetoid's ground in the save: core/save.js). */
   dump() { let any = false; const a = Array.from(this.h, (v) => { const c = Math.round(v * 100); if (c) any = true; return c; }); return any ? a : null; }
