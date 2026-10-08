@@ -32,6 +32,7 @@ export const SPORELING = { height: 0.33, glowDay: 0.12, glowNight: 1, sway: 0.02
 const PART = { stem: 0, cap: 1, armL: 2, armR: 3, legL: 4, legR: 5, eyes: 6 }; // (its own left and right: facing +z, its left is +x)
 
 const KEY = 'garden-sporeling-1';
+const SP_WRAP = ((Math.PI * 2) / 0.9) * 500; // (the glow's clock wraps after 500 whole breaths of its sin(0.9 t), so the wrap is not seen)
 const VERT_DECL = /* glsl */`
 attribute vec4 aSp;
 attribute vec3 aPivot;
@@ -189,11 +190,11 @@ export function sporeling({ colour = 0xd8584a, size = 1, seed = 1 } = {}) {
     group, mesh,
     get airborne() { return st.hop >= SPORELING.crouch + SPORELING.launch && st.hop < SPORELING.crouch + SPORELING.launch + SPORELING.air; },
     /** colour: its fruit's; night: 0 day .. 1 night; moving: 0 still .. 1 walking (a waddle); sway: the idle's strength. */
-    set({ colour: c, night = st.night, moving = st.moving, sway = st.sway } = {}) { if (c != null) U.uCap.value.copy(toColour(c)); st.night = night; st.moving = moving; st.sway = sway; },
+    set({ colour: c, night = st.night, moving = st.moving, sway = st.sway } = {}) { if (c != null) U.uCap.value.copy(toColour(c)); st.night = Number.isFinite(night) ? night : st.night; st.moving = Number.isFinite(moving) ? moving : st.moving; st.sway = Number.isFinite(sway) ? sway : st.sway; },
     /** A hop of `height` metres (0: the squash and stretch alone, the body carried by something else). */
-    hop(height = 0.25) { if (st.hop >= 0 && st.hop < SPORELING.crouch + SPORELING.launch + SPORELING.air) return; st.hop = 0; st.hopH = height * size; },
+    hop(height = 0.25) { if (st.hop >= 0 && st.hop < SPORELING.crouch + SPORELING.launch + SPORELING.air) return; st.hop = 0; st.hopH = Number.isFinite(height) ? height * size : 0; },
     update(raw = 1 / 60) {
-      const L = SPORELING, dt = Math.min(raw, 0.1); st.t += dt; const t = st.t + st.ph, sw = L.sway * size * st.sway, mv = st.moving;
+      const L = SPORELING, dt = Math.min(raw > 0 ? raw : 0, 0.1); st.t += dt; const t = st.t + st.ph, sw = L.sway * size * st.sway, mv = st.moving;
       // the idle sway and the waddle, the cap lagging the stem
       st.lean.set(Math.sin(t * 1.1) * 0.6 + Math.sin(t * 12) * 0.5 * mv, Math.sin(t * 0.83 + 1) * 0.4).multiplyScalar(sw);
       st.cap.lerp(_cap.set(-st.lean.y * 7 + 0.05 * Math.sin(t * 1.7), st.lean.x * 7), Math.min(1, dt * 6));
@@ -210,7 +211,7 @@ export function sporeling({ colour = 0xd8584a, size = 1, seed = 1 } = {}) {
       st.blinkAt -= dt; if (st.blinkAt <= 0) { st.blink = 0; st.blinkAt = 2.5 + rnd() * 3; }
       let bl = 0; if (st.blink >= 0) { st.blink += dt; bl = Math.sin(Math.min(1, st.blink / 0.16) * Math.PI); if (st.blink > 0.16) st.blink = -1; }
       U.uPose.value.set(st.lean.x, st.lean.y, st.cap.x, st.cap.y); U.uLimb.value.set(armL, armR, legL, legR); U.uSquash.value = squash; U.uBlink.value = bl;
-      U.uGlow.value = L.glowDay + (L.glowNight - L.glowDay) * st.night; U.uT.value = st.t % 3600; body.position.y = lift; mindTick();
+      U.uGlow.value = L.glowDay + (L.glowNight - L.glowDay) * st.night; U.uT.value = st.t % SP_WRAP; body.position.y = lift; mindTick();
     },
     dispose() { if (gone) return; gone = true; group.parent?.remove(group); geo.dispose(); mat.dispose(); },
   };

@@ -22,15 +22,17 @@
 // colours washed on and since faded; the meander over the scene; palmettes on the shoulder), as in the Metropolitan Museum's and
 // the National Archaeological Museum of Athens' collections; Spiritfarer's Everdoor (care ending as a gift).
 //
-//   const P = lekythos({ colour, spirit?, height?, seed? })   P.group (stands on its origin, its picture to +z)   P.dispose()
-//   (colour: a hex, a THREE.Color, a CSS colour or Soul Alchemy's { h, s }; spirit: its kind ('sporeling', 'slipjelly'...) or a keepsake
-//    pot's record { kind }; anything else is drawn as a slip jelly)
+//   const P = lekythos({ colour?, feeling?, spirit?, height?, seed? })   P.group (stands on its origin, its picture to +z)   P.dispose()
+//   (colour: a hex, a THREE.Color, a CSS colour or Soul Alchemy's { h, s }; feeling: 'wonder' .. 'dread', its canon colour when no colour is
+//    given; spirit: its kind ('sporeling', 'slipjelly'...) or a keepsake pot's record { kind, colour, feeling } (game.keepsakes.pots[i]: the
+//    record's own colour and feeling are used when not given); anything else is drawn as a slip jelly)
 //   lekythosParked() -> a mesh of the pots' material for the warm-up (never disposed)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { WARE, paintMeander, paintTongues, paintPalmette, paintLikeness, paintStele } from '../blackfigure.js';
 import { wheelColour } from '../wheelcolour.js';
+import { COLOR } from '../../progress/weather.js';
 
 /** The numbers: the pot's height (metres), its canvas (around, along), lathe segments, the white ground's colour. */
 export const LEKYTHOS = { height: 0.62, canvas: [512, 1024], segments: 40, white: '#efe8da' };
@@ -58,11 +60,11 @@ function potMaterial(map) {
   return m;
 }
 
-/** A colour from anything the callers hold. */
-function toColour(c) {
+/** A colour from anything the callers hold; a feeling's canon colour when it holds none. */
+function toColour(c, feeling) {
   if (c && typeof c === 'object' && 'h' in c && 's' in c) return wheelColour(c.h, c.s);
   if (c && c.isColor) return c.clone();
-  return new THREE.Color(c ?? 0x8fb0ff);
+  return new THREE.Color(c ?? COLOR[feeling] ?? 0x8fb0ff);
 }
 /** The painting's colours (CSS, sRGB: rule 87): the line a dark of the colour, the wash it thinned, the border's colour kept off the white. */
 function paletteOf(colour) {
@@ -125,9 +127,9 @@ function potGeometry(height) {
 }
 
 /** A keepsake pot. */
-export function lekythos({ colour = 0x8fb0ff, spirit = null, height = LEKYTHOS.height, seed = 1 } = {}) {
-  const kind = typeof spirit === 'string' ? spirit : spirit?.kind ?? null;
-  const map = paintPot(toColour(colour), kind, seed), mat = potMaterial(map), geo = potGeometry(height);
+export function lekythos({ colour, feeling, spirit = null, height = LEKYTHOS.height, seed = 1 } = {}) {
+  const rec = spirit && typeof spirit === 'object' ? spirit : null, kind = typeof spirit === 'string' ? spirit : rec?.kind ?? null;
+  const map = paintPot(toColour(colour ?? rec?.colour, feeling ?? rec?.feeling), kind, seed), mat = potMaterial(map), geo = potGeometry(height);
   const mesh = new THREE.Mesh(geo, mat); mesh.name = 'keepsake-lekythos'; mesh.castShadow = true; mesh.receiveShadow = true;
   const group = new THREE.Group(); group.name = 'keepsake-pot'; group.add(mesh);
   let gone = false;

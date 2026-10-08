@@ -8,7 +8,7 @@
 //   mirth   FERMENT   KOJI (Aspergillus oryzae) over steamed rice in two cedar trays (the koji-buta of a koji room): a soft fuzz,
 //                     white where young, green-gold where it sporulates; the rice showing through
 //   desire  PRINT     the INKCAP (Coprinus comatus, the shaggy mane): tall white shaggy bells on a mound of loam, the old ones
-//                     dissolving into black ink from the rim up, drips hanging and a stain at the foot (the ink was once ink)
+//                     dissolving into black ink from the rim up, drips hanging and a pool of ink at the foot (the ink was once ink)
 //   grief   ROT       the OYSTER (Pleurotus ostreatus): pale overlapping shelves on a rotting log and a stump, the gills running
 //                     down their short stems (the oyster eats oil spills: it cleans the crude)
 //   dread   DISSOLVE  WITCHES' BUTTER (Tremella mesenterica): bright yellow-orange jelly folds on dead branches, wet and brainlike
@@ -48,6 +48,7 @@ export const STRAIN_FUNGI = { wonder: 'lichen', mirth: 'koji', desire: 'inkcap',
 const FEELING_OF = { lichen: 'wonder', koji: 'mirth', inkcap: 'desire', oyster: 'grief', butter: 'dread', witchesButter: 'dread' };
 /** The numbers: the bed's radius (m), the ring's distance outside it, the foxfire's strength and its lightness (least, most), the breath (rad/s). */
 export const STRAIN_LOOK = { radius: 1.2, ring: 0.22, glow: 0.55, light: [0.5, 0.62], breath: 0.7 };
+const BREATH_WRAP = ((Math.PI * 2) / STRAIN_LOOK.breath) * 400; // (the clock's wrap: 400 whole breaths, about a real hour)
 
 /** A feeling's foxfire: its canon colour, its lightness lifted into a glow's (linear, as a material wants). */
 export function foxfireColour(feeling) {
@@ -70,7 +71,7 @@ const VERT_GROW = /* glsl */`
     float gk = smoothstep(aFx.x, aFx.x + 0.14, uGrowth); // (born at its growth, scaled up from its foot)
     transformed = aRoot + (transformed - aRoot) * gk;
     vFx = aFx;
-    vPh = fract(sin(dot(aRoot.xz, vec2(12.9898, 78.233))) * 43758.5453);
+    vPh = fract(sin(dot(floor(aRoot.xz * 4.0), vec2(12.9898, 78.233))) * 43758.5453); // (the breath's phase by quarter-metre patch: a mound whose roots differ at every vertex must not boil)
   }
 `;
 const FRAG_DECL = /* glsl */`
@@ -182,7 +183,7 @@ function boulderShape(R, seed, squat = 0.62, bottom = -Infinity) {
 
 // ---- the parts every bed shares: the white mycelium creeping, and the fairy ring
 /** A few patches of white mycelium on the bed's ground (K.groundAt), clear of what the strain stands there (K.keep: [x, z, r]). */
-function mycelium(K, R, rnd) {
+function mycelialMats(K, R, rnd) {
   for (let i = 0; i < 3; i++) {
     let cx = 0, cz = 0, r = 0.06 + rnd() * 0.06;
     for (let n = 0; n < 12; n++) { const a = rnd() * Math.PI * 2, d = R * (0.25 + rnd() * 0.65); cx = Math.cos(a) * d; cz = Math.sin(a) * d; if (!K.keep.some(([x, z, kr]) => Math.hypot(cx - x, cz - z) < kr + r)) break; r *= 0.85; }
@@ -203,7 +204,7 @@ function fairyRing(K, Rr, feeling, rnd) {
   for (let k = 0; k < p.count; k++) {
     const x = p.getX(k), z = p.getZ(k), q = Math.atan2(z, x), t = (Math.hypot(x, z) - r0) / W, [w0, w1] = wob(q), rr = r0 + w0 + t * (W - w0 - w1), X = Math.cos(q) * rr, Z = Math.sin(q) * rr, tf = tuft(X, Z);
     p.setXYZ(k, X, lift(t) + 0.01 * tf, Z);
-    col.push(mix(mix(0x18241a, 0x2c3c2a, tf), mix(0x4a3e2a, 0x5e4e34, tf), 1 - THREE.MathUtils.smoothstep(t, 0.14, 0.26)));
+    col.push(mix(mix(0x536a52, 0x72896a, tf), mix(0x8e7e56, 0xa8986a, tf), 1 - THREE.MathUtils.smoothstep(t, 0.14, 0.26))); // (a darker, lusher moss and straw, not black: on the garden's pale ground a black ring reads as a hoop)
   }
   sward.computeVertexNormals();
   let ci = 0; // (the sward rises out of the ground as the ring grows, each vertex from under itself)
@@ -419,7 +420,7 @@ const BUILD = { wonder: lichen, mirth: koji, desire: inkcap, grief: oyster, drea
 export function strainBed(strain = 'wonder', { radius = STRAIN_LOOK.radius, growth = 1, night = 0, seed = 1, curve = 0 } = {}) {
   const feeling = BUILD[strain] ? strain : FEELING_OF[strain] ?? 'wonder', rnd = rng(seed * 31 + Object.keys(BUILD).indexOf(feeling));
   const K = new BedParts();
-  BUILD[feeling](K, radius, rnd); mycelium(K, radius, rnd); fairyRing(K, radius + STRAIN_LOOK.ring, feeling, rnd);
+  BUILD[feeling](K, radius, rnd); mycelialMats(K, radius, rnd); fairyRing(K, radius + STRAIN_LOOK.ring, feeling, rnd);
   const geo = K.done(curve), mat = strainMaterial(feeling), U = mat.userData.u;
   const mesh = new THREE.Mesh(geo, mat); mesh.name = `strain-bed-${STRAIN_FUNGI[feeling]}`; mesh.receiveShadow = true; mesh.castShadow = false;
   const group = new THREE.Group(); group.name = 'spore-bed'; group.add(mesh);
@@ -427,8 +428,8 @@ export function strainBed(strain = 'wonder', { radius = STRAIN_LOOK.radius, grow
   const B = {
     group, mesh, feeling, fungus: STRAIN_FUNGI[feeling], tris: geo.index.count / 3,
     /** growth: 0 inoculated .. 1 the colony full; night: 0 day .. 1 night (the garden's), the foxfire's strength. */
-    set({ growth: gw = U.uGrowth.value, night: nt = U.uNight.value } = {}) { U.uGrowth.value = THREE.MathUtils.clamp(gw, 0, 1); U.uNight.value = THREE.MathUtils.clamp(nt, 0, 1); },
-    update(raw = 1 / 60) { U.uT.value = (U.uT.value + raw) % 3600; mindTick(); },
+    set({ growth: gw = U.uGrowth.value, night: nt = U.uNight.value } = {}) { U.uGrowth.value = THREE.MathUtils.clamp(Number.isFinite(gw) ? gw : U.uGrowth.value, 0, 1); U.uNight.value = THREE.MathUtils.clamp(Number.isFinite(nt) ? nt : U.uNight.value, 0, 1); },
+    update(raw = 1 / 60) { U.uT.value = (U.uT.value + (raw > 0 ? raw : 0)) % BREATH_WRAP; mindTick(); }, // (a whole number of breaths, so the wrap is not seen; a bad step is none)
     dispose() { if (gone) return; gone = true; group.parent?.remove(group); geo.dispose(); mat.dispose(); },
   };
   B.set({ growth, night });

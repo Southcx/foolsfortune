@@ -251,8 +251,40 @@ the rules before building in the same area; a rule a machine can check goes into
 93. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
     and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
     `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
+94. **A look made on the workbench is judged once on the ground it will stand on.** The workbench's floor is near black and its light
+    strong; the Spirit Garden's ground is pale (225, 230, 180) and its light soft. A colour chosen against the one is wrong on the
+    other (a "darker, lusher" ring that was near black read as a hoop), so a look for a place is placed in that place by hand, in its
+    own light and on its own ground's normal, before it is called done.
+95. **A clock a shader's sine reads wraps at a whole number of that sine's periods, and a step that is not a number is no step.** A
+    uniform wrapped at 3600 real seconds jumps the phase of `sin(0.7 t)` (2520 rad is 401.07 turns) by the fraction left over; and `NaN` added once
+    stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
+    handed a number that is not one.
 
 ## Cases
+
+### 2026-10-08 · The fairy rings were black hoops on the garden's pale ground (found in review, placing the strains in the real garden)
+- **Seen:** on the workbench's dark stage the sward round a spore bed (0x18241a to 0x2c3c2a) read as dark moss. Stood by hand on the
+  Dantian (ground about (225, 230, 180) in the garden's daylight) every bed's ring was the heaviest mark on screen, a near-black hoop on
+  a pastel planetoid, not a darker, lusher ground. Standing a bed on the direction from the planetoid's centre rather than the ground's
+  normal buried the far half of its ring under the clay (the Dantian is not a sphere: `radiusAt` carries noise and the clay).
+- **Cause:** the colours were chosen against the workbench's floor and light, and the bed was placed in the garden only in the head.
+- **Fix:** the sward is moss (0x536a52 to 0x72896a) with a straw dead edge (0x8e7e56 to 0xa8986a): darker than the ground and not black,
+  in the garden and on the workbench. The handoff to Petra says to stand a bed on the ground's own normal (three samples of
+  `radiusAt`), measured to lay the whole ring on the Dantian.
+- **Rule:** 94 (a look made on the workbench is judged once on the ground it will stand on; and 64, the normal).
+
+### 2026-10-08 · The koji's foxfire boiled, a bad step poisoned the glow for good, and its clock jumped once an hour (found in review)
+- **Seen:** the foxfire's breath over a night cycle, four samples a pixel: the two koji trays showed fine per-pixel noise in how much each
+  pixel breathed (mean relative range 0.10, up to 0.35) where every other part breathed whole. `bed.update(NaN)` left the clock `NaN` for
+  good (the glow's `sin` of it undefined: black or white on a driver that does not drop it), `bed.set({ growth: NaN })` clamped to `NaN`
+  and the whole bed vanished, and a sporeling's `update(NaN)` bent every vertex to `NaN`.
+- **Cause:** the breath's phase came from each vertex's growth root, and the koji's fuzz grows each vertex from its own root, so every
+  vertex breathed on its own phase. `clamp(NaN)` and `NaN + dt` are `NaN`. The clocks wrapped at 3600 real seconds, which is 401.07 turns of
+  `sin(0.7 t)` (a step in the glow of up to 0.09) and 515.66 turns of the sporeling's `sin(0.9 t)` (up to a third of its glow).
+- **Fix:** the phase is taken from the root's quarter-metre patch (the mottle after: mean range 0.064, smooth patches); the clocks wrap
+  at 400 and 500 whole breaths; `update` adds only a step above zero, `set` keeps its old value when handed a number that is not one,
+  and `hop(NaN)` is no hop. 560 beds over every strain, seed and size, 252 pots and 30 sporelings fed bad arguments: no `NaN` attribute or uniform.
+- **Rule:** 95.
 
 ### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
 - **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
