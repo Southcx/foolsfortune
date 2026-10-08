@@ -167,6 +167,11 @@ export class LeviathanPiece {
   /** On the bar: a spit (outlined, from the throat, its light swelling first); a fin's windup every other bar alongside. */
   onBar(bar, rel) {
     const st = this.stage, S = st.ship;
+    // the telegraph mark (Calissa's vfx/telegraph.js), as the brig's ports wear it: on the throat over the bar before each spit, and on
+    // the fin through its windup; each goes with its part (casebook: a mark is asked every frame whether it is still true)
+    const T = st.shots.telegraphs;
+    if (T && rel >= 3 && (this.phase === 'heave' || this.phase === 'abreast' || this.phase === 'maw') && (bar + 1) % N.spit.every === 0 && this.throat.alive) T.mark(this.look.part('throat').object, BAR_S, { radius: 1.2, from: 2.6, alive: () => this.throat.alive && !this.ended });
+    if (T && this.phase === 'abreast' && (bar - 8) % N.fin.every === 1 && this.fins.t < 0) { const pv = this.look.fins?.find((x) => x.side === FLANK)?.pivot; if (pv) T.mark(pv, N.fin.windup * BAR_S, { radius: 2.4, from: 4, alive: () => !this.ended }); }
     if (rel >= 4 && (this.phase === 'heave' || this.phase === 'abreast' || this.phase === 'maw') && bar % N.spit.every === 0) {
       this.look.throat(1); this.throatT = 0.3; // (its light swells, and dies with the spit)
       const mouth = this.throat.alive ? this.throat.local : this.at, aim = _v.copy(S.local).sub(mouth).normalize().multiplyScalar(18);

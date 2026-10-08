@@ -94,7 +94,7 @@ export class Realm {
         this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
         this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
       },
-      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -317,7 +317,7 @@ export class Realm {
     const near = this.site.planets.filter((Q) => Q !== P && !Q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2);
     for (const Q of near) { const V = this.site.link(P, Q); this.site.links?.push({ V, a: P, b: Q, ends: {} }); }
     for (const l of this.site.lotuses) if (l.planet === P) this.clays[P.id].keep(l.pos.clone().sub(P.c), 2);
-    this.plots.addPlanet(P, plots); this.plots.veins(P);
+    this.plots.addPlanet(P, plots); this.plots.placeWaiting?.(P); this.plots.veins(P);
     const W = this.waiting; if (W.clay[P.id] || W.ground[P.id]) { this.clays[P.id].load(W.clay[P.id]); this.clays[P.id].loadGround(W.ground[P.id]); delete W.clay[P.id]; delete W.ground[P.id]; this.reshape(P, true); }
     P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
     P.look.group.visible = true;

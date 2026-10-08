@@ -31,8 +31,9 @@ export const ZONE_TESTS = [
   { id: 'dunes', test: inDunes },
   // a Well's floor (world/well/dunemaw.js): built far west and deep, one floor at a time
   { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
-  // a crossing of the Emocean (world/emocean/stage.js SEA_AT): a straight rail 4 km along +Z, far west, at the dunes' layer
-  { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 2400 && p.y > -470 && p.y < -360 },
+  // a crossing of the Emocean (world/emocean/stage.js SEA_AT): the rail along +Z from z -2000, far west, at the dunes' layer; a long
+  // passage (six waypoints, some 450 bars at 39 m a bar) runs 17.5 km, so the zone runs to 24 km (Calissa read the old 4.4 km's end)
+  { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 24000 && p.y > -470 && p.y < -360 },
   // the Spirit Garden (world/garden/place.js GARDEN_AT): six planetoids over the world's north, entered at a Shrine
   { id: 'garden', test: (p) => Math.abs(p.x) < 250 && p.z > 2750 && p.z < 3250 && p.y > 1000 && p.y < 1500 },
   // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer

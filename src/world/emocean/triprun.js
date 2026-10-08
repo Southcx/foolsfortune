@@ -26,7 +26,6 @@ import { tripLayout } from '../../music/legs.js';
 import { schedule } from '../../progress/rail/legs.js';
 import { start, arrive, havenChoices, choose, legScore, adrift, drift } from '../../progress/rail/trip.js';
 import { ENCOUNTERS, pickEncounter, offered, apply, strengthOf } from '../../progress/rail/encounters.js';
-import { bountyPay } from '../../progress/econ/livelihoods.js';
 import { rutterWorth, next } from '../../progress/econ/passage.js';
 import { ECON } from '../../progress/econ/table.js';
 import { worthOf } from '../../progress/shop/catalogue.js';
@@ -39,7 +38,6 @@ import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 
 const MUSIC_ID = { leviathan: 'nobody' };
-const BOUNTY_CLASS = 1; // (a posted bounty on one leg: livelihoods.js bountyPay(1), 128 cubes; a Whale's 960 is two hours' aim for a minute. Dovina's number to set)
 const BAR_S_GUESS = 2; // (a bar's real seconds near enough for the barge's rutter price: stage.js BAR_S) // (the cue's names for a leg where they differ from the waypoint's)
 const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Reckon the sea.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
 // each encounter's title and its choices' words (Espada's: docs/LORE.md, "The encounters at sea"); a choice not listed shows its `does`
@@ -168,7 +166,7 @@ export class TripRun {
     let more = legScore(scored, w) - scored;
     if (this.hidden?.k === k) { more += Math.round(scored * (this.hidden.pays - 1)); this.hidden = null; }
     if (more) S.run.score += more;
-    if (this.bounty === w.id && this.legs[k].plan) { const cubes = bountyPay(BOUNTY_CLASS); this.game.cubes?.earn(cubes, 'bounty'); this.bounty = null; this.game.events?.emit('passage.bounty', { waypoint: w.id, type: w.type, cubes, by: 'courier' }); }
+    if (this.bounty?.waypoint === w.id && this.legs[k].plan) { const cubes = this.bounty.cubes; this.game.cubes?.earn(cubes, 'bounty'); this.bounty = null; this.game.events?.emit('passage.bounty', { waypoint: w.id, type: w.type, cubes, by: 'courier' }); }
     if (this.race && this.legs[k].plan) { const par = this.race.par, beat = scored + more >= par; this.V.passage.race = { beat }; this.race = null; this.game.events?.emit('passage.race', { beat, score: scored + more, par: Math.round(par), by: 'courier' }); }
     // the hull carries: the run's hits are the hull's damage (trip.js); a haven's mend shows there
     S.run.hits = Math.max(0, (SHIPS[this.state.ship]?.bears ?? S.run.bears) - this.state.hull);
@@ -220,7 +218,7 @@ export class TripRun {
         for (let i = 0; i < Math.min(a.n, room); i++) if ((box?.add(`cask.${a.grade}`, 'loot') ?? -1) >= 0) { (V.s.manifest[a.grade] ||= []).push({ from: 'convoy', paid: 0 }); n++; }
         V?.dirty?.(); ev('passage.casks', { n, grade: a.grade }); break;
       }
-      case 'bounty': this.bounty = a.waypoint; ev('passage.posted', { waypoint: a.waypoint, type: this.chart.waypoints[a.waypoint]?.type, cubes: bountyPay(BOUNTY_CLASS) }); break;
+      case 'bounty': this.bounty = { waypoint: a.waypoint, cubes: a.cubes ?? 0 }; ev('passage.posted', { waypoint: a.waypoint, type: this.chart.waypoints[a.waypoint]?.type, cubes: a.cubes ?? 0 }); break; // (its pay is the ask's: encounters.js postedBounty, Dovina's)
       case 'sellRutter': {
         const i = (box?.slots || []).findIndex((x) => x?.id === 'rutter'); if (i < 0) break;
         box.take(i); g.cubes?.earn(a.cubes, 'sell'); ev('rutter.sell', { cubes: a.cubes, to: 'letty' }); break;
