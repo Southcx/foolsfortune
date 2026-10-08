@@ -351,8 +351,32 @@ the rules before building in the same area; a rule a machine can check goes into
     alone cannot tell it from the player leaving, so the window marks the moment and the pause waits past it.
 126. **A test's seed names no game day.** What the calendar lays (a sea chart, a Well's floors) changes with the real hour; a test that
     depends on it pins the clock (`?clock=`) as perf does, or its seed means a different world each hour.
+127. **A point fixed in the world is found in the world and carried into a moving frame, never written as the frame's numbers.** A
+    rail frame that banks, rolls or loops tilts its own axes: a centre "across" a banked frame lies under the sea, and a height "up" it
+    leans. Find the point from what does not tilt (the heartline and the heading), add world heights in the world, then `toLocal`.
+128. **Two meshes that meet on a curve overlap; they never abut.** A ring of chords lies inside its circle and a camera-following grid
+    never matches a fixed one, so a seam cut on the circle opens a sliver onto whatever is under the world (the sky's dome, from above).
+    Run one a few metres on under the other and let it win their shared ground by polygon offset (a state, not a program).
 
 ## Cases
+### 2026-10-08 · Charybdis held fifteen metres under the crude, and the whirlpool's seam open to the sky (Calissa's Charybdis)
+- **Seen:** building Charybdis's look on Petra's director (world/emocean/charybdis.js): the foe it holds at the arena's centre measured
+  15.1 m under the crude's level all through the arena's laps (a 24-bar peak, 3 laps), so "risen 7 m" stood 8.6 m under the sea and
+  "dived 6 m" 20.8 m under, and 3.5 to 4.0 m off the point the laps circle (the heartline turns about it at 44.4 to 44.9 m). Drawn where
+  it is held, its maw would sit inside the crude, off the whirlpool's middle. Separately, the whirlpool's first disc showed a dotted line
+  of the sky's dome round its rim from above (`crossing:charybdis`, the 'above' camera).
+- **Cause (measured on the rail's own path, RailPath.lay and at over a 24-bar arena):** `arenaCentre` gives the centre in the frame at the arena's middle,
+  `(-sign * radius, 0, 0)`, and `foe.local.y` its height up the frame; through the arena the frame is banked 0.35 rad inward, so its
+  across points down into the sea (radius x sin 0.35 = 15.1 m) and its up leans, and the rail point is the heartline less the tilted up.
+  The seam: the disc's rim is 128 chords inside its circle (1 cm in at the middle of each), the sea round it was cut on the circle, and
+  the sliver between showed what is under the world.
+- **Fix:** the whirlpool's heart is found from the heartline and the heading only (`whirlHeart`, vfx/whirlpool.js: the heartline's point
+  at the arena's middle, the arena's radius across the unbanked heading, at the sea's level); the director holds the foe at the heart
+  plus its height in the world, carried into the frame by `rail.toLocal` (the smallest edit, world/emocean/charybdis.js `take`).
+  Petra's test still passes all nine; the ship now circles at 44.4 to 44.9 m from it. The disc runs 3 m on past its rim under the sea
+  round it, drawn with a polygon offset (no program: a state), and only the sea round it is cut: no sliver from any camera.
+- **Rule:** 127, 128.
+
 ### 2026-10-08 · Five shader programs over main's at boot, two of them one shadow (perf over the program budget, Calissa's program diet, round two)
 - **Seen:** `npm run perf` on Calissa's branch (8ce7551) read 165 programs in every scene against the budget of 164 (main: 160), and the heap
   367 MB against 365. The boot's programs listed by name and cache key against main's: `leaf-canopy`, `mind-geometry`, `rail-mark`,
