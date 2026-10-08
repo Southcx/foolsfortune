@@ -23,7 +23,7 @@ export class Places {
     this.map = new Map();
   }
 
-  add(id, { name = id, at, yaw = null, note = '', near = 1.6, stand = null, deck = false }) { this.map.set(id, { id, name, at, yaw, note, near, stand, deck }); return this; } // (stand: the exact spot to be set down, facing `at`; deck: set down at its own height, not on the sand under it)
+  add(id, { name = id, at, yaw = null, note = '', near = 1.6, stand = null, deck = false, via = null }) { this.map.set(id, { id, name, at, yaw, note, near, stand, deck, via }); return this; } // (stand: the exact spot to be set down, facing `at`; deck: set down at its own height, not on the sand under it)
   /** Not while a crossing is sailed: the Courier is the ship's (SWEEPS group 3: /goto mid-crossing left a full-size Courier on the sloop). */
   refuses() { return !!this.game.emocean?.stage.active; }
   get(id) { return this.map.get(id) || null; }
@@ -39,6 +39,7 @@ export class Places {
   /** Into the place's zone the way the game takes you there, and set down a step from it, facing it. */
   travel(id) {
     const g = this.game, p = this.get(id), at = this.pos(id);
+    if (p?.via) return p.via() ? { pos: at, yaw: 0 } : null; // (a place reached its own way: a debug chest in the Spirit Garden, debug/debugchest.js)
     if (!p || !at || this.refuses()) return null;
     if (g.well?.active) g.well.end?.('abandon'); // (travelled out of a run: it is given up, nothing paid, nothing hauled: SWEEPS group 3)
     const zone = wholeOf(at);

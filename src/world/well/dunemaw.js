@@ -243,7 +243,7 @@ export class Dunemaw {
     R.cleared.add(n);
     const r = seeded((R.seed ^ Math.imul(n + 7, 0x27d4eb2d)) >>> 0), kind = r.pick(KIND_IDS), foe = this.mobs.some((c) => c.cls && c.downBy === 'courier');
     const tier = Math.min(4, n - 1 + (deckDraw(g.ledger, 'well.rare', RARE, r()) ? 1 : 0) + (foe ? 1 : 0)), item = `mat.${kind}`;
-    R.haul.push({ id: item, data: makeMaterial(kind, (R.seed + n) >>> 0, tier) });
+    R.haul.push({ id: item, data: makeMaterial(kind, (R.seed + n) >>> 0, tier, g.weather?.at?.(`well:${WELL_ID}`)) }); // (it remembers the weather it was won in: Dovina's 7a, ruled A)
     g.events?.emit('well.find', { well: WELL_ID, floor: n, item, tier, by: 'courier' });
   }
 
