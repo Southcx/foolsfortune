@@ -32,6 +32,7 @@ import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.j
 import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
 import { raceRank } from './rail/encounters.js';
+import { TRIP } from './rail/trip.js';
 import { mountable, slotsOf } from './rail/mounts.js';
 import { boardKey, better } from './rail/trip.js';
 import { deckDraw } from './econ/deck.js';
@@ -176,7 +177,7 @@ export class Voyage {
     this.s.at = passed ? V.to : home; this.s.sailing = null;
     this.dirty();
     const continues = V.continues || 0, setPieces = V.setPieces || [V.setPiece || 'shoal'], setPiece = setPieces[setPieces.length - 1];
-    const ranked = raceRank(rankOf(score, setPiece), !!V.passage?.race?.beat), rank = continues && 'SAB'.includes(ranked) ? CONTINUE.rankCap : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed run still tops out at C)
+    const ranked = raceRank(rankOf(score, setPiece), !!V.passage?.race?.beat), rank = (continues || V.passage?.adrift) && 'SAB'.includes(ranked) ? (continues ? CONTINUE.rankCap : TRIP.driftRank) : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed or adrift run still tops out at C)
     const medal = !continues && medalOf({ passed, downed, spawned });
     this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
       chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });

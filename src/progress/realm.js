@@ -166,9 +166,11 @@ export const ORBIT = { slots: 10, radius: 95, tilt: 12 };
 export const orbitSlot = (n = 0) => ({ angle: +((360 / ORBIT.slots) * (n % ORBIT.slots)).toFixed(1), radius: ORBIT.radius, tilt: n % 2 ? -ORBIT.tilt : ORBIT.tilt });
 
 /** 20. The garden's weather is you: the draught's feeling falls as rain inside the Jar, as hard as your mental state is liquid (Stoic
- *  and Resolved dry, Balanced a drizzle, Fluid rain, Prismatic a storm), so drinking Lachryma in the world waters the garden, and
- *  meditating at the Chimney (settling you) clears it. Brimming adds `brim`. Rain is a water source of the draught's feeling (WATERS). */
-export const RAIN = { Stoic: 0, Resolved: 0, Balanced: 0.2, Fluid: 0.5, Prismatic: 0.9, brim: 0.1 };
+ *  to Balanced dry, Fluid rain, Prismatic a storm), so drinking Lachryma in the world waters the garden, and meditating at the Chimney
+ *  (settling you) clears it. Brimming adds `brim`. Rain is a water source of the draught's feeling (WATERS). Balanced was a drizzle
+ *  (0.2) until 2026-10-08: the mind rests at Balanced (the keeper, v112), so the garden drizzled whenever you stood still, and a
+ *  garden always wet teaches nothing; now rain is something you did (Calissa's question, Dovina's ruling). */
+export const RAIN = { Stoic: 0, Resolved: 0, Balanced: 0, Fluid: 0.5, Prismatic: 0.9, brim: 0.1 };
 export const rainOf = ({ state = 'Balanced', brimming = false } = {}) => Math.min(1, (RAIN[state] ?? 0) + (brimming ? RAIN.brim : 0));
 
 /** 21. A guest in your garden (over the room, COOP.md): their Pneuka Jar on your planetoids, hopping and looking; their god hand may pet

@@ -908,7 +908,7 @@ async function main() {
   const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
-  const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
+  const gardenLooks = [...(game.realm?.parked() || []), ...(game.gardenMycelium?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }

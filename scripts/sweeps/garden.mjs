@@ -785,7 +785,7 @@ await guard('mycelium', async () => {
     g.cubes.earn(500, 'test'); g.pneuka.add('mat.provision', 'test');
     const p = R.plots.plots.find((q) => q.planet.id === 'myggdrasil' && !q.placed), r = R.plots.place(p, 'sporebed', 'grief');
     const i = S.bedOf(p.id), f = R.site.features.find((x) => x.kind === 'sporebed' && x.plot === p.id);
-    return { placed: r.ok, why: r.why, plot: p.id, i, strain: S.beds[i]?.strain, feature: !!f, ring: M.rings.has(p.id) }`);
+    return { placed: r.ok, why: r.why, plot: p.id, i, strain: S.beds[i]?.strain, feature: !!f, ring: M.beds.has(p.id) }`);
   check('spore bed: placed, granted, a place to F at, its ring drawn', b1.placed && b1.i >= 0 && b1.feature && b1.ring, b1);
   check('spore bed: placed in a feeling you hold spores of, it takes that strain', b1.strain === 'grief', { strain: b1.strain });
   // F at it: stand the Jar there and ask what the chevron offers, then work it through its page as a player clicks
@@ -801,13 +801,13 @@ await guard('mycelium', async () => {
   check('spore bed: a thing set from the page, working, takeable back', s1.set && !s1.ready && /working/.test(s1.text) && /Take it back/.test(s1.text), s1);
   const h1 = await M(`
     const i = S.bedOf('${b1.plot}'); S.beds[i].at -= S.beds[i].hours * 150000 + 1; M.sync();
-    const lit = M.rings.get('${b1.plot}').mat.emissiveIntensity > 0, n0 = g.pneuka.slots.filter(Boolean).length; M.use({ kind: 'sporebed', plot: '${b1.plot}' });
+    const lit = M.beds.get('${b1.plot}').growth === 1, n0 = g.pneuka.slots.filter(Boolean).length; M.use({ kind: 'sporebed', plot: '${b1.plot}' });
     const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /Harvest/.test(d.innerText)); row?.click();
-    return { lit, harvested: !S.beds[i].set, ev: g.events.counts['spore.harvest'] || 0, gained: g.pneuka.slots.filter(Boolean).length - n0, unlit: !(M.rings.get('${b1.plot}').mat.emissiveIntensity > 0) }`);
+    return { lit, harvested: !S.beds[i].set, ev: g.events.counts['spore.harvest'] || 0, gained: g.pneuka.slots.filter(Boolean).length - n0, unlit: M.beds.get('${b1.plot}').growth < 1 }`);
   check('spore bed: ready, its ring lights; harvested from the page, the bed is free again', h1.lit && h1.harvested && h1.ev >= 1 && h1.gained >= 1 && h1.unlit, h1);
   await closeAll();
   // moved by the hand: the colony goes with it
-  const mv = await M(`const from = R.plots.plots.find((q) => q.id === '${b1.plot}'), to = R.plots.plots.find((q) => q.planet === from.planet && !q.placed); const ok = R.plots.move(from, to); M.sync(); return { ok, bed: S.bedOf(to.id), old: S.bedOf(from.id), ring: M.rings.has(to.id) && !M.rings.has(from.id) }`);
+  const mv = await M(`const from = R.plots.plots.find((q) => q.id === '${b1.plot}'), to = R.plots.plots.find((q) => q.planet === from.planet && !q.placed); const ok = R.plots.move(from, to); M.sync(); return { ok, bed: S.bedOf(to.id), old: S.bedOf(from.id), ring: M.beds.has(to.id) && !M.beds.has(from.id) }`);
   check('spore bed: moved by the hand, its colony and ring go with it', mv.ok && mv.bed === 0 && mv.old === -1 && mv.ring, mv);
   // the tree: fed at its roots from its page, a crop at dawn, picked
   const t1 = await M(`
@@ -822,8 +822,10 @@ await guard('mycelium', async () => {
   check('Myggdrasil: the crown picked from its page, bare again', pk.crown === 0 && pk.shown === 0 && pk.ev >= 1, pk);
   await closeAll();
   // a keepsake pot at the Chimney's foot
-  const kp = await M(`g.events.emit('spirit.release', { spirit: 'sweep', kind: 'slipjelly', feeling: 'grief', by: 'courier' }); const C = R.site.by.chimney, m = new __game.THREE.Matrix4(); M.pots.getMatrixAt(0, m); const p = new V().setFromMatrixPosition(m), d = p.clone().sub(C.c); return { n: M.pots.count, off: +(d.length() - C.radiusAt(d.normalize())).toFixed(2) }`);
-  check('keepsake pot: a spirit let go stands as a pot on the Chimney\'s ground', kp.n === 1 && Math.abs(kp.off) < 0.3, kp);
+  const kp = await M(`g.events.emit('spirit.release', { spirit: 'sweep', kind: 'slipjelly', feeling: 'grief', by: 'courier' }); const C = R.site.by.chimney, x = M.painted[0], p = x ? x.P.group.position.clone() : new V(), d = p.clone().sub(C.c); return { n: M.painted.length + M.pots.count, painted: M.painted.length, off: +(d.length() - C.radiusAt(d.normalize())).toFixed(2) }`);
+  check('keepsake pot: a spirit let go stands as a painted lekythos on the Chimney\'s ground', kp.n === 1 && kp.painted === 1 && Math.abs(kp.off) < 0.3, kp);
+  const sp = await M(`const n0 = M.sporelings.length; T.s.sporeling = 2; M.sync(); const P = R.site.by.myggdrasil, x = M.sporelings[0], d = x.S.group.position.clone().sub(P.c); return { n0, n: M.sporelings.length, off: +(d.length() - P.radiusAt(d.normalize())).toFixed(2) }`);
+  check('sporelings: the tree\'s sporelings stand round its roots on the ground', sp.n === 2 && Math.abs(sp.off) < 0.3, sp);
   // the Grimoire of Echoes
   const gm = await M(`const host = document.createElement('div'); g.codexPages.grimoire({ game: g }, host); const t = host.innerText; return { oyster: /The oyster/.test(t), pots: /Slipjelly|slipjelly/i.test(t), tree: /girth/.test(t) }`);
   check('the Grimoire of Echoes: the strains held, the tree, the pots', gm.oyster && gm.tree && gm.pots, gm);

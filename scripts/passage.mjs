@@ -118,6 +118,20 @@ check('a ship that cannot dive is never offered the dive', !offered('lightWhale'
 check('a storm cleared raises the rutter', rutterWorth({ minutes: 6, rank: 'A', read: 1, storms: 1 }) > rutterWorth({ minutes: 6, rank: 'A', read: 1 }));
 { const all = mountable(Object.keys(MOUNTS));
   check('a loadout is cut to the hull\'s slots', all.length >= 3 && ['sloop', 'frigate', 'tanker'].every((h) => loadout(all, all, h).length === Math.min(all.length, slotsOf(h))), Object.fromEntries(['sloop', 'frigate', 'tanker'].map((h) => [h, loadout(all, all, h).length]))); }
+{ // the portents' shortlist: decoys of its own class first, the class said only when every candidate shares it
+  let spans = 0, said = 0, threats = 0, kinOnly = 0;
+  for (let d = 0; d < 200; d++) {
+    const C = seaChart({ from: 'anagami', to: 'margarite', day: d, danger: 0.5, distance: 6, casks: 1 });
+    for (const w of Object.values(C.waypoints)) for (const [depth, sv] of [[2, 0.9], [3, 0.95]]) {
+      const P = portent(C, w, depth, sv); if (!P.candidates.length || P.tier === 'exact') continue;
+      const share = P.candidates.every((t) => classOf(t) === classOf(w.type));
+      if (P.cls != null && !share) spans++; if (P.cls != null) said++;
+      if (classOf(w.type) === 'threat') { threats++; if (share) kinOnly++; }
+    }
+  }
+  check('a portent names its class only when every candidate shares it', spans === 0 && said > 0, { said, spans });
+  check('a threat\'s decoys are threats (four of its class to draw from)', threats > 0 && kinOnly === threats, { threats, kinOnly });
+}
 { // the encounters' effects (apply): every choice of every encounter on many seas, pure and in bounds
   let bad = [], asked = {};
   for (let d = 0; d < 60; d++) {
