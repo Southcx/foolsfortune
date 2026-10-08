@@ -233,7 +233,7 @@ export class GameLog {
       this.quiet.set(key, now);
     }
     const p = this.last;
-    if (key && p && p.key === key && now - p.t < win) {
+    if (key && p && p.key === key && (fmt || p.text === text) && now - p.t < win) { // (a different line under the same key is its own line: two casts close together were one, the second's name lost)
       p.n++; p.t = now;
       p.text = fmt ? fmt(p.n) : p.text;
       if (p.el) p.el.lastChild.textContent = p.text;

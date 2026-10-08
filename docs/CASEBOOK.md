@@ -265,6 +265,12 @@ the rules before building in the same area; a rule a machine can check goes into
     the ship rides), or the ship is swung through the sea's surface.
 99. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
     copied (last frame's), the two disagree at any discontinuity; hand all of it the same way.
+100. **What lies in a place that is taken down goes with it.** A thing a place leaves in a list (a sherd on a floor of a Well) is
+    dropped when the place is: listen for the place's end (another floor, the way out) and forget what it held.
+101. **A grid on a sphere meets itself at the poles.** Read the last row round a pole as one point (its mean) near the pole, never
+    along one longitude, or the ground creases there.
+102. **A merged line is the same line.** The log folds a repeat into the line before it (a count); a different line under the same key is
+    its own, or the second's words are lost.
 
 ## Cases
 
@@ -1378,3 +1384,24 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** each figure turns about the heartline, CRUISE up the frame (railpath.js `heart`). Measured after: the ship 3 m above the
   sea through every figure (scripts/railpathtest.mjs).
 - **Rule:** 98.
+
+### 2026-10-08 · A Great Dunemaw ostracon left lying stayed in the world after its floor was gone (Calissa, reading while testing)
+- **Seen:** not in play: read. A sherd dropped from a forgotten pot and left lying stayed in `loose` after the Courier left the floor;
+  its word was never dropped again (`drop` refuses a word that is loose) and it could be taken by standing where the floor had been.
+- **Cause:** nothing took the floor's loose sherds away when the floor was.
+- **Fix:** `Ostraca.forget('dunemaw')` on `well.floor` and `well.leave`. Checked by scripts/ostracatest.mjs and the Dunemaw sweep.
+- **Rule:** 100.
+
+### 2026-10-08 · A pull near a planetoid's pole creased the ground (Calissa's garden survey)
+- **Seen:** within 0.49 m of a pole, a pull with the god hand left a crease.
+- **Cause:** `Clay.heightAt` clamps the last row at 88.59 degrees, so near the pole the height is read along one longitude.
+- **Fix:** within half a row of a pole the height blends to the last row's mean, all of it at the pole. Checked by the garden sweep.
+- **Rule:** 101.
+
+### 2026-10-08 · The log lost the Great Slip Jelly's second cast when two came close together (found by the Dunemaw sweep)
+- **Seen:** "accept 4: the log names every cast as it begins" failed: Broodwake was cast, the log said only "readies Blowout".
+- **Cause:** `log.say` folded a line into the one before it whenever the key matched within 1.6 real seconds, keeping the first's text;
+  both casts' lines share the key `cast`. Headless, the sweep's ticks run faster than the wall clock, so 4 game seconds apart was
+  inside the window; in play, any two casts within 1.6 real seconds would have lost the second's name.
+- **Fix:** a line folds only into an identical one (or one with a counter format, `fmt`). Checked by the Dunemaw sweep.
+- **Rule:** 102.

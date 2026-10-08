@@ -80,6 +80,7 @@ export class Orbit {
     const B = BOUGHT.find((b) => b.id === id); if (!B || this.R.site.by[id]) return null;
     const P = this.R.site.addPlanet({ id, r: B.r, c: this.slotPos(slot), name: NAMES[id]?.name || id });
     this.R.adopt(P, B.plots);
+    this.R.game.present?.shade?.(); // (its stone's flat shading made smooth now, not a second later: one program, never two in play)
     this.bought.push({ id, slot });
     return P;
   }
