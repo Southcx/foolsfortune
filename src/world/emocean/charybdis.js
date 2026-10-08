@@ -5,8 +5,10 @@
 // the whirlpool's heart, the arena's centre, as Charybdis: it RISES out of the maelstrom (the Astral: above the crude) and DIVES back in
 // (the Umbral: under it) by turns, four bars each, `stage.foe = { id: 'charybdis', under }` all the while (Wanda's boss line dives with
 // it). It wears the waypoint's feeling, which the log names as it first rises (Espada's line: "Charybdis rises, in grief."). Its look
-// is a stand-in (the heavy's own) until Calissa's. Its numbers and its hit rule are Dovina's (setpieces.js CHARYBDIS, charybdisHurt):
-// hurt only from the world it is in, twice as it crosses the surface; felled, two crystal shards; driven off, nothing more.
+// is Calissa's (vfx/charybdis.js and the whirlpool, vfx/whirlpool.js, drawn by vfx/crossinglook.js; the heavy's own mesh hidden). It is
+// held at the whirlpool's heart as the look finds it (`whirlHeart`: the arena's centre on the sea, its bank taken out), so what is struck
+// is where it is drawn. Its numbers and its hit rule are Dovina's (setpieces.js CHARYBDIS, charybdisHurt): hurt only from the world it
+// is in, twice as it crosses the surface; felled, two crystal shards; driven off, nothing more.
 //
 // Prior art: Homer's Charybdis (Odyssey XII: thrice a day it swallows the sea and spits it out), Rez's Area X and Star Fox 64's
 // all-range mode (the arena off the rail), Ikaruga's bosses that change their polarity on a beat.
@@ -15,11 +17,12 @@
 //   events: charybdis.rise { feel }, charybdis.felled { feel, shards }, charybdis.driven { feel, hp }, all with `by`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { arenaCentre } from './railpath.js';
+import { whirlHeart } from '../../vfx/whirlpool.js';
+import { CRUISE } from '../../courier/ship/views.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CHARYBDIS, charybdisHurt } from '../../progress/rail/setpieces.js'; // (its numbers and its hit rule: Dovina's)
 
-const _c = new THREE.Vector3();
+const _c = new THREE.Vector3(), _h = new THREE.Vector3();
 
 export class Charybdis {
   constructor(stage) { this.st = stage; this.game = stage.game; this.active = false; this.foe = null; }
@@ -49,12 +52,14 @@ export class Charybdis {
     if (up && !this.said && this.y > 0) { this.said = true; this.game.events?.emit('charybdis.rise', { feel: this.w?.feel || null, by: 'creature' }); }
   }
 
-  /** The leg's heavy is Charybdis: held at the whirlpool's heart (the arena's centre in the rail's frame) at its height. */
+  /** The leg's heavy is Charybdis: held at the whirlpool's heart at its height (in the world, then into the rail's frame: through the
+   *  arena the frame is banked, so the frame's own centre would sit 14 m under the crude); its stand-in mesh hidden for its look. */
   take() {
-    const W = this.st.waves, f = (W?.foes || []).find((x) => x.alive && x.role === 'heavy');
+    const S = this.st, W = S.waves, f = (W?.foes || []).find((x) => x.alive && x.role === 'heavy');
     if (!f) return;
-    this.foe = f; f.name = 'Charybdis'; f.solid = true; f.hp = f.maxHp = CHARYBDIS.hp; f.cls = Math.max(f.cls ?? 0, 4);
-    f.tick = (dt, foe) => { arenaCentre(this.arena, _c); foe.local.set(_c.x, this.y, _c.z); return true; };
+    this.foe = f; f.name = 'Charybdis'; f.solid = true; f.hp = f.maxHp = CHARYBDIS.hp; f.cls = Math.max(f.cls ?? 0, 4); if (f.mesh) f.mesh.visible = false;
+    whirlHeart(S.rail.path, this.arena, S.sea?.y ?? 0, _h, CRUISE);
+    f.tick = (dt, foe) => { S.rail.toLocal(_c.copy(_h).setY(_h.y + this.y), foe.local); return true; };
     // hurt only from the world it is in, twice over as it crosses the surface (setpieces.js charybdisHurt); a shot from the other world
     // glances off with the resist mark (the ward), once a fifth of a real second at most
     f.armour = (foe) => {

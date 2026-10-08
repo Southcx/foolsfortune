@@ -18,6 +18,11 @@
 //                 the heartline, square to the path where it stands: the ship flies through them and lights them), MONOLITHS rising
 //                 out of the crude on the flanks of a fight leg; laid ahead as the rail comes to them, put down behind
 //   THE WAKE      on the sea along the legs, and left in the air along a turn's figure (vfx/rail.js ShipWake `air`); none under the surface
+//   THE MAELSTROM through a maelstrom leg, the whirlpool on the crude sea (vfx/whirlpool.js, the sea's own program) spun up at the
+//                 arena's heart from the leg's first bar, and Charybdis (vfx/charybdis.js) as Petra's director holds it (world/emocean/
+//                 charybdis.js: `charybdis.y`, its foe): risen it spits (the whirlpool shallow round its sheath, its maw leaning toward
+//                 the ship), dived it swallows (deep and fast, pouring over its lip); a blow on it lifts its parts' line and glow; beaten,
+//                 it sinks and the sea goes still; at the leg's release it goes down and the whirlpool lets go
 //   THE PRESSURES the hull's cracks on the sloop as hits carry leg to leg (vfx/sloop.js scars: dark seams with the crude in them), and
 //                 the gold they turn to when a haven caulks them; the bunker as a Lachrymato Bottle on the deck (vfx/bottle.js), its
 //                 level the fuel left (never a number, never the word tank); adrift, the current's streaks running past the ship in the
@@ -35,8 +40,11 @@
 import * as THREE from 'three';
 import { MarkBuffer, STYLE } from './railmark.js';
 import { RailGeometry } from './railgeometry.js';
-import { warpMaterial, deepMaterial, keepTrue } from './stormwarp.js';
+import { warpMaterial, deepMaterial, keepTrue, warpObject } from './stormwarp.js';
 import { LachrymatoBottle } from './bottle.js';
+import { CharybdisLook, CHARYBDIS_LOOK } from './charybdis.js';
+import { whirlHeart, WHIRL } from './whirlpool.js';
+import { COLOR } from '../progress/weather.js';
 import { CRUISE } from '../courier/ship/views.js';
 import { BAR_S } from '../progress/rail/crossing.js';
 
@@ -62,6 +70,7 @@ const damp = THREE.MathUtils.damp;
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(), _x = new THREE.Vector3(), _w = new THREE.Vector3(), _l = new THREE.Vector3();
 const _u = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _prevVel = new THREE.Vector3(), _acc = new THREE.Vector3();
 const PTS = Array.from({ length: C.shell.segs + 3 }, () => new THREE.Vector3());
+const _hw = new THREE.Vector3(), _hc = new THREE.Vector3(), _tint = new THREE.Color();
 /** A number 0..1 of a number (the same every time: where a slab stands is the rail's, never the frame's chance). */
 const hash = (x) => { const s = Math.sin(x * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
@@ -71,6 +80,7 @@ export class CrossingLook {
     this.lift = 0; this.side = 0; this.shellT = 0; this.shellForm = 'astral'; this.gilt = 0; this.hitsWas = 0;
     this.rings = []; this.slabs = []; this.plan = { rings: [], slabs: [] }; this.prevShip = new THREE.Vector3(); this.hasPrev = false;
     this.streaks = Array.from({ length: C.drift.n }, (_, i) => ({ x: (hash(i) - 0.5) * 22, y: 0.3 + hash(i + 7) * 1.8, z: -20 + hash(i + 13) * 100 }));
+    this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0, sense: 1 };
     this.game.events?.on?.('rail.surge', () => { this.shellT = C.shell.time; this.shellForm = this.st.ship?.form || 'astral'; });
   }
 
@@ -93,10 +103,15 @@ export class CrossingLook {
       this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.38, 0.05); this.bottle.group.rotation.y = 0.5;
       this.bottle.group.visible = false; body.add(this.bottle.group);
     }
+    // the maelstrom: the whirlpool's disc beside the sea, Charybdis parked hidden (both of programs already made: the sea's, Old Nobody's)
+    this.whirl = st.sea?.whirlpool?.() || null;
+    this.beast = new CharybdisLook({ env: this.game.sky?.env || null, fx: this.game.vfx || null });
+    this.beast.group.visible = false; this.beast.group.traverse((o) => { o.userData.zoneFree = true; }); warpObject(this.beast.group); scene.add(this.beast.group);
   }
-  parked() { return [this.marks.mesh, this.geo.group]; }
+  parked() { return [this.marks.mesh, this.geo.group, this.beast.group, ...(this.whirl ? [this.whirl.mesh] : [])]; }
   show(on) {
     this.marks.mesh.visible = on; this.geo.group.visible = on;
+    if (!on) this.stillMaelstrom();
     if (this.bottle) this.bottle.group.visible = on && this.st.stage.fuel != null;
   }
 
@@ -115,7 +130,7 @@ export class CrossingLook {
       }
     });
     this.plan = { rings, slabs };
-    this.lift = 0; this.side = 0; this.shellT = 0; this.gilt = 0; this.hitsWas = 0; this.hasPrev = false;
+    this.lift = 0; this.side = 0; this.shellT = 0; this.gilt = 0; this.hitsWas = 0; this.hasPrev = false; this.stillMaelstrom();
     if (st.ship?.vel) _prevVel.copy(st.ship.vel); // (the last crossing's last push is no slosh at this one's first frame)
   }
   clear() {
@@ -125,7 +140,7 @@ export class CrossingLook {
   /** Landed or broken: the geometry put down, the surface back at the sea, the hull and the deck as they were. */
   end() {
     this.clear(); this.plan = { rings: [], slabs: [] };
-    this.lift = 0; if (this.st.sea) this.st.sea.lift = 0; this.shellT = 0;
+    this.lift = 0; if (this.st.sea) this.st.sea.lift = 0; this.shellT = 0; this.stillMaelstrom();
     this.st.ship?.look?.scars?.({ open: 0, gilt: 0 });
     this.marks.count = 0; this.marks.flush();
   }
@@ -138,6 +153,7 @@ export class CrossingLook {
     this.umbral(raw);
     this.geometry(raw, s);
     this.pressures(raw);
+    this.maelstrom(raw);
     this.wake(raw, turning);
     let k = this.shell(raw, 0);
     k = this.adrift(raw, k);
@@ -200,6 +216,38 @@ export class CrossingLook {
       this.prevShip.copy(_w); this.hasPrev = true;
     }
     G.update(raw, { camera: this.game.camera });
+  }
+
+  // ---------------------------------------------------------------- the maelstrom: the whirlpool and Charybdis
+  /** Through a maelstrom leg (Petra's director, world/emocean/charybdis.js, read and never changed): the whirlpool at the arena's heart
+   *  (vfx/whirlpool.js) from its first bar; Charybdis shown while it is held there, at its height, leaning toward the ship; sinking when
+   *  it is beaten or let go, the whirlpool going still. */
+  maelstrom(raw) {
+    const st = this.st, Ch = st.charybdis, sea = st.sea, W = this.whirl, L = this.beast, M = this.mael; if (!Ch || !sea || !W || !L) return;
+    if (Ch.active && Ch.arena && M.arena !== Ch.arena) { M.arena = Ch.arena; M.sense = -(Ch.arena.sign ?? 1); whirlHeart(st.rail.path, Ch.arena, sea.y, M.heart, CRUISE); } // (it turns the way the ship laps: sign +1 laps toward atan2(z, x) falling, measured on a crossing of each sign)
+    const f = Ch.foe, alive = !!f?.alive;
+    if (alive) { M.shown = true; M.y = Ch.y; M.feel = Ch.w?.feel || null; }
+    else if (M.shown) { M.y -= raw * CHARYBDIS_LOOK.sink; if (M.y < -45) M.shown = false; } // (beaten or let go: it sinks into the maelstrom)
+    L.group.visible = M.shown && sea.mesh.visible;
+    if (M.shown) {
+      L.set({ y: M.y, feel: M.feel, sense: M.sense }); L.place(M.heart, sea);
+      if (f && (f.hitT || 0) > M.hitT + 1e-3) L.hit(1); // (a blow on its body: the parts' line and glow lift)
+      M.hitT = f?.hitT || 0;
+      st.ship?.look?.group?.getWorldPosition(_hw);
+      L.update(raw, { sea, umbral: this.game.umbral, toward: st.ship?.look?.group ? _hw : null });
+    }
+    const w = M.shown && M.y > -14 ? L.whirlFor(M.y, sea.lift) : { swallow: 1, apex: WHIRL.bare.apex - sea.lift, inner: WHIRL.bare.inner };
+    const here = Ch.active && !!M.arena && !(f && !alive); // (beaten: the sea goes still)
+    W.set({ at: M.shown && M.y > -14 ? L.crossing(sea.y + sea.lift + w.apex, _hc) : M.heart, on: here ? 1 : 0, ...w, sense: M.sense, tint: M.feel ? _tint.setHex(COLOR[M.feel] ?? 0xffffff) : null });
+    W.update(raw);
+    this.game.umbral?.set?.({ clear: M.shown ? 1 : 0 }); // (under the surface, the murk drawn off so it is seen across the arena)
+  }
+  /** The maelstrom put away at once (a crossing begun, ended, or the stage hidden). */
+  stillMaelstrom() {
+    const M = this.mael; M.arena = null; M.shown = false; M.hitT = 0;
+    if (this.beast) { this.beast.group.visible = false; this.beast.reset(); }
+    if (this.whirl) { this.whirl.set({ on: 0 }); this.whirl.on = 0; this.whirl.update(0); }
+    this.game.umbral?.set?.({ clear: 0 });
   }
 
   // ---------------------------------------------------------------- the trip's pressures on the ship

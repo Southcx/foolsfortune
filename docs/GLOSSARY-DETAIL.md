@@ -675,7 +675,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
   the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
   (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
-  **windows**. *Not:* a zone's `partOf`; `rail.part` is the event that one was downed.
+  **windows**; Charybdis's: eight **baleen combs**, six **eyes** and the **throat** (below). *Not:* a zone's `partOf`; `rail.part` is
+  the event that one was downed.
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
 - **the crossing** (`progress/rail/crossing.js`, `docs/plans/RAIL.md`): a stage as it plays, 100 bars of the cue: its **acts** (launch,
@@ -846,8 +847,30 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   deep's black-violet fog, motes of Lachryma rising), the **caustics** thrown down onto what is under it (`causticsOn`: a caustic
   overlay; or through `warpMaterial`). **The surface crossing** (Q, a half-bar): the **splash ring** on the surface, a crown of crude,
   and the line of the surface wiped across the lens (the crown is the dive's, `vfx/waterfx.js`, thrown on the crude). *Not:* the crossing (a stage as it plays).
-- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`): where a rail circling it sees a part best. *Not:* a
-  station (a course station, the kiln station).
+- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`; Charybdis's: `above`, `flank`, `below`): where a rail
+  circling it sees a part best. *Not:* a station (a course station, the kiln station).
+- **the whirlpool** (`Whirlpool`, `sea.whirlpool()`, `src/vfx/whirlpool.js`; Calissa's, 2026-10-08): the maelstrom's crude turning round
+  **the whirlpool's heart** (`whirlHeart`: the point on the sea the arena's laps circle, where Charybdis is held; the arena's centre with
+  the frame's bank taken out), drawn on the crude sea's own program (a disc of its material, `uDisc`) as a Rankine vortex: **the vortex's
+  core** turning as one body (its surface a paraboloid), the slope round it falling as 1/r², the speed rising inward; the current's
+  streaks and the oil film wound in toward its middle in two phases of a flow map (Portal 2's), its walls lit as Poe's were, a bow of the
+  film's colours over its middle, leaning to the waypoint's feeling. It turns **the way the arena's ship laps** (`sense`, +1 or -1 from the
+  arena's sign), Charybdis with it. It **swallows** (Charybdis dived: deep and fast, the crude pouring
+  over its lip into its maw: **the pour**, a skirt hung from its inner edge) and **spits** (risen: shallow and slow, the bands streaming
+  out round its sheath). The logic's sea has it too (`heightAt`). *Not:* the maelstrom (the leg, a waypoint's type), the whorl (the storm
+  warp's), the ring (the orbit's), a ripple, the vortex's core as "the core" (the Great Slip Jelly's weak point).
+- **Charybdis's look** (`CharybdisLook`, `src/vfx/charybdis.js`; Calissa's, 2026-10-08; drawn by `vfx/crossinglook.js`, held by Petra's
+  `world/emocean/charybdis.js`): a whale's body stood on end in the crude with only its mouth at the top. **Its maw**: a round gape, **its
+  lip** a rim of crude hide, **the gullet** inside rowed with labradorite teeth as a lamprey's, **the throat** (a boss part, `throat`:
+  the gullet's light at its bottom in the feeling's colour, seen from above; it swells before it swallows) and eight **baleen combs**
+  of five plates standing round the lip (`baleen.0`..`baleen.7`: from above and the side; they flare as their windup). Its six **eyes**
+  under the lip (`eye.0`..`eye.5`: from the side, and from under the surface as it dives), each in a ring of labradorite **tubercles**
+  (a humpback's knobs). **The throat pouch**: one side of its head ballooned and pleated as a lunging humpback's, its **throat pleats**
+  wound down its neck; opposite, **its rostrum**, a ridge up to the lip with the tubercles in rows. **The sheath**: a column of crude
+  whirling round its neck, where the whirlpool meets it when it spits. Below the crude, its chest, two humpback **flippers** and its
+  flukes. Risen, it **leans** its maw toward the ship (about the lip's middle, so what is struck is where it is drawn). Its five moods: the
+  feeling's colour in its eyes, its throat and the whirlpool's film, and in how it moves. *Not:* Old Nobody's throat or eye (another
+  beast's parts of the same names: always "Charybdis's"), the Jar's mouth, a Well's mouth, the False Light's keel.
 - **the veil** (`game.glitch.veil`, drawn in the glitch's pass): the storm warp's and the Umbral's share of the screen: the haze (the
   frame sampled through slow scrolling noise, toward the edges), the chromatic split at the edges, the storm's gold-white light, the
   Umbral's black-violet grade, and the line of the surface across the lens. What wears `keepTrue` (the danger) is never moved by it.
