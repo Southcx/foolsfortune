@@ -808,6 +808,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
   of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
   alone (that is the map's: see the homonyms).
+- **the stack** (`stackOf`, `railHeat`, `src/music/legs.js`): how many of a crossing leg's eight musical parts sound (pad and pulse,
+  the groove, the bass, the arpeggio, the snare and shimmer, the theme, the choir, the boss's line): its phase's own, plus the **heat**
+  every lock, down and boss part adds, cooling a quarter of a part a bar (Rez's layers). *Not:* a layer (the map's), the mood layer.
 - **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
   chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near

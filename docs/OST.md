@@ -30,6 +30,8 @@ colour over a modern pulse), Uematsu (themes that return in the last battle), Cr
 | **The Crown** | B C E F E | the Great Slip Jelly's urn crown |
 | **The Leviathan** | E F E C B, two slow bars low | the crossing's rogue Leviathan |
 | **The Awakening** | E A G B E | a fossil woken; all in the Crucibelle's notes, so the player can play it |
+| **The Beacon** | B up to E, a foghorn; then B E G B E turning | the crossing's drowned lighthouse |
+| **The Whirl** | E D B D B A G A, to E | the maelstrom: round and down, in its feeling's mode |
 
 ## 3. The cues
 
@@ -49,6 +51,7 @@ colour over a modern pulse), Uematsu (themes that return in the last battle), Cr
 | The Heavenly Kiln | a Firing | 132, E In | gong, taiko thunder, guzheng, erhu, the kiln's roar; more per tier; fired or cooled (`kiln.js`) |
 | The Crowned Brood | the Great Slip Jelly | 150, E minor | a section a phase on the bar line: the crown (a layer a crack), the break (a beat of silence, the slam), the Slip Nova on a downbeat, bare (the drop), calving (the Crown in a four-voice canon), the overflow a semitone up, the win; the enrage swallows it (`greatjelly.js`) |
 | Crude Sea | a crossing of the Emocean | 160, E minor, a bar 1.5 s | the stage's clock: trance under space jazz with the owner's ear (shimmer, hats, an 808 that slides, holes); bars 62 to 96 the set piece (shoal, pirates under the shanty, the Leviathan); long crossings chain up to three (`emocean.js`) |
+| Crude Sea: the Crossing | a crossing as a rollercoaster | 160, a key a leg | a launch, 3 to 6 legs (open, build, a hole, the peak, release) with a 4-bar turn of the rail between them, the arrive. Each leg its key, groove and theme: the shoal (E, the Answer), the Wreckers (A, the shanty), Old Nobody (C#, the Leviathan), the storm wall (E Phrygian, the Five), the graveyard (F, the Beacon), the maelstrom (the feeling's mode, the Whirl), a calm (G, a music box), a bounty (B, the Five as a WANTED poster). The stack thickens with your locks and downs, Rez's way (`legs.js`) |
 | Haul Away the Fortune, Roll the Moon Down | the skiff | 6/8; 88 | shanties, a new one each time the sail goes up (`shanty.js`, `shanties.js`) |
 | Leave Her, Lachryma; Song of the Siren; Hex and Kettle | sound test | 3/4; 6/8; 7/8 | a forebitter; the sea's lure; the witch |
 | The Shallows; The Deep | swimming | 76 Lydian; 54 In | light under water; the Tear far down (`dive.js`) |
@@ -71,7 +74,12 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **The weather** (`music/mood.js`): the night thins every cue; the mood lays a layer (wonder a glass pad, mirth a celesta, desire a
   frame drum, grief a cello, dread a drone with the Tear); an agate plays both, a torn sky neither. The Crucibelle plays in the
   cue's scale, or the weather's mode where nothing plays (`game.music.scale()`). A track's aspect for busking: `music/aspects.js`.
-- **Played along** (Rez): the rail's lock tones and downs, the catch's sting wait for the music's next sixteenth or beat.
+- **Played along** (Rez): the rail's lock tones and downs, the catch's sting wait for the music's next sixteenth or beat, in the key
+  of the bar sounding (a crossing's legs each have one: a section's `root`).
+- **The stack** (Rez's layers): a crossing's cue sounds as many of a leg's eight parts as its phase and your play give it; every lock,
+  down and boss part adds heat, which cools a quarter of a part a bar. A boss's peak is the thickest.
+- **Under the surface** (the rail's Umbral form): the music and the world through a low-pass, the breach lifting the air back
+  (`arranger.setUnder`, `sfx.setUnder`, read from `game.emocean.form`).
 
 ## 5. Production rules
 
@@ -111,4 +119,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   `docs/handoffs/everyone/2026-10-06-from-wanda-the-dunemaw-s-sound.md`.
 - Petra's placeholders that want real sounds: the Soul Brush and the jet arts, the parries, the Shrine's rest, the sea's extras
   (`docs/handoffs/wanda/`).
+- The Spirit Garden's new parts (water running, the rain inside the Jar, the hand's brushes, a cue deepening a Firing):
+  `docs/handoffs/wanda/2026-10-07-from-dovina-garden-sound.md`.
+- The crossing's maelstrom arena (off the rail) and a bounty's posted stray want their own cues once their runtime exists.
 - The settings' save sections (the voice, the music switch, the rhythm offset): waiting on the save's way to carry an adopted key.

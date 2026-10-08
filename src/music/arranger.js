@@ -9,6 +9,7 @@
 //   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
 //   arranger.layer = (score, section, bar) => [event] (the mood: music/mood.js)   arranger.thin = { hit, bass, rest } (the night)   score.scale / section.scale
 //   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
+//   arranger.setUnder(on) (the rail's Umbral form: the music heard through the crude, and the lift of the breach)
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
 // build), sidechain compression as a rhythmic device (French house, then every EDM drop), and the arrangement of a melodic bass
@@ -17,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
+const UNDER_HZ = 650; // (the music heard from under the crude)
 const BASS = new Set(['upright', 'moog', 'sub', 'growl', 'pick', 'pizz', 'eight']); // (what the night's thinning takes down with the drums)
 const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle', 'tick', 'ohat', 'snap']);
 
@@ -31,7 +33,10 @@ export class Arranger {
     this.duckG = ctx.createGain();
     this.sweep = ctx.createBiquadFilter(); this.sweep.type = 'lowpass'; this.sweep.frequency.value = 18000; this.sweep.Q.value = 0.9;
     const glue = ctx.createDynamicsCompressor(); glue.threshold.value = -16; glue.ratio.value = 3; glue.attack.value = 0.01; glue.release.value = 0.2;
-    this.bus.connect(this.sweep).connect(glue).connect(this.duckG).connect(this.sfx.main ?? this.sfx.master); // (the music's own way out: it never ducks with the effects)
+    // under the crude (the rail's Umbral form) the music is heard through the sea: a low-pass; breaching lifts the top back (setUnder)
+    this.depth = ctx.createBiquadFilter(); this.depth.type = 'lowpass'; this.depth.frequency.value = this.under ? UNDER_HZ : 20000; this.depth.Q.value = 0.6;
+    this.lift = ctx.createBiquadFilter(); this.lift.type = 'highshelf'; this.lift.frequency.value = 5000; this.lift.gain.value = 0;
+    this.bus.connect(this.sweep).connect(this.depth).connect(this.lift).connect(glue).connect(this.duckG).connect(this.sfx.main ?? this.sfx.master); // (the music's own way out: it never ducks with the effects)
     const dry = ctx.createGain(); dry.connect(this.bus);
     const pump = ctx.createGain(); pump.connect(this.bus);
     const verb = ctx.createConvolver(); verb.buffer = this.sfx.impulse(3.2, 2.6);
@@ -79,6 +84,17 @@ export class Arranger {
     if (!this.alive) return;
     const t = this.ctx.currentTime, g = this.duckG.gain;
     g.cancelScheduledValues(t); g.setTargetAtTime(0.35, t, 0.08); g.setTargetAtTime(1, t + sec, 0.5);
+  }
+  /** Under the surface or above it (music/player.js setUnder): the low-pass closes over half a bar; breaching opens it with a lift of air. */
+  setUnder(on) {
+    on = !!on; if (on === !!this.under) return;
+    this.under = on;
+    if (!this.alive || !this.depth) return;
+    const t = this.ctx.currentTime, f = this.depth.frequency, half = (this.spb || 0.375) * 2;
+    f.cancelScheduledValues(t); f.setValueAtTime(f.value, t); f.exponentialRampToValueAtTime(on ? UNDER_HZ : 20000, t + half);
+    const g = this.lift.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+    if (!on) { g.linearRampToValueAtTime(5, t + half); g.setTargetAtTime(0, t + half, 0.6); } // (the breach: a lift of air, settling)
+    else g.setTargetAtTime(0, t, 0.1);
   }
   setVolume(v) { this.volume = v; if (this.alive) this.bus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.3); }
 

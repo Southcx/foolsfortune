@@ -22,6 +22,7 @@ import { OVERTURE } from './overture.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 import { HEARTS } from '../tools/lockheart/table.js';
 import { stageCue } from './emocean.js';
+import { tripCue, railHeat, HEAT } from './legs.js';
 import { WELL_FLOORS } from './well.js';
 import { GREAT_JELLY, setFight } from './greatjelly.js';
 import { GARDEN, AWAKENING, setGarden } from './garden.js';
@@ -43,6 +44,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   if (T?.active || (T?.outcome && game.garden?.inside && A?.alive && A.score === KILN)) { setKiln(T); return KILN; }
   if (game.garden?.awakening) return AWAKENING; // (a fossil woken by the Crucibelle's song: once, then the garden again)
   if (game.garden?.inside) { setGarden({ phase: phaseAt(), draught: strongest(game.draught) }); return GARDEN; } // (the Inner Realm: the day's phase and your draught, music/garden.js)
+  if (game.emocean?.stage?.active && game.emocean.stage.legs?.length) { hearRail(game); return tripCue(game.emocean.stage.legs); } // (the rollercoaster: a cue a leg, music/legs.js)
   if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150, game.emocean.stage.setPieces ?? game.emocean.stage.setPiece); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
   if (game.well?.fight?.active) { setFight(game.well.fight); return GREAT_JELLY; } // (the Great Slip Jelly's fight: its phases, music/greatjelly.js)
   if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE;
@@ -87,3 +89,13 @@ function strongest(d) {
   return best;
 }
 
+/** Rez's layers: the rail's locks, downs and a boss's parts heat the crossing's cue (music/legs.js railHeat), heard once a game. */
+function hearRail(game) {
+  if (S.railHeard || !game.events?.on) return;
+  S.railHeard = true;
+  game.events.on('rail.lock', () => railHeat(HEAT.lock));
+  game.events.on('rail.volley', () => railHeat(HEAT.volley));
+  game.events.on('rail.down', (e) => railHeat(HEAT.down * (1 + (e?.cls || 0) / 2)));
+  game.events.on('rail.part', () => railHeat(HEAT.part));
+  game.events.on('rail.core', () => railHeat(HEAT.core));
+}
