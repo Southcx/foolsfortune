@@ -59,8 +59,9 @@ void main() {
     vFade = live * smoothstep(0.0, 0.2, uRTime - iA.w) * (1.0 - aQ.y * 0.85) * smoothstep(1.2, 3.5, distance(p, cameraPosition)); // (never a streak across the lens)
   } else {
     // a ring: iA = (where it landed, t0), iB = (up there, -), iC = (size, life, -, -)
-    float age = (uRTime - iA.w) / iC.y, on = step(0.0, age) * step(age, 1.0);
-    vec3 n = normalize(iB.xyz), t = normalize(abs(n.y) < 0.95 ? cross(n, vec3(0.0, 1.0, 0.0)) : cross(n, vec3(1.0, 0.0, 0.0))), b = cross(n, t);
+    float age = (uRTime - iA.w) / max(iC.y, 0.001), on = step(0.0, age) * step(age, 1.0) * step(0.0, iC.y);
+    float nl = dot(iB.xyz, iB.xyz); // (a ring never laid has no up: never normalize nothing, so no vertex of one is NaN)
+    vec3 n = nl > 0.000001 ? iB.xyz * inversesqrt(nl) : vec3(0.0, 1.0, 0.0), t = normalize(abs(n.y) < 0.95 ? cross(n, vec3(0.0, 1.0, 0.0)) : cross(n, vec3(1.0, 0.0, 0.0))), b = cross(n, t);
     float s = iC.x * (0.25 + 0.75 * sqrt(clamp(age, 0.0, 1.0))) * on;
     wp = iA.xyz + (t * aQ.x + b * aQ.y) * s;
     vFade = on * (1.0 - age);

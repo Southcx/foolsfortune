@@ -495,7 +495,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   and glossier, drying over 20 real seconds). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
 - **the garden's rain** (`rainOf`, `waterworks.rain()`; drawn by `src/vfx/garden/gardenrain.js`): your draught falling on every
   planetoid as hard as your mental state is liquid (Stoic dry .. Prismatic 0.9); drawn as streaks, each falling to its own planetoid's
-  heart, a **ring** where it lands, and the garden's sky greying. *Not:* the weather's streaks (the world's, `vfx/weather.js`).
+  heart, a **drop's ring** where it lands (a ring opening on the ground or on the water: code `rings`), and the garden's sky greying.
+  *Not:* the weather's streaks (the world's, `vfx/weather.js`); *not* a ripple (the water's own disturbance, `game.water.disturb`), nor
+  **the ring** (the orbit's slots round the Dantian).
 - **a track** (the garden's: `src/world/garden/races.js`): a groove the hand carved in one stroke that closes on itself, 40 m or more;
   the spirits on its planetoid **race** a lap on it (Dovina's `RACE`). *Not:* a music track (the sound test's), the course.
 - **the ring** (`ORBIT`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a **bought planetoid** is set (the

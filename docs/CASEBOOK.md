@@ -187,8 +187,22 @@ the rules before building in the same area; a rule a machine can check goes into
 71. **What stands on a surface listens for the surface.** Anything placed on ground that can move (plants on the clay, a marker on the
     water) is placed again when the ground's version changes, not only when its own state does; test it by moving the ground under it
     and measuring the gap.
+72. **An instance never drawn has nothing to normalize.** A pooled instance's unset attributes are zeros, and `normalize(vec3(0))` is NaN
+    in a vertex shader: what a GPU does with a NaN position is undefined (SwiftShader drops the triangle; another driver need not). Guard the
+    length (or move the dead instance outside the clip volume) before it is divided by; read every pooled shader for what its zeros do.
 
 ## Cases
+
+### 2026-10-08 · The garden's rain rings were NaN until each was first laid (Calissa, the review of her garden look)
+- **Seen (reading `vfx/garden/gardenrain.js`, then the shader's arithmetic by hand):** the pool of 360 rings starts with `iB` (the ring's
+  up) at zero, and the vertex shader took `normalize(iB.xyz)` for every ring, laid or not.
+- **Cause:** `normalize(vec3(0))` is NaN; the cross products and `wp = iA.xyz + (t * aQ.x + b * aQ.y) * s` carried it (`NaN * -0` is NaN, so
+  `on = 0` did not save it), so every unused ring had NaN corners. SwiftShader drops such a triangle; the spec leaves what a NaN corner
+  does undefined, so another driver might draw it. The streaks were safe (a dead one is moved to its head by `if (live < 0.5) wp = head`).
+- **Fix:** the ring's up is `iB.xyz * inversesqrt(nl)` only when its length is above 1e-6 and straight up otherwise, its age divides by
+  `max(life, 0.001)` and `on` also needs a life of 0 or more. SwiftShader never showed the fault (it drops the triangle), so it was found by
+  reading, and the rain's renders after the change were looked at (the rings and streaks are unchanged).
+- **Rule:** 72.
 
 ### 2026-10-08 · The garden's tufts floated after a stroke, and the cap dropped the crown first (Calissa, from the survey)
 - **Seen (Calissa's garden survey, 2026-10-08):** a pull or press under grown plants left their tufts hanging in the air or sunk in the

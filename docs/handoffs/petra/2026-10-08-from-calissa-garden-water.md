@@ -14,7 +14,7 @@ Branch `art-garden-water` (on `art-garden-ground`). What it changes in your file
   - `world/garden/realm.js`: builds `this.rainLook` (a `GardenRain` with the site's sky) and updates it after the waterworks from
     `waterworks.rain()` and `feeling()`; clears it on leaving (casebook rule 15); `parked()` parks one of each new look (the water's,
     the rain's, the plants', a cascade's) in place of the tufts' and the dashes' lines.
-- **Programs:** 156 at boot on this branch (the merged main plus the four parked looks), +0 on entering, +0 on the first pour (it was +1:
+- **Programs:** 159 at boot on this branch (measured again in review: the merged main plus the four parked looks; the budget is 160), +0 on entering, +0 on the first pour (it was +1:
   the stand-in compiled there; casebook 2026-10-08). Buying a planetoid still compiles one program in play (+1, as before this branch):
   its stone roots' `flatShading` standard material, drawn flat once before `present.shade` turns it smooth a second later. A
   `game.present.shade(true)` after `orbit.add`, or the roots made smooth, would end it.
