@@ -529,6 +529,63 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
   today: 4,820." and beaten: "High water on this sea today: 5,140, over 4,820." · a following sea: "A following sea: your draught trumps
   what waits ahead."
 
+### The mycelium *(Espada's names for Dovina's plan, `docs/plans/MYCELIUM.md`; proposed, 2026-10-08)*
+- **The World Mushroom is Myggdrasil** (MIG-dra-sil): *myco-*, fungus; *my*, because every player's is their own; and Yggdrasil, the
+  world-ash, which means "Odin's horse", the gallows-tree he hung on for nine nights to win the runes (the Hanged Man, before the
+  tarot). One word, three roots, all of them showing.
+- **Its sap is its tincture** (Latin *tinctura*, a dyeing). In alchemy the tincture is what tinges a base metal into gold; in heraldry the
+  tinctures are a shield's colours; to an apothecary, a remedy steeped. It is the colour of all it has eaten, so all three fit.
+- **Its girth** stays (it grows as its meals double).
+- **Its ten fruiting bodies are its caps**, each a sephirah of the Kabbalists' Tree of Life, opened from the root upward (the ascent):
+  the Kingdom (Malkuth), the Foundation (Yesod), Splendour (Hod), Victory (Netzach), Beauty (Tiphareth), Severity (Geburah), Mercy
+  (Chesed, the seventh cap, which seeds strains), Understanding (Binah), Wisdom (Chokmah), the Crown (Keter). Proposed for later: an
+  eleventh, hidden cap, **Knowledge** (Da'at, the sephirah that is not counted), which is Eden's other tree.
+- **Its twenty-two branches** keep the name ("path" is a material's). Each is hung with its Major Arcana card, as the Golden Dawn laid
+  the trumps on the paths between the sephiroth (the order of the paths 11 to 32; Strength and Justice in the Golden Dawn's swap):
+
+| path | card | between | letter, sign | the branch gives |
+|---|---|---|---|---|
+| 11 | The Fool | Crown, Wisdom | Aleph, air | a sporeling (the wanderer arrives) |
+| 12 | The Magician | Crown, Understanding | Beth, Mercury | a sharper tincture (will) |
+| 13 | The High Priestess | Crown, Beauty | Gimel, the Moon | a sharper tincture (the hidden read) |
+| 14 | The Empress | Wisdom, Understanding | Daleth, Venus | a sporeling (the mother) |
+| 15 | The Emperor | Wisdom, Beauty | Heh, Aries | a fruit a dawn |
+| 16 | The Hierophant | Wisdom, Mercy | Vav, Taurus | a fruit a dawn |
+| 17 | The Lovers | Understanding, Beauty | Zayin, Gemini | the lichen's seed (two become one) |
+| 18 | The Chariot | Understanding, Severity | Cheth, Cancer | a fruit a dawn |
+| 19 | Strength | Mercy, Severity | Teth, Leo | a fruit a dawn |
+| 20 | The Hermit | Mercy, Beauty | Yod, Virgo | a sharper tincture (the lamp) |
+| 21 | Wheel of Fortune | Mercy, Victory | Kaph, Jupiter | a fruit a dawn |
+| 22 | Justice | Severity, Beauty | Lamed, Libra | a sharper tincture (the scales) |
+| 23 | The Hanged Man | Severity, Splendour | Mem, water | witches' butter's seed (water) |
+| 24 | Death | Beauty, Victory | Nun, Scorpio | the oyster's seed (what ends feeds) |
+| 25 | Temperance | Beauty, Foundation | Samekh, Sagittarius | a sharper tincture (the alchemist's mixing) |
+| 26 | The Devil | Beauty, Splendour | Ayin, Capricorn | a fruit a dawn (plenty, held) |
+| 27 | The Tower | Victory, Splendour | Peh, Mars | a fruit a dawn |
+| 28 | The Star | Victory, Foundation | Tzaddi, Aquarius | a sporeling (hope) |
+| 29 | The Moon | Victory, the Kingdom | Qoph, Pisces | a fruit a dawn |
+| 30 | The Sun | Splendour, Foundation | Resh, the Sun | a sporeling (the child) |
+| 31 | Judgement | Splendour, the Kingdom | Shin, fire | koji's seed (fire) |
+| 32 | The World | Foundation, the Kingdom | Tav, Saturn | the inkcap's seed (the earth's print) |
+
+  The count: 8 fruit, 5 sharper tincture, 5 seeds, 4 sporelings. The three mother letters (air, water, fire) open a sporeling and two
+  seeds; the World, the last path, touches the Kingdom where you stand.
+- **The five strains**, each a real fungus doing its real work (the verbs stay: graft, ferment, print, rot, dissolve):
+  - **the lichen** (wonder, wood: *graft*): a lichen is a fungus and an alga living as one thing; two lives make a third.
+  - **koji** (mirth, fire: *ferment*): *Aspergillus oryzae*, Japan's national fungus, the slow heat behind sake, miso and soy.
+  - **the inkcap** (desire, earth: *print*): *Coprinus*, whose gills melt into a black ink people have written with.
+  - **the oyster** (grief, metal: *rot*): oyster mushrooms are grown on oil spills to eat the crude (mycoremediation), so the oyster is
+    the strain that cleans up crude Lachryma. And Margarite's nacre is an oyster's answer to grit: a callback, not a plot.
+  - **witches' butter** (dread, water: *dissolve*): *Tremella*, a jelly fungus that shrivels dry and swells back with rain (the
+    lore's Pirates and Witches, LORE.md section 9).
+- **Sporelings** stay (a fungal spirit from Myggdrasil's crown; a stray of your own garden, by the owner's rule).
+- **The keepsake pot** stays as the word. Its shape for Calissa: a white-ground **lekythos**, the slim Attic oil flask painted with a
+  farewell (the same hand as the ostraca's black-figure, a gentler ground).
+- **The diary** (the log, once a game day you visit): "Myggdrasil ate 2 fish and a curio. Its tincture turns toward grief." · at dawn:
+  "Dawn. Myggdrasil fruits: 4, leaned to mirth." (a fair day: "Dawn. Myggdrasil fruits: 4, true to its tincture."; a prismatic day:
+  "Dawn. Myggdrasil fruits: 4. One shines.") · a cap opens: "Myggdrasil's girth grows. The Foundation opens." · a branch hung: "You hang
+  The Tower on its branch. Myggdrasil will fruit once more each dawn." · a sporeling: "A sporeling drops from Myggdrasil's crown."
+
 ## 12. Where the words live
 
 | Words | File |
