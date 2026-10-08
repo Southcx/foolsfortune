@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE MODERN RIG: the instruments of the owner's ear (docs/OST.md section 6: the air on top, the drums, the bass that slides, the
+// THE MODERN RIG: the instruments of the owner's ear (docs/archive/2026-10-06-ost-the-owners-ear.md: the air on top, the drums, the bass that slides, the
 // clean guitar that never sits still), mixed onto the Band (music/band.js) as the wider band and the rock rig are, so a score asks
 // for them by name. Made to be laid over the cues that exist as layers and texture, not to rescore them (the owner, 2026-10-06).
 //
