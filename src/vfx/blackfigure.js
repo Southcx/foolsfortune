@@ -11,18 +11,21 @@
 //
 // Prior art: Attic black-figure (Exekias's Achilles and Ajax at the board game and his Dionysos cup; Kleitias's Francois Vase, its small
 // figures on groundlines in friezes), the Corinthian pinakes of Penteskouphia (potters at the potter's wheel and at a kiln, painted on clay
-// plaques), the fountain-house hydriai (figures at the water under a portico), and the meander of the Geometric amphorae.
+// plaques), the fountain-house hydriai (figures at the water under a portico), and the meander of the Geometric amphorae. The next four:
+// the mourners of the prothesis (Exekias's funerary plaques: a figure bowed over the one laid out), the heraldic pair of the animal
+// friezes (Corinthian goats and lions confronted, head to head), the pursuit on the Francois Vase (Troilos fleeing Achilles, the one
+// running looking back), and for the melt, the set's own dashed line (the play's flight) round where the jelly stood.
 //
-//   PICTURES[WORD] -> picture id (Espada's twelve, the default until her data lands in npc/neuralese.js)
+//   PICTURES[WORD] -> picture id (the word's English, for each word of Espada's OSTRACON_PICTURES, npc/neuralese.js, that a painter here paints)
 //   paintPicture(g, id, x, y, w, h, span?) -> true | false (no such picture; span: [x0, x1], how far its groundline runs, in pixels)
 //   paintMeander(g, x, y, w, h)    paintFrieze(g, x, y, w, h)    paintTongues(g, x, y, w, h)    paintPalmette(g, cx, foot, s)    paintRosette(g, cx, cy, r)
 //   WARE = { black, clay, white, red }   (g: a 2D canvas context; x, y, w, h: the zone in its pixels; the zone's red ground is the caller's)
 // ---------------------------------------------------------------------------------------
 
+import { OSTRACON_PICTURES, glossOf } from '../npc/neuralese.js';
+
 /** The ware's colours: the black (EYE CUP's 0x1c1410), the Attic orange-red clay, added white and added red. */
 export const WARE = { black: '#1c1410', clay: '#c8643a', white: '#efe2c6', red: '#7d2622' };
-/** Espada's first twelve words and what each picture shows (her data overrides this when it lands: npc/neuralese.js). */
-export const PICTURES = { SIVA: 'drink', LUNO: 'rest', GRAV: 'forage', PEXA: 'fish', KITH: 'huddle', ROMI: 'play', HEMA: 'home', FETA: 'fetch', TALO: 'follow', STIL: 'still', EZA: 'ease', HUSA: 'hush' };
 
 const INC = 0.55;
 const GY = 5;
@@ -82,12 +85,17 @@ function jellyShapes() {
   const sheen = tr().M(-1.4, 20.2).Q(-6.0, 19.0, -7.6, 14.6);
   return (JELLY = { body, curl, drips, tuck, sheen });
 }
-/** Its eye: 'open' (look: where the pupil sits), 'wide', 'shut', 'glad'. */
-function eye(g, kind, T, cx, cy, look = [0.6, 0]) {
+/** Its eye: 'open' (look: where the pupil sits), 'wide' (centred unless it looks), 'shut', 'glad', 'fierce' (its lid brought down to the front). */
+function eye(g, kind, T, cx, cy, look) {
   if (kind === 'shut') { cut(g, tr().M(cx - 2.2, cy + 0.6).Q(cx, cy - 1.6, cx + 2.2, cy + 0.6).M(cx - 1.2, cy - 0.4).L(cx - 1.6, cy - 1.4).M(cx + 0.4, cy - 0.7).L(cx + 0.4, cy - 1.8), T); return; }
   if (kind === 'glad') { cut(g, tr().M(cx - 2.2, cy - 0.6).Q(cx, cy + 2.0, cx + 2.2, cy - 0.6), T, INC * 1.3); return; }
-  const wide = kind === 'wide';
-  paint(g, tr().O(cx, cy, wide ? 2.9 : 2.4), T, WARE.white); paint(g, tr().O(cx + (wide ? 0 : look[0]), cy + (wide ? 0 : look[1]), wide ? 0.8 : 1.1), T, WARE.black);
+  if (kind === 'fierce') {
+    paint(g, tr().O(cx, cy, 2.5), T, WARE.white); paint(g, tr().O(cx + 0.9, cy - 0.5, 1.1), T, WARE.black);
+    paint(g, tr().M(cx - 3.2, cy + 3.4).L(cx + 3.2, cy + 3.4).L(cx + 3.2, cy + 0.2).L(cx - 3.2, cy + 2.0).Z(), T, WARE.black);
+    cut(g, tr().M(cx - 2.6, cy + 1.85).L(cx + 2.7, cy + 0.35), T, INC * 1.2); return;
+  }
+  const wide = kind === 'wide', [lx, ly] = look ?? (wide ? [0, 0] : [0.6, 0]);
+  paint(g, tr().O(cx, cy, wide ? 2.9 : 2.4), T, WARE.white); paint(g, tr().O(cx + lx, cy + ly, wide ? 0.8 : 1.1), T, WARE.black);
 }
 /** A slip jelly: o = { s, face, squash, lean, eye: 'open'|'wide'|'shut'|'glad', look, curl, mouth, arm: [[x, y], ...] (a pseudopod from its front), hand: 'open' }. Returns its transform. */
 function jelly(g, x, y, o = {}) {
@@ -110,7 +118,7 @@ function jelly(g, x, y, o = {}) {
 const ARMS = {
   down: [[1.6, -4.6], [2.4, -8.6]], reach: [[4.2, -2.0], [8.6, -1.4]], point: [[4.4, 0.2], [9.0, 2.4]], up: [[2.6, 4.0], [3.6, 8.0]],
   hold: [[3.8, -1.0], [6.4, 3.4]], rest: [[3.8, -3.6], [7.6, -6.8]], pole: [[3.6, -2.6], [7.0, -3.4]], carry: [[2.6, 2.8], [0.8, 6.0]],
-  back: [[-2.2, -4.0], [-4.0, -7.4]], swing: [[2.0, -4.2], [4.6, -6.8]], wheel: [[4.6, -3.8], [8.4, -5.6]],
+  back: [[-2.2, -4.0], [-4.0, -7.4]], swing: [[2.0, -4.2], [4.6, -6.8]], wheel: [[4.6, -3.8], [8.4, -5.6]], raise: [[3.2, 4.6], [5.0, 9.4]],
 };
 const LEGS = {
   stand: [[[1.2, 7.4], [1.5, 4], [1.4, 1.2], [0.8, 0.6], [3.4, 0.6]], [[-1.2, 7.4], [-1.4, 4], [-1.3, 1.2], [-1.9, 0.6], [0.7, 0.6]]],
@@ -178,7 +186,34 @@ function sun(g, x, y, r = 5) { const ray = tr(); for (let i = 0; i < 12; i++) { 
 function moon(g, x, y, r = 6) { paint(g, tr().O(x, y, r), ID, WARE.white); paint(g, tr().O(x + r * 0.45, y + r * 0.22, r * 0.86), ID, WARE.clay); }
 function star(g, x, y, r = 1.4) { line(g, tr().M(x - r, y).L(x + r, y).M(x, y - r).L(x, y + r), ID, 0.55, WARE.white); }
 function bauble(g, x, y, r = 2.8) { trace(g, tr().O(x, y, r)); lay(g, 0.8, WARE.black); g.fillStyle = WARE.white; g.fill(); paint(g, tr().O(x - r * 0.35, y + r * 0.35, r * 0.3), ID, WARE.red); }
-function drops(g, pts, r = 0.7) { for (const [x, y] of pts) paint(g, tr().M(x, y + r * 2.2).Q(x + r * 1.2, y, x, y - r).Q(x - r * 1.2, y, x, y + r * 2.2).Z(), ID, WARE.white); }
+function drops(g, pts, r = 0.7, style = WARE.white) { for (const [x, y] of pts) paint(g, tr().M(x, y + r * 2.2).Q(x + r * 1.2, y, x, y - r).Q(x - r * 1.2, y, x, y + r * 2.2).Z(), ID, style); }
+/** A trace's outline in dashes (world units along it): where a thing was, as the play's flight is dashed. */
+function dashed(t, T, on = 1.5, off = 1.1) {
+  const d = tr();
+  for (const sub of t.subs) {
+    const pts = sub.map(([x, y]) => T(x, y)); if (sub.closed) pts.push(pts[0]);
+    let pen = true, left = on; d.M(...pts[0]);
+    for (let i = 1; i < pts.length; i++) {
+      let [x0, y0] = pts[i - 1], seg = Math.hypot(pts[i][0] - x0, pts[i][1] - y0);
+      const [x1, y1] = pts[i];
+      while (seg > left) { const k = left / seg; x0 += (x1 - x0) * k; y0 += (y1 - y0) * k; seg -= left; if (pen) d.L(x0, y0); else d.M(x0, y0); pen = !pen; left = pen ? on : off; }
+      left -= seg; if (pen) d.L(x1, y1);
+    }
+  }
+  return d;
+}
+/** A slip jelly burst: the pool it fell to, a mound in it where its eye lies shut, the crown of slip flung up and the drops raining back. */
+function burstJelly(g, x, y, s = 1) {
+  const T = place(x, y, s);
+  solid(g, tr().M(-13.5, 0).Q(-12.6, 2.2, -10.4, 2.3).C(-6.4, 2.5, -4.6, 4.9, 0, 4.9).C(4.4, 4.9, 6.2, 2.5, 10.2, 2.3).Q(12.6, 2.2, 13.2, 0).Z(), T, false);
+  for (const [bx, h, lean, w] of [[-8.4, 5.6, -0.55, 1.5], [-3.9, 8.4, -0.22, 1.7], [3.7, 9.0, 0.24, 1.7], [8.6, 5.4, 0.6, 1.4]]) {
+    const tx = bx + lean * h;
+    solid(g, tr().M(bx - w, 1.8).Q(bx - w * 0.25, h * 0.62, tx, h).Q(bx + w * 0.25, h * 0.62, bx + w, 1.8).Z().O(tx, h + 0.3, w * 0.48), T, false);
+  }
+  drops(g, [[-11.2, 9.6], [-6.4, 13.2], [0.6, 14.2], [6.8, 12.8], [12, 8.8]].map(([px, py]) => T(px, py)), 0.75 * s, WARE.black);
+  cut(g, tr().M(-6.2, 2.0).Q(-8.6, 1.4, -10.6, 1.6).M(6.4, 2.0).Q(8.8, 1.3, 10.8, 1.6), T);
+  eye(g, 'shut', T, 0, 3.2);
+}
 function fish(g, x, y, s = 1, a = 0) {
   const c = Math.cos(a), sn = Math.sin(a), T = (px, py) => [x + s * (px * c - py * sn), y + s * (px * sn + py * c)];
   const body = tr().M(10, 0).Q(4, 4.6, -5, 1.6).L(-9.4, 4.2).L(-8, 0).L(-9.4, -4.2).L(-5, -1.6).Q(4, -4.6, 10, 0).Z();
@@ -192,7 +227,7 @@ function amphora(g, x, y, s = 1, a = 0) {
   limb(g, tr().M(1.5, 15).Q(4.2, 15.2, 3.4, 12).M(-1.5, 15).Q(-4.2, 15.2, -3.4, 12), T, 0.7 * s);
   cut(g, tr().M(-3.8, 7).Q(0, 6.2, 3.8, 7).M(-3.6, 8.4).Q(0, 7.6, 3.6, 8.4), T);
 }
-function motion(g, x, y, n = 3, len = 6, gap = 3.2) { const m = tr(); for (let i = 0; i < n; i++) m.M(x, y + i * gap).L(x - len + i * 1.2, y + i * gap); line(g, m, ID, 0.8); }
+function motion(g, x, y, n = 3, len = 6, gap = 3.2, face = 1) { const m = tr(); for (let i = 0; i < n; i++) m.M(x, y + i * gap).L(x - face * (len - i * 1.2), y + i * gap); line(g, m, ID, 0.8); }
 
 // ---- the twelve pictures (a panel 72 units wide and 54 tall, the groundline at GY): figures fill it, as on a cup's tondo
 const SCENES = {
@@ -271,7 +306,44 @@ const SCENES = {
     moon(g, 55, 42, 6); for (const [x, y, r] of [[42, 48, 1.2], [66, 31, 1.0], [45, 35, 0.9], [67, 48, 1.2], [31, 44, 0.8]]) star(g, x, y, r);
     jelly(g, 28, GY, { curl: true, squash: 0.85, eye: 'shut' });
   },
+  // ---- Espada's next four (npc/neuralese.js OSTRACON_PICTURES): melt, flee, mourn, rival
+  melt(g) {
+    // where it stood, dashed (as the play's flight), and the puddle it ran down into, spread flat, its eye still in it
+    line(g, dashed(jellyShapes().body, jellyT(36, GY, {})), ID, 0.7);
+    const fall = tr(); for (const [x, y] of [[18.6, 17], [16.4, 12.4], [53.4, 17], [55.6, 12.4]]) fall.M(x, y).L(x, y - 3.2); line(g, fall, ID, 0.7);
+    solid(g, tr().M(7.5, GY).Q(8.4, GY + 2.5, 11.6, GY + 2.6).C(19, GY + 2.8, 25, GY + 3.1, 29.4, GY + 5.4).C(32.6, GY + 8.8, 41.4, GY + 9.2, 44.6, GY + 5.6)
+      .C(48, GY + 2.9, 54, GY + 2.5, 60.4, GY + 2.5).Q(64, GY + 2.4, 65, GY).Z(), ID);
+    solid(g, tr().O(68, GY + 0.8, 1.5, 0.8).O(4.6, GY + 0.7, 1.2, 0.7), ID, false);
+    cut(g, tr().M(12.6, GY + 1.3).Q(20, GY + 1.9, 25.6, GY + 2.4).M(47.6, GY + 2.2).Q(53, GY + 1.5, 59.6, GY + 1.3).M(31.6, GY + 6.2).Q(30.6, GY + 3.8, 31.6, GY + 2.2), ID);
+    cut(g, tr().O(31.6, GY + 1.7, 0.55), ID);
+    eye(g, 'open', ID, 38.6, GY + 5.1, [0.3, 0.6]);
+    line(g, tr().M(36.4, GY + 8.6).Q(32.6, GY + 8.0, 30.8, GY + 5.8), ID, INC * 1.5, WARE.white);
+  },
+  flee(g) {
+    folk(g, 14, GY, { pose: 'walk', near: 'raise', hand: 'open', far: 'back' });
+    motion(g, 41, GY + 8, 3, 6);
+    paint(g, tr().O(54, GY + 0.2, 7.5, 1.1), ID, WARE.black);
+    const T = jelly(g, 55, GY + 3.4, { s: 0.9, squash: 0.94, lean: 0.4, eye: 'wide', look: [-0.9, 0.3] });
+    drops(g, [T(-6.6, 21.4), T(-9.6, 18.4)], 0.55);
+    for (const [x, y, r] of [[40.6, GY + 1.6, 0.6], [38.2, GY + 3.2, 0.5], [36.4, GY + 1.3, 0.45]]) paint(g, tr().O(x, y, r), ID, WARE.black);
+  },
+  mourn(g) {
+    burstJelly(g, 54, GY);
+    const T = jelly(g, 21, GY, { lean: 0.58, squash: 0.78, eye: 'shut', arm: [[8.8, 6.6], [12.4, 5.4], [15.4, 3.2], [17.0, 0.9]], hand: 'open' });
+    drops(g, [T(6.0, 10.4), T(6.6, 7.0)], 0.55);
+  },
+  rival(g) {
+    motion(g, 9, GY + 6, 3, 5); motion(g, 63, GY + 6, 3, 5, 3.2, -1);
+    jelly(g, 22.6, GY, { s: 0.9, lean: 0.5, eye: 'fierce' });
+    jelly(g, 49.4, GY, { s: 0.9, face: -1, lean: 0.5, eye: 'fierce' });
+    const star = tr(); for (const a of [0.35, 0.95, 1.57, 2.19, 2.79]) star.M(36 + Math.cos(a) * 3.4, 22 + Math.sin(a) * 3.4).L(36 + Math.cos(a) * 6.4, 22 + Math.sin(a) * 6.4); line(g, star, ID, 0.8);
+    for (const [x, y, r] of [[34.2, GY + 1.2, 0.5], [37.8, GY + 1.2, 0.5], [36, GY + 2.4, 0.45]]) paint(g, tr().O(x, y, r), ID, WARE.black);
+  },
 };
+
+/** Which words have a picture: each word Espada gives an ostracon scene (npc/neuralese.js, OSTRACON_PICTURES) that a painter here paints,
+ *  the painter keyed by the word's English (its gloss: SIVA's is 'drink'). The rest draw the meander. */
+export const PICTURES = Object.fromEntries(Object.keys(OSTRACON_PICTURES).map((w) => [w, glossOf(w)]).filter(([, id]) => SCENES[id]));
 
 /** Paints the picture `id` into the panel (x, y, w, h); false if there is no such picture (the caller paints the meander). */
 export function paintPicture(g, id, x, y, w, h, span) {
