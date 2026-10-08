@@ -27,3 +27,7 @@ turning side, about 77 degrees off the view's axis, so in play it is off screen 
 
 **Under the surface:** while it is shown, the Umbral's murk is drawn off (`game.umbral.set({ clear })`, vfx/umbral.js: density 0.034
 to 0.014), so it is seen across the arena from below; at 0.034 a thing 45 m off kept a tenth of its light; at 0.014, two thirds.
+
+**Which way it turns (the review, casebook 129):** the whirlpool and Charybdis turn the way the ship laps, `looks.mael.sense = -arena.sign`
+(measured on both signs: the ship, the beast's eye and sheath and the bands all fall in `atan2(z, x)` at sign +1, all rise at -1). If you
+change what `arena.sign` means, the look follows it from that one line (`vfx/crossinglook.js`, `maelstrom`).
