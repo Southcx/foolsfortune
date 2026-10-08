@@ -123,8 +123,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+- **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
+  neuralese word beside a picture of what it does; found once (18: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
+  the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
+  upper ring) carries three words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
+  "ledger stone" (the ledger is the game's counts).
+- **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
+  digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
 - **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
-  Hand, Wide Bore, Thick Walls, Perfect Pitch, Early Tell, Rule of Thirds, Half Time, Guide Tone, Crib, Two-Tone: Espada's names). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+  Hand, Wide Bore, Thick Walls, Perfect Pitch, Early Tell, Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
@@ -394,7 +401,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
 - **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
-  Veritome's macros). *Retired:* Spellcasting.
+  Veritome's macros; the beat: staying on tempo is transcribing actions to time). No new domains, ever (the owner, 2026-10-08).
+  *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
   **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
   carrying Delirium's status, or the reverse, hits much harder. *Not:* an element.

@@ -27,7 +27,7 @@ never needed and never forced. The number that would do the skill for you is opt
 | Psychokinesis | the god hand's grab and throw | **psygun drills in the Throwing Room** (quality: the drill's score); psygun hits on creatures (quality: chain, point-blank, a headshot) |
 | Possession | the Lockheart's drain, reprogramming | a catch (quality: the struggle held through, the wheel's odds beaten); a spirit's bond raised |
 | Alteration | the god hand's sunder, swell, wring | terraforming strokes (quality: water led where it pools); a crack mended; mopping a blot |
-| Spellscription | sigils, macros, a sigil's pop | a Cogitomap copied; a realm's name written; `reprogram.run` (quality 1 when held first time and typed clean, else 0.4: needs `held`, `typos`, Espada); **time, for now** (Wanda): `song.play` (quality: its fever) and `rhythm.score` (quality: accuracy), a busk's tips x1.25 |
+| Spellscription | sigils, macros, a sigil's pop | a Cogitomap copied; a realm's name written; `reprogram.run` (quality 1 when held first time and typed clean, else 0.4: needs `held`, `typos`, Espada); **time** (the owner: staying on tempo is transcribing actions to time): `song.play` (quality: its fever) and `rhythm.score` (quality: accuracy), a busk's tips x1.25 |
 
 ## 3. The knacks (names Espada's, 2026-10-08; achievements over the ledger)
 
@@ -41,7 +41,7 @@ never needed and never forced. The number that would do the skill for you is opt
 | Rule of Thirds | the Veritome's frame shows its thirds | 300 plates appraised / a four-star plate | Calissa |
 | Half Time | the metronome swings on every other beat (never slower: it stays on the music's grid, Wanda) | 1,000 notes on the beat / fever full for eight bars | Wanda |
 | Guide Tone | the next charted note sounds a beat early | 50 songs played / a song at accuracy 0.95 or more | Wanda |
-| Crib | the English gloss beside each neuralese word | 100 macros spoken / a five-Function macro held at the first try | Espada, Petra |
+| Crib Sheet | the English gloss beside each neuralese word that is glossed (its reach grows by digging up ostraca: the owner, 2026-10-08) | 100 macros spoken / a five-Function macro held at the first try / six ostraca found (the explorer's way) | Espada, Petra |
 | Two-Tone | both of an agate's colours shown on a creature's body | 300 agates seen / 20 named right in a row | Calissa, Espada |
 
 Calibration, key bindings and volume stay **settings**, never knacks (Wanda): what makes the game playable at all is never earned.
@@ -81,8 +81,10 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
 
 - **Wanda** (`docs/handoffs/dovina/2026-10-08-from-wanda-training.md` on her branch): folded in above. **Time (the beat) has no home**:
   it runs through the bell, the rhythm mode, the rail and the parry. Ruled for now: its EXP goes to Spellscription (a note chart is a
-  script read), its seasoning to Focus (a rhythm combo of 25). **Asked of the owner:** does time get a domain of its own?
+  script read), its seasoning to Focus (a rhythm combo of 25). **The owner's ruling (2026-10-08): no new domains, ever.** Staying on tempo is transcribing actions to time, so time is Spellscription's.
 - **Espada** (`2026-10-08-from-espada-training-words.md`, 1d71f21 on her branch): the knacks' names, Crib and Two-Tone, the agate guess
   at appraisal, the fading gloss; "knack" and "seasoning" kept. Emotional literacy's home: a mood read right seasons Charisma (added to
   `SEASONING` once `appraise.mood` exists).
+- **The owner, 2026-10-08** (through Espada): the knacks' names approved; Crib is the **Crib Sheet**, and it glosses more for the one who
+  explores: the ostraca (archaeology: Indiana Jones, Spelunky, La-Mulana). Where they lie, how many and what they count: `progress/ostraca.js`.
 - **Calissa**, **Petra**: awaited.
