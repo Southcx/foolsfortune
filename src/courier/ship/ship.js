@@ -235,7 +235,7 @@ export class Ship {
     if (!this.sloop) return;
     const g = this.sloop.group, t = this.game.dunes?.t ?? 0;
     this.rail.toWorld(this.local, g.position);
-    g.rotation.set(-this.pitch, 0, this.bank + this.spin, 'YXZ');
+    g.rotation.set(-this.pitch, 0, this.bank + this.spin, 'YXZ'); if (this.rail.q) g.quaternion.premultiply(this.rail.q); // (the rail's turn: railpath.js)
     this.sloop.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t });
     const cam = this.game.camera, scroll = !RET[view];
     this.rail.toWorld(this.retNear, this.near.position); this.rail.toWorld(this.retFar, this.far.position);

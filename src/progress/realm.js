@@ -62,6 +62,7 @@ export const FEATURES = {
   incense:    { size: 'small',  job: 'calm',    does: 'the draught settles faster while the Jar rests near it (a tenth of a game hour sooner a burner)', n: 0.1, firing: 2 },
   stone:      { size: 'small',  job: 'empower', does: 'a formation stone: its neighbours count it twice in their formation', n: 2, firing: 2 },
   drillYard:  { size: 'large',  job: 'drill',   does: 'the spirits drill here (DRILLS)', n: 1, firing: 4 },
+  sporebed:   { size: 'small',  job: 'transmute', does: 'a spore bed: a strain of fungus works what you set in it (progress/sporebeds.js); placed in a feeling you hold spores of, it takes that strain', n: 1, firing: 1 },
 };
 const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch' };
 /** What placing a feature costs: cubes by its size, and one material of its feeling's kind. */

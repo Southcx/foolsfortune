@@ -8,7 +8,7 @@
 // Prior art: Kingdom Hearts 1 and 2 (the Gummi Ship's weapon blocks), Einhander (one gunpod at a time, with its own ammunition),
 // Gradius's power-up bar (a choice of what to be good at), and every shmup's bomb (few, and it clears the screen).
 //
-//   MOUNTS[tool] = { name, verb, does, cost?, charges?, cooldown? (bars) }   SLOTS   slotsOf(ship)   mountable(worn) -> [tool]   loadout(chosen, worn) -> [tool]
+//   MOUNTS[tool] = { name, verb, does, cost?, charges?, cooldown? (bars) }   SLOTS   slotsOf(ship)   mountable(worn) -> [tool]   loadout(chosen, worn, ship?) -> [tool]
 //   The slots are the hull's (the owner, 2026-10-08: "mount slots by hull"; ships.js SHIPS[ship].mounts): sloop 2, frigate 3, destroyer 2,
 //   tanker and galleon 1. Keys 1 to 3 fire them in the order chosen at the pier.
 // ---------------------------------------------------------------------------------------
@@ -33,5 +33,5 @@ export const MOUNTS = {
 
 /** The tools that can be mounted, from those worn (game.belt): every worn tool but the psygun, which is always the gun. */
 export const mountable = (worn = []) => worn.filter((t) => MOUNTS[t] && !MOUNTS[t].always);
-/** The loadout as sailed: the first SLOTS of `chosen` that are worn and mountable, in order. */
-export const loadout = (chosen = [], worn = []) => chosen.filter((t, i) => chosen.indexOf(t) === i && mountable(worn).includes(t)).slice(0, SLOTS);
+/** The loadout as sailed: the first `slotsOf(ship)` of `chosen` that are worn and mountable, in order. */
+export const loadout = (chosen = [], worn = [], ship = 'sloop') => chosen.filter((t, i) => chosen.indexOf(t) === i && mountable(worn).includes(t)).slice(0, slotsOf(ship));

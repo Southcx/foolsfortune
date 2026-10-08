@@ -762,6 +762,75 @@ await guard('orbit', async () => {
   await ticks(30); await shot('orbit');
 });
 
+// ---- the mycelium (docs/plans/MYCELIUM.md; world/garden/mycelium.js, Dovina's): Myggdrasil's planetoid at Sinter, a spore bed's life
+// through its page, the tree fed and picked, a keepsake pot at the Chimney, the Grimoire of Echoes. (The realm's two hooks, `use` and
+// `update`, are Petra's: until they land, F's work is asked of the mycelium directly, as the hook will.)
+await guard('mycelium', async () => {
+  const M = (expr) => ev(`(() => { const g = __game.game, R = g.realm, M = g.gardenMycelium, S = g.sporeBeds, T = g.myggdrasil, V = __game.THREE.Vector3; ${expr} })()`);
+  const before = await M(`return { has: !!M, given: M ? !!M.give() : null, fired: R.site.by.myggdrasil ? 1 : 0 }`);
+  check('mycelium: no Myggdrasil before the second Firing', before.has && !before.given && !before.fired, before);
+  const g1 = await M(`
+    g.ledger.hi('alchemy.rank.willpower', 60); const P = M.give(); if (!P) return { ok: false };
+    const free0 = R.orbit.slots().filter((x) => x.free).length;
+    const gaps = R.site.planets.filter((q) => q !== P).map((q) => +(q.c.distanceTo(P.c) - (q.rMax || q.r) - P.rMax).toFixed(1));
+    const ring = Array.from({ length: 10 }, (_, n) => +(R.orbit.slotPos(n).distanceTo(P.c) - P.rMax).toFixed(1));
+    const box = new __game.THREE.Box3().setFromObject(M.tree.group), H = box.max.y - box.min.y;
+    return { ok: true, r: P.r, gaps: Math.min(...gaps), ring: Math.min(...ring), free0, height: +H.toFixed(1), lotuses: R.site.lotuses.filter((l) => l.planet === P).length, plots: R.plots.plots.filter((p) => p.planet === P).length, again: M.give() === P, ev: g.events.counts['garden.myggdrasil'] || 0 }`);
+  check('mycelium: Myggdrasil given at Sinter, once, said once', g1.ok && g1.again && g1.ev === 1, g1);
+  check('mycelium: its planetoid the largest (26 m), clear of every planetoid by 10 m and more', g1.r === 26 && g1.gaps > 10, { r: g1.r, leastGap: g1.gaps });
+  check('mycelium: clear of the ring\'s slots (a bought planetoid of 16 m still fits)', g1.ring > 16 + 10, { leastToASlot: g1.ring });
+  check('mycelium: the tree is BIG (48 m and more), lotuses and plots of its own', g1.height >= 48 && g1.lotuses >= 2 && g1.plots === 6, { height: g1.height, lotuses: g1.lotuses, plots: g1.plots });
+  // a spore bed placed as the hand places it (paid), in grief: the first bed brings the oyster and the inkcap, so it takes the oyster
+  const b1 = await M(`
+    g.cubes.earn(500, 'test'); g.pneuka.add('mat.provision', 'test');
+    const p = R.plots.plots.find((q) => q.planet.id === 'myggdrasil' && !q.placed), r = R.plots.place(p, 'sporebed', 'grief');
+    const i = S.bedOf(p.id), f = R.site.features.find((x) => x.kind === 'sporebed' && x.plot === p.id);
+    return { placed: r.ok, why: r.why, plot: p.id, i, strain: S.beds[i]?.strain, feature: !!f, ring: M.rings.has(p.id) }`);
+  check('spore bed: placed, granted, a place to F at, its ring drawn', b1.placed && b1.i >= 0 && b1.feature && b1.ring, b1);
+  check('spore bed: placed in a feeling you hold spores of, it takes that strain', b1.strain === 'grief', { strain: b1.strain });
+  // F at it: stand the Jar there and ask what the chevron offers, then work it through its page as a player clicks
+  const f1 = await M(`
+    const f = R.site.features.find((x) => x.kind === 'sporebed' && x.plot === '${b1.plot}'), J = R.jarBody, d = f.pos.clone().sub(f.planet.c).normalize();
+    J.pos.copy(f.pos).addScaledVector(d, 0.6); J.planet = f.planet; J.up.copy(d); J.vel.set(0, 0, 0);
+    const o = R.offer(); g.pneuka.add('mat.edge', 'test', 0, { kind: 'edge', tier: 1, hue: 20, sat: 0.6, path: [] });
+    const used = M.use(R.near); return { offered: R.near?.kind, used, page: g.indexMenu.page?.name, text: document.querySelector('#indexmenu')?.innerText.replace(/\\n+/g, ' | ').slice(0, 160) }`);
+  check('spore bed: the chevron offers it, F opens its page', f1.offered === 'sporebed' && f1.used && f1.page === 'garden.sporebed', f1);
+  await shot('mycelium-sporebed-page');
+  await page.click('#indexmenu .room >> text=EDGE'); await ticks(2);
+  const s1 = await M(`const i = S.bedOf('${b1.plot}'); return { set: !!S.beds[i].set, text: document.querySelector('#indexmenu')?.innerText.replace(/\\n+/g, ' | ').slice(0, 200), ready: S.ready(i) }`);
+  check('spore bed: a thing set from the page, working, takeable back', s1.set && !s1.ready && /working/.test(s1.text) && /Take it back/.test(s1.text), s1);
+  const h1 = await M(`
+    const i = S.bedOf('${b1.plot}'); S.beds[i].at -= S.beds[i].hours * 150000 + 1; M.sync();
+    const lit = M.rings.get('${b1.plot}').mat.emissiveIntensity > 0, n0 = g.pneuka.slots.filter(Boolean).length; M.use({ kind: 'sporebed', plot: '${b1.plot}' });
+    const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /Harvest/.test(d.innerText)); row?.click();
+    return { lit, harvested: !S.beds[i].set, ev: g.events.counts['spore.harvest'] || 0, gained: g.pneuka.slots.filter(Boolean).length - n0, unlit: !(M.rings.get('${b1.plot}').mat.emissiveIntensity > 0) }`);
+  check('spore bed: ready, its ring lights; harvested from the page, the bed is free again', h1.lit && h1.harvested && h1.ev >= 1 && h1.gained >= 1 && h1.unlit, h1);
+  await closeAll();
+  // moved by the hand: the colony goes with it
+  const mv = await M(`const from = R.plots.plots.find((q) => q.id === '${b1.plot}'), to = R.plots.plots.find((q) => q.planet === from.planet && !q.placed); const ok = R.plots.move(from, to); M.sync(); return { ok, bed: S.bedOf(to.id), old: S.bedOf(from.id), ring: M.rings.has(to.id) && !M.rings.has(from.id) }`);
+  check('spore bed: moved by the hand, its colony and ring go with it', mv.ok && mv.bed === 0 && mv.old === -1 && mv.ring, mv);
+  // the tree: fed at its roots from its page, a crop at dawn, picked
+  const t1 = await M(`
+    const f = R.site.features.find((x) => x.kind === 'myggdrasil'); g.pneuka.add('mat.arcane', 'test', 0, { kind: 'arcane', tier: 2, hue: 200, sat: 0.6, path: [] });
+    M.use(f); const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /feed it/.test(d.innerText)); row?.click();
+    const fed = g.ledger.get('myggdrasil.feed'), sap = T.tincture; T.s.dawn = -1; T.s.crown = []; const n = T.dawn(); M.sync();
+    return { page: g.indexMenu.page?.name, fed, sap, fruit: n, shown: M.crop.count, bodies: M.bodies.filter((b) => b.visible).length, caps: T.caps }`);
+  check('Myggdrasil: fed at its roots from its page, the tincture takes the colour', t1.page === 'garden.myggdrasil' && t1.fed >= 1 && t1.sap?.mass > 0, t1);
+  check('Myggdrasil: it fruits at dawn, the crop hangs under the cap, its open bodies shown', t1.fruit > 0 && t1.shown === Math.min(12, t1.fruit) && t1.bodies === t1.caps, t1);
+  const pk = await M(`const f = R.site.features.find((x) => x.kind === 'myggdrasil'); M.use(f); const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /Pick the crown/.test(d.innerText)); row?.click(); return { crown: T.crown.length, shown: M.crop.count, ev: g.events.counts['myggdrasil.pick'] || 0 }`);
+  check('Myggdrasil: the crown picked from its page, bare again', pk.crown === 0 && pk.shown === 0 && pk.ev >= 1, pk);
+  await closeAll();
+  // a keepsake pot at the Chimney's foot
+  const kp = await M(`g.events.emit('spirit.release', { spirit: 'sweep', kind: 'slipjelly', feeling: 'grief', by: 'courier' }); const C = R.site.by.chimney, m = new __game.THREE.Matrix4(); M.pots.getMatrixAt(0, m); const p = new V().setFromMatrixPosition(m), d = p.clone().sub(C.c); return { n: M.pots.count, off: +(d.length() - C.radiusAt(d.normalize())).toFixed(2) }`);
+  check('keepsake pot: a spirit let go stands as a pot on the Chimney\'s ground', kp.n === 1 && Math.abs(kp.off) < 0.3, kp);
+  // the Grimoire of Echoes
+  const gm = await M(`const host = document.createElement('div'); g.codexPages.grimoire({ game: g }, host); const t = host.innerText; return { oyster: /The oyster/.test(t), pots: /Slipjelly|slipjelly/i.test(t), tree: /girth/.test(t) }`);
+  check('the Grimoire of Echoes: the strains held, the tree, the pots', gm.oyster && gm.tree && gm.pots, gm);
+  // a look at the tree from its own planetoid
+  await M(`const P = R.site.by.myggdrasil, J = R.jarBody, d = new V(0.62, 0.42, 0.66).normalize(); J.pos.copy(P.c).addScaledVector(d, P.radiusAt(d) + 0.6); J.planet = P; J.up.copy(d); J.vel.set(0, 0, 0); return 0`);
+  await ticks(90); await shot('mycelium-myggdrasil');
+});
+
 await ev(() => __game.game.realm.leave()); await ticks(60); await settle();
 
 // ================================================================== the page's errors

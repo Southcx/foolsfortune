@@ -190,7 +190,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
   and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
   a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
-  spirit fired at the Chimney into a pot that stays (proposed). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
+  spirit fired at the Chimney into a pot that stays, standing in a ring at its foot (`progress/keepsakes.js`). **Myggdrasil's planetoid**
+  (`world/garden/mycelium.js`): the seventh planetoid, given at Sinter (not bought, not on the ring), the tree on its crown, F at its roots.
+  **The Grimoire of Echoes** (`feedback/codex/grimoire.js`): the Codex's page of the mycelium, what you have met only (the strains held,
+  the grafts made, the tree, the branches, the pots). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
 - **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
   station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
   materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
@@ -245,6 +248,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
   **A turn of the rail**: the four bars between two legs where the spline bends, dives or breaches into the next. *Not:* a seam (a
   change of place under cover).
+- **a figure** (`FIGURES`, `world/emocean/railpath.js`, Petra's): what a turn of the rail flies, the frame carrying everything that
+  fights: a **weave** (out across the sea and back, banked), a **crest** (up over a rise and down), a **corkscrew** (rolled once about
+  the line: the sea overhead at its middle), a **vertical loop** (code `verticalLoop`: pitched once round, over on its back). Each turns
+  about **the heartline** (the ship's cruise line, `CRUISE` up the frame), never about the rail point. Through the legs the rail is
+  straight and level. *Not:* a swell (the crude sea's), a loop (an emote held, or the thread's), a turn of the rail (the four bars).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.

@@ -313,6 +313,12 @@ the rules before building in the same area; a rule a machine can check goes into
     uniform wrapped at 3600 real seconds jumps the phase of `sin(0.7 t)` (2520 rad is 401.07 turns) by the fraction left over; and `NaN` added once
     stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
     handed a number that is not one.
+114. **A rule's effect is applied where the rule lives, once.** When a pure module owns a rule (trip.js's mend on arriving at an
+    encounter), the world calls it and does not apply the same number again on its own; the world acts only on what the rule asks.
+115. **A turned frame turns about the rider, not the track.** A figure that rolls or pitches the rail turns about the heartline (where
+    the ship rides), or the ship is swung through the sea's surface.
+116. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
+    copied (last frame's), the two disagree at any discontinuity; hand all of it the same way.
 
 ## Cases
 
@@ -1610,3 +1616,28 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** only a foe the ray meets 2 m or more beyond the ship's nose is picked. Measured: worst 0.007 of the screen through a crossing.
 - **Rule:** 95.
 
+### 2026-10-08 · An encounter at sea mended the hull twice (v120; found by Dovina reading triprun.js)
+- **Seen:** not in play: read in the code. An encounter would give back 6 of the hull where the rule says 3.
+- **Cause:** `offer()` added the encounter's `mend` (3) when the choice opened, and `trip.js arrive()` added `LEG.mend` (3) again
+  as the leg closed: the world applied a rule the pure module already applies.
+- **Fix:** the mend in `offer()` dropped; the choice is now Dovina's `apply(state, id, choice, ctx)` and the world does only its asks
+  (triprun.js `act`). Checked by scripts/triptest.mjs (an encounter sailed, each ask done).
+- **Rule:** 114.
+
+### 2026-10-08 · A vertical loop showed one frame upside down at each quarter (found by scripts/railpathtest.mjs)
+- **Seen:** the camera's up against the rail's up read -0.999 for one frame of each turn; every other frame 0.999.
+- **Cause:** the cinema hands the player's camera its shot before the stage sets it: the shot's place and look are Vector3s read by
+  reference (this frame's), its roll a number copied (last frame's). As the look passes the vertical, a look-at with the world's up
+  flips its basis by half a turn, and the roll that undoes it arrived a frame late.
+- **Fix:** the stage writes the roll into `player.camShot` as it sets the shot (stage.js `camera`). Measured after: 0.999 at every
+  frame of every figure.
+- **Rule:** 116.
+
+### 2026-10-08 · The corkscrew took the ship under the sea at its middle (found in a screenshot, before it shipped)
+- **Seen:** at the corkscrew's middle the screenshot showed only sky: the camera and the ship were under the crude, its surface
+  culled from below.
+- **Cause:** the frame rolled about the rail point, which lies at the sea's level; the ship rides 3 m up the frame (CRUISE), so
+  upside down it was 3 m under the surface.
+- **Fix:** each figure turns about the heartline, CRUISE up the frame (railpath.js `heart`). Measured after: the ship 3 m above the
+  sea through every figure (scripts/railpathtest.mjs).
+- **Rule:** 115.

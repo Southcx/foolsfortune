@@ -85,7 +85,7 @@ export class PiratesPiece {
   }
 
   /** A part's place in the rail frame, from its world place on her look. */
-  partAt(w, out) { const Q = this.stage.rail.Q; return out.set(Q.x - w.x, w.y - Q.y, w.z - Q.z); }
+  partAt(w, out) { return this.stage.rail.toLocal(w, out); }
   /** Her look where she is (rail frame `at`), her bow the way she heads. */
   place() {
     const st = this.stage, L = this.look;

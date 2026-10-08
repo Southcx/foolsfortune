@@ -195,16 +195,34 @@ if (part('pier')) {
 }
 
 // ---------------------------------------------------------------- a crossing to Margarite's dock (the shoal)
-/** Board from the pier's page by a click, as a person does. */
-const board = async (island, to, setPieces) => {
-  await S.ev(({ sp }) => { const g = __game.game; g.cubes.earn(600, 'test'); g.chat.run(`/crossing ${sp}`); }, { sp: setPieces });
+/** Board from the pier's page as a person does: the sea chart opened from its row, a lane drafted by clicking its waypoints (a sailable
+ *  one through a waypoint of the set piece asked for, else the first sailable), CAST OFF clicked: the trip (world/emocean/triprun.js).
+ *  `direct` sails the old hop by the pier's handle instead (the stage's script acts, which the set piece checks below read; the page's
+ *  direct row is to be retired: Petra, v120). */
+const LEG_OF = { shoal: 'shoal', pirates: 'wreckers', leviathan: 'leviathan' };
+const board = async (island, to, setPieces, { direct = false } = {}) => {
+  await S.ev(({ sp, direct }) => { const g = __game.game; g.cubes.earn(600, 'test'); if (direct) g.chat.run(`/crossing ${sp}`); }, { sp: setPieces, direct });
   await em(`standPier('${island}')`); await S.ticks(20);
   await S.closeAll(); await S.press('KeyF', 4);
   const w = await em('win()');
   if (!(w.index && w.page === 'pier')) return { ok: false, why: 'no pier page', w };
-  await S.page.click(`#indexmenu .room >> text=${to}`);
+  if (direct) {
+    const ok = await S.ev(({ from, to }) => __game.game.pier.sail(from, to), { from: island, to: to.toLowerCase() });
+    await S.ticks(2); await S.settle(); await S.ticks(4);
+    return { ok };
+  }
+  await S.page.click(`#indexmenu .room >> text=THE SEA CHART: ${to}`); await S.ticks(2);
+  const lane = await S.ev(async ({ want }) => {
+    const C = __game.game.pier.chart, { lanes } = await import('/src/progress/econ/passage.js'), { sailable } = await import('/src/progress/rail/trip.js');
+    const ship = __game.game.pier.ship, all = lanes(C.chart).filter((l) => sailable(C.chart, l, ship));
+    const l = all.find((x) => x.some((id) => C.chart.waypoints[id].type === want)) || all[0];
+    return l ? { ids: l, types: l.map((id) => C.chart.waypoints[id].type) } : null;
+  }, { want: LEG_OF[setPieces] || setPieces });
+  if (!lane) return { ok: false, why: 'no sailable lane on the sea chart' };
+  for (const id of lane.ids) { await S.page.click(`#indexmenu [data-wp="${id}"]`); await S.ticks(1); }
+  await S.page.click('#indexmenu .room >> text=CAST OFF');
   await S.ticks(2); await S.settle(); await S.ticks(4);
-  return { ok: true };
+  return { ok: true, types: lane.types };
 };
 let crossed = false;
 if (part('crossing')) {
@@ -214,7 +232,7 @@ if (part('crossing')) {
   await S.ev(() => { const g = __game.game; g.cubes.earn(600, 'test'); g.chat.run('/crossing shoal'); });
   const cubes0 = await S.ev(() => __game.game.cubes.balance);
   await S.press('KeyF', 4);
-  await S.page.click('#indexmenu .room >> text=Margarite');
+  await S.ev(() => __game.game.pier.sail('anagami', 'margarite')); // (the direct hop by the pier's handle: these checks read the script's acts)
   const mid = await st();
   S.check('board: a seam covers casting off', mid.boarding && (await S.ev(() => !!__game.game.seam.busy)), { boarding: mid.boarding });
   await S.ticks(2); await S.settle(); await S.ticks(4);
@@ -420,7 +438,7 @@ if (part('back')) {
   if (!crossed) { await S.go('margarite'); await S.ticks(30); }
   await S.ev(() => { const g = __game.game; for (let i = 0; i < 4; i++) g.pneuka.add('cask.mirth', 'test'); });
   const casks0 = await S.ev(() => __game.game.voyage.casks());
-  const b = await board('margarite', 'Anagami', 'pirates');
+  const b = await board('margarite', 'Anagami', 'pirates', { direct: true }); // (the script's acts: the Wreckers' first beat and the continue)
   let s = await st();
   S.check('back: boarded at Margarite\'s pier for Anagami', b.ok && s.active && s.sailing?.to === 'anagami' && JSON.stringify(s.setPieces) === '["pirates"]', { ok: b.ok, active: s.active, sailing: s.sailing });
   if (s.active) {
@@ -473,7 +491,7 @@ if (part('leviathan')) {
   S.phase = 'leviathan';
   const at = await S.ev(() => __game.game.voyage.at);
   if (at !== 'margarite') { await S.ev(() => { const g = __game.game; g.voyage.s.at = 'margarite'; }); await S.go('margarite'); await S.ticks(20); }
-  const b = await board('margarite', 'Anagami', 'leviathan');
+  const b = await board('margarite', 'Anagami', 'leviathan', { direct: true }); // (the script's acts: Old Nobody's beats)
   let s = await st();
   S.check('leviathan: boarded with Old Nobody forced', b.ok && s.active && JSON.stringify(s.setPieces) === '["leviathan"]', { ok: b.ok, setPieces: s.setPieces });
   if (s.active) {
@@ -502,7 +520,16 @@ if (part('repeat')) {
   await toJetty(); await S.ev(() => { __game.game.voyage.s.at = 'anagami'; });
   // a crossing begun and ended once first (what is made on first need is made), then counted
   const once = async (from, label) => { const b = await board(from, label, 'shoal'); if (!b.ok) return false; await sail(120); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); return true; };
-  await once('anagami', 'Margarite'); await once('margarite', 'Anagami');
+  { // the first drafted at the sea chart and checked: the trip runs its legs (Petra's triprun.js on Dovina's runtime)
+    const b = await board('anagami', 'Margarite', 'shoal');
+    const t = await S.ev(() => { const E = __game.game.emocean; return { active: E.stage.active, trip: E.trip.active, legs: (E.stage.legs || []).map((l) => l.id) }; });
+    S.check('passage: drafted at the sea chart by clicks, cast off, the trip sails its legs', b.ok && t.active && t.trip && t.legs.length === b.types?.length, { ...b, ...t });
+    if (b.ok) { await sail(120); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
+  }
+  const rw = await S.ev(async () => { const { worthOf, SHOPS } = await import('/src/progress/shop/catalogue.js'), { today } = await import('/src/core/calendar.js');
+    return { today: worthOf('rutter', { worth: 100, day: today() }), dayOn: worthOf('rutter', { worth: 100, day: today() - 1 }), buys: SHOPS.purser.buys.includes('rutter') }; });
+  S.check('passage: a rutter is worth its worth today, half that a game day on, and the Purser buys it', rw.today === 100 && rw.dayOn === 50 && rw.buys, rw);
+  await once('margarite', 'Anagami');
   const c0 = await em('counts()');
   let fails = 0, stuck = [];
   for (let i = 0; i < REPS; i++) {

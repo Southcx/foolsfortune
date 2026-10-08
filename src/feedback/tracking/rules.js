@@ -22,6 +22,7 @@ import { moveRules } from './moves.js';
 import { heldStrikeRules } from './heldstrikes.js';
 import { blowRules } from './blows.js';
 import { ostracaRules } from './ostraca.js';
+import { passageRules } from './passage.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -39,6 +40,7 @@ export function areaRules(ctx) {
   partyRules(ctx); // (the siblings: coop/party.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
   ostracaRules(ctx); // (the ostraca and stelae: neuralese words dug up into the Crib Sheet)
+  passageRules(ctx); // (an encounter's choice at sea done: world/emocean/triprun.js)
   heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
   blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
 }

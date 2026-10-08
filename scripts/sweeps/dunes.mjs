@@ -301,9 +301,11 @@ await run('skiff', async () => {
   k = await ds('skiff()');
   S.check('skiff: back in the Dunes, the Courier arrives on foot (no ride asked for)', !k.tech, { ...k, cause: k.tech ? 'courier/skiff/skiff.js: the tech ended by the travel before its update saw the Dunes inactive, so want stayed true and canStart() mounts it again on arrival' : null });
   if (k.tech) await S.press('KeyY', 80);
-  // a resize mid-ride (the resize event lands on the wall clock: 300 ms, as the basement sweep waits)
+  // a resize mid-ride (the resize event lands on the wall clock: polled until the canvas has followed, three real seconds at most)
   await S.press('KeyY', 170); await S.hold('KeyW', 30);
-  await S.page.setViewportSize({ width: 640, height: 400 }); await S.page.waitForTimeout(300); await S.ticks(20);
+  await S.page.setViewportSize({ width: 640, height: 400 });
+  for (let i = 0; i < 60 && (await S.ev(() => __game.renderer.domElement.clientWidth)) !== 640; i++) { await S.page.waitForTimeout(50); await S.ticks(1); }
+  await S.ticks(20);
   const rs = await S.ev(() => ({ cw: __game.renderer.domElement.clientWidth, ch: __game.renderer.domElement.clientHeight, aspect: +__game.camera.aspect.toFixed(3) }));
   await S.shot('skiff-resized');
   S.check('skiff: resized mid-ride, the canvas and camera follow', rs.cw === 640 && rs.ch === 400 && Math.abs(rs.aspect - 1.6) < 0.01, rs);

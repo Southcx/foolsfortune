@@ -8,7 +8,8 @@ import { seaChart, lanes, next, portent, sight, confidence, tierOf, PASSAGE, rut
 import { cheapestLane, laneBurn, sailable, start, arrive, choose, adrift, drift, draughtTrump, spillAt, formSkew, havenChoices } from '../src/progress/rail/trip.js';
 import { hop } from '../src/progress/econ/emocean.js';
 import { SHIPS, canSail, holdOf } from '../src/progress/rail/ships.js';
-import { ENCOUNTERS, pickEncounter, offered } from '../src/progress/rail/encounters.js';
+import { ENCOUNTERS, pickEncounter, offered, apply, raceRank, strengthOf } from '../src/progress/rail/encounters.js';
+import { slotsOf, loadout, mountable, MOUNTS } from '../src/progress/rail/mounts.js';
 
 const DAYS = Number(process.argv[process.argv.indexOf('--days') + 1]) || 2000;
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
@@ -115,4 +116,29 @@ check('bright feelings throw astral shots, dark umbral', formSkew('wonder') > 0.
   check('the Glass never comes without a run of this sea chart to race', glass === 0); }
 check('a ship that cannot dive is never offered the dive', !offered('lightWhale', 'tanker').some((c) => c.id === 'follow') && offered('lightWhale', 'sloop').some((c) => c.id === 'follow'));
 check('a storm cleared raises the rutter', rutterWorth({ minutes: 6, rank: 'A', read: 1, storms: 1 }) > rutterWorth({ minutes: 6, rank: 'A', read: 1 }));
+{ const all = mountable(Object.keys(MOUNTS));
+  check('a loadout is cut to the hull\'s slots', all.length >= 3 && ['sloop', 'frigate', 'tanker'].every((h) => loadout(all, all, h).length === Math.min(all.length, slotsOf(h))), Object.fromEntries(['sloop', 'frigate', 'tanker'].map((h) => [h, loadout(all, all, h).length]))); }
+{ // the encounters' effects (apply): every choice of every encounter on many seas, pure and in bounds
+  let bad = [], asked = {};
+  for (let d = 0; d < 60; d++) {
+    const C = seaChart({ from: 'anagami', to: 'margarite', day: d, danger: 0.5, distance: 6, casks: 2 }), L = lanes(C)[0], st0 = { ...start('sloop'), at: L[0], plan: L };
+    for (const [id, E] of Object.entries(ENCOUNTERS)) for (const c of E.choices) {
+      const ctx = { chart: C, rng: () => 0.3, rutter: 120, ghost: { score: 1000 }, wordsLeft: d % 2 }, a = apply(st0, id, c.id, ctx), b = apply(st0, id, c.id, ctx);
+      if (JSON.stringify(a) !== JSON.stringify(b)) bad.push(`${id}.${c.id}: not pure`);
+      if (a.state.fuel < 0 || a.state.hull !== st0.hull) bad.push(`${id}.${c.id}: state out of bounds`);
+      for (const k of a.asks) { asked[k.ask] = (asked[k.ask] || 0) + 1; if (k.waypoint && !L.slice(1).includes(k.waypoint)) bad.push(`${id}.${c.id}: asks for a waypoint behind or off the path`); if (k.waypoints?.some((x) => !L.slice(1).includes(x))) bad.push(`${id}.${c.id}: an exact portent off the path`); }
+    }
+  }
+  check('every encounter choice applies purely, in bounds, asking only of waypoints ahead', !bad.length, bad.slice(0, 4));
+  check('every kind of ask is reachable', ['exact', 'casks', 'bounty', 'sellRutter', 'hiddenLeg', 'crew', 'counter', 'buyRutter', 'ghost', 'ostracon'].every((k) => asked[k]), asked);
+  const C = seaChart({ from: 'anagami', to: 'margarite', day: 3, danger: 0.5, distance: 6, casks: 0 }), L = lanes(C)[0];
+  const tk = apply({ ...start('tanker'), at: L[0], plan: L }, 'lightWhale', 'follow', { chart: C });
+  check('a ship that cannot dive is given no hidden leg even if asked', !tk.asks.length);
+  const dry = apply({ ...start('sloop'), fuel: 0.5, at: L[0], plan: L }, 'castaway', 'rescue', { chart: C });
+  check('no castaway fed from a tank short of a measure, and it is not offered', !dry.asks.length && dry.state.fuel === 0.5 && !offered('castaway', 'sloop', { fuel: 0.5 }).some((c) => c.id === 'rescue'));
+  check('no rutter, nothing to sell Letty', !offered('lettysCutter', 'sloop', { rutter: 0 }).some((c) => c.id === 'sell') && offered('lettysCutter', 'sloop', { rutter: 90 }).some((c) => c.id === 'sell'));
+  const loot = apply({ ...start('sloop'), at: L[0], plan: L }, 'ghostConvoy', 'loot', { chart: C }).state;
+  check('loot draws the Wreckers: their legs ahead stronger, others not', strengthOf(loot, { type: 'wreckers', strength: 1 }) > 1 && strengthOf(loot, { type: 'shoal', strength: 1 }) === 1);
+  check('a ghost beaten lifts a rank a letter, never past S', raceRank('B', true) === 'A' && raceRank('S', true) === 'S' && raceRank('B', false) === 'B');
+}
 console.log(fails ? `passage: ${fails} FAILED (${charts} sea charts)` : `passage: all passed (${charts} sea charts)`); process.exitCode = fails ? 1 : 0;
