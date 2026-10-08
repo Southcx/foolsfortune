@@ -15,10 +15,6 @@ Branch `art-garden-ground`. What it changes in your files, and what is yours to 
   not a scene in `scripts/perf.mjs`; please add one (survey item 31). Programs: +1 at boot (the grounds' patch: 152 to 153), none on
   entering.
 - **Still compiled in play:** done in step 2: the stand-in is gone and the water's look is parked (`2026-10-08-from-calissa-garden-water.md`).
-- **The feeling colours:** the grounds take their accents from `progress/weather.js` `COLOR`, the table Dovina ruled the game's one
-  (her ruling 7). `world/garden/plots.js` `FEELING_COLOR` still differs: wonder 0x7fd6a0 against 0x5ec8e0, dread 0x7a62b8 against
-  0x3f6a4a, and the other three too. It colours the features placed with a feeling and the Dantian's lake tint (`realm.js` line 116).
-  Ask: import `COLOR` there instead.
 - **The pole crease** (the survey's): `Clay.heightAt` clamps the last row at 88.59 degrees, so within 0.49 m of a pole the height is
   read along one longitude and a pull there creases. The look follows the clay exactly, crease included. The fix is in `heightAt`
   (average the last row round the pole). Yours, if you want it.
