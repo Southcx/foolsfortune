@@ -190,8 +190,24 @@ the rules before building in the same area; a rule a machine can check goes into
 72. **An instance never drawn has nothing to normalize.** A pooled instance's unset attributes are zeros, and `normalize(vec3(0))` is NaN
     in a vertex shader: what a GPU does with a NaN position is undefined (SwiftShader drops the triangle; another driver need not). Guard the
     length (or move the dead instance outside the clip volume) before it is divided by; read every pooled shader for what its zeros do.
+73. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
+    and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
+    `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
 
 ## Cases
+
+### 2026-10-08 · The garden's water was two programs, and the perf budget broke (Calissa, the review of her garden look)
+- **Seen (`npm run perf` on Calissa's branch with `art-garden-water-r` merged, against her branch alone):** programs 159 / 162 / 162 (workshop /
+  dunes / well) became 165 / 168 / 168 where the garden's work was reckoned at four more; the budget is 164.
+- **Cause (measured, the warm-up's programs listed by name):** six new programs, not four or five: the grounds, the rain, the plants, the
+  cascade and the water **twice**. The two water programs differ in one bit of their cache key (`flipSided`, 5123 against 1027): the water is
+  transparent and double-sided, which three.js draws as a back-face pass and a front-face pass, a program each.
+- **Fix:** `forceSinglePass: true` on the water's and the cascade's materials (`vfx/garden/gardenwater.js`, `gardencascade.js`): one pass, one
+  program, and nothing drawn differently (a sheet of water and a ribbon have no second layer to order; the pond looks the same in the
+  renders before and after). Boot is 158 programs on this branch (it was 159). The garden's looks are still five programs (the grounds, the
+  water, the rain, the plants, the cascade), each parked in the warm-up so that nothing compiles on entering, pouring or the first cascade;
+  the budget has to carry them (the handoff to Petra says by how much).
+- **Rule:** 73.
 
 ### 2026-10-08 · The garden's rain rings were NaN until each was first laid (Calissa, the review of her garden look)
 - **Seen (reading `vfx/garden/gardenrain.js`, then the shader's arithmetic by hand):** the pool of 360 rings starts with `iB` (the ring's
