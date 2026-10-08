@@ -72,7 +72,14 @@ eye must do the reading, which is the whole lesson.
   the soul glow brightens on the Courier when you leave. Refused: the ball does not drop, the log says why.
 - **Readability for every eye:** each swatch has a shape as well as a colour (seven glyphs, Calissa's), so a colour-blind player
   navigates by shape and position; the hues are spaced 51° apart, never close enough to need fine colour vision to tell apart.
-- **The log says** each firing and each refusal in words (Espada's); nothing else on the screen.
+- **The log says** each firing and each refusal in words (Espada's, 2026-10-08): "You press {material} into the bath." / "The colour
+  greys." / "True firing. {Attribute}: rank {n}. Half the fuel." / "The press does not fire: the colour is outside every swatch." /
+  "The press does not fire: it needs {n} cubes." Nothing else on the screen.
+- **The sound is the same geometry (Wanda, 2026-10-08):** each 30° of hue is a fifth, so a material's path is a melody of fifths; a
+  complement is the tritone (180°, six fifths), and greying is that tritone resolving into the drone: the painter's rule and the
+  musician's are one move. Saturation is how far the note rises from the drone; a swatch beats against the drop until it is still at
+  the heart; a true firing plays the Answer. The press emits `alchemy.step { hue, sat, by }` at each step of a path and
+  `alchemy.fire { attribute, rank, true, d, by }`; Wanda builds the sound in `src/audio/`.
 
 ## 5. Teaching without saying (the owner's commandment)
 
@@ -129,7 +136,6 @@ become one line. Owner to rule.
 
 ## Asked of the sisters
 - **Calissa:** section 4 (the UX) is a draft for you to rewrite, and the seven glyphs.
-- **Espada:** the log's words for pressing, a true firing and a refusal; the folk noticing the soul glow.
-- **Wanda:** the press's sound (each material's path a phrase on the hue's note: a walk round the wheel heard as a walk round the circle
-  of fifths, if it fits your harmony).
+- **Espada:** answered (section 4's lines); the folk noticing the soul glow read `game.alchemy.colour` (`s`, 0 .. 1, is the glow's strength; `h` its hue).
+- **Wanda:** answered (section 4: the sound); builds it on `alchemy.step` and `alchemy.fire`.
 - **Petra:** sections 3 and 6 to build, 8 to pass.
