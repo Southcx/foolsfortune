@@ -609,6 +609,21 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Gnomon** (Espada's; `world/dunes/solar.js`): the pale spire in the Dunes, the sundial's shadow-stick; the Solar Skiffing trial
   is begun at its foot.
 - **a slip geyser** (`world/dunes/geysers.js`, `vfx/slipgeyser.js`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
+- **an ostracon's look** (`Ostracon`, `ostraconThing`, `src/vfx/ostracon.js`; Calissa's): an **ostracon** (plural **ostraca**, Espada's
+  name: LORE.md "Digging for words"; where they lie is Dovina's, `progress/ostraca.js`) is a curved potsherd of red earthenware a hand
+  across, from a pot of the town that was, in Attic **black-figure** (the EYE CUP glaze's hand): its broken edges the paler raw body, its
+  outer face **the black**, with the word's **rune** scratched through it to the red (`runeStrokes`, `tools/veritome/mind/runes.js`: the
+  Veritome's own glyph) and beside it, in a panel left in the red, a **picture** of what the word does (`PICTURES`, `paintPicture`,
+  `src/vfx/blackfigure.js`), or the **meander** (the Greek key) for a word with none. *Not:* a shard (the homonym), nor one of the
+  sherds (the Great Slip Jelly's calves); *not* a plate (a photograph).
+- **a stele's look** (`Stele`, `src/vfx/ostracon.js`; the word is Dovina's glossary's for Espada's "ledger stone"): an eroded sandstone
+  slab the Courier's height, sand heaped at its foot, the town's runes cut in rows (the words it is given; ruled rows rubbed blank until
+  Espada's sentence lands) under one painted **frieze** in the same black-figure hand (`paintFrieze`: the town's folk and the slip
+  jellies at work together). *Not:* "ledger stone" (the ledger is the game's counts).
+- **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
+  *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
+- **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a
+  sparkle (never a pixel) and never smaller than a few lines, so it cannot crawl. *Not:* glints (the water's, or the shoal's).
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
