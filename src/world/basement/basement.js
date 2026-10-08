@@ -504,6 +504,7 @@ export class Course {
     if (!r) return;
     this.game.circuits?.leave();
     if (r.spawn === 'circuit') { this.game.circuits.enter(r.circuit || r.id); return; }
+    if (r.spawn === 'debug') { this.game.debugChests?.go(r.kit); return; } // (the Index's DEBUG rows: debug/debugchest.js)
     if (r.spawn === 'lab') this.toLab();
     else if (r.spawn === 'mill') this.toMill();
     else if (r.spawn === 'dunes') this.toDunes();

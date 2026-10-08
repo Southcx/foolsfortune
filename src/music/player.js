@@ -42,6 +42,8 @@ export class MusicPlayer {
     this.mood = { aspect, strength, second, secondStrength, cancelled }; this.arr.layer = moodLayer(aspect, strength, second, secondStrength);
   }
   /** The night: the drums and the bass back, the leads a little softer (every cue the arranger plays). */
+  /** The ship under the crude (the rail's Umbral form, audio/ambience.js reads game.emocean.form): the music heard through it. */
+  setUnder(on) { this.arr.setUnder(on); }
   setNight(on) { this.night = !!on; this.arr.thin = on ? { hit: 0.55, bass: 0.7, rest: 0.88 } : null; }
   /** The scale to play along in, five semitones from the grid's root: the scale of the bar sounding now (a score or section may name its
    *  own; the minor pentatonic if not), or, with nothing playing, the weather's mode (nothing to clash with). */
@@ -72,7 +74,7 @@ export class MusicPlayer {
    *  near enough; E flat unless the score says). Null when nothing plays. */
   grid() {
     const A = this.arr;
-    if (A.alive && !A.ended && A.score) { const sec = A.score.sections[A.section]; return { t0: A.next, spb: A.spb, beats: sec?.beats || A.score.beats || 4, root: A.score.root ?? 63, swing: 0.5 }; }
+    if (A.alive && !A.ended && A.score) { const sec = A.score.sections[A.section]; return { t0: A.next, spb: A.spb, beats: sec?.beats || A.score.beats || 4, root: sec?.root ?? A.score.root ?? 63, swing: 0.5 }; } // (a section may be in its own key: a crossing's legs, music/legs.js)
     if (this.alive && this.score) return { t0: this.next, spb: this.spb, beats: 4, root: this.score.root ?? 63, swing: this.score.swing ?? 0.5 };
     return null;
   }

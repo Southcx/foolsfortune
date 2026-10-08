@@ -5,15 +5,22 @@
 //
 //   WASD      the ship in the view's plane: a critically damped approach to 14 m/s (Star Fox 64's Arwing settles, it never wobbles);
 //             it banks into a sideways move and pitches into a climb, so it shows its intent before it arrives
-//   mouse     the reticle (chase, free, astern): two marks on one line from the nose, at 12 m and 36 m (Star Fox 64: depth read without
-//             stereo); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
+//   mouse     the reticle (chase, free, astern): a cursor over the whole screen (the mouse's pixels, kept through a swing: the owner's
+//             bug, RAIL-OVERHAUL.md 1.4), and a ray from the camera through it each frame: the gun aims where it meets the plane 36 m
+//             ahead, or at the first foe it crosses; two marks on the nose's line, at 12 m and there (Star Fox 64: depth read without
+//             stereo, Sin & Punishment's free cursor); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
 //             abeam (into the screen) in the side view while a set piece runs alongside (the brig's broadside, Old Nobody's flank)
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
 //   E         the barrel roll: 0.35 s, turning plain shots for its first quarter second; the Blink's two charges (Star Fox 64)
 //   V         the parry: a quarter second in which an outlined shot near the hull goes home (as on foot: PARRY.md)
-//   Q         polarity: the ship's feeling flips between yours and its opposite (Ikaruga)
+//   Q         the FORMS (RAIL-OVERHAUL.md 4, the owner's idea): breach into the Astral form, dive into the Umbral (Ikaruga's polarity
+//             as Orta's forms): a shot of your form's kind is drunk, the other hurts; Astral fast, wide, a spread of three and eight locks,
+//             Umbral slower, tighter, one heavy shot and four locks; a hull that cannot dive refuses it. The old polarity rides with it
+//             (Astral is your feeling, Umbral its opposite) for the shots of a direct hop
+//   R         the SURGE: the absorbed Lachryma let go at once, a lance at everything on the screen and a half bar untouchable; it costs
+//             the chain (Panzer Dragoon's Berserk, Child of Eden's Euphoria)
 //   Shift, C  boost and brake: the ship's place along the rail moves within a window; the music, the clock, never does
 //
 // A hit: the ship is untouchable a second and its glow holds steady (never a blink: CLAUDE.md); the screen shakes as trauma squared
@@ -32,6 +39,7 @@ import { sfx } from '../../audio/sfx.js';
 import { Sloop } from '../../vfx/sloop.js';
 import { COLOR, OPPOSITE } from '../../progress/weather.js';
 import { axes, planeOf, VIEW_RIGS, CRUISE } from './views.js';
+import { SHIPS } from '../../progress/rail/ships.js';
 
 const D2R = Math.PI / 180, SCALE = 0.24; // (the sloop is 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
 const damp = THREE.MathUtils.damp, clamp = THREE.MathUtils.clamp;
@@ -39,13 +47,18 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
 const VIEW_FWD = { chase: [0, 0, 1], free: [0, 0, 1], astern: [0, 0, -1], above: [0, 0, 1], side: [0, 0, 1] };
 const VIEW_RIGHT = { chase: 1, free: 1, astern: -1, above: 1, side: 1 };
-const RET = { chase: [9, 6], free: [15, 9], astern: [9, 6] }; // (how far the reticle may stray at 36 m, across and up)
+const RET = { chase: 1, free: 1, astern: 1 };
+/** The forms (RAIL-OVERHAUL.md 4): pace and box as shares, the gun, the lock-on's most; Umbral rides low (a stand-in until Calissa's
+ *  surface from below: the dive's look). */
+const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
+const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot fills 4; full at 100; untouchable half a bar of the cue) // (the views with a free cursor; above and side fire along the scroll)
+const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Ship {
   constructor(game, rail) {
     this.game = game; this.rail = rail;
     this.local = new THREE.Vector3(0, CRUISE, 0); this.vel = new THREE.Vector3();
-    this.ret = { x: 0, y: 0 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
+    this.cursor = { x: 0, y: 0.15 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
     this.aspect = 'mirth'; this.home = 'mirth';
     this.boostZ = 0; this.bank = 0; this.pitch = 0;
     this.rollT = 0; this.spin = 0; this.charges = T.ship.roll.charges; this.rechargeT = 0;
@@ -69,9 +82,12 @@ export class Ship {
   }
 
   /** A crossing begins: the ship at the rail point, its feeling yours (the stones' draught, else the island's mood). */
-  begin(aspect = 'mirth') {
-    this.home = this.aspect = aspect;
-    this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.ret.x = this.ret.y = 0;
+  begin(aspect = 'mirth', ship = 'sloop') {
+    this.home = this.aspect = aspect; this.qSaid = false; this.form = 'astral'; this.surge = 0;
+    // the hull (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether it dives
+    const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
+    this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
+    this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15;
     this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
@@ -86,24 +102,25 @@ export class Ship {
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
     const want = _a.set(0, 0, 0);
-    want[ax.k] += h * ax.s * S.top; want[ay.k] += v * ay.s * S.top;
+    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace, box: (this.hull?.box ?? 1) * F.box };
+    want[ax.k] += h * ax.s * S.top * hull.pace; want[ay.k] += v * ay.s * S.top * hull.pace;
     const pl = planeOf(plane);
     // boost and brake: the place along the rail (in the screen plane, where z is otherwise pinned)
     const bz = keys.has('ShiftLeft') || keys.has('ShiftRight') ? S.boost.ahead : keys.has('KeyC') ? -S.boost.behind : 0;
     this.boostZ += clamp(bz - this.boostZ, -S.boost.rate * dt, S.boost.rate * dt);
     // the pinned axis eases home: z to the boost's place on the screen, y to the cruise height over the sea, x to the rail on the wall
     if (pl === 'screen') want.z = (this.boostZ - this.local.z) * 4;
-    else if (pl === 'sea') want.y = (CRUISE - this.local.y) * 4;
+    else if (pl === 'sea') want.y = (CRUISE + F.cruise - this.local.y) * 4; // (Umbral rides low)
     else if (pl === 'wall') want.x = (0 - this.local.x) * 4;
     for (const k of ['x', 'y', 'z']) this.vel[k] = damp(this.vel[k], want[k], S.spring, dt);
     this.local.addScaledVector(this.vel, dt);
-    const B = S.box, zc = pl === 'screen' ? this.boostZ : 0;
-    this.local.x = clamp(this.local.x, -B.x, B.x); this.local.y = clamp(this.local.y, B.yLo, B.yHi); this.local.z = clamp(this.local.z, zc - B.z, zc + B.z);
+    const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0;
+    this.local.x = clamp(this.local.x, -B.x * k, B.x * k); this.local.y = clamp(this.local.y, B.yLo + F.cruise * 0.5, B.yLo + (B.yHi - B.yLo) * k + F.cruise); this.local.z = clamp(this.local.z, zc - B.z * k, zc + B.z * k);
     // bank and pitch show the intent (screen-right in the view, so the astern view banks the right way)
     const sx = (pl === 'wall' ? this.vel.z : this.vel.x * (VIEW_RIGHT[view] || 1)), sy = this.vel.y;
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
     this.pitch = damp(this.pitch, clamp(sy * S.pitch, -S.pitchMax, S.pitchMax) * D2R, 10, dt);
-    this.aimAt(view, I, abeam && view === 'side');
+    this.aimAt(view, I, abeam && view === 'side', waves); this.aimArgs = [view, abeam && view === 'side', waves];
     // the roll, its charges, the parry's window, the mercy after a hit
     const R = S.roll;
     if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
@@ -117,15 +134,22 @@ export class Ship {
       else { this.parryT -= raw; if (this.parryT <= 0) this.recover = 0.35; } // (a parry into nothing costs a breath: no mashing through a wall)
     }
     this.mercy = Math.max(0, this.mercy - dt);
-    if (hit.has('KeyQ')) { this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
+    if (hit.has('KeyQ') && this.hull && !this.hull.dive) { if (!this.qSaid) { this.qSaid = true; this.game.events?.emit('rail.refuse', { what: 'dive', ship: this.hull.id, by: 'courier' }); } } // (a heavy hull rides the surface: ships.js dive)
+    else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.game.events?.emit('rail.form', { form: this.form, by: 'courier' }); this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
     // the gun, the sweep and the volley, all on the sixteenth (Rez)
     if (sixteenth !== this.lastSixteenth) {
       this.lastSixteenth = sixteenth;
-      if (keys.has('Mouse0')) { shots?.gun(this.nose, this.aim); sfx.tap?.(9); }
+      if (keys.has('Mouse0')) { // (Astral a spread of three, Umbral one heavy shot)
+        if (F.spread > 1) for (let i = 0; i < F.spread; i++) shots?.gun(this.nose, _n.copy(this.aim).applyAxisAngle(_b.set(0, 1, 0), (i - (F.spread - 1) / 2) * 0.06));
+        else { const s = shots?.gun(this.nose, this.aim); if (s) s.dmg = F.heavy; }
+        sfx.tap?.(9);
+      }
       if (this.painting) this.paint(waves);
       const q = this.queue.shift();
       if (q) { if (q.to.alive && this.game.lachryma?.spend(S.lock.cost, 'lance') !== false) shots?.lance(this.nose, q.to, q.volley); else q.volley.flown++; }
     }
+    // the surge (R): full, a lance at everything on the screen, untouchable half a bar; the chain is its price
+    if (hit.has('KeyR') && this.surge >= SURGE.full) this.letGo(waves, shots);
     const rmb = keys.has('Mouse2');
     if (rmb && !this.painting) { this.painting = true; this.locks.length = 0; }
     if (!rmb && this.painting) {
@@ -138,24 +162,39 @@ export class Ship {
   }
 
   /** Where the gun points: from the nose to the reticle at 36 m (free views), or along the scroll (above, side). */
-  aimAt(view, I, abeam = false) {
-    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, lim = RET[view]; // (abeam: a set piece alongside, the gun at it, into the screen)
+  aimAt(view, I, abeam = false, waves = null) {
+    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, free = RET[view] && VIEW_RIGS[view] != null; // (abeam: a set piece alongside, the gun at it, into the screen)
     this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
-    if (!lim || VIEW_RIGS[view] == null) { this.ret.x = damp(this.ret.x, 0, 8, 1 / 60); this.ret.y = damp(this.ret.y, 0, 8, 1 / 60); this.aim.set(...f); }
-    else {
-      const k = 0.035;
-      this.ret.x = clamp(this.ret.x + (I?.dx || 0) * k, -lim[0], lim[0]); this.ret.y = clamp(this.ret.y - (I?.dy || 0) * k, -lim[1], lim[1]);
-      _b.set(f[0], f[1], f[2]).multiplyScalar(d2).add(this.nose); _b.x += this.ret.x * (VIEW_RIGHT[view] || 1); _b.y += this.ret.y;
-      this.aim.copy(_b).sub(this.nose).normalize();
+    // the cursor: the mouse's pixels as a share of the screen, so it covers all of it and never moves with the camera (a swing keeps it)
+    const W = innerWidth || 960, H = innerHeight || 540, C = this.cursor;
+    C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1);
+    const cam = this.game.camera, R = this.rail, far = _st.copy(this.nose).addScaledVector(_b.set(...f), d2);
+    if (free && cam && R.toLocal) {
+      cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(C.x, C.y), cam);
+      R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
+      const t = Math.abs(_d.z) > 1e-4 ? (far.z - _o.z) / _d.z : -1; // (the plane 36 m ahead of the nose, square to the view)
+      if (t > 0) far.copy(_o).addScaledVector(_d, t);
+      // the first foe the ray crosses, nearer than that plane, is aimed at there (what is under the cursor is what is shot)
+      let best = t > 0 ? t : Infinity; const past = _w.copy(this.nose).sub(_o).dot(_d) + 2; // (only a foe the ray meets beyond the ship: one passing by the camera is not what the cursor means)
+      for (const foe of waves?.foes || []) {
+        if (!foe.alive) continue;
+        R.toLocal(foe.pos, _w); const tt = _w.clone().sub(_o).dot(_d); if (tt <= past || tt >= best) continue;
+        if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0)) { best = tt; far.copy(_a); } // (the point on the ray, in its reach: the reticle stays under the cursor, a big hull's centre may be far off it)
+      }
     }
+    this.aim.copy(far).sub(this.nose).normalize();
     this.retNear = _sp.copy(this.nose).addScaledVector(this.aim, d1).clone();
-    this.retFar = _st.copy(this.nose).addScaledVector(this.aim, d2).clone();
+    this.retFar = far.clone();
   }
+
+  /** Aimed again once the camera is placed this frame (the stage calls it after its camera): the cursor's ray through this frame's
+   *  camera, so the reticle never lags it by a frame when it shakes or swings. */
+  reaim() { if (!this.aimArgs) return; const [view, abeam, waves] = this.aimArgs; this.aimAt(view, null, abeam, waves); this.place(view); }
 
   /** The sweep: the foe nearest the far reticle on the screen, within reach and not painted yet. */
   paint(waves) {
     const L = T.ship.lock, cam = this.game.camera;
-    if (!waves || !cam || this.locks.length >= L.max) return;
+    if (!waves || !cam || this.locks.length >= Math.min(this.hull?.locks ?? L.max, (FORM[this.form] || FORM.astral).locks)) return;
     const rp = this.rail.toWorld(this.retFar, _a).project(cam), asp = cam.aspect || 16 / 9;
     let best = null, bd = L.reach;
     for (const f of waves.foes) {
@@ -175,7 +214,18 @@ export class Ship {
     this.onHit?.(s);
     return true;
   }
-  absorb(s) { this.onAbsorb?.(s); sfx.absorb?.(0); }
+  absorb(s) { this.surge = Math.min(SURGE.full, this.surge + SURGE.per); this.onAbsorb?.(s); sfx.absorb?.(0); }
+  returned() { sfx.ricochet?.(); this.onReturned?.(); }
+  /** The hurtbox the shot field reads (the hull's: ships.js). */
+  get hurtR() { return this.hull?.hurt ?? T.ship.hurt; }
+  /** The surge let go: a lance at every live foe the camera sees, both worlds, and a half bar untouchable; the chain reset (the stage's). */
+  letGo(waves, shots) {
+    const cam = this.game.camera, live = (waves?.foes || []).filter((f) => f.alive && f.lock !== false && _b.copy(f.pos).project(cam).z < 1 && Math.abs(_b.x) < 1.1 && Math.abs(_b.y) < 1.1);
+    const volley = { n: live.length, flown: 0, hit: 0, downs: 0 };
+    for (const f of live) shots?.lance(this.nose, f, volley);
+    this.surge = 0; this.mercy = Math.max(this.mercy, SURGE.mercy);
+    this.onSurge?.(volley); this.game.events?.emit('rail.surge', { n: live.length, by: 'courier' }); sfx.seekers?.(live.length);
+  }
   turned() { sfx.ricochet?.(); }
 
   tint() { const c = COLOR[this.aspect] ?? 0xffc65c; this.sloop?.keelMat?.color.setHex(c); } // (the ship's feeling as its keel's glow: Calissa's to dress)

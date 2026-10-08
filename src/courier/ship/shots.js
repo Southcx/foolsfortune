@@ -23,11 +23,17 @@
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { COLOR } from '../../progress/weather.js';
+import { stream } from '../../core/rng.js';
 
 const CAP = { gun: 128, lance: 16, plain: 192, outlined: 24 };
 const FOE_R = 0.3, OUT_R = 0.36;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Color();
 const Z = new THREE.Vector3(0, 0, 1);
+const rand = stream('ship/lances'); // (the simulation's chance: core/rng.js)
+// the lances fly by PROPORTIONAL NAVIGATION, Itano's way (docs/plans/research/RAIL-PATTERNS.md 3): fanned out at launch, each its own
+// navigation constant, the turn capped, pure pursuit at the last metres (where the sight line's rate blows up)
+const LANCE = { speed: 60, fan: 14, N: [2.5, 5], turn: 9, pursue: 4, wobble: 0.6 };
+const _R = new THREE.Vector3(), _V = new THREE.Vector3(), _O = new THREE.Vector3(), _A = new THREE.Vector3(), _u = new THREE.Vector3();
 const pool = (n, make) => Array.from({ length: n }, make);
 
 export class Shots {
@@ -62,13 +68,15 @@ export class Shots {
   gun(p, dir) {
     const s = this.guns.find((x) => !x.on); if (!s) return null;
     const G = T.ship.shot;
-    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life;
+    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life; s.dmg = 1;
     return s;
   }
   /** A lance at a painted foe (its volley keeps the count). */
   lance(p, to, volley = null) {
     const s = this.lances.find((x) => !x.on); if (!s) return null;
-    s.on = true; s.p.copy(p); s.v.set(0, 6, 22); s.life = 2.5; s.to = to; s.volley = volley;
+    s.on = true; s.p.copy(p); s.life = 2.5; s.to = to; s.volley = volley; s.age = 0;
+    const a = rand() * Math.PI * 2; s.v.set(Math.cos(a) * LANCE.fan, 6 + Math.abs(Math.sin(a)) * LANCE.fan * 0.6, 22); // (fanned: each arcs out its own way first)
+    s.N = LANCE.N[0] + rand() * (LANCE.N[1] - LANCE.N[0]); s.last = to?.local ? to.local.clone() : null; s.phase = rand() * 6.28;
     return s;
   }
   /** A foe's shot: of a feeling (plain), or outlined (answered only by the parry). */
@@ -105,15 +113,25 @@ export class Shots {
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0) { s.on = false; continue; }
       const f = waves?.hitAt(s.p, T.ship.shot.radius);
-      if (f) { waves.strike(f, 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
+      if (f) { waves.strike(f, s.dmg ?? 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
     }
     // the lances turn onto what they were sent at, and keep going if it is gone
     for (const s of this.lances) {
       if (!s.on) continue;
       s.life -= dt;
+      s.age += dt;
       if (s.to?.alive) {
-        _d.copy(s.to.local).sub(s.p); const d = _d.length();
-        s.v.lerp(_d.multiplyScalar(60 / Math.max(d, 0.001)), Math.min(1, dt * 9));
+        _R.copy(s.to.local).sub(s.p); const d = _R.length();
+        // the target's velocity from its last place (the foes move by their own rules: waves.js)
+        _V.copy(s.to.local).sub(s.last || s.to.local).divideScalar(Math.max(dt, 1e-4)).sub(s.v); s.last = (s.last || new THREE.Vector3()).copy(s.to.local);
+        const speed = Math.min(LANCE.speed, s.v.length() + 90 * dt); // (it gathers speed out of the launch)
+        _u.copy(s.v).normalize();
+        if (d < LANCE.pursue) _A.copy(_R).normalize().sub(_u).multiplyScalar(LANCE.turn * 2); // (pure pursuit, close in)
+        else { _O.crossVectors(_R, _V).divideScalar(d * d); const Vc = -_R.dot(_V) / d; _A.crossVectors(_O, _u).multiplyScalar(s.N * Math.max(Vc, 10)); }
+        const turn = Math.min(_A.length() / Math.max(speed, 1), LANCE.turn) * dt;
+        if (_A.lengthSq() > 1e-8) { _A.normalize(); _u.addScaledVector(_A, Math.tan(Math.min(turn, 1.2))).normalize(); }
+        if (s.age < 0.5) _u.addScaledVector(_V.set(Math.cos(s.phase + s.age * 18), Math.sin(s.phase + s.age * 18), 0), LANCE.wobble * (0.5 - s.age) * dt * 8).normalize(); // (a decaying wobble early: the circus)
+        s.v.copy(_u).multiplyScalar(speed);
         if (d < (s.to.radius || 1) + 0.6) { waves.strike(s.to, T.ship.lock.lance, { cause: 'lance', at: s.p, dir: s.v, volley: s.volley }); this.endLance(s, true); continue; }
       }
       s.p.addScaledVector(s.v, dt);
@@ -125,7 +143,7 @@ export class Shots {
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0 || s.p.z < -40 || Math.abs(s.p.x) > 80) { s.on = false; continue; }
       if (s.turned || !ship) continue;
-      if (s.p.distanceTo(ship.local) < T.ship.hurt + FOE_R) {
+      if (s.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + FOE_R) {
         if (s.aspect && s.aspect === ship.aspect) { ship.absorb(s); s.on = false; } // (of the ship's feeling: drunk)
         else if (ship.turning) { s.turned = true; s.v.set(s.v.x * -0.4 + (s.p.x - ship.local.x) * 8, 6, -s.v.z * 0.3); ship.turned(s); } // (the roll turns it aside)
         else if (ship.hit(s)) s.on = false;
@@ -138,7 +156,7 @@ export class Shots {
       if (r.back && r.from?.alive) { _d.copy(r.from.local).sub(r.p); const sp = r.v.length(); r.v.lerp(_d.multiplyScalar(sp / Math.max(_d.length(), 0.001)), Math.min(1, dt * 6)); } // (home: Sin & Punishment's return finds its thrower)
       // (sent home: a part says what its own shot does to it, the brig's bow 6, a gill 5; else it downs its thrower)
       if (r.back) { const f = waves?.hitAt(r.p, OUT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: r.p, dir: r.v, returned: true }); this.endOutlined(r); } continue; }
-      if (ship && r.p.distanceTo(ship.local) < T.ship.hurt + OUT_R && ship.hit(r)) this.endOutlined(r);
+      if (ship && r.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + OUT_R && ship.hit(r)) this.endOutlined(r);
     }
     this.draw();
   }

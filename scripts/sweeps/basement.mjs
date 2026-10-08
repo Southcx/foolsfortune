@@ -156,6 +156,18 @@ for (const r of rooms) {
   await S.press('KeyF', 3);
   await S.resume(); // (the pause cover can come up headless when the pointer lock is refused: it would swallow the key under test)
   await S.page.keyboard.press(r.code); await S.ticks(3); await S.settle(); await S.ticks(20);
+  const garden = /^debug\.(press|garden)$/.test(r.id); // (a debug chest in the Spirit Garden: you are the Pneuka Jar on a planetoid, Petra's note 2026-10-08)
+  if (garden) {
+    const c = await S.common(`Index ${r.id}`, { courier: false, level: false });
+    const g = await S.ev((id) => { const G = __game.game, R = G.realm, P = G.places?.pos?.(id), J = R?.jarBody?.pos || R?.jarBody?.position;
+      return { active: !!R?.active, near: P && J ? +Math.hypot(J.x - P.x, J.y - P.y, J.z - P.z).toFixed(2) : null }; }, r.id);
+    S.check(`Index ${r.id}: its key takes the Pneuka Jar into the garden by the chest`, g.active && g.near != null && g.near < 3, `${r.name}: realm.active ${g.active}, the Jar ${g.near} m from the chest`);
+    const naming = c.dom.page === 'realm.name', unnamed = await S.ev(() => !__game.game.realm?.name);
+    S.check(`Index ${r.id}: its key opens no second window (the naming page allowed while the realm is unnamed)`, (!c.dom.index || (naming && unnamed)) && !c.dom.pneuka && !c.dom.codex && !c.dom.map,
+      `index=${c.dom.index} page='${c.dom.page}' unnamed=${unnamed} pneuka=${c.dom.pneuka} codex=${c.dom.codex} map=${c.dom.map}`);
+    await S.closeAll(); await S.ev(() => __game.game.realm?.leave?.()); await S.ticks(20);
+    continue;
+  }
   const c = await S.common(`Index ${r.id}`);
   const x = { course: await bs('course()'), hud: await bs('hud()'), inSiege: await S.ev(() => { const p = __game.game.player.pos; return p.x > -30 && p.x < 30 && p.z > -108 && p.z < -76 && p.y < -2; }) };
   const ok = expect[r.id] ? expect[r.id](c.state, x) : dist(p0, c.state.player) > 5;
@@ -256,10 +268,11 @@ S.phase = 'circuits';
 const defs = await S.ev(() => [...__game.game.circuits.defs.values()].map((d) => ({ id: d.id, name: d.name, stages: d.stages.map((s) => s[0].zone), bounds: d.bounds, resetY: d.resetY })));
 for (const D of defs) {
   await S.closeAll();
+  const logAt = await S.ev(() => __game.game.log.said || 0);
   await S.ev((id) => __game.game.circuits.enter(id), D.id); await S.ticks(10);
   const h0 = await bs('hud()');
   S.check(`circuit ${D.id}: armed, its beacons shown and no panel on the screen`, h0.run?.id === D.id && h0.circuit === 'none' && h0.beacons > 0, h0);
-  const saidE = await S.ev(() => __game.game.log.lines.map((l) => l.text).slice(-6));
+  const saidE = await S.ev((n) => __game.game.log.lines.filter((l) => l.seq > n).map((l) => l.text), logAt); // (every line since entering: the last circuit's achievements can push it past a fixed tail)
   S.check(`circuit ${D.id}: the log says its medal times on entering`, saidE.some((t) => /Gold under/.test(t)), saidE);
   const e0 = await bs('nEvs()');
   // a fall, after the start line

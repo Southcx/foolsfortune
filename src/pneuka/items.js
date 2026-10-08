@@ -90,4 +90,7 @@ for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'cr
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
   examine: 'A chart of one Well on one game day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
 
+ITEMS.rutter = { id: 'rutter', kind: 'rutter', key: 'rutter', name: 'RUTTER', glyph: '⚓', color: 0x6bd3ff, tier: 2, // (PASSAGE.md 6; the model and page Calissa's)
+  examine: 'The map of one passage on one game day, every waypoint you sailed set down true. Tomorrow the sea is laid again.' /* (placeholder words for Espada's) */, card: null, lure: false, stack: false };
+
 export const itemOf = (id) => ITEMS[id] || null;

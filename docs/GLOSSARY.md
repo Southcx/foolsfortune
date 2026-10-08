@@ -35,7 +35,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **ship** (the Emocean's rail-shooter layer): the Vessoul's sailing form between Islands of Ego, classed by real nomenclature: **sloop**,
   **frigate**, **tanker**, **destroyer**, **galleon**. *Not:* the skiff.
 - **hop** (`hop()`, `src/progress/econ/emocean.js`): one crossing of the Emocean from one island to another, on the **node map** (one node
-  an island, at its place on the Law-Chaos line). It costs fuel (the ship's **burn** times the distance) and is sailed as one **stage**.
+  an island, at its place on the Law-Chaos line). Its fuel is the price of a full **tank** (`hop().fuel`, the ship's `fill`), and it is sailed as one **stage**.
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
@@ -68,11 +68,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   2026-10-07), a **breather** between two whose flotsam **mends** the ship.
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
-- **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
+- **polarity** (Q on the rail; to be the Astral and Umbral forms: RAIL-OVERHAUL.md): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
   Lachryma to the pool) instead of hurting (Ikaruga).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
   **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
-- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, two chosen at the pier (the wake brush, the toll, the
+- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
 - **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
   `scripts/rail.mjs`); a crossing's rank is its score against par (S, A, B, C, D); the medal is Star Fox's (passed, four in five
@@ -140,6 +140,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   bead beaded up tight, bared clay round it; *not* the aliasing crawl), **a break's glint** (the nearest spread's break catching the
   light on the side facing the bead; always so qualified, *not* the water's glints or the shoal's), **the gutter** (the press's lantern
   going out in a thread of smoke); and after a true firing **the Jar's breath** (`jar.breath`: the Pneuka Jar's mouth breathing the soul colour). Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+- **the mycelium** (`src/progress/mycelium.js`, Dovina's; `docs/plans/MYCELIUM.md`; Espada's names, proposed 2026-10-08, LORE.md "The mycelium": the strains are the **lichen** (graft), **koji** (ferment), the **inkcap** (print), the **oyster** (rot) and **witches' butter** (dissolve); the tree is **Myggdrasil**, its sap **the tincture**, its fruiting bodies **the caps** (named for the sephiroth, `CAPS`), its branches kept (`BRANCHES`)): the garden's fungi
+  as transmutators. A thing's **colour signature** (`SIGNATURE`, `signatureOf`: its hue and saturation on Soul Alchemy's wheel: a
+  material its own, a curio its blurb's, a fish its feeling's). A **spore bed**: a garden bed a **strain** has colonised (its fairy
+  ring drawn round it; *not* the ring of bought planetoids, nor the hue ring); a strain works one **verb** by its feeling: **graft**
+  (wonder: two curios into one, by a chart), **ferment** (mirth: a material's saturation up), **print** (desire: anything into a
+  **spore print**, a material of exactly its colour, one straight pull), **rot** (grief: anything into materials of its colour, six
+  tenths of its worth), **dissolve** (dread: saturation down). **The World Mushroom** (`TREE`; working name): the tree fed anything at
+  its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
+  and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
+  a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
+  spirit fired at the Chimney into a pot that stays (proposed). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
+  station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
+  materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
+  bead**, the **ghost path** and **ghost bead** ahead of it, the **line blend** a press leaves; the press 4.35 m north, the plate shrine in
+  its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
   features, the ground under it and the water at it; a firing's fuel is divided by it (Dovina's ruling 3). *Not:* the plate shrine (its hokora).
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
@@ -154,6 +170,41 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
 - **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
   Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Wet Ink and Ariadne's Thread proposed). It is said once when the ledger opens it (`knack.open`), and is on until switched off. **The thread** (Ariadne's Thread's, `cartography.thread`): the way walked since the last Shrine rested at, a loop cut where it crosses itself, drawn on the map. *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+- **the sea chart**, **the passage**, **a waypoint**, **a portent**, **the reckoning** (of the sea), **a rutter** (`docs/plans/PASSAGE.md`; the window `SeaChart`, `world/emocean/seachart.js`, from the pier's THE SEA CHART row; the item `rutter`;
+  `src/progress/econ/passage.js`, Dovina's; the words Espada's, approved by the owner 2026-10-08): the sea chart is the constellation of waypoints laid
+  between two islands at the pier (lanes that merge, never cross; a pure function of the route and the game day); the passage is the
+  path you draft through it, a waypoint a column; a waypoint is one leg (its set piece, or a calm); a portent is what Divination shows
+  of a waypoint, a shortlist of candidates that narrows as its confidence grows and fades with depth; the reckoning is the
+  survey at the pier (the Dreamvane's dowse held over the sea chart: `voyage.reckon`); a rutter (item `rutter`) is a passage's map,
+  made by sailing it to the end, sold or used that game day. *Not:* the course (the basement's), "forecast" (the weather's), a
+  Cogitomap (a Well's), the node map (the islands).
+- **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player's words Espada's, LORE.md "The
+  trip's pressures"): **the hull** (the ship's `bears`, carried from leg to leg, mended only at a haven); **the bunker** (code `tank`:
+  the fuel a ship carries, in **measures**; filling it is **bunkering**, at the pier and at a calm's buoy; *not* "tank", which is the
+  tanker's and the Lachrymato Bottle's never-word); **burn** (the measures a waypoint costs: its type's times the ship's; *not* the hop's
+  price, which is `fill`); **adrift** (short of every way on's burn: the current carries the ship, two to one straight on, its legs
+  capped at a C); **heaving to** (code `campfire`, a calm's choice: **caulk the hull** (code `mend`, half the hull back) or **reckon
+  the sea** (code `reckon`, the portents ahead a quarter sharper)); **high water** (code `best`: the best score on one route's sea
+  chart for one game day, `voyage.bestOf`); **a waypoint's feeling** (its aspect, carried out to sea in an island's **plume**: shown as
+  a halo round its portent's silhouette from the silhouette up, Calissa's; it sets its foes' damage type and how its shots fall
+  between the forms); **a following sea** (code `draughtTrump`: the draught a leg leaves trumping the next waypoint's foes); **a
+  squall** (code `storm`, `STORM`: Slay the Spire's burning elite, where two plumes meet at a **front**: a threat waypoint a class
+  stronger, always shown, never in a narrows). *Not:* the weather's storm (there is none: the eyewall is a leg), the vessel's cracks
+  (the hull is the ship's), a chain (the ledger's or the rail's).
+- **a leg's schedule** (`schedule`, `LEGS`, `src/progress/rail/legs.js`, Dovina's): what a waypoint's leg throws at the ship bar by bar
+  (its waves, its patterns and their throwers, lights to lock, its director's entrance), in its phases (open, build, peak, release),
+  shaped by the waypoint (class, feeling, storm) and held to the pacing law (`idle`: no two bars with nothing in reach; `node
+  scripts/legs.mjs`). **the leg runner** (`LegRunner`, `world/emocean/legrunner.js`) plays it; **the pattern player** (`PatternPlayer`,
+  `world/emocean/patternplayer.js`) releases a pattern's shots from its thrower, turned onto the ship as they fire; **the shot field**
+  (`ShotField`, `world/emocean/shotfield.js`) flies every foe's shot (400 at most) and says what a shot meeting the ship means (drunk,
+  turned, sent home, taken). **a light** (`rail.light`): a thing adrift to lock for its pay, never firing (the calm's, the release's).
+  **a thrower**: the foe (or fixed point, `AHEAD`) a pattern fires from; downed, its unfired volleys go with it. *Not:* the old
+  `courier/ship/shots.js` (the ship's own gun and lances, kept).
+- **the Astral form**, **the Umbral form**, **the surge** (`docs/plans/RAIL-OVERHAUL.md`; the owner's names, 2026-10-08): the ship above
+  the Emocean and below it, Q to breach or dive (was polarity: a shot of your form's kind is absorbed, the other hurts; an **astral
+  shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
+  **A turn of the rail**: the four bars between two legs where the spline bends, dives or breaches into the next. *Not:* a seam (a
+  change of place under cover).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
@@ -470,8 +521,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **crude** (`ECON.crude`): liquid Lachryma as a cargo, fossil feeling (`docs/LORE.md`, "Lachryma as crude"); graded by aspect,
   **wonder**, **mirth**, **desire**, **grief**, **dread**. Volatile, so it can **spill**; cubes cannot. *Not:* a bauble (the pool's drop).
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
-  (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
-  King's marque (Letty Marque). *Not:* the same thing.
+  (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named Egregore (a creature of real human myth) or a Figment gone
+  stray or aberrant, under the King's marque (Letty Marque). *Not:* the same thing.
 - **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
@@ -875,6 +926,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
   events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its
   attachments).
+- **debug chest** (`DebugChest`, `DEBUG_KITS` in `src/debug/kits.js`; `docs/plans/DEBUG-CHESTS.md`): a crate in the magenta-and-black
+  missing-texture checker left beside a feature sent for a test session, its **kit** (the items and cubes that feature's QAIS tests need)
+  topped up at each F; nothing it gives is counted; place id `debug.<kit>`. Always "debug chest" in full. *Not:* a chest (the Tithe's,
+  the world's, with tiers), the all-arts switch (it lends arts, not things).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the
@@ -908,6 +963,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
   of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
   alone (that is the map's: see the homonyms).
+- **the stack** (`stackOf`, `railHeat`, `src/music/legs.js`): how many of a crossing leg's eight musical parts sound (pad and pulse,
+  the groove, the bass, the arpeggio, the snare and shimmer, the theme, the choir, the boss's line): its phase's own, plus the **heat**
+  every lock, down and boss part adds, cooling a quarter of a part a bar (Rez's layers). *Not:* a layer (the map's), the mood layer.
 - **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
   chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
@@ -926,8 +984,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   through the game's db. A **guest** is another person playing; the **party** is at most four. You **ask** a sibling (seconds) or send its division a **letter** (minutes). *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
-  authored by no one. Neither is good or evil by nature.
-- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
+  authored by no one. Neither is good or evil by nature. **Which is which** (the owner, 2026-10-08): drawn from real human mythology, an Egregore
+  (Charybdis, Old Nobody); made up, a Figment. A Figment at large is a **stray** (wandered from its island, still itself: the Cantor)
+  or an **aberrant** (gone wrong: a blotling).
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named Egregore or a Figment gone stray or aberrant, given by **Letty Marque**,
   a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Magnus Ibrahim Manus** (the King; his island **Margarite**) and **Entra Polearis** (the Queen; her island **Entropolis**): two other
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
@@ -940,6 +1000,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 - **the Pithos**: what the folk call the Great Slip Jelly, crowned with the broken crude jar it grew in (a *pithos*, Pandora's jar). The
   log says "the Great Slip Jelly".
+- **Charybdis** (the owner, 2026-10-08; LORE.md, "The passage"): the Whale (class 3) of the maelstrom, after Homer's whirlpool that
+  swallows the sea and spits it out: it rises out of the maelstrom (Astral) and dives back in (Umbral); one name for its five moods, its
+  feeling the waypoint's weather ("Charybdis rises, in grief."). One Egregore in every maelstrom (Dovina's ruling). **the
+  Drowned Light**: the graveyard's drowned lighthouse, the False Light's twin below. *Not:* the maelstrom (the leg, a place).
 - **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
   hours. The Solar Skiffing trial races its shadow.
 - **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
