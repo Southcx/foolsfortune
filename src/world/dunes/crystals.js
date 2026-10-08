@@ -142,12 +142,15 @@ export class Crystals {
     this.game.events?.emit('crystal.ref', { note: ref });
   }
 
-  /** How high on a formation they aim (0 its foot .. 1 its top): where their look passes its axis. */
+  /** How high on a formation they aim (0 its foot .. 1 its top): where their look meets the stave's near side, the height of the fret
+   *  under the crosshair (a look pitched down meets the skin higher than it passes the axis: read there, a fret's edge was one fret off). */
   aimHeight(e) {
     const cam = this.game.camera, d = _p.set(0, 0, -1).applyQuaternion(cam.quaternion), o = cam.position;
     const hx = e.ground.x - o.x, hz = e.ground.z - o.z, hd = Math.hypot(d.x, d.z) || 1e-3;
-    const t = (hx * d.x + hz * d.z) / (hd * hd); // (along the look, to its nearest pass by the axis, in plan)
-    const y = o.y + d.y * Math.max(0, t);
+    const along = (hx * d.x + hz * d.z) / hd, side = Math.abs(hx * d.z - hz * d.x) / hd; // (in plan: to the look's nearest pass by the axis, and how far to one side of it)
+    const s = e.spires[0], foot = e.ground.y + s.at.y, cone = foot + 0.8 * s.h, point = foot + 1.15 * s.h; // (the stave's prism, then its point)
+    const skin = (y) => { const r = s.w * 0.46 * Math.max(0, Math.min(1, (point - y) / (point - cone))); return Math.sqrt(Math.max(0, r * r - side * side)); }; // (half the stave's width across the look at y)
+    const y0 = o.y + d.y * Math.max(0, along / hd), y = o.y + d.y * Math.max(0, (along - skin(y0)) / hd);
     return Math.max(0, Math.min(1, (y - e.ground.y) / (e.h * SPAN)));
   }
 

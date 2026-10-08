@@ -86,7 +86,7 @@ export class CrystalFrets {
   /** Where spire `i`'s frets stand (the world height of the first's foot, the five's span) and how much they are drawn. */
   set(i, floorY, span, k) {
     const a = this.fret.array, o = i * 4;
-    if (a[o] === floorY && a[o + 1] === span && a[o + 2] === k) return;
+    if (a[o] === Math.fround(floorY) && a[o + 1] === Math.fround(Math.max(1e-3, span)) && a[o + 2] === Math.fround(k)) return; // (the array holds float32: a double never equals it, so the guard never held, and every placing sent the attribute again)
     a[o] = floorY; a[o + 1] = Math.max(1e-3, span); a[o + 2] = k;
     this.fret.needsUpdate = true;
   }
