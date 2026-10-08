@@ -5,7 +5,9 @@
 //
 //   GLAZE   the armour, the trim, the mask: the glaze's own colour, with the maker's painting kept only as light and shade (its
 //           luminance), so a pale glaze is pale on a dark-painted part (multiplied, every glaze read near black on the armour); and the
-//           rare glazes' kiln PATTERNS (below: stars, spots, streaks, crackle, leaf), so the eye sees what they cost.
+//           rare glazes' kiln PATTERNS (below: stars, spots, streaks, crackle, leaf, the eye, the dip), so the eye sees what they cost.
+//           Each glaze part is told which it is (`uFinPart`: 0 the armour, 1 the trim, 2 the mask), for a pattern that is laid out on
+//           the body (the eye) rather than over it.
 //   GEM     the stones: cut facets (the surface's direction stepped into planes, so the light breaks on it), a deep body, sparkle where
 //           a facet catches the light, and FIRE (dispersion: a little spectrum at the glint); opal plays its colours, moonstone glows
 //           blue under the surface (adularescence), star stones are left for later.
@@ -18,15 +20,19 @@
 // Prior art: the gem shaders of Spyro (2018) and of every jewel-match game (faceted normals, sparkle, dispersion), Kajiya and Kay's hair
 // highlight (1989) as most games after it fake it, the subsurface "wrap" lighting of skin since Half-Life 2, and real gemmology for the
 // stones' optics, Worley's cellular noise (1996) for spots and crazing, and the real glazes (yohen, oil spot, hare's fur, guan crackle,
-// kinrande) for how each pattern forms (dispersion, play of colour, adularescence), so what the kiln sells is what such a stone does.
+// kinrande, the Attic eye-cup, a celadon dipped and crawled) for how each pattern forms (dispersion, play of colour, adularescence), so
+// what the kiln sells is what such a stone does.
 //
 //   dressFinish(material, kind) -> uniforms (kept on material.userData.finish; set them, the shader reads them)
+//   ownLight(pattern) -> true for a pattern that paints the part in colours of its own (the eye, the dip): its painted light (the
+//     painting's glow back, character.js PAINT_LIGHT) takes those colours, so the vessel gives it a white emissive (vessel.js dress)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { EYE_GLSL } from './eyecup.js';
 
 const HEAD = `
 varying vec3 vFinObj; varying vec3 vFinN;
-uniform float uFinOn; uniform vec3 uFinA; uniform vec3 uFinB; uniform vec4 uFinP; uniform vec4 uFinS;
+uniform float uFinOn; uniform vec3 uFinA; uniform vec3 uFinB; uniform vec4 uFinP; uniform vec4 uFinS; uniform float uFinPart;
 float finLuma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 vec3 finSpectrum(float t) { return clamp(abs(fract(t + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0); }
 vec3 finHash3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -38,7 +44,11 @@ vec3 finCells(vec3 p) { vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.
   for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
     vec3 o = vec3(x, y, z), h = finHash3(i + o); float d = length(o + h - f);
     if (d < d1) { d2 = d1; d1 = d; id = h.z; } else if (d < d2) d2 = d; }
-  return vec3(d1, d2, id); }`;
+  return vec3(d1, d2, id); }
+// the urn crown's broken lip (vfx/urncrown.js urnGeometry: its jag, round the lathe's forty sides, straight between them as a fracture runs)
+float finJag(float a) { return 0.12 * abs(sin(a * 7.0)) + 0.08 * abs(sin(a * 17.0 + 1.3)) + 0.05 * sin(a * 31.0); }
+float finLip(float a) { float s = 6.2831853 / 40.0, i = floor(a / s); return mix(finJag(i * s), finJag((i + 1.0) * s), a / s - i); }
+${EYE_GLSL}`;
 
 // THE PATTERNS of the rare glazes (glazes.js `pattern`; uFinP.z which, uFinP.w the model's scale, uFinB the pattern's colour), in the
 // part's own space, so they sit on the body as a glaze sits on a pot. Each is how the real one forms in the kiln:
@@ -47,8 +57,14 @@ vec3 finCells(vec3 p) { vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.
 //   3 STREAKS hare's fur: the glaze running down the pot, iron drawn into fine gold-brown hairs
 //   4 CRACKLE guan, raku, ru: the glaze shrinking more than the clay as it cools; a net of crazing, stained dark (two sizes on guan)
 //   5 LEAF    kinrande: gold leaf laid over the enamel in torn patches
+//   6 EYE     the Eye Cup: Attic black-figure, a staring eye placed on every part (vfx/eyecup.js: where, and how an eye is drawn)
+//   7 DIP     JELLY-CROWN: the vessel dipped to the chest as the crown sat in the jelly: the celadon stops in the urn crown's own broken lip
+//             (vfx/urncrown.js urnGeometry, its jag), thick and deep at the lip and in every hollow, crawled apart just above it
+//             (kairagi, as on a Korean Ido bowl's foot), a few runs below it; under it the jelly's wet slip (uFinB). Nothing in it glows:
+//             a lit crackle on the vessel reads as its cracks (courier/vessel/kintsugi.js)
 const PATTERN = `
-  float finPatM = 0.0, finPatR = 0.0, finPatS = 0.0, finPatH = 0.0; vec3 finPatE = vec3(0.0); // (S, H: a sheen for the light stage, and its hue)
+  float finPatM = 0.0, finPatR = 0.0, finPatS = 0.0, finPatH = 0.0, finPatRo = 0.0; vec3 finPatE = vec3(0.0); // (S, H: a sheen for the light stage, and its hue; Ro: a matte patch)
+  vec3 finEmC = uFinA; // (the colour the part is, unshaded: an ownLight pattern's painted light takes it)
   if (uFinOn > 0.5 && uFinP.z > 0.5) {
     vec3 q = vFinObj * uFinP.w; int pat = int(uFinP.z + 0.5);
     // (each fades as its cells shrink below a pixel or two, so a far body never shimmers with them: the house rule against flicker)
@@ -78,13 +94,45 @@ const PATTERN = `
       float leaf = smoothstep(0.55, 0.58, n);
       diffuseColor.rgb = mix(diffuseColor.rgb, uFinB, leaf); finPatM = leaf; finPatR = leaf;
       finPatE = uFinB * leaf * 0.18; finPatS = leaf;
+    } else if (pat == 6) {
+      float blk = 0.0;
+      if (uFinPart > 1.5) {
+  #ifdef USE_MAP
+        diffuseColor.rgb = eyeCupMask(vMapUv, finL, length(fwidth(vMapUv)), uFinB, blk) * mix(1.0, finShade, 0.25);
+  #endif
+      } else if (uFinPart > 0.5) { diffuseColor.rgb = uFinB * finShade; blk = 1.0; }                       // (the trim: the black, a cup's lip)
+      else diffuseColor.rgb = eyeCupArmour(vFinObj, vFinN, length(fwidth(vFinObj)), diffuseColor.rgb, uFinB, uFinA * finShade, blk);
+      finEmC = diffuseColor.rgb / max(finShade, 0.25); finPatR = blk * 0.85; finPatRo = (1.0 - blk) * 0.25;  // (the black lustrous, the clay and the whites dry)
+    } else if (pat == 7) {
+      vec3 o = vFinObj; float pxm = length(fwidth(o));
+      float a = atan(o.x, o.z);
+      float lip = 1.19 + 0.3 * finLip(a);                                                                             // (the urn's broken lip, at the vessel's scale)
+      float runLen = sqrt(smoothstep(0.72, 0.92, finNoise(vec3(a * 5.0, 3.1, 0.0)))) * 0.05;                        // (a few runs, blunt-ended, where the lip ran thick)
+      float h = o.y - lip, inRun = smoothstep(-pxm, pxm, h + runLen) * (1.0 - step(0.0, h));
+      float glazed = smoothstep(-pxm, pxm, h + runLen);
+      // the thick edge: the glaze unbroken along the lip; over it the kairagi, the thick glaze crawled apart with the slip showing
+      // between, closing up toward the top
+      float lipK = (1.0 - smoothstep(0.0, 0.014, h)) * step(0.0, h);
+      float band = smoothstep(0.01, 0.02, h) * (1.0 - smoothstep(0.02, 0.065, h)), cs = 60.0, pc = pxm * cs, keepK = 1.0 - smoothstep(0.25, 0.6, pc);
+      vec3 c = finCells(o * cs); float edge = c.y - c.x, gap = band * 0.45;
+      float held = mix(1.0, smoothstep(gap, gap + max(0.06, pc), edge), smoothstep(0.0, 0.06, gap));             // (no channels at all where it never crawled)
+      glazed *= mix(1.0 - gap * 0.9, held, keepK);
+      float thick = max(max((1.0 - smoothstep(0.55, 1.05, finShade)) * 0.85, smoothstep(gap, gap + 0.4, edge) * band * keepK), max(lipK, inRun) * 0.95); // (thick: in a hollow, the heart of what held, the edge at the lip, a run)
+      vec3 deep = uFinA * vec3(0.32, 0.6, 0.42);
+      vec3 cel = mix(uFinA * mix(finShade, 1.0, 0.45), deep * mix(finShade, 1.0, 0.6), thick);
+      vec3 slip = uFinB * mix(finShade, 1.0, 0.5);
+      diffuseColor.rgb = mix(slip, cel, glazed);
+      finEmC = mix(uFinB, mix(uFinA, deep, thick), glazed);
+      finPatR = glazed * (0.6 + 0.4 * thick) + (1.0 - glazed) * 0.35;                                                     // (the glaze glassy, thickest glassiest; the slip wet)
+      finPatRo = (1.0 - glazed) * band * 0.6;                                                                               // (the bare channels between dry)
     }
   }`;
 
 // per kind: what goes into the colour, and what into the light (uFinP: four numbers whose meaning is the kind's, below)
 const COLOR = {
   // P.x: how much of the painting's light and shade to keep; P.y: its midpoint
-  glaze: `if (uFinOn > 0.5) { float l = finLuma(diffuseColor.rgb); diffuseColor.rgb = uFinA * clamp(1.0 + (l - uFinP.y) * uFinP.x, 0.25, 1.6); }` + PATTERN,
+  glaze: `float finL = finLuma(diffuseColor.rgb), finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
+    if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
   // A: the stone's colour; B: its second colour (opal's play, moonstone's glow); P.x: facets per unit; P.y: fire; P.z: play of colour; P.w: adularescence
   gem: `if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
     diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }`,
@@ -96,7 +144,14 @@ const COLOR = {
 };
 // per kind: the surface itself (after the maps: metal and gloss), where a pattern is metal (silver spots, gold leaf) or a glassier film
 const SURFACE = {
-  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR);`,
+  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);`,
+};
+// per kind: before the emissive map, and so before anything else adds light (the kintsugi's seams and the cracks' Lachryma,
+// courier/vessel/kintsugi.js, are added right after the map and must never be multiplied by a part's colour)
+const LIGHT_BEFORE = {
+  glaze: `if (uFinOn > 0.5 && uFinP.z > 5.5) { // an ownLight pattern: its painted light in its own colours (the vessel gave it white); the firing's glow kept
+      float fireK = clamp(1.0 - emissive.b / max(emissive.r, 1e-4), 0.0, 1.0); // (the kiln-orange the firing lerps from: vessel.js update)
+      totalEmissiveRadiance *= mix(finEmC, vec3(1.0), fireK); }`,
 };
 const LIGHT = {
   glaze: `totalEmissiveRadiance += finPatE;
@@ -130,9 +185,12 @@ const LIGHT = {
   }`,
 };
 
+/** Does this kiln pattern paint the part in colours of its own (so its painted light should be in them, not the glaze's)? */
+export const ownLight = (pattern) => pattern >= 6;
+
 export function dressFinish(m, kind) {
   if (m.userData.finish) return m.userData.finish;
-  const u = { uFinOn: { value: 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) } };
+  const u = { uFinOn: { value: 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) }, uFinPart: { value: 0 } };
   const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey?.bind(m);
   m.onBeforeCompile = (sh, r) => {
     prev?.call(m, sh, r);
@@ -144,7 +202,7 @@ export function dressFinish(m, kind) {
       .replace('#include <common>', `#include <common>\n${HEAD}`)
       .replace('#include <color_fragment>', `#include <color_fragment>\n${COLOR[kind] || ''}`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${SURFACE[kind] || ''}`)
-      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n${LIGHT[kind] || ''}`);
+      .replace('#include <emissivemap_fragment>', `${LIGHT_BEFORE[kind] || ''}\n#include <emissivemap_fragment>\n${LIGHT[kind] || ''}`);
   };
   m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fin-${kind}`;
   m.needsUpdate = true;

@@ -246,10 +246,10 @@ export class GardenHand {
   pose(dt) {
     const R = this.R, god = R.god, hand = god?.hand; if (!hand?.root) return;
     const at = this.held ? this.at : this.point, n = R.site.planets.reduce((b, P) => (at.distanceTo(P.c) - P.r < at.distanceTo(b.c) - b.r ? P : b)).c;
-    const up = _w.copy(at).sub(n).normalize(), fwd = R.camera.fwd.clone().projectOnPlane(up).normalize();
+    const up = _w.copy(at).sub(n).normalize(), fwd = (R.press?.viewing ? R.press.frame.N : R.camera.fwd).clone().projectOnPlane(up).normalize(); // (at the press, the view's north: SOUL-ALCHEMY.md 4.3)
     const fingers = fwd.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(up, -Math.sin(0.5)).normalize(), back = up.clone().addScaledVector(fingers, -up.dot(fingers)).normalize();
     _m.makeBasis(new THREE.Vector3().crossVectors(fingers, back).normalize(), fingers, back); hand.root.quaternion.setFromRotationMatrix(_m);
-    hand.root.position.copy(at).addScaledVector(up, this.held ? 0.6 : this.stroke ? 0.5 : HAND.lift).addScaledVector(fingers, -hand.tip.length());
+    hand.root.position.copy(at).addScaledVector(up, this.held ? 0.6 : this.stroke ? 0.5 : R.press?.viewing ? R.press.look.handLift : HAND.lift).addScaledVector(fingers, -hand.tip.length()); // (at the press, raised over the bath: vfx/alchemy/presslook.js)
     god.handClips?.update(dt); // (its clips by the art, the stroke and what is held: godhand/godhandclips.js)
   }
 }

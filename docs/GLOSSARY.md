@@ -117,12 +117,29 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   a Well alive, to its mouth, with the haul and three quarters of the run's pay (Pokemon's Escape Rope, Psychonauts' Smelling Salts). It
   breaks when blown; one carried at a time. *Not:* "escape item" (the placeholder) in what the player reads.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
-  (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
+  (a hue and a saturation on the colour wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
-  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
+  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the colour wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look Calissa's, `src/vfx/alchemy/`, handed
+  the station's calls by `pressbath.js`): the station on the Athanor's crown: the **bath** (the colour wheel, 5 m across, no numbers: a
+  dish of still black Lachryma, moved from the drum's pool to the basin), the **basin** it lies in (`vfx/alchemy/basin.js`), its **grey
+  centre** (a disc of bare clay 25 cm across, wheelColour's own grey), its three **throwing lines** (faint grooves a third out, on the
+  tiles' circle and at the lip), its **kerb** (basalt, with each **attribute's seal** carved in it: the potter's chop, filled with the
+  tile's glaze, `vfx/alchemy/seals.js`; *not* "glyph", the glyph pop's word), the **ware ring** (the Pneuka Box's materials laid out as
+  **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, the **spread's break** at its edge, **a tile's heart**,
+  always in full; a **yohen star** on its face for each true firing), the **soul bead**, the **ghost path** and **ghost bead** ahead of
+  it, the **line blend** a press leaves, and **the draught's current** (sheen drifting toward the draught's bearing, never a tint);
+  the press 4.35 m north on **the press's footing** (a round of the basin's stone, level with the bath: `FOOTING`), the plate shrine in
+  its own **hokora** on the east shoulder (`Hokora`, `src/vfx/garden/hokora.js`: a roadside hokora in small, its plate leant at the
+  doors). **The press's look** (`PressLook`, `src/vfx/alchemy/presslook.js`) is everything the station shows, read from it each frame:
+  **a firing's look** (`src/vfx/alchemy/firing.js`): the **hit-stop**, the **burning glass** (the eye's pinpoint on the bead), the
+  **kiln heat** and the **crazing** it leaves on the tile, the tile shrinking a step; and **the refusals' look**: **the crawl** (the
+  bead beaded up tight, bared clay round it; *not* the aliasing crawl), **a break's glint** (the nearest spread's break catching the
+  light on the side facing the bead; always so qualified, *not* the water's glints or the shoal's), **the gutter** (the press's lantern
+  going out in a thread of smoke); and after a true firing **the Jar's breath** (`jar.breath`: the Pneuka Jar's mouth breathing the soul colour). Its **formation** (`press.formation()`) is fire's, counting the Athanor's
 - **the mycelium** (`src/progress/mycelium.js`, Dovina's; `docs/plans/MYCELIUM.md`; Espada's names, proposed 2026-10-08, LORE.md "The mycelium": the strains are the **lichen** (graft), **koji** (ferment), the **inkcap** (print), the **oyster** (rot) and **witches' butter** (dissolve); the tree is **Myggdrasil**, its sap **the tincture**, its fruiting bodies **the caps** (named for the sephiroth, `CAPS`), its branches kept (`BRANCHES`)): the garden's fungi
   as transmutators. A thing's **colour signature** (`SIGNATURE`, `signatureOf`: its hue and saturation on Soul Alchemy's wheel: a
   material its own, a curio its blurb's, a fish its feeling's). A **spore bed**: a garden bed a **strain** has colonised (its fairy
@@ -213,7 +230,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **shield**: the pool paying for a blow before the clay does (35 Lachryma a full blow). It is not a separate bar.
 - **shatter / made whole** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`): the Courier's death, and being made whole again in
   the workshop. Player text says "made whole" (or "re-formed"), never "reform", which reads as politics; the event keeps its code name.
-- **glaze** (`src/courier/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks. A rare glaze also has a **kiln pattern** (`vfx/finish.js`): the mark its firing leaves, drawn the way the real one forms (yohen's stars, oil spot's silver, hare's fur's streaks, crackle, kinrande's leaf).
+- **glaze** (`src/courier/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks. A rare glaze also has a **kiln pattern** (`vfx/finish.js`): the mark its firing leaves, drawn the way the real one forms (yohen's stars, oil spot's silver, hare's fur's streaks, crackle, kinrande's leaf, the eye, the dip).
+  **The eye** (pattern 6, the EYE CUP glaze's: `vfx/eyecup.js`): Attic black-figure eyes **placed** on the parts of the vessel (the
+  chest, the back, the hands, the thighs, and the mask's own painted eyes), never tiled. **The dip** (pattern 7, JELLY-CROWN's): where
+  a dipped glaze stops, here in the urn crown's broken lip, the glaze thick along it; **kairagi** (the Ido bowls' word) the thick glaze
+  crawled apart just above it, the slip showing between. *Not:* a dive into water (`waterfx`), the seam's dip to the dark.
 - **kintsugi** (`src/courier/vessel/kintsugi.js`): the net the cracks run along. Its gold shows on the body only while a crack mends, and is gone when the mend completes (R45).
 - **chest glaze** (`src/vfx/chestglaze.js`): how a chest shows its tier as it charges, in place of a beam: celadon, crazing, raku, kintsugi gold.
 - **sibling** (`game.party`, `src/coop/sibling.js`): another Courier in your world with a mind of its own, one for each division (Petra,
@@ -247,6 +268,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cube** (`game.cubes`, `src/world/treasure/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
 - **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear.
   What it gives: cubes, and sometimes a **crystal shard** (`mat.shard`, always so called) or a Possibilikey.
+- **the stave** (`e.spires[0]`, `src/world/dunes/crystals.js`): a crystal formation's main spire, the one a strike is read on: it stands
+  whole until the formation gives, and wears its frets. *Not:* the lesser spires round it (the blows knock those away).
+- **fret** (code `fret`, `FRETS`, `fretAt`: `src/world/dunes/crystaltuning.js`; drawn by `src/vfx/crystalfrets.js`): one of a crystal's
+  five note steps on its stave, foot to point, the same on every formation (each a fifth of nine tenths of its height; the fifth runs on
+  to the point). Fret k sounds the Crucibelle's k-th note in the formation's key (the minor pentatonic, the root at the foot) and is
+  drawn in that note's colour (`DEGREE_COLOR`: gold, rose, green, blue, violet), leaded dark between; a strike lights the fret it
+  sounded. A crystal's **sweet spot** is one fret and a way round. The owner's "zones" of a crystal (2026-10-08). *Not:* a zone (a
+  render zone), the band (Wanda's instruments), nor the chat line's `/fret` (an alias of the worried emote, `courier/emotes.js`).
 - **signature** (`src/core/signatures.js`): where Lachryma is, and how strongly. Tools that sense or drink Lachryma ask here.
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute` × 60): what ordinary play should earn in an hour (480 cubes). A source is judged as a multiple of it
@@ -373,6 +402,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   ball) or a plain one (`{ pos, vel }`, a jelly's glob); `parry: false` keeps it out of reach of every parry.
 - **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
   in the Dunes. *Retired:* "surfer".
+- **the skiff's model** (`src/assets/solarskiff.glb`, from the owner's `source_assets/Courier/courier_solarskiff.blend` and its painted
+  hull, `courier_solarskiff_hull.png`, by `scripts/export_solarskiff.py`): the skiff as the owner built it, rigged (`Skiff_Rig`, 64
+  bones): the **hull** (its carved prow with the eye, the **dome** at the stern), the two **oars** (shipped: nothing rows yet), the
+  **doors** in the deck the mast rises through, the telescoping **mast** and its **finial**, the boom, the yard, the sail and the pennant
+  (one cloth), the **engine** and its **fins** and **vents**; and two pieces of the Courier's Lachryma (`CourierEnergy`) hidden at a
+  point until a clip opens them: the **flare** (out of the engine in the flare's clips) and the **sigil** (the ring of marks laid on
+  the sand the boat rises out of in the summon). Parsed on the way into the Dunes (`Skiff.load`). *Not:* the sloop (the Emocean's
+  ship, `vfx/sloop.js`), nor "ship" for any of it.
+- **the skiff's clips** (`Skiff_Summon` ... `Skiff_Bail` in `solarskiff.glb`, played by `courier/skiff/boatpose.js`): the skiff's own
+  15 clips, each the **partner** of the rider's clip of the same name (authored together, the same frames): the boat plays its partner
+  at the rider's time and weight, so the deck moves under the feet as the body does on it. The code's word is laid on after (the boom,
+  the hoist from the sail's L, the belly, the pennant: `boat.js`). *Not:* the rider's clips (the Courier's suite, `rider.js`); "board"
+  as a term (the overture's storyboard has it).
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
 - **emote** (`EMOTES`, `src/courier/emotes.js`; the tech `Emote`, `courier/moves/emote.js`; events `emote.start`, `emote.end`): the Courier's
@@ -390,8 +432,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the agents, the trailer and the map read the one registry. A place is a point; *not* a room (an area the log names, which the
   `place.enter` event carries as `room`: an old homonym).
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
-  named in full (or ZoI). A zone may be **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its
-  **whole** (`wholeOf(pos)`): the beach is part of the dunes.
+  named in full (or ZoI); *not* a crystal's note steps (the owner's "zones" on a crystal, 2026-10-08: say **fret**). A zone may be
+  **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its **whole** (`wholeOf(pos)`): the beach
+  is part of the dunes.
 - **the zone map** (`src/render/zonemap.js`): the zones' bounds as pure numbers (`zoneOf`, `wholeOf`), for anything that asks where a
   point is without drawing: the weather's place, a Node script.
 - **the daylight** (`game.daylight`, `src/render/daylight.js`): the light on the open ground (the sun, the sky's light, the fog) by the game
@@ -532,27 +575,42 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **launch lotus** flies the Jar to a neighbour in two real seconds. *Not:* "hopper" (the press's mouth), "island" (the bowl's rubble).
 - **the ground's materials** (`GROUND`, `src/progress/realm.js`; SPIRIT-GARDEN.md section 7): what the god hand paints a planetoid's
   ground with, one a phase: **moss** (wood, wonder), **ash** (fire, mirth), **loam** (earth, desire), **slate** (metal, grief), **silt**
-  (water, dread). Free; a feature counts its ground in its formation. *Not:* a material (Soul Alchemy's, pressed), the formation
-  **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
+  (water, dread). Free; a feature counts its ground in its formation. Drawn by `src/vfx/garden/gardengrounds.js` over the planetoid's
+  skin (each in its phase's colours, its accent its feeling's), blended at their borders by height. *Not:* a material (Soul Alchemy's,
+  pressed), the formation **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
 - **the garden's views** (`realm.camera`, `src/world/garden/gardencam.js`): **behind** the Jar (as it opens), **first person** (Z, the
   same setting as the world's), **overhead** (`: the god hand's view in the garden, straight down; W A S D moves the view, not the Jar).
   **The press view** (F at the Athanor's bath: `press`, SOUL-ALCHEMY.md 4.3): the spirit press's own framing, north locked to the press,
-  left with F, Esc or W A S D. *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
+  left with F, Esc or W A S D; while it is open **the grey surround** (`GardenSky.surround`) eases the garden's sky, haze and fog to the
+  grey of their own lightness (0.8 s in, 0.5 s out), the HUD steps out but for the log (`game.ui.want(id, on, { log })`), and the god
+  hand is **half-dithered** over the bath (`HAND_FADE`, a screen door) so it never hides the soul bead. *Not:* the god hand's isometric
+  view (the world's, `godhand/godhand.js`), which the garden never uses.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
   the stroke began), carve, **roughen**; a stroke's **size** (Shift and the wheel); **undo** (Ctrl+Z, ten strokes).
-- **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by a stand-in, `watermesh.js`): Lachryma running on a
+- **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by `src/vfx/garden/gardenwater.js`): Lachryma running on a
   planetoid, a shallow-water simulation on its clay's grid that pools, spills, dries and **wears the ground** (erosion); each cell keeps
   its mix of the five feelings. A **spring** pours for good, a **drain** takes for good (the hand's WATER art sets both). A body in it
-  **wades**, or **floats** when it is deeper than the body (`swim`). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
+  **wades**, or **floats** when it is deeper than the body (`swim`). Drawn on the planetoid's own vertices in its feeling's colour; two
+  feelings in it are an agate; opposites cancelled are **fair water** (milky, as nacre); the ground it leaves is **wet** (`aWet`: darker
+  and glossier, drying over 20 real seconds). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
+- **the garden's rain** (`rainOf`, `waterworks.rain()`; drawn by `src/vfx/garden/gardenrain.js`): your draught falling on every
+  planetoid as hard as your mental state is liquid (Stoic dry .. Prismatic 0.9); drawn as streaks, each falling to its own planetoid's
+  heart, a **drop's ring** where it lands (a ring opening on the ground or on the water: code `rings`), and the garden's sky greying.
+  *Not:* the weather's streaks (the world's, `vfx/weather.js`); *not* a ripple (the water's own disturbance, `game.water.disturb`), nor
+  **the ring** (the orbit's slots round the Dantian).
 - **a track** (the garden's: `src/world/garden/races.js`): a groove the hand carved in one stroke that closes on itself, 40 m or more;
   the spirits on its planetoid **race** a lap on it (Dovina's `RACE`). *Not:* a music track (the sound test's), the course.
 - **the ring** (`ORBIT`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a **bought planetoid** is set (the
   Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed, in turn); bought at the shed, its **seed** is carried by the god hand
-  into the open sky and let go there. *Not:* the hue ring (the spirit press's), the upper ring (the bowl's gallery).
-- **a cascade** (`src/world/garden/cascades.js`): water deep in a basin facing a linked planetoid spilling over to it. *Not:* a
-  sandfall (the Great Dunemaw's).
-- **the plants** (the garden's: `src/world/garden/plants.js`): green that spreads cell by cell over wet moss, loam and silt, and wilts
-  elsewhere; seeded by a herb terrace and by moss painted. *Not:* a material planted in a bed (the beds grow materials).
+  into the open sky and let go there; each wears its own look (`src/vfx/garden/boughtplanetoids.js`). *Not:* the hue ring (the spirit
+  press's), the upper ring (the bowl's gallery).
+- **a cascade** (`src/world/garden/cascades.js`; drawn by `src/vfx/garden/gardencascade.js`): water deep in a basin facing a linked
+  planetoid spilling over to it, drawn as a ribbon of Lachryma along its arc with **spray** where it lands. *Not:* a sandfall (the
+  Great Dunemaw's).
+- **the plants** (the garden's: `src/world/garden/plants.js`; drawn by `src/vfx/garden/gardenplants.js`): green that spreads cell by
+  cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
+  **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
+  (the beds grow materials); *not* the moss ground (the paint) or a herb terrace (a feature).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
@@ -598,13 +656,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   backhand, block, scoop, beckon, shoo, wave, snap, crush, fistClench, count, fingerGun, thumbsUp, thumbsDown, okSign, peace, vanish.
   Where a name is another thing's too, it is qualified: **the hand's grab** (*not* `god.grab`, a thing held, nor GRAB, the garden's
   art), **the hand's pull** (*not* PULL, the stroke it plays under), **the hand's slam** (*not* the Soul Brush's slam nor the Great Slip
-  Jelly's), **the hand's flick** (*not* the Soul Brush's flick of slip; it plays when a spirit is flicked), **the hand's point**.
+  Jelly's), **the hand's flick** (*not* the Soul Brush's flick of slip; it plays when a spirit is flicked), **the hand's point**, **the hand's release** (*not* a bound spirit's release, `spirit.release`).
   A **contact** (`HAND_CONTACTS`) is the frame a blow lands. *Not:* an emote (the Courier's), nor a gesture (a held tool's).
 - **the Jar's clips** (`PneukaJarClips`, `JAR_MOVES`, `src/godhand/pneukajarclips.js`; the owner's `courier_pneuka.blend`): the Pneuka Jar's
   own 17 actions on its own mixer: idle, summon, dismiss, hop, land, open, close, gulp, spit, startled, shake, happy, sad, curious,
   rummage, sleep, wake. They own its squash and its scale (on its `root` bone); nothing else scales it. **The Jar's hop** and **the Jar's
   land** are the garden's hop and landing as clips (*not* a hop of the Emocean); **the Jar's gulp** is the clip of a Figment swallowed
-  (*not* the Lockheart's gulp, the parry, nor the gulp mount). Its cracks are skinned to it and ride the clips (`vfx/crackskin.js`).
+  (*not* the Lockheart's gulp, the parry, nor the gulp mount); **the Jar's wake** is the clip of waking from sleep (*not* a wake on water, nor the Wake Whistle). Its cracks are skinned to it and ride the clips (`vfx/crackskin.js`).
 - **a rig's clips** (`RigClips`, `src/courier/anim/rigclips.js`): what the two above are built on: a small rig's own actions on its own
   mixer, by named **moves**, each a loop, a once (going on to its `then`), or held (played **in** to a **hold** rocked back and forth,
   then **out**). *Not:* the Courier's clips (the suite, `courier/anim/animator.js`).
@@ -660,9 +718,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
-  is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
-  ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
-  **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+  is the hourglass in the pool. **the drum's pool**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired (it
+  was "the bath" until 2026-10-08: the bath is the press's basin now). **the root spout**: a root grown from the drum's front lip over
+  the ware ring and the kerb to the bath's north lip (the tsukubai's kakei); **the thread**: the soul running from the eye's drop down
+  through the hourglass and along the root into the bath while it presses. **the ball** (the lever's): up after a press, down at its
+  stop after a firing; its **ember** warms in it while the bead is inside a spread. **the press's lantern** (never
+  "the lantern" alone: the garden has stone lanterns): tall when your cubes cover a firing here, low when not. **the hue ring** (`HueRing`, `src/vfx/alchemy/huering.js`): seven lights circling the press, one per
+  attribute at its hue; away from the press view the one the soul colour is inside comes close and burns; in it they **settle** into
+  their seals (one at a time, clockwise from Willpower), **lift** over the tile whose spread the bead enters, **dive** into it at a
+  firing, and go home. **soul glow**: the vessel's skin lit from inside in the soul colour, drawn by wheelColour's Oklab at one
+  lightness for every hue: the soul's chroma at one strength once off grey, never its brightness (none while grey); brighter for a few
+  real seconds after a true firing.
+- **wheelColour** (`src/vfx/wheelcolour.js`, SOUL-ALCHEMY.md 4.16): the one colour function of the colour wheel, in Oklab: every colour
+  at the press is drawn by it (the tiles, the seals' glaze, the soul bead, the paths, the droplets, the lumps), so a bead and its tile
+  are the same colour when they are the same place. **self-lit** (`selfLit`, `src/vfx/selflit.js`): a surface drawn with the frame's
+  tone curve and grade undone, so it shows exactly the colour it was given; *not* emissive (it never glows past what it is).
+- **the press's marks** (`Marks`, `src/vfx/alchemy/marks.js`): the self-lit things on and round the bath (tiles, seals, droplets, paths,
+  the beads, the lumps) as one instanced program, layered by instance order. *Not:* a world mark (a mark on a thing, carrying no words:
+  these carry none either, but are the press's own).
 - **the ripple tank** (`src/vfx/ripples.js`): the rings on water: a height field round the eye stepped by the wave equation, that every
   disturbance of a water surface (`game.water.disturb`) dents; the water's shader reads its slopes. **The wake** is its rings' V behind
   a swimmer. **The crown** (`src/vfx/waterfx.js`): a dive's splash, a rim of drops flung up and out round a column. **Drips**: the
@@ -709,6 +782,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
   textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
   stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
+- **the grey tint** (`greyTint`, `greyTexture`, `cloneTinted`, `src/vfx/greytint.js`): a painting in greys under its material's colour:
+  the painting's **reference grey** (its body's own) is the colour exactly, a darker grey darkens it toward black, a lighter lifts it
+  toward white, so any colour the game gives the thing (the kiln's heat, a raider's red, a turned jar's cream) reads as itself with
+  the painting on it. The clapperjar wears it (the owner's grey texture, `source_assets/clapperjar_base.png`, reference 102 of 255).
+  *Not:* a glaze (fired at the kiln), nor triplanar's 'detail' (light and shade only, no UVs).
 - **rock** (`src/world/well/rock.js`): the Great Dunemaw's walls and pillars drawn rough over their box colliders, a noise field
   pushing the skin up to 0.3 m sideways.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
@@ -737,6 +815,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
   each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
   counts).
+- **the stele's sandstone, laid** (`sandstoneMaterial`, `layStone`, `src/vfx/ostracon.js`): the stele's own stone on boxes, their UVs in
+  metres along the axis each face looks down, so courses run on from box to box: **ashlar** (the town's isodomic courses, 0.7 m high, each block cut from the stone at its own place, sand in the
+  joints: the sealed room's walls and roof) or **plain** (one monolith: the sealed room's door slab). *Not:* the ruins' columns (stone of
+  their own), nor the surfaces (`render/triplanar.js`).
+- **a plaster patch's look** (`PlasterPatch`, `src/vfx/plasterpatch.js`; the patch and its blow are Petra's, `world/ostraca.js`): the
+  **skim**, newer plaster a shade off the workshop's old wall, the trowel's arcs in it, its rim feathered to the wall's colour and a
+  **hairline crack** round it (always so called: a crack alone is the vessel's), so only a careful eye spots it; struck, it comes away in a few **flakes** of itself (they lie on the floor a
+  few real seconds, then shrink away) and a puff of dust (`plaster.break`, `plaster.land` in the library), leaving the **scar**: the
+  old wall bared, the skim's pale cut round it, and the hollow the ostracon was set in. *Not:* the plaster surface (`triplanar.js`'s
+  texture, or `vfx/surfaces.js`'s pattern).
 - **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
   *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
 - **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a
@@ -752,6 +840,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the liquid pack** (`src/assets/liquid_pack.webp`, baked by `scripts/bake_liquid.py` from `source_assets/liquid/`): the owner's
   noise photographs as one tileable texture (marbling, bubbles, sand ripples, veins) that every liquid is drawn with (`src/vfx/liquid.js`).
   **caustics**: the net of light on a pool's floor; **glints**: the water's sparkle where the sun catches it.
+- **the ground pack** (`src/assets/ground_pack.webp`, baked by `scripts/bake_ground.py` from `source_assets/vfx/Noise_Gradients/`): four
+  of the owner's noise gradients as the four grey channels of one tileable texture, the heights the ground's materials are drawn from
+  (R moss's cushions, G loam's rootlets, B slate's cleft, A silt's crazing; ash's come from the liquid pack's glowing cells). Fetched
+  beside the bundle (never inlined in it) when the first planetoid is made. *Not:* the liquid pack, nor the surfaces
+  (`render/triplanar.js`).
 - **the markup window** (`BugMarkup`, `src/ui/bugmarkup.js`): the bug report's window over the frozen frame (F8: QAIS's Reports
   tab, `src/debug/qais/report.js`): the frame at a whole-number scale, **marks** on a layer of their own (pen, arrow, ring, box; red or white;
   undo), a title, what happened, what should have, a kind and a severity.
@@ -935,7 +1028,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island, or a Well, `well:<id>`; the weather events' `island` field carries it) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
-| hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
+| hold | a ship's hold (how many casks may cross); to hold the save; a rig's hold (the stretch of a clip rocked back and forth while a move is held: `RigClips`, `hold: [18, 32]`) | "the ship's hold"; "hold the save"; "the clip's hold" |
+| move | a blow of the combo engine (the moveset, `kick.hit`); a rig's move (`RigClips`: a named clip choice, the hand's `snap`, the Jar's `hop`; its `release()` lets a held one go on) | "a blow" or "the kick's move"; "a rig's move" |
 | hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (the air slam, the ground slam); the Great Slip Jelly's; the god hand's clip (the flat palm brought down) | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry (a Lachryma shot swallowed); a mount on the rail; the Pneuka Jar's clip (a Figment swallowed) | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
@@ -945,7 +1039,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
+| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint |
+| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`); the colour wheel (Soul Alchemy's: hue the bearing, saturation the distance out; in play it is the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
+| sigil | the Soul Brush's: strokes drawn in Celestial mode and read (Spellscription); the Solar Skiff's: the ring of marks laid on the sand the boat rises out of (the model's `sigil` bone) | "a sigil" is the brush's; "the skiff's sigil" in full |
+| dome | the sky's (`vfx/sky.js`, where the night alive is drawn); the stern of the Solar Skiff's hull (the model's own word) | "the sky's dome", "the skiff's dome" |
 
 ## Retired words
 

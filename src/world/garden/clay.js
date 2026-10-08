@@ -122,6 +122,7 @@ export class Clay {
 
   /** A look made to follow the grid (vfx/garden/planetoid.js: its vertices' directions `dir`, heights `h` in units of its radius `R`). */
   toLook(look) {
+    if (look.fromClay) return look.fromClay(this); // (Calissa's look keeps its own maps and redraws only what changed, its grounds too)
     const D = look.dir, H = look.h;
     for (let i = 0; i < H.length; i++) H[i] = this.heightAt(_d.set(D[i * 3], D[i * 3 + 1], D[i * 3 + 2])) / look.R;
     look.rebuild();

@@ -9,11 +9,16 @@
 //   THE NIGHT    the game's own hour: at night the dome deepens to indigo, stars come out above and the cloud sea glows faintly from
 //                within (the Lachryma under it)
 //   THE MOTES    soft points of light drifting slowly round the eye, as dust in a sunbeam (Dual Hearts' air)
+//   THE GREY SURROUND  while the press view is open (docs/plans/SOUL-ALCHEMY.md 4.3), the dome, the haze (and so the fog, which is the
+//                haze) and the motes ease to a neutral grey of their own lightness over 0.8 real seconds, and back over 0.5: a colour is
+//                judged on a grey ground (Albers; the colour booth's grey surround; Okami's world stilled to a canvas)
 //
 // Prior art: Dual Hearts (a dreamworld of floating islands in pastel light), Super Mario Galaxy's skies (a hub of small worlds in a
-// soft void), Journey's and Sky's cloud seas, and Chinese landscape painting's mist below the peaks (the xianxia sky).
+// soft void), Journey's and Sky's cloud seas, Chinese landscape painting's mist below the peaks (the xianxia sky), and the colour
+// matching booth's neutral surround (Josef Albers, Interaction of Color) for the grey.
 //
-//   const S = new GardenSky()   scene.add(S.group)   S.set({ draught: hex, night: 0..1 })   S.update(rawDt, camera)   S.fog (a Color: the haze)
+//   const S = new GardenSky()   scene.add(S.group)   S.set({ draught: hex, night: 0..1, rain: 0..1 })   S.update(rawDt, camera)   S.fog (a Color: the haze)
+//   S.surround(on)   S.grey (0 coloured .. 1 the grey surround, eased)   S.surround(false, true) (back at once: the garden left)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -44,6 +49,10 @@ void main() {
 
 const DAY = { zenith: new THREE.Color(0.16, 0.2, 0.58), haze: new THREE.Color(0.86, 0.46, 0.56), cloud: new THREE.Color(0.95, 0.84, 0.88) }; // (pastel, and kept below white: the scene is linear)
 const NIGHT = { zenith: new THREE.Color(0.02, 0.02, 0.07), haze: new THREE.Color(0.12, 0.08, 0.2), cloud: new THREE.Color(0.2, 0.17, 0.32) };
+const SURROUND = { in: 0.8, out: 0.5 }; // (real seconds: SOUL-ALCHEMY.md 4.3)
+const _g = new THREE.Color();
+/** A colour eased toward the neutral grey of its own lightness (Rec. 709 luminance, linear): the grey surround keeps the sky's value. */
+const toGrey = (c, k) => { if (k <= 0) return c; const y = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; return c.lerp(_g.setRGB(y, y, y), k); };
 
 export class GardenSky {
   constructor({ radius = 900, motes = 220 } = {}) {
@@ -57,23 +66,29 @@ export class GardenSky {
     this.moteG = new THREE.BufferGeometry(); this.moteG.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.motes = new THREE.Points(this.moteG, new THREE.PointsMaterial({ size: 0.16, map: softDot(), transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xfff0d8 }));
     this.motes.frustumCulled = false; this.group.add(this.motes);
-    this.fog = new THREE.Color(); this.draught = new THREE.Color(0xf2c84a); this.night = 0; this.t = 0;
+    this.fog = new THREE.Color(); this.draught = new THREE.Color(0xf2c84a); this.night = 0; this.rain = 0; this.t = 0; this.grey = 0; this.greyTo = 0;
     this.set({});
   }
 
-  /** Your draught (a feeling's colour) tints the haze; `night` 0 day .. 1 the middle of the night (the game's own hour). */
-  set({ draught = null, night = this.night } = {}) {
+  /** Your draught (a feeling's colour) tints the haze; `night` 0 day .. 1 the middle of the night (the game's own hour); `rain` 0..1 greys it (vfx/garden/gardenrain.js). */
+  set({ draught = null, night = this.night, rain = this.rain } = {}) {
     if (draught != null) this.draught.setHex(draught); this.night = THREE.MathUtils.clamp(night, 0, 1);
     const k = this.night, u = this.u;
     u.uZenith.value.copy(DAY.zenith).lerp(NIGHT.zenith, k);
     u.uHaze.value.copy(DAY.haze).lerp(NIGHT.haze, k).lerp(this.draught, 0.28); // (your mood in the air)
     u.uCloud.value.copy(DAY.cloud).lerp(NIGHT.cloud, k).lerp(this.draught, 0.08);
+    this.rain = THREE.MathUtils.clamp(rain, 0, 1); const r = this.rain * 0.45; // (under rain the air greys and the light lowers)
+    if (r > 0) for (const [c, dim] of [[u.uZenith.value, 0.82], [u.uHaze.value, 0.88], [u.uCloud.value, 0.86]]) { const l = c.r * 0.3 + c.g * 0.59 + c.b * 0.11; c.lerp(_g.setRGB(l, l, l * 1.04), r).multiplyScalar(1 - (1 - dim) * this.rain); }
+    toGrey(u.uZenith.value, this.grey); toGrey(u.uHaze.value, this.grey); toGrey(u.uCloud.value, this.grey); // (the grey surround: SOUL-ALCHEMY.md 4.3)
     u.uNight.value = k; this.fog.copy(u.uHaze.value);
-    this.motes.material.color.setHex(0xfff0d8).lerp(this.draught, 0.3);
+    toGrey(this.motes.material.color.setHex(0xfff0d8).lerp(this.draught, 0.3), this.grey);
   }
+  /** The press view's grey surround: on, the sky, the haze and the fog ease to grey (0.8 s); off, back (0.5 s); `now` snaps it. */
+  surround(on, now = false) { this.greyTo = on ? 1 : 0; if (now) { this.grey = this.greyTo; this.set({}); } }
 
   update(raw = 1 / 60, camera = null) {
     this.t += raw; this.u.uT.value = this.t;
+    if (this.grey !== this.greyTo) { const k = this.greyTo > this.grey ? raw / SURROUND.in : -raw / SURROUND.out; this.grey = THREE.MathUtils.clamp(this.grey + k, Math.min(this.grey, this.greyTo), Math.max(this.grey, this.greyTo)); this.set({}); } // (linear in time, so the sweep can time it)
     if (camera) { this.dome.position.copy(camera.position); }
     const P = this.moteG.attributes.position, c = camera?.position;
     for (let i = 0; i < P.count; i++) {

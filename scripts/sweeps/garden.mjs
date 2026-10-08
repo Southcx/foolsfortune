@@ -724,6 +724,17 @@ else {
   });
 }
 
+// ---- the spirit press's view: the garden greys round the bath and comes back (SOUL-ALCHEMY.md 4.3, 4.22; Calissa's look)
+await guard('press: the grey surround', async () => {
+  const rgb = () => ev(() => { const g = __game.game, c = g.scene.fog.color; return { fog: [c.r, c.g, c.b], grey: g.realm.site.sky.grey, hud: document.body.classList.contains('ui1'), log: document.body.classList.contains('uilog') }; });
+  const r0 = await rgb(); await ev(() => __game.game.realm.press.enter()); await ticks(60);
+  const r1 = await rgb(), chroma = Math.max(...r1.fog) - Math.min(...r1.fog);
+  await ev(() => __game.game.realm.press.leave('sweep')); await ticks(45);
+  const r2 = await rgb(), back = Math.max(...r2.fog.map((v, i) => Math.abs(v - r0.fog[i])));
+  check('press: the press view greys the sky and the fog, the HUD out', r1.grey === 1 && chroma < 0.01 && r1.hud && r1.log, { grey: r1.grey, chroma: +chroma.toFixed(4), hud: r1.hud, log: r1.log });
+  check('press: left, the sky, the fog and the HUD come back', r2.grey === 0 && back < 0.01 && !r2.hud, { grey: r2.grey, fogBack: +back.toFixed(4), hud: r2.hud });
+});
+
 // ---- item 19: a bought planetoid sits on the ring round the Dantian
 await guard('orbit', async () => {
   const refusal = await ev(() => __game.game.realm.orbit.buy());

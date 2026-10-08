@@ -19,6 +19,8 @@ import { sfx } from '../audio/sfx.js';
 import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { stream, randDir } from '../core/rng.js';
 import { actPose, startAct } from './idleacts.js';
+import { greyTexture, greyTint, cloneTinted } from '../vfx/greytint.js';
+import clapperjarBaseB64 from '../assets/clapperjar_base.png?b64';
 const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -45,9 +47,9 @@ export class Clappers {
     this.ctrl.setCharacterMass(8);
     this.ctrl.enableSnapToGround(0.2);
     this.ctrl.enableAutostep(0.12, 0.1, false);
-    // the Courier's terracotta (their armour's colour); each clapper gets its own copy so a fresh one
-    // can glow from the kiln and cool
-    this.mat = addRim(new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true }), 0.8); // (a thin rim: render/toon.js)
+    // the Courier's terracotta (their armour's colour) tinting the owner's grey painting (its body's grey, 102, is the colour: vfx/greytint.js);
+    // each clapper gets its own copy so a fresh one can glow from the kiln and cool
+    this.mat = greyTint(addRim(new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true }), 0.8), greyTexture(clapperjarBaseB64), 102 / 255); // (a thin rim: render/toon.js)
     this.hot = new THREE.Color(0xffe2a0); // white-hot clay
     this.ember = new THREE.Color(0xff5a14);
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });
@@ -76,9 +78,9 @@ export class Clappers {
     const model = cloneSkinned(this.gltf.scene);
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    const mat = this.mat.clone();
-    // (the model's own eyes, if it brings them: any mesh or material named for an eye keeps its own material and stands in for the
-    // drawn ellipsoids below; the owner's disc eyes, 2026-10-06, were being painted with the clay and covered by them)
+    const mat = cloneTinted(this.mat); // (a plain clone() dropped the rim's define and the tint's hook)
+    // (the model's own eyes, if it brings them as a mesh or material named for an eye, keep their own material and stand in for the drawn
+    // pupils below; the owner's clapperjar has its disc eyes inside its one mesh, so they wear the painting, white, and the pupils sit on them)
     const isEye = (o) => /eye/i.test(o.name) || [].concat(o.material).some((m) => /eye/i.test(m?.name || ''));
     const ownEyes = meshes.some(isEye);
     for (const o of meshes) {
@@ -91,9 +93,9 @@ export class Clappers {
     const bone = (n) => model.getObjectByName(n);
     const eyesBone = bone('eyes');
     if (eyesBone && !ownEyes) { // (drawn eyes only for a model without its own)
-      for (const x of [-0.055, 0.055]) {
+      for (const x of [-0.081, 0.081]) { // (the middle of each disc eye, 5 cm across, in this bone's space: a pupil there, not on its inner rim at 0.055)
         const e = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 4), this.eyeMat);
-        e.scale.set(1, 1.5, 0.6);
+        e.scale.set(0.7, 1.5, 0.7);
         e.position.set(x, 0.01, 0.0);
         eyesBone.add(e);
       }

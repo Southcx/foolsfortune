@@ -11,8 +11,12 @@
 // and Okami's sumi-e ink, which glow a little of their own colour back so the paint reads in shade.
 //
 //   const m = godHandPainting()   const j = pneukaJarPainting()   paintFlash(j, flash)  (a blow's flash, a mend's warmth: -1 .. 1)
+//   vessoulPainted(map, params, uniforms?)   the same painted material for another form (the Solar Skiff: courier/skiff/boat.js)
+//   HAND_FADE.fade.value = 0.5   (the god hand half-dithered, a screen door: over the press's bath it never hides the soul bead;
+//   render/outline.js withFade, the Courier's own fade, on the hand's own uniforms: one program)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { withFade, rigUniforms } from '../render/outline.js';
 import handB64 from '../assets/courier/courier_godhand_base.png?b64';
 import jarB64 from '../assets/courier/courier_pneukajar_base.png?b64';
 
@@ -26,12 +30,20 @@ function painting(b64) {
   t.anisotropy = 4;
   return t;
 }
-const painted = (map, o = {}) => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0, ...o });
+/** The house's painted material for every painted form of the Vessoul (the god hand, the Pneuka Jar, the Solar Skiff's hull, parts and
+ *  cloth): the painting as its colour and a share of its glow, on a rig's own fade and dissolve (render/outline.js withFade; `U`, whole
+ *  unless given). One cache key for all of them, so every one drawn the same way is one shader program: a form that never fades keeps
+ *  its uniforms whole, where the fade's two branches are skipped and its pixels are the plain painting's (CASEBOOK rule 5). */
+export function vessoulPainted(map, o = {}, U = rigUniforms()) {
+  return withFade(new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0, ...o }), 'vessoul-paint', U);
+}
 
-/** The god hand's painted clay (one material: godhand.js sets its glow's pulse). */
-export function godHandPainting() { const m = painted(painting(handB64)); m.name = 'Courier_Godhand'; return m; }
+/** The god hand's own fade (1 whole .. 0 gone, a 4 x 4 screen door) and dissolve, apart from the Courier's. */
+export const HAND_FADE = rigUniforms();
+/** The god hand's painted clay (one material: godhand.js sets its glow's pulse), on its own fade. */
+export function godHandPainting() { const m = vessoulPainted(painting(handB64), {}, HAND_FADE); m.name = 'Courier_Godhand'; return m; }
 /** The Pneuka Jar's painted clay (its body; the gems keep the core's light). */
-export function pneukaJarPainting() { const m = painted(painting(jarB64), { roughness: 0.6 }); m.name = 'Courier_PneukaJar'; return m; }
+export function pneukaJarPainting() { const m = vessoulPainted(painting(jarB64), { roughness: 0.6 }); m.name = 'Courier_PneukaJar'; return m; }
 
 /** A blow's flash (flash > 0, hot) or a mend's warmth (flash < 0) on a painted material: its own painting glowing brighter, warmer. */
 export function paintFlash(m, flash) {

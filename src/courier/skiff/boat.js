@@ -1,189 +1,163 @@
 // ---------------------------------------------------------------------------------------
-// THE SKIFF: the Solar Skiff's body. A small hovering boat with a lug sail, after the King of Red
-// Lions in The Wind Waker: a hull with a raised, curled prow and a figurehead, one mast, a yellow
-// boom that swings out to leeward of the wind, a single billowing cel-cream sail with a painted
-// emblem, and a long pennant streaming from the masthead that shows which way the wind goes. The rider
-// holds a sheet (a rope) from the boom's end, so the hands never have to follow a moving boom.
+// THE SKIFF: the Solar Skiff's body, the owner's model (source_assets/Courier/courier_solarskiff.blend, its hull painted by the owner:
+// courier_solarskiff_hull.png, 2026-10-08; exported by scripts/export_solarskiff.py to src/assets/solarskiff.glb). A small hovering
+// boat with a lug sail after the King of Red Lions in The Wind Waker: a carved prow with an eye, a domed stern with its engine and fins,
+// two oars, doors in the deck the mast rises through, a telescoping mast, a boom that swings out to leeward of the wind, a cream sail
+// with its terracotta spiral, and a red pennant at the masthead that shows which way the wind goes. The rider holds a sheet (a rope)
+// from the boom's end, so the hands never have to follow a moving boom.
 //
-// What was taken from Wind Waker's boat, from its screenshots and write-ups: the sail is opaque cloth
-// with one crease and a belly, not a glowing sheet; the boom's angle is set by the wind against the
-// heading (out wide running before it, close in on the wind); when the sail is up it billows and when
-// it is not it is a small bundle on the boom; the wind is shown in the world, not on the screen. (Wind Waker's own
-// wind arrow floated beside the boat; here it is the masthead pennant that sailors actually read, a swallowtail ribbon
-// whose ripple is all in its vertex shader: it streams straight and flutters fast in a strong wind, droops and lazes
-// in a light one.)
+// What moves it, in order, every frame (pose):
+//   1. its own clips (boatpose.js): each the partner of the rider's clip of the same name, played with it at the same time and weight
+//      (the summon's rise out of the sand and its doors, mast and boom; the recall's fold and flight into the raised right hand; the
+//      ride's bob, carve, flare and Ollie)
+//   2. the code's word, absolute (what Wind Waker's boat showed, from its screenshots and write-ups): the boom to leeward, wider with
+//      the wind behind; the sail hoisted as far as L (always L's: the summon ends furled, as the ride starts); its belly, full or
+//      luffing; the pennant streaming where the wind goes, quick and tight in a strong wind, drooping in a light one
+//   3. the range of motion last (courier/anim/rom.js SKIFF_ROM)
 //
-// Built as one Group in its own frame (+Z bow, +X to the left, Y up, origin at the deck), so the
-// whole skiff, and the rider standing on it, are moved and turned with one quaternion.
-//   const skiff = new Skiff(scene);
-//   skiff.set({ sail, side, fill, boom, glow, t })      // per frame: what the sail is doing
-//   skiff.group.position / .quaternion                  // where it is
+// Built as one Group in its own frame (+Z bow, +X to the left, Y up, origin at the deck), so the whole skiff, and the rider standing on
+// it, are moved and turned with one quaternion. The model is parsed the first time it is wanted (load: skiff.js asks on the way into
+// the Dunes, or as the trailer begins), its bytes a chunk of their own until then, so a session that never goes there never holds
+// them; until it is parsed and its materials compiled the boat is not drawn, and nothing else waits on it.
+//   const skiff = new Skiff(scene);   skiff.load(game)  (a promise; again: the same one)   skiff.ready
+//   skiff.set({ sail, side, fill, boom, glow, t, speed })   // per frame: what the sail is doing
+//   skiff.placePennant(windDir, strength, t)                 // per frame, once the group is placed
+//   skiff.pose(rider, s) or skiff.posePhase(clip, t)         // after the rider is posed (skiff.js animate)
+//   skiff.group.position / .quaternion                       // where it is
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
+import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
+import { BoatPose } from './boatpose.js';
+import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
 
+// how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
+// rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
+// (0.77 under the deck) 0.17 into it on the flat: a sand keel, cutting the sand at the bow where the wake's bubbles start (judged
+// from the Dunes, front, side and close at the waterline of the sand; lift it here, never the hover, if it ever reads as clipping)
+const LIFT = 0;
 export const SKIFF = {
-  half: 1.3, beam: 0.46, deck: 0.04, // half length, half width, height of the deck surface over the origin
-  mast: { z: 0.45, h: 4.4 },
-  boom: { y: 2.05, len: 2.05 },
-  sailH: 2.15,
-  rider: { z: -0.42 }, // where the rider's feet are on the deck (along the boat)
+  half: 1.82, beam: 0.52, deck: LIFT, // half length (the bow's tip), half width, height of the deck surface over the origin
+  mast: { z: 0.45, h: 4.378 },        // (the pennant's root)
+  boom: { y: 2.156, len: 2.05 },
+  sailH: 1.914,                        // (the yard's rise over the boom, hoisted)
+  rider: { z: -0.42 },                 // where the rider's feet are on the deck (along the boat): the model's `rider` bone
 };
-const SW = 14, SH = 12;
-const C = { hull: 0xb5532d, deck: 0xf1d9b6, gold: 0xf2c14e, dark: 0x4a2a1e, sail: 0xf6e6c8, rope: 0xe9d4a4 };
+// the hoist (the yard's height over the boom, the sail's scale up its luff) furled and full, from the clips' own Furl and Unfurl
+const FURLED = { yard: 0.055, sail: 0.06 };
+// the belly at full fill: each sail bone out to the side of the one below (m), from Skiff_RideCruise; Skiff_RideIdle is a third of it
+const BELLY = [0.27, 0.22, -0.14];
+const C = { rope: 0xe9d4a4, energy: 0xffc65c };
+const Zax = new THREE.Vector3(0, 0, 1), Xax = new THREE.Vector3(1, 0, 0);
+const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3();
+const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
-function emblemTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const g = c.getContext('2d');
-  g.fillStyle = '#f6e6c8'; g.fillRect(0, 0, 256, 256);
-  // stitched panels: a few darker seams up the cloth
-  g.fillStyle = 'rgba(160,120,80,0.16)';
-  for (const x of [60, 122, 190]) g.fillRect(x, 0, 2, 256);
-  // the emblem: a sun that curls into a wave (terracotta, thick, rounded)
-  g.strokeStyle = '#c2432b'; g.lineCap = 'round'; g.lineWidth = 20;
-  g.beginPath();
-  for (let a = 0; a < Math.PI * 3.1; a += 0.05) { const r = 12 + a * 15; const x = 138 + Math.cos(a - 1) * r * 0.9, y = 128 + Math.sin(a - 1) * r * 0.9; a === 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
-  g.stroke();
-  g.fillStyle = '#e8a23a'; g.beginPath(); g.arc(138, 128, 9, 0, Math.PI * 2); g.fill();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
+// the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do): the Vessoul's painted material,
+// so the hull and the parts share the god hand's and the Pneuka Jar's shader program (vfx/vessoulpaint.js)
+const painted = (map, o = {}) => vessoulPainted(map, o);
+/** A texture the glTF brought, filtered so it never crawls: mipmapped down, and `near` (Blender's Closest) kept only up close. */
+function filtered(tex, near) {
+  if (!tex) return null;
+  tex.magFilter = near ? THREE.NearestFilter : THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.anisotropy = 4;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
 }
 
 export class Skiff {
   constructor(scene) {
     this.group = new THREE.Group();
     this.group.name = 'SolarSkiff';
-    this.buildHull();
-    this.buildRig();
-    this.buildRope();
-    this.buildPennant(scene);
     this.group.visible = false;
+    this.group.userData.zoneFree = true; // (shown and hidden by the tech, in the Dunes only: the zones placed it, waiting at the origin, in the workshop, and hid the first summon a quarter second: CASEBOOK, 2026-10-08)
     scene.add(this.group);
-    this.side = 1; this.boomAngle = 0.5;
-  }
-
-  set visible(v) { this.group.visible = v; this.pennant.visible = v; this.rope.visible = v; }
-
-  // ------------------------------------------------------------------ the hull
-  buildHull() {
-    const { half, beam } = SKIFF;
-    // (a lens with a pointed bow (+Z) and a blunter stern; the shape's y is -z after the turn)
-    const shape = new THREE.Shape();
-    shape.moveTo(0, -half);
-    shape.bezierCurveTo(beam * 0.9, -half * 0.55, beam * 1.05, half * 0.35, beam * 0.72, half);
-    shape.lineTo(-beam * 0.72, half);
-    shape.bezierCurveTo(-beam * 1.05, half * 0.35, -beam * 0.9, -half * 0.55, 0, -half);
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.24, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 2, curveSegments: 16 });
-    geo.rotateX(-Math.PI / 2);
-    geo.translate(0, -0.26, 0);
-    const hull = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: C.hull, roughness: 0.62, flatShading: true }));
-    hull.castShadow = true;
-    addOutline(hull);
-    this.group.add(hull);
-    // the deck: a slightly smaller cream plank on top
-    const dshape = new THREE.Shape();
-    const s = 0.86;
-    dshape.moveTo(0, -half * s);
-    dshape.bezierCurveTo(beam * 0.9 * s, -half * 0.55 * s, beam * 1.05 * s, half * 0.35 * s, beam * 0.72 * s, half * s);
-    dshape.lineTo(-beam * 0.72 * s, half * s);
-    dshape.bezierCurveTo(-beam * 1.05 * s, half * 0.35 * s, -beam * 0.9 * s, -half * 0.55 * s, 0, -half * s);
-    const dg = new THREE.ExtrudeGeometry(dshape, { depth: 0.02, bevelEnabled: false, curveSegments: 16 });
-    dg.rotateX(-Math.PI / 2);
-    dg.translate(0, 0.02, 0);
-    const deck = new THREE.Mesh(dg, new THREE.MeshStandardMaterial({ color: C.deck, roughness: 0.8, flatShading: true }));
-    deck.receiveShadow = true;
-    this.group.add(deck);
-    // the prow: a horn that rises and curls back over the bow, ending in a gold head
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0.02, half - 0.02), new THREE.Vector3(0, 0.16, half + 0.24), new THREE.Vector3(0, 0.46, half + 0.3),
-      new THREE.Vector3(0, 0.68, half + 0.14), new THREE.Vector3(0, 0.72, half - 0.06),
-    ]);
-    const prow = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.065, 6), new THREE.MeshStandardMaterial({ color: C.hull, roughness: 0.6, flatShading: true }));
-    prow.castShadow = true; addOutline(prow);
-    this.group.add(prow);
-    const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.14, 0), new THREE.MeshStandardMaterial({ color: C.gold, roughness: 0.5, flatShading: true, emissive: 0x4a3200, emissiveIntensity: 0.4 }));
-    head.position.set(0, 0.74, half - 0.1);
-    addOutline(head);
-    this.group.add(head);
-    for (const sx of [-1, 1]) {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.24, 5), new THREE.MeshStandardMaterial({ color: C.gold, roughness: 0.5, flatShading: true }));
-      horn.position.set(sx * 0.09, 0.9, half - 0.14);
-      horn.rotation.set(-0.5, 0, -sx * 0.5);
-      this.group.add(horn);
-    }
-    // the stern block, and a low rail of gold along each side
-    const stern = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.2, 0.12), new THREE.MeshStandardMaterial({ color: C.hull, roughness: 0.6, flatShading: true }));
-    stern.position.set(0, 0.1, -half + 0.12);
-    addOutline(stern);
-    this.group.add(stern);
-    // the hover glow under the hull: steady, warm, no flicker
-    const emitMat = new THREE.MeshBasicMaterial({ color: 0xffc65c, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-    const emit = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), emitMat);
-    emit.rotation.x = -Math.PI / 2; emit.position.y = -0.34; emit.scale.set(0.85, 1.9, 1);
-    this.group.add(emit);
-    this.emit = emit;
-  }
-
-  // ------------------------------------------------------------------ mast, boom, sail
-  buildRig() {
-    const { mast, boom, sailH } = SKIFF;
-    const dark = new THREE.MeshStandardMaterial({ color: 0x3f7a58, roughness: 0.6, flatShading: true }); // (a green mast, as on the Red Lions)
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, mast.h, 6), dark);
-    m.position.set(0, mast.h / 2 + 0.04, mast.z);
-    m.castShadow = true; addOutline(m);
-    this.group.add(m); this.mast = m;
-    // the rig turns about the mast: the boom, and the cloth hung between the mast and the boom's end
-    this.rig = new THREE.Group();
-    this.rig.position.set(0, 0, mast.z);
-    const gold = new THREE.MeshStandardMaterial({ color: C.gold, roughness: 0.5, flatShading: true });
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, boom.len, 6), gold);
-    b.rotation.x = Math.PI / 2; b.position.set(0, boom.y, -boom.len / 2);
-    b.castShadow = true; addOutline(b);
-    this.rig.add(b);
-    const geo = new THREE.PlaneGeometry(1, 1, SW, SH);
-    this.tex = emblemTexture();
-    this.sailMat = new THREE.MeshStandardMaterial({ map: this.tex, side: THREE.DoubleSide, roughness: 0.9, emissive: 0xffb45a, emissiveIntensity: 0, flatShading: false });
-    this.sail = new THREE.Mesh(geo, this.sailMat);
-    this.sail.frustumCulled = false;
-    this.sail.castShadow = true;
-    this.rig.add(this.sail);
-    this.sailPos = geo.attributes.position;
-    this.group.add(this.rig);
+    this.side = 1; this.boomAngle = 0.5; this.L = 0; this.fill = 0; this.glow = 0; this.t = 0; this.folded = 1;
+    this.wind = { yaw: 0, str: 0.6, t: 0 };
+    this.ground = -0.6; // (the sand's height in the group's frame: skiff.js says, each frame)
     this.tip = new THREE.Vector3(); // the boom's end, in world space (for the sheet)
+    this.buildRope();
   }
 
-  /**
-   * Shape the cloth. `sail` is how far it is hoisted (0 a bundle on the boom, 1 full), `side` which way it
-   * bellies (+1 to the boat's left), `fill` how full of wind it is 0..1 (a sail pointing into the wind
-   * luffs), `t` for the little flutter of a luffing sail.
-   */
-  shapeSail(sail, side, fill, t) {
-    const { boom, sailH } = SKIFF;
-    const P = this.sailPos;
-    const hv = 0.16 + 0.84 * sail;
-    const belly = 0.62 * fill * (0.25 + 0.75 * sail);
-    const flap = (1 - fill) * 0.06 * sail;
-    let i = 0;
-    for (let jy = 0; jy <= SH; jy++) {
-      const v = jy / SH;
-      const chord = boom.len * (1 - 0.3 * v) * (0.4 + 0.6 * sail);
-      const y = boom.y + v * sailH * hv;
-      for (let ix = 0; ix <= SW; ix++, i++) {
-        const u = ix / SW;
-        const z = -u * chord - 0.02;
-        // one crease down the middle third, as the Red Lions' sail has, and a belly that fills toward the head
-        const crease = -0.05 * Math.exp(-Math.pow((u - 0.55) * 5, 2)) * side * sail;
-        const bul = belly * Math.sin(Math.PI * u) * (0.35 + 0.65 * Math.sin(Math.PI * Math.min(1, 0.2 + v * 0.85)));
-        const fl = flap * Math.sin(t * 3.2 + u * 6 + v * 4) * u;
-        P.setXYZ(i, side * bul + crease + fl, y, z);
-      }
+  get ready() { return !!this.live; }
+
+  /** The model, parsed and compiled the first time it is wanted; resolves when the boat can be drawn. */
+  load(game) {
+    this.loading ||= import('../../assets/solarskiff.glb?b64')
+      .then(({ default: b64 }) => new GLTFLoader().parseAsync(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, ''))
+      .then(async (gltf) => {
+        this.build(gltf);
+        // (its programs built off the main thread before its first frame, as the warm-up builds the rest, and for the buffer the frame is
+        // drawn into, as it does: nothing compiles in play. compileAsync compiles at the call and only waits after, so the target is put back
+        // at once. An empty frame first, as main.js's warm-up does: compile reads the clipping state the last render left, and the trail
+        // map's offscreen pass leaves none until the next draw (a tick with no draw after it: the manual mode the sweeps, the stress test
+        // and perf run in), so the hull and the cloth were built for no planes here and again, for the God Hand's one, at their first
+        // draw: CASEBOOK, 2026-10-08)
+        const r = game?.renderer;
+        if (r?.compileAsync) {
+          const prev = r.getRenderTarget();
+          let done;
+          try { r.setRenderTarget(game.post?.target ?? prev); r.render(new THREE.Scene(), game.camera); done = r.compileAsync(this.group, game.camera, game.scene); } catch (e) { console.warn('the skiff\'s shaders', e); }
+          r.setRenderTarget(prev);
+          await done?.catch?.(() => {});
+        }
+        this.live = true;
+      })
+      .catch((e) => console.warn('the skiff\'s model', e));
+    return this.loading;
+  }
+  set visible(v) { this.group.visible = v && this.ready; this.rope.visible = v && this.ready; }
+
+  // ------------------------------------------------------------------ the model
+  build(gltf) {
+    const model = this.model = gltf.scene;
+    model.position.y = LIFT;
+    model.updateMatrixWorld(true);
+    const meshes = [];
+    model.traverse((o) => { if (o.isMesh) meshes.push(o); });
+    const skinned = meshes.find((m) => m.isSkinnedMesh);
+    const bones = skinned.skeleton.bones;
+    this.bone = Object.fromEntries(bones.map((b) => [b.name, b]));
+    const riderBone = model.getObjectByName('rider');
+    if (riderBone) SKIFF.rider.z = +riderBone.getWorldPosition(_v).z.toFixed(3);
+    // the sheet's end on the boom: where the old boom's sheet was (0.92 of the boom out from the mast), riding the boom's last segment
+    const tipAt = new THREE.Vector3(0, SKIFF.boom.y + LIFT, SKIFF.mast.z - SKIFF.boom.len * 0.92);
+    this.tipNode = new THREE.Object3D();
+    this.tipNode.position.copy(this.bone.boom_3.worldToLocal(tipAt));
+    this.bone.boom_3.add(this.tipNode);
+    // the materials, by name (each painted, Emission in the .blend: here lit by the game and glowing back a share of itself)
+    for (const m of meshes) {
+      const src = m.material, tex = src.emissiveMap || src.map;
+      if (src.name === 'Skiff_Hull') m.material = painted(filtered(tex, true));
+      else if (src.name === 'Skiff_Parts') m.material = painted(filtered(tex, false));
+      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }); }
+      else if (src.name === 'CourierEnergy') m.material = this.energyMat = new THREE.MeshStandardMaterial({ color: src.color.clone(), roughness: 0.35, metalness: 0.2, emissive: PALETTE.glow ?? C.energy, emissiveIntensity: 0.3 });
+      m.material.name = src.name;
+      src.dispose?.();
+      m.castShadow = true;
+      m.receiveShadow = src.name === 'Skiff_Hull';
+      m.frustumCulled = false; // (the summon starts the hull 1.3 m down and the recall flies the root 1.5 m up: never culled by its rest box)
+      // outlined but the cloth (as the old sail) and the Lachryma (as the Courier's own: character.js OUTLINED): the flare and the sigil are
+      // opened by a bone scaled a thousandfold, and an inverted hull's offset is skinned with its bone (render/outline.js), so theirs would
+      // open a thousandfold too (CASEBOOK, 2026-10-08)
+      if (src.name === 'Skiff_Hull' || src.name === 'Skiff_Parts') addOutline(m);
     }
-    P.needsUpdate = true;
-    this.sail.geometry.computeVertexNormals();
+    // the hover glow under the hull, riding the hull bone (it bobs, pitches and rises out of the sand with it): steady, warm, no flicker
+    const emitMat = new THREE.MeshBasicMaterial({ color: C.energy, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    this.emit = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), emitMat);
+    this.emit.rotation.x = -Math.PI / 2; this.emit.position.y = -0.36; this.emit.scale.set(0.9, 3.4, 1);
+    this.emit.frustumCulled = false;
+    this.bone.hull.add(this.emit);
+    this.P = new BoatPose(gltf.animations, bones);
+    this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
+    this.rom = new JointLimits();
+    for (const [name, spec] of Object.entries(SKIFF_ROM)) { const b = this.bone[name]; if (b) this.rom.add(b, _q.fromArray(this.rest(name)), spec); }
+    this.group.add(model);
+    this.P.write(this.P.rest);
   }
 
   // ------------------------------------------------------------------ the sheet (a rope to the rider's hands)
@@ -195,14 +169,14 @@ export class Skiff {
     this.rope.frustumCulled = false;
     this.rope.visible = false;
     this.ropeGeo = g;
-    this.group.parent?.add(this.rope);
   }
 
   /** Draw the sheet from the boom's end to a hand (both in world space), with a little sag. */
   drawRope(scene, hand) {
+    if (!this.P) return;
     if (!this.rope.parent) scene.add(this.rope);
-    this.rig.updateMatrixWorld(true);
-    this.tip.set(0, SKIFF.boom.y, -SKIFF.boom.len * 0.92).applyMatrix4(this.rig.matrixWorld);
+    this.tipNode.updateWorldMatrix(true, false);
+    this.tipNode.getWorldPosition(this.tip);
     const P = this.ropeGeo.attributes.position;
     const n = 14, sag = 0.12;
     for (let i = 0; i < n; i++) {
@@ -212,68 +186,81 @@ export class Skiff {
     P.needsUpdate = true;
   }
 
-  // ------------------------------------------------------------------ the pennant (the wind, shown)
-  buildPennant(scene) {
-    const len = 1.9, h = 0.26;
-    const g = new THREE.PlaneGeometry(len, h, 20, 2);
-    g.translate(len / 2, 0, 0); // (from the mast, x 0, out to the tail, x len)
-    // a swallowtail: the middle of the last few columns drawn back into a notch
-    const P = g.attributes.position;
-    for (let i = 0; i < P.count; i++) {
-      const x = P.getX(i), y = P.getY(i);
-      if (Math.abs(y) < 1e-4 && x > len * 0.84) P.setX(i, len * 0.84 + (x - len * 0.84) * 0.15);
-    }
-    this.pennantU = { uTime: { value: 0 }, uStr: { value: 0.6 }, uLen: { value: len } };
-    const mat = new THREE.MeshStandardMaterial({ color: 0xc2432b, emissive: 0x6a1a10, emissiveIntensity: 0.25, roughness: 0.8, side: THREE.DoubleSide });
-    mat.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, this.pennantU);
-      sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uStr; uniform float uLen;')
-        .replace('#include <begin_vertex>', `#include <begin_vertex>
-{
-  float u = clamp(position.x / uLen, 0.0, 1.0);                     // 0 at the mast .. 1 at the tail
-  transformed.y *= 1.0 - 0.75 * u;                                   // it narrows to the tail
-  float spd = 3.0 + 7.0 * uStr;                                      // a strong wind: quick, tight ripples
-  float ph = position.x * (2.6 + 1.6 * uStr) - uTime * spd;
-  float amp = (0.07 + 0.16 * uStr) * u;
-  transformed.z += sin(ph) * amp + sin(ph * 0.53 + 1.7) * amp * 0.5;  // the flutter, travelling down its length
-  transformed.y += sin(ph * 0.8 + 0.6) * amp * 0.35 - u * u * 0.55 * (1.0 - uStr); // a little lift, and a droop in a light wind
-}`)
-        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
-{
-  float u = clamp(position.x / uLen, 0.0, 1.0), ph = position.x * (2.6 + 1.6 * uStr) - uTime * (3.0 + 7.0 * uStr);
-  objectNormal = normalize(vec3(-cos(ph) * (0.07 + 0.16 * uStr) * u * 2.6, 0.0, 1.0));   // (the slope of the ripple, for its shading)
-}`);
-    };
-    this.pennant = new THREE.Mesh(g, mat);
-    this.pennant.frustumCulled = false;
-    this.pennant.visible = false;
-    this.pennant.castShadow = true;
-    scene.add(this.pennant);
-  }
+  /** Kept for its callers: the mast's telescoping is the clips' now (the summon's and the recall's). */
+  fold(k) { this.folded = k; }
 
-  /** The mast telescoped down (0) or standing (1), the boom and the pennant with it: the summon and the recall (skiff.js). */
-  fold(k) {
-    const s = Math.max(0.05, k), { mast, boom } = SKIFF;
-    this.folded = k; this.mast.scale.y = s; this.mast.position.y = (mast.h * s) / 2 + 0.04; this.rig.position.y = -(1 - k) * (boom.y - 0.35);
-  }
-
-  /** The pennant at the masthead, streaming where the wind goes (dir: unit vector in x, z; strength 0..1+), t seconds. */
+  /** The pennant streams where the wind goes (dir: unit vector in x, z; strength 0..1+), t seconds. Called once the group is placed. */
   placePennant(dir, strength, t) {
-    const { mast } = SKIFF;
-    this.group.updateMatrixWorld();
-    this.pennant.position.set(0, mast.h * Math.max(0.05, this.folded ?? 1) + 0.02, mast.z).applyMatrix4(this.group.matrixWorld);
-    this.pennant.rotation.set(0, Math.atan2(-dir.y, dir.x), 0); // (dir.y is z)
-    this.pennantU.uTime.value = t;
-    this.pennantU.uStr.value = THREE.MathUtils.clamp(strength, 0, 1.2);
+    _v.set(dir.x, 0, dir.y).applyQuaternion(_q.copy(this.group.quaternion).invert());
+    this.wind.yaw = Math.atan2(-_v.x, -_v.z); // (at rest the pennant streams aft, -Z: turned about the mast to where the wind goes)
+    this.wind.str = THREE.MathUtils.clamp(strength, 0, 1.2);
+    this.wind.t = t;
   }
 
   // ------------------------------------------------------------------ per frame
   /** sail 0..1 hoisted; side +-1; fill 0..1; boom = the boom's angle from dead aft (radians, + to the boat's right); glow 0..1 (a flare); t seconds. */
   set({ sail, side, fill, boom, glow, t, speed }) {
-    this.rig.rotation.y = boom;
-    this.shapeSail(sail, side, fill, t);
-    this.sailMat.emissiveIntensity = 0.12 + 0.7 * glow;
-    this.emit.material.opacity = 0.38 + 0.22 * Math.min(1, speed / 24) + 0.3 * glow;
+    this.L = sail; this.side = side; this.fill = fill; this.boomAngle = boom; this.glow = glow; this.t = t;
+    if (!this.P) return;
+    this.clothMat.emissiveIntensity = PAINT_LIGHT + 0.7 * glow;
+    this.energyMat.emissiveIntensity = 0.3 + 1.4 * glow;
+    this.emit.material.opacity = 0.38 + 0.22 * Math.min(1, (speed || 0) / 24) + 0.3 * glow;
+  }
+
+  /** The ride: the boat's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
+  pose(R, s) {
+    if (!this.P) return;
+    this.P.write(this.P.ride(R, s));
+    this.own(1);
+  }
+
+  /** A phase's clip (Skiff_Summon, Mount, Dismount, Recall, Bail; Skiff_RideIdle parked), then the code's where the clip lets go. */
+  posePhase(clip, t) {
+    if (!this.P) return;
+    this.P.write(clip === 'Skiff_RideIdle' ? this.P.sample(clip, t, this.P.A, true) : this.P.phase(clip, t));
+    // the summon stands the mast, grows the boom and shows the pennant (to f58); the recall folds them (from f5): the clip has them till then
+    const w = clip === 'Skiff_Summon' ? smooth(1.8, 2.1, t) : clip === 'Skiff_Recall' ? 1 - smooth(0, 0.15, t) : 1;
+    // the summon's sigil (opened by the clip, f4 to f25) is laid on the sand the boat rises out of: the .blend draws it 0.79 under the deck,
+    // under the sand here, where the boat hovers and the summon begins with its deck at the rider's feet
+    if (clip === 'Skiff_Summon' && this.bone.sigil) this.bone.sigil.position.z = this.ground - LIFT + 0.03;
+    // (the sigil is the energy's cream, which noon sand takes back: it burns brighter while the ring is out, f4 to f25)
+    if (clip === 'Skiff_Summon') this.energyMat.emissiveIntensity = 0.3 + 1.4 * this.glow + 1.4 * (1 - smooth(0.6, 0.9, t));
+    this.own(w);
+  }
+
+  /** The code's word on the boat, over the clip by w: the boom, the belly and the pennant; the hoist is always L's. Then the range of motion. */
+  own(w) {
+    const B = this.bone, t = this.t;
+    // the hoist: the yard up the mast and the sail up its luff as far as L (Skiff_Unfurl's ends; a straight line between, never past full)
+    const L = THREE.MathUtils.clamp(this.L, 0, 1);
+    B.yard.position.z = FURLED.yard + (this.P.rest.p[this.P.index.yard * 3 + 2] - FURLED.yard) * L;
+    B.sail_1.scale.y = FURLED.sail + (1 - FURLED.sail) * L;
+    if (w > 0.001) {
+      // the boom about the mast (its local Z is the boat's up), to leeward
+      _q.fromArray(this.rest('boom')).multiply(_q2.setFromAxisAngle(Zax, this.boomAngle));
+      B.boom.quaternion.slerp(_q, w);
+      // the belly: each sail bone out to the side it fills to, and a small flap when it luffs
+      const flap = (1 - this.fill) * 0.05 * L;
+      ['sail_1', 'sail_2', 'sail_3'].forEach((n, i) => {
+        const x = this.side * this.fill * BELLY[i] + flap * Math.sin(t * 3.2 + i * 1.7) * (i + 1) / 3;
+        B[n].position.x += (x - B[n].position.x) * w;
+      });
+      // the pennant: its root turned about the mast to where the wind goes; the five links ripple down it, quick and tight in a strong
+      // wind, slow and drooping in a light one (the old pennant's vertex shader, as rotations: a wave's slope from link to link)
+      const { yaw, str } = this.wind, wt = this.wind.t;
+      B.pennant_root.quaternion.slerp(_q.fromArray(this.rest('pennant_root')).multiply(_q2.setFromAxisAngle(Zax, yaw)), w);
+      const kx = 2.6 + 1.6 * str, om = 3 + 7 * str, amp = 0.07 + 0.16 * str, len = 1.9, droop = 0.58 * (1 - Math.min(1, str));
+      let prev = 0, prevD = 0;
+      for (let i = 1; i <= 5; i++) {
+        const x = i * 0.374, u = x / len, ph = x * kx - wt * om;
+        const slope = amp * u * kx * Math.cos(ph) + amp * u * 0.5 * kx * 0.53 * Math.cos(ph * 0.53 + 1.7);
+        const d = -droop * u; // (the droop's slope at this link: down toward the tail)
+        const b = B[`pennant_${i}`];
+        _q.fromArray(this.rest(`pennant_${i}`)).multiply(_q2.setFromAxisAngle(Zax, THREE.MathUtils.clamp(slope - prev, -0.6, 0.6))).multiply(_q2.setFromAxisAngle(Xax, d - prevD));
+        b.quaternion.slerp(_q, w);
+        prev = slope; prevD = d;
+      }
+    }
+    this.rom.apply();
   }
 }

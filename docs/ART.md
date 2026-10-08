@@ -31,6 +31,10 @@ and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, g
 
 - **Lachryma:** liquid near-black with the oil film (fresh: cream glow, oxidising to black); solid is **bismuth** (stepped hoppers, oxide
   colours face by face: `vfx/bismuth.js`); mental is labradorite. **Crude is not water:** no white foam, never water-blue.
+- **A note has one colour everywhere** (`DEGREE_COLOR`: gold the root, rose, green, blue, violet): the bell's vents, the rhythm lanes,
+  and a crystal's **frets** (`vfx/crystalfrets.js`: the stave as five panes of stained glass, foot to point, leaded in Lachrymite violet,
+  deepened so they hold on noon sand; Boomwhackers, tourmaline grown in layers of colour). Only the stave is fretted; the lesser
+  spires stay lilac.
 - **Liquids are drawn by one library** (`vfx/liquid.js`; packs baked by `scripts/bake_liquid.py` from the owner's noise photographs).
   Water paints its floor (ripples, caustics, depth colour, Fresnel short of a mirror, sparkle welcome); Lachryma is ink with the film in
   its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow.
@@ -48,6 +52,22 @@ Medals: hare's fur, oil spot, guan, kinrande, ru, yohen tenmoku. Shop: natural a
 glaze carries its kiln pattern drawn as the real one forms, fading as its cells shrink below two pixels (no shimmer at range). The kiln
 also sets gems with their real optics, hair finishes and skin tones.
 
+The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, and both paint the part in colours of their own:
+- **JELLY-CROWN** (pattern 7, **the dip**): a slip-green celadon (0x8ab894) dipped to the chest, as the crown sat in the jelly. It stops
+  in the urn crown's own broken lip (`urncrown.js`'s jag round the lathe's forty sides, straight between them, as a fracture runs),
+  thick and deep green along the lip and in every hollow of the painting, crawled apart just above that thick edge (**kairagi**, as
+  on a Korean Ido bowl's foot) with the slip dry between, a few blunt runs below; under the lip the jelly's wet
+  slip (0x7a5434), glossy. Nothing in it glows: a lit crackle on the vessel reads as its cracks. After Ru and Longquan dipped celadon,
+  and the Ido bowls' kairagi.
+- **EYE CUP** (pattern 6, **the eye**: `vfx/eyecup.js`): Attic black-figure in the ware's colours (`blackfigure.js` WARE): the red clay
+  (0xc8643a) with the black (0x1c1410), added white and added red, and an eye placed on every part, staring: one on the chest, the
+  chest's stone its pupil; a mirrored pair on the back either side of the Lachrymato Bottle; one on the back of each hand; one on the
+  outside of each thigh; the black below the knees as a cup's foot, two lines reserved in it. On the trim, the black (a cup's lip and
+  handles); on the mask, a black-figure face, the painting's pale eyes in added white with the crown's blue iris (the Eye Cup cast's
+  eye, `foelook.js`), its marks in added red. Each eye: an almond of two arcs, outlined in the black with a line incised through it,
+  the iris rimmed and ringed, a pupil, a catchlight, a brow; every line fades under two pixels. After the Attic eye-cups (kylix type
+  A, c. 540 to 500 BC: Exekias's Dionysos cup) and the Gorgoneion of their tondos.
+
 ## 5. The rules each place keeps
 
 - **The glitch** (`vfx/glitch.js`, the owner: "lean into it"): an event's pulse with an end (the FOE showing itself, an ultimate, a mind
@@ -55,15 +75,36 @@ also sets gems with their real optics, hair finishes and skin tones.
 - **The data drain** (`vfx/datadrain.js`): polygons streaming into the bracelet, unlit, so it reads on white sand and in the dark.
 - **The night sky** lives in the dome's shader (`vfx/sky.js` NIGHT_GLSL): our own stars, each at least 1.5 px, turning once a game day;
   meteors every 25 to 70 s; the aurora at the Shore. No draw call, no program.
-- **The spirit press:** the soul colour is its only bright thing, shown as the bath, the bead and the hue ring, never written; it is the
-  vessel's Lachryma, so a new Courier looks exactly as made.
+- **The spirit press:** the soul colour is its only bright thing, shown as the soul bead, the drum's pool and the hue ring, never written;
+  it is the vessel's Lachryma, so a new Courier looks exactly as made. **The bath is neutral** (SOUL-ALCHEMY.md 4.4, Albers): black
+  Lachryma over a dished clay floor, pale over the grey centre and black at the lip, never lit in the soul colour. Every colour on it is
+  `wheelColour` (`vfx/wheelcolour.js`, Oklab) and self-lit through `selfLit` (`vfx/selflit.js`, the tone curve and grade undone), so a
+  tile shows its glaze exactly and the bead dead on it vanishes. Distinctions are carried four ways before colour: bearing and distance,
+  the seals' shapes, value and gloss, motion. **The surround is grey while you judge** (4.3): the press view eases the garden's sky,
+  haze and fog to the grey of their own lightness, and the HUD steps out but for the folded log. **Everything that answers is
+  physical** (4.12, 4.13): the lever's ball up or down and warming, the eye brightening, the press's lantern tall or guttering; a firing
+  is a hit-stop, a burning glass, a white kiln heat cooling to crazing and the tile shrinking a step; a refusal is a crawl, a break's
+  glint or a gutter, never a flash or a word. The hokora is the garden's palette in small: grey stone, plum-dark wood, a moss roof.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
 - **The garden** (Dual Hearts): pastel air tinted by your draught, a cloud sea below, toy planetoids (`vfx/garden/`); a feature wears its
-  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos).
+  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos). **The grounds the hand paints wear their phase, not their
+  feeling** (`vfx/garden/gardengrounds.js`): moss jade cushions, ash pale over embers, loam ochre clods and rootlets, slate silver-blue
+  cleft, silt blue-black and crazed. The feeling is only the accent (dew, embers, flecks, sheen, the gleam in a crack), so a painted
+  planetoid reads as ground first and mood second. Borders are height-blended (the higher one shows), never a smear across a cell.
+  **The water is the feeling, outright** (`vfx/garden/gardenwater.js`): Lachryma in its feeling's canon colour, dark where the light
+  goes in and glowing from inside as it deepens (and by night), the marbling's film in its veins and at its meniscus. Two feelings in
+  one pool are an agate, wedged along the marbling and never blended; opposites that meet are fair water, milky as nacre. Ground it
+  wets darkens and glosses for 20 real seconds, with caustics under the shallows. **The rain is your draught** (`gardenrain.js`): thin
+  streaks drawn toward the sky's pale, each falling to its own planetoid's heart, a ring where it lands, the sky greying under it.
+  **The plants are toys** (`gardenplants.js`): chunky moss cushions with fern sprigs, herb rosettes that bloom in desire's colour,
+  reeds with a cattail; lit by up-turned normals like the ground they grow from, shrinking away past 18 m so the ground carries the
+  green. **A cascade is a ribbon** (`gardencascade.js`): its feeling's colour scrolled down the fall, frayed white at the edges, spray
+  at the foot. **The bought four** (`boughtplanetoids.js`) each keep one idea: the Moon's craters, the Koi Pond's teal crown, the Drill
+  Yard's ring of posts, the Bone Bed's ribs.
 
 ## 6. The Courier's face
 
@@ -75,9 +116,10 @@ blink and look, the event map) comes back from `d4872d0` to drive it.
 
 | what | verdict |
 |---|---|
-| the Courier, the painted sky, the spell circles, the maker's pixel art, the Lantern Wisp | **ours** (the owner's) |
+| the Courier, the painted sky, the spell circles, the maker's pixel art, the Lantern Wisp, the god hand and the Pneuka Jar (their rigs, clips and paintings: `vfx/vessoulpaint.js`) | **ours** (the owner's) |
 | labradorite, filigree, damage looks, temper, bismuth, finishes, HUD ring, compass, vane, chest glazes | **ours** (made for the game) |
-| clapperjars, slip jelly, god hand, Pneuka Jar, Psygun (GLBs) | ours, origin to confirm |
+| the clapperjars' painting (`source_assets/clapperjar_base.png`, grey, tinted by each jar's colour: `vfx/greytint.js`) | **ours** (the owner's) |
+| clapperjars, slip jelly, Psygun (GLBs) | ours, origin to confirm |
 | **the five tools' models** (`tools/*/model.js`) | **placeholder: first for the owner's models** |
 | **the clay folk** (`npc/folk.js`) | **placeholder: second** |
 | chests and curios, Box things and lures, the Lockheart's wheel | placeholder |

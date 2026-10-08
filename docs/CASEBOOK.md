@@ -167,7 +167,6 @@ the rules before building in the same area; a rule a machine can check goes into
 64. **What stands on a surface stands on its normal.** Tilt it from up to the surface's normal under it (analytic where the surface
     is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
     by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
-
 65. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
     scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool). Taking
     down is idempotent: a second `dispose` does nothing.
@@ -184,18 +183,317 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
-72. **A line said on a state's edge needs hysteresis.** Where a state can flicker (brimming at sea, overflow after overflow), say it on
+72. **A material's `clone()` keeps its numbers, not its shader.** A Standard or Physical material's copy resets its defines to
+    `STANDARD` alone, and no copy keeps `onBeforeCompile` or `customProgramCacheKey`: a material dressed by a define (the rim) or a
+    hook (the grey tint) is cloned with what carries them over (`vfx/greytint.js` `cloneTinted`), or dressed again after, and the
+    copy's defines are read once headless.
+
+73. **A stretch cut from a lean clip is sampled, never cut by keys.** `AnimationUtils.subclip` keeps only the keys inside the stretch; a
+    lean export keeps few keys (a straight line is two), so a bone with none inside drops out of the held clip and falls to its rest
+    pose. Sample every frame of the stretch through each track's own interpolant (`RigClips.cut`), and test a held move against the
+    full clip at the same frames (the largest bone difference, the largest step at the seam).
+74. **A clip chosen by a state reads the whole of that state.** The catch's `held` is let go of the moment the Figment is drawn in, 0.45
+    s before it is bound: the Jar must read the look's `take` too, or its lid shuts and opens again for the gulp.
+75. **A chooser asks the phase, not only the name.** A move that is named is not a move that is playing: in its way out, or done, it is
+    not held, so wanting it again plays it again (`GodHandClips.choose`).
+76. **An outline grows with the bone that carries it.** The inverted hull's offset is added before skinning (render/outline.js), so a
+    bone that scales a piece open (a collapsed flare or sigil scaled a thousandfold) opens its outline a thousandfold too: a piece a
+    bone scales past its rest by more than a little is never outlined.
+77. **What waits to be mounted waits where it was left.** A phase that brings the rider to a thing (the skiff's mount) moves the rider
+    and leaves the thing; whatever drew the thing at the rider's own position in the other phases is told so.
+78. **A compile made between frames is made after an empty frame.** `compile` and `compileAsync` read the clipping state the last render
+    left, and an offscreen pass that clears the renderer's planes (the trail map's) leaves none until the next draw; a piece compiled
+    lazily renders an empty scene into the frame's own target first (as main.js's warm-up does), else its programs are built for no
+    planes and again, for the God Hand's one, at their first draw.
+79. **A table read round by index is fed numbers from its own range.** A lookup that wraps (a colour for each scale degree) aliases
+    anything wider: a seven-step scale read through five colours showed the "true" gold five steps off. Read it from the set it was
+    made for, or clamp, and say which.
+80. **A mark the player reads is read where the player sees it.** What a strike measures must be taken at the surface the crosshair
+    meets, not at a line through the thing (a crystal's axis): a look pitched down meets a column's skin higher than it passes
+    its axis, and the colour under the crosshair was a fret off. Measure the mechanic against the render, by a ray into the mesh.
+81. **A look in colours of its own owns its glow too.** The armour and the mask glow back their painting in the emissive, which every
+    other glaze sets to its own colour; a kiln pattern that paints a part in several colours gives each its own glow, and anything
+    else that borrows the emissive (the firing's kiln-orange) is looked at on it before it ships. What it does to the emissive is done
+    before the emissive map (`LIGHT_BEFORE`), never after: the light other code adds right behind the map (the cracks' Lachryma, the
+    mend's gold, `kintsugi.js`) is nobody's colour to multiply.
+82. **A mode never writes another mode's state to borrow its look.** A field one system keeps (the garden hand's `held`: the body it
+    holds) is set by that system alone; a pose wanted elsewhere is read from the borrower's own state by whoever draws it.
+83. **Parts that meet are placed in one frame.** A spout and its basin, a press and its bath: stood each on its own ground, a planetoid's
+    curve puts them a metre apart; stand them in the frame of the one that must be level, and give the other a footing.
+84. **The glow round a light is a falloff, never a low-poly sphere, and where it hangs on a surface it lies over it.** A sphere's silhouette is a hard
+    polygon at any opacity, and a camera-facing glow cut by the plane it hangs over is a straight edge: draw a soft radial sprite, and
+    with the depth test off (drawn after what it lights) wherever it sits within its own radius of a surface.
+85. **A fold the player did not choose never goes through the setter that keeps their choice.** A feature that folds a window while it is
+    up asks for the fold without keeping it (`log.setMini(v, false)`), so closing the tab mid-feature leaves their saved choice as it was.
+86. **A dressing laid on the ground ends at its own edge, never in a margin of its colour at zero height.** A bank of sand, a drift, a
+    stain that falls to nothing still shows its colour where it is flat; on a floor not its colour that margin is a pale square. Cut
+    it away along a wandering line (or fade it, if a program can be spared), and look at it on every floor it can stand on.
+87. **A canvas painted from a `THREE.Color` takes the colour's sRGB values.** `.r .g .b` are the renderer's linear working values: written
+    as CSS they paint far too dark. Use `getRGB(target, SRGBColorSpace)` or `getStyle()`, and shift a shade in sRGB (`getHSL` /
+    `setHSL` with `SRGBColorSpace`), where the eye judges it.
+88. **What is not drawn is not offered.** A thing hidden for a reason (a shut room's stele, a floor that is gone) is left out of what F
+    can take or read: the offer asks `visible` as well as the distance, or the interact chevron stands over a wall and the find is
+    made through it.
+89. **A skipped call leaves its work owed.** A throttle that drops every other call (a counter's parity, a cooldown) drops whoever
+    lands on the skip, the same one each time when the callers come in a fixed order, and a caller that clears its own flag first never
+    asks again. Make the work cheap enough to do at every call (redraw only what changed), or keep the debt per thing and clear it when
+    the work is done.
+90. **What lies on a surface is drawn on that surface's own mesh.** A layer over the ground (water, a film, a decal that follows it) is
+    built on the ground's vertices and triangles, lifted along them, so the two can never cross between vertices; a mesh of its own,
+    coarser or finer, pokes through or hides where they disagree. Its edge is cut by a value interpolated across those triangles (a
+    depth), never by dropping whole triangles.
+91. **What stands on a surface listens for the surface.** Anything placed on ground that can move (plants on the clay, a marker on the
+    water) is placed again when the ground's version changes, not only when its own state does; test it by moving the ground under it
+    and measuring the gap.
+92. **An instance never drawn has nothing to normalize.** A pooled instance's unset attributes are zeros, and `normalize(vec3(0))` is NaN
+    in a vertex shader: what a GPU does with a NaN position is undefined (SwiftShader drops the triangle; another driver need not). Guard the
+    length (or move the dead instance outside the clip volume) before it is divided by; read every pooled shader for what its zeros do.
+93. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
+    and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
+    `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
+94. **A line said on a state's edge needs hysteresis.** Where a state can flicker (brimming at sea, overflow after overflow), say it on
     entering and say its end only after it has lapsed a while; a flicker is one spell, never a pair of lines each time.
-73. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
+95. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
     ship is not what the cursor means; the pick starts past the shooter.
-74. **A rule's effect is applied where the rule lives, once.** When a pure module owns a rule (trip.js's mend on arriving at an
+96. **The scene is compiled once, by the boot's warm-up.** A module that compiles the whole scene itself while the game is still being
+    built compiles every material in it for the state of that moment (no cutaway plane, three lamps, flat shading), programs no frame
+    draws with, and each lives as long as its material. `compile` takes hidden objects too and the prime draw shows them, so a look made
+    at boot needs no warm-up of its own; a look made later compiles its own group, after an empty frame (78).
+97. **A rule's effect is applied where the rule lives, once.** When a pure module owns a rule (trip.js's mend on arriving at an
     encounter), the world calls it and does not apply the same number again on its own; the world acts only on what the rule asks.
-75. **A turned frame turns about the rider, not the track.** A figure that rolls or pitches the rail turns about the heartline (where
+98. **A turned frame turns about the rider, not the track.** A figure that rolls or pitches the rail turns about the heartline (where
     the ship rides), or the ship is swung through the sea's surface.
-76. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
+99. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
     copied (last frame's), the two disagree at any discontinuity; hand all of it the same way.
 
 ## Cases
+
+### 2026-10-08 · The compass, the vane's marks and the pendulum compiled their programs in play (found by the program audit, Calissa)
+- **Seen (headless, programs counted):** showing the wire compass, the Dreamvane's marks and the Crucibelle's pendulum for the first time
+  compiled 3 programs (155 to 158): a hitch the first time the Dreamvane is worn or the Crucibelle drawn.
+- **Cause:** all three were made lazily on the first tick after the warm-up (`main.js`, `game.wireCompass ||= ...`), so the warm-up
+  never saw their materials.
+- **Fix:** they are made before the warm-up and shown for its compile; their own update hides them on the first frame (`main.js`).
+  Measured: 158 at boot, 158 after showing them; nothing compiles in play.
+- **Rule:** 17 and 18 (a look made on first need is made at boot and compiled with the rest).
+
+### 2026-10-08 · Thirteen shader programs compiled for a frame that is never drawn (perf over the program budget, Calissa's program diet)
+- **Seen:** `npm run perf` on Calissa's branch read 168, 170 and 170 programs against the budget of 164. Listing every live program with
+  its cache key, thirteen (ids 2 to 14, the first compiled) had no clipping plane and three point lights in their keys (four of them
+  flat shading too), while every program the frames use has the God Hand's one plane, the light budget's eight lamps and the present's
+  smooth shading: the same looks a second time (the particles, the pots and their shards, the bismuth, a beam, and the rave's own
+  beams, ball, wire and specks).
+- **Cause:** `Rave.warm` (vfx/rave.js), called by main.js as the rave was made, compiled the whole scene with `renderer.compile` long
+  before the God Hand installed its plane (and before the lamps and the shading were set); a material keeps every program it has been
+  compiled with, so all thirteen lived on unused. Its own purpose was already met: the warm-up compiles hidden objects too, and the prime
+  draw shows them.
+- **Fix:** the rave has no warm-up of its own (main.js no longer calls one); the boot's warm-up compiles and draws it with everything
+  else. Measured after (the same listing): the thirteen are gone (no program is left without the plane but the shadow's depth
+  programs, which never clip, and one screen pass compiled in play), the rave's beams, ball, wire, pools and specks each still have
+  their program at boot, with the plane and the eight lamps, and perf's programs compiled after the warm-up stay at 2, neither the rave's.
+- **Rule:** 96.
+
+### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
+- **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
+  while the sand under it did not: measured against the drawn sand at the dig on a 21.6 degree slope, its rim stood 4.6 cm above it at
+  one edge and 3.3 cm under it at the other, so a third of the painted face was covered and the rest hung over the slope. At the
+  24.5 degree dig the sand's height function stands 15 cm above the sand that is drawn (and walked on), so the veiled mound hung in the air
+  and jumped down to the ground when the pick lifted it.
+- **Cause:** the dig put the ostracon at the function's height (`heightAt`) and turned it about the world's up only (CASEBOOK 64 said so).
+- **Fix:** `build()` and `drop()` take the point and the normal from a ray down onto the sand (the one `drop` already cast), and
+  `Ostracon.lieOn(normal, yaw)` turns the look's up to the normal (never past 40 degrees); the veiled look, the one rising and the one
+  lying all use it. Measured after on the three steepest digs: the look's origin 0.0 cm over the drawn sand, its rim under it 0.0 cm, over
+  it 2.9 cm at most (the ostracon's own curve is 1.6 cm of that); the face shows whole.
+- **Rule:** 64 (a look that lies on a surface is given the surface's normal and height by whoever places it).
+
+### 2026-10-08 · The sealed room's stele was drawn inside its shut walls and offered to F through the back wall (found in review)
+- **Seen:** with the sealed room's door shut, `Ostraca.near()` offered the stele from outside the back wall: it stands 0.8 m inside a
+  0.4 m wall and the reach is 2.2 m, so the chevron stood over the wall and `stele.read` fired without the fork ever ringing in the
+  door (measured: `near()` from 1.9 m behind the stele returned it). Its 9,000 triangles and shadow calls were drawn for no one.
+- **Cause:** the stele was always drawn, and `near()` asked only the distance; the guard on `look.group.visible` (made for the cavern's
+  stele) had nothing to read for the sealed one.
+- **Fix:** the sealed stele is hidden while the door is shut and shown by `open()` (and at load, when the door was opened before);
+  `near()` offers a stele only while its look is drawn. Measured after: shut, `near()` from the same spot returns nothing; open, the
+  stele inside is offered.
+- **Rule:** 88.
+
+### 2026-10-08 · A stele's sand bank was a pale square on the great cavern's stone (found headless, swapping in the ostraca's looks)
+- **Seen:** the stele in the great cavern's upper ring stood in a bright rectangle 1.8 m by 1.4 m on the gallery's dark stone
+  (the builder's headless shot); in the Dunes it never showed, sand on sand.
+- **Cause:** the bank (`vfx/ostracon.js` `bankGeometry`) is a plane whose height falls to nothing toward its edge, but every vertex kept
+  the sand's colour at full strength: its flat margin is sand-coloured floor laid over whatever floor it stands on.
+- **Fix:** the triangles of the margin are cut away where the bank is under 4 to 12 mm high (the line wandering by noise), so it ends
+  as a drift on the gallery's stone and on the Dunes' sand alike, in the mound's own sand material. (A vertex-alpha fade was tried
+  first: it looked softer but cost a transparent shader program, and the Dunes stood at the 160-program budget.)
+- **Rule:** 86.
+
+### 2026-10-08 · The plaster patch was painted far too dark (found headless, before it shipped)
+- **Seen:** the first plaster patch on the workshop's west wall rendered near black (measured RGB 45, 0, 10 against the wall's 125, 32, 22).
+- **Cause:** its canvas was painted from `THREE.Color` channels read raw (`c.r * 255`): with colour management on those are linear
+  values, so every colour went onto the canvas as if much darker, and the HSL shifts were made in linear space too.
+- **Fix:** `vfx/plasterpatch.js` reads `getRGB(target, SRGBColorSpace)` and shifts shades with `getHSL`/`setHSL` in `SRGBColorSpace`;
+  measured after: the skim 129, 37, 23 against the wall's 125, 32, 22, a shade off as meant.
+- **Rule:** 87.
+
+### 2026-10-08 · A burning light showed as a hard polygon, then as a glow cut straight (found in the firing's frames, review of the press)
+- **Seen:** at a firing the attribute's light hung over its tile, and a pale flat 12-sided disc lay round the tile, its edges straight; in
+  a true firing, after the glow was softened, it was cut along a straight line across the bath.
+- **Cause:** the light's glow (`halo` in the code) was an additive sphere of 12 by 8 segments at full opacity (a polygon from above, grown 1.6 times at the
+  burn); a soft camera-facing sprite in its place was cut by the bath's and the kerb's planes where the light dives to 4 cm over them.
+- **Fix:** the glow is a soft radial sprite (`vfx/alchemy/huering.js`), drawn after the marks and with the depth test off while its light
+  is over the kerb or the bath (a seated, lifted or diving light); the core sphere is 20 by 14.
+- **Rule:** 84.
+
+### 2026-10-08 · Opening the press view wrote the player's log fold to their saved choice (found reading the review, Calissa)
+- **Seen:** reading `vfx/alchemy/presslook.js`: it folded the log to its tab strip when the view opened and unfolded it for 4 seconds for
+  every line said; `setMini` keeps what it is given in the saved choice each time, so a tab closed in the press view left the log folded
+  at the next boot, and a line said while they typed could fold it under them.
+- **Cause:** the setter is the player's own (the fold button, the backslash key) and kept its argument unconditionally.
+- **Fix:** `setMini(v, keep = true)` (`feedback/gamelog.js`, a small crossing): the press look folds without keeping, restores what it found
+  when the view is left, and holds the log open while they type.
+- **Rule:** 85.
+
+### 2026-10-08 · Leaving the press view with a lump in the hand threw on the next frame (found headless, Calissa)
+- **Seen:** with a lump carried at the spirit press, F (or Esc, or W A S D) left the press view, and the next frame the garden's grab
+  threw `Cannot read properties of undefined (reading 'radius')`; reproduced headless by setting what the station set and leaving.
+- **Cause:** the station wrote its carry into the garden hand's own `held` (`hand.held = !!this.carry`, a boolean where the hand keeps
+  the body it holds) to get a pinching pose, and the leave returned before the line that set it back; the garden's grab then read
+  `held.body.radius` off `true`. The same flag also sent the hand to the last thing it had held and played the garden's grab clip.
+- **Fix:** the station no longer touches the hand's state: the hand's clips read the station's own `carry`, `hover`, `lever` and
+  `walk` (`godhand/godhandclips.js` `atPress`), and where the hand stands is the press's look (`vfx/alchemy/presslook.js` `handPoint`).
+- **Rule:** 82.
+
+### 2026-10-08 · The spirit press stood a metre under its bath, its drum inside the basin's plinth (Calissa, from the side renders)
+- **Seen:** from the side the press's drum was hidden behind the basin's plinth, its front lip 0.28 m under the liquid and 3.22 m from
+  the centre, inside the ware ring (measured headless), so no spout could pour from it into the bath.
+- **Cause:** the bath was laid level over the highest ground under its footprint, the press stood on the ground 4.35 m north, and on
+  the Athanor (10 m across) the ground falls 1.06 m in that distance: two parts that work together were each placed on their own ground.
+- **Fix:** the press stands in the bath's own frame, 4.35 m north and 5 cm under the liquid, on **the press's footing** (a round of the
+  basin's stone with its own skirt into the ground, merged into the basin's mesh: `vfx/alchemy/basin.js` `FOOTING`); the root spout
+  then reaches from the drum's lip over the ware ring and the kerb, and the thread falls into the bath at north.
+- **Rule:** 83.
+
+### 2026-10-08 · A cracked vessel in EYE CUP or JELLY-CROWN lost the violet thread in its cracks, and its mending gold read orange and green (Calissa, the reviewer of the Great Slip Jelly's glazes)
+- **Seen (headless, cracks 0.85 on every region, then mending, four looks side by side: terracotta, guan, EYE CUP, JELLY-CROWN):**
+  terracotta's and guan's cracks carry a bright violet thread of Lachryma and, mending, a cream-gold line; EYE CUP's threads were a
+  faint orange scratch (none at all over its black) and its gold orange, JELLY-CROWN's a dull green and its gold green.
+- **Cause (measured):** `kintsugi.js` adds the cracks' Lachryma and the mend's gold to `totalEmissiveRadiance` straight after
+  `#include <emissivemap_fragment>`, and the glaze's `ownLight` multiply (`totalEmissiveRadiance *= finEmC`, put there for the firing)
+  came after it in the same program, so it multiplied the violet by the clay's or the celadon's colour and the black's black.
+- **Fix:** the multiply moved ahead of the emissive map (`LIGHT_BEFORE` in `vfx/finish.js`): it scales only what the map then
+  multiplies (the painting's own glow and the firing's), commutatively, so the firing frames are unchanged and the cracks' light is
+  added whole behind it. Both now read as terracotta's and guan's.
+- **Rule:** 81 (amended).
+
+### 2026-10-08 · Fired in EYE CUP or JELLY-CROWN, the vessel barely warmed where yohen glowed kiln-orange (Calissa, the Great Slip Jelly's glazes)
+- **Seen (headless, before it shipped):** the firing's frames (vessel.fireT 2.5, 1.3, 0.25, the workshop): yohen's body kiln-orange
+  cooling to its black; EYE CUP's and JELLY-CROWN's a faint warm tint, the eye's black and the mask not at all.
+- **Cause (measured):** the armour and the mask glow back their painting (`character.js` PAINT_LIGHT 0.45: the emissive times the
+  painting), and a glaze sets that emissive to its colour. A pattern in colours of its own (the eye's black, white and blue; the dip's
+  slip under the celadon) would glow the glaze's colour over them (the black lit red in the shade), so those two were given a white
+  emissive, multiplied in the shader by the colour each point is (`finEmC`). That multiplied the firing's orange too: orange times the
+  clay or the green is a dim glow, times the black none.
+- **Fix:** `vfx/finish.js` reads the firing's share from the emissive's own hue (1 - b/r: 0.99 at the kiln-orange the firing starts
+  from, 0 at white) and lets that share through unmultiplied: at rest each colour glows its own, firing the whole body glows orange and
+  cools into it. The three frames now read as yohen's (`ownLight` in finish.js, `vessel.js` dress).
+- **Rule:** 81.
+
+### 2026-10-08 · The fret under the crosshair was not always the fret the strike read (the crystal frets' review)
+- **Seen (the reviewer, by ray into the mesh, 20 000 looks at three formations):** a look at a fret near its edge sounded the next fret
+  over: 15 in 100 over all poses, 3 to 4 in 100 at the camera's own play distance (7 m out, 1.5 m up), 50 to 70 in 100 looking steeply
+  down (4 m up, 2 m out).
+- **Cause (measured):** `aimHeight` read the height where the look passes the formation's axis, but the frets are drawn on its skin,
+  and the look meets the skin before the axis: a look pitched down by `a` meets the skin `r tan a` higher (the stave's half width is 0.3
+  to 0.37 m, a fret is 0.4 to 0.67 m).
+- **Fix:** `aimHeight` takes the height where the look meets the stave's near side (half its width across the look, tapering over the
+  point), by one correction. Measured the same way: 5.7 in 100 over all poses, 1 to 4 in 100 at play distance; the rest is the six-sided
+  prism's facets, the lean and the lesser spires in front. With the game's own camera, 30 of 30 looks 8 to 22 cm from a fret's edge read
+  the colour they showed (the old reading missed at 1 cm).
+- **Rule:** 80.
+
+### 2026-10-08 · A wrong strike at a crystal's point showed gold, the colour of the true note (Calissa, the crystal frets)
+- **Seen (Calissa's survey of the crystals):** aiming at the point of a formation (formation 3, its sweet spot at 0.316 of its
+  height) sounded a wrong note and burst in gold, the colour `music/tone.js` keeps for "the home note: a crystal struck true".
+- **Cause (measured):** `crystaltuning.js` stepped through the seven degrees of the major scale (`deg` from -7 to 7, a step a seventh
+  of nine tenths of the height from a hidden, random spot), and `crystals.js` coloured the burst `degreeColor(deg)`, which wraps round
+  the Crucibelle's five colours: deg 5 read as 0. At the point of formation 3, deg = round((1 - 0.316) x 7) = 5, so gold. 9 of the 18
+  formations could reach +-5 at one end (3, 5, 6, 10, 11, 13 to 16, by their sweet heights).
+- **Fix:** the owner's frets (2026-10-08): five fixed frets on every stave (`fretAt(u)`, a fifth of the span each), fret k sounding the
+  Crucibelle's k-th note, the sweet spot a fret (`spot.fret`, one draw, as the height was, so every formation and the seed's sequence
+  are as they were); `deg` is now `fret - spot.fret`, -4 to 4; the burst takes `degreeColor(fret)`, 0 to 4, which never wraps, so gold
+  is the root fret, the foot. The fork's reference burst is neutral (the fork's own light): in the sweet fret's colour it would show the
+  answer. Measured headless (20 checks, game noon and midnight): every fret struck sounds itself (fret, `pitchOff`, key + 12 + SCALE[k]),
+  each fret's colour within 5 degrees of hue of its note's at noon, the sweet fret from the spot's bearing opens it.
+- **Rule:** 79.
+
+### 2026-10-08 · The Solar Skiff's hull and cloth compiled twice, the second at their first draw (Calissa's review of the skiff's model)
+- **Seen (headless, programs counted before and after the first summon):** the model's load compiled its programs (`compileAsync`, off the
+  main thread, as intended), and the first frames that drew it built `Skiff_Hull` and `Skiff_Cloth` again: 3 programs new at the first
+  draw, two of them the PBR shaders with eight point lights and the sun's shadow, a stall the load was written to avoid.
+- **Cause:** the two programs differed in one number of the cache key, `numClippingPlanes` (0, then 1). `compile` reads the clipping
+  state the last render left; the trail map's pass (`world/ground/trailmap.js`) sets the renderer's planes to none, renders, and puts
+  them back without telling the clipping state, which holds zero until the next draw; the God Hand's cutaway plane is always installed,
+  so every real draw has one. main.js's warm-up already renders an empty frame first for this (its comment says so); the skiff's lazy
+  load did not. (A page that draws between its ticks, as a player's does, leaves one plane; the manual mode the sweeps, the stress test
+  and `npm run perf` run in does not, and counted the extra programs.)
+- **Fix:** `Skiff.load` renders an empty scene into the post target before `compileAsync` (courier/skiff/boat.js). Programs new at the
+  first summon draw: 3 to 1 (a depth program), and no duplicate of the hull or the cloth.
+- **Rule:** 78.
+
+### 2026-10-08 · The summon's sigil was cream on the noon sand and could not be seen (Calissa's review of the skiff's model)
+- **Seen (headless, from above, game noon):** the ring of marks the boat rises out of was a faint pattern of paler arcs on the sand; at
+  play distance there was no ring.
+- **Cause:** the sigil is drawn with the Courier's energy (`CourierEnergy`: cream, a warm glow at 0.3), which on lit sand is the sand's
+  own colour.
+- **Fix:** the energy burns at 1.7 above its rest while the ring is out (frames 4 to 25 of `Skiff_Summon`, then eased off by 0.9 s)
+  (courier/skiff/boat.js posePhase): the marks stand out white, the engine and the mast light with them.
+- **Rule:** none new (a glow is judged in the light it will be seen in, at noon as at night).
+
+### 2026-10-08 · The Solar Skiff's flare drew a black wall across the screen (Calissa, the skiff's model)
+- **Seen (headless, the owner's model on the board, Shift held):** a black quad tens of metres wide over the view from the flare's
+  start to its end.
+- **Cause:** the flare and the summon's sigil are collapsed to a point in the .blend and opened by their bones scaled 1000 to 1264
+  times. The outline shell (render/outline.js) pushes each vertex out along its normal *before* skinning, so the bone scaled the
+  outline's thickness by the same thousand: a shell 10 to 30 m across round the engine. (The sigil's went straight up, out of view.)
+- **Fix:** the Lachryma (`CourierEnergy`: the engine, the finial, the inner mast, the flare and the sigil) is not outlined, as the
+  Courier's own is not (courier/skiff/boat.js); the hull and the fittings keep theirs (their bones scale 0.001 to 1.16).
+- **Rule:** 76.
+
+### 2026-10-08 · The first summon in the Dunes rose with no board for a quarter second (Calissa, the skiff's model)
+- **Seen (headless, the first Y after arriving in the Dunes):** the rider's summon played with the board hidden until 0.2 s in; every
+  later summon showed it from its first frame.
+- **Cause:** the skiff's group is a top-level object with no zone of its own; the zones (render/zones.js) placed it where it waited
+  hidden, at the origin, in the workshop, and kept it hidden from the Dunes until their next pass, a quarter second later.
+- **Fix:** the group is `zoneFree` (courier/skiff/boat.js): the tech shows it only in the Dunes and hides it everywhere else.
+- **Rule:** 77's note: a thing that is moved into place when it is wanted says how the zones should see it.
+
+### 2026-10-08 · At every mount the parked skiff jumped to the rider and sank into the sand (Calissa, the skiff's model)
+- **Seen (headless, F at a parked board):** in the mount's first frame the board left where it hovered, stood under the rider 0.9 m
+  away with its deck at the sand (0.6 m down), then slid back and rose over 0.35 s.
+- **Cause:** skiff.js tick placed the group at the Courier's own position in every phase but the dismount, the bail and the getting
+  up; the mount moves the Courier from where they stood to the board and up (stepPhase), so the board went with them from the
+  first frame. (The old procedural board did the same; the owner's model, 4.5 m tall, made it plain.)
+- **Fix:** in the mount the board stays at its parked place and heading; the rider is placed from the Courier's position onto the
+  deck's spot, the spot's offset eased in with the step (courier/skiff/skiff.js tick).
+- **Rule:** 77.
+
+### 2026-10-08 · The god hand's pointing finger fell open in its hold, it stayed at a clip's last frame when wanted again, and the Jar shut its lid before it swallowed (Calissa's review)
+- **Seen (headless, after the clips went in):** a held move (the hand's `point` while Sunder is held, its `scoop`, the Jar's `hop`) is
+  played in to a held stretch cut from the clip. In the page the ring finger of `point` stepped 102 degrees in one frame at the seam
+  into its hold (the cut clip had 9 of the clip's 20 tracks), and `scoop` lost 7: the hand showed an open claw, not a point. In a
+  catch the Jar was `open` while the Figment struggled, `idle` (lid shut) for the 0.45 s it was drawn down the tether, then `gulp`
+  from its first frame. And a held move let go of (Sunder not cast, a carve stroke ended) and wanted again inside its 0.4 s way out
+  stayed at its clip's last frame for as long as it was wanted (`point/once@44`, `scoop/once@54`).
+- **Cause:** `RigClips.cut` used `AnimationUtils.subclip`, which keeps the keys inside the stretch and nothing else, and the clips are
+  lean (a straight run of poses is two keys): a bone with no key inside the stretch is dropped from the cut clip, and the mixer puts a
+  bone no action drives back at its rest pose. The Jar's chooser read `catch.held`, which `HandCatch.hold` clears when the draw-in
+  begins, not the look's `take`. The hand's chooser (`GodHandClips.choose`) returned at once when the move wanted was the move
+  named, though that move was in its way out or done, and a done move is not replayed without `again`.
+- **Fix:** `cut` samples every frame of the stretch through each track's own interpolant (all 20 tracks, held pose within 2 degrees
+  of the full clip's at every frame, no step at the seam); the Jar's chooser keeps `open` while the look is taking, so the gulp enters
+  at frame 7 as its `from` meant; the hand's chooser returns only for a move in its loop or its hold, and plays one that is in its
+  way out or done again.
+- **Rule:** 73, 74 and 75.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame
@@ -212,6 +510,90 @@ the rules before building in the same area; a rule a machine can check goes into
   the cracks are skinned to the Jar (`vfx/crackskin.js`: worst 0.55 cm off the posed surface over every clip); the garden's hop
   and landing go to the Jar's clips (`vfx/garden/jarhop.js`), the spring kept for the workbench's stand-in.
 - **Rule:** 69, and 58 widened.
+### 2026-10-08 · The clapperjars' pupils sat on the rim of their white disc eyes (Calissa's review of the owner's texture)
+- **Seen:** with the grey texture on, the disc eyes are white (the painting's white tab) and each drawn pupil stood at its disc's inner
+  edge: the jar looked cross-eyed (the face at 0.9 m). Before the texture the discs were terracotta and the offset was not seen.
+- **Cause (measured):** the pupils in `Clappers.spawn` were at x ±0.055 in the eyes bone's space. The disc eyes (the vertices weighted
+  to that bone) are flat in that bone's x-z plane, 0.05 across, spanning x 0.056 to 0.106 on each side, centred at ±0.081. The
+  pupils were placed for the drawn eyes of an earlier model and left where they were when the owner's discs came (2026-10-06).
+- **Fix:** the pupils at x ±0.081, scaled 0.7 across and along the disc (0.039 wide, inside the 0.05 disc): a ring of white round each.
+- **Rule:** none new: a part drawn over a model's feature is placed by the measured centre of that feature in the same bone's space.
+
+### 2026-10-08 · Every clapperjar had lost its rim (Calissa, putting on the owner's texture)
+- **Seen:** measured, not seen: the shared clapperjar material carried `RIM 0.256` (render/toon.js `addRim`, the Courier's thin
+  Lachryma rim), and every jar in the workshop drew with `{ STANDARD: '' }` alone. The owner's grey texture would have lost its tint
+  the same way (read from three.js, not run: the copy keeps the map but not the hook, so each jar would draw a plain multiply).
+- **Cause (measured):** `Clappers.spawn` gives each jar `this.mat.clone()` (its own colour, for the kiln's heat). three.js's
+  `MeshStandardMaterial.copy` sets `defines = { STANDARD: '' }` after copying the rest, and `Material.copy` never copies
+  `onBeforeCompile` or `customProgramCacheKey`. The colour, roughness and flat shading came across; the rim never did.
+- **Fix:** each jar's material is `cloneTinted(this.mat)` (`vfx/greytint.js`): the clone with the defines and the hook carried over.
+  Headless, all six jars: `{ STANDARD, RIM: 0.256, GREY_REF: 0.1329 }`, the texture on each, one program for all six.
+- **Rule:** 72.
+
+### 2026-10-08 · The garden's water was two programs, and the perf budget broke (Calissa, the review of her garden look)
+- **Seen (`npm run perf` on Calissa's branch with `art-garden-water-r` merged, against her branch alone):** programs 159 / 162 / 162 (workshop /
+  dunes / well) became 165 / 168 / 168 where the garden's work was reckoned at four more; the budget is 164.
+- **Cause (measured, the warm-up's programs listed by name):** six new programs, not four or five: the grounds, the rain, the plants, the
+  cascade and the water **twice**. The two water programs differ in one bit of their cache key (`flipSided`, 5123 against 1027): the water is
+  transparent and double-sided, which three.js draws as a back-face pass and a front-face pass, a program each.
+- **Fix:** `forceSinglePass: true` on the water's and the cascade's materials (`vfx/garden/gardenwater.js`, `gardencascade.js`): one pass, one
+  program, and nothing drawn differently (a sheet of water and a ribbon have no second layer to order; the pond looks the same in the
+  renders before and after). Boot is 158 programs on this branch (it was 159). The garden's looks are still five programs (the grounds, the
+  water, the rain, the plants, the cascade), each parked in the warm-up so that nothing compiles on entering, pouring or the first cascade;
+  the budget has to carry them (the handoff to Petra says by how much).
+- **Rule:** 93.
+
+### 2026-10-08 · The garden's rain rings were NaN until each was first laid (Calissa, the review of her garden look)
+- **Seen (reading `vfx/garden/gardenrain.js`, then the shader's arithmetic by hand):** the pool of 360 rings starts with `iB` (the ring's
+  up) at zero, and the vertex shader took `normalize(iB.xyz)` for every ring, laid or not.
+- **Cause:** `normalize(vec3(0))` is NaN; the cross products and `wp = iA.xyz + (t * aQ.x + b * aQ.y) * s` carried it (`NaN * -0` is NaN, so
+  `on = 0` did not save it), so every unused ring had NaN corners. SwiftShader drops such a triangle; the spec leaves what a NaN corner
+  does undefined, so another driver might draw it. The streaks were safe (a dead one is moved to its head by `if (live < 0.5) wp = head`).
+- **Fix:** the ring's up is `iB.xyz * inversesqrt(nl)` only when its length is above 1e-6 and straight up otherwise, its age divides by
+  `max(life, 0.001)` and `on` also needs a life of 0 or more. SwiftShader never showed the fault (it drops the triangle), so it was found by
+  reading, and the rain's renders after the change were looked at (the rings and streaks are unchanged).
+- **Rule:** 92.
+
+### 2026-10-08 · The garden's tufts floated after a stroke, and the cap dropped the crown first (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** a pull or press under grown plants left their tufts hanging in the air or sunk in the
+  clay until the green next changed; with more than 3,000 planted cells, the Dantian's crown lost its tufts first.
+- **Cause (read, then measured):** `plants.js` redrew a planetoid's tufts only when its own grid changed (`dirty`); `realm.reshape`
+  never told it the clay had moved. The cap filled in cell order from the south pole. Measured with the new look's own check before it
+  follows: 10 of 239 plants more than 2 cm over their ground after a 6-pull, 3-press stroke, the worst 0.137 m.
+- **Fix:** the plants' look (`vfx/garden/gardenplants.js`) keys on each planted planetoid's clay version too, and is placed again
+  within 0.1 real seconds (the debt kept: rule 89), nearest the eye first. After the same stroke: 0 of 239 over their ground (the worst
+  2.5 cm under, its foot let down by the slope: rule 64).
+- **Rule:** 91.
+
+### 2026-10-08 · The garden's water had a hole at each pole, streaks near the crown, and compiled on the first pour (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08, `03-water-standin.png`; Petra's note, 2026-10-07):** broken white streaks in water near
+  the Dantian's crown; no water within half a metre of a pole; the first pour hitched while the water's program compiled; and the
+  water hid under the planetoid wherever the planetoid's mesh was coarser than the clay.
+- **Cause:** the stand-in (`watermesh.js`) was its own latitude-longitude sphere on the clay's grid: its cells near the crown were
+  slivers (0.2 by 1 m at 80 degrees), its quads stopped a row short of each pole, it drew only triangles wet at all three corners (so
+  the shore stepped cell by cell), and it was made on the first pour, after the warm-up (rule 18).
+- **Fix:** the water's look (`vfx/garden/gardenwater.js`) is drawn on the planetoid's own vertices (the shared icosphere the ground is
+  drawn on), each at the drawn ground plus the water's depth plus 1 cm, a lake level to its bank; triangles with a wet corner are
+  drawn and the shore is cut by the depth interpolated across them (5 mm, fading in to 6 cm), so the water always stands 1.5 cm or
+  more over the ground where it shows (rule 1); one material for every planetoid, parked in the warm-up. Measured headless on the
+  Dantian (four pits, a run down a hill): 0 drawn triangles dry at every corner, 0 wet vertices under their ground (the least 1.5 cm
+  over), 0 programs compiled on entering or pouring; two frames 1/60 s apart with the camera still flip 0 to 10 pixels of 368,640,
+  and a 4 mm camera move flips no more with the water than without it.
+- **Rule:** 90 (and 1, 18).
+
+### 2026-10-08 · The garden's ground worn by its water stayed drawn as it was on every other planetoid (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** with two planetoids eroding at once, one of them kept its old drawn ground until the
+  next stroke ended on it; the Jar stands on the clay (`radiusAt`), so it stood off the ground it was drawn on.
+- **Cause (measured, this build, main's `reshape` put back in the page):** `realm.reshape` skipped every other call that was not `now`
+  on one counter (`shapeT`) shared by every planetoid, the hand's strokes and erosion's look tick; the water's look tick clears each
+  planetoid's `eroded` flag and then calls `reshape` for it, in site order. Three planetoids worn by 0.3 m in one tick: the Dantian and
+  the Athanor drawn 0.299 m off their clay, the Terraces right; the next tick the other way round. The skip was there because the
+  redraw cost a full `toLook` (heightAt at every vertex, all normals: 4.5 to 6 ms at the clay's fineness).
+- **Fix:** the look keeps a map onto the clay's grid and redraws only the cells that changed since it last looked
+  (vfx/garden/planetoidmesh.js `refreshFromClay`, through `Clay.toLook`): a brush tick in the page 0.1 to 0.3 ms at 3 m, 0.8 to 1.8 ms at
+  12 m (p50), so `reshape` runs at every call and the skip is gone (world/garden/realm.js). The same three planetoids, three rounds:
+  every one within 2.6 micrometres of its clay after each tick.
+- **Rule:** 89.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
@@ -962,14 +1344,14 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** brimming lasted 2 real seconds after each overflow and its end was said at once; at sea absorbed shots overflow the pool
   every few seconds, so each gap said "You settle." and the next shot "You are brimming." again.
 - **Fix:** courier/mind.js says "brimming" once a spell and "You settle." only after 6 real seconds with no overflow.
-- **Rule:** 72.
+- **Rule:** 94.
 
 ### 2026-10-08 · The rail's gun aimed back at the camera when a foe passed close by it (v119; found by scripts/railaimtest.mjs)
 - **Seen:** in a free view the far reticle left the cursor by up to 0.13 of the screen for a frame or two, twice a crossing.
 - **Cause:** the aim takes the first foe the cursor's ray crosses; a big foe passing beside the camera was crossed in front of the ship,
   so the aim point lay between the camera and the ship and the gun pointed back at it.
 - **Fix:** only a foe the ray meets 2 m or more beyond the ship's nose is picked. Measured: worst 0.007 of the screen through a crossing.
-- **Rule:** 73.
+- **Rule:** 95.
 
 ### 2026-10-08 · An encounter at sea mended the hull twice (v120; found by Dovina reading triprun.js)
 - **Seen:** not in play: read in the code. An encounter would give back 6 of the hull where the rule says 3.
@@ -977,7 +1359,7 @@ the rules before building in the same area; a rule a machine can check goes into
   as the leg closed: the world applied a rule the pure module already applies.
 - **Fix:** the mend in `offer()` dropped; the choice is now Dovina's `apply(state, id, choice, ctx)` and the world does only its asks
   (triprun.js `act`). Checked by scripts/triptest.mjs (an encounter sailed, each ask done).
-- **Rule:** 74.
+- **Rule:** 97.
 
 ### 2026-10-08 · A vertical loop showed one frame upside down at each quarter (found by scripts/railpathtest.mjs)
 - **Seen:** the camera's up against the rail's up read -0.999 for one frame of each turn; every other frame 0.999.
@@ -986,7 +1368,7 @@ the rules before building in the same area; a rule a machine can check goes into
   flips its basis by half a turn, and the roll that undoes it arrived a frame late.
 - **Fix:** the stage writes the roll into `player.camShot` as it sets the shot (stage.js `camera`). Measured after: 0.999 at every
   frame of every figure.
-- **Rule:** 76.
+- **Rule:** 99.
 
 ### 2026-10-08 · The corkscrew took the ship under the sea at its middle (found in a screenshot, before it shipped)
 - **Seen:** at the corkscrew's middle the screenshot showed only sky: the camera and the ship were under the crude, its surface
@@ -995,4 +1377,4 @@ the rules before building in the same area; a rule a machine can check goes into
   upside down it was 3 m under the surface.
 - **Fix:** each figure turns about the heartline, CRUISE up the frame (railpath.js `heart`). Measured after: the ship 3 m above the
   sea through every figure (scripts/railpathtest.mjs).
-- **Rule:** 75.
+- **Rule:** 98.

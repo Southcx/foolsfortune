@@ -96,7 +96,7 @@ check('the press has a formation', r5.f0 >= 0.5 && r5.f0 <= 2, r5);
 await ev(async () => { const G = __game.game, M = await import('/src/progress/econ/materials.js'); G.alchemy.s.colour = { h: 0, s: 0 }; G.alchemy.s.cocked = false; for (let i = 0; i < 3; i++) G.pneuka.add('mat.edge', 'test', 0, M.makeMaterial('edge', 20 + i, 1)); G.realm.press.enter(); });
 await g.step(80);
 const scr = (expr) => g.page.evaluate((e) => { const G = __game.game, P = G.realm.press, v = eval(e).clone().project(G.camera); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; }, expr);
-const lumpS = await scr('P.lumps()[0].pos'), mouthS = await scr('P.mouthAt()'), ballS = await scr('P.ballAt()');
+const lumpS = await scr('P.lumps()[0].pos'), mouthS = await scr('P.mouthAt()');
 const mouse = g.page.mouse;
 await mouse.move(lumpS.x, lumpS.y); await g.step(3);
 const hovered = await ev(() => !!__game.game.realm.press.hover);
@@ -106,6 +106,7 @@ const loaded = await ev(() => __game.game.realm.press.hopper.length);
 await mouse.down(); await g.step(150); await mouse.up(); await g.step(20);
 const pressedH = await ev(() => ({ colour: __game.game.alchemy.colour, cocked: __game.game.alchemy.s.cocked }));
 await ev(() => { window.__ev = []; for (const n of ['alchemy.fire', 'alchemy.refuse']) __game.game.events.on(n, (e) => window.__ev.push(n)); });
+const ballS = await scr('P.ballAt()'); // (read when it is reached for: the ball stands up once pressed and rests at its stop when spent, SOUL-ALCHEMY.md 4.12)
 await mouse.move(ballS.x, ballS.y); await g.step(2); await mouse.down(); await g.step(2); await mouse.move(ballS.x, ballS.y + 140, { steps: 6 }); await g.step(4); await mouse.up(); await g.step(4);
 const pulled = await ev(() => window.__ev);
 await g.page.keyboard.press('KeyW'); await g.step(60);
