@@ -141,6 +141,7 @@ export class TripRun {
     if (k >= 0) {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
+      if (leg.type === 'maelstrom') this.st.charybdis?.update(dt, bar);
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
@@ -154,6 +155,7 @@ export class TripRun {
     else this.runner.done = true;
     if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
     this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score;
+    if (w.type === 'maelstrom') this.st.charybdis?.begin(k, w); // (its director: the arena and Charybdis, charybdis.js)
     if (leg.plan && this.hidden && !this.hidden.k) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)
     this.game.events?.emit('passage.waypoint', { type: w.type, k, storm: !!w.storm, feel: w.feel || null, by: 'environment' });
   }
@@ -242,6 +244,6 @@ export class TripRun {
     }
   }
 
-  stop() { if (this.active && this.V?.passage) { this.V.passage.storms = this.state.storms; this.V.passage.sailed = this.wps.map(({ id, type, strength, feel, storm }) => ({ id, type, strength, feel, storm })); } // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
+  stop() { this.st.charybdis?.end(); if (this.active && this.V?.passage) { this.V.passage.storms = this.state.storms; this.V.passage.sailed = this.wps.map(({ id, type, strength, feel, storm }) => ({ id, type, strength, feel, storm })); } // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
     this.active = false; this.field?.clear(); this.player?.stop(); if (this.runner) this.runner.done = true; const st = this.st.stage; st.legs = null; st.campfire = null; st.encounter = null; st.fuel = null; }
 }

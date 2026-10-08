@@ -15,7 +15,7 @@
 // on the rail between set pieces, No Limits' heartline (the figures turn about the rider, not the track), the Frenet frame's flip avoided by carrying the frame's angles, not deriving it from curvature.
 //
 //   const P = new RailPath()   P.lay({ turns: [{ at: s0, len, figure, sign }], length, start, heart })   P.at(s, outPos, outQuat)
-//   FIGURES   figureFor(next, rng) -> 'weave' | 'crest' | 'corkscrew' | 'verticalLoop'   (toWorld and the rest live on the stage's rail)
+//   FIGURES (and `arena`, a maelstrom's peak: arenaLaps, arenaCentre)   figureFor(next, rng) -> 'weave' | 'crest' | 'corkscrew' | 'verticalLoop'   (toWorld and the rest live on the stage's rail)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -34,7 +34,22 @@ export const FIGURES = {
   corkscrew: (k, s) => ({ yaw: 0, pitch: 0, roll: s * TAU * ease(k) }),
   /** The frame pitched once round over the middle three quarters, straight in and out: up, over on its back, down onto the line. */
   verticalLoop: (k) => { const m = Math.min(1, Math.max(0, (k - 0.125) / 0.75)); return { yaw: 0, pitch: TAU * ease(m), roll: 0 }; },
+  /** The maelstrom's arena (not a turn of the rail: a leg's peak): the line leaves straight and circles the whirlpool whole laps
+   *  (`t.laps`), its turn eased in and out over ARENA.ease of its length and banked inward, and goes on on its heading. Its centre,
+   *  in the middle, is ARENA.radius(t) across the frame on the turning side (`arenaCentre`). */
+  arena: (k, s, t) => ({ yaw: s * TAU * (t?.laps ?? 1) * turnShare(k), pitch: 0, roll: -s * ARENA.bank * turnRate(k) }),
 };
+
+/** The arena's shape: the share of its length eased in and out, the bank at full turn, and the radius it is laid for (laps chosen so the
+ *  circle is near it: arenaLaps). */
+export const ARENA = { ease: 0.1, bank: 0.35, radius: 40 };
+const turnRate = (k) => (k < ARENA.ease ? k / ARENA.ease : k > 1 - ARENA.ease ? (1 - k) / ARENA.ease : 1);
+const turnShare = (k) => { const e = ARENA.ease, A = k < e ? (k * k) / (2 * e) : k > 1 - e ? 1 - e - ((1 - k) * (1 - k)) / (2 * e) : e / 2 + (k - e); return A / (1 - e); };
+/** Whole laps for an arena `len` metres long, so its circle's radius is nearest ARENA.radius (one at the least). */
+export const arenaLaps = (len) => Math.max(1, Math.round((len * (1 - ARENA.ease)) / (TAU * ARENA.radius)));
+/** The arena's radius as laid (metres), and its centre in the rail's frame through its middle: across, on the turning side. */
+export const arenaRadius = (t) => (t.len * (1 - ARENA.ease)) / (TAU * (t.laps ?? 1));
+export const arenaCentre = (t, out) => out.set(-(t.sign ?? 1) * arenaRadius(t), 0, 0); // (local x is the chase view's screen right: a heading turned + turns left)
 
 /** Which figure a turn flies: the eyewall's tunnel corkscrews into it, the maelstrom is entered by a vertical loop, the rest by the draw. */
 export function figureFor(next, rng) {
@@ -78,7 +93,7 @@ export class RailPath {
 
   /** The three angles at s: a turn's figure where one is flown, level and straight elsewhere. */
   angles(s) {
-    for (const t of this.turns) if (s >= t.at && s < t.at + t.len) return FIGURES[t.figure]?.((s - t.at) / t.len, t.sign ?? 1) || ZERO;
+    for (const t of this.turns) if (s >= t.at && s < t.at + t.len) return FIGURES[t.figure]?.((s - t.at) / t.len, t.sign ?? 1, t) || ZERO;
     return ZERO;
   }
 

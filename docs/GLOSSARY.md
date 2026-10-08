@@ -268,7 +268,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   fights: a **weave** (out across the sea and back, banked), a **crest** (up over a rise and down), a **corkscrew** (rolled once about
   the line: the sea overhead at its middle), a **vertical loop** (code `verticalLoop`: pitched once round, over on its back). Each turns
   about **the heartline** (the ship's cruise line, `CRUISE` up the frame), never about the rail point. Through the legs the rail is
-  straight and level. *Not:* a swell (the crude sea's), a loop (an emote held, or the thread's), a turn of the rail (the four bars).
+  straight and level, but for **the arena** (`arena`, `arenaCentre`): a maelstrom leg's peak, whole laps round the whirlpool, banked in,
+  Charybdis held at its centre (`world/emocean/charybdis.js`, rising Astral and diving Umbral by turns of four bars). *Not:* a swell
+  (the crude sea's), a loop (an emote held, or the thread's), a turn of the rail (the four bars), the maelstrom (the leg, a place).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
