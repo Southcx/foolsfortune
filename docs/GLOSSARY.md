@@ -193,6 +193,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cube** (`game.cubes`, `src/world/treasure/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
 - **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear.
   What it gives: cubes, and sometimes a **crystal shard** (`mat.shard`, always so called) or a Possibilikey.
+- **the stave** (`e.spires[0]`, `src/world/dunes/crystals.js`): a crystal formation's main spire, the one a strike is read on: it stands
+  whole until the formation gives, and wears its frets. *Not:* the lesser spires round it (the blows knock those away).
+- **fret** (code `fret`, `FRETS`, `fretAt`: `src/world/dunes/crystaltuning.js`; drawn by `src/vfx/crystalfrets.js`): one of a crystal's
+  five note steps on its stave, foot to point, the same on every formation (each a fifth of nine tenths of its height; the fifth runs on
+  to the point). Fret k sounds the Crucibelle's k-th note in the formation's key (the minor pentatonic, the root at the foot) and is
+  drawn in that note's colour (`DEGREE_COLOR`: gold, rose, green, blue, violet), leaded dark between; a strike lights the fret it
+  sounded. A crystal's **sweet spot** is one fret and a way round. The owner's "zones" of a crystal (2026-10-08). *Not:* a zone (a
+  render zone), the band (Wanda's instruments), nor the chat line's `/fret` (an alias of the worried emote, `courier/emotes.js`).
 - **signature** (`src/core/signatures.js`): where Lachryma is, and how strongly. Tools that sense or drink Lachryma ask here.
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute` × 60): what ordinary play should earn in an hour (480 cubes). A source is judged as a multiple of it
@@ -349,8 +357,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the agents, the trailer and the map read the one registry. A place is a point; *not* a room (an area the log names, which the
   `place.enter` event carries as `room`: an old homonym).
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
-  named in full (or ZoI). A zone may be **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its
-  **whole** (`wholeOf(pos)`): the beach is part of the dunes.
+  named in full (or ZoI); *not* a crystal's note steps (the owner's "zones" on a crystal, 2026-10-08: say **fret**). A zone may be
+  **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its **whole** (`wholeOf(pos)`): the beach
+  is part of the dunes.
 - **the zone map** (`src/render/zonemap.js`): the zones' bounds as pure numbers (`zoneOf`, `wholeOf`), for anything that asks where a
   point is without drawing: the weather's place, a Node script.
 - **the daylight** (`game.daylight`, `src/render/daylight.js`): the light on the open ground (the sun, the sky's light, the fog) by the game

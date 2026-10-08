@@ -205,8 +205,42 @@ the rules before building in the same area; a rule a machine can check goes into
     left, and an offscreen pass that clears the renderer's planes (the trail map's) leaves none until the next draw; a piece compiled
     lazily renders an empty scene into the frame's own target first (as main.js's warm-up does), else its programs are built for no
     planes and again, for the God Hand's one, at their first draw.
+79. **A table read round by index is fed numbers from its own range.** A lookup that wraps (a colour for each scale degree) aliases
+    anything wider: a seven-step scale read through five colours showed the "true" gold five steps off. Read it from the set it was
+    made for, or clamp, and say which.
+80. **A mark the player reads is read where the player sees it.** What a strike measures must be taken at the surface the crosshair
+    meets, not at a line through the thing (a crystal's axis): a look pitched down meets a column's skin higher than it passes
+    its axis, and the colour under the crosshair was a fret off. Measure the mechanic against the render, by a ray into the mesh.
 
 ## Cases
+
+### 2026-10-08 · The fret under the crosshair was not always the fret the strike read (the crystal frets' review)
+- **Seen (the reviewer, by ray into the mesh, 20 000 looks at three formations):** a look at a fret near its edge sounded the next fret
+  over: 15 in 100 over all poses, 3 to 4 in 100 at the camera's own play distance (7 m out, 1.5 m up), 50 to 70 in 100 looking steeply
+  down (4 m up, 2 m out).
+- **Cause (measured):** `aimHeight` read the height where the look passes the formation's axis, but the frets are drawn on its skin,
+  and the look meets the skin before the axis: a look pitched down by `a` meets the skin `r tan a` higher (the stave's half width is 0.3
+  to 0.37 m, a fret is 0.4 to 0.67 m).
+- **Fix:** `aimHeight` takes the height where the look meets the stave's near side (half its width across the look, tapering over the
+  point), by one correction. Measured the same way: 5.7 in 100 over all poses, 1 to 4 in 100 at play distance; the rest is the six-sided
+  prism's facets, the lean and the lesser spires in front. With the game's own camera, 30 of 30 looks 8 to 22 cm from a fret's edge read
+  the colour they showed (the old reading missed at 1 cm).
+- **Rule:** 80.
+
+### 2026-10-08 · A wrong strike at a crystal's point showed gold, the colour of the true note (Calissa, the crystal frets)
+- **Seen (Calissa's survey of the crystals):** aiming at the point of a formation (formation 3, its sweet spot at 0.316 of its
+  height) sounded a wrong note and burst in gold, the colour `music/tone.js` keeps for "the home note: a crystal struck true".
+- **Cause (measured):** `crystaltuning.js` stepped through the seven degrees of the major scale (`deg` from -7 to 7, a step a seventh
+  of nine tenths of the height from a hidden, random spot), and `crystals.js` coloured the burst `degreeColor(deg)`, which wraps round
+  the Crucibelle's five colours: deg 5 read as 0. At the point of formation 3, deg = round((1 - 0.316) x 7) = 5, so gold. 9 of the 18
+  formations could reach +-5 at one end (3, 5, 6, 10, 11, 13 to 16, by their sweet heights).
+- **Fix:** the owner's frets (2026-10-08): five fixed frets on every stave (`fretAt(u)`, a fifth of the span each), fret k sounding the
+  Crucibelle's k-th note, the sweet spot a fret (`spot.fret`, one draw, as the height was, so every formation and the seed's sequence
+  are as they were); `deg` is now `fret - spot.fret`, -4 to 4; the burst takes `degreeColor(fret)`, 0 to 4, which never wraps, so gold
+  is the root fret, the foot. The fork's reference burst is neutral (the fork's own light): in the sweet fret's colour it would show the
+  answer. Measured headless (20 checks, game noon and midnight): every fret struck sounds itself (fret, `pitchOff`, key + 12 + SCALE[k]),
+  each fret's colour within 5 degrees of hue of its note's at noon, the sweet fret from the spot's bearing opens it.
+- **Rule:** 79.
 
 ### 2026-10-08 · The Solar Skiff's hull and cloth compiled twice, the second at their first draw (Calissa's review of the skiff's model)
 - **Seen (headless, programs counted before and after the first summon):** the model's load compiled its programs (`compileAsync`, off the

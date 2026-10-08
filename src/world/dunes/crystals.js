@@ -5,11 +5,12 @@
 // a time (baubles, and a shed of cubes that the break pays back: ECON.crystal), and struck while a tuning fork RINGS in them (the Dreamvane's fork) they give
 // twice as much and a shard of crystal besides (an item: it feeds the Lockheart). Any other blade or club only chips them. A spent
 // formation is stubs; a few minutes and it has grown back. Each is TUNED (world/dunes/crystaltuning.js): a key and a sweet spot, found by ear
-// (the fork gives the reference, each strike a note: its pitch from the height struck, its wavering from the way round); found, it
+// (the fork gives the reference, each strike a note: its pitch from the fret struck, its wavering from the way round); found, it
 // opens and pays many times over. Dense formations take many strikes, fragile ones few.
 //
 // One InstancedMesh for every spire of every formation: one draw for the whole sea; a formation's spires shrink as it is worked and
-// glow while it rings (a steady slow pulse, never a flicker).
+// glow while it rings (a steady slow pulse, never a flicker). The stave (the main spire) wears its five frets in the notes' colours
+// (vfx/crystalfrets.js); a strike lights the fret it sounded.
 //
 // Prior art: the ore veins of Minecraft and Terraria (found, struck, they give), Deep Rock Galactic's crystal veins and its pickaxe,
 // Breath of the Wild's ore deposits (a few blows; some ore is luminous), and the resonance of a tuning fork on a glass (the fork's ring
@@ -23,8 +24,9 @@ import { tag, register } from '../../core/tags.js';
 import { sfx } from '../../audio/sfx.js';
 import { DUNE, BARRIER, OASIS } from './dunes.js';
 import { ECON } from '../../progress/econ/table.js';
-import { tuneFor, readStrike, refNote } from './crystaltuning.js';
+import { tuneFor, readStrike, refNote, FRETS, SPAN } from './crystaltuning.js';
 import { degreeColor } from '../../music/tone.js';
+import { crystalFretMaterial, CrystalFrets } from '../../vfx/crystalfrets.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/dunes/crystals'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -35,7 +37,7 @@ function placeholderTone(midi, beat, dur, gain) {
   sfx.tone(t, dur, { f0: f, gain, dest, type: 'triangle' });
   if (beat > 0.05) sfx.tone(t, dur, { f0: f + beat, gain: gain * 0.9, dest, type: 'triangle' });
 }
-const REGROW = 180, GROW = 6;
+const REGROW = 180, GROW = 6, OPEN = 0.5, OPEN_SWEET = 0.85; // (the stave stands whole a moment as it gives: its last fret's light, or the sweet run)
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
 const BASE = new THREE.Color(0xcdb8f2), RING = new THREE.Color(0xfff1d6), SPENT = new THREE.Color(0x5d4a7a);
 
@@ -47,10 +49,11 @@ export class Crystals {
     const geo = new THREE.CylinderGeometry(0.5, 0.5, 0.8, 6, 1).translate(0, 0.4, 0);
     const tip = new THREE.ConeGeometry(0.5, 0.35, 6).translate(0, 0.975, 0);
     this.geo = mergeTwo(geo, tip);
-    this.mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x4a2f86, emissiveIntensity: 0.55, roughness: 0.22, metalness: 0.15, flatShading: true });
+    this.mat = crystalFretMaterial({ color: 0xffffff, emissive: 0x4a2f86, emissiveIntensity: 0.55, roughness: 0.22, metalness: 0.15, flatShading: true }, BASE);
     this.spires = [];
     this.build();
     this.mesh = new THREE.InstancedMesh(this.geo, this.mat, this.spires.length);
+    this.frets = new CrystalFrets(this.mesh);
     this.mesh.castShadow = true; this.mesh.receiveShadow = false;
     this.mesh.frustumCulled = false; // (spread over the whole sea: one draw, culled by being in the dunes or not)
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -109,11 +112,15 @@ export class Crystals {
     // (the main spire stands whole until the formation gives: it is the stave being sounded, up and down, so it must not shrink
     //  under the pick (owner's note, R40); the lesser spires about it are what the blows knock away)
     const e = s.e, main = s === e.spires[0], whole = main ? (e.hp > 0 ? 1 : 0.22) : 0.22 + 0.78 * (e.hp / e.maxHp);
-    const left = e.regrowT > 0 ? Math.min(1, 0.22 + 0.78 * Math.max(0, 1 - e.regrowT / GROW)) : whole;
+    const open = main && e.openT > 0; // (the stave holds a moment as it gives, for its frets' light: vfx/crystalfrets.js)
+    const left = open ? 1 : e.regrowT > 0 ? Math.min(1, 0.22 + 0.78 * Math.max(0, 1 - e.regrowT / GROW)) : whole;
     const k = left * e.rise;
     _s.set(s.w, s.h * Math.max(0.001, k), s.w);
     _p.copy(e.ground).add(s.at).setY(e.ground.y + s.at.y - (1 - e.rise) * 0.4);
     this.mesh.setMatrixAt(s.i, _m.compose(_p, s.tilt, _s));
+    // the frets: on the stave alone, rising with it out of the sand; none while it is stubs, coming back as it grows again
+    const drawn = !main ? 0 : open || e.regrowT <= 0 ? 1 : Math.max(0, 1 - e.regrowT / GROW);
+    this.frets.set(s.i, e.ground.y - (1 - e.rise) * 0.4, SPAN * e.h, drawn);
   }
   dirty(e) { for (const s of e.spires) this.place(s); this.mesh.instanceMatrix.needsUpdate = true; }
 
@@ -140,17 +147,20 @@ export class Crystals {
     const ref = refNote(e.tune);
     if (sfx.crystalRef) sfx.crystalRef(ref); else placeholderTone(ref, 0, 3.5, 0.14);
     this.game.music?.duck?.(4, 0.15); // (the music steps back while it rings: the ear has work to do)
-    this.game.fx?.toneBurst?.(e.ground.clone().setY(e.ground.y + 0.3), degreeColor(0), 0.8, 1 + e.r * 0.5); // (the reference: gold, the root)
+    this.game.fx?.toneBurst?.(e.ground.clone().setY(e.ground.y + 0.3), RING, 0.8, 1 + e.r * 0.5); // (the reference: the fork's own light; in a fret's colour it would show the answer)
     this.game.events?.emit('crystal.ref', { note: ref });
   }
 
-  /** How high on a formation they aim (0 its foot .. 1 its top): where their look passes its axis. */
+  /** How high on a formation they aim (0 its foot .. 1 its top): where their look meets the stave's near side, the height of the fret
+   *  under the crosshair (a look pitched down meets the skin higher than it passes the axis: read there, a fret's edge was one fret off). */
   aimHeight(e) {
     const cam = this.game.camera, d = _p.set(0, 0, -1).applyQuaternion(cam.quaternion), o = cam.position;
     const hx = e.ground.x - o.x, hz = e.ground.z - o.z, hd = Math.hypot(d.x, d.z) || 1e-3;
-    const t = (hx * d.x + hz * d.z) / (hd * hd); // (along the look, to its nearest pass by the axis, in plan)
-    const y = o.y + d.y * Math.max(0, t);
-    return Math.max(0, Math.min(1, (y - e.ground.y) / (e.h * 0.9)));
+    const along = (hx * d.x + hz * d.z) / hd, side = Math.abs(hx * d.z - hz * d.x) / hd; // (in plan: to the look's nearest pass by the axis, and how far to one side of it)
+    const s = e.spires[0], foot = e.ground.y + s.at.y, cone = foot + 0.8 * s.h, point = foot + 1.15 * s.h; // (the stave's prism, then its point)
+    const skin = (y) => { const r = s.w * 0.46 * Math.max(0, Math.min(1, (point - y) / (point - cone))); return Math.sqrt(Math.max(0, r * r - side * side)); }; // (half the stave's width across the look at y)
+    const y0 = o.y + d.y * Math.max(0, along / hd), y = o.y + d.y * Math.max(0, (along - skin(y0)) / hd);
+    return Math.max(0, Math.min(1, (y - e.ground.y) / (e.h * SPAN)));
   }
 
   struck(e, p, dir, power, by, tool) {
@@ -178,15 +188,17 @@ export class Crystals {
     if (n > 0) { e.shed = (e.shed || 0) + n; g.cubes?.burst?.(p.clone().setY(p.y + 0.2), n, { spread: 0.7, up: 3.2, from: 'crystal' }); }
     g.vfx?.play('crystal.strike', { pos: p.clone(), dir: dir.clone().negate(), power: R.sweet ? 1.6 : 0.8 + 0.6 * R.near });
     g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6 + Math.round(R.near * 14), dust: 2 });
-    // the note made visible at the height struck, in its colour (gold when true: music/tone.js), and chips knocked off the lesser spires
-    const at = e.ground.clone().setY(e.ground.y + u * e.h * 0.9);
-    g.fx?.toneBurst?.(at, degreeColor(R.deg), R.sweet ? 1 : 0.3 + 0.5 * R.near, 0.6 + e.r * 0.4);
+    // the note made visible at the height struck, in its fret's colour (music/tone.js: the root gold), the fret lit on the stave (the
+    // sweet strike runs them all, foot to point), and chips knocked off the lesser spires
+    const at = e.ground.clone().setY(e.ground.y + u * e.h * SPAN);
+    g.fx?.toneBurst?.(at, degreeColor(R.fret), R.sweet ? 1 : 0.3 + 0.5 * R.near, 0.6 + e.r * 0.4);
+    this.frets.strike(e.spires[0].i, R.fret); if (R.sweet) this.frets.run(e.spires[0].i);
     g.fx?.chipsOff?.(p.clone(), dir.clone().negate(), R.sweet ? 14 : 5, 0.8 + e.size * 0.4);
     g.music?.duck?.(R.sweet ? 3 : 1.6, 0.25);
     sfx.cubeClack?.(1);
     if (sfx.crystalStrike) sfx.crystalStrike(R.midi, R.beat, { dense: T.kind === 'dense', last }); else placeholderTone(R.midi, R.beat, T.kind === 'dense' ? 1.1 : 1.8, 0.16);
     g.ai?.stimuli.emit('noise', p, { radius: 18, strength: 0.6, by, source: e });
-    g.events?.emit('crystal.strike', { by, tool, ringing, pos: [p.x, p.y, p.z], near: R.near, pitchOff: R.deg, beat: R.beat, sweet: R.sweet, nature: T.kind });
+    g.events?.emit('crystal.strike', { by, tool, ringing, pos: [p.x, p.y, p.z], near: R.near, fret: R.fret, pitchOff: R.deg, beat: R.beat, sweet: R.sweet, nature: T.kind });
     if (last) {
       // it opens: at its sweet spot many times over, else as its nature pays (cubes; a shard if it rang; sometimes a key)
       if (R.sweet) { if (sfx.crystalSweet) sfx.crystalSweet(R.midi); else { placeholderTone(R.midi, 0, 2.5, 0.2); placeholderTone(R.midi + 7, 0, 2.5, 0.12); placeholderTone(R.midi + 12, 0, 2.5, 0.1); } }
@@ -196,8 +208,8 @@ export class Crystals {
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
       if (g.pneuka && simRand() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
       let fossil = false; if (g.pneuka && simRand() < (ringing ? 0.1 : 0.03)) { g.pneuka.add('fossil.lachrymite', 'crystal'); fossil = true; } // (a creature's shape in the set Lachryma: the Grove wakes it, world/garden/awaken.js)
-      e.regrowT = REGROW + GROW; e.ringT = 0;
-      T.spot = { th: simRand() * Math.PI * 2, u: 0.25 + simRand() * 0.5 }; // (it grows back with its spot somewhere new)
+      e.regrowT = REGROW + GROW; e.ringT = 0; e.openT = R.sweet ? OPEN_SWEET : OPEN;
+      T.spot = { th: simRand() * Math.PI * 2, fret: Math.floor(simRand() * FRETS) }; // (it grows back with its spot somewhere new)
       g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, fossil, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
@@ -211,6 +223,7 @@ export class Crystals {
     let colors = false, mats = false;
     for (const e of this.list) {
       if (e.rising) { e.rise = Math.min(1, e.rise + dt / 1.6); if (e.rise >= 1) e.rising = false; this.dirty(e); }
+      if (e.openT > 0) { e.openT -= dt; if (e.openT <= 0) this.dirty(e); } // (it has given: the stave falls to its stub)
       if (e.regrowT > 0) {
         e.regrowT -= dt;
         if (e.regrowT <= GROW) { if (e.hp <= 0) { e.hp = e.maxHp; e.shed = 0; } this.dirty(e); } // (grown back: whole again over its last seconds)
@@ -222,7 +235,7 @@ export class Crystals {
       // the colour: lit while it rings (a slow steady pulse), dull while it is stubs
       if (ringing || e.wasRinging || e.regrowT > 0 || e.wasSpent) {
         const pulse = ringing ? 0.55 + 0.45 * Math.sin(performance.now() / 1000 * Math.PI * 2 * 1.5) : 0;
-        _c.copy(e.hp <= 0 && e.regrowT > GROW ? SPENT : BASE).lerp(RING, pulse);
+        _c.copy(e.hp <= 0 && e.regrowT > GROW && !(e.openT > 0) ? SPENT : BASE).lerp(RING, pulse);
         for (const s of e.spires) this.mesh.setColorAt(s.i, _c);
         colors = true;
       }
@@ -230,6 +243,7 @@ export class Crystals {
     }
     if (colors) this.mesh.instanceColor.needsUpdate = true;
     if (mats) this.mesh.instanceMatrix.needsUpdate = true;
+    this.frets.update(dt, this.game.daylight?.k.day ?? 0);
   }
 }
 

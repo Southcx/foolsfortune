@@ -31,6 +31,10 @@ and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, g
 
 - **Lachryma:** liquid near-black with the oil film (fresh: cream glow, oxidising to black); solid is **bismuth** (stepped hoppers, oxide
   colours face by face: `vfx/bismuth.js`); mental is labradorite. **Crude is not water:** no white foam, never water-blue.
+- **A note has one colour everywhere** (`DEGREE_COLOR`: gold the root, rose, green, blue, violet): the bell's vents, the rhythm lanes,
+  and a crystal's **frets** (`vfx/crystalfrets.js`: the stave as five panes of stained glass, foot to point, leaded in Lachrymite violet,
+  deepened so they hold on noon sand; Boomwhackers, tourmaline grown in layers of colour). Only the stave is fretted; the lesser
+  spires stay lilac.
 - **Liquids are drawn by one library** (`vfx/liquid.js`; packs baked by `scripts/bake_liquid.py` from the owner's noise photographs).
   Water paints its floor (ripples, caustics, depth colour, Fresnel short of a mirror, sparkle welcome); Lachryma is ink with the film in
   its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow.
