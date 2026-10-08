@@ -11,8 +11,9 @@
 // Prior art: Old School RuneScape's general stores (the stock, the climbing price, the restock), and the same game's rule that a shop
 // pays full only for its own trade.
 //
-//   game.shops.open(shop)  .close()  .price(shop, id) -> cubes | null (none left)  .offer(shop, id) -> cubes (0: will not buy)
+//   game.shops.open(shop, { factor? })  .close()  .price(shop, id) -> cubes | null (none left)  .offer(shop, id) -> cubes (0: will not buy)
 //   .buy(shop, id, { price, haggled }) -> bool   .sell(shop, slot) -> cubes | 0   .stockOf(shop, id)   .update(dt)
+//   (factor { sell, buy }: a counter opened away from its keeper, the Purser's barge at sea: encounters.js ENCOUNTER.barge; until it closes)
 //   .haggle(shop, id)  (begins the haggle talk)   .hag (the haggle in progress: { shop, item, h })
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
@@ -47,20 +48,22 @@ export class Shops {
     if (base == null) return null;
     const n = this.stockOf(shop, id);
     if (n <= 0) return null;
-    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * (1 + S.dear * Math.max(0, base - n)) / this.charm()));
+    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * this.fx(shop, 'buy') * (1 + S.dear * Math.max(0, base - n)) / this.charm()));
   }
   /** What the shop pays them for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
   offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.fx(shop, 'sell') * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     const paid = Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
     // (never above its own full-shelf ask, less a cube: charisma widens both sides, and a buy-and-sell-back must never pay)
     if (D.sells[id] == null) return paid;
-    const ask = Math.round(worthOf(id) * D.markup * this.want(shop, id) / this.charm());
+    const ask = Math.round(worthOf(id) * D.markup * this.want(shop, id) * this.fx(shop, 'buy') / this.charm());
     return Math.min(paid, Math.max(0, ask - 1));
   }
 
+  /** The open counter's factor on its prices (`open`'s: the barge's mid-sea prices), 1 at a keeper's own counter. */
+  fx(shop, side) { return this.cur === shop && this.factor ? this.factor[side] ?? 1 : 1; }
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
   want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * supplyMult(isl, demandKey(id)) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
   /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
@@ -75,16 +78,16 @@ export class Shops {
   charm() { return this.game.alchemy?.widen?.('charisma.trade') || 1; }
 
   // ---------------------------------------------------------------- the counter
-  open(shop) {
+  open(shop, { factor = null } = {}) {
     if (!SHOPS[shop]) return false;
-    this.cur = shop;
+    this.cur = shop; this.factor = factor;
     this.game.shopUI?.show(shop);
-    this.game.events.emit('shop.open', { shop, by: 'courier' });
+    this.game.events.emit('shop.open', { shop, factor, by: 'courier' });
     return true;
   }
   close() {
     if (!this.cur) return;
-    const shop = this.cur; this.cur = null;
+    const shop = this.cur; this.cur = null; this.factor = null;
     this.game.shopUI?.hide();
     this.game.events.emit('shop.close', { shop });
   }

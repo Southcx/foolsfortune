@@ -139,6 +139,8 @@ check('a storm cleared raises the rutter', rutterWorth({ minutes: 6, rank: 'A', 
   check('no rutter, nothing to sell Letty', !offered('lettysCutter', 'sloop', { rutter: 0 }).some((c) => c.id === 'sell') && offered('lettysCutter', 'sloop', { rutter: 90 }).some((c) => c.id === 'sell'));
   const loot = apply({ ...start('sloop'), at: L[0], plan: L }, 'ghostConvoy', 'loot', { chart: C }).state;
   check('loot draws the Wreckers: their legs ahead stronger, others not', strengthOf(loot, { type: 'wreckers', strength: 1 }) > 1 && strengthOf(loot, { type: 'shoal', strength: 1 }) === 1);
+  const bt = apply({ ...start('sloop'), at: L[0], plan: L }, 'lettysCutter', 'bounty', { chart: C }).asks[0];
+  check('Letty\'s posted bounty carries its pay, six to twelve minutes of the aim', bt?.cubes >= 48 && bt.cubes <= 96, bt);
   check('a ghost beaten lifts a rank a letter, never past S', raceRank('B', true) === 'A' && raceRank('S', true) === 'S' && raceRank('B', false) === 'B');
 }
 console.log(fails ? `passage: ${fails} FAILED (${charts} sea charts)` : `passage: all passed (${charts} sea charts)`); process.exitCode = fails ? 1 : 0;

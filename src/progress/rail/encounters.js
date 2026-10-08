@@ -14,7 +14,7 @@
 //   dives: PASSAGE.md section 14)
 //   apply(state, id, choice, ctx) -> { state, asks: [ask] }   (the choice's effect on the trip's state, progress/rail/trip.js, and what
 //   the world must do besides: Petra's triprun.js acts on the asks; ctx = { chart, rng, rutter?, minutes?, ghost?, wordsLeft? })
-//   raceRank(rank, beat) -> rank   strengthOf(state, waypoint) -> strength   ENCOUNTER (the numbers)
+//   raceRank(rank, beat) -> rank   postedBounty(waypoint) -> cubes   strengthOf(state, waypoint) -> strength   ENCOUNTER (the numbers)
 //   (the words, the names and the cinematics are Espada's and Calissa's: these are the mechanics, with working names)
 // ---------------------------------------------------------------------------------------
 import { SHIPS } from './ships.js';
@@ -72,12 +72,19 @@ export const ENCOUNTER = {
   rescue: { fuel: 1, slots: 1, legs: 1 },
   /** The barge's counter: casks sold at 0.85 and bought at 1.15 of the Purser's posted price (mid-sea: dearer both ways, but here). */
   barge: { sell: 0.85, buy: 1.15 },
-  /** A ghost beaten lifts the next leg's rank one letter (never past S). */
+  /** Letty's posted bounty: what clearing the marked leg pays, in real minutes of the aim by the waypoint's class (Guppy 0 .. Leviathan 4),
+   *  so it weighs against her other offer, a rutter sold at 1.25 (about 50 to 80 cubes): six minutes of the aim at a Guppy, a quarter
+   *  more a class. Over a five-minute passage that is about 1.2 times the aim: a good leg, never a jackpot (the aim's ceiling is 1.5).
+   *  Not bountyPay (livelihoods.js): that is a named hunt's, two real hours' aim for a Whale. */
+  bounty: { minutes: 6, perClass: 0.25 },
+  /** A ghost beaten lifts the crossing's rank one letter (never past S; a coin-fed run is still capped). */
   race: 1,
   /** The bottle: an ostracon's word half the time while any are left to find, else a waypoint ahead made exact. */
   word: 0.5,
 };
 const RANKS = ['D', 'C', 'B', 'A', 'S'];
+/** What Letty's posted bounty pays for clearing a waypoint's leg (ENCOUNTER.bounty). */
+export const postedBounty = (w) => Math.round(ECON.perMinute * ENCOUNTER.bounty.minutes * (1 + ENCOUNTER.bounty.perClass * Math.max(0, Math.min(4, Math.round(w?.strength ?? 0)))));
 /** A leg's rank after a race: one letter up if the ghost was beaten. */
 export const raceRank = (rank, beat) => (beat ? RANKS[Math.min(RANKS.length - 1, RANKS.indexOf(rank) + ENCOUNTER.race)] ?? rank : rank);
 /** A waypoint's strength as the trip has made it (the Wreckers drawn to you by a loot), for `schedule`'s `strength`. */
@@ -96,7 +103,7 @@ function ahead(state, chart) {
 /** An encounter's choice made: the trip's state after it, and what the world must do besides (each ask a plain object, `ask` its kind):
  *    exact { waypoints }          their portents shown as they are (the sea chart's; ghostConvoy.follow, driftBottle.read)
  *    casks { n, grade }           crude into the hold (ghostConvoy.loot; the hold's limit is the world's)
- *    bounty { waypoint }          that waypoint sailed as a bounty leg, its feeling kept (lettysCutter.bounty)
+ *    bounty { waypoint, cubes }   that waypoint sailed as a bounty leg, its feeling kept; cleared, it pays `cubes` (lettysCutter.bounty)
  *    sellRutter { cubes }         the carried rutter given to Letty for this (lettysCutter.sell; ctx.rutter is its worth today)
  *    hiddenLeg { form, pays, after }  a leg added after this waypoint, sailed in that form, its score times `pays` (lightWhale.follow)
  *    crew { slots, legs }         a mount slot more for that many legs (castaway.rescue)
@@ -111,7 +118,7 @@ export function apply(state, id, choice, ctx = {}) {
   switch (`${id}.${choice}`) {
     case 'ghostConvoy.follow': { const cols = [...new Set(on.map((x) => chart.waypoints[x].col))].slice(0, E.follow); asks.push({ ask: 'exact', waypoints: on.filter((x) => cols.includes(chart.waypoints[x].col)) }); break; }
     case 'ghostConvoy.loot': s.drawn = { ...(s.drawn || {}), wreckers: (s.drawn?.wreckers || 0) + E.loot.wreckers }; asks.push({ ask: 'casks', n: E.loot.casks, grade: w?.feel || s.feel || 'mirth' }); break;
-    case 'lettysCutter.bounty': { const t = on.find((x) => classOf(chart.waypoints[x].type) === 'threat') ?? on[on.length - 1]; if (t) asks.push({ ask: 'bounty', waypoint: t }); break; }
+    case 'lettysCutter.bounty': { const t = on.find((x) => classOf(chart.waypoints[x].type) === 'threat') ?? on[on.length - 1]; if (t) asks.push({ ask: 'bounty', waypoint: t, cubes: postedBounty(chart.waypoints[t]) }); break; }
     case 'lettysCutter.sell': if (ctx.rutter) asks.push({ ask: 'sellRutter', cubes: Math.round(ctx.rutter * E.sell) }); break;
     case 'lightWhale.listen': s.sharp = (s.sharp || 0) + E.listen; break;
     case 'lightWhale.follow': if (SHIPS[s.ship]?.dive) asks.push({ ask: 'hiddenLeg', form: E.dive.form, pays: E.dive.pays, after: s.at }); break;
