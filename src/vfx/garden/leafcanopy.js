@@ -10,7 +10,7 @@
 //   A LEAF       four vertices at the sphere vertex: in the colour pass the vertex shader puts them round it facing the camera (view-
 //                space offsets, turned by the leaf's own angle) and sways the centre slowly by the world position and the wind; the
 //                normal is the SPHERE's, so the crown is lit as one soft round mass. Each quad is a clump of leaves from the atlas,
-//                leaning a third of the way to its sphere's surface (shingled, never square to the eye: CASEBOOK rule 120), shrinking
+//                leaning a third of the way to its sphere's surface (shingled, never square to the eye: CASEBOOK rule 122), shrinking
 //                away near the eye (a camera inside a crown sees it open round it), a little larger far off (a crown stays a mass), and
 //                not drawn at all on the far side of its sphere (the near side and the inner shell hide it). A sphere may be squashed
 //                into an ellipsoid and halved (a cap's dome over its gills), and a canopy may open by its slot's GATE: each leaf shows

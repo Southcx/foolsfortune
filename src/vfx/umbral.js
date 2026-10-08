@@ -18,7 +18,7 @@
 //                  vfx/rail.js) with a crown of crude thrown up and, below, a burst of motes; and the eye passing through the meniscus:
 //                  the LINE of the surface wiped across the lens, the frame refracted at its lip, the veil's colour turning from the
 //                  storm's gold-white to the Umbral's black-violet below it (the glitch's pass: vfx/glitch.js `veil`)
-// The eye's side of the surface is measured, never assumed (the camera against the sea's height under it: `heightAt`), so the meniscus
+// The eye's side of the surface is measured, never assumed (the camera against the sea's drawn height under it: `surfaceAt`, the Umbral form's lift with it), so the meniscus
 // is drawn exactly when the eye is under it; `set({ below })` steers the LOOK (the grade, the column, the caustics) for a runtime that
 // wants it ahead of the camera, and `null` hands it back to the eye.
 //
@@ -93,6 +93,8 @@ function ringGeometry(n = 48) {
 
 const _p = new THREE.Vector3(), _v = new THREE.Vector3(), _q = new THREE.Vector3();
 const rnd = (a, b) => a + Math.random() * (b - a);
+/** The surface as DRAWN (the Umbral form's lift with it: vfx/crudesea.js surfaceAt), else the one the logic rides. */
+const surf = (sea, x, z) => (sea.surfaceAt ? sea.surfaceAt(x, z) : sea.heightAt(x, z));
 
 export class Umbral {
   constructor(game, { scene = null, vfx = null, sea = null, hide = null, anywhere = false } = {}) {
@@ -118,7 +120,7 @@ export class Umbral {
 
   /** Something went through the surface at `pos`: a ring spreads, a crown of crude is thrown up, and bubbles of Lachryma rise below. */
   splash(pos, { power = 1, dive = true } = {}) {
-    const sea = this.sea, y = sea ? sea.heightAt(pos.x, pos.z) : pos.y, P = THREE.MathUtils.clamp(power, 0.3, 2);
+    const sea = this.sea, y = sea ? surf(sea, pos.x, pos.z) : pos.y, P = THREE.MathUtils.clamp(power, 0.3, 2);
     let R = this.rings.find((r) => r.t >= UMBRAL.ring);
     if (!R && this.rings.length < 4) {
       const m = new THREE.Mesh(ringGeometry(), foamMaterial(this.ringU)); m.frustumCulled = false; m.renderOrder = 3; m.userData.zoneFree = true;
@@ -145,7 +147,7 @@ export class Umbral {
     this.t += raw;
     const sea = this.sea, inSea = sea?.mesh?.visible !== false && (this.anywhere || this.game.emocean?.stage?.active || this.game.emocean?.seaAshore);
     let d = Infinity;
-    if (sea && camera && inSea) d = camera.position.y - sea.heightAt(camera.position.x, camera.position.z);
+    if (sea && camera && inSea) d = camera.position.y - surf(sea, camera.position.x, camera.position.z);
     const eye = d < 0 ? 1 : 0;
     if (eye !== this.eye) { this.eye = eye; sea?.under?.(!!eye); }
     const want = this.forced ?? eye;
@@ -154,7 +156,7 @@ export class Umbral {
     this.line = Math.abs(d) < UMBRAL.band ? THREE.MathUtils.clamp(0.5 - d / (2 * UMBRAL.band), 0, 1) : -1;
     if (this.forced != null && this.line < 0 && this.forced > 0.3 && this.forced < 0.7) this.line = (this.forced - 0.3) / 0.4; // (a runtime's crossing the eye does not make)
     this.column(eye);
-    DEEP_U.uDeepOn.value = this.below; DEEP_U.uDeepY.value = sea?.y ?? 0; DEEP_U.uDeepT.value = this.t;
+    DEEP_U.uDeepOn.value = this.below; DEEP_U.uDeepY.value = (sea?.y ?? 0) + (sea?.lift ?? 0); DEEP_U.uDeepT.value = this.t;
     const lit = this.below > 0.01;
     for (const c of OVERLAYS) { if (!c.parent) OVERLAYS.delete(c); else c.visible = lit; }
     if (sea?.silhouettes) sea.silhouettes(this.things);
@@ -164,7 +166,7 @@ export class Umbral {
       if (R.t >= UMBRAL.ring) continue;
       R.t += raw; const k = Math.min(1, R.t / UMBRAL.ring), s = (0.4 + 4.2 * (1 - (1 - k) * (1 - k))) * R.p;
       R.m.scale.set(s, 1, s); R.m.geometry.attributes.aAge.array.fill(k); R.m.geometry.attributes.aAge.needsUpdate = true;
-      if (sea) R.m.position.y = sea.heightAt(R.m.position.x, R.m.position.z) + 0.06;
+      if (sea) R.m.position.y = surf(sea, R.m.position.x, R.m.position.z) + 0.06;
       if (R.t >= UMBRAL.ring) R.m.visible = false;
     }
     const V = this.game.glitch?.veil;
@@ -201,7 +203,7 @@ export class Umbral {
       this.acc -= 1;
       const ahead = rnd(3, 16);
       _p.copy(camera.position).addScaledVector(_q, ahead).add(_v.set(rnd(-1, 1) * ahead * 0.7, rnd(-1, 0.6) * ahead * 0.45, rnd(-1, 1) * ahead * 0.7));
-      const top = this.sea ? this.sea.y - 0.6 : _p.y; if (_p.y > top) _p.y = top - rnd(0, 3);
+      const top = this.sea ? this.sea.y + (this.sea.lift || 0) - 0.6 : _p.y; if (_p.y > top) _p.y = top - rnd(0, 3);
       _v.set(rnd(-0.15, 0.15), rnd(0.25, 0.6), rnd(-0.15, 0.15));
       V.add.emit({ pos: _p, vel: _v, life: rnd(4, 7), size: rnd(0.07, 0.12) * (0.6 + ahead / 12), sizeEnd: 0.02, color: MOTE[(Math.random() * 3) | 0], alpha: 0.75, alphaEnd: 0, drag: 0.6, gravity: -0.12, shape: 'soft', grow: 1.2, floor: -1e9 });
     }

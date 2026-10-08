@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THINGS: the models of the small things the last three tools take (a Possibilikey, an instrument for the Crucibelle, a Lockheart's
-// coffin, a shard of crystal, a Lachrymite fossil, an ostracon). Each is a few primitives in the tool-kit's palette, flat-shaded, sized in metres; the Pneuka Box renders
+// coffin, a shard of crystal, a Lachrymite fossil, an ostracon, a rutter). Each is a few primitives in the tool-kit's palette, flat-shaded, sized in metres; the Pneuka Box renders
 // each once into its icon (pneuka/icons.js, prerendered: the look of a PS2 inventory), and the Lockheart wears the coffin on its chain
 // (`buildCoffin`, also the tool's own model).
 //
@@ -14,6 +14,7 @@
 import * as THREE from 'three';
 import { fossilThing } from '../vfx/garden/fossil.js';
 import { ostraconThing } from '../vfx/ostracon.js';
+import { rutterThing } from '../vfx/rutter.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.1, flatShading: true, ...o });
@@ -143,5 +144,6 @@ export function buildThing(id) {
   if (id === 'mat.shard') return shard();
   if (id === 'fossil.lachrymite') return fossilThing(); // (Calissa's: vfx/garden/fossil.js)
   if (id.startsWith('ostracon.')) return ostraconThing(id.slice(9)); // (an ostracon of its word, `ostracon.<word>`: Calissa's, vfx/ostracon.js)
+  if (id === 'rutter') return rutterThing(); // (the book shut on its tooled board: Calissa's, vfx/rutter.js)
   return null;
 }

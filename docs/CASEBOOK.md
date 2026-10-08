@@ -325,13 +325,43 @@ the rules before building in the same area; a rule a machine can check goes into
     uniform wrapped at 3600 real seconds jumps the phase of `sin(0.7 t)` (2520 rad is 401.07 turns) by the fraction left over; and `NaN` added once
     stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
     handed a number that is not one.
+120. **A shader patch says where its declarations go when the anchor is missing.** A function that splices code into another program
+    at a chunk (`#include <common>`, `<project_vertex>`) checks for every anchor it uses; a program of its own that ends in one chunk
+    but has no other (a ShaderMaterial) gets the head put first, never silently dropped. Prove it on the material it was written for,
+    in the game, with the console's shader log read.
 
-120. **A camera-facing quad is never square to the eye, never at it, and never trusted to alpha to coverage on a software rasterizer.**
+121. **A look's clock is the frame's own, passed down.** A look that animates by a clock (a shader's time, a scroll) is handed the
+    frame's real step by whoever draws it; a constant standing in for the frame (`1 / 60`) runs it at half speed at 30 frames a second
+    and double at 120. Where a draw is only a redraw (after a clear), the step is nothing, not a frame.
+
+122. **A camera-facing quad is never square to the eye, never at it, and never trusted to alpha to coverage on a software rasterizer.**
      Lean billboards a little in depth (toward the surface they stand for), shrink them away near the eye, and ask the renderer's name
      before turning on alpha to coverage: SwiftShader, which every headless check runs on, stripes the first and speckles the last, and a
      look that cannot be verified headless cannot be judged.
 
 ## Cases
+### 2026-10-08 · The shot field's marks ran their clock at a fixed 60 a second (review of art-crossing-wire)
+
+- **Seen:** not in play: read. `ShotField.draw()` handed the look `dt = 1 / 60` whatever the frame, and `clear()` drew once more and
+  ran the look's clock a frame on.
+- **Cause:** the draw was written when it was a placeholder with no clock; moving it to `RailShots` (whose shader's time is stepped by
+  the step it is given) kept the constant.
+- **Fix:** `draw(dt)` takes the frame's step from `update(dt)`; a redraw after a clear passes none. Checked by the Emocean sweep's crossing
+  part and `scripts/triptest.mjs`.
+- **Rule:** 121.
+
+
+### 2026-10-08 · The ambient geometry's rings were never drawn in the crossing: their program failed to compile under the storm (found wiring the looks into play)
+
+- **Seen:** the turn rings were laid (five live handles, an instanced count of five, 31 m ahead of the camera) and nothing showed. The
+  console: `mind-geometry: Vertex shader is not compiled ... 'vDeepW' : undeclared identifier`, `'stormClip' : no matching overloaded
+  function`, and `useProgram: program not valid` each frame.
+- **Cause:** the storm warp's opt-in (`vfx/stormwarp.js` `storm()`) put its declarations after `#include <common>` and its bend after
+  `#include <project_vertex>`. The Mind's geometry (`vfx/railgeometry.js`) is a ShaderMaterial that ends in `<project_vertex>` (so a warp
+  written for three's materials bends it) but never includes `<common>`: the bend went in, its declarations did not. The workbench's
+  stages never warped it, so it had never been compiled warped until the crossing did.
+- **Fix:** when the vertex shader has no `<common>`, the storm's head (its uniforms, `stormClip`, `vDeepW`) is put at the top.
+- **Rule:** 120.
 
 ### 2026-10-08 · Myggdrasil's fruit hung under caps that were still buds, and its mouth was drawn where the ground hid it (found in review)
 - **Seen:** feeding the tree a step (caps 3 to 4) hung its next fruit at once under the fourth cap while that cap was still a shut bud,
@@ -360,7 +390,7 @@ the rules before building in the same area; a rule a machine can check goes into
   cutting through each other in a line); leaves shrink away between 2.2 and 0.8 m of the eye; alpha to coverage is used only where the
   renderer is not a software one (`coverageTrusted`, asked once of a throwaway context), else a plain cut at one half, kept stable by
   mips that preserve each cell's coverage (`src/vfx/garden/leafcanopy.js`).
-- **Rule:** see rule 120.
+- **Rule:** see rule 122.
 
 ### 2026-10-08 · The fairy rings were black hoops on the garden's pale ground (found in review, placing the strains in the real garden)
 - **Seen:** on the workbench's dark stage the sward round a spore bed (0x18241a to 0x2c3c2a) read as dark moss. Stood by hand on the

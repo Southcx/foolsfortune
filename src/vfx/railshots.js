@@ -18,9 +18,10 @@
 // Prior art: Touhou's and Cave's bullets (the core and the edge, the long bullet for the fast one, the player's shots faint and under
 // the enemy's), Ikaruga's two polarities read by value as much as hue, Rez's player lasers, the hitbox dot of every modern danmaku.
 //
-//   const S = new RailShots({ cap: 400, guns: 128 })   parent.add(S.mesh)   (or S.build(scene))   S.parked() -> [mesh] (the warm-up)
+//   const S = new RailShots({ cap: 400, guns: 128, beams: 0 })   parent.add(S.mesh)   (or S.build(scene))   S.parked() -> [mesh] (the warm-up)
 //   every frame: S.set(i, pos, vel, kind, outlined, radius?, alpha?, seed?) for i < n, then S.count = n
 //                S.gun(i, pos, vel) for i < m, then S.guns = m         S.hurtbox(pos, radius) | S.hurtbox(null)
+//                S.beam(i, a, b, radius, kind, alpha, warning) for i < l, then S.beams = l   (a laser: its warning thread, then hot)
 //                S.update(rawDt, camera)   (sorts, writes, sends; camera optional: the last one that drew it)
 //   S.color(hex)   the psygun's shots' colour (the ship's)         S.show(on)
 //   (pos: the hit sphere's centre; vel: m/s in the frame the eye rides with (the rail's); both in the parent's frame: the world in the
@@ -39,17 +40,21 @@ export const RAIL_SHOT = {
   gunLength: 2.4,       // ... and its length
 };
 
-const _e = new THREE.Vector3();
+const _e = new THREE.Vector3(), _f = new THREE.Vector3();
+const NEAR = 6; // (metres: how near the eye a beam's head is drawn, at most)
+/** A laser's warning thread, by its kind: the astral's gold-white, the umbral's pale violet (linear light; the ribbon style's colour). */
+const BEAM_WARN = { astral: new THREE.Color(1.0, 0.85, 0.55), umbral: new THREE.Color(0.62, 0.55, 0.95) };
 
 export class RailShots {
-  constructor({ cap = 400, guns = 128 } = {}) {
+  constructor({ cap = 400, guns = 128, beams = 0 } = {}) {
     this.cap = cap; this.gunCap = guns; this.count = 0; this.guns = 0;
-    this.buf = new MarkBuffer(guns + cap + 1, { renderOrder: 43 });
+    this.buf = new MarkBuffer(guns + cap + beams + 1, { renderOrder: 43 });
     this.mesh = this.buf.mesh;
     this.fp = new Float32Array(cap * 3); this.fv = new Float32Array(cap * 3); this.fs = new Float32Array(cap * 5); // (kind, outlined, radius, alpha, seed)
     this.gp = new Float32Array(guns * 3); this.gv = new Float32Array(guns * 3);
     this.key = new Float32Array(cap); this.idx = new Uint16Array(cap);
     this.hb = { on: false, p: new THREE.Vector3(), r: 0.35 };
+    this.beamCap = beams; this.beams = 0; this.bd = new Float32Array(beams * 9); // (a beam: a, b, radius, kind, alpha, warning 0|1)
     this.gunRGB = new THREE.Color(0xffc65c);
     this.t = 0; this.camera = null;
     const draw = this.mesh.onBeforeRender;
@@ -74,6 +79,15 @@ export class RailShots {
     if (i >= this.gunCap) return;
     const o = i * 3; this.gp[o] = pos.x; this.gp[o + 1] = pos.y; this.gp[o + 2] = pos.z; this.gv[o] = vel.x; this.gv[o + 1] = vel.y; this.gv[o + 2] = vel.z;
   }
+  /** A laser, the i-th this frame (the shot field's: world/emocean/shotfield.js), from its thrower `a` to its reach `b`: hot, a capsule of
+   *  its kind as wide as what it hurts (`radius`), its rim and core a shot's; a WARNING, a thin line of its kind's light that hurts
+   *  nothing yet (a thread a pixel and a half wide, never thinner: Ikaruga's and Touhou's warning lines). */
+  beam(i, a, b, radius, kind = 'astral', alpha = 1, warning = false) {
+    if (i >= this.beamCap) return;
+    const d = this.bd, o = i * 9;
+    d[o] = a.x; d[o + 1] = a.y; d[o + 2] = a.z; d[o + 3] = b.x; d[o + 4] = b.y; d[o + 5] = b.z; d[o + 6] = radius; d[o + 7] = kindOf(kind) + (warning ? 2 : 0); d[o + 8] = alpha;
+  }
+
   /** The ship's hurtbox: where (the hit test's centre) and its radius; null hides it. */
   hurtbox(pos, radius = this.hb.r) { this.hb.on = !!pos; if (pos) { this.hb.p.copy(pos); this.hb.r = radius; } }
 
@@ -91,7 +105,7 @@ export class RailShots {
       B.put(k, ax, ay, az, gr * 0.4, x, y, z, gr, ax, ay, az, 1, x, y, z, 1, STYLE.gun, c.r, c.g, c.b);
     }
     // the foes', far to near
-    if (cam) { _e.setFromMatrixPosition(cam.matrixWorld); this.mesh.parent?.worldToLocal(_e); }
+    if (cam) { _e.setFromMatrixPosition(cam.matrixWorld); this.mesh.parent?.worldToLocal(_e); _f.set(0, 0, -1).transformDirection(cam.matrixWorld); }
     for (let i = 0; i < n; i++) { const o = i * 3; this.idx[i] = i; this.key[i] = cam ? (this.fp[o] - _e.x) ** 2 + (this.fp[o + 1] - _e.y) ** 2 + (this.fp[o + 2] - _e.z) ** 2 : 0; }
     if (cam && n > 1) { const key = this.key; this.idx.subarray(0, n).sort((a, b) => key[b] - key[a]); }
     for (let j = 0; j < n; j++, k++) {
@@ -100,6 +114,21 @@ export class RailShots {
       const len = sp > 1e-3 ? Math.min(sp * Z.tail, Z.tailMax) / sp : 0, r = this.fs[q + 2];
       const ax = x - vx * len, ay = y - vy * len, az = z - vz * len, al = this.fs[q + 3];
       B.put(k, ax, ay, az, r * Z.taper, x, y, z, r, ax, ay, az, al, x, y, z, al, this.fs[q], this.fs[q + 1], 0, this.fs[q + 4]);
+    }
+    // the lasers: their warning threads, then the hot beams (over the shots: a beam is the bigger danger)
+    for (let i = 0, nb = Math.min(this.beams, this.beamCap); i < nb; i++, k++) {
+      const d = this.bd, o = i * 9, kind = d[o + 7] % 2, warn = d[o + 7] >= 2, al = d[o + 8];
+      if (warn) { const c = kind ? BEAM_WARN.umbral : BEAM_WARN.astral; B.put(k, d[o], d[o + 1], d[o + 2], 0.02, d[o + 3], d[o + 4], d[o + 5], 0.02, d[o], d[o + 1], d[o + 2], al, d[o + 3], d[o + 4], d[o + 5], al * 0.4, STYLE.ribbon, c.r, c.g, c.b); }
+      else {
+        // the head kept six metres ahead of the eye: a beam sweeping past the camera would otherwise put its head at the lens, where a
+        // shot's near fade (railmark.js) takes the whole capsule out
+        let hx = d[o + 3], hy = d[o + 4], hz = d[o + 5]; const r = d[o + 6];
+        if (cam) {
+          const dh = (hx - _e.x) * _f.x + (hy - _e.y) * _f.y + (hz - _e.z) * _f.z, dt = (d[o] - _e.x) * _f.x + (d[o + 1] - _e.y) * _f.y + (d[o + 2] - _e.z) * _f.z;
+          if (dh < NEAR && dt > NEAR) { const u = (dt - NEAR) / (dt - dh); hx = d[o] + (hx - d[o]) * u; hy = d[o + 1] + (hy - d[o + 1]) * u; hz = d[o + 2] + (hz - d[o + 2]) * u; }
+        }
+        B.put(k, d[o], d[o + 1], d[o + 2], r, hx, hy, hz, r, 0, 0, 0, al, 0, 0, 0, al, kind, 0, 0, 0);
+      } // (its head at its reach, the end that sweeps by the ship: near, so the shader's least size never stretches it)
     }
     // the hurtbox, over all of it
     if (this.hb.on) { const p = this.hb.p; B.put(k++, p.x, p.y, p.z, this.hb.r, p.x, p.y, p.z, 0, p.x, p.y, p.z, 1, p.x, p.y, p.z, 1, STYLE.hurtbox); }

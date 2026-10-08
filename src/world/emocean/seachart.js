@@ -6,8 +6,9 @@
 // one waypoint a column along the lanes, then cast off. READ THE SEA (the Dreamvane worn): a needle wanders for four beats and the mouse
 // holds a mark on it; how long it was held true is the reckoning (voyage.reckon), and the fog over the chart lifts with it. A rutter
 // of this route and game day in the Pneuka Box shows the whole sea exact.
-// The look is a stand-in for Calissa's (the constellation over the crude, the lanes as threads of light): plain SVG in the Index's
-// window. The waypoints' words are placeholders for Espada's.
+// The look is Calissa's (ui/seachart/seachart.js SeaChartCanvas: the constellation over the crude, the lanes as threads of light, the
+// portents by tier, a waypoint's feeling as a halo, the squall's flame, a following sea's beads on its lane) in the Index's window; the
+// hovered waypoint's words under it are placeholders for Espada's.
 //
 // Prior art: Slay the Spire's map (lanes, a budgeted pool, the drafted path), FTL's sector beacons and scanners (sight that falls off),
 // Hades' doors (a counted shortlist, never a percentage), Sunless Sea's charts and port reports (the rutter).
@@ -19,6 +20,9 @@ import { hop, NODES } from '../../progress/econ/emocean.js';
 import { stageWx } from '../../progress/weather.js';
 import { today } from '../../core/calendar.js';
 import { sfx } from '../../audio/sfx.js';
+import { SeaChartCanvas, layout, CHART_SIZE } from '../../ui/seachart/seachart.js';
+import { draughtTrump } from '../../progress/rail/trip.js';
+import { rutterSpread } from '../../vfx/rutter.js';
 
 /** The waypoints' words (placeholders for Espada's) and what each sails as today. The legs not built yet sail as the shoal (a stand-in
  *  until Dovina's leg runtime: RAIL-OVERHAUL.md); the havens are the breathers between legs. */
@@ -29,7 +33,7 @@ export const WAYPOINT = {
 };
 const CLASS_WORD = { threat: 'a threat', haven: 'a haven', boss: 'something vast' };
 const READ = { beats: 4, beat: 0.6, tol: 14 }; // (the reckoning: four beats of 0.6 real seconds; the mark held within 14 degrees of the needle)
-const W = 640, H = 300;
+const W = 640;
 
 export class SeaChart {
   constructor(game, pier) { this.game = game; this.pier = pier; this.chart = null; this.path = []; this.reading = null; }
@@ -68,28 +72,34 @@ export class SeaChart {
     const { s, level, rutter } = this.seeing(), from = C.from, to = C.to;
     if (!this.sounding) { this.sounding = true; sfx.seaChart?.(true); } // (Wanda's: the chart's ambience while it is open; pier.update says when it shuts)
     M.showPage('seachart', (im, el) => {
-      const x = (col) => 70 + ((W - 140) * (col + 0.5)) / C.columns, y = (row) => 30 + ((H - 60) * (row + 0.5)) / C.rows;
-      const at = (id) => { const w = C.waypoints[id]; return [x(w.col), y(w.row)]; };
-      const open = new Set(next(C, this.path[this.path.length - 1] ?? null));
-      let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:6px auto;background:#120a08;border-radius:6px">`;
-      const line = (a, b, lit) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${lit ? '#ffe0a0' : '#6b4a3a'}" stroke-width="${lit ? 3 : 1.4}"/>`;
-      const fromP = [26, H / 2], toP = [W - 26, H / 2], drafted = (a, b) => { const i = this.path.indexOf(b); return i >= 0 && (i === 0 ? a == null : this.path[i - 1] === a); };
-      for (const id of C.first) svg += line(fromP, at(id), drafted(null, id));
-      for (const [a, b] of C.edges) svg += line(at(a), at(b), drafted(a, b));
-      for (const id of C.last) svg += line(at(id), toP, this.done() && this.path[this.path.length - 1] === id);
-      svg += `<circle cx="${fromP[0]}" cy="${fromP[1]}" r="9" fill="#ffb27a"/><circle cx="${toP[0]}" cy="${toP[1]}" r="9" fill="#ffb27a"/>`;
-      for (const [id, w] of Object.entries(C.waypoints)) {
-        const depth = w.col + 1, P = rutter ? { tier: 'exact', candidates: [w.type], cls: classOf(w.type) } : portent(C, w, depth, s, level);
-        const [cx, cy] = at(id), on = this.path.includes(id), can = open.has(id) && !this.done();
-        const label = P.tier === 'exact' ? `${WAYPOINT[w.type]?.word || w.type} ${'●'.repeat(w.strength || 1)}` : P.candidates.length ? P.candidates.map((t) => WAYPOINT[t]?.word || t).join(' or ') : P.cls ? CLASS_WORD[P.cls] : '✦';
-        const fill = on ? '#ffe0a0' : P.cls === 'haven' ? '#8fd3a8' : P.cls === 'boss' ? '#ff7a6a' : P.tier === 'star' ? '#5a4a6a' : '#c9a0ff';
-        svg += `<g data-wp="${id}" style="cursor:${can ? 'pointer' : 'default'};opacity:${can || on ? 1 : 0.6}"><circle cx="${cx}" cy="${cy}" r="${can ? 11 : 8}" fill="${fill}" stroke="${can ? '#fff' : 'none'}" stroke-width="2"/>`;
-        svg += `<text x="${cx}" y="${cy + 24}" fill="#fbe3cf" font-size="11" text-anchor="middle">${label}</text></g>`;
+      // the chart: Calissa's look (ui/seachart/seachart.js: the constellation over the crude, the lanes threads of light, each portent's
+      // tier, a feeling's halo, the squall's flame, a following sea's beads), clicked to draft; the hovered waypoint's words under it
+      const P = {};
+      for (const [id, w] of Object.entries(C.waypoints)) P[id] = rutter ? { tier: 'exact', candidates: [w.type], cls: classOf(w.type) } : portent(C, w, w.col + 1, s, level);
+      const say = (id) => {
+        if (this.look) { this.look.hover = id; this.look.draw(); } // (the hovered waypoint lit on the chart)
+        if (!this.hoverEl) return;
+        const w = id && C.waypoints[id], Q = w && P[id];
+        this.hoverEl.textContent = id === 'from' ? (NODES[from]?.name || from) : id === 'to' ? (NODES[to]?.name || to) : !Q ? ' ' : Q.tier === 'exact' ? `${WAYPOINT[w.type]?.word || w.type} ${'●'.repeat(w.strength || 1)}` : Q.candidates.length ? Q.candidates.map((t) => WAYPOINT[t]?.word || t).join(' or ') : Q.cls ? CLASS_WORD[Q.cls] : 'something';
+      };
+      this.look ||= new SeaChartCanvas({ maxWidth: 672 }); // (its own click and hover handlers unused: the places over it, below, take them)
+      this.ways = new Set(next(C, this.path[this.path.length - 1] ?? null));
+      const box = el('div', 'chart'); box.style.cssText = 'display:flex;flex-direction:column;align-items:center;margin:6px auto';
+      const frame = el('div'); frame.style.cssText = 'position:relative;line-height:0'; frame.appendChild(this.look.canvas); box.appendChild(frame);
+      this.look.set(C, { portents: P, drafted: this.path, classOf, trumpOf: (a, b) => draughtTrump(C.waypoints[a]?.feel, C.waypoints[b]?.feel) });
+      // each waypoint a place to click over the picture (the drafting's handle, the sweeps' and the tests' too): none drawn
+      const at = layout(C);
+      for (const id of Object.keys(C.waypoints)) {
+        const can = this.ways.has(id) && !this.done(), p = at[id], d = el('div');
+        d.setAttribute('data-wp', id);
+        d.style.cssText = `position:absolute;left:${(p.x / CHART_SIZE.w) * 100}%;top:${(p.y / CHART_SIZE.h) * 100}%;width:${(26 / CHART_SIZE.w) * 100}%;height:${(26 / CHART_SIZE.h) * 100}%;transform:translate(-50%,-50%);border-radius:50%;cursor:${can ? 'pointer' : 'default'}`;
+        d.onpointerenter = () => say(id); d.onpointerleave = () => say(null);
+        if (can) d.onclick = () => this.pick(id);
+        frame.appendChild(d);
       }
-      svg += `<text x="${fromP[0] - 14}" y="${fromP[1] - 16}" fill="#fbe3cf" font-size="12" text-anchor="start">${NODES[from]?.name || from}</text>`;
-      svg += `<text x="${toP[0] + 14}" y="${toP[1] - 16}" fill="#fbe3cf" font-size="12" text-anchor="end">${NODES[to]?.name || to}</text></svg>`;
-      const box = el('div', 'chart'); box.innerHTML = svg;
-      box.querySelectorAll('[data-wp]').forEach((n) => { const id = n.getAttribute('data-wp'); if (open.has(id) && !this.done()) n.addEventListener('click', () => this.pick(id)); });
+      this.hoverEl = el('div', 'grp', ' '); box.appendChild(this.hoverEl); // (the words are Espada's placeholders)
+      const held = this.pier.rutter(from, to); // (a rutter of this sea carried: its open spread under the chart, the passage it set down in ink: vfx/rutter.js)
+      if (held) { const page = rutterSpread(held, { chart: C, portents: P }); page.style.cssText = 'width:100%;max-width:336px;margin:6px auto 0;display:block;border-radius:3px'; box.appendChild(page); }
       im.appendChild(box);
       // the reckoning's needle, while it is read
       const read = el('canvas'); read.width = W; read.height = 60; read.style.cssText = `width:100%;max-width:${W}px;display:${this.reading ? 'block' : 'none'};margin:0 auto`;

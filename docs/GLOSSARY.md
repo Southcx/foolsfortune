@@ -847,6 +847,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   deep's black-violet fog, motes of Lachryma rising), the **caustics** thrown down onto what is under it (`causticsOn`: a caustic
   overlay; or through `warpMaterial`). **The surface crossing** (Q, a half-bar): the **splash ring** on the surface, a crown of crude,
   and the line of the surface wiped across the lens (the crown is the dive's, `vfx/waterfx.js`, thrown on the crude). *Not:* the crossing (a stage as it plays).
+- **the drawn surface**, **the lift** (`CrudeSea.lift`, `surfaceAt`; set by `vfx/crossinglook.js`): in the Umbral form the crude sea is
+  DRAWN higher, over the fight and the eye, while the sea the logic rides (`heightAt`: the swells, the brig, the shoal's boil) stays
+  where it is; a dive is the drawn surface sweeping up past the ship and the lens, a breach the same down. *Not:* a drift tide, the folded sea.
+- **the crossing's look** (`CrossingLook`, `game.emocean.looks`, `src/vfx/crossinglook.js`; Calissa's): the storm looks laid on the crossing
+  as it plays, read from the stage each frame: the storm warp's strength by the leg's phase, the waypoint's weather and a turn of the rail;
+  the lift; the ambient geometry hung on the spline (**turn rings**, threaded through a turn of the rail on its heartline; **flank
+  monoliths**, rising beside a fight leg); the wake left in the air along a turn's figure; **the surge's shell** (three great circles of
+  light turning round the ship while the surge keeps it untouchable); and the trip's pressures on the ship: **the hull's scars** (`Sloop.scars`:
+  the hull's open cracks, dark seams with the crude in them, carried leg to leg, turning to gold when caulked), **the bunker's bottle** (a
+  Lachrymato Bottle on the sloop's deck, its level the fuel left), and **the current's streaks** (adrift: pale lines overtaking the ship).
+  *Not:* the crossing (a stage as it plays, Petra's), the shell of a psygun (a caster shell).
+- **a laser's warning thread** (`RailShots.beam`, the shot field's): a laser's line before it burns, a thread of its kind's light a pixel
+  and a half wide, never thinner; hot, the beam is a capsule of its kind as wide as what it hurts. *Not:* a lane mark, the wire compass.
 - **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
