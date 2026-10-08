@@ -122,6 +122,8 @@ export class Creatures {
     c.windup = { at, radius, eta, kind, parry, t: eta + 0.3, mark: parry && part ? this.game.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
   }
   unwind(c) { c.windup?.mark?.clear(); if (c.windup) c.windup = null; }
+  /** An outlined windup run out unanswered with the Courier in its reach: a parry missed (the feat's run starts over: TRAINING.md 6). */
+  missed(c, w) { const P = this.game.player; if (P && w.at.distanceTo(P.pos) <= w.radius + 1) this.game.events?.emit('parry.missed', { kind: c.kind, by: 'creature' }); }
   /** The eta a windup's mark is shown with: Perception draws the outline's thickening out over a longer lead (x its widening), and the
    *  last quarter second, the window, is never moved (vfx/parrymark.js thickens over the 0.8 s before it; SOUL-ALCHEMY.md 6). */
   shownEta(e) { const w = this.game.alchemy?.widen?.('perception.notice') ?? 1; return e <= 0.25 ? e : 0.25 + (e - 0.25) / w; }
@@ -148,7 +150,7 @@ export class Creatures {
     const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
-      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) this.unwind(c); }
+      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
       c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');

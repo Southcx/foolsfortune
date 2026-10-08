@@ -16,6 +16,7 @@
 //   log.say('move', 'You slam into the ground.')                         one line
 //   log.say('battle', 'You shatter a jar.', { key: 'break', fmt: (n) => `You shatter ${n} jars.` })   folds repeats within a moment
 //   log.say('warn', 'You cannot do that.', { key: 'x', throttle: 3 })     at most once in 3 s
+//   log.lines (the last `max` lines)   log.said (every line ever said: a line's `seq` is its place, so a mark survives the cap)
 //   PageUp / PageDown scroll, End jumps to the newest, [ and ] change tab.
 // ---------------------------------------------------------------------------------------
 export const CLASSES = {
@@ -239,7 +240,7 @@ export class GameLog {
       this.afterSay(p);
       return p;
     }
-    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone };
+    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone, seq: this.said = (this.said || 0) + 1 }; // (seq: a line's place among all ever said; `lines` keeps only the last `max`, so mark a place by seq, never by index)
     this.lines.push(l);
     if (this.lines.length > this.max) this.lines.shift();
     this.last = l;

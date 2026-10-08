@@ -39,7 +39,7 @@ const OLD = {
 const PLAY = {
   fighter: { jellies: 1.2, zandatsu: 0.25, stash: 1.5 },       // a minute: jellies burst, cores taken, cubes a jelly had swallowed
   miner: { crystals: 18, size: 1.0, ring: 0.5, walk: 70,       // the formations, their mean size, share rung by the fork, s between them
-    fragile: 0.25, sweet: { dense: 0.4, fragile: 0.15 } },     // (R39) the share of them fragile, and how often she opens each kind at its sweet spot
+    fragile: 0.25, sweet: { dense: 0.4, fragile: 0.15 } },     // (R39) the share of them fragile, and how often the Courier opens each kind at its sweet spot
   photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
   treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
   angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog

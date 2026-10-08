@@ -35,23 +35,25 @@ check('the drop walks on the page', r1.walking, '');
 await g.step(200);
 const r2 = await ev(async () => {
   const G = __game.game, A = G.alchemy, out = {};
-  // a complement greys
-  A.s.colour = { h: 0, s: 0.6 }; const comp = A.walk([{ hue: 180, sat: 0.5, path: [[0, 0.1]] }]).colour, same = A.walk([{ hue: 0, sat: 0.5, path: [[0, 0.1]] }]).colour;
-  out.comp = comp.s; out.same = same.s;
+  // a complement greys (the pull: a step toward the material's own colour; across the wheel that passes through grey)
+  G.draught = {}; A.s.colour = { h: 0, s: 0.6 };
+  out.comp = A.walk([{ hue: 180, sat: 0.6, path: [[0.5, 0]] }], A.s.colour, { extra: 0 }).colour.s; out.same = A.walk([{ hue: 0, sat: 0.6, path: [[0.5, 0]] }], A.s.colour, { extra: 0 }).colour.s;
   // refused outside every swatch, with why in the log
-  A.s.colour = { h: 0, s: 0 }; const lines = G.log?.lines?.length ?? 0; const ref = A.fire(); out.refused = !ref.ok; out.why = ref.why;
+  A.s.colour = { h: 0, s: 0 }; A.s.cocked = true; const lines = G.log?.lines?.length ?? 0; const ref = A.fire(); out.refused = !ref.ok; out.why = ref.why;
   G.realm.press.fireLever(() => {}); out.logged = (G.log?.lines?.length ?? 0) > lines;
   // fired at the heart: half fuel, a true firing; seasoning spent
-  const id = 'focus', t = { h: 20 + 360 / 7, s: 0.65 }; A.s.season[id] = 40; A.s.colour = { ...t };
+  const id = 'focus', t = { h: 20 + 360 / 7, s: 0.65 }; A.s.season[id] = 40; A.s.colour = { ...t }; A.s.cocked = true;
   const c0 = G.cubes.balance; let fired = null; const off = G.events.on('alchemy.fire', (e) => (fired = e));
   const f = A.fire(); off?.();
   out.fire = f; out.event = fired; out.spent = c0 - (G.cubes.balance); out.season = A.seasoning(id); out.rank = A.rank(id);
+  out.again = A.fire().code; // (one firing a press: the lever is down until the next press)
   out.ledgerTrue = G.ledger?.get?.('alchemy.true') ?? null; out.full = (await import('/src/progress/alchemy.js')).fuelAt(0);
   return out; });
-check('a complement greys the colour', Math.abs(r2.same - r2.comp - 0.05) < 1e-6, { comp: r2.comp, same: r2.same });
+check('a complement greys the colour', r2.comp < 0.05 && Math.abs(r2.same - 0.6) < 1e-6, { comp: r2.comp, same: r2.same });
 check('fired outside every swatch: refused, said in the log', r2.refused && r2.logged, r2.why);
 check('fired at the heart: ranks, a true firing, half fuel', r2.fire.ok && r2.event?.true && r2.rank === 1 && r2.spent === Math.round(r2.fire.fuel) && r2.ledgerTrue === 1, { fire: r2.fire, spent: r2.spent, full: r2.full, true: r2.ledgerTrue });
 check('firing spends the seasoning', r2.season === 0, r2.season);
+check('one firing a press: a second is refused as spent', r2.again === 'spent', r2.again);
 const r3 = await ev(() => {
   const G = __game.game, A = G.alchemy, out = {};
   const before = A.seasoning('perception'), rad0 = A.radius('perception');

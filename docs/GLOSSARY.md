@@ -122,21 +122,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
-  A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+  A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
 - **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`): the spirit press as it stands in the garden,
   over the Athanor's vent, and its page: the **bath** drawn from above as the wheel (no numbers), the seven **swatches** (each a colour
   and a shape), the drop, the hopper's **trail** ahead of it. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
   features, the ground under it and the water at it; every swatch's radius is times it. *Not:* the Athanor's plate shrine (the same page).
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
-  neuralese word beside a picture of what it does; found once (18: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
+  neuralese word beside a picture of what it does; found once (16: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
   the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
-  upper ring) carries three words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
+  upper ring) carries three abstract words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
   "ledger stone" (the ledger is the game's counts).
-- **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
+- **the sealed room** (`world/ostraca.js`): a stone room by the ruins in the Dunes whose door slab the Dreamvane's fork opens by
+  ringing in it; inside, a stele. **a plaster patch** (the same): a cracked patch on the workshop's old walls that a blow knocks away,
+  an ostracon behind it. **a forgotten pot**: a pot on a floor of the Great Dunemaw that holds an ostracon (the deck: `DUNEMAW_DECK`).
+- **the Crib Sheet** (a knack, the owner's name; `game.ostraca.gloss(word)`): the English gloss beside each neuralese word that is glossed, its reach grown only by
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
-- **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
-  Hand, Wide Bore, Thick Walls, Perfect Pitch, Early Tell, Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+- **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
+  Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening; the name Espada's to confirm), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Slow Hand and the map's way back proposed). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
@@ -407,7 +410,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
 - **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
-  Veritome's macros; the beat: staying on tempo is transcribing actions to time). No new domains, ever (the owner, 2026-10-08).
+  Veritome's macros; the beat: staying on tempo is transcribing actions to time). **Ouranurgy** is the rules of the space
+  around you: displacement, and time slowed or stopped (blade mode, zandatsu, reprogramming, Celestial mode). No new domains, ever (the
+  owner, 2026-10-08).
   *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
   **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
@@ -816,10 +821,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
 - **moonflower**: a Spirit Garden bed that opens only at night, by the game hour.
-- **ostracon** (plural **ostraca**; `OSTRACA`, `src/npc/neuralese.js`; Espada's, the owner's archaeology direction, 2026-10-08): a
+- **ostracon** (plural **ostraca**; `OSTRACON_PICTURES`, `src/npc/neuralese.js`; Espada's, the owner's archaeology direction, 2026-10-08): a
   potsherd the town that was wrote on, one neuralese word beside a painted picture of what it does; dug up, it glosses that word on the
-  **Crib Sheet** (the knack: each neuralese word's English beside it, `LEXICON`). **the ledger stone**: the town's record, many words on
-  one slab, at the end of a harder path. *Not:* a sherd (the Pithos's calf), a plate (a Veritome photograph).
+  **Crib Sheet** (the knack: each neuralese word's English beside it, `LEXICON`). **a stele** (`STELAE`, Dovina's `progress/ostraca.js`; Greek *stēlē*, a standing
+  stone): one of two, three words each among a sentence, at the end of a harder path. *Not:* a sherd (the Pithos's calf), a plate (a Veritome photograph).
 
 ## Homonyms we keep on purpose (always qualify them)
 

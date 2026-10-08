@@ -241,7 +241,7 @@ export class Veritome extends Tech {
 
   shutter() {
     const g = this.game, P = this.P;
-    if (this.memory.full) { sfx.fizzle?.(); g.log?.say('info', 'The Veritome\'s memory is full. Appraise its plates in the Book (B).', { key: 'memoryfull', throttle: 3 }); this.shotCool = 0.4; return; } // (the one refusal: room, never film. The words are placeholders for Espada's)
+    if (this.memory.full) { sfx.memoryFull?.(); g.log?.say('info', 'The Veritome\'s memory is full. Appraise its plates in the Book (B).', { key: 'memoryfull', throttle: 3 }); this.shotCool = 0.4; return; } // (the one refusal: room, never film. The words are placeholders for Espada's)
     this.shotCool = 0.6;
     this.gesture('Tome_Shutter', { fadeOut: 0.12 });
     const report = scorePhoto(g, g.camera);
@@ -288,7 +288,8 @@ export class Veritome extends Tech {
     this.memory.expose({ ...plate, thumb, held });
     this.book.save();
     if (thumb) this.model.setPhoto(thumb);
-    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left });
+    const score = q.shot.subjects[0]?.score ?? 0, best = kind ? this.book.photos[kind]?.score ?? -1 : Infinity; // (the best subject's score; the Compendium's best of its kind)
+    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left, score, fresh: score > best }); // (score, fresh: domains.js weighs them, TRAINING.md 6)
   }
   /** Appraise plates off the roll (all of them, or those ids): the darkroom's batch (the Codex calls it). */
   appraise(ids = null) { return appraise(this.game, this.book, this.memory.take(ids)); }

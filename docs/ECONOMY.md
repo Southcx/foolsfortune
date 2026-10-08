@@ -22,13 +22,13 @@ than about 1.5x the aim**, except luck (a prismatic chest is a windfall).
 | profile | cubes an hour of play | x aim |
 |---|---:|---:|
 | fighter (jellies, zandatsu) | 608 | 1.27 |
-| miner (18 formations, tuned by ear) | 834 | 1.74 |
+| miner (18 formations, tuned by ear) | 602 | 1.25 |
 | photographer (spare cards condensed; no film: the Veritome is digital) | 430 | 0.90 |
 | angler (fish sold to Old Grog) | 475 | 0.99 |
 | treasury camper (the Weir's five plinths) | 586 | 1.22 |
 
 **The miner** (`crystaltuning.js`): plain strikes pay dense 0.6, fragile 0.5 (`ECON.crystal.kind`); the sweet spot dense x2, fragile
-x6 (`.sweet`), assumed found on 40% of dense, 15% of fragile; never listening earns about 400. The 1.74x is open (DESIGN.md section 7).
+x6 (`.sweet`), assumed found on 40% of dense, 15% of fragile; never listening earns about 400. 1.25x since R57 (it was 1.74x; measured again 2026-10-08).
 
 **The Tithe** returns 78% of what it takes, pity and dupes counted (dupes pay 4 / 12 / 30 / 80 / 240 by tier); the curio is the rest
 of the prize. **The treasury** plinths shut again for 4 real minutes (common) up to 2 h 40 real minutes (prismatic); DEBUG keeps 30
