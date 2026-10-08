@@ -13,6 +13,10 @@ emocean sweep's `back` and `leviathan` parts pass (30 and 30). What follows is t
   (another builder's) sits there. `windupK` is what it reads for its shrink.
 - `look.parts.list(prefix)`, `look.parts.states()`, `look.reset()`. The look never decides a state: you do (one exception below).
 - Each look's `update(rawDt, sea)` must run every frame it is shown (it eases the states and ticks the pulses).
+- An anchor is where the shrinking mark sits, never your hurtbox: `riggingWorld(i)` is still the sling's knot (what hits today) and a
+  `rigging.i` anchor is mid-sail, 2 to 3 m below it; `gillWorld` is the slit's upper end and its anchor mid-slit; `portWorld`,
+  `toothWorld` and an anchor are one point. `userData.radius` is the mark's size (a sling's is the sail's), not the hurtbox's: those
+  stay yours and Dovina's (`setpieces.js`).
 
 **The False Light** (`vfx/brig.js`, `new BrigLook({ env, fx, flank = -1 })`):
 - `'rigging.0'..'rigging.3'` (fore course, fore topsail, main course, main topsail), `'rigging'` (the whole rig: it follows its four
@@ -35,7 +39,9 @@ circling it sees the parts. `L.wake(k)`: its slick on the crude. `gillWorld(i, s
 **The Drowned Light** (`vfx/drownedlighthouse.js`, new, not yet in the rail): `new DrownedLight({ env, fx })`, parts `'lamp'` and
 `'window.0'..'window.5'`; `D.set({ wake, yaw, pitch, warn, hot, ghosts })`, `D.beamPoint(d, out)`, `D.hulls` and `D.ghosts` (Object3Ds
 to put foes on). When the graveyard leg builds it, park `D.group` for the warm-up as the others are: its materials match programs the
-game already warms (measured in the workbench: none new beyond the workbench's own lights).
+game already warms (measured in the game's own scene: none new), but only once they are shaded as the boot shades the scene: built
+after the boot they are flat, and drawn so each compiles a flat program and is turned smooth a second later by `present.update`; call
+`game.present.shade(true)` after building them and before their first draw (3 programs added without it, 0 with it).
 
 **Costs** (draws counted on the visible objects; programs at boot from `renderer.info.programs`, the cache keys before and after):
 programs at boot 163 before and after: every new material matches a program the game already warms, and `leviathan-shadow` is gone

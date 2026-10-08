@@ -241,6 +241,21 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-08 · The False Light's keel seams never answered the keel (found in review)
+- **Seen:** looking at her from under, the seams along the keel were the lure's full gold whether the keel was whole, damaged or broken
+  (the sheets' `fl-below-intact`, `-damaged` and `-broken` showed one and the same line). Beside it: a part's windup never lifted its
+  line and glow, the colours jumped to the rail in a frame when the last sling was cut, and the Drowned Light's `ghosts` were records
+  where its interface said Object3Ds.
+- **Cause:** the update wrote the seam's brightness and its colour on one line, `const seam = ...; // (its windup: the seams flare)
+  this.seamMat.color.setHex(...)`: the colour was after the `//` and never ran (rule 25). It parses, the check passes and no error is
+  thrown, so nothing said so. The windup set `windupK` and never asked the line and glow to read it; the colours' `strike` was set
+  straight into the draw.
+- **Fix:** the colour on a line of its own, so the seams are a thin dim line intact, brighter damaged, brightest broken with the hold's
+  gold pouring (the workbench, `crossing:bosses.falselight`, from below); `windup()` redraws the line and glow; the colours ease down
+  (`strikeE`) and fly again at once on `strike(0)`; `ghosts` are Object3Ds with their wreck and drift in `userData`.
+- **Rule:** 25. A line with a `//` in its middle was found in seven modules by a few lines of script (a `//` whose text goes on past a
+  closing parenthesis into `this.` or a statement): a check for it in `scripts/check.mjs` is Petra's to add.
+
 ### 2026-10-08 · Old Nobody's shadow compiled its program in play, at its first heave (found building its wake)
 - **Seen:** the boot's warm-up compiled 163 programs and `leviathan-shadow` was not among them (`renderer.info.programs`, the cache keys
   listed before and after); the shadow mesh was added to the scene by its first `shadow()` call, so its program compiled on Old
