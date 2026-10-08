@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
-import { dressFinish } from '../../vfx/finish.js';
+import { dressFinish, ownLight } from '../../vfx/finish.js';
 import { addKintsugi, kintsugiUniforms } from './kintsugi.js';
 import { tagRegions } from './damage.js';
 import { ECON } from '../../progress/econ/table.js';
@@ -80,11 +80,11 @@ export class Vessel {
       } else {
         U.uFinA.value.setHex(g.color); U.uFinB.value.setHex(g.color2 ?? g.color);
         const sh = REGIONS[r].shader, P = U.uFinP.value;
-        if (sh === 'glaze') P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale)
+        if (sh === 'glaze') { P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); U.uFinPart.value = r === 'mask' ? 2 : r === 'trim' ? 1 : 0; } // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale; which part, for a pattern laid out on the body)
         else if (sh === 'hair') { const b = hairSpan(ch); P.set(g.kind === 'hair' ? g.p[0] : 0, b.h, g.kind === 'hair' ? g.p[2] : 0, b.y0); if (g.kind !== 'hair') U.uFinB.value.setHex(g.color); }
         else P.set(...(g.p || [0, 0, 0, 0]));
         m.color.setHex(0xffffff); m.roughness = g.rough; m.metalness = g.metal;
-        m.userData.rest = sh === 'glaze' && m.map ? { em: g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
+        m.userData.rest = sh === 'glaze' && m.map ? { em: ownLight(g.pattern) ? 0xffffff : g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 }; // (a pattern in colours of its own lights them itself: vfx/finish.js ownLight)
       }
       if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
       if (r === 'skin') U.uFinS.value = this.soul;

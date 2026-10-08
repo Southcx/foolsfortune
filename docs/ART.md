@@ -52,6 +52,22 @@ Medals: hare's fur, oil spot, guan, kinrande, ru, yohen tenmoku. Shop: natural a
 glaze carries its kiln pattern drawn as the real one forms, fading as its cells shrink below two pixels (no shimmer at range). The kiln
 also sets gems with their real optics, hair finishes and skin tones.
 
+The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, and both paint the part in colours of their own:
+- **JELLY-CROWN** (pattern 7, **the dip**): a slip-green celadon (0x8ab894) dipped to the chest, as the crown sat in the jelly. It stops
+  in the urn crown's own broken lip (`urncrown.js`'s jag round the lathe's forty sides, straight between them, as a fracture runs),
+  thick and deep green along the lip and in every hollow of the painting, crawled apart just above that thick edge (**kairagi**, as
+  on a Korean Ido bowl's foot) with the slip dry between, a few blunt runs below; under the lip the jelly's wet
+  slip (0x7a5434), glossy. Nothing in it glows: a lit crackle on the vessel reads as its cracks. After Ru and Longquan dipped celadon,
+  and the Ido bowls' kairagi.
+- **EYE CUP** (pattern 6, **the eye**: `vfx/eyecup.js`): Attic black-figure in the ware's colours (`blackfigure.js` WARE): the red clay
+  (0xc8643a) with the black (0x1c1410), added white and added red, and an eye placed on every part, staring: one on the chest, the
+  chest's stone its pupil; a mirrored pair on the back either side of the Lachrymato Bottle; one on the back of each hand; one on the
+  outside of each thigh; the black below the knees as a cup's foot, two lines reserved in it. On the trim, the black (a cup's lip and
+  handles); on the mask, a black-figure face, the painting's pale eyes in added white with the crown's blue iris (the Eye Cup cast's
+  eye, `foelook.js`), its marks in added red. Each eye: an almond of two arcs, outlined in the black with a line incised through it,
+  the iris rimmed and ringed, a pupil, a catchlight, a brow; every line fades under two pixels. After the Attic eye-cups (kylix type
+  A, c. 540 to 500 BC: Exekias's Dionysos cup) and the Gorgoneion of their tondos.
+
 ## 5. The rules each place keeps
 
 - **The glitch** (`vfx/glitch.js`, the owner: "lean into it"): an event's pulse with an end (the FOE showing itself, an ultimate, a mind
