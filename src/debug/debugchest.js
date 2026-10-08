@@ -39,7 +39,8 @@ export class DebugChests {
     }
     // the Index: a DEBUG heading under the rooms (world/basement/basement.js goRoom sends 'debug' here)
     const rooms = game.course?.rooms;
-    if (rooms) for (const kit of Object.keys(DEBUG_KITS)) rooms.push({ id: `debug.${kit}`, tag: 'DBG', name: `DEBUG CHEST: ${kit.toUpperCase()}`, blurb: DEBUG_KITS[kit].for, group: 'DEBUG', spawn: 'debug', kit });
+    const order = Object.keys(DEBUG_KITS).sort((a, b) => GARDEN.has(DEBUG_KITS[a].at) - GARDEN.has(DEBUG_KITS[b].at)); // (the garden's last: they go in at a Shrine)
+    if (rooms) order.forEach((kit, i) => rooms.push({ id: `debug.${kit}`, code: i < 8 ? `Digit${i + 2}` : undefined, tag: i < 8 ? String(i + 2) : 'DBG', name: `DEBUG CHEST: ${kit.toUpperCase()}`, blurb: DEBUG_KITS[kit].for, group: 'DEBUG', spawn: 'debug', kit }));
   }
 
   get(kit) { return this.list.find((c) => c.kit === kit) || null; }
@@ -49,6 +50,7 @@ export class DebugChests {
     const g = this.game;
     for (const [kit, K] of Object.entries(DEBUG_KITS)) if (!this.get(kit) && !GARDEN.has(K.at)) this.stand(kit, K);
     if (!this.gardenDone && g.realm?.site && g.realm?.press?.frame) this.garden();
+    if (this.pending && g.realm?.active && g.realm.jarBody && !g.realm.entering) { const k = this.pending; this.pending = null; this.go(k); } // (gone in for a garden chest: set down by it)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'debug.chest' && P?.peekLatch?.('KeyF')) { P.latch('KeyF'); this.give(it.ref); }
     for (const c of this.list) c.look.update(dt);
@@ -122,7 +124,10 @@ export class DebugChests {
     const g = this.game, K = DEBUG_KITS[kit]; if (!K) return false;
     if (GARDEN.has(K.at)) {
       const c = this.get(kit);
-      if (!g.realm?.active || !c) { g.log?.say('warn', 'That debug chest is in the Spirit Garden: go in at a Shrine first.', { key: 'debug.go', throttle: 1 }); return false; }
+      if (!g.realm?.active || !c) { // (in at the last Shrine rested at, then set down beside it: update())
+        if (g.realm?.active || !g.realm?.enter(g.shrines?.get?.(g.shrines.last) || null)) return false;
+        this.pending = kit; return true;
+      }
       const up = c.pos.clone().sub(c.planet.c).normalize(), t = _v.set(0, 0, 1).projectOnPlane(up).normalize();
       if (t.lengthSq() < 1e-4) t.copy(_up).projectOnPlane(up).normalize();
       g.realm.jarBody.pos.copy(c.pos).addScaledVector(t, 1.6).addScaledVector(up, 0.6); g.realm.jarBody.vel?.set(0, 0, 0);

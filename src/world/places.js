@@ -40,6 +40,7 @@ export class Places {
   travel(id) {
     const g = this.game, p = this.get(id), at = this.pos(id);
     if (p?.via) return p.via() ? { pos: at, yaw: 0 } : null; // (a place reached its own way: a debug chest in the Spirit Garden, debug/debugchest.js)
+    if (g.realm?.active && p && at) return this.outOfGarden(() => this.travel(id)) ? { pos: at, yaw: 0 } : null;
     if (!p || !at || this.refuses()) return null;
     if (g.well?.active) g.well.end?.('abandon'); // (travelled out of a run: it is given up, nothing paid, nothing hauled: SWEEPS group 3)
     const zone = wholeOf(at);
@@ -56,9 +57,16 @@ export class Places {
     return { pos: to, yaw };
   }
 
+  /** From inside the Spirit Garden: it is left first (under its seam), and `then` runs once it has been. */
+  outOfGarden(then) {
+    const g = this.game, off = g.events?.on('garden.leave', () => { off?.(); queueMicrotask(then); });
+    g.realm.leave(); return true;
+  }
+
   /** Stand at a point (a QAIS report's `stand` line, /goto x y z yaw): into its zone as travel() goes, then set down there. */
   stand(to, yaw = 0) {
     const g = this.game, zone = wholeOf(to);
+    if (g.realm?.active) return this.outOfGarden(() => this.stand(to, yaw)) ? { pos: to, yaw } : null;
     if (zone === 'well' || this.refuses()) return null;
     if (g.well?.active) g.well.end?.('abandon');
     if (zone === 'dunes' && !g.dunes?.active) g.course.toDunes();
