@@ -25,6 +25,9 @@ export { PLANETOIDS, OFFERED as REALM_NAMES, name as realmName, gloss as realmGl
 
 const L = (g, k) => g.ledger?.get(k) || 0;
 
+// the soul glow (Soul Alchemy: game.alchemy.colour.s, as strong as the soul colour is saturated): the folk notice it past 0.3 (Dovina's)
+const glows = (g) => (g.alchemy?.colour?.s ?? 0) >= 0.3;
+
 export const TALKS = {
   saggar: {
     start: 'hello', again: 'again',
@@ -34,7 +37,7 @@ export const TALKS = {
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
         { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'What are the clapperjars?', go: 'jars' },
         { text: 'About the pots I broke…', go: 'pots' },
@@ -80,7 +83,7 @@ export const TALKS = {
         { mood: 'fear', text: "I'm Pip. I'm Mistress Saggar's apprentice. {p:0.4}{small}I'm hiding.{/}" },
         { mood: 'sad', text: 'She sent me down for glaze and the clapperjars {tremble}clapped at me{/}. All of them. {slow}At once.{/}' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'Why are you scared of them?', go: 'scared' },
         { text: 'Want me to deal with them?', go: 'deal' },
@@ -115,7 +118,7 @@ export const TALKS = {
         { mood: 'sad', text: "I've fished this pool since it was a {small}puddle{/}. Since before the sand came. {p:0.5}{slow}Since before the Weir was a weir.{/}" },
         { mood: 'awe', text: 'Do you see how the water holds the sky? {p:0.3}{slow}That\'s the Lachryma in it.{/} The tide brings it up from somewhere deep.' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'calm', text: '{slow}Mm.{/} {p:0.4}The Courier again. {bob}Sit a while.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: '{slow}Mm.{/} {p:0.4}The Courier again. {bob}Sit a while.{/}' }, { mood: 'sad', when: glows, text: 'Hm. {p:0.5}You\'ve a light in you. {p:0.4}{slow}The town had that, once.{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "What's in the water?", go: 'fish' },
         { text: 'Why so sad?', go: 'sad' },
@@ -161,7 +164,7 @@ export const TALKS = {
         { mood: 'sly', text: 'Welcome, welcome, {gold}welcome{/}! Raku, treasurer of the Weir, at your service. {p:0.4}{small}For a small fee.{/}' },
         { mood: 'joy', text: "You've come about the {lach}Tithe{/}, of course. {bounce}Everyone does, eventually.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'sly', text: 'Ah, my {gold}favourite{/} customer! {p:0.3}{small}Is that a purse I hear?{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'sly', text: 'Ah, my {gold}favourite{/} customer! {p:0.3}{small}Is that a purse I hear?{/}' }, { mood: 'sly', when: glows, text: 'That glow. {p:0.3}Is it real? {p:0.3}{small}What would you take for it?{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "Let's trade.", do: (g) => g.shops?.open('raku'), go: null },
         { text: "What's the Tithe?", go: 'tithe' },
