@@ -113,6 +113,7 @@ export class GardenHand {
   update(dt) {
     const g = this.game, I = g.input, R = this.R;
     this.clock += g.rawDt ?? dt;
+    if (R.press?.viewing) { this.brush.hide(); R.press.handle(dt, this); return this.pose(dt); } // (the press view: the station has the hand, world/garden/press.js)
     const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
     for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(KEY(k)) && !typing) this.setArt(ARTS[k]);
     if (I.wasPressed('KeyR') && !typing) this.turn();
