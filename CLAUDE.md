@@ -5,6 +5,10 @@ The owner's rules for every change. Each line is a rule; the reasons are kept sh
 ## Words and structure
 - **`docs/GLOSSARY.md` is binding**: one word, one meaning, in code, docs, commits and messages. Name a new thing there first, in the same
   commit; a request that uses a word against the glossary is clarified before anything is built.
+- **The glossary stays short** (the owner, 2026-10-08: "I can barely read it"): one line a term in `docs/GLOSSARY.md`. Sub-parts, looks and
+  history go in `docs/GLOSSARY-DETAIL.md` (not loaded), or in the system's spec.
+- **What the player reads follows `docs/plans/CLARITY.md`** (the owner, 2026-10-08): a genre-word label, one line of effect, numbers as
+  stats, shown before it is said. Lore names stay in the world and the Codex.
 - **The glossary is always in context** (the owner, 2026-10-07): it is imported below, so every session and every agent it starts
   reads it before anything else. A prompt for a subagent says "read CLAUDE.md and docs/GLOSSARY.md first" all the same.
 - **Names say which thing, whole** (the owner: "be more verbose when naming your scripts so that they're not ambiguous"): a file,

@@ -37,8 +37,9 @@ This file is the plan that comes out of them.
   Its credits moved to `docs/CREDITS.md`.
 - **The wiki's index**, with the pages still to write and their sources.
 - **CLARITY.md**, the rules for anything the player reads, and `scripts/clarity.mjs` to check them.
-- **The glossary:** a slim core is drafted (one line a term), with the full text kept in a reference file. It waits on the divisions'
-  review.
+- **The glossary:** cut from 22,500 to 5,900 words. 171 core terms, one line each; the full text of all 331 is in
+  `docs/GLOSSARY-DETAIL.md`, not loaded. Nothing was lost: the script checked all 1,075 bold terms. Duplicates were merged, and blot was
+  ruled the player's word. The report is `docs/plans/research/GLOSSARY-SLIM.md`, and the divisions review it at the gate.
 
 ### Dovina (mine, next)
 - **The wiki pages to write** (the index's list): combat, the Great Dunemaw, the Emocean, the Spirit Garden, Soul Alchemy,
