@@ -39,6 +39,7 @@ import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 import { Ostracon, Stele } from '../vfx/ostracon.js';
+import { debugChestModel } from '../vfx/debugchest.js';
 import { PICTURES } from '../vfx/blackfigure.js';
 
 export function buildStage(id) {
@@ -150,6 +151,7 @@ export function buildStage(id) {
     let pt = 0; obj.userData.ostraca = O; obj.userData.stele = S;
     obj.userData.tick = (t) => { const k = t % 12, b = k < 4 ? 0 : k < 6 ? (k - 4) / 2 : k < 10 ? 1 : 1 - (k - 10) / 2, dt = Math.max(0, t - pt); pt = t; for (const o of O) { o.set({ buried: b }); o.update(dt); } S.set({ buried: b }); S.update(dt); };
   }
+  else if (id === 'debug:chest') { const C = debugChestModel(); obj = C.group; let pt = 0; obj.userData.tick = (t) => { if (t % 2 < pt % 2) C.bump(); C.update(Math.max(0, t - pt)); pt = t; }; } // (the debug chest's look: its lid hopping every 2 s, as each F tops it up)
   else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } U.tell(k < 1.5 ? k / 1.5 : 0); if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'brush:bottles') { obj = new THREE.Group(); const B = ['small', 'medium', 'large'].map((sz, i) => { const b = new LachrymatoBottle({ size: sz }); b.group.position.x = -0.3 + i * 0.3; b.set({ fill: [0.9, 0.55, 0.3][i], crack: i === 2 }); obj.add(b.group); return b; }); const acc = new THREE.Vector3(); let pt = 0; obj.userData.tick = (t) => { acc.set(Math.sin(t * 1.3) > 0.9 ? 9 : 0, 0, Math.cos(t * 0.9) > 0.95 ? 7 : 0); for (const b of B) b.update(Math.max(0, t - pt), acc); pt = t; }; }
