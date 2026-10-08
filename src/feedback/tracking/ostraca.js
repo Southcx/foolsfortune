@@ -3,7 +3,7 @@
 // (progress/ostraca.js; docs/LORE.md, "Digging for words"). Counted in the ledger, where the Crib Sheet and the achievements read them;
 // the log says the word and its gloss once, the first time. The words are placeholders for Espada's. tracking/rules.js calls it.
 //
-//   ostracaRules({ on, L, log })     ostracon.find { word, gloss, place, by }   stele.read { stele, words: [word], gloss: [gloss], by }
+//   ostracaRules({ on, L, log })     ostracon.find { word, gloss, place, by }   stele.read { stele, text, words: [word], gloss: [gloss], by }
 // ---------------------------------------------------------------------------------------
 import { STELAE } from '../../progress/ostraca.js';
 
@@ -13,12 +13,12 @@ export function ostracaRules({ on, L, log }) {
     const first = !L.get(`ostracon.${e.word}`);
     L.inc(`ostracon.${e.word}`); if (!first) return;
     L.inc('ostracon.found'); if (e.place) L.inc(`ostracon.found.${e.place}`);
-    log.say('loot', `You dig up a sherd with writing on it: ${String(e.word).toUpperCase()}${e.gloss ? ` (${e.gloss})` : ''}.`);
+    log.say('loot', `You find an ostracon: ${String(e.word).toUpperCase()}${e.gloss ? ` (${e.gloss})` : ''}.`); // (Espada's line)
   });
   on('stele.read', (e) => {
     if (e.by !== 'courier' || !STELAE.some((s) => s.id === e.stele) || L.get(e.stele)) return;
     L.inc(e.stele); L.inc('stele.read');
     const words = (e.words || []).map((w, i) => `${String(w).toUpperCase()}${e.gloss?.[i] ? ` (${e.gloss[i]})` : ''}`);
-    log.say('loot', `You read a stele: ${words.join(', ')}.`);
+    log.say('loot', `You read the stele: ${e.text ? `${e.text} ` : ''}New words: ${words.join(', ')}.`); // (Espada's line; e.text the stele's sentence)
   });
 }

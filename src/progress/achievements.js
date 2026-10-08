@@ -583,12 +583,12 @@ export function buildAchievements(game) {
   H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
   C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);
   C('ir2', 'garden', 'The Garden', 3, 'count', 'Potter of Worlds', 'Sculpt your planetoids a hundred times.', 'garden.sculpt', 100);
-  // the ostraca (progress/ostraca.js; LORE.md, "Digging for words"): the explorer's track to the Crib Sheet (names placeholders for Espada's)
-  C('os1', 'explore', 'Digging', 1, 'count', 'Potsherd', 'Dig up a sherd with writing on it.', 'ostracon.found', 1);
-  C('os2', 'explore', 'Digging', 2, 'collect', 'A Few Words', 'Find six ostraca.', 'ostracon.found', 6);
-  C('os3', 'explore', 'Digging', 4, 'collect', 'Every Sherd', 'Find all eighteen ostraca.', 'ostracon.found', 18);
+  // the ostraca (progress/ostraca.js; LORE.md, "Digging for words"): the explorer's track to the Crib Sheet (names Espada's)
+  C('os1', 'explore', 'Digging', 1, 'count', 'First Word', 'Dig up an ostracon.', 'ostracon.found', 1);
+  C('os2', 'explore', 'Digging', 2, 'collect', 'Small Talk', 'Find six ostraca.', 'ostracon.found', 6);
+  C('os3', 'explore', 'Digging', 4, 'collect', 'Broken English', 'Find every ostracon.', 'ostracon.found', 16);
   C('os4', 'explore', 'Digging', 3, 'mechanic', 'Set in Stone', 'Read a stele.', 'stele.read', 1);
-  F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(18, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 24, { title: 'Epigrapher' });
+  F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(16, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 22, { title: 'Epigrapher' });
   // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
   F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
   C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);

@@ -58,7 +58,7 @@ export class Realm {
     // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
     this.clays = Object.fromEntries(this.site.planets.map((P) => [P.id, new Clay(P)]));
     for (const P of this.site.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d); // (Calissa's shape plus the clay: one ground)
-    for (const f of this.site.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'gate' || f.kind === 'shed' ? 4 : 3);
+    for (const f of this.site.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'athanor' ? 5.6 : f.kind === 'gate' || f.kind === 'shed' ? 4 : 3); // (the Athanor's bath, its ware ring and the press 4.35 m north: no stroke heaves them)
     for (const l of this.site.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
     this.plots = new Plots(game, this.site, this.clays);
     this.raising = new Raising(game, this);
@@ -153,6 +153,7 @@ export class Realm {
     if (!this.active) return;
     this.leaveDue = false;
     const go = () => {
+      this.press?.leave('garden'); // (the press view ends with the garden: what waits in the mouth goes back)
       this.active = false; this.site.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
@@ -208,7 +209,7 @@ export class Realm {
   /** Is the Jar's (or a spirit's) wish this step: WASD along the ground, as the camera faces. */
   wish(out) {
     const I = this.game.input, f = (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
-    if (this.camera.view === 'overhead') return out.set(0, 0, 0); // (overhead, WASD pans the view: the Jar stands)
+    if (this.camera.view === 'overhead' || this.press?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it: the Jar stands)
     const right = _w.crossVectors(this.camera.fwd, this.camera.up).normalize();
     out.copy(this.camera.fwd).multiplyScalar(f).addScaledVector(right, r);
     if (out.lengthSq() > 1) out.normalize();
@@ -353,7 +354,7 @@ export class Realm {
   // ------------------------------------------------------------------ the places
   /** The place the Jar stands at, for the chevron (courier/interact.js: game.interact.add('garden', ...)). */
   offer() {
-    if (!this.active || this.jarBody?.held || this.jarBody?.flight) return null;
+    if (!this.active || this.jarBody?.held || this.jarBody?.flight || this.press?.viewing) return null;
     let best = null, bd = FEATURE_R;
     for (const f of this.site.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jarBody.pos); if (d < bd) { bd = d; best = f; } }
     for (const s of this.spirits) { const d = s.body.pos.distanceTo(this.jarBody.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.body.pos }; } }
@@ -378,7 +379,8 @@ export class Realm {
         break;
       }
       case 'slot': if (G?.accrued(f.i) > 0) G.collect(f.i); else say(G?.slots?.[f.i]?.enc ? 'Nothing has gathered here yet.' : 'No echo works this pavilion yet.'); break;
-      case 'athanor': this.athanor(); return;
+      case 'athanor': this.press.enter(); return; // (the bath: F opens the press view, world/garden/press.js)
+      case 'hokora': this.athanor(); return; // (the plate shrine's own hokora on the Athanor's east shoulder: SOUL-ALCHEMY.md 4.2)
       case 'cocoon': this.cocoon(); return;
       case 'tribulationMat': {
         if (this.tribulation.active) return;
@@ -392,19 +394,15 @@ export class Realm {
     }
     this.sync();
   }
-  /** The Athanor: the spirit press (world/garden/press.js), and its shrine, where a photograph of a creature awakens a spirit of its
-   *  kind (world/garden/awaken.js). */
+  /** The plate shrine (its hokora on the Athanor's shoulder): a photograph of a creature awakens a spirit of its kind (world/garden/awaken.js). */
   athanor() {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     const open = () => menu.showPage('athanor', (im, el) => {
-      const work = el('div', 'rooms'), p = el('div', 'room', '<span class="n">✶</span><span><b>Work the spirit press</b><s>press materials to walk your soul colour; fire it into an attribute</s></span>');
-      p.onclick = () => this.press.open(); work.appendChild(p);
-      im.appendChild(el('div', 'grp', 'THE SPIRIT PRESS')); im.appendChild(work);
       const rows = el('div', 'rooms'), plates = this.awaken.plates();
       for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Awaken: ${p.kind}</b><s>a plate of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
       if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No plate to awaken</b><s>photograph a creature with the Veritome, and its plate can wake one here</s></span>'));
       im.appendChild(el('div', 'grp', 'THE PLATE SHRINE')); im.appendChild(rows);
-    }, { title: 'THE ATHANOR', sub: 'click a plate · F closes' });
+    }, { title: 'THE PLATE SHRINE', sub: 'click a plate · F closes' });
     open();
   }
   /** The cocoon tree: a fossil woken by the Awakening Song, or two spirits merged into one. */

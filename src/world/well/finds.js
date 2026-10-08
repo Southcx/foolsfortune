@@ -39,6 +39,7 @@ export class Finds {
         onBreak: (e, at, by) => this.broke(e, at, by) });
       if (ent) this.pots.push(ent);
     }
+    game.ostraca?.forFloor(this); // (a forgotten pot may hold the next ostracon: the deck, world/ostraca.js)
     // the artifacts: in the dead ends' find spots first, then glinting from a room's wall; the last of them warped
     const spots = rooms.flatMap((c) => (c.spots || []).filter((s) => s.kind === 'find').map((s) => s.pos.clone()));
     const n = FINDS.artifacts[floor - 1];
@@ -62,6 +63,7 @@ export class Finds {
 
   /** A pot broke: a find spills from it as cubes where it stood (whoever broke it: the log says who). */
   broke(ent, at, by) {
+    if (ent.def.ostracon) this.game.ostraca?.drop(ent.def.ostracon, at.clone(), 'dunemaw'); // (a sherd with a word on it, left where the pot broke)
     if (!ent.def.find) return;
     const g = this.game, worth = findWorth('pot', this.floor, false, ECON.well.deeper) * ECON.perMinute;
     g.cubes?.burst?.(at.clone(), worth, { count: 5, up: 4, from: 'well' });

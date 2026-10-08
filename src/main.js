@@ -208,6 +208,8 @@ import { Letters } from './coop/letters.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
+import { Knacks } from './progress/knacks.js';
+import { Ostraca } from './world/ostraca.js';
 import { Weather, phaseAt } from './progress/weather.js';
 import { modifier as stoneModifier } from './progress/stones.js';
 import { TitleScene } from './title/scene.js';
@@ -549,6 +551,7 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
+    game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
       if (game.dialogue?.open || game.kilnUI?.open || !idle()) return null;
@@ -696,6 +699,8 @@ async function main() {
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
+  game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
+  game.ostraca = new Ostraca(game); // (the inscribed sherds and the stelae: world/ostraca.js)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
     const setStones = () => game.lachryma?.addModifier('stones', stoneModifier(game.vessel?.look?.stones, { night: phaseAt() === 'night' }));
     game.lachryma?.addModifier('willpower', { get maxMult() { return game.alchemy?.widen?.('willpower.shield') ?? 1; } }); // (Willpower widens the pool, read live: SOUL-ALCHEMY.md 6)
@@ -838,6 +843,7 @@ async function main() {
   addEventListener('keydown', (e) => {
     if (e.code !== 'Escape' || e.repeat || !cursorFree() || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
     e.preventDefault();
+    if (game.realm?.press?.viewing) { game.realm.press.leave('esc'); return; } // (Esc leaves the press view, not to the pause menu: SOUL-ALCHEMY.md 4.3)
     if (god.arts.wheelOpen) { god.arts.closeWheel(false); return; }
     overlay.style.display = 'flex'; input.enabled = false; game.realm?.hand?.letGo(); // (what the garden's hand held is set down, not left hanging under the pause: GARDEN-SWEEP #14)
   });
@@ -1153,7 +1159,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

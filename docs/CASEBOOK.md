@@ -172,7 +172,11 @@ the rules before building in the same area; a rule a machine can check goes into
     down is idempotent: a second `dispose` does nothing.
 66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
     or with a line in the reader's reply saying why not.
-67. **A skipped call leaves its work owed.** A throttle that drops every other call (a counter's parity, a cooldown) drops whoever
+67. **An answer reads the window it answers.** A check that runs every frame of a press (the parry's window) tests the thing's own
+    timing too (a windup's eta), or holding the button early answers what has not yet come.
+68. **A pose built for a camera is built in the camera's convention.** `Object3D.lookAt` turns a plain object's +Z to its target and
+    only a camera's (or a light's) -Z; a target pose for a camera is made with `Matrix4.lookAt(eye, target, up)`, or on a camera.
+69. **A skipped call leaves its work owed.** A throttle that drops every other call (a counter's parity, a cooldown) drops whoever
     lands on the skip, the same one each time when the callers come in a fixed order, and a caller that clears its own flag first never
     asks again. Make the work cheap enough to do at every call (redraw only what changed), or keep the debt per thing and clear it when
     the work is done.
@@ -190,7 +194,7 @@ the rules before building in the same area; a rule a machine can check goes into
   (vfx/garden/planetoidmesh.js `refreshFromClay`, through `Clay.toLook`): a brush tick in the page 0.1 to 0.3 ms at 3 m, 0.8 to 1.8 ms at
   12 m (p50), so `reshape` runs at every call and the skip is gone (world/garden/realm.js). The same three planetoids, three rounds:
   every one within 2.6 micrometres of its clay after each tick.
-- **Rule:** 67.
+- **Rule:** 69.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
@@ -901,3 +905,21 @@ the rules before building in the same area; a rule a machine can check goes into
   box; a full one refuses; one plate appraised and it takes again. (The stress page still read `book.film` and threw on its first
   run: a rename is searched for in `scripts/` as well as `src/`.)
 - **Rule:** 66.
+
+### 2026-10-08 · A parry pressed at a lunge's first frame answered it (Calissa's survey, TRAINING.md 6)
+- **Seen:** blows could be parried by mashing V: a press at the start of a 0.8 s lunge broke it off.
+- **Cause:** `parry.js` `blow()` took the first windup in reach with no test of its `eta`, and `answer` runs on every frame of the
+  press's window, so any windup in reach was answered however early.
+- **Fix:** a blow is answered only when it will land within `BLOW_WINDOW` (0.25 real seconds, the siblings' own rule in
+  `coop/fight.js`); the kick and the cutlass answer blows when no shot is in reach, as every tool does; `move.parry` carries `lead`
+  (a blow) or `d` and `reach` (a shot); an outlined windup run out with the Courier in reach is `parry.missed`, which starts the
+  ledger's `parry.run.best` over. Measured headless: 0.8 s early refused, 0.2 s answered (`lead` 0.2), a run-out windup counted missed.
+- **Rule:** 67.
+
+### 2026-10-08 · The press view looked away from the bath (found headless, before it shipped)
+- **Seen:** in the press view the cursor's ray missed every lump by 13.5 m and the press drew at the bottom of the frame.
+- **Cause:** the view's target pose was a plain `Object3D` turned with `lookAt(focus)`, which points its +Z at the focus; the camera
+  slerped to that rotation and so looked down its -Z, straight away from the bath and upside down.
+- **Fix:** the target rotation from `Matrix4.lookAt(pos, focus, up)` (the camera's convention). Measured: the mouth at y 35 of 300,
+  a lump under the cursor missed by 0.013 m; hover, pinch, load, press and the lever all answer (scripts/soulalchemytest.mjs).
+- **Rule:** 68.

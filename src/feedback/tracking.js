@@ -24,6 +24,7 @@
 //   circuit.<id>.*             runs, finish, clean, fall, gates, medal.<gold|silver|bronze>
 //   records (hi/lo)            speed.max, speed.skiff.max, air.longest, fall.max, slam.height, chain.max, ...
 // ---------------------------------------------------------------------------------------
+import { KNACKS } from '../progress/knacks.js';
 import { PSYGUNS } from '../tools/psygun/kinds.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { sfx } from '../audio/sfx.js';
@@ -228,8 +229,10 @@ export class Tracking {
       return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your Soul Brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
       shatter: 'The Crucibelle shatters the shot.', stagger: 'You shoot it down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
     };
+    let parryRun = 0; // (parries without a miss: the feat's run, TRAINING.md 6; a miss is an outlined windup run out with you in reach)
+    on('parry.missed', () => { L.inc('parry.missed'); parryRun = 0; });
     on('move.parry', (e) => {
-      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed);
+      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed); L.hi('parry.run.best', ++parryRun);
       log.say('battle', e.what === 'blow' && e.how !== 'shutter' ? 'You parry the blow, and it breaks off.' : PARRY_SAY[e.how] || PARRY_SAY.return, { key: 'parry', win: 1 });
     });
     on('recoil.jump', (e) => { L.inc('move.recoil'); if (e.charged) L.inc('recoil.charged'); L.hi('recoil.up', e.up); });
@@ -344,10 +347,10 @@ export class Tracking {
     on('veritome.lens', () => L.inc('veritome.lens'));
     on('photo.take', (e) => {
       L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
-      first('photo', 'Logged: your first photograph. It waits in the memory of the Veritome to be appraised (B).');
+      first('photo', "Logged: your first photograph. It stays in the Veritome's memory until you appraise it (B).");
       if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
-      if (e.left === 0) log.say('info', 'That was the last plate the memory holds.', { key: 'memorylast', throttle: 5 });
+      if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 plates.", { key: 'memorylast', throttle: 5 });
     });
     on('photo.discard', (e) => L.inc('photo.discard', e.n));
     on('photo.appraise', (e) => {
@@ -424,8 +427,13 @@ export class Tracking {
     });
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
+    // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
+    on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
+    on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
+    on('plaster.break', () => L.inc('plaster.break'));
     on('reprogram.run', (e) => {
       L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');
+      if ((e.effects || []).length >= 5 && !e.misses && !(e.refused || []).length) L.inc('reprogram.held5'); // (five Functions held at the first try: the Crib Sheet's skilled way, progress/knacks.js)
       for (const f of e.effects || []) L.inc(`reprogram.fn.${f}`);
       L.hi('reprogram.q', Math.round((e.q || 0) * 100));
       const did = (e.effects || []).filter((f) => !(e.refused || []).includes(f)).map((f) => FUNCTIONS[f]?.label.toLowerCase()).filter(Boolean);

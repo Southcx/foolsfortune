@@ -23,6 +23,7 @@ import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
 import { STATS, firingOf, ranksOf } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
+import { basinVolume } from './water.js';
 import { GROUNDS } from './clay.js';
 import { FEELINGS } from './water.js';
 
@@ -112,6 +113,7 @@ export class GardenHand {
   update(dt) {
     const g = this.game, I = g.input, R = this.R;
     this.clock += g.rawDt ?? dt;
+    if (R.press?.viewing) { this.brush.hide(); R.press.handle(dt, this); return this.pose(dt); } // (the press view: the station has the hand, world/garden/press.js)
     const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
     for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(KEY(k)) && !typing) this.setArt(ARTS[k]);
     if (I.wasPressed('KeyR') && !typing) this.turn();
@@ -193,7 +195,7 @@ export class GardenHand {
     const P = this.hit.planet, clay = this.R.clays[P.id]; if (!clay) return;
     const dir = this.hit.point.clone().sub(P.c).normalize();
     if (!this.stroke) { // (a stroke begins: what it changes can be undone, and a flattening keeps the height it began at)
-      this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir), path: how === 'carve' ? [] : null }; // (a carve's path: a track if it closes on itself, world/garden/races.js)
+      this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir), path: how === 'carve' ? [] : null, held: basinVolume(clay) }; // (a carve's path: a track if it closes on itself, world/garden/races.js; held: what its basins hold before, for the stroke's q)
       this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift();
     }
     if ((this.brushT -= dt) > 0) return;
@@ -211,7 +213,7 @@ export class GardenHand {
     const S = this.stroke; this.stroke = null; if (!S) return; if (!S.moved) { this.undos.pop(); return; } // (nothing changed: nothing to undo)
     this.R.reshape(S.planet, true);
     if (S.how === 'paint') this.game.events?.emit('garden.paint', { planetoid: S.planet.id, ground: S.ground || 'none', by: 'courier' });
-    else { this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' }); this.R.plots.veins(S.planet); this.R.races?.redraw(S.planet); if (S.path) this.R.races?.offer(S.planet, S.path); } // (a ridge raised moves the veins' ends: item 13; a carve that closes is a track: 17c)
+    else { const after = basinVolume(this.R.clays[S.planet.id]), q = S.held + after > 1e-3 ? after / (S.held + after) : 0.5; this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, q: +q.toFixed(3), by: 'courier' }); this.R.plots.veins(S.planet); this.R.races?.redraw(S.planet); if (S.path) this.R.races?.offer(S.planet, S.path); } // (a ridge raised moves the veins' ends: item 13; a carve that closes is a track: 17c) // (q: the basins after against before, 0.5 unchanged: TRAINING.md 6)
   }
 
   // ---- placing: the page of what may stand there (its cost in cubes and a material of the feeling's kind)
