@@ -552,6 +552,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
   (the beds grow materials); *not* the moss ground (the paint) or a herb terrace (a feature).
+- **the leaf canopy** (`LeafCanopy`, `canopyGeometry`, `src/vfx/garden/leafcanopy.js`; the owner, 2026-10-08): a tree's crown drawn from a
+  few spheres whose every vertex is a **leaf** (a quad turned to the eye, swaying, lit by its sphere's normal, a clump from the **leaf
+  atlas**: gingko, willow, round, mulberry, gill, cap), in labradorite edged and veined in gold. One program for every canopy; a canopy
+  may take a **tint** (Myggdrasil's tincture: its flash leaned to a colour). *Not:* the plants (the green on the clay), a bed.
+- **a garden tree** (`GardenTree`, `plantGrove`, `src/vfx/garden/gardentree.js`): a trunk of the garden's plum-dark bark, a few branches
+  and a leaf canopy at their ends; the Mulberry Grove's eighteen spirit trees are a grove of them (two draws). *Not:* the cocoon tree (its
+  own model, wearing a leaf canopy), nor Myggdrasil.
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),

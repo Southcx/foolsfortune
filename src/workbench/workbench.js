@@ -178,6 +178,7 @@ export class Workbench {
     out.push({ id: 'garden:features', grp: 'the Spirit Garden', label: "the garden's features on a planetoid (each with its feeling; lit at night), and the sculpt brush raising and digging" });
     out.push({ id: 'garden:forms', grp: 'the Spirit Garden', label: "a spirit's fifteen forms (the five feelings by Law, Neutral and Chaos), on a stand-in body" });
     out.push({ id: 'garden:cocoon', grp: 'the Spirit Garden', label: 'the cocoon tree (a spirit cocooned, two merging into one, a pod opening; on a loop)' });
+    out.push({ id: 'garden:trees', grp: 'the Spirit Garden', label: 'garden trees: the leaf canopy in labradorite and gold (a gingko, a willow, a round crown, a mulberry, gill slivers tinted), game noon then night' });
     out.push({ id: 'garden:fossils', grp: 'the Spirit Garden', label: 'Lachrymite fossils (buried, dug, woken by the song, breaking open; on a loop)' });
     out.push({ id: 'garden:kiln', grp: 'the Spirit Garden', label: 'the Heavenly Kiln over the Peak (opening, bolts traced then striking)' });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
@@ -312,6 +313,7 @@ export class Workbench {
 
   clearHolder() {
     if (!this.holder) return;
+    this.model?.userData.leave?.(); // (a stage that borrowed the bench, its lights, puts them back: workbench/stages.js garden:trees)
     for (const c of [...this.holder.children]) this.holder.remove(c);
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }

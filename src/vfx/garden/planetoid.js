@@ -11,7 +11,7 @@
 //                terraces  the Herb Terraces, 12 m: stepped round its crown, rows of spirit herbs on them
 //                athanor   the Athanor, 10 m: basalt in columns, a vent at its crown glowing with the athanor's fire
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
-//                mulberryGrove the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
+//                mulberryGrove the Mulberry Grove, 16 m: moss and eighteen spirit trees (garden trees: vfx/garden/gardentree.js), the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
 //                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
@@ -32,6 +32,7 @@ import { mergeStatic } from '../../render/merge.js';
 import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
 import { groundMaterial, groundTick } from './gardengrounds.js';
 import { BOUGHT_LOOKS } from './boughtplanetoids.js';
+import { plantGrove } from './gardentree.js';
 
 export const PLANETOIDS = {
   dantian: { radius: 20, top: 0x9fd88a, low: 0x7fb08a, rock: 0x8a7f94 },
@@ -140,10 +141,12 @@ export class Planetoid {
     } else if (this.kind === 'pavilions') {
       const pave = new THREE.Mesh(new THREE.SphereGeometry(R * 1.006, 32, 6, 0, Math.PI * 2, 0, 0.6), std(0xeee4d4, { roughness: 0.6 })); pave.name = 'pavilions-paving'; pave.material.userData.noMerge = true; this.props.add(pave);
     } else if (this.kind === 'mulberryGrove') {
-      const trunk = std(0x8a6a5a), leaf = [std(0x8fd4a0), std(0xa8e0b4), std(0xc8e8a0), std(0xf2c8d8)];
-      for (let i = 0; i < 18; i++) { const a = rnd() * 6.28, y = -0.1 + rnd() * 1.0, s = Math.sqrt(Math.max(0, 1 - y * y)), h = 2 + rnd() * 2.5, tree = new THREE.Group();
-        tree.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, h, 5).translate(0, h / 2, 0), trunk)); tree.add(new THREE.Mesh(new THREE.SphereGeometry(1 + rnd() * 0.8, 8, 6).translate(0, h + 0.6, 0), leaf[i % 4]));
-        this.place(tree, _v.set(Math.cos(a) * s, y, Math.sin(a) * s), -0.1); tree.updateMatrix(); for (const c of [...tree.children]) { c.applyMatrix4(tree.matrix); this.props.add(c); } }
+      // the spirit trees: garden trees (vfx/garden/gardentree.js) in labradorite and gold, two draws for the eighteen; mostly mulberries
+      const LEAVES = ['mulberry', 'mulberry', 'round', 'mulberry', 'gingko', 'willow'], spot = new THREE.Object3D(), trees = [];
+      for (let i = 0; i < 18; i++) { const a = rnd() * 6.28, y = -0.1 + rnd() * 1.0, s = Math.sqrt(Math.max(0, 1 - y * y)), h = 2 + rnd() * 2.5, crown = 1 + rnd() * 0.8;
+        this.place(spot, _v.set(Math.cos(a) * s, y, Math.sin(a) * s), -0.1); spot.updateMatrix();
+        trees.push({ matrix: spot.matrix.clone(), height: h, crown, leaf: LEAVES[i % LEAVES.length], seed: i + 1 }); }
+      this.groveToPlant = trees; // (grown on its first update, when the garden is entered: the boot's heap never holds its 11,000 leaves)
     } else if (this.bought) {
       this.bought.dress(this, at, std);
     } else if (this.kind === 'chimney') {
@@ -154,12 +157,13 @@ export class Planetoid {
 
   update(raw = 1 / 60) {
     this.t += raw;
+    if (this.groveToPlant) { const G = plantGrove(this.groveToPlant); this.props.add(G.bark, G.canopy); this.grove = G; this.groveToPlant = null; } // (the Mulberry Grove's trees: two meshes)
     if (!clockOwner || clockOwner.disposed) clockOwner = this;
     if (clockOwner === this) groundTick(raw);
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 
-  dispose() { this.disposed = true; this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); }
+  dispose() { this.disposed = true; this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }); } // (the canopy's and the bark's are everyone's: casebook rule 24)
 }
 
 function lcg(seed) { let a = Math.floor(Math.abs(seed) * 1000) % 2147483647 || 7; return () => ((a = (a * 16807) % 2147483647) / 2147483647); }

@@ -35,6 +35,8 @@ import { buildFeature, FEATURE_IDS } from '../vfx/garden/features.js';
 import { dressForm, SIDES } from '../vfx/garden/forms.js';
 import { SculptBrush } from '../vfx/garden/sculptbrush.js';
 import { CocoonTree } from '../vfx/garden/cocoontree.js';
+import { GardenTree } from '../vfx/garden/gardentree.js';
+import { canopyTick } from '../vfx/garden/leafcanopy.js';
 import { Fossil } from '../vfx/garden/fossil.js';
 import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
@@ -112,6 +114,23 @@ export function buildStage(id) {
     obj.userData.tick = (t) => { const L = Math.floor(t / 8), k = t % 8; if (L !== loop) { loop = L; if (T) { obj.remove(T.group); T.dispose(); } T = new CocoonTree({ slots: 3 }); T.group.scale.setScalar(0.35); obj.add(T.group); }
       T.cocoon(0, { feeling: 'wonder', k: Math.min(1, k / 1.5) }); T.cocoon(1, { feeling: 'mirth', k: Math.min(1, k / 1.5) }); if (T.slots[2].k > 0 || k < 2) T.cocoon(2, { feeling: 'dread', k: Math.min(1, k / 1.5) });
       if (k > 2 && k < 5.2) T.merge(1, 2, (k - 2) / 3); if (k > 6 && T.slots[0].open < 0 && T.slots[0].k > 0.5) T.open(0); T.update(1 / 60); };
+  }
+  else if (id === 'garden:trees') {
+    // a grove of five garden trees (the leaf canopy in labradorite and gold: a gingko, a willow, a round crown, a mulberry, and gill
+    // slivers with a tincture's tint), game noon then night on a loop (10 real seconds each); the bench's lights dimmed for the night
+    // and put back when the stage is left (casebook rule 15)
+    obj = new THREE.Group();
+    const kinds = [['gingko', 3.4, 1.5], ['willow', 2.8, 1.7], ['round', 3, 1.6], ['mulberry', 3.2, 1.7], ['gill', 3, 1.5]];
+    const T = kinds.map(([leaf, height, crown], i) => { const t = new GardenTree({ leaf, height, crown, seed: i + 3, tint: leaf === 'gill' ? { color: 0xd8607a, amount: 0.55 } : null }); const a = (i / kinds.length) * Math.PI * 2 + 0.3; t.group.position.set(Math.cos(a) * 4.2, 0, Math.sin(a) * 4.2); obj.add(t.group); return t; });
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(7.5, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x5f8a6a, roughness: 0.95 })); ground.position.y = 0.01; obj.add(ground);
+    let lights = null, k = 0;
+    obj.userData.tick = (t) => {
+      if (!lights) { let S = obj; while (S.parent) S = S.parent; lights = []; S.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); }
+      const want = obj.userData.night ?? (Math.floor(t / 10) % 2); k = obj.userData.night !== undefined ? want : k + (want - k) * 0.05; // (eased over about a real second; a test's pin is taken at once)
+      for (const [L, i0] of lights) L.intensity = i0 * (1 - 0.86 * k);
+      canopyTick({ t, night: k });
+    };
+    obj.userData.leave = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); T.forEach((x) => x.dispose()); };
   }
   else if (id === 'garden:fossils') {
     let F = null, loop = -1, lastBeat = 0; obj = new THREE.Group();

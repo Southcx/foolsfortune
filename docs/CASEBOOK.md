@@ -251,8 +251,28 @@ the rules before building in the same area; a rule a machine can check goes into
 93. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
     and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
     `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
+94. **A camera-facing quad is never square to the eye, never at it, and never trusted to alpha to coverage on a software rasterizer.**
+    Lean billboards a little in depth (toward the surface they stand for), shrink them away near the eye, and ask the renderer's name
+    before turning on alpha to coverage: SwiftShader, which every headless check runs on, stripes the first and speckles the last, and a
+    look that cannot be verified headless cannot be judged.
 
 ## Cases
+
+### 2026-10-08 · The new leaf canopy's leaves near the eye were striped in rows, and every leaf was speckled with what was behind it (found in the build)
+- **Seen:** in the workbench's grove and inside the cocoon tree's crown (headless, SwiftShader), leaves within about 3 m of the camera
+  rendered in horizontal rows with gaps (whole quads as ladders of dashes over the floor; long lines across the screen once the near
+  fade was off), and with alpha to coverage on, the inside of every leaf, where its alpha is exactly one, was dotted in rows with the sky
+  behind it.
+- **Cause, measured:** two things, each switched off on its own. The rows went with depth writes (gone with `depthWrite` off), with
+  back-face culling (gone with `DoubleSide`) and with a quad lying square to the eye (gone when its corners were tilted in depth by 1%):
+  SwiftShader rasterizes a triangle of one view depth near the eye in broken rows; the quads' corners agreed on their centre to the last
+  bit (a JS replay of the vertex shader: worst disagreement 0). The dots went only with `alphaToCoverage` off: SwiftShader drops samples
+  in an ordered pattern even at an alpha of one, where the spec intends full coverage.
+- **Fix:** each leaf leans a third of the way to its sphere's surface plus a 1% tilt (never one depth, and leaves now shingle instead of
+  cutting through each other in a line); leaves shrink away between 2.2 and 0.8 m of the eye; alpha to coverage is used only where the
+  renderer is not a software one (`coverageTrusted`, asked once of a throwaway context), else a plain cut at one half, kept stable by
+  mips that preserve each cell's coverage (`src/vfx/garden/leafcanopy.js`).
+- **Rule:** see rule 94.
 
 ### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
 - **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
