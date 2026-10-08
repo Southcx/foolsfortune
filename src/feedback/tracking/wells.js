@@ -12,8 +12,10 @@ const NAME = (id) => itemOf(id)?.name || id;
 const AN = (s) => (/^[AEIOU]/i.test(s) ? 'an' : 'a');
 
 export function wellRules({ on, L, log }) {
+  let cracked = false; // (a crack taken in this run: Thick Walls' feat, a run without one: knacks.js)
+  on('vessel.crack', () => { if (enteredAt != null) cracked = true; });
   let enteredAt = null; // (seconds of play when the run began: what a player's run takes, measured, for the pay table: Dovina)
-  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; log.say('explore', 'You go down into the Great Dunemaw.'); });
+  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; cracked = false; log.say('explore', 'You go down into the Great Dunemaw.'); });
   on('well.floor', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
@@ -23,6 +25,7 @@ export function wellRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     if (e.how === 'abandon') { enteredAt = null; log.say('warn', "You leave the Well by another way. It keeps this run's finds."); return; } // (travelled out of a run: world/places.js; words a placeholder, Espada's)
     if (!e.shattered) L.inc('well.out');
+    if (!e.shattered && e.how !== 'escape' && enteredAt != null && !cracked) L.inc('well.run.whole'); // (up and out, the clay never cracked)
     if (e.how === 'escape') L.inc('well.escape'); // (the Wake Whistle: docs/plans/SHRINES.md)
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
@@ -48,7 +51,7 @@ export function wellRules({ on, L, log }) {
   on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' }); });
   on('cogitomap.get', (e) => {
     if (e.by !== 'courier') return;
-    L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth);
+    L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth); if ((L.get('well.enter') || 0) <= 1) L.inc('cogitomap.firstrun'); // (Ariadne's Thread's feat)
     log.say('loot', 'Cogitomap drawn: the Well as it is this game day.', { tone: '#ffd98a' });
   });
 }

@@ -1,51 +1,38 @@
-**2026-10-08, from Calissa (Art): the ostraca's looks are in your dig (branch `art-ostraca-swap-r`, reviewed); six crossings for your review**
+**2026-10-08, from Calissa (Art): what the ostraca's second swap adds to your dig (branch `art-ostraca-swap-r-on-base`, reviewed, on the base that already has the first swap); crossings for your review**
 
-The stand-ins in `world/ostraca.js` are swapped at their seams only. Every event, ledger key, save field and the dig's logic are as
-they were; `simRand()` is still drawn once a drop.
+The base already had the ostraca's and the stelae's looks in `world/ostraca.js` (the lazy looks made within 80 m, `parked()` for the
+warm-up, `footOf`, the cavern's stele made once). This adds what that swap left out, at the same seams. Every event, ledger key, save
+field and the dig's logic are as they were; `simRand()` is still drawn once a drop.
 
-- **An ostracon** is an `Ostracon` of its word (`drop`). `look.arrive(t, from)` runs on your `s.t` clock: dug out of the sand in the Dunes
-  (buried 1 to 0, a mound round it), falling from where its plaster patch was in the workshop, falling from a pot's height (0.35 m)
-  in the Great Dunemaw. `take` disposes the look. A buried ostracon draws nothing until it is revealed: the dowse's shiver is still the
-  only sign of it. The sparkle shows only during the rise, never while it is veiled. (Review: an ostracon dug in the Dunes keeps the sand's
-  normal from the ray `drop` already casts and `look.lieOn(normal, yaw)` lays it on the slope: casebook 64; `simRand()` still once.)
-- **A stele** is a `Stele` (`addStele`, now with a `yaw` argument). Its face carries Espada's sentence (`STELE_TEXT`), a clause to a row.
-  The cavern's faces the bowl's middle. `cavern()` disposes the last cavern's `stele.ring` before it adds the new one. Without that,
-  each visit kept a 640 x 1120 face texture and left a stale reach entry in `this.stelae`.
-- **The sealed room** uses `sandstoneMaterial({ ashlar: true })`, coursed blocks. `box()` lays each box with
-  `layStone(geometry, its position)`, so the UVs are in metres and the courses run on from box to box. This is a plain textured
-  material: no new shader program. The door slab is `sandstoneMaterial()`, one plain monolith (`door.m.material`).
-- **The sealed room's stele is drawn only once the door is open.** `sealedRoom()` hides it while the door is shut and `open()` shows
-  it. `addStele` now returns its entry. While shut, nothing can see inside, and hiding it saves about 9k triangles and its shadow
-  calls in the Dunes.
 - **The plaster patch** is a `PlasterPatch` (vfx/plasterpatch.js), 3 cm proud of the wall as your box was. In `struck`, your three
-  dispose calls became `look.break({ vfx, floorY: 0 })`. It leaves the scar and throws the flakes and dust (`plaster.break` and
-  `plaster.land` in the library).
-- **Update** reads `g.rawDt` for the looks' clocks and updates the loose ostraca, the patches and the stelae.
+  dispose calls became `look.break({ vfx, floorY: 0 })`: it leaves the scar and throws the flakes and dust (`plaster.break` and
+  `plaster.land` in the library). `update` calls `p.look.update(dt)`.
+- **An ostracon that falls** (from its plaster patch, from a pot's height of 0.35 m): `drop` keeps `s.from`, and the look's
+  `arrive(t, from)` runs on your `s.t` clock (0.8 real seconds) in place of the climb out of the sand, which on the workshop's tiles was
+  a mound of sand with the ostracon rising out of it. `tend` makes a late look with `arrive` too.
+- **An ostracon in the Dunes, or by a column, lies on the slope** (casebook 64): `drop` keeps the normal of the ray it already casts,
+  and `look.lieOn(normal, yaw)` lays the look on it. The buried six are laid on the sand that is drawn, point and normal from a ray in
+  `build()` (not `heightAt`, which stood 15 cm above it at one dig: the veiled mound hung in the air and jumped down when the pick
+  lifted it).
+- **The sealed room** uses `sandstoneMaterial({ ashlar: true })`: `box()` lays each box with `layStone(geometry, its position)`, so
+  the courses run on from box to box; the door slab is `sandstoneMaterial()`, one plain monolith. A textured standard material: no
+  new program.
+- **The sealed room's stele is drawn only once the door is open** (`sealedRoom()` hides it, `open()` shows it), so your `near()` guard
+  on `look.group.visible` stops it being read through the back wall: it was drawn inside the shut walls and offered from 1.9 m behind.
+- **A stele's face** carries Espada's sentence (`STELE_TEXT`), a clause to a row (the three words of `def.words` stay in `stele.read`).
+  She is asked to confirm that is canon.
 - **pneuka/thingmodels.js** gets `ostracon.<word>` to `ostraconThing(word)`, and **pneuka/icons.js** renders any `ostracon.*` id
-  through it. No Pneuka Box item for an ostracon exists yet. If finding one should give an item, add `ITEMS['ostracon.<word>']` and
-  the model and icon follow. I tested this with an injected item and did not commit it.
+  through it. No Pneuka Box item for an ostracon exists yet: if finding one should give an item, add `ITEMS['ostracon.<word>']` and
+  the model and icon follow (tested with an injected item, not committed; 6 to 8 KB an icon).
 
-**Seen while testing, yours:**
-- An ostracon dropped on a floor of the Great Dunemaw is added to `g.scene` and is never taken down when the floor goes, so it stays
-  wherever that floor stood. Your stand-in did the same.
-- `near()` checks only horizontal distance and height, so the sealed stele could be read from outside the back wall while the door was
-  shut: the stele stands 0.8 m inside a 0.4 m wall, well within REACH 2.2. **Closed in review** (one more crossing, in your file): `near()`
-  offers a stele only while it is drawn (`st.mesh.visible`), and the sealed one is drawn once the door is open.
-- Pre-existing, not touched: the Great Dunemaw's ostracon, left lying when the Courier leaves the Well, stays in `loose` for the session, so
-  its word is never dropped again (`drop` refuses a word that is loose) and it can be taken by standing where the floor stood.
+**Programs.** Against this base the swap adds none: your `parked()` warms the ostracon's body and the sparkle at boot, and every
+other new material is a stock textured standard material. One late program remains, as on the base before this swap: the shadow depth
+of an unskinned caster with a map (the first mapped static caster: the ostraca's, the stelae's, now the flakes' and the sealed room's
+blocks), compiled the first time one is drawn in the sun's shadow; `parked()` is under the world, outside the shadow's frustum. If
+you want it warmed, one mapped caster parked inside the frustum for the prime draw does it.
 
-**Programs (corrected in review): the swap adds three the perf does not see.** `npm run perf` reads the workshop, the Dunes and a Well
-hall, and no ostracon is in view at any of them, so it says 160 / 160 / 157 as on the base. Measured with the real warm-up (the prime
-draw on), in the Dunes at 160 after boot and three late: standing at a ruins ostracon the page compiles **two** more (`ostracon`, the
-potsherd's one shader; and a shadow depth program for an unskinned caster with a map, shared by the ostracon, the flakes, the stele
-and the sealed room's blocks, none of which existed before), and the first buried ostracon to rise compiles **one** more (the sparkle's
-`ShaderMaterial`). 163 alive in a session that has seen them, 3 compiled mid-play on first sight, none in the warm-up. The first
-version (162) had a box-mapped shader and a transparent bank; those are gone.
-Your call (ARCHITECTURE.md: "raised only by a commit that names the looks and the reason"): either raise `BUDGET.programs` in
-`scripts/perf.mjs` and the Budgets row to 163, naming the ostracon, the mapped caster's depth and the sparkle, and park one of each in
-the warm-up so they compile with the rest (`game.solar?.parked()` is the pattern: `Ostraca.parked()` returning a hidden ostracon with
-its sparkle shown and a stele, added to `gardenLooks` in `main.js`); or tell me which to give up (the sparkle can be a stock
-additive sprite driven from `onBeforeRender`; the ostracon's shader can be three stock materials without the black's sheen). Rule for
-the gate: a look is measured where it is first seen, not where the perf stands.
+**Seen while testing, yours, not touched:** a Great Dunemaw ostracon left lying when the Courier leaves the Well stays in `loose` for
+the session, so its word is never dropped again (`drop` refuses a word that is loose) and it can be taken by standing where the floor
+stood.
 
 Delete this note when done.

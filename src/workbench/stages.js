@@ -39,6 +39,7 @@ import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 import { Ostracon, Stele } from '../vfx/ostracon.js';
+import { debugChestModel } from '../vfx/debugchest.js';
 import { PICTURES } from '../vfx/blackfigure.js';
 
 export function buildStage(id) {
@@ -143,13 +144,14 @@ export function buildStage(id) {
     obj = new THREE.Group(); const R = [0, 1, 2, 3].map((i) => { const r = new SolarRing({ radius: 1 }); r.group.position.set(-3.3 + i * 2.2, 1.2, 0); obj.add(r.group); return r; });
     R[0].set({ lit: true, next: true }); R[1].set({ lit: true }); R[2].set({ lit: false }); let pt = 0; obj.userData.tick = (t) => { if (t % 3 < pt % 3) R[3].pass(); R.forEach((r) => r.update(Math.max(0, t - pt))); pt = t; };
   }
-  else if (id === 'dunes:ostraca') { // (the twelve words with pictures in two rows, one word with none (the meander), a stele behind with the twelve as stand-in words; dug, buried and dug again)
-    obj = new THREE.Group(); const words = Object.keys(PICTURES);
-    const O = [...words, 'VOYD'].map((w, i) => { const o = new Ostracon({ word: w }); o.group.position.set(i < 12 ? -0.8 + (i % 6) * 0.32 : 1.25, 0, i < 12 ? 0.3 + Math.floor(i / 6) * 0.3 : 0.45); obj.add(o.group); return o; });
-    const S = new Stele({ words }); S.group.position.set(0, 0, -1.0); obj.add(S.group);
+  else if (id === 'dunes:ostraca') { // (the sixteen words with pictures in two rows, one word with none (the meander), a stele behind with twelve of them as stand-in words; dug, buried and dug again)
+    obj = new THREE.Group(); const words = Object.keys(PICTURES), n = words.length, row = Math.ceil(n / 2);
+    const O = [...words, 'VOYD'].map((w, i) => { const o = new Ostracon({ word: w }); o.group.position.set(i < n ? -0.16 * (row - 1) + (i % row) * 0.32 : 0.16 * (row + 1.5), 0, i < n ? 0.3 + Math.floor(i / row) * 0.3 : 0.45); obj.add(o.group); return o; });
+    const S = new Stele({ words: words.slice(0, 12) }); S.group.position.set(0, 0, -1.0); obj.add(S.group);
     let pt = 0; obj.userData.ostraca = O; obj.userData.stele = S;
     obj.userData.tick = (t) => { const k = t % 12, b = k < 4 ? 0 : k < 6 ? (k - 4) / 2 : k < 10 ? 1 : 1 - (k - 10) / 2, dt = Math.max(0, t - pt); pt = t; for (const o of O) { o.set({ buried: b }); o.update(dt); } S.set({ buried: b }); S.update(dt); };
   }
+  else if (id === 'debug:chest') { const C = debugChestModel(); obj = C.group; let pt = 0; obj.userData.tick = (t) => { if (t % 2 < pt % 2) C.bump(); C.update(Math.max(0, t - pt)); pt = t; }; } // (the debug chest's look: its lid hopping every 2 s, as each F tops it up)
   else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } U.tell(k < 1.5 ? k / 1.5 : 0); if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'brush:bottles') { obj = new THREE.Group(); const B = ['small', 'medium', 'large'].map((sz, i) => { const b = new LachrymatoBottle({ size: sz }); b.group.position.x = -0.3 + i * 0.3; b.set({ fill: [0.9, 0.55, 0.3][i], crack: i === 2 }); obj.add(b.group); return b; }); const acc = new THREE.Vector3(); let pt = 0; obj.userData.tick = (t) => { acc.set(Math.sin(t * 1.3) > 0.9 ? 9 : 0, 0, Math.cos(t * 0.9) > 0.95 ? 7 : 0); for (const b of B) b.update(Math.max(0, t - pt), acc); pt = t; }; }

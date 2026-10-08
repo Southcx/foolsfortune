@@ -169,7 +169,8 @@ export class Workbench {
     out.push({ id: 'slice:finds', grp: 'the slice', label: "the Great Dunemaw's finds (the lamp, the ewer, the mask, the coins; the lamp warped)" });
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
-    out.push({ id: 'dunes:ostraca', grp: 'the Dunes', label: 'the ostraca (the twelve words and their pictures, one word with none) and a stele (the twelve as stand-in words): dug, buried, dug; on a loop' });
+    out.push({ id: 'debug:chest', grp: 'debug', label: 'a debug chest (the missing-texture crate; its lid hops at each top-up)' });
+    out.push({ id: 'dunes:ostraca', grp: 'the Dunes', label: 'the ostraca (the sixteen words and their pictures, one word with none) and a stele (twelve of them as stand-in words): dug, buried, dug; on a loop' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
     out.push({ id: 'slice:foe', grp: 'the slice', label: "the Great Slip Jelly's windups (each cast in turn, read from the body; then the Sherds and the Overflow)" });
     out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });

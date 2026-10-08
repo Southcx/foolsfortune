@@ -44,9 +44,9 @@ export const SOURCES = [
   // (Calissa, 2026-10-08: the continuous score once photo.take carries it, halved for a kind the Compendium already holds as well:
   // 24 plates of one pot must not pay 24 times; until then the stars)
   { event: 'photo.take',      domain: 'divination',     base: 8,  quality: (e) => (e.score != null ? q01((e.score - 50) / 200) * (e.fresh === false ? 0.5 : 1) : q01(((e.stars || 1) - 1) / 3)) },
-  // a parry read from a blow's windup (blows only): the later in the window, the better (Calissa's lead, the outline's own ramp); an
-  // early press still pays as rote. Projectiles, by how close they came (`d` of the parry's reach) once the event carries it.
-  { event: 'move.parry',      domain: 'divination',     base: 6,  quality: (e) => (e.by !== 'courier' ? null : e.what === 'blow' ? (e.lead == null ? 0.5 : e.lead <= 0.25 ? 1 : q01(1 - (e.lead - 0.25) / 0.8)) : e.d != null && e.reach ? q01(1 - e.d / e.reach) : null) },
+  // a parry read from a blow's windup (blows only): a blow is answered only inside its window (BLOW_WINDOW, 0.25 real seconds, Petra
+  // a564e9b), so the later in it, the better: at the strike 1, at the window's opening 0.4 (the rote floor). Projectiles, by how close they came (`d` of the parry's reach) once the event carries it.
+  { event: 'move.parry',      domain: 'divination',     base: 6,  quality: (e) => (e.by !== 'courier' ? null : e.what === 'blow' ? (e.lead == null ? 0.5 : 0.4 + 0.6 * q01(1 - e.lead / 0.25)) : e.d != null && e.reach ? q01(1 - e.d / e.reach) : null) },
   { event: 'god.grab',        domain: 'psychokinesis',  base: 4,  quality: () => 0.5 },
   { event: 'god.throw',       domain: 'psychokinesis',  base: 8,  quality: (e) => q01((e.speed || 0) / 30) },
   { event: 'drill.end',       domain: 'psychokinesis',  base: 12, quality: (e) => (e.tuned?.length ? null : e.run?.shots ? q01((e.run.hits || 0) / e.run.shots) : null) }, // (the Throwing Room; a tuned game earns nothing: Petra)

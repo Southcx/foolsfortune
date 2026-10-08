@@ -49,6 +49,9 @@ function deadInput(inp) {
   return g;
 }
 
+const STEADY = { cone: (3 * Math.PI) / 180, pull: 0.3 }; // (Steady Hand: within 3 degrees, at most 30% of the way a 60th of a second: Dovina's numbers)
+const _sa = new THREE.Vector3(), _sb = new THREE.Vector3();
+
 export class Weapon {
   constructor(game) {
     this.game = game;
@@ -128,6 +131,7 @@ export class Weapon {
   /** Input + timers. Called once per frame before physics. */
   update(dt, rawInput, player) {
     const W = T.weapon;
+    if (this.drawT >= 1 && this.game.knacks?.on('steadyHand') && !this.game.god?.controlling) this.steady(player); // (the knack: the aim drawn onto a target near the reticle)
     // The fire button can belong to something else (throwing what you're carrying). While it does,
     // the weapon sees it as up, and it stays up until the button is released, so the click that
     // threw the pot doesn't also fire, or start a charge, when the hands come free.
@@ -385,7 +389,8 @@ export class Weapon {
     const range = T.weapon.range;
     const ray = this.shotRay(camera, player, character, dir);
     dir.copy(ray.dir);
-    const hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
+    let hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
+    if (game.knacks?.on('wideBore') && !hasTag(hit?.entity, 'hurtable')) hit = this.wideBore(ray, range, hit) || hit; // (the knack: a creature's mark a third wider)
 
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
     const gunFwd = new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion);
@@ -466,6 +471,31 @@ export class Weapon {
     this.kickV += 1.8 * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = T.weapon.bloomMax;
     this.vent(character, 3);
+  }
+
+  /** STEADY HAND (a knack, progress/knacks.js): a creature within 3 degrees of the reticle draws the aim onto it, at most 30% of the way
+   *  a 60th of a second. Off, the aim is exactly the player's. Aim assist as every console shooter's slowdown and pull, made earned. */
+  steady(player) {
+    const g = this.game, cam = g.camera, raw = g.rawDt || 1 / 60, fwd = player.lookDir(_sa); // (the reticle's way: the camera's look)
+    let best = null, ba = STEADY.cone;
+    for (const c of g.creatures?.list || []) {
+      if (!c.alive || c.ally || c.training) continue;
+      const to = (c.center ? c.center(_sb) : _sb.copy(c.pos)).sub(cam.position), d = to.length(); if (d > T.weapon.range || d < 0.5) continue;
+      const a = fwd.angleTo(to.divideScalar(d)); if (a < ba) { ba = a; best = to.clone(); }
+    }
+    if (!best) return;
+    const k = 1 - Math.pow(1 - STEADY.pull, raw * 60), yaw = Math.atan2(best.x, best.z), pitch = Math.asin(THREE.MathUtils.clamp(best.y, -1, 1));
+    player.yaw += Math.atan2(Math.sin(yaw - player.yaw), Math.cos(yaw - player.yaw)) * k; player.pitch += (pitch - player.pitch) * k;
+  }
+  /** WIDE BORE (a knack): a shot that missed takes a creature whose own radius, a third wider, the ray passed through. */
+  wideBore(ray, range, hit) {
+    const g = this.game, far = hit ? hit.point.distanceTo(ray.origin) : range; let best = null, bt = far;
+    for (const c of g.creatures?.list || []) {
+      if (!c.alive || c.ally) continue;
+      const ctr = c.center ? c.center(_sb) : _sb.copy(c.pos), t = _sa.copy(ctr).sub(ray.origin).dot(ray.dir); if (t <= 0 || t >= bt) continue;
+      const near = _sa.copy(ray.origin).addScaledVector(ray.dir, t); if (near.distanceTo(ctr) <= (c.radius || 0.5) * 4 / 3) { bt = t; best = { entity: c, point: near.clone(), normal: ray.dir.clone().negate(), distance: t }; }
+    }
+    return best;
   }
 
   applyHit(hit, dir) {
