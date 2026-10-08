@@ -289,8 +289,41 @@ the rules before building in the same area; a rule a machine can check goes into
 106. **A mark sized from a projection is clamped, and a flag that draws a mark is eased before it reaches the look.** A streak as long as
     five fish, however close the camera, and a strike's 0 / 1 flag, are a flash on the screen in the one frame a group turns on. And a
     rate is never driven by an eased number: the phase swings by the clock times the change.
+107. **A mark a model lays in the world rides in the model's group, counter-moved, so it is warmed and hidden with it.** A shadow or a wake
+    added to the scene on its first use compiles in play and outlives its model's `visible`. And count a material's settings, not its
+    class: a transparent `DoubleSide` material draws twice (back faces, then front) and is two programs, and `fog: false` is a third;
+    match a material the game already warms (`renderer.info.programs` before and after), or set `forceSinglePass`.
 
 ## Cases
+
+### 2026-10-08 · The False Light's keel seams never answered the keel (found in review)
+- **Seen:** looking at her from under, the seams along the keel were the lure's full gold whether the keel was whole, damaged or broken
+  (the sheets' `fl-below-intact`, `-damaged` and `-broken` showed one and the same line). Beside it: a part's windup never lifted its
+  line and glow, the colours jumped to the rail in a frame when the last sling was cut, and the Drowned Light's `ghosts` were records
+  where its interface said Object3Ds.
+- **Cause:** the update wrote the seam's brightness and its colour on one line, `const seam = ...; // (its windup: the seams flare)
+  this.seamMat.color.setHex(...)`: the colour was after the `//` and never ran (rule 25). It parses, the check passes and no error is
+  thrown, so nothing said so. The windup set `windupK` and never asked the line and glow to read it; the colours' `strike` was set
+  straight into the draw.
+- **Fix:** the colour on a line of its own, so the seams are a thin dim line intact, brighter damaged, brightest broken with the hold's
+  gold pouring (the workbench, `crossing:bosses.falselight`, from below); `windup()` redraws the line and glow; the colours ease down
+  (`strikeE`) and fly again at once on `strike(0)`; `ghosts` are Object3Ds with their wreck and drift in `userData`.
+- **Rule:** 25. A line with a `//` in its middle was found in seven modules by a few lines of script (a `//` whose text goes on past a
+  closing parenthesis into `this.` or a statement): a check for it in `scripts/check.mjs` is Petra's to add.
+
+### 2026-10-08 · Old Nobody's shadow compiled its program in play, at its first heave (found building its wake)
+- **Seen:** the boot's warm-up compiled 163 programs and `leviathan-shadow` was not among them (`renderer.info.programs`, the cache keys
+  listed before and after); the shadow mesh was added to the scene by its first `shadow()` call, so its program compiled on Old
+  Nobody's first heave, a hitch on a real GPU at the set piece's first beat. Building the boss parts, the lighthouse lamp's beam first
+  added two programs of its own (a basic map, both sides, transparent: one for the back pass and one for the front, with `fog: false`
+  a variant the game had not got).
+- **Cause:** the mark lay outside the group `stage.parked()` shows for the warm-up (casebook 18); and a material's settings, not its
+  class, make its program.
+- **Fix:** the shadow and the new wake ride in the beast's group with `matrixAutoUpdate` off and a matrix that undoes the group's
+  (`unframe`), so their vertices stay in the world's frame, they are warmed with the group and hidden with it; and both are drawn with the
+  game's own basic-map program (a soft halo for the shadow, a slick texture streaming aft for the wake), as are the beam, the glass and the
+  ghosts' sails, which keep fog to match it. Boot programs 163 before and after; `leviathan-shadow` is gone, so one fewer compiles in play.
+- **Rule:** 107.
 
 ### 2026-10-08 · The silhouette's eye, which is shot at, was handed to the storm to bend (Calissa, reviewing the swarm)
 - **Seen (read, then run in the workbench with a recording hook):** `warpWith(fn)` gave `fn` every material the Mind's geometry made, and

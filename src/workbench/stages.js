@@ -45,9 +45,11 @@ import { PICTURES } from '../vfx/blackfigure.js';
 import { crossingStage } from './crossingstages.js';
 import { crossingShotsStage } from './crossingshots.js';
 import { buildSwarmStage } from './swarmstage.js';
+import { buildBossStage, BOSS_STAGE_IDS } from './bossstage.js';
 
 export function buildStage(id, game) {
   let obj = null;
+  if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
   if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
   else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
