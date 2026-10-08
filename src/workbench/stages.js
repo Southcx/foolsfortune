@@ -46,6 +46,7 @@ import { crossingStage } from './crossingstages.js';
 import { crossingShotsStage } from './crossingshots.js';
 import { buildSwarmStage } from './swarmstage.js';
 import { buildBossStage, BOSS_STAGE_IDS } from './bossstage.js';
+import { seaChartStage } from './seachartstage.js';
 
 export function buildStage(id, game) {
   let obj = null;
@@ -56,6 +57,7 @@ export function buildStage(id, game) {
   else if (id === 'ship:sloop') obj = new Sloop().group;
   else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the telegraph, the hurtbox: workbench/crossingshots.js)
   else if (id === 'crossing:shoal' || id === 'crossing:geometry') obj = buildSwarmStage(id); // (the crossing's swarm and ambient geometry: workbench/swarmstage.js)
+  else if (id === 'crossing:chart') obj = seaChartStage(); // (the sea chart at three confidences and the rutter: workbench/seachartstage.js)
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
   else if (id === 'slice:cave') {
     obj = new THREE.Group();
