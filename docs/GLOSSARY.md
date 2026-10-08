@@ -51,6 +51,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **pity** (`TITHE.pity`) — a counter that turns a run of bad chest pulls into a sure thing (a rare every 10, an epic every 40). → detail
 - **crystal** (`src/world/dunes/crystals.js`) — a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear;
   gives cubes, sometimes a crystal shard or a Possibilikey. → detail
+- **fret** (`FRETS`, `fretAt`, `src/world/dunes/crystaltuning.js`) — one of a crystal's five note steps up its stave, each in its note's colour; a
+  crystal's sweet spot is one fret. *Not:* a zone, nor the `/fret` emote. → detail
 - **signature** (`src/core/signatures.js`) — where Lachryma is, and how strongly; tools that sense or drink Lachryma ask here.
 - **draught** (`draughtOf`, `DRAUGHT`) — the feeling of the Lachryma last drunk; a blow of that damage type builds its status faster; fades over a
   real minute. *Not:* a drink of crude (a cask).
@@ -240,6 +242,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the flock** (`creatures/ai/flock.js`) — many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a school (a
   wave's role).
 - **the lock-on** (RMB held on the rail) — the reticle marks up to eight targets; release fires a lance at each. *Not:* the lock-on on foot. → detail
+- **the hurtbox** (`T.ship.hurt`, drawn by `vfx/railshots.js`) — the sphere a foe's shot must touch to hit the ship, drawn in the hull as a pale
+  core and a dark ring. *Not:* a hit region (the vessel's six).
+- **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`) — the crossing caught in a psychic storm: the world bent, never the danger;
+  scaled by the setting `visual.warp`. *Not:* the weather, the glitch. → detail
 - **the Astral form / the Umbral form / the surge** (`docs/plans/RAIL-OVERHAUL.md`) — the ship above and below the Emocean (Q; was polarity); the
   surge lets the swarm of lances go on R. *Not:* a seam. → detail
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`) — a worn tool carried on the ship, as many as its hull's slots; the psygun is always the gun.
@@ -296,6 +302,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
+- **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
+  Crucibelle is in the hands; the setting `visual.compassContrast`. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -361,6 +369,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the tuning panel** (Tab, `src/debug/tuning.js`) — live sliders and actions. A **setting** is the player's own preference; a **knob** is any
   other number; a knob off its default is tuned. → detail
 
+- **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`; Calissa's) — CLARITY's card: one choosable thing shown as icon, label, one line,
+  stat chips, key and state. Code and docs only. *Not:* a Veritome card.
 - **a label / a lore name** (`name` / `lore` on a data table; `docs/plans/CLARITY.md`) — what the UI calls a thing (a genre word: *Grapple*,
   *Bomb*) / the world's name for it (*the hook*, *the toll*). The UI shows only the label. *Not:* two things.
 
@@ -372,7 +382,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | key | a keyboard key; a Possibilikey | "Possibilikey", in full |
 | station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
-| card | a Veritome card; the tarot cards falling on the title | "card" is the Veritome's; the title's are scenery |
+| card | a Veritome card; the tarot cards falling on the title; a choice card (CLARITY's, the UI's) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
@@ -408,4 +418,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`) | `audio/cues.js`, `pneuka/thingmodels.js` |
 | Lab mode | the all-arts switch (`lendAll`, `setLendAll`; label "ALL ARTS" for now) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
+| polarity (the ship's feeling on the rail) | the Astral and Umbral forms | `src/courier/ship/`, `world/emocean/` (29 uses; the check's list is Petra's) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |

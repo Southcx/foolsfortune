@@ -59,9 +59,10 @@ Everything the player chooses has two names:
 A label is one or two words, a word a player already knows from other games. It is never a word the game invented, and never a
 metaphor that needs the lore to decode. The glossary records both names for every such thing (section 9).
 
-## 4. The card
+## 4. The card (a choice card)
 
-Every choosable thing is shown as one card: a mount, a tool, a Movement Art, a shop item, a feature to place, an encounter's
+Every choosable thing is shown as one **choice card** (`ChoiceCard`, `src/ui/choicecard.js`, Calissa's; in code and docs always "a choice
+card", since a card alone is the Veritome's): a mount, a tool, a Movement Art, a shop item, a feature to place, an encounter's
 choice, a ship. A card always has the same parts, in this order:
 
 1. **an icon** (Calissa's pixel art, 1x, scaled by whole numbers);
