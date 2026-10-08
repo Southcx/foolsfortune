@@ -107,6 +107,6 @@ export const RECORDS = {
   'move.launch': 'launchers that lifted something (opens the air string)',
   'move.air.best': 'the most blows in one air string, the creature never touching the ground',
   'move.special.<id>': 'specials used, by id',
-  'skiff.bail': 'bails off the Solar Skiff (thrown at a wall over about 14 m/s, or a wobble landing)',
+  'skiff.bail': 'bails off the Solar Skiff (a wall struck over 14 m/s, a landing past 17 m/s, or one landed badly crooked: skiff.js BAIL; a wobble is a near miss, not a bail)',
   'skiff.ollie.geyser': 'ollies off a geyser',
 };

@@ -139,7 +139,7 @@ starts when the one before it runs clean in the garden sweep (`scripts/sweeps/ga
 | 5 | 19 | New planetoids bought and placed | built | Petra | `ORBIT`, `orbitSlot`: a ring of 10 slots 95 m round the Dantian, 12° above and below its equator by turn (Galaxy's observatory); the hand carries the seed up and lets go; it takes the nearest free slot and grows lotuses and veins to its two nearest |
 | 5 | 12 | Water between planetoids (a fall off a rim drops to the nearest by its gravity) | built | Petra | |
 | 6 | 21 | A guest in your garden | open | Petra (after COOP.md C5) | `GUEST`: their Jar hops and looks; their hand may pet your spirits, spar at the Chimney, and leave one material a visit in the shed's gift slot; it never sculpts, paints, places, waters, catches, releases or takes (Animal Crossing's visitors do not dig) |
-| all | 23 | Each item's check in the garden sweep | as each lands | Dovina | Petra sends the hooks |
+| all | 23 | Each item's check in the garden sweep | built for steps 1 to 5 (section 13 of the sweep: 126 pass, 2 fail: the plots, below) | Dovina | Petra sends the hooks |
 | all | 24 | **Added:** the garden's help page (the keys, the brushes, the views) | built | Petra; words Espada | |
 | all | 26 | **Added:** the garden's ledger and achievements (strokes, water led, rivers cut, races won and records, visitors settled, sparring) | open | Dovina | predicates over the ledger, as every achievement |
 | all | 27 | **Added:** the gardener in `scripts/economy.mjs` (what an hour in the garden costs and earns: beds, the dividend, the sinks) | open | Dovina | |
