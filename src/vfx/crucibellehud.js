@@ -23,7 +23,7 @@
 // Read, not driven: the bell's own clock and judgement (`crucibelle.grid()`, `now()`, `fever`), its events (`crucibelle.note`,
 // `song.play`, `crucibelle.fever`) and its songs (tools/crucibelle/songs.js). Settings: `visual.pendulumSize`, `visual.compassContrast`
 // (the lines fainter or brighter, and a dark keyline under them that grows with it: light lines alone vanish on a noon sky). The tape
-// opens a gap below its line for the swing, and round the bell's mark (wirecompass.js `hole`). The Half Time knack (`game.knacks.halfTime`): the ends land on every other
+// opens a gap below its line for the swing, and round the bell's mark (wirecompass.js `hole`). The Half Time knack (`game.knacks.on('halfTime')`, progress/knacks.js): the ends land on every other
 // eighth, the quarters, never a slower tempo, and a third notch in the middle marks the off-eighth the bell still counts.
 //
 // Prior art, as on a museum label:
@@ -147,7 +147,7 @@ export class CrucibelleHud {
 
   /** The swing at time `t` on the bell's grid `G`: the angle and everything the eye can read off it. */
   swing(t, G) {
-    const e = G.spb / 2, ph = (t - G.t0) / e, half = !!this.game.knacks?.halfTime;
+    const e = G.spb / 2, ph = (t - G.t0) / e, half = !!this.game.knacks?.on?.('halfTime');
     const sw = half ? ph / 2 : ph, th = AMP * Math.cos(Math.PI * sw);
     const wE = Math.min(BELL_WINDOW / e, half ? 1 : 0.5);
     const notch = AMP * Math.cos(Math.PI * Math.min(half ? wE / 2 : wE, 0.5));
