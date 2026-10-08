@@ -117,17 +117,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   a Well alive, to its mouth, with the haul and three quarters of the run's pay (Pokemon's Escape Rope, Psychonauts' Smelling Salts). It
   breaks when blown; one carried at a time. *Not:* "escape item" (the placeholder) in what the player reads.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
-  (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
+  (a hue and a saturation on the colour wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
-  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
+  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the colour wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
-- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
-  station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
-  materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
-  bead**, the **ghost path** and **ghost bead** ahead of it, the **line blend** a press leaves; the press 4.35 m north, the plate shrine in
-  its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look Calissa's, `src/vfx/alchemy/`, handed
+  the station's calls by `pressbath.js`): the station on the Athanor's crown: the **bath** (the colour wheel, 5 m across, no numbers: a
+  dish of still black Lachryma, moved from the drum's pool to the basin), the **basin** it lies in (`vfx/alchemy/basin.js`), its **grey
+  centre** (a disc of bare clay 25 cm across, wheelColour's own grey), its three **throwing lines** (faint grooves a third out, on the
+  tiles' circle and at the lip), its **kerb** (basalt, with each **attribute's seal** carved in it: the potter's chop, filled with the
+  tile's glaze, `vfx/alchemy/seals.js`; *not* "glyph", the glyph pop's word), the **ware ring** (the Pneuka Box's materials laid out as
+  **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, the **spread's break** at its edge, **a tile's heart**,
+  always in full; a **yohen star** on its face for each true firing), the **soul bead**, the **ghost path** and **ghost bead** ahead of
+  it, the **line blend** a press leaves, and **the draught's current** (sheen drifting toward the draught's bearing, never a tint);
+  the press 4.35 m north, the plate shrine in its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
   features, the ground under it and the water at it; a firing's fuel is divided by it (Dovina's ruling 3). *Not:* the plate shrine (its hokora).
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
@@ -606,9 +611,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
-  is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
+  is the hourglass in the pool. **the drum's pool**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired (it
+  was "the bath" until 2026-10-08: the bath is the press's basin now). **the hue
   ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
   **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+- **wheelColour** (`src/vfx/wheelcolour.js`, SOUL-ALCHEMY.md 4.16): the one colour function of the colour wheel, in Oklab: every colour
+  at the press is drawn by it (the tiles, the seals' glaze, the soul bead, the paths, the droplets, the lumps), so a bead and its tile
+  are the same colour when they are the same place. **self-lit** (`selfLit`, `src/vfx/selflit.js`): a surface drawn with the frame's
+  tone curve and grade undone, so it shows exactly the colour it was given; *not* emissive (it never glows past what it is).
+- **the press's marks** (`Marks`, `src/vfx/alchemy/marks.js`): the self-lit things on and round the bath (tiles, seals, droplets, paths,
+  the beads, the lumps) as one instanced program, layered by instance order. *Not:* a world mark (a mark on a thing, carrying no words:
+  these carry none either, but are the press's own).
 - **the ripple tank** (`src/vfx/ripples.js`): the rings on water: a height field round the eye stepped by the wave equation, that every
   disturbance of a water surface (`game.water.disturb`) dents; the water's shader reads its slopes. **The wake** is its rings' V behind
   a swimmer. **The crown** (`src/vfx/waterfx.js`): a dive's splash, a rim of drops flung up and out round a column. **Drips**: the
@@ -878,7 +891,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
+| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`); the colour wheel (Soul Alchemy's: hue the bearing, saturation the distance out; in play it is the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
 
 ## Retired words
 

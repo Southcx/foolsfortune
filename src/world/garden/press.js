@@ -199,10 +199,10 @@ export class GardenPress {
       if (W.t >= W.dur) this.finish();
     }
     // the tiles (their radius now, their bare radius), the bead, the ghost paths, the lumps
-    this.bath.tiles(IDS.map((id) => { const t = targetOf(id); return { ...t, r: A.radius(id), bare: radiusAt(A.rank(id)) }; }));
-    this.bath.bead(bead);
+    this.bath.tiles(IDS.map((id) => { const t = targetOf(id); return { ...t, r: A.radius(id), bare: radiusAt(A.rank(id)), rank: A.rank(id), stars: A.stars?.(id) ?? 0 }; })); // (rank: 9 and 10 share a radius; stars: the true firings, when kept)
+    this.bath.bead(bead, { viewing: this.viewing, draught: this.game.draught, walking: !!W }); // (the bead wells up in the press view; the draught's current; the stir)
     const queued = this.queued(), from = A.colour;
-    this.bath.queue(this.viewing && queued.length ? A.walk(queued, from).trail : null);
+    this.bath.queue(this.viewing && queued.length ? A.walk(queued, from).trail : null, queued.map((_, i) => A.walk(queued.slice(0, i + 1), from).trail.length - 1)); // (ends: where each material's walk ends, for its ring)
     const hov = this.carry || this.hover;
     this.bath.ghost(this.viewing && hov ? A.walk([...queued, hov.m], from).trail : null);
     const lumps = this.lumps(); if (this.carry) lumps.push({ ...this.carry }); this.bath.lumps(lumps);
