@@ -104,6 +104,19 @@ glyph, so in a week of play the eye learns to see "a little too warm, a little t
   glaze matched to your soul colour is said by the folk (Espada).
 - **Achievements and Arts:** true firings, a rank in all seven, the first Firing each opens (section 3 of TRAINING.md).
 
+## 7a. What it means (the owner, 2026-10-08)
+
+> "Enemy drops are like remnants of an 'experience' and much like in real life we take in 'experiences' and process them mentally,
+> which then changes our personality over time."
+
+So the press is **processing**. A material is an experience kept; pressing is thinking it through, in an order (the same experiences
+in another order make another person); the soul colour is who you are becoming; a firing is a trait settling. It holds together:
+an experience at odds with where you stand (the complement) brings you back toward grey, the calm centre; brimming tints what you
+take in with your mood (3.4); seasoning is practice. **Proposed, to make the drop remember its experience:** a material's hue leans
+toward the feeling of the moment it was won (the weather where it fell, or the creature's own feeling), by `ECON.alchemy.memory`
+(proposed 0.3 of the way from its kind's hue): a drop won in a storm of grief pulls toward grief. Weather, fights and the soul colour
+become one line. Owner to rule.
+
 ## 8. Acceptance (each a check in the garden sweep, section 14)
 
 1. At the Athanor the press stands; the hand drops a material in and the drop walks its path; the material leaves the Pneuka Box.
