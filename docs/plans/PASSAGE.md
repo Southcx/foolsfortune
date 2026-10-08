@@ -186,14 +186,15 @@ A new haven waypoint, **an encounter**: the ship is mended as at a calm, a short
 and it ends in **a choice with stakes** (FTL's events, Slay the Spire's rest-or-upgrade, Sunless Sea's storylets, Wind Waker's sea).
 Which encounter resolves on arrival (Slay the Spire's "?"): its portent shows a haven's silhouette; each one's weight doubles for every
 voyage it has gone unmet (x8 at most), so the sea shows them all in time. One stands in the middle column of every sea chart that has
-room (the anchor, in place of a plain calm). The first seven (working names, Espada's to name, Calissa's to film, Wanda's to score):
+room (the anchor, in place of a plain calm). The first seven (Espada's names, proposed 2026-10-08 in LORE.md "The encounters at sea", awaiting the owner; Calissa's to film, Wanda's to
+score). The mirror sea's ghost is **your double**, not "your fetch": fetch is already a word's gloss on the Crib Sheet (Dovina's ruling).
 
 | encounter | the cinematic | the choice |
 |---|---|---|
-| ghost convoy | ghost ships passing in the fog | follow (the next two portents exact) or loot the last (2 casks; the Wreckers drawn to you) |
-| Letty's cutter | Letty Marque and Poll alongside | take a bounty onto this passage, or sell her your rutter at 1.25 its worth |
-| a whale of light | a whale singing under the crude | listen (the reckoning up a quarter) or follow it down (a hidden Umbral leg: a diver's dare) |
-| a castaway | a Contractor on a raft | rescue (a quarter of the fuel; a hand mans a mount next leg) or leave |
-| the Purser's barge | the barge at anchor, lanterns lit | trade casks mid-sea, buy fuel, or buy today's rutter |
-| the mirror sea | your best crossing's ghost beside you | race it through the next leg (a rank up if you win) or let it pass |
-| a drift bottle | a bottle bobbing in the light | read it: a word glossed (an ostracon's), or a portent made exact |
+| the Dead Reckoners (`ghostConvoy`) | ghost ships passing in the fog | follow (the next two portents exact) or board the last (2 casks; the Wreckers drawn to you) |
+| the Last Word, Letty's cutter (`lettysCutter`) | Letty Marque and Poll alongside | take a bounty onto this passage, or sell her your rutter at 1.25 its worth |
+| the Cantor (`lightWhale`) | a whale singing under the crude | listen (the reckoning up a quarter) or follow it down (a hidden Umbral leg: a diver's dare) |
+| Hap Lagan (`castaway`) | a Contractor on a raft, their Tulpa Bob a cork float | rescue (a quarter of the fuel; a hand mans a mount next leg) or leave |
+| the Bourse (`pursersBarge`) | the barge at anchor, lanterns lit | trade casks mid-sea, buy fuel, or buy today's rutter |
+| the Glass (`mirrorSea`) | your double: your best crossing beside you | race it through the next leg (a rank up if you win) or let it pass |
+| a drift bottle (`driftBottle`) | a bottle bobbing in the light | read it: a word glossed (an ostracon's), or a portent made exact |
