@@ -202,6 +202,10 @@ export const ECON = {
     seasonMax: 100, seasonCeiling: 0.13, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, formationClamp: [0.5, 2],
     pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08, memory: 0.3 }, // (memory: a drop's saturation leans this far toward the weather's strength it was won in, the owner's 7a, A) // (each feeling's hue: weather.js COLOR, the one table)
 
+  /** THE RUTTER (docs/plans/PASSAGE.md): a passage's map is worth `share` of what its sailed minutes earn at the aim, by its rank, and
+   *  `stale` of that each game day after (the sea chart reseeds daily). Measured against the 1.5 x aim cap in scripts/economy.mjs. */
+  passage: { share: 0.25, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5 },
+
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
    *  in `block`s of game hours (a spell of weather holds a block at least); its strength another slow wave, CALM below `calm`. The

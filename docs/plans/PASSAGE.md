@@ -25,8 +25,8 @@ any caller of `reckon()` (the survey verb is unwired), and a trip's map.
 Opened at **the pier** (F at a jetty's end, as now) after choosing the destination. Drawn left to right from the island you stand on to
 the one you sail for; between them **columns** of waypoints, the passage one waypoint a column.
 
-**Its size, from the hop:** columns = `clamp(2 + round(distance / 3) + (danger >= 1 ? 1 : 0), 3, 6)` (the Margarite run, distance 4:
-3 columns; Anagami to Entropolis, 4 plus danger: 5); rows 3 to 5 (5 on a long run).
+**Its size, from the hop:** columns = `clamp(2 + round(distance / 3) + (danger >= 1 ? 1 : 0), 3, 6)` (measured: the Margarite run 3
+columns of 4 rows; Anagami to Entropolis 4 by 4; Margarite to Entropolis, King to Queen, 6 by 5).
 
 **Its lanes (Slay the Spire's method):** four passes from random waypoints of the first column, each step to one of the three nearest
 in the next, merging allowed, **crossing never**; waypoints off every lane removed; the last column links to the destination.
@@ -35,7 +35,7 @@ in the next, merging allowed, **crossing never**; waypoints off every lane remov
 | waypoint | share | rules |
 |---|---|---|
 | the shoal | 30% - 5% d | |
-| the Wreckers | 10% + 5% d (+ 3% a cask aboard, at most 30%) | never in the first column; their strength rises with the casks you carry |
+| the Wreckers | 10% + 5% d + 3% a cask aboard (at most 30%) | never in the first column; their strength rises with the casks you carry |
 | the storm wall | 12% + 4% d | never two in a row |
 | the graveyard | 12% | |
 | the maelstrom | at most one a sea chart, from the third column | |
@@ -53,8 +53,9 @@ day's hash (`hash01`), so the same game day lays the same sea (learnable, as an 
 ## 3. The passage, and what it costs
 
 You draft the passage before you cast off: click a waypoint in each column along the lanes (a path that only follows the lines).
-**Fuel** is the hop's (as now) plus a little a waypoint past the shortest (`ECON.emocean.perWaypoint`, a tenth of the hop's fuel):
-a long, rich passage costs more to sail. You may **redraft at a calm** (the waypoints ahead only; a calm's buoy sells fuel).
+**Fuel** is the hop's (as now). **The pressure is the hold:** every cask aboard raises the Wreckers' share of the sea and their
+strength (a step for every four casks), so a rich cargo makes every lane wilder. You may **redraft at a calm** (the waypoints ahead
+only; a calm's buoy sells fuel).
 
 ## 4. The portents (Divination)
 
@@ -108,10 +109,11 @@ as the sea chart of that game day with every waypoint you sailed exact, and the 
 - **Used the same game day:** at the pier it shows that route's sea chart fully (a ticket to a known sea, as a Cogitomap is to a Well).
 - **Copied** by Spellscription (`spellscription.copy`, extended from Cogitomaps).
 
-**Its worth:** `worth = round(perMinute x minutes x 0.25 x rankFactor x (0.5 + 0.5 x read))`, minutes the passage's sailed real
+**Its worth** (`rutterWorth`, `ECON.passage`): `round(perMinute x minutes x 0.25 x rankFactor x (0.5 + 0.5 x read))`, minutes the passage's sailed real
 minutes, rankFactor S 1.5, A 1.2, B 1, C 0.8, D 0.6; **stale** by game days: x0.5 a game day after (the sea chart reseeds daily, so
 yesterday's rutter is a curiosity), and the existing glut (`demand`'s `sold`). Its cap keeps a trip's pay under 1.5 x the aim with the
-rest of the trip's earnings (ECONOMY.md), measured in `scripts/economy.mjs` (a new **hauler** profile).
+rest of the trip's earnings (ECONOMY.md), measured in `scripts/economy.mjs` (a new **hauler** profile). At six real minutes, read
+whole: S 18, A 14, B 12, C 10, D 7 cubes (a side income; the cargo is the trip's living).
 
 ## 7. Events, ledger, achievements (Dovina's)
 
@@ -140,7 +142,7 @@ weather); **a rutter sold for its full worth**; **Old Nobody foreseen** (seen in
 
 ## 10. Acceptance (the Emocean sweep, and `scripts/passage.mjs`)
 
-1. 10,000 sea charts: no crossing lanes; every rule held; every waypoint reachable; the pool's shares within 3 points of the table.
+1. **Built:** `src/progress/econ/passage.js`; `node scripts/passage.mjs` lays 6,000 sea charts (three routes, 2,000 game days) and passes: no crossing lanes; every rule held; every waypoint reachable; the pool's shares within 3 points of the table.
 2. A portent's shortlist always holds the truth; depth 1 always exact.
 3. A reading of quality 1 at level 1 shows the second column at two candidates or better (sight 1 x 0.62 = 0.62).
 4. A passage sailed to its end gives one rutter, with its legs and rank; sold at Margarite above Entropolis.

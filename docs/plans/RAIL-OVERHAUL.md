@@ -134,7 +134,7 @@ before a boss leg (Orta: revive before a boss). **Bonus foes:** a group cleared 
 of 56, a good player by bar 48, a novice cuts her rigging (struck colours) about half the time: measured by `scripts/rail.mjs`, never
 guessed. Every leg's parts are sized the same way: by the measured damage a player of each skill does in its peak.
 
-## 7. The pattern library (Dovina's: `src/progress/rail/patterns.js`)
+## 7. The pattern library (Dovina's: `src/progress/rail/patterns.js`, **built**; `node scripts/patterns.mjs` checks all 28)
 
 Data and pure functions, no Three.js: `emit(pattern, params, t, rng) -> [{ at, pos, vel, kind, outlined, motion }]` in the rail's
 frame, so the stage, the simulator and a test all read the same thing. The 28 emitters of RAIL-PATTERNS.md (ring, rotating ring,
@@ -145,7 +145,8 @@ and a formula; **a foe's attack is a timeline of patterns** (CLAUDE.md: a script
 In 3D: a pattern is emitted in its **plane** (the view's plane, so a ring reads as a ring from the camera) or as a **sphere/cone**
 toward the ship in the free and chase views.
 
-**The fairness checker** (`scripts/rail.mjs`, a new pass): for every pattern in every leg at every skill: the smallest gap is at least
+**The fairness checker** (`fair()` in `patterns.js`, run by `scripts/patterns.mjs` on every pattern in the plane and the cone; the
+legs' schedules will run it too): for every pattern in every leg at every skill: the smallest gap is at least
 3 ship widths; the reaction time (distance over speed, minus the telegraph) at least 0.5 real seconds; no shot spawns inside 4 m of the
 ship; no blind-spot seed deltas (gcd rule); homers turn at most 90 degrees a second and live at most 2.5 real seconds.
 
