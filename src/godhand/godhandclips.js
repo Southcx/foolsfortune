@@ -103,11 +103,11 @@ export class GodHandClips {
     const R = this.R;
     if (R.move === 'spawn' && R.frame < 20) return; // (it pops in first)
     if (R.busy && R.spec?.firm) return;
-    if (R.move === want) return;
+    if (R.move === want && R.phase !== 'out' && R.phase !== 'once') return; // (in its loop, or in its hold; letting go of it and wanting it again inside its way out, or after, plays it again)
     if (R.move === 'grab' && want === 'grabHold') return; // (the grab goes on to the hold itself)
     if (R.phase === 'in' || R.phase === 'hold') { R.release(); if (!urgent) return; }
     if (R.busy && !urgent) return;
-    R.play(want);
+    R.play(want, { again: R.move === want });
   }
 
   world() {
