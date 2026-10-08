@@ -31,7 +31,7 @@
 //   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
 //     bars?: 24..64 (or each leg's own phases, RAIL-OVERHAUL.md section 6), aspect?: the maelstrom's feeling, phases?: { open, build, peak,
 //     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.emocean.stage.legs)
-//   setEncounter(waiting): an encounter's choice pending holds its cue on the bar line
+//   setEncounter(waiting): an encounter's choice pending holds its cue on the bar line   setFoeUnder(under): a boss diving takes its line under
 //   tripLayout(legs) -> { bars, legs: [{ id, at, open, build, peak, release, end }], turns: [bar] } (the stage's bars, for the runtime)
 //   railHeat(n) adds heat (HEAT.lock, .volley, .down, .part, .core: music/choose.js hears the rail's events)
 // ---------------------------------------------------------------------------------------
@@ -45,6 +45,8 @@ const R = { heat: 0 };
 export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
 /** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
 export function setEncounter(waiting) { R.waiting = !!waiting; }
+/** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
+export function setFoeUnder(under) { R.foeUnder = !!under; }
 export function railHeat(n = 0) { R.heat = Math.max(0, Math.min(3, R.heat + n)); }
 
 // ---- each leg: its key (semitones from E), its four chords ([semitones from the key, minor?]), its groove, its voices
@@ -133,7 +135,8 @@ function legBar(L, phase, i, len) {
   if (s >= 5) out.push(...SNARE(L, c));
   if (s >= 6) out.push(...THEME[L.id](L, i));
   if (s >= 7) out.push(E('voice', 0, 4, c.tri[0], 0.06, { vowel: 'a' }), E('voice', 0, 4, c.tri[2], 0.05, { vowel: 'a' }));
-  if (s >= 8 || (peakBoss && s >= 7)) out.push(...(BOSS[L.id]?.(L, i) || []));
+  if (s >= 8 || (peakBoss && s >= 7)) { const line = BOSS[L.id]?.(L, i) || []; // (a boss under the surface: its line alone heard through the crude, and its bubbles)
+    out.push(...(R.foeUnder ? [...line.map((e) => ({ ...e, deep: true })), E('bubble', 1.5, 0.5, null, 0.2, { size: 1.6 }), E('bubble', 3.25, 0.5, null, 0.15, { size: 1.2 })] : line)); }
   if (i === 0 && phase !== 'release') out.push(E('crash', 0, 1, null, phase === 'peak' ? 0.5 : 0.35), ...(phase === 'peak' ? [E('impact', 0, 1, null, 0.4)] : []));
   if (phase === 'peak' && i % 8 === 7 && L.groove !== 'none') out.push(...fill(0.45));
   if (last && phase === 'build') return [...out.filter((e) => e.b < 2), E('reverse', 2, 2, null, 0.4)]; // (the hole into the peak: cut at the third beat)

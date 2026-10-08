@@ -11,7 +11,8 @@
    `rail.volley` (a volley released), `rail.part` (a boss part downed), `rail.core` (a boss's core). Nothing else is needed.
 3. **The forms:** set `game.emocean.form = 'astral' | 'umbral'`. The ambience reads it every frame: under, the music
    (`arranger.setUnder`) and the world's effects (`sfx.setUnder`) go through a low-pass over half a bar; breaching, a lift of air;
-   each crossing splashes (`sfx.railSurface(down)`). It resets by itself when the stage ends.
+   each crossing splashes (`sfx.railSurface(down)`). It resets by itself when the stage ends. A boss below the surface
+   (`game.emocean.stage.foe.under`, Charybdis) takes its own line under from the next bar, the rest of the band staying bright.
 4. **The lock tones** now follow the leg's key (each section carries its `root`; `game.music.grid().root` reads it).
 5. **The sea chart:** `sfx.seaChart(true)` when the chart opens, `sfx.seaChart(false)` when it closes; while the dowse is held over it,
    `sfx.reading(off, held)` every frame (off -1..1 from true, held 0..1 of the four beats; it fades by itself 0.3 real seconds after the

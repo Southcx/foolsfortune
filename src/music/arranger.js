@@ -6,7 +6,7 @@
 //
 //   score = { title, bpm, arrange: true, loopFrom, then?: score (played straight on into, at the bar line), lead?, fadeIn?, cut? (a cue that
 //   must land on a moment: its first bar this soon, its fade-in this short, what it replaces cut, not faded), sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
-//   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
+//   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options, deep?: heard through the crude (a low-pass) }
 //   arranger.layer = (score, section, bar) => [event] (the mood: music/mood.js)   arranger.thin = { hit, bass, rest } (the night)   score.scale / section.scale
 //   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
 //   arranger.setUnder(on) (the rail's Umbral form: the music heard through the crude, and the lift of the breach)
@@ -50,6 +50,10 @@ export class Arranger {
     ein.connect(dl); dl.connect(pl).connect(this.bus); dl.connect(dr); dr.connect(pr).connect(this.bus); dr.connect(elp).connect(fb).connect(dl);
     this.pumpG = pump;
     this.band = new Band(ctx, { dry, pump, verb: vin, echo: ein, kicked: (t) => this.kicked(t) }, this.sfx.noiseBuf);
+    // a second band heard through the crude: an event marked `deep` plays here (a foe under the surface: music/legs.js, Charybdis)
+    const deepLp = ctx.createBiquadFilter(); deepLp.type = 'lowpass'; deepLp.frequency.value = 520; deepLp.Q.value = 0.7; deepLp.connect(this.bus);
+    const ddry = ctx.createGain(), dpump = ctx.createGain(); ddry.connect(deepLp); dpump.connect(deepLp);
+    this.deepBand = new Band(ctx, { dry: ddry, pump: dpump, verb: vin, echo: ein, kicked: () => {} }, this.sfx.noiseBuf);
   }
   /** The sidechain: the synths and the bass dip under each kick of a section that pumps. */
   kicked(t) {
@@ -144,7 +148,7 @@ export class Arranger {
   }
   // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
   play1(e, t0, gain = 1) {
-    const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
+    const B = e.deep ? this.deepBand || this.band : this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
     const th = this.score?.moodless ? null : this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
