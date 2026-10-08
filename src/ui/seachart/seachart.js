@@ -11,7 +11,7 @@
 //   (each emblem out of focus and faded by the confidence, overlaid a little apart, the one in front changing slowly; the silhouette
 //   crisp when the candidates share a class, since then the class is known); its class (the silhouette alone, crisp); a dim star
 //   (something is there). The icons are in the line hand; the feeling is a nimbus round the icon with its weather's motif, from the
-//   silhouette tier up (ui/seachart/nimbus.js). The storm mark's flame is always shown, and the lanes at a storm bend with it. Where the
+//   silhouette tier up (ui/seachart/nimbus.js). The squall's flame is always shown, and the lanes at a squall bend with it. Where the
 //   draught's trump holds (the pier says which: `trumpOf`) the lane takes the trumping feeling's colour, beads of it running toward the
 //   trumped waypoint. The day's best is a pale line beside its lanes; a stretch sailed adrift, a dashed current. The sloop marks you.
 //   THE SAME DRAWING IN INK (`look: 'ink'`) is a rutter's page (vfx/rutter.js): iron-gall lines and emblems on vellum, the passage gilt,
@@ -21,7 +21,7 @@
 // sector map (the next jumps lit), the medieval portolan chart (the rhumb lines from a wind rose, hand-coloured, in black, green and
 // red), and the hurricane cone and quantile dotplots behind PASSAGE.md's portents (counts, never a crisp edge where knowledge ends).
 //
-//   const sc = new SeaChart({ maxWidth, onPick, onHover })   el.appendChild(sc.canvas)
+//   const sc = new SeaChartCanvas({ maxWidth, onPick, onHover })   el.appendChild(sc.canvas)   (not Petra's window `SeaChart`, world/emocean/seachart.js)
 //   sc.set(chart, { portents, drafted, at, hover, trumpOf, ghost, drift, classOf, ship })   sc.pick(clientX, clientY) -> id | 'from' | 'to' | null
 //   sc.draw(t?)   sc.dispose()        drawSeaChart(canvas, chart, { scale, look, t, since, ...the same })   layout(chart)   CHART_SIZE
 //   chart: Dovina's seaChart() (progress/econ/passage.js): { route, from, to, day, columns, rows, waypoints: { id: { col, row, type,
@@ -101,18 +101,26 @@ function groundOf(look, seed) {
   return c;
 }
 
-// ---- the lanes: each a line, or, where a storm stands at either end, a line the storm bends (the warp the crossing uses, seen from above)
+// ---- the lanes: each a line, or, where a squall stands at either end, a line the squall bends (the warp the crossing uses, seen from above)
 const LINE = {
   crude: { lane: [182, 160, 236], open: [255, 224, 150], drafted: [255, 246, 214], glow: [242, 204, 90], ghost: [214, 232, 255], drift: [159, 224, 232] },
   ink: { lane: [58, 40, 26], open: [58, 40, 26], drafted: [201, 150, 44], glow: [201, 150, 44], drift: [58, 90, 96] }, // (no day's best on a rutter's page: the trip is sailed)
 };
 const rgba = ([r, g, b], a) => `rgba(${r | 0},${g | 0},${b | 0},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
-function gapOf(chart, id) {
+/** How far short of a waypoint's centre a lane stops: by what its portent shows of it and no more (a dim star's, its class's, the widest
+ *  of its candidates' classes), the true type's only where it is exact. (A lane that stopped by the true class would tell a haven from a
+ *  threat among candidates of both: casebook rule 96.) */
+function gapOf(chart, id, p, classOf) {
   if (id === 'from' || id === 'to') return GAP.island;
-  const w = chart.waypoints[id]; return w ? GAP[classOfType(w.type)] : GAP.threat;
+  const w = chart.waypoints[id]; if (!w) return GAP.threat;
+  const tier = p?.tier || 'exact';
+  if (tier === 'star') return GAP.star;
+  if (tier === 'class') return GAP[p.cls || classOf(w.type)] ?? GAP.threat;
+  if (tier === 'two' || tier === 'three') return Math.max(...(p.candidates?.length ? p.candidates : [w.type]).map((t) => GAP[classOf(t)] ?? GAP.threat));
+  return GAP[classOf(w.type)] ?? GAP.threat;
 }
 /** The points of a lane from A to B, cut short of both ends by `ga` and `gb`, from share k0 to k1 of it (a lane brightening), bent
- *  across itself when `bend` (a storm at an end: two art pixels at most, at the middle, never at the ends, its wave moving slowly), and
+ *  across itself when `bend` (a squall at an end: two art pixels at most, at the middle, never at the ends, its wave moving slowly), and
  *  set `off` art pixels to one side (the day's best beside the passage). */
 function lanePath(A, B, ga, gb, { k0 = 0, k1 = 1, bend = false, t = 0, off = 0 } = {}) {
   const dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, len = Math.max(0, L - ga - gb), n = bend ? 14 : 1, out = [];
@@ -185,9 +193,7 @@ export function drawSeaChart(canvas, chart, o = {}) {
   const ways = done ? [] : head == null ? chart.first : chart.edges.filter(([a]) => a === head).map(([, b]) => b);
   const openSet = new Set(ways.map((b) => key(head ?? 'from', b)));
   const lanes = [...chart.first.map((b) => ['from', b]), ...chart.edges, ...chart.last.map((a) => [a, 'to'])];
-  const since = o.since || {}, starGap = {};
-  for (const [id, p] of Object.entries(P)) if (p?.tier === 'star') starGap[id] = GAP.star;
-  const gap = (id) => starGap[id] ?? gapOf(chart, id), bent = (a, b) => !!(WP[a]?.storm || WP[b]?.storm);
+  const since = o.since || {}, gap = (id) => gapOf(chart, id, P[id], classOf), bent = (a, b) => !!(WP[a]?.storm || WP[b]?.storm);
   const lp = (a, b, opt = {}) => lanePath(at[a], at[b], gap(a), gap(b), { bend: bent(a, b), t, ...opt });
   g.lineCap = 'round'; g.lineJoin = 'round';
   // the lanes, faint into the fog
@@ -241,7 +247,7 @@ export function drawSeaChart(canvas, chart, o = {}) {
     blit(g, isl, A.x, A.y, s);
   }
   for (const w of Object.values(WP)) drawWaypoint(g, w, P[w.id], at[w.id], s, t, look, classOf);
-  // the storm mark: always shown, whatever the tier; black, its core labradorite, swaying (its two leans handed over slowly)
+  // the squall's mark: always shown, whatever the tier; black, its core labradorite, swaying (its two leans handed over slowly)
   for (const w of Object.values(WP)) if (w.storm) {
     const A = at[w.id], x = A.x + 8, y = A.y - 13, lean = 0.5 + 0.5 * Math.sin(t * 1.2 + A.x);
     if (look !== 'ink') { const gr = g.createRadialGradient(x * s, y * s, 0, x * s, y * s, 8 * s); gr.addColorStop(0, 'rgba(154,138,230,.3)'); gr.addColorStop(1, 'rgba(106,122,208,0)'); g.fillStyle = gr; g.fillRect((x - 8) * s, (y - 8) * s, 16 * s, 16 * s); }
@@ -258,7 +264,7 @@ export function drawSeaChart(canvas, chart, o = {}) {
 
 /** The sea chart as an element of the pier's page: its canvas at the whole-number scale the window allows, moving while it is shown,
  *  picking what is under the pointer. */
-export class SeaChart {
+export class SeaChartCanvas {
   constructor({ maxWidth = 672, scale = null, look = 'crude', onPick = null, onHover = null } = {}) {
     this.maxWidth = maxWidth; this.fixed = scale; this.look = look; this.onPick = onPick; this.onHover = onHover;
     this.canvas = document.createElement('canvas'); this.canvas.className = 'px seachart';

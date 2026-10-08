@@ -3,23 +3,23 @@
 // three boards, the same sea read at three confidences (the pier with no reckoning; a good reckoning; a good one at a high Divination
 // level), the passage drafted lane by lane and begun again (the day's best beside it on the third, a stretch adrift on the second),
 // and the rutter's model (vfx/rutter.js) shut and open in front of them.
-// Until the passage's runtime is on this branch (progress/econ/passage.js, Dovina's), the sea is a sample laid by hand to its rules (four
-// lanes that merge and never cross, the pool's types, a storm, the middle column's encounter), and its portents follow passage.js's
-// `portent()` (its confidence by depth, its tiers, its decoys from the pool's other types): a stand-in, said as one.
+// The sea is a sample laid by hand to Dovina's rules (progress/econ/passage.js: four lanes that merge and never cross, every type of the
+// pool, a squall, the middle column's encounter), so that every tier and class shows at once; its portents are her own `portent()` and
+// the draught's trump her own `draughtTrump()` (progress/rail/trip.js), so the stage follows them when they change.
 //
 // Prior art: the workbench's other stages (workbench/stages.js): a look staged on a loop with the game's own modules.
 //
-//   seaChartStage() -> Object3D (its loop on userData.tick(t))   SAMPLE_CHART   samplePortents(chart, sight, level?) -> { id: portent }
-//   sampleTrump(chart) -> (a, b) => 'trumps' | 'trumped' | null
+//   seaChartStage() -> Object3D (its loop on userData.tick(t), its freeing on userData.dispose)   SAMPLE_CHART
+//   samplePortents(chart, sight, level?) -> { id: portent }   sampleTrump(chart) -> (a, b) => 'trumps' | 'trumped' | null
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { drawSeaChart, CHART_SIZE } from '../ui/seachart/seachart.js';
 import { Rutter } from '../vfx/rutter.js';
-import { TYPE_OF } from '../progress/weather.js';
-import { TRUMPS } from '../progress/combat/types.js';
+import { portent, classOf } from '../progress/econ/passage.js';
+import { draughtTrump } from '../progress/rail/trip.js';
 
 const WP = (id, type, feel, strength, storm = false) => { const [col, row] = id.split(':').map(Number); return [id, { id, col, row, type, feel, strength, storm }]; };
-/** King to Queen (Margarite to Entropolis, six columns of five rows): every type, a storm, the middle column's encounter. */
+/** King to Queen (Margarite to Entropolis, six columns of five rows): every type, a squall, the middle column's encounter. */
 export const SAMPLE_CHART = {
   route: 'entra-margarite', from: 'margarite', to: 'entra', day: 3, columns: 6, rows: 5,
   waypoints: Object.fromEntries([
@@ -39,34 +39,18 @@ export const SAMPLE_CHART = {
   ],
   first: ['0:1', '0:3'], last: ['5:0', '5:1', '5:3'],
 };
-const PASSAGE = ['0:3', '1:3', '2:2', '3:3', '4:3', '5:3']; // (through the encounter and the storm)
+const PASSAGE = ['0:3', '1:3', '2:2', '3:3', '4:3', '5:3']; // (through the encounter and the squall)
 const GHOST = ['0:1', '1:1', '2:2', '3:2', '4:2', '5:1']; // (the day's best, a sample: through the calm and the maelstrom)
 
-// ---- the portents, as passage.js lays them (a stand-in until it is merged here)
-const POOL = ['shoal', 'wreckers', 'eyewall', 'graveyard', 'calm', 'encounter'];
-const CLS = { calm: 'haven', encounter: 'haven', maelstrom: 'boss', bounty: 'boss', leviathan: 'boss' };
-function rng(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } let a = h >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const confidence = (depth, s, level = 1) => (depth <= 1 ? 1 : Math.max(0, Math.min(1, s * Math.pow(0.62 + 0.08 * (level / 99), depth - 1))));
-const tierOf = (c, depth) => (depth <= 1 || c >= 0.85 ? 'exact' : c >= 0.6 ? 'two' : c >= 0.35 ? 'three' : c >= 0.15 ? 'class' : 'star');
+// ---- the portents and the draught's trump: Dovina's own
 /** Every waypoint's portent seen from the pier (depth = its column + 1) at a sight (passage.js `sight()`) and Divination level. */
 export function samplePortents(chart, sight, level = 1) {
   const out = {};
-  for (const w of Object.values(chart.waypoints)) {
-    const depth = w.col + 1, c = confidence(depth, sight, level), tier = tierOf(c, depth), n = { exact: 1, two: 2, three: 3 }[tier] || 0;
-    const feel = tier !== 'star' ? w.feel ?? null : undefined, cls = CLS[w.type] || 'threat';
-    if (!n) { out[w.id] = { tier, candidates: [], cls: tier === 'class' ? cls : null, confidence: +c.toFixed(3), feel, storm: !!w.storm }; continue; }
-    const r = rng(`portent:${chart.route}:${chart.day}:${w.id}`), others = POOL.filter((t) => t !== w.type), cands = [w.type];
-    while (cands.length < n) cands.push(others.splice(Math.min(others.length - 1, Math.floor(r() * others.length)), 1)[0]);
-    for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [cands[i], cands[j]] = [cands[j], cands[i]]; }
-    out[w.id] = { tier, candidates: cands, cls, confidence: +c.toFixed(3), feel, storm: !!w.storm };
-  }
+  for (const w of Object.values(chart.waypoints)) out[w.id] = portent(chart, w, w.col + 1, sight, level);
   return out;
 }
-/** The draught's trump between two waypoints' feelings (trip.js `draughtTrump`, Dovina's: a stand-in until it is merged here). */
-export const sampleTrump = (chart) => (a, b) => {
-  const x = TYPE_OF[chart.waypoints[a]?.feel], y = TYPE_OF[chart.waypoints[b]?.feel];
-  return !x || !y ? null : TRUMPS[x] === y ? 'trumps' : TRUMPS[y] === x ? 'trumped' : null;
-};
+/** The draught's trump between two waypoints' feelings. */
+export const sampleTrump = (chart) => (a, b) => draughtTrump(chart.waypoints[a]?.feel, chart.waypoints[b]?.feel);
 
 /** The stage: three boards (no reckoning, a good one, a good one at Divination 99), the passage drafted and begun again, the rutter. */
 export function seaChartStage() {
@@ -93,10 +77,13 @@ export function seaChartStage() {
     const since = {}, path = ['from', ...drafted, ...(n === PASSAGE.length ? ['to'] : [])];
     for (let i = 1; i < path.length; i++) since[`${path[i - 1]}>${path[i]}`] = u - (Math.min(i, n) - 1) * step; // (the lane to a waypoint is drafted when it is; the last to the island with the last)
     const hover = n < PASSAGE.length ? PASSAGE[n] : null;
-    boards.forEach((b, i) => { drawSeaChart(b.canvas, chart, { scale: 2, t, portents: b.portents, drafted, since, hover: i === 2 ? hover : null, trumpOf, at: i === 2 ? drafted[Math.max(0, n - 2)] : null, ghost: i === 2 ? GHOST : null, drift: i === 1 ? [['1:3', '2:2']] : null }); b.tex.needsUpdate = true; });
+    boards.forEach((b, i) => { drawSeaChart(b.canvas, chart, { scale: 2, t, portents: b.portents, classOf, drafted, since, hover: i === 2 ? hover : null, trumpOf, at: i === 2 ? drafted[Math.max(0, n - 2)] : null, ghost: i === 2 ? GHOST : null, drift: i === 1 ? [['1:3', '2:2']] : null }); b.tex.needsUpdate = true; });
     const o = t % 14, ease = (x) => x * x * (3 - 2 * x); // (shut for a breath, opened over two seconds, lying open, shut again)
     open.open(o < 1.5 ? 0 : o < 3.5 ? ease((o - 1.5) / 2) : o < 12 ? 1 : 1 - ease((o - 12) / 2));
   };
-  obj.userData.dispose = () => { shut.dispose(); open.dispose(); for (const b of boards) b.tex.dispose(); };
+  obj.userData.dispose = () => { // (the workbench calls it when the stage is dropped: the boards' meshes and textures, and both rutters)
+    shut.dispose(); open.dispose(); for (const b of boards) b.tex.dispose();
+    obj.traverse((o) => { o.geometry?.dispose(); for (const m of [o.material, o.userData.mat0].flat()) m?.dispose?.(); }); // (userData.mat0: what the workbench's view modes put aside)
+  };
   return obj;
 }

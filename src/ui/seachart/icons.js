@@ -9,7 +9,7 @@
 // masthead, the eyewall a bolt, the graveyard two masts standing out of the crude like grave crosses, the maelstrom a spiral, Old
 // Nobody the flukes, a bounty the hunter's sight, a calm a half sun over level water, an encounter a hanging lantern). The islands have
 // their own: Anagami a bottle kiln and the Gnomon over the dunes, Margarite the lighthouse on the whale's back, Entropolis tilted towers
-// under a dark moon (docs/LORE.md, section 1). Then the storm mark's flame (black, its core labradorite, in two leans for its sway), the
+// under a dark moon (docs/LORE.md, section 1). Then the squall's flame (black, its core labradorite, in two leans for its sway), the
 // sloop's mark, a strength pip, the dim star of a waypoint seen with no confidence, and the five letters the rank's chop on a rutter's
 // page can carry. Every icon is drawn in THE LINE HAND (a pale labradorite: Calissa's rule, the danger in line and glow), never in a
 // feeling's colour: a feeling filled into a shape would read as certain and carry two facts in one channel, so the sea chart shows it
@@ -228,7 +228,7 @@ const ISLAND_ART = {
 export const ISLANDS = { anagami: 'clay', margarite: 'pearl', entra: 'neon', open: 'line' };
 
 const MARK_ART = {
-  flame: [ // (the storm mark: Slay the Spire's burning elite, black with a labradorite core; flameB is its mirror, the other way of its sway)
+  flame: [ // (a squall's mark: Slay the Spire's burning elite, black with a labradorite core; flameB is its mirror, the other way of its sway)
     '...1.....',
     '..1a1....',
     '..1b1....',
@@ -279,6 +279,9 @@ const RAMPS = {
 };
 
 const CACHE = new Map();
+// (what is made of a canvas, kept on the canvas: a ground or an icon that is dropped takes its scaled and blurred copies with it, and
+// a long session that meets a new sea chart every game day never keeps all of them: casebook rule 97)
+const SCALES = new WeakMap(), BLURS = new WeakMap();
 const IDX = (ch) => (ch === '.' ? -1 : ch >= '0' && ch <= '9' ? ch.charCodeAt(0) - 48 : ch === 'a' ? 10 : ch === 'b' ? 11 : -1);
 
 /** A grid of ramp steps (an array of strings, or a function of x, y) recoloured at 1x into a canvas. */
@@ -352,7 +355,7 @@ export function islandIcon(island, look = 'crude') {
   const id = ISLAND_ART[island] ? island : 'open', rows = ISLAND_ART[id], pal = look === 'ink' ? 'ink' : ISLANDS[id];
   return paint(rows, W(rows), rows.length, pal, `isl|${id}|${pal}`);
 }
-/** A mark: the storm's flame (and flameB, its mirror), the sloop, a strength pip, the dim star, a rank's letter. */
+/** A mark: the squall's flame (and flameB, its mirror), the sloop, a strength pip, the dim star, a rank's letter. */
 export function markIcon(name, look = 'crude', pal = null) {
   const mirror = name === 'flameB', rows0 = MARK_ART[mirror ? 'flame' : name] || MARK_ART.star, rows = mirror ? rows0.map((r) => [...r.padEnd(W(rows0), '.')].reverse().join('')) : rows0;
   const p = pal || (look === 'ink' ? 'ink' : name.startsWith('flame') ? 'labradorite' : name === 'ship' ? 'pearl' : name === 'star' ? 'line' : 'gold');
@@ -367,7 +370,7 @@ export function ringIcon(r = 14, pal = 'gold') {
 
 /** A 1x canvas scaled by a whole number, nearest (the kit's rule: a pixel is always a square of pixels). */
 export function scaled(src, s) {
-  const key = src; let m = CACHE.get(key); if (!(m instanceof Map)) { m = new Map(); CACHE.set(key, m); }
+  let m = SCALES.get(src); if (!m) { m = new Map(); SCALES.set(src, m); }
   if (m.has(s)) return m.get(s);
   const c = document.createElement('canvas'); c.width = src.width * s; c.height = src.height * s;
   const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(src, 0, 0, c.width, c.height);
@@ -379,7 +382,7 @@ export function scaled(src, s) {
  *  is not cut: { canvas, pad }. `r` is kept to quarter pixels so the cache stays small. */
 export function blurred(src, s, r) {
   const q = Math.max(0, Math.round(r * 4) / 4), key = `blur|${s}|${q}`;
-  let m = CACHE.get(src); if (!(m instanceof Map)) { m = new Map(); CACHE.set(src, m); }
+  let m = BLURS.get(src); if (!m) { m = new Map(); BLURS.set(src, m); }
   if (m.has(key)) return m.get(key);
   const big = scaled(src, s), pad = Math.ceil(q * 3) + 1, w = big.width + pad * 2, h = big.height + pad * 2;
   const c = document.createElement('canvas'); c.width = w; c.height = h;

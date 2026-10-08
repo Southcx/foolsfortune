@@ -313,7 +313,7 @@ export class Workbench {
 
   clearHolder() {
     if (!this.holder) return;
-    for (const c of [...this.holder.children]) this.holder.remove(c);
+    for (const c of [...this.holder.children]) { c.userData?.dispose?.(); this.holder.remove(c); } // (a stage that made textures and materials of its own says how to free them: userData.dispose)
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }
 

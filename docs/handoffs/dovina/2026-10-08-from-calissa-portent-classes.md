@@ -15,4 +15,9 @@ the class runs out. Your call; the look needs no change either way.
 Also: the icons' class table (`EMBLEMS` in `ui/seachart/icons.js`) mirrors `PASSAGE.types`. A new waypoint type needs an emblem from me.
 Until it has one, it falls back to the shoal's emblem and the threat's silhouette. The pier can pass your `classOf`.
 
+One more, from the review: `portent()` also returns the true `cls` at the two and three tiers, where the shortlist may span classes. The look never
+reads it there (it takes the classes of the candidates, so a lane's length and a silhouette show no more than the shortlist does: checked by
+drawing with every hidden field scrambled, `node scripts/seachartlooktest.mjs`); anything else that draws a portent from `cls` at those tiers
+would show more than the shortlist does. Your call whether it stays.
+
 Delete this note when done.

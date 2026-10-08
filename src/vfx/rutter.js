@@ -2,7 +2,7 @@
 // THE RUTTER'S MODEL (docs/plans/PASSAGE.md, section 6): the map a passage sailed to its end gives, as a sailor's book. A small bound
 // book (11 by 15 cm, a little over 2 cm thick), its boards in a black-green morocco, raised bands on the spine, a brass clasp,
 // the page edges cream; its front board tooled in gilt with its own passage (the island left at the foot, the island made at the head,
-// the waypoints sailed as gilt studs along a line, the storm a star) inside a blind double fillet and a gilt one, a fleuron at each
+// the waypoints sailed as gilt studs along a line, a squall a star) inside a blind double fillet and a gilt one, a fleuron at each
 // corner. Open, its spread is that game day's sea chart drawn in ink across both pages (ui/seachart/seachart.js, `look: 'ink'`: the
 // passage gilt, the feelings washed in, the portolan's rhumb lines), ruled round in red, and the crossing's rank stamped in vermilion
 // at the foot of the right page.
@@ -14,7 +14,7 @@
 //   const R = new Rutter({ rutter, chart, portents })   scene.add(R.group)   R.open(k 0..1)   R.dispose()
 //   rutterThing(rutter?) -> { group, dispose }   (the Pneuka Box's model of the item `rutter`: pneuka/thingmodels.js buildThing, Petra's)
 //   rutterCover(rutter) -> { color, orm } canvases   rutterSpread(rutter, { chart, portents }) -> canvas (1024 x 704)
-//   rutter: { from, to, day, passage: [waypoint ids 'col:row'], legs: [their types], rank: 'S' .. 'D', read, storms? }; chart: the
+//   rutter: { from, to, day, passage: [waypoint ids 'col:row'], legs: [their types], rank: 'S' .. 'D', read, feels?: [aspect | null of each waypoint sailed], stormsAt?: [ids of the squalls sailed] }; chart: the
 //   sea chart of that route and game day (Dovina's seaChart), else one is pieced together from the passage alone.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -172,7 +172,7 @@ export class Rutter {
     const strap = box(0.0014, 2 * (TH + TB), 0.016, M.brass); strap.position.set(W / 2 + 0.0007, 0, 0); front.add(strap); // (from the front board's top to the back board's foot: the hinge is halfway)
     // the spine: a half round of leather about the hinge, with four raised bands; it turns half as far as the cover, under the gutter
     const spine = (this.spine = new THREE.Group()); spine.position.set(-W / 2, Y0, 0); this.group.add(spine);
-    const R = Y0 + 0.0004, sp = new THREE.Mesh(new THREE.CylinderGeometry(R, R, H, 14, 1, true, Math.PI, Math.PI), M.leather); sp.rotation.x = Math.PI / 2; spine.add(sp);
+    const R = Y0 + 0.0004, sp = new THREE.Mesh(new THREE.CylinderGeometry(R, R, H, 14, 1, false, Math.PI, Math.PI), M.leather); sp.rotation.x = Math.PI / 2; spine.add(sp);
     for (let i = 0; i < 4; i++) { const b = new THREE.Mesh(new THREE.TorusGeometry(R, 0.0011, 4, 10, Math.PI), M.leather); b.rotation.set(0, 0, Math.PI / 2); b.position.z = -H / 2 + (H * (i + 1)) / 5; spine.add(b); }
     sp.material.side = THREE.DoubleSide;
     this.open(0);
