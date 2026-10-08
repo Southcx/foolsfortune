@@ -54,6 +54,7 @@ export const SEASONING = [
   { event: 'mind.settle',     attribute: 'willpower',     points: 2, when: () => true },                         // (brimming, and settling back)
   { event: 'creature.status', attribute: 'focus',         points: 1, when: (e) => e.by === 'courier' },          // (a status built on a creature)
   { event: 'rhythm.score',    attribute: 'focus',         points: 3, when: (e) => (e.combo || e.maxCombo || 0) >= 25 },
+  { event: 'angle.catch',     attribute: 'focus',         points: 2, when: () => true },                         // (patience: a snapped line loses the fish, so a catch is a line held: Petra)
   { event: 'npc.talk',        attribute: 'charisma',      points: 1, when: () => true },
   { event: 'shop.sell',       attribute: 'charisma',      points: 1, when: (e) => e.by !== 'environment' },
   { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.step === 'deal' },          // (a haggle struck, not each step: Petra, v114)

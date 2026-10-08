@@ -111,3 +111,7 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
   takes a `q` (the water held after the stroke against before, as a share; Petra's to emit); the parry's `lead` is hers to add. Her
   knack (the way back on the map) is in the table. **Patience** (angling) seasons Focus: a fish landed without the line breaking, once
   the landing says so (`fish.land { snapped }`).
+- **Petra, built** (a564e9b, c4630c0): every field above is emitted; a blow is answered only inside `BLOW_WINDOW` (0.25 real seconds),
+  so the parry's quality now runs 0.4 at the window's opening to 1 at the strike; `parry.missed` and `parry.run.best` are kept;
+  `photo.js` credits the thirds (1 on a crossing, 0.7 dead centre); `garden.sculpt`'s `q` is the basins' volume after over before
+  plus after (0.5 for a stroke that changed nothing). **Patience** seasons Focus on `angle.catch` (a snapped line loses the fish).
