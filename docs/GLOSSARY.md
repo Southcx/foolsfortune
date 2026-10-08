@@ -306,6 +306,16 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   ten keys. *Not:* "chart" alone (the map's).
 - **grade / rating** (`src/music/rhythm/judge.js`, `src/ui/rating.js`) — grade is how near a press came (perfect, great, good, miss); rating is
   the maker's word over the line, from Miss! to Wow. *Not:* the same thing.
+- **the arranger** (`src/music/arranger.js`) — plays a score a bar ahead of the audio clock, moving between sections on the bar line.
+  **The band** (`src/music/band.js`): its instruments.
+- **the stack** (`stackOf`, `railHeat`, `src/music/legs.js`) — how many of a crossing leg's eight musical parts sound: its phase's own plus the
+  **heat** each lock, down and boss part adds (Rez's layers). *Not:* a layer (the map's), the mood layer.
+- **mood layer** (`moodLayer`, `src/music/mood.js`) — the weather heard as a few quiet notes over a cue; the night **thins** every cue. **The
+  scale** (`game.music.scale()`): the five notes the Crucibelle plays along in.
+- **busking** (`src/world/busk.js`) — the rhythm mode played for tips on **a busker's mat** at a pier. **The busking body**
+  (`courier/moves/rhythmhold.js`): the Courier playing it (a gesture a press, the jam at a combo of 10).
+- **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`) — the music under the Opening, a mode each, and its **landing** when the wheel
+  lands. *Not:* the Opening itself.
 
 ## 10. Engine and process
 
