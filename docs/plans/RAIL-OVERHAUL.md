@@ -126,6 +126,12 @@ themselves are good"), each now bound to a stretch of spline.
 | **a calm** (haven) | 24 | lights to lock for score (whales of light, the aurora: never empty), flotsam that **mends** (kept: LEG.mend), **the Purser's buoy** where the Purser's tender sells fuel | a breath that still scores | Rez's scanning orbs, the breather kept |
 | **a bounty** (when Letty has posted one) | 56 | the posted stray: an aberrant Figment as a boss with parts | the bounty's livelihood | Letty Marque's board |
 
+**Each leg's phases** (bars: open, build, peak, release; the cue's clock and the runtime's, Wanda's `tripLayout(legs)` `phases`): the shoal
+8, 18, 18, 4; the Wreckers 8, 20, 24, 4 (she is alongside the whole peak); Old Nobody 8, 24, 28, 4 (a boss's peak may pass 24); the
+eyewall 8, 12, 16, 4; the graveyard 8, 18, 18, 4; the maelstrom 8, 12, 24, 4; a bounty 8, 20, 24, 4; a calm 8, 12, 0, 4 (no peak: a
+breath that scores). Wanda's musical **hole** (the drop before the peak) is the cue's, never the play's: the pacing law still holds
+through it (targets to lock, the parts winding up). An **encounter** is no leg: its sequence carries its own cue, then a turn of the rail.
+
 **Every boss:** telegraphs by a **shrinking mark** on the part about to act (Elemental Gearbolt), in Calissa's outline language; a part
 downed pays and changes the pattern (Einhander, Silvergun); clearing every part before the core pays a bonus; the ship is **mended**
 before a boss leg (Orta: revive before a boss). **Bonus foes:** a group cleared whole spawns a gold one (the Gummi lesson).
