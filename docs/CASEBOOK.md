@@ -174,7 +174,23 @@ the rules before building in the same area; a rule a machine can check goes into
     or with a line in the reader's reply saying why not.
 67. **An answer reads the window it answers.** A check that runs every frame of a press (the parry's window) tests the thing's own
     timing too (a windup's eta), or holding the button early answers what has not yet come.
+68. **A look in colours of its own owns its glow too.** The armour and the mask glow back their painting in the emissive, which every
+    other glaze sets to its own colour; a kiln pattern that paints a part in several colours gives each its own glow, and anything
+    else that borrows the emissive (the firing's kiln-orange) is looked at on it before it ships.
 ## Cases
+
+### 2026-10-08 · Fired in EYE CUP or JELLY-CROWN, the vessel barely warmed where yohen glowed kiln-orange (Calissa, the Great Slip Jelly's glazes)
+- **Seen (headless, before it shipped):** the firing's frames (vessel.fireT 2.5, 1.3, 0.25, the workshop): yohen's body kiln-orange
+  cooling to its black; EYE CUP's and JELLY-CROWN's a faint warm tint, the eye's black and the mask not at all.
+- **Cause (measured):** the armour and the mask glow back their painting (`character.js` PAINT_LIGHT 0.45: the emissive times the
+  painting), and a glaze sets that emissive to its colour. A pattern in colours of its own (the eye's black, white and blue; the dip's
+  slip under the celadon) would glow the glaze's colour over them (the black lit red in the shade), so those two were given a white
+  emissive, multiplied in the shader by the colour each point is (`finEmC`). That multiplied the firing's orange too: orange times the
+  clay or the green is a dim glow, times the black none.
+- **Fix:** `vfx/finish.js` reads the firing's share from the emissive's own hue (1 - b/r: 0.99 at the kiln-orange the firing starts
+  from, 0 at white) and lets that share through unmultiplied: at rest each colour glows its own, firing the whole body glows orange and
+  cools into it. The three frames now read as yohen's (`ownLight` in finish.js, `vessel.js` dress).
+- **Rule:** 68.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
