@@ -89,7 +89,7 @@ export class ShotField {
     if (dt <= 0) return;
     for (const x of this.shots) if (x.on) this.step(x, dt, ship, waves);
     for (const b of this.beams) if (b.on) this.stepBeam(b, dt, ship);
-    this.draw();
+    this.draw(dt);
   }
 
   step(x, dt, ship, waves) {
@@ -199,9 +199,9 @@ export class ShotField {
   /** Every live shot and beam written to the look in the world (the frame moves with the rail, so every one, every frame): a shot as a
    *  capsule of its kind along its flight (outlined: the parry mark round it), swelling in its glint before a dash, faded once turned
    *  or sent home; a snake's trail as its kind's capsules; a laser as its warning thread, then hot. */
-  draw() {
+  draw(dt = 0) { // (dt: the frame's, the look's own clock; none when it is only redrawn after a clear)
     if (!this.look || !this.rail) return;
-    const R = this.rail, L = this.look, dt = 1 / 60;
+    const R = this.rail, L = this.look;
     let n = 0, nb = 0;
     for (const x of this.shots) {
       if (!x.on) continue;

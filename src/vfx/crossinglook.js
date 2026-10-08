@@ -116,6 +116,7 @@ export class CrossingLook {
     });
     this.plan = { rings, slabs };
     this.lift = 0; this.side = 0; this.shellT = 0; this.gilt = 0; this.hitsWas = 0; this.hasPrev = false;
+    if (st.ship?.vel) _prevVel.copy(st.ship.vel); // (the last crossing's last push is no slosh at this one's first frame)
   }
   clear() {
     for (const r of this.plan.rings) { r.h?.dispose(); r.h = null; }
