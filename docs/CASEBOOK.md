@@ -173,6 +173,15 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-08 · The clapperjars' pupils sat on the rim of their white disc eyes (Calissa's review of the owner's texture)
+- **Seen:** with the grey texture on, the disc eyes are white (the painting's white tab) and each drawn pupil stood at its disc's inner
+  edge: the jar looked cross-eyed (the face at 0.9 m). Before the texture the discs were terracotta and the offset was not seen.
+- **Cause (measured):** the pupils in `Clappers.spawn` were at x ±0.055 in the eyes bone's space. The disc eyes (the vertices weighted
+  to that bone) are flat in that bone's x-z plane, 0.05 across, spanning x 0.056 to 0.106 on each side, centred at ±0.081. The
+  pupils were placed for the drawn eyes of an earlier model and left where they were when the owner's discs came (2026-10-06).
+- **Fix:** the pupils at x ±0.081, scaled 0.7 across and along the disc (0.039 wide, inside the 0.05 disc): a ring of white round each.
+- **Rule:** none new: a part drawn over a model's feature is placed by the measured centre of that feature in the same bone's space.
+
 ### 2026-10-08 · Every clapperjar had lost its rim (Calissa, putting on the owner's texture)
 - **Seen:** measured, not seen: the shared clapperjar material carried `RIM 0.256` (render/toon.js `addRim`, the Courier's thin
   Lachryma rim), and every jar in the workshop drew with `{ STANDARD: '' }` alone. The owner's grey texture would have lost its tint

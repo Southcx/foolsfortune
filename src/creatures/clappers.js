@@ -79,8 +79,8 @@ export class Clappers {
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
     const mat = cloneTinted(this.mat); // (a plain clone() dropped the rim's define and the tint's hook)
-    // (the model's own eyes, if it brings them: any mesh or material named for an eye keeps its own material and stands in for the
-    // drawn ellipsoids below; the owner's disc eyes, 2026-10-06, were being painted with the clay and covered by them)
+    // (the model's own eyes, if it brings them as a mesh or material named for an eye, keep their own material and stand in for the drawn
+    // pupils below; the owner's clapperjar has its disc eyes inside its one mesh, so they wear the painting, white, and the pupils sit on them)
     const isEye = (o) => /eye/i.test(o.name) || [].concat(o.material).some((m) => /eye/i.test(m?.name || ''));
     const ownEyes = meshes.some(isEye);
     for (const o of meshes) {
@@ -93,9 +93,9 @@ export class Clappers {
     const bone = (n) => model.getObjectByName(n);
     const eyesBone = bone('eyes');
     if (eyesBone && !ownEyes) { // (drawn eyes only for a model without its own)
-      for (const x of [-0.055, 0.055]) {
+      for (const x of [-0.081, 0.081]) { // (the middle of each disc eye, 5 cm across, in this bone's space: a pupil there, not on its inner rim at 0.055)
         const e = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 4), this.eyeMat);
-        e.scale.set(1, 1.5, 0.6);
+        e.scale.set(0.7, 1.5, 0.7);
         e.position.set(x, 0.01, 0.0);
         eyesBone.add(e);
       }
