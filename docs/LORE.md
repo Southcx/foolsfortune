@@ -425,6 +425,37 @@ roly-poly toy that rights itself, and a cup).
   and will chase it to the far shore; but an Egregore is authored by no one, so there is no source to finish. Her arc: the hunt that
   cannot end is how she learns the strays had no author to blame.
 
+### The passage and the overhauled crossing *(Dovina's working names, Espada's verdicts; proposed, 2026-10-08)*
+`docs/plans/PASSAGE.md`, `docs/plans/RAIL-OVERHAUL.md`. Kept unless said:
+- **the sea chart** (a chart in the map's sense, so the homonym holds); **the passage** (to book passage; the Northwest Passage, a way
+  found through: say "side passage" for the Great Dunemaw's); **a waypoint** (drawn as a star, said as a waypoint); **a portent** (Latin
+  *portendere*, to stretch forth: a sign held out ahead); **a rutter** (French *routier*, the pilot's book of routes; England's first
+  printed one, 1528). **The Astral form** and **the Umbral form** are the owner's (Latin *astrum*, star; *umbra*, shadow, the Gnomon's
+  word). **The surge** (a storm surge: the sea let go at once). **A turn of the rail**, always in full ("turn" is a Possibilikey's).
+- **The reading of the sea becomes the reckoning** (one thing, one word: the code's `RECKON` is already it). Dead reckoning is the
+  navigator's way of knowing where you are by what you can work out ("ded.", deduced): Divination as deduction. You **reckon the sea**.
+- **The storm wall becomes the eyewall**: meteorology's word for the ring of the worst wind round a storm's still eye. The leg is a
+  tunnel run through it, so the player learns the real word by flying it.
+- **The graveyard** stays; its drowned lighthouse is **the Drowned Light**: the False Light rides above, a true light lies drowned
+  below. Why it drowned is a blank.
+- **The maelstrom** stays (Dutch *malen*, to grind, and *stroom*: the grinding stream; the Moskstraumen, Poe's descent). The Figment
+  that fights in it is a blank until Dovina gives it a class.
+- **A calm** stays (the homonym already holds it). Its buoy is **the Purser's buoy**, where the King's tender sells fuel.
+- **The log** (`passage.*`, `rutter.*`; STE, counts but no percentages):
+  - passage.chart: "Sea chart: Anagami to Margarite, 3 waypoints." · passage.draft: "You draft the passage: 4 waypoints."
+  - passage.read: "The needle holds true. The sea chart clears." / "The needle wavers. Some of the sea chart clears." / "The needle
+    drifts. The sea chart stays dim." (and, when an earlier reckoning that game day was better: "Your first reckoning was better.")
+  - passage.waypoint: "The graveyard, as the portent showed." / "The graveyard: one of the 3 the portent showed." / "The graveyard. The
+    portent showed only a dim star."
+  - passage.redraft: "You draft the passage again from here." · passage.done: "Passage sailed: 4 legs. Rank A."
+  - rutter.get: "You get a rutter: Anagami to Margarite, game day 12." · rutter.sell: "You sell the rutter for 40 cubes." (a game day
+    old: "It is a game day old. It sells for half.")
+  - the legs' first beats: eyewall "The storm closes round you. The eyewall is ahead." · graveyard "Hulls below, ghost ships above." ·
+    the Drowned Light "The Drowned Light wakes." · maelstrom "The sea turns. The rail lets you go." and at its end "The maelstrom
+    slows. The rail takes you again." · a calm "The sea lies down. Lights rise round the hull." · the buoy "The Purser's buoy: fuel at
+    the posted price." · a bounty "Letty's mark is ahead." A turn of the rail, a breach, a dive and the surge say nothing: they are
+    seen.
+
 ## 12. Where the words live
 
 | Words | File |
