@@ -500,7 +500,7 @@ await ev(() => {
     pour(id, d, vol, feeling) { const W = R().waterworks.water(R().site.by[id]); W.pour(d, vol, feeling); W.wake(); },
     margin() { const c = __game.camera.position; let m = 1e9; for (const P of R().site.planets) { const d = c.distanceTo(P.c); m = Math.min(m, d - P.radiusAt(c.clone().sub(P.c).divideScalar(d || 1))); } return m; },
     wetDepth(id, d) { return R().waterworks.waters[id]?.depthAt(d) ?? 0; },
-    cleanAll() { for (const P of R().site.planets) R().resetPlanetoid(P); R().hand.undos.length = 0; },
+    cleanAll() { const M = __game.game.courierMind; if (M) M.mind = 0; for (const P of R().site.planets) R().resetPlanetoid(P); R().hand.undos.length = 0; }, // (the mind at Balanced: no rain falls into what is measured, v112's keeper)
   };
   window.__s13.cleanAll();
 });
@@ -640,12 +640,13 @@ await guard('reset', async () => {
   });
   check('reset: set up (a pit, ash, water and green on the Terraces)', set.dug < -0.3 && set.ground === 'ash' && set.water > 1 && set.plant >= 1, set);
   await page.mouse.move(480, 300); await ticks(10);
+  await ev(() => { const M = __game.game.courierMind; if (M) { M.mind = 0; M.brimming = false; } }); // (no rain into what the reset must clear)
   const hitP = await ev(() => __game.game.realm.hand.hit?.planet.id || null);
   const r0 = await evn('garden.reset'), a0 = await evn('garden.reset.ask');
   await page.keyboard.down('Control'); await press('Backspace', 4);
   const once = await ev(() => ({ h: +__game.game.realm.clays.terraces.heightAt(__rd).toFixed(2) }));
   const asked = (await evn('garden.reset.ask')) - a0, resetAfterOne = (await evn('garden.reset')) - r0;
-  await press('Backspace', 4); await page.keyboard.up('Control'); await ticks(10);
+  await press('Backspace', 4); await page.keyboard.up('Control'); await ticks(2);
   const res = await ev(() => { const R = __game.game.realm, P = R.site.by.terraces, d = __rd, e = __game.game.events.last('garden.reset'); return { h: +R.clays.terraces.heightAt(d).toFixed(3), ground: R.clays.terraces.groundOf(d), painted: R.clays.terraces.painted, water: +(R.waterworks.waters.terraces?.total || 0).toFixed(2), plant: R.plants.at(P, d), ev: e && { planetoid: e.planetoid, by: e.by } }; });
   const r1 = (await evn('garden.reset')) - r0;
   check('reset: the hand was over the Terraces', hitP === 'terraces', hitP);

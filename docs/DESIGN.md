@@ -375,7 +375,9 @@ Punishment.
 3. **Accessibility is earned, optional and honest.** An assist (aim drawn to a target, a wider shot, a slower metronome) is a knack:
    opened by practice, switched on or off at will, and counted the same either way. This refines section 9's "no number may do the
    skill for them": none may be forced on them, and none may gate the skill.
-4. **Every system teaches something real, unannounced** (section 9's pillar, from the tools to every system): the mechanic itself is
+4. **The seven domains are all there will ever be** (the owner, 2026-10-08): a new skill finds its home in one of them (time, the
+   beat, is Spellscription's: staying on tempo is transcribing actions to time).
+5. **Every system teaches something real, unannounced** (section 9's pillar, from the tools to every system): the mechanic itself is
    the lesson (pitch from tuning crystals, the painter's eye from the press), never a tutorial or a factoid.
 
 The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. Soul Alchemy as the first system built to all four:
