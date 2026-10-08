@@ -9,9 +9,9 @@
 //          the Wreckers    A minor, a jig over the drive    the shanty's verse on the fiddle; at the peak the chorus in the brass and
 //                                                           the crew's shout (the False Light alongside)
 //          Old Nobody      C# minor, half time and taiko    the Leviathan's motif in the low brass; the whale; the choir on the Tear
-//          the storm wall  E Phrygian, two-step at 160      the Five in the lead guitar, the warp's growl
+//          the eyewall     E Phrygian, two-step at 160      the Five in the lead guitar, the warp's growl
 //          the graveyard   F minor (Lachryma's key)         the Beacon: a foghorn and the drowned lighthouse's lamp turning
-//          the maelstrom   E in the place's feeling's mode  the Whirl, round and down, on the feeling's own voice
+//          the maelstrom   E in the place's feeling's mode  the Whirl, round and down, on the feeling's own voice (Charybdis)
 //          a calm          G major                          a music box (the harp and the celesta), the whale; no drums but a tick
 //          a bounty        B minor, four on the floor       the Five as a WANTED poster: brass stabs
 //   THE STACK (Rez's layers, Mizuguchi's: the music thickens as you play): how many of a leg's eight parts sound (a pad and a pulse, the
@@ -27,9 +27,11 @@
 // Orta's forms, Star Fox 64's leg-by-leg score, KH2's Gummi missions, the trance arrangement (open, build, drop, breakdown), Crywolf's
 // drop and the owner's holes (docs/OST.md section 6), and this game's own motifs and Crude Sea (music/emocean.js), whose parts it keeps.
 //
-//   import { tripCue, tripLayout, railHeat, HEAT, LEGS } from './legs.js'
-//   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'stormwall'|'graveyard'|'maelstrom'|'calm'|'bounty',
-//     bars: 24..64, aspect?: the maelstrom's feeling, phases?: { open, build, peak, release } }]   (music/choose.js, game.emocean.stage.legs)
+//   import { tripCue, tripLayout, railHeat, HEAT, LEGS, setEncounter } from './legs.js'
+//   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
+//     bars?: 24..64 (or each leg's own phases, RAIL-OVERHAUL.md section 6), aspect?: the maelstrom's feeling, phases?: { open, build, peak,
+//     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.emocean.stage.legs)
+//   setEncounter(waiting): an encounter's choice pending holds its cue on the bar line
 //   tripLayout(legs) -> { bars, legs: [{ id, at, open, build, peak, release, end }], turns: [bar] } (the stage's bars, for the runtime)
 //   railHeat(n) adds heat (HEAT.lock, .volley, .down, .part, .core: music/choose.js hears the rail's events)
 // ---------------------------------------------------------------------------------------
@@ -41,6 +43,8 @@ const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 export const BPM = 160;
 const R = { heat: 0 };
 export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
+/** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
+export function setEncounter(waiting) { R.waiting = !!waiting; }
 export function railHeat(n = 0) { R.heat = Math.max(0, Math.min(3, R.heat + n)); }
 
 // ---- each leg: its key (semitones from E), its four chords ([semitones from the key, minor?]), its groove, its voices
@@ -49,10 +53,11 @@ export const LEGS = {
   shoal: { tr: 0, prog: [[0, m], [8, M], [10, M], [7, m]], groove: 'four', arp: 'koto', lead: 'sax', boss: false },
   wreckers: { tr: 5, prog: [[0, m], [10, M], [0, m], [7, m]], groove: 'jig', arp: 'twinkle', lead: 'fiddle', boss: true },
   nobody: { tr: -3, prog: [[0, m], [8, M], [5, m], [7, M]], groove: 'half', arp: 'harp', lead: 'brass', boss: true },
-  stormwall: { tr: 0, prog: [[0, m], [1, M], [0, m], [10, m]], groove: 'two', arp: 'koto', lead: 'shred', boss: false },
+  eyewall: { tr: 0, prog: [[0, m], [1, M], [0, m], [10, m]], groove: 'two', arp: 'koto', lead: 'shred', boss: false },
   graveyard: { tr: 1, prog: [[0, m], [8, M], [3, M], [7, M]], groove: 'half', arp: 'celesta', lead: 'brass', boss: true },
   maelstrom: { tr: 0, prog: null, groove: 'break', arp: 'twinkle', lead: null, boss: true },
   calm: { tr: 3, prog: [[0, M], [9, m], [5, M], [7, M]], groove: 'none', arp: 'harp', lead: 'celesta', boss: false },
+  encounter: { tr: 0, prog: [[0, m], [8, M], [3, M], [10, M]], groove: 'none', arp: 'harp', lead: null, boss: false },
   bounty: { tr: 7, prog: [[0, m], [8, M], [3, M], [10, M]], groove: 'four', arp: 'koto', lead: 'brass', boss: true },
 };
 const VOICE = { wonder: 'theremin', mirth: 'steelpan', desire: 'sax', grief: 'fiddle', dread: 'voice' }; // (the maelstrom's Figment sings in its feeling)
@@ -95,7 +100,7 @@ const THEME = {
   shoal: (L, i) => (i % 2 === 0 ? quote(MOTIF.ANSWER, 'sax', { v: 0.32 }) : REPLY[(i >> 1) % 3].map(([b, d, n]) => E('sax', b, d, n, 0.28))),
   wreckers: (L, i) => shanty(VERSE, i, 'fiddle', L, 0.3),
   nobody: (L, i) => (i % 2 === 0 ? quote(MOTIF.LEVIATHAN, 'brass', { up: keyed(12, L), v: 0.3 }) : [E('voice', 0, 4, keyed(77, L) - 12, 0.08, { vowel: 'o' })]),
-  stormwall: (L, i) => (i % 2 === 0 ? quote(MOTIF.FIVE, 'shred', { x: 0.75, v: 0.3 }) : quote(MOTIF.TEAR, 'shred', { up: 12, v: 0.26, o: { vib: 0.04 } })),
+  eyewall: (L, i) => (i % 2 === 0 ? quote(MOTIF.FIVE, 'shred', { x: 0.75, v: 0.3 }) : quote(MOTIF.TEAR, 'shred', { up: 12, v: 0.26, o: { vib: 0.04 } })),
   graveyard: (L, i) => (i % 4 === 0 ? quote(MOTIF.BEACON, 'brass', { up: keyed(0, L), v: 0.3 }).map((e, k) => (k > 1 ? { ...e, i: 'bell', v: 0.22, n: e.n + 12 } : e)) : []),
   maelstrom: (L, i) => quote(MOTIF.WHIRL, VOICE[L.aspect] || 'theremin', { v: 0.26 }).map((e) => ({ ...e, n: modal(e.n, L) })),
   calm: (L, i) => (i % 2 === 0 ? quote(MOTIF.ANSWER, 'celesta', { up: keyed(12, L) - 12, x: 1.5, v: 0.22 }) : [E('whale', 0, 4, keyed(52, L), 0.12)]),
@@ -146,6 +151,35 @@ function turnBar(A, B, i) {
   return [E('kick', 0, 1, null, 0.7), E('supersaw', 0, 4.1, dom.tri, 0.08, { cutoff: 6000 }), ...fill(0.55), ...[0, 0.5, 1, 1.5].map((b, k) => E('tom', b, 0.5, null, 0.35, { pitch: 180 - k * 25 }))];
 }
 
+// ---- the encounters at sea (PASSAGE.md section 13, src/progress/rail/encounters.js; Espada's names): a cue under the sequence (arrive,
+// 4 bars), then a hold of 2 bars looped while the choice waits (no drums: a choice is not hurried), then the turn of the rail; each
+// its own level (`ga`, `gh`: rendered and measured to about -31 and -33 dB RMS)
+const drone = (n, v = 0.05) => [E('pad', 0, 4.2, n, v, { cutoff: 1100 })];
+const STEP = [[0, 0.5, 69], [0.5, 0.5, 71], [1, 1, 72], [2, 2, 76]]; // (the Fool's Step: A B C, a leap to E)
+const ENCOUNTER = {
+  ghostConvoy: { ga: 1.82, gh: 1.5, // the Dead Reckoners: ghost ships in the fog, the shanty slowed to a dirge on a concertina, a ship's bell
+    arrive: (L, i) => [...drone([52, 59, 64]), ...(i % 2 === 0 ? VERSE.tune[i >> 1].map(([b, d, n]) => E('concertina', b * 2 / 3, d * 2 / 3, n - 12, 0.18)) : []), ...(i === 0 ? [E('bell', 0, 1, 64, 0.3)] : [])],
+    hold: (L, i) => [...drone([52, 59, 63]), E('voice', 0, 8, 64, 0.06, { vowel: 'o' }), ...(i ? [] : [E('bell', 0, 1, 52, 0.22)])] },
+  lettysCutter: { ga: 0.84, gh: 2.4, // the Last Word: Letty Marque and Poll alongside, a sly pizzicato and a flute
+    arrive: (L, i) => [...drone([55, 62, 67]), ...[0, 1, 2, 3].map((b) => E('pizz', b, 0.5, [55, 59, 62, 66][(b + i) % 4], 0.22)), ...(i % 2 ? quote(MOTIF.ANSWER, 'flute', { v: 0.22 }) : [])],
+    hold: (L, i) => [...drone([55, 59, 66]), E('pizz', 0, 0.5, 55, 0.18), E('pizz', 2, 0.5, 62, 0.15)] },
+  lightWhale: { ga: 2.4, gh: 3.8, // the Cantor: a whale singing under the crude, the choir answering, the Answer slowly on the celesta
+    arrive: (L, i) => [...drone([52, 59, 64, 71]), E('whale', 0, 4, i % 2 ? 57 : 52, 0.16, { to: i % 2 ? 52 : 59 }), ...(i === 2 ? quote(MOTIF.ANSWER, 'celesta', { x: 2, v: 0.18 }) : [])],
+    hold: (L, i) => [...drone([52, 59, 64, 71]), E('voice', 0, 8, 71, 0.05, { vowel: 'u' }), ...(i ? [E('whale', 0, 4, 64, 0.1, { to: 59 })] : [])] },
+  castaway: { ga: 2.75, gh: 4.3, // Hap Lagan: a Contractor alone on a raft, the Fool's Step on a harmonica; Bob the cork bobbing (a soft pop off the beat)
+    arrive: (L, i) => [...drone([52, 59]), ...quote(STEP, 'harmonica', { v: 0.24 }), E('bubble', 1.5, 0.5, null, 0.15), E('bubble', 3.5, 0.5, null, 0.12)],
+    hold: (L, i) => [...drone([52, 59]), E('harmonica', 0, 4, i ? 71 : 67, 0.12), E('bubble', 2.5, 0.5, null, 0.12)] },
+  pursersBarge: { ga: 0.48, gh: 0.52, // the Bourse: the barge at anchor, lanterns lit: a lounge, the Rhodes and the upright on brushes
+    arrive: (L, i) => [...[55, 59, 62, 66].map((n) => E('rhodes', 0, 3.8, n, 0.16)), E('upright', 0, 2, 43, 0.12), E('upright', 2, 2, 50, 0.1), E('brush', 1, 1, null, 0.3), E('brush', 3, 1, null, 0.3), ...(i === 3 ? [E('vibes', 0, 2, 71, 0.18)] : [])],
+    hold: (L, i) => [...(i ? [52, 55, 59, 62] : [55, 59, 62, 66]).map((n) => E('rhodes', 0, 3.8, n, 0.13)), E('upright', 0, 4, i ? 40 : 43, 0.1), E('brush', 2, 1, null, 0.22)] },
+  mirrorSea: { ga: 0.76, gh: 1.66, // the Glass: your double beside you: the Answer and its echo a beat behind, an octave up, on glass
+    arrive: (L, i) => [...drone([52, 59, 64]), ...quote(MOTIF.ANSWER, 'vibes', { v: 0.22 }), ...quote(MOTIF.ANSWER, 'celesta', { at: 1, up: 12, v: 0.14 }), E('shimmer', 0, 4, [64, 67, 71], 0.06)],
+    hold: (L, i) => [...drone([52, 59, 64]), E('vibes', 0, 2, 76, 0.14), E('celesta', 1, 2, 88, 0.09), E('shimmer', 0, 4, [64, 67, 71], 0.05)] },
+  driftBottle: { ga: 2.3, gh: 5.6, // a drift bottle: a music box in the light, a cork's pop
+    arrive: (L, i) => [...drone([64, 71], 0.04), ...(i % 2 === 0 ? quote(MOTIF.AWAKEN, 'celesta', { up: 12, v: 0.18 }) : []), ...(i === 0 ? [E('bubble', 0, 0.5, null, 0.2)] : [])],
+    hold: (L, i) => [...drone([64, 71], 0.04), E('harp', 0, 2, 76, 0.14), E('harp', 2, 2, 83, 0.1)] },
+};
+
 // ---- the launch and the arrive (the island rising: the tally over it)
 const LAUNCH = (i) => [E('pad', 0, 4.2, [52, 59, 64], 0.06, { cutoff: 1200 }), ...(i === 0 ? quote(MOTIF.ANSWER, 'bell', { up: -12, v: 0.25 }) : []), ...(i === 1 ? [E('whale', 0, 4, 52, 0.12)] : []),
   ...(i >= 2 ? [E('kick', 0, 1, null, 0.6), E('kick', 2, 1, null, 0.5), E('tick', 1, 0.5, null, 0.12), E('tick', 3, 0.5, null, 0.12)] : []), ...(i === 3 ? [E('riser', 0, 4, null, 0.3), ...fill(0.5)] : [])];
@@ -154,8 +188,11 @@ const ARRIVE = (i) => (i === 0 ? [E('crash', 0, 1, null, 0.45), E('bell', 0, 1, 
     : [E('pad', 0, 4.2, [52, 56, 59, 64], 0.05, { cutoff: 1600 }), ...(i === 3 ? [E('bell', 0, 2, 88, 0.14)] : [])]);
 
 /** The bars of each part of a leg: its own, or open 8, release 4 and the rest split between the build and the peak. */
+const PHASES = { wreckers: [8, 20, 24, 4], nobody: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] }; // (RAIL-OVERHAUL.md section 6: a calm has no peak)
 export function phasesOf(leg) {
   if (leg.phases) return leg.phases;
+  const P = !leg.bars && PHASES[leg.id];
+  if (P) return { open: P[0], build: P[1], peak: P[2], release: P[3] };
   const bars = Math.max(16, leg.bars || 48), mid = bars - 12, build = Math.round(mid / 2);
   return { open: 8, build, peak: mid - build, release: 4 };
 }
@@ -164,6 +201,7 @@ export function tripLayout(legs) {
   let at = 4; const out = [], turns = [];
   legs.forEach((leg, k) => {
     if (k > 0) { turns.push(at); at += 4; }
+    if (leg.id === 'encounter') { out.push({ id: 'encounter', at, end: at + 6, held: true }); at += 6; return; } // (its hold loops until the choice: what follows moves with it)
     const p = phasesOf(leg), o = { id: leg.id, at, open: at, build: at + p.open, peak: at + p.open + p.build, release: at + p.open + p.build + p.peak };
     o.end = o.release + p.release; at = o.end; out.push(o);
   });
@@ -182,18 +220,23 @@ export function tripCue(legs) {
   });
   Ls.forEach((L, k) => {
     if (k > 0) sections.push({ id: `turn:${k}`, bars: 4, gain: 2.6, sweep: [700, 16000], root: 64 + keyed(0, L), bar: (i) => turnBar(Ls[k - 1], L, i) });
+    if (L.id === 'encounter') { const C = ENCOUNTER[legs[k].encounter] || ENCOUNTER.driftBottle;
+      sections.push({ id: `encounter:${k}:arrive`, bars: 4, gain: 4 * C.ga, root: 64, bar: (i) => C.arrive(L, i) }, { id: `encounter:${k}:hold`, bars: 2, gain: 4 * C.gh, root: 64, hold: true, bar: (i) => C.hold(L, i) });
+      return; }
     const p = phasesOf(legs[k]);
     for (const ph of ['open', 'build', 'peak', 'release']) {
+      if (!p[ph]) continue; // (a calm has no peak)
       sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6, pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
         sweep: ph === 'release' ? [9000, 2200] : null, root: 64 + keyed(0, L), scale: L.id === 'maelstrom' ? MODES[L.aspect] : L.id === 'calm' ? MODES.mirth : null,
         bar: (i) => legBar(L, ph, i, p[ph]) });
     }
   });
   sections.push({ id: 'arrive', bars: 4, gain: 5.5, bar: ARRIVE });
-  const score = { title: 'Crude Sea: the Crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections };
+  const score = { title: 'Crude Sea: the Crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections,
+    jump: (sec, bar) => (sections[sec].hold && bar >= sections[sec].bars - 1 && R.waiting ? sec : null) }; // (an encounter's hold waits for the choice)
   CACHE.set(key, score);
   return score;
 }
 
-/** The sound test's crossing (music/soundtest.js): four legs, each a minute long, so every boss is heard. */
-export const CROSSING_TOUR = tripCue([{ id: 'shoal', bars: 40 }, { id: 'wreckers', bars: 40 }, { id: 'graveyard', bars: 40 }, { id: 'nobody', bars: 40 }]);
+/** The sound test's crossing (music/soundtest.js): four legs, each a minute long, so every boss is heard, and the Cantor between. */
+export const CROSSING_TOUR = tripCue([{ id: 'shoal', bars: 40 }, { id: 'wreckers', bars: 40 }, { id: 'encounter', encounter: 'lightWhale' }, { id: 'graveyard', bars: 40 }, { id: 'nobody', bars: 40 }]);

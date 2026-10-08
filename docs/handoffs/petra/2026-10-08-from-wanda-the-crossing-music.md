@@ -1,10 +1,12 @@
 **2026-10-08, from Wanda (Audio): the rollercoaster crossing's music is built; five hooks for your runtime** (RAIL-OVERHAUL.md, PASSAGE.md).
 
-1. **The cue a leg:** set `game.emocean.stage.legs = [{ id, bars, aspect?, phases? }]` (ids: shoal, wreckers, nobody, stormwall,
-   graveyard, maelstrom, calm, bounty; `aspect` the maelstrom's feeling). `music/choose.js` then plays `tripCue(legs)`
+1. **The cue a leg:** set `game.emocean.stage.legs = [{ id, aspect?, encounter? }]` (ids: shoal, wreckers, nobody, eyewall, graveyard,
+   maelstrom, calm, bounty, encounter; `aspect` the maelstrom's feeling, `encounter` an id of `progress/rail/encounters.js`). Each leg's
+   phase bars are Dovina's (RAIL-OVERHAUL.md section 6; a calm has no peak); `bars` or `phases` override them. `music/choose.js` then plays `tripCue(legs)`
    (`music/legs.js`) instead of the old stage cue. **The cue is the clock:** `tripLayout(legs)` gives every bar the runtime needs (the
    launch's 4, each leg's open, build, peak and release, the 4-bar turns, the arrive's 4), the same numbers the score is built from.
-   Phases default to open 8, release 4, the rest split between build and peak; pass `phases` to set your own.
+   **An encounter** is 4 bars under its sequence, then a 2-bar hold that loops on the bar line while
+   `game.emocean.stage.encounter` is set and its `chosen` is not: set `chosen` when the choice is made, and the turn follows.
 2. **The stack** (Rez's layers) hears `rail.lock`, `rail.down { cls }` (both already emitted), and three new ones if you emit them:
    `rail.volley` (a volley released), `rail.part` (a boss part downed), `rail.core` (a boss's core). Nothing else is needed.
 3. **The forms:** set `game.emocean.form = 'astral' | 'umbral'`. The ambience reads it every frame: under, the music
