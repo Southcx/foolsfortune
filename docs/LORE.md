@@ -470,6 +470,8 @@ roly-poly toy that rights itself, and a cup).
 
 ### The encounters at sea *(canon: the owner, 2026-10-08; Espada's names for Dovina's seven, `progress/rail/encounters.js`, PASSAGE.md section 13)*
 Each: its name and root, then the log's lines (arrival · each choice) and the choices' words (STE: a verb first).
+On the sea chart an encounter not yet met is **a sighting** ("encounter" is the Spirit Garden's word); each has its page's title in
+capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOURSE, THE GLASS, A DRIFT BOTTLE; `world/emocean/triprun.js`).
 - **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
   own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
   *Follow them.* "You follow the Dead Reckoners. The next 2 waypoints are clear." · *Board the last ship.* "You take 2 casks from the
@@ -492,7 +494,7 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
   does not change them." · *Trade casks.* · *Buy fuel.* · *Buy today's rutter.* (each said as the counter says it now).
 - **mirrorSea: the Glass, and your double.** Sailors call a flat sea "glass". The ghost is **your double** ("fetch", the folklore's
   double, stays the Crib Sheet's gloss of FETA: Dovina's ruling, one word one meaning). "The sea goes flat as glass. Your double sails
-  beside you." · *Race it.* (won) "You beat your double. The leg's rank goes up a step." (lost) "Your double beats you, and fades." ·
+  beside you." · *Race your double.* (won) "You beat your double. The leg's rank goes up a step." (lost) "Your double beats you, and fades." ·
   *Let it pass.* "Your double sails on, and is gone."
 - **driftBottle: a drift bottle.** The real oceanographers' tool: bottles set adrift to map the currents, found years later. Who writes
   these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a

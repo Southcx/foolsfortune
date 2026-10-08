@@ -25,9 +25,9 @@ import { sfx } from '../../audio/sfx.js';
 export const WAYPOINT = {
   shoal: { word: 'the shoal', sails: 'shoal' }, wreckers: { word: 'the Wreckers', sails: 'pirates' }, eyewall: { word: 'the eyewall', sails: 'shoal' },
   graveyard: { word: 'the graveyard', sails: 'shoal' }, maelstrom: { word: 'the maelstrom', sails: 'shoal' }, bounty: { word: 'a bounty', sails: 'shoal' },
-  leviathan: { word: 'Old Nobody', sails: 'leviathan' }, calm: { word: 'a calm', sails: null }, encounter: { word: 'an encounter', sails: null },
+  leviathan: { word: 'Old Nobody', sails: 'leviathan' }, calm: { word: 'a calm', sails: null }, encounter: { word: 'a sighting', sails: null },
 };
-const CLASS_WORD = { threat: 'a threat', haven: 'a haven', boss: 'something great' };
+const CLASS_WORD = { threat: 'a threat', haven: 'a haven', boss: 'something vast' };
 const READ = { beats: 4, beat: 0.6, tol: 14 }; // (the reckoning: four beats of 0.6 real seconds; the mark held within 14 degrees of the needle)
 const W = 640, H = 300;
 
@@ -97,8 +97,8 @@ export class SeaChart {
       const rows = el('div', 'rooms');
       const act = (n, title, sub, fn, ok = true) => { const d = el('div', 'room', `<span class="n">${n}</span><span><b>${title}</b><s>${sub}</s></span>`); if (ok) d.onclick = fn; else d.style.opacity = '0.5'; rows.appendChild(d); };
       const vane = g.belt?.isWorn('dreamvane');
-      act('◎', 'READ THE SEA', vane ? `the needle over the chart: keep the mark on it for four beats (today ${Math.round(g.voyage.reckoning(from, to) * 100)}% read)` : 'wear the Dreamvane to read the sea', () => this.beginRead(), vane && !this.reading);
-      act('↺', 'REDRAFT', 'clear the passage and draw it again', () => { this.path = []; this.draw(); }, this.path.length > 0);
+      act('◎', 'RECKON THE SEA', vane ? `hold the needle on the mark for four beats (today ${Math.round(g.voyage.reckoning(from, to) * 100)}% reckoned)` : 'wear the Dreamvane to reckon the sea', () => this.beginRead(), vane && !this.reading);
+      act('↺', 'REDRAFT', 'clear the passage and draft it again', () => { this.path = []; this.draw(); }, this.path.length > 0);
       act('⚓', 'CAST OFF', this.done() ? `sails as: ${this.legs().join(', ')}` : `draft one waypoint in each of the ${C.columns} columns first`, () => this.pier.castOff(from, to), this.done());
       act('←', 'BACK', 'to the pier', () => this.pier.open(from));
       im.appendChild(rows);

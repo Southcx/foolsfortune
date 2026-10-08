@@ -29,7 +29,17 @@ import { LegRunner } from './legrunner.js';
 import { stream } from '../../core/rng.js';
 
 const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
-const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Reckon the sea.', fuel: 'Bunker: fill the tank.' }; // (Espada's words: the campfire is heaving to)
+const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Reckon the sea.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
+// each encounter's title and its choices' words (Espada's: docs/LORE.md, "The encounters at sea"); a choice not listed shows its `does`
+const ENCOUNTER_WORDS = {
+  ghostConvoy: { title: 'THE DEAD RECKONERS', follow: 'Follow them.', loot: 'Board the last ship.' },
+  lettysCutter: { title: 'THE LAST WORD', bounty: 'Take her bounty.', sell: 'Sell her your rutter.' },
+  lightWhale: { title: 'THE CANTOR', listen: 'Listen.', follow: 'Follow it down.' },
+  castaway: { title: 'A RAFT ADRIFT', rescue: 'Take them aboard.', leave: 'Sail on.' },
+  pursersBarge: { title: 'THE BOURSE', trade: 'Trade casks.', rutter: 'Buy today\'s rutter.' },
+  mirrorSea: { title: 'THE GLASS', race: 'Race your double.', pass: 'Let it pass.' },
+  driftBottle: { title: 'A DRIFT BOTTLE', read: 'Read it.' },
+};
 
 export class TripRun {
   constructor(stage) { this.st = stage; this.game = stage.game; this.active = false; this.swings = []; }
@@ -115,7 +125,7 @@ export class TripRun {
     const S = this.st, M = this.game.indexMenu, leg = this.legs[k], w = this.wps[k]; if (!M || S.offering) return;
     this.chosen.add(k); S.offering = true;
     const enc = leg.encounter && ENCOUNTERS[leg.encounter], st = S.stage;
-    const opts = enc ? enc.choices.filter((c) => !(c.needs === 'dive' && !SHIPS[this.state.ship]?.dive)).map((c) => ({ id: c.id, word: c.does }))
+    const opts = enc ? enc.choices.filter((c) => !(c.needs === 'dive' && !SHIPS[this.state.ship]?.dive)).map((c) => ({ id: c.id, word: ENCOUNTER_WORDS[leg.encounter]?.[c.id] || c.does }))
       : havenChoices(this.state, w).map((id) => ({ id, word: CHOICE_WORD[id] || id }));
     if (enc) { st.encounter = { id: leg.encounter, chosen: false }; this.state = { ...this.state, hull: Math.min(SHIPS[this.state.ship].bears, this.state.hull + (enc.mend || 0)) }; }
     else st.campfire = { chosen: false };
@@ -132,7 +142,7 @@ export class TripRun {
       const box = el('div', 'rooms');
       for (const o of opts) { const d = el('div', 'room', `<span class="n">·</span><span><b>${o.word}</b></span>`); d.onclick = () => pick(o.id); box.appendChild(d); }
       im.appendChild(box);
-    }, { title: enc ? (leg.encounter || 'AN ENCOUNTER').toUpperCase() : 'HEAVING TO', sub: enc ? 'choose' : 'the sea lies still a while' }); // (placeholder words: Espada's)
+    }, { title: enc ? (ENCOUNTER_WORDS[leg.encounter]?.title || 'A SIGHTING') : 'HEAVING TO', sub: enc ? 'choose one' : 'the sea lies still a while' }); // (Espada's words)
   }
 
   stop() { this.active = false; this.field?.clear(); this.player?.stop(); if (this.runner) this.runner.done = true; const st = this.st.stage; st.legs = null; st.campfire = null; st.encounter = null; st.fuel = null; }
