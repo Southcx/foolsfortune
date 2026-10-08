@@ -101,6 +101,9 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **Sounds the ear must read** (the crystals) keep near-harmonic partials and a strong fundamental.
 - **Sounds made elsewhere** (`sfx.voiceAt(where, { listener, tag })`, `audio/positional.js`): a co-op sibling's body plays the Courier's
   own sounds, panned to its side and rolled off with distance (gone past 30 m), with its own rate limits.
+- **The Mycelium** (`audio/mycelium.js`): a spore bed sounds its strain (lichen, koji, inkcap, oyster, witches' butter); Myggdrasil is a
+  drone in its tincture's feeling (the mode's colour note over E and its fifth, brighter as it saturates); its caps open a step up the
+  scale each, the Kingdom to the Crown; a keepsake pot sings its spirit's line of the Answer in its feeling's mode.
 - **Voices:** the spirits (`audio/spirits.js`) are Chao-like: a small throat, the mood in the tune, the feeling in the leap (mirth a
   major third, wonder a fourth, desire a fifth, grief a minor third, dread a half step).
 

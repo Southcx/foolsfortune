@@ -259,66 +259,72 @@ the rules before building in the same area; a rule a machine can check goes into
     built compiles every material in it for the state of that moment (no cutaway plane, three lamps, flat shading), programs no frame
     draws with, and each lives as long as its material. `compile` takes hidden objects too and the prime draw shows them, so a look made
     at boot needs no warm-up of its own; a look made later compiles its own group, after an empty frame (78).
-97. **The storm bends the world, never the danger, and the danger is marked where it is built.** Every material of what hurts or is
+97. **A rule's effect is applied where the rule lives, once.** When a pure module owns a rule (trip.js's mend on arriving at an
+    encounter), the world calls it and does not apply the same number again on its own; the world acts only on what the rule asks.
+98. **A turned frame turns about the rider, not the track.** A figure that rolls or pitches the rail turns about the heartline (where
+    the ship rides), or the ship is swung through the sea's surface.
+99. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
+    copied (last frame's), the two disagree at any discontinuity; hand all of it the same way.
+100. **What lies in a place that is taken down goes with it.** A thing a place leaves in a list (a sherd on a floor of a Well) is
+    dropped when the place is: listen for the place's end (another floor, the way out) and forget what it held.
+101. **A grid on a sphere meets itself at the poles.** Read the last row round a pole as one point (its mean) near the pole, never
+    along one longitude, or the ground creases there.
+102. **A merged line is the same line.** The log folds a repeat into the line before it (a count); a different line under the same key is
+    its own, or the second's words are lost.
+103. **The storm bends the world, never the danger, and the danger is marked where it is built.** Every material of what hurts or is
     aimed at (a shot, an outlined shot and its parry mark, a reticle, a lock mark, a hurtbox mark) goes through `keepTrue` at its
     owner's build (free on a transparent one; an opaque one costs a program, so say it); a big object the storm seats moves less than its
     smallest part's radius (`STORM.seat`), because a hurtbox is where the logic puts it. Measure it: render with the veil on and off,
     the danger isolated by differencing with and without it, and read its shift in pixels.
-98. **A wrapped `onBeforeCompile` keeps its old code in its program key, taken before the wrap.** The default
+104. **A wrapped `onBeforeCompile` keeps its old code in its program key, taken before the wrap.** The default
     `customProgramCacheKey` is `this.onBeforeCompile.toString()`, read late: once the hook is wrapped it is the wrapper's text for every
     material, and two wrapped materials of one kind with different old code would share one program.
-99. **A mark the player must read carries a light part and a dark part.** The black crude and the gold storm are both grounds at sea:
+105. **A mark the player must read carries a light part and a dark part.** The black crude and the gold storm are both grounds at sea:
     a danger drawn only dark (ink on the ink sea) or only as added light (white on the gold) vanishes on one of them. Give it both (an
     astral shot's dark rim, an umbral shot's pale rim, the outline's film beside its ink, a ribbon's shade at its edges) and render it
     over both grounds before calling it done.
-100. **What a mark draws from a number, it draws from the thing's own, never its place in a list.** A packed list is rewritten every
+106. **What a mark draws from a number, it draws from the thing's own, never its place in a list.** A packed list is rewritten every
     frame: when one entry ends, every entry after it takes the one before's index. A film's phase, a flicker's offset, a wobble's seed
     taken from the index changes colour for every mark behind the one that ended; take it from the record (its pool slot).
-101. **A mark that says "this, now" is asked whether it is still true, every frame.** A telegraph closes on a part that can act and on
+107. **A mark that says "this, now" is asked whether it is still true, every frame.** A telegraph closes on a part that can act and on
     a bar that will fire; the part downed, the fight ended or the volley that will not come takes the mark with it (`alive`), or the
     player learns to ignore the one mark they must not.
-102. **A warm-up puts back what it moved.** Whatever is moved, scaled or re-parented to be compiled is put back where it is hidden
+108. **A warm-up puts back what it moved.** Whatever is moved, scaled or re-parented to be compiled is put back where it is hidden
     again; never trust each owner to reposition its look every frame (a look drawn in the world's own frame never does).
-103. **A quad built in screen space keeps its winding.** Its across axis is the along axis turned clockwise on the screen ((x, y) to
+109. **A quad built in screen space keeps its winding.** Its across axis is the along axis turned clockwise on the screen ((x, y) to
     (y, -x)); turned the other way the quad is mirrored, faces away and is culled on a one-sided material.
-104. **A warp's door names who is not let in.** The storm bends the world, never the danger: whatever is shot at, hurt by or locked on
+110. **A warp's door names who is not let in.** The storm bends the world, never the danger: whatever is shot at, hurt by or locked on
     (an eye, a shot, a hurtbox) is made outside the warp's family and is handed only to its own hook (`warpWith`'s `keepTrue`).
-105. **A colour pinned to the world is for things that stand.** Anything the rail carries through the world (the school, the geometry
+111. **A colour pinned to the world is for things that stand.** Anything the rail carries through the world (the school, the geometry
     placed in the rail's frame) takes its stone's phase from itself (its local position at its size, plus its own seed), or the colours
     cycle at the rail's speed.
-106. **A mark sized from a projection is clamped, and a flag that draws a mark is eased before it reaches the look.** A streak as long as
+112. **A mark sized from a projection is clamped, and a flag that draws a mark is eased before it reaches the look.** A streak as long as
     five fish, however close the camera, and a strike's 0 / 1 flag, are a flash on the screen in the one frame a group turns on. And a
     rate is never driven by an eased number: the phase swings by the clock times the change.
-107. **A mark a model lays in the world rides in the model's group, counter-moved, so it is warmed and hidden with it.** A shadow or a wake
+113. **A mark a model lays in the world rides in the model's group, counter-moved, so it is warmed and hidden with it.** A shadow or a wake
     added to the scene on its first use compiles in play and outlives its model's `visible`. And count a material's settings, not its
     class: a transparent `DoubleSide` material draws twice (back faces, then front) and is two programs, and `fog: false` is a third;
     match a material the game already warms (`renderer.info.programs` before and after), or set `forceSinglePass`.
-108. **What a portent does not show, no part of the drawing shows.** A picture made from the truth beside what is shown leaks by its side
+114. **What a portent does not show, no part of the drawing shows.** A picture made from the truth beside what is shown leaks by its side
     channels (a lane's length, an offset, a draw order): draw twice with only the hidden fields changed and compare the pixels
     (`scripts/seachartlooktest.mjs`: one waypoint at a time, its type, strength and a dim star's feeling). Nor
     what the record never held: an unrecorded strength is not drawn as a default one.
-109. **What is made of a canvas is kept on the canvas.** A scaled or blurred copy lives in a `WeakMap` keyed by its source; a `Map` keyed by the
+115. **What is made of a canvas is kept on the canvas.** A scaled or blurred copy lives in a `WeakMap` keyed by its source; a `Map` keyed by the
     canvas, emptied at a size, keeps every canvas it ever saw. Count the canvases alive after a GC (a `createElement` wrapper and
     `WeakRef`s): their pixels are outside the heap, and the heap's number will not show them.
-110. **A hook is read by someone.** A name set on `userData` (a stage's `dispose`) is a promise only the one who takes the thing down keeps: grep
+116. **A hook is read by someone.** A name set on `userData` (a stage's `dispose`) is a promise only the one who takes the thing down keeps: grep
     for who reads it before relying on it, and measure `renderer.info.memory` before, while and after leaving, more than once.
-111. **A class a module exports has a name no other module of the game exports.** The glossary calls the pier's window `SeaChart`; its drawing
+117. **A class a module exports has a name no other module of the game exports.** The glossary calls the pier's window `SeaChart`; its drawing
     took the word for a class, and the one module that imports the one declares the other. Grep `export class` and the glossary first, and
     qualify (`SeaChartCanvas`).
-112. **A look made on the workbench is judged once on the ground it will stand on.** The workbench's floor is near black and its light
+118. **A look made on the workbench is judged once on the ground it will stand on.** The workbench's floor is near black and its light
     strong; the Spirit Garden's ground is pale (225, 230, 180) and its light soft. A colour chosen against the one is wrong on the
     other (a "darker, lusher" ring that was near black read as a hoop), so a look for a place is placed in that place by hand, in its
     own light and on its own ground's normal, before it is called done.
-113. **A clock a shader's sine reads wraps at a whole number of that sine's periods, and a step that is not a number is no step.** A
+119. **A clock a shader's sine reads wraps at a whole number of that sine's periods, and a step that is not a number is no step.** A
     uniform wrapped at 3600 real seconds jumps the phase of `sin(0.7 t)` (2520 rad is 401.07 turns) by the fraction left over; and `NaN` added once
     stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
     handed a number that is not one.
-114. **A rule's effect is applied where the rule lives, once.** When a pure module owns a rule (trip.js's mend on arriving at an
-    encounter), the world calls it and does not apply the same number again on its own; the world acts only on what the rule asks.
-115. **A turned frame turns about the rider, not the track.** A figure that rolls or pitches the rail turns about the heartline (where
-    the ship rides), or the ship is swung through the sea's surface.
-116. **What one frame hands another is all of one frame.** When part of a camera's shot is read by reference (this frame's) and part
-    copied (last frame's), the two disagree at any discontinuity; hand all of it the same way.
 
 ## Cases
 
@@ -331,7 +337,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the sward is moss (0x536a52 to 0x72896a) with a straw dead edge (0x8e7e56 to 0xa8986a): darker than the ground and not black,
   in the garden and on the workbench. The handoff to Petra says to stand a bed on the ground's own normal (three samples of
   `radiusAt`), measured to lay the whole ring on the Dantian.
-- **Rule:** 112 (a look made on the workbench is judged once on the ground it will stand on; and 64, the normal).
+- **Rule:** 118 (a look made on the workbench is judged once on the ground it will stand on; and 64, the normal).
 
 ### 2026-10-08 · The koji's foxfire boiled, a bad step poisoned the glow for good, and its clock jumped once an hour (found in review)
 - **Seen:** the foxfire's breath over a night cycle, four samples a pixel: the two koji trays showed fine per-pixel noise in how much each
@@ -344,7 +350,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the phase is taken from the root's quarter-metre patch (the mottle after: mean range 0.064, smooth patches); the clocks wrap
   at 400 and 500 whole breaths; `update` adds only a step above zero, `set` keeps its old value when handed a number that is not one,
   and `hop(NaN)` is no hop. 560 beds over every strain, seed and size, 252 pots and 30 sporelings fed bad arguments: no `NaN` attribute or uniform.
-- **Rule:** 113.
+- **Rule:** 119.
 
 ### 2026-10-08 · A rutter's page made from its passage alone gave every waypoint two pips of strength nobody had recorded (found in review, reading what the item keeps)
 - **Seen:** \`chartOfRutter(r)\`, the page's chart when the item carries no \`chart\` (the item \`voyage.js\` makes keeps \`from, to, route, day, passage,
@@ -352,7 +358,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** a default written as if it were data.
 - **Fix:** the strength is \`r.strengths?.[i] ?? null\` and a waypoint with none draws no pips; the handoff asks for \`strengths\`, \`feels\` and
   \`stormsAt\` in the item.
-- **Rule:** 108.
+- **Rule:** 114.
 
 ### 2026-10-08 · The sea chart's lanes stopped short of a waypoint by its true class, telling a haven from a threat among a portent's candidates (found in review, a differential draw)
 - **Seen:** one waypoint at a time, its type scrambled to another class, its strength and (at a dim star) its feeling changed, over 1,187 of
@@ -363,7 +369,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `gapOf(chart, id, portent, classOf)` goes by what the portent shows: a dim star's gap, a class tier's `cls`, the widest of the
   candidates' classes at two and three, the true class only where it is exact. The same scramble now moves no pixel in any tier (0 of
   1,187, and 0 of 691 in `scripts/seachartlooktest.mjs`).
-- **Rule:** 108.
+- **Rule:** 114.
 
 ### 2026-10-08 · The sea chart kept every ground it had drawn, 1.3 MB of canvas for each game day's sea (found in review)
 - **Seen:** drawing 80 route-days in two looks at 2x, then a garbage collection: the canvases still alive went from 54 to 108 megapixels
@@ -372,7 +378,7 @@ the rules before building in the same area; a rule a machine can check goes into
   the ground cache was cleared past 24, but each ground's scaled copy stayed in `CACHE` under it.
 - **Fix:** the copies live in `WeakMap`s keyed by the source canvas (`SCALES`, `BLURS`), so a ground that is dropped takes its copies with it.
   Over the same run: 4.48 to 4.54 megapixels.
-- **Rule:** 109.
+- **Rule:** 115.
 
 ### 2026-10-08 · The workbench never called a stage's dispose, so the sea chart stage kept 32 geometries and 11 textures a time it was shown (found in review)
 - **Seen:** `crossing:chart` shown and left four times: `renderer.info.memory` went from 1576 geometries and 156 textures to 1707 and 204, and
@@ -382,14 +388,14 @@ the rules before building in the same area; a rule a machine can check goes into
   aside (`userData.mat0`).
 - **Fix:** `clearHolder` calls `userData.dispose` on what it drops; the stage frees both rutters, the boards' textures and every mesh it made.
   Four loads: 1611 geometries and 171 textures while shown, 1579 and 160 after leaving, the same each time.
-- **Rule:** 110.
+- **Rule:** 116.
 
 ### 2026-10-08 · The sea chart's drawing took the name of the pier's window for its class (found in review)
 - **Seen:** `ui/seachart/seachart.js` exported `class SeaChart`, as did `world/emocean/seachart.js` (Petra's window, the glossary's `SeaChart`); the
   handoff told the pier to `import { SeaChart }` into the module that declares one.
 - **Cause:** the branch was cut before the window's glossary entry was merged, so nothing in it showed the name was taken.
 - **Fix:** `SeaChartCanvas`, in the module, the glossary and the handoff.
-- **Rule:** 111.
+- **Rule:** 117.
 
 ### 2026-10-08 · The False Light's keel seams never answered the keel (found in review)
 - **Seen:** looking at her from under, the seams along the keel were the lure's full gold whether the keel was whole, damaged or broken
@@ -418,7 +424,7 @@ the rules before building in the same area; a rule a machine can check goes into
   (`unframe`), so their vertices stay in the world's frame, they are warmed with the group and hidden with it; and both are drawn with the
   game's own basic-map program (a soft halo for the shadow, a slick texture streaming aft for the wake), as are the beam, the glass and the
   ghosts' sails, which keep fog to match it. Boot programs 163 before and after; `leviathan-shadow` is gone, so one fewer compiles in play.
-- **Rule:** 107.
+- **Rule:** 113.
 
 ### 2026-10-08 · The silhouette's eye, which is shot at, was handed to the storm to bend (Calissa, reviewing the swarm)
 - **Seen (read, then run in the workbench with a recording hook):** `warpWith(fn)` gave `fn` every material the Mind's geometry made, and
@@ -429,7 +435,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `mindGeoMaterial(kind, { warped: false })` for the eye's three (`vfx/shoalsilhouette.js`); `warpWith(fn, { keepTrue })` hands
   those to `keepTrue` instead (the storm's `keepTrue` and `deepMaterial`: the veil leaves it, and no new program). Recording hook: 3 eye
   materials made, 0 given to the warp, 3 to `keepTrue`.
-- **Rule:** 104.
+- **Rule:** 110.
 
 ### 2026-10-08 · The stone's colour on the school and the eye would have cycled a few times a second (Calissa, reviewing the swarm)
 - **Seen (read, then computed from the rail's own numbers):** the glints' and the geometry's colour (`labPhase`) took the fragment's world
@@ -439,7 +445,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** the Mind's family anchors to the world (right for the things that stand: the Dunemaw, the cave).
 - **Fix:** the glints take it from their own local position and a per-fish offset (`vfx/shoal.js`, `vL`); the geometry from its local
   position at its instance's size and its seed (`vfx/railgeometry.js`, `vP`).
-- **Rule:** 105.
+- **Rule:** 111.
 
 ### 2026-10-08 · A dashing glint near the camera threw a streak across the screen, and every strike's streak came on in one frame (Calissa, reviewing the swarm)
 - **Seen (a glint set 2.5 m from the rail's camera with dash 1, rendered after the fix; the old length computed at 137 px a metre; and the
@@ -453,7 +459,7 @@ the rules before building in the same area; a rule a machine can check goes into
   7 px wide), both in `vfx/shoal.js`; the dash is a per-member number eased in and out beside the roll, 12 a real second
   (`world/emocean/shoal.js`, five lines: CROSSING). The first try, an expression of the mood's clock and the roll, stepped by up to
   0.49 on a strike that began behind the ship: measured, so replaced.
-- **Rule:** 106.
+- **Rule:** 112.
 
 ### 2026-10-08 · The shoal's glints, its boil and the ship's wake were drawn 50 m under the crude (Calissa, wiring 600 glints)
 - **Seen (headless, a crossing under /crossing shoal, the set piece at bar 72):** no glint, no Conductor, no boil round the ship in
@@ -465,7 +471,7 @@ the rules before building in the same area; a rule a machine can check goes into
   -50 m, so every glint and the wake were drawn 50 m down, under the opaque crude.
 - **Fix:** the warm-up keeps each parked sea look's position and puts it back as it hides it (`src/main.js`, two lines). The glints,
   the boil and both wake lines are on the sea (screenshots `rail_shoal_above`, `rail_shoal_chase`).
-- **Rule:** 102. (A check for the Emocean sweep is handed to Dovina: the shoal look's and the wake's world matrices at the origin's
+- **Rule:** 108. (A check for the Emocean sweep is handed to Dovina: the shoal look's and the wake's world matrices at the origin's
   height while a set piece runs.)
 
 ### 2026-10-08 · The far glints' sparks and the frenzy's streaks were never drawn (found headless, before it shipped)
@@ -474,7 +480,7 @@ the rules before building in the same area; a rule a machine can check goes into
   mirrored basis, so the quad's triangles faced away and the one-sided material culled them.
 - **Fix:** the across axis turned clockwise (`vfx/shoal.js`, the spark's `ac`); the streaks and the far sparks are drawn
   (`wb_shoal_dash`).
-- **Rule:** 103.
+- **Rule:** 109.
 
 ### 2026-10-08 · An outlined shot's film changed colour whenever another shot ended, and a shot passing the eye filled the screen (found in review of the shots' look)
 - **Seen (headless, the shoal's crossing, the shots' buffer read before and after):** an outlined shot's film phase read 0.236 with
@@ -486,7 +492,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `RailShots.set` takes a `seed` (the outlined shot's own pool slot, kept for its whole flight; `courier/ship/shots.js`
   passes it); the capsule's alpha fades over its last four metres from the eye (`vfx/railmark.js` `nearFade`: 1.2 m gone, 5 m whole;
   the nearest view's camera is 7.5 m from the ship, so nothing a player must read is touched).
-- **Rule:** 100, and the law "no flash, ever" (a large bright shape that comes and goes in a few frames is one).
+- **Rule:** 106, and the law "no flash, ever" (a large bright shape that comes and goes in a few frames is one).
 
 ### 2026-10-08 · The brig's last telegraph closed on nothing, and a port downed under its ring kept the ring (found in review of the shots' look)
 - **Seen (headless, the pirates' broadside, the marks counted bar by bar):** rings stood at bars 9, 11, 13 ... 21 of the set piece and
@@ -496,7 +502,7 @@ the rules before building in the same area; a rule a machine can check goes into
   part was still there.
 - **Fix:** the call asks `rel < 21` (the next bar must fire) and hands the mark `alive: () => p.alive && !this.ended`
   (`vfx/telegraph.js`, `world/emocean/pirates.js`).
-- **Rule:** 101.
+- **Rule:** 107.
 
 ### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)
 - **Seen (headless, the crossing's pincer from above):** eight lances flown, `ribbons.active` 8, and nothing on screen; the same
@@ -508,7 +514,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the call put before its comment; the shots drawn by `vfx/railshots.js` (`vfx/railmark.js`): every kind with a light and a
   dark part, the outlined with the parry mark's ink band and its film bright at the band's edge; the ribbons laid over the frame
   (not added: added light went white on the gold) with a shade at their edges.
-- **Rule:** 99, and 25 (read the whole line after any edit that adds a comment to it).
+- **Rule:** 105, and 25 (read the whole line after any edit that adds a comment to it).
 
 ### 2026-10-08 · The storm's veil moved the shots and the seat moved the hurtboxes (Calissa, the review of the storm warp)
 - **Seen (the rail headless, `/crossing pirates` and `/crossing shoal`, 960 x 600, the storm at its wall):** (1) the veil's haze moved a
@@ -529,7 +535,7 @@ the rules before building in the same area; a rule a machine can check goes into
   turn is "the whorl" (glossary, `STORM.whorl`, `uStormWhorl`). Cost: the plain shots' opaque instanced material is now non-opaque
   (a program of its own, +1: 154 to 155 at boot), given back when the shots' new look (`vfx/railshots.js`, one transparent material)
   replaces it.
-- **Rule:** 97, 98.
+- **Rule:** 103, 104.
 
 ### 2026-10-08 · The compass, the vane's marks and the pendulum compiled their programs in play (found by the program audit, Calissa)
 - **Seen (headless, programs counted):** showing the wire compass, the Dreamvane's marks and the Crucibelle's pendulum for the first time
@@ -1622,7 +1628,7 @@ the rules before building in the same area; a rule a machine can check goes into
   as the leg closed: the world applied a rule the pure module already applies.
 - **Fix:** the mend in `offer()` dropped; the choice is now Dovina's `apply(state, id, choice, ctx)` and the world does only its asks
   (triprun.js `act`). Checked by scripts/triptest.mjs (an encounter sailed, each ask done).
-- **Rule:** 114.
+- **Rule:** 97.
 
 ### 2026-10-08 · A vertical loop showed one frame upside down at each quarter (found by scripts/railpathtest.mjs)
 - **Seen:** the camera's up against the rail's up read -0.999 for one frame of each turn; every other frame 0.999.
@@ -1631,7 +1637,7 @@ the rules before building in the same area; a rule a machine can check goes into
   flips its basis by half a turn, and the roll that undoes it arrived a frame late.
 - **Fix:** the stage writes the roll into `player.camShot` as it sets the shot (stage.js `camera`). Measured after: 0.999 at every
   frame of every figure.
-- **Rule:** 116.
+- **Rule:** 99.
 
 ### 2026-10-08 · The corkscrew took the ship under the sea at its middle (found in a screenshot, before it shipped)
 - **Seen:** at the corkscrew's middle the screenshot showed only sky: the camera and the ship were under the crude, its surface
@@ -1640,4 +1646,25 @@ the rules before building in the same area; a rule a machine can check goes into
   upside down it was 3 m under the surface.
 - **Fix:** each figure turns about the heartline, CRUISE up the frame (railpath.js `heart`). Measured after: the ship 3 m above the
   sea through every figure (scripts/railpathtest.mjs).
-- **Rule:** 115.
+- **Rule:** 98.
+
+### 2026-10-08 · A Great Dunemaw ostracon left lying stayed in the world after its floor was gone (Calissa, reading while testing)
+- **Seen:** not in play: read. A sherd dropped from a forgotten pot and left lying stayed in `loose` after the Courier left the floor;
+  its word was never dropped again (`drop` refuses a word that is loose) and it could be taken by standing where the floor had been.
+- **Cause:** nothing took the floor's loose sherds away when the floor was.
+- **Fix:** `Ostraca.forget('dunemaw')` on `well.floor` and `well.leave`. Checked by scripts/ostracatest.mjs and the Dunemaw sweep.
+- **Rule:** 100.
+
+### 2026-10-08 · A pull near a planetoid's pole creased the ground (Calissa's garden survey)
+- **Seen:** within 0.49 m of a pole, a pull with the god hand left a crease.
+- **Cause:** `Clay.heightAt` clamps the last row at 88.59 degrees, so near the pole the height is read along one longitude.
+- **Fix:** within half a row of a pole the height blends to the last row's mean, all of it at the pole. Checked by the garden sweep.
+- **Rule:** 101.
+
+### 2026-10-08 · The log lost the Great Slip Jelly's second cast when two came close together (found by the Dunemaw sweep)
+- **Seen:** "accept 4: the log names every cast as it begins" failed: Broodwake was cast, the log said only "readies Blowout".
+- **Cause:** `log.say` folded a line into the one before it whenever the key matched within 1.6 real seconds, keeping the first's text;
+  both casts' lines share the key `cast`. Headless, the sweep's ticks run faster than the wall clock, so 4 game seconds apart was
+  inside the window; in play, any two casts within 1.6 real seconds would have lost the second's name.
+- **Fix:** a line folds only into an identical one (or one with a counter format, `fmt`). Checked by the Dunemaw sweep.
+- **Rule:** 102.

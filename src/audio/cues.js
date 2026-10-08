@@ -8,6 +8,8 @@
 //
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
+import { feelingOfKind } from './mycelium.js';
+
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
@@ -38,6 +40,13 @@ const RULES = {
   'spirit.pet': (s, e) => s.spiritVoice?.('happy', e),
   'spirit.flick': (s, e) => s.spiritVoice?.('hurt', e),
   'garden.sculpt': (s, e) => s.sculpt?.(e.how || 'press'),
+  // the Mycelium (docs/plans/MYCELIUM.md: audio/mycelium.js)
+  'spore.harvest': (s, e) => s.sporeHarvest?.(e.strain, e.up),
+  'myggdrasil.feed': (s) => s.myggFeed?.(),
+  'myggdrasil.fruit': (s, e) => s.myggFruit?.(e.n),
+  'myggdrasil.girth': (s, e) => s.myggCap?.(e.caps),
+  'myggdrasil.hang': (s, e) => s.myggHang?.(e.arcana),
+  'keepsake.pot': (s, e) => s.keepsakeSong?.({ feeling: e.feeling || feelingOfKind(e.kind) }, 1),
 };
 
 export function hearEvents(game, sfx) {
