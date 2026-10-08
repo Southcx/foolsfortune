@@ -551,6 +551,7 @@ if (part('careless')) {
   S.check(`careless: ${REPS} runs leave no physics bodies or jellies`, after.bodies <= before.bodies && after.colliders <= before.colliders && after.jellies <= before.jellies, { bodies: [before.bodies, after.bodies], colliders: [before.colliders, after.colliders], jellies: [before.jellies, after.jellies] });
   // the great cavern in and out: a wipe-free leave by travel
   if (!quick) {
+    await toCavern(); await S.go('workshop'); await reset(); await S.ticks(60); // (a warm-up visit first: the Well zone's prop batches are made once on first use and kept, a cache, not a leak: Petra, d4beef3)
     const b2 = await dm('counts()');
     for (let i = 0; i < 3; i++) { await toCavern(); await S.go('workshop'); }
     await reset(); await S.ticks(60);

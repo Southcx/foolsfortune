@@ -144,7 +144,7 @@ export class SoulAlchemy {
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);
     this.s.colour = { h: +r.colour.h.toFixed(1), s: +r.colour.s.toFixed(3) }; this.s.cocked = true; // (pressing cocks the lever: one firing a press, ruling 5)
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.press', { count: mats.length, hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
+    this.game.events.emit('alchemy.press', { count: mats.length, kinds: mats.map((x) => x.m.kind), hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
     return { colour: this.colour, trail: r.trail };
   }
 

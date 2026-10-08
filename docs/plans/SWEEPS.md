@@ -87,8 +87,8 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
   scene; Calissa measured 421 Groups after one visit and after two). The four sherds were never taken down either: fixed (e0730dd,
   b45367d). The Dunemaw sweep's check (added): left after the fight, the bodies, colliders, jellies and creatures are back to before the cavern.
 - The Dunemaw sweep read the log by index into its last 400 lines (a full log lost the early ones: "accept 4" failed at v114 on an
-  unnamed broodCall); it reads each line's `seq` now (Petra's fix, v114). Petra asks the cavern warm-up visit be held while she traces
-  the last +22 objects (4 top-level roots) over three visits.
+  unnamed broodCall); it reads each line's `seq` now (Petra's fix, v114). The last +22 objects were the Well zone's prop batches, made once on
+  first use and kept (a cache: Petra, d4beef3); the sweep now pays a warm-up visit before it counts.
 
 ### 8. Other
 - **The Tithe's opening throws every frame** (`TypeError ... 'rig'`, `vfx/chestfx.js:45`; `TitheAct` sets `chests.cur` with no
