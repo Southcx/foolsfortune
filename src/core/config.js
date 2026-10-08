@@ -337,6 +337,8 @@ export const DEFAULTS = {
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
     grade: 1, // the colour grade after it: shadows toward indigo, light toward the kiln's warmth
     glitch: true, // the data showing through at the big moments (vfx/glitch.js, vfx/datadrain.js): false turns every tear and drop-out off
+    pendulumSize: 1, // the Crucibelle's pendulum on the compass (vfx/crucibellehud.js): its size, 0.5 to 2.5 (a setting: Calissa)
+    compassContrast: 1, // the wire compass's tape and the marks hung on it, fainter below 1 and brighter above; the pendulum's black keyline grows with it (a setting)
   },
   audio: {
     volume: 0.7,

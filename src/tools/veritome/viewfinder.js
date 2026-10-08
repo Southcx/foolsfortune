@@ -17,7 +17,7 @@
 // Pokémon Snap's viewfinder brackets, Wind Waker's Picto Box (the frame is the box's own), the Sheikah Slate's camera, and a
 // sextant's arc and a compass card in a ship's log.
 //
-//   vf.show(on)  vf.draw(dt, { heading, pitch, tide, charge, chance, brackets, zoom, stars, memory: { left, of } })  vf.flash(thumb)
+//   vf.show(on)  vf.draw(dt, { heading, pitch, tide, charge, chance, brackets, zoom, stars, memory: { left, of }, thirds })  vf.flash(thumb)
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
 const CSS = `
@@ -103,6 +103,16 @@ export class Viewfinder {
     for (const [len, a] of [[15, s.tide * Math.PI * 2 * 4], [9, s.tide * Math.PI * 2]]) { g.beginPath(); g.moveTo(kx, ky); g.lineTo(kx + Math.sin(a) * len, ky - Math.cos(a) * len); g.stroke(); }
     // the date stamp, bottom right inside the picture: the camera's own orange LCD (ui/datestamp.js)
     { const h = Math.max(10, A.h * 0.035); drawStamp(g, stampText(), A.x + A.w - h * 0.8, A.y + A.h - h * 1.8, h); }
+    // the Rule of Thirds knack (progress/knacks.js `ruleOfThirds`): two faint lines each way where photo.js's placement credits the thirds (the
+    // screen's own NDC +-1/3, so the lines are honest to the score), drawn only inside the picture, with a small ring at each of the four crossings
+    if (s.thirds) {
+      g.save(); g.beginPath(); roundRect(g, A.x, A.y, A.w, A.h, r); g.clip();
+      g.strokeStyle = 'rgba(255,240,210,.32)'; g.lineWidth = 1;
+      for (const k of [1 / 3, 2 / 3]) { g.beginPath(); g.moveTo(W * k, A.y); g.lineTo(W * k, A.y + A.h); g.moveTo(A.x, H * k); g.lineTo(A.x + A.w, H * k); g.stroke(); }
+      g.strokeStyle = 'rgba(255,240,210,.5)';
+      for (const kx of [1 / 3, 2 / 3]) for (const ky of [1 / 3, 2 / 3]) { g.beginPath(); g.arc(W * kx, H * ky, 4, 0, Math.PI * 2); g.stroke(); }
+      g.restore();
+    }
     // the subjects in frame: focus brackets
     for (const b of s.brackets || []) {
       const x = (b.x * 0.5 + 0.5) * W, y = (-b.y * 0.5 + 0.5) * H, h = Math.max(14, b.h * H * 0.5), w2 = h * 0.8, L = h * 0.35;

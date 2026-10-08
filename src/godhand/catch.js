@@ -44,7 +44,7 @@ export class HandCatch {
     const need = (c.cls || 0) + 1;
     this.held = { c, t: 0, need, tug: new THREE.Vector3(), next: 0.3, at: c.pos.clone() };
     c.held = c.pos.clone();
-    const V = this.god.jar; this.game.catchLook?.begin(c.root, () => V.pos.clone().setY(V.pos.y + 1.2)); // (the Jar's mouth)
+    const V = this.god.jar; this.game.catchLook?.begin(c.root, () => V.clips?.mouth() ?? V.pos.clone().setY(V.pos.y + 1.2)); // (the Jar's mouth, as its clips hold it: godhand/pneukajarclips.js)
     this.game.events?.emit('catch.grab', { kind: c.kind, cls: c.cls || 0, need, by: 'courier' });
     return this.held;
   }
