@@ -13,6 +13,8 @@
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
 //                mulberryGrove the Mulberry Grove, 16 m: moss and eighteen spirit trees (garden trees: vfx/garden/gardentree.js), the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
+//                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the World Mushroom on its crown (vfx/garden/myggdrasil.js,
+//                          48 m tall, grown on its first update; it reads `game.myggdrasil` when the planetoid is given the game)
 //                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
 //                vertices), brought up to the god hand's clay (world/garden/clay.js) by `fromClay`, only where a stroke changed it; and
@@ -22,7 +24,7 @@
 // isles, the xianxia cave abode and its spirit fields (terraces, the pill furnace, the needle peak of a sect's mountain), and Animal
 // Crossing's soft, rounded toy-like ground.
 //
-//   const P = new Planetoid({ kind, radius, seed, surface, detail })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
+//   const P = new Planetoid({ kind, radius, seed, surface, detail, game })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
 //   P.reach (m: its farthest ground from the heart, kept with every sculpt; the Chimney's is 27.8 against its 8 m radius)
 //   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.fromClay(clay)   P.tint(lakeHex)   P.update(rawDt)
 //   (P.h, P.dir, P.R, P.geo and P.rebuild() stay for a reader that sets the heights itself: h a vertex in units of R)
@@ -33,6 +35,7 @@ import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bou
 import { groundMaterial, groundTick } from './gardengrounds.js';
 import { BOUGHT_LOOKS } from './boughtplanetoids.js';
 import { plantGrove } from './gardentree.js';
+import { WorldMushroom } from './myggdrasil.js';
 
 export const PLANETOIDS = {
   dantian: { radius: 20, top: 0x9fd88a, low: 0x7fb08a, rock: 0x8a7f94 },
@@ -41,13 +44,15 @@ export const PLANETOIDS = {
   pavilions: { radius: 14, top: 0xe8dcc8, low: 0xb8d494, rock: 0x9a8c98 },
   mulberryGrove: { radius: 16, top: 0x7cc48a, low: 0x5fa47a, rock: 0x7a6f86 },
   chimney: { radius: 8, top: 0xd8d2dc, low: 0xa89cb4, rock: 0x7a7088 },
+  myggdrasil: { radius: 26, top: 0x8fbf9c, low: 0x6f9a86, rock: 0x6a5f72 },
 };
 
 const BAND = 0.18; // (sculpting keeps the surface within this share of the radius, in or out)
 let clockOwner = null; // (the one planetoid whose update runs the grounds' shared clock, once a frame)
 
 export class Planetoid {
-  constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL } = {}) {
+  constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL, game = null } = {}) {
+    this.game = game; // (only Myggdrasil's reads it: its state, game.myggdrasil)
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
     this.bought = BOUGHT_LOOKS[kind] || null; // (one of the four bought in the ring: its own skin, shape and props)
     const K = PLANETOIDS[kind] ?? (this.bought ? { radius: radius ?? 12, ...this.bought.palette } : PLANETOIDS.mulberryGrove); this.kind = kind; this.R = radius ?? K.radius; this.K = K;
@@ -149,6 +154,8 @@ export class Planetoid {
       this.groveToPlant = trees; // (grown on its first update, when the garden is entered: the boot's heap never holds its 11,000 leaves)
     } else if (this.bought) {
       this.bought.dress(this, at, std);
+    } else if (this.kind === 'myggdrasil') {
+      this.mushroomToGrow = true; // (the World Mushroom, grown on its first update: the boot's heap never holds its leaves)
     } else if (this.kind === 'chimney') {
       const top = this.surface(_v.set(0, 1, 0));
       const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.2, 0.4, 8).translate(0, top + 0.1, 0), stone); this.props.add(plat);
@@ -158,12 +165,14 @@ export class Planetoid {
   update(raw = 1 / 60) {
     this.t += raw;
     if (this.groveToPlant) { const G = plantGrove(this.groveToPlant); this.props.add(G.bark, G.canopy); this.grove = G; this.groveToPlant = null; } // (the Mulberry Grove's trees: two meshes)
+    if (this.mushroomToGrow) { this.mushroomToGrow = false; this.mushroom = new WorldMushroom({ radius: this.R, surface: (d) => this.surface(d) }); this.group.add(this.mushroom.group); }
+    this.mushroom?.update(raw, this.game?.myggdrasil);
     if (!clockOwner || clockOwner.disposed) clockOwner = this;
     if (clockOwner === this) groundTick(raw);
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 
-  dispose() { this.disposed = true; this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }); } // (the canopy's and the bark's are everyone's: casebook rule 24)
+  dispose() { this.disposed = true; this.mushroom?.dispose(); this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }); } // (the canopy's and the bark's are everyone's: casebook rule 24)
 }
 
 function lcg(seed) { let a = Math.floor(Math.abs(seed) * 1000) % 2147483647 || 7; return () => ((a = (a * 16807) % 2147483647) / 2147483647); }

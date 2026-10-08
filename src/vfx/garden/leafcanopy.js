@@ -12,9 +12,13 @@
 //                normal is the SPHERE's, so the crown is lit as one soft round mass. Each quad is a clump of leaves from the atlas,
 //                leaning a third of the way to its sphere's surface (shingled, never square to the eye: CASEBOOK rule 94), shrinking
 //                away near the eye (a camera inside a crown sees it open round it), a little larger far off (a crown stays a mass), and
-//                not drawn at all on the far side of its sphere (the near side and the inner shell hide it)
+//                not drawn at all on the far side of its sphere (the near side and the inner shell hide it). A sphere may be squashed
+//                into an ellipsoid and halved (a cap's dome over its gills), and a canopy may open by its slot's GATE: each leaf shows
+//                once the gate passes its phase (its distance out from the axis), so a cap opens from its middle out (canopyOpen), and
+//                an entry's leaves can be hidden in the index, from the shadow pass too (canopyShow)
 //   THE ATLAS    painted on a canvas once (4 x 2 cells of 128 px): gingko fans, willow blades, round leaves, mulberry leaves, and for
-//                Myggdrasil gill slivers and little caps. Red is the gold (veins and rims), green the leaf's own light (dark at its
+//                Myggdrasil a comb of gills and a cap's shingled scales (both turned out from the axis by the vertex shader: a cap's
+//                gills radiate from its stipe, its scales point to its rim). Red is the gold (veins and rims), green the leaf's own light (dark at its
 //                base), blue which leaf of the clump, alpha the coverage. Its mips are made here, cell by cell (no cell bleeds into
 //                its neighbour), each level's alpha scaled so as much of a cell passes the cut as at full size (the canopy never thins
 //                to a sparkle as it recedes: Unity's "mip maps preserve coverage"); every level a canvas, uploaded premultiplied
@@ -41,7 +45,8 @@
 //   group.add(C.mesh)   C.tint(color, amount)   C.dispose()
 //   canopyGeometry([{ spheres, leaf, density, seed, slot, matrix }]) -> one geometry for many canopies (drawn with canopyMaterial())
 //   canopyTick({ t, wind, night })   (only outside the garden: in it the grounds' clock drives the time and the night)
-//   LEAF_KINDS   canopyMaterial()   canopySlot() / canopyTint(slot, color, amount) / canopyFree(slot)
+//   LEAF_KINDS   canopyMaterial()   canopySlot() / canopyTint(slot, color, amount) / canopyOpen(slot, k) / canopyFree(slot)
+//   canopyShow(geometry, geometry.userData.ranges[i], on)   (one entry's leaves hidden or shown: Myggdrasil's caps)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from '../labradorite.js';
@@ -51,7 +56,7 @@ import { GROUND_UNIFORMS } from './gardengrounds.js';
 export const LEAF_KINDS = { gingko: [0, 6], willow: [1], round: [2, 7], mulberry: [3], gill: [4], cap: [5] };
 const LEAF_MAX = 4; // (m: the largest leaf quad; a leaf's size is stored as a share of it)
 const CELL = 128, COLS = 4, ROWS = 2, TINTS = 64;
-const KEY = 'leaf-canopy-1';
+const KEY = 'leaf-canopy-2';
 
 // ---- the material: one for every canopy (made on first need; shared, never disposed)
 const U = {
@@ -95,16 +100,22 @@ const VERT_PROJECT = /* glsl */`
   lgrow *= smoothstep(0.8, 2.2, -mvPosition.z); // (and at the eye it shrinks away: the crown opens round a camera inside it, no quad near the near plane)
   vLeafEye = normalize(cameraPosition - lwC.xyz);
   if (aLeaf.w > 0.99 && dot(normalize(mat3(modelMatrix) * normal), vLeafEye) < -0.3) lgrow = 0.0; // (an outer leaf on the far side of its sphere: hidden by the near side and the inner shell, so never drawn)
+  float lcell = floor(aLeaf.z * 7.0 + 0.5);
+  vec2 lslot = vec2((floor(aTree.x * 255.0 + 0.5) + 0.5) / ${TINTS.toFixed(1)}, 0.25);
+  lgrow *= clamp((texture2D(tCanopyTint, vec2(lslot.x, 0.75)).r * 1.15 - aTree.y) / 0.15, 0.0, 1.0); // (the slot's open gate: a leaf shows once the gate passes its phase, so a cap grown from its middle out opens as the gate rises; 1 for every plain canopy)
   float lrot = aLeaf.y * 6.2832 + 0.08 * sin(uGTime * 0.61 + lph * 2.3);
   float lc = cos(lrot), ls = sin(lrot);
-  vec2 loff = vec2(lc * aCorner.x - ls * aCorner.y, ls * aCorner.x + lc * aCorner.y) * (0.5 * lsize * lms * lgrow);
+  vec2 lux = vec2(lc, ls), luy = vec2(-ls, lc);
+  bool lturned = lcell > 3.5 && lcell < 5.5;
+  if (lturned) { vec3 lrad = normalMatrix * vec3(normal.x, 0.0, normal.z); luy = normalize(lrad.xy + luy * 0.12 + 1e-5); lux = vec2(luy.y, -luy.x); } // (gills and cap scales run out from the axis: the cell's up turned along the leaf's own outward direction as the eye sees it, easing to its random turn where that direction points at the eye, never a snap)
+  vec2 loff = (lux * aCorner.x + luy * aCorner.y) * (0.5 * lsize * lms * lgrow);
   vec3 lnv = normalize(normalMatrix * normal);
+  if (lturned) { float lnl = length(lnv.xy); if (lnl > 1e-3) { vec2 lnp = lnv.xy / lnl; loff -= lnp * dot(loff, lnp) * (0.6 * (1.0 - abs(dot(lnv, normalize(-mvPosition.xyz))))); } } // (seen edge on, at a dome's outline, a scale lies along the outline: the cap's edge stays a smooth curve, never a row of bumps)
   mvPosition.xy += loff;
   mvPosition.z -= dot(loff, lnv.xy) * 0.35 - (aCorner.x * 0.37 + aCorner.y * 0.21) * 0.01 * lsize * lms; // (each leaf leans a third of the way to its sphere's surface, shingled, and never lies square to the eye: no two cut through each other in a hard line, and no rasterizer meets a quad of one depth)
   gl_Position = projectionMatrix * mvPosition;
-  float lcell = floor(aLeaf.z * 7.0 + 0.5);
   vLeafUv = (vec2(mod(lcell, 4.0), 1.0 - floor(lcell / 4.0)) + (aCorner * 0.5 + 0.5)) * vec2(0.25, 0.5); // (cell 0 is the canvas's top left: the texture's top half)
-  vLeafTint = texture2D(tCanopyTint, vec2((floor(aTree.x * 255.0 + 0.5) + 0.5) / ${TINTS.toFixed(1)}, 0.5));
+  vLeafTint = texture2D(tCanopyTint, lslot);
   vLeafW = lwC.xyz; vLeafDepth = aLeaf.w; vLeafVar = fract(aTree.y * 7.31);
 `;
 const FRAG_DECL = /* glsl */`
@@ -209,16 +220,23 @@ function coverageCheck(renderer) {
   U.uLeafHard.value = aa && MAT?.alphaToCoverage ? 0 : 1;
 }
 
-// ---- the tints: a table of 64, slot 0 the plain stone
+// ---- the tints: a table of 64 slots, slot 0 the plain stone; its first row a slot's tint, its second its open gate (red: 0 shut ..
+// 1 open, every leaf shown; a canopy grown from its middle out, Myggdrasil's caps, opens as the gate rises: vfx/garden/myggdrasil.js)
 function tintTable() {
   if (tintTex) return tintTex;
-  tintTex = new THREE.DataTexture(new Uint8Array(TINTS * 4), TINTS, 1, THREE.RGBAFormat, THREE.UnsignedByteType);
+  const d = new Uint8Array(TINTS * 2 * 4); for (let i = 0; i < TINTS; i++) d[(TINTS + i) * 4] = 255;
+  tintTex = new THREE.DataTexture(d, TINTS, 2, THREE.RGBAFormat, THREE.UnsignedByteType);
   tintTex.minFilter = tintTex.magFilter = THREE.NearestFilter; tintTex.generateMipmaps = false; tintTex.needsUpdate = true;
   return tintTex;
 }
-/** A slot of its own for a canopy that will take a tint (0 when the table is full: it stays the plain stone). */
+/** A slot of its own for a canopy that will take a tint or open by its gate (0 when the table is full: it stays the plain stone, open). */
 export function canopySlot() { for (let i = 1; i < TINTS; i++) if (!slots[i]) { slots[i] = 1; return i; } return 0; }
-export function canopyFree(slot) { if (slot > 0) { slots[slot] = 0; canopyTint(slot, 0x000000, 0); } }
+export function canopyFree(slot) { if (slot > 0) { slots[slot] = 0; canopyTint(slot, 0x000000, 0); canopyOpen(slot, 1); } }
+/** A slot's open gate, 0 (no leaf shown) .. 1 (every leaf): a leaf shows when the gate passes its phase (canopyGeometry's `grow`). */
+export function canopyOpen(slot, k = 1) {
+  if (!(slot > 0)) return; const T = tintTable(), i = (TINTS + slot) * 4, v = Math.round(THREE.MathUtils.clamp(k, 0, 1) * 255);
+  if (T.image.data[i] !== v) { T.image.data[i] = v; T.needsUpdate = true; }
+}
 /** A slot's tint: `color` (hex or Color) at `amount` (0 the plain stone .. 1 its flash wholly that colour). */
 export function canopyTint(slot, color, amount = 1) {
   if (!(slot > 0)) return; const T = tintTable(), d = T.image.data, c = _c.set(color); // (stored in linear light, as the stone's palette is mixed)
@@ -250,33 +268,57 @@ function icoDirs(detail) {
 
 /** Leaves for many canopies, one geometry (drawn with canopyMaterial()). Each entry: `spheres` [{ c: [x,y,z] | Vector3, r }] in its own
  *  frame, `matrix` (that frame into the mesh's), `leaf` (a LEAF_KINDS name), `density` (1: the leaves' own spacing), `size` (m: the
- *  leaf quad; by default from the radius), `seed`, `slot` (its tint's), `shell` (the inner shell's share of the radius), `unify` (how
- *  far each normal leans to the whole crown's, so many spheres light as one mass). */
+ *  leaf quad; by default from the radius), `seed`, `slot` (its tint's and gate's), `shell` (the inner shell's share of the radius),
+ *  `unify` (how far each normal leans to the whole crown's, so many spheres light as one mass). A sphere may say for itself: `squash`
+ *  [x, y, z] (an ellipsoid: a cap's dome is a sphere squashed in y), `half` (+1 its upper half only, -1 its lower), `hole` (m: no leaf
+ *  nearer its axis than this, where a stipe runs through), `leaf`, `size`, `shell` (0: none), `slot`, `grow` (each leaf's phase is how far
+ *  out from the axis it lies, so the slot's gate opens it from the middle out) and `radial` (+1 or -1: each normal leans out from the
+ *  axis and up or down, as gills face, whatever the ellipsoid's own). The geometry's `userData.ranges` [{ first, count }] are its
+ *  entries' leaves (canopyShow). */
 export function canopyGeometry(entries) {
-  const L = []; // (the leaves: [cx, cy, cz, nx, ny, nz, size, rot, cell, depth, slot, phase])
+  const L = [], ranges = []; // (the leaves: [cx, cy, cz, nx, ny, nz, size, rot, cell, depth, slot, phase])
   for (const E of entries) {
-    const rnd = lcg(E.seed ?? 1), M = E.matrix || null, cells = LEAF_KINDS[E.leaf] || LEAF_KINDS.round, density = E.density ?? 1;
-    const sc = M ? new THREE.Vector3().setFromMatrixScale(M) : null, scale = sc ? Math.max(sc.x, sc.y, sc.z) : 1;
-    const S = E.spheres.map((s) => ({ c: (Array.isArray(s.c) ? new THREE.Vector3(...s.c) : s.c.clone()).applyMatrix4(M || IDENT), r: s.r * scale }));
+    const first = L.length / 12, rnd = lcg(E.seed ?? 1), M = E.matrix || IDENT, density = E.density ?? 1;
+    const sc = new THREE.Vector3().setFromMatrixScale(M), scale = Math.max(sc.x, sc.y, sc.z), rot = new THREE.Matrix3().getNormalMatrix(M);
+    const S = E.spheres.map((s) => ({ ...s, c: Array.isArray(s.c) ? new THREE.Vector3(...s.c) : s.c.clone(), q: new THREE.Vector3(...(s.squash || [1, 1, 1])), cells: LEAF_KINDS[s.leaf || E.leaf] || LEAF_KINDS.round }));
     const whole = new THREE.Vector3(); let wsum = 0; for (const s of S) { const w = s.r ** 3; whole.addScaledVector(s.c, w); wsum += w; } whole.divideScalar(wsum || 1);
-    const unify = E.unify ?? 0.3, shell = E.shell ?? 0.6;
+    const unify = E.unify ?? 0.3, inside = (p, o) => { _w.copy(p).sub(o.c).divide(o.q).divideScalar(o.r); return _w.length() < 0.82 && (!o.half || _w.y * o.half > -0.02); };
     for (const s of S) {
-      const size = (E.size ?? THREE.MathUtils.clamp(s.r * 0.5, 0.45, 1.6)) * scale, spacing = size * 0.5 / Math.sqrt(density);
-      const want = (4 * Math.PI * s.r * s.r) / (spacing * spacing), detail = Math.max(1, Math.round(Math.sqrt(Math.max(0, want - 2) / 10)) - 1);
+      const size = (s.size ?? E.size ?? THREE.MathUtils.clamp(s.r * 0.5, 0.45, 1.6)) * scale, spacing = size * 0.5 / Math.sqrt(density) / scale;
+      const ab = (s.q.x * s.q.y) ** 1.6075, ac = (s.q.x * s.q.z) ** 1.6075, bc = (s.q.y * s.q.z) ** 1.6075, area = 4 * Math.PI * s.r * s.r * ((ab + ac + bc) / 3) ** (1 / 1.6075); // (Thomsen's ellipsoid area)
+      const want = area / (spacing * spacing), detail = Math.max(1, Math.round(Math.sqrt(Math.max(0, want - 2) / 10)) - 1), shell = s.shell ?? E.shell ?? 0.6;
       for (const [layer, d, rr, sz] of [[1, detail, 1, 1], [shell, Math.max(1, detail - 2), shell, 0.9]]) {
+        if (!(rr > 0)) continue;
         const spin = new THREE.Quaternion().setFromEuler(new THREE.Euler(rnd() * 6.28, rnd() * 6.28, rnd() * 6.28));
         for (const dir0 of icoDirs(d)) {
           const dir = _a.copy(dir0).applyQuaternion(spin);
-          const p = _p.copy(s.c).addScaledVector(dir, s.r * rr * (1 + (rnd() - 0.5) * 0.12));
+          if (s.half && dir.y * s.half < -0.02) continue; // (the half it keeps)
+          const p = _p.copy(dir).multiply(s.q).multiplyScalar(s.r * rr * (1 + (rnd() - 0.5) * 0.12)).add(s.c);
           leafBasis(dir, _t, _b); p.addScaledVector(_t, (rnd() - 0.5) * spacing * 0.7).addScaledVector(_b, (rnd() - 0.5) * spacing * 0.7); // (jittered off the lattice)
-          if (layer === 1 && S.some((o) => o !== s && p.distanceTo(o.c) < o.r * 0.82)) continue; // (deep inside another sphere: no one sees it)
-          const n = _n.copy(p).sub(s.c).normalize().lerp(_w.copy(p).sub(whole).normalize(), unify).normalize();
-          L.push(p.x, p.y, p.z, n.x, n.y, n.z, size * sz * (0.85 + rnd() * 0.3), rnd(), cells[Math.floor(rnd() * cells.length)], layer, E.slot ?? 0, rnd());
+          const out = Math.hypot(p.x - s.c.x, p.z - s.c.z);
+          if (s.hole && out < s.hole) continue; // (inside the stipe that runs through it)
+          if (layer === 1 && S.some((o) => o !== s && inside(p, o))) continue; // (deep inside another sphere: no one sees it)
+          const n = s.radial ? _n.set((p.x - s.c.x) / (out || 1) * 0.55, 0.85 * s.radial, (p.z - s.c.z) / (out || 1) * 0.55).normalize()
+            : _n.copy(dir).divide(s.q).normalize().lerp(_v.copy(p).sub(whole).normalize(), unify).normalize(); // (the ellipsoid's own normal: its gradient)
+          n.applyMatrix3(rot).normalize(); p.applyMatrix4(M);
+          const phase = s.grow ? THREE.MathUtils.clamp(out / (s.r * s.q.x), 0, 1) * 0.86 + rnd() * 0.1 : rnd();
+          L.push(p.x, p.y, p.z, n.x, n.y, n.z, size * sz * (0.85 + rnd() * 0.3), rnd(), s.cells[Math.floor(rnd() * s.cells.length)], layer, s.slot ?? E.slot ?? 0, phase);
         }
       }
     }
+    ranges.push({ first, count: L.length / 12 - first, on: true });
   }
-  return buildLeaves(L);
+  const g = buildLeaves(L); g.userData.ranges = ranges;
+  return g;
+}
+
+/** Show (or hide) one entry's leaves in a canopy geometry (`userData.ranges[i]`): hidden, their triangles are collapsed in the index, so
+ *  neither the colour pass nor the shadow pass draws them (a cap shut, its open leaves' shadow gone with them). */
+export function canopyShow(geometry, range, on = true) {
+  if (!range || range.on === on || !range.count) return; range.on = on;
+  const I = geometry.index, a = I.array;
+  for (let i = range.first, o = i * 6; i < range.first + range.count; i++, o += 6) { const v = i * 4; if (on) { a[o] = v; a[o + 1] = v + 1; a[o + 2] = v + 2; a[o + 3] = v; a[o + 4] = v + 2; a[o + 5] = v + 3; } else a.fill(v, o, o + 6); }
+  I.addUpdateRange(range.first * 6, range.count * 6); I.needsUpdate = true;
 }
 
 /** The vertex buffers from the leaves: four vertices a leaf, compact (23 bytes a vertex). */
@@ -428,21 +470,29 @@ function mulberryClump(x, rnd) {
     x.lineWidth = 0.6; x.beginPath(); for (const a of [0, 2.1, -2.1]) { x.moveTo(0, cy + R * 0.55); x.lineTo(Math.sin(a) * R * 0.8, cy - Math.cos(a) * R * 0.8); } x.stroke(); // (three veins to the lobes)
   });
 }
+// the gills and the cap's scales run up their cell (the shader turns a cell's up outward from the axis: canopyGeometry's cells 4 and 5),
+// over a dark backing lens, so a cap's underside reads as gills radiating from its stipe and its dome as scales shingled toward the rim
+function backing(x, rnd, w, h, g = 110) {
+  x.beginPath(); for (let k = 0; k <= 32; k++) { const a = (k / 32) * Math.PI * 2, rr = 1 + 0.07 * Math.sin(k * 2.9 + rnd() * 2); x.lineTo(Math.sin(a) * w * rr, -Math.cos(a) * h * rr); } x.closePath();
+  x.fillStyle = `rgb(0,${g},${Math.floor(40 + rnd() * 200)})`; x.fill();
+}
 function gillClump(x, rnd) {
-  clump(x, rnd, 10, 4, 14, (id, r) => {
-    const len = 38 + r() * 8, w = 5 + r() * 3;
-    x.beginPath(); x.moveTo(0, 0); x.quadraticCurveTo(w * 1.6, -len * 0.5, 0, -len); x.quadraticCurveTo(w * 0.2, -len * 0.5, 0, 0); x.closePath();
-    shadeFill(x, len, id); x.fill(); GOLD(x); x.lineWidth = 1.3; x.beginPath(); x.moveTo(0, 0); x.quadraticCurveTo(w * 1.6, -len * 0.5, 0, -len); x.stroke(); // (the gill's edge)
-  });
+  for (let k = 0; k < 9; k++) {
+    const id = Math.floor(40 + rnd() * 200), xo = (k - 4) * 10 + (rnd() - 0.5) * 2.5, ends = 1 - ((k - 4) / 5.2) ** 2, top = -56 * ends + rnd() * 5, bot = 56 * ends - rnd() * 5, w = 3.4 + rnd() * 1.4, bow = (rnd() - 0.5) * 3;
+    x.beginPath(); x.moveTo(xo, bot); x.quadraticCurveTo(xo + w + bow, 0, xo, top); x.quadraticCurveTo(xo - w + bow, 0, xo, bot); x.closePath();
+    const g = x.createLinearGradient(0, bot, 0, top); g.addColorStop(0, `rgb(0,130,${id})`); g.addColorStop(1, `rgb(0,250,${id})`); x.fillStyle = g; x.fill();
+    GOLD(x); x.lineWidth = 1.2; x.beginPath(); x.moveTo(xo, bot); x.quadraticCurveTo(xo + w + bow, 0, xo, top); x.stroke(); // (the gill's free edge)
+  }
 }
 function capClump(x, rnd) {
-  clump(x, rnd, 5, 10, 18, (id, r) => {
-    const s = 26 + r() * 8, cy = -s * 0.75;
-    x.fillStyle = `rgb(0,150,${id})`; x.fillRect(-s * 0.07, cy, s * 0.14, s * 0.75); // (the stem)
-    x.beginPath(); x.ellipse(0, cy, s * 0.5, s * 0.36, 0, Math.PI, 0); x.closePath(); shadeFill(x, s, id); x.fill();
-    GOLD(x); x.lineWidth = 1.8; x.beginPath(); x.moveTo(-s * 0.5, cy); x.lineTo(s * 0.5, cy); x.stroke(); // (the gills' line under the cap)
-    x.lineWidth = 0.8; x.beginPath(); x.ellipse(0, cy, s * 0.5, s * 0.36, 0, Math.PI, 0); x.stroke();
-  });
+  backing(x, rnd, 44, 48, 120);
+  for (let row = 0; row < 3; row++) for (let k = 0; k < 3 - (row === 1 ? 1 : 0); k++) { // (the outer row first: each scale nearer the axis lies over the base of the one beyond it)
+    const id = Math.floor(40 + rnd() * 200), n = row === 1 ? 2 : 3, x0 = (k - (n - 1) / 2) * 27 + (rnd() - 0.5) * 4, y0 = -30 + row * 26 + (rnd() - 0.5) * 4, w = 15 + rnd() * 3, h = 22 + rnd() * 4;
+    x.beginPath(); x.moveTo(x0 - w, y0 + h * 0.45); x.bezierCurveTo(x0 - w * 1.05, y0 - h * 0.55, x0 - w * 0.4, y0 - h, x0, y0 - h); x.bezierCurveTo(x0 + w * 0.4, y0 - h, x0 + w * 1.05, y0 - h * 0.55, x0 + w, y0 + h * 0.45); x.closePath();
+    const g = x.createLinearGradient(0, y0 + h * 0.45, 0, y0 - h); g.addColorStop(0, `rgb(0,120,${id})`); g.addColorStop(1, `rgb(0,250,${id})`); x.fillStyle = g; x.fill();
+    GOLD(x); x.lineWidth = 1.5; x.beginPath(); x.moveTo(x0 - w, y0 + h * 0.45); x.bezierCurveTo(x0 - w * 1.05, y0 - h * 0.55, x0 - w * 0.4, y0 - h, x0, y0 - h); x.bezierCurveTo(x0 + w * 0.4, y0 - h, x0 + w * 1.05, y0 - h * 0.55, x0 + w, y0 + h * 0.45); x.stroke(); // (its free edge)
+    x.lineWidth = 0.6; x.beginPath(); x.moveTo(x0, y0 + h * 0.4); x.lineTo(x0, y0 - h * 0.8); x.stroke(); // (its ridge)
+  }
 }
 
 function lcg(seed) { let a = Math.floor(Math.abs(seed) * 1000) % 2147483647 || 7; return () => ((a = (a * 16807) % 2147483647) / 2147483647); }

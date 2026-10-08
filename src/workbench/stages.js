@@ -37,6 +37,7 @@ import { SculptBrush } from '../vfx/garden/sculptbrush.js';
 import { CocoonTree } from '../vfx/garden/cocoontree.js';
 import { GardenTree } from '../vfx/garden/gardentree.js';
 import { canopyTick } from '../vfx/garden/leafcanopy.js';
+import { BRANCH_PATHS } from '../vfx/garden/myggdrasil.js';
 import { Fossil } from '../vfx/garden/fossil.js';
 import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
@@ -131,6 +132,30 @@ export function buildStage(id) {
       canopyTick({ t, night: k });
     };
     obj.userData.leave = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); T.forEach((x) => x.dispose()); };
+  }
+  else if (id === 'garden:myggdrasil') {
+    // Myggdrasil, the World Mushroom, on its 26 m planetoid (vfx/garden/myggdrasil.js), its state a step every 8 real seconds (caps 1, 3,
+    // 5, 10; branches none, three, seven, all twenty-two; no tincture, then a rose and a teal one; fruit as the crown fills), game noon
+    // then night every other loop. A test pins a step: userData.pin = { caps, branches, tincture, crown }, userData.night = 0 | 1
+    obj = new THREE.Group();
+    const ALL = Object.keys(BRANCH_PATHS), STEPS = [
+      { caps: 1, branches: [], tincture: null, crown: [] },
+      { caps: 3, branches: ['world', 'moon', 'sun'], tincture: null, crown: [1, 2] },
+      { caps: 5, branches: ['world', 'moon', 'sun', 'judgement', 'star', 'tower', 'temperance'], tincture: { h: 350, s: 0.55 }, crown: [1, 2, 3, 4, 5] },
+      { caps: 10, branches: ALL, tincture: { h: 175, s: 0.7 }, crown: Array.from({ length: 18 }, (_, i) => i) },
+    ];
+    const state = { ...STEPS[0] }, P = new Planetoid({ kind: 'myggdrasil', seed: 9, game: { myggdrasil: state } }); obj.add(P.group);
+    let lights = null, k = 0, last = 0;
+    obj.userData.planetoid = P;
+    obj.userData.tick = (t) => {
+      if (!lights) { let S = obj; while (S.parent) S = S.parent; lights = []; S.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); }
+      Object.assign(state, obj.userData.pin || STEPS[Math.floor(t / 8) % STEPS.length]);
+      const raw = Math.min(0.1, Math.max(0, t - last)); last = t; P.update(raw || 1 / 60);
+      const want = obj.userData.night ?? (Math.floor(t / 32) % 2); k = obj.userData.night !== undefined ? want : k + (want - k) * 0.05;
+      for (const [L, i0] of lights) L.intensity = i0 * (1 - 0.86 * k);
+      canopyTick({ t, night: k }); P.mushroom?.update(0, state); // (the glow again under the stage's own night: the planetoid's clock set the game's)
+    };
+    obj.userData.leave = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); P.dispose(); };
   }
   else if (id === 'garden:fossils') {
     let F = null, loop = -1, lastBeat = 0; obj = new THREE.Group();
