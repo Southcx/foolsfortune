@@ -16,6 +16,7 @@
 // from the mix), Rhythm Heaven's and Patapon's "the sound is the feedback", and Chris Wilson's "A Tale of Two Clocks".
 //
 //   game.rhythm = new Rhythm(game)   game.rhythm.begin('wanda', 'steady')   game.rhythm.active   game.rhythm.end()   game.rhythm.offset
+//   the Guide Tone knack (game.knacks.on('guideTone')): each charted note sounded softly a beat early
 //   game.rhythm.press(lane, audioTime) (what a key calls; a script can too)   game.rhythm.last { lane, grade, t } (the latest press)   TRACKS: the playable tracks (the sound test's, arranged)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from '../arranger.js';
@@ -51,7 +52,7 @@ export class Rhythm {
     this.arr = new Arranger(sfx); this.arr.jitter = 0; this.arr.volume = 0.36;
     this.t0 = this.ctx.currentTime + LEAD_IN; // (the chart's zero on the audio clock: the count-in's first click)
     this.arr.play(chart.backing); this.t0 = this.arr.started ?? this.t0;
-    this.active = true; this.finished = false; this.lastSweep = 0;
+    this.active = true; this.finished = false; this.lastSweep = 0; this.guided = 0;
     addEventListener('keydown', this.onKey, true); // (capture: ahead of the field's input, which never sees the digits)
     this.highway.show({ notes: this.judge.notes });
     this.frame = requestAnimationFrame(() => this.tick());
@@ -105,11 +106,21 @@ export class Rhythm {
     for (const n of this.judge.byLane[lane]) { const d = Math.abs(n.t - t); if (d < bd) { bd = d; best = n; } else if (n.t > t) break; }
     return best;
   }
+  /** Guide Tone (the knack, progress/knacks.js): each charted note sounded softly a beat before it is due, a call to answer (Simon,
+   *  the call and response of a teacher's voice), scheduled a little ahead on the audio clock like the backing. */
+  guide(t) {
+    const N = this.judge.notes, A = this.arr, ahead = 0.15;
+    while (this.guided < N.length && N[this.guided].t - A.spb < t + ahead) {
+      const n = N[this.guided++], at = this.t0 + n.t - A.spb;
+      if (at >= this.ctx.currentTime) A.play1({ i: n.i, b: 0, d: Math.min(0.5, n.d / A.spb), n: n.midi, v: n.v * 0.22, o: n.o }, at, n.g);
+    }
+  }
   tick() {
     if (!this.active) return;
     const t = this.now(), J = this.judge;
     for (const n of J.sweep(t - SLACK)) this.highway.hit(n.lane, 'miss');
     const dt = Math.min(0.1, Math.max(0, t - this.lastSweep)); this.lastSweep = t;
+    if (this.game.knacks?.on('guideTone')) this.guide(t);
     this.highway.draw(t, { combo: J.combo, progress: t / this.chart.length, dt });
     if (t > this.chart.length + 0.5) { this.end(true); return; } // (the song's last bar played out)
     this.frame = requestAnimationFrame(() => this.tick());
