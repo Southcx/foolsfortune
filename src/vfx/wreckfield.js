@@ -11,7 +11,7 @@
 //   BURNING      a few pieces still alight: an ember glow on them (a halo, never a flash), dying as the field ages
 //
 // Prior art: Assassin's Creed IV (a sunk ship's flotsam to sail through and pick from), Sid Meier's Pirates! (the hold spilling), the
-// R-Type and Gradius debris corridors (wreckage as a course), and Phantom Storm's chase back past the Pirate Ship's place.
+// R-Type and Gradius debris corridors (wreckage as a route), and Phantom Storm's chase back past the Pirate Ship's place.
 //
 //   const W = new WreckField({ length, width, count, seed })   W.group (its own frame: +Z along the field from z 0 to `length`, the
 //   waterline at y 0)   W.spill(k)   W.update(rawDt, sea)   W.count   W.pieceWorld(i, out)   W.way(z) (the way through's x at z)   W.dispose()

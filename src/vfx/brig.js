@@ -160,7 +160,7 @@ export class BrigLook {
     // the whole rig, as one part: its anchor up the mainmast
     this.parts.add(new BossPart({ name: 'rigging', object: this.body, radius: 5, at: new THREE.Vector3(0, 1 + S.main.h * 0.55, S.main.z), facing: new THREE.Vector3(flank, 0, 0), look }));
     mergeStatic(this.body);
-    this.t = 0; this.k = { hurt: 0, sink: 0, strike: 0 }; this.smokeAcc = 0;
+    this.t = 0; this.k = { hurt: 0, sink: 0, strike: 0, strikeE: 0 }; this.smokeAcc = 0;
     this.set({});
     this.reset();
   }
@@ -324,7 +324,7 @@ export class BrigLook {
   /** Rigging point i (0 fore course, 1 fore topsail, 2 main course, 3 main topsail): cut, its yard drops and its sail goes slack. */
   rigging(i, cut = true) { const y = this.yards[i]; if (y) y.part.set(cut ? 'broken' : 'intact'); }
   /** The colours: 0 flying .. 1 struck (hauled down to the rail). */
-  strike(k) { this.k.strike = THREE.MathUtils.clamp(k, 0, 1); }
+  strike(k) { this.k.strike = THREE.MathUtils.clamp(k, 0, 1); if (this.k.strike === 0) this.k.strikeE = 0; } // (a haul, not a jump: the colours ease down; flying again at once)
   /** Her hull's hurt (0 .. 1): it scorches and her deck smokes. */
   hurt(k) { this.k.hurt = THREE.MathUtils.clamp(k, 0, 1); this.hullMat.color.setScalar(1 - 0.45 * this.k.hurt); }
   /** Sinking (0 .. 1): bow down and under. */
@@ -364,7 +364,7 @@ export class BrigLook {
     this.seamMat.color.setHex(C.lure).multiplyScalar(seam * (0.9 + 0.1 * Math.sin(t * 1.7)) * (1 - this.k.sink * 0.5));
     this.holdMat.opacity = kb * (0.75 + 0.15 * Math.sin(t * 1.3));
     // the colours: hauled down, and drooping as they come
-    const s = this.k.strike, sw = Math.sin(t * 5);
+    const s = (this.k.strikeE = ease(this.k.strikeE, this.k.strike, 2)), sw = Math.sin(t * 5);
     this.flag.position.y = THREE.MathUtils.lerp(this.flagTop, railY(0) + 0.3, s);
     this.flagMesh.rotation.y = Math.PI / 2 + sw * 0.08 * (1 - s); this.flagMesh.rotation.x = s * 1.2;
     // her hurt: smoke from her deck

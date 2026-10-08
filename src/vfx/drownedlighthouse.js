@@ -124,7 +124,7 @@ export class DrownedLight {
       for (const m of [BRIG.fore, BRIG.main]) { rig.push(0, 1, m.z, 0, 1 + m.h * 0.9, m.z); for (const f of [0.42, 0.78]) { const span = (f < 0.5 ? 9.5 : 7) * (m === BRIG.main ? 1.1 : 1), y0 = 1 + m.h * f; rig.push(-span / 2, y0, m.z, span / 2, y0, m.z); const sg = new THREE.PlaneGeometry(span * 0.9, m.h * 0.3, 3, 2); const sp = sg.attributes.position; for (let v = 0; v < sp.count; v++) if (sp.getY(v) < -m.h * 0.1) sp.setY(v, sp.getY(v) + rnd() * m.h * 0.12); mesh(sg, ghostSail, 0, y0 - m.h * 0.15, m.z + 0.2, sails); } } // (rags of sail on the yards)
       const rg = track(new THREE.BufferGeometry()); rg.setAttribute('position', new THREE.Float32BufferAttribute(rig, 3)); g.add(new THREE.LineSegments(rg, ghostLine));
       mergeStatic(sails);
-      this.ghosts.push({ g, w, a, d: d + 2, s, ph: rnd() * 6.28 });
+      g.userData = { wreck: w, a, d: d + 2, s, ph: rnd() * 6.28 }; this.ghosts.push(g); // (an Object3D, as `hulls` are: its wreck and where it drifts ride in userData)
     }
     // the barnacles, labradorite: on the tower below the line and on the wrecks (one instanced draw; Old Nobody's program)
     const NB = 90 + barnSlots.length;
@@ -178,10 +178,10 @@ export class DrownedLight {
     }
     // the ghosts: riding above their wrecks, drifting round the light, breathing in and out of sight
     const ge = (this.k.ghostsE = ease(this.k.ghostsE, this.k.ghosts, 1.5));
-    for (const G of this.ghosts) {
-      const a = G.a + t * 0.012, y = 2.6 + Math.sin(t * 0.5 + G.ph) * 0.5; // (riding above the crude, its keel clear)
-      G.g.position.set(Math.cos(a) * G.d, y, Math.sin(a) * G.d); G.g.rotation.set(Math.sin(t * 0.7 + G.ph) * 0.04, -a, Math.sin(t * 0.6 + G.ph) * 0.06); G.g.scale.setScalar(G.s);
-      G.g.visible = ge > 0.02;
+    for (const g of this.ghosts) {
+      const G = g.userData, a = G.a + t * 0.012, y = 2.6 + Math.sin(t * 0.5 + G.ph) * 0.5; // (riding above the crude, its keel clear)
+      g.position.set(Math.cos(a) * G.d, y, Math.sin(a) * G.d); g.rotation.set(Math.sin(t * 0.7 + G.ph) * 0.04, -a, Math.sin(t * 0.6 + G.ph) * 0.06); g.scale.setScalar(G.s);
+      g.visible = ge > 0.02;
     }
     const breath = 0.8 + 0.2 * Math.sin(t * 0.35);
     this.ghostFill.opacity = 0.1 * ge * breath; this.ghostLine.uniforms.uOpacity.value = 0.85 * ge * breath; this.ghostSail.opacity = 0.3 * ge * breath;
