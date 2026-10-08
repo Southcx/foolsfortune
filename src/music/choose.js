@@ -45,7 +45,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   if (game.garden?.awakening) return AWAKENING; // (a fossil woken by the Crucibelle's song: once, then the garden again)
   if (game.garden?.inside) { setGarden({ phase: phaseAt(), draught: strongest(game.draught) }); return GARDEN; } // (the Inner Realm: the day's phase and your draught, music/garden.js)
   if (game.emocean?.stage?.active && game.emocean.stage.legs?.length) { hearRail(game); const st = game.emocean.stage, enc = st.encounter || st.campfire; setEncounter(enc && !enc.chosen); setFoeUnder(st.foe?.under);
-    setTrip({ lowFuel: st.fuel != null && st.fuel < 0.25, adrift: st.adrift }); return tripCue(game.emocean.stage.legs); } // (the rollercoaster: a cue a leg, music/legs.js)
+    setTrip({ lowFuel: st.fuel != null && st.fuel < 0.25, adrift: st.adrift, figures: game.emocean.figures }); return tripCue(game.emocean.stage.legs); } // (the rollercoaster: a cue a leg, music/legs.js)
   if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150, game.emocean.stage.setPieces ?? game.emocean.stage.setPiece); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
   if (game.well?.fight?.active) { setFight(game.well.fight); return GREAT_JELLY; } // (the Great Slip Jelly's fight: its phases, music/greatjelly.js)
   if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE;

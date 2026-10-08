@@ -35,7 +35,8 @@
 //   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
 //     bars?: 24..64 (or each leg's own phases, RAIL-OVERHAUL.md section 6), aspect?: the maelstrom's feeling, phases?: { open, build, peak,
 //     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.emocean.stage.legs)
-//   setEncounter(waiting): an encounter's (or a calm's campfire) choice pending holds its cue on the bar line   setTrip({ lowFuel, adrift })
+//   setEncounter(waiting): an encounter's (or a calm's campfire) choice pending holds its cue on the bar line   setTrip({ lowFuel, adrift, figures })
+//   a crossing's score is of `family: 'crossing'`: relaid with new legs ahead (adrift), it carries on from the bar playing (Arranger.swap)
 //   legs[k].feeling (an aspect, or none: fair) and legs[k].storm   setFoeUnder(under): a boss diving takes its line under
 //   tripLayout(legs) -> { bars, legs: [{ id, at, open, build, peak, release, end }], turns: [bar] } (the stage's bars, for the runtime)
 //   railHeat(n) adds heat (HEAT.lock, .volley, .down, .part, .core: music/choose.js hears the rail's events)
@@ -49,7 +50,7 @@ export const BPM = 160;
 const R = { heat: 0 };
 export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
 /** The trip's pressures (PASSAGE.md 14.2): fuel running low, or adrift on the current; read from the next bar. */
-export function setTrip({ lowFuel = false, adrift = false } = {}) { R.lowFuel = !!lowFuel; R.adrift = !!adrift; }
+export function setTrip({ lowFuel = false, adrift = false, figures = null } = {}) { R.lowFuel = !!lowFuel; R.adrift = !!adrift; R.figures = figures; }
 /** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
 export function setEncounter(waiting) { R.waiting = !!waiting; }
 /** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
@@ -173,7 +174,16 @@ function legBar(L, phase, i, len) {
 }
 
 // ---- the turn of the rail: from one leg's key into the next's, four bars
-function turnBar(A, B, i) {
+// the figure the rail flies through the turn (world/emocean/railpath.js, game.emocean.figures): a crest rises into its top, a corkscrew
+// and a loop drop the bottom out at the inverted bar (the third), a weave swells a cymbal on each bank
+function figureBar(fig, out, i) {
+  if (fig === 'crest') return i === 1 ? [...out.filter((e) => e.i !== 'riser'), E('riser', 0, 4, null, 0.35)] : i === 2 ? [E('crash', 0, 1, null, 0.45), E('shimmer', 0, 4, [76, 80, 83], 0.08), ...out.filter((e) => e.i !== 'kick')] : i === 3 ? [...out, E('whoosh', 0, 3, null, 0.3)] : out;
+  if (fig === 'corkscrew' || fig === 'verticalLoop') return i === 2 ? [...out.filter((e) => !['kick', 'sub', 'tom', 'supersaw'].includes(e.i)), E('reverse', 0, 4, null, 0.3), E('shimmer', 0, 4, [76, 83, 88], 0.09), E('breath', 0, 4, null, 0.15)] : out; // (weightless: no floor under you)
+  if (fig === 'weave') return i === 1 || i === 3 ? [...out, E('reverse', 2, 2, null, 0.25), E('ride', 0, 1, null, 0.25)] : out;
+  return out;
+}
+function turnBar(A, B, i, k) { return figureBar(R.figures?.[k - 1], turnBarOf(A, B, i), i); }
+function turnBarOf(A, B, i) {
   const ca = chordOf(A, 0), nb = chordOf(B, 0), dom = { ...nb, tri: [nb.tri[0] + 7, nb.tri[0] + 11, nb.tri[0] + 14].map((n) => (n > 72 ? n - 12 : n)), bass: nb.bass + 7 > 47 ? nb.bass - 5 : nb.bass + 7 };
   if (i === 0) return [E('kick', 0, 1, null, 0.7), ...PAD(A, ca, 1), E('reverse', 2, 2, null, 0.4), E('whoosh', 1, 3, null, 0.35)];
   if (i === 1) return [E('riser', 0, 12, null, 0.3), E('supersaw', 0, 4.1, dom.tri, 0.06, { cutoff: 1800 }), E('sub', 0, 4, dom.bass, 0.18), E('tom', 3, 0.5, null, 0.3, { pitch: 140 })];
@@ -249,7 +259,7 @@ export function tripCue(legs) {
     return { ...base, id: LEGS[leg.id] ? leg.id : 'shoal', aspect, feeling: leg.feeling || null, storm: !!leg.storm, prog: base.prog || MODE_PROG[aspect] || MODE_PROG.grief };
   });
   Ls.forEach((L, k) => {
-    if (k > 0) sections.push({ id: `turn:${k}`, bars: 4, gain: 2.6, sweep: [700, 16000], root: 64 + keyed(0, L), bar: (i) => turnBar(Ls[k - 1], L, i) });
+    if (k > 0) sections.push({ id: `turn:${k}`, bars: 4, gain: 2.6, sweep: [700, 16000], root: 64 + keyed(0, L), bar: (i) => turnBar(Ls[k - 1], L, i, k) });
     if (L.id === 'encounter') { const C = ENCOUNTER[legs[k].encounter] || ENCOUNTER.driftBottle;
       sections.push({ id: `encounter:${k}:arrive`, bars: 4, gain: 4 * C.ga, root: 64, bar: (i) => C.arrive(L, i) }, { id: `encounter:${k}:hold`, bars: 2, gain: 4 * C.gh, root: 64, hold: true, bar: (i) => C.hold(L, i) });
       return; }
@@ -262,7 +272,7 @@ export function tripCue(legs) {
     }
   });
   sections.push({ id: 'arrive', bars: 4, gain: 5.5, bar: ARRIVE });
-  const score = { title: 'Crude Sea: the Crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections,
+  const score = { title: 'Crude Sea: the Crossing', family: 'crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections,
     jump: (sec, bar) => (sections[sec].hold && bar >= sections[sec].bars - 1 && R.waiting ? sec : null) }; // (an encounter's hold waits for the choice)
   CACHE.set(key, score);
   return score;

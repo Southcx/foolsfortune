@@ -10,6 +10,7 @@
 //   arranger.layer = (score, section, bar) => [event] (the mood: music/mood.js)   arranger.thin = { hit, bass, rest } (the night)   score.scale / section.scale
 //   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
 //   arranger.setUnder(on) (the rail's Umbral form: the music heard through the crude, and the lift of the breach)
+//   arranger.swap(score): a score of the same `family` relaid mid-play carries on from the bar playing (follow does it by itself)
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
 // build), sidechain compression as a rhythmic device (French house, then every EDM drop), and the arrangement of a melodic bass
@@ -81,8 +82,19 @@ export class Arranger {
   }
   follow(score) {
     if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)
+    if (score && this.alive && score !== this.score && this.swap(score)) return; // (the same piece relaid: carried on, not restarted)
     if (score && (!this.alive || this.score !== score)) { if (this.alive) this.stop(score.cut ? 0.15 : 1.2); else this.play(score); }
     else if (!score && this.alive) this.stop(2);
+  }
+  /** A score relaid mid-play (a crossing whose legs changed ahead: music/legs.js, the current carrying the ship adrift): if it is of the
+   *  same `family` and every section up to the one playing is the same (its id and bars), it takes over from the next bar line,
+   *  keeping the bar; true when it did. */
+  swap(score) {
+    const S = this.score;
+    if (!score?.family || score.family !== S?.family || this.ended) return false;
+    for (let k = 0; k <= this.section; k++) { const a = S.sections[k], b = score.sections[k]; if (!a || !b || a.id !== b.id || a.bars !== b.bars) return false; }
+    this.score = score; if (this.finished === S) this.finished = null;
+    return true;
   }
   duck(sec = 2) {
     if (!this.alive) return;
