@@ -87,7 +87,7 @@ export class CrossingLook {
     this.parkedRing = this.geo.ring(new THREE.Vector3(0, -1e4, 0), new THREE.Quaternion(), 1);
     this.parkedSlab = this.geo.monolith(new THREE.Vector3(0, -1e4, 0), { height: 4, rise: 1 });
     // the bunker: a Lachrymato Bottle stood on the deck aft of the mast (the sloop's own frame: +Z the bow, 7 m long)
-    const body = st.ship?.sloop?.body;
+    const body = st.ship?.look?.body;
     if (body) {
       this.bottle = new LachrymatoBottle({ size: 'large' });
       this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.38, 0.05); this.bottle.group.rotation.y = 0.5;
@@ -126,7 +126,7 @@ export class CrossingLook {
   end() {
     this.clear(); this.plan = { rings: [], slabs: [] };
     this.lift = 0; if (this.st.sea) this.st.sea.lift = 0; this.shellT = 0;
-    this.st.ship?.sloop?.scars?.({ open: 0, gilt: 0 });
+    this.st.ship?.look?.scars?.({ open: 0, gilt: 0 });
     this.marks.count = 0; this.marks.flush();
   }
 
@@ -162,7 +162,7 @@ export class CrossingLook {
 
   // ---------------------------------------------------------------- the Umbral
   umbral(raw) {
-    const st = this.st, sea = st.sea, cam = this.game.camera, sl = st.ship?.sloop; if (!sea || !cam) return;
+    const st = this.st, sea = st.sea, cam = this.game.camera, sl = st.ship?.look; if (!sea || !cam) return;
     const under = st.ship.form === 'umbral', L = C.lift;
     const want = under ? Math.max(L.least, cam.position.y - sea.y + L.over) : 0;
     const chase = under && want - this.lift > 1 && this.lift > L.least * 0.6; // (the dive done and the camera climbing: keep the eye under)
@@ -178,7 +178,7 @@ export class CrossingLook {
 
   // ---------------------------------------------------------------- the ambient geometry on the spline
   geometry(raw, s) {
-    const st = this.st, R = st.rail, G = this.geo, sea = st.sea, sl = st.ship?.sloop;
+    const st = this.st, R = st.rail, G = this.geo, sea = st.sea, sl = st.ship?.look;
     for (const r of this.plan.rings) {
       if (!r.h && r.s > s - 5 && r.s < s + C.rings.ahead) {
         R.path.at(r.s, _p, _q); _up.set(0, 1, 0).applyQuaternion(_q); _p.addScaledVector(_up, CRUISE + C.rings.up); // (on the heartline, the cruise height, a little over it)
@@ -204,7 +204,7 @@ export class CrossingLook {
 
   // ---------------------------------------------------------------- the trip's pressures on the ship
   pressures(raw) {
-    const st = this.st, r = st.run, sl = st.ship?.sloop; if (!sl || !r) return;
+    const st = this.st, r = st.run, sl = st.ship?.look; if (!sl || !r) return;
     if (r.hits < this.hitsWas) this.gilt += this.hitsWas - r.hits; // (caulked: the hits a haven or a coin mended turn to gold)
     this.hitsWas = r.hits;
     sl.scars?.({ open: r.bears ? r.hits / r.bears : 0, gilt: r.bears ? this.gilt / r.bears : 0 });
@@ -220,7 +220,7 @@ export class CrossingLook {
 
   // ---------------------------------------------------------------- the wake
   wake(raw, turning) {
-    const st = this.st, sl = st.ship?.sloop, W = st.wake; if (!sl || !W) return;
+    const st = this.st, sl = st.ship?.look, W = st.wake; if (!sl || !W) return;
     const dry = this.lift < 0.3; // (under the surface there is no foam)
     for (const ln of W.lines) ln.m.visible = dry && st.sea.mesh.visible;
     W.update(raw, { group: sl.group, speed: st.rail.speed + st.ship.boostZ, length: (sl.length ?? 7) * sl.group.scale.x, beam: (sl.beam ?? 2.4) * sl.group.scale.x, air: turning }, st.sea); // (the hull's own size: vfx/shipclasses.js)
@@ -231,7 +231,7 @@ export class CrossingLook {
   shell(raw, k) {
     if (this.shellT <= 0) return k;
     this.shellT = Math.max(0, this.shellT - raw);
-    const S = C.shell, sl = this.st.ship?.sloop; if (!sl) return k;
+    const S = C.shell, sl = this.st.ship?.look; if (!sl) return k;
     const age = S.time - this.shellT, a = Math.min(1, age / 0.08) * Math.min(1, this.shellT / 0.35), r = S.r * (1 + 0.12 * Math.min(1, age / 0.2));
     const col = SHELL_LIGHT[this.shellForm] || SHELL_LIGHT.astral, M = this.marks;
     sl.group.getWorldPosition(_p);

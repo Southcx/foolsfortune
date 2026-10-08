@@ -109,7 +109,7 @@ const LINE = {
 const rgba = ([r, g, b], a) => `rgba(${r | 0},${g | 0},${b | 0},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
 /** How far short of a waypoint's centre a lane stops: by what its portent shows of it and no more (a dim star's, its class's, the widest
  *  of its candidates' classes), the true type's only where it is exact. (A lane that stopped by the true class would tell a haven from a
- *  threat among candidates of both: casebook rule 96.) */
+ *  threat among candidates of both: casebook rule 114.) */
 function gapOf(chart, id, p, classOf) {
   if (id === 'from' || id === 'to') return GAP.island;
   const w = chart.waypoints[id]; if (!w) return GAP.threat;
