@@ -643,6 +643,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Gnomon** (Espada's; `world/dunes/solar.js`): the pale spire in the Dunes, the sundial's shadow-stick; the Solar Skiffing trial
   is begun at its foot.
 - **a slip geyser** (`world/dunes/geysers.js`, `vfx/slipgeyser.js`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
+- **an ostracon's look** (`Ostracon`, `ostraconThing`, `src/vfx/ostracon.js`; Calissa's): an **ostracon** (plural **ostraca**, Espada's
+  name: LORE.md "Digging for words"; where they lie is Dovina's, `progress/ostraca.js`) is a curved potsherd of red earthenware a hand
+  across, broken from a painted pot of the town that was, in Attic **black-figure** (the EYE CUP glaze's hand). The pot's zones run across
+  it and off its broken edges (a border of **tongues**, a frieze round the vessel with a **palmette** under each handle, **the black** of
+  its lower body); in the frieze a **picture** of what the word does (`PICTURES`, `paintPicture`, `src/vfx/blackfigure.js`), kept whole,
+  or the **meander** (the Greek key) for a word with none; on the black below, the word's **rune** as a **graffito**, scratched after the
+  firing (`runeStrokes`, `tools/veritome/mind/runes.js`: the Veritome's own glyph). Its broken edges are the paler raw body. *Not:* a
+  shard (the homonym), nor one of the sherds (the Great Slip Jelly's calves); *not* a plate (a photograph).
+- **a stele's look** (`Stele`, `src/vfx/ostracon.js`; the word is Dovina's glossary's for Espada's "ledger stone"): an Attic grave stele
+  in sandstone the Courier's height, its foot in a bank of sand: a tapered shaft, rounded and spalled, a cornice, an **anthemion** (a
+  palmette finial) crowning it; one painted **frieze** in the same black-figure hand on the floor of a recessed panel under the crown
+  (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
+  each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
+  counts).
+- **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
+  *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
+- **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a
+  sparkle (never a pixel) and never smaller than a few lines, so it cannot crawl. *Not:* glints (the water's, or the shoal's).
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
