@@ -223,7 +223,7 @@ export class CrossingLook {
     const st = this.st, sl = st.ship?.sloop, W = st.wake; if (!sl || !W) return;
     const dry = this.lift < 0.3; // (under the surface there is no foam)
     for (const ln of W.lines) ln.m.visible = dry && st.sea.mesh.visible;
-    W.update(raw, { group: sl.group, speed: st.rail.speed + st.ship.boostZ, length: 7 * sl.group.scale.x, beam: 2.4 * sl.group.scale.x, air: turning }, st.sea);
+    W.update(raw, { group: sl.group, speed: st.rail.speed + st.ship.boostZ, length: (sl.length ?? 7) * sl.group.scale.x, beam: (sl.beam ?? 2.4) * sl.group.scale.x, air: turning }, st.sea); // (the hull's own size: vfx/shipclasses.js)
   }
 
   // ---------------------------------------------------------------- the surge's shell

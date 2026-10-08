@@ -338,6 +338,9 @@ the rules before building in the same area; a rule a machine can check goes into
      Lean billboards a little in depth (toward the surface they stand for), shrink them away near the eye, and ask the renderer's name
      before turning on alpha to coverage: SwiftShader, which every headless check runs on, stripes the first and speckles the last, and a
      look that cannot be verified headless cannot be judged.
+123. **A height asked of the crude sea is the world's, its own y in it.** `CrudeSea.heightAt` returns `this.y + the swell` (the Emocean's sea
+    lies at -420), so a thing placed *relative* to a parent that already stands on the sea takes `heightAt(...) - parent.y`, never the bare value.
+    On the workbench the sea lies at y 0 and the two are the same, which is how the wrong one passed there.
 
 ## Cases
 ### 2026-10-08 · The shot field's marks ran their clock at a fixed 60 a second (review of art-crossing-wire)
@@ -391,6 +394,18 @@ the rules before building in the same area; a rule a machine can check goes into
   renderer is not a software one (`coverageTrusted`, asked once of a throwaway context), else a plain cut at one half, kept stable by
   mips that preserve each cell's coverage (`src/vfx/garden/leafcanopy.js`).
 - **Rule:** see rule 122.
+
+### 2026-10-08 · The encounters' sets sank 420 m under the crude, the Cantor stood upright and a mooring at Margarite's dock went down with them (found in review, sailing them)
+- **Seen:** sailing a passage with the Last Word and a Raft Adrift forced in: the film's second camera shot hung in a flat navy void, the
+  raft's Hap Lagan lit as a silhouette in it, and Letty's cutter was nowhere in the first shot (only a far speck of the ship). On the
+  workbench the same tableaux sat on the water. Reading the code: the Cantor's body never tilted and its light patch never faded.
+- **Cause:** three. `film.js` handed a tableau `bob = sea.heightAt(x, z)`, which is the world's height (the Emocean's sea lies at y -420),
+  while the tableau's group sits at the holder's y (also about -420) and adds `bob` to it: -840, 420 m under the surface (the workbench's sea
+  is at y 0, where the two agree). The mooring did the same at Margarite's dock (`crude.heightAt` then `* 0.7`): a hull 294 m down. And two
+  lines of the Cantor's tick had code after a `//` comment (rule 25): its roll and the patch's fade were comments.
+- **Fix:** `bob` is `heightAt(...) - holder.y` (film) and `heightAt(...) - crude.y` (mooring); the two Cantor lines are code, the comment
+  at the end of the line.
+- **Rule:** 123 (and 25).
 
 ### 2026-10-08 · The fairy rings were black hoops on the garden's pale ground (found in review, placing the strains in the real garden)
 - **Seen:** on the workbench's dark stage the sward round a spore bed (0x18241a to 0x2c3c2a) read as dark moss. Stood by hand on the

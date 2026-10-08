@@ -79,7 +79,8 @@ export class TripRun {
     });
     this.layout = tripLayout(legs); this.legs = legs;
     this.state = { ...start(V.ship || 'sloop'), plan: this.wps.map((w) => w.id) }; this.k = -1; this.chosen = new Set(); // (plan: "ahead" is the drafted path, encounters.js)
-    this.bounty = null; this.hidden = null; this.race = null;
+    this.bounty = null; this.hidden = null; this.race = null; this.filmed = null;
+    this.game.encounterFilm?.prepare(legs.map((l) => l.encounter).filter(Boolean), { hull: V.ship || 'sloop' }); // (the encounters' sets built and compiled under the cast-off's cover: vfx/encounters/film.js)
     // the views by phase, and a swing at each phase whose view differs from the one before (the stage's camera grammar)
     this.views = []; let prev = 'chase';
     this.layout.legs.forEach((L, k) => {
@@ -111,7 +112,7 @@ export class TripRun {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
-      if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || leg.type === 'encounter')) this.offer(k);
+      if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
     this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
@@ -121,6 +122,7 @@ export class TripRun {
     const leg = this.legs[k], w = this.wps[k];
     if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }); // (the Wreckers drawn by a loot)
     else this.runner.done = true;
+    if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
     this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score;
     if (leg.plan && this.hidden && !this.hidden.k) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)
     this.game.events?.emit('passage.waypoint', { type: w.type, k, storm: !!w.storm, feel: w.feel || null, by: 'environment' });

@@ -50,6 +50,8 @@ import { crossingShotsStage } from './crossingshots.js';
 import { buildSwarmStage } from './swarmstage.js';
 import { buildBossStage, BOSS_STAGE_IDS } from './bossstage.js';
 import { seaChartStage } from './seachartstage.js';
+import { shipStage } from './shipstage.js';
+import { encounterStage, ENCOUNTER_STAGE_IDS } from './encounterstage.js';
 import { strainBed } from '../vfx/garden/strains.js';
 import { lekythos } from '../vfx/garden/lekythos.js';
 import { sporeling } from '../vfx/garden/sporeling.js';
@@ -59,6 +61,8 @@ export function buildStage(id, game) {
   let obj = null;
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
   if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
+  else if (id === 'ships:classes') obj = shipStage(game); // (the five hulls in echelon: workbench/shipstage.js)
+  else if (ENCOUNTER_STAGE_IDS.includes(id)) obj = encounterStage(id, game); // (the encounters at sea as filmed: workbench/encounterstage.js)
   else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
