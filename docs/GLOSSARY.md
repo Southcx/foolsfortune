@@ -133,7 +133,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
   and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
   a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
-  spirit fired at the Chimney into a pot that stays (proposed). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
+  spirit fired at the Chimney into a pot that stays, standing in a ring at its foot (`progress/keepsakes.js`). **Myggdrasil's planetoid**
+  (`world/garden/mycelium.js`): the seventh planetoid, given at Sinter (not bought, not on the ring), the tree on its crown, F at its roots.
+  **The Grimoire of Echoes** (`feedback/codex/grimoire.js`): the Codex's page of the mycelium, what you have met only (the strains held,
+  the grafts made, the tree, the branches, the pots). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
 - **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
   station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
   materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul

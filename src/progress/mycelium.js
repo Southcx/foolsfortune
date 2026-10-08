@@ -83,6 +83,8 @@ export function signatureOf(item) {
 }
 
 /** The strains: the verb each feeling works, how many game hours it takes, and what it eats. */
+/** The strains as the player reads them (Espada's names, LORE.md "The mycelium"). */
+export const STRAIN_NAMES = { wonder: 'the lichen', mirth: 'koji', desire: 'the inkcap', grief: 'the oyster', dread: "witches' butter" };
 export const STRAINS = {
   wonder: { verb: 'graft', hours: 12, eats: ['curio'], pair: true },
   mirth: { verb: 'ferment', hours: 8, eats: ['material'] },

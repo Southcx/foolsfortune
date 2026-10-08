@@ -202,6 +202,8 @@ import { SporeBeds } from './progress/sporebeds.js';
 import { itemOf } from './pneuka/items.js';
 import { Myggdrasil } from './progress/myggdrasil.js';
 import { Keepsakes } from './progress/keepsakes.js';
+import { GardenMycelium } from './world/garden/mycelium.js';
+import { renderGrimoire } from './feedback/codex/grimoire.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -705,6 +707,8 @@ async function main() {
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)
   game.myggdrasil = new Myggdrasil(game); // (the World Mushroom on its own planetoid: progress/myggdrasil.js)
   game.keepsakes = new Keepsakes(game); // (a spirit let go, fired into a pot that stays: progress/keepsakes.js)
+  game.codexPages = { ...(game.codexPages || {}), grimoire: renderGrimoire }; // (the Grimoire of Echoes, the Codex's page of the mycelium: its tab is codex.js's)
+  if (game.realm) game.gardenMycelium = new GardenMycelium(game.realm); // (the mycelium in the Inner Realm: Myggdrasil's planetoid, the spore beds, the pots: world/garden/mycelium.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)

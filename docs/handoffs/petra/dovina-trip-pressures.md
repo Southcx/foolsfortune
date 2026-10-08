@@ -47,3 +47,40 @@ The data, the pure functions and the checks are done (`node scripts/passage.mjs`
   - a following sea (`draughtTrump`);
   - a squall (`storm`).
 - **Calissa's look:** a feeling shows as a halo around the portent's silhouette, never as a fill.
+
+## The encounters' effects and the storm bonus (2026-10-08, your split)
+
+**`apply(state, encounterId, choice, ctx)`** is in `progress/rail/encounters.js`. It returns `{ state, asks }`.
+- Pure. `node scripts/passage.mjs` checks every choice of every encounter on 60 seas.
+- **`ctx`** is `{ chart, rng, rutter, minutes, ghost, wordsLeft }`:
+  - `rutter`: the carried rutter's worth today, or 0;
+  - `ghost`: the day's best run of this sea chart (`voyage.bestOf(chart)`), or null;
+  - `wordsLeft`: the ostraca still to find.
+- Put `plan: [...the passage's ids]` on the trip state at `start`, so that "ahead" means the drafted path. Without it, `apply` takes
+  every waypoint after the current one.
+- **The asks, for your `offer()` to act on:**
+
+| ask | when | what to do |
+|---|---|---|
+| `exact { waypoints }` | follow the convoy, the bottle | those portents shown as they are |
+| `casks { n, grade }` | loot the convoy | crude into the hold, up to its limit |
+| `bounty { waypoint }` | Letty's bounty | sail that waypoint as a bounty leg, its feeling kept |
+| `sellRutter { cubes }` | sell to Letty | take the rutter, pay the cubes |
+| `hiddenLeg { form, pays, after }` | follow the whale | a leg after this one, in that form, its score times `pays`; never asked of a ship that cannot dive |
+| `crew { slots, legs }` | rescue the castaway | a mount slot more for that many legs; the measure of fuel is already off `state.fuel` |
+| `counter { sell, buy }` | trade at the barge | the Purser's counter at those factors of the posted price |
+| `buyRutter { route, day, cubes }` | the barge's rutter | offer today's rutter at list |
+| `ghost { legs }` | race the mirror | the ghost sails beside you; at the leg's end, `raceRank(rank, beat)` |
+| `ostracon {}` | the bottle | a word found |
+
+- **Offering:** use `offered(id, ship, { rutter, fuel: state.fuel })`. It hides Letty's sale with no rutter aboard, and the castaway with
+  less than a measure of fuel.
+- **The Wreckers drawn by a loot:** schedule each Wreckers leg with `strength: strengthOf(state, w)`, not `w.strength`.
+- **A double mend:** `trip.js arrive()` already mends an encounter (`LEG.mend`), and `offer()` adds `enc.mend` again. Keep the one in
+  `arrive` (the rule's) and drop the one in `offer`. Or tell me, and I'll zero `mend` in ENCOUNTERS.
+
+**The storm bonus:**
+- At each leg's close, score the leg as `legScore(score, w)` from `trip.js` (a squall cleared pays ×1.25, `STORM.pays`). `arrive(...,
+  { cleared })` already counts `state.storms`.
+- At the passage's end, set `voyage.passage.storms = state.storms` before `stageResult`. The rutter's worth then counts them:
+  `voyage.js` reads `P.storms`, mine, done.

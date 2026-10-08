@@ -1,40 +1,44 @@
-# From Dovina (Design): the Mycelium, approved and started (2026-10-08)
+# From Dovina (Design): the Mycelium's world side, built (2026-10-08)
 
-**The owner's rulings:**
-- Myggdrasil gets its own planetoid, and its model is BIG.
-- Keep the keepsake pots.
-- The strain names are approved.
-- His words: "start building it".
+Your split: I took the world side. It is in `src/world/garden/mycelium.js` (`game.gardenMycelium`, made in `main.js` after the realm)
+and `src/feedback/codex/grimoire.js` (the Grimoire of Echoes, put on `game.codexPages.grimoire`).
 
-`docs/plans/MYCELIUM.md` sections 9 and 10.
+**What it does:**
+- **Myggdrasil's planetoid:** given at Sinter on `garden.enter`. It hangs at `GARDEN_AT + (0, -60, -160)`, with radius 26. It clears
+  every planetoid by more than 10 m and the ring's slots by more than 26 m (the sweep measures both). It is added the way `orbit.js` adds
+  a bought planetoid: `site.addPlanet`, then `realm.adopt(P, 6)`. Its tree is a stand-in, 48 m tall, until Calissa's.
+  Its F place is `kind: 'myggdrasil'` in `site.features`.
+- **Spore beds:** `sporebed` is a feature in `progress/realm.js` `FEATURES` (mine): small, Firing 1, on the PLACE page.
+  - Placed, it is granted to `game.sporeBeds` with its plot's id. Placed in a feeling whose spores you hold, it takes that strain.
+  - Each gets an F place (`kind: 'sporebed'`, `plot`) and a fairy ring on its plot's group.
+  - Its neighbours' strains are read from `plots.neighbours`. `garden.move` carries its colony along.
+- **Keepsake pots:** an `InstancedMesh` ring at the Chimney's foot (64 at most).
+- **The pages:** the Index's window, as the shed's are (`garden.sporebed`, `garden.myggdrasil`).
 
-**My side, built and checked:**
-- `game.sporeBeds` (`progress/sporebeds.js`), `game.myggdrasil` (`progress/myggdrasil.js`) and `game.keepsakes` (`progress/keepsakes.js`);
-- their tracking rules and eight achievements;
-- the chat line's `/spore` and `/tree` for testing;
-- `node scripts/mycelium.mjs`, which includes the services played against a stand-in game. All pass.
-- Small hub edits in `main.js`: the three services, the `itemOf` import, the two chat commands.
+**The hooks I need in your files, one line each:**
+1. `world/garden/realm.js`, in `use(f)`'s `default:`:
+   `if (this.game.gardenMycelium?.use(f)) return;`
+2. `world/garden/realm.js`, in its update while active:
+   `this.game.gardenMycelium?.update(raw);`
+   This lights a bed's ring when it comes ready (checked once a real second).
+3. `feedback/codex/codex.js`, a tab `['grimoire', 'GRIMOIRE']` whose render is `this.game.codexPages?.grimoire?.(this, cx)`, as the
+   other shelves' are.
+4. The realm's save loads clay before Myggdrasil's planetoid exists, so its sculpting is dropped on reload. A bought planetoid may hit
+   the same thing. Either:
+   - call `game.gardenMycelium.give()` before the clay loads; or
+   - keep a planetoid's clay data until the planetoid comes.
+   Your call; say which and I'll fit it.
 
-**The world side (`src/world/garden/`). Yours, unless you want me to take it, as we split the rail. Say which.**
-1. **Myggdrasil's planetoid** (`ECON.myggdrasil`):
-   - given at the second Firing (Sinter), not bought;
-   - radius 26 m, the largest;
-   - the tree 48 m tall, a landmark from every planetoid.
-2. **The spore bed as a feature:**
-   - placed, it emits `garden.place { feature: 'sporebed' }`, and `game.sporeBeds` grants a bed;
-   - the hand's verbs: inoculate (pick a held strain), set (the Pneuka Box's slots), back (in the first game hour), harvest;
-   - `sporeBeds.near(i, strains)` whenever beds move (the neighbours' strains pace it);
-   - `sporeBeds.tend(i, true)` when a spirit stands to it.
-3. **Myggdrasil's verbs:**
-   - feed at the roots (`feed(boxSlot)`);
-   - pick at the crown (`pick()`);
-   - hang a card on a branch (`hang(arcanaId)`: it takes the card from the Book).
-   - `dawn()` runs on `garden.enter` already. Call it on the clock too, if the garden stays open across a dawn.
-4. **Keepsake pots:** `game.keepsakes.pots`, one a release. Place each somewhere in the Inner Realm. The look is Calissa's.
-5. **The Codex's Grimoire of Echoes page:** the graft pairs found (`spore.graft.made.*`), the strains held, the branches hung.
+Hooks 1 and 3 are what a player needs: until they land, F at a bed or at the roots does nothing. The garden sweep asks the mycelium
+directly, as hook 1 will.
 
-The looks are Calissa's (the model BIG) and the words Espada's.
+**Checked:** `node scripts/sweeps/garden.mjs`, section "mycelium". It covers:
+- the planetoid's placing, size and clearances;
+- a bed placed and paid, its strain taken, its page, set, made ready, harvested and moved;
+- the tree fed and picked from its page, and its dawn;
+- a pot on the Chimney's ground;
+- the Grimoire.
 
-**One small ask for `creatures/bound.js` (yours):** add `feeling: e.sp?.feeling` to `spirit.release`'s payload. A keepsake pot passes it on
-in `keepsake.pot { feeling }`, so the pot's song sings in its spirit's real mode (Wanda's ask: `audio/mycelium.js`). Until then it is
-null, and Wanda draws a mode from the kind.
+Shots: `mycelium-sporebed-page` and `mycelium-myggdrasil`.
+
+`spirit.release`'s `feeling`: thank you. The pots are tinted by it.
