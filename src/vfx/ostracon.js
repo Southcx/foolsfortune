@@ -4,13 +4,16 @@
 // dig). The ware is Attic black-figure in the hand of the EYE CUP glaze (Calissa's decision): the town that was (Elpis, Espada's
 // proposal) wrote on its pots, and its broken pots are the island's paper.
 //
-//   AN OSTRACON  a curved potsherd of red earthenware a hand across, broken from a pot's belly, its broken edges the paler raw body. Its
-//                outer face is the black: the word's RUNE scratched through to the red (runes.js's own strokes, drawn as lines at any
-//                size, so it is the glyph the Veritome draws), and beside it a panel left in the red with a black-figure PICTURE of what
-//                the word does (vfx/blackfigure.js); a word with no picture has the meander there instead
-//   A STELE      an eroded sandstone slab the Courier's height, sand heaped at its foot. The town's runes are cut in rows (the words
-//                it is given; until Espada's sentence lands, ruled rows rubbed blank), and along its top runs one painted frieze in the
-//                same hand: the town's folk and the slip jellies at work together
+//   AN OSTRACON  a curved potsherd of red earthenware a hand across, broken from a painted pot: the pot's zones run across it and off
+//                its broken edges (a tongue border, a frieze of figures on a groundline round the vessel with a palmette under each
+//                handle, the black of its lower body), the word's PICTURE in the frieze (vfx/blackfigure.js), kept whole where the break
+//                spares it; a word with no picture has the meander there instead. Below, the word's RUNE is a GRAFFITO, scratched into
+//                the black after the firing: runes.js's own strokes (the glyph the Veritome draws), each a pale ragged scratch with a burr
+//                where the point lifted. The black has flaked back to the red at the break, and its sheen is uneven, as brushed on
+//   A STELE      an Attic grave stele in sandstone the Courier's height: a tapered shaft with its arrises rounded by the wind and a few
+//                spalls, a cornice, and an ANTHEMION (a palmette finial) crowning it in silhouette; the frieze painted in the same hand
+//                on the floor of a panel cut a finger deep under the crown; the town's runes cut in rows below, a faint guide line under
+//                each row (the words it is given; with none, the face is bare until Espada's sentence lands); its foot in a bank of sand
 //   BURIED       set({ buried }) sinks either into a mound of sand (0 dug clean .. 1 only a corner showing), as fossil.js does. What shows
 //                SPARKLES: the black catching the sun, slow, swelling and fading with the sun's angle and the eye's. It is worked out
 //                once a sparkle (not a pixel), and drawn never smaller than a few lines, so it cannot crawl
@@ -21,29 +24,31 @@
 // "ledger stone" in Dovina's glossary: the ledger is the game's counts), a sparkle (glints are the water's).
 //
 // Prior art, as a museum label: the ostraca of Athens (the Agora's voting potsherds, names scratched through the black to the red,
-// Themistocles's among them); Attic black-figure (Exekias; Kleitias's Francois Vase); the Linear B tablets of Knossos and Pylos (a
-// palace's lists in a script read long after); the Rosetta Stone (one text in two scripts: here a word beside its picture); La-Mulana's
-// tablets, read with its glyph reader; Heaven's Vault's inscriptions (a language learned from what is found); Chants of Sennaar (a
-// glossary deduced from pictures); Tunic (a script on one lattice, its manual found a page at a time).
+// Themistocles's among them; graffiti on the feet of black-glazed cups, owners' marks cut after firing); Attic black-figure (Exekias;
+// Kleitias's Francois Vase, zoned in friezes); the Attic grave stelae of the Kerameikos, crowned with anthemia; the Linear B tablets of
+// Knossos and Pylos (a palace's lists in a script read long after); the Rosetta Stone (one text in two scripts: here a word beside its
+// picture); La-Mulana's tablets, read with its glyph reader; Heaven's Vault's inscriptions (a language learned from what is found);
+// Chants of Sennaar (a glossary deduced from pictures); Tunic (a script on one lattice, its manual found a page at a time).
 //
 //   const O = new Ostracon({ word, picture? })   O.group (rests on its origin)   O.set({ buried })   O.update(dt)   O.dispose()
 //   const S = new Stele({ words })               S.group (stands on its origin, its face to +z)   S.set({ buried })   S.update(dt)   S.dispose()
-//   (words: the runes in rows, four to a row, or an array of rows; none, the rows ruled and rubbed blank)
+//   (words: the runes in rows, four to a row, or an array of rows; none, a bare face)
 //   ostraconThing(word) -> { group, dispose }    the item in the Pneuka Box: a potsherd dug clean, its face to the eye (fossilThing's way)
 //   (picture: one of blackfigure.js's ids, 'drink' .. 'hush'; left out, the word's own from PICTURES; unknown, the meander)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { runeStrokes } from '../tools/veritome/mind/runes.js';
-import { WARE, PICTURES, paintPicture, paintMeander, paintFrieze } from './blackfigure.js';
+import { WARE, PICTURES, paintPicture, paintMeander, paintFrieze, paintTongues, paintPalmette, paintRosette } from './blackfigure.js';
 
-// the potsherd (metres: across, up, thick, the pot's radius where it broke); its face's canvas; the stele (across, high, deep; its
-// sandstone's tile in metres); the stele's face's canvas
-const SW = 0.18, SH = 0.1125, ST = 0.006, SR = 0.22;
-const OW = 512, OH = 320;
-const EW = 0.8, EH = 1.75, ED = 0.26, TW = 0.8, TH = 0.875;
-const FW = 640, FH = 1400;
+// the potsherd (metres: across, up, thick, the pot's radius where it broke) and its face's canvas; the stele's shaft (across, high, deep),
+// its cornice's height, its sandstone's tile (metres), its face's canvas and the frieze's panel on it (x, y, w, h)
+const SW = 0.17, SH = 0.133, ST = 0.006, SR = 0.22;
+const OW = 512, OH = 400;
+const EW = 0.8, EH = 1.4, ED = 0.26, CH = 0.075, TW = 0.8, TH = 0.7;
+const FW = 640, FH = 1120, FRIEZE = [46, 34, 548, 122];
 const SAND = 0xd8b886;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
+const clamp = THREE.MathUtils.clamp;
 
 // ---- chance from the word, so a word's potsherd breaks the same way every time
 function seeded(str) { let h = 2166136261; for (const ch of String(str)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => { h += 0x6d2b79f5; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -55,24 +60,51 @@ function noise3(x, y, z) {
 }
 const linear = (hex) => { const c = new THREE.Color(hex); return `vec3(${c.r.toFixed(4)}, ${c.g.toFixed(4)}, ${c.b.toFixed(4)})`; };
 function canvasTexture(c, repeat = false) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
+function sheet(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
-// ---- the potsherd's face: the black, the rune scratched through it, the panel left in the red with its picture
-function cutRune(g, word, cx, cy, size, w, style) { const k = size / 8; g.beginPath(); for (const [[x0, y0], [x1, y1]] of runeStrokes(word)) { g.moveTo(cx + (x0 - 5) * k, cy + (y0 - 5) * k); g.lineTo(cx + (x1 - 5) * k, cy + (y1 - 5) * k); } g.lineWidth = w; g.strokeStyle = style; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); }
-function paintFace(word, picture) {
-  const c = document.createElement('canvas'); c.width = OW; c.height = OH; const g = c.getContext('2d'), rnd = seeded(`face:${word}`);
+// ---- the potsherd's face: a piece of a painted pot, its zones bent to the pot's curve and turned as it broke; the graffito; the wear
+/** The rune as a graffito: each stroke a pale scratch in the black, ragged at its edges, tapering in where the point bit and leaving a burr where it lifted. */
+function scratchRune(g, word, cx, cy, size, rnd) {
+  const k = size / 8, w = size * 0.08;
+  for (const [[x0, y0], [x1, y1]] of runeStrokes(word)) {
+    const ax = cx + (x0 - 5) * k, ay = cy + (y0 - 5) * k, bx = cx + (x1 - 5) * k, by = cy + (y1 - 5) * k, len = Math.hypot(bx - ax, by - ay), ux = (bx - ax) / len, uy = (by - ay) / len, n = Math.max(6, Math.round(len / 2.5));
+    const L = [], R = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, hw = w * 0.5 * Math.min(1, t * 7 + 0.15) * (0.7 + rnd() * 0.55), px = ax + (bx - ax) * t, py = ay + (by - ay) * t; L.push([px - uy * hw, py + ux * hw]); R.push([px + uy * hw, py - ux * hw]); }
+    g.beginPath(); L.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); for (let i = R.length - 1; i >= 0; i--) g.lineTo(...R[i]); g.closePath(); g.fillStyle = '#e4a174'; g.fill();
+    g.beginPath(); g.moveTo(ax + ux * w, ay + uy * w); g.lineTo(bx - ux * w * 0.2, by - uy * w * 0.2); g.lineWidth = w * 0.26; g.lineCap = 'round'; g.strokeStyle = '#b5542f'; g.stroke();
+    // the burr: the black pushed up and crumbled where the point lifted, and a crumb or two flung aside
+    g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2, r = w * (0.45 + rnd() * 0.45); g.lineTo(bx + ux * w * 0.35 + Math.cos(a) * r, by + uy * w * 0.35 + Math.sin(a) * r * 0.8); } g.closePath(); g.fillStyle = '#eab48c'; g.fill();
+    for (let i = 0; i < 2; i++) { const s = rnd() > 0.5 ? 1 : -1, d = w * (0.9 + rnd() * 0.8); g.fillRect(bx + ux * w * (0.6 + rnd()) - uy * d * s, by + uy * w * (0.6 + rnd()) + ux * d * s, 1.3, 1.3); }
+  }
+}
+function paintFace(word, picture, outline) {
+  const rnd = seeded(`face:${word}`), ox = 64, oy = 60, PW = OW + 2 * ox, PH = OH + 2 * oy;
+  // the pot, painted in its zones on a sheet wider than the face, so the break falls across them anywhere
+  const P = sheet(PW, PH), p = P.getContext('2d');
+  p.fillStyle = WARE.black; p.fillRect(0, 0, PW, PH);
+  for (let y = 0; y < PH; y += 5) { p.fillStyle = `rgba(92, 54, 30, ${(0.02 + rnd() * 0.05).toFixed(3)})`; p.fillRect(0, y, PW, 2 + rnd() * 3); }
+  const zt = oy + 44, zf = oy + 66, zg = oy + 236, sx = ox + 142, sw = 227;
+  paintTongues(p, 0, zt, PW, zf - zt);
+  p.fillStyle = WARE.clay; p.fillRect(0, zf, PW, zg - zf);
+  if (paintPicture(p, picture, sx, zf, sw, zg - zf, [0, PW])) {
+    // the frieze runs on round the pot past the word's picture: a palmette under each handle, rosettes in the empty ground
+    const foot = zg - 5 * (sw / 72);
+    paintPalmette(p, ox + 30, foot, 118); paintPalmette(p, ox + OW - 30, foot, 118);
+    paintRosette(p, ox + 104, zf + 46, 8); paintRosette(p, ox + OW - 102, zf + 58, 8);
+  } else paintMeander(p, 0, zf, PW, zg - zf);
+  p.fillStyle = WARE.black; p.fillRect(0, zg, PW, PH - zg); p.fillStyle = WARE.clay; p.fillRect(0, zg + 9, PW, 2.5);
+  // laid on the face bent to the curve of the pot's shoulder and turned as the potsherd broke from it
+  const c = sheet(OW, OH), g = c.getContext('2d'), turn = (rnd() - 0.5) * 0.2, sag = 7 + rnd() * 7;
   g.fillStyle = WARE.black; g.fillRect(0, 0, OW, OH);
-  // the black is brushed on the turning pot: faint bands of it thinner and browner
-  for (let y = 0; y < OH; y += 6) { g.fillStyle = `rgba(90, 52, 30, ${(0.03 + rnd() * 0.05).toFixed(3)})`; g.fillRect(0, y, OW, 3 + rnd() * 3); }
-  // two lines left in the red below the picture, as the potter's wheel turned
-  g.fillStyle = WARE.clay; g.fillRect(0, 282, OW, 2.5); g.fillRect(0, 289, OW, 1.5);
-  // the rune: a wide scratch in the red, its fresh middle paler
-  cutRune(g, word, 112, 160, 120, 11, WARE.clay); cutRune(g, word, 112, 160, 120, 4, '#dc8a5c');
-  // the panel, with a line left in the red round it
-  g.strokeStyle = WARE.clay; g.lineWidth = 2; g.strokeRect(183, 51, 286, 218);
-  g.fillStyle = WARE.clay; g.fillRect(190, 58, 272, 204);
-  if (!paintPicture(g, picture, 190, 58, 272, 204)) paintMeander(g, 190, 58, 272, 204);
-  // age: a few flecks of the black lost from the red, and of the red from the black
-  for (let i = 0; i < 40; i++) { const x = rnd() * OW, y = rnd() * OH, r = 0.6 + rnd() * 1.6, inPanel = x > 190 && x < 462 && y > 58 && y < 262; g.fillStyle = inPanel ? 'rgba(200,100,58,0.55)' : 'rgba(200,100,58,0.35)'; g.beginPath(); g.ellipse(x, y, r * 1.5, r, rnd() * 3, 0, Math.PI * 2); g.fill(); }
+  g.save(); g.translate(OW / 2, OH / 2); g.rotate(turn);
+  for (let x = 0; x < PW; x += 2) { const t = (x - PW / 2) / (PW / 2); g.drawImage(P, x, 0, 3, PH, x - PW / 2, -PH / 2 + sag * t * t, 3, PH); }
+  g.restore();
+  // the black's sheen uneven, thinner where the brush ran dry
+  const gr = g.createRadialGradient(OW * (0.3 + rnd() * 0.4), OH * 0.8, 0, OW * 0.5, OH * 0.8, OW * 0.45); gr.addColorStop(0, 'rgba(118, 74, 44, 0.12)'); gr.addColorStop(1, 'rgba(118, 74, 44, 0)'); g.fillStyle = gr; g.fillRect(0, OH * 0.55, OW, OH * 0.45);
+  scratchRune(g, word, OW / 2 - 6, 304, 92, rnd);
+  // at the break the black has flaked back to the red in little scallops
+  g.fillStyle = '#d27a4c';
+  for (const [x, y] of outline) { if (rnd() > 0.32) continue; const X = (x / 2 + 0.5) * OW, Y = (0.5 - y / 2) * OH, r = 2 + rnd() * 5; g.beginPath(); for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2, rr = r * (0.6 + rnd() * 0.6); g.lineTo(X + Math.cos(a) * rr, Y + Math.sin(a) * rr); } g.closePath(); g.fill(); }
   return c;
 }
 
@@ -105,6 +137,7 @@ function potsherdGeometry(word) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('aFace', new THREE.Float32BufferAttribute(face, 1));
   g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  g.userData.outline = outer;
   g.userData.rim = [...outer.map((p) => at(p, 0)), ...inner.map((p) => at(p, ST))].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
   return g;
 }
@@ -129,7 +162,7 @@ else if (vFace > 0.5) { float ph = vPotsherd.y * 260.0, aa = 1.0 - smoothstep(0.
 const FACES = new Map();
 function faceFor(word, picture) {
   const key = `${word}|${picture}`; let F = FACES.get(key);
-  if (!F) { const tex = canvasTexture(paintFace(word, picture)); F = { key, tex, mat: potsherdMaterial(tex), geo: potsherdGeometry(word), n: 0 }; FACES.set(key, F); }
+  if (!F) { const geo = potsherdGeometry(word), tex = canvasTexture(paintFace(word, picture, geo.userData.outline)); F = { key, tex, mat: potsherdMaterial(tex), geo, n: 0 }; FACES.set(key, F); }
   F.n++; return F;
 }
 function letGo(F) { if (--F.n > 0) return; F.mat.dispose(); F.tex.dispose(); F.geo.dispose(); FACES.delete(F.key); }
@@ -137,8 +170,12 @@ function letGo(F) { if (--F.n > 0) return; F.mat.dispose(); F.tex.dispose(); F.g
 // ---- the mound: a heap of sand that meets the ground without a line (a gaussian turned on a lathe), one shape and one sand for all
 let MOUND = null;
 function mound() {
-  if (!MOUND) { const pts = []; for (let i = 0; i <= 14; i++) { const r = i / 14; pts.push(new THREE.Vector2(r, (Math.exp(-3 * r * r) - Math.exp(-3)) / (1 - Math.exp(-3)))); } pts.reverse(); MOUND = { geo: new THREE.LatheGeometry(pts, 28), mat: new THREE.MeshStandardMaterial({ name: 'ostracon-sand', color: SAND, roughness: 1 }) }; }
+  sandParts();
   const m = new THREE.Mesh(MOUND.geo, MOUND.mat); m.receiveShadow = true; return m;
+}
+function sandParts() {
+  if (!MOUND) { const pts = []; for (let i = 0; i <= 14; i++) { const r = i / 14; pts.push(new THREE.Vector2(r, (Math.exp(-3 * r * r) - Math.exp(-3)) / (1 - Math.exp(-3)))); } pts.reverse(); MOUND = { geo: new THREE.LatheGeometry(pts, 28), mat: new THREE.MeshStandardMaterial({ name: 'ostracon-sand', color: SAND, roughness: 1 }) }; }
+  return MOUND;
 }
 
 // ---- the sparkle: the black catching the sun, once a sparkle (in the vertex shader), a soft star never smaller than a few lines
@@ -222,85 +259,117 @@ export function ostraconThing(word) {
   return { group, dispose: () => O.dispose() };
 }
 
-// ---- the stele: sandstone, its bedding the same on every side; its face the frieze and the rows of runes
+// ---- the stele: granular sandstone, the same on every side; its face the recessed frieze and the rows of runes
+/** A soft cloud of tones over a tile, `cells` across, wrapping at its edges (the texel centres laid so the first column meets the last). */
+function cloud(g, W, H, cells, rows, alpha, rnd, tones) {
+  const s = sheet(cells + 1, rows + 1), q = s.getContext('2d'), v = Array.from({ length: cells * rows }, () => tones[Math.floor(rnd() * tones.length)]);
+  for (let j = 0; j <= rows; j++) for (let i = 0; i <= cells; i++) { q.fillStyle = v[(j % rows) * cells + (i % cells)]; q.fillRect(i, j, 1, 1); }
+  const sx = W / cells, sy = H / rows; g.save(); g.globalAlpha = alpha; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(s, 0, 0, cells + 1, rows + 1, -sx / 2, -sy / 2, (cells + 1) * sx, (rows + 1) * sy); g.restore();
+}
 let TILE = null;
 function sandstoneTile() {
   if (TILE) return TILE;
-  const c = document.createElement('canvas'), W = FW, H = Math.round(FH / 2); c.width = W; c.height = H; const g = c.getContext('2d'), rnd = seeded('sandstone');
+  const W = FW, H = FH / 2, c = sheet(W, H), g = c.getContext('2d'), rnd = seeded('sandstone'), tones = ['#d8bb8c', '#c4a172', '#a98458', '#8f6b45', '#b9925e', '#a4673c', '#e2c99e'];
   g.fillStyle = '#b48f62'; g.fillRect(0, 0, W, H);
-  // the bedding: bands laid down by old water, wavy, wrapping top to bottom and side to side
-  for (let i = 0; i < 18; i++) {
-    const y = (i / 18) * H, h = 10 + rnd() * 26, light = rnd() > 0.5, a = 0.05 + rnd() * 0.08, ph = rnd() * 6.28, amp = 2 + rnd() * 5;
-    g.fillStyle = light ? `rgba(226, 196, 150, ${a})` : `rgba(150, 112, 74, ${a})`;
-    for (const off of [-H, 0, H]) { g.beginPath(); g.moveTo(0, y + off); for (let x = 0; x <= W; x += 16) g.lineTo(x, y + off + Math.sin((x / W) * 6.2832 * 2 + ph) * amp); for (let x = W; x >= 0; x -= 16) g.lineTo(x, y + off + h + Math.sin((x / W) * 6.2832 * 2 + ph + 0.6) * amp); g.closePath(); g.fill(); }
-  }
-  // iron in it: soft rusty clouds, and paler leached ones, wrapped so the tile repeats with no join
-  for (let i = 0; i < 16; i++) {
-    const x = rnd() * W, y = rnd() * H, r = 40 + rnd() * 120, rust = i % 3 !== 0;
-    for (const [ox, oy] of [[0, 0], [-W, 0], [W, 0], [0, -H], [0, H]]) { const gr = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r); gr.addColorStop(0, rust ? 'rgba(150, 92, 52, 0.16)' : 'rgba(226, 204, 160, 0.16)'); gr.addColorStop(1, 'rgba(150, 92, 52, 0)'); g.fillStyle = gr; g.fillRect(x + ox - r, y + oy - r, r * 2, r * 2); }
-  }
-  for (let i = 0; i < 5000; i++) { const t = rnd(); g.fillStyle = t < 0.4 ? 'rgba(236, 214, 170, 0.35)' : t < 0.75 ? 'rgba(140, 106, 72, 0.3)' : 'rgba(176, 138, 96, 0.35)'; g.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 1.5, 1 + rnd() * 1.5); }
-  for (let i = 0; i < 70; i++) { const x = rnd() * W, y = rnd() * H, r = 1.5 + rnd() * 3.5; g.fillStyle = 'rgba(232, 206, 160, 0.4)'; g.beginPath(); g.ellipse(x + 0.8, y + 1, r, r * 0.7, 0, 0, 6.2832); g.fill(); g.fillStyle = 'rgba(96, 70, 46, 0.45)'; g.beginPath(); g.ellipse(x, y, r, r * 0.7, 0, 0, 6.2832); g.fill(); }
+  // value in clouds at five scales, the iron in it rusty here and leached pale there; the bedding only a faint smear along, never a line
+  for (const [cells, rows, a] of [[3, 3, 0.4], [8, 7, 0.32], [20, 18, 0.24], [52, 46, 0.16], [130, 114, 0.12], [4, 40, 0.1]]) cloud(g, W, H, cells, rows, a, rnd, tones);
+  // the grains: quartz bright, iron dark, a few pits with their lit lips
+  for (let i = 0; i < 14000; i++) { const t = rnd(); g.fillStyle = t < 0.35 ? 'rgba(242, 224, 186, 0.42)' : t < 0.65 ? 'rgba(122, 90, 60, 0.35)' : t < 0.85 ? 'rgba(170, 128, 86, 0.4)' : 'rgba(208, 176, 130, 0.45)'; g.fillRect(rnd() * W, rnd() * H, 1 + rnd(), 1 + rnd()); }
+  for (let i = 0; i < 140; i++) { const x = rnd() * W, y = rnd() * H, r = 1.2 + rnd() * 3.2; g.fillStyle = 'rgba(232, 208, 164, 0.45)'; g.beginPath(); g.ellipse(x + 0.8, y + 1, r, r * 0.75, 0, 0, 6.2832); g.fill(); g.fillStyle = 'rgba(88, 64, 42, 0.5)'; g.beginPath(); g.ellipse(x, y, r, r * 0.75, 0, 0, 6.2832); g.fill(); }
   return (TILE = c);
 }
 let BODY = null;
-function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.94 }) }; } return BODY.mat; }
+function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; } return BODY.mat; }
 
+function cutRune(g, word, cx, cy, size, w, style) { const k = size / 8; g.beginPath(); for (const [[x0, y0], [x1, y1]] of runeStrokes(word)) { g.moveTo(cx + (x0 - 5) * k, cy + (y0 - 5) * k); g.lineTo(cx + (x1 - 5) * k, cy + (y1 - 5) * k); } g.lineWidth = w; g.strokeStyle = style; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); }
 /** A rune cut in the sandstone: the groove's shaded wall, its floor, its lit wall (the light from above and to the left). */
 function cutInSandstone(g, word, cx, cy, size, fade = 1) {
   const w = size * 0.11;
-  cutRune(g, word, cx - w * 0.22, cy - w * 0.22, size, w * 1.15, `rgba(92, 66, 42, ${0.85 * fade})`);
-  cutRune(g, word, cx, cy, size, w * 0.8, `rgba(132, 100, 68, ${0.9 * fade})`);
-  cutRune(g, word, cx + w * 0.28, cy + w * 0.28, size, w * 0.32, `rgba(228, 204, 158, ${0.7 * fade})`);
-}
-function paintStele(words) {
-  const c = document.createElement('canvas'); c.width = FW; c.height = FH; const g = c.getContext('2d'), rnd = seeded(`stele:${words.join(' ')}`), T = sandstoneTile();
-  g.drawImage(T, 0, 0); g.drawImage(T, 0, FH / 2);
-  // the frieze along its top, the paint flaked away in patches to the sandstone
-  paintFrieze(g, 32, 66, 576, 150);
-  g.save(); g.beginPath(); for (let i = 0; i < 15; i++) { const x = 32 + rnd() * 576, y = 66 + rnd() * 150, r = 2.5 + rnd() * (i < 3 ? 12 : 5); g.moveTo(x + r, y); for (let a = 0.5; a < 6.3; a += 0.5) { const rr = r * (0.6 + rnd() * 0.5); g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8); } g.closePath(); }
-  g.clip(); g.drawImage(T, 0, 0); g.restore();
-  g.strokeStyle = 'rgba(92, 66, 42, 0.6)'; g.lineWidth = 3; g.strokeRect(26, 60, 588, 162);
-  // the rows: ruled lines cut first, then the runes, each row centred, wide apart so a word reads as one; rows with no words rubbed blank
-  const list = Array.isArray(words[0]) ? words : rowsOf(words, 4), size = 72, pitch = 128, top = 310;
-  for (let r = 0; r < 7; r++) {
-    const y = top + r * pitch, row = list[r] || [], fade = 1 - 0.35 * Math.max(0, (y - 900) / 300);
-    g.fillStyle = `rgba(100, 74, 48, ${0.35 * fade})`; g.fillRect(40, y + size / 2 + 20, FW - 80, 2.5); g.fillStyle = `rgba(232, 208, 164, ${0.3 * fade})`; g.fillRect(40, y + size / 2 + 22.5, FW - 80, 1.5);
-    const gap = 54, wide = row.length * size + (row.length - 1) * gap;
-    row.forEach((w, i) => cutInSandstone(g, w, FW / 2 - wide / 2 + size / 2 + i * (size + gap), y, size, fade));
-  }
-  // age: sand-blown pale and smooth near the ground, darker at the foot where the sand lies, the edges darker
-  let gr = g.createLinearGradient(0, FH * 0.7, 0, FH); gr.addColorStop(0, 'rgba(238, 216, 176, 0)'); gr.addColorStop(1, 'rgba(238, 216, 176, 0.32)'); g.fillStyle = gr; g.fillRect(0, FH * 0.7, FW, FH * 0.3);
-  gr = g.createLinearGradient(0, FH * 0.92, 0, FH); gr.addColorStop(0, 'rgba(110, 82, 54, 0)'); gr.addColorStop(1, 'rgba(110, 82, 54, 0.4)'); g.fillStyle = gr; g.fillRect(0, FH * 0.92, FW, FH * 0.08);
-  for (const [x0, x1] of [[0, 40], [FW, FW - 40]]) { gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(96, 70, 46, 0.32)'); gr.addColorStop(1, 'rgba(96, 70, 46, 0)'); g.fillStyle = gr; g.fillRect(Math.min(x0, x1), 0, 40, FH); }
-  // a fissure wandering down from the top corner
-  g.strokeStyle = 'rgba(70, 50, 32, 0.6)'; g.lineWidth = 2; g.beginPath(); let x = FW * 0.83, y = 0; g.moveTo(x, y); while (y < 330) { x += (rnd() - 0.55) * 14; y += 10 + rnd() * 14; g.lineTo(x, y); } g.stroke();
-  return c;
+  cutRune(g, word, cx - w * 0.22, cy - w * 0.22, size, w * 1.15, `rgba(88, 62, 40, ${0.85 * fade})`);
+  cutRune(g, word, cx, cy, size, w * 0.8, `rgba(128, 96, 64, ${0.9 * fade})`);
+  cutRune(g, word, cx + w * 0.28, cy + w * 0.28, size, w * 0.32, `rgba(226, 202, 156, ${0.7 * fade})`);
 }
 function rowsOf(words, n) { const out = []; for (let i = 0; i < words.length; i += n) out.push(words.slice(i, i + n)); return out; }
+function paintStele(words) {
+  const c = sheet(FW, FH), g = c.getContext('2d'), rnd = seeded(`stele:${words.join(' ')}`), T = sandstoneTile(), [fx, fy, fw, fh] = FRIEZE;
+  g.drawImage(T, 0, 0); g.drawImage(T, 0, FH / 2);
+  // the frieze, on the floor of its panel, the paint flaked to the sandstone in patches; the panel's cut walls, shaded above and lit below
+  paintFrieze(g, fx, fy, fw, fh);
+  g.save(); g.beginPath(); for (let i = 0; i < 15; i++) { const x = fx + rnd() * fw, y = fy + rnd() * fh, r = 2.5 + rnd() * (i < 3 ? 11 : 5); g.moveTo(x + r, y); for (let a = 0.5; a < 6.3; a += 0.5) { const rr = r * (0.6 + rnd() * 0.5); g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8); } g.closePath(); }
+  g.clip(); g.drawImage(T, 0, 0); g.restore();
+  g.fillStyle = 'rgba(64, 44, 26, 0.5)'; g.fillRect(fx - 6, fy - 6, fw + 12, 6); g.fillRect(fx - 6, fy, 6, fh);
+  g.fillStyle = 'rgba(236, 214, 172, 0.42)'; g.fillRect(fx - 6, fy + fh, fw + 12, 5); g.fillRect(fx + fw, fy, 5, fh);
+  // the rows: each row's runes cut, a faint guide line the mason scored under them and nowhere else
+  const list = Array.isArray(words[0]) ? words : rowsOf(words, 4), size = 70, pitch = 124, top = 250, gap = 52;
+  list.forEach((row, r) => {
+    const y = top + r * pitch; if (y > FH - 170 || !row.length) return;
+    const wide = row.length * size + (row.length - 1) * gap, x0 = FW / 2 - wide / 2;
+    g.fillStyle = 'rgba(96, 70, 46, 0.24)'; g.fillRect(x0 - 12, y + size / 2 + 15, wide + 24, 1.5);
+    row.forEach((w, i) => cutInSandstone(g, w, x0 + size / 2 + i * (size + gap), y, size));
+  });
+  // age: sand-blown paler and smoother toward the ground, darker where the sand lies against it, its edges darker
+  let gr = g.createLinearGradient(0, FH * 0.55, 0, FH * 0.8); gr.addColorStop(0, 'rgba(238, 216, 176, 0)'); gr.addColorStop(1, 'rgba(238, 216, 176, 0.26)'); g.fillStyle = gr; g.fillRect(0, FH * 0.55, FW, FH * 0.25);
+  gr = g.createLinearGradient(0, FH * 0.8, 0, FH * 0.87); gr.addColorStop(0, 'rgba(238, 216, 176, 0.26)'); gr.addColorStop(0.35, 'rgba(110, 82, 54, 0)'); gr.addColorStop(1, 'rgba(100, 74, 48, 0.42)'); g.fillStyle = gr; g.fillRect(0, FH * 0.8, FW, FH * 0.2);
+  for (const [x0, x1] of [[0, 40], [FW, FW - 40]]) { gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(96, 70, 46, 0.3)'); gr.addColorStop(1, 'rgba(96, 70, 46, 0)'); g.fillStyle = gr; g.fillRect(Math.min(x0, x1), 0, 40, FH); }
+  // a fissure wandering down from the top corner
+  g.strokeStyle = 'rgba(70, 50, 32, 0.55)'; g.lineWidth = 2; g.beginPath(); let x = FW * 0.84, y = 0; g.moveTo(x, y); while (y < 300) { x += (rnd() - 0.55) * 14; y += 10 + rnd() * 14; g.lineTo(x, y); } g.stroke();
+  return c;
+}
 
-function steleGeometry() {
-  const g = new THREE.BoxGeometry(EW, EH, ED, 12, 28, 4); g.translate(0, EH / 2, 0);
-  const P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, hw = EW / 2, hd = ED / 2, r = 0.03;
+/** Carves a box standing on y = 0: tapered, its arrises rounded by the wind (the top's too), its face recessed where asked, eaten in at its edges, spalled. */
+function carve(g, { w, h, d, r, taper = [0, 0], amp = 1, spalls = [], recess = null, face = true }) {
+  const P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv;
   for (let i = 0; i < P.count; i++) {
-    let x = P.getX(i), y = P.getY(i), z = P.getZ(i); const nx = N.getX(i), ny = N.getY(i), nz = N.getZ(i);
-    if (Math.abs(nx) > 0.5) U.setXY(i, z / TW + 0.5, y / TH); else if (Math.abs(ny) > 0.5) U.setXY(i, x / TW + 0.5, z / TH + 0.5); else if (nz < -0.5) U.setXY(i, -x / TW + 0.5, y / TH);
-    const hy = y / EH, ax = hw * (1 - 0.06 * hy), az = hd * (1 - 0.12 * hy);
-    x *= 1 - 0.06 * hy; z *= 1 - 0.12 * hy;
-    // the vertical edges rounded by the wind
-    const cx = THREE.MathUtils.clamp(x, -ax + r, ax - r), cz = THREE.MathUtils.clamp(z, -az + r, az - r), dx = x - cx, dz = z - cz, dl = Math.hypot(dx, dz);
-    if (dl > 1e-6) { x = cx + (dx / dl) * r; z = cz + (dz / dl) * r; }
-    // the top: a gentle arch, its front and back edges rounded by the wind
-    const drop = 0.07 * (x / hw) ** 2; y -= drop * THREE.MathUtils.smoothstep(hy, 0.7, 1);
-    const cy = Math.min(y, EH - drop - r), tz = THREE.MathUtils.clamp(z, -az + r, az - r), ey = y - cy, ez = z - tz, el = Math.hypot(ey, ez);
-    if (ey > 1e-6 && el > 1e-6) { y = cy + (ey / el) * r; z = tz + (ez / el) * r; }
-    // erosion: the sandstone eaten in toward its heart, most at the edges and corners, a chip or two
-    // (an edge is where two faces meet: near it when the second nearest of the side, front-or-back and top planes is near too)
-    const near = [ax - Math.abs(x), az - Math.abs(z), EH - y].sort((p, q) => p - q), edge = Math.max(0, 1 - near[1] / 0.08), d =(noise3(x * 9, y * 9, z * 9) * 0.02 + noise3(x * 23, y * 23, z * 23) * 0.007) * (0.25 + 0.75 * edge) + Math.max(0, noise3(x * 4 + 7, y * 4, z * 4) - 0.66) * 0.2 * edge;
-    const l = Math.hypot(x, z) || 1; x -= (x / l) * d; z -= (z / l) * d; if (hy > 0.97) y -= d * 0.8;
+    const x0 = P.getX(i), y0 = P.getY(i), z0 = P.getZ(i), nx = N.getX(i), ny = N.getY(i), nz = N.getZ(i);
+    if (Math.abs(nx) > 0.5) U.setXY(i, z0 / TW + 0.5, y0 / TH); else if (Math.abs(ny) > 0.5) U.setXY(i, x0 / TW + 0.5, z0 / TH + 0.5); else if (nz < -0.5) U.setXY(i, -x0 / TW + 0.5, y0 / TH); else if (!face) U.setXY(i, x0 / TW + 0.5, y0 / TH);
+    const hy = y0 / h, ax = (w / 2) * (1 - taper[0] * hy), az = (d / 2) * (1 - taper[1] * hy);
+    let x = x0 * (1 - taper[0] * hy), y = y0, z = z0 * (1 - taper[1] * hy);
+    const cx = clamp(x, -ax + r, ax - r), cy = Math.min(y, h - r), cz = clamp(z, -az + r, az - r), ex = x - cx, ey = y - cy, ez = z - cz, el = Math.hypot(ex, ey, ez);
+    if (el > 1e-6) { x = cx + (ex / el) * r; y = cy + (ey / el) * r; z = cz + (ez / el) * r; }
+    if (recess && nz > 0.5) z -= recess(x0, y0);
+    // (near an edge: where two faces meet, so the second nearest of the side, front-or-back and top planes is near too)
+    const near = [ax - Math.abs(x), az - Math.abs(z), h - y].sort((p, q) => p - q), edge = Math.max(0, 1 - near[1] / 0.08);
+    let e = ((noise3(x * 9, y * 9, z * 9) * 0.016 + noise3(x * 23, y * 23, z * 23) * 0.006) * (0.2 + 0.8 * edge) + Math.max(0, noise3(x * 4 + 7, y * 4, z * 4) - 0.68) * 0.12 * edge) * amp;
+    for (const [sx, sy, sz, sr, sd] of spalls) { const q = Math.hypot(x - sx, y - sy, z - sz) / sr; if (q < 1) e += sd * (1 - q * q) ** 2; }
+    const l = Math.hypot(x, z) || 1; x -= (x / l) * e; z -= (z / l) * e; if (hy > 0.97) y -= e * 0.6;
     P.setXYZ(i, x, y, z);
   }
   g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  return g;
+}
+function steleGeometry() {
+  // the frieze's panel cut a finger deep (its walls slope over one row of the mesh); spalls where the edges took knocks
+  const recess = (x, y) => 0.014 * (1 - THREE.MathUtils.smoothstep(Math.abs(x), 0.334, 0.366)) * THREE.MathUtils.smoothstep(y, 1.196, 1.224) * (1 - THREE.MathUtils.smoothstep(y, 1.342, 1.37));
+  const spalls = [[-0.38, 0.92, 0.12, 0.09, 0.035], [0.38, 1.02, 0.12, 0.07, 0.03], [0.39, 0.38, -0.12, 0.1, 0.04], [-0.39, 0.22, -0.12, 0.08, 0.03], [0.38, 0.6, 0.12, 0.06, 0.025], [-0.37, 1.38, 0.11, 0.05, 0.022]];
+  return carve(new THREE.BoxGeometry(EW, EH, ED, 24, 48, 8).translate(0, EH / 2, 0), { w: EW, h: EH, d: ED, r: 0.045, taper: [0.05, 0.1], spalls, recess });
+}
+/** The crown: an anthemion, a palmette of nine lobes fanned over two volutes, cut out of the sandstone in silhouette. */
+function anthemionGeometry() {
+  const s = new THREE.Shape(), nL = 9, tmax = 1.22, R = (t) => (0.15 + 0.085 * Math.sqrt(Math.max(0, Math.sin(Math.PI * ((t * nL) % 1))))) * (0.86 + 0.14 * Math.cos((t - 0.5) * 2.4));
+  s.moveTo(-0.2, 0); s.lineTo(0.2, 0);
+  for (let i = 0; i <= 18; i++) { const a = -Math.PI / 2 + (i / 18) * Math.PI * 1.25; s.lineTo(0.22 + Math.cos(a) * 0.062, 0.075 + Math.sin(a) * 0.062); }
+  for (let i = 0; i <= 90; i++) { const t = i / 90, th = tmax - 2 * tmax * t, r = R(t); s.lineTo(Math.sin(th) * r, 0.13 + Math.cos(th) * r); }
+  for (let i = 0; i <= 18; i++) { const a = Math.PI / 4 + (i / 18) * Math.PI * 1.25; s.lineTo(-0.22 + Math.cos(a) * 0.062, 0.075 + Math.sin(a) * 0.062); }
+  s.closePath();
+  for (const x of [-0.22, 0.22]) { const hole = new THREE.Path(); hole.absarc(x, 0.075, 0.022, 0, Math.PI * 2, true); s.holes.push(hole); }
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.007, bevelSegments: 2, curveSegments: 8 });
+  g.translate(0, 0, -0.04); g.computeBoundingBox(); return g;
+}
+
+let BANK = null;
+function bankMaterial() { return (BANK ||= new THREE.MeshStandardMaterial({ name: 'stele-bank', color: 0xffffff, vertexColors: true, roughness: 1 })); }
+/** Sand banked round a footprint (half sizes hx, hz): level against the stele, deeper on the windward front, falling away concave to nothing. */
+function bankGeometry(hx, hz) {
+  const g = new THREE.PlaneGeometry(1.8, 1.4, 60, 46).rotateX(-Math.PI / 2), P = g.attributes.position, col = [], sand = new THREE.Color(SAND);
+  for (let i = 0; i < P.count; i++) {
+    const x = P.getX(i), z = P.getZ(i), d = Math.hypot(Math.max(0, Math.abs(x) - hx), Math.max(0, Math.abs(z) - hz));
+    const deep = (0.075 + 0.055 * THREE.MathUtils.smoothstep(z, -hz, hz)) * (0.8 + 0.4 * noise3(x * 6 + 3, 0.5, z * 6));
+    P.setY(i, deep * Math.exp(-d / 0.2) * (1 - THREE.MathUtils.smoothstep(Math.max(Math.abs(x) / 0.9, Math.abs(z) / 0.7), 0.6, 1)));
+    // (shaded in the hollow where it banks against the stele, so it reads as set in sand under any light)
+    const k = 0.74 + 0.26 * THREE.MathUtils.smoothstep(d, 0, 0.14); col.push(sand.r * k, sand.g * k, sand.b * k);
+  }
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
   return g;
 }
 
@@ -309,24 +378,28 @@ export class Stele {
     this.group = new THREE.Group(); this.group.name = 'stele';
     this.slab = new THREE.Group(); this.group.add(this.slab);
     this.faceTex = canvasTexture(paintStele(words.map((w) => (Array.isArray(w) ? w.map((x) => String(x).toUpperCase()) : String(w).toUpperCase()))));
-    this.faceMat = new THREE.MeshStandardMaterial({ name: 'stele-face', map: this.faceTex, roughness: 0.92 });
+    this.faceMat = new THREE.MeshStandardMaterial({ name: 'stele-face', map: this.faceTex, roughness: 0.93 });
     const body = steleBody();
-    this.mesh = new THREE.Mesh(steleGeometry(), [body, body, body, body, this.faceMat, body]); this.mesh.castShadow = this.mesh.receiveShadow = true; this.slab.add(this.mesh);
-    // sand heaped at its foot (more on the windward side), more when it is buried
-    this.heaps = [[0.05, 0.1, 1], [-0.32, -0.12, 0.6]].map(([x, z, k]) => { const m = mound(); m.position.set(x, 0, z); m.userData.k = k; this.group.add(m); return m; });
-    this.sparkle = new Sparkle(0.15, seeded(words.join(' ') || 'stele')()); this.sparkle.mesh.position.set(0, EH - 0.07, ED / 2 * 0.88 + 0.02); this.slab.add(this.sparkle.mesh);
+    this.mesh = new THREE.Mesh(steleGeometry(), [body, body, body, body, this.faceMat, body]);
+    this.cornice = new THREE.Mesh(carve(new THREE.BoxGeometry(0.84, CH, 0.3, 20, 3, 8).translate(0, CH / 2, 0), { w: 0.84, h: CH, d: 0.3, r: 0.022, amp: 0.6, face: false }), body); this.cornice.position.y = EH;
+    this.crown = new THREE.Mesh(anthemionGeometry(), body); this.crown.position.y = EH + CH;
+    for (const m of [this.mesh, this.cornice, this.crown]) { m.castShadow = m.receiveShadow = true; this.slab.add(m); }
+    // its foot in a bank of sand; when it is buried, a dune heaped over it besides
+    this.bank = new THREE.Mesh(bankGeometry(EW / 2 - 0.02, ED / 2 - 0.02), bankMaterial()); this.bank.receiveShadow = true; this.group.add(this.bank);
+    this.heaps = [[0, 0, 1], [-0.28, -0.12, 0.55]].map(([x, z, k]) => { const m = mound(); m.position.set(x, 0, z); m.userData.k = k; this.group.add(m); return m; });
+    this.sparkle = new Sparkle(0.15, seeded(words.join(' ') || 'stele')()); this.sparkle.mesh.position.set(0, EH - 0.06, ED / 2 * 0.9 + 0.006); this.slab.add(this.sparkle.mesh);
     this.normal = new THREE.Vector3(0, 0.25, 1).normalize();
     this.buried = -1; this.set({ buried: 0 });
   }
 
-  /** How buried it is: 0 standing clear (a little sand at its foot) .. 1 sunk to its frieze in a dune of sand. */
+  /** How buried it is: 0 standing, its foot in a little bank of sand .. 1 sunk to the top of its frieze in a dune of sand, the crown above it. */
   set({ buried = this.buried } = {}) {
-    const b = THREE.MathUtils.clamp(buried, 0, 1); if (b === this.buried) return; this.buried = b;
-    this.slab.position.y = -b * (EH - 0.36);
-    for (const m of this.heaps) { const k = m.userData.k; m.scale.set((0.72 + 0.35 * b) * k, (0.18 + 0.06 * b) * k, (0.42 + 0.35 * b) * k); }
+    const b = clamp(buried, 0, 1); if (b === this.buried) return; this.buried = b;
+    this.slab.position.y = -0.08 - b * 0.94;
+    for (const m of this.heaps) { const k = m.userData.k; m.visible = b > 0.02; m.scale.set((0.7 + 0.35 * b) * k, 0.26 * b * k, (0.55 + 0.3 * b) * k); }
   }
 
   update(dt = 1 / 60) { sunOf(this.group); this.sparkle.update(dt, THREE.MathUtils.smoothstep(this.buried, 0.3, 0.9), this.normal); }
 
-  dispose() { this.group.parent?.remove(this.group); this.mesh.geometry.dispose(); this.faceMat.dispose(); this.faceTex.dispose(); this.sparkle.dispose(); }
+  dispose() { this.group.parent?.remove(this.group); for (const m of [this.mesh, this.cornice, this.crown, this.bank]) m.geometry.dispose(); this.faceMat.dispose(); this.faceTex.dispose(); this.sparkle.dispose(); }
 }

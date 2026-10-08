@@ -2,8 +2,9 @@
 // BLACK-FIGURE: the painter of the town that was's ware (Elpis, Espada's proposal), in the hand of the EYE CUP glaze. Flat black
 // silhouettes on the red clay, their details scratched back through the black to the red, a groundline under them, and a touch of added
 // white and added red. It paints a word's PICTURE (what the word does: the slip jellies and the town's folk at it), the MEANDER (the
-// Greek key, for a word with no picture) and the stele's FRIEZE (the folk and the slip jellies at work together), as canvas paths sampled
-// into points, so a figure can lean, squash and bend and still be crisp at any size.
+// Greek key, for a word with no picture), the stele's FRIEZE (the folk and the slip jellies at work together) and the ornament a pot is
+// zoned with (the TONGUES of a border band, the PALMETTE under a handle, a ROSETTE filler), as canvas paths sampled into points, so a figure
+// can lean, squash and bend and still be crisp at any size.
 //
 // The black is what museums call black gloss; it is "the black" here, since a gloss is the Crib Sheet's (the English beside a word).
 // A figure in front of another is parted from it by a scratched contour, as Exekias parts Achilles from Ajax.
@@ -13,8 +14,9 @@
 // plaques), the fountain-house hydriai (figures at the water under a portico), and the meander of the Geometric amphorae.
 //
 //   PICTURES[WORD] -> picture id (Espada's twelve, the default until her data lands in npc/neuralese.js)
-//   paintPicture(g, id, x, y, w, h) -> true | false (no such picture)    paintMeander(g, x, y, w, h)    paintFrieze(g, x, y, w, h)
-//   WARE = { black, clay, white, red }   (g: a 2D canvas context; x, y, w, h: the panel in its pixels; the panel's ground is the caller's)
+//   paintPicture(g, id, x, y, w, h, span?) -> true | false (no such picture; span: [x0, x1], how far its groundline runs, in pixels)
+//   paintMeander(g, x, y, w, h)    paintFrieze(g, x, y, w, h)    paintTongues(g, x, y, w, h)    paintPalmette(g, cx, foot, s)    paintRosette(g, cx, cy, r)
+//   WARE = { black, clay, white, red }   (g: a 2D canvas context; x, y, w, h: the zone in its pixels; the zone's red ground is the caller's)
 // ---------------------------------------------------------------------------------------
 
 /** The ware's colours: the black (EYE CUP's 0x1c1410), the Attic orange-red clay, added white and added red. */
@@ -54,7 +56,8 @@ function line(g, t, T, w, style = WARE.black) { trace(g, t, T); lay(g, w, style)
 function limb(g, t, T, w) { trace(g, t, T); lay(g, w + INC * 2.4, WARE.clay); lay(g, w, WARE.black); }
 
 function frame(g, x, y, w, h, units = 100) { g.save(); g.translate(x, y + h); const s = w / units; g.scale(s, -s); M0 = g.getTransform(); return { W: units, H: h / s }; }
-function ground(g, W, y = GY) { line(g, tr().M(1, y).L(W - 1, y), ID, 1.1); line(g, tr().M(1, y - 1.9).L(W - 1, y - 1.9), ID, 0.5); }
+function groundSpan(g, u0, u1, y = GY) { line(g, tr().M(u0, y).L(u1, y), ID, 1.1); line(g, tr().M(u0, y - 1.9).L(u1, y - 1.9), ID, 0.5); }
+function ground(g, W, y = GY) { groundSpan(g, 1, W - 1, y); }
 
 // ---- the figures' transforms: local units (a slip jelly 20 tall, a folk 31), standing at (x, y), facing +1 right or -1 left
 function place(x, y, s = 1, face = 1) { return (px, py) => [x + face * s * px, y + s * py]; }
@@ -271,14 +274,50 @@ const SCENES = {
 };
 
 /** Paints the picture `id` into the panel (x, y, w, h); false if there is no such picture (the caller paints the meander). */
-export function paintPicture(g, id, x, y, w, h) {
+export function paintPicture(g, id, x, y, w, h, span) {
   const S = SCENES[id]; if (!S) return false;
-  const F = frame(g, x, y, w, h, 72); ground(g, F.W); S(g, F); g.restore(); return true;
+  const F = frame(g, x, y, w, h, 72), s = w / 72;
+  if (span) groundSpan(g, (span[0] - x) / s, (span[1] - x) / s); else ground(g, F.W);
+  S(g, F); g.restore(); return true;
+}
+
+/** The tongue pattern: tongues hanging from a line, black and added red by turns (the border band over a pot's frieze). */
+export function paintTongues(g, x, y, w, h) {
+  g.fillStyle = WARE.clay; g.fillRect(x, y, w, h);
+  const r = h * 0.2, step = r * 2.6, top = y + h * 0.14, L = h * 0.5;
+  for (let i = 0, cx = x + r * 0.6; cx < x + w + r; i++, cx += step) {
+    g.beginPath(); g.moveTo(cx - r, top); g.lineTo(cx - r, top + L); g.arc(cx, top + L, r, Math.PI, 0, true); g.lineTo(cx + r, top); g.closePath();
+    g.fillStyle = i % 2 ? WARE.red : WARE.black; g.fill(); if (i % 2) { g.lineWidth = Math.max(1, h * 0.04); g.strokeStyle = WARE.black; g.stroke(); }
+  }
+  g.fillStyle = WARE.black; g.fillRect(x, y, w, h * 0.14); g.fillRect(x, y + h * 0.9, w, h * 0.1);
+}
+
+/** A palmette (the ornament under a pot's handle): petals fanned up from a heart over two volutes, black and added red by turns. foot: the groundline's y; s: its height. */
+export function paintPalmette(g, cx, foot, s) {
+  const hy = foot - s * 0.3, P = (lx, ly, side = 1) => [cx + side * lx, foot - ly];
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (const side of [-1, 1]) {
+    g.beginPath(); g.moveTo(...P(0, s * 0.3, side)); g.quadraticCurveTo(...P(s * 0.24, s * 0.3, side), ...P(s * 0.26, s * 0.12, side));
+    for (let i = 1; i <= 30; i++) { const a = (-i / 30) * Math.PI * 2.2, r = s * 0.08 * (1 - (0.75 * i) / 30); g.lineTo(...P(s * 0.18 + Math.cos(a) * r, s * 0.12 + Math.sin(a) * r, side)); }
+    g.lineWidth = s * 0.06; g.strokeStyle = WARE.black; g.stroke();
+  }
+  for (let i = -3; i <= 3; i++) {
+    const a = i * 0.36, dx = Math.sin(a), dy = -Math.cos(a), L = s * (0.66 - 0.05 * Math.abs(i)), w = s * 0.075, bx = cx + dx * s * 0.05, by = hy + dy * s * 0.05, tx = cx + dx * L, ty = hy + dy * L, mx = cx + dx * L * 0.62, my = hy + dy * L * 0.62;
+    g.beginPath(); g.moveTo(bx, by); g.quadraticCurveTo(mx - dy * w * 1.6, my + dx * w * 1.6, tx, ty); g.quadraticCurveTo(mx + dy * w * 1.6, my - dx * w * 1.6, bx, by); g.closePath();
+    g.fillStyle = i % 2 ? WARE.red : WARE.black; g.fill(); if (i % 2) { g.lineWidth = Math.max(1, s * 0.012); g.strokeStyle = WARE.black; g.stroke(); }
+  }
+  g.beginPath(); g.arc(cx, hy, s * 0.075, 0, Math.PI * 2); g.fillStyle = WARE.black; g.fill();
+}
+
+/** A rosette (a filler in a frieze's empty ground): a dot ringed by eight. */
+export function paintRosette(g, cx, cy, r) {
+  g.fillStyle = WARE.black; g.beginPath(); g.arc(cx, cy, r * 0.32, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.beginPath(); g.arc(cx + Math.cos(a) * r * 0.78, cy + Math.sin(a) * r * 0.78, r * 0.2, 0, Math.PI * 2); g.fill(); }
 }
 
 /** The meander (the Greek key) across the panel's middle: what a word with no picture carries. */
 export function paintMeander(g, x, y, w, h) {
-  const F = frame(g, x, y, w, h), u = 4.4, cell = 4 * u, n = Math.floor((F.W - 6) / cell), x0 = (F.W - n * cell) / 2, y0 = F.H / 2 - 2 * u;
+  const F = frame(g, x, y, w, h, (54 * w) / h), u = 4.4, cell = 4 * u, n = Math.ceil(F.W / cell) + 1, x0 = -cell / 2, y0 = F.H / 2 - 2 * u;
   const k = tr();
   for (let i = 0; i < n; i++) { const X = x0 + i * cell; k.M(X, y0).L(X, y0 + 4 * u).L(X + 3 * u, y0 + 4 * u).L(X + 3 * u, y0 + u).L(X + u, y0 + u).L(X + u, y0 + 3 * u).L(X + 2 * u, y0 + 3 * u).L(X + 2 * u, y0 + 2 * u); }
   k.M(x0, y0 - u * 0.1).L(x0 + n * cell, y0 - u * 0.1);
