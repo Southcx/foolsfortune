@@ -115,6 +115,23 @@ export const CLAPPER_ROM = {
   forearmR: { hinge: [0, 0, 1], min: -1.6, max: 1.6, cone: 0.9 },
 };
 
+// The Solar Skiff's (courier/skiff/boat.js): the joints its code poses over its clips (the boom to leeward, the pennant to the wind and its
+// ripple) and the doors the mast rises through. Learned from its own clips (solarskiff.glb: the twist about each hinge and the swing left
+// over, over every frame of the 15) and widened to what the code asks: the boom swings 1.3 rad either way, the pennant turns right round
+// its masthead and each link ripples 0.6 rad and droops 0.12; the recall folds the boom 1.57 and the pennant links 1.19, the summon swings
+// the doors 1.83 open (the bone frames are Blender's: the boom and the pennant turn about their local Z, the boat's up).
+export const SKIFF_ROM = {
+  boom: { hinge: [0, 0, 1], min: -1.65, max: 1.45, cone: 1.65 },
+  pennant_root: { hinge: [0, 0, 1], min: -Math.PI, max: Math.PI, cone: 0.1 },
+  pennant_1: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
+  pennant_2: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
+  pennant_3: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
+  pennant_4: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
+  pennant_5: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
+  doorL: { hinge: [0, -1, 0], min: -0.7, max: 1.95, cone: 0.1 },
+  doorR: { hinge: [0, 1, 0], min: -0.7, max: 1.95, cone: 0.1 },
+};
+
 /**
  * The Courier's limits: the human envelope above (RIGIFY), with each finger and thumb joint's real hinge and
  * observed range taken from the game's own clips (romdata.js, from scripts/learn_rom.mjs) where it is narrower.

@@ -156,8 +156,41 @@ the rules before building in the same area; a rule a machine can check goes into
     state (the Sondelass's Blade Mode), ask the thing's own service (`game.techs.get`), and check the call did something.
 61. **A shortcut to a shared folder is never committed.** A worktree's link to `node_modules` (or any folder outside the tree) is
     named in `.gitignore` as a file as well as a folder, and a commit made with `add -A` is read before it is merged.
+62. **An outline grows with the bone that carries it.** The inverted hull's offset is added before skinning (render/outline.js), so a
+    bone that scales a piece open (a collapsed flare or sigil scaled a thousandfold) opens its outline a thousandfold too: a piece a
+    bone scales past its rest by more than a little is never outlined.
+63. **What waits to be mounted waits where it was left.** A phase that brings the rider to a thing (the skiff's mount) moves the rider
+    and leaves the thing; whatever drew the thing at the rider's own position in the other phases is told so.
 
 ## Cases
+
+### 2026-10-08 · The Solar Skiff's flare drew a black wall across the screen (Calissa, the skiff's model)
+- **Seen (headless, the owner's model on the board, Shift held):** a black quad tens of metres wide over the view from the flare's
+  start to its end.
+- **Cause:** the flare and the summon's sigil are collapsed to a point in the .blend and opened by their bones scaled 1000 to 1264
+  times. The outline shell (render/outline.js) pushes each vertex out along its normal *before* skinning, so the bone scaled the
+  outline's thickness by the same thousand: a shell 10 to 30 m across round the engine. (The sigil's went straight up, out of view.)
+- **Fix:** the Lachryma (`CourierEnergy`: the engine, the finial, the inner mast, the flare and the sigil) is not outlined, as the
+  Courier's own is not (courier/skiff/boat.js); the hull and the fittings keep theirs (their bones scale 0.001 to 1.16).
+- **Rule:** 62.
+
+### 2026-10-08 · The first summon in the Dunes rose with no board for a quarter second (Calissa, the skiff's model)
+- **Seen (headless, the first Y after arriving in the Dunes):** the rider's summon played with the board hidden until 0.2 s in; every
+  later summon showed it from its first frame.
+- **Cause:** the skiff's group is a top-level object with no zone of its own; the zones (render/zones.js) placed it where it waited
+  hidden, at the origin, in the workshop, and kept it hidden from the Dunes until their next pass, a quarter second later.
+- **Fix:** the group is `zoneFree` (courier/skiff/boat.js): the tech shows it only in the Dunes and hides it everywhere else.
+- **Rule:** 63's note: a thing that is moved into place when it is wanted says how the zones should see it.
+
+### 2026-10-08 · At every mount the parked skiff jumped to the rider and sank into the sand (Calissa, the skiff's model)
+- **Seen (headless, F at a parked board):** in the mount's first frame the board left where it hovered, stood under the rider 0.9 m
+  away with its deck at the sand (0.6 m down), then slid back and rose over 0.35 s.
+- **Cause:** skiff.js tick placed the group at the Courier's own position in every phase but the dismount, the bail and the getting
+  up; the mount moves the Courier from where they stood to the board and up (stepPhase), so the board went with them from the
+  first frame. (The old procedural board did the same; the owner's model, 4.5 m tall, made it plain.)
+- **Fix:** in the mount the board stays at its parked place and heading; the rider is placed from the Courier's position onto the
+  deck's spot, the spot's offset eased in with the step (courier/skiff/skiff.js tick).
+- **Rule:** 63.
 
 ### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
 - **Seen (Dovina's room sweeps):** `TypeError` reading `rig` at vfx/chestfx.js:45 every frame of the Tithe's opening; the rest of that

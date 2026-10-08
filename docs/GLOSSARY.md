@@ -296,6 +296,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   ball) or a plain one (`{ pos, vel }`, a jelly's glob); `parry: false` keeps it out of reach of every parry.
 - **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
   in the Dunes. *Retired:* "surfer".
+- **the skiff's model** (`src/assets/solarskiff.glb`, from the owner's `source_assets/Courier/courier_solarskiff.blend` and its painted
+  hull, `courier_solarskiff_hull.png`, by `scripts/export_solarskiff.py`): the skiff as the owner built it, rigged (`Skiff_Rig`, 64
+  bones): the **hull** (its carved prow with the eye, the **dome** at the stern), the two **oars** (shipped: nothing rows yet), the
+  **doors** in the deck the mast rises through, the telescoping **mast** and its **finial**, the boom, the yard, the sail and the pennant
+  (one cloth), the **engine** and its **fins** and **vents**; and two pieces of the Courier's Lachryma (`CourierEnergy`) hidden at a
+  point until a clip opens them: the **flare** (out of the engine in the flare's clips) and the **sigil** (the ring of marks laid on
+  the sand the board rises out of in the summon). Parsed on the way into the Dunes (`Skiff.load`). *Not:* the sloop (the Emocean's
+  ship, `vfx/sloop.js`), nor "ship" for any of it.
+- **the skiff's clips** (`Skiff_Summon` ... `Skiff_Bail` in `solarskiff.glb`, played by `courier/skiff/boatpose.js`): the skiff's own
+  15 clips, each the **partner** of the rider's clip of the same name (authored together, the same frames): the board plays its partner
+  at the rider's time and weight, so the deck moves under the feet as the body does on it. The code's word is laid on after (the boom,
+  the hoist from the sail's L, the belly, the pennant: `boat.js`). *Not:* the rider's clips (the Courier's suite, `rider.js`); "board"
+  as a term (the overture's storyboard has it).
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
 - **emote** (`EMOTES`, `src/courier/emotes.js`; the tech `Emote`, `courier/moves/emote.js`; events `emote.start`, `emote.end`): the Courier's
