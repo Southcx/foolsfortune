@@ -442,9 +442,9 @@ await run('crystal', async () => {
 await run('shrines', async () => {
   await goFoot('dunes'); await S.ticks(4);
   const built = await S.ev(() => __game.game.shrines.list.map((s) => s.id));
-  S.check('shrines: the Lamp Shrine and the Float Shrine are built', built.includes('dunemaw') && built.includes('pier'), built);
+  S.check('shrines: the Lamp Shrine and the Float Shrine are built', built.includes('lamp') && built.includes('float'), built);
   const before = (id) => S.ev((id) => { const g = __game.game, s = g.shrines.get(id), f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; g.places.stand(new __game.THREE.Vector3(s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4), s.yaw + Math.PI); g.player.yaw = s.yaw + Math.PI; return true; }, id);
-  for (const [id, label] of [['dunemaw', 'the Lamp Shrine'], ['pier', 'the Float Shrine']]) {
+  for (const [id, label] of [['lamp', 'the Lamp Shrine'], ['float', 'the Float Shrine']]) {
     await before(id); await S.ticks(30);
     const ch = await ds('chevron()');
     S.check(`shrines ${label}: the chevron is on it`, ch.cur === 'shrine' && ch.ref === id && ch.off < 0.6, ch);
@@ -472,17 +472,17 @@ await run('shrines', async () => {
     S.check(`shrines ${label}: after the page the Courier walks`, (await moveTest()) > 1, 'W held 40 ticks');
   }
   // fast travel: from the Float Shrine's page to the Lamp Shrine (a click on the row, as a person would)
-  await before('pier'); await S.ticks(20); await F(8);
+  await before('float'); await S.ticks(20); await F(8);
   const m = await ds('mark()');
   const clicked = await S.ev(() => { const row = [...document.querySelectorAll('#indexmenu .room')].find((r) => /the Lamp Shrine/.test(r.textContent)); if (!row) return false; row.click(); return true; });
   await S.ticks(4); await S.settle(); await S.ticks(20);
-  const at = await S.ev(() => { const g = __game.game, s = g.shrines.get('dunemaw'); return { d: +Math.hypot(g.player.pos.x - s.pos.x, g.player.pos.z - s.pos.z).toFixed(2), last: g.shrines.last, index: g.indexMenu.open }; });
+  const at = await S.ev(() => { const g = __game.game, s = g.shrines.get('lamp'); return { d: +Math.hypot(g.player.pos.x - s.pos.x, g.player.pos.z - s.pos.z).toFixed(2), last: g.shrines.last, index: g.indexMenu.open }; });
   const ev = await ds(`eventsSince(${JSON.stringify(m)})`);
   S.check('shrines: the Float Shrine\'s page travels to the Lamp Shrine', clicked && at.d < 3 && !at.index && ev.some((e) => e.name === 'shrine.travel' && e.by === 'courier'), { clicked, ...at, ev: ev.map((e) => e.name) });
   await S.common('shrine-travelled-lamp');
   // travelled there and back many times: nothing leaks, the Courier stands
   const c0 = await ds('counts()');
-  for (let i = 0; i < Math.ceil(REPS / 2); i++) for (const to of ['pier', 'dunemaw']) { await S.ev((to) => __game.game.shrines.travel(to), to); await S.ticks(4); await S.settle(); await S.ticks(6); }
+  for (let i = 0; i < Math.ceil(REPS / 2); i++) for (const to of ['float', 'lamp']) { await S.ev((to) => __game.game.shrines.travel(to), to); await S.ticks(4); await S.settle(); await S.ticks(6); }
   const c1 = await ds('counts()');
   S.check(`shrines: travelled between them ${Math.ceil(REPS / 2) * 2} times, nothing leaks`, c1.geometries - c0.geometries <= 4 && c1.textures - c0.textures <= 2, { before: c0, after: c1 });
   await S.common('shrine-travel-stress');
