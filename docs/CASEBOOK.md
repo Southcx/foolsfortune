@@ -172,7 +172,25 @@ the rules before building in the same area; a rule a machine can check goes into
     down is idempotent: a second `dispose` does nothing.
 66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
     or with a line in the reader's reply saying why not.
+67. **A table read round by index is fed numbers from its own range.** A lookup that wraps (a colour for each scale degree) aliases
+    anything wider: a seven-step scale read through five colours showed the "true" gold five steps off. Read it from the set it was
+    made for, or clamp, and say which.
 ## Cases
+
+### 2026-10-08 · A wrong strike at a crystal's point showed gold, the colour of the true note (Calissa, the crystal frets)
+- **Seen (Calissa's survey, crystals.md section 2):** aiming at the point of a formation (formation 3, its sweet spot at 0.316 of its
+  height) sounded a wrong note and burst in gold, the colour `music/tone.js` keeps for "the home note: a crystal struck true".
+- **Cause (measured):** `crystaltuning.js` stepped through the seven degrees of the major scale (`deg` from -7 to 7, a step a seventh
+  of nine tenths of the height from a hidden, random spot), and `crystals.js` coloured the burst `degreeColor(deg)`, which wraps round
+  the Crucibelle's five colours: deg 5 read as 0. At the point of formation 3, deg = round((1 - 0.316) x 7) = 5, so gold. 9 of the 18
+  formations could reach +-5 at one end (3, 5, 6, 10, 11, 13 to 16, the survey's table).
+- **Fix:** the owner's frets (2026-10-08): five fixed frets on every stave (`fretAt(u)`, a fifth of the span each), fret k sounding the
+  Crucibelle's k-th note, the sweet spot a fret (`spot.fret`, one draw, as the height was, so every formation and the seed's sequence
+  are as they were); `deg` is now `fret - spot.fret`, -4 to 4; the burst takes `degreeColor(fret)`, 0 to 4, which never wraps, so gold
+  is the root fret, the foot. The fork's reference burst is neutral (the fork's own light): in the sweet fret's colour it would show the
+  answer. Measured headless (20 checks, game noon and midnight): every fret struck sounds itself (fret, `pitchOff`, key + 12 + SCALE[k]),
+  each fret's colour within 5 degrees of hue of its note's at noon, the sweet fret from the spot's bearing opens it.
+- **Rule:** 67.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
