@@ -68,7 +68,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   2026-10-07), a **breather** between two whose flotsam **mends** the ship.
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
-- **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
+- **polarity** (Q on the rail; to be the Astral and Umbral forms: RAIL-OVERHAUL.md): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
   Lachryma to the pool) instead of hurting (Ikaruga).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
   **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
@@ -142,6 +142,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
 - **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
   Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Wet Ink and Ariadne's Thread proposed). It is said once when the ledger opens it (`knack.open`), and is on until switched off. **The thread** (Ariadne's Thread's, `cartography.thread`): the way walked since the last Shrine rested at, a loop cut where it crosses itself, drawn on the map. *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+- **the sea chart**, **the passage**, **a waypoint**, **a portent**, **the reading of the sea**, **a rutter** (`docs/plans/PASSAGE.md`;
+  `src/progress/econ/passage.js`, Dovina's; player words Espada's to change): the sea chart is the constellation of waypoints laid
+  between two islands at the pier (lanes that merge, never cross; a pure function of the route and the game day); the passage is the
+  path you draft through it, a waypoint a column; a waypoint is one leg (its set piece, or a calm); a portent is what Divination shows
+  of a waypoint, a shortlist of candidates that narrows as its confidence grows and fades with depth; the reading of the sea is the
+  survey at the pier (the Dreamvane's dowse held over the sea chart: `voyage.reckon`); a rutter (item `rutter`) is a passage's map,
+  made by sailing it to the end, sold or used that game day. *Not:* the course (the basement's), "forecast" (the weather's), a
+  Cogitomap (a Well's), the node map (the islands).
+- **the Astral form**, **the Umbral form**, **the surge** (`docs/plans/RAIL-OVERHAUL.md`; the owner's names, 2026-10-08): the ship above
+  the Emocean and below it, Q to breach or dive (was polarity: a shot of your form's kind is absorbed, the other hurts; an **astral
+  shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
+  **A turn of the rail**: the four bars between two legs where the spline bends, dives or breaches into the next. *Not:* a seam (a
+  change of place under cover).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
