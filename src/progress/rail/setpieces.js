@@ -102,13 +102,16 @@ export const LEVIATHAN = {
  *  open to both and takes `surface` times: **the surface strike**, Ikaruga's polarity switch made a timing (catch it as it breaches or
  *  sounds). So the leg asks you to follow it down and up on its beat, and a ship that cannot dive (the tanker, the galleon) can hurt it
  *  only risen and at the surface: half the window, the price of a heavy hull (PASSAGE.md 11).
- *  `hp` in shots (a lance is LANCE shots): a Leviathan's class (WAVES.hp[4], 150), so a sloop that follows it in both worlds fells it in
- *  a 24-bar peak at about 6 shots a bar, and a ship that stays above needs about twice that (an expert's feat). Not measured in play yet.
+ *  `hp` in shots (a lance is LANCE shots): measured (Petra's scripts/charybdistest.mjs, 2026-10-08), a scripted expert who follows it
+ *  in both worlds deals about 39 a bar (the gun fires every sixteenth: the Astral's spread of three, the Umbral's heavy shot of 2.5), so
+ *  150 (a Leviathan's class, the first guess) fell in 3.8 bars of the 24. 480 is half the peak for that expert: one rise and dive and a
+ *  half seen through, the fight's shape met before it ends; a player less sure of the switch takes most of the peak; a ship that cannot
+ *  dive gets only the risen bars and the surface, about the whole peak even for the expert. Measured against `bar` in charybdistest.
  *  What it leaves: felled, two crystal shards and its class's down pay (the leg's score); driven off (alive when the peak ends), nothing
  *  more: it is in every maelstrom, so unlike Old Nobody it is no bounty (Letty posts the rogue, not the sea's own). */
 export const CHARYBDIS = {
   bars: 4, rise: 7, depth: -6, swing: 1,
-  hp: 150, surface: 2, band: 1.5,
+  hp: 480, surface: 2, band: 1.5,
   pay: { felled: 2, driven: 0 },
 };
 /** How much a shot of the ship's `form` ('astral' | 'umbral') hurts Charybdis at height `y` (metres over the crude): 1 in its own world,
