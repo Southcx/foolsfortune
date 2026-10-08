@@ -25,11 +25,14 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 164, heapMB: 365 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
+const BUDGET = { calls: 450, tris: 350_000, programs: 166, heapMB: 375 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // (heapMB is the DEV server's heap, which holds every module's source text and source map: it grows with the code, not only with what a
 // player's page holds. v117: 345 here, 228 in the built game (vite preview, gc'd), up 5 from 223 before that round's merges; raised
 // 340 -> 350 for that, Petra. v121: 359 here, 231 built (two boots, gc'd), +3 since v117; the rest the round's new modules' source
-// (the rail's spline, the mycelium's world and sounds, the garden's looks): raised 350 -> 365, Petra. The built figure is the one to watch: see the casebook, 2026-10-08. programs 160 -> 164, v117: the
+// (the rail's spline, the mycelium's world and sounds, the garden's looks): raised 350 -> 365, Petra.
+// v122: Calissa's rail looks (the storm warp, the Umbral, the shots' rail-mark, the telegraph, the Itano ribbons) +5 programs (160 -> 165
+// in the Dunes, the well and the garden) and +7 MB dev heap (built 232 to 238, +1 to +7): programs 164 -> 166, heapMB 365 -> 375, Petra;
+// Calissa asked which two fold back. The built figure is the one to watch: see the casebook, 2026-10-08. programs 160 -> 164, v117: the
 // ostracon's body and its sparkle (Calissa's black-figure sherd, vfx/ostracon.js), warmed at boot so neither is a hitch in play.)
 // how far a number may move from the baseline before the gate asks why (counts are exact; times are a software renderer's, so looser)
 const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, draw: 0.25, bootS: 0.3 };
