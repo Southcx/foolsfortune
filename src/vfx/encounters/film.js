@@ -56,7 +56,7 @@ export class EncounterFilm {
     const yaw = Math.atan2(_d.x, _d.z);
     s.local = new THREE.Vector3(s.at[0], 0, s.at[1]); s.holder.quaternion.copy(R.q); R.toWorld(s.local, s.holder.position);
     s.holder.visible = true;
-    const ship = () => E.ship?.sloop?.group.position || R.Q, subject = () => s.subject.getWorldPosition(_v);
+    const ship = () => E.ship?.look?.group.position || R.Q, subject = () => s.subject.getWorldPosition(_v);
     this.live = { id, s, t: 0, done: false, onDone };
     this.live.h = cine.play(name, { anchors: { ship, tableau: () => s.holder.position, subject }, yaw, on: { done: () => this.finish() } });
     g.events?.emit('passage.film', { encounter: id, by: 'environment' });

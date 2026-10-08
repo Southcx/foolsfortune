@@ -280,7 +280,7 @@ const RAMPS = {
 
 const CACHE = new Map();
 // (what is made of a canvas, kept on the canvas: a ground or an icon that is dropped takes its scaled and blurred copies with it, and
-// a long session that meets a new sea chart every game day never keeps all of them: casebook rule 97)
+// a long session that meets a new sea chart every game day never keeps all of them: casebook rule 115)
 const SCALES = new WeakMap(), BLURS = new WeakMap();
 const IDX = (ch) => (ch === '.' ? -1 : ch >= '0' && ch <= '9' ? ch.charCodeAt(0) - 48 : ch === 'a' ? 10 : ch === 'b' ? 11 : -1);
 
