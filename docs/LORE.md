@@ -425,7 +425,7 @@ roly-poly toy that rights itself, and a cup).
   and will chase it to the far shore; but an Egregore is authored by no one, so there is no source to finish. Her arc: the hunt that
   cannot end is how she learns the strays had no author to blame.
 
-### The passage and the overhauled crossing *(Dovina's working names, Espada's verdicts; proposed, 2026-10-08)*
+### The passage and the overhauled crossing *(canon: the owner, 2026-10-08; Dovina's working names, Espada's verdicts)*
 `docs/plans/PASSAGE.md`, `docs/plans/RAIL-OVERHAUL.md`. Kept unless said:
 - **the sea chart** (a chart in the map's sense, so the homonym holds); **the passage** (to book passage; the Northwest Passage, a way
   found through: say "side passage" for the Great Dunemaw's); **a waypoint** (drawn as a star, said as a waypoint); **a portent** (Latin

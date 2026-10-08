@@ -840,6 +840,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 - **the Pithos**: what the folk call the Great Slip Jelly, crowned with the broken crude jar it grew in (a *pithos*, Pandora's jar). The
   log says "the Great Slip Jelly".
+- **Charybdis** (the owner, 2026-10-08; LORE.md, "The passage"): the Whale (class 3) of the maelstrom, after Homer's whirlpool that
+  swallows the sea and spits it out: it rises out of the maelstrom (Astral) and dives back in (Umbral); one name for its five moods, its
+  feeling the waypoint's weather ("Charybdis rises, in grief."). Whether it is one Egregore or a Figment of each sea is open. **the
+  Drowned Light**: the graveyard's drowned lighthouse, the False Light's twin below. *Not:* the maelstrom (the leg, a place).
 - **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
   hours. The Solar Skiffing trial races its shadow.
 - **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
