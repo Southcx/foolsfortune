@@ -398,8 +398,8 @@ if (part('dock')) {
   await em("standSpot('shrine')"); await S.ticks(20);
   ch = await em('chevron()');
   await S.press('KeyF', 6); w = await em('win()'); await S.shot('dock-shrine');
-  const sh = await S.ev(() => ({ last: __game.game.shrines.last, found: __game.game.shrines.found.has('margarite') }));
-  S.check('dock: F at the Pearl Shrine rests there and opens its page', sh.last === 'margarite' && sh.found && w.index, { chevron: ch.cur, ...sh, page: w.page });
+  const sh = await S.ev(() => ({ last: __game.game.shrines.last, found: __game.game.shrines.found.has('pearl') }));
+  S.check('dock: F at the Pearl Shrine rests there and opens its page', sh.last === 'pearl' && sh.found && w.index, { chevron: ch.cur, ...sh, page: w.page });
   await S.press('KeyF', 6); w = await em('win()');
   S.check('dock: F closes the Shrine\'s page and it stays closed', !w.index, w);
   await S.closeAll(); await S.ticks(4);
@@ -459,7 +459,7 @@ if (part('back')) {
     const de = await events(md), stg = de.find((e) => e.name === 'emocean.stage');
     const home = await S.ev(() => { const r = __game.game.shrines.reformAt(); return __sw.v(r.pos); });
     const dHome = Math.hypot(s.player[0] - home[0], s.player[2] - home[2]);
-    const island = { workshop: 'anagami', dunemaw: 'anagami', pier: 'anagami', margarite: 'margarite' }[last];
+    const island = { bisque: 'anagami', lamp: 'anagami', float: 'anagami', pearl: 'margarite' }[last];
     S.check('continue: declined, made whole at the last Shrine', !s.active && !s.aboard && !s.hidden && dHome < 3 && s.at === island && !w.index && !w.pause, { last, at: s.at, player: s.player, shrine: home, fromShrine: +dHome.toFixed(2), page: w.page, pause: w.pause });
     S.check('continue: a broken crossing never medals, ranks C at best', stg && stg.d.passed === false && !stg.d.medal && stg.d.continues === 1 && !'SAB'.includes(stg.d.rank), stg?.d && { passed: stg.d.passed, rank: stg.d.rank, medal: stg.d.medal, continues: stg.d.continues });
     const casks1 = await S.ev(() => __game.game.voyage.casks());

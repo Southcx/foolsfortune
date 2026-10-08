@@ -252,7 +252,7 @@ export function renderAngling(codex, cx) {
   cx.appendChild(body);
 }
 
-/** CURIOS: the twenty things a chest can hold, by tier; a silhouette until you have it. The Tithe's odds are here too, in the open. */
+/** CURIOS: the things a chest can hold (and the few only a FOE gives), by tier; a silhouette until you have it. The Tithe's odds are here too, in the open. */
 export function renderCurios(codex, cx) {
   ensureStyle();
   const g = codex.game, L = g.ledger;
@@ -267,7 +267,7 @@ export function renderCurios(codex, cx) {
   const body = el('div', 'body');
   const list = el('div', 'list');
   for (const t of CHEST_TIERS) {
-    list.appendChild(el('div', 'lg-sub', `${t.name.toUpperCase()} <span style="opacity:.6;float:right;letter-spacing:.06em">${CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t) && own(c)).length}/4</span>`));
+    list.appendChild(el('div', 'lg-sub', `${t.name.toUpperCase()} <span style="opacity:.6;float:right;letter-spacing:.06em">${CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t) && own(c)).length}/${CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t)).length}</span>`));
     for (const c of CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t))) {
       const has = own(c);
       const row = el('div', `row${has ? '' : ' locked'}${codex.csel === c.id ? ' sel' : ''}`,

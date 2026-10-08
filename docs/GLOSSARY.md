@@ -24,7 +24,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   baseline; every other stone is a trade. One set at a time. *Not:* a stone in the world (say what it is), Strawman's or a cairn's.
 - **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
   damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
-- **mental state**, the Courier's (`COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
+- **mental state**, the Courier's (`game.courierMind`, `src/courier/mind.js`, kept with the pool; `COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
   up by Lachryma drunk, settled by quiet; Prismatic is power and fragility, Stoic the reverse. The player reads "your mental state".
 - **brimming** (Espada's word): the push of overflow, a vessel full past its brim (four times a drink's); the log says "You are
   brimming." and "You settle." *Not:* "drunk", which never appears in player text.
@@ -120,6 +120,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
+- **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
+  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
+  A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+- **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
+  Hand, Wide Bore...). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.

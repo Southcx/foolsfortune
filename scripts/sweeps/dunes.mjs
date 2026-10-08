@@ -71,7 +71,7 @@ window.__ds = (() => {
     /** A line that calls the Courier he or she (the game says "you"). */
     gendered(lines) { return lines.filter((t) => /\\b(Courier|Couriers?'s?)\\b[^.]*\\b(she|he|her|him|his|hers|himself|herself)\\b/i.test(t) || /^(She|He) /.test(t)); },
     // ---- the Solar Skiff
-    skiff() { const K = skiff(); return { tech: g.techs.active?.id || null, want: !!K.want, shown: !!K.skiff.group.visible, sail: +K.L.toFixed(2), speed: +(K.speed || 0).toFixed(1), air: !!K.air, spin: +K.spin.toFixed(2), cross: g.hud.el.cross?.style.display ?? null, sfxLoop: !!K.sfxLoop, pos: v(g.player.pos) }; },
+    skiff() { const K = skiff(); return { tech: g.techs.active?.id || null, phase: g.techs.active?.id === 'skiff' ? K.phase : null, parked: !!K.parked, want: !!K.want, shown: !!K.skiff.group.visible, sail: +K.L.toFixed(2), speed: +(K.speed || 0).toFixed(1), air: !!K.air, spin: +K.spin.toFixed(2), cross: g.hud.el.cross?.style.display ?? null, sfxLoop: !!K.sfxLoop, pos: v(g.player.pos) }; },
     // ---- the Solar Skiffing trial
     solar() { const s = g.solar; return { running: s.running, next: s.next, missed: s.missed, t: +(s.t || 0).toFixed(1), lit: s.lit, rings: s.rings.length, shown: s.rings.filter((R) => R.look.group.visible).length, taken: s.rings.filter((R) => R.taken).length }; },
     /** Set down a few metres before ring i on its line, facing along it (where a person would be lining up to pass it). */
@@ -244,9 +244,10 @@ await run('busk', async () => {
 await run('skiff', async () => {
   await S.go('dunes'); await S.ticks(10);
   const m0 = await ds('mark()');
-  await S.press('KeyY', 12);
+  // (Y summons it: the board called up out of the raised hand, 2.2 real seconds, then the ride: Calissa's suite, skiff.js PHASE)
+  await S.press('KeyY', 170);
   let k = await ds('skiff()');
-  S.check('skiff: Y mounts the Solar Skiff', k.tech === 'skiff', k);
+  S.check('skiff: Y summons the Solar Skiff and rides it', k.tech === 'skiff' && k.phase === 'ride', k);
   await S.hold('KeyW', 150);
   k = await ds('skiff()');
   const f1 = await S.shot('skiff-sailing');
@@ -261,23 +262,37 @@ await run('skiff', async () => {
   m = await ds('mark()');
   await hop(22);
   ev = await ds(`eventsSince(${JSON.stringify(m)})`);
-  const wob = ev.some((e) => e.name === 'skiff.wobble');
-  S.note('skiff: the wobble landing happened', wob);
-  if (wob) S.check('skiff: a wobble landing is a bail (skiff.bail, by courier)', ev.some((e) => e.name === 'skiff.bail' && e.by === 'courier'),
-    { seen: ev.map((e) => e.name), cause: 'courier/skiff/skiff.js land(): a wobble emits skiff.wobble only; nothing in src emits skiff.bail (tracking/moves.js and the "Eat Sand" achievement wait on it)' });
-  // Y dismounts; the world is given back
-  await S.press('KeyY', 12);
+  S.note('skiff: the wobble landing happened (a wobble is a near miss, not a bail: Calissa\'s suite)', ev.some((e) => e.name === 'skiff.wobble'));
+  // a bail (a landing too hard or too crooked, a wall over 14 m/s: skiff.js BAIL) is counted and said: the bail made directly, as the land() rule would
+  m = await ds('mark()');
+  const l0 = await S.ev(() => __game.game.ledger?.get?.('skiff.bail') || 0);
+  await S.ev(() => { const K = __game.game.techs.get('skiff'); if (__game.game.techs.active?.id === 'skiff' && K.phase === 'ride') K.bail('crooked'); });
+  await S.ticks(200);
+  ev = await ds(`eventsSince(${JSON.stringify(m)})`);
+  const l1 = await S.ev(() => __game.game.ledger?.get?.('skiff.bail') || 0);
+  S.check('skiff: a bail says by courier and the ledger counts it', ev.some((e) => e.name === 'skiff.bail' && e.by === 'courier') && l1 === l0 + 1, { seen: ev.map((e) => e.name), ledger: [l0, l1] });
   k = await ds('skiff()');
-  S.check('skiff: Y dismounts (the skiff hidden, the reticle back, its sound stopped)', !k.tech && !k.shown && k.cross === '' && !k.sfxLoop, k);
+  S.check('skiff: after a bail the Courier gets up and the board is parked', !k.tech && k.parked, k);
+  // F at the parked board mounts it again (skiff.js: F at a parked board; the bail slides it away, so walk up to it first)
+  await S.ev(() => { const g = __game.game, k = g.techs.get('skiff').parked; if (k) { g.player.pos.set(k.pos.x + 1.5, g.player.pos.y, k.pos.z); g.player.vel.set(0, 0, 0); } });
+  await S.ticks(10); await S.press('KeyF', 100);
+  k = await ds('skiff()');
+  S.check('skiff: F at the parked board mounts it', k.tech === 'skiff' && k.phase === 'ride', k);
+  // Y dismounts; the world is given back
+  await S.press('KeyY', 80); // (the recall: 0.96 real seconds)
+  k = await ds('skiff()');
+  S.check('skiff: Y recalls it (the skiff hidden, the reticle back, its sound stopped)', !k.tech && !k.shown && k.cross === '' && !k.sfxLoop, k);
   S.check('skiff: on foot again, the Courier walks', (await moveTest()) > 1, 'W held 40 ticks');
   // Y spammed: an even number of presses ends where it began
   for (let i = 0; i < 20; i++) await S.press('KeyY', 1);
-  await S.ticks(20);
+  await S.ticks(240);
   k = await ds('skiff()');
-  S.check('skiff: Y pressed 20 times ends on foot', !k.tech && !k.shown, k);
-  if (k.tech) { await S.press('KeyY', 12); }
+  S.check('skiff: Y pressed 20 times settles (riding or on foot, never stuck between)', (k.tech === 'skiff' && k.phase === 'ride') || (!k.tech && !k.shown), k);
+  if (k.tech) { await S.press('KeyY', 80); }
+  k = await ds('skiff()');
+  S.check('skiff: and one Y more ends on foot', !k.tech, k);
   // travel away mid-ride and back: the skiff gone in the workshop, and on foot on return (skiff.js update: leaving the Dunes drops the want)
-  await S.press('KeyY', 12); await S.hold('KeyW', 30);
+  await S.press('KeyY', 170); await S.hold('KeyW', 30);
   await S.go('workshop');
   k = await ds('skiff()');
   const fw = await S.shot('skiff-travelled-workshop');
@@ -285,18 +300,18 @@ await run('skiff', async () => {
   await S.go('dunes');
   k = await ds('skiff()');
   S.check('skiff: back in the Dunes, the Courier arrives on foot (no ride asked for)', !k.tech, { ...k, cause: k.tech ? 'courier/skiff/skiff.js: the tech ended by the travel before its update saw the Dunes inactive, so want stayed true and canStart() mounts it again on arrival' : null });
-  if (k.tech) await S.press('KeyY', 12);
-  // a resize mid-ride
-  await S.press('KeyY', 12); await S.hold('KeyW', 30);
-  await S.page.setViewportSize({ width: 640, height: 400 }); await S.ticks(20);
+  if (k.tech) await S.press('KeyY', 80);
+  // a resize mid-ride (the resize event lands on the wall clock: 300 ms, as the basement sweep waits)
+  await S.press('KeyY', 170); await S.hold('KeyW', 30);
+  await S.page.setViewportSize({ width: 640, height: 400 }); await S.page.waitForTimeout(300); await S.ticks(20);
   const rs = await S.ev(() => ({ cw: __game.renderer.domElement.clientWidth, ch: __game.renderer.domElement.clientHeight, aspect: +__game.camera.aspect.toFixed(3) }));
   await S.shot('skiff-resized');
   S.check('skiff: resized mid-ride, the canvas and camera follow', rs.cw === 640 && rs.ch === 400 && Math.abs(rs.aspect - 1.6) < 0.01, rs);
   await S.page.setViewportSize({ width: 960, height: 600 }); await S.ticks(10);
   // mounted and stowed many times: nothing leaks
-  await S.press('KeyY', 12);
+  await S.press('KeyY', 80);
   const c0 = await ds('counts()');
-  for (let i = 0; i < REPS; i++) { await S.press('KeyY', 8); await S.hold('KeyW', 8); await S.press('KeyY', 8); }
+  for (let i = 0; i < REPS; i++) { await S.press('KeyY', 170); await S.hold('KeyW', 8); await S.press('KeyY', 80); }
   const c1 = await ds('counts()');
   S.check(`skiff: mounted and stowed ${REPS} times, nothing leaks`, c1.geometries - c0.geometries <= 4 && c1.textures - c0.textures <= 2, { before: c0, after: c1 });
   const all = await ds(`eventsSince(${JSON.stringify(m0)})`);
@@ -427,9 +442,9 @@ await run('crystal', async () => {
 await run('shrines', async () => {
   await goFoot('dunes'); await S.ticks(4);
   const built = await S.ev(() => __game.game.shrines.list.map((s) => s.id));
-  S.check('shrines: the Lamp Shrine and the Float Shrine are built', built.includes('dunemaw') && built.includes('pier'), built);
+  S.check('shrines: the Lamp Shrine and the Float Shrine are built', built.includes('lamp') && built.includes('float'), built);
   const before = (id) => S.ev((id) => { const g = __game.game, s = g.shrines.get(id), f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; g.places.stand(new __game.THREE.Vector3(s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4), s.yaw + Math.PI); g.player.yaw = s.yaw + Math.PI; return true; }, id);
-  for (const [id, label] of [['dunemaw', 'the Lamp Shrine'], ['pier', 'the Float Shrine']]) {
+  for (const [id, label] of [['lamp', 'the Lamp Shrine'], ['float', 'the Float Shrine']]) {
     await before(id); await S.ticks(30);
     const ch = await ds('chevron()');
     S.check(`shrines ${label}: the chevron is on it`, ch.cur === 'shrine' && ch.ref === id && ch.off < 0.6, ch);
@@ -457,17 +472,17 @@ await run('shrines', async () => {
     S.check(`shrines ${label}: after the page the Courier walks`, (await moveTest()) > 1, 'W held 40 ticks');
   }
   // fast travel: from the Float Shrine's page to the Lamp Shrine (a click on the row, as a person would)
-  await before('pier'); await S.ticks(20); await F(8);
+  await before('float'); await S.ticks(20); await F(8);
   const m = await ds('mark()');
   const clicked = await S.ev(() => { const row = [...document.querySelectorAll('#indexmenu .room')].find((r) => /the Lamp Shrine/.test(r.textContent)); if (!row) return false; row.click(); return true; });
   await S.ticks(4); await S.settle(); await S.ticks(20);
-  const at = await S.ev(() => { const g = __game.game, s = g.shrines.get('dunemaw'); return { d: +Math.hypot(g.player.pos.x - s.pos.x, g.player.pos.z - s.pos.z).toFixed(2), last: g.shrines.last, index: g.indexMenu.open }; });
+  const at = await S.ev(() => { const g = __game.game, s = g.shrines.get('lamp'); return { d: +Math.hypot(g.player.pos.x - s.pos.x, g.player.pos.z - s.pos.z).toFixed(2), last: g.shrines.last, index: g.indexMenu.open }; });
   const ev = await ds(`eventsSince(${JSON.stringify(m)})`);
   S.check('shrines: the Float Shrine\'s page travels to the Lamp Shrine', clicked && at.d < 3 && !at.index && ev.some((e) => e.name === 'shrine.travel' && e.by === 'courier'), { clicked, ...at, ev: ev.map((e) => e.name) });
   await S.common('shrine-travelled-lamp');
   // travelled there and back many times: nothing leaks, the Courier stands
   const c0 = await ds('counts()');
-  for (let i = 0; i < Math.ceil(REPS / 2); i++) for (const to of ['pier', 'dunemaw']) { await S.ev((to) => __game.game.shrines.travel(to), to); await S.ticks(4); await S.settle(); await S.ticks(6); }
+  for (let i = 0; i < Math.ceil(REPS / 2); i++) for (const to of ['float', 'lamp']) { await S.ev((to) => __game.game.shrines.travel(to), to); await S.ticks(4); await S.settle(); await S.ticks(6); }
   const c1 = await ds('counts()');
   S.check(`shrines: travelled between them ${Math.ceil(REPS / 2) * 2} times, nothing leaks`, c1.geometries - c0.geometries <= 4 && c1.textures - c0.textures <= 2, { before: c0, after: c1 });
   await S.common('shrine-travel-stress');

@@ -99,7 +99,7 @@ if (part('places')) {
   }
   // what F acts on in the workshop must be a place an agent can be sent to (world/places.js: "every room and landmark by name")
   const missing = await S.ev(() => { const g = __game.game, P = g.places.all(), near = (x, z, r = 3) => P.some((p) => Math.hypot(p.pos[0] - x, p.pos[2] - z) < r);
-    const want = { 'the Bisque Shrine': g.shrines.get('workshop')?.pos || g.player.spawn.clone().setX(g.player.spawn.x + 2.2), 'the gong': { x: -2.6, z: -12.6 }, Strawman: g.testroom?.strawman?.pos, 'the spray wall': { x: 25, z: 2.5 } };
+    const want = { 'the Bisque Shrine': g.shrines.get('bisque')?.pos || g.player.spawn.clone().setX(g.player.spawn.x + 2.2), 'the gong': { x: -2.6, z: -12.6 }, Strawman: g.testroom?.strawman?.pos, 'the spray wall': { x: 25, z: 2.5 } };
     return Object.entries(want).filter(([, p]) => p && !near(p.x, p.z)).map(([k]) => k); });
   S.check('places: every workshop landmark F acts on is a place', !missing.length, missing.length ? `no place within 3 m of: ${missing.join(', ')} (world/places.js installPlaces)` : 'all');
 }
@@ -154,6 +154,9 @@ if (part('kiln')) {
     if (o.kiln) opens++; if (o.kiln && o.locked) lockedOpen++;
     await S.press('Escape', 8);
   }
+  // (Esc asks the pointer lock back and the browser refuses a lock asked from Esc; after three refusals the game shows the click-to-play
+  //  card, as a real browser would: Petra, v112. Clicked, as a person would, before reading)
+  await S.page.mouse.click(480, 300); await S.resume(); await S.ticks(4);
   w = await ws('win()');
   S.check('kiln: F/Esc spammed ends closed, and unpaused', !w.kiln && w.tech !== 'kiln' && !w.pause, { opens, ...w });
   S.check('kiln: the pointer is never locked while the station is open', lockedOpen === 0, `${lockedOpen} of ${opens} openings had the pointer locked a quarter second in (main.js onLockChange releases a late lock only under modalOpen(), which leaves out kilnUI)`);
@@ -163,7 +166,7 @@ if (part('kiln')) {
     await standKiln(); await F(20);
     if (!(await ws('win()')).kiln) { over.push({ key, why: 'the station did not open' }); continue; }
     await S.press(key, 40);
-    const list = await ws('openList()');
+    const list = (await ws('openList()')).filter((x) => x !== 'pause'); // (the pause cover is the click-to-play card from a refused lock, not a window the key opened)
     if (label === 'codex') await S.shot('kiln-with-codex');
     over.push({ key, open: list });
     await closeAll(); await S.ticks(30);
@@ -176,7 +179,8 @@ if (part('kiln')) {
   const before = await ws('openList()');
   await S.press('Escape', 10);
   const afterEsc = await ws('openList()');
-  S.check('kiln: Esc with the Codex over the station closes the Codex first', before.includes('codex') && !afterEsc.includes('codex') && afterEsc.includes('kiln'), { before, afterEsc });
+  // (B is refused over the station now: one window at a time, the check above. Esc then closes the station itself)
+  S.check('kiln: B is refused over the station, and Esc closes the station', !before.includes('codex') && before.includes('kiln') && !afterEsc.includes('kiln') && !afterEsc.includes('codex'), { before, afterEsc });
   await closeAll(); await S.ticks(30);
   // careless: set down elsewhere with the station open (a travel from the chat line, a shatter)
   await standKiln(); await F(20);
@@ -302,7 +306,7 @@ if (part('tithe')) {
 if (part('shrine')) {
   S.phase = 'shrine';
   await closeAll(); await S.go('workshop'); await S.ticks(10);
-  const at = await S.ev(() => { const s = __game.game.shrines.get('workshop'); if (!s) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; return { p: [s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4], yaw: s.yaw + Math.PI, built: __game.game.shrines.built }; });
+  const at = await S.ev(() => { const s = __game.game.shrines.get('bisque'); if (!s) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; return { p: [s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4], yaw: s.yaw + Math.PI, built: __game.game.shrines.built }; });
   S.check('shrine: the Bisque Shrine is built', !!at, at);
   if (at) {
     await ws(`stand(${JSON.stringify(at.p)}, ${at.yaw})`); await S.settle(); await settleCourier();
@@ -313,7 +317,7 @@ if (part('shrine')) {
     await F(6);
     let w = await ws('win()');
     const pool = await S.ev(() => { const L = __game.game.lachryma; return { value: L.value, max: L.max }; });
-    S.check('shrine: F rests (the pool full) and opens its page', w.index && w.page === 'workshop' && pool.value >= pool.max - 0.5, { ...w, pool });
+    S.check('shrine: F rests (the pool full) and opens its page', w.index && w.page === 'bisque' && pool.value >= pool.max - 0.5, { ...w, pool });
     const shrineShot = await shotCommon('shrine-page');
     const text = await S.ev(() => document.querySelector('#indexmenu .im')?.innerText || '');
     S.check('shrine: its page carries no movement calibration', !/CALIBRATION/.test(text), /CALIBRATION/.test(text) ? `the page under THE BISQUE SHRINE lists ${text.split('\n').filter((t) => /CALIBRATION/.test(t)).join(' | ')} (feedback/indexmenu.js render(): calibration drawn under every page)` : 'none');
