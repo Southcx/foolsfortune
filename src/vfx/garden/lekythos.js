@@ -15,18 +15,21 @@
 //                in the field over it; to its left its grave stele on two steps, an anthemion on top, a ribbon in the colour tied round
 //                it, a lekythos on its step. The back is bare white, as the real ones are. The white flaked here and there (it was the
 //                fragile part of the ware).
-// One program for every keepsake pot (a standard material with its own map; the black's gloss read off the map in the shader).
+// One program for every keepsake pot (a standard material with its own map; the black's gloss read off the map in the shader), and one
+// painting (with its material) for every pot of one kind and colour, counted by the pots that wear it and freed with the last: a painting
+// is about 5 MB (its canvas and its texture's mips), so a ring of 64 pots of a few kinds and feelings costs a few paintings, not 64.
 //
 // Prior art, as a museum label: the Attic white-ground lekythoi of c. 470 to 400 BC, the funerary vase (the Achilles Painter's, the
 // Bosanquet Painter's, the Reed Painter's and Group R's: figures in a dilute line on a white ground beside a stele hung with ribbons, the
 // colours washed on and since faded; the meander over the scene; palmettes on the shoulder), as in the Metropolitan Museum's and
 // the National Archaeological Museum of Athens' collections; Spiritfarer's Everdoor (care ending as a gift).
 //
-//   const P = lekythos({ colour?, feeling?, spirit?, height?, seed? })   P.group (stands on its origin, its picture to +z)   P.dispose()
+//   const P = lekythos({ colour?, feeling?, spirit?, height? })   P.group (stands on its origin, its picture to +z)   P.dispose()
 //   (colour: a hex, a THREE.Color, a CSS colour or Soul Alchemy's { h, s }; feeling: 'wonder' .. 'dread', its canon colour when no colour is
 //    given; spirit: its kind ('sporeling', 'slipjelly'...) or a keepsake pot's record { kind, colour, feeling } (game.keepsakes.pots[i]: the
-//    record's own colour and feeling are used when not given); anything else is drawn as a slip jelly)
-//   lekythosParked() -> a mesh of the pots' material for the warm-up (never disposed)
+//    record's own colour and feeling are used when not given); anything else is drawn as a slip jelly; `seed` is still taken and no longer
+//    varies anything: a painting's flaking is drawn from its kind and colour, so pots that share one share it)
+//   lekythosParked() -> a mesh of the pots' material for the warm-up (never disposed)   lekythosShared() -> { paintings, geometries } (live)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -47,6 +50,7 @@ const AT = { reserve: 0.172, field: 0.195, meander: [0.548, 0.606], shoulder: 0.
 
 const MAT_KEY = 'garden-lekythos-1';
 let PARKED = null;
+const PAINTINGS = new Map(), GEOS = new Map(); // (kind|colour -> { map, mat, users }; height -> { geo, users })
 const ROUGH = /* glsl */`
   {
     float lumK = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
@@ -126,22 +130,46 @@ function potGeometry(height) {
   geo.computeBoundingSphere(); return geo;
 }
 
+/** The painting a pot of this kind and colour wears, painted once and shared (its flaking seeded by the key, so it is the same each time). */
+function paintingOf(colour, kind) {
+  const key = `${kind ?? 'slipjelly'}|${colour.getHexString()}`;
+  let p = PAINTINGS.get(key);
+  if (!p) {
+    let h = 7; for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+    const map = paintPot(colour, kind, h || 1); p = { key, map, mat: potMaterial(map), users: 0 }; PAINTINGS.set(key, p);
+  }
+  p.users++; return p;
+}
+function geometryOf(height) {
+  let q = GEOS.get(height);
+  if (!q) { q = { height, geo: potGeometry(height), users: 0 }; GEOS.set(height, q); }
+  q.users++; return q;
+}
+
 /** A keepsake pot. */
-export function lekythos({ colour, feeling, spirit = null, height = LEKYTHOS.height, seed = 1 } = {}) {
+export function lekythos({ colour, feeling, spirit = null, height = LEKYTHOS.height } = {}) {
   const rec = spirit && typeof spirit === 'object' ? spirit : null, kind = typeof spirit === 'string' ? spirit : rec?.kind ?? null;
-  const map = paintPot(toColour(colour ?? rec?.colour, feeling ?? rec?.feeling), kind, seed), mat = potMaterial(map), geo = potGeometry(height);
-  const mesh = new THREE.Mesh(geo, mat); mesh.name = 'keepsake-lekythos'; mesh.castShadow = true; mesh.receiveShadow = true;
+  const P = paintingOf(toColour(colour ?? rec?.colour, feeling ?? rec?.feeling), kind), Q = geometryOf(height);
+  const mesh = new THREE.Mesh(Q.geo, P.mat); mesh.name = 'keepsake-lekythos'; mesh.castShadow = true; mesh.receiveShadow = true;
+  P.mat.userData.shared = true; // (freed by its last pot, never by a holder sweeping its children: workbench.js)
   const group = new THREE.Group(); group.name = 'keepsake-pot'; group.add(mesh);
   let gone = false;
   return {
     group, mesh,
-    dispose() { if (gone) return; gone = true; group.parent?.remove(group); geo.dispose(); mat.dispose(); map.dispose(); },
+    dispose() {
+      if (gone) return; gone = true; group.parent?.remove(group);
+      if (--Q.users <= 0) { GEOS.delete(Q.height); Q.geo.dispose(); }
+      if (--P.users <= 0) { PAINTINGS.delete(P.key); P.mat.dispose(); P.map.dispose(); }
+    },
   };
 }
+
+/** How many paintings and pot shapes are alive (the sweeps and the review read it). */
+export function lekythosShared() { return { paintings: PAINTINGS.size, geometries: GEOS.size }; }
 
 /** A small pot of the pots' material for the warm-up (the program the garden will draw; never disposed). */
 export function lekythosParked() {
   if (PARKED) return PARKED;
-  const P = lekythos({ colour: 0x8fb0ff, height: 0.1 }); PARKED = P.mesh; PARKED.name = 'keepsake-lekythos-parked'; PARKED.material.userData.shared = true;
+  const P = lekythos({ colour: 0x8fb0ff, height: 0.1 }); PARKED = P.mesh; PARKED.name = 'keepsake-lekythos-parked'; // (its painting's count is never let down)
   return PARKED;
 }
