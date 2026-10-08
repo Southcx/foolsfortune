@@ -18,6 +18,7 @@ import { seaChart, next, sight, portent, classOf } from '../../progress/econ/pas
 import { hop, NODES } from '../../progress/econ/emocean.js';
 import { stageWx } from '../../progress/weather.js';
 import { today } from '../../core/calendar.js';
+import { sfx } from '../../audio/sfx.js';
 
 /** The waypoints' words (placeholders for Espada's) and what each sails as today. The legs not built yet sail as the shoal (a stand-in
  *  until Dovina's leg runtime: RAIL-OVERHAUL.md); the havens are the breathers between legs. */
@@ -65,6 +66,7 @@ export class SeaChart {
   draw() {
     const g = this.game, C = this.chart, M = this.pier.menu; if (!C || !M) return;
     const { s, level, rutter } = this.seeing(), from = C.from, to = C.to;
+    if (!this.sounding) { this.sounding = true; sfx.seaChart?.(true); } // (Wanda's: the chart's ambience while it is open; pier.update says when it shuts)
     M.showPage('seachart', (im, el) => {
       const x = (col) => 70 + ((W - 140) * (col + 0.5)) / C.columns, y = (row) => 30 + ((H - 60) * (row + 0.5)) / C.rows;
       const at = (id) => { const w = C.waypoints[id]; return [x(w.col), y(w.row)]; };
@@ -125,6 +127,7 @@ export class SeaChart {
       // the needle: the sea's pull wandering (three slow waves), across the chart's width
       const needle = 0.5 + 0.32 * Math.sin(t * 1.3 + seed) + 0.12 * Math.sin(t * 3.1 + seed * 2) + 0.05 * Math.sin(t * 7.3);
       const off = Math.abs(needle - mark.x) * 180; R.total += dt; if (off < READ.tol) R.held += dt;
+      sfx.reading?.(Math.max(-1, Math.min(1, ((mark.x - needle) * 180) / (READ.tol * 3))), Math.min(1, (now - t0) / dur)); // (the needle's tone steadying: Wanda's)
       const c = this.canvas.getContext('2d'), w = this.canvas.width, h = this.canvas.height;
       c.fillStyle = '#120a08'; c.fillRect(0, 0, w, h);
       c.strokeStyle = off < READ.tol ? '#ffe0a0' : '#c9a0ff'; c.lineWidth = 3; c.beginPath(); c.moveTo(needle * w, 4); c.lineTo(needle * w, h - 4); c.stroke();
@@ -136,7 +139,7 @@ export class SeaChart {
   }
   /** The reading's quality (0..1, how long the mark was held true) is how much of the sea it divines today (the day's best kept). */
   finishRead(q) {
-    const g = this.game, C = this.chart; this.reading = null;
+    const g = this.game, C = this.chart; this.reading = null; sfx.readingEnd?.(q);
     const r = g.voyage.reckon(C.from, C.to, q, +q.toFixed(2));
     g.events?.emit('passage.read', { q: +q.toFixed(2), read: +r.toFixed(2), by: 'courier' });
     this.draw();

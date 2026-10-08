@@ -173,6 +173,7 @@ export class Emocean {
     if (!this.stage.active || this.offering) return;
     this.settle();
     this.hold();
+    this.form = this.ship.form; // (Wanda's ambience reads it: under, the music low-passed)
     this.camera(raw);
     this.ship.reaim(); // (the reticle under the cursor through this frame's camera)
     this.look(raw, bar);
