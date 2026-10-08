@@ -44,11 +44,11 @@
 import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { SONGS, DEGREE_COLOR, match } from '../tools/crucibelle/songs.js';
+import { WINDOW as BELL_WINDOW } from '../tools/crucibelle/crucibelle.js';
 
 const R = 10;              // (the tape's radius: wirecompass.js)
 const LINES = 480;         // (the HUD is drawn in pixels of the sixth generation's 480 lines, whatever the resolution: render/present.js)
-// The bell's on-beat window, seconds either side of an eighth (WINDOW in tools/crucibelle/crucibelle.js, mirrored until it is exported).
-const BELL_WINDOW = 0.085;
+// The bell's on-beat window, seconds either side of an eighth, is the bell's own (WINDOW, tools/crucibelle/crucibelle.js), so the notch never lies.
 const AMP = 0.62;          // the swing's half-arc, radians (the fob's is 0.55)
 const LEN = 64;            // the pendulum's length, pixels
 const NEUME = 6.5;         // a neume's half-size, pixels: 13 across, 17 with the octave's line

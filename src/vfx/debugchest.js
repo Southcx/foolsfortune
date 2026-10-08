@@ -53,7 +53,7 @@ export function debugChestModel() {
   const lid = new THREE.Mesh(meteredBox(SIZE.w + 0.03, SIZE.lid, SIZE.d + 0.03), mat);
   const hinge = new THREE.Group(); hinge.position.set(0, SIZE.h, -SIZE.d / 2 - 0.015); lid.position.set(0, SIZE.lid / 2, SIZE.d / 2 + 0.015);
   hinge.add(lid); group.add(body, hinge);
-  for (const m of [body, lid]) { m.castShadow = true; m.receiveShadow = false; addOutline(m); }
+  for (const m of [body, lid]) { m.castShadow = false; m.receiveShadow = false; addOutline(m); } // (no shadow: a debug chest needs none, and its depth program would compile in play)
   let t = 1;
   return {
     group,

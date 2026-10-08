@@ -144,10 +144,10 @@ export function buildStage(id) {
     obj = new THREE.Group(); const R = [0, 1, 2, 3].map((i) => { const r = new SolarRing({ radius: 1 }); r.group.position.set(-3.3 + i * 2.2, 1.2, 0); obj.add(r.group); return r; });
     R[0].set({ lit: true, next: true }); R[1].set({ lit: true }); R[2].set({ lit: false }); let pt = 0; obj.userData.tick = (t) => { if (t % 3 < pt % 3) R[3].pass(); R.forEach((r) => r.update(Math.max(0, t - pt))); pt = t; };
   }
-  else if (id === 'dunes:ostraca') { // (the twelve words with pictures in two rows, one word with none (the meander), a stele behind with the twelve as stand-in words; dug, buried and dug again)
-    obj = new THREE.Group(); const words = Object.keys(PICTURES);
-    const O = [...words, 'VOYD'].map((w, i) => { const o = new Ostracon({ word: w }); o.group.position.set(i < 12 ? -0.8 + (i % 6) * 0.32 : 1.25, 0, i < 12 ? 0.3 + Math.floor(i / 6) * 0.3 : 0.45); obj.add(o.group); return o; });
-    const S = new Stele({ words }); S.group.position.set(0, 0, -1.0); obj.add(S.group);
+  else if (id === 'dunes:ostraca') { // (the sixteen words with pictures in two rows, one word with none (the meander), a stele behind with twelve of them as stand-in words; dug, buried and dug again)
+    obj = new THREE.Group(); const words = Object.keys(PICTURES), n = words.length, row = Math.ceil(n / 2);
+    const O = [...words, 'VOYD'].map((w, i) => { const o = new Ostracon({ word: w }); o.group.position.set(i < n ? -0.16 * (row - 1) + (i % row) * 0.32 : 0.16 * (row + 1.5), 0, i < n ? 0.3 + Math.floor(i / row) * 0.3 : 0.45); obj.add(o.group); return o; });
+    const S = new Stele({ words: words.slice(0, 12) }); S.group.position.set(0, 0, -1.0); obj.add(S.group);
     let pt = 0; obj.userData.ostraca = O; obj.userData.stele = S;
     obj.userData.tick = (t) => { const k = t % 12, b = k < 4 ? 0 : k < 6 ? (k - 4) / 2 : k < 10 ? 1 : 1 - (k - 10) / 2, dt = Math.max(0, t - pt); pt = t; for (const o of O) { o.set({ buried: b }); o.update(dt); } S.set({ buried: b }); S.update(dt); };
   }
