@@ -47,6 +47,7 @@ for (const [type, L] of Object.entries(LEGS)) {
 { const H = CHARYBDIS, peak = LEGS.maelstrom.phases?.peak ?? 24;
   const ok = charybdisHurt('astral', H.rise) === 1 && charybdisHurt('umbral', H.rise) === 0 && charybdisHurt('umbral', H.depth) === 1 && charybdisHurt('astral', H.depth) === 0 && charybdisHurt('astral', 0) === H.surface && charybdisHurt('umbral', 0) === H.surface;
   console.log(`${ok ? 'PASS' : 'FAIL'} Charybdis is hurt only from the world it is in, by both at the surface`); if (!ok) fails++;
-  const fair = H.hp === WAVES.hp[4] && H.bars * 2 <= 24;
-  console.log(`${fair ? 'PASS' : 'FAIL'} Charybdis has a Leviathan's hit points and turns at least three times in a 24-bar peak ${JSON.stringify({ hp: H.hp, bars: H.bars, peak })}`); if (!fair) fails++; }
+  const EXPERT = 39.5, felled = +(H.hp / EXPERT).toFixed(1); // (damage a bar of a scripted expert following both worlds: Petra's charybdistest, 150 hp in 3.8 bars)
+  const fair = felled >= 10 && felled <= 14 && H.hp > WAVES.hp[4] && H.bars * 2 <= 24;
+  console.log(`${fair ? 'PASS' : 'FAIL'} Charybdis lasts about half the peak against a perfect diver, and turns at least three times ${JSON.stringify({ hp: H.hp, expertBars: felled, bars: H.bars, peak })}`); if (!fair) fails++; }
 console.log(fails ? `legs: ${fails} FAILED` : 'legs: all passed'); process.exitCode = fails ? 1 : 0;
