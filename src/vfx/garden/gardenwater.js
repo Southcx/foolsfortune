@@ -18,7 +18,9 @@
 //   THE SKIN     the marbling's two crossing layers as its normal, laid triplanar in the planetoid's space and calmed with distance
 //                (18 to 70 m, as vfx/water.js calms); the film's colours in its veins and at its meniscus; the garden's sky in it by
 //                Fresnel (the haze to the zenith: vfx/garden/gardensky.js); the sun's tight highlight and glints where the fine
-//                bubbles cross it (the water's sparkle, welcome: R58), fading out past 18 m
+//                bubbles cross it (the water's sparkle, welcome: R58), fading out past 18 m; calmed and its gloss varied (the owner,
+//                2026-10-08: "a little too plastic-y"), clearer in the shallows, with a faint web of the caustics (vfx/liquid.js
+//                liqCaustics) on the surface over them
 //   THE FOAM     made of bubbles (liqFoam) where it runs fast and shallow (over 1.5 m/s, under 0.3 m)
 //   THE GROUND   under and after it: the planetoid's aWet (how wet, drying over 20 real seconds; the depth over it), which the grounds
 //                darken, gloss and lay caustics on (vfx/garden/gardengrounds.js)
@@ -86,10 +88,11 @@ const FRAG_SHORE = /* glsl */`
 // (before the alpha map: every sample the later stages read, the body's colour and its opacity)
 const FRAG_BODY = /* glsl */`
   float wD = vWater.x, wDeep = smoothstep(0.05, 1.2, wD), wFar = smoothstep(18.0, 70.0, length(vViewPosition)), wT = uGTime * 0.35;
-  vec3 wNb = normalize(vWn), wPert = vec3(0.0); float wH = 0.0, wGlow = 0.0, wVein = 0.0, wBub = 0.0, wFoam = 0.0;
+  vec3 wFw = fwidth(vWp); float wPx = max(wFw.x, max(wFw.y, wFw.z)); // (the pixel's footprint, for the caustics' lines: taken where every fragment runs)
+  vec3 wNb = normalize(mix(normalize(vWn), normalize(vWp), 0.92 * smoothstep(0.006, 0.04, wD) * (1.0 - smoothstep(0.4, 1.5, vWater.y)))), wPert = vec3(0.0); float wH = 0.0, wGlow = 0.0, wVein = 0.0, wBub = 0.0, wFoam = 0.0; // (still water's level is a sphere about the heart: its normal is the heart's up, not its triangles' (the shore's triangles lean), so no facet catches the sky; running water keeps its slope's)
   {
     vec3 w3 = pow(abs(wNb), vec3(4.0)); w3 /= w3.x + w3.y + w3.z + 1e-5;
-    float S = uWScale, st = 1.5 * (1.0 - 0.7 * wFar), speed = vWater.y;
+    float S = uWScale, speed = vWater.y, st = mix(0.95, 0.6, wDeep * (1.0 - smoothstep(0.4, 1.5, speed))) * (1.0 - 0.7 * wFar); // (calmed, 2026-10-08: the owner found the water "a little too plastic-y"; a still deep pool calmest)
     float foamAmt = smoothstep(1.5, 3.0, speed) * smoothstep(0.02, 0.06, wD) * (1.0 - smoothstep(0.12, 0.3, wD)) * 0.55; // (fast and shallow, but never on a film)
     vec2 fl = vec2(0.0);
     #define W_PLANE(Q, PERT, W) { vec2 q = Q; vec3 n = liqNormal(q, S, wT, st); wPert += PERT * W; wH += liqHeight(q, S, wT) * W; wGlow += liqGlow(q, S * 0.6, wT) * W; wVein += liqTap(q * S + vec2(wT * 0.021, wT * 0.013)).a * W; wBub += liqTap(q * 0.9 + vec2(wT * 0.05, -wT * 0.03)).g * W; if (foamAmt > 0.01) wFoam += liqFoam(q, 0.7, uGTime, foamAmt) * W; }
@@ -117,12 +120,12 @@ const FRAG_BODY = /* glsl */`
     wCol = mix(wCol, nacre, smoothstep(0.25, 0.85, cancel));
   }
   diffuseColor.rgb = pow(wCol, vec3(1.6)) * mix(0.5, 0.2, wDeep); // (lit at the top, darker and deeper in colour as it deepens: the light goes in)
-  diffuseColor.a = smoothstep(${WATER_LOOK.draw.toFixed(4)}, 0.06, wD) * mix(0.72, 0.96, wDeep);
+  diffuseColor.a = smoothstep(${WATER_LOOK.draw.toFixed(4)}, 0.06, wD) * mix(0.55, 0.95, wDeep); // (clearer in the shallows: the ground and its caustics show through)
   diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.9, 0.94, 0.95), wCol, 0.25), wFoam * 0.8); // (foam keeps a breath of its feeling)
   diffuseColor.a = max(diffuseColor.a, wFoam * 0.8 * smoothstep(${WATER_LOOK.draw.toFixed(4)}, 0.03, wD));
 `;
 const FRAG_SURFACE = /* glsl */`
-  roughnessFactor = mix(0.07, 0.6, wFoam); metalnessFactor = 0.0;
+  roughnessFactor = mix(mix(0.12, 0.26, smoothstep(0.3, 0.7, wH)), 0.6, wFoam); metalnessFactor = 0.0; // (the gloss varied with the marbling: never one even coat)
 `;
 const FRAG_NORMAL = /* glsl */`
   normal = normalize((viewMatrix * vec4(normalize(wNb + wPert), 0.0)).xyz);
@@ -136,11 +139,19 @@ const FRAG_GLOW = /* glsl */`
     float ndv = clamp(dot(normal, V), 0.0, 1.0), fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
     vec3 sky = mix(uWHaze, uWZenith, smoothstep(0.0, 0.7, dot(normalize(Rw), normalize(vWp))));
     vec3 core = pow(wCol, vec3(1.3));
-    vec3 e = core * (0.16 + 0.72 * wDeep) * (0.4 + 1.6 * wGlow * wGlow) * (1.0 + 0.9 * uGNight);      // (light pooled inside it, deeper and by night brighter)
+    vec3 e = core * (0.12 + 0.6 * wDeep) * (0.6 + (0.8 + 0.8 * uGNight) * wGlow * wGlow) * (0.8 + 1.1 * uGNight); // (light pooled inside it, deeper and by night brighter; by day softer and more even: broad bright pools read as a gel's sheen)
     float film = wH * 0.9 + fres * 0.7 + wT * 0.01;
     e += liqFilm(film) * pow(wVein, 2.0) * 0.12 * (1.0 - wFoam);                                       // (the film in its veins)
     e += liqFilm(film + 0.3) * (1.0 - smoothstep(${WATER_LOOK.draw.toFixed(4)}, 0.08, wD)) * 0.18;   // (the meniscus at the shore)
-    e += sky * fres * 0.5 * (1.0 - wFoam);                                                            // (the garden's sky in it, short of a mirror)
+    e += sky * fres * 0.32 * (1.0 - wFoam);                                                           // (the garden's sky in it, short of a mirror)
+    {                                                                                                  // (a faint web of the caustics on the surface over the shallows, the floor's light: vfx/liquid.js)
+      vec3 n3 = pow(abs(wNb), vec3(4.0)); n3 /= n3.x + n3.y + n3.z + 1e-5;
+      vec3 c = vec3(0.0), wq = vWp; float t = uGTime * 0.8;
+      if (n3.x > 0.05) c += liqCaustics(wq.zy, 1.0, t, wPx) * n3.x;
+      if (n3.y > 0.05) c += liqCaustics(wq.xz, 1.0, t, wPx) * n3.y;
+      if (n3.z > 0.05) c += liqCaustics(wq.xy, 1.0, t, wPx) * n3.z;
+      e += c * mix(vec3(1.0), core, 0.35) * 0.09 * (1.0 - wDeep) * (1.0 - wFoam) * (1.0 - wFar);
+    }
     #if NUM_DIR_LIGHTS > 0
       vec3 H = normalize(directionalLights[0].direction + V);
       float glint = smoothstep(0.86, 0.93, wBub) * pow(max(dot(normal, H), 0.0), 40.0) * (1.0 - smoothstep(10.0, 18.0, length(vViewPosition)));

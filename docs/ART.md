@@ -37,7 +37,13 @@ and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, g
   spires stay lilac.
 - **Liquids are drawn by one library** (`vfx/liquid.js`; packs baked by `scripts/bake_liquid.py` from the owner's noise photographs).
   Water paints its floor (ripples, caustics, depth colour, Fresnel short of a mirror, sparkle welcome); Lachryma is ink with the film in
-  its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow.
+  its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow. **Water is never plastic**
+  (the owner, 2026-10-08: the ripple read "a little too plastic-y"): its highlight is broad and soft and its gloss varies in slow
+  patches, the rings bend the light and never whiten, and nothing glints in one even coat. **The caustics are a Voronoi cell texture
+  in two layers** (`liqCaustics`, `causticTexture()`): curved threads that swell into knots where three cells meet, the second layer
+  the same net a little apart in a cooler, more saturated hue and fainter, so the line is white where they meet and splits into colour
+  where they part (a real caustic's dispersion); the marbling bends the net so it writhes, and a slow wash keeps it from tiling. On the
+  floor under the shallows, and a faint web of it on the surface.
 - **Sacred geometry is grammar:** the owner's wife's circles (`circle_lotus`, `circle_swirl`) layered and counter-turning; hexagons are the
   lawful mind, spirals the chaotic.
 - **The world is thrown and fired** (lathe forms, slips, glazes, kiln marks); the tools are instruments with a silhouette and a stance.
@@ -104,7 +110,8 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   **The water is the feeling, outright** (`vfx/garden/gardenwater.js`): Lachryma in its feeling's canon colour, dark where the light
   goes in and glowing from inside as it deepens (and by night), the marbling's film in its veins and at its meniscus. Two feelings in
   one pool are an agate, wedged along the marbling and never blended; opposites that meet are fair water, milky as nacre. Ground it
-  wets darkens and glosses for 20 real seconds, with caustics under the shallows. **The rain is your draught** (`gardenrain.js`): thin
+  wets darkens and glosses for 20 real seconds, with caustics under the shallows (the shared Voronoi net), a faint web of them on the
+  surface; still water lies level (its normal the planetoid's up, so no shore triangle catches the sky) and glows evenly by day. **The rain is your draught** (`gardenrain.js`): thin
   streaks drawn toward the sky's pale, each falling to its own planetoid's heart, a ring where it lands, the sky greying under it.
   **The plants are toys** (`gardenplants.js`): chunky moss cushions with fern sprigs, herb rosettes that bloom in desire's colour,
   reeds with a cattail; lit by up-turned normals like the ground they grow from, shrinking away past 18 m so the ground carries the

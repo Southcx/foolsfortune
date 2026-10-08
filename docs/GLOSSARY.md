@@ -928,7 +928,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the **wet sand** behind it. The island's weather ends at the waterline.
 - **the liquid pack** (`src/assets/liquid_pack.webp`, baked by `scripts/bake_liquid.py` from `source_assets/liquid/`): the owner's
   noise photographs as one tileable texture (marbling, bubbles, sand ripples, veins) that every liquid is drawn with (`src/vfx/liquid.js`).
-  **caustics**: the net of light on a pool's floor; **glints**: the water's sparkle where the sun catches it.
+  **caustics** (`liqCaustics`, `causticTexture()` in `src/vfx/liquid.js`): the net of light on a pool's floor, a Voronoi cell texture
+  drawn in two layers a little apart (white where they meet, split into colour where they part); **glints**: the water's sparkle
+  where the sun catches it.
 - **the ground pack** (`src/assets/ground_pack.webp`, baked by `scripts/bake_ground.py` from `source_assets/vfx/Noise_Gradients/`): four
   of the owner's noise gradients as the four grey channels of one tileable texture, the heights the ground's materials are drawn from
   (R moss's cushions, G loam's rootlets, B slate's cleft, A silt's crazing; ash's come from the liquid pack's glowing cells). Fetched

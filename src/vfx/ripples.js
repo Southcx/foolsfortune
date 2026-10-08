@@ -17,7 +17,7 @@
 // Crysis's interactive water: a camera-centred height field stamped by what touches it).
 //
 //   const T = new RippleTank(renderer)   T.disturb(d)   T.update(rawDt, cameraPos, { lachryma })   RIPPLE_U (the water's uniforms)
-//   RIPPLE_GLSL: ripSlope(xz) -> vec3(dh/dx, dh/dz, h)
+//   RIPPLE_GLSL: ripSlope(xz) -> vec3(dh/dx, dh/dz, h) (the slope filtered over four cells: soft crests, never a one-cell edge)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -34,9 +34,10 @@ vec3 ripSlope(vec2 xz) {
   vec2 u = (xz - uRipO.xy) / uRipO.z;
   if (u.x < 0.0 || u.y < 0.0 || u.x > 1.0 || u.y > 1.0) return vec3(0.0);
   float e = ${(1 / N).toFixed(6)}, edge = smoothstep(0.0, 0.08, min(min(u.x, u.y), min(1.0 - u.x, 1.0 - u.y)));
-  float hx = texture2D(uRip, u + vec2(e, 0.0)).r - texture2D(uRip, u - vec2(e, 0.0)).r;
-  float hz = texture2D(uRip, u + vec2(0.0, e)).r - texture2D(uRip, u - vec2(0.0, e)).r;
-  return vec3(hx, hz, texture2D(uRip, u).r) * edge;
+  // the slope filtered: four taps on the diagonals 1.5 cells out, each bilinear, so the difference is taken over a soft 4 by 4 cells
+  // (the rings' crests come out round and soft, never a one-cell edge), in the units of the old two-cell difference, one tap fewer
+  float k = 1.5 * e, pp = texture2D(uRip, u + vec2(k, k)).r, pn = texture2D(uRip, u + vec2(k, -k)).r, np = texture2D(uRip, u + vec2(-k, k)).r, nn = texture2D(uRip, u - vec2(k, k)).r;
+  return vec3((pp + pn - np - nn) * (1.0 / 3.0), (pp + np - pn - nn) * (1.0 / 3.0), (pp + pn + np + nn) * 0.25) * edge;
 }`;
 
 const SIM_V = 'varying vec2 vU; void main() { vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
