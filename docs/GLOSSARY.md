@@ -236,6 +236,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   surge lets the swarm of lances go on R. *Not:* a seam. → detail
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`) — a worn tool carried on the ship, as many as its hull's slots; the psygun is always the gun.
   *Not:* a ship part. → detail
+- **a mount's preview** (`MountPreview`, `game.mooring.preview(tool)`, `src/vfx/mountpreview.js`) — the mount hovered or chosen at the pier
+  drawn on the crude round the moored hull at its size at sea (a fan, a cone, a blast ring, a grapnel line, a viewfinder, a radar's scan,
+  a line of fire); no words.
+  *Not:* the card's demo loop, the lock-on. → detail
 - **par / rank / medal / the tally** (`progress/rail/score.js`) — par an expert's median for a set piece; the crossing's rank its score against
   par (S to D); the medal; the tally, the last log line.
 - **reckoning** (`RECKON`, `reckonLead`) — how much of a crossing the Courier has divined (Divination), 0..1 for that day. *Not:* "course" (the

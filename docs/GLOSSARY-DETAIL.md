@@ -747,7 +747,20 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
   counter). *Not:* Margarite (the island, of which the dock is all that is built).
 - **the mooring** (`Mooring`, `game.mooring`, `src/vfx/mooring.js`): the hull chosen at the pier lying alongside its end at life size,
-  its sails furled. *Not:* the jetty (the plank walk), the pier's page.
+  its sails furled; a mount's preview rides it. *Not:* the jetty (the plank walk), the pier's page.
+- **a mount's preview** (`MountPreview`, `MOUNT_LOOK`, `src/vfx/mountpreview.js`; `game.mooring.preview(tool)`, called by the pier's
+  page on the row hovered and on the mount last taken aboard; CLARITY.md section 6, Into the Breach's): what a mount does, drawn as a
+  world mark on the crude round the moored hull, one at a time, gone when none is chosen or the Courier leaves the pier. At its size
+  round the ship at sea (every hull flies at **a quarter of its size** at the rail, `AT_SEA`, so a range of 10 m there is 42 m round
+  the moored hull), from **the nose** (`NOSE`, 0.9 m ahead of the ship's middle at the rail), each a shape (`MOUNT_LOOK[tool].shape`):
+  the Blaster's **line of fire** (`fireLine`) and its two reticles; Absorb Spray's **fan** (`sprayFan`, arcs spraying out); the Bomb's
+  **blast ring** (`blastRing`) and the beat's (faint, broken) with a shockwave going out; the Vacuum's **cone** (`drawCone`, arcs drawn
+  in); the Snapshot's **viewfinder** (`viewfinder`: the camera's frame standing on the sea, its frustum faint); the Grapple's **grapnel
+  line** (`grapnel`: to its range, two flukes at its end, the aim's arc faint); the Radar's **scan** (`radarScan`: range circles and a
+  **scan line**, clockwise from above, once in four real seconds). Drawn in the rail mark's **wire** style (`STYLE.wire`, `vfx/railmark.js`): screen-space,
+  the mount's colour (`MOUNT_LOOK`; the ship's feeling for the Blaster and Absorb Spray) with the Mind's schiller along its heart,
+  lifted over the drawn crude and depth-tested (the jetty, the hull and the Courier hide it; the sand above the waterline covers it).
+  *Not:* the card's demo loop (CLARITY.md section 6, a loop beside a card), the lock-on reticle, a lane mark.
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
 - **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,

@@ -94,8 +94,10 @@ export class Pier {
         const on = chosen.includes(t), M = MOUNTS[t];
         const d = el('div', 'room', `<span class="n">${on ? `${chosen.indexOf(t) + 1}` : '·'}</span><span><b>${M.name}</b><s>${on ? 'aboard' : 'ashore'}: ${M.does}</s></span>`);
         d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
+        d.onmouseenter = () => g.mooring?.preview(t); d.onmouseleave = () => g.mooring?.preview(this.chosen?.at(-1) ?? null); // (a mount's preview on the moored hull: vfx/mountpreview.js)
         mb.appendChild(d);
       }
+      g.mooring?.preview(chosen.at(-1) ?? null); // (the one last taken aboard, until another is hovered)
       const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes' });
