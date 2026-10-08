@@ -60,7 +60,8 @@ window.__dm = (() => {
       document.getElementById('overlay').style.display = 'none'; G.input.enabled = true;
     },
     counts() {
-      let n = 0, floors = 0, bowls = 0; g.scene.traverse((o) => { n++; if (/^well-floor-/.test(o.name) && o !== W.warm?.group) floors++; if (o.name === 'well-bowl') bowls++; });
+      let n = 0, floors = 0, bowls = 0; const sib = new Set(); g.scene.children.forEach((c) => { if (/^Waiting-/.test(c.name)) c.traverse((o) => sib.add(o)); }); // (the siblings waiting at their meeting spots are the party's, not the Well's: Petra, v112)
+      g.scene.traverse((o) => { if (sib.has(o)) return; n++; if (/^well-floor-/.test(o.name) && o !== W.warm?.group) floors++; if (o.name === 'well-bowl') bowls++; });
       const i = G.renderer.info, Wd = g.physics.world;
       return { objects: n, top: g.scene.children.length, floors, bowls, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs?.length ?? null,
         bodies: Wd.bodies.len(), colliders: Wd.colliders.len(), jellies: g.jellies?.list.length ?? null, creatures: g.creatures?.list?.length ?? null };

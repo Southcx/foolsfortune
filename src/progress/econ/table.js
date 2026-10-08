@@ -190,7 +190,13 @@ export const ECON = {
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
-  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65 }, // (radius 0.22 at first let a half-grey colour count: R58)
+  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65, // (radius 0.22 at first let a half-grey colour count: R58)
+    // (SOUL-ALCHEMY.md, the owner's laws, 2026-10-08) seasoning widens a swatch up to x(1 + seasonWiden); one source gives at most
+    // seasonPerHour a game hour (played, never idled); a firing costs fuel x (aim[0] + aim[1] x d/r); within `trueShare` of the radius is
+    // a true firing; a complement (within complementArc of the opposite hue) greys by `complement` of its step; brimming adds brimStep
+    // toward the draught's hue; the press's formation multiplies the radius within formationClamp.
+    seasonMax: 100, seasonWiden: 1.5, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, complement: 0.5, complementArc: 30,
+    brimStep: 0.02, feelingHue: { wonder: 200, mirth: 50, desire: 10, grief: 230, dread: 280 }, formationClamp: [0.5, 2] },
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read

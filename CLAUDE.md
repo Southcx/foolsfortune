@@ -21,6 +21,13 @@ The owner's rules for every change. Each line is a rule; the reasons are kept sh
 Before designing anything, ask "has this been done before?", look it up, and say in the module's header what was taken and from where.
 Build it as a modular piece with a small interface, not a one-off. Free assets only (UAL Standard, CMU mocap, CC0: the README's credits).
 
+## Design laws (the owner, 2026-10-08; DESIGN.md section 22)
+- **Skill skips grind; grind closes the gap.** Every source of growth pays more for doing it well and still pays for doing it at all.
+- **Arts only by achievement** (Movement Arts, God Arts, knacks), a count way and a feat way for each worth having. Assists are knacks:
+  earned, optional, switched on or off, never gating the skill.
+- **Every system teaches something real without saying so** (pitch from crystals, the painter's eye from the press): the mechanic is
+  the lesson, never a tutorial.
+
 ## Animation
 - An existing clip (UAL Standard, CMU, CC0) for every movement wherever practicable, blended into the tree; author one only when none fits.
 - IK is a light correction (a foot on a surface, a hand on a handle), never a whole pose.
