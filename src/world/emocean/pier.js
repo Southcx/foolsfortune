@@ -112,7 +112,7 @@ export class Pier {
    *  rutter (voyage.stageResult). */
   castOff(from, to) {
     const C = this.chart; if (!C.done()) return false;
-    return this.sail(from, to, { ids: [...C.path], legs: C.path.map((id) => C.chart.waypoints[id].type), pieces: C.legs(), route: `${from}>${to}`, read: +this.game.voyage.reckoning(from, to).toFixed(2) });
+    return this.sail(from, to, { ids: [...C.path], legs: C.path.map((id) => C.chart.waypoints[id].type), waypoints: C.path.map((id) => ({ ...C.chart.waypoints[id] })), chart: C.chart, pieces: C.legs(), route: `${from}>${to}`, read: +this.game.voyage.reckoning(from, to).toFixed(2) });
   }
 
   /** Board and go: the voyage pays the fuel and draws the set pieces; the stage takes the Courier aboard. */

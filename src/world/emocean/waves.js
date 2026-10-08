@@ -126,7 +126,7 @@ export class Waves {
 
   /** Fire on the grid: a school's stray shot on a bar line, a darter's outlined shot every other bar, a heavy's fan each bar. */
   fire(f, bar, sixteenth, ship, shots) {
-    if (!ship || !shots || sixteenth === this.lastSixteenth) return;
+    if (this.quiet || !ship || !shots || sixteenth === this.lastSixteenth) return; // (quiet: a passage's leg, its schedule the only source of shots)
     const b = Math.floor(bar), onBar = sixteenth % 16 === (f.off % 16);
     if (!onBar || b === f.lastBar || f.t < 1.2 || f.local.z < 6 || f.local.z > 70) return;
     f.lastBar = b;
