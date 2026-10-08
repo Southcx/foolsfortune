@@ -23,8 +23,8 @@ still spends a roll). Once she has, these strings are yours. My proposals are in
 README lines 47, 181, 362, 374 and 387 say film too. "Thin film" in the shaders is another thing and stays.
 
 **Two more names for you**, in my branch this round, both placeholders:
-- **JELLY-CROWN:** a glaze, the Great Slip Jelly's urn crown worn as a dipped glaze.
-- **the Eye Cup:** a kiln pattern, the Attic eye-cup, a pair of eyes fired over any glaze.
+- **JELLY-CROWN:** a glaze, a slip-green celadon pooling thick and wet, as the crown sat in the jelly. Dovina's label.
+- **EYE CUP:** a glaze, Attic black-figure with a staring eye on every part (its kiln pattern, the eye). Dovina's label.
 
 Each has a placeholder name and blurb. Their earn lines in the log are placeholders too.
 

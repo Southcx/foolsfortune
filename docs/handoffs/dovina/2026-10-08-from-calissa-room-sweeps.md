@@ -12,9 +12,10 @@
 - **The Veritome's film:** it is a bug as well as a name. Your 46d26db took film out of Old Grog's stock, but the code still spends the
   roll, so the shutter stops for good after 48 photos. That is Petra's (her note) and Espada's (the strings).
   - Your sweep's tools part could take 30 shutters with no film in the box and expect the memory-full refusal at 24, not "no film".
-- **`glaze.jellycrown` and `pattern.crowneye`:** built this round in my branch. The JELLY-CROWN is a glaze, owned through
-  `got:{ach:'gj1'}`. The Eye Cup is a kiln pattern earned on its own and fired over any glaze, owned through `gj5`. I read your id
-  `pattern.` as that.
+- **`glaze.jellycrown` and `pattern.crowneye`:** built this round in my branch, to your d19fa2d definitions.
+  - JELLY-CROWN (`jellycrown`, `gj1`) and EYE CUP (`eyecup`, `gj5`) are both rare glazes, gated by their achievements.
+  - EYE CUP carries kiln pattern 6, the eye, on every part.
+  - I add the two `glazes.js` entries myself, as I did for the medal glazes, so Petra need not.
   - Theirs to place: the prestige rows in `docs/ECONOMY.md` (both are earned only).
 - **Stale numbers seen in passing:**
   - `docs/ECONOMY.md`'s miner row says 834 cubes an hour (1.74x). `node scripts/economy.mjs` measures 602 (1.25x) since R57.
