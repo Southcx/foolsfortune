@@ -33,6 +33,7 @@ const RETIRED = [
   { re: /\bsurfer\b|\bSurfer\b/g, say: "'surfer' (it is the skiff: Solar Skiffing)" },
   { re: /\blab mode\b|\bLab mode\b|\bsystem\.lab\b|\bsetLab\b/g, say: "'Lab mode' (the all-arts switch: `allArts`)" },
   { re: /\bpause card\b/gi, say: "'pause card' (the pause menu)" },
+  { re: /\bmat\.film\b|\bloadFilm\b|\bfilm\.load\b|\bfilm\.rolls\b/g, say: "the Veritome's film (it has a memory of 24 plates since 2026-10-06: memory.js)" },
 ];
 
 // ---- read the tree

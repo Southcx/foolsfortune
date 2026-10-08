@@ -159,8 +159,43 @@ the rules before building in the same area; a rule a machine can check goes into
 62. **A motion written as a curve of time has a floor, and the next stage starts where it stopped.** A wait the player controls (a
     menu left open) can be any length: a fall that grows with it is bounded by an easing that ends above whatever it falls toward, and
     the stage after it reads where it hung, never its own start again.
+63. **An export moves a child by its matrix against its parent, never by its location alone.** Blender keeps part of a parented
+    object's place in its parent inverse: zero the location and the inverse still carries it. Keep `parent.matrix_world⁻¹ @
+    child.matrix_world`, clear the inverse, and have the export print where each mesh stands on its rig (a skinned mesh off its rig
+    turns about a far pivot, and reads as stretching).
+64. **What stands on a surface stands on its normal.** Tilt it from up to the surface's normal under it (analytic where the surface
+    is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
+    by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
 
+65. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
+    scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool). Taking
+    down is idempotent: a second `dispose` does nothing.
+66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
+    or with a line in the reader's reply saying why not.
 ## Cases
+
+### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
+- **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
+  snapped to the surface of the checkerboard black hole" (THE FOOL'S PRECIPICE).
+- **Cause (measured):** two. (1) The export, not the file. In `chess_pieces.blend` each mesh stands with its rig at the rig's place in
+  the row, parented with an inverse that undoes that place (+15 the pawn, +12 the rook, +9 the knight, +6 the bishop, +3 the queen, 0
+  the king). `scripts/export_chess.py` zeroed the rig's location and the mesh's but kept the inverse, so each mesh left its rig by that
+  much (the pawn's POSITION x 14..16, its joints and inverse binds at x 0) and every bone's turn swung the body round a pivot that far
+  off: the widest frame of lookAround 14.1 units (the pawn), 11.9 (the rook), 9.2 (the knight), 6.7 (the bishop), 4.6 (the queen)
+  against 2 at rest; the king alone was right (2.1). On the board the bases' rims stood −11.0 m to +9.3 m off the surface. (The script
+  also wrote `chess.bin.glb`: Blender adds `.glb` to any other name, so the pack had not been re-exported since its rename.) (2)
+  `title/board.js` stood each piece upright at its square's centre; the drain slopes 0.65 (33 degrees) at 14 m, so with the export
+  fixed a rim still floated downhill and sank uphill by up to 1.5 m at 18 m out, 0.65 m at 40 to 80 m.
+- **Fix:** the export keeps each mesh's matrix against its rig, clears the inverse, takes the pair to the origin, prints each mesh's
+  centre on its rig (all 0.0000) and warns when one is off; it writes the `.glb` and renames it to the `.bin`. Every clip's widest
+  frame is now its rest width or what the clip authors (the pawn's lookAround 2.00; bow, fall and getUp lean or lay the piece over,
+  2.6 to 5.2, as the king's always did). `board.js` tilts each holder from up to the board's normal (`boardSlope`, analytic), its yaw
+  and its clip on top, and lets it down by half the radial bend times the rim's reach squared, so no edge floats. The rim against the
+  board while a piece stands idle, over 40 s of play headless: +0.2 cm at most; across the radius the board rises round the base, so
+  that edge sits in by 21 cm at the steepest square a piece stands on (the queen, rim 2.9 m, 18 m out), 11 cm at 25 to 40 m, 3.5 cm at
+  40 to 80 m, under 1 cm beyond (a pixel at the title's camera is about 19 cm at 100 m). The drain's sink, the fall and the spawn are
+  as they were.
+- **Rule:** 63, 64.
 
 ### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
 - **Seen (Dovina's room sweeps):** `TypeError` reading `rig` at vfx/chestfx.js:45 every frame of the Tithe's opening; the rest of that
@@ -822,3 +857,29 @@ the rules before building in the same area; a rule a machine can check goes into
   the board after 600 real seconds (measured in the running title); the dive carries on from where they hung and ends 2.9 m over it
   at the worst.
 - **Rule:** 62.
+
+### 2026-10-08 · The four sherds stayed in the scene after they burst (Calissa's survey of the room sweeps)
+- **Seen:** strike the four sherds down and leave the bowl: four more bodies, colliders, jellies and creatures than before, the sherds
+  still in the scene, out of sight (measured on main 7d7a594 by Calissa).
+- **Cause:** `raid.js` set `sherds = null` once none was alive without taking the dead ones down, and `dispose()` took down only the
+  live ones; a dead `once` jelly is never re-formed (`slipjelly.js`), so nothing else did.
+- **Fix:** the sherds go to `spent` when the moment ends; each is taken down once its pop is over (`dying == null`); `dispose()` takes
+  down every sherd, alive or dead. Measured headless (a temporary check in a copy of the Dunemaw sweep): four burst, jellies 12 before
+  and 12 after the pops, `spent` empty; after leaving, bodies 840 to 816 and jellies 12 to 3, as before the cavern.
+  The first version also put the sherds the mend had just taken down into `spent`, so each was taken down twice; the second
+  `removeRigidBody` threw Rapier's "recursive use of an object" in the Dunemaw sweep's fight. Those go to `spent` no more, and a
+  jelly's `dispose` is now a no-op the second time.
+- **Rule:** 65. (The check belongs in the Dunemaw sweep: Dovina's.)
+
+### 2026-10-08 · The Veritome would stop for good after 48 photographs (Calissa's survey; Espada's list)
+- **Seen:** the shutter still spent a roll of film (`mat.film`) though the owner retired film on 2026-10-06 and Old Grog no longer
+  sells it: the start kit's one roll and the camera's own gave 48 plates, then "You have no film. (Old Grog sells it on the pier.)",
+  a line no longer true, and no way past it.
+- **Cause:** the glossary and the shop changed; the code did not. The handoff that asked for it was deleted from `docs/handoffs/petra/`
+  without the work.
+- **Fix:** `film.js` is `memory.js` (`VeritomeMemory`, `MEMORY_PLATES`); `loadFilm`, `useShot`, the Book's `shots`, the item, its kit
+  entry, `film.load` and its rule are gone; the one refusal is a full memory. `npm run check` refuses the film's names (two lines left
+  in Wanda's and Calissa's files, baselined, theirs to take out). Measured headless: an empty memory takes a plate with no film in the
+  box; a full one refuses; one plate appraised and it takes again. (The stress page still read `book.film` and threw on its first
+  run: a rename is searched for in `scripts/` as well as `src/`.)
+- **Rule:** 66.

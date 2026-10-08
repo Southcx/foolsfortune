@@ -268,7 +268,7 @@ export class PneukaBox {
     if (belt) for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.count(`tool.${t.id}`)) this.add(`tool.${t.id}`, 'start');
     // (for the tools after the first four: the three instruments and a handful of keys to begin with; the Gambler's and the Shepherd's
     // coffins and the INVERTED key are bought from Raku or found, so a first opening is never a bought jackpot: docs/DESIGN.md, section 8, proposal 2)
-    for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
+    for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even']) this.add(id, 'start');
     // (a small Lachrymato Bottle on the upper back, half full: the Soul Brush paints from it and it feeds the pool below half at once;
     // the medium and the large are Grog's to sell. Dovina's ask for the owner, 2026-10-07)
     if (!this.fit.bottle.length && !this.held('bottle.small')) { this.fit.bottle.push('bottle.small'); this.uses.bottle.push(BOTTLES['bottle.small'].capacity / 2); }

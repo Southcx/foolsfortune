@@ -160,7 +160,7 @@
       }
       if (book && rnd() < 0.002) {
         const B = book.book, r = rnd(), ids = Object.keys(B.cards);
-        if (r < 0.5 && B.film.plates.length) book.appraise();
+        if (r < 0.5 && B.memory.plates.length) book.appraise();
         else if (ids.length) B.condense(ids[Math.floor(rnd() * ids.length)]);
       }
       const box = g.game.pneuka;

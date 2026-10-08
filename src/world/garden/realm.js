@@ -31,6 +31,7 @@ import { Plants } from './plants.js';
 import { Races } from './races.js';
 import { Orbit } from './orbit.js';
 import { Cascades } from './cascades.js';
+import { GardenPress } from './press.js';
 import { Daturas } from '../../vfx/datura.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
@@ -67,6 +68,7 @@ export class Realm {
     this.races = new Races(this); // (tracks carved in one closed stroke, and the spirits' races on them: world/garden/races.js)
     this.orbit = new Orbit(this); // (the planetoids bought and set in the ring: world/garden/orbit.js)
     this.cascades = new Cascades(this); // (water spilling from one planetoid to the next: world/garden/cascades.js)
+    this.press = new GardenPress(this, this.site.features.find((f) => f.kind === 'athanor')); // (Soul Alchemy's press on the Athanor: world/garden/press.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
@@ -244,7 +246,7 @@ export class Realm {
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
-    this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw);
+    this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw); this.press.update(raw);
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
@@ -391,10 +393,14 @@ export class Realm {
     }
     this.sync();
   }
-  /** The Athanor's shrine: a photograph of a creature awakens a spirit of its kind (world/garden/awaken.js). */
+  /** The Athanor: the spirit press (world/garden/press.js), and its shrine, where a photograph of a creature awakens a spirit of its
+   *  kind (world/garden/awaken.js). */
   athanor() {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     const open = () => menu.showPage('athanor', (im, el) => {
+      const work = el('div', 'rooms'), p = el('div', 'room', '<span class="n">✶</span><span><b>Work the spirit press</b><s>press materials to walk your soul colour; fire it into an attribute</s></span>');
+      p.onclick = () => this.press.open(); work.appendChild(p);
+      im.appendChild(el('div', 'grp', 'THE SPIRIT PRESS')); im.appendChild(work);
       const rows = el('div', 'rooms'), plates = this.awaken.plates();
       for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Awaken: ${p.kind}</b><s>a plate of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
       if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No plate to awaken</b><s>photograph a creature with the Veritome, and its plate can wake one here</s></span>'));

@@ -8,7 +8,7 @@
 // Prior art: Pokémon Snap (size, pose and technique, the same-species bonus, the report after each shot), Dead Rising's PP for a
 // photograph by its genre, and Fatal Frame's camera, whose shot is better the nearer and the more centred the subject is.
 //
-// A photograph is kept on the film (film.js) as its SERIAL form: what was in it, as it was at the shutter, with no live references, so
+// A photograph is kept in the memory (memory.js) as its SERIAL form: what was in it, as it was at the shutter, with no live references, so
 // the darkroom (darkroom.js) can appraise it whenever the Courier gets round to it (Dark Cloud 2 and Wind Waker keep the picture, not
 // the moment).
 //
@@ -72,7 +72,7 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
  *  (scored near the best in the frame), not something caught at the edge; the World wants five kinds, each photographed well. */
 const has = (states, st) => (states.has ? states.has(st) : states.includes(st));
 
-/** A photograph as the film keeps it: what was in it, as it was, and nothing live. */
+/** A photograph as the memory keeps it: what was in it, as it was, and nothing live. */
 export function serial(r) {
   return {
     subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), aware: !!s.aware, engaged: !!s.engaged })),

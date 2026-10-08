@@ -9,7 +9,7 @@
 //    Veritome is held open. Cards with no item form (the Arcana, the creatures) come straight from the darkroom and stay cards.
 //  - CONDENSE turns a spare copy into Lachryma cubes by its rank (the shop buying a card).
 //
-// The Book also keeps the rest of what the Veritome knows, so it is saved in one place: the film (film.js), the Compendium (the best
+// The Book also keeps the rest of what the Veritome knows, so it is saved in one place: the memory (memory.js), the Compendium (the best
 // photograph of each kind of thing), the map pins (where photographs were taken), and the bestiary's facts (bestiary.js).
 // It is kept in the browser beside the map; the ledger is told everything through events (tracking.js), so achievements stay
 // predicates over the ledger.
@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import { CARDS, CARD, FREE_SLOTS, WORTH } from './cards.js';
 import { CURIOS } from '../../world/treasure/treasure.js';
-import { Film, ROLL } from './film.js';
+import { VeritomeMemory } from './memory.js';
 import { Bestiary } from './bestiary.js';
 import { sfx } from '../../audio/sfx.js';
 
@@ -34,12 +34,11 @@ export class Book {
     this.legacyItems = null; this.legacyLoose = null; // (things the first Book held as things: the Pneuka Box takes them, once)
     this.photos = {};  // the Compendium: subject kind -> { score, stars, thumb, at }
     this.pins = [];    // where photographs were taken: { x, y, z, yaw, kind, stars }
-    this.plates = [];  // the film's plates (film.js)
-    this.shots = ROLL; // exposures left on the roll in the camera (a new roll is loaded from the box: loadFilm)
+    this.plates = [];  // the memory's plates (memory.js)
     this.facts = {};   // the bestiary's known facts (bestiary.js)
     this.migrated = {};
     this.load();
-    this.film = new Film(this.plates);
+    this.memory = new VeritomeMemory(this.plates);
     this.bestiary = new Bestiary(this.facts);
   }
 
@@ -90,18 +89,6 @@ export class Book {
     return worth;
   }
 
-  /** Film for the next exposure: true if the roll in the camera has some left, else a fresh roll is loaded from the Pneuka Box
-   *  (a ROLL OF FILM: progress/shop/catalogue.js, Old Grog sells them); false if there is none. */
-  loadFilm() {
-    if (this.shots > 0) return true;
-    const box = this.game.pneuka, i = box ? box.slots.findIndex((s) => s?.id === 'mat.film') : -1;
-    if (i < 0) return false;
-    box.take(i); this.shots = ROLL; this.save();
-    this.game.events?.emit('film.load', { left: box.count('mat.film') });
-    return true;
-  }
-  /** One exposure used. */
-  useShot() { this.shots = Math.max(0, this.shots - 1); }
 
   tick() { if (!this.migrated.curio && this.game.ledger) this.migrateCurios(); }
 
@@ -119,9 +106,9 @@ export class Book {
   // ---------------------------------------------------------------- kept in the browser
   save() {
     const plates = this.plates.slice(-40);
-    const s = { cards: this.cards, seen: this.seen, items: this.legacyItems, loose: this.legacyLoose, photos: this.photos, pins: this.pins.slice(-60), plates, facts: this.facts, migrated: this.migrated, shots: this.shots };
+    const s = { cards: this.cards, seen: this.seen, items: this.legacyItems, loose: this.legacyLoose, photos: this.photos, pins: this.pins.slice(-60), plates, facts: this.facts, migrated: this.migrated };
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {
-      // (storage full: keep everything but the pictures on the film)
+      // (storage full: keep everything but the pictures in the memory)
       try { localStorage.setItem(KEY, JSON.stringify({ ...s, plates: plates.map((p) => ({ ...p, thumb: null })) })); } catch { /* unavailable: the Book still works this session */ }
     }
   }
@@ -129,7 +116,7 @@ export class Book {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (s) {
-        Object.assign(this, { cards: s.cards || {}, seen: s.seen || {}, legacyItems: s.items || null, legacyLoose: s.loose?.length ? s.loose : null, photos: s.photos || {}, pins: s.pins || [], plates: s.plates || [], facts: s.facts || {}, migrated: s.migrated || {}, shots: s.shots ?? ROLL });
+        Object.assign(this, { cards: s.cards || {}, seen: s.seen || {}, legacyItems: s.items || null, legacyLoose: s.loose?.length ? s.loose : null, photos: s.photos || {}, pins: s.pins || [], plates: s.plates || [], facts: s.facts || {}, migrated: s.migrated || {} });
         return;
       }
       // the first Book (the Arcana only, kept under their bare names): its cards and photographs carry over
@@ -142,7 +129,7 @@ export class Book {
   }
   erase() {
     for (const k of ['cards', 'seen', 'photos', 'facts', 'migrated']) for (const id in this[k]) delete this[k][id];
-    this.legacyItems = null; this.legacyLoose = null; this.pins.length = 0; this.plates.length = 0; this.shots = ROLL;
+    this.legacyItems = null; this.legacyLoose = null; this.pins.length = 0; this.plates.length = 0;
     this.save();
   }
 }

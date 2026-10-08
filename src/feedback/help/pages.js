@@ -132,7 +132,7 @@ export const PAGES = [
       ['MMB by a stunned mind', 'reprogram it'],
       ['P (with it out)', 'the Pneuka Box, and the bank beside it'],
     ],
-    notes: ['The Codex (B, VERITOME) appraises the film, keeps the binder and the bestiary.'],
+    notes: ['The Codex (B, VERITOME) appraises the plates in its memory, keeps the binder and the bestiary.'],
   },
   {
     id: 'dreamvane', title: 'THE DREAMVANE', key: 'K', src: 'tools/dreamvane/, world/dunes/crystaltuning.js',
