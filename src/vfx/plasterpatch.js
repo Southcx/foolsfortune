@@ -96,7 +96,7 @@ function paintSkim(w, h, rim, wall, rnd) {
   return c;
 }
 
-/** The scar: the old wall bared where the patch was (rough, darker), the broken skim's pale cut round it, the hollow the sherd was set in. */
+/** The scar: the old wall bared where the patch was (rough, darker), the broken skim's pale cut round it, the hollow the ostracon was set in. */
 function paintScar(w, h, rim, wall, rnd) {
   const W = Math.round(w * PXM), H = Math.round(h * PXM), c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'), P = rim.map(toPx(w, h)), old = shade(wall, 0, -0.06, -0.12);
@@ -105,7 +105,7 @@ function paintScar(w, h, rim, wall, rnd) {
   for (let i = 0; i < 900; i++) { const k = rnd(), x = rnd() * W, y = rnd() * H, r = 0.8 + rnd() * 2.6; g.fillStyle = k < 0.45 ? css(shade(old, 0, 0, 0.06), 0.6) : css(shade(old, 0, 0, -0.08), 0.6); g.beginPath(); g.ellipse(x, y, r, r * 0.8, rnd() * 3, 0, 6.2832); g.fill(); }
   g.strokeStyle = css(shade(old, 0, 0, -0.1), 0.5); g.lineWidth = 1.2;
   for (let i = 0; i < 14; i++) { const x = rnd() * W, y = rnd() * H, a = 0.6 + rnd() * 0.3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * 40, y + Math.sin(a) * 40); g.stroke(); }
-  // the hollow: an oval cut in the wall where the sherd sat, shadowed under its top lip, its lower lip lit
+  // the hollow: an oval cut in the wall where the ostracon sat, shadowed under its top lip, its lower lip lit
   const hx = W * (0.5 + (rnd() - 0.5) * 0.1), hy = H * 0.55, hw = W * 0.15, hh = H * 0.17;
   let gr = g.createRadialGradient(hx, hy - hh * 0.25, 0, hx, hy, hw); gr.addColorStop(0, css(shade(old, 0, 0, -0.15))); gr.addColorStop(0.75, css(shade(old, 0, 0, -0.1))); gr.addColorStop(1, css(old, 0));
   g.fillStyle = gr; g.beginPath(); g.ellipse(hx, hy, hw, hh, 0, 0, 6.2832); g.fill();

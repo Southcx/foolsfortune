@@ -32,6 +32,7 @@
 //
 //   const O = new Ostracon({ word, picture? })   O.group (rests on its origin)   O.set({ buried })   O.update(dt)   O.dispose()
 //   O.arrive(t, from?)                           its arrival on the dig's clock: dug out of the sand, or fallen from `from` (world axes)
+//   O.lieOn(normal, yaw)                         laid on a slope: its up turned to the ground's normal (world axes), turned `yaw` about it
 //   const S = new Stele({ words })               S.group (stands on its origin, its face to +z)   S.set({ buried })   S.update(dt)   S.dispose()
 //   (words: the runes in rows, four to a row, or an array of rows; none, a bare face)
 //   ostraconThing(word) -> { group, dispose }    the item in the Pneuka Box: a potsherd dug clean, its face to the eye (fossilThing's way)
@@ -50,7 +51,7 @@ const OW = 512, OH = 400;
 const EW = 0.8, EH = 1.4, ED = 0.26, CH = 0.075, TW = 0.8, TH = 0.7;
 const FW = 640, FH = 1120, FRIEZE = [46, 34, 548, 122];
 const SAND = 0xd8b886;
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0);
 const clamp = THREE.MathUtils.clamp;
 
 // ---- chance from the word, so a word's potsherd breaks the same way every time
@@ -248,6 +249,14 @@ export class Ostracon {
     let lo = Infinity; for (const p of this.F.geo.userData.rim) lo = Math.min(lo, _a.copy(p).applyMatrix4(this.body.matrix).y);
     this.body.position.y = -lo - 0.018 * b;
     this.mound.visible = b > 0.02; this.mound.scale.set(0.15 + 0.03 * b, 0.045 * b, 0.13 + 0.03 * b); this.mound.position.z = 0.012;
+  }
+
+  /** Laid on a slope (CASEBOOK 64: what lies on a surface lies on its normal): the group's up turned to the ground's `normal` (unit, in the
+   *  world's axes, never more than 40 degrees off up), then turned `yaw` about it. Call before `arrive`; on level ground it is a plain yaw. */
+  lieOn(normal, yaw = 0) {
+    _a.copy(normal).normalize(); const h = Math.hypot(_a.x, _a.z);
+    if (_a.y <= 0) _a.set(0, 1, 0); else if (h > 0.6428) _a.set(_a.x / h * 0.6428, 0.766, _a.z / h * 0.6428); // (past 40 degrees: sin and cos of 40)
+    this.group.quaternion.setFromUnitVectors(_up, _a).multiply(_q.setFromAxisAngle(_up, yaw));
   }
 
   /** Its arrival as `t` runs 0 .. 1 (the dig's own clock): with no `from`, dug up out of the sand (buried 1 .. 0); with `from` (where it

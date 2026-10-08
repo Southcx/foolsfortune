@@ -186,7 +186,29 @@ the rules before building in the same area; a rule a machine can check goes into
 71. **A canvas painted from a `THREE.Color` takes the colour's sRGB values.** `.r .g .b` are the renderer's linear working values: written
     as CSS they paint far too dark. Use `getRGB(target, SRGBColorSpace)` or `getStyle()`, and shift a shade in sRGB (`getHSL` /
     `setHSL` with `SRGBColorSpace`), where the eye judges it.
+72. **What is not drawn is not offered.** A thing hidden for a reason (a shut room's stele, a floor that is gone) is left out of what F
+    can take or read: the offer asks `visible` as well as the distance, or the interact chevron stands over a wall and the find is
+    made through it.
 ## Cases
+
+### 2026-10-08 · An ostracon dug out on a dune's slope lay flat: one edge in the sand, the other hanging (found in review)
+- **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
+  while the sand under it did not: measured against the drawn sand at the dig on a 21.6 degree slope, its rim stood 4.6 cm above it at
+  one edge and 3.3 cm under it at the other, so a third of the painted face was covered and the rest hung over the slope.
+- **Cause:** the dig put the ostracon at the ground's point and turned it about the world's up only (CASEBOOK 64 said so already).
+- **Fix:** `drop()` keeps the sand's normal from the ray it already casts (an ostracon dug in the Dunes only) and `Ostracon.lieOn(normal, yaw)`
+  turns the look's up to it (never past 40 degrees). Measured after on the same dig: 2.9 cm above, 0.2 cm under (the ostracon's own curve is
+  1.6 cm of that); the face shows whole.
+- **Rule:** 64 (a look that lies on a surface is given the surface's normal by whoever places it).
+
+### 2026-10-08 · The sealed room's stele could be read through its back wall (found in review, swapping in the ostraca's looks)
+- **Seen:** with the sealed room's door shut and the stele hidden (drawn only once the door is open), `Ostraca.near()` still offered it
+  to F from outside the back wall: the stele stands 0.8 m inside a 0.4 m wall and the reach is 2.2 m, so the chevron stood over the wall
+  and `stele.read` fired without the fork ever ringing in the door (measured: `near()` from 1.9 m behind the stele returned it).
+- **Cause:** `near()` considered every stele by horizontal distance and height alone, and said nothing of whether it was drawn.
+- **Fix:** `near()` offers a stele only while its look is visible (`st.mesh.visible`); the sealed one is shown by `open()`. Measured
+  after: shut, `near()` from the same spot returns nothing; open, the stele inside is offered.
+- **Rule:** 72.
 
 ### 2026-10-08 · A stele's sand bank was a pale square on the great cavern's stone (found headless, swapping in the ostraca's looks)
 - **Seen:** the stele in the great cavern's upper ring stood in a bright rectangle 1.8 m by 1.4 m on the gallery's dark stone

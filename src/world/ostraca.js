@@ -43,7 +43,7 @@ export class Ostraca {
     const words = WORD_SPLIT(FUNCTIONS).ostraca, P = OSTRACA.places;
     let i = 0; this.at = {};
     for (const place of ['dunes', 'dunemaw', 'ruins', 'workshop']) { this.at[place] = words.slice(i, i + P[place].n); i += P[place].n; }
-    this.stoneMat = sandstoneMaterial({ ashlar: true }); // (the looks are Calissa's, vfx/ostracon.js: a sherd an Ostracon of its word, a stele a Stele, the sealed room the stele's sandstone)
+    this.stoneMat = sandstoneMaterial({ ashlar: true }); // (the looks are Calissa's, vfx/ostracon.js: an ostracon an Ostracon of its word, a stele a Stele, the sealed room the stele's sandstone)
     this.built = { dunes: false, workshop: false };
   }
 
@@ -159,8 +159,10 @@ export class Ostraca {
   /** A sherd lying loose at `at`, for F. */
   drop(word, at, place, rise = true) {
     if (this.found(word) || this.loose.some((s) => s.word === word)) return;
-    { const down = this.game.physics?.raycast?.(_v.copy(at).setY(at.y + 1), _d, 4, this.game.player?.collider, undefined, (k) => !k.isSensor()); if (down) at = down.point.clone(); } // (it lies on whatever is under it: a pot breaks mid-height, a column's foot is not the sand beside it)
-    const g = this.game, look = new Ostracon({ word }), m = look.group; m.position.copy(at); m.rotation.y = simRand() * 6.28; m.name = `ostracon-${word}`; // (the look: Calissa's, vfx/ostracon.js; it rests on its origin)
+    let slope = null; // (the sand's normal under an ostracon dug in the Dunes: it lies on the slope, CASEBOOK 64)
+    { const down = this.game.physics?.raycast?.(_v.copy(at).setY(at.y + 1), _d, 4, this.game.player?.collider, undefined, (k) => !k.isSensor()); if (down) { at = down.point.clone(); if (place === 'dunes') slope = down.normal; } } // (it lies on whatever is under it: a pot breaks mid-height, a column's foot is not the sand beside it)
+    const g = this.game, look = new Ostracon({ word }), m = look.group; m.position.copy(at); m.name = `ostracon-${word}`; // (the look: Calissa's, vfx/ostracon.js; it rests on its origin)
+    const yaw = simRand() * 6.28; if (slope) look.lieOn(slope, yaw); else m.rotation.y = yaw; // (one draw of chance a drop, as before)
     g.scene.add(m);
     const s = { word, place, pos: at.clone(), mesh: m, look, t: rise ? 0 : 1 };
     s.from = place === 'workshop' ? this.patches.find((p) => p.word === word)?.pos.clone().sub(at) ?? null : place === 'dunemaw' ? new THREE.Vector3(0, 0.35, 0) : null; // (its look arrives from the wall it was set in, a pot's height, or up out of the sand)
@@ -176,7 +178,7 @@ export class Ostraca {
     let best = null;
     const consider = (pos, ref, lift) => { const d = Math.hypot(pos.x - P.pos.x, pos.z - P.pos.z); if (d < REACH && Math.abs(pos.y - P.pos.y) < 2.2 && (!best || d < best.d)) best = { pos: pos.clone().setY(pos.y + lift), d, ref }; };
     for (const s of this.loose) consider(s.pos, s, 0.7);
-    for (const st of this.stelae) if (!(this.game.ledger?.get(st.def.id) > 0)) consider(st.pos, st, 1.9);
+    for (const st of this.stelae) if (st.mesh.visible && !(this.game.ledger?.get(st.def.id) > 0)) consider(st.pos, st, 1.9); // (a stele not drawn is not read: the sealed room's, while its door is shut and the walls stand between)
     return best;
   }
 
