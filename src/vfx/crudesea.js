@@ -123,13 +123,14 @@ vec2 seaC = vec2(dot(vSeaW.xz, uCur), dot(vSeaW.xz, vec2(-uCur.y, uCur.x)));
 float seaStreak = seaNoise(vec2(seaC.x * 0.025 - uT * 0.05, seaC.y * 0.1)) * 0.6 + seaNoise(vec2(seaC.x * 0.06 - uT * 0.11, seaC.y * 0.24)) * 0.4; // (streaks four times as long as wide: elongated more, they ran to the horizon as spokes)
 // the whirlpool (vfx/whirlpool.js): the sea leaves its circle to the disc; in it the streaks are wound round the heart and drawn in
 float whirlW = 0.0, whirlR = 1e6;
+vec2 whirlDx = dFdx(vSeaP), whirlDy = dFdy(vSeaP); // (the whirl's footprint, taken here in uniform flow, before the discard and the branch: no crawl)
 if (uWhirl.w > 0.0) {
   vec2 wd = vSeaP - uWhirl.xy; whirlR = length(wd);
   if (uDisc < 0.5 && whirlR < uWhirl.z) discard; // (the sea round it leaves the circle to the disc, which runs on under it a little: no crack)
   whirlW = uWhirl.w * (1.0 - smoothstep(0.72 * uWhirl.z, uWhirl.z, whirlR));
   if (whirlW > 0.0) {
     float w0 = 1.0 - abs(2.0 * uWhirlT.x - 1.0), w1 = 1.0 - w0;
-    float ws = w0 * whirlStreak(wd, whirlR, uWhirlF.x, uWhirlF.z) + w1 * whirlStreak(wd, whirlR, uWhirlF.y, uWhirlF.w);
+    float ws = w0 * whirlStreak(wd, whirlR, uWhirlF.x, uWhirlF.z, whirlDx, whirlDy) + w1 * whirlStreak(wd, whirlR, uWhirlF.y, uWhirlF.w, whirlDx, whirlDy);
     seaStreak = mix(seaStreak, clamp(0.5 + (ws - 0.5) / max(sqrt(w0 * w0 + w1 * w1), 0.5), 0.0, 1.0), whirlW); // (the two phases' crossfade, its contrast kept)
   }
 }

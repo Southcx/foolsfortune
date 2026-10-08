@@ -77,11 +77,17 @@ uniform vec4 uWhirl, uWhirlA, uWhirlF, uWhirlT; uniform vec3 uWhirlC; uniform fl
 float whirlHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float whirlNoise(vec2 p, float P) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); float a = mod(i.x, P), b = mod(i.x + 1.0, P);
   return mix(mix(whirlHash(vec2(a, i.y)), whirlHash(vec2(b, i.y)), f.x), mix(whirlHash(vec2(a, i.y + 1.0)), whirlHash(vec2(b, i.y + 1.0)), f.x), f.y); }
-float whirlStreak(vec2 d, float r, float phi, float psi) {
+float whirlStreak(vec2 d, float r, float phi, float psi, vec2 ddx, vec2 ddy) {
   float c = uWhirlA.x, s = r < c ? 1.0 : c * c / (r * r);             // (the vortex's own angular speed, as a share of the core's)
   float lr = log(max(r, 0.4)), a = (atan(d.y, d.x) - phi * s) / 6.2831853;
   float x = a * 12.0 + lr * 2.4 * uWhirlT.w, y = (lr + psi) * 7.0;    // (twelve arms round, wound as a log spiral trailing the turn, whichever way it goes; seven bands an e-fold in)
-  return whirlNoise(vec2(x, y), 12.0) * 0.6 + whirlNoise(vec2(x * 2.0 + 5.0, y * 2.3), 24.0) * 0.4;
+  // each octave's footprint (noise cells a pixel) from the point's own screen derivatives (ddx, ddy: taken by the caller in uniform flow),
+  // the angle's analytically so the branch cut at atan's +-pi draws no seam; an octave fades to its mean as its cells near the pixel
+  float r2 = max(r * r, 0.16);
+  vec2 dA = vec2(d.x * ddx.y - d.y * ddx.x, d.x * ddy.y - d.y * ddy.x) / r2, dL = vec2(dot(d, ddx), dot(d, ddy)) / r2;
+  float foot = max(length(dA * (12.0 / 6.2831853) + dL * 2.4 * uWhirlT.w), length(dL) * 7.0);
+  float k1 = 1.0 - smoothstep(0.3, 0.6, foot), k2 = 1.0 - smoothstep(0.3, 0.6, foot * 2.3);
+  return mix(0.5, whirlNoise(vec2(x, y), 12.0), k1) * 0.6 + mix(0.5, whirlNoise(vec2(x * 2.0 + 5.0, y * 2.3), 24.0), k2) * 0.4;
 }`;
 
 /** The whirlpool's heart: the point on the sea the arena's laps circle (where the line's heartline turns about, at the sea's level).
