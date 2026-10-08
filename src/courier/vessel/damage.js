@@ -170,7 +170,7 @@ export class VesselDamage {
     for (let i = 0; i < this.crack.length; i++) {
       this.quiet[i] += dt;
       if (this.crack[i] > 0 && this.quiet[i] > MEND_AFTER) {
-        this.crack[i] = Math.max(0, this.crack[i] - MEND_RATE * dt);
+        this.crack[i] = Math.max(0, this.crack[i] - MEND_RATE * (this.game.alchemy?.widen?.('resilience.mend') ?? 1) * dt); // (Resilience: the clay mends faster)
         if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i], by: 'courier' }); }
       }
       // the gold comes into the cracks over a second once they mend, and goes dark again if a blow lands first; the cells it fills go

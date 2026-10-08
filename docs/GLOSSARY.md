@@ -123,6 +123,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`): the spirit press as it stands in the garden,
+  over the Athanor's vent, and its page: the **bath** drawn from above as the wheel (no numbers), the seven **swatches** (each a colour
+  and a shape), the drop, the hopper's **trail** ahead of it. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+  features, the ground under it and the water at it; every swatch's radius is times it. *Not:* the Athanor's plate shrine (the same page).
+- **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
   Hand, Wide Bore...). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing

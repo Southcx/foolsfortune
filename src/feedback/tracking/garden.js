@@ -15,8 +15,10 @@ export function gardenRules({ on, L, log }) {
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
-    log.say('gain', `The press fires. ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}.`);
+    if (e.true) L.inc('alchemy.true'); // (a true firing: within a quarter of the swatch's radius, SOUL-ALCHEMY.md 3.3; the words are placeholders for Espada's)
+    log.say('gain', `${e.true ? 'A true firing.' : 'The press fires.'} ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}, for ${e.fuel} cubes.`);
   });
+  on('alchemy.seasoned', (e) => { if (e.by === 'courier') log.say('info', `Your ${ATTRIBUTES[e.attribute]?.name || e.attribute} is seasoned: its swatch is as wide as practice makes it.`); });
   on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} now works a garden slot.`); } } });
   on('garden.collect', (e) => { if (e.by === 'courier') L.inc('garden.dividend', e.cubes); });
   on('garden.plant', (e) => { if (e.by === 'courier') L.inc('garden.plant'); });

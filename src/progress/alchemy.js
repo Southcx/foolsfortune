@@ -16,6 +16,7 @@
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { press, distance } from './econ/materials.js';
+import { DAY_MS, now as calNow } from '../core/calendar.js';
 
 const A = ECON.alchemy, M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
 
@@ -57,7 +58,7 @@ export const SEASONING = [
   { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.won !== false },
   { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
   { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
-  { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned },                    // (a Throwing Room drill finished, untuned)
+  { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned?.length },            // (a Throwing Room drill finished, untuned: `tuned` is the list of knobs away from default)
   { event: 'creature.zandatsu', attribute: 'dexterity',   points: 2, when: (e) => e.by !== 'environment' },
   { event: 'sigil.pop',       attribute: 'visualization', points: 2, when: (e) => e.by !== 'environment' },
   { event: 'garden.sculpt',   attribute: 'visualization', points: 1, when: (e) => e.by === 'courier' },
@@ -80,52 +81,95 @@ export function complementGrey(colour, hue, satStep) {
   return off <= A.complementArc ? A.complement * Math.abs(satStep || 0) : 0;
 }
 
-const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {} });
+const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {} }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour)
+const GAME_HOUR = DAY_MS / 24, wrapH = (h) => ((h % 360) + 360) % 360;
+/** A step on the wheel from colour `c` toward hue `h` (at least the swatches' saturation), `by` of the wheel's distance (0..1). */
+function stepToward(c, h, by) {
+  const s = Math.max(c.s, A.sat), ax = c.s * Math.cos(c.h * Math.PI / 180), ay = c.s * Math.sin(c.h * Math.PI / 180);
+  const bx = s * Math.cos(h * Math.PI / 180), by2 = s * Math.sin(h * Math.PI / 180), dx = bx - ax, dy = by2 - ay, len = Math.hypot(dx, dy);
+  if (len < 1e-6) return { ...c };
+  const k = Math.min(1, (2 * by) / len), x = ax + dx * k, y = ay + dy * k;
+  return { h: wrapH(Math.atan2(y, x) * 180 / Math.PI), s: Math.min(1, Math.hypot(x, y)) };
+}
 
 export class SoulAlchemy {
   constructor(game) {
     this.game = game;
     this.s = fresh();
-    game.save?.section('alchemy', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
+    game.save?.section('alchemy', { scope: 'player', version: 2, migrate: (d) => ({ ...fresh(), ...(d || {}) }), dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
+    // seasoning: doing each attribute's thing anywhere (SEASONING), a source at most seasonPerHour a game hour, so it is played, never idled
+    for (const S of SEASONING) game.events?.on?.(S.event, (e) => { try { if (S.when(e || {})) this.season(S.attribute, S.points, S.event); } catch { /* a filter that cannot read its event: not this one */ } });
   }
   get colour() { return { ...this.s.colour }; }
   rank(id) { return this.s.ranks[id] || 0; }
+  seasoning(id) { return this.s.season[id] || 0; }
   widen(key) { return widenAtRank(key, KNOB[key] ? this.rank(KNOB[key].attr) : 0); }
+  /** The press's formation where it stands (the Athanor's features and ground: world/garden/press.js), 1 when there is no press. */
+  formation() { return this.game.realm?.press?.formation?.() ?? 1; }
+  /** A swatch's radius now: its rank, its seasoning, the press's formation. */
+  radius(id) { return swatchRadius(this.rank(id), this.seasoning(id), this.formation()); }
+
+  /** Points of seasoning from a source (an event's name), capped a game hour. */
+  season(id, pts, source) {
+    const hour = Math.floor(calNow() / GAME_HOUR), f = this.s.fed[source] || (this.s.fed[source] = { hour, pts: 0 });
+    if (f.hour !== hour) { f.hour = hour; f.pts = 0; }
+    const add = Math.min(pts, A.seasonPerHour - f.pts, A.seasonMax - this.seasoning(id)); if (add <= 0) return 0;
+    f.pts += add; this.s.season[id] = this.seasoning(id) + add;
+    this.game.save?.dirty('alchemy');
+    if (this.s.season[id] >= A.seasonMax) this.game.events?.emit('alchemy.seasoned', { attribute: id, by: 'courier' });
+    return add;
+  }
+
+  /** What pressing these materials would do, without doing it: the trail the colour walks (for the press's preview). */
+  walk(mats, colour = this.s.colour) {
+    const g = this.game, brim = !!g.courierMind?.brimming, d = g.draught || {}, lead = Object.keys(d).sort((a, b) => d[b] - d[a])[0], tint = brim && lead ? A.feelingHue[lead] : null;
+    let c = { ...colour }; const trail = [{ ...c }]; let greyed = 0;
+    for (const m of mats) {
+      const before = { ...c }, r = press(c, [m]);
+      trail.push(...r.trail.slice(1)); c = { ...r.colour };
+      const grey = complementGrey(before, m.hue, m.path.reduce((a, [, ds]) => a + Math.abs(ds), 0)); // (the painter's rule: a complement greys)
+      if (grey > 0) { c.s = Math.max(0, c.s - grey); trail.push({ ...c }); greyed++; }
+      if (tint != null) { c = stepToward(c, tint, A.brimStep); trail.push({ ...c }); } // (brimming: your draught tints what you take in)
+    }
+    return { colour: c, trail, greyed, tinted: tint != null };
+  }
 
   /** Into the hopper: the materials in these box slots, in this order (each is used up). The colour walks their paths. */
   press(slots = []) {
     const box = this.game.pneuka, mats = [];
     for (const i of new Set(slots)) { const s = box?.slots[i]; if (s?.data?.path) mats.push({ i, m: s.data }); } // (a slot named twice is pressed once)
     if (!mats.length) return { colour: this.colour, trail: [] };
-    const r = press(this.s.colour, mats.map((x) => x.m));
+    const r = this.walk(mats.map((x) => x.m));
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);
     this.s.colour = { h: +r.colour.h.toFixed(1), s: +r.colour.s.toFixed(3) };
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.press', { count: mats.length, hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), by: 'courier' });
+    this.game.events.emit('alchemy.press', { count: mats.length, hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
     return { colour: this.colour, trail: r.trail };
   }
 
-  /** The attribute whose target the soul colour is inside now (the nearest, if two), or null. */
-  near() {
-    let best = null, bd = Infinity;
+  /** The attribute whose swatch the soul colour is inside now (the nearest, if two), or null; with its distance and radius. */
+  near() { return this.nearest()?.id ?? null; }
+  nearest() {
+    let best = null;
     for (const id of Object.keys(ATTRIBUTES)) {
-      const d = distance(this.s.colour, targetOf(id));
-      if (d <= radiusAt(this.rank(id)) && d < bd) { best = id; bd = d; }
+      const d = distance(this.s.colour, targetOf(id)), r = this.radius(id);
+      if (d <= r && (!best || d / r < best.d / best.r)) best = { id, d, r };
     }
     return best;
   }
 
-  /** The igniter: raise the attribute the colour is inside, for its fuel. Refused (with why) when it is in none, at the top, or poor. */
+  /** The igniter: raise the attribute the colour is inside, for its aimed fuel (half at the heart). Its seasoning is spent. */
   fire() {
-    const id = this.near();
-    if (!id) return { ok: false, why: 'Your soul colour sits in no attribute: press it nearer one.' };
-    const r = this.rank(id);
+    const N = this.nearest();
+    if (!N) return { ok: false, why: 'Your soul colour sits in no attribute: press it nearer one.' };
+    const { id, d, r: rad } = N, r = this.rank(id);
     if (r >= A.ranks) return { ok: false, why: `Your ${ATTRIBUTES[id].name} is as wide as it goes.` };
-    const fuel = fuelAt(r);
+    const fuel = aimedFuel(r, d, rad);
     if (!this.game.cubes?.spend(fuel, 'alchemy')) return { ok: false, why: `The press burns ${fuel} cubes of refined Lachryma.` };
-    this.s.ranks[id] = r + 1;
+    const isT = isTrue(d, rad);
+    this.s.ranks[id] = r + 1; this.s.season[id] = 0;
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.fire', { attribute: id, rank: r + 1, fuel, by: 'courier' });
-    return { ok: true, attribute: id, rank: r + 1 };
+    this.game.events.emit('alchemy.fire', { attribute: id, rank: r + 1, fuel, true: isT, d: +(d / rad).toFixed(2), by: 'courier' });
+    return { ok: true, attribute: id, rank: r + 1, true: isT, fuel };
   }
 }
