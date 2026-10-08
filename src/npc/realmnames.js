@@ -13,6 +13,7 @@
 //
 //   PLANETOIDS[id] = { name, gloss }     OFFERED = [names]     name(seed) -> 'HEMA-LUNO'     gloss(name) -> 'home, rest' | null
 // ---------------------------------------------------------------------------------------
+import { LEXICON } from './neuralese.js';
 
 // the planetoids (docs/plans/SPIRIT-GARDEN.md section 3), keyed by the plan's placeholders
 export const PLANETOIDS = {
@@ -29,12 +30,10 @@ export const PLANETOIDS = {
   fossils:   { name: 'the Bone Bed', gloss: 'a layer of old bones in rock; where the Lachrymite fossils are laid' },
 };
 
-// the kind words, with their English (from FUNCTIONS: a word's label, said as a place would be)
-const WORDS = {
-  HEMA: 'home', LUNO: 'rest', KITH: 'kin', ROMI: 'play', SIVA: 'drink', STIL: 'stillness', EZA: 'ease', HUSA: 'hush',
-  AMI: 'kin to you', MOR: 'grief', PEXA: 'fishing',
-};
-const MODS = { LON: 'long', DEO: 'deep' };
+// the kind words a realm may be named from, said as a place would be (npc/neuralese.js keeps every word's English)
+const KIND = ['HEMA', 'LUNO', 'KITH', 'ROMI', 'SIVA', 'STIL', 'EZA', 'HUSA', 'AMI', 'MOR', 'PEXA'];
+const WORDS = Object.fromEntries(KIND.map((w) => [w, LEXICON[w].place]));
+const MODS = { LON: LEXICON.LON.place, DEO: LEXICON.DEO.place };
 
 // the ten offered first (LORE.md), each read as a place
 const GLOSSES = {

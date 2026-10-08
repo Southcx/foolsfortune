@@ -377,6 +377,27 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 - Waiting on the owner's rulings: the Pithos's casts, the Firings, the five phases' swap, the Shrines' names, the Wake Whistle,
   blot/blotling, the crossing's cast.
 
+### The knacks *(canon: the owner, 2026-10-08)*
+An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Thick Walls**,
+**Perfect Pitch**, **Early Tell**, **Rule of Thirds**, **Half Time**, **Crib Sheet** (the English beside each neuralese word you have
+found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of an agate shown on a creature's body).
+
+### Digging for words: the ostraca *(the owner's direction, 2026-10-08; names Espada's, proposed)*
+- **The direction**: the Crib Sheet glosses more words for the player who explores; archaeology is the motif (Indiana Jones, Spelunky,
+  La-Mulana's tablets read with its glyph reader, Heaven's Vault's inscriptions, Chants of Sennaar's deduced glossary). It shares its
+  dig with the Lachrymite fossils (found with the Dreamvane, the Dunes and the Wells).
+- **An ostracon** (plural *ostraca*): a potsherd with writing on it. The Greeks wrote on broken pots because sherds were free: votes,
+  receipts, a pupil's practice lines. In a world of clay, the island's broken pots are its paper. Each ostracon carries one neuralese
+  word **beside a picture of what it does** (a bilingual, the Rosetta Stone's trick at the size of a shard), and finding it adds that
+  word's gloss to the Crib Sheet. It glosses; it never teaches a Function (those are learned by seeing the mind do it).
+- **Whose writing**: the town that was. Before the sand, its folk wrote neuralese on their pots to tell the slip what to do: the
+  boomtown's orders, chores and reminders, the first reprogramming, done to clay. That is why the jellies answer it. Who taught them the
+  language stays blank.
+- **Where**: buried in the Dunes (the survey shows a glint; the pick lifts it), in the Great Dunemaw's forgotten pots, at the ruins'
+  columns, and a few in plain sight for the one who reads walls. A larger find, **a ledger stone** (the town's own record, many words
+  and one sentence), stands at the end of a harder path: La-Mulana's tablets, Spelunky's hidden rooms.
+- **Monster Rancher's disc stone stays the plates' job** (a Veritome photograph awakens a spirit at the Athanor); ostraca are words only.
+
 ### The round robin's proposals *(Espada's, for the owner)*
 - **The town that was is Elpis** (from Hesiod's *Works and Days*): Greek for hope, the one thing left in Pandora's jar when everything
   else flew out. The boomtown named itself for hope; its jar became the Pithos; the bright core at the bottom is what is left of it.

@@ -782,6 +782,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
 - **moonflower**: a Spirit Garden bed that opens only at night, by the game hour.
+- **ostracon** (plural **ostraca**; `OSTRACA`, `src/npc/neuralese.js`; Espada's, the owner's archaeology direction, 2026-10-08): a
+  potsherd the town that was wrote on, one neuralese word beside a painted picture of what it does; dug up, it glosses that word on the
+  **Crib Sheet** (the knack: each neuralese word's English beside it, `LEXICON`). **the ledger stone**: the town's record, many words on
+  one slab, at the end of a harder path. *Not:* a sherd (the Pithos's calf), a plate (a Veritome photograph).
 
 ## Homonyms we keep on purpose (always qualify them)
 
