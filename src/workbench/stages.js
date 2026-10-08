@@ -3,7 +3,7 @@
 // each built by its id and ticked on a loop. Loaded the first time one is picked (workbench.js loadModel), so none of it costs the game's
 // boot: the looks it stages are the game's own modules, imported here and nowhere else in the workbench.
 //
-//   buildStage(id) -> Object3D (its loop on userData.tick(t)) | null
+//   buildStage(id, game) -> Object3D (its loop on userData.tick(t)) | null   (the crossing's stages: workbench/crossingstages.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DreamvaneModel } from '../tools/dreamvane/model.js';
@@ -42,10 +42,12 @@ import { SolarRing } from '../vfx/solarring.js';
 import { Ostracon, Stele } from '../vfx/ostracon.js';
 import { debugChestModel } from '../vfx/debugchest.js';
 import { PICTURES } from '../vfx/blackfigure.js';
+import { crossingStage } from './crossingstages.js';
 
-export function buildStage(id) {
+export function buildStage(id, game) {
   let obj = null;
-  if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
+  if (id.startsWith('crossing:')) obj = crossingStage(id, game);
+  else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
