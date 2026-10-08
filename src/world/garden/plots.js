@@ -19,14 +19,15 @@
 //   T.move(from, to)   T.settle(plot)   T.veins(planet?)   T.wet (a hook: (plot) -> a feeling or null, the realm's waterworks)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { COLOR } from '../../progress/weather.js';
 import { PLANETOID_PLOTS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES, VEIN as VEIN_RULE, veinEnd } from '../../progress/realm.js';
 import { NX, NY, CELL_DIRS } from './clay.js';
 import { SpiritVein } from '../../vfx/garden/veins.js';
 import { seeded } from '../../core/rng.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 
-/** The five feelings' colours (the garden's tints for a feature placed with one: Calissa's to refine). */
-export const FEELING_COLOR = { mirth: 0xffb35c, wonder: 0x7fd6a0, desire: 0xe0705a, grief: 0x9fb0d8, dread: 0x7a62b8 };
+/** The five feelings' colours: the one feeling table (progress/weather.js COLOR, Dovina's ruling of 2026-10-08), the five aspects of it. */
+export const FEELING_COLOR = Object.fromEntries(['mirth', 'wonder', 'desire', 'grief', 'dread'].map((f) => [f, COLOR[f]]));
 const NEAR = 1.75; // (two plots are neighbours within this many plot spacings)
 const UP = new THREE.Vector3(0, 1, 0);
 

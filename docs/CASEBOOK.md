@@ -168,9 +168,12 @@ the rules before building in the same area; a rule a machine can check goes into
     by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
 
 65. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
-    scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool).
+    scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool). Taking
+    down is idempotent: a second `dispose` does nothing.
 66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
     or with a line in the reader's reply saying why not.
+67. **An answer reads the window it answers.** A check that runs every frame of a press (the parry's window) tests the thing's own
+    timing too (a windup's eta), or holding the button early answers what has not yet come.
 ## Cases
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
@@ -865,6 +868,9 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the sherds go to `spent` when the moment ends; each is taken down once its pop is over (`dying == null`); `dispose()` takes
   down every sherd, alive or dead. Measured headless (a temporary check in a copy of the Dunemaw sweep): four burst, jellies 12 before
   and 12 after the pops, `spent` empty; after leaving, bodies 840 to 816 and jellies 12 to 3, as before the cavern.
+  The first version also put the sherds the mend had just taken down into `spent`, so each was taken down twice; the second
+  `removeRigidBody` threw Rapier's "recursive use of an object" in the Dunemaw sweep's fight. Those go to `spent` no more, and a
+  jelly's `dispose` is now a no-op the second time.
 - **Rule:** 65. (The check belongs in the Dunemaw sweep: Dovina's.)
 
 ### 2026-10-08 · The Veritome would stop for good after 48 photographs (Calissa's survey; Espada's list)
@@ -879,3 +885,13 @@ the rules before building in the same area; a rule a machine can check goes into
   box; a full one refuses; one plate appraised and it takes again. (The stress page still read `book.film` and threw on its first
   run: a rename is searched for in `scripts/` as well as `src/`.)
 - **Rule:** 66.
+
+### 2026-10-08 · A parry pressed at a lunge's first frame answered it (Calissa's survey, TRAINING.md 6)
+- **Seen:** blows could be parried by mashing V: a press at the start of a 0.8 s lunge broke it off.
+- **Cause:** `parry.js` `blow()` took the first windup in reach with no test of its `eta`, and `answer` runs on every frame of the
+  press's window, so any windup in reach was answered however early.
+- **Fix:** a blow is answered only when it will land within `BLOW_WINDOW` (0.25 real seconds, the siblings' own rule in
+  `coop/fight.js`); the kick and the cutlass answer blows when no shot is in reach, as every tool does; `move.parry` carries `lead`
+  (a blow) or `d` and `reach` (a shot); an outlined windup run out with the Courier in reach is `parry.missed`, which starts the
+  ledger's `parry.run.best` over. Measured headless: 0.8 s early refused, 0.2 s answered (`lead` 0.2), a run-out windup counted missed.
+- **Rule:** 67.

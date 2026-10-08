@@ -8,7 +8,8 @@
 // drink it settles back toward Balanced at settlePerSec. The **draught** is the feeling of the Lachryma last drunk: the weather where it
 // was drunk, by the stone's tint (`draughtOf`), fading over a real minute. Kept in one save section with the pool's level ('pool').
 // `game.courierMind` { mind, v (0..1, Dovina's view: 0.5 at rest), state ('Stoic' .. 'Prismatic'), brimming } is what the garden's rain
-// reads (world/garden/waterworks.js); `game.draught` { aspect: share } is what the garden's lake, the music and the sky read.
+// reads (world/garden/waterworks.js); `game.draught` { aspect: share } is what the garden's lake, the music and the sky read; `game.draughtHex` its strongest feeling's
+// colour (progress/weather.js COLOR), or null.
 // Events: mind.state { state, by }, mind.brim { by }, mind.settle { by } (the log says them: tracking.js).
 //
 // Prior art: Darkest Dungeon's stress (a meter moved by what you do, settled by rest), and the creatures' own mental state here.
@@ -17,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import { COURIER_MIND, DRAUGHT, stoneOf, draughtOf } from '../progress/stones.js';
 import { stateOf, pushed, settle } from '../progress/combat/mind.js';
+import { COLOR } from '../progress/weather.js';
 
 const DRINKS = new Set(['bauble', 'bottle', 'absorb', 'gulp', 'parry']); // (what is drunk from the world; a refill from a jackpot or a wave is not a drink)
 const BRIM = 2, QUIET = 5; // (real seconds brimming after an overflow; real seconds of quiet before it settles)
@@ -57,6 +59,7 @@ export class CourierMind {
     if (this.brimT > 0 && (this.brimT -= dt) <= 0) g.events?.emit('mind.settle', { by: 'courier' });
     if (this.quiet > QUIET && this.mind !== 0) { this.mind = settle(this.mind, dt, 0); if (this.mind === 0) this.dirty(); }
     for (const k of Object.keys(g.draught)) { g.draught[k] -= DRAUGHT.fadePerSec * dt; if (g.draught[k] <= 0) delete g.draught[k]; }
+    { const d = g.draught, lead = Object.keys(d).sort((a, b) => d[b] - d[a])[0]; g.draughtHex = lead ? COLOR[lead] ?? null : null; } // (the draught's colour, from the one feeling table: the garden's sky reads it)
     const s = this.state;
     if (s !== this.lastState) { this.lastState = s; g.events?.emit('mind.state', { state: s, by: 'courier' }); this.dirty(); }
   }

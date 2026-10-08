@@ -228,8 +228,10 @@ export class Tracking {
       return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your Soul Brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
       shatter: 'The Crucibelle shatters the shot.', stagger: 'You shoot it down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
     };
+    let parryRun = 0; // (parries without a miss: the feat's run, TRAINING.md 6; a miss is an outlined windup run out with you in reach)
+    on('parry.missed', () => { L.inc('parry.missed'); parryRun = 0; });
     on('move.parry', (e) => {
-      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed);
+      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed); L.hi('parry.run.best', ++parryRun);
       log.say('battle', e.what === 'blow' && e.how !== 'shutter' ? 'You parry the blow, and it breaks off.' : PARRY_SAY[e.how] || PARRY_SAY.return, { key: 'parry', win: 1 });
     });
     on('recoil.jump', (e) => { L.inc('move.recoil'); if (e.charged) L.inc('recoil.charged'); L.hi('recoil.up', e.up); });

@@ -41,6 +41,9 @@ const live = (pr) => !(pr.body && !pr.body.isValid?.()) && !pr.parried && !pr.bl
 function gone(game, pr) { if (pr.vanish) pr.vanish(); else game.projectiles?.delete(pr); }
 
 /** The projectiles near `at`, fast enough, and coming toward the Courier (nearest first). */
+/** A blow is answered only when it will land within this many real seconds (the window: the siblings' own rule, coop/fight.js). */
+export const BLOW_WINDOW = 0.25;
+
 function incoming(game, at, radius, speedMin, all = false) {
   const P = game.player, out = [];
   for (const pr of game.projectiles || []) {
@@ -93,10 +96,10 @@ function turn(game, hit) {
 
 export function deflect(game, { at, radius = 2, speedMin = 4.5, outMin = 12, assist = 0.45, iframes = 0.35, tool = 'kick', paint = null } = {}) {
   const hit = incoming(game, at, radius, speedMin);
-  if (!hit) return null;
+  if (!hit) return blow(game, { tool, how: 'return', at, radius }) ? true : null; // (no shot in reach: a blow in its window, answered as every tool answers one)
   send(game, hit, { outMin, assist, paint });
   breath(game, hit.t, iframes);
-  game.events?.emit('move.parry', { speed: hit.sp, tool, how: 'return', what: 'shot', by: 'courier' });
+  game.events?.emit('move.parry', { speed: hit.sp, tool, how: 'return', what: 'shot', d: +hit.d.toFixed(2), reach: radius, by: 'courier' });
   return hit.pr;
 }
 
@@ -133,18 +136,19 @@ function shot(game, { tool, how, at, radius, paint }) {
     if (pr.from?.alive) game.stun?.add(pr.from, 1, { by: 'courier', cause: 'parry' });
   } else turn(game, hit);
   breath(game, hit.t);
-  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', by: 'courier' });
+  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, by: 'courier' });
   return 'shot';
 }
 
 function blow(game, { tool, how, at, radius }) {
-  const c = game.creatures?.windups(at, radius)[0];
+  const c = game.creatures?.windups(at, radius).find((x) => x.windup.t - 0.3 <= BLOW_WINDOW); // (only in its window: a press at a lunge's first frame answers nothing, TRAINING.md 6)
   if (!c) return null;
+  const lead = +Math.max(0, c.windup.t - 0.3).toFixed(3); // (seconds before the strike: read before parried() unwinds it; domains.js weighs it)
   game.creatures.parried(c);
   game.stun?.add(c, how === 'shutter' ? 1.25 : how === 'stagger' ? 1 : 0.5, { by: 'courier', cause: 'parry' }); // (the shutter: a full flash's stun and more)
   if (how === 'shutter') { game.flash?.burst?.(); c.brain?.senses?.dazzle?.(1.4); }
   breath(game, c.center ? c.center(_p) : _p.copy(c.pos));
-  game.events?.emit('move.parry', { tool, how, what: 'blow', kind: c.kind, by: 'courier' });
+  game.events?.emit('move.parry', { tool, how, what: 'blow', kind: c.kind, lead, by: 'courier' });
   return 'blow';
 }
 

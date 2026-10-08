@@ -83,7 +83,9 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
   ledger's `foe.drop.<id>` is the record, the gift the event's rule.
 - The Wake Whistle still works after it leaves the Pneuka Box mid-breath (`dunemaw.js:331,350`).
 - A wipe sets you down 11.8 m from the Lip Stone (`wipe()` returns `bowl.arrive`); acceptance 7.
-- 22 unnamed Groups added to the scene each visit to the great cavern (1,289 to 1,333 over two): not traced (`foelook.js`, `cavekit.js`).
+- ~~22 unnamed Groups added to the scene each visit to the great cavern~~: **fixed** (Petra's c58bcb4: a waiting sibling's psygun left in the
+  scene; Calissa measured 421 Groups after one visit and after two). The four sherds were never taken down either: fixed (e0730dd,
+  b45367d). The Dunemaw sweep's check: burst the four sherds, leave, and the counts match.
 
 ### 8. Other
 - **The Tithe's opening throws every frame** (`TypeError ... 'rig'`, `vfx/chestfx.js:45`; `TitheAct` sets `chests.cur` with no

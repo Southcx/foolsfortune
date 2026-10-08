@@ -131,7 +131,8 @@ export class BrushTechniques {
       const n = run() ?? 0;
       let s = null;
       if (sigil) { s = this.tool.sigils.pop(sigil); if (s.popped) this.game.events?.emit('sigil.pop', { sigil, popped: s.popped, cleared: s.cleared }); }
-      this.game.events?.emit('brush.glyph', { technique: def.id, n, sigils: s?.popped || 0 });
+      const fit = rec.fit ?? (rec.score < 1 ? Math.max(0, Math.min(1, (rec.score - 0.72) / 0.28)) : null); // (how well it was drawn: a loop's closing, a template's match; TRAINING.md 6)
+      this.game.events?.emit('brush.glyph', { technique: def.id, n, sigils: s?.popped || 0, ...(fit == null ? {} : { fit: +fit.toFixed(3) }) });
     };
     return { id: def.id, name: def.name, cost: p.empty ? 0 : def.cost, ...p };
   }
