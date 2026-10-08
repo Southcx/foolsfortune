@@ -167,7 +167,6 @@ the rules before building in the same area; a rule a machine can check goes into
 64. **What stands on a surface stands on its normal.** Tilt it from up to the surface's normal under it (analytic where the surface
     is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
     by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
-
 65. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
     scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool). Taking
     down is idempotent: a second `dispose` does nothing.
@@ -184,6 +183,11 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
+72. **A material's `clone()` keeps its numbers, not its shader.** A Standard or Physical material's copy resets its defines to
+    `STANDARD` alone, and no copy keeps `onBeforeCompile` or `customProgramCacheKey`: a material dressed by a define (the rim) or a
+    hook (the grey tint) is cloned with what carries them over (`vfx/greytint.js` `cloneTinted`), or dressed again after, and the
+    copy's defines are read once headless.
+
 73. **A stretch cut from a lean clip is sampled, never cut by keys.** `AnimationUtils.subclip` keeps only the keys inside the stretch; a
     lean export keeps few keys (a straight line is two), so a bone with none inside drops out of the held clip and falls to its rest
     pose. Sample every frame of the stretch through each track's own interpolant (`RigClips.cut`), and test a held move against the
@@ -228,6 +232,25 @@ the rules before building in the same area; a rule a machine can check goes into
   the cracks are skinned to the Jar (`vfx/crackskin.js`: worst 0.55 cm off the posed surface over every clip); the garden's hop
   and landing go to the Jar's clips (`vfx/garden/jarhop.js`), the spring kept for the workbench's stand-in.
 - **Rule:** 69, and 58 widened.
+### 2026-10-08 · The clapperjars' pupils sat on the rim of their white disc eyes (Calissa's review of the owner's texture)
+- **Seen:** with the grey texture on, the disc eyes are white (the painting's white tab) and each drawn pupil stood at its disc's inner
+  edge: the jar looked cross-eyed (the face at 0.9 m). Before the texture the discs were terracotta and the offset was not seen.
+- **Cause (measured):** the pupils in `Clappers.spawn` were at x ±0.055 in the eyes bone's space. The disc eyes (the vertices weighted
+  to that bone) are flat in that bone's x-z plane, 0.05 across, spanning x 0.056 to 0.106 on each side, centred at ±0.081. The
+  pupils were placed for the drawn eyes of an earlier model and left where they were when the owner's discs came (2026-10-06).
+- **Fix:** the pupils at x ±0.081, scaled 0.7 across and along the disc (0.039 wide, inside the 0.05 disc): a ring of white round each.
+- **Rule:** none new: a part drawn over a model's feature is placed by the measured centre of that feature in the same bone's space.
+
+### 2026-10-08 · Every clapperjar had lost its rim (Calissa, putting on the owner's texture)
+- **Seen:** measured, not seen: the shared clapperjar material carried `RIM 0.256` (render/toon.js `addRim`, the Courier's thin
+  Lachryma rim), and every jar in the workshop drew with `{ STANDARD: '' }` alone. The owner's grey texture would have lost its tint
+  the same way (read from three.js, not run: the copy keeps the map but not the hook, so each jar would draw a plain multiply).
+- **Cause (measured):** `Clappers.spawn` gives each jar `this.mat.clone()` (its own colour, for the kiln's heat). three.js's
+  `MeshStandardMaterial.copy` sets `defines = { STANDARD: '' }` after copying the rest, and `Material.copy` never copies
+  `onBeforeCompile` or `customProgramCacheKey`. The colour, roughness and flat shading came across; the rim never did.
+- **Fix:** each jar's material is `cloneTinted(this.mat)` (`vfx/greytint.js`): the clone with the defines and the hook carried over.
+  Headless, all six jars: `{ STANDARD, RIM: 0.256, GREY_REF: 0.1329 }`, the texture on each, one program for all six.
+- **Rule:** 72.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases

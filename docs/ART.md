@@ -77,6 +77,7 @@ blink and look, the event map) comes back from `d4872d0` to drive it.
 |---|---|
 | the Courier, the painted sky, the spell circles, the maker's pixel art, the Lantern Wisp, the god hand and the Pneuka Jar (their rigs, clips and paintings: `vfx/vessoulpaint.js`) | **ours** (the owner's) |
 | labradorite, filigree, damage looks, temper, bismuth, finishes, HUD ring, compass, vane, chest glazes | **ours** (made for the game) |
+| the clapperjars' painting (`source_assets/clapperjar_base.png`, grey, tinted by each jar's colour: `vfx/greytint.js`) | **ours** (the owner's) |
 | clapperjars, slip jelly, Psygun (GLBs) | ours, origin to confirm |
 | **the five tools' models** (`tools/*/model.js`) | **placeholder: first for the owner's models** |
 | **the clay folk** (`npc/folk.js`) | **placeholder: second** |
