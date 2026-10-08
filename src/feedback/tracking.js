@@ -429,7 +429,7 @@ export class Tracking {
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
-    on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings in the slab, and it sinks into the sand.'); });
+    on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
     on('reprogram.run', (e) => {
       L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');

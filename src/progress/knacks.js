@@ -13,7 +13,7 @@
 import { CRIB } from './ostraca.js';
 
 export const KNACKS = {
-  crib: { name: 'the Crib Sheet', does: 'the English beside each neuralese word you have glossed',
+  crib: { name: 'the Crib Sheet', does: 'Shows the English beside each neuralese word you have glossed',
     opens: (L) => (L.get('reprogram.run') || 0) >= CRIB.macros || (L.get('reprogram.held5') || 0) >= CRIB.heldFive || (L.get('ostracon.found') || 0) >= CRIB.ostraca },
 };
 
@@ -36,7 +36,7 @@ export class Knacks {
   }
   command(args = []) {
     const [id, v] = args, log = this.game.log;
-    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `${d.name} (${k}): ${this.open(k) ? (this.on(k) ? 'on' : 'off') : 'not yet earned'}. ${d.does}.`, { key: `knack.${k}`, throttle: 0.5 }); return; }
+    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `Knack: ${d.name} (/knack ${k}): ${this.open(k) ? (this.on(k) ? 'on' : 'off') : 'not yet earned'}. ${d.does}.`, { key: `knack.${k}`, throttle: 0.5 }); return; }
     if (!KNACKS[id]) { log?.say('warn', `No knack called ${id}.`, { key: 'knack', throttle: 1 }); return; }
     if (!this.open(id)) { log?.say('warn', `You have not earned ${KNACKS[id].name} yet.`, { key: 'knack', throttle: 1 }); return; }
     this.set(id, v ? v !== 'off' : !this.on(id));

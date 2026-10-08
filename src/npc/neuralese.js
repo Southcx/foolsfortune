@@ -11,7 +11,7 @@
 // receipts, a pupil's lines), La-Mulana's tablets read with its glyph reader, Chants of Sennaar's glossary filled by deduction.
 //
 //   LEXICON[WORD] = { gloss, place }   (place: the gloss said as a place would be, for a realm's name)
-//   OSTRACON_PICTURES[WORD] -> what its ostracon shows    STELE_TEXT[stele id] = { words, text, gloss }    glossOf(word)
+//   OSTRACON_PICTURES[WORD] -> what its ostracon shows    STELE_TEXT[stele id] -> its sentence   STELE_GLOSS[stele id] -> its English   glossOf(word)
 // ---------------------------------------------------------------------------------------
 
 export const LEXICON = {
@@ -40,8 +40,13 @@ export const OSTRACON_PICTURES = {
 // the two stelae's sentences: each carries its three new words among words already known, so a sentence teaches them by context
 // (comprehensible input). The sealed room's is the town's rule; the upper ring's, above the bowl, is its last word to its kin.
 export const STELE_TEXT = {
-  'stele.sealed': { words: ['DIPSA', 'GULA', 'VOYD'], text: 'DIPSA SIVA. GULA GRAV. VOYD STIL.', gloss: 'Thirst: drink. Hunger: forage. To forget: be still.' },
-  'stele.ring': { words: ['AMI', 'LON', 'DEO'], text: 'AMI KITH. HEMA LON. MOR DEO.', gloss: 'You are kin. Home is long. Grief runs deep.' },
+  'stele.sealed': 'DIPSA SIVA. GULA GRAV. VOYD STIL.',
+  'stele.ring': 'AMI KITH. HEMA LON. MOR DEO.',
+};
+// their English, for the Codex and for us (the log says the sentence bare and glosses only the new words: the reader puts it together)
+export const STELE_GLOSS = {
+  'stele.sealed': 'Thirst: drink. Hunger: forage. To forget: be still.',
+  'stele.ring': 'You are kin. Home is long. Grief runs deep.',
 };
 
 export const glossOf = (word) => LEXICON[String(word).toUpperCase()]?.gloss ?? null;
