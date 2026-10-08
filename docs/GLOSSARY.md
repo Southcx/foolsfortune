@@ -72,7 +72,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Lachryma to the pool) instead of hurting (Ikaruga).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
   **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
-- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, two chosen at the pier (the wake brush, the toll, the
+- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
 - **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
   `scripts/rail.mjs`); a crossing's rank is its score against par (S, A, B, C, D); the medal is Star Fox's (passed, four in five

@@ -14,3 +14,5 @@ The full design is in PASSAGE.md sections 11–13.
 `{ id: 'encounter', encounter: <encounters.js id> }`. While `stage.encounter` is set and `chosen` is not, its cue holds a 2-bar loop;
 `tripLayout` counts an encounter as 6 bars and marks it `held`. The leg id `stormwall` is now `eyewall`. If the music should dive with
 Charybdis, it needs `stage.foe.under`; that waits on the owner.
+
+**The owner's rulings (2026-10-08):** the mounts are by hull. The pier takes `slotsOf(ship)` from `progress/rail/mounts.js` in place of `SLOTS` (`pier.js`: lines 56 and 79). That is sloop 2, frigate 3, destroyer 2, tanker and galleon 1, on keys 1 to 3. The music dives with Charybdis: set `stage.foe.under = true` while it is below the surface, and Wanda filters the boss line alone.

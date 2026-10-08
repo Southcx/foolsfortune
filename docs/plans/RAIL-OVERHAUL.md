@@ -63,9 +63,10 @@ Ikaruga chapter, and every minute of it is played.
 | Shift / C | boost / brake along the rail (kept) | the rollercoaster's speed |
 | R | **the surge** (§4): the absorbed Lachryma let go at once | the panic button with a price |
 
-**Retired at sea:** V (folded into the roll), the colour flip (become the forms), the two mounts (RAIL.md's `mounts.js`: the sloop
-carried two worn tools; the owner to rule whether they come back as the surge's flavour). Seven verbs is still Panzer Dragoon Orta's
-count; every one now answers a different question.
+**Retired at sea:** V (folded into the roll), the colour flip (become the forms). **The mounts stay, by hull** (the owner, 2026-10-08:
+"mount slots by hull"; `mounts.js` `slotsOf`, `ships.js`): the sloop carries two worn tools on keys 1 and 2, the frigate three, the
+destroyer two, the tanker and the galleon one. So a sloop's hands hold seven verbs and two mounts, and a tanker's seven and one: the
+heavy hull is the simpler ship as well as the slower (Orta's forms, FTL's weapon slots).
 
 ## 4. Astral and Umbral: the forms (the owner's idea; Ikaruga's polarity, Orta's forms)
 
@@ -122,7 +123,7 @@ themselves are good"), each now bound to a stretch of spline.
 | **Old Nobody** (reworked) | 64 | the rogue Leviathan **as a space** (Panzer Dragoon Saga): the rail circles it; gills from below, teeth and eye from above; it quickens as gills shut (Ikaruga's Uzura); breaches through the rail | the boss is a place | Saga, Orta's manta, Moby-Dick |
 | **the eyewall** (new) | 40 | the eye of a psychic storm: a tunnel run through folding geometry and sweeping beams, the warp at its strongest; few foes, all dodging | the rollercoaster itself | Star Fox's Area 6, Ace Combat's tunnel runs, Rez Area 5 |
 | **the graveyard** (new) | 48 | sunken hulls (Umbral) and ghost ships riding above them (Astral); mines; the Drowned Light that wakes as the peak | the two worlds at once | Phantom Storm's ghouls, Sunless Sea |
-| **the maelstrom** (new) | 48 | an arena off the rail (all-range), a whirlpool you circle while **Charybdis** fights you in both worlds (Espada's, Odyssey XII: it rises into the Astral and dives into the Umbral; the same one in every maelstrom, an **Egregore** by the owner's rule (2026-10-08: drawn from real human myth), wearing the place's feeling: the log names it beside) | free flight, once a trip at most | Rez's Area X, Star Fox's all-range |
+| **the maelstrom** (new) | 48 | an arena off the rail (all-range), a whirlpool you circle while **Charybdis** fights you in both worlds (Espada's, Odyssey XII: it rises into the Astral and dives into the Umbral; the same one in every maelstrom, an **Egregore** by the owner's rule (2026-10-08: drawn from real human myth), wearing the place's feeling: the log names it beside; the music dives with it, the boss line alone filtered while `stage.foe.under`: the owner, 2026-10-08) | free flight, once a trip at most | Rez's Area X, Star Fox's all-range |
 | **a calm** (haven) | 24 | lights to lock for score (whales of light, the aurora: never empty), flotsam that **mends** (kept: LEG.mend), **the Purser's buoy** where the Purser's tender sells fuel | a breath that still scores | Rez's scanning orbs, the breather kept |
 | **a bounty** (when Letty has posted one) | 56 | the posted stray: an aberrant Figment as a boss with parts | the bounty's livelihood | Letty Marque's board |
 
