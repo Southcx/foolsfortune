@@ -168,12 +168,13 @@ export class ShoalPiece {
       if (!F.alive[i]) continue;
       F.get(i, _p, _v); st.rail.toWorld(_p, _w); st.rail.dirWorld(_v, _u);
       _q.setFromUnitVectors(_z, _u.lengthSq() > 1e-6 ? _u.normalize() : _z);
-      L.set(n++, _w, _q, this.roll[i]);
+      L.set(n++, _w, _q, this.roll[i], this.mood[i] === 2 ? 1 : 0); // (a strike dashes: its streak, vfx/shoal.js)
     }
     L.count = n;
     const c = this.caller;
     if (c?.alive) { _q.setFromAxisAngle(_u.set(0, 1, 0), -st.t * 0.6); L.conductor(c.pos, _q, true); } else L.conductor(_p, _q, false);
     st.rail.toWorld(_p.copy(st.ship.local), _w);
+    L.ball(_w, this.radius + 1, this.scattered || this.scatterT > 0 ? 0 : 1); // (the ring round the ship read as one turning mass: vfx/shoal.js)
     L.boil(_w, this.radius + 3, this.scattered ? 0 : Math.min(1, rel / 1.5) * (this.scatterT > 0 ? 0.3 : 1), st.sea);
     L.update(raw);
   }

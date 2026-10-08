@@ -184,8 +184,33 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
+72. **A warm-up puts back what it moved.** Whatever is moved, scaled or re-parented to be compiled is put back where it is hidden
+    again; never trust each owner to reposition its look every frame (a look drawn in the world's own frame never does).
+73. **A quad built in screen space keeps its winding.** Its across axis is the along axis turned clockwise on the screen ((x, y) to
+    (y, -x)); turned the other way the quad is mirrored, faces away and is culled on a one-sided material.
 
 ## Cases
+
+### 2026-10-08 · The shoal's glints, its boil and the ship's wake were drawn 50 m under the crude (Calissa, wiring 600 glints)
+- **Seen (headless, a crossing under /crossing shoal, the set piece at bar 72):** no glint, no Conductor, no boil round the ship in
+  any view, and no wake behind it; the shoal's look reported 54 glints drawn, its group visible, every glint within 6 m of the ship
+  (world y -421.9 .. -419 against the sea at -420.7). The same with the look as it was before this change.
+- **Cause (measured):** main.js's warm-up moved every parked sea look to (0, -50, 0) to compile it and, after, only hid them again.
+  The looks that place their group every frame (the sea, the sloop, the brig, Old Nobody, the boarders) recovered; the two that draw
+  in the world's own frame from a group left where it was (`vfx/shoal.js` ShoalLook, `vfx/rail.js` ShipWake's two lines) kept the
+  -50 m, so every glint and the wake were drawn 50 m down, under the opaque crude.
+- **Fix:** the warm-up keeps each parked sea look's position and puts it back as it hides it (`src/main.js`, two lines). The glints,
+  the boil and both wake lines are on the sea (screenshots `rail_shoal_above`, `rail_shoal_chase`).
+- **Rule:** 72. (A check for the Emocean sweep is handed to Dovina: the shoal look's and the wake's world matrices at the origin's
+  height while a set piece runs.)
+
+### 2026-10-08 · The far glints' sparks and the frenzy's streaks were never drawn (found headless, before it shipped)
+- **Seen:** a striking glint stretched but left no streak behind it; past the fish's distance the school thinned to nothing.
+- **Cause:** the spark's quad was laid on the screen along the heading and across it, the across axis turned counter-clockwise: a
+  mirrored basis, so the quad's triangles faced away and the one-sided material culled them.
+- **Fix:** the across axis turned clockwise (`vfx/shoal.js`, the spark's `ac`); the streaks and the far sparks are drawn
+  (`wb_shoal_dash`).
+- **Rule:** 73.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame

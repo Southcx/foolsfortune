@@ -59,6 +59,11 @@ also sets gems with their real optics, hair finishes and skin tones.
   vessel's Lachryma, so a new Courier looks exactly as made.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
+- **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror
+  flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
+  stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
+  The ambient geometry is wire in the same blues over dark glass (gold is kept for a ring you threaded), black labradorite slabs, and
+  the crude folded overhead. One program for all of it but the glints.
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
