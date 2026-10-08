@@ -156,6 +156,9 @@ the rules before building in the same area; a rule a machine can check goes into
     state (the Sondelass's Blade Mode), ask the thing's own service (`game.techs.get`), and check the call did something.
 61. **A shortcut to a shared folder is never committed.** A worktree's link to `node_modules` (or any folder outside the tree) is
     named in `.gitignore` as a file as well as a folder, and a commit made with `add -A` is read before it is merged.
+62. **A motion written as a curve of time has a floor, and the next stage starts where it stopped.** A wait the player controls (a
+    menu left open) can be any length: a fall that grows with it is bounded by an easing that ends above whatever it falls toward, and
+    the stage after it reads where it hung, never its own start again.
 
 ## Cases
 
@@ -810,3 +813,12 @@ the rules before building in the same area; a rule a machine can check goes into
   worktree retired.
 - **Rule:** 61.
 
+### 2026-10-08 · On the title, the Courier fell through the board while the menu was open (the owner)
+- **Seen:** after the Fool's Step, waiting at the menu, the Courier passed through the checkerboard and fell on into the void.
+- **Cause:** the menu's slowed fall was `1.15 + 0.1 x` real seconds open, unbounded: measured from the board's own height
+  (`boardY`), the Courier crossed it at about 35 real seconds (3.5 m under it then). The dive also started its fall time at 1.15
+  again, so a long wait would have snapped the Courier back up into view as the dive began.
+- **Fix:** the menu's fall eases toward `FALL_HANG` (1.5 added at most, the same 0.1 a second at its start): they hang 15.4 m over
+  the board after 600 real seconds (measured in the running title); the dive carries on from where they hung and ends 2.9 m over it
+  at the worst.
+- **Rule:** 62.
