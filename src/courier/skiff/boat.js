@@ -18,7 +18,7 @@
 // Built as one Group in its own frame (+Z bow, +X to the left, Y up, origin at the deck), so the whole skiff, and the rider standing on
 // it, are moved and turned with one quaternion. The model is parsed the first time it is wanted (load: skiff.js asks on the way into
 // the Dunes, or as the trailer begins), its bytes a chunk of their own until then, so a session that never goes there never holds
-// them; until it is parsed and its materials compiled the board is not drawn, and nothing else waits on it.
+// them; until it is parsed and its materials compiled the boat is not drawn, and nothing else waits on it.
 //   const skiff = new Skiff(scene);   skiff.load(game)  (a promise; again: the same one)   skiff.ready
 //   skiff.set({ sail, side, fill, boom, glow, t, speed })   // per frame: what the sail is doing
 //   skiff.placePennant(windDir, strength, t)                 // per frame, once the group is placed
@@ -33,7 +33,7 @@ import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
-// rides where the old board's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
+// rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
 // (0.77 under the deck) 0.17 into it on the flat: a sand keel, cutting the sand at the bow where the wake's bubbles start (judged
 // from the Dunes, front, side and close at the waterline of the sand; lift it here, never the hover, if it ever reads as clipping)
 const LIFT = 0;
@@ -84,7 +84,7 @@ export class Skiff {
 
   get ready() { return !!this.live; }
 
-  /** The model, parsed and compiled the first time it is wanted; resolves when the board can be drawn. */
+  /** The model, parsed and compiled the first time it is wanted; resolves when the boat can be drawn. */
   load(game) {
     this.loading ||= import('../../assets/solarskiff.glb?b64')
       .then(({ default: b64 }) => new GLTFLoader().parseAsync(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, ''))
@@ -92,12 +92,15 @@ export class Skiff {
         this.build(gltf);
         // (its programs built off the main thread before its first frame, as the warm-up builds the rest, and for the buffer the frame is
         // drawn into, as it does: nothing compiles in play. compileAsync compiles at the call and only waits after, so the target is put back
-        // at once)
+        // at once. An empty frame first, as main.js's warm-up does: compile reads the clipping state the last render left, and the trail
+        // map's offscreen pass leaves none until the next draw (a tick with no draw after it: the manual mode the sweeps, the stress test
+        // and perf run in), so the hull and the cloth were built for no planes here and again, for the God Hand's one, at their first
+        // draw: CASEBOOK, 2026-10-08)
         const r = game?.renderer;
         if (r?.compileAsync) {
           const prev = r.getRenderTarget();
           let done;
-          try { r.setRenderTarget(game.post?.target ?? prev); done = r.compileAsync(this.group, game.camera, game.scene); } catch (e) { console.warn('the skiff\'s shaders', e); }
+          try { r.setRenderTarget(game.post?.target ?? prev); r.render(new THREE.Scene(), game.camera); done = r.compileAsync(this.group, game.camera, game.scene); } catch (e) { console.warn('the skiff\'s shaders', e); }
           r.setRenderTarget(prev);
           await done?.catch?.(() => {});
         }
@@ -203,7 +206,7 @@ export class Skiff {
     this.emit.material.opacity = 0.38 + 0.22 * Math.min(1, (speed || 0) / 24) + 0.3 * glow;
   }
 
-  /** The ride: the board's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
+  /** The ride: the boat's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
   pose(R, s) {
     if (!this.P) return;
     this.P.write(this.P.ride(R, s));
@@ -216,9 +219,11 @@ export class Skiff {
     this.P.write(clip === 'Skiff_RideIdle' ? this.P.sample(clip, t, this.P.A, true) : this.P.phase(clip, t));
     // the summon stands the mast, grows the boom and shows the pennant (to f58); the recall folds them (from f5): the clip has them till then
     const w = clip === 'Skiff_Summon' ? smooth(1.8, 2.1, t) : clip === 'Skiff_Recall' ? 1 - smooth(0, 0.15, t) : 1;
-    // the summon's sigil (opened by the clip, f4 to f25) is laid on the sand the board rises out of: the .blend draws it 0.79 under the deck,
-    // under the sand here, where the board hovers and the summon begins with its deck at the rider's feet
+    // the summon's sigil (opened by the clip, f4 to f25) is laid on the sand the boat rises out of: the .blend draws it 0.79 under the deck,
+    // under the sand here, where the boat hovers and the summon begins with its deck at the rider's feet
     if (clip === 'Skiff_Summon' && this.bone.sigil) this.bone.sigil.position.z = this.ground - LIFT + 0.03;
+    // (the sigil is the energy's cream, which noon sand takes back: it burns brighter while the ring is out, f4 to f25)
+    if (clip === 'Skiff_Summon') this.energyMat.emissiveIntensity = 0.3 + 1.4 * this.glow + 1.4 * (1 - smooth(0.6, 0.9, t));
     this.own(w);
   }
 

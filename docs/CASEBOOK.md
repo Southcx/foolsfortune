@@ -161,8 +161,35 @@ the rules before building in the same area; a rule a machine can check goes into
     bone scales past its rest by more than a little is never outlined.
 63. **What waits to be mounted waits where it was left.** A phase that brings the rider to a thing (the skiff's mount) moves the rider
     and leaves the thing; whatever drew the thing at the rider's own position in the other phases is told so.
+64. **A compile made between frames is made after an empty frame.** `compile` and `compileAsync` read the clipping state the last render
+    left, and an offscreen pass that clears the renderer's planes (the trail map's) leaves none until the next draw; a piece compiled
+    lazily renders an empty scene into the frame's own target first (as main.js's warm-up does), else its programs are built for no
+    planes and again, for the God Hand's one, at their first draw.
 
 ## Cases
+
+### 2026-10-08 · The Solar Skiff's hull and cloth compiled twice, the second at their first draw (Calissa's review of the skiff's model)
+- **Seen (headless, programs counted before and after the first summon):** the model's load compiled its programs (`compileAsync`, off the
+  main thread, as intended), and the first frames that drew it built `Skiff_Hull` and `Skiff_Cloth` again: 3 programs new at the first
+  draw, two of them the PBR shaders with eight point lights and the sun's shadow, a stall the load was written to avoid.
+- **Cause:** the two programs differed in one number of the cache key, `numClippingPlanes` (0, then 1). `compile` reads the clipping
+  state the last render left; the trail map's pass (`world/ground/trailmap.js`) sets the renderer's planes to none, renders, and puts
+  them back without telling the clipping state, which holds zero until the next draw; the God Hand's cutaway plane is always installed,
+  so every real draw has one. main.js's warm-up already renders an empty frame first for this (its comment says so); the skiff's lazy
+  load did not. (A page that draws between its ticks, as a player's does, leaves one plane; the manual mode the sweeps, the stress test
+  and `npm run perf` run in does not, and counted the extra programs.)
+- **Fix:** `Skiff.load` renders an empty scene into the post target before `compileAsync` (courier/skiff/boat.js). Programs new at the
+  first summon draw: 3 to 1 (a depth program), and no duplicate of the hull or the cloth.
+- **Rule:** 64.
+
+### 2026-10-08 · The summon's sigil was cream on the noon sand and could not be seen (Calissa's review of the skiff's model)
+- **Seen (headless, from above, game noon):** the ring of marks the boat rises out of was a faint pattern of paler arcs on the sand; at
+  play distance there was no ring.
+- **Cause:** the sigil is drawn with the Courier's energy (`CourierEnergy`: cream, a warm glow at 0.3), which on lit sand is the sand's
+  own colour.
+- **Fix:** the energy burns at 1.7 above its rest while the ring is out (frames 4 to 25 of `Skiff_Summon`, then eased off by 0.9 s)
+  (courier/skiff/boat.js posePhase): the marks stand out white, the engine and the mast light with them.
+- **Rule:** none new (a glow is judged in the light it will be seen in, at noon as at night).
 
 ### 2026-10-08 · The Solar Skiff's flare drew a black wall across the screen (Calissa, the skiff's model)
 - **Seen (headless, the owner's model on the board, Shift held):** a black quad tens of metres wide over the view from the flare's

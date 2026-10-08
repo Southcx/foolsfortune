@@ -302,10 +302,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **doors** in the deck the mast rises through, the telescoping **mast** and its **finial**, the boom, the yard, the sail and the pennant
   (one cloth), the **engine** and its **fins** and **vents**; and two pieces of the Courier's Lachryma (`CourierEnergy`) hidden at a
   point until a clip opens them: the **flare** (out of the engine in the flare's clips) and the **sigil** (the ring of marks laid on
-  the sand the board rises out of in the summon). Parsed on the way into the Dunes (`Skiff.load`). *Not:* the sloop (the Emocean's
+  the sand the boat rises out of in the summon). Parsed on the way into the Dunes (`Skiff.load`). *Not:* the sloop (the Emocean's
   ship, `vfx/sloop.js`), nor "ship" for any of it.
 - **the skiff's clips** (`Skiff_Summon` ... `Skiff_Bail` in `solarskiff.glb`, played by `courier/skiff/boatpose.js`): the skiff's own
-  15 clips, each the **partner** of the rider's clip of the same name (authored together, the same frames): the board plays its partner
+  15 clips, each the **partner** of the rider's clip of the same name (authored together, the same frames): the boat plays its partner
   at the rider's time and weight, so the deck moves under the feet as the body does on it. The code's word is laid on after (the boom,
   the hoist from the sail's L, the belly, the pennant: `boat.js`). *Not:* the rider's clips (the Courier's suite, `rider.js`); "board"
   as a term (the overture's storyboard has it).
@@ -808,6 +808,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
+| sigil | the Soul Brush's: strokes drawn in Celestial mode and read (Spellscription); the Solar Skiff's: the ring of marks laid on the sand the boat rises out of (the model's `sigil` bone) | "a sigil" is the brush's; "the skiff's sigil" in full |
+| dome | the sky's (`vfx/sky.js`, where the night alive is drawn); the stern of the Solar Skiff's hull (the model's own word) | "the sky's dome", "the skiff's dome" |
 
 ## Retired words
 
