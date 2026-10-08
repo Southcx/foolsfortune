@@ -130,7 +130,7 @@ function memory(codex, cx, g, B) {
   btns.appendChild(button(`APPRAISE CHOSEN (${pick.size})`, () => { codex.vtReport = g.veritome.appraise([...pick]); pick.clear(); codex.render(); }, !pick.size));
   btns.appendChild(button(`DISCARD CHOSEN (${pick.size})`, () => { F.remove([...pick]); B.save(); g.events?.emit('photo.discard', { n: pick.size }); pick.clear(); codex.render(); }, !pick.size));
   left.appendChild(btns);
-  left.appendChild(el('div', 'sec', `IN MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a plate to choose it`));
+  left.appendChild(el('div', 'sec', `MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a plate to choose it`));
   const roll = el('div', 'roll');
   for (const p of F.plates) {
     const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PLATE ${p.id}<em>undeveloped</em>`);
