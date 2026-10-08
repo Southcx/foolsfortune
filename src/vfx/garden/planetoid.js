@@ -13,6 +13,7 @@
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
 //                mulberryGrove the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
+//                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
 //                vertices), brought up to the god hand's clay (world/garden/clay.js) by `fromClay`, only where a stroke changed it; and
 //                its painted grounds (moss, ash, loam, slate, silt) drawn over the skin (vfx/garden/gardengrounds.js)
@@ -30,6 +31,7 @@ import * as THREE from 'three';
 import { mergeStatic } from '../../render/merge.js';
 import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
 import { groundMaterial, groundTick } from './gardengrounds.js';
+import { BOUGHT_LOOKS } from './boughtplanetoids.js';
 
 export const PLANETOIDS = {
   dantian: { radius: 20, top: 0x9fd88a, low: 0x7fb08a, rock: 0x8a7f94 },
@@ -46,7 +48,8 @@ let clockOwner = null; // (the one planetoid whose update runs the grounds' shar
 export class Planetoid {
   constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL } = {}) {
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
-    const K = PLANETOIDS[kind] ?? PLANETOIDS.mulberryGrove; this.kind = kind; this.R = radius ?? K.radius; this.K = K;
+    this.bought = BOUGHT_LOOKS[kind] || null; // (one of the four bought in the ring: its own skin, shape and props)
+    const K = PLANETOIDS[kind] ?? (this.bought ? { radius: radius ?? 12, ...this.bought.palette } : PLANETOIDS.mulberryGrove); this.kind = kind; this.R = radius ?? K.radius; this.K = K;
     this.cTop = new THREE.Color(K.top); this.cLow = new THREE.Color(K.low); this.cRock = new THREE.Color(K.rock);
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
@@ -71,6 +74,7 @@ export class Planetoid {
     if (this.kind === 'athanor') { const c = Math.floor(Math.atan2(z, x) * 4) + Math.floor(y * 6) * 7; r += (((c * 37) % 11) / 11 - 0.5) * 0.04; } // (basalt columns)
     if (this.kind === 'pavilions' && y > 0.6) r = Math.min(r, 1.005); // (its crown paved smooth)
     if (this.kind === 'chimney' && y > 0) r *= 1 + 2.6 * y ** 12; // (drawn up into a needle: only the very crown is pulled)
+    if (this.bought) r = this.bought.shape(x, y, z, r);
     if (y < -0.35) r *= 1 + 0.08 * (-y - 0.35); // (its underside a touch deeper: the island's keel)
     return r;
   }
@@ -122,7 +126,7 @@ export class Planetoid {
     const stone = std(0xd8d0c8, { flatShading: true });
     if (this.kind === 'dantian') {
       this.lakeMat = std(0xf2c84a, { roughness: 0.1, metalness: 0.2, emissive: 0x553f10 }); this.lakeMat.userData.noMerge = true;
-      const lake = new THREE.Mesh(new THREE.SphereGeometry(R * 1.004, 32, 8, 0, Math.PI * 2, 0, 0.32), this.lakeMat); lake.name = 'dantian-lake'; this.props.add(lake);
+      const lake = new THREE.Mesh(new THREE.SphereGeometry(R * 1.004, 32, 8, 0, Math.PI * 2, 0, 0.32), this.lakeMat); lake.name = 'dantian-lake'; this.props.add(lake); this.lakeCos = Math.cos(0.32); // (what lies under the lake's cap is not drawn over it: the plants ask)
       for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.28; at(new THREE.Mesh(new THREE.DodecahedronGeometry(0.5 + rnd() * 0.3, 0), stone), Math.cos(a) * 0.33, 0.94, Math.sin(a) * 0.33, 0.1); }
       const shed = new THREE.Group(); shed.add(new THREE.Mesh(new THREE.BoxGeometry(3, 2.4, 2.4).translate(0, 1.2, 0), std(0xc98a5a)));
       const roof = new THREE.Mesh(new THREE.ConeGeometry(2.6, 1.4, 4).translate(0, 3.1, 0), std(0x7a4a6a)); roof.rotation.y = Math.PI / 4; shed.add(roof);
@@ -140,6 +144,8 @@ export class Planetoid {
       for (let i = 0; i < 18; i++) { const a = rnd() * 6.28, y = -0.1 + rnd() * 1.0, s = Math.sqrt(Math.max(0, 1 - y * y)), h = 2 + rnd() * 2.5, tree = new THREE.Group();
         tree.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, h, 5).translate(0, h / 2, 0), trunk)); tree.add(new THREE.Mesh(new THREE.SphereGeometry(1 + rnd() * 0.8, 8, 6).translate(0, h + 0.6, 0), leaf[i % 4]));
         this.place(tree, _v.set(Math.cos(a) * s, y, Math.sin(a) * s), -0.1); tree.updateMatrix(); for (const c of [...tree.children]) { c.applyMatrix4(tree.matrix); this.props.add(c); } }
+    } else if (this.bought) {
+      this.bought.dress(this, at, std);
     } else if (this.kind === 'chimney') {
       const top = this.surface(_v.set(0, 1, 0));
       const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.2, 0.4, 8).translate(0, top + 0.1, 0), stone); this.props.add(plat);

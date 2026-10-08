@@ -18,6 +18,8 @@
 //                 reach and the bounding sphere (the heart, the farthest ground); the buffers are sent up only over the runs that moved
 //   THE GROUNDS   two attributes a vertex, aGroundA (moss, ash, loam) and aGroundB (slate, silt), the bilinear share of each ground
 //                 over the four cells in bytes (bare is what is left): what vfx/garden/gardengrounds.js blends the five grounds by
+//   THE WET       aWet a vertex (bytes): how wet the ground is (1 under water, drying to 0 over 20 real seconds) and the water's depth
+//                 over it (in units of 1.5 m), written by the water's look (vfx/garden/gardenwater.js) and read by the grounds
 //
 // Prior art: the icosphere as a subdivided icosahedron (three.js's PolyhedronGeometry; Kevin Kaiser's "icosphere" with shared edge
 // vertices), the dirty-region refresh of every terrain editor (a brush rebuilds the chunks it touched: Unity's and Unreal's landscape
@@ -26,6 +28,7 @@
 //   const S = unitSphere(24)   S.n   S.dir (Float32Array, xyz a vertex)   S.index   sphereTangents(S) -> { east, north }   sphereMaps(S)
 //   const geo = sphereGeometry(S)   (position, normal, color, aGroundA, aGroundB; its own index over the shared triangles)
 //   vertexNormals(geo, S)   refreshFromClay(look, clay) -> { cells, moved, normals, painted }   (look: { R, h, base, geo, sphere, colourOf(i, C) })
+//   tracked(attr) (sent up whole until its first upload, then by runs)   sendRuns(attr, list, count, n)   sendWhole(attr)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { NX, NY, uvOf } from '../../world/garden/clay.js';
@@ -124,7 +127,8 @@ export function sphereGeometry(S) {
   g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
   g.setAttribute('aGroundA', new THREE.BufferAttribute(new Uint8Array(n * 3), 3, true)); // (a share in a byte: 1/255 is finer than any border shows)
   g.setAttribute('aGroundB', new THREE.BufferAttribute(new Uint8Array(n * 2), 2, true));
-  for (const a of Object.values(g.attributes)) { a.setUsage(THREE.DynamicDrawUsage); a.whole = true; a.onUpload(sentWhole); }
+  g.setAttribute('aWet', new THREE.BufferAttribute(new Uint8Array(n * 2), 2, true)); // (wet, and the water's depth over it / 1.5 m: vfx/garden/gardenwater.js writes it)
+  for (const a of Object.values(g.attributes)) tracked(a);
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1);
   return g;
 }
@@ -215,9 +219,13 @@ export function bounds(L) {
   L.reach = L.R * far + 0.6;
 }
 
+/** An attribute that is sent up whole until its first upload, and after that only over the runs it is told of (sendRuns). */
+export function tracked(attr) { attr.setUsage(THREE.DynamicDrawUsage); attr.whole = true; attr.onUpload(sentWhole); return attr; }
 /** Send an attribute up over the runs of the listed vertices only (sorted, near runs joined), added to whatever runs are still owed
- *  since the last upload (two refreshes before one frame); past a third of the mesh, or too scattered, the whole of it. */
-function sendRuns(attr, list, count, n) {
+ *  since the last upload (two refreshes before one frame); past a third of the mesh, or too scattered, the whole of it. The list's
+ *  first `count` entries are sorted in place. */
+export function sendRuns(attr, list, count, n) {
+  if (!count) return;
   attr.needsUpdate = true;
   if (attr.whole) return; // (a whole upload is owed already: it carries these too)
   if (count > n / 3) { attr.clearUpdateRanges(); attr.whole = true; return; }

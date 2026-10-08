@@ -37,6 +37,10 @@ import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
 import { dressForm } from '../../vfx/garden/forms.js';
+import { waterParked } from '../../vfx/garden/gardenwater.js';
+import { GardenRain, rainParked } from '../../vfx/garden/gardenrain.js';
+import { plantsParked } from '../../vfx/garden/gardenplants.js';
+import { cascadeParked } from '../../vfx/garden/gardencascade.js';
 import { phaseAt } from '../../progress/weather.js';
 import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
@@ -73,6 +77,7 @@ export class Realm {
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
+    this.rainLook = new GardenRain({ sky: this.site.sky }); this.site.group.add(this.rainLook.group); // (Calissa's rain: each drop falls to its own planetoid's heart, vfx/garden/gardenrain.js)
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
     this.restT = 0; this.workT = 0;
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
@@ -96,8 +101,10 @@ export class Realm {
     for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.site.by.dantian.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); }
     { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.site.by.mulberryGrove.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
     this.site.tree.slots[0].pod.visible = true; this.tribulation.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
-    { const T = new THREE.InstancedMesh(this.plants.geo, this.plants.mat, 1); T.setMatrixAt(0, new THREE.Matrix4()); T.position.copy(this.site.by.dantian.c); this.site.group.add(T); this.parkedLooks.push(T); } // (the plants' tufts: world/garden/plants.js)
-    { const L = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.dantian.c, this.site.by.dantian.c.clone().setY(this.site.by.dantian.c.y + 1)]), this.cascades.mat); L.computeLineDistances(); this.site.group.add(L); this.parkedLooks.push(L); } // (a cascade's dashes: world/garden/cascades.js)
+    { const T = plantsParked(); T.position.copy(this.site.by.dantian.c); this.site.group.add(T); this.parkedLooks.push(T); } // (the plants: Calissa's look, vfx/garden/gardenplants.js)
+    { const L = cascadeParked(); this.site.group.add(L); this.parkedLooks.push(L); } // (a cascade's ribbon and spray: Calissa's, vfx/garden/gardencascade.js)
+    { const W = waterParked(); W.position.copy(this.site.by.dantian.c); this.site.group.add(W); this.parkedLooks.push(W); } // (Calissa's water, one material for every planetoid's: vfx/garden/gardenwater.js)
+    { const W = rainParked(); this.site.group.add(W); this.parkedLooks.push(W); } // (and her rain's streaks and rings)
     ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.site.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.site.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.chimney.c, this.site.by.dantian.c]), this.plots.threadMat.gen); this.site.group.add(this.parkedThread);
@@ -155,6 +162,7 @@ export class Realm {
     const go = () => {
       this.press?.leave('garden'); // (the press view ends with the garden: what waits in the mouth goes back)
       this.active = false; this.site.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
+      this.rainLook.clear(); // (no drop left hanging for the next visit: CASEBOOK rule 15)
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.site.group.remove(s.mesh);
@@ -248,6 +256,7 @@ export class Realm {
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw); this.press.update(raw);
+    this.rainLook.set({ amount: this.waterworks.rain(), feeling: this.waterworks.feeling() }); this.rainLook.update(raw, g.camera, this.site.planets, J.planet); // (the rain as it falls: your mental state, your draught)
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)

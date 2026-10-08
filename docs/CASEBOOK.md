@@ -180,7 +180,42 @@ the rules before building in the same area; a rule a machine can check goes into
     lands on the skip, the same one each time when the callers come in a fixed order, and a caller that clears its own flag first never
     asks again. Make the work cheap enough to do at every call (redraw only what changed), or keep the debt per thing and clear it when
     the work is done.
+70. **What lies on a surface is drawn on that surface's own mesh.** A layer over the ground (water, a film, a decal that follows it) is
+    built on the ground's vertices and triangles, lifted along them, so the two can never cross between vertices; a mesh of its own,
+    coarser or finer, pokes through or hides where they disagree. Its edge is cut by a value interpolated across those triangles (a
+    depth), never by dropping whole triangles.
+71. **What stands on a surface listens for the surface.** Anything placed on ground that can move (plants on the clay, a marker on the
+    water) is placed again when the ground's version changes, not only when its own state does; test it by moving the ground under it
+    and measuring the gap.
+
 ## Cases
+
+### 2026-10-08 · The garden's tufts floated after a stroke, and the cap dropped the crown first (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** a pull or press under grown plants left their tufts hanging in the air or sunk in the
+  clay until the green next changed; with more than 3,000 planted cells, the Dantian's crown lost its tufts first.
+- **Cause (read, then measured):** `plants.js` redrew a planetoid's tufts only when its own grid changed (`dirty`); `realm.reshape`
+  never told it the clay had moved. The cap filled in cell order from the south pole. Measured with the new look's own check before it
+  follows: 10 of 239 plants more than 2 cm over their ground after a 6-pull, 3-press stroke, the worst 0.137 m.
+- **Fix:** the plants' look (`vfx/garden/gardenplants.js`) keys on each planted planetoid's clay version too, and is placed again
+  within 0.1 real seconds (the debt kept: rule 69), nearest the eye first. After the same stroke: 0 of 239 over their ground (the worst
+  2.5 cm under, its foot let down by the slope: rule 64).
+- **Rule:** 71.
+
+### 2026-10-08 · The garden's water had a hole at each pole, streaks near the crown, and compiled on the first pour (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08, `03-water-standin.png`; Petra's note, 2026-10-07):** broken white streaks in water near
+  the Dantian's crown; no water within half a metre of a pole; the first pour hitched while the water's program compiled; and the
+  water hid under the planetoid wherever the planetoid's mesh was coarser than the clay.
+- **Cause:** the stand-in (`watermesh.js`) was its own latitude-longitude sphere on the clay's grid: its cells near the crown were
+  slivers (0.2 by 1 m at 80 degrees), its quads stopped a row short of each pole, it drew only triangles wet at all three corners (so
+  the shore stepped cell by cell), and it was made on the first pour, after the warm-up (rule 18).
+- **Fix:** the water's look (`vfx/garden/gardenwater.js`) is drawn on the planetoid's own vertices (the shared icosphere the ground is
+  drawn on), each at the drawn ground plus the water's depth plus 1 cm, a lake level to its bank; triangles with a wet corner are
+  drawn and the shore is cut by the depth interpolated across them (5 mm, fading in to 6 cm), so the water always stands 1.5 cm or
+  more over the ground where it shows (rule 1); one material for every planetoid, parked in the warm-up. Measured headless on the
+  Dantian (four pits, a run down a hill): 0 drawn triangles dry at every corner, 0 wet vertices under their ground (the least 1.5 cm
+  over), 0 programs compiled on entering or pouring; two frames 1/60 s apart with the camera still flip 0 to 10 pixels of 368,640,
+  and a 4 mm camera move flips no more with the water than without it.
+- **Rule:** 70 (and 1, 18).
 
 ### 2026-10-08 · The garden's ground worn by its water stayed drawn as it was on every other planetoid (Calissa, from the survey)
 - **Seen (Calissa's garden survey, 2026-10-08):** with two planetoids eroding at once, one of them kept its old drawn ground until the

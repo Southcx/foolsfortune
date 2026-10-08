@@ -20,6 +20,9 @@
 //                  slate (metal, grief)   silver-blue cleft stone, metalness 0.3, a sheen of grief where it turns from the eye
 //                  silt  (water, dread)   blue-black and glossy, crazed into mud polygons, a gleam of dread in the cracks
 //                The glints fade out past 40 m, where their texels are smaller than a pixel (no aliasing crawl: CLAUDE.md)
+//   THE WET      where the garden's water lies or lay (aWet, written by vfx/garden/gardenwater.js): the ground darker and glossier,
+//                drying over 20 real seconds, and under shallow water the liquid pack's caustics (vfx/liquid.js liqCaustic) laid on it,
+//                fading out as the water deepens past 1.5 m
 //
 // Prior art: height-based blending of terrain layers (Andrey Mishkinis, "Advanced Terrain Texture Splatting", 2013; Unreal's
 // HeightLerp), triplanar mapping (GPU Gems 3 ch. 1; Ben Golus 2017; render/triplanar.js here), the five phases' colours of the wuxing
@@ -32,7 +35,7 @@
 import * as THREE from 'three';
 import { GROUND } from '../../progress/realm.js';
 import { COLOR, phaseAt } from '../../progress/weather.js';
-import { liquidTexture2 } from '../liquid.js';
+import { liquidTexture2, liquidUniforms, LIQUID_GLSL } from '../liquid.js';
 
 /** The five grounds' look (colours as hex, sRGB): a ramp from `lo` (its hollows) to `hi` (its tops) over its height between `ramp`'s two
  *  edges; `rough`, `metal`; its height drawn from the ground pack's channels at two scales (`fine`, every 2 m, and `coarse`, every 5.4 m
@@ -93,6 +96,8 @@ export function applyPalette() {
 const VERT_DECL = /* glsl */`
 attribute vec3 aGroundA;
 attribute vec2 aGroundB;
+attribute vec2 aWet;
+varying vec2 vGW;
 varying vec3 vGA;
 varying vec2 vGB;
 varying vec3 vGp;
@@ -100,10 +105,11 @@ varying vec3 vGn;
 varying float vGv;
 `;
 const VERT_BODY = /* glsl */`
-  vGA = aGroundA; vGB = aGroundB; vGp = transformed; vGn = objectNormal;
+  vGA = aGroundA; vGB = aGroundB; vGp = transformed; vGn = objectNormal; vGW = aWet;
   { vec3 q = position * 0.11; vGv = 0.5 + 0.5 * sin(q.x * 2.3 + q.y * 1.7) * sin(q.y * 2.9 - q.z * 1.3) * sin(q.z * 2.1 + q.x * 2.7); } // (a slow variation over tens of metres: the grounds' tone and the embers' phase)
 `;
 const FRAG_DECL = /* glsl */`
+varying vec2 vGW;
 varying vec3 vGA;
 varying vec2 vGB;
 varying vec3 vGp;
@@ -149,28 +155,39 @@ const FRAG_COLOUR = /* glsl */`
       gGlow += uGAcc[k] * gB[k] * (A.x * glint * (0.35 + 0.65 * (1.0 - uGNight)) + A.y * vein * breath * (0.45 + 0.55 * uGNight) + A.z * peak * uGNight + A.w * crack * (0.15 + 0.85 * uGNight) * near);
     }
     diffuseColor.rgb = diffuseColor.rgb * (0.95 + 0.1 * Tc.r) * bb + gCol; // (the bare skin keeps its colour, a breath of the coarse cushions in it so a painted patch sits in it)
+    diffuseColor.rgb *= 1.0 - 0.38 * vGW.x; // (wet ground darkens: the water fills its pores)
   }
 `;
 const FRAG_SURFACE = /* glsl */`
-  roughnessFactor = roughnessFactor * (1.0 - gCover) + gRough;
+  roughnessFactor = mix(roughnessFactor * (1.0 - gCover) + gRough, 0.16, 0.85 * vGW.x); // (wet ground goes glossy)
   metalnessFactor = metalnessFactor * (1.0 - gCover) + gMetal;
 `;
 const FRAG_GLOW = /* glsl */`
   { float fres = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);
     for (int k = 0; k < 5; k++) gGlow += uGAcc[k] * gB[k] * uGAmt2[k].x * fres;
+    if (vGW.y > 0.002) { // (under the water: its caustics on the floor, the light it gathers, strongest in the shallows)
+      float d = vGW.y * 1.5, gk = smoothstep(0.06, 0.35, d) * (1.0 - smoothstep(0.7, 1.8, d)); // (caustics need water to focus in: none under a film)
+      vec3 gn = normalize(vGn), gw = pow(abs(gn), vec3(4.0)); gw /= gw.x + gw.y + gw.z + 1e-5;
+      float t = uGTime * 0.6, c = 0.0;
+      if (gw.x > 0.05) c += liqCaustic(vGp.zy, 0.32, t) * gw.x;
+      if (gw.y > 0.05) c += liqCaustic(vGp.xz, 0.32, t) * gw.y;
+      if (gw.z > 0.05) c += liqCaustic(vGp.xy, 0.32, t) * gw.z;
+      gGlow += vec3(1.0, 0.97, 0.88) * c * gk * 0.24 * (0.35 + 0.65 * (1.0 - uGNight)); }
     totalEmissiveRadiance += gGlow; }
 `;
-const KEY = 'garden-grounds-1';
+const KEY = 'garden-grounds-2';
 
 /** Patch a planetoid's MeshStandardMaterial (vertex colours on) with the five grounds. Mutates and returns it; every one patched shares a
  *  program (one cache key) and one set of uniforms. */
+let LIQ = null; // (the liquid packs, for the caustics under the water: shared by every planetoid)
 export function groundMaterial(material) {
   if (!applied) applyPalette();
+  LIQ ||= liquidUniforms();
   GROUND_UNIFORMS.uGPack.value = groundPackTexture(); GROUND_UNIFORMS.uGCells.value = liquidTexture2();
   material.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, GROUND_UNIFORMS);
+    Object.assign(sh.uniforms, GROUND_UNIFORMS, LIQ);
     sh.vertexShader = VERT_DECL + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n${VERT_BODY}`);
-    sh.fragmentShader = FRAG_DECL + sh.fragmentShader
+    sh.fragmentShader = FRAG_DECL + LIQUID_GLSL + sh.fragmentShader
       .replace('#include <alphamap_fragment>', `${FRAG_COLOUR}\n#include <alphamap_fragment>`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${FRAG_SURFACE}`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n${FRAG_GLOW}`);

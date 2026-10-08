@@ -487,19 +487,28 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   left with F, Esc or W A S D. *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
   the stroke began), carve, **roughen**; a stroke's **size** (Shift and the wheel); **undo** (Ctrl+Z, ten strokes).
-- **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by a stand-in, `watermesh.js`): Lachryma running on a
+- **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by `src/vfx/garden/gardenwater.js`): Lachryma running on a
   planetoid, a shallow-water simulation on its clay's grid that pools, spills, dries and **wears the ground** (erosion); each cell keeps
   its mix of the five feelings. A **spring** pours for good, a **drain** takes for good (the hand's WATER art sets both). A body in it
-  **wades**, or **floats** when it is deeper than the body (`swim`). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
+  **wades**, or **floats** when it is deeper than the body (`swim`). Drawn on the planetoid's own vertices in its feeling's colour; two
+  feelings in it are an agate; opposites cancelled are **fair water** (milky, as nacre); the ground it leaves is **wet** (`aWet`: darker
+  and glossier, drying over 20 real seconds). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
+- **the garden's rain** (`rainOf`, `waterworks.rain()`; drawn by `src/vfx/garden/gardenrain.js`): your draught falling on every
+  planetoid as hard as your mental state is liquid (Stoic dry .. Prismatic 0.9); drawn as streaks, each falling to its own planetoid's
+  heart, a **ring** where it lands, and the garden's sky greying. *Not:* the weather's streaks (the world's, `vfx/weather.js`).
 - **a track** (the garden's: `src/world/garden/races.js`): a groove the hand carved in one stroke that closes on itself, 40 m or more;
   the spirits on its planetoid **race** a lap on it (Dovina's `RACE`). *Not:* a music track (the sound test's), the course.
 - **the ring** (`ORBIT`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a **bought planetoid** is set (the
   Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed, in turn); bought at the shed, its **seed** is carried by the god hand
-  into the open sky and let go there. *Not:* the hue ring (the spirit press's), the upper ring (the bowl's gallery).
-- **a cascade** (`src/world/garden/cascades.js`): water deep in a basin facing a linked planetoid spilling over to it. *Not:* a
-  sandfall (the Great Dunemaw's).
-- **the plants** (the garden's: `src/world/garden/plants.js`): green that spreads cell by cell over wet moss, loam and silt, and wilts
-  elsewhere; seeded by a herb terrace and by moss painted. *Not:* a material planted in a bed (the beds grow materials).
+  into the open sky and let go there; each wears its own look (`src/vfx/garden/boughtplanetoids.js`). *Not:* the hue ring (the spirit
+  press's), the upper ring (the bowl's gallery).
+- **a cascade** (`src/world/garden/cascades.js`; drawn by `src/vfx/garden/gardencascade.js`): water deep in a basin facing a linked
+  planetoid spilling over to it, drawn as a ribbon of Lachryma along its arc with **spray** where it lands. *Not:* a sandfall (the
+  Great Dunemaw's).
+- **the plants** (the garden's: `src/world/garden/plants.js`; drawn by `src/vfx/garden/gardenplants.js`): green that spreads cell by
+  cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
+  **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
+  (the beds grow materials); *not* the moss ground (the paint) or a herb terrace (a feature).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),

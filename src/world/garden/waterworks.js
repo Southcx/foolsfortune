@@ -5,7 +5,7 @@
 // that runs 0.4 a real second for good) or a **drain** (Ctrl and the left: takes 0.8 a real second), and takes the nearest of either away
 // (Shift and the right). The water runs at 60 steps a real second where there is any, and a sculpted slope slumps a few times a real
 // second; what the water wears away reaches the planetoid's look twice a real second (world/garden/realm.js `reshape`). Springs and
-// drains are marked by a stand-in (a ring on the ground, Calissa's to dress); the water's look is world/garden/watermesh.js.
+// drains are marked by a stand-in (a ring on the ground, Calissa's to dress); the water's look is vfx/garden/gardenwater.js.
 // The planetoid bodies (the Jar, the spirits) ask `planet.waterAt(dir)` and wade or float (world/garden/planetbody.js).
 // Water keeps its feeling (item 11, Dovina's WATERS): what is poured is the feeling R chose with the WATER art, else your draught's
 // (wonder when you carry none); a spring keeps the feeling it was set with. Water standing at a plot counts in its formation as one
@@ -26,7 +26,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { PlanetWater, FEELINGS } from './water.js';
-import { WaterLook } from './watermesh.js';
+import { WaterLook } from '../../vfx/garden/gardenwater.js'; // (Calissa's look: the planetoid's own vertices, Lachryma by its feeling)
 import { WATERS, rainOf } from '../../progress/realm.js';
 import { stream } from '../../core/rng.js';
 import { CELL_DIRS, NX, NY } from './clay.js';
@@ -119,7 +119,7 @@ export class Waterworks {
   update(dt) {
     for (const P of this.R.site.planets) {
       const W = this.waters[P.id]; if (!W) continue;
-      if (W.total > 0 && !this.looks[P.id]) { this.looks[P.id] = new WaterLook(W, P); this.R.site.group.add(this.looks[P.id].mesh); }
+      if (W.total > 0 && !this.looks[P.id]) { this.looks[P.id] = new WaterLook(W, P, { sky: this.R.site.sky }); this.R.site.group.add(this.looks[P.id].mesh); }
       this.looks[P.id]?.update(dt);
     }
     if ((this.lookT -= dt) <= 0) {
