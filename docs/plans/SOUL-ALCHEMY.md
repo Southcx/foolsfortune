@@ -184,7 +184,7 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 | Charisma | 123 | oribe green | the Fan |
 | Perception | 174 | Persian turquoise | the Gaze |
 | Dexterity | 226 | cobalt | the Swift |
-| Visualization | 277 | Jun lavender | the Finder |
+| Visualization | 277 | Jun lavender | the Cloud (was the Finder: Espada, shapes seen in clouds) |
 | Resilience | 329 | peach bloom | the Tumbler |
 
 - **The lights** answer the bead and never move otherwise:
@@ -298,7 +298,7 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 
   - So 51° between hues does not tell the tiles apart without full colour vision: the seals are required, not an extra.
 - **Every colliding pair has the most unlike seals:**
-  - the Swift against the Finder (a diagonal solid against hollow right angles);
+  - the Swift against the Cloud (a diagonal solid against hollow right angles);
   - the Peak against the Still Point (a solid triangle against a ring);
   - the Peak against the Fan (point up against point down);
   - the Still Point against the Fan (closed round against ribbed);
@@ -413,7 +413,7 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 - **the colour wheel**: always in full, added as a fourth meaning in the "wheel" homonym row; in play it is the bath.
 - **Avoided on purpose:** drop (loot), pool (the Courier's), run (a Well's), stain (spilled crude), well (a Well), eye (kept for the press's eye; Perception's seal is the Gaze), "the Swallow" (retired for the Great Dunemaw; Dexterity's bird is the Swift).
 
-### 4.24 The seven seals (names Espada's to confirm)
+### 4.24 The seven seals (names confirmed by Espada, LORE.md 5da0e85: the Finder is the Cloud)
 
 | attribute | hue | glyph (16 px; 64 px carving) | why |
 |---|---|---|---|
@@ -422,7 +422,7 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 | Charisma | 123 | **The Fan.** 16 px: a sensu opened about 120°, a wedge whose point (the rivet, a 2 px stem below it) is at the bottom and whose arc runs along the top, with four ribs knocked out. 64 px: the leaf over its sticks, the guard sticks heavier, a cord and tassel from the rivet. | The rakugo storyteller's fan: one voice and a fan hold a room, which is reading people and being read. That is what Charisma trains (talks, sales, tips) and does (what the folk pay and ask). It is the only glyph pointing down, the Peak's inverse. It is ribbed against the Still Point and a wedge against the Gaze's flat almond, its three colour twins. A first pass: at 16 px it reads as a fan or scallop shell, and the ribs want a hand-tidy. |
 | Perception | 174 | **The Gaze.** 16 px: a wide almond 16 × 9 px with sharp corners left and right, a 4 px pupil, and three short lashes standing on the upper lid. 64 px: five lashes, an iris ring, a catchlight, the upper lid heavier. | Seeing it coming: Perception shows a creature's windup sooner, and is seasoned by a parry in its window and by a plate appraised at three stars or more. It is the only glyph twice as wide as tall. The lashes break its top so it never reads as the Still Point. Named the Gaze so "the eye" stays the press's. |
 | Dexterity | 226 | **The Swift.** 16 px: a bird banked toward the upper right, scythe wings swept back across a short body, a forked tail trailing to the lower left. 64 px: separated primaries, a deep fork, a pale throat. | Swift twice: the bird that turns in its own length, and quick hands (draw and stow, a swap mid-fight; tsubame-gaeshi, the cut that comes back before a bird could turn). It is the only diagonal, many-pointed glyph, set against the Finder's hollow right angles, its colour twin for protanopes and deuteranopes (ΔE 0.026 to 0.044). It is never called a swallow (retired). |
-| Visualization | 277 | **The Finder.** 16 px: two right-angle brackets 2 px thick with 7 px arms, at the top-left and bottom-right corners of a 14 px square, the middle empty. 64 px: the brackets as two hands' thumb and forefinger (the painter's finder), a faint sketched circle floating in the middle. | Holding a picture before it is made: Visualization widens the canvas the Soul Brush and the hand work on. The painter's finder is the artist's eye itself, which is the owner's lesson. It is the only hollow, straight-cornered glyph, kept furthest from the Swift. |
+| Visualization | 277 | **The Cloud** (Espada's name; Calissa's drawing was "the Finder"). 16 px: two right-angle brackets 2 px thick with 7 px arms, at the top-left and bottom-right corners of a 14 px square, the middle empty. 64 px: the brackets as two hands' thumb and forefinger (the painter's finder), a faint sketched circle floating in the middle. | Holding a picture before it is made: Visualization widens the canvas the Soul Brush and the hand work on. The painter's finder is the artist's eye itself, which is the owner's lesson. It is the only hollow, straight-cornered glyph, kept furthest from the Swift. |
 | Resilience | 329 | **The Tumbler.** 16 px: a gourd leaning about 20°, a small lobe up and right on a short stem, a waist, a big weighted lobe, with a 1 px zigzag seam knocked out across it. 64 px: the seam inlaid in gold, a cord at the waist, a short arc under the foot to show the rock. | It falls and rights itself: the okiagari-koboshi ("fall seven times, rise eight"), as Strawman rocks back up on its weighted foot. It is drawn as the hulu, the alchemist's gourd of long life, mended with the vessel's kintsugi: the clay mends, the ship bears one more hit. It is the only two-lobed, leaning glyph. Its seam is a connected zigzag, because loose knocked-out pixels read as a face. |
 
 The 16 px drawings (`#` is the cut). Calissa draws the 16 px art in the maker's style, and the maker may redraw it at 1x:
