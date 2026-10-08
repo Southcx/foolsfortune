@@ -645,6 +645,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   of labradorite standing out of the crude, a whirl on the surface, rings on the beat of its approach (no words or numbers).
 - **the crude sea** (`src/vfx/crudesea.js`): the Emocean's surface where the ships sail, liquid Lachryma: black, its swells real, its
   current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
+- **the sea chart's look** (`SeaChart`, `drawSeaChart`, `src/ui/seachart/seachart.js`; the pixel art `src/ui/seachart/icons.js`;
+  PASSAGE.md, Dovina's sea chart drawn): pixel art at 1x on the maker's ramp, scaled by whole numbers, over the crude with a
+  portolan's rhumb lines and wind rose laid faint. A **waypoint icon** is its **silhouette** (its class's shape: a diamond for a threat,
+  a ring for a haven, a radiant star for a boss; crisp whenever the class is known) and its **emblem** (its type's picture inside: the
+  shoal's school of glints, the Wreckers' brig with the false light, the eyewall's bolt, the graveyard's grave-cross masts, the
+  maelstrom's spiral, Old Nobody's flukes, a bounty's sight, a calm's half sun over level water, an encounter's lantern), both in
+  **the line hand** (a pale labradorite, never a feeling's colour). **A waypoint's nimbus** (`drawNimbus`, `ui/seachart/nimbus.js`):
+  its feeling shown round the icon, a glow in the feeling's colour with the weather's motif inside (wonder's motes, mirth's facets,
+  desire's sand, grief's streaks, dread's smoke), from the silhouette tier up. A portent's **candidates** are overlaid a little apart,
+  out of focus and faded by its confidence, one in front at a time. The sea chart's lanes are lines of light, the drafted ones
+  gold-white, a storm's bent; the draught's trump runs along its lane as beads of the trumping feeling. The same drawing in ink
+  (`look: 'ink'`) is a rutter's page. *Not:* the map (Mind Mapping), a glyph (the glyph pop's), a sigil (the Soul Brush's), the
+  weather's halo (wonder by day), an aura (a status's).
+- **the rutter's model** (`Rutter`, `rutterThing`, `src/vfx/rutter.js`): a small bound book in black-green morocco, its front board
+  tooled in gilt with its own passage (the islands as gilt stamps, the waypoints sailed as studs, a blind wind rose under them); open,
+  its spread is that game day's sea chart in ink, ruled in red, and the crossing's rank stamped in vermilion: **the rank's chop**.
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
   is the hourglass in the pool. **the drum's pool**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired (it
