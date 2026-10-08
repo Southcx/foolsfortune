@@ -381,6 +381,15 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Thick Walls**,
 **Perfect Pitch**, **Early Tell**, **Rule of Thirds**, **Half Time**, **Crib Sheet** (the English beside each neuralese word you have
 found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of an agate shown on a creature's body).
+*Proposed, 2026-10-08:* **Held Breath** (a blow's parry window a beat longer; replaces Early Tell), **Wet Ink** (Celestial mode waits
+longer after the last stroke: the ink stays wet), **Ariadne's Thread** (the map shows the way back to the last Shrine: the thread
+that led Theseus out of the labyrinth).
+
+### The press's seals *(Calissa's shapes, one an attribute; names proposed, 2026-10-08)*
+**the Peak** (Willpower), **the Still Point** (Focus: "at the still point of the turning world", Eliot, and the press is a wheel),
+**the Fan** (Charisma: a fan held, and a fan who follows), **the Gaze** (Perception), **the Swift** (Dexterity: the bird, and the
+speed), **the Cloud** (Visualization: shapes seen in clouds; "the Finder" said what, not how), **the Tumbler** (Resilience: the
+roly-poly toy that rights itself, and a cup).
 
 ### Digging for words: the ostraca *(the owner's direction, 2026-10-08; names Espada's, proposed)*
 - **The direction**: the Crib Sheet glosses more words for the player who explores; archaeology is the motif (Indiana Jones, Spelunky,
@@ -394,8 +403,15 @@ found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of
   boomtown's orders, chores and reminders, the first reprogramming, done to clay. That is why the jellies answer it. Who taught them the
   language stays blank.
 - **Where**: buried in the Dunes (the survey shows a glint; the pick lifts it), in the Great Dunemaw's forgotten pots, at the ruins'
-  columns, and a few in plain sight for the one who reads walls. A larger find, **a ledger stone** (the town's own record, many words
-  and one sentence), stands at the end of a harder path: La-Mulana's tablets, Spelunky's hidden rooms.
+  columns, under the workshop's plaster (Dovina's numbers, `progress/ostraca.js`). Rarer, **two stelae** (Greek *stēlē*, a standing
+  stone; Dovina's word, since "ledger" is the game's counts) at the end of harder paths: La-Mulana's tablets, Spelunky's hidden rooms.
+  Each carries three words no ostracon does, inside a sentence that teaches them by context (`STELE_TEXT`, `npc/neuralese.js`):
+  - the ruins' sealed room, the town's rule: *DIPSA SIVA. GULA GRAV. VOYD STIL.* (Thirst: drink. Hunger: forage. To forget: be still.)
+  - the great cavern's upper ring, above the bowl, its last word to its kin: *AMI KITH. HEMA LON. MOR DEO.* (You are kin. Home is
+    long. Grief runs deep.)
+- **The log**: "You find an ostracon: SIVA (drink)." · "You read the stele: AMI KITH. HEMA LON. MOR DEO. New words: AMI (kin), LON
+  (long), DEO (deep)." **The achievements**: First Word, Small Talk, Broken English (every ostracon: broken pots, and a language
+  pieced together), Set in Stone, Epigrapher (*epi* + *graphein*, writing upon: the title).
 - **Monster Rancher's disc stone stays the plates' job** (a Veritome photograph awakens a spirit at the Athanor); ostraca are words only.
 
 ### The round robin's proposals *(Espada's, for the owner)*

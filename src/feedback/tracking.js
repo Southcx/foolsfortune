@@ -347,10 +347,10 @@ export class Tracking {
     on('veritome.lens', () => L.inc('veritome.lens'));
     on('photo.take', (e) => {
       L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
-      first('photo', 'Logged: your first photograph. It waits in the memory of the Veritome to be appraised (B).');
+      first('photo', "Logged: your first photograph. It stays in the Veritome's memory until you appraise it (B).");
       if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
-      if (e.left === 0) log.say('info', 'That was the last plate the memory holds.', { key: 'memorylast', throttle: 5 });
+      if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 plates.", { key: 'memorylast', throttle: 5 });
     });
     on('photo.discard', (e) => L.inc('photo.discard', e.n));
     on('photo.appraise', (e) => {
@@ -429,7 +429,7 @@ export class Tracking {
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
-    on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings in the slab, and it sinks into the sand.'); });
+    on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
     on('reprogram.run', (e) => {
       L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');

@@ -190,7 +190,8 @@ export class Ostraca {
   // ---------------------------------------------------------------- the Crib Sheet
   glossed(word) {
     const w = String(word).toLowerCase(), L = this.game.ledger;
-    return this.found(w) || STELAE.some((st) => st.words.includes(w) && L?.get(st.id) > 0) || !!this.game.macros?.known?.has?.(w); // (a Function learned: seen a mind do it)
+    const named = String(this.game.realm?.name || '').toLowerCase().split(/[^a-z]+/).includes(w); // (a word of the realm's name you chose: Espada, 2026-10-08)
+    return this.found(w) || named || STELAE.some((st) => st.words.includes(w) && L?.get(st.id) > 0) || !!this.game.macros?.known?.has?.(w); // (a Function learned: seen a mind do it)
   }
   /** A word as the Crib Sheet shows it: its English beside it when glossed and the knack is on; bare otherwise. */
   gloss(word) {
