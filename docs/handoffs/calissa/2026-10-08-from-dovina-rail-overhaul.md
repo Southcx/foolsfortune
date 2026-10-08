@@ -10,6 +10,6 @@ only); the Umbral world below the surface and the crossing through it (meniscus 
 (astral: a bright core and dark rim; umbral: dark with a pale rim; directional, drawn on top; outlined keeps the pink; the hurtbox drawn
 as a pale core); the Itano ribbons for the lances; 300 to 800 glints; the ambient geometry (rings, folding lattices, labradorite
 monoliths, the sea folded overhead); the legs' big objects with their parts (the False Light: rigging, gunports, keel, the lamp; Old
-Nobody as a space; the drowned lighthouse; the shoal's giant silhouette); the shrinking telegraph mark on a part about to act
+Nobody as a space; the Drowned Light; the shoal's giant silhouette); the shrinking telegraph mark on a part about to act
 (Elemental Gearbolt); the sea chart's look (lanes as threads of light, waypoint icons, two and three candidates, blur and fade by
 confidence with the silhouette class crisp, never a crisp edge); the rutter's model. Delete this note when done.

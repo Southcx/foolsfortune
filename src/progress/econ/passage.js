@@ -15,7 +15,7 @@
 //
 //   PASSAGE (the pool and its rules)   seaChart({ from, to, day, danger, distance, casks, leviathan, bounty }) -> chart
 //   lanes(chart) -> [[waypoint id, ...]]   next(chart, id) -> [ids]   classOf(type) -> 'threat' | 'boss' | 'haven'
-//   sight(reading, widen, lead) -> 0..   confidence(depth, sight, level) -> 0..1   tierOf(c, depth) -> 'exact' | 'two' | 'three' | 'class' | 'star'
+//   sight(reckoning, widen, lead) -> 0..   confidence(depth, sight, level) -> 0..1   tierOf(c, depth) -> 'exact' | 'two' | 'three' | 'class' | 'star'
 //   portent(chart, waypoint, depth, sight, level) -> { tier, candidates, cls, confidence }   rutterWorth({ minutes, rank, read, daysOld }) -> cubes
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
@@ -26,7 +26,7 @@ export const PASSAGE = {
   types: {
     shoal:     { cls: 'threat', share: (d) => 0.30 - 0.05 * d },
     wreckers:  { cls: 'threat', share: (d, casks) => Math.min(0.30, 0.10 + 0.05 * d + 0.03 * casks), minCol: 1, noRepeat: true },
-    storm:     { cls: 'threat', share: (d) => 0.12 + 0.04 * d, noRepeat: true },
+    eyewall:   { cls: 'threat', share: (d) => 0.12 + 0.04 * d, noRepeat: true },
     graveyard: { cls: 'threat', share: () => 0.12 },
     calm:      { cls: 'haven',  share: (d) => 0.18 - 0.04 * d, noRepeat: true, notLast: true },
     maelstrom: { cls: 'boss',   one: true, minCol: 2 },
@@ -131,9 +131,9 @@ export function lanes(chart) {
 
 // ---- the portents (Divination)
 
-/** How far you see: the reading of the sea (0..1, the day's best: voyage.reckoning), Divination's widening (x1 .. x1.5:
+/** How far you see: the reckoning (0..1, the day's best: voyage.reckoning), Divination's widening (x1 .. x1.5:
  *  `divination.reckon`), and the weather of the island you leave (stageWx(...).lead: the pall x0.6, wonder x1.25). */
-export const sight = (reading = 0, widen = 1, lead = 1) => (0.35 + 0.65 * Math.max(0, Math.min(1, reading))) * widen * lead;
+export const sight = (reckoning = 0, widen = 1, lead = 1) => (0.35 + 0.65 * Math.max(0, Math.min(1, reckoning))) * widen * lead;
 /** A waypoint's confidence at a depth (1 the next waypoint: always exact), falling by 0.62 a column at Divination 1, 0.70 at 99. */
 export const confidence = (depth, s, level = 1) => (depth <= 1 ? 1 : Math.max(0, Math.min(1, s * Math.pow(0.62 + 0.08 * (Math.max(1, level) / 99), depth - 1))));
 /** What a confidence shows: the leg exactly, two candidates, three, its silhouette class, or a dim star. */

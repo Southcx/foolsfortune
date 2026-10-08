@@ -54,7 +54,7 @@ check('one maelstrom, bounty and Leviathan at most', bad.ones === 0, bad.ones);
 check('a portent\'s shortlist always holds the truth', portentMiss === 0, portentMiss);
 check('the next waypoint is always exact', nextNotExact === 0, nextNotExact);
 const shares = Object.fromEntries(Object.entries(counts).map(([k, v]) => [k, +(v / waypointsAll).toFixed(3)]));
-check('every type appears', ['shoal', 'wreckers', 'storm', 'graveyard', 'calm', 'maelstrom', 'bounty', 'leviathan'].every((t) => counts[t] > 0), shares);
+check('every type appears', ['shoal', 'wreckers', 'eyewall', 'graveyard', 'calm', 'maelstrom', 'bounty', 'leviathan'].every((t) => counts[t] > 0), shares);
 check('sizes by route', true, sizes);
 // acceptance 3: a reading of quality 1 at level 1 shows the second column at two candidates or better
 check('a full reading at level 1 shows depth 2 as two candidates', tierOf(confidence(2, sight(1, 1, 1), 1), 2) === 'two', confidence(2, sight(1, 1, 1), 1));

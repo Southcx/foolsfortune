@@ -15,7 +15,7 @@ the cursor's screen position.
 an arena); the Astral and Umbral forms (Q: half a bar through the surface; absorb your kind, the other hurts; the surge on R; V retired
 at sea, its job folded into the roll); the shot runtime (pools for 400 shots, the two kinds, collisions); the lances' proportional
 navigation (formula in research/RAIL-PATTERNS.md §3); boids at 300 to 800 (a CPU grid, a third stepped a frame); the legs' runtime from
-my schedules; the sea chart window at the pier, the drafting, the reading of the sea (the dowse over the chart, calling `voyage.reckon`:
+my schedules; the sea chart window at the pier, the drafting, the reckoning (the dowse over the chart, calling `voyage.reckon`:
 nothing calls it today), a crossing run from the passage, the rutter item and its sale.
 
 **Mine, starting now:** `progress/rail/patterns.js` (28 emitters as data and pure functions in the rail's frame: `emit(pattern, params,
@@ -24,5 +24,5 @@ numbers (`crossing.js`, `setpieces.js`), the fairness checker and the leg simula
 (calibration), the score, ledger, achievements, sweeps. The natural split if you are backlogged: I also take the shot runtime and the
 pattern player (they read my library), in `world/emocean/` with your approval at the gate.
 
-Glossary: the sea chart, the passage, a waypoint, a portent, the reading of the sea, a rutter; the Astral and Umbral forms, the surge,
+Glossary: the sea chart, the passage, a waypoint, a portent, the reckoning, a rutter; the Astral and Umbral forms, the surge,
 a turn of the rail (named in this commit). Delete this note when done.

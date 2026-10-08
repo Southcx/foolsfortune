@@ -10,7 +10,8 @@ Kept by Dovina. The ride it drafts is `docs/plans/RAIL-OVERHAUL.md`; the researc
 **Words (the glossary first):** "course" is the basement's loop and "chart" alone is the map's, so this is **the sea chart** (the
 constellation at the pier: a chart in the map's sense), **the passage** (the path you draft through it), **a waypoint** (a node of
 it: one leg), **a portent** (what Divination tells of a waypoint: not "forecast", which is the weather's) and **a rutter** (the trip's map, kept and sold: a sailor's book of
-routes, from the French *routier*). Player words are Espada's to change.
+routes, from the French *routier*). Espada's ruling (LORE.md, "The passage and the overhauled crossing", dd1c4f3): kept, but the survey is **the reckoning** (one word:
+`RECKON` already is it), the storm leg is **the eyewall**, the drowned lighthouse **the Drowned Light**, the buoy **the Purser's buoy**.
 
 ## 1. What exists, and what this adds (read in the code, 2026-10-08)
 
@@ -36,14 +37,14 @@ in the next, merging allowed, **crossing never**; waypoints off every lane remov
 |---|---|---|
 | the shoal | 30% - 5% d | |
 | the Wreckers | 10% + 5% d + 3% a cask aboard (at most 30%) | never in the first column; their strength rises with the casks you carry |
-| the storm wall | 12% + 4% d | never two in a row |
+| the eyewall | 12% + 4% d | never two in a row |
 | the graveyard | 12% | |
 | the maelstrom | at most one a sea chart, from the third column | |
 | a calm (haven) | 18% - 4% d | never two in a row; never in the last column |
 | a bounty | one, if Letty has posted one on this route | |
 | Old Nobody | from its deck (`LEVIATHAN.deck`), drawn when the sea chart is laid: if drawn, one waypoint of the last two columns | the deck's guarantee is kept, and a portent can now see it coming |
 
-Local rules (Slay the Spire's): a haven, the Wreckers and the storm wall never follow themselves (child unlike parent); a waypoint
+Local rules (Slay the Spire's): a haven, the Wreckers and the eyewall never follow themselves (child unlike parent); a waypoint
 with two or more ways on leads to unlike waypoints (siblings unlike); the first column is never a boss leg; **one column in the middle
 always has a calm on some lane** (an anchor: the rest before the climb).
 
@@ -55,7 +56,7 @@ day's hash (`hash01`), so the same game day lays the same sea (learnable, as an 
 You draft the passage before you cast off: click a waypoint in each column along the lanes (a path that only follows the lines).
 **Fuel** is the hop's (as now). **The pressure is the hold:** every cask aboard raises the Wreckers' share of the sea and their
 strength (a step for every four casks), so a rich cargo makes every lane wilder. You may **redraft at a calm** (the waypoints ahead
-only; a calm's buoy sells fuel).
+only; the Purser's buoy sells fuel).
 
 ## 4. The portents (Divination)
 
@@ -63,10 +64,10 @@ Each waypoint shows what Divination tells of it, at a **confidence** that falls 
 
 ```
 confidence(depth) = clamp01(sight x falloff ^ (depth - 1))   (depth 1, the next waypoint: always exact)
-sight   = (0.35 + 0.65 x reading) x widen('divination.reckon') x weatherLead
+sight   = (0.35 + 0.65 x reckoning) x widen('divination.reckon') x weatherLead
 falloff = 0.62 + 0.08 x (Divination level / 99)
 ```
-- **reading** (0 .. 1) is the day's best **reading of the sea** for this route (the existing `reckoning`, finally wired: §5).
+- **reckoning** (0 .. 1) is the day's best reckoning of this route (the existing `reckoning`, finally wired: §5).
 - **widen** is Divination's widening (x1 at level 1 .. x1.5 at 99, existing `divination.reckon`).
 - **weatherLead** is the weather of the island you leave (existing `stageWx(...).lead`: the pall of dread x0.6, wonder x1.25): a dread
   sky shortens how far you see.
@@ -88,14 +89,14 @@ types, weighted as the pool, so the decoys are plausible. **No crisp edge** wher
 fade one into the next (Calissa: blur and transparency by confidence, the silhouette class kept crisp). **The portents are calibrated
 and true:** the true leg is always in the shortlist shown; a test (`scripts/passage.mjs`) lays 10,000 sea charts and asserts it.
 
-## 5. The reading of the sea (the survey verb, finally wired)
+## 5. The reckoning (the survey verb, finally wired)
 
 At the pier, with the Dreamvane worn, **F, then hold the dowse over the sea chart**: the needle swings toward the strongest of the
 route's waypoints' signatures (each leg gives off a signature of its feeling and strength: CLAUDE.md, `core/signatures.js`). Holding
 the needle steady on it for four beats while the sea's pull wanders is the skill; the **quality** (0 .. 1) is how long it was held true
-(a steadiness the vane already measures for the weather). The reading is `voyage.reckon(from, to, share, q)` (existing: the day's best
-kept), and it pays Divination EXP (existing source `emocean.reckon`). **Skill skips grind:** one good reading opens most of the sea
-chart; **grind closes the gap:** the level's falloff and widening let a patient player see as far with plain readings. A reading again
+(a steadiness the vane already measures for the weather). The reckoning is `voyage.reckon(from, to, share, q)` (existing: the day's best
+kept), and it pays Divination EXP (existing source `emocean.reckon`). **Skill skips grind:** one good reckoning opens most of the sea
+chart; **grind closes the gap:** the level's falloff and widening let a patient player see as far with plain reckonings. A reckoning again
 at a calm sharpens what is ahead.
 
 ## 6. The rutter (the trip's map)
@@ -118,9 +119,9 @@ whole: S 18, A 14, B 12, C 10, D 7 cubes (a side income; the cargo is the trip's
 ## 7. Events, ledger, achievements (Dovina's)
 
 Events (each with `by`): `passage.chart { from, to, columns, day }` (the sea chart laid), `passage.draft { waypoints }`, `passage.read
-{ q, read }` (the reading), `passage.waypoint { type, depth, confidence, guessed }` (arriving: was the portent's shortlist right, and
+{ q, read }` (the reckoning), `passage.waypoint { type, depth, confidence, guessed }` (arriving: was the portent's shortlist right, and
 which was shown), `passage.redraft`, `passage.done { rank, legs }`, `rutter.get`, `rutter.sell`. Ledger: trips, waypoints by type,
-readings, the best reading, the deepest exact portent, rutters made and sold. Achievements (a count way and a feat way): **a trip of
+reckonings, the best reckoning, the deepest exact portent, rutters made and sold. Achievements (a count way and a feat way): **a trip of
 six waypoints**; **a passage read whole** (every waypoint exact at the pier); **the long dark** (a trip under the pall, dread's
 weather); **a rutter sold for its full worth**; **Old Nobody foreseen** (seen in a portent before it was met).
 
@@ -135,15 +136,15 @@ weather); **a rutter sold for its full worth**; **Old Nobody foreseen** (seen in
 | division | builds |
 |---|---|
 | **Dovina** | `src/progress/econ/passage.js` (the sea chart's generator: lanes, pool, rules; the portents and their tiers; the rutter's worth), `scripts/passage.mjs` (the calibration test and the generator's checks), the events' rules, ledger, achievements, the hauler profile, the glossary entries |
-| **Petra** | the pier's sea chart window and the drafting input, the reading of the sea (the vane over the chart; the call to `voyage.reckon`), the crossing run from the passage (a leg per waypoint), the rutter's item and sale |
+| **Petra** | the pier's sea chart window and the drafting input, the reckoning (the vane over the chart; the call to `voyage.reckon`), the crossing run from the passage (a leg per waypoint), the rutter's item and sale |
 | **Calissa** | the sea chart's look (the constellation over the crude, the lanes as threads of light, the waypoint icons, the candidates' blur and fade, the silhouette classes), the rutter's model and its page |
-| **Wanda** | the reading's sound (the needle's tone steadying), the sea chart's ambience |
-| **Espada** | the player words (the passage, waypoint, sea chart, rutter, the reading of the sea), the waypoints' names in the log |
+| **Wanda** | the reckoning's sound (the needle's tone steadying), the sea chart's ambience |
+| **Espada** | the player words (the passage, waypoint, sea chart, rutter, the reckoning), the waypoints' names in the log |
 
 ## 10. Acceptance (the Emocean sweep, and `scripts/passage.mjs`)
 
 1. **Built:** `src/progress/econ/passage.js`; `node scripts/passage.mjs` lays 6,000 sea charts (three routes, 2,000 game days) and passes: no crossing lanes; every rule held; every waypoint reachable; the pool's shares within 3 points of the table.
 2. A portent's shortlist always holds the truth; depth 1 always exact.
-3. A reading of quality 1 at level 1 shows the second column at two candidates or better (sight 1 x 0.62 = 0.62).
+3. A reckoning of quality 1 at level 1 shows the second column at two candidates or better (sight 1 x 0.62 = 0.62).
 4. A passage sailed to its end gives one rutter, with its legs and rank; sold at Margarite above Entropolis.
 5. A debug chest at the jetty: the Dreamvane and cubes for fuel.
