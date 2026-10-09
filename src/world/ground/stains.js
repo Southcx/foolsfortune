@@ -61,8 +61,8 @@ export class Stains {
 
   /** The mop's stroke this frame, a to b at height y: a strip 2.4 m wide (STAINS.wipe) wiped across the blots it crosses, each from its
    *  rim, up to `want` Lachryma; a thin smear pushed on 0.5 m. An emptied blot is washed. */
-  wipe(a, b, y, want) {
-    const pm = this.game.paintmap, w = STAINS.wipe ?? 2.4;
+  wipe(a, b, y, want, width = null) {
+    const pm = this.game.paintmap, w = width ?? STAINS.wipe ?? 2.4; // (`width`: Clean's splat, not the mop's strip)
     let got = 0, grade = null, at = null, smear = null;
     if (!pm) return { got, grade, at, smear };
     for (const s of this.list.slice()) {

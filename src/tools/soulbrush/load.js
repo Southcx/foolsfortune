@@ -45,15 +45,16 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3
 export class BrushLoad {
   constructor(tool) {
     this.tool = tool; this.mode = 'paint'; this.sat = -1; this.working = false;
+    this.pick = null; // (the radial's pick: radial.js)
     this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null;
     tool.game.events?.on('vessel.shieldbreak', () => this.shieldBreak());
     this.look = null; this.lookId = null; this.crackT = 0; this.mopAt = null; // (the bottle worn, seen: Calissa's vfx/bottle.js)
     this.aimer = new PaintSpray(tool.game); // (where the paint goes and where it will land: paintspray.js, LACHRYMA-LOOP.md 3)
     tool.game.save?.section('brushload', { // (the mode and the grade of what the bottle holds; the Lachryma it holds is the bottle's own `uses`)
       scope: 'player', version: 1,
-      dump: () => ({ mode: this.mode, grade: this.grade }),
-      load: (d) => { this.mode = LOAD.modes.includes(d.mode) ? d.mode : 'paint'; this.grade = ASPECTS.includes(d.grade) ? d.grade : null; },
-      reset: () => { this.mode = 'paint'; this.grade = null; },
+      dump: () => ({ mode: this.mode, grade: this.grade, pick: this.pick }),
+      load: (d) => { this.mode = LOAD.modes.includes(d.mode) ? d.mode : 'paint'; this.grade = ASPECTS.includes(d.grade) ? d.grade : null; this.pick = ASPECTS.includes(d.pick) || d.pick === 'clean' ? d.pick : null; },
+      reset: () => { this.mode = 'paint'; this.grade = null; this.pick = null; },
     });
   }
   save() { this.game.save?.dirty('brushload'); }
@@ -64,7 +65,10 @@ export class BrushLoad {
   get held() { return this.box?.uses?.bottle?.[0] || 0; }
   set held(v) { const U = this.box?.uses?.bottle; if (U && this.bottle) { U[0] = Math.max(0, Math.min(BOTTLES[this.bottle].capacity, v)); this.box.save?.(); } }
   /** The feeling the brush lays: the bottle's grade while it holds some, else the weather's where the Courier stands. */
-  get aspect() { const g = this.game; return (this.held > 0.5 && this.grade) || g.weather?.here?.(this.P.pos)?.aspect || 'wonder'; }
+  get aspect() { const g = this.game; return (ASPECTS.includes(this.pick) && this.pick) || (this.held > 0.5 && this.grade) || g.weather?.here?.(this.P.pos)?.aspect || 'wonder'; }
+  /** What the radial picked (radial.js): a feeling the paint is refined into, or 'clean' (Fair: it washes, and lays nothing). */
+  setPick(id) { if (id === this.pick) return; this.pick = id; this.save(); sfx.click?.(); this.game.events?.emit('brush.pick', { feeling: id, by: 'courier' }); }
+  get cleaning() { return this.pick === 'clean'; }
 
   setMode(m) { if (m === this.mode || !LOAD.modes.includes(m)) return; this.mode = m; this.end(); this.save(); sfx.click?.(); this.game.events?.emit('brush.mode', { mode: m, by: 'courier' }); }
 
@@ -99,7 +103,7 @@ export class BrushLoad {
     const tip = this.aimer.muzzle(this.P, _a), aim = this.aimer.aim(tip, _d); // (a steady nozzle before the chest: paintspray.js)
     while (this.acc >= 1 && this.drops.length < MAX_DROPS) {
       this.acc -= 1;
-      this.drops.push({ p: tip.clone(), v: this.aimer.launch(aim, simRand), aspect, life: 3, travel: 0, trail: 0 }); // (the spray's look is Calissa's: vfx/brushload.js, driven in tick)
+      this.drops.push({ p: tip.clone(), v: this.aimer.launch(aim, simRand), aspect, clean: this.cleaning, life: 3, travel: 0, trail: 0 }); // (the spray's look is Calissa's: vfx/brushload.js, driven in tick)
     }
     g.ai?.stimuli?.emit?.({ kind: 'sound', pos: tip.clone(), loud: 0.3, by: 'courier' });
   }
@@ -173,7 +177,7 @@ export class BrushLoad {
     // the aim: the spread's heat, and the reticle where the stream would land while paint is aimed (a stand-in look: paintspray.js)
     this.aimer.update(dt, this.working && this.mode === 'paint', this.P);
     const aiming = this.busy && this.mode === 'paint' && this.tool.drawT > 0.02, tip = aiming ? this.aimer.muzzle(this.P, _a) : null;
-    this.aimer.reticle(aiming, tip, aiming ? this.aimer.aim(tip, _d) : null, ASPECT_COLOR[this.aspect]);
+    this.aimer.reticle(aiming, tip, aiming ? this.aimer.aim(tip, _d) : null, this.cleaning ? 0xf4efe6 : ASPECT_COLOR[this.aspect]);
     if (this.busy && this.tool.drawT > 0.02) g.brushLoad?.update(raw, { model: this.tool.model, mode: this.mode, saturate: Math.max(0, this.sat), working: this.working, aim: this.tool.club.aimDir(_d).clone(), from: this.mopAt, feeling: this.aspect });
     // the bottle: a reserve that feeds the pool below half
     const b = this.bottle;
@@ -197,6 +201,11 @@ export class BrushLoad {
 
   land(d, at, normal = _d.set(0, 1, 0)) {
     const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
+    if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
+      g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false);
+      g.stains?.wipe({ x: at.x, z: at.z }, { x: at.x, z: at.z }, at.y, 99, sp.r * 2);
+      return;
+    }
     let area = g.paintmap?.stamp(at.x, at.y, at.z, sp.r, d.aspect, 0.9) || 0;
     if (sp.stretch > 1.05) { const h = Math.hypot(d.v.x, d.v.z) || 1, o = sp.r * (sp.stretch - 1); area += g.paintmap?.stamp(at.x + (d.v.x / h) * o, at.y, at.z + (d.v.z / h) * o, sp.r * 0.85, d.aspect, 0.9) || 0; }
     this.paintArea += area; this.paintAspect = d.aspect;

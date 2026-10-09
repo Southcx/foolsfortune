@@ -20,6 +20,11 @@ export function brushRules({ on, L, log }) {
     L.inc('paint.area', e.area || 0);
     if (e.aspect) L.inc(`paint.${e.aspect}`, e.area || 0);
   });
+  // brush.pick { feeling, by }: the radial's pick (tools/soulbrush/radial.js): a feeling the paint is refined into, or Clean
+  on('brush.pick', (e) => {
+    L.inc(`brush.pick.${e.feeling}`);
+    log.say('info', e.feeling === 'clean' ? 'Your brush sprays clean.' : `Your brush paints ${e.feeling[0].toUpperCase()}${e.feeling.slice(1)}.`, { key: 'brushpick', throttle: 0.5 });
+  });
   // brush.mop { lachryma, by }: Lachryma drunk into the bottle (or the pool, bottle-less)
   on('brush.mop', (e) => { if (e.by === 'courier') L.inc('mop.lachryma', e.lachryma || 0); });
   // stain.wash { grade, stage, by }: a stain mopped up whole
