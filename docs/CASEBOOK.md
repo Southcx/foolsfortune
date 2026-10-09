@@ -446,8 +446,24 @@ the rules before building in the same area; a rule a machine can check goes into
 164. **A model scaled is a look judged again, from where it is now seen.** Whatever its shaders and effects measure in metres (a
     world-space phase, a particle's size and speed, a gravity) is put against the model's own size, and every face the old size hid
     (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
+165. **A choice that is none of a list's kinds is passed as itself.** A getter that falls back to a default kind (the brush's `aspect`:
+    the pick, else the bottle's grade, else the weather) answers "which feeling", never "what was picked"; a look that must show the pick
+    reads the pick.
 
 ## Cases
+
+### 2026-10-09 · Clean sprayed the weather's colour (the Soul Brush's radial, read while giving the paint its looks)
+
+- **Seen:** with the radial's Clean picked, the spray's drops were drawn in a feeling's colour, so the wash looked like paint. Measured on
+  the base (2f61385) at the paint range, a 110-tick hold: 73 of its 108 drops and droplets in Wonder's colours (`5ec8e0`, its film tone
+  `4faabf`), the other 35 the ink every spray has (`15101c`).
+- **Cause (measured):** `tools/soulbrush/load.js` handed the look `feeling: this.aspect`, and `aspect` is the getter that answers with
+  the pick only when the pick is a feeling, else the bottle's grade, else the weather (Wonder at the Workshop that hour): `'clean'` never
+  reached the look (`load.aspect` read `wonder` with `load.cleaning` true). The arc's droplets took `ASPECT_COLOR[d.aspect]` the same way.
+- **Fix:** the look is handed `'clean'` while cleaning and draws clear water (`d8eeee`, glints `f4ffff`: `vfx/brushload.js`), and Clean's
+  droplets on the arc are clear (`e8fbff`). The same hold on the branch: 89 clear (`d8eeee`, `f4ffff`, `e8fbff`), 20 ink, none in a
+  feeling's colour.
+- **Rule:** 165.
 
 ### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
 

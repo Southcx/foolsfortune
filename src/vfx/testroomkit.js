@@ -19,7 +19,16 @@
 //                    light rising off the page into it (a glass cone of the Mind and rings of light climbing it, widening from the
 //                    print to the dial), all in the Mind's lines (the System's reading laid over a physical thing: docs/plans/OVERLAY.md)
 //
+//   THE PAINT RANGE'S MARKS  the floor marks of the paint range (world/testroom/paintrange.js: a stand and rings at 3, 6 and 9 m) in
+//                    the plates' own hand: the stand a fired quarry tile set in the planks, terracotta with a darker kiln edge and a
+//                    cream slip chevron trailed on it pointing down the range; each ring a band of the plates' cream slip brushed on the
+//                    floor as on a banding wheel (its edges wander, the brush's streaks run round it, a fat dab where the stroke began
+//                    and ended), an oxblood line round its rim, and a tally on its near side, small oxblood tiles set in the planks each
+//                    with a dab of slip (one, two, three: how far, counted, never a number: docs/ART.md precept 6). Opaque, lit like
+//                    the floor: the drill plate's glaze's program (a standard material with a map), none of its own.
+//
 //   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom)
+//   dressPaintRange(range)   (the paint range's stand-in marks given their look: geometry and material swapped, the meshes kept)
 //   LECTERN.projection   the dial's height over the pages, its print and its light (knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -83,6 +92,85 @@ export function drillPlate(radius = 0.32) {
     new THREE.MeshStandardMaterial({ name: 'drill-bull', color: 0x8e2a1c, roughness: 0.25, emissive: 0x000000 }));
   bull.rotation.z = -Math.PI / 2; bull.scale.set(1, 0.45, 1); bull.position.x = 0.022; group.add(bull);
   return { group, bull };
+}
+
+let SLIP = null, TILE = null;
+/** The ring's slip, painted once along a strip (u round the ring, v across the band from the inside out): cream, the brush's streaks,
+ *  an oxblood line at the rim, and a fat dab where the stroke began and ended. */
+function slipBand() {
+  if (SLIP) return SLIP;
+  const W = 256, H = 32, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#e4d3b2'; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 26; i++) { // (the brush's hairs: streaks along the stroke, a little darker or lighter)
+    const y = Math.random() * H, a = 0.05 + Math.random() * 0.1;
+    x.fillStyle = Math.random() < 0.5 ? `rgba(120,90,60,${a})` : `rgba(255,248,232,${a})`; x.fillRect(0, y, W, 0.6 + Math.random() * 1.2);
+  }
+  x.fillStyle = 'rgba(150,110,70,0.22)'; x.beginPath(); x.ellipse(6, H / 2, 10, H * 0.48, 0, 0, Math.PI * 2); x.fill(); // (where the stroke began, over where it ended)
+  x.fillStyle = '#7a2a1e'; x.fillRect(0, 2, W, 6); // (the oxblood line round the rim: the canvas's top is the band's outside)
+  SLIP = new THREE.CanvasTexture(c); SLIP.colorSpace = THREE.SRGBColorSpace; SLIP.anisotropy = 4; SLIP.wrapS = THREE.RepeatWrapping;
+  return SLIP;
+}
+let TALLY = null, TALLY_M = null;
+/** One tally stroke, painted once: a dab of the cream slip edged in oxblood (one picture: no two faces in one plane, casebook rule 1). */
+function tallyStroke() {
+  if (TALLY) return TALLY;
+  const c = document.createElement('canvas'); c.width = 64; c.height = 32;
+  const x = c.getContext('2d');
+  x.fillStyle = '#7a2a1e'; x.fillRect(0, 0, 64, 32);
+  x.fillStyle = '#e4d3b2'; x.beginPath(); x.ellipse(32, 16, 27, 9.5, 0, 0, Math.PI * 2); x.fill();
+  TALLY = new THREE.CanvasTexture(c); TALLY.colorSpace = THREE.SRGBColorSpace; TALLY.anisotropy = 4;
+  return TALLY;
+}
+/** The stand's quarry tile, painted once: terracotta with a darker kiln edge, a little speckle, and a cream slip chevron pointing +u. */
+function quarryTile() {
+  if (TILE) return TILE;
+  const N = 128, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  x.fillStyle = '#8a4428'; x.fillRect(0, 0, N, N);
+  const g = x.createRadialGradient(N / 2, N / 2, N * 0.15, N / 2, N / 2, N * 0.72); g.addColorStop(0, '#b4643c'); g.addColorStop(1, '#8a4428');
+  x.fillStyle = g; x.fillRect(5, 5, N - 10, N - 10);
+  for (let i = 0; i < 140; i++) { x.fillStyle = Math.random() < 0.5 ? 'rgba(60,24,12,0.35)' : 'rgba(230,170,120,0.3)'; x.fillRect(Math.random() * N, Math.random() * N, 1.5, 1.5); }
+  x.strokeStyle = '#e4d3b2'; x.lineWidth = 15; x.lineCap = 'round'; x.lineJoin = 'round'; // (the slip trailed in one stroke: a chevron down the range)
+  x.beginPath(); x.moveTo(40, 30); x.lineTo(86, 64); x.lineTo(40, 98); x.stroke();
+  TILE = new THREE.CanvasTexture(c); TILE.colorSpace = THREE.SRGBColorSpace; TILE.anisotropy = 4;
+  return TILE;
+}
+
+/** A band from r0 to r1 round the origin in the xy plane (as RingGeometry, so the stand-in's rotation lays it flat), its edges wandering
+ *  as a ring brushed on a turning wheel does; u runs round it, v across from the inside out. */
+function brushedRing(r0, r1, seed) {
+  const n = 72, pos = [], uv = [], idx = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, a = t * Math.PI * 2, wo = Math.sin(a * 3 + seed) * 0.008 + Math.sin(a * 7 + seed * 2.3) * 0.004, wi = Math.sin(a * 2 + seed * 1.7) * 0.007;
+    for (const [r, v] of [[r0 + wi, 0], [r1 + wo, 1]]) { pos.push(Math.cos(a) * r, Math.sin(a) * r, 0); uv.push(t, v); }
+    if (i < n) { const k = i * 2; idx.push(k, k + 1, k + 3, k, k + 3, k + 2); }
+  }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals();
+  return geo;
+}
+
+/** The paint range's marks given their look (paintrange.js keeps the meshes, their places and its reading of the rings). */
+export function dressPaintRange(range) {
+  if (!range?.group || range.group.userData.dressed) return;
+  const slipM = new THREE.MeshStandardMaterial({ name: 'range-slip', map: slipBand(), roughness: 0.5 });
+  const tileM = new THREE.MeshStandardMaterial({ name: 'range-tile', map: quarryTile(), roughness: 0.8 });
+  const ringMeshes = new Set(range.rings.map((R) => R.mesh));
+  for (const m of range.group.children) {
+    if (!m.isMesh) continue;
+    const old = m.material;
+    if (ringMeshes.has(m)) {
+      const R = range.rings.find((q) => q.mesh === m), i = range.rings.indexOf(R), p = m.geometry.parameters || {};
+      m.geometry.dispose(); m.geometry = brushedRing(p.innerRadius ?? 0.48, p.outerRadius ?? 0.6, i * 2.1 + 0.4); m.material = slipM;
+      for (let k = 0; k <= i; k++) { // (the tally: one stroke of slip a range, on the side toward the stand (local -x is the world's -x), each with an oxblood edge)
+        const d = new THREE.Mesh(new THREE.PlaneGeometry(0.29, 0.1), TALLY_M ||= new THREE.MeshStandardMaterial({ name: 'range-tally', map: tallyStroke(), roughness: 0.5 }));
+        d.position.set(-(R.r + 0.24), (k - i / 2) * 0.15, 0); d.name = 'range-tally'; m.add(d);
+      }
+    } else { m.material = tileM; m.rotation.z = 0; } // (the stand's tile: its chevron down the range, +x)
+    m.renderOrder = 0;
+    if (old !== slipM && old !== tileM) old.dispose?.();
+  }
+  range.group.userData.dressed = true;
 }
 
 /** The Index's lectern, built facing local +z (the reader stands there); about 0.6 by 0.5 m and 1.15 m high, as the stand-in's collider. */
@@ -154,6 +242,7 @@ export class TestRoomDress {
       for (const o of [...t.mesh.children]) { t.mesh.remove(o); o.geometry?.dispose(); o.material?.dispose(); }
       const P = drillPlate(); P.group.rotation.y = Math.PI; t.mesh.add(P.group); t.bull = P.bull; // (the stand-in's group faces the mark down its -x)
     }
+    dressPaintRange(this.game.testroom.paintRange); // (the paint range's floor marks in the plates' hand)
     const C = this.game.testroom.console; // (the lectern's stand-in group: its parts give way to the dressed lectern, the group and its place kept)
     if (C) {
       for (const o of [...C.children]) { C.remove(o); o.geometry?.dispose(); o.material?.dispose(); }

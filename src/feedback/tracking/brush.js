@@ -28,7 +28,7 @@ export function brushRules({ on, L, log }) {
   });
   // brush.mop { lachryma, by }: Lachryma drunk into the bottle (or the pool, bottle-less)
   on('brush.mop', (e) => { if (e.by === 'courier') L.inc('mop.lachryma', e.lachryma || 0); });
-  // stain.wash { grade, stage, by }: a stain mopped up whole
+  // stain.wash { grade, stage, at, size, by }: a stain mopped up whole (at, size: where it lay and how wide, for its shine)
   on('stain.wash', (e) => {
     if (e.by !== 'courier') return;
     L.inc('stain.wash'); if (e.grade) L.inc(`stain.${e.grade}`);

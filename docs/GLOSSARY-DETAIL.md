@@ -277,6 +277,21 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
   (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
   shaders draw and the game asks; the **stains** themselves are kept in `world/ground/stains.js`.
+  **The paint's look** (`vfx/paintmotifs.js`, Calissa's): a pigment no brighter than the floor, a crisp round edge, a wet sheen, and its
+  **paint motif** (`PAINT_MOTIF`, the byte beside each cell's height): Wonder a frost lattice of hexagons, Mirth sun-dapple dots, Desire
+  the wind's ripples (a crest and its lee), Fury plates parted by **cracks of light** that glow, Gall a curdled film of dark **curds**,
+  Grief the rain's broken streaks, Dread marbled contour lines (suminagashi); **crude** (a blot's, a slick's) is liquid Lachryma as the
+  bauble ends its oxidising: near-black, the bauble's oil film (violet, peacock, gold, magenta) at a grazing eye, no feeling's colour; a
+  slick oxidises on as it fades (its age in the motif's fraction), a dark stain drying into the floor and gone. *Not:* a kiln pattern (`vfx/finish.js`), the weather's look.
+  **The brush's marks** (`vfx/brushmarks.js`, one program, the ribbons'): **the paint reticle** (`PaintReticle`): the **point** where the
+  stream's centre lands and the **ring** of its spread there, four **ticks** (the far one down the throw), in the picked feeling's colour,
+  keylined; **the jet ring** (`JetRing`): at the feet while a jet runs, the hover's fuel draining, the rocket's gather filling, eight
+  segments between two lines of the Mind, the rocket's **burst** when full; **the shine** (`CleanShine`): where the mop or Clean takes the
+  last of a blot or of paint, a ring going out with **glints** and a **twinkle** over it. **The bottle's arc** (`BottleArc`,
+  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial right of the crosshair, the **meniscus** where it stands, quarter
+  **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
+  sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
+  glyph.
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
@@ -490,6 +505,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
   the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/testroomkit.js`): an open book whose pages project the
   Index's dial, lying parallel to them a few centimetres over the paper, its print inked on the page and its light climbing between.
+  **The paint range** (`world/testroom/paintrange.js`; its look `dressPaintRange`, `vfx/testroomkit.js`): the stand, a quarry tile with a
+  slip chevron down the range, and rings at 3, 6 and 9 m brushed in the drill plates' cream slip with an oxblood rim, each with a
+  **tally** of one, two or three small tiles on its near side (counted, never a number).
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
@@ -1090,7 +1108,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the UI icons** (`uiIcon`, `iconEl`, `ICON_IDS`, `src/ui/icons/`; Calissa's): the pixel art of the choice card and the keywords, 16 px
   (8 for a chip's), each a picture of what its thing DOES (a mount's at sea, never the tool ashore): the twelve keywords
   (`icons/keywordart.js`), the seven mounts (`icons/mountart.js`), the chips and the card's marks (`icons/chipart.js`: lock, check, the
-  compare arrows). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
+  compare arrows), and the Soul Brush's radial (`icons/paintart.js`, `paint.<pick>`: Wonder's snowflake, Mirth's sun, Desire's heart,
+  Fury's flame, Gall's fly, Grief's tear, Dread's bolt, Clean's sparkle, each in its feeling's own palette, `paintRamp`). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
   bevelled from the top left, and the hand adds **the keyline** (a pixel of the darkest grey round it, so every icon has a light part and
   a dark part: casebook rule 105); recoloured by a palette (**gold** its own, **grey** a locked card, **better** and **worse** a compared
   arrow, **line** the sea chart's) and scaled by whole numbers. *Not:* the sea chart's icons (`ui/seachart/icons.js`), a glyph (the
