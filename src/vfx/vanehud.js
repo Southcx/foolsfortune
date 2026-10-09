@@ -13,10 +13,17 @@
 // own marks on its own visor), the dreamcatcher's web itself, and the radio-dial "tuning" of every scanner game (Fallout's Pip-Boy radio,
 // Death Stranding's odradek).
 //
+// Drawn with the compass's own material (vfx/wirecompass.js `compassMaterial`: one program for the whole device), each in its attuned
+// colour with a keyline under it, pale light on a dark sky and dark ink on a bright one as the tape is (R11). The group is never hidden
+// by a render zone: it was placed once in the workshop's and then never moved (its update stopped at the hidden check), so the vane's
+// marks were never seen anywhere else (casebook, 2026-10-09).
+//
 //   const vh = new VaneHud(game, compass)    vh.update(dt)    (after the compass)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ATTUNE } from '../tools/dreamvane/dreamvane.js';
+import { compassMaterial, compassLines, keyUnder, keyStrength } from './wirecompass.js';
+import { T as TUNE } from '../core/config.js'; // (T is the dowsed target below)
 
 const R = 10;         // (the tape's radius: wirecompass.js)
 const SIGILS = {       // line pairs on a unit square (x, y in -1..1)
@@ -30,25 +37,32 @@ const SIGILS = {       // line pairs on a unit square (x, y in -1..1)
     for (let i = 0; i < 28; i++) { const a = drop(i / 28), b = drop((i + 1) / 28); L.push([a[0], a[1], b[0], b[1]]); } L.push([0, 0.9, -0.28, 0.35], [0, 0.9, 0.28, 0.35]); return L; })(),
 };
 
-const lines = (pairs, z = 0) => new THREE.BufferGeometry().setFromPoints(pairs.flatMap(([a, b, c, d]) => [new THREE.Vector3(a, b, z), new THREE.Vector3(c, d, z)]));
-const mat = () => new THREE.LineBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0 });
+const lines = (pairs, z = 0) => compassLines(new THREE.BufferGeometry().setFromPoints(pairs.flatMap(([a, b, c, d]) => [new THREE.Vector3(a, b, z), new THREE.Vector3(c, d, z)])));
+/** A mark of the vane: its lines in a colour of their own (`colour`, `opacity`), and a keyline under them (`key`). */
+function mark(geo, order) {
+  const m = new THREE.LineSegments(geo, compassMaterial({ flat: true })); m.renderOrder = order; m.frustumCulled = false;
+  const U = m.material.uniforms; m.colour = U.uFlat.value; m.key = keyUnder(m).material.uniforms.uAlpha;
+  Object.defineProperty(m, 'opacity', { get: () => U.uAlpha.value, set: (v) => { U.uAlpha.value = v; } });
+  return m;
+}
+const _white = new THREE.Color(1, 1, 1);
 
 export class VaneHud {
   constructor(game, compass) {
     this.game = game; this.compass = compass;
-    this.group = new THREE.Group(); this.group.renderOrder = 36;
+    this.group = new THREE.Group(); this.group.renderOrder = 36; this.group.userData.zoneFree = true; // (the HUD: never hidden by a render zone)
     this.sigil = new THREE.Group(); this.group.add(this.sigil);
     this.sigils = {};
-    for (const [id, pairs] of Object.entries(SIGILS)) { const m = new THREE.LineSegments(lines(pairs), mat()); m.renderOrder = 36; m.frustumCulled = false; m.visible = false; this.sigil.add(m); this.sigils[id] = m; }
+    for (const [id, pairs] of Object.entries(SIGILS)) { const m = mark(lines(pairs), 36); m.visible = false; this.sigil.add(m); this.sigils[id] = m; }
     // the web: spokes and three rings of a dreamcatcher, behind the sigil
     const web = [];
     for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; web.push([Math.cos(a) * 0.25, Math.sin(a) * 0.25, Math.cos(a) * 1.6, Math.sin(a) * 1.6]); }
     for (const r of [0.6, 1.05, 1.6]) for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2, b = ((k + 1) / 12) * Math.PI * 2; web.push([Math.cos(a) * r, Math.sin(a) * r, Math.cos(b) * r * 0.96, Math.sin(b) * r * 0.96]); }
-    this.web = new THREE.LineSegments(lines(web), mat()); this.web.renderOrder = 35; this.web.frustumCulled = false; this.group.add(this.web);
+    this.web = mark(lines(web), 34); this.group.add(this.web);
     // the resonance: a standing wave between two brackets, on the tape
     const wave = [[-0.9, -0.6, -0.9, 0.6], [0.9, -0.6, 0.9, 0.6]];
     for (let i = 0; i < 24; i++) { const x0 = -0.8 + (i / 24) * 1.6, x1 = -0.8 + ((i + 1) / 24) * 1.6, f = (x) => Math.sin(x * Math.PI * 3) * Math.cos(x * Math.PI / 1.6); wave.push([x0, f(x0), x1, f(x1)]); }
-    this.res = new THREE.LineSegments(lines(wave), mat()); this.res.renderOrder = 36; this.res.frustumCulled = false;
+    this.res = mark(lines(wave), 36); this.res.userData.zoneFree = true;
     game.scene.add(this.group, this.res);
     this.alpha = 0; this.resA = 0; this.flash = 0; this.turn = 0; this.lastAtt = -1; this.lastTick = 0;
     this.col = new THREE.Color();
@@ -58,9 +72,10 @@ export class VaneHud {
     const g = this.game, C = this.compass, dv = g.dreamvane, cam = g.camera;
     const on = !!(dv && dv.held && C?.tape?.visible);
     this.alpha += ((on ? 1 : 0) - this.alpha) * (1 - Math.exp(-dt * 6));
-    this.group.visible = this.alpha > 0.01;
-    this.res.visible = this.group.visible && this.resA > 0.01;
-    if (!this.group.visible) return;
+    const shown = this.alpha > 0.01; // (its own number, never the object's visible: a hidden object's visible reads false)
+    this.group.visible = shown;
+    this.res.visible = shown && this.resA > 0.01;
+    if (!shown) return;
     const A = ATTUNE[dv.att] || ATTUNE[0];
     if (dv.att !== this.lastAtt) { this.lastAtt = dv.att; this.turn = 1; for (const [id, m] of Object.entries(this.sigils)) m.visible = id === A.id; }
     this.turn = Math.max(0, this.turn - dt * 3);
@@ -71,9 +86,9 @@ export class VaneHud {
     this.group.quaternion.copy(cam.quaternion);
     this.group.scale.setScalar(0.3);
     this.sigil.rotation.z = this.turn * this.turn * Math.PI; this.sigil.scale.setScalar(1 - 0.4 * this.turn);
-    const sig = this.sigils[A.id];
-    sig.material.color.copy(this.col); sig.material.opacity = this.alpha * (0.85 + 0.15 * (dv.glow || 0));
-    this.web.material.color.copy(this.col); this.web.material.opacity = this.alpha * (0.12 + 0.5 * (dv.glow || 0));
+    const sig = this.sigils[A.id], con = THREE.MathUtils.clamp(TUNE.visual.compassContrast ?? 1, 0.25, 3), key = keyStrength(con);
+    sig.colour.set(this.col.r, this.col.g, this.col.b, 1); sig.opacity = this.alpha * (0.85 + 0.15 * (dv.glow || 0)) * con; sig.key.value = this.alpha * key;
+    this.web.colour.set(this.col.r, this.col.g, this.col.b, 1); this.web.opacity = this.alpha * (0.12 + 0.5 * (dv.glow || 0)) * con; this.web.key.value = this.web.opacity * key;
     this.web.rotation.z += dt * (0.1 + 0.6 * (dv.glow || 0));
     // the resonance: at what it hears, as tall as it sings, flashing on each tick
     const T = dv.dowsing ? dv.target : null;
@@ -86,7 +101,8 @@ export class VaneHud {
       this.res.quaternion.copy(cam.quaternion);
       this.res.scale.set(0.42, 0.12 + 0.5 * (dv.glow || 0), 1);
     }
-    this.res.material.color.copy(this.col).lerp(new THREE.Color(1, 1, 1), this.flash * 0.6);
-    this.res.material.opacity = this.alpha * this.resA * (0.5 + 0.5 * this.flash);
+    const rc = _rc.copy(this.col).lerp(_white, this.flash * 0.6); this.res.colour.set(rc.r, rc.g, rc.b, 1);
+    this.res.opacity = this.alpha * this.resA * (0.5 + 0.5 * this.flash) * con; this.res.key.value = this.alpha * this.resA * key;
   }
 }
+const _rc = new THREE.Color();

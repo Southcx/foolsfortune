@@ -13,6 +13,8 @@
 //
 //   const c = new CloudLayer(scene, { sun: dir })    c.update(dt, camera.position, windDir (Vector2), windSpeed)    c.visible = bool
 //   c.grade({ expo, mul, cover, opacity })   the hour and the weather (vfx/weather.js): an empty grade is the layer as built
+//   c.over(dir, colour)   the layer as drawn now laid over a colour (linear, in place), from the noise in memory: what a mark that must
+//   read against the sky is drawn on (vfx/wirecompass.js)
 // The layer bends with the storm over the crossing (vfx/stormwarp.js warpMaterial: the ceiling that folds); elsewhere the bend is nothing.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -85,6 +87,27 @@ void main() {
     U.uCover.value = cover; U.uOpacity.value = opacity;
   }
 
+  /** The layer over a direction as the shader draws it now (its ceiling's mapping, two octaves, its cover, light and opacity), laid
+   *  over `c` (linear) in place. */
+  over(d, c) {
+    if (!this.mesh.visible || d.y < 0.015) return c;
+    const U = this.uniforms, o = this.offset, k = 0.22 / (d.y + 0.1), u = d.x * k, v = d.z * k, cover = U.uCover.value;
+    const n = this.noiseAt(u + o.x, v + o.y) * 0.7 + this.noiseAt(u * 2.7 - o.x * 1.6 + 0.37, v * 2.7 - o.y * 1.6 + 0.37) * 0.3;
+    const a = THREE.MathUtils.smoothstep(n, cover, cover + 0.2) * THREE.MathUtils.smoothstep(d.y, 0.015, 0.22) * U.uOpacity.value;
+    if (a <= 0) return c;
+    const sd = Math.max(0, d.dot(U.uSun.value)), glow = Math.pow(sd, 10) * 0.35;
+    _c.copy(U.uShade.value).lerp(U.uLit.value, THREE.MathUtils.smoothstep(n, cover + 0.05, cover + 0.3) * 0.7 + 0.3 * sd);
+    _c.r += glow; _c.g += 0.8 * glow; _c.b += 0.55 * glow;
+    return c.lerp(_c, a);
+  }
+  /** The noise texture at (u, v), bilinear and repeating, 0..1 (the texture's own level 0: a little sharper than the GPU's mips far off). */
+  noiseAt(u, v) {
+    const img = this.uniforms.uNoise.value.image, N = img.width, D = img.data;
+    const x = (u - Math.floor(u)) * N - 0.5, y = (v - Math.floor(v)) * N - 0.5, x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+    const at = (i, j) => D[((((j % N) + N) % N) * N + (((i % N) + N) % N)) * 4] / 255;
+    return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
+  }
+
   set visible(v) { this.mesh.visible = v; }
   get visible() { return this.mesh.visible; }
 
@@ -96,3 +119,4 @@ void main() {
     this.offset.x %= 1; this.offset.y %= 1;
   }
 }
+const _c = new THREE.Color();
