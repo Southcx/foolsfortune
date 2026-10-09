@@ -30,7 +30,7 @@
 // each a timer on the target rather than a change to its code, and the "damageable" interface of most engines (Unreal's TakeDamage,
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
-//   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
+//   game.creatures.add(c)   .addFriend(c) (a sibling)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
 //   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
 //   c.friend: another Courier, an ally the Courier's blows still reach (friendly fire: a fifth of the damage, statuses under tolerance)
 //   .windup(c, { at, radius, eta, kind, parry, part })   .unwind(c)   .windups(pos, r)   .parried(c)   (a telegraphed blow, for the parry:
@@ -58,7 +58,12 @@ export class Creatures {
   constructor(game) {
     this.game = game;
     this.list = [];
+    this.friends = []; // (another Courier struck by friendly fire: a sibling, coop/sibling.js; outside `list`, which is what minds, the
+    // lock-on, the Veritome and the tools' fields look through, so nothing hunts, photographs or locks onto them)
   }
+  /** A friend: struck by the Courier's blows (`strike`, friendly fire), never one of the creatures. */
+  addFriend(c) { c.status ||= new Map(); c.mind ??= 0; c.emo ??= 0; c.build ||= {}; c.friend = true; c.ally = true; this.friends.push(c); return c; }
+  removeFriend(c) { const i = this.friends.indexOf(c); if (i >= 0) this.friends.splice(i, 1); }
   add(c) { c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; this.list.push(c); return c; }
   remove(c) { const i = this.list.indexOf(c); if (i >= 0) this.list.splice(i, 1); }
   /** The living creatures within r of p (horizontal and vertical both), nearest first. */
@@ -171,6 +176,11 @@ export class Creatures {
   }
   update(dt) {
     const T = this.game.temper;
+    for (const c of this.friends) { // (a friend's statuses and tolerance run down; its mind is its own)
+      for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
+      if (c.tolerance) for (const k in c.tolerance) c.tolerance[k].left -= dt;
+      for (const t in c.build) c.build[t] = Math.max(0, c.build[t] - BUILD.drainPerSec * dt);
+    }
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
       if (c.tolerance) for (const k in c.tolerance) c.tolerance[k].left -= dt; // (friendly fire's window: the tolerance resets after it)
