@@ -154,6 +154,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **aqua regia / amethyst** — Margarite's lamp fuel, refined from crude / Entropolis's charm for a clear head.
 - **Charybdis** (`CHARYBDIS`, `world/emocean/charybdis.js`) — the Whale (class 3) Egregore of the maelstrom, rising Astral and diving Umbral; one
   in every maelstrom. *Not:* the maelstrom (the leg, a place). → detail
+- **the whirlpool**, **Charybdis's look** (`vfx/whirlpool.js`, `vfx/charybdis.js`) — the maelstrom's crude turning round its heart, and
+  the maw that rises out of it and dives back; its baleen combs, eyes and throat are boss parts. → detail
 
 ## 5. Places and the Wells
 
@@ -404,7 +406,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | emote | the Courier's (`EMOTES`); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (`Brush_Dive`); a dive into water or wet slip (`waterfx`); the ledger's old `brush.slam.dive` | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`); the blow that answers a guard or parry (kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| eye | the EYE CUP kiln pattern (6); the camera's point of view; Old Nobody's; the shoal silhouette's (`SilhouetteEye`) | "the eye" is the kiln pattern; "the camera's eye" or "round the view"; "Old Nobody's eye"; "the silhouette's eye" |
+| eye | the EYE CUP kiln pattern (6); the camera's point of view; Old Nobody's; the shoal silhouette's (`SilhouetteEye`); Charybdis's six | "the eye" is the kiln pattern; "the camera's eye" or "round the view"; "Old Nobody's eye"; "the silhouette's eye"; "Charybdis's eyes" |
 | wheel | Plutchik's wheel of feelings; the Lockheart's wheel of odds; the party's order wheel (T held); the colour wheel (Soul Alchemy's; in play, the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
 | sigil | the Soul Brush's (strokes read in Celestial mode); the Solar Skiff's (the ring of marks on the sand) | "a sigil" is the brush's; "the skiff's sigil" in full |
 | dome | the sky's (`vfx/sky.js`); the stern of the Solar Skiff's hull | "the sky's dome", "the skiff's dome" |

@@ -34,6 +34,7 @@ const RETIRED = [
   { re: /\blab mode\b|\bLab mode\b|\bsystem\.lab\b|\bsetLab\b/g, say: "'Lab mode' (the all-arts switch: `allArts`)" },
   { re: /\bpause card\b/gi, say: "'pause card' (the pause menu)" },
   { re: /\bmat\.film\b|\bloadFilm\b|\bfilm\.load\b|\bfilm\.rolls\b/g, say: "the Veritome's film (it has a memory of 24 plates since 2026-10-06: memory.js)" },
+  { re: /\bpolarity\b/gi, say: "'polarity' (the Astral and Umbral forms)", rule: 'word.retired.polarity' }, // (its own rule, adopted the day it was retired: 2026-10-08)
 ];
 
 // ---- read the tree
@@ -113,7 +114,7 @@ for (const [f, src] of text) {
 // ---- 5. words (docs/GLOSSARY.md): retired words, and the Courier's pronouns (CLAUDE.md, The Courier)
 const COURIER = /\b(the )?Courier\b[^.;\n]{0,60}?\b(she|he|her|him|his|hers|herself|himself)\b/gi;
 for (const [f, src] of text) {
-  for (const { re, say } of RETIRED) for (const m of src.matchAll(re)) add('word.retired', f, lineOf(src, m.index), `retired word: ${say}`);
+  for (const { re, say, rule } of RETIRED) for (const m of src.matchAll(re)) add(rule || 'word.retired', f, lineOf(src, m.index), `retired word: ${say}`);
   for (const m of src.matchAll(COURIER)) {
     const ctx = src.slice(Math.max(0, m.index - 40), m.index + m[0].length);
     if (/\b(the Prince|Raku|Grog|Saggar|Pip|Kaolin|the King|the Queen)\b/.test(ctx)) continue; // (the folk are he and she)

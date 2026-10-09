@@ -30,11 +30,15 @@
 //                   MENISCUS (a dark mirror of the deep past the critical angle, Snell's window of the air above inside it, the film's
 //                   light leaking through); no second mesh, no second program
 //   sea.silhouettes([{ obj, r, len }])   the bellies of things floating above, as soft shadows on the meniscus (up to six)
+//   sea.whirlpool() -> Whirlpool   the maelstrom's whirlpool (vfx/whirlpool.js): a disc of this same material and program (`uDisc`), laid
+//                   about its heart, the sea round it leaving its circle undrawn; heightAt has it too (what is drawn is what is ridden)
+//   sea.material(disc)   the sea's material (one program for every sea: the key and the shader are the same, the uniforms its own)
 // It bends with the storm (vfx/stormwarp.js warpMaterial): the sea is the storm's first canvas.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
 import { warpMaterial } from './stormwarp.js';
+import { Whirlpool, WHIRL, WHIRL_U, WHIRL_VERT, WHIRL_FRAG } from './whirlpool.js';
 
 const _s = new THREE.Vector3();
 
@@ -45,7 +49,7 @@ const G = 9.8;
 
 export class CrudeSea {
   constructor({ env = null, size = 900, cells = 180, y = 0, geometry = null } = {}) {
-    this.y = y; this.lift = 0; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put; lift: the Umbral form's, below)
+    this.y = y; this.env = env; this.whirl = null; this.lift = 0; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put; lift: the Umbral form's, below)
     this.k = { calm: 0, swell: 0.38, film: 1, current: new THREE.Vector2(1, 0.25).normalize() };
     let geo = geometry;
     if (!geo) { geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2); }
@@ -58,13 +62,23 @@ export class CrudeSea {
       uDeepC: { value: new THREE.Color(0x140a22) }, uLight: { value: new THREE.Color(1.0, 0.9, 0.7) }, // (the deep's colour, the storm's light above)
       uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
       uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)
+      ...WHIRL_U(), // (the maelstrom's whirlpool: off until a disc is laid, vfx/whirlpool.js)
     };
-    const m = this.mat = new THREE.MeshStandardMaterial({ name: 'crude-sea', color: 0x07050b, roughness: 0.5, metalness: 0.12, envMap: env, envMapIntensity: 0.35 });
+    this.mat = this.material(false);
+    this.mesh = new THREE.Mesh(geo, this.mat);
+    this.mesh.position.y = y; this.mesh.frustumCulled = false; this.mesh.receiveShadow = true;
+  }
+
+  /** The sea's material: every sea's and the whirlpool's disc are one program (the same shader and key), each with its uniforms. */
+  material(disc = false) {
+    const u = this.u, own = { uDisc: { value: disc ? 1 : 0 } };
+    const m = new THREE.MeshStandardMaterial({ name: 'crude-sea', color: 0x07050b, roughness: 0.5, metalness: 0.12, envMap: this.env, envMapIntensity: 0.35 });
     m.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, u);
+      Object.assign(sh.uniforms, u, own);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', `#include <common>
 uniform float uT, uAmp, uCalm; uniform vec4 uW[${N}]; uniform float uC[${N}]; varying vec3 vSeaW; varying float vSeaH;
+${WHIRL_VERT}
 vec3 seaGerstner(vec2 p, out vec3 n) {
   vec3 d = vec3(0.0); vec3 nn = vec3(0.0, 1.0, 0.0);
   float amp = uAmp * (1.0 - 0.85 * uCalm);
@@ -77,11 +91,20 @@ vec3 seaGerstner(vec2 p, out vec3 n) {
   n = normalize(nn); return d;
 }`)
         .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
-vec3 seaN; vec4 seaWp = modelMatrix * vec4(position, 1.0);
+vec3 seaN; vec4 seaWp = modelMatrix * vec4(position, 1.0); float seaTaper = 1.0, seaLow = 0.0, seaDh = 0.0; vec2 seaDir = vec2(1.0, 0.0);
+if (uDisc > 0.5) { // (the whirlpool's disc, vfx/whirlpool.js: position is its ring's place, its skirt's drop and its angle about the heart)
+  float wu = position.x, wr = wu < 0.0 ? uWhirlA.z * (1.0 + wu) : mix(uWhirlA.z, uWhirl.z + ${WHIRL.over.toFixed(1)}, pow(wu, ${WHIRL.spacing.toFixed(2)})); // (past the rim it runs on under the sea round it: the seam's overlap)
+  seaDir = vec2(cos(position.z), sin(position.z));
+  seaWp = vec4(uWhirl.x + seaDir.x * wr, modelMatrix[3].y, uWhirl.y + seaDir.y * wr, 1.0);
+  seaTaper = mix(uWhirlA.w, 1.0, smoothstep(uWhirlA.x, uWhirl.z, wr)); seaLow = whirlH(wr) + position.y; seaDh = whirlDH(wr);
+}
+vSeaP = seaWp.xz;
 float seaFar = 1.0 - smoothstep(140.0, 380.0, length(seaWp.xz - cameraPosition.xz)); // (the swells lie down before the cells could alias them)
-vec3 seaD = seaGerstner(seaWp.xz, seaN) * seaFar;
-objectNormal = normalize(mix(vec3(0.0, 1.0, 0.0), seaN, seaFar));`)
+vec3 seaD = seaGerstner(seaWp.xz, seaN) * (seaFar * seaTaper) + vec3(0.0, seaLow, 0.0);
+seaN = normalize(mix(vec3(0.0, 1.0, 0.0), seaN, seaFar * seaTaper));
+objectNormal = normalize(vec3(seaN.x - seaDh * seaDir.x, seaN.y, seaN.z - seaDh * seaDir.y)); // (the vortex's slope: its gradient, radial)`)
         .replace('#include <begin_vertex>', `#include <begin_vertex>
+if (uDisc > 0.5) transformed = vec3(seaWp.x - modelMatrix[3].x, 0.0, seaWp.z - modelMatrix[3].z);
 transformed += seaD; vSeaW = seaWp.xyz + seaD; vSeaH = seaD.y;`);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
@@ -90,14 +113,29 @@ float seaHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.545
 float seaNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(seaHash(i), seaHash(i + vec2(1, 0)), f.x), mix(seaHash(i + vec2(0, 1)), seaHash(i + vec2(1, 1)), f.x), f.y); }
 vec3 seaFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }
-${LIQUID_GLSL}`)
+${LIQUID_GLSL}
+${WHIRL_FRAG}`)
         .replace('#include <color_fragment>', `#include <color_fragment>
 if (uClip.w > 0.0) { vec2 cd = vSeaW.xz - uClip.xy; float ca = atan(cd.y, cd.x) - uClipA.x; ca = abs(atan(sin(ca), cos(ca)));
   if (ca > uClipA.y || length(cd) < uClip.z) discard; } // (a shore's sea: its sector only, from the sand out)
 // the current: streaks drawn along the drift, scrolled (two scales, so it never reads as one repeating sheet)
 vec2 seaC = vec2(dot(vSeaW.xz, uCur), dot(vSeaW.xz, vec2(-uCur.y, uCur.x)));
 float seaStreak = seaNoise(vec2(seaC.x * 0.025 - uT * 0.05, seaC.y * 0.1)) * 0.6 + seaNoise(vec2(seaC.x * 0.06 - uT * 0.11, seaC.y * 0.24)) * 0.4; // (streaks four times as long as wide: elongated more, they ran to the horizon as spokes)
+// the whirlpool (vfx/whirlpool.js): the sea leaves its circle to the disc; in it the streaks are wound round the heart and drawn in
+float whirlW = 0.0, whirlR = 1e6;
+vec2 whirlDx = dFdx(vSeaP), whirlDy = dFdy(vSeaP); // (the whirl's footprint, taken here in uniform flow, before the discard and the branch: no crawl)
+if (uWhirl.w > 0.0) {
+  vec2 wd = vSeaP - uWhirl.xy; whirlR = length(wd);
+  if (uDisc < 0.5 && whirlR < uWhirl.z) discard; // (the sea round it leaves the circle to the disc, which runs on under it a little: no crack)
+  whirlW = uWhirl.w * (1.0 - smoothstep(0.72 * uWhirl.z, uWhirl.z, whirlR));
+  if (whirlW > 0.0) {
+    float w0 = 1.0 - abs(2.0 * uWhirlT.x - 1.0), w1 = 1.0 - w0;
+    float ws = w0 * whirlStreak(wd, whirlR, uWhirlF.x, uWhirlF.z, whirlDx, whirlDy) + w1 * whirlStreak(wd, whirlR, uWhirlF.y, uWhirlF.w, whirlDx, whirlDy);
+    seaStreak = mix(seaStreak, clamp(0.5 + (ws - 0.5) / max(sqrt(w0 * w0 + w1 * w1), 0.5), 0.0, 1.0), whirlW); // (the two phases' crossfade, its contrast kept)
+  }
+}
 diffuseColor.rgb *= 0.7 + 0.6 * seaStreak;
+diffuseColor.rgb *= 1.0 - 0.7 * whirlW * smoothstep(0.0, 8.0, -vSeaH); // (darker down the walls)
 diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (the crests a shade warmer: crude is amber where it is thin)`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 // the liquid's own slopes on the swell (vfx/liquid.js: the owner's marbling, two layers crossing, slow as crude is), close up only
@@ -109,7 +147,14 @@ float seaNear = 1.0 - smoothstep(30.0, 160.0, length(vSeaW.xz - cameraPosition.x
   float cells = liqHeight(vSeaW.xz, 0.045, uT * 0.4), veins = liqTap(vSeaW.xz * 0.045 + vec2(uT * 0.4 * 0.021, uT * 0.4 * 0.013)).a;
   float band = smoothstep(0.42, 0.78, seaStreak), vein = pow(veins, 1.8) * seaNear;
   float film = (0.2 + 0.8 * fres) * uFilm * (0.4 + 0.6 * uCalm) * max(band, vein);
-  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.1) * film * 0.12; }`)
+  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.1) * film * 0.12;
+  if (whirlW > 0.0) { // (the bands wound round it in the film; Poe's light along the black walls, leaning to the feeling; the bow of the film's colours hung over the middle)
+    vec3 wn = inverseTransformDirection(normalize(normal), viewMatrix); float wall = smoothstep(0.01, 0.25, 1.0 - wn.y); // (from a gentle slope: a vortex's walls steepen only near its core)
+    vec3 fc = mix(seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.05), uWhirlC, uWhirlT.y);
+    float arm = smoothstep(0.5, 0.8, seaStreak) * (0.35 + 0.65 * smoothstep(0.0, 0.8, 1.0 - whirlR / uWhirl.z));
+    float bow = exp(-pow((whirlR - uWhirlA.z * 1.8 - 2.0) / max(uWhirlA.z * 0.6 + 1.0, 1.0), 2.0)) * uWhirlT.z;
+    totalEmissiveRadiance += whirlW * (fc * (0.11 * arm * (0.6 + 0.4 * fres) + film * 0.24 * wall + 0.08 * wall * arm) + seaFilm(0.05 + whirlR * 0.04 - uT * 0.03) * bow * 0.09);
+  } }`)
         .replace('#include <opaque_fragment>', `#include <opaque_fragment>
 if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding turned: vfx/umbral.js)
   vec3 Vv = normalize(vViewPosition), Nu = normalize(normal), I = -Vv;
@@ -128,10 +173,16 @@ if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding tu
   gl_FragColor.rgb = mix(mirror + leak * shade, air * shade * (0.75 + 0.5 * seaStreak), win);
 }`);
     };
-    m.customProgramCacheKey = () => 'crude-sea-4';
+    m.customProgramCacheKey = () => 'crude-sea-5';
     warpMaterial(m); // (the storm bends the sea: vfx/stormwarp.js; its key carries this one)
-    this.mesh = new THREE.Mesh(geo, m);
-    this.mesh.position.y = y; this.mesh.frustumCulled = false; this.mesh.receiveShadow = true;
+    return m;
+  }
+
+  /** The maelstrom's whirlpool on this sea (made once; its disc beside the sea's mesh): vfx/whirlpool.js. */
+  whirlpool() {
+    if (!this.whirl) { this.whirl = new Whirlpool(this); (this.mesh.parent || null)?.add(this.whirl.mesh); }
+    else if (!this.whirl.mesh.parent && this.mesh.parent) this.mesh.parent.add(this.whirl.mesh);
+    return this.whirl;
   }
 
   /** Calm (0..1: the breather), swell (a multiplier), film (the sheen's strength), current (a direction in the xz plane). */
@@ -148,6 +199,7 @@ if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding tu
     const g = this.mesh.geometry;
     if (on && !this.idxDown && g.index) { const a = g.index.array, b = new a.constructor(a.length); for (let i = 0; i < a.length; i += 3) { b[i] = a[i]; b[i + 1] = a[i + 2]; b[i + 2] = a[i + 1]; } this.idxUp = g.index; this.idxDown = new THREE.BufferAttribute(b, 1); }
     if (this.idxDown) g.setIndex(on ? this.idxDown : this.idxUp);
+    this.whirl?.under(on);
     this.u.uUnder.value = on ? 1 : 0;
   }
 
@@ -173,8 +225,8 @@ if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding tu
 
   /** The surface's height at a point (the same sum as the shader's, near the eye): what a ship rides. */
   heightAt(x, z, t = this.t) {
-    const amp = this.k.swell * (1 - 0.85 * this.k.calm);
-    let y = 0;
+    const W = this.whirl, amp = this.k.swell * (1 - 0.85 * this.k.calm) * (W ? W.taperAt(x, z) : 1);
+    let y = W ? W.depthAt(x, z) : 0;
     for (let i = 0; i < N; i++) {
       const [a, L, q] = WAVES[i], k = (2 * Math.PI) / L, A = (q / k) * amp, c = this.u.uC.value[i];
       y += A * Math.sin(k * (Math.cos(a) * x + Math.sin(a) * z) - c * t);
@@ -182,5 +234,5 @@ if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding tu
     return this.y + y;
   }
 
-  dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mat.dispose(); }
+  dispose() { this.whirl?.dispose(); this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mat.dispose(); }
 }
