@@ -23,7 +23,7 @@ background. Where the two disagree, this file wins (Faith is cut here).
 | What it does in a mind | rejects, refuses, keeps away, sours what it touches | pushes, breaks, rushes in, burns hot and short |
 | How it moves (the flame, the body) | recoils, holds back, turns aside | surges, lunges, shakes |
 | Its opposite | **none: it does not cancel** (see 2) | **Dread** (fear and anger cancel, as WHEEL.md already rules) |
-| Colour (`COLOR`, already in `weather.js`) | violet `0x8a5ac8` | red `0xd8403a` |
+| Colour (`COLOR`, already in `weather.js`) | violet `0x8a5ac8` | blood red `0xc80018` (Calissa, measured: apart from Desire, and from Dread for protanopes) |
 | Motif (never colour alone) | rot: drips, flies, a curdled film | heat: sparks, cracks of light, hail |
 
 **The seven, in display order** (VALENCE, most positive first, the order every menu, legend and radial shows):
