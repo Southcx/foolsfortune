@@ -70,7 +70,7 @@ export class BrushLoad {
 
   /** The club's ground hold: the bristles start to fill. */
   begin() { this.sat = 0; this.working = false; sfx.brushCharge?.(); }
-  end() { if (this.sat >= 0 || this.working) this.flush(); this.sat = -1; this.working = false; this.tool.model.setInk(0); }
+  end() { if (this.sat >= 0 || this.working) this.flush(); this.sat = -1; this.working = false; this.mopFrom = null; this.tool.model.setInk(0); }
   get busy() { return this.sat >= 0; }
 
   /** While the brush is in the hand: the hold fills, then the mode works, until LMB is let go. */
@@ -112,7 +112,10 @@ export class BrushLoad {
     if (room <= 0.01) { this.end(); g.log?.say('info', 'Your Lachrymato Bottle is full.', { key: 'bottlefull', throttle: 4 }); return; }
     const tip = this.tool.model.tipWorld(_a), P = this.P, want = Math.min(room, LOAD.mop.rate * dt), r = LOAD.mop.reach;
     const fx = (tip.x + P.pos.x) / 2, fz = (tip.z + P.pos.z) / 2; // (between the feet and the bristles)
-    const s = g.stains?.drink(fx, P.pos.y, fz, r, want) || { got: 0 };
+    // the stroke this frame: from where the mop was to where it is, wiped as a strip (stains.js wipe: rim first, a smear pushed on)
+    const from = this.mopFrom && Math.hypot(this.mopFrom.x - fx, this.mopFrom.z - fz) < 3 ? this.mopFrom : { x: fx, z: fz };
+    const s = g.stains?.wipe(from, { x: fx, z: fz }, P.pos.y, want) || { got: 0 };
+    this.mopFrom = { x: fx, z: fz };
     let got = s.got;
     if (s.grade && s.grade !== this.grade) { this.grade = s.grade; this.save(); }
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)

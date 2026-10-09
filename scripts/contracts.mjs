@@ -67,9 +67,9 @@ const results = await g.page.evaluate(async () => {
     const d = G.paintmap.drink(p.x + 30, p.y, p.z + 30, 1.2, 99);
     return n > 0 && a?.aspect === 'mirth' && d > 0 && !G.paintmap.at(p.x + 30, p.y, p.z + 30) ? true : `stamp ${n}, at ${JSON.stringify(a)}, drink ${d}`;
   });
-  C('stains.spill/drink', 'world/ground/stains.js', 'tools/soulbrush/load.js', () => {
-    const p = G.player.pos.clone().setX(G.player.pos.x + 40), s = G.stains.spill(p, 'grief', 10, 'courier', 'contract');
-    const r = G.stains.drink(p.x, p.y, p.z, 1, 99);
+  C('stains.spill/wipe', 'world/ground/stains.js', 'tools/soulbrush/load.js', () => {
+    const p = G.player.pos.clone().setX(G.player.pos.x + 10), s = G.stains.spill(p, 'grief', 10, 'courier', 'contract'); // (within the paint map's window: a blot lives there)
+    const r = G.stains.wipe({ x: p.x - 1.5, z: p.z }, { x: p.x + 1.5, z: p.z }, s.y, 99);
     return s && r.got >= 9.9 && r.grade === 'grief' && !G.stains.list.includes(s) ? true : `got ${JSON.stringify(r)}`;
   });
   C('the bottle\'s place', 'pneuka/box.js', 'tools/soulbrush/load.js', () => (Array.isArray(G.pneuka.fitted('bottle')) && G.player.techs.get('soulbrush')?.load ? true : 'no bottle fitting or no load'));
