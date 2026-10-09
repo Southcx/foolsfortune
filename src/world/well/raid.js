@@ -87,9 +87,15 @@ export class Raid {
     this.g.events?.emit('foe.cast', { cast: id, windup: d.windup, by: 'creature' });
     DO[id]?.begin?.(this, d);
     if (!d.windup) this.look.blow(id);
+    else if (d.area) { // (its telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/TELEGRAPHS.md)
+      const A = d.area, P = this.P, at = A.at === 'courier' ? P.pos.clone() : F.c.pos;
+      const radius = A.radius ?? A.outer?.[1] ?? A.length ?? A.inner ?? F.c.radius * 2;
+      this.g.creatures?.telegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark });
+    }
   }
   onBlow(id, d) {
     if (this.skip === id) { this.skip = null; return; }
+    if (this.F.c.windup?.kind === id) this.g.creatures?.unwind(this.F.c); // (landed: was the Courier out of it? creatures.js read)
     this.look.blow(id);
     if (this.down() && id !== 'swallow') return; // (stunned in its windup: the cast is broken)
     DO[id]?.blow?.(this, d);

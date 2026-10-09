@@ -33,10 +33,15 @@
 //   game.creatures.add(c)   .addFriend(c) (a sibling)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
 //   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
 //   c.friend: another Courier, an ally the Courier's blows still reach (friendly fire: a fifth of the damage, statuses under tolerance)
-//   .windup(c, { at, radius, eta, kind, parry, part })   .unwind(c)   .windups(pos, r)   .parried(c)   (a telegraphed blow, for the parry:
-//   courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry mark while it can be answered)
+//   .windup(c, { at, radius, eta, kind, parry, part, area, type, status, answer, read })   .unwind(c)   .windups(pos, r)   .parried(c)
+//   (a telegraphed blow, for the parry: courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry
+//   mark while it can be answered. Its TELEGRAPH (docs/plans/TELEGRAPHS.md): `area` its shape, `type` `status` `answer` what Divination
+//   may show of it; `w.telegraph` is markOf at the Courier's Divination as it began (the mark is Calissa's to draw). A windup that held
+//   the Courier as it began and ended with them out of it, parried or looking away is READ: `windup.read { kind, how, by }`; `read: false`
+//   for one that never counts, Strawman's)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { hasTag } from '../core/tags.js';
 import { TYPES, BUILD, typeOf, multiplier } from '../progress/combat/types.js';
 import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
@@ -45,11 +50,13 @@ import { sfx } from '../audio/sfx.js';
 import { blowWindow } from '../courier/parry.js';
 import { courierMindEffect } from '../progress/stones.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
+import { markOf } from '../progress/combat/telegraphs.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
 /** Statuses the mental state does not scale (stun.js keeps its own timing). */
 const UNSCALED = new Set(['stun']);
+const _wd = new THREE.Vector3(), _wp = new THREE.Vector3();
 
 /** How much of a status a creature has right now (0 when none). */
 export const st = (c, name) => { const s = c?.status?.get(name); return s && s.t > 0 ? s.k : 0; };
@@ -141,11 +148,28 @@ export class Creatures {
   /** A creature's telegraphed blow: what a parry in its window answers (docs/plans/PARRY.md). Cleared when it lands or is cancelled
    *  (`unwind`), or `eta` and a breath after, whichever is first. `at` may be a live vector (a lunge's body). A blow that cannot be
    *  parried (a grab, a ram) passes `parry: false`: telegraphed by its own body, never marked. */
-  windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null } = {}) {
+  windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true } = {}) {
     this.unwind(c);
-    c.windup = { at, radius, eta, kind, parry, t: eta + 0.3, mark: parry && part ? this.game.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
+    const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
+    w.telegraph = area ? markOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('telegraphs')) : null;
+    w.held = read && !!g.player && this.holds(c, w);
+    c.windup = w;
   }
-  unwind(c) { c.windup?.mark?.clear(); if (c.windup) c.windup = null; }
+  /** A cast's telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
+  telegraph(c, kind, spec) { const w = c.windup; if (w && w.t > 0) { Object.assign(w, spec, { kind }); w.telegraph = markOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('telegraphs')); w.held = !!this.game.player && this.holds(c, w); } else this.windup(c, { ...spec, kind, parry: false }); }
+  unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }
+  /** Is the Courier in a windup's area: within its reach, or for a gaze looking at it; a raidwide holds everyone. */
+  holds(c, w) {
+    const g = this.game, P = g.player, s = w.area?.shape;
+    if (s === 'raidwide' || s === 'adds' || s === 'split') return true;
+    if (s === 'gaze') { const cam = g.camera; if (!cam) return false; cam.getWorldDirection(_wd); _wp.copy(c.pos).sub(cam.position).normalize(); return _wd.dot(_wp) > 0.5; }
+    return w.at.distanceTo(P.pos) <= w.radius + 0.4;
+  }
+  /** A windup over that held the Courier: answered (out of it, parried, looking away), said for Divination (domains.js, Dovina's). */
+  read(c, w, why) {
+    const how = why === 'parried' ? 'parried' : this.holds(c, w) ? null : w.area?.shape === 'gaze' ? 'lookAway' : 'out';
+    if (how) this.game.events?.emit('windup.read', { kind: w.kind, how, by: 'courier' });
+  }
   /** An outlined windup run out unanswered with the Courier in its reach: a parry missed (the feat's run starts over: TRAINING.md 6). */
   missed(c, w) { const P = this.game.player; if (P && w.at.distanceTo(P.pos) <= w.radius + 1) this.game.events?.emit('parry.missed', { kind: c.kind, by: 'creature' }); }
   /** The eta a windup's mark is shown with: Perception draws the outline's thickening out over a longer lead (x its widening), and the
@@ -165,7 +189,7 @@ export class Creatures {
     return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
   }
   /** A blow answered by a parry: it breaks off (the creature decides how: `onParried`, else its `cancel`). */
-  parried(c) { this.unwind(c); if (c.onParried) c.onParried(); else c.cancel?.('parried'); }
+  parried(c) { this.unwind(c, 'parried'); if (c.onParried) c.onParried(); else c.cancel?.('parried'); }
   /** A mind that has crossed into another state says so (`creature.mind`: the sound of it going Prismatic is Wanda's, by cues.js). */
   mindMoved(c, by) {
     const id = stateOf(c.mind).id;
