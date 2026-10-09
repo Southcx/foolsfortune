@@ -311,7 +311,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 - **The Pithos** (the folk's name; the log says the Great Slip Jelly): a *pithos* is the ancient storage jar, Pandora's real "box":
   everything flew out and hope stayed at the bottom. A brood jelly grew in the town's crude jar and outgrew it; under the crown is the
   core, the bright thing at the bottom. **Its casts** *(proposed)*, each a jar's part or a potter's step that also says what to do:
-  Lidfall, Shoulder Charge, Throwing Rings, Slip Trail, Eye Cup (the Greek cup painted with eyes to stare evil back), Unstopped,
+  Lidfall, Shoulder Charge, Throwing Rings, Slick Trail (was Slip Trail), Eye Cup (the Greek cup painted with eyes to stare evil back), Unstopped,
   Blowout (a pot with trapped water bursts in the kiln), Broodwake, Centring, Slake and Wedge, Decant, the Sherds (they mend: kintsugi
   turned on you), the Overflow (the mother who overflows), The Dunemaw Swallows; the status **Sodden**. Hope is never a cast: the core
   is what you strike.
