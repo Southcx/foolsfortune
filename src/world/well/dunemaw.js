@@ -30,7 +30,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DUNE } from '../dunes/dunes.js';
-import { layoutFloor, buildFloor, GRID, CELL } from './wellkit.js';
+import { layoutFloor, buildFloor, CELL } from './wellkit.js';
 import { wellSeed, wellPay, wellYield, drawWell, cogitomapWorth } from '../../progress/econ/islands.js';
 import { makeMaterial, KIND_IDS } from '../../progress/econ/materials.js';
 import { deckDraw } from '../../progress/econ/deck.js';
@@ -54,7 +54,7 @@ import { NURSERY, FOE } from '../../progress/combat/dunemaw.js';
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
  *  feedback/cartography.js: both decided by height). The grid's north-west corner. */
-export const WELL_AT = new THREE.Vector3(-1300 - (GRID * CELL) / 2, -900, -(GRID * CELL) / 2);
+export const WELL_AT = new THREE.Vector3(-1300, -900, 0); // (a floor's centre: the third, 7 cells of 18 m, swirled, reaches 89 m out: render/zonemap.js's 'well')
 /** The mouth, in the dunes' local frame (metres from the centre): out past the oasis, to the north-west. */
 const MOUTH_LOCAL = { x: -150, z: -120 };
 const FLOORS = 3, REACH = 2.4;

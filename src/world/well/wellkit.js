@@ -21,8 +21,8 @@
 //
 //   layoutFloor(seed, floor) (welllayout.js)
 //   buildFloor(game, layout, origin, floor) -> { group, cells (each with its design `tpl` and `spots`: [{ kind, pos }]), path, arrive: { pos, yaw }, up, down, moveDown(cell), sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
-//     ground(x, z, top?), update(dt), dispose() }       (origin: the grid's north-west corner, at the upper tier's floor)
-//   GRID (cells a side), CELL (metres a cell), WALL_H
+//     ground(x, z, top?), update(dt), dispose() }       (origin: the grid's centre, at the upper tier's floor)
+//   gridOf(floor) (cells a side), CELL (metres a cell), WALL_H
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { triplanar, surfaceTexture } from '../../render/triplanar.js';
@@ -32,15 +32,15 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { addOutline } from '../../render/outline.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
-import { layoutFloor, swirl, GRID, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
+import { layoutFloor, swirl, gridOf, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
 import { roomSand, BASE } from './wellsand.js';
 import { Sandfalls } from './wellshift.js';
 import { roughen, segments } from './rock.js';
 import { chooseRooms, roomPieces, TALL } from './prefabs.js';
 import { seeded } from '../../core/rng.js';
 
-export { layoutFloor, GRID, CELL, WALL_H };
-const WT = 0.5, SLAB = 0.5, PIECE = 3.5, HALF = (GRID * CELL) / 2;
+export { layoutFloor, gridOf, CELL, WALL_H };
+const WT = 0.5, SLAB = 0.5, PIECE = 3.5;
 /** How much taller a floor's walls stand than WALL_H, for the sand banked against them (wellsand.js: drifts to 1.2, 1.8 and 2.2 m, dunes
  *  on top): the wall above the highest sand stays out of a hang's reach (core/config.js hang.maxTop 2.95), as it was on bare floors. */
 const LIFT = [1.5, 2.5, 3];
@@ -53,7 +53,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 // to a crawl every few metres. Rapier, after Bullet's btAdjustInternalEdgeContacts: contacts on an inner edge take the faces' normal)
 const TRI_FLAGS = RAPIER.TriMeshFlags?.FIX_INTERNAL_EDGES ?? 0;
 
-/** One floor, built at `origin` (the north-west corner of the grid, at the upper tier's floor level). */
+/** One floor, built at `origin` (the grid's centre, at the upper tier's floor level; the grid is the floor's own size). */
 export function buildFloor(game, layout, origin, floor = 1) {
   const W = game.physics.world, body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed());
   const group = new THREE.Group(); group.name = `well-floor-${floor}`; group.userData.zone = 'well';
@@ -61,7 +61,8 @@ export function buildFloor(game, layout, origin, floor = 1) {
   chooseRooms(layout, seeded((layout.seed ^ Math.imul(floor, 0x2c1b3c6d)) >>> 0)); // (each room's design, paced along the path: prefabs.js)
   const deep = (floor - 1) / 2, tint = (hex, k = 1) => new THREE.Color(hex).lerp(new THREE.Color(0x3a2350), deep * 0.55 * k).getHex();
   const sets = { floor: [], wall: [], ceil: [], deco: [], arch: [] }, sandGeos = [];
-  const C = { x: origin.x + HALF, z: origin.z + HALF }, Y = origin.y, sw = swirl(layout.twist), unsw = swirl(layout.twist, { back: true }), bend = layout.twist > 0;
+  const HALF = (layout.grid * CELL) / 2, grid = layout.grid;
+  const C = { x: origin.x, z: origin.z }, Y = origin.y, sw = swirl(layout.twist, { grid }), unsw = swirl(layout.twist, { back: true, grid }), bend = layout.twist > 0;
   const cellAt = new Map(layout.cells.map((k) => [`${k.c},${k.r}`, k]));
   const get = (c, r) => cellAt.get(`${c},${r}`);
   const mid = (cell) => ({ x: (cell.c + 0.5) * CELL - HALF, z: (cell.r + 0.5) * CELL - HALF }); // (grid metres from the floor's centre)
@@ -170,7 +171,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     const key = cell.hall != null ? `h${cell.hall}` : `${cell.c},${cell.r}`;
     if (lit.has(key)) continue;
     lit.add(key);
-    const lm = cell.hall != null ? hallMid(layout.halls[cell.hall]) : m, lp = place(lm.x, lm.z);
+    const lm = cell.hall != null ? hallMid(layout.halls[cell.hall], HALF) : m, lp = place(lm.x, lm.z);
     const l = new THREE.PointLight(new THREE.Color(0xffa066).lerp(new THREE.Color(0xa070ff), deep), cell.hall != null ? 20 : 14, CELL * (cell.hall != null ? 2.2 : 1.4), 1.2);
     l.position.set(lp.x, Y + level(cell) + WH - 0.6, lp.z); group.add(l);
     game.lights?.adopt(l); // (a proxy now, not at the budget's next scan: a real light for even one frame recompiles every material in view)
@@ -178,7 +179,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   // ---- the sand: a heightfield a room (a hall is one room), the same samples drawn as one mesh for the floor
   const rooms = [];
   for (const cell of layout.cells) if (cell.hall == null) rooms.push({ cells: [cell], m: mid(cell), size: CELL, cell });
-  layout.halls.forEach((h, id) => rooms.push({ cells: layout.cells.filter((k) => k.hall === id), m: hallMid(h), size: 2 * CELL, cell: layout.cells.find((k) => k.hall === id) }));
+  layout.halls.forEach((h, id) => rooms.push({ cells: layout.cells.filter((k) => k.hall === id), m: hallMid(h, HALF), size: 2 * CELL, cell: layout.cells.find((k) => k.hall === id) }));
   const sandOf = new Map(), spotsOf = new Map();
   for (const room of rooms) {
     const { m, size, cell } = room, doors = [], pools = [];
@@ -292,5 +293,5 @@ export function buildFloor(game, layout, origin, floor = 1) {
 }
 
 /** A hall's middle (grid metres from the floor's centre): the corner its four cells share. */
-function hallMid(h) { return { x: (h.c + 1) * CELL - HALF, z: (h.r + 1) * CELL - HALF }; }
+function hallMid(h, HALF) { return { x: (h.c + 1) * CELL - HALF, z: (h.r + 1) * CELL - HALF }; }
 
