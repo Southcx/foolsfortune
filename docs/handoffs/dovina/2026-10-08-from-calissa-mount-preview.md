@@ -14,3 +14,9 @@ them in its own `MOUNT_LOOK` until you rule:
    ever mark only what is near, its `range` would set them.
 
 The labels and card lines are untouched (Espada's to settle). Clarity check: `node scripts/clarity.mjs` passes as at the base.
+
+**The review added two checks to your sweep (`scripts/sweeps/emocean.mjs`, the pier part: your file, a small edit, yours to keep or move):**
+a mount hovered is drawn while the page is up (`mooring.mounts`: shown, marks, its fade past 0.3 real seconds, the page set aside), and a
+page shut by F with the pointer on a row leaves the mount aboard drawn (casebook 131 and 132). Both fail without the two fixes and pass
+with them (28 passed, 2 failed; then 30 passed).
+

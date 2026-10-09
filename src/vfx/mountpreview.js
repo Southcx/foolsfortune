@@ -81,8 +81,8 @@ export class MountPreview {
     this.pw = []; this.pa = []; this.rgb = [1, 1, 1]; // (a strip's points, in the world, and their half-widths; the colour: reused)
   }
 
-  /** Draw this mount's preview (a tool id of MOUNTS), or none. Drawn at once where the last draw stood (a page opened over a paused
-   *  world still shows the new one behind it). */
+  /** Draw this mount's preview (a tool id of MOUNTS), or none. Drawn at once where the last draw stood, at the start of its fade (faint:
+   *  the mooring's updates, which the loop keeps running under the pier's page, bring it up in a third of a real second). */
   show(tool) {
     const id = tool && MOUNTS[tool] && MOUNT_LOOK[tool] ? tool : null;
     if (id === this.tool) return this;

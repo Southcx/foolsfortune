@@ -6,13 +6,15 @@
 // Only near a pier (inside 160 m) is it shown; the looks are built once a class and kept (the rail's own, vfx/shipclasses.js shipLook).
 // A MOUNT'S PREVIEW rides it (vfx/mountpreview.js, docs/plans/CLARITY.md section 6): the pier's page names the mount hovered or chosen
 // (`preview(tool)`), and its shape is drawn on the crude round the hull, one at a time, until another is named, none is, or the Courier
-// leaves the pier (or casts off).
+// leaves the pier (or casts off). The page pauses the game, so the loop's modal branch ticks the mooring too (else a mount hovered in it
+// stands frozen at nothing: casebook rule 131), and a page shut under the pointer sends no leave, so the mooring sets the preview back to the
+// mount taken aboard when it sees the page close (rule 132). `side()` says which side of the screen the hull lies on: the page is set aside to the other.
 //
 // Prior art: Wind Waker's King of Red Lions tied up at every dock, Sunless Sea's ship at its London berth (the ship you chose is the
 // one you see), and the harbour of every port town: a hull alongside reads "you can go to sea from here" with no word said.
 //
 //   game.mooring = new Mooring(game)   .update(raw)   (reads game.pier: its piers' ends and its chosen hull; the sea level per island)
-//   .preview(toolId | null)   (a mount's preview on the moored hull; the pier's page calls it)
+//   .preview(toolId | null)   (a mount's preview on the moored hull; the pier's page calls it)   .side() -> 'left' | 'right' | null   (where the hull is on screen)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { shipLook } from './shipclasses.js';
@@ -32,6 +34,10 @@ export class Mooring {
   /** A mount's preview on the moored hull (a tool id of MOUNTS), or none: the pier's page names the one hovered or chosen. */
   preview(tool) { this.mounts.show(tool); return this; }
 
+  /** Which side of the screen the moored hull lies on ('left' | 'right'), or none if it is not shown: the pier's page docks to the other,
+   *  so the hull and its preview stay in view while a mount is chosen. */
+  side() { return this.cur?.group.visible ? (_v.copy(this.at).project(this.game.camera).x < 0 ? 'left' : 'right') : null; }
+
   /** The look of a hull, built on first asking and parked in the scene hidden. */
   look(id) {
     if (!this.looks[id]) {
@@ -47,7 +53,9 @@ export class Mooring {
     let best = null, bd = NEAR;
     for (const [island, at] of P.piers) { const j = at(); if (!j) continue; const d = Math.hypot(j.end.x - me.x, j.end.z - me.z); if (d < bd) { bd = d; best = { island, j }; } }
     if (!best) { this.away(); return; }
-    const s = this.look(P.ship || 'sloop');
+    const s = this.look(P.ship || 'sloop'), open = !!g.indexMenu?.open;
+    if (this.paged && !open) this.mounts.show(P.chosen?.at(-1) ?? null); // (a page shut under the pointer sends no leave: the mount taken aboard, whatever it was over)
+    this.paged = open;
     if (this.cur !== s) { this.hide(); this.cur = s; s.polarity(this.feel = COLOR[g.weather?.at?.(best.island)?.aspect] ?? 0xffc65c); }
     // alongside the pier's end on its south side, the bow out to sea (the pier faces the land: its yaw), a little inland of the end
     const { j, island } = best, yaw = j.yaw ?? 0, out = _f.set(-Math.sin(yaw), 0, -Math.cos(yaw)), side = _r.set(out.z, 0, -out.x);
@@ -68,6 +76,6 @@ export class Mooring {
 
   hide() { if (this.cur) this.cur.group.visible = false; this.cur = null; }
   /** Nothing to moor (no pier near, or the crossing begun): the hull hidden and its preview cleared. */
-  away() { this.hide(); this.mounts.park(); }
+  away() { this.hide(); this.paged = false; this.mounts.park(); }
 }
-const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _px = new THREE.Vector2();
+const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _v = new THREE.Vector3(), _px = new THREE.Vector2();

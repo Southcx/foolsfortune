@@ -759,7 +759,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   line** (`grapnel`: to its range, two flukes at its end, the aim's arc faint); the Radar's **scan** (`radarScan`: range circles and a
   **scan line**, clockwise from above, once in four real seconds). Drawn in the rail mark's **wire** style (`STYLE.wire`, `vfx/railmark.js`): screen-space,
   the mount's colour (`MOUNT_LOOK`; the ship's feeling for the Blaster and Absorb Spray) with the Mind's schiller along its heart,
-  lifted over the drawn crude and depth-tested (the jetty, the hull and the Courier hide it; the sand above the waterline covers it).
+  lifted over the drawn crude and depth-tested (the jetty, the hull and the Courier hide it; the sand above the waterline covers it). The
+  pier's page pauses the game, so the loop ticks the mooring under it (the preview fades in and moves while a mount is chosen), the page is
+  **set aside** from the hull, and a page shut puts the preview back to the mount taken aboard (the pointer sends no leave).
   *Not:* the card's demo loop (CLARITY.md section 6, a loop beside a card), the lock-on reticle, a lane mark.
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
@@ -958,6 +960,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
 - **the dialogue box** (`src/npc/dialogue.js`): the one window of words in the world.
+- **a page set aside** (`showPage(name, render, { aside: 'left' | 'right' })`, `src/feedback/indexmenu.js`; the review of Calissa's mount preview, 2026-10-08):
+  an index-window page set in a column (340 px, its rooms one to a row) at one side of the screen, no veil over the rest, for a window whose
+  choice is seen in the world beside it. The pier's is set to the side away from the moored hull (`game.mooring.side()`), so a mount hovered
+  is seen on the hull while it is chosen. The window still pauses the game and takes its keys (F, Esc), and a click on the clear ground
+  shuts it. *Not:* a page centred under the veil (the index's, a Shrine's), the dock (Margarite's quay; the word "dock" is a place's).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),

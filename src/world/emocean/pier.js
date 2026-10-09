@@ -100,7 +100,7 @@ export class Pier {
       g.mooring?.preview(chosen.at(-1) ?? null); // (the one last taken aboard, until another is hovered)
       const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
-    }, { title: 'THE PIER', sub: 'click to choose · F closes' });
+    }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
   }
 
   /** A rutter of this route and game day in the Pneuka Box (the charted passage a heavy hull sails; none exist until the rutter item

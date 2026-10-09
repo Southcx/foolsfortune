@@ -286,6 +286,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   *Not:* the Veritome.
 - **the map** (M) — called Mind Mapping in the game (`src/feedback/cartography.js`).
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
+- **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
+  the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
