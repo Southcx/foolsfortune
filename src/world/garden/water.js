@@ -16,11 +16,13 @@
 // angle, Musgrave 1989).
 //
 //   const W = new PlanetWater(clay, { g })   W.step(dt) (60 a real second)   W.slump(dt) (a few a real second)   W.depthAt(dir)   W.pour(dir, volume, feeling)   W.drink(dir, volume)
-//   W.total   W.version   W.mix(k) -> [5 shares]   W.dump() / W.load(d)   basinVolume(clay) -> cubic metres its basins would hold
+//   W.total   W.version   W.mix(k) -> [a share a feeling, FEELINGS' order]   W.dump() / W.load(d)   basinVolume(clay) -> cubic metres its basins would hold
 // ---------------------------------------------------------------------------------------
 import { NX, NY, CELL_DIRS, uvOf } from './clay.js';
+import { DISPLAY_ORDER } from '../../progress/weather.js';
 
-export const FEELINGS = ['wonder', 'mirth', 'desire', 'grief', 'dread']; // (the shown order: DISPLAY_ORDER, progress/weather.js)
+export const FEELINGS = DISPLAY_ORDER; // (the seven, in the shown order: progress/weather.js; Gall and Fury's channels with them, GALL-AND-FURY.md 15)
+const NF = FEELINGS.length; // (a cell's mix: one share a feeling)
 const WATER = { g: 20, damp: 0.985, minDepth: 1e-4, dry: 0.0015, erodeK: 0.02, depositK: 0.06, capacityK: 0.05, minSlope: 0.06, talus: 1.1, slumpK: 0.25, sediment: 0.5 };
 // (g: the garden's gravity, planetbody.js; dry: metres a real second off still water; erosion: Mei's Kc, Ks, Kd; talus: the steepest a
 // sculpted slope holds, rise over run; sediment: the most a cell's water carries, metres)
@@ -31,7 +33,7 @@ export class PlanetWater {
     this.w = new Float32Array(n); this.s = new Float32Array(n); this.s2 = new Float32Array(n);
     this.fl = new Float32Array(n); this.fr = new Float32Array(n); this.ft = new Float32Array(n); this.fb = new Float32Array(n);
     this.vx = new Float32Array(n); this.vy = new Float32Array(n);
-    this.mixes = new Float32Array(n * 5); this.next = new Float32Array(n * 5); this.wNext = new Float32Array(n);
+    this.mixes = new Float32Array(n * NF); this.next = new Float32Array(n * NF); this.wNext = new Float32Array(n);
     // the cells' sizes on the sphere: a row's width shrinks toward the poles (held to a fifth of its height, so a pole cell is not a needle)
     this.dy = (R * Math.PI) / NY; this.dx = new Float32Array(NY); this.area = new Float32Array(NY);
     for (let j = 0; j < NY; j++) { const lat = ((j + 0.5) / NY - 0.5) * Math.PI; this.dx[j] = Math.max(this.dy * 0.2, (R * Math.cos(lat) * Math.PI * 2) / NX); this.area[j] = this.dx[j] * this.dy; }
@@ -54,14 +56,14 @@ export class PlanetWater {
     const [u, v] = uvOf(dir), i0 = Math.floor(u), j0 = Math.max(0, Math.min(NY - 1, Math.floor(v))), j1 = Math.min(NY - 1, j0 + 1), i1 = (i0 + 1) % NX, fu = u - i0, fv = Math.max(0, Math.min(1, v - j0)), W = this.w;
     return (W[j0 * NX + i0] * (1 - fu) + W[j0 * NX + i1] * fu) * (1 - fv) + (W[j1 * NX + i0] * (1 - fu) + W[j1 * NX + i1] * fu) * fv;
   }
-  mix(k) { return Array.from(this.mixes.subarray(k * 5, k * 5 + 5)); }
+  mix(k) { return Array.from(this.mixes.subarray(k * NF, k * NF + NF)); }
 
   /** Water poured at a direction: `volume` cubic metres of one feeling, spread over the cell and its four neighbours. */
   pour(dir, volume, feeling = 'wonder') {
     const k0 = this.cellOf(dir), e = Math.max(0, FEELINGS.indexOf(feeling));
     for (const k of [k0, this.nl[k0], this.nr[k0], this.nt[k0], this.nb[k0]]) {
       const add = (volume / 5) / this.area[(k / NX) | 0], was = this.w[k], now = was + add, M = this.mixes;
-      for (let f = 0; f < 5; f++) M[k * 5 + f] = now > 0 ? (M[k * 5 + f] * was + (f === e ? add : 0)) / now : 0;
+      for (let f = 0; f < NF; f++) M[k * NF + f] = now > 0 ? (M[k * NF + f] * was + (f === e ? add : 0)) / now : 0;
       this.w[k] = now;
     }
     this.wake();
@@ -103,7 +105,7 @@ export class PlanetWater {
         const m = q === 0 ? nl[k] : q === 1 ? nr[k] : q === 2 ? nt[k] : nb[k], f = q === 0 ? fl[k] : q === 1 ? fr[k] : q === 2 ? ft[k] : fb[k];
         if (!f) continue;
         const dm = (f * dt) / area[(m / NX) | 0], before = WN[m], after = before + dm;
-        if (after > 0) for (let e = 0; e < 5; e++) N[m * 5 + e] = (N[m * 5 + e] * before + M[k * 5 + e] * dm) / after;
+        if (after > 0) for (let e = 0; e < NF; e++) N[m * NF + e] = (N[m * NF + e] * before + M[k * NF + e] * dm) / after;
         WN[m] = after;
       }
     }
@@ -168,7 +170,7 @@ export class PlanetWater {
   load(a) {
     this.w.fill(0); this.mixes.fill(0);
     if (!Array.isArray(a)) return;
-    for (let i = 0; i + 2 < a.length; i += 3) { const k = a[i] | 0; if (k < 0 || k >= NX * NY) continue; this.w[k] = (a[i + 1] || 0) / 100; this.mixes[k * 5 + Math.max(0, Math.min(4, a[i + 2] | 0))] = 1; }
+    for (let i = 0; i + 2 < a.length; i += 3) { const k = a[i] | 0; if (k < 0 || k >= NX * NY) continue; this.w[k] = (a[i + 1] || 0) / 100; this.mixes[k * NF + Math.max(0, Math.min(NF - 1, a[i + 2] | 0))] = 1; }
     this.awake = true; this.version++;
   }
 }
