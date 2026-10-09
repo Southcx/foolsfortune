@@ -62,7 +62,7 @@ export class Qais {
     this.store = store;
     store.watch('meta', (docs) => { this.round = docs.find((d) => d.id === 'round') || null; this.redraw(); });
     this.evidence = new Evidence(this.game, (t, s) => this.seen(t, s));
-    store.watch('tests', (docs) => { this.evidence.watch(docs.filter((t) => t.build === this.round?.build)); this.redraw(); });
+    store.watch('tests', (docs) => { this.evidence.watch(docs.filter((t) => !t.retired && (t.build === this.round?.build || !t.status || t.status === 'open')) /* (the Tests tab's own set: tabs.js roundTests) */); this.redraw(); });
     for (const c of ['brief', 'bugs', 'questions']) store.watch(c, () => this.redraw());
   }
 
