@@ -9,6 +9,7 @@
 // the status, tuned apart from it), Kingdom Hearts' sleep bubbles and stop-frost, Monster Hunter's status particles over a monster.
 //
 //   game.auras = new Auras(game)   .update()  (main.js, every frame, after creatures)
+//   auras.throughWalls = false | true | (c) -> bool   drawn over walls (off: a wall hides an aura as it hides its creature: vfx/glyphs.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -18,6 +19,7 @@ export class Auras {
   constructor(game) {
     this.game = game;
     this.on = new Map(); // creature -> Map(status -> handle)
+    this.throughWalls = false; // (false, true, or a creature -> bool: its auras seen through walls)
   }
 
   update() {
@@ -34,7 +36,9 @@ export class Auras {
         let m = this.on.get(c);
         if (!m) this.on.set(c, (m = new Map()));
         let h = m.get(name);
-        if (!h || !h.alive) { h = V.play(fx, { pos: this.centre(c), scale: THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), power: 1 }); m.set(name, h); }
+        const xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
+        if (h && !!h.ctx?.throughWalls !== xr) { h.stop?.(); h = null; } // (the switch thrown: played again into the other pools)
+        if (!h || !h.alive) { h = V.play(fx, { pos: this.centre(c), scale: THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), power: 1, throughWalls: xr }); m.set(name, h); }
         this.centre(c, h.pos);
         h.k = Math.min(1, s.k ?? 1) * Math.min(1, s.t / FADE);
         seen.add(h);

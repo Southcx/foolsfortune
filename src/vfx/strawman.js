@@ -17,11 +17,21 @@
 //
 //   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(rawDt)   S.dispose()
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
-//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard folds the sleeves across its front; the swing winds up 0.8 s, then sweeps)
+//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard crosses the sleeves in an X in front of its chest, a boxer's
+//   cross-arm block: SLEEVES.guard; the swing winds up 0.8 s, the right sleeve held up beside the head, then sweeps forward)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const BODY_H = 0.95, TARGET_Y = -BODY_H + 0.44 * BODY_H; // (the sack's height; the target's middle, metres below the neck)
+/** Strawman's sleeves (radians from a sleeve standing straight out to its side; pi/2 is straight ahead). `guard`: the shoulders brought
+ *  forward (`reach`, m), each sleeve swung forward past straight ahead (`forward`) and tipped down, so the two cross in an X over its
+ *  chest, 0.3 m in front of it, clear of the head and the sack; the right tipped a little lower, lying over the left. `swing`: the right
+ *  sleeve in the wind-up held up (`up`) and a little back (`back`), high beside the head where the striker sees it, and the parry mark
+ *  on it (a sleeve drawn straight back hid behind the head from in front); then swept `through` past straight ahead. */
+export const SLEEVES = {
+  guard: { reach: 0.16, forward: 2.25, tipL: 0.5, tipR: 0.65 },
+  swing: { back: 0.15, up: 1.15, through: 1.6, ease: 12 }, // (ease: 1/s, the sleeve's way back to rest when a parry breaks the swing off)
+};
 const C = { burlap: 0xcdb48c, seam: 0x6b5236, sleeve: 0x3a2f3a, cuff: 0xefe3c8, hat: 0x2c2731, band: 0x8d7f92, post: 0x3b2a1e, lacquer: 0x121014, red: 0xb8402e, cream: 0xf3e6c8, straw: 0xe0c070 };
 
 /** The sack's cloth, painted on a canvas: a burlap weave, its seams, and on the front the target (three rings). */
@@ -87,17 +97,20 @@ export class StrawmanModel {
     hat.position.set(0, 2.08, -0.16); hat.rotation.z = 0.06; rock.add(hat);
     const rim = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.05, 0.29), M(std(C.band, { roughness: 0.5 }))); rim.position.set(0, 0.24, 0); hat.add(rim);
     // the crossbar and its sleeves (charcoal, tapered, the cuffs flared with the cream spiral)
-    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.7, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
+    // (the bar between the shoulders; each sleeve carries the rest of it, so a sleeve folded into the guard never leaves a bare stick out)
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
     const sleeveM = M(std(C.sleeve)), cuffM = M(std(0xffffff, { map: cuffTexture() }));
     this.arms = [];
-    for (const s of [-1, 1]) { // (each sleeve on its own shoulder: they fold into a guard, and one draws back for the swing)
+    const halfG = new THREE.CylinderGeometry(0.03, 0.03, 0.68, 8); // (one geometry, both halves)
+    for (const s of [-1, 1]) { // (each sleeve on its own shoulder: they fold into a guard, and one rises for the swing)
       const arm = new THREE.Group(); arm.position.set(s * 0.17, 1.5, -0.08); rock.add(arm); this.arms.push(arm);
+      const half = new THREE.Mesh(halfG, postM); half.rotation.z = Math.PI / 2; half.position.set(s * 0.34, 0.02, -0.02); arm.add(half);
       const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.19, 0.66, 12, 1, true), sleeveM); sl.material.side = THREE.DoubleSide; // (puffy, flaring to the cuff)
       sl.rotation.z = s * Math.PI / 2; sl.position.set(s * 0.33, 0, 0); arm.add(sl);
       const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.67, 0, 0); cuff.rotation.y = s * Math.PI / 2; arm.add(cuff);
       const lip = new THREE.Mesh(new THREE.TorusGeometry(0.195, 0.025, 6, 20), sleeveM); lip.position.copy(cuff.position); lip.rotation.y = s * Math.PI / 2; arm.add(lip);
     }
-    this.mode = 'still'; this.pose = 0; this.sw = null; // (the guard's weight 0..1; the swing under way)
+    this.mode = 'still'; this.pose = 0; this.sw = null; this.armR = 0; this.armUp = 0; this.lean = 0; // (the guard's weight 0..1; the swing under way; the sleeve's and the body's turns as drawn)
     // the sack: hangs on the bar, swings a beat behind (its own pivot at the neck)
     const sack = this.sack = new THREE.Group(); sack.position.set(0, 1.45, 0); rock.add(sack);
     const prof = []; for (let i = 0; i <= 14; i++) { const t = i / 14; prof.push(new THREE.Vector2(0.07 + 0.42 * Math.sin(Math.PI * Math.pow(t, 0.72)) * (1 - 0.3 * t), -BODY_H + t * BODY_H)); } // (a fat pear, as drawn: twice the head's width)
@@ -129,7 +142,7 @@ export class StrawmanModel {
   /** The mode F cycles (Dovina's, docs/plans/STRAWMAN.md): 'still', 'guard' (the sleeves fold into an X across its front: it blocks from
    *  the front), 'swing' (Petra's clock calls swing() every 3 sim seconds). */
   setMode(m) { this.mode = m; }
-  /** A swing: 0.8 s of wind-up that reads (it leans back, the right sleeve draws back and up, the target pulses amber: the tell), then a
+  /** A swing: 0.8 s of wind-up that reads (it leans back, the right sleeve rises beside the head, the target pulses amber: the tell), then a
    *  quick sweep forward; `onStrike` is called at the sweep's middle (Petra's harmless hit). */
   swing(onStrike) { if (!this.sw) this.sw = { t: 0, onStrike, hit: false }; }
 
@@ -163,18 +176,25 @@ export class StrawmanModel {
     this.s.clampScalar(-0.6, 0.6);
     // the guard: the sleeves fold forward into an X across the front; the swing: wind-up, then the sweep
     this.pose += ((this.mode === 'guard' ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * 8));
+    const SW = SLEEVES.swing, GD = SLEEVES.guard;
     let lean = 0, armR = 0, armUp = 0, tell = 0;
     if (this.sw) {
       const W = this.sw; W.t += dt;
-      if (W.t < 0.8) { const u = W.t / 0.8, e = u * u * (3 - 2 * u); lean = -0.22 * e; armR = -1.3 * e; armUp = 0.6 * e; tell = 0.5 + 0.5 * Math.sin(W.t * 26); } // (the wind-up: leaning back, the sleeve drawn back and up, the target pulsing)
-      else if (W.t < 1.05) { const u = (W.t - 0.8) / 0.25; lean = -0.22 + 0.5 * u; armR = -1.3 + 2.9 * u; armUp = 0.6 * (1 - u); if (u > 0.5 && !W.hit) { W.hit = true; W.onStrike?.(); } } // (the sweep)
-      else if (W.t < 1.6) { const u = (W.t - 1.05) / 0.55; lean = 0.28 * (1 - u); armR = 1.6 * (1 - u); }
+      if (W.t < 0.8) { const u = W.t / 0.8, e = u * u * (3 - 2 * u); lean = -0.22 * e; armR = -SW.back * e; armUp = SW.up * e; tell = 0.5 + 0.5 * Math.sin(W.t * 26); } // (the wind-up: leaning back, the sleeve held up beside the head, the target pulsing)
+      else if (W.t < 1.05) { const u = (W.t - 0.8) / 0.25; lean = -0.22 + 0.5 * u; armR = -SW.back + (SW.back + SW.through) * u; armUp = SW.up * (1 - u); if (u > 0.5 && !W.hit) { W.hit = true; W.onStrike?.(); } } // (the sweep)
+      else if (W.t < 1.6) { const u = (W.t - 1.05) / 0.55; lean = 0.28 * (1 - u); armR = SW.through * (1 - u); }
       else this.sw = null;
     }
     const g = this.pose;
-    this.arms[0].rotation.set(0, -g * 1.25, -g * 0.35);
-    this.arms[1].rotation.set(0, g * 1.25 + armR, g * 0.35 + armUp);
-    this.rock.rotation.set(this.a.x + lean, 0, this.a.y);
+    // (a sleeve on side s swings forward, toward +z, the way it faces, by rotation.y = -s * forward, and tips down by rotation.z = -s * tip.
+    // The signs were the other way round, and the guard and the swing pointed backwards: the owner's T51, v133)
+    // (a swing a parry broke off sets `sw` to null from outside: the sleeve and the lean ease back to rest instead of snapping there)
+    const k = this.sw ? 1 : 1 - Math.exp(-dt * SW.ease);
+    this.armR += (armR - this.armR) * k; this.armUp += (armUp - this.armUp) * k; this.lean += (lean - this.lean) * k;
+    for (const a of this.arms) a.position.z = -0.08 + g * GD.reach;
+    this.arms[0].rotation.set(0, g * GD.forward, g * GD.tipL);
+    this.arms[1].rotation.set(0, -g * GD.forward - this.armR, -g * GD.tipR + this.armUp);
+    this.rock.rotation.set(this.a.x + this.lean, 0, this.a.y);
     this.sack.rotation.set(this.s.x * 0.7, 0, this.s.y * 0.7);
     for (const l of this.legs) l.rotation.x = -this.s.x * 1.4; // (the legs dangle after)
     // the ring that was hit: a flash on the target, fading

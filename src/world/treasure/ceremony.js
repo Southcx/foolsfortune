@@ -141,7 +141,7 @@ export class Ceremony {
     let name = this.clip, t = this.clipT;
     if (name === 'interact') t = Math.min(t * 0.85, 1.05);
     else if (name === 'hitChest') t = Math.min(t, 0.32);
-    else if (name === 'idle') t = t % 2.5;
+    else if (name === 'idle') { name = ch.idles?.clip || 'idle'; t = t % (C.clips[name]?.dur || 2.5); } // (the idle they stood in before the chest: courier/anim/idlebreak.js)
     C.blend(base, C.sample(name, t, ch.P.tmp, false), w);
   }
 

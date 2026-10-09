@@ -187,9 +187,9 @@ export class Crucibelle extends HeldTool {
     if (id === 'reveal') {
       const r = 16 * power;
       n += g.crystals?.reveal(P.pos, r, 'courier', 'song') || 0;
-      // every signature in reach marked where it is (a mark on the thing: vfx/glyphs.js)
+      // every signature in reach marked where it is, through walls and sand (the song is a scan: a mark on the thing, vfx/glyphs.js)
       const all = (g.signatures?.around(P.pos, r) || []).sort((a, b) => a.d - b.d).slice(0, 14);
-      for (const s of all) g.glyphs?.pop('bang1', s.pos.clone().setY(s.pos.y + 1.1), { color: 0xcdb8f2, size: 0.45, life: 3 });
+      for (const s of all) g.glyphs?.pop('bang1', s.pos.clone().setY(s.pos.y + 1.1), { color: 0xcdb8f2, size: 0.45, life: 3, throughWalls: true });
       n += all.length;
     } else if (id === 'mirage') {
       const secs = 7 * power;

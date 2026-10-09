@@ -13,6 +13,13 @@
 //   GRIEF   the long rain: steady, long, silver, the sky grey and drained (Illusion's labradorite, in the drops' sheen)
 //   DREAD   the pall: a bruise-coloured haze, ink and violet-green, and thunder far off as FAR BOLTS, each held a beat and fading
 //           over a second and a half, with a slow glow in the cloud behind; never a flash on the screen (Delirium's ink and green)
+//   GALL    the miasma (docs/plans/GALL-AND-FURY.md): a low sour fog lying in the hollows and thin on the crests (lenses of it on the
+//           ground, flat-topped as valley fog is), Gall's violet greyed toward bile; FLIES in a few loose clouds low over the sand;
+//           a CURDLED FILM on still water and Lachryma, the oil film's colours gone sour (vfx/water.js `SOUR_U`); a low flat sky with a
+//           bruise at the horizon (Ego's, as Wonder: but rot, never the hexagon)
+//   FURY    the hail: hard white pellets falling fast and nearly straight, each BOUNCING once and lying as a thin white SCATTER that
+//           melts, POCKING still water with small hard rings (the ripple tank, `game.water.disturb`); a hard, bright overcast in the
+//           cumulonimbus's grey-green, a red edge at the horizon (Fury's). Never thunder, never lightning: those are Dread's
 // What falls is in the world, never on the screen: long thin streaks and motes in a column round the eye, each along its own path
 // (the sixth generation's rain: lines wrapped round the camera), so nothing swims or flickers. Since R46 (the owner: "toned down in
 // number and presence ... higher in the sky ... noise modulation befitting their travel path"): fewer; most of it high, only a sparse
@@ -27,17 +34,24 @@
 // Prior art: the sixth generation's camera-wrapped rain (Wind Waker, Metal Gear Solid 2's tanker deck), real atmospheric optics (the
 // 22-degree halo and parhelia from hexagonal plate crystals, the primary bow at 42 degrees round the antisolar point, diamond dust),
 // Breath of the Wild's lightning (a bolt seen far off before its thunder), Okami's painted skies graded by the hour, and Journey's
-// weather as feeling.
+// weather as feeling. The miasma: Silent Hill's and Dark Souls' Blighttown's sulphurous low fogs, Pathologic's plague miasma, and
+// valley fog's flat top (the cold air pooling in the hollows); its lenses are soft point sprites faded by their area and at the
+// screen's edge (the sixth generation's fog cards, with the soft-particle problem met by sitting each one on the ground). The hail:
+// real hailstorms (the cumulonimbus's grey-green light; a stone's one bounce and its white scatter melting on warm ground) and Breath
+// of the Wild's weather readability (each weather known at a glance by what it does, not only by its colour).
 //
 //   game.weatherLook = new WeatherLook(game)   .update(dt, camera)   .force({ aspect, strength, phase, light } | null) (tests, the workbench)
 //   An AGATE sky (two feelings: `second`, `secondStrength` from the rules): the first falls; the second colours the sky, the clouds and
 //   what falls, and may raise its own mark (an aurora under a pall: awe). Opposites cancel in the rules, so there is nothing to draw.
 //   .shoreline({ center, angle, half, r })   the mood ends at the waterline (vfx/shore.js tells it)
 //   .prewarm() (made and shown for the boot's warm-up; returns what hides it)   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
+//   Every look shares two falling programs: the streaks (one LineSegments) and the motes (Points, a mode each: drift, flies, hail,
+//   fog lens), the miasma's lenses a second instance of the motes' very source (three caches a program by its source: no new one).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Overhead, OVERHEAD_GLSL } from './overhead.js';
 import { COLOR } from '../progress/weather.js';
+import { SOUR_U } from './water.js';
 
 const C = (hex) => new THREE.Color(hex);
 /** The feelings' colours: the game's one table (progress/weather.js COLOR, Dovina's; ruled the one table 2026-10-08, SOUL-ALCHEMY.md), re-exported
@@ -55,6 +69,12 @@ export const LOOK = {
             sky: { expo: 0.78, mul: [0.92, 0.96, 1.04], desat: 0.65 }, fog: C(0x7c858e), fogD: 1.6 },
   dread:  { colour: C(COLOR.dread), clouds: { cover: 0.28, opacity: 0.95 },  fall: null, mark: 'bolts',
             sky: { expo: 0.55, mul: [0.8, 0.86, 0.8], desat: 0.35, haze: C(0x26302a), hazeK: 0.75 }, fog: C(0x24302a), fogD: 2.6 },
+  // (the miasma's fall is its fog lenses and its flies; `mist` the lenses' colour, Gall's violet greyed toward bile; `fly` the flies')
+  gall:   { colour: C(COLOR.gall), clouds: { cover: 0.24, opacity: 0.97 },  fall: { kind: 'miasma', rate: 1, flies: 96, lenses: 440 }, mist: C(0x7e6e88), fly: C(0x140f16),
+            sky: { expo: 0.62, mul: [1.0, 0.97, 0.84], desat: 0.5, haze: C(0x4c3452), hazeK: 0.8 }, fog: C(0x7a6c7c), fogD: 2.4 },
+  // (the hail falls white whatever its feeling: `fall.colour`; the red is the sky's edge, never the stones)
+  fury:   { colour: C(COLOR.fury), clouds: { cover: 0.26, opacity: 0.97 },  fall: { kind: 'hail', rate: 1, speed: 26, len: 0.2, alpha: 1, vel: [0.05, -1, 0.02], noise: 0.1, lowK: 0.7, colour: C(0xeef6ff), scatter: 2000 },
+            sky: { expo: 0.86, mul: [0.88, 0.98, 0.9], desat: 0.5, haze: C(0x8a1a24), hazeK: 0.7 }, fog: C(0x8c968c), fogD: 1.4 },
 };
 const ASPECTS = Object.keys(LOOK);
 
@@ -87,6 +107,7 @@ export function fogOf(aspect, strength = 1) { const L = LOOK[aspect]; return L ?
 
 // ---------------------------------------------------------------- what falls
 const R = 26, H = 30, LOW = 4; // (the column round the eye: its radius, and its height, from LOW metres under the eye up; most of what falls is high)
+const WET_U = { uWet: { value: [new THREE.Vector4(1, 1, 0, 0), new THREE.Vector4(1, 1, 0, 0)] }, uWetY: { value: new THREE.Vector2() } }; // (the still waters nearest the eye, shared by the motes: WeatherLook.wet sets them)
 const SHORE_U = { uShore: { value: new THREE.Vector4(0, 0, 0, 0) }, uShoreA: { value: new THREE.Vector2(0, 0) } }; // (shared by what falls: vfx/shore.js sets it)
 const WRAP = /* glsl */`
 uniform float uT; uniform vec3 uCam; uniform vec3 uVel; uniform float uNoise, uLowK;
@@ -151,30 +172,116 @@ void main() {
   return { obj: L, u, n };
 }
 
+/** The motes: one Points program in four modes (a uniform, never a define: one program for all of them, CASEBOOK rule 5).
+ *   0 DRIFT  dust and diamond dust on the wind's eddies (wonder, desire)
+ *   1 FLIES  a few loose clouds, each a drifting centre low over the ground with its flies buzzing round it (gall)
+ *   2 HAIL   a stone landing: the last of its fall, one bounce, then lying where it skipped to and melting; each lands somewhere new
+ *            each time round (fury; the streaks are the fall itself)
+ *   3 LENS   a lens of low fog, wider than tall, sat on the ground (so the ground never cuts it), more and taller in a hollow than
+ *            on a crest, mottled; laid out to 48 m round the eye on a coarser map of the ground (gall)
+ *  Below its least size a dot fades with its area instead of shrinking (a far fly or stone thins, it never crawls a pixel at a time). */
 function makeMotes(n, occ) {
   const seed = new Float32Array(n * 3); for (let i = 0; i < seed.length; i++) seed[i] = Math.random();
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 },
-    uNoise: { value: 1.5 }, uLowK: { value: 0.2 }, ...occ };
+    uNoise: { value: 1.5 }, uLowK: { value: 0.2 }, uMode: { value: 0 }, uWet: WET_U.uWet, uWetY: WET_U.uWetY, ...occ };
   const m = new THREE.ShaderMaterial({ name: 'weather-motes',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
-attribute vec3 aSeed; uniform float uSize, uHex, uPx; varying float vA; varying float vG;
+attribute vec3 aSeed; uniform float uSize, uHex, uPx, uMode; varying float vA; varying float vG; varying float vM; varying float vAsp;
+float h11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+vec2 wrapXZ(vec2 w, float r) { return mod(w - uCam.xz + r, 2.0 * r) - r; } // (world-anchored, wrapped round the eye at radius r)
+float groundAt(vec2 xz, float or) { float oy = overheadY(xz); return oy > -9000.0 ? oy : or; } // (the top of what is there, or a stand-in)
+uniform vec4 uWet[2]; uniform vec2 uWetY; // (the two still waters nearest the eye: their boxes x0 z0 x1 z1, their surfaces; a box with x1 < x0 is none)
+float wetAt(vec2 xz) { // (the surface of still water here, or the stand-in for none)
+  if (xz.x > uWet[0].x && xz.y > uWet[0].y && xz.x < uWet[0].z && xz.y < uWet[0].w) return uWetY.x;
+  if (xz.x > uWet[1].x && xz.y > uWet[1].y && xz.x < uWet[1].z && xz.y < uWet[1].w) return uWetY.y;
+  return -1e4;
+}
 void main() {
-  vec3 r = wrapAt(aSeed, 0.8 + 0.4 * fract(aSeed.y * 13.1));
-  vec3 w = uCam + r;
-  w += curlish(w * 0.08, uT) * uNoise; // (each mote wanders on the wind's own eddies, the ice sinking slower through them)
+  vec3 w; float a = 1.0, size = uSize, lo = 2.5, hi = 8.0; vG = 0.0; vM = aSeed.z; vAsp = 1.0;
+  if (uMode < 0.5) {
+    vec3 r = wrapAt(aSeed, 0.8 + 0.4 * fract(aSeed.y * 13.1));
+    w = uCam + r;
+    w += curlish(w * 0.08, uT) * uNoise; // (each mote wanders on the wind's own eddies, the ice sinking slower through them)
+    // a crystal's glint: a slow turn that catches the light for a moment, each on its own long period (never a twinkle field)
+    vG = uHex * pow(max(0.0, sin(uT * (0.5 + 0.4 * aSeed.x) + aSeed.z * 40.0)), 24.0);
+    vA = edgeFade(r) * fallFade(w, aSeed.x);
+    vec4 mv0 = viewMatrix * vec4(w, 1.0);
+    gl_PointSize = clamp(uSize * uPx / -mv0.z, 1.0, 6.0) * (1.0 + 1.5 * vG);
+    gl_Position = projectionMatrix * mv0;
+    return;
+  }
+  if (uMode < 1.5) { // FLIES: nine loose clouds, three of them in a close ring round the eye (they find you), each drifting slowly,
+    // its flies on fast unequal loops round it; world-anchored, a cloud wrapping round the eye fades out behind and in ahead
+    float c = floor(aSeed.x * 9.0), wr = c < 3.0 ? 6.0 : 16.0;
+    vec2 cr = wrapXZ(vec2(h11(c + 1.0), h11(c + 7.0)) * 2.0 * wr + vec2(sin(uT * 0.11 + c), cos(uT * 0.09 + c * 1.7)) * 2.0, wr);
+    vec3 cc = vec3(uCam.x + cr.x, 0.0, uCam.z + cr.y);
+    cc.y = groundAt(cc.xz, uCam.y - 1.6) + 0.5 + 1.0 * h11(c + 13.0);
+    float ph = aSeed.z * 40.0, rr = 0.25 + 0.55 * fract(aSeed.y * 17.0);
+    w = cc + rr * vec3(sin(uT * (2.0 + 4.0 * aSeed.y) + ph), 0.5 * sin(uT * (3.0 + 3.0 * aSeed.z) + ph * 1.3), cos(uT * (2.5 + 3.5 * fract(aSeed.x * 31.0)) + ph * 0.7))
+      + 0.07 * vec3(sin(uT * 23.0 + ph), sin(uT * 19.0 + ph * 2.0), cos(uT * 29.0 + ph)); // (the dart and jitter of a fly, never a smooth orbit)
+    a = 1.0 - smoothstep(wr * 0.65, wr, length(cr));
+    if (w.y < overheadY(w.xz) - 0.05) a = 0.0; // (under a roof's edge: none)
+  } else if (uMode < 2.5) { // HAIL: a stone's landing, bounce and scatter, a new spot each time round
+    float P = 2.6 + 1.4 * aSeed.y, cyc = uT / P + aSeed.x * 7.0, k = floor(cyc), tau = fract(cyc) * P;
+    vec3 hs = vec3(h11(k * 1.7 + aSeed.z * 91.0), h11(k * 2.3 + aSeed.x * 53.0), h11(k * 3.1 + aSeed.y * 71.0));
+    vec2 rc = wrapXZ(hs.xz * 22.0, 11.0), xz = uCam.xz + rc;
+    float gy = groundAt(xz, -1e4), wy = wetAt(xz), tf = 0.1, vb = 1.2 + 1.6 * hs.y, tb = 2.0 * vb / 9.8, y;
+    vec2 skip = vec2(cos(hs.y * 40.0), sin(hs.y * 40.0)) * (0.15 + 0.3 * hs.x); // (it skips a little way off the way it bounced)
+    if (wy > -9000.0 && gy < wy - 0.05) { gy = wy; a = step(tau, tf); } // (on water a stone is gone at the surface: its ring is the pock, vfx/ripples.js; a pond's box has dry corners, so only where the ground lies under the surface)
+    if (tau < tf) y = gy + 22.0 * (tf - tau);
+    else if (tau < tf + tb) { float s = tau - tf; y = gy + vb * s - 4.9 * s * s; xz += skip * (s / tb); }
+    else { y = gy; xz += skip; }
+    w = vec3(xz.x, y + 0.03, xz.y);
+    float rest = tf + tb, melt = 1.0 - smoothstep(rest + (P - rest) * 0.4, P * 0.97, tau); // (lying white, then melting into the sand)
+    a *= melt * (1.0 - smoothstep(7.0, 11.0, length(rc))) * step(-9000.0, gy); // (none where the ground is not known yet)
+    size *= 0.55 + 0.45 * melt;
+  } else { // LENS: a pancake of low fog lying on the ground, thicker and deeper in the hollows, drawn as the ellipse it projects to
+    vec2 rc = wrapXZ(aSeed.xz * 96.0 + uVel.xz * uT, 48.0), xz = uCam.xz + rc;
+    xz += curlish(vec3(xz.x, 0.0, xz.y) * 0.03, uT * 0.25).xz * uNoise;
+    float g0 = groundAt(xz, -1e4);
+    float gn = 0.125 * (groundAt(xz + vec2(6.0, 0.0), g0) + groundAt(xz - vec2(6.0, 0.0), g0) + groundAt(xz + vec2(0.0, 6.0), g0) + groundAt(xz - vec2(0.0, 6.0), g0)
+      + groundAt(xz + vec2(15.0, 9.0), g0) + groundAt(xz - vec2(15.0, 9.0), g0) + groundAt(xz + vec2(-9.0, 15.0), g0) + groundAt(xz - vec2(-9.0, 15.0), g0)); // (the ground round it, near and further: a dip and a basin both count)
+    float hollow = clamp((gn - g0) / 1.5, 0.0, 1.0), crest = clamp((g0 - gn) / 1.2, 0.0, 1.0);
+    w = vec3(xz.x, g0 + (0.3 + 0.5 * aSeed.y) * (1.0 + 1.5 * hollow), xz.y);
+    vec3 dv = uCam - w; float dist = length(dv), sEl = clamp(dv.y / max(0.1, dist), -1.0, 1.0), cEl = sqrt(1.0 - sEl * sEl);
+    size *= clamp(dist / 22.0, 0.35, 1.0); // (smaller near the eye: finer there, and never past the sprite's cap)
+    vAsp = max(sEl, 0.22 * cEl); // (a flat disc seen at an elevation is an ellipse that tall: edge-on a thin band, from above nearly round)
+    w.y = max(w.y, g0 + 0.5 * size * vAsp * cEl + 0.1); // (lifted till its near rim clears the ground: a sprite's one depth never cuts it)
+    a = (0.6 + 0.4 * hollow) * (1.0 - 0.7 * crest) * (1.0 - smoothstep(34.0, 48.0, length(rc))) * step(-9000.0, g0); // (none where the ground is not known yet)
+    lo = 1.0; hi = 240.0;
+  }
   vec4 mv = viewMatrix * vec4(w, 1.0);
-  // a crystal's glint: a slow turn that catches the light for a moment, each on its own long period (never a twinkle field)
-  vG = uHex * pow(max(0.0, sin(uT * (0.5 + 0.4 * aSeed.x) + aSeed.z * 40.0)), 24.0);
-  vA = edgeFade(r) * fallFade(w, aSeed.x);
-  gl_PointSize = clamp(uSize * uPx / -mv.z, 1.0, 6.0) * (1.0 + 1.5 * vG);
+  float px = size * uPx / max(0.1, -mv.z);
+  gl_PointSize = clamp(px, lo, hi);
+  a *= min(1.0, px * px / (lo * lo)) * shoreFade(w);
   gl_Position = projectionMatrix * mv;
+  if (uMode > 2.5) { // (a lens fades near the eye and as its centre nears the screen's edge, so a big sprite never pops at the edge)
+    vec2 ndc = gl_Position.xy / max(0.001, gl_Position.w);
+    a *= smoothstep(1.5, 4.5, -mv.z) * (1.0 - smoothstep(0.82, 1.08, max(abs(ndc.x), abs(ndc.y))));
+  } else a *= smoothstep(1.2, 3.5, -mv.z);
+  vA = a;
 }`,
-    fragmentShader: `uniform vec3 uCol; uniform float uA, uHex; varying float vA; varying float vG;
+    fragmentShader: `uniform vec3 uCol; uniform float uA, uHex, uMode; varying float vA; varying float vG; varying float vM; varying float vAsp;
 void main() {
   vec2 p = gl_PointCoord - 0.5;
+  if (uMode > 2.5) { // a lens of fog: the ellipse its disc projects to, soft to nothing at its rim, mottled by two slow lumps (curdled, never even)
+    vec2 q = p * vec2(2.0, 2.0 / vAsp);
+    float r = length(q), s = 1.0 - smoothstep(0.15, 1.0, r);
+    float lump = 0.7 + 0.3 * sin(p.x * 11.0 + vM * 40.0) * sin(p.y * 9.0 / vAsp - vM * 23.0);
+    float k = s * lump; if (k < 0.004) discard;
+    gl_FragColor = vec4(mix(uCol, uCol * vec3(1.06, 1.1, 0.7), smoothstep(0.25, 0.9, r)), uA * vA * k); // (the violet sours to bile toward its rim)
+    return;
+  }
+  if (uMode > 1.5) { // a hailstone: a little ice ball lit from above, white on top and blue-grey beneath, so it reads on pale sand as on dark clay
+    float d = length(p), body = 1.0 - smoothstep(0.36, 0.5, d);
+    if (body < 0.01) discard;
+    float lit = clamp(0.5 - 1.6 * p.y - 0.4 * p.x, 0.0, 1.0); // (gl_PointCoord's y runs down the screen: the top is lit)
+    gl_FragColor = vec4(uCol * mix(vec3(0.38, 0.46, 0.56), vec3(1.0), lit), uA * vA * body);
+    return;
+  }
   float hex = max(abs(p.x) * 0.866 + abs(p.y) * 0.5, abs(p.y)); // (a hexagon: the plate crystal)
   float shape = uHex > 0.5 ? 1.0 - smoothstep(0.38, 0.46, hex) : 1.0 - smoothstep(0.15, 0.5, length(p));
   if (shape < 0.01) discard;
@@ -261,7 +368,10 @@ export class WeatherLook {
     this.group = new THREE.Group(); this.group.name = 'weather'; this.group.userData.zoneFree = true;
     this.game.scene?.add(this.group);
     this.over = new Overhead(this.game); // (what stands over each spot round the eye: nothing falls under it, vfx/overhead.js)
-    this.rain = makeRain(2000, this.over.u); this.motes = makeMotes(800, this.over.u); this.falls = [this.rain, this.motes]; // (fewer than they were, R46)
+    this.rain = makeRain(2000, this.over.u); this.motes = makeMotes(2000, this.over.u); // (fewer than they were, R46; the hail's scatter is the most of them)
+    this.wide = new Overhead(this.game, { n: 40, cell: 3 }); // (the ground to 60 m round the eye, coarser: the miasma's lenses lie out to 48 m)
+    this.mist = makeMotes(LOOK.gall.fall.lenses, this.wide.u); this.mist.u.uMode.value = 3; this.mist.u.uSize.value = 12; this.mist.u.uNoise.value = 2.5;
+    this.falls = [this.rain, this.motes, this.mist];
     this.halo = ringMesh(0, tanD(21), tanD(23.5));
     this.bow = ringMesh(1, tanD(40.5), tanD(42.5));
     this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
@@ -269,7 +379,7 @@ export class WeatherLook {
     const boltMat = new THREE.MeshBasicMaterial({ name: 'weather-bolt', color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
     this.bolt = new THREE.Mesh(boltGeo(rng(7)), boltMat); this.bolt.frustumCulled = false; this.bolt.visible = false;
     this.glow = ringMesh(3, 0, 90);
-    for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
+    for (const o of [this.rain.obj, this.motes.obj, this.mist.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
   }
 
   /** For the boot's shader warm-up (main.js): everything made and shown, so its programs compile with the rest and the first weather
@@ -320,7 +430,7 @@ export class WeatherLook {
           g.expo *= lerp(1, S.expo ?? 1, k);
           if (S.mul) for (let i = 0; i < 3; i++) g.mul[i] *= lerp(1, S.mul[i], k);
           g.desat = Math.max(g.desat, (S.desat || 0) * k);
-          if (S.haze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; S.haze.toArray(g.haze); }
+          if (S.haze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; S.haze.toArray(g.haze); for (let i = 0; i < 3; i++) g.haze[i] *= 1 - 0.65 * g.night; } // (a horizon's haze holds what light there is: at night an ember, never a lit band)
         }
         sky.grade(Object.assign(_sg, { day: g.day, night: g.night, expo: g.expo, mul: _c.fromArray(g.mul), stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK }));
         // the clouds take the hour's light (less of the night's dark: they hold what light there is) and the weather's cover
@@ -336,32 +446,53 @@ export class WeatherLook {
     let any = false; for (const a of ASPECTS) if (this.amt[a] > 1e-3 || this.sec[a] > 1e-3) any = true;
     if (!this.made) { if (!any) { this.lift = 0; return; } this.make(); } // (calm since the boot and never warmed: nothing to draw, nothing made)
     this.group.visible = any || this.t - this.strike.t < 3; // (calm: nothing drawn, nothing updated)
-    if (!this.group.visible) { this.lift = 0; return; }
+    if (!this.group.visible) { this.lift = 0; SOUR_U.uSour.value = 0; return; }
     const light = w?.light ?? 0.5, dayK = smooth(light, 0.3, 0.6), nightK = 1 - smooth(light, 0.15, 0.4);
     const sun = _v.copy(this.game.dunes?.sunDir || _up).normalize();
-    // what falls: the strongest falling weather's way of falling, the others' colours eased in (one rain, one mote field)
-    let rainA = 0, moteA = 0;
-    const R0 = this.rain.u, M0 = this.motes.u;
+    // what falls: the strongest falling weather's way of falling, the others' colours eased in (one rain, one mote field, one fog)
+    let rainA = 0, moteA = 0, mistA = 0, hailK = 0;
+    const R0 = this.rain.u, M0 = this.motes.u, lit = 0.18 + 0.82 * smooth(light, 0.1, 0.6); // (the fog and the stones take the hour's light; Lachryma's own rain still glows at night)
     for (const a of ASPECTS) {
       const k = open ? this.amt[a] : 0, F = LOOK[a].fall; if (!F || !k) continue;
-      if (F.vel && k > rainA) { // (streaks: rain falling, or sand blown along the ground)
+      if (F.vel && k > rainA) { // (streaks: rain falling, hail, or sand blown along the ground)
         rainA = k; this.tint(R0.uCol.value, a); R0.uLen.value = F.len; R0.uA.value = F.alpha * k;
-        R0.uNoise.value = F.kind === 'sirocco' ? 1.2 : 0.6; R0.uLowK.value = F.kind === 'sirocco' ? 0.3 : 0.18; // (the sirocco streams along the ground: more of it low)
+        if (F.kind === 'hail') R0.uCol.value.multiplyScalar(lit);
+        R0.uNoise.value = F.noise ?? (F.kind === 'sirocco' ? 1.2 : 0.6); R0.uLowK.value = F.lowK ?? (F.kind === 'sirocco' ? 0.3 : 0.18); // (the sirocco streams along the ground: more of it low; the hail falls nearly straight, most of it to the ground)
         R0.uVel.value.fromArray(F.vel); const wd = this.game.dunes?.wind?.dir; if (wd && F.kind === 'sirocco') R0.uVel.value.set(wd.x, F.vel[1], wd.y); R0.uVel.value.multiplyScalar(F.speed); // (the wanting wind blows the way the dunes' wind does)
         this.rain.obj.geometry.setDrawRange(0, Math.round(this.rain.n * F.rate * k) * 2);
       }
       const diamond = F.kind === 'diamond', dk = diamond ? k * dayK : k; // (diamond dust by day; at night wonder is the aurora)
-      if ((diamond || F.kind === 'sirocco') && dk > moteA) {
-        moteA = dk; this.tint(M0.uCol.value, a); M0.uHex.value = diamond ? 1 : 0; M0.uSize.value = diamond ? 0.05 : 0.12;
-        M0.uVel.value.set(diamond ? 0.05 : F.speed, diamond ? -F.speed : 0.3, diamond ? 0 : F.speed * 0.3); M0.uA.value = (diamond ? 0.8 : 0.6) * dk;
-        M0.uNoise.value = diamond ? 1.0 : 2.0; M0.uLowK.value = diamond ? 0.2 : 0.3;
-        this.motes.obj.geometry.setDrawRange(0, Math.round(this.motes.n * F.rate * dk));
+      if (F.kind !== 'rain' && dk > moteA) {
+        moteA = dk; this.tint(M0.uCol.value, a); M0.uHex.value = diamond ? 1 : 0;
+        if (F.kind === 'miasma') { // (the flies: dark whatever the agate, a few dozen in nine loose clouds)
+          M0.uMode.value = 1; M0.uCol.value.copy(LOOK[a].fly); M0.uSize.value = 0.05; M0.uA.value = 0.9 * dk;
+          this.motes.obj.geometry.setDrawRange(0, Math.round(F.flies * dk));
+        } else if (F.kind === 'hail') { // (the stones landing, bouncing once and lying white till they melt)
+          M0.uMode.value = 2; M0.uCol.value.multiplyScalar(lit); M0.uSize.value = 0.075; M0.uA.value = 0.85 * dk;
+          this.motes.obj.geometry.setDrawRange(0, Math.min(this.motes.n, Math.round(F.scatter * dk)));
+        } else {
+          M0.uMode.value = 0; M0.uSize.value = diamond ? 0.05 : 0.12;
+          M0.uVel.value.set(diamond ? 0.05 : F.speed, diamond ? -F.speed : 0.3, diamond ? 0 : F.speed * 0.3); M0.uA.value = (diamond ? 0.8 : 0.6) * dk;
+          M0.uNoise.value = diamond ? 1.0 : 2.0; M0.uLowK.value = diamond ? 0.2 : 0.3;
+          this.motes.obj.geometry.setDrawRange(0, Math.min(this.motes.n, Math.round(800 * F.rate * dk))); // (the drift as it was: 800 at most)
+        }
       }
+      if (F.lenses && k > mistA) { // (the miasma's low fog: its lenses, tinted by an agate's second, lit by the hour)
+        mistA = k; const U = this.mist.u; U.uCol.value.copy(LOOK[a].mist); this.tintBy(U.uCol.value, a).multiplyScalar(lit);
+        const fc = this.game.scene?.fog?.color; if (fc) U.uCol.value.lerp(fc, 0.6 * nightK); // (at night a fog is the night's own fog, a little lighter than the sand, never a dark stain)
+        U.uA.value = 0.8 * k;
+        const wd = this.game.dunes?.wind?.dir; U.uVel.value.set(wd ? wd.x * 0.35 : 0.3, 0, wd ? wd.y * 0.35 : 0.15); // (it creeps with the wind, slowly)
+        this.mist.obj.geometry.setDrawRange(0, Math.round(F.lenses * Math.min(1, 0.4 + 0.6 * k)));
+      }
+      if (F.kind === 'hail') hailK = Math.max(hailK, k);
     }
-    this.rain.obj.visible = rainA > 0.01; this.motes.obj.visible = moteA > 0.01;
+    this.rain.obj.visible = rainA > 0.01; this.motes.obj.visible = moteA > 0.01; this.mist.obj.visible = mistA > 0.01;
     if (this.rain.obj.visible || this.motes.obj.visible) this.over.update(cam, 48); // (a few dozen rays a frame: the map round the eye kept fresh)
+    if (this.mist.obj.visible) this.wide.update(cam, 32);
     for (const L of this.falls) { L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
-    M0.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
+    M0.uPx.value = this.mist.u.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
+    this.pock(dt, hailK, cam); if (hailK > 0.01) this.wet(cam);
+    SOUR_U.uSour.value = open ? Math.min(1, this.amt.gall || 0) : 0; // (the curdled film on still water and Lachryma, as strong as the miasma here)
     // the marks in the sky (open places only: none of them is seen from a room)
     const mk = (a) => (open ? Math.min(1, this.amt[a] + this.sec[a]) : 0); // (the marks are the sky's colouring: a second raises its own, an aurora under a pall)
     const won = mk('wonder'), mir = mk('mirth'), dre = mk('dread');
@@ -373,11 +504,28 @@ export class WeatherLook {
     this.thunder(dt, dre, cam);
   }
 
-  /** What falls takes its weather's colour, with the agate's second worked into it (the second colours; it never falls). */
-  tint(out, a) {
-    out.copy(LOOK[a].colour).multiplyScalar(LOOK[a].tone ?? 1);
+  /** What falls takes its weather's colour (or its own: the hail is white), with the agate's second worked into it (the second
+   *  colours; it never falls). */
+  tint(out, a) { out.copy(LOOK[a].fall?.colour ?? LOOK[a].colour).multiplyScalar(LOOK[a].tone ?? 1); return this.tintBy(out, a); }
+  /** An agate's second worked into a colour. */
+  tintBy(out, a) {
     for (const b of ASPECTS) if (b !== a && this.sec[b] > 0.01) out.lerp(_c3.copy(LOOK[b].colour).multiplyScalar(LOOK[b].tone ?? 1), 0.5 * this.sec[b]);
     return out;
+  }
+
+  /** The two still waters nearest the eye, for the hail (a stone that lands on water is gone, not lying), twice a second. */
+  wet(cam) {
+    if ((this.wetT = (this.wetT || 0) - 1) > 0) return; this.wetT = 30;
+    const vols = (this.game.water?.volumes || []).filter((v) => Math.abs(v.surface - cam.y) < 40).map((v) => [Math.hypot(Math.max(v.x0 - cam.x, 0, cam.x - v.x1), Math.max(v.z0 - cam.z, 0, cam.z - v.z1)), v]).sort((a, b) => a[0] - b[0]);
+    for (let i = 0; i < 2; i++) { const v = vols[i]?.[0] < 30 ? vols[i][1] : null; WET_U.uWet.value[i].set(v ? v.x0 : 1, v ? v.z0 : 1, v ? v.x1 : 0, v ? v.z1 : 0); WET_U.uWetY.value.setComponent(i, v ? v.surface : 0); }
+  }
+
+  /** The hail on still water: a few small hard rings a second near the eye, a light touch in the ripple tank (`game.water.disturb`;
+   *  a touch off the water is no touch). Kind 'drop', weak, so a ring is small and quick. */
+  pock(dt, k, cam) {
+    const W = this.game.water; if (!W?.disturb || k < 0.05) return;
+    this.pockAcc = (this.pockAcc || 0) + dt * 36 * k;
+    while (this.pockAcc >= 1) { this.pockAcc -= 1; W.disturb(cam.x + (Math.random() - 0.5) * 22, cam.z + (Math.random() - 0.5) * 22, 0.35 + 0.25 * Math.random(), 'drop'); }
   }
 
   /** Hang a sky mark: a ring centred on a direction from the eye (the sun's, or its opposite), facing the eye. */
@@ -407,8 +555,9 @@ export class WeatherLook {
   }
 
   dispose() {
-    this.game.sky?.grade?.({});
+    this.game.sky?.grade?.({}); SOUR_U.uSour.value = 0;
     if (!this.made) return;
+    this.over.dispose(); this.wide.dispose();
     this.group.parent?.remove(this.group);
     this.group.traverse((o) => { if (o.isMesh || o.isPoints || o.isLineSegments) { o.geometry.dispose(); o.material.dispose(); } });
   }

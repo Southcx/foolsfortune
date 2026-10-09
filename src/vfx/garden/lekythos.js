@@ -26,7 +26,7 @@
 //
 //   const P = lekythos({ colour?, feeling?, spirit?, height? })   P.group (stands on its origin, its picture to +z)   P.dispose()
 //   (colour: a hex, a THREE.Color, a CSS colour or Soul Alchemy's { h, s }; feeling: 'wonder' .. 'dread', its canon colour when no colour is
-//    given; spirit: its kind ('sporeling', 'slipjelly'...) or a keepsake pot's record { kind, colour, feeling } (game.keepsakes.pots[i]: the
+//    given; spirit: its kind ('slipjelly'...) or a keepsake pot's record { kind, colour, feeling } (game.keepsakes.pots[i]: the
 //    record's own colour and feeling are used when not given); anything else is drawn as a slip jelly; `seed` is still taken and no longer
 //    varies anything: a painting's flaking is drawn from its kind and colour, so pots that share one share it)
 //   lekythosParked() -> a mesh of the pots' material for the warm-up (never disposed)   lekythosShared() -> { paintings, geometries } (live)
