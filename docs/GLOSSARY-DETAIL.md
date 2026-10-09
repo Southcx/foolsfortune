@@ -1087,7 +1087,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
   dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**
-  (wonder by night), the **rainbow** (mirth), **far bolts** (dread: a bolt a long way off, held a beat and fading; never a flash). An **agate** sky's second feeling colours the sky, the
+  (wonder by night), the **rainbow** (mirth), **far bolts** (dread: a bolt a long way off, held a beat and fading; never a flash); the
+  miasma (gall): **fog lenses** (pancakes of low fog sat on the ground, more in the hollows, drawn as the ellipse each projects to),
+  **flies** (a few loose clouds low over the ground) and the **curdled film** (`SOUR_U`, `vfx/water.js`: a mottled skin on still water
+  and Lachryma); the hail (fury): **hailstones** (short white streaks falling nearly straight), each **landing** with one bounce and
+  lying as a **scatter** that melts, and **pocks** (small rings in the ripple tank). Never thunder or lightning for the hail. An **agate** sky's second feeling colours the sky, the
   clouds and what falls, and may raise its own mark; it never falls. Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.

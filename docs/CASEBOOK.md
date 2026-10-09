@@ -424,8 +424,25 @@ the rules before building in the same area; a rule a machine can check goes into
     the filter that keeps the Throwing Room out reads every field that can name it (`kind`, `what`).
 156. **A blow turned aside builds nothing.** A guard's `hurt` returns `'blocked'` and `creatures.strike` stops there: no mind, no
     status, no stun.
+157. **A probe is never cast down a grid line.** A ray that samples a heightfield or a tiled level on a regular grid is nudged off
+    the grid's lines (a few millimetres on no grid a level uses); a miss over solid ground is a bug, never open sky.
 
 ## Cases
+
+### 2026-10-09 · The miasma's ground fog floated at the eye's height, and a third of the weather's map of the ground was holes (Calissa's Gall and Fury looks)
+
+- **Seen:** building the miasma's fog lenses on a coarser map of the ground round the eye (`vfx/overhead.js`, 3 m cells), lenses drawn
+  in magenta lay in a thin band at the horizon and none on the near sand; from 28 m up they floated under the camera. Probing the map
+  beside the Weir: 3 of 7 cells over plain sand read OPEN (nothing under the sky), though `dunes.heightAt` gave -408 there.
+- **Cause (measured):** `Overhead` casts each ray straight down through its cell's centre, `(k + 0.5) * cell`. The Dunes' floor is a
+  Rapier heightfield; a vertical ray exactly on its grid lines goes through it. The misses were the rows at z = -22.5 and -37.5 (on the
+  floor's 7.5 m lines); -31.5 and -43.5 hit. With the rain's 1.75 m cells the centres rarely land on a line, so it showed as the odd
+  hole (the rain there judged its ground from the eye, `uCam.y - 2`); with 3 m cells every fifth row did, and the lenses (and the hail's
+  stones) stood on the stand-in height: the eye's.
+- **Fix:** every ray is cast `NUDGE` (0.0173 m) off its cell's centre; the lenses and the stones are drawn only where the ground is
+  known (`step(-9000.0, g0)`), never at a guessed height. After, in the Dunes with the hail and the miasma forced: 0 of 1,024
+  cells open in the rain's map and 0 of 1,600 in the lenses' map, and the lenses lie on the sand from the ground and from 28 m up.
+- **Rule:** 157.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 

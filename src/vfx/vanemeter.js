@@ -5,6 +5,10 @@
 // calm. Reading the sky (the dowse raised) swings the needle through the coming blocks of the forecast, one after another in their
 // colours, and back. A weathervane on a weather tool: the reading is a thing turning on the thing, never a gauge.
 //
+// Seven petals since Gall and Fury (docs/plans/GALL-AND-FURY.md), each its feeling's colour AND its own shape (`PETAL_SHAPE`, its damage
+// type's motif in miniature), so the rose reads without colour; the needle's angles are the petals' own (i / n of a turn), calm between
+// the last and the first.
+//
 // Prior art: the weathervane and the wind sock (the strength in a streamer's length), the barometer's needle swinging toward Stormy or
 // Fair, and Zelda's Wind Waker baton (the wind's direction shown on the thing you hold).
 //
@@ -14,13 +18,16 @@ import * as THREE from 'three';
 import { DISPLAY_ORDER, COLOR } from '../progress/weather.js';
 
 const _h = new THREE.Color(), _t = new THREE.Color(), CALM = new THREE.Color(0x9a8a70);
-const PETALS = DISPLAY_ORDER.map((a) => COLOR[a]);
+/** Each feeling's petal shape (never colour alone): Impact's square, Ego's hexagon, Influence's flame, Fury's spark, Gall's drip, the
+ *  long rain's needle, Delirium's bubble. */
+export const PETAL_SHAPE = { mirth: 'cube', wonder: 'hex', desire: 'cone', fury: 'star', gall: 'drip', grief: 'needle', dread: 'ring' };
+const PETALS = DISPLAY_ORDER.map((a) => ({ hex: COLOR[a], shape: PETAL_SHAPE[a] || 'cone' }));
 
 export class VaneMeter {
   constructor(game) { this.game = game; this.angle = 0; this.av = 0; this.str = 0; this.t = 0; this.sweep = -1; this.blocks = []; }
 
   /** Where the needle points for a feeling (its petal), and the calm's own place (between the first petal and the last). */
-  angleOf(aspect) { const i = DISPLAY_ORDER.indexOf(aspect); return i < 0 ? -Math.PI / 5 : (i / DISPLAY_ORDER.length) * Math.PI * 2; }
+  angleOf(aspect) { const n = DISPLAY_ORDER.length, i = DISPLAY_ORDER.indexOf(aspect); return i < 0 ? -Math.PI / n : (i / n) * Math.PI * 2; }
 
   update(raw, model, { dowse = false } = {}) {
     if (!model?.setVane) return;
