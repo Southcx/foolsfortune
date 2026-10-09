@@ -21,8 +21,10 @@ export const nearShore = (c) => inDunes(c) && shoreSector(c, 220, 0.7);
 
 export const ZONE_TESTS = [
   // the Throwing Room (world/testroom/layout.js TR: x 10.5 to 30.5, z -5.5 to 10.5, 6 m high), through a door in the Workshop's east wall:
-  // drawn only from where its doorway can be seen; part of the Workshop's ground (one roof, one set of lamps)
-  { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.y < 7 && p.x > 10.5 && p.x < 30.6 && p.z > -5.6 && p.z < 10.6 },
+  // drawn only from where its doorway can be seen; part of the Workshop's ground (one roof, one set of lamps). Its bounds take in its
+  // own walls (their boxes centred 25 cm outside the floor's edge, x 30.75 and z -5.75 / 10.75): at the floor's edge they fell to the
+  // Workshop and vanished from inside whenever the door was out of view (the owner's R2, v131; casebook)
+  { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.y < 7 && p.x > 10.5 && p.x < 31.2 && p.z > -6.2 && p.z < 11.2 },
   { id: 'workshop', test: (p) => p.y > -1.2 && p.y < 60 && Math.abs(p.x) < 40 && Math.abs(p.z) < 40 },
   { id: 'basement', test: (p) => p.y <= -1.2 && p.y > -150 && p.x > -250 && p.x < 450 && p.z > -300 && p.z < 200 },
   { id: 'circuits', test: (p) => p.x > 2800 && p.x < 3300 && p.z > -300 && p.z <= 380 && p.y > -120 && p.y < 120 },

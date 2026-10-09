@@ -26,6 +26,7 @@ import { StrawmanModel } from '../../vfx/strawman.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 export { TR };
+const _src = new THREE.Vector3(); // (where a blow came from, when nothing struck it but a point and a way: Strawman's guard)
 
 
 /** The static room: floor, walls, roof, beams, the lane and the mark, the clay wall, the shelf. Returns the wall's collider. */
@@ -33,10 +34,16 @@ export function buildTestRoom(level) {
   const C = PALETTE, { x0, x1, z0, z1, h } = TR, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
   const shell = { outline: false, shadow: false };
   level.box([cx, -0.25, cz], [w, 0.5, d], C.floor, { outline: false }); // (a floor has no outline: the hull's top lay in the floor's own plane and fought it for the pixels, the owner's R45 report; the Workshop's slabs, basement.js groundFloor, are the same)
-  level.box([cx, h + 0.25, cz], [w + 1, 0.5, d + 1], C.deep, shell);
+  level.box([cx + 0.25, h + 0.25, cz], [w + 0.5, 0.5, d + 1], C.deep, shell); // (no overhang west: its end face lay on the Workshop's east wall's inner face at x 10 and fought it, a band at the eaves: the owner's R3, v131)
   level.box([x1 + 0.25, h / 2, cz], [0.5, h, d + 1], C.wall, shell);
   level.box([cx, h / 2, z0 - 0.25], [w, h, 0.5], C.wall, shell);
   level.box([cx, h / 2, z1 + 0.25], [w, h, 0.5], C.wall, shell);
+  // the west wall's lining, a finger thick on the Workshop's east wall, the door left open: the Workshop's wall is the Workshop zone's and
+  // is not drawn from in here when the door is out of view, so the room keeps its own face on it (the owner's R2, v131)
+  { const D = TR.door, t = 0.04, lx = x0 + t / 2, lining = { ...shell, collide: false };
+    level.box([lx, h / 2, (z0 + D.z0) / 2], [t, h, D.z0 - z0], C.wall, lining);
+    level.box([lx, h / 2, (D.z1 + z1) / 2], [t, h, z1 - D.z1], C.wall, lining);
+    level.box([lx, (D.h + h) / 2, (D.z0 + D.z1) / 2], [t, h - D.h, D.z1 - D.z0], C.wall, lining); }
   // the floor's planks, a wainscot, beams across, and posts in the walls (so it reads as the Workshop's own wing, not a box)
   for (let z = z0 + 2; z < z1; z += 2) level.box([cx, 0.005, z], [w, 0.01, 0.06], C.deep, { outline: false, collide: false, shadow: false });
   for (const [x, z, sx, sz] of [[cx, z0 + 0.06, w, 0.12], [cx, z1 - 0.06, w, 0.12], [x1 - 0.06, cz, 0.12, d]]) level.box([x, 0.55, z], [sx, 1.1, sz], C.dark, { outline: false, collide: false, shadow: false });
@@ -130,7 +137,10 @@ export class TestRoom {
       knock() {}, vanish() {},
       hurt(point, dir, power, cause, by, from, type) {
         // guard: a blow from in front is blocked (it still counts, at nothing); the sack shows every blow (no numbers: its body)
-        const front = dir && -(dir.z) > 0.5; // (it faces +z: a blow travelling -z came from in front of it)
+        // (from in front: judged by where the striker stands, within 60 degrees of its facing, +z; the blow's `dir` is each tool's own
+        // convention and missed them all: the owner's T51, v131)
+        const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
+        const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, front = !!src && dz > 0.5 * Math.hypot(dx, dz);
         const dmg = mode === 'guard' && front ? 0 : power;
         hits.push({ at: clock, dmg, type: mode === 'guard' && front ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;

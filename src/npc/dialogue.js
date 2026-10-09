@@ -128,7 +128,7 @@ export class Dialogue {
     // (the camera goes to whichever side of the pair the player's camera is already on: no swing across)
     { const c = g.camera.position, P = g.player.pos, dx = npc.pos.x - P.x, dz = npc.pos.z - P.z; this.side = (-(dz) * (c.x - P.x) + dx * (c.z - P.z)) >= 0 ? 1 : -1; }
     const met = g.ledger?.get?.(`npc.talk.${npc.id}`) || 0;
-    this.root.classList.add('open');
+    this.root.classList.add('open'); this.onOpen?.(); // (main.js frees the mouse: a held pointer lock keeps Esc for the browser, so Esc could not end a talk: T136)
     this.el.name.innerHTML = `${npc.name}${npc.def.title ? `<s>${npc.def.title}</s>` : ''}`;
     g.events.emit('npc.talk', { npc: npc.id, first: !met, by: 'courier' });
     this.go(at || (met ? (T.again || T.start) : T.start));
@@ -142,7 +142,7 @@ export class Dialogue {
     g.cinema?.unshot('talk'); g.mood?.free('npc.burst');
     if (n) g.folk.setMood(n, n.def.temper || 'calm', 0.35);
     g.events.emit('npc.bye', { npc: n?.id, by: 'courier' });
-    this.npc = null; this.node = null;
+    this.npc = null; this.node = null; this.onClose?.(); // (and takes it back)
   }
 
   /** A node of the talk: its lines in order, then its choices (or its next, or the end). */
