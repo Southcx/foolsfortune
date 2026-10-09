@@ -409,8 +409,12 @@ the rules before building in the same area; a rule a machine can check goes into
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
 149. **A mark is hidden by what hides its thing.** A world mark on a creature is depth-tested by default and drawn so its own body
-    never hides it; one that shows through walls says so (`throughWalls`) for a reason the player can see. An offset that depends on
-    the eye is applied per camera as it draws (`onBeforeRender`), never once in the update: another camera sees it displaced.
+    never hides it; one that shows through walls says so (`throughWalls`) for a reason the player can see (a scan's marks, the Reveal
+    song's), and on the rail every one does (no wall stands there, and a mark set in a foe's own body is hidden by it). An offset
+    that depends on the eye is applied per camera as it draws (`onBeforeRender`), never once in the update: another camera sees it
+    displaced.
+150. **A look asked for by name falls back to a plain one.** A glyph kind, an effect or a sound a table lacks is a wrong look and
+    nothing else, never a thrown frame that stops what the caller was doing; the one place that reads the table picks the fallback.
 
 ## Cases
 
@@ -432,7 +436,26 @@ the rules before building in the same area; a rule a machine can check goes into
   which draws them over walls (the effects' x-ray pools, `vfx.js`: the same program, the depth test off). Behind the wall the marks
   now change 0 pixels; in the open 3,471 (3,449 before: the same mark, the same place); from low under the jelly's head the "?" is
   whole over it; with the switch thrown, 1,251 behind the wall. Programs 161/163/163/163, as before.
+- **Review (the first fix's own regressions, measured):** it hid two marks that must show. (1) The Crucibelle's Reveal song marks every
+  signature in reach (a scan, a mark over a crystal under the sand or a creature behind a wall is its whole use): it now passes
+  `throughWalls: true` (`tools/crucibelle/crucibelle.js`, one option). (2) Charybdis's ward, the resist mark of rule 148, is popped
+  at the whale's centre, inside its own body: on the rail at 61 m (a bias of 11 m) the ward changed 1,829 pixels with the whale
+  risen (the ring's faint outline; the bar and the burst were inside the body) and 3,083 diving (cut by the sea's surface). The rail
+  has no wall and its foes are bigger than any bias, so on the rail every mark is seen over the sea as before (`glyphs.js` reads
+  `game.emocean.stage.active`): the whole ward, 9,943 and 9,235 pixels.
 - **Rule:** 149.
+
+### 2026-10-09 · The Reveal song stopped at the first buried crystal (found reviewing R20's fix)
+
+- **Seen:** `Crystals.reveal` over a veiled crystal in the Dunes (seed 1) threw `TypeError: Cannot read properties of undefined
+  (reading 'draw')` from `tex` in `vfx/glyphs.js`: the first crystal rose, any other veiled one in reach stayed buried, the song's
+  marks on the signatures were never popped, and the pool had been spent before it.
+- **Cause (measured):** `Crystals.reveal` pops a glyph of kind `'bang'`; the sheet has `bang1`, `bang2` and `bang3`. `pop` chose a
+  fallback for its own record (`KINDS[kind] || KINDS.bang1`) but drew with the name it was asked, which `tex` looks up with none, so
+  a kind the sheet lacks threw. The call dates from the move to `src/` by domain at the latest.
+- **Fix:** `pop` resolves a kind the sheet lacks to `bang1` once, before anything is drawn. The same reveal now rises the crystal and
+  pops its mark, and the song's marks follow.
+- **Rule:** 150.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 

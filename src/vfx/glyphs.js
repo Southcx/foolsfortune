@@ -23,6 +23,7 @@
 //   const g = game.glyphs.pop('bang3', pos, { hold: 1.2 })    a mark that stays for a window (and shakes harder as it closes) until g.close()
 //   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
+//   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -125,7 +126,8 @@ export class Glyphs {
   }
 
   pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0, throughWalls = null, bias = null } = {}) {
-    const K = KINDS[kind] || KINDS.bang1, g = this.game;
+    if (!KINDS[kind]) kind = 'bang1'; // (a kind the sheet lacks reads as a "!" and never throws: Crystals.reveal asked for 'bang')
+    const K = KINDS[kind], g = this.game;
     const mk = (map, blending) => { const S = new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, depthWrite: false, blending, fog: false })); S.onBeforeRender = nearer; return S; };
     const main = mk(tex(kind), THREE.NormalBlending);
     main.renderOrder = 30;
@@ -140,7 +142,7 @@ export class Glyphs {
   }
 
   update(dt) {
-    const cam = this.game.camera.position;
+    const cam = this.game.camera.position, rail = !!this.game.emocean?.stage.active; // (the crossing: no wall stands on it, and its foes are bigger than any bias, so its marks keep to being seen over the sea)
     for (let i = this.list.length - 1; i >= 0; i--) {
       const q = this.list[i];
       q.t += dt;
@@ -169,7 +171,7 @@ export class Glyphs {
         r.position.copy(m.position); r.scale.setScalar(worldK * (0.6 + 4 * k)); r.material.opacity = 0.7 * (1 - k);
       }
       // walls hide it, its own thing never (drawn nearer each camera that draws it: nearer); seen through walls, over everything
-      const through = !!(q.throughWalls ?? this.throughWalls), bias = through ? 0 : q.bias ?? Math.max(BIAS.min, BIAS.k * worldK);
+      const through = !!(q.throughWalls ?? (this.throughWalls || rail)), bias = through ? 0 : q.bias ?? Math.max(BIAS.min, BIAS.k * worldK);
       for (const s of Object.values(q.parts)) if (s) { s.material.depthTest = !through; s.userData.bias = bias; } // (a state, not a program)
     }
   }

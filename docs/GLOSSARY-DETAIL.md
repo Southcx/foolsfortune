@@ -1097,7 +1097,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   bars, the fish portrait. A wall hides a creature's marks (its glyph pops, its aura, its temper) as it hides the creature, and its own
   body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**
   (a pop's `{ throughWalls }`, or `game.glyphs`, `game.temper`, `game.auras` `.throughWalls`, true or a creature -> bool): the switch
-  that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20).
+  that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20). A scan's
+  marks (the Reveal song's) and every mark on the rail are seen through walls already.
 
 ## 10. Engine and process
 
