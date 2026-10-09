@@ -25,6 +25,7 @@ export const LENDS = {
   feelings:  { label: 'Feelings',      opens: 'Gall and Fury known' },
   glazes:    { label: 'Glazes',        opens: 'Every glaze and kiln pattern firable.' },
   codex:     { label: 'Codex',         opens: 'Every hidden entry shown' },
+  telegraphs:{ label: 'Telegraphs',    opens: 'Every telegraph step shown.' }, // (Divination's ladder lent: TELEGRAPHS.md)
 };
 const fresh = () => Object.fromEntries(Object.keys(LENDS).map((k) => [k, true])); // (a new DEBUG save lends everything: today's sandbox)
 
