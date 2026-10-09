@@ -21,18 +21,35 @@
 // iridescent meniscus where it meets the stone. The Weir's Well is filled with it. The two kinds are one shader program: which one a
 // material is, is a uniform (uLachryma), never a define, so the pond and the Well do not compile a program each (CASEBOOK rule 5).
 //
+// THE CURDLED FILM (the miasma's, docs/plans/GALL-AND-FURY.md: `SOUR_U.uSour`, 0..1, set by vfx/weather.js where Gall falls): a skin on
+// still water, mottled and clotted (bile, bruise, a brown heart to the thickest clots), dulling the sheen where it lies; on Lachryma the
+// film's own colours gone sour (olive, liver, bruise) and clotted into the same blotches. Slow: it drifts, it never swims. One uniform
+// shared by every liquid material, as the ripple tank's are: no program of its own.
+//
 // Prior art (researched for the owner's ask, R58; sources in docs/ART.md, "Liquid"): Super Mario Sunshine (two textures scrolled
 // against each other, the water changing with distance, the floor and its light seen through), Valve's water and flow maps (Vlachos,
 // SIGGRAPH 2010: crossing normal layers), Sea of Thieves (the sub-surface crest colour, foam where the water meets things), Roystan's
 // toon water (depth colour, threshold foam at the shore), Zucconi's caustics, GPU Gems ch. 1 (the summed waves), Wind Waker and Final
 // Fantasy X (a painted sky in the water, a palette chosen, not simulated).
 //
-//   const w = makeWaterMaterial(sky, 'water' | 'lachryma');   w.uniforms.uTime.value = t;
+//   const w = makeWaterMaterial(sky, 'water' | 'lachryma');   w.uniforms.uTime.value = t;   SOUR_U.uSour.value = 0..1 (the curdled film)
 //   waterGeometry(volume)   -> a plane with `aDepth` (metres to the floor; 0 at the edge) for the volume { x0, x1, z0, z1, surface, bottom, depthAt? }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
 import { RIPPLE_U, RIPPLE_GLSL } from './ripples.js';
+
+/** The curdled film's strength, shared by every liquid material (vfx/weather.js sets it where Gall falls). */
+export const SOUR_U = { uSour: { value: 0 } };
+const SOUR_GLSL = /* glsl */`
+uniform float uSour;
+// the curdled skin: two slow taps of the owner's noise thresholded into blotches (clots), with a ragged rim; 0 where none lies
+float sourClot(vec2 xz, float t) {
+  float c1 = liqHeight(xz, 0.19, t * 0.05), c2 = liqTap(xz * 0.43 + vec2(t * 0.004, -t * 0.003)).b;
+  return smoothstep(0.4, 0.55, c1 * 0.62 + c2 * 0.48);
+}
+vec3 sourFilm(float x) { return vec3(0.34, 0.3, 0.2) + vec3(0.18, 0.12, 0.16) * cos(6.2832 * (x + vec3(0.1, 0.25, 0.6))); } // (olive, liver, bruise: a thin film's run of colours, soured)
+`;
 
 const VERT = `
 #include <common>
@@ -65,6 +82,7 @@ varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN; varyin
 //SKYGLSL
 //LIQUIDGLSL
 //RIPPLEGLSL
+//SOURGLSL
 void main() {
   vec3 V = normalize(cameraPosition - vW);
   bool under = !gl_FrontFacing;
@@ -102,6 +120,11 @@ void main() {
   float rim = 1.0 - smoothstep(0.0, 0.35, vDepth);                               // (the meniscus, iridescent, where it meets the stone)
   col += liqFilm(film + 0.3) * rim * 0.5;
   col += liqFilm(film + rip.z * 2.0) * ripCrest * 0.45;                            // (on Lachryma a ring is a slow band of the film's colours)
+  if (uSour > 0.001) { // the miasma's film: the colours gone sour, clotted into blotches, dull where they lie
+    float clot = sourClot(vW.xz, t);
+    vec3 sour = vec3(0.012, 0.01, 0.008) + sourFilm(film) * (0.1 + 0.25 * fres + 0.4 * clot) + sky * 0.03;
+    col = mix(col, sour, uSour * (0.55 + 0.4 * clot));
+  }
   alpha = 0.96;
   } else {
   // WATER: the light that comes back up through it (absorbed by the path it took), the floor's caustics seen through it, the sky in it
@@ -133,6 +156,14 @@ void main() {
   float foam = liqFoam(vW.xz, 0.3, t, shore * shore * (0.62 + 0.1 * sin(uTime * 0.8 + vW.x * 0.4)) + smoothstep(0.85, 1.0, vH) * 0.12);
   col = mix(col, vec3(0.95, 0.98, 0.97), foam * 0.9);
   col += (sky * 0.18 + 0.03) * ripCrest;                                          // (a ring's crest catches a little more of the sky: Sunshine's rings, softly)
+  if (uSour > 0.001) { // the miasma's film: a mottled skin of bile and bruise, brown at the clots' hearts, the sheen dulled under it
+    float clot = sourClot(vW.xz, t), c2 = liqTap(vW.xz * 0.11 + vec2(t * 0.002, t * 0.001)).g;
+    vec3 sour = mix(vec3(0.46, 0.43, 0.2), vec3(0.4, 0.3, 0.44), smoothstep(0.35, 0.65, c2));
+    sour = mix(sour, vec3(0.3, 0.23, 0.14), smoothstep(0.62, 0.85, liqHeight(vW.xz, 0.19, t * 0.05)));
+    sour += vec3(0.16, 0.15, 0.06) * clot * (1.0 - clot) * 4.0;                    // (a clot's rim stands a little proud and catches the light)
+    sour *= 0.55 + 0.45 * dot(sky, vec3(0.33)) + 0.15 * fres;                       // (lit as the sky lights the water: it is a skin, not a glow)
+    col = mix(col, sour, uSour * (0.45 + 0.5 * clot) * (1.0 - foam));
+  }
   alpha = smoothstep(0.0, 0.3, vDepth) * 0.97 + foam * 0.3;                    // (the water paints its own floor: it fades only at the very edge, onto the real sand)
   }
   if (under) { col *= 0.55; alpha = 0.55; }
@@ -148,9 +179,9 @@ export function makeWaterMaterial(sky, kind = 'water') {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
     ...liquidUniforms(), uLachryma: { value: lach ? 1 : 0 }, uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
-  Object.assign(uniforms, RIPPLE_U); // (the ripple tank's, shared as they are: merge would have copied them)
+  Object.assign(uniforms, RIPPLE_U, SOUR_U); // (the ripple tank's and the curdled film's, shared as they are: merge would have copied them)
   return new THREE.ShaderMaterial({ name: lach ? 'liquid-lachryma' : 'liquid-water',
-    uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL).replace('//RIPPLEGLSL', RIPPLE_GLSL),
+    uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL).replace('//RIPPLEGLSL', RIPPLE_GLSL).replace('//SOURGLSL', SOUR_GLSL),
     transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
   });
 }

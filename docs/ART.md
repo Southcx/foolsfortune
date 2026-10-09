@@ -29,7 +29,10 @@ agrees with colour (Spence 2011, with Wanda): high and short for light and small
 | Delirium | chaotic, entropic | ink, violet-green | smoke up, drips down, bubbles (confusion) |
 
 Lawful is straight, crystalline, still; chaotic curls, flows, never rests. **A weather wears its feeling's damage type** (mirth sunshower
-and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, grief long rain, dread the pall).
+and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, grief long rain, dread the pall), and Gall and Fury their
+own motifs (docs/plans/GALL-AND-FURY.md): **the miasma** is rot (violet fog greyed toward bile lying in the hollows, flies, a curdled film
+on still water, a bruise at the horizon), **the hail** is heat turned hard (white stones that bounce once and lie melting, pocks on
+water, a bright grey-green overcast with a red edge; never thunder, which is Dread's). Each is known by what it does before its colour.
 
 ## 3. Materials and shapes
 

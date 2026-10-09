@@ -8,7 +8,8 @@
 // Skiffing trial at the Gnomon (begun, its rings lit, the course run in order and out of order, refused at night, left by leaving the
 // Dunes, begun and left many times); a slip geyser's launch; a crystal struck with the Dreamvane's pick until it gives; the Shrines
 // (found with F, rested at, their page opened and closed, F spammed, fast travel between the found ones); the pier's page at the jetty's
-// end; and the weather as the game hour moves (night, dawn, a storm: the pall, and noon again), with the frame watched for a flash.
+// end; and the weather as the game hour moves (night, dawn, a storm: the pall, and noon again), with the frame watched for a flash, and
+// Gall's miasma and Fury's hail forced (no sky reaches them yet), each drawn with no new shader program.
 // Every event seen is kept; the Dunes' own events without `by` fail. Exits non-zero on any FAIL.
 //
 //   npm run dev &                     (or URL=http://host:port/ for a build under `vite preview`)
@@ -563,6 +564,25 @@ await run('weather', async () => {
     }
   }
   await ds(`clockShift(${noon})`); await S.ticks(300);
+  // Gall's and Fury's looks (Calissa's, vfx/weather.js): no island's sky reaches them yet (ECON.weather.reach), so each is forced as
+  // the look's builder forced it: game.weather's here() and sky() made to say the aspect at full strength (the hour left as it is); the
+  // grief rain and wonder's diamond dust go first so the streaks' and the motes' programs are compiled, and the two must add none
+  const force = (a) => S.ev((x) => { const W = __game.game.weather; W.__here ||= W.here; W.__sky ||= W.sky; if (!x) { W.here = W.__here; W.sky = W.__sky; return; }
+    W.here = (p) => ({ ...W.__here(p), aspect: x, strength: 1, second: null }); W.sky = (ms, pl) => ({ ...W.__sky(ms, pl), aspect: x, strength: 1 }); }, a);
+  const look = () => S.ev(() => { const g = __game.game, L = g.weatherLook, P = __game.renderer.properties, prog = (o) => P.get(o.material).currentProgram || null;
+    return { amt: Object.fromEntries(Object.entries(L.amt).filter(([, a]) => a > 0.05).map(([k, a]) => [k, +a.toFixed(2)])), rain: L.rain.obj.visible, motes: L.motes.obj.visible, mist: L.mist.obj.visible, mode: L.motes.u.uMode.value,
+      sour: +(L.mist && g.water?.mats?.water?.uniforms?.uSour?.value || 0).toFixed(2), programs: __game.renderer.info.programs.length, mistShares: !L.mist.obj.visible || !prog(L.motes.obj) || prog(L.mist.obj) === prog(L.motes.obj) }; });
+  for (const a of ['grief', 'wonder']) { await force(a); await S.ticks(300); }
+  await S.ev(() => { const g = __game.game, v = g.water.volumes.find((w) => Math.abs(w.surface - g.player.pos.y) < 40); if (v) g.water.disturb((v.x0 + v.x1) / 2, (v.z0 + v.z1) / 2, 0.5, 'stroke'); }); // (a stroke in the Weir's pond: the ripple tank's step program, as a swim compiles it, so the hail's pocks are measured against it)
+  await S.ticks(30);
+  const progs0 = (await look()).programs;
+  for (const a of ['gall', 'fury']) {
+    await force(a); await S.ticks(300);
+    const L = await look(), c = await S.common(`weather-${a}`);
+    S.check(`weather ${a} (forced): its look draws`, a === 'gall' ? L.mist && L.motes && L.mode === 1 && L.sour > 0.5 : L.rain && L.motes && L.mode === 2, { ...L, file: name(c.file) });
+    S.check(`weather ${a} (forced): no new shader program (the streaks', the motes', the water's and the ripple tank's are shared)`, L.programs === progs0 && L.mistShares, { programs: L.programs, after: progs0, mistShares: L.mistShares });
+  }
+  await force(null); await S.ticks(300);
   const back = await ds('sky()');
   S.check('weather: the clock put back, it is daytime and fair again', back.phase === 'day', back);
   await S.common('weather-noon-again');

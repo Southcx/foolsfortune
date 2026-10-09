@@ -446,10 +446,33 @@ the rules before building in the same area; a rule a machine can check goes into
 164. **A model scaled is a look judged again, from where it is now seen.** Whatever its shaders and effects measure in metres (a
     world-space phase, a particle's size and speed, a gravity) is put against the model's own size, and every face the old size hid
     (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
-165. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
+165. **A probe is never cast down a grid line.** A ray that samples a heightfield or a tiled level on a regular grid is nudged off
+    the grid's lines (a few millimetres on no grid a level uses); a miss over solid ground is a bug, never open sky.
+166. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
     leaves the warm-up in the same change: a program compiled at boot for nothing is a program the budget cannot give to something new.
 
 ## Cases
+
+### 2026-10-09 · The vane's rose was laid once per meter, not once per model (found reviewing Gall and Fury's looks)
+
+- **Seen:** reading `vfx/vanemeter.js` after the rose grew to seven shaped petals: the meter handed the petals over once (`petalsSet`) and never again, so a Dreamvane model built after the first (a rebuilt tool, the workbench's) kept an empty rose: a needle with no petals, and with shapes carrying the feelings, no feelings.
+- **Cause:** the "laid" flag lived on the meter, the rose on the model.
+- **Fix:** the meter hands the petals to any model that has none (`model.petals?.length ? null : PETALS`). Rendered standalone, seven petals, seven shapes (cube, hexagon, flame, spark, drip, needle, ring), each told from the others in greyscale.
+- **Rule:** 165 (a flag that says a thing was done lives with the thing it was done to).
+
+### 2026-10-09 · The miasma's ground fog floated at the eye's height, and a third of the weather's map of the ground was holes (Calissa's Gall and Fury looks)
+
+- **Seen:** building the miasma's fog lenses on a coarser map of the ground round the eye (`vfx/overhead.js`, 3 m cells), lenses drawn
+  in magenta lay in a thin band at the horizon and none on the near sand; from 28 m up they floated under the camera. Probing the map
+  beside the Weir: 3 of 7 cells over plain sand read OPEN (nothing under the sky), though `dunes.heightAt` gave -408 there.
+- **Cause (measured):** `Overhead` casts each ray straight down through its cell's centre, `(k + 0.5) * cell`. The Dunes' floor is a
+  Rapier heightfield; a vertical ray exactly on its grid lines goes through it. The misses were the rows at z = -22.5 and -37.5 (on the
+  floor's 7.5 m lines); -31.5 and -43.5 hit. With the rain's 1.75 m cells the centres rarely land on a line, so it showed as the odd
+  hole (the rain there judged its ground from the eye, `uCam.y - 2`); with 3 m cells every fifth row did, and the lenses (and the hail's
+  stones) stood on the stand-in height: the eye's.
+- **Fix:** every ray is cast `NUDGE` (0.0173 m) off its cell's centre; the lenses and the stones are drawn only where the ground is
+  known (`step(-9000.0, g0)`), never at a guessed height. After, in the Dunes with the hail and the miasma forced: 0 of 1,024
+  cells open in the rain's map and 0 of 1,600 in the lenses' map, and the lenses lie on the sand from the ground and from 28 m up.
 
 ### 2026-10-09 · The Figment attack telegraphs' one program had no room under the budget (perf: 163 of 164, the warm-up's stain)
 
@@ -461,7 +484,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the stain left the warm-up (`main.js`); the parry mark is warmed on the parked Lachrymato Bottle instead (the same plain-mesh
   shell, so the same program). The Figment attack telegraphs' program took its place: 156 at boot and 162 in the workshop, as before, with a Figment attack
   telegraph and a glyph shown and nothing compiled late.
-- **Rule:** 165.
+- **Rule:** 166.
 
 ### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
 
