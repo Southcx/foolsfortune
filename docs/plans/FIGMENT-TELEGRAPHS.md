@@ -1,6 +1,11 @@
-# Telegraphs: the vocabulary of attack mechanics (the owner, 2026-10-09)
+# Figment attack telegraphs: the vocabulary of attack mechanics on foot (the owner, 2026-10-09)
 
-Kept by Dovina (the vocabulary, the ladder, the numbers: `src/progress/combat/telegraphs.js`); the marks Calissa's (`src/vfx/`), the wiring
+**The name, always in full** (the owner, 2026-10-09): a **Figment attack telegraph** is what Divination draws over a creature's windup in
+the third-person game. It is never the rail's telegraph mark (`vfx/telegraph.js`, the ring closing on a boss's part at sea), which
+belongs to the rail-shooter crossing. Code says `figment` (`figmenttelegraphs.js`, `FIGMENT_TELEGRAPH`, `figmentMarkOf`); the docs say
+"Figment attack telegraph", or "Figment telegraph" once the sentence has named it.
+
+Kept by Dovina (the vocabulary, the ladder, the numbers: `src/progress/combat/figmenttelegraphs.js`); the marks Calissa's (`src/vfx/`), the wiring
 Petra's (`creatures.windup`, the timeline runner), the words Espada's. Research: `docs/plans/research/TELEGRAPHS.md` (sources).
 
 > "Attack Telegraphs are tied to Divination and are visualized in Lachryma HUD colors. Character animation should be used to broadly
@@ -29,7 +34,7 @@ Petra's (`creatures.windup`, the timeline runner), the words Espada's. Research:
 
 - **Every windup is readable with no mark at all.** Each creature's blow has a body tell, an animation broad enough to read: the
   rear, the scrape, the swell (Calissa's clips, `docs/AI.md`). A creature without one is a bug, not a hard creature.
-- **A telegraph is what Divination adds** on top of the body: a mark on the ground or on the thing, in Lachryma's colours. It never
+- **A Figment attack telegraph is what Divination adds** on top of the body: a mark on the ground or on the thing, in Lachryma's colours. It never
   replaces the tell, and the fight is always beatable without it.
 - **Divination's level sets how much the mark says** (the fidelity ladder, section 2). **Perception** (a Soul Alchemy attribute,
   already built: `perception.notice`) sets **how early** it appears. Divination is what you understand; Perception is how soon you
@@ -39,11 +44,11 @@ Petra's (`creatures.windup`, the timeline runner), the words Espada's. Research:
   - the resist mark means "it will refuse that";
   - the closing ring on a boss's part at sea (`vfx/telegraph.js`) means "this part acts now".
 
-  Telegraphs add to these and never wear them.
+  Figment telegraphs add to these and never wear them; the rail's mark joins this ladder only by a later ruling.
 
 ## 2. The fidelity ladder (Divination)
 
-A telegraph says more as Divination rises. Each step adds a channel and never takes one away.
+A Figment attack telegraph says more as Divination rises. Each step adds a channel and never takes one away.
 
 | step | Divination level | what the mark says | how it is drawn |
 |---|---|---|---|
@@ -83,12 +88,12 @@ the same numbers (`CASTS[id].area`, `creatures.windup`'s `area`).
 - **Drawn where:** an area shape on the ground, conforming to it (the paint map's decal path, never a flat disc floating over a slope).
   Gaze, adds and arena have no ground: gaze puts the **eye glyph** on the creature; adds put the **target glyph** over each add; arena
   marks the **arena's rim** (a ring of the type's colour running round the bowl's edge, never a screen effect).
-- **Several at once:** at most six telegraphs drawn; overlapping areas of one cast merge into one edge. Telegraphs are never culled by
+- **Several at once:** at most six Figment telegraphs drawn; overlapping areas of one cast merge into one edge. They are never culled by
   distance or by the effect budget before other effects are.
 
 ## 4. The glyphs Calissa draws (no words, no numbers: world marks)
 
-**Answer glyphs** (step 4): chevrons and marks on the telegraph's edge, in the icons' hand (a light shape keylined dark).
+**Answer glyphs** (step 4): chevrons and marks on the Figment telegraph's edge, in the icons' hand (a light shape keylined dark).
 
 | answer | glyph | used for |
 |---|---|---|
@@ -113,7 +118,7 @@ dashed ring, so partial information is honest: "here, size unknown" (FFXIV's cau
 ## 5. Colours: Lachryma's, and never colour alone
 
 - **Step 1 to 2:** the Mind's ink (near-black, the schiller creeping through it), the parry mark's and the closing ring's family. The
-  telegraph is Lachryma's sense of the blow, not a game's red.
+  Figment telegraph is Lachryma's sense of the blow, not a game's red.
 - **Step 3 on:** the fill takes the **damage type's colour** (its damage look, `damage.<type>`) and the type's **motif** as its pattern.
   A colour always comes with a shape or pattern; every mark is checked in greyscale and with a protanopia filter before it ships.
 - **Harm is never orange alone.** There is no "danger colour"; danger is the edge and the fill. A friendly area (a sibling's, a
@@ -124,23 +129,23 @@ dashed ring, so partial information is honest: "here, size unknown" (FFXIV's cau
 1. **The fill lands on the strike frame,** never before and never after. There is no hidden snapshot: what you see when the fill
    reaches the edge is what is hit.
 2. **The edge is crisp and the inside tinted.** No soft-edged cones.
-3. **One mark, one meaning.** The parry mark answers, the resist mark refuses, a telegraph shows an area. None wears another's look.
-4. **The body is enough.** Every creature's tell is tested with telegraphs off (Divination 1), from the front and the side.
-5. **Hidden only where taught.** A fight may withhold a telegraph (an "omen-less" cast) only after an earlier room has taught that
+3. **One mark, one meaning.** The parry mark answers, the resist mark refuses, a Figment telegraph shows an area, the rail's mark a part about to act. None wears another's look.
+4. **The body is enough.** Every creature's tell is tested with Figment telegraphs off (Divination 1), from the front and the side.
+5. **Hidden only where taught.** A fight may withhold a Figment telegraph (an "omen-less" cast) only after an earlier room has taught that
    cast with one. Never as a surprise.
 6. **A windup read well opens the creature.** Monster Hunter's rule: the answer is also the opening (the ram into the pillar cracks
-   the crown; the gaze turned back stuns it). A telegraph that shows only how to survive and never where to strike is half a word.
-7. **No telegraph on the Courier's own screen edge.** It sits on the ground or on the thing (CLAUDE.md, "Marks in the world").
+   the crown; the gaze turned back stuns it). A Figment telegraph that shows only how to survive and never where to strike is half a word.
+7. **No Figment telegraph on the Courier's own screen edge.** It sits on the ground or on the thing (CLAUDE.md, "Marks in the world").
 8. **The rail keeps its own** for now (the Emocean's crossing is in flux). Its closing ring is the same family, and joins this ladder
    when the rail is settled.
 
-## 7. The data (`src/progress/combat/telegraphs.js`, Dovina's)
+## 7. The data (`src/progress/combat/figmenttelegraphs.js`, Dovina's)
 
 ```js
-TELEGRAPH.steps = [{ id: 'where', at: 2 }, { id: 'when', at: 8 }, { id: 'kind', at: 20 }, { id: 'answer', at: 35 }];
-stepsAt(level) -> ['where', 'when', ...]                 // what a Divination level shows
-SHAPES[shape] = { answer, ground: bool }                 // the default answer glyph a shape wears
-markOf(windup, level) -> { shape, edge, fill, type, status, answer } | null   // what to draw, for Calissa's mark
+FIGMENT_TELEGRAPH.steps = [{ id: 'where', at: 2 }, { id: 'when', at: 8 }, { id: 'kind', at: 20 }, { id: 'answer', at: 35 }];
+figmentStepsAt(level) -> ['where', 'when', ...]                 // what a Divination level shows
+FIGMENT_SHAPES[shape] = { answer, ground: bool }                 // the default answer glyph a shape wears
+figmentMarkOf(windup, level) -> { shape, edge, fill, type, status, answer } | null   // what to draw, for Calissa's mark
 ```
 
 `creatures.windup(c, { ..., area, type, status, answer })` gains the four fields (Petra). A cast's `area` already carries its shape;
@@ -149,19 +154,19 @@ override it (Lidfall: `parry`).
 
 ## 8. Who builds what, in order
 
-1. **Dovina (done with this):** the vocabulary, the ladder, `telegraphs.js`, the glossary's entry, the Great Slip Jelly's casts given
+1. **Dovina (done with this):** the vocabulary, the ladder, `figmenttelegraphs.js`, the glossary's entry, the Great Slip Jelly's casts given
    `type`, `status` and `answer`.
-2. **Calissa:** the telegraph mark (`vfx/` — the edge, the fill, the caution edge, the merge), the answer glyphs and status glyphs
+2. **Calissa:** the Figment telegraph mark (`vfx/figmenttelegraph.js`, apart from the rail's `vfx/telegraph.js` — the edge, the fill, the caution edge, the merge), the answer glyphs and status glyphs
    (section 4), the arena rim ring. A workbench stage showing every shape at every step.
 3. **Petra:** `creatures.windup` carries `area`, `type`, `status`, `answer`; the timeline runner passes each cast's; the mark drawn
-   at `markOf(w, game.psyche.level('divination'))`; Perception's lead (`shownEta`) applies to the telegraph as it does to the parry
+   at `figmentMarkOf(w, game.psyche.level('divination'))`; Perception's lead (`shownEta`) applies to the Figment telegraph as it does to the parry
    mark; the `windup.read` event.
 4. **Dovina:** Divination's `windup.read` source in `domains.js`, once the event exists; the ledger counts (`windup.read.<how>`).
 5. **Espada:** the log line when a step is reached, and the steps' names in the Codex's Divination page.
 
 ## 9. Open
 
-- No art or knack shows a step early: Divination is the only way. In DEBUG, the lend panel's `telegraphs` row shows every step, for
+- No art or knack shows a step early: Divination is the only way. In DEBUG, the lend panel's `figmentTelegraphs` row shows every step, for
   testing the marks.
 - Creatures other than the Great Slip Jelly carry their windups' shapes as each is next touched (slip jellies: `circle`; clapperjars:
   `lunge`).

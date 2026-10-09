@@ -83,7 +83,7 @@ tested** (switch Feelings off, go and drink Gall, watch the slot open).
 | Feelings | `feelings` | Gall and Fury known (the radial's slots open) |
 | Glazes | `glazes` | every kiln look firable (`vessel.has`) |
 | Codex | `codex` | every hidden achievement, bestiary row, curio, strain and song shown (the ??? lifted) |
-| Telegraphs | `telegraphs` | every step of Divination's telegraph ladder (TELEGRAPHS.md) |
+| Figment Telegraphs | `figmentTelegraphs` | every step of Divination's Figment attack telegraph ladder (FIGMENT-TELEGRAPHS.md) |
 
 **Defaults:** a new DEBUG save starts with **every category lent** (today's sandbox, and more). A STORY save has no panel.
 
