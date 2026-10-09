@@ -86,7 +86,7 @@ export class Stains {
     const stage = this.stageOf(s), pm = this.game.paintmap;
     this.list.splice(this.list.indexOf(s), 1);
     pm?.wipe(s.x, s.z, s.x, s.z, s.y, 2 * RADIUS[stage] + 1, 1e9, true, s); // (what little is left of it, gone with it)
-    this.game.events?.emit('stain.wash', { grade: s.grade, stage, by: 'courier' });
+    this.game.events?.emit('stain.wash', { grade: s.grade, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by: 'courier' }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js)
   }
 
   /** The game day's layout: the Shore's stains, a few a game day, seeded by the day (the same for everyone on it). */

@@ -450,8 +450,24 @@ the rules before building in the same area; a rule a machine can check goes into
     the grid's lines (a few millimetres on no grid a level uses); a miss over solid ground is a bug, never open sky.
 166. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
     leaves the warm-up in the same change: a program compiled at boot for nothing is a program the budget cannot give to something new.
+167. **A choice that is none of a list's kinds is passed as itself.** A getter that falls back to a default kind (the brush's `aspect`:
+    the pick, else the bottle's grade, else the weather) answers "which feeling", never "what was picked"; a look that must show the pick
+    reads the pick.
 
 ## Cases
+
+### 2026-10-09 · Clean sprayed the weather's colour (the Soul Brush's radial, read while giving the paint its looks)
+
+- **Seen:** with the radial's Clean picked, the spray's drops were drawn in a feeling's colour, so the wash looked like paint. Measured on
+  the base (2f61385) at the paint range, a 110-tick hold: 73 of its 108 drops and droplets in Wonder's colours (`5ec8e0`, its film tone
+  `4faabf`), the other 35 the ink every spray has (`15101c`).
+- **Cause (measured):** `tools/soulbrush/load.js` handed the look `feeling: this.aspect`, and `aspect` is the getter that answers with
+  the pick only when the pick is a feeling, else the bottle's grade, else the weather (Wonder at the Workshop that hour): `'clean'` never
+  reached the look (`load.aspect` read `wonder` with `load.cleaning` true). The arc's droplets took `ASPECT_COLOR[d.aspect]` the same way.
+- **Fix:** the look is handed `'clean'` while cleaning and draws clear water (`d8eeee`, glints `f4ffff`: `vfx/brushload.js`), and Clean's
+  droplets on the arc are clear (`e8fbff`). The same hold on the branch: 89 clear (`d8eeee`, `f4ffff`, `e8fbff`), 20 ink, none in a
+  feeling's colour.
+- **Rule:** 167.
 
 ### 2026-10-09 · A status with no glyph drew the out chevron, and a mark shown every frame relaid its grid every frame (found reviewing the Figment attack telegraphs)
 

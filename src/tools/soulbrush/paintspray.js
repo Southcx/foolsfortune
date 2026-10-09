@@ -9,16 +9,17 @@
 //   - A SPLAT grows with the throw (`near` metres at the brush, `far` at `at` metres and past), stretched along a shallow hit; every drop
 //     shows. A droplet trails the arc every metre.
 //   - The RETICLE: the centre drop's own flight, simulated, puts an inner point where the stream lands and a ring for the spread there.
-//     A world mark, no words (CLAUDE.md); its look is a stand-in, Calissa's to make.
+//     A world mark, no words (CLAUDE.md); its look is Calissa's (vfx/brushmarks.js PaintReticle).
 //
 // Prior art: Splatoon's shot (two flight states, straight then falling; the Splattershot's spread, its jump spread and its bias toward the
 // centre; the ground reticle), Super Mario Sunshine's FLUDD squirt (a stream aimed with the camera, planted feet for precision).
 //
 //   const S = new PaintSpray(game)   S.update(dt, firing, P)   S.muzzle(P) -> where it leaves   S.aim(from, out) -> dir   S.launch(from, dir, rand) -> velocity
 //   S.fly(drop, dt) (gravity once past `straight`)   S.splat(drop, normal) -> { r, stretch }   S.predict(from, dir) -> { point, dist }
-//   S.reticle(on, from, aspectColor)   SPRAY (the numbers)
+//   S.reticle(on, from, dir, aspectColor, rawDt)   SPRAY (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { PaintReticle } from '../../vfx/brushmarks.js';
 
 export const SPRAY = {
   speed: 16, straight: 5, gravity: 14, jitter: 0.03, // (m/s; metres before it falls; m/s^2 after; the speed's share of variance)
@@ -33,11 +34,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quatern
 export class PaintSpray {
   constructor(game) {
     this.game = game; this.heat = 0; this.wasGrounded = true; this.spreadNow = SPRAY.spread.still;
-    // the reticle's stand-in: a point and a ring laid on what the stream lands on
-    const mat = (o) => new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide });
-    this.dot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 16), mat(0.9)); this.ring = new THREE.Mesh(new THREE.RingGeometry(0.92, 1, 40), mat(0.55));
-    this.mark = new THREE.Group(); this.mark.add(this.dot, this.ring); this.mark.visible = false; this.mark.renderOrder = 30; this.mark.name = 'paint-reticle';
-    game.scene?.add(this.mark);
+    this.look = new PaintReticle(game); // (a point and a ring laid on what the stream lands on: vfx/brushmarks.js)
   }
 
   /** The spread now (degrees): the body's state, and the heat of sustained fire (a jump resets it). */
@@ -106,15 +103,12 @@ export class PaintSpray {
   }
 
   /** The reticle on the ground: shown while the stream is aimed (`on`), the ring the spread's width where it lands. */
-  reticle(on, from, dir, color) {
-    const m = this.mark;
+  reticle(on, from, dir, color, raw = 1 / 60) {
     const at = on ? this.predict(from, dir) : null;
-    m.visible = !!at; if (!at) return;
-    m.position.copy(at.point).addScaledVector(at.normal, 0.03);
-    m.quaternion.setFromUnitVectors(_a.set(0, 0, 1), at.normal);
-    const ringR = Math.max(0.25, Math.tan(this.spreadNow * DEG) * at.dist) + SPRAY.splat.far * 0.5; this.ring.scale.setScalar(ringR);
-    if (color != null) { this.dot.material.color.set(color); this.ring.material.color.set(color); }
+    if (!at) { this.look.set(false, null, null, {}, raw); return; }
+    const ringR = Math.max(0.25, Math.tan(this.spreadNow * DEG) * at.dist) + SPRAY.splat.far * 0.5;
+    this.look.set(true, at.point, at.normal, { ring: ringR, along: dir, color }, raw);
   }
 
-  dispose() { this.mark.parent?.remove(this.mark); this.dot.geometry.dispose(); this.ring.geometry.dispose(); this.dot.material.dispose(); this.ring.material.dispose(); }
+  dispose() { this.look.dispose(); }
 }

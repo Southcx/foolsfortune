@@ -40,6 +40,7 @@ export function spendLoad(game, n, tag = 'load') {
 /** The feeling the load would lay now (the bottle's grade, else the weather's here). */
 export const loadAspect = (game) => game.player?.techs?.get('soulbrush')?.load?.aspect || 'wonder';
 const DROPS_PER_SEC = 18, MAX_DROPS = 64, STATUS_EVERY = 0.5;
+const CLEAN_COLOR = new THREE.Color(0xe8fbff); // (Clean's drops: clear water, not a feeling's colour)
 const STRIDE = { own: 1.25, other: 0.75, refill: 6 }; // (the paint-stride knack: x speed in your own feeling, x in another's; Lachryma a second it fills, Dovina's to tune) // (the throw, the spread and the splat: paintspray.js)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
 
@@ -174,7 +175,7 @@ export class BrushLoad {
       if (hit && hit.normal.y > 0.5) { this.land(d, hit.point, hit.normal); this.drops.splice(i, 1); continue; }
       if (hit) { d.v.reflect(hit.normal).multiplyScalar(0.25); continue; } // (a wall: it runs down it)
       d.p.add(_b);
-      if ((d.trail += len) >= SPRAY.trail) { d.trail = 0; g.fx?.alpha.emit({ pos: d.p.clone(), vel: d.v.clone().multiplyScalar(0.05), life: 0.25, size: 0.07, sizeEnd: 0.02, color: ASPECT_COLOR[d.aspect], alpha: 0.7, drag: 2, gravity: 4 }); } // (a droplet along the arc each metre)
+      if ((d.trail += len) >= SPRAY.trail) { d.trail = 0; g.fx?.alpha.emit({ pos: d.p.clone(), vel: d.v.clone().multiplyScalar(0.05), life: 0.25, size: 0.07, sizeEnd: 0.02, color: d.clean ? CLEAN_COLOR : ASPECT_COLOR[d.aspect], alpha: 0.7, drag: 2, gravity: 4 }); } // (a droplet along the arc each metre; Clean's clear)
     }
     if (this.paintDue && !this.drops.length) this.flushPaint();
     // the paint's feeling on what stands in it (the creatures decide what a status means for them: creatures.build)
@@ -189,11 +190,12 @@ export class BrushLoad {
     }
     // the looks (Calissa's): the load on the bristles while the brush is out, the bottle worn
     const raw = g.rawDt || dt;
-    // the aim: the spread's heat, and the reticle where the stream would land while paint is aimed (a stand-in look: paintspray.js)
+    // the aim: the spread's heat, and the reticle where the stream would land while paint is aimed (its look: vfx/brushmarks.js)
     this.aimer.update(dt, this.working && this.mode === 'paint', this.P);
     const aiming = this.busy && this.mode === 'paint' && this.tool.drawT > 0.02, tip = aiming ? this.aimer.muzzle(this.P, _a) : null;
-    this.aimer.reticle(aiming, tip, aiming ? this.aimer.aim(tip, _d) : null, this.cleaning ? 0xf4efe6 : ASPECT_COLOR[this.aspect]);
-    if (this.busy && this.tool.drawT > 0.02) g.brushLoad?.update(raw, { model: this.tool.model, mode: this.mode, saturate: Math.max(0, this.sat), working: this.working, aim: this.tool.club.aimDir(_d).clone(), from: this.mopAt, feeling: this.aspect });
+    this.aimer.reticle(aiming, tip, aiming ? this.aimer.aim(tip, _d) : null, this.cleaning ? 0xf4efe6 : ASPECT_COLOR[this.aspect], raw);
+    const drawn = this.tool.drawT > 0.02, b0 = this.bottle; // (the load's look every frame: the mop head's load while drawn, the shines always: vfx/brushload.js)
+    g.brushLoad?.update(raw, { model: drawn ? this.tool.model : null, mode: this.mode, saturate: this.busy ? Math.max(0, this.sat) : 0, working: this.busy && this.working, aim: drawn && this.busy ? this.tool.club.aimDir(_d).clone() : null, from: this.mopAt, feeling: this.cleaning ? 'clean' : this.aspect, fill: b0 ? this.held / BOTTLES[b0].capacity : 0, grade: this.grade });
     // the bottle: a reserve that feeds the pool below half
     const b = this.bottle;
     this.wear(b, raw);
@@ -217,8 +219,9 @@ export class BrushLoad {
   land(d, at, normal = _d.set(0, 1, 0)) {
     const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
     if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
-      g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false); g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, 'slick');
+      const got = (g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false).got || 0) + (g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, 'slick').got || 0);
       g.stains?.wipe({ x: at.x, z: at.z }, { x: at.x, z: at.z }, at.y, 99, sp.r * 2);
+      if (got > 0) g.brushLoad?.shine?.(at, sp.r * 2); // (the ground it washed shines a moment: vfx/brushmarks.js)
       return;
     }
     let area = g.paintmap?.stamp(at.x, at.y, at.z, sp.r, d.aspect, 0.9) || 0;

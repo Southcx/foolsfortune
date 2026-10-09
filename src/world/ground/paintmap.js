@@ -7,7 +7,8 @@
 // Prior art: Super Mario Sunshine's pollution layers (doldecomp/sms PollutionLayer: a bitmap projected flat onto the floor, stamped by
 // the spray, asked by the collision), Splatoon's paint kept in a texture laid over the level, and our own trail map
 // (world/ground/trailmap.js: a window that follows the focus, re-centred in whole cells so nothing swims). Kept on the CPU, as
-// Sunshine's was, so the game asks it without a read-back; uploaded to two small textures for the look.
+// Sunshine's was, so the game asks it without a read-back; uploaded to two small textures for the look (the colour; the height and
+// the motif byte), which is Calissa's: vfx/paintmotifs.js (each feeling's pattern, crude's oil film, the gloss).
 //
 //   const pm = new PaintMap()   pm.update(dt, focusX, focusZ)   pm.patch(material) (the ground's shaders: tops of things only)
 //   pm.stamp(x, y, z, r, aspect, k) -> m² newly covered   pm.drink(x, y, z, r, want) -> paint taken (0..want, in cell-fulls)
@@ -17,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OPPOSITE, ASPECTS, COLOR } from '../../progress/weather.js';
+import { paintMotifCode, PAINT_LOOK_HEAD, PAINT_LOOK_BODY, PAINT_LOOK_ROUGH } from '../../vfx/paintmotifs.js';
 
 const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, SLICK_LIFE = 40, NONE = -1e4, NEAR = 0.8, FLAT = 0x3b2b22; // (a slick: crude thrown or welled up in a fight, flat (no feeling), gone in 40 real seconds)
 /** Which cells a wipe or a count takes: true a blot's crude, 'slick' a slick's, false paint. */
@@ -31,9 +33,9 @@ export class PaintMap {
     this.h = new Float32Array(N * N).fill(NONE); // the height it lies at
     this.x0 = -SPAN / 2; this.z0 = -SPAN / 2; // (the window's corner, in whole cells)
     this.live = new Set(); this.dirty = true; this.upT = 0;
-    this.colData = new Uint8Array(N * N * 4); this.hData = new Float32Array(N * N);
+    this.colData = new Uint8Array(N * N * 4); this.hData = new Float32Array(N * N * 2); // (the height a cell lies at, and its motif: vfx/paintmotifs.js)
     this.colTex = new THREE.DataTexture(this.colData, N, N, THREE.RGBAFormat); this.colTex.magFilter = this.colTex.minFilter = THREE.LinearFilter;
-    this.hTex = new THREE.DataTexture(this.hData, N, N, THREE.RedFormat, THREE.FloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
+    this.hTex = new THREE.DataTexture(this.hData, N, N, THREE.RGFormat, THREE.FloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
     this.colTex.needsUpdate = this.hTex.needsUpdate = true;
     this.uniforms = { uPmCol: { value: this.colTex }, uPmH: { value: this.hTex }, uPmWin: { value: new THREE.Vector4(this.x0, this.z0, SPAN, 1 / N) } };
   }
@@ -158,8 +160,8 @@ export class PaintMap {
     const C = this.colData, Hh = this.hData, tmp = new THREE.Color();
     for (let n = 0; n < N * N; n++) {
       const p = this.k[n], o = n * 4;
-      if (p > 0.02 && this.crude[n] !== 2) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude: the feeling's colour gone dark and flat, a stand-in look: Calissa's)
-      else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n] = NONE; continue; } // (black under nothing: an edge filters toward the colour, not away from it; a slick's cells are drawn where they lie, vfx/slicks.js)
+      if (p > 0.02 && this.crude[n] !== 2) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n * 2] = this.h[n]; Hh[n * 2 + 1] = paintMotifCode(this.asp[n], this.crude[n], p); C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude's look is its motif's, oil-black: vfx/paintmotifs.js)
+      else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n * 2] = NONE; Hh[n * 2 + 1] = 0; continue; } // (black under nothing: an edge filters toward the colour, not away from it; a slick's cells are drawn where they lie, vfx/slicks.js)
       const a = C[o + 3] / 255; C[o] = Math.round(tmp.r * a * 255); C[o + 1] = Math.round(tmp.g * a * 255); C[o + 2] = Math.round(tmp.b * a * 255); // (premultiplied)
     }
     this.colTex.needsUpdate = true; this.hTex.needsUpdate = true;
@@ -179,21 +181,10 @@ export class PaintMap {
       sh.fragmentShader = `varying vec3 vPmPos;
 varying vec3 vPmN;
 uniform sampler2D uPmCol; uniform sampler2D uPmH; uniform vec4 uPmWin;
-` + sh.fragmentShader.replace('#include <alphamap_fragment>', `{
-    vec2 pmUv = (vPmPos.xz - uPmWin.xy) / uPmWin.z;
-    if (pmUv.x > 0.0 && pmUv.y > 0.0 && pmUv.x < 1.0 && pmUv.y < 1.0) {
-      vec4 pc = texture2D(uPmCol, pmUv);
-      float near = 1.0 - smoothstep(0.5, 0.9, abs(vPmPos.y - texture2D(uPmH, pmUv).r));
-      float up = smoothstep(0.55, 0.8, normalize(vPmN).y);
-      float grain = fract(sin(dot(floor(vPmPos.xz * 6.0), vec2(12.9898, 78.233))) * 43758.5453);
-      vec3 col = pc.rgb / max(pc.a, 0.05); // (the colour un-premultiplied: the texture filters colour and coverage together)
-      float k = smoothstep(0.25, 0.5, pc.a + (grain - 0.5) * 0.12) * near * up; // (a wet edge, a little ragged)
-      diffuseColor.rgb = mix(diffuseColor.rgb, col, k * 0.8);
-      pmGlow = col * k * 0.2; // (Lachryma glows a little; the dark of crude, hardly at all)
-    }
-  }
+${PAINT_LOOK_HEAD}
+` + sh.fragmentShader.replace('#include <alphamap_fragment>', `${PAINT_LOOK_BODY}
   #include <alphamap_fragment>`).replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += pmGlow;')
-        .replace('void main() {', 'vec3 pmGlow = vec3(0.0);\nvoid main() {');
+        .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>${PAINT_LOOK_ROUGH}`); // (the look, the motifs and the gloss: Calissa's, vfx/paintmotifs.js)
     };
     material.customProgramCacheKey = () => `pm|${before}`;
     material.userData.paintmap = true; material.needsUpdate = true;
