@@ -11,13 +11,14 @@
 // (full, half, quarter, immune, reset after 18 s), and the co-op shooters' attenuated friendly fire (Left 4 Dead's normal difficulty,
 // Helldivers' honesty in reverse: here it stings, it does not kill).
 //
-//   FRIENDLY = { damage, buildMult, durMult, immuneAt, windowSec }      friendlyDamage(dmg) -> dmg      tolerance(n) -> { build, dur } | null
+//   FRIENDLY = { damage, cap, buildMult, durMult, immuneAt, windowSec }      friendlyDamage(dmg, maxHp) -> dmg      tolerance(n) -> { build, dur } | null
 // ---------------------------------------------------------------------------------------
 
-export const FRIENDLY = { damage: 0.2, buildMult: 2, durMult: 0.5, immuneAt: 3, windowSec: 20 };
+export const FRIENDLY = { damage: 0.2, cap: 0.25, buildMult: 2, durMult: 0.5, immuneAt: 3, windowSec: 20 };
+// (cap: no one blow from an ally takes more than a quarter of the target's health, so a fifth of a Lockheart jackpot stings and never kills)
 
-/** What a blow deals to an ally. */
-export const friendlyDamage = (dmg) => dmg * FRIENDLY.damage;
+/** What a blow deals to an ally; with the target's full health, never more than `cap` of it in one blow. */
+export const friendlyDamage = (dmg, maxHp = Infinity) => Math.min(dmg * FRIENDLY.damage, maxHp * FRIENDLY.cap);
 
 /** The `n`th status of one kind from allies within the window (0 the first): how much more build-up it needs and how long it holds,
  *  or null when the ally now shrugs it off. 0: x1 / x1; 1: x2 / x0.5; 2: immune. */

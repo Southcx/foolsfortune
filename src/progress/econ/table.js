@@ -219,13 +219,16 @@ export const ECON = {
   weather: {
     lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
     wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
+    reach: {},             // (how far toward Chaos a place's mood may run: +2 Dread when unsaid; +3 lets Gall fall, +4 Fury. Anagami stays at 2.
+                           //  The Great Dunemaw's deep, once Calissa's looks land: reach 4 with the lean at 2, measured over 400 game days
+                           //  of 3-hour blocks: Gall 8%, Fury 1%, Dread 14%: Gall is met in the Well, Fury mostly at sea. GALL-AND-FURY.md 4.)
     mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
     under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)
     build: 0.5, fish: 1, supply: 0.25,
-    mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5 },
-    danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5 },
-    lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6 },
-    fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2 },
+    mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5, gall: 0.4,  fury: 0.6 },
+    danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5, gall: 0.35, fury: 0.6 }, // (Fury the most dangerous water)
+    lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6, gall: 0.6,  fury: 0.7 }, // (a miasma hides what comes)
+    fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2,   gall: 2,    fury: 2 },
     night: { signature: 1.5 },
   },
 };

@@ -36,6 +36,28 @@ rams is forgiven, and which side of the room is spent first is the player's choi
 **Budgets:** one sub-zone, at most 60 draw calls and 150k triangles in view (pillars and stalactites batched), lights from the light
 budget only (four of the eight: W0's glow, the core, two Lachryma seams).
 
+## The great bowl (Dovina, 2026-10-09): for the Great Slip Jelly about 12 Couriers tall
+
+The owner wants the fight big, about 21 m of jelly, and the bowl as a large arena to test movement in. One factor, x2.5, on every
+horizontal measure and every height of the bowl's own; what the Courier's body meets keeps its size, so the core movement reads the same.
+Petra lands these into `ARENA` (`progress/combat/dunemaw.js`) in the same commit as the bowl's rebuild (tried alone, the sweep loses the
+cavern mid-fight: the build code still holds the first bowl's sizes).
+
+| measure | first bowl | great bowl | why |
+|---|---|---|---|
+| radius, roof | 28, 30 | 70, 75 | x2.5: about 140 m across, a roof well over the jelly |
+| rim from (wading depth, wade) | 22 (0.4, 0.7) | 55 (0.4, 0.7) | depth is the Courier's shins: unchanged |
+| upper walk from, y | 24, 4 | 60, 4 | y stays mantle height |
+| ledge z, y, width | 26..34, 6, 12 | 65..85, 6, 30 | y stays reachable |
+| pillars r, width, height | 18, 3, 12 | 45, 7.5, 30 | must stand a 21 m body's ram |
+| stalactites r, y | 12, 14..18 | 30, 35..45 | above the jelly's crown |
+| pools centre, ring r, width (depth) | 6, 16, 4 (2) | 15, 40, 10 (2) | depth is the Courier's: unchanged |
+| clutches r, clear | 25, 3 | 62, 7.5 | x2.5 |
+| wake | 20 | 50 | x2.5 |
+
+The ram's range and speed, the slam's reach and the camera scale from `FOE` (Petra's, as she proposed); the timeline's casts, reach and
+lifetimes are mine to rescale once the bowl stands.
+
 ## Measured (Petra, 2026-10-06) and ruled
 
 1. **The sidestep:** aimed when the charge starts, the Courier clears at most 1.56 m of the FOE's half-width: a fail. Aimed when the

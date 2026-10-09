@@ -58,8 +58,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   real minute. *Not:* a drink of crude (a cask).
 - **mental state** (`game.courierMind`, `src/courier/mind.js`; creatures': `progress/combat/mind.js`) — the Courier's: pushed up by Lachryma
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
-- **the five feelings** (`DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most negative:
-  Wonder, Mirth, Desire, Grief, Dread. *Not:* "hunger" (never an aspect). → detail
+- **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
+  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. Anagami's five (`NATIVE`) are known from the start; Gall and Fury are learned
+  by drinking them. *Not:* "hunger", "Faith" (cut). → detail
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a
@@ -273,8 +274,13 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
 - **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
-- **the all-arts switch** (`system.lendAll`) — lends every art without learning it (on in DEBUG, off in STORY); nothing it lends is counted. Label
-  ALL ARTS. *Not:* "Lab mode".
+- **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
+  shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
+- **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, ...): a lent
+  category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
+  arts row. *Not:* "Lab mode".
+- **a preset** (`PRESETS`, `src/debug/presets.js`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
+  DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only text feedback; **the chat line** is its typing.
