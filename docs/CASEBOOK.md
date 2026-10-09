@@ -379,11 +379,33 @@ the rules before building in the same area; a rule a machine can check goes into
     window has shut proves the picture, not the choosing. Name what the window calls, and photograph it with the window up.
 136. **A hover is the pointer's state, and a window shut under the pointer sends no leave.** Whatever a hover set is set back by what
     owns it when the window closes (read in its own update), never left to the pointer's leaving.
+137. **A state is modelled as that state, never as another state scaled toward it.** A furled sail is canvas stowed on its spar, not
+    the sail squashed to a fifth of its height (which keeps its whole width: a board 4 m long with its emblem squashed into a decal);
+    a sheathed blade, a folded wing or a shut lid likewise. And a look is judged from where a person stands beside it (the jetty
+    walker's eye, inside the height of what is moored there), not only from the stage's own views of it.
 
 131. **A writer to a store writes the shape its reader draws.** A document the page renders is written in the fields the renderer reads
     (QAIS's Brief: `division`, `build`, `lines`, `waiting`, `at`), and read back through the page once after the first write.
 
 ## Cases
+
+### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
+
+- **Seen:** at the jetty's end, facing the land (the sweep's `pier: closed`), a broad flat beige panel with a gold mandala filled a
+  quarter of the view to the right, beside the moored hull's side; hiding the mooring's hull removed it. From out at sea, behind the
+  hull, the moored sloop read fine (a small sail by the mast).
+- **Cause (measured):** the moored sloop's mainsail. "Furled" was `set({ sail: 0.15 })`, which only scaled the sail's height to 0.22:
+  it kept its whole 3.9 m foot along the boom and stood 1.2 m tall, 1.81 to 3.01 m over the crude, the boom swung 0.39 rad toward the
+  jetty. The jetty's deck is 1.1 m over the crude, so the walker's camera (2.79 m) stood inside the sheet's height about 4 m from it:
+  a vertical sheet seen from within its own height reads as a flat board, and the lotus squashed to an ellipse read as an emblem laid
+  on it. From out at sea the sheet was edge-on. The frigate's and galleon's courses were the same squash (boards under each yard), and
+  every jib was pushed down into its hull (the squash scales about the waterline).
+- **Fix:** `FURL` (0.15) and `furlRoll` in `vfx/sloop.js`: at FURL or under, the sails are hidden and the canvas is drawn stowed: the
+  main flaked along the boom's top with four ties, the boom amidships, the jib rolled on its stay from the bowsprit; the ship classes'
+  courses each furled on its yard with its gaskets and their jibs rolled (one bundle and one set of ties a rig, shown only moored). The
+  mooring sets `sail: 0`. Over FURL nothing changed: the workbench's `ships:classes` at sail 1 renders pixel-identical before and after
+  (seven views, no pixel differs). Checked from the jetty and from the side for the five hulls.
+- **Rule:** 137.
 
 ### 2026-10-08 · A mount hovered at the pier drew nothing: the window that pauses the game also stopped the preview (the review of Calissa's mount preview)
 
