@@ -24,6 +24,8 @@ export const DEBUG_KITS = {
     items: [['whistle.wake', 1], ['bottle.small', 2]], cubes: 500 },
   jetty: { at: 'jetty', for: 'a drafted passage: the sea chart, a long crossing, the encounters, the turns of the rail', by: 'petra', tests: ['T172', 'T173', 'T174'],
     items: [['cask.mirth', 4], ['rutter', 1, { from: 'anagami', to: 'margarite', route: 'anagami>margarite', day: 0, passage: [], legs: [], rank: 'C', read: 0, minutes: 5, worth: 40 }]], cubes: 3000 }, // (cubes for the fuel of a long passage, casks for the Wreckers to take, a rutter for Letty to buy)
+  paintrange: { at: 'testroom.paintrange', for: 'painting at range: the reticle, the spread, the splats (LACHRYMA-LOOP.md 3)', by: 'petra', tests: ['T178'],
+    items: [['tool.soulbrush', 1], ['bottle.small', 1]] }, // (the brush, and a bottle to paint from and to mop into)
   throwing: { at: 'testroom.index', for: 'the drills (Steady Hand and Wide Bore open by drill hits)', by: 'dovina', tests: [],
     items: [['tool.psygun', 1]] },
 };

@@ -106,6 +106,15 @@ export const ABILITIES = [
         hint: 'Kick yourself up, again and again.', goals: [led('move.recoil', 25, 'recoil jumps')] },
     ],
   },
+  {
+    // the Solar Skiff's glide (Petra's, R8: courier/skiff/skiff.js). Taken from Breath of the Wild's paraglider and Wind Waker's Deku Leaf:
+    // the glide is earned by getting the board into the air, so its goal is the hop that makes the airtime it stretches
+    id: 'glide', key: 'Space held', name: 'Skiff Glide', glyph: '⌒', tech: 'skiffGlide', input: 'hold Space in the air on the Solar Skiff',
+    blurb: 'On the Solar Skiff, hold Space in the air and the sail catches: a long, slow fall instead of a spin.',
+    hint: 'Get the board off the sand. Again and again.',
+    goals: [led('skiff.hop', 40, 'hops on the Solar Skiff')],
+    variants: [],
+  },
 ];
 
 // ---------------------------------------------------------------------------

@@ -62,7 +62,7 @@ export const weakTo = (grain = {}) => TRAITS.filter((t) => (grain[t.id] || 0) > 
 export const poles = (grain = {}, read = TRAITS.map((t) => t.id)) => TRAITS.filter((t) => read.includes(t.id) && Math.abs(grain[t.id] || 0) >= 0.2).map((t) => (grain[t.id] > 0 ? t.high : t.low));
 
 /** The place's mood sways its minds (TEMPERAMENT.md): a drift per second toward a pole, by the weather's strength. A rate, never a jump. */
-const SWAY = { dread: { n: 1 }, mirth: { a: 1 }, wonder: { o: 1 }, desire: { e: 1 }, grief: { e: -1 }, faith: { a: 0.5, n: -0.5 }, gall: { a: -1 }, fury: { a: -0.5, e: 0.5 } };
+const SWAY = { dread: { n: 1 }, mirth: { a: 1 }, wonder: { o: 1 }, desire: { e: 1 }, grief: { e: -1 }, gall: { a: -1 }, fury: { a: -0.5, e: 0.5 } };
 export const SWAY_RATE = 0.01; // (a full-strength weather moves a trait a hundredth a second: a spell of minutes leaves a mark, not a new mind)
 export function sway(aspect, strength = 0) {
   const s = SWAY[aspect] || {}, out = {};

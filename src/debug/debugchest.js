@@ -32,7 +32,7 @@ export class DebugChests {
   constructor(game) {
     this.game = game; this.list = []; this.said = new Set(); this.gardenDone = false;
     game.interact?.add('debug.chest', (P) => {
-      if (game.dialogue?.open || game.god?.controlling || game.realm?.active) return null;
+      if (game.mode === 'story' || game.dialogue?.open || game.god?.controlling || game.realm?.active) return null; // (none stands in STORY: DEBUG-MODE.md section 2)
       let best = null;
       for (const c of this.list) { if (c.garden) continue; const d = Math.hypot(c.pos.x - P.pos.x, c.pos.z - P.pos.z); if (d < REACH && Math.abs(c.pos.y - P.pos.y) < 1.8 && (!best || d < best.d)) best = { pos: c.pos.clone().setY(c.pos.y + 1.1), d, ref: c.kit }; }
       return best;
@@ -61,7 +61,8 @@ export class DebugChests {
     if (this.pending && g.realm?.active && g.realm.jarBody && !g.realm.entering) { const k = this.pending; this.pending = null; this.go(k); } // (gone in for a garden chest: set down by it)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'debug.chest' && P?.peekLatch?.('KeyF')) { P.latch('KeyF'); this.give(it.ref); }
-    for (const c of this.list) c.look.update(dt);
+    const on = g.mode !== 'story'; // (in STORY no debug chest stands)
+    for (const c of this.list) { if (c.shown !== on) { c.shown = on; c.look.group.visible = on; } if (on) c.look.update(dt); } // (its own flag: a zone's hiding is on the getter, render/zones.js)
   }
 
   /** Where a world kit's chest stands: { pos, face } (null while its place is not built). */
@@ -73,6 +74,7 @@ export class DebugChests {
       case 'well.mouth': { const M = g.well?.mouthPos; if (!M) return null; const x = M.x + 3.4, z = M.z + 1.4; return { pos: new THREE.Vector3(x, sand(x, z, M.y), z), face: M.clone() }; }
       case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'testroom.index': return g.testroom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
+      case 'testroom.paintrange': { const S = g.testroom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)
       default: return null;
     }
   }

@@ -378,7 +378,7 @@ export class BrushTechniques {
           const dir = nx && !nx.brk ? nx.p.clone().sub(d.p).normalize() : (dabs[i - 1] ? d.p.clone().sub(dabs[i - 1].p).normalize() : new THREE.Vector3(1, 0, 0));
           const w = THREE.MathUtils.clamp(d.p.distanceTo(v.eye) * 0.045, 0.3, 1.2);
           paint.add(d.p, d.n, dir, w);
-          g.slip?.addDisc(d.p, d.n, w * 0.6, 14);
+          g.slip?.addDisc(d.p, d.n, w * 0.6, 14, 0, 'courier');
         }
         paint.gap();
         sfx.inkDab?.(1);

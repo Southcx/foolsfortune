@@ -137,9 +137,13 @@ export class SlipField {
 
   /** A splat that dries: wet (diveable) for `life` seconds, but not until it is `delay` seconds old (the Soul Brush's fresh trail
    *  under a sliding Courier must not pull them under the moment it is laid). */
-  addDisc(c, n, r, life, delay = 0) {
+  /** A disc of slip, wet enough to dive into for `life` seconds. `by`: who laid it; it is also laid as Lachryma on the ground (`onLay`,
+   *  main.js: the Courier's as paint in the brush's feeling, anyone else's as a slick: LACHRYMA-LOOP.md 5, rule 7, "all slip is
+   *  Lachryma"; a look only: diving and sliding are as they were). */
+  addDisc(c, n, r, life, delay = 0, by = 'creature') {
     if (this.discs.length > 400) this.discs.shift();
     this.discs.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0, delay });
+    this.onLay?.(c, n, r, by);
   }
 
   update(dt) {

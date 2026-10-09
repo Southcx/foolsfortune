@@ -16,6 +16,7 @@
 //
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
 //   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
+//   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
 //   events: strawman.mode, strawman.bout, strawman.swing { landed }, strawman.parried
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -24,6 +25,7 @@ import { PALETTE } from '../../core/config.js';
 import { POTS, WALL } from '../../progress/combat/testroom.js';
 import { STRAWMAN, bout } from '../../progress/combat/dunemaw.js';
 import { StrawmanModel } from '../../vfx/strawman.js';
+import { PaintRange } from './paintrange.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
@@ -92,6 +94,7 @@ export class TestRoom {
     if (built?.wallCol) g.physics.register(built.wallCol, this.wall);
     this.strawman = this.makeStrawman();
     this.drills = new Drills(g, this);
+    this.paintRange = new PaintRange(g); // (the floor rings at 3, 6 and 9 m: painting at range, paintrange.js)
     // F: the console opens the Index on its page; Strawman cycles its mode
     g.interact?.add('testroom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);

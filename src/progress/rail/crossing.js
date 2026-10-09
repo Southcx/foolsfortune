@@ -64,7 +64,7 @@ export const ACTS = [
   { id: 'launch',   from: 0,  to: 9,   view: 'chase', teaches: 'the ship: moving in the box, the two reticles, the barrel roll' },
   { id: 'schools',  from: 9,  to: 26,  view: 'chase', teaches: 'the gun, and the lock-on sweep (a school is eight in a line)' },
   { id: 'pincer',   from: 26, to: 36,  view: 'above', teaches: 'polarity: shots of your feeling are drunk, the other one hurts' },
-  { id: 'darters',  from: 36, to: 50,  view: 'free',  teaches: 'the parry: darters spit outlined shots at the camera; V sends them back' },
+  { id: 'darters',  from: 36, to: 50,  view: 'free',  teaches: 'the parry: darters spit outlined shots at the camera; a roll in time sends them home' },
   { id: 'breather', from: 50, to: 62,  view: 'chase', teaches: 'the sea itself: flotsam to gather, the reckoning\'s marks, a breath' },
   { id: 'setpiece', from: 62, to: 96, view: null,    teaches: 'everything at once' },
   { id: 'arrive',   from: 96, to: 100, view: 'chase', teaches: 'nothing: the tally, and the island in sight' },

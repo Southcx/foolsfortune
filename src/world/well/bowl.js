@@ -45,13 +45,13 @@ import { bowlSand, bowlSandTick, PoolRing } from '../../vfx/bowl.js';
 import { sfx } from '../../audio/sfx.js';
 
 /** Where the bowl stands: its centre on the rim's level, in the Well's zone (render/zonemap.js), under where the floors are built. */
-export const BOWL_AT = new THREE.Vector3(-1300, -925, 0);
+export const BOWL_AT = new THREE.Vector3(-1300, -1000, 0); // (below the Well's floors (y -900) by more than its roof: render/zonemap.js 'well' reaches it)
 const DEG = Math.PI / 180, UP = new THREE.Vector3(0, 1, 0);
-const R = ARENA.radius, RIM = ARENA.rim.from, ROOF = ARENA.roof, TAN = Math.tan(ARENA.dish * DEG);
-const LEDGE = { x: ARENA.ledge.width / 2, z0: ARENA.ledge.z[0], z1: ARENA.ledge.z[1], y: ARENA.ledge.y, back: 46 }; // (the tunnel runs on to z 46)
-const SLOPE = { x: 4.5, half: 1.5, z1: 15.6 }; // (S1, S2: 3 m wide at x -4.5 and +4.5, from the ledge's lip down to z 15.6, about 30 degrees)
-const S3 = { bearing: 166, r0: ARENA.upper.from, r1: 17.2, half: 1.5 }; // (the upper ring's way down, between P3 and W3)
-const STAL = { len: 4.5, root: 0.75, fall: 0.8 }; // (a stalactite's hanging spike, the root's radius, the shake before it drops: sim seconds)
+const R = ARENA.radius, RIM = ARENA.rim.from, ROOF = ARENA.roof, TAN = Math.tan(ARENA.dish * DEG), K = ARENA.scale ?? 1;
+const LEDGE = { x: ARENA.ledge.width / 2, z0: ARENA.ledge.z[0], z1: ARENA.ledge.z[1], y: ARENA.ledge.y, back: ARENA.ledge.z[1] + 12 }; // (the tunnel runs on 12 m past the ledge)
+const SLOPE = { x: 4.5 * K, half: 1.5 * K, z1: 15.6 * K }; // (S1, S2: from the ledge's lip down toward the centre, about 30 degrees)
+const S3 = { bearing: 166, r0: ARENA.upper.from, r1: 17.2 * K, half: 1.5 * K }; // (the upper ring's way down, between P3 and W3)
+const STAL = { len: 4.5 * K, root: 0.75 * K, fall: 0.8 }; // (a stalactite's hanging spike, the root's radius, the shake before it drops: sim seconds)
 const PILLAR = { r: ARENA.pillars.width / 2, h: ARENA.pillars.height };
 export const bearingXZ = (b, r) => ({ x: Math.sin(b * DEG) * r, z: Math.cos(b * DEG) * r });
 
@@ -80,8 +80,8 @@ export class Bowl {
     this.buildPillars(); this.buildStalactites(); this.buildPools();
     this.clutchSpots = [22, 68, 112, 158, 202, 248, 292, 338].slice(0, ARENA.clutches.perQuadrant * 4).map((b) => { const p = bearingXZ(b, ARENA.clutches.r); return this.world(p.x, dishY(ARENA.clutches.r), p.z); });
     // two lamps from the light budget (W0's glow, and a warm one over the ledge: render/lightbudget.js lends them real lights)
-    const glow = new THREE.PointLight(0x9a6bff, 26, 40, 1.3); glow.position.set(0, 4, 0);
-    const warm = new THREE.PointLight(0xffa066, 18, 34, 1.3); warm.position.set(0, LEDGE.y + 5, LEDGE.z0 + 4);
+    const glow = new THREE.PointLight(0x9a6bff, 26 * K, 40 * K, 1.3); glow.position.set(0, 4 * K, 0);
+    const warm = new THREE.PointLight(0xffa066, 18 * K, 34 * K, 1.3); warm.position.set(0, LEDGE.y + 5, LEDGE.z0 + 4);
     this.group.add(glow, warm); g.lights?.adopt(glow); g.lights?.adopt(warm);
     g.scene.add(this.group);
     /** Where a Courier dropping in arrives: in the tunnel behind the ledge, facing the bowl. */

@@ -25,11 +25,11 @@ export const STATS = { wonder: 'sight', mirth: 'speed', desire: 'strength', grie
 export const MAX = 999;
 
 /** What feeding raises (a Well's material by its kind: progress/econ/materials.js KINDS), by how much a tier (0..4) of the material.
- *  Finery and art raise the bond, not a stat: a gift, not a meal. A cask of crude shifts its feeling toward the cask's grade; a curio
+ *  Finery (Gall's kind) trains will and art (Fury's) strength: the stats stay five (GALL-AND-FURY.md section 10). A cask of crude shifts its feeling toward the cask's grade; a curio
  *  raises the bond by its tier. */
 export const FEED = {
-  stat: { mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', roe: 'grief' }, // (roe: slip roe, the Dunemaw's eggs)
-  bond: ['finery', 'art'],
+  stat: { mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', finery: 'dread', art: 'desire', roe: 'grief' }, // (roe: slip roe, the Dunemaw's eggs)
+  bond: [], // (no kind is a gift alone now: a curio raises the bond)
   perTier: [6, 10, 16, 24, 36], // (a common material +6 .. a tier-4 find +36: a hundred and fifty meals from nothing to the ceiling)
   feeling: 0.1, // (a cask moves the spirit's feeling a tenth of the way toward its grade)
   curioBond: [2, 4, 7, 12, 20],

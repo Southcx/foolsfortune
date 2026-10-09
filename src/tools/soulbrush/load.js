@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH'S LOAD: the brush as the tool of environmental Lachryma (the owner, 2026-10-06; Dovina's rulings and numbers,
 // docs/plans/SUNSHINE-SYSTEMS.md section 4, progress/brushload.js). Two MODES, as the Sondelass has forms (1 and 2 while it is out):
-//   PAINT  the bristles saturate, then spray Lachryma: drops fly in arcs and lay a feeling where they land (the paint map:
+//   PAINT  the bristles saturate, then spray Lachryma: drops fly where you aim (paintspray.js) and lay a feeling where they land (the paint map:
 //          world/ground/paintmap.js); a creature standing in it takes that feeling's status; on water, rings. It spends the bottle,
 //          else the pool. What it lays is the bottle's grade (the crude it last drank), else the feeling of the weather here.
 //   MOP    the bristles saturate, then drink: stains of spilled crude (world/ground/stains.js) and the paint itself, into the bottle.
@@ -26,6 +26,7 @@ import { T } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 import { LachrymatoBottle } from '../../vfx/bottle.js';
+import { PaintSpray, SPRAY } from './paintspray.js';
 
 const simRand = stream('tools/soulbrush/load');
 
@@ -38,20 +39,23 @@ export function spendLoad(game, n, tag = 'load') {
 }
 /** The feeling the load would lay now (the bottle's grade, else the weather's here). */
 export const loadAspect = (game) => game.player?.techs?.get('soulbrush')?.load?.aspect || 'wonder';
-const DROPS_PER_SEC = 18, DROP_SPEED = 9.5, DROP_R = 0.55, MAX_DROPS = 64, STATUS_EVERY = 0.5;
+const DROPS_PER_SEC = 18, MAX_DROPS = 64, STATUS_EVERY = 0.5;
+const STRIDE = { own: 1.25, other: 0.75, refill: 6 }; // (the paint-stride knack: x speed in your own feeling, x in another's; Lachryma a second it fills, Dovina's to tune) // (the throw, the spread and the splat: paintspray.js)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class BrushLoad {
   constructor(tool) {
     this.tool = tool; this.mode = 'paint'; this.sat = -1; this.working = false;
+    this.pick = null; this.stride = 1; // (the radial's pick: radial.js; the paint underfoot's pace: strideOf)
     this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null;
     tool.game.events?.on('vessel.shieldbreak', () => this.shieldBreak());
     this.look = null; this.lookId = null; this.crackT = 0; this.mopAt = null; // (the bottle worn, seen: Calissa's vfx/bottle.js)
+    this.aimer = new PaintSpray(tool.game); // (where the paint goes and where it will land: paintspray.js, LACHRYMA-LOOP.md 3)
     tool.game.save?.section('brushload', { // (the mode and the grade of what the bottle holds; the Lachryma it holds is the bottle's own `uses`)
       scope: 'player', version: 1,
-      dump: () => ({ mode: this.mode, grade: this.grade }),
-      load: (d) => { this.mode = LOAD.modes.includes(d.mode) ? d.mode : 'paint'; this.grade = ASPECTS.includes(d.grade) ? d.grade : null; },
-      reset: () => { this.mode = 'paint'; this.grade = null; },
+      dump: () => ({ mode: this.mode, grade: this.grade, pick: this.pick }),
+      load: (d) => { this.mode = LOAD.modes.includes(d.mode) ? d.mode : 'paint'; this.grade = ASPECTS.includes(d.grade) ? d.grade : null; this.pick = ASPECTS.includes(d.pick) || d.pick === 'clean' ? d.pick : null; },
+      reset: () => { this.mode = 'paint'; this.grade = null; this.pick = null; },
     });
   }
   save() { this.game.save?.dirty('brushload'); }
@@ -62,19 +66,22 @@ export class BrushLoad {
   get held() { return this.box?.uses?.bottle?.[0] || 0; }
   set held(v) { const U = this.box?.uses?.bottle; if (U && this.bottle) { U[0] = Math.max(0, Math.min(BOTTLES[this.bottle].capacity, v)); this.box.save?.(); } }
   /** The feeling the brush lays: the bottle's grade while it holds some, else the weather's where the Courier stands. */
-  get aspect() { const g = this.game; return (this.held > 0.5 && this.grade) || g.weather?.here?.(this.P.pos)?.aspect || 'wonder'; }
+  get aspect() { const g = this.game; return (ASPECTS.includes(this.pick) && this.pick) || (this.held > 0.5 && this.grade) || g.weather?.here?.(this.P.pos)?.aspect || 'wonder'; }
+  /** What the radial picked (radial.js): a feeling the paint is refined into, or 'clean' (Fair: it washes, and lays nothing). */
+  setPick(id) { if (id === this.pick) return; this.pick = id; this.save(); sfx.click?.(); this.game.events?.emit('brush.pick', { feeling: id, by: 'courier' }); }
+  get cleaning() { return this.pick === 'clean'; }
 
   setMode(m) { if (m === this.mode || !LOAD.modes.includes(m)) return; this.mode = m; this.end(); this.save(); sfx.click?.(); this.game.events?.emit('brush.mode', { mode: m, by: 'courier' }); }
 
   /** The club's ground hold: the bristles start to fill. */
   begin() { this.sat = 0; this.working = false; sfx.brushCharge?.(); }
-  end() { if (this.sat >= 0 || this.working) this.flush(); this.sat = -1; this.working = false; this.tool.model.setInk(0); }
+  end() { if (this.sat >= 0 || this.working) this.flush(); this.sat = -1; this.working = false; this.mopFrom = null; this.tool.model.setInk(0); }
   get busy() { return this.sat >= 0; }
 
   /** While the brush is in the hand: the hold fills, then the mode works, until LMB is let go. */
   update(raw, inp) {
     if (this.sat < 0) return;
-    if (!inp.isDown('Mouse0') || !this.P.grounded) { this.end(); return; }
+    if (!inp.isDown('Mouse0') || (!this.P.grounded && !(this.mode === 'paint' && this.working))) { this.end(); return; } // (begun on the ground; a spray carries on through a jump, wider: paintspray.js)
     if (!this.working) {
       this.sat = Math.min(1, this.sat + raw / saturateTime(T));
       this.tool.model.setInk(this.sat);
@@ -94,13 +101,10 @@ export class BrushLoad {
     this.paintFrom = fromBottle > 0 ? 'bottle' : 'pool';
     const aspect = this.aspect;
     this.acc += dt * DROPS_PER_SEC;
-    const tip = this.tool.model.tipWorld(_a), aim = this.tool.club.aimDir(_d);
+    const tip = this.aimer.muzzle(this.P, _a), aim = this.aimer.aim(tip, _d); // (a steady nozzle before the chest: paintspray.js)
     while (this.acc >= 1 && this.drops.length < MAX_DROPS) {
       this.acc -= 1;
-      const spread = (simRand() - 0.5) * 0.35, up = 0.32 + simRand() * 0.18, sp = DROP_SPEED * (0.8 + simRand() * 0.35);
-      const c = Math.cos(spread), s = Math.sin(spread), dx = aim.x * c - aim.z * s, dz = aim.x * s + aim.z * c;
-      const v = new THREE.Vector3(dx, up, dz).normalize().multiplyScalar(sp);
-      this.drops.push({ p: tip.clone(), v, aspect, life: 2.5 }); // (the spray's look is Calissa's: vfx/brushload.js, driven in tick)
+      this.drops.push({ p: tip.clone(), v: this.aimer.launch(aim, simRand), aspect, clean: this.cleaning, life: 3, travel: 0, trail: 0 }); // (the spray's look is Calissa's: vfx/brushload.js, driven in tick)
     }
     g.ai?.stimuli?.emit?.({ kind: 'sound', pos: tip.clone(), loud: 0.3, by: 'courier' });
   }
@@ -113,8 +117,12 @@ export class BrushLoad {
     if (room <= 0.01) { this.end(); g.log?.say('info', 'Your Lachrymato Bottle is full.', { key: 'bottlefull', throttle: 4 }); return; }
     const tip = this.tool.model.tipWorld(_a), P = this.P, want = Math.min(room, LOAD.mop.rate * dt), r = LOAD.mop.reach;
     const fx = (tip.x + P.pos.x) / 2, fz = (tip.z + P.pos.z) / 2; // (between the feet and the bristles)
-    const s = g.stains?.drink(fx, P.pos.y, fz, r, want) || { got: 0 };
+    // the stroke this frame: from where the mop was to where it is, wiped as a strip (stains.js wipe: rim first, a smear pushed on)
+    const from = this.mopFrom && Math.hypot(this.mopFrom.x - fx, this.mopFrom.z - fz) < 3 ? this.mopFrom : { x: fx, z: fz };
+    const s = g.stains?.wipe(from, { x: fx, z: fz }, P.pos.y, want) || { got: 0 };
+    this.mopFrom = { x: fx, z: fz };
     let got = s.got;
+    if (got < want && g.paintmap) got += g.paintmap.wipe(from.x, from.z, fx, fz, P.pos.y, 2.4, (want - got) * 0.25, 'slick').got * 4; // (a slick too: a fight's crude, a cell-full four Lachryma as paint's)
     if (s.grade && s.grade !== this.grade) { this.grade = s.grade; this.save(); }
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)
     if (got > 0) { this.held += got; this.mopped += got; }
@@ -140,19 +148,33 @@ export class BrushLoad {
     this.paintArea = 0;
   }
 
+  /** The paint underfoot, with its knack on (paintStride: LACHRYMA-LOOP.md 5, rule 1; the knack's row is Dovina's, its name Espada's):
+   *  your own feeling (what the brush lays) speeds you and fills the bottle, another feeling slows you; crude only carries the Brush
+   *  Slide, as it did. Off, it is 1 and nothing: the core movement exactly as it was. Read as the Soul Brush's `slow` (techs.js). */
+  strideOf(dt) {
+    const g = this.game, P = this.P;
+    if (!g.knacks?.on?.('paintStride') || !P.grounded || !g.paintmap) return 1;
+    const p = g.paintmap.at(P.pos.x, P.pos.y, P.pos.z); if (!p || p.crude) return 1;
+    if (p.aspect !== this.aspect) return STRIDE.other;
+    if (this.bottle) this.fill(STRIDE.refill * p.k * dt); // (Sunshine's refill by standing in water: here, in your own feeling)
+    return STRIDE.own;
+  }
+
   /** Always (drawn or not): the drops in flight, the paint's statuses on what stands in it, the bottle feeding the pool. */
   tick(dt) {
     const g = this.game, ph = g.physics;
+    this.stride = this.strideOf(dt);
     for (let i = this.drops.length - 1; i >= 0; i--) {
       const d = this.drops[i];
       d.life -= dt; if (d.life <= 0) { this.drops.splice(i, 1); continue; }
-      _b.copy(d.v).multiplyScalar(dt); const len = _b.length();
-      const hit = len > 1e-4 && ph?.raycast(d.p, _b.clone().divideScalar(len), len, undefined, undefined, (c) => !c.isSensor?.());
+      this.aimer.fly(d, dt, _b); const len = _b.length(); // (straight, then falling: paintspray.js)
+      const hit = len > 1e-4 && ph?.raycast(d.p, _b.clone().divideScalar(len), len, this.P.collider, undefined, (c) => !c.isSensor?.());
       const W = g.water?.at(d.p.x, d.p.y, d.p.z);
       if (W && d.p.y + _b.y <= W.surface) { g.water.disturb(d.p.x, d.p.z, 0.25, 'drop'); this.drops.splice(i, 1); continue; }
-      if (hit && hit.normal.y > 0.5) { this.land(d, hit.point); this.drops.splice(i, 1); continue; }
+      if (hit && hit.normal.y > 0.5) { this.land(d, hit.point, hit.normal); this.drops.splice(i, 1); continue; }
       if (hit) { d.v.reflect(hit.normal).multiplyScalar(0.25); continue; } // (a wall: it runs down it)
-      d.p.add(_b); d.v.y -= 9.8 * dt;
+      d.p.add(_b);
+      if ((d.trail += len) >= SPRAY.trail) { d.trail = 0; g.fx?.alpha.emit({ pos: d.p.clone(), vel: d.v.clone().multiplyScalar(0.05), life: 0.25, size: 0.07, sizeEnd: 0.02, color: ASPECT_COLOR[d.aspect], alpha: 0.7, drag: 2, gravity: 4 }); } // (a droplet along the arc each metre)
     }
     if (this.paintDue && !this.drops.length) this.flushPaint();
     // the paint's feeling on what stands in it (the creatures decide what a status means for them: creatures.build)
@@ -167,6 +189,10 @@ export class BrushLoad {
     }
     // the looks (Calissa's): the load on the bristles while the brush is out, the bottle worn
     const raw = g.rawDt || dt;
+    // the aim: the spread's heat, and the reticle where the stream would land while paint is aimed (a stand-in look: paintspray.js)
+    this.aimer.update(dt, this.working && this.mode === 'paint', this.P);
+    const aiming = this.busy && this.mode === 'paint' && this.tool.drawT > 0.02, tip = aiming ? this.aimer.muzzle(this.P, _a) : null;
+    this.aimer.reticle(aiming, tip, aiming ? this.aimer.aim(tip, _d) : null, this.cleaning ? 0xf4efe6 : ASPECT_COLOR[this.aspect]);
     if (this.busy && this.tool.drawT > 0.02) g.brushLoad?.update(raw, { model: this.tool.model, mode: this.mode, saturate: Math.max(0, this.sat), working: this.working, aim: this.tool.club.aimDir(_d).clone(), from: this.mopAt, feeling: this.aspect });
     // the bottle: a reserve that feeds the pool below half
     const b = this.bottle;
@@ -188,8 +214,15 @@ export class BrushLoad {
     this.look.update(raw, this.P.accel || null);
   }
 
-  land(d, at) {
-    const g = this.game, area = g.paintmap?.stamp(at.x, at.y, at.z, DROP_R, d.aspect, 0.45) || 0;
+  land(d, at, normal = _d.set(0, 1, 0)) {
+    const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
+    if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
+      g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false); g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, 'slick');
+      g.stains?.wipe({ x: at.x, z: at.z }, { x: at.x, z: at.z }, at.y, 99, sp.r * 2);
+      return;
+    }
+    let area = g.paintmap?.stamp(at.x, at.y, at.z, sp.r, d.aspect, 0.9) || 0;
+    if (sp.stretch > 1.05) { const h = Math.hypot(d.v.x, d.v.z) || 1, o = sp.r * (sp.stretch - 1); area += g.paintmap?.stamp(at.x + (d.v.x / h) * o, at.y, at.z + (d.v.z / h) * o, sp.r * 0.85, d.aspect, 0.9) || 0; }
     this.paintArea += area; this.paintAspect = d.aspect;
     for (const c of g.creatures?.near?.(at, 0.9) || []) if (!c.ally) g.creatures.build(c, TYPE_OF[d.aspect], 3, 'courier', 'paint');
     if (simRand() < 0.3) g.fx?.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3(0, 1.2, 0), life: 0.3, size: 0.12, sizeEnd: 0.02, color: ASPECT_COLOR[d.aspect], alpha: 0.6, drag: 3, gravity: 6 });

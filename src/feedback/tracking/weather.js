@@ -6,7 +6,7 @@
 //   weatherRules({ on, L, log, g })     g: the game (the weather where the Courier is, at the moment of a catch or a status)
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { TYPE_OF, NAMES, clockAt } from '../../progress/weather.js';
+import { TYPE_OF, NAMES, NATIVE, clockAt } from '../../progress/weather.js';
 
 const PLACE = (id) => (id === 'well:dunemaw' ? 'the Great Dunemaw' : NODES[id]?.name || id);
 const STATUS_OF = { impact: 'stun', ego: 'doubt', influence: 'charm', illusion: 'blind', delirium: 'confusion' };
@@ -33,6 +33,14 @@ export function weatherRules({ on, L, log, g }) {
   on('clock.read', (e) => {
     const c = clockAt(e.ms);
     log.say('info', `Game day ${c.day}, ${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}.`, { key: 'clock', throttle: 1 });
+  });
+  // a feeling learned by drinking it (GALL-AND-FURY.md section 5): feeling.drink { aspect, by } as the drunk feeling changes (courier/mind.js);
+  // a feeling past Anagami's five is known from its first drink, and the radial's slot and the achievement read that count
+  on('feeling.drink', (e) => {
+    if (e.by !== 'courier' || !e.aspect) return;
+    const first = !L.get(`feeling.known.${e.aspect}`);
+    L.inc(`feeling.known.${e.aspect}`);
+    if (first && !NATIVE.includes(e.aspect)) log.say('system', `${e.aspect[0].toUpperCase() + e.aspect.slice(1)} known. Refine it now.`, { key: 'feeling.known' }); // (Espada's words)
   });
   on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built

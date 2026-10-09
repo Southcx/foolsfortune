@@ -77,6 +77,8 @@ Kept by Dovina (the design); Petra builds the engine. Units: real seconds, real 
 - **Never pick up** cubes, drops, casks or finds. What the world gives is the owner's to take; a sibling **points at it** (a glyph pop
   over it, CLAUDE.md's marks).
 - **Never open** chests, Lockhearts or doors; never catch, buy, sell or spend.
+- **Takes friendly fire** like a guest (the owner, 2026-10-05: an ally is another player's Courier or a division's clay form): a fifth of
+  the blow, never more than a quarter of its health in one, statuses under tolerance (`combat/friendly.js`). Blows do not pass through.
 - **Breaks** a pot or prop only as a blow's side effect in a fight, never on purpose.
 - **Shatters as the Courier does,** and is made whole at the owner's last Shrine; a fallen sibling is out until called again.
 

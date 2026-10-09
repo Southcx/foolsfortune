@@ -172,7 +172,7 @@ if (part('kiln')) {
     await closeAll(); await S.ticks(30);
   }
   S.note('kiln: windows over the station', over.map((o) => `${o.key}: ${o.open?.join('+') || o.why}`));
-  const stacked = over.filter((o) => o.open && o.open.filter((x) => x !== 'tuning').length > 1);
+  const stacked = over.filter((o) => o.open && o.open.filter((x) => x !== 'tuning' && x !== 'qais').length > 1); // (QAIS, the development window, opens over anything: the owner's R7, casebook 151)
   S.check('kiln: no second window opens over the station', !stacked.length, stacked.map((o) => `${o.key} -> ${o.open.join(' + ')}`).join('; ') || 'none');
   // Esc with the Codex over the station: the window on top goes first
   await standKiln(); await F(20); await S.press('KeyB', 6);
@@ -253,7 +253,7 @@ if (part('folk')) {
       await S.go(`folk.${id}`); await settleCourier(); await F(30);
       if (!(await ws('win()')).dialogue) { over.push(`${key}: did not open`); continue; }
       await S.press(key, 40);
-      const list = await ws('openList()');
+      const list = (await ws('openList()')).filter((x) => x !== 'qais'); // (QAIS opens over the dialogue box by rule: the owner's R7, casebook 151)
       over.push(`${key}: ${list.join('+')}`);
       await closeAll(); await S.ticks(30);
     }
@@ -505,7 +505,7 @@ if (part('windows')) {
     await closeAll(); await S.ticks(2);
   }
   const pausing = new Set(['codex', 'pneuka', 'map', 'qais', 'index', 'shop']); // (main.js modalOpen(): the windows that pause the game)
-  const twoUp = pairs.filter((p) => p.list.filter((x) => pausing.has(x)).length > 1);
+  const twoUp = pairs.filter((p) => p.list.filter((x) => pausing.has(x) && x !== 'qais').length > 1); // (QAIS is exempt: it opens over any window, the owner's R7, casebook 151)
   S.note('windows: each over each', pairs.map((p) => `${p.a}>${p.b}: ${p.list.join('+') || '-'}`));
   S.check('windows: no two windows that pause open at once', !twoUp.length, twoUp.map((p) => `${p.a} then ${p.b}: ${p.list.join(' + ')}`).join('; ') || 'none');
   // the pause menu (the pointer lock lost, as Esc does in play): what opens over it

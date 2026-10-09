@@ -139,7 +139,7 @@ export class Spatter {
     g.scene.add(m);
     const life = T.shells.bomb.splatLife * (0.8 + simRand() * 0.4);
     this.splats.push({ m, age: 0, life, slip });
-    if (slip) g.slip?.addDisc(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife)); // wet enough to dive into, for a while
+    if (slip) g.slip?.addDisc(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife), 0, 'courier'); // wet enough to dive into, for a while
     if (this.splats.length > 220) { const s = this.splats.shift(); g.scene.remove(s.m); s.m.material.dispose(); }
   }
 
@@ -153,7 +153,7 @@ export class Spatter {
     m.renderOrder = 1;
     g.scene.add(m);
     this.pools.push({ m, pos: point.clone(), age: 0, life: B.poolLife, r: B.poolRadius * (slip ? 0.8 : 1), slip });
-    if (slip) g.slip?.addDisc(point, normal, B.poolRadius * 0.8, Math.min(B.poolLife * 0.7, T.tech.slip.coverLife));
+    if (slip) g.slip?.addDisc(point, normal, B.poolRadius * 0.8, Math.min(B.poolLife * 0.7, T.tech.slip.coverLife), 0, 'courier');
   }
 
   stepPools(dt) {

@@ -10,6 +10,8 @@ import { DRILLS, score, medalOf, KEYS } from '../../progress/combat/testroom.js'
 
 export function testroomRules({ on, L, log }) {
   // drill.end { id, run: { hits, shots, times, group }, tuned: [keys], by }
+  // paintrange.read { three, six, nine, by }: the paint range's rings covered after a hold (world/testroom/paintrange.js): measured, never counted
+  on('paintrange.read', (e) => log.say('info', `Paint range: 3 m ${Math.round(e.three * 100)}%, 6 m ${Math.round(e.six * 100)}%, 9 m ${Math.round(e.nine * 100)}%.`, { key: 'paintrange', throttle: 0.5 }));
   on('drill.end', (e) => {
     const D = DRILLS[e.id];
     if (!D || e.by !== 'courier') return;

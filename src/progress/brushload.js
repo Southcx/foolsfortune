@@ -34,9 +34,9 @@ export const saturateTime = (T) => T?.charge?.time ?? 0.85;
 
 /** The Lachrymato Bottles: aquarium glass on the upper back. Bigger holds more, cracks more easily, and spills more when it does. */
 export const BOTTLES = {
-  'bottle.small':  { capacity: 40,  feed: 6,  crack: 0.1,  spill: 0.3 }, // (their prices: ECON.goods, in minutes of play)
-  'bottle.medium': { capacity: 80,  feed: 8,  crack: 0.2,  spill: 0.4 },
-  'bottle.large':  { capacity: 120, feed: 10, crack: 0.35, spill: 0.5 },
+  'bottle.small':  { capacity: 80,  feed: 6,  crack: 0.1,  spill: 0.3 }, // (their prices: ECON.goods, in minutes of play)
+  'bottle.medium': { capacity: 160, feed: 8,  crack: 0.2,  spill: 0.4 },
+  'bottle.large':  { capacity: 240, feed: 10, crack: 0.35, spill: 0.5 },
 };
 // feed: Lachryma a second the bottle gives the pool while the pool is below half and regenerating (a reserve, not a second pool);
 // crack: the chance a broken shield (vessel.shieldbreak) cracks it; spill: the share of what it holds that pours out as a stain.

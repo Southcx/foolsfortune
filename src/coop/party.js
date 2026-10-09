@@ -62,7 +62,7 @@ export class Party {
   dirty() { this.game.save?.dirty('party'); }
   /** Room for one more: two siblings out, four players at most (guests count). */
   room() { return this.list.length + this.coming.size < this.cap && 1 + this.list.length + this.coming.size + (this.game.guests?.list.length || 0) < PLAYERS; }
-  may(id) { return this.met.has(id) || this.game.mode === 'debug'; } // (the sandbox meets everyone)
+  may(id) { return this.met.has(id) || !!this.game.lend?.has('siblings'); } // (DEBUG's lend panel meets everyone: progress/lend.js)
 
   /** Met where its craft lives (coop/meeting.js): it joins at once if there is room, the rig that waited joining with it. */
   meet(id, rig = null, at = null) {

@@ -21,14 +21,15 @@
 import { COLOR } from '../progress/weather.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
-const FEELINGS = ['wonder', 'mirth', 'desire', 'grief', 'dread'];
-const MODE = { wonder: [0, 4, 6, 7, 11], mirth: [0, 2, 4, 7, 9], desire: [0, 2, 3, 7, 9], grief: [0, 3, 5, 7, 10], dread: [0, 1, 5, 7, 8] }; // (music/mood.js MODES)
-const COLOUR_NOTE = { wonder: 6, mirth: 4, desire: 9, grief: 3, dread: 1 }; // (each mode's own note against E)
+const FEELINGS = ['wonder', 'mirth', 'desire', 'grief', 'dread']; // (the five strains' feelings: a spirit kind sings in one of these)
+const HUED = [...FEELINGS, 'fury', 'gall']; // (a tincture can lean to any of the seven)
+const MODE = { wonder: [0, 4, 6, 7, 11], mirth: [0, 2, 4, 7, 9], desire: [0, 2, 3, 7, 9], grief: [0, 3, 5, 7, 10], dread: [0, 1, 5, 7, 8], fury: [0, 3, 6, 7, 10], gall: [0, 1, 4, 7, 8] }; // (music/mood.js MODES)
+const COLOUR_NOTE = { wonder: 6, mirth: 4, desire: 9, grief: 3, dread: 1, fury: 6, gall: 1 }; // (each mode's own note against E)
 const hueOf = (hex) => { const r = ((hex >> 16) & 255) / 255, g = ((hex >> 8) & 255) / 255, b = (hex & 255) / 255, M = Math.max(r, g, b), d = M - Math.min(r, g, b);
   if (!d) return 0; const h = M === r ? ((g - b) / d) % 6 : M === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; };
-const HUE = Object.fromEntries(FEELINGS.map((f) => [f, hueOf(COLOR[f])]));
+const HUE = Object.fromEntries(HUED.filter((f) => COLOR[f] != null).map((f) => [f, hueOf(COLOR[f])]));
 /** The feeling whose hue is nearest a colour's (the tincture's). */
-export function feelingOfHue(h) { let best = 'grief', d = 1e9; for (const f of FEELINGS) { const x = Math.abs(((h - HUE[f] + 540) % 360) - 180); if (x < d) { d = x; best = f; } } return best; }
+export function feelingOfHue(h) { let best = 'grief', d = 1e9; for (const f of Object.keys(HUE)) { const x = Math.abs(((h - HUE[f] + 540) % 360) - 180); if (x < d) { d = x; best = f; } } return best; }
 /** A stable small number from an id (a card's, a spirit kind's). */
 const hashOf = (x) => (typeof x === 'number' ? x : [...String(x)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7));
 /** A spirit kind's feeling when the event carries none: the same kind always sings in the same one. */

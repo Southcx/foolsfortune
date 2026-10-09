@@ -32,7 +32,7 @@ export const ZONE_TESTS = [
   { id: 'beach', partOf: 'dunes', test: (p) => inDunes(p) && inShore(p) },
   { id: 'dunes', test: inDunes },
   // a Well's floor (world/well/dunemaw.js): built far west and deep, one floor at a time
-  { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
+  { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -1020 && p.y < -840 }, // (the floors at -900, the bowl at -1000)
   // a crossing of the Emocean (world/emocean/stage.js SEA_AT): the rail along +Z from z -2000, far west, at the dunes' layer; a long
   // passage (six waypoints, some 450 bars at 39 m a bar) runs 17.5 km, so the zone runs to 24 km (Calissa read the old 4.4 km's end)
   { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 24000 && p.y > -470 && p.y < -360 },
