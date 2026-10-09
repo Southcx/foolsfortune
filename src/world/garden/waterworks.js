@@ -57,7 +57,7 @@ export class Waterworks {
   feelingAt(P, dir) {
     const W = this.waters[P.id]; if (!W || W.depthAt(dir) < RAIN.wet) return null;
     const M = W.mix(W.cellOf(dir)), F = FEELINGS;
-    let i = 0; for (let e = 1; e < 5; e++) if (M[e] > M[i]) i = e;
+    let i = 0; for (let e = 1; e < M.length; e++) if (M[e] > M[i]) i = e;
     const lead = F[i], opp = WATERS.opposite[lead], o = opp ? M[F.indexOf(opp)] : 0;
     return opp && Math.abs(M[i] - o) <= (M[i] + o) * 0.5 ? null : lead;
   }

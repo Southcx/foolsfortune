@@ -112,6 +112,12 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   hook (the Sondelass's) or a sweep. → detail
 - **windup** (`creatures.windup`, `c.windup`) — a creature's telegraphed blow, listed while it can be answered; a parry in its window breaks it
   off. *Not:* an attack's own phase name.
+- **Figment attack telegraph** (`figmentMarkOf`, `src/progress/combat/figmenttelegraphs.js`; `docs/plans/FIGMENT-TELEGRAPHS.md`) — what
+  Divination draws of a creature's windup in the third-person game, over the body's tell, saying more as it rises: where (the edge), when
+  (the fill), what kind (the type's colour, the status glyph), how to answer (the answer glyph). Always named in full, or "Figment
+  telegraph". *Not:* the rail's telegraph mark, the windup's animation, the parry mark.
+- **the rail's telegraph mark** (`TelegraphMarks`, `src/vfx/telegraph.js`) — on the rail, the ring closing on a boss's part about to act.
+  *Not:* a Figment attack telegraph.
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
@@ -274,8 +280,13 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
 - **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
-- **the all-arts switch** (`system.lendAll`) — lends every art without learning it (on in DEBUG, off in STORY); nothing it lends is counted. Label
-  ALL ARTS. *Not:* "Lab mode".
+- **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
+  shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
+- **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
+  category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
+  arts row. *Not:* "Lab mode".
+- **a preset** (`PRESETS`, `src/debug/presets.js`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
+  DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only text feedback; **the chat line** is its typing.
@@ -361,7 +372,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **module / division / round / the gate** — a file under `src/`; one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada); one
   cycle of work (R42...); Petra's review of every push to main. → detail
 - **seam** (`game.seam`, `src/render/seam.js`) — a change of place made under a cover (dip to the dark, change, come back). *Not:* a texture seam.
-- **the save** (`game.save`, `src/core/save.js`) — everything the game keeps in the browser, in sections of scope player, world or settings.
+- **the save** (`game.save`, `src/core/save.js`) — everything the game keeps in the browser, in sections of scope player, world or settings; the
+  progress is one mode's (DEBUG or STORY), the other's on its shelf.
   *Not:* `save()` on a module. → detail
 - **the seed** (`?seed=N`, `game.seed`) — the number the session's chance is drawn from; a stream is one module's own draw. *Not:* a Well's
   `wellSeed`.
@@ -420,6 +432,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | sigil | the Soul Brush's (strokes read in Celestial mode); the Solar Skiff's (the ring of marks on the sand) | "a sigil" is the brush's; "the skiff's sigil" in full |
 | dome | the sky's (`vfx/sky.js`); the stern of the Solar Skiff's hull | "the sky's dome", "the skiff's dome" |
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
+| telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring" |
 
 ## 12. Retired words

@@ -21,6 +21,7 @@ export function partyRules({ on, log }) {
   // the siblings in a fight (coop/fight.js): what they do for you is said; nothing of it is counted as yours, but a foe you struck that
   // one of them finishes is yours (creature.credit: Dovina's ledger counts it)
   const FOE = (k) => (k === 'slipjelly' ? 'the slip jelly' : k === 'clapperjar' ? 'the clapperjar' : 'it');
+  on('sibling.hit', (e) => { if (e.by !== 'courier') return; if (e.down) log.say('warn', `${nameOf(e.sibling)} shatters, and is made whole at your side.`, { key: `sib.down.${e.sibling}`, throttle: 2 }); else log.say('battle', `You strike ${nameOf(e.sibling)}.`, { key: `sib.hit.${e.sibling}`, throttle: 3 }); }); // (friendly fire, coop/sibling.js; words a stand-in, Espada's)
   on('sibling.parry', (e) => log.say('battle', `${nameOf(e.sibling)} parries ${FOE(e.kind)}'s blow.`, { key: 'sib.parry', throttle: 3 }));
   on('sibling.flash', (e) => log.say('battle', `${nameOf(e.sibling)} flashes ${FOE(e.kind)}.`, { key: 'sib.flash', throttle: 4 }));
   on('creature.credit', (e) => log.say('battle', `${nameOf(e.who)} finishes what you struck.`, { key: 'sib.credit', throttle: 2 }));

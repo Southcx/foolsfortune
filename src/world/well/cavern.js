@@ -40,15 +40,15 @@ export class Cavern {
   /** In the bowl or its tunnel (the Well's safety net asks: off the plan for a second, back to the arrival). */
   cellAt(x, z) {
     const dx = x - BOWL_AT.x, dz = z - BOWL_AT.z;
-    return Math.hypot(dx, dz) < ARENA.radius + 1 || (Math.abs(dx) < 7 && dz > 20 && dz < 48) ? this : null;
+    return Math.hypot(dx, dz) < ARENA.radius + 1 || (Math.abs(dx) < ARENA.ledge.width / 2 + 2 && dz > ARENA.ledge.z[0] - 6 && dz < ARENA.ledge.z[1] + 13) ? this : null; // (the tunnel behind the ledge)
   }
   ground(x, z) { return this.bowl.floorY(x - BOWL_AT.x, z - BOWL_AT.z); }
 
   /** The reveal: from high over the bowl's far side, over the FOE in W0, back to over the Courier's shoulder on the ledge. */
   reveal() {
     const g = this.game, P = g.player.pos, W = (x, y, z) => new THREE.Vector3(BOWL_AT.x + x, BOWL_AT.y + y, BOWL_AT.z + z);
-    g.flythrough?.play([W(0, 20, -24), W(10, 14, -6), W(4, 9, 10), P.clone().add(new THREE.Vector3(1.6, 3, 3.4)), P.clone().add(new THREE.Vector3(0.4, 1.7, 3))],
-      { look: W(0, 1, 0) });
+    const K = ARENA.scale ?? 1; g.flythrough?.play([W(0, 20 * K, -24 * K), W(10 * K, 14 * K, -6 * K), W(4 * K, 9 * K, 10 * K), P.clone().add(new THREE.Vector3(1.6, 3, 3.4)), P.clone().add(new THREE.Vector3(0.4, 1.7, 3))],
+      { look: W(0, 1 * K, 0) });
   }
 
   /** The pale pool, the way up, where the fight ended (as a floor's way up: wellkit.js's pool). */

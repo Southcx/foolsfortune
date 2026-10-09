@@ -98,13 +98,20 @@ Porcelain and the Court wait for the owner's models.
 
 ### Lachryma as crude
 Set the condition (a feeling-made, mind-radioactive substance that behaves like petroleum) and let the consequences fall:
-- **Crude is fossil feeling**: the deeper, the older, until it is a feeling nobody remembers having.
+- **Crude is fossil feeling**: the deeper, the older, until it is a feeling nobody remembers having. *Proposed (the owner's unification,
+  2026-10-09):* so crude carries **no feeling**: it is feeling gone flat, Lachryma that has forgotten what it felt. The cycle is
+  petroleum's: weather falls on an island as fresh, aspected Lachryma; it soaks down, and buried long enough it flattens into crude;
+  refining wakes a feeling in it again. Crude is named for its **field**, never a feeling (as Brent and West Texas are named for where
+  they come up): Dunemaw crude, and later each island's own.
 - **Drawing a Well down is working a feeling through.** A Well that runs dry is a mind that has healed; that is why Wells drift and
   Cogitomaps go stale. The moral axis of the economy: harvesting helps; a greedy driller wants the Well to keep filling. Intent, not
   alignment, decides which a Courier is.
-- **Grades** by aspect, as crude grades sweet or sour; each island wants its own. The unit is the **cask**.
+- **Grades** by field (*proposed*: was by aspect); each island pays for each field its own price. The unit is the **cask**.
 - **Liquid is unstable** (a bauble sours from cream to black); Lachrymite is inert. **Couriers are refineries** and the Pneuka Jar a
-  containment vessel: only a Courier turns liquid to solid, so the currency is a refined product.
+  containment vessel: only a Courier turns liquid to solid, so the currency is a refined product. *Proposed:* refining is also what
+  gives crude a feeling back (**wonder Lachryma**, **grief Lachryma**: the player's words), and the Courier is one of two refineries:
+  the other is Margarite's **Stillhouse**, where the King's crude is distilled into aqua regia (a still house is a distillery's
+  stills: *stillare*, to drip). A blot is crude spilled, so it has no feeling either; it oxidises as a bauble does, darkening with age.
 - **Ships by trade**: sloop (errands, letters), frigate (escort), galleon (refined cubes), destroyer (hunts Egregores), tanker (crude,
   double-hulled because it must be).
 - **A spill is a cogitohazard**: Figments bloom where it lands. **The town that was** is a boomtown gone bust.
@@ -175,8 +182,9 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
 - **Rings** are adjectives, never new names (mild, basic, intense). Mirth's top is **elation**. The centre is **Prismatic**.
 - **Emotional weather**: the sea of feeling settling onto a mind each game day. The mood is the island's ego's; **fair** (calm) is the
   glaze holding, which on Anagami is not proof that nothing is wrong. Wonder is **the aurora**; mirth **the fox's wedding** (a
-  sunshower); desire **the wanting wind** (*want*: desire and lack at once); grief **the long rain**; dread **the pall**; faith **the
-  halo**; gall **the miasma**; fury **the hail** (no lightning: nothing flickers). A Well has its own mood; the open Emocean's is *open*.
+  sunshower); desire **the wanting wind** (*want*: desire and lack at once); grief **the long rain**; dread **the pall**; gall **the miasma**
+  (Greek *miasma*, the stain of pollution that spreads by touch and leaves only when washed away: Gall's own rule); fury **the hail**
+  (no lightning: nothing flickers; and a ship *hails* another before it boards). Faith is cut (the owner, 2026-10-09). A Well has its own mood; the open Emocean's is *open*.
 - **Grain** (always capitalised): a mind's temperament. A clay body has a grain, set before firing, worked with or against. Player
   words, both poles: **curious / wary**, **orderly / erratic**, **bold / shy**, **gentle / hostile**, **skittish / steady**; the OCEAN
   ids stay in code. Grain is climate, mood is weather: an island sets its Figments' mean Grain; an Egregore has the widest spread; the
@@ -304,7 +312,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 - **The Pithos** (the folk's name; the log says the Great Slip Jelly): a *pithos* is the ancient storage jar, Pandora's real "box":
   everything flew out and hope stayed at the bottom. A brood jelly grew in the town's crude jar and outgrew it; under the crown is the
   core, the bright thing at the bottom. **Its casts** *(proposed)*, each a jar's part or a potter's step that also says what to do:
-  Lidfall, Shoulder Charge, Throwing Rings, Slip Trail, Eye Cup (the Greek cup painted with eyes to stare evil back), Unstopped,
+  Lidfall, Shoulder Charge, Throwing Rings, Slick Trail (was Slip Trail), Eye Cup (the Greek cup painted with eyes to stare evil back), Unstopped,
   Blowout (a pot with trapped water bursts in the kiln), Broodwake, Centring, Slake and Wedge, Decant, the Sherds (they mend: kintsugi
   turned on you), the Overflow (the mother who overflows), The Dunemaw Swallows; the status **Sodden**. Hope is never a cast: the core
   is what you strike.
@@ -316,7 +324,13 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 
 ## 8. Things and looks
 
-- **Slip**: liquid clay, Kaolin's essence; the Soul Brush writes with it. **Kintsugi**: breakage mended in gold.
+- **Slip**: liquid clay, Kaolin's essence (a broken pot's slip flows home). *Ruled by the owner (2026-10-09): "All Slip is now a form of Lachryma."*
+  So slip is **Lachryma carrying Kaolin's clay**: the island's own blood (Kaolin is an ego precipitated out of Lachryma, so his essence
+  was always Lachryma). The slip jellies, the urn crown, the brood and slip roe are bodies laden with it. Underfoot it is crude, in two
+  kinds: **a blot** (spilled; it stays, grows and is mopped up) and **a slick** (thrown or welled up in a fight; it oxidises and fades).
+  From the Courier it is **paint** (refined, in a feeling). The Pithos grew in a crude jar, so it bleeds crude. Renamed in player text
+  (*proposed*; the code ids stay): the slip geyser is **a gusher**; the bowl's slip pools **the sumps**; the Slip Trail **the Slick
+  Trail**; the slide's **paint trail**, the **Paint Shell** (was the slip shell), the brush's **flick** of paint. **Kintsugi**: breakage mended in gold.
 - **Lachryma's look**: black, oily, ultraviolet, iridescent; it pops against terracotta and paper. Baubles are cream (the pot people's
   centres); Lachryma is the black.
 - **The worth of a look**: the folk rank a glaze by the clay it belongs on. What a tier wears is common to it; the tier above is aspired to.
@@ -374,7 +388,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 | Anagami Island; Kaolin Anagami | | the island; its owner and ego |
 | Entropolis | Entra Polaeris's Island | |
 | the Great Dunemaw (a Well) | the Well | the Weir's Well is a place |
-| a cask of grief crude | crude | name the grade |
+| a cask of Dunemaw crude | a cask of grief crude | name the field (*proposed*: crude has no feeling) |
 | the Pneuka Jar, the Pneuka Box | Pneuma | |
 | Lachryma, Lachrymite | Lacrima, Lachrima | the HUD's *Lachrimeter* spelling: *open* |
 | clapperjar; slip jelly | clapper jar | |
@@ -619,6 +633,21 @@ One label per thing; the name stays in the world. The label is what the card say
 | an encounter not yet met (the sea chart) | | **Sighting** | "encounter" is the Spirit Garden's word |
 
 **Blot** is ruled the player's word (Dovina, 2026-10-08); the code keeps `stain`.
+
+### Gall and Fury *(Dovina's GALL-AND-FURY.md; Espada's words, proposed, 2026-10-09)*
+- **Gall** (Old English *gealla*, bile: bitterness you can taste) and **Fury** (Latin *furia*, the Furies who pursue). Their weathers
+  are **the miasma** and **the hail** (section 3).
+- **Rings** (mild, basic, intense): Gall **boredom, disgust, loathing**; Fury **annoyance, anger, rage**. Plain and kid-safe; the
+  feelings' own names stay the feelings', never a ring.
+- **Agates**: Fury with Mirth **pride**; with Desire **zeal** (Letty Marque's creed in one word); with Wonder **outrage**; with Grief
+  **envy**; with Gall **contempt** (as section 3 already had it). Gall with Grief **remorse**; with Dread **shame**; with Wonder
+  **disbelief**; with Mirth **mockery** (laughing at what repels you); with Desire **cynicism** (Greek *kynikos*, dog-like: the
+  philosophers who sneered at wanting). Fury and Dread cancel.
+- **No opposite for Gall** fits the lore: a miasma is never cancelled, only outlasted or washed away (the Greek cure was *katharsis*,
+  a cleansing; the radial's button reads **Clean**, its lore name **Fair**).
+- **A feeling is learned by drinking it** fits too: a Courier is a refinery, and refines only what it has tasted. The unlocks:
+  **Acquired Taste** (Gall: what you learn to stomach by drinking it) and **Seeing Red** (Fury: the idiom, and its colour). A locked
+  slot's line: "Drink it to learn it: the Great Dunemaw, deep." / "Drink it to learn it: the sea near Entropolis."
 
 ## 12. Where the words live
 

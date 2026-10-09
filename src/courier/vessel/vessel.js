@@ -53,7 +53,7 @@ export class Vessel {
   has(id) {
     const g = this.glaze(id);
     if (!g) return false;
-    if (g.got.start || g.got.photo) return true;
+    if (g.got.start || g.got.photo || this.game.lend?.has('glazes')) return true; // (DEBUG's lend panel: progress/lend.js)
     if (g.got.ach) return this.game.ledger?.done?.[g.got.ach] !== undefined; // (done at play time 0 is 0: never truthiness)
     return !!this.bought?.[id];
   }
@@ -177,12 +177,15 @@ export class Vessel {
   }
 
   // ---------------------------------------------------------------- kept (progress: reset with each build)
-  save() { try { localStorage.setItem(KEY, JSON.stringify({ look: this.look, learned: this.learned, seq: this.seq || 0 })); } catch { /* this session only */ } }
+  save() { try { localStorage.setItem(KEY, JSON.stringify({ look: this.look, learned: this.learned, seq: this.seq || 0, bought: this.bought || {} })); } catch { /* this session only */ } }
+  /** A shop glaze bought at Saggar's kiln (progress/shop/shops.js buyGlaze): theirs from now on. */
+  buy(id) { if (!GLAZES[id]?.got?.shop) return false; (this.bought ||= {})[id] = true; this.save(); return true; }
   load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
       this.learned = (s.learned || []).filter((g) => g?.id && Number.isFinite(g.color)).slice(-LEARNED_MAX);
+      this.bought = Object.fromEntries(Object.keys(s.bought || {}).filter((id) => GLAZES[id]?.got?.shop).map((id) => [id, true])); // (it was read, never written: Dovina's find)
       this.seq = s.seq || 0;
       for (const r of Object.keys(REGIONS)) if (s.look?.[r] && this.glaze(s.look[r])) this.look[r] = s.look[r];
     } catch { /* nothing kept */ }

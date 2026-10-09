@@ -2,7 +2,8 @@
 // THE WELL'S PLAN: one floor of a Well as data, from a seed (pure: no three.js, so a Node script reads it as the game does). The grid is
 // Spelunky's (Derek Yu, 2008): one guaranteed PATH from a room on the top row, sideways and down, until it drops out of the bottom row;
 // rooms off it hang from it, and a loop is sometimes cut. Since the Dunemaw was made big (docs/plans/DUNEMAW.md, Calissa's numbers):
-//   - 5 by 5 cells of 18 m (14 until R45: the owner found it cramped); HALLS of 2 by 2 cells (1 to 3 a floor, open to the dark overhead);
+//   - 5, 6 and 7 cells a side of 18 m (14 until R45: the owner found it cramped), 13, 19 and 25 rooms a floor, two either way (the owner's
+//     v133 ruling, DUNEMAW.md: the first teaches small, the third is the payoff); HALLS of 2 by 2 cells (1 to 3 a floor, open to the dark overhead);
 //   - TWO TIERS 6 m apart: the path crosses between them at least twice through SLOPE cells (a ramp of sand from one tier to the other,
 //     straight through: 6 m over 18 m, 20 degrees at most with its ends rounded (wellsand.js), walked either way);
 //   - the TWIST: the floor is swirled about its centre, each point turned by an angle that grows with its distance out, up to
@@ -14,25 +15,27 @@
 // Prior art: Spelunky's room grid, Persona 3's Tartarus (floors from a seed), Mystery Dungeon's templates; the swirl is the "twirl" filter
 // of every paint program, applied to a floor plan (Psychonauts' bent streets, Antichamber's rooms that do not sit square).
 //
-//   layoutFloor(seed, floor) -> { floor, twist, cells: [{ c, r, role, tpl, doors: Set, level, slope?, hall? }], halls: [{ c, r }],
+//   layoutFloor(seed, floor) -> { floor, grid, twist, cells: [{ c, r, role, tpl, doors: Set, level, slope?, hall? }], halls: [{ c, r }],
 //                                 start, exit, path: [cell...], links: [{ a, b, side, path, sandfall?: { phase } }] }
-//   swirl(twist, { back? }) -> (x, z) => { x, z, a }   (grid metres from the floor's centre -> swirled, and the angle there; back: undone)
-//   GRID, CELL, WALL_H, TIER, DOOR, DOOR_H, TWIST
+//   swirl(twist, { back?, grid? }) -> (x, z) => { x, z, a }   (grid metres from the floor's centre -> swirled, and the angle there; back: undone)
+//   gridOf(floor) (cells a side)   GRIDS, ROOMS, CELL, WALL_H, TIER, DOOR, DOOR_H, TWIST
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
 
-export const GRID = 5, CELL = 18, WALL_H = 7, TIER = 6, DOOR = 5, DOOR_H = 5; // (DOOR_H: the hole in the wall, the arch's crown: wellkit.js)
+/** Cells a side, and the rooms a floor is drawn to (two either way), by floor (1, 2, 3). */
+export const GRIDS = [5, 6, 7], ROOMS = [13, 19, 25];
+export const gridOf = (floor) => GRIDS[Math.min(GRIDS.length, Math.max(1, floor)) - 1];
+export const CELL = 18, WALL_H = 7, TIER = 6, DOOR = 5, DOOR_H = 5; // (DOOR_H: the hole in the wall, the arch's crown: wellkit.js)
 /** Degrees a step of the grid is swirled, by floor (1, 2, 3): the corners turn four steps' worth. */
 export const TWIST = [0, 7, 14];
 export const SIDES = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] };
 export const OPP = { n: 's', s: 'n', w: 'e', e: 'w' };
 const key = (c, r) => `${c},${r}`;
-const HALF = (GRID * CELL) / 2, RMAX = HALF * Math.SQRT2;
 
 /** The floor's swirl: grid metres from its centre to where they stand, and the angle turned there (radians). `back: true` undoes it
  *  (exactly: the swirl turns a point about the centre and never moves it in or out, so its distance gives the angle back). */
-export function swirl(twist, { back = false } = {}) {
-  const amax = (twist * 4 * Math.PI) / 180, k = back ? -1 : 1;
+export function swirl(twist, { back = false, grid = GRIDS[0] } = {}) {
+  const amax = (twist * 4 * Math.PI) / 180, k = back ? -1 : 1, RMAX = ((grid * CELL) / 2) * Math.SQRT2;
   return (x, z) => {
     if (!amax) return { x, z, a: 0 };
     const a = amax * Math.min(1, Math.hypot(x, z) / RMAX), c = Math.cos(k * a), s = Math.sin(k * a);
@@ -41,6 +44,7 @@ export function swirl(twist, { back = false } = {}) {
 }
 
 function attempt(R, floor) {
+  const GRID = gridOf(floor), want = ROOMS[Math.min(ROOMS.length, Math.max(1, floor)) - 1];
   const cells = new Map(), links = [];
   const add = (c, r, role = 'side') => { const k = key(c, r); if (!cells.has(k)) cells.set(k, { c, r, role, tpl: 'plain', doors: new Set(), level: 0 }); return cells.get(k); };
   const sideOf = (a, b) => Object.keys(SIDES).find((s) => a.c + SIDES[s][0] === b.c && a.r + SIDES[s][1] === b.r);
@@ -95,12 +99,12 @@ function attempt(R, floor) {
   }
   // ---- the halls: 2 by 2 blocks on one tier, no slope, no pool in them; a missing cell is added to complete one
   const start = path[0], exit = path[path.length - 1], halls = [];
-  const want = 1 + R.int(3), blocks = [];
+  const hallsWanted = 1 + R.int(3), blocks = [];
   for (let c0 = 0; c0 < GRID - 1; c0++) for (let r0 = 0; r0 < GRID - 1; r0++) blocks.push([c0, r0]);
   for (let i = blocks.length - 1; i > 0; i--) { const j = R.int(i + 1); [blocks[i], blocks[j]] = [blocks[j], blocks[i]]; }
   const taken = new Set();
   for (const [c0, r0] of blocks) {
-    if (halls.length >= want) break;
+    if (halls.length >= hallsWanted) break;
     const four = [[c0, r0], [c0 + 1, r0], [c0, r0 + 1], [c0 + 1, r0 + 1]], here = four.map(([x, z]) => cells.get(key(x, z)));
     const have = here.filter(Boolean);
     if (have.length < 2 || four.some(([x, z]) => taken.has(key(x, z)))) continue;
@@ -114,12 +118,12 @@ function attempt(R, floor) {
   // ---- which side links fall (what stands in each room is chosen by its design: prefabs.js, wellkit.js)
   const sides = links.filter((l) => !l.path && !(l.a.hall != null && l.a.hall === l.b.hall)); // (never the path, never inside a hall)
   const rooms = cells.size - 3 * halls.length; // (a hall is one room of four cells)
-  if (!halls.length || sides.length < 2 || rooms < 10 || rooms > 20) return null; // (a hall at least, two sandfalls, 10 to 20 rooms: drawn again)
+  if (!halls.length || sides.length < 2 || Math.abs(rooms - want) > 2) return null; // (a hall at least, two sandfalls, the floor's rooms: drawn again)
   const falls = Math.min(sides.length, 2 + R.int(3));
   for (let i = sides.length - 1; i > 0; i--) { const j = R.int(i + 1); [sides[i], sides[j]] = [sides[j], sides[i]]; }
   sides.slice(0, falls).forEach((l) => { l.sandfall = { phase: R() }; });
   start.role = 'start'; exit.role = 'exit';
-  return { floor, twist: TWIST[floor - 1] ?? TWIST[TWIST.length - 1], cells: [...cells.values()], halls, start, exit, path, links, levelAt, seed: 0 };
+  return { floor, grid: GRID, twist: TWIST[floor - 1] ?? TWIST[TWIST.length - 1], cells: [...cells.values()], halls, start, exit, path, links, levelAt, seed: 0 };
 }
 
 /** The floor's plan: the same seed, the same floor. A plan whose path has no two straight cells for the slopes is drawn again. */

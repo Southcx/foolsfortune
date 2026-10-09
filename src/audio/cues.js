@@ -27,6 +27,10 @@ const RULES = {
   'combat.annihilate': (s) => { s.damage?.('impact', 1); s.damage?.('delirium', 1); s.prismatic?.(1); }, // (the two ends of the line at once: audio/damage.js)
   'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
   // the crossing's rail shooter (audio/rail.js): a lock's tone and a down, each on the music's next sixteenth (Rez)
+  'skiff.glide': (s) => s.skiffGlide?.(), // (the wings' wind: audio/moves.js skiffLoop)
+  'skiff.tumble': (s, e) => s.tumbleThump?.(e.speed), // (the bail's ragdoll on the sand, a thump a contact)
+  'sibling.hit': (s, e) => s.siblingHit?.(e.down), // (a sibling's clay struck: audio/vessel.js)
+  'feeling.drink': (s, e) => { if (e.by === 'courier') s.feelingDrink?.(e.aspect); }, // (the drunk feeling changed: audio/vessel.js)
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)

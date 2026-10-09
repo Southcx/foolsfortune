@@ -7,8 +7,12 @@
 //   DESIRE   a frame drum's pulse (three against the bar), low and dry
 //   GRIEF    a cello line, the root and the fifth, long bows
 //   DREAD    a drone low under everything, the root and the Tear above it (F on E: the flat second, held)
-// And the MODES: the five pentatonics of the five moods, the scale the Crucibelle plays (game.music.scale(), music/player.js) when no cue is
-// playing to set it: major for mirth, a Lydian pentatonic for wonder, Dorian for desire, minor for grief, the In scale for dread.
+//   FURY     low strings driving eighths on the root, the tritone stabbed on the last beat (heat: it pushes, it never rests)
+//   GALL     a reed's sour hum, the root and the flat second a hair apart, swelling and souring across two bars
+// And the MODES: the seven pentatonics of the seven feelings, the scale the Crucibelle plays (game.music.scale(), music/player.js) when no
+// cue is playing to set it: major for mirth, a Lydian pentatonic for wonder, Dorian for desire, minor for grief, the In scale for dread,
+// a tritone minor for fury (the minor pentatonic with its fourth raised: Dread's In answered from the other side), and a Hijaz pentatonic
+// for gall (the flat second against the major third, the augmented step that sours: docs/plans/GALL-AND-FURY.md section 11).
 //
 // Prior art: vertical layering in adaptive scores (the stems of Red Dead Redemption and Breath of the Wild's field music thickening
 // and thinning), the modes' order of brightness (Lydian the brightest, Phrygian the darkest), and the Japanese In scale (miyako-bushi)
@@ -16,7 +20,8 @@
 // An AGATE sky (two moods at once, the second weaker: progress/weather.js) lays both layers by their strengths, and its scale is the
 // stronger mood's with one note borrowed from the other (its signature: the raised fourth of wonder, the major third of mirth, the major
 // sixth of desire, the flat seventh of grief, the flat second of dread), put in place of the nearest note that is not the root, the fifth
-// or the stronger mood's own signature. Opposites at once cancel (the sky is TORN): no mode at all, the root and the fifth.
+// or the stronger mood's own signature (fury's is its tritone; gall lends its flat sixth). Gall borrows no note: a gall sky keeps its
+// Hijaz whole, as nothing cancels it (it has no opposite). Opposites at once cancel (the sky is TORN): no mode at all, the root and the fifth.
 //
 //   import { moodLayer, moodScale, MODES } from './mood.js'   moodLayer(aspect, strength, second?, secondStrength?) -> (score, section, bar) => [events] | null
 //   moodScale(aspect, second?, cancelled?) -> five semitones   MODES[aspect]
@@ -29,16 +34,18 @@ export const MODES = {
   desire: [0, 2, 3, 7, 9], // (Dorian: the minor third with the major sixth)
   grief: [0, 3, 5, 7, 10], // (minor pentatonic: the Crucibelle's own)
   dread: [0, 1, 5, 7, 8], // (In: the flat second, the Tear)
+  fury: [0, 3, 6, 7, 10], // (tritone minor: the minor pentatonic's fourth raised, the devil's interval beside the fifth)
+  gall: [0, 1, 4, 7, 8], // (Hijaz: the flat second up an augmented step to the major third, the flat sixth)
 };
 export const DEFAULT_SCALE = MODES.grief;
-const SIGN = { wonder: 6, mirth: 4, desire: 9, grief: 10, dread: 1 }; // (each mode's signature note)
+const SIGN = { wonder: 6, mirth: 4, desire: 9, grief: 10, dread: 1, fury: 6, gall: 8 }; // (each mode's signature note)
 const TORN = [0, 7, 12, 19, 24]; // (a torn sky: only the root and the fifth, nothing to pull either way)
 
 /** The scale of a sky: its mood's mode, an agate's borrowed note in it, or the torn sky's root and fifth. */
 export function moodScale(aspect, second = null, cancelled = null) {
   if (cancelled) return TORN;
   const base = MODES[aspect] || DEFAULT_SCALE, note = SIGN[second];
-  if (!MODES[second] || second === aspect || base.includes(note)) return base;
+  if (!MODES[second] || second === aspect || aspect === 'gall' || base.includes(note)) return base; // (gall borrows nothing)
   const keep = new Set([0, 7, SIGN[aspect]]);
   let at = -1, best = 99;
   base.forEach((n, i) => { if (!keep.has(n) && Math.abs(n - note) < best) { best = Math.abs(n - note); at = i; } });
@@ -51,6 +58,9 @@ const PARTS = {
   desire: (r, beats, bar, k) => [0, 1.5, 3].filter((b) => b < beats).map((b, j) => E('bodhran', b, 1, null, (j ? 0.14 : 0.2) * k, { rim: j === 2 })),
   grief: (r, beats, bar, k) => (bar % 2 ? [] : [E('strings', 0, beats * 2, r - 12 + (bar % 4 ? 7 : 0), 0.07 * k, { attack: 0.8, bright: 1400 })]),
   dread: (r, beats, bar, k) => (bar % 2 ? [] : [E('strings', 0, beats * 2, [r - 24, r - 11], 0.05 * k, { attack: 1.5, bright: 900 })]),
+  fury: (r, beats, bar, k) => [...Array(Math.floor(beats * 2)).keys()].map((j) => E('strings', j / 2, 0.4, r - 12, (j % 2 ? 0.035 : 0.05) * k, { attack: 0.01, bright: 1100, spic: true }))
+    .concat([E('strings', beats - 1, 0.6, [r - 6, r], 0.05 * k, { attack: 0.01, bright: 1600, spic: true })]),
+  gall: (r, beats, bar, k) => (bar % 2 ? [] : [E('hum', 0, beats * 2, [r - 12, r - 11], 0.05 * k, { attack: 1.2 })]),
 };
 
 /** The layer for a mood at a strength (0..1), or null for calm: a function the arranger calls for each bar it lays out. */

@@ -13,6 +13,7 @@
 //    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
 //
 //   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
+//   1 held the radial: the paint's feeling, or Clean (tools/soulbrush/radial.js)
 //   LMB    the club: three blows (a pause after the second: the spin; sprinting: the dive); held on the ground, the bristles SATURATE
 //          and the mode works (tools/soulbrush/load.js: 1 PAINT, 2 MOP); held in the air, the charge and the slam   RMB tap  FLICK
 //   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
@@ -33,6 +34,7 @@ import { Celestial } from './celestial.js';
 import { BrushCanvas } from './canvas.js';
 import { BrushTechniques } from './techniques.js';
 import { Sigils } from './sigils.js';
+import { PaintRadial } from './radial.js';
 import { PaintPath } from '../../vfx/paintpath.js';
 import { measureGrip, handFromTool } from '../grip.js';
 import { drawHands } from '../draw.js';
@@ -73,6 +75,7 @@ export class SoulBrush extends Tech {
     this.canvas = new BrushCanvas();
     this.techniques = new BrushTechniques(this);
     this.celestial = new Celestial(this);
+    this.radial = new PaintRadial(this); // (1 held: what the paint is, radial.js)
     this.sigils = new Sigils(g);
     this.paint = new PaintPath(g.scene, { wet: 0xe8ab86, dry: 0xb4603f, life: TRAIL_WET });
     this.rmbT = -1;
@@ -86,7 +89,7 @@ export class SoulBrush extends Tech {
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
   get stance() { return this.toolOut && (this.club.busy || this.celestial.active || this.load.busy); }
-  get slow() { return this.toolOut && this.club.charge >= 0 ? 0.6 : 1; }
+  get slow() { return (this.toolOut && this.club.charge >= 0 ? 0.6 : 1) * (this.load?.stride ?? 1); } // (and the paint underfoot's pace: the paintStride knack, load.js strideOf; 1 when it is off)
 
   // ---------------------------------------------------------------- where it is worn, and the grip
   computeSocket(ch) {
@@ -127,7 +130,7 @@ export class SoulBrush extends Tech {
     if (this.drawT > 0.02 && !this.wasOut) { this.wasOut = true; sfx.toolDraw(); g.events?.emit('brush.draw', {}); }
     if (this.drawT <= 0.02 && this.wasOut) {
       this.wasOut = false; sfx.holster?.();
-      this.club.cancel(); this.load.end(); this.celestial.exit('stow'); this.rmbT = -1;
+      this.club.cancel(); this.load.end(); this.celestial.exit('stow'); this.radial.end(); this.rmbT = -1;
       g.events?.emit('brush.stow', {});
     }
     if (this.drawTarget === 0 && this.club.busy) this.club.cancel(); // (being put away: a blow or a slam ends now, not frozen through the holster)
@@ -148,6 +151,7 @@ export class SoulBrush extends Tech {
           }
         }
         ['Digit1', 'Digit2'].forEach((k, i) => { if (inp.wasPressed(k)) this.load.setMode(LOAD_MODES[i]); }); // (the modes, as the Sondelass's forms)
+        this.radial.update(raw, inp); // (1 held: the radial, what the paint is: radial.js)
         if (this.load.busy) this.load.update(raw, inp);
         else if (!this.sliding) this.club.update(dt, inp);
       }
@@ -232,7 +236,7 @@ export class SoulBrush extends Tech {
       const dir = this.lastDab && d < 2 ? down.point.clone().sub(this.lastDab).normalize() : _v3.set(P.vel.x, 0, P.vel.z).normalize().clone();
       if (d > 2) this.paint.gap();
       this.paint.add(down.point, down.normal, dir, TRAIL_W * (0.85 + 0.15 * Math.min(1, hs / 8)));
-      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE);
+      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
       if (simRand() < 0.35) sfx.inkDab?.(0.35);

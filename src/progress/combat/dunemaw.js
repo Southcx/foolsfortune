@@ -19,7 +19,8 @@
 /** THE CROWNED FOE. The urn is a pot: what breaks pots breaks it (Impact, the slam, its own ram into stone); everything else rings off
  *  it (the resist mark) for a chip. Three crack stages, then the core is bare. */
 export const FOE = {
-  cls: 2, halfWidth: 1.0, // (the Great Slip Jelly at class 2: a slip jelly's 0.5 m radius x1.6, squashed wider at a ram, crown included)
+  cls: 2, halfWidth: 1.0, // (the Great Slip Jelly at class 2; its contact numbers grow from its body (creatures/jelly/greatjelly.js))
+  size: 14, // (its body x14 a slip jelly's: 21 m tall, 7 m in radius, about twelve Couriers (the owner, 2026-10-09: "BIG"); Calissa's model scales with it)
   hp: 48, // (six slip jellies' worth: the bare phase is about 24 plain blows, 12 on the core, a real minute or two of a fight)
   crown: {
     stage: 6, stages: 3, // (crack points a stage: 18 in all, about 12 heavy Impact blows, or three rams, or a mix)
@@ -27,15 +28,20 @@ export const FOE = {
     ram: 6, // (its own ram into a pillar or a stalactite: one whole stage; the bullfight is the clever way, the hammer the honest one)
     bodyChip: 0.25, // (blows to its sides while crowned: the slip takes them, a quarter lands)
   },
-  ram: { telegraph: 1.0, speed: 11, range: 24, turn: 20, wallStun: 1, aim: 0 }, // (a 1 s scrape, then 11 m/s: faster than a sprint, slower than a
-                                                                       //  dash, so it is sidestepped, never outrun; 24 m at most, 20° a second;
+  ram: { telegraph: 1.6, speed: 11, range: 60, turn: 12, wallStun: 1, aim: 0 }, // (a 1.6 s scrape, then 11 m/s: faster than a sprint, slower than a
+                                                                       //  dash, so it is sidestepped, never outrun. The great bowl (2026-10-09): its
+                                                                       //  body is 14 m wide, so a sidestep is 9 m, 1.3 s at a sprint: the scrape
+                                                                       //  grew to cover it; the speed stays the Courier's measure; 60 m at most (x2.5
+                                                                       //  with the bowl); 12° a second (a 21 m body turns slow, and a long ram must
+                                                                       //  not track a sprint);
                                                                        //  `aim`: the aim is taken at this share of the scrape, 0 its start
                                                                        //  (Petra measured: aimed at the charge's start, the sidestep fails)
-  slam: { within: 5, radius: 3 }, // (close in, it rears and slams a ring 6 m across)
+  slam: { within: 12, radius: 10 }, // (close in (its 7 m radius and 5 m more), it rears and slams a ring 20 m across: 1.4x its radius, as the body's code floors it)
   reel: { seconds: 4, mult: 3 }, // (the break: it reels, and every blow lands three times over; Hollow Knight's window, short on purpose)
   core: { mult: 2, body: 0.5 }, // (bare: the core takes double, the body half; the core moves with it, so aim is the skill)
-  sink: { every: 12, seconds: 3, telegraph: 1.2 }, // (bare: it sinks every 12 sim s for 3 and surfaces with a slam, the slip's ring 1.2 s before)
-  slide: { speed: 0.8, low: 1.5, lowAt: 0.33 }, // (the arena slides toward it in m/s, faster below a third: the mouth's antlion, inside)
+  sink: { every: 12, seconds: 3, telegraph: 1.8 }, // (bare: it sinks every 12 sim s for 3 and surfaces with a slam, the slip's ring 1.8 s before: 10 m out of the slam at a sprint)
+  slide: { speed: 0.8, low: 1.5, lowAt: 0.33 }, // (unscaled on purpose: the drag is measured against the Courier's walk (4.2 m/s), which the bowl does not change)
+  // (the arena slides toward it in m/s, faster below a third: the mouth's antlion, inside)
   brood: { at: [0.66, 0.33], each: 3, hp: 2 }, // (it calls brood at two thirds and one third: three a call, from the clutches still whole)
   reprogramAt: 0.2, // (below a fifth of its health and reeling or stunned: the data drain can take it)
   pay: {
@@ -70,14 +76,18 @@ export function broodAt(hpShare, lastShare, clutchesLeft) {
 export const pay = (end) => FOE.pay[end] || null;
 
 /** THE ARENA (docs/plans/DUNEMAW-ARENA.md, Petra's to build): the bowl's measures in metres, bearings from north clockwise. */
-export const ARENA = {
-  radius: 28, roof: 30, dish: 4, // (degrees of the floor's slope to the centre)
-  rim: { from: 22, depth: 0.4, wade: 0.7 }, upper: { from: 24, y: 4, bearings: [90, 270] }, ledge: { z: [26, 34], y: 6, width: 12 },
-  pillars: { r: 18, bearings: [30, 90, 150, 210, 270, 330], width: 3, height: 12, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen)
-  stalactites: { r: 12, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [14, 18] },
-  pools: { centre: 6, ring: { r: 16, bearings: [0, 90, 180, 270], width: 4 }, depth: 2 },
-  clutches: { r: 25, perQuadrant: 2, clear: 3 }, // (3 m or more from any pillar)
-  wake: 20, // (the FOE wakes when the Courier is on the floor within 20 m of it)
+export const ARENA = { // (the owner, 2026-10-09: "yes I want it BIG ... a good opportunity for me to test movement in a large arena": every
+  //   measure of the v130 bowl x2.5, 140 m across, for a Great Slip Jelly 21 m tall; the timeline's numbers are Dovina's to rescale to it)
+  radius: 70, roof: 75, dish: 4, // (degrees of the floor's slope to the centre)
+  rim: { from: 63, depth: 0.4, wade: 0.7 }, // (the shallows a band of 7 m, as the old bowl's 6: wider read as a black stripe and a long wade)
+  upper: { from: 60, y: 4, bearings: [90, 270] }, ledge: { z: [65, 85], y: 6, width: 30 }, // (heights the Courier's body meets keep their size: Dovina's
+  //   DUNEMAW-ARENA.md 'The great bowl'; the walk 4 m up, the ledge 6)
+  pillars: { r: 45, bearings: [30, 90, 150, 210, 270, 330], width: 7.5, height: 30, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen)
+  stalactites: { r: 30, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [35, 45] },
+  pools: { centre: 15, ring: { r: 40, bearings: [0, 90, 180, 270], width: 10 }, depth: 2 },
+  clutches: { r: 66, perQuadrant: 2, clear: 7.5 }, // (in the rim shallows; 7.5 m or more from any pillar)
+  wake: 50, // (the FOE wakes when the Courier is on the floor within 50 m of it)
+  scale: 2.5, // (the bowl's own fittings (its slopes, spikes, lamps: world/well/bowl.js) grown with it, from the v130 bowl's)
 };
 
 /** THE NURSERY. The slip jellies breed in the slip; a clutch is part of the floor's seeded layout, so it comes back with the next game

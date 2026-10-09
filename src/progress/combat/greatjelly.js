@@ -10,8 +10,9 @@
 // Thunder Force's boss as a musical event (Wanda's cue turns on the casts).
 //
 //   NAMES[cast]   STATES   SUSTAINED   HEALTH   clearAt(uptime)   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
-//   phaseOf(share) -> phase   timeline(phase, t0, until) -> [{ t, cast }]   DROPS   dropsFor(run) -> [cosmetic ids]
+//   castMark(id, level, lent?) -> the Figment attack telegraph to draw | null   phaseOf(share) -> phase   timeline(phase, t0, until) -> [{ t, cast }]   DROPS   dropsFor(run) -> [cosmetic ids]
 // ---------------------------------------------------------------------------------------
+import { figmentMarkOf } from './figmenttelegraphs.js';
 
 /** THE COURIER'S SUSTAINED DAMAGE, read from the tools' own numbers (core/config.js, the strike calls), in power a real second at full
  *  uptime, for a player who lands what they swing: the psygun 1 a shot at its 0.16 s cap, about 3 clicks a second really (3.0); the
@@ -36,26 +37,36 @@ export const ENRAGE = 570;
  *  of its class). `answer`: what the player does. Names are placeholders for Espada's. */
 /** The casts' names as the log says them (Espada's, 2026-10-07, docs/LORE.md: each a jar's part or a potter's step, each telling
  *  you what to do). The log: "The Great Slip Jelly readies <name>." */
-export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelidRings: 'Throwing Rings', oozeRain: 'Slip Trail',
+export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelidRings: 'Throwing Rings', oozeRain: 'Slick Trail',
   crownGlare: 'Eye Cup', slipNova: 'Blowout', sinkingSands: 'Centring', surfaceSlam: 'Wedge', brineCascade: 'Decant', broodCall: 'Broodwake',
   calving: 'Sherds', overflow: 'The Overflow', swallow: 'The Dunemaw Swallows' };
 /** The transition is Unstopped; Brine Soaked is Sodden; Submerge is Slake; the calves are sherds, and "the sherds mend" when they re-merge. */
 export const STATES = { clutch: 'Unstopped', soaked: 'Sodden', submerge: 'Slake', calf: 'sherd' };
+/** THE GREAT BOWL'S SCALE (2026-10-09: a body 21 m tall in a bowl 140 m across; Petra's build, ARENA). Every area grew with the body
+ *  (about x2.5), and every windup a player must run out of grew until a sprinting Courier (6.8 m/s, core/config.js) clears it with 0.3 s
+ *  to read it: windup >= escape metres / 6.8 + 0.3. What is answered in place (the parry, the guard, the gaze) kept its windup. Monster
+ *  Hunter's and Shadow of the Colossus's rule: the bigger the body, the longer and plainer the tell. The old bowl's numbers are in git. */
+// `mark`: what the Figment attack telegraph says at Divination's steps 3 and 4 (docs/plans/FIGMENT-TELEGRAPHS.md): the blow's damage type, the status it
+// builds, and the answer glyph (progress/combat/figmenttelegraphs.js FIGMENT_ANSWERS); `answer` (prose) is the design note. The enrage has none.
 export const CASTS = {
-  crownBash:   { windup: 1.2, area: { shape: 'lunge', at: 'courier', reach: 9 }, effect: { pool: 0.6, soaked: 20 }, answer: 'parry (V) or roll', parry: true }, // (the tankbuster; soaked: the next hit doubled for 20 s)
-  brineLine:   { windup: 1.0, area: { shape: 'line', at: 'courier', width: 4, length: 24 }, effect: { hits: 1, crown: 'pillar' }, answer: 'stand before a pillar and step aside: it cracks its own crown' }, // (the ram: DUNEMAW-SYSTEMS.md)
-  gelidRings:  { windup: 1.5, area: { shape: 'out-in', inner: 6, outer: [6, 16] }, effect: { hits: 1, slow: 3 }, answer: 'out of the first ring, then back in' },
-  oozeRain:    { windup: 0.6, area: { shape: 'baited', drops: 3, every: 1, radius: 2.5, lasts: 60 }, effect: { hits: 1 }, answer: 'lead the drops to the rim: each leaves a puddle for a real minute' },
-  crownGlare:  { windup: 2.0, area: { shape: 'gaze' }, effect: { stunned: 3 }, answer: 'look away, or look through the Veritome: the lens turns the gaze back and stuns it 4 s', mirror: 4 },
-  slipNova:    { windup: 3.0, area: { shape: 'raidwide' }, effect: { pool: 0.4 }, answer: 'unavoidable; guard (V held) at the flash for half' },
-  sinkingSands:{ windup: 2.0, area: { shape: 'floor', slide: [0.8, 1.5] }, effect: { drag: true }, answer: 'stand on islands: rubble, fallen pillars' },
-  surfaceSlam: { windup: 1.2, area: { shape: 'circle', at: 'courier', radius: 4 }, effect: { hits: 1 }, answer: 'off the rings: the slip rings before it surfaces' },
-  brineCascade:{ windup: 1.5, area: { shape: 'cone', degrees: 120, length: 14 }, effect: { hits: 1 }, answer: 'get behind it: its maw swells for a bar' },
-  broodCall:   { windup: 2.0, area: { shape: 'adds', perClutch: 2, heal: 0.02 }, effect: { adds: true }, answer: 'kill the brood before they reach it: each heals it 2% and grows a crown plate back' },
-  calving:     { windup: 3.0, area: { shape: 'split', calves: 4, within: 30, heal: 0.1 }, effect: { split: true }, answer: 'kill all four calves within 30 s, or they re-merge and heal it' },
-  overflow:    { windup: 3.0, area: { shape: 'floor', slip: 'all' }, effect: { slip: true, hatchAll: true }, answer: 'hold the islands; every clutch left hatches' },
-  swallow:     { windup: 5.0, area: { shape: 'raidwide' }, effect: { wipe: true }, answer: 'none: it is the enrage' },
+  crownBash:   { windup: 1.4, mark: { type: 'impact', status: 'soaked', answer: 'parry' }, area: { shape: 'lunge', at: 'courier', reach: 20 }, effect: { pool: 0.6, soaked: 20 }, answer: 'parry (V) or roll', parry: true }, // (the tankbuster; soaked: the next hit doubled for 20 s)
+  brineLine:   { windup: 1.6, mark: { type: 'impact', status: null, answer: 'bait' }, area: { shape: 'line', at: 'courier', width: 14, length: 60 }, effect: { hits: 1, crown: 'pillar' }, answer: 'stand before a pillar and step aside: it cracks its own crown' }, // (the ram: DUNEMAW-SYSTEMS.md)
+  gelidRings:  { windup: 2.5, mark: { type: 'impact', status: 'slow', answer: 'out' }, area: { shape: 'out-in', inner: 15, outer: [15, 40] }, effect: { hits: 1, slow: 3 }, answer: 'out of the first ring, then back in' },
+  oozeRain:    { windup: 0.9, mark: { type: 'impact', status: null, answer: 'out' }, area: { shape: 'baited', drops: 3, every: 1, radius: 4, lasts: 60 }, effect: { hits: 1 }, answer: 'lead the drops to the rim: each leaves a puddle for a real minute' },
+  crownGlare:  { windup: 2.0, mark: { type: 'ego', status: 'stun', answer: 'lookAway' }, area: { shape: 'gaze' }, effect: { stunned: 3 }, answer: 'look away, or look through the Veritome: the lens turns the gaze back and stuns it 4 s', mirror: 4 },
+  slipNova:    { windup: 3.0, mark: { type: 'impact', status: null, answer: 'guard' }, area: { shape: 'raidwide' }, effect: { pool: 0.4 }, answer: 'unavoidable; guard (V held) at the flash for half' },
+  sinkingSands:{ windup: 2.0, mark: { type: null, status: null, answer: 'highGround' }, area: { shape: 'floor', slide: [0.8, 1.5] }, effect: { drag: true }, answer: 'stand on islands: rubble, fallen pillars' },
+  surfaceSlam: { windup: 1.8, mark: { type: 'impact', status: null, answer: 'out' }, area: { shape: 'circle', at: 'courier', radius: 9 }, effect: { hits: 1 }, answer: 'off the rings: the slip rings before it surfaces' },
+  brineCascade:{ windup: 2.4, mark: { type: 'impact', status: null, answer: 'behind' }, area: { shape: 'cone', degrees: 120, length: 35 }, effect: { hits: 1 }, answer: 'get behind it: its maw swells for a bar' },
+  broodCall:   { windup: 2.0, mark: { type: null, status: null, answer: 'killFirst' }, area: { shape: 'adds', perClutch: 2, heal: 0.02 }, effect: { adds: true }, answer: 'kill the brood before they reach it: each heals it 2% and grows a crown plate back' },
+  calving:     { windup: 3.0, mark: { type: null, status: null, answer: 'killFirst' }, area: { shape: 'split', calves: 4, within: 30, heal: 0.1 }, effect: { split: true }, answer: 'kill all four calves within 30 s, or they re-merge and heal it' },
+  overflow:    { windup: 3.0, mark: { type: null, status: null, answer: 'highGround' }, area: { shape: 'floor', slip: 'all' }, effect: { slip: true, hatchAll: true }, answer: 'hold the islands; every clutch left hatches' },
+  swallow:     { windup: 5.0, mark: null, area: { shape: 'raidwide' }, effect: { wipe: true }, answer: 'none: it is the enrage' },
 };
+
+/** What a cast's Figment attack telegraph shows at a Divination level (`lent`: the lend panel's figmentTelegraphs row): the mark to draw, or null (the body
+ *  alone). The timeline runner asks this as a cast begins (docs/plans/FIGMENT-TELEGRAPHS.md section 7). */
+export const castMark = (id, level = 1, lent = false) => { const C = CASTS[id]; return C && C.mark ? figmentMarkOf({ area: C.area, eta: C.windup, ...C.mark }, level, lent) : null; };
 
 /** The phases, by the share of its health left. Each loops its casts (`at`: real seconds into the loop) until the next phase begins;
  *  each loop runs a fifth faster than the last (the fight tightens as it goes). The transitions are casts of their own. */

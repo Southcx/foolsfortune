@@ -101,6 +101,7 @@ export function targets(g, centre, R) {
   }
   for (const ent of registered('struckable')) { const p = ent.pos; if ((p.x - centre.x) ** 2 + (p.z - centre.z) ** 2 < R2) out.push({ kind: 'thing', ent, pos: p, r: ent.r || 0.5 }); } // (a crystal: world/dunes/crystals.js)
   for (const c of g.creatures?.near(centre, R) || []) if (!c.ally) out.push({ kind: 'creature', ent: c, pos: c.center(new THREE.Vector3()), r: c.radius || 0.5 });
+  for (const c of g.creatures?.friends || []) if (c.alive && c.pos.distanceToSquared(centre) < (R + c.radius) ** 2) out.push({ kind: 'creature', ent: c, pos: c.center(new THREE.Vector3()), r: c.radius }); // (a sibling: friendly fire)
   return out;
 }
 

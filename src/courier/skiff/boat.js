@@ -153,6 +153,10 @@ export class Skiff {
     this.emit.frustumCulled = false;
     this.bone.hull.add(this.emit);
     this.P = new BoatPose(gltf.animations, bones);
+    // the glide's wings: the oars as the Ollie clip spreads them widest (0.58 s in), held while gliding (skiff.js; Calissa's own glide
+    // clip, when there is one, takes its place)
+    const f = this.P.sample('Skiff_Ollie', 0.58, this.P.A, false);
+    this.wingQ = Object.fromEntries(['oar_shoulder.L', 'oar_shoulder.R'].filter((n) => this.P.index[n] != null).map((n) => [n, new THREE.Quaternion().fromArray(f.q, this.P.index[n] * 4)]));
     this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
     this.rom = new JointLimits();
     for (const [name, spec] of Object.entries(SKIFF_ROM)) { const b = this.bone[name]; if (b) this.rom.add(b, _q.fromArray(this.rest(name)), spec); }
@@ -199,7 +203,8 @@ export class Skiff {
 
   // ------------------------------------------------------------------ per frame
   /** sail 0..1 hoisted; side +-1; fill 0..1; boom = the boom's angle from dead aft (radians, + to the boat's right); glow 0..1 (a flare); t seconds. */
-  set({ sail, side, fill, boom, glow, t, speed }) {
+  set({ sail, side, fill, boom, glow, t, speed, wings = 0 }) {
+    this.wings = wings;
     this.L = sail; this.side = side; this.fill = fill; this.boomAngle = boom; this.glow = glow; this.t = t;
     if (!this.P) return;
     this.clothMat.emissiveIntensity = PAINT_LIGHT + 0.7 * glow;
@@ -261,6 +266,8 @@ export class Skiff {
         prev = slope; prevD = d;
       }
     }
+    // the glide: the oars spread as wings, by how far into the glide (this.wings 0..1, set by skiff.js)
+    if (this.wings > 0.001 && this.wingQ) for (const n in this.wingQ) B[n].quaternion.slerp(this.wingQ[n], this.wings);
     this.rom.apply();
   }
 }

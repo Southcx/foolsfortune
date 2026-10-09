@@ -69,7 +69,7 @@ export const ABILITIES = [
   {
     id: 'slip', key: 'C', name: 'Slip Dive', glyph: '≈', tech: 'slip', input: 'C on slip', station: 'T4',
     blurb: 'Melt into liquid clay and move fast through it: up walls, under gaps, launched out with a jump. Lachryma soaks back in while you are under.',
-    hint: 'Paint the world with the slip shell first.',
+    hint: 'Paint the world with the Paint Shell first.',
     goals: [led('slip.splat', 6, 'slip splats')],
     variants: [
       { id: 'tide', name: 'Tide', blurb: 'Faster through the slip, and a higher launch out of it.', cfg: { speed: 13, jump: 10 },
@@ -105,6 +105,15 @@ export const ABILITIES = [
       { id: 'boost', name: 'Boost', blurb: 'Every shot kicks harder, and one more of them a jump.', cfg: { kick: 6.6, chargedKick: 13, charges: 4 },
         hint: 'Kick yourself up, again and again.', goals: [led('move.recoil', 25, 'recoil jumps')] },
     ],
+  },
+  {
+    // the Solar Skiff's glide (Petra's, R8: courier/skiff/skiff.js). Taken from Breath of the Wild's paraglider and Wind Waker's Deku Leaf:
+    // the glide is earned by getting the board into the air, so its goal is the hop that makes the airtime it stretches
+    id: 'glide', key: 'Space held', name: 'Skiff Glide', glyph: '⌒', tech: 'skiffGlide', input: 'hold Space in the air on the Solar Skiff',
+    blurb: 'On the Solar Skiff, hold Space in the air and the sail catches: a long, slow fall instead of a spin.',
+    hint: 'Get the board off the sand. Again and again.',
+    goals: [led('skiff.hop', 40, 'hops on the Solar Skiff')],
+    variants: [],
   },
 ];
 

@@ -383,3 +383,19 @@ Punishment.
 
 The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. Soul Alchemy as the first system built to all four:
 `docs/plans/SOUL-ALCHEMY.md`.
+
+## 23. Figment attack telegraphs: the body first, Divination second (the owner, 2026-10-09; docs/plans/FIGMENT-TELEGRAPHS.md)
+
+- **Always named in full** (the owner): a *Figment attack telegraph* is the third-person game's; the rail shooter's telegraph mark
+  (`vfx/telegraph.js`) is another thing, and the two are never called by one bare word.
+
+- **Every windup is readable from the creature's animation alone.** A Figment attack telegraph is never needed; a creature that needs one is a bug.
+- **Figment attack telegraphs belong to Divination,** drawn in Lachryma's colours, on a ladder of fidelity: at Divination 2 the edge (where), 8
+  the fill landing on the strike frame (when), 20 the damage type's colour and the status glyph (what kind), 35 the answer glyph (how
+  to answer). **Perception** sets how early a mark shows; Divination how much it says.
+- **A vocabulary of shapes** (circle, ring, cone, line, lunge, baited, floor, gaze, arena, adds, tracked, left) and of **answers**
+  (out, in, sidestep, behind, look away, guard, parry, bait, kill first, high ground): one shape, one answer glyph, no words.
+- **Reading is how Divination grows:** a windup that would have caught the Courier and did not is Divination's exp. Skill skips grind.
+- Taken from FFXIV (the shapes, head markers that carry the answer), WildStar (the fill as the clock), WoW 11.1 (a crisp edge, a tinted
+  inside), Monster Hunter (the body is the tell, and the answer is the opening), and the accessibility guidelines (never colour alone).
+  Seeing Figment attack telegraphs as a levelled sense is ours.

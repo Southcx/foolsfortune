@@ -35,6 +35,8 @@ const CHORDS = {
   desire: [[0, [0, 3, 7, 10]], [5, [0, 4, 7]], [0, [0, 3, 7, 10]], [10, [0, 4, 7]]], // (Em7 A Em7 D: Dorian's major IV)
   grief: [[0, [0, 3, 7]], [8, [0, 4, 7]], [5, [0, 3, 7]], [7, [0, 4, 7]]], // (Em C Am B)
   dread: [[0, [0, 3, 7]], [1, [0, 4, 7]], [10, [0, 3, 7]], [0, [0, 3, 7]]], // (Em F Dm Em: the Tear in the harmony)
+  fury: [[0, [0, 3, 7]], [6, [0, 4, 6]], [3, [0, 4, 7]], [0, [0, 3, 6]]], // (Em, A#(b5), G, E dim: the tritone pulling at both ends)
+  gall: [[0, [0, 4, 7]], [1, [0, 4, 7]], [8, [0, 4, 7]], [0, [0, 4, 7]]], // (E F C E: Hijaz's own cadence, the flat second leaning home)
 };
 const R = 52; // (E3)
 const chordAt = (i) => CHORDS[G.draught][i % 4];

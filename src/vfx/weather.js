@@ -230,7 +230,7 @@ void main() {
     vec2 rc = wrapXZ(hs.xz * 22.0, 11.0), xz = uCam.xz + rc;
     float gy = groundAt(xz, -1e4), wy = wetAt(xz), tf = 0.1, vb = 1.2 + 1.6 * hs.y, tb = 2.0 * vb / 9.8, y;
     vec2 skip = vec2(cos(hs.y * 40.0), sin(hs.y * 40.0)) * (0.15 + 0.3 * hs.x); // (it skips a little way off the way it bounced)
-    if (wy > -9000.0) { gy = wy; a = step(tau, tf); } // (on water a stone is gone at the surface: its ring is the pock, vfx/ripples.js)
+    if (wy > -9000.0 && gy < wy - 0.05) { gy = wy; a = step(tau, tf); } // (on water a stone is gone at the surface: its ring is the pock, vfx/ripples.js; a pond's box has dry corners, so only where the ground lies under the surface)
     if (tau < tf) y = gy + 22.0 * (tf - tau);
     else if (tau < tf + tb) { float s = tau - tf; y = gy + vb * s - 4.9 * s * s; xz += skip * (s / tb); }
     else { y = gy; xz += skip; }

@@ -37,6 +37,9 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FEELINGS } from '../../world/garden/water.js';
+// (Petra, for Gall and Fury: the water's mix is a share for each of the seven now (world/garden/water.js, FEELINGS' order); this look
+// shows the five it was made for, read by name, and Gall and Fury are yours to add to it)
+const FIVE = ['wonder', 'mirth', 'desire', 'grief', 'dread'], SHOWN = FIVE.map((f) => FEELINGS.indexOf(f));
 import { COLOR } from '../../progress/weather.js';
 import { sphereMaps, tracked, sendRuns } from './planetoidmesh.js';
 import { GROUND_UNIFORMS } from './gardengrounds.js';
@@ -51,7 +54,7 @@ export const WATER_LOOK = { lift: 0.01, draw: 0.005, cell: 0.003, tuck: -0.06, d
 
 let MAT = null;
 const U = {
-  uWFeel: { value: FEELINGS.map((f) => new THREE.Color(COLOR[f])) }, uWNacre: { value: new THREE.Color(WATER_LOOK.nacre) },
+  uWFeel: { value: FIVE.map((f) => new THREE.Color(COLOR[f])) }, uWNacre: { value: new THREE.Color(WATER_LOOK.nacre) },
   uWHaze: { value: new THREE.Color(0.86, 0.46, 0.56) }, uWZenith: { value: new THREE.Color(0.16, 0.2, 0.58) }, uWScale: { value: WATER_LOOK.scale },
 };
 
@@ -248,7 +251,7 @@ export class WaterLook {
       for (let q = 0; q < 4; q++) {
         const c = cells[i * 4 + q], w = Wt[c]; if (!(w > LK.cell)) continue;
         const f = wt[i * 4 + q]; if (w > mx) mx = w; sw += f; sl += f * (C.base[c] + Hc[c] + w); vx += f * W.vx[c]; vy += f * W.vy[c];
-        const o = c * 5; m0 += f * mix[o]; m1 += f * mix[o + 1]; m2 += f * mix[o + 2]; m3 += f * mix[o + 3]; m4 += f * mix[o + 4];
+        const o = c * FEELINGS.length; m0 += f * mix[o + SHOWN[0]]; m1 += f * mix[o + SHOWN[1]]; m2 += f * mix[o + SHOWN[2]]; m3 += f * mix[o + SHOWN[3]]; m4 += f * mix[o + SHOWN[4]];
       }
       if (sw < 1e-6) { // (no water round it now, but drawn wet a frame ago: it recedes from where it was, never vanishes with its faces)
         if (this.sgen[i] !== gen - 1 || !(depth[i] > LK.draw) || !Number.isFinite(vlev[i])) continue;

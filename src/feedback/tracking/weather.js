@@ -40,7 +40,7 @@ export function weatherRules({ on, L, log, g }) {
     if (e.by !== 'courier' || !e.aspect) return;
     const first = !L.get(`feeling.known.${e.aspect}`);
     L.inc(`feeling.known.${e.aspect}`);
-    if (first && !NATIVE.includes(e.aspect)) log.say('system', `You know ${e.aspect[0].toUpperCase() + e.aspect.slice(1)} now. You can refine it.`, { key: 'feeling.known' }); // (placeholder words: Espada's)
+    if (first && !NATIVE.includes(e.aspect)) log.say('system', `${e.aspect[0].toUpperCase() + e.aspect.slice(1)} known. Refine it now.`, { key: 'feeling.known' }); // (Espada's words)
   });
   on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built
