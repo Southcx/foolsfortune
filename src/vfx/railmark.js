@@ -14,7 +14,7 @@
 //             so the segments of a strip meet edge to edge, never overlapping (the screen-space polyline of MeshLine and Matt
 //             DesLauriers' "Drawing Lines is Hard"); its colour over the frame, a paler heart, a shade at its edges, tapering, fading
 //   spark     a hot point (a ribbon's head), light added
-//   ring      a telegraph (vfx/telegraph.js): a ring at A of radius wA shrinking to the part's own ring (wB): ink, with the Mind's
+//   ring      the closing ring (vfx/closingring.js): a ring at A of radius wA shrinking to the part's own ring (wB): ink, with the Mind's
 //             schiller (vfx/labradorite.js) as a line inside it, the parry mark's line weight
 //   hurtbox   the ship's hurtbox: a pale core and a dark ring, its outer edge exactly the hurtbox's radius (never larger or smaller
 //             than what is hit), the ring edged pale outside so it reads on the black crude too
@@ -32,7 +32,7 @@
 //
 // Prior art: every danmaku's bullet sprite (Touhou's and Cave's: a bright core and a dark edge, an elongated sprite for a fast bullet,
 // smaller faster bullets over larger slower ones), the signed-distance capsule (Inigo Quilez, "2D distance functions"), screen-space
-// lines (MeshLine; DesLauriers 2015), osu!'s approach circle (the telegraph's shrink), and the parry mark's own Cuphead.
+// lines (MeshLine; DesLauriers 2015), osu!'s approach circle (the closing ring's shrink), and the parry mark's own Cuphead.
 //
 //   const B = new MarkBuffer(cap, { renderOrder })   parent.add(B.mesh)
 //   B.put(i, ax, ay, az, wa, bx, by, bz, wb, px, py, pz, aa, nx, ny, nz, ab, style, s1, s2, s3)   B.count = n   B.flush()

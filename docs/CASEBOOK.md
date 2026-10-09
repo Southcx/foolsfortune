@@ -426,8 +426,22 @@ the rules before building in the same area; a rule a machine can check goes into
     status, no stun.
 157. **An impact is measured against the surface it lands on.** A landing's hardness is the speed into the ground's own motion
     under the body (a slope falls away too), never the bare fall speed.
+158. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
+    leaves the warm-up in the same change: a program compiled at boot for nothing is a program the budget cannot give to something new.
 
 ## Cases
+
+### 2026-10-09 · The telegraphs' one program had no room under the budget (perf: 163 of 164, the warm-up's stain)
+
+- **Seen:** the telegraphs' look (`vfx/telegraphs/`) needed one shader program; the last baseline stood at 161 to 163 of the 164 the
+  gate allows, and a headless boot counted 156 compiled by the warm-up, 162 after twenty frames of the workshop.
+- **Cause (measured):** the warm-up still built `new Stain()` (`vfx/stains.js`) and parked it, so the stain's program was compiled at
+  boot and kept alive; but spilled crude has been drawn by the paint map in the ground's own shaders since `world/ground/stains.js` was
+  folded into it, and nothing in play makes a `Stain` any more (only the workbench's `brush:stains`). The parry mark was warmed on it.
+- **Fix:** the stain left the warm-up (`main.js`); the parry mark is warmed on the parked Lachrymato Bottle instead (the same plain-mesh
+  shell, so the same program). The telegraphs' program took its place: 156 at boot and 162 in the workshop, as before, with a telegraph
+  and a glyph shown and nothing compiled late.
+- **Rule:** 158.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 
@@ -806,7 +820,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** the call site asked "is this the bar before a volley" and not "will it fire", and a mark had no way to ask whether its
   part was still there.
 - **Fix:** the call asks `rel < 21` (the next bar must fire) and hands the mark `alive: () => p.alive && !this.ended`
-  (`vfx/telegraph.js`, `world/emocean/pirates.js`).
+  (`vfx/telegraph.js`, now `vfx/closingring.js`; `world/emocean/pirates.js`).
 - **Rule:** 107.
 
 ### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)

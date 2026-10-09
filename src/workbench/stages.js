@@ -54,6 +54,7 @@ import { seaChartStage } from './seachartstage.js';
 import { shipStage } from './shipstage.js';
 import { mountStage } from './mountstage.js';
 import { encounterStage, ENCOUNTER_STAGE_IDS } from './encounterstage.js';
+import { telegraphStage, TELEGRAPH_STAGE_IDS } from './telegraphstage.js';
 import { strainBed } from '../vfx/garden/strains.js';
 import { lekythos } from '../vfx/garden/lekythos.js';
 import { sporeling } from '../vfx/garden/sporeling.js';
@@ -62,6 +63,7 @@ import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 export function buildStage(id, game) {
   let obj = null;
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
+  if (TELEGRAPH_STAGE_IDS.includes(id)) return telegraphStage(id); // (the telegraphs' marks and glyphs: workbench/telegraphstage.js)
   if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
   else if (id === 'ships:classes') obj = shipStage(game); // (the five hulls in echelon: workbench/shipstage.js)
   else if (id === 'ships:mounts') obj = mountStage(game); // (a mount's preview on a moored sloop and frigate: workbench/mountstage.js)
@@ -70,7 +72,7 @@ export function buildStage(id, game) {
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
   else if (id === 'crossing:charybdis') obj = charybdisStage(game); // (the maelstrom's whirlpool and Charybdis: workbench/charybdisstage.js)
-  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the telegraph, the hurtbox: workbench/crossingshots.js)
+  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the closing ring, the hurtbox: workbench/crossingshots.js)
   else if (id === 'crossing:shoal' || id === 'crossing:geometry') obj = buildSwarmStage(id); // (the crossing's swarm and ambient geometry: workbench/swarmstage.js)
   else if (id === 'crossing:chart') obj = seaChartStage(); // (the sea chart at three confidences and the rutter: workbench/seachartstage.js)
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }

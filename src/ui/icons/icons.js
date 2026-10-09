@@ -7,7 +7,8 @@
 //
 // The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5), 'mount.<tool>' (ui/icons/mountart.js, the
 // seven at sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration; and lock, check, up, down,
-// upHollow, downHollow).
+// upHollow, downHollow), and the telegraphs' glyphs: 'answer.<id>', 'status.<id>', 'tmark.<id>' (ui/icons/telegraphart.js, which the world
+// draws from its own atlas: vfx/telegraphs/telegraphatlas.js).
 //
 // Prior art: the 8- and 16-bit consoles' palette swaps (one sprite, a palette for each state: Final Fantasy's recoloured windows and
 // enemies), and the pixel kit's integer scaling here (a pixel is always a square of pixels).
@@ -22,9 +23,10 @@ import { toneGrid } from './hand.js';
 import { KEYWORD_ART } from './keywordart.js';
 import { MOUNT_ART } from './mountart.js';
 import { CHIP_ART } from './chipart.js';
+import { ANSWER_ART, STATUS_ART, TMARK_ART } from './telegraphart.js';
 
 const ART = {};
-for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
+for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['tmark', TMARK_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
 export const ICON_IDS = Object.keys(ART);
 export const hasIcon = (id) => id in ART;
 

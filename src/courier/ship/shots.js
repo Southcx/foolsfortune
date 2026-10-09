@@ -11,8 +11,8 @@
 //
 // Drawn by Calissa's looks (made once, at boot, parked for the warm-up: casebook 17): every shot in one instanced draw (vfx/railshots.js:
 // the gun's needles, the foes' astral and umbral capsules far to near, the outlined in the parry mark's ink and film, the ship's hurtbox
-// over them), the lances' ribbons (vfx/itano.js) and the telegraph marks a set piece puts on a part about to act (vfx/telegraph.js,
-// `S.telegraphs.mark(target, seconds)`). Nothing here decides what a hit means: the ship (`hit`, `absorb`) and the waves (`hitAt`,
+// over them), the lances' ribbons (vfx/itano.js) and the closing rings a set piece puts on a part about to act (vfx/closingring.js,
+// `S.closingRings.mark(target, seconds)`). Nothing here decides what a hit means: the ship (`hit`, `absorb`) and the waves (`hitAt`,
 // `strike`) do.
 //
 // Prior art: every shmup's bullet pool (a fixed array, no allocation in the loop), Ikaruga's polarity, RayStorm's lock-on lasers that
@@ -27,7 +27,7 @@ import { T } from '../../core/config.js';
 import { COLOR } from '../../progress/weather.js';
 import { RailShots } from '../../vfx/railshots.js';
 import { ItanoRibbons } from '../../vfx/itano.js';
-import { TelegraphMarks } from '../../vfx/telegraph.js';
+import { ClosingRings } from '../../vfx/closingring.js';
 import { stream } from '../../core/rng.js';
 
 const CAP = { gun: 128, lance: 48, plain: 192, outlined: 24 }; // (lances: a volley's eight and the surge's swarm, a lance at everything on the screen)
@@ -54,9 +54,9 @@ export class Shots {
   build(scene) {
     this.look = new RailShots({ cap: 400, guns: CAP.gun }).build(scene); this.look.mesh.renderOrder = 60; // (the ship's own gun and hurtbox over the hull, which is over the foes' shots: ship.js OVER_SHOTS) // (400: the heaviest peak the overhaul plans, RAIL-OVERHAUL.md section 5)
     this.ribbons = new ItanoRibbons({ max: 64 }); scene.add(this.ribbons.mesh); // (a volley's eight and those still running out behind, and the surge's swarm: vfx/crossinglook.js)
-    this.telegraphs = new TelegraphMarks(); scene.add(this.telegraphs.mesh);
+    this.closingRings = new ClosingRings(); scene.add(this.closingRings.mesh);
     for (const r of this.outlines) { r.mesh = new THREE.Object3D(); r.mesh.visible = false; } // (a handle, not drawn: the look draws the outlined; mounts.js asks `s.mesh`)
-    this.meshes = [this.look.mesh, this.ribbons.mesh, this.telegraphs.mesh];
+    this.meshes = [this.look.mesh, this.ribbons.mesh, this.closingRings.mesh];
     this.show(false);
   }
   parked() { return this.meshes || []; }
@@ -178,13 +178,13 @@ export class Shots {
     L.hurtbox(S && this.look.mesh.visible ? R.toWorld(S.local, _c3) : null, S?.hull?.hurt ?? T.ship.hurt);
     L.update(raw, this.game.camera);
     for (const s of this.lances) if (s.on) this.ribbons.push(s, R.toWorld(s.p, _w));
-    this.ribbons.update(raw); this.telegraphs.update(raw);
+    this.ribbons.update(raw); this.closingRings.update(raw);
   }
 
   clear() {
     for (const L of [this.guns, this.lances, this.plains]) for (const s of L) { s.on = false; s.to = null; s.volley = null; }
     for (const r of this.outlines) this.endOutlined(r);
-    this.ribbons?.clear(); this.telegraphs?.clear();
+    this.ribbons?.clear(); this.closingRings?.clear();
     if (this.look) this.draw();
   }
   /** How many of the foes' shots are flying (the stress test's invariant: the pools never leak). */

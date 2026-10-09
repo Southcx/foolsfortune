@@ -112,9 +112,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   hook (the Sondelass's) or a sweep. → detail
 - **windup** (`creatures.windup`, `c.windup`) — a creature's telegraphed blow, listed while it can be answered; a parry in its window breaks it
   off. *Not:* an attack's own phase name.
-- **telegraph** (`markOf`, `src/progress/combat/telegraphs.js`; `docs/plans/TELEGRAPHS.md`) — what Divination draws of a windup over the body's
-  tell, saying more as it rises: where (the edge), when (the fill), what kind (the type's colour, the status glyph), how to answer (the
-  answer glyph). *Not:* the windup's animation, the parry mark, the closing ring on a part at sea (`vfx/telegraph.js`).
+- **telegraph** (`markOf`, `progress/combat/telegraphs.js`; drawn by `game.telegraphs`, `vfx/telegraphs/`) — what Divination draws of a windup
+  over the body's tell: where (the edge), when (the fill), what kind (the type's colour and motif, the status glyph), how to answer (the
+  answer glyph). *Not:* the windup's animation, the parry mark, the closing ring on a part at sea (`vfx/closingring.js`). → detail
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
@@ -315,7 +315,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
-  fish portrait.
+  fish portrait, a telegraph and its glyphs.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
   Crucibelle is in the hands; the setting `visual.compassContrast`. → detail
 - **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`) — one choosable thing shown as its icon, label, one line, stat chips, key and

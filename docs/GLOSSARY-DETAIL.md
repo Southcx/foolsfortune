@@ -291,6 +291,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   creature), the **Major Arcana** (twenty-two designated cards).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
+- **telegraph** (code: `markOf`, Dovina's data, `progress/combat/telegraphs.js`; the look `TelegraphLook`, `game.telegraphs`,
+  `src/vfx/telegraphs/`, Calissa's, 2026-10-09; TELEGRAPHS.md): what Divination draws of a windup, never more than its step has earned. Its
+  parts: **the edge** (step 1: the area's outline on the ground in the Mind's ink, a pale keyline outside it, the drawn area the area's own
+  numbers); **the caution edge** (the edge dashed: a tracked shape not yet locked, its size not yet known); **the fill** (step 2: the area
+  filling away from its maker on the windup's own clock, reaching the edge on the strike frame, its front a pale line; untyped it is ink,
+  from step 3 the damage type's two colours and its **motif**: impact's facets, ego's hex lattice, influence's ripples, illusion's turning
+  curls, delirium's bubbles); **a status glyph** (step 3, `status.<id>`: one for each status the blow builds, standing where the fill lands
+  last); **an answer glyph** (step 4, `answer.<id>`: chevrons laid on the ground at the edge, turned out, in or across a line; a curved arrow
+  behind a cone's maker; standing over a thing, the guard on the arena's rim, the high ground on a safe island, the crack on what a bait
+  leads into, the target over an add, the shut eye on a gazer); **an add's marker** (`tmark.add`, over each add before step 4) and **pips**
+  (`tmark.pip`, a real second left each, ten at most); **the eye** (`tmark.eye`, on a gazer); **the arena's rim** (a raidwide: a band round
+  the arena with a marquee running round it). One cast's areas are one edge (a union); six at once at most, never culled; a friendly area
+  (a sibling's, a spirit's) is its outline alone in the Courier's draught colour. One program (`telegraphshader.js`); the glyphs are drawn
+  in the icons' hand (`ui/icons/telegraphart.js`) into one atlas (`telegraphatlas.js`); the grid it lies on is **the drape**
+  (`telegraphdrape.js`: a square of world cells set on the ground). *Not:* the closing ring, the parry mark ("answer this"), the resist mark,
+  a glyph pop (`vfx/glyphs.js`).
 
 ## 4. Creatures and folk
 
@@ -671,7 +687,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   change of place under cover).
 - **a boss part** (`BossPart`, `BossParts`, `src/vfx/bossparts.js`; Calissa's, 2026-10-08): one piece of a leg's big object that the
   runtime hits and breaks on its own: **intact**, **damaged**, **broken**, or **sealed** (not to be hit yet: Ikaruga's covers); drawn in
-  line and glow (the Mind's labradorite); its **telegraph anchor** (`telegraphAnchor`) is where the shrinking mark sits, and its
+  line and glow (the Mind's labradorite); its **closing ring's anchor** (`closingRingAnchor`) is where the closing ring sits, and its
   **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
   the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
   (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
@@ -842,9 +858,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **seated** (drawn whole, shifted to where the storm draws the world at its place, by at most `STORM.seat`, 0.4 m, so its parts stay on
   their hurtboxes). Its strength (0..1) is a leg's **storm**, the waypoint's weather and the Courier's mental state (Prismatic warps the
   most), scaled by the setting `visual.warp`. *Not:* the weather (an island's mood); the glitch (a pulse).
-- **the telegraph mark** (`vfx/telegraph.js`; Elemental Gearbolt's): a ring closing on a part about to act over its windup, the part's
-  own ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. *Not:* the parry
-  mark ("answer this"), a lane mark (Divination's, on the sea), a windup (the creature's own listing).
+- **the closing ring** (`ClosingRings`, `vfx/closingring.js`, `shots.closingRings`; Elemental Gearbolt's; was "the telegraph mark",
+  renamed 2026-10-09 so it is never taken for a telegraph): a ring closing on a part about to act at sea over its windup, the part's own
+  ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. The rail keeps it until the
+  crossing is settled (TELEGRAPHS.md 6.8). *Not:* a telegraph (Divination's mark on the ground), the parry mark ("answer this"), a lane
+  mark (Divination's, on the sea), a windup (the creature's own listing).
 - **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player's words Espada's, LORE.md "The
   trip's pressures"): **the hull** (the ship's `bears`, carried from leg to leg, mended only at a haven); **the bunker** (code `tank`:
   the fuel a ship carries, in **measures**; filling it is **bunkering**, at the pier and at a calm's buoy; *not* "tank", which is the
@@ -1096,7 +1114,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
   the pendulum keylined in black, more as it rises.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
-  bars, the fish portrait.
+  bars, the fish portrait, a telegraph and its glyphs (`game.telegraphs`).
 
 ## 10. Engine and process
 

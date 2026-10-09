@@ -6,10 +6,10 @@ in your files changed: `world/emocean/pirates.js` and `leviathan.js` drive the l
 emocean sweep's `back` and `leviathan` parts pass (30 and 30). What follows is the interface for the runtime you are building.
 
 **One shape for every part** (`src/vfx/bossparts.js`, `BossPart`):
-- `look.part(name)` returns `{ object, state, sealed, alive, open, pulse, windupK, telegraphAnchor }` with `hit(power = 1)` (a fifth of a
+- `look.part(name)` returns `{ object, state, sealed, alive, open, pulse, windupK, closingRingAnchor }` with `hit(power = 1)` (a fifth of a
   real second of line and glow on the part, never a screen flash), `damage()`, `break()`, `set('intact' | 'damaged' | 'broken')`,
   `seal(on)`, `windup(k 0..1)` (the part's own body telegraph) and `world(out)` (the anchor's world point).
-- `telegraphAnchor` is an Object3D on the part, `userData = { radius (m), part (name), facing (local Vector3) }`: the shrinking mark
+- `closingRingAnchor` is an Object3D on the part, `userData = { radius (m), part (name), facing (local Vector3) }`: the shrinking mark
   (another builder's) sits there. `windupK` is what it reads for its shrink.
 - `look.parts.list(prefix)`, `look.parts.states()`, `look.reset()`. The look never decides a state: you do (one exception below).
 - Each look's `update(rawDt, sea)` must run every frame it is shown (it eases the states and ticks the pulses).

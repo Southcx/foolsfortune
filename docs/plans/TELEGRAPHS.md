@@ -37,7 +37,7 @@ Petra's (`creatures.windup`, the timeline runner), the words Espada's. Research:
 - **What already exists keeps its meaning:**
   - the parry mark (the Lachryma outline) means "answer this with the parry", always shown, never Divination's;
   - the resist mark means "it will refuse that";
-  - the closing ring on a boss's part at sea (`vfx/telegraph.js`) means "this part acts now".
+  - the closing ring on a boss's part at sea (`vfx/closingring.js`) means "this part acts now".
 
   Telegraphs add to these and never wear them.
 

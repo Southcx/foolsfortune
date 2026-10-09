@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// THE WORKBENCH'S STAGE 'crossing:shots' (the crossing's group): the shots' look, the Itano ribbons, the hurtbox and the telegraph mark
-// (vfx/railshots.js, itano.js, telegraph.js) shown before the rail's runtime drives them, over the two grounds they must read on: the
+// THE WORKBENCH'S STAGE 'crossing:shots' (the crossing's group): the shots' look, the Itano ribbons, the hurtbox and the closing ring
+// (vfx/railshots.js, itano.js, closingring.js) shown before the rail's runtime drives them, over the two grounds they must read on: the
 // storm's gold sky and the black crude. In the rail's own frame (+Z ahead, the ship at the cruise height) and from its chase view:
 //
 //   a RING of astral shots opening from a point ahead, a three-armed SPIRAL of umbral shots, a WALL of mixed shots (astral, umbral,
@@ -14,7 +14,7 @@
 import * as THREE from 'three';
 import { RailShots } from '../vfx/railshots.js';
 import { ItanoRibbons } from '../vfx/itano.js';
-import { TelegraphMarks } from '../vfx/telegraph.js';
+import { ClosingRings } from '../vfx/closingring.js';
 import { Sloop } from '../vfx/sloop.js';
 import { COLOR } from '../progress/weather.js';
 
@@ -56,9 +56,9 @@ export function crossingShotsStage() {
   const ship = new Sloop(); ship.group.scale.setScalar(SHIP_SCALE); ship.group.position.set(0, CRUISE, 0); obj.add(ship.group);
   ship.polarity?.(COLOR.mirth);
   // the looks
-  const S = new RailShots({ cap: 400, guns: 64 }), R = new ItanoRibbons({ max: 16 }), T = new TelegraphMarks();
+  const S = new RailShots({ cap: 400, guns: 64 }), R = new ItanoRibbons({ max: 16 }), T = new ClosingRings();
   obj.add(S.mesh, R.mesh, T.mesh); S.color(COLOR.mirth);
-  // the dummies: eight for the lances, one part for the telegraph
+  // the dummies: eight for the lances, one part for the closing ring
   const dm = new THREE.MeshStandardMaterial({ color: 0x3a3048, roughness: 0.35, metalness: 0.3, emissive: 0x1a1030 });
   const dummies = Array.from({ length: 8 }, (_, i) => { const a = (i / 7 - 0.5) * 2.2, m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), dm); m.position.set(Math.sin(a) * 9, CRUISE + 3 + Math.cos(i * 1.7) * 2, 20 + Math.cos(a) * 6); obj.add(m); return m; });
   const part = new THREE.Mesh(new THREE.OctahedronGeometry(1.2, 0), dm); part.position.set(7, CRUISE + 5, 34); obj.add(part);
@@ -110,7 +110,7 @@ export function crossingShotsStage() {
     }
     for (const d of dummies) d.scale.lerp(_d.set(1, 1, 1), Math.min(1, dt * 6)); // (struck: it swells and settles, no flash)
     R.update(dt);
-    // the telegraph: a part about to act, every 2.2 s, over 1.5 s
+    // the closing ring: a part about to act, every 2.2 s, over 1.5 s
     if (Math.floor(t / 2.2) !== tele) { tele = Math.floor(t / 2.2); T.mark(part, 1.5, { radius: 1.2 }); }
     part.rotation.y += dt * 0.6; T.update(dt);
   };

@@ -25,7 +25,7 @@
 // the beam: Touhou, DoDonPachi).
 //
 //   const D = new DrownedLight({ env, fx })   D.group (its own frame: origin on the tower's axis at the waterline, Y up)
-//   D.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), windup(k), world(out), telegraphAnchor }
+//   D.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), windup(k), world(out), closingRingAnchor }
 //     names: 'lamp', 'window.0'..'window.5'
 //   D.set({ wake 0..1 (the lamp waking), yaw (rad: the beam's turn), pitch, warn 0..1, hot 0..1, ghosts 0..1 })   D.update(rawDt, sea)
 //   D.parts   D.reset()   D.lamp (the LighthouseLamp)   D.beamPoint(d, out)   D.beamDir(out)   D.hulls, D.ghosts (Object3Ds: the wrecks
