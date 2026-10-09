@@ -13,7 +13,13 @@
 /** The fidelity ladder: the Divination level each step shows from (first numbers: the domain curve puts 2 in minutes, 8 within the
  *  first hour, 20 at about 2.5 real hours of Divination's play, 35 at about 9). */
 export const TELEGRAPH = {
-  steps: [{ id: 'where', at: 2 }, { id: 'when', at: 8 }, { id: 'kind', at: 20 }, { id: 'answer', at: 35 }],
+  steps: [ // (labels and lines Espada's: the Codex's Divination page names them; `said` is the log's line when the step is reached)
+    { id: 'where',  at: 2,  label: 'Area',   line: 'See where a blow lands.',          said: 'Telegraphs show the area now.' },
+    { id: 'when',   at: 8,  label: 'Timing', line: 'See when a blow lands.',           said: 'Telegraphs show the timing now.' },
+    { id: 'kind',   at: 20, label: 'Type',   line: 'See its damage type and status.',  said: 'Telegraphs show the damage type now.' },
+    { id: 'answer', at: 35, label: 'Answer', line: 'See how to answer it.',            said: 'Telegraphs show the answer now.' },
+  ],
+  tells: { label: 'Tells', line: 'Read the body. No marks yet.' }, // (step 0: the body alone)
   max: 6, // (telegraphs drawn at once; one cast's overlapping areas merge into one edge)
 };
 /** The answers a mark can carry (Calissa's glyphs, TELEGRAPHS.md section 4). */
