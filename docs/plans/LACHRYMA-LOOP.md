@@ -25,6 +25,15 @@ owner or Espada.
 - **The radial's eighth slot is Fair** (the game's word for no feeling: fair weather, fair water, opposites cancelled). Its label on the
   choice card is the owner's to rule against CLARITY's genre-word rule ("Clean"?); Fair is its lore name.
 
+**The line, ruled (Dovina, 2026-10-09, on Calissa's survey): liquid on the ground is Lachryma; solid bodies are clay.**
+- **Every liquid hazard is crude, a blot:** the bowl's pools and rim shallows, the cast puddles, the spit glob, the Overflow, a geyser's
+  spill. A cast puddle is a blot with a lifetime: it fades instead of growing.
+- **The Courier's own slip becomes the Courier's paint,** refined Lachryma in the brush's feeling: the slide trail, the slip shell, and
+  the brush's flick, slam pool and wash.
+- **Diving into either is unchanged:** this is a look change only.
+- **Clay stays clay:** the jellies' bodies, the urn crown, the brood, slip roe, and the bomb shell's molten slip.
+- **The code keeps its ids.** Player text says "crude" for a liquid underfoot.
+
 ## 1. One substance, two states
 - **Crude**: unrefined Lachryma. Spilled on the ground it is a **blot**; carried, a **cask**. It has **no feeling**. It oxidises in the
   open as the clapperjars' dropped baubles do: dark and oily when fresh, then shifting through Lachryma's colours. *Espada settles
