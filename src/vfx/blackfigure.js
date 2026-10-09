@@ -465,19 +465,6 @@ export function paintFrieze(g, x, y, w, h) {
 
 // ---- the white-ground hand: the funerary lekythos's (vfx/garden/lekythos.js), its figures outlined in a line on the white ground and
 // washed in a colour (the Achilles Painter's and the Reed Painter's lekythoi: a figure beside a grave stele, ribbons tied round it)
-/** A sporeling (vfx/garden/sporeling.js): a cap for a head, spotted, its gills under it, a stem body with two eyes, a wave of a hypha. */
-function sporelingFigure(g, x, y, s = 1) {
-  const T = place(x, y, s);
-  limb(g, tr().M(-2.2, 3).L(-3.2, 0.2).M(2.2, 3).L(3.2, 0.2), T, 1.3 * s);
-  solid(g, tr().M(-4.8, 2.4).C(-6.6, 6, -5.4, 10.4, -3.8, 13).L(3.8, 13).C(5.4, 10.4, 6.6, 6, 4.8, 2.4).Q(0, 1.4, -4.8, 2.4).Z(), T);
-  limb(g, tr().M(-4.9, 8.2).Q(-8.4, 7.2, -9.8, 4.2).M(4.9, 8.2).Q(8.4, 9.8, 9.8, 13.2), T, 1.1 * s);
-  solid(g, tr().M(-11.4, 12.2).C(-11, 20, -5.4, 23.8, 0, 23.8).C(5.4, 23.8, 11, 20, 11.4, 12.2).Q(0, 10.2, -11.4, 12.2).Z(), T);
-  const gills = tr(); for (let i = -4; i <= 4; i++) gills.M(i * 0.8, 12.6).L(i * 2.5, 11.4 + Math.abs(i) * 0.12);
-  cut(g, gills, T, INC * 0.8);
-  for (const [cx, cy, r] of [[-6, 17.4, 1.5], [0.4, 20.6, 1.8], [6.2, 16.8, 1.3], [-2.6, 15, 0.9], [3.4, 14.4, 0.8]]) paint(g, tr().O(cx, cy, r), T, WARE.white);
-  eye(g, 'open', T, -2.1, 8.4, [0, -0.3]); eye(g, 'open', T, 2.1, 8.4, [0, -0.3]);
-  cut(g, tr().M(-1, 5.4).Q(0, 4.6, 1, 5.4), T, INC * 0.9);
-}
 /** A ribbon (a taenia) hung in the field from a peg, looped, its two tails falling: (x, top) the peg, in the frame's units. */
 function hungRibbon(g, x, top, colour) {
   const piece = (t) => { trace(g, t, ID); g.fillStyle = colour; g.fill(); lay(g, INC * 0.8, OUTLINE.line); };
@@ -487,15 +474,14 @@ function hungRibbon(g, x, top, colour) {
   paint(g, tr().O(x, top - 0.4, 0.7), ID, WARE.black);
 }
 /** The spirit's likeness in the white-ground hand, standing on a groundline across the panel (x, y, w, h: the panel 60 units wide).
- *  kind: 'sporeling', or a slip jelly for anything else (most spirits were slip jellies); style: { line, wash, ground, ribbon? } as CSS
+ *  kind: a slip jelly for every kind (most spirits were slip jellies: kind kept for the next likeness); style: { line, wash, ground, ribbon? } as CSS
  *  colours (ribbon: a taenia hung in the field over it, in that colour, as the lekythoi hang one in the empty ground). */
 export function paintLikeness(g, kind, x, y, w, h, style) {
   OUTLINE = { ground: '#efe8da', ...style };
   try {
     const F = frame(g, x, y, w, h, 60), cx = F.W / 2;
     groundSpan(g, 2, F.W - 2);
-    if (kind === 'sporeling') sporelingFigure(g, cx, GY, Math.min(2.1, (F.H - GY - 3) / 24));
-    else jelly(g, cx, GY, { s: Math.min(1.8, (F.H - GY - 3) / 22.8), face: -1, eye: 'open', look: [-0.5, 0.2] });
+    jelly(g, cx, GY, { s: Math.min(1.8, (F.H - GY - 3) / 22.8), face: -1, eye: 'open', look: [-0.5, 0.2] });
     if (OUTLINE.ribbon && F.H > 64) hungRibbon(g, F.W * 0.78, F.H - 4, OUTLINE.ribbon);
     g.restore();
   } finally { OUTLINE = null; }

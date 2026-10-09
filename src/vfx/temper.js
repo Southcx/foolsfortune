@@ -18,6 +18,8 @@
 //   temper.set(c, { state, emo, enrage })   whenever they change (missing keys keep their value)
 //   temper.look(c) -> { gloss 0..1, glow THREE.Color (add to emissive), tremble 0..1 }   for the body module
 //   temper.update()                         every frame, after the creatures
+//   temper.throughWalls = false | true | (c) -> bool   its looks drawn over walls (off: a wall hides them, as it hides the body; the
+//                                           switch the Dreamvane's survey will throw as a psychic sonar ping: vfx/glyphs.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -30,6 +32,7 @@ export class Temper {
   constructor(game) {
     this.game = game;
     this.on = new Map(); // creature -> { state, emo, enrage, held: Map(name -> handle), base: roughness }
+    this.throughWalls = false; // (false, true, or a creature -> bool: its looks seen through walls)
   }
 
   set(c, v = {}) {
@@ -63,7 +66,7 @@ export class Temper {
         c.mat.roughness = s < 0 ? THREE.MathUtils.lerp(T.base, 0.98, -s / 2) : THREE.MathUtils.lerp(T.base, 0.12, s / 2);
       }
       if (!V) continue;
-      const scale = THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5);
+      const scale = THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
       const at = (out) => out.set(c.pos.x, c.pos.y + (c.height || 1) * 0.5, c.pos.z);
       const want = {
         'temper.stoic': smooth(1, 2, -T.state),
@@ -74,7 +77,8 @@ export class Temper {
       for (const [name, k] of Object.entries(want)) {
         let h = T.held.get(name);
         if (k > 0.02) {
-          if (!h || !h.alive) { h = V.play(name, { pos: at(new THREE.Vector3()), scale }); T.held.set(name, h); }
+          if (h && !!h.ctx?.throughWalls !== xr) { h.stop?.(); h = null; } // (the switch thrown: played again into the other pools)
+          if (!h || !h.alive) { h = V.play(name, { pos: at(new THREE.Vector3()), scale, throughWalls: xr }); T.held.set(name, h); }
           at(h.pos); h.k = k;
         } else if (h) { h.stop?.(); T.held.delete(name); }
       }

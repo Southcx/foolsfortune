@@ -20,7 +20,8 @@
 //   glyph     a mark (vfx/glyphs.js)   sound  an sfx method by name (audio: Wanda's)   fx  another effect, by name
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
 // hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash) or 'gold' / 'lach' / 'white'. `power` (the context's)
-// scales counts and sizes, so one effect serves a tap and a full-strength blow.
+// scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's) draws its particles,
+// decals and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an effect is hidden by walls).
 //
 // An effect can `extends` another (its layers first, then these), so a family shares a base and each member adds its own: change
 // the base and the family follows.
@@ -223,7 +224,7 @@ export class Vfx {
       if (!busy) { for (const s of h.layers) s.mesh?.dispose(); this.live.splice(i, 1); h.alive = false; }
     }
     for (const sw of this.swings || []) { sw.tick(); for (const { t } of sw.trails) t.update(raw); }
-    this.add.update(raw); this.alpha.update(raw);
+    this.add.update(raw); this.alpha.update(raw); this.xray?.add.update(raw); this.xray?.alpha.update(raw);
     for (const L of this.lights) {
       if (L.t >= L.dur) { L.l.intensity = 0; continue; }
       L.t += raw; const u = Math.min(1, L.t / L.dur);
@@ -266,6 +267,16 @@ export class Vfx {
     return false;
   }
 
+  /** The pools an effect seen through walls draws in (`ctx.throughWalls`), made the first time one asks: the same program as the
+   *  others, their depth test off (a state), drawn after the world's own transparent things. */
+  xrayPool(alpha) {
+    if (!this.xray) {
+      const mk = (additive) => { const P = new Sprites(this.game.scene, { additive, max: 2048, renderOrder: additive ? 27 : 26 }); P.mat.depthTest = false; return P; };
+      this.xray = { add: mk(true), alpha: mk(false) };
+    }
+    return alpha ? this.xray.alpha : this.xray.add;
+  }
+
   /** How much of `want` the budget allows (all of it in a cinematic). */
   spend(kind, want, ctx) { return ctx?.cine ? 1 : this.budget[kind].take(want); }
 
@@ -277,7 +288,7 @@ export class Vfx {
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
         const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
-        const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
+        const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, depthTest: !ctx.throughWalls, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
         const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat);
         m.renderOrder = L.order ?? 4; m.frustumCulled = false; m.userData.moodExempt = true; m.visible = false;
         g.scene.add(m);
@@ -294,7 +305,7 @@ export class Vfx {
       case 'shake': { const k = (L.k ?? 0.3) * Math.min(1.5, P); g.player && (g.player.shake = Math.max(g.player.shake || 0, k * this.spend('shake', k, ctx))); break; }
       case 'hitstop': { const d = (L.dur ?? 0.06) * Math.min(1.5, P) * this.spend('hitstop', (L.dur ?? 0.06) * Math.min(1.5, P), ctx); if (d > 0.012) g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, d, { release: L.release ?? 0.08 }); break; }
       case 'smear': if (g.post?.accum && !g.death?.active) { Object.assign(g.post.accum, { amt: L.amt ?? 0.6, zoom: L.zoom ?? 0.006, spin: L.spin ?? 0 }); this.smearAmt = L.amt ?? 0.6; this.smearT = this.smearDur = L.dur ?? 0.6; } break;
-      case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false }); break;
+      case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false, throughWalls: ctx.throughWalls ?? null }); break;
       case 'sound': sfx[L.sfx]?.(...(L.args || [])); break;
       case 'fx': this.play(L.fx, { ...ctx, pos: _v.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0])) }); break;
     }
@@ -319,7 +330,7 @@ export class Vfx {
 
   emit(h, L, n) {
     if (!h.ctx?.cine && n > 0) { const f = this.budget.sprites.take(n); n = f >= 1 ? n : Math.floor(n * f + Math.random()); } // (the particle budget: a busy second thins out)
-    const ctx = h.ctx, P = ctx.power ?? 1, pool = L.pool === 'alpha' ? this.alpha : this.add, sz = (L.powerSize === false ? 1 : Math.sqrt(P)) * (ctx.scale ?? 1);
+    const ctx = h.ctx, P = ctx.power ?? 1, pool = ctx.throughWalls ? this.xrayPool(L.pool === 'alpha') : L.pool === 'alpha' ? this.alpha : this.add, sz = (L.powerSize === false ? 1 : Math.sqrt(P)) * (ctx.scale ?? 1);
     for (let i = 0; i < n; i++) {
       // where it is born
       const sp = L.spawn || 'point', r = rnd(L.r ?? 0, ctx) * (ctx.scale ?? 1);

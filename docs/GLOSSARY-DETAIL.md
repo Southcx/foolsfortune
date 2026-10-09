@@ -481,7 +481,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
   Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
-  the floor, 10 m from the spray wall).
+  the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/testroomkit.js`): an open book whose pages project the
+  Index's dial, lying parallel to them a few centimetres over the paper, its print inked on the page and its light climbing between.
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
@@ -567,7 +568,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   tenths of its worth), **dissolve** (dread: saturation down). **The World Mushroom** (`TREE`; working name): the tree fed anything at
   its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
   and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
-  a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
+  a **prismatic day**). A **keepsake pot**: a released
   spirit fired at the Chimney into a pot that stays, standing in a ring at its foot (`progress/keepsakes.js`). **Myggdrasil's planetoid**
   (`world/garden/mycelium.js`): the seventh planetoid, given at Sinter (not bought, not on the ring), the tree on its crown, F at its roots.
   **The Grimoire of Echoes** (`feedback/codex/grimoire.js`): the Codex's page of the mycelium, what you have met only (the strains held,
@@ -582,7 +583,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (`canopyOpen`; *not* the Dantian's gate), one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's
   paths between the caps) run gold when a card is hung, a ghost before. **The mycelium's threads** run from the roots' ends over the
   ground to each spore bed on its planetoid (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on threads
-  under the caps, glowing in the tincture's colour; **perches** (shelf brackets on the stipe) are where sporelings sit (`perchWorld`).
+  under the caps, glowing in the tincture's colour; **shelf brackets** on the stipe in the crown, polypores of its clay.
 - **the plants** (the garden's: `src/world/garden/plants.js`; drawn by `src/vfx/garden/gardenplants.js`): green that spreads cell by
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
@@ -636,16 +637,13 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   firing, and go home. **soul glow**: the vessel's skin lit from inside in the soul colour, drawn by wheelColour's Oklab at one
   lightness for every hue: the soul's chroma at one strength once off grey, never its brightness (none while grey); brighter for a few
   real seconds after a true firing.
-- **a sporeling's look** (`sporeling`, `src/vfx/garden/sporeling.js`): a cap for a head in its fruit's colour, spotted; labradorite
-  gills edged in gold; a stem body with two eyes; hyphae for limbs; an idle sway, a waddle, a **hop** of its own (a squash, a stretch,
-  feet tucked; *not* the Emocean's hop, nor the Jar's hop). Its mind is Petra's.
 - **the strains' looks** (`strainBed`, `STRAIN_FUNGI`, `src/vfx/garden/strains.js`; the mycelium is Dovina's, `docs/plans/MYCELIUM.md`):
   a spore bed drawn as its strain's real fungus on what it grows on: the **lichen** (wonder: crusts, leafy **rosettes** and pixie cups on
   boulders and bark), **koji** (mirth: Aspergillus oryzae over rice in two cedar trays, a **koji-buta** each), the **inkcap** (desire:
   shaggy inkcaps on loam, dissolving into **ink** from the rim), the **oyster** (grief: shelves on a rotting log and a stump), **witches'
   butter** (dread: yellow-orange jelly on dead branches); in code a strain is its feeling, its fungus `lichen` .. `butter`. Its
   **growth** (0 inoculated .. 1 full) brings each part up from its foot. **Foxfire** (`foxfireColour`): what glows at night in the
-  garden's fungi (the strains, a fairy ring's fruit, a sporeling's gills), the feeling's canon colour lifted to a glow's lightness, a
+  garden's fungi (the strains, a fairy ring's fruit), the feeling's canon colour lifted to a glow's lightness, a
   slow breath and never a flicker; *not* a light (no lamp is lent). **A fairy ring**: round a spore bed, a narrow dead edge, a darker
   lusher **sward** outside it and the strain's own small growths on it; *not* the ring of bought planetoids, the hue ring, a ripple.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
@@ -1096,7 +1094,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
   the pendulum keylined in black, more as it rises.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
-  bars, the fish portrait.
+  bars, the fish portrait. A wall hides a creature's marks (its glyph pops, its aura, its temper) as it hides the creature, and its own
+  body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**
+  (a pop's `{ throughWalls }`, or `game.glyphs`, `game.temper`, `game.auras` `.throughWalls`, true or a creature -> bool): the switch
+  that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20).
 
 ## 10. Engine and process
 
