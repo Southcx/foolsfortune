@@ -58,7 +58,7 @@ export class Hud {
     };
     build();
     addEventListener('resize', build);
-    this.el.lachNum.textContent = ''; // (no count beside the tube: the tube is the count, docs/LOOK.md 2)
+    this.el.lachNum.textContent = ''; // (no count beside the tube: the tube is the count, docs/ART.md precept 2)
     // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while they have it
     this.beads = new ChargeBeads(px, { k: this.meter.el.__k, max: 3 });
     this.el.lachNum.before(this.beads.el);
@@ -85,7 +85,7 @@ export class Hud {
     // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
     if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
     // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
-    // not the HUD's to show (CLAUDE.md, Feedback; docs/LOOK.md 6)
+    // not the HUD's to show (CLAUDE.md, Feedback; docs/ART.md precept 6)
     if (debug !== this.debugShown) { this.debugShown = debug; this.el.speed.style.display = debug ? '' : 'none'; }
     if (debug) {
       this.peakT = (this.peakT || 0) - dt;

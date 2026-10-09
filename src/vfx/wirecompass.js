@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE WIRE COMPASS: which way they face and where the waypoint is, as a tape of ticks drawn in the Mind's lines across the top of
-// the view, and a wire diamond standing over the waypoint in the world. No letters, no degrees, no metres (docs/LOOK.md 6): north is
+// the view, and a wire diamond standing over the waypoint in the world. No letters, no degrees, no metres (docs/ART.md precept 6): north is
 // the tall tick, east, south and west the middling ones, each with its glyph under it (the sun's road: CARDINAL); the waypoint is a diamond on the tape at its bearing and
 // another over the place itself, drawn through walls, a fixed size on the screen. The map is still the map (M); the room they are in
 // is said by the log as they enter it (place.enter -> tracking.js).

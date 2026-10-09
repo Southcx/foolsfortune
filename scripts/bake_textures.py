@@ -3,7 +3,7 @@
 # BAKE THE TILING TEXTURES: the CC0 surfaces for the triplanar material (render/triplanar.js; the owner, R46: "pull open source cc0
 # options for now and credit accordingly"). Each is an ambientCG material (CC0 1.0, https://ambientcg.com), taken at 1K and brought to
 # the game: its light and shade (the colour map's, darkened by its occlusion map where it has one) graded to the colour that surface already has in the game (its light and shade kept, its hue pulled to the palette:
-# docs/LOOK.md) and taken down to 256 px (the 480-line look), still tiling.
+# docs/ART.md, precept 1) and taken down to 256 px (the 480-line look), still tiling.
 #
 #   python3 scripts/bake_textures.py <folder with the unzipped 1K-JPG sets>   -> src/assets/textures/<name>.jpg
 # ---------------------------------------------------------------------------------------

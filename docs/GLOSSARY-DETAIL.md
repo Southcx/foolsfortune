@@ -929,8 +929,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   generative **sound bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music. *Not:* the
   Spirit Garden's **beds** (where a material is planted).
 - **the arranger** (`src/music/arranger.js`): what plays a score a bar ahead of the audio clock. **the band** (`src/music/band.js`): its instruments.
-- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
-  audit (ours, placeholder, genre default).
+- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, the **precepts** (what
+  each kind of thing looks like; cited "precept N") and motion, and the effect meshes' pipeline. It holds what was LOOK.md. The placeholder
+  audit (ours, placeholder, genre default) is a dated note: `docs/archive/2026-10-08-art-placeholder-audit.md`.
 - **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
   *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
 - **a busker's mat** (`src/world/busk.js`): where the rhythm mode is begun in the world, one on each pier (Old Grog's at the Weir,

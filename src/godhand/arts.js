@@ -175,7 +175,7 @@ export class GodArts {
     else if (this.live) msg = this.live.tip || '';
     else if (K.far) { msg = 'OUT OF REACH'; bad = true; }
     // (no prompts about what the hand does or does not "understand": the ground outside your zone of influence just does not answer, and the ring shows it)
-    // No words at the cursor (CLAUDE.md, Feedback; docs/LOOK.md 5): how far the hand reaches is the dome standing round the jar
+    // No words at the cursor (CLAUDE.md, Feedback; docs/ART.md precept 5): how far the hand reaches is the dome standing round the jar
     // (vfx/wiremarks.js), the cursor's ring turns when it is past it, and an unlearned art is greyed on the bar. (msg and bad are
     // kept for the diagnostics.)
     this.tipMsg = msg; this.tipBad = bad;

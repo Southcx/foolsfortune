@@ -50,7 +50,7 @@ export function buildTestRoom(level) {
   level.box([(TR.mark.x + TR.wall.x) / 2, 0.02, TR.mark.z], [TR.wall.x - TR.mark.x, 0.01, 0.9], C.deep, { outline: false, collide: false, shadow: false });
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.7, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
   ring.rotation.x = -Math.PI / 2; ring.position.set(TR.mark.x, 0.035, TR.mark.z); level.scene.add(ring);
-  // the spray wall: a slab of soft clay on a timber frame, its face at TR.wall.x; a cross at the aim point (no numbers: docs/LOOK.md)
+  // the spray wall: a slab of soft clay on a timber frame, its face at TR.wall.x; a cross at the aim point (no numbers: docs/ART.md precept 6)
   const W = TR.wall, wallCol = level.box([W.x + 0.2, 0.3 + WALL.height / 2, W.z], [0.4, WALL.height, WALL.width], C.pale);
   level.box([W.x + 0.3, 0.15, W.z], [0.6, 0.3, WALL.width + 0.4], C.wood);
   for (const s of [-1, 1]) level.box([W.x + 0.3, (WALL.height + 0.6) / 2, W.z + s * (WALL.width / 2 + 0.12)], [0.24, WALL.height + 0.6, 0.24], C.wood);

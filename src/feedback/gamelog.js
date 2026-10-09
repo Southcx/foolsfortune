@@ -76,7 +76,7 @@ const CSS = `
   text-shadow: 1px 1px 0 #000; user-select: text; }
 #chatlog.typing { opacity: 1 !important; }
 #chatlog .foot { padding: 1px 6px 0; font: 500 9.5px var(--f-ui); color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
-#chatlog .foot .keys { visibility: hidden; } #chatlog.typing .foot .keys { visibility: visible; } /* (the keys are said while the line is open, not always: docs/LOOK.md 7) */
+#chatlog .foot .keys { visibility: hidden; } #chatlog.typing .foot .keys { visibility: visible; } /* (the keys are said while the line is open, not always: docs/ART.md precept 7) */
 `;
 
 const pad = (n) => String(n).padStart(2, '0');

@@ -27,7 +27,7 @@ export class Water {
     this.volumes = [];
     this.time = 0;
     this.mats = {};
-    this.ripples = []; // (the last 3 s of disturbances, for vfx/water.js's rings and wakes: docs/plans/SUNSHINE.md, phase 1)
+    this.ripples = []; // (the last 3 s of disturbances, for vfx/water.js's rings and wakes: docs/plans/SUNSHINE-SYSTEMS.md, phase 1)
     this.onDisturb = null;
   }
 

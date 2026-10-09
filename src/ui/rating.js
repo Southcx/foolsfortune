@@ -10,7 +10,7 @@
 //   THE SET      the song's end gives the whole set a word from its accuracy (`overall`: Miss! under 35 percent, then OK..., Nice!,
 //                Great!, Excellent, Awesome and Perfect at 55, 70, 80, 90 and 95; Wow at 97 with no note missed), said in the log
 //   THE INKS     the pixel kit's palettes, rising with the word: grey for the misses and the OKs, clay for Nice and Great, a mind's
-//                indigo for Excellent and Awesome, gold for Perfect and Wow (gold is won: docs/LOOK.md)
+//                indigo for Excellent and Awesome, gold for Perfect and Wow (gold is won: docs/ART.md precept 4)
 //   THE POP      the newest word replaces the last: it lands one whole step larger for 60 ms, settles, rises 10 px and fades by 0.6 s.
 //                Every step is a whole-number scale of the 1x art (ui/pixel.js), never resampled.
 //

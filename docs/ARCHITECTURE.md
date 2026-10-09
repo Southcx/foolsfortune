@@ -47,7 +47,7 @@ src/
                  the page's room (COOP.md)  (Petra)
   assets/        models, textures, fonts, clips                                                         (Calissa)
 scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports
-docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, AI, ECONOMY, OST, HANDOFFS
+docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, ART, VFX, AI, ECONOMY, OST, HANDOFFS
 ```
 
 ## Imports

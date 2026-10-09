@@ -362,8 +362,20 @@ the rules before building in the same area; a rule a machine can check goes into
     one's angle in that one function over a few frames and comparing the signs (a look's own `sense`, +1 or -1, carries it to all of them).
 130. **A boss is proved by a shooter, not by its place.** A target checked only for where it stands can stand where no view
     shows it and no gun reaches; its test fires at it (a scripted expert) and reports when it falls.
+131. **A removed doc is hunted by its bare name as well as its file name.** A list that writes `LOOK` where a path writes `LOOK.md`
+    slips past a grep for the path; before a doc is deleted, grep its name alone (and in capitals) and every list of docs.
 
 ## Cases
+### 2026-10-08 · A docs list still named LOOK after LOOK was merged into ART (the review of the docs merges)
+- **Seen:** `docs/ARCHITECTURE.md`'s layout block listed the bibles as "GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, ..." on the
+  branch that deleted `docs/LOOK.md`, whose report said a grep for `LOOK.md`, `OVERLAY-LOOK` and `SUNSHINE.md` found nothing but
+  provenance notes. ART was not in that list at all.
+- **Cause:** the builder's sweep looked for the three file names. The list wrote the bare word, with no `.md`, so no pattern of the
+  sweep could match it. Found by grepping `\bLOOK\b` over every tracked markdown file.
+- **Fix:** the list names ART in LOOK's place (`docs/ARCHITECTURE.md`, one word; Petra's file, a one-word crossing). Every other bare
+  mention left is a code constant or the provenance note "this was LOOK.md".
+- **Rule:** 131.
+
 ### 2026-10-08 · Charybdis turned against its own whirlpool, and the whirlpool against the ship half the time (the review of Calissa's Charybdis)
 - **Seen:** reading the review's numbers, not the pictures: in `crossing:charybdis` the beast's eye 0 and its sheath's ridges, as the
   world's `atan2(z, x)` has them, fell (0.156 to 0.106, and -0.424 to -0.664 radians in 1.5 real seconds) while the whirlpool's bands
