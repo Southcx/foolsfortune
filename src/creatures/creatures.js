@@ -33,10 +33,10 @@
 //   game.creatures.add(c)   .addFriend(c) (a sibling)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
 //   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
 //   c.friend: another Courier, an ally the Courier's blows still reach (friendly fire: a fifth of the damage, statuses under tolerance)
-//   .windup(c, { at, radius, eta, kind, parry, part, area, type, status, answer, read })   .unwind(c)   .windups(pos, r)   .parried(c)
+//   .windup(c, { at, radius, eta, kind, parry, part, area, type, status, answer, read })   .figmentTelegraph(c, kind, spec)   .unwind(c)   .windups(pos, r)   .parried(c)
 //   (a telegraphed blow, for the parry: courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry
-//   mark while it can be answered. Its TELEGRAPH (docs/plans/TELEGRAPHS.md): `area` its shape, `type` `status` `answer` what Divination
-//   may show of it; `w.telegraph` is markOf at the Courier's Divination as it began (the mark is Calissa's to draw). A windup that held
+//   mark while it can be answered. Its FIGMENT ATTACK TELEGRAPH (docs/plans/FIGMENT-TELEGRAPHS.md): `area` its shape, `type` `status` `answer` what Divination
+//   may show of it; `w.figmentTelegraph` is figmentMarkOf at the Courier's Divination as it began (the mark is Calissa's to draw). A windup that held
 //   the Courier as it began and ended with them out of it, parried or looking away is READ: `windup.read { kind, how, by }`; `read: false`
 //   for one that never counts, Strawman's)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
@@ -50,7 +50,7 @@ import { sfx } from '../audio/sfx.js';
 import { blowWindow } from '../courier/parry.js';
 import { courierMindEffect } from '../progress/stones.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
-import { markOf } from '../progress/combat/telegraphs.js';
+import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -151,12 +151,12 @@ export class Creatures {
   windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true } = {}) {
     this.unwind(c);
     const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
-    w.telegraph = area ? markOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('telegraphs')) : null;
+    w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs')) : null;
     w.held = read && !!g.player && this.holds(c, w);
     c.windup = w;
   }
-  /** A cast's telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
-  telegraph(c, kind, spec) { const w = c.windup; if (w && w.t > 0) { Object.assign(w, spec, { kind }); w.telegraph = markOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('telegraphs')); w.held = !!this.game.player && this.holds(c, w); } else this.windup(c, { ...spec, kind, parry: false }); }
+  /** A cast's Figment attack telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
+  figmentTelegraph(c, kind, spec) { const w = c.windup; if (w && w.t > 0) { Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs')); w.held = !!this.game.player && this.holds(c, w); } else this.windup(c, { ...spec, kind, parry: false }); }
   unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }
   /** Is the Courier in a windup's area: within its reach, or for a gaze looking at it; a raidwide holds everyone. */
   holds(c, w) {

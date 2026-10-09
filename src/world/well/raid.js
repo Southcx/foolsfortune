@@ -87,10 +87,10 @@ export class Raid {
     this.g.events?.emit('foe.cast', { cast: id, windup: d.windup, by: 'creature' });
     DO[id]?.begin?.(this, d);
     if (!d.windup) this.look.blow(id);
-    else if (d.area) { // (its telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/TELEGRAPHS.md)
+    else if (d.area) { // (its Figment attack telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/FIGMENT-TELEGRAPHS.md)
       const A = d.area, P = this.P, at = A.at === 'courier' ? P.pos.clone() : F.c.pos;
       const radius = A.radius ?? A.outer?.[1] ?? A.length ?? A.inner ?? F.c.radius * 2;
-      this.g.creatures?.telegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark });
+      this.g.creatures?.figmentTelegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark });
     }
   }
   onBlow(id, d) {
