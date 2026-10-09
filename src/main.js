@@ -273,7 +273,7 @@ async function main() {
   const seedArg = new URLSearchParams(location.search).get('seed'); // (?seed=N: a page that must play the same twice, the stress test's)
   reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
-  const freshBuild = save.boot(BUILD); // (a new build starts its progress afresh: the player's and the world's)
+  const freshBuild = save.boot(BUILD, save.unstash('mode') || save.lastMode()); // (a new build starts its progress afresh: the player's and the world's; and the save is the mode's chosen on the title, DEBUG or STORY: DEBUG-MODE.md section 2)
   loadTuning();
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
@@ -764,7 +764,7 @@ async function main() {
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
-  game.chat.add('goto', { help: 'stand at a place (/goto well.mouth) or a point (/goto x y z yaw: the stand line of a QAIS report)', run: (a) => {
+  game.chat.add('goto', { debug: true, help: 'stand at a place (/goto well.mouth) or a point (/goto x y z yaw: the stand line of a QAIS report)', run: (a) => {
     const n = a.map(Number), point = a.length >= 3 && n.slice(0, 3).every(Number.isFinite);
     const ok = point ? game.places.stand(new THREE.Vector3(n[0], n[1], n[2]), n[3] || 0) : a[0] ? game.places.travel(a[0]) : null;
     game.events.emit('courier.goto', { to: a.join(' ') || '(nowhere)', ok: !!ok, by: 'courier' });
@@ -776,7 +776,7 @@ async function main() {
   const OPT_ARTS = ['hover', 'rocket', 'skim'];
   game.save?.section('optarts', { scope: 'settings', version: 1, dump: () => Object.fromEntries(OPT_ARTS.map((a) => [a, !!T.tech[a].enabled])),
     load: (d) => { for (const a of OPT_ARTS) T.tech[a].enabled = !!d[a]; }, reset: () => { for (const a of OPT_ARTS) T.tech[a].enabled = false; } });
-  game.chat.add('art', { help: `switch an opt-in Movement Art on or off: /art ${OPT_ARTS.join(' | ')} (no name: the list)`, run: ([id]) => {
+  game.chat.add('art', { debug: true, help: `switch an opt-in Movement Art on or off: /art ${OPT_ARTS.join(' | ')} (no name: the list)`, run: ([id]) => {
     if (!OPT_ARTS.includes(id)) { game.events.emit('art.list', { arts: OPT_ARTS.map((a) => `${a} ${T.tech[a].enabled ? 'on' : 'off'}`).join(', ') }); return; }
     T.tech[id].enabled = !T.tech[id].enabled; game.save?.dirty('optarts');
     game.events.emit('art.toggle', { art: id, on: T.tech[id].enabled, by: 'courier' });
@@ -788,17 +788,17 @@ async function main() {
   game.rhythm = new Rhythm(game);
   game.debugChests = new DebugChests(game); // (what a test session needs, beside the thing under test: debug/debugchest.js, docs/plans/DEBUG-CHESTS.md)
   game.busk = new Busk(game); // (the busker's mats on the piers: F with the Crucibelle worn begins a song: world/busk.js)
-  game.chat.add('garden', { help: "into your Inner Realm from where you stand (a tester's way: a Shrine is the door)", run: () => game.realm?.enter(game.shrines?.get?.(game.shrines.last) || null) });
+  game.chat.add('garden', { debug: true, help: "into your Inner Realm from where you stand (a tester's way: a Shrine is the door)", run: () => game.realm?.enter(game.shrines?.get?.(game.shrines.last) || null) });
   // (a tester's way to the mycelium until the garden's features are placed by hand: MYCELIUM.md; every verb reports through its event)
-  game.chat.add('spore', { help: 'the spore beds: /spore bed | inoculate <bed> <feeling> | set <bed> <box slot> [slot] | back <bed> | harvest <bed>', run: (a) => {
+  game.chat.add('spore', { debug: (a) => a[0] === 'bed', help: 'the spore beds: /spore bed | inoculate <bed> <feeling> | set <bed> <box slot> [slot] | back <bed> | harvest <bed>', run: (a) => {
     const S = game.sporeBeds, n = (k) => Number(a[k]) - 1, f = { bed: () => ({ ok: true, bed: S.grant() + 1 }), inoculate: () => S.inoculate(n(1), a[2]),
       set: () => S.set(n(1), a.slice(2).map((x) => Number(x) - 1)), back: () => S.back(n(1)), harvest: () => S.harvest(n(1)) }[a[0]];
     const r = f ? f() : { ok: false, why: 'bed, inoculate, set, back or harvest' }; if (!r.ok && r.why) game.log.say('warn', r.why, { key: 'spore', throttle: 1 }); } });
-  game.chat.add('tree', { help: 'Myggdrasil: /tree feed <box slot> | pick | hang <arcana> | dawn', run: (a) => {
+  game.chat.add('tree', { debug: (a) => a[0] === 'dawn', help: 'Myggdrasil: /tree feed <box slot> | pick | hang <arcana> | dawn', run: (a) => {
     const T = game.myggdrasil, f = { feed: () => T.feed(Number(a[1]) - 1), pick: () => ({ ok: true, n: T.pick() }), hang: () => T.hang(a[1]), dawn: () => ({ ok: true, n: T.dawn() }) }[a[0]];
     const r = f ? f() : { ok: false, why: 'feed, pick, hang or dawn' }; if (!r.ok && r.why) game.log.say('warn', r.why, { key: 'tree', throttle: 1 }); } });
   game.chat.add('realmname', { help: 'name your Inner Realm yourself: /realmname <name>', run: (args) => game.realm?.setName(args.join(' ')) });
-  game.chat.add('cavern', { help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
+  game.chat.add('cavern', { debug: true, help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
     const W = game.well; if (game.emocean?.stage.active || game.death?.active) return;
     const go = () => { if (!W.active && !W.enter()) return; W.toCavern(); game.events.emit('cavern.force', { by: 'courier' }); };
     if (game.seam) game.seam.cross(go, { kind: 'maw' }); else go();
@@ -808,7 +808,7 @@ async function main() {
     if (a && !RHYTHM_TRACKS.some((T) => T.id === a)) { game.events.emit('rhythm.list', { tracks: RHYTHM_TRACKS.map((T) => T.id) }); return; }
     game.rhythm.begin(a, b);
   } });
-  game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
+  game.chat.add('opening', { debug: true, help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
     const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
     const T = await import('./tools/lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
     const { table, mods } = T.oddsOf('heart.plain', ['key.brass']);
@@ -854,8 +854,8 @@ async function main() {
   title.ui = new TitleUI(game, {
     onStart: () => titleScene.go(),
     onChoose: (mode) => {
-      title.mode = mode;
-      system.setLendAll(mode === 'debug'); // (DEBUG is the sandbox: every art lent; STORY learns them by doing)
+      if (mode !== save.mode) { save.flush({ all: true }); save.stash('mode', mode); location.reload(); return; } // (the other mode's save: put in place at boot, before anything reads it)
+      title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)
       if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
       game.mode = mode;
       input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
@@ -1266,7 +1266,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
 }
 

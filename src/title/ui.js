@@ -72,11 +72,11 @@ export class TitleUI {
     this.page = page;
     const g = this.game, music = g.music;
     const pages = {
-      main: [
-        // STORY is off the menu until further notice (the owner, 2026-10-04: docs/DESIGN.md, section 8); its choice still works if restored
-        { id: 'debug', label: 'DEBUG', sub: 'the workshop as it stands: every tool, every room' },
-        { id: 'settings', label: 'SETTINGS', sub: 'music, voice, windows' },
-        { id: 'sound', label: 'SOUND TEST', sub: 'the music, one piece at a time' },
+      main: [ // (no lines under the choices: the owner, v135, "super unnecessary")
+        { id: 'debug', label: 'DEBUG' },
+        { id: 'settings', label: 'SETTINGS' },
+        { id: 'sound', label: 'SOUND TEST' },
+        { id: 'story', label: 'STORY (coming later)' }, // (its own save, nothing lent, no commands: docs/plans/DEBUG-MODE.md section 2; words Espada's)
       ],
       settings: [
         { id: 'music', label: `MUSIC ${music?.on === false ? 'OFF' : 'ON'}` },
@@ -109,7 +109,7 @@ export class TitleUI {
       if (it.id === 'music') g.music?.setOn?.(!(g.music.on !== false));
       else if (it.id === 'voice') g.voice?.set?.({ on: !g.voice.settings.on });
       else if (it.id === 'window') g.theme?.next?.();
-      else if (it.id === 'back') { this.hot = 2; this.showMenu('main'); return; }
+      else if (it.id === 'back') { this.hot = 1; this.showMenu('main'); return; }
       this.showMenu('settings');
       return;
     }

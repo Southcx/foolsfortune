@@ -81,7 +81,7 @@ export class Moveset {
   /** A move's row in Dovina's table (progress/combat/moves.js), or null. */
   rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || null; }
   /** Whether a move is open to the Courier (its row's unlock over the ledger; a move with no row always is). */
-  open(id) { const d = this.def(id); return !d?.rule || !this.rule(d) || unlocked(this.S.rules || this.id, d.rule, this.game.ledger); }
+  open(id) { const d = this.def(id); return !d?.rule || !this.rule(d) || !!this.game.lend?.has('moves') || unlocked(this.S.rules || this.id, d.rule, this.game.ledger); }
   /** The pause strings: [{ at: the ground move they branch from, to: [moves] }]. */
   branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; }
 

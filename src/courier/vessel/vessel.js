@@ -53,7 +53,7 @@ export class Vessel {
   has(id) {
     const g = this.glaze(id);
     if (!g) return false;
-    if (g.got.start || g.got.photo) return true;
+    if (g.got.start || g.got.photo || this.game.lend?.has('glazes')) return true; // (DEBUG's lend panel: progress/lend.js)
     if (g.got.ach) return this.game.ledger?.done?.[g.got.ach] !== undefined; // (done at play time 0 is 0: never truthiness)
     return !!this.bought?.[id];
   }
