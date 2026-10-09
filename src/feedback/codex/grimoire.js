@@ -37,7 +37,7 @@ export function renderGrimoire(codex, cx) {
 
   // the strains, in the order the five feelings are always shown
   const st = sec('THE STRAINS');
-  for (const f of DISPLAY_ORDER) {
+  for (const f of DISPLAY_ORDER.filter((x) => STRAINS[x])) { // (the five strains: the garden's phases stay five)
     const own = !!S?.strains?.[f], X = STRAINS[f];
     if (own) line(st, `<b>${cap(STRAIN_NAMES[f])}</b> <s>${X.verb}s ${X.eats.join(', ')}${X.pair ? ', two at a time' : ''} · ${X.hours} game hours</s>`, COLOR[f]);
     else line(st, '<b>???</b> <s>a strain not yet held</s>', null, true);

@@ -24,7 +24,7 @@
 // what is easy), Stardew Valley (rain fish), FFXIV's fish windows, Persona 4's fog (the town's mood, and dangerous), Majora's Mask and
 // Minecraft (a game clock that makes days testable), and Wind Waker (the sea's weather as a thing you sail through).
 //
-//   ASPECTS (on the line)   VALENCE, DISPLAY_ORDER (generated: wonder, mirth, desire, grief, dread)   COLOR   AGATES, agateOf(a, b)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, second?, secondStrength?, agate?, phase, dayPhase }
+//   ASPECTS (on the line: seven)   NATIVE (Anagami's five, known from the start)   VALENCE, DISPLAY_ORDER (generated: wonder, mirth, desire, fury, gall, grief, dread)   COLOR   AGATES, agateOf(a, b)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, second?, secondStrength?, agate?, phase, dayPhase }
 //   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   clockAt(ms?) -> { day, weekday, hour, minute }   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
 //   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .read(by?) (the Dreamvane)  .update(dt)
@@ -35,27 +35,34 @@ import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { wholeOf } from '../render/zonemap.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
-export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
-/** How positive each feeling is (the shown order is generated from it, so the wheel's eight can join without a hand-written list:
- *  docs/plans/WHEEL.md). Faith, Gall and Fury are staged: they arrive with their places (the owner, 2026-10-05). */
-export const VALENCE = { wonder: 2, mirth: 1.5, faith: 1, desire: 0, fury: -0.5, gall: -1, grief: -1.5, dread: -2 };
+/** The seven feelings on the Law-to-Chaos line, as the crude's grades sit on the islands. The five keep their places; Gall and Fury
+ *  (docs/plans/GALL-AND-FURY.md) lie past Dread, so a place's sky reaches them only where its mood runs past +2 (`ECON.weather.reach`). */
+export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread', 'gall', 'fury'];
+/** Anagami's five: the feelings its waters carry, known to the Courier from the start (Gall and Fury are learned by drinking them). */
+export const NATIVE = ['mirth', 'wonder', 'desire', 'grief', 'dread'];
+/** How positive each feeling is (the shown order is generated from it: docs/plans/WHEEL.md). Faith is cut (the owner, 2026-10-09). */
+export const VALENCE = { wonder: 2, mirth: 1.5, desire: 0, fury: -0.5, gall: -1, grief: -1.5, dread: -2 };
 /** The order the feelings are SHOWN in, anywhere a player sees them (the owner; GLOSSARY): most positive to most negative. */
 export const DISPLAY_ORDER = ASPECTS.slice().sort((a, b) => VALENCE[b] - VALENCE[a]);
 /** Each feeling's colour: Plutchik's hue for its petal, which is also its damage type's (Calissa; the owner, 2026-10-05). */
-export const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a, faith: 0x9be36a, gall: 0x8a5ac8, fury: 0xc80018 };
+export const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a, gall: 0x8a5ac8, fury: 0xc80018 };
 /** AGATE: two feelings at once, wedged and never blended (Espada), after Plutchik's dyads in Espada's plain words (LORE.md); opposites
  *  cancel instead. The key is the two feelings in Law-to-Chaos order. A mind or a sky shows one feeling, or one agate: never three. */
 export const AGATES = {
   'mirth+wonder': 'delight', 'mirth+desire': 'hope', 'mirth+dread': 'guilt',
   'wonder+grief': 'disappointment', 'wonder+dread': 'awe', 'desire+grief': 'longing', 'desire+dread': 'worry', 'grief+dread': 'despair',
+  // Gall and Fury (Espada's words, GALL-AND-FURY.md section 0)
+  'mirth+fury': 'pride', 'desire+fury': 'zeal', 'wonder+fury': 'outrage', 'grief+fury': 'envy', 'gall+fury': 'contempt',
+  'grief+gall': 'remorse', 'dread+gall': 'shame', 'wonder+gall': 'disbelief', 'mirth+gall': 'mockery', 'desire+gall': 'cynicism',
 };
-/** Plutchik's opposed pairs among ours: they cancel, never wedge (WHEEL.md). */
-export const OPPOSITE = { mirth: 'grief', grief: 'mirth', wonder: 'desire', desire: 'wonder', dread: 'fury', fury: 'dread', faith: 'gall', gall: 'faith' };
+/** Plutchik's opposed pairs among ours: they cancel, never wedge (WHEEL.md). Gall has none: it is only outlasted or washed out. */
+export const OPPOSITE = { mirth: 'grief', grief: 'mirth', wonder: 'desire', desire: 'wonder', dread: 'fury', fury: 'dread', gall: null };
 export const agateOf = (a, b) => (a && b && a !== b ? AGATES[[a, b].sort((x, y) => ASPECTS.indexOf(x) - ASPECTS.indexOf(y)).join('+')] || null : null);
-/** The damage type each weather feeds: the type at its place on the line (progress/combat/types.js). */
-export const TYPE_OF = { mirth: 'impact', wonder: 'ego', desire: 'influence', grief: 'illusion', dread: 'delirium' };
+/** The damage type each weather feeds: the type at its place on the line (progress/combat/types.js). The types stay five: Fury feeds
+ *  Impact (anger is force), Gall feeds Ego (contempt makes a mind doubt itself). */
+export const TYPE_OF = { mirth: 'impact', wonder: 'ego', desire: 'influence', grief: 'illusion', dread: 'delirium', fury: 'impact', gall: 'ego' };
 /** Espada's names (LORE.md, "Emotional weather"; proposals for the owner). */
-export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', desire: 'the wanting wind', grief: 'the long rain', dread: 'the pall', calm: 'fair' };
+export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', desire: 'the wanting wind', grief: 'the long rain', dread: 'the pall', gall: 'the miasma', fury: 'the hail', calm: 'fair' };
 
 /** Each zone's place and exposure (Petra's table: render/zonemap.js). */
 const ZONE_PLACE = {
@@ -64,6 +71,9 @@ const ZONE_PLACE = {
 };
 /** Where a place sits on the line: an island by its law, a Well by its own leaning (a mind ruminating leans to grief). */
 const lawOf = (place) => ECON.islands[place]?.law ?? W.wells[place?.slice(5)] ?? 0;
+/** How far toward Chaos a place's mood may run: +2 (Dread) unless the table lets it further (+3 Gall, +4 Fury). Law's end stops at Mirth. */
+const reachOf = (place) => W.reach?.[place] ?? 2;
+const moodClamp = (m, place) => Math.max(-2, Math.min(reachOf(place), m));
 
 const hour = (ms) => ms / GAME_HOUR;
 const hash01 = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
@@ -87,17 +97,17 @@ export function weatherAt(place = 'anagami', ms = calNow()) {
   const h = hour(ms), day = { phase: +((((h % 24) + 24) % 24) / 24).toFixed(4), dayPhase: phaseAt(ms) };
   if (!place) return { aspect: null, strength: 0, ...day }; // (the open Emocean: no ego, no mood)
   const t = Math.floor(h / W.block) * W.block, [p1, p2, p3] = W.periods, ph = (k) => hash01(`weather:${place}:${k}`);
-  const mood = Math.max(-2, Math.min(2, lawOf(place) * W.lean + W.swing[0] * wave(t, p1, ph(1)) + W.swing[1] * wave(t, p2, ph(2))));
+  const mood = moodClamp(lawOf(place) * W.lean + W.swing[0] * wave(t, p1, ph(1)) + W.swing[1] * wave(t, p2, ph(2)), place);
   const intensity = 0.5 + 0.5 * wave(t, p3, ph(3));
   if (intensity < W.calm) return { aspect: null, strength: 0, ...day };
   const aspect = ASPECTS[Math.round(mood) + 2], strength = +((intensity - W.calm) / (1 - W.calm)).toFixed(2);
   // an undercurrent: a second mood of the place on its own slow waves; when it runs strong and differs, the sky is an AGATE of the two
   // (Calissa: the second shows as colour, never as a second weather to read), always weaker than the first
-  const U = W.under, mood2 = Math.max(-2, Math.min(2, lawOf(place) * W.lean + U.swing * wave(t, U.periods[0], ph(4))));
+  const U = W.under, mood2 = moodClamp(lawOf(place) * W.lean + U.swing * wave(t, U.periods[0], ph(4)), place);
   const i2 = 0.5 + 0.5 * wave(t, U.periods[1], ph(5)), second = ASPECTS[Math.round(mood2) + 2];
   if (i2 < U.above || second === aspect) return { aspect, strength, ...day };
   const s2 = +(Math.min(0.8, (i2 - U.above) / (1 - U.above)) * strength).toFixed(2);
-  if (OPPOSITE[aspect] === second) return { aspect, strength: +(strength * (1 - s2)).toFixed(2), cancelled: second, ...day }; // (opposites cancel: the mood is torn, and weaker)
+  if (OPPOSITE[aspect] && OPPOSITE[aspect] === second) return { aspect, strength: +(strength * (1 - s2)).toFixed(2), cancelled: second, ...day }; // (opposites cancel: the mood is torn, and weaker)
   return { aspect, strength, second, secondStrength: s2, agate: agateOf(aspect, second), ...day };
 }
 

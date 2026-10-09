@@ -64,9 +64,12 @@ The other pairs are unchanged: Wonder and Desire, Mirth and Grief, Dread and Fur
 
 `ASPECTS` is the Law-to-Chaos line the systems read (the weather's lean, the rail's danger, the astral share). The seven:
 
-**Mirth · Wonder · Desire · Grief · Gall · Dread · Fury** (Law to Chaos).
+**Mirth · Wonder · Desire · Grief · Dread · Gall · Fury** (Law to Chaos; built 2026-10-09).
 - Fury is the far end, rage being order's last enemy.
-- Gall sits beside Grief: both turn inward and sour.
+- The five keep their places (-2 to +2) and the two newcomers lie past Dread, so no sky that exists today changes: a place's mood is clamped
+  to [-2, reach], `ECON.weather.reach` (+2 when unsaid; +3 lets Gall fall, +4 Fury). (The first draft put Gall between Grief and Dread;
+  that would have moved every island's weather, so it was not built.)
+- `NATIVE` is Anagami's five: the shore's blots and the sea chart's waypoints draw from it until phase 2.
 
 **What breaks:** the weather maps a mood from −2 to +2 onto five slots (`ASPECTS[Math.round(mood) + 2]`). With seven it maps −3 to +3.
 - **Anagami's sky must never reach the ends.** Its lean keeps the mood within ±2. Gall and Fury live past that, so they fall on Anagami

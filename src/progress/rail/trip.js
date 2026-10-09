@@ -45,7 +45,7 @@ export const TRIP = {
   /** Adrift: a straight step is this much likelier than a diagonal; a leg sailed adrift tops out at this rank. */
   driftStraight: 2, driftRank: 'C',
   /** How the shots of a waypoint fall between the forms: the astral share by feeling (fair: half and half). */
-  astral: { wonder: 0.75, mirth: 0.65, desire: 0.5, grief: 0.35, dread: 0.25 },
+  astral: { wonder: 0.75, mirth: 0.65, desire: 0.5, grief: 0.35, dread: 0.25, gall: 0.3, fury: 0.2 },
   /** Crude at a waypoint of its own feeling and of its opposite. */
   spill: { same: 0.75, opposite: 1.5 },
 };
