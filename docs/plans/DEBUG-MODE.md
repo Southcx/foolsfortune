@@ -46,7 +46,7 @@ look Calissa's; its words Espada's.
   (scope `settings`, under `debug.lend`), so your switches survive a build.
 - **Nothing crosses.** A DEBUG achievement, count or item never reaches the STORY save. The Codex says which save you are in at the top
   of its records page ("DEBUG save" / "STORY save").
-- **STORY comes back to the title,** last on the menu, as "STORY (not written yet)". In it nothing is lent, no command that grants or
+- **STORY comes back to the title,** last on the menu, as "STORY (coming later)" (Espada's words). In it nothing is lent, no command that grants or
   travels works, and no debug chest stands. Today it plays as the slice with story rules: the honest check that the slice can be
   played up to without help.
 
@@ -110,7 +110,7 @@ PRESETS.dunemawBowl = {
 };
 ```
 
-- **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "from a preset" beside its records.
+- **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "Preset: {label}" beside its records.
 - **They live in `src/debug/presets.js`** (data, Dovina's), each naming what it is for, like a debug chest's kit. A QAIS test may name a
   preset (`preset: 'gardenFiring2'`); its "take me there" applies it.
 - **The first five:**

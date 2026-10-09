@@ -41,16 +41,20 @@ export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelid
   calving: 'Sherds', overflow: 'The Overflow', swallow: 'The Dunemaw Swallows' };
 /** The transition is Unstopped; Brine Soaked is Sodden; Submerge is Slake; the calves are sherds, and "the sherds mend" when they re-merge. */
 export const STATES = { clutch: 'Unstopped', soaked: 'Sodden', submerge: 'Slake', calf: 'sherd' };
+/** THE GREAT BOWL'S SCALE (2026-10-09: a body 21 m tall in a bowl 140 m across; Petra's build, ARENA). Every area grew with the body
+ *  (about x2.5), and every windup a player must run out of grew until a sprinting Courier (6.8 m/s, core/config.js) clears it with 0.3 s
+ *  to read it: windup >= escape metres / 6.8 + 0.3. What is answered in place (the parry, the guard, the gaze) kept its windup. Monster
+ *  Hunter's and Shadow of the Colossus's rule: the bigger the body, the longer and plainer the tell. The old bowl's numbers are in git. */
 export const CASTS = {
-  crownBash:   { windup: 1.2, area: { shape: 'lunge', at: 'courier', reach: 9 }, effect: { pool: 0.6, soaked: 20 }, answer: 'parry (V) or roll', parry: true }, // (the tankbuster; soaked: the next hit doubled for 20 s)
-  brineLine:   { windup: 1.0, area: { shape: 'line', at: 'courier', width: 4, length: 24 }, effect: { hits: 1, crown: 'pillar' }, answer: 'stand before a pillar and step aside: it cracks its own crown' }, // (the ram: DUNEMAW-SYSTEMS.md)
-  gelidRings:  { windup: 1.5, area: { shape: 'out-in', inner: 6, outer: [6, 16] }, effect: { hits: 1, slow: 3 }, answer: 'out of the first ring, then back in' },
-  oozeRain:    { windup: 0.6, area: { shape: 'baited', drops: 3, every: 1, radius: 2.5, lasts: 60 }, effect: { hits: 1 }, answer: 'lead the drops to the rim: each leaves a puddle for a real minute' },
+  crownBash:   { windup: 1.4, area: { shape: 'lunge', at: 'courier', reach: 20 }, effect: { pool: 0.6, soaked: 20 }, answer: 'parry (V) or roll', parry: true }, // (the tankbuster; soaked: the next hit doubled for 20 s)
+  brineLine:   { windup: 1.6, area: { shape: 'line', at: 'courier', width: 14, length: 60 }, effect: { hits: 1, crown: 'pillar' }, answer: 'stand before a pillar and step aside: it cracks its own crown' }, // (the ram: DUNEMAW-SYSTEMS.md)
+  gelidRings:  { windup: 2.5, area: { shape: 'out-in', inner: 15, outer: [15, 40] }, effect: { hits: 1, slow: 3 }, answer: 'out of the first ring, then back in' },
+  oozeRain:    { windup: 0.9, area: { shape: 'baited', drops: 3, every: 1, radius: 4, lasts: 60 }, effect: { hits: 1 }, answer: 'lead the drops to the rim: each leaves a puddle for a real minute' },
   crownGlare:  { windup: 2.0, area: { shape: 'gaze' }, effect: { stunned: 3 }, answer: 'look away, or look through the Veritome: the lens turns the gaze back and stuns it 4 s', mirror: 4 },
   slipNova:    { windup: 3.0, area: { shape: 'raidwide' }, effect: { pool: 0.4 }, answer: 'unavoidable; guard (V held) at the flash for half' },
   sinkingSands:{ windup: 2.0, area: { shape: 'floor', slide: [0.8, 1.5] }, effect: { drag: true }, answer: 'stand on islands: rubble, fallen pillars' },
-  surfaceSlam: { windup: 1.2, area: { shape: 'circle', at: 'courier', radius: 4 }, effect: { hits: 1 }, answer: 'off the rings: the slip rings before it surfaces' },
-  brineCascade:{ windup: 1.5, area: { shape: 'cone', degrees: 120, length: 14 }, effect: { hits: 1 }, answer: 'get behind it: its maw swells for a bar' },
+  surfaceSlam: { windup: 1.8, area: { shape: 'circle', at: 'courier', radius: 9 }, effect: { hits: 1 }, answer: 'off the rings: the slip rings before it surfaces' },
+  brineCascade:{ windup: 2.4, area: { shape: 'cone', degrees: 120, length: 35 }, effect: { hits: 1 }, answer: 'get behind it: its maw swells for a bar' },
   broodCall:   { windup: 2.0, area: { shape: 'adds', perClutch: 2, heal: 0.02 }, effect: { adds: true }, answer: 'kill the brood before they reach it: each heals it 2% and grows a crown plate back' },
   calving:     { windup: 3.0, area: { shape: 'split', calves: 4, within: 30, heal: 0.1 }, effect: { split: true }, answer: 'kill all four calves within 30 s, or they re-merge and heal it' },
   overflow:    { windup: 3.0, area: { shape: 'floor', slip: 'all' }, effect: { slip: true, hatchAll: true }, answer: 'hold the islands; every clutch left hatches' },
