@@ -7,7 +7,7 @@
 //                  call    two notes, the second higher (hello?)       cheer  a little arpeggio up (a form reached)
 //                  effort  a grunt and a squeak (a drill)              sleep  a breath of a hum, slow
 //                its feeling (an aspect) bends the leap: mirth a major third, wonder a fourth, desire a fifth, grief a minor third, dread a
-//                half step (the Tear); `pitch` scales the throat (a big spirit lower, a hatchling higher)
+//                half step (the Tear), fury a tritone, gall a minor sixth; `pitch` scales the throat (a big spirit lower, a hatchling higher)
 //   SCULPT       the hand's clay (garden.sculpt): press (a wet squelch and a soft thud), pull (a rubbery stretch rising), smooth (a damp
 //                swish), carve (a scrape, grit in it)
 // Heard through audio/cues.js on spirit.feed, .drill, .mature, .merge, .release, .visit, .pet, .flick and garden.sculpt; the garden's
@@ -15,7 +15,7 @@
 // Prior art: the Chao of Sonic Adventure (a voice of a few syllables, all feeling, no words), Animalese and the Banjo-Kazooie gibberish
 // (pitch contour as meaning), and potters' wheels and wet clay (Foley: a hand in a bucket of slip).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
-const LEAP = { mirth: 4, wonder: 5, desire: 7, grief: 3, dread: 1 }; // (semitones: each feeling's interval)
+const LEAP = { mirth: 4, wonder: 5, desire: 7, grief: 3, dread: 1, fury: 6, gall: 8 }; // (semitones: each feeling's interval)
 const VOWEL = { a: [900, 1500], o: [600, 1000], u: [380, 900], i: [400, 2400], e: [650, 2000] }; // (two formants, an adult's; scaled up for a small throat)
 
 export class SpiritSounds {

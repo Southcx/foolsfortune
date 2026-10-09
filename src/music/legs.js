@@ -156,7 +156,7 @@ function layBar(L, phase, i, len) {
 
 // ---- the trip's pressures (PASSAGE.md section 14): the waypoint's feeling recolours its leg; a storm is heavier; low fuel and adrift
 // are heard in every leg; a calm is the campfire. Each is read as the bar is laid out, so it lands on the next bar line.
-const MODE7 = { wonder: [0, 2, 4, 6, 7, 9, 11], mirth: [0, 2, 4, 5, 7, 9, 11], desire: [0, 2, 3, 5, 7, 9, 10], grief: [0, 2, 3, 5, 7, 8, 10], dread: [0, 1, 3, 5, 6, 8, 10] }; // (dread Locrian: the flat fifth sounds in every chord)
+const MODE7 = { wonder: [0, 2, 4, 6, 7, 9, 11], mirth: [0, 2, 4, 5, 7, 9, 11], desire: [0, 2, 3, 5, 7, 9, 10], grief: [0, 2, 3, 5, 7, 8, 10], dread: [0, 1, 3, 5, 6, 8, 10], fury: [0, 2, 3, 6, 7, 8, 10], gall: [0, 1, 4, 5, 7, 8, 10] }; // (dread Locrian: the flat fifth sounds in every chord; fury the minor with its fourth raised; gall Phrygian dominant, Hijaz whole)
 const MINOR = MODE7.grief; // (every leg is written in its key's natural minor: a feeling moves each note to the same degree of its mode)
 function recolour(n, root, mode) {
   if (n == null || !mode) return n;
