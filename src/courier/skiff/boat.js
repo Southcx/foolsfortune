@@ -172,7 +172,7 @@ export class Skiff {
     this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
     // the glide's wings: Skiff_Glide's oars, each its rest turned by the pose (SKIFF_GLIDE), held while gliding (skiff.js `wings`). The
     // bones by their names in three.js, which drops the dot of Blender's `oar_shoulder.L` (PropertyBinding.sanitizeNodeName, as `doorL`):
-    // asked for with the dot, the stand-in found neither and the glide spread nothing (CASEBOOK, 2026-10-09; rule 165)
+    // asked for with the dot, the stand-in found neither and the glide spread nothing (CASEBOOK, 2026-10-09; rule 168)
     this.glideQ = Object.fromEntries(['oar_shoulderL', 'oar_shoulderR'].filter((n) => this.P.index[n] != null).map((n) => [n, glideOar(_q.fromArray(this.rest(n)), n.endsWith('L') ? 1 : -1)]));
     this.rom = new JointLimits();
     for (const [name, spec] of Object.entries(SKIFF_ROM)) { const b = this.bone[name]; if (b) this.rom.add(b, _q.fromArray(this.rest(name)), spec); }
