@@ -424,6 +424,8 @@ the rules before building in the same area; a rule a machine can check goes into
     the filter that keeps the Throwing Room out reads every field that can name it (`kind`, `what`).
 156. **A blow turned aside builds nothing.** A guard's `hurt` returns `'blocked'` and `creatures.strike` stops there: no mind, no
     status, no stun.
+157. **An impact is measured against the surface it lands on.** A landing's hardness is the speed into the ground's own motion
+    under the body (a slope falls away too), never the bare fall speed.
 
 ## Cases
 
@@ -2155,3 +2157,13 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the spot is Grog's other side, 6 m from the Shrine; the jellies' homes are 50.8 to 56.5 m from the mat (over leash and sight
   together, 45 m).
 - **Rule:** none new (a placement).
+
+### 2026-10-09 · The skiff bailed on small drops (the owner's R8, v133)
+- **Seen:** thrown off the Solar Skiff landing small hops off ledges and crests.
+- **Cause:** a landing's impact was the board's bare fall speed (`-vel.y`). Off a crest at speed the board already falls with the slope
+  (its follow speed about 11 m/s down at 30 m/s on 20 degrees), so a short hop onto the next downslope read past the 17 m/s bail. The
+  crooked-landing bail could never fire (its test needs more than half a turn off square, which a turn's rounding never leaves).
+- **Fix:** the impact is the fall into the sand's own motion under the board (`vyT - vel.y`). Headless: 18 m/s down onto sand falling 11,
+  no bail; onto flat sand, a bail. The owner's asks built with it: the glide (Space held in the air: the oars spread, the fall held to
+  3.2 m/s, A and D carve) and the bail thrown as a ragdoll faded into the get-up (courier/anim/ragdoll.js).
+- **Rule:** 157.

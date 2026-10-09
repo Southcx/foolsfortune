@@ -16,12 +16,15 @@
 //   A / D     steer (the board can turn on the spot, and carves at speed)
 //   Space     hold to crouch the springs, release to hop. In the air A / D spin the whole skiff, rider and
 //             all: land a whole turn square for a boost (skiff.ollie { geyser, by }: the hop, or a geyser caught crouched)
+//   Space     held in the air (after a hop, or off a crest): GLIDE, the oars spread as wings; the fall slows to a sink and A / D carve
+//             instead of spinning (skiff.glide { by }; a Movement Art: skiffGlide, its unlock Dovina's; BotW's paraglider, Wind Waker's Deku Leaf)
 //   Shift     solar flare: the emblem blazes and top speed and acceleration jump, for Lachryma
 //   Y         on foot: SUMMON the board (it rises out of the sand under them, the mast telescopes up, they hop on: 2.2 s);
 //             riding: RECALL it (they step down and it shrinks into the raised hand). The psygun is stowed while you ride.
 //   F         riding slowly: DISMOUNT (they step off and the board is left PARKED, hovering where it was); at a parked board: MOUNT
 //   a crash   a wall struck above 14 m/s, a landing past 17 m/s, or a spin landed badly crooked BAILS them: thrown off backward, the
-//             board left parked where it slides to a stop, and up again from the sand (skiff.bail { why, speed, by })
+//             board left parked where it slides to a stop; the body thrown as a ragdoll (courier/anim/ragdoll.js) and faded into the get-up
+//             (skiff.bail { why, speed, by })
 //
 // The rider and the skiff are one rigid unit: one quaternion (heading, then the sand's slope, then
 // lean and spin) turns the skiff and, through character.js, the rider standing on it; the rider is
@@ -35,6 +38,7 @@ import { Skiff, SKIFF } from './boat.js';
 import { Wake } from '../../world/ground/wake.js';
 import { Rider } from './rider.js';
 import { rootOf } from '../../tools/moveset.js';
+import { Ragdoll } from '../anim/ragdoll.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -46,7 +50,9 @@ const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t
 const PHASE = { summon: ['Skiff_Summon', 2.2], mount: ['Skiff_Mount', 0.96], dismount: ['Skiff_Dismount', 0.83], recall: ['Skiff_Recall', 0.96], bail: ['Skiff_Bail', 1.3], getup: ['getUp', 1.5] };
 // the board's own clip in each phase (its partner of the rider's: courier/skiff/boatpose.js); getting up, it idles where it slid to
 const BOAT_CLIP = { summon: 'Skiff_Summon', mount: 'Skiff_Mount', dismount: 'Skiff_Dismount', recall: 'Skiff_Recall', bail: 'Skiff_Bail', getup: 'Skiff_RideIdle' };
-const BAIL = { wall: 14, land: 17, crooked: 3.6 }; // (m/s into a wall, m/s down onto the sand, radians of spin landed off square)
+const BAIL = { wall: 14, land: 17, crooked: 3.6 }; // (m/s into a wall, m/s into the sand (against its own slope: R8), radians of spin landed off square)
+const RAG = { throw: 0.7, lift: 3, blend: 0.35 }; // (a bail: of the board's speed the body keeps, m/s up, s from the ragdoll back to the get-up clip)
+const GLIDE = { gravity: 0.22, sink: 3.2, drag: 0.04, carve: 2.2 }; // (of the skiff's gravity; m/s the fall is held to; of the speed a second; x the air's turn)
 // how much of the wind's push the sail uses, by cos(angle between the heading and where the wind goes): 1 dead downwind .. -1 into it
 const POLAR = [[-1, 0.28], [-0.6, 0.42], [-0.2, 0.7], [0.2, 0.92], [0.7, 1.0], [1, 1.0]];
 const polar = (c) => {
@@ -143,6 +149,7 @@ export class Skiffing extends Tech {
   }
 
   end() {
+    this.rag?.stop(); this.ragWant = null;
     const P0 = this.P; if (this.safe && P0.embedded?.()) P0.pos.copy(this.safe); // (a phase never leaves them inside the barrier or a ruin)
     if (!this.parked) this.skiff.visible = false;
     this.wake.clear();
@@ -167,13 +174,14 @@ export class Skiffing extends Tech {
     }
     if (phase === 'getup') { // (the get-up's first hips laid onto where the bail left the hips: the same body, now on the sand)
       const C = g.character.clips, hb = C.clips.Skiff_Bail, gu = C.clips.getUp, e = hb.n - 1;
-      if (hb && gu) {
+      if (this.rag?.active) { const h = this.rag.hips; if (h && this.clearAt(h.x, this.P.pos.y, h.z)) this.rider.pos.set(h.x, this.rider.pos.y, h.z); } // (the body lies where the ragdoll left it)
+      else if (hb && gu) {
         const r = this.rider.pos, x = r.x, z = r.z;
         _v2.set(hb.p[e * 3] - gu.p[0], 0, hb.p[e * 3 + 2] - gu.p[2]).applyQuaternion(this.rider.q);
         if (this.clearAt(x + _v2.x, this.P.pos.y, z + _v2.z)) r.add(_v2); // (the body lies where it fell, unless that is in a wall)
       }
     }
-    if (phase === 'bail') { this.parked = null; P.shake = Math.max(P.shake, 0.4); sfx.thunk?.(1.4, 3); }
+    if (phase === 'bail') { this.parked = null; P.shake = Math.max(P.shake, 0.4); sfx.thunk?.(1.4, 3); this.ragWant = this.v.clone().multiplyScalar(RAG.throw).setY(Math.max(0, P.vel.y) + RAG.lift); } // (thrown: the ragdoll, from the next pose: afterPose)
   }
 
   /** Is the capsule clear standing at (x, y, z)? (a phase never sets them down inside a wall: the barrier, a ruin) */
@@ -225,6 +233,7 @@ export class Skiffing extends Tech {
       // the board slides on to a stop, upright; the rider is thrown off where they were and lies there, then gets up
       const b = this.board; b.v.multiplyScalar(Math.exp(-2.5 * dt)); b.pos.addScaledVector(b.v, dt); b.pos.y = D.rideHeight(b.pos.x, b.pos.z) + hover;
       this.rider.dy = hover * smooth(0.12, 0.45, this.phase === 'bail' ? t : 9);
+      if (this.rag?.active) { this.rag.step(dt); if (this.phase === 'bail') { const h = this.rag.hips; if (h && this.clearAt(h.x, P.pos.y, h.z)) this.rider.pos.set(h.x, this.rider.pos.y, h.z); } } // (the capsule goes where the body tumbles)
       { const y = D.rideHeight(this.rider.pos.x, this.rider.pos.z); if (this.clearAt(this.rider.pos.x, y, this.rider.pos.z)) P.pos.set(this.rider.pos.x, y, this.rider.pos.z); else this.rider.pos.set(P.pos.x, this.rider.pos.y, P.pos.z); } P.vel.set(0, 0, 0);
       const done = this.phase === 'getup' ? t >= len : t >= len && !g.character.clips.clips.getUp;
       if (this.phase === 'bail' && t >= len && !done) this.enter('getup');
@@ -297,9 +306,13 @@ export class Skiffing extends Tech {
 
     // ---- steering: it turns on the spot, and carves once it is moving (less so the faster it goes)
     const sp0 = this.v.length(), speedFrac = clamp(sp0 / c.maxSpeed, 0, 1);
-    const rate = c.turn * (0.35 + 0.65 * clamp(sp0 / 7, 0, 1)) * (1 - 0.4 * speedFrac) * (this.air ? 0.3 : 1);
+    // the glide: Space held in the air, with the art (system.allows: until it is registered, it is everyone's)
+    const glideWas = this.gliding;
+    this.gliding = this.air && inp.isDown('Space') && this.airT > 0.12 && (g.system?.allows?.('skiffGlide') ?? true);
+    if (this.gliding && !glideWas) { this.spin = 0; g.events?.emit('skiff.glide', { by: 'courier' }); sfx.airJump?.(); } // (a placeholder sound: Wanda's glide to come)
+    const rate = c.turn * (0.35 + 0.65 * clamp(sp0 / 7, 0, 1)) * (1 - 0.4 * speedFrac) * (this.air ? (this.gliding ? 0.3 * GLIDE.carve : 0.3) : 1);
     this.heading -= this.steer * rate * dt;
-    if (this.air) this.spin += -this.steer * 8 * dt;
+    if (this.air && !this.gliding) this.spin += -this.steer * 8 * dt;
 
     // ---- hop: hold Space to crouch the springs (a tap is a hop), let go to launch
     const sp2 = inp.isDown('Space');
@@ -323,7 +336,8 @@ export class Skiffing extends Tech {
       P.vel.y = damp(P.vel.y, vyT, c.follow, dt) - gap * 60 * dt;
       if (gap > 0.85 || (gap > 0.25 && P.vel.y > vyT + 5)) { this.air = true; this.spin = 0; this.airT = 0; }
     } else {
-      P.vel.y -= c.gravity * dt;
+      P.vel.y -= c.gravity * (this.gliding && P.vel.y < 0 ? GLIDE.gravity : 1) * dt; // (the wings slow the fall, never the rise: a hop stays a hop)
+      if (this.gliding) { P.vel.y = Math.max(P.vel.y, -GLIDE.sink); this.v.multiplyScalar(1 - GLIDE.drag * dt); }
       this.airT += dt; if (this.popT != null) this.popT += dt;
       if (gap <= 0.12 && P.vel.y <= 0.5) this.land(vyT);
     }
@@ -360,8 +374,9 @@ export class Skiffing extends Tech {
 
   land(vyT) {
     const P = this.P, g = this.game;
-    const impact = -P.vel.y;
-    this.air = false; this.popT = null; this.landT = 0;
+    const impact = vyT - P.vel.y; // (into the sand: against the slope's own rise or fall under the board, never its bare fall: a hop off a
+    //                                 crest onto the next downslope was read as a 17 m/s crash, the owner's R8)
+    this.air = false; this.gliding = false; this.popT = null; this.landT = 0;
     P.vel.y = vyT * 0.6;
     this.landDip = clamp(impact / 9, 0.25, 1);
     if (impact > 3) { sfx.thunk?.(0.6, 3); g.fx?.impact?.(P.pos.clone().setY(P.pos.y - 0.6), UP, { sparks: 0, dust: 12 }); }
@@ -410,7 +425,8 @@ export class Skiffing extends Tech {
     this.boom = damp(this.boom, this.boomSign * out, 5, dt);
     const fill = clamp((polar(cosA) - 0.3) / 0.7, 0, 1);
     this.fill = damp(this.fill, this.L * (this.L > 0.7 ? 1 : 0.6) * (0.25 + 0.75 * fill), 4, dt);
-    this.skiff.set({ sail: this.L, side: -Math.sign(this.boom || 1), fill: this.fill, boom: this.boom, glow: this.boosting, t: this.time, speed: this.speed });
+    this.wingK = damp(this.wingK || 0, this.gliding && this.phase === 'ride' ? 1 : 0, 8, dt); // (the oars out as wings while gliding)
+    this.skiff.set({ sail: this.L, side: -Math.sign(this.boom || 1), fill: this.fill, boom: this.boom, glow: this.boosting, t: this.time, speed: this.speed, wings: this.wingK });
     // ---- one quaternion for the whole unit: heading, then the slope, then the lean and the pitch, with the spin about its own up
     // (heading, spin and roll change in the 60 Hz step; the skiff and the rider are drawn between steps, the way the camera and the wake are)
     qA.setFromAxisAngle(UP, hv + sv);
@@ -489,6 +505,14 @@ export class Skiffing extends Tech {
 
   /** Once the body is posed: the sheet runs from the boom's end to the rider's high hand (while they ride). */
   afterPose(ch) {
+    // the bail's ragdoll: begun from this frame's pose, all of the body while thrown, faded into the get-up clip (courier/anim/ragdoll.js)
+    if (this.active && (this.phase === 'bail' || this.phase === 'getup')) {
+      if (this.ragWant) { (this.rag ||= new Ragdoll(this.game)).start(ch, this.ragWant, { floor: (x, z) => this.dunes?.heightAt?.(x, z) ?? null }); this.ragWant = null; }
+      if (this.rag?.active) {
+        const w = this.phase === 'bail' ? 1 : 1 - smooth(0, RAG.blend, this.phaseT);
+        if (w > 0.001) this.rag.apply(ch, w); else this.rag.stop();
+      }
+    }
     if (this.w < 0.05 || !this.active) return;
     const on = this.phase === 'ride' || (this.phase === 'summon' && this.phaseT > 1.8) || (this.phase === 'mount' && this.phaseT > 0.6);
     this.skiff.rope.visible = on;

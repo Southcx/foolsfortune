@@ -13,8 +13,8 @@
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
-//   E         the barrel roll: 0.35 s, turning plain shots for its first quarter second; the Blink's two charges (Star Fox 64)
-//   V         the parry: a quarter second in which an outlined shot near the hull goes home (as on foot: PARRY.md)
+//   E         the barrel roll: 0.35 s; for its first quarter second it turns plain shots and sends an outlined shot near the hull home
+//             (the parry at sea: V retires on the rail, the owner's ruling); the Blink's two charges (Star Fox 64)
 //   Q         the FORMS (RAIL-OVERHAUL.md 4, the owner's idea): breach into the Astral form, dive into the Umbral (Ikaruga's polarity
 //             as Orta's forms): a shot of your form's kind is drunk, the other hurts; Astral fast, wide, a spread of three and eight locks,
 //             Umbral slower, tighter, one heavy shot and four locks; a hull that cannot dive refuses it. The old polarity rides with it
@@ -140,18 +140,14 @@ export class Ship {
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
     this.pitch = damp(this.pitch, clamp(sy * S.pitch, -S.pitchMax, S.pitchMax) * D2R, 10, dt);
     this.aimAt(view, I, abeam && view === 'side', waves, arena); this.aimArgs = [view, abeam && view === 'side', waves, arena];
-    // the roll, its charges, the parry's window, the mercy after a hit
+    // the roll, its charges (and its window the parry at sea), the mercy after a hit
     const R = S.roll;
     if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
     if (this.rollT > 0) { this.rollT = Math.max(0, this.rollT - dt); this.spin = (1 - this.rollT / R.time) * Math.PI * 2 * (sx >= 0 ? 1 : -1); } else this.spin = 0;
     if (this.charges < R.charges) { this.rechargeT += dt; if (this.rechargeT >= R.recharge) { this.rechargeT = 0; this.charges++; } } else this.rechargeT = 0;
-    this.recover = Math.max(0, this.recover - raw);
-    if (hit.has('KeyV') && this.parryT <= 0 && this.recover <= 0) this.parryT = 0.25;
-    if (this.parryT > 0) {
-      const n = shots?.parry(this.local, 2.6) || 0;
-      if (n) { this.parryT = 0; this.onParry?.(n); }
-      else { this.parryT -= raw; if (this.parryT <= 0) this.recover = 0.35; } // (a parry into nothing costs a breath: no mashing through a wall)
-    }
+    // the parry at sea is the roll (the owner's ruling, RAIL-OVERHAUL.md: V retires on the rail): its turning window sends an outlined
+    // shot near the hull home as well as turning the plain ones; its charges are what keep it from being mashed
+    if (this.turning) { const n = shots?.parry(this.local, 2.6) || 0; if (n) this.onParry?.(n); }
     this.mercy = Math.max(0, this.mercy - dt);
     if (hit.has('KeyQ') && this.hull && !this.hull.dive) { if (!this.qSaid) { this.qSaid = true; this.game.events?.emit('rail.refuse', { what: 'dive', ship: this.hull.id, by: 'courier' }); } } // (a heavy hull rides the surface: ships.js dive)
     else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.game.events?.emit('rail.form', { form: this.form, by: 'courier' }); this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
