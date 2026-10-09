@@ -99,7 +99,7 @@ export class Tracking {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
     // (the Throwing Room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
     // drill.*, carry neither mark: world/testroom/, feedback/tracking/testroom.js)
-    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman') return; f(e); });
+    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.what === 'strawman') return; f(e); });
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };
 
     // ---- breaking
@@ -574,7 +574,7 @@ export class Tracking {
       log.say('info', 'The world stills, and becomes paper.', { key: 'bcanvas', throttle: 6 });
     });
     on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
-    on('brush.miss', () => L.inc('brush.miss'));
+    on('brush.miss', () => L.inc('brush.miss')); on('brush.mark', () => L.inc('brush.mark')); // (mark: a dot on a thing, R18; the star over it says so)
     on('brush.inscribe', (e) => { L.inc('inscribe'); L.inc(`inscribe.${e.prop}`); });
     on('brush.glyph', (e) => {
       L.inc(`brush.tech.${e.technique}`); L.inc('brush.tech');
@@ -608,7 +608,7 @@ export class Tracking {
       log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
     on('cut.hit', (e) => {
       L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
-      const w = e.what === 'clapper' ? 'clapperjar' : 'pot';
+      const w = e.what === 'clapper' ? 'clapperjar' : e.what === 'slipjelly' ? 'slip jelly' : e.what === 'pot' || e.what === 'breakable' ? 'pot' : 'creature'; // (a creature by its own word, never a pot: T51)
       log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
     });
     on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });

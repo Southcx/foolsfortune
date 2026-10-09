@@ -40,7 +40,7 @@ export class Qais {
       go: (t) => this.go(t), file: (t = null) => this.file(t), send: () => this.send(),
     };
     this.make();
-    addEventListener('keydown', (e) => this.key(e), true);
+    addEventListener('keydown', (e) => this.key(e), true); // (main.js routes the keys here first, before any window's own listener: see `keysFirst`)
     openStore().then((s) => this.connect(s));
   }
 
@@ -67,6 +67,13 @@ export class Qais {
   }
 
   // ---------------------------------------------------------------- the window
+  /** Called by main.js's first keydown listener (registered before every window's): F8, and every key while QAIS is open, are QAIS's
+   *  alone, so Esc closes QAIS and not the window under it (R7). Returns whether it took the key. */
+  keysFirst(e) {
+    if (this.marking || (e.code !== 'F8' && !this.open)) return false;
+    this.key(e); e.stopImmediatePropagation(); return true;
+  }
+
   key(e) {
     if (this.marking) return; // (the markup window has the keys: its Esc is its own)
     if (e.code === 'F8') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) this.toggle(); return; }
@@ -80,7 +87,7 @@ export class Qais {
   /** May it open now? In play, not over the title, the workbench or another window that pauses. */
   canOpen() {
     const g = this.game;
-    return !g.title?.active && !g.workbench?.open && !g.kilnUI?.open && !g.seam?.busy && !g.codex?.open && !g.indexMenu?.open && !g.cartography?.open && !g.pneukaUI?.open && !g.shopUI?.open && !g.dialogue?.open;
+    return !g.title?.active && !g.workbench?.open && !g.seam?.busy; // (over any window: F8 is the bug report, and a bug is often in a window: the owner's R7, v133)
   }
 
   toggle() { if (this.open) this.close(); else if (this.canOpen()) this.show(); }
