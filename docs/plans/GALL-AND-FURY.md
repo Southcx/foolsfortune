@@ -14,6 +14,21 @@ Kept by Dovina. This is the whole of it, so nothing is lost to a compaction:
 It extends `docs/plans/WHEEL.md` (Plutchik's wheel, the expansion and contraction principle, the rings and the agates), which stays the
 background. Where the two disagree, this file wins (Faith is cut here).
 
+## 0. The words (Espada, LORE.md "Gall and Fury", fef46e7; proposals until the owner rules)
+- **Weathers:**
+  - **the miasma** (Gall): Greek for the stain that spreads by touch and leaves only when washed, which is Gall's no-opposite rule;
+  - **the hail** (Fury): no lightning.
+- **Rings:** Gall is boredom, disgust, loathing; Fury is annoyance, anger, rage.
+- **Agates:**
+  - Fury with Mirth **pride**, with Desire **zeal**, with Wonder **outrage**, with Grief **envy**, with Gall **contempt**;
+  - Gall with Grief **remorse**, with Dread **shame**, with Wonder **disbelief**, with Mirth **mockery**, with Desire **cynicism**;
+  - Fury and Dread cancel.
+- **Unlocks:** **Acquired Taste** (Gall) and **Seeing Red** (Fury).
+- **A locked radial slot:** "Drink it to learn it: the Great Dunemaw, deep." / "Drink it to learn it: the sea near Entropolis."
+- **Lore for the two rulings:** a miasma is only outlasted or washed out (katharsis); a refinery refines only what it has tasted.
+- **Slip:** Lachryma carrying Kaolin's clay. Jellies and roe are bodies laden with it, underfoot it is crude, and from the Courier it is
+  paint.
+
 ## 1. Who they are
 
 | | **Gall** | **Fury** |
