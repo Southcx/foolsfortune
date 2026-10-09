@@ -157,6 +157,7 @@ export class ChoiceCard {
     this.row = row || {};
     const r = this.row, el = this.el, state = r.state || 'ready', locked = state === 'locked';
     el.className = `cc ${state}`; el.innerHTML = '';
+    if (r.id) el.dataset.id = r.id; else delete el.dataset.id; // (what it is, for a test or a window that finds a card by its row)
     el.setAttribute('aria-disabled', locked ? 'true' : 'false');
     el.setAttribute('aria-pressed', state === 'equipped' ? 'true' : 'false');
     // 1. the icon

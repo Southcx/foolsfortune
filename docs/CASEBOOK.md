@@ -374,8 +374,37 @@ the rules before building in the same area; a rule a machine can check goes into
 134. **A view model converts every field a row carries, not the one that was noticed.** A table kept in the crossing's own clock is told in
     real seconds in its cooldown and in its prose (`ui/mountcards.js` `inSeconds`); a picture is judged at 1x on a dark ground and a pale one,
     where a two-pixel-high row of dots reads as an ellipsis.
+135. **A thing shown while a window pauses the world is ticked by that window's own branch of the loop, and judged with the window
+    open.** A look that fades in or moves on a clock stands at nothing if the loop returns before it; a picture proved only after the
+    window has shut proves the picture, not the choosing. Name what the window calls, and photograph it with the window up.
+136. **A hover is the pointer's state, and a window shut under the pointer sends no leave.** Whatever a hover set is set back by what
+    owns it when the window closes (read in its own update), never left to the pointer's leaving.
 
 ## Cases
+
+### 2026-10-08 · A mount hovered at the pier drew nothing: the window that pauses the game also stopped the preview (the review of Calissa's mount preview)
+
+- **Seen:** the builder's report: the preview "is only clearly seen once the page is closed", the veil being the cause, handed to Petra. Read
+  for what the person sees: with the pier's page open and a mount row hovered, the mooring's clock stood at 2 and the preview's fade
+  (`since`) at 0 after 120 ticks (2 real seconds); the shape was in the buffer (106 marks, `visible`) at the fade's floor, an alpha of
+  0.0001; with the page's veil hidden by hand the water showed no line. The pictures that had passed it were taken after `indexMenu.close()` and 70 ticks.
+- **Cause:** the Index window is a modal: the loop's modal branch (`main.js`, `if (modalOpen()) { ...; return; }`) returns before
+  `mooring.update`, so a preview named under the page was drawn once at `since = 0` (the fade's start) and never brought up; and the
+  page, centred under a veil of `.78`, covered the middle of the screen where the hull and its shape lie.
+- **Fix:** the modal branch ticks the mooring on the real clock beside the seam (`main.js`, one call); `showPage` takes `{ aside }`, a
+  page in a column to one side with no veil, and the pier's is set to the side away from the hull (`mooring.side()`). Checked with the
+  page up: the Vacuum's cone, the Snapshot's frame and the Grapple's line on the Courier's own camera at 1280 by 720, hovering rows.
+- **Rule:** 135.
+
+### 2026-10-08 · F with the pointer on a mount's row left that mount previewed after the page shut (the review of Calissa's mount preview)
+
+- **Seen:** the pier's page opened, Absorb Spray hovered, F pressed with the pointer where it was: the page shut and Absorb Spray, ashore,
+  stayed drawn on the hull ("the mount last taken aboard stays", the report says).
+- **Cause:** the preview was set back by the row's `mouseleave`, and a page shut (the root's `display` gone) sends none.
+- **Fix:** the mooring sees the page open then shut and puts the preview back to `pier.chosen.at(-1)` itself (`mooring.update`); the open
+  flag is dropped when the hull is away. Checked: F, Esc and the CLOSE button, with the pointer on an ashore row, each leave the mount aboard
+  (or nothing, when none is aboard).
+- **Rule:** 136.
 
 ### 2026-10-08 · The choice card could not be reached by keyboard, a pick scrolled the page to the top, and a keyword's tip outlived its window (the review of Calissa's choice card)
 - **Seen:** the pier's page opened headless: Tab, ArrowDown, ArrowRight and Enter each left the focus on the body, nothing moved and

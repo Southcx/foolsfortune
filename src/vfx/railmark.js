@@ -18,6 +18,10 @@
 //             schiller (vfx/labradorite.js) as a line inside it, the parry mark's line weight
 //   hurtbox   the ship's hurtbox: a pale core and a dark ring, its outer edge exactly the hurtbox's radius (never larger or smaller
 //             than what is hit), the ring edged pale outside so it reads on the black crude too
+//   wire      a mount's preview (vfx/mountpreview.js): a ribbon's segment in the mount's colour, shaded dark at its edges, with the
+//             Mind's schiller (vfx/labradorite.js) along its heart (a negative wA: the colour alone). The one style that keeps its
+//             DEPTH: it lies on the water in the world, so a jetty, a hull or the Courier in front of it hides it (its buffer's material
+//             takes `depthTest`, a state and not a program: the same rail-mark program, casebook rule 124)
 //
 // Everything is in pixels of the target being drawn (the 480-line present: render/present.js): every mark at least a few pixels (a
 // far shot is the same shape scaled up, so it reads the same), every line of the parry mark's 3.6 px. A shot (a capsule) within five metres
@@ -33,13 +37,13 @@
 //   const B = new MarkBuffer(cap, { renderOrder })   parent.add(B.mesh)
 //   B.put(i, ax, ay, az, wa, bx, by, bz, wb, px, py, pz, aa, nx, ny, nz, ab, style, s1, s2, s3)   B.count = n   B.flush()
 //   (points in the mesh's parent's frame, the scene's in the game: the world; wa, wb half-widths in metres; aa, ab alpha at A and B;
-//    style a STYLE; s1..s3 by style: astral/umbral (outlined 0|1, -, seed), gun/ribbon/spark (r, g, b in linear light))
+//    style a STYLE; s1..s3 by style: astral/umbral (outlined 0|1, -, seed), gun/ribbon/spark/wire (r, g, b in linear light))
 //   B.time(t)   the film's and the schiller's drift (seconds)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 
-export const STYLE = { astral: 0, umbral: 1, gun: 2, ribbon: 3, spark: 4, ring: 5, hurtbox: 6 };
+export const STYLE = { astral: 0, umbral: 1, gun: 2, ribbon: 3, spark: 4, ring: 5, hurtbox: 6, wire: 7 };
 /** A shot's kind, as the runtime may name it ('astral' | 'umbral' | 0 | 1): astral by default. */
 export const kindOf = (k) => (k === 'umbral' || k === 1 ? 1 : 0);
 /** The parry mark's line, in pixels at the 480-line present (vfx/parrymark.js WIDTH). */
@@ -52,12 +56,13 @@ attribute vec4 iA, iB, iP, iN, iS;
 uniform vec2 uRes;
 varying vec4 vS;   // the style and its numbers
 varying vec4 vL;   // x, y: this pixel in the mark's own frame (px: x along from A, y across); z: the segment's length (px); w: 0 at A, 1 at B
-varying vec4 vR;   // x, y: half-widths at A and B (px); z: the outline's width (px); w: alpha
+varying vec4 vR;   // x, y: half-widths at A and B (px); z: the outline's width (px), or a wire's heart (0 or 1); w: alpha
+varying float vPh; // a wire's place on the schiller's palette (labradorite.js labPhase, its drift added in the fragment)
 const float ZC = -0.15;                                                  // (a plane just before the eye: what is behind it is cut off)
 vec3 eye(vec3 p) { return (modelViewMatrix * vec4(p, 1.0)).xyz; }
 vec2 scr(vec3 v, out float pxm) { vec4 c = projectionMatrix * vec4(v, 1.0); pxm = projectionMatrix[1][1] * 0.5 * uRes.y / c.w; return c.xy / c.w * 0.5 * uRes; }
 void main() {
-  vS = iS; vL = vec4(0.0); vR = vec4(0.0);
+  vS = iS; vL = vec4(0.0); vR = vec4(0.0); vPh = 0.0;
   int st = int(iS.x + 0.5);
   gl_Position = vec4(0.0, 0.0, 2.0, 1.0);                               // (off, until it is placed)
   vec3 a = eye(iA.xyz), b = eye(iB.xyz);
@@ -65,9 +70,9 @@ void main() {
   if (a.z > ZC) a = mix(a, b, (a.z - ZC) / (a.z - b.z));
   if (b.z > ZC) b = mix(b, a, (b.z - ZC) / (b.z - a.z));
   float pa, pb; vec2 sa = scr(a, pa), sb = scr(b, pb);
-  float ra = iA.w * pa, rb = iB.w * pb;
+  float ra = abs(iA.w) * pa, rb = abs(iB.w) * pb;
   vec2 pos;
-  if (st == 3) {
+  if (st == 3 || st == 7) {
     // a ribbon's segment: each end turned by the line through its neighbours, so the next segment starts on the same two corners
     vec3 p = eye(iP.xyz), n = eye(iN.xyz); float q;
     vec2 sp = sa, sn = sb, dd = sb - sa;
@@ -80,7 +85,8 @@ void main() {
     float fa = max(ra, 0.75), fb = max(rb, 0.75);                        // (never thinner than a pixel and a half: thinner is fainter instead)
     pos = position.x < 0.5 ? sa + vec2(-ta.y, ta.x) * fa * side : sb + vec2(-tb.y, tb.x) * fb * side;
     vL = vec4(0.0, side, length(dd), position.x);
-    vR = vec4(fa, fb, 0.0, mix(iP.w * min(1.0, ra / fa), iN.w * min(1.0, rb / fb), position.x));
+    vR = vec4(fa, fb, st == 7 && iA.w > 0.0 ? 1.0 : 0.0, mix(iP.w * min(1.0, ra / fa), iN.w * min(1.0, rb / fb), position.x));
+    if (st == 7) { vec3 wp = (modelMatrix * vec4(position.x < 0.5 ? iA.xyz : iB.xyz, 1.0)).xyz; vPh = dot(wp, vec3(0.071, 0.103, 0.057)) + 0.42 * dot(normalize(cameraPosition - wp), vec3(0.55, 0.62, -0.56)); }
   } else if (st >= 4) {
     // a round mark about A: a spark, a ring (and the part's ring inside it, wB), the hurtbox (its true size: no least size)
     if (st == 4) ra = max(ra, 2.0);
@@ -106,11 +112,14 @@ void main() {
     vR = vec4(ra, rb, ow, iN.w * nearFade);
   }
   gl_Position = vec4(pos / (0.5 * uRes), 0.0, 1.0);
+  // a wire keeps its end's own depth (the screen-space quad at that end's clip w), so the world in front of it hides it
+  if (st == 7) { vec4 c = projectionMatrix * vec4(position.x < 0.5 ? a : b, 1.0); gl_Position = vec4(gl_Position.xy * c.w, c.z, c.w); }
 }`;
 
 const F = /* glsl */`
 uniform float uTime;
 varying vec4 vS, vL, vR;
+varying float vPh;
 ${LAB_GLSL}
 const vec3 INK = vec3(0.004, 0.003, 0.007);                                // (the parry mark's ink, in linear light)
 vec3 film(float ph) { vec3 f = 0.5 + 0.5 * cos(6.2832 * (ph + vec3(0.0, 0.33, 0.67))); return f * f; } // (the parry mark's oil film)
@@ -148,6 +157,14 @@ void main() {
     float edge = 1.0 - abs(vL.y), body = smoothstep(0.0, 0.3, edge), lit = smoothstep(0.35, 0.7, edge);
     vec3 c = mix(vS.yzw * 0.12, mix(vS.yzw * 1.4, vS.yzw * 0.5 + vec3(1.1), smoothstep(0.8, 1.0, edge)), lit);
     a = body * 0.9 * al; col = c * a;
+  } else if (st == 7) {
+    // a mount's preview: its colour shaded dark at the edges (it holds on noon sand and on the black crude alike), the Mind's schiller
+    // along the heart of a wire (vR.z), drifting at the Mind's one slow rate
+    float hw = mix(vR.x, vR.y, vL.w), edge = 1.0 - abs(vL.y), body = smoothstep(0.0, clamp(1.0 / hw, 0.3, 1.0), edge); // (a pixel of soft edge at least: a thin line never crawls)
+    float lit = smoothstep(0.3, 0.6, edge), heart = smoothstep(0.72, 0.95, edge) * vR.z;
+    vec3 c = mix(vS.yzw * 0.1, vS.yzw * 1.35, lit);
+    c = mix(c, labSoft(vPh + uMindT * 0.018) * 1.7, heart);
+    a = body * 0.92 * al; col = c * a;
   } else {
     float d = length(vL.xy), r = vR.x;
     if (st == 4) {

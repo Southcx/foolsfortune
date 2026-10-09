@@ -112,6 +112,16 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   (IM Fell), shown on hover only.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
+- **A mount's preview** (`vfx/mountpreview.js`; CLARITY.md section 6, after Into the Breach): what a mount does is drawn on the crude
+  round the moored hull before it is a word, at the size it has round the ship at sea, one at a time. A shape a mount: the line of fire,
+  a fan, a blast ring, a cone, a viewfinder, a grapnel line, a radar's scan; its motion says which way it works (a spray's arcs go out,
+  a vacuum's come in, a shockwave leaves the hull, a hook is thrown and reeled, a scan line turns clockwise). In the mount's own colour
+  (the Blaster and Absorb Spray wear the ship's feeling, the moored hull's, as they do at sea; the Bomb coral, the Vacuum violet, the Snapshot the Flash's warm
+  white, the Grapple sea-teal, the Radar the vane's green), each line shaded dark at its edges so it holds on noon sand and on the black
+  crude, the Mind's schiller along its heart. Lines are screen-space (never under a pixel and a half, a pixel of soft edge: they cannot
+  crawl), lifted a hand over the drawn crude and hidden by whatever stands in front (the jetty, the hull, the Courier, the sand). It
+  breathes at one slow rate and carries no word or number. It is seen as the mount is chosen, not after: the pier's page is set aside from
+  the hull with no veil, and the game's loop keeps the preview moving under it.
 - **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror
   flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
   stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
