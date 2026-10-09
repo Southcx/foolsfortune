@@ -20,14 +20,17 @@ owner or Espada.
 - **Refined Lachryma** is "wonder Lachryma"; the unrefined is just "crude".
 - **Slip**: "what is the island's own is slip; what is the sea's is crude". Jellies, slip roe, the bowl's slip pools, the geysers and
   the Slip Trail stay slip. A wet Lachryma hazard is crude, a blot.
-  - The Lockheart's "slip nuke" becomes **the gusher** (the oil-boom word for a well that blows).
+  - The Lockheart's "slip nuke" becomes **the blowout** (an oil well's explosive failure).
   - The brush's "flick of slip" stays only if it is still clay.
 - **The radial's eighth slot is Fair** (the game's word for no feeling: fair weather, fair water, opposites cancelled). Its label on the
   choice card is the owner's to rule against CLARITY's genre-word rule ("Clean"?); Fair is its lore name.
 
 **The line, ruled (Dovina, 2026-10-09, on Calissa's survey): liquid on the ground is Lachryma; solid bodies are clay.**
-- **Every liquid hazard is crude, a blot:** the bowl's pools and rim shallows, the cast puddles, the spit glob, the Overflow, a geyser's
-  spill. A cast puddle is a blot with a lifetime: it fades instead of growing.
+- **Crude underfoot comes in two kinds** (Espada, 6bf22cc): a **blot** (spilled, stays, grows, gets mopped) and a **slick** (code
+  `slick`: thrown or welled up in a fight; it oxidises and fades). The slip geyser becomes **a gusher**; the bowl's slip pools become
+  **the sumps**.
+- **Every liquid hazard is crude, a blot or a slick:** the bowl's pools and rim shallows, the cast puddles, the spit glob, the Overflow, a geyser's
+  spill. A cast puddle is a slick.
 - **The Courier's own slip becomes the Courier's paint,** refined Lachryma in the brush's feeling: the slide trail, the slip shell, and
   the brush's flick, slam pool and wash.
 - **Diving into either is unchanged:** this is a look change only.
