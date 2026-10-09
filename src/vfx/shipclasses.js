@@ -30,7 +30,8 @@
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { Sloop, SLOOP, JAR, jarHull, jarDeck, sailMaterial } from './sloop.js';
+import { Sloop, SLOOP, JAR, jarHull, jarDeck, sailMaterial, furlRoll, FURL } from './sloop.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dressChestGlaze, chestGlazeUniforms } from './chestglaze.js';
 import { vfxTexture } from './vfx.js';
 import { mindLineMaterial } from './labradorite.js';
@@ -39,7 +40,7 @@ import { addOutline } from '../render/outline.js';
 import { keepTrue } from './stormwarp.js';
 import { causticsOn } from './umbral.js';
 
-const C = { gold: 0xf2c14e, mast: 0x3f7a58, dark: 0x4a2a1e, lach: 0xffc65c, cobalt: 0x23408e, bisque: 0xf1d9b6 };
+const C = { gold: 0xf2c14e, mast: 0x3f7a58, dark: 0x4a2a1e, lach: 0xffc65c, cobalt: 0x23408e, bisque: 0xf1d9b6, sail: 0xf6e6c8 };
 
 /** Each class: its pot's profile (foot to lip: fraction of the length, fraction of the belly's radius), size, sheer, clay, rig. */
 export const SHIP_FORMS = {
@@ -153,7 +154,7 @@ export class ShipClassLook {
     }
     // the rig: the skiff's green masts and gold yards, the sails cream (the lotus on the biggest), a jib to the bowsprit
     const lotus = vfxTexture('circle_lotus'), blank = new THREE.DataTexture(new Uint8Array(4), 1, 1);
-    let top = 0;
+    let top = 0; const rolls = [], ties = [], V = THREE.Vector3; // (the canvas furled: each course on its yard, the jib on its stay)
     for (const M of F.masts) {
       add(this.body, new THREE.CylinderGeometry(0.06, 0.1, M.h, 6), spar, 0, deckY + M.h / 2, M.z);
       top = Math.max(top, M.h);
@@ -163,6 +164,8 @@ export class ShipClassLook {
         const mat = track(sailMaterial(M.h === Math.max(...F.masts.map((x) => x.h)) && k === M.sails - 1 ? lotus : blank));
         const sail = add(this.body, squareGeometry(w, y1 - y0), mat, 0, y1 - 0.04, M.z + 0.05, false); sail.rotation.y = Math.PI / 2;
         this.sails.push({ mesh: sail, mat });
+        const r = 0.06 + 0.035 * (y1 - y0), f = furlRoll(new V(-w * 0.5, y1 + r * 0.6, M.z + 0.05), new V(w * 0.5, y1 + r * 0.6, M.z + 0.05), { r0: r, r1: r, bunt: 0.45, ties: [0.2, 0.4, 0.6, 0.8], lumps: 9 });
+        rolls.push(f.roll); ties.push(f.ties);
       }
     }
     if (F.jib && F.masts.length) {
@@ -172,6 +175,14 @@ export class ShipClassLook {
       jib.computeVertexNormals();
       const mat = track(sailMaterial(blank)); this.sails.push({ mesh: add(this.body, jib, mat, 0, 0, M.z, false), mat, jib: true });
       add(this.body, new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6), gold, 0, F.sheer[0] + F.sheer[1] * 0.7, L * 0.5 + 0.6).rotation.x = Math.PI / 2 - 0.15;
+      const tackAt = new V(0, F.sheer[0] + F.sheer[1] * 0.7, L * 0.5 + 0.6).addScaledVector(new V(0, Math.sin(0.15), Math.cos(0.15)), 0.56); // (the jib furled: rolled on its stay from the bowsprit's end)
+      rolls.push(furlRoll(tackAt, new V(0, head - 0.15, M.z + 0.1), { r0: 0.08, r1: 0.025, lumps: 4 }).roll);
+    }
+    if (rolls.length) { // (one bundle and one set of ties for the whole rig: the yards never turn, and furled the sails are hidden)
+      this.furled = new THREE.Group(); this.body.add(this.furled);
+      add(this.furled, mergeGeometries(rolls, false), std(C.sail, { roughness: 0.9 }));
+      if (ties.length) add(this.furled, mergeGeometries(ties, false), dark, 0, 0, 0, false);
+      for (const g of [...rolls, ...ties]) g.dispose();
     }
     // the pennant: the skiff's red swallowtail at the highest masthead (or the fin's staff)
     const penY = F.fin ? deckY + F.fin.h + 0.8 : deckY + top - 0.1, penZ = F.fin ? F.fin.z - 0.1 : (F.masts.find((m) => m.h === top)?.z ?? 0);
@@ -211,7 +222,10 @@ export class ShipClassLook {
   /** Per frame, as the sloop's: sail hoisted, heel, the wind's side, the drive's glow, time. */
   set({ sail = 1, heel = 0, side = 1, glow = 0.6, t = 0 } = {}) {
     this.body.rotation.z = heel;
+    const furled = sail <= FURL; // (the canvas stowed: the bundles on the yards shown, the sails hidden: vfx/sloop.js FURL)
+    if (this.furled) this.furled.visible = furled;
     for (const s of this.sails) {
+      s.mesh.visible = !furled;
       const u = s.mat.userData.u; u.uFill.value = sail; u.uSide.value = s.jib ? side : -1; u.uT.value = t;
       s.mesh.scale.y = 0.08 + 0.92 * sail;
       if (!s.jib) s.mesh.rotation.y = Math.PI / 2 + side * 0.22 * sail; // (the yards braced round to the wind)
