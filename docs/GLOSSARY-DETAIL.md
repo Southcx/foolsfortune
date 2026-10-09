@@ -337,6 +337,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
 - **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): what the folk call the Great Dunemaw's FOE, a Great Slip Jelly wearing the broken urn it grew in as a crown (**the urn crown**, `src/vfx/urncrown.js`; the lore copy says "the broken crude jar": a *pithos*, Pandora's jar); breaking the crown bares **the core**, its weak point.
+  Its size is `FOE.size` (`src/progress/combat/dunemaw.js`, 14: the body 21 m tall, 27.8 m with the crown; the owner, 2026-10-09:
+  "about 12 Couriers tall"), the one number its body, its fight and its look are scaled by. Under the urn is **the urn's flesh**
+  (`urn-flesh`, `src/vfx/urncrown.js`): the jelly swollen up into the urn it outgrew, seen from below.
 - **the Prince of Clay**: Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the ram**, **the slam**, **the reel**, **the slide** (the Great Slip Jelly's: `src/creatures/jelly/greatjelly.js`): its charge after
   a one-second scrape, aimed as the scrape begins (stone it hits cracks its own crown); its slam close in; the four seconds it reels
@@ -983,6 +986,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   shuts it. *Not:* a page centred under the veil (the index's, a Shrine's), the dock (Margarite's quay; the word "dock" is a place's).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+  **Froude scaling** (`froude(o, k)`, `src/vfx/cavekit.js`): a particle drawn for one size thrown by a thing k times as big (sizes by k,
+  speeds and times by √k, gravity real), as miniature effects are shot; the Great Slip Jelly's and the bowl's effects use it.
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
   played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
