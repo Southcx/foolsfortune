@@ -312,6 +312,24 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   creature), the **Major Arcana** (twenty-two designated cards).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
+- **Figment attack telegraph** (code: `figmentMarkOf`, Dovina's data, `progress/combat/figmenttelegraphs.js`; drawn by
+  `FigmentTelegraphs`, `game.figmentTelegraphs`, `src/vfx/figmenttelegraph.js`, its parts in `src/vfx/figmenttelegraph/`, Calissa's,
+  2026-10-09; FIGMENT-TELEGRAPHS.md): what Divination draws of a creature's windup, never more than its step has earned. Its parts: **the
+  edge** (step 1: the area's outline on the ground in the Mind's ink, a pale keyline outside it, the drawn area the area's own numbers);
+  **the caution edge** (the edge dashed: a tracked shape not yet locked, its size not yet known); **the fill** (step 2: the area filling
+  away from its maker on the windup's own clock, reaching the edge on the strike frame, its front a pale line; untyped it is ink, from
+  step 3 the damage type's two colours and its **motif**: impact's facets, ego's hex lattice, influence's ripples, illusion's turning
+  curls, delirium's bubbles); **a status glyph** (step 3, `status.<id>`: one for each status the blow builds, standing where the fill
+  lands last); **an answer glyph** (step 4, `answer.<id>`: chevrons laid on the ground at the edge, turned out, in or across a line; a
+  curved arrow behind a cone's maker; standing over a thing, the guard on the arena's rim, the high ground on a safe island, the crack on
+  what a bait leads into, the target over an add, the shut eye on a gazer); **an add's marker** (`figmentMark.add`, over each add before
+  step 4) and **pips** (`figmentMark.pip`, a real second left each, ten at most); **the eye** (`figmentMark.eye`, on a gazer); **the
+  arena's rim** (a raidwide: a band round the arena with a marquee running round it). One cast's areas are one edge (a union); six at
+  once at most, never culled; a friendly area (a sibling's, a spirit's) is its outline alone in the Courier's draught colour. One program
+  (`figmenttelegraphshader.js`); the glyphs are drawn in the icons' hand (`ui/icons/figmenttelegraphart.js`) into one atlas
+  (`figmenttelegraphatlas.js`); the grid it lies on is **the drape** (`figmenttelegraphdrape.js`: a square of world cells set on the
+  ground). *Not:* the rail's telegraph mark (`vfx/telegraph.js`), the parry mark ("answer this"), the resist mark, a glyph pop
+  (`vfx/glyphs.js`).
 
 ## 4. Creatures and folk
 
@@ -1131,7 +1149,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink
   (`labInk`, a surface's near-black), though it is drawn in it.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
-  bars, the fish portrait. A wall hides a creature's marks (its glyph pops, its aura, its temper) as it hides the creature, and its own
+  bars, the fish portrait, a Figment attack telegraph and its glyphs (`game.figmentTelegraphs`). A wall hides a creature's marks (its
+  glyph pops, its aura, its temper) as it hides the creature, and its own
   body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**
   (a pop's `{ throughWalls }`, or `game.glyphs`, `game.temper`, `game.auras` `.throughWalls`, true or a creature -> bool): the switch
   that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20). A scan's

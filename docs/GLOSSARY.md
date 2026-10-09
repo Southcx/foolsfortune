@@ -117,10 +117,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   hook (the Sondelass's) or a sweep. → detail
 - **windup** (`creatures.windup`, `c.windup`) — a creature's telegraphed blow, listed while it can be answered; a parry in its window breaks it
   off. *Not:* an attack's own phase name.
-- **Figment attack telegraph** (`figmentMarkOf`, `src/progress/combat/figmenttelegraphs.js`; `docs/plans/FIGMENT-TELEGRAPHS.md`) — what
-  Divination draws of a creature's windup in the third-person game, over the body's tell, saying more as it rises: where (the edge), when
-  (the fill), what kind (the type's colour, the status glyph), how to answer (the answer glyph). Always named in full, or "Figment
-  telegraph". *Not:* the rail's telegraph mark, the windup's animation, the parry mark.
+- **Figment attack telegraph** (`figmentMarkOf`, `src/progress/combat/figmenttelegraphs.js`; drawn by `game.figmentTelegraphs`,
+  `src/vfx/figmenttelegraph.js`; `docs/plans/FIGMENT-TELEGRAPHS.md`) — what Divination draws of a creature's windup in the third-person
+  game, over the body's tell, saying more as it rises: where (the edge), when (the fill), what kind (the type's colour, the status glyph),
+  how to answer (the answer glyph). Always named in full, or "Figment telegraph". *Not:* the rail's telegraph mark, the windup's
+  animation, the parry mark. → detail
 - **the rail's telegraph mark** (`TelegraphMarks`, `src/vfx/telegraph.js`) — on the rail, the ring closing on a boss's part about to act.
   *Not:* a Figment attack telegraph.
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,

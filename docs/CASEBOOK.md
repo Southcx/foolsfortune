@@ -448,8 +448,17 @@ the rules before building in the same area; a rule a machine can check goes into
     (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
 165. **A probe is never cast down a grid line.** A ray that samples a heightfield or a tiled level on a regular grid is nudged off
     the grid's lines (a few millimetres on no grid a level uses); a miss over solid ground is a bug, never open sky.
+166. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
+    leaves the warm-up in the same change: a program compiled at boot for nothing is a program the budget cannot give to something new.
 
 ## Cases
+
+### 2026-10-09 · A status with no glyph drew the out chevron, and a mark shown every frame relaid its grid every frame (found reviewing the Figment attack telegraphs)
+
+- **Seen:** reading `vfx/figmenttelegraph.js` and its look: `cellOf(id)` is `Math.max(0, indexOf)`, so a status the glyph set has no picture for (`calm`, `melt`) was drawn as cell 0, `answer.out`, the chevron that says "step out of it": a wrong word, not a missing one. And `show()` reset the slot's drape on every call, so a caller that re-shows a mark each frame (as the handoff allows for `.set`) would have laid the 49 x 49 grid again each frame.
+- **Cause:** a lookup that misses fell to the first entry; the reset sat outside the "new to its slot" branch.
+- **Fix:** the glyph batch skips an id the atlas lacks (`FigmentTelegraphGlyphs.add`), and the drape is reset only when a mark first takes a slot. Also the casebook's 2026-10-08 brig case said the rail's mark "is now `vfx/closingring.js`": the rename was undone, the line says `vfx/telegraph.js` again.
+- **Rule:** 163 (a lookup that misses is a plain look, never another thing's meaning).
 
 ### 2026-10-09 · The vane's rose was laid once per meter, not once per model (found reviewing Gall and Fury's looks)
 
@@ -471,7 +480,18 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** every ray is cast `NUDGE` (0.0173 m) off its cell's centre; the lenses and the stones are drawn only where the ground is
   known (`step(-9000.0, g0)`), never at a guessed height. After, in the Dunes with the hail and the miasma forced: 0 of 1,024
   cells open in the rain's map and 0 of 1,600 in the lenses' map, and the lenses lie on the sand from the ground and from 28 m up.
-- **Rule:** 165.
+
+### 2026-10-09 · The Figment attack telegraphs' one program had no room under the budget (perf: 163 of 164, the warm-up's stain)
+
+- **Seen:** the Figment attack telegraphs' look (`vfx/figmenttelegraph.js`) needed one shader program; the last baseline stood at 161 to 163 of the 164 the
+  gate allows, and a headless boot counted 156 compiled by the warm-up, 162 after twenty frames of the workshop.
+- **Cause (measured):** the warm-up still built `new Stain()` (`vfx/stains.js`) and parked it, so the stain's program was compiled at
+  boot and kept alive; but spilled crude has been drawn by the paint map in the ground's own shaders since `world/ground/stains.js` was
+  folded into it, and nothing in play makes a `Stain` any more (only the workbench's `brush:stains`). The parry mark was warmed on it.
+- **Fix:** the stain left the warm-up (`main.js`); the parry mark is warmed on the parked Lachrymato Bottle instead (the same plain-mesh
+  shell, so the same program). The Figment attack telegraphs' program took its place: 156 at boot and 162 in the workshop, as before, with a Figment attack
+  telegraph and a glyph shown and nothing compiled late.
+- **Rule:** 166.
 
 ### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
 
@@ -993,7 +1013,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** the call site asked "is this the bar before a volley" and not "will it fire", and a mark had no way to ask whether its
   part was still there.
 - **Fix:** the call asks `rel < 21` (the next bar must fire) and hands the mark `alive: () => p.alive && !this.ended`
-  (`vfx/telegraph.js`, `world/emocean/pirates.js`).
+  (`vfx/telegraph.js`; `world/emocean/pirates.js`).
 - **Rule:** 107.
 
 ### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)
