@@ -49,7 +49,7 @@ export const DO = {
     begin: (R, d) => R.F.cast(d.windup, { pose: 1.25 }),
     blow: (R, d) => {
       const A = d.area;
-      for (let i = 0; i < A.drops; i++) R.after(i * A.every, () => R.lob(R.F.c.pos.clone().setY(R.F.c.pos.y + 1.6), R.P.pos.clone(), 0.8, (at) => {
+      for (let i = 0; i < A.drops; i++) R.after(i * A.every, () => R.lob(R.F.c.pos.clone().setY(R.F.c.pos.y + R.F.c.height * 0.95), R.P.pos.clone(), 0.8 + 0.04 * R.F.c.height, (at) => { // (from its top, as big as its body: Calissa's measure at x14)
         R.g.slip?.addDisc(at.clone(), UP, A.radius, A.lasts);
         sfx.jellySquelch?.(R.g.listenerDistance(at), 1);
         if (flat(R.P.pos, at) < A.radius && Math.abs(R.P.pos.y - at.y) < 2) R.hit('oozeRain', d.effect, { from: at });

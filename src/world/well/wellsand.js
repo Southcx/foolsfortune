@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
 
-export const SAMPLES = 32, BASE = 0.08, MAX_SLOPE = Math.tan((30 * Math.PI) / 180);
+export const SAMPLES = 24, BASE = 0.08, MAX_SLOPE = Math.tan((30 * Math.PI) / 180);
 const LOOK = { // (by floor: dune height, drift height against the walls, ripple)
   1: { dune: 0, drift: 1.2, ripple: 0.2 },
   2: { dune: 2, drift: 1.8, ripple: 0.15 },
