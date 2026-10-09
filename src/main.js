@@ -18,6 +18,7 @@ import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
 import { PaintMap } from './world/ground/paintmap.js';
 import { Stains } from './world/ground/stains.js';
+import { LoadGauge } from './feedback/loadgauge.js';
 import { Character } from './courier/character.js';
 import { Input } from './core/input.js';
 import { Player } from './courier/player.js';
@@ -403,6 +404,7 @@ async function main() {
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
+  game.loadGauge = new LoadGauge(game); // (what the brush's load spends, shown where you look: the arc, the jets' rings: feedback/loadgauge.js)
   game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
@@ -1131,7 +1133,7 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
-    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt);
+    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);
