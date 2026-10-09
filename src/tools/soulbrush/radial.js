@@ -28,7 +28,7 @@ export class PaintRadial {
   constructor(tool) { this.tool = tool; this.heldT = -1; this.wheel = null; }
   get game() { return this.tool.game; }
   /** Is a feeling learned? (Gall and Fury: by drinking them, GALL-AND-FURY.md; not yet in the game, so they show locked.) */
-  learned(p) { return !p.learn || (this.game.ledger?.get?.(`feeling.known.${p.id}`) || 0) > 0; } // (drunk once: feeling.known.*, the ledger's; Acquired Taste and Seeing Red are its achievements)
+  learned(p) { return !p.learn || !!this.game.lend?.has('feelings') || (this.game.ledger?.get?.(`feeling.known.${p.id}`) || 0) > 0; } // (drunk once: feeling.known.*, the ledger's; Acquired Taste and Seeing Red are its achievements)
 
   update(raw, inp) {
     const P = this.tool.P;

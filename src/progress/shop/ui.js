@@ -10,7 +10,8 @@
 //
 //   const ui = new ShopUI(game)   ui.show(shop)   ui.hide()   ui.render()   ui.open
 // ---------------------------------------------------------------------------------------
-import { SHOPS, shelfOf, worthOf } from './catalogue.js';
+import { SHOPS, shelfOf, worthOf, glazePrice } from './catalogue.js';
+import { GLAZES } from '../../courier/vessel/glazes.js';
 import { itemOf } from '../../pneuka/items.js';
 import { itemIcon } from '../../pneuka/icons.js';
 
@@ -93,6 +94,16 @@ export class ShopUI {
       row.onmouseleave = () => this.say('&nbsp;');
       row.onclick = () => { if (p != null) S.buy(this.shop, id); };
       row.oncontextmenu = (e) => { e.preventDefault(); if (D.haggle && p != null) S.haggle(this.shop, id); };
+      list.appendChild(row);
+    }
+    // the glazes (Saggar's counter): learned at the kiln, not things in the box; each once
+    if (D.glazes) for (const G of Object.values(GLAZES).filter((x) => x.got?.shop)) {
+      const own = !!g.vessel?.has(G.id), p = own ? null : glazePrice('stoneware'), hex = `#${G.color.toString(16).padStart(6, '0')}`;
+      const row = el('div', `good${own ? ' out' : ''}`, `<div class="ic"><i style="display:block;width:28px;height:28px;margin:6px;border-radius:50%;background:${hex};box-shadow:inset -4px -4px 0 rgba(0,0,0,.25)"></i></div><div class="nm">${G.name}<s>glaze</s></div>`);
+      row.appendChild(el('div', 'pr', own ? 'yours' : `${p}<small>CUBES</small>`));
+      row.onmouseenter = () => this.say(own ? `<b>${G.name}</b> is yours: fire it at the kiln.` : `Buy <b>${G.name}</b> for <b>${p}</b> cubes: fire it at the kiln.`);
+      row.onmouseleave = () => this.say('&nbsp;');
+      row.onclick = () => { if (!own) S.buyGlaze(this.shop, G.id); };
       list.appendChild(row);
     }
     shelf.appendChild(list); cols.appendChild(shelf);

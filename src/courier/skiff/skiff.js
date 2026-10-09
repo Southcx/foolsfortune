@@ -24,7 +24,7 @@
 //   F         riding slowly: DISMOUNT (they step off and the board is left PARKED, hovering where it was); at a parked board: MOUNT
 //   a crash   a wall struck above 14 m/s, a landing past 17 m/s, or a spin landed badly crooked BAILS them: thrown off backward, the
 //             board left parked where it slides to a stop; the body thrown as a ragdoll (courier/anim/ragdoll.js) and faded into the get-up
-//             (skiff.bail { why, speed, by })
+//             (skiff.bail { why, speed, by }; each thump of the tumble skiff.tumble { speed, by }, for its sound)
 //
 // The rider and the skiff are one rigid unit: one quaternion (heading, then the sand's slope, then
 // lean and spin) turns the skiff and, through character.js, the rider standing on it; the rider is
@@ -309,7 +309,7 @@ export class Skiffing extends Tech {
     // the glide: Space held in the air, with the art (system.allows: until it is registered, it is everyone's)
     const glideWas = this.gliding;
     this.gliding = this.air && inp.isDown('Space') && this.airT > 0.12 && (g.system?.allows?.('skiffGlide') ?? true);
-    if (this.gliding && !glideWas) { this.spin = 0; g.events?.emit('skiff.glide', { by: 'courier' }); sfx.airJump?.(); } // (a placeholder sound: Wanda's glide to come)
+    if (this.gliding && !glideWas) { this.spin = 0; g.events?.emit('skiff.glide', { by: 'courier' }); } // (the wind under the wings is the skiff's loop: sfxLoop.set's glide, Wanda's)
     const rate = c.turn * (0.35 + 0.65 * clamp(sp0 / 7, 0, 1)) * (1 - 0.4 * speedFrac) * (this.air ? (this.gliding ? 0.3 * GLIDE.carve : 0.3) : 1);
     this.heading -= this.steer * rate * dt;
     if (this.air && !this.gliding) this.spin += -this.steer * 8 * dt;
@@ -367,7 +367,7 @@ export class Skiffing extends Tech {
     // (the lean: into the turn, and out of a slide; roll about the boat's own long axis)
     const wantRoll = clamp(this.steer * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? 0 : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest)
     this.roll = damp(this.roll, wantRoll, 9, dt);
-    if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0);
+    if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
     g.events?.emit('skiff.tick', { speed: this.speed });
     return true;
   }
@@ -507,7 +507,7 @@ export class Skiffing extends Tech {
   afterPose(ch) {
     // the bail's ragdoll: begun from this frame's pose, all of the body while thrown, faded into the get-up clip (courier/anim/ragdoll.js)
     if (this.active && (this.phase === 'bail' || this.phase === 'getup')) {
-      if (this.ragWant) { (this.rag ||= new Ragdoll(this.game)).start(ch, this.ragWant, { floor: (x, z) => this.dunes?.heightAt?.(x, z) ?? null }); this.ragWant = null; }
+      if (this.ragWant) { (this.rag ||= new Ragdoll(this.game)).start(ch, this.ragWant, { floor: (x, z) => this.dunes?.heightAt?.(x, z) ?? null, onTouch: (speed) => this.game.events?.emit('skiff.tumble', { speed: +speed.toFixed(1), by: 'courier' }) }); this.ragWant = null; }
       if (this.rag?.active) {
         const w = this.phase === 'bail' ? 1 : 1 - smooth(0, RAG.blend, this.phaseT);
         if (w > 0.001) this.rag.apply(ch, w); else this.rag.stop();

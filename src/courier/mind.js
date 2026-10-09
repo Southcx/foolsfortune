@@ -10,7 +10,7 @@
 // `game.courierMind` { mind, v (0..1, Dovina's view: 0.5 at rest), state ('Stoic' .. 'Prismatic'), brimming } is what the garden's rain
 // reads (world/garden/waterworks.js); `game.draught` { aspect: share } is what the garden's lake, the music and the sky read; `game.draughtHex` its strongest feeling's
 // colour (progress/weather.js COLOR), or null.
-// Events: mind.state { state, by }, mind.brim { by }, mind.settle { by } (the log says them: tracking.js).
+// Events: mind.state { state, by }, mind.brim { by }, mind.settle { by }, feeling.drink { aspect, by } (a change of the feeling drunk) (the log says them: tracking.js).
 //
 // Prior art: Darkest Dungeon's stress (a meter moved by what you do, settled by rest), and the creatures' own mental state here.
 //
@@ -49,6 +49,7 @@ export class CourierMind {
     this.quiet = 0;
     if (over) { if (!this.said) { this.said = true; g.events?.emit('mind.brim', { by: 'courier' }); } this.brimT = BRIM; this.sayT = 0; } // (said once a spell: overflow after overflow at sea is one spell)
     const w = g.weather?.here?.(g.player?.pos);
+    if (w?.aspect && w.aspect !== this.lastDrunk) { this.lastDrunk = w.aspect; g.events?.emit('feeling.drink', { aspect: w.aspect, by: 'courier' }); } // (a change of feeling drunk, not every drink: tracking/weather.js counts feeling.known.*)
     if (w?.aspect) { const d = draughtOf(this.stone, w.aspect, w.strength, w.second || null, w.secondStrength || 0); if (Object.keys(d).length) g.draught = d; }
     this.dirty();
   }

@@ -170,8 +170,8 @@ export class Emocean {
   /** Once a frame (before the camera: main.js). */
   update(dt) {
     const g = this.game, raw = g.rawDt ?? dt;
-    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('crossing', { help: 'the next crossing\'s set pieces, one to three of shoal, pirates, leviathan: /crossing pirates,leviathan', run: (_, arg) => { const L = String(arg || '').split(/[ ,]+/).filter((x) => this.pieces[x]).slice(0, 3); this.force = L.length ? L : null; g.events?.emit('rail.force', { setPieces: L, by: 'courier' }); } });
-      g.chat.add('figure', { help: 'the next crossing\'s turns of the rail all one figure (weave, crest, corkscrew, verticalLoop), or none to draw them: /figure verticalLoop', run: (_, arg) => { const f = String(arg || '').trim(); this.figure = FIGURES[f] ? f : null; g.events?.emit('rail.figure', { figure: this.figure, by: 'courier' }); } }); }
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('crossing', { debug: true, help: 'the next crossing\'s set pieces, one to three of shoal, pirates, leviathan: /crossing pirates,leviathan', run: (_, arg) => { const L = String(arg || '').split(/[ ,]+/).filter((x) => this.pieces[x]).slice(0, 3); this.force = L.length ? L : null; g.events?.emit('rail.force', { setPieces: L, by: 'courier' }); } });
+      g.chat.add('figure', { debug: true, help: 'the next crossing\'s turns of the rail all one figure (weave, crest, corkscrew, verticalLoop), or none to draw them: /figure verticalLoop', run: (_, arg) => { const f = String(arg || '').trim(); this.figure = FIGURES[f] ? f : null; g.events?.emit('rail.figure', { figure: this.figure, by: 'courier' }); } }); }
     if (!this.stage.active) { this.unfinished(); this.ashore(raw); return; }
     if (this.offering) { if (!g.indexMenu?.open) this.decline(); return; } // (the coin's page closed unanswered: the ship breaks up)
     this.clock(raw);

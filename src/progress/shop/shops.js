@@ -17,7 +17,7 @@
 //   .haggle(shop, id)  (begins the haggle talk)   .hag (the haggle in progress: { shop, item, h })
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
-import { SHOPS, worthOf, shelfOf, demandKey } from './catalogue.js';
+import { SHOPS, worthOf, shelfOf, demandKey, glazePrice } from './catalogue.js';
 import { demand, drawWell, wellYield } from '../econ/islands.js';
 import { supplyMult, fillHours } from '../weather.js';
 import { today, now as calNow } from '../../core/calendar.js';
@@ -105,6 +105,18 @@ export class Shops {
     this.save();
     sfx.cubeGet?.(2); sfx.shopBuy?.(); // (shopBuy, shopSell: Wanda's, docs/HANDOFFS.md)
     g.events.emit('shop.buy', { shop, item: id, price: cost, worth: worthOf(id), haggled, island: SHOPS[shop].island || null, by: 'courier' });
+    g.shopUI?.render();
+    return true;
+  }
+  /** A shop glaze (Saggar's counter, SHOPS.saggar.glazes): learned at the kiln, never a thing in the box, at an everyday glaze's price
+   *  (glazePrice('stoneware'): ECON.looks). */
+  buyGlaze(shop, gid) {
+    const g = this.game, V = g.vessel, cost = glazePrice('stoneware');
+    if (!V || cost == null || V.has(gid)) return false;
+    if (!g.cubes.spend(cost, `shop.${shop}`)) { this.refuse(`You cannot afford it. (${cost} cubes)`, 'poor'); return false; }
+    if (!V.buy(gid)) return false;
+    sfx.cubeGet?.(2); sfx.shopBuy?.();
+    g.events.emit('shop.buy', { shop, item: `glaze.${gid}`, price: cost, worth: cost, haggled: false, island: SHOPS[shop].island || null, by: 'courier' });
     g.shopUI?.render();
     return true;
   }

@@ -29,7 +29,7 @@ export class System {
   }
 
   // ---- queries ----
-  get lendAll() { return !!this.state.lendAll; }
+  get lendAll() { return !!this.game.lend?.has('arts'); } // (the lend panel's Movement Arts: DEBUG only, progress/lend.js; the saved flag is no longer read)
   unlocked(id) { return !!this.state.unlocked[id]; }
   has(id) { return this.lendAll || this.unlocked(id) || (!id.includes('.') && !!BY_ID[id]?.basic); }
   variantId(abilityId) { const v = this.state.variant[abilityId]; return v && this.has(`${abilityId}.${v}`) ? v : null; }
@@ -126,7 +126,7 @@ export class System {
     return true;
   }
 
-  setLendAll(on) { this.state.lendAll = !!on; this.touch(true); this.changed(); }
+  setLendAll(on) { this.game.lend?.set('arts', on); this.changed(); }
 
   // ---- saving ----
   touch(now = false) { if (now) this.save(); else if (!(this.dirty > 0)) this.dirty = 3; }
