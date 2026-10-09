@@ -72,7 +72,10 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **What plays where** is one list, highest first (`music/choose.js`): the title; the Lockheart; the kiln, the awakening, the garden;
   the crossing; the Great Slip Jelly; a fight; the Dunemaw's floors; a dive; the skiff; the dunes; the workshop.
 - **The weather** (`music/mood.js`): the night thins every cue; the mood lays a layer (wonder a glass pad, mirth a celesta, desire a
-  frame drum, grief a cello, dread a drone with the Tear); an agate plays both, a torn sky neither. The Crucibelle plays in the
+  frame drum, grief a cello, dread a drone with the Tear, fury driving low strings with the tritone stabbed, gall a reed's sour hum);
+  an agate plays both, a torn sky neither. Fury's mode is a tritone minor [0 3 6 7 10], gall's a Hijaz [0 1 4 7 8] that borrows no note
+  (it has no opposite; docs/plans/GALL-AND-FURY.md). Their beds (`audio/ambience.js`): fury's hail on clay and glaze over a hot low
+  pressure (never thunder), gall's flies, sour hum and drip. The Crucibelle plays in the
   cue's scale, or the weather's mode where nothing plays (`game.music.scale()`). A track's aspect for busking: `music/aspects.js`.
 - **Played along** (Rez): the rail's lock tones and downs, the catch's sting wait for the music's next sixteenth or beat, in the key
   of the bar sounding (a crossing's legs each have one: a section's `root`).
