@@ -81,9 +81,11 @@ export class Creatures {
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
-    if (c.friend) dmgK = friendlyDamage(dmgK);
+    if (c.friend) dmgK = friendlyDamage(dmgK); // (a fifth; and the cap below: no blow from an ally past a quarter of its health)
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
-    const took = c.hurt(point, dir, power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
+    let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
+    if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
+    const took = c.hurt(point, dir, dmg, cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)

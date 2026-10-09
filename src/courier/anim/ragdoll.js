@@ -11,7 +11,7 @@
 // the blend from ragdoll back to an animated get-up of Euphoria and of Uncharted's falls ("ragdoll to animation" by a pose fade); the
 // capsule-per-bone layout of Unity's Ragdoll Wizard and Unreal's physics assets.
 //
-//   const R = new Ragdoll(game)   R.start(character, vel, { floor })   R.apply(character, w)   R.settled -> bool   R.hips -> Vector3   R.stop()
+//   const R = new Ragdoll(game)   R.start(character, vel, { floor, onTouch(speed) })   R.apply(character, w)   R.settled -> bool   R.hips -> Vector3   R.stop()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -32,7 +32,7 @@ export class Ragdoll {
   constructor(game) { this.game = game; this.parts = []; this.joints = []; this.active = false; this.t = 0; this.floor = null; }
 
   /** Let the body go: capsules where the bones are now, thrown at `vel` (m/s, a Vector3). `floor(x, z)` -> the ground's height, or null. */
-  start(ch, vel, { floor = null, spin = 2 } = {}) {
+  start(ch, vel, { floor = null, spin = 2, onTouch = null } = {}) {
     this.stop();
     const W = this.game.physics.world, B = ch.bones, by = {};
     ch.root.updateMatrixWorld(true);
@@ -53,14 +53,18 @@ export class Ragdoll {
         this.joints.push(W.createImpulseJoint(RAPIER.JointData.spherical({ x: _c.x, y: _c.y, z: _c.z }, { x: 0, y: 0, z: 0 }), pb, body, true));
       }
     }
-    this.floor = floor; this.active = this.parts.length > 0; this.t = 0;
+    this.floor = floor; this.onTouch = onTouch; this.touchT = 0; this.active = this.parts.length > 0; this.t = 0;
     return this.active;
   }
 
   /** Once a fixed step: nothing sinks under ground that has no collider. */
   step(dt) {
     if (!this.active) return;
-    this.t += dt;
+    this.t += dt; this.touchT -= dt;
+    // a part falling past 2 m/s that has all but stopped: it met the ground (`onTouch(speed)`, one each 0.12 s: the tumble's thumps)
+    let hit = 0;
+    for (const p of this.parts) { const vy = p.body.linvel().y; if ((p.vy ?? 0) < -2 && vy > p.vy * 0.3) hit = Math.max(hit, -p.vy); p.vy = vy; }
+    if (hit && this.touchT <= 0 && this.onTouch) { this.touchT = 0.12; this.onTouch(hit); }
     if (!this.floor) return;
     for (const p of this.parts) {
       const t = p.body.translation(), gy = this.floor(t.x, t.z);

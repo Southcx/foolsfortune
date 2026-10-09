@@ -78,11 +78,12 @@ export const pay = (end) => FOE.pay[end] || null;
 /** THE ARENA (docs/plans/DUNEMAW-ARENA.md, Petra's to build): the bowl's measures in metres, bearings from north clockwise. */
 export const ARENA = { // (the owner, 2026-10-09: "yes I want it BIG ... a good opportunity for me to test movement in a large arena": every
   //   measure of the v130 bowl x2.5, 140 m across, for a Great Slip Jelly 21 m tall; the timeline's numbers are Dovina's to rescale to it)
-  radius: 70, roof: 50, dish: 4, // (degrees of the floor's slope to the centre)
+  radius: 70, roof: 75, dish: 4, // (degrees of the floor's slope to the centre)
   rim: { from: 63, depth: 0.4, wade: 0.7 }, // (the shallows a band of 7 m, as the old bowl's 6: wider read as a black stripe and a long wade)
-  upper: { from: 60, y: 10, bearings: [90, 270] }, ledge: { z: [65, 85], y: 15, width: 30 },
+  upper: { from: 60, y: 4, bearings: [90, 270] }, ledge: { z: [65, 85], y: 6, width: 30 }, // (heights the Courier's body meets keep their size: Dovina's
+  //   DUNEMAW-ARENA.md 'The great bowl'; the walk 4 m up, the ledge 6)
   pillars: { r: 45, bearings: [30, 90, 150, 210, 270, 330], width: 7.5, height: 30, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen)
-  stalactites: { r: 30, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [32, 40] },
+  stalactites: { r: 30, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [35, 45] },
   pools: { centre: 15, ring: { r: 40, bearings: [0, 90, 180, 270], width: 10 }, depth: 2 },
   clutches: { r: 66, perQuadrant: 2, clear: 7.5 }, // (in the rim shallows; 7.5 m or more from any pillar)
   wake: 50, // (the FOE wakes when the Courier is on the floor within 50 m of it)
