@@ -25,6 +25,7 @@ import { STRAWMAN, bout } from '../../progress/combat/dunemaw.js';
 import { StrawmanModel } from '../../vfx/strawman.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
+import { sfx } from '../../audio/sfx.js';
 export { TR };
 const _src = new THREE.Vector3(); // (where a blow came from, when nothing struck it but a point and a way: Strawman's guard)
 
@@ -141,10 +142,13 @@ export class TestRoom {
         // convention and missed them all: the owner's T51, v131)
         const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
         const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, front = !!src && dz > 0.5 * Math.hypot(dx, dz);
-        const dmg = mode === 'guard' && front ? 0 : power;
-        hits.push({ at: clock, dmg, type: mode === 'guard' && front ? 'blocked' : type || cause || 'shot' });
+        const blocked = mode === 'guard' && front, dmg = blocked ? 0 : power;
+        hits.push({ at: clock, dmg, type: blocked ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;
-        model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
+        if (blocked) { // (a block is shown as one: the resist mark where it struck, the guard's clank, the sack barely stirring: the owner's T51, v132)
+          g.glyphs?.pop?.('ward', (point || S.center()).clone(), { color: 0xffffff, size: 0.7, life: 0.6, float: 0.25, burst: true, ring: true });
+          sfx.guardBlock?.(); model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), 0.15);
+        } else model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
       },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
       setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); },
@@ -152,7 +156,7 @@ export class TestRoom {
       tick(raw) {
         clock += raw;
         model.update?.(raw);
-        if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
+        if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
         if (mode === 'swing' && (swingT += raw) > STRAWMAN.swing.every) { swingT = 0; model.swing?.(() => {}); }
       },
       last: null,

@@ -867,13 +867,12 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
+    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open && !game.dialogue?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's or a talk's, is not a pause: the owner's T10, v132)
   };
   // a talk frees the mouse as the kiln's window does (the game's own release, so no pause), and takes it back when it ends: a held lock
   // keeps Esc for the browser, and Esc mid-talk opened the pause menu with the talk still up (the owner's T136, v131; casebook)
-  let talkFreed = false; // (taken back only if the talk let it go: a lock it never held is not asked for)
-  game.dialogue.onOpen = () => { talkFreed = !!input.locked; if (talkFreed) { selfRelease = true; document.exitPointerLock?.(); } };
-  game.dialogue.onClose = () => { if (talkFreed && input.enabled && !cursorFree() && !modalOpen() && !game.shopUI?.open && !game.kilnUI?.open) input.requestLock(); talkFreed = false; };
+  game.dialogue.onOpen = () => { if (input.locked) { selfRelease = true; document.exitPointerLock?.(); } };
+  game.dialogue.onClose = () => { if (!input.locked && input.everLocked && input.enabled && !cursorFree() && !modalOpen() && !game.shopUI?.open && !game.kilnUI?.open) input.requestLock(); }; // (asked back whenever it is not held: a refusal while a window was up left the mouse loose with no card, T10)
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)
   addEventListener('keydown', (e) => {

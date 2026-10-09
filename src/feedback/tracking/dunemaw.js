@@ -51,9 +51,9 @@ export function dunemawRules({ on, L, log }) {
   });
   // Strawman: one line a bout, never a count
   on('strawman.bout', (e) => {
-    const types = Object.entries(e.byType || {}).sort((a, b) => b[1] - a[1]).map(([t, d]) => `${TYPE[t] || t} ${Math.round(d)}`).join(', ');
+    const types = Object.entries(e.byType || {}).filter(([t]) => t !== 'blocked').sort((a, b) => b[1] - a[1]).map(([t, d]) => `${TYPE[t] || t} ${Math.round(d)}`).join(', ');
     const st = Object.entries(e.statuses || {}).map(([s, n]) => `${DONE[s] || s} ${n === 1 ? 'once' : `${n} times`}`).join(', ');
-    log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${st ? `; ${st}` : ''}.`);
+    log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);
   });
   on('strawman.mode', (e) => log.say('info', `Strawman: ${e.mode}.`, { key: 'strawman', throttle: 1 }));
 }

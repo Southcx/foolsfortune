@@ -2,7 +2,9 @@
 // MEETING THE SIBLINGS: each is met once, where its craft lives (Dovina's rulings, docs/plans/COOP.md C4), and is the owner's to call
 // from then on. Until met, a sibling waits at its place, idle: Petra by the workshop's shelves, Calissa at the kiln, Wanda on Old
 // Grog's pier, Espada at the Dunes' Gnomon (the nearest thing the Dunes have to a lighthouse), Dovina at Raku's table. Its rig is made
-// only while you are near (within 30 m) and let go when you leave, so an unmet sibling costs nothing elsewhere. F beside it meets it
+// the first time you come within 30 m on its own floor, hidden (never thrown away) when you walk off, and let go only past 150 m: a rig
+// built and dropped at a 30 m line was a whole skinned Courier uploaded at every crossing of it, the threshold hitch the owner felt
+// in the basement under the kiln (R5, v132: about 300 ms each on Firefox; casebook). F beside it meets it
 // (`party.meet`): it joins at once if the party has room. Its words at the meeting are Espada's to write (the log's line, a placeholder).
 //
 // Prior art: Dragon's Dogma's pawns met in the world before they are summoned at rift stones, and the party members of the old JRPGs
@@ -15,7 +17,7 @@ import { T } from '../core/config.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
 import { SIBLINGS, lookOf } from './party.js';
 
-const NEAR = 30, REACH = 2.6;
+const NEAR = 30, FAR = 150, FLOOR = 4, REACH = 2.6; // (m: made within NEAR on its own floor, FLOOR up or down; let go past FAR)
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const folkAt = (g, id, dx, dz) => { const n = g.folk?.list?.find((f) => (f.def?.id || f.id) === id); return n ? n.pos.clone().add(V(dx, 0, dz)) : null; };
 /** Where each sibling waits to be met (and which way it faces), or null while its place is not built. */
@@ -35,7 +37,7 @@ export class Meetings {
 
   offer() {
     const P = this.game.player.pos; let best = null;
-    for (const [id, W] of this.waiting) { const d = Math.hypot(P.x - W.pos.x, P.z - W.pos.z); if (d < REACH && Math.abs(P.y - W.pos.y) < 2 && (!best || d < best.d)) best = { pos: W.pos.clone().setY(W.pos.y + 2.2), d, sibling: id, ref: `meet.${id}` }; }
+    for (const [id, W] of this.waiting) { if (W.hidden) continue; const d = Math.hypot(P.x - W.pos.x, P.z - W.pos.z); if (d < REACH && Math.abs(P.y - W.pos.y) < 2 && (!best || d < best.d)) best = { pos: W.pos.clone().setY(W.pos.y + 2.2), d, sibling: id, ref: `meet.${id}` }; }
     return best;
   }
 
@@ -47,8 +49,9 @@ export class Meetings {
     for (const def of SIBLINGS) {
       const id = def.id, W = this.waiting.get(id);
       if (party.met.has(id)) { if (W) this.letGo(id); continue; }
-      const at = SPOTS[id]?.(g), near = at && Math.hypot(P.x - at.x, P.z - at.z) < NEAR && Math.abs(P.y - at.y) < 20;
-      if (!near) { if (W) this.letGo(id); continue; }
+      const at = SPOTS[id]?.(g), d = at ? Math.hypot(P.x - at.x, P.z - at.z) : Infinity, near = d < NEAR && Math.abs(P.y - at.y) < FLOOR;
+      if (!near) { if (W && (d > FAR || Math.abs(P.y - at.y) > 60)) this.letGo(id); else if (W) this.hide(W, true); continue; }
+      if (W?.hidden) this.hide(W, false);
       if (!W && !this.making.has(id)) {
         this.making.add(id);
         this.makeRig().then((rig) => {
@@ -69,6 +72,9 @@ export class Meetings {
     this.party.meet(id, W.rig, W.pos); // (the rig that waited is the one that joins)
     this.waiting.delete(id);
   }
+
+  /** Out of sight, kept: hidden, not rebuilt on the way back. */
+  hide(W, on) { W.hidden = on; W.rig.root.visible = !on; }
 
   letGo(id) {
     const W = this.waiting.get(id); this.waiting.delete(id); if (!W) return;
