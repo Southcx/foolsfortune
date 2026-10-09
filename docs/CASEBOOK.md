@@ -453,6 +453,13 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-09 · A status with no glyph drew the out chevron, and a mark shown every frame relaid its grid every frame (found reviewing the Figment attack telegraphs)
+
+- **Seen:** reading `vfx/figmenttelegraph.js` and its look: `cellOf(id)` is `Math.max(0, indexOf)`, so a status the glyph set has no picture for (`calm`, `melt`) was drawn as cell 0, `answer.out`, the chevron that says "step out of it": a wrong word, not a missing one. And `show()` reset the slot's drape on every call, so a caller that re-shows a mark each frame (as the handoff allows for `.set`) would have laid the 49 x 49 grid again each frame.
+- **Cause:** a lookup that misses fell to the first entry; the reset sat outside the "new to its slot" branch.
+- **Fix:** the glyph batch skips an id the atlas lacks (`FigmentTelegraphGlyphs.add`), and the drape is reset only when a mark first takes a slot. Also the casebook's 2026-10-08 brig case said the rail's mark "is now `vfx/closingring.js`": the rename was undone, the line says `vfx/telegraph.js` again.
+- **Rule:** 163 (a lookup that misses is a plain look, never another thing's meaning).
+
 ### 2026-10-09 · The vane's rose was laid once per meter, not once per model (found reviewing Gall and Fury's looks)
 
 - **Seen:** reading `vfx/vanemeter.js` after the rose grew to seven shaped petals: the meter handed the petals over once (`petalsSet`) and never again, so a Dreamvane model built after the first (a rebuilt tool, the workbench's) kept an empty rose: a needle with no petals, and with shapes carrying the feelings, no feelings.
@@ -1006,7 +1013,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** the call site asked "is this the bar before a volley" and not "will it fire", and a mark had no way to ask whether its
   part was still there.
 - **Fix:** the call asks `rel < 21` (the next bar must fire) and hands the mark `alive: () => p.alive && !this.ended`
-  (`vfx/telegraph.js`, now `vfx/closingring.js`; `world/emocean/pirates.js`).
+  (`vfx/telegraph.js`; `world/emocean/pirates.js`).
 - **Rule:** 107.
 
 ### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)

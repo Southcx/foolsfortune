@@ -90,8 +90,7 @@ export class FigmentTelegraphs {
     if (Number.isFinite(opts.eta)) T.eta = opts.eta;
     T.total = Math.max(0.05, opts.total ?? (Number.isFinite(mark.fill) ? mark.fill : null) ?? T.eta ?? 1);
     const onGround = mark.ground || (mark.shape === 'raidwide' && !!T.o.rim); // (a raidwide lies on the arena's rim when it has one)
-    if (onGround && !T.slot) T.slot = this.pool.find((p) => !p.busy) || null;
-    if (T.slot) { T.slot.busy = T; T.slot.drape.reset(); }
+    if (onGround && !T.slot) { T.slot = this.pool.find((p) => !p.busy) || null; if (T.slot) { T.slot.busy = T; T.slot.drape.reset(); } } // (the grid is laid anew only for a mark new to its slot: a caller may show() every frame)
     return T.h;
   }
   get(id) { return this.live.get(id)?.h || null; }

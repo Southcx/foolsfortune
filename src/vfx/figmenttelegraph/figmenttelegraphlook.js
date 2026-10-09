@@ -16,7 +16,7 @@
 import * as THREE from 'three';
 import { toWorld } from './figmenttelegraphshapes.js';
 import { figmentTelegraphMaterial, TYPE_INDEX, TYPE_TINTS } from './figmenttelegraphshader.js';
-import { cellOf } from './figmenttelegraphatlas.js';
+import { cellOf, ATLAS_IDS } from './figmenttelegraphatlas.js';
 import { FigmentTelegraphDrape } from './figmenttelegraphdrape.js';
 
 const BOARDS = 96;
@@ -55,7 +55,7 @@ export class FigmentTelegraphGlyphs {
   begin() { this.n = 0; }
   /** One glyph this frame: art id, where (world), size (m), alpha, tint (hex), stand (its foot on the point), shift [x, y, scale]. */
   add(art, p, size, alpha, tint, stand = 1, sx = 0, sy = 0, sc = 1) {
-    if (this.n >= BOARDS) return;
+    if (this.n >= BOARDS || !ATLAS_IDS.includes(art)) return; // (a status with no picture of its own, calm or melt, is left undrawn: never another's, cell 0's chevron)
     const g = this.g.attributes, k = this.n++;
     _c.setHex(tint);
     for (let v = 0; v < 4; v++) {
