@@ -21,6 +21,7 @@ import { weld } from './weld.js';
 
 export const RESOLUTIONS = { ps2: 480, 540: 540, 720: 720, native: 0 };
 const CREASE = Math.cos(THREE.MathUtils.degToRad(50));
+const WALK = 600; // (objects shaded a frame by the once-a-second pass: about ten frames for the whole scene)
 
 /** Smooth normals for a triangle-soup geometry, in place: each vertex averages the faces at its position within the crease angle. */
 export function creaseNormals(geo, smooth) {
@@ -75,7 +76,12 @@ export class Presentation {
   /** Smooth or flat, for every material that was built flat and every triangle-soup geometry drawn with one. */
   shade(all = false) {
     const smooth = T.visual.smooth !== false;
-    this.game.scene.traverse((o) => {
+    this.game.scene.traverse((o) => this.shadeOne(o, all, smooth));
+  }
+
+  /** One object made smooth or flat to match (shade()'s body, also walked a slice a frame by update()). */
+  shadeOne(o, all, smooth) {
+    {
       if (!o.isMesh || o.userData.isOutline) return;
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       let faceted = false;
@@ -89,12 +95,16 @@ export class Presentation {
       if (faceted && g && !g.index && !o.isInstancedMesh && !o.isBatchedMesh && (all || this.geos.get(g) !== smooth)) {
         if (this.geos.get(g) !== smooth) { creaseNormals(g, smooth); this.geos.set(g, smooth); }
       }
-    });
+    }
   }
 
-  /** New things arrive (a pot respawns, a shard falls): a quiet pass once a second shades them to match. */
+  /** New things arrive (a pot respawns, a shard falls): a quiet pass once a second shades them to match, walked WALK objects a frame
+   *  (the whole scene, 5,000 objects, in one frame was 2 to 3 ms headless and, with the light budget's scan on the same frame, the
+   *  periodic spike the owner's Firefox showed at 18 to 43 ms: R4 and R5's diagnostics, v132). */
   update(dt) {
-    this.scanT -= dt;
-    if (this.scanT <= 0) { this.scanT = 1; this.shade(); }
+    if (!this.walk) { this.scanT -= dt; if (this.scanT > 0) return; this.scanT = 1; this.walk = [this.game.scene]; }
+    const smooth = T.visual.smooth !== false;
+    for (let n = 0; n < WALK && this.walk.length; n++) { const o = this.walk.pop(); this.shadeOne(o, false, smooth); for (const c of o.children) this.walk.push(c); }
+    if (!this.walk.length) this.walk = null;
   }
 }

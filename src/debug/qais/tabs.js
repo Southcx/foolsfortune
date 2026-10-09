@@ -14,15 +14,16 @@ import { tuned, line } from '../tuned.js';
 export const TABS = [['brief', 'Brief'], ['tests', 'Tests'], ['reports', 'Reports'], ['questions', 'Questions']];
 const DIVISIONS = ['petra', 'dovina', 'wanda', 'calissa', 'espada'];
 const OPEN = (t) => !t.status || t.status === 'open';
-const order = (a, b) => (a.order ?? a.n ?? 0) - (b.order ?? b.n ?? 0);
+const order = (a, b) => (a.walk ?? 1e6) - (b.walk ?? 1e6) || (a.order ?? a.n ?? 0) - (b.order ?? b.n ?? 0); // (Dovina's walk: one route covers them)
 const div = (d) => DIVISIONS.indexOf(String(d.division).toLowerCase());
 
 function h(tag, cls = '', text = null) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function btn(label, fn) { const b = h('button', 'qbtn', label); b.addEventListener('click', fn); return b; }
 const row = (...kids) => { const r = h('div', 'acts'); r.append(...kids.filter(Boolean)); return r; };
 
-/** The round's documents. */
-const roundTests = (q) => q.store.docs('tests').filter((t) => t.build === q.round?.build).sort(order);
+/** The round's documents: its own tests, and every test still untried from an earlier build (a test is not done because a build
+ *  passed it by; the owner, 2026-10-09), but for those Dovina has retired (`retired`: what it tested is gone or changed). */
+const roundTests = (q) => q.store.docs('tests').filter((t) => !t.retired && (t.build === q.round?.build || OPEN(t))).sort(order);
 const roundBugs = (q) => q.store.docs('bugs').filter((b) => b.round === q.round?.build);
 
 /** The tab row, with what waits in each. */
@@ -78,7 +79,10 @@ function reports(body, q) {
   if (before.length) { const det = h('details'); det.append(h('summary', 'qarea', `Earlier (${before.length})`), q.look.reportList(before, { onOpen: open })); body.append(det); }
 }
 
-function questions(body, q) { body.append(q.look.questions(q.store.docs('questions'))); }
+function questions(body, q) { // (answered here, read by Dovina: the choice and its note, QAIS.md)
+  body.append(q.look.questions(q.store.docs('questions'), { onAnswer: (x, o) => q.act.answer(x, o), onNote: (x, text) => q.act.qnote(x, text) }));
+  body.append(row(btn('Send to the brigade', () => q.act.send())));
+}
 
 const DRAW = { brief, tests, reports, questions };
 export function draw(tab, body, q) {

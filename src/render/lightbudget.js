@@ -31,7 +31,7 @@ export class LightBudget {
       this.slots.push({ l, proxy: null, k: 0 });
     }
     this.proxies = [];
-    this.scanT = 0;
+    this.scanT = 0.5; // (half a second out of step with the shading pass, present.js: the two whole-scene scans never share a frame)
     this.scan();
   }
 

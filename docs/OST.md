@@ -96,7 +96,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level
   once put three quarters of a climax there and flattened it. The upright bass and big taiko are the usual culprits: measure by
   rendering with one instrument dropped.
-- **The air:** the owner's music has a median 7% of its energy above 2 kHz; keep hats, shimmer and breath in the busy cues.
+- **The air:** the owner's music has a median 7% of its energy above 2 kHz (`docs/archive/2026-10-06-ost-the-owners-ear.md`); keep hats, shimmer and breath in the busy cues.
 - **The kick is round and short; the bass is bowed and plucked**, a quiet sine under it.
 - **The hole:** a bar cut at its third beat and a reversed swell into the next downbeat (the owner's favourites all have one).
 - **The modern rig** (`modern.js`): `tick`, `ohat`, `snap`, `eight` (the 808, sliding in with `from`), `shimmer`, `twinkle` (clean
@@ -110,26 +110,3 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   scale each, the Kingdom to the Crown; a keepsake pot sings its spirit's line of the Answer in its feeling's mode.
 - **Voices:** the spirits (`audio/spirits.js`) are Chao-like: a small throat, the mood in the tune, the feeling in the leap (mirth a
   major third, wonder a fourth, desire a fifth, grief a minor third, dread a half step).
-
-## 6. The owner's ear (Spotify, read 2026-10-05 and 06; previews measured)
-
-- **Superlike** (77 songs) and the top-songs lists (all-time, 2023, 2024, 2025): emo, bedroom pop, alternative R&B, hyperpop,
-  metalcore, math rock, melodic drops. The genres move year to year; the ear does not: about 32% of the energy under 120 Hz, 28%
-  percussive, 110 bpm on every list.
-- **The five favourites:** *Waterfalls Coming Out Your Mouth* (Glass Animals), *DATURA* (Crywolf), *Agoraphobia* (Coletta),
-  *Linoleum* (kmoe, the one song on every list), *WHY'D YOU HAVE TO GO THERE* and *MOUTHFUL OF SILENCE* (ZIG MENTALITY).
-- **What sets the favourites apart:** silence as a hit (four of six cut out and slam back, against a third of the list), a bass that
-  slides, more bass (48% under 120 Hz).
-- **What it asked of this soundtrack, and got:** more air and more drums (this soundtrack's cues had an eighth of the list's air),
-  holes, sliding bass, clean tapped guitar, the soft-to-crushing drop. The owner chose Crude Sea's A/B on these grounds.
-
-## 7. Open
-
-- The Dunemaw's places (the pit's hiss, slip rivers, geysers, the stalactite runs' beat) and Strawman's blow:
-  `docs/handoffs/everyone/2026-10-06-from-wanda-the-dunemaw-s-sound.md`.
-- Petra's placeholders that want real sounds: the Soul Brush and the jet arts, the parries, the Shrine's rest, the sea's extras
-  (`docs/handoffs/wanda/`).
-- The Spirit Garden's new parts (water running, the rain inside the Jar, the hand's brushes, a cue deepening a Firing):
-  `docs/handoffs/wanda/2026-10-07-from-dovina-garden-sound.md`.
-- The crossing's maelstrom arena (off the rail) and a bounty's posted stray want their own cues once their runtime exists.
-- The settings' save sections (the voice, the music switch, the rhythm offset): waiting on the save's way to carry an adopted key.

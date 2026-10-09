@@ -94,7 +94,7 @@ Each drawing writes a technique onto what it was drawn over. Every one costs Lac
 | V | Heavy | 3 | makes it heavy |
 | a heart | Solace | 6 | every clapperjar in view dances; the god hand's jar is soothed |
 
-**At sea:** **Absorb Spray**. A cone (50 degrees, 9 m) that eats enemy shots of your own feeling. Costs 4 energy.
+**At sea:** **Absorb**. A cone (50 degrees, 9 m) that eats enemy shots of your own feeling. Costs 4 energy.
 
 ## The Veritome (J)
 
@@ -116,7 +116,7 @@ before time runs out. You compose macros in the Codex (VERITOME, THE MIND shelf)
 creature's own mind (an action, a status, a drive, a relation, a memory wiped). The better it fits, the stronger it is. You learn
 Functions by photographing creatures doing them.
 
-**At sea:** **Snapshot**. Opens weak points for a few seconds (its Flash holds one open 3 s). Costs 6 energy, cooldown 6 s.
+**At sea:** **Flash**. Opens weak points for a few seconds (its Flash holds one open 3 s). Costs 6 energy, cooldown 6 s.
 
 ## The Dreamvane (K)
 

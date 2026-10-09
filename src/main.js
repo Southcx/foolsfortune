@@ -859,7 +859,7 @@ async function main() {
   input.onLockChange = (locked) => {
     // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened
     // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
-    if (locked && (modalOpen() || game.kilnUI?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
+    if (locked && (modalOpen() || game.kilnUI?.open || game.dialogue?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
     if (!locked && selfRelease) { selfRelease = false; return; } // (a release the game made itself is not you leaving: no pause, the kiln sweep's F and Esc spam)
     if (!locked && performance.now() - (input.escSpentAt ?? -1e9) < 500) return; // (an Esc a window spent closing itself is not you leaving either: casebook 125)
     if (title.active) return; // (the title owns the screen: no pause menu over it)
@@ -867,8 +867,12 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
+    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open && !game.dialogue?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's or a talk's, is not a pause: the owner's T10, v132)
   };
+  // a talk frees the mouse as the kiln's window does (the game's own release, so no pause), and takes it back when it ends: a held lock
+  // keeps Esc for the browser, and Esc mid-talk opened the pause menu with the talk still up (the owner's T136, v131; casebook)
+  game.dialogue.onOpen = () => { if (input.locked) { selfRelease = true; document.exitPointerLock?.(); } };
+  game.dialogue.onClose = () => { if (!input.locked && input.everLocked && input.enabled && !cursorFree() && !modalOpen() && !game.shopUI?.open && !game.kilnUI?.open) input.requestLock(); }; // (asked back whenever it is not held: a refusal while a window was up left the mouse loose with no card, T10)
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)
   addEventListener('keydown', (e) => {

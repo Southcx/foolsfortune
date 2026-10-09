@@ -1,6 +1,6 @@
 # The room sweeps (the owner, 2026-10-07: "Go clean house")
 
-Kept by Dovina (mechanical testing). Each room has a sweep in `scripts/sweeps/` on a shared harness; `npm run dev`, then
+Kept by Dovina (mechanical testing). Run as CLAUDE.md "Test lean" says (the owner, 2026-10-08): only the room changed, once a round, and no new checks for a mechanic in flux. Each room has a sweep in `scripts/sweeps/` on a shared harness; `npm run dev`, then
 `node scripts/sweeps/run.mjs` (or one: `node scripts/sweeps/<room>.mjs [--quick]`). A sweep enters every place in its room, works it as
 a person would and as a careless one would (spam, Esc mid-action, windows over windows, leave mid-action, twenty times fast, resize,
 travel away and back), and checks the world is put back. A FAIL is a defect; it passes when the fix lands, and stays as the

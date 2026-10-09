@@ -54,14 +54,14 @@ export const PLANETOID_PLOTS = {
  *  third room for more spirits, once a few are caught; the fourth the drills, once there are spirits worth training (Monster
  *  Rancher opens its harder drills late). Never a number on the Courier: a Firing opens verbs. */
 export const FEATURES = {
-  terrace:    { name: 'Herb Terrace', size: 'medium', job: 'grow',    does: 'Grows more of a material you plant', n: 1, firing: 1 },
-  pavilion:   { name: 'Pavilion', size: 'large',  job: 'work',    does: 'Pays cubes for a fight you beat', n: 1, firing: 2 },
+  terrace:    { name: 'Planter', size: 'medium', job: 'grow',    does: 'Grows more of a material you plant', n: 1, firing: 1 },
+  pavilion:   { name: 'Trophy Hall', size: 'large',  job: 'work',    does: 'Pays cubes for a fight you beat', n: 1, firing: 2 },
   spiritHouse:{ name: 'Spirit House', size: 'medium', job: 'shelter', does: 'Room for two more spirits', n: 2, firing: 3 },
   pond:       { name: 'Pond', size: 'medium', job: 'water',   does: 'Water that flows downhill; visitors drink here', n: 1, firing: 1 },
   lantern:    { name: 'Lantern', size: 'small',  job: 'light',   does: 'Light at night; night visitors come', n: 1, firing: 1 },
-  incense:    { name: 'Incense Burner', size: 'small',  job: 'calm',    does: 'Calms you faster while you rest near it', n: 0.1, firing: 2 },
+  incense:    { name: 'Incense', size: 'small',  job: 'calm',    does: 'Calms you faster while you rest near it', n: 0.1, firing: 2 },
   stone:      { name: 'Booster Stone', size: 'small',  job: 'empower', does: 'Boosts the features next to it', n: 2, firing: 2 },
-  drillYard:  { name: 'Drill Yard', size: 'large',  job: 'drill',   does: 'Spirits train here', n: 1, firing: 4 },
+  drillYard:  { name: 'Training Yard', size: 'large',  job: 'drill',   does: 'Spirits train here', n: 1, firing: 4 },
   sporebed:   { name: 'Spore Bed', size: 'small',  job: 'transmute', does: 'Fungus that transforms what you put in it', n: 1, firing: 1 },
 };
 const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch' };

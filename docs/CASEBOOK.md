@@ -384,6 +384,31 @@ the rules before building in the same area; a rule a machine can check goes into
     a sheathed blade, a folded wing or a shut lid likewise. And a look is judged from where a person stands beside it (the jetty
     walker's eye, inside the height of what is moored there), not only from the stage's own views of it.
 
+138. **A writer to a store writes the shape its reader draws.** A document the page renders is written in the fields the renderer reads
+    (QAIS's Brief: `division`, `build`, `lines`, `waiting`, `at`), and read back through the page once after the first write.
+
+139. **A window that wants Esc frees the mouse.** While the pointer is locked the browser keeps Esc; a window that ends on Esc
+    (the talk, the kiln) releases the lock itself when it opens and takes it back when it closes.
+140. **A zone's bounds take in its own walls.** A box is filed by its centre; a wall centred outside the floor's edge falls to the next
+    zone and is hidden from inside. Bounds reach past the outer faces, and a wall shared with another zone gets a lining of its own.
+141. **A thing drawn on another reads the other's numbers.** A board, a label, a decal on a stone takes the stone's position from the
+    stone's constant, never a copy of its numbers, or it stays behind when the stone moves.
+142. **No overhang ends on another's face.** A slab that overhangs into a neighbour's wall puts its end face in the wall's plane;
+    stop it at the wall, or a band fights at the joint.
+143. **"From the front" is judged by where the striker stands.** A blow's `dir` is each tool's own convention; a facing test reads
+    the striker's position (`from`, else the Courier).
+
+144. **Nothing heavy is built and thrown away at a line the player crosses.** A model made on approach is kept (hidden) on the way
+    out and let go only far off; a radius test that means "this floor" says so in height too.
+145. **No whole-scene pass runs in one frame on a timer.** A periodic scan walks a slice a frame, and two of them never share a
+    frame; what has not moved keeps its last answer.
+146. **A refused pointer lock is asked again by the next window to close.** The click-to-play card waits until no window is up; a
+    window's close asks for the lock whenever it is not held.
+147. **The engine's autostep is not trusted alone.** A body pinned against a lip under the step height is stepped over by the game's
+    own step-over, felt for at the lip's height.
+148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
+    sound) and is counted in its line.
+
 ## Cases
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
@@ -1958,3 +1983,94 @@ the rules before building in the same area; a rule a machine can check goes into
   the ship's aim is abeam there with the cursor free, its far plane taken along the gun's own way. Measured after: the expert fells
   it at bar 3.8 of 24.
 - **Rule:** 130.
+
+### 2026-10-08 · The Brief went blank for seventeen builds (v110 to v126; found by the owner)
+- **Seen:** QAIS's Brief tab showed a "Petra" heading and nothing under it from v110 on; the owner could not tell what had landed.
+- **Cause:** the Brief draws each document's `lines` and `waiting` (`ui/qais.js` `brief`); from v110 the publish wrote a `body` and a
+  `title` instead. The store took them; nothing read them back through the page.
+- **Fix:** the seventeen documents rewritten with `lines`, `waiting` and `at` (their `body` kept). Every Brief from here is written in
+  the renderer's fields.
+- **Rule:** 138.
+
+### 2026-10-09 · Esc during a talk opened the pause menu, the talk still up (the owner's T136, v131)
+- **Seen:** Esc mid-talk opened the pause menu; the talk stayed open. F ended it.
+- **Cause:** a talk kept the pointer lock; while locked the browser takes Esc to release the lock and the page never sees the key. The
+  release came through as you leaving: the pause menu.
+- **Fix:** a talk frees the mouse when it opens (the game's own release, no pause) and takes the lock back when it ends (`main.js`
+  `dialogue.onOpen`/`onClose`), as the kiln's window does; Esc then reaches the talk and ends it.
+- **Rule:** 139.
+
+### 2026-10-09 · The Throwing Room's north wall showed the room through it (the owner's R2, v131)
+- **Seen:** from inside, the north wall was dark and see-through: the far outlines and the sky showed.
+- **Cause:** the room's zone ended at the floor's edge (z -5.6, x 30.6) and its north, east and south wall boxes are centred 25 cm
+  past it, so they were filed under the Workshop and hidden whenever the camera in the room could not see the door. The Workshop's own
+  east wall, the room's west wall, was hidden the same way.
+- **Fix:** the zone reaches past the walls (x 31.2, z -6.2 to 11.2); the west wall gets a 4 cm lining of the room's own, the door
+  left open. Measured: a ray at the marked pixel now meets the wall at 5.8 m (it met nothing before).
+- **Rule:** 140.
+
+### 2026-10-09 · The Dunes' tally board hung 10 m off its stone (the owner's R1, v131)
+- **Seen:** "The Tally" board stood in the air in front of a bare tan stone.
+- **Cause:** the stone is placed from `TALLY_AT` (moved to z +41 with the pond in R46); the board kept its own copy of the old number
+  (z +31).
+- **Fix:** the board is placed from `TALLY_AT`, 3 cm proud of the stone's water face.
+- **Rule:** 141.
+
+### 2026-10-09 · A band flickered at the Workshop's eaves over the Throwing Room's door (the owner's R3, v131)
+- **Seen:** a striped band along the top of the Workshop's east wall, under the roof.
+- **Cause:** the Throwing Room's roof slab overhung 0.5 m west; its end face lay in the Workshop wall's inner face (x 10) from y 6 to
+  6.5. A ray there met both at 7.02 m.
+- **Fix:** the slab stops at the room's side of the wall (x 10.5). The ray now meets the wall alone.
+- **Rule:** 142.
+
+### 2026-10-09 · Strawman on guard did not block (the owner's T51, v131)
+- **Seen:** blows from in front did full damage in guard mode (bouts of 13, 3 and 22 blows, every one counted).
+- **Cause:** "in front" was read from the blow's `dir` as travelling -z; the tools pass `dir` by their own conventions (the shot's way,
+  the swing's, the striker-to-target or the reverse), so the test failed for them.
+- **Fix:** in front is where the striker stands (`from`, else the Courier), within 60 degrees of its facing. Measured headless: on
+  guard, a blow from in front is blocked with either `dir`; from behind it lands. The arms' pose is Calissa's (handed on).
+- **Rule:** 143.
+
+### 2026-10-09 · A 300 ms hitch at the same lines every time (the owner's R5, the calibration room, v132)
+- **Seen:** a hitch of the same length on crossing a line in the basement's calibration room; the F4 report logged "+7 geometries;
+  +1 textures" at each 316 to 362 ms spike (Firefox, GTX 980).
+- **Cause:** Calissa's waiting sibling (`coop/meeting.js`) was made when the Courier came within 30 m of the kiln, 20 m up or down,
+  and disposed past it: the 30 m line ran through the calibration room one floor down, and every crossing built a whole skinned Courier
+  (7 geometries, a texture) and uploaded it. Measured headless: six crossings, a rig built and dropped at each.
+- **Fix:** the sibling is made on its own floor only (4 m), hidden and kept when you walk off, let go past 150 m. Six crossings now
+  build nothing.
+- **Rule:** 144.
+
+### 2026-10-09 · A smaller hitch about once a real second (R4 and R5's diagnostics, v132)
+- **Seen:** 35 to 64 ms frames about once a second on the owner's Firefox, mostly `sim` (18 to 43 ms).
+- **Cause:** two whole-scene scans on one frame once a second: the shading pass (`present.update`, 2 to 3.3 ms headless over 4,961
+  objects) and the light budget's scan (1.5 ms); and the zone pass four times a second worked out every top-level object's place,
+  holder groups by the box of all they hold (up to 3 ms).
+- **Fix:** the shading pass walks 600 objects a frame; the light scan runs half a second out of step; a still mesh keeps its zone and a
+  holder group's is worked out again every two seconds or when the picture changes. Headless after: the shading pass 0.2 to 0.6 ms a
+  frame.
+- **Rule:** 145.
+
+### 2026-10-09 · Talking to Pip sometimes brought up the pause menu (the owner's T10, v132)
+- **Seen:** the pause menu over an open talk, now and then.
+- **Cause:** the talk frees the mouse (v132, T136) and asks for it back when it ends; a refused request is retried and then reported as
+  the lock lost, which opened the pause menu whatever was up, a talk begun since included.
+- **Fix:** a lock lost while a talk is open is not a pause; a talk that closes asks for the lock whenever it is not held.
+- **Rule:** 146.
+
+### 2026-10-09 · The Courier stalled at a 0.25 m step (the owner's R6, v132)
+- **Seen:** walking into a 0.25 m ledge in the basement, the Courier stopped and shivered 2 cm back and forth; 0.4 and 0.5 m walls
+  mantled.
+- **Cause:** Rapier's autostep (0.4 m) did not take it, and the game's step-over starts at 0.38 m and felt for a wall at 0.35 m, over
+  the lip.
+- **Fix:** pinned (pushing on at under 0.4 of the walk's speed for an eighth of a second), the step-over takes a lip from 0.08 m,
+  felt for just over it. Measured: the Courier steps up and walks on at speed; free movement unchanged.
+- **Rule:** 147.
+
+### 2026-10-09 · Strawman's guard still read as not blocking (the owner's T51, v132)
+- **Seen:** on v132 the owner saw no block.
+- **Cause:** a blocked blow played the same flinch as a landed one, and the log's line said only "0 damage".
+- **Fix:** a blocked blow shows the resist mark where it struck and the guard's clank, the sack barely stirs, and the bout's line says
+  how many were blocked.
+- **Rule:** 148.
+

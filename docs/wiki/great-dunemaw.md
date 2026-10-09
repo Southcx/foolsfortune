@@ -12,7 +12,7 @@ A Well is not a place that stays the same. Each game day lays it out again, and 
 | --- | --- |
 | Find the mouth | Out on the sand north-west of the oasis (about 180 m). A dark pool turns in a ring of fallen stones. The Dreamvane hears it from far off. |
 | Go in | **F** at the mouth. The view closes on the pool, the floor is built, you arrive. |
-| Rest before | A Shrine called Lamp is planned at the mouth's lip (not checked in code). There are no Shrines inside. |
+| Rest before | The Lamp Shrine stands 3 m beside the mouth. There are no Shrines inside. |
 | Come back | **F** at a pale pool (the way up). You walk out at the mouth with your haul and your pay. |
 
 A **run** is one trip down and back. You can only be in one run at a time.

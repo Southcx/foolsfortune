@@ -59,9 +59,10 @@ Everything the player chooses has two names:
 A label is one or two words, a word a player already knows from other games. It is never a word the game invented, and never a
 metaphor that needs the lore to decode. The glossary records both names for every such thing (section 9).
 
-## 4. The card
+## 4. The card (a choice card)
 
-Every choosable thing is shown as one card: a mount, a tool, a Movement Art, a shop item, a feature to place, an encounter's
+Every choosable thing is shown as one **choice card** (`ChoiceCard`, `src/ui/choicecard.js`, Calissa's; in code and docs always "a choice
+card", since a card alone is the Veritome's): a mount, a tool, a Movement Art, a shop item, a feature to place, an encounter's
 choice, a ship. A card always has the same parts, in this order:
 
 1. **an icon** (Calissa's pixel art, 1x, scaled by whole numbers);
@@ -130,7 +131,9 @@ A list of text rows is the last resort. In order of preference:
 
 ## 9. The label table
 
-Each player-facing mechanic gets a row here, then a glossary line. The labels below are proposals; the words are Espada's to settle.
+Each player-facing mechanic gets a row here, then a glossary line. The labels below are Espada's (2026-10-08, `docs/LORE.md` "The labels"),
+proposals until the owner rules. The garden's: Planter, Trophy Hall, Spirit House, Pond, Lantern, Incense, Booster Stone, Training Yard,
+Spore Bed. An encounter not yet met on the sea chart is a **Sighting**.
 The game must have **one** label per thing.
 
 ### The ship's mounts (the screenshot that started this)
@@ -139,10 +142,10 @@ The game must have **one** label per thing.
 |---|---|---|---|---|
 | psygun | the gun | **Blaster** | Fire with LMB; hold RMB to **lock-on** up to 8 | always mounted; 3 energy a lock |
 | sondelass | the hook | **Grapple** | Pulls loot in, yanks boarders off | 16 m; cooldown 1.5 s |
-| soulbrush | the wake brush | **Absorb spray** | Sprays a cone that eats shots of your colour | 50°, 9 m; 4 energy |
+| soulbrush | the wake brush | **Absorb** | Sprays a cone that eats shots of your colour | 50°, 9 m; 4 energy |
 | crucibelle | the toll | **Bomb** | Clears every shot around you | 10 m (14 on the beat); ×3 a crossing |
 | lockheart | the gulp | **Vacuum** | Sucks in shots and small fish; refills energy | 35°, 8 m; cooldown 6 s |
-| veritome | the plate | **Snapshot** | Opens weak points for a few seconds | 6 energy; cooldown 6 s |
+| veritome | the plate | **Flash** | Opens weak points for a few seconds | 6 energy; cooldown 6 s |
 | dreamvane | the vane | **Radar** | Warns you of attacks earlier | passive |
 
 The pier's mount panel, redrawn from section 4:
@@ -150,7 +153,7 @@ The pier's mount panel, redrawn from section 4:
 ```
 CHOOSE 2 MOUNTS                                    sloop: 2 slots
  [1] GRAPPLE        Pulls loot in, yanks boarders off    16 m · 1.5 s
- [2] ABSORB SPRAY   Sprays a cone that eats your colour  50° 9 m · 4 energy
+ [2] ABSORB         Sprays a cone that eats your colour  50° 9 m · 4 energy
  [ ] BOMB           Clears every shot around you         10 m · x3
  [ ] VACUUM         Sucks in shots, refills energy       35° 8 m · 6 s
  (the moored ship shows the selected mount's cone or ring; holding a card plays its demo)
@@ -205,3 +208,39 @@ file path.
    - `scripts/clarity.mjs` joins the gate.
 3. **Then:** each window in the traffic order of section 9, one a round. A window is done when it passes the check and the owner
    reads it cold.
+
+## 13. The wiki's house style (from the OSRS wiki)
+
+The owner, 2026-10-08: the wiki (`docs/wiki/`) follows the Old School RuneScape wiki's style guide
+(`oldschool.runescape.wiki/w/RuneScape:Style_guide`), the best-kept game wiki there is. What we took, and where we differ:
+
+- **A page's shape:**
+  - an **infobox** first: a small table of the thing's stats, its key, where it is, what it costs;
+  - then a **lead** of two or three sentences: what it is and why you care;
+  - then the sections, with strategy and trivia in their own sections at the end.
+  - A topic with its own page gets one line under its heading, "Main page: [The Emocean](emocean.md)", never a repeat of it.
+- **Headings** in sentence case (only the first word and names capitalised), short, with no links in them.
+- **Names** exactly as the game shows them. A thing's label from section 9 is its name on the wiki, with its lore name once beside it.
+  Proper nouns are capitalised (places, the folk, the tools, the domains). Items and creatures are lower case unless they hold a name
+  ("a slip jelly", "the Great Slip Jelly").
+- **No abbreviations or shorthand** ("the Lockheart", never "LH"), no "&" for "and", the serial comma in lists.
+- **British spelling** (colour, armour, travelled), as the game already writes it.
+- **Tense:** present for what the game does; past only for what was removed; "not built yet" for the planned (never the future tense,
+  which reads as a promise).
+- **Person:** "you" (our wiki is a guide, and the game says "you"); never "I" or "we".
+- **Numbers:** a comma between thousands (1,920 cubes); a unit on every number; dates as 8 October 2026.
+- **Rarity** in the OSRS bands, with the odds beside the word:
+
+  | band | odds |
+  |---|---|
+  | Always | 100% |
+  | Common | 1/2 to 1/25 |
+  | Uncommon | 1/26 to 1/99 |
+  | Rare | 1/100 to 1/999 |
+  | Very rare | 1/1,000 or rarer |
+  | Varies | it depends on something (say what) |
+
+  A drop list runs from most to least common; quantities are written out ("5, 17 or 35 cubes"), never in brackets.
+- **Bold** only for the page's subject on its first mention, and the keywords of section 5.
+- **Not taken:** the OSRS wiki writes in-world pages without "you" and bans AI-written text. Ours is a guide, written by the
+  divisions, checked against the code.

@@ -90,7 +90,13 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 ## Scope
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
   goes away when you leave. The Zone of Influence is the ground explored. The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
-  (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check); a bug fixed in a room gets its check.
+  (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check).
+- **Test lean** (the owner, 2026-10-08: "you play the game very differently from how I do"). The owner's play is the test of feel; the
+  machines guard only what breaks the game. **Every push:** `npm run check` and `npm run build`. **The stress test:** only when the change
+  touches the core movement, physics, the save or a shared service. **A sweep:** only the room you changed, once, at the end of the round.
+  **No new checks for a mechanic in flux** (the list below); a check is written once the owner calls it settled, or for a crash, a save
+  loss or a bug the owner reported. A sweep check that fails on a mechanic in flux is updated or deleted, never fixed around.
+  **In flux now** (the owner edits this line): the Emocean's rail and crossing; the Spirit Garden; the Great Dunemaw's fight.
 - **A debug chest beside every feature sent for a test session** (the owner, 2026-10-08; `docs/plans/DEBUG-CHESTS.md`): what its QAIS
   tests need (items and cubes, never state), within a few metres of the thing, in the magenta-and-black missing-texture checker so it
   is never mistaken for the game's; the asking division writes its kit beside the QAIS test, nothing it gives is counted, and it goes
@@ -128,7 +134,7 @@ default branch, merge small and often, stay inside your own files (a small edit 
   lasts also goes in `docs/handoffs/<reader>/` (one file a note; delete it in your branch when done; read yours and `everyone/` each round).
 - **Questions for the owner** go to Dovina, who batches them into one digest after a major round.
 - **How work lands.** The owner sets the direction; Petra plans the round and hands out the tasks. A division is done when it has merged
-  the latest default branch and fixed what broke, built, passed `npm run check` and (if it touched code) `npm run stress`, pushed, and
+  the latest default branch and fixed what broke, built, passed `npm run check` (and the stress test or a sweep only as "Test lean" says), pushed, and
   told the owner in a few lines what changed, what to try, and any handoffs. Petra reviews (it builds, nothing others call is gone, no one's
   work overwritten, stress no worse, the change works headless, it reads well and fits, `npm run perf` says it costs what it is worth),
   merges and publishes; what fails goes back with the reason. Petra does not edit another division's files to make a merge pass.

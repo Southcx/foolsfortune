@@ -33,6 +33,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the party** (`game.party`, `src/coop/party.js`) — the siblings called into your world (two at once; four players at most, guests included),
   and what you tell them with `/sib`.
 - **guest** — a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
+- **voice card / drift** (`PERSONAS`, `drift()`, `src/coop/personas.js`) — a sibling's voice written as form and lexicon / the house voice's
+  tells a line slides back to, banned for all five.
 - **asking a sibling / letter** (`@name words`, `/letter name words`; `src/coop/answer.js`) — a question a sibling answers in seconds, in its
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
@@ -49,6 +51,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **pity** (`TITHE.pity`) — a counter that turns a run of bad chest pulls into a sure thing (a rare every 10, an epic every 40). → detail
 - **crystal** (`src/world/dunes/crystals.js`) — a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear;
   gives cubes, sometimes a crystal shard or a Possibilikey. → detail
+- **fret** (`FRETS`, `fretAt`, `src/world/dunes/crystaltuning.js`) — one of a crystal's five note steps up its stave, each in its note's colour; a
+  crystal's sweet spot is one fret. *Not:* a zone, nor the `/fret` emote. → detail
 - **signature** (`src/core/signatures.js`) — where Lachryma is, and how strongly; tools that sense or drink Lachryma ask here.
 - **draught** (`draughtOf`, `DRAUGHT`) — the feeling of the Lachryma last drunk; a blow of that damage type builds its status faster; fades over a
   real minute. *Not:* a drink of crude (a cask).
@@ -144,6 +148,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
+- **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
+- **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
+- **cogitohazard** — the umbrella word for Lachryma's dangers in the environment and maliciously aligned Figments.
+- **aqua regia / amethyst** — Margarite's lamp fuel, refined from crude / Entropolis's charm for a clear head.
 - **Charybdis** (`CHARYBDIS`, `world/emocean/charybdis.js`) — the Whale (class 3) Egregore of the maelstrom, rising Astral and diving Umbral; one
   in every maelstrom. *Not:* the maelstrom (the leg, a place). → detail
 - **the whirlpool**, **Charybdis's look** (`vfx/whirlpool.js`, `vfx/charybdis.js`) — the maelstrom's crude turning round its heart, and
@@ -186,6 +194,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **an ostracon** (pl. ostraca; `src/progress/ostraca.js`) — a potsherd with one neuralese word and a picture of what it does; found once, it
   glosses that word. *Not:* a shard, a plate. → detail
 
+- **a stele / the Crib Sheet** (`progress/ostraca.js`, `/knack`) — a standing stone with three neuralese words in a sentence / the knack that
+  glosses neuralese beside each word.
 - **the Wake Whistle** (`whistle.wake`) — a clay whistle that takes you out of a Well alive, with your haul; it breaks when blown. → detail
 
 ## 6. The Spirit Garden, Soul Alchemy and the mycelium
@@ -208,6 +218,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   they are the same place.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'
   butter) each work one verb; the tree is Myggdrasil. *Not:* a material's `path`. → detail
+- **the tincture / the caps** (`TREE`, `CAPS`) — Myggdrasil's sap (the colour of all it ate) / its ten fruiting bodies. **moonflower**: a bed
+  that opens only at night.
 
 ## 7. The Emocean and the rail
 
@@ -232,6 +244,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the flock** (`creatures/ai/flock.js`) — many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a school (a
   wave's role).
 - **the lock-on** (RMB held on the rail) — the reticle marks up to eight targets; release fires a lance at each. *Not:* the lock-on on foot. → detail
+- **the hurtbox** (`T.ship.hurt`, drawn by `vfx/railshots.js`) — the sphere a foe's shot must touch to hit the ship, drawn in the hull as a pale
+  core and a dark ring. *Not:* a hit region (the vessel's six).
+- **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`) — the crossing caught in a psychic storm: the world bent, never the danger;
+  scaled by the setting `visual.warp`. *Not:* the weather, the glitch. → detail
 - **the Astral form / the Umbral form / the surge** (`docs/plans/RAIL-OVERHAUL.md`) — the ship above and below the Emocean (Q; was polarity); the
   surge lets the swarm of lances go on R. *Not:* a seam. → detail
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`) — a worn tool carried on the ship, as many as its hull's slots; the psygun is always the gun.
@@ -248,6 +264,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   path drafted through them, one leg, Divination's view of one, a passage's map. *Not:* a Cogitomap. → detail
 - **the trip's pressures** (`src/progress/rail/trip.js`) — the hull, the bunker, burn, adrift, heaving to, high water, a waypoint's feeling, a
   following sea, a squall. *Not:* the vessel's cracks. → detail
+- **the plume / a front** — an island's weather running out to sea / where two plumes meet and a squall forms.
+- **the Drowned Light** — the graveyard leg's drowned lighthouse, the False Light's twin below.
+- **the encounters at sea** (`ENCOUNTERS`, `progress/rail/encounters.js`) — the Dead Reckoners, the Last Word (Letty's cutter), the Cantor, Hap
+  Lagan and Bob, the Bourse, the Glass, a drift bottle. One not yet met is a **Sighting**. *Not:* an encounter of the Spirit Garden. → detail
 - **the Umbral** (`game.umbral`, `src/vfx/umbral.js`) — the world below the Emocean's surface, where the ship's Umbral form fights. *Not:* the
   crossing. → detail
 
@@ -290,6 +310,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
+- **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
+  Crucibelle is in the hands; the setting `visual.compassContrast`. → detail
 - **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`) — one choosable thing shown as its icon, label, one line, stat chips, key and
   state, its detail on hover; **compare** arrows on what would change; **the slot row** (`slotRow`) a loadout as a bar. *Not:* a card (the
   Veritome's). → detail
@@ -409,4 +431,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`) | `audio/cues.js`, `pneuka/thingmodels.js` |
 | Lab mode | the all-arts switch (`lendAll`, `setLendAll`; label "ALL ARTS" for now) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
+| polarity (the ship's feeling on the rail) | the Astral and Umbral forms | `src/courier/ship/`, `world/emocean/` (29 uses; the check's list is Petra's) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |

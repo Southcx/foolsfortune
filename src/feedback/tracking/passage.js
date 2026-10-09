@@ -6,7 +6,7 @@
 //
 //   passageRules({ on, L, log })   passage.exact { waypoints, types }   passage.casks { n, grade }   passage.posted { waypoint, type, cubes }
 //   passage.bounty { waypoint, type, cubes }   rutter.sell { cubes, to }   rutter.buy { cubes }   passage.dive { form, pays }
-//   passage.crew { slots, legs }   passage.ghost { legs, score }   passage.race { beat, score, par }   passage.adrift { at, types, relaid }   charybdis.rise { feel }   charybdis.felled { feel, shards }   charybdis.driven { feel, hp }
+//   passage.crew { slots, legs }   passage.ghost { legs, score }   passage.race { beat, score, par }   passage.adrift { at, types, relaid }   charybdis.rise { feel }   charybdis.dive { feel }   charybdis.felled { feel, shards }   charybdis.driven { feel, hp }
 // ---------------------------------------------------------------------------------------
 const WORD = { shoal: 'the shoal', wreckers: 'the Wreckers', eyewall: 'the eyewall', graveyard: 'the graveyard', maelstrom: 'the maelstrom', bounty: 'a bounty', leviathan: 'Old Nobody', calm: 'a calm', encounter: 'a sighting' }; // (the sea chart's words: world/emocean/seachart.js WAYPOINT)
 const named = (t) => WORD[t] || t;
@@ -23,7 +23,8 @@ export function passageRules({ on, L, log }) {
   on('passage.ghost', (e) => { if (e.by === 'courier') log.say('explore', e.score != null ? `Your double sails beside you. Beat ${e.score} over the next leg.` : 'The glass is empty: no double to race today.'); });
   on('passage.adrift', (e) => { L.inc('passage.adrift'); log.say('warn', e.relaid && e.types?.length ? `Your bunker is dry. You are adrift: the current takes you on to ${e.types.map(named).join(', then ')}.` : 'Your bunker is dry. You are adrift: the current takes you.'); });
   on('charybdis.rise', (e) => log.say('combat', e.feel ? `Charybdis rises, in ${e.feel}.` : 'Charybdis rises.')); // (Espada's line, the glossary's)
-  on('charybdis.felled', (e) => log.say('gain', `Charybdis is felled. You take ${e.shards} crystal shards from the maelstrom.`)); // (placeholders for Espada's)
+  on('charybdis.dive', () => log.say('combat', 'Charybdis dives.')); // (Espada's, LORE.md: its first dive only)
+  on('charybdis.felled', (e) => { log.say('combat', 'Charybdis sinks into the maelstrom. The sea goes still.'); log.say('gain', `You take ${e.shards} crystal shards from the maelstrom.`); }); // (Espada's line; the pay's, the house style)
   on('charybdis.driven', () => log.say('combat', 'Charybdis sinks back into the maelstrom.'));
   on('passage.race', (e) => { if (e.by !== 'courier') return; if (e.beat) L.inc('passage.race.beat'); log.say(e.beat ? 'record' : 'info', e.beat ? 'You beat your double.' : 'Your double pulls ahead.'); });
 }

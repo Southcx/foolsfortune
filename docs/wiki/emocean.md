@@ -42,10 +42,10 @@ mount slots, fired on keys **1** to **3** in the order you pick.
 | Mount | Tool | What it does | Numbers |
 | --- | --- | --- | --- |
 | **Blaster** | the psygun | Fire with LMB; hold RMB to lock on | always mounted; 3 energy a lock |
-| **Absorb Spray** | the Soul Brush | Eats enemy shots of your colour | 50 degrees, 9 m; 4 energy |
+| **Absorb** | the Soul Brush | Eats enemy shots of your colour | 50 degrees, 9 m; 4 energy |
 | **Bomb** (the Crucibelle's toll) | the Crucibelle | Clears every shot around you | 10 m (14 m on the beat); 3 a crossing |
 | **Vacuum** (the Lockheart's gulp) | the Lockheart | Sucks in shots and small fish; refills energy | 35 degrees, 8 m; 6 s cooldown |
-| **Snapshot** (the Veritome's plate) | the Veritome | Opens weak points for a few seconds | 6 energy; 6 s cooldown |
+| **Flash** (the Veritome's plate) | the Veritome | Opens weak points for a few seconds | 6 energy; 6 s cooldown |
 | **Grapple** (the Sondelass's hook) | the Sondelass | Pulls loot in; yanks boarders off | 16 m; 1.5 s cooldown |
 | **Radar** (the Dreamvane's vane) | the Dreamvane | Warns you of attacks earlier | passive |
 

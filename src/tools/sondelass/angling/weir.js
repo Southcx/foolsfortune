@@ -220,7 +220,7 @@ export class Weir {
     const c = document.createElement('canvas'); c.width = 1400; c.height = 620;
     const tex = new THREE.CanvasTexture(c);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(12, 12 * 620 / 1400), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-    m.position.set(OX + 16, B + 3.2, OZ + 31.07); m.rotation.y = Math.PI; // (on the tally's stone, facing the water)
+    m.position.set(TALLY_AT[0], B + 3.2, TALLY_AT[2] + 0.07); m.rotation.y = Math.PI; // (on the tally's stone's water face, 3 cm proud of it: read from TALLY_AT, never its own numbers: the stone moved 10 m with the pond in R46 and the board stayed, the owner's R1)
     this.game.scene.add(m);
     return { c, tex, v: -1, m };
   }

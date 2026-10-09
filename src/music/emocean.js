@@ -12,7 +12,7 @@
 //                        answered by the lead guitar, the pursuit (four on the floor, the brass in canon), the turn home (B major)
 //   ARRIVE    96 to 100  Margarite in sight: E major, a harp up two octaves, a bell; it ends (the stage is done when its cue is)
 // E minor, the game's key, over Em C D Bm (the trance's lift, the anime's ache), the Emocean's fusion: a trance groove under space jazz.
-// Over it, the owner's ear (docs/OST.md section 6; the A/B of 2026-10-06, which the owner chose, "significantly better"): air on top (a
+// Over it, the owner's ear (docs/archive/2026-10-06-ost-the-owners-ear.md; the A/B of 2026-10-06, which the owner chose, "significantly better"): air on top (a
 // shimmer, crisp hats and their rolls), a clean tapped guitar answering the koto from the other side, an 808 under the heavy that
 // slides between the roots, and three holes (a beat of silence and a reversed swell: into the darters, into the heavy, in its middle).
 // The sax's answer to the Answer (its sixth and seventh notes) varies each time round, and the arpeggios turn over every other phrase

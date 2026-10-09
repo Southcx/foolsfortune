@@ -529,7 +529,10 @@ export class Player {
     // falling/jumping at a ledge while pushing forward: pull up onto it
     if (!this.grounded && !this.wallrun && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin, this.vel.y)) return;
     // walking or running into a low wall (above what the feet step up by themselves): step over it without stopping
-    if (this.grounded && !jumped && !this.sliding && iz > 0 && hs > 0.8 && this.tryMantle(M.stepHeight - 0.02, 0, true)) return;
+    // (and pinned against a lip the controller's own autostep should have taken but did not, 0.08 m up: an eighth of a second pinned, the
+    // owner's R6 at a 0.23 m step in the basement, v132; the step-over is the same move, so the core movement is unchanged elsewhere)
+    this.pinT = this.grounded && !this.sliding && iz > 0 && hs < 0.4 * M.walkSpeed ? (this.pinT || 0) + dt : 0; // (pushing on, getting nowhere: the walls take the speed, and the body only shivers in place)
+    if (this.grounded && !jumped && !this.sliding && iz > 0 && (hs > 0.8 || this.pinT > 0.12) && this.tryMantle(this.pinT > 0.12 ? 0.08 : M.stepHeight - 0.02, 0, true)) return;
 
     // slides and dashes bowl clapperjars over; otherwise they just jostle
     this.critters(hv);
@@ -838,7 +841,7 @@ export class Player {
     const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
     const P = this.pos;
     // something in front at chest height or below the ledge
-    const wall = this.physics.raycast({ x: P.x, y: P.y + Math.max(minH, 0.35), z: P.z }, f, RADIUS + M.mantleReach, this.collider, GROUPS.controllerQuery, solid);
+    const wall = this.physics.raycast({ x: P.x, y: P.y + (minH < 0.3 ? minH + 0.04 : Math.max(minH, 0.35)), z: P.z }, f, RADIUS + M.mantleReach, this.collider, GROUPS.controllerQuery, solid); // (a low lip is felt for low: at 0.35 a 0.23 m step was not there at all)
     if (!wall || Math.abs(wall.normal.y) > 0.5) return false;
     const reach = wall.distance + 0.3;
     const top = { x: P.x + f.x * reach, y: P.y + M.mantleMax + 0.15, z: P.z + f.z * reach };
