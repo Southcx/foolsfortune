@@ -2,7 +2,8 @@
 // The System's face: the Codex (B). What is learned is announced in the log (tracking.js), not here. The Codex sorts what you can
 // learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
 // of the ones you don't (a hint, and a bar that only fills as you get closer), and which
-// variant is selected. The all-arts switch lends you everything. The Codex pauses the game while it's
+// variant is selected. In DEBUG its LENDS shelf is the lend panel (ui/lendpanel.js), and a lent art wears the hollow mark, an earned one
+// the solid. The Codex pauses the game while it's
 // open. Fired-clay tablets, the same ink as the rest of the HUD.
 // ---------------------------------------------------------------------------
 import { ABILITIES, GOD_ARTS, BY_ID } from '../../progress/skills.js';
@@ -10,6 +11,7 @@ import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledg
 import { renderVeritome } from '../../tools/veritome/ui.js';
 import { renderTools } from '../../tools/codexpage.js';
 import { renderSoundTest } from '../../music/soundtest.js';
+import { lendPanel, lentMark, saveName } from '../../ui/lendpanel.js';
 
 
 const CSS = `
@@ -112,10 +114,14 @@ export class Codex {
     const head = el('header');
     head.appendChild(el('h2', '', 'THE CODEX'));
     head.appendChild(el('span', 'sub', 'the Veritome\'s own pages · arts are learned by doing · B to close'));
-    const allArts = el('div', `switch allarts${s.lendAll ? ' on' : ''}`, 'ALL ARTS <i></i>');
-    allArts.title = 'Everything unlocked: for testing and for showing the game off';
-    allArts.onclick = () => s.setLendAll(!s.lendAll);
-    head.appendChild(allArts);
+    // the lend panel (DEBUG only: ui/lendpanel.js, its shelf below): in place of the ALL ARTS switch
+    if (this.game.mode === 'debug' && this.game.lend) {
+      const n = Object.values(this.game.lend.state).filter(Boolean).length;
+      const lends = el('div', `switch lends${this.shelf === 'lend' ? ' on' : ''}`, `LENDS <u>${n} lent</u>`);
+      lends.title = 'The lend panel: what DEBUG opens without the ledger, a category at a time';
+      lends.onclick = () => { this.shelf = 'lend'; this.render(); };
+      head.appendChild(lends);
+    }
     // the System's voice (audio/voice/voice.js): on or off, kept in the browser
     const V = this.game.voice;
     if (V) {
@@ -152,6 +158,12 @@ export class Codex {
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
+    if (this.shelf === 'lend') { // (the lend panel: ui/lendpanel.js; outside DEBUG there is none, and the shelf falls back to the arts)
+      const P = lendPanel(this.game, { onChange: () => { this.sys.changed?.(); this.render(); } });
+      if (P) { cx.appendChild(P); this.rows = {}; this.cardHost = null; return; }
+      this.shelf = 'move';
+    }
+    if (this.shelf === 'records') cx.appendChild(el('div', 'shelf', saveName(this.game).toUpperCase())); // (which save these are: DEBUG-MODE.md section 2)
     if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire') {
       (this.shelf === 'grimoire' ? (c, host) => this.game.codexPages?.grimoire?.(c, host) : this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;
@@ -164,11 +176,11 @@ export class Codex {
     const list = el('div', 'list');
     this.rows = {};
     for (const a of (this.shelf === 'god' ? GOD_ARTS : ABILITIES)) {
-      const own = s.has(a.id);
+      const own = s.has(a.id), lent = own && !s.unlocked(a.id) && !a.basic; // (a lent art is never shown as earned: the hollow mark)
       const frac = s.skillFrac(a.id, a.goals);
       const nvar = a.variants.filter((v) => s.has(`${a.id}.${v.id}`)).length;
       const row = el('div', `row${own ? '' : ' locked'}`,
-        `<span class="g">${own ? a.glyph : '?'}</span><span class="t"><b>${own ? a.name.toUpperCase() : '· · ·'}</b><s>${own ? `${nvar}/${a.variants.length} variants` : frac > 0 ? `${Math.round(frac * 100)}% learned` : 'unknown'}</s>${own ? '' : `<div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div>`}</span>`);
+        `<span class="g">${own ? a.glyph : '?'}</span><span class="t"><b>${own ? `${lentMark(lent ? 'lent' : 'earned')} ${a.name.toUpperCase()}` : '· · ·'}</b><s>${own ? `${nvar}/${a.variants.length} variants` : frac > 0 ? `${Math.round(frac * 100)}% learned` : 'unknown'}</s>${own ? '' : `<div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div>`}</span>`);
       row.onclick = () => { this.sel = a.id; this.renderCard(); this.markSel(); };
       this.rows[a.id] = row;
       list.appendChild(row);

@@ -172,6 +172,10 @@ export const SKIFF_ROM = {
   pennant_5: { hinge: [0, 0, 1], min: -0.7, max: 1.3, cone: 0.25 },
   doorL: { hinge: [0, -1, 0], min: -0.7, max: 1.95, cone: 0.1 },
   doorR: { hinge: [0, 1, 0], min: -0.7, max: 1.95, cone: 0.1 },
+  // the oars: folded about the beam by the summon and the recall (1.37 rad, their local X), raised 0.39 by the Ollie; swung out over
+  // their sides as wings in the glide (boat.js SKIFF_GLIDE: 1.22 out, rolled 0.5, lifted 0.3 and flexing 0.05: the swing is that much)
+  oar_shoulderL: { hinge: [1, 0, 0], min: -0.15, max: 1.45, cone: 1.4 },
+  oar_shoulderR: { hinge: [1, 0, 0], min: -0.15, max: 1.45, cone: 1.4 },
 };
 
 /**

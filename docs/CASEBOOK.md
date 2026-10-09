@@ -446,8 +446,25 @@ the rules before building in the same area; a rule a machine can check goes into
 164. **A model scaled is a look judged again, from where it is now seen.** Whatever its shaders and effects measure in metres (a
     world-space phase, a particle's size and speed, a gravity) is put against the model's own size, and every face the old size hid
     (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
+165. **A bone is asked for by the name three.js gave it, and a look that finds nothing says so.** The glTF loader drops a Blender
+    name's dots and other reserved characters (`oar_shoulder.L` is `oar_shoulderL`, PropertyBinding.sanitizeNodeName); a table of
+    bones is keyed by the loaded names, and code that filters a rig's bones by name is judged by rendering the pose, never by its
+    running without an error.
 
 ## Cases
+
+### 2026-10-09 · The skiff's glide spread nothing: the oars were asked for by their Blender names (the owner's R8, "it reads faintly")
+
+- **Seen:** Space held in the air on the Solar Skiff: the owner read the oars' spread as faint; rendered in the Dunes from the front,
+  side and above, the oars did not move at all while `wings` was 0.96.
+- **Cause (measured):** `boat.js` built its stand-in `wingQ` from `['oar_shoulder.L', 'oar_shoulder.R'].filter((n) => P.index[n] != null)`;
+  three.js's GLTFLoader names the bones `oar_shoulderL` / `oar_shoulderR` (the dot dropped, as `doorL` already was in SKIFF_ROM), so
+  the filter left an empty table and the slerp ran over nothing. Even found, the Ollie's widest frame turned the oars 0.39 rad about
+  the beam: up, not out.
+- **Fix:** Skiff_Glide (`SKIFF_GLIDE`): the oars by their loaded names, each swung out over its side 1.22 rad from dead aft, a 0.3
+  dihedral, its blade rolled flat, a slow flex; the rider's upper body in the suite's Air_Glide (`rider.js`); the oars specced in
+  SKIFF_ROM. Judged in the Dunes from the front, side, back and above: the oars stand out as swept wings, `rom.clamped` 0.
+- **Rule:** 165 (new).
 
 ### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
 
