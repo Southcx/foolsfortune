@@ -26,6 +26,7 @@
 // a dry one is pale, matte and nearly still.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { LAB_GLSL, SLIP_SCHILLER, SLIP_SCHILLER_GLSL, mindTime } from '../../vfx/labradorite.js';
 
 export class JellyDeform {
   constructor(material, height, { melt = false } = {}) {
@@ -35,6 +36,7 @@ export class JellyDeform {
       uSq: { value: 1 }, uLean: { value: new THREE.Vector2() }, uWob: { value: 0 }, uPh: { value: 0 },
       uDent: { value: new THREE.Vector4(0, 0, 0, 0) }, uH: { value: height },
       uFoot: { value: 0 }, uFootPh: { value: 0 }, uWet: { value: 1 }, uFlow: { value: 0 },
+      uMindT: mindTime, uSlipSchiller: SLIP_SCHILLER, // (the Lachryma under the clay: one uniform for every slip body, Calissa's vfx/labradorite.js)
     };
     this.feet = 0; this.footPh = 0; this.wet = 1;
     this.sq = 1; this.sqV = 0;
@@ -68,6 +70,8 @@ vJP = position;
       if (melt) sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
 uniform float uTime, uH, uWet, uFlow; varying vec3 vJP;
+${LAB_GLSL}
+${SLIP_SCHILLER_GLSL}
 float jh( vec3 p ) { return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 ); }
 float jn( vec3 p ) {
 	vec3 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
@@ -88,7 +92,10 @@ float jWet;
 	diffuseColor.rgb *= mix( dry, wet, jWet ) * ( 0.9 + 0.18 * grain ); // (the material's colour tints it: white is plain sand)
 }`)
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-roughnessFactor = mix( 0.92, 0.22, jWet );`);
+roughnessFactor = mix( 0.92, 0.22, jWet );`)
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+totalEmissiveRadiance += slipSchiller( vJP, normal, normalize( vViewPosition ), jWet );
+`); // (all slip is Lachryma: its flash under the clay, vfx/labradorite.js)
     };
     material.customProgramCacheKey = () => (melt ? 'jelly-melt2' : 'jelly2');
   }

@@ -77,7 +77,7 @@ export class SoulBrush extends Tech {
     this.celestial = new Celestial(this);
     this.radial = new PaintRadial(this); // (1 held: what the paint is, radial.js)
     this.sigils = new Sigils(g);
-    this.paint = new PaintPath(g.scene, { wet: 0xe8ab86, dry: 0xb4603f, life: TRAIL_WET });
+    this.paint = new PaintPath(g.scene, { wet: 0xe8ab86, dry: 0xb4603f, life: TRAIL_WET, tint: () => this.load?.aspect }); // (the slide trail and the wash are the Courier's paint, in the brush's feeling: vfx/paintpath.js)
     this.rmbT = -1;
     this.slideW = 0; this.slideYaw = 0; this.sliding = false; this.slideDist = 0; this.lastDab = null; this.slideT = 0;
     this.lagY = 0; this.lagZ = 0; this.lagVy = 0; this.lagVz = 0;
@@ -240,7 +240,7 @@ export class SoulBrush extends Tech {
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
       if (simRand() < 0.35) sfx.inkDab?.(0.35);
-      if (simRand() < 0.5) g.fx.alpha.emit({ pos: down.point.clone().setY(down.point.y + 0.05), vel: new THREE.Vector3(-P.vel.x * 0.1, 0.8, -P.vel.z * 0.1), life: 0.4, size: 0.08, sizeEnd: 0.25, color: new THREE.Color(0xe8ab86), alpha: 0.35, drag: 3 });
+      if (simRand() < 0.5) g.fx.alpha.emit({ pos: down.point.clone().setY(down.point.y + 0.05), vel: new THREE.Vector3(-P.vel.x * 0.1, 0.8, -P.vel.z * 0.1), life: 0.4, size: 0.08, sizeEnd: 0.25, color: this.paint.tintNow, alpha: 0.35, drag: 3 });
     }
   }
 

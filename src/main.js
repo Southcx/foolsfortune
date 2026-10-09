@@ -18,6 +18,7 @@ import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
 import { PaintMap } from './world/ground/paintmap.js';
 import { Stains } from './world/ground/stains.js';
+import { Slicks } from './vfx/slicks.js';
 import { LoadGauge } from './feedback/loadgauge.js';
 import { loadAspect } from './tools/soulbrush/load.js';
 import { Character } from './courier/character.js';
@@ -411,7 +412,8 @@ async function main() {
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   // all slip is Lachryma (LACHRYMA-LOOP.md 5, rule 7): what the Courier lays is its paint, in the brush's feeling; anyone else's, a slick
   // (the ground's look only: game.slip's discs are as they were, for the dive)
-  if (game.slip) game.slip.onLay = (c, n, r, by) => { if (n.y < 0.5 || !game.paintmap) return; if (by === 'courier') game.paintmap.stamp(c.x, c.y, c.z, r, loadAspect(game), 0.6); else game.paintmap.slick(c.x, c.y, c.z, r, 0.8); };
+  game.slicks = new Slicks(game); // (a slick drawn where it lies, oxidising as it goes: vfx/slicks.js)
+  if (game.slip) game.slip.onLay = (c, n, r, by, life) => { if (n.y < 0.5 || !game.paintmap) return; if (by === 'courier') game.paintmap.stamp(c.x, c.y, c.z, r, loadAspect(game), 0.6); else { game.paintmap.slick(c.x, c.y, c.z, r, 0.8); game.slicks.spill(c, r, life, { normal: n }); } };
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); vfx/parrymark.js)
@@ -1139,7 +1141,7 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
-    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
+    game.paintmap.update(dt, camera.position.x, camera.position.z); game.slicks?.update(dt); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);

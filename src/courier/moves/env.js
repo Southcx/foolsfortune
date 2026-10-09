@@ -143,7 +143,7 @@ export class SlipField {
   addDisc(c, n, r, life, delay = 0, by = 'creature') {
     if (this.discs.length > 400) this.discs.shift();
     this.discs.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0, delay });
-    this.onLay?.(c, n, r, by);
+    this.onLay?.(c, n, r, by, life);
   }
 
   update(dt) {

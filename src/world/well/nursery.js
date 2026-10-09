@@ -90,7 +90,7 @@ export class Nursery {
     g.physics.world.removeRigidBody(k.rb); k.rb = null;
     g.creatures.remove(k);
     const up = new THREE.Vector3(0, 1, 0);
-    g.shells?.addSplat?.(k.pos.clone().setY(k.pos.y + 0.02), up, 2.2, true);
+    g.shells?.addSplat?.(k.pos.clone().setY(k.pos.y + 0.02), up, 2.2, 'crude');
     g.slip?.addDisc(k.pos.clone(), up, 1.4, 18);
     if (g.fx?.alpha?.emit) for (let e = 0; e < 18; e++) g.fx.alpha.emit({ pos: k.pos.clone().setY(k.pos.y + 0.3), vel: new THREE.Vector3((simRand() - 0.5) * 4, 2 + simRand() * 4, (simRand() - 0.5) * 4), life: 0.9, size: 0.07, sizeEnd: 0.02, color: new THREE.Color(0xd9c19a), alpha: 0.9, drag: 0.5, gravity: 9 });
     sfx.jellyPop?.(g.listenerDistance(k.pos));
