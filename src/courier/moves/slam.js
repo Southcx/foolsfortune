@@ -13,7 +13,9 @@ import { sfx } from '../../audio/sfx.js';
 import { T, PALETTE } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
 import { stream } from '../../core/rng.js';
+import { featTint } from '../../vfx/oxidation.js';
 const simRand = stream('courier/moves/slam'); // (the simulation's chance: core/rng.js, the same twice)
+const fxRand = stream('courier/moves/slam.fx'); // (the look's chance, a stream of its own: the film's hue never shifts the simulation's draws)
 
 /** The slam's clips. The start plays from `flip` (the arms thrown up, then the flip) to `end` (feet first: the fall loop's pose to 2
  *  degrees), over `share` of the fall the slam will have, never slower than captured; a fall under `flipMin` s starts from the tuck
@@ -149,7 +151,8 @@ export class Slam extends Tech {
     m.rotation.x = -Math.PI / 2;
     m.position.copy(at).add(new THREE.Vector3(0, 0.04, 0));
     this.game.scene.add(m);
-    this.rings.push({ m, age: 0, R });
+    const ph = fxRand(); featTint(ph, m.material.color); // (where on Lachryma's film its hue starts)
+    this.rings.push({ m, age: 0, R, ph });
   }
 
   tick(dt) {
@@ -160,6 +163,7 @@ export class Slam extends Tech {
       if (k >= 1) { this.game.scene.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); this.rings.splice(i, 1); continue; }
       r.m.scale.setScalar(0.3 + r.R * (1 - (1 - k) * (1 - k)));
       r.m.material.opacity = 0.8 * (1 - k);
+      featTint(r.ph + k * 0.7, r.m.material.color); // (a feat of the Courier's power reads as Lachryma: the ring walks the oil film's hues as it goes out, vfx/oxidation.js)
     }
   }
 

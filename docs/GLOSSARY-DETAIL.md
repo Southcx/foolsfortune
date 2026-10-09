@@ -89,7 +89,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   ("× aim"); nothing but luck should pay more than 1.5×.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
-- **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
+- **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks (the oxidation ramp,
+  `src/vfx/oxidation.js`).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma ("a cask of crude grief"), carried in the Pneuka Box; a ship's **hold** is how many casks may cross; a sloop holds 8.
 - **chest glaze** (`src/vfx/chestglaze.js`): how a chest shows its tier as it charges, in place of a beam: celadon, crazing, raku, kintsugi gold.
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
@@ -162,6 +163,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **draw / stow**: take a tool in hand / put it back.
 - **blot** *(Espada's word for a stain of spilled crude, settled by Dovina 2026-10-08: the player reads "blot", the code keeps `stain`)* and **blotling** (the aberrant Figment a full-grown blot
   gives up).
+- **a slick** (Espada's word, docs/plans/LACHRYMA-LOOP.md section 0; code `slick`; its look `game.slicks`, `src/vfx/slicks.js`, Calissa's,
+  2026-10-09): crude thrown or welled up in a fight: the Great Slip Jelly's cast puddles (the Slick Trail's drops, the rings, the Decant,
+  its slam), a spit glob landing, a burst jelly or broken clutch, a gusher's spill. Fresh it is black and glossy, the oil film only at its
+  rim and at a grazing look; it **thins**, the film's bands coming up through it and their hue walking; it goes to a pale **sheen** and soaks
+  away. What the mop and Clean take of it is the paint map's (`slick` cells, `world/ground/paintmap.js`): its look shrinks from the rim as
+  they go. Drawn with the blots' program (`vfx/stains.js`, `uSlick`). *Not:* a blot (spilled, it stays and grows until mopped).
+- **the oxidation ramp** (`OXIDATION`, `oxidationAt`, `src/vfx/oxidation.js`; Calissa's, 2026-10-09): how Lachryma left lying in the
+  open turns, one clock for everything of it: a bauble is fresh cream (Lachryma just out of clay), turns to crude (near-black, the oil film
+  on it) from 7 to 22 real seconds, and runs into the ground by 40.5; a slick enters at crude and runs on along its own life (thinned at
+  0.3, sheen at 0.72, gone at 1). **The film** (`oxFilm`, `filmColour`, `FILM`): the oil film's colours walked round a loop (violet,
+  teal, gold, magenta), thin-film interference read as Lachryma's own. **featTint** (`featTint(t)`): that film's hue shift as a feat of
+  the Courier's power wears it: the blink's afterimage and streak, the slam's ring (and the brush's slam, which throws the same ring),
+  the jets' thrust (laid over the brush's feeling), every shockwave (the library's `shock`). **The slip schiller** (`SLIP_SCHILLER`,
+  `SLIP_SCHILLER_GLSL`, `src/vfx/labradorite.js`): the faint labradorite flash of the Lachryma under every slip body's clay, at a grazing
+  look and where it runs wet (the slip jellies' melt): one uniform, shared, so it never makes a program. *Not:* the weather's look, the
+  glitch.
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB

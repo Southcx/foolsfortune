@@ -158,8 +158,8 @@ export class PaintMap {
     const C = this.colData, Hh = this.hData, tmp = new THREE.Color();
     for (let n = 0; n < N * N; n++) {
       const p = this.k[n], o = n * 4;
-      if (p > 0.02) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude: the feeling's colour gone dark and flat, a stand-in look: Calissa's)
-      else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n] = NONE; continue; } // (black under nothing: an edge filters toward the colour, not away from it)
+      if (p > 0.02 && this.crude[n] !== 2) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude: the feeling's colour gone dark and flat, a stand-in look: Calissa's)
+      else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n] = NONE; continue; } // (black under nothing: an edge filters toward the colour, not away from it; a slick's cells are drawn where they lie, vfx/slicks.js)
       const a = C[o + 3] / 255; C[o] = Math.round(tmp.r * a * 255); C[o + 1] = Math.round(tmp.g * a * 255); C[o + 2] = Math.round(tmp.b * a * 255); // (premultiplied)
     }
     this.colTex.needsUpdate = true; this.hTex.needsUpdate = true;

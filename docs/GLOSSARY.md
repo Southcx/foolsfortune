@@ -89,6 +89,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   environmental Lachryma, in paint and mop modes. → detail
 - **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, graded by feeling; left alone it grows, and a
   full-grown one gives up a blotling (an aberrant Figment). *Not:* "stain" in player text. → detail
+- **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
+  jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
+- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
+  — how Lachryma left in the open turns (the bauble's and a slick's one clock and oil film) / the film's hue shift every feat of the
+  Courier's power wears / the Lachryma's faint flash under a slip body's clay. → detail
 - **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`) — an aquarium-glass bottle worn at the upper back; a reserve that feeds the
   pool below half and is what paint spends and mop fills. *Not:* "tank", ever.
 - **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the

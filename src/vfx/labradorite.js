@@ -20,6 +20,9 @@
 //   mindTime                          the shared drift uniform; mindTick() once a frame (idempotent: anyone may call it)
 //   mindLineMaterial({ opacity, depthTest, bright })    for LineSegments / Line
 //   mindFillMaterial({ opacity, depthTest, ink })       for the body of a mark (normal blending: ink with schiller at the rim)
+//   SLIP_SCHILLER (one uniform every slip body shares: its strength)   SLIP_SCHILLER_GLSL (slipSchiller(p, n, viewDir, wet): include after
+//     LAB_GLSL; the faint flash of the Lachryma in slip under its clay, at a grazing look, strongest where it runs wet: the owner,
+//     2026-10-09, "All Slip is now a form of Lachryma"; the slip jellies' melt, creatures/jelly/deform.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -114,3 +117,17 @@ export function mindFillMaterial({ opacity = 0.5, depthTest = false, ink = 1 } =
     transparent: true, depthWrite: false, depthTest, side: THREE.DoubleSide, fog: false,
   });
 }
+
+/** How strongly the Lachryma shows under every slip body's clay (one uniform, shared: a material's program never changes with it). */
+export const SLIP_SCHILLER = { value: 0.5 };
+/** The Lachryma in slip: a faint schiller under the clay, at a grazing look (the stone turned), strongest where it runs wet. Uses
+ *  LAB_GLSL (include that first). p: a point on the body (object space is fine: the flash turns with it), n and viewDir in one space. */
+export const SLIP_SCHILLER_GLSL = /* glsl */`
+uniform float uSlipSchiller;
+vec3 slipSchiller(vec3 p, vec3 n, vec3 viewDir, float wet) {
+  float ndv = clamp(abs(dot(n, viewDir)), 0.0, 1.0), graze = pow(1.0 - ndv, 1.2);
+  float ph = labPhase(p, viewDir) + 0.3 * dot(n, vec3(0.3, 0.8, 0.5));
+  float band = smoothstep(0.2, 0.85, 0.5 + 0.5 * sin(ph * 12.566));
+  return labradorite(ph) * graze * (0.3 + 0.7 * band) * (0.25 + 0.75 * wet) * uSlipSchiller;
+}
+`;

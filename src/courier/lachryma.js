@@ -12,9 +12,10 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, G, groups } from '../core/physics.js';
-import { T, PALETTE } from '../core/config.js';
+import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
+import { OXIDATION, oxidationMaterial } from '../vfx/oxidation.js';
 const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class LachrymaPool {
@@ -122,7 +123,7 @@ export class LachrymaPool {
 // Prior art: the pickups that fade before they vanish (the blinking hearts and rupees of Zelda, Kingdom Hearts' orbs that dim), made a
 // change of matter rather than a blink (the comfort rule: nothing flickers).
 // ---------------------------------------------------------------------------
-const OX = { start: 7, full: 22, melt: 38, gone: 40.5, steps: 64 }; // (steps: 64 shared looks, one program; at 8 the colour visibly stepped)
+const OX = OXIDATION; // (the one ramp, its numbers and its look: vfx/oxidation.js)
 const PICKUP = 32;
 const BAUBLE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER);
 const UP = new THREE.Vector3(0, 1, 0);
@@ -134,7 +135,7 @@ export class Baubles {
     this.game = game;
     this.list = [];
     this.geo = new THREE.IcosahedronGeometry(1, 2);
-    this.stages = Array.from({ length: OX.steps }, (_, i) => oxMaterial(i / (OX.steps - 1)));
+    this.stages = Array.from({ length: OX.steps }, (_, i) => oxidationMaterial(i / (OX.steps - 1)));
     this.mat = this.stages[0];
     this.coreMat = new THREE.MeshBasicMaterial({ color: 0xfff6ea });
     this.glint = new THREE.SphereGeometry(1, 8, 6);
@@ -292,28 +293,4 @@ export class Baubles {
   }
 
   clear() { for (let i = this.list.length - 1; i >= 0; i--) this.remove(i); }
-}
-
-/** A bauble's look at oxidation k (0 fresh cream and glowing .. 1 liquid Lachryma: near-black, the oil film on it). */
-function oxMaterial(k) {
-  const cream = new THREE.Color(PALETTE.cream), glow = new THREE.Color(PALETTE.glow);
-  const e = Math.pow(k, 0.8);
-  const m = new THREE.MeshPhysicalMaterial({
-    color: cream.clone().lerp(new THREE.Color(0x05040a), e), emissive: glow.clone().lerp(new THREE.Color(0x2a1450), k), emissiveIntensity: 0.45 * (1 - k) + 0.04,
-    roughness: 0.18 + 0.04 * k, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05,
-  });
-  const uOil = { value: 1.25 * k * k };
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.uOil = uOil;
-    sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>
-uniform float uOil;
-vec3 oxFilm(float t) { t = fract(t) * 4.0; vec3 a = vec3(0.30, 0.06, 0.70), b = vec3(0.04, 0.55, 0.75), c = vec3(0.95, 0.72, 0.18), d = vec3(0.85, 0.10, 0.50);
-  return t < 1.0 ? mix(a, b, smoothstep(0.0, 1.0, t)) : t < 2.0 ? mix(b, c, smoothstep(1.0, 2.0, t)) : t < 3.0 ? mix(c, d, smoothstep(2.0, 3.0, t)) : mix(d, a, smoothstep(3.0, 4.0, t)); }`)
-      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-{ float ndv = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0); float fres = pow(1.0 - ndv, 2.2);
-  totalEmissiveRadiance += oxFilm(fres * 0.8 + normal.y * 0.2) * (0.03 + 1.5 * fres) * uOil; }`);
-  };
-  m.customProgramCacheKey = () => 'bauble-ox';
-  return m;
 }

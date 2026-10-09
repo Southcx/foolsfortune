@@ -19,7 +19,8 @@
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
 //   glyph     a mark (vfx/glyphs.js)   sound  an sfx method by name (audio: Wanda's)   fx  another effect, by name
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
-// hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash) or 'gold' / 'lach' / 'white'. `power` (the context's)
+// hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash), 'film' or 'film0'..'film3' (Lachryma's oil film, a
+// feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`) or 'gold' / 'lach' / 'white'. `power` (the context's)
 // scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's) draws its particles,
 // decals and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an effect is hidden by walls).
 //
@@ -40,6 +41,7 @@ import { meshFx } from './meshfx.js';
 import { LIBRARY } from './library.js';
 import { sfx } from '../audio/sfx.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+import { featTint } from './oxidation.js';
 
 // the textures a decal can wear (src/assets/vfx/tex/*.png, by file name: the spell circles the owner's wife drew among them)
 const TEX_SRC = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/tex/*.png', { query: '?b64', import: 'default', eager: true }))
@@ -85,6 +87,7 @@ function color(v, ctx) {
   if (v === 'tint') return ctx.tint === undefined ? 0xffffff : color(ctx.tint, ctx);
   if (v === 'tip') return ctx.tip === undefined ? color('tint', ctx) : color(ctx.tip, ctx); // (a swing's hot end)
   if (v === 'labradorite') return LAB[Math.floor(Math.random() * LAB.length)];
+  if (typeof v === 'string' && v.startsWith('film')) return featTint((v.length > 4 ? +v.slice(4) / 4 : Math.random()) + (ctx.phase ?? 0), _c).getHex(); // (Lachryma's film: 'film' a colour of it, 'film0'..'film3' its four, turned by `phase`)
   if (typeof v === 'string') return NAMED[v] ?? 0xffffff;
   return v;
 }
