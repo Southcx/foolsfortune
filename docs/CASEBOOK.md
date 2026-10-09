@@ -408,6 +408,13 @@ the rules before building in the same area; a rule a machine can check goes into
     own step-over, felt for at the lip's height.
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
+149. **An object's `visible` is the zones' answer too: an update never stops on it.** The zones (render/zones.js) make `visible` a getter
+    that reads false while the object's zone is not drawn; an update that returns on its own object's `visible` never moves it out of
+    that zone, and it is hidden for good. Keep the shown state in a number of its own, and mark a HUD (or anything moved to the eye)
+    `zoneFree`.
+150. **A scrolled texture's offset wraps where every reader of it turns whole.** An offset kept in 0..1 is a seam for any reader that
+    multiplies it by something that is not a whole number (a second octave at 1.6, a cirrus at 0.4): when it wraps, that field jumps.
+    Wrap at a whole number every multiplier turns into whole repeats (5 for 1, 1.6 and 0.4), or keep an unwrapped sum.
 
 149. **A mark is drawn with an alpha.** Light added at alpha 0 writes nothing through this pipeline; every style of a mark carries
     one, and a new style is proved by counting the pixels it changes.
@@ -428,6 +435,42 @@ the rules before building in the same area; a rule a machine can check goes into
     under the body (a slope falls away too), never the bare fall speed.
 
 ## Cases
+
+### 2026-10-09 · The stars jumped, in patches, every eleven minutes (R10 review, Calissa)
+
+- **Seen:** (reviewing the stars behind the cloud) with the cloud layer's drift offset set either side of its wrap, 4.9995 and 0.0005 now,
+  0.9995 and 0.0005 before, the star light in the same eighth-by-six cells of the sky changed by 44% on average and by all of it in the
+  worst cell (the whole field 11% dimmer); two frames at one offset differed by 0.1%. The first octave was seamless; the haze that dims
+  patches of the stars (now the cirrus) read the offset times 0.4, and the cloud's own second octave times 1.6.
+- **Cause (measured):** `CloudLayer.update` kept the offset in 0..1 (`%= 1`). A shift of 1 is a whole repeat of the noise only for the
+  first octave: 1.6 and 0.4 are not whole, so at the wrap the second octave and the cirrus jumped by 0.6 and 0.4 of a repeat. At the Dunes'
+  wind (8) the offset wraps every 11 to 18 real minutes; the cloud's detail octave had always done it (30% of its noise, never looked for), and the new cirrus made it a field of stars dimming and brightening in patches in one frame.
+- **Fix:** `vfx/clouds.js` wraps the offset at 5, the first whole number that 1, 1.6 and 0.4 all turn into whole repeats of. After: 1.8% on
+  average across the wrap (the cell with the most is a few stars at the threshold), the cloud's second octave seamless too. The same pass
+  renamed the cirrus and the night painting's swirls in `vfx/sky.js` and the docs: they had been called "haze" and "veil", which are the
+  weather's horizon haze and the storm warp's veil (glossary).
+- **Rule:** 150.
+
+### 2026-10-09 · The wire compass vanished on a bright sky, and the Dreamvane's marks never showed outside the workshop (R11, Calissa)
+
+- **Seen (the owner, R11, `/goto 1961.15 -407.91 50.56 4.1`, the Dreamvane worn; headless, the same spot at noon, dusk, night and the
+  pall):** at noon the tape was white on a white sky, only the west glyph faintly there; at dusk it went out wherever it crossed the
+  bright cloud. With the Dreamvane in the hands, no sigil, web or resonance stood over the tape anywhere in the Dunes.
+- **Cause (measured):** the tape and the vane's marks were light added to the frame and nothing else: on a sky the screen shows at 0.85
+  lightness (noon, measured 0.874 behind the tape) a pale line can add at most ~0.1 before it clips, and only the pendulum had a dark
+  keyline (rule 105). The tape's line contrast, the 99.5th percentile of |luma - its 9-pixel median|, was 0.020 at noon. The vane's
+  group is a Group at the origin until first drawn: the zones filed it in the workshop at boot (its box: the sigils round the origin),
+  and its update returned at `if (!this.group.visible)`, which the zones' getter answered false, so it was never moved out (rule 149).
+- **Fix:** `vfx/wirecompass.js`: one material for the whole device (`compassMaterial`: premultiplied, the colour added and the alpha
+  how much of the ground it covers), every line with a keyline a pixel out in the opposite tone (`keyUnder`, one draw), and the ink
+  taken from what the tape is drawn against: the dome's colour where it crosses it as drawn now (`sky.toneAt`, from the paintings'
+  copies in memory and the grade) under the cloud layer (`clouds.over`), or the room's background under a roof; lightness over 0.6
+  turns it to dark ink with a pale keyline, under 0.5 back to pale light with a dark one, eased over ~0.4 s (7 microseconds a read, ten a second).
+  The vane (`vfx/vanehud.js`) and the pendulum (`vfx/crucibellehud.js`) draw with it; their groups are `zoneFree` and the vane's update
+  keeps its own shown state. Noon line contrast 0.020 -> 0.153; the estimate against the screen: noon 0.854 / 0.874, dusk 0.817 / 0.761,
+  the pall 0.807 / 0.780, night 0.242 / 0.141 (the stars not counted). Turning and pitching through a dusk for 15 s: 3 turns of the ink,
+  each where the ground changed (the bright horizon to the dark zenith).
+- **Rule:** 105, and 149.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 

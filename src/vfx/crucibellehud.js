@@ -22,7 +22,9 @@
 //
 // Read, not driven: the bell's own clock and judgement (`crucibelle.grid()`, `now()`, `fever`), its events (`crucibelle.note`,
 // `song.play`, `crucibelle.fever`) and its songs (tools/crucibelle/songs.js). Settings: `visual.pendulumSize`, `visual.compassContrast`
-// (the lines fainter or brighter, and a dark keyline under them that grows with it: light lines alone vanish on a noon sky). The tape
+// (the lines fainter or brighter, and the keyline under them growing with it). Drawn with the compass's own material (vfx/wirecompass.js
+// `compassMaterial`, the pen's colours per vertex): pale light with a dark keyline on a dark sky, dark ink with a pale one on a bright
+// sky, as the tape is (R11: light lines alone vanish on a noon sky). The tape
 // opens a gap below its line for the swing, and round the bell's mark (wirecompass.js `hole`). The Half Time knack (`game.knacks.on('halfTime')`, progress/knacks.js): the ends land on every other
 // eighth, the quarters, never a slower tempo, and a third notch in the middle marks the off-eighth the bell still counts.
 //
@@ -45,6 +47,7 @@ import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { SONGS, DEGREE_COLOR, match } from '../tools/crucibelle/songs.js';
 import { WINDOW as BELL_WINDOW } from '../tools/crucibelle/crucibelle.js';
+import { compassMaterial, keyStrength } from './wirecompass.js';
 
 const R = 10;              // (the tape's radius: wirecompass.js)
 const LINES = 480;         // (the HUD is drawn in pixels of the sixth generation's 480 lines, whatever the resolution: render/present.js)
@@ -89,20 +92,23 @@ const ease = (x) => { x = THREE.MathUtils.clamp(x, 0, 1); return x < 0.5 ? 2 * x
 const rgb = (hex) => { const c = new THREE.Color(hex); return [c.r, c.g, c.b]; };
 const BRASS = rgb(0xd9b048), SMOKE = rgb(0x8a8090), SMOKE_HOT = rgb(0xb49be6), NOTE_RGB = DEGREE_COLOR.map(rgb);
 
-/** A pen of line segments into one dynamic buffer (positions and premultiplied colours), drawn in one call. */
+/** A pen of line segments into one dynamic buffer (positions, and each line's colour and weight: the compass material's `aCol`), drawn
+ *  in one call. */
 class Pen {
   constructor(max) {
-    this.pos = new Float32Array(max * 3); this.col = new Float32Array(max * 3); this.n = 0; this.max = max;
+    this.pos = new Float32Array(max * 3); this.col = new Float32Array(max * 4); this.n = 0; this.max = max;
     this.geo = new THREE.BufferGeometry();
     this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
-    this.geo.setAttribute('color', new THREE.BufferAttribute(this.col, 3).setUsage(THREE.DynamicDrawUsage));
+    this.geo.setAttribute('aCol', new THREE.BufferAttribute(this.col, 4).setUsage(THREE.DynamicDrawUsage));
+    this.geo.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(max), 1)); // (read by the compass's material, unused with a pen's colours)
+    this.geo.setAttribute('aOff', new THREE.BufferAttribute(new Float32Array(max * 2), 2)); // (no keyline offset: the pen's keylines are drawn moved)
   }
   reset() { this.n = 0; }
   seg(x0, y0, x1, y1, c, k, z0 = 0, z1 = 0) {
     if (k <= 0.004 || this.n + 2 > this.max) return;
-    const p = this.pos, q = this.col, i = this.n * 3;
+    const p = this.pos, q = this.col, i = this.n * 3, j = this.n * 4;
     p[i] = x0; p[i + 1] = y0; p[i + 2] = z0; p[i + 3] = x1; p[i + 4] = y1; p[i + 5] = z1;
-    q[i] = q[i + 3] = c[0] * k; q[i + 1] = q[i + 4] = c[1] * k; q[i + 2] = q[i + 5] = c[2] * k;
+    q[j] = q[j + 4] = c[0]; q[j + 1] = q[j + 5] = c[1]; q[j + 2] = q[j + 6] = c[2]; q[j + 3] = q[j + 7] = k;
     this.n += 2;
   }
   /** A closed outline `pts` (unit), scaled by `s` about its centre `c`, `grow` times larger, at x, y. */
@@ -115,24 +121,24 @@ class Pen {
   arc(cx, cy, r, a0, a1, c, k, n = 12) {
     for (let i = 0; i < n; i++) { const t0 = a0 + ((a1 - a0) * i) / n, t1 = a0 + ((a1 - a0) * (i + 1)) / n; this.seg(cx + Math.sin(t0) * r, cy - Math.cos(t0) * r, cx + Math.sin(t1) * r, cy - Math.cos(t1) * r, c, k); }
   }
-  commit() { this.geo.setDrawRange(0, this.n); this.geo.attributes.position.needsUpdate = true; this.geo.attributes.color.needsUpdate = true; }
+  commit() { this.geo.setDrawRange(0, this.n); this.geo.attributes.position.needsUpdate = true; this.geo.attributes.aCol.needsUpdate = true; }
 }
-const lineMat = () => new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0 });
+const lineMat = () => compassMaterial({ vert: true });
 
 export class CrucibelleHud {
   constructor(game, compass) {
     this.game = game; this.compass = compass;
-    this.group = new THREE.Group(); this.group.renderOrder = 36;
+    this.group = new THREE.Group(); this.group.renderOrder = 36; this.group.userData.zoneFree = true; // (the HUD: never hidden by a render zone)
     this.pen = new Pen(MAXV);
     this.lines = new THREE.LineSegments(this.pen.geo, lineMat()); this.lines.renderOrder = 36; this.lines.frustumCulled = false;
-    // the keyline: the same lines in black, a pixel out each way, under them (faint at the default contrast, strong above it). Black times
-    // the pen's colours is black, so it reads the colours as the lines do and is drawn with their shader program, not one of its own
-    this.keyMat = new THREE.LineBasicMaterial({ color: 0x000000, vertexColors: true, transparent: true, depthTest: false, depthWrite: false, fog: false, opacity: 0 });
+    // the keyline: the same lines in the opposite tone (dark under light, pale under ink), a pixel out each way, under them, each line's
+    // as strong as the line; drawn with the lines' own shader program, not one of its own
+    this.keyMat = compassMaterial({ key: true, vert: true });
     this.keys = [[1, 0], [-1, 0], [0, 1], [0, -1]].map((o) => { const m = new THREE.LineSegments(this.pen.geo, this.keyMat); m.userData.o = o; m.renderOrder = 35; m.frustumCulled = false; this.group.add(m); return m; });
     this.group.add(this.lines);
     // the fever's peak ringing round the tape, in the world (the tape is a ring round the eye)
     this.ringPen = new Pen(256);
-    this.ring = new THREE.LineSegments(this.ringPen.geo, lineMat()); this.ring.renderOrder = 36; this.ring.frustumCulled = false;
+    this.ring = new THREE.LineSegments(this.ringPen.geo, lineMat()); this.ring.renderOrder = 36; this.ring.frustumCulled = false; this.ring.userData.zoneFree = true;
     game.scene.add(this.group, this.ring);
     this.alpha = 0; this.lastT = null; this.prevAbs = 0; this.towardEnd = false; this.view = null;
     this.motif = []; this.leaving = []; this.cast = null; this.taking = null; this.taken = null; this.pending = null; this.lastNote = -1e9; this.ringT = -1;
@@ -220,9 +226,9 @@ export class CrucibelleHud {
     this.group.scale.setScalar(px * size);
     if (C.hole) C.hole(this.alpha, Math.atan(((Math.sin(AMP) * (LEN + 20) + NEUME + 4) * size * px) / R), Math.atan((8 * size * px) / R)); // (the tape opens for the swing, and round the bell's mark)
     for (const k of this.keys) k.position.set(k.userData.o[0] / size, k.userData.o[1] / size, 0); // (a pixel out, whatever the size)
-    this.lines.material.opacity = this.alpha * Math.min(1, con);
-    this.keyMat.opacity = this.alpha * THREE.MathUtils.clamp(con - 0.45, 0, 1) * 0.8; // (a keyline even at 1: light lines vanish on the Dunes' noon sky)
-    for (const k of this.keys) k.visible = this.keyMat.opacity > 0.01;
+    this.lines.material.uniforms.uAlpha.value = this.alpha * Math.min(1, con);
+    this.keyMat.uniforms.uAlpha.value = this.alpha * keyStrength(con); // (a keyline at 1 too: light lines alone vanish on the Dunes' noon sky)
+    for (const k of this.keys) k.visible = this.keyMat.uniforms.uAlpha.value > 0.01;
     const lift = Math.max(1, con), faint = (own ? 0.6 : 1) * lift;
 
     const P = this.pen; P.reset();
@@ -318,7 +324,7 @@ export class CrucibelleHud {
           for (let i = 0; i < 8; i++) { const b0 = bf + sd * (phi - 0.04 * (i + 1)), b1 = bf + sd * (phi - 0.04 * i); Q.seg(Math.sin(b0) * R, y, Math.sin(b1) * R, y, SMOKE_HOT, fade * (1 - i / 8), -Math.cos(b0) * R, -Math.cos(b1) * R); }
           const bh = bf + sd * phi; Q.seg(Math.sin(bh) * R, -hgt, Math.sin(bh) * R, hgt, SMOKE_HOT, fade, -Math.cos(bh) * R, -Math.cos(bh) * R);
         }
-        Q.commit(); this.ring.material.opacity = this.alpha * Math.min(1, con);
+        Q.commit(); this.ring.material.uniforms.uAlpha.value = this.alpha * Math.min(1, con);
       }
     }
   }

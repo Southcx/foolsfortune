@@ -6,6 +6,8 @@
 //   METEORS      one every 25 to 70 real seconds of night, a short streak falling across 8 to 14 degrees of sky in 0.6 s
 //   THE AURORA   at the Shore, by night: curtains low over the sea (the shore's bearing), easing in over 6 s as you come down to the
 //                beach and out as you leave it; elsewhere the sea is out of sight and the sky keeps its stars
+//   THE CLOUD    the cloud layer's own field (vfx/clouds.js: its noise, drift, cover and opacity) handed to the dome each frame, so the
+//                stars, the meteor and the aurora sit behind it (the owner, R10); with no layer drawn, nothing hides them
 //
 // Prior art: the turning star fields of Ōkami and Outer Wilds (the sky a clock you can read), Breath of the Wild's shooting stars (a
 // rare event the sky gives you), and the aurora as seen from a northern shore (low over the water, green at the hem, violet above).
@@ -42,5 +44,9 @@ export class NightSky {
       G.uMetE.value.copy(S).addScaledVector(down.add(across).normalize(), len).normalize();
     }
     G.uMetK.value = this.met;
+    // the cloud the stars are behind: the layer's own uniforms, linked (it drifts and is graded where it lives)
+    const CL = g.dunes?.clouds, CU = CL?.uniforms;
+    if (CU) { G.uCloudNoise.value = CU.uNoise.value; G.uCloudOff.value = CU.uOff.value; G.uCloud.value.set(CU.uCover.value, CU.uOpacity.value, CL.visible ? 1 : 0, 1); }
+    else G.uCloud.value.set(0.5, 0, 0, 0);
   }
 }

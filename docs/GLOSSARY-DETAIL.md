@@ -1028,7 +1028,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   stroke in Celestial mode).
 - **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
   **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore
-  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky).
+  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky). The stars
+  each have a temperature (most near white, a few orange or blue-white) and a brightness on a power law (many faint, a few bright), and
+  sit behind the cloud: the cloud layer's own field hides them (`uCloud*`, linked by the night alive), the night painting's swirls thin
+  them, and a slow **cirrus** (a high thin cloud drifting slower than the cloud layer, read from the same noise; never the weather's haze) dims
+  patches of them (R10).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
   of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
   alone (that is the map's: see the homonyms).
@@ -1094,7 +1098,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
   the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
-  the pendulum keylined in black, more as it rises.
+  their keylines stronger as it rises. **the compass's ink** (`COMPASS_U.uInk`, `compassMaterial`): the whole device's tone, taken from
+  what it is drawn against (the sky's state in memory, `sky.toneAt` under `clouds.over`; under a roof the room's background): pale light
+  with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink
+  (`labInk`, a surface's near-black), though it is drawn in it.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
   bars, the fish portrait.
 
