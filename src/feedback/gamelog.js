@@ -74,7 +74,7 @@ const CSS = `
 #chatlog .line b { font: 16px var(--f-sys); color: var(--accent); font-weight: normal; }
 #chatlog .line input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: #fff; font: 16px var(--f-sys); caret-color: #ffd98a; padding: 0;
   text-shadow: 1px 1px 0 #000; user-select: text; }
-#chatlog.typing { opacity: 1 !important; }
+#chatlog.typing { opacity: 1 !important; pointer-events: auto; } #chatlog.typing .tab { cursor: pointer; } /* (while the line is open the log takes the mouse: its wheel scrolls, its tabs are clicked, T142) */
 #chatlog .foot { padding: 1px 6px 0; font: 500 9.5px var(--f-ui); color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
 #chatlog .foot .keys { visibility: hidden; } #chatlog.typing .foot .keys { visibility: visible; } /* (the keys are said while the line is open, not always: docs/ART.md precept 7) */
 `;
@@ -107,6 +107,7 @@ export class GameLog {
     addEventListener('pointerup', () => { if (this.dragging) { this.dragging = false; this.pinned = atEnd(); } });
     this.body.addEventListener('scroll', () => { if (this.dragging || !this.pinned) this.pinned = atEnd(); }, { passive: true });
     this.tabEls = [...root.querySelectorAll('.tab')];
+    this.tabEls.forEach((t, i) => t.addEventListener('mousedown', (e) => { e.preventDefault(); this.setTab(i); })); // (a click on a tab, the line kept open: its focus is not lost to the click)
     this.foot = root.querySelector('.n');
     // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
     this.minEl = root.querySelector('.min');
@@ -146,6 +147,7 @@ export class GameLog {
     this.field.focus({ preventScroll: true });
     this.game.input?.down.clear(); // (the keys held as it opened are let go: the Courier stops)
     this.body.scrollTop = this.body.scrollHeight;
+    if (this.game.input?.locked) { this.freed = true; document.exitPointerLock?.(); } // (the mouse lent to the log while the line is open: a release while it is busy is no pause, main.js)
     this.wake();
   }
   close() {
@@ -153,6 +155,7 @@ export class GameLog {
     this.typing = false;
     this.root.classList.remove('typing');
     this.field.blur();
+    if (this.freed) { this.freed = false; const I = this.game.input; if (I?.enabled && (I.wantLock?.() ?? true)) I.requestLock(); } // (and taken back; refused after an Esc, a click takes it: core/input.js)
   }
   send(text) {
     const t = String(text || '').trim();
@@ -209,6 +212,7 @@ export class GameLog {
     this.tabEls.forEach((t, k) => { t.classList.toggle('on', k === i); t.classList.toggle('new', this.unread.has(k)); });
     this.body.replaceChildren(...this.lines.filter((l) => this.shows(l.cls)).slice(-120).map((l) => this.build(l)));
     this.body.scrollTop = this.body.scrollHeight;
+    if (this.game.input?.locked) { this.freed = true; document.exitPointerLock?.(); } // (the mouse lent to the log while the line is open: a release while it is busy is no pause, main.js)
     this.wake();
   }
 

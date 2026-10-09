@@ -64,7 +64,7 @@ export const FEATURES = {
   drillYard:  { name: 'Training Yard', size: 'large',  job: 'drill',   does: 'Spirits train here', n: 1, firing: 4 },
   sporebed:   { name: 'Spore Bed', size: 'small',  job: 'transmute', does: 'Fungus that transforms what you put in it', n: 1, firing: 1 },
 };
-const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch' };
+const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch', gall: 'finery', fury: 'art' }; // (Gall and Fury take the two free kinds: GALL-AND-FURY.md section 9)
 /** What placing a feature costs: cubes by its size, and one material of its feeling's kind. */
 export const costOf = (feature, feeling = 'wonder') => ({ cubes: Math.round((ECON.place.features[FEATURES[feature]?.size] || 0) * ECON.perMinute), material: KIND_OF[feeling] || null });
 

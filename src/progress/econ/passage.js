@@ -24,7 +24,7 @@
 //   feelOf(from, to, col, columns, r, lean?) -> aspect | null   choke(chart) -> Set(ids every lane passes)   STORM
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
-import { ASPECTS, weatherAt } from '../weather.js';
+import { NATIVE, weatherAt } from '../weather.js';
 import { DAY_MS } from '../../core/calendar.js';
 
 /** The waypoint types: a share of the live waypoints by the route's danger d (-1 calm .. +2 wild), and their rules. Shares that do not
@@ -65,7 +65,7 @@ export function feelOf(from, to, col, columns, r, lean = null) {
   if (lean?.aspect && r() < lean.strength * (1 - t)) return lean.aspect;
   if (r() < 0.1) return null;
   const mood = a + (b - a) * t + (r() - 0.5) * 2.2;
-  return ASPECTS[Math.max(0, Math.min(4, Math.round(mood) + 2))];
+  return NATIVE[Math.max(0, Math.min(4, Math.round(mood) + 2))]; // (Anagami's five; Entropolis's plumes carry Gall and Fury in phase 2)
 }
 
 /** The waypoints every lane passes through (a storm is never put on one: it must be avoidable). */
@@ -153,7 +153,7 @@ export function seaChart({ from, to, day = 0, danger = 0, distance = 4, casks = 
   const blocked = choke(chart), stormable = ids.filter((id) => classOf(waypoints[id].type) === 'threat' && waypoints[id].col >= STORM.minCol && !blocked.has(id));
   for (let k = 0; k < STORM.count(C) && stormable.length; k++) {
     const id = stormable.splice(pick(r, stormable.length), 1)[0];
-    waypoints[id].storm = true; if (!waypoints[id].feel) waypoints[id].feel = ASPECTS[pick(r, 5)]; // (a storm is never fair)
+    waypoints[id].storm = true; if (!waypoints[id].feel) waypoints[id].feel = NATIVE[pick(r, NATIVE.length)]; // (a storm is never fair)
   }
   for (const w of Object.values(waypoints)) w.strength = Math.min(4, PASSAGE.strength(danger, w.col, w.type, casks) + (w.storm ? STORM.strength : 0));
   return chart;

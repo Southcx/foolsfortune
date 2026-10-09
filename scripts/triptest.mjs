@@ -29,7 +29,7 @@ const r1 = await g.page.evaluate(() => {
 });
 // sail it, answering a haven's page when it comes; note the views seen and the shots fired
 const seen = { views: new Set(), fired: 0, offered: [], maxLive: 0 };
-for (let i = 0; i < 600; i++) {
+for (let i = 0; i < 1200; i++) { // (legs twice as long since v134: about 330 real seconds a trip)
   await g.step(30);
   const s = await g.page.evaluate(() => {
     const G = __game.game, E = G.emocean, F = E.trip.field, M = G.indexMenu;

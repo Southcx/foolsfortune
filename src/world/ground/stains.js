@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STAINS, stainStage } from '../../progress/brushload.js';
-import { ASPECTS } from '../../progress/weather.js';
+import { ASPECTS, NATIVE } from '../../progress/weather.js';
 import { now, today, DAY_MS } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
 import { Stain } from '../../vfx/stains.js';
@@ -79,7 +79,7 @@ export class Stains {
           const x = land.x + (R() - 0.5) * 50, z = land.z + (R() - 0.5) * 70, w = beach.shoreAt(x, z);
           if (w < 2 || w > 30) continue; // (on the sand, near the waterline: where the sea leaves what it carries)
           const y = beach.heightAt(x, z);
-          this.list.push({ x, y, z, grade: ASPECTS[Math.floor(R() * ASPECTS.length)], born: d * DAY_MS, drunk: 0, spawned: false, from: 'shore' });
+          this.list.push({ x, y, z, grade: NATIVE[Math.floor(R() * NATIVE.length)], born: d * DAY_MS, drunk: 0, spawned: false, from: 'shore' });
           break;
         }
       }

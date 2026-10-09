@@ -39,13 +39,14 @@ const BAR = 1.5;
  *  but most are gone in 2) nor the first bar after; shots of one world in blocks of 8 bars (4 in the graveyard). */
 export const STRETCH = 2, SWING_CLEAR = 3, SWING_BREATH = 1, WORLD_BLOCK = 8;
 const P = (open, build, peak, release) => ({ open: open * STRETCH, build: build * STRETCH, peak: peak * STRETCH, release: release * STRETCH });
+const V = (open, build, peak, release) => ({ open, build, peak, release }); // (a phase's view: a name, not stretched: P('chase', ...) made NaN of every view, Petra's catch)
 
 /** The legs. `at` is a bar within the cue's phase; `every` repeats it to the phase's end (or `until`). `from` names who fires a pattern:
  *  'ahead' (a point 60 m up the rail), or the newest live foe of a role ('school', 'darter', 'heavy'), or the leg's 'object' (its
  *  director's big thing); `kind` is 'astral', 'umbral', 'feel' (by the waypoint's feeling: trip.formSkew) or 'gift' (the ship's own
  *  form: absorbed, it fills the surge). */
 export const LEGS = {
-  shoal: { bars: 96, phases: P(8, 18, 18, 4), views: P('chase', 'above', 'free', 'chase'), cues: [
+  shoal: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'above', 'free', 'chase'), cues: [
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 8 } },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'offsetTwins', from: 'ahead', kind: 'feel', params: { volleys: 4 } } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'vee', count: 7 } },
@@ -58,7 +59,7 @@ export const LEGS = {
     { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'school', kind: 'feel' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  wreckers: { bars: 112, phases: P(8, 20, 24, 4), views: P('chase', 'side', 'side', 'astern'), cues: [
+  wreckers: { bars: 112, phases: P(8, 20, 24, 4), views: V('chase', 'side', 'side', 'astern'), cues: [
     { phase: 'open', at: 0, every: 3, wave: { role: 'darter', formation: 'dash', count: 2 } },
     { phase: 'open', at: 1, every: 2, pattern: { name: 'aimedBurst', from: 'darter', kind: 'feel', params: { volleys: 2 } } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'vee', count: 6 } },
@@ -70,7 +71,7 @@ export const LEGS = {
     { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: P('chase', 'above', 'free', 'astern'), cues: [
+  leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: V('chase', 'above', 'free', 'astern'), cues: [
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 8 } },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'accelRain', from: 'ahead', kind: 'feel', params: { volleys: 5 } } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 8 } },
@@ -82,7 +83,7 @@ export const LEGS = {
     { phase: 'peak', at: 4, every: 7, pattern: { name: 'sweepBeam', from: 'object', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: P('chase', 'free', 'chase', 'chase'), cues: [ // (few foes, all dodging: the rollercoaster itself)
+  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: V('chase', 'free', 'chase', 'chase'), cues: [ // (few foes, all dodging: the rollercoaster itself)
     { phase: 'open', at: 0, every: 4, pattern: { name: 'sweepBeam', from: 'ahead', kind: 'feel', params: { volleys: 1 } } },
     { phase: 'open', at: 2, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
     { phase: 'build', at: 0, every: 3, pattern: { name: 'gapWall', from: 'ahead', kind: 'feel' } },
@@ -94,7 +95,7 @@ export const LEGS = {
     { phase: 'peak', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 6 } },
     { phase: 'release', at: 0, every: 4, targets: 6 },
   ] },
-  graveyard: { bars: 96, phases: P(8, 18, 18, 4), views: P('chase', 'side', 'free', 'chase'), cues: [ // (both worlds at once: kinds mixed)
+  graveyard: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'side', 'free', 'chase'), cues: [ // (both worlds at once: kinds mixed)
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 6 } },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'decelBurst', from: 'ahead', kind: 'umbral', params: { volleys: 2 } } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 8 } },
@@ -107,7 +108,7 @@ export const LEGS = {
     { phase: 'peak', at: 2, every: 4, wave: { role: 'school', formation: 'vee', count: 6 } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  maelstrom: { bars: 96, phases: P(8, 12, 24, 4), views: P('chase', 'free', 'free', 'chase'), cues: [ // (Charybdis: a heavy placeholder until its director)
+  maelstrom: { bars: 96, phases: P(8, 12, 24, 4), views: V('chase', 'free', 'free', 'chase'), cues: [ // (Charybdis: a heavy placeholder until its director)
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'ring', count: 8 } },
     { phase: 'open', at: 1, every: 3, pattern: { name: 'curving', from: 'ahead', kind: 'feel' } },
     { phase: 'build', at: 0, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 3 } },
@@ -119,7 +120,7 @@ export const LEGS = {
     { phase: 'peak', at: 2, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  bounty: { bars: 112, phases: P(8, 20, 24, 4), views: P('chase', 'above', 'free', 'chase'), cues: [
+  bounty: { bars: 112, phases: P(8, 20, 24, 4), views: V('chase', 'above', 'free', 'chase'), cues: [
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'vee', count: 7 } },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'oddFan', from: 'ahead', kind: 'feel' } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
@@ -131,7 +132,7 @@ export const LEGS = {
     { phase: 'peak', at: 2, every: 4, wave: { role: 'school', formation: 'ring', count: 6 } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  calm: { bars: 48, phases: P(8, 12, 0, 4), views: P('chase', 'above', 'above', 'chase'), cues: [ // (a breath that still scores: lights, and shots of your own form to drink)
+  calm: { bars: 48, phases: P(8, 12, 0, 4), views: V('chase', 'above', 'above', 'chase'), cues: [ // (a breath that still scores: lights, and shots of your own form to drink)
     { phase: 'open', at: 0, every: 3, targets: 6 },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'ring', from: 'ahead', kind: 'gift', params: { volleys: 1, speed: 9 } } },
     { phase: 'build', at: 0, every: 3, targets: 6 },

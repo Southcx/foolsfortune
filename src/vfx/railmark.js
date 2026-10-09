@@ -134,7 +134,7 @@ void main() {
     float r = mix(vR.x, vR.y, h), dx = s - clamp(s, 0.0, L), d = length(vec2(dx, t)), q = d / max(r, 1e-3);
     float body = cover(r - d);
     if (st == 2) {
-      col = mix(vec3(1.6), vS.yzw * 1.8, smoothstep(0.0, 0.85, q)) * body * mix(0.2, 1.0, h * h) * al;
+      col = mix(vec3(1.6), vS.yzw * 1.8, smoothstep(0.0, 0.85, q)) * body * mix(0.2, 1.0, h * h) * al; a = body * al * 0.6; // (an alpha, not light alone: at alpha 0 the needle wrote nothing, the owner's R16 v133; it also darkens a bright sky behind it, so it reads by day: Petra's crossing, Calissa's to refine)
     } else {
       bool astral = st == 0;
       float inner = cover(0.58 * r - d);                                   // (the core: inside six tenths of the radius)
@@ -169,7 +169,7 @@ void main() {
     float d = length(vL.xy), r = vR.x;
     if (st == 4) {
       float q = d / max(r, 1.0);
-      col = (vec3(1.4) + vS.yzw * 2.2) * pow(max(1.0 - q, 0.0), 1.8) * al;
+      col = (vec3(1.4) + vS.yzw * 2.2) * pow(max(1.0 - q, 0.0), 1.8) * al; a = pow(max(1.0 - q, 0.0), 1.8) * al * 0.5; // (the same: a spark at alpha 0 wrote nothing)
     } else if (st == 5) {
       // the ring coming in: ink, the schiller inside it; the part's own ring, fainter, where it will close
       float line = cover(MARK_HALF - abs(d - r)), lit = cover(0.75 - abs(d - r));

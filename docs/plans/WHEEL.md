@@ -1,5 +1,8 @@
 # The Wheel: a complete map of feeling (the owner, 2026-10-05)
 
+> **Superseded in part (2026-10-09):** Faith is cut; Gall and Fury are built as the sixth and seventh feelings. The full spec is
+> `docs/plans/GALL-AND-FURY.md`, and it wins where the two disagree.
+
 Kept by Dovina. The owner's ask: a complete emotional wheel after **Plutchik's wheel of emotions** (as presented by 6 Seconds, 2025:
 <https://www.6seconds.org/2025/02/06/plutchik-wheel-emotions/>), applied to the existing systems. Determined by all four divisions and
 Dovina on 2026-10-05; partly built (`src/progress/weather.js`: `VALENCE`, `DISPLAY_ORDER`, `COLOR`, `AGATES`, `agateOf`, `OPPOSITE`).

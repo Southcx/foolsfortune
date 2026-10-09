@@ -387,6 +387,14 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   }
 
   // ------------------------------------------------------------------ per frame
+  /** The workshop's sun as it was before the Dunes took it: its frame, its place and its aim. */
+  giveSunBack() {
+    const L = this.lights, sh = L.sun.shadow.camera, s = this.saved;
+    sh.left = s.l; sh.right = s.r; sh.top = s.t; sh.bottom = s.b; sh.near = s.n; sh.far = s.f; sh.updateProjectionMatrix();
+    L.sun.position.copy(s.pos); L.sun.target.position.copy(s.at); L.sun.target.updateMatrixWorld();
+    this.shadowed = false;
+  }
+
   update(dt) {
     const g = this.game, cam = g.camera, L = this.lights;
     this.t += dt;
@@ -396,9 +404,11 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     // (the open sea is drawn further than a room: the camera's far plane opens out down here, and the fog closes it)
     const far = THREE.MathUtils.lerp(200, 420, this.mix);
     if (Math.abs(cam.far - far) > 1) { cam.far = far; cam.updateProjectionMatrix(); }
+    // (the workshop's sun given back the moment the camera leaves, its place and aim with its frame: kept, it lit the Throwing Room from
+    // the Dunes' low angle and followed the Courier in 4 m snaps while the light faded: the owner's R13)
+    if (!inside && this.shadowed) this.giveSunBack();
     if (this.mix < 0.002) {
       this.mix = 0; if (this.terrain.visible) this.setVisible(false);
-      if (this.shadowed) { const sh = L.sun.shadow.camera, s = this.saved; sh.left = s.l; sh.right = s.r; sh.top = s.t; sh.bottom = s.b; sh.near = s.n; sh.far = s.f; sh.updateProjectionMatrix(); this.shadowed = false; }
       return;
     }
     if (!this.terrain.visible) this.setVisible(true);
@@ -433,12 +443,14 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     L.amb.intensity = THREE.MathUtils.lerp(H.ambI, A.ambI, k);
     L.sun.color.copy(H.sunC).lerp(A.sunC, k);
     const P = g.player.renderPos;
-    const cx = Math.round(P.x / 4) * 4, cz = Math.round(P.z / 4) * 4;
-    L.sun.position.set(cx + this.sunDir.x * 50, P.y + this.sunDir.y * 50 + 12, cz + this.sunDir.z * 50);
-    const sh = L.sun.shadow.camera;
-    if (!this.shadowed) { this.saved = { l: sh.left, r: sh.right, t: sh.top, b: sh.bottom, n: sh.near, f: sh.far }; this.shadowed = true; sh.left = sh.bottom = -32; sh.right = sh.top = 32; sh.near = 1; sh.far = 120; sh.updateProjectionMatrix(); }
-    L.sun.target.position.set(cx, P.y, cz);
-    L.sun.target.updateMatrixWorld();
+    if (inside) {
+      const sh = L.sun.shadow.camera;
+      if (!this.shadowed) { this.saved = { l: sh.left, r: sh.right, t: sh.top, b: sh.bottom, n: sh.near, f: sh.far, pos: L.sun.position.clone(), at: L.sun.target.position.clone() }; this.shadowed = true; sh.left = sh.bottom = -32; sh.right = sh.top = 32; sh.near = 1; sh.far = 120; sh.updateProjectionMatrix(); }
+      const cx = Math.round(P.x / 4) * 4, cz = Math.round(P.z / 4) * 4;
+      L.sun.position.set(cx + this.sunDir.x * 50, P.y + this.sunDir.y * 50 + 12, cz + this.sunDir.z * 50);
+      L.sun.target.position.set(cx, P.y, cz);
+      L.sun.target.updateMatrixWorld();
+    }
     // (the caller sets sun.intensity from `under`: see main.js; here the dune value is offered)
     this.sunIntensity = A.sunI;
     this.uniforms.uGlow.value = THREE.MathUtils.clamp(L.sun.intensity / A.sunI, 0, 1); // (last frame's sun, after the hour and the weather)

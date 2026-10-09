@@ -31,6 +31,7 @@
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
 //   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
+//   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
 //   .windup(c, { at, radius, eta, kind, parry, part })   .unwind(c)   .windups(pos, r)   .parried(c)   (a telegraphed blow, for the parry:
 //   courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry mark while it can be answered)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
@@ -75,7 +76,8 @@ export class Creatures {
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
-    c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
+    const took = c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
+    if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
     if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });

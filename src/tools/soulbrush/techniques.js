@@ -17,6 +17,9 @@
 //   V  vee      HEAVY     what is under it is five times as heavy; over nothing, the Courier dives (on the ground: a burst of slip)
 //   heart       SOLACE    Magic Cat Academy's heart: every clapperjar in view forgets itself and dances; the god hand's jar is soothed
 //   (other)     WASH      laid on the world as slip, where the strokes pass over surfaces (Splatoon's ink on anything)
+//   •  dot      MARK      the thing under it is marked (a dot again lets it go); while anything is marked, every drawing of that hold
+//                         touches only the marked (the owner's R18: a clapperjar's sigils without the pots round it; Okami's precision
+//                         of the brush, and the tag-then-act of Splinter Cell's Mark and Execute)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -43,6 +46,9 @@ export const TINT = { still: '#bfe6ff', bounce: '#9fe8a0', mend: '#f2c35a', embe
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _s = new THREE.Sphere();
 const UP = new THREE.Vector3(0, 1, 0);
+/** The marked things a drawing is held to while it is planned and run (null: no marks, everything in reach). */
+let only = null;
+const allowed = (ent) => !only || only.has(ent);
 
 /** The view a drawing was made over: the camera as it was, and the screen's size. */
 export function viewOf(game, W, H) {
@@ -92,6 +98,7 @@ function things(g) {
 function picked(g, v, test, max = 30) {
   const out = [];
   for (const t of things(g)) {
+    if (!allowed(t.ent)) continue;
     const s = toScreen(v, t.pos);
     if (!s || s.z > max) continue;
     if (test(s, pxOf(v, t.r, s.z))) out.push({ ...t, z: s.z });
@@ -112,7 +119,24 @@ export class BrushTechniques {
     this.tool = tool;
     this.live = []; // things with a life of their own (a bolt's afterglow)
     this.plungeWatch = false;
+    this.marked = new Set(); this.markGlyphs = new Map(); // (R18's marks: the things, and the star held over each)
   }
+
+  /** A dot at a screen point: the nearest thing under it marked, or let go if it was; true when it found one. */
+  markAt(x, y, v) {
+    const g = this.game, t = picked(g, v, (s, r) => Math.hypot(s.x - x, s.y - y) <= 14 + r)[0];
+    if (!t) return false;
+    if (this.marked.has(t.ent)) { this.marked.delete(t.ent); this.markGlyphs.get(t.ent)?.close?.(); this.markGlyphs.delete(t.ent); }
+    else {
+      this.marked.add(t.ent);
+      const at = () => (t.kind === 'clapper' ? t.ent.pos.clone().setY(t.ent.pos.y + 1.1) : t.ent.body?.isValid?.() ? _w.copy(t.ent.body.translation()).setY(t.ent.body.translation().y + (t.r || 0.4) + 0.5).clone() : t.pos);
+      this.markGlyphs.set(t.ent, g.glyphs?.pop?.('star', at(), { color: 0xf2c35a, size: 0.4, hold: 600, follow: at })); // (a placeholder look: Calissa's to make)
+    }
+    g.events?.emit('brush.mark', { marked: this.marked.size, by: 'courier' });
+    return true;
+  }
+  /** The marks let go (the paper put away). */
+  clearMarks() { for (const m of this.markGlyphs.values()) m?.close?.(); this.markGlyphs.clear(); this.marked.clear(); }
   get game() { return this.tool.game; }
 
   /** A recognised drawing (or null: a wash) -> a plan { id, cost, empty, run() } for it, read against the view it was drawn over. */
@@ -121,16 +145,19 @@ export class BrushTechniques {
     const key = rec.name === 'line' ? (rec.sigil === '|' ? 'bounce' : 'still') : rec.name;
     const def = TECHNIQUES[key];
     if (!def) return null;
-    const p = this[def.id](rec, v);
+    const marks = this.marked.size ? new Set(this.marked) : null;
+    only = marks; let p;
+    try { p = this[def.id](rec, v); } finally { only = null; }
     if (!p) return null;
+    if (marks) { const go = p.run; p.run = () => { only = marks; try { return go(); } finally { only = null; } }; }
     const sigil = rec.sigil ? SIGIL_OF[rec.sigil] : null;
     // (a sigil mark is never empty: it is still a mark, even over nothing the brush can alter)
-    if (p.empty && sigil && this.tool.sigils.heads(sigil)) { p.empty = false; p.run = () => 0; }
+    if (p.empty && sigil && this.tool.sigils.heads(sigil, marks)) { p.empty = false; p.run = () => 0; }
     const run = p.run;
     p.run = () => {
       const n = run() ?? 0;
       let s = null;
-      if (sigil) { s = this.tool.sigils.pop(sigil); if (s.popped) this.game.events?.emit('sigil.pop', { sigil, popped: s.popped, cleared: s.cleared }); }
+      if (sigil) { s = this.tool.sigils.pop(sigil, marks); if (s.popped) this.game.events?.emit('sigil.pop', { sigil, popped: s.popped, cleared: s.cleared }); }
       const fit = rec.fit ?? (rec.score < 1 ? Math.max(0, Math.min(1, (rec.score - 0.72) / 0.28)) : null); // (how well it was drawn: a loop's closing, a template's match; TRAINING.md 6)
       this.game.events?.emit('brush.glyph', { technique: def.id, n, sigils: s?.popped || 0, ...(fit == null ? {} : { fit: +fit.toFixed(3) }) });
     };
@@ -170,9 +197,9 @@ export class BrushTechniques {
   mend(rec, v) {
     const g = this.game, poly = rec.poly || rec.points;
     const inCircle = (p) => { const s = toScreen(v, p); return s && s.z < 35 && inside(s, poly); };
-    const pots = [...g.breakables.items].filter((e) => e.alive && (e.crackStage > 0 || e.cracks?.dark?.length) && inCircle(e.body.translation()));
-    const wrecks = (g.breakables.wrecks || []).filter((w) => !w.claimed && inCircle(w.pos));
-    const jars = (g.clappers?.list || []).filter((c) => c.alive && !c.ally && inCircle(c.pos.clone().setY(c.pos.y + 0.35)));
+    const pots = [...g.breakables.items].filter((e) => allowed(e) && e.alive && (e.crackStage > 0 || e.cracks?.dark?.length) && inCircle(e.body.translation()));
+    const wrecks = (g.breakables.wrecks || []).filter((w) => !only && !w.claimed && inCircle(w.pos));
+    const jars = (g.clappers?.list || []).filter((c) => allowed(c) && c.alive && !c.ally && inCircle(c.pos.clone().setY(c.pos.y + 0.35)));
     const n = pots.length + wrecks.length + jars.length;
     if (!n) return { empty: true, run: () => 0 };
     return {
@@ -216,7 +243,7 @@ export class BrushTechniques {
         for (const [b, d] of kicks) {
           if (!b.isValid()) continue;
           const ent = b.numColliders() ? g.physics.entityOf(b.collider(0)) : null;
-          if (ent?.type === 'player') continue;
+          if (ent?.type === 'player' || (only && !only.has(ent))) continue;
           g.breakables.instigate(ent, 'courier');
           const k = 11 * strength * (1 - (d / reach) * 0.6) * b.mass();
           g.physics.kick(b, { x: dir.x * k, y: (dir.y + 0.35) * k, z: dir.z * k });
@@ -224,7 +251,7 @@ export class BrushTechniques {
         }
         for (const c of g.clappers?.list || []) {
           _v.subVectors(c.pos, from); const d = _v.length();
-          if (!c.alive || d > reach || _v.normalize().dot(dir) < cone) continue;
+          if (!c.alive || !allowed(c) || d > reach || _v.normalize().dot(dir) < cone) continue;
           g.clappers.knock(c, dir.clone().multiplyScalar(10 * strength).setY(3.5)); n++;
         }
         if (!P.grounded) P.impulse(dir.clone().multiplyScalar(6 * strength).setY(Math.max(2, dir.y * 6)), 'gale');
@@ -243,10 +270,10 @@ export class BrushTechniques {
       run: () => {
         let n = 0;
         this.lightning(at);
-        for (const cl of g.clappers?.list || []) if (cl.alive && cl.pos.distanceTo(at) < 3.5) { g.clappers.stun(cl, 3.5, g.shells.glowOutline, g.shells.xray); n++; }
+        for (const cl of g.clappers?.list || []) if (cl.alive && allowed(cl) && cl.pos.distanceTo(at) < 3.5) { g.clappers.stun(cl, 3.5, g.shells.glowOutline, g.shells.xray); n++; }
         // (the brush is no hammer of the gods: what the bolt strikes is cracked, not broken)
         for (const e of [...g.breakables.items]) {
-          if (!e.alive || e.def?.trial) continue;
+          if (!e.alive || e.def?.trial || !allowed(e)) continue;
           const t = e.body.translation(), p = new THREE.Vector3(t.x, t.y + 0.3, t.z);
           if (p.distanceTo(at) < 1.6 && e.hp > 25) g.breakables.damage(e, 20, p, p.clone().sub(at).normalize(), 0.5, false, 'courier');
         }
@@ -306,7 +333,7 @@ export class BrushTechniques {
 
   solace(rec, v) {
     const g = this.game;
-    const jars = (g.clappers?.list || []).filter((c) => { if (!c.alive) return false; const s = toScreen(v, c.pos); return s && s.z < 18 && s.x > 0 && s.x < v.W && s.y > 0 && s.y < v.H; });
+    const jars = (g.clappers?.list || []).filter((c) => { if (!c.alive || !allowed(c)) return false; const s = toScreen(v, c.pos); return s && s.z < 18 && s.x > 0 && s.x < v.W && s.y > 0 && s.y < v.H; });
     const jar = g.god?.active && g.god.jar?.alive ? g.god.jar : null;
     if (!jars.length && !jar) return { empty: true, run: () => 0 };
     return {
