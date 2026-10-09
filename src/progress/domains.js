@@ -48,6 +48,9 @@ export const SOURCES = [
   // a564e9b), so the later in it, the better: at the strike 1, at the window's opening 0.4 (the rote floor). Held Breath's longer window
   // scores against 0.25 all the same: an answer it alone made possible pays the rote rate (the assist never does the skill: Dovina, 2026-10-08) Projectiles, by how close they came (`d` of the parry's reach) once the event carries it.
   { event: 'move.parry',      domain: 'divination',     base: 6,  quality: (e) => (e.by !== 'courier' ? null : e.what === 'blow' ? (e.lead == null ? 0.5 : 0.4 + 0.6 * q01(1 - e.lead / 0.25)) : e.d != null && e.reach ? q01(1 - e.d / e.reach) : null) },
+  // a Figment attack telegraph's windup read (creatures.js `windup.read`; FIGMENT-TELEGRAPHS.md 2): out of its area or looking away; a
+  // parry is move.parry's above, never paid twice
+  { event: 'windup.read',     domain: 'divination',     base: 6,  quality: (e) => (e.by !== 'courier' || e.how === 'parried' ? null : 0.6) },
   { event: 'god.grab',        domain: 'psychokinesis',  base: 4,  quality: () => 0.5 },
   { event: 'god.throw',       domain: 'psychokinesis',  base: 8,  quality: (e) => q01((e.speed || 0) / 30) },
   { event: 'drill.end',       domain: 'psychokinesis',  base: 12, quality: (e) => (e.tuned?.length ? null : e.run?.shots ? q01((e.run.hits || 0) / e.run.shots) : null) }, // (the Throwing Room; a tuned game earns nothing: Petra)
