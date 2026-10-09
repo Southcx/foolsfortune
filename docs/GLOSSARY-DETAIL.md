@@ -8,7 +8,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **asking a sibling** (`@name words` on the chat line, `src/coop/answer.js`): a question a sibling answers in seconds, in its division's
   voice (`src/coop/personas.js`), drafted by Claude through the page's `sample`; its **answer** is a line and, when asked, an order.
   *Not:* a letter, nor the division itself.
-- **brimming** (Espada's word): the push of overflow, a vessel full past its brim (four times a drink's); the log says "You are
+- **brimming** (Espada's word): the push of overflow, a vessel full past its brim (twice a drink's: the owner, 2026-10-09); the log says "You are
   brimming." and "You settle." *Not:* "drunk", which never appears in player text.
 - **the co-op meter** (`/usage`, `src/coop/usage.js`): what asking and letters spend of the owner's Claude usage over the last real hour,
   each stopped at a cap the owner sets (40 asks, 10 letters by default); a letter waits on one answer from each division at a time.
