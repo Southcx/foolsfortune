@@ -8,7 +8,7 @@
 //                                     glints three to a stroke; 4 Lachryma a real second
 //   the toll (the Crucibelle)         the bomb: every foe's shot within 10 m (14 on the beat) broken, the shoal scattered, a boarder
 //                                     knocked off; three a crossing
-//   the gulp (the Lockheart)          a cone ahead swallowed for a second (35 degrees, 8 m): shots and Guppy-class glints, 2 Lachryma each
+//   the gulp (the Lockheart)          a cone ahead swallowed for MOUNTS' duration (its angle and range, the table's): shots and Guppy-class glints, 2 Lachryma each
 //   the plate (the Veritome)          a photograph of what is in frame (a set piece in the Compendium), and its Flash holds every weak
 //                                     point in frame open two bars (a gill, a gunport); 6 Lachryma
 //   the hook (the Sondelass)          the nearest thing on the aim within 16 m: a boarder yanked into the sea, a cask reeled aboard
@@ -23,6 +23,10 @@ import * as THREE from 'three';
 import { MOUNTS } from '../../progress/rail/mounts.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { sfx } from '../../audio/sfx.js';
+
+/** Each mount's cone as the table gives it (Dovina's MOUNTS: `angle` is the cone's full width, so the half-angle is half of it; the hook
+ *  has no table angle and keeps 60 degrees across), so the card, the mooring's preview and play are one number. */
+const CONE = Object.fromEntries(['soulbrush', 'lockheart', 'sondelass'].map((t) => [t, { half: (MOUNTS[t]?.angle ?? 60) / 2, range: MOUNTS[t]?.range ?? 8 }]));
 
 const KEYS = ['Digit1', 'Digit2', 'Digit3']; // (a frigate carries three: mounts by hull, rail/mounts.js slotsOf)
 const _d = new THREE.Vector3(), _a = new THREE.Vector3();
@@ -58,7 +62,7 @@ export class Mounts {
     if (M.cost && pool && pool.spend(M.cost, `mount.${tool}`) === false) { sfx.dryFire?.(); return false; }
     if (M.cooldown) this.cool[tool] = M.cooldown * BAR_S;
     if (Number.isFinite(this.charges[tool])) this.charges[tool]--;
-    const done = tool === 'crucibelle' ? this.toll(ctx) : tool === 'lockheart' ? (this.gulpT = 1, true) : tool === 'veritome' ? this.plate(ctx) : tool === 'sondelass' ? this.hook(ctx) : false;
+    const done = tool === 'crucibelle' ? this.toll(ctx) : tool === 'lockheart' ? (this.gulpT = MOUNTS.lockheart.duration ?? 1, true) : tool === 'veritome' ? this.plate(ctx) : tool === 'sondelass' ? this.hook(ctx) : false;
     this.game.events?.emit('rail.mount', { tool, verb: M.verb, by: 'courier' });
     return done;
   }
@@ -67,17 +71,17 @@ export class Mounts {
   brush(dt, { ship, waves, shots }) {
     const pool = this.game.lachryma, cost = MOUNTS.soulbrush.cost * dt;
     if (pool && (pool.drain ? pool.drain(cost, 'mount.soulbrush') : pool.spend(cost)) === 0) return;
-    for (const s of shots.plains) if (s.on && s.aspect === ship.aspect && inCone(s.p, ship.nose, ship.aim, 25, 9)) { s.on = false; ship.absorb(s); }
+    for (const s of shots.plains) if (s.on && s.aspect === ship.aspect && inCone(s.p, ship.nose, ship.aim, CONE.soulbrush.half, CONE.soulbrush.range)) { s.on = false; ship.absorb(s); }
     this.stroke = (this.stroke || 0) + dt;
     if (this.stroke >= 0.25) { // (a stroke: three glints cut)
       this.stroke = 0; let n = 3;
-      for (const f of waves.foes) if (n > 0 && f.alive && f.role === 'glint' && f.solid !== false && inCone(f.local, ship.nose, ship.aim, 25, 9)) { waves.strike(f, 1, { cause: 'slash' }); n--; }
+      for (const f of waves.foes) if (n > 0 && f.alive && f.role === 'glint' && f.solid !== false && inCone(f.local, ship.nose, ship.aim, CONE.soulbrush.half, CONE.soulbrush.range)) { waves.strike(f, 1, { cause: 'slash' }); n--; }
     }
   }
 
-  /** The toll: the bomb (14 m on the beat, 10 off it). */
+  /** The toll: the bomb (the table's range, 1.4 times it on the beat). */
   toll({ ship, waves, shots, bar }) {
-    const onBeat = Math.abs(bar - Math.round(bar)) < 0.08 || Math.abs(bar * 4 - Math.round(bar * 4)) < 0.08, r = onBeat ? 14 : 10;
+    const onBeat = Math.abs(bar - Math.round(bar)) < 0.08 || Math.abs(bar * 4 - Math.round(bar * 4)) < 0.08, r = (MOUNTS.crucibelle.range ?? 10) * (onBeat ? 1.4 : 1); // (the table's ring; on the beat 1.4 times it)
     for (const s of [...shots.plains, ...shots.outlines]) if (s.on && !s.back && s.p.distanceTo(ship.local) < r) { if (s.mesh) shots.endOutlined(s); else s.on = false; }
     for (const f of waves.within(ship.local, r)) if (f.role === 'boarder') waves.strike(f, 99, { cause: 'impact' });
     this.stage.piece?.scatter?.();
@@ -90,8 +94,8 @@ export class Mounts {
   /** The gulp: a cone ahead for a second; shots and Guppy glints swallowed, 2 Lachryma each. */
   gulp({ ship, waves, shots }) {
     let n = 0;
-    for (const s of [...shots.plains, ...shots.outlines]) if (s.on && !s.back && inCone(s.p, ship.nose, ship.aim, 35, 8)) { if (s.mesh) shots.endOutlined(s); else s.on = false; n++; }
-    for (const f of waves.foes) if (f.alive && f.role === 'glint' && f.cls === 0 && inCone(f.local, ship.nose, ship.aim, 35, 8)) { waves.strike(f, 99, { cause: 'gulp' }); n++; }
+    for (const s of [...shots.plains, ...shots.outlines]) if (s.on && !s.back && inCone(s.p, ship.nose, ship.aim, CONE.lockheart.half, CONE.lockheart.range)) { if (s.mesh) shots.endOutlined(s); else s.on = false; n++; }
+    for (const f of waves.foes) if (f.alive && f.role === 'glint' && f.cls === 0 && inCone(f.local, ship.nose, ship.aim, CONE.lockheart.half, CONE.lockheart.range)) { waves.strike(f, 99, { cause: 'gulp' }); n++; }
     if (n) { this.game.lachryma?.gain(2 * n, 'gulp'); sfx.gulp?.(0); }
   }
 
@@ -102,19 +106,19 @@ export class Mounts {
     for (const f of waves.foes) {
       if (!f.alive || !('open' in f)) continue;
       _a.copy(f.pos).project(cam); if (Math.abs(_a.x) > 1 || Math.abs(_a.y) > 1 || _a.z > 1) continue;
-      f.flashT = 2 * BAR_S; held++;
+      f.flashT = MOUNTS.veritome.duration ?? 2 * BAR_S; held++;
     }
     this.game.flash?.burst?.(); sfx.shutter?.();
     this.game.events?.emit('rail.plate', { setPiece: piece || null, held, by: 'courier' });
     return true;
   }
 
-  /** The hook: the nearest on the aim within 16 m: a boarder into the sea, a cask aboard. */
+  /** The hook: the nearest on the aim within the table's range: a boarder into the sea, a cask aboard. */
   hook({ ship, waves }) {
-    let best = null, bd = 16;
-    for (const f of waves.foes) if (f.alive && f.role === 'boarder' && inCone(f.local, ship.nose, ship.aim, 30, 16)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; } }
+    let best = null, bd = CONE.sondelass.range;
+    for (const f of waves.foes) if (f.alive && f.role === 'boarder' && inCone(f.local, ship.nose, ship.aim, CONE.sondelass.half, CONE.sondelass.range)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; } }
     if (best) { waves.strike(best, 99, { cause: 'hook' }); sfx.ropeSnap?.(); return true; }
-    const cask = this.stage.piece?.nearestCask?.(ship.local, 16);
+    const cask = this.stage.piece?.nearestCask?.(ship.local, CONE.sondelass.range);
     if (cask) { this.stage.piece.gather(cask); sfx.ropeSnap?.(); return true; }
     return false;
   }
