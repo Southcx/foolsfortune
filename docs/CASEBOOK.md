@@ -409,6 +409,22 @@ the rules before building in the same area; a rule a machine can check goes into
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
 
+149. **A mark is drawn with an alpha.** Light added at alpha 0 writes nothing through this pipeline; every style of a mark carries
+    one, and a new style is proved by counting the pixels it changes.
+150. **A helper that scales numbers is never handed names.** A table's numbers and its words go through different helpers.
+151. **A key that opens a development window is heard first.** F8 is taken in the capture phase, before any window's own keys, and
+    a window up is no reason to refuse it; only the title, the workbench and a seam are.
+152. **The browser's refusal is not the player's choice.** A pointer lock refused (the cooldown after Esc) says how to take it back
+    and takes it on the next click; it never opens the pause menu.
+153. **A window that takes typing takes the mouse.** The chat line typing frees the pointer and its tabs answer a click; closing it
+    asks for the lock back.
+154. **Whatever borrows a shared light gives back all of it.** Place, aim and frame are saved together and restored together, the
+    moment the borrower's area is left, not when its fade ends.
+155. **The log names a thing by its own word, and a dummy is never counted.** An outcome line maps every `what` it can be sent;
+    the filter that keeps the Throwing Room out reads every field that can name it (`kind`, `what`).
+156. **A blow turned aside builds nothing.** A guard's `hurt` returns `'blocked'` and `creatures.strike` stops there: no mind, no
+    status, no stun.
+
 ## Cases
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
@@ -2074,3 +2090,68 @@ the rules before building in the same area; a rule a machine can check goes into
   how many were blocked.
 - **Rule:** 148.
 
+### 2026-10-09 · The Blaster fired nothing on the rail (the owner's R16, v133; blocks)
+- **Seen:** LMB held or clicked: no shots, in every section of a passage.
+- **Cause:** it fired (63 shots in 2 s headless, 27 in flight in a frame) but its needle was drawn as light alone, alpha 0, and at alpha 0
+  the mark wrote nothing: a probe put a gun shot 10 m before the camera and counted 0 pixels changed (a foe's shot there: 217). The
+  lances' sparks were written the same way.
+- **Fix:** the needle and the spark carry an alpha (`vfx/railmark.js`, Petra's crossing, Calissa's to refine). After: the spread of three
+  shows, night and day.
+- **Rule:** 149.
+
+### 2026-10-09 · Every leg flew in the chase view (found fixing R17, v134's merge)
+- **Seen:** the trip test saw only 'chase'; a passage's views were chase from end to end.
+- **Cause:** the legs were doubled by a stretch helper, `P`, that multiplies; the views were written with the same helper, so every
+  view was 'chase' times 2, NaN, and fell back to chase.
+- **Fix:** the views go through their own helper, `V`. The trip test's budget doubled with the legs.
+- **Rule:** 150.
+
+### 2026-10-09 · F8 did nothing over an open window (the owner's R7, v133)
+- **Seen:** with the Pneuka Box (or another window) up, F8 did not open QAIS.
+- **Cause:** QAIS refused to open while a window was up, and the window's own key handler took the key first.
+- **Fix:** QAIS hears its keys in the capture phase (`qais.keysFirst`, added before every other listener in `main.js`) and refuses only
+  over the title, the workbench and a seam. Headless: Pneuka Box open, F8 opens QAIS over it; Esc closes QAIS, a second Esc the Box.
+- **Rule:** 151.
+
+### 2026-10-09 · Closing a window sometimes brought up the pause menu (the owner's R12 and T10, v133)
+- **Seen:** after Esc closed a window, the click-to-play card or the pause menu came up.
+- **Cause:** the browser refuses a new pointer lock for a moment after Esc; the refusal was reported as the lock lost, which pauses.
+- **Fix:** a refused request is reported as `'refused'`: the log says "Click to take the mouse back." (throttled) and the next click in
+  the world asks again. Nothing pauses.
+- **Rule:** 152.
+
+### 2026-10-09 · The log could not be scrolled or its tabs clicked while typing (the owner's T142, v133)
+- **Seen:** typing on the chat line, the wheel and the tabs did nothing.
+- **Cause:** the pointer stayed locked and the log took no pointer events.
+- **Fix:** opening the chat line frees the pointer; the log takes pointer events while typing; a tab answers a mousedown; closing asks
+  for the lock back if it freed it.
+- **Rule:** 153.
+
+### 2026-10-09 · The Throwing Room's shadows jumped as the Courier moved (the owner's R13, v133)
+- **Seen:** a long diagonal shadow over the lectern's corner, jumping as the camera moved; the owner had come back from the Dunes.
+- **Cause:** the Dunes move the sun to follow the Courier (a low gold sun, its frame snapped to 4 m) and on leaving put back only the
+  shadow frame. The sun stayed where the Dunes left it, aimed at the Courier's last spot: measured back in the workshop, the sun at
+  (-11.5, 27, -39) aimed at (16, 0, 0), where it belongs at (4, 30, -5) aimed at the origin. It also followed the Courier for the two
+  seconds the light took to fade.
+- **Fix:** the Dunes save the sun's place and aim with its frame and give all three back the frame the camera leaves
+  (`dunes.giveSunBack`). Measured after: (4, 30, -5), aimed at the origin, frame ±17 m.
+- **Rule:** 154.
+
+### 2026-10-09 · Strawman: "You slash pots", stun through the guard, a swing that never came (the owner's T51, v133)
+- **Seen:** blows on Strawman logged as pots; Strawman stunned while blocking; in swing mode it never swung at the Courier.
+- **Cause:** the log's filter for the Throwing Room read `kind`, and a blow's payload names its target in `what`; the line mapped
+  everything that was not a clapperjar to "pot". `creatures.strike` built the blow's status after `hurt` whatever `hurt` did. The swing
+  was played as a look with an empty callback: no windup for the parry, no strike.
+- **Fix:** the filter reads `what` too, and the line names a slip jelly or a creature by its word. A blocked `hurt` returns
+  `'blocked'` and the strike stops. The swing is a windup in front of Strawman (2.6 m, 0.925 s to the sweep's middle, outlined on the
+  sleeve); unanswered it shoves the Courier in reach (no harm) and the log says so; parried it breaks off. Headless: 12 Impact blows
+  through the guard, no stun, poise 1; the windup listed; landed and parried each logged.
+- **Rule:** 155, 156.
+
+### 2026-10-09 · Wanda's sibling stood on the Float Shrine; the busker's mat was in slip jelly reach (the owner's R9, v133)
+- **Seen:** the sibling's rig on the Shrine; jellies coming at the mat.
+- **Cause:** the sibling's spot was Old Grog + (2.4, -1.6), 1 m from the Shrine. The jellies' homes were 32 to 40 m from the mat, and a
+  jelly sees 15 m and keeps within 30 m of home.
+- **Fix:** the spot is Grog's other side, 6 m from the Shrine; the jellies' homes are 50.8 to 56.5 m from the mat (over leash and sight
+  together, 45 m).
+- **Rule:** none new (a placement).

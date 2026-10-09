@@ -7,12 +7,13 @@
 //   - the shots in flight at once stay under the budget (400 at a heavy peak, 60 in a calm), stormed included.
 // `node scripts/legs.mjs`
 // ---------------------------------------------------------------------------------------
-import { LEGS, schedule, idle } from '../src/progress/rail/legs.js';
+import { LEGS, schedule, idle, STRETCH, SWING_CLEAR, SWING_BREATH } from '../src/progress/rail/legs.js';
 import { CHARYBDIS, charybdisHurt, WAVES } from '../src/progress/rail/setpieces.js';
 import { PATTERNS, emit, fair, children } from '../src/progress/rail/patterns.js';
 
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
-const BAR = 1.5, WANDA = { shoal: [8, 18, 18, 4], wreckers: [8, 20, 24, 4], leviathan: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], graveyard: [8, 18, 18, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] };
+const BAR = 1.5, WANDA0 = { shoal: [8, 18, 18, 4], wreckers: [8, 20, 24, 4], leviathan: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], graveyard: [8, 18, 18, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] };
+const WANDA = Object.fromEntries(Object.entries(WANDA0).map(([k, v]) => [k, v.map((n) => n * STRETCH)])); // (doubled: the owner, R17; Wanda's cues to follow)
 const lasting = (name, params) => { const s = emit(name, params, { origin: [0, 0, 0], aim: [0, 0, -1] }); return (s.length ? s[s.length - 1].at : 0) + 1; };
 const ctxOf = (mode) => ({ origin: [0, 4, 60], aim: [0, -0.06, -1], mode });
 
@@ -39,6 +40,10 @@ for (const [type, L] of Object.entries(LEGS)) {
     peak = Math.max(peak, ...live);
   }
   check(`${type}: never two bars idle (every class, stormed and not)`, !gaps.length, gaps.slice(0, 6));
+  { const plan = schedule(type, { strength: 1, feel: 'grief' }), bad = plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH));
+    check(`${type}: no pattern fired across a swing of view (R17)`, !bad.length, bad.map((e) => `${e.pattern.name}@${e.bar}`).slice(0, 4));
+    const mixed = []; for (let b = 0; b < plan.bars; b += 8) { const ks = new Set(plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && e.bar >= b && e.bar < b + 8).map((e) => e.pattern.kind)); if (ks.size > 1 && type !== 'graveyard') mixed.push(b); }
+    check(`${type}: one world at a time (Astral or Umbral, a block of bars each)`, !mixed.length, mixed.slice(0, 4)); }
   check(`${type}: every pattern fair as the leg fires it`, !unfair.length, unfair.slice(0, 4));
   const cap = type === 'calm' ? 60 : 400;
   check(`${type}: the shots in flight under ${cap}`, peak <= cap, `${peak} at the worst tenth of a second`);

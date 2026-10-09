@@ -1,3 +1,5 @@
+> **The sporelings were cut** (the owner, 2026-10-09: docs/plans/PARKED.md). Mentions below are history.
+
 # The Mycelium: fungi, the World Mushroom, and the spirits who live with them (a plan for the Spirit Garden's next round)
 
 Dovina's plan, 2026-10-08. The owner's brief: "a deep dive on the monster raising, monster collection and slice of life cozy farming

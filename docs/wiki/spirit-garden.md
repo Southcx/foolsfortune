@@ -260,13 +260,10 @@ a card.
 
 | Branch adds | Cards | Effect |
 | --- | --- | --- |
-| A fruit | 8 | One more fruit each dawn |
-| A sharper tincture | 5 | Fruit leans less toward the day's feeling (each sharper one makes the lean 40% weaker) |
+| A fruit | 10 | One more fruit each dawn |
+| A sharper tincture | 7 | Fruit leans less toward the day's feeling (each sharper one makes the lean 40% weaker) |
 | A strain's seed | 5 | Spores of one strain (Lovers Wonder, Judgement Mirth, World Desire, Death Grief, Hanged Man Dread) |
-| A sporeling | 4 | Sporelings come more often |
 
-**Sporelings** are small fungal spirits that stand round the roots and hop now and then, up to 6 at once, in the tincture's colour.
-They do not yet settle as visitors; that is not built.
 
 ### The Grimoire of Echoes
 
