@@ -11,8 +11,9 @@ the body and place Petra's; the words Espada's.
 - **No floating numbers:** a bout ends 4 real seconds after its last blow and the log says one line ("Strawman took 18 blows in 6.2 s:
   54 damage, 8.7 a second (Impact 40, Ego 14); stunned once."); `/strawman` repeats it.
 - **F cycles three modes:** still, guard (blocks from the front: the shoulders come forward and the sleeves cross in an X 0.3 m in front
-  of its chest, `GUARD`), swing (a slow, harmless swing every 3 sim seconds; **its 0.8 s wind-up must read from the body**: it leans
-  back, the right sleeve drawn back and up, then swept forward). It faces +z; a sleeve swings forward by `rotation.y = -side * angle`
+  of its chest, `SLEEVES.guard`), swing (a slow, harmless swing every 3 sim seconds; **its 0.8 s wind-up must read from the body, from
+  where the striker stands**: it leans back, the right sleeve rises high beside the head (the parry mark rides on it, so it is never drawn
+  behind the head: `SLEEVES.swing`), then it is swept forward). It faces +z; a sleeve swings forward by `rotation.y = -side * angle`
   (the signs were reversed until v133, T51: the guard and the swing pointed backwards).
 - **Canon (Espada):** Pip stitched it, the one thing in a workshop of clay that cannot shatter. The log names it without an article:
   "Strawman rocks back up."

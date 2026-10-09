@@ -410,8 +410,38 @@ the rules before building in the same area; a rule a machine can check goes into
     sound) and is counted in its line.
 149. **A turn's sign is proved by where the part ends up.** A limb that should swing forward is measured (its tip's position in the
     thing's own facing, +z where it stands) and looked at from in front and the side, never read off the sign it was written with.
+150. **A telegraph is judged from where the blow is answered, with its mark on.** The part that carries the parry mark stays in sight
+    from the striker's place for the whole wind-up (rendered from in front, with the mark), never behind the body it belongs to.
 
 ## Cases
+
+### 2026-10-09 · The swing's wind-up drew the sleeve behind Strawman's head, and the parry mark with it (the review of T51, v133)
+- **Seen:** with the guard's signs put right, the wind-up (the sleeve "drawn back and up") showed from where the striker stands as a grey
+  stub half behind the head, its cuff turned away; the outline that marks the sleeve while a parry can answer it (Petra's `swing()`,
+  `part: model.arms[1]`) was a thin arc. Before the fix the sleeve had risen toward the striker, the cuff and its outline in plain view.
+  A parry (`onParried()` clears `model.sw`) set the sleeve and the lean back to rest in one frame.
+- **Cause:** the pose was written to the plan's words (back and up) and judged from the side. Measured in the room: at the wind-up's top
+  the cuff was 1.0 m behind its centre and 0.3 m off its line (z -4.41, x 20.32 about 20), a stub 0.2 m wide in front view. The model also
+  read its sleeve and lean straight from `sw`, so clearing `sw` from outside was a snap.
+- **Fix:** the wind-up holds the sleeve up beside the head and only a little back (`SLEEVES.swing`: up 1.15, back 0.15 radians): its
+  length stands clear of the hat and in front view, the mark on it; the cuff 0.6 m behind and 2.2 m up at the top, 0.5 m in front mid-sweep.
+  The sleeve and the lean ease to rest (12 a second) when `sw` is cleared from outside. The guard's constants are one table, `SLEEVES`
+  (`GUARD` alone is the Courier's held block in the glossary).
+- **Rule:** 150.
+
+### 2026-10-09 · The Courier's idle read as if on a stimulant (the owner's R14, v133)
+- **Seen:** the Courier standing still swayed at the chest, bobbed the head with each breath and flicked the left hand once every
+  loop (the owner: "too much torso sway, and a twitchy left hand on too short a loop").
+- **Cause:** the idle was `Loco_IdleMasc`, a braced stance (knees bent, fists out). Measured in the room over 10 real seconds at 60 Hz: chest
+  3.6 cm/s mean (tilt 4.8 degrees mean), head 15.8 cm/s and 9.8 cm front to back, the left hand 12 cm/s mean and 49.7 cm/s at its
+  flick, on a 2.5 s loop. The suite has seven standing idles; nothing chose between them.
+- **Fix:** `IDLES` (`courier/anim/idlebreak.js`): the seven by their look, one named default (`akimbo`, `Loco_IdleRelaxedMasc`, hands on
+  the hips), `idles.choose(key)` for a kiln chooser later. Same measure: chest 1.7 cm/s (tilt 3.0 degrees), head 7.9 cm/s and 5.9 cm, the
+  left hand 5 cm/s and 10.5 at most, a 3.0 s loop. The idle breaks, the fighting stance, the tools' stances and the walk are unchanged; the
+  six idles the code now names moved from `social.bin` to `core.bin` (+268 KB, the pack's total the same). The chest ceremony stood the
+  Courier in the old `idle` alias after the hit: it asks `ch.idles.clip` now (CROSSING, `world/treasure/ceremony.js`).
+- **Rule:** none new: whatever stands the Courier in the idle asks `ch.idles.clip` (the alias `idle` is the stances' and the authored
+  clips' base, as they were tuned), and a default among candidates is picked by measuring each in the game, not by looking at one.
 
 ### 2026-10-09 · Strawman's arms still pointed backwards in guard (the owner's T51, v133)
 - **Seen:** on guard, Strawman's sleeves folded back behind its head; from in front only the cuffs' rims showed, and the crossbar stood
@@ -420,9 +450,9 @@ the rules before building in the same area; a rule a machine can check goes into
   its cuff to -z. Measured in the room: on guard both cuffs 0.68 m behind its centre (z -4.08 for a body at -3.4). The swing was mirrored
   the same way: the wind-up drew the right sleeve forward, the sweep went back.
 - **Fix:** a sleeve on side s swings forward by `rotation.y = -s * angle` (`GUARD`: the shoulders 0.16 m forward, the sleeves 129
-  degrees round and tipped down, crossing in an X 0.3 m in front of the chest, clear of the head and the sack); the wind-up draws back
-  and up, the sweep comes forward; each sleeve carries its half of the crossbar. Measured: on guard the cuffs at z -2.86 and -2.90 (0.5 m
-  in front), crossed (x 20.20 and 19.84 about a centre at 20); the wind-up's cuff 1.0 m behind, the sweep's in front.
+  degrees round and tipped down, crossing in an X 0.3 m in front of the chest, clear of the head and the sack); the sweep comes
+  forward (the wind-up: the case above); each sleeve carries its half of the crossbar. Measured: on guard the cuffs at z -2.86 and -2.90
+  (0.5 m in front), crossed (x 20.20 and 19.84 about a centre at 20); the sweep's cuff 0.5 m in front.
 - **Rule:** 149.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
