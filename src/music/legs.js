@@ -44,6 +44,7 @@
 import { MOTIF, quote } from './motifs.js';
 import { VERSE, CHORUS } from './shanty.js';
 import { MODES } from './mood.js';
+import { LEGS as RAIL } from '../progress/rail/legs.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 export const BPM = 160;
@@ -129,13 +130,13 @@ function modal(n, L) { // (a note of the Whirl, written in E minor, moved onto t
 }
 
 // how many parts sound: the phase's own, the heat on top; a boss's peak is the thickest
-function stackOf(phase, i, L) {
-  const base = phase === 'open' ? Math.min(4, 1 + (i >> 1)) : phase === 'build' ? Math.min(6, 4 + (i >> 3)) : phase === 'peak' ? (L.boss ? 7 : 6) : 3;
+function stackOf(phase, i, L, len) {
+  const base = phase === 'open' ? Math.min(4, 1 + Math.floor(4 * i / len)) : phase === 'build' ? Math.min(6, 4 + Math.floor(3 * i / len)) : phase === 'peak' ? (L.boss ? 7 : 6) : 3; // (the open and the build ramp over their own length, however long the rail makes them)
   return Math.min(8, base + Math.round(R.heat) + (L.storm && phase !== 'open' && phase !== 'release' ? 1 : 0)); // (a storm leg: a part thicker)
 }
 function layBar(L, phase, i, len) {
   R.heat = Math.max(0, R.heat - 0.25); // (the heat cools a quarter of a part a bar)
-  const c = chordOf(L, i), s = stackOf(phase, i, L), peakBoss = phase === 'peak' && L.boss, out = [...PAD(L, c, 1), ...PULSE(L)];
+  const c = chordOf(L, i), s = stackOf(phase, i, L, len), peakBoss = phase === 'peak' && L.boss, out = [...PAD(L, c, 1), ...PULSE(L)];
   const last = i === len - 1;
   if (s >= 2) out.push(...GROOVE[L.groove]());
   if (s >= 3) out.push(...BASS(L, c, i, peakBoss));
@@ -227,12 +228,13 @@ const ARRIVE = (i) => (i === 0 ? [E('crash', 0, 1, null, 0.45), E('bell', 0, 1, 
   : i === 1 ? [...[64, 68, 71, 76, 80].map((n, k) => E('harp', k * 0.2, 2, n + 12, 0.2)), E('shimmer', 0, 4, [64, 68, 71], 0.1)]
     : [E('pad', 0, 4.2, [52, 56, 59, 64], 0.05, { cutoff: 1600 }), ...(i === 3 ? [E('bell', 0, 2, 88, 0.14)] : [])]);
 
-/** The bars of each part of a leg: its own, or open 8, release 4 and the rest split between the build and the peak. */
-const PHASES = { wreckers: [8, 20, 24, 4], nobody: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] }; // (RAIL-OVERHAUL.md section 6: a calm has no peak)
+/** The bars of each part of a leg: its own (the runtime hands the schedule's), else the rail's table (Dovina's LEGS: one source, so the
+ *  cue and the leg runner never disagree), else open 8, release 4 and the rest split between the build and the peak. */
+const RAIL_ID = { nobody: 'leviathan' }; // (the music's name for Old Nobody's leg; the rail's is its director's)
 export function phasesOf(leg) {
   if (leg.phases) return leg.phases;
-  const P = !leg.bars && PHASES[leg.id];
-  if (P) return { open: P[0], build: P[1], peak: P[2], release: P[3] };
+  const P = !leg.bars && RAIL[RAIL_ID[leg.id] || leg.id]?.phases;
+  if (P) return { open: P.open, build: P.build, peak: P.peak, release: P.release };
   const bars = Math.max(16, leg.bars || 48), mid = bars - 12, build = Math.round(mid / 2);
   return { open: 8, build, peak: mid - build, release: 4 };
 }
