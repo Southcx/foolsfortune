@@ -24,9 +24,11 @@
 //   COURIER_MIND = { perDrink, perOverflow, settlePerSec }   DRAUGHT = { build, fadePerSec }   reachOf(id, { night }) -> magnet radius x
 // ---------------------------------------------------------------------------------------
 
-/** How much a drink moves the Courier's mental state (one whole state is 1, as for creatures): a clapperjar's 36 is a third of a state;
- *  a drink past full pushes four times as hard (BRIMMING, Espada's word; never "drunk" in player text); quiet settles it back at the creatures' own rate. */
-export const COURIER_MIND = { perDrink: 0.01, perOverflow: 0.04, settlePerSec: 0.05 };
+/** How much a drink moves the Courier's mental state (one whole state is 1, as for creatures). The owner, 2026-10-09 (QAIS T145): one
+ *  clapperjar moved a whole state; a state should take 10 to 15 clapperjars' worth. So a clapperjar's 36 is a twelfth of a state
+ *  (12 x 36 x 0.0023 = 1.0); a drink past full pushes twice as hard (BRIMMING, Espada's word; never "drunk" in player text: it was four
+ *  times, which made a full pool cross a state on one jar), about 6 jars a state; quiet settles it back at the creatures' own rate. */
+export const COURIER_MIND = { perDrink: 0.0023, perOverflow: 0.0046, settlePerSec: 0.05 };
 /** The draught's worth: a blow of the drunk feeling's damage type builds its status up to half again as fast, at a full draught; the
  *  draught fades over a real minute without drinking (a feeling carried, not kept). */
 export const DRAUGHT = { build: 0.5, fadePerSec: 1 / 60 };
