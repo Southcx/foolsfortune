@@ -11,15 +11,29 @@ Kept by Dovina. The research behind it is `docs/plans/research/PAINTING.md` (Spl
 Cleanup Detail, PowerWash Simulator, Portal 2, with sources). Each part below names who builds it. **Open** marks what waits on the
 owner or Espada.
 
+## 0. The words (Espada, 2026-10-09; proposals until the owner rules)
+- **Crude** carries no feeling: feeling gone flat ("fossil feeling, until nobody remembers having it"). It runs a cycle like
+  petroleum's: weather falls aspected, soaks down and flattens into crude, and refining wakes a feeling again.
+- **Crude is named for its field,** as Brent and West Texas are: "a cask of Dunemaw crude". That settles section 1's question:
+  provenance, not feeling.
+- **To refine** is the verb. The refineries are the Courier and **Margarite's Stillhouse**, where the King's crude becomes aqua regia.
+- **Refined Lachryma** is "wonder Lachryma"; the unrefined is just "crude".
+- **Slip**: "what is the island's own is slip; what is the sea's is crude". Jellies, slip roe, the bowl's slip pools, the geysers and
+  the Slip Trail stay slip. A wet Lachryma hazard is crude, a blot.
+  - The Lockheart's "slip nuke" becomes **the gusher** (the oil-boom word for a well that blows).
+  - The brush's "flick of slip" stays only if it is still clay.
+- **The radial's eighth slot is Fair** (the game's word for no feeling: fair weather, fair water, opposites cancelled). Its label on the
+  choice card is the owner's to rule against CLARITY's genre-word rule ("Clean"?); Fair is its lore name.
+
 ## 1. One substance, two states
 - **Crude**: unrefined Lachryma. Spilled on the ground it is a **blot**; carried, a **cask**. It has **no feeling**. It oxidises in the
   open as the clapperjars' dropped baubles do: dark and oily when fresh, then shifting through Lachryma's colours. *Espada settles
   the words; Calissa the look.*
 - **Refined Lachryma**: crude processed into one of the seven feelings: Wonder, Mirth, Desire, Grief, Dread, Gall and Fury. Faith is
   cut. The Courier refines it, by drinking it and painting it out. A facility refines it at scale (Margarite's lamp works, which
-  make aqua regia, is the natural one). **Open:** Espada's word for refined Lachryma and for the facility.
+  make aqua regia, is the natural one). (Words: section 0.)
 - **Slip** stays the potter's word for clay: the slip jellies' bodies, slip roe, the Slip shell. The hazard on the ground that you
-  slide in becomes crude. **Open:** Espada confirms which uses are clay and which become crude.
+  slide in becomes crude. (Words: section 0.)
 - **Every feat of the Courier's power reads as Lachryma**: the blink dash's afterimages, a slam's shock, a jet's thrust, all
   hue-shifted like the Lachryma tools. *Calissa's.*
 
@@ -36,11 +50,11 @@ The simulator (`scripts/economy.mjs`) is rerun before this is built. **Open:** t
 |---|---|---|
 | **Mop** | Drinks crude and paint under a swept strip into the Lachrymato Bottle | Fills the bottle |
 | **Paint** | Sprays refined Lachryma in the feeling picked on the radial | Spends the bottle |
-| **Neutralize** (the radial's eighth slot; working word) | Sprays clear: removes paint and crude where it lands, at range, as FLUDD's water cleans goop | Spends the bottle, gains nothing |
+| **Fair** (the radial's eighth slot; the owner's "Neutralize") | Sprays clear: removes paint and crude where it lands, at range, as FLUDD's water cleans goop | Spends the bottle, gains nothing |
 
 The trade: the mop is close and slow, and it is how you refuel. Neutralize is fast and at range, and it costs you.
 
-- **The radial** (hold the brush's mode key): eight slots, the seven feelings in display order plus Neutralize. Each slot shows the
+- **The radial** (hold the brush's mode key): eight slots, the seven feelings in display order plus Fair. Each slot shows the
   feeling's icon and colour, never colour alone (CLARITY.md). It ships with five feelings plus Neutralize and two slots showing locked
   until Gall and Fury exist. *Calissa's look; Petra's input.*
 - **Bottles are doubled** (done, 2026-10-09): 80, 160 and 240.
@@ -85,7 +99,7 @@ the numbers are Dovina's (`progress/brushload.js`).*
 3. **Ship the radial with five feelings now**, or wait for Gall and Fury.
 
 ## 6. Order of work, when ruled
-1. Espada's words (crude, refined, Neutralize, slip).
+1. Espada's words: done (section 0). The glossary's crude, cask and blot lines are updated once the owner rules.
 2. The numbers in `brushload.js` (Dovina).
 3. Aim, spread, reticle and splats, plus a QAIS range test at 3, 6 and 9 m with a debug chest (Petra and Calissa).
 4. Blots into the paint map; the mop's wipe and its head (Petra, Calissa).
