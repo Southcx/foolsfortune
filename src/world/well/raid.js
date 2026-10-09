@@ -141,10 +141,10 @@ export class Raid {
   }
   /** Is the Courier looking at it: through the Veritome's lens ('lens': the gaze turns back), with their own eyes ('eye'), or not. */
   looking() {
-    const g = this.g, cam = g.camera, F = this.F, at = F.c.pos.clone().setY(F.c.pos.y + 1.4);
+    const g = this.g, cam = g.camera, F = this.F, at = F.c.pos.clone().setY(F.c.pos.y + F.c.height * 0.6);
     cam.updateMatrixWorld(); // (the camera as it is this step, not as it was last drawn)
     const eye = cam.getWorldPosition(new THREE.Vector3()), fwd = cam.getWorldDirection(new THREE.Vector3()), to = at.clone().sub(eye);
-    if (to.length() > 50) return 'away';
+    if (to.length() > 50 * (ARENA.scale ?? 1)) return 'away';
     const facing = to.normalize().dot(fwd) > Math.cos(35 * Math.PI / 180);
     if (!facing) return 'away';
     return g.veritome?.lens ? 'lens' : 'eye';
@@ -162,7 +162,7 @@ export class Raid {
   broodDrive(c, dt) {
     const F = this.F, to = _v.set(F.c.pos.x - c.pos.x, 0, F.c.pos.z - c.pos.z), d = to.length();
     c.face = F.c.pos; c.want.copy(to).setLength(BROOD_SPEED);
-    if (d < 2.2) { c.reached = true; c.want.set(0, 0, 0); } // (fed in update, never inside the jellies' own loop: casebook 26)
+    if (d < F.c.radius + 1.4) { c.reached = true; c.want.set(0, 0, 0); } // (fed in update, never inside the jellies' own loop: casebook 26)
   }
   /** A brood reached it: it heals, grows a plate back (bare), and the brood is gone into it. */
   feed(c) {
@@ -177,7 +177,7 @@ export class Raid {
     const F = this.F, J = this.g.jellies, hp = area.hp ?? CALF_HP;
     F.hide();
     this.sherds = [45, 135, 225, 315].map((b) => {
-      const p = bearingXZ(b, 12), c = J.spawn(this.B.world(p.x, dishY(12) + 0.05, p.z), { once: true, cls: 1 });
+      const r = 12 * (ARENA.scale ?? 1), p = bearingXZ(b, r), c = J.spawn(this.B.world(p.x, dishY(r) + 0.05, p.z), { once: true, cls: 1 });
       c.hp = c.maxHp = hp; c.sherd = true; c.name = 'Sherd';
       const hurt = c.hurt; c.hurt = (...a) => { const was = Math.max(0, c.hp); hurt(...a); F.c.hp = Math.max(1, F.c.hp - (was - Math.max(0, c.hp))); };
       c.deform?.kick(8, null, 0.3);

@@ -71,8 +71,8 @@ export class SlipJellies {
 
   /** A jelly at `home`. `once`: it does not form again when it bursts (a Well's: the floor is taken down with it). `cls`: a bigger class
    *  (0 the ordinary, up to 4: a FOE is 2), larger, harder to burst and to stun (Figment classes: docs/ECONOMY.md). */
-  spawn(home, { yaw = simRand() * 6.28, spirit = null, once = false, cls = 0 } = {}) {
-    const g = this.game, M = this.mind;
+  spawn(home, { yaw = simRand() * 6.28, spirit = null, once = false, cls = 0, size = null } = {}) {
+    const g = this.game, M = this.mind, k = size ?? (cls > 0 ? 1 + 0.3 * cls : 1), Hk = H * k, Rk = R * k; // (k: the body's scale, collider and reach with it: the Great Slip Jelly's FOE.size)
     // (sand, wet and sliding: the colour and the gloss are the melt's, deform.js; the material's colour only tints it)
     const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.7, metalness: 0, emissive: 0x000000, emissiveIntensity: 1 });
     // (a SPIRIT (spirits.js) is a jelly of smoke: the same body and the same mind, lit from inside, a little see-through)
@@ -86,16 +86,16 @@ export class SlipJellies {
     root.position.copy(home); root.rotation.y = yaw;
     g.scene.add(root);
     const w = g.physics.world;
-    const rb = w.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(home.x, home.y + H * 0.5, home.z));
-    const col = w.createCollider(RAPIER.ColliderDesc.capsule(H * 0.5 - R * 0.85, R * 0.85).setCollisionGroups(groups(G.CRITTER, 0xffff)), rb);
+    const rb = w.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(home.x, home.y + Hk * 0.5, home.z));
+    const col = w.createCollider(RAPIER.ColliderDesc.capsule(Hk * 0.5 - Rk * 0.85, Rk * 0.85).setCollisionGroups(groups(G.CRITTER, 0xffff)), rb);
     const traits = rollTraits(M.traits);
     const c = {
       type: 'creature', kind: spirit ? 'spirit' : 'slipjelly', name: spirit ? 'Smoke Spirit' : 'Slip Jelly', id: NEXT++, root, body, mat, deform, rb, col, spirit, ally: !!spirit,
-      home: home.clone(), pos: home.clone(), prevPos: home.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), vy: 0, yaw, radius: R, height: H,
+      home: home.clone(), pos: home.clone(), prevPos: home.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), vy: 0, yaw, radius: Rk, height: Hk,
       alive: true, hp: JELLY.hp, poise: JELLY.poise * (traits.bold ?? 1), stunFor: JELLY.stunFor, air: false, groundY: null, groundT: 0, trailT: 0,
       hurtT: 0, flash: 0, deadT: 0, lastHitBy: null, pose: 'idle', face: null, attack: null, traits, rel: new Map(), macro: null, loud: 1,
       macros: JELLY_MACROS,
-      center: (out) => out.copy(c.pos).setY(c.pos.y + H * 0.55),
+      center: (out) => out.copy(c.pos).setY(c.pos.y + c.height * 0.55),
       head: () => this.head(c),
       hurt: (p, dir, power, cause, by, from) => this.hurt(c, p, dir, power, cause, by, from),
       cancel: (why) => this.cancel(c, why), onParried: () => this.parried(c),
@@ -111,7 +111,8 @@ export class SlipJellies {
     // what it is doing, in a word, for whoever looks (the Veritome's photograph reads it: tools/veritome/subjects.js, the bestiary's facts):
     // its wind-up, the hunt, or the action its mind is running
     Object.defineProperty(c, 'state', { get: () => (c.attack?.phase === 'wind' ? 'wind' : c.brain?.action?.hunt ? 'chase' : ({ 'go home': 'home', 'sent home': 'home' })[c.brain?.action?.id] || c.brain?.action?.id || 'idle') });
-    if (cls > 0) { c.cls = cls; c.hp *= 1 + cls; c.poise *= 1 + cls; root.scale.setScalar(1 + 0.3 * cls); c.name = 'Great Slip Jelly'; }
+    if (k !== 1) root.scale.setScalar(k);
+    if (cls > 0) { c.cls = cls; c.hp *= 1 + cls; c.poise *= 1 + cls; c.name = 'Great Slip Jelly'; }
     c.once = once;
     if (spirit) { c.hp = JELLY.hp * (spirit.power ?? 1); c.poise = 99; tag(c, 'hurtable', 'creature'); }
     else tag(c, 'hurtable', 'programmable', 'creature', 'sliceable');
@@ -137,7 +138,7 @@ export class SlipJellies {
   }
   /** The underside of what is over its head within `rise` (rising, it meets a ceiling), or null. */
   roof(c, rise) {
-    const hit = this.game.physics.raycast(_c.set(c.pos.x, c.pos.y + H * 0.5, c.pos.z), _b.set(0, 1, 0), H * 0.5 + rise, c.col, undefined, this.solid);
+    const hit = this.game.physics.raycast(_c.set(c.pos.x, c.pos.y + c.height * 0.5, c.pos.z), _b.set(0, 1, 0), c.height * 0.5 + rise, c.col, undefined, this.solid);
     return hit ? hit.point.y : null;
   }
   /** Is there something solid in the way along `dir` (for the steering's whiskers)? the wall's normal, or null. */
@@ -145,7 +146,7 @@ export class SlipJellies {
     const hit = this.game.physics.raycast(_c.set(pos.x, pos.y + 0.6, pos.z), dir, len, c.col, undefined, this.solid);
     return hit && Math.abs(hit.normal.y) < 0.6 ? hit.normal : null;
   }
-  head(c) { return new THREE.Vector3(c.pos.x, c.pos.y + H * c.deform.sq + 0.35, c.pos.z); }
+  head(c) { return new THREE.Vector3(c.pos.x, c.pos.y + c.height * c.deform.sq + 0.35, c.pos.z); }
 
   // ---------------------------------------------------------------- blows
   hurt(c, p, dir, power, cause, by, from = null) {
@@ -303,7 +304,7 @@ export class SlipJellies {
       if (c.held) { // (in the god hand's grip: where the hand holds it, its mind stood aside, struggling: godhand/catch.js)
         c.prevPos.copy(c.pos); c.pos.copy(c.held); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.groundY = null; c.want.set(0, 0, 0);
         c.deform.wob = Math.max(c.deform.wob, 0.08); this.pose(c, dt, dt);
-        c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z });
+        c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + c.height * 0.5, z: c.pos.z });
         continue;
       }
       // (far from the Courier, it rests where it is: its mind keeps its wants ticking and no more (brain.js's level of detail))
@@ -360,7 +361,7 @@ export class SlipJellies {
       D.kick(7, null, 0.1);
       c.drives.add('thirst', 0.05); c.drives.add('rest', 0.04);
     } else {
-      const S = JELLY.spit, from = this.head(c).setY(c.pos.y + H * 0.8), aim = _a.copy(F).setY(F.y + (foe === g.player ? 0.9 : 0.6));
+      const S = JELLY.spit, from = this.head(c).setY(c.pos.y + c.height * 0.8), aim = _a.copy(F).setY(F.y + (foe === g.player ? 0.9 : 0.6));
       const flat = Math.hypot(aim.x - from.x, aim.z - from.z), tFlight = Math.max(0.15, flat / S.speed);
       const v = new THREE.Vector3(aim.x - from.x, 0, aim.z - from.z);
       if (v.lengthSq() < 1e-6) v.set(0, 0, 1);
@@ -402,7 +403,7 @@ export class SlipJellies {
     // finds its own start for ground, so it climbed the wall onto the roof, the Well's playtest)
     const sp = Math.hypot(c.vel.x, c.vel.z) * dt;
     if (sp > 1e-5) {
-      const n = this.probe(c, c.pos, _d.set(c.vel.x, 0, c.vel.z).normalize(), sp + R);
+      const n = this.probe(c, c.pos, _d.set(c.vel.x, 0, c.vel.z).normalize(), sp + c.radius);
       if (n) { const into = c.vel.x * n.x + c.vel.z * n.z; if (into < 0) { c.vel.x -= n.x * into; c.vel.z -= n.z * into; } }
     }
     const nx = c.pos.x + c.vel.x * dt, nz = c.pos.z + c.vel.z * dt;
@@ -414,13 +415,13 @@ export class SlipJellies {
     else { c.pos.x = nx; c.pos.z = nz; if (gy != null) c.groundY = gy; }
     if (c.air) {
       c.vy -= 9.81 * dt;
-      if (c.vy > 0) { const roof = this.roof(c, c.vy * dt); if (roof != null) { c.pos.y = roof - H; c.vy = 0; } } // (a knock up meets the ceiling: it does not pass through it onto the roof, the Well's playtest)
+      if (c.vy > 0) { const roof = this.roof(c, c.vy * dt); if (roof != null) { c.pos.y = roof - c.height; c.vy = 0; } } // (a knock up meets the ceiling: it does not pass through it onto the roof, the Well's playtest)
       c.pos.y += c.vy * dt;
       if (c.pos.y <= c.groundY && c.vy < 0) this.land(c);
       // (on the way, it can hit its foe bodily: a lunge not stepped out of)
       else if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm') && !st(c, 'charm')) {
         const F = A.foe.pos, fy = A.foe === g.player ? F.y + 0.9 : F.y + (A.foe.height ?? 1) * 0.5;
-        if (Math.hypot(F.x - c.pos.x, F.z - c.pos.z) < 0.9 && Math.abs(fy - (c.pos.y + H * 0.5)) < 1.2) { A.hit = true; this.strike(c, A.foe, 'lunge'); }
+        if (Math.hypot(F.x - c.pos.x, F.z - c.pos.z) < 0.9 && Math.abs(fy - (c.pos.y + c.height * 0.5)) < 1.2) { A.hit = true; this.strike(c, A.foe, 'lunge'); }
       }
     } else if (dt > 0) {
       c.pos.y += (c.groundY - c.pos.y) * Math.min(1, dt * 12);
@@ -434,7 +435,7 @@ export class SlipJellies {
       this.trail.add(at, UP, _b.copy(c.vel).normalize(), 0.7, c); // (each jelly its own stroke: two near each other never join)
       g.slip?.addDisc(at, UP, 0.42, 14, 0.4);
     } else if (c.vel.lengthSq() <= 0.15) this.trail.gap(c);
-    c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z });
+    c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + c.height * 0.5, z: c.pos.z });
   }
 
   land(c) {
@@ -559,7 +560,7 @@ export class SlipJellies {
     c.groundY = null; c.groundT = 0; // (found again under it on its next step)
     c.deform.lean.set(0, 0); c.deform.leanV.set(0, 0); c.deform.target.lean.set(0, 0);
     c.root.position.copy(at); c.root.rotation.y = yaw;
-    c.rb.setTranslation({ x: at.x, y: at.y + H * 0.5, z: at.z }, true);
+    c.rb.setTranslation({ x: at.x, y: at.y + c.height * 0.5, z: at.z }, true);
     this.trail.gap(c); // (no stroke of slip drawn from where it was)
   }
 
