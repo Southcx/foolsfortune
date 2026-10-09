@@ -495,7 +495,7 @@ export class Skiffing extends Tech {
     this.rider.R ||= new Rider(ch);
     const R = this.rider.R;
     if (this.phase === 'ride') {
-      R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT }, dt);
+      R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT, glide: this.wingK || 0 }, dt);
       if (this.active) this.poseBoat(); // (the board's clips by the rider's weights of this very frame)
       return;
     }

@@ -85,8 +85,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   special round in a chamber. → detail
 - **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grapnel). →
   detail
-- **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils) and inscriptions; the tool of
-  environmental Lachryma, in paint and mop modes. → detail
+- **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
+  held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
 - **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, graded by feeling; left alone it grows, and a
   full-grown one gives up a blotling (an aberrant Figment). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
@@ -295,7 +295,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
   category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
-  arts row. *Not:* "Lab mode".
+  arts row. Drawn by `src/ui/lendpanel.js` (the Codex's LENDS, QAIS's Lends); a lent art wears the hollow mark. *Not:* "Lab mode".
 - **a preset** (`PRESETS`, `src/debug/presets.js`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over

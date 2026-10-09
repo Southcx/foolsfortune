@@ -277,6 +277,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   at the rider's time and weight, so the deck moves under the feet as the body does on it. The code's word is laid on after (the boom,
   the hoist from the sail's L, the belly, the pennant: `boat.js`). *Not:* the rider's clips (the Courier's suite, `rider.js`); "board"
   as a term (the overture's storyboard has it).
+- **Skiff_Glide** (`SKIFF_GLIDE`, `courier/skiff/boat.js`; the rider's half in `rider.js`): the glide's pose (Space held in the air):
+  the oars swung out over their sides as wings (from dead aft 1.22 rad, a 0.3 dihedral, blades rolled flat, a slow flex) and the
+  suite's `Air_Glide` over the rider's upper body, blended by the glide (`wings`, 0..1). A pose in code, not a clip in the .blend.
 - **the skiff's model** (`src/assets/solarskiff.glb`, from the owner's `source_assets/Courier/courier_solarskiff.blend` and its painted
   hull, `courier_solarskiff_hull.png`, by `scripts/export_solarskiff.py`): the skiff as the owner built it, rigged (`Skiff_Rig`, 64
   bones): the **hull** (its carved prow with the eye, the **dome** at the stern), the two **oars** (shipped: nothing rows yet), the
@@ -291,6 +294,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, the **spin** after a pause, the **dive** at a
   sprint, the **slam**: the **air slam** let go in the air, the **ground slam** let go after landing), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
+  **Celestial mode's mark** (glyph kind `celestialMark`, `vfx/glyphs.js`; laid by `techniques.js` markAt): the vermilion ensō with a dot
+  and four quarter strokes held over a target a dot has chosen, until let go. *Not:* a sigil, a Figment attack telegraph.
   **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
   (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
   shaders draw and the game asks; the **stains** themselves are kept in `world/ground/stains.js`.
@@ -381,7 +386,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the mind and says which damage type a mind is weak to; it shows in movement and posture, never colour. *Not:* **temper** (the body
   showing its mental state, `vfx/temper.js`); *not* "personality" or "stats" in player text. Grain is climate, mood is weather.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
-  gets (34 joints; its eighteen clips: idle, five floats, cast, hit, death, five mood loops, three emotes, a dance). The mood loops are
+  gets (34 joints; its twenty clips: idle, five floats, cast, hit, death, six mood loops, four emotes, a dance; Gall's `Mood_Gall` and `Emote_Shudder` baked from its own by `scripts/bake_wisp_moods.mjs`). The mood loops are
   a feeling's basic ring, the emotes its onset; its flame carries the strength. *Not:* the hue ring's lights (the spirit press's).
 - **Magnus Ibrahim Manus** (the King; his island **Margarite**) and **Entra Polearis** (the Queen; her island **Entropolis**): two other
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
@@ -957,8 +962,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 
 ## 8. Records and progression
 
-- **the all-arts switch** (code `system.lendAll`, `setLendAll`; in the Codex's head): lends every art without learning it (on in DEBUG,
-  off in STORY). Its label is ALL ARTS (ON / OFF). Nothing it lends is counted or announced. *Not:* "Lab mode".
+- **the all-arts switch** (code `system.lendAll`, `setLendAll`): the lend panel's Movement Arts row (`lend.has('arts')`); the Codex's
+  ALL ARTS switch is gone, its place the LENDS button. Nothing it lends is counted or announced. *Not:* "Lab mode".
+- **the lend panel's look** (`lendPanel`, `lentMark`, `saveName`, `src/ui/lendpanel.js`): a switch a row, in the Codex's LENDS shelf and
+  QAIS's Lends tab, DEBUG only; the **lent mark** (a hollow ring) beside a lent art, the **earned mark** (a solid disc) beside an earned
+  one: shape, never colour alone.
 - **build**: one published version of the game (v45...). Progress resets on every new build; settings are kept.
 - **chain** (of events; `chain.<what>` in the ledger, `chain()` among the arts' goals): the same event n times, each within a set time of
   the last (`chain.blink2`: a blink within 0.9 s of a blink); it counts once and starts over. `chain.max` is the psygun's hit chain.
