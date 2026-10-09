@@ -5,7 +5,8 @@
 // and a few of the game's switches (/voice, /music, /window). /help lists them all; the emotes, too many for one line, by family
 // (/emotes lists the families, /emotes <family> one of them, /dances /flirts /taunts theirs).
 //
-// Commands are a table any module can add to (`chat.add(name, { help, aliases, run(args, line) })`), so a feature brings its own.
+// Commands are a table any module can add to (`chat.add(name, { help, aliases, run(args, line), debug })`), so a feature brings its own.
+// A tester's command (`debug: true`, or `debug(args)` for some of its verbs) is refused outside DEBUG (docs/plans/DEBUG-MODE.md section 3).
 // What a command does is reported the usual way: it emits an event and tracking.js says it in the log; only a refusal ("There is
 // no command /x.") and /help's own list are written directly, as a refusal at the point of use may be.
 //
@@ -36,6 +37,7 @@ export class Chat {
     const [head, ...rest] = text.slice(1).split(/\s+/);
     const c = this.find(head || '');
     if (!c) { g.log.say('warn', `There is no command /${head}. (/help lists them.)`, { key: 'chat.unknown', throttle: 0.5 }); return; }
+    if (c.debug && (c.debug === true || c.debug(rest)) && g.mode !== 'debug') { g.log.say('warn', `/${c.name} works in DEBUG only.`, { key: 'chat.debug', throttle: 1 }); return; }
     try { c.run(rest, rest.join(' ')); } catch (e) { console.warn('chat', e); }
   }
 

@@ -11,13 +11,16 @@
 // (player and world are apart on purpose: in co-op, each player's section travels with them and the host owns the world's.)
 // A key some module still writes itself is ADOPTED: declared below with its scope, so the wipe, the export and the build reset know it
 // until its owner moves it into a section. Nothing new may touch localStorage outside this file (`npm run check`, rule save.storage).
+// TWO SAVES, DEBUG and STORY (docs/plans/DEBUG-MODE.md section 2): the player and world scopes, and the adopted keys in them, belong to
+// one mode at a time. The mode they belong to is kept (`foolsfortune.mode`); booting in the other mode puts them on that mode's shelf
+// (`foolsfortune.shelf.<mode>`, one record) and takes the chosen mode's off its own, before anything reads them. Settings are shared.
 // While something BORROWS the game (the overture's trailer), the save is held: nothing is written, and on release every section is
 // loaded again from what was last written.
 //
 // Prior art: Minecraft's versioned data with fixers run in order (a section's `migrate`), the one save object of Stardew Valley and
 // Factorio, the console rule that a save is written whole or not at all, and redux-persist's named slices.
 //
-//   const save = new Save()   save.boot(build) -> true if this build is new here (its progress wiped)
+//   const save = new Save()   save.boot(build, mode?) -> true if this build is new here (its progress wiped)   save.mode   save.lastMode()
 //   save.section(id, { scope, version, dump, load, reset, migrate, check })   (load runs at once with what was kept, or reset with none)
 //   save.dirty(id)   save.flush({ all? })   (dirty marks; flush writes each dirty scope whole: main.js calls it once a frame)   save.writer(fn)
 //   save.wipe(scope)   save.check() -> fixes made   save.hold(why) / save.release(why)   save.export() -> string   save.import(text, { replace })
@@ -27,7 +30,8 @@
 const PREFIXES = ['foolsfortune.', 'ff.']; // (ff.: the workbench's own edits, Calissa's studio)
 const ours = (k) => PREFIXES.some((p) => k?.startsWith(p));
 const RECORD = { player: 'foolsfortune.save.player', world: 'foolsfortune.save.world', settings: 'foolsfortune.save.settings' };
-const BUILD_KEY = 'foolsfortune.build';
+const BUILD_KEY = 'foolsfortune.build', MODE_KEY = 'foolsfortune.mode', SHELF = 'foolsfortune.shelf.';
+export const MODES = ['debug', 'story'];
 
 /** Keys still written by their own modules, by scope (each owner moves its key into a section in its own round: docs/HANDOFFS.md). */
 export const ADOPTED = {
@@ -55,13 +59,38 @@ export class Save {
   read(key) { try { return JSON.parse(this.store?.getItem(key) || 'null'); } catch { return null; } }
   write(key, value) { try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch { return false; } }
 
-  /** At boot, before anything registers: a new build wipes the progress scopes (and the adopted keys in them). True if it did. */
-  boot(build) {
+  /** The mode the progress now stored belongs to (DEBUG until STORY is chosen once). */
+  lastMode() { let m = null; try { m = this.store?.getItem(MODE_KEY); } catch { /* none */ } return MODES.includes(m) ? m : 'debug'; }
+
+  /** At boot, before anything registers: a new build wipes the progress scopes (and the adopted keys in them, and both shelves); then
+   *  the progress of `mode` is put in place (the other mode's shelved). True if the build was new here. */
+  boot(build, mode = this.lastMode()) {
     let was = null; try { was = this.store?.getItem(BUILD_KEY); } catch { /* none */ }
-    if (was === build) return false;
-    for (const scope of ['player', 'world']) this.wipeStored(scope);
-    this.write(BUILD_KEY, build);
-    return !!was; // (a first visit has nothing to clear, and is not told it was cleared)
+    if (was !== build) {
+      for (const scope of ['player', 'world']) this.wipeStored(scope);
+      for (const m of MODES) try { this.store?.removeItem(SHELF + m); } catch { /* none */ }
+      this.write(BUILD_KEY, build);
+    }
+    const cur = this.lastMode();
+    if (MODES.includes(mode) && mode !== cur) { this.shelve(cur); this.unshelve(mode); this.write(MODE_KEY, mode); }
+    this.mode = MODES.includes(mode) ? mode : cur;
+    return !!was && was !== build; // (a first visit has nothing to clear, and is not told it was cleared)
+  }
+  /** The progress stored now (player and world, records and adopted keys) put on `mode`'s shelf, and taken out of the way. */
+  shelve(mode) {
+    const keys = {};
+    if (this.store) for (let i = this.store.length - 1; i >= 0; i--) {
+      const k = this.store.key(i);
+      if (k === RECORD.player || k === RECORD.world || ['player', 'world'].includes(scopeOfKey(k))) { keys[k] = this.store.getItem(k); this.store.removeItem(k); }
+    }
+    this.write(SHELF + mode, keys);
+  }
+  /** `mode`'s shelf put back in place (nothing on it: a fresh save), and the records read again. */
+  unshelve(mode) {
+    const keys = this.read(SHELF + mode) || {};
+    for (const [k, v] of Object.entries(keys)) this.write(k, v);
+    try { this.store?.removeItem(SHELF + mode); } catch { /* none */ }
+    for (const scope of ['player', 'world']) this.records[scope] = this.read(RECORD[scope]) || { v: 1, sections: {} };
   }
 
   /** A section: what one system keeps. Loaded at once from the record (migrated if it is older), or reset if there is nothing. */

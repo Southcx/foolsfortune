@@ -32,7 +32,7 @@ export class DebugChests {
   constructor(game) {
     this.game = game; this.list = []; this.said = new Set(); this.gardenDone = false;
     game.interact?.add('debug.chest', (P) => {
-      if (game.dialogue?.open || game.god?.controlling || game.realm?.active) return null;
+      if (game.mode === 'story' || game.dialogue?.open || game.god?.controlling || game.realm?.active) return null; // (none stands in STORY: DEBUG-MODE.md section 2)
       let best = null;
       for (const c of this.list) { if (c.garden) continue; const d = Math.hypot(c.pos.x - P.pos.x, c.pos.z - P.pos.z); if (d < REACH && Math.abs(c.pos.y - P.pos.y) < 1.8 && (!best || d < best.d)) best = { pos: c.pos.clone().setY(c.pos.y + 1.1), d, ref: c.kit }; }
       return best;
@@ -61,7 +61,8 @@ export class DebugChests {
     if (this.pending && g.realm?.active && g.realm.jarBody && !g.realm.entering) { const k = this.pending; this.pending = null; this.go(k); } // (gone in for a garden chest: set down by it)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'debug.chest' && P?.peekLatch?.('KeyF')) { P.latch('KeyF'); this.give(it.ref); }
-    for (const c of this.list) c.look.update(dt);
+    const on = g.mode !== 'story'; // (in STORY no debug chest stands)
+    for (const c of this.list) { if (c.shown !== on) { c.shown = on; c.look.group.visible = on; } if (on) c.look.update(dt); } // (its own flag: a zone's hiding is on the getter, render/zones.js)
   }
 
   /** Where a world kit's chest stands: { pos, face } (null while its place is not built). */
