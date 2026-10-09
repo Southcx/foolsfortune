@@ -10,6 +10,8 @@
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const PLACE = { mask: { f: 1.25, pan: 0 }, torso: { f: 0.8, pan: 0 }, armL: { f: 1.05, pan: -0.5 }, armR: { f: 1.05, pan: 0.5 }, legL: { f: 0.9, pan: -0.3 }, legR: { f: 0.9, pan: 0.3 } };
 
+const DRINK_MODE = { wonder: [0, 4, 6, 7, 11], mirth: [0, 2, 4, 7, 9], desire: [0, 2, 3, 7, 9], grief: [0, 3, 5, 7, 10], dread: [0, 1, 5, 7, 8], fury: [0, 3, 6, 7, 10], gall: [0, 1, 4, 7, 8] }; // (music/mood.js MODES)
+
 export class VesselSounds {
   /** A crack where a blow lands (k: how cracked the region is now, 0..1; region: mask, torso, armL, armR, legL, legR). */
   vesselCrack(k = 0.5, region = 'torso') {
@@ -21,6 +23,26 @@ export class VesselSounds {
     this.tone(t, 0.14, { f0: 320 * P.f, f1: 190 * P.f, type: 'triangle', gain: 0.35, dest }); // (the body under it)
     const n = 3 + Math.round(5 * Math.min(1, k)); // (the crazing runs on: more of it the worse the crack)
     for (let i = 0; i < n; i++) this.noise(t + 0.05 + Math.pow(i / n, 1.4) * 0.35, 0.012, { type: 'bandpass', f0: (4200 + Math.random() * 3000) * P.f, q: 10, gain: 0.3, dest });
+  }
+
+  /** A sibling struck (sibling.hit): the same clay as the Courier's, heard from beside you: a smaller report and its crazing, and when
+   *  it goes down a few shards falling. */
+  siblingHit(down = false) {
+    if (!this.ok() || !this.allow('siblingHit', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.22, 0.4);
+    this.noise(t, 0.05, { type: 'bandpass', f0: 4200, f1: 2200, q: 2.5, gain: 0.6, dest: d });
+    this.tone(t, 0.12, { f0: 360, f1: 230, type: 'triangle', gain: 0.25, dest: d });
+    for (let i = 0; i < (down ? 7 : 3); i++) this.noise(t + 0.05 + i * (down ? 0.07 : 0.05) + Math.random() * 0.03, 0.015, { type: 'bandpass', f0: 3500 + Math.random() * 3500, q: 10, gain: down ? 0.35 : 0.22, dest: d }); // (crazing, or the shards when down)
+    if (down) this.tone(t + 0.1, 0.5, { f0: 330, f1: 165, type: 'sine', gain: 0.12, dest: d }); // (settling)
+  }
+  /** A feeling drunk (feeling.drink { aspect }: the draught changed): a swallow, then the feeling's colour as three rising notes of its
+   *  mode (music/mood.js MODES) over E, so the ear learns each feeling's shape before the eye names it. */
+  feelingDrink(aspect) {
+    const mode = DRINK_MODE[aspect]; if (!mode || !this.ok() || !this.allow('feelingDrink', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.25, 0.5, true);
+    this.tone(t, 0.09, { f0: 220, f1: 120, type: 'sine', gain: 0.3, dest: d }); // (the swallow)
+    [0, 2, 4].forEach((k, i) => this.tone(t + 0.12 + i * 0.09, 0.7 - i * 0.1, { f0: hz(76 + mode[k] + (k === 4 && mode[k] < 7 ? 12 : 0)), type: 'sine', gain: 0.12, dest: d }));
+    this.tone(t + 0.12, 1, { f0: hz(76 + mode[1]), type: 'triangle', gain: 0.04, dest: d }); // (its colour note held under)
   }
 
   /** A crack healed: gold run into it, a warm shimmer rising a fourth and settling. */

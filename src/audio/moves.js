@@ -57,20 +57,15 @@ export class MoveSounds {
   }
   /** The glide begun (skiff.glide): the wind under the wings of the skiff's loop sounding now. */
   skiffGlide() { this._skiff?.glide(true); }
-  /** Thrown off the skiff (skiff.bail): the body tumbling on the sand for about a second (the ragdoll, courier/anim/ragdoll.js), each
-   *  bounce lower and softer: a thump in the sand, grit thrown, now and then the clay of the body knocking; a slide's hiss to rest.
-   *  Timed, not touched: no event per contact yet (the bail's own hit is the skiff's thunk). */
-  bailTumble(speed = 10) {
-    if (!this.ok()) return;
-    const t0 = this.ctx.currentTime, d = this.out(0.55, 0.2), k = Math.min(1, Math.max(0.35, speed / 16));
-    [0.2, 0.43, 0.62, 0.79, 0.94].forEach((at, i) => {
-      if (i > 2 && Math.random() < 0.4) return; // (the last bounces not always: it comes to rest its own way)
-      const t = t0 + at + (Math.random() - 0.5) * 0.05, g = k * Math.pow(0.68, i);
-      this.tone(t, 0.14, { f0: 95 + Math.random() * 20, f1: 48, type: 'sine', gain: 0.5 * g, dest: d });
-      this.noise(t, 0.12 + 0.04 * i, { type: 'bandpass', f0: 2600 + Math.random() * 1200, q: 0.9, gain: 0.35 * g, dest: d });
-      if (Math.random() < 0.5) this.tone(t + 0.01, 0.05, { f0: 620 + Math.random() * 200, f1: 520, type: 'triangle', gain: 0.12 * g, dest: d }); // (the clay body knocking)
-    });
-    this.noise(t0 + 0.75, 0.5, { type: 'bandpass', f0: 1800, f1: 700, q: 0.7, gain: 0.12 * k, attack: 0.08, dest: d }); // (sliding to rest)
+  /** A thump of the bail's tumble (skiff.tumble { speed }: a part of the ragdoll meeting the sand, courier/anim/ragdoll.js): a thump in
+   *  the sand by how hard it fell, grit thrown, sometimes the clay of the body knocking; the softer ones trail a short slide. */
+  tumbleThump(speed = 4) {
+    if (!this.ok() || !this.allow('tumbleThump', 0.1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.55, 0.2), g = Math.min(1, Math.max(0.15, (speed - 1.5) / 7));
+    this.tone(t, 0.14, { f0: 90 + Math.random() * 25, f1: 48, type: 'sine', gain: 0.5 * g, dest: d });
+    this.noise(t, 0.1 + 0.08 * (1 - g), { type: 'bandpass', f0: 2600 + Math.random() * 1200, q: 0.9, gain: 0.35 * g, dest: d });
+    if (Math.random() < 0.5) this.tone(t + 0.01, 0.05, { f0: 620 + Math.random() * 200, f1: 520, type: 'triangle', gain: 0.12 * g, dest: d }); // (the clay body knocking)
+    if (g < 0.4) this.noise(t + 0.05, 0.3, { type: 'bandpass', f0: 1700, f1: 700, q: 0.7, gain: 0.1, attack: 0.05, dest: d }); // (sliding to rest)
   }
 
   slide() {
