@@ -39,8 +39,8 @@ vec2 skyUv(vec3 d) { return vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d
 //   BRIGHTNESS  a power law (N(>F) ~ F^-1.4, near the -1.5 of stars spread evenly through space): many faint, a few bright, the
 //               brightest a touch larger. A faint star is dimmer, never smaller: a soft Gaussian at least a pixel wide (no crawl)
 //   BEHIND      the cloud layer's own field read here (vfx/clouds.js's mapping and noise, linked by vfx/nightsky.js), so a star is gone
-//               under a cloud and fades at its fringe; the night painting's swirls (`veil`) let them through only where they are thin;
-//               a high HAZE drifting slower than the cloud dims patches of the field, so it is never even
+//               under a cloud and fades at its fringe; the night painting's swirls (`swirl`) let them through only where they are thin;
+//               a high CIRRUS drifting slower than the cloud dims patches of the field, so it is never even
 //   TWINKLE     slow (a few seconds a breath), deeper near the horizon, where starlight crosses more air (and is dimmer there: extinction)
 // Prior art: the Yale Bright Star Catalogue's colour indices and counts (most naked-eye stars white to yellow-white, the K giants
 // orange, a few hot blue-white; three times as many at each fainter magnitude); Tanner Helland's fit to the blackbody in sRGB (2012);
@@ -65,12 +65,12 @@ float cloudOver(vec3 d) {
   float n = texture2D(uCloudNoise, uv + uCloudOff).r * 0.7 + texture2D(uCloudNoise, uv * 2.7 - uCloudOff * 1.6 + 0.37).r * 0.3;
   return smoothstep(uCloud.x - 0.08, uCloud.x + 0.16, n) * smoothstep(0.015, 0.22, d.y) * clamp(uCloud.y * 2.5, 0.0, 1.0);
 }
-vec3 nightAlive(vec3 c, vec3 d, float k, float veil) {
+vec3 nightAlive(vec3 c, vec3 d, float k, float swirl) {
   float lum = dot(c, vec3(0.299, 0.587, 0.114)), dark = 1.0 - smoothstep(0.18, 0.5, lum), up = smoothstep(0.0, 0.1, d.y);
   float cl = uCloud.z > 0.5 ? cloudOver(d) : 0.0, clear = 1.0 - cl;
-  float hz = uCloud.w > 0.5 ? texture2D(uCloudNoise, d.xz / (max(d.y, 0.0) + 0.3) * 0.08 + uCloudOff * 0.4 + 0.53).r : 0.6; // (the haze: higher and slower than the cloud)
+  float cirrus = uCloud.w > 0.5 ? texture2D(uCloudNoise, d.xz / (max(d.y, 0.0) + 0.3) * 0.08 + uCloudOff * 0.4 + 0.53).r : 0.6; // (the cirrus: higher and slower than the cloud)
   float air = mix(0.3, 1.0, smoothstep(0.03, 0.45, d.y));                                // (extinction: low stars through more air, dimmer)
-  float seen = clear * mix(0.35, 1.0, smoothstep(0.34, 0.62, hz)) * (1.0 - smoothstep(0.05, 0.4, veil)) * dark * up * air * k;
+  float seen = clear * mix(0.35, 1.0, smoothstep(0.34, 0.62, cirrus)) * (1.0 - smoothstep(0.05, 0.4, swirl)) * dark * up * air * k;
   // the wheel: the sky turned about a pole 35 degrees off the zenith, toward the north (-z)
   vec3 P = normalize(vec3(0.0, 0.819, -0.574)); float ca = cos(uWheel), sa = sin(uWheel);
   vec3 r = d * ca + cross(P, d) * sa + P * dot(P, d) * (1.0 - ca);

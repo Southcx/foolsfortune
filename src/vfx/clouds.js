@@ -116,7 +116,9 @@ void main() {
     this.mesh.position.copy(camPos);
     const k = windSpeed * 0.00022 * dt;
     this.offset.x += windDir.x * k; this.offset.y += windDir.y * k;
-    this.offset.x %= 1; this.offset.y %= 1;
+    // (wrapped at 5, not 1: the second octave reads it 1.6 times over and the night sky's cirrus 0.4 times over (vfx/nightsky.js), and 5 is
+    // the first whole number all three turn into whole repeats of the texture, so a wrap is a jump in none of them)
+    this.offset.x %= 5; this.offset.y %= 5;
   }
 }
 const _c = new THREE.Color();

@@ -412,8 +412,26 @@ the rules before building in the same area; a rule a machine can check goes into
     that reads false while the object's zone is not drawn; an update that returns on its own object's `visible` never moves it out of
     that zone, and it is hidden for good. Keep the shown state in a number of its own, and mark a HUD (or anything moved to the eye)
     `zoneFree`.
+150. **A scrolled texture's offset wraps where every reader of it turns whole.** An offset kept in 0..1 is a seam for any reader that
+    multiplies it by something that is not a whole number (a second octave at 1.6, a cirrus at 0.4): when it wraps, that field jumps.
+    Wrap at a whole number every multiplier turns into whole repeats (5 for 1, 1.6 and 0.4), or keep an unwrapped sum.
 
 ## Cases
+
+### 2026-10-09 · The stars jumped, in patches, every eleven minutes (R10 review, Calissa)
+
+- **Seen:** (reviewing the stars behind the cloud) with the cloud layer's drift offset set either side of its wrap, 4.9995 and 0.0005 now,
+  0.9995 and 0.0005 before, the star light in the same eighth-by-six cells of the sky changed by 44% on average and by all of it in the
+  worst cell (the whole field 11% dimmer); two frames at one offset differed by 0.1%. The first octave was seamless; the haze that dims
+  patches of the stars (now the cirrus) read the offset times 0.4, and the cloud's own second octave times 1.6.
+- **Cause (measured):** `CloudLayer.update` kept the offset in 0..1 (`%= 1`). A shift of 1 is a whole repeat of the noise only for the
+  first octave: 1.6 and 0.4 are not whole, so at the wrap the second octave and the cirrus jumped by 0.6 and 0.4 of a repeat. At the Dunes'
+  wind (8) the offset wraps every 11 to 18 real minutes; the cloud's detail octave had always done it (30% of its noise, never looked for), and the new cirrus made it a field of stars dimming and brightening in patches in one frame.
+- **Fix:** `vfx/clouds.js` wraps the offset at 5, the first whole number that 1, 1.6 and 0.4 all turn into whole repeats of. After: 1.8% on
+  average across the wrap (the cell with the most is a few stars at the threshold), the cloud's second octave seamless too. The same pass
+  renamed the cirrus and the night painting's swirls in `vfx/sky.js` and the docs: they had been called "haze" and "veil", which are the
+  weather's horizon haze and the storm warp's veil (glossary).
+- **Rule:** 150.
 
 ### 2026-10-09 · The wire compass vanished on a bright sky, and the Dreamvane's marks never showed outside the workshop (R11, Calissa)
 

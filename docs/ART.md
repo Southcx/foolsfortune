@@ -87,7 +87,7 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
 - **The data drain** (`vfx/datadrain.js`): polygons streaming into the bracelet, unlit, so it reads on white sand and in the dark.
 - **The night sky** lives in the dome's shader (`vfx/sky.js` NIGHT_GLSL): our own stars, a soft Gaussian never under a pixel wide,
   turning once a game day; each its own temperature on the Planckian locus (a lognormal round 6300 K) and brightness on a power law;
-  behind the cloud layer (its field read in the dome), thinned by the night painting's swirls and a slow haze, dimmer low down;
+  behind the cloud layer (its field read in the dome), thinned by the night painting's swirls and a slow high cirrus, dimmer low down;
   meteors every 25 to 70 s; the aurora at the Shore. No draw call, no program.
 - **The wire compass reads on any sky** (`vfx/wirecompass.js`): every line keylined in the opposite tone, and the device's ink from
   what is behind it (the sky's state in memory, never the GPU): pale light on a dark sky, dark ink on a bright one. One program for

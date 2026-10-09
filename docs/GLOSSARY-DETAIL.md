@@ -1031,7 +1031,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky). The stars
   each have a temperature (most near white, a few orange or blue-white) and a brightness on a power law (many faint, a few bright), and
   sit behind the cloud: the cloud layer's own field hides them (`uCloud*`, linked by the night alive), the night painting's swirls thin
-  them, and a slow **haze** dims patches of them (R10).
+  them, and a slow **cirrus** (a high thin cloud drifting slower than the cloud layer, read from the same noise; never the weather's haze) dims
+  patches of them (R10).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
   of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
   alone (that is the map's: see the homonyms).
