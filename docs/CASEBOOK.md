@@ -436,8 +436,54 @@ the rules before building in the same area; a rule a machine can check goes into
     thing's own facing, +z where it stands) and looked at from in front and the side, never read off the sign it was written with.
 161. **A telegraph is judged from where the blow is answered, with its mark on.** The part that carries the parry mark stays in sight
     from the striker's place for the whole wind-up (rendered from in front, with the mark), never behind the body it belongs to.
+162. **A mark is hidden by what hides its thing.** A world mark on a creature is depth-tested by default and drawn so its own body
+    never hides it; one that shows through walls says so (`throughWalls`) for a reason the player can see (a scan's marks, the Reveal
+    song's), and on the rail every one does (no wall stands there, and a mark set in a foe's own body is hidden by it). An offset
+    that depends on the eye is applied per camera as it draws (`onBeforeRender`), never once in the update: another camera sees it
+    displaced.
+163. **A look asked for by name falls back to a plain one.** A glyph kind, an effect or a sound a table lacks is a wrong look and
+    nothing else, never a thrown frame that stops what the caller was doing; the one place that reads the table picks the fallback.
 
 ## Cases
+
+### 2026-10-09 · A slip jelly's "?" showed through the Great Dunemaw's walls (the owner, QAIS R20)
+
+- **Seen:** the owner saw Figments' mood marks through walls (reported as the temper and the glyphs). Measured on the Great Dunemaw's
+  first floor (seed 1, the clock pinned), a jelly given every mark at once (the temper at Prismatic and enraged, the charm aura, an
+  "?" held over its head) and seen from a spot with a wall 2 m from the eye and 6.5 m in front of the head: the marks changed 1,328
+  pixels of a 280 by 240 box round the head, and all of them were the "?". The temper's and the aura's particles changed none.
+- **Cause (measured):** `vfx/glyphs.js` built every glyph's sprites with `depthTest: false` ("draws through water and walls", written
+  for the angler's bite), so every pop anywhere (the ?, … and ♪ a jelly's mind pops as it changes its mind, the folk's marks, the
+  stun star) drew over the world. The temper and the auras emit into the effects' sprite pools, which were depth-tested already.
+- **Fix:** a glyph is depth-tested, and just before each camera draws it (`onBeforeRender`) it is moved toward that camera along its
+  own line of sight by its bias (1 m, or 1.5 times its world size, whichever is more; `pop(..., { bias })` for a mark set inside
+  something big) and shrunk by as much, so it covers the same pixels at a nearer depth: its own creature never hides it, a wall
+  does. The first try moved it in the update along the game camera's ray; rendered from another camera (the test's) the "?" sat
+  a metre to the side of its jelly, so the move is per camera. A switch for the owner's later idea (the Dreamvane's survey as a
+  psychic sonar ping): `throughWalls` on a pop or on `game.glyphs`, `game.temper` and `game.auras` (true or a creature -> bool),
+  which draws them over walls (the effects' x-ray pools, `vfx.js`: the same program, the depth test off). Behind the wall the marks
+  now change 0 pixels; in the open 3,471 (3,449 before: the same mark, the same place); from low under the jelly's head the "?" is
+  whole over it; with the switch thrown, 1,251 behind the wall. Programs 161/163/163/163, as before.
+- **Review (the first fix's own regressions, measured):** it hid two marks that must show. (1) The Crucibelle's Reveal song marks every
+  signature in reach (a scan, a mark over a crystal under the sand or a creature behind a wall is its whole use): it now passes
+  `throughWalls: true` (`tools/crucibelle/crucibelle.js`, one option). (2) Charybdis's ward, the resist mark of rule 148, is popped
+  at the whale's centre, inside its own body: on the rail at 61 m (a bias of 11 m) the ward changed 1,829 pixels with the whale
+  risen (the ring's faint outline; the bar and the burst were inside the body) and 3,083 diving (cut by the sea's surface). The rail
+  has no wall and its foes are bigger than any bias, so on the rail every mark is seen over the sea as before (`glyphs.js` reads
+  `game.emocean.stage.active`): the whole ward, 9,943 and 9,235 pixels.
+- **Rule:** 162.
+
+### 2026-10-09 · The Reveal song stopped at the first buried crystal (found reviewing R20's fix)
+
+- **Seen:** `Crystals.reveal` over a veiled crystal in the Dunes (seed 1) threw `TypeError: Cannot read properties of undefined
+  (reading 'draw')` from `tex` in `vfx/glyphs.js`: the first crystal rose, any other veiled one in reach stayed buried, the song's
+  marks on the signatures were never popped, and the pool had been spent before it.
+- **Cause (measured):** `Crystals.reveal` pops a glyph of kind `'bang'`; the sheet has `bang1`, `bang2` and `bang3`. `pop` chose a
+  fallback for its own record (`KINDS[kind] || KINDS.bang1`) but drew with the name it was asked, which `tex` looks up with none, so
+  a kind the sheet lacks threw. The call dates from the move to `src/` by domain at the latest.
+- **Fix:** `pop` resolves a kind the sheet lacks to `bang1` once, before anything is drawn. The same reveal now rises the crystal and
+  pops its mark, and the song's marks follow.
+- **Rule:** 163.
 
 ### 2026-10-09 · The swing's wind-up drew the sleeve behind Strawman's head, and the parry mark with it (the review of T51, v133)
 - **Seen:** with the guard's signs put right, the wind-up (the sleeve "drawn back and up") showed from where the striker stands as a grey
