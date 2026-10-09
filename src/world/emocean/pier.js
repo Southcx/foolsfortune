@@ -14,7 +14,9 @@
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { MOUNTS, slotsOf, mountable } from '../../progress/rail/mounts.js';
+import { slotsOf, mountable } from '../../progress/rail/mounts.js';
+import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
+import { mountRow, mountRows } from '../../ui/mountcards.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
@@ -69,6 +71,7 @@ export class Pier {
     const g = this.game, V = g.voyage; if (!V) return;
     const at = island || V.at;
     if (V.at !== at && !V.sailing) { if (V.arrive) V.arrive(at); else { V.s.at = at; V.dirty(); } } // (they stand at this pier: they may have come by a Shrine)
+    const was = this.menu?.open && this.menu.page?.name === 'pier' ? this.menu.root?.querySelector('.im') : null, y = was?.scrollTop || 0; // (a pick draws the page again: it stays where it was scrolled)
     this.menu?.showPage('pier', (im, el) => {
       const box = el('div', 'rooms');
       for (const id of Object.keys(NODES)) {
@@ -88,17 +91,19 @@ export class Pier {
         d.onclick = () => { this.ship = id; this.open(at); };
         sb.appendChild(d);
       }
-      // the mounts: the hull's worth of worn tools aboard (click to take one aboard or ashore)
-      const { can, chosen } = this.mounts(), mb = el('div', 'rooms'), n = slotsOf(this.ship);
-      for (const t of can) {
-        const on = chosen.includes(t), M = MOUNTS[t];
-        const d = el('div', 'room', `<span class="n">${on ? `${chosen.indexOf(t) + 1}` : '·'}</span><span><b>${M.name}</b><s>${on ? 'aboard' : 'ashore'}: ${M.does}</s></span>`);
-        d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
-        mb.appendChild(d);
-      }
+      // the mounts: the hull's worth of worn tools aboard, as the slot row and a choice card each (click one to take it aboard or ashore: ui/choicecard.js)
+      const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
+      const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
+      const back = () => g.mooring?.preview(this.chosen?.at(-1) ?? null); // (the one last taken aboard, until another is hovered or focused)
+      const cards = mountRows(can, chosen).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
+      for (const c of cards) { const show = () => g.mooring?.preview(c.row.id); c.el.addEventListener('mouseenter', show); c.el.addEventListener('focus', show); c.el.addEventListener('mouseleave', back); c.el.addEventListener('blur', back); } // (a mount's preview on the moored hull: vfx/mountpreview.js)
+      mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
+      mb.firstChild.style.marginBottom = '6px';
+      g.mooring?.preview(chosen.at(-1) ?? null);
       const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
-    }, { title: 'THE PIER', sub: 'click to choose · F closes' });
+    }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
+    if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
   }
 
   /** A rutter of this route and game day in the Pneuka Box (the charted passage a heavy hull sails; none exist until the rutter item

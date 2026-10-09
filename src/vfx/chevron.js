@@ -8,7 +8,7 @@
 // Prior art: the floating crystal of The Sims' Plumbob and the down-pointing arrow over the thing you can act on in Zelda, Persona
 // and every action-RPG since; the two-layer, counter-rotating build is what keeps it alive while it is doing nothing.
 //
-// It is the System telling you what F would do, so it is drawn as the Mind is (vfx/labradorite.js, docs/LOOK.md): the outer a
+// It is the System telling you what F would do, so it is drawn as the Mind is (vfx/labradorite.js, docs/ART.md precept 3): the outer a
 // shell of black labradorite with the schiller coming up at its turn, the inner a glassy flash of it, the edges softly rainbow.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';

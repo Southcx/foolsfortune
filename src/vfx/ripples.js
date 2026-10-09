@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE RIPPLE TANK: rings on water where something touches it (the owner, R46: "simple ripples and water wake trails when The Courier is
-// swimming"; docs/plans/SUNSHINE.md phase 1). A small height field round the eye, stepped by the wave equation on the GPU, that every
+// swimming"; docs/plans/SUNSHINE-SYSTEMS.md phase 1). A small height field round the eye, stepped by the wave equation on the GPU, that every
 // disturbance of a water surface (`game.water.disturb`: a stroke, a dive, a climb out, the wake) knocks a dent into; the water's shader
 // reads its slopes into the surface's normal and glitter and whitens the steepest crests (vfx/water.js). A swimmer faster than the
 // rings leaves a V behind, as a boat does: the wake is the rings' own Mach cone, not a drawn line.

@@ -180,12 +180,23 @@ if (part('pier')) {
   // the mounts: one taken ashore by a click, the choice kept when the page is opened again
   const before = await S.ev(() => __game.game.pier.mounts().chosen.slice());
   if (before.length) {
-    await S.ev((t) => { const rows = [...document.querySelectorAll('#indexmenu .room')]; rows.find((r) => r.querySelector('.n')?.textContent === '1')?.click(); }, null); await S.ticks(2);
+    await S.ev((t) => { const c = document.querySelector(`#indexmenu .cc.equipped[data-id="${t}"]`); c?.click(); }, before[0]); await S.ticks(2);
     const after = await S.ev(() => __game.game.pier.mounts().chosen.slice());
     S.check('pier: a click takes a mount ashore', after.length === before.length - 1 && !after.includes(before[0]), { before, after });
-    await S.ev(() => { const rows = [...document.querySelectorAll('#indexmenu .room')]; rows.find((r) => r.querySelector('.n')?.textContent === '·' && /ashore/.test(r.textContent))?.click(); }); await S.ticks(2);
+    await S.ev(() => { const c = document.querySelector('#indexmenu .cc.ready'); c?.click(); }); await S.ticks(2);
     const again = await S.ev(() => __game.game.pier.mounts().chosen.slice());
     S.check('pier: never more than two mounts aboard', again.length <= 2, { chosen: again });
+    // a mount hovered is drawn on the moored hull while the page is up (the page pauses the game: its preview must still fade in), and shut
+    // under the pointer the page leaves the mount aboard drawn, not the one hovered (casebook 135, 136)
+    const prev = () => S.ev(() => { const g = __game.game, M = g.mooring.mounts; return { tool: M.tool, since: +M.since.toFixed(2), shown: M.mesh.visible, marks: M.buf.count, aboard: g.pier.chosen?.at(-1) ?? null, open: g.indexMenu.open, side: document.getElementById('indexmenu')?.dataset.aside || null }; });
+    await S.ev(() => { const g = __game.game, a = g.pier.mounts(); const row = document.querySelector('#indexmenu .cc.ready'); row?.dispatchEvent(new MouseEvent('mouseenter')); return a.can; }); await S.ticks(30);
+    const hov = await prev();
+    if (hov.tool && hov.tool !== hov.aboard) S.check('pier: a mount hovered is drawn while the page is open', hov.shown && hov.marks > 0 && hov.since > 0.3 && !!hov.side, hov);
+    await S.shot('pier-page-hover');
+    await S.press('KeyF', 4); await S.ticks(4);
+    const shut = await prev();
+    S.check('pier: a page shut under the pointer leaves the mount aboard drawn', !shut.open && shut.tool === shut.aboard, shut);
+    await S.press('KeyF', 4); await S.ticks(4);
   } else S.note('pier: mounts', 'no tool worn that can be mounted');
   const txt2 = await em('menuText()');
   S.check('pier: with fuel, Margarite shows its fuel', /fuel: \d+ cubes/.test(txt2), txt2.replace(/\n+/g, ' | ').slice(0, 200));

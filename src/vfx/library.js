@@ -2,7 +2,7 @@
 // THE VFX LIBRARY: every effect in the game, by the name of what happened (vfx/vfx.js reads it; the layer types and their numbers are
 // documented there). This file is the one place the look is tuned: change a number here and every place that plays the effect follows.
 // A name is found from the most particular to the least (`hit.slash.crystal` -> `hit.slash` -> `hit`), and `extends` gives a family a
-// base. The house rules (docs/LOOK.md):
+// base. The house rules (docs/VFX.md, docs/ART.md):
 //   - LAYERED. An effect is several things at once at different sizes and speeds: a core flash, a shape, sparks, something that
 //     lingers, something that drifts down; and screen weight (hitstop, shake, light) in proportion to what happened.
 //   - THE MATERIAL SPEAKS. What flies off says what was struck: clay chips and dust, crystal shards and glints, jelly bubbles and goo.
@@ -127,7 +127,7 @@ export const LIBRARY = {
   // Law-Chaos line, so the type reads with the HUD hidden and without colour vision (each has its own shape and lightness, not only
   // its hue). Lawful: geometric, crystalline, straight, still. Chaotic: fluid, iridescent, curling, never at rest. Prior art: Destiny's
   // damage types (Arc's forks, Solar's flares, Void's spheres: a shape per colour), Persona's affinity icons, the elemental hit sparks
-  // of Monster Hunter; the colours follow docs/LOOK.md (lightness and saturation carry the feeling, the hue carries the world's meaning).
+  // of Monster Hunter; the colours follow docs/ART.md section 1 (lightness and saturation carry the feeling, the hue carries the world's meaning).
   //   IMPACT     lawful, physical: bone and gold; crystal facets thrown straight out, a square flash, chips. Fired clay struck.
   'damage.impact': { layers: [
     L({ type: 'sprites', count: 1, shape: 'star4', size: 1.05, sizeEnd: 0.2, life: 0.16, color: 0xf2e6c8, colorEnd: 'gold', rot: 0.785 }),

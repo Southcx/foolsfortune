@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE RING AT HER FEET: the Courier's Lachryma and what has noticed them, drawn on the ground round them, in the world, with no words
-// and no numbers (docs/LOOK.md, the 3D HUD). It is the always-on gauge; the Lachrimeter panel steps forward only while the Lachryma
+// and no numbers (docs/plans/OVERLAY.md, the 3D HUD). It is the always-on gauge; the Lachrimeter panel steps forward only while the Lachryma
 // is moving (hud.js).
 //
 //   THE POOL      a band of Lachryma itself (matter, never line: near-black liquid with its oil-film sheen) filling the ring from the

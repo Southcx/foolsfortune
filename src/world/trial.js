@@ -42,7 +42,7 @@ export class Trial {
     game.save?.section('trial', { scope: 'player', version: 1, // (the best time is kept in the save, not in storage of its own: SWEEPS group 8)
       dump: () => ({ best: this.best }), load: (d) => { this.best = Number.isFinite(d?.best) ? d.best : null; }, reset: () => { this.best = null; } });
     this.glow = makeGlowOutline(PALETTE.hot, 0.012);
-    // the count is rings on the start line that close one by one, and a ring that bursts on GO (no digits: docs/LOOK.md 6, 7)
+    // the count is rings on the start line that close one by one, and a ring that bursts on GO (no digits: docs/ART.md precepts 6, 7)
     this.rings = new CountRings(game.scene);
     this.xray = makeGlowOutline(PALETTE.glow, 0.005, true);
     this.el = {

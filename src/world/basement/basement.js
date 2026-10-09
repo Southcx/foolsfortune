@@ -98,7 +98,7 @@ function labelTexture(text, sub) {
  * (+x at -PI/2, -x at PI/2, +z at PI). Vertical ones face +z at rotY 0.
  */
 // what a sign would have said about the keys: said once by the log when they come up to the sign, never painted on it (CLAUDE.md:
-// marks in the world are not text; docs/LOOK.md 7). `signHelp(game, pos)` asks, every frame, from the course's update.
+// marks in the world are not text; docs/ART.md precept 7). `signHelp(game, pos)` asks, every frame, from the course's update.
 export const SIGN_HELP = [];
 export function signHelp(game, p) {
   for (const h of SIGN_HELP) {

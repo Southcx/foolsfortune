@@ -252,6 +252,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   surge lets the swarm of lances go on R. *Not:* a seam. → detail
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`) — a worn tool carried on the ship, as many as its hull's slots; the psygun is always the gun.
   *Not:* a ship part. → detail
+- **a mount's preview** (`MountPreview`, `game.mooring.preview(tool)`, `src/vfx/mountpreview.js`) — the mount hovered or chosen at the pier
+  drawn on the crude round the moored hull at its size at sea (a fan, a cone, a blast ring, a grapnel line, a viewfinder, a radar's scan,
+  a line of fire); no words.
+  *Not:* the card's demo loop, the lock-on. → detail
 - **par / rank / medal / the tally** (`progress/rail/score.js`) — par an expert's median for a set piece; the crossing's rank its score against
   par (S to D); the medal; the tally, the last log line.
 - **reckoning** (`RECKON`, `reckonLead`) — how much of a crossing the Courier has divined (Divination), 0..1 for that day. *Not:* "course" (the
@@ -302,10 +306,19 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   *Not:* the Veritome.
 - **the map** (M) — called Mind Mapping in the game (`src/feedback/cartography.js`).
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
+- **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
+  the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
   Crucibelle is in the hands; the setting `visual.compassContrast`. → detail
+- **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`) — one choosable thing shown as its icon, label, one line, stat chips, key and
+  state, its detail on hover; **compare** arrows on what would change; **the slot row** (`slotRow`) a loadout as a bar. *Not:* a card (the
+  Veritome's). → detail
+- **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
+  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive. *Not:* a label. → detail
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each thing does, in the icons'
+  hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -371,8 +384,6 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the tuning panel** (Tab, `src/debug/tuning.js`) — live sliders and actions. A **setting** is the player's own preference; a **knob** is any
   other number; a knob off its default is tuned. → detail
 
-- **a choice card** (`ChoiceCard`, `src/ui/choicecard.js`; Calissa's) — CLARITY's card: one choosable thing shown as icon, label, one line,
-  stat chips, key and state. Code and docs only. *Not:* a Veritome card.
 - **a label / a lore name** (`name` / `lore` on a data table; `docs/plans/CLARITY.md`) — what the UI calls a thing (a genre word: *Grapple*,
   *Bomb*) / the world's name for it (*the hook*, *the toll*). The UI shows only the label. *Not:* two things.
 
@@ -380,11 +391,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | word | its meanings | say |
 | --- | --- | --- |
 | mind | a creature's (`Brain`); THE MIND (the macro shelf); Mind Mapping (the map) | "a creature's mind", "THE MIND shelf", "the map" |
-| charge | the psygun's beam; the Lockheart's fill; the Veritome's capture | whose charge |
+| charge | the psygun's beam; the Lockheart's fill; the Veritome's capture; a mount's charges (uses a crossing: the Charges keyword) | whose charge; "charges" (plural) is a mount's |
 | key | a keyboard key; a Possibilikey | "Possibilikey", in full |
 | station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
-| card | a Veritome card; the tarot cards falling on the title; a choice card (CLARITY's, the UI's) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
+| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |

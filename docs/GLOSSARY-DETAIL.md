@@ -747,7 +747,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
   counter). *Not:* Margarite (the island, of which the dock is all that is built).
 - **the mooring** (`Mooring`, `game.mooring`, `src/vfx/mooring.js`): the hull chosen at the pier lying alongside its end at life size,
-  its sails furled. *Not:* the jetty (the plank walk), the pier's page.
+  its sails furled; a mount's preview rides it. *Not:* the jetty (the plank walk), the pier's page.
+- **a mount's preview** (`MountPreview`, `MOUNT_LOOK`, `src/vfx/mountpreview.js`; `game.mooring.preview(tool)`, called by the pier's
+  page on the row hovered and on the mount last taken aboard; CLARITY.md section 6, Into the Breach's): what a mount does, drawn as a
+  world mark on the crude round the moored hull, one at a time, gone when none is chosen or the Courier leaves the pier. At its size
+  round the ship at sea (every hull flies at **a quarter of its size** at the rail, `AT_SEA`, so a range of 10 m there is 42 m round
+  the moored hull), from **the nose** (`NOSE`, 0.9 m ahead of the ship's middle at the rail), each a shape (`MOUNT_LOOK[tool].shape`):
+  the Blaster's **line of fire** (`fireLine`) and its two reticles; Absorb Spray's **fan** (`sprayFan`, arcs spraying out); the Bomb's
+  **blast ring** (`blastRing`) and the beat's (faint, broken) with a shockwave going out; the Vacuum's **cone** (`drawCone`, arcs drawn
+  in); the Snapshot's **viewfinder** (`viewfinder`: the camera's frame standing on the sea, its frustum faint); the Grapple's **grapnel
+  line** (`grapnel`: to its range, two flukes at its end, the aim's arc faint); the Radar's **scan** (`radarScan`: range circles and a
+  **scan line**, clockwise from above, once in four real seconds). Drawn in the rail mark's **wire** style (`STYLE.wire`, `vfx/railmark.js`): screen-space,
+  the mount's colour (`MOUNT_LOOK`; the ship's feeling for the Blaster and Absorb Spray) with the Mind's schiller along its heart,
+  lifted over the drawn crude and depth-tested (the jetty, the hull and the Courier hide it; the sand above the waterline covers it). The
+  pier's page pauses the game, so the loop ticks the mooring under it (the preview fades in and moves while a mount is chosen), the page is
+  **set aside** from the hull, and a page shut puts the preview back to the mount taken aboard (the pointer sends no leave).
+  *Not:* the card's demo loop (CLARITY.md section 6, a loop beside a card), the lock-on reticle, a lane mark.
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
 - **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
@@ -929,8 +944,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   generative **sound bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music. *Not:* the
   Spirit Garden's **beds** (where a material is planted).
 - **the arranger** (`src/music/arranger.js`): what plays a score a bar ahead of the audio clock. **the band** (`src/music/band.js`): its instruments.
-- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
-  audit (ours, placeholder, genre default).
+- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, the **precepts** (what
+  each kind of thing looks like; cited "precept N") and motion, and the effect meshes' pipeline. It holds what was LOOK.md. The placeholder
+  audit (ours, placeholder, genre default) is a dated note: `docs/archive/2026-10-08-art-placeholder-audit.md`.
 - **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
   *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
 - **a busker's mat** (`src/world/busk.js`): where the rhythm mode is begun in the world, one on each pier (Old Grog's at the Weir,
@@ -938,6 +954,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **the busking body** (`src/courier/moves/rhythmhold.js`): the Courier playing it, the Crucibelle kept in hand: a **gesture** on each judged
   press (the lane's note), the **jam** (a groove of the whole body) while a rhythm combo runs at ten or more, the fever's peak at every
   twenty-fifth note.
+- **a choice card** (`ChoiceCard`, `choiceCard`, `cardList`, `src/ui/choicecard.js`; Calissa's look, docs/plans/CLARITY.md section 4): one
+  choosable thing shown so its use reads in two seconds, its parts always in one order: the **icon** (the UI icons), the **label** (the
+  row's `name`, big), **one line of effect** (`does`: its keywords marked, its numbers in colour), the **stat chips** (a small icon, a
+  number and its unit: range m, angle °, energy, charges ×n, cooldown s, duration s; real seconds only, a table in bars turned to
+  seconds first: `ui/mountcards.js`), the **key** ([1], [LMB], or the Passive keyword) and the **state** (equipped, ready, locked with its
+  one **opening line**; the words placeholders for Espada's). Its **detail** (the lore name and the whole text) shows only on hover, on
+  keyboard focus, or while the card is **held** (a press kept down). **Compare** (`compareTo(base)`): the card against what it would
+  replace, an arrow on each chip that changes, solid for better and hollow for worse as well as green and red. **The slot row**
+  (`slotRow`): a loadout's slots as a bar (Gradius), the one always fitted first, each slot with what fills it and the key that fires
+  it. Every window may use it in place of the index's row (a glyph, a title, a grey sentence). *Not:* a card (the Veritome's), the
+  Pneuka Box's 56 slots, the Spirit Garden's slots.
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
@@ -945,6 +972,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
 - **the dialogue box** (`src/npc/dialogue.js`): the one window of words in the world.
+- **a page set aside** (`showPage(name, render, { aside: 'left' | 'right' })`, `src/feedback/indexmenu.js`; the review of Calissa's mount preview, 2026-10-08):
+  an index-window page set in a column (340 px, its rooms one to a row) at one side of the screen, no veil over the rest, for a window whose
+  choice is seen in the world beside it. The pier's is set to the side away from the moored hull (`game.mooring.side()`), so a mount hovered
+  is seen on the hull while it is chosen. The window still pauses the game and takes its keys (F, Esc), and a click on the clear ground
+  shuts it. *Not:* a page centred under the veil (the index's, a Shrine's), the dock (Margarite's quay; the word "dock" is a place's).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
@@ -972,6 +1004,13 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **caustics** (`liqCaustics`, `causticTexture()` in `src/vfx/liquid.js`): the net of light on a pool's floor, a Voronoi cell texture
   drawn in two layers a little apart (white where they meet, split into colour where they part); **glints**: the water's sparkle
   where the sun catches it.
+- **a keyword** (`KEYWORDS`, `keywordEl`, `keyworded`, `src/ui/keywords.js`; CLARITY.md section 5, Dovina's table, Espada's words): one
+  of twelve genre words the UI explains on hover wherever it stands (Slay the Spire's): **Absorb**, **Parry**, **Bomb**, **Lock-on**,
+  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**. In text it is bold, in the window's
+  gold, its icon before it; a hover or keyboard focus opens **its tip** (`#kwtip`: the icon, the word, what it means in one line). A new
+  mechanic reuses one if it can; adding one is an entry here first. Each names in the UI a thing the glossary already has: Energy is
+  the pool, Lock-on the lock-on, Hull the ship's hull (its `bears`), Fuel the bunker, Charges a mount's uses a crossing (*not* the
+  homonym charge), Parry the parry. *Not:* a label (a thing's own genre word, `name`).
 - **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
 - **the map** (M): called **Mind Mapping** in the game (`src/feedback/cartography.js`).
@@ -1035,6 +1074,14 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
   textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
   stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
+- **the UI icons** (`uiIcon`, `iconEl`, `ICON_IDS`, `src/ui/icons/`; Calissa's): the pixel art of the choice card and the keywords, 16 px
+  (8 for a chip's), each a picture of what its thing DOES (a mount's at sea, never the tool ashore): the twelve keywords
+  (`icons/keywordart.js`), the seven mounts (`icons/mountart.js`), the chips and the card's marks (`icons/chipart.js`: lock, check, the
+  compare arrows). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
+  bevelled from the top left, and the hand adds **the keyline** (a pixel of the darkest grey round it, so every icon has a light part and
+  a dark part: casebook rule 105); recoloured by a palette (**gold** its own, **grey** a locked card, **better** and **worse** a compared
+  arrow, **line** the sea chart's) and scaled by whole numbers. *Not:* the sea chart's icons (`ui/seachart/icons.js`), a glyph (the
+  glyph pop's), the Pneuka Box's item icons (`pneuka/icons.js`).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
   dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**

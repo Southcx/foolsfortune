@@ -4,7 +4,7 @@
 // calibration numbers: the live movement values and the measured chains every space is sized from
 // (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
 // It also opens on a PAGE of its own: the Throwing Room's console shows its page (the drills, their bests, Strawman) in it.
-//   menu.show()   menu.showPage(name, render(im, el), { title, sub })   menu.close()
+//   menu.show()   menu.showPage(name, render(im, el), { title, sub, aside })   menu.close()   (aside: 'left' | 'right', the page set in a column to that side, no veil, the world left in view)
 // ---------------------------------------------------------------------------
 import { sfx } from '../audio/sfx.js';
 
@@ -19,6 +19,14 @@ const CSS = `
 #indexmenu header .sub { opacity: .65; font-size: 12px; letter-spacing: .08em; flex: 1; }
 #indexmenu .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #indexmenu .x:hover { background: rgba(var(--jsel),.35); }
+#indexmenu[data-aside] { background: none; }
+#indexmenu[data-aside] .im { width: min(340px, calc(100% - 24px)); }
+#indexmenu[data-aside="left"] { justify-content: flex-start; padding-left: 12px; }
+#indexmenu[data-aside="right"] { justify-content: flex-end; padding-right: 12px; }
+#indexmenu[data-aside] .rooms { grid-template-columns: 1fr; }
+#indexmenu[data-aside] header { flex-wrap: wrap; row-gap: 4px; }
+#indexmenu[data-aside] h2 { flex: 1; white-space: nowrap; font-size: 18px; }
+#indexmenu[data-aside] header .sub { order: 3; flex: 1 0 100%; }
 #indexmenu .grp { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,178,122,.2); }
 #indexmenu .rooms { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 @media (max-width: 560px) { #indexmenu .rooms { grid-template-columns: 1fr; } }
@@ -75,7 +83,7 @@ export class IndexMenu {
   }
 
   /** The same window on a page of its own (the Throwing Room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
-  showPage(name, render, { title = null, sub = null } = {}) { this.page = { name, render, title, sub }; this.show(); } // (title/sub: a page that is not the index's own, a Shrine's)
+  showPage(name, render, { title = null, sub = null, aside = null } = {}) { this.page = { name, render, title, sub, aside }; this.show(); } // (title/sub: a page that is not the index's own, a Shrine's)
 
   close() {
     if (!this.open) return;
@@ -95,6 +103,7 @@ export class IndexMenu {
   render() {
     const r = this.root;
     r.innerHTML = '';
+    if (this.page?.aside) r.dataset.aside = this.page.aside; else delete r.dataset.aside; // (a page set aside: a column to one side, the world beside it unveiled)
     const im = el('div', 'im');
     r.appendChild(im);
     const head = el('header');

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE PAINT MAP: where Lachryma lies on the ground, as a grid the world can ask and the ground's shaders can draw. The Soul Brush's
 // paint lays a feeling on it (and the mop drinks it back), and what stands in it is asked of it (stains of spilled crude are their own
-// meshes: world/ground/stains.js): a creature in painted ground takes the feeling's status, a Brush Slide over it runs on (docs/plans/SUNSHINE.md phase 2;
-// docs/plans/SUNSHINE-SYSTEMS.md, Dovina's numbers).
+// meshes: world/ground/stains.js): a creature in painted ground takes the feeling's status, a Brush Slide over it runs on (docs/plans/SUNSHINE-SYSTEMS.md: phase 2,
+// and Dovina's numbers).
 //
 // Prior art: Super Mario Sunshine's pollution layers (doldecomp/sms PollutionLayer: a bitmap projected flat onto the floor, stamped by
 // the spray, asked by the collision), Splatoon's paint kept in a texture laid over the level, and our own trail map

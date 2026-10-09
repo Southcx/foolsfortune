@@ -12,7 +12,7 @@
 //
 //   THE INDEX'S LECTERN  the console where the Index opens on its Testing page: a reading desk of the Workshop's dark wood on a turned
 //                    post, an open book on it whose pages are lit faintly from inside (the Index awake), and over the book the Index's
-//                    dial in the Mind's lines, turning slowly (the System's reading laid over a physical thing: docs/plans/OVERLAY-LOOK.md)
+//                    dial in the Mind's lines, turning slowly (the System's reading laid over a physical thing: docs/plans/OVERLAY.md)
 //
 //   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom)
 // ---------------------------------------------------------------------------------------
