@@ -451,6 +451,13 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-09 · The vane's rose was laid once per meter, not once per model (found reviewing Gall and Fury's looks)
+
+- **Seen:** reading `vfx/vanemeter.js` after the rose grew to seven shaped petals: the meter handed the petals over once (`petalsSet`) and never again, so a Dreamvane model built after the first (a rebuilt tool, the workbench's) kept an empty rose: a needle with no petals, and with shapes carrying the feelings, no feelings.
+- **Cause:** the "laid" flag lived on the meter, the rose on the model.
+- **Fix:** the meter hands the petals to any model that has none (`model.petals?.length ? null : PETALS`). Rendered standalone, seven petals, seven shapes (cube, hexagon, flame, spark, drip, needle, ring), each told from the others in greyscale.
+- **Rule:** 165 (a flag that says a thing was done lives with the thing it was done to).
+
 ### 2026-10-09 · The miasma's ground fog floated at the eye's height, and a third of the weather's map of the ground was holes (Calissa's Gall and Fury looks)
 
 - **Seen:** building the miasma's fog lenses on a coarser map of the ground round the eye (`vfx/overhead.js`, 3 m cells), lenses drawn

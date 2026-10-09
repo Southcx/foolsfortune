@@ -44,6 +44,6 @@ export class VaneMeter {
     this.av += (d * 40 - this.av * 6) * raw; this.angle += this.av * raw;
     this.str += ((w.aspect ? w.strength : 0) - this.str) * (1 - Math.exp(-raw * 2));
     _h.setHex(w.aspect ? COLOR[w.aspect] : CALM.getHex()); _t.setHex(w.second ? COLOR[w.second] : (w.aspect ? COLOR[w.aspect] : CALM.getHex()));
-    model.setVane(this.angle, _h, _t, this.str, this.t, this.petalsSet ? null : PETALS); this.petalsSet = true;
+    model.setVane(this.angle, _h, _t, this.str, this.t, model.petals?.length ? null : PETALS); // (laid once, and again on a model that has none: a new model gets its rose)
   }
 }
