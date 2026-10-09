@@ -17,6 +17,10 @@
 // Prince of Persia's crumbling platforms (a tell before the fall), the Metroid Prime scan of a weak wall (a seam that says "this
 // breaks"), Ori's Ginso tree and Hollow Knight's Deepnest (a cave that is alive), and the frogspawn and salmon roe of a stream bed.
 //
+// AT ANY SIZE (the bowl grew x2.5 for a 21 m Great Slip Jelly, 2026-10-09): a piece's sides follow its girth (a 30 m pillar is not a
+// nine-sided prism), and the dust and chips it throws grow as big things move (Froude scaling, the miniature effects' rule: sizes by k,
+// speeds and times by √k, gravity real; k is the piece over the size it was drawn at, a 12 m pillar and a 4.5 m stalactite).
+//
 //   new Pillar({ height, radius, fx })   .crack(stage 1..3)   .fall(dir)   .rubble()   .update(t, dt)   .state ('whole'|'cracked'|'falling'|'fallen'|'rubble')
 //   new Stalactite({ kind, length, fx })   .shake()   .setSolid(k)   .shatter()   .update(t)
 //   slipMaterial({ flow: Vector2, speed })   (its uniforms on .userData.u: uT)
@@ -28,6 +32,8 @@ import { LAB_GLSL, mindTime } from './labradorite.js';
 import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
 
 const STONE = 0x9b7a5c, PALE = 0xd8c4a4;
+/** A particle grown k times (Froude: size by k, speed and time by √k, gravity left real). */
+export function froude(o, k) { if (k <= 1) return o; const f = Math.sqrt(k); o.size *= k; o.sizeEnd *= k; o.vel.multiplyScalar(f); o.life *= f; o.drag /= f; return o; }
 
 /** A material that shows a seam and stages of cracks glowing with the Lachryma (shared by the pillar and the stalactite). */
 export function seamed(color, u, { seam = 1, flat = true } = {}) {
@@ -55,7 +61,7 @@ export function seamed(color, u, { seam = 1, flat = true } = {}) {
 export class Pillar {
   constructor({ height = 10, radius = 1.4, fx = null } = {}) {
     this.u = { uStage: { value: 0 }, uSeam: { value: 1 }, uSpent: { value: 0 }, uMindT: mindTime };
-    const g = new THREE.CylinderGeometry(radius * 0.85, radius * 1.15, height, 9, 8); g.translate(0, height / 2, 0);
+    const g = new THREE.CylinderGeometry(radius * 0.85, radius * 1.15, height, Math.max(9, Math.round(6 * radius)), Math.max(8, Math.ceil(height / 1.5))); g.translate(0, height / 2, 0); // (sides and rings by its girth and height)
     const pos = g.attributes.position; // (a cave's column: rough, its girth swelling and pinching)
     for (let i = 0; i < pos.count; i++) { const y = pos.getY(i) / height, k = 1 + 0.12 * Math.sin(y * 7.0 + pos.getX(i)) + 0.18 * Math.sin(y * Math.PI) ; pos.setX(i, pos.getX(i) * k); pos.setZ(i, pos.getZ(i) * k); }
     g.computeVertexNormals();
@@ -84,10 +90,11 @@ export class Pillar {
   }
   dust(n, along = false) { // (a burst of the cave's dust, and stone chips, where it lands)
     const fx = this.fx; if (!fx?.alpha) return; this.group.updateMatrixWorld(true);
+    const k = this.height / 12; // (drawn for the 12 m pillar)
     for (let i = 0; i < n; i++) {
       const d = along ? (i / n) * this.height : this.height * 0.85, at = this.group.localToWorld(_p.set(this.dir.x * d + (Math.random() - 0.5) * this.radius * 2, 0.3, this.dir.z * d + (Math.random() - 0.5) * this.radius * 2));
-      fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 3, 1 + Math.random() * 2.5, (Math.random() - 0.5) * 3), life: 1.6 + Math.random(), size: 0.6, sizeEnd: 2.4, color: new THREE.Color(0x8a6e55), alpha: 0.45, drag: 1.8, gravity: -0.2 });
-      if (i % 3 === 0) fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 5, 3 + Math.random() * 4, (Math.random() - 0.5) * 5), life: 1.2, size: 0.12, sizeEnd: 0.1, color: new THREE.Color(STONE), alpha: 1, drag: 0.3, gravity: 12 });
+      fx.alpha.emit(froude({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 3, 1 + Math.random() * 2.5, (Math.random() - 0.5) * 3), life: 1.6 + Math.random(), size: 0.6, sizeEnd: 2.4, color: new THREE.Color(0x8a6e55), alpha: 0.45, drag: 1.8, gravity: -0.2 }, k));
+      if (i % 3 === 0) fx.alpha.emit(froude({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 5, 3 + Math.random() * 4, (Math.random() - 0.5) * 5), life: 1.2, size: 0.12, sizeEnd: 0.1, color: new THREE.Color(STONE), alpha: 1, drag: 0.3, gravity: 12 }, k));
     }
   }
   update(t, dt = 1 / 60) {
@@ -107,7 +114,8 @@ export class Stalactite {
   constructor({ kind = 'stone', length = 4, radius = 0.9, fx = null } = {}) {
     this.kind = kind; this.fx = fx; this.radius = radius;
     this.u = { uStage: { value: kind === 'brittle' ? 2 : 0 }, uSeam: { value: kind === 'stone' ? 0 : 1 }, uSpent: { value: 0 }, uMindT: mindTime, uSolid: { value: 1 }, uT: { value: 0 } };
-    const g = new THREE.ConeGeometry(radius, length, 8, 6); g.rotateX(Math.PI); g.translate(0, -length / 2, 0); // (hangs from its root at the origin)
+    const g = new THREE.ConeGeometry(radius, length, Math.max(8, Math.round(8 * radius)), Math.max(6, Math.ceil(length / 0.75))); // (sides and rings by its girth and length)
+    g.rotateX(Math.PI); g.translate(0, -length / 2, 0); // (hangs from its root at the origin)
     const pos = g.attributes.position;
     for (let i = 0; i < pos.count; i++) { const y = -pos.getY(i) / length, k = 1 + 0.15 * Math.sin(y * 9.0 + pos.getZ(i) * 3.0); pos.setX(i, pos.getX(i) * k); pos.setZ(i, pos.getZ(i) * k); }
     // the top: a flat to land on (a stump, cut off where a jump lands), and the cone hanging under it
@@ -139,9 +147,9 @@ void main() { vec3 V = normalize(cameraPosition - vW); float f = abs(dot(V, vN))
   /** Fallen and rammed (or slammed on): it shatters, used once. Shards and dust where it lay. */
   shatter() {
     this.group.visible = false; const fx = this.fx; if (!fx?.alpha) return; this.group.updateMatrixWorld(true);
-    const col = new THREE.Color(this.kind === 'brittle' ? PALE : STONE);
-    for (let i = 0; i < 20; i++) { const at = this.mesh.localToWorld(_p.set(0, -(i / 20) * this.length, 0)); fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6), life: 1.1, size: 0.14 * (1 + this.radius), sizeEnd: 0.1, color: col, alpha: 1, drag: 0.3, gravity: 12 });
-      if (i % 2) fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random() * 2, (Math.random() - 0.5) * 2), life: 1.6, size: 0.5, sizeEnd: 1.8, color: new THREE.Color(0x8a6e55), alpha: 0.4, drag: 1.8, gravity: -0.2 }); }
+    const col = new THREE.Color(this.kind === 'brittle' ? PALE : STONE), k = this.length / 4.5; // (drawn for the 4.5 m stalactite)
+    for (let i = 0; i < 20; i++) { const at = this.mesh.localToWorld(_p.set(0, -(i / 20) * this.length, 0)); fx.alpha.emit(froude({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6), life: 1.1, size: 0.14 * (1 + this.radius), sizeEnd: 0.1, color: col, alpha: 1, drag: 0.3, gravity: 12 }, k));
+      if (i % 2) fx.alpha.emit(froude({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random() * 2, (Math.random() - 0.5) * 2), life: 1.6, size: 0.5, sizeEnd: 1.8, color: new THREE.Color(0x8a6e55), alpha: 0.4, drag: 1.8, gravity: -0.2 }, k)); }
   }
   /** A warped one's presence: 1 solid, 0 gone (on the Dunemaw's beat: `dunemaw.beat`). */
   setSolid(k) { this.u.uSolid.value = k; this.mesh.visible = k > 0.02; }

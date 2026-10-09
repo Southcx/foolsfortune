@@ -426,8 +426,39 @@ the rules before building in the same area; a rule a machine can check goes into
     status, no stun.
 157. **An impact is measured against the surface it lands on.** A landing's hardness is the speed into the ground's own motion
     under the body (a slope falls away too), never the bare fall speed.
+158. **A model scaled is a look judged again, from where it is now seen.** Whatever its shaders and effects measure in metres (a
+    world-space phase, a particle's size and speed, a gravity) is put against the model's own size, and every face the old size hid
+    (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
 
 ## Cases
+
+### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
+
+- **Seen:** reading the bowl's kit grown for the BIG bowl (`vfx/cavekit.js` Stalactite), the cone's line ended
+  `g.rotateX(Math.PI); // (sides and rings by its girth and length) g.translate(0, -length / 2, 0); // (hangs from its root ...)`.
+- **Cause (measured):** casebook rule 25: everything after the first `//` is comment, so the translate never ran. The 11.25 m spike
+  (4.5 m x2.5) spanned y -5.63 to +5.63 about its root instead of -11.25 to 0: its upper half up inside the drape, its tip 5.6 m short.
+- **Fix:** the comment moved to the end of the geometry's own line, `g.rotateX(Math.PI); g.translate(0, -length / 2, 0);` on its own.
+  Judged in the great cavern from the far floor and from high over the dish: the spikes hang from their roots.
+- **Rule:** 25.
+
+### 2026-10-09 · The Great Slip Jelly BIG: its crown a hollow shade seen from the floor, its cracks banded, its shards a toy's spray
+
+- **Seen:** the owner's ruling made the Great Slip Jelly about twelve Couriers tall; `FOE.size` 14 made its body 21 m (27.8 m with the
+  crown; it was 3.2 m at x1.6). From the bowl's floor the urn crown was a lampshade: its open broken edge showed the urn's inside and
+  the black roof through its mouth, the jelly's egg-shaped top a pin under it. The cracks' Lachryma banded in stripes along every crack,
+  the urn's 40-sided shoulder showed its facets, and at the burst its 1.9 m sherds flew at a toy's speed (x14 in the world) and were gone
+  before 2 s, high in the air.
+- **Cause (measured):** at 3 m no camera ever stood under the crown (the eye at 1.5 m looked at it nearly level); at 27.8 m the floor's
+  eye is 19 to 26 m below it. The crack glow's phase was `dot(worldPos, k)`, about a cycle every 0.65 m, drawn for an urn 1 m in radius
+  (8.7 m now); the shards' speeds and gravity were in the crown's own units, so the root's scale multiplied both.
+- **Fix:** `vfx/urncrown.js`: the urn's flesh (the jelly swollen up into the urn, its rim under the teeth) closes the underside; the
+  glow's phase is over the urn's radius in the world (`uUrnR`); the lathe is 120 sides round a Catmull-Rom profile, the broken lip still
+  the forty-sided jag `vfx/finish.js` copies; the shards fall by Froude scaling (speeds over √λ, real gravity), left in the world where
+  the urn burst, and lie at the body's feet before they fade. `vfx/foelook.js` and the bowl's kit (`cavekit.js`, `bowl.js`): their
+  particles grow by the same rule (`froude()`), the pillars and stalactites take sides by their girth, and the far terraces of
+  `dunemawkit.js` average out instead of crawling. Judged from the ledge and the floor, front and side, before and after.
+- **Rule:** 158.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 
