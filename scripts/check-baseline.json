@@ -40,5 +40,6 @@
  "word.retired.polarity|src/world/emocean/charybdis.js": 1,
  "word.retired.polarity|src/world/emocean/shotfield.js": 2,
  "word.retired.polarity|src/world/emocean/stage.js": 3,
- "word.retired.polarity|src/world/emocean/waves.js": 1
+ "word.retired.polarity|src/world/emocean/waves.js": 1,
+ "word.retired.polarity|src/workbench/mountstage.js": 1
 }
