@@ -21,6 +21,7 @@ for (const [type, L] of Object.entries(LEGS)) {
   const ph = ['open', 'build', 'peak', 'release'].map((k) => L.phases[k]);
   check(`${type}: the phases make its bars and Wanda's split`, ph.reduce((a, b) => a + b, 0) === L.bars && ph.join() === WANDA[type].join(), `${ph.join('/')} of ${L.bars}`);
   const names = [...new Set(L.cues.filter((c) => c.pattern).map((c) => c.pattern.name))];
+  check(`${type}: every phase's view is one of the five views`, ['open', 'build', 'peak', 'release'].every((k) => ['chase', 'above', 'side', 'free', 'astern'].includes(L.views[k])), L.views); // (casebook 150: v133's views went through the stretch and came out NaN)
   check(`${type}: every pattern is in the library`, names.every((n) => PATTERNS[n]), names.filter((n) => !PATTERNS[n]));
   let gaps = [], unfair = [], peak = 0;
   for (const storm of [false, true]) for (let strength = 0; strength <= 3; strength++) {
@@ -40,7 +41,8 @@ for (const [type, L] of Object.entries(LEGS)) {
     peak = Math.max(peak, ...live);
   }
   check(`${type}: never two bars idle (every class, stormed and not)`, !gaps.length, gaps.slice(0, 6));
-  { const plan = schedule(type, { strength: 1, feel: 'grief' }), bad = plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH));
+  { const plan = schedule(type, { strength: 1, feel: 'grief' }); check(`${type}: a swing is a change between two real views`, plan.swings.length <= 3 && plan.phases.every((p) => typeof p.view === 'string'), plan.swings);
+    const bad = plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH));
     check(`${type}: no pattern fired across a swing of view (R17)`, !bad.length, bad.map((e) => `${e.pattern.name}@${e.bar}`).slice(0, 4));
     const mixed = []; for (let b = 0; b < plan.bars; b += 8) { const ks = new Set(plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && e.bar >= b && e.bar < b + 8).map((e) => e.pattern.kind)); if (ks.size > 1 && type !== 'graveyard') mixed.push(b); }
     check(`${type}: one world at a time (Astral or Umbral, a block of bars each)`, !mixed.length, mixed.slice(0, 4)); }
