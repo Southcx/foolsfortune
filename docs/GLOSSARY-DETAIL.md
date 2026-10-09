@@ -747,7 +747,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
   counter). *Not:* Margarite (the island, of which the dock is all that is built).
 - **the mooring** (`Mooring`, `game.mooring`, `src/vfx/mooring.js`): the hull chosen at the pier lying alongside its end at life size,
-  its sails furled; a mount's preview rides it. *Not:* the jetty (the plank walk), the pier's page.
+  its sails **furled** (a ship look's `set` at `FURL` or under, `furlRoll`, `vfx/sloop.js`: the canvas stowed, the main flaked and tied on
+  the boom amidships, the jib rolled on its stay, each course on its yard; never a sail squashed flat); a mount's preview rides it.
+  *Not:* the jetty (the plank walk), the pier's page.
 - **a mount's preview** (`MountPreview`, `MOUNT_LOOK`, `src/vfx/mountpreview.js`; `game.mooring.preview(tool)`, called by the pier's
   page on the row hovered and on the mount last taken aboard; CLARITY.md section 6, Into the Breach's): what a mount does, drawn as a
   world mark on the crude round the moored hull, one at a time, gone when none is chosen or the Courier leaves the pier. At its size

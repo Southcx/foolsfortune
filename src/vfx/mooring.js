@@ -65,7 +65,7 @@ export class Mooring {
     const bob = crude ? crude.heightAt(this.at.x, this.at.z) - crude.y : 0.12 * Math.sin(t * 0.8); // (heightAt is the world's, the crude's own y in it)
     s.group.position.set(this.at.x, sea + bob * 0.7, this.at.z);
     s.group.rotation.set(0.025 * Math.sin(t * 0.6), Math.atan2(out.x, out.z), 0.035 * Math.sin(t * 0.45 + 1), 'YXZ');
-    s.set({ sail: 0.15, side: 1, glow: 0.35, t }); // (moored: the sails furled to a bundle, the drive low)
+    s.set({ sail: 0, side: 1, glow: 0.35, t }); // (moored: the canvas furled, the main tied on the boom amidships and the jib rolled on its stay: sloop.js FURL; the drive low)
     s.group.visible = true;
     // the mount's preview round it: laid on the crude as it is drawn (the dock's sea, or the shore's), level with the hull's heading
     const V = this.pv; this.sea = crude || (g.shore?.sea?.mesh?.visible ? g.shore.sea : null);

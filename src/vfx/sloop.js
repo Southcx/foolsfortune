@@ -16,6 +16,10 @@
 //   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   (the crossing: docs/plans/RAIL.md)
 //   s.scars({ open, gilt })   the hull's cracks carried leg to leg, and the gold they turn to when caulked (PASSAGE.md 14.1)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; about 7 m long)
+// FURLED (a sail at FURL or under: the mooring's, vfx/mooring.js): the canvas taken in as a real crew stows it, never a sail squashed
+// flat (a squash kept the main's whole 4 m foot as a cream board 1.2 m tall at the jetty walker's eye: casebook rule 137): the main
+// flaked on the boom and tied with its ties, the boom amidships, the jib rolled on its stay (a roller furler); the planes hidden. Any
+// sail over FURL is drawn exactly as before. `furlRoll` is the bundle, shared with the ship classes (their courses on their yards).
 // Under the storm and in the Umbral (vfx/stormwarp.js, vfx/umbral.js): the ship is never bent, the veil leaves its glows true
 // (`keepTrue`; its opaque body flies in the veil's quiet middle), and below the surface the caustics play over its hull and deck (a
 // caustic overlay: `causticsOn`, the one shared program of every overlay).
@@ -24,12 +28,16 @@ import * as THREE from 'three';
 import { dressChestGlaze, chestGlazeUniforms } from './chestglaze.js';
 import { vfxTexture } from './vfx.js';
 import { mergeStatic } from '../render/merge.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../render/outline.js';
 import { keepTrue } from './stormwarp.js';
 import { causticsOn } from './umbral.js';
 
 export const SLOOP = { length: 7, beam: 2.4, draft: 0.9, mast: { z: 1.1, h: 7.6 }, boom: { y: 1.7, len: 4.2 }, bowsprit: 1.4 };
 const C = { clay: 0xb5532d, bisque: 0xf1d9b6, gold: 0xf2c14e, mast: 0x3f7a58, sail: 0xf6e6c8, dark: 0x4a2a1e, lach: 0xffc65c };
+/** The sail (0 furled .. 1 full) at or under which a ship's canvas is furled (`set`; the mooring passes 0, the workbench's moored
+ *  hulls 0.15); every sail over it is drawn as it always was (the rail's 1, an encounter's 0.7). */
+export const FURL = 0.15;
 
 // the Pneuka Jar's profile, foot to lip (fraction of the length, fraction of the belly's radius): the hull is this turned and laid down
 export const JAR = [[0, 0], [0.03, 0.34], [0.1, 0.66], [0.24, 0.93], [0.4, 1], [0.58, 0.95], [0.74, 0.78], [0.84, 0.6], [0.9, 0.5], [0.95, 0.54], [1, 0.6]];
@@ -67,6 +75,28 @@ export function jarDeck(profile = JAR, { length: L, beam } = SLOOP, y = 0.42) {
   const g = new THREE.ShapeGeometry(s, 6);
   g.rotateX(Math.PI / 2); g.translate(0, y, 0);
   return g;
+}
+
+/** A sail furled: a roll of canvas from `a` to `b` (the ship's frame), lumpy with its folds, round at its ends and pinched where a tie
+ *  holds it. `r0`, `r1` its radius at each end; `bunt` 0..1 how much fatter its middle is (a square sail on its yard is fattest at the
+ *  bunt); `squash` its section's height to its width (a main flaked over a boom sags wide); `ties` where it is tied (fractions along
+ *  it). Prior art: a dinghy's main flaked and tied on its boom, a roller-furled jib, a square-rigger's courses furled on the yards.
+ *  Returns { roll, ties } (geometries; `ties` null when it has none). */
+export function furlRoll(a, b, { r0 = 0.15, r1 = 0.1, bunt = 0, squash = 1, ties = [], lumps = 7 } = {}) {
+  const len = a.distanceTo(b), n = Math.max(12, Math.round(len * 26));
+  const rad = (t) => THREE.MathUtils.lerp(r0, r1, t) * (1 - bunt + bunt * Math.sqrt(Math.sin(Math.PI * t)));
+  const pinch = (t) => ties.reduce((k, tk) => k * (1 - 0.3 * Math.exp(-((((t - tk) * len) / 0.05) ** 2))), 1);
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, end = Math.min(t, 1 - t) * len, re = t < 0.5 ? r0 : r1, cap = Math.sqrt(1 - (1 - Math.min(1, end / re)) ** 2); // (each end rounded over its own radius)
+    pts.push(new THREE.Vector2(Math.max(0.001, rad(t) * pinch(t) * (1 + 0.09 * Math.sin(t * len * lumps + 1.3)) * cap), t * len));
+  }
+  const at = new THREE.Matrix4().compose(a, new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.asin(THREE.MathUtils.clamp((b.y - a.y) / len, -1, 1)), Math.atan2(b.x - a.x, b.z - a.z), 0, 'YXZ')), new THREE.Vector3(1, 1, 1));
+  const roll = new THREE.LatheGeometry(pts, 8); roll.scale(1, 1, squash); roll.rotateX(Math.PI / 2); roll.applyMatrix4(at); // (the lathe's axis laid along +Z, then from a to b; the section's height up)
+  roll.computeVertexNormals();
+  const rings = ties.map((tk) => { const r = rad(tk) * (1 - 0.3) + 0.012, g = new THREE.TorusGeometry(r, 0.018, 4, 10); g.scale(1, squash, 1); g.translate(0, 0, tk * len); g.applyMatrix4(at); return g; });
+  const tied = rings.length ? mergeGeometries(rings, false) : null; for (const g of rings) g.dispose();
+  return { roll, ties: tied };
 }
 
 /** A sail: a grid between its corners (luff along the mast, foot along the boom), with a belly the vertex shader fills. */
@@ -145,6 +175,14 @@ export class Sloop {
     for (let i = 0; i < jp.count; i++) { const u = jp.getX(i), v = jp.getY(i); jp.setXYZ(i, 0, 0.4 + v * (jibTop - 0.4) * (1 - u * 0.0), tackZ * (1 - v) - u * (1 - v) * 1.6); }
     jib.computeVertexNormals();
     this.jibMesh = add(this.body, jib, this.jibMat, 0, 0, S.mast.z, false);
+    // furled (the mooring): the main flaked along the boom's top and tied, the jib rolled on its stay from the bowsprit's end to the head
+    const canvas = std(C.sail, { roughness: 0.9 }), rope = std(C.dark), V = THREE.Vector3;
+    this.furled = [new THREE.Group(), new THREE.Group()]; this.boom.add(this.furled[0]); this.body.add(this.furled[1]);
+    const mf = furlRoll(new V(0, 0.12, -0.14), new V(0, 0.08, -S.boom.len * 0.94), { r0: 0.17, r1: 0.09, squash: 0.78, ties: [0.16, 0.38, 0.6, 0.82] });
+    add(this.furled[0], mf.roll, canvas); add(this.furled[0], mf.ties, rope, 0, 0, 0, false);
+    const tack = new V(0, 0.95, S.length * 0.5 + S.bowsprit * 0.4).addScaledVector(new V(0, Math.sin(0.15), Math.cos(0.15)), S.bowsprit * 0.4); // (nine tenths out along the bowsprit)
+    const jf = furlRoll(tack, new V(0, jibTop - 0.15, S.mast.z + 0.1), { r0: 0.08, r1: 0.025, lumps: 4 });
+    add(this.furled[1], jf.roll, canvas);
     // the pennant at the masthead: the skiff's red swallowtail
     const pen = new THREE.PlaneGeometry(1.4, 0.24, 12, 1); pen.translate(-0.7, 0, 0);
     this.pennant = add(this.body, pen, std(0xc2432b, { emissive: 0x6a1a10, emissiveIntensity: 0.25, side: THREE.DoubleSide, flatShading: false }), 0, S.mast.h - 0.1, S.mast.z, false);
@@ -159,13 +197,16 @@ export class Sloop {
     this.set({});
   }
 
-  /** Per frame: sail hoisted (0 furled .. 1 full), how far it heels, which side the wind fills it from, the drive's glow, and time. */
+  /** Per frame: sail hoisted (0 .. FURL furled, the canvas stowed; over it the sail drawn that far up, to 1 full), how far it heels,
+   *  which side the wind fills it from, the drive's glow, and time. */
   set({ sail = 1, heel = 0, side = 1, glow = 0.6, t = 0 } = {}) {
     const S = SLOOP;
     this.body.rotation.z = heel;
-    this.boom.rotation.y = side * (0.35 + 0.25 * sail);
+    const furled = sail <= FURL; // (the canvas stowed: its bundles shown, the sails hidden, the boom amidships)
+    this.mainMesh.visible = this.jibMesh.visible = !furled; for (const f of this.furled) f.visible = furled;
+    this.boom.rotation.y = furled ? 0 : side * (0.35 + 0.25 * sail);
     for (const m of [this.sail, this.jibMat]) { const u = m.userData.u; u.uFill.value = sail; u.uSide.value = side; u.uT.value = t; }
-    this.mainMesh.scale.y = 0.08 + 0.92 * sail; this.jibMesh.scale.set(1, 0.08 + 0.92 * sail, 1); // (furled: a bundle on the boom)
+    this.mainMesh.scale.y = 0.08 + 0.92 * sail; this.jibMesh.scale.set(1, 0.08 + 0.92 * sail, 1); // (hoisted that far: furled, the planes are hidden)
     this.jibMesh.rotation.y = side * 0.18 * sail;
     this.pennant.rotation.y = Math.PI / 2 + side * 0.6 + Math.sin(t * 6) * 0.08;
     this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
