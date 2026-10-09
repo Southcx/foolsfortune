@@ -31,6 +31,7 @@ export class Input {
     addEventListener('blur', () => this.down.clear());
     el.addEventListener('mousedown', (e) => {
       if (!this.enabled) return;
+      if (!this.locked && this.everLocked && (this.wantLock?.() ?? true)) this.requestLock(); // (a click is the user's say-so: the lock a window's close could not take back without one, R12/T10)
       if (e.button === 1) e.preventDefault();
       const code = `Mouse${e.button}`;
       this.pressed.add(code);
@@ -65,7 +66,7 @@ export class Input {
       return;
     }
     this.tries = 0;
-    this.onLockChange?.(false); // (still refused: back to the "click to play" card)
+    this.onLockChange?.(false, 'refused'); // (still refused: the game says how to take it back, and the next click does: main.js)
   }
 
   requestLock(retry = false) {

@@ -5,7 +5,7 @@
 // its open CAPS fruit (mycelium.js `fruit`): materials of the tincture's colour leaned toward the game day's feeling. The crop waits in
 // the crown until picked, never spoiling, and a dawn adds none while one is waiting (a crop is the most it holds: no chore, no loss).
 // A Major Arcana card from the Book hung on a BRANCH opens it for good (mycelium.js BRANCHES: a fruit, a sharper tincture, a strain's
-// seed, a sporeling). The seventh cap, Mercy, seeds a strain when it opens. The planetoid, the tree's look, the hand's feeding and
+// seed). The seventh cap, Mercy, seeds a strain when it opens. The planetoid, the tree's look, the hand's feeding and
 // picking are the world's (Petra's) and Calissa's.
 //
 // Prior art: Legend of Mana's Trent (fed seeds, fruiting by the weekday), Potion Craft's map (a mixture steered by what goes in), the
@@ -15,7 +15,7 @@
 //   .feed(boxSlot) -> { ok, why?, girth }   .pick() -> n   .hang(arcana) -> { ok, why?, adds }   .dawn(now?) (called on entering the
 //   garden and on the clock)   .branches -> { arcana: true }
 // events: myggdrasil.feed { thing, worth, girth }, myggdrasil.girth { girth, caps }, myggdrasil.fruit { n, weekday }, myggdrasil.pick { n },
-//         myggdrasil.hang { arcana, adds }, myggdrasil.sporeling, each with `by`
+//         myggdrasil.hang { arcana, adds }, each with `by` (the sporelings were cut: the owner, 2026-10-09)
 // ---------------------------------------------------------------------------------------
 import { sapAfter, signatureOf, fruit, treeGirth, bodiesOpen, BRANCHES, CAPS, STRAINS } from './mycelium.js';
 import { thingOf } from './sporebeds.js';
@@ -24,7 +24,7 @@ import * as calendar from '../core/calendar.js';
 
 const clock = calendar.now, GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, DAWN = 5;
 const MERCY = CAPS.indexOf('Mercy') + 1; // (the seventh cap seeds a strain when it opens: Espada's)
-const fresh = () => ({ tincture: null, fed: 0, branches: {}, crown: [], dawn: -1, seed: 7, sporeling: 0 });
+const fresh = () => ({ tincture: null, fed: 0, branches: {}, crown: [], dawn: -1, seed: 7 });
 
 export class Myggdrasil {
   constructor(game) {
@@ -78,9 +78,6 @@ export class Myggdrasil {
     const r = fruit(this.tree(), weekday, this.s.seed);
     this.s.crown = r.fruit; this.s.tincture = r.sap;
     this.emit('myggdrasil.fruit', { n: r.fruit.length, weekday });
-    // a sporeling now and then: one dawn in (8 less one for each sporeling branch hung), never two waiting
-    const sp = Object.keys(this.s.branches).filter((id) => BRANCHES[id]?.adds === 'sporeling').length;
-    if (sp && this.s.seed % Math.max(2, 8 - sp) === 0) { this.s.sporeling++; this.emit('myggdrasil.sporeling', {}); }
     return r.fruit.length;
   }
   /** Pick the crown: every fruit into the box. */

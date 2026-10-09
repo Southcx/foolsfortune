@@ -72,11 +72,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **cask** (`cask.<grade>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
 - **the Purser** (`purserPrice`) — the trader at Margarite's dock who buys crude, materials and Cogitomaps at a posted price, never haggled. The
   role is the name.
-- **commission / bounty** (`commissionPay`, `bountyPay`) — a commission is a hunt for a Figment by class (Seger); a bounty a hunt for a named
-  Egregore or a stray or aberrant Figment (Letty Marque). *Not:* the same thing.
-
-## 3. The tools and the moves
-
+- **bounty** (`bountyPay`) — a hunt for a named Egregore or a stray or aberrant Figment, under the King's marque (Letty Marque). Commissions
+  (Seger's hunts by class) were cut (the owner, 2026-10-09).
 - **tool** (`src/tools/`) — one of the Courier's psychic tools, worn on the belt: the psygun, Sondelass, Soul Brush, Veritome, Dreamvane,
   Crucibelle, Lockheart. *Not:* a Node script.
 - **the belt** (`game.belt`, `src/tools/belt.js`) — where tools are worn; "is a tool out?" asks here. **Draw / stow** take a tool in hand / put it
@@ -408,7 +405,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | calm | no weather (`aspect` null, the log's "fair"); the swells laid down for a stage's breather | "fair" for weather; "a calm" for the stage |
 | hold | a ship's hold (casks); to hold the save; a rig's hold (a clip's stretch rocked while a move is held) | "the ship's hold"; "hold the save"; "the clip's hold" |
 | move | a blow of the combo engine (`kick.hit`); a rig's move (`RigClips`: a named clip choice) | "a blow" or "the kick's move"; "a rig's move" |
-| hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`); a sporeling's bounce | "a hop" is the Emocean's; "the Jar's hop", "a sporeling's hop". A spirit's body is `s.body`, never `hop` |
+| hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`) | "a hop" is the Emocean's; "the Jar's hop". A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (air, ground); the Great Slip Jelly's; the god hand's clip | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry; a mount on the rail; the Pneuka Jar's clip | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
 | kiln | the workshop's (the kiln station, `kilnUI`); the Heavenly Kiln (`Tribulation`, `world/garden/tribulation.js`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |

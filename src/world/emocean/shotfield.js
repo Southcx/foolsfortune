@@ -33,6 +33,9 @@ import { RailShots } from '../../vfx/railshots.js';
 
 export const CAP = 400;
 const LASERS = 16, TRAIL = 18, SHOT_R = 0.3, BEAM_R = 0.45;
+/** A shot's tether: for its first `s` real seconds a thin line back to the foe that threw it, fading (at most `n` at once, the newest), so
+ *  what fired what is read at a glance (the owner's R17, v133; Ikaruga's and Radiant Silvergun's muzzle lines). */
+const TETHER = { s: 0.35, n: 48, alpha: 0.7 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3();
 const v3 = (a, out) => (Array.isArray(a) ? out.set(a[0], a[1], a[2]) : out.copy(a));
@@ -54,7 +57,7 @@ export class ShotField {
 
   // ---------------------------------------------------------------- the look (Calissa's: vfx/railshots.js, the rail's one mark program)
   build(scene) {
-    this.look = new RailShots({ cap: this.cap + LASERS * TRAIL, guns: 0, beams: LASERS }).build(scene); this.look.show(false);
+    this.look = new RailShots({ cap: this.cap + LASERS * TRAIL, guns: 0, beams: LASERS + TETHER.n }).build(scene); this.look.show(false);
     this.meshes = [this.look.mesh];
     return this.meshes;
   }
@@ -213,6 +216,14 @@ export class ShotField {
       if (!b.on) continue;
       const hot = b.t > b.warn;
       L.beam(nb++, R.toWorld(b.a, _w), R.toWorld(b.b, _c), hot ? BEAM_R : 0.06, b.kind, hot ? 1 : 0.8, !hot);
+    }
+    // the tethers: each shot new from its thrower drawn back to it a moment, as a warning thread of its kind
+    let tn = 0;
+    for (const x of this.shots) {
+      if (tn >= TETHER.n) break;
+      const age = x.t - x.warn;
+      if (!x.on || x.back || age < 0 || age > TETHER.s || !x.from?.alive || !x.from.local) continue;
+      L.beam(nb++, R.toWorld(x.from.local, _w), R.toWorld(x.p, _c), 0.03, x.kind, TETHER.alpha * (1 - age / TETHER.s), true); tn++;
     }
     L.count = n; L.beams = nb;
     L.update(dt);

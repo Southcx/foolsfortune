@@ -49,8 +49,7 @@ Selling to the folk pays a little better than condensing a card, on purpose: a c
 | Fuel for a crossing | by distance; see [The Emocean](emocean.md) |
 | The Spirit Garden | the long sink: planetoids 480 to 3,840 cubes, beds and slots; see [The Spirit Garden](spirit-garden.md) |
 
-Not built yet: commissions (a hunt for a Figment by class), throwing pots for pay. Their pay rules exist in the economy table and
-nothing in play uses them.
+Cut (9 October 2026): commissions and throwing pots for pay. A bounty from Letty Marque is the one hunt that pays.
 
 ## Chests
 

@@ -4,10 +4,9 @@
 // "The livelihoods": pay by the quality of play, not the time spent). Nothing here moves a cube: the building systems call these and
 // pay through game.cubes.
 //
-// Prior art: Rhythm Heaven's and DDR's grades (the score is the pay), OSRS Slayer (assignments by class, points for a streak), Stardew
-// Valley's quality stars (a better-made thing sells for more), Animal Crossing's busker (an audience tires of one song).
+// Prior art: Rhythm Heaven's and DDR's grades (the score is the pay), Animal Crossing's busker (an audience tires of one song).
 //
-//   buskPay(minutes, accuracy, repeats) -> cubes      commissionPay(cls, streak) -> cubes      potPay(accuracy, prestige) -> cubes
+//   buskPay(minutes, accuracy, repeats) -> cubes   (commissions and throwing pots for pay were cut by the owner, 2026-10-09)
 //   bountyPay(cls) -> cubes (a named stray, mostly out of Entropolis, paid by the King's marque, less Letty's cut)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
@@ -21,17 +20,8 @@ export function buskPay(minutes, accuracy, repeats = 0) {
   return M(minutes * w * Math.pow(B.tire, Math.max(0, repeats)));
 }
 
-/** A commission on a Figment of class `cls` (0 Guppy .. 4 Leviathan), the `streak`th in a row (1 the first). */
-export function commissionPay(cls, streak = 1) {
-  const C = ECON.commission, base = M(C.minutes[Math.max(0, Math.min(4, cls))]);
-  return streak > 0 && streak % C.streakEvery === 0 ? base * C.streakMult : base;
-}
+/** A hunt's base worth for class `cls` (0 Guppy .. 4 Leviathan): ECON.hunt's minutes of play. */
+const huntWorth = (cls) => M(ECON.hunt.minutes[Math.max(0, Math.min(4, cls))]);
 
-/** A thrown pot whose shape matched at `accuracy` (0..1), glazed at `prestige` (looks: earthenware .. court). */
-export function potPay(accuracy, prestige = 'earthenware') {
-  const P = ECON.pot, w = P.floor + (P.ceil - P.floor) * Math.pow(q01(accuracy), P.power);
-  return M(P.minutes * w + (P.glaze[prestige] || 0));
-}
-
-/** A bounty on a named stray of class `cls` (0 Guppy .. 4 Leviathan): a commission's worth times ECON.bounty.mult, less Letty's cut. */
-export const bountyPay = (cls) => Math.round(commissionPay(cls, 1) * ECON.bounty.mult * (1 - ECON.bounty.cut));
+/** A bounty on a named stray of class `cls` (0 Guppy .. 4 Leviathan): a hunt's worth times ECON.bounty.mult, less Letty's cut. */
+export const bountyPay = (cls) => Math.round(huntWorth(cls) * ECON.bounty.mult * (1 - ECON.bounty.cut));

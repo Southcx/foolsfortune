@@ -194,14 +194,14 @@ export function fruit(tree, weekday = 0, seed = 1) {
 
 /** The twenty-two branches, each opened by hanging its Major Arcana card (Espada's pairing, the Golden Dawn's paths 11 to 32 with its
  *  Strength and Justice swap, LORE.md "The mycelium"): what each adds. `fruit` a fruit a dawn, `sharp` a sharper tincture (the sap's
- *  lean toward the day halved again), `seed` a strain's seed (which strain), `sporeling` a sporeling's visit. */
+ *  lean toward the day halved again), `seed` a strain's seed (which strain), (the sporelings were cut by the owner, 2026-10-09: their four branches now give fruit or a sharper sap). */
 export const BRANCHES = {
-  fool: { adds: 'sporeling' }, magician: { adds: 'sharp' }, priestess: { adds: 'sharp' }, empress: { adds: 'sporeling' },
+  fool: { adds: 'fruit' }, magician: { adds: 'sharp' }, priestess: { adds: 'sharp' }, empress: { adds: 'sharp' },
   emperor: { adds: 'fruit' }, hierophant: { adds: 'fruit' }, lovers: { adds: 'seed', strain: 'wonder' }, chariot: { adds: 'fruit' },
   strength: { adds: 'fruit' }, hermit: { adds: 'sharp' }, wheel: { adds: 'fruit' }, justice: { adds: 'sharp' },
   hanged: { adds: 'seed', strain: 'dread' }, death: { adds: 'seed', strain: 'grief' }, temperance: { adds: 'sharp' },
-  devil: { adds: 'fruit' }, tower: { adds: 'fruit' }, star: { adds: 'sporeling' }, moon: { adds: 'fruit' },
-  sun: { adds: 'sporeling' }, judgement: { adds: 'seed', strain: 'mirth' }, world: { adds: 'seed', strain: 'desire' },
+  devil: { adds: 'fruit' }, tower: { adds: 'fruit' }, star: { adds: 'sharp' }, moon: { adds: 'fruit' },
+  sun: { adds: 'fruit' }, judgement: { adds: 'seed', strain: 'mirth' }, world: { adds: 'seed', strain: 'desire' },
 };
 /** The ten caps (the fruiting bodies), from the root up, as Espada names them for the sephiroth: the seventh, Mercy, seeds strains. */
 export const CAPS = ['the Kingdom', 'the Foundation', 'Splendour', 'Victory', 'Beauty', 'Severity', 'Mercy', 'Understanding', 'Wisdom', 'the Crown'];

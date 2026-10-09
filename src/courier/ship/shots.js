@@ -52,7 +52,7 @@ export class Shots {
 
   /** The looks (at boot, parked hidden: their one program compiled with the warm-up). */
   build(scene) {
-    this.look = new RailShots({ cap: 400, guns: CAP.gun }).build(scene); // (400: the heaviest peak the overhaul plans, RAIL-OVERHAUL.md section 5)
+    this.look = new RailShots({ cap: 400, guns: CAP.gun }).build(scene); this.look.mesh.renderOrder = 60; // (the ship's own gun and hurtbox over the hull, which is over the foes' shots: ship.js OVER_SHOTS) // (400: the heaviest peak the overhaul plans, RAIL-OVERHAUL.md section 5)
     this.ribbons = new ItanoRibbons({ max: 64 }); scene.add(this.ribbons.mesh); // (a volley's eight and those still running out behind, and the surge's swarm: vfx/crossinglook.js)
     this.telegraphs = new TelegraphMarks(); scene.add(this.telegraphs.mesh);
     for (const r of this.outlines) { r.mesh = new THREE.Object3D(); r.mesh.visible = false; } // (a handle, not drawn: the look draws the outlined; mounts.js asks `s.mesh`)

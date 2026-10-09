@@ -56,6 +56,11 @@ const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot fills 4; f
 const _fv = new THREE.Vector3();
 const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3();
 
+/** The hull drawn after the foes' shots (their marks are drawn without depth, over what came before: renderOrder 43, vfx/railshots.js),
+ *  so the ship is never lost under them; its own gun and hurtbox draw over it again (shots.js, 60). The owner's R17, v133. */
+const OVER_SHOTS = 50;
+function overShots(group) { group.traverse((o) => { if (!o.isMesh) return; o.renderOrder = OVER_SHOTS; for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && !m.transparent) { m.transparent = true; m.depthWrite = true; } }); }
+
 export class Ship {
   constructor(game, rail) {
     this.game = game; this.rail = rail;
@@ -70,7 +75,7 @@ export class Ship {
 
   build(scene) {
     this.look = new Sloop({ env: this.game.sky?.env || null });
-    this.look.group.scale.setScalar(SCALE); this.look.group.visible = false; this.look.group.userData.zoneFree = true;
+    this.look.group.scale.setScalar(SCALE); this.look.group.visible = false; this.look.group.userData.zoneFree = true; overShots(this.look.group);
     scene.add(this.look.group);
     // the two reticles and the lock marks (placeholders for Calissa's: rings that face the camera)
     const ring = (r, w, c, o) => { const m = new THREE.Mesh(new THREE.RingGeometry(r - w, r, 24), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthTest: false, depthWrite: false })); m.renderOrder = 20; m.visible = false; m.userData.zoneFree = true; m.frustumCulled = false; scene.add(m); return m; };
@@ -101,7 +106,7 @@ export class Ship {
   dress(id) {
     if (!this.look) return;
     const L = (this.looks ||= { sloop: this.look }), was = this.look; // (the looks by hull, the sloop's first)
-    if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(SCALE); L[id].group.userData.zoneFree = true; }
+    if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(SCALE); L[id].group.userData.zoneFree = true; overShots(L[id].group); }
     if (L[id] === was) return;
     const now = L[id]; now.group.visible = was.group.visible; was.group.visible = false;
     if (!now.group.parent) was.group.parent?.add(now.group);

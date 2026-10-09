@@ -16,6 +16,7 @@
 //
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
 //   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
+//   events: strawman.mode, strawman.bout, strawman.swing { landed }, strawman.parried
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -148,16 +149,33 @@ export class TestRoom {
         if (blocked) { // (a block is shown as one: the resist mark where it struck, the guard's clank, the sack barely stirring: the owner's T51, v132)
           g.glyphs?.pop?.('ward', (point || S.center()).clone(), { color: 0xffffff, size: 0.7, life: 0.6, float: 0.25, burst: true, ring: true });
           sfx.guardBlock?.(); model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), 0.15);
-        } else model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
+          return 'blocked'; // (and it builds nothing: no stun through a guard, creatures.strike: the owner's T51, v133)
+        }
+        model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
       },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
       setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); },
+      /** A swing at whoever stands in front: a windup the parry answers (outlined on the right sleeve while it can be), then the sweep;
+       *  unanswered, it lands on the Courier in reach as a shove, no harm (STRAWMAN.swing.harm): parry practice (the owner's T51, v133). */
+      swing() {
+        const front = at.clone().add(_src.set(0, 0, STRAWMAN.swing.reach * 0.5));
+        g.creatures?.windup(S, { at: front, radius: STRAWMAN.swing.reach * 0.5, eta: STRAWMAN.swing.telegraph, kind: 'swing', part: model.arms?.[1] || model.group });
+        model.swing?.(() => {
+          if (!S.windup) return; // (parried: it broke off)
+          g.creatures?.unwind(S);
+          const P = g.player, dx = P.pos.x - at.x, dz = P.pos.z - at.z, d = Math.hypot(dx, dz);
+          if (d > STRAWMAN.swing.reach || dz < 0.3 * d || Math.abs(P.pos.y - at.y) > 1.5) { g.events?.emit('strawman.swing', { landed: false, by: 'creature' }); return; }
+          if (!(P.invuln > 0)) { P.impulse?.(new THREE.Vector3(dx, 0, dz).setLength(STRAWMAN.swing.push).setY(1.5), 'strawman'); P.shake = Math.max(P.shake || 0, 0.35); }
+          g.events?.emit('strawman.swing', { landed: true, by: 'creature' });
+        });
+      },
+      onParried() { model.sw = null; model.hit?.(S.center(), new THREE.Vector3(0, 0, -1), 1.2); g.events?.emit('strawman.parried', { by: 'courier' }); }, // (the sweep broken off: it rocks back)
       /** Once a frame, in real seconds: the bout's end said, the swing's slow sweep (harmless: STRAWMAN.swing.harm). */
       tick(raw) {
         clock += raw;
         model.update?.(raw);
         if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
-        if (mode === 'swing' && (swingT += raw) > STRAWMAN.swing.every) { swingT = 0; model.swing?.(() => {}); }
+        if (mode === 'swing' && (swingT += raw) > STRAWMAN.swing.every) { swingT = 0; S.swing(); }
       },
       last: null,
     };

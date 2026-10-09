@@ -18,7 +18,7 @@ import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
-import { buskPay, commissionPay, potPay, bountyPay } from '../src/progress/econ/livelihoods.js';
+import { buskPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
@@ -46,9 +46,6 @@ const PLAY = {
   angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog
   // the livelihoods not built yet (ECONOMY.md): how an hour of each might go, at three levels of play (accuracy, or a well-made thing)
   busker: { songMin: 3, set: 10 },                               // three-minute songs, a set of ten different ones before any repeat
-  slayer: { cls: 1, minutesEach: 8, speed: [1.3, 0.5] },        // Barracuda commissions, eight minutes each for an ordinary hunter; a
-                                                                 // hunter at accuracy a takes minutesEach x (speed[0] - speed[1] x a)
-  potter: { minutesEach: 3, prestige: 'stoneware' },             // a pot thrown, glazed and fired in three minutes
   diver: { floors: 5, foes: 1, minutesPerFloor: 5 },             // a Well run: five floors, one FOE, five minutes a floor
   hauler: { units: 12, worth: 30, distance: 4, hopMin: 12 },      // a hold of twelve things worth 30 each, four units away, twelve minutes a hop
   completionist: { playPerDay: 2, checkInEvery: 24, farmRate: 480, mastered: [1, 3, 5, 10, 20] }, // hours played a day, hours between
@@ -201,8 +198,6 @@ for (const keys of [['key.brass'], ['key.loaded'], ['key.even'], ['key.twin']]) 
 console.log(`\nthe livelihoods not built yet (cubes an hour at poor / middling / masterful play; the aim is ${aim})`);
 const lv = (name, f) => { const v = [0.4, 0.7, 1].map(f); console.log(`${pad(name, 26)}${v.map((x) => num(x)).join('')}   ${v.map((x) => (x / aim).toFixed(2)).join(' / ')} x aim`); };
 { const B = PLAY.busker, songs = 60 / B.songMin; lv('busking', (a) => { let v = 0; for (let i = 0; i < songs; i++) v += buskPay(B.songMin, a, Math.floor(i / B.set)); return v; }); }
-{ const S = PLAY.slayer; lv('commissions (Barracuda)', (a) => { const n = 60 / (S.minutesEach * (S.speed[0] - S.speed[1] * a)); let v = 0; for (let i = 1; i <= n; i++) v += commissionPay(S.cls, i); return v + (n % 1) * commissionPay(S.cls, 1); }); } // (a better hunter finishes sooner)
-{ const P = PLAY.potter; lv(`throwing pots (${P.prestige})`, (a) => (60 / P.minutesEach) * potPay(a, P.prestige)); }
 { const D = PLAY.diver; lv('Well runs', (a) => { const floors = Math.round(D.floors * (0.6 + 0.4 * a)); return (60 / (floors * D.minutesPerFloor)) * wellPay(floors, a > 0.6 ? D.foes : 0); }); } // (a weaker diver turns back sooner)
 { const H = PLAY.hauler; lv('hauling', (a) => (60 / H.hopMin) * haulProfit({ buy: 0.8, sell: 1 + 0.5 * a, units: H.units, worth: H.worth, distance: H.distance, failed: a < 0.5 ? 1 : 0 })); }
 const run = wellPay(PLAY.diver.floors, PLAY.diver.foes);
@@ -237,7 +232,7 @@ const route = [];
 for (let d = 0; d < 14; d++) { const buy = demand('entra', 'dread', d), sell = demand('margarite', 'dread', d); route.push(crudeRun({ ship: 'tanker', grade: 'dread', buy, sell, distance: 6 })); }
 const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
 console.log(`\nthe crude route, Entropolis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
-console.log(`bounties (a commission x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan (commissions ${[0, 1, 2, 3, 4].map((c) => commissionPay(c, 1)).join(' / ')})`);
+console.log(`bounties (a hunt's worth x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan `);
 console.log(`a Well drifts daily: the dunes Well's seed on days 0, 1, 2: ${[0, 1, 2].map((d) => wellSeed('dunes', d)).join(', ')} (the same day, the same Well)`);
 
 console.log('\nTHE EMOCEAN\'S NODE MAP AND ITS STAGE (econ/emocean.js: one authored stage, its classes from the route\'s danger)');

@@ -824,8 +824,6 @@ await guard('mycelium', async () => {
   // a keepsake pot at the Chimney's foot
   const kp = await M(`g.events.emit('spirit.release', { spirit: 'sweep', kind: 'slipjelly', feeling: 'grief', by: 'courier' }); const C = R.site.by.chimney, x = M.painted[0], p = x ? x.P.group.position.clone() : new V(), d = p.clone().sub(C.c); return { n: M.painted.length + M.pots.count, painted: M.painted.length, off: +(d.length() - C.radiusAt(d.normalize())).toFixed(2) }`);
   check('keepsake pot: a spirit let go stands as a painted lekythos on the Chimney\'s ground', kp.n === 1 && kp.painted === 1 && Math.abs(kp.off) < 0.3, kp);
-  const sp = await M(`const n0 = M.sporelings.length; T.s.sporeling = 2; M.sync(); const P = R.site.by.myggdrasil, x = M.sporelings[0], d = x.S.group.position.clone().sub(P.c); return { n0, n: M.sporelings.length, off: +(d.length() - P.radiusAt(d.normalize())).toFixed(2) }`);
-  check('sporelings: the tree\'s sporelings stand round its roots on the ground', sp.n === 2 && Math.abs(sp.off) < 0.3, sp);
   // the Grimoire of Echoes
   const gm = await M(`const host = document.createElement('div'); g.codexPages.grimoire({ game: g }, host); const t = host.innerText; return { oyster: /The oyster/.test(t), pots: /Slipjelly|slipjelly/i.test(t), tree: /girth/.test(t) }`);
   check('the Grimoire of Echoes: the strains held, the tree, the pots', gm.oyster && gm.tree && gm.pots, gm);

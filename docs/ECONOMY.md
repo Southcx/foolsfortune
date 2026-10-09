@@ -102,20 +102,18 @@ Each rides a tool and trains its skill (DESIGN.md section 9).
 - **Live**: mining by ear (Dreamvane: cubes, shards, Possibilikeys), angling (Sondelass: fish sold), photography (Veritome: cards,
   bestiary facts), haggling (a better price).
 - **Ruled**: Lockheart conversion (cubes from baubles); combat (materials, for Soul Alchemy); resolving Wells; cartography
-  (Cogitomaps); caster shell crafting (Psygun); hauling (the price gap); **commissions** (by Figment class: Guppy, Barracuda, Marlin,
-  Whale, Leviathan; streaks); ranching Figments (Lockheart summoning, working the Spirit Garden); busking (Crucibelle: pay by score
-  in a rhythm mode on the ten notes, charts from `src/music/`); throwing pots (Soul Brush and the kiln); foraging (the Spirit Garden's
+  (Cogitomaps); caster shell crafting (Psygun); hauling (the price gap); ranching Figments (Lockheart summoning, working the Spirit Garden); busking (Crucibelle: pay by score
+  in a rhythm mode on the ten notes, charts from `src/music/`); foraging (the Spirit Garden's
   beds).
-- Cut: salvage, spell scrolls.
+- Cut: salvage, spell scrolls; commissions and throwing pots for pay (the owner, 2026-10-09, QAIS: a bounty is the one hunt
+  that pays).
 
-**Simulated before built** (`ECON.busk`, `.commission`, `.pot`, `.well`, `.cogitomap`, `.island`, `.emocean`; pay rules in
+**Simulated before built** (`ECON.busk`, `.well`, `.cogitomap`, `.island`, `.emocean`; pay rules in
 `econ/livelihoods.js`, `econ/islands.js`). x aim at poor / middling / masterful play:
 
 | livelihood | poor | middling | masterful |
 |---|---:|---:|---:|
 | busking | 0.42 | 0.75 | 1.27 |
-| commissions (Barracuda) | 0.91 | 1.05 | 1.25 |
-| throwing pots (stoneware) | 0.54 | 0.88 | 1.42 |
 | Well runs | 0.72 | 1.21 | 1.31 |
 | hauling (none passes 1.5x but this, where the risk is the profit) | -0.46 (cargo lost) | 0.95 | 1.51 |
 
@@ -136,7 +134,7 @@ richer). Well runs, x aim and share of runs lost, poor / middling / masterful:
 
 **The toxic symbiosis** (the owner, 2026-10-04): Entropolis prices crude low, Margarite high (`ECON.islands[i].crude`). A clean dread
 tanker run between them (distance 6) pays -0.73x to 1.09x over a fortnight of game days: knowing *when* to sail is the skill.
-**Bounties** (Letty Marque): a named stray brought to Margarite pays 2.5x a commission of its class, less Letty's 20% (`ECON.bounty`,
+**Bounties** (Letty Marque): a named stray brought to Margarite pays 2.5x a hunt's worth of its class, less Letty's 20% (`ECON.bounty`,
 `bountyPay`): 48 cubes for a Guppy, 2,880 for a Leviathan.
 
 **Cogitomaps**: a ticket to a seeded run of one Well as charted; Spellscription copies good ones. **Materials** come in broad kinds,

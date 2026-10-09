@@ -98,18 +98,14 @@ export const ECON = {
    *  playing well pays (accuracy 1: 1.5x the aim; 0.7: about 0.8x; 0.4: 0.4x). The same song played again within the hour tires the
    *  audience (`tire` a repeat), so a set pays more than a loop. */
   busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7, match: 0.5 }, // (match: a song that suits the sky pays up to half again, by the weather's strength: Wanda's TRACK_ASPECT)
-  /** COMMISSIONS by Figment class (Guppy .. Leviathan): minutes of play each pays, about the time an ordinary hunter takes, so a better
-   *  hunter, finishing sooner, earns more an hour; every `streakEvery`th in a row pays `streakMult` times (OSRS Slayer's points). Skipping
-   *  one breaks the streak. */
-  commission: { minutes: [3, 8, 20, 60, 180], streakEvery: 10, streakMult: 3 },
+  /** A HUNT's worth by Figment class (Guppy .. Leviathan): the minutes of play it takes an ordinary hunter, the base a bounty is paid
+   *  from. (Commissions, Seger's hunts by class, were cut by the owner, 2026-10-09: QAIS; the bounty is the one hunt that pays.) */
+  hunt: { minutes: [3, 8, 20, 60, 180] },
   /** BOUNTIES (Letty Marque's, under the King's marque: docs/LORE.md): a hunt for a named stray (an Egregore off the Emocean, or a
-   *  Figment gone aberrant), mostly out of Entropolis, paid for by Margarite. A bounty pays `mult` times a commission of the same
+   *  Figment gone aberrant), mostly out of Entropolis, paid for by Margarite. A bounty pays `mult` times a hunt of the same
    *  class (it is a named target, far from home, and the hunt includes the trip), less `cut`, Letty's share. The owner, 2026-10-04:
    *  the Queen's island breeds the strays and the King's pays to have them brought in, a toxic symbiosis. */
   bounty: { mult: 2.5, cut: 0.2 },
-  /** THROWING POTS: a pot pays `minutes` of play times its shape's accuracy weighed steeply (floor .. ceil, as the domains' SKILL), plus
-   *  its glaze's prestige in minutes (looks: a pot glazed in porcelain sells for more). */
-  pot: { minutes: 2.5, floor: 0.25, ceil: 1.5, power: 2, glaze: { earthenware: 0, stoneware: 0.5, porcelain: 1.5, court: 3 } },
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },

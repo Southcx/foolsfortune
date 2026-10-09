@@ -143,6 +143,9 @@ export class TripRun {
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
+    // a swing of view begins: what is still in the air is let go (no shot lives across one: the owner's R17, Dovina's pacing law in
+    // legs.js keeps new ones out of the bars round it)
+    const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.field.clear(); this.swung = sw;
     this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
   }

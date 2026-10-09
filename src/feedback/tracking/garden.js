@@ -31,7 +31,6 @@ export function gardenRules({ on, L, log }) {
   on('myggdrasil.fruit', (e) => { if (e.by === 'courier') L.inc('myggdrasil.fruit', e.n || 0); });
   on('myggdrasil.pick', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.pick', e.n || 0); log.say('loot', `You pick ${e.n} from Myggdrasil's crown.`); });
   on('myggdrasil.hang', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.hang'); L.inc(`myggdrasil.hang.${e.arcana}`); log.say('info', 'You hang the card on its branch. The branch takes it.'); });
-  on('myggdrasil.sporeling', (e) => { if (e.by === 'courier') { L.inc('myggdrasil.sporeling'); log.say('info', 'A sporeling drops from the crown.'); } });
   on('keepsake.pot', (e) => { if (e.by === 'courier') { L.inc('keepsake.pot'); log.say('info', `${e.spirit || 'Your spirit'} is fired into a keepsake pot. It stays.`); } });
 
   // one line a press, never one a material (SOUL-ALCHEMY 4.20, Espada's words): the press emits alchemy.press as each material's walk
