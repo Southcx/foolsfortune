@@ -409,6 +409,10 @@ the rules before building in the same area; a rule a machine can check goes into
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
 
+149. **A mark is drawn with an alpha.** Light added at alpha 0 writes nothing through this pipeline; every style of a mark carries
+    one, and a new style is proved by counting the pixels it changes.
+150. **A helper that scales numbers is never handed names.** A table's numbers and its words go through different helpers.
+
 ## Cases
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
@@ -2073,4 +2077,20 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** a blocked blow shows the resist mark where it struck and the guard's clank, the sack barely stirs, and the bout's line says
   how many were blocked.
 - **Rule:** 148.
+
+### 2026-10-09 · The Blaster fired nothing on the rail (the owner's R16, v133; blocks)
+- **Seen:** LMB held or clicked: no shots, in every section of a passage.
+- **Cause:** it fired (63 shots in 2 s headless, 27 in flight in a frame) but its needle was drawn as light alone, alpha 0, and at alpha 0
+  the mark wrote nothing: a probe put a gun shot 10 m before the camera and counted 0 pixels changed (a foe's shot there: 217). The
+  lances' sparks were written the same way.
+- **Fix:** the needle and the spark carry an alpha (`vfx/railmark.js`, Petra's crossing, Calissa's to refine). After: the spread of three
+  shows, night and day.
+- **Rule:** 149.
+
+### 2026-10-09 · Every leg flew in the chase view (found fixing R17, v134's merge)
+- **Seen:** the trip test saw only 'chase'; a passage's views were chase from end to end.
+- **Cause:** the legs were doubled by a stretch helper, `P`, that multiplies; the views were written with the same helper, so every
+  view was 'chase' times 2, NaN, and fell back to chase.
+- **Fix:** the views go through their own helper, `V`. The trip test's budget doubled with the legs.
+- **Rule:** 150.
 
