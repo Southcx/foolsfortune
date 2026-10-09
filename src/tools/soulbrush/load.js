@@ -39,13 +39,14 @@ export function spendLoad(game, n, tag = 'load') {
 }
 /** The feeling the load would lay now (the bottle's grade, else the weather's here). */
 export const loadAspect = (game) => game.player?.techs?.get('soulbrush')?.load?.aspect || 'wonder';
-const DROPS_PER_SEC = 18, MAX_DROPS = 64, STATUS_EVERY = 0.5; // (the throw, the spread and the splat: paintspray.js)
+const DROPS_PER_SEC = 18, MAX_DROPS = 64, STATUS_EVERY = 0.5;
+const STRIDE = { own: 1.25, other: 0.75, refill: 6 }; // (the paint-stride knack: x speed in your own feeling, x in another's; Lachryma a second it fills, Dovina's to tune) // (the throw, the spread and the splat: paintspray.js)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class BrushLoad {
   constructor(tool) {
     this.tool = tool; this.mode = 'paint'; this.sat = -1; this.working = false;
-    this.pick = null; // (the radial's pick: radial.js)
+    this.pick = null; this.stride = 1; // (the radial's pick: radial.js; the paint underfoot's pace: strideOf)
     this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null;
     tool.game.events?.on('vessel.shieldbreak', () => this.shieldBreak());
     this.look = null; this.lookId = null; this.crackT = 0; this.mopAt = null; // (the bottle worn, seen: Calissa's vfx/bottle.js)
@@ -121,6 +122,7 @@ export class BrushLoad {
     const s = g.stains?.wipe(from, { x: fx, z: fz }, P.pos.y, want) || { got: 0 };
     this.mopFrom = { x: fx, z: fz };
     let got = s.got;
+    if (got < want && g.paintmap) got += g.paintmap.wipe(from.x, from.z, fx, fz, P.pos.y, 2.4, (want - got) * 0.25, 'slick').got * 4; // (a slick too: a fight's crude, a cell-full four Lachryma as paint's)
     if (s.grade && s.grade !== this.grade) { this.grade = s.grade; this.save(); }
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)
     if (got > 0) { this.held += got; this.mopped += got; }
@@ -146,9 +148,22 @@ export class BrushLoad {
     this.paintArea = 0;
   }
 
+  /** The paint underfoot, with its knack on (paintStride: LACHRYMA-LOOP.md 5, rule 1; the knack's row is Dovina's, its name Espada's):
+   *  your own feeling (what the brush lays) speeds you and fills the bottle, another feeling slows you; crude only carries the Brush
+   *  Slide, as it did. Off, it is 1 and nothing: the core movement exactly as it was. Read as the Soul Brush's `slow` (techs.js). */
+  strideOf(dt) {
+    const g = this.game, P = this.P;
+    if (!g.knacks?.on?.('paintStride') || !P.grounded || !g.paintmap) return 1;
+    const p = g.paintmap.at(P.pos.x, P.pos.y, P.pos.z); if (!p || p.crude) return 1;
+    if (p.aspect !== this.aspect) return STRIDE.other;
+    if (this.bottle) this.fill(STRIDE.refill * p.k * dt); // (Sunshine's refill by standing in water: here, in your own feeling)
+    return STRIDE.own;
+  }
+
   /** Always (drawn or not): the drops in flight, the paint's statuses on what stands in it, the bottle feeding the pool. */
   tick(dt) {
     const g = this.game, ph = g.physics;
+    this.stride = this.strideOf(dt);
     for (let i = this.drops.length - 1; i >= 0; i--) {
       const d = this.drops[i];
       d.life -= dt; if (d.life <= 0) { this.drops.splice(i, 1); continue; }
@@ -202,7 +217,7 @@ export class BrushLoad {
   land(d, at, normal = _d.set(0, 1, 0)) {
     const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
     if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
-      g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false);
+      g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false); g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, 'slick');
       g.stains?.wipe({ x: at.x, z: at.z }, { x: at.x, z: at.z }, at.y, 99, sp.r * 2);
       return;
     }

@@ -93,7 +93,7 @@ export const OUTCOME_FX = {
     }
     for (let i = 0; i < 40; i++) { const a = fxRand() * Math.PI * 2, r = Math.sqrt(fxRand()) * R; g.shells?.addDroplet?.(at.clone().setY(at.y + 1), new THREE.Vector3(Math.cos(a) * r * 0.6, rnd(8, 14), Math.sin(a) * r * 0.6), rnd(0.05, 0.1), true); }
     // the ground drowned in it
-    for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2, r = i === 0 ? 0 : rnd(0.3, 1) * R * 0.8; g.slip?.addDisc(at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.02, Math.sin(a) * r)), UP, rnd(1.6, 3.2), 24, rnd(0.6, 2)); }
+    for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2, r = i === 0 ? 0 : rnd(0.3, 1) * R * 0.8; g.slip?.addDisc(at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.02, Math.sin(a) * r)), UP, rnd(1.6, 3.2), 24, rnd(0.6, 2), 'courier'); }
     // everything against their burst, every pot broken, every clapperjar flung
     let n = 0;
     for (const c of foes(g, at, R)) { const d = c.pos.clone().sub(at).setY(0.5).normalize(); if (g.creatures.strike(c, c.center(new THREE.Vector3()), d, 99, 'nuke', by)) n++; }

@@ -89,7 +89,7 @@ export class SoulBrush extends Tech {
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
   get stance() { return this.toolOut && (this.club.busy || this.celestial.active || this.load.busy); }
-  get slow() { return this.toolOut && this.club.charge >= 0 ? 0.6 : 1; }
+  get slow() { return (this.toolOut && this.club.charge >= 0 ? 0.6 : 1) * (this.load?.stride ?? 1); } // (and the paint underfoot's pace: the paintStride knack, load.js strideOf; 1 when it is off)
 
   // ---------------------------------------------------------------- where it is worn, and the grip
   computeSocket(ch) {
@@ -236,7 +236,7 @@ export class SoulBrush extends Tech {
       const dir = this.lastDab && d < 2 ? down.point.clone().sub(this.lastDab).normalize() : _v3.set(P.vel.x, 0, P.vel.z).normalize().clone();
       if (d > 2) this.paint.gap();
       this.paint.add(down.point, down.normal, dir, TRAIL_W * (0.85 + 0.15 * Math.min(1, hs / 8)));
-      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE);
+      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
       if (simRand() < 0.35) sfx.inkDab?.(0.35);

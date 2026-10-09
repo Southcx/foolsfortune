@@ -12,20 +12,22 @@
 //   const pm = new PaintMap()   pm.update(dt, focusX, focusZ)   pm.patch(material) (the ground's shaders: tops of things only)
 //   pm.stamp(x, y, z, r, aspect, k) -> m² newly covered   pm.drink(x, y, z, r, want) -> paint taken (0..want, in cell-fulls)
 //   pm.at(x, y, z) -> { k, aspect, crude } | null   pm.wipe(ax, az, bx, bz, y, width, want, crude, centre?) -> { got, aspect, smear }
-//   pm.count(x, y, z, r, crude) -> cells   pm.onRecentre (set by stains.js: the blots laid again)   ASPECT_COLOR
+//   pm.slick(x, y, z, r, k) (crude that fades: a fight's)   pm.count(x, y, z, r, crude) -> cells   pm.onRecentre (set by stains.js: the blots laid again)   ASPECT_COLOR
 //   (one cell is 0.25 m, so a puddle's edge reads round; a window of 256 cells, 64 m, round the focus; paint fades over LIFE real seconds)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OPPOSITE, ASPECTS, COLOR } from '../../progress/weather.js';
 
-const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, NONE = -1e4, NEAR = 0.8;
+const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, SLICK_LIFE = 40, NONE = -1e4, NEAR = 0.8, FLAT = 0x3b2b22; // (a slick: crude thrown or welled up in a fight, flat (no feeling), gone in 40 real seconds)
+/** Which cells a wipe or a count takes: true a blot's crude, 'slick' a slick's, false paint. */
+const KIND = (crude) => (crude === 'slick' ? 2 : crude ? 1 : 0);
 export const ASPECT_COLOR = Object.fromEntries(ASPECTS.map((a) => [a, new THREE.Color(COLOR[a])]));
 
 export class PaintMap {
   constructor() {
     this.k = new Float32Array(N * N);       // paint, 0..1
     this.asp = new Int8Array(N * N).fill(-1); // its feeling (index into ASPECTS)
-    this.crude = new Uint8Array(N * N); // 1: the cell is crude (a blot: world/ground/stains.js), which keeps; 0: paint, which fades
+    this.crude = new Uint8Array(N * N); // 1: crude, a blot's (world/ground/stains.js), which keeps; 2: a slick, crude that fades; 0: paint, which fades
     this.h = new Float32Array(N * N).fill(NONE); // the height it lies at
     this.x0 = -SPAN / 2; this.z0 = -SPAN / 2; // (the window's corner, in whole cells)
     this.live = new Set(); this.dirty = true; this.upT = 0;
@@ -62,15 +64,29 @@ export class PaintMap {
     return fresh;
   }
 
+  /** A slick: crude with no feeling laid in a disc (a jelly's spit, a slam's ring, a cast's puddle: LACHRYMA-LOOP.md 0, "every liquid
+   *  hazard is crude"), over bare ground and paint, never over a blot; it fades in SLICK_LIFE real seconds. */
+  slick(x, y, z, r, k = 1) {
+    const c = Math.ceil(r / CELL), ci = Math.floor((x - this.x0) / CELL), cj = Math.floor((z - this.z0) / CELL);
+    for (let dj = -c; dj <= c; dj++) for (let di = -c; di <= c; di++) {
+      const i = ci + di, j = cj + dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
+      if (Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) > r) continue;
+      const n = j * N + i; if (this.crude[n] === 1 && this.k[n] > 0.05) continue;
+      if (this.h[n] !== NONE && Math.abs(this.h[n] - y) > NEAR && this.k[n] > 0.05) continue;
+      this.asp[n] = -1; this.crude[n] = 2; this.k[n] = Math.max(this.k[n], k); this.h[n] = y; this.live.add(n);
+    }
+    this.dirty = true;
+  }
+
   /** The mop's wipe: a strip `w` wide from a to b (the stroke this frame), rim cells first, up to `want` cell-fulls. `crude` true: only
-   *  crude, false: only paint. Returns { got, aspect, smear: where the edge of it was pushed to (0.5 m on along the stroke) } (rule 7). */
+   *  a blot's crude, 'slick': only a slick's, false: only paint. Returns { got, aspect, smear: where the edge of it was pushed to (0.5 m on along the stroke) } (rule 7). */
   wipe(ax, az, bx, bz, y, w, want, crude, centre = null) {
     const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz) || 1e-6, ux = dx / len, uz = dz / len, half = w / 2;
     const x0 = Math.min(ax, bx) - half, x1 = Math.max(ax, bx) + half, z0 = Math.min(az, bz) - half, z1 = Math.max(az, bz) + half;
     const cells = [];
     for (let j = Math.floor((z0 - this.z0) / CELL); j <= Math.floor((z1 - this.z0) / CELL); j++) for (let i = Math.floor((x0 - this.x0) / CELL); i <= Math.floor((x1 - this.x0) / CELL); i++) {
       if (i < 0 || j < 0 || i >= N || j >= N) continue;
-      const n = j * N + i; if (this.k[n] <= 0 || this.crude[n] !== (crude ? 1 : 0) || Math.abs(this.h[n] - y) > NEAR) continue;
+      const n = j * N + i; if (this.k[n] <= 0 || this.crude[n] !== KIND(crude) || Math.abs(this.h[n] - y) > NEAR) continue;
       const px = this.x0 + (i + 0.5) * CELL - ax, pz = this.z0 + (j + 0.5) * CELL - az, along = px * ux + pz * uz, across = Math.abs(px * uz - pz * ux);
       if (across > half || along < -half || along > len + half) continue;
       const cx = centre ? this.x0 + (i + 0.5) * CELL - centre.x : 0, cz = centre ? this.z0 + (j + 0.5) * CELL - centre.z : 0;
@@ -102,7 +118,7 @@ export class PaintMap {
     let n = 0; const c = Math.ceil(r / CELL), ci = Math.floor((x - this.x0) / CELL), cj = Math.floor((z - this.z0) / CELL);
     for (let dj = -c; dj <= c; dj++) for (let di = -c; di <= c; di++) {
       const i = ci + di, j = cj + dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
-      const m = j * N + i; if (this.k[m] <= 0.02 || this.crude[m] !== (crude ? 1 : 0) || Math.abs(this.h[m] - y) > NEAR) continue;
+      const m = j * N + i; if (this.k[m] <= 0.02 || this.crude[m] !== KIND(crude) || Math.abs(this.h[m] - y) > NEAR) continue;
       if (Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) <= r) n++;
     }
     return n;
@@ -111,7 +127,7 @@ export class PaintMap {
   /** The paint at a point of the ground (within 0.8 m of the height it was laid at), or null. */
   at(x, y, z) {
     const n = this.cell(x, z); if (n < 0 || this.k[n] < 0.08 || Math.abs(this.h[n] - y) > NEAR) return null;
-    return { k: this.k[n], aspect: ASPECTS[this.asp[n]], crude: !!this.crude[n] };
+    return { k: this.k[n], aspect: this.asp[n] >= 0 ? ASPECTS[this.asp[n]] : null, crude: !!this.crude[n], slick: this.crude[n] === 2 };
   }
 
   /** Once a frame: fade the paint, follow the focus (whole cells; what leaves the window is gone), upload when changed. */
@@ -119,7 +135,7 @@ export class PaintMap {
     const want0 = Math.floor((fx - SPAN / 2) / CELL) * CELL, want1 = Math.floor((fz - SPAN / 2) / CELL) * CELL;
     if (Math.abs(want0 - this.x0) > SPAN / 4 || Math.abs(want1 - this.z0) > SPAN / 4) this.recentre(want0, want1);
     const fade = dt / LIFE;
-    for (const n of this.live) { if (this.crude[n] && this.k[n] > 0) continue; this.k[n] -= fade; if (this.k[n] <= 0) { this.k[n] = 0; this.asp[n] = -1; this.h[n] = NONE; this.crude[n] = 0; this.live.delete(n); } } // (crude keeps: a blot stays until it is wiped)
+    for (const n of this.live) { if (this.crude[n] === 1 && this.k[n] > 0) continue; this.k[n] -= this.crude[n] === 2 ? dt / SLICK_LIFE : fade; if (this.k[n] <= 0) { this.k[n] = 0; this.asp[n] = -1; this.h[n] = NONE; this.crude[n] = 0; this.live.delete(n); } } // (crude keeps: a blot stays until it is wiped)
     if (this.live.size) this.dirty = true;
     this.upT -= dt;
     if (this.dirty && this.upT <= 0) { this.upload(); this.upT = 0.1; this.dirty = false; } // (ten uploads a second at most)
@@ -142,7 +158,7 @@ export class PaintMap {
     const C = this.colData, Hh = this.hData, tmp = new THREE.Color();
     for (let n = 0; n < N * N; n++) {
       const p = this.k[n], o = n * 4;
-      if (p > 0.02) { tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(0.42); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude: the feeling's colour gone dark and flat, a stand-in look: Calissa's)
+      if (p > 0.02) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n]) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] ? Math.max(p, 0.6) : p)); } // (crude: the feeling's colour gone dark and flat, a stand-in look: Calissa's)
       else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n] = NONE; continue; } // (black under nothing: an edge filters toward the colour, not away from it)
       const a = C[o + 3] / 255; C[o] = Math.round(tmp.r * a * 255); C[o + 1] = Math.round(tmp.g * a * 255); C[o + 2] = Math.round(tmp.b * a * 255); // (premultiplied)
     }

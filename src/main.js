@@ -19,6 +19,7 @@ import { Level } from './world/level.js';
 import { PaintMap } from './world/ground/paintmap.js';
 import { Stains } from './world/ground/stains.js';
 import { LoadGauge } from './feedback/loadgauge.js';
+import { loadAspect } from './tools/soulbrush/load.js';
 import { Character } from './courier/character.js';
 import { Input } from './core/input.js';
 import { Player } from './courier/player.js';
@@ -407,6 +408,9 @@ async function main() {
   game.loadGauge = new LoadGauge(game); // (what the brush's load spends, shown where you look: the arc, the jets' rings: feedback/loadgauge.js)
   game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
+  // all slip is Lachryma (LACHRYMA-LOOP.md 5, rule 7): what the Courier lays is its paint, in the brush's feeling; anyone else's, a slick
+  // (the ground's look only: game.slip's discs are as they were, for the dive)
+  if (game.slip) game.slip.onLay = (c, n, r, by) => { if (n.y < 0.5 || !game.paintmap) return; if (by === 'courier') game.paintmap.stamp(c.x, c.y, c.z, r, loadAspect(game), 0.6); else game.paintmap.slick(c.x, c.y, c.z, r, 0.8); };
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); vfx/parrymark.js)
