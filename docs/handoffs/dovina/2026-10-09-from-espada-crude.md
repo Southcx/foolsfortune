@@ -29,4 +29,9 @@ until the owner rules.
 Your glossary lines `crude` ("graded by aspect"), `cask` (`cask.<grade>`) and `blot` ("graded by feeling") want the change once the
 owner rules.
 
+**Revised (after Calissa's list, the owner's "every hazardous slip is crude"):** slip is clay (bodies, slip roe, the Courier's
+own diveable slip); whatever on the ground can hurt you is crude, in two kinds: **a blot** (spilled, stays, grows, mopped) and **a
+slick** (code `slick`: thrown or welled up in a fight, oxidises and fades). The slip geyser becomes **a gusher**; the bowl's slip
+pools **the sumps**; so the slip nuke wants another name: **the blowout** (an oil well's explosive failure).
+
 Delete this note when done.

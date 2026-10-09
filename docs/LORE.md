@@ -323,9 +323,13 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 
 ## 8. Things and looks
 
-- **Slip**: liquid clay, Kaolin's essence (a broken pot's slip flows home). *Proposed rule (2026-10-09):* **what is the island's own is
-  slip; what is the sea's is crude.** Slip is clay: the slip jellies' bodies, slip roe, the slip pools of the bowl, a slip geyser, the
-  Great Slip Jelly's trail. A wet hazard on the ground that came from Lachryma is crude (a blot), never slip. **Kintsugi**: breakage mended in gold.
+- **Slip**: liquid clay, Kaolin's essence (a broken pot's slip flows home). *Proposed rule (2026-10-09, revised after the owner's "every
+  hazardous slip is crude"):* **slip is clay; whatever on the ground can hurt you is crude.** Slip stays the clay with a shape or an
+  owner: the slip jellies' bodies, slip roe, the Courier's own diveable slip (Kaolin's essence, as the Courier's vessel is). The
+  hazards turn crude, in two kinds: **a blot** (crude spilled; it stays, grows and is mopped up) and **a slick** (crude thrown or
+  welled up in a fight: the Great Slip Jelly's puddles and spit, its flood, the bowl's rim shallows; it oxidises and fades; an oil
+  slick). The Pithos grew in a crude jar, so it bleeds crude: the lore was waiting for this. A slip geyser becomes **a gusher** (an
+  oil well blowing wild), and the bowl's slip pools **the sumps** (where oil collects). **Kintsugi**: breakage mended in gold.
 - **Lachryma's look**: black, oily, ultraviolet, iridescent; it pops against terracotta and paper. Baubles are cream (the pot people's
   centres); Lachryma is the black.
 - **The worth of a look**: the folk rank a glaze by the clay it belongs on. What a tier wears is common to it; the tier above is aspired to.
