@@ -1,22 +1,23 @@
 // ---------------------------------------------------------------------------------------
-// THE TELEGRAPHS' DRAPE: the grid a ground telegraph is drawn on, laid over the ground so the mark conforms to it (TELEGRAPHS.md
-// section 3: "on the ground, conforming to it ... never a flat disc floating over a slope"). A square of the world round the area,
-// in whole cells snapped to the world (a cell of 0.5, 1, 2 or 4 m, the finest that keeps it within 48 a side), each vertex set on the
-// ground under it, a few centimetres up (the casebook's rule 1). Heights are asked of a ground function once a world cell and kept
-// (a mark that follows the Courier across the bowl asks only for the cells it newly covers). What a coarse grid cannot follow (a
-// chord across a curved floor) the program hides by pulling the mark toward the eye (vfx/telegraphs/telegraphshader.js `uBias`).
+// THE FIGMENT ATTACK TELEGRAPHS' DRAPE: the grid a Figment attack telegraph on the ground is drawn on, laid over the ground so the mark
+// conforms to it (FIGMENT-TELEGRAPHS.md section 3: "on the ground, conforming to it ... never a flat disc floating over a slope"). A square
+// of the world round the area, in whole cells snapped to the world (a cell of 0.5, 1, 2 or 4 m, the finest that keeps it within 48 a side),
+// each vertex set on the ground under it, a few centimetres up (the casebook's rule 1). Heights are asked of a ground function once a world
+// cell and kept (a mark that follows the Courier across the bowl asks only for the cells it newly covers). What a coarse grid cannot follow
+// (a chord across a curved floor) the program hides by pulling the mark toward the eye (vfx/figmenttelegraph/figmenttelegraphshader.js
+// `uBias`).
 //
 // Prior art: the stains' drape (vfx/stains.js: a disc's vertices lifted to the ground under each), the projected decal's grid of
 // every terrain engine before deferred decals (a patch of the terrain's own cells under the mark), and a height cache keyed by cell.
 //
-//   const D = new TelegraphDrape({ max: 48 })   D.geometry   D.lay(bounds { x0, z0, x1, z1 }, heightAt (x, z) -> y) -> true if relaid
+//   const D = new FigmentTelegraphDrape({ max: 48 })   D.geometry   D.lay(bounds { x0, z0, x1, z1 }, heightAt (x, z) -> y) -> true if relaid
 //   heightCache(fn (x, z, y) -> height) -> (x, z, y) -> height   (one ask a world cell and floor band of 4 m, cleared past 60,000)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const STEPS = [0.5, 1, 2, 4], LIFT = 0.04;
 
-export class TelegraphDrape {
+export class FigmentTelegraphDrape {
   constructor({ max = 48 } = {}) {
     this.max = max; const n = max + 1;
     this.pos = new Float32Array(n * n * 3);

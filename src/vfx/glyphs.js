@@ -1,8 +1,13 @@
 // ---------------------------------------------------------------------------------------
 // GLYPHS: the punctuation of a world. A chunky "!", "!!" or "!!!" (or "?", "…", "♪") that pops out of something in the world, on a
-// sprite that always faces the camera and draws through water and walls: a fish that has noticed the lure, a probe, the bite that
-// has to be answered. The glyph is squashed and stretched as it pops (it overshoots, wobbles, settles and rises), with a burst of
-// spikes and a ring behind it for the ones that matter. Tinted per use (the lure's aspect), always with a heavy dark outline.
+// sprite that always faces the camera: a fish that has noticed the lure, a probe, the bite that has to be answered. The glyph is
+// squashed and stretched as it pops (it overshoots, wobbles, settles and rises), with a burst of spikes and a ring behind it for the
+// ones that matter. Tinted per use (the lure's aspect), always with a heavy dark outline.
+//
+// WALLS HIDE IT (the owner, R20: a Figment's marks showed through walls). A glyph is depth-tested against the world, but it is never
+// hidden by the thing it sits on: it is drawn `bias` metres nearer the eye along its own line of sight and shrunk by as much, so it
+// covers the same pixels and only what stands more than that in front of it (a wall, a pillar) hides it. `throughWalls` draws it over
+// everything instead (a pop's own, or the module's for every pop: the switch the Dreamvane's survey will throw as a psychic sonar ping).
 //
 // (and the WARD, a ring barred across: something refused what was done to it: a blade turned aside)
 // Prior art: the exclamation mark over the head of every alerted enemy from Metal Gear Solid onward, Animal Crossing's and FFXIV's
@@ -10,12 +15,32 @@
 // borrowed from (a fast overshoot, a wobble, a held beat, a rise and a fade). It is text in the world, on the thing it is about; it is
 // not a HUD message, and the log stays the only place the game *says* anything.
 //
+// The bias is the decal and impostor trick of pulling a depth toward the eye (Unreal's "depth offset", a sprite's depth bias in the
+// particle systems of the seventh generation), done on the CPU just before each camera draws it (`onBeforeRender`: the Veritome's or
+// a cinema's camera sees it in the same place): moved along that camera's ray and scaled, so no new shader program.
+//
 //   game.glyphs.pop('bang3', position, { color: 0xffd76a, size: 1, burst: true, follow: () => vec })
 //   const g = game.glyphs.pop('bang3', pos, { hold: 1.2 })    a mark that stays for a window (and shakes harder as it closes) until g.close()
+//   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
+//   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
+//   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const CACHE = new Map();
+const BIAS = { min: 1, k: 1.5 }; // (m, and per metre of the glyph's size: a mark is hidden only by what stands that far in front of it)
+const _cam = new THREE.Vector3(), _at = new THREE.Vector3(), _sc = new THREE.Vector3();
+/** Just before a camera draws a glyph's sprite: its matrix moved `userData.bias` metres toward that camera along its line of sight
+ *  (never past halfway) and shrunk by as much, so it covers the same pixels at a nearer depth. Its position and scale are kept. */
+function nearer(renderer, scene, camera) {
+  const b = this.userData.bias;
+  if (!b) return;
+  _cam.setFromMatrixPosition(camera.matrixWorld);
+  const d = _at.subVectors(this.position, _cam).length();
+  if (d < 1e-4) return;
+  const f = (d - Math.min(b, d * 0.5)) / d;
+  this.matrixWorld.compose(_at.multiplyScalar(f).add(_cam), this.quaternion, _sc.copy(this.scale).multiplyScalar(f));
+}
 
 function glyphCanvas(text, w, h, font) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -97,25 +122,27 @@ export class Glyphs {
     this.game = game;
     this.list = [];
     this.ringTex = game.fx.haloTexture;
+    this.throughWalls = false; // (every pop seen through walls: off; a pop's own `throughWalls` says for itself)
   }
 
-  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0 } = {}) {
-    const K = KINDS[kind] || KINDS.bang1, g = this.game;
-    const mk = (map, blending) => new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, depthTest: false, depthWrite: false, blending, fog: false }));
+  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0, throughWalls = null, bias = null } = {}) {
+    if (!KINDS[kind]) kind = 'bang1'; // (a kind the sheet lacks reads as a "!" and never throws: Crystals.reveal asked for 'bang')
+    const K = KINDS[kind], g = this.game;
+    const mk = (map, blending) => { const S = new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, depthWrite: false, blending, fog: false })); S.onBeforeRender = nearer; return S; };
     const main = mk(tex(kind), THREE.NormalBlending);
     main.renderOrder = 30;
     const parts = { main, burst: null, ring: null };
     g.scene.add(main);
     if (burst) { parts.burst = mk(tex('burst'), THREE.AdditiveBlending); parts.burst.renderOrder = 29; g.scene.add(parts.burst); }
     if (ring) { parts.ring = mk(this.ringTex, THREE.AdditiveBlending); parts.ring.renderOrder = 28; g.scene.add(parts.ring); }
-    const q = { K, parts, pos: pos.clone(), follow, t: 0, life: hold > 0 ? hold + 0.25 : life, hold, size, float, aspect: K.aspect, seed: Math.random() * 6 };
+    const q = { K, parts, pos: pos.clone(), follow, t: 0, life: hold > 0 ? hold + 0.25 : life, hold, size, float, aspect: K.aspect, seed: Math.random() * 6, throughWalls, bias };
     q.close = () => { q.life = Math.min(q.life, q.t + 0.25); q.hold = 0; q.closing = true; };
     this.list.push(q);
     return q;
   }
 
   update(dt) {
-    const cam = this.game.camera.position;
+    const cam = this.game.camera.position, rail = !!this.game.emocean?.stage.active; // (the crossing: no wall stands on it, and its foes are bigger than any bias, so its marks keep to being seen over the sea)
     for (let i = this.list.length - 1; i >= 0; i--) {
       const q = this.list[i];
       q.t += dt;
@@ -143,6 +170,9 @@ export class Glyphs {
         const r = q.parts.ring, k = Math.min(1, q.t / 0.5);
         r.position.copy(m.position); r.scale.setScalar(worldK * (0.6 + 4 * k)); r.material.opacity = 0.7 * (1 - k);
       }
+      // walls hide it, its own thing never (drawn nearer each camera that draws it: nearer); seen through walls, over everything
+      const through = !!(q.throughWalls ?? (this.throughWalls || rail)), bias = through ? 0 : q.bias ?? Math.max(BIAS.min, BIAS.k * worldK);
+      for (const s of Object.values(q.parts)) if (s) { s.material.depthTest = !through; s.userData.bias = bias; } // (a state, not a program)
     }
   }
 }

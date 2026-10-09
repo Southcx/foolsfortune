@@ -31,7 +31,7 @@
 // bosses (the parts you can see you can shoot), the Cornish wreckers' lamps, and the figurehead carvers of the age of sail.
 //
 //   const B = new BrigLook({ env, fx, flank })   B.group (its own frame: +Z the bow, Y up, origin at the waterline amidships; 18 m long)
-//   B.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), seal(on), windup(k), world(out), closingRingAnchor }
+//   B.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), seal(on), windup(k), world(out), telegraphAnchor }
 //     names: 'rigging', 'rigging.0'..'rigging.3', 'gunport.0'..'gunport.5' (on `flank`, -1 by default: her -X side), 'keel', 'lamp'
 //   B.parts (the BossParts)   B.reset()   B.lamp (the LighthouseLamp: B.lamp.set({ yaw, warn, hot }) for its beam)
 //   (the crossing's runtime as it stands: world/emocean/pirates.js)

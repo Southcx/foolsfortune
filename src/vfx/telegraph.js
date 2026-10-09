@@ -1,16 +1,15 @@
 // ---------------------------------------------------------------------------------------
-// THE CLOSING RING: a boss's part about to act at sea shows it (docs/plans/RAIL-OVERHAUL.md section 6: "Every boss: telegraphs by a
+// THE TELEGRAPH MARK: a boss's part about to act shows it (docs/plans/RAIL-OVERHAUL.md section 6: "Every boss: telegraphs by a
 // shrinking mark on the part about to act (Elemental Gearbolt), in Calissa's outline language"). A ring stands on the part, wide, and
 // closes on it over the windup; where it will close, the part's own ring waits, fainter; at the act both are gone (no flash: the act is
 // the part's own, its blow or its volley). The line is the parry mark's weight (3.6 px at the 480-line present) and its ink, with the
 // Mind's schiller running round inside it (vfx/labradorite.js): the danger is drawn in line, on top of everything, and never bent by
-// the storm. It means "this, now": it is not the parry mark (that means "answer this", and nothing else wears it), nor a telegraph
-// (Divination's mark of a creature's windup on the ground: vfx/telegraphs/; the rail keeps this ring until it is settled, TELEGRAPHS.md 6.8).
+// the storm. It means "this, now": it is not the parry mark (that means "answer this", and nothing else wears it).
 //
 // Prior art: Elemental Gearbolt's shrinking target marks (Alfa System, 1997), osu!'s approach circle closing on its hit circle (a
 // linear shrink reads as a clock), Sekiro's perilous kanji and Elden Ring's glint (a windup that marks itself).
 //
-//   const T = new ClosingRings({ max: 16 })   parent.add(T.mesh)   T.parked() -> [mesh]
+//   const T = new TelegraphMarks({ max: 16 })   parent.add(T.mesh)   T.parked() -> [mesh]
 //   const h = T.mark(target, seconds, { radius, from, alive }?)   target: an Object3D (followed), a Vector3 (read each frame) or a function
 //            (out) -> out, the part's place in the world; radius: the part's (m: by default the Object3D's bounding sphere, else 1);
 //            from: where the ring starts (m: three radii and 2.5 m by default); alive: () -> bool, asked every frame: the mark is gone
@@ -22,7 +21,7 @@ import { MarkBuffer, STYLE } from './railmark.js';
 
 const _w = new THREE.Vector3(), _s = new THREE.Sphere(), _b = new THREE.Box3();
 
-export class ClosingRings {
+export class TelegraphMarks {
   constructor({ max = 16 } = {}) {
     this.max = max; this.t = 0; this.marks = [];
     this.buf = new MarkBuffer(max, { renderOrder: 42 });

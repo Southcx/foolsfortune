@@ -189,6 +189,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
   control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
+- **idle** (`IDLES`, `idleClip`, `src/courier/anim/idlebreak.js`): the clip the Courier stands in with nothing in the hands, one of the
+  suite's seven standing idles, keyed by its look (akimbo, hipCocked, handsBehind, armsDown, braced, weightShift, restless); `IDLES.default`
+  is the one played (akimbo since v133, the owner's R14), `idles.choose(key)` another, crossfaded. *Not:* a stance (a tool's idle), an
+  idle break (a fidget over it), an emote.
 - **idle break** (`IDLE`, `src/courier/anim/idlebreak.js`): a fidget played over the idle after a still spell with nothing in hand (a look
   round, a stretch, a shift and tap, in turn); any move ends it. *Not:* an emote (asked for by the player).
 - **the jet arts** (`courier/moves/jets.js`): three opt-in Movement Arts on the Soul Brush's load, after Sunshine's nozzles, off until
@@ -291,22 +295,24 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   creature), the **Major Arcana** (twenty-two designated cards).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
-- **telegraph** (code: `markOf`, Dovina's data, `progress/combat/telegraphs.js`; the look `TelegraphLook`, `game.telegraphs`,
-  `src/vfx/telegraphs/`, Calissa's, 2026-10-09; TELEGRAPHS.md): what Divination draws of a windup, never more than its step has earned. Its
-  parts: **the edge** (step 1: the area's outline on the ground in the Mind's ink, a pale keyline outside it, the drawn area the area's own
-  numbers); **the caution edge** (the edge dashed: a tracked shape not yet locked, its size not yet known); **the fill** (step 2: the area
-  filling away from its maker on the windup's own clock, reaching the edge on the strike frame, its front a pale line; untyped it is ink,
-  from step 3 the damage type's two colours and its **motif**: impact's facets, ego's hex lattice, influence's ripples, illusion's turning
-  curls, delirium's bubbles); **a status glyph** (step 3, `status.<id>`: one for each status the blow builds, standing where the fill lands
-  last); **an answer glyph** (step 4, `answer.<id>`: chevrons laid on the ground at the edge, turned out, in or across a line; a curved arrow
-  behind a cone's maker; standing over a thing, the guard on the arena's rim, the high ground on a safe island, the crack on what a bait
-  leads into, the target over an add, the shut eye on a gazer); **an add's marker** (`tmark.add`, over each add before step 4) and **pips**
-  (`tmark.pip`, a real second left each, ten at most); **the eye** (`tmark.eye`, on a gazer); **the arena's rim** (a raidwide: a band round
-  the arena with a marquee running round it). One cast's areas are one edge (a union); six at once at most, never culled; a friendly area
-  (a sibling's, a spirit's) is its outline alone in the Courier's draught colour. One program (`telegraphshader.js`); the glyphs are drawn
-  in the icons' hand (`ui/icons/telegraphart.js`) into one atlas (`telegraphatlas.js`); the grid it lies on is **the drape**
-  (`telegraphdrape.js`: a square of world cells set on the ground). *Not:* the closing ring, the parry mark ("answer this"), the resist mark,
-  a glyph pop (`vfx/glyphs.js`).
+- **Figment attack telegraph** (code: `figmentMarkOf`, Dovina's data, `progress/combat/figmenttelegraphs.js`; drawn by
+  `FigmentTelegraphs`, `game.figmentTelegraphs`, `src/vfx/figmenttelegraph.js`, its parts in `src/vfx/figmenttelegraph/`, Calissa's,
+  2026-10-09; FIGMENT-TELEGRAPHS.md): what Divination draws of a creature's windup, never more than its step has earned. Its parts: **the
+  edge** (step 1: the area's outline on the ground in the Mind's ink, a pale keyline outside it, the drawn area the area's own numbers);
+  **the caution edge** (the edge dashed: a tracked shape not yet locked, its size not yet known); **the fill** (step 2: the area filling
+  away from its maker on the windup's own clock, reaching the edge on the strike frame, its front a pale line; untyped it is ink, from
+  step 3 the damage type's two colours and its **motif**: impact's facets, ego's hex lattice, influence's ripples, illusion's turning
+  curls, delirium's bubbles); **a status glyph** (step 3, `status.<id>`: one for each status the blow builds, standing where the fill
+  lands last); **an answer glyph** (step 4, `answer.<id>`: chevrons laid on the ground at the edge, turned out, in or across a line; a
+  curved arrow behind a cone's maker; standing over a thing, the guard on the arena's rim, the high ground on a safe island, the crack on
+  what a bait leads into, the target over an add, the shut eye on a gazer); **an add's marker** (`figmentMark.add`, over each add before
+  step 4) and **pips** (`figmentMark.pip`, a real second left each, ten at most); **the eye** (`figmentMark.eye`, on a gazer); **the
+  arena's rim** (a raidwide: a band round the arena with a marquee running round it). One cast's areas are one edge (a union); six at
+  once at most, never culled; a friendly area (a sibling's, a spirit's) is its outline alone in the Courier's draught colour. One program
+  (`figmenttelegraphshader.js`); the glyphs are drawn in the icons' hand (`ui/icons/figmenttelegraphart.js`) into one atlas
+  (`figmenttelegraphatlas.js`); the grid it lies on is **the drape** (`figmenttelegraphdrape.js`: a square of world cells set on the
+  ground). *Not:* the rail's telegraph mark (`vfx/telegraph.js`), the parry mark ("answer this"), the resist mark, a glyph pop
+  (`vfx/glyphs.js`).
 
 ## 4. Creatures and folk
 
@@ -349,6 +355,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
 - **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): what the folk call the Great Dunemaw's FOE, a Great Slip Jelly wearing the broken urn it grew in as a crown (**the urn crown**, `src/vfx/urncrown.js`; the lore copy says "the broken crude jar": a *pithos*, Pandora's jar); breaking the crown bares **the core**, its weak point.
+  Its size is `FOE.size` (`src/progress/combat/dunemaw.js`, 14: the body 21 m tall, 27.8 m with the crown; the owner, 2026-10-09:
+  "about 12 Couriers tall"), the one number its body, its fight and its look are scaled by. Under the urn is **the urn's flesh**
+  (`urn-flesh`, `src/vfx/urncrown.js`): the jelly swollen up into the urn it outgrew, seen from below.
 - **the Prince of Clay**: Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the ram**, **the slam**, **the reel**, **the slide** (the Great Slip Jelly's: `src/creatures/jelly/greatjelly.js`): its charge after
   a one-second scrape, aimed as the scrape begins (stone it hits cracks its own crown); its slam close in; the four seconds it reels
@@ -497,7 +506,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
   Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
-  the floor, 10 m from the spray wall).
+  the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/testroomkit.js`): an open book whose pages project the
+  Index's dial, lying parallel to them a few centimetres over the paper, its print inked on the page and its light climbing between.
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
@@ -583,7 +593,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   tenths of its worth), **dissolve** (dread: saturation down). **The World Mushroom** (`TREE`; working name): the tree fed anything at
   its roots, its **sap** the colour of all it ate, its **girth** grown as its meals double, its ten **fruiting bodies** (the sephiroth)
   and twenty-two **branches** (hung with Major Arcana cards); it **fruits** at dawn, leaned by the game day's feeling (a **fair day**,
-  a **prismatic day**). A **sporeling**: a fungal spirit the tree's crown gives, settling as a visitor. A **keepsake pot**: a released
+  a **prismatic day**). A **keepsake pot**: a released
   spirit fired at the Chimney into a pot that stays, standing in a ring at its foot (`progress/keepsakes.js`). **Myggdrasil's planetoid**
   (`world/garden/mycelium.js`): the seventh planetoid, given at Sinter (not bought, not on the ring), the tree on its crown, F at its roots.
   **The Grimoire of Echoes** (`feedback/codex/grimoire.js`): the Codex's page of the mycelium, what you have met only (the strains held,
@@ -598,7 +608,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (`canopyOpen`; *not* the Dantian's gate), one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's
   paths between the caps) run gold when a card is hung, a ghost before. **The mycelium's threads** run from the roots' ends over the
   ground to each spore bed on its planetoid (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on threads
-  under the caps, glowing in the tincture's colour; **perches** (shelf brackets on the stipe) are where sporelings sit (`perchWorld`).
+  under the caps, glowing in the tincture's colour; **shelf brackets** on the stipe in the crown, polypores of its clay.
 - **the plants** (the garden's: `src/world/garden/plants.js`; drawn by `src/vfx/garden/gardenplants.js`): green that spreads cell by
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
@@ -652,16 +662,13 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   firing, and go home. **soul glow**: the vessel's skin lit from inside in the soul colour, drawn by wheelColour's Oklab at one
   lightness for every hue: the soul's chroma at one strength once off grey, never its brightness (none while grey); brighter for a few
   real seconds after a true firing.
-- **a sporeling's look** (`sporeling`, `src/vfx/garden/sporeling.js`): a cap for a head in its fruit's colour, spotted; labradorite
-  gills edged in gold; a stem body with two eyes; hyphae for limbs; an idle sway, a waddle, a **hop** of its own (a squash, a stretch,
-  feet tucked; *not* the Emocean's hop, nor the Jar's hop). Its mind is Petra's.
 - **the strains' looks** (`strainBed`, `STRAIN_FUNGI`, `src/vfx/garden/strains.js`; the mycelium is Dovina's, `docs/plans/MYCELIUM.md`):
   a spore bed drawn as its strain's real fungus on what it grows on: the **lichen** (wonder: crusts, leafy **rosettes** and pixie cups on
   boulders and bark), **koji** (mirth: Aspergillus oryzae over rice in two cedar trays, a **koji-buta** each), the **inkcap** (desire:
   shaggy inkcaps on loam, dissolving into **ink** from the rim), the **oyster** (grief: shelves on a rotting log and a stump), **witches'
   butter** (dread: yellow-orange jelly on dead branches); in code a strain is its feeling, its fungus `lichen` .. `butter`. Its
   **growth** (0 inoculated .. 1 full) brings each part up from its foot. **Foxfire** (`foxfireColour`): what glows at night in the
-  garden's fungi (the strains, a fairy ring's fruit, a sporeling's gills), the feeling's canon colour lifted to a glow's lightness, a
+  garden's fungi (the strains, a fairy ring's fruit), the feeling's canon colour lifted to a glow's lightness, a
   slow breath and never a flicker; *not* a light (no lamp is lent). **A fairy ring**: round a spore bed, a narrow dead edge, a darker
   lusher **sward** outside it and the strain's own small growths on it; *not* the ring of bought planetoids, the hue ring, a ripple.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
@@ -687,7 +694,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   change of place under cover).
 - **a boss part** (`BossPart`, `BossParts`, `src/vfx/bossparts.js`; Calissa's, 2026-10-08): one piece of a leg's big object that the
   runtime hits and breaks on its own: **intact**, **damaged**, **broken**, or **sealed** (not to be hit yet: Ikaruga's covers); drawn in
-  line and glow (the Mind's labradorite); its **closing ring's anchor** (`closingRingAnchor`) is where the closing ring sits, and its
+  line and glow (the Mind's labradorite); its **telegraph anchor** (`telegraphAnchor`) is where the shrinking mark sits, and its
   **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
   the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
   (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
@@ -858,11 +865,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **seated** (drawn whole, shifted to where the storm draws the world at its place, by at most `STORM.seat`, 0.4 m, so its parts stay on
   their hurtboxes). Its strength (0..1) is a leg's **storm**, the waypoint's weather and the Courier's mental state (Prismatic warps the
   most), scaled by the setting `visual.warp`. *Not:* the weather (an island's mood); the glitch (a pulse).
-- **the closing ring** (`ClosingRings`, `vfx/closingring.js`, `shots.closingRings`; Elemental Gearbolt's; was "the telegraph mark",
-  renamed 2026-10-09 so it is never taken for a telegraph): a ring closing on a part about to act at sea over its windup, the part's own
-  ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. The rail keeps it until the
-  crossing is settled (TELEGRAPHS.md 6.8). *Not:* a telegraph (Divination's mark on the ground), the parry mark ("answer this"), a lane
-  mark (Divination's, on the sea), a windup (the creature's own listing).
+- **the telegraph mark** (`vfx/telegraph.js`; Elemental Gearbolt's): a ring closing on a part about to act over its windup, the part's
+  own ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. *Not:* the parry
+  mark ("answer this"), a lane mark (Divination's, on the sea), a windup (the creature's own listing).
 - **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player's words Espada's, LORE.md "The
   trip's pressures"): **the hull** (the ship's `bears`, carried from leg to leg, mended only at a haven); **the bunker** (code `tank`:
   the fuel a ship carries, in **measures**; filling it is **bunkering**, at the pier and at a calm's buoy; *not* "tank", which is the
@@ -999,6 +1004,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   shuts it. *Not:* a page centred under the veil (the index's, a Shrine's), the dock (Margarite's quay; the word "dock" is a place's).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+  **Froude scaling** (`froude(o, k)`, `src/vfx/cavekit.js`): a particle drawn for one size thrown by a thing k times as big (sizes by k,
+  speeds and times by √k, gravity real), as miniature effects are shot; the Great Slip Jelly's and the bowl's effects use it.
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
   played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
@@ -1046,7 +1053,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   stroke in Celestial mode).
 - **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
   **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore
-  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky).
+  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky). The stars
+  each have a temperature (most near white, a few orange or blue-white) and a brightness on a power law (many faint, a few bright), and
+  sit behind the cloud: the cloud layer's own field hides them (`uCloud*`, linked by the night alive), the night painting's swirls thin
+  them, and a slow **cirrus** (a high thin cloud drifting slower than the cloud layer, read from the same noise; never the weather's haze) dims
+  patches of them (R10).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
   of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
   alone (that is the map's: see the homonyms).
@@ -1112,9 +1123,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
   the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
-  the pendulum keylined in black, more as it rises.
+  their keylines stronger as it rises. **the compass's ink** (`COMPASS_U.uInk`, `compassMaterial`): the whole device's tone, taken from
+  what it is drawn against (the sky's state in memory, `sky.toneAt` under `clouds.over`; under a roof the room's background): pale light
+  with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink
+  (`labInk`, a surface's near-black), though it is drawn in it.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
-  bars, the fish portrait, a telegraph and its glyphs (`game.telegraphs`).
+  bars, the fish portrait, a Figment attack telegraph and its glyphs (`game.figmentTelegraphs`). A wall hides a creature's marks (its
+  glyph pops, its aura, its temper) as it hides the creature, and its own
+  body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**
+  (a pop's `{ throughWalls }`, or `game.glyphs`, `game.temper`, `game.auras` `.throughWalls`, true or a creature -> bool): the switch
+  that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20). A scan's
+  marks (the Reveal song's) and every mark on the rail are seen through walls already.
 
 ## 10. Engine and process
 

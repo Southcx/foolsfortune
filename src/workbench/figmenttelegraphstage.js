@@ -1,30 +1,32 @@
 // ---------------------------------------------------------------------------------------
-// THE WORKBENCH'S TELEGRAPH STAGES (the combat group): the telegraphs' look (vfx/telegraphs/telegraphlook.js) drawn from the telegraphs'
-// own data (progress/combat/telegraphs.js `markOf`, progress/combat/greatjelly.js `castMark`), on grounds of their own (pale sand and
-// dark stone, sloped and bumped, so the mark is seen lying on what it lies on: the casebook's rule 118), each windup on a loop:
-//   combat:telegraphs           THE LADDER: six ground shapes (circle, out-in, cone, line, lunge, baited) in columns, Divination 1, 2,
-//                               8, 20 and 35 in rows (the body alone, where, when, what kind, how to answer)
-//   combat:telegraphs.more      the rest at the same five levels: floor (two safe pockets), tracked (dashed, then locked), left
-//                               (puddles), gaze (the eye on its maker), adds (three, a pip a second left), raidwide (the arena's rim)
-//   combat:telegraphs.variants  every shape at step 4 over the area's numbers drawn in magenta (the drawn area is the true area),
-//                               the friendly outline (a sibling's, in the draught colour), the caution edge, one cast's overlapping
-//                               drops merged into one edge, the mark over a ridge
-//   combat:telegraphs.glyphs    the glyph sheet: every answer, mark and status glyph over pale and dark ground
-//   combat:telegraphs.bowl      the Great Slip Jelly's casts at their own size (castMark at Divination 35) on a dish 140 m across
+// THE WORKBENCH'S FIGMENT ATTACK TELEGRAPH STAGES (the group 'Figment attack telegraphs'): the marks as drawn (vfx/figmenttelegraph.js)
+// from their own data (progress/combat/figmenttelegraphs.js `figmentMarkOf`, progress/combat/greatjelly.js `castMark`), on grounds of their
+// own (pale sand and dark stone, sloped and bumped, so the mark is seen lying on what it lies on: the casebook's rule 118), each windup on
+// a loop:
+//   combat:figmentTelegraphs           THE LADDER: six ground shapes (circle, out-in, cone, line, lunge, baited) in columns, Divination 1, 2,
+//                                      8, 20 and 35 in rows (the body alone, where, when, what kind, how to answer)
+//   combat:figmentTelegraphs.more      the rest at the same five levels: floor (two safe pockets), tracked (dashed, then locked), left
+//                                      (puddles), gaze (the eye on its maker), adds (three, a pip a second left), raidwide (the arena's rim)
+//   combat:figmentTelegraphs.variants  every shape at step 4 over the area's numbers drawn in magenta (the drawn area is the true area),
+//                                      the friendly outline (a sibling's, in the draught colour), the caution edge, one cast's overlapping
+//                                      drops merged into one edge, the mark over a ridge
+//   combat:figmentTelegraphs.glyphs    the glyph sheet: every answer, mark and status glyph over pale and dark ground
+//   combat:figmentTelegraphs.bowl      the Great Slip Jelly's casts at their own size (castMark at Divination 35) on a dish 140 m across
 //
 // Prior art: the workbench's other stages (a look shown on a loop before the game drives it: workbench/crossingshots.js), and the
 // style sheet of a UI kit (every state of every piece on one page).
 //
-//   telegraphStage(id) -> Object3D (its loop on userData.tick(t); userData.bare; userData.view)    TELEGRAPH_STAGE_IDS
+//   figmentTelegraphStage(id) -> Object3D (its loop on userData.tick(t); userData.bare; userData.view)    FIGMENT_TELEGRAPH_STAGE_IDS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { TelegraphLook } from '../vfx/telegraphs/telegraphlook.js';
-import { ATLAS_IDS } from '../vfx/telegraphs/telegraphatlas.js';
-import { markOf } from '../progress/combat/telegraphs.js';
+import { FigmentTelegraphs } from '../vfx/figmenttelegraph.js';
+import { ATLAS_IDS } from '../vfx/figmenttelegraph/figmenttelegraphatlas.js';
+import { GLYPH_TINT } from '../vfx/figmenttelegraph/figmenttelegraphlook.js';
+import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
 import { CASTS, castMark } from '../progress/combat/greatjelly.js';
 import { COLOR } from '../progress/weather.js';
 
-export const TELEGRAPH_STAGE_IDS = ['combat:telegraphs', 'combat:telegraphs.more', 'combat:telegraphs.variants', 'combat:telegraphs.glyphs', 'combat:telegraphs.bowl'];
+export const FIGMENT_TELEGRAPH_STAGE_IDS = ['combat:figmentTelegraphs', 'combat:figmentTelegraphs.more', 'combat:figmentTelegraphs.variants', 'combat:figmentTelegraphs.glyphs', 'combat:figmentTelegraphs.bowl'];
 const LEVELS = [1, 2, 8, 20, 35];
 const SAND = new THREE.Color(0xd9b98c), STONE = new THREE.Color(0x2a2220);
 
@@ -76,11 +78,11 @@ function numbersLine(area, h, at, facing = 0, opts = {}) {
   return grp;
 }
 
-/** A row of telegraphs on a loop: `cells` [{ key, at, facing, opts, level, friendly, half }] drawn by looks of six, each windup 3 s. */
+/** A row of Figment attack telegraphs on a loop: `cells` [{ key, at, facing, opts, level, friendly, half }] drawn by looks of six, each windup 3 s. */
 function loopCells(obj, cells, ground, { windup = 3, gap = 0.9 } = {}) {
   const shim = { rawDt: 1 / 60, camera: null };
   const looks = [];
-  for (let i = 0; i < cells.length; i += 6) { const L = new TelegraphLook(shim, { scene: null }); L.ground = (x, z) => ground(x, z); obj.add(L.group); looks.push(L); }
+  for (let i = 0; i < cells.length; i += 6) { const L = new FigmentTelegraphs(shim, { scene: null }); L.ground = (x, z) => ground(x, z); obj.add(L.group); looks.push(L); }
   let pt = 0;
   obj.userData.tick = (t) => {
     const dt = Math.max(0, Math.min(0.1, t - pt)); pt = t; shim.rawDt = dt;
@@ -88,7 +90,7 @@ function loopCells(obj, cells, ground, { windup = 3, gap = 0.9 } = {}) {
       const L = looks[Math.floor(i / 6)], id = `cell${i}`, w = W[c.key] || c.w, cyc = (windup + gap) * (c.halves || 1), k = t % cyc;
       const half = c.halves === 2 && k >= windup + gap ? 1 : 0, kk = half ? k - (windup + gap) : k, eta = windup - kk;
       if (eta < 0) { L.hide(id); c.shown = -1; return; }
-      const mark = markOf({ ...w, eta: windup, answer: half ? 'in' : w.answer }, c.level ?? 35, false);
+      const mark = figmentMarkOf({ ...w, eta: windup, answer: half ? 'in' : w.answer }, c.level ?? 35, false);
       if (!mark) return;
       const h = c.shown !== half ? L.show(id, mark, { origin: c.at, facing: c.facing || 0, eta, ...c.opts, friendly: c.friendly }) : L.get(id);
       if (c.shown !== half && half) h?.next(eta);
@@ -99,11 +101,11 @@ function loopCells(obj, cells, ground, { windup = 3, gap = 0.9 } = {}) {
   return looks;
 }
 
-export function telegraphStage(id) {
+export function figmentTelegraphStage(id) {
   const obj = new THREE.Group(); obj.userData.bare = true; obj.userData.placed = true;
   const bumps = (x, z) => 0.35 * Math.sin(x * 0.31) * Math.cos(z * 0.27) + 0.2 * Math.sin(x * 0.9 + z * 0.4);
-  if (id === 'combat:telegraphs' || id === 'combat:telegraphs.more') {
-    const keys = id === 'combat:telegraphs' ? ['circle', 'outin', 'cone', 'line', 'lunge', 'baited'] : ['floor', 'tracked', 'left', 'gaze', 'adds', 'raidwide'];
+  if (id === 'combat:figmentTelegraphs' || id === 'combat:figmentTelegraphs.more') {
+    const keys = id === 'combat:figmentTelegraphs' ? ['circle', 'outin', 'cone', 'line', 'lunge', 'baited'] : ['floor', 'tracked', 'left', 'gaze', 'adds', 'raidwide'];
     const DX = 16, DZ = 15, h = (x, z) => bumps(x, z) - z * 0.04, tone = (x) => (Math.floor((x + DX * 3) / DX) % 2 ? 0.92 : 0.05);
     obj.add(groundMesh(130, h, (x) => tone(x)));
     const cells = [];
@@ -123,9 +125,9 @@ export function telegraphStage(id) {
     }));
     const looks = loopCells(obj, cells, h);
     const tick = obj.userData.tick; let lockT = 0;
-    obj.userData.tick = (t) => { tick(t); if (id === 'combat:telegraphs.more') { const locked = t % 3.9 > 1.6; if (locked !== lockT) { lockT = locked; looks.forEach((L) => { for (let i = 0; i < 30; i++) L.get(`cell${i}`)?.set({ locked }); }); } } };
+    obj.userData.tick = (t) => { tick(t); if (id === 'combat:figmentTelegraphs.more') { const locked = t % 3.9 > 1.6; if (locked !== lockT) { lockT = locked; looks.forEach((L) => { for (let i = 0; i < 30; i++) L.get(`cell${i}`)?.set({ locked }); }); } } };
     obj.userData.view = { pos: new THREE.Vector3(0, 62, -58), look: new THREE.Vector3(0, 0, 2) };
-  } else if (id === 'combat:telegraphs.variants') {
+  } else if (id === 'combat:figmentTelegraphs.variants') {
     const h = (x, z) => bumps(x, z) + 1.6 * Math.exp(-((x - 18) ** 2) / 18) - z * 0.03;
     obj.add(groundMesh(110, h, (x, z) => (z > 4 ? 0.05 : 0.92)));
     const cells = [], keys = ['circle', 'outin', 'cone', 'line', 'lunge', 'floor'];
@@ -150,24 +152,24 @@ export function telegraphStage(id) {
     for (const e of extra) { e.at.y = h(e.at.x, e.at.z); e.level = 35; cells.push(e); const m = maker(); m.position.copy(e.at); obj.add(m); }
     loopCells(obj, cells, h);
     obj.userData.view = { pos: new THREE.Vector3(0, 70, -50), look: new THREE.Vector3(0, 0, 18) };
-  } else if (id === 'combat:telegraphs.glyphs') {
+  } else if (id === 'combat:figmentTelegraphs.glyphs') {
     const h = () => 0;
     obj.add(groundMesh(60, h, (x, z) => (z > 0 ? 0.95 : 0.04), 8));
-    const shim = { rawDt: 1 / 60 }, L = new TelegraphLook(shim, { scene: null }); obj.add(L.group);
-    obj.userData.tick = () => {
-      L.boards.n = 0;
+    const shim = { rawDt: 1 / 60 }, L = new FigmentTelegraphs(shim, { scene: null }); obj.add(L.group);
+    obj.userData.tick = (t = 0) => {
+      L.glyphs.begin();
       ATLAS_IDS.forEach((art, i) => {
-        const col = i % 11, row = Math.floor(i / 11), tint = art.startsWith('status.') ? ({ stun: 0xf2cc5a, doubt: 0x6a96f0, charm: 0xf4a6bc, blind: 0x9ad8f0, confusion: 0xb48ae0, slow: 0x7fb2ff, halt: 0xbfe6ff, sleep: 0xd9c8ff, soaked: 0x8fd0c8 })[art.slice(7)] : 0xe6dcff;
-        for (const z of [-4 - row * 3.4, 4 + row * 3.4]) L.board(art, new THREE.Vector3((col - 5) * 2.4, 0.1, z), 2, 1, tint, 1);
+        const col = i % 11, row = Math.floor(i / 11), tint = art.startsWith('status.') ? GLYPH_TINT[art.slice(7)] ?? GLYPH_TINT.answer : GLYPH_TINT.answer;
+        for (const z of [-4 - row * 3.4, 4 + row * 3.4]) L.glyphs.add(art, new THREE.Vector3((col - 5) * 2.4, 0.1, z), 2, 1, tint, 1);
       });
-      const g = L.boards.g; g.setDrawRange(0, L.boards.n * 6); for (const k of ['position', 'glyph', 'shift', 'tint']) g.attributes[k].needsUpdate = true; L.boards.mesh.visible = true;
+      L.glyphs.end(t, null);
     };
     obj.userData.view = { pos: new THREE.Vector3(0, 14, -26), look: new THREE.Vector3(0, 0, -6) };
-  } else if (id === 'combat:telegraphs.bowl') {
+  } else if (id === 'combat:figmentTelegraphs.bowl') {
     const DISH = Math.tan((4 * Math.PI) / 180), h = (x, z) => -(63 - Math.min(63, Math.hypot(x, z))) * DISH;
     obj.add(groundMesh(150, h, () => 0.75, 150));
     const jelly = maker(6); jelly.position.set(0, h(0, 0), 0); obj.add(jelly);
-    const shim = { rawDt: 1 / 60 }, L = new TelegraphLook(shim, { scene: null }); L.ground = (x, z) => h(x, z); obj.add(L.group);
+    const shim = { rawDt: 1 / 60 }, L = new FigmentTelegraphs(shim, { scene: null }); L.ground = (x, z) => h(x, z); obj.add(L.group);
     const ids = Object.keys(CASTS).filter((k) => CASTS[k].mark), courier = new THREE.Vector3(6, 0, 24); courier.y = h(courier.x, courier.z);
     const pillars = [30, 90, 150, 210, 270, 330].map((b) => { const a = (b * Math.PI) / 180, p = new THREE.Vector3(Math.sin(a) * 45, 0, Math.cos(a) * 45); p.y = h(p.x, p.z); const m = new THREE.Mesh(new THREE.CylinderGeometry(3.75, 3.75, 30, 16), new THREE.MeshLambertMaterial({ color: 0x5a4a40 })); m.position.copy(p).add(new THREE.Vector3(0, 15, 0)); obj.add(m); return p; });
     const adds = [0, 1, 2, 3].map((i) => { const s = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 8), new THREE.MeshLambertMaterial({ color: 0x7a9a86 })); const a = i * 1.5 + 0.4; s.position.set(Math.sin(a) * 30, h(Math.sin(a) * 30, Math.cos(a) * 30) + 1.2, Math.cos(a) * 30); obj.add(s); return s; });

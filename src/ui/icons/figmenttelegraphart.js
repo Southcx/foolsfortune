@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------------------------------
-// THE TELEGRAPHS' GLYPHS: the pictures a telegraph wears (docs/plans/TELEGRAPHS.md sections 3 and 4), 14 x 14 in the icons' hand
-// (ui/icons/hand.js: the light shape only; the bevel and the keyline are the hand's, 16 x 16 with it), so the marks in the world are
-// drawn by the same hand as the HUD's keywords and read the same way: a light shape keylined dark, on any ground. They are world marks:
-// no words, no numbers (a count is pips). The world draws them from one atlas (vfx/telegraphs/telegraphatlas.js); the Codex may show
-// them as icons (ui/icons/icons.js: 'answer.<id>', 'status.<id>', 'tmark.<id>').
+// THE FIGMENT ATTACK TELEGRAPHS' GLYPHS: the pictures a Figment attack telegraph wears (docs/plans/FIGMENT-TELEGRAPHS.md sections 3 and 4),
+// 14 x 14 in the icons' hand (ui/icons/hand.js: the light shape only; the bevel and the keyline are the hand's, 16 x 16 with it), so the
+// marks in the world are drawn by the same hand as the HUD's keywords and read the same way: a light shape keylined dark, on any ground.
+// They are world marks: no words, no numbers (a count is pips). The world draws them from one atlas
+// (vfx/figmenttelegraph/figmenttelegraphatlas.js); the Codex may show them as icons (ui/icons/icons.js: 'answer.<id>', 'status.<id>',
+// 'figmentMark.<id>').
 //
 //   THE ANSWERS (step 4: how to answer)
 //   out         two chevrons pointing one way: laid on the ground at an area's edge, turned to point out of it (and, turned, in and
@@ -25,7 +26,7 @@
 // the tankbuster's), Monster Hunter's status icons (the snail, the stars, the bubbles), Into the Breach's intent marks, and the
 // accessibility guidelines' rule that colour is never alone: every glyph here is told apart in greys.
 //
-//   ANSWER_ART[id]   STATUS_ART[id]   TMARK_ART[id]   (rows, 14 x 14)
+//   ANSWER_ART[id]   STATUS_ART[id]   FIGMENT_MARK_ART[id]   (rows, 14 x 14)
 // ---------------------------------------------------------------------------------------
 import { grid } from './hand.js';
 
@@ -161,7 +162,7 @@ export const ANSWER_ART = {
   ],
 };
 
-export const TMARK_ART = {
+export const FIGMENT_MARK_ART = {
   eye: grid(14, 14, (x, y) => {
     if (!almond(x, y)) return null;
     const r = ring(x, y);

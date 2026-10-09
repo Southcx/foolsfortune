@@ -54,16 +54,15 @@ import { seaChartStage } from './seachartstage.js';
 import { shipStage } from './shipstage.js';
 import { mountStage } from './mountstage.js';
 import { encounterStage, ENCOUNTER_STAGE_IDS } from './encounterstage.js';
-import { telegraphStage, TELEGRAPH_STAGE_IDS } from './telegraphstage.js';
+import { figmentTelegraphStage, FIGMENT_TELEGRAPH_STAGE_IDS } from './figmenttelegraphstage.js';
 import { strainBed } from '../vfx/garden/strains.js';
 import { lekythos } from '../vfx/garden/lekythos.js';
-import { sporeling } from '../vfx/garden/sporeling.js';
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 
 export function buildStage(id, game) {
   let obj = null;
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
-  if (TELEGRAPH_STAGE_IDS.includes(id)) return telegraphStage(id); // (the telegraphs' marks and glyphs: workbench/telegraphstage.js)
+  if (FIGMENT_TELEGRAPH_STAGE_IDS.includes(id)) return figmentTelegraphStage(id); // (the Figment attack telegraphs' marks and glyphs: workbench/figmenttelegraphstage.js)
   if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
   else if (id === 'ships:classes') obj = shipStage(game); // (the five hulls in echelon: workbench/shipstage.js)
   else if (id === 'ships:mounts') obj = mountStage(game); // (a mount's preview on a moored sloop and frigate: workbench/mountstage.js)
@@ -72,7 +71,7 @@ export function buildStage(id, game) {
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
   else if (id === 'crossing:charybdis') obj = charybdisStage(game); // (the maelstrom's whirlpool and Charybdis: workbench/charybdisstage.js)
-  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the closing ring, the hurtbox: workbench/crossingshots.js)
+  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the telegraph, the hurtbox: workbench/crossingshots.js)
   else if (id === 'crossing:shoal' || id === 'crossing:geometry') obj = buildSwarmStage(id); // (the crossing's swarm and ambient geometry: workbench/swarmstage.js)
   else if (id === 'crossing:chart') obj = seaChartStage(); // (the sea chart at three confidences and the rutter: workbench/seachartstage.js)
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
@@ -204,19 +203,17 @@ export function buildStage(id, game) {
       C.update(1 / 60);
     };
   }
-  else if (id === 'garden:strains') { // (the five strains' beds growing in, day to night and back on a 24 real second loop; a row of keepsake pots; sporelings swaying and hopping. userData.hold = { night, growth } pins them)
+  else if (id === 'garden:strains') { // (the five strains' beds growing in, day to night and back on a 24 real second loop; a row of keepsake pots. userData.hold = { night, growth } pins them)
     obj = new THREE.Group(); const beds = DISPLAY_ORDER.map((f, i) => { const B = strainBed(f, { seed: i + 1 }); B.group.position.set((i - 2) * 4.2, 0, -1.6); obj.add(B.group); return B; });
-    const pots = [[COLOR.wonder, 'slipjelly'], [COLOR.mirth, 'sporeling'], [COLOR.desire, 'slipjelly'], [COLOR.grief, 'sporeling'], [COLOR.dread, 'slipjelly'], [{ h: 300, s: 0.7 }, 'sporeling']].map(([colour, spirit], i) => { const P = lekythos({ colour, spirit, seed: i + 1 }); P.group.position.set((i - 2.5) * 0.85, 0, 2.0); P.group.rotation.y = (i - 2.5) * -0.12; obj.add(P.group); return P; });
-    const sp = [0xd8402a, COLOR.mirth, { h: 200, s: 0.6 }, 0x9a6ad8].map((colour, i) => { const S = sporeling({ colour, seed: i + 3 }); S.group.position.set((i - 1.5) * 1.1 + 0.3, 0, 3.2); S.group.rotation.y = (i - 1.5) * 0.25; obj.add(S.group); return S; });
-    const lights = []; let found = false, pt = 0; obj.userData.parts = { beds, pots, sporelings: sp };
+    const pots = [COLOR.wonder, COLOR.mirth, COLOR.desire, COLOR.grief, COLOR.dread, { h: 300, s: 0.7 }].map((colour, i) => { const spirit = 'slipjelly'; const P = lekythos({ colour, spirit, seed: i + 1 }); P.group.position.set((i - 2.5) * 0.85, 0, 2.0); P.group.rotation.y = (i - 2.5) * -0.12; obj.add(P.group); return P; });
+    const lights = []; let found = false, pt = 0; obj.userData.parts = { beds, pots };
     const dim = (k) => { if (!found) { found = true; let r = obj; while (r.parent) r = r.parent; r.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); } for (const [L, i0] of lights) L.intensity = i0 * k; };
-    obj.userData.dispose = () => { for (const [L, i0] of lights) L.intensity = i0; [...beds, ...pots, ...sp].forEach((x) => x.dispose()); };
+    obj.userData.dispose = () => { for (const [L, i0] of lights) L.intensity = i0; [...beds, ...pots].forEach((x) => x.dispose()); };
     obj.userData.tick = (t) => {
       const dt = Math.max(0, Math.min(0.1, t - pt)), k = t % 24, hold = obj.userData.hold; pt = t;
       const night = hold?.night ?? (k < 10 ? 0 : k < 12 ? (k - 10) / 2 : k < 20 ? 1 : k < 22 ? 1 - (k - 20) / 2 : 0), growth = hold?.growth ?? Math.min(1, k / 4);
       if (obj.parent) dim(1 - 0.86 * night);
       beds.forEach((B) => { B.set({ growth, night }); B.update(dt); });
-      sp.forEach((S, i) => { S.set({ night }); if (!hold && Math.floor(t * 0.5 + i * 0.37) !== Math.floor((t - dt) * 0.5 + i * 0.37) && (i + Math.floor(t * 0.5)) % 2 === 0) S.hop(0.22); S.update(dt); });
     };
   }
   else if (id === 'pier:mat') { const B = new BuskerMat(); obj = B.group; obj.userData.tick = (t) => { B.tip(Math.floor(t % 14)); B.set({ playing: (t % 14) > 3 }); B.update(1 / 60); }; }

@@ -408,7 +408,6 @@ the rules before building in the same area; a rule a machine can check goes into
     own step-over, felt for at the lip's height.
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
-
 149. **A mark is drawn with an alpha.** Light added at alpha 0 writes nothing through this pipeline; every style of a mark carries
     one, and a new style is proved by counting the pixels it changes.
 150. **A helper that scales numbers is never handed names.** A table's numbers and its words go through different helpers.
@@ -426,22 +425,186 @@ the rules before building in the same area; a rule a machine can check goes into
     status, no stun.
 157. **An impact is measured against the surface it lands on.** A landing's hardness is the speed into the ground's own motion
     under the body (a slope falls away too), never the bare fall speed.
-158. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
+158. **An object's `visible` is the zones' answer too: an update never stops on it.** The zones (render/zones.js) make `visible` a getter
+    that reads false while the object's zone is not drawn; an update that returns on its own object's `visible` never moves it out of
+    that zone, and it is hidden for good. Keep the shown state in a number of its own, and mark a HUD (or anything moved to the eye)
+    `zoneFree`.
+159. **A scrolled texture's offset wraps where every reader of it turns whole.** An offset kept in 0..1 is a seam for any reader that
+    multiplies it by something that is not a whole number (a second octave at 1.6, a cirrus at 0.4): when it wraps, that field jumps.
+    Wrap at a whole number every multiplier turns into whole repeats (5 for 1, 1.6 and 0.4), or keep an unwrapped sum.
+160. **A turn's sign is proved by where the part ends up.** A limb that should swing forward is measured (its tip's position in the
+    thing's own facing, +z where it stands) and looked at from in front and the side, never read off the sign it was written with.
+161. **A telegraph is judged from where the blow is answered, with its mark on.** The part that carries the parry mark stays in sight
+    from the striker's place for the whole wind-up (rendered from in front, with the mark), never behind the body it belongs to.
+162. **A mark is hidden by what hides its thing.** A world mark on a creature is depth-tested by default and drawn so its own body
+    never hides it; one that shows through walls says so (`throughWalls`) for a reason the player can see (a scan's marks, the Reveal
+    song's), and on the rail every one does (no wall stands there, and a mark set in a foe's own body is hidden by it). An offset
+    that depends on the eye is applied per camera as it draws (`onBeforeRender`), never once in the update: another camera sees it
+    displaced.
+163. **A look asked for by name falls back to a plain one.** A glyph kind, an effect or a sound a table lacks is a wrong look and
+    nothing else, never a thrown frame that stops what the caller was doing; the one place that reads the table picks the fallback.
+164. **A model scaled is a look judged again, from where it is now seen.** Whatever its shaders and effects measure in metres (a
+    world-space phase, a particle's size and speed, a gravity) is put against the model's own size, and every face the old size hid
+    (an underside, a back face, a silhouette's facets) is looked at from the new eye line.
+165. **A warm-up's stand-in is a look the game still draws.** When a look leaves play (drawn now by another module), its stand-in
     leaves the warm-up in the same change: a program compiled at boot for nothing is a program the budget cannot give to something new.
 
 ## Cases
 
-### 2026-10-09 · The telegraphs' one program had no room under the budget (perf: 163 of 164, the warm-up's stain)
+### 2026-10-09 · The Figment attack telegraphs' one program had no room under the budget (perf: 163 of 164, the warm-up's stain)
 
-- **Seen:** the telegraphs' look (`vfx/telegraphs/`) needed one shader program; the last baseline stood at 161 to 163 of the 164 the
+- **Seen:** the Figment attack telegraphs' look (`vfx/figmenttelegraph.js`) needed one shader program; the last baseline stood at 161 to 163 of the 164 the
   gate allows, and a headless boot counted 156 compiled by the warm-up, 162 after twenty frames of the workshop.
 - **Cause (measured):** the warm-up still built `new Stain()` (`vfx/stains.js`) and parked it, so the stain's program was compiled at
   boot and kept alive; but spilled crude has been drawn by the paint map in the ground's own shaders since `world/ground/stains.js` was
   folded into it, and nothing in play makes a `Stain` any more (only the workbench's `brush:stains`). The parry mark was warmed on it.
 - **Fix:** the stain left the warm-up (`main.js`); the parry mark is warmed on the parked Lachrymato Bottle instead (the same plain-mesh
-  shell, so the same program). The telegraphs' program took its place: 156 at boot and 162 in the workshop, as before, with a telegraph
-  and a glyph shown and nothing compiled late.
-- **Rule:** 158.
+  shell, so the same program). The Figment attack telegraphs' program took its place: 156 at boot and 162 in the workshop, as before, with a Figment attack
+  telegraph and a glyph shown and nothing compiled late.
+- **Rule:** 165.
+
+### 2026-10-09 · Every stalactite in the bowl would have hung half through its own root (caught before it was committed)
+
+- **Seen:** reading the bowl's kit grown for the BIG bowl (`vfx/cavekit.js` Stalactite), the cone's line ended
+  `g.rotateX(Math.PI); // (sides and rings by its girth and length) g.translate(0, -length / 2, 0); // (hangs from its root ...)`.
+- **Cause (measured):** casebook rule 25: everything after the first `//` is comment, so the translate never ran. The 11.25 m spike
+  (4.5 m x2.5) spanned y -5.63 to +5.63 about its root instead of -11.25 to 0: its upper half up inside the drape, its tip 5.6 m short.
+- **Fix:** the comment moved to the end of the geometry's own line, `g.rotateX(Math.PI); g.translate(0, -length / 2, 0);` on its own.
+  Judged in the great cavern from the far floor and from high over the dish: the spikes hang from their roots.
+- **Rule:** 25.
+
+### 2026-10-09 · The Great Slip Jelly BIG: its crown a hollow shade seen from the floor, its cracks banded, its shards a toy's spray
+
+- **Seen:** the owner's ruling made the Great Slip Jelly about twelve Couriers tall; `FOE.size` 14 made its body 21 m (27.8 m with the
+  crown; it was 3.2 m at x1.6). From the bowl's floor the urn crown was a lampshade: its open broken edge showed the urn's inside and
+  the black roof through its mouth, the jelly's egg-shaped top a pin under it. The cracks' Lachryma banded in stripes along every crack,
+  the urn's 40-sided shoulder showed its facets, and at the burst its 1.9 m sherds flew at a toy's speed (x14 in the world) and were gone
+  before 2 s, high in the air.
+- **Cause (measured):** at 3 m no camera ever stood under the crown (the eye at 1.5 m looked at it nearly level); at 27.8 m the floor's
+  eye is 19 to 26 m below it. The crack glow's phase was `dot(worldPos, k)`, about a cycle every 0.65 m, drawn for an urn 1 m in radius
+  (8.7 m now); the shards' speeds and gravity were in the crown's own units, so the root's scale multiplied both.
+- **Fix:** `vfx/urncrown.js`: the urn's flesh (the jelly swollen up into the urn, its rim under the teeth) closes the underside; the
+  glow's phase is over the urn's radius in the world (`uUrnR`); the lathe is 120 sides round a Catmull-Rom profile, the broken lip still
+  the forty-sided jag `vfx/finish.js` copies; the shards fall by Froude scaling (speeds over √λ, real gravity), left in the world where
+  the urn burst, and lie at the body's feet before they fade. `vfx/foelook.js` and the bowl's kit (`cavekit.js`, `bowl.js`): their
+  particles grow by the same rule (`froude()`), the pillars and stalactites take sides by their girth, and the far terraces of
+  `dunemawkit.js` average out instead of crawling. Judged from the ledge and the floor, front and side, before and after.
+- **Rule:** 164.
+
+### 2026-10-09 · A slip jelly's "?" showed through the Great Dunemaw's walls (the owner, QAIS R20)
+
+- **Seen:** the owner saw Figments' mood marks through walls (reported as the temper and the glyphs). Measured on the Great Dunemaw's
+  first floor (seed 1, the clock pinned), a jelly given every mark at once (the temper at Prismatic and enraged, the charm aura, an
+  "?" held over its head) and seen from a spot with a wall 2 m from the eye and 6.5 m in front of the head: the marks changed 1,328
+  pixels of a 280 by 240 box round the head, and all of them were the "?". The temper's and the aura's particles changed none.
+- **Cause (measured):** `vfx/glyphs.js` built every glyph's sprites with `depthTest: false` ("draws through water and walls", written
+  for the angler's bite), so every pop anywhere (the ?, … and ♪ a jelly's mind pops as it changes its mind, the folk's marks, the
+  stun star) drew over the world. The temper and the auras emit into the effects' sprite pools, which were depth-tested already.
+- **Fix:** a glyph is depth-tested, and just before each camera draws it (`onBeforeRender`) it is moved toward that camera along its
+  own line of sight by its bias (1 m, or 1.5 times its world size, whichever is more; `pop(..., { bias })` for a mark set inside
+  something big) and shrunk by as much, so it covers the same pixels at a nearer depth: its own creature never hides it, a wall
+  does. The first try moved it in the update along the game camera's ray; rendered from another camera (the test's) the "?" sat
+  a metre to the side of its jelly, so the move is per camera. A switch for the owner's later idea (the Dreamvane's survey as a
+  psychic sonar ping): `throughWalls` on a pop or on `game.glyphs`, `game.temper` and `game.auras` (true or a creature -> bool),
+  which draws them over walls (the effects' x-ray pools, `vfx.js`: the same program, the depth test off). Behind the wall the marks
+  now change 0 pixels; in the open 3,471 (3,449 before: the same mark, the same place); from low under the jelly's head the "?" is
+  whole over it; with the switch thrown, 1,251 behind the wall. Programs 161/163/163/163, as before.
+- **Review (the first fix's own regressions, measured):** it hid two marks that must show. (1) The Crucibelle's Reveal song marks every
+  signature in reach (a scan, a mark over a crystal under the sand or a creature behind a wall is its whole use): it now passes
+  `throughWalls: true` (`tools/crucibelle/crucibelle.js`, one option). (2) Charybdis's ward, the resist mark of rule 148, is popped
+  at the whale's centre, inside its own body: on the rail at 61 m (a bias of 11 m) the ward changed 1,829 pixels with the whale
+  risen (the ring's faint outline; the bar and the burst were inside the body) and 3,083 diving (cut by the sea's surface). The rail
+  has no wall and its foes are bigger than any bias, so on the rail every mark is seen over the sea as before (`glyphs.js` reads
+  `game.emocean.stage.active`): the whole ward, 9,943 and 9,235 pixels.
+- **Rule:** 162.
+
+### 2026-10-09 · The Reveal song stopped at the first buried crystal (found reviewing R20's fix)
+
+- **Seen:** `Crystals.reveal` over a veiled crystal in the Dunes (seed 1) threw `TypeError: Cannot read properties of undefined
+  (reading 'draw')` from `tex` in `vfx/glyphs.js`: the first crystal rose, any other veiled one in reach stayed buried, the song's
+  marks on the signatures were never popped, and the pool had been spent before it.
+- **Cause (measured):** `Crystals.reveal` pops a glyph of kind `'bang'`; the sheet has `bang1`, `bang2` and `bang3`. `pop` chose a
+  fallback for its own record (`KINDS[kind] || KINDS.bang1`) but drew with the name it was asked, which `tex` looks up with none, so
+  a kind the sheet lacks threw. The call dates from the move to `src/` by domain at the latest.
+- **Fix:** `pop` resolves a kind the sheet lacks to `bang1` once, before anything is drawn. The same reveal now rises the crystal and
+  pops its mark, and the song's marks follow.
+- **Rule:** 163.
+
+### 2026-10-09 · The swing's wind-up drew the sleeve behind Strawman's head, and the parry mark with it (the review of T51, v133)
+- **Seen:** with the guard's signs put right, the wind-up (the sleeve "drawn back and up") showed from where the striker stands as a grey
+  stub half behind the head, its cuff turned away; the outline that marks the sleeve while a parry can answer it (Petra's `swing()`,
+  `part: model.arms[1]`) was a thin arc. Before the fix the sleeve had risen toward the striker, the cuff and its outline in plain view.
+  A parry (`onParried()` clears `model.sw`) set the sleeve and the lean back to rest in one frame.
+- **Cause:** the pose was written to the plan's words (back and up) and judged from the side. Measured in the room: at the wind-up's top
+  the cuff was 1.0 m behind its centre and 0.3 m off its line (z -4.41, x 20.32 about 20), a stub 0.2 m wide in front view. The model also
+  read its sleeve and lean straight from `sw`, so clearing `sw` from outside was a snap.
+- **Fix:** the wind-up holds the sleeve up beside the head and only a little back (`SLEEVES.swing`: up 1.15, back 0.15 radians): its
+  length stands clear of the hat and in front view, the mark on it; the cuff 0.6 m behind and 2.2 m up at the top, 0.5 m in front mid-sweep.
+  The sleeve and the lean ease to rest (12 a second) when `sw` is cleared from outside. The guard's constants are one table, `SLEEVES`
+  (`GUARD` alone is the Courier's held block in the glossary).
+- **Rule:** 161.
+
+### 2026-10-09 · The Courier's idle read as if on a stimulant (the owner's R14, v133)
+- **Seen:** the Courier standing still swayed at the chest, bobbed the head with each breath and flicked the left hand once every
+  loop (the owner: "too much torso sway, and a twitchy left hand on too short a loop").
+- **Cause:** the idle was `Loco_IdleMasc`, a braced stance (knees bent, fists out). Measured in the room over 10 real seconds at 60 Hz: chest
+  3.6 cm/s mean (tilt 4.8 degrees mean), head 15.8 cm/s and 9.8 cm front to back, the left hand 12 cm/s mean and 49.7 cm/s at its
+  flick, on a 2.5 s loop. The suite has seven standing idles; nothing chose between them.
+- **Fix:** `IDLES` (`courier/anim/idlebreak.js`): the seven by their look, one named default (`akimbo`, `Loco_IdleRelaxedMasc`, hands on
+  the hips), `idles.choose(key)` for a kiln chooser later. Same measure: chest 1.7 cm/s (tilt 3.0 degrees), head 7.9 cm/s and 5.9 cm, the
+  left hand 5 cm/s and 10.5 at most, a 3.0 s loop. The idle breaks, the fighting stance, the tools' stances and the walk are unchanged; the
+  six idles the code now names moved from `social.bin` to `core.bin` (+268 KB, the pack's total the same). The chest ceremony stood the
+  Courier in the old `idle` alias after the hit: it asks `ch.idles.clip` now (CROSSING, `world/treasure/ceremony.js`).
+- **Rule:** none new: whatever stands the Courier in the idle asks `ch.idles.clip` (the alias `idle` is the stances' and the authored
+  clips' base, as they were tuned), and a default among candidates is picked by measuring each in the game, not by looking at one.
+
+### 2026-10-09 · Strawman's arms still pointed backwards in guard (the owner's T51, v133)
+- **Seen:** on guard, Strawman's sleeves folded back behind its head; from in front only the cuffs' rims showed, and the crossbar stood
+  out bare on both sides.
+- **Cause:** the sleeves' turns had the wrong sign for the way it faces in the room (+z): `rotation.y = -1.25` on the left sleeve swings
+  its cuff to -z. Measured in the room: on guard both cuffs 0.68 m behind its centre (z -4.08 for a body at -3.4). The swing was mirrored
+  the same way: the wind-up drew the right sleeve forward, the sweep went back.
+- **Fix:** a sleeve on side s swings forward by `rotation.y = -s * angle` (`GUARD`: the shoulders 0.16 m forward, the sleeves 129
+  degrees round and tipped down, crossing in an X 0.3 m in front of the chest, clear of the head and the sack); the sweep comes
+  forward (the wind-up: the case above); each sleeve carries its half of the crossbar. Measured: on guard the cuffs at z -2.86 and -2.90
+  (0.5 m in front), crossed (x 20.20 and 19.84 about a centre at 20); the sweep's cuff 0.5 m in front.
+- **Rule:** 160.
+
+### 2026-10-09 · The stars jumped, in patches, every eleven minutes (R10 review, Calissa)
+
+- **Seen:** (reviewing the stars behind the cloud) with the cloud layer's drift offset set either side of its wrap, 4.9995 and 0.0005 now,
+  0.9995 and 0.0005 before, the star light in the same eighth-by-six cells of the sky changed by 44% on average and by all of it in the
+  worst cell (the whole field 11% dimmer); two frames at one offset differed by 0.1%. The first octave was seamless; the haze that dims
+  patches of the stars (now the cirrus) read the offset times 0.4, and the cloud's own second octave times 1.6.
+- **Cause (measured):** `CloudLayer.update` kept the offset in 0..1 (`%= 1`). A shift of 1 is a whole repeat of the noise only for the
+  first octave: 1.6 and 0.4 are not whole, so at the wrap the second octave and the cirrus jumped by 0.6 and 0.4 of a repeat. At the Dunes'
+  wind (8) the offset wraps every 11 to 18 real minutes; the cloud's detail octave had always done it (30% of its noise, never looked for), and the new cirrus made it a field of stars dimming and brightening in patches in one frame.
+- **Fix:** `vfx/clouds.js` wraps the offset at 5, the first whole number that 1, 1.6 and 0.4 all turn into whole repeats of. After: 1.8% on
+  average across the wrap (the cell with the most is a few stars at the threshold), the cloud's second octave seamless too. The same pass
+  renamed the cirrus and the night painting's swirls in `vfx/sky.js` and the docs: they had been called "haze" and "veil", which are the
+  weather's horizon haze and the storm warp's veil (glossary).
+- **Rule:** 159.
+
+### 2026-10-09 · The wire compass vanished on a bright sky, and the Dreamvane's marks never showed outside the workshop (R11, Calissa)
+
+- **Seen (the owner, R11, `/goto 1961.15 -407.91 50.56 4.1`, the Dreamvane worn; headless, the same spot at noon, dusk, night and the
+  pall):** at noon the tape was white on a white sky, only the west glyph faintly there; at dusk it went out wherever it crossed the
+  bright cloud. With the Dreamvane in the hands, no sigil, web or resonance stood over the tape anywhere in the Dunes.
+- **Cause (measured):** the tape and the vane's marks were light added to the frame and nothing else: on a sky the screen shows at 0.85
+  lightness (noon, measured 0.874 behind the tape) a pale line can add at most ~0.1 before it clips, and only the pendulum had a dark
+  keyline (rule 105). The tape's line contrast, the 99.5th percentile of |luma - its 9-pixel median|, was 0.020 at noon. The vane's
+  group is a Group at the origin until first drawn: the zones filed it in the workshop at boot (its box: the sigils round the origin),
+  and its update returned at `if (!this.group.visible)`, which the zones' getter answered false, so it was never moved out (rule 149).
+- **Fix:** `vfx/wirecompass.js`: one material for the whole device (`compassMaterial`: premultiplied, the colour added and the alpha
+  how much of the ground it covers), every line with a keyline a pixel out in the opposite tone (`keyUnder`, one draw), and the ink
+  taken from what the tape is drawn against: the dome's colour where it crosses it as drawn now (`sky.toneAt`, from the paintings'
+  copies in memory and the grade) under the cloud layer (`clouds.over`), or the room's background under a roof; lightness over 0.6
+  turns it to dark ink with a pale keyline, under 0.5 back to pale light with a dark one, eased over ~0.4 s (7 microseconds a read, ten a second).
+  The vane (`vfx/vanehud.js`) and the pendulum (`vfx/crucibellehud.js`) draw with it; their groups are `zoneFree` and the vane's update
+  keeps its own shown state. Noon line contrast 0.020 -> 0.153; the estimate against the screen: noon 0.854 / 0.874, dusk 0.817 / 0.761,
+  the pall 0.807 / 0.780, night 0.242 / 0.141 (the stars not counted). Turning and pitching through a dusk for 15 s: 3 turns of the ink,
+  each where the ground changed (the bright horizon to the dark zenith).
+- **Rule:** 105, and 158.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 

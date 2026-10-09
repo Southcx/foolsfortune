@@ -33,7 +33,7 @@
 // and Ecco's shadows under the boat, Spirited Away's No-Face (a blank face as the most frightening thing), and the Odyssey.
 //
 //   const L = new LeviathanLook({ env, fx })   L.group (its own frame: +Z the head, Y up, origin on the spine amidships; 40 m long)
-//   L.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), seal(on), windup(k), world(out), closingRingAnchor }
+//   L.part(name) -> BossPart { object, state, hit(power), damage(), break(), set(state), seal(on), windup(k), world(out), telegraphAnchor }
 //     names: 'gill.left.0'..'gill.left.3' (side 1, its left: +X), 'gill.right.0'..'gill.right.3' (side -1), 'tooth.0'..'tooth.5',
 //     'eye', 'throat'
 //   L.parts   L.reset()   L.quicken (0..1: the gills shut, or `set({ quicken })` to hold it)   L.vantage(name, out)

@@ -11,7 +11,7 @@
 //   LINE AND GLOW  every part wears its edges in the Mind's labradorite (vfx/labradorite.js, Rez's wireframes): what fights is drawn in
 //              line and glow so it reads against the dark midtones of a tarred hull or a crude hide. Bright intact, dim damaged, gone
 //              broken; a hit lifts it for a fifth of a real second (a pulse on the part, never a flash on the screen)
-//   THE CLOSING RING  `closingRingAnchor`: an Object3D on the part where the closing ring sits (the mark is another module's: Elemental
+//   THE TELEGRAPH  `telegraphAnchor`: an Object3D on the part where the shrinking mark sits (the mark is another module's: Elemental
 //              Gearbolt's boxes, in the outline language), its `userData.radius` (m) the mark's size and `userData.facing` the way
 //              the part faces (local); `windup(k)` is the part's own body telegraph (a port's lid, a gill's flare, the lamp's warning
 //              line) and `windupK` what the mark reads
@@ -23,7 +23,7 @@
 //   P.wire(geometry | mesh, { threshold, bright, parent, lines })   (its line and glow: LineSegments added to the object, or to `parent`;
 //     `lines`: the geometry is already line pairs)
 //   P.hit(power)   P.damage()   P.break()   P.set('intact' | 'damaged' | 'broken')   P.seal(on)   P.windup(k 0..1)   P.world(out)
-//   P.state   P.sealed   P.alive (not broken)   P.open (alive and not sealed)   P.pulse   P.windupK   P.closingRingAnchor   P.object
+//   P.state   P.sealed   P.alive (not broken)   P.open (alive and not sealed)   P.pulse   P.windupK   P.telegraphAnchor   P.object
 //   const R = new BossParts()   R.add(P)   R.part(name)   R.list(prefix)   R.update(rawDt)   R.reset()   R.states()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -36,7 +36,7 @@ export class BossPart {
   constructor({ name, object, radius = 1, at = null, facing = null, look = null } = {}) {
     this.name = name; this.object = object; this.look = look;
     this.state = 'intact'; this.sealed = false; this.pulse = 0; this.windupK = 0; this.wires = [];
-    const A = (this.closingRingAnchor = new THREE.Object3D()); A.name = `closingRing:${name}`;
+    const A = (this.telegraphAnchor = new THREE.Object3D()); A.name = `telegraph:${name}`;
     if (at) A.position.copy(at);
     A.userData = { radius, part: name, facing: (facing || new THREE.Vector3(0, 0, 1)).clone().normalize() };
     object.add(A);
@@ -67,7 +67,7 @@ export class BossPart {
   }
   seal(on = true) { if (this.sealed !== on) { this.sealed = on; this.look?.(this, 'seal'); this.glow(); } return this; }
   windup(k) { this.windupK = THREE.MathUtils.clamp(k, 0, 1); this.look?.(this, 'windup'); this.glow(); return this; } // (its line and glow rises with it: glow() reads windupK)
-  world(out = new THREE.Vector3()) { return this.closingRingAnchor.getWorldPosition(out); }
+  world(out = new THREE.Vector3()) { return this.telegraphAnchor.getWorldPosition(out); }
 
   /** The line and glow as the state, the seal and the pulse say. */
   glow() {
@@ -79,7 +79,7 @@ export class BossPart {
     if (this.pulse > 0) { this.pulse = Math.max(0, this.pulse - raw * 6); this.look?.(this, 'pulse'); this.glow(); } // (a fifth of a real second)
   }
 
-  dispose() { for (const w of this.wires) { w.parent?.remove(w); if (!w.userData.lent) w.geometry.dispose(); w.material.dispose(); } this.closingRingAnchor.parent?.remove(this.closingRingAnchor); }
+  dispose() { for (const w of this.wires) { w.parent?.remove(w); if (!w.userData.lent) w.geometry.dispose(); w.material.dispose(); } this.telegraphAnchor.parent?.remove(this.telegraphAnchor); }
 }
 
 export class BossParts {

@@ -51,7 +51,7 @@ import { LachrymatoBottle } from './vfx/bottle.js';
 import { WaterFx } from './vfx/waterfx.js';
 import { BrushLoad } from './vfx/brushload.js';
 import { ParryMark } from './vfx/parrymark.js';
-import { TelegraphLook } from './vfx/telegraphs/telegraphlook.js';
+import { FigmentTelegraphs } from './vfx/figmenttelegraph.js';
 import * as RailLook from './vfx/rail.js';
 import { SHORE } from './world/dunes/beach.js';
 import { Course } from './world/basement/basement.js';
@@ -415,7 +415,7 @@ async function main() {
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); vfx/parrymark.js)
-  game.telegraphs = new TelegraphLook(game); // (what Divination draws of a windup: telegraphs.show(id, markOf(...), { origin, facing, eta }); vfx/telegraphs/telegraphlook.js, wired by creatures.windup and the timeline runner)
+  game.figmentTelegraphs = new FigmentTelegraphs(game); // (what Divination draws of a windup: figmentTelegraphs.show(id, figmentMarkOf(...), { origin, facing, eta }); vfx/figmenttelegraph.js, wired by creatures.windup and the timeline runner)
   game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's polarity/hurt/hoist)
   level.build();
   mark('level');
@@ -925,7 +925,7 @@ async function main() {
   const brushLooks = [new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
-  const parkTelegraphs = game.telegraphs.prewarm(); // (one telegraph and one of its glyphs, 50 m under the world: their one program)
+  const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.gardenMycelium?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
@@ -940,7 +940,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkCracks(); parkTelegraphs();
+  parkWeather?.(); parkDrain(); parkCracks(); parkFigmentTelegraphs();
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1232,7 +1232,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.telegraphs.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

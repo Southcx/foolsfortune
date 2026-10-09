@@ -3,7 +3,7 @@
 // whirlpool that swallows the sea and spits it out; one name for its five moods, its feeling the waypoint's weather; docs/GLOSSARY.md:
 // Charybdis's look, a boss part). Petra holds it at the whirlpool's heart (world/emocean/charybdis.js: it rises 7 m out of the
 // maelstrom, the Astral, and dives 6 m back in, the Umbral, by turns of four bars); this is how it looks and how each part answers
-// (vfx/bossparts.js: intact, damaged, broken; line and glow; a closing ring's anchor). Not a whale copied from Old Nobody: a whale's body
+// (vfx/bossparts.js: intact, damaged, broken; line and glow; a telegraph anchor). Not a whale copied from Old Nobody: a whale's body
 // stood on end in the crude, as a sperm whale sleeps, with only its mouth at the top, round as a lamprey's, that the sea pours into.
 //
 //   THE MAW      a round gape on top, its LIP a thick rim of crude hide; inside, the GULLET (dark flesh) going down, ringed with rows of
@@ -31,7 +31,7 @@
 // Prior art: Homer, Odyssey XII; the humpback whale (its lunge up through a bubble net, its throat pleats, its knobbed head and long
 // flippers) and the sperm whale's vertical sleep (Miller et al. 2008); the lamprey's oral disc; Herbert's sandworm (a mouth that is
 // the beast); Sin & Punishment's and Panzer Dragoon's arena bosses (circled, struck part by part); Elemental Gearbolt's telegraphs
-// (vfx/closingring.js closes on a part's anchor); Shadow of the Colossus (weak points that glow on a body that is a place).
+// (vfx/telegraph.js closes on a part's anchor); Shadow of the Colossus (weak points that glow on a body that is a place).
 //
 //   const C = new CharybdisLook({ env, fx })   C.group (its own frame: the lip's middle at the origin, Y up, the body hanging below)
 //   C.set({ y (m over the crude: how high it stands, Petra's charybdis.y), feel, sense (which way it turns, the whirlpool's) })   C.place(heart (world, on the sea), sea?)

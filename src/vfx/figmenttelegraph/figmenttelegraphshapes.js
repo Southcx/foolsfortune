@@ -1,12 +1,13 @@
 // ---------------------------------------------------------------------------------------
-// THE TELEGRAPHS' SHAPES: a telegraph (progress/combat/telegraphs.js `markOf`: { shape, area, ground, edge, fill, type, status,
-// answer }) laid out as what the mark's one program draws (vfx/telegraphs/telegraphshader.js): a union of up to eight primitives in
-// the maker's frame, the safe pockets cut out of a floor, the answer's chevrons laid flat on the ground, and the glyphs that stand
-// over a point (the status, the high ground, the guard, the bait). Pure numbers, no three.js: what is drawn is the area's own
-// numbers, so the drawn area is the true area (TELEGRAPHS.md section 3, rule 2; the workbench overlays the numbers to prove it).
+// THE FIGMENT ATTACK TELEGRAPHS' SHAPES: a Figment attack telegraph (progress/combat/figmenttelegraphs.js `figmentMarkOf`: { shape, area,
+// ground, edge, fill, type, status, answer }) laid out as what the mark's one program draws
+// (vfx/figmenttelegraph/figmenttelegraphshader.js): a union of up to eight primitives in the maker's frame, the safe pockets cut out of a
+// floor, the answer's chevrons laid flat on the ground, and the glyphs that stand over a point (the status, the high ground, the guard, the
+// bait). Pure numbers, no three.js: what is drawn is the area's own numbers, so the drawn area is the true area (FIGMENT-TELEGRAPHS.md
+// section 3, rule 2; the workbench overlays the numbers to prove it).
 //
 // THE FRAME: the maker's (the creature's) feet at the origin, its facing +z, +x to its side; a bearing is from +z toward +x. Every
-// primitive's fill runs AWAY from the maker (the fill is the clock: TELEGRAPHS.md step 2): a circle from its centre out, a ring from
+// primitive's fill runs AWAY from the maker (the fill is the clock: FIGMENT-TELEGRAPHS.md step 2): a circle from its centre out, a ring from
 // its inner edge out, a cone and a line from the body along their length, the floor from the maker across it, the arena's rim round
 // from the maker's bearing both ways to the far side.
 //
@@ -19,7 +20,7 @@
 //
 //   frameOf(origin, facing) -> F      toLocal(F, x, z) -> [lx, lz]      toWorld(F, lx, lz) -> [x, z]
 //   shapesOf(mark, F, opts) -> { prims, pockets, stamps, boards, far, bounds } | null   (opts: points, target, width, half, radius,
-//     centre, pockets, rim, bait: world { x, z } (and y for a board); see TelegraphLook.show)
+//     centre, pockets, rim, bait: world { x, z } (and y for a board); see FigmentTelegraphs.show)
 // ---------------------------------------------------------------------------------------
 
 export const PRIM = { circle: 0, ring: 1, cone: 2, rect: 3, floor: 4, rim: 5 };
@@ -127,7 +128,7 @@ function answerOf(answer, P, F, o, stamps, boards) {
   if (answer === 'bait') for (const b of o.bait || []) boards.push({ art: 'answer.bait', world: b, size: b.size ?? 2.4, stand: 0 });
 }
 
-/** A telegraph laid out: null for a shape with nothing to draw. `F`: frameOf(origin, facing). */
+/** A Figment attack telegraph laid out: null for a shape with nothing to draw. `F`: frameOf(origin, facing). */
 export function shapesOf(mark, F, o = {}) {
   if (!mark) return null;
   const P = primsOf(mark, F, o).slice(0, MAX.prims);

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE TELEGRAPHS' PROGRAM: one shader for every telegraph mark (docs/plans/TELEGRAPHS.md), so the whole vocabulary costs one program
-// (the casebook's rule 124: variants are uniforms, never defines). Two modes on one uniform:
-//   THE GROUND (uMode 0)  a grid draped on the ground (vfx/telegraphs/telegraphdrape.js) on which the area is drawn from its numbers:
-//     a union of signed distances (vfx/telegraphs/telegraphshapes.js PRIM), so one cast's overlapping areas are one edge; the floor's
+// THE FIGMENT ATTACK TELEGRAPHS' PROGRAM: one shader for every Figment attack telegraph (docs/plans/FIGMENT-TELEGRAPHS.md), so the
+// whole vocabulary costs one program (the casebook's rule 124: variants are uniforms, never defines). Two modes on one uniform:
+//   THE GROUND (uMode 0)  a grid draped on the ground (vfx/figmenttelegraph/figmenttelegraphdrape.js) on which the area is drawn from its numbers:
+//     a union of signed distances (vfx/figmenttelegraph/figmenttelegraphshapes.js PRIM), so one cast's overlapping areas are one edge; the floor's
 //     safe pockets cut out of it. Step 1, the EDGE: the Mind's ink (the parry mark's near-black with the labradorite's schiller in
 //     it) a constant 2.8 pixels wide, a pale keyline outside it so it reads on dark ground (the casebook's rule 105), dashed while its
 //     size is not known (the caution edge); no fill. Step 2, the FILL: the area filling away from the maker as the windup runs, a
@@ -22,12 +22,12 @@
 // FFXIV's caution marker (a broken ring: size unknown), Inigo Quilez's 2D distance functions and fwidth-wide lines (crisp at any
 // distance, no crawl), the decal's depth offset toward the camera of every engine that lays marks on terrain.
 //
-//   telegraphMaterial({ mode, atlas }) -> ShaderMaterial    (every one shares the program; each mark its own uniforms)
+//   figmentTelegraphMaterial({ mode, atlas }) -> ShaderMaterial    (every one shares the program; each mark its own uniforms)
 //   TYPE_INDEX, TYPE_TINTS                                   (the damage types, in order, and their two colours each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from '../labradorite.js';
-import { MAX } from './telegraphshapes.js';
+import { MAX } from './figmenttelegraphshapes.js';
 
 export const TYPE_INDEX = { impact: 0, ego: 1, influence: 2, illusion: 3, delirium: 4 };
 /** Each damage type's dark and light (vfx/library.js `damage.<type>`): impact bone and gold, ego lapis, influence rose and warm gold,
@@ -235,11 +235,11 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-/** A telegraph's material: mode 'ground' (a draped mark) or 'glyphs' (the boards). Each is its own uniforms over the one program. */
-export function telegraphMaterial({ mode = 'ground', atlas = null } = {}) {
+/** A Figment attack telegraph's material: mode 'ground' (a draped mark) or 'glyphs' (the boards). Each is its own uniforms over the one program. */
+export function figmentTelegraphMaterial({ mode = 'ground', atlas = null } = {}) {
   const v4 = (n) => Array.from({ length: n }, () => new THREE.Vector4());
   const m = new THREE.ShaderMaterial({
-    name: 'telegraph',
+    name: 'figmentTelegraph',
     uniforms: {
       uMode: { value: mode === 'glyphs' ? 1 : 0 }, uBias: { value: mode === 'glyphs' ? 0.1 : 0.3 }, uPxK: { value: 2 * Math.tan((55 * Math.PI) / 360) / 480 },
       uMinPx: { value: 18 }, uMaxPx: { value: 64 }, uT: { value: 0 }, uAlpha: { value: 1 }, uMindT: mindTime,

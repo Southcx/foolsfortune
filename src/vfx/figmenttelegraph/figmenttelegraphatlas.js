@@ -1,30 +1,31 @@
 // ---------------------------------------------------------------------------------------
-// THE TELEGRAPHS' GLYPH ATLAS: every glyph a telegraph wears (ui/icons/telegraphart.js: the answers, the marks, the statuses), painted
-// in the icons' hand (ui/icons/hand.js: bevelled, keylined) as greys into one texture, each at three times its pixels in a 64 px cell
-// with an 8 px gutter, so its mips never bleed into a neighbour down to an 8 px cell. The program colours it (the tone is the grey;
-// tone 0, the keyline, stays ink): one drawing, every tint, as the HUD's icons are one drawing and many palettes (ui/icons/icons.js).
-// Mipmapped and filtered (LinearMipmapLinear, anisotropic): a glyph seen far or at a slant is smoothed, never crawling.
+// THE FIGMENT ATTACK TELEGRAPHS' GLYPH ATLAS: every glyph a Figment attack telegraph wears (ui/icons/figmenttelegraphart.js: the answers,
+// the marks, the statuses), painted in the icons' hand (ui/icons/hand.js: bevelled, keylined) as greys into one texture, each at three
+// times its pixels in a 64 px cell with an 8 px gutter, so its mips never bleed into a neighbour down to an 8 px cell. The program colours
+// it (the tone is the grey; tone 0, the keyline, stays ink): one drawing, every tint, as the HUD's icons are one drawing and many palettes
+// (ui/icons/icons.js). Mipmapped and filtered (LinearMipmapLinear, anisotropic): a glyph seen far or at a slant is smoothed, never
+// crawling.
 //
 // Prior art: the sprite atlas of every console (one texture, a cell a sprite), the pixel kit's whole-number scaling (ui/pixel.js), and
 // the padded atlas of texture streaming (a gutter so a mip never reads its neighbour).
 //
-//   telegraphAtlas() -> THREE.Texture (made once)      cellOf(id) -> index ('answer.out', 'tmark.eye', 'status.stun' ...)
+//   figmentTelegraphAtlas() -> THREE.Texture (made once)      cellOf(id) -> index ('answer.out', 'figmentMark.eye', 'status.stun' ...)
 //   ATLAS = { cols: 8, rows: 4, inset: 0.125 }          ATLAS_IDS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { toneGrid } from '../../ui/icons/hand.js';
-import { ANSWER_ART, STATUS_ART, TMARK_ART } from '../../ui/icons/telegraphart.js';
+import { ANSWER_ART, STATUS_ART, FIGMENT_MARK_ART } from '../../ui/icons/figmenttelegraphart.js';
 
 export const ATLAS = { cols: 8, rows: 4, cell: 64, scale: 3, inset: 0.125 };
 export const ATLAS_IDS = [
-  ...Object.keys(ANSWER_ART).map((k) => `answer.${k}`), ...Object.keys(TMARK_ART).map((k) => `tmark.${k}`), ...Object.keys(STATUS_ART).map((k) => `status.${k}`),
+  ...Object.keys(ANSWER_ART).map((k) => `answer.${k}`), ...Object.keys(FIGMENT_MARK_ART).map((k) => `figmentMark.${k}`), ...Object.keys(STATUS_ART).map((k) => `status.${k}`),
 ];
-const ART = { ...Object.fromEntries(Object.entries(ANSWER_ART).map(([k, v]) => [`answer.${k}`, v])), ...Object.fromEntries(Object.entries(TMARK_ART).map(([k, v]) => [`tmark.${k}`, v])), ...Object.fromEntries(Object.entries(STATUS_ART).map(([k, v]) => [`status.${k}`, v])) };
+const ART = { ...Object.fromEntries(Object.entries(ANSWER_ART).map(([k, v]) => [`answer.${k}`, v])), ...Object.fromEntries(Object.entries(FIGMENT_MARK_ART).map(([k, v]) => [`figmentMark.${k}`, v])), ...Object.fromEntries(Object.entries(STATUS_ART).map(([k, v]) => [`status.${k}`, v])) };
 export const cellOf = (id) => Math.max(0, ATLAS_IDS.indexOf(id));
 
 let tex = null;
 /** The atlas, painted on first use and kept (a canvas texture: one upload). */
-export function telegraphAtlas() {
+export function figmentTelegraphAtlas() {
   if (tex) return tex;
   const { cols, rows, cell, scale } = ATLAS, c = document.createElement('canvas');
   c.width = cols * cell; c.height = rows * cell;
