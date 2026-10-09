@@ -32,6 +32,7 @@
 //
 //   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
 //   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
+//   c.friend: another Courier, an ally the Courier's blows still reach (friendly fire: a fifth of the damage, statuses under tolerance)
 //   .windup(c, { at, radius, eta, kind, parry, part })   .unwind(c)   .windups(pos, r)   .parried(c)   (a telegraphed blow, for the parry:
 //   courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry mark while it can be answered)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
@@ -42,6 +43,8 @@ import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
 import { sfx } from '../audio/sfx.js';
 import { blowWindow } from '../courier/parry.js';
+import { courierMindEffect } from '../progress/stones.js';
+import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -72,11 +75,15 @@ export class Creatures {
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
   strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause)) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
-    if (c.ally && by === 'courier') return false; // (their own: a spirit they called up is not struck by them)
+    if (c.ally && !c.friend && by === 'courier') return false; // (their own: a spirit they called up is not struck by them; a friend, another Courier, is: friendly fire)
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
+    // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
+    // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
+    let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
+    if (c.friend) dmgK = friendlyDamage(dmgK);
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
-    const took = c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
+    const took = c.hurt(point, dir, power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
@@ -93,7 +100,8 @@ export class Creatures {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = stateOf(c.mind).take;
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
-    const T = TYPES[type];
+    const T = TYPES[type], tn = c.friend ? c.tolerance?.[T.builds] : null; // (a friend's next status of this kind needs more build-up: tolerance)
+    if (tn?.left > 0) amount /= tolerance(tn.n + 1)?.build ?? Infinity;
     c.build[type] = (c.build[type] || 0) + amount * take;
     if (c.build[type] >= T.buildAt) { c.build[type] = 0; this.apply(c, T.builds, T.buildDur, 1, by); }
   }
@@ -109,6 +117,12 @@ export class Creatures {
       }
     }
     if (by === 'courier') dur *= this.game.alchemy?.widen?.('focus.hold') ?? 1; // (Focus: a status you build holds longer, SOUL-ALCHEMY.md 6)
+    if (c.friend) { // (a status from an ally: a trick once, not a lock; each within the window holds shorter, the third is shrugged off)
+      const T0 = (c.tolerance ||= {}), was = T0[name];
+      const n = was && was.left > 0 ? was.n + 1 : 0, tol = tolerance(n); T0[name] = { n, left: FRIENDLY.windowSec };
+      if (!tol) { this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by }); return false; }
+      dur *= tol.dur;
+    }
     const s = c.status.get(name);
     if (s && s.t >= dur && s.k >= k) return false;
     c.status.set(name, { t: Math.max(dur, s?.t || 0), dur, k: Math.max(k, s?.k || 0) });
@@ -157,6 +171,7 @@ export class Creatures {
     const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
+      if (c.tolerance) for (const k in c.tolerance) c.tolerance[k].left -= dt; // (friendly fire's window: the tolerance resets after it)
       if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not

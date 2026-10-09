@@ -21,6 +21,7 @@
 import * as THREE from 'three';
 import { HURT } from '../../vfx/filigree.js';
 import { sfx } from '../../audio/sfx.js';
+import { courierMindEffect } from '../../progress/stones.js';
 
 export const REGIONS = ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'];
 const MEND_AFTER = 6, MEND_RATE = 0.025; // (seconds of quiet before a region mends, and how much of it mends a second: ~40 s from full;
@@ -127,6 +128,7 @@ export class VesselDamage {
   /** A blow on them: resolved to a region, that region cracked by `k` (0..1). */
   hit({ point = null, from = null, dir = null, k = 0.5, why = 'blow', by = 'environment' } = {}) {
     if (!this.boxes || this.game.death?.active) return -1;
+    if (this.game.courierMind) k *= courierMindEffect(this.game.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
     const pool = this.game.lachryma;
     if (pool) {

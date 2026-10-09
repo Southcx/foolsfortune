@@ -289,7 +289,7 @@ export function buildAchievements(game) {
   C('bk4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
   C('bk5', 'brush', 'The Club', 3, 'endure', 'Seeing Stars', 'Leave 25 clapperjars reeling with the overhead blow.', 'brush.stun', 25);
   C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Slip', 'Brush slide 25 times.', 'brush.slide', 25);
-  C('bs2', 'brush', 'The Slide', 3, 'endure', 'Slip Trailer', 'Paint 1 km of slip with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
+  C('bs2', 'brush', 'The Slide', 3, 'endure', 'Paint the Town', 'Paint 1 km with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
   H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m of slip in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
   C('bc1', 'brush', 'The Canvas', 1, 'count', 'The World Is Paper', 'Open the Celestial Brush 10 times.', 'brush.canvas', 10);
   C('bc2', 'brush', 'The Canvas', 2, 'mechanic', 'Two Hands at Once', 'Have 10 drawings of more than one stroke read.', 'brush.read.multi', 10);

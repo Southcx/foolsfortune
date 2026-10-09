@@ -36,7 +36,7 @@ export const ENRAGE = 570;
  *  of its class). `answer`: what the player does. Names are placeholders for Espada's. */
 /** The casts' names as the log says them (Espada's, 2026-10-07, docs/LORE.md: each a jar's part or a potter's step, each telling
  *  you what to do). The log: "The Great Slip Jelly readies <name>." */
-export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelidRings: 'Throwing Rings', oozeRain: 'Slip Trail',
+export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelidRings: 'Throwing Rings', oozeRain: 'Slick Trail',
   crownGlare: 'Eye Cup', slipNova: 'Blowout', sinkingSands: 'Centring', surfaceSlam: 'Wedge', brineCascade: 'Decant', broodCall: 'Broodwake',
   calving: 'Sherds', overflow: 'The Overflow', swallow: 'The Dunemaw Swallows' };
 /** The transition is Unstopped; Brine Soaked is Sodden; Submerge is Slake; the calves are sherds, and "the sherds mend" when they re-merge. */
