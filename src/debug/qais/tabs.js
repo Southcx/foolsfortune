@@ -78,7 +78,10 @@ function reports(body, q) {
   if (before.length) { const det = h('details'); det.append(h('summary', 'qarea', `Earlier (${before.length})`), q.look.reportList(before, { onOpen: open })); body.append(det); }
 }
 
-function questions(body, q) { body.append(q.look.questions(q.store.docs('questions'))); }
+function questions(body, q) { // (answered here, read by Dovina: the choice and its note, QAIS.md)
+  body.append(q.look.questions(q.store.docs('questions'), { onAnswer: (x, o) => q.act.answer(x, o), onNote: (x, text) => q.act.qnote(x, text) }));
+  body.append(row(btn('Send to the brigade', () => q.act.send())));
+}
 
 const DRAW = { brief, tests, reports, questions };
 export function draw(tab, body, q) {

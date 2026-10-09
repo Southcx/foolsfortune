@@ -26,7 +26,7 @@
 //   look.testCard(test, { onStatus(status), onNote(text), onGo(), onFail() })  -> element (element.update(test) redraws it in place)
 //   look.seenMark(seen)                            -> element | null   (seen: [{ at, gist }], the first three sightings)
 //   look.reportList(bugs, { onOpen(id) })          -> element
-//   look.brief(docs) and look.questions(qs)        -> element   (the other two tabs, plain)
+//   look.brief(docs) -> element; look.questions(qs, { onAnswer(q, option), onNote(q, text) }) -> element (options pressed as a test card's)
 //   look.notice(text)                              -> element   (one quiet line in the body: off the published build, QAIS says so)
 //   look.preview()                                 (the four tabs over sample documents, for `/qais` until the shell lands; Esc closes)
 // ---------------------------------------------------------------------------------------
@@ -104,6 +104,7 @@ const CSS = `
 #qais .qdiv.wait { border-color: rgba(255,138,60,.5); } #qais .qdiv.wait h3 { color: #ffb37c; }
 #qais .qq { padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,.2); border: 1px solid rgba(255,241,220,.14); }
 #qais .qq .from { font-size: 11px; opacity: .6; } #qais .qq .opts { margin-top: 4px; font-size: 12px; opacity: .85; }
+#qais .qq .acts { margin-top: 6px; } #qais .qq textarea { width: 100%; margin-top: 6px; } #qais .qq.done { opacity: .7; }
 #qais .qq .ans { margin-top: 6px; padding: 4px 8px; border-left: 3px solid ${VERDICTS.pass.ink}; background: rgba(127,211,154,.08); }
 #qais .empty { opacity: .55; font-style: italic; padding: 20px; text-align: center; }
 `;
@@ -205,14 +206,20 @@ export class QaisLook {
     return box;
   }
 
-  /** The Questions: open ones first; an answered one shows the answer and where it was given. */
-  questions(qs) {
+  /** The Questions: each a slip with its options as buttons (the test card's, pressed to choose, pressed again to take back) and a note.
+   *  Kept in their own order, so a choice never jumps the slip away from under the pointer. */
+  questions(qs, { onAnswer, onNote } = {}) {
     const box = el('div', 'qslips');
     if (!qs?.length) { box.append(el('div', 'empty', 'No open questions.')); return box; }
-    for (const q of [...qs].sort((a, b) => !!a.answer - !!b.answer)) {
-      box.append(el('div', 'qq', `<div class="from">${esc(DIVISION_SUIT[q.from] || '')} ${esc(cap(q.from))} asks</div><div>${esc(q.q)}</div>
-        ${q.options?.length ? `<div class="opts">${q.options.map((o) => esc(o)).join(' · ')}</div>` : ''}
-        ${q.answer ? `<div class="ans">${esc(q.answer)}${q.where ? ` <span class="from">(${esc(q.where)})</span>` : ''}</div>` : ''}`));
+    for (const q of [...qs].sort((a, b) => String(a.id).localeCompare(String(b.id)))) {
+      const slip = el('div', `qq${q.answer ? ' done' : ''}`, `<div class="from">${esc(DIVISION_SUIT[q.from] || '')} ${esc(cap(q.from))} asks</div><div>${esc(q.q)}</div>
+        ${q.options?.length ? `<div class="acts">${q.options.map((o, k) => `<button class="qbtn v${q.answer === o ? ' on' : ''}" data-k="${k}" style="--ink:${VERDICTS.pass.ink}">${esc(o)}</button>`).join('')}</div>` : ''}
+        ${q.answer && !q.options?.includes(q.answer) ? `<div class="ans">${esc(q.answer)}${q.where ? ` <span class="from">(${esc(q.where)})</span>` : ''}</div>` : ''}
+        ${onNote ? `<textarea placeholder="A note (why, or what instead)">${esc(q.note || '')}</textarea>` : ''}`);
+      slip.querySelectorAll('[data-k]').forEach((b) => { b.onclick = () => { const o = q.options[+b.dataset.k]; onAnswer?.(q, q.answer === o ? null : o); }; });
+      const ta = slip.querySelector('textarea');
+      if (ta) { ta.onblur = () => { if (ta.value !== (q.note || '')) onNote?.(q, ta.value); }; ta.onkeydown = (e) => e.stopPropagation(); } // (typing a note is not playing)
+      box.append(slip);
     }
     return box;
   }

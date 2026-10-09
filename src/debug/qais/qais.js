@@ -36,7 +36,7 @@ export class Qais {
     this.open = false; this.marking = false; this.tab = 'brief';
     this.store = null; this.round = null; this.frame = null;
     this.act = {
-      mark: (t, s) => this.mark(t, s), note: (t, text) => this.note(t, text),
+      mark: (t, s) => this.mark(t, s), note: (t, text) => this.note(t, text), answer: (x, o) => this.answer(x, o), qnote: (x, text) => this.qnote(x, text),
       go: (t) => this.go(t), file: (t = null) => this.file(t), send: () => this.send(),
     };
     this.make();
@@ -133,6 +133,9 @@ export class Qais {
   latest(t) { return this.store.docs('tests').find((x) => x.id === t.id) || t; }
 
   /** A verdict ('open' undoes it: the card's stamped button pressed again). A Fail also files a report (the card calls file(test)). */
+  /** A question answered from its options (null takes it back), and its note: written on the press, never a stream. */
+  answer(x, option) { this.store.update('questions', x.id, { answer: option, where: option ? `QAIS, ${this.round?.build || this.build}` : null, answeredAt: Date.now() }); }
+  qnote(x, text) { this.store.update('questions', x.id, { note: String(text).slice(0, 2000) }); }
   mark(t, status) { this.store.update('tests', t.id, { status, markedAt: Date.now() }); }
 
   /** A note, as the card hands it over (on its pause and on blur: never a key at a time). */
@@ -162,12 +165,14 @@ export class Qais {
     if (!r?.build) { this.game.log.say('system', 'QAIS has no round to send.', { throttle: 1 }); return; }
     const ts = this.store.docs('tests').filter((t) => t.build === r.build), n = (s) => ts.filter((t) => (t.status || 'open') === s).length;
     const counts = { pass: n('pass'), fail: n('fail'), skip: n('skip'), open: n('open'), reports: this.store.docs('bugs').filter((b) => b.round === r.build).length };
+    const answered = this.store.docs('questions').filter((x) => x.answer && !x.acted).length;
     await this.store.update('meta', 'round', { sent: true, sentAt: Date.now() });
     let woke = true, why = '';
     try {
       const prompt = `From the owner, through QAIS: the round ${r.build} is sent. ${counts.pass} passed, ${counts.fail} failed, ${counts.skip} skipped, `
         + `${counts.open} not tried; ${counts.reports} reports filed on it. Read the round with ArtifactData on ${BUILD_URL} (the tests and the bugs `
-        + `whose build or round is ${r.build}), route each fail and report to its division, set the reports' first status, and answer in the owner's thread.`;
+        + `whose build or round is ${r.build}), route each fail and report to its division, set the reports' first status, and answer in the owner's thread.`
+        + (answered ? ` ${answered} question${answered > 1 ? 's' : ''} answered in QAIS (the questions collection: answer and note): act on them.` : '');
       const at = new Date(Date.now() + 90 * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
       await this.store.call(BRIGADE.server, BRIGADE.tool, { name: `QAIS: round ${r.build} sent`, prompt, persistent_session_id: BRIGADE.session, run_once_at: at, initiation: 'human_request' });
     } catch (e) { woke = false; why = e?.code || e?.message || 'refused'; console.warn('QAIS: the brigade could not be woken', e); }
