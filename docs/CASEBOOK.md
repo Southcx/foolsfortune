@@ -408,8 +408,22 @@ the rules before building in the same area; a rule a machine can check goes into
     own step-over, felt for at the lip's height.
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
+149. **A turn's sign is proved by where the part ends up.** A limb that should swing forward is measured (its tip's position in the
+    thing's own facing, +z where it stands) and looked at from in front and the side, never read off the sign it was written with.
 
 ## Cases
+
+### 2026-10-09 · Strawman's arms still pointed backwards in guard (the owner's T51, v133)
+- **Seen:** on guard, Strawman's sleeves folded back behind its head; from in front only the cuffs' rims showed, and the crossbar stood
+  out bare on both sides.
+- **Cause:** the sleeves' turns had the wrong sign for the way it faces in the room (+z): `rotation.y = -1.25` on the left sleeve swings
+  its cuff to -z. Measured in the room: on guard both cuffs 0.68 m behind its centre (z -4.08 for a body at -3.4). The swing was mirrored
+  the same way: the wind-up drew the right sleeve forward, the sweep went back.
+- **Fix:** a sleeve on side s swings forward by `rotation.y = -s * angle` (`GUARD`: the shoulders 0.16 m forward, the sleeves 129
+  degrees round and tipped down, crossing in an X 0.3 m in front of the chest, clear of the head and the sack); the wind-up draws back
+  and up, the sweep comes forward; each sleeve carries its half of the crossbar. Measured: on guard the cuffs at z -2.86 and -2.90 (0.5 m
+  in front), crossed (x 20.20 and 19.84 about a centre at 20); the wind-up's cuff 1.0 m behind, the sweep's in front.
+- **Rule:** 149.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 

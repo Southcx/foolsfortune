@@ -17,11 +17,16 @@
 //
 //   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(rawDt)   S.dispose()
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
-//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard folds the sleeves across its front; the swing winds up 0.8 s, then sweeps)
+//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard crosses the sleeves in an X in front of its chest, a boxer's
+//   cross-arm block: GUARD; the swing winds up 0.8 s, the right sleeve drawn back and up, then sweeps forward)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const BODY_H = 0.95, TARGET_Y = -BODY_H + 0.44 * BODY_H; // (the sack's height; the target's middle, metres below the neck)
+/** The guard: the shoulders brought forward (`reach`, m), each sleeve swung forward past straight ahead (`forward`, radians from straight
+ *  out; pi/2 is straight ahead) and tipped down, so the two cross in an X over its chest, 0.3 m in front of it, clear of the head and the
+ *  sack; the right tipped a little lower, lying over the left. */
+export const GUARD = { reach: 0.16, forward: 2.25, tipL: 0.5, tipR: 0.65 };
 const C = { burlap: 0xcdb48c, seam: 0x6b5236, sleeve: 0x3a2f3a, cuff: 0xefe3c8, hat: 0x2c2731, band: 0x8d7f92, post: 0x3b2a1e, lacquer: 0x121014, red: 0xb8402e, cream: 0xf3e6c8, straw: 0xe0c070 };
 
 /** The sack's cloth, painted on a canvas: a burlap weave, its seams, and on the front the target (three rings). */
@@ -87,11 +92,14 @@ export class StrawmanModel {
     hat.position.set(0, 2.08, -0.16); hat.rotation.z = 0.06; rock.add(hat);
     const rim = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.05, 0.29), M(std(C.band, { roughness: 0.5 }))); rim.position.set(0, 0.24, 0); hat.add(rim);
     // the crossbar and its sleeves (charcoal, tapered, the cuffs flared with the cream spiral)
-    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.7, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
+    // (the bar between the shoulders; each sleeve carries the rest of it, so a sleeve folded into the guard never leaves a bare stick out)
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
     const sleeveM = M(std(C.sleeve)), cuffM = M(std(0xffffff, { map: cuffTexture() }));
     this.arms = [];
+    const halfG = new THREE.CylinderGeometry(0.03, 0.03, 0.68, 8); // (one geometry, both halves)
     for (const s of [-1, 1]) { // (each sleeve on its own shoulder: they fold into a guard, and one draws back for the swing)
       const arm = new THREE.Group(); arm.position.set(s * 0.17, 1.5, -0.08); rock.add(arm); this.arms.push(arm);
+      const half = new THREE.Mesh(halfG, postM); half.rotation.z = Math.PI / 2; half.position.set(s * 0.34, 0.02, -0.02); arm.add(half);
       const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.19, 0.66, 12, 1, true), sleeveM); sl.material.side = THREE.DoubleSide; // (puffy, flaring to the cuff)
       sl.rotation.z = s * Math.PI / 2; sl.position.set(s * 0.33, 0, 0); arm.add(sl);
       const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.67, 0, 0); cuff.rotation.y = s * Math.PI / 2; arm.add(cuff);
@@ -172,8 +180,11 @@ export class StrawmanModel {
       else this.sw = null;
     }
     const g = this.pose;
-    this.arms[0].rotation.set(0, -g * 1.25, -g * 0.35);
-    this.arms[1].rotation.set(0, g * 1.25 + armR, g * 0.35 + armUp);
+    // (a sleeve on side s swings forward, toward +z, the way it faces, by rotation.y = -s * forward, and tips down by rotation.z = -s * tip.
+    // The signs were the other way round, and the guard and the swing pointed backwards: the owner's T51, v133)
+    for (const a of this.arms) a.position.z = -0.08 + g * GUARD.reach;
+    this.arms[0].rotation.set(0, g * GUARD.forward, g * GUARD.tipL);
+    this.arms[1].rotation.set(0, -g * GUARD.forward - armR, -g * GUARD.tipR + armUp);
     this.rock.rotation.set(this.a.x + lean, 0, this.a.y);
     this.sack.rotation.set(this.s.x * 0.7, 0, this.s.y * 0.7);
     for (const l of this.legs) l.rotation.x = -this.s.x * 1.4; // (the legs dangle after)

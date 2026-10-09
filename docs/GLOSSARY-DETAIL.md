@@ -189,6 +189,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
   control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
+- **idle** (`IDLES`, `idleClip`, `src/courier/anim/idlebreak.js`): the clip the Courier stands in with nothing in the hands, one of the
+  suite's seven standing idles, keyed by its look (akimbo, hipCocked, handsBehind, armsDown, braced, weightShift, restless); `IDLES.default`
+  is the one played (akimbo since v133, the owner's R14), `idles.choose(key)` another, crossfaded. *Not:* a stance (a tool's idle), an
+  idle break (a fidget over it), an emote.
 - **idle break** (`IDLE`, `src/courier/anim/idlebreak.js`): a fidget played over the idle after a still spell with nothing in hand (a look
   round, a stretch, a shift and tap, in turn); any move ends it. *Not:* an emote (asked for by the player).
 - **the jet arts** (`courier/moves/jets.js`): three opt-in Movement Arts on the Soul Brush's load, after Sunshine's nozzles, off until
