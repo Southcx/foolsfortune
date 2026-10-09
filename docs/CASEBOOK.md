@@ -408,14 +408,6 @@ the rules before building in the same area; a rule a machine can check goes into
     own step-over, felt for at the lip's height.
 148. **A rule the player cannot see is not working.** A block, a resist or a refusal shows itself at the point of contact (a mark, a
     sound) and is counted in its line.
-149. **An object's `visible` is the zones' answer too: an update never stops on it.** The zones (render/zones.js) make `visible` a getter
-    that reads false while the object's zone is not drawn; an update that returns on its own object's `visible` never moves it out of
-    that zone, and it is hidden for good. Keep the shown state in a number of its own, and mark a HUD (or anything moved to the eye)
-    `zoneFree`.
-150. **A scrolled texture's offset wraps where every reader of it turns whole.** An offset kept in 0..1 is a seam for any reader that
-    multiplies it by something that is not a whole number (a second octave at 1.6, a cirrus at 0.4): when it wraps, that field jumps.
-    Wrap at a whole number every multiplier turns into whole repeats (5 for 1, 1.6 and 0.4), or keep an unwrapped sum.
-
 149. **A mark is drawn with an alpha.** Light added at alpha 0 writes nothing through this pipeline; every style of a mark carries
     one, and a new style is proved by counting the pixels it changes.
 150. **A helper that scales numbers is never handed names.** A table's numbers and its words go through different helpers.
@@ -433,8 +425,59 @@ the rules before building in the same area; a rule a machine can check goes into
     status, no stun.
 157. **An impact is measured against the surface it lands on.** A landing's hardness is the speed into the ground's own motion
     under the body (a slope falls away too), never the bare fall speed.
+158. **An object's `visible` is the zones' answer too: an update never stops on it.** The zones (render/zones.js) make `visible` a getter
+    that reads false while the object's zone is not drawn; an update that returns on its own object's `visible` never moves it out of
+    that zone, and it is hidden for good. Keep the shown state in a number of its own, and mark a HUD (or anything moved to the eye)
+    `zoneFree`.
+159. **A scrolled texture's offset wraps where every reader of it turns whole.** An offset kept in 0..1 is a seam for any reader that
+    multiplies it by something that is not a whole number (a second octave at 1.6, a cirrus at 0.4): when it wraps, that field jumps.
+    Wrap at a whole number every multiplier turns into whole repeats (5 for 1, 1.6 and 0.4), or keep an unwrapped sum.
+160. **A turn's sign is proved by where the part ends up.** A limb that should swing forward is measured (its tip's position in the
+    thing's own facing, +z where it stands) and looked at from in front and the side, never read off the sign it was written with.
+161. **A telegraph is judged from where the blow is answered, with its mark on.** The part that carries the parry mark stays in sight
+    from the striker's place for the whole wind-up (rendered from in front, with the mark), never behind the body it belongs to.
 
 ## Cases
+
+### 2026-10-09 · The swing's wind-up drew the sleeve behind Strawman's head, and the parry mark with it (the review of T51, v133)
+- **Seen:** with the guard's signs put right, the wind-up (the sleeve "drawn back and up") showed from where the striker stands as a grey
+  stub half behind the head, its cuff turned away; the outline that marks the sleeve while a parry can answer it (Petra's `swing()`,
+  `part: model.arms[1]`) was a thin arc. Before the fix the sleeve had risen toward the striker, the cuff and its outline in plain view.
+  A parry (`onParried()` clears `model.sw`) set the sleeve and the lean back to rest in one frame.
+- **Cause:** the pose was written to the plan's words (back and up) and judged from the side. Measured in the room: at the wind-up's top
+  the cuff was 1.0 m behind its centre and 0.3 m off its line (z -4.41, x 20.32 about 20), a stub 0.2 m wide in front view. The model also
+  read its sleeve and lean straight from `sw`, so clearing `sw` from outside was a snap.
+- **Fix:** the wind-up holds the sleeve up beside the head and only a little back (`SLEEVES.swing`: up 1.15, back 0.15 radians): its
+  length stands clear of the hat and in front view, the mark on it; the cuff 0.6 m behind and 2.2 m up at the top, 0.5 m in front mid-sweep.
+  The sleeve and the lean ease to rest (12 a second) when `sw` is cleared from outside. The guard's constants are one table, `SLEEVES`
+  (`GUARD` alone is the Courier's held block in the glossary).
+- **Rule:** 161.
+
+### 2026-10-09 · The Courier's idle read as if on a stimulant (the owner's R14, v133)
+- **Seen:** the Courier standing still swayed at the chest, bobbed the head with each breath and flicked the left hand once every
+  loop (the owner: "too much torso sway, and a twitchy left hand on too short a loop").
+- **Cause:** the idle was `Loco_IdleMasc`, a braced stance (knees bent, fists out). Measured in the room over 10 real seconds at 60 Hz: chest
+  3.6 cm/s mean (tilt 4.8 degrees mean), head 15.8 cm/s and 9.8 cm front to back, the left hand 12 cm/s mean and 49.7 cm/s at its
+  flick, on a 2.5 s loop. The suite has seven standing idles; nothing chose between them.
+- **Fix:** `IDLES` (`courier/anim/idlebreak.js`): the seven by their look, one named default (`akimbo`, `Loco_IdleRelaxedMasc`, hands on
+  the hips), `idles.choose(key)` for a kiln chooser later. Same measure: chest 1.7 cm/s (tilt 3.0 degrees), head 7.9 cm/s and 5.9 cm, the
+  left hand 5 cm/s and 10.5 at most, a 3.0 s loop. The idle breaks, the fighting stance, the tools' stances and the walk are unchanged; the
+  six idles the code now names moved from `social.bin` to `core.bin` (+268 KB, the pack's total the same). The chest ceremony stood the
+  Courier in the old `idle` alias after the hit: it asks `ch.idles.clip` now (CROSSING, `world/treasure/ceremony.js`).
+- **Rule:** none new: whatever stands the Courier in the idle asks `ch.idles.clip` (the alias `idle` is the stances' and the authored
+  clips' base, as they were tuned), and a default among candidates is picked by measuring each in the game, not by looking at one.
+
+### 2026-10-09 · Strawman's arms still pointed backwards in guard (the owner's T51, v133)
+- **Seen:** on guard, Strawman's sleeves folded back behind its head; from in front only the cuffs' rims showed, and the crossbar stood
+  out bare on both sides.
+- **Cause:** the sleeves' turns had the wrong sign for the way it faces in the room (+z): `rotation.y = -1.25` on the left sleeve swings
+  its cuff to -z. Measured in the room: on guard both cuffs 0.68 m behind its centre (z -4.08 for a body at -3.4). The swing was mirrored
+  the same way: the wind-up drew the right sleeve forward, the sweep went back.
+- **Fix:** a sleeve on side s swings forward by `rotation.y = -s * angle` (`GUARD`: the shoulders 0.16 m forward, the sleeves 129
+  degrees round and tipped down, crossing in an X 0.3 m in front of the chest, clear of the head and the sack); the sweep comes
+  forward (the wind-up: the case above); each sleeve carries its half of the crossbar. Measured: on guard the cuffs at z -2.86 and -2.90
+  (0.5 m in front), crossed (x 20.20 and 19.84 about a centre at 20); the sweep's cuff 0.5 m in front.
+- **Rule:** 160.
 
 ### 2026-10-09 · The stars jumped, in patches, every eleven minutes (R10 review, Calissa)
 
@@ -449,7 +492,7 @@ the rules before building in the same area; a rule a machine can check goes into
   average across the wrap (the cell with the most is a few stars at the threshold), the cloud's second octave seamless too. The same pass
   renamed the cirrus and the night painting's swirls in `vfx/sky.js` and the docs: they had been called "haze" and "veil", which are the
   weather's horizon haze and the storm warp's veil (glossary).
-- **Rule:** 150.
+- **Rule:** 159.
 
 ### 2026-10-09 · The wire compass vanished on a bright sky, and the Dreamvane's marks never showed outside the workshop (R11, Calissa)
 
@@ -470,7 +513,7 @@ the rules before building in the same area; a rule a machine can check goes into
   keeps its own shown state. Noon line contrast 0.020 -> 0.153; the estimate against the screen: noon 0.854 / 0.874, dusk 0.817 / 0.761,
   the pall 0.807 / 0.780, night 0.242 / 0.141 (the stars not counted). Turning and pitching through a dusk for 15 s: 3 turns of the ink,
   each where the ground changed (the bright horizon to the dark zenith).
-- **Rule:** 105, and 149.
+- **Rule:** 105, and 158.
 
 ### 2026-10-09 · A flat cream panel with a gold emblem lay over the crude beside Anagami's jetty (the emocean sweep's pier shot)
 
