@@ -19,6 +19,7 @@ export function brushRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('paint.area', e.area || 0);
     if (e.aspect) L.inc(`paint.${e.aspect}`, e.area || 0);
+    L.hi('paint.stroke.best', e.area || 0); // (the most laid in one hold of the spray: the paintStride knack's feat way)
   });
   // brush.pick { feeling, by }: the radial's pick (tools/soulbrush/radial.js): a feeling the paint is refined into, or Clean
   on('brush.pick', (e) => {

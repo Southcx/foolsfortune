@@ -47,6 +47,9 @@ export const KNACKS = {
   wetInk: { name: 'Wet Ink', does: 'Keeps Celestial mode waiting longer after your last stroke',
     opens: (L) => G(L, 'brush.miss') >= 100 || G(L, 'sigil.cleared.best') >= 4,
     switch: 'tools/soulbrush/celestial.js (REST)', number: '0.42 to 0.7 real seconds' },
+  paintStride: { name: 'Paint Stride', does: 'Your own paint speeds you and refills your bottle; another feeling slows you', // (name a placeholder: Espada's)
+    opens: (L) => G(L, 'paint.area') >= 400 || G(L, 'paint.stroke.best') >= 30, // (about five bottles of paint laid; or 30 m² in one hold of the spray)
+    switch: 'tools/soulbrush/load.js strideOf (built: LACHRYMA-LOOP.md 5, rule 1; Super Mario Sunshine: water underfoot)', number: 'own feeling x1.25, another x0.75, the bottle refilled 6 a second' },
   ariadnesThread: { name: "Ariadne's Thread", does: 'Shows on the map the way back to the last Shrine you rested at',
     opens: (L) => G(L, 'map.room') >= 50 || G(L, 'cogitomap.firstrun') >= 1,
     switch: 'feedback/cartography.js (the map)', number: 'a thread from you to the Shrine' },
