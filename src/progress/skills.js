@@ -69,7 +69,7 @@ export const ABILITIES = [
   {
     id: 'slip', key: 'C', name: 'Slip Dive', glyph: '≈', tech: 'slip', input: 'C on slip', station: 'T4',
     blurb: 'Melt into liquid clay and move fast through it: up walls, under gaps, launched out with a jump. Lachryma soaks back in while you are under.',
-    hint: 'Paint the world with the slip shell first.',
+    hint: 'Paint the world with the Paint Shell first.',
     goals: [led('slip.splat', 6, 'slip splats')],
     variants: [
       { id: 'tide', name: 'Tide', blurb: 'Faster through the slip, and a higher launch out of it.', cfg: { speed: 13, jump: 10 },
