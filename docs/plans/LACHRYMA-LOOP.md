@@ -103,12 +103,44 @@ the numbers are Dovina's (`progress/brushload.js`).*
 - A stream costs about 0.9% of a bottle a drop: a full small bottle (80) is about 11 real seconds of spray. Refilling waits a third of
   a second after you stop.
 
-## 5. Open, for the owner
-1. **Does painted ground change how you move?** Splatoon's swim and Sunshine's slide are the biggest "it feels like Sunshine" levers.
-   The proposal: an opt-in Movement Art (a knack, earned) where your own feeling speeds you up and refills you, and others' slow you.
-   It is never a change to the core movement, and switching it off restores the core movement exactly.
-2. **Crude priced by island of origin, not feeling** (section 1).
-3. **Ship the radial with five feelings now**, or wait for Gall and Fury.
+## 5. Ruled by the owner (2026-10-09: "go with your calls")
+1. **Painted ground changes how you move**, as an earned knack you can switch off:
+   - your own feeling speeds you and refills the bottle;
+   - other feelings slow you;
+   - **you can still brush-slide on crude** (the owner's exception).
+
+   Off, the core movement is exactly as now.
+2. **The radial ships now:** five feelings plus Fair, with the Gall and Fury slots locked until you learn them (GALL-AND-FURY.md
+   section 5).
+3. **The button reads "Clean"**; Fair is its lore name.
+4. **Mop vs Clean:** the mop drinks into the bottle, up close. Clean sprays at range and costs the bottle.
+5. **Crude is priced by its field**, and refining adds the value. **No deep simulation:** the owner wants the whole picture of
+   what goes in and what comes out, drawn as a diagram, not a spreadsheet.
+6. **Gall and Fury: the whole spec** is `docs/plans/GALL-AND-FURY.md`.
+7. **All slip is Lachryma** (the owner: "All Slip is now a form of Lachryma and should be rolled into the larger system as such").
+   Everything above under "Slip" stands, and slip as a substance is Lachryma, not plain clay.
+8. **"Build it like Super Mario Sunshine" means replicate first, then diverge:** copy Sunshine's systems as closely as we can, play it,
+   then bend it to fit our other systems (section 5a).
+
+## 5a. Sunshine's systems, one for one (replicate first)
+
+| Super Mario Sunshine | Ours | Notes for the first build |
+|---|---|---|
+| FLUDD's water tank, the gauge on screen | the Lachrymato Bottle; its fill drawn on the back and as an arc by the reticle | Sunshine's tank is a fixed size, shown always while FLUDD is out |
+| Refilling at any water (stand in it, or spray-dip) | mopping crude and paint; standing in your own feeling (with the knack) | Sunshine refills by touching water: our mop is the touch |
+| Squirt nozzle: a stream aimed with the stick when standing, held to keep spraying | Paint mode: hold to spray, aimed with full pitch, with the reticle | stand still to aim precisely, as Mario plants his feet |
+| Spray arc and pressure: a long stream that arcs down | straight for 5 m, then falls (rule 3.1) | |
+| Hover nozzle: about 4 s of hover on the tank, a hover gauge | the hover jet: its ring at the feet, drawn from the bottle | |
+| Rocket nozzle: charge, then launch straight up | the rocket jet: a charge ring filling | |
+| Turbo nozzle: a sprint on land, skimming water | the skim jet | |
+| Goop (graffiti): paint that slows, burns or shocks; covers the ground; spawns enemies from Piranha Plants | crude (blots and slicks): it slips; a full-grown blot gives up a blotling | ours slips rather than slows |
+| Washing goop with water: it shrinks from the spray; a clean patch sparkles | Clean (the spray) and the mop wipe crude away; the cleaned ground shines a moment | the sparkle is the PowerWash "done" read |
+| Graffiti symbols (the M, a Shine sign) cleaned to reveal a Shine | a blot hiding something (an ostracon, a cache) that cleaning reveals | a later content hook |
+| Belly slide on wet ground (dive on water: fast and long) | the brush slide, on paint and on crude | the owner: brush-slide on crude stays |
+| Sprayed walls and enemies: water knocks back, stuns some | paint on a creature builds its feeling's status (the draught); Clean knocks back | |
+| Shadow Mario's paintbrush and paint | blotlings and aberrant Figments spill crude | |
+
+Diverge only after the owner has played the replica.
 
 ## 6. Order of work, when ruled
 1. Espada's words: done (section 0). The glossary's crude, cask and blot lines are updated once the owner rules.
