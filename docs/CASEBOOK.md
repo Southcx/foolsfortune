@@ -364,8 +364,46 @@ the rules before building in the same area; a rule a machine can check goes into
     shows it and no gun reaches; its test fires at it (a scripted expert) and reports when it falls.
 131. **A removed doc is hunted by its bare name as well as its file name.** A list that writes `LOOK` where a path writes `LOOK.md`
     slips past a grep for the path; before a doc is deleted, grep its name alone (and in capitals) and every list of docs.
+132. **A window's keys need a way in as well as a way along.** Tab is spent by the game (`core/input.js`), a list of focusable things is
+    not reached until something puts focus on it, and a window drawn again drops focus and scroll: the first arrow enters the list on the
+    screen, a keyboard pick gives its focus back to the card that was picked, and a redraw keeps the window's scroll. A test for a window's
+    keyboard starts with nothing in focus; it never calls `.focus()` to begin.
+133. **What is shown for a thing that can vanish is tied to the thing, not to its events.** A tip placed on the body hides on the pointer's
+    leaving; a window shut or drawn again sends no pointerleave and no blur to what it hid or removed. Follow the thing each frame while the tip
+    shows and hide it when the thing has no boxes (`getClientRects().length === 0`) or is gone.
+134. **A view model converts every field a row carries, not the one that was noticed.** A table kept in the crossing's own clock is told in
+    real seconds in its cooldown and in its prose (`ui/mountcards.js` `inSeconds`); a picture is judged at 1x on a dark ground and a pale one,
+    where a two-pixel-high row of dots reads as an ellipsis.
 
 ## Cases
+
+### 2026-10-08 · The choice card could not be reached by keyboard, a pick scrolled the page to the top, and a keyword's tip outlived its window (the review of Calissa's choice card)
+- **Seen:** the pier's page opened headless: Tab, ArrowDown, ArrowRight and Enter each left the focus on the body, nothing moved and
+  nothing was chosen (the builder's check had called `.focus()` on a card first, then pressed arrows). Any pick, mouse or key, drew the page
+  again with its scroll at 0 (259 to 0 at 854 x 480: the mounts off the screen at 480 lines). With a card focused by key and the pointer parked
+  on another, both cards opened their detail over one another. A click on an empty slot called `take(undefined)`. Hovering the Snapshot's
+  "weak points" and pressing F shut the page and left the WEAK POINT tip over the world (`#kwtip.on` true, read in the frame).
+- **Cause:** `core/input.js` spends Tab for the game; the card list's arrows moved only between cards when one already had focus; `render`
+  in `feedback/indexmenu.js` empties the window's root, so a redraw is a new `.im` (scroll 0) with nothing in focus; the keyword's tip hid
+  on its keyword's `pointerleave` and `blur` and a keyword hidden with its window, or removed, gets neither.
+- **Fix:** `installChoiceCards` listens once: with nothing in focus the first arrow puts focus on the first card of the list on the screen
+  (the last going up or left); the list's keys stop at an edge; a keyboard pick on a card or a slot is kept (`keepFocus`, 0.6 real seconds)
+  and the list drawn next gives that card (or the first left) its focus back; a keyboard-led list (`.ccards.kbd`) opens no detail for a
+  parked pointer, and a moving pointer takes it back; an empty slot is not a button. `Pier.open` keeps the scroll of a pier page it draws
+  again (`world/emocean/pier.js`, the one crossing). The tip follows its keyword each frame and hides when the keyword has no boxes or is
+  gone (`ui/keywords.js`). Measured after, at 854 x 480: ArrowDown from nothing focuses Grapple; Enter and Space pick and keep focus and
+  scroll (275); a mouse pick keeps scroll 259; F with a card focused closes; F with a keyword hovered leaves no tip.
+- **Rule:** 132, 133.
+
+### 2026-10-08 · The mounts' hover detail told lengths in bars, and the charges chip read as an ellipsis (the review of Calissa's choice card)
+- **Seen:** hovering the Snapshot card: "holds a weak point open two bars"; the Radar's "marked a bar ahead" (CLARITY.md section 7: one
+  clock, real seconds); and the charges chip at 1x, three dots two pixels high, looked like "...".
+- **Cause:** `ui/mountcards.js` turned the table's `cooldown` from bars to seconds and passed `detail` as it stood; the chip's pips were
+  drawn two rows tall.
+- **Fix:** `inSeconds` tells "N bars" in the detail as seconds (BAR_S: "3 s", "1.5 s ahead"), the table untouched; the chip's pips are six rows
+  tall. The Blaster's detail still names Rez and a sixteenth note, in Dovina's prose, for her to settle.
+- **Rule:** 134.
+
 ### 2026-10-08 · A docs list still named LOOK after LOOK was merged into ART (the review of the docs merges)
 - **Seen:** `docs/ARCHITECTURE.md`'s layout block listed the bibles as "GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, ..." on the
   branch that deleted `docs/LOOK.md`, whose report said a grep for `LOOK.md`, `OVERLAY-LOOK` and `SUNSHINE.md` found nothing but

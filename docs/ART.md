@@ -100,6 +100,16 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
     lantern tall or guttering; a firing is a hit-stop, a burning glass, a white kiln heat cooling to crazing and the tile shrinking a
     step; a refusal is a crawl, a break's glint or a gutter, never a flash or a word.
   - The hokora is the garden's palette in small: grey stone, plum-dark wood, a moss roof.
+- **The choice card and its icons** (`ui/choicecard.js`, `ui/icons/`, `ui/keywords.js`; CLARITY.md sections 4, 5 and 8): a choice is
+  a card, never a grey sentence. One order on every card (icon, label, one line, chips, key, state), so the eye learns where to look
+  once. **The icons are enamel in a wire** (cloisonne): only the light shape is drawn, bevelled from the top left, and the hand keylines
+  it in the darkest grey, so it reads on all five window colours and on a pale ground (casebook rule 105); 16 px at 2 px a pixel
+  (8 px chips at 1), whole numbers only. Each is a picture of what the thing DOES (the Grapple's grapnel, the Bomb's bell ringing out,
+  the Absorb Spray's aerosol), never the tool ashore: the label is a genre word, so the picture is a genre picture too. **Gold is the
+  icons' own colour and the keywords'**: one accent for "this is a rule you can use". A state is a palette swap, never a redraw (grey
+  for locked), and **no colour stands alone**: equipped carries a tick and its word, locked a padlock and its opening line, a compared
+  number a solid arrow for better and a hollow one for worse beside its green or red. The lore lives in the detail, in the lore face
+  (IM Fell), shown on hover only.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
 - **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror

@@ -15,6 +15,8 @@
 //              all its segments strung as the game strings them; scrubbed; seen through its own camera or from outside with its
 //              camera's path drawn; its data edited live (Apply: here and in the world); and KEY THIS VIEW sets a camera key from
 //              where the workbench's camera is, at the scrub's time
+//   CARDS      the choice card (ui/choicecard.js) on a sheet: the seven mounts, the slot row, compare, the keywords, every icon in each
+//              palette, in each window colour (workbench/cardsheet.js)
 //
 // Prior art: the engine editor's asset browser and its preview pane (Unity's inspector preview, Unreal's Niagara and static-mesh
 // editors: an effect or a mesh on a turntable, its stats beside it), the "sound test" and "model viewer" of the sixth generation's
@@ -47,7 +49,7 @@ export function applyVfxOverrides() {
 const CSS = `
 #workbench { position: fixed; inset: 0; z-index: 40; pointer-events: none; font: 13px var(--f-ui, sans-serif); color: #f3e6d8; }
 #workbench .wb { position: absolute; top: 12px; bottom: 12px; left: 12px; width: 340px; pointer-events: auto; display: flex; flex-direction: column; padding: 10px 12px; box-sizing: border-box; } /* (the window's own look: ui/theme.js WINDOWS) */
-#workbench .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+#workbench .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 #workbench .tabs b { cursor: pointer; padding: 3px 9px; border: 1px solid rgba(255,255,255,.2); border-radius: 3px; font-weight: 600; letter-spacing: .08em; }
 #workbench .tabs b.on { background: rgba(255,215,140,.18); border-color: rgba(255,215,140,.6); }
 #workbench .tabs .x { margin-left: auto; }
@@ -109,7 +111,7 @@ export class Workbench {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = (this.root = document.createElement('div')); root.id = 'workbench'; root.style.display = 'none';
     root.innerHTML = `<div class="wb">
-      <div class="tabs"><b data-t="effects">EFFECTS</b><b data-t="models">MODELS</b><b data-t="textures">TEXTURES</b><b data-t="cinema">CINEMA</b><b class="x" title="close (Esc)">×</b></div>
+      <div class="tabs"><b data-t="effects">EFFECTS</b><b data-t="models">MODELS</b><b data-t="textures">TEXTURES</b><b data-t="cinema">CINEMA</b><b data-t="cards">CARDS</b><b class="x" title="close (Esc)">×</b></div>
       <input type="search" placeholder="search">
       <div class="list"></div>
       <div class="pane"></div>
@@ -148,7 +150,9 @@ export class Workbench {
     this.figure.visible = true;
     this.pane.innerHTML = '';
     this.cineClear?.();
-    if (tab === 'effects') this.effectsPane();
+    this.sheet?.remove(); this.sheet = null;
+    if (tab === 'cards') this.cardsPane();
+    else if (tab === 'effects') this.effectsPane();
     else if (tab === 'cinema') this.cinemaPane();
     else if (tab === 'models') this.modelsPane();
     else this.texturesPane();
@@ -157,6 +161,7 @@ export class Workbench {
 
   // ------------------------------------------------------------------ the list (whatever the tab lists)
   entries() {
+    if (this.tab === 'cards') return [];
     if (this.tab === 'cinema') return Object.entries(SEQUENCES).flatMap(([n, d]) => Object.keys(d.segments || {}).map((sg) => ({ id: `${n}|${sg}`, grp: n, label: sg })));
     if (this.tab === 'effects') return Object.keys(LIBRARY).sort().map((n) => ({ id: n, grp: n.split('.')[0], label: n }));
     if (this.tab === 'textures') return [...vfxTextureNames().map((n) => ({ id: `tex:${n}`, grp: 'effect textures', label: n })), { id: 'atlas', grp: 'sprites', label: 'the sprite atlas' }];
@@ -409,6 +414,12 @@ export class Workbench {
   }
 
   // ------------------------------------------------------------------ TEXTURES
+  /** CARDS: the choice card, its icons and the keywords on a sheet beside the panel (workbench/cardsheet.js, loaded on first use). */
+  cardsPane() {
+    this.pane.innerHTML = '<div class="info">the choice card (ui/choicecard.js): the mounts, the slot row, compare, the keywords, every icon</div>'; this.figure.visible = false;
+    import('./cardsheet.js').then(({ cardSheet }) => { if (this.tab !== 'cards' || this.sheet) return; this.sheet = cardSheet(); this.root.appendChild(this.sheet); });
+  }
+
   texturesPane() { this.pane.innerHTML = '<div class="info">a texture, shown on the stage (the alpha as white on the dark)</div>'; this.figure.visible = false; }
   loadTexture(id) {
     this.clearHolder();
