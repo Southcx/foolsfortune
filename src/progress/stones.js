@@ -21,14 +21,25 @@
 //   STONES[id] = { pool: { maxBonus?, regenMult?, costMult?, regenDelayMult? }, reach, heady, tint, gulp?, overflow, cubes?, night?, luck? }
 //   stoneOf(id) -> the row (the Maker's when unknown)   modifier(id, { night }) -> a LachrymaPool modifier (courier/lachryma.js addModifier)
 //   intake(id, amount, { full, night, luckRoll? }) -> { take, flushed, cubes, heady }   draughtOf(id, aspect, strength, second?) -> { aspect: share }
-//   COURIER_MIND = { perDrink, perOverflow, settlePerSec }   DRAUGHT = { build, fadePerSec }   reachOf(id, { night }) -> magnet radius x
+//   COURIER_MIND = { perDrink, perOverflow, settlePerSec }   COURIER_MIND_EFFECT[state] = { power, fragility }   courierMindEffect(mind)
+//   DRAUGHT = { build, fadePerSec }   reachOf(id, { night }) -> magnet radius x
 // ---------------------------------------------------------------------------------------
+import { stateOf } from './combat/mind.js';
 
 /** How much a drink moves the Courier's mental state (one whole state is 1, as for creatures). The owner, 2026-10-09 (QAIS T145): one
  *  clapperjar moved a whole state; a state should take 10 to 15 clapperjars' worth. So a clapperjar's 36 is a twelfth of a state
  *  (12 x 36 x 0.0023 = 1.0); a drink past full pushes twice as hard (BRIMMING, Espada's word; never "drunk" in player text: it was four
  *  times, which made a full pool cross a state on one jar), about 6 jars a state; quiet settles it back at the creatures' own rate. */
 export const COURIER_MIND = { perDrink: 0.0023, perOverflow: 0.0046, settlePerSec: 0.05 };
+/** What the Courier's mental state does to a fight (the owner, 2026-10-09, QAIS "loose-prismatic": Build): `power` multiplies the damage
+ *  of the Courier's blows and shots, `fragility` the damage the Courier takes (the shield and the clay alike). Prismatic is power and
+ *  fragility (x1.5 dealt, x2 taken), Stoic the reverse (x0.67, x0.5), Balanced neither; between them, a step each way. Read by
+ *  `courierMindEffect(mind)` (the mind's own -2 .. +2 scale, progress/combat/mind.js); applied where blows land (Petra's wiring). */
+export const COURIER_MIND_EFFECT = {
+  stoic: { power: 0.67, fragility: 0.5 }, resolved: { power: 0.83, fragility: 0.75 }, balanced: { power: 1, fragility: 1 },
+  fluid: { power: 1.25, fragility: 1.5 }, prismatic: { power: 1.5, fragility: 2 },
+};
+export const courierMindEffect = (mind = 0) => COURIER_MIND_EFFECT[stateOf(mind).id];
 /** The draught's worth: a blow of the drunk feeling's damage type builds its status up to half again as fast, at a full draught; the
  *  draught fades over a real minute without drinking (a feeling carried, not kept). */
 export const DRAUGHT = { build: 0.5, fadePerSec: 1 / 60 };

@@ -205,7 +205,7 @@ export const TALKS = {
           ...[0, 1, 2].map((i) => ({ when: (g) => !H(g)?.done && g.shops.hagOffers().length > i, text: (g) => `Offer ${g.shops.hagOffers()[i]} cubes.`, do: (g) => g.shops.hagOffer(i), go: 'haggle' })),
           { when: (g) => !H(g)?.done && H(g).flattered < 3, text: (g) => FLATTERY[Math.min(2, H(g).flattered)], do: (g) => g.shops.hagFlatter(), go: 'haggle' },
           { when: (g) => !H(g)?.done && !H(g).clinked && g.cubes.balance >= H(g).ask, text: 'Clink a few cubes on the counter.', do: (g) => g.shops.hagClink(), go: 'haggle' },
-          { when: (g) => H(g)?.done === 'last' && g.cubes.balance >= H(g).ask, text: (g) => `Pay ${H(g).ask}.`, do: (g) => g.shops.hagAccept(), go: 'haggle' },
+          { when: (g) => H(g) && (!H(g).done || H(g).done === 'last') && H(g).step !== 'open' && g.cubes.balance >= H(g).ask, text: (g) => `Pay ${H(g).ask}.`, do: (g) => g.shops.hagAccept(), go: 'haggle' },
           { when: (g) => H(g)?.done === 'deal', text: 'Shake on it.', do: (g) => g.shops.hagClose(), go: null },
           { when: (g) => H(g) && H(g).done !== 'deal', text: (g) => (H(g).done === 'last' ? 'Leave it.' : 'Walk away.'), do: (g) => (H(g).done === 'last' ? g.shops.hagDrop() : g.shops.hagWalk()), go: (g) => (g.shops.hag ? 'haggle' : 'hagbye') },
         ],

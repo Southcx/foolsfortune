@@ -84,7 +84,7 @@ check('the tree grows a step of girth as its meals double, and opens a fruiting 
   check('every attribute\'s hue has a curio or a fish within 30 degrees to print', !far.length, far); }
 { const ids = ARCANA.map((a) => a.id), n = (k) => Object.values(BRANCHES).filter((b) => b.adds === k).length, seeds = Object.values(BRANCHES).filter((b) => b.strain).map((b) => b.strain).sort();
   check('twenty-two branches, one for each Major Arcana card, and ten caps', ids.length === 22 && ids.every((id) => BRANCHES[id]) && Object.keys(BRANCHES).length === 22 && CAPS.length === TREE.bodies,
-    { fruit: n('fruit'), sharp: n('sharp'), seed: n('seed'), sporeling: n('sporeling') });
+    { fruit: n('fruit'), sharp: n('sharp'), seed: n('seed') });
   check('each strain has its branch to seed it', seeds.join() === Object.keys(STRAINS).sort().join(), seeds); }
 
 // ---- the services, played against a stand-in game (a box, a bus, a save, a Book, a clock)

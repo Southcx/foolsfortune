@@ -167,7 +167,7 @@ export class Shops {
   hagWalk() { const H = this.hag; if (H) { walk(H.h); this.said(); if (H.h.done === 'gone') this.hag = null; } }
   hagDrop() { const H = this.hag; if (H) { H.h.step = 'gone'; H.h.done = 'gone'; this.said(); this.hag = null; } }
   hagMood() { return this.hag ? moodOf(this.hag.h) : 'sly'; }
-  hagAccept() { const H = this.hag; if (H && H.h.done === 'last') { accept(H.h); this.said('deal'); } }
+  hagAccept() { const H = this.hag; if (H && (!H.h.done || H.h.done === 'last')) { accept(H.h); this.said('deal'); } } // (his ask taken, a counter or his last word: QAIS T18, v133)
   /** The deal shaken on: the thing bought at the agreed price; back to the shop. */
   hagClose(reopen = true) {
     const H = this.hag; this.hag = null;
