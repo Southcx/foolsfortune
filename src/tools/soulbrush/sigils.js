@@ -104,14 +104,15 @@ export class Sigils {
   }
 
   /** Does any queue in view start with this mark? */
-  heads(key) { for (const e of this.on.values()) if (e.k > 0.5 && e.keys[0] === key) return true; return false; }
+  heads(key, marked = null) { for (const [c, e] of this.on) if (e.k > 0.5 && e.keys[0] === key && (!marked || marked.has(c))) return true; return false; }
 
-  /** A mark was drawn: it comes off the front of every queue it heads (in range, shown). */
+  /** A mark was drawn: it comes off the front of every queue it heads (in range, shown); `only` one clapperjar, or a Set of the marked. */
   pop(key, only = null) {
     const g = this.game, P = g.player;
     let popped = 0, cleared = 0;
     for (const [c, e] of [...this.on]) {
-      if ((only && c !== only) || (!only && e.k < 0.5) || e.keys[0] !== key) continue;
+      const set = only?.has ? only : null; // (a Set: the Celestial Brush's marked, each still in range and shown: R18)
+      if ((only && !set && c !== only) || (set && (!set.has(c) || e.k < 0.5)) || (!only && e.k < 0.5) || e.keys[0] !== key) continue;
       e.keys.shift();
       const s = e.sprites.shift();
       this.bursts.push({ s, t: 0 });

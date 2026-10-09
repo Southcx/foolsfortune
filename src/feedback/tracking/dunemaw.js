@@ -56,4 +56,6 @@ export function dunemawRules({ on, L, log }) {
     log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);
   });
   on('strawman.mode', (e) => log.say('info', `Strawman: ${e.mode}.`, { key: 'strawman', throttle: 1 }));
+  on('strawman.parried', () => log.say('battle', "You parry Strawman's swing.", { key: 'strawman.parry', throttle: 0.5 }));
+  on('strawman.swing', (e) => { if (e.landed) log.say('battle', "Strawman's sleeve catches you.", { key: 'strawman.swing', throttle: 1 }); });
 }

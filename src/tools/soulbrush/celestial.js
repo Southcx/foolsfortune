@@ -16,6 +16,9 @@ import { sfx } from '../../audio/sfx.js';
 import { recognize } from './gesture.js';
 import { viewOf, TINT } from './techniques.js';
 
+/** A stroke no wider than DOT px either way is a dot. */
+const DOT = 10;
+const isDot = (st) => { let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (const p of st) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); } return x1 - x0 <= DOT && y1 - y0 <= DOT; };
 const SLOW = 0.04, DRAIN = 1.5, INK_PER_PX = 0.004, ENTER_MIN = 6, REST = 0.42, QUEUE_MAX = 4, SENS = 1.15;
 
 export class Celestial {
@@ -53,9 +56,11 @@ export class Celestial {
     this.canvas.show(false);
     sfx.brushOut?.();
     // the painting takes: each drawing, in the order drawn
+    const n = this.queue.length;
     this.queue.forEach((plan, i) => g.fx.after(0.05 + i * 0.16, () => plan.run()));
     g.events?.emit('brush.canvas', { open: false, drawings: this.queue.length, why });
     this.queue = [];
+    g.fx.after(0.05 + Math.max(0, n - 1) * 0.16 + 0.1, () => this.tool.techniques.clearMarks()); // (the marks go once the last drawing has taken)
   }
 
   /** The frame, in real seconds (`raw`): the paper, the brush, the reading. */
@@ -92,6 +97,11 @@ export class Celestial {
   read() {
     const g = this.game, cv = this.canvas, strokes = cv.pending();
     if (!strokes.length) return;
+    // a dot: the thing under it marked (or let go); while any is marked, the drawings touch only those (techniques.js, MARK: R18)
+    if (strokes.length === 1 && isDot(strokes[0])) {
+      const q = strokes[0][0];
+      if (this.tool.techniques.markAt(q.x, q.y, viewOf(g, cv.size.w, cv.size.h))) { cv.fade(); sfx.inkDab?.(0.8); return; }
+    }
     const rec = recognize(strokes);
     const plan = this.tool.techniques.plan(rec, viewOf(g, cv.size.w, cv.size.h));
     if (!plan) { cv.run(); sfx.inkRun?.(); g.events?.emit('brush.miss', { strokes: strokes.length }); return; }

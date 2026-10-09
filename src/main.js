@@ -449,6 +449,7 @@ async function main() {
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: courier/vessel/death.js)
 
   const input = new Input(renderer.domElement);
+  addEventListener('keydown', (e) => game.qais?.keysFirst?.(e), true); // (QAIS first, before every window's own key listener: F8 over any window, and its Esc its own, R7)
   game.replay = new Replay(input); // (what was pressed, kept to play again: core/replay.js; its commands are registered as the game is built)
   const player = new Player(physics, camera, input);
   game.player = player;
@@ -531,7 +532,7 @@ async function main() {
   game.god = god;
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
-  input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
+  input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
@@ -680,7 +681,8 @@ async function main() {
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
-  for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
+  // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)
+  for (const [dx, dz] of [[-12, -42], [4, -48], [18, -40]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
@@ -856,12 +858,13 @@ async function main() {
   if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; started = true; } // (a replay is played from the start of play: no title)
   game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
   let selfRelease = false; // (the next unlock is the game's own: see below)
-  input.onLockChange = (locked) => {
+  input.onLockChange = (locked, why) => {
     // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened
     // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
     if (locked && (modalOpen() || game.kilnUI?.open || game.dialogue?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
     if (!locked && selfRelease) { selfRelease = false; return; } // (a release the game made itself is not you leaving: no pause, the kiln sweep's F and Esc spam)
     if (!locked && performance.now() - (input.escSpentAt ?? -1e9) < 500) return; // (an Esc a window spent closing itself is not you leaving either: casebook 125)
+    if (!locked && why === 'refused') { game.log?.say('system', 'Click to take the mouse back.', { key: 'lock.refused', throttle: 5 }); return; } // (the browser would not give the mouse back after a window closed on Esc, which is no user action to it: that is not a pause, R12/T10 v133)
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';

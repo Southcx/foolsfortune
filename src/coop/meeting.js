@@ -24,7 +24,7 @@ const folkAt = (g, id, dx, dz) => { const n = g.folk?.list?.find((f) => (f.def?.
 const SPOTS = {
   petra: (g) => g.player.spawn.clone().add(V(-3.5, 0, 2.5)),
   calissa: () => KILN_AT.clone().add(V(4.2, 0, 2.6)), // (clear of the kiln's own F)
-  wanda: (g) => folkAt(g, 'grog', 2.4, -1.6),
+  wanda: (g) => folkAt(g, 'grog', -2.6, 1.8), // (Grog's other side, 6 m off the Float Shrine: she stood on it, the owner's R9)
   espada: (g) => (g.dunes?.gnomon ? g.dunes.gnomon.clone().add(V(7, 0, 5)).setY(g.dunes.heightAt(g.dunes.gnomon.x + 7, g.dunes.gnomon.z + 5)) : null),
   dovina: (g) => folkAt(g, 'raku', -2, 1.4),
 };
