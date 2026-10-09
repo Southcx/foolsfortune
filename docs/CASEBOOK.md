@@ -384,7 +384,7 @@ the rules before building in the same area; a rule a machine can check goes into
     a sheathed blade, a folded wing or a shut lid likewise. And a look is judged from where a person stands beside it (the jetty
     walker's eye, inside the height of what is moored there), not only from the stage's own views of it.
 
-131. **A writer to a store writes the shape its reader draws.** A document the page renders is written in the fields the renderer reads
+138. **A writer to a store writes the shape its reader draws.** A document the page renders is written in the fields the renderer reads
     (QAIS's Brief: `division`, `build`, `lines`, `waiting`, `at`), and read back through the page once after the first write.
 
 ## Cases
@@ -1968,5 +1968,5 @@ the rules before building in the same area; a rule a machine can check goes into
   `title` instead. The store took them; nothing read them back through the page.
 - **Fix:** the seventeen documents rewritten with `lines`, `waiting` and `at` (their `body` kept). Every Brief from here is written in
   the renderer's fields.
-- **Rule:** 131.
+- **Rule:** 138.
 
