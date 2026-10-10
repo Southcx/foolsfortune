@@ -571,6 +571,18 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **The paint range** (`world/testroom/paintrange.js`; its look `dressPaintRange`, `vfx/testroomkit.js`): the stand, a quarry tile with a
   slip chevron down the range, and rings at 3, 6 and 9 m brushed in the drill plates' cream slip with an oxblood rim, each with a
   **tally** of one, two or three small tiles on its near side (counted, never a number).
+  **The combat wing** (`world/testroom/combatwing.js`, `TR.wing`; its look `vfx/combatwingkit.js`; docs/plans/COMBAT-LAB.md): the
+  Throwing Room's hall for fighting, through **the arcade** where its south wall stood, 9 m high, in the room's zone; it measures and
+  never pays, as the room does. Its stations, each with **a station's lectern** (the Index's lectern's shape, its book shut while its page
+  is unbuilt; *not* the Index's lectern) and a debug chest: **the sparring circle** (Strawman in a ring of tamped clay bounded by straw
+  bales, a sumo dohyo's; never "Strawman's ring": a ring is a homonym), with **the frame meter** (`frameMeter`: twenty tiles crosswise
+  in its clay between Strawman and the striker, a tenth of a second each; no words or numbers) and **the sparring mirror** on the west
+  wall; **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
+  "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
+  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (eleven **roly-polies**, Strawman's
+  kin, each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's
+  full height, for the launcher and the air string). Places: `sparring.circle`, `figment.telegraph.floor`, `parry.range`,
+  `status.bench`, `juggle.pen`. *Not:* "the combat lab" (the plan's working title; the basement is never "the lab").
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14

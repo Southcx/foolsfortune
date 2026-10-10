@@ -84,6 +84,12 @@ export function installPlaces(game) {
   P.add('strawman', { name: 'Strawman', at: () => TR.strawman.clone(), note: 'F: its mode; the bout is said in the log' });
   P.add('spraywall', { name: 'the spray wall', at: () => new THREE.Vector3(TR.wall.x, 0, TR.wall.z), yaw: -Math.PI / 2, near: 2.5, note: 'clay that keeps every dent' });
   P.add('throwing', { name: 'the Throwing Room', at: () => TR.mark.clone(), yaw: Math.PI / 2, note: 'on the firing mark; F at the Index\'s lectern: the drills' }); // (world/testroom/)
+  { const W = TR.wing, at = ([x, z]) => () => V(x, 0, z), B = W.statusBench, J = W.jugglePen; // (the combat wing's stations, through the room's south arcade, each set down facing what it is for: world/testroom/combatwing.js, docs/plans/COMBAT-LAB.md)
+    P.add('sparring.circle', { name: 'the sparring circle', at: at([W.circle.x, W.circle.z]), yaw: 0, near: 2, note: 'in front of Strawman in its ring; the frame meter beyond it, the mirror on the west wall' });
+    P.add('figment.telegraph.floor', { name: 'the Figment telegraph floor', at: at(W.telegraphFloor.caster), yaw: 0, near: W.telegraphFloor.mark[1] - W.telegraphFloor.caster[1], note: 'on its mark, facing the caster (a stand-in)' });
+    P.add('parry.range', { name: 'the parry range', at: at(W.parryRange.pitcher), yaw: 0, near: 8, note: 'on the 8 m mark, facing the pitcher (a stand-in)' });
+    P.add('status.bench', { name: 'the status bench', at: at([B.x, (B.z0 + B.z1) / 2]), yaw: Math.PI / 2, near: 3, note: 'the eleven roly-polies, a status glyph before each' });
+    P.add('juggle.pen', { name: 'the juggle pen', at: at([(J.x0 + J.x1) / 2, (J.z0 + J.z1) / 2]), yaw: 0, near: 4.5, note: 'at its gate: sand under the hall\'s full height' }); }
   if (game.course?.console) P.add('index', { name: 'the index console', at: () => V(game.course.console.x, -14, game.course.console.z), note: 'F: the room menu' });
   if (game.dunes) P.add('dunes', { name: 'the dunes', at: () => game.dunes.spawnPoint(), note: 'the sand sea; the Weir is its oasis' });
   if (game.course?.weirSpawn) P.add('weir', { name: 'the Weir', at: () => game.course.weirSpawn.v.clone(), note: 'the oasis: the pools, the pier, the treasury' });

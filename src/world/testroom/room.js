@@ -6,8 +6,9 @@
 // look is Calissa's (the targets, the wall, Strawman's model: vfx/strawman.js); this is the place and its bodies.
 //
 // The room is 20 by 16 m through a door in the Workshop's east wall: the firing mark a few steps in, the spray wall of soft clay 10 m down
-// the lane from it, the targets that came from beside the kiln on posts along the north side, Strawman on the south side, the twelve pots
-// that come back on a shelf by the door, and the Index's console beside it (F: the room's page, feedback/indexmenu.js). It measures and
+// the lane from it, the targets that came from beside the kiln on posts along the north side, Strawman through the south arcade in the
+// combat wing's sparring circle (combatwing.js), the twelve pots that come back on a shelf by the door, and the Index's console beside it
+// (F: the room's page, feedback/indexmenu.js). It measures and
 // never pays: its pots and Strawman are `training` (the ledger never hears them: tracking.js), and a drill run on a tuned game is said but
 // not recorded (feedback/tracking/testroom.js).
 //
@@ -17,6 +18,7 @@
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
 //   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 //   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
+//   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
 //   events: strawman.mode, strawman.bout, strawman.swing { landed }, strawman.parried
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -26,6 +28,7 @@ import { POTS, WALL } from '../../progress/combat/testroom.js';
 import { STRAWMAN, bout } from '../../progress/combat/dunemaw.js';
 import { StrawmanModel } from '../../vfx/strawman.js';
 import { PaintRange } from './paintrange.js';
+import { buildCombatWing } from './combatwing.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
@@ -40,7 +43,7 @@ export function buildTestRoom(level) {
   level.box([cx, -0.25, cz], [w, 0.5, d], C.floor, { outline: false }); // (a floor has no outline: the hull's top lay in the floor's own plane and fought it for the pixels, the owner's R45 report; the Workshop's slabs, basement.js groundFloor, are the same)
   level.box([cx + 0.25, h + 0.25, cz], [w + 0.5, 0.5, d + 1], C.deep, shell); // (no overhang west: its end face lay on the Workshop's east wall's inner face at x 10 and fought it, a band at the eaves: the owner's R3, v131)
   level.box([x1 + 0.25, h / 2, cz], [0.5, h, d + 1], C.wall, shell);
-  level.box([cx, h / 2, z0 - 0.25], [w, h, 0.5], C.wall, shell);
+  buildCombatWing(level); // (the south wall is the combat wing's arcade now, and the wing beyond it: combatwing.js, docs/plans/COMBAT-LAB.md)
   level.box([cx, h / 2, z1 + 0.25], [w, h, 0.5], C.wall, shell);
   // the west wall's lining, a finger thick on the Workshop's east wall, the door left open: the Workshop's wall is the Workshop zone's and
   // is not drawn from in here when the door is out of view, so the room keeps its own face on it (the owner's R2, v131)
@@ -50,7 +53,7 @@ export function buildTestRoom(level) {
     level.box([lx, (D.h + h) / 2, (D.z0 + D.z1) / 2], [t, h - D.h, D.z1 - D.z0], C.wall, lining); }
   // the floor's planks, a wainscot, beams across, and posts in the walls (so it reads as the Workshop's own wing, not a box)
   for (let z = z0 + 2; z < z1; z += 2) level.box([cx, 0.005, z], [w, 0.01, 0.06], C.deep, { outline: false, collide: false, shadow: false });
-  for (const [x, z, sx, sz] of [[cx, z0 + 0.06, w, 0.12], [cx, z1 - 0.06, w, 0.12], [x1 - 0.06, cz, 0.12, d]]) level.box([x, 0.55, z], [sx, 1.1, sz], C.dark, { outline: false, collide: false, shadow: false });
+  for (const [x, z, sx, sz] of [[cx, z1 - 0.06, w, 0.12], [x1 - 0.06, cz, 0.12, d]]) level.box([x, 0.55, z], [sx, 1.1, sz], C.dark, { outline: false, collide: false, shadow: false });
   for (let x = x0 + 4; x < x1; x += 5) {
     level.box([x, h - 0.3, cz], [0.35, 0.4, d], C.dark, { shadow: false });
     for (const z of [z0 + 0.2, z1 - 0.2]) level.box([x, h / 2, z], [0.45, h, 0.4], C.dark, { shadow: false });
