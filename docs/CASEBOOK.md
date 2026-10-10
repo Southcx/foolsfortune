@@ -348,7 +348,8 @@ the rules before building in the same area; a rule a machine can check goes into
      (a ribbon, a band, a smoke thread) is a branch on a uniform in that one program (`vfx/ribbonlight.js`), never a ShaderMaterial of
      its own. List the boot's programs by name and cache key against main's before calling a branch's count its own.
 125. **An Esc a window spends is not a pause.** The pointer's unlock can land after the window has closed; a lock change read
-    alone cannot tell it from the player leaving, so the window marks the moment and the pause waits past it.
+    alone cannot tell it from the player leaving, so the window marks the moment and the pause waits past it. The mark is taken
+    first, by the earliest listener, so no window's own handler can stop the key before it is marked.
 126. **A test's seed names no game day.** What the calendar lays (a sea chart, a Well's floors) changes with the real hour; a test that
     depends on it pins the clock (`?clock=`) as perf does, or its seed means a different world each hour.
 127. **A point fixed in the world is found in the world and carried into a moving frame, never written as the frame's numbers.** A
@@ -2754,3 +2755,14 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the parked stain back in main.js's warm-up; the program budget 164 -> 165 (scripts/perf.mjs, the reason beside it). Headless,
   the sweep's steps: 165 programs before Gall and Fury, 165 after, none new.
 - **Rule:** 169.
+
+### 2026-10-10 · Esc closing the Pneuka Box sometimes opened the pause menu too (the workshop sweep, v142 gate)
+- **Seen:** "window pneuka: Esc closes it" failed with `pause`; Calissa saw it come and go too. A probe of P, P, P, Esc, 25 times with
+  every lock change traced: 2 of 25 showed the pause, each after an unlock that landed once the box had closed, and `escSpentAt`
+  was never set, in any of the 25.
+- **Cause:** the Pneuka Box's own Esc listener (window, capture, built at main.js's `new PneukaUI`) calls `stopImmediatePropagation`;
+  case 125's marker was a capture listener on the same window registered later in main.js, so it never ran for the box. The box's
+  own `exitPointerLock` unlock, when the browser delivered it after the close, found no window open and no mark: a pause.
+- **Fix:** the marker moved into `Input`'s constructor (core/input.js), the first keydown listener the game registers; main.js only
+  says which windows spend an Esc (`input.escSpends`). The same probe: 0 of 25, the mark set in 24 (the 25th's lock never changed).
+- **Rule:** 125 (amended: the mark is taken first).

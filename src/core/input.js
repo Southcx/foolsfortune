@@ -17,6 +17,9 @@ export class Input {
     el.addEventListener('wheel', (e) => { if (this.enabled) { this.wheel += e.deltaY; e.preventDefault(); } }, { passive: false });
     el.addEventListener('auxclick', (e) => e.preventDefault());
 
+    // an Esc that a window spends closing itself is marked before any window's own handler can stop it (each window's is registered
+    // later, and some stop the event: the Pneuka Box's did, so the mark never came, casebook 125's second case); main.js says which spend
+    addEventListener('keydown', (e) => { if (e.code === 'Escape' && this.escSpends?.()) this.escSpentAt = performance.now(); }, true);
     addEventListener('keydown', (e) => {
       const tag = e.target?.tagName; if (tag === 'INPUT' || tag === 'TEXTAREA') return; // (typing in a field: the chat line, a save code)
       if (e.code === 'Tab') e.preventDefault();
