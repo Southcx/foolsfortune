@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE MOVESETS: the rules that hear the moves of Calissa's suite (tools/moveset.js; the numbers: progress/combat/moves.js) and
-// keep the counts their unlocks and achievements read: launchers, the air string's best, specials, the skiff's bails and ollies, and the
+// keep the counts their unlocks and achievements read: launchers, the air string's best, specials, paid cuts, the skiff's bails and ollies, and the
 // tools' blows the unlocks count that no other rule keeps (the Dreamvane's, the Crucibelle's fever). Only the Courier's count (`by`).
 // tracking.js calls it from listen(). The words are placeholders for Espada's.
 //
@@ -14,6 +14,8 @@ export function moveRules({ on, L, log }) {
   on('move.air', (e) => { if (e.by !== 'courier') return; L.hi('move.air.best', e.hits || 0); if ((e.hits || 0) >= 6) log.say('battle', `An air string of ${e.hits}.`, { key: 'air', throttle: 2 }); });
   // move.special { tool, special, by }: a special used (its cost already paid)
   on('move.special', (e) => { if (e.by !== 'courier') return; L.inc('move.special'); L.inc(`move.special.${e.special}`); const s = MOVES[e.tool]?.special; if (s && s.id === e.special && !L.get(`move.special.${e.special}.said`)) { L.inc(`move.special.${e.special}.said`); log.say('gain', `A special: ${e.special}.`); } });
+  // move.cut { tool, move, paid, cost, by }: a blow's recovery cut short for Lachryma (the paid cut, a working name); said once, to teach it
+  on('move.cut', (e) => { if (e.by !== 'courier' || !e.paid) return; L.inc('move.cut.paid'); if (L.first('move.cut.paid')) log.say('gain', `You cut the recovery short for ${e.cost} Lachryma: a press once the blade has struck.`); });
   // the skiff (Calissa's suite): skiff.bail { speed, by }, skiff.ollie { geyser, by }
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
   on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', 'You bail.', { key: 'bail', throttle: 3 }); } });

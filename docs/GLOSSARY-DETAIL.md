@@ -256,10 +256,16 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the moveset** (`tools/moveset.js`, Calissa's; numbers `progress/combat/moves.js`, Dovina's): a tool's **string** (LMB, blow by blow),
   its **pause string** (LMB after a pause mid-string), its **charge** (LMB held), its **launcher** (S + LMB: the struck thing is
   `airborne`), its **air string** (LMB in the air, ending in a **plunge**), its **dash attack** (LMB while sprinting) and its **special**
-  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow, its row's time spent and its strike past, may be
-  cut short by a press into a new opener: the **recovery cut** (*not* a cancel: opposites cancel). A **bail** is being thrown off the
-  Solar Skiff. *Not:* a combo (the
-  club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one yet.
+  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow (and the dash, the charge's release, a plunge
+  landed), its row's time spent and its strike past, may be cut short by a press into a new opener: the **recovery cut**, free (*not* a
+  cancel: opposites cancel). **The paid cut** (a working name: the player's word is Espada's and the owner's to rule; code `paidCut`, the
+  event `move.cut`, `recovering()`/`cut()` in `tools/moveset.js`): in any blow's recovery, its strike past and before the free ways open,
+  a press made there pays Lachryma (the tool's `paidCut` row; the Sondelass's 5) and the next move the grammar picks begins at once,
+  leaving the afterimage (`vfx/afterimage.js`, Blink Dash's look); never inside a strike, never in a plunge's fall; a press the pool cannot
+  pay is the free grammar. The launcher **held** to its strike lifts higher and the Courier **rides** what it launched (the code's
+  `juggle`: its measured motion, a blade's height below it; Devil May Cry's High Time); the air blows ride it too. A **bail** is being
+  thrown off the Solar Skiff. *Not:* a combo (the club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one
+  yet.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the

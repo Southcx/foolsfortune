@@ -29,14 +29,27 @@ export const MOVES = {
     combo1: { power: 1.2, time: 0.42, unlock: always }, combo2: { power: 1.3, time: 0.46, unlock: always },
     combo3: { power: 1.4, time: 0.5, unlock: always }, combo4: { power: 2.0, time: 0.78, unlock: always },   // (2.7 power a second over the four)
     pause1: { power: 1.0, time: 0.4, unlock: always }, pause2: { power: 1.0, time: 0.4, unlock: always },
-    pause3: { power: 2.6, time: 0.9, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers)
+    pause3: { power: 2.6, time: 0.9, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers: j3)
+    thrust2: { power: 0.9, hits: 3, time: 0.9, unlock: always, status: 'stagger' },                         // (t2, Sond_ThrustCombo: the held thrust stabs three times; pause3's 2.6 as three, Calissa 2026-10-10)
     charge: { power: 4.0, time: 1.3, unlock: always },                                                        // (a full charge, the psygun's 0.85 s and the swing)
     launcher: { power: 0.8, time: 0.55, status: 'airborne', unlock: uses('cut.hit', 50) },                    // (position, not damage; after 50 cutlass blows)
     air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
     plunge: { power: 2.0, time: 0.6, status: 'stagger', unlock: uses('move.launch', 10) },                   // (2.9 a second over the air string: short, and earned)
     dash: { power: 1.6, time: 0.5, unlock: always },
+    counter: { power: 0.8, hits: 4, time: 1.7, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
     stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
-    special: { id: 'tidecutter', power: 7, time: 1.4, cost: 12, unlock: uses('cut.hit', 500) },              // (a line of slip: the Sondelass mastered)
+    special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
+    // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
+    // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js
+    // lachryma.max; the maker's stone, progress/stones.js, leaves it so; a stone moves it by -15..+30 and the cost by x0.85..1.15). A paid
+    // ground string cuts four recoveries (c1, c2, c3, c4's): 1.37 real s on paper, 1.50 measured (a cut waits for a press after the
+    // strike), not 2.20 free: 20 Lachryma a string, 13.3 a real second. Regen (3.5 a second) waits 2.2 s unspent, so none comes back while
+    // cutting: a fresh pool pays 20 cuts, five strings, 7.7 real s measured, at 3.9 power a second, not 2.7 (x1.47), about 9 power more
+    // than the free string in that time, a slip jelly and a fifth (8). Then the pool, which is also the shield, is empty: a burst, not a
+    // raise past the 2.6 the raids are sized to. Flat, as Guilty Gear's Roman Cancel is half the gauge whatever it cancels: where it buys
+    // most (the charge release's 1.19 real s, the counter's 0.76, the Tidecutter's 0.69, the plunge's landing 0.6) against least (c3's
+    // 0.07, a2's none) is for the player to learn. A little more than a psygun shot (4), less than the stinger (6).
+    paidCut: { cost: 5, unlock: always },
   },
   unarmed: {
     combo1: { power: 0.6, time: 0.32, unlock: always }, combo2: { power: 0.6, time: 0.32, unlock: always },
@@ -107,6 +120,7 @@ export const RECORDS = {
   'move.launch': 'launchers that lifted something (opens the air string)',
   'move.air.best': 'the most blows in one air string, the creature never touching the ground',
   'move.special.<id>': 'specials used, by id',
+  'move.cut.paid': 'recoveries cut short for Lachryma (the paid cut, a working name)',
   'skiff.bail': 'bails off the Solar Skiff (a wall struck over 14 m/s, a landing past 17 m/s, or one landed badly crooked: skiff.js BAIL; a wobble is a near miss, not a bail)',
   'skiff.ollie.geyser': 'ollies off a geyser',
 };

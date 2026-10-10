@@ -5,8 +5,9 @@
 //   LMB         four strokes, the fourth the whole body's (a leap and a cut); after a pause at the first, a THRUST and its follow;
 //               after a pause at the second, the three wide arcs of the JRPG string
 //   hold LMB    the CHARGE: the blade drawn back while held, the charged slash on release
-//   S + LMB     the LAUNCHER: up they go, and what it cuts goes with them; LMB in the air: two cuts, then the PLUNGE, the blade
-//               driven down into the ground with a blast round them
+//   S + LMB     the LAUNCHER: tapped, what it cuts goes up to the blade; held, up they go with it (Devil May Cry's High Time); LMB in
+//               the air: two cuts that keep it at the blade, then the PLUNGE, the blade driven down with a blast round them on the ground
+//   a press in a blow's recovery: THE PAID CUT (tools/moveset.js): Lachryma paid, the next move at once; RMB the stinger, V the guard
 //   sprinting   LMB: the DASH SLASH (its own 2.3 m, carried)
 //   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
 //   RMB tap     the STINGER: a committed thrust. They lunge six metres in a quarter of a second, the suite's thrust held out, and
@@ -36,6 +37,9 @@ import { Trail } from '../../vfx/trail.js';
 import { BladeMode } from './blade.js';
 import { deflect, guard } from '../../courier/parry.js';
 import { Moveset, rootOf } from '../moveset.js';
+import { Afterimages } from '../../vfx/afterimage.js';
+import { stream } from '../../core/rng.js';
+const fxRand = stream('tools/sondelass/cutlass.fx'); // (the look's chance: the afterimages' hue)
 
 // The strikes are the Courier's own suite (melee.glb's Sond_*), played by the shared combo engine (tools/moveset.js): the moves below
 // are its table. Clip seconds throughout; when the blade can hurt is not typed here: it is measured from the clip (melee.js).
@@ -46,20 +50,30 @@ const MOVES = {
   c4: { rule: 'combo4', clip: 'Sond_Combo4', body: 'whole', root: 'xz', hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' },
   // the pause strings: after the first stroke, a thrust and its follow; after the second, the three wide arcs (the JRPG string)
   t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
-  t2: { rule: 'pause3', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'raise' },
-  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.45, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
-  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.6, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
+  // (t2 holds the thrust out 0.13-0.70 and stabs three times, its speed's peaks at 0.21, 0.53, 0.66: a typed strike, a hit at each;
+  // its push 7 to 2, or the first stab threw what it struck out of the other two's reach; its row's stagger holds it. The blade is held
+  // 40-90 degrees to their left all the while, never across the front, so it never struck what was straight ahead: aimed at 55)
+  t2: { rule: 'thrust2', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', strike: [0.13, 0.7], parts: [0.13, 0.45, 0.6], aim: 0.95, hit: { power: 1.8, dmg: 1.6, push: 2 }, heat: 0.7, arc: 'raise' },
+  // (j1 and j2 chain once their arcs finish, 0.51 and 0.64: a quick press no longer cuts the arc short)
+  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.53, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
+  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.66, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
   j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
-  // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes; LMB in the air: two cuts and the plunge
-  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 9.5, push: 1 }, arc: 'over' },
-  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 4, push: 1.5 }, arc: 'r2l' },
-  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], hit: { power: 1.3, dmg: 1.1, lift: 4, push: 2 }, arc: 'l2r', heat: 0.5 },
-  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 7, lift: 5 }, heat: 1, arc: 'over' },
+  // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes. Tapped, lift 5.5 (an apex of 1.55 m about as a1 cuts, the
+  // Courier on the clip's own rise); held to its strike, lift 9.5 and they ride up with it (High Time, tools/moveset.js). LMB in the
+  // air: two cuts that keep it at the blade (lift 2: back to the same height in the 0.4 s to the next, 9.81 x 0.4 / 2; push 0.5, not
+  // 1.5 and 2, which carried the two of them sideways at 3.8 m/s into the nearest wall) and the plunge,
+  // whose landing ring strikes only what is near the ground, its lift gone (what it threw overhead flew 9 m)
+  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.5 }, arc: 'over' },
+  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 2, push: 0.5 }, arc: 'r2l' },
+  // (a2's somersault turns the blade in an upright circle 37-49 degrees to their left, never across the front: aim turns them that far
+  // off the target, so the circle's front passes through it; measured from the clip, melee.js)
+  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 2, push: 0.5 }, arc: 'l2r', heat: 0.5 },
+  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard, and the special (R)
   dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
   hold: { clip: 'Sond_ChargeHold' },
   burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
-  spin: { rule: 'combo3', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
+  spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
   tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
 };
 const STRINGS = { ground: ['c1', 'c2', 'c3', 'c4'], pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
@@ -82,14 +96,14 @@ export class Cutlass {
     this.tool = tool;
     const g = tool.game;
     this.trail = g.vfx?.swing('swing.cutlass', { tint: 0xffb27a, tip: 0xfff1dc }) || new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 }); // (its look: vfx/library.js)
+    this.ghosts = new Afterimages(g, { opacity: 0.3, life: 0.4 }); // (the stinger's and the paid cut's: Blink Dash's one afterimage, vfx/afterimage.js)
     this.moves = new Moveset(tool, {
       id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
-      trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b),
+      trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b), ghosts: this.ghosts,
     });
     this.blade = new BladeMode(this);
     this.rmbT = -1; // RMB down: how long (a tap is a stinger, a hold is blade mode)
     this.stinging = false; this.stCool = 0; this.stHit = new Set(); this.stPrev = new THREE.Vector3(); this.stDir = new THREE.Vector3(0, 0, 1); this.ghostT = 0;
-    this.ghosts = [];
     this.guardOn = false; this.guardT = 0; this.guardW = 0; this.parryT = 9;
   }
   get busy() { return this.moves.busy || this.stinging || this.blade.active || this.guardOn; }
@@ -98,7 +112,7 @@ export class Cutlass {
   get combo() { return this.moves.combo; }
 
   cancel() {
-    this.moves.cancel(); this.rmbT = -1; this.guardOn = false;
+    this.moves.cancel(); this.rmbT = -1; this.guardOn = false; this.ghosts.clear();
     this.blade.exit('stow');
     this.game.lock?.release('stow');
     this.trail.gap();
@@ -130,8 +144,9 @@ export class Cutlass {
     // LMB with the guard up: the counter (the spin), and the guard drops
     if (this.guardOn && inp.wasPressed('Mouse0') && !this.moves.busy) { this.guardOn = false; this.tool.P.guarding = false; this.moves.begin('spin', 'counter'); }
     this.guardUpdate(dt, inp);
-    // RMB: a tap is the stinger, a hold is blade mode
-    if (inp.wasPressed('Mouse2') && !this.moves.whole && !this.stinging && !this.guardOn) this.rmbT = 0;
+    // RMB: a tap is the stinger, a hold is blade mode; in a blow's recovery, the stinger at once for the paid cut (tools/moveset.js)
+    if (inp.wasPressed('Mouse2') && this.moves.recovering() && !this.stinging && this.stCool <= 0 && this.moves.cut(STING.cost)) this.stinger(true);
+    else if (inp.wasPressed('Mouse2') && !this.moves.whole && !this.stinging && !this.guardOn) this.rmbT = 0;
     if (this.rmbT >= 0) {
       this.rmbT += raw;
       if (!inp.isDown('Mouse2')) { this.rmbT = -1; if (!this.busy && this.stCool <= 0) this.stinger(); }
@@ -155,9 +170,9 @@ export class Cutlass {
   }
 
   // ---------------------------------------------------------------- the stinger
-  stinger() {
+  stinger(cut = false) {
     const P = this.tool.P, g = this.game, launch = P.techs.get('launch');
-    if (!launch || P.techs.active) return;
+    if (!launch || (P.techs.active && !(cut && P.techs.active === launch))) return; // (a paid cut from a whole-body blow: its launch goes straight into the thrust's)
     if (!g.lachryma.spend(STING.cost, 'stinger')) return;
     const dir = this.aimDir(new THREE.Vector3());
     // toward the lock: no farther than the target (they stop a blade's length short of it)
@@ -225,18 +240,12 @@ export class Cutlass {
     if (this.ghostT <= 0) { this.ghostT = 0.045; this.afterimage(); }
   }
 
-  afterimage() {
-    const g = this.game, ch = g.character;
-    if (!ch || ch.hidden) return;
-    const mat = new THREE.MeshBasicMaterial({ color: 0xff9a5a, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending });
-    const obj = ch.snapshot(mat);
-    g.scene.add(obj);
-    this.ghosts.push({ obj, mat, age: 0 });
-  }
+  afterimage() { this.ghosts.leave({ ph: fxRand() }); } // (Blink Dash's: the film's hues walked as it fades; it was a flat orange)
 
   // ---------------------------------------------------------------- the guard
   guardUpdate(dt, inp) {
     const P = this.tool.P, g = this.game;
+    if (inp.wasPressed('KeyV') && this.moves.recovering() && !this.stinging) this.moves.cut(); // (the guard at once from a blow's recovery: the paid cut)
     const want = inp.isDown('KeyV') && !this.moves.busy && !this.stinging;
     if (want && !this.guardOn) { this.guardOn = true; this.guardT = 0; sfx.guardUp?.(); g.events?.emit('guard.up', {}); }
     else if (!want && this.guardOn) this.guardOn = false;
@@ -261,15 +270,9 @@ export class Cutlass {
     else if (m.bladeOut > 0.5) this.moves.afterHands(dt);
     else { this.trail.gap(); this.trail.update(dt); }
     const hot = c && (c.def.heat || 0) > 0.6;
-    this.trail.setColors(this.stinging ? 0xffe0b0 : hot ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc);
+    if (!c?.paid || this.stinging) this.trail.setColors(this.stinging ? 0xffe0b0 : hot ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc); // (a paid blow's: the engine's, the film)
     if (this.stinging) this.trail.power = 1.5; // (the finishers and the stinger shed more)
-    for (let i = this.ghosts.length - 1; i >= 0; i--) {
-      const gh = this.ghosts[i];
-      gh.age += dt;
-      const k = 1 - gh.age / 0.4;
-      if (k <= 0) { this.game.scene.remove(gh.obj); gh.obj.traverse((o) => o.geometry?.dispose()); gh.mat.dispose(); this.ghosts.splice(i, 1); continue; }
-      gh.mat.opacity = 0.3 * k * k;
-    }
+    this.ghosts.update(dt);
   }
 
   /** The first-person arc for what is playing: { arc, u } (tools/viewmodel.js). */

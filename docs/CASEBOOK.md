@@ -481,8 +481,46 @@ the rules before building in the same area; a rule a machine can check goes into
     dropped, the difference spread over the clip: stances.js `closeLoop`) before the clip is measured or chosen for its stillness.
 175. **What tops a thing up adds what it adds.** A spill, a smear or a refill into something partly taken raises it by its own share
     (its area, its cells), never back to whole; the look follows the count of what lies there.
+181. **A blast laid on the ground tests height.** A ring round a landing or a slam strikes what is within reach of the ground it is laid
+    on (the target's lowest point to the feet), never the plane alone: what hangs overhead is out of it.
+182. **What must move together shares one motion, and a blade is checked against where the thing is.** A body kept at another (a juggle,
+    a carry) follows the other's measured motion with a pull to the gap, never two gravities tuned to agree; and a blow is proven by the
+    tip's measured angle and height against where the target stands, not by the clip's look (an arc that never crosses the front is
+    aimed by its own angle; a push that carries the pair is a push too far).
 
 ## Cases
+
+### 2026-10-10 · The Sondelass's air string missed: two gravities, and two blades that never crossed the front (the owner: "I also had issues with the aerial portion of the launch combo")
+
+- **Seen:** headless, a slip jelly calmed 1.9 m in front, S + LMB, then LMB every 0.1 real s: the launcher hit; a1 and a2 missed (the
+  jelly's centre 2.6-3.5 and 4.3 m above the Courier's feet, the cuts reaching about 2.7 and 3.1); after making the two rise and hang
+  together, a2 still missed with the jelly at a perfect 1.27 m gap and 1.4 m off, and t2 (the pause string's held thrust) never struck
+  a jelly 1.48 m straight ahead.
+- **Cause (measured):** (a) the launcher lifted the jelly at 9.5 m/s (4.6 m up) while the Courier rose the clip's 0.92 m; (b) in the air
+  string the Courier fell at 0.12 x 21 = 2.5 m/s² and the jelly at its own 9.81, the gap growing about 1.8 m over a1 and a2; (c) the tips'
+  angles about the body (`melee.js` tracks, sampled across the strikes): a2's somersault turns the blade in an upright circle 37-49
+  degrees to their left, t2's thrust is held 40-92 degrees to their left, so neither sector ever reached a target dead ahead (the sweep's
+  half-width and the jelly's own came to 34 degrees); (d) once the pair rode together, a1's and a2's sideways pushes (1.5, 2) carried
+  both at 3.8 m/s into a wall, the Launch tech ended the plunge on the wall and a ground blow began in the air.
+- **Fix:** `tools/moveset.js`: the **ride**: what a launcher or an air blow lifts is the `juggle`, its motion measured each frame from
+  where it is; an air blow (and a launcher held to its strike, from the strike's end) sets the Courier's velocity to it, with a pull to
+  1.3 m below its centre and 1.4 m off; the launcher's last pose held till it turns over. A move's `aim` turns the body by the angle its
+  arc passes at. A blow that throws the juggle off (push 4 or more, no lift) ends the ride; the plunge's landing gives the ground's
+  gravity back. `cutlass.js`: tap lift 5.5, held 9.5; a1, a2 lift 2, push 0.5; a2 aimed 0.73 rad, t2 0.95. After: held, a1, a2 and the
+  plunge's chop hit at gaps of 1.20, 1.27, 1.28 m, the pair at 2.3-2.6 m; tapped, at 1.12, 1.27, 1.28; t2 stabbed three times.
+- **Rule:** 182.
+
+### 2026-10-10 · The plunge's ring struck what hung overhead and threw it 9 m (found charting the Sondelass)
+
+- **Seen:** the same run: the plunge landed with the jelly's base 3.06 m overhead (the gap 3.5 m), and the ring "hit" it, its push 7 and
+  lift 5 throwing it 9 m.
+- **Cause (measured):** `Moveset.ring` tested the distance on the ground's plane only (`targets` takes a radius about the feet, and the
+  loop checked x and z); the plunge's hit (lift 5) was the chop's and the ring's at once.
+- **Fix:** the ring skips a target whose lowest point is more than 1.5 m above the Courier's feet, or whose top is more than 1.5 m below
+  them (`RING_UP`); a move's `ringHit` gives the ring its own hit (the plunge's: push 7, lift 0; its chop's push 2, lift 0, so what it
+  cut falls beside them). After: the plunge landed with the jelly's base 1.87 m up and it was out of the ring; it landed 1.5 m off and the
+  next c1 struck it.
+- **Rule:** 181.
 
 ### 2026-10-10 · The slicks kept a program warm on their own (the program budget 164 -> 165 at v138)
 

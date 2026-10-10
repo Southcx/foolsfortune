@@ -115,6 +115,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Possibilikey is always so called, never "key". → detail
 - **the moveset** (`tools/moveset.js`) — a tool's string, pause string, charge, launcher, air string, dash attack and special. The recovery cut is
   not a cancel. *Not:* a combo. → detail
+- **the paid cut** (working name, Espada's and the owner's to rule; `paidCut`, `move.cut`, `tools/moveset.js`) — a press in a blow's recovery,
+  its strike past, that pays Lachryma for the next move at once. *Not:* a cancel, nor the free recovery cut. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.
 - **damage type** (`src/progress/combat/types.js`) — what kind of force a blow is: Impact, Ego, Influence, Illusion, Delirium; each builds a
   status and trumps one other. *Not:* an element. → detail
