@@ -35,7 +35,7 @@ export class Geysers {
       const x = DUNE.x + p.x, z = DUNE.z + p.z, pos = new THREE.Vector3(x, D.heightAt(x, z), z);
       const look = new SlipGeyser({ height: 22 + r() * 16, radius: LAUNCH.r, seed: i + 1 });
       look.group.position.copy(pos); look.group.userData.zone = 'dunes'; game.scene.add(look.group);
-      look.onSpill = () => game.slicks?.spill(pos, LAUNCH.r * 1.3, 24); // (a gusher's spill: a slick round the vent, Calissa's vfx/slicks.js)
+      look.onSpill = () => { game.slicks?.spill(pos, LAUNCH.r * 1.3, 24); game.paintmap?.slick(pos.x, pos.y, pos.z, LAUNCH.r * 1.3, 0.8); }; // (a gusher's spill: a slick round the vent, Calissa's vfx/slicks.js, and in the paint map, so the mop and Clean take it)
       this.list.push({ look, pos, thrown: false });
     });
   }

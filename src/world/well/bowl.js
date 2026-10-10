@@ -40,7 +40,7 @@ import { ARENA } from '../../progress/combat/dunemaw.js';
 import { roughen, segments } from './rock.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
-import { Pillar, Stalactite } from '../../vfx/cavekit.js';
+import { Pillar, Stalactite, slipMaterial as caveSlip } from '../../vfx/cavekit.js';
 import { bowlSand, bowlSandTick, PoolRing } from '../../vfx/bowl.js';
 import { sfx } from '../../audio/sfx.js';
 
@@ -73,7 +73,7 @@ export class Bowl {
     this.K = (g.dunemawKit ||= (() => { const k = dunemawKit({ env: g.sky?.env }); for (const mm of [k.wall, k.floor, k.trim, k.sand].filter(Boolean)) mm.userData.shared = true; return k; })());
     this.dishMat = bowlSand({}); // (Calissa's: its streaks run toward uPool at uSlide)
     this.sandMat = this.K.sand || (g.wellSandMat ||= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc9a473, roughness: 1, name: 'well-sand-standin' }), { userData: { shared: true } }));
-    this.slipMat = slipMaterial();
+    this.slipMat = caveSlip(); this.slipMat.color.setHex(0x1a1420); // (the pools and rim shallows are crude, LACHRYMA-LOOP.md 0: the Overflow's ink with the Lachryma's ribbons, Calissa's; the cave slip's own program)
     this.t = 0;
     this.slideV = new THREE.Vector3(); // (the sand's slide toward the FOE's pool, m/s, set by slide())
     this.buildFloor(); this.buildWalls(); this.buildLedge(); this.buildRing();
@@ -303,7 +303,7 @@ export class Bowl {
   // ------------------------------------------------------------------ every frame
   update(dt) {
     const g = this.game, P = g.player;
-    this.t += dt;
+    this.t += dt; const su = this.slipMat.userData.u; if (su) su.uT.value = this.t; // (the crude's ribbons run)
     const raw = g.rawDt ?? dt;
     for (const w of this.pools) {
       w.mouth.update(this.t, 1);

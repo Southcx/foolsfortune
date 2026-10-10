@@ -115,9 +115,13 @@ export class BrushLoad {
     const g = this.game, b = this.bottle;
     if (!b) { this.end(); g.log?.say('info', 'You have no Lachrymato Bottle to mop into.', { key: 'nobottle', throttle: 4 }); return; }
     const room = BOTTLES[b].capacity - this.held;
-    if (room <= 0.01) { this.end(); g.log?.say('info', 'Your Lachrymato Bottle is full.', { key: 'bottlefull', throttle: 4 }); return; }
     const tip = this.tool.model.tipWorld(_a), P = this.P, want = Math.min(room, LOAD.mop.rate * dt), r = LOAD.mop.reach;
     const fx = (tip.x + P.pos.x) / 2, fz = (tip.z + P.pos.z) / 2; // (between the feet and the bristles)
+    if (room <= 0.01) { // (full: the head smears what it cannot drink along the stroke, a thin slick the mop and Clean take later: LACHRYMA-LOOP.md 3, rule 8)
+      g.log?.say('info', 'Your Lachrymato Bottle is full.', { key: 'bottlefull', throttle: 4 });
+      if ((this.smearT = (this.smearT ?? 0) - dt) <= 0) { this.smearT = 0.1; g.paintmap?.slick(fx, P.pos.y, fz, 0.3, 0.5); g.slicks?.spill(new THREE.Vector3(fx, P.pos.y, fz), 0.3, 12); }
+      this.mopAt = null; return;
+    }
     // the stroke this frame: from where the mop was to where it is, wiped as a strip (stains.js wipe: rim first, a smear pushed on)
     const from = this.mopFrom && Math.hypot(this.mopFrom.x - fx, this.mopFrom.z - fz) < 3 ? this.mopFrom : { x: fx, z: fz };
     const s = g.stains?.wipe(from, { x: fx, z: fz }, P.pos.y, want) || { got: 0 };

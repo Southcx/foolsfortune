@@ -21,7 +21,7 @@ const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 /** The radial's slots, in display order, and Clean. `learn`: a feeling not yet learned shows locked (Gall and Fury, for now). */
 export const PICKS = [
   { id: 'wonder', label: 'Wonder' }, { id: 'mirth', label: 'Mirth' }, { id: 'desire', label: 'Desire' },
-  { id: 'fury', label: 'Fury', learn: true }, { id: 'gall', label: 'Gall', learn: true },
+  { id: 'fury', label: 'Fury', learn: true, where: 'Drink it to learn it: the sea near Entropolis.' }, { id: 'gall', label: 'Gall', learn: true, where: 'Drink it to learn it: the Great Dunemaw, deep.' }, // (Espada's lines, GALL-AND-FURY.md 0)
   { id: 'grief', label: 'Grief' }, { id: 'dread', label: 'Dread' },
   { id: 'clean', label: 'Clean', color: 0xf4efe6 },
 ];
@@ -50,7 +50,7 @@ export class PaintRadial {
     if (inp.isDown('Digit1')) {
       this.heldT += raw;
       if (this.heldT >= HOLD && !this.wheel?.isOpen) {
-        this.wheel = new RadialWheel({ id: 'paintradial', items: PICKS.map((p) => { const locked = !this.learned(p); return { label: p.label, color: hex(p.color ?? COLOR[p.id]), icon: pickIcon(p.id, locked), locked }; }) });
+        this.wheel = new RadialWheel({ id: 'paintradial', items: PICKS.map((p) => { const locked = !this.learned(p); return { label: p.label, sub: locked ? p.where : '', color: hex(p.color ?? COLOR[p.id]), icon: pickIcon(p.id, locked), locked }; }) });
         this.wheel.open(); P.lookScale.wheel = 0; sfx.click?.();
       }
       if (this.wheel?.isOpen) this.wheel.steer(inp.dx || 0, inp.dy || 0);
