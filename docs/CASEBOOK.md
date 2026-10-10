@@ -514,6 +514,9 @@ the rules before building in the same area; a rule a machine can check goes into
     height and its posed top are measured against the state's speed and the room it must fit. A loop played past twice its own speed
     takes short steps at a quick cadence, never long low strides; and a foot is planted only while the capsule is slow enough for it
     to stay there.
+187. **A sweep reaches a thing the way the player can, every way the game offers.** A list the game shows (the Index's rooms) may hold
+   entries with no key of their own; a sweep that presses only keys throws on the first one, and every check after it never runs.
+
 
 ## Cases
 
@@ -2766,3 +2769,11 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the marker moved into `Input`'s constructor (core/input.js), the first keydown listener the game registers; main.js only
   says which windows spend an Esc (`input.escSpends`). The same probe: 0 of 25, the mark set in 24 (the 25th's lock never changed).
 - **Rule:** 125 (amended: the mark is taken first).
+
+### 2026-10-10 · The basement sweep threw at the Index's tenth room (Calissa's builder, a13f991)
+- **Seen:** `scripts/sweeps/basement.mjs` passed 177 checks, then threw at line 158; the rest of the sweep never ran.
+- **Cause:** the sweep picked each Index room by pressing its `code`; the debug chests' rooms (past the keyed ones) have none, and
+  `keyboard.press(undefined)` throws.
+- **Fix:** a room with no key is picked as the Index itself offers, with arrows from its current selection and Enter. The basement
+  sweep: 362 pass, 0 fail, the two debug chests' rooms reached by arrows.
+- **Rule:** 187.
