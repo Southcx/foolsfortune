@@ -14,6 +14,8 @@
 // mark and the area a Figment attack telegraph draws: the drawn area is the hit area), and the recovery to rest (the punish). The springs
 // the doll already has carry the follow-through (`kicks`: an impulse to the rock, the sack or the hat at a time). Every number here is at
 // 1x; the parry's window (its last 0.25 s before a strike) is the parry's rule (courier/parry.js), not a move's.
+// No blow strikes sooner than 0.75 s after its move (or its last blow) begins: the mark runs hot half a second before a strike (the window
+// and a press's quarter second), so a shorter wind-up would glint from its first frame and teach nothing (casebook 2026-10-10, rule 185).
 //
 // Prior art: Punch-Out!!'s tells (each opponent's wind-up a picture readable before the blow, the same picture every time, the delayed
 // one a held pose), Sekiro's and Dark Souls' readable wind-ups (a long, still telegraph; a delayed swing that punishes the panic press;
@@ -52,9 +54,9 @@ const jabLunge = { shape: 'lunge', reach: 1.9, width: 0.9 };
 // a target looking back), held a beat, then thrust: the shoulder driven forward, the sleeve unrolling to half again its length
 const JAB = [
   [0, 'lin', { tell: 1 }],
-  [0.28, 'out', { turn: -0.28, lf: 1.75, lu: 0.06, lo: -0.12, lean: -0.06 }],
-  [0.36, 'io', { turn: -0.3, lf: 1.8, lo: -0.15 }],
-  [0.45, 'in', { turn: 0.16, lf: 1.41, lu: 0, lo: 0.24, ls: 0.6, lean: 0.12, tell: 0 }],
+  [0.58, 'out', { turn: -0.28, lf: 1.75, lu: 0.06, lo: -0.12, lean: -0.06 }],
+  [0.66, 'io', { turn: -0.3, lf: 1.8, lo: -0.15 }],
+  [0.75, 'in', { turn: 0.16, lf: 1.41, lu: 0, lo: 0.24, ls: 0.6, lean: 0.12, tell: 0 }],
 ];
 
 export const STRAWMAN_MOVES = {
@@ -72,23 +74,23 @@ export const STRAWMAN_MOVES = {
   },
   /** The jab: a short tell, a straight thrust of the left cuff. */
   jab: {
-    label: 'jab', end: 0.8, pulse: 30,
-    blows: [{ at: 0.45, part: 'left', area: jabLunge }],
-    keys: [...JAB, [0.8, 'out', REST]],
-    kicks: [{ at: 0.45, rock: [0.9, 0], sack: [1.2, 0] }], // (the rock wobbles as the sleeve springs back)
+    label: 'jab', end: 1.1, pulse: 30,
+    blows: [{ at: 0.75, part: 'left', area: jabLunge }],
+    keys: [...JAB, [1.1, 'out', REST]],
+    kicks: [{ at: 0.75, rock: [0.9, 0], sack: [1.2, 0] }], // (the rock wobbles as the sleeve springs back)
   },
   /** The one-two: the jab, and through its recovery the right sleeve already up beside the head (the swing's picture, held short). */
   oneTwo: {
-    label: 'one-two', end: 1.4, pulse: 30,
-    blows: [{ at: 0.45, part: 'left', area: jabLunge, owns: LEFT }, { at: 0.85, part: 'right', area: swingCone }],
+    label: 'one-two', end: 1.85, pulse: 30,
+    blows: [{ at: 0.75, part: 'left', area: jabLunge, owns: LEFT }, { at: 1.3, part: 'right', area: swingCone }],
     keys: [
       ...JAB,
-      [0.62, 'out', { turn: -0.05, lf: 0.35, lo: 0, ls: 0.1, lean: -0.16, rf: -SW.back, ru: SW.up, tell: 1 }],
-      [0.72, 'io', { lf: 0.1, ls: 0, lean: -0.2, ru: SW.up + 0.05 }],
-      [0.97, 'lin', { lean: 0.28, rf: SW.through, ru: 0, turn: 0.1, tell: 0 }], // (the sweep: its middle, 0.845, the second strike)
-      [1.4, 'io', REST],
+      [1.07, 'out', { turn: -0.05, lf: 0.35, lo: 0, ls: 0.1, lean: -0.16, rf: -SW.back, ru: SW.up, tell: 1 }],
+      [1.17, 'io', { lf: 0.1, ls: 0, lean: -0.2, ru: SW.up + 0.05 }],
+      [1.42, 'lin', { lean: 0.28, rf: SW.through, ru: 0, turn: 0.1, tell: 0 }], // (the sweep: its middle, 1.295, the second strike)
+      [1.85, 'io', REST],
     ],
-    kicks: [{ at: 0.45, rock: [0.6, 0] }, { at: 0.85, rock: [0.5, -0.4], sack: [0.6, -0.8] }],
+    kicks: [{ at: 0.75, rock: [0.6, 0] }, { at: 1.3, rock: [0.5, -0.4], sack: [0.6, -0.8] }],
   },
   /** The overhead chop: both sleeves rise together above the hat (a tall silhouette), it leans far back, a long slow pulse; then both
    *  come down in front at once. The longest punish: the sleeves down, the doll rocking hard. */
@@ -126,17 +128,17 @@ export const STRAWMAN_MOVES = {
   /** The hat-butt: the sleeves swept back like wings, the hat tipping back first, the X eyes looking up; then it nods the hat's front edge
    *  down at you. Short: it punishes hugging it inside the swing. */
   hatButt: {
-    label: 'hat-butt', end: 1.2, pulse: 28,
-    blows: [{ at: 0.6, part: 'hat', area: { shape: 'lunge', reach: 1.4, width: 1.0 } }],
+    label: 'hat-butt', end: 1.35, pulse: 28,
+    blows: [{ at: 0.75, part: 'hat', area: { shape: 'lunge', reach: 1.4, width: 1.0 } }],
     keys: [
       [0, 'lin', { tell: 1 }],
-      [0.22, 'out', { hat: -0.32 }],
-      [0.42, 'io', { hat: -0.38, lf: -0.75, rf: -0.75, lu: 0.3, ru: 0.3, lean: -0.1, look: 0.3 }], // (tipped back no further: past 0.6 rad, with a lean, the head hid the hat from in front: rule 161)
-      [0.48, 'io', { hat: -0.42, lean: -0.12 }],
-      [0.6, 'in', { hat: 0.95, lean: 0.42, look: -0.25, lf: -0.4, rf: -0.4, lu: 0.1, ru: 0.1, tell: 0 }],
-      [1.2, 'io', REST],
+      [0.37, 'out', { hat: -0.32 }],
+      [0.57, 'io', { hat: -0.38, lf: -0.75, rf: -0.75, lu: 0.3, ru: 0.3, lean: -0.1, look: 0.3 }], // (tipped back no further: past 0.6 rad, with a lean, the head hid the hat from in front: rule 161)
+      [0.63, 'io', { hat: -0.42, lean: -0.12 }],
+      [0.75, 'in', { hat: 0.95, lean: 0.42, look: -0.25, lf: -0.4, rf: -0.4, lu: 0.1, ru: 0.1, tell: 0 }],
+      [1.35, 'io', REST],
     ],
-    kicks: [{ at: 0.6, rock: [1.3, 0], hat: 6 }], // (the hat wobbling on its bounce)
+    kicks: [{ at: 0.75, rock: [1.3, 0], hat: 6 }], // (the hat wobbling on its bounce)
   },
   /** The delayed swing: the swing's picture exactly, then a hold at the top with the pulse gone dark (a held breath), then the sweep. A
    *  press on the swing's timing is half a second early and answers nothing. */

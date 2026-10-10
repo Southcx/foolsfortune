@@ -507,8 +507,21 @@ the rules before building in the same area; a rule a machine can check goes into
 184. **A body and its windup keep one clock.** A creature's animation, the strike it calls and the windup the parry asks of all run on the
     sim step (`dt`), never the body on real seconds: under any time scale (a hit-stop, a held slowdown, a tempo) the strike lands as the
     window closes. Only what is said in real seconds (a bout's gap, a press's quarter second) reads `rawDt`.
+185. **A tell has a dark beat before its glint.** A look that says "now" can only teach if there is a "not yet" before it: a wind-up
+    shorter than the time its mark runs hot (the window and a press's quarter second, 0.5 s) glints from its first frame.
 
 ## Cases
+
+### 2026-10-10 · Strawman's jab glinted from its first frame (Calissa, judging the strings)
+
+- **Seen:** on the sparring sheets, the jab (0.45 s to its strike), the one-two's jab and nearly the hat-butt (0.60 s) wore the hot line
+  and the glint from the first frame of their wind-up; the one-two's second blow went hot before its first had struck.
+- **Cause (measured by the builder):** the mark goes hot when V would answer: the parry's window (0.25 s) plus the quarter second a press
+  keeps asking, so half a second before a strike. A wind-up of 0.5 s or less is all window: no dark beat, nothing to learn, and an early
+  press always answers.
+- **Fix:** `vfx/strawmanmoves.js`: no blow strikes sooner than 0.75 s after its move or its last blow begins: the jab 0.45 -> 0.75 s, the
+  hat-butt 0.60 -> 0.75 s, the one-two 0.45 + 0.40 -> 0.75 + 0.55 s (each key shifted, the poses unchanged); COMBAT-LAB.md section 6.
+- **Rule:** 185 (new).
 
 ### 2026-10-10 · The Figment attack telegraph climbed Strawman like a tent (Calissa's contact sheets of Strawman's moves)
 

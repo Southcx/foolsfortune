@@ -186,11 +186,11 @@ clock runs out (`w.t` 0.300 to 0.317, one frame).
 | move | windup (to the strike) | the tell, from the striker's place | strikes with (the mark) | window | recovery (the punish) | area (drawn = hit) |
 |---|---|---|---|---|---|---|
 | **swing** | 0.925 s | leans back; the right sleeve up beside the head; the sack pulses amber | the right sleeve | 0.675 to 0.925 s | 0.675 s | cone, 140 degrees, 2.6 m |
-| **jab** | 0.45 s | the left shoulder drawn back, the left sleeve levelled at you, its spiral facing you; held a beat | the left sleeve, thrust (it unrolls to 1.6x) | 0.20 to 0.45 s | 0.35 s (the rock wobbles) | lunge, 1.9 m long, 0.9 wide |
-| **one-two** | 0.45 s, then 0.40 s more | the jab; through its recovery the right sleeve already up beside the head (the swing's picture, held 0.1 s) | the left sleeve, then the right | 0.20 to 0.45, 0.60 to 0.85 s | 0.55 s after the second | the jab's lunge, then the swing's cone |
+| **jab** | 0.75 s | the left shoulder drawn back, the left sleeve levelled at you, its spiral facing you; held a beat | the left sleeve, thrust (it unrolls to 1.6x) | 0.50 to 0.75 s | 0.35 s (the rock wobbles) | lunge, 1.9 m long, 0.9 wide |
+| **one-two** | 0.75 s, then 0.55 s more | the jab; through its recovery the right sleeve already up beside the head (the swing's picture, held 0.1 s) | the left sleeve, then the right | 0.20 to 0.45, 0.60 to 0.85 s | 0.55 s after the second | the jab's lunge, then the swing's cone |
 | **overhead chop** | 1.15 s | both sleeves up together above the hat in a V, a tall silhouette; it leans far back; the head looks up; a slow pulse | both sleeves (one mark) | 0.90 to 1.15 s | 0.80 s: both sleeves down in front, the doll pitched forward (the longest punish) | line, 1.0 m wide, 2.2 m long |
 | **spin sweep** | 0.85 s (the second sleeve at 1.0) | leans back on its ball, both sleeves out straight, cocked 0.55 rad the wrong way | both sleeves (one mark), knee high: the left in front, then the right a half turn later | 0.60 to 0.85 s (one parry breaks off the whole spin) | 0.90 s: dizzy, it circles on its ball | circle, r 2.0 m (the cuff 1.5 m out, at 0.5 m high) |
-| **hat-butt** | 0.60 s | the hat tips back first (0.38 rad: further, the head hid it), the sleeves swept back like wings, the eyes look up | the hat, nodded down at you | 0.35 to 0.60 s | 0.60 s, the hat bouncing on its spring | lunge, 1.4 m long, 1.0 wide |
+| **hat-butt** | 0.75 s | the hat tips back first (0.38 rad: further, the head hid it), the sleeves swept back like wings, the eyes look up | the hat, nodded down at you | 0.50 to 0.75 s | 0.60 s, the hat bouncing on its spring | lunge, 1.4 m long, 1.0 wide |
 | **delayed swing** | 1.425 s | the swing's picture exactly to 0.8 s, then held at the top, the pulse gone dark and the sack dimmed, creeping | the right sleeve | 1.175 to 1.425 s | 0.55 s | the swing's cone |
 
 **The jump:** the spin sweep is low; a jump with your feet more than **0.35 m** up as a sleeve passes takes nothing
@@ -212,6 +212,10 @@ seconds and their relations stay (the parry's press window is real seconds: Petr
 
 The words (the strings' labels and lines, the log's lines) are placeholders for Espada's. `STRAWMAN.swing.telegraph` and `.reach`
 (`progress/combat/dunemaw.js`, Dovina's) are no longer read: the swing's numbers are its row in `STRAWMAN_MOVES`.
+
+No blow strikes sooner than **0.75 s** after its move (or its last blow) begins (Calissa, 2026-10-10): the mark runs hot half a second
+before a strike (the window and a press's quarter second), so a shorter wind-up glinted from its first frame and taught nothing
+(casebook rule 185). The jab, the one-two and the hat-butt were lengthened to it; the one-two's second blow strikes 0.55 s after its first.
 
 ## 7. The extras
 
