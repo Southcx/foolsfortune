@@ -256,16 +256,27 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the moveset** (`tools/moveset.js`, Calissa's; numbers `progress/combat/moves.js`, Dovina's): a tool's **string** (LMB, blow by blow),
   its **pause string** (LMB after a pause mid-string), its **charge** (LMB held), its **launcher** (S + LMB: the struck thing is
   `airborne`), its **air string** (LMB in the air, ending in a **plunge**), its **dash attack** (LMB while sprinting) and its **special**
-  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow, its row's time spent and its strike past, may be
-  cut short by a press into a new opener: the **recovery cut** (*not* a cancel: opposites cancel). A **bail** is being thrown off the
-  Solar Skiff. *Not:* a combo (the
-  club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one yet.
+  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow (and the dash, the charge's release, a plunge
+  landed), its row's time spent and its strike past, may be cut short by a press into a new opener: the **recovery cut**, free (*not* a
+  cancel: opposites cancel). **The paid cut** (a working name: the player's word is Espada's and the owner's to rule; code `paidCut`, the
+  event `move.cut`, `recovering()`/`cut()` in `tools/moveset.js`): in any blow's recovery, its strike past and before the free ways open,
+  a press made there pays Lachryma (the tool's `paidCut` row; the Sondelass's 5) and the next move the grammar picks begins at once,
+  leaving the afterimage (`vfx/afterimage.js`, Blink Dash's look); never inside a strike, never in a plunge's fall; a press the pool cannot
+  pay is the free grammar. The launcher **held** to its strike lifts higher and the Courier **rides** what it launched (the code's
+  `juggle`: its measured motion, a blade's height below it; Devil May Cry's High Time); the air blows ride it too. A **bail** is being
+  thrown off the Solar Skiff. *Not:* a combo (the club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one
+  yet.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
   press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
   the **guard** (held). A **parryable** thing wears a Lachryma outline (Cuphead's pink); one
   without it cannot be parried. *Not:* the guard (the held block after the window).
+  That outline is **the parry mark** (`game.parryMark`, `vfx/parrymark.js`): ink with the oil film in it, thickening as a strike nears.
+  While a V pressed now would answer (`pressAnswers` for a windup: the blow's window and the press's quarter second; `shotAnswers` for
+  a shot in reach; `courier/parry.js`) it runs **hot** (a white core between film-coloured rims, twice as wide), and as it goes hot
+  **the window's glint**, a four-point star, flares on the striking part's crest and is gone in 0.16 real seconds (`parry.window`).
+  *Not:* the resist mark, a Figment attack telegraph.
   Each tool's answer (`courier/parries.js`, the table): the psygun's **stagger** (shot down, its thrower stunned), the Soul Brush's
   **bat** (returned, carrying the load's feeling) and **soak** (a Lachryma shot drunk into the Lachrymato Bottle), the Veritome's
   **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
@@ -560,6 +571,18 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **The paint range** (`world/testroom/paintrange.js`; its look `dressPaintRange`, `vfx/testroomkit.js`): the stand, a quarry tile with a
   slip chevron down the range, and rings at 3, 6 and 9 m brushed in the drill plates' cream slip with an oxblood rim, each with a
   **tally** of one, two or three small tiles on its near side (counted, never a number).
+  **The combat wing** (`world/testroom/combatwing.js`, `TR.wing`; its look `vfx/combatwingkit.js`; docs/plans/COMBAT-LAB.md): the
+  Throwing Room's hall for fighting, through **the arcade** where its south wall stood, 9 m high, in the room's zone; it measures and
+  never pays, as the room does. Its stations, each with **a station's lectern** (the Index's lectern's shape, its book shut while its page
+  is unbuilt; *not* the Index's lectern) and a debug chest: **the sparring circle** (Strawman in a ring of tamped clay bounded by straw
+  bales, a sumo dohyo's; never "Strawman's ring": a ring is a homonym), with **the frame meter** (`frameMeter`: twenty tiles crosswise
+  in its clay between Strawman and the striker, a tenth of a second each; no words or numbers) and **the sparring mirror** on the west
+  wall; **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
+  "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
+  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (eleven **roly-polies**, Strawman's
+  kin, each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's
+  full height, for the launcher and the air string). Places: `sparring.circle`, `figment.telegraph.floor`, `parry.range`,
+  `status.bench`, `juggle.pen`. *Not:* "the combat lab" (the plan's working title; the basement is never "the lab").
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14

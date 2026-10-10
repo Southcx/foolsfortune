@@ -10,6 +10,7 @@
 
 const KINDS = ['eldritch', 'arcane', 'finery', 'mechanism', 'edge', 'art', 'provision']; // (materials.js KIND_IDS, the seven kinds)
 const mats = (count, tier) => KINDS.map((k) => [`mat.${k}`, count, { tier }]);
+const TOOLS = () => ['psygun', 'sondelass', 'soulbrush', 'veritome', 'dreamvane', 'crucibelle', 'lockheart'].map((t) => [`tool.${t}`, 1]); // (pneuka/items.js TOOL_ITEMS: given only if neither worn nor boxed)
 
 export const DEBUG_KITS = {
   press: { at: 'athanor', for: 'Soul Alchemy: the press station (SOUL-ALCHEMY.md 4)', by: 'dovina', tests: ['T155', 'T156'],
@@ -28,4 +29,10 @@ export const DEBUG_KITS = {
     items: [['tool.soulbrush', 1], ['bottle.small', 1]] }, // (the brush, and a bottle to paint from and to mop into)
   throwing: { at: 'testroom.index', for: 'the drills (Steady Hand and Wide Bore open by drill hits)', by: 'dovina', tests: [],
     items: [['tool.psygun', 1]] },
+  // the combat wing's stations (docs/plans/COMBAT-LAB.md section 7): every tool, since each answers and strikes its own way; the QAIS
+  // tests that will name them are not written yet (each station's mechanic first), so these are the first drafts, Calissa's
+  sparring: { at: 'sparring.circle', for: "Strawman's strings: the parry in the window's glint, a combo answered", by: 'calissa', tests: [], items: TOOLS() },
+  parryrange: { at: 'parry.range', for: "the parry range: each tool's answer to a plain and an outlined shot", by: 'calissa', tests: [], items: [...TOOLS(), ['bottle.small', 1]] }, // (the bottle: the mop's soak drinks into it)
+  statusbench: { at: 'status.bench', for: 'the status bench: each status landed, its aura, its glyph, its log line', by: 'calissa', tests: [], items: [...TOOLS(), ['bottle.small', 1]] },
+  jugglepen: { at: 'juggle.pen', for: 'the juggle pen: the launcher and the air string', by: 'calissa', tests: [], items: TOOLS() },
 };

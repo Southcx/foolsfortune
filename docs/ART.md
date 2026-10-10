@@ -223,3 +223,37 @@ roughs a shape out headless; `export_vfx.py --import <glb>` brings it into the .
 ## 9. The placeholder audit
 
 What to replace first (ours, placeholder, genre default) was kept here until 2026-10-08; it is now a dated note: `docs/archive/2026-10-08-art-placeholder-audit.md`.
+
+## 10. The core movement's clips (the locomotion pass, 2026-10-10)
+
+Every clip below is the Courier's suite (`source_assets/Courier/courier_anims_move.glb`, baked into `core.bin`; the base file
+`courier_base_rigged.blend` holds no clips, only a camera rig's and one held pose), its knees and elbows put on their hinge as it is
+decoded and the posed body squared again after IK (the hinge repair, `courier/anim/hinges.js`). The gait shares one phase (each loop's
+left heel strike at phase 0) and plays at the ground speed over the loop's own (measured from its planted foot: walk 0.77 m/s, jog
+4.81, sprint 4.43, crouch walk 0.61), part longer strides (to 1.65x walking, 1.3x running), the rest cadence; planted feet lock.
+
+| state | clip | blend |
+| --- | --- | --- |
+| idle | `idle:upright` (Loco_IdleC's body, Loco_IdleFem's left arm and its mirror); under a tool's layer `idle` (Loco_IdleMasc); fighting Loco_IdleAlert; breaks Loco_IdleLookAround, Loco_IdleStretch, Loco_IdleShiftTap | into the walk by 0.5 m/s, the idle's share at most a whole in 0.15 s (a start); breaks in 0.5, out 0.6, cut 0.15; alert 3/s |
+| walk | `walk` (Loco_WalkMasc) | 0.5 to 2.4 m/s |
+| run | `jog` (Loco_RunMasc) | smoothstep from the walk, 2.4 to 3.4; whole at 4.2 |
+| sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
+| backpedal, strafe | the same loops, run backward past 110 degrees | the hips turned toward the move (70 at most), the chest back to the aim |
+| starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
+| crouch | Loco_CrouchIdle, Loco_CrouchWalk by 0.5 m/s | 0.8 of the crouch's weight, on the shared phase |
+| jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
+| off a ledge | Air_JumpLoop from 0.5 s | 0.25 |
+| fall | Air_FallLoop past 5 m/s down after 0.45 s in the air | 0.35 |
+| double jump | Air_DoubleJump from 0.07 s, 1.25x until upright | in 0.08; to the loop at 0.82 s over 0.2 |
+| land soft, hard | Air_JumpLand from 0.1 s, by the fall (7 m/s whole); Loco_LandHard from 9 m/s (whole at 11), 1.5x | out 0.12 to 0.5 s, and 0.4 to 0.7; less of both while moving |
+| slide | Trav_SlideStart from 0.15 s, Trav_SlideLoop; out by Trav_SlideExit | 0.2 into the loop; the exit over the slide's own fade |
+| wallrun | the sprint at the wall's speed, the body rolled 24 degrees off the wall; the wall hand and foot put on it | the wall's blend (player.js) |
+| wall jump | Trav_WallJump's push from 0.13 s, 1.1x, in place and unturned, over Air_JumpLoop (new: it had played the ground jump's spring) | in 0.06; out 0.35 to 0.6 s |
+| mantle | Trav_Mantle 0.15 to 0.62 s; a knee-high wall Trav_Vault; from a hang Trav_LedgeClimbUp | time-warped onto the mantle |
+| air dash | Air_AirDash, AirDashL, AirDashR, AirDashBack by the dash's direction | from 0.1 s at 1.5x through the dash |
+| ladder, swim | Trav_LadderClimb, Trav_LadderIdle, Trav_LadderEnter; the old pack's swim and tread | the techs' own (moves/ladder.js, moves/swim.js) |
+
+In the suite and not played (the social pack): Loco_SprintStop (a skid stop, 1.07 s, with travel) and Loco_Turn180 (a planted half
+turn) would fit the stop and the reversal once moved into the core pack (a bake); Loco_WalkFem, Loco_RunFem and Loco_SprintHero are
+other walks and runs; Loco_SneakWalk a slower crouch. The crouch walk is played at 3.6 times its own speed (the core's 2.2 m/s): long
+strides (1.65 times its own) at 2.2 times its cadence.
