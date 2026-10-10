@@ -460,8 +460,38 @@ the rules before building in the same area; a rule a machine can check goes into
 169. **A stand-in leaves the warm-up only when no look draws its program.** Rule 166 asks the look; this asks the program: before a
     parked stand-in goes, list who draws with its program (`customProgramCacheKey`, a shared material's) and keep it while any one does.
     The check that proves it: the program list after the look is first drawn in play equals the list after the boot.
+170. **What tops a thing up adds what it adds.** A spill, a smear or a refill into something partly taken raises it by its own share
+    (its area, its cells), never back to whole; the look follows the count of what lies there.
 
 ## Cases
+
+### 2026-10-10 · The slicks kept a program warm on their own (the program budget 164 -> 165 at v138)
+
+- **Seen:** Petra's v138 gate (the case of the same day, below): the stain parked in the warm-up again and the budget raised to 165,
+  because every slick drew with the stain's program. `npm run perf` at 83ebc10: the Dunes, the well and the garden 165 programs.
+- **Cause (measured):** once the paint map drew the blots, the stain's program (`vfx/stains.js`) had one look left in play, the slicks
+  (`uSlick` 1), and the parked stain stood only to keep that one look from compiling in play. A slick is a flat look on a quad's uv with
+  the settings the ribbons' one program already has (transparent, no depth written, no fog): rule 124's flat look of a few lines.
+- **Fix:** the stain's slick branch moved, as it was, into the ribbons' one program (`vfx/ribbonlight.js`, look `slick`: `uP` the ramp,
+  what the mop left, the seed; a world-position varying for the grazing look), warm from the boot with the jet ring; the dead `uSlick`
+  branch out of the stain's program; the parked stain out of main.js's warm-up. `npm run perf` after: the workshop 162, the Dunes, the
+  well and the garden 164; programs compiled after the warm-up 3, the same three as before. A slick spilled in the Dunes and in the
+  Great Dunemaw's bowl: no new program (163 and 161, before and after it), its program the jet ring's. Rendered before and after from
+  three eyes at five steps of the ramp: 55 of 518,400 pixels moved more than 8 of 255 (at most 36), all on the rims' antialiasing.
+  The Dunes sweep's weather part: Fury 164 against 164.
+- **Rule:** 124 and 169.
+
+### 2026-10-10 · The full mop's smear grew a mopped slick back whole and fresh (found while folding the slicks' program)
+
+- **Seen:** headless in the Dunes: a 1.5 m slick (112 paint-map cells) mopped to 60 cells, its look at 0.54 of its size and 7 s along
+  its ramp; then five of the full mop's smears into it (`tools/soulbrush/load.js`: `paintmap.slick` and `slicks.spill`, 0.3 m, every
+  0.1 s): its look back to 1.0 and fresh again (4.9 s along), over 68 cells.
+- **Cause (measured):** `Slicks.spill` fed any spill that fell inside a live slick by setting its `amount` to 1 and its age back to
+  0.12 of its life, whatever the spill's size; `follow()` only ever lowers `amount` (cells taken), so nothing brought it back to 68.
+- **Fix:** a spill inside a slick freshens it by its share of the slick's area (none under `minRadius`: a smear, a trail's drop) and
+  fills it back only as far as its paint-map cells came back, or by that share where it has none (`vfx/slicks.js`). After, the same
+  five smears: 0.61 of its size (68 of 112 cells), 8.5 s along its ramp.
+- **Rule:** 170.
 
 ### 2026-10-09 · The skiff's glide spread nothing: the oars were asked for by their Blender names (the owner's R8, "it reads faintly")
 

@@ -15,6 +15,10 @@
 //   reticle  the paint reticle: a point where the stream lands and a ring for its spread, keylined (uC, uK, uP ring, point, width)
 //   jetring  the jet ring at the feet: the hover's fuel, the rocket's gather, in the Lachryma ring's language (uP fill, low, burst, start)
 //   shine    ground just cleaned: a ring going out with glints, or a twinkle over it (uC, uK, uP age, kind, seed)
+// and a slick (vfx/slicks.js), crude spilled in a fight, a flat look on a draped disc's uv: its shape (an edge broken by noise, flung
+// drops round it) and its colour along the oxidation ramp (vfx/oxidation.js slickColour; uT, uP ramp, what the mop left, seed). It
+// was drawn with the blots' stain program (vfx/stains.js), which nothing else drew in play once the paint map took the blots: the
+// one look kept a program warm on its own (casebook 2026-10-10). Its code is that program's slick branch, kept as it was.
 //
 // Blending, side and depth are the material's own and do not split the program (the vein and the band add, the smoke and the beam
 // blend); fog, both sides and transparency must stay the same for all of them, or the program splits again.
@@ -23,18 +27,27 @@
 // define would compile a program each), and the earlier diet's pond and Weir's Well (vfx/water.js: the kind a uniform, not a define).
 //
 //   ribbonLightMaterial(look, uniforms, { blending, name, fog, toneMapped }) -> a ShaderMaterial on the one program
-//   (look: 'vein' | 'band' | 'smoke' | 'beam' | 'reticle' | 'jetring' | 'shine'; uniforms: { uT?, uK?, uC?, uP? } of the caller's own,
-//   kept by reference; uRibbon is added, and uMindT, the Mind's drift: vfx/labradorite.js)
+//   (look: 'vein' | 'band' | 'smoke' | 'beam' | 'reticle' | 'jetring' | 'shine' | 'slick'; uniforms: { uT?, uK?, uC?, uP? } of the
+//   caller's own, kept by reference; uRibbon is added, and uMindT, the Mind's drift: vfx/labradorite.js)   SLICK_DISC (the slick's
+//   disc, its half-size in the look's own units: a slick's quad is 2 * SLICK_DISC across, scaled to its radius)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
+import { OXIDATION_GLSL } from './oxidation.js';
 
-export const RIBBON_LOOK = { vein: 0, band: 1, smoke: 2, beam: 3, reticle: 4, jetring: 5, shine: 6 };
+export const RIBBON_LOOK = { vein: 0, band: 1, smoke: 2, beam: 3, reticle: 4, jetring: 5, shine: 6, slick: 7 };
+export const SLICK_DISC = 2.2;
 
-const V = /* glsl */`varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const F = /* glsl */`varying vec2 vU; uniform float uT, uK, uRibbon; uniform vec3 uC; uniform vec4 uP;
+const V = /* glsl */`varying vec2 vU; varying vec3 vRw; void main() { vU = uv; vRw = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const F = /* glsl */`varying vec2 vU; varying vec3 vRw; uniform float uT, uK, uRibbon; uniform vec3 uC; uniform vec4 uP;
 ${LAB_GLSL}
+${OXIDATION_GLSL}
 float rlEdge(float d, float fw) { return 1.0 - smoothstep(-0.5 * fw, 0.5 * fw, d); } // (inside a signed distance, antialiased by the pixel)
+// (the slick's noise, the stain program's own: a hash seeded by uP.z, value noise, three octaves)
+float slkH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uP.z * 17.0) * 43758.5453); }
+float slkN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(slkH(i), slkH(i + vec2(1.0, 0.0)), f.x), mix(slkH(i + vec2(0.0, 1.0)), slkH(i + 1.0), f.x), f.y); }
+float slkFbm(vec2 p) { return slkN(p) * 0.55 + slkN(p * 2.1 + 3.1) * 0.3 + slkN(p * 4.3 + 7.7) * 0.15; }
 void main() {
   if (uRibbon < 0.5) {
     float across = 1.0 - abs(vU.y * 2.0 - 1.0), core = pow(across, 3.0);
@@ -89,7 +102,7 @@ void main() {
     float pop = uP.z > 0.0 ? (1.0 - smoothstep(fw, 3.0 * fw + 0.03, abs(r - (0.81 + 0.17 * uP.z)))) * (1.0 - uP.z) : 0.0;
     c = mix(c, lit * 1.3, pop); al = max(al, pop);
     gl_FragColor = vec4(c, al * uK);
-  } else {
+  } else if (uRibbon < 6.5) {
     // THE SHINE (vfx/brushmarks.js): ground just cleaned. uP.y 0: laid on the ground, a ring going out and a few glints, each once;
     // 1: a twinkle standing over it, a four-pointed star keylined dark. uP: age (0..1), kind, a seed
     vec2 p = vU * 2.0 - 1.0; float r = length(p), fw = max(fwidth(r), 1e-4), t = uP.x;
@@ -110,6 +123,25 @@ void main() {
       vec3 c = mix(vec3(0.02, 0.02, 0.04), mix(uC, vec3(1.0), rlEdge(core * s, f2)), body);
       gl_FragColor = vec4(c, max(body, outline * 0.8) * uK * (1.0 - smoothstep(0.75, 1.0, t)));
     }
+  } else {
+    // A SLICK (vfx/slicks.js): crude with no feeling, along the oxidation ramp; a black mirror while fresh, then the film, then the
+    // sheen, soaking in from its rim; its flung drops round it. uP: the ramp (0 fresh .. 1 gone), what the mop has left (0..1), a seed
+    vec2 p = (vU * 2.0 - 1.0) * ${SLICK_DISC.toFixed(1)}; float r = length(p); vec2 dir = p / max(r, 1e-4); // (the bearing as a direction: no seam, no star)
+    float size = 1.45 * (1.0 - 0.3 * smoothstep(0.7, 1.0, uP.x)) * mix(0.25, 1.0, uP.y);       // (its reach, soaking in from its rim; and what is left of it)
+    float d = r - size * (0.8 + 0.35 * slkFbm(dir * 1.9 + uP.z * 5.0 + p * 0.5));             // (inside: negative)
+    float sat = 0.0;
+    for (int i = 0; i < 6; i++) { // (its flung drops)
+      float fi = float(i); vec2 c = vec2(cos(fi * 2.4 + uP.z * 6.0), sin(fi * 2.4 + uP.z * 6.0)) * size * (1.15 + 0.35 * slkH(vec2(fi, 3.0)));
+      float rr = size * (0.06 + 0.12 * slkH(vec2(fi, 9.0)));
+      sat = max(sat, 1.0 - smoothstep(rr * 0.75, rr, length(p - c)));
+    }
+    float pool = 1.0 - smoothstep(-0.02, 0.02, d), body = max(pool, sat); // (the pool itself, not its drops: only it has the rim's band)
+    if (body < 0.01) discard;
+    float depth = clamp(-d / max(size, 0.01), 0.0, 1.0), ring = (1.0 - smoothstep(0.0, 0.12, depth)) * body; // (the thin edge)
+    vec3 V = normalize(cameraPosition - vRw); float f2 = pow(1.0 - abs(V.y), 2.0);
+    float h = slkFbm(p * 0.8 + uP.z * 3.0) + 0.35 * slkFbm(p * 2.3 + uP.z * 7.0 + uT * 0.01);  // (the film's thickness)
+    gl_FragColor = vec4(slickColour(uP.x, f2, h, fwidth(h), ring * pool), body * (1.0 - smoothstep(0.82, 1.0, uP.x)));
+    #include <colorspace_fragment>
   }
 }`;
 

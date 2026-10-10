@@ -168,7 +168,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   its slam), a spit glob landing, a burst jelly or broken clutch, a gusher's spill. Fresh it is black and glossy, the oil film only at its
   rim and at a grazing look; it **thins**, the film's bands coming up through it and their hue walking; it goes to a pale **sheen** and soaks
   away. What the mop and Clean take of it is the paint map's (`slick` cells, `world/ground/paintmap.js`): its look shrinks from the rim as
-  they go. Drawn with the blots' program (`vfx/stains.js`, `uSlick`). *Not:* a blot (spilled, it stays and grows until mopped).
+  they go. Drawn on the ribbons' one program (`vfx/ribbonlight.js`, look `slick`). *Not:* a blot (spilled, it stays and grows until mopped).
 - **the oxidation ramp** (`OXIDATION`, `oxidationAt`, `src/vfx/oxidation.js`; Calissa's, 2026-10-09): how Lachryma left lying in the
   open turns, one clock for everything of it: a bauble is fresh cream (Lachryma just out of clay), turns to crude (near-black, the oil film
   on it) from 7 to 22 real seconds, and runs into the ground by 40.5; a slick enters at crude and runs on along its own life (thinned at
@@ -1127,7 +1127,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
 - **the ribbon of light** (`ribbonLightMaterial`, `RIBBON_LOOK`, `src/vfx/ribbonlight.js`): the one shader program every flat strip of light
   draws with, its look a uniform: the spirit veins (and Myggdrasil's threads), the sculpt brush's ring, the incense thread, the data
-  drain's beam. *Not:* a ribbon of the rail's marks (railmark.js's `ribbon` style: an Itano lance's trail).
+  drain's beam; and the flat looks of the same settings on a quad: the brush's marks and a slick. *Not:* a ribbon of the rail's marks
+  (railmark.js's `ribbon` style: an Itano lance's trail).
 - **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
   surface where something touched it; the V behind something moving on it.
 - **the ripple tank** (`src/vfx/ripples.js`): the rings on water: a height field round the eye stepped by the wave equation, that every
