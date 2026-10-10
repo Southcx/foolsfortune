@@ -457,6 +457,9 @@ the rules before building in the same area; a rule a machine can check goes into
     name's dots and other reserved characters (`oar_shoulder.L` is `oar_shoulderL`, PropertyBinding.sanitizeNodeName); a table of
     bones is keyed by the loaded names, and code that filters a rig's bones by name is judged by rendering the pose, never by its
     running without an error.
+169. **A stand-in leaves the warm-up only when no look draws its program.** Rule 166 asks the look; this asks the program: before a
+    parked stand-in goes, list who draws with its program (`customProgramCacheKey`, a shared material's) and keep it while any one does.
+    The check that proves it: the program list after the look is first drawn in play equals the list after the boot.
 
 ## Cases
 
@@ -2407,3 +2410,13 @@ the rules before building in the same area; a rule a machine can check goes into
   no bail; onto flat sand, a bail. The owner's asks built with it: the glide (Space held in the air: the oars spread, the fall held to
   3.2 m/s, A and D carve) and the bail thrown as a ragdoll faded into the get-up (courier/anim/ragdoll.js).
 - **Rule:** 157.
+
+### 2026-10-10 · A slick compiled a program in play (the Dunes sweep's Fury check, v138)
+- **Seen:** the Dunes sweep, forcing Fury's hail at the Weir: 168 shader programs after against 167 before, "no new shader program"
+  failed. The new one, named by a headless diff of `renderer.info.programs`: `stain`.
+- **Cause:** Calissa's slicks (vfx/slicks.js) draw every slick with the blots' program (`stain`, `uSlick`). The same round took the parked
+  stain out of the boot's warm-up under rule 166, because the paint map now draws the blots; the slicks still drew with its program, so
+  the first slick laid in play (a gusher's spill, a jelly's) compiled it: a hitch on a real GPU, and a program the count never saw.
+- **Fix:** the parked stain back in main.js's warm-up; the program budget 164 -> 165 (scripts/perf.mjs, the reason beside it). Headless,
+  the sweep's steps: 165 programs before Gall and Fury, 165 after, none new.
+- **Rule:** 169.

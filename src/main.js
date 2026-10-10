@@ -48,6 +48,7 @@ import { Trial } from './world/trial.js';
 import { TestRoom } from './world/testroom/room.js';
 import { TestRoomDress } from './vfx/testroomkit.js';
 import { NightSky } from './vfx/nightsky.js';
+import { Stain } from './vfx/stains.js';
 import { LachrymatoBottle } from './vfx/bottle.js';
 import { WaterFx } from './vfx/waterfx.js';
 import { BrushLoad } from './vfx/brushload.js';
@@ -924,7 +925,7 @@ async function main() {
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   // (a Lachrymato Bottle and the jets' ring, made now and parked hidden, never disposed: their programs live while one exists; the casebook's
   // rules 17 and 18. The stain that stood beside them is gone: the paint map draws the blots now, docs/CASEBOOK.md 2026-10-09)
-  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh]; // (the jet ring: the brush's marks' one program, the ribbons', vfx/brushmarks.js)
+  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh, new Stain({ seed: 0.5 }).group]; // (the stain: a slick's program, vfx/slicks.js draws every slick with it; unwarmed, the first gusher or jelly spill compiled it in play, the Dunes sweep's Fury check, v138) // (the jet ring: the brush's marks' one program, the ribbons', vfx/brushmarks.js)
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
