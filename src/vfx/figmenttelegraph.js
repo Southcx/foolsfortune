@@ -63,7 +63,8 @@ export class FigmentTelegraphs {
   get count() { return this.live.size; }
 
   // ------------------------------------------------------------------ the ground
-  /** The ground under (x, z): the place's own function, else a ray down from above the maker (static colliders only). */
+  /** The ground under (x, z): the place's own function, else a ray down from above the maker (static colliders only, and never a
+   *  creature's own body: Strawman's capsule is a static collider, and the mark climbed it like a tent: the casebook's rule 183). */
   heightAt(x, z, yHint) {
     const y = this.ground?.(x, z, yHint);
     if (Number.isFinite(y)) return y;
@@ -72,7 +73,7 @@ export class FigmentTelegraphs {
   }
   rayAt(x, z, y0 = 0) {
     const ph = this.game?.physics;
-    const hit = ph?.raycast?.(_r.set(x, y0 + 4, z), _down, 12, undefined, undefined, (c) => !c.parent?.() || c.parent().isFixed?.());
+    const hit = ph?.raycast?.(_r.set(x, y0 + 4, z), _down, 12, undefined, undefined, (c) => (!c.parent?.() || c.parent().isFixed?.()) && ph.entityOf?.(c)?.type !== 'creature');
     return hit ? hit.point.y : NaN;
   }
 

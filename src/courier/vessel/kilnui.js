@@ -8,10 +8,15 @@
 // Prior art: FFXIV's glamour plate and dye window (a part, then a swatch, previewed on the character as it turns), the colour
 // pickers of Animal Crossing's Able Sisters, and the PS2 era's character-edit screens (a slow turntable and a menu at the side).
 //
+// The STANCE tab (the owner's R21, v137): the Courier's idle, chosen here as a glaze is (a click tries it on; KEEP keeps it, free: a stance
+// is not fired; LEAVE without keeping puts back what was kept). The idles and their words are Calissa's and Espada's (anim/idlebreak.js
+// IDLES); the choice is the save's `courierIdle` section (main.js).
+//
 //   const ui = new KilnUI(game)   ui.show()   ui.hide()   ui.render()   ui.open   ui.look (the preview)   ui.spin (turn, -1..1)
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../../progress/econ/table.js';
 import { REGIONS } from './glazes.js';
+import { IDLES } from '../anim/idlebreak.js';
 
 const CSS = `
 #kiln { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 9; display: none; width: 330px; user-select: none; }
@@ -27,6 +32,8 @@ const CSS = `
 #kiln .s { aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(255,241,220,.25); cursor: var(--jcur-pointer, pointer); box-shadow: inset -4px -6px 8px rgba(0,0,0,.35), inset 3px 4px 6px rgba(255,255,255,.25); }
 #kiln .s:hover { border-color: #ffd98a; } #kiln .s.on { border-color: #fff1dc; box-shadow: 0 0 0 2px #ffd98a, inset -4px -6px 8px rgba(0,0,0,.35), inset 3px 4px 6px rgba(255,255,255,.25); }
 #kiln .s.metal { background-image: linear-gradient(135deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%); }
+#kiln .st { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 6px 0 8px; } #kiln .st div { font-size: 11px; letter-spacing: .1em; padding: 6px 6px 5px; border: 1px solid rgba(255,178,122,.25); border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
+#kiln .st div.on, #kiln .st div:hover { border-color: #ffd98a; background: rgba(var(--jsel),.35); }
 #kiln .what { min-height: 46px; font-size: 12px; line-height: 1.4; } #kiln .what b { color: #ffd98a; font-weight: normal; letter-spacing: .08em; }
 #kiln .row { display: flex; gap: 8px; } #kiln button { flex: 1; font: inherit; font-size: 11px; letter-spacing: .14em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 6px 8px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #kiln button:hover { background: rgba(var(--jsel),.55); } #kiln button:disabled { opacity: .4; cursor: default; }
@@ -62,11 +69,13 @@ export class KilnUI {
   show() {
     const V = this.game.vessel;
     this.look = { ...V.look }; this.region = 'body'; this.open = true; this.keys.clear();
+    this.stand = this.kept = this.game.character?.idles?.stand ?? IDLES.default; // (the idle tried on, and the one kept)
     this.root.classList.add('open'); this.dragEl.classList.add('open');
     document.exitPointerLock?.();
     this.render();
   }
-  hide() { this.open = false; this.root.classList.remove('open'); this.dragEl.classList.remove('open'); this.keys.clear(); }
+  hide() { if (this.open && this.stand !== this.kept) this.game.character?.idles?.choose(this.kept); this.open = false; // (left without keeping: the kept idle back)
+    this.root.classList.remove('open'); this.dragEl.classList.remove('open'); this.keys.clear(); }
 
   render() {
     if (!this.open) return;
@@ -82,7 +91,11 @@ export class KilnUI {
       t.onclick = () => { this.region = r.id; this.render(); };
       tabs.appendChild(t);
     }
+    const st = el('div', `tab${this.region === 'stance' ? ' on' : ''}`, 'STANCE<i style="background:transparent;border-color:transparent"></i>');
+    st.onclick = () => { this.region = 'stance'; this.render(); };
+    tabs.appendChild(st);
     px.appendChild(tabs);
+    if (this.region === 'stance') { this.renderStance(px); this.root.appendChild(px); return; }
     const what = el('div', 'what');
     const sayGlaze = (gz) => { what.innerHTML = gz ? `<b>${gz.name}</b><br>${gz.blurb}` : `${REGIONS[this.region].blurb}`; };
     const sw = el('div', 'sw');
@@ -119,5 +132,24 @@ export class KilnUI {
     px.appendChild(row);
     px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn the vessel · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));
     this.root.appendChild(px);
+  }
+
+  /** The STANCE tab: the eight idles, tried on with a click; KEEP keeps one (free), LEAVE without keeping puts back the kept one. */
+  renderStance(px) {
+    const g = this.game, I = g.character?.idles, L = IDLES.labels;
+    const what = el('div', 'what'), say = (k) => { what.innerHTML = `<b>${L[k]?.name ?? k}</b><br>${L[k]?.does ?? ''}`; };
+    const grid = el('div', 'st');
+    for (const k of Object.keys(IDLES.clips)) {
+      const b = el('div', this.stand === k ? 'on' : '', L[k]?.name ?? k);
+      b.onmouseenter = () => say(k); b.onmouseleave = () => say(this.stand);
+      b.onclick = () => { if (I?.choose(k)) { this.stand = k; this.render(); } };
+      grid.appendChild(b);
+    }
+    px.appendChild(grid); say(this.stand); px.appendChild(what);
+    const row = el('div', 'row');
+    const keep = el('button', '', this.stand === this.kept ? 'KEPT' : 'KEEP · FREE'); keep.disabled = this.stand === this.kept;
+    keep.onclick = () => { this.kept = this.stand; g.save?.dirty('courierIdle'); g.events?.emit('courier.idle', { stand: this.stand, by: 'courier' }); this.render(); };
+    const leave = el('button', '', 'LEAVE (Esc)'); leave.onclick = () => this.onLeave?.();
+    row.appendChild(keep); row.appendChild(leave); px.appendChild(row);
   }
 }

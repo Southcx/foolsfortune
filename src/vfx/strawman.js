@@ -15,23 +15,22 @@
 // roly-poly toy and the inflatable punching bag (a weighted round base that always stands back up: okiagari-koboshi, the Daruma that
 // rises), the wing chun wooden dummy and the training dummies of every action game (Zelda's, Smash's sandbag: hit forever, never broken).
 //
-//   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(rawDt)   S.dispose()
+//   THE MOVES  it fights back without a skeleton (vfx/strawmanmoves.js: the table, the keys, the numbers): the rock on its ball, the
+//               sleeves on their shoulders, the sack a beat behind on its neck, the hat nodding on its base, and a turn about the ball
+//
+//   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(dt)   S.dispose()   (dt: sim seconds,
+//   the clock the windups count in: creatures.js)
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
-//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard crosses the sleeves in an X in front of its chest, a boxer's
-//   cross-arm block: SLEEVES.guard; the swing winds up 0.8 s, the right sleeve held up beside the head, then sweeps forward)
+//   S.setMode('still' | 'guard' | 'swing')   (the guard crosses the sleeves in an X in front of its chest, a boxer's cross-arm block:
+//   SLEEVES.guard)   S.play(id, { onContact(blow, contact), onEnd })   S.breakOff(channels?)   S.playing (the move's id, or null)
+//   S.parts.left | right | both | hat   (what strikes: the parry mark rides there)   S.yaw, S.yawTo (the facing, turned toward
+//   yawTo between moves, held through one)   S.engaged (a string runs: the guard stays down)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
+export { SLEEVES };
 
 const BODY_H = 0.95, TARGET_Y = -BODY_H + 0.44 * BODY_H; // (the sack's height; the target's middle, metres below the neck)
-/** Strawman's sleeves (radians from a sleeve standing straight out to its side; pi/2 is straight ahead). `guard`: the shoulders brought
- *  forward (`reach`, m), each sleeve swung forward past straight ahead (`forward`) and tipped down, so the two cross in an X over its
- *  chest, 0.3 m in front of it, clear of the head and the sack; the right tipped a little lower, lying over the left. `swing`: the right
- *  sleeve in the wind-up held up (`up`) and a little back (`back`), high beside the head where the striker sees it, and the parry mark
- *  on it (a sleeve drawn straight back hid behind the head from in front); then swept `through` past straight ahead. */
-export const SLEEVES = {
-  guard: { reach: 0.16, forward: 2.25, tipL: 0.5, tipR: 0.65 },
-  swing: { back: 0.15, up: 1.15, through: 1.6, ease: 12 }, // (ease: 1/s, the sleeve's way back to rest when a parry breaks the swing off)
-};
 const C = { burlap: 0xcdb48c, seam: 0x6b5236, sleeve: 0x3a2f3a, cuff: 0xefe3c8, hat: 0x2c2731, band: 0x8d7f92, post: 0x3b2a1e, lacquer: 0x121014, red: 0xb8402e, cream: 0xf3e6c8, straw: 0xe0c070 };
 
 /** The sack's cloth, painted on a canvas: a burlap weave, its seams, and on the front the target (three rings). */
@@ -78,6 +77,9 @@ function heartShape() {
   return s;
 }
 
+/** An angle brought into -pi..pi (a whole turn is no turn). */
+const wrap = (a) => a - Math.PI * 2 * Math.round(a / (Math.PI * 2));
+
 export class StrawmanModel {
   constructor() {
     const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...o });
@@ -87,14 +89,16 @@ export class StrawmanModel {
     // the ball foot (stays on the floor); everything above rocks on it
     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.19, 24, 16), M(std(C.lacquer, { roughness: 0.18, metalness: 0.1 })));
     ball.position.y = 0.19; root.add(ball);
-    const rock = this.rock = new THREE.Group(); rock.position.y = 0.19; root.add(rock); // (the pivot: the ball's centre)
+    const turn = this.turn = new THREE.Group(); root.add(turn); // (the turn about the ball: its facing and a move's spin; the ball is round, so it stays)
+    const rock = this.rock = new THREE.Group(); rock.position.y = 0.19; turn.add(rock); // (the pivot: the ball's centre)
     // the post: from the ball up behind the doll, banded, to the hat
     const postM = M(std(C.post, { roughness: 0.7 }));
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 2.0, 10), postM); post.position.set(0, 1.0, -0.12); rock.add(post);
     for (const y of [0.24, 0.42]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.05, 12), M(std(C.band, { roughness: 0.5, metalness: 0.3 }))); b.position.set(0, y, -0.12); rock.add(b); }
     // the hat: a tall block standing up behind the head, its top rim a lighter band
+    const hatPivot = this.hatPivot = new THREE.Group(); hatPivot.position.set(0, 1.84, -0.16); rock.add(hatPivot); // (its base on the post: it nods there)
     const hat = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.48, 0.26), M(std(C.hat, { roughness: 0.6 })));
-    hat.position.set(0, 2.08, -0.16); hat.rotation.z = 0.06; rock.add(hat);
+    hat.position.set(0, 0.24, 0); hat.rotation.z = 0.06; hatPivot.add(hat);
     const rim = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.05, 0.29), M(std(C.band, { roughness: 0.5 }))); rim.position.set(0, 0.24, 0); hat.add(rim);
     // the crossbar and its sleeves (charcoal, tapered, the cuffs flared with the cream spiral)
     // (the bar between the shoulders; each sleeve carries the rest of it, so a sleeve folded into the guard never leaves a bare stick out)
@@ -110,7 +114,9 @@ export class StrawmanModel {
       const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.67, 0, 0); cuff.rotation.y = s * Math.PI / 2; arm.add(cuff);
       const lip = new THREE.Mesh(new THREE.TorusGeometry(0.195, 0.025, 6, 20), sleeveM); lip.position.copy(cuff.position); lip.rotation.y = s * Math.PI / 2; arm.add(lip);
     }
-    this.mode = 'still'; this.pose = 0; this.sw = null; this.armR = 0; this.armUp = 0; this.lean = 0; // (the guard's weight 0..1; the swing under way; the sleeve's and the body's turns as drawn)
+    this.mode = 'still'; this.pose = 0; // (the guard's weight 0..1)
+    this.p = { ...REST }; this.want = { ...REST }; this.mv = null; this.yaw = 0; this.yawTo = 0; this.engaged = false; // (the pose as drawn, a move's under way, the facing)
+    this.hatA = 0; this.hatV = 0; this.lastLean = 0; this.lastTilt = 0; // (the hat's own spring; the rock's last keyed lean, which swings the sack)
     // the sack: hangs on the bar, swings a beat behind (its own pivot at the neck)
     const sack = this.sack = new THREE.Group(); sack.position.set(0, 1.45, 0); rock.add(sack);
     const prof = []; for (let i = 0; i <= 14; i++) { const t = i / 14; prof.push(new THREE.Vector2(0.07 + 0.42 * Math.sin(Math.PI * Math.pow(t, 0.72)) * (1 - 0.3 * t), -BODY_H + t * BODY_H)); } // (a fat pear, as drawn: twice the head's width)
@@ -118,7 +124,7 @@ export class StrawmanModel {
     const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 28), this.bodyMat); body.rotation.y = Math.PI; body.scale.set(1, 1, 0.85); sack.add(body); // (the lathe's u 0.5 is at -z: turned, the target faces +z, the front)
     this.body = body;
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 24, 16), M(std(0xffffff, { map: sackTexture({ face: true }) })));
-    head.position.set(0.03, 0.24, 0.04); head.scale.set(1, 0.92, 0.9); head.rotation.set(0.05, -Math.PI / 2, -0.12); sack.add(head);
+    head.position.set(0.03, 0.24, 0.04); head.scale.set(1, 0.92, 0.9); head.rotation.set(0.05, -Math.PI / 2, -0.12); sack.add(head); this.head = head;
     // the cord and the heart
     const cord = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.008, 6, 24), M(std(0x1c1418))); cord.rotation.x = Math.PI / 2 - 0.35; cord.position.set(0, 0.0, 0.03); sack.add(cord);
     const heart = new THREE.Mesh(new THREE.ExtrudeGeometry(heartShape(), { depth: 0.02, bevelEnabled: true, bevelSize: 0.006, bevelThickness: 0.006, bevelSegments: 2 }), M(std(C.lacquer, { roughness: 0.15, metalness: 0.2 })));
@@ -137,14 +143,39 @@ export class StrawmanModel {
     // the rock: two angles (x, z) on a spring round the ball; the sack's swing: two more, softer, a beat behind
     this.a = new THREE.Vector2(); this.av = new THREE.Vector2(); this.s = new THREE.Vector2(); this.sv = new THREE.Vector2();
     this.flash = 0;
+    // what strikes, each worn with the parry mark while its blow can be answered: a sleeve, the hat, or both sleeves at once (one mark
+    // over the two: a stand-in outside the scene graph whose traverse visits both and whose frame is a point between the shoulders, so
+    // the window's glint finds the higher cuff: vfx/parrymark.js reads only traverse, matrixWorld and worldToLocal)
+    const mid = new THREE.Object3D(); mid.position.set(0, 1.6, -0.08); rock.add(mid);
+    const both = new THREE.Object3D(); both.name = 'strawman-sleeves';
+    both.traverse = (fn) => { fn(both); this.arms[0].traverse(fn); this.arms[1].traverse(fn); };
+    both.updateWorldMatrix = () => { mid.updateWorldMatrix(true, false); both.matrixWorld.copy(mid.matrixWorld); };
+    this.parts = { left: this.arms[0], right: this.arms[1], hat: hatPivot, both };
   }
 
   /** The mode F cycles (Dovina's, docs/plans/STRAWMAN.md): 'still', 'guard' (the sleeves fold into an X across its front: it blocks from
-   *  the front), 'swing' (Petra's clock calls swing() every 3 sim seconds). */
+   *  the front), 'swing' (the room's clock plays the swing every 3 sim seconds: world/testroom/strawmanstrings.js). */
   setMode(m) { this.mode = m; }
-  /** A swing: 0.8 s of wind-up that reads (it leans back, the right sleeve rises beside the head, the target pulses amber: the tell), then a
-   *  quick sweep forward; `onStrike` is called at the sweep's middle (Petra's harmless hit). */
-  swing(onStrike) { if (!this.sw) this.sw = { t: 0, onStrike, hit: false }; }
+  /** A move from the table (vfx/strawmanmoves.js), from its first frame: `onContact(blow, contact)` at each moment a blow's part meets
+   *  the air in front (contact 0 is the strike; a spin's second sleeve is contact 1), `onEnd()` when it is back at rest. Its facing is
+   *  held from here: the aim it was begun with is the aim it lands on. */
+  play(id, { onContact = null, onEnd = null } = {}) {
+    const M = STRAWMAN_MOVES[id]; if (!M) return false;
+    const at = [];
+    M.blows.forEach((B, blow) => [B.at, ...(B.also || [])].forEach((t, contact) => at.push({ t, blow, contact })));
+    for (const K of M.kicks || []) at.push({ t: K.at, kick: K });
+    at.sort((x, y) => x.t - y.t);
+    this.mv = { id, M, t: 0, at, i: 0, mask: new Set(), onContact, onEnd };
+    return true;
+  }
+  /** A blow a parry broke off: what it moved eases back to rest (MOVE_EASE). With `channels`, only those (the jab of a one-two, so the
+   *  second blow still comes); without, the whole move. */
+  breakOff(channels = null) {
+    if (!this.mv) return;
+    if (channels) for (const c of channels) this.mv.mask.add(c);
+    else { this.mv = null; this.p.turn = wrap(this.p.turn); }
+  }
+  get playing() { return this.mv?.id ?? null; }
 
   /** Which ring of the target a world point is on (1 the bull's-eye, 2 and 3 the rings, 0 off the target). */
   ring(point) {
@@ -156,7 +187,7 @@ export class StrawmanModel {
   /** A blow: it rocks away from it, the sack swings, the ring hit flashes, straw puffs out. `dir` the way the blow travels. */
   hit(point, dir, power = 1) {
     const k = Math.min(2, power);
-    const local = this.group.worldToLocal(point.clone().add(dir)).sub(this.group.worldToLocal(point.clone()));
+    const local = this.turn.worldToLocal(point.clone().add(dir)).sub(this.turn.worldToLocal(point.clone())); // (in the rock's own frame: it is turned)
     this.av.x += local.z * 3.2 * k; this.av.y -= local.x * 3.2 * k; // (a push toward +z tips it about x: forward)
     this.sv.x += local.z * 4.5 * k; this.sv.y -= local.x * 4.5 * k;
     if (this.ring(point)) this.flash = 1;
@@ -168,39 +199,56 @@ export class StrawmanModel {
   }
 
   update(raw = 1 / 60) {
-    const dt = Math.min(raw, 0.05);
-    // the roly-poly: a stiff spring (the weight low in the ball) with a little damping, the swing softer and slower
+    const dt = Math.min(raw, 0.05); // (the springs' step; a move's clock takes the whole frame, as the windup's does)
+    // a move under way: its contacts and kicks as their moments pass, then its pose; a blow broken off eases back on its own
+    const mv = this.mv, p = this.p, want = this.want;
+    if (mv) {
+      mv.t += raw;
+      while (mv.i < mv.at.length && mv.at[mv.i].t <= mv.t) {
+        const e = mv.at[mv.i++];
+        if (e.kick) this.kick(e.kick); else mv.onContact?.(e.blow, e.contact);
+        if (this.mv !== mv) break; // (a contact may end it)
+      }
+      if (this.mv === mv) poseAt(mv.M, mv.t, want);
+      if (this.mv === mv && mv.t >= mv.M.end) { this.mv = null; Object.assign(want, REST); p.turn = wrap(p.turn); mv.onEnd?.(); }
+    }
+    const live = this.mv, k = 1 - Math.exp(-dt * MOVE_EASE);
+    for (const c of CHANNELS) {
+      if (live && !live.mask.has(c)) p[c] = want[c];
+      else p[c] += (0 - p[c]) * k;
+    }
+    // the facing: turned toward yawTo between moves (a body turning on its ball, not a snap), held through one
+    if (!live) { const d = wrap(this.yawTo - this.yaw); this.yaw = wrap(this.yaw + Math.sign(d) * Math.min(Math.abs(d), 5 * dt, Math.abs(d) * 8 * dt + 0.002)); }
+    // the roly-poly: a stiff spring (the weight low in the ball) with a little damping, the swing softer and slower; the sack is also
+    // swung by the keyed lean and tilt, a beat behind them (the follow-through), and the hat bounces on its own spring
     this.av.addScaledVector(this.a, -38 * dt).multiplyScalar(Math.exp(-dt * 3.2)); this.a.addScaledVector(this.av, dt);
     this.a.clampScalar(-0.75, 0.75);
+    this.sv.x -= (p.lean - this.lastLean) * 2; this.sv.y -= (p.tilt - this.lastTilt) * 2; this.lastLean = p.lean; this.lastTilt = p.tilt;
     this.sv.addScaledVector(this.s, -16 * dt).addScaledVector(this.av, -0.4 * dt * 10).multiplyScalar(Math.exp(-dt * 2.2)); this.s.addScaledVector(this.sv, dt);
     this.s.clampScalar(-0.6, 0.6);
-    // the guard: the sleeves fold forward into an X across the front; the swing: wind-up, then the sweep
-    this.pose += ((this.mode === 'guard' ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * 8));
-    const SW = SLEEVES.swing, GD = SLEEVES.guard;
-    let lean = 0, armR = 0, armUp = 0, tell = 0;
-    if (this.sw) {
-      const W = this.sw; W.t += dt;
-      if (W.t < 0.8) { const u = W.t / 0.8, e = u * u * (3 - 2 * u); lean = -0.22 * e; armR = -SW.back * e; armUp = SW.up * e; tell = 0.5 + 0.5 * Math.sin(W.t * 26); } // (the wind-up: leaning back, the sleeve held up beside the head, the target pulsing)
-      else if (W.t < 1.05) { const u = (W.t - 0.8) / 0.25; lean = -0.22 + 0.5 * u; armR = -SW.back + (SW.back + SW.through) * u; armUp = SW.up * (1 - u); if (u > 0.5 && !W.hit) { W.hit = true; W.onStrike?.(); } } // (the sweep)
-      else if (W.t < 1.6) { const u = (W.t - 1.05) / 0.55; lean = 0.28 * (1 - u); armR = SW.through * (1 - u); }
-      else this.sw = null;
-    }
-    const g = this.pose;
-    // (a sleeve on side s swings forward, toward +z, the way it faces, by rotation.y = -s * forward, and tips down by rotation.z = -s * tip.
+    this.hatV += -this.hatA * 320 * dt; this.hatV *= Math.exp(-dt * 5); this.hatA = THREE.MathUtils.clamp(this.hatA + this.hatV * dt, -0.5, 0.5);
+    // the guard: the sleeves fold forward into an X across the front (and stay down while a string runs or a move is under way)
+    this.pose += ((this.mode === 'guard' && !this.engaged && !live ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * 8));
+    const g = this.pose, GD = SLEEVES.guard;
+    // (a sleeve on side s swings forward, toward +z, the way it faces, by rotation.y = -s * forward, and tips up by rotation.z = s * up.
     // The signs were the other way round, and the guard and the swing pointed backwards: the owner's T51, v133)
-    // (a swing a parry broke off sets `sw` to null from outside: the sleeve and the lean ease back to rest instead of snapping there)
-    const k = this.sw ? 1 : 1 - Math.exp(-dt * SW.ease);
-    this.armR += (armR - this.armR) * k; this.armUp += (armUp - this.armUp) * k; this.lean += (lean - this.lean) * k;
-    for (const a of this.arms) a.position.z = -0.08 + g * GD.reach;
-    this.arms[0].rotation.set(0, g * GD.forward, g * GD.tipL);
-    this.arms[1].rotation.set(0, -g * GD.forward - this.armR, -g * GD.tipR + this.armUp);
-    this.rock.rotation.set(this.a.x + this.lean, 0, this.a.y);
+    const [L, R] = this.arms;
+    L.position.z = -0.08 + g * GD.reach + p.lo; R.position.z = -0.08 + g * GD.reach + p.ro;
+    L.rotation.set(0, g * GD.forward + p.lf, g * GD.tipL - p.lu);
+    R.rotation.set(0, -g * GD.forward - p.rf, -g * GD.tipR + p.ru);
+    L.scale.x = 1 + p.ls; R.scale.x = 1 + p.rs;
+    this.turn.rotation.y = this.yaw + p.turn;
+    this.rock.rotation.set(this.a.x + p.lean, 0, this.a.y + p.tilt);
+    this.hatPivot.rotation.x = p.hat + this.hatA;
+    this.head.rotation.x = 0.05 - p.look;
     this.sack.rotation.set(this.s.x * 0.7, 0, this.s.y * 0.7);
     for (const l of this.legs) l.rotation.x = -this.s.x * 1.4; // (the legs dangle after)
+    const tell = p.tell > 0.01 ? p.tell * (0.5 + 0.5 * Math.sin((mv?.t ?? 0) * (mv?.M.pulse ?? 26))) : 0;
+    this.bodyMat.color.setScalar(1 - 0.38 * p.dark); // (a held breath: the sack dims, its pulse gone dark)
     // the ring that was hit: a flash on the target, fading
     this.flash = Math.max(0, this.flash - dt * 2.5);
     this.bodyMat.emissive.setRGB(0.9, 0.35, 0.2).multiplyScalar(this.flash * 0.6);
-    if (tell > 0) this.bodyMat.emissive.setRGB(1.0, 0.6, 0.1).multiplyScalar(0.35 * tell); // (the swing's tell: amber, pulsing, on the whole sack)
+    if (tell > 0) this.bodyMat.emissive.setRGB(1.0, 0.6, 0.1).multiplyScalar(0.35 * tell); // (a move's tell: amber, pulsing, on the whole sack)
     // the straw: falls, tumbles, and is gone
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
     let n = 0;
@@ -212,6 +260,14 @@ export class StrawmanModel {
     }
     this.motes = this.motes.filter((s) => s.t <= s.life);
     this.puffs.count = n; this.puffs.instanceMatrix.needsUpdate = true;
+  }
+
+  /** A move's follow-through: an impulse to the rock's spring (`rock`, and `tip`, a push off upright), the sack's, the hat's. */
+  kick(K) {
+    if (K.rock) { this.av.x += K.rock[0]; this.av.y += K.rock[1]; }
+    if (K.tip) { this.a.x += K.tip[0]; this.a.y += K.tip[1]; }
+    if (K.sack) { this.sv.x += K.sack[0]; this.sv.y += K.sack[1]; }
+    if (K.hat) this.hatV += K.hat;
   }
 
   dispose() {

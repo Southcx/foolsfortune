@@ -7,6 +7,7 @@
 //   moveRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { MOVES } from '../../progress/combat/moves.js';
+import { IDLES } from '../../courier/anim/idlebreak.js';
 
 export function moveRules({ on, L, log }) {
   // move.launch { tool, by }: a launcher lifted something; move.air { tool, hits, by }: an air string ended with `hits` blows landed
@@ -17,6 +18,7 @@ export function moveRules({ on, L, log }) {
   // move.cut { tool, move, paid, cost, by }: a blow's recovery cut short for Lachryma (the paid cut, a working name); said once, to teach it
   on('move.cut', (e) => { if (e.by !== 'courier' || !e.paid) return; L.inc('move.cut.paid'); if (L.first('move.cut.paid')) log.say('gain', `You cut the recovery short for ${e.cost} Lachryma: a press once the blade has struck.`); });
   // the skiff (Calissa's suite): skiff.bail { speed, by }, skiff.ollie { geyser, by }
+  on('courier.idle', (e) => log.say('info', `You will stand ${(IDLES.labels[e.stand]?.name ?? e.stand).toLowerCase()}.`, { key: 'courier.idle', throttle: 1 })); // (the kiln's STANCE kept: courier/vessel/kilnui.js; words a stand-in, Espada's)
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
   on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', 'You bail.', { key: 'bail', throttle: 3 }); } });
   on('skiff.ollie', (e) => { if (e.by !== 'courier') return; L.inc('skiff.ollie'); if (e.geyser) L.inc('skiff.ollie.geyser'); });
