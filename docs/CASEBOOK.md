@@ -481,8 +481,47 @@ the rules before building in the same area; a rule a machine can check goes into
     dropped, the difference spread over the clip: stances.js `closeLoop`) before the clip is measured or chosen for its stillness.
 175. **What tops a thing up adds what it adds.** A spill, a smear or a refill into something partly taken raises it by its own share
     (its area, its cells), never back to whole; the look follows the count of what lies there.
+176. **A look that says "now" asks the rule that answers.** A mark that shows a window (the parry mark hot) is driven every frame by
+    the same predicate the press uses, the press's own length included (a press keeps asking for a quarter second), never by a copy of
+    its number or a ramp toward it. Measured by pressing at every frame and reading the look on the same frame.
+177. **A shell drawn from a body's geometry takes what bends the body.** An inverted hull (the parry mark, any outline) made from a mesh
+    whose vertex shader moves it (a jelly's squash, a skin) is given the same bend, or it draws the rest shape. Judged in the pose that
+    bends the most. A uniform a bend reads defaults to doing nothing: a `Vector4()` is (0, 0, 0, 1), not zero.
 
 ## Cases
+
+### 2026-10-10 · The parry mark said "now" a quarter second after V already answered (the owner: "more apparent ... that you're in the window")
+
+- **Seen:** headless, Strawman's swing in the Throwing Room (its windup 0.925 s, struck as it unwinds): the parry mark's width and alpha
+  a frame against the windup's time to the strike `e` (`w.t - 0.3`), and V (the kick) pressed at the first frame below each of eleven
+  `e`. The mark reached its fullest (3.6 px, alpha 1) at `e` 0.25 (Held Breath 0.40), exactly `blow()`'s rule; but V answered from `e`
+  0.508 (not at 0.558), Held Breath from 0.608 (not at 0.675). Over that first quarter second of answering presses the mark stood at
+  3.0 to 3.6 px and 0.86 to 1 alpha on a smooth ramp: 0.2 px between 0.1 s before its fullest and the fullest. Nothing in it said "now".
+- **Cause (measured):** the mark read the blow's window (`creatures.shownEta`, fullest in its last 0.25 s), but a press is not a frame:
+  it keeps asking for a quarter second after V (`parries.js` `WINDOW` 0.25, the kick's 0.26, the cutlass's 0.28), so a press answers
+  from the blow's window plus that. The look showed half the press's real window, and showed its edge as a slope.
+- **Fix:** `courier/parry.js` exports the window (`inBlowWindow`, what `blow()` asks; `pressAnswers`, the blow's window plus
+  `PRESS_WINDOW`; `shotAnswers`, a shot inside answer()'s 2 m reach plus what it flies in the press's quarter second), and the parry mark
+  asks them every frame: while they hold it runs hot (a white core between film rims, 7 px against the ink's 3.6) with the window's glint
+  as it opens, and drops back the frame they do not (`vfx/parrymark.js`). After, the same trace: hot from `e` 0.492 (Held Breath 0.642)
+  to the strike, every frame; the presses, measured again, answer from 0.508 and 0.608 as before (the rule is unchanged: a tool's
+  press asks 16 frames, so it answers from 0.50, the frame the look goes hot; the kick's and the cutlass's a frame or two sooner). The
+  ink's ramp now reaches its fullest as the mark goes hot.
+- **Rule:** 176 (and 67).
+
+### 2026-10-10 · A slip jelly's parry mark was a tall dome over a body crouched to lunge (found judging the parry window)
+
+- **Seen:** headless in the Throwing Room, a slip jelly winding up a lunge (`squash` 0.62): its parry mark drew a dome about half again
+  as tall as the body, its whole back filled with ink and film above the crouched body (hot, a dome of rainbow); in the lunge's flight,
+  the body stretched back to its rest height, the outline fitted.
+- **Cause (measured):** the jelly's squash, lean, wobble, toes and dent are done in its vertex shader (`creatures/jelly/deform.js`);
+  the mark's shells were built from the same geometry with their own program, which knew nothing of it, so they drew the rest shape.
+- **Fix:** the mark's vertex shader carries the jelly's bend (its defaults change nothing), and a mark over a creature with `deform`
+  hands that body's uniforms to the shells over the body (by reference: a twin of each band's material, its width and heat shared);
+  the glint's crest is found on the bent body too. One program as before (159 before and after the first glint). Caught before
+  committing: the dent's default `new THREE.Vector4()` is (0, 0, 0, 1), and it blew Strawman's sleeve's shell out into a ball a metre
+  across; the default is now (0, 0, 0, 0).
+- **Rule:** 177 (and 76).
 
 ### 2026-10-10 · The slicks kept a program warm on their own (the program budget 164 -> 165 at v138)
 
