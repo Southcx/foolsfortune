@@ -259,6 +259,17 @@ export const LIBRARY = {
     L({ type: 'sprites', count: 70, shape: 'streak', dir: 'sphere', speed: [3, 12], size: 0.06, sizeEnd: 0.01, life: [0.4, 0.8], stretch: 1.2, drag: 2.5, color: ['tip', 'tint'], twinkle: 20, powerCount: false }),
     L({ type: 'light', color: 'tint', k: 90, range: 16, dur: 0.3, up: 0 }),
   ] },
+  // a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave):
+  // Lachryma's ring, not a white one. A band of crude's ink, the oil film's three thin bands just inside it, each walking its hue as it
+  // goes out ('film0'..'film3': vfx/oxidation.js featTint, turned by the caller's `phase`), and a few motes of the film thrown off.
+  // `scale` is the reach in metres (a ring's line sits at 0.39 of its size, a thin ring's at 0.45: these sizes put both at the reach).
+  shock: { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 1, shape: 'ring', size: 2.6, life: 0.36, grow: 11, color: 'ink', alpha: 0.5, alphaEnd: 0, rot: 0, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 2.15, life: 0.3, grow: 12, color: 'film0', colorEnd: 'film1', alpha: 1, alphaEnd: 0, rot: 0, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 1.95, life: 0.32, grow: 11, color: 'film1', colorEnd: 'film2', alpha: 0.9, alphaEnd: 0, rot: 0, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 1.75, life: 0.34, grow: 10, color: 'film2', colorEnd: 'film3', alpha: 0.8, alphaEnd: 0, rot: 0, powerCount: false }),
+    L({ type: 'sprites', count: [6, 9], shape: 'sparkle', spawn: 'shell', r: 0.55, dir: 'out', speed: [1.5, 3], size: [0.12, 0.2], sizeEnd: 0, life: [0.25, 0.45], drag: 3, color: 'film', twinkle: 20, powerCount: false }),
+  ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
   // the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its hot end.

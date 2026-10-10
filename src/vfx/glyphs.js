@@ -9,7 +9,8 @@
 // covers the same pixels and only what stands more than that in front of it (a wall, a pillar) hides it. `throughWalls` draws it over
 // everything instead (a pop's own, or the module's for every pop: the switch the Dreamvane's survey will throw as a psychic sonar ping).
 //
-// (and the WARD, a ring barred across: something refused what was done to it: a blade turned aside)
+// (and the WARD, a ring barred across: something refused what was done to it: a blade turned aside; and CELESTIAL MODE'S MARK, an
+// ensō round a dot: a target the Soul Brush's dot has chosen, held over it until let go)
 // Prior art: the exclamation mark over the head of every alerted enemy from Metal Gear Solid onward, Animal Crossing's and FFXIV's
 // bite indicators (the number of marks is the weight of the bite: ! !! !!!), and the comic-book onomatopoeia the pop's timing is
 // borrowed from (a fast overshoot, a wobble, a held beat, a rise and a fade). It is text in the world, on the thing it is about; it is
@@ -91,9 +92,36 @@ function wardCanvas() {
   draw(44, '#150806'); draw(26, '#ffffff'); draw(14, '#bfe3ff');
   return c;
 }
+// CELESTIAL MODE'S MARK: what a dot leaves on a target under the Soul Brush's paper (tools/soulbrush/techniques.js markAt), drawn in
+// Celestial mode's own hand: an ensō (the one-stroke brushed circle of Zen calligraphy, left open where the brush lifted, thick where
+// it was laid down and thinning as the ink ran out) round the dot itself, with the four short strokes of a spell circle's quarters
+// outside it. Inked as every glyph is (the dark outline, the light rim) with a deeper core, three steps of one ink so it holds in a
+// red-lit room, and tinted vermilion at its call, the seal ink (shuin) a brushed page is signed in: it reads on the cream paper the screen turns to, where the old gold star sank. Its shape says "chosen":
+// it never needs its colour (judged in greyscale). Prior art: Okami's brush strokes and the seal on its scrolls; the ensō.
+function celestialMarkCanvas() {
+  const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d'); g.translate(s / 2, s / 2); g.lineCap = 'round'; g.lineJoin = 'round';
+  const R = 78, a0 = -0.42 * Math.PI, sweep = 1.8 * Math.PI, N = 48;
+  const enso = (extra, col) => { // (the brush laid down heavy, thinning as it goes round: short segments, each a little narrower)
+    g.strokeStyle = col;
+    for (let i = 0; i < N; i++) {
+      const u = i / N, a = a0 + sweep * u, b = a0 + sweep * (i + 1.2) / N, r = R + 3 * Math.sin(u * 5.3);
+      g.lineWidth = extra + 30 - 20 * u * u;
+      g.beginPath(); g.arc(0, 0, r, a, Math.min(b, a0 + sweep)); g.stroke();
+    }
+  };
+  const ticks = (extra, col) => { // (the quarters: four short strokes out from the ring, a spell circle's)
+    g.strokeStyle = col; g.lineWidth = extra + 12;
+    for (let k = 0; k < 4; k++) { const a = Math.PI / 4 + (k * Math.PI) / 2; g.beginPath(); g.moveTo(Math.cos(a) * 100, Math.sin(a) * 100); g.lineTo(Math.cos(a) * 118, Math.sin(a) * 118); g.stroke(); }
+  };
+  const dot = (extra, col) => { g.fillStyle = col; g.beginPath(); g.arc(0, 0, 17 + extra / 2, 0, Math.PI * 2); g.fill(); };
+  for (const [extra, col] of [[22, '#150806'], [10, '#ffffff'], [0, '#bfb2a8']]) { enso(extra, col); ticks(extra, col); dot(extra, col); }
+  return c;
+}
 const KINDS = {
   vein: { draw: veinCanvas, w: 256, h: 256, aspect: 1 },
   ward: { draw: wardCanvas, w: 256, h: 256, aspect: 1 },
+  celestialMark: { draw: celestialMarkCanvas, w: 256, h: 256, aspect: 1 },
   bang1: { text: '!', w: 256, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1 },
   bang2: { text: '!!', w: 384, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1.5 },
   bang3: { text: '!!!', w: 512, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 2 },

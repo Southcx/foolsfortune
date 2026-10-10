@@ -7,9 +7,11 @@
 // Prior art: in-client patch notes (League's PBE client: the changes read where they are tried) and a test-case manager's run view
 // (TestRail: steps, the expected result, pass / fail / skip and a note per case).
 //
-//   TABS   tabList(q) -> [{ id, label, count?, dot? }]   draw(tab, body, q)   (q: the Qais: q.look, q.store, q.round, q.act)
+//   TABS   tabList(q) -> [{ id, label, count?, dot? }]   draw(tab, body, q)   (q: the Qais: q.look, q.store, q.round, q.act, q.game)
+//   In DEBUG a fifth tab, Lends: the lend panel (Calissa's ui/lendpanel.js), drawn with or without the store.
 // ---------------------------------------------------------------------------------------
 import { tuned, line } from '../tuned.js';
+import { lendPanel } from '../../ui/lendpanel.js';
 
 export const TABS = [['brief', 'Brief'], ['tests', 'Tests'], ['reports', 'Reports'], ['questions', 'Questions']];
 const DIVISIONS = ['petra', 'dovina', 'wanda', 'calissa', 'espada'];
@@ -27,14 +29,17 @@ const roundTests = (q) => q.store.docs('tests').filter((t) => !t.retired && (t.b
 const roundBugs = (q) => q.store.docs('bugs').filter((b) => b.round === q.round?.build);
 
 /** The tab row, with what waits in each. */
+const LEND_TAB = { id: 'lend', label: 'Lends' }; // (the lend panel, DEBUG's only: ui/lendpanel.js; it needs no store)
 export function tabList(q) {
-  if (!q.store?.online) return TABS.map(([id, label]) => ({ id, label }));
+  const lend = q.game?.mode === 'debug' && q.game.lend ? [LEND_TAB] : [];
+  if (!q.store?.online) return [...TABS.map(([id, label]) => ({ id, label })), ...lend];
   const tests = roundTests(q), left = tests.filter(OPEN).length, open = q.store.docs('questions').filter((x) => !x.answer).length;
   return [
     { id: 'brief', label: 'Brief' },
     { id: 'tests', label: 'Tests', count: tests.length ? `${left} left` : null, dot: tests.some((t) => OPEN(t) && t.seen?.length) },
     { id: 'reports', label: 'Reports', count: roundBugs(q).length || null },
     { id: 'questions', label: 'Questions', count: open || null, dot: open > 0 },
+    ...lend,
   ];
 }
 
@@ -87,6 +92,7 @@ function questions(body, q) { // (answered here, read by Dovina: the choice and 
 const DRAW = { brief, tests, reports, questions };
 export function draw(tab, body, q) {
   body.replaceChildren();
+  if (tab === 'lend') { const P = lendPanel(q.game); body.append(P || q.look.notice('The lend panel is the DEBUG save\'s: this is the STORY save.')); return; }
   if (!q.store?.online && tab !== 'reports') { body.append(q.look.notice()); return; }
   if (!q.store?.online) body.append(q.look.notice());
   DRAW[tab](body, q);

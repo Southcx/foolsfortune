@@ -130,7 +130,7 @@ export class BrushTechniques {
     else {
       this.marked.add(t.ent);
       const at = () => (t.kind === 'clapper' ? t.ent.pos.clone().setY(t.ent.pos.y + 1.1) : t.ent.body?.isValid?.() ? _w.copy(t.ent.body.translation()).setY(t.ent.body.translation().y + (t.r || 0.4) + 0.5).clone() : t.pos);
-      this.markGlyphs.set(t.ent, g.glyphs?.pop?.('star', at(), { color: 0xf2c35a, size: 0.4, hold: 600, follow: at })); // (a placeholder look: Calissa's to make)
+      this.markGlyphs.set(t.ent, g.glyphs?.pop?.('celestialMark', at(), { color: 0xff7a52, size: 0.4, hold: 600, follow: at })); // (Celestial mode's mark, vermilion seal ink: vfx/glyphs.js)
     }
     g.events?.emit('brush.mark', { marked: this.marked.size, by: 'courier' });
     return true;

@@ -89,7 +89,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   ("× aim"); nothing but luck should pay more than 1.5×.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
-- **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
+- **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks (the oxidation ramp,
+  `src/vfx/oxidation.js`).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma ("a cask of crude grief"), carried in the Pneuka Box; a ship's **hold** is how many casks may cross; a sloop holds 8.
 - **chest glaze** (`src/vfx/chestglaze.js`): how a chest shows its tier as it charges, in place of a beam: celadon, crazing, raku, kintsugi gold.
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
@@ -162,6 +163,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **draw / stow**: take a tool in hand / put it back.
 - **blot** *(Espada's word for a stain of spilled crude, settled by Dovina 2026-10-08: the player reads "blot", the code keeps `stain`)* and **blotling** (the aberrant Figment a full-grown blot
   gives up).
+- **a slick** (Espada's word, docs/plans/LACHRYMA-LOOP.md section 0; code `slick`; its look `game.slicks`, `src/vfx/slicks.js`, Calissa's,
+  2026-10-09): crude thrown or welled up in a fight: the Great Slip Jelly's cast puddles (the Slick Trail's drops, the rings, the Decant,
+  its slam), a spit glob landing, a burst jelly or broken clutch, a gusher's spill. Fresh it is black and glossy, the oil film only at its
+  rim and at a grazing look; it **thins**, the film's bands coming up through it and their hue walking; it goes to a pale **sheen** and soaks
+  away. What the mop and Clean take of it is the paint map's (`slick` cells, `world/ground/paintmap.js`): its look shrinks from the rim as
+  they go. Drawn with the blots' program (`vfx/stains.js`, `uSlick`). *Not:* a blot (spilled, it stays and grows until mopped).
+- **the oxidation ramp** (`OXIDATION`, `oxidationAt`, `src/vfx/oxidation.js`; Calissa's, 2026-10-09): how Lachryma left lying in the
+  open turns, one clock for everything of it: a bauble is fresh cream (Lachryma just out of clay), turns to crude (near-black, the oil film
+  on it) from 7 to 22 real seconds, and runs into the ground by 40.5; a slick enters at crude and runs on along its own life (thinned at
+  0.3, sheen at 0.72, gone at 1). **The film** (`oxFilm`, `filmColour`, `FILM`): the oil film's colours walked round a loop (violet,
+  teal, gold, magenta), thin-film interference read as Lachryma's own. **featTint** (`featTint(t)`): that film's hue shift as a feat of
+  the Courier's power wears it: the blink's afterimage and streak, the slam's ring (and the brush's slam, which throws the same ring),
+  the jets' thrust (laid over the brush's feeling), every shockwave (the library's `shock`). **The slip schiller** (`SLIP_SCHILLER`,
+  `SLIP_SCHILLER_GLSL`, `src/vfx/labradorite.js`): the faint labradorite flash of the Lachryma under every slip body's clay, at a grazing
+  look and where it runs wet (the slip jellies' melt): one uniform, shared, so it never makes a program. *Not:* the weather's look, the
+  glitch.
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
@@ -260,6 +277,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   at the rider's time and weight, so the deck moves under the feet as the body does on it. The code's word is laid on after (the boom,
   the hoist from the sail's L, the belly, the pennant: `boat.js`). *Not:* the rider's clips (the Courier's suite, `rider.js`); "board"
   as a term (the overture's storyboard has it).
+- **Skiff_Glide** (`SKIFF_GLIDE`, `courier/skiff/boat.js`; the rider's half in `rider.js`): the glide's pose (Space held in the air):
+  the oars swung out over their sides as wings (from dead aft 1.22 rad, a 0.3 dihedral, blades rolled flat, a slow flex) and the
+  suite's `Air_Glide` over the rider's upper body, blended by the glide (`wings`, 0..1). A pose in code, not a clip in the .blend.
 - **the skiff's model** (`src/assets/solarskiff.glb`, from the owner's `source_assets/Courier/courier_solarskiff.blend` and its painted
   hull, `courier_solarskiff_hull.png`, by `scripts/export_solarskiff.py`): the skiff as the owner built it, rigged (`Skiff_Rig`, 64
   bones): the **hull** (its carved prow with the eye, the **dome** at the stern), the two **oars** (shipped: nothing rows yet), the
@@ -274,9 +294,26 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, the **spin** after a pause, the **dive** at a
   sprint, the **slam**: the **air slam** let go in the air, the **ground slam** let go after landing), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
+  **Celestial mode's mark** (glyph kind `celestialMark`, `vfx/glyphs.js`; laid by `techniques.js` markAt): the vermilion ensō with a dot
+  and four quarter strokes held over a target a dot has chosen, until let go. *Not:* a sigil, a Figment attack telegraph.
   **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
   (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
   shaders draw and the game asks; the **stains** themselves are kept in `world/ground/stains.js`.
+  **The paint's look** (`vfx/paintmotifs.js`, Calissa's): a pigment no brighter than the floor, a crisp round edge, a wet sheen, and its
+  **paint motif** (`PAINT_MOTIF`, the byte beside each cell's height): Wonder a frost lattice of hexagons, Mirth sun-dapple dots, Desire
+  the wind's ripples (a crest and its lee), Fury plates parted by **cracks of light** that glow, Gall a curdled film of dark **curds**,
+  Grief the rain's broken streaks, Dread marbled contour lines (suminagashi); **crude** (a blot's, a slick's) is liquid Lachryma as the
+  bauble ends its oxidising: near-black, the bauble's oil film (violet, peacock, gold, magenta) at a grazing eye, no feeling's colour; a
+  slick oxidises on as it fades (its age in the motif's fraction), a dark stain drying into the floor and gone. *Not:* a kiln pattern (`vfx/finish.js`), the weather's look.
+  **The brush's marks** (`vfx/brushmarks.js`, one program, the ribbons'): **the paint reticle** (`PaintReticle`): the **point** where the
+  stream's centre lands and the **ring** of its spread there, four **ticks** (the far one down the throw), in the picked feeling's colour,
+  keylined; **the jet ring** (`JetRing`): at the feet while a jet runs, the hover's fuel draining, the rocket's gather filling, eight
+  segments between two lines of the Mind, the rocket's **burst** when full; **the shine** (`CleanShine`): where the mop or Clean takes the
+  last of a blot or of paint, a ring going out with **glints** and a **twinkle** over it. **The bottle's arc** (`BottleArc`,
+  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial right of the crosshair, the **meniscus** where it stands, quarter
+  **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
+  sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
+  glyph.
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
@@ -295,6 +332,24 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   creature), the **Major Arcana** (twenty-two designated cards).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
+- **Figment attack telegraph** (code: `figmentMarkOf`, Dovina's data, `progress/combat/figmenttelegraphs.js`; drawn by
+  `FigmentTelegraphs`, `game.figmentTelegraphs`, `src/vfx/figmenttelegraph.js`, its parts in `src/vfx/figmenttelegraph/`, Calissa's,
+  2026-10-09; FIGMENT-TELEGRAPHS.md): what Divination draws of a creature's windup, never more than its step has earned. Its parts: **the
+  edge** (step 1: the area's outline on the ground in the Mind's ink, a pale keyline outside it, the drawn area the area's own numbers);
+  **the caution edge** (the edge dashed: a tracked shape not yet locked, its size not yet known); **the fill** (step 2: the area filling
+  away from its maker on the windup's own clock, reaching the edge on the strike frame, its front a pale line; untyped it is ink, from
+  step 3 the damage type's two colours and its **motif**: impact's facets, ego's hex lattice, influence's ripples, illusion's turning
+  curls, delirium's bubbles); **a status glyph** (step 3, `status.<id>`: one for each status the blow builds, standing where the fill
+  lands last); **an answer glyph** (step 4, `answer.<id>`: chevrons laid on the ground at the edge, turned out, in or across a line; a
+  curved arrow behind a cone's maker; standing over a thing, the guard on the arena's rim, the high ground on a safe island, the crack on
+  what a bait leads into, the target over an add, the shut eye on a gazer); **an add's marker** (`figmentMark.add`, over each add before
+  step 4) and **pips** (`figmentMark.pip`, a real second left each, ten at most); **the eye** (`figmentMark.eye`, on a gazer); **the
+  arena's rim** (a raidwide: a band round the arena with a marquee running round it). One cast's areas are one edge (a union); six at
+  once at most, never culled; a friendly area (a sibling's, a spirit's) is its outline alone in the Courier's draught colour. One program
+  (`figmenttelegraphshader.js`); the glyphs are drawn in the icons' hand (`ui/icons/figmenttelegraphart.js`) into one atlas
+  (`figmenttelegraphatlas.js`); the grid it lies on is **the drape** (`figmenttelegraphdrape.js`: a square of world cells set on the
+  ground). *Not:* the rail's telegraph mark (`vfx/telegraph.js`), the parry mark ("answer this"), the resist mark, a glyph pop
+  (`vfx/glyphs.js`).
 
 ## 4. Creatures and folk
 
@@ -331,7 +386,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the mind and says which damage type a mind is weak to; it shows in movement and posture, never colour. *Not:* **temper** (the body
   showing its mental state, `vfx/temper.js`); *not* "personality" or "stats" in player text. Grain is climate, mood is weather.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
-  gets (34 joints; its eighteen clips: idle, five floats, cast, hit, death, five mood loops, three emotes, a dance). The mood loops are
+  gets (34 joints; its twenty clips: idle, five floats, cast, hit, death, six mood loops, four emotes, a dance; Gall's `Mood_Gall` and `Emote_Shudder` baked from its own by `scripts/bake_wisp_moods.mjs`). The mood loops are
   a feeling's basic ring, the emotes its onset; its flame carries the strength. *Not:* the hue ring's lights (the spirit press's).
 - **Magnus Ibrahim Manus** (the King; his island **Margarite**) and **Entra Polearis** (the Queen; her island **Entropolis**): two other
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
@@ -490,6 +545,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
   the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/testroomkit.js`): an open book whose pages project the
   Index's dial, lying parallel to them a few centimetres over the paper, its print inked on the page and its light climbing between.
+  **The paint range** (`world/testroom/paintrange.js`; its look `dressPaintRange`, `vfx/testroomkit.js`): the stand, a quarry tile with a
+  slip chevron down the range, and rings at 3, 6 and 9 m brushed in the drill plates' cream slip with an oxblood rim, each with a
+  **tally** of one, two or three small tiles on its near side (counted, never a number).
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
@@ -904,8 +962,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 
 ## 8. Records and progression
 
-- **the all-arts switch** (code `system.lendAll`, `setLendAll`; in the Codex's head): lends every art without learning it (on in DEBUG,
-  off in STORY). Its label is ALL ARTS (ON / OFF). Nothing it lends is counted or announced. *Not:* "Lab mode".
+- **the all-arts switch** (code `system.lendAll`, `setLendAll`): the lend panel's Movement Arts row (`lend.has('arts')`); the Codex's
+  ALL ARTS switch is gone, its place the LENDS button. Nothing it lends is counted or announced. *Not:* "Lab mode".
+- **the lend panel's look** (`lendPanel`, `lentMark`, `saveName`, `src/ui/lendpanel.js`): a switch a row, in the Codex's LENDS shelf and
+  QAIS's Lends tab, DEBUG only; the **lent mark** (a hollow ring) beside a lent art, the **earned mark** (a solid disc) beside an earned
+  one: shape, never colour alone.
 - **build**: one published version of the game (v45...). Progress resets on every new build; settings are kept.
 - **chain** (of events; `chain.<what>` in the ledger, `chain()` among the arts' goals): the same event n times, each within a set time of
   the last (`chain.blink2`: a blink within 0.9 s of a blink); it counts once and starts over. `chain.max` is the psygun's hit chain.
@@ -1090,7 +1151,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the UI icons** (`uiIcon`, `iconEl`, `ICON_IDS`, `src/ui/icons/`; Calissa's): the pixel art of the choice card and the keywords, 16 px
   (8 for a chip's), each a picture of what its thing DOES (a mount's at sea, never the tool ashore): the twelve keywords
   (`icons/keywordart.js`), the seven mounts (`icons/mountart.js`), the chips and the card's marks (`icons/chipart.js`: lock, check, the
-  compare arrows). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
+  compare arrows), and the Soul Brush's radial (`icons/paintart.js`, `paint.<pick>`: Wonder's snowflake, Mirth's sun, Desire's heart,
+  Fury's flame, Gall's fly, Grief's tear, Dread's bolt, Clean's sparkle, each in its feeling's own palette, `paintRamp`). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
   bevelled from the top left, and the hand adds **the keyline** (a pixel of the darkest grey round it, so every icon has a light part and
   a dark part: casebook rule 105); recoloured by a palette (**gold** its own, **grey** a locked card, **better** and **worse** a compared
   arrow, **line** the sea chart's) and scaled by whole numbers. *Not:* the sea chart's icons (`ui/seachart/icons.js`), a glyph (the
@@ -1114,7 +1176,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink
   (`labInk`, a surface's near-black), though it is drawn in it.
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
-  bars, the fish portrait. A wall hides a creature's marks (its glyph pops, its aura, its temper) as it hides the creature, and its own
+  bars, the fish portrait, a Figment attack telegraph and its glyphs (`game.figmentTelegraphs`). A wall hides a creature's marks (its
+  glyph pops, its aura, its temper) as it hides the creature, and its own
   body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**
   (a pop's `{ throughWalls }`, or `game.glyphs`, `game.temper`, `game.auras` `.throughWalls`, true or a creature -> bool): the switch
   that shows them through walls instead (off; kept for the Dreamvane's survey grown into a psychic sonar ping, the owner's, R20). A scan's

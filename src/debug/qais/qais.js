@@ -127,9 +127,9 @@ export class Qais {
     if (!this.open || !this.store && !force) return;
     if (!force && this.pane.contains(document.activeElement) && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName)) { this.stale = true; return; }
     this.stale = false;
-    this.look.tabs(this.tabsEl, this.store ? tabList(this) : TABS.map(([id, label]) => ({ id, label })), this.tab, (id) => this.setTab(id));
+    this.look.tabs(this.tabsEl, tabList(this), this.tab, (id) => this.setTab(id));
     const top = this.pane.scrollTop;
-    if (this.store) draw(this.tab, this.pane, this);
+    if (this.store || this.tab === 'lend') draw(this.tab, this.pane, this); // (the lend panel needs no store: debug/qais/tabs.js)
     else this.pane.textContent = 'Opening the store...';
     this.pane.scrollTop = top;
     const r = this.round;

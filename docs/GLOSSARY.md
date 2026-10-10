@@ -85,12 +85,22 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   special round in a chamber. → detail
 - **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grapnel). →
   detail
-- **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils) and inscriptions; the tool of
-  environmental Lachryma, in paint and mop modes. → detail
+- **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
+  held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
 - **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, graded by feeling; left alone it grows, and a
   full-grown one gives up a blotling (an aberrant Figment). *Not:* "stain" in player text. → detail
+- **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
+  jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
+- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
+  — how Lachryma left in the open turns (the bauble's and a slick's one clock and oil film) / the film's hue shift every feat of the
+  Courier's power wears / the Lachryma's faint flash under a slip body's clay. → detail
 - **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`) — an aquarium-glass bottle worn at the upper back; a reserve that feeds the
   pool below half and is what paint spends and mop fills. *Not:* "tank", ever.
+- **paint motif** (`PAINT_MOTIF`, `src/vfx/paintmotifs.js`) — the pattern a feeling's paint carries on the ground beside its colour (Wonder
+  frost, Mirth dots, Desire ripples, Fury cracks, Gall curds, Grief streaks, Dread marbling); crude's is an oil film. *Not:* a kiln pattern. → detail
+- **the paint reticle / the jet ring / the shine / the bottle's arc** (`PaintReticle`, `JetRing`, `CleanShine`, `src/vfx/brushmarks.js`;
+  `BottleArc`, `src/vfx/bottlearc.js`) — where the stream lands and its spread; the hover's fuel or the rocket's gather at the feet; ground
+  just cleaned; the bottle's fill beside the crosshair. No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
 - **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
   Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
@@ -112,10 +122,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   hook (the Sondelass's) or a sweep. → detail
 - **windup** (`creatures.windup`, `c.windup`) — a creature's telegraphed blow, listed while it can be answered; a parry in its window breaks it
   off. *Not:* an attack's own phase name.
-- **Figment attack telegraph** (`figmentMarkOf`, `src/progress/combat/figmenttelegraphs.js`; `docs/plans/FIGMENT-TELEGRAPHS.md`) — what
-  Divination draws of a creature's windup in the third-person game, over the body's tell, saying more as it rises: where (the edge), when
-  (the fill), what kind (the type's colour, the status glyph), how to answer (the answer glyph). Always named in full, or "Figment
-  telegraph". *Not:* the rail's telegraph mark, the windup's animation, the parry mark.
+- **Figment attack telegraph** (`figmentMarkOf`, `src/progress/combat/figmenttelegraphs.js`; drawn by `game.figmentTelegraphs`,
+  `src/vfx/figmenttelegraph.js`; `docs/plans/FIGMENT-TELEGRAPHS.md`) — what Divination draws of a creature's windup in the third-person
+  game, over the body's tell, saying more as it rises: where (the edge), when (the fill), what kind (the type's colour, the status glyph),
+  how to answer (the answer glyph). Always named in full, or "Figment telegraph". *Not:* the rail's telegraph mark, the windup's
+  animation, the parry mark. → detail
 - **the rail's telegraph mark** (`TelegraphMarks`, `src/vfx/telegraph.js`) — on the rail, the ring closing on a boss's part about to act.
   *Not:* a Figment attack telegraph.
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
@@ -284,7 +295,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
   category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
-  arts row. *Not:* "Lab mode".
+  arts row. Drawn by `src/ui/lendpanel.js` (the Codex's LENDS, QAIS's Lends); a lent art wears the hollow mark. *Not:* "Lab mode".
 - **a preset** (`PRESETS`, `src/debug/presets.js`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
@@ -326,8 +337,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Veritome's). → detail
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
   Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive. *Not:* a label. → detail
-- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each thing does, in the icons'
-  hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
+  thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -433,7 +444,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | dome | the sky's (`vfx/sky.js`); the stern of the Solar Skiff's hull | "the sky's dome", "the skiff's dome" |
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
-| ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring" |
+| ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
 | retired | say instead | where it still is |

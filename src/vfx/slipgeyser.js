@@ -14,6 +14,7 @@
 //
 //   const G = new SlipGeyser({ height, seed })   scene.add(G.group)   G.update(simDt)   G.state ('dormant' | 'rumble' | 'erupt' | 'fall')
 //   G.launching (true while the column stands)   G.k (0..1 how much of the column stands)   G.dispose()
+//   G.onSpill = (G) => ...   (as it begins to fall: the crude it pours back down is a slick round the vent, game.slicks.spill)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DunemawSpout } from './dunemaw.js';
@@ -54,6 +55,7 @@ export class SlipGeyser {
     if (this.left <= 0) {
       const next = { dormant: 'rumble', rumble: 'erupt', erupt: 'fall', fall: 'dormant' }[this.state];
       this.state = next;
+      if (next === 'fall') this.onSpill?.(this); // (what pours back down lies round the vent as a slick: whoever owns the gusher lays it, vfx/slicks.js)
       const S = this.spec; this.left = next === 'dormant' ? S.dormant[0] + this.rnd() * (S.dormant[1] - S.dormant[0]) : S[next];
     }
     const target = this.state === 'erupt' ? 1 : this.state === 'fall' ? 0.25 : 0;

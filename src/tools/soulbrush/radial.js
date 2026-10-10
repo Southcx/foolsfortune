@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH'S RADIAL: what the paint is, picked on a held key (docs/plans/LACHRYMA-LOOP.md section 2 and 5: the radial ships now).
-// Hold 1 (the paint mode's key) with the brush in the hand and the wheel opens: the seven feelings in display order (most positive
+// Hold 1 (the paint mode's key) with the brush in the hand and the wheel opens, each slot a picture of its own (ui/icons/paintart.js,
+// Calissa's: never colour alone): the seven feelings in display order (most positive
 // first: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread) and CLEAN (its lore name Fair: sprays clear, washing paint and crude off where
 // it lands, at range, and gains nothing). Gall and Fury show locked until they are learned (GALL-AND-FURY.md section 5). Flick toward one,
 // let go: picked. A tap of 1 is the paint mode, as before; 2 the mop.
@@ -12,6 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { RadialWheel } from '../../feedback/wheel.js';
 import { COLOR } from '../../progress/weather.js';
+import { iconEl } from '../../ui/icons/icons.js';
 import { sfx } from '../../audio/sfx.js';
 
 const HOLD = 0.22; // (real seconds of 1 held before the wheel opens: shorter is a tap, the paint mode)
@@ -23,6 +25,17 @@ export const PICKS = [
   { id: 'grief', label: 'Grief' }, { id: 'dread', label: 'Dread' },
   { id: 'clean', label: 'Clean', color: 0xf4efe6 },
 ];
+
+/** A slot's picture (ui/icons/paintart.js: a silhouette a pick, in its feeling's colours); a locked one in grey under the lock. */
+function pickIcon(id, locked) {
+  const icon = iconEl(`paint.${id}`, { pal: locked ? 'grey' : `paint.${id}`, px: 2 });
+  if (!locked) return icon;
+  const box = document.createElement('div'), lock = iconEl('chip.lock', { pal: 'gold', px: 2 });
+  box.style.cssText = 'position:absolute;line-height:0'; box.appendChild(icon);
+  lock.style.cssText += ';position:absolute;right:-6px;bottom:-6px';
+  box.appendChild(lock);
+  return box;
+}
 
 export class PaintRadial {
   constructor(tool) { this.tool = tool; this.heldT = -1; this.wheel = null; }
@@ -37,7 +50,7 @@ export class PaintRadial {
     if (inp.isDown('Digit1')) {
       this.heldT += raw;
       if (this.heldT >= HOLD && !this.wheel?.isOpen) {
-        this.wheel = new RadialWheel({ id: 'paintradial', items: PICKS.map((p) => ({ label: p.label, color: hex(p.color ?? COLOR[p.id]), locked: !this.learned(p) })) });
+        this.wheel = new RadialWheel({ id: 'paintradial', items: PICKS.map((p) => { const locked = !this.learned(p); return { label: p.label, color: hex(p.color ?? COLOR[p.id]), icon: pickIcon(p.id, locked), locked }; }) });
         this.wheel.open(); P.lookScale.wheel = 0; sfx.click?.();
       }
       if (this.wheel?.isOpen) this.wheel.steer(inp.dx || 0, inp.dy || 0);

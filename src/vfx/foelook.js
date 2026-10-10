@@ -15,7 +15,7 @@
 //   broodCall   BROODWAKE    it throbs, a violet pulse going out of it on every beat
 //   calving     SHERDS       four seams of light run down it, quartering it; calve() the split: its calves wear sherds of the urn,
 //                            and threads of slip between them tighten as the half-minute runs out (mend(k)): left alive, they re-merge
-//   overflow    THE OVERFLOW slip pours off it, and the dish floods from the centre outward (overflow(k)): only the islands stand
+//   overflow    THE OVERFLOW crude pours off it, and the dish floods from the centre outward (overflow(k)): only the islands stand
 //
 // Prior art: Monster Hunter's tells (a monster rears, crouches, swells: the body says the move), FFXIV's cast bars (the name before the
 // blow) without its floor markers (the owner's cut), Shadow of the Colossus' colossi (the body as the read), Okami's and the potter's
@@ -107,7 +107,7 @@ export class FoeLook {
     this.threads = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 5).translate(0, 0.5, 0).rotateX(Math.PI / 2), this.threadMat, 6); this.threads.count = 0; this.threads.frustumCulled = false; this.threads.name = 'calf-threads';
     // the flood of The Overflow: a sheet of slip rising in the dish
     if (floor) {
-      this.floodMat = slipMaterial({ flow: new THREE.Vector2(0.3, 1), speed: 1.2 }); this.floodMat.color.setHex(0x4a3428); // (wet slip, darker than the dry sand it covers)
+      this.floodMat = slipMaterial({ flow: new THREE.Vector2(0.3, 1), speed: 1.2 }); this.floodMat.color.setHex(0x1a1420); // (crude welling up: every liquid hazard is crude (LACHRYMA-LOOP.md 0), ink with the Lachryma's ribbons running through it)
       this.flood = new THREE.Mesh(new THREE.CircleGeometry(floor.radius ?? 22, 64).rotateX(-Math.PI / 2), this.floodMat); this.flood.name = 'foe-flood'; this.flood.visible = false; this.flood.frustumCulled = false;
     }
     this.cast = null; this.k = 0; this.opts = {}; this.blowT = 0; this.flood_k = 0; this.calves = null; this.mendK = 0; this.acc = 0;

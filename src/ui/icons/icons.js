@@ -5,9 +5,12 @@
 // gold wherever it stands), GREY a card not yet opened, BETTER and WORSE a compared number's arrow (green and red, and solid against
 // hollow so the colour is never alone), LINE the sea chart's pale labradorite.
 //
-// The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5), 'mount.<tool>' (ui/icons/mountart.js, the
-// seven at sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration; and lock, check, up, down,
-// upHollow, downHollow).
+// The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5), 'mount.<tool>' (ui/icons/mountart.js, the seven at
+// sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration; and lock, check, up, down, upHollow,
+// downHollow), 'paint.<pick>' (ui/icons/paintart.js: the Soul Brush's radial, the seven feelings and Clean, each in its own palette
+// 'paint.<pick>', the feeling's colour at the body's middle tone: `paintRamp`), and the Figment attack telegraphs' glyphs: 'answer.<id>',
+// 'status.<id>', 'figmentMark.<id>' (ui/icons/figmenttelegraphart.js, which the world draws from its own atlas:
+// vfx/figmenttelegraph/figmenttelegraphatlas.js).
 //
 // Prior art: the 8- and 16-bit consoles' palette swaps (one sprite, a palette for each state: Final Fantasy's recoloured windows and
 // enemies), and the pixel kit's integer scaling here (a pixel is always a square of pixels).
@@ -15,6 +18,7 @@
 //   uiIcon(id, pal = 'gold') -> canvas (1x, cached)        hasIcon(id)        ICON_IDS
 //   iconEl(id, { pal, px = 2, title }) -> <canvas>          px: CSS pixels an art pixel (whole), drawn crisp at the screen's ratio
 //   ICON_PALS                                              the palettes by name (twelve [r, g, b] each)
+//   paintRamp(hex) -> twelve [r, g, b]                     a feeling's palette: its colour at tone 9 (the body), lit above, shaded below
 // ---------------------------------------------------------------------------------------
 import { PAL } from '../pixel.js';
 import { ramp } from '../seachart/icons.js';
@@ -22,16 +26,30 @@ import { toneGrid } from './hand.js';
 import { KEYWORD_ART } from './keywordart.js';
 import { MOUNT_ART } from './mountart.js';
 import { CHIP_ART } from './chipart.js';
+import { ANSWER_ART, STATUS_ART, FIGMENT_MARK_ART } from './figmenttelegraphart.js';
+import { PAINT_ART } from './paintart.js';
+import { COLOR } from '../../progress/weather.js';
 
 const ART = {};
-for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
+for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['figmentMark', FIGMENT_MARK_ART], ['paint', PAINT_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
 export const ICON_IDS = Object.keys(ART);
 export const hasIcon = (id) => id in ART;
 
 const css2rgb = (c) => (c.startsWith('#') ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : c.match(/\d+/g).map(Number));
+/** A feeling's palette for its icon: the colour itself at tone 9 (the body's middle), lit toward a warm white above it and shaded
+ *  toward its own black below (tone 0, the keyline); a colour too dark to read on the window is lifted first (Dread's green). The
+ *  sea chart's `ramp` maps tones by brightness instead, which turns a dark red pink: a feeling must stay its colour. */
+export function paintRamp(hex) {
+  let c = [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255];
+  const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255;
+  if (lum < 0.3) { const k = (0.3 - lum) / (1 - lum); c = c.map((v) => v + (255 - v) * k); }
+  const dark = [0.1, 0.2, 0.27, 0.33, 0.4, 0.5, 0.6, 0.72, 0.86, 1], lit = [0.26, 0.52];
+  return [...dark.map((k) => c.map((v) => Math.round(v * k))), ...lit.map((k) => c.map((v, i) => Math.round(v + ([255, 250, 236][i] - v) * k)))];
+}
 export const ICON_PALS = {
   ...Object.fromEntries(Object.entries(PAL).map(([k, v]) => [k, v.map(css2rgb)])),
   better: ramp(0x62d36e), worse: ramp(0xe0584e), line: ramp(0xb6a8d8),
+  ...Object.fromEntries(Object.keys(PAINT_ART).map((k) => [`paint.${k}`, paintRamp(COLOR[k] ?? 0xbfe9f2)])), // (Clean: a pale water)
 };
 
 const CACHE = new Map(), GRIDS = new Map();

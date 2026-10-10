@@ -54,6 +54,8 @@ import { seaChartStage } from './seachartstage.js';
 import { shipStage } from './shipstage.js';
 import { mountStage } from './mountstage.js';
 import { encounterStage, ENCOUNTER_STAGE_IDS } from './encounterstage.js';
+import { lachrymaStage, LACHRYMA_STAGE_IDS } from './lachrymastage.js';
+import { figmentTelegraphStage, FIGMENT_TELEGRAPH_STAGE_IDS } from './figmenttelegraphstage.js';
 import { strainBed } from '../vfx/garden/strains.js';
 import { lekythos } from '../vfx/garden/lekythos.js';
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
@@ -61,10 +63,12 @@ import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 export function buildStage(id, game) {
   let obj = null;
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
+  if (FIGMENT_TELEGRAPH_STAGE_IDS.includes(id)) return figmentTelegraphStage(id); // (the Figment attack telegraphs' marks and glyphs: workbench/figmenttelegraphstage.js)
   if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
   else if (id === 'ships:classes') obj = shipStage(game); // (the five hulls in echelon: workbench/shipstage.js)
   else if (id === 'ships:mounts') obj = mountStage(game); // (a mount's preview on a moored sloop and frigate: workbench/mountstage.js)
   else if (ENCOUNTER_STAGE_IDS.includes(id)) obj = encounterStage(id, game); // (the encounters at sea as filmed: workbench/encounterstage.js)
+  else if (LACHRYMA_STAGE_IDS.includes(id)) obj = lachrymaStage(id); // (the oxidation ramp: baubles and slicks, workbench/lachrymastage.js)
   else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;

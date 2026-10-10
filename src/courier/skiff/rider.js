@@ -11,18 +11,21 @@
 //   THE OLLIE Skiff_Ollie cut in three: its crouch played by the hop's charge, its pop and rise as the hop leaves, its peak held while
 //             airborne (a crest, a geyser), its landing played when the board lands. Its own lift is taken off the hips (the feet stay on
 //             the deck: the hop's physics carries the body, casebook rule 19)
+//   THE GLIDE Space held in the air: the suite's Air_Glide over the upper body (arms out as wings), by `glide` (0..1, skiff.js's
+//             wings); the boat's half of Skiff_Glide is the oars swung out (boat.js SKIFF_GLIDE)
 //   PHASES    Skiff_Summon, Skiff_Mount, Skiff_Dismount, Skiff_Recall, Skiff_Bail (then the UAL get-up from the sand): the whole body
 //
 // Prior art: SSX's and Jet Set Radio's board stances (a carve as a held lean, a grab as a held air pose), Tony Hawk's ollie cut into
 // crouch, pop, air and land, and Wind Waker's sail hoisted hand over hand.
 //
-//   const R = new Rider(ch)   R.ride(base, w, s, dt)   (s: { t, speed, steer, L, hoistDir, furling, flaring, charge, air, popT, landT })
+//   const R = new Rider(ch)   R.ride(base, w, s, dt)   (s: { t, speed, steer, L, hoistDir, furling, flaring, charge, air, popT, landT, glide })
 //   R.phase(base, clip, t, w)   R.lift(clip, t)  the clip's feet above their first frame's (m)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const damp = THREE.MathUtils.damp, smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const OLLIE = { crouch: 0.23, pop: 0.27, peak: 0.45, land: 0.73 }; // (Skiff_Ollie's moments, clip seconds: frames 8, 9, 14, 23)
+const GLIDE = { clip: 'Air_Glide', w: 0.85 }; // (the glide's upper body: the suite's glide (courier/moves/jets.js's hover wears it too), short of all of it so the stance shows through)
 const lifts = new Map();
 
 export class Rider {
@@ -89,6 +92,13 @@ export class Rider {
       C.sample('Skiff_Ollie', this.ot, B, false);
       B.p[1] -= this.lift('Skiff_Ollie', this.ot); // (the feet stay on the deck: the hop lifts the body, not the clip)
       C.blend(A, B, this.ollieW);
+    }
+    // the glide (Skiff_Glide's body): the suite's Air_Glide, arms out as wings and leaning into the air, over the upper body only; the
+    // ollie's held peak keeps the legs, so the feet stay on the deck (casebook rule 19). The rider faces over the side, so the arms
+    // spread along the board, fore and aft, as a board rider's do on a wave, while the oars spread over the sides (boat.js SKIFF_GLIDE)
+    if ((s.glide || 0) > 0.01 && C.clips[GLIDE.clip]) {
+      C.sample(GLIDE.clip, s.t, B, true);
+      C.blend(A, B, s.glide * GLIDE.w, this.ch.MASK_UPPER, 0);
     }
     C.blend(base, A, w);
   }

@@ -72,7 +72,7 @@ function legacyPool(fx, pool, shape) {
     emit(o) {
       const P = fx.vfx?.[pool]; if (!P) return; // (before the VFX system is up, at boot: nothing to draw yet)
       const y = o.pos.y;
-      P.emit({ pos: o.pos, vel: o.vel, life: o.life || 0.5, size: o.size ?? 0.1, sizeEnd: o.sizeEnd, color: o.color ?? 0xffffff, alpha: o.alpha ?? 1, alphaEnd: 0,
+      P.emit({ pos: o.pos, vel: o.vel, life: o.life || 0.5, size: o.size ?? 0.1, sizeEnd: o.sizeEnd, color: o.color ?? 0xffffff, colorEnd: o.colorEnd, alpha: o.alpha ?? 1, alphaEnd: 0,
         drag: o.drag ?? 1, gravity: o.gravity ?? 0, twinkle: o.twinkle || 0, shape,
         floor: o.floor ?? (y < BASE_FLOOR - 5 ? -1e9 : y < -2 ? BASE_FLOOR + 0.02 : 0.02) });
     },
@@ -280,7 +280,11 @@ export class FX {
     }
   }
 
-  shockwave(center, radius) {
+  /** A shockwave out of a feat of the Courier's power: Lachryma's ring (the library's `shock`: crude's ink and the oil film's bands, its
+   *  hue walking as it goes out), its reach `radius`; `phase` turns the film (successive shocks differ). Without the VFX system (a bare
+   *  page), the old flat ring. */
+  shockwave(center, radius, { phase = Math.random() } = {}) {
+    if (this.vfx) { this.vfx.play('shock', { pos: center, scale: 0.2 + Math.max(0.1, radius), phase }); return; }
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 32), new THREE.MeshBasicMaterial({
       color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     ring.position.copy(center);

@@ -12,7 +12,8 @@
 //      ride's bob, carve, flare and Ollie)
 //   2. the code's word, absolute (what Wind Waker's boat showed, from its screenshots and write-ups): the boom to leeward, wider with
 //      the wind behind; the sail hoisted as far as L (always L's: the summon ends furled, as the ride starts); its belly, full or
-//      luffing; the pennant streaming where the wind goes, quick and tight in a strong wind, drooping in a light one
+//      luffing; the pennant streaming where the wind goes, quick and tight in a strong wind, drooping in a light one; in a glide the
+//      oars swung out as wings (SKIFF_GLIDE, the Skiff_Glide pose, by `wings`)
 //   3. the range of motion last (courier/anim/rom.js SKIFF_ROM)
 //
 // Built as one Group in its own frame (+Z bow, +X to the left, Y up, origin at the deck), so the whole skiff, and the rider standing on
@@ -20,7 +21,7 @@
 // the Dunes, or as the trailer begins), its bytes a chunk of their own until then, so a session that never goes there never holds
 // them; until it is parsed and its materials compiled the boat is not drawn, and nothing else waits on it.
 //   const skiff = new Skiff(scene);   skiff.load(game)  (a promise; again: the same one)   skiff.ready
-//   skiff.set({ sail, side, fill, boom, glow, t, speed })   // per frame: what the sail is doing
+//   skiff.set({ sail, side, fill, boom, glow, t, speed, wings })   // per frame: what the sail is doing (wings 0..1: the glide)
 //   skiff.placePennant(windDir, strength, t)                 // per frame, once the group is placed
 //   skiff.pose(rider, s) or skiff.posePhase(clip, t)         // after the rider is posed (skiff.js animate)
 //   skiff.group.position / .quaternion                       // where it is
@@ -52,6 +53,21 @@ const BELLY = [0.27, 0.22, -0.14];
 const C = { rope: 0xe9d4a4, energy: 0xffc65c };
 const Zax = new THREE.Vector3(0, 0, 1), Xax = new THREE.Vector3(1, 0, 0);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3();
+// SKIFF_GLIDE: the glide's pose of the boat (Space held in the air; the owner's R8: "a Skiff_Glide pose, oars out as wings"). The oars
+// trail aft at rest (their local Y), hinged about the beam (local X: the clips' fold, Skiff_Summon's 1.37 rad) and turned about the
+// boat's up (local Z); for the glide each is swung out over its own side (`spread`, from dead aft), lifted to a dihedral (`lift`: a
+// glider's wings in a shallow V, steadier than flat) and its blade rolled flat to the air (`roll`). Judged from the Dunes, front and
+// side, against the Ollie's 0.39 rad stand-in it replaces. Prior art: the King of Red Lions' and the Deku Leaf's spread in Wind
+// Waker, a hang glider's dihedral, a gull's flexing primaries (`flex`, rad, at `flexRate` rad/s).
+export const SKIFF_GLIDE = { spread: 1.22, lift: 0.3, roll: 0.5, flex: 0.045, flexRate: 3.1 };
+/** An oar's Skiff_Glide rotation: its rest, swung out (side +1 the left oar, out to +X), lifted and rolled, in its own frame. */
+function glideOar(rest, side) {
+  const q = rest.clone();
+  q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -side * SKIFF_GLIDE.spread));
+  q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), SKIFF_GLIDE.lift));
+  q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), side * SKIFF_GLIDE.roll));
+  return q;
+}
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
 // the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do): the Vessoul's painted material,
@@ -153,11 +169,11 @@ export class Skiff {
     this.emit.frustumCulled = false;
     this.bone.hull.add(this.emit);
     this.P = new BoatPose(gltf.animations, bones);
-    // the glide's wings: the oars as the Ollie clip spreads them widest (0.58 s in), held while gliding (skiff.js; Calissa's own glide
-    // clip, when there is one, takes its place)
-    const f = this.P.sample('Skiff_Ollie', 0.58, this.P.A, false);
-    this.wingQ = Object.fromEntries(['oar_shoulder.L', 'oar_shoulder.R'].filter((n) => this.P.index[n] != null).map((n) => [n, new THREE.Quaternion().fromArray(f.q, this.P.index[n] * 4)]));
     this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
+    // the glide's wings: Skiff_Glide's oars, each its rest turned by the pose (SKIFF_GLIDE), held while gliding (skiff.js `wings`). The
+    // bones by their names in three.js, which drops the dot of Blender's `oar_shoulder.L` (PropertyBinding.sanitizeNodeName, as `doorL`):
+    // asked for with the dot, the stand-in found neither and the glide spread nothing (CASEBOOK, 2026-10-09; rule 168)
+    this.glideQ = Object.fromEntries(['oar_shoulderL', 'oar_shoulderR'].filter((n) => this.P.index[n] != null).map((n) => [n, glideOar(_q.fromArray(this.rest(n)), n.endsWith('L') ? 1 : -1)]));
     this.rom = new JointLimits();
     for (const [name, spec] of Object.entries(SKIFF_ROM)) { const b = this.bone[name]; if (b) this.rom.add(b, _q.fromArray(this.rest(name)), spec); }
     this.group.add(model);
@@ -266,8 +282,14 @@ export class Skiff {
         prev = slope; prevD = d;
       }
     }
-    // the glide: the oars spread as wings, by how far into the glide (this.wings 0..1, set by skiff.js)
-    if (this.wings > 0.001 && this.wingQ) for (const n in this.wingQ) B[n].quaternion.slerp(this.wingQ[n], this.wings);
+    // the glide (Skiff_Glide): the oars swung out as wings, by how far into the glide (this.wings 0..1, set by skiff.js), each tip
+    // riding the air a little (a slow flex, the right a beat behind the left, as a gull's primaries do)
+    if (this.wings > 0.001 && this.glideQ) {
+      for (const n in this.glideQ) {
+        const side = n.endsWith('L') ? 1 : -1, flex = SKIFF_GLIDE.flex * Math.sin(t * SKIFF_GLIDE.flexRate + (side > 0 ? 0 : 1.1));
+        B[n].quaternion.slerp(_q.copy(this.glideQ[n]).multiply(_q2.setFromAxisAngle(Xax, flex)), this.wings);
+      }
+    }
     this.rom.apply();
   }
 }
