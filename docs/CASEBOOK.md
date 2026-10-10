@@ -487,8 +487,69 @@ the rules before building in the same area; a rule a machine can check goes into
 177. **A shell drawn from a body's geometry takes what bends the body.** An inverted hull (the parry mark, any outline) made from a mesh
     whose vertex shader moves it (a jelly's squash, a skin) is given the same bend, or it draws the rest shape. Judged in the pose that
     bends the most. A uniform a bend reads defaults to doing nothing: a `Vector4()` is (0, 0, 0, 1), not zero.
+178. **A knee or an elbow bends on its hinge.** A clip retargeted by bone direction, a blend or an IK solve can bend a shin or a forearm
+    sideways or back off its hinge with every joint where it should be: measure the lower bone's swing off its rest hinge, its twist
+    taken out first (never the joints' places), in game, in every state. Square it by turning the upper bone about its own length (the
+    joints stay), at a joint's own speed and within its own range; past the range, keep the hinge and let the wrist or ankle move.
+179. **What lets go eases out, and is not caught again in the same breath.** A foot lock let go by distance waits for the cycle to lift
+    that foot; a weight that swaps one whole pose for another (the idle for the run) moves at its own pace, never at the pace of a speed
+    that crosses its band in a frame.
+180. **A clip's travel comes out in its own frame, before anything turns it.** In place, then unturned: turned first, the travel is turned
+    and then taken off unturned, and the body is thrown twice the travel off the capsule.
 
 ## Cases
+
+### 2026-10-10 · Knees and elbows bent off their hinge (the owner: "joints pointing the wrong way"; the locomotion pass)
+
+- **Seen:** the owner, 2026-10-10: joints pointing the wrong way. In game, every tool off, front and side
+  (`docs/ART.md` section 10's states): the upright idle's right forearm angled out from the elbow; Trav_WallJump's knees out to the sides
+  and its shins bent sideways under them; the slide's tucked knee. Measured on the in-game Courier (`character.animate` and `poseHands`,
+  a synthetic state for each of 20 states of the core movement, 14,012 knee and elbow frames): 2,773 more than 20 degrees sideways off
+  the hinge or bent back past straight (the jog 354 of 684, the strafes 326 and 316, the slide 217, the wallrun 163).
+- **Cause (measured):** the clips, then the IK. Each shin's and forearm's turn against its rest, its twist about its length taken out:
+  of the 9,504 limb frames of the Loco_, Air_ and Trav_ clips, 2,123 bend more than 20 degrees sideways and 212 back past straight
+  (Trav_WallJump's knees 125 and 131, Trav_LadderClimb's 123, Loco_LandHard's 102, Trav_SlideLoop's left 86; Loco_IdleFem's right elbow,
+  the upright idle's arm, 30 out and 26 back in every frame). In the worst, the thighs' and shins' twist is exactly 0: the suite (and the
+  UAL pack before it, whose jog's elbows reach 59) was retargeted by bone direction, never turning a bone about its length, so where the
+  capture's thigh or upper arm was turned the lower bone reached its direction off its hinge. The rig's hinge is the lower bone's rest X
+  (the walk's knees and elbows turn about it, 2 to 113 degrees, 20 at most off it). After the clips, the IK bent more: the strafe's knees
+  re-solved toward the pole (101 degrees off), the wallrun's wall hand's elbow (163 degrees off).
+- **Fix:** the hinge repair (`courier/anim/hinges.js`, glossary): the upper bone turned about its own length until the lower's hinge is
+  square to the bend, the joints kept; in each clip of the set being polished as it is decoded (`suite.js`, HINGED: Loco_, Air_, Trav_,
+  the old swim and tread), and every frame on the posed body after the knee guard, before the joint limits (`character.js` poseHands:
+  the legs always, the arms while the hands are empty). The turn changes at most 360 degrees a second in a clip (720 posed): held, a
+  near-straight limb's plane wheeled round faster than the limb (Loco_IdleMasc's elbow 13.5 degrees a frame raw, 54.8 squared unheld,
+  16.6 held); past the upper's range (a thigh 90, an upper arm 100) a clip's lower stays on its hinge and the wrist or ankle moves. The
+  upright idle's right arm is now its left's mirror (`idlebreak.js` IDLES.baked `mirror`). After: the clips 63 sideways and 1 bent back
+  of 9,504; in game 91 of 14,012, 85 of them the wallrun's wall hand in the harness's own wall (a real wall not tried); no clip's fastest
+  limb step grew 5 degrees or more; every loop's last frame still its first; 23 ms at boot for the 16 clips decoded then (node).
+- **Rule:** 178 (new).
+
+### 2026-10-10 · A start snapped a foot and swapped the body in a frame (found measuring the locomotion pass)
+
+- **Seen:** headless, a start from standing to the sprint at the ground's accel (55 m/s2): a planted foot jumped 30 to 38 cm in one
+  frame, twice in the start; every joint went from the idle to the run in one frame (the right upper arm 72 degrees in a frame with the
+  repaired idle, 20 before it).
+- **Cause (measured):** the foot lock let a foot go when the body had run 0.35 m off it, and caught it again on the next frame at the
+  clip's foot, the cycle still calling it planted: the eased position to the clip's in one frame. The idle's share is read from the gait
+  speed, which passes 0.5 m/s, the whole idle-to-walk band, in one frame at that accel.
+- **Fix:** a lock let go stays let go until the cycle lifts that foot (`character.js` footIK, `lock.lost`): the same start's foot 12 to
+  15 cm a frame over five frames, eased. The idle's share moves at most a whole in `START_SWAP` (0.15 s), the loops scaled into the
+  rest: the start's largest joint step 26 degrees (the right upper arm, with the idle's arm mirrored).
+- **Rule:** 179 (new).
+
+### 2026-10-10 · The kick-off threw the body 1.1 m ahead of the capsule (found laying it on the wall jump)
+
+- **Seen:** headless, a jump off a wallrun with the kick-off laid on: the body drawn off the Courier's place, ahead of it (front view, 0.3
+  s into the kick).
+- **Cause (measured):** `airborne.js` turned Trav_WallJump back (`unturn`, its half turn taken out, the hips' offset turned with it) and
+  then took its travel out (`inPlace`, the hips' 0.55 m back from the clip's first frame, unturned): at the half turn the travel was
+  turned to ahead and taken off again, 1.1 m, at the kick's full weight until 0.35 s. Every kick-off from a ladder, a ledge, a pole, the
+  latch or a grate since it was laid.
+- **Fix:** in place first, then unturned: through the kick the hips stay 0.01 to 0.03 m off the body's place. And a jump off a
+  wallrun's wall (3 m/s up in a frame while the wall holds them) now plays the kick-off over the air loop; it had played the ground jump's
+  crouched spring once the wall let go.
+- **Rule:** 180 (new).
 
 ### 2026-10-10 · The parry mark said "now" a quarter second after V already answered (the owner: "more apparent ... that you're in the window")
 

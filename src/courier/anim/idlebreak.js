@@ -49,9 +49,10 @@ export const IDLES = {
   /** The idles baked at load (stances.js bakeClip), by their clip names. UPRIGHT: Loco_IdleC's body (the straightest and stillest of the
    *  seven) with Loco_IdleFem's arms hung at the sides, stretched to its loop and their swing halved; its last two frames pop to meet the
    *  first (10.5 degrees at the right shoulder, 1.2 to 1.7 along the spine and head, where its other steps are 0.3), so they are dropped
-   *  and the loop closed. */
+   *  and the loop closed. `mirror`: those bones taken from the pose mirrored (Character.mirrorPose): Loco_IdleFem's right elbow is bent
+   *  30 degrees out and 26 back off its hinge in every frame (hinges.js), its left is clean, so the right arm is the left's mirror. */
   baked: {
-    'idle:upright': { base: 'Loco_IdleC', closeLoop: 2, overlay: [['Loco_IdleFem', ARMS]], exaggerate: [0.5, ARMS] },
+    'idle:upright': { base: 'Loco_IdleC', closeLoop: 2, overlay: [['Loco_IdleFem', ARMS]], exaggerate: [0.5, ARMS], mirror: `${ARMS}.*R$` },
   },
   /** What a chooser shows (the kiln's), as docs/plans/CLARITY.md asks of a table: `name` the label, `does` one line, verb first; each a
    *  placeholder for Espada (the player's words are hers). */
@@ -81,13 +82,29 @@ export const IDLE = {
 
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 
+/** The bones a pattern names, in every frame of clip c, taken from that frame mirrored (the other side's, reflected: ch.mirrorPose). */
+function mirrorBones(ch, c, pattern) {
+  const C = ch.clips, nb = C.nb, re = new RegExp(pattern), a = C.pose(), b = C.pose();
+  for (let f = 0; f < c.n; f++) {
+    a.q.set(c.q.subarray(f * nb * 4, (f + 1) * nb * 4)); a.p.set(c.p.subarray(f * 3, f * 3 + 3));
+    ch.mirrorPose(a, b);
+    for (let i = 0; i < nb; i++) if (re.test(C.bones[i])) c.q.set(b.q.subarray(i * 4, i * 4 + 4), (f * nb + i) * 4);
+  }
+}
+
 export class IdleBreaks {
   constructor(ch) {
     this.ch = ch; this.C = ch.clips;
     this.stillT = 0; this.n = 0; this.brk = null; this.bt = 0; this.bw = 0; this.cutW = 0;
     this.alertW = 0; this.p = this.C.pose();
     this.stand = IDLES.default; this.was = null; this.swapW = 0; this.underW = 0; this.layerT = 9;
-    for (const [name, S] of Object.entries(IDLES.baked)) if (!this.C.clips[name]) { const c = bakeClip(this.C, S); if (c) this.C.clips[name] = { ...c, name }; }
+    for (const [name, S] of Object.entries(IDLES.baked)) {
+      if (this.C.clips[name]) continue;
+      const c = bakeClip(this.C, S);
+      if (!c) continue;
+      this.C.clips[name] = { ...c, name };
+      if (S.mirror) mirrorBones(ch, this.C.clips[name], S.mirror);
+    }
   }
 
   get playing() { return this.brk; }

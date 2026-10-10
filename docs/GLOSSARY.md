@@ -381,6 +381,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **event** (`game.events`) — a message on the bus, named `domain.verb`; its payload never uses `name` or `t`, and an outcome carries `by`.
 - **rescue** (`courier.rescue`, `Player.guard()`) — the body's safety net taking it out of a bad state, counted by the stress test, never hidden.
   *Not:* the cutlass's guard.
+- **the hinge repair** (`repairHinges`, `LimbHinges`, `src/courier/anim/hinges.js`) — knees and elbows squared to their hinge, in a clip as it is
+  decoded and on the posed body after IK; the joints stay where they were. *Not:* the joint limits (`anim/rom.js`).
 - **tag** (`src/core/tags.js`) — what a tool may do to a thing and what it is made of.
 - **module / division / round / the gate** — a file under `src/`; one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada); one
   cycle of work (R42...); Petra's review of every push to main. → detail
