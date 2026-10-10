@@ -48,7 +48,7 @@ export class BuskerMat {
     for (const sz of [-1, 1]) for (let i = 0; i < 9; i++) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.006, 0.07), fringe); f.position.set(-w * 0.8 + (i / 8) * w * 1.6, 0.012, sz * (l + 0.03)); body.add(f); }
     // the tip pot at a corner: the Jar's silhouette, hand-sized
     const pot = new THREE.LatheGeometry(JAR.map(([u, rr]) => new THREE.Vector2(Math.max(0.001, rr * 0.09), u * 0.22)), 14);
-    const clay = new THREE.MeshStandardMaterial({ color: 0xb5532d, roughness: 0.6, side: THREE.DoubleSide });
+    const clay = new THREE.MeshStandardMaterial({ color: 0xb5532d, roughness: 0.6, side: THREE.DoubleSide, shadowSide: THREE.BackSide }); // (its shadow cast as every one-sided caster's: a two-sided caster's depth program was compiled in play, the first time the Weir's mat came into the sun's shadow)
     const potM = new THREE.Mesh(pot, clay); potM.position.set(w * 0.62, 0.015, l * 0.72); potM.castShadow = true; body.add(potM);
     const lip = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.008, 5, 14), new THREE.MeshStandardMaterial({ color: 0xf2c14e, metalness: 0.6, roughness: 0.35 })); lip.rotation.x = Math.PI / 2; lip.position.set(w * 0.62, 0.015 + 0.22, l * 0.72); body.add(lip);
     mergeStatic(body);
