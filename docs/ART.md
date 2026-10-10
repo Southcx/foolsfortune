@@ -230,13 +230,13 @@ Every clip below is the Courier's suite (`source_assets/Courier/courier_anims_mo
 `courier_base_rigged.blend` holds no clips, only a camera rig's and one held pose), its knees and elbows put on their hinge as it is
 decoded and the posed body squared again after IK (the hinge repair, `courier/anim/hinges.js`). The gait shares one phase (each loop's
 left heel strike at phase 0) and plays at the ground speed over the loop's own (measured from its planted foot: walk 0.77 m/s, jog
-4.81, sprint 4.43, the sneak 0.40), part longer strides (to 1.65x walking, 1.3x running, 1.15x sneaking), the rest cadence; planted
+4.81, sprint 4.43, the prowl 0.61), part longer strides (to 1.65x walking, 1.3x running, 1.4x prowling), the rest cadence; planted
 feet lock. The skid stop and the half turn are one-shots over it (`courier/anim/stopturn.js`), the hips' travel out in the clip's own
 frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the speeds and the body's yaw.
 
 | state | clip | blend |
 | --- | --- | --- |
-| idle | `idle:upright` (Loco_IdleC's body, Loco_IdleFem's left arm and its mirror); under a tool's layer `idle` (Loco_IdleMasc); fighting Loco_IdleAlert; breaks Loco_IdleLookAround, Loco_IdleStretch, Loco_IdleShiftTap | into the walk by 0.5 m/s, the idle's share at most a whole in 0.15 s (a start); breaks in 0.5, out 0.6, cut 0.15; alert 3/s |
+| idle | `idle:upright` (Loco_IdleC's body, Loco_IdleFem's left arm and its mirror); under a tool's layer `idle` (Loco_IdleMasc, its left hand's flick held out); fighting Loco_IdleAlert; the Bs: breaks Loco_IdleLookAround, Loco_IdleStretch, Loco_IdleShiftTap, and an idle's own captured loop (below) | into the walk by 0.5 m/s, the idle's share at most a whole in 0.15 s (a start); a B after a random 4 to 5 of the idle's loops still (the owner, 2026-10-10); breaks in 0.5, out 0.6, cut 0.15; an own B in step with A, in and out 0.25; alert 3/s |
 | walk | `walk` (Loco_WalkMasc) | 0.5 to 2.4 m/s |
 | run | `jog` (Loco_RunMasc) | smoothstep from the walk, 2.4 to 3.4; whole at 4.2 |
 | sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
@@ -244,7 +244,8 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
 | skid stop (new) | Loco_SprintStop from its brace (0.07 s) at 1.15x, in place: when the speed falls under 4 m/s within 0.25 s of 5.6 m/s or more, still heading within 20 degrees of the sprint (a stop, or a reversal on its way through zero) | in 0.08; out as it stands (its 0.72 to 0.95 s); cut over 0.12 s when the move picks up 1.2 m/s again or the ground, a crouch, slide, mantle or dash takes over; not in first person |
 | half turn (new) | Loco_Turn180, its frame the one whose hips have turned as far as the body (time-warped onto player.js's turn; at its own pace once the body is round), in place and unturned, mirrored for a turn to the right; to 0.7 s (its frame 22 is its first again) | on a reversal: the move over 100 degrees behind, from 3 m/s or more through under 1.5 within 0.3 s, the body turning to it at 1.5 rad/s or more; in 0.06, out 0.42 to 0.58 s (the run back on the legs as the body faces the move); the skid gives way to it; its feet planted only under 1 to 3 m/s (the capsule is back at a run 0.08 s after the reversal) |
-| crouch | Loco_CrouchIdle; moving, Loco_SneakWalk (new: Loco_CrouchWalk had played at 3.6x its pace and read as lunges) by 0.5 m/s | the idle at 0.8 of the crouch's weight, the sneak whole once moving, on the shared phase; the sneak stands as tall as the walk, so the foot IK lets the body down 0.38 m (posed top 1.45 m, under the basement tunnel's 1.5) and its strides go to 1.15x, the rest cadence |
+| crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
+| crawl (new, its body to come) | Loco_CrawlEnter, Loco_Crawl (hands and knees), Loco_CrawlProne (the belly), Loco_CrawlExit (`CRAWL`, `courier/anim/crawl.js`) | while `s.crawl` (player.js has no body for it yet: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md); down by the enter from its squat (0.2 s in) when crouched, faded in 0.15; the loops on their own phase at the move's speed over theirs (0.29 and 0.39 m/s), strides to 1.3x; `s.prone` blends to the belly; up by the exit to its squat (0.4 s) or standing (0.64); the foot IK, the reach drop, the knee guard and the prowl's head give way to it. Posed top 1.05 m (hands and knees), 0.74 (belly) |
 | jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
 | off a ledge | Air_JumpLoop from 0.5 s | 0.25 |
 | fall | Air_FallLoop past 5 m/s down after 0.45 s in the air | 0.35 |
@@ -257,8 +258,39 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | air dash | Air_AirDash, AirDashL, AirDashR, AirDashBack by the dash's direction | from 0.1 s at 1.5x through the dash |
 | ladder, swim | Trav_LadderClimb, Trav_LadderIdle, Trav_LadderEnter; the old pack's swim and tread | the techs' own (moves/ladder.js, moves/swim.js) |
 
-In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_CrouchWalk
-(the crouch's old loop, out of the core pack since the sneak took its place). Loco_SprintStop, Loco_Turn180 and Loco_SneakWalk moved
-into the core pack (2026-10-10: core.bin 2,920,462 to 2,950,390 bytes, 161 to 163 clips). The sneak is an upright tiptoe sneak (its hips
-at the walk's height, 0.40 m/s of its own): at the crouch's 2.2 m/s it plays at 4.8 times its cadence, short-stepped and low, not the
-long low strides that read as lunges.
+In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_SneakWalk
+and Loco_CreepSideR. Loco_SprintStop and Loco_Turn180 moved into the core pack (2026-10-10: core.bin 2,920,462 to 2,950,390 bytes, 161
+to 163 clips); then the prowl round (2026-10-10): Loco_CrouchWalk and the four crawl clips in, Loco_SneakWalk out (core.bin to
+3,004,786 bytes, 167 clips).
+
+**The prowl** (the owner, 2026-10-10: "a hunting, predatory sort of movement, like a lion prowling. Note that felines have a very still
+head"). The three crouched loops rendered at the crouch's 2.2 m/s, every tool off, front and side, the head measured in the world against
+the capsule (bob up and down, sway side to side, its turn's speed):
+
+| loop at 2.2 m/s | its own speed | head bob | sway | turn, mean / fastest |
+| --- | --- | --- | --- | --- |
+| Loco_SneakWalk, let down 0.38 m (the crouch to now) | 0.40 m/s, 4.8x its cadence | 19 cm | 56 cm | 1,448 / 2,731 degrees a second |
+| Loco_CreepSideR (a sidestep creep) | 0.32 | 15 | 38 | 712 / 1,824 |
+| Loco_CrouchWalk, as it is | 0.61 | 8.5 | 11 | 23 / 36 |
+| the prowl: Loco_CrouchWalk, the head held | 0.61, 1.4x strides | 3.0 | 4.1 | 3 / 6 |
+
+The sneak's head swings with its tiptoe at any pace, and its cadence multiplied it (casebook rule 187). The head held is a cat's: its turn
+in the body's heading frame followed slowly (2.5/s) and levelled to a gaze 10 degrees below the horizon, shared up the neck (spine004 a
+quarter, spine005 three tenths, the head the rest, each capped at 22, 20 and 30 degrees off the clip), before the aim's look; after the
+feet, its place against the capsule followed slowly (2/s) and the neck's base swung to hold it there (0.85 of the way). A turning prowl
+(1.2 rad/s): bob 3.0, sway 4.1, the head turning with the body at 69 degrees a second. The first-person eye rides the posed head while
+crouched (player.js), so it is as still.
+
+**The idles' A and B** (the owner, 2026-10-10: "A should play 4x to 5x more often than the B"). A is the standing idle's loop; a B a
+break, or an idle's own gesture held out of its loop (`IDLES.calm`, idlebreak.js: the bones' frames bridged, the loop as captured kept as
+`<clip>:B`). Measured over 20 real minutes of standing: upright (4.0 s loop) 4.45 of its loops a B (4.0 to 5.0), braced (2.5 s) 4.52,
+weightShift (5.0 s) 4.46 (3.7 to 5.3: its own B waits for its loop to begin). Per idle:
+
+| idle | A | B |
+| --- | --- | --- |
+| upright, akimbo, hipCocked, handsBehind, armsDown | the loop | the three breaks in turn |
+| braced (Loco_IdleMasc, and IDLE.under) | the loop, the left hand's flick held out (frames 14 to 56): the hand off the chest 13.4 cm/s mean, 51 fastest, to 9.6 and 16; the index finger 344 degrees a second to 3 | the breaks (the flick is gone: the owner's ask) |
+| weightShift (Loco_IdleD) | the loop, the right hand's throw held out (frames 29 to 133): 37 cm/s mean, 2.1 m/s fastest, to 7.4 and 20 | `Loco_IdleD:B` (the throw, as captured) and the breaks, in turn |
+| restless (Loco_IdleE) | itself: never still, its B is what it is | the breaks |
+
+The stances baked over braced keep its left arm (the Crucibelle's and the Soul Brush's, at 1.4x): their left hands are as calm.
