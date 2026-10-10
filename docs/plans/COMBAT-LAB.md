@@ -90,8 +90,8 @@ reading a body's tell rather than a mark; that a window is short and late; that 
   tiles it covers; the striker's press a cream pip under the tile it fell on (early, late or in, at a glance). Prior art: Street Fighter
   6's frame meter, which is the strip, not its colours (the house's own). First laid behind Strawman: his body hid it from the striker's
   place, so it lies in front.
-- **The mirror** (an extra, built as a stand-in): a long glass on the west wall in a dark wood frame, a dance studio's; silvered grey with
-  the cartoon mirror's glints so it reads as a mirror before it reflects. The reflection is a second render: see section 7.
+- **The mirror** (an extra): a long glass on the west wall in a dark wood frame, a dance studio's; silvered grey with the cartoon
+  mirror's glints, and a real mirror while the Courier is inside the bales (a second render: see section 7).
 - **The lectern** (still the shut book's stand-in; built as a mechanic): F opens its page, set aside to the left so the circle stays in
   view (`indexmenu.showPage`, `aside`): the four strings and None (section 6), and in DEBUG the tempo (1x, 0.5x, 0.25x). Picking a
   string closes the page and says it in the log (`strawman.string`); the tempo is said too (`strawman.tempo`).
@@ -220,12 +220,13 @@ before a strike (the window and a press's quarter second), so a shorter wind-up 
 ## 7. The extras
 
 - **The frame meter**: built as a stand-in (section 2). Cheap to light later: one strip of tiles, its colours set per tile.
-- **The mirror**: built as a stand-in. A real reflection is a second render of the room from the mirror's side, so its cost is the room's
-  own: the frame from the striker's place in the ring is 85 draw calls and 38,534 triangles (measured, section 9), so a reflection of the
-  testroom zone alone adds about that again, about 170 in all, well inside the 450 budget; the triangles are cheap at a low resolution.
-  Proposed so it costs only when it is worth it: a low-resolution render (a quarter of the 480 lines) of the testroom zone alone, from a
-  camera mirrored in the glass, drawn only while the Courier is inside the bales; off otherwise, and never with the Workshop's zone in it.
-  Petra's to accept (the present, `render/present.js`, is hers).
+- **The mirror**: built (2026-10-10, Calissa; the owner approved it, Petra told): the sparring mirror, `vfx/sparringmirror.js`. A second
+  render of the testroom zone alone (never the Workshop's, no world marks: no sprite, chevron, reticle, Figment telegraph or compass), from
+  the eye mirrored in the glass through the glass's own corners (its near plane on the glass), into a target of 120 lines (a quarter of
+  the 480) spent on the glass alone; drawn only while the Courier is inside the bales and the glass is in view, every other frame above 45
+  frames a second, the shadow pass not repeated. Outside the bales the glass is the stand-in's dull glass. Measured from the ring facing
+  the glass: 118 calls / about 40,400 triangles with it off, 223 / 73,294 on a frame it is drawn and 118 on the next (SwiftShader 7.6 ms
+  off; 12.2 and 8.0 on); facing away 122 either way; one program more (`npm run perf`: 162 to 163), compiled at the warm-up.
 - **The tempo**: built (section 6): `game.time.slow('sparring.tempo', k)` while a string runs, Strawman's clock on the sim step.
 - **The juggle pen**: built: a fenced square of sand (6.6 by 6.6 m) under the hall's full 9 m, its gate toward the arcade. **For:** the
   launcher and the air string (the owner reported the launcher combo's aerial part). **Teaches:** the timing of the launcher's lift and

@@ -581,7 +581,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   is unbuilt; *not* the Index's lectern) and a debug chest: **the sparring circle** (Strawman in a ring of tamped clay bounded by straw
   bales, a sumo dohyo's; never "Strawman's ring": a ring is a homonym), with **the frame meter** (`frameMeter`: twenty tiles crosswise
   in its clay between Strawman and the striker, a tenth of a second each; no words or numbers) and **the sparring mirror** on the west
-  wall; **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
+  wall (`SparringMirror`, `mirrorPane`, `vfx/sparringmirror.js`: a real mirror while the Courier is inside the bales, the room drawn
+  again from the eye mirrored in the glass, bodies and never marks; the stand-in's dull glass outside them; *not* a mirage); **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
   "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
   12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (eleven **roly-polies**, Strawman's
   kin, each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's

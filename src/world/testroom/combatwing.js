@@ -25,7 +25,8 @@ import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { TR } from './layout.js';
-import { WING_COLOR, STATUS_BENCH_ORDER, lecternParts, strawRoly, parryPitcher, telegraphCaster, markTiles, statusPlaques, mirrorGlass } from '../../vfx/combatwingkit.js';
+import { WING_COLOR, STATUS_BENCH_ORDER, lecternParts, strawRoly, parryPitcher, telegraphCaster, markTiles, statusPlaques } from '../../vfx/combatwingkit.js';
+import { mirrorPane } from '../../vfx/sparringmirror.js';
 
 const flat = { outline: false, collide: false, shadow: false };
 const shell = { outline: false, shadow: false };
@@ -93,11 +94,11 @@ function buildStations(level) {
   const Fm = S.meter, pitch = Fm.len / Fm.tiles;
   level.box([S.x, 0.034, Fm.z], [Fm.len + 0.12, 0.004, 0.42], K.oxblood, flat);
   for (let i = 0; i < Fm.tiles; i++) level.box([S.x - Fm.len / 2 + pitch * (i + 0.5), 0.036, Fm.z], [pitch - 0.03, 0.008, 0.3], K.slate, flat);
-  // its mirror on the west wall (a frame of the dark wood; the glass a stand-in)
+  // its mirror on the west wall (a frame of the dark wood; the glass reflects while the Courier is inside the bales: vfx/sparringmirror.js)
   const Mi = W.mirror, fx = W.inner + 0.19, frame = { shadow: false, collide: false };
   for (const y of [Mi.y1 + 0.06, Mi.y0 - 0.06]) level.box([fx, y, Mi.z], [0.14, 0.12, Mi.len + 0.24], C.dark, frame);
   for (const s of [-1, 1]) level.box([fx, (Mi.y0 + Mi.y1) / 2, Mi.z + s * (Mi.len / 2 + 0.06)], [0.14, Mi.y1 - Mi.y0, 0.12], C.dark, frame);
-  const glass = mirrorGlass(Mi.len, Mi.y1 - Mi.y0); glass.position.set(W.inner + 0.16, (Mi.y0 + Mi.y1) / 2, Mi.z); dressed.push(glass);
+  const glass = mirrorPane(Mi.len, Mi.y1 - Mi.y0); glass.position.set(W.inner + 0.16, (Mi.y0 + Mi.y1) / 2, Mi.z); dressed.push(glass);
   // THE FIGMENT TELEGRAPH FLOOR: the screed, its oxblood border, the caster, the mark the Courier stands on
   const F = W.telegraphFloor, fcx = (F.x0 + F.x1) / 2, fcz = (F.z0 + F.z1) / 2, bw = 0.1;
   level.box([fcx, 0.017, fcz], [F.x1 - F.x0, 0.01, F.z1 - F.z0], K.screed, flat); // (grey stoneware slip: neutral, so every damage type's colour reads true on it; cream washed the marks' light fill out)

@@ -27,7 +27,8 @@
 //                    with a dab of slip (one, two, three: how far, counted, never a number: docs/ART.md precept 6). Opaque, lit like
 //                    the floor: the drill plate's glaze's program (a standard material with a map), none of its own.
 //
-//   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom)
+//   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom;
+//   .mirror, the combat wing's sparring mirror: vfx/sparringmirror.js)
 //   dressPaintRange(range)   (the paint range's stand-in marks given their look: geometry and material swapped, the meshes kept)
 //   quarryTile() tallyStroke()   (the stand's tile and a tally's stroke, painted once: the combat wing's marks wear them too, vfx/combatwingkit.js)
 //   LECTERN.projection   the dial's height over the pages, its print and its light (knobs)
@@ -37,6 +38,7 @@ import { mindLineMaterial, mindFillMaterial, mindTick } from './labradorite.js';
 import { mergeStatic } from '../render/merge.js';
 import { triplanar, surfaceTexture } from '../render/triplanar.js';
 import { PALETTE } from '../core/config.js';
+import { SparringMirror } from './sparringmirror.js';
 
 // the projection's measures (m, over the book's board; per real second): the page's top at the spine, the dial's height over it and its
 // size, its strokes, its print and its light
@@ -237,6 +239,7 @@ export class TestRoomDress {
   /** Once the room stands: each drill target's stand-in discs give way to a plate (its `bull` swapped, so its lit() still lights it). */
   update(raw = 1 / 60) {
     this.t += raw; this.lectern?.update(this.t);
+    (this.mirror ||= new SparringMirror(this.game)).update(raw); // (the combat wing's glass, a mirror while the Courier is inside the bales: vfx/sparringmirror.js)
     if (this.done) return;
     const D = this.game.testroom?.drills; if (!D?.targets) return;
     for (const t of D.targets) {
