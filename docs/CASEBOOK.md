@@ -457,8 +457,24 @@ the rules before building in the same area; a rule a machine can check goes into
     name's dots and other reserved characters (`oar_shoulder.L` is `oar_shoulderL`, PropertyBinding.sanitizeNodeName); a table of
     bones is keyed by the loaded names, and code that filters a rig's bones by name is judged by rendering the pose, never by its
     running without an error.
+169. **A uniform is the body's that wears it.** A shader's uniforms are objects handed over by reference: a second body dressed with
+    the first's set shows whatever happens to the first. Another Courier's rig (a sibling's, a guest's) takes its own set (fade,
+    dissolve, cracks) on the same program; prove it by changing the first and reading the second's uniform from the renderer.
 
 ## Cases
+
+### 2026-10-10 · A sibling wore the Courier's cracks (found building a sibling's shatter)
+
+- **Seen:** the Courier struck on the torso (its crack 0.58), a sibling called beside them showed the same cracks on its own torso:
+  its body material's `uDmg`, read from the renderer (`renderer.properties`), was `[0, 0.58, 0, 0, 0, 0]`, the Courier's numbers. A
+  guest's rig and a sibling waiting to be met were dressed the same way. A sibling could not crack, or be mended in gold, on its own.
+- **Cause (measured):** `courier/vessel/vessel.js` `dress` laid the kintsugi on every rig it dressed with the vessel's one `kinU`,
+  `{ own: true }` as well; the uniforms are shared objects, so every Courier model read the Courier's damage (`shared: true`).
+- **Fix:** a rig dressed `{ own: true }` keeps crack uniforms of its own (`ch.kinU`, made once at its first dressing); the Courier's
+  rigs keep the vessel's. One program still (the uniforms are the material's; the shader is the same). Measured after: the sibling's
+  `uDmg` all 0 with the Courier's torso at 0.58 (`shared: false`), and a sibling's shatter (vfx/siblingshatter.js) cracks and gilds
+  only itself.
+- **Rule:** 169 (new).
 
 ### 2026-10-09 · The skiff's glide spread nothing: the oars were asked for by their Blender names (the owner's R8, "it reads faintly")
 

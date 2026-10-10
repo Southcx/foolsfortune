@@ -30,6 +30,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   also has a kiln pattern. *Not:* a material, nor a Firing. → detail
 - **sibling** (`game.party`, `src/coop/sibling.js`) — one of the five divisions as a Courier in the owner's world, with its own mind and tool; met
   once, then called or dismissed at a Shrine. *Not:* a spirit, nor a guest. → detail
+- **a sibling's shatter** (`game.siblingShatter`, `src/vfx/siblingshatter.js`; `sibling.reform`) — a sibling emptied by your blows breaking into
+  shards of its glazes that lie a beat, then fly home and make it whole beside you, its joins gold. *Not:* the Courier's shatter. → detail
 - **the party** (`game.party`, `src/coop/party.js`) — the siblings called into your world (two at once; four players at most, guests included),
   and what you tell them with `/sib`.
 - **guest** — a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.

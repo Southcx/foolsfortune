@@ -63,6 +63,14 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   *Also, second copy in "The world":* **sibling** (`docs/plans/COOP.md`): one of the five divisions as a Courier in the owner's world (Dovina, Petra, Calissa, Wanda, Espada),
   with a mind, a temperament and a tool of its own; met once, then called or dismissed at a Shrine; steered by its division's session
   through the game's db. A **guest** is another person playing; the **party** is at most four. You **ask** a sibling (seconds) or send its division a **letter** (minutes). *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
+- **a sibling's shatter** (`game.siblingShatter`, `src/vfx/siblingshatter.js`, Calissa's): the Courier's shatter at a sibling's size, then
+  the way back. Its own cracks run over it (0.16 s, its rig's own crack uniforms: a sibling never wears the Courier's cracks); it bursts
+  (the Courier's dust, chips, Lachryma's ring and glitter) into 26 **shards** of its glazes, each a piece of a pot's wall (the glaze outside,
+  the bare clay inside and along the break), which scatter and lie, three in four glaze up; at 1.75 s it is set down beside its leader
+  (`sibling.reform`, with the seconds until it is whole), the shards shiver, rise and fly home, and the body is built up from the feet
+  as they arrive (its rig's dissolve run backwards), its joins gold until the gold fades (kintsugi, as the Courier is made whole). It is
+  held, struck by nothing, until whole (about 3 s). Shards, not sherds: a sherd is the Pithos's calf. *Not:* the Courier's shatter
+  (`courier/vessel/death.js`).
 - **the stones** (the kiln's STONES region, `Courier_Stones`; `src/progress/stones.js`, LORE.md "The stones"): where Lachryma enters the
   vessel, and so how the Courier takes it in: the pool's size, regen and costs, the magnet's **reach**, how **heady** a drink is (how far
   it pushes the Courier's mental state toward Prismatic), the **draught** it leaves, and where overflow goes. The Maker's Stones are the
