@@ -8,9 +8,12 @@
 // the mop and Clean take of it is the paint map's (world/ground/paintmap.js `slick` cells): a slick laid there shrinks from its rim as
 // they are taken, and lives as long as they do, or its own life if that is longer.
 //
-// Drawn with the blots' program (vfx/stains.js, `uSlick` 1): no program of its own. One mesh a slick, draped over the ground under it
-// (a few rays a frame, so a cast's ten puddles never cost one frame), the newest drawn over the older; a spill inside a live slick
-// feeds it instead of laying another; at most `max` at once, the oldest soaking away early to make room.
+// Drawn on the ribbons' one program (vfx/ribbonlight.js, look `slick`), warm from the boot with the jet ring: no program of its own
+// (it once drew with the blots' stain program, and was the last look in play that did: casebook 2026-10-10). One mesh a slick, draped
+// over the ground under it (a few rays a frame, so a cast's ten puddles never cost one frame), the newest drawn over the older; a spill
+// inside a live slick feeds it instead of laying another: freshened by the share of it the spill covers, filled back as far as its
+// paint-map cells came back (the full mop's smear, 0.3 m, fills a sliver of a mopped slick, never the whole of it again); at most `max`
+// at once, the oldest soaking away early to make room.
 //
 // Prior art: Super Mario Sunshine's goop (a creature's spill that lies on the ground and is hosed away, the shape of its splash),
 // Splatoon's ink puddles (a decal with a glossy edge), the Bonn Agreement Oil Appearance Code (thick oil black, then metallic, rainbow,
@@ -20,9 +23,9 @@
 //   game.slicks = new Slicks(game)   game.slicks.spill(pos, radius, life, { normal })   game.slicks.update(rawDt)   .list   .clear()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { stainUniforms, stainMaterial, STAIN_R } from './stains.js';
+import { ribbonLightMaterial, SLICK_DISC } from './ribbonlight.js';
 
-const EDGE = 1.41; // (a slick's middle edge in the stain disc's own units (vfx/stains.js, uSlick): its mesh is scaled radius / EDGE)
+const EDGE = 1.41; // (a slick's middle edge in the look's own units (vfx/ribbonlight.js, slick): its mesh is scaled radius / EDGE)
 const SEG = 12; // (the disc's grid, draped vertex by vertex)
 const RAYS = 220; // (ground rays a frame for the draping: a cast's ten puddles drape over a frame or two)
 const LIFT = 0.03; // (metres over the ground: with the program's polygon offset, the casebook's rule 1)
@@ -36,22 +39,28 @@ export class Slicks {
   }
 
   /** Crude spilled at `pos` (on the ground), `radius` metres, lying at least `life` real seconds. A spill inside a live slick feeds it
-   *  (fresh again, its life the longer); one smaller than `minRadius` that falls on bare ground is not drawn (a jelly's trail draws its
-   *  own path). On a wall (`normal` steep) it is not a slick. */
+   *  (as much fresher and fuller as the share of it the spill covers, its life the longer); one smaller than `minRadius` that falls on
+   *  bare ground is not drawn (a jelly's trail draws its own path). On a wall (`normal` steep) it is not a slick. */
   spill(pos, radius, life = 30, { normal = null, seed = null } = {}) {
     if (!pos || !(radius > 0) || (normal && normal.y < 0.5)) return null;
     for (const s of this.list) {
       if (s.dying || Math.abs(s.y - pos.y) > 1 || Math.hypot(s.x - pos.x, s.z - pos.z) + radius > s.r * 1.1) continue; // (only one that falls within it: a bigger spill over it is a slick of its own, drawn over)
-      s.age = Math.min(s.age, s.life * 0.12); s.life = Math.max(s.life, life); s.amount = 1;
+      const share = radius < this.minRadius ? 0 : Math.min(1, (radius / s.r) ** 2); // (by area: a spit into its own puddle nearly all of it; a smear or a trail's drop, under minRadius, none)
+      s.age -= (s.age - Math.min(s.age, s.life * 0.12)) * share; s.life = Math.max(s.life, life);
+      const pm = this.game.paintmap, n = pm && s.cells0 > 0 ? pm.count(s.x, s.y, s.z, s.r, 'slick') : -1; // (its cells, the spill's laid first: main.js onLay, the mop's smear)
+      if (n < 0) s.amount = Math.min(1, s.amount + share);
+      else { if (n > s.cellsLast) s.amount = Math.min(1, Math.max(s.amount, n / s.cells0)); s.cellsLast = n; } // (filled back as far as its cells were)
       return s;
     }
     if (radius < this.minRadius) return null;
     const live = this.list.filter((s) => !s.dying);
     if (live.length >= this.max) this.soak(live[0]);
     if (this.list.length >= this.max + 8) this.remove(this.list[0]);
-    const u = stainUniforms({ seed: seed ?? Math.random(), slick: 1 });
-    const geo = new THREE.PlaneGeometry(2 * STAIN_R, 2 * STAIN_R, SEG, SEG);
-    const mesh = new THREE.Mesh(geo, stainMaterial(u));
+    const u = { uT: { value: 0 }, uP: { value: new THREE.Vector4(0, 1, seed ?? Math.random(), 0) } }; // (uP: the ramp, what the mop left, the seed)
+    const geo = new THREE.PlaneGeometry(2 * SLICK_DISC, 2 * SLICK_DISC, SEG, SEG);
+    const mat = ribbonLightMaterial('slick', u, { name: 'slick' });
+    mat.polygonOffset = true; mat.polygonOffsetFactor = -2; // (drawn over the ground it lies on: GL state, not the program's key)
+    const mesh = new THREE.Mesh(geo, mat);
     mesh.name = 'slick'; mesh.rotation.x = -Math.PI / 2; mesh.position.set(pos.x, pos.y, pos.z);
     mesh.scale.set(radius / EDGE, radius / EDGE, 1); mesh.renderOrder = 1 + (this.seq++ % 10000) * 1e-4; // (the newest over the older: never by distance, which swaps as the camera moves)
     mesh.visible = false; mesh.frustumCulled = true;
@@ -78,7 +87,7 @@ export class Slicks {
       if (pm && s.cells0 > 0 && (s.check -= raw) <= 0) this.follow(s, pm, P);
       const k = s.age / s.life;
       if (k >= 1 || s.amount < 0.04) { this.remove(s); continue; }
-      s.u.uOx.value = k; s.u.uAmount.value += (s.amount - s.u.uAmount.value) * (1 - Math.exp(-raw * 6)); // (it shrinks from the rim as it is taken, never at once)
+      const L = s.u.uP.value; L.x = k; L.y += (s.amount - L.y) * (1 - Math.exp(-raw * 6)); // (it shrinks from the rim as it is taken, never at once)
     }
   }
 

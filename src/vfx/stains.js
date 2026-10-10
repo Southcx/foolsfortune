@@ -13,22 +13,19 @@
 // Prior art: Super Mario Sunshine's graffiti goop (Bowser Jr.'s paint: a puddle on the ground that grows, hurts and is hosed away, and
 // whose colour says its kind), Splatoon's ink on the ground (a flat pool with a glossy rim, drawn as a decal), and the oil slick's film.
 //
-// A SLICK (vfx/slicks.js: crude thrown or welled up in a fight, no feeling) is drawn by the same program: `uSlick` 1 takes the stain's
-// shape without fingers or stages and colours it along the oxidation ramp (`uOx`, vfx/oxidation.js slickColour): one program for both,
-// and the stain the warm-up parks (main.js) keeps it compiled.
+// Nothing in play draws a Stain now: a blot lives in the paint map and is drawn by the ground's own programs (world/ground/stains.js,
+// vfx/paintmotifs.js), and a slick on the ribbons' one program (vfx/slicks.js, vfx/ribbonlight.js), so nothing warms this program at
+// boot (casebook rules 166 and 169). The workbench's `brush:stains` keeps it, the look the paint map's blots grew from.
 //
 //   const S = new Stain({ feeling, seed })   S.group (a flat disc, stood 1.5 cm off the ground: the casebook's rule 1)   S.drape(heightAt)
 //   S.set({ stage: 0..3 (eased: it grows), amount: 0..1 (what the mop has left) })   S.update(rawDt)   S.dispose()
-//   stainUniforms({ ... }) -> the uniforms   stainMaterial(uniforms) -> the one program's material (a slick's too)   STAIN_R (the disc's radius)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from './weather.js';
-import { OXIDATION_GLSL } from './oxidation.js';
 
 const R = 2.2; // (the disc's radius, metres: a stage 3 stain fills it)
 const V = /* glsl */`varying vec2 vP; varying vec3 vW; void main() { vP = position.xy; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
-const F = /* glsl */`uniform float uStage, uAmount, uT, uSeed, uSlick, uOx; uniform vec3 uGrade; varying vec2 vP; varying vec3 vW;
-${OXIDATION_GLSL}
+const F = /* glsl */`uniform float uStage, uAmount, uT, uSeed; uniform vec3 uGrade; varying vec2 vP; varying vec3 vW;
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed * 17.0) * 43758.5453); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + 1.0), f.x), f.y); }
@@ -36,9 +33,9 @@ float fbm(vec2 p) { return vn(p) * 0.55 + vn(p * 2.1 + 3.1) * 0.3 + vn(p * 4.3 +
 vec3 film(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }
 void main() {
   vec2 p = vP; float r = length(p); vec2 dir = p / max(r, 1e-4);                             // (the bearing as a direction: no seam, no star)
-  float stage = mix(uStage, 2.0, uSlick);                                                  // (a slick: its flung drops, never a stage)
-  float size = mix(0.35 + 0.42 * uStage, 1.45 * (1.0 - 0.3 * smoothstep(0.7, 1.0, uOx)), uSlick) * mix(0.25, 1.0, uAmount); // (its reach: by stage, or a slick soaking in from its rim; and what is left of it)
-  float fingers = smoothstep(1.2, 2.4, uStage) * 0.55 * pow(vn(dir * 2.6 + uSeed * 9.0), 3.0) * (1.0 - uSlick); // (stage 2: fingers out along the ground)
+  float stage = uStage;
+  float size = (0.35 + 0.42 * uStage) * mix(0.25, 1.0, uAmount);                           // (its reach by stage, and what is left of it)
+  float fingers = smoothstep(1.2, 2.4, uStage) * 0.55 * pow(vn(dir * 2.6 + uSeed * 9.0), 3.0); // (stage 2: fingers out along the ground)
   float edge = size * (0.8 + 0.35 * fbm(dir * 1.9 + uSeed * 5.0 + p * 0.5) + fingers);
   float d = r - edge;                                                                      // (inside: negative)
   // satellite pools and flung drops round it
@@ -56,14 +53,6 @@ void main() {
   vec3 ink = vec3(0.006, 0.005, 0.01);
   vec3 c = ink + film(fbm(p * 1.4 + uT * 0.01) * 1.5 + fres + uSeed) * (0.02 + 0.12 * fres);   // (the film: brightest at a grazing look)
   float ring = (1.0 - smoothstep(0.0, 0.12, depth)) * body;                                // (the thin edge: the feeling shows where the film thins)
-  if (uSlick > 0.5) { // (a slick: crude with no feeling, along the oxidation ramp; a black mirror while fresh, then the film, then the sheen)
-    float pool = 1.0 - smoothstep(-0.02, 0.02, d), f2 = pow(1.0 - abs(V.y), 2.0);   // (the pool itself, not its flung drops: only it has the rim's band)
-    float h = fbm(p * 0.8 + uSeed * 3.0) + 0.35 * fbm(p * 2.3 + uSeed * 7.0 + uT * 0.01); // (the film's thickness)
-    vec3 sc = slickColour(uOx, f2, h, fwidth(h), ring * pool);
-    gl_FragColor = vec4(sc, body * (1.0 - smoothstep(0.82, 1.0, uOx)));
-    #include <colorspace_fragment>
-    return;
-  }
   c = mix(c, uGrade * 0.55, ring * 0.65);
   // stage 3: the middle breathes (bubbles rise, swell and break, slowly)
   float st3 = smoothstep(2.4, 3.0, uStage) * uAmount;
@@ -78,14 +67,10 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-/** A stain's (or a slick's) uniforms: `slick` 1 draws it as a slick, `ox` its place on the oxidation ramp (0 fresh .. 1 gone). */
-export const stainUniforms = ({ feeling = 'grief', seed = Math.random(), slick = 0, ox = 0 } = {}) => ({
+const stainUniforms = ({ feeling = 'grief', seed = Math.random() } = {}) => ({
   uStage: { value: 0 }, uAmount: { value: 1 }, uT: { value: 0 }, uSeed: { value: seed }, uGrade: { value: new THREE.Color(COLOR[feeling] ?? COLOR.grief) },
-  uSlick: { value: slick }, uOx: { value: ox },
 });
-/** The one program blots and slicks are drawn with (the same source and settings: three.js gives every one of these the same program). */
-export const stainMaterial = (u) => new THREE.ShaderMaterial({ name: 'stain', uniforms: u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
-export const STAIN_R = R;
+const stainMaterial = (u) => new THREE.ShaderMaterial({ name: 'stain', uniforms: u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
 
 export class Stain {
   constructor({ feeling = 'grief', seed = Math.random() } = {}) {
