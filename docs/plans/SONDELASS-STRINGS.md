@@ -55,8 +55,10 @@ Already true today: R (the special) cuts any upper-body blow (c1-c3, t1, j1, j2)
 - **What it buys** (Dovina's to price): the ground string's cycle goes from 2.16 to 1.37 real s, its 5.9 power from 2.7 to 4.3 a
   real second (x1.57), past the 2.6 rule the raids are sized to. The biggest single buys are the blows that play out today: the charge
   release (1.52), the dash (1.15), the plunge's landing (about 1.0).
-- **The look** (Calissa's): the paid blow's ribbon wears `featTint` (the film every feat of the Courier's power wears). No words. A
-  sound for it is Wanda's (none yet).
+- **The look** (Calissa's; the owner, 2026-10-10: "use the same afterimage effect that Blink Dash does"): the cut leaves Blink Dash's
+  afterimage, the body left behind walking the oil film's hues as it fades (`featTint`), and the paid blow's ribbon wears the film too.
+  Blink Dash's afterimage (`courier/moves/blink.js`) and the stinger's (`tools/sondelass/cutlass.js`) fold into one shared vfx module
+  first, so the three read as one. No words. A sound for it is Wanda's (none yet).
 - Prior art: Guilty Gear's Roman Cancel (recovery cut short for half the Tension gauge), Street Fighter 6's Drive Rush cancel (the
   Drive gauge), Devil May Cry's jump cancel and Bayonetta's Dodge Offset (the string kept flowing, for skill rather than a resource).
 
