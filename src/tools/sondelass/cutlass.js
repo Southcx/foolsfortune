@@ -59,11 +59,14 @@ const MOVES = {
   j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.66, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
   j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
   // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes. Tapped, lift 5.5 (an apex of 1.55 m about as a1 cuts, the
-  // Courier on the clip's own rise); held to its strike, lift 9.5 and they ride up with it (High Time, tools/moveset.js). LMB in the
-  // air: two cuts that keep it at the blade (lift 2: back to the same height in the 0.4 s to the next, 9.81 x 0.4 / 2; push 0.5, not
-  // 1.5 and 2, which carried the two of them sideways at 3.8 m/s into the nearest wall) and the plunge,
+  // Courier on the clip's own rise); held to its strike, lift 9.2 and they ride up with it (High Time, tools/moveset.js): the owner's
+  // "about 2.2x their own height", 2.2 x 1.78 m = 3.92 m to the feet. They ride 1.3 m under a slip jelly's centre (0.45 m under its
+  // base), so its base must reach 4.37 m: 9.2^2 / (2 x 9.81) = 4.31, and a2's lift near the top adds the rest (measured: the feet 3.93 m
+  // pressing on, 3.80 m with no press after; 9.5 took them to 4.18). An air blow never slows its rise (a lift is a floor: moveset.js), or
+  // a1 stopped it at 2.6 m. LMB in the air: two cuts that keep it at the blade (lift 2: back to the same height in the 0.4 s to the next,
+  // 9.81 x 0.4 / 2; push 0.5, not 1.5 and 2, which carried the two of them sideways at 3.8 m/s into the nearest wall) and the plunge,
   // whose landing ring strikes only what is near the ground, its lift gone (what it threw overhead flew 9 m)
-  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.5 }, arc: 'over' },
+  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.2 }, arc: 'over' },
   a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 2, push: 0.5 }, arc: 'r2l' },
   // (a2's somersault turns the blade in an upright circle 37-49 degrees to their left, never across the front: aim turns them that far
   // off the target, so the circle's front passes through it; measured from the clip, melee.js)

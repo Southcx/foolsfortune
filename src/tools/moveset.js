@@ -25,7 +25,9 @@
 //                          they RIDE up with what it launched (Devil May Cry's High Time), the clip's last pose held till it turns over
 //     LMB in the air       the AIR string (once a jump): they hang while it plays (gravity x0.12); with something launched in reach
 //                          they ride it instead (its measured speed, a blade's height below it: the two hang alike, whatever its own
-//                          gravity); its last move may PLUNGE to the ground, whose ring strikes only what is near the ground
+//                          gravity), and a blow's lift is a floor, never a ceiling (what still rises faster keeps rising: High Time's
+//                          climb is the launcher's whatever the presses); its last move may PLUNGE to the ground, whose ring strikes only
+//                          what is near the ground, and whose landing settles the drawn body (courier/anim/squash.js)
 //     LMB while sprinting  the DASH: the clip's own travel, carried
 //     R                    the SPECIAL: a costly move of the tool's own (Lachryma)
 //   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift },
@@ -393,6 +395,7 @@ export class Moveset {
     const g = this.game, S = this.S, cause = h.cause || S.cause || 'sliced';
     const power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = (c?.high && c.def.high?.lift) || (h.lift ?? 0);
+    if (c?.kind === 'air' && kv.y > 1 && this.juggle?.ent === ent && this.juggle.v.y > kv.y) kv.y = this.juggle.v.y; // (a lift is a floor, never a ceiling: an air blow on what is still rising faster keeps its rise, so High Time's climb is the launcher's whatever the presses; it cut it at a1, 2.6 m)
     if ((kind === 'creature' || kind === 'clapper') && kv.y > 1 && (c?.kind === 'launcher' || c?.kind === 'air') && (!this.juggle || !this.juggle.ent.alive)) this.juggle = { ent, kind, p: this.centreOf({ ent, kind }, new THREE.Vector3()), v: kv.clone(), fresh: true }; // (what is launched is ridden)
     else if (this.juggle?.ent === ent && kv.y <= 1 && (h.push ?? 0) >= 4) this.juggle = null; // (thrown off, not held up: never followed)
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', this.id);

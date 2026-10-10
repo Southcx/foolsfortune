@@ -218,6 +218,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
   control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
+- **the Courier's squash** (`CourierSquash`, `game.courierSquash`, `SQUASH`, `src/courier/anim/squash.js`): the drawn body pressed down
+  and out (its volume kept) after a hard landing, on a critically damped spring: a settle, never a bounce, gone by about 0.3 s; 6 % at
+  the plunge's 26 m/s, a share of it from the hard landing's 9 m/s. The drawn body only (the root's scale, about the feet), laid on
+  after the pose and lifted before anything reads it; what the hands carry moves with the hand and keeps its shape. *Not:* a slip
+  jelly's squash (its own deform), the Pneuka Jar's squash (its clips'), nor the hard landing's clip.
 - **idle** (`IDLES`, `idleClip`, `src/courier/anim/idlebreak.js`): the clip the Courier stands in with nothing in the hands, keyed by its
   look: the suite's seven standing idles (akimbo, hipCocked, handsBehind, armsDown, braced, weightShift, restless) and **upright**
   (`idle:upright`, baked at load in `IDLES.baked`: handsBehind's straight body, armsDown's arms at the sides). `IDLES.default` is the one
