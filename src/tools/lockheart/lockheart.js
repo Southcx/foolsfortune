@@ -352,7 +352,7 @@ export class Lockheart extends HeldTool {
   animate(ch, base, dt) {
     const C = ch.clips, P = this.P;
     if (!this.track) {
-      this.idleClip = C.clips.Lock_Idle ? 'Lock_Idle' : 'stance:lockheart';
+      this.idleClip = C.clips['stance:lockheart'] ? 'stance:lockheart' : 'Lock_Idle'; // (Lock_Idle with the hand held out: courier/anim/stances.js)
       this.track = new Track(C, new Set([this.idleClip]));
       this.track.play(this.idleClip, 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose(); this.gestures = new Gestures(C); this.X = new Crossfade(C, 0.1);

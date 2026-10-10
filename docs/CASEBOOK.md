@@ -472,8 +472,60 @@ the rules before building in the same area; a rule a machine can check goes into
 172. **A uniform is the body's that wears it.** A shader's uniforms are objects handed over by reference: a second body dressed with
     the first's set shows whatever happens to the first. Another Courier's rig (a sibling's, a guest's) takes its own set (fade,
     dissolve, cracks) on the same program; prove it by changing the first and reading the second's uniform from the renderer.
+173. **A layer over part of the body stands on the pose it was made over.** A pose laid over the upper body only (a mask, the hips not
+    moved) takes the hips, the legs and the lower spine from whatever is under it; when what is under it can change (a chosen idle), the
+    layer says what it was made over and that is put under it. Judged by the spine chain (the pelvis's roll, the hips' shift off the
+    feet, each spine bone's roll) in every state that lays a layer, against the numbers from before the change.
+174. **A loop is measured at its seam.** A clip played on a loop is checked for its last step against its others (each bone's turn
+    from frame to frame); a step several times the rest is a pop at the seam, not motion in the capture. Closed (the popping frames
+    dropped, the difference spread over the clip: stances.js `closeLoop`) before the clip is measured or chosen for its stillness.
 
 ## Cases
+
+### 2026-10-10 · The Courier's idle leaned, and every tool's stance leaned with it (the owner's R21 and Dovina's note, v137)
+
+- **Seen:** standing still, the Courier leaned to their left (the owner: "should be standing straight, with minimal swaying motion");
+  the owner's guess: a bad rotation on a spine bone, carried into every animation over the idle.
+- **Cause (measured in game over 10 real seconds, every tool off, and against a worktree at 92c7809^, the build before v133):** no spine
+  bone was bad and nothing was rebaked wrong (core.bin before and after: 155 clips the same to 0.05 degrees, the rest pose to 0.15). The
+  default idle had been made `akimbo` (Loco_IdleRelaxedMasc), whose capture stands on one leg: the pelvis rolled 8 degrees, the hips 10.6
+  cm off the feet's middle, the spine leaning 11.3 degrees to their left (hips to neck), the chest tilted 14.8. And every tool's stance
+  (and the gun's aim) is laid over the upper body only (`MASK_UPPER`, the hips not moved): the hips, legs and lower spine stayed the
+  idle's. Drawn and standing, the Lockheart, Soul Brush, Dreamvane, Crucibelle, Sondelass and Veritome leaned 9.2 to 10.3 degrees,
+  each with the pelvis rolled 8 and the spine bones rolled 8 to 12; before v133 all six leaned 0.11 or less (1.1 for the Sondelass's own
+  en garde), the pelvis at 0. Walk, run and an emote were the same before and after to 0.01 (they replace the idle whole).
+- **Fix:** (a) a new default, `upright` (`idle:upright`, baked at load: `courier/anim/idlebreak.js` IDLES.baked): the seven measured
+  again, the straightest and stillest body is handsBehind (Loco_IdleC: lean 0.1, pelvis 0, shift 0, chest 1.1 cm/s), but its hands sit
+  on the tools worn at the back and its loop pops (case below); its body with armsDown's arms (Loco_IdleFem) hung at the sides, their
+  swing halved, the seam closed: lean 0.2, pelvis 0, shift 0, chest 1.1 cm/s, head 5.8 cm, hands 2.8 and 4.0 cm/s (12 at most). (b)
+  `IDLE.under`: while a tool or the gun is in the hands, the aim is up or a passive tech lays its pose (a crate carried, the kick's blows), the idle
+  under the layer is the pack's `idle` (Loco_IdleMasc, what every stance was made over), crossfaded over 0.4 s and held 1 s after. The six
+  stances now read 0.06 to 1.13 degrees of lean and 0 to 0.04 of pelvis, the numbers of before v133. (c) the kiln's choice:
+  `idles.choose(key)`, the list and a save field handed to Petra (`docs/handoffs/petra/2026-10-10-from-calissa-idle-choice.md`).
+- **Rule:** 173 (new).
+
+### 2026-10-10 · The stillest idle twitched its hands once a loop (found measuring the idles for R21)
+
+- **Seen:** v133 measured handsBehind (Loco_IdleC) as the stillest standing idle but for "a quick hand move once a loop, 15 to 23 cm/s".
+- **Cause (measured on the clip):** not a move: a seam. Its steps are 0.3 degrees a frame, then 2.6 and 10.5 at the last two (the right
+  shoulder; 1.2 to 1.7 along the spine and head): the capture's end jumps to meet its start. With other arms laid over it, the chest's
+  jump alone threw the hands at 50 to 57 cm/s.
+- **Fix:** `closeLoop` in the stance bake (`courier/anim/stances.js` bakeClip; Unity's Loop Pose): the two popping frames dropped and the
+  difference left between the new last frame and the first spread over the clip; the baked upright's largest step is now 2.0 degrees
+  (a forearm's own swing), the spine's 0.3, and the hands' fastest 12 cm/s.
+- **Rule:** 174 (new).
+
+### 2026-10-10 · The Lockheart sat against the belly (the owner's v137, via Dovina)
+
+- **Seen:** drawn, the coffin hung from the left hand against the Courier's belly; the owner: "move it forward and lower".
+- **Cause (measured, body frame):** the held placement is the rig's: the coffin hangs straight down from the left hand on a 0.22 m chain
+  (`tools/lockheart/lockheart.js` hands()), and Lock_Idle held that hand at the chest, 1.19 m up and 0.22 forward: the coffin spanned
+  0.84 to 1.10 m, its back 7 cm off the belly's front, from the navel to the hips.
+- **Fix:** `stance:lockheart` re-based on the suite's Lock_Idle with the left hand nudged 10 cm lower and 14 cm forward, its arm solved
+  again at bake (`nudge`, `courier/anim/stances.js`); the Lockheart plays it (CROSSING, one line). The hand is at 1.09 m, 0.36 forward; the
+  coffin spans 0.74 to 1.00 m, its back 21 cm off the body, hanging on its chain in front of the hips. The hoover, the flail and the
+  opening are unchanged (each blends over it). Judged from the front, 45 degrees, the side and behind, every other tool off.
+- **Rule:** none new (the hand is the rig's, the chain the code's; the clip moved, the code's numbers untouched).
 
 ### 2026-10-10 · A sibling wore the Courier's cracks (found building a sibling's shatter)
 
