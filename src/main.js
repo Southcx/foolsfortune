@@ -105,6 +105,7 @@ import { VesselDamage } from './courier/vessel/damage.js';
 import { Combat } from './core/combat.js';
 import { Vessel } from './courier/vessel/vessel.js';
 import { KilnUI } from './courier/vessel/kilnui.js';
+import { IDLES } from './courier/anim/idlebreak.js';
 import { Kiln, KILN_AT } from './courier/moves/kiln.js';
 import { Shops } from './progress/shop/shops.js';
 import { ShopUI } from './progress/shop/ui.js';
@@ -451,6 +452,9 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
+  // the idle chosen at the kiln (the owner's R21: courier/vessel/kilnui.js STANCE; Calissa's IDLES): kept with the player's progress
+  game.save?.section('courierIdle', { scope: 'player', version: 1, dump: () => ({ stand: character.idles?.stand ?? IDLES.default }),
+    load: (d) => { if (!character.idles?.choose(d?.stand)) character.idles?.choose(IDLES.default); }, reset: () => character.idles?.choose(IDLES.default) });
   // the vessel they are: its glazes and its kintsugi, on them (vessel/: fired at the kiln in the workshop, courier/moves/kiln.js)
   game.vessel = new Vessel(game);
   game.vessel.dress(character);

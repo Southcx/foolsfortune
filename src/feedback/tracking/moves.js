@@ -7,6 +7,7 @@
 //   moveRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { MOVES } from '../../progress/combat/moves.js';
+import { IDLES } from '../../courier/anim/idlebreak.js';
 
 export function moveRules({ on, L, log }) {
   // move.launch { tool, by }: a launcher lifted something; move.air { tool, hits, by }: an air string ended with `hits` blows landed
@@ -15,6 +16,7 @@ export function moveRules({ on, L, log }) {
   // move.special { tool, special, by }: a special used (its cost already paid)
   on('move.special', (e) => { if (e.by !== 'courier') return; L.inc('move.special'); L.inc(`move.special.${e.special}`); const s = MOVES[e.tool]?.special; if (s && s.id === e.special && !L.get(`move.special.${e.special}.said`)) { L.inc(`move.special.${e.special}.said`); log.say('gain', `A special: ${e.special}.`); } });
   // the skiff (Calissa's suite): skiff.bail { speed, by }, skiff.ollie { geyser, by }
+  on('courier.idle', (e) => log.say('info', `You will stand ${(IDLES.labels[e.stand]?.name ?? e.stand).toLowerCase()}.`, { key: 'courier.idle', throttle: 1 })); // (the kiln's STANCE kept: courier/vessel/kilnui.js; words a stand-in, Espada's)
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
   on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', 'You bail.', { key: 'bail', throttle: 3 }); } });
   on('skiff.ollie', (e) => { if (e.by !== 'courier') return; L.inc('skiff.ollie'); if (e.geyser) L.inc('skiff.ollie.geyser'); });
