@@ -502,8 +502,28 @@ the rules before building in the same area; a rule a machine can check goes into
     a carry) follows the other's measured motion with a pull to the gap, never two gravities tuned to agree; and a blow is proven by the
     tip's measured angle and height against where the target stands, not by the clip's look (an arc that never crosses the front is
     aimed by its own angle; a push that carries the pair is a push too far).
+183. **A clip is cast by its measures, not its name.** Before a clip takes a state, its own speed (from its planted foot), its hips'
+    height and its posed top are measured against the state's speed and the room it must fit. A loop played past twice its own speed
+    takes short steps at a quick cadence, never long low strides; and a foot is planted only while the capsule is slow enough for it
+    to stay there.
 
 ## Cases
+
+### 2026-10-10 · The crouch walk read as lunges (the owner; the locomotion clips round)
+
+- **Seen:** the owner: the crouch walk reads as lunges. In game (`character.animate`, every tool off, front and side): the rear leg
+  thrown long behind, its knee near the ground, every step.
+- **Cause (measured):** Loco_CrouchWalk moves 0.61 m/s of its own and the crouch 2.2, so it played at 3.6 times: strides 1.65 times its
+  own at 2.2 times its cadence, the hips at 0.44 m. The clip named to replace it, Loco_SneakWalk ("a slower crouch" in ART.md), is an
+  upright tiptoe sneak: its hips at the walk's height (0.74 m against 0.69), 0.40 m/s of its own. Played as it is, the crouched body's
+  posed top is 1.92 m (the low capsule goes under 1.5 m: the basement's tunnel); let down with the walk's strides, the legs ran out of
+  reach (the foot IK's reach drop at its 0.12 m cap) and lunged again. Building the half turn beside it: the turn's planted feet locked
+  while the capsule was already back at a run (0.08 s after a reversal passes zero), each dragged 0.35 m and let go, 1.6 to 2.3 m of
+  planted slide a turn.
+- **Fix:** the sneak whole once moving, let down 0.38 m by the foot IK (`SNEAK` in character.js: the knees bend, the feet stay), its
+  strides to 1.15 times its own and the rest cadence (4.8 times its own at 2.2 m/s): posed top 1.46 m, reach drop 0.08 m at most;
+  Loco_CrouchWalk out of the core pack. The turn's feet planted only under 1 to 3 m/s (`TURN.still`): its planted slide 0 to 0.01 m.
+- **Rule:** 183 (new).
 
 ### 2026-10-10 · The Sondelass's air string missed: two gravities, and two blades that never crossed the front (the owner: "I also had issues with the aerial portion of the launch combo")
 

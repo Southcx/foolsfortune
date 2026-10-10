@@ -230,7 +230,9 @@ Every clip below is the Courier's suite (`source_assets/Courier/courier_anims_mo
 `courier_base_rigged.blend` holds no clips, only a camera rig's and one held pose), its knees and elbows put on their hinge as it is
 decoded and the posed body squared again after IK (the hinge repair, `courier/anim/hinges.js`). The gait shares one phase (each loop's
 left heel strike at phase 0) and plays at the ground speed over the loop's own (measured from its planted foot: walk 0.77 m/s, jog
-4.81, sprint 4.43, crouch walk 0.61), part longer strides (to 1.65x walking, 1.3x running), the rest cadence; planted feet lock.
+4.81, sprint 4.43, the sneak 0.40), part longer strides (to 1.65x walking, 1.3x running, 1.15x sneaking), the rest cadence; planted
+feet lock. The skid stop and the half turn are one-shots over it (`courier/anim/stopturn.js`), the hips' travel out in the clip's own
+frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the speeds and the body's yaw.
 
 | state | clip | blend |
 | --- | --- | --- |
@@ -240,7 +242,9 @@ left heel strike at phase 0) and plays at the ground speed over the loop's own (
 | sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
 | backpedal, strafe | the same loops, run backward past 110 degrees | the hips turned toward the move (70 at most), the chest back to the aim |
 | starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
-| crouch | Loco_CrouchIdle, Loco_CrouchWalk by 0.5 m/s | 0.8 of the crouch's weight, on the shared phase |
+| skid stop (new) | Loco_SprintStop from its brace (0.07 s) at 1.15x, in place: when the speed falls under 4 m/s within 0.25 s of 5.6 m/s or more, still heading within 20 degrees of the sprint (a stop, or a reversal on its way through zero) | in 0.08; out as it stands (its 0.72 to 0.95 s); cut over 0.12 s when the move picks up 1.2 m/s again or the ground, a crouch, slide, mantle or dash takes over; not in first person |
+| half turn (new) | Loco_Turn180, its frame the one whose hips have turned as far as the body (time-warped onto player.js's turn; at its own pace once the body is round), in place and unturned, mirrored for a turn to the right; to 0.7 s (its frame 22 is its first again) | on a reversal: the move over 100 degrees behind, from 3 m/s or more through under 1.5 within 0.3 s, the body turning to it at 1.5 rad/s or more; in 0.06, out 0.42 to 0.58 s (the run back on the legs as the body faces the move); the skid gives way to it; its feet planted only under 1 to 3 m/s (the capsule is back at a run 0.08 s after the reversal) |
+| crouch | Loco_CrouchIdle; moving, Loco_SneakWalk (new: Loco_CrouchWalk had played at 3.6x its pace and read as lunges) by 0.5 m/s | the idle at 0.8 of the crouch's weight, the sneak whole once moving, on the shared phase; the sneak stands as tall as the walk, so the foot IK lets the body down 0.38 m (posed top 1.45 m, under the basement tunnel's 1.5) and its strides go to 1.15x, the rest cadence |
 | jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
 | off a ledge | Air_JumpLoop from 0.5 s | 0.25 |
 | fall | Air_FallLoop past 5 m/s down after 0.45 s in the air | 0.35 |
@@ -253,7 +257,8 @@ left heel strike at phase 0) and plays at the ground speed over the loop's own (
 | air dash | Air_AirDash, AirDashL, AirDashR, AirDashBack by the dash's direction | from 0.1 s at 1.5x through the dash |
 | ladder, swim | Trav_LadderClimb, Trav_LadderIdle, Trav_LadderEnter; the old pack's swim and tread | the techs' own (moves/ladder.js, moves/swim.js) |
 
-In the suite and not played (the social pack): Loco_SprintStop (a skid stop, 1.07 s, with travel) and Loco_Turn180 (a planted half
-turn) would fit the stop and the reversal once moved into the core pack (a bake); Loco_WalkFem, Loco_RunFem and Loco_SprintHero are
-other walks and runs; Loco_SneakWalk a slower crouch. The crouch walk is played at 3.6 times its own speed (the core's 2.2 m/s): long
-strides (1.65 times its own) at 2.2 times its cadence.
+In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_CrouchWalk
+(the crouch's old loop, out of the core pack since the sneak took its place). Loco_SprintStop, Loco_Turn180 and Loco_SneakWalk moved
+into the core pack (2026-10-10: core.bin 2,920,462 to 2,950,390 bytes, 161 to 163 clips). The sneak is an upright tiptoe sneak (its hips
+at the walk's height, 0.40 m/s of its own): at the crouch's 2.2 m/s it plays at 4.8 times its cadence, short-stepped and low, not the
+long low strides that read as lunges.
