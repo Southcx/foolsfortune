@@ -525,7 +525,7 @@ async function main() {
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
   // an Esc pressed while a window is open is that window's (it closes it): marked before any window's own handler runs (capture), so the
   // pointer's unlock it may bring is not read as you leaving (onLockChange: casebook 125)
-  addEventListener('keydown', (e) => { if (e.code === 'Escape' && (modalOpen() || game.kilnUI?.open || game.dialogue?.open)) input.escSpentAt = performance.now(); }, true);
+  input.escSpends = () => modalOpen() || !!game.kilnUI?.open || !!game.dialogue?.open; // (marked by core/input.js's listener, the first registered)
   game.windowOpen = windowOpen; // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
