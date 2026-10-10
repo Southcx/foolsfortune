@@ -143,7 +143,8 @@ export class Raid {
       L.mesh.name = 'raid-drop'; this.g.scene.add(L.mesh); this.lobs.push(L);
     }
     to.y = this.ground(to.x, to.z);
-    Object.assign(L, { on: true, from, to, s, k: 0, onLand }); L.mesh.visible = true;
+    L.mesh.scale.setScalar(Math.max(1, this.F.k * 0.8)); // (a drop the body's size: about 2.2 m at FOE.size 14)
+    Object.assign(L, { on: true, from, to, s, k: 0, arc: 5 * Math.max(1, this.F.k * 0.4), onLand }); L.mesh.visible = true;
   }
   /** Is the Courier looking at it: through the Veritome's lens ('lens': the gaze turns back), with their own eyes ('eye'), or not. */
   looking() {
@@ -217,7 +218,7 @@ export class Raid {
     for (const L of this.lobs) {
       if (!L.on) continue;
       L.k = Math.min(1, L.k + dt / L.s);
-      L.mesh.position.lerpVectors(L.from, L.to, L.k); L.mesh.position.y += Math.sin(L.k * Math.PI) * 5;
+      L.mesh.position.lerpVectors(L.from, L.to, L.k); L.mesh.position.y += Math.sin(L.k * Math.PI) * L.arc;
       if (L.k >= 1) { L.on = false; L.mesh.visible = false; L.onLand(L.to); }
     }
     // what its blows left on the Courier

@@ -36,7 +36,7 @@ export class LockOn {
   /** The middle of a thing (world). */
   pointOf(t, out) {
     if (t.type === 'clapper') return out.copy(t.ref.pos).setY(t.ref.pos.y + 0.35);
-    if (t.type === 'creature') return t.ref.center(out); // (a creature: creatures.js)
+    if (t.type === 'creature') return t.ref.lockPoint ? t.ref.lockPoint(out) : t.ref.center(out); // (a creature: creatures.js; its weak point, if it names one)
     const b = t.ref.body.translation();
     return out.set(b.x, b.y + (t.ref.P?.height ?? 0.5) * 0.45, b.z);
   }
@@ -46,7 +46,7 @@ export class LockOn {
   shownOf(t, out) {
     const a = this.game.alpha ?? 1;
     if (t.type === 'clapper') { const c = t.ref; out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.hop || 0) + 0.35); }
-    if (t.type === 'creature') { const c = t.ref; out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.height ?? 1) * 0.55); }
+    if (t.type === 'creature') { const c = t.ref; if (c.lockPoint) return c.lockPoint(out); out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.height ?? 1) * 0.55); } // (a weak point is drawn where its model is)
     const m = t.ref.mesh;
     if (m) { m.updateMatrixWorld(); out.setFromMatrixPosition(m.matrixWorld); return out.setY(out.y + (t.ref.P?.height ?? 0.5) * 0.45); }
     return this.pointOf(t, out);

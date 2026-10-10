@@ -21,7 +21,7 @@
 //                (wheelColour) leans every cap's flash. TWENTY-TWO BRANCHES (the Golden Dawn's paths 11 to 32, BRANCH_PATHS, Dovina's
 //                BRANCHES by their trump) join the caps as threads of light: a hung one gold and running, the rest a ghost. FRUIT hangs
 //                under the open caps on threads, glowing in the tincture's colour (a breath, never a flicker; as many as the crown
-//                holds); PERCHES (shelf brackets on the stipe in the crown) are where the sporelings sit (`perchWorld`)
+//                holds); SHELF BRACKETS on the stipe in the crown, polypores grown from its clay
 //   ITS COST     the garden's one canopy program; the stipe, the gold, the mouth, the face and the fruit plain standard materials; the branches
 //                and threads the spirit veins' program (vfx/garden/veins.js): no new program. Two canopies, built once: near, and a far
 //                one of fewer, larger leaves beyond MYGG.lodFar metres. A cap opening moves its slot's gate and hides the other state's
@@ -31,12 +31,12 @@
 // Kabbalists' Tree of Life and the Golden Dawn's tarot on its paths, Princess Mononoke's kodama and Mario's Toads (a face that is two
 // dots and a smile), Nausicaa's fungal forest (trees that are fungi, many caps on
 // branching stems), real fungi (Amanita's volva and ring, a parasol's shingled scales, an agaric's radiating gills, the shelf
-// polypores for the perches, foxfire's steady glow), and the leaf canopy itself (vfx/garden/leafcanopy.js).
+// polypores for the shelf brackets, foxfire's steady glow), and the leaf canopy itself (vfx/garden/leafcanopy.js).
 //
 //   const M = new WorldMushroom({ radius: 26, surface: (dir) => metres })   M.group (at the planetoid's heart, the tree up its +Y)
 //   M.update(rawDt, state)   (state: game.myggdrasil, read defensively: caps 0..10, branches { id: true } | Set | [ids], tincture { h, s }
 //   | null, crown [fruit]; missing, caps 3 and nothing hung)   M.threadsTo(points)   M.mouthWorld(out)   M.capWorld(i, out)
-//   M.perchWorld(i, out)   M.perches (how many)   M.snap()   M.dispose()   CAP_SITES   BRANCH_PATHS   MYGG
+//   M.snap()   M.dispose()   CAP_SITES   BRANCH_PATHS   MYGG
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -77,7 +77,7 @@ export const BRANCH_PATHS = {
 const BRANCH_IDS = Object.keys(BRANCH_PATHS);
 const SPIRAL = { priestess: 200 }; // (a branch between two caps on the stipe winds round it from this bearing)
 const STIPE = [[-2.4, 6.7], [0, 6.2], [1.2, 5.0], [2.6, 4.25], [5, 3.85], [9, 3.6], [15, 3.42], [22, 3.25], [30, 3.0], [34, 2.85], [38.4, 2.7], [41, 2.6]];
-const PERCH_AT = [[13.4, 165, 1.2], [15.6, 285, 1.1], [18.4, 75, 1.3], [22.6, 200, 1.2], [24.2, 340, 1.3], [31.6, 150, 1.4], [33.4, 300, 1.2], [35.2, 95, 1.1]];
+const BRACKET_AT = [[13.4, 165, 1.2], [15.6, 285, 1.1], [18.4, 75, 1.3], [22.6, 200, 1.2], [24.2, 340, 1.3], [31.6, 150, 1.4], [33.4, 300, 1.2], [35.2, 95, 1.1]];
 const ROOT_AZ = [110, 150, 190, 230, 270, 310, 350, 30, 70], MOUTH = { az: 90, s: 9.4 }, FACE = { az: 90, y: 10.4 }; // (both between the roots at 70 and 110, under no arm: the Foundation's leaves the stipe at 20, Victory's at 120)
 const D2R = Math.PI / 180, GOLD = 0xd8ae58;
 
@@ -120,7 +120,7 @@ export class WorldMushroom {
     return out.copy(_d).multiplyScalar(this.surface(_d) + lift);
   }
 
-  // ---- the body: the stipe, its ring, the roots, the arms, the perches (one mesh of grey clay; the ring and the lip gold)
+  // ---- the body: the stipe, its ring, the roots, the arms, the shelf brackets (one mesh of grey clay; the ring and the lip gold)
   buildBody() {
     const geos = [], rnd = this.rnd;
     // the stipe: a lathe of the profile, its fibres ridges round it and a slow twist up it
@@ -148,14 +148,12 @@ export class WorldMushroom {
       geos.push(C.stalk ? tube(pts, 1.0, 0.55, 9, 12, 1) : tube(pts, 1.4, 0.8, 9, 24, 1));
       const knob = new THREE.SphereGeometry(1.05, 10, 8); knob.scale(1, 0.7, 1); knob.translate(...this.at(C.az, C.out, C.y - 0.35).toArray()); geos.push(knob);
     }
-    // the perches: shelf brackets on the stipe in the crown (a sporeling sits on each)
-    this.perchAt = [];
-    for (const [y, az, rp] of PERCH_AT) {
+    // the shelf brackets on the stipe in the crown (polypores of its clay)
+    for (const [y, az, rp] of BRACKET_AT) {
       const r = stipeR(y), out = _o.set(Math.sin(az * D2R), 0, Math.cos(az * D2R)), b = new THREE.CylinderGeometry(rp, rp * 0.82, 0.3, 12, 1, false, 0, Math.PI);
       b.rotateY(-Math.PI / 2); // (its round edge out along +Z, its cut face against the stipe)
       const m = new THREE.Matrix4().makeBasis(_t.crossVectors(_up.set(0, 1, 0), out).normalize(), _up, out).setPosition(this.at(az, r - 0.15, y));
       b.applyMatrix4(m); geos.push(b);
-      this.perchAt.push(this.at(az, r + rp * 0.45, y + 0.16));
     }
     const body = new THREE.Mesh(mergeGeometries(geos.map(plain), false), this.mats.stipe); geos.forEach((x) => x.dispose());
     body.name = 'myggdrasil-stipe'; body.castShadow = body.receiveShadow = true; this.group.add(body); this.body = body;
@@ -330,9 +328,6 @@ export class WorldMushroom {
   mouthWorld(out = new THREE.Vector3()) { return this.group.localToWorld(out.copy(this.mouthAt)); }
   /** Cap i's heart, in the world (its fruit hangs under it). */
   capWorld(i, out = new THREE.Vector3()) { const C = this.cap[i]; return C ? this.group.localToWorld(out.setFromMatrixPosition(C.matrix)) : null; }
-  get perches() { return this.perchAt.length; }
-  /** Perch i's seat (where a sporeling sits), in the world. */
-  perchWorld(i, out = new THREE.Vector3()) { const p = this.perchAt[i]; return p ? this.group.localToWorld(out.copy(p)) : null; }
 
   dispose() {
     this.group.parent?.remove(this.group);

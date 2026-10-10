@@ -195,7 +195,7 @@ export class Workbench {
     out.push({ id: 'garden:myggdrasil', grp: 'the Spirit Garden', label: 'Myggdrasil, the World Mushroom (48 m on its planetoid): caps 1, 3, 5, 10 opening, branches lit as cards are hung, a tincture, fruit; noon then night' });
     out.push({ id: 'garden:fossils', grp: 'the Spirit Garden', label: 'Lachrymite fossils (buried, dug, woken by the song, breaking open; on a loop)' });
     out.push({ id: 'garden:kiln', grp: 'the Spirit Garden', label: 'the Heavenly Kiln over the Peak (opening, bolts traced then striking)' });
-    out.push({ id: 'garden:strains', grp: 'the Spirit Garden', label: "the five strains' spore beds (lichen, koji, inkcap, oyster, witches' butter: growing in, foxfire at night, fairy rings), keepsake pots, sporelings; day to night" });
+    out.push({ id: 'garden:strains', grp: 'the Spirit Garden', label: "the five strains' spore beds (lichen, koji, inkcap, oyster, witches' butter: growing in, foxfire at night, fairy rings), keepsake pots; day to night" });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
     out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });

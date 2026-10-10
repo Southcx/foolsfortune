@@ -17,6 +17,19 @@ import { addOutline } from '../../render/outline.js';
 export const HOOK = 2.5, FORK = 2.5;
 const WOOD = 0x4a2f22, WOOD2 = 0x6a4430, STEEL = 0xe6e8ee, BRASS = 0xd9b048, WEB = 0xe8d7b6, FEATHER = 0xb49be6;
 
+/** A vane petal's shape, pointing out along +Y from the post (metres, before the vane's scale): each feeling's motif in miniature. */
+function petalGeo(shape) {
+  switch (shape) {
+    case 'cube': { const g = new THREE.BoxGeometry(0.014, 0.014, 0.014); g.rotateY(Math.PI / 4); g.translate(0, 0.012, 0); return g; } // (Impact's square)
+    case 'hex': { const g = new THREE.CylinderGeometry(0.012, 0.012, 0.004, 6); g.rotateZ(Math.PI / 2); g.translate(0, 0.014, 0); return g; } // (the plate crystal, face out)
+    case 'star': { const g = new THREE.OctahedronGeometry(0.012); g.scale(0.8, 1.5, 0.8); g.translate(0, 0.016, 0); return g; } // (a spark, a hailstone's hard point)
+    case 'drip': { const pts = []; for (let i = 0; i <= 8; i++) { const u = i / 8; pts.push(new THREE.Vector2(Math.sin(Math.PI * u) * 0.011 * Math.pow(u, 0.6), 0.032 * u)); } return new THREE.LatheGeometry(pts, 8); } // (a drip hanging off the rose, its bulb outward: rot)
+    case 'needle': { const g = new THREE.ConeGeometry(0.005, 0.042, 6); g.translate(0, 0.021, 0); return g; } // (the long rain)
+    case 'ring': { const g = new THREE.TorusGeometry(0.009, 0.003, 6, 12); g.rotateY(Math.PI / 2); g.translate(0, 0.014, 0); return g; } // (a bubble ring, face out along the post: Delirium)
+    default: return new THREE.ConeGeometry(0.012, 0.035, 4); // (a flame, a petal)
+  }
+}
+
 export class DreamvaneModel {
   constructor() {
     const g = (this.group = new THREE.Group());
@@ -71,19 +84,17 @@ export class DreamvaneModel {
   /** A fork to throw (a copy of the one in the heel, the same look), its point toward its own -X. */
   forkMesh() { const f = this.makeFork(this.forkMats.steel, this.forkMats.brass); f.scale.setScalar(FORK); f.traverse((o) => { if (o.isMesh) o.castShadow = true; }); return f; }
 
-  /** The weather vane on the crook's head (vfx/vanemeter.js drives it): a brass rose of five petals, the feelings in their shown order,
-   *  each faintly its colour; a needle turning about the staff to point at the mood, its head the mood's colour and its tail the agate's
-   *  second; two streamers from the tail, longer with the mood's strength, slack in calm. Built on first use. */
+  /** The weather vane on the crook's head (vfx/vanemeter.js drives it): a brass rose of a petal a feeling (seven, in their shown order),
+   *  each faintly its colour and each its own shape, so a petal is known without its colour (a cube, a hexagon, a flame, a spark, a drip,
+   *  a raindrop, a bubble ring: vanemeter.js PETAL_SHAPE); a needle turning about the staff to point at the mood, its head the mood's
+   *  colour and its tail the agate's second; two streamers from the tail, longer with the mood's strength, slack in calm. Built on first
+   *  use; the rose is laid when the meter first hands it the petals. */
   vane() {
     if (this.vaneG) return this.vaneG;
     const V = (this.vaneG = new THREE.Group()); V.position.set(1.0 + 0.11 * HOOK + 0.06, 0.11 * HOOK, 0); V.scale.setScalar(1.6); this.group.add(V);
     const brass = new THREE.MeshStandardMaterial({ name: 'vane-brass', color: BRASS, metalness: 0.7, roughness: 0.35 });
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.07, 6), brass); post.rotation.z = -Math.PI / 2; post.position.x = -0.02; V.add(post);
-    this.petals = [];
-    for (let i = 0; i < 5; i++) { // (the rose: five petals round the post, in the plane across the staff)
-      const a = (i / 5) * Math.PI * 2, m = new THREE.MeshStandardMaterial({ name: 'vane-petal', color: 0x8a6a3a, metalness: 0.5, roughness: 0.4, emissive: 0x000000 });
-      const pet = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.035, 4), m); pet.position.set(0.012, Math.cos(a) * 0.05, Math.sin(a) * 0.05); pet.rotation.x = a; V.add(pet); this.petals.push(m);
-    }
+    this.petals = []; this.rose = new THREE.Group(); V.add(this.rose);
     const N = (this.vaneNeedle = new THREE.Group()); N.position.x = 0.03; V.add(N);
     this.vaneHead = new THREE.MeshStandardMaterial({ name: 'vane-head', color: 0xffffff, roughness: 0.4, emissive: 0xffffff, emissiveIntensity: 0.25 });
     this.vaneTail = new THREE.MeshStandardMaterial({ name: 'vane-tail', color: 0xffffff, roughness: 0.5, side: THREE.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.15 });
@@ -104,7 +115,21 @@ export class DreamvaneModel {
     this.vaneHead.color.copy(head); this.vaneHead.emissive.copy(head);
     this.vaneTail.color.copy(tail); this.vaneTail.emissive.copy(tail);
     this.streamers.forEach((st, i) => { st.scale.y = 0.15 + 1.1 * strength; st.rotation.x = (1 - strength) * 0.15 + Math.sin(t * (5 + 4 * strength) + i * 1.7) * 0.35 * strength; st.rotation.z = (i ? 1 : -1) * (0.2 + 0.5 * strength); });
-    if (petals) this.petals.forEach((m, i) => m.color.setHex(petals[i]).multiplyScalar(0.6));
+    if (petals) this.layRose(petals);
+  }
+
+  /** The rose's petals: one a feeling round the post, in the plane across the staff, at the needle's own angles (i / n of a turn), each
+   *  `{ hex, shape }` (a bare hex is a cone, as the first rose was). */
+  layRose(petals) {
+    for (const o of [...this.rose.children]) { o.geometry.dispose(); o.material.dispose(); this.rose.remove(o); }
+    this.petals = [];
+    const n = petals.length;
+    petals.forEach((p, i) => {
+      const a = (i / n) * Math.PI * 2, hex = typeof p === 'number' ? p : p.hex;
+      const m = new THREE.MeshStandardMaterial({ name: 'vane-petal', color: hex, metalness: 0.5, roughness: 0.4, emissive: 0x000000 }); m.color.multiplyScalar(0.6);
+      const pet = new THREE.Mesh(petalGeo(typeof p === 'number' ? 'cone' : p.shape), m);
+      pet.position.set(0.012, Math.cos(a) * 0.05, Math.sin(a) * 0.05); pet.rotation.x = a; this.rose.add(pet); this.petals.push(m);
+    });
   }
 
   /** The needle: the catcher turned toward what it hears (in the staff's frame: yaw about the staff, pitch across it), its web lit. */

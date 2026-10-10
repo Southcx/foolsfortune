@@ -78,7 +78,7 @@ export class SlipJellies {
     // (a SPIRIT (spirits.js) is a jelly of smoke: the same body and the same mind, lit from inside, a little see-through)
     if (spirit) { mat.transparent = true; mat.opacity = 0.74; mat.depthWrite = true; }
     addRim(mat, 0.5);
-    const deform = new JellyDeform(mat, H, { melt: true });
+    const deform = new JellyDeform(mat, H, { melt: true, detail: k >= 4 ? 3 : 1 }); // (the FOE's melt three times finer: about 25 cm of grain, three pixels at 40 m)
     const root = new THREE.Group();
     const body = new THREE.Mesh(this.geo, mat);
     body.castShadow = true; body.renderOrder = 2;

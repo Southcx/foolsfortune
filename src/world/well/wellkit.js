@@ -201,17 +201,20 @@ export function buildFloor(game, layout, origin, floor = 1) {
     spotsOf.set(cell, D.spots.map((o) => { const p = place(m.x + o.x, m.z + o.z), on = D.pieces.find((q) => Math.abs(q.x - o.x) < q.w / 2 && Math.abs(q.z - o.z) < q.d / 2);
       return { kind: o.kind, pos: new THREE.Vector3(p.x, on ? y + (on.h === TALL ? high : on.h) : yb + S.at(o.x, o.z), p.z) }; })); // (on a piece's top where one stands there)
   }
-  // ---- what is drawn: one mesh a set (the kit's materials, shared by every floor), and one of sand
+  // ---- what is drawn: one mesh a set and a quadrant (the kit's materials, shared by every floor), and the sand's the same way
   const K = (game.dunemawKit ||= (() => { const k = dunemawKit({ env: game.sky?.env }); for (const mm of [k.wall, k.floor, k.trim, k.sand].filter(Boolean)) mm.userData.shared = true; return k; })());
   const COL = { floor: tint(PALETTE.floor), wall: tint(PALETTE.wall), ceil: tint(PALETTE.deep, 0.5), deco: tint(PALETTE.mid) };
-  for (const [set, geos] of Object.entries(sets)) {
-    if (!geos.length) continue;
+  // (merged a quadrant at a time, so the frustum culls the rooms behind you: a floor of 25 rooms drawn whole was 170k triangles from
+  // anywhere in it, against the Well's 120k; a quadrant is the cell's middle's side of the floor's centre)
+  const quad = (geo) => { geo.computeBoundingBox(); const b = geo.boundingBox; return ((b.min.x + b.max.x) / 2 > C.x ? 1 : 0) + ((b.min.z + b.max.z) / 2 > C.z ? 2 : 0); };
+  const byQuad = (geos) => { const Q = [[], [], [], []]; for (const g of geos) Q[quad(g)].push(g); return Q.filter((q) => q.length); };
+  for (const [set, all] of Object.entries(sets)) for (const geos of byQuad(all)) {
     let merged = mergeGeometries(geos, false); for (const g of geos) g.dispose();
     if (set === 'wall' || set === 'deco') { // (rock: one skin, its normals smoothed over the seams and the boxes' edges, so a wall reads as cut stone, not as a box)
       merged.deleteAttribute('normal'); const welded = mergeVertices(merged, 1e-3); merged.dispose(); merged = welded; merged.computeVertexNormals();
     }
     const mesh = new THREE.Mesh(merged, set === 'floor' ? K.floor : set === 'ceil' || set === 'arch' ? K.trim : set === 'wall' || set === 'deco' ? K.wall : game.level.mat(COL[set]));
-    mesh.receiveShadow = true; mesh.castShadow = set === 'deco' || set === 'arch';
+    mesh.name = `well-${set}`; mesh.receiveShadow = true; mesh.castShadow = set === 'deco' || set === 'arch';
     if (set === 'wall' || set === 'deco' || set === 'arch') addOutline(mesh); // (the floor lies under the sand; the ceiling is seen from below only)
     group.add(mesh);
   }
@@ -219,8 +222,10 @@ export function buildFloor(game, layout, origin, floor = 1) {
   // (the sand's grain from the world: render/triplanar.js, Calissa's CC0 sand on the tops, packed sand on the banks; once per material)
   if (!sandMat.userData.triplanar) triplanar(sandMat, { side: surfaceTexture('sand_packed'), top: surfaceTexture('sand'), scale: 0.3, strength: 0.75 });
   game.paintmap?.patch(sandMat); // (once: the paint on the Dunemaw's sand)
-  const sand = new THREE.Mesh(mergeGeometries(sandGeos, false), sandMat); for (const g of sandGeos) g.dispose();
-  sand.receiveShadow = true; sand.name = 'well-sand'; group.add(sand);
+  for (const geos of byQuad(sandGeos)) {
+    const sand = new THREE.Mesh(mergeGeometries(geos, false), sandMat); for (const g of geos) g.dispose();
+    sand.receiveShadow = true; sand.name = 'well-sand'; group.add(sand);
+  }
   // ---- the pools: the way up at the way in, the way down at the end of the path (none on the last floor: the bottom of the Well)
   const onSand = (cell, lx = 0, lz = 0) => {
     const s = sandOf.get(cell), km = mid(cell), gx = km.x + lx, gz = km.z + lz, p = place(gx, gz);

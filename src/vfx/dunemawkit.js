@@ -43,7 +43,7 @@ function wallMaterial(env) {
       .replace('#include <common>', '#include <common>\nvarying vec3 vSwW;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvSwW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nvarying vec3 vSwW;\nuniform float uDepth, uSlam, uT;\nvec3 swClimb = vec3(0.0);\n${OXIDE}`)
+      .replace('#include <common>', `#include <common>\nvarying vec3 vSwW;\nuniform float uDepth, uSlam, uT;\nvec3 swClimb = vec3(0.0); float swFar = 0.0;\n${OXIDE}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
 { // the terraces: a step every 0.6 m up the wall, each a film of its own thickness (its colour), a dark seam at each riser
   float step = floor(vSwW.y / 0.6), f = fract(vSwW.y / 0.6);
@@ -52,17 +52,19 @@ function wallMaterial(env) {
   vec3 ox = pow(swOxide(film + step * 0.13 + uT * 0.015 * uDepth), vec3(1.7)) * 2.2; // (the colours drift up the stair, deeper down)
   ox = mix(vec3(dot(ox, vec3(0.3, 0.55, 0.15))), ox, 0.33 + 0.67 * cry);
   float riser = smoothstep(0.0, 0.06, f) * (1.0 - smoothstep(0.94, 1.0, f));
+  swFar = smoothstep(0.12, 0.45, fwidth(vSwW.y / 0.6)); // (a terrace under three pixels: the bowl's 50 m wall seen across 140 m)
+  riser = mix(riser, 0.9, swFar); ox = mix(ox, vec3(0.62, 0.55, 0.6), swFar * 0.7); // (its seams and films averaged, as a mip would: never a crawl)
   diffuseColor.rgb *= mix(vec3(0.25), ox, riser);
-  swClimb = ox * riser * smoothstep(0.8, 1.0, sin(step * 0.9 - uT * 1.6)) * (0.35 * uDepth * uDepth + 0.4 * uSlam); // (a light climbing the terraces in waves, an equalizer's)
+  swClimb = ox * riser * smoothstep(0.8, 1.0, sin(step * 0.9 - uT * 1.6)) * (0.35 * uDepth * uDepth + 0.4 * uSlam) * (1.0 - 0.6 * swFar); // (a light climbing the terraces in waves, an equalizer's)
 }`)
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += swClimb;')
       .replace('#include <normal_fragment_begin>', `#include <normal_fragment_begin>
 { // the steps, told by the light: on an upright face, each terrace's normal leans up toward the sky across its height (a tread
   // sloping back into the wall), so the light breaks on every step as it does on a hopper's stair; the box stays a box
-  float f = fract(vSwW.y / 0.6);
+  float f = fract(vSwW.y / 0.6), far = smoothstep(0.12, 0.45, fwidth(vSwW.y / 0.6));
   vec3 upV = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
   float upright = 1.0 - smoothstep(0.4, 0.7, abs(dot(normal, upV)));
-  normal = normalize(normal + upV * upright * (0.15 + 0.9 * (1.0 - f)));
+  normal = normalize(normal + upV * upright * (0.15 + 0.9 * mix(1.0 - f, 0.5, far))); // (far off, the treads' sawtooth of light is its mean)
 }`);
   };
   m.customProgramCacheKey = () => 'dunemaw-wall';

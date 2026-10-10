@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { G, groups } from '../core/physics.js';
 
 const OPEN = -1e4; // (nothing over this spot: open to the sky all the way down)
+const NUDGE = 0.0173; // (metres off a cell's centre, on no grid a level is built on)
 const ONLY_STATIC = groups(0xffff, G.STATIC); // (the level: roofs, walls, the ground; never the Courier, a pot or a creature)
 const _o = { x: 0, y: 0, z: 0 }, _d = { x: 0, y: -1, z: 0 };
 
@@ -49,7 +50,7 @@ export class Overhead {
     for (let r = 0; r < rays; r++) {
       const [di, dj] = this.order[this.k]; this.k = (this.k + 1) % this.order.length;
       const x = cx + di, z = cz + dj;
-      _o.x = (x + 0.5) * this.cell; _o.y = top; _o.z = (z + 0.5) * this.cell;
+      _o.x = (x + 0.5) * this.cell + NUDGE; _o.y = top; _o.z = (z + 0.5) * this.cell + NUDGE; // (a hair off the cell's centre: a straight-down ray on a heightfield's grid line goes through it, CASEBOOK 2026-10-09)
       const hit = P.raycast(_o, _d, 120, undefined, ONLY_STATIC, this.pred);
       const t = ((((z % n) + n) % n) * n + (((x % n) + n) % n)) * 4;
       this.data[t] = hit ? hit.point.y : OPEN; this.data[t + 1] = x; this.data[t + 2] = z;
