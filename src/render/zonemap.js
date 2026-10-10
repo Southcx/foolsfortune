@@ -24,7 +24,9 @@ export const ZONE_TESTS = [
   // drawn only from where its doorway can be seen; part of the Workshop's ground (one roof, one set of lamps). Its bounds take in its
   // own walls (their boxes centred 25 cm outside the floor's edge, x 30.75 and z -5.75 / 10.75): at the floor's edge they fell to the
   // Workshop and vanished from inside whenever the door was out of view (the owner's R2, v131; casebook)
-  { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.y < 7 && p.x > 10.5 && p.x < 31.2 && p.z > -6.2 && p.z < 11.2 },
+  // The combat wing (world/testroom/combatwing.js, TR.wing: z -36 to -5.5, 9 m high) is the room's too, through the arcade: its walls and roof
+  // to 36.5 south and 9.5 up (docs/plans/COMBAT-LAB.md)
+  { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.x > 10.5 && p.x < 31.2 && ((p.y < 7 && p.z > -6.2 && p.z < 11.2) || (p.y < 10.5 && p.z > -36.7 && p.z <= -5.5)) },
   { id: 'workshop', test: (p) => p.y > -1.2 && p.y < 60 && Math.abs(p.x) < 40 && Math.abs(p.z) < 40 },
   { id: 'basement', test: (p) => p.y <= -1.2 && p.y > -150 && p.x > -250 && p.x < 450 && p.z > -300 && p.z < 200 },
   { id: 'circuits', test: (p) => p.x > 2800 && p.x < 3300 && p.z > -300 && p.z <= 380 && p.y > -120 && p.y < 120 },

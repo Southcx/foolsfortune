@@ -75,7 +75,7 @@ export class DebugChests {
       case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'testroom.index': return g.testroom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
       case 'testroom.paintrange': { const S = g.testroom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)
-      default: return null;
+      default: { const c = TR.wing?.chests?.[at]; return c && g.testroom ? { pos: new THREE.Vector3(c[0], 0, c[1]), face: new THREE.Vector3(c[2], 0, c[3]) } : null; } // (the combat wing's stations: world/testroom/layout.js TR.wing.chests)
     }
   }
 
