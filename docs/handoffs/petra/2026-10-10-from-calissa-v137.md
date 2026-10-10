@@ -42,7 +42,7 @@ sky and its labradorite lip, edge on, was the rainbow. W3's mouth hidden: the fr
 Fixed in `vfx/dunemaw.js` and `vfx/bowl.js`: `layOnGround(geo, ground, k)` lifts the mouth's, the maw's and the ring's vertices onto the
 ground, and the mouth is one-sided (a look on the ground is seen from above). **CROSSING:** `world/well/bowl.js` `buildPools()` passes the
 dish to both: `ground = (x, z) => dishY(Math.hypot(w.x + x, w.z + z)) - y`. The ring's bubbles and splash sit on it too. Programs: none
-added (the mouth's program goes from two-sided to one-sided; every mouth shares it). Casebook 2026-10-10, rule 169.
+added (the mouth's program goes from two-sided to one-sided; every mouth shares it). Casebook 2026-10-10, rule 170.
 
 **Yours, the camera's floor:** the eye still comes to rest a few centimetres over the sand whenever the frame pitches it below the pivot.
 `allowed = hit.distance - C.collisionRadius` keeps 0.2 m along a ray that grazes the floor, so at 19 m in the FOE's frame (pitch 21 + 6)

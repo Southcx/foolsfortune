@@ -461,11 +461,11 @@ the rules before building in the same area; a rule a machine can check goes into
     parked stand-in goes, list who draws with its program (`customProgramCacheKey`, a shared material's) and keep it while any one does.
     The check that proves it: the program list after the look is first drawn in play equals the list after the boot.
 
-169. **A flat look on sloping ground is laid on the slope, and judged from the camera's lowest place.** A disc, a decal or a pool's
+170. **A flat look on sloping ground is laid on the slope, and judged from the camera's lowest place.** A disc, a decal or a pool's
     face set at one height on ground that is not level floats over it on one side and sinks under it on the other: lift its vertices
     to the ground under each (`layOnGround`, `vfx/dunemaw.js`) or level the ground under it. A look on the ground is one-sided: an eye
     that sinks under it sees the ground, never its underside. Look at it from the floor with the camera pitched up, not only from above.
-170. **A program is what a material is at its first draw, shadow included.** The sun's depth program differs by a caster's sides
+171. **A program is what a material is at its first draw, shadow included.** The sun's depth program differs by a caster's sides
     (and skinning, morphs, instancing): a two-sided look casts one-sided (`shadowSide`) unless its silhouette needs both. A material
     built flat after the warm-up is drawn flat until the present's walk smooths it: shade it as it is built. A pass with a scene of its
     own (a trail map, a render target) is drawn once in the warm-up, before the empty frame, or it compiles in play.
@@ -502,7 +502,7 @@ the rules before building in the same area; a rule a machine can check goes into
   (the bowl passes `ground`: one line in Petra's `world/well/bowl.js`), and the mouth is one-sided. Rendered again: the same shot shows the
   whole Great Slip Jelly; W3 lies whole on the slope from above and flush from the side; W0 is a ring round the FOE's foot. The eye
   still rests a few centimetres over the sand when the frame pitches it below the pivot: the camera's, handed to Petra.
-- **Rule:** 169 (new).
+- **Rule:** 170 (new).
 
 ### 2026-10-10 · Three programs compiled after the warm-up (perf at v137: MeshStandardMaterial, ShaderMaterial, MeshDepthMaterial)
 
@@ -514,7 +514,7 @@ the rules before building in the same area; a rule a machine can check goes into
   compiled the first time the Weir's mat came into the sun's shadow.
 - **Fix:** the pot casts one-sided (`shadowSide: BackSide`, every one-sided caster's program). The coffin and the trail map are Petra's:
   each handed over with its line, tried here first: with all three, 0 late programs and 162 in the Dunes, the Well and the garden (164).
-- **Rule:** 170 (new).
+- **Rule:** 171 (new).
 
 ### 2026-10-09 · The skiff's glide spread nothing: the oars were asked for by their Blender names (the owner's R8, "it reads faintly")
 
