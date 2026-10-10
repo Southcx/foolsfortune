@@ -272,6 +272,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
   the **guard** (held). A **parryable** thing wears a Lachryma outline (Cuphead's pink); one
   without it cannot be parried. *Not:* the guard (the held block after the window).
+  That outline is **the parry mark** (`game.parryMark`, `vfx/parrymark.js`): ink with the oil film in it, thickening as a strike nears.
+  While a V pressed now would answer (`pressAnswers` for a windup: the blow's window and the press's quarter second; `shotAnswers` for
+  a shot in reach; `courier/parry.js`) it runs **hot** (a white core between film-coloured rims, twice as wide), and as it goes hot
+  **the window's glint**, a four-point star, flares on the striking part's crest and is gone in 0.16 real seconds (`parry.window`).
+  *Not:* the resist mark, a Figment attack telegraph.
   Each tool's answer (`courier/parries.js`, the table): the psygun's **stagger** (shot down, its thrower stunned), the Soul Brush's
   **bat** (returned, carrying the load's feeling) and **soak** (a Lachryma shot drunk into the Lachrymato Bottle), the Veritome's
   **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
