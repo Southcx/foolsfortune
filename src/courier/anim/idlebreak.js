@@ -1,37 +1,69 @@
 // ---------------------------------------------------------------------------------------
-// IDLE BREAKS: what the Courier does standing still with nothing in their hands. They stand in one of the suite's standing idles
-// (IDLES: a table of them by their look, the one played marked `default`; the owner's R14, v133: a calm one, hands on the hips, where
-// the old Loco_IdleMasc braced the knees and bobbed the head with every breath). After a still spell (IDLE.waits, 7 to 12 s, in turn)
-// one of the suite's idle breaks plays over the idle: Loco_IdleLookAround, Loco_IdleStretch, Loco_IdleShiftTap, chosen in turn,
-// crossfaded in and out. Anything ends it at once (a short fade): a step, a jump, a crouch, a tool drawn, a tech, a fight. While
+// IDLE BREAKS: what the Courier does standing still with nothing in their hands. They stand in one of their standing idles (IDLES: a
+// table of them by their look, the one played marked `default`; the owner's R21, v137: standing straight with the least sway, so
+// `upright`, baked at load from the suite's straightest body and its arms-down arms: IDLES.baked). After a still spell (IDLE.waits, 7
+// to 12 s, in turn) one of the suite's idle breaks plays over the idle: Loco_IdleLookAround, Loco_IdleStretch, Loco_IdleShiftTap, chosen
+// in turn, crossfaded in and out. Anything ends it at once (a short fade): a step, a jump, a crouch, a tool drawn, a tech, a fight. While
 // game.combat says they are fighting with nothing drawn, the idle itself is Loco_IdleAlert (fists up, the weight back) instead of the
 // plain one; a tool drawn keeps its own stance (stances.js), which is what names it across a room.
 //
+// THE IDLE UNDER A LAYER. A tool's stance, the gun's aim, a carried crate and the kick's blows are laid over the upper body only
+// (character.js MASK_UPPER, the hips not moved): the hips, the legs and the lower spine stay the idle's. Every one of them was made over
+// the pack's `idle` (Loco_IdleMasc, the stances' base), so while one is on the idle under it is that one (IDLE.under, crossfaded over
+// IDLE.swap and held IDLE.underHold s after): the chosen idle's weight on one leg never tilts a stance (v137: the akimbo idle's hips,
+// rolled 8 degrees and 10.6 cm to one side, leaned every tool's stance 9 to 11 degrees; casebook rule 173).
+//
 // Prior art: the idle breaks of Uncharted and The Last of Us (a fidget after some still seconds, on no timer the player can see),
-// Super Mario 64's look-around, and Monster Hunter's combat idle against its town idle; the chosen idle stance of a character creator
-// (Black Desert's and Monster Hunter World's idle pose pick: one table of stances, one picked, crossfaded on a change).
+// Super Mario 64's look-around, and Monster Hunter's combat idle against its town idle (and its weapon drawn: a stance of its own over
+// the ready legs, never the town idle's); the chosen idle stance of a character creator (Black Desert's and Monster Hunter World's idle
+// pose pick: one table of stances, one picked, crossfaded on a change); Unity's Loop Pose for the baked one's seam (stances.js).
 //
 //   const idles = new IdleBreaks(ch)
 //   idles.idle(dt, s, still, out) -> out   the idle layer: the plain or alert idle, a break over it; still: the idle's share of the gait
 //   idles.playing                           the break playing, or null
-//   idles.choose(key) -> bool               stand in another of IDLES (crossfaded over IDLE.swap s); idles.stand: the key standing in
+//   idles.choose(key) -> bool               stand in another of IDLES (crossfaded over IDLE.swap): the one call a chooser makes (the
+//                                           kiln's, Petra's: docs/handoffs/petra/2026-10-10-from-calissa-idle-choice.md); idles.stand:
+//                                           the key standing in (what the save keeps)
 //   idleClip(key = IDLES.default)           the clip a key of IDLES plays (for anything else that stands the Courier idle)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakeClip } from './stances.js';
 
-/** The Courier's standing idles: every standing idle of the suite, by its look; `default` is the one they stand in (one name: a chooser
- *  at the kiln, later, sets it, or idles.choose). Measured in game over 10 real seconds (R14, v133): the chest's speed, its sway; the left
- *  hand's speed, mean and fastest; the loop. All are in core.bin (named here), so a choice needs no fetch. */
+const ARMS = '^(upper_arm|forearm|hand|f_|thumb)';
+/** The Courier's standing idles: the suite's seven, by their look, and one baked from them; `default` is the one they stand in (one name:
+ *  the kiln's chooser sets another, by idles.choose). Measured in game over 10 real seconds, every tool off (v137): the spine's lean to
+ *  their left (hips to neck, degrees), the pelvis's roll and the hips' shift off the feet; the chest's speed; the head's sway; the hands'
+ *  speed, mean and fastest; the loop. All but the baked one are in core.bin (named here), so a choice needs no fetch. */
 export const IDLES = {
-  default: 'akimbo',
+  default: 'upright',
   clips: {
-    akimbo: 'Loco_IdleRelaxedMasc', // (hands on the hips, the weight on one leg, a slow breath: chest 1.7 cm/s; left hand 4.9, at most 10.5; 3.0 s)
-    hipCocked: 'Loco_IdleRelaxedFem', // (the left hand on the hip, the right hanging, a hip thrown out: chest 1.6; the right hand flicks at 24 cm/s; 3.0 s)
-    handsBehind: 'Loco_IdleC', // (hands clasped behind the back, feet together: the stillest, chest 1.2, but a quick hand move once a loop, 15 to 23 cm/s, where the worn tools hang; 4.0 s)
-    armsDown: 'Loco_IdleFem', // (arms at the sides, feet together; the head bobs 10 cm with each breath: chest 3.9; 2.5 s)
-    braced: 'Loco_IdleMasc', // (feet wide, knees bent, fists out; the head bobs 10 cm, the left hand flicks at 50 cm/s: chest 3.6; 2.5 s. The default to v133)
-    weightShift: 'Loco_IdleD', // (the weight hip to hip, 10 cm; the right hand thrown out once a loop at 2 m/s; 5.0 s)
+    upright: 'idle:upright', // (the default: straight and still, arms at the sides, feet together: lean 0.2, roll 0, shift 0; chest 1.1 cm/s; head 5.8 cm; hands 2.8 and 4.0 cm/s, at most 12; 4.0 s)
+    akimbo: 'Loco_IdleRelaxedMasc', // (hands on the hips, the weight on one leg: lean 11.3, roll 8, shift 10.6 cm; chest 1.7; head 6.0; left hand 4.9, at most 10.5; 3.0 s. The default v133 to v137)
+    hipCocked: 'Loco_IdleRelaxedFem', // (the left hand on the hip, the right hanging, a hip thrown out: lean -13.6, roll 9.6, shift 9 cm; chest 1.6; the right hand flicks at 24 cm/s; 3.0 s)
+    handsBehind: 'Loco_IdleC', // (hands clasped behind the back, feet together: the straightest and stillest body, lean 0.1, roll 0, chest 1.1; but the hands sit on the tools worn at the back and pop at the loop's end, 23 cm/s; 4.0 s)
+    armsDown: 'Loco_IdleFem', // (arms at the sides, feet together: lean 4.4, roll 9, shift 8.8 cm; the head bobs 10 cm with each breath, chest 3.9; 2.5 s)
+    braced: 'Loco_IdleMasc', // (feet wide, knees bent, fists out: lean 0, roll 0; the head bobs 10 cm, the left hand flicks at 50 cm/s: chest 3.6; 2.5 s. The default to v133, and IDLE.under)
+    weightShift: 'Loco_IdleD', // (the weight hip to hip, 10 cm, the lean swinging 7.6 either way; the right hand thrown out once a loop at 2 m/s; 5.0 s)
     restless: 'Loco_IdleE', // (the arms working in front, never still: chest 17 cm/s, hands to 1.2 m/s; 4.0 s)
+  },
+  /** The idles baked at load (stances.js bakeClip), by their clip names. UPRIGHT: Loco_IdleC's body (the straightest and stillest of the
+   *  seven) with Loco_IdleFem's arms hung at the sides, stretched to its loop and their swing halved; its last two frames pop to meet the
+   *  first (10.5 degrees at the right shoulder, 1.2 to 1.7 along the spine and head, where its other steps are 0.3), so they are dropped
+   *  and the loop closed. */
+  baked: {
+    'idle:upright': { base: 'Loco_IdleC', closeLoop: 2, overlay: [['Loco_IdleFem', ARMS]], exaggerate: [0.5, ARMS] },
+  },
+  /** What a chooser shows (the kiln's), as docs/plans/CLARITY.md asks of a table: `name` the label, `does` one line, verb first; each a
+   *  placeholder for Espada (the player's words are hers). */
+  labels: {
+    upright: { name: 'Upright', does: 'Stand tall and still, arms at your sides.' },
+    akimbo: { name: 'Akimbo', does: 'Stand hands on hips, weight on one leg.' },
+    hipCocked: { name: 'Hip Cocked', does: 'Cock a hip, one hand resting on it.' },
+    handsBehind: { name: 'At Ease', does: 'Stand at ease, hands clasped behind you.' },
+    armsDown: { name: 'Loose', does: 'Stand loose, arms down, breathing deep.' },
+    braced: { name: 'Braced', does: 'Brace wide, knees bent, fists ready.' },
+    weightShift: { name: 'Shifting', does: 'Rock your weight from hip to hip.' },
+    restless: { name: 'Restless', does: 'Fidget, hands never quite settling.' },
   },
 };
 /** The clip a key of IDLES plays. */
@@ -43,7 +75,8 @@ export const IDLE = {
   breaks: ['Loco_IdleLookAround', 'Loco_IdleStretch', 'Loco_IdleShiftTap'],
   fadeIn: 0.5, fadeOut: 0.6, cut: 0.15,
   alert: 'Loco_IdleAlert', alertRate: 3, // (1/s: in and out of the fighting stance)
-  swap: 0.4, // (s: one standing idle to another, when one is chosen)
+  swap: 0.4, // (s: one standing idle to another, when one is chosen; the chosen idle to IDLE.under and back)
+  under: 'idle', underHold: 1.0, // (the idle under an upper-body layer: the stances' base; held this many s after the layer ends, so a run of blows is not a shuffle of the feet)
 };
 
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -53,7 +86,8 @@ export class IdleBreaks {
     this.ch = ch; this.C = ch.clips;
     this.stillT = 0; this.n = 0; this.brk = null; this.bt = 0; this.bw = 0; this.cutW = 0;
     this.alertW = 0; this.p = this.C.pose();
-    this.stand = IDLES.default; this.was = null; this.swapW = 0;
+    this.stand = IDLES.default; this.was = null; this.swapW = 0; this.underW = 0; this.layerT = 9;
+    for (const [name, S] of Object.entries(IDLES.baked)) if (!this.C.clips[name]) { const c = bakeClip(this.C, S); if (c) this.C.clips[name] = { ...c, name }; }
   }
 
   get playing() { return this.brk; }
@@ -81,9 +115,13 @@ export class IdleBreaks {
 
   idle(dt, s, still, out) {
     const C = this.C, ch = this.ch;
+    const g = s.techs?.game, armed = !!g?.belt?.others(null), fighting = !!g?.combat?.engaged;
     C.sample(this.clip, ch.time, out);
     if (this.swapW > 0.001) { this.swapW = Math.max(0, this.swapW - dt / IDLE.swap); C.blend(out, C.sample(this.was, ch.time, this.p), smooth(0, 1, this.swapW)); } // (the idle before, fading)
-    const g = s.techs?.game, armed = !!g?.belt?.others(null), fighting = !!g?.combat?.engaged;
+    // the idle under an upper-body layer: a tool or the gun in the hands, the aim, a passive tech's pose (a crate carried, a blow of the kick)
+    this.layerT = armed || (s.upper || 0) > 0.01 || s.techs?.list?.some((t) => t.passive && t.engaged) ? 0 : this.layerT + dt;
+    this.underW = THREE.MathUtils.clamp(this.underW + (this.layerT < IDLE.underHold ? dt : -dt) / IDLE.swap, 0, 1);
+    if (this.underW > 0.001 && this.clip !== IDLE.under && C.clips[IDLE.under]) C.blend(out, C.sample(IDLE.under, ch.time, this.p), smooth(0, 1, this.underW));
     // the fighting stance, empty-handed
     this.alertW = THREE.MathUtils.damp(this.alertW, fighting && !armed && s.grounded ? 1 : 0, IDLE.alertRate, dt);
     if (this.alertW > 0.001) C.blend(out, C.sample(IDLE.alert, ch.time, this.p), this.alertW);

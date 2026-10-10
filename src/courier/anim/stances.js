@@ -5,25 +5,32 @@
 //
 // A stance is a UAL clip (CC0) modified, baked once at load into a clip of its own (`stance:<tool>`), so a tool names it as its idle
 // and the animator never knows the difference (CLAUDE.md: find a clip, blend it in; modify it rather than author one):
-//   base         the UAL idle it starts from (its breathing, its weight shift: the life is the clip's)
+//   base         the UAL idle it starts from (its breathing, its weight shift: the life is the clip's); a list: the first the pack has
 //   overlay      [clip, bones (a pattern)]: those bones taken from another clip at the same moment of the loop (the hand that holds
 //                the tool from the clip whose fingers close on a haft, the rest of them from a freer idle)
 //   exaggerate   how much further each joint swings from its own average over the loop (1: as captured; 1.5: half again): the
-//                Disney principle, applied to a capture
+//                Disney principle, applied to a capture; [k, pattern] for only the bones the pattern names (below 1, a calmer swing)
 //   rot          [bone, axis, degrees] turns, in the body's frame (x their left, y up, z forward), applied in order, parents first:
 //                the pose of the stance, set on top of the clip's motion, the way a key pose is offset in a DCC's layer
 //   reach        [side, [x, y, z], [pole x, y, z]?]: where a hand is to be in the key pose (body frame, metres from the feet), its arm
 //                solved once here, at bake, as authored.js solves its key poses; the hand keeps its own turn, the clip's motion rides
 //                on top. For a hand that has to be somewhere exact (at an ear, on a hip), which turns alone get to only by guesswork
+//   nudge        [side, [x, y, z], [pole x, y, z]?]: a hand moved this far (body frame, metres) from where the clip has it, every
+//                frame, its arm solved again as `reach` solves it: the clip's own motion kept, the hand held somewhere else
 //   drop         the hips lowered (metres): a wider, readier stance
 //   hold         0..1: one frame of the base held for the whole clip (a pose, not a loop)
+//   closeLoop    frames at the base's end that jump to meet its start (a loop exported with a pop at its end): dropped, and the
+//                difference left between its new last frame and its first spread over the whole clip, so it loops without a jump
 // The hand that holds the tool keeps the tool (the tool rides the hand: tools/grip.js); a second hand on it is the light IK a hand
 // closing on a haft is allowed.
 //
 // Prior art: Monster Hunter's weapon idles (a silhouette per weapon class), Ghibli and the Disney twelve (exaggeration, appeal,
-// staging), the animation layer of every DCC (an additive offset over a captured cycle).
+// staging), the animation layer of every DCC (an additive offset over a captured cycle); closeLoop is Unity's Loop Pose (Mecanim's
+// import option: the end's mismatch with the start spread over the clip).
 //
 //   bakeStances(ch)     once, after the clips are loaded (character.js)
+//   bakeClip(C, S)      -> a clip of the base with S's hold, closeLoop, overlay and exaggerate (no skeleton needed: the Courier's
+//                       standing idles are baked with it too, courier/anim/idlebreak.js); null if the base is not in the pack
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -49,12 +56,12 @@ export const STANCES = {
       ['head', 'z', 12], ['head', 'y', -10],
     ],
   },
-  // THE LOCKHEART (R40, the owner's direction): the coffin held gingerly in the LEFT hand, in front of the chest, the head tipped down to
-  // it as to something that might wake; the right hand free, hanging as it hangs at rest.
+  // THE LOCKHEART (R40, the owner's direction): the coffin held gingerly in the LEFT hand, the head tipped down to it as to something that
+  // might wake; the right hand free. The suite's own Lock_Idle, the left hand held further out and lower (the owner's v137: the coffin sat
+  // against the belly, 7 cm off it, from the chest to the hips): out in front, where it hangs on its chain clear of the body.
   lockheart: {
-    base: 'idle', exaggerate: 1.15,
-    rot: [['head', 'x', 10], ['head', 'z', 7], ['spine003', 'x', 3]],
-    reach: [['L', [0.08, 1.2, 0.27], [0.45, 0.95, -0.1]]],
+    base: ['Lock_Idle', 'idle'],
+    nudge: [['L', [-0.04, -0.1, 0.14]]],
   },
   // THE LOCKHEART'S CHANNEL (R40): FFXI's black magic cast, the arms out in front and the hands joined, thumbs and fingers making an
   // O; what it draws streams in through the O to the coffin floating behind it. One held frame of the push (its arms out), the hands
@@ -77,7 +84,7 @@ export const STANCES = {
 };
 
 const AX = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
-const _q = new THREE.Quaternion(), _m = new THREE.Quaternion(), _d = new THREE.Quaternion(), _v = new THREE.Vector3();
+const _q = new THREE.Quaternion(), _m = new THREE.Quaternion(), _d = new THREE.Quaternion(), _share = new THREE.Quaternion(), _v = new THREE.Vector3(), _n = new THREE.Vector3();
 
 /** q = mean * (mean⁻¹ q)^k: the joint's swing away from its average, scaled. */
 function exaggerate(q, mean, k) {
@@ -90,39 +97,60 @@ function exaggerate(q, mean, k) {
   return q.copy(mean).multiply(_d);
 }
 
+/** The clip arrays of a spec's base with its hold, closeLoop, overlay and exaggerate laid on (the parts that need no skeleton). */
+export function bakeClip(C, S) {
+  const src = C.clips[[].concat(S.base).find((b) => C.clips[b])], nb = C.nb, nb4 = nb * 4;
+  if (!src) return null;
+  let n = src.n, q = new Float32Array(src.q), p = new Float32Array(src.p);
+  // (hold: one frame of the clip, the same for all of it: a pose held, not a loop)
+  if (S.hold !== undefined) { const h = Math.round(S.hold * (n - 1)); for (let f = 0; f < n; f++) { q.copyWithin(f * nb4, h * nb4, (h + 1) * nb4); p.copyWithin(f * 3, h * 3, h * 3 + 3); } }
+  // (closeLoop: the popping end dropped; each bone's last kept frame turned onto its first a share at a time, frame by frame)
+  if (S.closeLoop > 0 && n - S.closeLoop > 2) {
+    n -= S.closeLoop; q = q.slice(0, n * nb4); p = p.slice(0, n * 3);
+    const L = n - 1;
+    for (let b = 0; b < nb; b++) {
+      _d.fromArray(q, L * nb4 + b * 4).invert().multiply(_q.fromArray(q, b * 4)); // (what the last frame lacks of the first, in the bone's own frame)
+      for (let f = 1; f <= L; f++) _m.fromArray(q, f * nb4 + b * 4).multiply(_share.identity().slerp(_d, f / L)).toArray(q, f * nb4 + b * 4);
+    }
+    const dp = [0, 1, 2].map((k) => p[k] - p[L * 3 + k]);
+    for (let f = 1; f <= L; f++) for (let k = 0; k < 3; k++) p[f * 3 + k] += dp[k] * (f / L);
+  }
+  for (const [clip, pattern] of S.overlay || []) {
+    const o = C.clips[clip];
+    if (!o) continue;
+    const re = new RegExp(pattern), tmp = C.pose();
+    for (let f = 0; f < n; f++) {
+      C.sample(clip, (f / Math.max(1, n - 1)) * o.dur, tmp, true);
+      for (let b = 0; b < nb; b++) if (re.test(C.bones[b])) for (let k = 0; k < 4; k++) q[(f * nb + b) * 4 + k] = tmp.q[b * 4 + k];
+    }
+  }
+  // the exaggeration: each joint's average over the loop, and every frame pushed further from it
+  const [ek, eOnly] = Array.isArray(S.exaggerate) ? [S.exaggerate[0], new RegExp(S.exaggerate[1])] : [S.exaggerate, null];
+  if (ek && ek !== 1) {
+    for (let b = 0; b < nb; b++) {
+      if (eOnly && !eOnly.test(C.bones[b])) continue;
+      _m.set(0, 0, 0, 0);
+      for (let f = 0; f < n; f++) {
+        const o = (f * nb + b) * 4;
+        const sgn = (q[o] * q[b * 4] + q[o + 1] * q[b * 4 + 1] + q[o + 2] * q[b * 4 + 2] + q[o + 3] * q[b * 4 + 3]) < 0 ? -1 : 1;
+        _m.x += q[o] * sgn; _m.y += q[o + 1] * sgn; _m.z += q[o + 2] * sgn; _m.w += q[o + 3] * sgn;
+      }
+      _m.normalize();
+      const mean = _m.clone();
+      for (let f = 0; f < n; f++) { const o = (f * nb + b) * 4; _q.fromArray(q, o); exaggerate(_q, mean, ek).toArray(q, o); }
+    }
+  }
+  return { ...src, n, dur: n === src.n ? src.dur : (n - 1) / C.fps, q, p };
+}
+
 export function bakeStances(ch, table = STANCES) {
   const C = ch.clips, nb = C.nb, d = ch.driven, root = ch.root;
   const saveP = root.position.clone(), saveQ = root.quaternion.clone();
   root.position.set(0, 0, 0); root.quaternion.identity();
   for (const [id, S] of Object.entries(table)) {
-    const src = C.clips[S.base];
-    if (!src) continue;
-    const n = src.n, q = new Float32Array(src.q), p = new Float32Array(src.p);
-    // (hold: one frame of the clip, the same for all of it: a pose held, not a loop)
-    if (S.hold !== undefined) { const nb4 = nb * 4, h = Math.round(S.hold * (n - 1)); for (let f = 0; f < n; f++) { q.copyWithin(f * nb4, h * nb4, (h + 1) * nb4); p.copyWithin(f * 3, h * 3, h * 3 + 3); } }
-    for (const [clip, pattern] of S.overlay || []) {
-      const o = C.clips[clip];
-      if (!o) continue;
-      const re = new RegExp(pattern), tmp = C.pose();
-      for (let f = 0; f < n; f++) {
-        C.sample(clip, (f / Math.max(1, n - 1)) * o.dur, tmp, true);
-        for (let b = 0; b < nb; b++) if (re.test(C.bones[b])) for (let k = 0; k < 4; k++) q[(f * nb + b) * 4 + k] = tmp.q[b * 4 + k];
-      }
-    }
-    // the exaggeration: each joint's average over the loop, and every frame pushed further from it
-    if (S.exaggerate && S.exaggerate !== 1) {
-      for (let b = 0; b < nb; b++) {
-        _m.set(0, 0, 0, 0);
-        for (let f = 0; f < n; f++) {
-          const o = (f * nb + b) * 4;
-          const sgn = (q[o] * q[b * 4] + q[o + 1] * q[b * 4 + 1] + q[o + 2] * q[b * 4 + 2] + q[o + 3] * q[b * 4 + 3]) < 0 ? -1 : 1;
-          _m.x += q[o] * sgn; _m.y += q[o + 1] * sgn; _m.z += q[o + 2] * sgn; _m.w += q[o + 3] * sgn;
-        }
-        _m.normalize();
-        const mean = _m.clone();
-        for (let f = 0; f < n; f++) { const o = (f * nb + b) * 4; _q.fromArray(q, o); exaggerate(_q, mean, S.exaggerate).toArray(q, o); }
-      }
-    }
+    const c = bakeClip(C, S);
+    if (!c) continue;
+    const { n, q, p } = c;
     // the pose of the stance, over every frame
     const pose = C.pose();
     for (let f = 0; f < n; f++) {
@@ -139,10 +167,15 @@ export function bakeStances(ch, table = STANCES) {
         ch.reachHand(side, _v.set(...at), hq, 1, 0, pole ? new THREE.Vector3(...pole) : null);
         root.updateMatrixWorld(true);
       }
+      for (const [side, by, pole] of S.nudge || []) {
+        const arm = ch.arm[side], hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
+        ch.reachHand(side, arm.hand.getWorldPosition(_v).add(_n.set(...by)), hq, 1, 0, pole ? new THREE.Vector3(...pole) : null);
+        root.updateMatrixWorld(true);
+      }
       for (let i = 0; i < d.length; i++) d[i].quaternion.toArray(q, (f * nb + i) * 4);
       p[f * 3 + 1] -= S.drop || 0;
     }
-    C.clips[`stance:${id}`] = { ...src, q, p };
+    C.clips[`stance:${id}`] = c;
   }
   ch.resetPose();
   root.position.copy(saveP); root.quaternion.copy(saveQ); root.updateMatrixWorld(true);
