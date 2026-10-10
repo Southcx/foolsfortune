@@ -25,7 +25,8 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 164, heapMB: 375 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
+const BUDGET = { calls: 450, tris: 350_000, programs: 164, heapMB: 395 }; // (heapMB 375 -> 395 at v137, Petra: the dev heap 369 -> 386 with the round's source (Calissa's 19 commits, the telegraphs, the lend panel, the save's shelves); the dev server's, not a player's)
+// // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // (heapMB is the DEV server's heap, which holds every module's source text and source map: it grows with the code, not only with what a
 // player's page holds. v117: 345 here, 228 in the built game (vite preview, gc'd), up 5 from 223 before that round's merges; raised
 // 340 -> 350 for that, Petra. v121: 359 here, 231 built (two boots, gc'd), +3 since v117; the rest the round's new modules' source
@@ -121,7 +122,8 @@ const cmp = (label, key, now, was, tol, budget) => {
   if (moved) fails.push(`${label} ${key} ${now} is ${(d * 100).toFixed(0)}% above the baseline (${was})`);
   rows.push(`  ${(label + ' ' + key).padEnd(18)} ${String(now).padStart(9)}   ${was == null ? '' : `was ${String(was).padStart(8)}  ${d >= 0 ? '+' : ''}${(d * 100).toFixed(0)}%`}${over || moved ? '   <-- ' : ''}`);
 };
-const WELL_BUDGET = { calls: 88, tris: 120000 }; // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
+const WELL_BUDGET = { calls: 88, tris: 150000 }; // (raised 120k -> 150k at v137, Petra: the owner's 25 rooms on the bottom floor (was about 10) are all in view from a central hall, the walls drawn twice with their outline; the sand cut 32 -> 24 samples a room and the sets merged a quadrant at a time, 170k -> 140k measured.)
+// (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
 for (const p of ['workshop', 'dunes', 'well', 'garden']) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
   for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);

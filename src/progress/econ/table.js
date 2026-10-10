@@ -218,9 +218,9 @@ export const ECON = {
    *  and the NIGHT: `signature`, how much further Lachryma's signatures read in the dark. */
   weather: {
     lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
-    wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
-    reach: {},             // (how far toward Chaos a place's mood may run: +2 Dread when unsaid; +3 lets Gall fall, +4 Fury. Anagami stays at 2.
-                           //  The Great Dunemaw's deep, once Calissa's looks land: reach 4 with the lean at 2, measured over 400 game days
+    wells: { dunemaw: 2 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief; the Great Dunemaw's at 2, its deep)
+    reach: { 'well:dunemaw': 4 }, // (how far toward Chaos a place's mood may run: +2 Dread when unsaid; +3 lets Gall fall, +4 Fury. Anagami stays at 2.
+                           //  The Great Dunemaw's deep (Calissa's looks landed, R136): reach 4 with the lean at 2, measured over 400 game days
                            //  of 3-hour blocks: Gall 8%, Fury 1%, Dread 14%: Gall is met in the Well, Fury mostly at sea. GALL-AND-FURY.md 4.)
     mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
     under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)

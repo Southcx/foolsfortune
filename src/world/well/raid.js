@@ -87,9 +87,15 @@ export class Raid {
     this.g.events?.emit('foe.cast', { cast: id, windup: d.windup, by: 'creature' });
     DO[id]?.begin?.(this, d);
     if (!d.windup) this.look.blow(id);
+    else if (d.area) { // (its Figment attack telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/FIGMENT-TELEGRAPHS.md)
+      const A = d.area, P = this.P, at = A.at === 'courier' ? P.pos.clone() : F.c.pos;
+      const radius = A.radius ?? A.outer?.[1] ?? A.length ?? A.inner ?? F.c.radius * 2;
+      this.g.creatures?.figmentTelegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark });
+    }
   }
   onBlow(id, d) {
     if (this.skip === id) { this.skip = null; return; }
+    if (this.F.c.windup?.kind === id) this.g.creatures?.unwind(this.F.c); // (landed: was the Courier out of it? creatures.js read)
     this.look.blow(id);
     if (this.down() && id !== 'swallow') return; // (stunned in its windup: the cast is broken)
     DO[id]?.blow?.(this, d);
@@ -137,7 +143,8 @@ export class Raid {
       L.mesh.name = 'raid-drop'; this.g.scene.add(L.mesh); this.lobs.push(L);
     }
     to.y = this.ground(to.x, to.z);
-    Object.assign(L, { on: true, from, to, s, k: 0, onLand }); L.mesh.visible = true;
+    L.mesh.scale.setScalar(Math.max(1, this.F.k * 0.8)); // (a drop the body's size: about 2.2 m at FOE.size 14)
+    Object.assign(L, { on: true, from, to, s, k: 0, arc: 5 * Math.max(1, this.F.k * 0.4), onLand }); L.mesh.visible = true;
   }
   /** Is the Courier looking at it: through the Veritome's lens ('lens': the gaze turns back), with their own eyes ('eye'), or not. */
   looking() {
@@ -211,7 +218,7 @@ export class Raid {
     for (const L of this.lobs) {
       if (!L.on) continue;
       L.k = Math.min(1, L.k + dt / L.s);
-      L.mesh.position.lerpVectors(L.from, L.to, L.k); L.mesh.position.y += Math.sin(L.k * Math.PI) * 5;
+      L.mesh.position.lerpVectors(L.from, L.to, L.k); L.mesh.position.y += Math.sin(L.k * Math.PI) * L.arc;
       if (L.k >= 1) { L.on = false; L.mesh.visible = false; L.onLand(L.to); }
     }
     // what its blows left on the Courier

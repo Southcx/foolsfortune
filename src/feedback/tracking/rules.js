@@ -21,6 +21,7 @@ import { skiffRules } from './skiff.js';
 import { moveRules } from './moves.js';
 import { heldStrikeRules } from './heldstrikes.js';
 import { blowRules } from './blows.js';
+import { figmentTelegraphRules } from './figmenttelegraphs.js';
 import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 
@@ -43,4 +44,5 @@ export function areaRules(ctx) {
   passageRules(ctx); // (an encounter's choice at sea done: world/emocean/triprun.js)
   heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
   blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
+  figmentTelegraphRules(ctx); // (a windup read, and Divination's ladder said as it is climbed)
 }

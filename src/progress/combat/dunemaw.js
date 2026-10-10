@@ -82,9 +82,10 @@ export const ARENA = { // (the owner, 2026-10-09: "yes I want it BIG ... a good 
   rim: { from: 63, depth: 0.4, wade: 0.7 }, // (the shallows a band of 7 m, as the old bowl's 6: wider read as a black stripe and a long wade)
   upper: { from: 60, y: 4, bearings: [90, 270] }, ledge: { z: [65, 85], y: 6, width: 30 }, // (heights the Courier's body meets keep their size: Dovina's
   //   DUNEMAW-ARENA.md 'The great bowl'; the walk 4 m up, the ledge 6)
-  pillars: { r: 45, bearings: [30, 90, 150, 210, 270, 330], width: 7.5, height: 30, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen)
+  pillars: { r: 45, bearings: [30, 110, 150, 210, 290, 330], width: 7.5, height: 30, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen;
+  // 110 and 290, not 90 and 270: 5 m from a ring pool put a pillar inside the 7 m body as it surfaced, Calissa measured; now 15.6 m)
   stalactites: { r: 30, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [35, 45] },
-  pools: { centre: 15, ring: { r: 40, bearings: [0, 90, 180, 270], width: 10 }, depth: 2 },
+  pools: { centre: 15, ring: { r: 40, bearings: [0, 90, 180, 270], width: 15 }, depth: 2 }, // (a ring pool as wide as the centre's: the 7 m body sinks into it, not the sand round it)
   clutches: { r: 66, perQuadrant: 2, clear: 7.5 }, // (in the rim shallows; 7.5 m or more from any pillar)
   wake: 50, // (the FOE wakes when the Courier is on the floor within 50 m of it)
   scale: 2.5, // (the bowl's own fittings (its slopes, spikes, lamps: world/well/bowl.js) grown with it, from the v130 bowl's)

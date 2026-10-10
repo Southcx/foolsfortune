@@ -162,7 +162,7 @@ export class TestRoom {
        *  unanswered, it lands on the Courier in reach as a shove, no harm (STRAWMAN.swing.harm): parry practice (the owner's T51, v133). */
       swing() {
         const front = at.clone().add(_src.set(0, 0, STRAWMAN.swing.reach * 0.5));
-        g.creatures?.windup(S, { at: front, radius: STRAWMAN.swing.reach * 0.5, eta: STRAWMAN.swing.telegraph, kind: 'swing', part: model.arms?.[1] || model.group });
+        g.creatures?.windup(S, { at: front, radius: STRAWMAN.swing.reach * 0.5, eta: STRAWMAN.swing.telegraph, kind: 'swing', part: model.arms?.[1] || model.group, read: false }); // (Strawman is never counted: no read)
         model.swing?.(() => {
           if (!S.windup) return; // (parried: it broke off)
           g.creatures?.unwind(S);

@@ -57,6 +57,7 @@ export class GreatJelly {
     // the owner's "BIG", 2026-10-09: what is about contact scales with the body, what is a design number stays FOE's)
     const k = c.root.scale.x; this.k = k / 1.6; this.crownR = CROWN_R * k; this.half = Math.max(FOE.halfWidth, c.radius * 1.25); this.reachY = c.height * 0.9;
     this.slamR = Math.max(FOE.slam.radius, c.radius * 1.4); this.within = Math.max(FOE.slam.within, c.radius + 3); // (close in: from its skin, not its middle)
+    c.lockPoint = (out) => this.crown.group.getWorldPosition(out); // (the lock-on holds its weak point: the crown, and the core under it bare; Calissa's 4: mid-body left the crown out of frame)
     c.hp = c.maxHp = HEALTH; c.foeOf = this; c.name = 'Great Slip Jelly'; // (a raid boss's health: greatjelly.js, measured against Strawman)
     untag(c, 'sliceable', 'programmable'); // (no zandatsu on a FOE; reprogrammable only when it is low: see update)
     this.crown = new UrnCrown({ radius: CROWN_R }); c.root.add(this.crown.group);

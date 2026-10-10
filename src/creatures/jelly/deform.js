@@ -14,7 +14,7 @@
 // the volume kept); Slime Rancher's slimes (a vertex shader bending a mesh by a spring's offset, the top lagging the base); and the
 // damped harmonic spring of every "juicy" game feel talk (Jan Willem Nijman, Martin Jonasson & Petri Purho, "Juice it or lose it").
 //
-//   const d = new JellyDeform(material, height)   d.kick(squashV, leanV2, wobble)   d.dent(localPoint, depth)   d.update(dt, accel2)
+//   const d = new JellyDeform(material, height, { melt, detail })   d.kick(squashV, leanV2, wobble)   d.dent(localPoint, depth)   d.update(dt, accel2)
 //   d.target.squash = 0.8  (where the squash spring rests: a crouch, a sleep, a puddle)     d.feet = 0..1   d.wet = 0..1
 //
 // THE MELT (optional, { melt: true }): the surface of a creature of sloppy wet sand, sliding down it forever. A pattern of wet and dry
@@ -29,7 +29,7 @@ import * as THREE from 'three';
 import { LAB_GLSL, SLIP_SCHILLER, SLIP_SCHILLER_GLSL, mindTime } from '../../vfx/labradorite.js';
 
 export class JellyDeform {
-  constructor(material, height, { melt = false } = {}) {
+  constructor(material, height, { melt = false, detail = 1 } = {}) {
     this.melt = melt;
     this.u = {
       uTime: { value: 0 },
@@ -37,6 +37,7 @@ export class JellyDeform {
       uDent: { value: new THREE.Vector4(0, 0, 0, 0) }, uH: { value: height },
       uFoot: { value: 0 }, uFootPh: { value: 0 }, uWet: { value: 1 }, uFlow: { value: 0 },
       uMindT: mindTime, uSlipSchiller: SLIP_SCHILLER, // (the Lachryma under the clay: one uniform for every slip body, Calissa's vfx/labradorite.js)
+      uDetail: { value: detail }, // (the melt's streaks and grain are in the body's own space: a body drawn x14 needs them finer, Calissa's)
     };
     this.feet = 0; this.footPh = 0; this.wet = 1;
     this.sq = 1; this.sqV = 0;
@@ -69,7 +70,7 @@ vJP = position;
 }`);
       if (melt) sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-uniform float uTime, uH, uWet, uFlow; varying vec3 vJP;
+uniform float uTime, uH, uWet, uFlow, uDetail; varying vec3 vJP;
 ${LAB_GLSL}
 ${SLIP_SCHILLER_GLSL}
 float jh( vec3 p ) { return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 ); }
@@ -85,9 +86,9 @@ float jWet;
 	float a = atan( vJP.x, vJP.z ), h = clamp( vJP.y / uH, 0.0, 1.0 );
 	vec2 ring = vec2( cos( a ), sin( a ) );
 	float run = vJP.y * 2.2 + uFlow;
-	float streak = jn( vec3( ring * 2.6, run * 0.35 ) ) * 0.65 + jn( vec3( ring * 6.0, run * 0.9 ) ) * 0.35;
+	float streak = jn( vec3( ring * 2.6 * uDetail, run * 0.35 * uDetail ) ) * 0.65 + jn( vec3( ring * 6.0 * uDetail, run * 0.9 * uDetail ) ) * 0.35;
 	jWet = smoothstep( 0.5, 0.78, streak + 0.28 * ( 1.0 - h ) - 0.35 * ( 1.0 - uWet ) ) * mix( 0.35, 1.0, uWet );
-	float grain = jn( vec3( ring * 14.0, vJP.y * 16.0 ) );
+	float grain = jn( vec3( ring * 14.0 * uDetail, vJP.y * 16.0 * uDetail ) );
 	vec3 dry = mix( vec3( 0.90, 0.78, 0.58 ), vec3( 0.80, 0.65, 0.44 ), uWet ), wet = vec3( 0.47, 0.35, 0.22 );
 	diffuseColor.rgb *= mix( dry, wet, jWet ) * ( 0.9 + 0.18 * grain ); // (the material's colour tints it: white is plain sand)
 }`)

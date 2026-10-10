@@ -78,7 +78,7 @@ export class SlipJellies {
     // (a SPIRIT (spirits.js) is a jelly of smoke: the same body and the same mind, lit from inside, a little see-through)
     if (spirit) { mat.transparent = true; mat.opacity = 0.74; mat.depthWrite = true; }
     addRim(mat, 0.5);
-    const deform = new JellyDeform(mat, H, { melt: true });
+    const deform = new JellyDeform(mat, H, { melt: true, detail: k >= 4 ? 3 : 1 }); // (the FOE's melt three times finer: about 25 cm of grain, three pixels at 40 m)
     const root = new THREE.Group();
     const body = new THREE.Mesh(this.geo, mat);
     body.castShadow = true; body.renderOrder = 2;
@@ -328,7 +328,7 @@ export class SlipJellies {
     const g = this.game, W = JELLY[move];
     c.attack = { move, foe, phase: 'wind', t: W.wind * (st(c, 'doubt') ? 1.6 : 1), hit: false }; // (doubt: it hesitates)
     c.vel.multiplyScalar(0.2);
-    g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: c.attack.t, kind: move, part: c.root }); // (answerable: courier/parry.js; worn with the parry mark)
+    g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: c.attack.t, kind: move, part: c.root, area: { shape: 'circle', radius: 0.9 }, type: 'impact' }); // (answerable: courier/parry.js; worn with the parry mark)
     sfx.jellyWind(g.listenerDistance(c.pos), W.wind * (st(c, 'slow') ? 2.8 : 1));
     g.events?.emit('jelly.wind', { move });
   }
@@ -357,7 +357,7 @@ export class SlipJellies {
       to.setLength(dist / L.flight);
       c.vel.copy(to); c.vy = 9.81 * L.flight * 0.5; c.air = true; // (an arc that comes down where its foe stood)
       A.phase = 'air'; A.t = L.flight + 0.5;
-      g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: L.flight, kind: 'lunge', part: c.root }); // (the body itself is the blow: answerable until it lands)
+      g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: L.flight, kind: 'lunge', part: c.root, area: { shape: 'lunge', reach: 0.9 }, type: 'impact' }); // (the body itself is the blow: answerable until it lands)
       D.kick(7, null, 0.1);
       c.drives.add('thirst', 0.05); c.drives.add('rest', 0.04);
     } else {
