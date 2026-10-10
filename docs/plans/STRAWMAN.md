@@ -15,5 +15,8 @@ the body and place Petra's; the words Espada's.
   where the striker stands**: it leans back, the right sleeve rises high beside the head (the parry mark rides on it, so it is never drawn
   behind the head: `SLEEVES.swing`), then it is swept forward). It faces +z; a sleeve swings forward by `rotation.y = -side * angle`
   (the signs were reversed until v133, T51: the guard and the swing pointed backwards).
+- **Its moves and attack strings** (the owner, 2026-10-10; built by Calissa): seven moves (the swing, the jab, the one-two, the overhead
+  chop, the spin sweep, the hat-butt, the delayed swing) and four strings on the sparring circle's lectern: `docs/plans/COMBAT-LAB.md`
+  sections 2 and 6 (`vfx/strawmanmoves.js`, `world/testroom/strawmanstrings.js`).
 - **Canon (Espada):** Pip stitched it, the one thing in a workshop of clay that cannot shatter. The log names it without an article:
   "Strawman rocks back up."
