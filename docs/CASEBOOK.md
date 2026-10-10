@@ -514,8 +514,25 @@ the rules before building in the same area; a rule a machine can check goes into
     height and its posed top are measured against the state's speed and the room it must fit. A loop played past twice its own speed
     takes short steps at a quick cadence, never long low strides; and a foot is planted only while the capsule is slow enough for it
     to stay there.
+187. **A lift is a floor, never a ceiling.** A blow that holds a thing up in the air sets its rise to at least the blow's lift, never
+    to less: what is still rising faster keeps its rise. Measured as the thing's own speed (the engine never assumes its gravity) at the
+    blow, against the press timings a person makes (every 0.1 s), not only the one that waits for the top.
 
 ## Cases
+
+### 2026-10-10 · High Time stopped at 2.6 m (the owner: "there isn't enough height distance covered")
+
+- **Seen:** the owner: the held launcher should carry the Courier about 2.2 times their own height. Measured in the juggle pen (a slip
+  jelly 1.9 m ahead, S + LMB held, then LMB every 0.1 s): the feet at 2.57 m at the top; with no press after the launcher, 4.08 m.
+- **Cause (measured):** a1 begins at the launcher's row time (0.55 s) and hits at 0.78 s while the jelly still rose at 5.4 m/s;
+  its lift (2 m/s) is laid on as the jelly's new upward speed (each creature's `knock` sets it), so the climb stopped within 0.2 m
+  and the Courier, riding 1.3 m under the jelly's centre, stopped with it. The launcher's own 9.5 m/s only showed if a1 waited for
+  the apex, which no one pressing on does.
+- **Fix:** an air blow's lift is a floor (`blow()` in `tools/moveset.js`: the ridden thing's measured upward speed kept when it is
+  more); the held lift 9.5 to 9.2 so the top is the owner's height: the feet 3.93 m (2.2 x 1.78 m = 3.92) pressing on, 3.80 m with no
+  press. The tapped launcher's numbers are unchanged to the centimetre (its rise is spent by a1's hit). Every air blow still lands:
+  the gaps 1.20, 1.27, 1.28 m.
+- **Rule:** 187 (new).
 
 ### 2026-10-10 · The crouch walk read as lunges (the owner; the locomotion clips round)
 

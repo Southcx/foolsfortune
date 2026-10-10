@@ -106,6 +106,7 @@ import { Combat } from './core/combat.js';
 import { Vessel } from './courier/vessel/vessel.js';
 import { KilnUI } from './courier/vessel/kilnui.js';
 import { IDLES } from './courier/anim/idlebreak.js';
+import { CourierSquash } from './courier/anim/squash.js';
 import { Kiln, KILN_AT } from './courier/moves/kiln.js';
 import { Shops } from './progress/shop/shops.js';
 import { ShopUI } from './progress/shop/ui.js';
@@ -452,6 +453,7 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
+  game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model)] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js)
   // the idle chosen at the kiln (the owner's R21: courier/vessel/kilnui.js STANCE; Calissa's IDLES): kept with the player's progress
   game.save?.section('courierIdle', { scope: 'player', version: 1, dump: () => ({ stand: character.idles?.stand ?? IDLES.default }),
     load: (d) => { if (!character.idles?.choose(d?.stand)) character.idles?.choose(IDLES.default); }, reset: () => character.idles?.choose(IDLES.default) });
@@ -1081,6 +1083,7 @@ async function main() {
     if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.mooring?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1)
     if (started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
+    game.courierSquash.lift(); // (and the Courier's true shape, before anything reads the body: courier/anim/squash.js)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();
     if (input.wasPressed('F2')) game.ui.cycle();
@@ -1270,6 +1273,7 @@ async function main() {
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)
     game.lights.update(game.rawDt); // (and the lamps that light it: after everything has set its own)
     game.present.update(game.rawDt); // (new things shaded to match)
+    game.courierSquash.press(dt, player); // (last: the drawn body's settle after a hard landing, laid on once everything has read the pose)
     input.endFrame();
   }
   requestAnimationFrame(frame);
