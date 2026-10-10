@@ -15,6 +15,8 @@
 //   SAME MOTIONS          SAME names the old clips the suite recalibrates (the same capture: lengths and hip curves equal, 5-15 degrees
 //                         a bone, the neck and toes now moving); the game keeps playing them by their old names (the two compared front
 //                         and side: docs/ref/suite_same.png).
+//   KNEES AND ELBOWS      a clip of the set being polished (hinges.js HINGED: the core movement's) has its knees and elbows put back
+//                         on their hinge as it is decoded (hinges.js: the retarget turned no bone about its length, so they bent off it)
 //
 // Prior art: the game's own decoder (anims.js) and pack layout (scripts/bake_anims.mjs); streaming animation sets by need, as
 // Unreal's and Unity's addressable animation bundles do; lazy decompression of animation data on first sample (ACL's runtime).
@@ -23,6 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import coreUrl from '../../assets/clips/core.bin?url';
 import socialUrl from '../../assets/clips/social.bin?url';
+import { HINGED, repairHinges } from './hinges.js';
 
 // the old name -> the suite clip that is the same capture (front-and-side sheets of both: docs/ref/suite_same.png)
 export const SAME = {
@@ -40,7 +43,11 @@ export function readPack(buf, to = null) {
   const map = H.bones.map((b) => bones.indexOf(b)), missing = bones.map((b, i) => (H.bones.includes(b) ? -1 : i)).filter((i) => i >= 0);
   for (const c of H.clips) {
     const T = new Int32Array(c.tracks.length * 4); c.tracks.forEach((t, i) => T.set([t.k === 'q' ? map[t.b] : t.b, t.k === 'q' ? 0 : 1, t.o, t.n], i * 4)); // (the header's track objects let go)
-    clips[c.name] = lazy({ name: c.name, src: c.src, dur: c.dur, n: c.frames, loop: !!c.loop }, () => unpack(data, T, c.frames, nb, ps, missing, to?.rest));
+    clips[c.name] = lazy({ name: c.name, src: c.src, dur: c.dur, n: c.frames, loop: !!c.loop }, () => {
+      const f = unpack(data, T, c.frames, nb, ps, missing, to?.rest), rest = H.rest || to?.rest;
+      if (rest && HINGED(c.name)) repairHinges(f.q, c.frames, bones, rest, undefined, !!c.loop, H.fps); // (the knees and elbows back on their hinge: hinges.js)
+      return f;
+    });
   }
   return { fps: H.fps, bones, rest: H.rest || to?.rest, clips };
 }

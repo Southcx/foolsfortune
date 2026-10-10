@@ -481,8 +481,146 @@ the rules before building in the same area; a rule a machine can check goes into
     dropped, the difference spread over the clip: stances.js `closeLoop`) before the clip is measured or chosen for its stillness.
 175. **What tops a thing up adds what it adds.** A spill, a smear or a refill into something partly taken raises it by its own share
     (its area, its cells), never back to whole; the look follows the count of what lies there.
+176. **A look that says "now" asks the rule that answers.** A mark that shows a window (the parry mark hot) is driven every frame by
+    the same predicate the press uses, the press's own length included (a press keeps asking for a quarter second), never by a copy of
+    its number or a ramp toward it. Measured by pressing at every frame and reading the look on the same frame.
+177. **A shell drawn from a body's geometry takes what bends the body.** An inverted hull (the parry mark, any outline) made from a mesh
+    whose vertex shader moves it (a jelly's squash, a skin) is given the same bend, or it draws the rest shape. Judged in the pose that
+    bends the most. A uniform a bend reads defaults to doing nothing: a `Vector4()` is (0, 0, 0, 1), not zero.
+178. **A knee or an elbow bends on its hinge.** A clip retargeted by bone direction, a blend or an IK solve can bend a shin or a forearm
+    sideways or back off its hinge with every joint where it should be: measure the lower bone's swing off its rest hinge, its twist
+    taken out first (never the joints' places), in game, in every state. Square it by turning the upper bone about its own length (the
+    joints stay), at a joint's own speed and within its own range; past the range, keep the hinge and let the wrist or ankle move.
+179. **What lets go eases out, and is not caught again in the same breath.** A foot lock let go by distance waits for the cycle to lift
+    that foot; a weight that swaps one whole pose for another (the idle for the run) moves at its own pace, never at the pace of a speed
+    that crosses its band in a frame.
+180. **A clip's travel comes out in its own frame, before anything turns it.** In place, then unturned: turned first, the travel is turned
+    and then taken off unturned, and the body is thrown twice the travel off the capsule.
+181. **A blast laid on the ground tests height.** A ring round a landing or a slam strikes what is within reach of the ground it is laid
+    on (the target's lowest point to the feet), never the plane alone: what hangs overhead is out of it.
+182. **What must move together shares one motion, and a blade is checked against where the thing is.** A body kept at another (a juggle,
+    a carry) follows the other's measured motion with a pull to the gap, never two gravities tuned to agree; and a blow is proven by the
+    tip's measured angle and height against where the target stands, not by the clip's look (an arc that never crosses the front is
+    aimed by its own angle; a push that carries the pair is a push too far).
 
 ## Cases
+
+### 2026-10-10 · The Sondelass's air string missed: two gravities, and two blades that never crossed the front (the owner: "I also had issues with the aerial portion of the launch combo")
+
+- **Seen:** headless, a slip jelly calmed 1.9 m in front, S + LMB, then LMB every 0.1 real s: the launcher hit; a1 and a2 missed (the
+  jelly's centre 2.6-3.5 and 4.3 m above the Courier's feet, the cuts reaching about 2.7 and 3.1); after making the two rise and hang
+  together, a2 still missed with the jelly at a perfect 1.27 m gap and 1.4 m off, and t2 (the pause string's held thrust) never struck
+  a jelly 1.48 m straight ahead.
+- **Cause (measured):** (a) the launcher lifted the jelly at 9.5 m/s (4.6 m up) while the Courier rose the clip's 0.92 m; (b) in the air
+  string the Courier fell at 0.12 x 21 = 2.5 m/s² and the jelly at its own 9.81, the gap growing about 1.8 m over a1 and a2; (c) the tips'
+  angles about the body (`melee.js` tracks, sampled across the strikes): a2's somersault turns the blade in an upright circle 37-49
+  degrees to their left, t2's thrust is held 40-92 degrees to their left, so neither sector ever reached a target dead ahead (the sweep's
+  half-width and the jelly's own came to 34 degrees); (d) once the pair rode together, a1's and a2's sideways pushes (1.5, 2) carried
+  both at 3.8 m/s into a wall, the Launch tech ended the plunge on the wall and a ground blow began in the air.
+- **Fix:** `tools/moveset.js`: the **ride**: what a launcher or an air blow lifts is the `juggle`, its motion measured each frame from
+  where it is; an air blow (and a launcher held to its strike, from the strike's end) sets the Courier's velocity to it, with a pull to
+  1.3 m below its centre and 1.4 m off; the launcher's last pose held till it turns over. A move's `aim` turns the body by the angle its
+  arc passes at. A blow that throws the juggle off (push 4 or more, no lift) ends the ride; the plunge's landing gives the ground's
+  gravity back. `cutlass.js`: tap lift 5.5, held 9.5; a1, a2 lift 2, push 0.5; a2 aimed 0.73 rad, t2 0.95. After: held, a1, a2 and the
+  plunge's chop hit at gaps of 1.20, 1.27, 1.28 m, the pair at 2.3-2.6 m; tapped, at 1.12, 1.27, 1.28; t2 stabbed three times.
+- **Rule:** 182.
+
+### 2026-10-10 · The plunge's ring struck what hung overhead and threw it 9 m (found charting the Sondelass)
+
+- **Seen:** the same run: the plunge landed with the jelly's base 3.06 m overhead (the gap 3.5 m), and the ring "hit" it, its push 7 and
+  lift 5 throwing it 9 m.
+- **Cause (measured):** `Moveset.ring` tested the distance on the ground's plane only (`targets` takes a radius about the feet, and the
+  loop checked x and z); the plunge's hit (lift 5) was the chop's and the ring's at once.
+- **Fix:** the ring skips a target whose lowest point is more than 1.5 m above the Courier's feet, or whose top is more than 1.5 m below
+  them (`RING_UP`); a move's `ringHit` gives the ring its own hit (the plunge's: push 7, lift 0; its chop's push 2, lift 0, so what it
+  cut falls beside them). After: the plunge landed with the jelly's base 1.87 m up and it was out of the ring; it landed 1.5 m off and the
+  next c1 struck it.
+- **Rule:** 181.
+
+### 2026-10-10 · Knees and elbows bent off their hinge (the owner: "joints pointing the wrong way"; the locomotion pass)
+
+- **Seen:** the owner, 2026-10-10: joints pointing the wrong way. In game, every tool off, front and side
+  (`docs/ART.md` section 10's states): the upright idle's right forearm angled out from the elbow; Trav_WallJump's knees out to the sides
+  and its shins bent sideways under them; the slide's tucked knee. Measured on the in-game Courier (`character.animate` and `poseHands`,
+  a synthetic state for each of 20 states of the core movement, 14,012 knee and elbow frames): 2,773 more than 20 degrees sideways off
+  the hinge or bent back past straight (the jog 354 of 684, the strafes 326 and 316, the slide 217, the wallrun 163).
+- **Cause (measured):** the clips, then the IK. Each shin's and forearm's turn against its rest, its twist about its length taken out:
+  of the 9,504 limb frames of the Loco_, Air_ and Trav_ clips, 2,123 bend more than 20 degrees sideways and 212 back past straight
+  (Trav_WallJump's knees 125 and 131, Trav_LadderClimb's 123, Loco_LandHard's 102, Trav_SlideLoop's left 86; Loco_IdleFem's right elbow,
+  the upright idle's arm, 30 out and 26 back in every frame). In the worst, the thighs' and shins' twist is exactly 0: the suite (and the
+  UAL pack before it, whose jog's elbows reach 59) was retargeted by bone direction, never turning a bone about its length, so where the
+  capture's thigh or upper arm was turned the lower bone reached its direction off its hinge. The rig's hinge is the lower bone's rest X
+  (the walk's knees and elbows turn about it, 2 to 113 degrees, 20 at most off it). After the clips, the IK bent more: the strafe's knees
+  re-solved toward the pole (101 degrees off), the wallrun's wall hand's elbow (163 degrees off).
+- **Fix:** the hinge repair (`courier/anim/hinges.js`, glossary): the upper bone turned about its own length until the lower's hinge is
+  square to the bend, the joints kept; in each clip of the set being polished as it is decoded (`suite.js`, HINGED: Loco_, Air_, Trav_,
+  the old swim and tread), and every frame on the posed body after the knee guard, before the joint limits (`character.js` poseHands:
+  the legs always, the arms while the hands are empty). The turn changes at most 360 degrees a second in a clip (720 posed): held, a
+  near-straight limb's plane wheeled round faster than the limb (Loco_IdleMasc's elbow 13.5 degrees a frame raw, 54.8 squared unheld,
+  16.6 held); past the upper's range (a thigh 90, an upper arm 100) a clip's lower stays on its hinge and the wrist or ankle moves. The
+  upright idle's right arm is now its left's mirror (`idlebreak.js` IDLES.baked `mirror`). After: the clips 63 sideways and 1 bent back
+  of 9,504; in game 91 of 14,012, 85 of them the wallrun's wall hand in the harness's own wall (a real wall not tried); no clip's fastest
+  limb step grew 5 degrees or more; every loop's last frame still its first; 23 ms at boot for the 16 clips decoded then (node).
+- **Rule:** 178 (new).
+
+### 2026-10-10 · A start snapped a foot and swapped the body in a frame (found measuring the locomotion pass)
+
+- **Seen:** headless, a start from standing to the sprint at the ground's accel (55 m/s2): a planted foot jumped 30 to 38 cm in one
+  frame, twice in the start; every joint went from the idle to the run in one frame (the right upper arm 72 degrees in a frame with the
+  repaired idle, 20 before it).
+- **Cause (measured):** the foot lock let a foot go when the body had run 0.35 m off it, and caught it again on the next frame at the
+  clip's foot, the cycle still calling it planted: the eased position to the clip's in one frame. The idle's share is read from the gait
+  speed, which passes 0.5 m/s, the whole idle-to-walk band, in one frame at that accel.
+- **Fix:** a lock let go stays let go until the cycle lifts that foot (`character.js` footIK, `lock.lost`): the same start's foot 12 to
+  15 cm a frame over five frames, eased. The idle's share moves at most a whole in `START_SWAP` (0.15 s), the loops scaled into the
+  rest: the start's largest joint step 26 degrees (the right upper arm, with the idle's arm mirrored).
+- **Rule:** 179 (new).
+
+### 2026-10-10 · The kick-off threw the body 1.1 m ahead of the capsule (found laying it on the wall jump)
+
+- **Seen:** headless, a jump off a wallrun with the kick-off laid on: the body drawn off the Courier's place, ahead of it (front view, 0.3
+  s into the kick).
+- **Cause (measured):** `airborne.js` turned Trav_WallJump back (`unturn`, its half turn taken out, the hips' offset turned with it) and
+  then took its travel out (`inPlace`, the hips' 0.55 m back from the clip's first frame, unturned): at the half turn the travel was
+  turned to ahead and taken off again, 1.1 m, at the kick's full weight until 0.35 s. Every kick-off from a ladder, a ledge, a pole, the
+  latch or a grate since it was laid.
+- **Fix:** in place first, then unturned: through the kick the hips stay 0.01 to 0.03 m off the body's place. And a jump off a
+  wallrun's wall (3 m/s up in a frame while the wall holds them) now plays the kick-off over the air loop; it had played the ground jump's
+  crouched spring once the wall let go.
+- **Rule:** 180 (new).
+
+### 2026-10-10 · The parry mark said "now" a quarter second after V already answered (the owner: "more apparent ... that you're in the window")
+
+- **Seen:** headless, Strawman's swing in the Throwing Room (its windup 0.925 s, struck as it unwinds): the parry mark's width and alpha
+  a frame against the windup's time to the strike `e` (`w.t - 0.3`), and V (the kick) pressed at the first frame below each of eleven
+  `e`. The mark reached its fullest (3.6 px, alpha 1) at `e` 0.25 (Held Breath 0.40), exactly `blow()`'s rule; but V answered from `e`
+  0.508 (not at 0.558), Held Breath from 0.608 (not at 0.675). Over that first quarter second of answering presses the mark stood at
+  3.0 to 3.6 px and 0.86 to 1 alpha on a smooth ramp: 0.2 px between 0.1 s before its fullest and the fullest. Nothing in it said "now".
+- **Cause (measured):** the mark read the blow's window (`creatures.shownEta`, fullest in its last 0.25 s), but a press is not a frame:
+  it keeps asking for a quarter second after V (`parries.js` `WINDOW` 0.25, the kick's 0.26, the cutlass's 0.28), so a press answers
+  from the blow's window plus that. The look showed half the press's real window, and showed its edge as a slope.
+- **Fix:** `courier/parry.js` exports the window (`inBlowWindow`, what `blow()` asks; `pressAnswers`, the blow's window plus
+  `PRESS_WINDOW`; `shotAnswers`, a shot inside answer()'s 2 m reach plus what it flies in the press's quarter second), and the parry mark
+  asks them every frame: while they hold it runs hot (a white core between film rims, 7 px against the ink's 3.6) with the window's glint
+  as it opens, and drops back the frame they do not (`vfx/parrymark.js`). After, the same trace: hot from `e` 0.492 (Held Breath 0.642)
+  to the strike, every frame; the presses, measured again, answer from 0.508 and 0.608 as before (the rule is unchanged: a tool's
+  press asks 16 frames, so it answers from 0.50, the frame the look goes hot; the kick's and the cutlass's a frame or two sooner). The
+  ink's ramp now reaches its fullest as the mark goes hot.
+- **Rule:** 176 (and 67).
+
+### 2026-10-10 · A slip jelly's parry mark was a tall dome over a body crouched to lunge (found judging the parry window)
+
+- **Seen:** headless in the Throwing Room, a slip jelly winding up a lunge (`squash` 0.62): its parry mark drew a dome about half again
+  as tall as the body, its whole back filled with ink and film above the crouched body (hot, a dome of rainbow); in the lunge's flight,
+  the body stretched back to its rest height, the outline fitted.
+- **Cause (measured):** the jelly's squash, lean, wobble, toes and dent are done in its vertex shader (`creatures/jelly/deform.js`);
+  the mark's shells were built from the same geometry with their own program, which knew nothing of it, so they drew the rest shape.
+- **Fix:** the mark's vertex shader carries the jelly's bend (its defaults change nothing), and a mark over a creature with `deform`
+  hands that body's uniforms to the shells over the body (by reference: a twin of each band's material, its width and heat shared);
+  the glint's crest is found on the bent body too. One program as before (159 before and after the first glint). Caught before
+  committing: the dent's default `new THREE.Vector4()` is (0, 0, 0, 1), and it blew Strawman's sleeve's shell out into a ball a metre
+  across; the default is now (0, 0, 0, 0).
+- **Rule:** 177 (and 76).
 
 ### 2026-10-10 · The slicks kept a program warm on their own (the program budget 164 -> 165 at v138)
 

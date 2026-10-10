@@ -29,6 +29,7 @@
 //
 //   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom)
 //   dressPaintRange(range)   (the paint range's stand-in marks given their look: geometry and material swapped, the meshes kept)
+//   quarryTile() tallyStroke()   (the stand's tile and a tally's stroke, painted once: the combat wing's marks wear them too, vfx/combatwingkit.js)
 //   LECTERN.projection   the dial's height over the pages, its print and its light (knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -113,7 +114,7 @@ function slipBand() {
 }
 let TALLY = null, TALLY_M = null;
 /** One tally stroke, painted once: a dab of the cream slip edged in oxblood (one picture: no two faces in one plane, casebook rule 1). */
-function tallyStroke() {
+export function tallyStroke() {
   if (TALLY) return TALLY;
   const c = document.createElement('canvas'); c.width = 64; c.height = 32;
   const x = c.getContext('2d');
@@ -123,7 +124,7 @@ function tallyStroke() {
   return TALLY;
 }
 /** The stand's quarry tile, painted once: terracotta with a darker kiln edge, a little speckle, and a cream slip chevron pointing +u. */
-function quarryTile() {
+export function quarryTile() {
   if (TILE) return TILE;
   const N = 128, c = document.createElement('canvas'); c.width = c.height = N;
   const x = c.getContext('2d');

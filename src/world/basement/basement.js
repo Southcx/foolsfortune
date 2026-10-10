@@ -174,9 +174,9 @@ export function buildBasement(L, W, D) {
   blk(-OUT - 0.5, -W - 0.5, ...cy, -OUT - 0.5, OUT + 0.5, C.deep, solid);
   // (east of the Workshop the slab's top is the ground the Throwing Room stands on: its floor fills its own footprint, and two faces in
   // one plane fought for the pixels, the owner's R45 report. The slab goes round it: world/testroom/layout.js TR)
-  blk(W + 0.5, OUT + 0.5, ...cy, -OUT - 0.5, TR.z0, C.deep, solid);
+  blk(W + 0.5, OUT + 0.5, ...cy, -OUT - 0.5, TR.wing.z0, C.deep, solid); // (and round the combat wing south of it: TR.wing, the same width)
   blk(W + 0.5, OUT + 0.5, ...cy, TR.z1, OUT + 0.5, C.deep, solid);
-  blk(TR.x1, OUT + 0.5, ...cy, TR.z0, TR.z1, C.deep, solid);
+  blk(TR.x1, OUT + 0.5, ...cy, TR.wing.z0, TR.z1, C.deep, solid);
   blk(-W - 0.5, W + 0.5, ...cy, -OUT - 0.5, -D - 0.5, C.deep, solid);
   blk(-W - 0.5, W + 0.5, ...cy, D + 0.5, OUT + 0.5, C.deep, solid);
   wallX(-OUT - Wt / 2, -OUT, OUT); wallX(OUT + Wt / 2, -OUT, OUT);

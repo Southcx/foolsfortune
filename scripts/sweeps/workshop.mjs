@@ -443,7 +443,8 @@ if (part('throwing')) {
     S.check(`throwing: ${name} ends when the Courier leaves the room`, !b.active && b.shown === 0, b);
   }
   // Strawman: F cycles the mode, one step a press
-  await ws('stand([20, 0.05, -2.1], 3.14159)'); await S.ticks(30);
+  const sp = await S.ev(() => { const p = __game.game.testroom.strawman.pos; return [p.x, p.z]; }); // (1.3 m in front of it, wherever it stands: the combat wing's sparring circle now, world/testroom/layout.js TR.strawman)
+  await ws(`stand([${sp[0]}, 0.05, ${sp[1] + 1.3}], 3.14159)`); await S.ticks(30);
   const sch = await ws('chevron()');
   S.check('throwing: the chevron is on Strawman', sch.cur === 'strawman' && sch.off < 0.8, sch);
   const s0 = await S.ev(() => __game.game.events.counts['strawman.mode'] || 0);

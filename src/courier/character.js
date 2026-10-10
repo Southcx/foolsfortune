@@ -1,5 +1,6 @@
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 import { courierLimits } from './anim/rom.js';
+import { LimbHinges } from './anim/hinges.js';
 import { kneeProfile } from '../world/props/poles.js';
 import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
@@ -20,6 +21,7 @@ import { dressFiligree } from '../vfx/filigree.js';
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
+const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -146,6 +148,7 @@ export class Character {
     }
     // the last word on every posed joint: nothing bends the wrong way (rom.js)
     this.limits = courierLimits(this.bones, (b) => this.rest.get(b).q);
+    this.hinges = new LimbHinges(this.bones, (b) => this.rest.get(b).q); // (knees and elbows squared to their hinges after IK: anim/hinges.js)
     const B = this.bones;
     const len = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.arm = {
@@ -308,6 +311,7 @@ export class Character {
       for (const n of C.bones) if (n.endsWith(s) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) t[n] = 1;
       this.MASK_ARM[s] = C.mask(t);
     }
+    this.initMirror(); // (before the idles: the baked upright's right arm is its left's mirror)
     this.air = new Airborne(this); // (the air: take-off, fall, flip, kick-off, dash, landings: anim/airborne.js)
     this.airTrack = this.air.track;
     this.idles = new IdleBreaks(this); // (the idle, the fighting stance, the idle breaks: anim/idlebreak.js)
@@ -331,8 +335,7 @@ export class Character {
     this.toeRest = this.restPos.get(B.toeL).y;
     this.gait = {};
     for (const n of ['walk', 'jog', 'sprint', 'crouchWalk']) this.gait[n] = this.analyseGait(n);
-    this.lock = { L: { w: 0, on: false, p: new THREE.Vector3() }, R: { w: 0, on: false, p: new THREE.Vector3() } };
-    this.initMirror();
+    this.lock = { L: { w: 0, on: false, lost: false, p: new THREE.Vector3() }, R: { w: 0, on: false, lost: false, p: new THREE.Vector3() } };
     this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, dip: 0, dipV: 0, sliding: false, yawOff: 0 };
     this.airT = 0;
     this.resetPose();
@@ -568,6 +571,15 @@ export class Character {
     else if (gs <= knots[4]) W[2] = 1;
     else if (gs <= knots[5]) { W[3] = (gs - knots[4]) / (knots[5] - knots[4]); W[2] = 1 - W[3]; }
     else W[3] = 1;
+    // (a start from standing: the gait speed passes 0.5 m/s in one frame at the ground's accel, and the idle became the run in that frame,
+    //  every joint at once. The idle's share moves at most a whole in START_SWAP s, the loops scaled into the rest)
+    st.still = THREE.MathUtils.clamp(W[0], (st.still ?? W[0]) - dt / START_SWAP, (st.still ?? W[0]) + dt / START_SWAP);
+    if (Math.abs(st.still - W[0]) > 1e-6) {
+      const m0 = W[1] + W[2] + W[3];
+      if (m0 > 1e-6) for (const i of [1, 2, 3]) W[i] *= (1 - st.still) / m0;
+      else W[1] = 1 - st.still;
+      W[0] = st.still;
+    }
     const wm = W[1] + W[2] + W[3];
     const moving = [[1, 'walk'], [2, 'jog'], [3, 'sprint']];
     const blendG = (key) => {
@@ -747,6 +759,9 @@ export class Character {
     s.techs?.afterPose(this, s);
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
     Object.assign(st, { air, sl, mn, da, cr, wr, aw, gaitW, speed });
+    st.dt = dt;
+    const handsFree = !s.techs?.game?.belt?.others(null) && !((s.gun?.drawT ?? 0) > 0) && wU < 0.01;
+    st.hingeArms = damp(st.hingeArms ?? 1, handsFree ? 1 : 0, 8, dt); // (the arms' hinge pass, eased as a tool comes out or goes away)
   }
 
   /**
@@ -786,8 +801,11 @@ export class Character {
       const L = this.lock[k];
       if (L.on && s.groundVel) L.p.addScaledVector(s.groundVel, dt); // (a locked foot rides its platform)
       const want = lockable && st.contact[k] > 0.6;
-      if (want && !L.on) { L.on = true; L.p.copy(anim[k]); L.w = 1; } // (locks where the foot is: no pop)
-      if (L.on && (!want || Math.hypot(L.p.x - anim[k].x, L.p.z - anim[k].z) > 0.35)) L.on = false;
+      if (!want) L.lost = false;
+      if (want && !L.on && !L.lost) { L.on = true; L.p.copy(anim[k]); L.w = 1; } // (locks where the foot is: no pop)
+      // (let go when the body has run 0.35 m off it, a start or a turn outrunning the cycle: eased off, and not caught again until the
+      //  cycle lifts that foot. Caught again at once, it jumped to the clip's foot in one frame: 30 to 38 cm in a start, casebook 2026-10-10)
+      if (L.on && (!want || Math.hypot(L.p.x - anim[k].x, L.p.z - anim[k].z) > 0.35)) { L.on = false; L.lost = want; }
       L.w = THREE.MathUtils.damp(L.w, L.on ? 1 : 0, L.on ? 30 : 16, dt);
       if (L.w > 0.001) { offs[k].x += (L.p.x - anim[k].x) * L.w; offs[k].z += (L.p.z - anim[k].z) * L.w; }
     }
@@ -1116,6 +1134,9 @@ export class Character {
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
     o.techs?.hands(this, o);
     if (!o.techs?.unitFrame?.()) this.guardKnees(1 - Math.min(1, o.techs?.override || 0));
+    // (the knees and elbows back on their hinge after the IK, the joints where they are: the legs always, the arms while nothing is in the
+    //  hands, a tool's arms being its own set's: anim/hinges.js)
+    this.hinges.apply(st.dt ?? 1 / 60, 1, st.hingeArms ?? 1);
     // (the limits last, after the knee guard: CLAUDE.md. A tech that owns the body, a ladder, a pole, has posed the hands to its own
     //  handholds, and keeps them)
     if ((o.techs?.override || 0) < 0.5) this.limits.apply();

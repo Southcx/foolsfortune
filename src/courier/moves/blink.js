@@ -5,20 +5,18 @@
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
-import { PALETTE } from '../../core/config.js';
 import { stream, randDir } from '../../core/rng.js';
 import { featTint } from '../../vfx/oxidation.js';
+import { Afterimages } from '../../vfx/afterimage.js';
 const simRand = stream('courier/moves/blink'); // (the simulation's chance: core/rng.js, the same twice)
 const fxRand = stream('courier/moves/blink.fx'); // (the look's chance, a stream of its own: the film's hue never shifts the simulation's draws)
-
-const ghostMat = () => new THREE.MeshBasicMaterial({ color: PALETTE.pale, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending });
 
 export class Blink extends Tech {
   constructor(mgr) {
     super(mgr, 'blink');
     this.charges = this.cfg.charges;
     this.recharge = 0;
-    this.ghosts = [];
+    this.ghosts = new Afterimages(mgr.game, { opacity: 0.45 }); // (the one afterimage: vfx/afterimage.js, shared with the stinger and the paid cut)
     this.overrides = 0;
   }
 
@@ -100,30 +98,13 @@ export class Blink extends Tech {
       this.recharge += dt;
       if (this.recharge >= c.recharge) { this.charges++; this.recharge = 0; }
     } else this.recharge = 0;
-    for (let i = this.ghosts.length - 1; i >= 0; i--) {
-      const g = this.ghosts[i];
-      g.age += dt;
-      const k = 1 - g.age / c.ghostLife;
-      if (k <= 0) {
-        this.game.scene.remove(g.obj);
-        g.obj.traverse((o) => o.geometry?.dispose());
-        g.mat.dispose();
-        this.ghosts.splice(i, 1);
-        continue;
-      }
-      g.mat.opacity = 0.45 * k * k;
-      featTint(g.ph + (1 - k) * 0.5, g.mat.color); // (a feat of the Courier's power reads as Lachryma: the afterimage walks the oil film's hues as it fades, vfx/oxidation.js)
-      g.obj.position.addScaledVector(g.drift, dt);
-    }
+    this.ghosts.update(dt); // (a feat of the Courier's power reads as Lachryma: the afterimage walks the oil film's hues as it fades)
   }
 
   afterimage() {
     const ch = this.game.character;
     if (!ch || ch.hidden) return;
-    const mat = ghostMat(), ph = fxRand(); featTint(ph, mat.color); // (its hue's start on Lachryma's film)
-    const obj = ch.snapshot(mat);
-    this.game.scene.add(obj);
-    this.ghosts.push({ obj, mat, age: 0, ph, drift: this.dir.clone().multiplyScalar(-0.6) });
+    this.ghosts.leave({ ph: fxRand(), life: this.cfg.ghostLife, drift: this.dir.clone().multiplyScalar(-0.6) });
   }
 
   streak(a, b) {
