@@ -189,6 +189,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   glitch.
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
+  Its looks (`docs/ART.md` section 10), shown only, never changing the move: **the skid stop** (`SKID`, `src/courier/anim/stopturn.js`:
+  Loco_SprintStop when a sprint is let go), **the half turn** (`TURN`, the same file: Loco_Turn180 on a reversal at speed, its frame
+  picked by how far the body has turned), **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
+  let down to the crouch's height). *Not:* a tech (they never take the body), a Movement Art.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
   **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: the brass fob below the
@@ -428,7 +432,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   builds: **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium); Impact's is the stun). **build-up**
   (`creature.build[type]`): a type's meter toward its status. **annihilation**: Impact on a confused creature, or Delirium on a stunned one.
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
-- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a stitched sack doll on a post with a weighted ball foot, stitched by Pip; a creature that never falls and that the ledger never counts (`training`); infinitely durable, it cannot shatter and always stands back up. A **bout** is its blows until 4 real seconds pass without one, said in the log in one line. Named with no article ("Strawman rocks back up").
+- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a stitched sack doll on a post with a weighted ball foot, stitched by Pip; a creature that never falls and that the ledger never counts (`training`); infinitely durable, it cannot shatter and always stands back up. A **bout** is its blows until 4 real seconds pass without one, said in the log in one line. Named with no article ("Strawman rocks back up"). **Its moves** (`STRAWMAN_MOVES`, `vfx/strawmanmoves.js`; the owner, 2026-10-10): the swing, the jab, the one-two, the overhead chop, the spin sweep (low: a jump clears it), the hat-butt and the delayed swing, each a windup the parry answers and a harmless strike; **its attack strings** (`STRAWMAN_STRINGS`; run by `world/testroom/strawmanstrings.js`): moves and pauses in a set order on a loop (Footwork, One-two chop, The mix-up, Keep out), picked at the sparring circle's lectern and run only while the Courier is inside the circle; always "Strawman's attack string" or "a string" on the lectern, never a tool's string (the moveset's). docs/plans/COMBAT-LAB.md section 6.
 
 ## 5. Places and the Wells
 
@@ -577,7 +581,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   is unbuilt; *not* the Index's lectern) and a debug chest: **the sparring circle** (Strawman in a ring of tamped clay bounded by straw
   bales, a sumo dohyo's; never "Strawman's ring": a ring is a homonym), with **the frame meter** (`frameMeter`: twenty tiles crosswise
   in its clay between Strawman and the striker, a tenth of a second each; no words or numbers) and **the sparring mirror** on the west
-  wall; **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
+  wall (`SparringMirror`, `mirrorPane`, `vfx/sparringmirror.js`: a real mirror while the Courier is inside the bales, the room drawn
+  again from the eye mirrored in the glass, bodies and never marks; the stand-in's dull glass outside them; *not* a mirage); **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
   "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
   12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (eleven **roly-polies**, Strawman's
   kin, each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's

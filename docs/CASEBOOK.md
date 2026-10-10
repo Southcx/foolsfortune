@@ -502,8 +502,69 @@ the rules before building in the same area; a rule a machine can check goes into
     a carry) follows the other's measured motion with a pull to the gap, never two gravities tuned to agree; and a blow is proven by the
     tip's measured angle and height against where the target stands, not by the clip's look (an arc that never crosses the front is
     aimed by its own angle; a push that carries the pair is a push too far).
+183. **A creature's body is never the ground.** A mark laid on the ground finds the ground under it with static colliders that belong to
+    no creature (`physics.entityOf(c)?.type !== 'creature'`): a creature that stands on a static collider of its own is not a floor.
+184. **A body and its windup keep one clock.** A creature's animation, the strike it calls and the windup the parry asks of all run on the
+    sim step (`dt`), never the body on real seconds: under any time scale (a hit-stop, a held slowdown, a tempo) the strike lands as the
+    window closes. Only what is said in real seconds (a bout's gap, a press's quarter second) reads `rawDt`.
+185. **A tell has a dark beat before its glint.** A look that says "now" can only teach if there is a "not yet" before it: a wind-up
+    shorter than the time its mark runs hot (the window and a press's quarter second, 0.5 s) glints from its first frame.
+186. **A clip is cast by its measures, not its name.** Before a clip takes a state, its own speed (from its planted foot), its hips'
+    height and its posed top are measured against the state's speed and the room it must fit. A loop played past twice its own speed
+    takes short steps at a quick cadence, never long low strides; and a foot is planted only while the capsule is slow enough for it
+    to stay there.
 
 ## Cases
+
+### 2026-10-10 · The crouch walk read as lunges (the owner; the locomotion clips round)
+
+- **Seen:** the owner: the crouch walk reads as lunges. In game (`character.animate`, every tool off, front and side): the rear leg
+  thrown long behind, its knee near the ground, every step.
+- **Cause (measured):** Loco_CrouchWalk moves 0.61 m/s of its own and the crouch 2.2, so it played at 3.6 times: strides 1.65 times its
+  own at 2.2 times its cadence, the hips at 0.44 m. The clip named to replace it, Loco_SneakWalk ("a slower crouch" in ART.md), is an
+  upright tiptoe sneak: its hips at the walk's height (0.74 m against 0.69), 0.40 m/s of its own. Played as it is, the crouched body's
+  posed top is 1.92 m (the low capsule goes under 1.5 m: the basement's tunnel); let down with the walk's strides, the legs ran out of
+  reach (the foot IK's reach drop at its 0.12 m cap) and lunged again. Building the half turn beside it: the turn's planted feet locked
+  while the capsule was already back at a run (0.08 s after a reversal passes zero), each dragged 0.35 m and let go, 1.6 to 2.3 m of
+  planted slide a turn.
+- **Fix:** the sneak whole once moving, let down 0.38 m by the foot IK (`SNEAK` in character.js: the knees bend, the feet stay), its
+  strides to 1.15 times its own and the rest cadence (4.8 times its own at 2.2 m/s): posed top 1.46 m, reach drop 0.08 m at most;
+  Loco_CrouchWalk out of the core pack. The turn's feet planted only under 1 to 3 m/s (`TURN.still`): its planted slide 0 to 0.01 m.
+- **Rule:** 186 (new).
+
+### 2026-10-10 · Strawman's jab glinted from its first frame (Calissa, judging the strings)
+
+- **Seen:** on the sparring sheets, the jab (0.45 s to its strike), the one-two's jab and nearly the hat-butt (0.60 s) wore the hot line
+  and the glint from the first frame of their wind-up; the one-two's second blow went hot before its first had struck.
+- **Cause (measured by the builder):** the mark goes hot when V would answer: the parry's window (0.25 s) plus the quarter second a press
+  keeps asking, so half a second before a strike. A wind-up of 0.5 s or less is all window: no dark beat, nothing to learn, and an early
+  press always answers.
+- **Fix:** `vfx/strawmanmoves.js`: no blow strikes sooner than 0.75 s after its move or its last blow begins: the jab 0.45 -> 0.75 s, the
+  hat-butt 0.60 -> 0.75 s, the one-two 0.45 + 0.40 -> 0.75 + 0.55 s (each key shifted, the poses unchanged); COMBAT-LAB.md section 6.
+- **Rule:** 185 (new).
+
+### 2026-10-10 · The Figment attack telegraph climbed Strawman like a tent (Calissa's contact sheets of Strawman's moves)
+
+- **Seen:** on every move's sheet, from the striker's place and the side, the drawn area stood up from the clay over Strawman's body, a
+  tall translucent prism from the ball to the hat that hid the whole wind-up (the swing's cone, the jab's lunge, the spin's circle).
+- **Cause:** the mark's drape finds the ground with a ray down from 4 m over each grid point and keeps any static collider
+  (`vfx/figmenttelegraph.js rayAt`: no parent body, or a fixed one). Strawman's capsule (room.js) is a collider with no parent body, so
+  every point over it took the capsule's top for the floor. No other creature stands on a static collider of its own, so no fight
+  showed it.
+- **Fix:** the ray's filter also refuses a collider registered to a creature (`physics.entityOf(c)?.type !== 'creature'`). Re-rendered:
+  every area lies flat on the clay round Strawman's ball (`strawman-*.png`, the scratchpad's strawman-strings).
+- **Rule:** 183.
+
+### 2026-10-10 · Strawman struck on real seconds while its windup counted sim seconds
+
+- **Seen:** found reading the swing for the attack strings, not in play: the model's swing ran in `update(raw)` (real seconds) and
+  called the strike at 0.925 real s, while the windup it registered counts `w.t` down by the sim step in `creatures.update(dt)`.
+- **Cause:** worked from the two clocks, not measured on the old build: under any time scale the two parted. Under a 0.25 hold the
+  sleeve swept at 0.925 real s with 0.23 sim s of the windup gone (`w.t` 0.99, not 0.3): the window would have opened 2.8 real s after
+  the sweep. The parry's own breath (`time.pulse('parry', 0.05, 0.08)`) parted them by a few frames every parry.
+- **Fix:** Strawman's body, its moves and its strings run on `dt` (room.js `tick(dt, raw)`, `model.update(dt)`); the bout's gap stays
+  on real seconds. Measured headless, every move at 1x and at 0.25x: `w.t` at the strike 0.300 to 0.317 (one 60 Hz frame of 0.3).
+- **Rule:** 184.
 
 ### 2026-10-10 · The Sondelass's air string missed: two gravities, and two blades that never crossed the front (the owner: "I also had issues with the aerial portion of the launch combo")
 

@@ -13,6 +13,7 @@ import { Airborne } from './anim/airborne.js';
 import { IdleBreaks } from './anim/idlebreak.js';
 import { Hurt } from './anim/hurt.js';
 import { MantleClips } from './anim/mantle.js';
+import { StopTurn } from './anim/stopturn.js';
 import armorB64 from '../assets/courier/courier_armor.png?b64';
 import maskB64 from '../assets/courier/courier_mask.png?b64';
 import { dressFiligree } from '../vfx/filigree.js';
@@ -22,6 +23,11 @@ const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the 
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
+// The crouch's moving loop (the owner, 2026-10-10: it had been Loco_CrouchWalk, played at 3.6 times its own pace, which read as lunges):
+// Loco_SneakWalk on the shared phase, whole once moving (the crouch idle under it at crouchDepth). The sneak stands as tall as the walk,
+// so the foot IK lets the body down `drop` m (the knees bend, the feet stay) and the posed body, hair included, stays under the 1.5 m
+// the low capsule goes under (the basement's tunnel); its strides to `stride` times its own.
+export const SNEAK = { clip: 'Loco_SneakWalk', drop: 0.38, stride: 1.15 };
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -318,6 +324,8 @@ export class Character {
     this.hurt = new Hurt(this); // (a blow taken: anim/hurt.js)
     this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
     this.slideTrack = new Track(C, new Set(['slideLoop']));
+    this.stopTurn = new StopTurn(this); // (the skid stop and the half turn over the gait: anim/stopturn.js)
+    this.sneak = SNEAK; // (read each frame, so it can be moved live)
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.leg = {
       L: { thigh: B.thighL, shin: B.shinL, foot: B.footL, a: L('thighL', 'shinL'), b: L('shinL', 'footL') },
@@ -334,7 +342,7 @@ export class Character {
     this.ankleRest = this.restPos.get(B.footL).y;
     this.toeRest = this.restPos.get(B.toeL).y;
     this.gait = {};
-    for (const n of ['walk', 'jog', 'sprint', 'crouchWalk']) this.gait[n] = this.analyseGait(n);
+    for (const n of ['walk', 'jog', 'sprint', SNEAK.clip]) this.gait[n] = this.analyseGait(n);
     this.lock = { L: { w: 0, on: false, lost: false, p: new THREE.Vector3() }, R: { w: 0, on: false, lost: false, p: new THREE.Vector3() } };
     this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, dip: 0, dipV: 0, sliding: false, yawOff: 0 };
     this.airT = 0;
@@ -585,12 +593,12 @@ export class Character {
     const blendG = (key) => {
       let v = g.walk[key];
       if (wm > 0) { v = 0; for (const [i, n] of moving) v += W[i] * g[n][key]; v /= wm; }
-      return THREE.MathUtils.lerp(v, g.crouchWalk[key], cr);
+      return THREE.MathUtils.lerp(v, g[SNEAK.clip][key], cr);
     };
     const natSpeed = blendG('cycle') / blendG('dur'); // speed at 1x with the blended stride
     const ratio = gs / natSpeed;
     // past the clip's speed: part longer strides (the foot IK stretches them), part cadence
-    const maxStride = THREE.MathUtils.lerp(wm > 0 ? (W[1] * A.walkStride + (W[2] + W[3]) * A.maxStride) / wm : A.walkStride, A.walkStride, cr);
+    const maxStride = THREE.MathUtils.lerp(wm > 0 ? (W[1] * A.walkStride + (W[2] + W[3]) * A.maxStride) / wm : A.walkStride, this.sneak.stride, cr);
     st.stride = ratio >= 1 ? Math.min(maxStride, Math.pow(ratio, A.strideShare)) : Math.max(0.7, Math.sqrt(ratio));
     const cad = ratio / st.stride / blendG('dur');
     if (footed && sl < 0.5) st.phi = (((st.phi + (back ? -1 : 1) * cad * dt) % 1) + 1) % 1;
@@ -602,24 +610,28 @@ export class Character {
       cum += W[i];
       C.blend(base, C.sample(n, at(n), P.tmp), W[i] / cum);
     }
-    const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> walk
+    const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> the sneak
     if (cr > 0.001) {
       const cp = C.sample('crouchIdle', this.time, P.tmp);
-      C.blend(cp, C.sample('crouchWalk', at('crouchWalk'), P.tmp2), cwk);
-      C.blend(base, cp, cr * A.crouchDepth);
+      C.blend(cp, C.sample(SNEAK.clip, at(SNEAK.clip), P.tmp2), cwk);
+      C.blend(base, cp, cr * THREE.MathUtils.lerp(A.crouchDepth, 1, cwk));
     }
+    st.sneakDrop = this.sneak.drop * cr * cwk;
     // how planted each foot is at this point of the cycle (idle: both)
     st.contact = st.contact || { L: 1, R: 1 };
     for (const f of ['L', 'R']) {
       let c = W[0];
       for (const [i, n] of moving) if (W[i] > 0) c += W[i] * this.contactAt(g[n], f, (st.phi + g[n].off) % 1);
-      const cc = THREE.MathUtils.lerp(1, this.contactAt(g.crouchWalk, f, (st.phi + g.crouchWalk.off) % 1), cwk);
+      const cc = THREE.MathUtils.lerp(1, this.contactAt(g[SNEAK.clip], f, (st.phi + g[SNEAK.clip].off) % 1), cwk);
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
-    // footsteps: the left heel lands at phase 0, the right at 0.5
+    // ---- the skid stop and the half turn: a sprint let go, the move reversed at speed (anim/stopturn.js) ----
+    const free = footed && s.grounded && !s.techs?.active && !s.techs?.legsOwn ? (1 - cr) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - (s.techs?.override || 0)) : 0;
+    const brk = this.stopTurn.pose(dt, s, speed, free, base, st.contact);
+    // footsteps: the left heel lands at phase 0, the right at 0.5 (the skid's and the turn's own while they play)
     const ph = st.phi;
-    if (footed && wm > 0.2 && sl < 0.5 && st.lastPhi !== undefined) {
+    if (footed && wm > 0.2 && sl < 0.5 && brk.w < 0.5 && st.lastPhi !== undefined) {
       const crossed = (a) => (back ? st.lastPhi > a - 1e-9 && ph <= a : st.lastPhi < a && ph >= a) || Math.abs(ph - st.lastPhi) > 0.5 && a === 0;
       if (crossed(0) || crossed(0.5)) this.onFootstep?.();
     }
@@ -715,7 +727,7 @@ export class Character {
     // ---- procedural layer ----
     root.position.y -= st.dip;
     st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
-    const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
+    const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air) * (1 - brk.turnW); // (the half turn turns itself)
     // sliding on a slope: lie along it (pitch down a hill, roll across one)
     let sp = 0, sr = 0;
     if (s.groundN && sl > 0.01) {
@@ -732,7 +744,7 @@ export class Character {
     const upW = _v3.set(0, 1, 0);
     // orientation warping: hips turn toward the move, the chest turns back to the aim
     const gaitW = unit ? 0 : st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
-    const warp = st.warp * gaitW;
+    const warp = st.warp * gaitW * (1 - brk.w);
     if (Math.abs(warp) > 1e-3) {
       this.rotW(B.spine, upW, warp);
       this.rotW(B.spine001, upW, -warp * 0.45);
@@ -831,7 +843,7 @@ export class Character {
       }
     }
     st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach), REACH_FOLLOW, dt); // (one rate both ways: 40 down and 10 up pumped the hips once a stride)
-    drop += st.reachDrop;
+    drop += st.reachDrop + (st.sneakDrop || 0); // (the sneak let down to the crouch: SNEAK)
     if (drop > 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
     const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
     const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion), rootUp = _v6.set(0, 1, 0).applyQuaternion(root.quaternion);

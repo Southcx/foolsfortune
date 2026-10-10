@@ -79,24 +79,27 @@ room is, so the hall never vanishes behind the arcade. The basement's ceiling sl
 reading a body's tell rather than a mark; that a window is short and late; that what follows a parry is a punish window of a known length.
 
 - **Strawman** stands at the centre (moved from the room's south side: `TR.strawman`; the `strawman` place follows it). F at it still
-  cycles still, guard, swing; the bout is still said in the log.
+  cycles still, guard, swing; the bout is still said in the log. While a string runs it turns on its ball to face you between moves
+  (each move is aimed where it faced as it began, and held: the drawn area is where it lands), and faces the arcade again when it stops.
 - **The ring** is a sumo dohyo's: a disc of tamped clay bounded by straw bales sunk to their middles, each with two cords, the four at
-  the quarters set out a hand (the tokudawara). Strawman is straw; the ring is the rule (step out, and the string stops: a mechanic).
+  the quarters set out a hand (the tokudawara). Strawman is straw; the ring is the rule: built. A string runs only while you are inside
+  the clay (r 3.6 m and a step); step out and it stops after the move under way, and starts again a breath (1.0 s) after you step in.
 - **The frame meter** (an extra, built as a stand-in): twenty dark tiles set crosswise in the clay between Strawman and the striker,
   a tenth of a second each, time running left to right as the striker sees it. Proposed lighting (no words, no numbers): the windup in
   Strawman's own tell's amber, the strike in the kiln's red, the recovery in slate blue; the parry window drawn as a pale rim round the
   tiles it covers; the striker's press a cream pip under the tile it fell on (early, late or in, at a glance). Prior art: Street Fighter
   6's frame meter, which is the strip, not its colours (the house's own). First laid behind Strawman: his body hid it from the striker's
   place, so it lies in front.
-- **The mirror** (an extra, built as a stand-in): a long glass on the west wall in a dark wood frame, a dance studio's; silvered grey with
-  the cartoon mirror's glints so it reads as a mirror before it reflects. The reflection is a second render: see section 7.
-- **The lectern** (stand-in: a shut book): the string (section 6) and the tempo (0.25x, 0.5x, 1x; DEBUG only).
+- **The mirror** (an extra): a long glass on the west wall in a dark wood frame, a dance studio's; silvered grey with the cartoon
+  mirror's glints, and a real mirror while the Courier is inside the bales (a second render: see section 7).
+- **The lectern** (still the shut book's stand-in; built as a mechanic): F opens its page, set aside to the left so the circle stays in
+  view (`indexmenu.showPage`, `aside`): the four strings and None (section 6), and in DEBUG the tempo (1x, 0.5x, 0.25x). Picking a
+  string closes the page and says it in the log (`strawman.string`); the tempo is said too (`strawman.tempo`).
 - **Debug chest** `sparring`: the seven tools (each answers a blow its own way: courier/parry.js `how`).
-- **Needs:** Strawman's strings (the moves animated on his body: Calissa, `vfx/strawman.js`; the clock that runs a string and its windups:
-  Petra's `room.js` and Dovina's `STRAWMAN`, `progress/combat/dunemaw.js`); the lectern's page (Petra: the Index's page pattern,
-  `indexmenu.showPage`); the tempo (Petra: `game.time.slow('sparring.tempo', k)` held while in the ring; Strawman's `tick(raw)` must take
-  the scaled time or he alone keeps full speed); the frame meter's lighting (look: Calissa; the events it reads, `strawman.windup`,
-  `strawman.strike`, `move.parry` with its `lead`: Petra); the ring's rule (step out, the string stops: Petra).
+- **Built (2026-10-10, Calissa; the owner put Strawman wholly in Calissa's hands):** the moves and strings (section 6), the lectern's
+  page, the tempo, the ring's rule, Strawman's clock on the sim step (casebook rule 184). **Still needs:** the frame meter's lighting
+  (look: Calissa; the events it reads exist now: `strawman.windup { move, blow, eta }`, `strawman.strike { move, blow, landed, cleared }`,
+  `move.parry` with its `lead`); the lectern's own look (an open book while its page is up).
 
 ## 3. The Figment telegraph floor
 
@@ -152,55 +155,79 @@ does to a creature (each creature decides what it means: `creatures.status`), by
   that rocks like Strawman: Calissa's model), the event and its rule (Petra, the words Espada's), the Codex's status page (Petra's
   Codex, Espada's words, Calissa's glyphs), the auras exist (`vfx/library.js aura.<status>`).
 
-## 6. Strawman's attack strings (draft for the owner's markup)
+## 6. Strawman's attack strings (built, 2026-10-10)
 
-Strawman has no skeleton: what moves is (`vfx/strawman.js`) the **rock** (the whole doll pivoting on its ball foot, on a spring: lean
-back and forward, and to the sides), the **sleeves** (each on its own shoulder on the crossbar: swung forward or back, tipped up or down,
-the shoulder pushed out a little), the **sack** (hanging on the neck pivot, swinging a beat behind), the **hat** (the tall block on the
-post behind the head, riding the rock), and the turn of the whole doll about the ball (not used yet). The swing today: 0.8 s of windup
-(leaning back 0.22 rad, the right sleeve up beside the head, the sack's target pulsing amber), the sweep (0.25 s, its middle the strike),
-then 0.55 s back to rest. Nothing here is animated yet: the owner marks this up first.
+The owner's rulings (2026-10-10): animate all the moves (the swing kept); the four strings on the circle's lectern; the spin sweep, knee
+high, answered by a jump as well as the parry. Built by Calissa: the moves as data, `vfx/strawmanmoves.js` (`STRAWMAN_MOVES`,
+`STRAWMAN_STRINGS`: the keys, the blows, the numbers); the body that plays them, `vfx/strawman.js` (`play`, `breakOff`, the parts); the
+clock that runs them, `world/testroom/strawmanstrings.js` (`StrawmanStrings`, wired into `room.js` by four small edits).
 
-**The window** is the parry's rule, not Strawman's: a windup is answered in its last **0.25 s** before the strike (0.40 with the Held
-Breath knack: `courier/parry.js`, `BLOW_WINDOW`). A press earlier answers nothing. **The punish** is the recovery: from the strike to
-rest, when Strawman cannot strike again. All numbers are at 1x and are first numbers for the owner to move.
+Strawman has no skeleton: a move is keyed on the **rock** (the doll on its ball foot: lean and tilt), the **turn** about the ball (a new
+group between the ball and the rock), each **sleeve** on its shoulder (swung forward, tipped up or down, the shoulder pushed out, the
+sleeve stretched: a cartoon's sleeve unrolling), the **hat** (now on a pivot at its base: it nods), the **head** (it looks up), and the
+sack's **tell** (the amber pulse, at each move's own rate) and **dark** (dimmed: a held breath). Between keys, eased curves; the springs
+it had carry the follow-through (`kicks`: the rock's, the sack's, and a new one for the hat), and the sack also swings a beat behind the
+keyed lean. Every tell reads from the striker's place (casebook rule 161: the marked part in sight for the whole wind-up; judged on the
+contact sheets, front and side).
 
-| move | windup (to the strike) | what reads from the striker's place (the tell) | strikes with (the parry mark rides there) | window | recovery (the punish) | reach |
+**Each blow is a windup** (`creatures.windup`): the parry mark on its striking part (`model.parts`: a sleeve, the hat, or both sleeves
+under one mark, whose glint finds the higher cuff), and an `area` a Figment attack telegraph draws at your Divination (`figmentMarkOf`;
+type Impact, answer Parry), aimed where Strawman faced as the move began: **the drawn area is the hit area** (`inArea`, the same shapes).
+A strike that lands is harmless, a shove (4 m/s, `PUSH`), and counted as landed (`strawman.strike { landed }`); a parry's breath (its
+iframes) takes nothing. **A parry breaks the blow off**: its part eases back (`MOVE_EASE`, 12/s), it rocks back, and Strawman stands in
+its punish for the rest of the move; the one-two's jab parried, its second blow still comes (Sekiro's deflected combo). Two parries
+close together stun it (the parry's own stun, 0.5 a parry against poise 1): a stunned, slept or halted Strawman does nothing.
+
+**The window** is the parry's rule, not Strawman's: the last **0.25 s** before a strike (0.40 with Held Breath). The mark runs hot (and
+glints) from half a second before the strike (the window and a press's quarter second): on a windup of 0.5 s or less (the jab, the
+one-two's jab, the hat-butt nearly) it is hot from its first frame. All numbers at 1x; at 1x and 0.25x the strike lands as the windup's
+clock runs out (`w.t` 0.300 to 0.317, one frame).
+
+| move | windup (to the strike) | the tell, from the striker's place | strikes with (the mark) | window | recovery (the punish) | area (drawn = hit) |
 |---|---|---|---|---|---|---|
-| **swing** (today's) | 0.925 s | leans back; the right sleeve rises beside the head; the sack pulses amber | the right cuff | 0.675 to 0.925 s | 0.675 s | 2.6 m, a sweep across the front |
-| **jab** | 0.45 s | the left shoulder draws back and the left sleeve levels at you: its cream spiral turns to face you, a target looking back | the left cuff, thrust straight | 0.20 to 0.45 s | 0.35 s (the sleeve springs back, the rock wobbles) | 2.0 m, a narrow line |
-| **one-two** | 0.45 s, then 0.40 s more | the jab, and through its recovery the right sleeve already up beside the head (the swing's picture, held short) | the left cuff, then the right | 0.20 to 0.45, then 0.60 to 0.85 s | 0.55 s after the second | 2.0 then 2.6 m |
-| **overhead chop** | 1.15 s | both sleeves rise together above the hat, a tall silhouette; it leans far back on the ball; a long slow pulse | both cuffs together (the mark between them) | 0.90 to 1.15 s | 0.80 s: the sleeves on the floor, the doll rocking hard (the longest punish) | 2.4 m, a band 1 m wide in front |
-| **spin sweep** (the roly-poly's) | 0.85 s, then 0.15 s to the second sleeve | leans back on its ball foot until the lacquer shows; both sleeves out straight; a quarter turn the wrong way (cocking) | the leading cuff, low (knee high), then the other a half turn later | 0.60 to 0.85 s (one parry breaks off the whole spin) | 0.90 s, dizzy: it circles on the ball | 2.2 m all round |
-| **hat-butt** | 0.60 s | the sleeves swept back like wings and the hat tipping back first; the X eyes looking up | the hat's front edge, nodding down | 0.35 to 0.60 s | 0.60 s, the hat wobbling on its bounce | 1.4 m: punishes hugging it inside the swing |
-| **delayed swing** | 1.425 s | the swing's picture exactly, then a hold at the top with the pulse gone dark (a held breath), then the sweep | the right cuff | 1.175 to 1.425 s | 0.55 s | 2.6 m |
+| **swing** | 0.925 s | leans back; the right sleeve up beside the head; the sack pulses amber | the right sleeve | 0.675 to 0.925 s | 0.675 s | cone, 140 degrees, 2.6 m |
+| **jab** | 0.75 s | the left shoulder drawn back, the left sleeve levelled at you, its spiral facing you; held a beat | the left sleeve, thrust (it unrolls to 1.6x) | 0.50 to 0.75 s | 0.35 s (the rock wobbles) | lunge, 1.9 m long, 0.9 wide |
+| **one-two** | 0.75 s, then 0.55 s more | the jab; through its recovery the right sleeve already up beside the head (the swing's picture, held 0.1 s) | the left sleeve, then the right | 0.20 to 0.45, 0.60 to 0.85 s | 0.55 s after the second | the jab's lunge, then the swing's cone |
+| **overhead chop** | 1.15 s | both sleeves up together above the hat in a V, a tall silhouette; it leans far back; the head looks up; a slow pulse | both sleeves (one mark) | 0.90 to 1.15 s | 0.80 s: both sleeves down in front, the doll pitched forward (the longest punish) | line, 1.0 m wide, 2.2 m long |
+| **spin sweep** | 0.85 s (the second sleeve at 1.0) | leans back on its ball, both sleeves out straight, cocked 0.55 rad the wrong way | both sleeves (one mark), knee high: the left in front, then the right a half turn later | 0.60 to 0.85 s (one parry breaks off the whole spin) | 0.90 s: dizzy, it circles on its ball | circle, r 2.0 m (the cuff 1.5 m out, at 0.5 m high) |
+| **hat-butt** | 0.75 s | the hat tips back first (0.38 rad: further, the head hid it), the sleeves swept back like wings, the eyes look up | the hat, nodded down at you | 0.50 to 0.75 s | 0.60 s, the hat bouncing on its spring | lunge, 1.4 m long, 1.0 wide |
+| **delayed swing** | 1.425 s | the swing's picture exactly to 0.8 s, then held at the top, the pulse gone dark and the sack dimmed, creeping | the right sleeve | 1.175 to 1.425 s | 0.55 s | the swing's cone |
 
-The strings (each a row on the lectern; a pause is Strawman standing still, a breath to reset):
+**The jump:** the spin sweep is low; a jump with your feet more than **0.35 m** up as a sleeve passes takes nothing
+(`strawman.strike { cleared }`, and the log says you jumped it). A plain jump (6.4 m/s against 21 m/s/s) is above 0.35 m for 0.47 s, so
+one taken about 0.25 s before the first sleeve clears both.
+
+**The strings** (the lectern's rows; a pause is Strawman standing still, a breath to reset; each loops while you are inside the circle):
 
 | string | made of | teaches |
 |---|---|---|
-| **Footwork** | jab, pause 1.0 s, jab, pause 1.0 s, swing | the window on a short tell, then on a long one: the same 0.25 s after different waits |
-| **One-two, chop** | one-two, pause 0.6 s, overhead chop | a second parry 0.40 s after the first; then the long punish, earned by not swinging early |
-| **The mix-up** | swing, pause 1.2 s, delayed swing, pause 1.2 s, swing (or the two in a random order) | read the hold: a press on the swing's timing against the delayed swing is 0.5 s early and answers nothing |
-| **Keep out** | it chooses by your distance: inside 1.6 m the hat-butt, beyond it the spin sweep | spacing: neither hugging it nor standing at a sleeve's length is safe |
+| **Footwork** | jab, pause 1.0 s, jab, pause 1.0 s, swing, pause 1.6 s | the window on a short tell, then on a long one |
+| **One-two, chop** | one-two, pause 0.6 s, overhead chop, pause 1.6 s | a second parry 0.40 s after the first; then the long punish, earned by not swinging early |
+| **The mix-up** | two swings and a delayed swing in a random order (the seed's stream `strawman.strings`), pauses 1.2 s, then 1.6 s | read the hold: a press on the swing's timing against the delayed swing is 0.5 s early |
+| **Keep out** | by your distance as each begins: within 1.6 m the hat-butt, beyond it the spin sweep; pause 0.8 s | spacing: neither hugging it nor standing at a sleeve's length is safe |
 
-**The tempo** (0.25x, 0.5x, 1x; DEBUG only) slows the whole world through `game.time`, the Courier too: every number above stretches by
-1 / tempo in real seconds (at 0.25x the swing's window is a full real second), and their relations stay as they are. It is a study of the
-shapes, not an easier test; a test at full speed is the 1x row. (Strawman's clock runs on real seconds today: section 2's needs.)
+**The tempo** (1x, 0.5x, 0.25x; DEBUG only) holds `game.time.slow('sparring.tempo', k)` while a string runs inside the circle, and
+frees it the frame you step out or pick 1x: the whole world, the Courier too, so every number above stretches by 1 / tempo in real
+seconds and their relations stay (the parry's press window is real seconds: Petra's rule). A study of the shapes, not an easier test.
 
-What the owner might mark: which moves to keep; the windups and the windows; whether the spin is answered by a jump as well as the
-parry (it is low); whether the mix-up is random; whether a string loops; the order of the lectern's rows.
+The words (the strings' labels and lines, the log's lines) are placeholders for Espada's. `STRAWMAN.swing.telegraph` and `.reach`
+(`progress/combat/dunemaw.js`, Dovina's) are no longer read: the swing's numbers are its row in `STRAWMAN_MOVES`.
+
+No blow strikes sooner than **0.75 s** after its move (or its last blow) begins (Calissa, 2026-10-10): the mark runs hot half a second
+before a strike (the window and a press's quarter second), so a shorter wind-up glinted from its first frame and taught nothing
+(casebook rule 185). The jab, the one-two and the hat-butt were lengthened to it; the one-two's second blow strikes 0.55 s after its first.
 
 ## 7. The extras
 
 - **The frame meter**: built as a stand-in (section 2). Cheap to light later: one strip of tiles, its colours set per tile.
-- **The mirror**: built as a stand-in. A real reflection is a second render of the room from the mirror's side, so its cost is the room's
-  own: the frame from the striker's place in the ring is 85 draw calls and 38,534 triangles (measured, section 9), so a reflection of the
-  testroom zone alone adds about that again, about 170 in all, well inside the 450 budget; the triangles are cheap at a low resolution.
-  Proposed so it costs only when it is worth it: a low-resolution render (a quarter of the 480 lines) of the testroom zone alone, from a
-  camera mirrored in the glass, drawn only while the Courier is inside the bales; off otherwise, and never with the Workshop's zone in it.
-  Petra's to accept (the present, `render/present.js`, is hers).
-- **The tempo**: proposed (section 6); needs Petra's `game.time` hold and Strawman's clock on scaled time.
+- **The mirror**: built (2026-10-10, Calissa; the owner approved it, Petra told): the sparring mirror, `vfx/sparringmirror.js`. A second
+  render of the testroom zone alone (never the Workshop's, no world marks: no sprite, chevron, reticle, Figment telegraph or compass), from
+  the eye mirrored in the glass through the glass's own corners (its near plane on the glass), into a target of 120 lines (a quarter of
+  the 480) spent on the glass alone; drawn only while the Courier is inside the bales and the glass is in view, every other frame above 45
+  frames a second, the shadow pass not repeated. Outside the bales the glass is the stand-in's dull glass. Measured from the ring facing
+  the glass: 118 calls / about 40,400 triangles with it off, 223 / 73,294 on a frame it is drawn and 118 on the next (SwiftShader 7.6 ms
+  off; 12.2 and 8.0 on); facing away 122 either way; one program more (`npm run perf`: 162 to 163), compiled at the warm-up.
+- **The tempo**: built (section 6): `game.time.slow('sparring.tempo', k)` while a string runs, Strawman's clock on the sim step.
 - **The juggle pen**: built: a fenced square of sand (6.6 by 6.6 m) under the hall's full 9 m, its gate toward the arcade. **For:** the
   launcher and the air string (the owner reported the launcher combo's aerial part). **Teaches:** the timing of the launcher's lift and
   the air string's rhythm, with room above to see it. **Lectern** (stand-in): which creature to juggle (a slip jelly first), and its

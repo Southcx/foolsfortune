@@ -19,7 +19,8 @@
 //   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 //   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
 //   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
-//   events: strawman.mode, strawman.bout, strawman.swing { landed }, strawman.parried
+//   events: strawman.mode, strawman.bout; Strawman's moves and attack strings (strawmanstrings.js, Calissa's): strawman.windup,
+//   strawman.strike { move, landed, cleared }, strawman.parried { move }, strawman.string, strawman.tempo
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -29,6 +30,7 @@ import { STRAWMAN, bout } from '../../progress/combat/dunemaw.js';
 import { StrawmanModel } from '../../vfx/strawman.js';
 import { PaintRange } from './paintrange.js';
 import { buildCombatWing } from './combatwing.js';
+import { StrawmanStrings } from './strawmanstrings.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
@@ -148,7 +150,7 @@ export class TestRoom {
         // (from in front: judged by where the striker stands, within 60 degrees of its facing, +z; the blow's `dir` is each tool's own
         // convention and missed them all: the owner's T51, v131)
         const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
-        const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, front = !!src && dz > 0.5 * Math.hypot(dx, dz);
+        const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, y = model.yaw, front = !!src && dx * Math.sin(y) + dz * Math.cos(y) > 0.5 * Math.hypot(dx, dz); // (its front is where it faces: it turns on its ball in a string)
         const blocked = mode === 'guard' && front, dmg = blocked ? 0 : power;
         hits.push({ at: clock, dmg, type: blocked ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;
@@ -161,39 +163,31 @@ export class TestRoom {
       },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
       setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); },
-      /** A swing at whoever stands in front: a windup the parry answers (outlined on the right sleeve while it can be), then the sweep;
-       *  unanswered, it lands on the Courier in reach as a shove, no harm (STRAWMAN.swing.harm): parry practice (the owner's T51, v133). */
-      swing() {
-        const front = at.clone().add(_src.set(0, 0, STRAWMAN.swing.reach * 0.5));
-        g.creatures?.windup(S, { at: front, radius: STRAWMAN.swing.reach * 0.5, eta: STRAWMAN.swing.telegraph, kind: 'swing', part: model.arms?.[1] || model.group, read: false }); // (Strawman is never counted: no read)
-        model.swing?.(() => {
-          if (!S.windup) return; // (parried: it broke off)
-          g.creatures?.unwind(S);
-          const P = g.player, dx = P.pos.x - at.x, dz = P.pos.z - at.z, d = Math.hypot(dx, dz);
-          if (d > STRAWMAN.swing.reach || dz < 0.3 * d || Math.abs(P.pos.y - at.y) > 1.5) { g.events?.emit('strawman.swing', { landed: false, by: 'creature' }); return; }
-          if (!(P.invuln > 0)) { P.impulse?.(new THREE.Vector3(dx, 0, dz).setLength(STRAWMAN.swing.push).setY(1.5), 'strawman'); P.shake = Math.max(P.shake || 0, 0.35); }
-          g.events?.emit('strawman.swing', { landed: true, by: 'creature' });
-        });
-      },
-      onParried() { model.sw = null; model.hit?.(S.center(), new THREE.Vector3(0, 0, -1), 1.2); g.events?.emit('strawman.parried', { by: 'courier' }); }, // (the sweep broken off: it rocks back)
-      /** Once a frame, in real seconds: the bout's end said, the swing's slow sweep (harmless: STRAWMAN.swing.harm). */
-      tick(raw) {
+      /** A swing at whoever stands in front (the swing mode's): one of Strawman's moves (strawmanstrings.js, vfx/strawmanmoves.js): a
+       *  windup the parry answers, then the sweep; unanswered, it lands on the Courier in reach as a shove, no harm (the owner's T51, v133). */
+      swing() { S.strings.attack('swing'); },
+      onParried() { S.strings.parried(); }, // (the blow broken off: it rocks back, its sleeve eases home)
+      /** Once a frame: the body, its moves and its strings on the sim clock (the clock its windups count in: creatures.js); the bout's
+       *  end on real seconds (STRAWMAN.boutGap); the swing mode's slow sweep (harmless: STRAWMAN.swing.harm). */
+      tick(dt, raw = dt) {
         clock += raw;
-        model.update?.(raw);
+        model.update?.(dt);
+        S.strings.update(dt); S.yaw = model.yaw;
         if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
-        if (mode === 'swing' && (swingT += raw) > STRAWMAN.swing.every) { swingT = 0; S.swing(); }
+        if (mode === 'swing' && !S.strings.running && (swingT += dt) > STRAWMAN.swing.every) { swingT = 0; S.swing(); }
       },
       last: null,
     };
     const col = g.physics.world.createCollider(RAPIER.ColliderDesc.capsule(height * 0.32, radius).setTranslation(at.x, height * 0.5, at.z).setCollisionGroups(GROUPS.static));
     g.physics.register(col, S);
     g.creatures?.add(S);
+    S.strings = new StrawmanStrings(g, S); // (its moves and attack strings, the sparring circle's lectern: strawmanstrings.js)
     return S;
   }
 
   update(dt, raw = dt) {
     const g = this.game, P = g.player;
-    this.strawman.tick(raw);
+    this.strawman.tick(dt, raw);
     if (g.interact?.cur?.id === 'strawman' && P.peekLatch?.('KeyF')) {
       P.latch('KeyF');
       const M = STRAWMAN.modes, S = this.strawman;

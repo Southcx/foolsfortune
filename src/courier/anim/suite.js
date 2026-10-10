@@ -29,7 +29,7 @@ import { HINGED, repairHinges } from './hinges.js';
 
 // the old name -> the suite clip that is the same capture (front-and-side sheets of both: docs/ref/suite_same.png)
 export const SAME = {
-  idle: 'Loco_IdleMasc', walk: 'Loco_WalkMasc', jog: 'Loco_RunMasc', sprint: 'Loco_Sprint', crouchIdle: 'Loco_CrouchIdle', crouchWalk: 'Loco_CrouchWalk',
+  idle: 'Loco_IdleMasc', walk: 'Loco_WalkMasc', jog: 'Loco_RunMasc', sprint: 'Loco_Sprint', crouchIdle: 'Loco_CrouchIdle',
   jumpStart: 'Air_JumpStart', jumpLoop: 'Air_JumpLoop', jumpLand: 'Air_JumpLand', roll: 'Loco_Roll',
   slideStart: 'Trav_SlideStart', slideLoop: 'Trav_SlideLoop', slideExit: 'Trav_SlideExit', climb: 'Trav_Mantle',
 };

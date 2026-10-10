@@ -10,8 +10,8 @@
 //                    tenth of a second each (two seconds: the longest blow charted, the delayed swing, start to rest), time running
 //                    left to right as the striker sees it, dark until the mechanic lights them (fighting games' frame meter, Street
 //                    Fighter 6's). (Behind Strawman first, its body hid the strip from the striker's place.)
-//   THE MIRROR       a long glass on the west wall in a dark wood frame, a dance studio's (a stand-in: silvered grey with the cartoon
-//                    mirror's glints, no reflection yet)
+//   THE MIRROR       a long glass on the west wall in a dark wood frame, a dance studio's: silvered grey with the cartoon mirror's
+//                    glints, its dull glass while the Courier is outside the bales; inside them it reflects (vfx/sparringmirror.js)
 //   THE LECTERNS     each station's reading desk, the Index's lectern's shape (vfx/testroomkit.js) with its book shut: a stand-in until
 //                    its page is built (no projection, no glow: nothing promised that does not answer)
 //   THE STATUS PLAQUES fired tiles hung on the status bench's front under each roly-poly, as labels on a shelf, each with its
@@ -150,8 +150,8 @@ function glassFace() {
   GLINT = new THREE.CanvasTexture(c); GLINT.colorSpace = THREE.SRGBColorSpace; GLINT.anisotropy = 4;
   return GLINT;
 }
-/** The mirror's glass, a stand-in: silvered grey with its glints, no reflection yet (the reflection is a second render: COMBAT-LAB.md
- *  section 6). A thin box `w` long (local z) and `h` high, its face toward local +x. */
+/** The mirror's glass as a stand-in: silvered grey with its glints, the dull glass worn outside the bales (the reflection, a second
+ *  render, is vfx/sparringmirror.js's mirrorPane, built on this). A thin box `w` long (local z) and `h` high, its face toward local +x. */
 export function mirrorGlass(w, h) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(0.04, h, w), new THREE.MeshStandardMaterial({ name: 'wing-mirror-glass', map: glassFace(), roughness: 0.2 }));
   m.name = 'combat-wing-mirror'; m.receiveShadow = true;

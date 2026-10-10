@@ -13,6 +13,8 @@
 //
 //   inPlace(C, pose, name, t, axes = 'xz')            pose is name sampled at t; its hips' travel since frame 0 removed on those axes
 //   unturn(ch, pose, name, t)                          the hips' yaw since frame 0 taken out of pose (and of its hips' offset)
+//   turnOf(ch, name)                                   per frame, how far the clip's hips have turned since frame 0 (rad, + toward
+//                                                      the body's left, unwrapped; measured once a clip)
 //   additive(C, base, name, t, t0, w, mask, flip)      base *= w x (name at t relative to name at t0) on the masked bones; flip
 //                                                      reverses the delta (a blow from behind lurches forward instead of back)
 // ---------------------------------------------------------------------------------------
@@ -60,6 +62,18 @@ export function unturn(ch, pose, name, t) {
   const x = pose.p[0], z = pose.p[2], cs = Math.cos(-d), sn = Math.sin(-d);
   pose.p[0] = x * cs + z * sn; pose.p[2] = -x * sn + z * cs;
   return pose;
+}
+
+const turns = new WeakMap();
+export function turnOf(ch, name) {
+  const C = ch.clips, c = C.clips[name], i = C.index.spine;
+  if (!c || i === undefined) return null;
+  if (turns.has(c)) return turns.get(c);
+  _P.copy(ch.mir[i].parentRest);
+  const restInv = ch.restCharInv.get(ch.bones.spine), y0 = yawOf(_q0.fromArray(c.q, i * 4), _P, restInv), out = new Float32Array(c.n);
+  for (let f = 1; f < c.n; f++) { const d = yawOf(_q0.fromArray(c.q, (f * C.nb + i) * 4), _P, restInv) - y0 - out[f - 1]; out[f] = out[f - 1] + Math.atan2(Math.sin(d), Math.cos(d)); }
+  turns.set(c, out);
+  return out;
 }
 
 const bufs = new WeakMap();
