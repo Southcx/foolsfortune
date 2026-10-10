@@ -217,10 +217,10 @@ export class Bowl {
   buildPools() {
     const P = ARENA.pools, list = [{ x: 0, z: 0, r: P.centre / 2 }, ...P.ring.bearings.map((b) => ({ ...bearingXZ(b, P.ring.r), r: P.ring.width / 2 }))];
     this.pools = list.map((w, i) => {
-      const y = dishY(Math.hypot(w.x, w.z));
-      const mouth = new DunemawMouth({ radius: w.r, maw: 0x2a1a40 }); mouth.group.position.set(w.x, y + 0.03, w.z); mouth.mesh.name = `pool-w${i}`; mouth.maw.name = `rim-w${i}`;
+      const y = dishY(Math.hypot(w.x, w.z)), ground = (x, z) => dishY(Math.hypot(w.x + x, w.z + z)) - y; // (the dish under the pool: its look lies on the slope, never flat over it)
+      const mouth = new DunemawMouth({ radius: w.r, maw: 0x2a1a40, ground }); mouth.group.position.set(w.x, y + 0.03, w.z); mouth.mesh.name = `pool-w${i}`; mouth.maw.name = `rim-w${i}`;
       this.group.add(mouth.group);
-      const ripple = new PoolRing({ radius: w.r, fx: this.game.fx }); ripple.group.position.set(w.x, y + 0.06, w.z); this.group.add(ripple.group); // (Calissa's ring before a surfacing)
+      const ripple = new PoolRing({ radius: w.r, fx: this.game.fx, ground }); ripple.group.position.set(w.x, y + 0.06, w.z); this.group.add(ripple.group); // (Calissa's ring before a surfacing)
       return { i, x: w.x, z: w.z, r: w.r, y, mouth, ripple, pos: this.world(w.x, y, w.z), ringT: 0, ringDur: 1 };
     });
   }

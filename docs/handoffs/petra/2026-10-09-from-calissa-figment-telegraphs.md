@@ -3,7 +3,7 @@ item 3; branch art-v135-telegraphs)** (delete in your branch when done)
 
 `game.figmentTelegraphs` (`vfx/figmenttelegraph.js`, `FigmentTelegraphs`; its parts in `vfx/figmenttelegraph/`) is made in `main.js`,
 updated every frame on the sim step (`game.figmentTelegraphs.update(dt, camera)`, the step `creatures.update` runs on) and warmed at boot
-(one program: the warm-up's old stain left to make room, casebook rule 165). It draws exactly what `figmentMarkOf` / `castMark` hand it,
+(one program: the warm-up's old stain left to make room, casebook rule 166). It draws exactly what `figmentMarkOf` / `castMark` hand it,
 so a mark never says more than the Divination level has earned. Nothing in `creatures/` or `world/` calls it yet. What to call:
 
 1. **`creatures.windup`** (`creatures/creatures.js` 144): when the windup carries an `area`, show its Figment attack telegraph:

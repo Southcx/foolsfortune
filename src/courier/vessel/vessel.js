@@ -66,6 +66,7 @@ export class Vessel {
     if (!ch?.regionMats) return;
     if (!ch.regionsTagged) { tagRegions(ch); ch.regionsTagged = true; } // (each vertex told its hit region, for the cracks: courier/vessel/damage.js)
     if (!own) this.dressed.add(ch);
+    const kin = own ? (ch.kinU ||= kintsugiUniforms()) : this.kinU; // (another Courier's rig cracks on its own uniforms, never the Courier's: vfx/siblingshatter.js)
     for (const r of Object.keys(REGIONS)) {
       const m = ch.regionMats[r];
       let g = this.glaze(look[r]);
@@ -92,7 +93,7 @@ export class Vessel {
       if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
       if (r === 'skin') U.uFinS.value = this.soul;
       m.userData.glaze = g;
-      if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, this.kinU); m.userData.kin = true; }
+      if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, kin); m.userData.kin = true; }
     }
   }
   /** Try a look on them (the kiln's preview: nothing is kept until it is fired). */

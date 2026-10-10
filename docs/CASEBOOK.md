@@ -461,7 +461,60 @@ the rules before building in the same area; a rule a machine can check goes into
     parked stand-in goes, list who draws with its program (`customProgramCacheKey`, a shared material's) and keep it while any one does.
     The check that proves it: the program list after the look is first drawn in play equals the list after the boot.
 
+170. **A flat look on sloping ground is laid on the slope, and judged from the camera's lowest place.** A disc, a decal or a pool's
+    face set at one height on ground that is not level floats over it on one side and sinks under it on the other: lift its vertices
+    to the ground under each (`layOnGround`, `vfx/dunemaw.js`) or level the ground under it. A look on the ground is one-sided: an eye
+    that sinks under it sees the ground, never its underside. Look at it from the floor with the camera pitched up, not only from above.
+171. **A program is what a material is at its first draw, shadow included.** The sun's depth program differs by a caster's sides
+    (and skinning, morphs, instancing): a two-sided look casts one-sided (`shadowSide`) unless its silhouette needs both. A material
+    built flat after the warm-up is drawn flat until the present's walk smooths it: shade it as it is built. A pass with a scene of its
+    own (a trail map, a render target) is drawn once in the warm-up, before the empty frame, or it compiles in play.
+172. **A uniform is the body's that wears it.** A shader's uniforms are objects handed over by reference: a second body dressed with
+    the first's set shows whatever happens to the first. Another Courier's rig (a sibling's, a guest's) takes its own set (fade,
+    dissolve, cracks) on the same program; prove it by changing the first and reading the second's uniform from the renderer.
+
 ## Cases
+
+### 2026-10-10 · A sibling wore the Courier's cracks (found building a sibling's shatter)
+
+- **Seen:** the Courier struck on the torso (its crack 0.58), a sibling called beside them showed the same cracks on its own torso:
+  its body material's `uDmg`, read from the renderer (`renderer.properties`), was `[0, 0.58, 0, 0, 0, 0]`, the Courier's numbers. A
+  guest's rig and a sibling waiting to be met were dressed the same way. A sibling could not crack, or be mended in gold, on its own.
+- **Cause (measured):** `courier/vessel/vessel.js` `dress` laid the kintsugi on every rig it dressed with the vessel's one `kinU`,
+  `{ own: true }` as well; the uniforms are shared objects, so every Courier model read the Courier's damage (`shared: true`).
+- **Fix:** a rig dressed `{ own: true }` keeps crack uniforms of its own (`ch.kinU`, made once at its first dressing); the Courier's
+  rigs keep the vessel's. One program still (the uniforms are the material's; the shader is the same). Measured after: the sibling's
+  `uDmg` all 0 with the Courier's torso at 0.58 (`shared: false`), and a sibling's shatter (vfx/siblingshatter.js) cracks and gilds
+  only itself.
+- **Rule:** 172 (new).
+
+### 2026-10-10 · The top half of the frame went to a flat rainbow in the great cavern (the jelly-scale round's item 6, Petra's v137 ask)
+
+- **Seen:** the Courier 32.5 m out on a ring pool's bearing, facing the FOE at W0 with its frame on (the camera 6.15 m behind, pitched
+  14 degrees): the frame's top half black over a band of violet and teal; the FOE and the Courier's upper body gone. Every ring pool's
+  bearing did it.
+- **Cause (measured):** the eye was 6 cm over the sand and 18 cm under W3's mouth. A pool's look (`DunemawMouth`, `PoolRing`) was laid flat
+  at its centre's height on a dish that falls 4 degrees to the middle: a 15 m ring pool stood 0.52 m over the sand at its inner edge and
+  sank as far under it at its outer, and W0, on the cone's point, was buried but for its middle metre. The mouth was two-sided: from
+  under it, its ink filled everything above the horizon and its labradorite lip, edge on, was the rainbow. With W3's mouth hidden the
+  frame was right.
+- **Fix:** the look laid on the slope: `layOnGround(geo, ground, k)` lifts the mouth's, the maw's and the ring's vertices onto the dish
+  (the bowl passes `ground`: one line in Petra's `world/well/bowl.js`), and the mouth is one-sided. Rendered again: the same shot shows the
+  whole Great Slip Jelly; W3 lies whole on the slope from above and flush from the side; W0 is a ring round the FOE's foot. The eye
+  still rests a few centimetres over the sand when the frame pitches it below the pivot: the camera's, handed to Petra.
+- **Rule:** 170 (new).
+
+### 2026-10-10 · Three programs compiled after the warm-up (perf at v137: MeshStandardMaterial, ShaderMaterial, MeshDepthMaterial)
+
+- **Seen:** `npm run perf`: 3 programs compiled after the warm-up (was 2).
+- **Cause (measured, each by the object drawn when its program was made):** the Lockheart's coffin (`pneuka/thingmodels.js`,
+  `flatShading: true`) is built on the first tick and drawn flat until the present's walk smooths it a second later: a flat variant. The
+  Dunes' trail map (`world/ground/trailmap.js`) draws a scene of its own, which `compileAsync(scene)` never sees. The busker's mat's tip
+  pot (`vfx/buskermat.js`) is two-sided and casts: the sun's depth program for a two-sided caster, used by no caster in the warm-up's frame,
+  compiled the first time the Weir's mat came into the sun's shadow.
+- **Fix:** the pot casts one-sided (`shadowSide: BackSide`, every one-sided caster's program). The coffin and the trail map are Petra's:
+  each handed over with its line, tried here first: with all three, 0 late programs and 162 in the Dunes, the Well and the garden (164).
+- **Rule:** 171 (new).
 
 ### 2026-10-09 · The skiff's glide spread nothing: the oars were asked for by their Blender names (the owner's R8, "it reads faintly")
 

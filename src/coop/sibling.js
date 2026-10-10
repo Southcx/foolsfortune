@@ -8,7 +8,7 @@
 // nothing that listens for the Courier hears it). The Courier's blows reach it (Dovina's v135 ruling, overturning C6's "every blow
 // passes through it"): it is a friend in `game.creatures` (friendly fire: a fifth of the damage, no blow past a quarter of its health,
 // statuses under tolerance, progress/combat/friendly.js); struck, it flinches; emptied, it shatters and is made whole at its leader's
-// side (a stand-in: the shatter's look is Calissa's). It wears its division's look (Calissa's,
+// side (Calissa's look, vfx/siblingshatter.js: it is held in pieces until then). It wears its division's look (Calissa's,
 // vfx/siblinglooks.js). Its rig has its own fade and dissolve and is never hidden by the first-person view.
 //
 // Prior art: the Kingdom Hearts party, and the companion built from the player's own controller (Halo's co-op Arbiter, Sonic's Tails
@@ -81,7 +81,7 @@ export class Sibling {
     if (dir) B.vel.addScaledVector(_fl.copy(dir).setY(0).normalize(), SIB.flinch);
     const down = c.hp <= 0;
     this.game.events.emit('sibling.hit', { sibling: this.id, cause, hp: +c.hp.toFixed(1), down, by });
-    if (down) { c.hp = c.maxHp; if (this.leader) this.follow.warp(this.leader); }
+    if (down) { c.hp = c.maxHp; if (!this.game.siblingShatter?.begin(this, dir) && this.leader) this.follow.warp(this.leader); } // (it breaks, lies a beat and is drawn back together beside its leader: vfx/siblingshatter.js)
     return true;
   }
 
@@ -93,6 +93,8 @@ export class Sibling {
   /** The fixed step: the mind presses its keys, the body moves as the Courier's does. */
   fixed(dt, ctx) {
     this.leader = ctx.leader;
+    const held = !!this.game.siblingShatter?.holds(this); this.ent.alive = !held; // (in pieces: nothing to strike, vfx/siblingshatter.js)
+    if (held) { this.body.vel.set(0, 0, 0); this.keys.release(); return; } // (and nothing moves it until it is whole)
     const c = this.ent; if ((c.quietT -= dt) <= 0 && c.hp < c.maxHp) c.hp = Math.min(c.maxHp, c.hp + SIB.mend * dt); // (mends when left alone)
     this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
     const goal = this.fight.think(dt, { game: this.game, leader: ctx.leader, order: this.order }); // (something to fight: where to stand, coop/fight.js)
