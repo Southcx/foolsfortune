@@ -517,8 +517,43 @@ the rules before building in the same area; a rule a machine can check goes into
 187. **A lift is a floor, never a ceiling.** A blow that holds a thing up in the air sets its rise to at least the blow's lift, never
     to less: what is still rising faster keeps its rise. Measured as the thing's own speed (the engine never assumes its gravity) at the
     blow, against the press timings a person makes (every 0.1 s), not only the one that waits for the top.
+188. **A cadence multiplies everything in the loop.** A loop played at n times its pace swings its head, hands and hips n times as fast:
+    a loop is judged at the state's speed by its head's world motion (bob, sway, turn rate) as well as its feet, and a low gait holds
+    its head still (the prowl: `courier/anim/prowl.js`), the neck taking the body's motion.
+189. **A gesture in every loop is a B.** An idle's loop holds no gesture that plays each time round: it is held out of the loop (A) and,
+    if it is wanted, kept as a B played 1 in 4 to 5 (`IDLES.calm`, idlebreak.js). A clip changed in place changes every bake built on
+    it: look at those too (the stances over braced).
 
 ## Cases
+
+### 2026-10-10 · The crouch walk's head swung (the owner: "that crouch walk has a lot of excessive head movement")
+
+- **Seen:** the owner: excessive head movement crouch walking; "felines have a very still head". In game at 2.2 m/s, every tool off,
+  against the capsule: the head bobbed 19 cm and swung 56 cm side to side, turning 1,448 degrees a second on average (2,731 at most).
+- **Cause (measured):** the loop the crouch had taken that morning (case below), Loco_SneakWalk, is an upright tiptoe sneak whose head
+  swings 56 cm across and 43 fore and aft at its own pace (662 degrees a second): at 4.8 times its cadence that became 1,448. The other
+  crouched loops, at 2.2 m/s: Loco_CreepSideR 38 cm across, 712 degrees a second; Loco_CrouchWalk 11 cm, 23. Loco_CrouchWalk had read as
+  lunges only at its own squat: its trailing knee at 13 cm off the ground.
+- **Fix:** the prowl (`courier/anim/prowl.js`): Loco_CrouchWalk, its hips lifted 0.14 m by the foot IK (the knee kept 25 cm up), strides
+  1.4 times its own; the head held as a cat holds it, its turn followed slowly and levelled to a gaze, its place held by the neck's swing,
+  each neck bone capped. Head: bob 3.0 cm, sway 4.1, turn 3 degrees a second (6 at most). Building the crawl beside it: the foot IK's
+  reach drop read a crawl's straight legs as a reach and sank the belly crawl 11 cm into the floor (the knee at -14 cm); the crawl now
+  takes the reach drop and the knee guard off by its weight.
+- **Rule:** 188 (new); 186 stands (its fix, the sneak, is replaced).
+
+### 2026-10-10 · The braced idle's left hand twitched every loop (the owner: "stop the twitching motion on the Courier's left hand")
+
+- **Seen:** the owner: the Braced idle is almost perfect but for the left hand; "secondary motion in idle animations happens way too
+  often".
+- **Cause (measured on the clip, frame by frame):** Loco_IdleMasc's left fingers curl and flick once a loop (the index 72 degrees a second
+  in frames 15 to 24, then 344 in 31 to 53), the hand thrown 51 cm/s off the chest, and the hinge repair wheeling the near-straight
+  forearm at its 360-degree cap through the same frames (175 to 497 degrees a second): every 2.5 s. The same frames are the left arm of
+  the Crucibelle's and the Soul Brush's stances (baked over `idle`, 1.4 times). Loco_IdleD (weightShift) throws its right hand out at
+  2.1 m/s once each 5 s loop. The breaks came every 7 to 12 s whatever the idle (two to three upright loops).
+- **Fix:** `IDLES.calm` (idlebreak.js): the gesture's frames bridged for those bones (braced's left arm 14 to 56: the hand 9.6 cm/s mean,
+  16 fastest, the index 3 degrees a second; weightShift's right arm 29 to 133, its throw kept as `Loco_IdleD:B`); a B (a break, or an
+  idle's own) after a random 4 to 5 of A's loops (`IDLE.every`, the seed's stream): measured over 20 real minutes, 4.45 to 4.52 loops a B.
+- **Rule:** 189 (new).
 
 ### 2026-10-10 · High Time stopped at 2.6 m (the owner: "there isn't enough height distance covered")
 

@@ -14,6 +14,8 @@ import { IdleBreaks } from './anim/idlebreak.js';
 import { Hurt } from './anim/hurt.js';
 import { MantleClips } from './anim/mantle.js';
 import { StopTurn } from './anim/stopturn.js';
+import { Prowl, PROWL } from './anim/prowl.js';
+import { Crawl } from './anim/crawl.js';
 import armorB64 from '../assets/courier/courier_armor.png?b64';
 import maskB64 from '../assets/courier/courier_mask.png?b64';
 import { dressFiligree } from '../vfx/filigree.js';
@@ -23,11 +25,6 @@ const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the 
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
-// The crouch's moving loop (the owner, 2026-10-10: it had been Loco_CrouchWalk, played at 3.6 times its own pace, which read as lunges):
-// Loco_SneakWalk on the shared phase, whole once moving (the crouch idle under it at crouchDepth). The sneak stands as tall as the walk,
-// so the foot IK lets the body down `drop` m (the knees bend, the feet stay) and the posed body, hair included, stays under the 1.5 m
-// the low capsule goes under (the basement's tunnel); its strides to `stride` times its own.
-export const SNEAK = { clip: 'Loco_SneakWalk', drop: 0.38, stride: 1.15 };
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -325,7 +322,7 @@ export class Character {
     this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
     this.slideTrack = new Track(C, new Set(['slideLoop']));
     this.stopTurn = new StopTurn(this); // (the skid stop and the half turn over the gait: anim/stopturn.js)
-    this.sneak = SNEAK; // (read each frame, so it can be moved live)
+    this.prowl = new Prowl(this); // (the crouch on the move: its loop, the hips' lift and the cat's still head: anim/prowl.js)
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.leg = {
       L: { thigh: B.thighL, shin: B.shinL, foot: B.footL, a: L('thighL', 'shinL'), b: L('shinL', 'footL') },
@@ -342,7 +339,8 @@ export class Character {
     this.ankleRest = this.restPos.get(B.footL).y;
     this.toeRest = this.restPos.get(B.toeL).y;
     this.gait = {};
-    for (const n of ['walk', 'jog', 'sprint', SNEAK.clip]) this.gait[n] = this.analyseGait(n);
+    for (const n of ['walk', 'jog', 'sprint', PROWL.clip]) this.gait[n] = this.analyseGait(n);
+    this.crawl = new Crawl(this); // (on all fours, when player.js has a body for it: anim/crawl.js)
     this.lock = { L: { w: 0, on: false, lost: false, p: new THREE.Vector3() }, R: { w: 0, on: false, lost: false, p: new THREE.Vector3() } };
     this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, dip: 0, dipV: 0, sliding: false, yawOff: 0 };
     this.airT = 0;
@@ -593,12 +591,12 @@ export class Character {
     const blendG = (key) => {
       let v = g.walk[key];
       if (wm > 0) { v = 0; for (const [i, n] of moving) v += W[i] * g[n][key]; v /= wm; }
-      return THREE.MathUtils.lerp(v, g[SNEAK.clip][key], cr);
+      return THREE.MathUtils.lerp(v, g[PROWL.clip][key], cr);
     };
     const natSpeed = blendG('cycle') / blendG('dur'); // speed at 1x with the blended stride
     const ratio = gs / natSpeed;
     // past the clip's speed: part longer strides (the foot IK stretches them), part cadence
-    const maxStride = THREE.MathUtils.lerp(wm > 0 ? (W[1] * A.walkStride + (W[2] + W[3]) * A.maxStride) / wm : A.walkStride, this.sneak.stride, cr);
+    const maxStride = THREE.MathUtils.lerp(wm > 0 ? (W[1] * A.walkStride + (W[2] + W[3]) * A.maxStride) / wm : A.walkStride, PROWL.stride, cr);
     st.stride = ratio >= 1 ? Math.min(maxStride, Math.pow(ratio, A.strideShare)) : Math.max(0.7, Math.sqrt(ratio));
     const cad = ratio / st.stride / blendG('dur');
     if (footed && sl < 0.5) st.phi = (((st.phi + (back ? -1 : 1) * cad * dt) % 1) + 1) % 1;
@@ -610,24 +608,25 @@ export class Character {
       cum += W[i];
       C.blend(base, C.sample(n, at(n), P.tmp), W[i] / cum);
     }
-    const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> the sneak
+    const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> the prowl
     if (cr > 0.001) {
       const cp = C.sample('crouchIdle', this.time, P.tmp);
-      C.blend(cp, C.sample(SNEAK.clip, at(SNEAK.clip), P.tmp2), cwk);
+      C.blend(cp, C.sample(PROWL.clip, at(PROWL.clip), P.tmp2), cwk);
       C.blend(base, cp, cr * THREE.MathUtils.lerp(A.crouchDepth, 1, cwk));
     }
-    st.sneakDrop = this.sneak.drop * cr * cwk;
+    const crw = this.crawl.pose(dt, s, gs, base, cr); // (on all fours: anim/crawl.js; the feet and the prowl's head give way to it)
+    st.prowlLift = PROWL.lift * cr * cwk * (1 - crw); st.crawlW = crw;
     // how planted each foot is at this point of the cycle (idle: both)
     st.contact = st.contact || { L: 1, R: 1 };
     for (const f of ['L', 'R']) {
       let c = W[0];
       for (const [i, n] of moving) if (W[i] > 0) c += W[i] * this.contactAt(g[n], f, (st.phi + g[n].off) % 1);
-      const cc = THREE.MathUtils.lerp(1, this.contactAt(g[SNEAK.clip], f, (st.phi + g[SNEAK.clip].off) % 1), cwk);
+      const cc = THREE.MathUtils.lerp(1, this.contactAt(g[PROWL.clip], f, (st.phi + g[PROWL.clip].off) % 1), cwk);
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
     // ---- the skid stop and the half turn: a sprint let go, the move reversed at speed (anim/stopturn.js) ----
-    const free = footed && s.grounded && !s.techs?.active && !s.techs?.legsOwn ? (1 - cr) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - (s.techs?.override || 0)) : 0;
+    const free = footed && s.grounded && !s.techs?.active && !s.techs?.legsOwn ? (1 - cr) * (1 - crw) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - (s.techs?.override || 0)) : 0;
     const brk = this.stopTurn.pose(dt, s, speed, free, base, st.contact);
     // footsteps: the left heel lands at phase 0, the right at 0.5 (the skid's and the turn's own while they play)
     const ph = st.phi;
@@ -743,7 +742,7 @@ export class Character {
     root.updateMatrixWorld(true);
     const upW = _v3.set(0, 1, 0);
     // orientation warping: hips turn toward the move, the chest turns back to the aim
-    const gaitW = unit ? 0 : st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
+    const gaitW = unit ? 0 : st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da) * (1 - crw);
     const warp = st.warp * gaitW * (1 - brk.w);
     if (Math.abs(warp) > 1e-3) {
       this.rotW(B.spine, upW, warp);
@@ -751,6 +750,9 @@ export class Character {
       this.rotW(B.spine002, upW, -warp * 0.3);
       this.rotW(B.spine003, upW, -warp * 0.25);
     }
+    // the prowl's head: held level and still, before the aim's look is laid on (anim/prowl.js)
+    const prowlW = unit ? 0 : cr * (1 - crw) * (1 - air) * (1 - sl) * (1 - mn) * (1 - da) * (1 - Math.min(1, s.techs?.override || 0));
+    this.prowl.gaze(dt, s, prowlW);
     // aim: the spine twists toward the camera's yaw when the body lags it; the head does the looking otherwise
     const cw = s.combat ?? 0;
     st.yawOff = damp(st.yawOff, s.aimYawOffset * cw * (prof?.turn ?? 1), 18, dt);
@@ -764,9 +766,10 @@ export class Character {
     root.updateMatrixWorld(true);
 
     // ---- feet: stride warping and ground contact ----
-    const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw) * (1 - sl); // (a slide lies along the slope instead)
+    const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw) * (1 - sl) * (1 - crw); // (a slide lies along the slope instead; a crawl's knees are its clip's)
     st.pole = kneeProfile({ air, sl, cr });
     if (!unit && !s.techs?.legsOwn) this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW); // (on a skiff the feet are where the clip puts them)
+    this.prowl.steady(dt, s, prowlW); // (the neck holding the head's place: anim/prowl.js)
 
     s.techs?.afterPose(this, s);
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
@@ -830,7 +833,7 @@ export class Character {
     // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)
     const wL = 0.3 + 0.7 * (st.contact?.L ?? 1), wR = 0.3 + 0.7 * (st.contact?.R ?? 1);
     st.pelvis = THREE.MathUtils.damp(st.pelvis || 0, -Math.min(0, d.L * wL, d.R * wR), PELVIS_FOLLOW, dt);
-    let drop = st.pelvis;
+    let drop = st.pelvis - (st.prowlLift || 0); // (the prowl's hips raised over its clip's squat: PROWL.lift)
     let reach = 0;
     for (const k of ['L', 'R']) {
       const leg = this.leg[k];
@@ -842,9 +845,9 @@ export class Character {
         reach = Math.max(reach, disc > 0 ? v.y - Math.sqrt(disc) : 0.12);
       }
     }
-    st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach), REACH_FOLLOW, dt); // (one rate both ways: 40 down and 10 up pumped the hips once a stride)
-    drop += st.reachDrop + (st.sneakDrop || 0); // (the sneak let down to the crouch: SNEAK)
-    if (drop > 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
+    st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach) * (1 - (st.crawlW || 0)), REACH_FOLLOW, dt); // (a crawl's legs lie straight behind: its clip's, not a reach) // (one rate both ways: 40 down and 10 up pumped the hips once a stride)
+    drop += st.reachDrop;
+    if (drop !== 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
     const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
     const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion), rootUp = _v6.set(0, 1, 0).applyQuaternion(root.quaternion);
     for (const k of ['L', 'R']) {
@@ -1145,7 +1148,7 @@ export class Character {
     }
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
     o.techs?.hands(this, o);
-    if (!o.techs?.unitFrame?.()) this.guardKnees(1 - Math.min(1, o.techs?.override || 0));
+    if (!o.techs?.unitFrame?.()) this.guardKnees((1 - Math.min(1, o.techs?.override || 0)) * (1 - (st.crawlW || 0)));
     // (the knees and elbows back on their hinge after the IK, the joints where they are: the legs always, the arms while nothing is in the
     //  hands, a tool's arms being its own set's: anim/hinges.js)
     this.hinges.apply(st.dt ?? 1 / 60, 1, st.hingeArms ?? 1);
