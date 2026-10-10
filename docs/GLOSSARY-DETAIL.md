@@ -206,10 +206,13 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
   control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
-- **idle** (`IDLES`, `idleClip`, `src/courier/anim/idlebreak.js`): the clip the Courier stands in with nothing in the hands, one of the
-  suite's seven standing idles, keyed by its look (akimbo, hipCocked, handsBehind, armsDown, braced, weightShift, restless); `IDLES.default`
-  is the one played (akimbo since v133, the owner's R14), `idles.choose(key)` another, crossfaded. *Not:* a stance (a tool's idle), an
-  idle break (a fidget over it), an emote.
+- **idle** (`IDLES`, `idleClip`, `src/courier/anim/idlebreak.js`): the clip the Courier stands in with nothing in the hands, keyed by its
+  look: the suite's seven standing idles (akimbo, hipCocked, handsBehind, armsDown, braced, weightShift, restless) and **upright**
+  (`idle:upright`, baked at load in `IDLES.baked`: handsBehind's straight body, armsDown's arms at the sides). `IDLES.default` is the one
+  played (upright since v137, the owner's R21; akimbo v133 to v137), `idles.choose(key)` another, crossfaded: the one call the kiln's
+  chooser makes. **The idle under a layer** (`IDLE.under`): while a tool's stance, the aim or a passive tech's pose is laid over the upper
+  body, the idle beneath it is the pack's `idle` (Loco_IdleMasc, what every stance was made over), whatever idle is chosen. *Not:* a stance
+  (a tool's idle), an idle break (a fidget over it), an emote.
 - **idle break** (`IDLE`, `src/courier/anim/idlebreak.js`): a fidget played over the idle after a still spell with nothing in hand (a look
   round, a stretch, a shift and tap, in turn); any move ends it. *Not:* an emote (asked for by the player).
 - **the jet arts** (`courier/moves/jets.js`): three opt-in Movement Arts on the Soul Brush's load, after Sunshine's nozzles, off until
@@ -314,8 +317,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
   sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
   glyph.
-- **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
-  mode, Celestial mode).
+- **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle); `bakeClip` is its bake without the skeleton
+  (an overlay, an exaggeration, `closeLoop`: a loop's popping end dropped and the loop closed, Unity's Loop Pose), shared with the baked
+  idles. *Not:* a form (the Sondelass's) or a mode (blade mode, Celestial mode).
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **tool** (`src/tools/`, the belt and the held-tool base): one of the Courier's psychic tools, worn on the belt: the psygun, the
