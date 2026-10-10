@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------------------
 import { medalOf } from '../../progress/combat/dunemaw.js';
 import { dropsFor, DROPS, NAMES } from '../../progress/combat/greatjelly.js';
+import { STRAWMAN_MOVES, STRAWMAN_STRINGS } from '../../vfx/strawmanmoves.js';
 
 const DONE = { stun: 'stunned', halt: 'halted', slow: 'slowed', sleep: 'put to sleep', charm: 'charmed', blind: 'blinded', confusion: 'confused', doubt: 'made to doubt' };
 const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: 'Illusion', delirium: 'Delirium' };
@@ -56,6 +57,13 @@ export function dunemawRules({ on, L, log }) {
     log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);
   });
   on('strawman.mode', (e) => log.say('info', `Strawman: ${e.mode}.`, { key: 'strawman', throttle: 1 }));
-  on('strawman.parried', () => log.say('battle', "You parry Strawman's swing.", { key: 'strawman.parry', throttle: 0.5 }));
-  on('strawman.swing', (e) => { if (e.landed) log.say('battle', "Strawman's sleeve catches you.", { key: 'strawman.swing', throttle: 1 }); });
+  // its moves and attack strings (world/testroom/strawmanstrings.js; the words placeholders for Espada's)
+  const move = (e) => STRAWMAN_MOVES[e.move]?.label || 'swing';
+  on('strawman.parried', (e) => log.say('battle', `You parry Strawman's ${move(e)}.`, { key: 'strawman.parry', throttle: 0.3 }));
+  on('strawman.strike', (e) => {
+    if (e.landed) log.say('battle', e.move === 'hatButt' ? "Strawman's hat catches you." : "Strawman's sleeve catches you.", { key: 'strawman.strike', throttle: 1 });
+    else if (e.cleared) log.say('battle', `You jump Strawman's ${move(e)}.`, { key: 'strawman.cleared', throttle: 1 });
+  });
+  on('strawman.string', (e) => log.say('info', e.string ? `Strawman's string: ${STRAWMAN_STRINGS[e.string]?.label}. Step into the circle.` : 'Strawman stands still.', { key: 'strawman.string', throttle: 0.5 }));
+  on('strawman.tempo', (e) => log.say('info', `The sparring circle's tempo: ${e.tempo}x.`, { key: 'strawman.tempo', throttle: 0.5 }));
 }

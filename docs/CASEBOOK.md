@@ -502,8 +502,36 @@ the rules before building in the same area; a rule a machine can check goes into
     a carry) follows the other's measured motion with a pull to the gap, never two gravities tuned to agree; and a blow is proven by the
     tip's measured angle and height against where the target stands, not by the clip's look (an arc that never crosses the front is
     aimed by its own angle; a push that carries the pair is a push too far).
+183. **A creature's body is never the ground.** A mark laid on the ground finds the ground under it with static colliders that belong to
+    no creature (`physics.entityOf(c)?.type !== 'creature'`): a creature that stands on a static collider of its own is not a floor.
+184. **A body and its windup keep one clock.** A creature's animation, the strike it calls and the windup the parry asks of all run on the
+    sim step (`dt`), never the body on real seconds: under any time scale (a hit-stop, a held slowdown, a tempo) the strike lands as the
+    window closes. Only what is said in real seconds (a bout's gap, a press's quarter second) reads `rawDt`.
 
 ## Cases
+
+### 2026-10-10 · The Figment attack telegraph climbed Strawman like a tent (Calissa's contact sheets of Strawman's moves)
+
+- **Seen:** on every move's sheet, from the striker's place and the side, the drawn area stood up from the clay over Strawman's body, a
+  tall translucent prism from the ball to the hat that hid the whole wind-up (the swing's cone, the jab's lunge, the spin's circle).
+- **Cause:** the mark's drape finds the ground with a ray down from 4 m over each grid point and keeps any static collider
+  (`vfx/figmenttelegraph.js rayAt`: no parent body, or a fixed one). Strawman's capsule (room.js) is a collider with no parent body, so
+  every point over it took the capsule's top for the floor. No other creature stands on a static collider of its own, so no fight
+  showed it.
+- **Fix:** the ray's filter also refuses a collider registered to a creature (`physics.entityOf(c)?.type !== 'creature'`). Re-rendered:
+  every area lies flat on the clay round Strawman's ball (`strawman-*.png`, the scratchpad's strawman-strings).
+- **Rule:** 183.
+
+### 2026-10-10 · Strawman struck on real seconds while its windup counted sim seconds
+
+- **Seen:** found reading the swing for the attack strings, not in play: the model's swing ran in `update(raw)` (real seconds) and
+  called the strike at 0.925 real s, while the windup it registered counts `w.t` down by the sim step in `creatures.update(dt)`.
+- **Cause:** worked from the two clocks, not measured on the old build: under any time scale the two parted. Under a 0.25 hold the
+  sleeve swept at 0.925 real s with 0.23 sim s of the windup gone (`w.t` 0.99, not 0.3): the window would have opened 2.8 real s after
+  the sweep. The parry's own breath (`time.pulse('parry', 0.05, 0.08)`) parted them by a few frames every parry.
+- **Fix:** Strawman's body, its moves and its strings run on `dt` (room.js `tick(dt, raw)`, `model.update(dt)`); the bout's gap stays
+  on real seconds. Measured headless, every move at 1x and at 0.25x: `w.t` at the strike 0.300 to 0.317 (one 60 Hz frame of 0.3).
+- **Rule:** 184.
 
 ### 2026-10-10 · The Sondelass's air string missed: two gravities, and two blades that never crossed the front (the owner: "I also had issues with the aerial portion of the launch combo")
 
