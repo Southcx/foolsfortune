@@ -25,7 +25,8 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 164, heapMB: 395 }; // (heapMB 375 -> 395 at v137, Petra: the dev heap 369 -> 386 with the round's source (Calissa's 19 commits, the telegraphs, the lend panel, the save's shelves); the dev server's, not a player's)
+const BUDGET = { calls: 450, tris: 350_000, programs: 165, heapMB: 395 }; // (programs 164 -> 165 at v138, Petra: the stain's program, every slick's (vfx/slicks.js), warmed at boot again; it was compiled in play at the first spill, a hitch the count did not see)
+// // (heapMB 375 -> 395 at v137, Petra: the dev heap 369 -> 386 with the round's source (Calissa's 19 commits, the telegraphs, the lend panel, the save's shelves); the dev server's, not a player's)
 // // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // (heapMB is the DEV server's heap, which holds every module's source text and source map: it grows with the code, not only with what a
 // player's page holds. v117: 345 here, 228 in the built game (vite preview, gc'd), up 5 from 223 before that round's merges; raised

@@ -39,6 +39,7 @@ export class Raid {
   constructor(game, { cavern }) {
     this.g = game; this.C = cavern; this.F = cavern.foe; this.B = cavern.bowl; this.N = cavern.nursery;
     this.F.scripted = true; this.F.raid = this;
+    if (game.figmentTelegraphs) game.figmentTelegraphs.ground = (x, z) => this.ground(x, z); // (a Figment attack telegraph lies on the dish)
     this.T = new Timeline({
       phases: PHASES, casts: CASTS, schedule: timeline,
       pick: (share, done) => phaseOf(share, done.has('clutch')),
@@ -90,8 +91,19 @@ export class Raid {
     else if (d.area) { // (its Figment attack telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/FIGMENT-TELEGRAPHS.md)
       const A = d.area, P = this.P, at = A.at === 'courier' ? P.pos.clone() : F.c.pos;
       const radius = A.radius ?? A.outer?.[1] ?? A.length ?? A.inner ?? F.c.radius * 2;
-      this.g.creatures?.figmentTelegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark });
+      this.g.creatures?.figmentTelegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark, draw: this.drawOf(A, d) });
     }
+  }
+  /** What the bowl adds to a cast's Figment attack telegraph (vfx/figmenttelegraph.js): the gazer, the arena's rim for a raidwide, the
+   *  islands for the sinking floor (fallen pillars), the pillars a ram is led into, the Courier as the target. */
+  drawOf(A, d) {
+    const B = this.B, F = this.F, ctr = B.world(0, 0, 0), wide = ARENA.pillars.width;
+    const o = { target: this.P.pos.clone(), body: F.c.radius };
+    if (A.shape === 'gaze') Object.assign(o, { on: F.c.root, height: F.c.height });
+    if (A.shape === 'raidwide') Object.assign(o, { rim: { centre: ctr, radius: ARENA.rim.from, band: 3 }, centre: ctr, radius: ARENA.rim.from });
+    if (A.shape === 'floor') o.pockets = B.pillars.filter((p) => p.state !== 'whole').map((p) => { const w = B.world(p.x, 0, p.z); return { x: w.x, z: w.z, r: wide }; });
+    if (d.mark?.answer === 'bait') o.bait = B.pillars.filter((p) => p.state === 'whole').map((p) => B.world(p.x, p.y, p.z));
+    return o;
   }
   onBlow(id, d) {
     if (this.skip === id) { this.skip = null; return; }
@@ -248,6 +260,7 @@ export class Raid {
   }
 
   dispose() {
+    if (this.g.figmentTelegraphs?.ground) this.g.figmentTelegraphs.ground = null;
     this.look.dispose();
     for (const L of this.lobs) this.g.scene.remove(L.mesh);
     this.dropGeo?.dispose();

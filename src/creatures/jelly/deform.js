@@ -36,8 +36,8 @@ export class JellyDeform {
       uSq: { value: 1 }, uLean: { value: new THREE.Vector2() }, uWob: { value: 0 }, uPh: { value: 0 },
       uDent: { value: new THREE.Vector4(0, 0, 0, 0) }, uH: { value: height },
       uFoot: { value: 0 }, uFootPh: { value: 0 }, uWet: { value: 1 }, uFlow: { value: 0 },
-      uMindT: mindTime, uSlipSchiller: SLIP_SCHILLER, // (the Lachryma under the clay: one uniform for every slip body, Calissa's vfx/labradorite.js)
       uDetail: { value: detail }, // (the melt's streaks and grain are in the body's own space: a body drawn x14 needs them finer, Calissa's)
+      uMindT: mindTime, uSlipSchiller: SLIP_SCHILLER, // (the Lachryma under the clay: one uniform for every slip body, Calissa's vfx/labradorite.js)
     };
     this.feet = 0; this.footPh = 0; this.wet = 1;
     this.sq = 1; this.sqV = 0;

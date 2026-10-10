@@ -45,7 +45,7 @@ import { Cavern } from './cavern.js';
 import { FoeLook } from '../../vfx/foelook.js';
 import { BOWL_AT, slipMaterial } from './bowl.js';
 import { Nursery } from './nursery.js';
-import { Pillar, Stalactite, Clutch, dressBrood } from '../../vfx/cavekit.js';
+import { Pillar, Stalactite, Clutch, dressBrood, slipMaterial as caveSlip } from '../../vfx/cavekit.js';
 import { bowlSand, PoolRing } from '../../vfx/bowl.js';
 import { Finds, artifactMaterial } from './finds.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
@@ -85,7 +85,7 @@ export class Dunemaw {
     // (the great cavern's own, compiled with the rest: the rim's slip, the dish's sand, an artifact, the urn crown with its core and shards
     // bare, and Calissa's cave kit: a pillar, a brittle stalactite, a clutch, a pool's ring, a brood's cap)
     const U = new UrnCrown({ radius: 0.62 }); U.core.visible = true; U.shards.visible = true; U.group.position.copy(F.arrive.pos); F.group.add(U.group);
-    for (const mat of [slipMaterial(), bowlSand({}), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); }
+    for (const mat of [slipMaterial(), caveSlip(), bowlSand({}), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); } // (caveSlip: the bowl's crude now)
     const ring = new PoolRing({ radius: 1 }); ring.ring(0.5); ring.update(1 / 60);
     const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood);
     for (const o of [new Pillar({ height: 2, radius: 0.3 }).group, new Stalactite({ kind: 'brittle', length: 1, radius: 0.3 }).group, new Clutch({ eggs: 2 }).group, ring.group, brood]) { o.position.copy(F.arrive.pos); F.group.add(o); }
