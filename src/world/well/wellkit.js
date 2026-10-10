@@ -215,7 +215,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     }
     const mesh = new THREE.Mesh(merged, set === 'floor' ? K.floor : set === 'ceil' || set === 'arch' ? K.trim : set === 'wall' || set === 'deco' ? K.wall : game.level.mat(COL[set]));
     mesh.name = `well-${set}`; mesh.receiveShadow = true; mesh.castShadow = set === 'deco' || set === 'arch';
-    if (set === 'wall' || set === 'deco' || set === 'arch') addOutline(mesh); // (the floor lies under the sand; the ceiling is seen from below only)
+    if (set === 'deco' || set === 'arch') addOutline(mesh); // (the walls none: a 6 mm hull is under half a pixel past 4 m and only crawls, 37 to 68 pixels of 409,440, for 34k triangles: Calissa measured; the floor lies under the sand; the ceiling is seen from below only)
     group.add(mesh);
   }
   const sandMat = K.sand || (game.wellSandMat ||= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc9a473, roughness: 1, name: 'well-sand-standin' }), { userData: { shared: true } }));

@@ -4,7 +4,7 @@
 // matters, a little tilt with the strain), and a vignette tightens with how hard the moment is pulling. Anything can ask, by name,
 // and the last to ask sets the composition; everything eases in and out, and nothing is left behind when the last one lets go.
 //
-//   game.cinema.frame('fight', { bars: 1, fov: -14, dist: 0.78, yaw: 0.3, pitch: -0.05, roll: 0.02 })
+//   game.cinema.frame('fight', { bars: 1, fov: -14, dist: 0.78, yaw: 0.3, pitch: -0.05, roll: 0.02, shoulder: 0, lift: 0 })   (shoulder, lift: metres added)
 //   game.cinema.free('fight')          game.cinema.strain = 0..1
 //   game.cinema.shot('open', { pos, look, fov: -6, roll: 0, bars: 1, ease: 3 })     a camera of its own: a place and a point to look at
 //   game.cinema.frame('cut', { ..., ttl: 1.1 })   a frame that lets itself go after ttl real seconds
@@ -31,7 +31,7 @@ export class Cinema {
     this.game = game;
     this.reqs = new Map();
     this.k = 0; // bars
-    this.cam = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
+    this.cam = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0, shoulder: 0, lift: 0 }; // (shoulder, lift: metres added to the camera's side and height, a big thing framed)
     this.strain = 0; this.strainK = 0;
     this.shots = new Map(); this.sk = 0; this.lastShot = null; // (a scripted camera, blended in over the player's)
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
@@ -42,7 +42,7 @@ export class Cinema {
     this.top = root.querySelector('.top'); this.bot = root.querySelector('.bot'); this.vig = root.querySelector('.strain');
   }
 
-  frame(id, spec) { this.reqs.delete(id); this.reqs.set(id, { bars: 0, yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0, ease: 4, ...spec }); }
+  frame(id, spec) { this.reqs.delete(id); this.reqs.set(id, { bars: 0, yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0, shoulder: 0, lift: 0, ease: 4, ...spec }); }
   free(id) { this.reqs.delete(id); }
   /** A camera that is not the player's: a place and a point to look at, blended in by `ease` and out the same way. */
   shot(id, spec) {
@@ -71,8 +71,9 @@ export class Cinema {
     c.dist = D(c.dist, spec ? spec.dist : 1, ease, dt);
     c.fov = D(c.fov, spec ? spec.fov : 0, ease, dt);
     c.roll = D(c.roll, spec ? spec.roll : 0, ease * 1.5, dt);
+    c.shoulder = D(c.shoulder, spec ? spec.shoulder : 0, ease, dt); c.lift = D(c.lift, spec ? spec.lift : 0, ease, dt);
     const P = this.game.player.camFx;
-    P.yaw = c.yaw; P.pitch = c.pitch; P.dist = c.dist; P.fov = c.fov; P.roll = c.roll;
+    P.yaw = c.yaw; P.pitch = c.pitch; P.dist = c.dist; P.fov = c.fov; P.roll = c.roll; P.shoulder = c.shoulder; P.lift = c.lift;
     // the scripted camera: the player's own is blended toward it (and back), and their mouse is not the camera's while it holds
     if (shot) this.lastShot = shot;
     this.sk = D(this.sk, shot ? 1 : 0, shot ? shot.ease : (this.lastShot?.ease ?? 3), dt);

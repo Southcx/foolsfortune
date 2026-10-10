@@ -111,6 +111,7 @@ export class Lockheart extends HeldTool {
     this.cof.group.rotation.z = Math.PI / 2; this.cof.group.position.x = 0.22; // (+π/2: its head, +Y, turned to -X, up at the bail (R41: -π/2 hung it head down))
     this.cof.group.traverse((o) => { if (o.isMesh && o.geometry.boundingSphere?.radius > 0.02) addOutline(o); });
     this.model.group.add(this.cof.group);
+    this.cof.group.traverse((o) => this.game.present?.shadeOne(o, true, T.visual.smooth !== false)); // (smooth-shaded now, not at present's walk: its program is the warm one, not one compiled in play; Calissa measured)
     this.coffinId = id;
     this.rest?.wake();
     return this.cof;

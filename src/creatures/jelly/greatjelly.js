@@ -35,6 +35,7 @@
 //   const F = new GreatJelly(game, { bowl, nursery, at })   F.update(dt)   F.c (the body)   F.phase   F.stage   F.ended   F.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { T } from '../../core/config.js';
 import { FOE, ARENA, crackOf, phase as phaseOf, hitMult, broodAt } from '../../progress/combat/dunemaw.js';
 import { HEALTH } from '../../progress/combat/greatjelly.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
@@ -390,7 +391,7 @@ export class GreatJelly {
    *  Hunter's pulled-back boss camera: vfx/cinema.js), by how big it is; let go when it is down or the run is left. */
   frame() {
     const g = this.game, on = !this.ended && !this.disposed && this.c.alive && this.state !== 'asleep' && this.k > 1.5;
-    if (on) g.cinema?.frame('foe', { dist: 1 + 0.12 * this.k, fov: Math.min(14, 1.5 * this.k), pitch: 0.012 * this.k, ease: 2 }); // (tilted up toward its crown)
+    if (on) g.cinema?.frame('foe', { dist: 1 + 0.12 * this.k, fov: Math.min(14, 1.5 * this.k), pitch: 0.012 * this.k, shoulder: -Math.max(0, 0.34 * this.k + T.camera.tpShoulder), lift: Math.max(0, 0.23 * this.k - T.camera.tpLift), ease: 2 }); // (tilted up toward its crown; the camera 3 m left and 2 m up at FOE.size 14, the Courier off the jelly, on the right third clear of the log: Calissa measured)
     else g.cinema?.free('foe');
   }
 

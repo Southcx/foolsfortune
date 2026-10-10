@@ -916,6 +916,7 @@ async function main() {
   game.post.resize(); renderer.setRenderTarget(game.post.target); // (compiled for the buffer the frame is drawn into)
   // (an empty frame first: compile() reads the clipping state the last render left, and the God Hand's cutaway plane is always installed,
   // so without it every program was compiled for no planes here and again, for one, on the first real frame)
+  game.dunes?.trail?.update(0, 0, 0); // (the Dunes' trail map draws a scene of its own: its program compiled here, before the empty frame resets the clipping state; Calissa's)
   renderer.render(new THREE.Scene(), camera);
   const parkWell = game.well?.prewarm?.(); // (a Well's floor is built on entry: one stand-in floor is compiled with the rest, world/well/dunemaw.js)
   // the pieces made on first need are made now and compiled with the rest: the maw wipe (it covers the way into a Well, so it must not

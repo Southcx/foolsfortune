@@ -87,7 +87,7 @@ export class Player {
     this.crouching = false;
     this.mantle = null; // { from, to, t }
     this.wallrun = null; // { n, side, t, lost, handle }
-    this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
+    this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0, shoulder: 0, lift: 0 };
     this.camShot = null; // (a scripted camera blended over this one: see vfx/cinema.js)
     this.lookScale = { lock: 1, blade: 1, brush: 1, lens: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
     this.wallCd = 0;
@@ -1041,8 +1041,8 @@ export class Player {
     pivot.y += C.tpPivotHeight - drop;
     this.techs?.camera(fpPos, pivot, dt);
     const dist = THREE.MathUtils.lerp(C.tpDistance, C.tpAdsDistance, adsT) * cf.dist;
-    const shoulder = THREE.MathUtils.lerp(C.tpShoulder, C.tpAdsShoulder, adsT) * this.shoulderBlend;
-    const off = new THREE.Vector3().addScaledVector(right, shoulder).addScaledVector(camUp, C.tpLift).addScaledVector(fwd, -dist);
+    const shoulder = THREE.MathUtils.lerp(C.tpShoulder, C.tpAdsShoulder, adsT) * this.shoulderBlend + (cf.shoulder || 0); // (a big thing framed moves the camera aside: vfx/cinema.js)
+    const off = new THREE.Vector3().addScaledVector(right, shoulder).addScaledVector(camUp, C.tpLift + (cf.lift || 0)).addScaledVector(fwd, -dist);
     const offLen = off.length();
     const dir = off.clone().divideScalar(offLen);
     const hit = this.physics.raycast(pivot, dir, offLen + C.collisionRadius, exclude, GROUPS.controllerQuery);
@@ -1050,6 +1050,9 @@ export class Player {
     if (hit) allowed = Math.max(0.15, hit.distance - C.collisionRadius);
     this.camDist = allowed < this.camDist ? allowed : THREE.MathUtils.damp(this.camDist, allowed, 6, dt);
     const tpPos = pivot.addScaledVector(dir, this.camDist);
+    // (against what it met: the eye kept a collision radius off the surface along its normal, not only along the ray; a ray grazing the
+    // floor left the eye centimetres over it, the ground at eye height: Calissa measured 0.26 m in the Great Slip Jelly's frame)
+    if (hit && this.camDist >= hit.distance - C.collisionRadius - 0.05) tpPos.addScaledVector(hit.normal, C.collisionRadius * (1 - Math.abs(dir.dot(hit.normal))));
 
     cam.position.lerpVectors(fpPos, tpPos, tb);
     const baseFov = THREE.MathUtils.lerp(THREE.MathUtils.lerp(C.fpFov, C.fpAdsFov, adsT), THREE.MathUtils.lerp(C.tpFov, C.tpAdsFov, adsT), tb);
