@@ -14,12 +14,13 @@
 // Monster Hunter's Jyuratodus (the mud that tells where it will rise), and the stone dropped in a still pool.
 //
 //   bowlSand({ scale })   (a material: its uniforms on .userData.u; set u.uPool (world xz), u.uSlide (m/s, 0 at rest))   bowlSandTick(mat, rawDt)
-//   const R = new PoolRing({ radius, fx })   R.group (on the pool's surface)   R.ring(k 0..1)   R.surface()   R.update(rawDt)
+//   const R = new PoolRing({ radius, fx, ground })   R.group (on the pool's surface; ground(x, z): the slope under it, as DunemawMouth's)   R.ring(k 0..1)   R.surface()   R.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { surfaceTexture } from '../render/triplanar.js';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 import { froude } from './cavekit.js';
+import { layOnGround } from './dunemaw.js';
 
 /** The dish's sand, combed toward the pool the slide runs to. */
 export function bowlSand({ scale = 0.25 } = {}) {
@@ -66,11 +67,13 @@ void main() {
 }`;
 
 export class PoolRing {
-  constructor({ radius = 2, fx = null } = {}) {
+  constructor({ radius = 2, fx = null, ground = null } = {}) {
     this.fx = fx; this.radius = radius; this.k = 0; this.t = 0; this.bub = 0; this.grow = Math.max(1, radius / 2); // (drawn for a 2 m pool: a bigger one's slip is thrown as big things move, Froude scaling, cavekit.js)
+    this.ground = ground || (() => 0); // (the slope under it: the ring and its bubbles lie on it, as the pool's mouth does)
     this.u = { uK: { value: 0 }, uT: { value: 0 }, uMindT: mindTime };
     this.group = new THREE.Group(); this.group.name = 'pool-ring';
-    this.disc = new THREE.Mesh(new THREE.PlaneGeometry(radius * 2.2, radius * 2.2).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({ name: 'pool-ring', uniforms: this.u, transparent: true, depthWrite: false,
+    const seg = ground ? 12 : 1;
+    this.disc = new THREE.Mesh(layOnGround(new THREE.PlaneGeometry(radius * 2.2, radius * 2.2, seg, seg).rotateX(-Math.PI / 2), ground), new THREE.ShaderMaterial({ name: 'pool-ring', uniforms: this.u, transparent: true, depthWrite: false,
       vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: RING_F }));
     this.disc.position.y = 0.03; this.disc.renderOrder = 2; this.group.add(this.disc);
   }
@@ -79,14 +82,14 @@ export class PoolRing {
   /** It comes up: a splash of slip and a last bright ring. */
   surface() {
     this.k = 0; const fx = this.fx; if (!fx?.alpha) return; this.group.updateMatrixWorld(true); const c = this.group.getWorldPosition(_p).clone();
-    for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = Math.random() * this.radius * 0.8; fx.alpha.emit(froude({ pos: c.clone().add(_q.set(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(Math.cos(a) * 3, 5 + Math.random() * 6, Math.sin(a) * 3), life: 1.3, size: 0.18, sizeEnd: 0.08, color: new THREE.Color(i % 4 ? 0x8a6440 : 0xb59be6), alpha: 0.95, drag: 0.4, gravity: 12 }, this.grow)); }
+    for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = Math.random() * this.radius * 0.8, x = Math.cos(a) * r, z = Math.sin(a) * r; fx.alpha.emit(froude({ pos: c.clone().add(_q.set(x, 0.1 + this.ground(x, z), z)), vel: new THREE.Vector3(Math.cos(a) * 3, 5 + Math.random() * 6, Math.sin(a) * 3), life: 1.3, size: 0.18, sizeEnd: 0.08, color: new THREE.Color(i % 4 ? 0x8a6440 : 0xb59be6), alpha: 0.95, drag: 0.4, gravity: 12 }, this.grow)); }
   }
   update(raw = 1 / 60) {
     this.t += raw; this.u.uT.value = this.t; this.u.uK.value = this.k; this.disc.visible = this.k > 0.005;
     const fx = this.fx; if (!fx?.alpha || this.k < 0.05) return;
     this.bub += raw * (2 + 14 * this.k) * this.grow; // (bubbles breaking the slip, faster as it comes)
     this.group.updateMatrixWorld(true);
-    while (this.bub >= 1) { this.bub -= 1; const a = Math.random() * Math.PI * 2, r = Math.random() * this.radius * 0.7, at = this.group.localToWorld(_p.set(Math.cos(a) * r, 0.05, Math.sin(a) * r));
+    while (this.bub >= 1) { this.bub -= 1; const a = Math.random() * Math.PI * 2, r = Math.random() * this.radius * 0.7, x = Math.cos(a) * r, z = Math.sin(a) * r, at = this.group.localToWorld(_p.set(x, 0.05 + this.ground(x, z), z));
       fx.alpha.emit(froude({ pos: at.clone(), vel: new THREE.Vector3(0, 0.6 + Math.random(), 0), life: 0.35, size: 0.1 + 0.15 * this.k, sizeEnd: 0.02, color: new THREE.Color(0xc9b8e8), alpha: 0.7, drag: 2, gravity: 2 }, this.grow)); }
   }
   dispose() { this.group.parent?.remove(this.group); this.disc.geometry.dispose(); this.disc.material.dispose(); }

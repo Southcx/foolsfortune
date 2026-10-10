@@ -11,8 +11,10 @@
 // schiller already on the Mind's marks (one stone, one meaning: the Mind's things are labradorite). The maw round it (Espada's reading of
 // the name): the sand drawn in, in darker streaks spiralling toward the pool.
 //
-//   const m = new DunemawMouth({ radius, maw, spout, pit, crown })   (maw: the colour of what it draws in; pit: the antlion pit's sand, once the ground
-//     is carved with pitDepth; crown: the Prince's crown round it, the landmark; spout: a slip geyser's column)   PIT, pitDepth(r) (the pit's shape: Petra's heightAt)   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
+//   const m = new DunemawMouth({ radius, maw, spout, pit, crown, ground })   (maw: the colour of what it draws in; pit: the antlion pit's sand, once the ground
+//     is carved with pitDepth; crown: the Prince's crown round it, the landmark; spout: a slip geyser's column; ground(x, z): the height of
+//     sloping ground under it, in metres in its own frame, so it lies on the slope)   PIT, pitDepth(r) (the pit's shape: Petra's heightAt)
+//     scene.add(m.group)   m.update(t, open 0..1)   m.dispose()   layOnGround(geo, ground, k) (a flat look's vertices lifted onto that ground)
 //   (its own frame: centred on the sand's surface, Y up; Petra places it, its zone and its signature)
 //   const f = new Sandfall({ width, height })   group.add(f.group)   f.update(t, 'open' | 'warn' | 'falling', rawDt)   f.dispose()   (a floor's shifting door)
 // ---------------------------------------------------------------------------------------
@@ -241,19 +243,31 @@ export class PrinceCrown {
   dispose() { this.group.traverse((o) => { o.geometry?.dispose?.(); }); }
 }
 
+/** A flat look laid on ground that is not flat (a ring pool on the bowl's 4-degree dish): each vertex lifted by `ground(x, z)`, the
+ *  ground's height in metres under that point of the piece's own frame, with `k` the mesh's scale (its units are k metres). Baked once:
+ *  laid flat at its centre's height, a 15 m pool on that dish floated 0.52 m over the sand at its inner edge and sank as far under it at
+ *  its outer, and a camera on the sand looked up at its underside (docs/CASEBOOK.md, 2026-10-10). */
+export function layOnGround(geo, ground, k = 1) {
+  if (!ground) return geo;
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) p.setY(i, p.getY(i) + ground(p.getX(i) * k, p.getZ(i) * k) / k);
+  p.needsUpdate = true; geo.computeBoundingSphere();
+  return geo;
+}
+
 export class DunemawMouth {
-  constructor({ radius = 4.5, depth = 2.2, maw = 0x6b4c2e, spout = false, pit = false, crown = false } = {}) {
+  constructor({ radius = 4.5, depth = 2.2, maw = 0x6b4c2e, spout = false, pit = false, crown = false, ground = null } = {}) {
     this.u = { uT: { value: 0 }, uOpen: { value: 1 }, uDepth: { value: depth / radius }, uMindT: mindTime, uMaw: { value: new THREE.Color(maw) } };
     const geo = new THREE.CircleGeometry(1, 64, 0, Math.PI * 2);
     // (rings of vertices, so the funnel can bend: a circle of one ring could not sink)
-    const rings = new THREE.RingGeometry(0.001, 1, 64, 24); rings.rotateX(-Math.PI / 2);
+    const rings = new THREE.RingGeometry(0.001, 1, 64, 24); rings.rotateX(-Math.PI / 2); layOnGround(rings, ground, radius);
     geo.dispose();
-    this.mat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    this.mat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false,
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); // (one-sided: a look on the ground is seen from above; an eye that sinks under it sees the sand, never the pool's underside as a black sky)
     this.mesh = new THREE.Mesh(rings, this.mat);
     this.mesh.scale.setScalar(radius); this.mesh.position.y = 0.04; this.mesh.renderOrder = 2;
     this.group = new THREE.Group(); this.group.add(this.mesh);
-    const mawG = new THREE.RingGeometry(1, 1.9, 64, 4); mawG.rotateX(-Math.PI / 2);
+    const mawG = new THREE.RingGeometry(1, 1.9, 64, 4); mawG.rotateX(-Math.PI / 2); layOnGround(mawG, ground, radius);
     this.mawMat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader: V, fragmentShader: MAW_F, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
     this.maw = new THREE.Mesh(mawG, this.mawMat); this.maw.scale.setScalar(radius); this.maw.position.y = 0.03; this.maw.renderOrder = 1; this.group.add(this.maw);
     this.radius = radius;

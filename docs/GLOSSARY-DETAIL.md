@@ -436,7 +436,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (`src/world/well/bowl.js`, DUNEMAW-ARENA.md), where the crowned FOE broods. Its parts: **the ledge** (the way in, 6 m up; its two
   **slopes** are one way down), the **pillars** (six; a ram **cracks** one, a second **fells** it as a **log**, a third leaves **rubble**),
   the **stalactites** (eight, overhead; fallen, one lies on the floor as a ram target used once), the **slip pools** (W0 at the centre, W1
-  to W4 round it), the **rim shallows** (slow to wade) and **the upper ring** (a gallery in the south wall). Its way up, the pale pool,
+  to W4 round it; each pool's look laid on the dish's slope, `layOnGround(geo, ground, k)` in `src/vfx/dunemaw.js`), the **rim shallows** (slow to wade) and **the upper ring** (a gallery in the south wall). Its way up, the pale pool,
   forms only when the fight ends. *Not:* the Well's mouth (out on the sand).
 - **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
