@@ -62,6 +62,7 @@ const _wd = new THREE.Vector3(), _wp = new THREE.Vector3();
 export const st = (c, name) => { const s = c?.status?.get(name); return s && s.t > 0 ? s.k : 0; };
 
 export class Creatures {
+  static n = 0; // (a creature's number for its Figment attack telegraph's id, given the first time it winds up)
   constructor(game) {
     this.game = game;
     this.list = [];
@@ -148,16 +149,31 @@ export class Creatures {
   /** A creature's telegraphed blow: what a parry in its window answers (docs/plans/PARRY.md). Cleared when it lands or is cancelled
    *  (`unwind`), or `eta` and a breath after, whichever is first. `at` may be a live vector (a lunge's body). A blow that cannot be
    *  parried (a grab, a ram) passes `parry: false`: telegraphed by its own body, never marked. */
-  windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true } = {}) {
+  windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true, draw = null } = {}) {
     this.unwind(c);
-    const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
+    const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, draw, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
     w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs')) : null;
     w.held = read && !!g.player && this.holds(c, w);
     c.windup = w;
+    this.drawFigmentTelegraph(c, w);
+  }
+  /** The Figment attack telegraph drawn (Calissa's vfx/figmenttelegraph.js: exactly what figmentMarkOf earned, nothing more), its clock
+   *  the windup's; `w.draw` is what a place adds (the raid: the rim, the gazer, the bait). One a creature: a new windup takes its place. */
+  drawFigmentTelegraph(c, w) {
+    const F = this.game.figmentTelegraphs, P = this.game.player; if (!F) return;
+    if (!w.figmentTelegraph) { w.drawn?.hide(); w.drawn = null; return; }
+    w.drawn = F.show(`windup:${c.id ?? (c.figmentId ||= ++Creatures.n)}`, w.figmentTelegraph, {
+      origin: c.pos, facing: P ? { x: P.pos.x - c.pos.x, z: P.pos.z - c.pos.z } : null, eta: this.shownEta(w.eta), total: w.eta,
+      points: w.area?.at === 'courier' ? [w.at] : null, body: c.radius, alive: () => c.alive && c.windup === w, ...(w.draw || {}),
+    });
   }
   /** A cast's Figment attack telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
-  figmentTelegraph(c, kind, spec) { const w = c.windup; if (w && w.t > 0) { Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs')); w.held = !!this.game.player && this.holds(c, w); } else this.windup(c, { ...spec, kind, parry: false }); }
-  unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }
+  figmentTelegraph(c, kind, spec) {
+    const w = c.windup; if (!w || w.t <= 0) { this.windup(c, { ...spec, kind, parry: false }); return; }
+    Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs'));
+    w.held = !!this.game.player && this.holds(c, w); this.drawFigmentTelegraph(c, w);
+  }
+  unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); w.drawn?.hide(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }
   /** Is the Courier in a windup's area: within its reach, or for a gaze looking at it; a raidwide holds everyone. */
   holds(c, w) {
     const g = this.game, P = g.player, s = w.area?.shape;
@@ -208,7 +224,7 @@ export class Creatures {
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
       if (c.tolerance) for (const k in c.tolerance) c.tolerance[k].left -= dt; // (friendly fire's window: the tolerance resets after it)
-      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
+      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); w.drawn?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
       c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');
