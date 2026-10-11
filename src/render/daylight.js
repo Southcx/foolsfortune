@@ -14,7 +14,7 @@
 //   .k { day, night } (the hour's shares: the rest is dusk)   with no `game.weather`, the dusk as the maker painted it
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { hourGrade, fogOf, LOOK } from '../vfx/weather.js';
+import { hourGrade, fogOf, lightOf } from '../vfx/weather.js';
 
 // the keys: the maker's dusk is the base (dunes.js `away`); the day and the night are blended over it by the hour. Their horizons are
 // the owner's paintings' own (sky_day.webp about #b8d4e8, sky_night.webp about #280a17), so the fog melts into the sky at every hour
@@ -57,7 +57,7 @@ export class Daylight {
     T.fogD = B.fogD * THREE.MathUtils.lerp(1, DAY.fogK, d) * THREE.MathUtils.lerp(1, NIGHT.fogK, n);
     for (const k of ['hemiI', 'ambI', 'sunI']) T[k] = THREE.MathUtils.lerp(THREE.MathUtils.lerp(B[k], D[k], d), N[k], n);
     // the weather over the place: its fog's colour and thickness, and the light dimmed as its sky is (a pall darkens, a sunshower warms)
-    const a = sky.aspect, s = sky.strength || 0, F = a ? fogOf(a, s) : null, expo = a ? THREE.MathUtils.lerp(1, LOOK[a]?.sky?.expo ?? 1, s) : 1;
+    const a = sky.aspect, s = sky.strength || 0, F = a ? fogOf(a, s) : null, expo = a ? lightOf(a, s) : 1; // (the heavy look's exposure eased in: a heavy Dread dims the sand with its sky, vfx/weather.js lightOf)
     if (F) { T.fog.lerp(_c.copy(F.colour), 0.8 * s); T.bg.lerp(_c, 0.5 * s); T.fogD *= F.density; }
     T.sunI *= expo; T.hemiI *= expo; T.ambI *= Math.sqrt(expo);
   }

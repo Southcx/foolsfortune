@@ -145,6 +145,7 @@ export class Cutlass {
   get combo() { return this.moves.combo; }
 
   cancel() {
+    this.moves.closeBlow(this.stBlow); // (the stinger's blow before the stow ends the run: tools/moveset.js)
     this.moves.cancel(); this.rmb = null; this.iai = null; this.iaiW = 0; this.guardOn = false; this.ghosts.clear();
     this.blade.exit('stow');
     this.game.lock?.release('stow');
@@ -237,7 +238,7 @@ export class Cutlass {
   blinkCancel() {
     this.rmb = null; this.iai = null;
     if (this.blade.active) this.blade.exit('blink');
-    if (this.stinging) { const L = this.tool.P.techs.get('launch'); if (L?.active && L.o?.tag === 'stinger') { L.o.onEnd = null; L.o.time = 0; } this.stinging = false; this.trail.gap(); }
+    if (this.stinging) { const L = this.tool.P.techs.get('launch'); if (L?.active && L.o?.tag === 'stinger') { L.o.onEnd = null; L.o.time = 0; } this.stinging = false; this.trail.gap(); this.moves.closeBlow(this.stBlow); }
   }
 
   /** Whether E would blink now (read, never driven: the blink is the Courier's, courier/moves/blink.js). */
@@ -261,6 +262,7 @@ export class Cutlass {
     // toward the lock: no farther than the target (they stop a blade's length short of it)
     let speed = STING.speed, time = STING.dash;
     if (g.lock?.active) { g.lock.point(_e); const d = Math.max(1.2, _e.distanceTo(P.pos) - 1.4); time = THREE.MathUtils.clamp(d / speed, 0.1, STING.dash); }
+    this.stBlow = this.moves.ownBlow('stinger'); // (a blow of its own: move.blow when the lunge is over, tools/moveset.js)
     this.stinging = true; this.stStopped = false; this.stHit.clear(); this.stDir.copy(dir); this.stPrev.copy(P.pos); this.ghostT = 0.06; // (the first afterimage waits: at the start it would sit on the body)
     this.stCool = STING.cool;
     this.trail.gap();
@@ -277,7 +279,7 @@ export class Cutlass {
       clipMap: map,
       poseFix: root ? (pose) => { root.at(map(launch.clipT), _p); pose.p[0] -= _p.x; pose.p[2] -= _p.z; } : null,
       onStep: (dt) => this.stingStep(dt),
-      onEnd: () => { shedSpeed(P.vel, 6); this.stinging = false; this.trail.gap(); }, // (its exit speed however it ends: a blink cutting in read 30 m/s as its own, rule NEW:launch-end-speed)
+      onEnd: () => { shedSpeed(P.vel, 6); this.stinging = false; this.trail.gap(); this.moves.closeBlow(this.stBlow); }, // (its exit speed however it ends: a blink cutting in read 30 m/s as its own, rule 195)
       cuttable: true, // (the blink may cut in at any frame: courier/moves/techs.js; onEnd above lets it go)
     });
     const lt = P.techs.get('launch'); if (lt) lt.blendIn = 30;
@@ -297,7 +299,7 @@ export class Cutlass {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (segDist(from, to, _p) > STING.radius * 0.5 + ent.P.rMax) continue;
       this.stHit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power);
+      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power); this.moves.markBlow(this.stBlow, 'pot', ent);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7), false);
       g.events?.emit('cut.hit', { what: 'pot', combo: 'stinger' });
     }
@@ -306,7 +308,7 @@ export class Cutlass {
       _p.copy(c.pos).y += 0.35;
       if (segDist(from, to, _p) > STING.radius) continue;
       this.stHit.add(c); struck++;
-      g.clappers.hit(c, _p.clone(), dir.clone(), STING.power, 'sliced');
+      g.clappers.hit(c, _p.clone(), dir.clone(), STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'clapper', c);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7), false);
       g.events?.emit('cut.hit', { what: 'clapper', combo: 'stinger' });
     }
@@ -315,7 +317,7 @@ export class Cutlass {
       c.center(_p);
       if (segDist(from, to, _p) > STING.radius + c.radius) continue;
       this.stHit.add(c); struck++;
-      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced');
+      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'creature', c);
       g.events?.emit('cut.hit', { what: c.kind, combo: 'stinger' });
     }
     // (a thrust goes THROUGH: one light check at its first contact, never a stop per thing pierced, which would stall the lunge)

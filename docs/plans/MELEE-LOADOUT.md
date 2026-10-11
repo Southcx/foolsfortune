@@ -46,7 +46,7 @@ legs kept; a slip jelly 2.4 m ahead struck 5 frames, 83 ms, after the release). 
 `move.blink`, every tool's moveset; `cuttable` on the carry and the stinger): E at any frame of c2, the launcher, the stinger, an air
 blow, the iaido's charge or blade mode gives the blink on that frame's fixed step (blade mode: 2 frames, the world brought back up first),
 and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
-out of the stinger read its 30 m/s as its exit (casebook rule NEW:launch-end-speed). Sheets in Calissa's scratchpad (`melee-p2/`).
+out of the stinger read its 30 m/s as its exit (casebook rule 195). Sheets in Calissa's scratchpad (`melee-p2/`).
 
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
@@ -94,6 +94,10 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
   - Target for the slice: about 12 normals and 6 specials.
 - **The row rule:** whatever the loadout holds, the string's damage per second stays within ±15%. A move that does more to a body pays
   for it in time or in power.
+- **Its two events (built 2026-10-11, Calissa; the rules are Petra's):** `move.blow { tool, move, slot, hit, finish, by }` once a blow,
+  and `move.string.end { tool, run, why, by }` when a string run stops (the LMB blows landed in a row: a special's blow is apart from
+  it, neither adding nor ending; `tools/moveset.js`; what fires when, as measured:
+  `docs/handoffs/petra/2026-10-11-from-calissa-blow-events.md`).
 
 ## 3. Open (for the owner)
 

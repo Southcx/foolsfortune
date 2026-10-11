@@ -196,6 +196,7 @@ import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
+import { ProneHolster } from './tools/proneholster.js';
 import { Dreamvane } from './tools/dreamvane/dreamvane.js';
 import { Crucibelle } from './tools/crucibelle/crucibelle.js';
 import { Lockheart } from './tools/lockheart/lockheart.js';
@@ -501,6 +502,7 @@ async function main() {
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
+  game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
   game.parries = new Parries(game); // (V with a tool in the hands: the tool's own parry, docs/plans/PARRY.md; courier/parries.js)
@@ -1107,6 +1109,7 @@ async function main() {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
+      game.proneHolster.update(); // (before the psygun and the tools read their keys)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
