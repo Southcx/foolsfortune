@@ -13,7 +13,6 @@ import { Airborne } from './anim/airborne.js';
 import { IdleBreaks } from './anim/idlebreak.js';
 import { Hurt } from './anim/hurt.js';
 import { MantleClips } from './anim/mantle.js';
-import { StopTurn } from './anim/stopturn.js';
 import { Prowl, PROWL } from './anim/prowl.js';
 import { Crawl } from './anim/crawl.js';
 import armorB64 from '../assets/courier/courier_armor.png?b64';
@@ -321,7 +320,6 @@ export class Character {
     this.hurt = new Hurt(this); // (a blow taken: anim/hurt.js)
     this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
     this.slideTrack = new Track(C, new Set(['slideLoop']));
-    this.stopTurn = new StopTurn(this); // (the skid stop and the half turn over the gait: anim/stopturn.js)
     this.prowl = new Prowl(this); // (the crouch on the move: its loop, the hips' lift and the cat's still head: anim/prowl.js)
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.leg = {
@@ -625,14 +623,12 @@ export class Character {
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
-    // ---- the skid stop and the half turn: a sprint let go, the move reversed at speed (anim/stopturn.js) ----
-    const free = footed && s.grounded && !s.techs?.active && !s.techs?.legsOwn ? (1 - cr) * (1 - crw) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - (s.techs?.override || 0)) : 0;
-    const brk = this.stopTurn.pose(dt, s, speed, free, base, st.contact);
+    // (no skid stop and no half turn over the gait: the owner, 2026-10-11, "it's slow and breaks flow"; both were anim/stopturn.js)
     // (how much of the gait is running ground, and how much of that a sprint: a drawn tool's run of its own reads it, the cutlass's)
-    st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - brk.w); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
-    // footsteps: the left heel lands at phase 0, the right at 0.5 (the skid's and the turn's own while they play)
+    st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
+    // footsteps: the left heel lands at phase 0, the right at 0.5
     const ph = st.phi;
-    if (footed && wm > 0.2 && sl < 0.5 && brk.w < 0.5 && st.lastPhi !== undefined) {
+    if (footed && wm > 0.2 && sl < 0.5 && st.lastPhi !== undefined) {
       const crossed = (a) => (back ? st.lastPhi > a - 1e-9 && ph <= a : st.lastPhi < a && ph >= a) || Math.abs(ph - st.lastPhi) > 0.5 && a === 0;
       if (crossed(0) || crossed(0.5)) this.onFootstep?.();
     }
@@ -728,7 +724,7 @@ export class Character {
     // ---- procedural layer ----
     root.position.y -= st.dip;
     st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
-    const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air) * (1 - brk.turnW); // (the half turn turns itself)
+    const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
     // sliding on a slope: lie along it (pitch down a hill, roll across one)
     let sp = 0, sr = 0;
     if (s.groundN && sl > 0.01) {
@@ -745,7 +741,7 @@ export class Character {
     const upW = _v3.set(0, 1, 0);
     // orientation warping: hips turn toward the move, the chest turns back to the aim
     const gaitW = unit ? 0 : st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da) * (1 - crw);
-    const warp = st.warp * gaitW * (1 - brk.w);
+    const warp = st.warp * gaitW;
     if (Math.abs(warp) > 1e-3) {
       this.rotW(B.spine, upW, warp);
       this.rotW(B.spine001, upW, -warp * 0.45);
