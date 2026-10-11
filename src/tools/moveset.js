@@ -88,6 +88,9 @@
 //   M.string (the ground string's move ids)   M.specialOf(dir) -> its catalogue row   M.special(dir, { paid }) -> bool   M.costOf(row)
 //   M.recovering() (the move on show is past its strike)   M.cut(also) -> bool (the paid cut, for the tool's own next: `also` its cost)
 //   M.idle(dt) (once a frame the tool is not read: the Sondelass's rod or hook form; the string's window still runs out)
+//   M.stringPlace() -> { next, struck, len, branch } (the string's place, a pause string's too, read)   M.paidCutOpen(also) -> bool (a press now would be the paid cut, read)
+//   M.catalogueRow(id) (a slot's move as data)
+//     (both read, never driven: the cutlass's string row, ui/cutlassstringrow.js, asks the engine so it never says other than it does)
 //   spec.ghosts: an Afterimages the tool ticks itself (the engine keeps its own otherwise)
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
 //   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)
@@ -187,6 +190,8 @@ export class Moveset {
   get loadout() { const L = this.S.loadout; return typeof L === 'function' ? L() : L || null; }
   /** The ground string: the loadout's slots in order, or the tool's `strings.ground`. */
   get string() { return this.loadout?.string || this.S.strings.ground || []; }
+  /** A move's catalogue row (its kind, clip, effect, icon), or null: what a slot holds, for whoever draws it. */
+  catalogueRow(id) { return this.S.catalogue?.[id] || null; }
   /** The special a slot holds (`dir`: 'tap' | 'forward' | 'back'), its catalogue row; an empty forward or back slot is the tap's. */
   specialOf(dir = 'tap') { const L = this.loadout?.specials, id = L && ((dir !== 'tap' && L[dir]) || L.tap); return (id && this.S.catalogue?.[id]) || null; }
   /** What a row or a move costs in Lachryma (its row of moves.js first). */
@@ -286,6 +291,55 @@ export class Moveset {
     return true;
   }
 
+  /** The chain window on move `c` is open: a press now goes on to the next free, never sooner than its row's time (`soon`). */
+  chainOpen(c, soon) { return !!c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25); }
+  /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed): its row (`R`)'s
+   *  time spent and its strike past, a press now begins a new opener at no cost. */
+  freeCutOpen(c, R, soon) {
+    const free = c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
+    return !!R && !!free && since >= soon && c.t > (c.def.track?.strike[1] ?? 0);
+  }
+
+  /** The ground string's place as the next plain LMB takes it (read, never driven): `next` the slot it plays (-1: a pause string's blow,
+   *  no slot), `struck` how many of the string's slots this run has struck (0 none), `len` the slots, and `branch` the pause string the
+   *  press is in (its window open after the slot it branches from, or its run going on), else null: { at (the slot), to (its moves),
+   *  next (the one the press plays; -1, its last struck: the string begun again), struck (how many of its blows) }. The engine's own
+   *  rules (opener(), nextOf()): a move on show with a next (nextOf) goes on to it, the last ground blow looping to the first; nothing
+   *  on show, or a move with none (a charge's release, the special, the dash: a press goes through opener()), the pause string's first
+   *  inside PAUSE after the slot it branches from (never out of a blink), else the next within RESET of the last finish, else the first;
+   *  a pause string's run goes on to its next blow, then begins the string again. A blink cancel keeps it (blinkCancel). */
+  stringPlace() {
+    const len = this.string.length, c = this.cur, via = !!c && !this.nextOf(c), a = via ? this.takenAfter(c) : this.after, fresh = (!!c && !via) || a <= RESET; // (`via`: a press goes through opener(), which asks RESET when it takes the press: casebook NEW:read-every-branch)
+    if (!len) return { next: -1, struck: 0, len, branch: null };
+    const b = this.branch;
+    if (this.str === 'pause' && this.n >= 0 && b && fresh) { const k = this.n + 1 < b.to.length ? this.n + 1 : -1; return { next: k < 0 ? 0 : -1, struck: b.at + 1, len, branch: { at: b.at, to: b.to, next: k, struck: this.n + 1 } }; }
+    const live = this.str === 'ground' && this.n >= 0 && this.n < len && fresh;
+    const br = live && (!c || via) && !this.offset && a >= PAUSE[0] && a <= PAUSE[1] && this.branches().find((p) => p.at === this.n && this.open(p.to[0]));
+    if (br) return { next: -1, struck: this.n + 1, len, branch: { at: br.at, to: br.to, next: 0, struck: 0 } };
+    return live ? { next: (this.n + 1) % len, struck: this.n + 1, len, branch: null } : { next: 0, struck: 0, len, branch: null };
+  }
+
+  /** The `after` at which opener() takes a plain press made now under move `c` with no next (read, never driven): now, when the paid
+   *  cut or the free recovery cut is open; else when the free cut opens (the press waits in the buffer); 0 when the move ends first
+   *  (finish() starts `after` again). */
+  takenAfter(c) {
+    const R = this.rule(c.def), soon = R?.time ?? 0;
+    if (c.kind === 'charge-hold' || c.def.plunge || this.freeCutOpen(c, R, soon) || this.paidCutOpen()) return this.after;
+    const rate = c.def.rate || 1, wait = Math.max(0, ((c.def.track?.strike[1] ?? 0) - c.t) / rate, soon - (c.age || 0));
+    return !R || c.t + wait * rate >= (c.def.to ?? this.dur(c.def)) ? 0 : this.after + wait;
+  }
+
+  /** Whether a press now would be THE PAID CUT (read, never driven): the move on show in its recovery, before the free ways open (the
+   *  chain window, the free recovery cut), the tool with a row for it, and the pool able to pay it with `also` (what the move it goes into
+   *  costs), as pay() asks. */
+  paidCutOpen(also = 0) {
+    const c = this.cur, row = RULES[this.S.rules || this.id]?.paidCut, L = this.game.lachryma;
+    if (!c || !row || !L || !this.recovering(c)) return false;
+    const R = this.rule(c.def), soon = R?.time ?? 0, next = this.nextOf(c);
+    if (next ? this.chainOpen(c, soon) : this.freeCutOpen(c, R, soon)) return false;
+    return L.available >= L.cost(row.cost, 'cut') + L.cost(also, 'cut') - 1e-6;
+  }
+
   /** The paid cut for a tool's own next move (the stinger, the guard): the move on show paid for and ended. */
   cut(also = 0) {
     const c = this.cur;
@@ -361,11 +415,10 @@ export class Moveset {
     // the next move: a press inside the chain window
     const next = this.nextOf(c), R = this.rule(c.def), soon = R?.time ?? 0;
     c.age = (c.age || 0) + dt;
-    if (next && this.buffer > 0 && c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
+    if (next && this.buffer > 0 && this.chainOpen(c, soon)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
     // the recovery cut: a string's last blow (the dash, the charge's release, a plunge landed), its row's time spent and its strike past,
     // is cut short by a press into a new opener (Devil May Cry's cancels: the string runs at its rows' rate, not its clips' length)
-    const free = c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? c.age - (c.landAt ?? c.age) : c.age;
-    if (!next && R && this.buffer > 0 && free && since >= soon && c.t > (c.def.track?.strike[1] ?? 0)) { this.opener(inp); if (this.cur !== c) return; }
+    if (!next && this.buffer > 0 && this.freeCutOpen(c, R, soon)) { this.opener(inp); if (this.cur !== c) return; }
     // the paid cut: a press made in the recovery, before the free ways open, pays and the next move begins at once
     if (c.cutPress && this.buffer > 0 && allow) {
       c.cutPress = false;

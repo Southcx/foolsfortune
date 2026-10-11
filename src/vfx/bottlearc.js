@@ -1,6 +1,10 @@
 // ---------------------------------------------------------------------------------------
-// THE BOTTLE'S ARC: the Lachrymato Bottle's fill, beside the crosshair while the Soul Brush's load is spent (feedback/loadgauge.js says
-// when and how full; this is its look). A curved vial to the right of the crosshair, in the Lachryma ring's language (vfx/hudring.js):
+// THE BOTTLE'S ARC: the Lachrymato Bottle's fill, beside the brush's own aim while the Soul Brush's load is spent (feedback/loadgauge.js
+// says when and how full; this is its look). A curved vial in the Lachryma ring's language (vfx/hudring.js), standing where the eye is:
+//   WHERE        to the right of the paint reticle's ring on the screen while it is shown (vfx/brushmarks.js `screenAt`: where the
+//                stream will land, so the fill is read in the same glance as the aim; the crosshair is the psygun's alone), else
+//                beside the Courier's body (mopping, a jet: Breath of the Wild's stamina wheel), else in first person where the
+//                crosshair stood, the screen's middle. It glides between them (never a jump) and stands on whole pixels.
 //   THE LIQUID   Lachryma itself, ink with its oil film in bands (violet, peacock, gold), filling from the bottom up as a liquid would,
 //                a pale film line along its inner side and a bright MENISCUS across the vial where it stands (the light part)
 //   THE VIAL     dark glass, keylined dark all round (the dark part: casebook rule 105), between two fine lines of the Mind
@@ -13,10 +17,14 @@
 // Prior art: Super Mario Sunshine's water gauge (FLUDD's tank, a liquid that falls as you spray), Splatoon's ink tank and its empty-tank
 // cross beside the reticle, Breath of the Wild's stamina wheel (beside the player, segmented, shown only while it moves).
 //
-//   const A = new BottleArc()   A.set({ show: 0..1, frac: 0..1, flash: 0..1 (the dry flash left), low })   A.el   A.dispose()
+//   const A = new BottleArc(game)   A.set({ show: 0..1, frac: 0..1, flash: 0..1 (the dry flash left), low }, rawDt)   A.el   A.dispose()
+//   (without `game` it stands at the screen's middle, as it did beside the crosshair)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 
 const C = 80, R = 30, SPAN = 50; // (the box's middle; the vial's radius in px and its half-sweep in degrees: the stand-in's 100 degrees at 30 px, Petra's numbers)
+const GAP = 9, EDGE = 40, GLIDE = 16, BODY = 0.45; // (px between what it stands beside and the vial; the least margin to the screen's edge; its glide's rate a real second; metres from the body's middle to its side)
+const _v = new THREE.Vector3(), _r = new THREE.Vector3();
 const pt = (deg, r = R) => { const a = (deg * Math.PI) / 180; return [C + Math.cos(a) * r, C + Math.sin(a) * r]; };
 /** The vial's arc from the foot (+SPAN, below the right) up to `frac` of the way to its top (-SPAN). */
 const arc = (frac, r = R) => {
@@ -26,7 +34,8 @@ const arc = (frac, r = R) => {
 const across = (frac, r0, r1) => { const d = SPAN - 2 * SPAN * frac, [a, b] = pt(d, r0), [c, e] = pt(d, r1); return `M ${a.toFixed(2)} ${b.toFixed(2)} L ${c.toFixed(2)} ${e.toFixed(2)}`; };
 
 export class BottleArc {
-  constructor() {
+  constructor(game = null) {
+    this.game = game; this.ax = null; this.ay = null; this.dx = 0; this.dy = 0; this.at = { x: 0, y: 0, r: 0 };
     const el = (this.el = document.createElement('div'));
     el.id = 'bottlearc';
     el.style.cssText = `position:fixed;left:50%;top:50%;width:${2 * C}px;height:${2 * C}px;margin:${-C}px 0 0 ${-C}px;pointer-events:none;z-index:5;opacity:0`;
@@ -59,7 +68,8 @@ export class BottleArc {
   set({ show = 0, frac = 0, flash = 0, low = false } = {}, raw = 1 / 60) {
     this.t = (this.t + raw) % 60;
     if (Math.abs(show - this.shown) > 0.004) { this.shown = show; this.el.style.opacity = show.toFixed(3); }
-    if (show <= 0) return;
+    if (show <= 0) { this.ax = null; return; } // (it comes back where it is wanted then, not gliding from where it was)
+    this.place(raw);
     const f = Math.max(0, Math.min(1, frac)), key = Math.round(f * 400);
     if (key !== this.last) {
       this.last = key;
@@ -71,6 +81,36 @@ export class BottleArc {
     this.kl.setAttribute('stroke', pulse > 0.02 ? `rgba(${Math.round(8 + 90 * pulse)},5,14,.82)` : 'rgba(8,5,14,.78)');
     this.dry.setAttribute('opacity', flash > 0 ? (0.65 + 0.35 * pulse).toFixed(2) : '0');
     this.men.setAttribute('stroke-opacity', low ? (0.55 + 0.45 * (0.5 + 0.5 * Math.cos(this.t * Math.PI * 2 * 1.2))).toFixed(2) : '1');
+  }
+
+  /** Glide toward where it is wanted (`where`), on whole pixels. */
+  place(raw) {
+    const w = this.where(this.at), W = innerWidth, H = innerHeight;
+    if (this.ax == null) { this.ax = w.x; this.ay = w.y; }
+    else { const k = 1 - Math.exp(-GLIDE * raw); this.ax += (w.x - this.ax) * k; this.ay += (w.y - this.ay) * k; }
+    const dx = Math.round(this.ax - W / 2), dy = Math.round(this.ay - H / 2);
+    if (dx !== this.dx || dy !== this.dy) { this.dx = dx; this.dy = dy; this.el.style.transform = `translate(${dx}px, ${dy}px)`; }
+  }
+
+  /** Where the box's middle is wanted (CSS pixels): the vial (R to its right) just outside the paint reticle's ring; else just off the
+   *  Courier's side at the chest; else (first person, the body out of view, no game) the screen's middle. */
+  where(out) {
+    const g = this.game, P = g?.player, cam = g?.camera, W = innerWidth, H = innerHeight;
+    out.x = W / 2; out.y = H / 2;
+    if (!cam) return out;
+    const s = g.paintReticle?.screenAt?.(_r);
+    if (s) { out.x = s.x + Math.max(0, s.r + GAP - R); out.y = s.y; }
+    else if (P && !(P.fpWeight > 0.5)) {
+      _v.copy(P.renderPos); _v.y += 1.05; _v.project(cam);
+      if (_v.z < 1 && Math.abs(_v.x) < 0.9 && Math.abs(_v.y) < 0.9) {
+        const x = (_v.x + 1) * 0.5 * W, y = (1 - _v.y) * 0.5 * H;
+        _v.set(BODY, 0, 0).applyQuaternion(cam.quaternion).add(P.renderPos); _v.y += 1.05; _v.project(cam);
+        const side = Math.abs((_v.x + 1) * 0.5 * W - x);
+        out.x = x + Math.max(0, side + GAP - R); out.y = y;
+      }
+    }
+    out.x = Math.max(EDGE, Math.min(W - EDGE - R, out.x)); out.y = Math.max(EDGE, Math.min(H - EDGE, out.y));
+    return out;
   }
 
   dispose() { this.el.remove(); }

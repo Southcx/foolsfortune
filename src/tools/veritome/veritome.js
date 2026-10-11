@@ -53,7 +53,8 @@ import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _v = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3();
-const ZOOM = { wide: 64, tight: 16 };
+export const ZOOM = { wide: 64, tight: 16 }; // (the lens's field, degrees up the view: the wheel goes between them. vfx/veritomeframe.js reads it)
+export const PLATE = { w: 192, h: 120 }; // (a plate's pixels: the print's shape, cut from the aperture's width)
 const CAPTURE = { range: 18, time: 1.1 };
 // (the grip measures a tool along +X; the book's spine is its +Y)
 const SPINE_TO_GRIP = new THREE.Matrix4().makeRotationZ(-Math.PI / 2);
@@ -64,7 +65,7 @@ const MOVES = {
   b2: { rule: 'bash2', clip: 'Tome_BookBash2', hit: { power: 1.2, dmg: 1.0, push: 5 }, lunge: 2.2, arc: 'l2r', heat: 0.3 },
 };
 const STRINGS = { ground: ['b1', 'b2'] };
-const LIFT = 0.3; // (the lens: seconds of Tome_LensRaise in third person before first person takes over)
+export const LIFT = 0.3; // (the lens: seconds of Tome_LensRaise in third person before first person takes over)
 
 export class Veritome extends Tech {
   constructor(mgr) {
@@ -275,10 +276,10 @@ export class Veritome extends Tech {
     if (canvas) {
       try {
         const A = this.vf.aperture(canvas.width, canvas.height), c = document.createElement('canvas');
-        c.width = 192; c.height = 120;
-        const sw = A.w, sh = sw * (120 / 192), sy = A.y + (A.h - sh) / 2;
-        c.getContext('2d').drawImage(canvas, A.x, sy, sw, sh, 0, 0, 192, 120);
-        drawStamp(c.getContext('2d'), stampText(), 186, 104, 11); // (burnt into the print's corner, as the 90s date-backs did: ui/datestamp.js)
+        c.width = PLATE.w; c.height = PLATE.h;
+        const sw = A.w, sh = sw * (PLATE.h / PLATE.w), sy = A.y + (A.h - sh) / 2;
+        c.getContext('2d').drawImage(canvas, A.x, sy, sw, sh, 0, 0, PLATE.w, PLATE.h);
+        drawStamp(c.getContext('2d'), stampText(), PLATE.w - 6, PLATE.h - 16, 11); // (burnt into the print's corner, as the 90s date-backs did: ui/datestamp.js)
         thumb = c.toDataURL('image/jpeg', 0.72);
         q.swatch = swatchOf(c); // (its strongest colour: a good plate teaches the kiln a glaze, courier/vessel/vessel.js)
       } catch { thumb = null; }

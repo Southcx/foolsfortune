@@ -137,6 +137,9 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   crawl), lifted a hand over the drawn crude and hidden by whatever stands in front (the jetty, the hull, the Courier, the sand). It
   breathes at one slow rate and carries no word or number. It is seen as the mount is chosen, not after: the pier's page is set aside from
   the hull with no veil, and the game's loop keeps the preview moving under it.
+- **The lens's frame** (`vfx/veritomeframe.js`): the Snapshot's corners on foot, in the same warm white and wire, keylined in the stone's
+  ink so they hold on noon sand and in the basement's dark: what a plate would hold, set where the aim meets the world and corrected for
+  the camera's parallax (a rangefinder's bright lines), opening out to the viewfinder's aperture as the lens comes up. One draw, no program.
 - **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror
   flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
   stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
