@@ -426,6 +426,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the kit** (the `kit` section) — the Pneuka Box and the belt, kept as one. *Not:* the Lockheart's kit.
 - **the tuning panel** (Tab, `src/debug/tuning.js`) — live sliders and actions. A **setting** is the player's own preference; a **knob** is any
   other number; a knob off its default is tuned. → detail
+- **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS) — the Workbench's stage that plays a stance, a move, an emote or a
+  clip on the game's own animation stack as a take, stepped and scrubbed front, side and top. *Not:* the movement lab, the pose audit. → detail
 
 - **a label / a lore name** (`name` / `lore` on a data table; `docs/plans/CLARITY.md`) — what the UI calls a thing (a genre word: *Grapple*,
   *Bomb*) / the world's name for it (*the hook*, *the toll*). The UI shows only the label. *Not:* two things.

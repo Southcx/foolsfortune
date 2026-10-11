@@ -1347,3 +1347,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **tuned**: marked on the panel, listed under Tuned with a reset, said in the log at the start of play (`tuning.tuned`), shown at the
   top of QAIS's Brief and carried on every report, so a tuned game is never mistaken for a bug. *Not:* a setting (never a warning).
 - **the workbench** (`/workbench`, `src/workbench/`): the studio for effects, models and sequences.
+- **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS, first in the list): the Workbench's stage for reviewing
+  the Courier's animation without playing for it. Its Courier is a rig of its own (`animrig.js`, built as a sibling's) run through the game's
+  own stack and tools on a stand-in world (`animshim.js`: nothing it plays reaches the ledger, the log, the pool, the save, the world or the
+  Courier's own rig). A **take** (`animtake.js`) is a play recorded frame by frame at 60 a second and laid back at any frame; the body is
+  **pinned** where it stands, its travel drawn as a ghost line. Its **overlays** (`animoverlay.js`, `workbench.animOverlays`) are measures
+  that return marks (axes, points, segments, joint rings) the Anim Lab draws: the bones' axes now, the pose audit's when it lands.
