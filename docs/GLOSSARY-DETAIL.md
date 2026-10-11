@@ -276,6 +276,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `juggle`: its measured motion, a blade's height below it; Devil May Cry's High Time); the air blows ride it too. A **bail** is being
   thrown off the Solar Skiff. *Not:* a combo (the club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one
   yet.
+- **the melee loadout** (working name, Espada's and the owner's to rule; `tools/sondelass/sondelassloadout.js`, read by `tools/moveset.js`;
+  `docs/plans/MELEE-LOADOUT.md`): God Hand's Combo Tree, ours. **The catalogue** (`SONDELASS_MOVES`): every move a slot can hold, a row
+  each (its kind, **normal** or **special**; its Sond_ clip; its **effect** on a body: stagger, knock, launch or guard break; its
+  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`). **The loadout** (`SONDELASS_LOADOUT`):
+  the **string**'s slots in order (c1 .. c4 to start, 8 at most; LMB walks them, the last looping to the first) and the **specials**
+  (RMB tapped, with W, with S; an empty forward or back slot is the tap's; the Stinger on the tap). *Not:* the kit (the Pneuka Box and
+  the belt), nor the fixed grammar (S + LMB the launcher, the air and pause strings, the dash, the charge, R the special art, V the
+  guard), which stays the tool's own. With it: **the iaido** (crouched, RMB held: the charge's pose, `stance:cutlassIaido`; held through
+  0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
+  `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
+  "cancel" bare, which is the opposites' (an agate).
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
