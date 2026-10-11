@@ -105,7 +105,7 @@ This makes the two new feelings content, not menu clutter: you earn your seventh
 **Ruled (the owner, 2026-10-11): every feeling starts locked,** not only Gall and Fury. Anagami's five are learned by drinking in its
 weather (each spell holds 3 game hours, 7.5 real minutes; Mirth, the rarest under Anagami's sky, falls in about one block in nine, so the five
 come in the first one to three real hours); Gall and Fury far off. Until the first, the brush sprays only Clean. One achievement collects
-all seven (`sk11`). This supersedes "the five are known from the start" above.
+all seven (`sk11`, Full Spectrum). This supersedes "the five are known from the start" above.
 
 ## 6. Paint, and what it does to a mind (the Lachryma loop, phase 2)
 

@@ -132,9 +132,9 @@ export const ECON = {
    *  lands. Each island wants the other islands' crude (island demand, by field). The feeling is woken in it by refining it (the Courier,
    *  the Stillhouse), never carried in it. */
   crude: { spill: 0.35, glut: 0.004, fields: { // (a crude market is deep: a unit sold gluts it far less than a cask of fish)
-    margarite: { worth: 0.5, volatility: 0.5, island: 'margarite' },   // light and sweet: easy to carry, cheap
-    dunemaw:   { worth: 0.85, volatility: 1.1, island: 'anagami' },    // the Great Dunemaw's: the slice's own
-    entra:     { worth: 1.25, volatility: 1.6, island: 'entra' },      // heavy and sour: the richest and the most dangerous to carry
+    margarite: { worth: 0.5, volatility: 0.5, island: 'margarite', name: 'Margarite crude' },   // light and sweet: easy to carry, cheap
+    dunemaw:   { worth: 0.85, volatility: 1.1, island: 'anagami', name: 'Dunemaw crude' },    // the Great Dunemaw's: the slice's own
+    entra:     { worth: 1.25, volatility: 1.6, island: 'entra', name: 'Entropolis crude' }, // (names Espada's: "a cask of Dunemaw crude", "3 casks of Dunemaw crude")      // heavy and sour: the richest and the most dangerous to carry
   },
   /** The casks named by feeling before the owner's ruling, read as their field until the items are renamed (Petra's: pneuka/items.js);
    *  then this map goes. */
