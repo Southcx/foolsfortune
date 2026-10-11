@@ -88,7 +88,7 @@ The names of the weathers (WHEEL.md's placeholders, Espada's to settle):
 - **Gall: the miasma.** A low sour fog, flies in it, a curdled film on water.
 - **Fury: the hail.** Hard white pellets on clay and glaze, never thunder (thunder is Dread's).
 
-## 5. Learning a feeling (how the Courier gets them)
+## 5. Learning a feeling (how the Courier gets them; the owner, 2026-10-11: all seven start locked)
 
 The Courier refines crude into feelings, but only the ones they **know**.
 - **A feeling is known once you have drunk it.** You don't have to remember: you learn one by drinking Lachryma of that feeling (a
@@ -101,6 +101,11 @@ The Courier refines crude into feelings, but only the ones they **know**.
   achievement **"Bitter Taste"** (Gall) or **"Seeing Red"** (Fury) is the unlock (Espada's to name).
 
 This makes the two new feelings content, not menu clutter: you earn your seventh colour.
+
+**Ruled (the owner, 2026-10-11): every feeling starts locked,** not only Gall and Fury. Anagami's five are learned by drinking in its
+weather (each spell holds 3 game hours, 7.5 real minutes; Mirth, the rarest under Anagami's sky, falls in about one block in nine, so the five
+come in the first one to three real hours); Gall and Fury far off. Until the first, the brush sprays only Clean. One achievement collects
+all seven (`sk11`). This supersedes "the five are known from the start" above.
 
 ## 6. Paint, and what it does to a mind (the Lachryma loop, phase 2)
 
