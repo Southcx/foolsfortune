@@ -449,7 +449,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (`today()`); the bright part of it (`phaseAt` 'day') | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the swells laid down for a stage's breather | "fair" for weather; "a calm" for the stage |
-| hold | a ship's hold (casks); to hold the save; a rig's hold (a clip's stretch rocked while a move is held) | "the ship's hold"; "hold the save"; "the clip's hold" |
+| hold | a ship's hold (casks); to hold the save; a rig's hold (a clip's stretch rocked while a move is held); a pot in both hands (`carry.js`, `carryHoldAt`) | "the ship's hold"; "hold the save"; "the clip's hold"; "the carry's hold" |
 | move | a blow of the combo engine (`kick.hit`); a rig's move (`RigClips`: a named clip choice) | "a blow" or "the kick's move"; "a rig's move" |
 | hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`) | "a hop" is the Emocean's; "the Jar's hop". A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (air, ground); the Great Slip Jelly's; the god hand's clip | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |

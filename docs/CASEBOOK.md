@@ -553,6 +553,10 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
     keeps out of the Courier's collider and the character controller's query until its shape is a margin clear of the capsule. The
     controller sees a collider where the last step left it; made solid inside or against the capsule, it shoves the capsule out in one
     step. Measured as the capsule's step on the frame of the release, at the floor's edge too.
+NEW:drawn-on-render-clock. **What is drawn moves on the render clock.** A move's progress read from the fixed step (`st`) moves in
+    60 Hz steps under a faster frame, and a thing placed from it and from the interpolated body (`renderPos`) goes back and forth against
+    the body. The drawn pose and the drawn prop take their time from the frame (0 on the state's first drawn frame); the physics keeps
+    the fixed step's. Measured at 144 Hz as the prop's reversals against the palms.
 
 ## Cases
 
@@ -568,6 +572,13 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
   (10.7 cm with the crate), and thrown from the floor's edge beside the Shrine (x 5 to 8.5, z -14.5 to -12.5) left them sunk into the
   floor until they walked: 9.7 cm (pot), 22.3 cm (crate). The pot trailed the hands up to 12.5 cm after the core's turn-in, and a
   second set-down started where the first had (a crate's first frame of it 207 cm from where it was drawn).
+  At the gate again (090b1c5): its two rules were numbered 193 and 194, which the default branch had given to others (now written
+  NEW:<slug>); and a lift ended on the move snapped the pot, and the hands on it, to the walking palms in one frame. Measured (the jar
+  lifted with W held at 3.02 m/s, turning, crouched and moving, the crate; set down and thrown as they were; 60 and 144 Hz steps): on
+  the hold's first frames the pot stepped 15.6 cm a frame walking, 9.9 turning, 27.5 crouched (the palms 46.9), 21.3 with the crate,
+  and the body with it out of the lift's stance (the pelvis 8.4 cm walking, 36.6 crouched; a foot 12.6). The set-down's end and the
+  throw's end moved the hands 51 to 67 cm in one frame and the hips up to 30 (on the base too). At 144 Hz the pot went back and forth
+  against the palms 19 to 33 times in every lift on the move, and 6 to 15 in every set-down.
 - **Cause (measured):** the hold and the throw blended their clips over `MASK_UPPER` with `Clips.blend`'s default `hipW` of 1
   (`courier/moves/carry.js`), so the pelvis was Walk_Carry_Loop's (65.0 to 73.8 cm on its own clock, 0.5 clip seconds a real second
   when still) or OverhandThrow's (down to 50.3 cm), under legs that kept the idle's, the walk's or the prowl's rotations; the foot IK
@@ -578,6 +589,11 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
   it, and pushed the capsule out (moving the release 0.35 m further forward changed nothing; keeping the collider off for 8 steps took
   the shove away). The old throw had kept its body 0.55 m ahead, clear by luck. The second set-down's start was the pose read after the
   state had already changed to `put`, which is the last set-down's start.
+  The second gate's snap: the lift ends where the carrying clip's palms are at the idle (`carryHoldAt`), and the hold's first frame put
+  the pot within `LAG` (4 cm) of the walking or crouched palms, 9 to 32 cm away. The lift lays Chest_Open whole, so its last pose
+  (standing) gave way to the walk's or the crouch's in one frame, and the set-down's and the throw's poses were dropped the frame they
+  ended (rule 46); crouched, the lift's end was 35 cm under the standing stoop's reach. The lift's and the set-down's progress were read
+  from the fixed step's `st` while the pot was placed from the interpolated `renderPos`, and the set-down's start was held in the world.
 - **Fix:** `carry.js` (and one line of `main.js`). Both upper-body blends pass `hipW` 0, and the carrying clip runs on the legs' phase
   (`ht = st.phi x dur`: its left foot is forward at its frame 0, as at the legs' phase 0, measured with `analyseGait`), still when they
   are. The pot rides the hands (`followHands()`, in `afterPose`: the body posed, no hand's IK yet): its grip at the midpoint of the
@@ -599,7 +615,25 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
   ahead the pot still strikes it and breaks. The core's turn-in: the pot trails the palms 4.0 cm at most (was 12.5), the IK pulling them
   8.9 cm at most (was 15.6). A set-down's first frame moves the pot 0.6 cm, the second as the first. Not changed: crouch-walking, the
   leading thigh still passes into a held pot's side (645 skinned vertices, 13 cm, as before the fix).
-- **Rule:** NEW:carry-from-hands, NEW:let-go-clear.
+  The second gate's: every hand-off is a crossfade over `CATCH` (0.2 s) on the render clock. The lift's last pose eases out under the
+  hold (`liftFade`), its hips last (on 1 - s²: a leg's length is the cosine of its half bend, so hips lowered at the rotations' rate into
+  the crouch sank both feet 7 cm); the pot comes from where the lift left it to the palms along the same smoothstep while it rides them
+  (`catchFrom`); the set-down's stoop eases in over the hold, its hips first; what the hands let go of eases out (`out`: the stoop and the
+  hands on the pot set down, the throw's follow-through). The lift's end is no longer lowered for a crouch. The drawn lift, set-down and
+  throw run on render-clock times (`liftT`, `putT`, `throwT`), the physics body on `st`; the set-down starts where the hands had it, in
+  the body's frame. `holdAt` is `carryHoldAt`, "the carry's hold" a row of the glossary's "hold". After, the same harness: the hold's first frames
+  move the pot 3.2 cm a frame at most walking (was 15.6), 3.8 turning (9.9), 7.6 crouched (27.5, the body going down with it), 1.6 with
+  the crate (21.3); the pelvis 1.5, 2.3 and 4.6 cm a frame (8.4, 3.7, 36.6); the feet no lower than before in any hand-off (crouched
+  -0.1 cm, was -3.5; walking -1.0, the walk's own -2.8). The set-down's end moves the hands 2.9 to 12.7 cm a frame and the hips 0.7 to
+  3.7 (51 to 66 and 7 to 30); the throw's end the hands 8.6 to 8.8 (57 to 67). At 144 Hz, 0 reversals in every lift and set-down. The
+  hold itself is unchanged: 30 frames on, the first two runs equal 090b1c5's frame for frame within 0.01 cm (the later ones within
+  0.6 cm: the earlier set-downs left the room a little apart), and still, walking, stopping, crouched and turning the feet, the IK's pull
+  and the mesh against the physics body equal the first fix's numbers above. Left as they were: the
+  crate's palms pulled 17 to 21 cm (Walk_Carry_Loop's palms are 25 cm apart, the crate 70 cm wide: a wider grip wants another clip); the
+  pot through the head in the throw's wind-up (on the base too); a let-go thing is `G.DEBRIS` for its 2 to 3 steps, or while the Courier
+  stands over a dropped one, so the grapnel (`HOOKABLE`) and a sibling's collider pass it (their filters are Petra's); a 5 cm sideways
+  step of the pelvis in a walking turn (the core's, on the base too).
+- **Rule:** NEW:carry-from-hands, NEW:let-go-clear, NEW:drawn-on-render-clock; rules 46 and 56 for the hand-offs.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 
