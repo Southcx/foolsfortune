@@ -8,7 +8,7 @@
 //                              west wall, its lectern (the string and the tempo)
 //   THE FIGMENT TELEGRAPH FLOOR a clear screed of grey slip where a caster throws each Figment attack telegraph's shape in turn
 //   THE PARRY RANGE            a lane from a pitcher on its plinth, stand marks at 4, 8 and 12 m and two at 8 m off the line
-//   THE STATUS BENCH           eleven little roly-polies on a long bench, each status's glyph on a plaque under it
+//   THE STATUS BENCH           eleven roly-polies on a long bench, each status's glyph on a plaque under it (alive: statusbench.js)
 //   THE JUGGLE PEN             a fenced square of sand under the hall's full height, for the launcher and the air string
 //
 // This is the place and its bodies: floors, walls, roof, lamps (plain PointLights, lent by the light budget), each station's floor,
@@ -20,12 +20,13 @@
 // dummy, the frame meter, the tempo), FFXIV's striking dummies and its trial arenas (an open floor for every marker), the batting cage.
 //
 //   buildCombatWing(level)   (from buildTestRoom: the arcade in the room's south wall, then the hall and its stations; TR.wing the measures)
+//   statusBenchSpots() -> [{ status, x, y, z }]   (where each roly-poly sits: the status bench, world/testroom/statusbench.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { TR } from './layout.js';
-import { WING_COLOR, STATUS_BENCH_ORDER, lecternParts, strawRoly, parryPitcher, telegraphCaster, markTiles, statusPlaques } from '../../vfx/combatwingkit.js';
+import { WING_COLOR, STATUS_BENCH_ORDER, lecternParts, parryPitcher, telegraphCaster, markTiles, statusPlaques } from '../../vfx/combatwingkit.js';
 import { mirrorPane } from '../../vfx/sparringmirror.js';
 
 const flat = { outline: false, collide: false, shadow: false };
@@ -106,16 +107,13 @@ function buildStations(level) {
   for (const x of [F.x0 - bw / 2, F.x1 + bw / 2]) level.box([x, 0.018, fcz], [bw, 0.012, F.z1 - F.z0], K.oxblood, flat);
   put(level, telegraphCaster(), F.caster[0], F.caster[1], 0); solid(level, [F.caster[0], 0.95, F.caster[1]], [0.75, 0.95, 0.75]);
   tiles.push({ x: F.mark[0], z: F.mark[1], yaw: toward(F.mark[0], F.mark[1], F.caster[0], F.caster[1]), y: 0.03 });
-  // THE STATUS BENCH: a long bench on the west wall, eleven roly-polies on it facing the room, a glyph plaque on its front under each
+  // THE STATUS BENCH: a long bench on the west wall, a glyph plaque on its front under each roly-poly's place (the roly-polies are alive:
+  // world/testroom/statusbench.js stands them on it)
   const B = W.statusBench, blen = B.z1 - B.z0, bmid = (B.z0 + B.z1) / 2, bd = 0.8;
   level.box([B.x, B.h - 0.04, bmid], [bd, 0.08, blen], C.wood, { shadow: false });
   for (let k = 0; k <= 6; k++) for (const s of [-1, 1]) level.box([B.x + s * (bd / 2 - 0.12), (B.h - 0.08) / 2, B.z0 + 0.15 + (k * (blen - 0.3)) / 6], [0.1, B.h - 0.08, 0.1], C.dark, { shadow: false });
   level.box([B.x, 0.2, bmid], [bd - 0.3, 0.05, blen - 0.3], C.dark, { collide: false, shadow: false });
-  STATUS_BENCH_ORDER.slice(0, B.n).forEach((status, i) => {
-    const z = B.z1 - 0.6 - (i * (blen - 1.2)) / (B.n - 1);
-    put(level, strawRoly(), B.x, z, Math.PI / 2, B.h);
-    glyphs.push({ x: B.x + bd / 2 + 0.012, z, yaw: Math.PI / 2, y: B.h - 0.22, status });
-  });
+  for (const { status, z } of statusBenchSpots()) glyphs.push({ x: B.x + bd / 2 + 0.012, z, yaw: Math.PI / 2, y: B.h - 0.22, status });
   // THE JUGGLE PEN: sand, a fence of posts and two rails (solid: what is juggled stays in), its gate on the north side
   const P = W.jugglePen, post = (x, z) => level.box([x, 0.475, z], [0.12, 0.95, 0.12], C.dark, { shadow: false });
   const rail = (xa, za, xb, zb) => { for (const y of [0.5, 0.88]) level.box([(xa + xb) / 2, y, (za + zb) / 2], [Math.max(0.06, Math.abs(xb - xa)), 0.08, Math.max(0.06, Math.abs(zb - za))], C.wood, { shadow: false }); };
@@ -140,6 +138,13 @@ function buildStations(level) {
   }
   dressed.push(markTiles(tiles), statusPlaques(glyphs));
   return dressed;
+}
+
+/** The status bench's places, one a status in STATUS_BENCH_ORDER: where each roly-poly sits on the bench (x, the bench's top, z) and its
+ *  plaque hangs under it. */
+export function statusBenchSpots() {
+  const B = TR.wing.statusBench, blen = B.z1 - B.z0;
+  return STATUS_BENCH_ORDER.slice(0, B.n).map((status, i) => ({ status, x: B.x, y: B.h, z: B.z1 - 0.6 - (i * (blen - 1.2)) / (B.n - 1) }));
 }
 
 /** The arcade, the hall and its stations (from buildTestRoom, in place of the room's south wall). */

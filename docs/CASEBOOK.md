@@ -525,8 +525,44 @@ the rules before building in the same area; a rule a machine can check goes into
     it: look at those too (the stances over braced).
 190. **A sweep reaches a thing the way the player can, every way the game offers.** A list the game shows (the Index's rooms) may hold
    entries with no key of their own; a sweep that presses only keys throws on the first one, and every check after it never runs.
+191. **A line of sight to a thing never counts the thing.** A ray from the eye to a target's middle ends inside the target: its own
+    collider is left out of the test (by entity, `physics.entityOf`), or every solid target reads as hidden behind itself. Measure the
+    ray's hit before blaming the candidate list.
+192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
+    from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
+    only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
 
 ## Cases
+
+### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
+
+- **Seen:** the owner, at Strawman's sparring circle: S + LMB held does not go up. Measured (Strawman 1.9 m ahead, S + LMB held,
+  then LMB every 0.1 s): the Courier's feet topped out at 0.43 m; with no press after it, the launcher's last pose stood frozen 1.4 real
+  s on the ground; the air string played on the ground.
+- **Cause (measured):** High Time was the ride (`tools/moveset.js`): from the launcher's strike the Courier was carried 1.3 m under the
+  centre of what it had struck, at that thing's measured speed, and the launcher's pose was held until that thing fell at 3 m/s. Strawman
+  takes a knock as nothing (its `knock` is empty): its centre stays at 1.35 m, so the ride held the Courier on the ground, and it never
+  falls, so the pose held to the ride's 2.5 s cap. Any target that cannot be lifted did the same.
+- **Fix:** the rise is the Courier's own (`HIGH`, `leap()`): from the strike's end a ballistic arc to 3.92 m over the ground they left
+  (2.2 x 1.78 m) at 14.7 m/s², the launcher's pose held till that arc turns over; an air blow begun on the way up keeps the arc to its
+  top. What was struck still gets the held lift (9.2) and goes up to the blade; the ride is laid on only past the top, and only on a
+  thing seen to rise 0.1 m in 0.2 s (`RIDE.up`, `RIDE.still`), else let go. Measured: Strawman 3.92 m at 1.17 s, the air blows over its
+  head, the plunge from 3.82 m lands at 1.85 s and its ring strikes it; a slip jelly 3.92 m (the same rise), every air blow lands (gaps
+  0.62, 1.10, 1.25 m); with nothing struck, 3.92 m at 0.97 s. The paid cut from the launcher into a1 keeps the arc (3.92 m).
+- **Rule:** 192 (new; 191 as Calissa wrote it, renumbered at the gate: Dovina's 190 was first).
+
+### 2026-10-11 · Strawman could not be locked on to (the owner: "It is also impossible to lock on to the Strawman")
+
+- **Seen:** the owner: Z never locks Strawman; the cutlass and blade mode never aim at it.
+- **Cause (measured):** Strawman was a candidate all along (`game.creatures.list`, 26 m reach; headless, the sparring circle, 2 m in
+  front of it: `candidates()` listed `strawman`). The line-of-sight test (`lockon.js clear`) cast from the eye to its middle (1.35 m up)
+  and hit Strawman's own capsule first: a static collider with no rigid body, so the filter that skips moving bodies kept it (`clear`
+  false, `acquire` false). Every creature the lock had held so far had a dynamic body and passed by that filter.
+- **Fix:** `clear(pt, ref)` leaves out the colliders whose entity is the target. Petra's ruling: a training body comes to the lock
+  through `game.lock.add(ref)`, added by the room that owns it (Strawman, the status bench's eleven roly-polies), and the creature loop
+  skips `training`; its `lock.on` carries `training`, so the ledger never counts it. Measured after: `acquire` locks Strawman (the
+  reticle on it; the cutlass's moves and blade mode aim through `game.lock`, not entered headless); `lock.on` 0 in the ledger.
+- **Rule:** 191 (new; 190 as Calissa wrote it, renumbered at the gate).
 
 ### 2026-10-10 · The crouch walk's head swung (the owner: "that crouch walk has a lot of excessive head movement")
 
