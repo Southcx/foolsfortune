@@ -30,7 +30,16 @@ lands; until then this is the rule each row follows.
 | 8 | 8,000 | 14 | 13 real hours |
 
 - The ledger needs one new record: `sond.string.best`, the longest unbroken run of LMB string blows. It breaks on a miss, a blow taken
-  or a pause past the string's window. Petra's (the tracking rule, on `cut.combo`).
+  or a pause past the string's window. Built (Petra, fb1a85d: `move.string.end`'s `run`, `feedback/tracking/moves.js`).
+- **The run's edges** (Dovina, 2026-10-11; Calissa's to build):
+  1. **A press that cuts a whiffing blow** (R, or any cut): if the blow's strike has passed without a hit, it was a miss and the run
+     ends. Cut before the strike, no blow was thrown, so nothing ends. A cancel never launders a miss.
+  2. **A held charge** freezes the string's window, for up to 2 real seconds held (a full charge is 1.3); past that the run ends. Its
+     release is a blow like any other: it lands or it ends the run.
+  3. **A move across space** carries the run only if it is the Courier's own (a dash, a Movement Art, the hook's pull) inside the window.
+     A seam, a rescue or a place change ends it: the body left play.
+  4. **Blade Mode's cuts** count nothing toward the run or `sond.move.*`, and neither break it: Blade Mode is stopped time, paid in
+     Ouranurgy (`blade.exit`), not a string. The run resumes from where it was when time runs again.
 
 ## 2. Moves (normals in the string, specials on RMB)
 

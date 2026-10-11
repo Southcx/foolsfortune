@@ -2,18 +2,28 @@
 // THE CUTLASS: the Sondelass's melee form, and everything a blade needs to be a good one. Its strokes are the Courier's own suite
 // (Sond_*), run by the shared combo engine (tools/moveset.js, the grammar every tool keeps):
 //
-//   LMB         four strokes, the fourth the whole body's (a leap and a cut); after a pause at the first, a THRUST and its follow;
-//               after a pause at the second, the three wide arcs of the JRPG string
+//   LMB         THE NORMALS: the melee loadout's string (sondelassloadout.js: c1 .. c4 by default, four strokes, the fourth the whole
+//               body's, a leap and a cut), walked slot by slot, the last looping to the first; after a pause at the first, a THRUST and
+//               its follow; after a pause at the second, the three wide arcs of the JRPG string
 //   hold LMB    the CHARGE: the blade drawn back while held, the charged slash on release
 //   S + LMB     the LAUNCHER: tapped, what it cuts goes up to the blade; held, up they go on an arc of their own, 3.92 m, and it with
 //               them if it can be lifted (Devil May Cry's High Time); LMB in the air: two cuts that keep it at the blade, then the PLUNGE,
 //               the blade driven down with a blast round them on the ground
-//   a press in a blow's recovery: THE PAID CUT (tools/moveset.js): Lachryma paid, the next move at once; RMB the stinger, V the guard
+//   a press in a blow's recovery: THE PAID CUT (tools/moveset.js): Lachryma paid, the next move at once; RMB the special, V the guard
 //   sprinting   LMB: the DASH SLASH (its own 2.3 m, carried)
 //   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
-//   RMB tap     the STINGER: a committed thrust. They lunge six metres in a quarter of a second, the suite's thrust held out, and
-//               everything in the line is pierced and thrown. (courier/moves/launch.js carries them past the core's speed cap.)
-//   RMB hold    BLADE MODE (blade.js): time all but stops, the mouse turns a line of light through the target, LMB cuts along it.
+//   RMB         THE SPECIALS (the owner, 2026-10-11: "LMB as a 'normal' attack button and RMB as a 'special' attack button, so moves
+//               like the current Stinger don't get disrupted"): on the press, at once, the loadout's special: tapped, the tap's slot (the
+//               STINGER by default: a committed thrust, six metres in a quarter of a second, the suite's thrust held out, everything in
+//               the line pierced and thrown; courier/moves/launch.js carries them past the core's speed cap); with W, the forward slot;
+//               with S, the back slot (an empty one is the tap's). Inside a blow's strike the press waits (RMB_BUFFER) for the free way.
+//   crouched, RMB   THE IAIDO ("crouched" is player.crouching: grounded and low, never C held): the charge's pose (the blade along the
+//               belt, its point trailing past the left hip, the off hand at the guard, the body coiled: courier/anim/stances.js
+//               cutlassIaido); held through the charge (IAIDO.charge), BLADE MODE (blade.js): time all but stops, the mouse turns a line
+//               of light through the target, LMB cuts along it; let go before, THE DRAW CUT: one fast rising cut forward, from the pose.
+//               Not crouched, RMB never enters blade mode.
+//   E           THE BLINK CANCELS ANY MOVE (the owner, 2026-10-11): a stroke (tools/moveset.js blinkCancel(), the string's place kept), the
+//               stinger, the iaido's charge, blade mode.
 //   MMB         lock on (lockon.js): the camera and the body hold the target, strokes and the stinger go toward it, A/D strafe it.
 //   V (hold)    GUARD: the blade comes up (Sond_Block). Pressed in time (the first 0.28 s), a projectile that arrives is PARRIED
 //               (Sond_Parry): sent back where they look (parry.js, the rule the kick shares); later, it is only turned aside. LMB with
@@ -28,6 +38,9 @@
 //    two sockets, sampled per frame and spline-smoothed), and the hit-stop every fighting game uses (a few frames of nearly nothing
 //    at the moment of contact, which is most of what makes a hit feel heavy: game.time.pulse).
 //  - Zelda: Twilight Princess' lock-on and Sekiro's deflect for the guard's timing (see lockon.js and parry.js).
+//  - God Hand's specials on their own button (the Technique Roulette's), the normals' Combo Tree on the other (the melee loadout); the
+//    iaido: battojutsu's draw from the hip, Ghost of Tsushima's standoff and Sekiro's crouched draw (the charge held low, let go into one
+//    cut), Metal Gear Rising's Blade Mode entered from it.
 // The blade is tested against breakables and clapperjars by distance from the blade's segment (they are few and near); each is hit
 // once per stroke.
 // ---------------------------------------------------------------------------------------
@@ -37,18 +50,17 @@ import { BLADE_LEN } from './model.js';
 import { Trail } from '../../vfx/trail.js';
 import { BladeMode } from './blade.js';
 import { deflect, guard } from '../../courier/parry.js';
-import { Moveset, rootOf } from '../moveset.js';
+import { Moveset, rootOf, shedSpeed } from '../moveset.js';
 import { Afterimages } from '../../vfx/afterimage.js';
+import { SONDELASS_MOVES, SONDELASS_LOADOUT } from './sondelassloadout.js';
 import { stream } from '../../core/rng.js';
 const fxRand = stream('tools/sondelass/cutlass.fx'); // (the look's chance: the afterimages' hue)
 
 // The strikes are the Courier's own suite (melee.glb's Sond_*), played by the shared combo engine (tools/moveset.js): the moves below
 // are its table. Clip seconds throughout; when the blade can hurt is not typed here: it is measured from the clip (melee.js).
+// (The string's normals, c1 .. c4, and the specials RMB holds are the melee loadout's: sondelassloadout.js, its catalogue played by the
+// engine. What follows is the fixed grammar.)
 const MOVES = {
-  c1: { rule: 'combo1', clip: 'Sond_Combo1', rate: 1.1, chain: [0.22, 0.75], to: 0.85, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 3.2, arc: 'r2l' },
-  c2: { rule: 'combo2', clip: 'Sond_Combo2', rate: 1.1, chain: [0.26, 0.8], to: 0.9, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 3.2, arc: 'l2r' },
-  c3: { rule: 'combo3', clip: 'Sond_Combo3', rate: 1.1, chain: [0.42, 0.95], to: 1.05, fade: 0.35, hit: { power: 1.5, dmg: 1.3 }, lunge: 3.6, arc: 'r2l' },
-  c4: { rule: 'combo4', clip: 'Sond_Combo4', body: 'whole', root: 'xz', hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' },
   // the pause strings: after the first stroke, a thrust and its follow; after the second, the three wide arcs (the JRPG string)
   t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
   // (t2 holds the thrust out 0.13-0.70 and stabs three times, its speed's peaks at 0.21, 0.53, 0.66: a typed strike, a hit at each;
@@ -81,11 +93,19 @@ const MOVES = {
   burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
   spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
   tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
+  // crouched, RMB let go before the charge is full: THE IAIDO'S DRAW CUT. The suite's rising cut (c2's clip, low left to high right: the
+  // sweep a blade drawn from the left hip makes) from just before its strike, at 1.4x (the strike 0.05 real s after the release),
+  // begun from the iaido's pose (begin's `join`). No row of its own yet (progress/combat/moves.js is Dovina's): k x 1.1 = 1.54 a hit,
+  // between c3's 1.4 and c4's 2.0; about 0.6 real s a cut with the shortest charge, 2.5 power a second, the string's 2.7 or under
+  iai: { clip: 'Sond_Combo2', from: 0.1, rate: 1.4, to: 0.9, fade: 0.3, hit: { power: 1.1, dmg: 1.4, push: 3 }, lunge: 4.5, heat: 0.7, arc: 'l2r', legs: false }, // (the crouch's legs kept: the clip's stood them up mid-cut)
 };
-const STRINGS = { ground: ['c1', 'c2', 'c3', 'c4'], pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
+const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
-const STING = { dash: 0.26, speed: 30, dmg: 2.4, power: 3.0, reach: 2.0, radius: 0.85, cost: 6, cool: 0.5 };
-const PARRY_WIN = 0.28, HOLD = 0.16;
+const STING = SONDELASS_MOVES.stinger.sting; // (the stinger's numbers are its catalogue row's)
+// THE IAIDO: `charge` real s held to blade mode (the owner's "charge-up", about half a second); the pose eased in over `in` and out over
+// `out` real s; the off hand at the guard, `left` m along the tool from the blade hand
+const IAIDO = { charge: 0.5, in: 0.08, out: 0.1, left: 0.2 };
+const PARRY_WIN = 0.28, RMB_BUFFER = 0.35; // (an RMB press inside a strike waits this long, real s, for the free way)
 const DMG = 62;
 const _up = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3();
 
@@ -106,19 +126,27 @@ export class Cutlass {
     this.moves = new Moveset(tool, {
       id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
       trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b), ghosts: this.ghosts,
+      catalogue: SONDELASS_MOVES, loadout: SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout: a save of its own when it can be chosen, MELEE-LOADOUT.md phase 3)
+      drawn: () => this.tool.drawT > 0.02 && this.tool.form === 'cutlass', onBlinkCancel: () => this.blinkCancel(),
     });
     this.blade = new BladeMode(this);
-    this.rmbT = -1; // RMB down: how long (a tap is a stinger, a hold is blade mode)
+    this.rmb = null; // an RMB press waiting for the free way: { want: 'tap' | 'forward' | 'back' | 'iaido', t }
+    this.iai = null; this.iaiW = 0; // the iaido's charge ({ t: real s held, full }), and its pose's weight
     this.stinging = false; this.stCool = 0; this.stHit = new Set(); this.stPrev = new THREE.Vector3(); this.stDir = new THREE.Vector3(0, 0, 1); this.ghostT = 0;
     this.guardOn = false; this.guardT = 0; this.guardW = 0; this.parryT = 9;
   }
-  get busy() { return this.moves.busy || this.stinging || this.blade.active || this.guardOn; }
-  get playing() { return this.moves.playing || this.blade.active || this.blade.k > 0.05 || this.guardW > 0.02 || this.parryT < 0.9; }
+  get busy() { return this.moves.busy || this.stinging || this.blade.active || this.guardOn || !!this.iai; }
+  get playing() { return this.moves.playing || this.blade.active || this.blade.k > 0.05 || this.guardW > 0.02 || this.parryT < 0.9 || this.iaiW > 0.01; }
+  /** The off hand on the hilt (sondelass.js hands(): the light IK): while the iaido's pose shows, 0..1. */
+  get leftHand() { return this.moves.cur ? 0 : this.iaiW; }
+  /** Where along the tool the off hand takes it (m from the blade hand: at the guard). */
+  get leftAt() { return IAIDO.left; }
   get game() { return this.tool.game; }
   get combo() { return this.moves.combo; }
 
   cancel() {
-    this.moves.cancel(); this.rmbT = -1; this.guardOn = false; this.ghosts.clear();
+    this.moves.closeBlow(this.stBlow); // (the stinger's blow before the stow ends the run: tools/moveset.js)
+    this.moves.cancel(); this.rmb = null; this.iai = null; this.iaiW = 0; this.guardOn = false; this.ghosts.clear();
     this.blade.exit('stow');
     this.game.lock?.release('stow');
     this.trail.gap();
@@ -144,27 +172,77 @@ export class Cutlass {
   update(dt, inp) {
     const P = this.tool.P, g = this.game, raw = g.rawDt || dt;
     this.stCool -= dt; this.parryT += dt;
+    this.iaiW = this.iai ? Math.min(1, this.iaiW + raw / IAIDO.in) : Math.max(0, this.iaiW - raw / IAIDO.out);
+    // E in blade mode: the world comes back up for the blink at once (at a twentieth of its speed its fixed step, and so the blink, waits
+    // up to a third of a real second); the blink's own `move.blink` does the rest (blinkCancel())
+    if (this.blade.active && inp.wasPressed('KeyE') && this.blinkReady()) this.blade.exit('blink');
     // the blade is read in real seconds: what the world is doing does not change how fast they cut
     if (this.blade.active || this.blade.k > 0 || this.blade.queue.length) { this.blade.update(dt, inp); if (this.blade.active) return; }
     if (inp.wasPressed('Mouse1')) g.lock.toggle();
     // LMB with the guard up: the counter (the spin), and the guard drops
     if (this.guardOn && inp.wasPressed('Mouse0') && !this.moves.busy) { this.guardOn = false; this.tool.P.guarding = false; this.moves.begin('spin', 'counter'); }
     this.guardUpdate(dt, inp);
-    // RMB: a tap is the stinger, a hold is blade mode; in a blow's recovery, the stinger at once for the paid cut (tools/moveset.js)
-    if (inp.wasPressed('Mouse2') && this.moves.recovering() && !this.stinging && this.stCool <= 0 && this.moves.cut(STING.cost)) this.stinger(true);
-    else if (inp.wasPressed('Mouse2') && !this.moves.whole && !this.stinging && !this.guardOn) this.rmbT = 0;
-    if (this.rmbT >= 0) {
-      this.rmbT += raw;
-      if (!inp.isDown('Mouse2')) { this.rmbT = -1; if (!this.busy && this.stCool <= 0) this.stinger(); }
-      else if (this.rmbT >= HOLD) {
-        this.rmbT = -1;
-        if (!this.busy && this.blade.canEnter()) this.blade.enter();
-        else if (!this.busy) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); }
-      }
-    }
+    this.specials(inp, raw);
+    if (this.iai) { this.iaido(inp, raw); return; } // (the charge holds the hands: no stroke while it coils)
     if (this.stinging) return;
     this.moves.update(dt, inp, { allow: P.techs.active?.id !== 'swim' && !this.guardOn });
   }
+
+  /** RMB: THE SPECIALS. On the press, at once: the loadout's slot (tapped, the tap's; with W, the forward; with S, the back; an empty one
+   *  the tap's: tools/moveset.js special()). In a blow's recovery, at once for the paid cut (its own cost with it, or neither); inside a
+   *  strike, or the stinger cooling, the press waits RMB_BUFFER for the free way. Crouched (player.crouching), the press is the iaido. */
+  specials(inp, raw) {
+    const P = this.tool.P, M = this.moves;
+    if (inp.wasPressed('Mouse2') && !this.stinging && !this.guardOn && !this.blade.active && !this.iai) {
+      const want = P.crouching ? 'iaido' : inp.isDown('KeyW') ? 'forward' : inp.isDown('KeyS') ? 'back' : 'tap';
+      if (M.recovering() && (want === 'iaido' || this.stCool <= 0) && M.cut(want === 'iaido' ? 0 : M.costOf(M.specialOf(want)))) { this.go(want, true); return; }
+      this.rmb = { want, t: RMB_BUFFER };
+    }
+    const r = this.rmb;
+    if (!r) return;
+    r.t -= raw;
+    if (r.want === 'iaido' && !P.crouching) this.rmb = null; // (stood up while it waited: the iaido is the crouch's)
+    else if (!this.busy && (r.want === 'iaido' || this.stCool <= 0)) { this.rmb = null; this.go(r.want, false); }
+    else if (r.t <= 0) this.rmb = null;
+  }
+
+  /** What an RMB press goes into: the iaido's charge, or the special a slot holds (`paid`: a paid cut goes into it). */
+  go(want, paid) {
+    if (want === 'iaido') { this.iai = { t: 0, full: false }; return; }
+    this.moves.special(want, { paid });
+  }
+
+  /** THE IAIDO, while RMB is held crouched: the charge's pose; held through IAIDO.charge, blade mode as it always was; let go, the draw
+   *  cut. Off the ground (a jump, a fall) it is let go with nothing drawn. */
+  iaido(inp, raw) {
+    const I = this.iai, P = this.tool.P;
+    if (!P.grounded) { this.iai = null; return; }
+    I.t += raw;
+    if (!inp.isDown('Mouse2')) { this.iai = null; this.drawCut(); return; }
+    if (I.t >= IAIDO.charge && !I.full) {
+      I.full = true;
+      if (this.blade.canEnter()) { this.iai = null; this.blade.enter(); }
+      else { sfx.fizzle?.(); this.game.hud?.lachrymaPulse?.(false); } // (the pool cannot hold the world still: the pose is held; let go, it is the draw cut)
+    }
+  }
+
+  /** THE DRAW CUT: one fast rising cut forward (MOVES.iai), begun from the pose on show (the stance under the iaido's, by its weight). */
+  drawCut() {
+    const C = this.game.character.clips, pose = (this._jp ||= C.pose());
+    if (this.tool.track) this.tool.track.sample(pose); else C.sample('Sond_Idle', 0, pose, false);
+    C.blend(pose, C.sample('stance:cutlassIaido', 0, (this._ip ||= C.pose()), false), this.iaiW);
+    this.moves.begin('iai', 'iaido', 0, pose);
+  }
+
+  /** The blink cancel's own half (the moveset's blinkCancel() has let the stroke go): the stinger, the iaido's charge and blade mode go too. */
+  blinkCancel() {
+    this.rmb = null; this.iai = null;
+    if (this.blade.active) this.blade.exit('blink');
+    if (this.stinging) { const L = this.tool.P.techs.get('launch'); if (L?.active && L.o?.tag === 'stinger') { L.o.onEnd = null; L.o.time = 0; } this.stinging = false; this.trail.gap(); this.moves.closeBlow(this.stBlow); }
+  }
+
+  /** Whether E would blink now (read, never driven: the blink is the Courier's, courier/moves/blink.js). */
+  blinkReady() { const b = this.tool.P.techs.get('blink'); return !!b && b.usable() && b.charges > 0; }
 
   /** What a hit does to the world: the sound, the shake, the flash of the cut, and the stop (a beat of nearly nothing). */
   impact(dmg, a, b, stop = true) {
@@ -178,12 +256,13 @@ export class Cutlass {
   // ---------------------------------------------------------------- the stinger
   stinger(cut = false) {
     const P = this.tool.P, g = this.game, launch = P.techs.get('launch');
-    if (!launch || (P.techs.active && !(cut && P.techs.active === launch))) return; // (a paid cut from a whole-body blow: its launch goes straight into the thrust's)
-    if (!g.lachryma.spend(STING.cost, 'stinger')) return;
+    if (!launch || (P.techs.active && !(cut && P.techs.active === launch))) return false; // (a paid cut from a whole-body blow: its launch goes straight into the thrust's)
+    if (!g.lachryma.spend(STING.cost, 'stinger')) return false;
     const dir = this.aimDir(new THREE.Vector3());
     // toward the lock: no farther than the target (they stop a blade's length short of it)
     let speed = STING.speed, time = STING.dash;
     if (g.lock?.active) { g.lock.point(_e); const d = Math.max(1.2, _e.distanceTo(P.pos) - 1.4); time = THREE.MathUtils.clamp(d / speed, 0.1, STING.dash); }
+    this.stBlow = this.moves.ownBlow('stinger'); // (a blow of its own: move.blow when the lunge is over, tools/moveset.js)
     this.stinging = true; this.stStopped = false; this.stHit.clear(); this.stDir.copy(dir); this.stPrev.copy(P.pos); this.ghostT = 0.06; // (the first afterimage waits: at the start it would sit on the body)
     this.stCool = STING.cool;
     this.trail.gap();
@@ -200,9 +279,11 @@ export class Cutlass {
       clipMap: map,
       poseFix: root ? (pose) => { root.at(map(launch.clipT), _p); pose.p[0] -= _p.x; pose.p[2] -= _p.z; } : null,
       onStep: (dt) => this.stingStep(dt),
-      onEnd: () => { this.stinging = false; this.trail.gap(); },
+      onEnd: () => { shedSpeed(P.vel, 6); this.stinging = false; this.trail.gap(); this.moves.closeBlow(this.stBlow); }, // (its exit speed however it ends: a blink cutting in read 30 m/s as its own, rule 195)
+      cuttable: true, // (the blink may cut in at any frame: courier/moves/techs.js; onEnd above lets it go)
     });
     const lt = P.techs.get('launch'); if (lt) lt.blendIn = 30;
+    return true;
   }
 
   /** Each fixed step of the thrust: everything within reach of the path is pierced. */
@@ -218,7 +299,7 @@ export class Cutlass {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (segDist(from, to, _p) > STING.radius * 0.5 + ent.P.rMax) continue;
       this.stHit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power);
+      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power); this.moves.markBlow(this.stBlow, 'pot', ent);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7), false);
       g.events?.emit('cut.hit', { what: 'pot', combo: 'stinger' });
     }
@@ -227,7 +308,7 @@ export class Cutlass {
       _p.copy(c.pos).y += 0.35;
       if (segDist(from, to, _p) > STING.radius) continue;
       this.stHit.add(c); struck++;
-      g.clappers.hit(c, _p.clone(), dir.clone(), STING.power, 'sliced');
+      g.clappers.hit(c, _p.clone(), dir.clone(), STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'clapper', c);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7), false);
       g.events?.emit('cut.hit', { what: 'clapper', combo: 'stinger' });
     }
@@ -236,7 +317,7 @@ export class Cutlass {
       c.center(_p);
       if (segDist(from, to, _p) > STING.radius + c.radius) continue;
       this.stHit.add(c); struck++;
-      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced');
+      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'creature', c);
       g.events?.emit('cut.hit', { what: c.kind, combo: 'stinger' });
     }
     // (a thrust goes THROUGH: one light check at its first contact, never a stop per thing pierced, which would stall the lunge)
@@ -252,7 +333,7 @@ export class Cutlass {
   guardUpdate(dt, inp) {
     const P = this.tool.P, g = this.game;
     if (inp.wasPressed('KeyV') && this.moves.recovering() && !this.stinging) this.moves.cut(); // (the guard at once from a blow's recovery: the paid cut)
-    const want = inp.isDown('KeyV') && !this.moves.busy && !this.stinging;
+    const want = inp.isDown('KeyV') && !this.moves.busy && !this.stinging && !this.iai;
     if (want && !this.guardOn) { this.guardOn = true; this.guardT = 0; sfx.guardUp?.(); g.events?.emit('guard.up', {}); }
     else if (!want && this.guardOn) this.guardOn = false;
     this.guardW = THREE.MathUtils.damp(this.guardW, this.guardOn ? 1 : 0, 16, dt);
@@ -285,6 +366,7 @@ export class Cutlass {
   fpArc() {
     if (this.blade.active) return this.blade.swing > 0 ? { arc: this.blade.swingKind % 2 ? 'l2r' : 'r2l', u: 1 - this.blade.swing } : { arc: 'raise', u: 0.4 };
     if (this.guardW > 0.02) return { arc: 'raise', u: 0.5 * this.guardW };
+    if (this.iaiW > 0.02 && !this.moves.cur) return { arc: 'l2r', u: 0 }; // (the iaido: the blade held where the draw begins)
     return this.moves.fpArc();
   }
 
@@ -294,10 +376,13 @@ export class Cutlass {
     if (b.active || b.k > 0.05) {
       if (b.swing > 0) { const B = b.swingKind % 2 === 1; C.sample(B ? 'Sond_Combo2' : 'Sond_Combo1', 0.05 + (1 - b.swing) * (B ? 0.3 : 0.26), out, false); return { pose: out, w: 1 }; }
       C.sample('Sond_ChargeHold', 0.4, out, false);
-      return { pose: out, w: 0.85 * b.k };
+      const bw = 0.85 * b.k, iw = this.iaiW;
+      if (iw > 0.01) { C.blend(out, C.sample('stance:cutlassIaido', 0, (this._ip ||= C.pose()), false), iw / (iw + bw)); return { pose: out, w: Math.min(1, bw + iw) }; } // (out of the iaido's pose into blade mode's stance)
+      return { pose: out, w: bw };
     }
     if (this.parryT < 0.9) { C.sample('Sond_Parry', 0.12 + this.parryT, out, false); return { pose: out, w: 1 - THREE.MathUtils.smoothstep(this.parryT, 0.6, 0.9) }; } // (the deflect: the suite's parry, struck through)
     if (this.guardW > 0.02) { C.sample('Sond_Block', 0.4, out, false); return { pose: out, w: this.guardW }; }
+    if (this.iaiW > 0.01 && !this.moves.cur) { C.sample('stance:cutlassIaido', 0, out, false); return { pose: out, w: this.iaiW }; } // (the iaido's charge)
     return this.moves.pose(C, out);
   }
 }

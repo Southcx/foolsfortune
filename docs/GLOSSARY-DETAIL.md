@@ -189,9 +189,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   glitch.
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
-  Its looks (`docs/ART.md` section 10), shown only, never changing the move: **the skid stop** (`SKID`, `src/courier/anim/stopturn.js`:
-  Loco_SprintStop when a sprint is let go), **the half turn** (`TURN`, the same file: Loco_Turn180 on a reversal at speed, its frame
-  picked by how far the body has turned), **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
+  Its looks (`docs/ART.md` section 10), shown only, never changing the move (the skid stop and the half turn were cut, the owner,
+  2026-10-11: "slow and breaks flow"): **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
   let down to the crouch's height), **the crawl's clearance** (`CRAWL.outline`, `Crawl.clear`, `src/courier/anim/crawl.js`: the belly posed past its
   capsule, slid in the pelvis off a wall it would poke through; the capsule is Petra's). *Not:* a tech (they never take the body), a Movement Art.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
@@ -276,6 +275,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `juggle`: its measured motion, a blade's height below it; Devil May Cry's High Time); the air blows ride it too. A **bail** is being
   thrown off the Solar Skiff. *Not:* a combo (the club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one
   yet.
+- **the melee loadout** (working name, Espada's and the owner's to rule; `tools/sondelass/sondelassloadout.js`, read by `tools/moveset.js`;
+  `docs/plans/MELEE-LOADOUT.md`): God Hand's Combo Tree, ours. **The catalogue** (`SONDELASS_MOVES`): every move a slot can hold, a row
+  each (its kind, **normal** or **special**; its Sond_ clip; its **effect** on a body: stagger, knock, launch or guard break; its
+  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`). **The loadout** (`SONDELASS_LOADOUT`):
+  the **string**'s slots in order (c1 .. c4 to start, 8 at most; LMB walks them, the last looping to the first) and the **specials**
+  (RMB tapped, with W, with S; an empty forward or back slot is the tap's; the Stinger on the tap). *Not:* the kit (the Pneuka Box and
+  the belt), nor the fixed grammar (S + LMB the launcher, the air and pause strings, the dash, the charge, R the special art, V the
+  guard), which stays the tool's own. With it: **the iaido** (crouched, RMB held: the charge's pose, `stance:cutlassIaido`; held through
+  0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
+  `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
+  "cancel" bare, which is the opposites' (an agate).
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
@@ -1213,10 +1223,33 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   miasma (gall): **fog lenses** (pancakes of low fog sat on the ground, more in the hollows, drawn as the ellipse each projects to),
   **flies** (a few loose clouds low over the ground) and the **curdled film** (`SOUR_U`, `vfx/water.js`: a mottled skin on still water
   and Lachryma); the hail (fury): **hailstones** (short white streaks falling nearly straight), each **landing** with one bounce and
-  lying as a **scatter** that melts, and **pocks** (small rings in the ripple tank). Never thunder or lightning for the hail. An **agate** sky's second feeling colours the sky, the
+  lying as a **scatter** that melts, and **pocks** (small rings in the ripple tank). No thunder for the hail until it runs heavy. An **agate** sky's second feeling colours the sky, the
   clouds and what falls, and may raise its own mark; it never falls. Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.
+- **a heavy look** (`LOOK[aspect].heavy`, `heavyOf(k)`, `src/vfx/weather.js`; the owner, 2026-10-11, "much more impressive visually";
+  docs/plans/FEELINGS-AWAKENING.md section 3): what a weather's look leans to as its spell runs heavy (strength 0.65 to 1: nothing below,
+  all of it at 1), on the weather's own programs (counts, sizes, colours and uniforms; no program of its own), each its feeling's big
+  gesture in its colour and paint motif: Wonder's **aurora filling the sky** (by night all round and to 58 degrees, by day faint over a
+  sky deepened to lapis), the halo and sun dogs bright, diamond dust thick; Mirth's **confetti of light** (gold motes in a storm, each its
+  own shade, catching the sun) under a **double bow** (the secondary at 51 degrees, its colours reversed); Desire's **dust storm** (the
+  streaks long and rippling, the haze closing in amber-rose); Grief's rain in **sheets** (curtains of it sweeping on with the wind,
+  slanting, pocking still water); Dread's sky **pressing down** (near black-green, the cloud closed, ash sinking, an ink fog low, the cloud
+  lit from inside); Fury's **close bolts** (the hail's own lightning, forked, 55 to 170 m off, about one a second, mostly where you look, a
+  red glow behind each); Gall's miasma **risen** (its fog lenses to the chest, the flies in swarms). The sky shows it wherever a spell runs
+  heavy; `lightOf(aspect, strength)` is the light a heavy spell would leave on the scene (for render/daylight.js). *Not:* a stronger
+  spell (the rules' strength is the same; this is how it looks at the top of it).
+- **the awakening's look** (`game.awakeningLook`, `src/vfx/awakeninglook.js`): Calissa's share of an awakening (the moment and its glitch
+  are Petra's, `feedback/awakening.js`). **the flood**: on `feeling.wake`, that feeling's heavy look breaking out round the Courier for
+  about four real seconds (in over 0.5, held 3, out over 1.3), wherever they stand, indoors too: a second set of the weather's own falling
+  pieces in a short column centred on them (12 m round), its own overhead map cast from just over their head so it lands on a room's
+  floor; in an open place the sky takes it too (`weatherLook.surge`). Never over a fight's danger: nothing within 3.5 m of the Courier,
+  the middle of the screen kept clear, a third as much while a fight is on or a creature has noticed them. **a feeling's clip**
+  (`FEELING_CLIPS`, `src/courier/anim/feelingclips.js`): on `feeling.embody` (said once the Courier is free), the suite's own clip for the
+  feeling, played by the emote tech as an emote is (moving fades it out) but no emote (no event, never logged or counted): Wonder the
+  stretch's rise (looking up), Mirth the belly laugh, Desire hugging the air (a reach, then held to the chest), Fury rage (the fists),
+  Gall disgust (the recoil), Grief crying (the head bowed, the hands to the face), Dread the startle (the flinch). `/awaken <feeling>`
+  (DEBUG) plays the flood and the clip, nothing learned. *Not:* an emote, the glitch, the awakening itself (the act that wakes a feeling).
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
   the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,

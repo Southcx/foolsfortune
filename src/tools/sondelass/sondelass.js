@@ -5,7 +5,8 @@
 // with it out; it owns only the right arm's pose while it is drawn, and puts the Psygun away.
 //
 //   Q     draw / stow (the Psygun goes away first; X also stows it)           1 / 2 / 3   CUTLASS / ROD / HOOK
-//   CUTLASS  LMB a three-stroke combo · RMB tap: the Stinger · RMB hold: Blade Mode · Z / MMB lock on · V hold: guard, in time: parry
+//   CUTLASS  LMB the loadout's string · RMB the special (the Stinger) · crouched, hold RMB: the iaido into Blade Mode · MMB lock on · V hold:
+//            guard, in time: parry · E (the blink) cancels any move
 //   ROD      hold LMB to charge a cast, release to throw · 4-8 / wheel: the lure's aspect · wheel (lure out): its depth · RMB sinks it · MMB sounds
 //            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
 //   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),
@@ -172,10 +173,9 @@ export class Sondelass extends Tech {
     if (this.angler && this.form === 'rod') m.setBend(this.angler.bend());
     else m.setBend(THREE.MathUtils.damp(m.bend, 0, 10, dt));
     // the sub-systems
-    if (held) {
-      if (this.form === 'cutlass') this.cutlass.update(dt, inp);
-      else if (this.form === 'hook') this.hookshot.update(dt, inp);
-    }
+    if (held && this.form === 'cutlass') this.cutlass.update(dt, inp);
+    else this.cutlass.moves.idle(dt); // (the cutlass not in the hand: its string's window still runs out, tools/moveset.js idle())
+    if (held && this.form === 'hook') this.hookshot.update(dt, inp);
     this.hookshot.tickFlight?.(dt);
     if (this.form === 'rod' || this.angler?.lure) this.angler?.update(dt, inp, held && this.form === 'rod');
     this.strip.classList.toggle('on', this.drawT > 0.02);
@@ -266,8 +266,15 @@ export class Sondelass extends Tech {
       }
       // the free hand on the reel, cranking (or at the foregrip of the rod while it holds a fish)
       const hookLeft = this.form === 'hook' && this.hookshot.att ? 1 : 0; // (hanging or swinging: the free hand takes the shaft)
-      this.leftW = THREE.MathUtils.damp(this.leftW, Math.max(this.angler?.leftHand ?? 0, hookLeft), 10, 1 / 60);
+      const iaido = this.form === 'cutlass' ? this.cutlass.leftHand : 0; // (the iaido's charge: the off hand at the guard)
+      this.leftW = this.form === 'cutlass' ? iaido : THREE.MathUtils.damp(this.leftW, Math.max(this.angler?.leftHand ?? 0, hookLeft), 10, 1 / 60); // (the cutlass's eases with the pose's own weight)
       M.multiplyMatrices(B.handR.matrixWorld, this.socketR);
+      if (this.leftW > 0.01 && this.form === 'cutlass') {
+        model.group.matrixWorld.copy(M);
+        this.handFromTool(M, 'L', hp, this.cutlass.leftAt, 0, 0, hq);
+        const yaw = this.P.bodyYaw ?? this.P.yaw, pole = _v3.set(0.45 * Math.cos(yaw) - 0.15 * Math.sin(yaw), 0.75, -0.45 * Math.sin(yaw) - 0.15 * Math.cos(yaw)).add(this.P.renderPos); // (the elbow out to their left and a little back)
+        ch.reachHand('L', hp, hq, this.leftW, 0, pole.clone());
+      }
       if (this.leftW > 0.01 && this.form === 'hook') {
         model.group.matrixWorld.copy(M);
         this.handFromTool(M, 'L', hp, 0.55, 0.0, 0.0, hq);

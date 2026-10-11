@@ -50,6 +50,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 ## The casebook
 - **Every bug fixed gets a case in `docs/CASEBOOK.md`**: what was seen, the cause as measured, the fix, the rule. Read its rules before
   building in the same area.
+- **A new rule is `NEW:<slug>`, never a number** (the owner, 2026-10-11): in the short list, the case's **Rule:** line and any mention.
+  Petra numbers it at the gate (`scripts/casebook-number.mjs`); `npm run check` fails on a number used twice.
 
 ## Feedback
 - **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed (the basement's course timer and

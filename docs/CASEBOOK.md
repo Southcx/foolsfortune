@@ -2,6 +2,8 @@
 
 One case per fix, newest first: the cause (measured, not guessed), the fix, and **the rule** that keeps it from happening twice. Read
 the rules before building in the same area; a rule a machine can check goes into `npm run check` or a test too. (The owner, 2026-10-06.)
+A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wherever it is cited) and numbered at the gate by
+`scripts/casebook-number.mjs`; `npm run check` fails on a number used twice or a rule a case cites that is not here (2026-10-11).
 
 ## The rules, short (from the cases below)
 
@@ -539,8 +541,64 @@ the rules before building in the same area; a rule a machine can check goes into
     turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
     and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
     goes to its owner with the numbers.
+195. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+    (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
+    launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
+    speed at a handover reads the move's own speed otherwise.
+196. **An outcome is sent once nothing can change it.** An event that says how something went (a blow's
+    `move.blow`: hit or not) is sent when the check that decides it has run its whole window (the sweep's strike, padded as the sweep
+    pads it: `Moveset.spent()`), never on a tighter window of its own; a test of it places the thing at the window's edges.
+197. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
+    update (the string's window, `Moveset.after`) stops when its owner stops calling it (the Sondelass's rod or hook form): tick it
+    from the owner every frame it is not read (`Moveset.idle`), or read the time from a clock that always runs.
+198. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
+    ledger (a run, a streak) takes its definition from the plan that owns the record (Dovina's `sond.string.best`: "LMB string blows"),
+    not from whatever reaches the same door; every kind that reaches it is named in or out, and a test mixes in the kinds left out.
 
 ## Cases
+
+### 2026-10-11 · A stinger between string blows opened a string slot a blow early (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. c1 to c4 landed on a slip jelly, a stinger landed, c1 to c3 landed: `move.string.end
+  { run 8, pause }`, where the LMB blows were 7 and 8 is slot 5's feat threshold. The iaido's draw cut and the Tidecutter after c1
+  read `{ run 2 }` against 1. In 3 of 20 random sequences the best run read one higher than the LMB blows alone.
+- **Cause (measured):** `Moveset.markBlow` raised the string run at every counted contact, whatever the blow's kind; only
+  `closeBlow` treated a special's blow (`kind` special or iaido, the stinger's `own`) as apart, and only from the miss. Dovina's rule is
+  "the longest unbroken run of LMB string blows".
+- **Fix:** `specialBlow(c)`, asked by both: a special's blow sends its `move.blow` but neither adds to the run nor ends it; and
+  `markBlow` marks nothing on a blow already closed. Measured: the same sequence `{ run 7, pause }`; the draw cut, the Tidecutter, and
+  R inside a whiffing c2, each after c1, `{ run 1, pause }`; a whiffed stinger inside a run still ends nothing (`{ run 4, pause }`).
+- **Rule:** 198.
+
+### 2026-10-11 · A blow said hit: false, then struck; a string run lived through a form switch (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. (1) c3 with a slip jelly 0.9 m away at 2.66 to 2.84 rad off the facing (12 of 12
+  tries): `move.blow { move: 'c3', hit: false }` at t 0.477, the jelly struck the next frame at t 0.495; the same band behind j1, the
+  launcher and a1. (2) c1, c2 landed, the rod (2) for 5 real s, the cutlass (1): `M.after` read 0.5, the run 2 was still open, and
+  j1, j2, j3 grew it to 5 with no `move.string.end`; the hook the same.
+- **Cause (measured):** (1) `melee.js` `sweep()` strikes to `strike[1] + pad` (0.012 clip s); the moveset closed the blow at
+  `t > strike[1]`, so a thing in the pad was struck after its blow was reported. (2) `Moveset.after` grows only in `update()`, which the
+  Sondelass calls only in the cutlass form: the string's window (RESET, 0.9 s) stopped with it.
+- **Fix:** (1) the moveset passes the sweep its pad (`STRIKE_PAD`) and closes a blow at `spent()`: in its recovery and past
+  `strike[1] + STRIKE_PAD`; a whiff cut short in the pad by the next move is still a miss (its strike ran its course). Measured: c3 8
+  of 8 placements `hit: true`, j1 7, the launcher 4, a1 3 (the others no contact at all), no blow marked after its close. (2)
+  `Moveset.idle(dt)`, called by the Sondelass every frame the cutlass is not read: the same 5 s on the rod or the hook sends `end
+  { run 2, pause }` 0.9 s after c2, and the next LMB is c1, a new run.
+- **Rule:** 196, 197.
+
+### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
+
+- **Seen:** headless, the blink cancel's probe: E 2 or 8 frames into the stinger, the Courier came out of the blink at 14 m/s and went
+  8.03 m in the 30 frames from the press, against 6.3 m/s and 5.4 m out of c2, the launcher or the iaido's charge; an LMB 4 frames
+  after was the dash slash, not the string.
+- **Cause (measured):** the blink's exit is the body's speed at its start or its own 7 m/s, the greater (`blink.js`, `hs0`). The
+  stinger's launch carries them at 30 m/s and sheds to its `endSpeed` 6 only in `Launch.finish()`; the cut-in ends the launch with
+  `end()` alone, so the blink read 30 m/s, and the core's cap left 14.
+- **Fix:** the stinger's `onEnd` and every carried move's (`Moveset.carry`) shed to the launch's `endSpeed` (`shedSpeed`; on the
+  ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
+  the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
+  slash; now c3).
+- **Rule:** 195.
 
 ### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
 
@@ -565,7 +623,6 @@ the rules before building in the same area; a rule a machine can check goes into
   of exactly 0; 0.09 ms a frame prone. What it cannot hold: a gap narrower than the body (0.7 m wide, two walls: 10 cm through each,
   the same as before); handed to Petra with the numbers (`docs/handoffs/petra/2026-10-11-from-calissa-prone-reach.md`).
 - **Rule:** 194 (new; 193 as Calissa wrote it, renumbered at the gate: Dovina's 193 was first).
-
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 
