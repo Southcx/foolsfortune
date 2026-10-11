@@ -12,8 +12,8 @@ the sounds Wanda's, the names Espada's. **Starts after Calissa's melee phases.**
 ## 0. The idea
 
 **One quantity, one instrument.** The fight is tension, and the rod and line *are* tension. They are drawn and sounded as the physics
-says they would be, and nothing else is added. No gauge, no glyph, no prompt. The player who learns to read a bending rod has learned to
-fish, here and at a real river.
+says they would be. No gauge bar, no prompt; one mark on the reticle (section 2). The player who learns to read a bending rod has
+learned to fish, here and at a real river.
 
 What fails today is not that the fight is unexplained; it is that the instrument is false. The line sags when it should sing, the rod
 never bends, and the tension has no voice. So the player looks for a UI to tell them what the rod should have. Make the rod true and the
@@ -22,6 +22,7 @@ question goes away.
 **Prior art, and what was taken:**
 - **Sega Bass Fishing:** the rod's bend and the reel as the whole readout.
 - **Reel Fishing:** restraint; the waiting is the atmosphere.
+- **Animal Crossing:** the catch held up to the camera, every time, and it never gets old.
 - **Zelda: Twilight Princess's** fishing hole: side pressure, the close camera.
 - **Shadow of the Colossus:** the creature's body is the telegraph; a grip you hold and lose by feel.
 - **Real angling:** the pump, the bow, the drag, Mersenne's law (a string's pitch rises with the root of its tension).
@@ -56,14 +57,18 @@ to press. That is the whole grammar.
 - The fishing line: its slack is the fight's own. Loaded, straight. Bowed, it sags, and you see the leap land on it.
 
 **The rod bends with the load** (Calissa). Straight at 0; a healthy curve, about 30°, in the band; about 70° and shuddering at 1.0.
-This is the readout. The line's colour cue is retired with it: one signal, read first and only.
+The eye reads it first; the line's colour (exists) stays beside it.
 
 **The line sings** (Wanda). Pitch follows the root of tension, as a real string's does: a thrum low, a tone in the band, a whine near
 the snap. In the band it sits in the fish's aspect mode, so a fight held well is in key. A run pays out against the drag's click.
 
 **The fish shows its intent with its body**, a beat ahead: it turns before it runs, rises before it leaps, shudders before it thrashes,
-rolls and shows its flank when tired. The reticle's segment preview is retired once the bodies carry it (Calissa's call when the clips
-land); until then it stays as it is, plain.
+rolls and shows its flank when tired. That is the coarse read, at the water.
+
+**The reticle stays, and carries the fine read** (the owner, 2026-10-11: "it's not always easy to watch both sides of the screen").
+The rod is at one side of the view and the fish at the other, so the reticle, where the eye already is, says what the body only hints:
+the next move's kind, its direction, its weight, and how long until it lands (the fill). One mark, drawn plainly; redundancy is the
+point here, not clutter.
 
 **Divination** lengthens the beat (`LOOK` 1.4 s x widening, to 2.1 s): the fish's tell comes earlier, nothing is added.
 
@@ -72,7 +77,17 @@ land); until then it stays as it is, plain.
 - **The hook set:** 4 frames of hit-stop, the line snaps straight, the rod loads, one low thump.
 - **The leap:** a quarter-second held at its apex. Bowed, the line hangs slack; not, it strains.
 - **The snap:** the line whips loose, the rod springs up, then a beat of silence. No jingle.
-- **The landing:** the fish held up from the water; one line in the log (species, size, a record if it is one).
+- **The catch** (the owner: "a proper 'I CAUGHT A FISH' short cinematic, much like in Animal Crossing"): about 2.5 real seconds, skippable
+  with any key after the first half-second, and never on the second catch of a species in a row (then a 0.8 s quick lift).
+  1. The fish leaves the water on the line, a splash and a spray of its feeling's Lachryma.
+  2. The camera cuts close and low; the Courier holds it up in both hands, the fish wriggling, facing the camera. Animal Crossing's lift.
+  3. A short sting in the fish's aspect mode (Wanda); bigger for a new species, a record or a legend.
+  4. One line in the log, in the catch's voice: species, size, "a new record" if it is one. Espada writes the lines.
+  5. Back to the rod: the fish goes to the Pneuka Box or back in the water (section 7).
+  - A first of a species also offers the Veritome's plate before it goes.
+- **The fish, made worth holding up** (Calissa): the catch puts a fish a metre from the camera, so each species needs a body that
+  survives it: a silhouette that reads at a glance, its feeling in its colour and fins, a wet sheen, an eye, and a wriggle clip.
+  Sixteen bodies at the end; the ten that exist are refired first.
 
 ## 4. Numbers (mine; checked by `scripts/fishsim.mjs`)
 
@@ -106,11 +121,12 @@ land); until then it stays as it is, plain.
 1. **The instrument** (the owner's three): the rope rule, Shift + LMB, brace in S, the rod's bend. Calissa. Numbers and the sim: Dovina.
 2. **The voice and the moments:** the line's song and the drag (Wanda); the hook set, the leap, the snap, the landing, the pump in the
    model (Calissa).
-3. **The bodies' tells,** then the reticle retired (Calissa).
+3. **The catch and the fish:** the cinematic, the ten bodies refired, the bodies' tells; the reticle carries the intent (Calissa;
+   the sting Wanda's, the lines Espada's).
 4. **Depth:** the waters' shapes and the seven aspect keys (Petra); species rows, sizes, achievements, Bite Sense (Dovina); names
    (Espada); bodies (Calissa).
 
 ## 7. Open, for the owner
 
-1. **Retire the reticle** once the bodies tell? My call: yes. It is a gauge the rod makes redundant.
+1. ~~Retire the reticle?~~ No (the owner, 2026-10-11): it stays and carries the intent.
 2. **Release or keep** a landed fish? My call: release by default, a key to keep. The Pneuka Box stays light and the loop stays gentle.
