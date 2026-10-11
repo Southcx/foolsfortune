@@ -60,6 +60,9 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
 - **The blink cancel, split.** Petra's half (`techs.js`, `blink.js`): Techs lets the blink (E) cut in over a moveset's `launch` tech.
   Calissa's half: every Moveset listens for `move.blink` and cancels itself. No recovery is owed, the string's place is kept, the clip
   fades, and its launch's `onEnd` is nulled. Nothing in `blink.js` calls into tools, so every tool's moveset gets the cancel free.
+  Petra's half is on main at c2e5cc6. On our side, pass `cuttable: true` in the `L.go` options of `Moveset.carry`, and on the stinger's
+  launch. `Launch.end` calls our `onEnd`. A launch without the key (a pad's flight, a swing's release) never yields. Upper-body blows
+  run no tech, so they need only the `move.blink` cancel.
 - **Strawman's lock-on** goes through a candidate hook in `lockon.js`, never `game.creatures`, so the ledger never counts Strawman.
 
 **Dovina's earning (2026-10-11, `docs/plans/MELEE-LOADOUT-EARNING.md` on `claude/dovina-design`, 20c5d96):**
