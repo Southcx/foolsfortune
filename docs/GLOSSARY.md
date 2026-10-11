@@ -107,7 +107,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   frost, Mirth dots, Desire ripples, Fury cracks, Gall curds, Grief streaks, Dread marbling); crude's is an oil film. *Not:* a kiln pattern. → detail
 - **the paint reticle / the jet ring / the shine / the bottle's arc** (`PaintReticle`, `JetRing`, `CleanShine`, `src/vfx/brushmarks.js`;
   `BottleArc`, `src/vfx/bottlearc.js`) — where the stream lands and its spread; the hover's fuel or the rocket's gather at the feet; ground
-  just cleaned; the bottle's fill beside the crosshair. No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
+  just cleaned; the bottle's fill beside the paint reticle (`game.paintReticle`). No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
 - **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
   Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
@@ -364,6 +364,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (the fob on the bell), nor in the rhythm mode. → detail
 - **the lens's frame** (`VeritomeFrame`, `src/vfx/veritomeframe.js`) — four corners round what a plate would hold, in the third person while the
   Veritome is drawn and its lens down, set where the aim meets the world. *Not:* the viewfinder (the lens raised), the Snapshot's preview. → detail
+- **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`) — the next toll's reach and cone on the ground round the Courier
+  while the Crucibelle is in the hands, lit on the beat, a ring under each thing it would stagger. No words. *Not:* the toll's smoke ring. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
   under the effects.
 - **damage look / aura / temper** (`damage.<type>`, `aura.<status>`, `game.temper`) — a damage type's colour and motif on a hit; a status shown
