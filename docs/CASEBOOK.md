@@ -575,8 +575,147 @@ NEW:read-every-branch. **A mark that says what a press will do reads every way t
     string's run, the blink's offset), not the common path alone; it is tested against each branch, the rare one first.
 NEW:linger-asks-belt. **A tool's mark lingers only while the tool is asked for.** A mark kept up a moment after its use (the bottle's
     arc, 0.8 real s) asks the belt each frame (`belt.get(id).wants`): stowed or another tool asked for, the linger is cut that frame.
+NEW:travel-cut-to-the-peak. **A move's travel toward a thing is cut by the farthest it goes, down to none.** A whole-body move carried
+    toward what it is aimed at (the lock's target, else the magnet's: `aimedAt`, `tools/moveset.js`) is cut so the hips' farthest point
+    ahead in the move, with its own step, stops a reach short of it. Never by where the clip ends (a kick or a hop goes out and comes
+    back), never with a floor, never skipped for a short clip: a held slip jelly does not stop the capsule, and any travel left over
+    walks them through it. Aimed at a thing, the clip's sidestep is dropped (a string of them walks round it); the rise stays the
+    move's own (192). Test every whole-body move alone in every slot against a thing that cannot move and a thing that does not block,
+    with the lock-on and without.
+NEW:line-numbers-are-stats. **A number in a card's line is the row's stat.** A figure written into a line (a reach, a time) is checked
+    against the row's `stats` where the row is written, and a join that lets one source's words win over another's is read card by
+    card for the numbers it now shows.
+NEW:knock-away-not-along. **A knock back goes back.** A swing's direction at the thing it strikes is the tangent of its arc (`melee.js`),
+    across the striker, so a push along it alone sends the thing sideways, never away. A blow whose words say it knocks, shoves, kicks
+    or launches drives what it strikes away from the one who struck (`hit.away`, `tools/moveset.js`; the kick's `side`, the same rule),
+    measured as the thing's travel along and across the line between them, at a free target, never a pinned one.
+NEW:say-only-what-happens. **A line the player reads is what the click or the play will do.** A choice's card line and the log line
+    after it are read against the state the click leaves (a slot emptied, a string ended), and a way to open a thing is shown only
+    when what it reads has a writer: a record nothing keeps is a promise nothing keeps.
+NEW:default-plays-as-before. **A new option never moves the default.** An engine change or a data fix made for new rows is opt-in
+    on the row (`travelCut: 'peak'`, `hit.away`), never applied to the rows that already played, and the default is proven by the old
+    probe run as it was, frame for frame, against a free target as well as a pinned one.
+NEW:write-what-a-window-changes. **A change made in a window is written when it is made.** The main loop writes the save once a frame
+    only while no window is open (`main.js`), and nothing writes it when the page goes, so what a window changes (the loadout editor,
+    a page of the Index's window, the Codex) calls `save.flush()` itself after `dirty()`; flush waits only on a hold.
 
 ## Cases
+
+### 2026-10-11 · The default string no longer played as phase 2's after c4's hit (the melee loadout's verifiers, phase 3, third round)
+
+- **Seen:** phase 2's `string.mjs`, a free calmed slip jelly 1.9 m ahead: frame for frame through c4's hit (frames 132 and 120), then the
+  jelly 2.74 m off where it lay 1.95 m, and the loop's next c1 cut air (its hit at 154 gone). Also changed for every move that existed:
+  `Moveset.carry`'s travel cut (by the hips' farthest ahead, to none, sidestep dropped), and c4 had a chain window.
+- **Cause:** the second repair gave c4 `hit.away: 1` with the eleven new pushing rows, and rewrote the carry's cut for every whole-body
+  move, not only the catalogue's new ones.
+- **Fix:** c4 has no `away` again; the peak cut is opt-in, `travelCut: 'peak'` on the ten new whole-body rows, and every other move
+  keeps the old cut (the clip's end, 0.15 at least, the sidestep kept). c4's chain window stays: the engine reads it only through
+  `nextOf`, which gives none for the string's last slot, so the default never reads it. Measured: `string.mjs`'s five runs against phase
+  2 (art-melee-p2, 02836dd), free and pinned: every move's begin, hit, cut, the pool, and the Courier's x, z on all 260 frames identical,
+  and the free run identical to `string-after.json`.
+- **Rule:** NEW:default-plays-as-before.
+
+### 2026-10-11 · Every knock back sent a free slip jelly sideways (the melee loadout's verifiers, phase 3, second round)
+
+- **Seen:** the verifiers, headless: one blow of each normal at a free, calmed slip jelly 1.9 m ahead. Its travel along the line from
+  the Courier / across it (m): Push Kick 0.00 / 1.33, Heavy Chop 0.00 / 1.45, Low Sweep 0.00 / 1.66, c4 (Leap Strike) 0.00 / 1.24,
+  the same with the lock-on; Guard Break -0.38 / 1.79, Lunge Slash -0.77 / 0.79. The cards say "Kicks them away", "knocks back", and
+  wear the Knockback keyword. Measured here also: Spin Slash 4.11 m across, Power Slash 1.86, Guard Crush 1.18, Rising Cut 3.31.
+- **Cause (measured):** `melee.js` `sweep` hands every hit the direction `(cos(rel + yaw), 0, -sin(rel + yaw))`, the tangent of the
+  swing's arc at the thing, at right angles to the line between them; `Moveset.blow` scaled it by `hit.push` for the knock, and the
+  slip jelly's own flinch (`slipjelly.js` hurt) shoves it along the same. The kick had solved this for its own blows (`FistMoves.blow`,
+  `side`); the cutlass's catalogue never had.
+- **Fix:** `tools/moveset.js` `blow`: a hit with `away` (0..1) is sent that share straight away from the Courier, the rest along the
+  swing (`awayDir`), for its push and its flinch; none, as before, so no other tool changes. The catalogue's twelve rows that push
+  carry `away: 1` (c4 at first, taken off in the third round, NEW:default-plays-as-before; Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
+  Guard Crush, Backstep Slash); the cuts with no push (c1 to c3, Quick Slash, Backhand) and the fixed grammar are unchanged.
+  Measured, along / across: Push Kick 1.33 / 0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0 (with the lock-on the same),
+  Guard Break 1.69 / 0.52 (0.96 / 0 locked on), Lunge Slash 0.58 / 0.51, Spin Slash 1.85 / 0, Power Slash 1.86 / 0, Guard Crush 1.18 / 0,
+  Rising Cut 3.31 / 0. Phase 2's `string.mjs`: the air, pause and stinger runs as before; the free and paid strings frame for frame
+  through c4's hit (frames 132 and 120), after which the jelly is 2.74 m off, not 1.95, and the next c1 cuts air where it struck at
+  154 (the finisher knocks it out of the loop's reach, as a finisher does). The row rule is measured on pinned targets: unchanged.
+- **Rule:** NEW:knock-away-not-along.
+
+### 2026-10-11 · Empty in a middle slot cut it out, and the card and the log said the string ended (the verifiers, phase 3)
+
+- **Seen:** DEBUG, 1280x720 and 960x600: an 8-blow string [c1, c2, c3, c4, Quick Slash, Backhand, Push Kick, Body Blow], slot 6 picked,
+  its Empty card ("Ends the string before this slot.") clicked: a 7-blow string [.., Quick Slash, Push Kick, Body Blow], and the log
+  "Your string now ends after its fifth blow."
+- **Cause:** `SondelassLoadout.set(slot, null)` did `string.splice(i, 1)`, a removal; the card's line and the log's rule were written
+  for an ending.
+- **Fix:** `loadoutchosen.js`: `string.length = i`, the string ends before that slot and the slots after it go with it, as the card and
+  the log say.
+- **Rule:** NEW:say-only-what-happens.
+
+### 2026-10-11 · A loadout set with the editor open was lost on a reload (the verifiers, phase 3)
+
+- **Seen:** DEBUG, 1280 and 960: Heavy Chop put in slot 1 through the editor, 120 frames ticked with the window open: the stored
+  `sondelassLoadout.data.string[0]` still `c1`, and `c1` after a reload. Closed first, the change was kept.
+- **Cause:** `main.js` returns before `save.flush()` whenever a window is open (`modalOpen()`: the Index's window, the Codex), and no
+  `pagehide` or `beforeunload` writes the save; the editor is opened only in those windows. `set()` marked the section dirty and
+  waited for a flush that would not come until the window closed.
+- **Fix:** `SondelassLoadout.keep()`: `dirty()` then `save.flush()`, on every `set()` and `reset()` (flush waits only on a hold).
+- **Rule:** NEW:write-what-a-window-changes.
+
+### 2026-10-11 · Every closed string slot promised "or 8 in a row", which nothing could keep (the verifiers, phase 3)
+
+- **Seen:** STORY, 960x600: after 20 unbroken string blows on a slip jelly, `ledger.best('sond.string.best')` was null and slot 5
+  still read "CLOSED 300 hits, or 8 in a row" (10, 12 and 14 for slots 6 to 8). The count way works: at 300 `cut.hit` slot 5 opens.
+- **Cause:** nothing in `src/` writes the record `sond.string.best` (Dovina's earning names it; its tracking rule is to come);
+  `loadoutopen.js` reads it as 0, and `slotOpening` named it all the same.
+- **Fix:** `slotOpening` says only the count way ("300 hits"); the feat way stays in `SLOT_OPENS` and in `slotsOpen`, and comes back to
+  the line with the record's writer.
+- **Rule:** NEW:say-only-what-happens.
+
+### 2026-10-11 · W + RMB's list showed RMB, a quick second change lost its log line, Backstep Slash's reach said 2.4 m (the verifiers, phase 3)
+
+- **Seen:** the loadout editor, the W + RMB and S + RMB lists: every special's card wore the key cap RMB (only Empty showed S+RMB).
+  STORY: `set(1, 'c2')` then `set(1, 'c3')` in one moment, both true; one log line, naming Rising Slash, while the slot held Hop Slash.
+  Backstep Slash's reach chip 2.4 m: pressed S + RMB from rest it missed a slip jelly and Strawman at 2.2 m.
+- **Cause:** `loadouteditor.js` `card()` set `key` by the row's kind, never the picked slot's. The `loadout.set` rule throttled on
+  `loadout.<slot>` for 0.15 real s (`feedback/tracking/moves.js`), so a second change to a slot inside it was not said.
+- **Fix:** the picked special slot's key cap is handed to its cards (`W+RMB`, `S+RMB`); the rule keeps its key without a throttle (a
+  change is never repeated, `set()` refuses no change, and the same line again merges by the key). Backstep Slash's `stats.range` is
+  2.1, measured from where it is pressed (the hop back taken): S + RMB and tapped, at a slip jelly and Strawman, it lands at 1.8, 1.9,
+  2.0 and 2.1 m and misses at 2.2 (3 of 4). Measured: two changes in one moment, two lines, the last "Hop Slash"; DEBUG at 1280x720,
+  the S + RMB list's cards all S+RMB.
+- **Rule:** NEW:say-only-what-happens.
+
+### 2026-10-11 · Whole-body blows walked the Courier through what they struck (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the verifiers, headless. Against Strawman, the string [Guard Break, Lunge Slash, Push Kick, Lunge Slash, Push Kick, Heavy
+  Chop x3], no lock: blows 1 to 17 landed, each Heavy Chop carried the Courier about 0.14 m sideways, and from blow 18 every blow
+  whiffed while they walked 4 m past Strawman's side (-39.5% power a real second against the default). A slip jelly held by halt,
+  Guard Break x8: through it by blow 7, facing 180 degrees away, nothing landed after. 11 of 30 random loadouts were outside the row
+  rule's 15% against a pinned slip jelly (to -94.9%). Measured here as well: with the lock-on, the same Guard Break string stood
+  inside the halted jelly (0.05 to 0.27 m from its middle, its radius 0.5), and the default string walked to 0.34 m of a stunned one;
+  without it, the default crept 0.1 m nearer a cycle (1.77, 1.36, 1.26, 1.15 m).
+- **Cause (measured):** `Moveset.carry` cut a whole-body move's travel by `(dist - r - 0.9) / fwd`, held to 0.15..1, only when `fwd`
+  (where the clip's hips END, plus its own step) was over 0.3 m, and only toward the magnet's target. Guard Break, Push Kick, Heavy Chop
+  and Low Sweep end within 0.25 m of where they began, though their hips go 0.12 to 0.43 m ahead first (and Heavy Chop's and Low
+  Sweep's 0.16 m to the side), so they were never cut: Guard Break went its full 0.27 m a blow however close. Lunge Slash and c4 went
+  0.15 of theirs at the closest. Under the lock-on the magnet is not asked, so nothing was cut. A slip jelly does not stop the capsule;
+  past it, the magnet (1 rad of the camera's look) never finds it again. Strawman does stop it, and a blow pushed into its capsule
+  slid off round it.
+- **Fix:** `tools/moveset.js` `carry`: the cut is by the hips' farthest ahead over the move's span (`rootOf(...).ahead`) plus the
+  step, from 0 to 1, for any travel, toward the lock's target, else the magnet's (`aimedAt`); aimed at something, the clip's sidestep
+  is dropped; an xyz move's rise is no longer scaled with the cut (the launcher's 0.9 m hip rise went with it, to 15% close in: rule
+  192). Measured: the halted jelly with Guard Break x8 holds them at 1.40 m, lock-on or not, 16 hits in 10 real s; the loadout above
+  holds them at 1.35 m from Strawman, every blow facing it; the default holds at 1.41 m. The default string's begin, hit, cut and
+  stinger frames are the same in all five of phase 2's runs (`string.mjs`). The row rule, measured as the verifiers did: the 30
+  loadouts of seed 7, -6.2% to +3.1% against both a pinned slip jelly and Strawman (the loadout above +0.8%); every normal alone in
+  4 and 8 slots, -8.8% (Guard Break) to +6.7% (Heavy Chop), both targets. The launcher from 1 m rises as it does from 1.9 m (High
+  Time's top 3.92 m).
+- **Rule:** NEW:travel-cut-to-the-peak.
+
+### 2026-10-11 · The Stinger's card said "Lunges 6 m" beside an 8 m reach (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the loadout editor, the default special: STINGER, "Lunges 6 m, piercing everything in line", its reach chip 8 m; the lunge
+  measures 8.4 m.
+- **Cause:** the catalogue row's `line` was written from the comment above it ("six metres in a quarter of a real second"), older than
+  the lunge's numbers (30 m/s for 0.26 s, `range: 8`). The editor's placeholder said 8 m, and the join let the row's own words win.
+- **Fix:** the row's line says "Lunges 8 m"; the two comments that said six metres (`sondelassloadout.js`, `cutlass.js`) say eight.
+- **Rule:** NEW:line-numbers-are-stats.
 
 ### 2026-10-11 · The string row lit the next slot through a charge's release, the special and the dash (melee phase 6, the verifier)
 

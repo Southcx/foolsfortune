@@ -48,6 +48,95 @@ blow, the iaido's charge or blade mode gives the blink on that frame's fixed ste
 and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
 out of the stinger read its 30 m/s as its exit (casebook rule 195). Sheets in Calissa's scratchpad (`melee-p2/`).
 
+**Phase 3, the catalogue, built (2026-10-11, Calissa):** `SONDELASS_MOVES` holds Dovina's slice, 12 normals and 6 specials, each row with
+its label (CLARITY's genre word), one line of effect, `lore: null` (Espada's), `earn: null` (Dovina's), its parent, its effect and its
+`stats` (power, hits, time, range, cost, status). The new normals: **Quick Slash** (UAL swordA; parent c1), **Backhand** (swordB; c2),
+**Lunge Slash** (the melee hook, a step in; c3), **Heavy Chop** (swordC; c4), **Guard Break** (the suite's shove; c2), **Push Kick** (the
+front kick, the off hand's foot; c4), **Low Sweep** (swordHeavy's low cut; c3), **Body Blow** (the left jab; c1). The new specials:
+**Spin Slash** (Sond_SpinSlash; parent Backhand), **Power Slash** (the charge's release without the hold; Heavy Chop), **Rising Cut**
+(the uppercut with the blade, a launch; Quick Slash), **Guard Crush** (a planted thrust through a guard; the stinger), **Backstep Slash**
+(c3's hop taken 1.14 m back, for S + RMB; c3). No clip authored. The engine gained what they needed (`tools/moveset.js`): a row's own
+`stats` where moves.js names none, a move's own `reach`, `ribbon: false`, a typed `step` (forward or back), and `hit.guardBreak` (the
+thing struck asked `breakGuard()` first: Strawman's guard thrown open 1.0 s of the sim clock, `world/testroom/room.js` and `vfx/strawman.js`).
+Dovina's row rule holds, measured against a slip jelly: every new normal in every slot within -2.9% and +2.2% of today's string (1.956
+power a real second, hit-stops in), the four slowest together -7.7%, every special -8.5% to +6.0%; the stinger, today's, is +780% (its
+lunge strikes 2.2 x its row: a finding for Dovina, unchanged). The default loadout is today's to the frame (phase 2's `string.mjs`, all
+five runs the same). The chart and the table: SONDELASS-STRINGS.md section 7. Sheets in Calissa's scratchpad (`p3/moves/`).
+
+**Phase 3, the choosing, built (2026-10-11, Calissa; the catalogue's new rows are another builder's, on their own branch):** the loadout
+editor (`tools/sondelass/loadouteditor.js`), God Hand's technique list beside its Combo Tree: on the left the string's slots (`slotRow`:
+4 open, the rest shown CLOSED with what opens each, "300 hits"; the run's way unshown until its record has a writer) and the specials'
+three (RMB, W + RMB, S + RMB); on the right every move of the catalogue that fits the slot picked, as choice cards (label, one line, power, reach, speed and cost, the effect's
+keyword, compare arrows against what the slot holds; a locked move shown locked, "Locked. Learned from Rising Slash (to come).", never hidden). Click a
+slot, then a move. It lists whatever `SONDELASS_MOVES` holds (two rows put in at run time by the probe were listed, locked and lent,
+with nothing changed in the editor); a row's own `label`, `does` and `numbers` win, and `loadoutwords.js` stands in for today's five
+(Flat Cut, Rising Cut, Hop Cut, Leap Chop, Stinger: placeholders for Espada's; reach measured from the clips, c1 1.52 m, c2 1.74,
+c3 1.56, c4 2.11, the stinger's lunge 8.4 m and its 2 m point). Opened at **the sparring circle's lectern** (its page's first row,
+LOADOUT: the Index's window, `showPage`; Esc or F closes) and on **the Codex's SONDELASS shelf** (Esc, B or F closes). **Kept**
+(`loadoutchosen.js`, `game.sondelassLoadout`): one save section, `sondelassLoadout`, scope player, `{ string, specials }` as set, marked
+dirty on each change; the cutlass hands the engine `get()`, the choice checked against the catalogue (the row there, of the slot's kind,
+playable) and against what is open, a slot that no longer fits falling back to the default's (a fifth to eighth slot left empty, the
+string closing up), never a throw; the choice itself is kept as set, so a move lent in DEBUG comes back with the lend. **What is open**
+(`loadoutopen.js`, reads the ledger and the lends, writes neither): slots 5 to 8 at 300, 1,000, 3,000 and 8,000 `cut.hit`, or a run of
+8, 10, 12 or 14 (`sond.string.best`: nothing writes that record yet, so it reads 0 and only the count way opens a slot until Petra's
+rule lands); today's four normals and the stinger known from the start, any other row by its `earn(L, game)`; in DEBUG the lend panel's
+`moves` row lends every move and all 8 slots, each lent one wearing the hollow mark. **Said:** `loadout.set { tool, slot, move, label,
+by: 'courier' }`, its rule in `feedback/tracking/moves.js` ("Your string's third blow is now Leap Chop."; Espada's words to come).
+**The keywords:** a move's effect is shown as a keyword, four new ones beside CLARITY's twelve (Stagger, Knockback, Launch, Guard break,
+`ui/keywords.js`, their icons `ui/icons/keywordart.js`: placeholders for Espada's word), and the card has three new chips (power, reach,
+speed: `ui/choicecard.js`, `ui/icons/chipart.js`). Measured headless: the default string began c1, c2, c3, c4 at frames 1, 38, 67 and
+110 (LMB every 6 frames, a slip jelly 1.9 m ahead); with c4 put in slot 3 and c3 in slot 4 through the editor, c1, c2, c4, c3 at 1,
+38, 67 and 115, then c1 at 146; the page reloaded, the save still held c1 c2 c4 c3. Sheets in Calissa's scratchpad (`p3/editor/`).
+Not built: `move.learn` (the log's line when a move opens: Dovina's earning), the tree view of a move's two ways in the Codex.
+
+**Phase 3, joined (2026-10-11, Calissa):** the catalogue and the editor merged on `art-p3`. The editor lists all 18 rows with the
+rows' own words (Slash, Rising Slash, Hop Slash, Leap Strike, Stinger for today's five: `loadoutwords.js`'s placeholders are now a
+fallback only). Two fits, both in the card's numbers: a row's `stats.range` is its reach (the catalogue's measure, SONDELASS-STRINGS.md
+7a: what the card shows), and a row's power is a hit's times its `hits` (Spin Slash 0.85 x 4 = 3.4); the power chip shows hundredths
+(Push Kick 1.45, Low Sweep 1.35). Measured headless, DEBUG with Tool Moves lent: 18 cards for 18 rows, 8 slots open; Quick Slash, Body
+Blow and Lunge Slash put in slots 1 to 3 and Spin Slash and Backstep Slash in W and S through the editor, kept in the save as set, said
+in the log; the string played quickSlash, bodyBlow, lungeSlash, c4 (begun at frames 1, 32, 55, 98, LMB every 6 frames), striking a
+slip jelly 1.9 m ahead for 1.0, 0.9 and 1.4; W + RMB played Spin Slash and S + RMB Backstep Slash. In STORY the new rows stay locked:
+their `earn` is null until Dovina writes it. Sheet in Calissa's scratchpad (`p3/integrated/`).
+
+**Phase 3, repaired (2026-10-11, Calissa; the verifiers' three blocking findings):** (1) Whole-body blows walked the Courier through a
+slip jelly held by a status, or round Strawman, and every blow after hit air. `Moveset.carry` cut a move's travel only past 0.3 m of
+where its clip ENDS, never below 15%, and never under the lock-on, so Guard Break, Push Kick, Heavy Chop and Low Sweep (in 0.12 to 0.43
+m and back) were not cut at all. The cut is now by the hips' farthest ahead plus the move's own step, down to none, toward the lock's
+target else the magnet's; aimed at something, the clip's sidestep is dropped (casebook NEW:travel-cut-to-the-peak). Guard Break x8 into
+a halted jelly holds at 1.40 m, lock-on or not (was through it by blow 7); the default holds 1.41 m from a jelly (it crept 0.1 m a
+cycle, and walked to 0.34 m under the lock-on). (2) The row rule, measured as the verifiers did (LMB every 6 frames, the pool empty,
+cycles 2 and 3): the 30 random loadouts of 4 to 8 slots (seed 7) are all inside 15% against a pinned slip jelly and Strawman, -6.2% to
++3.1% (were 11 outside against the jelly, to -94.9%, and one against Strawman, -39.5%); every normal alone in 4 and 8 slots, -8.8% to
++6.7%. The default string's frames are phase 2's in all five runs. (3) The Stinger's line says "Lunges 8 m", its reach chip's number
+(casebook NEW:line-numbers-are-stats). Not changed: a blow's push follows its swing's tangent (`melee.js`), so the off hand's blows
+(Push Kick 7, Guard Break 5) shove a free jelly sideways; stunned, with no lock-on and the camera never turned, [Push Kick, Body Blow,
+Lunge Slash, Push Kick] put it 58 degrees off the camera's look by blow 11, past the magnet's cone (with the lock-on, 15 hits in 10
+real s). Harness in Calissa's scratchpad (`p3/repair/`).
+
+**Phase 3, repaired again (2026-10-11, Calissa; the verifiers' second round, four blocking):** (1) A knock back goes back: a blow's
+direction was its swing's tangent (`melee.js`), so every pushing blow sent a free slip jelly sideways (Push Kick 0.00 m along the line
+from the Courier, 1.33 across). The engine's `hit.away` (0..1, `tools/moveset.js`) sends that share straight away, its push and the
+flinch; the catalogue's twelve rows that push carry `away: 1` (casebook NEW:knock-away-not-along). Along / across now: Push Kick 1.33 /
+0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0, Power Slash 1.86 / 0. The default string is phase 2's frame for frame through
+c4's hit; after it the jelly lies 2.74 m off (was 1.95 m to the side) and the loop's next c1 cuts air. (2) Empty in a middle slot ends
+the string there, the slots after it with it, as its card and the log say (it cut the slot out; NEW:say-only-what-happens). (3) A
+change in the editor is written at once (`save.flush()` after `dirty()`: the main loop writes nothing while a window is open;
+NEW:write-what-a-window-changes). (4) A closed slot says only "300 hits" (1,000, 3,000, 8,000): "or 8 in a row" comes back when
+`sond.string.best` has a writer. And three minors: the W + RMB and S + RMB lists show their own key caps, a quick second change to a
+slot is said (the log's throttle dropped it), and Backstep Slash's reach says 2.1 m (measured: lands at 2.1, misses at 2.2; it said 2.4). Harness in Calissa's scratchpad (`p3/repair2/`).
+
+**Phase 3, repaired a third time (2026-10-11, Calissa; the verifiers' third round):** (1) The default loadout plays phase 2's string
+frame for frame again: c4 has no `hit.away` (its knock is along the swing, as before), and the carry's peak travel cut is opt-in
+(`travelCut: 'peak'`, the ten new whole-body rows); every move that existed keeps the old cut. c4's chain window is read only when c4 is
+not the last slot, so never by the default (casebook NEW:default-plays-as-before). Phase 2's `string.mjs`, its five runs against
+art-melee-p2 (02836dd), the slip jelly free and pinned: identical on every frame (begins, hits, cuts, the pool, the Courier's x, z). (2)
+A locked move promises nothing: until Dovina's `unlocked('sondelass', id, L)` has a row for it (`loadoutopen.js` asks it where her
+table holds one with an `unlock`), every move not in `STARTERS` stays locked in STORY, and its card says "Locked. Learned from <parent>
+(to come)." (NEW:say-only-what-happens); DEBUG's `moves` lend still opens all 18. (3) The editor reaches the Index's window through
+`game.indexMenu` (not `game.course`, a retired word); Guard Break's id is `guardBreak` (was `shove`, the kick's move's id), and a save
+holding 'shove' plays it (`RENAMED`, `loadoutchosen.js`). Harness in Calissa's scratchpad (`p3/repair3/`).
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned

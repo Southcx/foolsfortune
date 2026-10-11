@@ -42,14 +42,26 @@
 //                          (the press waits, buffered). A whole-body move's launch is asked for `cuttable` (the blink may take the step
 //                          from it: courier/moves/techs.js, Petra's half), and hands back its `endSpeed` however it ends (shedSpeed)
 //   THE LOADOUT (the melee loadout, working name: tools/sondelass/sondelassloadout.js, God Hand's Combo Tree): a tool may hand the engine a
-//   `catalogue` (moves as rows: { id, kind: 'normal' | 'special', rule, play (a move, below), wraps (a special the tool plays itself) })
+//   `catalogue` (moves as rows: { id, kind: 'normal' | 'special', rule, stats, play (a move, below), wraps (a special the tool plays itself) })
 //   and a `loadout` ({ string: [ids], specials: { tap, forward, back } }, or a function that returns one): LMB walks the string's slots
 //   in order, the last looping to the first (the GROUND string is the loadout's), and `special(dir)` plays the slot's special (an empty
-//   forward or back slot is the tap's). Without one, `strings.ground` is the string, as before.
-//   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift },
+//   forward or back slot is the tap's). Without one, `strings.ground` is the string, as before. A row's numbers are its `rule` row of
+//   progress/combat/moves.js where it names one (the rule wins), else its own `stats` ({ power, hits, time, cost, status }: the same
+//   shape, so the catalogue's new moves keep their numbers beside their clips until Dovina takes them into her table).
+//   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift, away },
 //             high: { lift } (a launcher held at its strike), strike: [t0, t1] (typed over the measured), parts: [t..] (a row's hits begin),
 //             aim (rad: where off the facing the blade's arc passes, for a cut whose arc never crosses the front),
 //             ringHit (the landing ring's own hit, where the strike's differs), lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
+//             travelCut: 'peak' (a whole-body move's travel cut by the hips' farthest ahead, toward the lock's target, its sidestep
+//             dropped when aimed: casebook NEW:travel-cut-to-the-peak; without it, the old cut: the whole clip scaled by where it ends),
+//             step: { v, at: [t0, t1] } (a whole-body move's own step, m/s along the facing between clip times t0 and t1, over the clip's
+//             travel: back when v < 0, the backstep's; never through what it goes to), reach (m past the measured tip: a fist's or a
+//             foot's, where the tool's is a blade's), limb, tip (melee.js: what the reach is measured on), ribbon: false (no ribbon: a
+//             kick, a shove), rec (an upper move's recovery clip, played on after it: UAL's split swings),
+//             hit.guardBreak (the blow opens a guard first: the thing struck is asked `breakGuard(point, dir, by)`, then struck),
+//             hit.away (0..1: that share of the blow's direction, its push and the flinch of what it strikes, straight away from them,
+//             the rest along the swing; none, along the swing, a blade's cut: melee.js. A knock along the swing alone shoves a thing
+//             sideways, never back: casebook NEW:knock-away-not-along),
 //             legs: false (an upper move standing still keeps the stance's legs, not the clip's: the iaido's cut from the crouch),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
@@ -137,6 +149,7 @@ const RING_UP = 1.5; // (m: a ring strikes what is within this of the ground it 
 const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5, up: 0.1, still: 0.2 };
 const _c1 = new THREE.Color(), _c2 = new THREE.Color();
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+const _w = new THREE.Vector3(), _s = new THREE.Vector3();
 const roots = new Map();
 
 /** A clip's hip travel from its first frame, per frame (body space: +Z ahead, +X their left): the move's own motion. */
@@ -146,7 +159,8 @@ export function rootOf(C, name) {
   const p = c.p, n = c.n, off = new Float32Array(n * 3);
   for (let f = 0; f < n; f++) for (let k = 0; k < 3; k++) off[f * 3 + k] = p[f * 3 + k] - p[k];
   const at = (t, out) => { const x = THREE.MathUtils.clamp(t * C.fps, 0, n - 1), i = Math.min(n - 2, Math.floor(x)), u = n > 1 ? x - i : 0, j = Math.min(n - 1, i + 1); return out.set(off[i * 3] + (off[j * 3] - off[i * 3]) * u, off[i * 3 + 1] + (off[j * 3 + 1] - off[i * 3 + 1]) * u, off[i * 3 + 2] + (off[j * 3 + 2] - off[i * 3 + 2]) * u); };
-  const r = { at, end: at(c.dur, new THREE.Vector3()) };
+  const ahead = (t0, t1, out = new THREE.Vector3()) => { const z0 = at(t0, out).z; let m = 0; for (let t = t0; t < t1 + 1 / C.fps; t += 1 / C.fps) m = Math.max(m, at(Math.min(t, t1), out).z - z0); return m; }; // (the farthest the hips go ahead of where they were at t0, before t1: m)
+  const r = { at, ahead, end: at(c.dur, new THREE.Vector3()) };
   roots.set(name, r);
   return r;
 }
@@ -166,7 +180,7 @@ export class Moveset {
     // the moves the engine plays: a catalogue's rows (a normal's or a slotted special's `play`, with its clip and row) and the tool's own
     // table, built once (a move's swing is measured once and kept on it: melee.js)
     this.table = { ...spec.moves };
-    for (const r of Object.values(spec.catalogue || {})) if (r.play && !this.table[r.id]) this.table[r.id] = { rule: r.rule, clip: r.clip, ...r.play };
+    for (const r of Object.values(spec.catalogue || {})) if (r.play && !this.table[r.id]) this.table[r.id] = { rule: r.rule, stats: r.stats, clip: r.clip, ...r.play };
     this.stringRun = 0; // (the LMB blows landed in a row: move.string.end)
     const deal = this.blow; // (every blow judged once dealt, the engine's or a tool's own rules for it: club.js, pick.js, kick.js)
     this.blow = (kind, ent, at, dir, h, c) => { const r = deal.call(this, kind, ent, at, dir, h, c); this.markBlow(c, kind, ent); return r; };
@@ -203,8 +217,8 @@ export class Moveset {
     if (r.wraps) return !!this.S.wraps?.[r.wraps]?.(r, { paid });
     return paid ? this.paid(r.id, 'special') : this.begin(r.id, 'special');
   }
-  /** A move's row in Dovina's table (progress/combat/moves.js), or null. */
-  rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || null; }
+  /** A move's row in Dovina's table (progress/combat/moves.js), or a catalogue row's own `stats` (the same shape), or null. */
+  rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || def?.stats || null; }
   /** Whether a move is open to the Courier (its row's unlock over the ledger; a move with no row always is). */
   open(id) { const d = this.def(id); return !d?.rule || !this.rule(d) || !!this.game.lend?.has('moves') || unlocked(this.S.rules || this.id, d.rule, this.game.ledger); }
   /** The pause strings: [{ at: the ground move they branch from, to: [moves] }]. */
@@ -509,9 +523,18 @@ export class Moveset {
     if (!L || P.mantle || P.freeze || (P.techs.active && P.techs.active !== L)) { c.def = { ...def, body: 'upper' }; return; } // (never mid-mantle: ending the core's climb there leaves them in the ledge)
     const R = def.root ? rootOf(C, def.clip) : null, span = ((def.to ?? this.dur(def)) - (def.from || 0)) / (def.rate || 1);
     const yaw = c.yaw, xyz = def.root === 'xyz';
-    // never through what it was aimed at: the travel is cut to stop a reach short of it
-    let scale = 1;
-    if (R && m) { const want = Math.hypot(R.end.x, R.end.z); if (want > 0.3) scale = THREE.MathUtils.clamp((m.dist - m.r - 0.9) / want, 0.15, 1); }
+    // never through what it was aimed at (the lock's target, else the magnet's): the travel ahead is cut so the farthest it goes stops a
+    // reach short of it, to none when they are there already; the clip's sidestep is dropped (a string of them walked round it and off
+    // the magnet's cone); a rise is the move's own (casebook rule 192, NEW:travel-cut-to-the-peak)
+    // `travelCut: 'peak'` asks for it (the catalogue's new moves, phase 3); every move before them keeps the old cut, the whole clip's
+    // travel scaled by the magnet's distance over where the clip ends, 0.15 at least (today's string, frame for frame: MELEE-LOADOUT.md)
+    const peak = def.travelCut === 'peak', aim = peak ? this.aimedAt(m) : null;
+    let scale = 1, side = 1;
+    if (peak) {
+      const fwd = (R ? (def.ahead ??= R.ahead(def.from || 0, def.to ?? this.dur(def))) : 0) + (def.step?.v > 0 ? def.step.v * (def.step.at[1] - def.step.at[0]) / (def.rate || 1) : 0); // (m: the hips' farthest ahead in the move and its own step forward)
+      if (aim && fwd > 0.01) scale = THREE.MathUtils.clamp((aim.dist - aim.r - 0.9) / fwd, 0, 1);
+      side = aim ? 0 : 1;
+    } else if (R && m) { const want = Math.hypot(R.end.x, R.end.z); if (want > 0.3) scale = THREE.MathUtils.clamp((m.dist - m.r - 0.9) / want, 0.15, 1); }
     c.scale = scale; c.tag = `${this.id}.${c.id}`; c.grav = def.plunge ? 0 : xyz ? 0 : def.gravity ?? (P.grounded ? 1 : HANG);
     const v0 = new THREE.Vector3(P.vel.x * 0.3, def.lift ?? (P.grounded ? 0 : Math.max(0, P.vel.y)), P.vel.z * 0.3);
     L.go(v0, {
@@ -523,9 +546,13 @@ export class Moveset {
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
         if (R) {
           const t0 = c.t, t1 = c.t + dt * (def.rate || 1);
-          R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt)); toWorld(_a, yaw, _k);
+          if (peak) { R.at(t1, _a).sub(R.at(t0, _b)).divideScalar(Math.max(1e-4, dt)); _a.x *= side; _a.z *= scale; }
+          else R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt));
+          toWorld(_a, yaw, _k);
           vel.x = _k.x; vel.z = _k.z; if (xyz && !this.arc) vel.y = _k.y; // (High Time's arc has the rise once it begins)
         }
+        const st = def.step; // (the move's own step over the clip's travel: forward cut short as the travel is, back in full)
+        if (st && c.phase !== 'fall' && c.t >= st.at[0] && c.t < st.at[1]) { const v = st.v * (st.v > 0 ? scale : 1); vel.x += Math.sin(yaw) * v; vel.z += Math.cos(yaw) * v; }
         const up = this.rise(c, vel), ride = !up && this.riding(c), held = c.kind === 'launcher' && !!this.arc; // (held: over the top, the launcher falls on its own arc till its pose lets go)
         if (tech?.o) { tech.o.gravity = up || held ? this.arc.g : ride ? 0 : c.grav; if (ride || up || held) tech.o.time = Math.max(tech.o.time, tech.t + 0.1); } // (rising, riding or held at the top, the move's launch lasts as long as it does)
         if (ride) this.ride(vel);
@@ -535,6 +562,15 @@ export class Moveset {
       cuttable: true, // (the blink may take the step at any frame: courier/moves/techs.js; blinkCancel() lets the move go)
     });
     this.wholeOn = true;
+  }
+
+  /** What a whole-body move goes to, for cutting its travel: the lock's target, else the magnet's (`m`): { dist (m, on the ground's
+   *  plane), r } or null. */
+  aimedAt(m) {
+    const L = this.game.lock, P = this.P;
+    if (!L?.active || !L.point(_e)) return m || null;
+    const t = L.target, ref = t.ref;
+    return { dist: Math.hypot(_e.x - P.pos.x, _e.z - P.pos.z), r: ref.radius ?? (t.type === 'clapper' ? 0.4 : ref.P ? ref.P.rMax * 0.9 + 0.1 : 0.5) }; // (the radii melee.js's targets give)
   }
 
   /** What was launched (`juggle`: the first thing a launcher or an air blow lifted), where its middle is and how fast it goes, measured
@@ -612,7 +648,7 @@ export class Moveset {
     let struck = 0;
     const R = this.rule(def), n = R?.hits || 1;
     if (n > 1 && def.track) { const [a, b] = def.track.strike, k = def.parts ? def.parts.filter((p) => c.t >= p).length - 1 : Math.floor(((c.t - a) / Math.max(1e-3, b - a)) * n); if (k > (c.part ?? 0) && k < n) { c.part = k; this.hit.clear(); } } // (`parts`: where each hit begins, the clip's own stabs)
-    sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev, c.t, { reach: this.S.reach ?? 0.6, pad: STRIKE_PAD, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } });
+    sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev, c.t, { reach: def.reach ?? this.S.reach ?? 0.6, pad: STRIKE_PAD, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } });
     if (struck) this.impact(def.hit.dmg ?? 1, c);
   }
 
@@ -633,6 +669,7 @@ export class Moveset {
   /** One blow on one thing: its damage, its knock (the launcher's lift, the plunge's spike), its event. */
   blow(kind, ent, at, dir, h, c) {
     const g = this.game, S = this.S, cause = h.cause || S.cause || 'sliced';
+    if (h.away) dir = this.awayDir(at, dir, h.away); // (a knock back goes back: `hit.away` of it straight away from them)
     const power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = (c?.high && c.def.high?.lift) || (h.lift ?? 0);
     if (c?.kind === 'air' && kv.y > 1 && this.juggle?.ent === ent && this.juggle.v.y > kv.y) kv.y = this.juggle.v.y; // (a lift is a floor, never a ceiling: an air blow on what is still rising faster keeps its rise, so High Time's climb is the launcher's whatever the presses; it cut it at a1, 2.6 m)
@@ -642,12 +679,23 @@ export class Moveset {
     else if (kind === 'pot') g.breakables.damage(ent, (S.pot ?? 62) * (h.dmg ?? 1), at, dir, power);
     else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); if (h.lift) this.lifted(c); }
     else if (kind === 'creature') {
+      if (h.guardBreak) ent.breakGuard?.(at, dir, 'courier'); // (a guard break: the guard opened first, so this blow lands through it)
       g.creatures.strike(ent, at, dir, this.worth(h, c), cause); if (h.lift || h.push) ent.knock?.(kv.clone());
       this.struck(ent, c);
     }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
     S.onHit?.(kind, ent, at, dir, h, c, this.rule(c?.def));
+  }
+
+  /** The direction a blow sends what it strikes: `k` (0..1) of it straight away from them, the rest along the swing (melee.js's
+   *  tangent; the kick's own `side` is the same rule from the other end: courier/moves/kick.js). A new vector; `dir` where the thing
+   *  is on top of them. */
+  awayDir(at, dir, k) {
+    const out = _w.set(at.x - this.P.pos.x, 0, at.z - this.P.pos.z);
+    if (out.lengthSq() < 1e-6) return dir;
+    out.normalize().multiplyScalar(Math.min(1, k)).addScaledVector(_s.copy(dir).setY(0).normalize(), 1 - Math.min(1, k));
+    return out.lengthSq() > 1e-6 ? out.normalize().clone() : dir;
   }
 
   /** What a blow is worth to a creature (creatures.strike's power): its row's, a charge from half of it to all; with no row, the tool's
@@ -725,7 +773,7 @@ export class Moveset {
   /** After the tool is placed this frame: the ribbon while the move is in its strike. */
   afterHands(dt) {
     const T = this.S.trail; if (!T) return;
-    const c = this.cur, win = c?.def.trail || (c?.def.track ? [c.def.track.strike[0] - 0.04, c.def.track.strike[1] + 0.04] : null);
+    const c = this.cur, win = c?.def.ribbon === false ? null : c?.def.trail || (c?.def.track ? [c.def.track.strike[0] - 0.04, c.def.track.strike[1] + 0.04] : null); // (`ribbon: false`: a kick, a shove)
     if (c && win && c.t >= win[0] && c.t <= win[1] && c.phase !== 'fall') { this.S.segment(_a, _b); T.push(_a, _b); }
     else T.gap();
     T.power = c ? 1 + (c.def.heat || 0) * 1.4 : 1;

@@ -2,9 +2,10 @@
 // THE CUTLASS: the Sondelass's melee form, and everything a blade needs to be a good one. Its strokes are the Courier's own suite
 // (Sond_*), run by the shared combo engine (tools/moveset.js, the grammar every tool keeps):
 //
-//   LMB         THE NORMALS: the melee loadout's string (sondelassloadout.js: c1 .. c4 by default, four strokes, the fourth the whole
-//               body's, a leap and a cut), walked slot by slot, the last looping to the first; after a pause at the first, a THRUST and
-//               its follow; after a pause at the second, the three wide arcs of the JRPG string
+//   LMB         THE NORMALS: the melee loadout's string (as chosen in the loadout editor and kept, loadoutchosen.js; the default,
+//               sondelassloadout.js: c1 .. c4, four strokes, the fourth the whole body's, a leap and a cut), walked slot by slot, the
+//               last looping to the first; after a pause at the first, a THRUST and its follow; after a pause at the second, the three
+//               wide arcs of the JRPG string
 //   hold LMB    the CHARGE: the blade drawn back while held, the charged slash on release
 //   S + LMB     the LAUNCHER: tapped, what it cuts goes up to the blade; held, up they go on an arc of their own, 3.92 m, and it with
 //               them if it can be lifted (Devil May Cry's High Time); LMB in the air: two cuts that keep it at the blade, then the PLUNGE,
@@ -14,7 +15,7 @@
 //   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
 //   RMB         THE SPECIALS (the owner, 2026-10-11: "LMB as a 'normal' attack button and RMB as a 'special' attack button, so moves
 //               like the current Stinger don't get disrupted"): on the press, at once, the loadout's special: tapped, the tap's slot (the
-//               STINGER by default: a committed thrust, six metres in a quarter of a second, the suite's thrust held out, everything in
+//               STINGER by default: a committed thrust, eight metres in a quarter of a second, the suite's thrust held out, everything in
 //               the line pierced and thrown; courier/moves/launch.js carries them past the core's speed cap); with W, the forward slot;
 //               with S, the back slot (an empty one is the tap's). Inside a blow's strike the press waits (RMB_BUFFER) for the free way.
 //   crouched, RMB   THE IAIDO ("crouched" is player.crouching: grounded and low, never C held): the charge's pose (the blade along the
@@ -53,6 +54,7 @@ import { deflect, guard } from '../../courier/parry.js';
 import { Moveset, rootOf, shedSpeed } from '../moveset.js';
 import { Afterimages } from '../../vfx/afterimage.js';
 import { SONDELASS_MOVES, SONDELASS_LOADOUT } from './sondelassloadout.js';
+import { SondelassLoadout } from './loadoutchosen.js';
 import { stream } from '../../core/rng.js';
 const fxRand = stream('tools/sondelass/cutlass.fx'); // (the look's chance: the afterimages' hue)
 
@@ -123,10 +125,11 @@ export class Cutlass {
     const g = tool.game;
     this.trail = g.vfx?.swing('swing.cutlass', { tint: 0xffb27a, tip: 0xfff1dc }) || new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 }); // (its look: vfx/library.js)
     this.ghosts = new Afterimages(g, { opacity: 0.3, life: 0.4 }); // (the stinger's and the paid cut's: Blink Dash's one afterimage, vfx/afterimage.js)
+    this.loadout = g.sondelassLoadout ||= new SondelassLoadout(g); // (the melee loadout chosen in the loadout editor and kept in the save, checked: loadoutchosen.js)
     this.moves = new Moveset(tool, {
       id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
       trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b), ghosts: this.ghosts,
-      catalogue: SONDELASS_MOVES, loadout: SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout: a save of its own when it can be chosen, MELEE-LOADOUT.md phase 3)
+      catalogue: SONDELASS_MOVES, loadout: () => this.loadout?.get() || SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout chosen, checked against the catalogue and what is open; the default where none is: MELEE-LOADOUT.md phase 3)
       drawn: () => this.tool.drawT > 0.02 && this.tool.form === 'cutlass', onBlinkCancel: () => this.blinkCancel(),
     });
     this.blade = new BladeMode(this);
