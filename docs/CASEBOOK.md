@@ -640,7 +640,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     its posed arms (hinges.js HINGED, `hingedArms`). Proved by the pose audit (scripts/poseaudit.mjs) on the states it touches, its
     blends included, before it ships.
 
-NEW:one-owner-one-clock. **What is posed every frame has one owner, on one clock, and no bearing taken from nothing.** A tech
+220. **What is posed every frame has one owner, on one clock, and no bearing taken from nothing.** A tech
     that sets the body's facing (or a hand's target) in the fixed step while the core eases it once a render frame makes a sawtooth at
     every frame rate but 60 Hz: give it to one of them (the core's stance turn, or the tech's `faceYaw()`), and measure headless at
     144 Hz as well (`tick(1 / 144)`). A direction worked out from a vector that passes through zero in play (the anchor's bearing from
@@ -688,7 +688,7 @@ NEW:one-owner-one-clock. **What is posed every frame has one owner, on one clock
     slow swing; body-relative, 0.26 (0.52). The elbow 0.87 (1.54), the yaw 0. Left to swing naturally (0.57 m out, 1.7 m/s), the hand 4.3 mm
     a frame body-relative (6.9 at most; was 41, and 694). The line's sag 0 mm, on the 0.55 m span and on a 4.3 m line. rom.js clamps
     nothing more in the hang.
-- **Rule:** NEW:one-owner-one-clock.
+- **Rule:** 220.
 
 ### 2026-10-11 · A string run lived through a 5.5 s charge, a trip across the island and a held iaido (Dovina's rulings on the run's edges)
 
