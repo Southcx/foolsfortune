@@ -384,6 +384,15 @@ did); Dovina's to rule (`docs/handoffs/dovina/2026-10-11-from-calissa-catalogue.
 The default plays today's string to the frame: phase 2's probe (`string.mjs`: free LMB every 6 frames, paid every 2, the held launcher's
 air string, the pause branch, the stinger), every blow's begin, hit and cut on the same frame as phase 2's `string-after.json`.
 
+**Measured again after the repair (2026-10-11).** The table above put one new move in a four-slot string. The verifiers' wider measure
+(random loadouts of 4 to 8 slots, and one move in every slot) found whole-body blows walking through the jelly and round Strawman
+(casebook NEW:travel-cut-to-the-peak). Repaired, by the same measure: the 30 loadouts of seed 7 are -6.2% to +3.1% against both a
+pinned slip jelly and Strawman, and every normal alone in 4 and 8 slots (same on both):
+
+| alone, 4 or 8 slots | c1 | c2 | c3 | c4 | Quick Slash | Backhand | Lunge Slash | Heavy Chop | Guard Break | Push Kick | Low Sweep | Body Blow |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| vs today | -0.5% | -0.3% | -0.2% | +0.6% | -4.1% | -3.6% | -0.2% | +6.7% | -8.8% | -7.4% | -8.0% | -4.8% |
+
 ### 7c. The sheets, and what was not checked
 
 In Calissa's scratchpad (`p3/moves/`): `sheet-normals` and `sheet-specials` (each new move at its wind-up, strike, the strike's middle and

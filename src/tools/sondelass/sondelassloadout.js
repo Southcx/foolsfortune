@@ -75,10 +75,10 @@ export const SONDELASS_MOVES = {
     stats: { power: 0.9, time: 0.3, range: 1.6 },
     play: { rate: 1.15, limb: 'L', tip: 0.1, reach: 0.35, ribbon: false, chain: [0.18, 0.55], to: 0.6, fade: 0.25, hit: { power: 0.9, dmg: 0.6, push: 1.5, cause: 'bashed' }, lunge: 2.2, arc: 'raise' } },
   // ---- the specials (RMB tapped, with W, with S) ----
-  // RMB: a committed thrust, six metres in a quarter of a real second, everything in the line pierced and thrown (cutlass.js plays it;
-  // courier/moves/launch.js carries them past the core's speed cap). `dash` real s, `speed` m/s, `dmg` x a pot's, `power` a hit, `reach`
+  // RMB: a committed thrust, eight metres in a quarter of a real second (30 m/s for 0.26 s: 8.4 m measured), everything in the line
+  // pierced and thrown (cutlass.js plays it; courier/moves/launch.js carries them past the core's speed cap). `dash` real s, `speed` m/s, `dmg` x a pot's, `power` a hit, `reach`
   // m past the body, `radius` m of the line, `cost` Lachryma (its row's), `cool` real s before the next
-  stinger: { id: 'stinger', kind: 'special', label: 'Stinger', line: 'Lunges 6 m, piercing everything in line', lore: null, clip: 'Sond_Thrust', effect: 'knock', parent: null, earn: null, rule: 'stinger', wraps: 'stinger',
+  stinger: { id: 'stinger', kind: 'special', label: 'Stinger', line: 'Lunges 8 m, piercing everything in line', lore: null, clip: 'Sond_Thrust', effect: 'knock', parent: null, earn: null, rule: 'stinger', wraps: 'stinger',
     stats: { power: 3.0, time: 0.7, cost: 6, range: 8 },
     sting: { dash: 0.26, speed: 30, dmg: 2.4, power: 3.0, reach: 2.0, radius: 0.85, cost: 6, cool: 0.5 } },
   // the catalogue's specials (phase 3): each a bigger single thing for its Lachryma, at the string's power a second of its own time

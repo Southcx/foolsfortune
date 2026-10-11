@@ -545,8 +545,54 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
+NEW:travel-cut-to-the-peak. **A move's travel toward a thing is cut by the farthest it goes, down to none.** A whole-body move carried
+    toward what it is aimed at (the lock's target, else the magnet's: `aimedAt`, `tools/moveset.js`) is cut so the hips' farthest point
+    ahead in the move, with its own step, stops a reach short of it. Never by where the clip ends (a kick or a hop goes out and comes
+    back), never with a floor, never skipped for a short clip: a held slip jelly does not stop the capsule, and any travel left over
+    walks them through it. Aimed at a thing, the clip's sidestep is dropped (a string of them walks round it); the rise stays the
+    move's own (192). Test every whole-body move alone in every slot against a thing that cannot move and a thing that does not block,
+    with the lock-on and without.
+NEW:line-numbers-are-stats. **A number in a card's line is the row's stat.** A figure written into a line (a reach, a time) is checked
+    against the row's `stats` where the row is written, and a join that lets one source's words win over another's is read card by
+    card for the numbers it now shows.
 
 ## Cases
+
+### 2026-10-11 · Whole-body blows walked the Courier through what they struck (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the verifiers, headless. Against Strawman, the string [Guard Break, Lunge Slash, Push Kick, Lunge Slash, Push Kick, Heavy
+  Chop x3], no lock: blows 1 to 17 landed, each Heavy Chop carried the Courier about 0.14 m sideways, and from blow 18 every blow
+  whiffed while they walked 4 m past Strawman's side (-39.5% power a real second against the default). A slip jelly held by halt,
+  Guard Break x8: through it by blow 7, facing 180 degrees away, nothing landed after. 11 of 30 random loadouts were outside the row
+  rule's 15% against a pinned slip jelly (to -94.9%). Measured here as well: with the lock-on, the same Guard Break string stood
+  inside the halted jelly (0.05 to 0.27 m from its middle, its radius 0.5), and the default string walked to 0.34 m of a stunned one;
+  without it, the default crept 0.1 m nearer a cycle (1.77, 1.36, 1.26, 1.15 m).
+- **Cause (measured):** `Moveset.carry` cut a whole-body move's travel by `(dist - r - 0.9) / fwd`, held to 0.15..1, only when `fwd`
+  (where the clip's hips END, plus its own step) was over 0.3 m, and only toward the magnet's target. Guard Break, Push Kick, Heavy Chop
+  and Low Sweep end within 0.25 m of where they began, though their hips go 0.12 to 0.43 m ahead first (and Heavy Chop's and Low
+  Sweep's 0.16 m to the side), so they were never cut: Guard Break went its full 0.27 m a blow however close. Lunge Slash and c4 went
+  0.15 of theirs at the closest. Under the lock-on the magnet is not asked, so nothing was cut. A slip jelly does not stop the capsule;
+  past it, the magnet (1 rad of the camera's look) never finds it again. Strawman does stop it, and a blow pushed into its capsule
+  slid off round it.
+- **Fix:** `tools/moveset.js` `carry`: the cut is by the hips' farthest ahead over the move's span (`rootOf(...).ahead`) plus the
+  step, from 0 to 1, for any travel, toward the lock's target, else the magnet's (`aimedAt`); aimed at something, the clip's sidestep
+  is dropped; an xyz move's rise is no longer scaled with the cut (the launcher's 0.9 m hip rise went with it, to 15% close in: rule
+  192). Measured: the halted jelly with Guard Break x8 holds them at 1.40 m, lock-on or not, 16 hits in 10 real s; the loadout above
+  holds them at 1.35 m from Strawman, every blow facing it; the default holds at 1.41 m. The default string's begin, hit, cut and
+  stinger frames are the same in all five of phase 2's runs (`string.mjs`). The row rule, measured as the verifiers did: the 30
+  loadouts of seed 7, -6.2% to +3.1% against both a pinned slip jelly and Strawman (the loadout above +0.8%); every normal alone in
+  4 and 8 slots, -8.8% (Guard Break) to +6.7% (Heavy Chop), both targets. The launcher from 1 m rises as it does from 1.9 m (High
+  Time's top 3.92 m).
+- **Rule:** NEW:travel-cut-to-the-peak.
+
+### 2026-10-11 · The Stinger's card said "Lunges 6 m" beside an 8 m reach (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the loadout editor, the default special: STINGER, "Lunges 6 m, piercing everything in line", its reach chip 8 m; the lunge
+  measures 8.4 m.
+- **Cause:** the catalogue row's `line` was written from the comment above it ("six metres in a quarter of a real second"), older than
+  the lunge's numbers (30 m/s for 0.26 s, `range: 8`). The editor's placeholder said 8 m, and the join let the row's own words win.
+- **Fix:** the row's line says "Lunges 8 m"; the two comments that said six metres (`sondelassloadout.js`, `cutlass.js`) say eight.
+- **Rule:** NEW:line-numbers-are-stats.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 

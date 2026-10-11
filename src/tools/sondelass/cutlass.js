@@ -15,7 +15,7 @@
 //   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
 //   RMB         THE SPECIALS (the owner, 2026-10-11: "LMB as a 'normal' attack button and RMB as a 'special' attack button, so moves
 //               like the current Stinger don't get disrupted"): on the press, at once, the loadout's special: tapped, the tap's slot (the
-//               STINGER by default: a committed thrust, six metres in a quarter of a second, the suite's thrust held out, everything in
+//               STINGER by default: a committed thrust, eight metres in a quarter of a second, the suite's thrust held out, everything in
 //               the line pierced and thrown; courier/moves/launch.js carries them past the core's speed cap); with W, the forward slot;
 //               with S, the back slot (an empty one is the tap's). Inside a blow's strike the press waits (RMB_BUFFER) for the free way.
 //   crouched, RMB   THE IAIDO ("crouched" is player.crouching: grounded and low, never C held): the charge's pose (the blade along the

@@ -99,6 +99,21 @@ in the log; the string played quickSlash, bodyBlow, lungeSlash, c4 (begun at fra
 slip jelly 1.9 m ahead for 1.0, 0.9 and 1.4; W + RMB played Spin Slash and S + RMB Backstep Slash. In STORY the new rows stay locked:
 their `earn` is null until Dovina writes it. Sheet in Calissa's scratchpad (`p3/integrated/`).
 
+**Phase 3, repaired (2026-10-11, Calissa; the verifiers' three blocking findings):** (1) Whole-body blows walked the Courier through a
+slip jelly held by a status, or round Strawman, and every blow after hit air. `Moveset.carry` cut a move's travel only past 0.3 m of
+where its clip ENDS, never below 15%, and never under the lock-on, so Guard Break, Push Kick, Heavy Chop and Low Sweep (in 0.12 to 0.43
+m and back) were not cut at all. The cut is now by the hips' farthest ahead plus the move's own step, down to none, toward the lock's
+target else the magnet's; aimed at something, the clip's sidestep is dropped (casebook NEW:travel-cut-to-the-peak). Guard Break x8 into
+a halted jelly holds at 1.40 m, lock-on or not (was through it by blow 7); the default holds 1.41 m from a jelly (it crept 0.1 m a
+cycle, and walked to 0.34 m under the lock-on). (2) The row rule, measured as the verifiers did (LMB every 6 frames, the pool empty,
+cycles 2 and 3): the 30 random loadouts of 4 to 8 slots (seed 7) are all inside 15% against a pinned slip jelly and Strawman, -6.2% to
++3.1% (were 11 outside against the jelly, to -94.9%, and one against Strawman, -39.5%); every normal alone in 4 and 8 slots, -8.8% to
++6.7%. The default string's frames are phase 2's in all five runs. (3) The Stinger's line says "Lunges 8 m", its reach chip's number
+(casebook NEW:line-numbers-are-stats). Not changed: a blow's push follows its swing's tangent (`melee.js`), so the off hand's blows
+(Push Kick 7, Guard Break 5) shove a free jelly sideways; stunned, with no lock-on and the camera never turned, [Push Kick, Body Blow,
+Lunge Slash, Push Kick] put it 58 degrees off the camera's look by blow 11, past the magnet's cone (with the lock-on, 15 hits in 10
+real s). Harness in Calissa's scratchpad (`p3/repair/`).
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned

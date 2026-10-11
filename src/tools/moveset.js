@@ -127,7 +127,8 @@ export function rootOf(C, name) {
   const p = c.p, n = c.n, off = new Float32Array(n * 3);
   for (let f = 0; f < n; f++) for (let k = 0; k < 3; k++) off[f * 3 + k] = p[f * 3 + k] - p[k];
   const at = (t, out) => { const x = THREE.MathUtils.clamp(t * C.fps, 0, n - 1), i = Math.min(n - 2, Math.floor(x)), u = n > 1 ? x - i : 0, j = Math.min(n - 1, i + 1); return out.set(off[i * 3] + (off[j * 3] - off[i * 3]) * u, off[i * 3 + 1] + (off[j * 3 + 1] - off[i * 3 + 1]) * u, off[i * 3 + 2] + (off[j * 3 + 2] - off[i * 3 + 2]) * u); };
-  const r = { at, end: at(c.dur, new THREE.Vector3()) };
+  const ahead = (t0, t1, out = new THREE.Vector3()) => { const z0 = at(t0, out).z; let m = 0; for (let t = t0; t < t1 + 1 / C.fps; t += 1 / C.fps) m = Math.max(m, at(Math.min(t, t1), out).z - z0); return m; }; // (the farthest the hips go ahead of where they were at t0, before t1: m)
+  const r = { at, ahead, end: at(c.dur, new THREE.Vector3()) };
   roots.set(name, r);
   return r;
 }
@@ -371,10 +372,14 @@ export class Moveset {
     if (!L || P.mantle || P.freeze || (P.techs.active && P.techs.active !== L)) { c.def = { ...def, body: 'upper' }; return; } // (never mid-mantle: ending the core's climb there leaves them in the ledge)
     const R = def.root ? rootOf(C, def.clip) : null, span = ((def.to ?? this.dur(def)) - (def.from || 0)) / (def.rate || 1);
     const yaw = c.yaw, xyz = def.root === 'xyz';
-    // never through what it was aimed at: the travel is cut to stop a reach short of it
+    // never through what it was aimed at (the lock's target, else the magnet's): the travel ahead is cut so the farthest it goes stops a
+    // reach short of it, to none when they are there already; the clip's sidestep is dropped (a string of them walked round it and off
+    // the magnet's cone); a rise is the move's own (casebook rule 192, NEW:travel-cut-to-the-peak)
+    const aim = this.aimedAt(m);
     let scale = 1;
-    const fwd = (R ? Math.hypot(R.end.x, R.end.z) : 0) + (def.step?.v > 0 ? def.step.v * (def.step.at[1] - def.step.at[0]) / (def.rate || 1) : 0); // (m: the clip's travel and its own step forward)
-    if (m && fwd > 0.3) scale = THREE.MathUtils.clamp((m.dist - m.r - 0.9) / fwd, 0.15, 1);
+    const fwd = (R ? (def.ahead ??= R.ahead(def.from || 0, def.to ?? this.dur(def))) : 0) + (def.step?.v > 0 ? def.step.v * (def.step.at[1] - def.step.at[0]) / (def.rate || 1) : 0); // (m: the hips' farthest ahead in the move and its own step forward)
+    if (aim && fwd > 0.01) scale = THREE.MathUtils.clamp((aim.dist - aim.r - 0.9) / fwd, 0, 1);
+    const side = aim ? 0 : 1;
     c.scale = scale; c.tag = `${this.id}.${c.id}`; c.grav = def.plunge ? 0 : xyz ? 0 : def.gravity ?? (P.grounded ? 1 : HANG);
     const v0 = new THREE.Vector3(P.vel.x * 0.3, def.lift ?? (P.grounded ? 0 : Math.max(0, P.vel.y)), P.vel.z * 0.3);
     L.go(v0, {
@@ -386,7 +391,7 @@ export class Moveset {
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
         if (R) {
           const t0 = c.t, t1 = c.t + dt * (def.rate || 1);
-          R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt)); toWorld(_a, yaw, _k);
+          R.at(t1, _a).sub(R.at(t0, _b)).divideScalar(Math.max(1e-4, dt)); _a.x *= side; _a.z *= scale; toWorld(_a, yaw, _k);
           vel.x = _k.x; vel.z = _k.z; if (xyz && !this.arc) vel.y = _k.y; // (High Time's arc has the rise once it begins)
         }
         const st = def.step; // (the move's own step over the clip's travel: forward cut short as the travel is, back in full)
@@ -400,6 +405,15 @@ export class Moveset {
       cuttable: true, // (the blink may take the step at any frame: courier/moves/techs.js; blinkCancel() lets the move go)
     });
     this.wholeOn = true;
+  }
+
+  /** What a whole-body move goes to, for cutting its travel: the lock's target, else the magnet's (`m`): { dist (m, on the ground's
+   *  plane), r } or null. */
+  aimedAt(m) {
+    const L = this.game.lock, P = this.P;
+    if (!L?.active || !L.point(_e)) return m || null;
+    const t = L.target, ref = t.ref;
+    return { dist: Math.hypot(_e.x - P.pos.x, _e.z - P.pos.z), r: ref.radius ?? (t.type === 'clapper' ? 0.4 : ref.P ? ref.P.rMax * 0.9 + 0.1 : 0.5) }; // (the radii melee.js's targets give)
   }
 
   /** What was launched (`juggle`: the first thing a launcher or an air blow lifted), where its middle is and how fast it goes, measured
