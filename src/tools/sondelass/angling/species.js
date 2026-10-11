@@ -17,7 +17,7 @@ import { COLOR, DISPLAY_ORDER } from '../../../progress/weather.js';
 
 // (the colours are the feelings' canon ones, progress/weather.js COLOR: the owner's ruling, R58)
 // Gall and Fury are appended at 5 and 6 (MELEE-LOADOUT-EARNING.md section 4, Dovina's), so every species' `aff` and every lure's taste
-// keeps the meaning its first five had. `learn`: a lure carries it only once the feeling is known (aspectKnown, below). Their hints are
+// keeps the meaning its first five had. All seven are known only once the feeling is (aspectKnown, below). Gall's and Fury's hints are
 // placeholders for Espada's words.
 export const ASPECTS = [
   { id: 'dread', name: 'DREAD', glyph: '◐', color: COLOR.dread, hint: 'the cold that comes before a shape' },
@@ -25,16 +25,17 @@ export const ASPECTS = [
   { id: 'grief', name: 'GRIEF', glyph: '☂', color: COLOR.grief, hint: 'a room kept exactly as it was' },
   { id: 'desire', name: 'DESIRE', glyph: '◍', color: COLOR.desire, hint: 'wanting, with nothing yet in mind' },
   { id: 'mirth', name: 'MIRTH', glyph: '♪', color: COLOR.mirth, hint: 'a laugh that has lost its joke' },
-  { id: 'gall', name: 'GALL', glyph: '⁂', color: COLOR.gall, hint: 'a thing swallowed that will not stay down', learn: true }, // (the glyph: curds, its paint's motif)
-  { id: 'fury', name: 'FURY', glyph: '※', color: COLOR.fury, hint: 'the heat in the hands before the blow', learn: true }, // (the glyph: a crack, its paint's motif)
+  { id: 'gall', name: 'GALL', glyph: '⁂', color: COLOR.gall, hint: 'a thing swallowed that will not stay down' }, // (the glyph: curds, its paint's motif)
+  { id: 'fury', name: 'FURY', glyph: '※', color: COLOR.fury, hint: 'the heat in the hands before the blow' }, // (the glyph: a crack, its paint's motif)
 ];
 export const ASPECT_IDX = Object.fromEntries(ASPECTS.map((a, i) => [a.id, i]));
 /** The order the seven are shown in, most positive to most negative (the owner's ruling: GLOSSARY, DISPLAY_ORDER), as indices into
  *  ASPECTS. ASPECTS keeps its own order: every species' `aff` and every lure's profile is indexed by it. */
 export const SHOWN = DISPLAY_ORDER.map((id) => ASPECT_IDX[id]);
-/** May a lure carry this aspect now? Gall and Fury only once that feeling is known (`feeling.known.*`, the ledger's: progress/feelings.js;
- *  the lend panel's feelings row lends them, as it does the Soul Brush's radial). The other five always. */
-export const aspectKnown = (game, i) => !ASPECTS[i]?.learn || !!game?.lend?.has?.('feelings') || (game?.ledger?.get?.(`feeling.known.${ASPECTS[i].id}`) || 0) > 0;
+/** May the angler push this aspect now (choose it, sound it)? Only once that feeling is known (`feeling.known.*`, the ledger's:
+ *  progress/feelings.js; the lend panel's feelings row lends them), all seven, as the Soul Brush's radial (Dovina, 2026-10-11). The bait
+ *  is not gated: a lure's own taste always counts (lures.js tasteOf); what is gated is the feeling a sounding pushes into it. */
+export const aspectKnown = (game, i) => !!game?.lend?.has?.('feelings') || (game?.ledger?.get?.(`feeling.known.${ASPECTS[i].id}`) || 0) > 0;
 /** Every aspect's aspectKnown, as an array indexed like ASPECTS (lures.js tasteOf takes it). */
 export const knownAspects = (game, out = []) => { for (let i = 0; i < ASPECTS.length; i++) out[i] = aspectKnown(game, i); return out; };
 
