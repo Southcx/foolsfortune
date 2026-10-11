@@ -62,6 +62,17 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
   fades, and its launch's `onEnd` is nulled. Nothing in `blink.js` calls into tools, so every tool's moveset gets the cancel free.
 - **Strawman's lock-on** goes through a candidate hook in `lockon.js`, never `game.creatures`, so the ledger never counts Strawman.
 
+**Dovina's earning (2026-10-11, `docs/plans/MELEE-LOADOUT-EARNING.md` on `claude/dovina-design`, 20c5d96):**
+- **String slots:** 4 to start and 8 at most. Slots 5 to 8 open at 300, 1,000, 3,000 and 8,000 cutlass hits, or sooner by an unbroken
+  string run of 8, 10, 12 or 14 blows (a new ledger record, `sond.string.best`).
+- **Moves:** each catalogue row names one parent move.
+  - A normal opens at 60 landed hits of its parent, or 5 finishes with it.
+  - A special opens at 30 hits of its parent, or once on the feat its effect names.
+  - Known from the start: today's four normals, the stinger, the launcher, the air string, the pause string and the dash.
+  - Target for the slice: about 12 normals and 6 specials.
+- **The row rule:** whatever the loadout holds, the string's damage per second stays within ±15%. A move that does more to a body pays
+  for it in time or in power.
+
 ## 3. Open (for the owner)
 
 - How many string slots to start with, and the most (God Hand's chain grows to about 8)?
