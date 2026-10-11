@@ -1,4 +1,4 @@
-// Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
+// Roll: an evasive maneuver. Press Sprint while crouched (C's crouch, or the crouch left standing; never from prone)
 // and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
 // when there's damage to dodge). The same roll happens on its own out of a fall of 20 m or more: the
 // fall is turned into forward speed and the landing is mitigated (`mitigated` on the event;
@@ -43,7 +43,7 @@ export class Roll extends Tech {
     }
     if (P.peekLatch('Dodge')) {
       P.latch('Dodge');
-      if (this.cool > 0 || P.sliding || !P.crouching) return false;
+      if (this.cool > 0 || P.sliding || !P.crouching || P.prone) return false; // (crouched, not flat on the belly)
       this.fall = 0;
       this.code = true;
       return true;

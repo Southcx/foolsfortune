@@ -18,6 +18,7 @@
 // (`unlocks`: the art or variant it teaches: the System reads it).
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
+import { ASPECTS as ASPECTS_ALL } from './weather.js';
 import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
@@ -623,6 +624,7 @@ export function buildAchievements(game) {
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
   C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Drink Gall, where the miasma falls.', 'feeling.known.gall', 1);
   C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Drink Fury, where the hail falls.', 'feeling.known.fury', 1);
+  F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Drink all seven feelings where they fall.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)
   F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
   C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);

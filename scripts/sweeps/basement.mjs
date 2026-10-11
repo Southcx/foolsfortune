@@ -150,12 +150,18 @@ S.phase = 'rooms';
 const rooms = await S.ev(() => __game.game.course.rooms.map((r) => ({ id: r.id, code: r.code, name: r.name, spawn: r.spawn || null })));
 const expect = { course: (s, x) => x.course.current === 0 && x.course.running, lab: (s) => s.layer === 'THE BASEMENT', braid: (s, x) => x.hud.run?.id === 'braid', millrace: (s, x) => x.hud.run?.id === 'mill', spindle: (s, x) => x.hud.run?.id === 'spindle',
   siege: (s, x) => x.inSiege, dunes: (s) => s.zone === 'dunes' || s.zone === 'beach', shore: (s) => s.zone === 'beach' || s.zone === 'dunes', dunemaw: (s) => s.zone === 'dunes' };
-for (const r of rooms) {
+for (const [ri, r] of rooms.entries()) {
   await atIndex();
   const p0 = (await S.sw('state()')).player;
   await S.press('KeyF', 3);
   await S.resume(); // (the pause cover can come up headless when the pointer lock is refused: it would swallow the key under test)
-  await S.page.keyboard.press(r.code); await S.ticks(3); await S.settle(); await S.ticks(20);
+  if (r.code) await S.page.keyboard.press(r.code); // (a room with its own key is picked by it)
+  else { // (rooms past the keys: arrows + Enter, as the Index says; from wherever its selection was left)
+    const n = await S.ev(() => __game.game.indexMenu?.rooms?.length || 0), at = await S.ev(() => __game.game.indexMenu?.sel || 0);
+    for (let k = 0; k < (ri - at + n) % Math.max(1, n); k++) await S.page.keyboard.press('ArrowDown');
+    await S.page.keyboard.press('Enter');
+  }
+  await S.ticks(3); await S.settle(); await S.ticks(20);
   const garden = /^debug\.(press|garden)$/.test(r.id); // (a debug chest in the Spirit Garden: you are the Pneuka Jar on a planetoid, Petra's note 2026-10-08)
   if (garden) {
     const c = await S.common(`Index ${r.id}`, { courier: false, level: false });
@@ -171,7 +177,7 @@ for (const r of rooms) {
   const c = await S.common(`Index ${r.id}`);
   const x = { course: await bs('course()'), hud: await bs('hud()'), inSiege: await S.ev(() => { const p = __game.game.player.pos; return p.x > -30 && p.x < 30 && p.z > -108 && p.z < -76 && p.y < -2; }) };
   const ok = expect[r.id] ? expect[r.id](c.state, x) : dist(p0, c.state.player) > 5;
-  S.check(`Index ${r.id}: its key (${r.code}) takes the Courier there`, ok && dist(p0, c.state.player) > 3, `${r.name}: ${JSON.stringify(p0)} -> ${JSON.stringify(c.state.player)}, zone ${c.state.zone}, layer ${c.state.layer}, run ${x.hud.run?.id ?? '-'}, course station ${x.course.current}`);
+  S.check(`Index ${r.id}: its key (${r.code || 'arrows + Enter'}) takes the Courier there`, ok && dist(p0, c.state.player) > 3, `${r.name}: ${JSON.stringify(p0)} -> ${JSON.stringify(c.state.player)}, zone ${c.state.zone}, layer ${c.state.layer}, run ${x.hud.run?.id ?? '-'}, course station ${x.course.current}`);
   S.check(`Index ${r.id}: its key opens no second window`, !c.dom.index && !c.dom.pneuka && !c.dom.codex && !c.dom.map,
     `after picking with ${r.code}: index=${c.dom.index} pneuka=${c.dom.pneuka} codex=${c.dom.codex} map=${c.dom.map} (the keydown that picked is still pressed for main.js on the next tick)`);
   await S.closeAll();

@@ -61,8 +61,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **mental state** (`game.courierMind`, `src/courier/mind.js`; creatures': `progress/combat/mind.js`) — the Courier's: pushed up by Lachryma
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
-  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. Anagami's five (`NATIVE`) are known from the start; Gall and Fury are learned
-  by drinking them. *Not:* "hunger", "Faith" (cut). → detail
+  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked and are learned by drinking each where it falls
+  (Anagami's five, `NATIVE`, in its weather; Gall and Fury far off). *Not:* "hunger", "Faith" (cut). → detail
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a
@@ -71,9 +71,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **faucet / drain** — where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute`) — what ordinary play should earn in a real hour (480 cubes); a source is judged as a multiple of it.
 - **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden). *Not:* any drain (the Tithe is a drain, not a sink).
-- **crude** (`ECON.crude`) — liquid Lachryma gone flat, a cargo with no feeling, named for its field (Dunemaw crude); refined, it takes a
-  feeling again (wonder Lachryma); volatile, so it can spill. *Not:* a bauble.
-- **cask** (`cask.<grade>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
+- **crude** (`ECON.crude`) — liquid Lachryma as a cargo, carrying no feeling, named for its **field** (`ECON.crude.fields`: Margarite, Dunemaw,
+  Entropolis) as oil is Brent; refined, it takes a feeling again (wonder Lachryma); volatile, so it can spill. *Not:* a bauble, nor graded by feeling (the owner, 2026-10-11).
+- **cask** (`cask.<field>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
 - **the Purser** (`purserPrice`) — the trader at Margarite's dock who buys crude, materials and Cogitomaps at a posted price, never haggled. The
   role is the name.
 - **bounty** (`bountyPay`) — a hunt for a named Egregore or a stray or aberrant Figment, under the King's marque (Letty Marque). Commissions
@@ -90,8 +90,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
   held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
-- **blot / slick** (`stain`, `STAINS`, `src/world/ground/stains.js`; `slick`) — spilled crude on the ground: a blot stays and grows, and a
-  full-grown one gives up a blotling (an aberrant Figment); a slick is thrown up in a fight and fades. *Not:* "stain" in player text. → detail
+- **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, of its field, in crude's oil film; left alone it
+  grows, and a full-grown one gives up a blotling (an aberrant Figment, of the weather's feeling where it rises). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
   jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
 - **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
@@ -137,8 +137,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **the prowl / the crawl** (`PROWL`, `src/courier/anim/prowl.js` / `CRAWL`, `s.crawl`, `src/courier/anim/crawl.js`) — the crouch on the move,
-  low, its head held still / on all fours or the belly under what the crouch cannot pass (the look built, its body to come). *Not:* a
-  tech, nor the wall latch's crawl along a wall.
+  low, its head held still / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
+  crouch, prone; a 0.8 m capsule). *Not:* a tech, nor the wall latch's crawl along a wall.
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
   Movement Art.
 - **Movement Art** (`src/progress/skills.js`) — a tech the System teaches; a variant is one of its versions.

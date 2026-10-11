@@ -38,7 +38,8 @@ const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
 /** The seven feelings on the Law-to-Chaos line, as the crude's grades sit on the islands. The five keep their places; Gall and Fury
  *  (docs/plans/GALL-AND-FURY.md) lie past Dread, so a place's sky reaches them only where its mood runs past +2 (`ECON.weather.reach`). */
 export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread', 'gall', 'fury'];
-/** Anagami's five: the feelings its waters carry, known to the Courier from the start (Gall and Fury are learned by drinking them). */
+/** Anagami's five: the feelings its weather carries (so its shore's blots and the sea chart's waypoints draw from them). Every feeling,
+ *  these five too, starts locked and is learned by drinking it (the owner, 2026-10-11). */
 export const NATIVE = ['mirth', 'wonder', 'desire', 'grief', 'dread'];
 /** How positive each feeling is (the shown order is generated from it: docs/plans/WHEEL.md). Faith is cut (the owner, 2026-10-09). */
 export const VALENCE = { wonder: 2, mirth: 1.5, desire: 0, fury: -0.5, gall: -1, grief: -1.5, dread: -2 };

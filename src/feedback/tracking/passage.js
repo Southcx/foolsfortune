@@ -4,16 +4,18 @@
 // whale followed down, a hand taken aboard, a ghost raced. The log's lines are placeholders for Espada's; the counts are the events'
 // own keys (Dovina's to read or move). rules.js calls it.
 //
-//   passageRules({ on, L, log })   passage.exact { waypoints, types }   passage.casks { n, grade }   passage.posted { waypoint, type, cubes }
+//   passageRules({ on, L, log })   passage.exact { waypoints, types }   passage.casks { n, field }   passage.posted { waypoint, type, cubes }
 //   passage.bounty { waypoint, type, cubes }   rutter.sell { cubes, to }   rutter.buy { cubes }   passage.dive { form, pays }
 //   passage.crew { slots, legs }   passage.ghost { legs, score }   passage.race { beat, score, par }   passage.adrift { at, types, relaid }   charybdis.rise { feel }   charybdis.dive { feel }   charybdis.felled { feel, shards }   charybdis.driven { feel, hp }
 // ---------------------------------------------------------------------------------------
+import { crudeName } from '../../pneuka/items.js';
+
 const WORD = { shoal: 'the shoal', wreckers: 'the Wreckers', eyewall: 'the eyewall', graveyard: 'the graveyard', maelstrom: 'the maelstrom', bounty: 'a bounty', leviathan: 'Old Nobody', calm: 'a calm', encounter: 'a sighting' }; // (the sea chart's words: world/emocean/seachart.js WAYPOINT)
 const named = (t) => WORD[t] || t;
 
 export function passageRules({ on, L, log }) {
   on('passage.exact', (e) => { if (e.by === 'courier' && e.types?.length) log.say('explore', `Ahead lies ${e.types.map(named).join(', then ')}.`); });
-  on('passage.casks', (e) => { if (e.by !== 'courier') return; if (e.n) { L.inc('passage.casks', e.n); log.say('gain', `You take ${e.n} ${e.n === 1 ? 'cask' : 'casks'} of crude ${e.grade} aboard.`); } else log.say('warn', 'Your hold is full.'); });
+  on('passage.casks', (e) => { if (e.by !== 'courier') return; if (e.n) { L.inc('passage.casks', e.n); log.say('gain', `You take ${e.n} ${e.n === 1 ? 'cask' : 'casks'} of ${crudeName(e.field)} aboard.`); } else log.say('warn', 'Your hold is full.'); });
   on('passage.posted', (e) => { if (e.by === 'courier') log.say('explore', `Letty posts a bounty on ${named(e.type)} ahead: ${e.cubes} cubes.`); });
   on('passage.bounty', (e) => { if (e.by !== 'courier') return; L.inc('passage.bounty'); log.say('gain', `Bounty paid: ${e.cubes} cubes.`); });
   on('rutter.sell', (e) => { if (e.by !== 'courier') return; L.inc('rutter.sell'); log.say('gain', `You sell Letty your rutter for ${e.cubes} cubes.`); });

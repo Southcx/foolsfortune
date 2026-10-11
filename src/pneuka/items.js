@@ -13,10 +13,11 @@ import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 import { INSTRUMENTS } from '../tools/crucibelle/songs.js';
-import { SPECIES, ASPECTS } from '../tools/sondelass/angling/species.js';
+import { SPECIES } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { typeNo } from '../tools/psygun/kinds.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
+import { ECON } from '../progress/econ/table.js';
 import { BOTTLES } from '../progress/brushload.js';
 
 export const ITEMS = {};
@@ -80,13 +81,23 @@ for (const k of Object.keys(MAT_KINDS)) {
   ITEMS[`mat.${k}`] = { id: `mat.${k}`, kind: 'material', key: k, name: MAT_NAMES[k] || k.toUpperCase(), glyph: '❖', color: hueHex(hue), tier: 0,
     examine: `Brought up out of a Well: one of the ${K.name}. The spirit press can use it.`, card: null, lure: false, stack: false };
 }
-// crude Lachryma, in casks, by grade (the five aspects: LORE.md section 8, "Lachryma as crude"; Espada's names and lines): what the
-// sloop carries between islands (progress/voyage.js, Dovina's). Kind 'crude', eight to a slot.
-const CASK_LINES = {
-  mirth: 'Light and sweet. Easy to carry. Somebody laughed this, a long time ago.', wonder: 'It glitters in the cask and does not settle.',
-  desire: 'The cask feels empty, however full it is.', grief: 'Heavy and sour. Carry it carefully.', dread: 'The richest grade. The worst to spill. Do not shake it.',
+// crude Lachryma, in casks, by FIELD (the owner, 2026-10-11: crude carries no feeling; it is named for where it comes up, as Brent or West
+// Texas: ECON.crude.fields, Dovina's; LORE.md section 8, "Lachryma as crude"): what a ship carries between islands (progress/voyage.js,
+// Dovina's). Kind 'crude', eight to a slot. Its look is crude's oil, darker the heavier.
+/** A field's crude in player text, Espada's (ECON.crude.fields[field].name): "a cask of Dunemaw crude". */
+export const crudeName = (field) => ECON.crude.fields[field]?.name || 'crude';
+const CASK_LINES = { // (Espada's: crude by field, named as oil is, for where it came up)
+  margarite: 'Margarite crude, the King\'s own. Light and sweet. Easy to carry, cheap to buy.',
+  dunemaw: 'Dunemaw crude, from under Anagami\'s sand. Middling heavy. It does not settle.',
+  entra: 'Entropolis crude. Heavy and sour: the richest, and the worst to spill. Do not shake it.',
 };
-for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
+const CASK_TONE = { margarite: 0x8a7650, dunemaw: 0x4a3828, entra: 0x1a1420 }; // (light sweet amber to heavy sour black: a placeholder, Calissa's)
+const caskOf = (field, id = `cask.${field}`) => ({ id, kind: 'crude', key: field, name: `CASK OF ${crudeName(field).toUpperCase()}`, glyph: '⛁',
+  color: CASK_TONE[field] ?? 0x3b2b22, tier: 1, examine: CASK_LINES[field] || 'Crude Lachryma, in a cask.', card: null, lure: false, stack: 8 });
+for (const field of Object.keys(ECON.crude.fields)) ITEMS[`cask.${field}`] = caskOf(field);
+// the casks named by feeling before the ruling, kept as their field's cask while the shops still sell them (ECON.crude.legacy: Dovina
+// deletes it when the shops sell by field, and these go with it)
+for (const [old, field] of Object.entries(ECON.crude.legacy || {})) ITEMS[`cask.${old}`] = caskOf(field, `cask.${old}`);
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
   examine: 'A chart of one Well on one game day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
 
