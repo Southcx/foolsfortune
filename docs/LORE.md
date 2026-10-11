@@ -679,15 +679,20 @@ tab *07 World and narrative*).
   Whistle, a ship's wake, and the Great Slip Jelly waking in its bowl.
 - **A vantage** stays the code's and the docs' word (`vantage.<id>`). Player text says **viewpoint**, the genre's word for a placed
   lookout (Assassin's Creed, Ghost of Tsushima).
-- **The lines**, one each, in the feeling's own voice. Every one begins "It feels like", because that is how a feeling introduces itself
-  (the owner wrote the first and set the refrain):
+- **The lines**, one each, each in its own feeling's shape (the owner, 2026-10-11: "they all need their OWN flavor"):
   - **Wonder** (the owner's): "It feels like the sky goes on further than you ever knew."
-  - **Mirth**: "It feels like a laugh got out before you could catch it."
-  - **Desire**: "It feels like having it, and still wanting more."
-  - **Grief**: "It feels like the space it left weighs more than it did."
-  - **Dread**: "It feels like something below knows you are here."
-  - **Fury**: "It feels like a fire that wants somewhere to go."
-  - **Gall**: "It feels like a bitter taste, and the nerve to swallow it." (*Gall* is both: bile, and nerve, as in "the gall to".)
+  - **Mirth**: "Laughter fizzes up through you, a shaken bottle whose cork was never going to hold." (Joy as pressure let go: the
+    giggle you cannot swallow.)
+  - **Desire**: "You lean toward it as a moth leans to a lamp, and having it only turns up the flame." (The moth is desire's oldest
+    picture; the lamp is Margarite's, the King's island of lamps, where wanting is the trade.)
+  - **Grief**: "There is a hollow in you the exact shape of what you lost, and nothing else will fit." (A potter's mould with nothing
+    left to cast: on an island of clay, loss is a negative space.)
+  - **Dread**: "Every shadow holds its breath at once, and so do you." (Fear before a shape: nothing has happened yet, and the world
+    and the body wait together.)
+  - **Fury** (after the owner's kettle): "You steam and rattle like a kettle on the boil, and you have stopped wanting the lid on."
+    (The lid is also the Great Slip Jelly's Lidfall, the cast Fury is woken against.)
+  - **Gall**: "Your stomach curdles like milk gone sour, and you roll up your sleeves anyway." (Curds are Gall's own paint motif;
+    *gall* is bile and nerve both, and the sleeves are the nerve.)
 - **The Codex's one line of how** (genre words, verb first): Stand at a viewpoint and look out. · Play for a crowd, or make the folk
   laugh. · Want something, and have it. · Lose what you staked, or what you carried. · Face what waits below. · Answer a blow with a
   blow. · Clean up what rots.
