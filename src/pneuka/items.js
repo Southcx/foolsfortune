@@ -84,16 +84,15 @@ for (const k of Object.keys(MAT_KINDS)) {
 // crude Lachryma, in casks, by FIELD (the owner, 2026-10-11: crude carries no feeling; it is named for where it comes up, as Brent or West
 // Texas: ECON.crude.fields, Dovina's; LORE.md section 8, "Lachryma as crude"): what a ship carries between islands (progress/voyage.js,
 // Dovina's). Kind 'crude', eight to a slot. Its look is crude's oil, darker the heavier.
-/** A field's name in player text (placeholders: Espada's words): "a cask of Dunemaw crude". */
-const CRUDE_FIELD_NAMES = { margarite: 'Margarite', dunemaw: 'Dunemaw', entra: 'Entropolis' };
-export const crudeFieldName = (field) => CRUDE_FIELD_NAMES[field] || (field ? field[0].toUpperCase() + field.slice(1) : '');
+/** A field's crude in player text, Espada's (ECON.crude.fields[field].name): "a cask of Dunemaw crude". */
+export const crudeName = (field) => ECON.crude.fields[field]?.name || 'crude';
 const CASK_LINES = { // (placeholders, from the old grades' lines: Espada's)
   margarite: 'Light and sweet. Easy to carry, cheap to buy. It came up quiet.',
   dunemaw: 'Out of the Great Dunemaw, under Anagami\'s sand. Middling heavy, and it does not settle.',
   entra: 'Heavy and sour. The richest crude. The worst to spill. Do not shake it.',
 };
 const CASK_TONE = { margarite: 0x8a7650, dunemaw: 0x4a3828, entra: 0x1a1420 }; // (light sweet amber to heavy sour black: a placeholder, Calissa's)
-const caskOf = (field, id = `cask.${field}`) => ({ id, kind: 'crude', key: field, name: `CASK OF ${crudeFieldName(field).toUpperCase()} CRUDE`, glyph: '⛁',
+const caskOf = (field, id = `cask.${field}`) => ({ id, kind: 'crude', key: field, name: `CASK OF ${crudeName(field).toUpperCase()}`, glyph: '⛁',
   color: CASK_TONE[field] ?? 0x3b2b22, tier: 1, examine: CASK_LINES[field] || 'Crude Lachryma, in a cask.', card: null, lure: false, stack: 8 });
 for (const field of Object.keys(ECON.crude.fields)) ITEMS[`cask.${field}`] = caskOf(field);
 // the casks named by feeling before the ruling, kept as their field's cask while the shops still sell them (ECON.crude.legacy: Dovina
