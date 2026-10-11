@@ -545,8 +545,36 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
+NEW:threshold-fixed-band. **A pattern cut from a texture keeps a band of its own.** A smoothstep of a texture (a glaze's edge, a mask,
+    a rim) sharpens what the mips softened: give it a fixed band in the texture's own units, wide enough to span pixels at play distance,
+    never one widened by `fwidth()` (one value a 2x2 quad: the edge moves with the quads as the camera slides). Draw a thin feature (a
+    run, a line) as its own soft profile, never cut at a level; and on a curved face blend the box mapping's projections (a switch of
+    axis is a seam, and every quad on it reads a blurred mip). Measure crawl over a frozen world with the camera slid a quarter pixel a
+    frame, against the build before and against the shader with the new part switched off.
 
 ## Cases
+
+### 2026-10-11 · The ash-glazed kilns crawled at 480 lines (the room glazes' verifier, d391bcd)
+
+- **Seen:** headless at 854 x 480, the world frozen and the camera slid a quarter pixel a frame for 60 frames: the share of the kiln's
+  pixels whose second difference of luma passed 6 levels went 10.4% -> 13.9% (the dome at 5.6 m), 22.3% -> 33.8% (at 12.5 m) and
+  14.8% -> 18.0% (the upper kiln) against the build before; the heat maps showed the box mapping's seams across the dome and checkered
+  patches beside the runs. The upper kiln's cap also read as plastic: a hard white hotspot from the lamp.
+- **Cause (measured):** the glaze, not the firebrick under it. With the glaze switched off in the shader (the brick body alone): 10.3%,
+  22.4%, 15.1%, the build before's numbers; with the brick flat and the glaze on: 14.0% at 5.6 m. The glaze's edge was
+  `smoothstep(0.5 ± (0.08 + fwidth(cover)))` over a cover that held the runs (rivulets 6 to 12 cm): the band was one value a 2x2 quad, so
+  the edge moved with the quads as the camera slid, and the threshold cut the mip-softened runs back into hard edges. The box mapping
+  switched axis across the dome, so the cover jumped at a seam (blending the axes alone took 13.8% to 12.7% at 5.6 m); the glass's
+  highlight added more (its gloss and sheen off: 12.1%). (The glitch was switched off to measure: a tear set off by an event lay across
+  some of the upper kiln's frames, and its steps follow the real clock.)
+- **Fix:** `vfx/surfaces.js`: the edge a fixed band of the cover (0.35 to 0.65), the runs their own soft profile (`max` with
+  `run * 1.25`), the room glaze atlas read along the three axes and blended by the normal (a box's face takes one, as before);
+  `vfx/roomglazes.js`: the ash's gloss 0.3 -> 0.5 (the lamp's highlight broad and soft), the tenmoku's sheen 1.0 -> 0.3 (an even sheen
+  on black lay as a grey veil: the stand read as charcoal). Measured, the same probe, the glitch off: the kiln's flickering share
+  13.8% -> 11.0% at 5.6 m, 33.8% -> 23.4% at 12.5 m, 18.8% -> 15.0% upstairs (the brick alone: 10.3%, 22.4%, 15.1%); the pixels hot
+  only with the glaze (above 6 where the glaze-off frame is calm, its hot pixels widened 1 px) 2,966 -> 249, 1,196 -> 43, 1,558 -> 0
+  of 409,920. Programs 163 at boot and in every view; reading the brick with explicit gradients as well changed nothing measurable (10.9% at 5.6 m, 14.9% upper), so it was left out.
+- **Rule:** NEW:threshold-fixed-band.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 

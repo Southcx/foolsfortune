@@ -198,11 +198,15 @@ dimples), **A the specks** (3 to 5.5 cm: iron, ash, rust, a pinhole). A glaze **
 wall-facing faces, and for a glaze the fire laid, the ash, on top and running down the sides), **pools thick** in the floor-facing faces,
 the pooling's blotches and the body's recesses (mortar, grout, a seam), and **runs thin** over what stands proud, where its specks show.
 A clear glaze (salt, ash) shows the body's relief through it; an opaque one (majolica, tenmoku) hides it. **The gloss** is the glass's
-own (the ash's glass 0.3, the bare firebrick 0.88), and **the sheen** is the room's own light (its ambient and hemisphere) taken as a dim
-surround and reflected by the standard material, so the glass shows at its turn and not face on.
+own (the ash's glass 0.5, a lamp's highlight broad and soft; the bare firebrick 0.88), and **the sheen** is the room's own light (its
+ambient and hemisphere) taken as a dim surround and reflected by the standard material, so the glass shows at its turn and not face on;
+a black glaze takes little of it (the tenmoku 0.3: an even sheen on black lies as a grey veil, and its lustre is the lamps' highlights).
 
-**No crawl:** the finest mark is 4 texels (3 cm, three pixels at 4 m at 480 lines), mipmapped to plain tone beyond; the glaze's edge is
-widened by its own screen-space change. **Not drawn, and why:** crackle (a net a texel wide would crawl), slip-trailed earthenware (a
+**No crawl:** the finest mark is 4 texels (3 cm, three pixels at 4 m at 480 lines), mipmapped to plain tone beyond. Where a glaze stops
+is a fixed band of its cover, never one widened by `fwidth()` (one value a 2x2 quad: the edge moved with the quads as the camera slid),
+and its runs are their own soft profile, never cut at a level (a cut sharpens what the mips softened); on a curved face the atlas is
+read along the three axes and blended by the normal, so the box mapping's switch of axis leaves no seam (NEW:threshold-fixed-band).
+**Not drawn, and why:** crackle (a net a texel wide would crawl), slip-trailed earthenware (a
 trailed line is the same; it belongs later on the drying rack's plates, with the dip), hare's fur on a built surface (see the stand).
 The glazed ware's bare foot (**the dip**) is asked of Petra (`world/props/pottery.js`).
 

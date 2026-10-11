@@ -21,7 +21,11 @@
 // platform carries its texture with it rather than sliding through it. Mipmapped and filtered: nothing crawls at a distance.
 // The room glaze atlas is a second 128 x 128 RGBA texture, a metre a tile (R the pooling, read again at 2.7 m a tile and the two mixed,
 // so a long wall does not repeat; G the runs; B the orange peel; A the specks), its finest mark 4 texels (3 cm, three pixels at 4 m at 480 lines),
-// mipmapped to plain tone beyond: no crackle, no trailed line, nothing a pixel wide.
+// mipmapped to plain tone beyond: no crackle, no trailed line, nothing a pixel wide. On a curved face (a kiln's dome) the atlas is read
+// along all three axes and blended by the normal (triplanar mapping, Geiss's GPU Gems 3 ch. 1), so the box mapping's switch of axis
+// leaves no seam; a box's face takes one axis, as before. Where a glaze stops is a fixed band of its cover, and its runs are drawn as
+// their own soft profile, never cut at a level: a threshold sharpens what the mips softened, and a band widened by fwidth() jitters with
+// each 2x2 quad as the camera moves (both crawled on the kilns at 480 lines: docs/CASEBOOK.md, NEW:threshold-fixed-band).
 //
 //   dress(material, color)     called by Level.mat(): picks the pattern (and a room glaze) from the colour, leaves others on the defaults
 //   SURFACE                    the table: colour -> { floor, wall, k } (k: how strongly the detail shows)
@@ -230,14 +234,16 @@ const FRAG = `
     float d = dot(tx, an.y > 0.7 ? surfFloor : surfWall);
     diffuseColor.rgb *= mix(1.0, d, surfK);
     if (glazeCover.x + glazeCover.y > 0.0) { // (a room glaze: vfx/roomglazes.js)
-      glazeF = texture2D(glazeTex, suv * ${(1 / GLAZE_METRES).toFixed(4)});
-      float pool = clamp((0.62 * texture2D(glazeTex, suv * 0.37 + vec2(0.29, 0.61)).r + 0.38 * glazeF.r - 0.5) * 1.3 + 0.5, 0.0, 1.0); // (2.7 m and 1 m a tile: a long wall never shows the repeat)
+      vec3 tw = an * an; tw *= tw; tw /= tw.x + tw.y + tw.z; // (the three axes' weights: one-hot on a box's face, blended where a dome turns)
+      vec3 gp = vSurfP * ${(1 / GLAZE_METRES).toFixed(4)}, fp = vSurfP * 0.37; vec2 fo = vec2(0.29, 0.61);
+      glazeF = tw.y * texture2D(glazeTex, gp.xz) + tw.x * texture2D(glazeTex, gp.zy) + tw.z * texture2D(glazeTex, gp.xy);
+      float wide = tw.y * texture2D(glazeTex, fp.xz + fo).r + tw.x * texture2D(glazeTex, fp.zy + fo).r + tw.z * texture2D(glazeTex, fp.xy + fo).r;
+      float pool = clamp((0.62 * wide + 0.38 * glazeF.r - 0.5) * 1.3 + 0.5, 0.0, 1.0); // (2.7 m and 1 m a tile: a long wall never shows the repeat)
       float up = vSurfN.y / max(length(vSurfN), 1e-4);
       float face = smoothstep(0.35, 0.85, up); // (1 floor-facing: where a glaze lies and the ash lands)
       float run = glazeF.g * glazeCover.z * (1.0 - face) * smoothstep(0.05, 0.5, up) * smoothstep(0.35, 0.7, pool); // (down the sides from where it gathered, dying out toward the foot)
-      float cover = mix(glazeCover.y, glazeCover.x, face) + (pool - 0.5) * glazeCover.w + run;
-      float cw = 0.08 + fwidth(cover);
-      glazeAmt = smoothstep(0.5 - cw, 0.5 + cw, cover);
+      float cover = mix(glazeCover.y, glazeCover.x, face) + (pool - 0.5) * glazeCover.w;
+      glazeAmt = max(smoothstep(0.35, 0.65, cover), clamp(run * 1.25, 0.0, 1.0)); // (a fixed band, never fwidth's; the runs their own soft profile)
       float thick = clamp(glazeGloss.z + (pool - 0.5) * (0.4 + 1.4 * glazeCover.w) + 0.3 * face + (1.0 - d) * glazeGloss.w + 0.5 * glazeF.g * glazeCover.z * (1.0 - face), 0.0, 1.0);
       vec3 gc = mix(glazeThin.rgb, glazeThick.rgb, thick);
       gc *= 1.0 + (glazeF.b - 0.5) * 0.3 * glazeThin.a; // (orange peel)

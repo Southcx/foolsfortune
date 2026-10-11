@@ -27,3 +27,13 @@ no glazed surface the only pixels that differ are the Courier's pose, a folk fig
 a frame, the second difference of luminance inside the glazed surface away from its edges (mean / 99th percentile, levels of 255): the
 hub wall 0.11 / 0.93 -> 0.42 / 2.0 (its floor 0.24 / 1.0), the kiln 0.20 / 1.0 -> 0.30 / 1.64, the plinths and the stand no higher.
 Not run: `npm run perf`, the stress test, a sweep.
+
+**Repaired after the verifier (d391bcd -> this commit): the kilns crawled.** The glaze's edge was banded by `fwidth()` and cut the runs at
+a level, and the box mapping's seams crossed the dome: the share of the kiln's pixels flickering under a quarter-pixel slide went past the
+build before's (13.9% against 10.4% close, 33.8% against 22.3% at 12.5 m). Now a fixed band, the runs their own soft profile, the atlas
+read along three axes on a curved face (a box's face is unchanged), the ash's gloss 0.5 (the upper kiln's hotspot) and the tenmoku's
+sheen 0.3 (the stand read as charcoal). Same probe, glitch off: 13.8% -> 11.0% close, 33.8% -> 23.4% far, 18.8% -> 15.0% upstairs
+(the brick alone 10.3%, 22.4%, 15.1%); pixels hot only with the glaze 2,966 -> 249, 1,196 -> 43, 1,558 -> 0 of 409,920. Programs 163
+at boot and in every view. `vfx/` and docs only; nothing of yours changes. The case: docs/CASEBOOK.md, NEW:threshold-fixed-band.
+Left as they were (the verifier's minors): the hub's brick mortar flickers a little at grazing angles; the crossings above are more
+than a colour id each (the `wareFor` argument, the pedestal's material, `wareGlossy`); draw calls not measured again.

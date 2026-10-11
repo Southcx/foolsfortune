@@ -36,7 +36,8 @@ export const ROOM_GLAZES = {
   ash: {
     label: 'natural ash glaze', body: 0x57281a, clay: { floor: 'brick', wall: 'brick', k: 0.42 },
     thick: 0x324a2a, thin: 0x6e5424, clear: 0.45, peel: 0, speck: 0x9c844c, specks: 0.3,
-    cover: [1.0, 0.0], runs: 0.85, pool: 0.45, gloss: 0.3, bodyRough: 0.88, sheen: 0.8, fat: 0.5, recess: 0.7,
+    cover: [1.0, 0.0], runs: 0.85, pool: 0.45, gloss: 0.5, bodyRough: 0.88, sheen: 0.8, fat: 0.5, recess: 0.7, // (gloss 0.5: a lamp's
+    // highlight broad and soft, as a wood-fired glass takes it; at 0.3 it was a hard white spot and the cap read as plastic)
     ware: 0x7a6a3a, wareGlossy: false,
   },
   // Firebrick, unglazed: fireclay brick, what a kiln and its chimney are built of; sooted dark where the flame comes out.
@@ -57,11 +58,12 @@ export const ROOM_GLAZES = {
   },
   // Tenmoku: the iron glaze of Jian ware (the Jianyang kilns, Fujian; Song, 10th to 13th c.), black and glossy where it pools and
   // breaking to rust (kaki) where it ran thin over a rim; the tea bowls Japanese monks brought home from the temples of Mount Tianmu,
-  // whence the name. Here the rust shows only as specks where it ran thin: streaks on a flat slab read as wood grain.
+  // whence the name. Here the rust shows only as specks where it ran thin: streaks on a flat slab read as wood grain. Its lustre is the
+  // lamps' highlights on the glass, not the room's sheen: on a black glaze an even sheen lies as a grey veil (it read as charcoal).
   tenmoku: {
     label: 'tenmoku', body: 0x4a3428, clay: { floor: 'plaster', wall: 'plaster', k: 0.08 },
-    thick: 0x1d1510, thin: 0x6b3416, clear: 0, peel: 0.1, speck: 0x8a4a20, specks: 0.25,
-    cover: [1, 1], runs: 0, pool: 0, gloss: 0.18, bodyRough: 0.9, sheen: 1.0, fat: 0.8, recess: 0.3,
+    thick: 0x22140b, thin: 0x6b3416, clear: 0, peel: 0.1, speck: 0x8a4a20, specks: 0.25,
+    cover: [1, 1], runs: 0, pool: 0, gloss: 0.18, bodyRough: 0.9, sheen: 0.3, fat: 0.8, recess: 0.3,
     ware: 0x2a1a12, wareGlossy: true,
   },
   // Hare's fur: the same Jian iron glaze, its iron drawn down the walls of the bowl into fine brown streaks as it ran. Ware only: the
