@@ -38,6 +38,7 @@ export const MOVES = {
     dash: { power: 1.6, time: 0.5, unlock: always },
     counter: { power: 0.8, hits: 4, time: 1.7, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
     stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
+    iaido: { power: 1.54, time: 0.6, parent: 'stinger', unlock: always },                                     // (the draw cut: crouched, RMB let go before the iaido's 0.5 s; Calissa's measured 1.4 x 1.1 a cut, 0.6 real s at the shortest charge, 2.57 a second, under the string's 2.7; free and known from the start, since it is Blade Mode's door, and Blade Mode came with the tool)
     special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
     // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
     // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js
