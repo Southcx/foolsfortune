@@ -386,7 +386,7 @@ air string, the pause branch, the stinger), every blow's begin, hit and cut on t
 
 **Measured again after the repair (2026-10-11).** The table above put one new move in a four-slot string. The verifiers' wider measure
 (random loadouts of 4 to 8 slots, and one move in every slot) found whole-body blows walking through the jelly and round Strawman
-(casebook NEW:travel-cut-to-the-peak). Repaired, by the same measure: the 30 loadouts of seed 7 are -6.2% to +3.1% against both a
+(casebook 206). Repaired, by the same measure: the 30 loadouts of seed 7 are -6.2% to +3.1% against both a
 pinned slip jelly and Strawman, and every normal alone in 4 and 8 slots (same on both):
 
 | alone, 4 or 8 slots | c1 | c2 | c3 | c4 | Quick Slash | Backhand | Lunge Slash | Heavy Chop | Guard Break | Push Kick | Low Sweep | Body Blow |

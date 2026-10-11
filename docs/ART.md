@@ -208,7 +208,7 @@ a black glaze takes little of it (the tenmoku 0.3: an even sheen on black lies a
 **No crawl:** the finest mark is 4 texels (3 cm, three pixels at 4 m at 480 lines), mipmapped to plain tone beyond. Where a glaze stops
 is a fixed band of its cover, never one widened by `fwidth()` (one value a 2x2 quad: the edge moved with the quads as the camera slid),
 and its runs are their own soft profile, never cut at a level (a cut sharpens what the mips softened); on a curved face the atlas is
-read along the three axes and blended by the normal, so the box mapping's switch of axis leaves no seam (NEW:threshold-fixed-band).
+read along the three axes and blended by the normal, so the box mapping's switch of axis leaves no seam (216).
 **Not drawn, and why:** crackle (a net a texel wide would crawl), slip-trailed earthenware (a
 trailed line is the same; it belongs later on the drying rack's plates, with the dip), hare's fur on a built surface (see the stand).
 The glazed ware's bare foot (**the dip**) is asked of Petra (`world/props/pottery.js`).

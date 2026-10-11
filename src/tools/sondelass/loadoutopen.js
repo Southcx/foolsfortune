@@ -11,7 +11,7 @@
 //               are the fixed grammar, never slotted). Any other row is known when Dovina's `unlocked('sondelass', id, L)`
 //               (progress/combat/moves.js) says so, asked only where her table has a row for it with an `unlock` (none yet: her earning
 //               is coming on main); until then every row not in STARTERS stays locked in STORY, and its card says only that, with its
-//               parent marked as to come (casebook NEW:say-only-what-happens: no way to learn it is promised that does not exist)
+//               parent marked as to come (casebook 209: no way to learn it is promised that does not exist)
 //   THE LEND    in the DEBUG save, the lend panel's `moves` row lends every move and all 8 slots (progress/lend.js); a lent one is shown
 //               with the hollow mark (ui/lendpanel.js), never as earned
 //
@@ -78,7 +78,7 @@ export function moveStatus(game, row) {
 }
 
 /** A locked move's one line: that it is locked, and the move it grows from (its parent), marked as to come: until Dovina's earning is
- *  in, no way to learn it exists, so none is promised (casebook NEW:say-only-what-happens). Words placeholders for Espada's. */
+ *  in, no way to learn it exists, so none is promised (casebook 209). Words placeholders for Espada's. */
 export function moveOpening(row, catalogue) {
   if (!row) return '';
   const parent = row.parent && catalogue?.[row.parent];

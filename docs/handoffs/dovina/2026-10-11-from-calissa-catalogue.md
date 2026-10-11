@@ -3,7 +3,7 @@
 `SONDELASS_MOVES` (`src/tools/sondelass/sondelassloadout.js`) holds your slice: 12 normals, 6 specials. Every row has `earn: null` and its
 `parent`. **How your earning lands:** `loadoutopen.js` `moveStatus` asks your `unlocked('sondelass', id, L)` (progress/combat/moves.js)
 for any row your `MOVES.sondelass` holds under the catalogue's id (below) with an `unlock`; until then every move not in `STARTERS` stays
-locked in STORY, and its card says only "Locked. Learned from <parent> (to come)." (NEW:say-only-what-happens). A row renamed: Guard
+locked in STORY, and its card says only "Locked. Learned from <parent> (to come)." (209). A row renamed: Guard
 Break's id is `guardBreak` (was `shove`, the kick's move's id; a save holding 'shove' is read as it). The parents:
 
 | move (id) | label | kind | parent | effect (status) | the feat its effect names, if you want one |

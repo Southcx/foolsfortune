@@ -103,13 +103,13 @@ their `earn` is null until Dovina writes it. Sheet in Calissa's scratchpad (`p3/
 slip jelly held by a status, or round Strawman, and every blow after hit air. `Moveset.carry` cut a move's travel only past 0.3 m of
 where its clip ENDS, never below 15%, and never under the lock-on, so Guard Break, Push Kick, Heavy Chop and Low Sweep (in 0.12 to 0.43
 m and back) were not cut at all. The cut is now by the hips' farthest ahead plus the move's own step, down to none, toward the lock's
-target else the magnet's; aimed at something, the clip's sidestep is dropped (casebook NEW:travel-cut-to-the-peak). Guard Break x8 into
+target else the magnet's; aimed at something, the clip's sidestep is dropped (casebook 206). Guard Break x8 into
 a halted jelly holds at 1.40 m, lock-on or not (was through it by blow 7); the default holds 1.41 m from a jelly (it crept 0.1 m a
 cycle, and walked to 0.34 m under the lock-on). (2) The row rule, measured as the verifiers did (LMB every 6 frames, the pool empty,
 cycles 2 and 3): the 30 random loadouts of 4 to 8 slots (seed 7) are all inside 15% against a pinned slip jelly and Strawman, -6.2% to
 +3.1% (were 11 outside against the jelly, to -94.9%, and one against Strawman, -39.5%); every normal alone in 4 and 8 slots, -8.8% to
 +6.7%. The default string's frames are phase 2's in all five runs. (3) The Stinger's line says "Lunges 8 m", its reach chip's number
-(casebook NEW:line-numbers-are-stats). Not changed: a blow's push follows its swing's tangent (`melee.js`), so the off hand's blows
+(casebook 207). Not changed: a blow's push follows its swing's tangent (`melee.js`), so the off hand's blows
 (Push Kick 7, Guard Break 5) shove a free jelly sideways; stunned, with no lock-on and the camera never turned, [Push Kick, Body Blow,
 Lunge Slash, Push Kick] put it 58 degrees off the camera's look by blow 11, past the magnet's cone (with the lock-on, 15 hits in 10
 real s). Harness in Calissa's scratchpad (`p3/repair/`).
@@ -117,23 +117,23 @@ real s). Harness in Calissa's scratchpad (`p3/repair/`).
 **Phase 3, repaired again (2026-10-11, Calissa; the verifiers' second round, four blocking):** (1) A knock back goes back: a blow's
 direction was its swing's tangent (`melee.js`), so every pushing blow sent a free slip jelly sideways (Push Kick 0.00 m along the line
 from the Courier, 1.33 across). The engine's `hit.away` (0..1, `tools/moveset.js`) sends that share straight away, its push and the
-flinch; the catalogue's twelve rows that push carry `away: 1` (casebook NEW:knock-away-not-along). Along / across now: Push Kick 1.33 /
+flinch; the catalogue's twelve rows that push carry `away: 1` (casebook 208). Along / across now: Push Kick 1.33 /
 0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0, Power Slash 1.86 / 0. The default string is phase 2's frame for frame through
 c4's hit; after it the jelly lies 2.74 m off (was 1.95 m to the side) and the loop's next c1 cuts air. (2) Empty in a middle slot ends
-the string there, the slots after it with it, as its card and the log say (it cut the slot out; NEW:say-only-what-happens). (3) A
+the string there, the slots after it with it, as its card and the log say (it cut the slot out; 209). (3) A
 change in the editor is written at once (`save.flush()` after `dirty()`: the main loop writes nothing while a window is open;
-NEW:write-what-a-window-changes). (4) A closed slot says only "300 hits" (1,000, 3,000, 8,000): "or 8 in a row" comes back when
+211). (4) A closed slot says only "300 hits" (1,000, 3,000, 8,000): "or 8 in a row" comes back when
 `sond.string.best` has a writer. And three minors: the W + RMB and S + RMB lists show their own key caps, a quick second change to a
 slot is said (the log's throttle dropped it), and Backstep Slash's reach says 2.1 m (measured: lands at 2.1, misses at 2.2; it said 2.4). Harness in Calissa's scratchpad (`p3/repair2/`).
 
 **Phase 3, repaired a third time (2026-10-11, Calissa; the verifiers' third round):** (1) The default loadout plays phase 2's string
 frame for frame again: c4 has no `hit.away` (its knock is along the swing, as before), and the carry's peak travel cut is opt-in
 (`travelCut: 'peak'`, the ten new whole-body rows); every move that existed keeps the old cut. c4's chain window is read only when c4 is
-not the last slot, so never by the default (casebook NEW:default-plays-as-before). Phase 2's `string.mjs`, its five runs against
+not the last slot, so never by the default (casebook 210). Phase 2's `string.mjs`, its five runs against
 art-melee-p2 (02836dd), the slip jelly free and pinned: identical on every frame (begins, hits, cuts, the pool, the Courier's x, z). (2)
 A locked move promises nothing: until Dovina's `unlocked('sondelass', id, L)` has a row for it (`loadoutopen.js` asks it where her
 table holds one with an `unlock`), every move not in `STARTERS` stays locked in STORY, and its card says "Locked. Learned from <parent>
-(to come)." (NEW:say-only-what-happens); DEBUG's `moves` lend still opens all 18. (3) The editor reaches the Index's window through
+(to come)." (209); DEBUG's `moves` lend still opens all 18. (3) The editor reaches the Index's window through
 `game.indexMenu` (not `game.course`, a retired word); Guard Break's id is `guardBreak` (was `shove`, the kick's move's id), and a save
 holding 'shove' plays it (`RENAMED`, `loadoutchosen.js`). Harness in Calissa's scratchpad (`p3/repair3/`).
 
@@ -227,6 +227,6 @@ today. No new shader program (the hook's mark is the wire compass's; the row is 
 with each tool drawn in turn, as on the base (the marks draw on the wire compass's, the rail mark's, the glyphs' and the ribbons'
 programs; the string row is page pixel art). Each mark is gone on a stow or a swap (measured headless, every tool in turn). Two things
 at the merge: the carry throw's landing had taken the brush's reticle's name, so the bottle's arc stood at the chest (CASEBOOK
-NEW:registered-name); and the toll's reach now draws with the one shared wire (`wireStrip`, `vfx/railmark.js`; its buffers identical
+203); and the toll's reach now draws with the one shared wire (`wireStrip`, `vfx/railmark.js`; its buffers identical
 over 240 frames). Open for the owner: feel in play; the toll's and the hoover's reaches are faint on noon sand; window sizes past 960
 px. Sheet: Calissa's scratchpad, `p6/integrated/sheet.png`.

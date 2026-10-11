@@ -25,7 +25,7 @@
 // along all three axes and blended by the normal (triplanar mapping, Geiss's GPU Gems 3 ch. 1), so the box mapping's switch of axis
 // leaves no seam; a box's face takes one axis, as before. Where a glaze stops is a fixed band of its cover, and its runs are drawn as
 // their own soft profile, never cut at a level: a threshold sharpens what the mips softened, and a band widened by fwidth() jitters with
-// each 2x2 quad as the camera moves (both crawled on the kilns at 480 lines: docs/CASEBOOK.md, NEW:threshold-fixed-band).
+// each 2x2 quad as the camera moves (both crawled on the kilns at 480 lines: docs/CASEBOOK.md, 216).
 //
 //   dress(material, color)     called by Level.mat(): picks the pattern (and a room glaze) from the colour, leaves others on the defaults
 //   SURFACE                    the table: colour -> { floor, wall, k } (k: how strongly the detail shows)

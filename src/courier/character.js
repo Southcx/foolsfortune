@@ -911,7 +911,7 @@ export class Character {
     // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
     // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
     // heel struck toe-up or a toe on a slope: walking up a ramp the toes went 3.8 cm into it, down it the heels 5.8 (CASEBOOK
-    // NEW:clip-sole-on-floor)
+    // 215)
     if (this.soles && planted > 0.05 && s.ground) {
       for (const k of ['L', 'R']) {
         const F = this.leg[k].foot.getWorldPosition(_v1);

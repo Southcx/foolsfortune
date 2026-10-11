@@ -11,7 +11,7 @@
 //       stats ({ power a hit, hits, time real s (its speed: when the next may begin), range m (its reach from the body: the clip's
 //       measured tip and the blade), cost Lachryma, status }: the card's numbers, and the engine's where no `rule` names a row),
 //       (a row's `play.hit.away`: what it strikes is sent straight away from the Courier, never along the swing, so a row whose line
-//       says it knocks, shoves, kicks or launches does so: tools/moveset.js; casebook NEW:knock-away-not-along)
+//       says it knocks, shoves, kicks or launches does so: tools/moveset.js; casebook 208)
 //       play (how the combo engine plays it: tools/moveset.js's A MOVE), wraps (a special the tool plays itself: the stinger is the
 //       cutlass's lunge), and that special's own numbers }
 //   SONDELASS_LOADOUT   the default: the string's slots in order (c1 .. c4, today's string; LMB walks them and the last loops to the

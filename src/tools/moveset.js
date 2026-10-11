@@ -53,7 +53,7 @@
 //             aim (rad: where off the facing the blade's arc passes, for a cut whose arc never crosses the front),
 //             ringHit (the landing ring's own hit, where the strike's differs), lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
 //             travelCut: 'peak' (a whole-body move's travel cut by the hips' farthest ahead, toward the lock's target, its sidestep
-//             dropped when aimed: casebook NEW:travel-cut-to-the-peak; without it, the old cut: the whole clip scaled by where it ends),
+//             dropped when aimed: casebook 206; without it, the old cut: the whole clip scaled by where it ends),
 //             step: { v, at: [t0, t1] } (a whole-body move's own step, m/s along the facing between clip times t0 and t1, over the clip's
 //             travel: back when v < 0, the backstep's; never through what it goes to), reach (m past the measured tip: a fist's or a
 //             foot's, where the tool's is a blade's), limb, tip (melee.js: what the reach is measured on), ribbon: false (no ribbon: a
@@ -61,7 +61,7 @@
 //             hit.guardBreak (the blow opens a guard first: the thing struck is asked `breakGuard(point, dir, by)`, then struck),
 //             hit.away (0..1: that share of the blow's direction, its push and the flinch of what it strikes, straight away from them,
 //             the rest along the swing; none, along the swing, a blade's cut: melee.js. A knock along the swing alone shoves a thing
-//             sideways, never back: casebook NEW:knock-away-not-along),
+//             sideways, never back: casebook 208),
 //             legs: false (an upper move standing still keeps the stance's legs, not the clip's: the iaido's cut from the crouch),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
@@ -311,7 +311,7 @@ export class Moveset {
    *  inside PAUSE after the slot it branches from (never out of a blink), else the next within RESET of the last finish, else the first;
    *  a pause string's run goes on to its next blow, then begins the string again. A blink cancel keeps it (blinkCancel). */
   stringPlace() {
-    const len = this.string.length, c = this.cur, via = !!c && !this.nextOf(c), a = via ? this.takenAfter(c) : this.after, fresh = (!!c && !via) || a <= RESET; // (`via`: a press goes through opener(), which asks RESET when it takes the press: casebook NEW:read-every-branch)
+    const len = this.string.length, c = this.cur, via = !!c && !this.nextOf(c), a = via ? this.takenAfter(c) : this.after, fresh = (!!c && !via) || a <= RESET; // (`via`: a press goes through opener(), which asks RESET when it takes the press: casebook 204)
     if (!len) return { next: -1, struck: 0, len, branch: null };
     const b = this.branch;
     if (this.str === 'pause' && this.n >= 0 && b && fresh) { const k = this.n + 1 < b.to.length ? this.n + 1 : -1; return { next: k < 0 ? 0 : -1, struck: b.at + 1, len, branch: { at: b.at, to: b.to, next: k, struck: this.n + 1 } }; }
@@ -517,7 +517,7 @@ export class Moveset {
     const yaw = c.yaw, xyz = def.root === 'xyz';
     // never through what it was aimed at (the lock's target, else the magnet's): the travel ahead is cut so the farthest it goes stops a
     // reach short of it, to none when they are there already; the clip's sidestep is dropped (a string of them walked round it and off
-    // the magnet's cone); a rise is the move's own (casebook rule 192, NEW:travel-cut-to-the-peak)
+    // the magnet's cone); a rise is the move's own (casebook rule 192, 206)
     // `travelCut: 'peak'` asks for it (the catalogue's new moves, phase 3); every move before them keeps the old cut, the whole clip's
     // travel scaled by the magnet's distance over where the clip ends, 0.15 at least (today's string, frame for frame: MELEE-LOADOUT.md)
     const peak = def.travelCut === 'peak', aim = peak ? this.aimedAt(m) : null;

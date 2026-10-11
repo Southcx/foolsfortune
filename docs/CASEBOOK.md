@@ -567,72 +567,72 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     (`tools/proneholster.js`; the psygun's queue is its own, let go in `weapon.js`).
 202. **Every way of setting the Courier down puts back the same state, through one method.** A respawn and a teleport
     that each list what they reset drift apart; the posture is the Courier's (`player.standUp`), and both call it.
-NEW:registered-name. **A name a class gives itself on `game` is its owner's alone.** A class that registers itself where others find it
+203. **A name a class gives itself on `game` is its owner's alone.** A class that registers itself where others find it
     (`game.paintReticle = this`) is built under that name once; a second use of its look asks not to take it (`{ aim: false }`), or the
     last one built holds the name and everything that reads it follows the wrong one. Before reusing a class, grep it for `game.<x> =`.
-NEW:read-every-branch. **A mark that says what a press will do reads every way the engine can take it.** A read of the engine's choice
+204. **A mark that says what a press will do reads every way the engine can take it.** A read of the engine's choice
     (the string row's lit pip: `Moveset.stringPlace()`) follows the engine's own rules down every branch (the pause window, a pause
     string's run, the blink's offset), not the common path alone; it is tested against each branch, the rare one first.
-NEW:linger-asks-belt. **A tool's mark lingers only while the tool is asked for.** A mark kept up a moment after its use (the bottle's
+205. **A tool's mark lingers only while the tool is asked for.** A mark kept up a moment after its use (the bottle's
     arc, 0.8 real s) asks the belt each frame (`belt.get(id).wants`): stowed or another tool asked for, the linger is cut that frame.
-NEW:travel-cut-to-the-peak. **A move's travel toward a thing is cut by the farthest it goes, down to none.** A whole-body move carried
+206. **A move's travel toward a thing is cut by the farthest it goes, down to none.** A whole-body move carried
     toward what it is aimed at (the lock's target, else the magnet's: `aimedAt`, `tools/moveset.js`) is cut so the hips' farthest point
     ahead in the move, with its own step, stops a reach short of it. Never by where the clip ends (a kick or a hop goes out and comes
     back), never with a floor, never skipped for a short clip: a held slip jelly does not stop the capsule, and any travel left over
     walks them through it. Aimed at a thing, the clip's sidestep is dropped (a string of them walks round it); the rise stays the
     move's own (192). Test every whole-body move alone in every slot against a thing that cannot move and a thing that does not block,
     with the lock-on and without.
-NEW:line-numbers-are-stats. **A number in a card's line is the row's stat.** A figure written into a line (a reach, a time) is checked
+207. **A number in a card's line is the row's stat.** A figure written into a line (a reach, a time) is checked
     against the row's `stats` where the row is written, and a join that lets one source's words win over another's is read card by
     card for the numbers it now shows.
-NEW:knock-away-not-along. **A knock back goes back.** A swing's direction at the thing it strikes is the tangent of its arc (`melee.js`),
+208. **A knock back goes back.** A swing's direction at the thing it strikes is the tangent of its arc (`melee.js`),
     across the striker, so a push along it alone sends the thing sideways, never away. A blow whose words say it knocks, shoves, kicks
     or launches drives what it strikes away from the one who struck (`hit.away`, `tools/moveset.js`; the kick's `side`, the same rule),
     measured as the thing's travel along and across the line between them, at a free target, never a pinned one.
-NEW:say-only-what-happens. **A line the player reads is what the click or the play will do.** A choice's card line and the log line
+209. **A line the player reads is what the click or the play will do.** A choice's card line and the log line
     after it are read against the state the click leaves (a slot emptied, a string ended), and a way to open a thing is shown only
     when what it reads has a writer: a record nothing keeps is a promise nothing keeps.
-NEW:default-plays-as-before. **A new option never moves the default.** An engine change or a data fix made for new rows is opt-in
+210. **A new option never moves the default.** An engine change or a data fix made for new rows is opt-in
     on the row (`travelCut: 'peak'`, `hit.away`), never applied to the rows that already played, and the default is proven by the old
     probe run as it was, frame for frame, against a free target as well as a pinned one.
-NEW:write-what-a-window-changes. **A change made in a window is written when it is made.** The main loop writes the save once a frame
+211. **A change made in a window is written when it is made.** The main loop writes the save once a frame
     only while no window is open (`main.js`), and nothing writes it when the page goes, so what a window changes (the loadout editor,
     a page of the Index's window, the Codex) calls `save.flush()` itself after `dirty()`; flush waits only on a hold.
-NEW:carry-from-hands. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
+212. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
     is posed and before any hand's IK), in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still
     while the body bobs under it and the IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the
     feet against the same run without it.
-NEW:let-go-clear. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
+213. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
     keeps out of the Courier's collider and the character controller's query until its shape is a margin clear of the capsule. The
     controller sees a collider where the last step left it; made solid inside or against the capsule, it shoves the capsule out in one
     step. Measured as the capsule's step on the frame of the release, at the floor's edge too.
-NEW:drawn-on-render-clock. **What is drawn moves on the render clock.** A move's progress read from the fixed step (`st`) moves in
+214. **What is drawn moves on the render clock.** A move's progress read from the fixed step (`st`) moves in
     60 Hz steps under a faster frame, and a thing placed from it and from the interpolated body (`renderPos`) goes back and forth against
     the body. The drawn pose and the drawn prop take their time from the frame (0 on the state's first drawn frame); the physics keeps
     the fixed step's. Measured at 144 Hz as the prop's reversals against the palms.
-NEW:clip-sole-on-floor. **A clip's planted sole stands on the floor it is played over.** A new pack of the same captures can plant its
+215. **A clip's planted sole stands on the floor it is played over.** A new pack of the same captures can plant its
     feet lower than the rig's rest sole; keep each foot's lowest skinned point on the ground under that point, not under the ankle, per
     foot. Never raise the whole body by a loop's deepest strike: the flat stance foot then stands in the air. Measured as the lowest sole
     vertex against the floor, every frame, at every pace, turning and on a ramp, its median as well as its minimum.
-NEW:threshold-fixed-band. **A pattern cut from a texture keeps a band of its own.** A smoothstep of a texture (a glaze's edge, a mask,
+216. **A pattern cut from a texture keeps a band of its own.** A smoothstep of a texture (a glaze's edge, a mask,
     a rim) sharpens what the mips softened: give it a fixed band in the texture's own units, wide enough to span pixels at play distance,
     never one widened by `fwidth()` (one value a 2x2 quad: the edge moves with the quads as the camera slides). Draw a thin feature (a
     run, a line) as its own soft profile, never cut at a level; and on a curved face blend the box mapping's projections (a switch of
     axis is a seam, and every quad on it reads a blurred mip). Measure crawl over a frozen world with the camera slid a quarter pixel a
     frame, against the build before and against the shader with the new part switched off.
-NEW:fresh-preview. **A preview that runs the game's own code begins every run from a kept fresh state, standing where the game's
+217. **A preview that runs the game's own code begins every run from a kept fresh state, standing where the game's
     stands.** A second copy of a stateful stack (the Anim Lab's rig and tools) carries whatever the last run left in it: a clock, a foot
     lock, a cast, a flag set once. Keep its state once it is built, and settled a frame so that what is built on the first frame is built
     only once. Put that state back before every run (`workbench/animfresh.js`), and never write back what the game holds. Step it with
     its parent at the world's origin, as the game's rig stands, since the IK and the holster are worked out in the world. To check it,
     record the same run after a different one: the bones are identical.
-NEW:streak-edges-named. **A streak names every way it ends, and bounds every way it waits.** A count kept in a row for a record (the
+218. **A streak names every way it ends, and bounds every way it waits.** A count kept in a row for a record (the
     string run) is ended by every way the body leaves play, heard where all of them already pass (`course.teleport` and the respawn
     reset the techs: the tool's `reset()`; a seam, read while it is under way; the guard's rescues, as events), never one caller at a
     time. A clock that waits on a held input waits a stated time (`HOLD_MAX`), never for as long as it is held; and a wait made by not
     calling the clock's update (the iaido's charge, Blade Mode) is a wait too: named in the rule, and bounded or ruled to stand.
 
-NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow; the wrist only finishes it.** A blade on the thumb's
+219. **A held thing is pointed by the shoulder and the elbow; the wrist only finishes it.** A blade on the thumb's
     side of a fist points within 55 to 110 degrees of the forearm and to the thumb's side of the elbow's bend, give or take the forearm's
     90 degrees of turn: a pose that asks the tool to point elsewhere is solved by moving the elbow (the pole) and the hand, the hand laid
     along its forearm (`aim` in courier/anim/stances.js; an off hand on a handle eased about it, `easeGrip` in tools/grip.js), never by
@@ -673,7 +673,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
     on the frame the window passed. RMB before the strike is no cut: its press waits for the blow to end (`cutlass.js` `rmb`), so c2
     whiffed on its own and ended the run `{ run 1, miss }` as any whiff does.
   - **Every old case** (31, and 8 random) is unchanged but where the rulings reach: the travel cases and the long hold.
-- **Rule:** NEW:streak-edges-named.
+- **Rule:** 218.
 
 ### 2026-10-11 · The Anim Lab's takes carried the last one in, its travel line sat off the body, the psygun stayed drawn (the verifier, before it landed)
 
@@ -700,7 +700,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   - The holder is put at the origin while the rig steps (`home()`).
   - A take keeps the hips in the holder's frame.
 - **Measured:** MEASURED
-- **Rule:** NEW:fresh-preview.
+- **Rule:** 217.
 
 ### 2026-10-11 · The ash-glazed kilns crawled at 480 lines (the room glazes' verifier, d391bcd)
 
@@ -722,7 +722,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   13.8% -> 11.0% at 5.6 m, 33.8% -> 23.4% at 12.5 m, 18.8% -> 15.0% upstairs (the brick alone: 10.3%, 22.4%, 15.1%); the pixels hot
   only with the glaze (above 6 where the glaze-off frame is calm, its hot pixels widened 1 px) 2,966 -> 249, 1,196 -> 43, 1,558 -> 0
   of 409,920. Programs 163 at boot and in every view; reading the brick with explicit gradients as well changed nothing measurable (10.9% at 5.6 m, 14.9% upper), so it was left out.
-- **Rule:** NEW:threshold-fixed-band.
+- **Rule:** 216.
 
 ### 2026-10-11 · The feet went into the floor at every pace since the suite came in (found verifying the carry's fix: "the walk at the carry's speed dips the feet into the floor, with or without a pot")
 
@@ -759,7 +759,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   the turn at 4.2 m/s -3.38 cm (3 frames under 1 cm; base -5.35, 42), down the ramp -1.94 (3; -7.45, 59), down the stairs -2.71 (8;
   -8.71, 74), up them with the pot -3.34 (2; -7.11, 27): a swinging or landing foot the raise weighs down by `planted`, which the whole
   body's lift had hidden. Stopping out of the prowl -5.95 for 8 frames (base -11.95, 58).
-- **Rule:** NEW:clip-sole-on-floor.
+- **Rule:** 215.
 
 ### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
 
@@ -859,7 +859,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   (`SOLE_KNEEL`). Lowest foot (cm), still / walking / turning: kneeling 0.0 to +0.4 / 0.0 to +0.4 / 0.0 to +0.2, the whole set-down
   never under 0.0 (was -3.0, 0.0, -2.4 before the change, with the 7 to 9 cm float); the knee's skin -0.7 / -0.7 / -1.4 at the bottom
   (on it). The palms stay 0 to 2 cm off the pot.
-- **Rule:** NEW:carry-from-hands, NEW:let-go-clear, NEW:drawn-on-render-clock; rules 46 and 56 for the hand-offs; NEW:clip-sole-on-floor
+- **Rule:** 212, 213, 214; rules 46 and 56 for the hand-offs; 215
   for the feet under it.
 
 ### 2026-10-11 · The default string no longer played as phase 2's after c4's hit (the melee loadout's verifiers, phase 3, third round)
@@ -874,7 +874,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   `nextOf`, which gives none for the string's last slot, so the default never reads it. Measured: `string.mjs`'s five runs against phase
   2 (art-melee-p2, 02836dd), free and pinned: every move's begin, hit, cut, the pool, and the Courier's x, z on all 260 frames identical,
   and the free run identical to `string-after.json`.
-- **Rule:** NEW:default-plays-as-before.
+- **Rule:** 210.
 
 ### 2026-10-11 · Every knock back sent a free slip jelly sideways (the melee loadout's verifiers, phase 3, second round)
 
@@ -888,14 +888,14 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   `side`); the cutlass's catalogue never had.
 - **Fix:** `tools/moveset.js` `blow`: a hit with `away` (0..1) is sent that share straight away from the Courier, the rest along the
   swing (`awayDir`), for its push and its flinch; none, as before, so no other tool changes. The catalogue's twelve rows that push
-  carry `away: 1` (c4 at first, taken off in the third round, NEW:default-plays-as-before; Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
+  carry `away: 1` (c4 at first, taken off in the third round, 210; Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
   Guard Crush, Backstep Slash); the cuts with no push (c1 to c3, Quick Slash, Backhand) and the fixed grammar are unchanged.
   Measured, along / across: Push Kick 1.33 / 0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0 (with the lock-on the same),
   Guard Break 1.69 / 0.52 (0.96 / 0 locked on), Lunge Slash 0.58 / 0.51, Spin Slash 1.85 / 0, Power Slash 1.86 / 0, Guard Crush 1.18 / 0,
   Rising Cut 3.31 / 0. Phase 2's `string.mjs`: the air, pause and stinger runs as before; the free and paid strings frame for frame
   through c4's hit (frames 132 and 120), after which the jelly is 2.74 m off, not 1.95, and the next c1 cuts air where it struck at
   154 (the finisher knocks it out of the loop's reach, as a finisher does). The row rule is measured on pinned targets: unchanged.
-- **Rule:** NEW:knock-away-not-along.
+- **Rule:** 208.
 
 ### 2026-10-11 · Empty in a middle slot cut it out, and the card and the log said the string ended (the verifiers, phase 3)
 
@@ -906,7 +906,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   for an ending.
 - **Fix:** `loadoutchosen.js`: `string.length = i`, the string ends before that slot and the slots after it go with it, as the card and
   the log say.
-- **Rule:** NEW:say-only-what-happens.
+- **Rule:** 209.
 
 ### 2026-10-11 · A loadout set with the editor open was lost on a reload (the verifiers, phase 3)
 
@@ -916,7 +916,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   `pagehide` or `beforeunload` writes the save; the editor is opened only in those windows. `set()` marked the section dirty and
   waited for a flush that would not come until the window closed.
 - **Fix:** `SondelassLoadout.keep()`: `dirty()` then `save.flush()`, on every `set()` and `reset()` (flush waits only on a hold).
-- **Rule:** NEW:write-what-a-window-changes.
+- **Rule:** 211.
 
 ### 2026-10-11 · Every closed string slot promised "or 8 in a row", which nothing could keep (the verifiers, phase 3)
 
@@ -926,7 +926,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   `loadoutopen.js` reads it as 0, and `slotOpening` named it all the same.
 - **Fix:** `slotOpening` says only the count way ("300 hits"); the feat way stays in `SLOT_OPENS` and in `slotsOpen`, and comes back to
   the line with the record's writer.
-- **Rule:** NEW:say-only-what-happens.
+- **Rule:** 209.
 
 ### 2026-10-11 · W + RMB's list showed RMB, a quick second change lost its log line, Backstep Slash's reach said 2.4 m (the verifiers, phase 3)
 
@@ -940,7 +940,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   2.1, measured from where it is pressed (the hop back taken): S + RMB and tapped, at a slip jelly and Strawman, it lands at 1.8, 1.9,
   2.0 and 2.1 m and misses at 2.2 (3 of 4). Measured: two changes in one moment, two lines, the last "Hop Slash"; DEBUG at 1280x720,
   the S + RMB list's cards all S+RMB.
-- **Rule:** NEW:say-only-what-happens.
+- **Rule:** 209.
 
 ### 2026-10-11 · Whole-body blows walked the Courier through what they struck (the melee loadout's verifiers, phase 3)
 
@@ -967,7 +967,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   loadouts of seed 7, -6.2% to +3.1% against both a pinned slip jelly and Strawman (the loadout above +0.8%); every normal alone in
   4 and 8 slots, -8.8% (Guard Break) to +6.7% (Heavy Chop), both targets. The launcher from 1 m rises as it does from 1.9 m (High
   Time's top 3.92 m).
-- **Rule:** NEW:travel-cut-to-the-peak.
+- **Rule:** 206.
 
 ### 2026-10-11 · The Stinger's card said "Lunges 6 m" beside an 8 m reach (the melee loadout's verifiers, phase 3)
 
@@ -976,7 +976,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
 - **Cause:** the catalogue row's `line` was written from the comment above it ("six metres in a quarter of a real second"), older than
   the lunge's numbers (30 m/s for 0.26 s, `range: 8`). The editor's placeholder said 8 m, and the join let the row's own words win.
 - **Fix:** the row's line says "Lunges 8 m"; the two comments that said six metres (`sondelassloadout.js`, `cutlass.js`) say eight.
-- **Rule:** NEW:line-numbers-are-stats.
+- **Rule:** 207.
 
 ### 2026-10-11 · The string row lit the next slot through a charge's release, the special and the dash (melee phase 6, the verifier)
 
@@ -993,7 +993,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   the free cut opens, 0 if the move ends first) (`src/tools/moveset.js`, 10 lines). Measured: 0 of 72 presses on the wrong pip in the
   same four scans; the verifier's 25 string plans unchanged (the charge's plan 1 to 0; the two 16-frame pauses keep their known
   one-frame buffered press); the shader programs 163 with the cutlass drawn (no new material).
-- **Rule:** NEW:read-every-branch.
+- **Rule:** 204.
 
 ### 2026-10-11 · The string row lit the wrong pip through a pause string (melee phase 6, the verifier)
 
@@ -1008,7 +1008,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   that slot, its next lit and no slot lit (`ui/cutlassstringrow.js`); the string's row never moves (that row's room kept, bottom
   anchored: the row's rect 442,502 76x18 before, its string at the same 442,502 in a 116x38 canvas after). Measured: 0 of 41 blows
   on the wrong pip, the same 8 plans; the shader programs 163 before and after with the cutlass drawn (the row is a 2D canvas).
-- **Rule:** NEW:read-every-branch.
+- **Rule:** 204.
 
 ### 2026-10-11 · The bottle's arc stayed up after the brush was stowed (melee phase 6, the verifier)
 
@@ -1021,7 +1021,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
 - **Fix:** `show` drops to 0 the frame the brush is no longer asked for (`belt.get('soulbrush').wants`), unless a jet runs. Measured:
   0 frames shown after the key in all four (G and J, let go and held); a rocket gathered and flown with the brush stowed keeps the arc
   while it runs (opacity 1 over 28 frames).
-- **Rule:** NEW:linger-asks-belt.
+- **Rule:** 205.
 
 ### 2026-10-11 · The bottle's arc stood at the Courier's chest while painting (melee phase 6, at the merge)
 
@@ -1035,7 +1035,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
 - **Fix:** a borrowed look is built `new PaintReticle(game, { aim: false })` (`vfx/brushmarks.js`, `vfx/carrythrowmark.js`). Measured:
   painting, the reticle at (462, 312) with a 34 px ring and the arc at (475, 312); carrying, the landing shown and the brush's reticle
   hidden; the programs 163 before and after.
-- **Rule:** NEW:registered-name.
+- **Rule:** 203.
 
 ### 2026-10-11 · Space from the crouch toggle hiccuped into the standing idle (the owner, v144's posture)
 
@@ -1157,7 +1157,7 @@ NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow;
   every stroke. Not fixed, with their causes, in the report: the strokes' wrists (62 to 70 degrees toward the little finger) and forearm
   turns (140 to 180) as the Sond_ clips hold them, which the hinge repair does not reach; the launcher's guard through the head; the
   Tidecutter's left forearm in the chest; the stinger's exit into the run; the off hand's first frames into the iaido.
-- **Rule:** NEW:point-with-the-arm.
+- **Rule:** 219.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 
