@@ -53,9 +53,14 @@ Every move in `SONDELASS_MOVES` names a **parent** (the move it grows from) and 
 
 - **Start known:** the four normals of today's string, the stinger (RMB tap), the launcher, the air string, the pause string, the dash.
   Nothing anyone has today is taken away.
-- **The slice's catalogue,** a target for Calissa's list: **about 12 normals and 6 specials**, so 8 normals and 5 specials to earn.
+- **The slice's catalogue,** a target for Calissa's list: **about 18 normals and 12 specials** (widened 2026-10-11 for the CMU
+  mocap pass: 7 kicks and off-hand blows as normals, 6 as specials, added beside the 12 and 6 from UAL and the suite, none replaced).
+  God Hand's tree is a hundred deep; breadth is the point, and the loadout's slots, not the catalogue, keep a string short.
+- **The CMU rows' count way is the kick:** their parent is the nearest Sondelass move, but a kick normal also opens at 60 blows of the
+  unarmed kick landed (`kick.hit`), a kick special at 150. Feet trained bare carry over to the blade.
 - **Pacing:** in the first 3 real hours of Sondelass play, a new move about every 20 real minutes; after that, the deeper rows come
-  slower (the counts above double along the tree).
+  slower (the counts above double along the tree). With 24 rows to earn, the whole tree is about 12 real hours by counts alone, and
+  about half that for a player who takes the feat ways.
 - **One move, one parent.** No row needs two others. A loadout never asks a player to grind a move they don't want for one they do.
 - Each opening is said in the log once (`move.learn { tool, move, by }`, as the Movement Arts are), and the Codex's Sondelass page shows
   the tree with the next row's two ways. Espada names the moves and the log line.
