@@ -97,9 +97,9 @@ export class Tracking {
   // ---------------------------------------------------------------- events
   listen() {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
-    // (the Throwing Room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
-    // drill.*, carry neither mark: world/testroom/, feedback/tracking/testroom.js)
-    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.what === 'strawman') return; f(e); });
+    // (the Throwing Room measures and never counts: its pots and lock targets (`training`), Strawman and the status bench's roly-polies
+    // never reach a rule here; its own rules, strawman.*, statusbench.* and drill.*, carry no mark: world/testroom/, feedback/tracking/testroom.js)
+    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.kind === 'rolypoly' || e?.what === 'strawman') return; f(e); });
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };
 
     // ---- breaking

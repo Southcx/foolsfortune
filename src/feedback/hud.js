@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE HUD: the few things drawn over the world that are not the log: the crosshair and its spread, the hitmarker, the Lachryma gauge's
+// THE HUD: the few things drawn over the world that are not the log: the psygun's crosshair (only while it is drawn) and its spread, the hitmarker, the Lachryma gauge's
 // pulse, the psygun's shells, the speed, and the pixelation the present asks for. No words or numbers in the world (CLAUDE.md,
 // Feedback): what deserves a sentence goes to the log.
 //
@@ -100,7 +100,7 @@ export class Hud {
     b.style.transform = `translate(-50%, ${gap}px)`;
     l.style.transform = `translate(calc(-100% - ${gap}px), -50%)`;
     r.style.transform = `translate(${gap}px, -50%)`;
-    this.el.cross.style.opacity = fp && ads > 0.5 ? 0 : 1 - ads * 0.3;
+    this.el.cross.style.opacity = !gunOut || (fp && ads > 0.5) ? 0 : 1 - ads * 0.3; // (the crosshair is the psygun's: shown only while it is drawn, the owner 2026-10-11; every other tool shows its own marks)
 
     this.el.charge.style.opacity = charge > 0 ? 1 : 0;
     this.el.chargeArc.style.strokeDashoffset = `${(1 - charge) * 100}`;

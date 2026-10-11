@@ -29,6 +29,10 @@ division's files is asked for, never edited past the smallest call-site (CROSSIN
 | **5. Gall and Fury on the rod** | seven lure aspects, their fish, their keys | Dovina (species, prices), Petra (the angler's keys), Espada (names), Calissa (lures' and fish's looks) |
 | **6. Every tool its own UI** | an audit of each tool's on-screen marks, then each tool's own (the Dreamvane's is the model) | Calissa (looks); Petra (hud.js) |
 
+**Phase 1b, built (2026-10-11, Calissa):** Strawman lockable (`game.lock.add`, Petra's ruling; casebook rule 190) and its stance on the
+sparring circle's lectern (COMBAT-LAB.md section 2); the status bench's roly-polies alive (COMBAT-LAB.md section 5); the psygun's
+crosshair shown only while the psygun is drawn (`feedback/hud.js`, CROSSING). Phase 6's audit is section 4.
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned
@@ -56,3 +60,21 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
 
 - How many string slots to start with, and the most (God Hand's chain grows to about 8)?
 - Should the launcher become a special you place (RMB with back), freeing S + LMB, or stay where it is?
+
+## 4. Every tool its own UI: the audit (phase 6's first step, 2026-10-11)
+
+The owner: "each tool should have its own UI according to what it does, much like the Dreamvane already". What each shows today (the
+crosshair is now the psygun's alone), and a proposal for what it should show; nothing in the last column is built. The Dreamvane is the
+model: its marks live on the wire compass and in the world, and each says what the tool is doing (where the Lachryma is, how near).
+
+| tool | on screen today | in the world today | should show (proposal, for the owner) |
+|---|---|---|---|
+| **the psygun** | the crosshair and its spread, the hitmarker, the charge ring, the shell palette and its glove, the reload bar | tracer, muzzle flash | as today: these are the gun's |
+| **the Sondelass** | the form strip (cutlass, rod, hook, the clay bob; the rod's lures on 4 to 8) | blade mode's guide line; the rod's reticle on the water and the fish portrait | the cutlass: the loadout's string as a short row of slots, the next LMB's slot lit (God Hand's combo tree), the paid cut's window as a glint on it; the hook: a mark on what it can catch, in reach; the rod: as today |
+| **the Soul Brush** | the bottle's arc (it stood beside the crosshair: it now stands alone, to be judged); the paint radial | the paint reticle (where the stream lands), the jet ring, the shine, Celestial mode's mark | as today: the paint reticle is its aim; the arc may want to move to the reticle's side |
+| **the Veritome** | the viewfinder while the lens is raised (first person) | plates; the flash | a small frame of the lens's field in the third person before it is raised (what the plate will hold) |
+| **the Dreamvane** | the wire compass and its own marks (the vane's dowse and survey) | the dowsing bead, the fork's ring | the model, as today |
+| **the Crucibelle** | the pendulum on the wire compass (its beat for the eye) | the toll's ring, the mirage | the toll's reach as a ring at the feet on the beat (what it staggers) |
+| **the Lockheart** | nothing | its load as the lid's glow (ajar a crack when full); the wheel of odds when it opens | the fill and the Possibilikeys on the ring as one small gauge at the coffin (whether it can open); the hoover's reach while it draws |
+| **nothing in the hands** (the kick, carrying) | nothing (the crosshair went with the psygun) | the lock-on reticle (any tool) | a throw's aim mark only while something carried can be thrown: a carried thing is thrown at the screen's middle (`courier/moves/carry.js`), which is now unmarked |
+

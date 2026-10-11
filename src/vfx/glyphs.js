@@ -23,10 +23,13 @@
 //   game.glyphs.pop('bang3', position, { color: 0xffd76a, size: 1, burst: true, follow: () => vec })
 //   const g = game.glyphs.pop('bang3', pos, { hold: 1.2 })    a mark that stays for a window (and shakes harder as it closes) until g.close()
 //   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
+//   pop('status.<id>', ...)            a status's glyph (STATUS_ART: stun, halt, slow, sleep, doubt, charm, blind, confusion, soaked)
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
 //   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { STATUS_ART } from '../ui/icons/figmenttelegraphart.js';
+import { toneGrid } from '../ui/icons/hand.js';
 
 const CACHE = new Map();
 const BIAS = { min: 1, k: 1.5 }; // (m, and per metre of the glyph's size: a mark is hidden only by what stands that far in front of it)
@@ -118,7 +121,20 @@ function celestialMarkCanvas() {
   for (const [extra, col] of [[22, '#150806'], [10, '#ffffff'], [0, '#bfb2a8']]) { enso(extra, col); ticks(extra, col); dot(extra, col); }
   return c;
 }
+/** A status's glyph (`status.<id>`: the Figment attack telegraphs' own pictures, STATUS_ART, in the icons' hand) for a pop: its tones as
+ *  greys at a whole-number scale, the keyline black, so the pop's `color` (the status's: GLYPH_TINT) lights it and the keyline stays dark. */
+function statusCanvas(id) {
+  const { w, h, tones } = toneGrid(STATUS_ART[id]), S = 256, k = Math.max(1, Math.floor(200 / Math.max(w, h)));
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d'), ox = Math.round((S - w * k) / 2), oy = Math.round((S - h * k) / 2);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const t = tones[y * w + x]; if (t < 0) continue;
+    const v = t === 0 ? 14 : Math.round(80 + (t / 11) * 175); g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(ox + x * k, oy + y * k, k, k);
+  }
+  return c;
+}
 const KINDS = {
+  ...Object.fromEntries(Object.keys(STATUS_ART).map((id) => [`status.${id}`, { draw: () => statusCanvas(id), w: 256, h: 256, aspect: 1 }])),
   vein: { draw: veinCanvas, w: 256, h: 256, aspect: 1 },
   ward: { draw: wardCanvas, w: 256, h: 256, aspect: 1 },
   celestialMark: { draw: celestialMarkCanvas, w: 256, h: 256, aspect: 1 },
