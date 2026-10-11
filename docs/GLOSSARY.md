@@ -62,9 +62,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
   negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked; each is learned at its awakening. *Not:* "hunger", "Faith" (cut). → detail
-- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`; `docs/plans/FEELINGS-AWAKENING.md`; working words, Espada's) — the
-  moment a feeling is learned, by an act that is that feeling (or drinking it in its weather on 5 occasions): its weather floods round you, the body answers,
-  one line in its own voice / a hand-placed lookout whose view wakes Wonder. *Not:* a notice from the System.
+- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`; `docs/plans/FEELINGS-AWAKENING.md`) — the moment a feeling is
+  learned (the verb: awaken, never "wake", which is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its weather floods round you, the body answers,
+  one line in its own voice / a hand-placed lookout whose view awakens Wonder; player text says "viewpoint". *Not:* a notice from the System.
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a
