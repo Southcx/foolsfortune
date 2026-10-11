@@ -1110,6 +1110,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   speeds and times by √k, gravity real), as miniature effects are shot; the Great Slip Jelly's and the bowl's effects use it.
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
   played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
+- **a room glaze** (`ROOM_GLAZES`, `src/vfx/roomglazes.js`): a real glaze, with its history, fired onto a room's built surface or given to
+  its ware: natural ash, firebrick (bare), majolica white, tenmoku, hare's fur, shino, oribe, sang de boeuf, salt glaze, celadon,
+  slip-trailed earthenware, terracotta and bisque. A row says the clay **body** under it (its colour is the row's **colour id**, what a room
+  builder passes: `ROOM_GLAZE_ID.kiln`), where it lies (**cover** on floor-facing and wall-facing faces, **runs** down the sides), how it
+  pools **thick** or runs **thin** (the colours), its **specks**, **orange peel**, **gloss** and **sheen**, and its **ware** colour (a pot's).
+  **The table** (`ROOM_SURFACES`): each kind of built surface (kiln, chimney, plinth, stand, hubWall, index) and its room glaze, the one
+  place the choice is made. **The showroom's ware** (`SHOWROOM_WARE`, `wareFor`): which pots upstairs wear which. **The room glaze atlas**
+  (`glazeAtlas()`, `vfx/surfaces.js`): one 128 x 128 texture, a metre a tile (R the pooling, G the runs, B the orange peel, A the specks),
+  drawn from noise at startup and read by the built surfaces' one program (`dress`); its finest mark 4 texels. *Not:* a glaze (the
+  Courier's, `courier/vessel/glazes.js`), a kiln pattern (`vfx/finish.js`), the clay patterns (`SURFACE`: plaster, planks, tiles, brick),
+  a material (Soul Alchemy's).
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
   shattering, a reprogramming): one screen pass in the glow (`post.screen`) that splits the colour, tears bands of rows, moshes blocks
   of the frame before, crushes colour to the code's cyan and magenta, drains toward a point, or cuts to a dark beat (**the drop-out**).
