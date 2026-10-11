@@ -679,7 +679,7 @@ tab *07 World and narrative*).
   Whistle, a ship's wake, and the Great Slip Jelly waking in its bowl.
 - **A vantage** stays the code's and the docs' word (`vantage.<id>`). Player text says **vantage point** (the owner's ruling), the same word whole.
 - **The lines**, one each, each in its own feeling's shape (the owner, 2026-10-11: "they all need their OWN flavor"). They stand in
-  until better ones come (the owner: "still a little cringe, but we need something in there"):
+  (the owner: "still a little cringe, but we need something in there"); their rewrite is *parked by the owner, 2026-10-11*:
   - **Wonder** (the owner's): "It feels like the sky goes on further than you ever knew."
   - **Mirth**: "Laughter fizzes up through you, a shaken bottle whose cork was never going to hold." (Joy as pressure let go: the
     giggle you cannot swallow.)
