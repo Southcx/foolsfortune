@@ -218,6 +218,7 @@ export class Cutlass {
     const I = this.iai, P = this.tool.P;
     if (!P.grounded) { this.iai = null; return; }
     I.t += raw;
+    this.moves.holding(I.t); // (a held charge: the string's window waits, for at most 2 real s of it: tools/moveset.js)
     if (!inp.isDown('Mouse2')) { this.iai = null; this.drawCut(); return; }
     if (I.t >= IAIDO.charge && !I.full) {
       I.full = true;

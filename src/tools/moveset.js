@@ -66,8 +66,21 @@
 //               roly-poly, the Throwing Room's pots: progress/combat/testroom.js isTraining), a sibling, a struckable thing (a crystal),
 //               a row worth nothing (a shove). A special's blow (specialBlow(): slot null, R, RMB's, the iaido's draw cut, the stinger
 //               by ownBlow()) sends its move.blow but is apart from the run: it neither adds to it nor ends it (MELEE-LOADOUT-EARNING.md
-//               section 1, "the longest unbroken run of LMB string blows"); nor does a blow cut short before its strike was past end it
-//               (the blink cancel keeps the run as it keeps the string).
+//               section 1, "the longest unbroken run of LMB string blows").
+//   THE RUN'S EDGES (Dovina's rulings, 2026-10-11; the string's PLACE is the grammar's above and they leave it be):
+//     a cut        a press that ends an LMB blow early (R, RMB's specials, the paid cut, the blink, the guard) is judged by the blow's
+//                  strike window (recovering(c)): past it with nothing struck, its move.blow says hit: false and the run ends 'miss'
+//                  (a cancel never launders a miss); cut before the window is past (no contact yet, the blade still able to strike),
+//                  nothing ends: the outcome was never decided (casebook rule NEW:outcome-after-window)
+//     a held charge   the window stands still (the engine's hold, the iaido's charge: holding(t)) for at most HOLD_MAX, 2 real s of
+//                  the hold; past it the run ends 'pause'. The release is a blow like any other (the charged slash adds or misses; the
+//                  iaido's draw cut is a special, apart)
+//     across space    the Courier's own moves (a dash, a Movement Art, the blink, the hook's pull) carry the run inside the window; the
+//                  body moved by no move of its own ends it 'pause' (leave()): a seam under way (game.seam.busy, read), a rescue of the
+//                  guard's (`courier.rescue`; the controller's `clip` is a move of their own kept short of a wall), a fall out of the
+//                  world (`courier.respawn`), a place change (course.teleport resets the techs: the tool's reset(), sondelass.js)
+//     Blade Mode   its cuts are not the engine's (blade.js): no move.blow, nothing counted, nothing broken; the cutlass does not
+//                  read the engine while it holds the world, so the window stands still and runs again from where it stood
 //
 // Prior art: Devil May Cry's grammar (the Launcher on back + attack, High Time held to rise with what it launched, the air string, the
 // jump cancel that keeps it flowing, the Helm Breaker plunge, the pause combo), Guilty Gear's Roman Cancel (a recovery cut short for a
@@ -92,7 +105,8 @@
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
 //   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)
 //   M.ownBlow(id) -> b, M.markBlow(b, kind, ent), M.closeBlow(b) (a blow the tool plays itself, the cutlass's stinger: move.blow once)
-//   M.stringRun (the LMB blows landed in a row)   M.specialBlow(c) (a special's blow: apart from the run)
+//   M.stringRun (the LMB blows landed in a row)   M.specialBlow(c) (a special's blow: apart from the run)   M.leave() (the body moved
+//   by no move of its own: the run ends)   M.holding(t) (a tool's own charge held t real s: past HOLD_MAX the run ends)
 //   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
 //   spec.sound: the swing's sound (heavy) -> (default sfx.slash; false when the tool sounds its own in onBegin)
 // ---------------------------------------------------------------------------------------
@@ -118,6 +132,9 @@ const STRIKE_PAD = 0.012;
 // hears the same three)
 const HURT_EVENTS = ['vessel.shield', 'vessel.shieldbreak', 'vessel.crack', 'courier.shatter'];
 const AWAY_EVENTS = ['god.enter', 'garden.enter', 'rail.start']; // (the body leaves play: the god hand, the Spirit Garden, a crossing; techs are not ticked there, so the string's window cannot run out on its own)
+// a held charge keeps the string's window still for at most this many real seconds of its hold, then the run ends (Dovina, 2026-10-11:
+// "for up to 2 real seconds held (a full charge is 1.3)"; the engine's is full 1.1 s into its hold: THE RUN'S EDGES, above)
+const HOLD_MAX = 2;
 // HIGH TIME's own arc (the owner, 2026-10-11: the launcher "linked to chasing the target it hits, so the action breaks when attempting
 // to use it on the Strawman"): from the strike's end the Courier rises on a ballistic arc of their own to `apex` m above the ground
 // they launched from (the feet: 2.2 x 1.78 m, the owner's "2.2x their own height", 2026-10-10), at `gravity` x the core's 21 m/s²
@@ -176,6 +193,8 @@ export class Moveset {
     this.offBlink = E.on('move.blink', () => this.blinkCancel());
     for (const n of HURT_EVENTS) E.on(n, () => this.endStringRun('hurt'));
     for (const n of AWAY_EVENTS) E.on(n, () => this.lapse()); // (a run never lives through them: 'pause', and the string's place goes back to its start)
+    E.on('courier.rescue', (e) => { if (e?.kind !== 'clip') this.leave(); });
+    E.on('courier.respawn', () => this.leave());
   }
   get game() { return this.tool.game; }
   get P() { return this.tool.P; }
@@ -263,9 +282,18 @@ export class Moveset {
   /** Past the string's window (RESET): the run ends ('pause') and the string's place goes back to its start. */
   lapse() { this.endStringRun('pause'); this.n = -1; this.str = 'ground'; this.offset = false; }
 
+  /** The body left play by no move of its own (a seam, a rescue, a place change): the run ends ('pause'). The string's place is the
+   *  window's to keep or lose, as ever (Dovina: the rulings are the run's, not the grammar's). The Courier's own moves (a dash, a
+   *  Movement Art, the blink, the hook's pull) never come here: inside the window they carry the run. */
+  leave() { this.endStringRun('pause'); }
+
+  /** A charge held `t` real seconds (the engine's hold, a tool's own: the iaido's, cutlass.js): the string's window stands still while it
+   *  is (no move ends, so `after` waits), but past HOLD_MAX the run ends ('pause'). Its release is a blow like any other. */
+  holding(t) { if (t > HOLD_MAX) this.endStringRun('pause'); }
+
   /** Once a frame while the tool is not the one read (the Sondelass in its rod or hook form, or going away: sondelass.js): the string's
    *  window still runs, so a run left open ends ('pause') and the place resets as they would in the hand; a switch inside it keeps both. */
-  idle(dt) { if (this.cur) return; this.after += dt; if (this.after > RESET) this.lapse(); }
+  idle(dt) { if (this.game.seam?.busy) this.leave(); if (this.cur) return; this.after += dt; if (this.after > RESET) this.lapse(); }
 
   /** The move on show is in its recovery: its strike (and its ring) past, a plunge landed; never a hold, never a fall. */
   recovering(c = this.cur) {
@@ -314,6 +342,7 @@ export class Moveset {
   update(dt, inp, { allow = true } = {}) {
     const P = this.P, S = this.S, st = S.strings;
     this.listen(); // (once, as soon as the tool is first in the hand)
+    if (this.game.seam?.busy) this.leave(); // (a change of place under its cover: the body is leaving play)
     if (this.cur?.ended) this.finish(); // (its launch ran out: carry()'s onEnd marks it, so a blink that cut the launch can cancel it first)
     const dodging = !!P.techs?.active?.cuts; // (the blink has the body: no move begins, the press waits in the buffer)
     if (dodging) allow = false;
@@ -349,8 +378,11 @@ export class Moveset {
     if (c.kind === 'launcher' && c.high && this.arc && c.t >= end - 0.03 && P.vel.y > -RIDE.turn && c.age < RIDE.hold) c.t = end - 0.03; // (High Time: its last pose held till their own arc turns over)
     if (c.phase !== 'fall' && c.def.plunge && c.t >= c.def.plunge.hold && !c.landed) { c.t = c.def.plunge.hold; c.phase = 'fall'; }
     // charge: the opener held becomes the hold, the hold released becomes the blow
-    if (c.kind === 'charge-hold') { this.charge = Math.min(1, this.charge + dt / 1.1); if (!inp.isDown(B)) { if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return; } }
-    else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
+    if (c.kind === 'charge-hold') {
+      this.charge = Math.min(1, this.charge + dt / 1.1);
+      this.holding((c.holdT = (c.holdT || 0) + (this.game.rawDt ?? dt))); // (real seconds into the hold: past HOLD_MAX the run ends)
+      if (!inp.isDown(B)) { if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return; }
+    } else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
     if (!inp.isDown(B)) this.held = false;
     this.sweep();
     const at = c.def.at ?? c.def.track?.strike[0];

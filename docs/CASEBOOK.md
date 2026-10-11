@@ -554,8 +554,46 @@ NEW:window-runs-unread. **A window kept in an update runs on while that update i
 NEW:count-what-the-record-names. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
     ledger (a run, a streak) takes its definition from the plan that owns the record (Dovina's `sond.string.best`: "LMB string blows"),
     not from whatever reaches the same door; every kind that reaches it is named in or out, and a test mixes in the kinds left out.
+NEW:streak-edges-named. **A streak names every way it ends, and bounds every way it waits.** A count kept in a row for a record (the
+    string run) is ended by every way the body leaves play, heard where all of them already pass (`course.teleport` and the respawn
+    reset the techs: the tool's `reset()`; a seam, read while it is under way; the guard's rescues, as events), never one caller at a
+    time. A clock that waits on a held input waits a stated time (`HOLD_MAX`), never for as long as it is held; and a wait made by not
+    calling the clock's update (the iaido's charge, Blade Mode) is a wait too: named in the rule, and bounded or ruled to stand.
 
 ## Cases
+
+### 2026-10-11 · A string run lived through a 5.5 s charge, a trip across the island and a held iaido (Dovina's rulings on the run's edges)
+
+- **Seen:** headless, the blow events' battery on the base (5240719). c1 landed and LMB was held 5.5 real s: the run lived the whole
+  hold and ended only at the release's whiff (`{ run 1, miss }`, 310 frames into the hold). c1 and c2 landed, then
+  `places.travel('kiln')` set them down 45 m away in the workshop: the run lived it, and c3, c4 there made `{ run 4, pause }`. The
+  iaido's charge and Blade Mode kept the string's window from running at all, for as long as they were held.
+- **Cause (measured):** the run ended on a miss, a blow taken, the window's lapse, a stow, or the god hand, the garden or a crossing,
+  and nothing else. A move on show holds the window, so the charge's hold kept it as long as LMB was down. The iaido's charge and Blade
+  Mode return before the cutlass reads the engine, so its window waited for them. A place change (`course.teleport`, the respawn), a
+  seam and the guard's rescue sent nothing the moveset heard, and a teleport is instant, inside any window.
+- **Fix:** Dovina's four rulings (MELEE-LOADOUT-EARNING.md section 1), in `tools/moveset.js` (THE RUN'S EDGES). `holding(t)` ends the
+  run (`pause`) past 2 real s of a hold: the engine's charge-hold, timed in `rawDt`, and the iaido's charge (`cutlass.js`). `leave()`
+  ends it (`pause`) on a seam under way (`game.seam.busy`, read in `update` and `idle`), a guard's `courier.rescue` (not the
+  controller's `clip`), `courier.respawn` and every `course.teleport` (it resets the techs: the Sondelass's new `reset()`). The cut over
+  a whiff and Blade Mode needed no change: they were measured as already built. The string's place is left to its window.
+  Measured after, a case for each side:
+  - **The hold.** 1.5 s held: no end in it, and c1 with the charged slash made `{ run 2, pause }`. 2.5 s held: `{ run 5, pause }` 121
+    frames into the hold, then the slash landed as a new run of 1.
+  - **The iaido's charge** (too little Lachryma for Blade Mode). 1.5 s: run 2 lived it, and c3 made it 3. 2.5 s: `{ run 2, pause }`
+    120 frames after the press; the draw cut stays apart, and c3 opened a new run.
+  - **The Courier's own moves** inside the window: an air dash (8.6 m), the roll (4.0 m) and the hook's pull (14 frames reeled) each
+    carried the run to 3.
+  - **What is not theirs:** a seam, `places.travel`, a guard's rescue (`reset`) and `respawn` each sent `{ run 2, pause }` on the frame
+    it happened (the seam's before the dark had covered anything).
+  - **Blade Mode**, held 2.5 real s with three cuts: no `move.blow` from its cuts; the window stood at 0.017 s on entry and 0.021 s at
+    exit; c3 made `{ run 3, pause }`.
+  - **The cut over a whiff.** R, or the blink, before c2's strike (t 0.073 and 0) ended nothing; nor did the blink inside it (t 0.202,
+    nothing struck yet). After it (t 0.33), R, the blink, the paid cut into the stinger and the guard all left `{ run 1, miss }`, sent
+    on the frame the window passed. RMB before the strike is no cut: its press waits for the blow to end (`cutlass.js` `rmb`), so c2
+    whiffed on its own and ended the run `{ run 1, miss }` as any whiff does.
+  - **Every old case** (31, and 8 random) is unchanged but where the rulings reach: the travel cases and the long hold.
+- **Rule:** NEW:streak-edges-named.
 
 ### 2026-10-11 · A stinger between string blows opened a string slot a blow early (the verifier, before merge: the blow events)
 
