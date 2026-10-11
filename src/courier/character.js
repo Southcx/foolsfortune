@@ -611,8 +611,13 @@ export class Character {
     const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> the prowl
     // (a take-off from the crouch: its weight held under the air's rising one until the air has the whole body, so the body goes from the
     //  crouch into the jump's own spring and never through the standing idle between: the owner's crouch-jump hiccup, 2026-10-11, showed
-    //  the idle at 0.29 for a held C. Let go once the air is whole, and on the ground at the crouch's own rate)
-    if (!footed && st.footed !== false) st.crHold = cr;
+    //  the idle at 0.29 for a held C. Let go once the air is whole, and on the ground at the crouch's own rate. Taken at the larger of this
+    //  frame's crouch and the last, as getting up from the belly lets the crouch start falling on the take-off frame itself. Landed back into
+    //  the crouch before the air was whole, as under a roof too low to stand, it is kept while the crouch climbs back up to it: let go at the
+    //  crouch's rate there, the two crossed at 0.44 and the standing idle showed at 0.41 in the 1.5 m basement tunnel)
+    const crPrev = st.crPrev ?? cr; st.crPrev = cr;
+    if (!footed && st.footed !== false) st.crHold = Math.max(cr, crPrev);
+    else if (footed && cr < (st.crHold || 0) && (cr > crPrev || st.footed === false)) { /* (landed into the crouch: kept until it is back; the landing frame's own crouch still falls) */ }
     else if (footed || this.airT > 0.95) st.crHold = damp(st.crHold || 0, 0, 12, dt);
     st.footed = footed;
     const crS = Math.max(cr, st.crHold || 0);

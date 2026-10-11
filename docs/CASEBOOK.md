@@ -550,10 +550,12 @@ NEW:collider-pose-same-step. **A collider's shape and its place change in the sa
     controller, a shape cast) meets the new shape at the old place. Set its world translation there and then too (`player.setShape`).
 NEW:takeoff-holds-pose. **A layer that hands the body to another keeps its weight until the other is whole.** Two weights eased at
     their own rates (the crouch out at 12/s, the air in at 10/s) show whatever lies under both for the length of the handover (the
-    standing idle, at 0.29). Hold the outgoing one's weight under the incoming one until it is whole, then let it go at its own rate.
+    standing idle, at 0.29). Hold the outgoing one's weight under the incoming one until it is whole, then let it go at its own rate;
+    and when the handover turns back before it is done (a jump cut short by a roof), keep the hold until the layer has climbed back.
 NEW:hands-given-back. **What takes the hands puts the tool away through the belt and gives it back through it.** The one asked out
     is remembered and drawn again once the hands are free; one put away by hand meanwhile stays away; and nothing pressed while
-    the hands were taken (a draw key, the aim held) is kept for after (`tools/proneholster.js`).
+    the hands were taken (a draw key, the aim held, the trigger's own queue: a tap, a shell, a charge) is kept for after
+    (`tools/proneholster.js`; the psygun's queue is its own, let go in `weapon.js`).
 
 ## Cases
 
@@ -577,6 +579,14 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   k35, the fixed step's accumulator); the standing idle shown falls from the crouch's own 0.20 at k-1 (0.17 at k0) and never rises;
   walking crouched, the walk shown 0.017 at most where it was 0.96. The slide hop with C tapped: 0.199 m before, 0.926 after (C held:
   0.926 both). C held and let go, crouch to prone to stand, sprinting out of the crouch: feet heights and grounding unchanged, no rescue.
+- **Found at review (the verifier):** in the basement tunnel (a 1.5 m roof, no room to stand) the crouch jump hits the roof at 0.119 m
+  and lands at k6, before the air is whole; the hold was let go on landing at 12/s while the crouch (fallen to 0.30 in the air: player.js
+  aims it at 0 off the ground) climbed back at 12/s, and the two crossed: the crouch's weight 0.80 to 0.44 at k8, the standing idle 0.41,
+  the hip 0.455 to 0.625 m over the feet until about k20. Fix: landed into a crouch that is climbing back, the hold is kept until the
+  crouch reaches it (the landing frame itself too, where the crouch still falls one more step), and the hold is taken at the larger of
+  the take-off frame's crouch and the frame before's (getting up from the belly lets the crouch start falling on the take-off frame:
+  0.82, the idle 0.29). Measured: the tunnel's crouch weight 0.80 throughout, the idle 0.198 at most (the crouch's own 0.20), the hip
+  back to 0.46 m by k16; the get-up jump's first frame lifts the head 0.083 m (was 0.177; the C-toggle jump's 0.085), the idle 0.169.
 - **Rule:** NEW:collider-pose-same-step; NEW:takeoff-holds-pose.
 
 ### 2026-10-11 · Tools stayed in the hands on the belly (the owner: "it looks SUPER goofy otherwise")
@@ -594,6 +604,17 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   stands them up: a CROSSING in player.js), and F picks nothing up lying down (carry.js). Measured, headless: the cutlass and the
   psygun in the holster by k90 (prone at k70), drawT 0 while down, Q, X, LMB, R and RMB held all refused, drawn again at k190 (the
   getting up done at k189), in hand at k205; Q pressed as the cutlass went back: it stayed away.
+- **Found at review (the verifier):** the psygun kept presses made lying down and fired them later by itself. LMB tapped prone: the
+  quick-draw buffer was held at 0.05 (`tryFire` keeps it while the gun is not up) and the shot left as the gun came back; the middle
+  button: `wantShell` held, a slicer shell spent; a charge released prone: `releaseCharged` held, a charged beam; a charge held into
+  prone: frozen at 0.37 with its Lachryma reserved, and resumed once the gun was back. With the Sondelass or nothing coming back, the
+  same fired at the next psygun draw. Cause: the holster stowed the gun every frame, but the gun's own trigger queue is not the
+  belt's, and the gun read its keys after the holster had run. Fix: a CROSSING in `tools/psygun/weapon.js`: while the prone holster is
+  `busy` the gun reads as another tool out (every one of its keys held up, the charge cancelled and refunded, a move cancelled), and its
+  buffer, its press clock, a shell asked for and a homing paint are let go. Measured, headless, both builds: the tap, the shell, the
+  charged release, the charge held through, and the same with the Sondelass or nothing coming back (X later): before, a shot or shell
+  at k204, k299 or k314; after, none, and nothing queued on any frame down. A tap or a shell after getting up fires as before (k344 and
+  k341 in both). Also: a seam's reset while getting up no longer ends the refusal early (`down` is read from the posture alone).
 - **Rule:** NEW:hands-given-back.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
