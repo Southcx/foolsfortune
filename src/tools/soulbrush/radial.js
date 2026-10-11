@@ -19,7 +19,7 @@ import { sfx } from '../../audio/sfx.js';
 const HOLD = 0.22; // (real seconds of 1 held before the wheel opens: shorter is a tap, the paint mode)
 const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 /** The radial's slots, in display order, and Clean. `learn`: a feeling not yet drunk shows locked (all seven: the owner, 2026-10-11). */
-const HERE = 'Drink it to learn it: where its weather falls on Anagami.'; // (a placeholder line for Anagami's five: Espada's)
+const HERE = 'Drink it to learn it: where its weather falls on Anagami.'; // (Espada's line for Anagami's five, kept as Petra drafted it)
 export const PICKS = [
   { id: 'wonder', label: 'Wonder', learn: true, where: HERE }, { id: 'mirth', label: 'Mirth', learn: true, where: HERE }, { id: 'desire', label: 'Desire', learn: true, where: HERE },
   { id: 'fury', label: 'Fury', learn: true, where: 'Drink it to learn it: the sea near Entropolis.' }, { id: 'gall', label: 'Gall', learn: true, where: 'Drink it to learn it: the Great Dunemaw, deep.' }, // (Espada's lines, GALL-AND-FURY.md 0)
