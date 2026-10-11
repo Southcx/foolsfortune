@@ -126,6 +126,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
 - **a guard break** (`hit.guardBreak`, `breakGuard()`, `tools/moveset.js`) — a blow that opens a guard (Strawman's) for a beat and lands
   through it: the cutlass's Guard Break and Guard Crush. *Not:* the guard (V), nor the parry. → detail
+- **the loadout editor** (`tools/sondelass/loadouteditor.js`; kept by `game.sondelassLoadout`, save section `sondelassLoadout`; what is open:
+  `loadoutopen.js`) — where the melee loadout is chosen: its slot rows beside its moves as choice cards, at the sparring circle's lectern and on
+  the Codex's SONDELASS shelf. *Not:* the lend panel, the Pneuka Box. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.
 - **damage type** (`src/progress/combat/types.js`) — what kind of force a blow is: Impact, Ego, Influence, Illusion, Delirium; each builds a
   status and trumps one other. *Not:* an element. → detail
@@ -355,7 +358,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   state, its detail on hover; **compare** arrows on what would change; **the slot row** (`slotRow`) a loadout as a bar. *Not:* a card (the
   Veritome's). → detail
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
-  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive. *Not:* a label. → detail
+  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive; and the melee loadout's four effects, Stagger, Knockback, Launch,
+  Guard break (placeholders for Espada's word). *Not:* a label. → detail
 - **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
