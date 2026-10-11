@@ -567,6 +567,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     (`tools/proneholster.js`; the psygun's queue is its own, let go in `weapon.js`).
 202. **Every way of setting the Courier down puts back the same state, through one method.** A respawn and a teleport
     that each list what they reset drift apart; the posture is the Courier's (`player.standUp`), and both call it.
+NEW:goal-counts-what-can-happen. **An achievement's goal counts only what the player can do.** A goal read off a whole list
+    (`game.techs.list.length`) grows with every entry, reachable or not; the predicate and its goal read one named set, shared
+    with the rule that writes the ledger (`loggedTechs`).
 
 ## Cases
 
@@ -3049,3 +3052,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `player.standUp()` (posture stand, its timers and buffer cleared, the standing shape), called by both; the shape's own check
   lowers them where there is no headroom.
 - **Rule:** 202.
+
+### 2026-10-11 · Every Tech, Once could not be earned (Petra, v154's prone holster)
+- **Seen:** lg5's goal was 37 techs, and no play could reach it.
+- **Cause:** the goal was `game.techs.list.length`, which counts the passive techs (carry, kick, recoil, the six tools' holsters, the
+  prone holster) that never start, and the five the tracking rule never logs (emote, talk, rhythm, death, ultimate). Out of reach
+  since the holsters joined the list; v154 only made it 37.
+- **Fix:** `loggedTechs(techs)` in `progress/skills.js`: the startable, logged techs. The tracking rule's firsts and lg5's predicate
+  and goal all read it. Measured: 21.
+- **Rule:** NEW:goal-counts-what-can-happen.
