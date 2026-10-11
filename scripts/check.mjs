@@ -207,6 +207,27 @@ for (const [f, raw] of text) {
   }
 }
 
+// ---- 13. the casebook's rules numbered once (CLAUDE.md, The casebook; the owner, 2026-10-11: "crack that whip"): two divisions each
+// took the next number three times in a day, and the merge kept both. A division writes a new rule as `NEW:<slug>` (in the short list
+// and in its case's **Rule:** line); the gate numbers it (scripts/casebook-number.mjs). Two rules with one number, or a case citing a
+// rule the list does not have, is a hard error; a `NEW:` waiting is only counted.
+const CASEBOOK = path.join(ROOT, 'docs', 'CASEBOOK.md');
+let newRules = 0;
+try {
+  const cb = fs.readFileSync(CASEBOOK, 'utf8'), lines = cb.split('\n'), start = lines.findIndex((l) => /^## The rules, short/.test(l)), end = lines.findIndex((l, i) => i > start && /^## /.test(l));
+  const seen = new Map();
+  for (let i = start + 1; i < end; i++) {
+    const m = lines[i].match(/^(\d+|NEW:[\w-]+)\. \*\*/); if (!m) continue;
+    if (m[1].startsWith('NEW:')) { newRules++; seen.set(m[1], i + 1); continue; }
+    if (seen.has(m[1])) add('casebook.rule.twice', CASEBOOK, i + 1, `rule ${m[1]} is numbered twice (also line ${seen.get(m[1])}): renumber the later one at the gate`, true);
+    else seen.set(m[1], i + 1);
+  }
+  lines.forEach((l, i) => {
+    const m = l.match(/^- \*\*Rule:\*\* (\d+|NEW:[\w-]+)/); if (!m || i < end) return;
+    if (!seen.has(m[1])) add('casebook.rule.missing', CASEBOOK, i + 1, `the case cites rule ${m[1]}, which the short list does not have`, true);
+  });
+} catch { /* no casebook */ }
+
 // ---- tally against the baseline
 const counts = {};
 for (const x of findings) if (!x.hard) counts[`${x.rule}|${x.file}`] = (counts[`${x.rule}|${x.file}`] || 0) + 1;
@@ -237,6 +258,7 @@ if (args.has('--update') || adopt.size) {
   fs.writeFileSync(BASELINE, JSON.stringify(Object.fromEntries(Object.entries(next).sort()), null, 1) + '\n');
   console.log(`baseline written: ${Object.keys(next).length} rule/file pairs`);
 }
+if (newRules) console.log(`\ncasebook: ${newRules} new rule${newRules === 1 ? '' : 's'} (NEW:<slug>) to be numbered at the gate (scripts/casebook-number.mjs)`);
 const ok = !hard.length && !fresh.length;
 console.log(ok ? '\ncheck: OK (no new debt)' : '\ncheck: FAILED');
 process.exit(ok ? 0 : 1);

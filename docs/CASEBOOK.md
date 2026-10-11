@@ -2,6 +2,8 @@
 
 One case per fix, newest first: the cause (measured, not guessed), the fix, and **the rule** that keeps it from happening twice. Read
 the rules before building in the same area; a rule a machine can check goes into `npm run check` or a test too. (The owner, 2026-10-06.)
+A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wherever it is cited) and numbered at the gate by
+`scripts/casebook-number.mjs`; `npm run check` fails on a number used twice or a rule a case cites that is not here (2026-10-11).
 
 ## The rules, short (from the cases below)
 
@@ -531,6 +533,18 @@ the rules before building in the same area; a rule a machine can check goes into
 192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
+193. **A listener on the bus asks the same filter the ledger's rules ask.** Anything that pays for an event outside tracking.js (the domains'
+   exp, Soul Alchemy's seasoning) skips a training body (`isTraining`, `combat/testroom.js`): one list of what never pays, for every payer.
+194. **A pose longer than its capsule is cleared where it is drawn.** A look that lies past the capsule it stands on (the belly crawl: 2.2 m
+    over a circle 0.27 m in radius) pokes through what the capsule stops at, and a thing's extent is measured, not guessed: the posed
+    mesh's reach by angle about the capsule's axis, then the poke at a plain wall in each way the body meets one (into it, along it,
+    turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
+    and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
+    goes to its owner with the numbers.
+NEW:launch-end-speed. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+    (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
+    launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
+    speed at a handover reads the move's own speed otherwise.
 NEW:carry-from-hands. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
     is posed and before any hand's IK), in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still
     while the body bobs under it and the IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the
@@ -586,6 +600,44 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
   8.9 cm at most (was 15.6). A set-down's first frame moves the pot 0.6 cm, the second as the first. Not changed: crouch-walking, the
   leading thigh still passes into a held pot's side (645 skinned vertices, 13 cm, as before the fix).
 - **Rule:** NEW:carry-from-hands, NEW:let-go-clear.
+
+### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
+
+- **Seen:** headless, the blink cancel's probe: E 2 or 8 frames into the stinger, the Courier came out of the blink at 14 m/s and went
+  8.03 m in the 30 frames from the press, against 6.3 m/s and 5.4 m out of c2, the launcher or the iaido's charge; an LMB 4 frames
+  after was the dash slash, not the string.
+- **Cause (measured):** the blink's exit is the body's speed at its start or its own 7 m/s, the greater (`blink.js`, `hs0`). The
+  stinger's launch carries them at 30 m/s and sheds to its `endSpeed` 6 only in `Launch.finish()`; the cut-in ends the launch with
+  `end()` alone, so the blink read 30 m/s, and the core's cap left 14.
+- **Fix:** the stinger's `onEnd` and every carried move's (`Moveset.carry`) shed to the launch's `endSpeed` (`shedSpeed`; on the
+  ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
+  the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
+  slash; now c3).
+- **Rule:** NEW:launch-end-speed.
+
+### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
+
+- **Seen:** prone (C, C) at the workshop's south wall (the plane z = -15; the capsule's axis can come to 0.32 m of it), the posed body
+  measured against the plane, mesh and bones, three ways. Crawling straight at it: the hands 31 and 36 cm through, the fingers 61 cm,
+  the mesh 64 cm (the head's bone stopped 4 cm short: the arms lead the head, they do not follow it). Crawling along it, leaning on it:
+  the shin 11 cm, the mesh 15 cm (the knees flare 0.46 m each side). Turning in place beside it (the combat stance, 90 degrees a second): a toe
+  86 cm, the mesh 92 cm, facing away (the feet trail 1.25 m behind the axis); 64 cm with the capsule 0.6 m off the plane.
+- **Cause (measured):** the capsule stands upright, 0.27 m in radius, 0.8 m tall: it knows nothing of the body lying on it. The belly's
+  outline about the axis, from every vertex over a crawl cycle (hair, fingers, toes): 0.97 m ahead (the hands, at 15 degrees off the
+  facing), 0.46 m to each side, 1.25 m behind (the toes). The wall stops the circle 0.32 m off; the rest of the body goes through.
+- **Fix:** the clearance in the look (`courier/anim/crawl.js`; the body is Petra's, so `player.js` is untouched). 48 rays round the axis at
+  0.3 m, each as long as the outline reaches that way and half a metre more; each surface point inside the outline (a convex polygon of
+  24 support planes, `CRAWL.outline`) is moved out along its normal by the polygon's nearest edge, the planes found added by the way
+  they face, and the body so slid tried again against every point (4 rounds: a prop's push into a wall is given back, the poke shared).
+  The slide goes on the pelvis only (the pose, the hands and the feet are the clips'), at most 1 m, in at a rate of 60 a second (a
+  rate of 30 left 14 cm of toe through the wall in a 540 degree-a-second turn) and out over about 0.15 s. Two first tries fell
+  short: the plane the support function gave for a hit, taken as infinite, pushed the body 0.85 m out of the way of the end faces of two
+  short walls it could pass between; the push of one surface alone sent the body 14 cm into the wall beside a prop. Measured after
+  (the same harness, the clearance patched off for before): straight at it, the mesh 0.2 cm through at worst (1 cm short at rest), along
+  it, 2 cm short; turning, 0.6 cm short, 4 and 6 cm through for a tick or two at 540 and 1080 degrees a second; in the open, a slide
+  of exactly 0; 0.09 ms a frame prone. What it cannot hold: a gap narrower than the body (0.7 m wide, two walls: 10 cm through each,
+  the same as before); handed to Petra with the numbers (`docs/handoffs/petra/2026-10-11-from-calissa-prone-reach.md`).
+- **Rule:** 194 (new; 193 as Calissa wrote it, renumbered at the gate: Dovina's 193 was first).
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 
@@ -2917,3 +2969,11 @@ NEW:let-go-clear. **What is let go of is solid to the Courier only once it is cl
 - **Fix:** a room with no key is picked as the Index itself offers, with arrows from its current selection and Enter. The basement
   sweep: 362 pass, 0 fail, the two debug chests' rooms reached by arrows.
 - **Rule:** 190.
+
+### 2026-10-11 · Training bodies seasoned Focus and paid Divination's exp (Calissa's handoff, melee phase 1)
+- **Seen:** six statuses built on the status bench's roly-polies raised `alchemy.s.season.focus` from 0 to 6, while the ledger stayed 0.
+- **Cause:** `alchemy.js` and `psyche.js` listen to the bus directly; only tracking.js's `on` wrapper skipped Strawman (`training`,
+  `kind: 'strawman'`), and the roly-polies were new.
+- **Fix:** `isTraining(e)` in `progress/combat/testroom.js` (Strawman, the roly-polies, anything marked `training`), asked by Soul Alchemy's
+  seasoning and the domains' exp; tracking.js may ask it too (Petra's).
+- **Rule:** 193 (191 as Dovina wrote it, renumbered at the gate: Calissa's 191 and 192 were first).

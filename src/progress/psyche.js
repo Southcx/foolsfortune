@@ -10,6 +10,7 @@
 //
 //   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key) }
 // ---------------------------------------------------------------------------------------
+import { isTraining } from './combat/testroom.js';
 import { DOMAINS, SOURCES, WIDEN, expFor, levelOf, widenAt } from './domains.js';
 
 const EVENTS = new Set(SOURCES.map((s) => s.event));
@@ -25,7 +26,7 @@ export function installPsyche(game) {
     widen: (key) => widenAt(key, WIDEN[key] ? levelOf(exp(WIDEN[key].domain)) : 1),
   };
   game.events.on('*', (e) => {
-    if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier')) return;
+    if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/testroom.js)
     for (const [d, n] of expFor(e)) {
       if (!(n > 0)) continue;
       const was = levelOf(exp(d));

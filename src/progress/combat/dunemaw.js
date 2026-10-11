@@ -134,8 +134,8 @@ export const litRing = (sunUp, shaded, aspect = null) => !!sunUp && !shaded && !
  *  ledger never counts (`training`). It speaks once a bout: the log's one line when the blows stop. */
 export const STRAWMAN = {
   boutGap: 4, // (real seconds without a blow end a bout, and the log says it)
-  modes: ['still', 'guard', 'swing'], // (F at Strawman cycles: stands; blocks from the front; swings slowly every 3 s, telegraphed, for no harm)
-  swing: { every: 3, telegraph: 0.925, harm: 0, reach: 2.6, push: 4 }, // (telegraph: to the sweep's middle, vfx/strawman.js; reach in m before it; push a shove, m/s)
+  modes: ['still', 'guard', 'swing'], // (stale once Calissa's melee phase 1 lands: the stance is the sparring lectern's and the swing a string's move;
+  swing: { every: 3, telegraph: 0.925, harm: 0, reach: 2.6, push: 4 }, //  then both go: world/testroom/room.js still reads them on main)
 };
 /** A bout's sum from its blows ({ at (s), dmg, type, status? }): the readout, in place of floating numbers. */
 export function bout(hits) {

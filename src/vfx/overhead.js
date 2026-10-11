@@ -9,7 +9,9 @@
 // the scene round the camera, that the rain tests against), done here with the physics' rays instead of a second render, which keeps
 // it to a few dozen rays a frame and no draw calls.
 //
-//   const O = new Overhead(game, { n, cell })   O.update(cameraPos, raysPerFrame)   O.u (uniforms: uOcc, uOccK)   OVERHEAD_GLSL
+//   const O = new Overhead(game, { n, cell, from })   O.update(cameraPos, raysPerFrame)   O.u (uniforms: uOcc, uOccK)   OVERHEAD_GLSL
+//   `from`: how far over the given point each ray starts (40 m: the roof over a room; the awakening's flood starts just over the
+//   Courier's head, so a room's floor is what it finds and the flood falls indoors: vfx/awakening.js)   O.fill(pos) every cell at once
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { G, groups } from '../core/physics.js';
@@ -29,8 +31,8 @@ float overheadY(vec2 xz) {
 }`;
 
 export class Overhead {
-  constructor(game, { n = 32, cell = 1.75 } = {}) {
-    this.game = game; this.n = n; this.cell = cell;
+  constructor(game, { n = 32, cell = 1.75, from = 40 } = {}) {
+    this.game = game; this.n = n; this.cell = cell; this.from = from;
     this.data = new Float32Array(n * n * 4).fill(1e9); // (cell ids no world cell has: all unknown)
     this.tex = new THREE.DataTexture(this.data, n, n, THREE.RGBAFormat, THREE.FloatType);
     this.tex.minFilter = this.tex.magFilter = THREE.NearestFilter; this.tex.needsUpdate = true;
@@ -46,7 +48,7 @@ export class Overhead {
   /** A few more cells measured (from high over the eye down to well below it). */
   update(pos, rays = 48) {
     const P = this.game.physics; if (!P?.raycast) return;
-    const cx = Math.floor(pos.x / this.cell), cz = Math.floor(pos.z / this.cell), n = this.n, top = pos.y + 40;
+    const cx = Math.floor(pos.x / this.cell), cz = Math.floor(pos.z / this.cell), n = this.n, top = pos.y + this.from;
     for (let r = 0; r < rays; r++) {
       const [di, dj] = this.order[this.k]; this.k = (this.k + 1) % this.order.length;
       const x = cx + di, z = cz + dj;
@@ -57,6 +59,9 @@ export class Overhead {
     }
     this.tex.needsUpdate = true;
   }
+
+  /** Every cell measured now (a map that must be whole at once: the flood's first frame). */
+  fill(pos) { this.update(pos, this.order.length); }
 
   dispose() { this.tex.dispose(); }
 }

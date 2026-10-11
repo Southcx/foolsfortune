@@ -17,10 +17,16 @@
 // Montage sections (a chain of clips with a way out from each), and the inertial/crossfade blends of every engine's animation graph.
 //
 //   game.techs.get('emote').request('wave') -> true | 'already' | 'busy' | 'unknown'        .stop()   (events: emote.start, emote.end)
+//   A feeling's clip (courier/anim/feelingclips.js, the awakening's: `request(feelingClipId('wonder'))`) plays the same way, but is no
+//   emote: no event, so nothing logs it, counts it or reacts to it.
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { EMOTES } from '../emotes.js';
+import { feelingClipOf } from '../anim/feelingclips.js';
+
+/** What an id plays: an emote, or a feeling's clip (the awakening's). */
+const specOf = (id) => EMOTES[id] || feelingClipOf(id);
 
 const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'];
 const FADE = 0.22; // (s: a phase change's crossfade)
@@ -51,25 +57,25 @@ export class Emote extends Tech {
   get handsBusy() { return true; } // (the gun goes away for it)
   /** A floor pose's legs are the clip's (the foot IK would fold the knees its own way), to the end of its fade: the IK switched back on
    *  under a pose still half the clip's turned the knee 10 degrees in a frame (measured); under the body's own it moves nothing. */
-  get keepsLegs() { return this.cur ? !!EMOTES[this.cur].floor : !!this.tail?.floor; }
+  get keepsLegs() { return this.cur ? !!specOf(this.cur).floor : !!this.tail?.floor; }
   label() { return this.cur ? this.cur.toUpperCase() : 'EMOTE'; }
 
   /** Ask for an emote by id; false (and a reason) if it cannot begin now. */
   request(id) {
     const P = this.P, g = this.game;
-    if (!EMOTES[id]) return 'unknown';
+    if (!specOf(id)) return 'unknown';
     if (this.active && this.cur === id) return 'already';
     if (g.god?.controlling || g.techs.active && !this.active) return 'busy';
     if (!P.grounded || P.sliding || P.wallrun || g.techs.get('carry')?.item) return 'busy';
     if (!this.ready(id)) {
       const pack = g.clipPack?.social; // (fetched now if nothing has asked yet; the emote begins when it lands)
       if (!pack) return 'busy';
-      pack.then((ok) => { if (this.want === id && !(ok && this.ready(id))) { this.want = null; g.log?.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 }); } });
+      pack.then((ok) => { if (this.want === id && !(ok && this.ready(id))) { this.want = null; if (EMOTES[id]) g.log?.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 }); } }); // (a feeling's clip was not asked for: no refusal said)
     }
     // (from a floor pose, up through its way out first and the new one begins when that is done: crossfaded straight from sitting to a
     //  wave, the legs unfolded through the floor in 0.2 s, 0.14 m under it, measured; any other emote straight into the next, its last
     //  pose faded under the new)
-    if (this.active && EMOTES[this.cur].floor && EMOTES[this.cur].exit) { this.leaving(); this.want = id; return true; }
+    if (this.active && specOf(this.cur).floor && specOf(this.cur).exit) { this.leaving(); this.want = id; return true; }
     if (this.active) this.mgr.stop();
     this.want = id;
     return true;
@@ -77,39 +83,39 @@ export class Emote extends Tech {
   stop() { this.want = null; if (this.active) this.leaving(); }
 
   /** Every clip the emote names is in the pack. */
-  ready(id) { const c = this.game.character?.clips?.clips; return !!c && clipsOf(EMOTES[id]).every((n) => c[n]); }
+  ready(id) { const c = this.game.character?.clips?.clips; return !!c && clipsOf(specOf(id)).every((n) => c[n]); }
   canStart() {
     if (!this.want) return false;
     if (MOVE_KEYS.some((k) => this.game.input.isDown(k))) { this.want = null; return false; } // (walked off while it was on its way)
     return this.P.grounded && this.ready(this.want);
   }
   start() {
-    const P = this.P, g = this.game, E = EMOTES[this.want];
+    const P = this.P, g = this.game, E = specOf(this.want);
     this.cur = this.want; this.want = null;
     P.endCore?.(); P.vel.set(0, 0, 0);
     this.yaw = P.yaw;
     for (const t of g.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow();
     this.prev = this.tail ? { ...this.tail, f: 1 - this.tail.f } : null; this.tail = null; this.sunk.clear(); // (an emote still fading out is faded under this one, from where its fade had got to)
     this.phase = null; this.set(E.enter ? 'enter' : E.loop ? 'loop' : 'once');
-    g.events.emit('emote.start', { emote: this.cur, by: 'courier' });
+    if (EMOTES[this.cur]) g.events.emit('emote.start', { emote: this.cur, by: 'courier' }); // (a feeling's clip is no emote: nothing says it)
   }
   /** Begin a phase (and a step of its chain); the one it leaves is held where it was and faded out under it. */
   set(phase, step = 0) {
     if (this.phase && this.phase !== 'done') { const n = this.clipOf(); this.prev = { name: n, t: this.timeIn(n), loop: this.phase === 'loop', f: 0 }; }
     this.phase = phase; this.step = step;
-    this.ct = phase === 'once' ? EMOTES[this.cur].from || 0 : 0;
+    this.ct = phase === 'once' ? specOf(this.cur).from || 0 : 0;
   }
   clipOf() {
-    const E = EMOTES[this.cur], c = this.phase === 'enter' ? E.enter : this.phase === 'loop' ? E.loop : this.phase === 'exit' ? E.exit : E.once;
+    const E = specOf(this.cur), c = this.phase === 'enter' ? E.enter : this.phase === 'loop' ? E.loop : this.phase === 'exit' ? E.exit : E.once;
     return Array.isArray(c) ? c[this.step] : c;
   }
-  steps(phase) { const c = EMOTES[this.cur][phase]; return Array.isArray(c) ? c.length : 1; }
+  steps(phase) { const c = specOf(this.cur)[phase]; return Array.isArray(c) ? c.length : 1; }
   dur(name) { return this.game.character?.clips?.clips?.[name]?.dur || 1; }
   /** Where the phase ends (a once may be cut short: `to`). */
-  endOf() { const n = this.clipOf(); return this.phase === 'loop' ? Infinity : this.phase === 'once' ? Math.min(EMOTES[this.cur].to ?? Infinity, this.dur(n)) : this.dur(n); }
+  endOf() { const n = this.clipOf(); return this.phase === 'loop' ? Infinity : this.phase === 'once' ? Math.min(specOf(this.cur).to ?? Infinity, this.dur(n)) : this.dur(n); }
   timeIn(name) { return this.phase === 'loop' ? this.ct % this.dur(name) : Math.min(this.ct, this.endOf() - 0.001); }
   leaving() {
-    const E = EMOTES[this.cur];
+    const E = specOf(this.cur);
     if (!E || this.phase === 'exit' || this.phase === 'done') return;
     if (!E.exit) { this.phase = 'done'; return; }
     // (halfway into a chain, out by the way back from that step: the hover's rise is undone before the sitting is; and halfway into a
@@ -120,7 +126,7 @@ export class Emote extends Tech {
     if (into > 0) this.ct = (1 - into) * this.dur(this.clipOf());
   }
   update(dt) {
-    const P = this.P, inp = this.game.input, E = EMOTES[this.cur];
+    const P = this.P, inp = this.game.input, E = specOf(this.cur);
     if (!E) return false;
     P.vel.set(0, -2, 0); P.move(dt);
     this.ct += dt;
@@ -134,8 +140,8 @@ export class Emote extends Tech {
     return true;
   }
   end() {
-    this.game.events.emit('emote.end', { emote: this.cur, by: 'courier' });
-    this.tail = this.last.name ? { ...this.last, f: 1, k: this.w, floor: !!EMOTES[this.cur]?.floor } : null; // (the last pose, faded off the body's own from the weight it had: tick counts it down, animate draws it)
+    if (EMOTES[this.cur]) this.game.events.emit('emote.end', { emote: this.cur, by: 'courier' });
+    this.tail = this.last.name ? { ...this.last, f: 1, k: this.w, floor: !!specOf(this.cur)?.floor } : null; // (the last pose, faded off the body's own from the weight it had: tick counts it down, animate draws it)
     this.cur = null; this.phase = null; this.prev = null; this.last.name = null;
   }
   reset() { this.want = null; this.tail = null; }
@@ -147,13 +153,13 @@ export class Emote extends Tech {
       if (tl) C.blend(base, this.pose(ch, tl.name, tl.t, tl.loop), smooth(tl.f) * tl.k);
       return;
     }
-    if (EMOTES[this.cur].floor && this.measured !== this.cur) { for (const n of clipsOf(EMOTES[this.cur])) this.liftOf(ch, n); this.measured = this.cur; }
+    if (specOf(this.cur).floor && this.measured !== this.cur) { for (const n of clipsOf(specOf(this.cur))) this.liftOf(ch, n); this.measured = this.cur; }
     const name = this.clipOf(), t = this.timeIn(name), loop = this.phase === 'loop';
     const L = this.last; L.name = name; L.t = t; L.loop = loop;
-    if (EMOTES[this.cur].floor) this.offFloor();
+    if (specOf(this.cur).floor) this.offFloor();
     // (lying down: the worn tools out of sight while the body is down, from halfway down to halfway up; each tool shows itself again
     //  from its own tick, which runs before this, so nothing is left hidden: tools/belt.js hideWorn)
-    if (EMOTES[this.cur].bare && (loop || (this.phase === 'enter' && t > 0.5 * this.dur(name)) || (this.phase === 'exit' && t < 0.5 * this.dur(name)))) this.game.belt?.hideWorn();
+    if (specOf(this.cur).bare && (loop || (this.phase === 'enter' && t > 0.5 * this.dur(name)) || (this.phase === 'exit' && t < 0.5 * this.dur(name)))) this.game.belt?.hideWorn();
     const pv = this.prev;
     if (pv) {
       pv.f = Math.min(1, pv.f + dt / FADE);
