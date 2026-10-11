@@ -7,6 +7,7 @@
 //   brushRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { BOTTLES, STAINS } from '../../progress/brushload.js';
+import { crudeName } from '../../pneuka/items.js';
 
 const STAGE = ['a fresh', 'a spreading', 'a deep', 'a full-grown'];
 const bottleName = (id) => (BOTTLES[id] ? `${id.split('.')[1]} Lachrymato Bottle` : 'Lachrymato Bottle');
@@ -28,17 +29,17 @@ export function brushRules({ on, L, log }) {
   });
   // brush.mop { lachryma, by }: Lachryma drunk into the bottle (or the pool, bottle-less)
   on('brush.mop', (e) => { if (e.by === 'courier') L.inc('mop.lachryma', e.lachryma || 0); });
-  // stain.wash { grade, stage, at, size, by }: a stain mopped up whole (at, size: where it lay and how wide, for its shine)
+  // stain.wash { field, stage, at, size, by }: a blot mopped up whole (at, size: where it lay and how wide, for its shine)
   on('stain.wash', (e) => {
     if (e.by !== 'courier') return;
-    L.inc('stain.wash'); if (e.grade) L.inc(`stain.${e.grade}`);
+    L.inc('stain.wash'); if (e.field) L.inc(`stain.${e.field}`); // (by its crude's field: crude carries no feeling, the owner, 2026-10-11)
     if (e.stage >= STAINS.stages) L.inc('stain.wash.grown');
-    log.say('gain', `You mop up ${STAGE[e.stage] || 'a'} blot of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
+    log.say('gain', `You mop up ${STAGE[e.stage] || 'a'} blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
   });
-  // stain.spawn { grade, kind, by: 'environment' }: a full-grown stain gives up an aberrant Figment
+  // stain.spawn { field, aspect, kind, by: 'environment' }: a full-grown blot gives up an aberrant Figment (the weather's feeling where it rises, or none)
   on('stain.spawn', (e) => {
     L.inc('stain.spawn');
-    log.say('combat', `A blotling crawls out of a blot of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stainspawn', throttle: 3 });
+    log.say('combat', `A blotling crawls out of a blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stainspawn', throttle: 3 });
   });
   // bottle.crack { bottle, spilled, by: 'creature' | 'environment' }: a broken shield cracked the glass
   on('bottle.crack', (e) => {

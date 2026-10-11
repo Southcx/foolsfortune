@@ -162,7 +162,7 @@ principles' squash and stretch, Super Mario 64's landing squash, Ratchet & Clank
 > so the action breaks when attempting to use it on the Strawman." (the owner, 2026-10-11)
 
 What was built (`tools/moveset.js`: `HIGH`, `leap()`, `rise()`; `tools/sondelass/cutlass.js`'s table; casebook, "High Time chased what
-it struck", rule 191):
+it struck", rule 192):
 
 - **The rise is theirs.** From the launcher's strike end (held), a ballistic arc to 3.92 m over the ground they left, at 14.7 m/s²
   (x0.7 the core's 21): the top 0.71 s after the strike's end. The launcher's last pose holds till that arc turns over (3 m/s down). An

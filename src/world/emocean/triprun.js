@@ -27,7 +27,7 @@ import { schedule } from '../../progress/rail/legs.js';
 import { start, arrive, havenChoices, choose, legScore, adrift, drift } from '../../progress/rail/trip.js';
 import { ENCOUNTERS, pickEncounter, offered, apply, strengthOf } from '../../progress/rail/encounters.js';
 import { rutterWorth, next } from '../../progress/econ/passage.js';
-import { ECON } from '../../progress/econ/table.js';
+import { ECON, crudeFieldOf } from '../../progress/econ/table.js';
 import { worthOf } from '../../progress/shop/catalogue.js';
 import { today } from '../../core/calendar.js';
 import { SHIPS } from '../../progress/rail/ships.js';
@@ -218,8 +218,9 @@ export class TripRun {
       case 'exact': ev('passage.exact', { waypoints: a.waypoints, types: a.waypoints.map((id) => this.chart.waypoints[id]?.type) }); break;
       case 'casks': { // crude into the hold, up to its limit (the manifest's entry paid nothing: found, not bought)
         const room = Math.max(0, (ECON.ships[this.state.ship]?.hold ?? 0) - (V?.casks?.() ?? 0)); let n = 0;
-        for (let i = 0; i < Math.min(a.n, room); i++) if ((box?.add(`cask.${a.grade}`, 'loot') ?? -1) >= 0) { (V.s.manifest[a.grade] ||= []).push({ from: 'convoy', paid: 0 }); n++; }
-        V?.dirty?.(); ev('passage.casks', { n, grade: a.grade }); break;
+        const field = crudeFieldOf(a.field || a.grade) || 'dunemaw'; // (crude by field, the owner, 2026-10-11: an ask still naming a feeling reads as its field)
+        for (let i = 0; i < Math.min(a.n, room); i++) if ((box?.add(`cask.${field}`, 'loot') ?? -1) >= 0) { (V.s.manifest[field] ||= []).push({ from: 'convoy', paid: 0 }); n++; }
+        V?.dirty?.(); ev('passage.casks', { n, field }); break;
       }
       case 'bounty': this.bounty = { waypoint: a.waypoint, cubes: a.cubes ?? 0 }; ev('passage.posted', { waypoint: a.waypoint, type: this.chart.waypoints[a.waypoint]?.type, cubes: a.cubes ?? 0 }); break; // (its pay is the ask's: encounters.js postedBounty, Dovina's)
       case 'sellRutter': {

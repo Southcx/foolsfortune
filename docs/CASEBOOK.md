@@ -523,10 +523,12 @@ the rules before building in the same area; a rule a machine can check goes into
 189. **A gesture in every loop is a B.** An idle's loop holds no gesture that plays each time round: it is held out of the loop (A) and,
     if it is wanted, kept as a B played 1 in 4 to 5 (`IDLES.calm`, idlebreak.js). A clip changed in place changes every bake built on
     it: look at those too (the stances over braced).
-190. **A line of sight to a thing never counts the thing.** A ray from the eye to a target's middle ends inside the target: its own
+190. **A sweep reaches a thing the way the player can, every way the game offers.** A list the game shows (the Index's rooms) may hold
+   entries with no key of their own; a sweep that presses only keys throws on the first one, and every check after it never runs.
+191. **A line of sight to a thing never counts the thing.** A ray from the eye to a target's middle ends inside the target: its own
     collider is left out of the test (by entity, `physics.entityOf`), or every solid target reads as hidden behind itself. Measure the
     ray's hit before blaming the candidate list.
-191. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
+192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
 
@@ -547,7 +549,7 @@ the rules before building in the same area; a rule a machine can check goes into
   thing seen to rise 0.1 m in 0.2 s (`RIDE.up`, `RIDE.still`), else let go. Measured: Strawman 3.92 m at 1.17 s, the air blows over its
   head, the plunge from 3.82 m lands at 1.85 s and its ring strikes it; a slip jelly 3.92 m (the same rise), every air blow lands (gaps
   0.62, 1.10, 1.25 m); with nothing struck, 3.92 m at 0.97 s. The paid cut from the launcher into a1 keeps the arc (3.92 m).
-- **Rule:** 191 (new).
+- **Rule:** 192 (new; 191 as Calissa wrote it, renumbered at the gate: Dovina's 190 was first).
 
 ### 2026-10-11 · Strawman could not be locked on to (the owner: "It is also impossible to lock on to the Strawman")
 
@@ -560,7 +562,7 @@ the rules before building in the same area; a rule a machine can check goes into
   through `game.lock.add(ref)`, added by the room that owns it (Strawman, the status bench's eleven roly-polies), and the creature loop
   skips `training`; its `lock.on` carries `training`, so the ledger never counts it. Measured after: `acquire` locks Strawman (the
   reticle on it; the cutlass's moves and blade mode aim through `game.lock`, not entered headless); `lock.on` 0 in the ledger.
-- **Rule:** 190 (new).
+- **Rule:** 191 (new; 190 as Calissa wrote it, renumbered at the gate).
 
 ### 2026-10-10 · The crouch walk's head swung (the owner: "that crouch walk has a lot of excessive head movement")
 
@@ -2854,3 +2856,11 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the marker moved into `Input`'s constructor (core/input.js), the first keydown listener the game registers; main.js only
   says which windows spend an Esc (`input.escSpends`). The same probe: 0 of 25, the mark set in 24 (the 25th's lock never changed).
 - **Rule:** 125 (amended: the mark is taken first).
+
+### 2026-10-10 · The basement sweep threw at the Index's tenth room (Calissa's builder, a13f991)
+- **Seen:** `scripts/sweeps/basement.mjs` passed 177 checks, then threw at line 158; the rest of the sweep never ran.
+- **Cause:** the sweep picked each Index room by pressing its `code`; the debug chests' rooms (past the keyed ones) have none, and
+  `keyboard.press(undefined)` throws.
+- **Fix:** a room with no key is picked as the Index itself offers, with arrows from its current selection and Enter. The basement
+  sweep: 362 pass, 0 fail, the two debug chests' rooms reached by arrows.
+- **Rule:** 190.

@@ -80,7 +80,7 @@ reading a body's tell rather than a mark; that a window is short and late; that 
 
 - **Strawman** stands at the centre (moved from the room's south side: `TR.strawman`; the `strawman` place follows it). F at it does
   nothing now (the owner, 2026-10-11): its stance is the lectern's; the bout is still said in the log. It is a lock target (Z, the
-  reticle on it), added by the room through `game.lock.add` (casebook rule 190). While a string runs it turns on its ball to face you between moves
+  reticle on it), added by the room through `game.lock.add` (casebook rule 191). While a string runs it turns on its ball to face you between moves
   (each move is aimed where it faced as it began, and held: the drawn area is where it lands), and faces the arcade again when it stops.
 - **The ring** is a sumo dohyo's: a disc of tamped clay bounded by straw bales sunk to their middles, each with two cords, the four at
   the quarters set out a hand (the tokudawara). Strawman is straw; the ring is the rule: built. A string runs only while you are inside

@@ -29,7 +29,7 @@ division's files is asked for, never edited past the smallest call-site (CROSSIN
 | **5. Gall and Fury on the rod** | seven lure aspects, their fish, their keys | Dovina (species, prices), Petra (the angler's keys), Espada (names), Calissa (lures' and fish's looks) |
 | **6. Every tool its own UI** | an audit of each tool's on-screen marks, then each tool's own (the Dreamvane's is the model) | Calissa (looks); Petra (hud.js) |
 
-**Phase 1b, built (2026-10-11, Calissa):** Strawman lockable (`game.lock.add`, Petra's ruling; casebook rule 190) and its stance on the
+**Phase 1b, built (2026-10-11, Calissa):** Strawman lockable (`game.lock.add`, Petra's ruling; casebook rule 191) and its stance on the
 sparring circle's lectern (COMBAT-LAB.md section 2); the status bench's roly-polies alive (COMBAT-LAB.md section 5); the psygun's
 crosshair shown only while the psygun is drawn (`feedback/hud.js`, CROSSING). Phase 6's audit is section 4.
 

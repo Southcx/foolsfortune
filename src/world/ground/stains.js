@@ -1,22 +1,24 @@
 // ---------------------------------------------------------------------------------------
-// STAINS: spilled crude on the ground, graded by its feeling (the owner, 2026-10-06; docs/plans/SUNSHINE-SYSTEMS.md section 4, Dovina's
+// STAINS: spilled crude on the ground, named for its field (the owner, 2026-10-06; crude carries no feeling, 2026-10-11: ECON.crude.fields;
+// a blot on Anagami is Dunemaw crude; drawn flat in crude's oil film, so the mop fills the bottle with no feeling of its own; docs/plans/SUNSHINE-SYSTEMS.md section 4, Dovina's
 // numbers in progress/brushload.js STAINS). The game day's layout puts STAINS.shore of them on the Shore, where the voyages' spills
 // come ashore; a cracked Lachrymato Bottle spills one where the Courier stood. Left alone, a stain grows a stage a game day (its crude
 // grows with it), and at the third it spawns ONE aberrant Figment (a slip jelly gone wrong), then holds. The Soul Brush's mop drinks a
 // stain up (tools/soulbrush/load.js); emptied, it is washed (`stain.wash`). A blot LIVES IN THE PAINT MAP (LACHRYMA-LOOP.md 3, rules 6
 // and 7: world/ground/paintmap.js, crude cells that keep): laid there once (and again when the map's window moves), grown by its rim a
-// stage at a time, so two that touch read as one; a spill on a blot of its own feeling joins it; the mop wipes a strip, rim first.
+// stage at a time, so two that touch read as one; a spill on a blot of its own field joins it; the mop wipes a strip, rim first. The
+// blotling a full-grown one gives up takes the feeling of the weather where it rises, or none in fair weather.
 // (Calissa's Stain meshes, vfx/stains.js, are no longer laid: the paint map draws it.)
 //
 // Prior art: Super Mario Sunshine's goop (a stage's pollution that Piranha Plants grow out of, cleaned for access), PowerWash
 // Simulator (the stain coming off is its own reward), and Stardew Valley's daily layout (what the day put down stays until dealt with).
 //
-//   const S = new Stains(game)   S.update(dt)   S.spill(pos, grade, lachryma, by)   S.wipe(a, b, y, want) -> { got, grade, at, smear }
-//   S.list ([{ x, y, z, grade, born, drunk, spawned, from }])   S.stageOf(s)   S.crudeOf(s)
+//   const S = new Stains(game)   S.update(dt)   S.spill(pos, field, lachryma, by)   S.wipe(a, b, y, want) -> { got, field, at, smear }
+//   S.list ([{ x, y, z, field, born, drunk, spawned, from }])   S.stageOf(s)   S.crudeOf(s)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STAINS, stainStage } from '../../progress/brushload.js';
-import { ASPECTS, NATIVE } from '../../progress/weather.js';
+import { ECON, crudeFieldOf } from '../../progress/econ/table.js';
 import { now, today, DAY_MS } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
 
@@ -27,6 +29,9 @@ const SHORE_CAP = 6; // (stains the Shore holds at most: the game days' layouts 
 const _o = new THREE.Vector3(), _down = new THREE.Vector3(0, -1, 0);
 const segDist = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, l2 = dx * dx + dz * dz, t = l2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / l2)) : 0; return Math.hypot(px - ax - t * dx, pz - az - t * dz); };
 
+/** The field of the island the blots lie on (Anagami's: the Great Dunemaw's crude). */
+const HOME_FIELD = ECON.islands.anagami.field;
+
 export class Stains {
   constructor(game) {
     this.game = game; this.list = []; this.laid = -1; this.t = 0;
@@ -34,7 +39,7 @@ export class Stains {
     game.save?.section('stains', {
       scope: 'world', version: 1,
       dump: () => ({ list: this.list.map(({ mapR, ...s }) => ({ ...s })), laid: this.laid }),
-      load: (d) => { this.list = (d.list || []).filter((s) => ASPECTS.includes(s.grade)).map((s) => ({ ...s })); this.laid = d.laid ?? -1; this.draw(); },
+      load: (d) => { this.list = (d.list || []).map(({ grade, ...s }) => ({ ...s, field: crudeFieldOf(s.field || grade) })).filter((s) => s.field); this.laid = d.laid ?? -1; this.draw(); }, // (a blot kept by feeling reads as its field)
       reset: () => { this.list = []; this.laid = -1; this.draw(); },
     });
   }
@@ -43,19 +48,20 @@ export class Stains {
   /** The Lachryma a stain still holds: its stage's crude, less what the mop has drunk. */
   crudeOf(s) { return Math.max(0, STAINS.crude[this.stageOf(s)] - s.drunk); }
 
-  /** A spill: a stain of `grade` where `pos` is (a cracked bottle, a crossing's spill). Its crude starts at what was spilled. */
-  spill(pos, grade, lachryma = STAINS.crude[0], by = 'environment', from = 'spill') {
-    if (!ASPECTS.includes(grade)) return null;
+  /** A spill: a blot of `field`'s crude where `pos` is (a cracked bottle, a crossing's spill; no field: the island's own, Anagami's
+   *  Dunemaw). Its crude starts at what was spilled. */
+  spill(pos, field = null, lachryma = STAINS.crude[0], by = 'environment', from = 'spill') {
+    field = crudeFieldOf(field || HOME_FIELD); if (!field) return null;
     const y = this.groundAt(pos.x, pos.y, pos.z);
-    const onto = this.list.find((o) => o.grade === grade && Math.abs(o.y - y) < 1.2 && Math.hypot(o.x - pos.x, o.z - pos.z) < RADIUS[this.stageOf(o)] + RADIUS[0]);
-    if (onto) { // (a spill on a blot of its own feeling joins it: its crude added, the blot laid out again to hold it)
+    const onto = this.list.find((o) => o.field === field && Math.abs(o.y - y) < 1.2 && Math.hypot(o.x - pos.x, o.z - pos.z) < RADIUS[this.stageOf(o)] + RADIUS[0]);
+    if (onto) { // (a spill on a blot of its own field joins it: its crude added, the blot laid out again to hold it)
       onto.drunk -= lachryma; onto.mapR = 0; this.draw(); this.save(); // (past its stage's crude: it is laid out bigger, by its area)
-      this.game.events?.emit('stain.spill', { grade, lachryma, from, by, joined: true });
+      this.game.events?.emit('stain.spill', { field, lachryma, from, by, joined: true });
       return onto;
     }
-    const s = { x: pos.x, y, z: pos.z, grade, born: now(), drunk: Math.max(0, STAINS.crude[0] - lachryma), spawned: false, from };
+    const s = { x: pos.x, y, z: pos.z, field, born: now(), drunk: Math.max(0, STAINS.crude[0] - lachryma), spawned: false, from };
     this.list.push(s); this.draw(); this.save();
-    this.game.events?.emit('stain.spill', { grade, lachryma, from, by });
+    this.game.events?.emit('stain.spill', { field, lachryma, from, by });
     return s;
   }
 
@@ -63,19 +69,19 @@ export class Stains {
    *  rim, up to `want` Lachryma; a thin smear pushed on 0.5 m. An emptied blot is washed. */
   wipe(a, b, y, want, width = null) {
     const pm = this.game.paintmap, w = width ?? STAINS.wipe ?? 2.4; // (`width`: Clean's splat, not the mop's strip)
-    let got = 0, grade = null, at = null, smear = null;
-    if (!pm) return { got, grade, at, smear };
+    let got = 0, field = null, at = null, smear = null;
+    if (!pm) return { got, field, at, smear };
     for (const s of this.list.slice()) {
       if (got >= want) break;
       if (Math.abs(s.y - y) > 1.2 || segDist(s.x, s.z, a.x, a.z, b.x, b.z) > this.reach(s) + w / 2) continue;
       const per = this.perCell(s), r = pm.wipe(a.x, a.z, b.x, b.z, s.y, w, (want - got) / per, true, s);
       if (r.got <= 0) continue;
-      const t = Math.min(this.crudeOf(s), r.got * per); s.drunk += t; got += t; grade = s.grade; at = s; smear = r.smear;
-      if (r.smear) pm.stamp(r.smear.x, s.y, r.smear.z, 0.3, s.grade, 0.15, true); // (the smear: the crude the stroke pushed along, thin)
+      const t = Math.min(this.crudeOf(s), r.got * per); s.drunk += t; got += t; field = s.field; at = s; smear = r.smear;
+      if (r.smear) pm.stamp(r.smear.x, s.y, r.smear.z, 0.3, null, 0.15, true); // (the smear: the crude the stroke pushed along, thin)
       if (this.crudeOf(s) <= 0.01 || !pm.count(s.x, s.y, s.z, this.reach(s), true)) { got += this.crudeOf(s); s.drunk += this.crudeOf(s); this.wash(s); } // (no crude cell left of it: emptied, all of it taken)
     }
     if (got) this.save();
-    return { got, grade, at: at && new THREE.Vector3(at.x, at.y, at.z), smear };
+    return { got, field, at: at && new THREE.Vector3(at.x, at.y, at.z), smear };
   }
   /** How far a blot's cells reach from its middle (it grows past its stage's size when spills join it). */
   reach(s) { return Math.max(RADIUS[this.stageOf(s)], s.mapR || 0) + 0.25; }
@@ -86,7 +92,7 @@ export class Stains {
     const stage = this.stageOf(s), pm = this.game.paintmap;
     this.list.splice(this.list.indexOf(s), 1);
     pm?.wipe(s.x, s.z, s.x, s.z, s.y, 2 * RADIUS[stage] + 1, 1e9, true, s); // (what little is left of it, gone with it)
-    this.game.events?.emit('stain.wash', { grade: s.grade, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by: 'courier' }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js)
+    this.game.events?.emit('stain.wash', { field: s.field, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by: 'courier' }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js)
   }
 
   /** The game day's layout: the Shore's stains, a few a game day, seeded by the day (the same for everyone on it). */
@@ -100,7 +106,8 @@ export class Stains {
           const x = land.x + (R() - 0.5) * 50, z = land.z + (R() - 0.5) * 70, w = beach.shoreAt(x, z);
           if (w < 2 || w > 30) continue; // (on the sand, near the waterline: where the sea leaves what it carries)
           const y = beach.heightAt(x, z);
-          this.list.push({ x, y, z, grade: NATIVE[Math.floor(R() * NATIVE.length)], born: d * DAY_MS, drunk: 0, spawned: false, from: 'shore' });
+          this.list.push({ x, y, z, field: HOME_FIELD, born: d * DAY_MS, drunk: 0, spawned: false, from: 'shore' }); // (R()'s draws kept as they were: the layout stays the same)
+          R();
           break;
         }
       }
@@ -119,8 +126,9 @@ export class Stains {
       if (Math.hypot(P.x - s.x, P.z - s.z) > 70) continue; // (it spawns where it can be met: not out of sight across the map)
       s.spawned = true;
       const c = J.spawn(new THREE.Vector3(s.x, s.y + 0.1, s.z), { cls: 1 });
-      if (c) { c.aberrant = true; c.name = 'Aberrant Slip Jelly'; c.grade = s.grade; } // (Espada names it; a bounty's quarry)
-      this.game.events?.emit('stain.spawn', { grade: s.grade, kind: STAINS.spawn.kind, by: 'environment' });
+      const aspect = this.game.weather?.here?.(new THREE.Vector3(s.x, s.y, s.z))?.aspect || null; // (the weather's feeling where it rises: crude has none of its own)
+      if (c) { c.aberrant = true; c.name = 'Aberrant Slip Jelly'; c.grade = aspect; } // (Espada names it; a bounty's quarry)
+      this.game.events?.emit('stain.spawn', { field: s.field, aspect, kind: STAINS.spawn.kind, by: 'environment' });
       this.save();
     }
     this.draw();
@@ -134,7 +142,7 @@ export class Stains {
       const st = this.stageOf(s), R = RADIUS[st];
       if (s.mapR >= R - 1e-3) continue;
       const frac = Math.max(0.05, this.crudeOf(s) / STAINS.crude[st]), r = R * Math.sqrt(frac);
-      pm.stamp(s.x, s.y, s.z, r, s.grade, 1, true);
+      pm.stamp(s.x, s.y, s.z, r, null, 1, true);
       s.mapR = Math.max(R, r);
     }
   }

@@ -57,13 +57,13 @@ export class Raising {
   pet(s) { const S = this.ready(s.e); S.align = Math.max(-1, S.align + ALIGN.pet); S.bond = Math.min(100, S.bond + PET_BOND); s.body.vel.addScaledVector(s.body.up, 3); this.say('spirit.pet', s); this.mature(s); this.dirty(); }
   flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.camera.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
 
-  /** Feed it what lies in a box slot: a material (its stat by tier), a curio (its bond), a cask (its feeling). */
+  /** Feed it what lies in a box slot: a material (its stat by tier), a curio (its bond). Never a cask: crude carries no feeling to lean it
+   *  by (the owner, 2026-10-11). */
   feed(s, slot) {
     const g = this.game, it = g.pneuka?.slots[slot]; if (!it) return false;
     const def = itemOf(it.id) || {}, S = this.ready(s.e), item = {};
     if (it.id.startsWith('mat.')) { item.kind = it.data?.kind || it.id.slice(4); item.tier = it.data?.tier ?? 0; }
     else if (def.kind === 'curio') { item.curio = true; item.tier = def.tier ?? 0; }
-    else if (it.id.startsWith('cask.')) item.grade = it.id.slice(5);
     else return false;
     const got = feedSheet(S, item);
     if (!Object.keys(got).length) return false;
@@ -151,7 +151,7 @@ export class Raising {
       // feeding: what in the box it would take
       (g.pneuka?.slots || []).forEach((it, k) => {
         if (!it) return; const def = itemOf(it.id) || {};
-        if (it.id.startsWith('mat.') || def.kind === 'curio' || it.id.startsWith('cask.')) btn(`Feed: ${def.name || it.id}`, it.id.startsWith('mat.') ? `raises ${Object.entries({ mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', roe: 'grief' }).find(([k2]) => it.id === `mat.${k2}` || it.data?.kind === k2)?.[1] || 'a stat'}` : def.kind === 'curio' ? 'raises its bond' : 'leans its feeling', () => this.feed(s, k));
+        if (it.id.startsWith('mat.') || def.kind === 'curio') btn(`Feed: ${def.name || it.id}`, it.id.startsWith('mat.') ? `raises ${Object.entries({ mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', roe: 'grief' }).find(([k2]) => it.id === `mat.${k2}` || it.data?.kind === k2)?.[1] || 'a stat'}` : def.kind === 'curio' ? 'raises its bond' : 'leans its feeling', () => this.feed(s, k));
       });
       if (R.plots?.plots.some((p) => p.placed?.feature === 'drillYard')) for (const [id, D] of Object.entries(DRILLS)) btn(`Drill: ${DRILL_NAME[id] || id}`, `${D.stat}${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => this.drill(s, id));
       if (s.body?.planet?.id === 'chimney' && !this.sparring) for (const o of R.spirits) if (o !== s && o.body.planet === s.body.planet) btn(`Spar: ${spiritName(o.e)}`, `at the Chimney, nobody hurt: each gains ${SPAR.gain} in its strongest stat${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => { if (S.fatigue < FATIGUE.fail) this.spar(s, o); });
