@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE KEYWORDS' ICONS: the twelve genre words of docs/plans/CLARITY.md section 5 (ui/keywords.js holds their words), each a picture of
+// THE KEYWORDS' ICONS: the twelve genre words of docs/plans/CLARITY.md section 5 and the melee loadout's four effects (ui/keywords.js holds their words), each a picture of
 // what it means, 14 x 14 in the icons' hand (ui/icons/hand.js: the light shape only; the bevel and the keyline are the hand's, 16 x 16
 // with it). Each is a shape a player already knows from other games, so it reads in greyscale and at 1x before its word is read:
 //   absorb     a mouth open over a shot (the chomp: a thing that eats what it meets)
@@ -14,6 +14,11 @@
 //   hull       a ship's side in planks, cracked (the hits it can still take)
 //   fuel       the bottle, stoppered, a level of fuel in it
 //   passive    a ring, closed: always on
+// and the melee loadout's four effects (the loadout editor's cards; placeholders, like their words, for Espada's):
+//   stagger    a body knocked off its feet, leaning back, the jolt's marks before it
+//   knockback  a block thrown off along the arrow that struck it, its wake behind
+//   launch     a block over an arrow rising, the burst of the lift at its foot
+//   guardbreak a shield cracked through, top to point
 //
 // Prior art: the keyword icons of Slay the Spire (one picture a keyword), the status icons of Monster Hunter and Final Fantasy XIV
 // (a shape before a colour), and the cartoon's own vocabulary (stars for a daze, a burst for a bomb, a reticle for a lock).
@@ -156,4 +161,68 @@ export const KEYWORD_ART = {
     '....++++++....',
   ],
   passive: grid(14, 14, (x, y) => { const r = ring(x, y, 6.5, 6.5); return r >= 3.4 && r <= 6.6 ? '#' : null; }),
+  stagger: [
+    '..........###.',
+    '.........#####',
+    '.........#####',
+    '..........###.',
+    '..............',
+    '.......####...',
+    '.+....####....',
+    '..+..####.....',
+    '.+..####......',
+    '....###.......',
+    '...##.##......',
+    '..##...##.....',
+    '.##.....##....',
+    '##.......#....',
+  ],
+  knockback: [
+    '..............',
+    '........######',
+    '........######',
+    '.+......######',
+    '..+..+..######',
+    '+++++.+.######',
+    '+++++..+######',
+    '+++++.+.######',
+    '..+..+..######',
+    '.+......######',
+    '........######',
+    '........######',
+    '..............',
+    '..............',
+  ],
+  launch: [
+    '....######....',
+    '....######....',
+    '....######....',
+    '..............',
+    '......##......',
+    '.....####.....',
+    '....######....',
+    '...########...',
+    '.....####.....',
+    '.....####.....',
+    '.....####.....',
+    '..+..####..+..',
+    '...+......+...',
+    '.+++......+++.',
+  ],
+  guardbreak: [
+    '.############.',
+    '.#####x######.',
+    '.######x#####.',
+    '.######x#####.',
+    '.#####x######.',
+    '.####x#######.',
+    '..####x#####..',
+    '..#####x####..',
+    '...####x###...',
+    '....###x##....',
+    '.....##x#.....',
+    '......##......',
+    '..............',
+    '..............',
+  ],
 };

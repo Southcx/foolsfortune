@@ -287,6 +287,18 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
   `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
   "cancel" bare, which is the opposites' (an agate).
+- **the loadout editor** (`tools/sondelass/loadouteditor.js`; `docs/plans/MELEE-LOADOUT.md` phase 3): God Hand's technique list beside its
+  Combo Tree. On the left the string's slots (`slotRow`: the open ones, filled or **empty**, then the ones not yet open shown **closed**
+  with what opens each) and the specials' three (RMB, W + RMB, S + RMB); on the right every move of the catalogue that fits the slot
+  picked, as choice cards (label, one line, power, reach, speed and cost, the effect's keyword, compare arrows against what the slot
+  holds; a locked move shown locked with the move it grows from). Opened at the sparring circle's lectern (its LOADOUT row: the Index's
+  window, `showPage`) and on the Codex's SONDELASS shelf; Esc or F closes it. **The loadout chosen** (`SondelassLoadout`,
+  `game.sondelassLoadout`, `loadoutchosen.js`): the choice kept in the save (section `sondelassLoadout`, scope player) and handed to the
+  combo engine checked against the catalogue and what is open, a slot that no longer fits falling back to the default's. **What is open**
+  (`loadoutopen.js`): 4 string slots, slots 5 to 8 at 300, 1,000, 3,000 and 8,000 cutlass hits (`cut.hit`) or a run of 8, 10, 12 or 14
+  (`sond.string.best`); today's four normals and the stinger known from the start, any other row by its `earn` predicate over the
+  ledger; in DEBUG the lend panel's `moves` row lends every move and all 8 slots (the hollow mark). A change is `loadout.set { tool,
+  slot, move, label, by }`, said in the log. *Not:* the lend panel, the Pneuka Box, the kit.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
@@ -1135,7 +1147,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   where the sun catches it.
 - **a keyword** (`KEYWORDS`, `keywordEl`, `keyworded`, `src/ui/keywords.js`; CLARITY.md section 5, Dovina's table, Espada's words): one
   of twelve genre words the UI explains on hover wherever it stands (Slay the Spire's): **Absorb**, **Parry**, **Bomb**, **Lock-on**,
-  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**. In text it is bold, in the window's
+  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**; and the melee loadout's four effects
+  (a move's `effect`, shown on the loadout editor's cards; placeholders for Espada's word): **Stagger** (`stagger`), **Knockback**
+  (`knock`), **Launch** (`launch`), **Guard break** (`guardBreak`). In text it is bold, in the window's
   gold, its icon before it; a hover or keyboard focus opens **its tip** (`#kwtip`: the icon, the word, what it means in one line). A new
   mechanic reuses one if it can; adding one is an entry here first. Each names in the UI a thing the glossary already has: Energy is
   the pool, Lock-on the lock-on, Hull the ship's hull (its `bears`), Fuel the bunker, Charges a mount's uses a crossing (*not* the

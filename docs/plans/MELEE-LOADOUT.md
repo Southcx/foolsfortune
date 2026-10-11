@@ -48,6 +48,32 @@ blow, the iaido's charge or blade mode gives the blink on that frame's fixed ste
 and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
 out of the stinger read its 30 m/s as its exit (casebook rule NEW:launch-end-speed). Sheets in Calissa's scratchpad (`melee-p2/`).
 
+**Phase 3, the choosing, built (2026-10-11, Calissa; the catalogue's new rows are another builder's, on their own branch):** the loadout
+editor (`tools/sondelass/loadouteditor.js`), God Hand's technique list beside its Combo Tree: on the left the string's slots (`slotRow`:
+4 open, the rest shown CLOSED with what opens each, "300 hits, or 8 in a row") and the specials' three (RMB, W + RMB, S + RMB); on the
+right every move of the catalogue that fits the slot picked, as choice cards (label, one line, power, reach, speed and cost, the effect's
+keyword, compare arrows against what the slot holds; a locked move shown locked, "Learned by using Rising Cut.", never hidden). Click a
+slot, then a move. It lists whatever `SONDELASS_MOVES` holds (two rows put in at run time by the probe were listed, locked and lent,
+with nothing changed in the editor); a row's own `label`, `does` and `numbers` win, and `loadoutwords.js` stands in for today's five
+(Flat Cut, Rising Cut, Hop Cut, Leap Chop, Stinger: placeholders for Espada's; reach measured from the clips, c1 1.52 m, c2 1.74,
+c3 1.56, c4 2.11, the stinger's lunge 8.4 m and its 2 m point). Opened at **the sparring circle's lectern** (its page's first row,
+LOADOUT: the Index's window, `showPage`; Esc or F closes) and on **the Codex's SONDELASS shelf** (Esc, B or F closes). **Kept**
+(`loadoutchosen.js`, `game.sondelassLoadout`): one save section, `sondelassLoadout`, scope player, `{ string, specials }` as set, marked
+dirty on each change; the cutlass hands the engine `get()`, the choice checked against the catalogue (the row there, of the slot's kind,
+playable) and against what is open, a slot that no longer fits falling back to the default's (a fifth to eighth slot left empty, the
+string closing up), never a throw; the choice itself is kept as set, so a move lent in DEBUG comes back with the lend. **What is open**
+(`loadoutopen.js`, reads the ledger and the lends, writes neither): slots 5 to 8 at 300, 1,000, 3,000 and 8,000 `cut.hit`, or a run of
+8, 10, 12 or 14 (`sond.string.best`: nothing writes that record yet, so it reads 0 and only the count way opens a slot until Petra's
+rule lands); today's four normals and the stinger known from the start, any other row by its `earn(L, game)`; in DEBUG the lend panel's
+`moves` row lends every move and all 8 slots, each lent one wearing the hollow mark. **Said:** `loadout.set { tool, slot, move, label,
+by: 'courier' }`, its rule in `feedback/tracking/moves.js` ("Your string's third blow is now Leap Chop."; Espada's words to come).
+**The keywords:** a move's effect is shown as a keyword, four new ones beside CLARITY's twelve (Stagger, Knockback, Launch, Guard break,
+`ui/keywords.js`, their icons `ui/icons/keywordart.js`: placeholders for Espada's word), and the card has three new chips (power, reach,
+speed: `ui/choicecard.js`, `ui/icons/chipart.js`). Measured headless: the default string began c1, c2, c3, c4 at frames 1, 38, 67 and
+110 (LMB every 6 frames, a slip jelly 1.9 m ahead); with c4 put in slot 3 and c3 in slot 4 through the editor, c1, c2, c4, c3 at 1,
+38, 67 and 115, then c1 at 146; the page reloaded, the save still held c1 c2 c4 c3. Sheets in Calissa's scratchpad (`p3/editor/`).
+Not built: `move.learn` (the log's line when a move opens: Dovina's earning), the tree view of a move's two ways in the Codex.
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned
