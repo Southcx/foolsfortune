@@ -71,8 +71,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **faucet / drain** — where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute`) — what ordinary play should earn in a real hour (480 cubes); a source is judged as a multiple of it.
 - **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden). *Not:* any drain (the Tithe is a drain, not a sink).
-- **crude** (`ECON.crude`) — liquid Lachryma as a cargo, graded by aspect; volatile, so it can spill. *Not:* a bauble.
-- **cask** (`cask.<grade>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
+- **crude** (`ECON.crude`) — liquid Lachryma as a cargo, carrying no feeling, named for its **field** (`ECON.crude.fields`: Margarite, Dunemaw,
+  Entropolis) as oil is Brent; volatile, so it can spill. *Not:* a bauble, nor graded by feeling (the owner, 2026-10-11).
+- **cask** (`cask.<field>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
 - **the Purser** (`purserPrice`) — the trader at Margarite's dock who buys crude, materials and Cogitomaps at a posted price, never haggled. The
   role is the name.
 - **bounty** (`bountyPay`) — a hunt for a named Egregore or a stray or aberrant Figment, under the King's marque (Letty Marque). Commissions
@@ -89,8 +90,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
   held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
-- **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, graded by feeling; left alone it grows, and a
-  full-grown one gives up a blotling (an aberrant Figment). *Not:* "stain" in player text. → detail
+- **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, of its field, in crude's oil film; left alone it
+  grows, and a full-grown one gives up a blotling (an aberrant Figment, of the weather's feeling where it rises). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
   jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
 - **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)

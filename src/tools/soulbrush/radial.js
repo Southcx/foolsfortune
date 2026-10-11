@@ -3,7 +3,7 @@
 // Hold 1 (the paint mode's key) with the brush in the hand and the wheel opens, each slot a picture of its own (ui/icons/paintart.js,
 // Calissa's: never colour alone): the seven feelings in display order (most positive
 // first: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread) and CLEAN (its lore name Fair: sprays clear, washing paint and crude off where
-// it lands, at range, and gains nothing). Gall and Fury show locked until they are learned (GALL-AND-FURY.md section 5). Flick toward one,
+// it lands, at range, and gains nothing). Every feeling shows locked until it is drunk once (the owner, 2026-10-11; GALL-AND-FURY.md section 5). Flick toward one,
 // let go: picked. A tap of 1 is the paint mode, as before; 2 the mop.
 //
 // Prior art: the weapon wheels of Grand Theft Auto V and Red Dead Redemption 2 (held, flicked, let go), Splatoon's special and sub
@@ -18,11 +18,12 @@ import { sfx } from '../../audio/sfx.js';
 
 const HOLD = 0.22; // (real seconds of 1 held before the wheel opens: shorter is a tap, the paint mode)
 const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
-/** The radial's slots, in display order, and Clean. `learn`: a feeling not yet learned shows locked (Gall and Fury, for now). */
+/** The radial's slots, in display order, and Clean. `learn`: a feeling not yet drunk shows locked (all seven: the owner, 2026-10-11). */
+const HERE = 'Drink it to learn it: where its weather falls on Anagami.'; // (a placeholder line for Anagami's five: Espada's)
 export const PICKS = [
-  { id: 'wonder', label: 'Wonder' }, { id: 'mirth', label: 'Mirth' }, { id: 'desire', label: 'Desire' },
+  { id: 'wonder', label: 'Wonder', learn: true, where: HERE }, { id: 'mirth', label: 'Mirth', learn: true, where: HERE }, { id: 'desire', label: 'Desire', learn: true, where: HERE },
   { id: 'fury', label: 'Fury', learn: true, where: 'Drink it to learn it: the sea near Entropolis.' }, { id: 'gall', label: 'Gall', learn: true, where: 'Drink it to learn it: the Great Dunemaw, deep.' }, // (Espada's lines, GALL-AND-FURY.md 0)
-  { id: 'grief', label: 'Grief' }, { id: 'dread', label: 'Dread' },
+  { id: 'grief', label: 'Grief', learn: true, where: HERE }, { id: 'dread', label: 'Dread', learn: true, where: HERE },
   { id: 'clean', label: 'Clean', color: 0xf4efe6 },
 ];
 
@@ -40,7 +41,7 @@ function pickIcon(id, locked) {
 export class PaintRadial {
   constructor(tool) { this.tool = tool; this.heldT = -1; this.wheel = null; }
   get game() { return this.tool.game; }
-  /** Is a feeling learned? (Gall and Fury: by drinking them, GALL-AND-FURY.md; not yet in the game, so they show locked.) */
+  /** Is a feeling learned? (by drinking it once: GALL-AND-FURY.md; Clean always is) */
   learned(p) { return !p.learn || !!this.game.lend?.has('feelings') || (this.game.ledger?.get?.(`feeling.known.${p.id}`) || 0) > 0; } // (drunk once: feeling.known.*, the ledger's; Acquired Taste and Seeing Red are its achievements)
 
   update(raw, inp) {

@@ -28,9 +28,11 @@ const fxRand = stream('courier/moves/jets.fx'); // (the look's chance, a stream 
 const GLIDE = { clip: 'Air_Glide', w: 0.9 };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _film = new THREE.Color();
 
+const CLEAN_COLOR = new THREE.Color(0xf4efe6);
+
 /** The jets' spray under the Courier: drops in the load's colour, a little paint where it falls, rings on water. */
 function jetSpray(tech, k = 1) {
-  const g = tech.game, P = tech.P, col = ASPECT_COLOR[loadAspect(g)];
+  const g = tech.game, P = tech.P, col = ASPECT_COLOR[loadAspect(g)] || CLEAN_COLOR; // (no feeling known yet: clear, Clean's)
   for (let i = 0; i < 2; i++) g.fx?.alpha.emit({ pos: P.pos.clone().add(_v.set((simRand() - 0.5) * 0.3, 0.6, (simRand() - 0.5) * 0.3)), vel: new THREE.Vector3((simRand() - 0.5) * 1.2, -7 * k, (simRand() - 0.5) * 1.2), life: 0.5, size: 0.08, sizeEnd: 0.03, color: col, colorEnd: featTint(fxRand(), _film, { feeling: loadAspect(g), k: 0.6 }), alpha: 0.75, drag: 0.4, gravity: 6 }); // (the thrust leaves in the brush's feeling and turns through Lachryma's film as it falls: vfx/oxidation.js featTint)
   if (simRand() < 0.25) {
     const hit = g.physics.raycast(P.pos, _d.set(0, -1, 0), 6, P.collider);

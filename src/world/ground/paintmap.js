@@ -44,9 +44,10 @@ export class PaintMap {
 
   /** Lay `k` of a feeling in a disc of radius r at (x, y, z). Returns the area newly covered (m²). One feeling a cell: the same feeling
    *  thickens, another takes the cell (the last writer wins, a crisp edge), its opposite cancels it toward bare ground (LACHRYMA-LOOP.md
-   *  3, rule 5). `crude`: laid as a blot's crude, which keeps (and paint over crude is laid over it, crude over paint takes the cell). */
+   *  3, rule 5). `crude`: laid as a blot's crude, which keeps (and paint over crude is laid over it, crude over paint takes the cell);
+   *  crude with no feeling (`aspect` null: a blot's, the owner, 2026-10-11) is drawn flat, in crude's oil film. */
   stamp(x, y, z, r, aspect, k = 1, crude = false) {
-    const a = ASPECTS.indexOf(aspect); if (a < 0) return 0;
+    const a = aspect == null && crude ? -1 : ASPECTS.indexOf(aspect); if (a < 0 && !(crude && aspect == null)) return 0;
     let fresh = 0;
     const c = Math.ceil(r / CELL), opp = ASPECTS.indexOf(OPPOSITE[aspect]);
     const ci = Math.floor((x - this.x0) / CELL), cj = Math.floor((z - this.z0) / CELL);

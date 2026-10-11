@@ -38,7 +38,7 @@ export function spendLoad(game, n, tag = 'load') {
   return got;
 }
 /** The feeling the load would lay now (the bottle's grade, else the weather's here). */
-export const loadAspect = (game) => game.player?.techs?.get('soulbrush')?.load?.aspect || 'wonder';
+export const loadAspect = (game) => game.player?.techs?.get('soulbrush')?.load?.aspect || null; // (null: no feeling known yet, nothing laid)
 const DROPS_PER_SEC = 18, MAX_DROPS = 64, STATUS_EVERY = 0.5;
 const CLEAN_COLOR = new THREE.Color(0xe8fbff); // (Clean's drops: clear water, not a feeling's colour)
 const STRIDE = { own: 1.25, other: 0.75, refill: 6 }; // (the paint-stride knack: x speed in your own feeling, x in another's; Lachryma a second it fills, Dovina's to tune) // (the throw, the spread and the splat: paintspray.js)
@@ -67,10 +67,14 @@ export class BrushLoad {
   get held() { return this.box?.uses?.bottle?.[0] || 0; }
   set held(v) { const U = this.box?.uses?.bottle; if (U && this.bottle) { U[0] = Math.max(0, Math.min(BOTTLES[this.bottle].capacity, v)); this.box.save?.(); } }
   /** The feeling the brush lays: the bottle's grade while it holds some, else the weather's where the Courier stands. */
-  get aspect() { const g = this.game; return (ASPECTS.includes(this.pick) && this.pick) || (this.held > 0.5 && this.grade) || g.weather?.here?.(this.P.pos)?.aspect || 'wonder'; }
+  /** Is a feeling known: drunk once (feeling.known.*, the ledger's), or lent in DEBUG. Every feeling starts locked (the owner, 2026-10-11). */
+  known(a) { const g = this.game; return ASPECTS.includes(a) && (!!g.lend?.has('feelings') || (g.ledger?.get?.(`feeling.known.${a}`) || 0) > 0); }
+  /** The feeling the paint is refined into: the radial's pick, else what the bottle holds, else the weather where they stand, each only
+   *  if known; else any known one; null with none known yet (the brush then sprays only Clean). */
+  get aspect() { const g = this.game; for (const a of [this.pick, this.held > 0.5 ? this.grade : null, g.weather?.here?.(this.P.pos)?.aspect]) if (this.known(a)) return a; return ASPECTS.find((a) => this.known(a)) || null; }
   /** What the radial picked (radial.js): a feeling the paint is refined into, or 'clean' (Fair: it washes, and lays nothing). */
   setPick(id) { if (id === this.pick) return; this.pick = id; this.save(); sfx.click?.(); this.game.events?.emit('brush.pick', { feeling: id, by: 'courier' }); }
-  get cleaning() { return this.pick === 'clean'; }
+  get cleaning() { return this.pick === 'clean' || !this.aspect; } // (no feeling known yet: Clean only)
 
   setMode(m) { if (m === this.mode || !LOAD.modes.includes(m)) return; this.mode = m; this.end(); this.save(); sfx.click?.(); this.game.events?.emit('brush.mode', { mode: m, by: 'courier' }); }
 
@@ -128,7 +132,7 @@ export class BrushLoad {
     this.mopFrom = { x: fx, z: fz };
     let got = s.got;
     if (got < want && g.paintmap) got += g.paintmap.wipe(from.x, from.z, fx, fz, P.pos.y, 2.4, (want - got) * 0.25, 'slick').got * 4; // (a slick too: a fight's crude, a cell-full four Lachryma as paint's)
-    if (s.grade && s.grade !== this.grade) { this.grade = s.grade; this.save(); }
+    // (a blot's crude carries no feeling, the owner, 2026-10-11: what is mopped never sets the bottle's feeling)
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)
     if (got > 0) { this.held += got; this.mopped += got; }
     this.mopAt = got > 0 ? (s.at || new THREE.Vector3(fx, P.pos.y, fz)) : null; // (where the stream is drawn from: vfx/brushload.js)
@@ -240,7 +244,7 @@ export class BrushLoad {
     const g = this.game, b = this.bottle; if (!b || this.held <= 0) return;
     const share = crack(b, simRand()); if (!share) return;
     const spilled = this.held * share; this.held -= spilled;
-    g.stains?.spill(this.P.pos.clone(), this.grade || ASPECTS[0], spilled, 'courier', 'bottle');
+    g.stains?.spill(this.P.pos.clone(), null, spilled, 'courier', 'bottle'); // (a blot of the island's crude: stains.js)
     sfx.glassCrack?.(); // (a placeholder: Wanda's)
     this.crackT = 12; // (the crack shows a while: vfx/bottle.js)
     g.events?.emit('bottle.crack', { bottle: b, spilled: Math.round(spilled), by: 'creature' });
