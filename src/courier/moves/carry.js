@@ -94,7 +94,7 @@ export class Carry extends Tech {
     if (!this.item) {
       if (this.state !== 'idle') { this.st += dt; if (this.st > 0.4) this.state = 'idle'; }
       const other = this.game.interact?.cur; // (F is for whatever the chevron is on: a gong or a chest nearer than the pot is theirs)
-      if (P.peekLatch('KeyF') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding && !(other && (other.id === 'trial' || other.id === 'chest' || other.id === 'item' || other.id === 'npc'))) {
+      if (P.peekLatch('KeyF') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding && !P.prone && !(other && (other.id === 'trial' || other.id === 'chest' || other.id === 'item' || other.id === 'npc'))) { // (CROSSING, Calissa, 2026-10-11: `!P.prone`, lying down the hands are on the floor: tools/proneholster.js)
         const e = this.find();
         if (e) { P.latch('KeyF'); this.begin(e); }
       }

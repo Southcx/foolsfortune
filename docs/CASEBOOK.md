@@ -545,8 +545,56 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
+NEW:collider-pose-same-step. **A collider's shape and its place change in the same call.** A collider moved on its parent
+    (`setTranslationWrtParent`) is moved in the world only by the next `world.step`; anything asked in this step (the character
+    controller, a shape cast) meets the new shape at the old place. Set its world translation there and then too (`player.setShape`).
+NEW:takeoff-holds-pose. **A layer that hands the body to another keeps its weight until the other is whole.** Two weights eased at
+    their own rates (the crouch out at 12/s, the air in at 10/s) show whatever lies under both for the length of the handover (the
+    standing idle, at 0.29). Hold the outgoing one's weight under the incoming one until it is whole, then let it go at its own rate.
+NEW:hands-given-back. **What takes the hands puts the tool away through the belt and gives it back through it.** The one asked out
+    is remembered and drawn again once the hands are free; one put away by hand meanwhile stays away; and nothing pressed while
+    the hands were taken (a draw key, the aim held) is kept for after (`tools/proneholster.js`).
 
 ## Cases
+
+### 2026-10-11 · Space from the crouch toggle hiccuped into the standing idle (the owner, v144's posture)
+
+- **Seen:** the owner: "jumping from crouched state causing a sort of hiccup like the courier is TRYING to jump but they transition to
+  standing idle instead". Headless, every frame from Space (60 Hz, at 19.5, 0, -32.1): with C pressed once (the v144 toggle), the
+  jump fired on the press frame (`move.jump` 'ground', 6.05 m/s up) but rose 0.196 m and was back on the floor at k9 (150 ms), upright,
+  the standing idle at 0.40 by k9 and 0.97 by k20; standing or with C held, 0.922 m, down at k34 or k35. Still or walking, Space 1, 30
+  or 120 frames after the C, all alike. With C held the jump was whole, but the standing idle showed at 0.29 in its first 0.05 s.
+- **Cause (measured):** a jump from the crouch stands them up (player.js, `setPosture('stand')`), so the step after it grows the capsule
+  from low to standing in the air (`setShape`). `setShape` moved the collider with `setTranslationWrtParent` alone, which Rapier
+  applies only in `world.step`: the controller asked in that same step met the standing capsule at the low one's centre, its foot
+  0.175 m below the feet, 7.4 cm in the floor, and called it grounded while it rose; the next step's grounded branch zeroed the jump.
+  (C held kept the capsule low in the air, so nothing grew.) A Rapier-only probe: a world translation set on a parented collider moves
+  it at once and leaves its offset alone; the next step puts it back at parent times offset, so the two never disagree for long.
+  Over that, the crouch's weight fell at 12/s while the air's rose at 10/s, and the standing idle under both showed through.
+- **Fix:** `setShape` sets the collider's world translation from `this.pos` in the same call (a CROSSING in player.js: one line under
+  a three-line comment; handoff to Petra). The take-off from the crouch holds the crouch's weight under the air's until the air has the whole body
+  (`character.js`, `st.crHold`; `st.crouchW` is the weight as laid). Measured: every crouch case 0.922 m and down at k34 (standing:
+  k35, the fixed step's accumulator); the standing idle shown falls from the crouch's own 0.20 at k-1 (0.17 at k0) and never rises;
+  walking crouched, the walk shown 0.017 at most where it was 0.96. The slide hop with C tapped: 0.199 m before, 0.926 after (C held:
+  0.926 both). C held and let go, crouch to prone to stand, sprinting out of the crouch: feet heights and grounding unchanged, no rescue.
+- **Rule:** NEW:collider-pose-same-step; NEW:takeoff-holds-pose.
+
+### 2026-10-11 · Tools stayed in the hands on the belly (the owner: "it looks SUPER goofy otherwise")
+
+- **Seen:** the owner: prone (C, C) with a tool out, the tool stayed in the hand along the crawl (read in the code, not measured before:
+  nothing put one away or kept one in). Building the fix, a second, measured: the aim held (and the fire button) lying down, with no
+  tool out, brought the psygun out on getting up.
+- **Cause:** nothing put a tool away for the posture (the core's, v144); the belt could put a tool away but not bring one out. The
+  psygun's own `stowed` (its ladder and swim return) remembered a combat press made while the hands were taken.
+- **Fix:** `tools/proneholster.js`: going prone stows the tool asked out through the belt (its own stow), as the body goes down (in the
+  holster 20 frames after); while down a worn tool's key is spent before the tools read it, with a throttled log line (a placeholder
+  for Espada), and `busy` (the passive techs' both hands taken) keeps the psygun's own draws off; once up (the getting up played out),
+  the one that was out is drawn again (`belt.draw`, whose adapters now have `out()`: a CROSSING in belt.js); one put away by hand as it
+  went back stays away; the psygun's memory is let go each frame down. A pot in the hands keeps them off the belly (C from the crouch
+  stands them up: a CROSSING in player.js), and F picks nothing up lying down (carry.js). Measured, headless: the cutlass and the
+  psygun in the holster by k90 (prone at k70), drawT 0 while down, Q, X, LMB, R and RMB held all refused, drawn again at k190 (the
+  getting up done at k189), in hand at k205; Q pressed as the cutlass went back: it stayed away.
+- **Rule:** NEW:hands-given-back.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 

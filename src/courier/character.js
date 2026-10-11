@@ -609,10 +609,18 @@ export class Character {
       C.blend(base, C.sample(n, at(n), P.tmp), W[i] / cum);
     }
     const cwk = clamp(gs / 0.5, 0, 1); // crouch: idle -> the prowl
-    if (cr > 0.001) {
+    // (a take-off from the crouch: its weight held under the air's rising one until the air has the whole body, so the body goes from the
+    //  crouch into the jump's own spring and never through the standing idle between: the owner's crouch-jump hiccup, 2026-10-11, showed
+    //  the idle at 0.29 for a held C. Let go once the air is whole, and on the ground at the crouch's own rate)
+    if (!footed && st.footed !== false) st.crHold = cr;
+    else if (footed || this.airT > 0.95) st.crHold = damp(st.crHold || 0, 0, 12, dt);
+    st.footed = footed;
+    const crS = Math.max(cr, st.crHold || 0);
+    st.crouchW = crS > 0.001 ? crS * THREE.MathUtils.lerp(A.crouchDepth, 1, cwk) : 0; // (the crouch layer's weight as laid)
+    if (crS > 0.001) {
       const cp = C.sample('crouchIdle', this.time, P.tmp);
       C.blend(cp, C.sample(PROWL.clip, at(PROWL.clip), P.tmp2), cwk);
-      C.blend(base, cp, cr * THREE.MathUtils.lerp(A.crouchDepth, 1, cwk));
+      C.blend(base, cp, st.crouchW);
     }
     const crw = this.crawl.pose(dt, s, gs, base, cr); // (on all fours: anim/crawl.js; the feet and the prowl's head give way to it)
     st.prowlLift = PROWL.lift * cr * cwk * (1 - crw); st.crawlW = crw;
