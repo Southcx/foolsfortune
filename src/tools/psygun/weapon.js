@@ -140,7 +140,13 @@ export class Weapon {
     if (!rawInput.isDown('Mouse0')) this.fireGate = false;
     if (blocked && (this.holding || this.charge > 0)) this.cancelCharge(); // (picked something up mid-charge)
     const belt = this.game.belt;
-    const toolOut = belt ? belt.others(belt.get('psygun')) || !belt.isWorn('psygun') : !!player.techs?.toolOut; // (or the Psygun is in the box) // (another tool is out: the Psygun stays on the back, and the mouse is that tool's)
+    // (CROSSING, Calissa, 2026-10-11: lying down, and getting up, the gun is put away by the prone holster, tools/proneholster.js, and
+    //  hears nothing, as when another tool is out; what was asked of the trigger is let go too, not kept for getting up: a tap, a shell or
+    //  a charged release lying down fired once the gun was back, measured. Not the animation's to fix, nor the holster's: the press is
+    //  read here, after the holster has run, and only the gun's own view of the keys holds them all up)
+    const prone = !!this.game.proneHolster?.busy;
+    if (prone) { this.buffer = 0; this.pressT = -1; this.wantShell = false; this.game.shells?.specials?.cancelPaint(); }
+    const toolOut = prone || (belt ? belt.others(belt.get('psygun')) || !belt.isWorn('psygun') : !!player.techs?.toolOut); // (or the Psygun is in the box) // (another tool is out: the Psygun stays on the back, and the mouse is that tool's)
     if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); if (this.moves.busy) this.moves.cancel(); }
     // (the trigger with something close in front is the pistol whip, not a shot: the press is spent, and the button held up until let go;
     // aiming down the sights, or in first person, the trigger is the trigger)
