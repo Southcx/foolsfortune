@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // ROPE: a rope that is really a rope. A chain of point masses (Verlet integration, distance constraints, gravity, damping) pinned
-// at both ends: it hangs in a curve when there is more of it than the distance between its ends, pulls straight when there is not,
-// and moves when the ends do. Drawn as a thin tube (a pentagon in section: it is a low-poly game). On top of the simulation a
-// HELIX can be laid: the rope leaves the Sondelass coiled and uncoils as it flies, the coils opening out and straightening as it goes
+// at both ends: it hangs in a curve when there is more of it than the distance between its ends, is straight when there is not (laid
+// on the line between them: the chain alone stretches under its own weight), and moves when the ends do. Drawn as a thin tube (a
+// pentagon in section: it is a low-poly game). On top of the simulation a HELIX can be laid: the rope leaves the Sondelass coiled and uncoils as it flies, the coils opening out and straightening as it goes
 // taut, the way a rope pays out of a harpoon gun.
 //
 // Prior art: Jakobsen's "Advanced Character Physics" rope (the Verlet chain every game rope descends from), Worms' ninja rope and Just
@@ -103,6 +103,17 @@ export class Rope {
         }
       }
       X[0].copy(a); X[n - 1].copy(b);
+    }
+    // (no more rope than the span: straight. The chain's few passes cannot hold that against gravity, so a loaded line hung in a belly:
+    //  the grapnel's, 76 links and 7 passes, sagged 0.3 to 0.6 m on a 0.55 m span with the Courier's weight on it, CASEBOOK. A loaded rope is
+    //  laid on the line between its ends and its motion spent, eased in by the sag its slack would make: none at all at 0, the
+    //  simulation's own from 3 cm)
+    const sagOf = Math.sqrt(Math.max(0, length - dist) * dist * 0.375); // (a shallow curve's sag s from its spare length e: e = 8 s^2 / 3 d)
+    const straight = 1 - THREE.MathUtils.smoothstep(sagOf, 0, 0.03);
+    if (straight > 0.001) for (let i = 1; i < n - 1; i++) {
+      const x = X[i], p = PX[i], vx = (x.x - p.x) * (1 - straight), vy = (x.y - p.y) * (1 - straight), vz = (x.z - p.z) * (1 - straight);
+      x.lerp(_p.lerpVectors(a, b, i / (n - 1)), straight);
+      p.set(x.x - vx, x.y - vy, x.z - vz);
     }
     // the drawn points: the simulation, plus the helix of an uncoiling rope
     const helix = opts.helix ?? 0;
