@@ -192,7 +192,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Its looks (`docs/ART.md` section 10), shown only, never changing the move: **the skid stop** (`SKID`, `src/courier/anim/stopturn.js`:
   Loco_SprintStop when a sprint is let go), **the half turn** (`TURN`, the same file: Loco_Turn180 on a reversal at speed, its frame
   picked by how far the body has turned), **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
-  let down to the crouch's height). *Not:* a tech (they never take the body), a Movement Art.
+  let down to the crouch's height), **the crawl's clearance** (`CRAWL.outline`, `Crawl.clear`, `src/courier/anim/crawl.js`: the belly posed past its
+  capsule, slid in the pelvis off a wall it would poke through; the capsule is Petra's). *Not:* a tech (they never take the body), a Movement Art.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
   **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: the brass fob below the

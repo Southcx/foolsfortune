@@ -529,8 +529,39 @@ the rules before building in the same area; a rule a machine can check goes into
 191. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
+193. **A pose longer than its capsule is cleared where it is drawn.** A look that lies past the capsule it stands on (the belly crawl: 2.2 m
+    over a circle 0.27 m in radius) pokes through what the capsule stops at, and a thing's extent is measured, not guessed: the posed
+    mesh's reach by angle about the capsule's axis, then the poke at a plain wall in each way the body meets one (into it, along it,
+    turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
+    and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
+    goes to its owner with the numbers.
 
 ## Cases
+
+### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
+
+- **Seen:** prone (C, C) at the workshop's south wall (the plane z = -15; the capsule's axis can come to 0.32 m of it), the posed body
+  measured against the plane, mesh and bones, three ways. Crawling straight at it: the hands 31 and 36 cm through, the fingers 61 cm,
+  the mesh 64 cm (the head's bone stopped 4 cm short: the arms lead the head, they do not follow it). Crawling along it, leaning on it:
+  the shin 11 cm, the mesh 15 cm (the knees flare 0.46 m each side). Turning in place beside it (the combat stance, 90 degrees a second): a toe
+  86 cm, the mesh 92 cm, facing away (the feet trail 1.25 m behind the axis); 64 cm with the capsule 0.6 m off the plane.
+- **Cause (measured):** the capsule stands upright, 0.27 m in radius, 0.8 m tall: it knows nothing of the body lying on it. The belly's
+  outline about the axis, from every vertex over a crawl cycle (hair, fingers, toes): 0.97 m ahead (the hands, at 15 degrees off the
+  facing), 0.46 m to each side, 1.25 m behind (the toes). The wall stops the circle 0.32 m off; the rest of the body goes through.
+- **Fix:** the clearance in the look (`courier/anim/crawl.js`; the body is Petra's, so `player.js` is untouched). 48 rays round the axis at
+  0.3 m, each as long as the outline reaches that way and half a metre more; each surface point inside the outline (a convex polygon of
+  24 support planes, `CRAWL.outline`) is moved out along its normal by the polygon's nearest edge, the planes found added by the way
+  they face, and the body so slid tried again against every point (4 rounds: a prop's push into a wall is given back, the poke shared).
+  The slide goes on the pelvis only (the pose, the hands and the feet are the clips'), at most 1 m, in at a rate of 60 a second (a
+  rate of 30 left 14 cm of toe through the wall in a 540 degree-a-second turn) and out over about 0.15 s. Two first tries fell
+  short: the plane the support function gave for a hit, taken as infinite, pushed the body 0.85 m out of the way of the end faces of two
+  short walls it could pass between; the push of one surface alone sent the body 14 cm into the wall beside a prop. Measured after
+  (the same harness, the clearance patched off for before): straight at it, the mesh 0.2 cm through at worst (1 cm short at rest), along
+  it, 2 cm short; turning, 0.6 cm short, 4 and 6 cm through for a tick or two at 540 and 1080 degrees a second; in the open, a slide
+  of exactly 0; 0.09 ms a frame prone. What it cannot hold: a gap narrower than the body (0.7 m wide, two walls: 10 cm through each,
+  the same as before); handed to Petra with the numbers (`docs/handoffs/petra/2026-10-11-from-calissa-prone-reach.md`).
+- **Rule:** 193 (new).
+
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 
