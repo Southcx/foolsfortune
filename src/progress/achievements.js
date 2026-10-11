@@ -19,7 +19,7 @@
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
-import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf } from './skills.js';
+import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
 import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
@@ -559,7 +559,7 @@ export function buildAchievements(game) {
   F('lg2', 'collect', 'Logged', 2, 'collect', 'Getting Filled In', 'Log 30 firsts.', (L) => L.firstCount(), 30);
   F('lg3', 'collect', 'Logged', 3, 'collect', "Captain's Log", 'Log 60 firsts.', (L) => L.firstCount(), 60);
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
-  F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
+  F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => loggedTechs(game.techs).filter((id) => L.firsts[`tech.${id}`] != null).length, loggedTechs(game.techs).length || 17); // (only techs that start: a passive one never does. Petra, v154)
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
 
   // ---------------------------------------------------------------- THE DOMAINS (progress/psyche.js: EXP in the ledger as `exp.<domain>`)
