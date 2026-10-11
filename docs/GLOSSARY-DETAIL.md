@@ -293,7 +293,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   strength. A pip is the move's UI icon where it has one (its catalogue row's `icon`, else `sondelass.<id>`), else a plain shape for its
   effect: stagger a small diamond, knock the diamond grown with a bright core, launch a double chevron up, guard break a cracked
   square. While the move on show is open for the paid cut (`Moveset.paidCutOpen`, its cost affordable), **the glint**: the lit pip wears
-  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. **The fork**: a pause string (a press
+  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. **The pause string's row** (never "the fork", which is the Dreamvane's): a pause string (a press
   0.25-0.8 real s after the slot it branches from ends) as a second row of pips over the first, its thread rising from the gap after
   that slot; shown while a press would take it (its first pip lit, no slot lit) and while its run goes on (its next lit; its last
   struck, the string's first lit). Read from the engine (`string`, `stringPlace()` with its `branch`), so it resets where the engine

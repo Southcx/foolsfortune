@@ -128,8 +128,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the melee loadout** (working name, Espada's and the owner's to rule; `SONDELASS_LOADOUT`, `SONDELASS_MOVES`, `sondelass/sondelassloadout.js`) —
   the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
 - **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`) — the melee loadout's string as pips at the bottom middle while the
-  cutlass is drawn: the next LMB's lit gold, a pause string's fork over it, the film's glint while the paid cut is open. *Not:* the slot
-  row, Strawman's attack strings. → detail
+  cutlass is drawn: the next LMB's lit gold, the pause string's row over it, the film's glint while the paid cut is open. *Not:* the slot
+  row, Strawman's attack strings; its pause string's row is never "the fork" (the Dreamvane's). → detail
 - **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`) — the ring on the point the hook would bite, within its reach, while the hook form is
   in hand; brackets close on it for a catch. *Not:* the chevron, the lock-on reticle. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.

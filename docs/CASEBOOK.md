@@ -556,6 +556,23 @@ NEW:linger-asks-belt. **A tool's mark lingers only while the tool is asked for.*
 
 ## Cases
 
+### 2026-10-11 · The string row lit the next slot through a charge's release, the special and the dash (melee phase 6, the verifier)
+
+- **Seen:** headless (960x600, the Throwing Room), a press on every 4th or 6th frame: after c1 held into the charge and let go, 19
+  of 20 presses played c1 with c2 lit; after c1, c2 and R (the special), 7 of 16 played c1 with c3 lit; after c1, c2, a sprint and the
+  dash, 17 of 19 played c1 with c3 lit. Idle into the dash, 0 of 17.
+- **Cause (measured):** `Moveset.stringPlace()` kept the string's place under any move on show (`fresh = !!c`), but a move with no
+  next (`nextOf()` null: the charge's release, the special, the dash) goes through `opener()`, which begins the string again once
+  `after` is past RESET (11 real s into the burst's recovery in the charge's case). A press made before such a move's free recovery cut
+  opens waits in the buffer and is taken when the cut opens, so the `after` that counts is that later one (the dash: 4 of 19 still
+  wrong with the first half of the fix alone, pressed at 0.85 to 0.89 s and taken past RESET).
+- **Fix:** the read keeps the place only under a move with a next; under one with none it asks RESET and the PAUSE window as
+  `opener()` does, at the `after` the press will be taken at (`Moveset.takenAfter`: now if the paid or free cut is open, else when
+  the free cut opens, 0 if the move ends first) (`src/tools/moveset.js`, 10 lines). Measured: 0 of 72 presses on the wrong pip in the
+  same four scans; the verifier's 25 string plans unchanged (the charge's plan 1 to 0; the two 16-frame pauses keep their known
+  one-frame buffered press); the shader programs 163 with the cutlass drawn (no new material).
+- **Rule:** NEW:read-every-branch.
+
 ### 2026-10-11 · The string row lit the wrong pip through a pause string (melee phase 6, the verifier)
 
 - **Seen:** headless (960x600, the Throwing Room), c1 and c2, then LMB 18 frames after c2 ended: j1 began with c3 lit, j2 and j3 with
@@ -564,9 +581,9 @@ NEW:linger-asks-belt. **A tool's mark lingers only while the tool is asked for.*
 - **Cause (measured):** `Moveset.stringPlace()` read the ground string only: in the PAUSE window after the slot a pause string
   branches from it answered the next slot, and through a pause string's run (`str` 'pause') the first; the row drew only the
   loadout's slots, so a pause string's blow had no pip to light.
-- **Fix:** `stringPlace()` follows `opener()` and `nextOf()` into the pause strings too (`branch`: the slot it forks from, its moves,
-  its next, its struck); the row draws it as **the fork**, a second row of pips over the string, its thread rising from the gap after
-  that slot, its next lit and no slot lit (`ui/cutlassstringrow.js`); the string's row never moves (the fork's room kept, bottom
+- **Fix:** `stringPlace()` follows `opener()` and `nextOf()` into the pause strings too (`branch`: the slot it branches from, its moves,
+  its next, its struck); the row draws it as **the pause string's row**, a second row of pips over the string, its thread rising from the gap after
+  that slot, its next lit and no slot lit (`ui/cutlassstringrow.js`); the string's row never moves (that row's room kept, bottom
   anchored: the row's rect 442,502 76x18 before, its string at the same 442,502 in a 116x38 canvas after). Measured: 0 of 41 blows
   on the wrong pip, the same 8 plans; the shader programs 163 before and after with the cutlass drawn (the row is a 2D canvas).
 - **Rule:** NEW:read-every-branch.

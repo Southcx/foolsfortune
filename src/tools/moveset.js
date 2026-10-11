@@ -215,19 +215,29 @@ export class Moveset {
    *  no slot), `struck` how many of the string's slots this run has struck (0 none), `len` the slots, and `branch` the pause string the
    *  press is in (its window open after the slot it branches from, or its run going on), else null: { at (the slot), to (its moves),
    *  next (the one the press plays; -1, its last struck: the string begun again), struck (how many of its blows) }. The engine's own
-   *  rules (opener(), nextOf()): a ground blow on show (or any move, the place kept under it) goes on to the next slot, the last
-   *  looping to the first; nothing on show, the pause string's first inside PAUSE after the slot it branches from (never out of a
-   *  blink), else the next within RESET of the last, else the first; a pause string's run goes on to its next blow, then begins the
-   *  string again. A blink cancel keeps it (blinkCancel). */
+   *  rules (opener(), nextOf()): a move on show with a next (nextOf) goes on to it, the last ground blow looping to the first; nothing
+   *  on show, or a move with none (a charge's release, the special, the dash: a press goes through opener()), the pause string's first
+   *  inside PAUSE after the slot it branches from (never out of a blink), else the next within RESET of the last finish, else the first;
+   *  a pause string's run goes on to its next blow, then begins the string again. A blink cancel keeps it (blinkCancel). */
   stringPlace() {
-    const len = this.string.length, c = this.cur, fresh = !!c || this.after <= RESET;
+    const len = this.string.length, c = this.cur, via = !!c && !this.nextOf(c), a = via ? this.takenAfter(c) : this.after, fresh = (!!c && !via) || a <= RESET; // (`via`: a press goes through opener(), which asks RESET when it takes the press: casebook NEW:read-every-branch)
     if (!len) return { next: -1, struck: 0, len, branch: null };
     const b = this.branch;
     if (this.str === 'pause' && this.n >= 0 && b && fresh) { const k = this.n + 1 < b.to.length ? this.n + 1 : -1; return { next: k < 0 ? 0 : -1, struck: b.at + 1, len, branch: { at: b.at, to: b.to, next: k, struck: this.n + 1 } }; }
     const live = this.str === 'ground' && this.n >= 0 && this.n < len && fresh;
-    const br = live && !c && !this.offset && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((p) => p.at === this.n && this.open(p.to[0]));
+    const br = live && (!c || via) && !this.offset && a >= PAUSE[0] && a <= PAUSE[1] && this.branches().find((p) => p.at === this.n && this.open(p.to[0]));
     if (br) return { next: -1, struck: this.n + 1, len, branch: { at: br.at, to: br.to, next: 0, struck: 0 } };
     return live ? { next: (this.n + 1) % len, struck: this.n + 1, len, branch: null } : { next: 0, struck: 0, len, branch: null };
+  }
+
+  /** The `after` at which opener() takes a plain press made now under move `c` with no next (read, never driven): now, when the paid
+   *  cut or the free recovery cut is open; else when the free cut opens (the press waits in the buffer); 0 when the move ends first
+   *  (finish() starts `after` again). */
+  takenAfter(c) {
+    const R = this.rule(c.def), soon = R?.time ?? 0;
+    if (c.kind === 'charge-hold' || c.def.plunge || this.freeCutOpen(c, R, soon) || this.paidCutOpen()) return this.after;
+    const rate = c.def.rate || 1, wait = Math.max(0, ((c.def.track?.strike[1] ?? 0) - c.t) / rate, soon - (c.age || 0));
+    return !R || c.t + wait * rate >= (c.def.to ?? this.dur(c.def)) ? 0 : this.after + wait;
   }
 
   /** Whether a press now would be THE PAID CUT (read, never driven): the move on show in its recovery, before the free ways open (the

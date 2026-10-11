@@ -9,7 +9,7 @@
 //                   pip stays where it was.
 //   THE STRUCK      the slots this run has struck, in the clay palette, whole; the slots still ahead, the same at half strength; the
 //                   thread between them bright as far as the lit pip, dim past it.
-//   THE FORK        a pause string (the engine's `strings.pause`: a press 0.25-0.8 s after the slot it branches from ends) grows as a
+//   THE PAUSE ROW   a pause string (the engine's `strings.pause`: a press 0.25-0.8 s after the slot it branches from ends) grows as a
 //                   second row over the first, its thread rising from the gap after that slot: shown while a press would take it (the
 //                   pause's window open: its first pip lit, no slot of the string lit) and while its run goes on (its next pip lit;
 //                   its last struck, the string's first lit again, as the engine begins it again). The string's row never moves.
@@ -33,7 +33,8 @@
 //
 // Prior art, as on a museum label:
 //   God Hand (Clover, 2006): the Combo Tree, the string of slots the square button walks, shown as a row of boxes the player filled.
-//   Devil May Cry's and Bayonetta's combo lists (a pause drawn as a gap, the string forking from the blow before it): the fork.
+//   Devil May Cry's and Bayonetta's combo lists (a pause drawn as a gap, the string branching from the blow before it): the pause
+//   string's row (never "the fork", which is the Dreamvane's).
 //   The psygun's shell palette (feedback/hud.js): the chosen one raised and lit, the rest stepped back.
 //   Bayonetta's dodge offset: the combo's place held through a dodge, which is why the lit pip stays after a blink.
 //   The fighting games' cancels made visible (Guilty Gear's Roman Cancel flash, Street Fighter 6's Drive Rush in its green afterimage):
@@ -47,7 +48,7 @@ import { featTint } from '../vfx/oxidation.js';
 import { grid, toneGrid } from './icons/hand.js';
 import { ICON_PALS, hasIcon, uiIcon } from './icons/icons.js';
 
-const CELL = 16, GAP = 4, RAISE = 2, LIFT = 2; // a pip's cell (14 authored, the keyline round it), the thread between two, the lit pip's lift, the fork's row over the string's: art pixels
+const CELL = 16, GAP = 4, RAISE = 2, LIFT = 2; // a pip's cell (14 authored, the keyline round it), the thread between two, the lit pip's lift, the pause string's row over the string's: art pixels
 const IDLE = 3, IN = 14, OUT = 2.2;          // real s idle before it fades (out of a fight); how fast it comes in and goes, /s
 const SWEEP = 0.2, REST = 0.1, STEPS = 24;   // the glint: real s to cross the pip's body (from its first pixel: a window may be 4 frames), between two crossings, and its steps
 const WALK = 1.1;                            // how fast the glint's hue walks the film, a real second (the afterimage's 0.5 over its 0.45 s life)
@@ -136,7 +137,7 @@ export class CutlassStringRow {
     if (this.alpha < 0.01 && !want) { this.hide(false); return; }
     if (!this.shown) { this.shown = true; this.el.style.display = 'block'; }
     this.el.style.opacity = this.alpha.toFixed(3);
-    // the paid cut's window, over the lit pip: the next blow is the string's or its fork's (a ground blow, a pause, the dash, a charge,
+    // the paid cut's window, over the lit pip: the next blow is the string's or its pause string's (a ground blow, a pause, the dash, a charge,
     // the iaido's cut or a special into the next; never an air blow or the launcher, whose cut goes on in the air)
     const c = M.cur, litId = br && br.next >= 0 ? br.to[br.next] : string[place.next], nd = litId && M.def(litId);
     const into = c && c.kind !== 'air' && c.kind !== 'launcher' && g.player?.grounded;
@@ -160,14 +161,14 @@ export class CutlassStringRow {
 
   /** Draw the row at 1x and hand it to the kit to scale. */
   paint(M, string, place, open, band) {
-    const n = string.length, c = this.c, step = CELL + GAP, br = place.branch, forks = M.branches?.().filter((b) => b.at < n) || [];
-    const need = Math.max(n, ...forks.map((b) => b.at + 1 + b.to.length)), pad = (need - n) * step; // (a fork longer than the string: as much room each side, the string kept centred)
-    const top = forks.length ? CELL + RAISE + LIFT : 0; // (the fork's row, kept whether it shows or not: bottom-anchored, the string never moves)
+    const n = string.length, c = this.c, step = CELL + GAP, br = place.branch, pauseRows = M.branches?.().filter((b) => b.at < n) || [];
+    const need = Math.max(n, ...pauseRows.map((b) => b.at + 1 + b.to.length)), pad = (need - n) * step; // (a pause string longer than the string: as much room each side, the string kept centred)
+    const top = pauseRows.length ? CELL + RAISE + LIFT : 0; // (the pause string's row, kept whether it shows or not: bottom-anchored, the string never moves)
     const W = Math.max(1, (2 * need - n) * step - GAP), H = top + CELL + RAISE;
     if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
     const g = c.getContext('2d', { willReadFrequently: true }); g.imageSmoothingEnabled = false; g.clearRect(0, 0, W, H); // (the glint reads the lit pip back)
     const clay = ICON_PALS.clay, rgb = (t) => `rgb(${clay[t][0]},${clay[t][1]},${clay[t][2]})`;
-    // a row of pips (the string's, or the fork's) from x0, y0: the thread through their middles, its shadow under it, bright as far as
+    // a row of pips (the string's, or the pause string's) from x0, y0: the thread through their middles, its shadow under it, bright as far as
     // the lit pip, dim past it; then the pips, the lit one gold and raised, the struck clay, those ahead at half strength
     const row = (ids, x0, y0, lit, struck) => {
       const ty = y0 + RAISE + CELL / 2 - 1;
@@ -185,7 +186,7 @@ export class CutlassStringRow {
       g.globalAlpha = 1;
     };
     row(string, pad, top, place.next, place.struck);
-    // the fork: its thread rises from the gap after the slot it branches from (over the string's own thread, dim past it) to its row's
+    // the pause string's row: its thread rises from the gap after the slot it branches from (over the string's own thread, dim past it) to its row's
     // middle, then along to its first pip (the walked way: bright), its shadow beside and under it
     if (br) {
       const fx = pad + br.at * step + CELL + GAP / 2 - 1, fy = RAISE + CELL / 2 - 1, gy = top + RAISE + CELL / 2 - 1, x1 = pad + (br.at + 1) * step;
@@ -196,8 +197,8 @@ export class CutlassStringRow {
     // the glint: while the window is open the lit pip's body wears the oil film's hue (the paid cut's afterimage's, walking), its bevel
     // kept as shading, and a pale band runs across it from the body's first pixel to its last, a whole art pixel at a time; the keyline
     // stays the keyline
-    const onFork = !!br && br.next >= 0, li = onFork ? br.at + 1 + br.next : place.next, ly = onFork ? 0 : top;
-    if (open && li >= 0 && (onFork || li < n)) {
+    const onPauseRow = !!br && br.next >= 0, li = onPauseRow ? br.at + 1 + br.next : place.next, ly = onPauseRow ? 0 : top;
+    if (open && li >= 0 && (onPauseRow || li < n)) {
       const x = pad + li * step, d = g.getImageData(x, ly, CELL, CELL), a = d.data, body = (i, xx) => xx >= 1 && xx <= CELL - 2 && a[i + 3] && a[i] + a[i + 1] + a[i + 2] >= 120; // (its edge columns are the keyline and the thread)
       let lo = 99, hi = -1;
       for (let yy = 0; yy < CELL; yy++) for (let xx = 0; xx < CELL; xx++) if (body((yy * CELL + xx) * 4, xx)) { lo = Math.min(lo, xx + yy); hi = Math.max(hi, xx + yy); }
@@ -216,6 +217,6 @@ export class CutlassStringRow {
   }
 
   /** What the eye can read off the row now (for a test): whether it is shown, its slots, the lit one, how many struck, the glint, the
-   *  fork (a pause string's row: { at, to, next, struck }, or null). */
+   *  pause string's row ({ at, to, next, struck }, or null). */
   read() { const s = this.state; return { shown: this.shown && this.alpha > 0.5, alpha: +this.alpha.toFixed(2), len: s.len, next: s.next, struck: s.struck, glint: s.glint, slots: s.slots, branch: s.branch }; }
 }
