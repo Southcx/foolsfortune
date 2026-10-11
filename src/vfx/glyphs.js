@@ -25,6 +25,7 @@
 //   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
 //   pop('status.<id>', ...)            a status's glyph (STATUS_ART: stun, halt, slow, sleep, doubt, charm, blind, confusion, soaked)
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
+//   nearer                             the bias as a sprite's own onBeforeRender (userData.bias): the Lockheart's gauge borrows it (vfx/lockheartmarks.js)
 //   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -36,7 +37,7 @@ const BIAS = { min: 1, k: 1.5 }; // (m, and per metre of the glyph's size: a mar
 const _cam = new THREE.Vector3(), _at = new THREE.Vector3(), _sc = new THREE.Vector3();
 /** Just before a camera draws a glyph's sprite: its matrix moved `userData.bias` metres toward that camera along its line of sight
  *  (never past halfway) and shrunk by as much, so it covers the same pixels at a nearer depth. Its position and scale are kept. */
-function nearer(renderer, scene, camera) {
+export function nearer(renderer, scene, camera) {
   const b = this.userData.bias;
   if (!b) return;
   _cam.setFromMatrixPosition(camera.matrixWorld);

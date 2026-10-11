@@ -27,6 +27,11 @@
 //    light correction, as CLAUDE.md allows IK: the hand then follows the tool, a few degrees at the wrist). A swept-sphere floor
 //    check in the manner of the foot-planting of every engine (Unity's and Unreal's two-bone foot IK on a ray down), done for the
 //    held thing instead of the foot.
+//  - OFF THE BODY: the same clips swing a longer staff, a bigger brush or a book through the Courier's own body (the pose audit,
+//    2026-10-11: the Dreamvane's far end 9.5 cm into the chest, the Soul Brush's haft through the shoulder, the book pulled 7.6 cm into
+//    the chest). The tool is turned about the hand until none of its listed points is inside the body's proxies (courier/anim/
+//    bodyproxies.js turnOff), the deepest first, a few rounds, and the hand follows it, as off the ground (a thing carried between two
+//    hands, the book or a pot, is moved out whole instead: pushOff). The holding forearm near the grip is not the body (a haft in the fist).
 //
 //   const S = new Gestures(C)   S.play(clip, { from, to, rate, loop, hold, fadeIn, fadeOut })   S.stop(fade)   S.update(dt)   S.sample(out) -> w
 //   S.clip   S.t   S.playing   S.fresh (true the frame after a play: cut the crossfade)   (hold: played once, kept on its last frame)
@@ -34,12 +39,16 @@
 //   const X = new Crossfade(C, dur)   X.cut(dur)   X.apply(out, dt, mask, w)   X.keyed(out, key, dt, mask, w)   X.reset()
 //   legsW(moves, st) -> how much of the legs is the tool's now
 //   liftAbove(M, points, floorY, max) -> radians turned   (M: the tool's world matrix, turned in place about its origin: the hand)
+//   keepOffBody(ch, grip, M, points, { side }) -> radians   (a tool riding a hand by `grip` turned off the body, the hand following:
+//                                                           OFF THE BODY below, by courier/anim/bodyproxies.js turnOff)
 //   floorUnder(game, P, x, z, y) -> the ground's height under (x, z) near y (a ray down; the feet's height if nothing is hit)
-//   closeHand(ch, grip, M, state, dt, { side, from, to, near, far })   the free hand onto the haft where the clip has it near
+//   closeHand(ch, grip, M, state, dt, { side, from, to, near, far })   the free hand onto the haft where the clip has it near, turned
+//                                       about the haft to meet its forearm (easeGrip)
 //   carryInto(moves, c)   (a Moveset's onBegin) a whole-body move with `carry` (m/s) keeps the sprint it began in, eased away by `carryTo`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { rootOf } from './moveset.js';
+import { handFromTool, easeGrip } from './grip.js';
 
 const _a = new THREE.Vector3(), _o = new THREE.Vector3(), _w = new THREE.Vector3(), _p = new THREE.Vector3(), _ax = new THREE.Vector3();
 const _q = new THREE.Quaternion(), _r = new THREE.Matrix4(), _t = new THREE.Matrix4(), _m = new THREE.Matrix4(), _x = new THREE.Vector3(), _down = new THREE.Vector3(0, -1, 0);
@@ -138,6 +147,22 @@ export function liftAbove(M, points, floorY, max = 0.8) {
   return a;
 }
 
+/** A held tool riding a hand (`grip`, tools/grip.js) at world matrix M kept off the body: turned about the hand (bodyproxies.js turnOff,
+ *  the holding forearm at the grip left out), and the hand set to follow it (a light IK: a few degrees at the wrist, the wrist's ease and the
+ *  elbow doing the rest, courier/anim/wristease.js). In place on M; -> the radians turned. */
+export function keepOffBody(ch, grip, M, points, { side = 'R' } = {}) {
+  if (!ch.body || !points?.length) return 0;
+  ch.root.updateMatrixWorld(true); ch.body.place();
+  const at = new THREE.Vector3().setFromMatrixPosition(M);
+  const a = ch.body.turnOff(M, points, { skip: { part: `forearm${side}`, at, r: 0.16 } });
+  if (a <= 0) return 0;
+  handFromTool(grip, M, side, _p, 0, 0, 0, _q);
+  if (!Number.isFinite(_p.x + _p.y + _p.z + _q.x + _q.y + _q.z + _q.w)) return 0;
+  ch.reachHand(side, _p.clone(), _q.clone(), 1);
+  M.multiplyMatrices(side === 'L' ? ch.bones.handL.matrixWorld : ch.bones.handR.matrixWorld, side === 'L' ? grip.L : grip.R);
+  return a;
+}
+
 /** The ground's height under (x, z), looked for from a little above `y` down (the feet's height when nothing is found). */
 export function floorUnder(game, P, x, z, y) {
   const hit = game.physics?.raycast(_a.set(x, y + 0.6, z), _down, 1.8, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
@@ -155,9 +180,14 @@ export function closeHand(ch, grip, M, state, dt, { side = 'L', from = -1, to = 
   d.addScaledVector(_x, -x);
   const perp = d.length(), want = x > from && x < to ? 1 - THREE.MathUtils.smoothstep(perp, near, far) : 0;
   state.k = THREE.MathUtils.damp(state.k || 0, want, 14, dt);
-  if (state.k < 0.01 || perp < 0.004 || !Number.isFinite(perp)) return;
+  if (state.k < 0.01 || !Number.isFinite(perp)) return;
   hand.getWorldPosition(_p).sub(d);
-  ch.reachHand(side, _p, hand.getWorldQuaternion(_q), state.k);
+  // (turned about the haft to meet its forearm, tools/grip.js easeGrip: the clip's hand was made on another prop, and on this haft its
+  //  wrist folded to 57 degrees toward the little finger, the pose audit; a hand on a haft takes it from the side its arm comes from)
+  hand.getWorldQuaternion(_q);
+  const fore = side === 'L' ? ch.bones.forearmL : ch.bones.forearmR;
+  easeGrip(_p, _q, _o.addScaledVector(_x, x), _x, hand.getWorldPosition(_w).sub(fore.getWorldPosition(_a)).normalize());
+  ch.reachHand(side, _p, _q, state.k);
 }
 
 /** In a Moveset's onBegin: a whole-body move whose def has `carry` keeps that much forward speed on top of its clip's own travel, eased

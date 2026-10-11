@@ -277,8 +277,12 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   yet.
 - **the melee loadout** (working name, Espada's and the owner's to rule; `tools/sondelass/sondelassloadout.js`, read by `tools/moveset.js`;
   `docs/plans/MELEE-LOADOUT.md`): God Hand's Combo Tree, ours. **The catalogue** (`SONDELASS_MOVES`): every move a slot can hold, a row
-  each (its kind, **normal** or **special**; its Sond_ clip; its **effect** on a body: stagger, knock, launch or guard break; its
-  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`). **The loadout** (`SONDELASS_LOADOUT`):
+  each (its kind, **normal** or **special**; its clip; its **effect** on a body: stagger, knock, launch or guard break; its
+  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`, or its own `stats` until Dovina takes
+  it in; its **label**, the genre word the UI shows, and one line of effect). Phase 3's slice (2026-10-11): the normals Slash, Rising
+  Slash, Hop Slash, Leap Strike (c1 .. c4), Quick Slash, Backhand, Lunge Slash, Heavy Chop, Guard Break (`guardBreak`; was `shove`, the kick's), Push Kick, Low Sweep
+  (`lowSweep`: a low cut of the blade; *not* a sweep, the testing tool, nor the kick's leg sweep) and Body Blow; the specials Stinger,
+  Spin Slash, Power Slash, Rising Cut, Guard Crush and Backstep Slash (SONDELASS-STRINGS.md section 7). **The loadout** (`SONDELASS_LOADOUT`):
   the **string**'s slots in order (c1 .. c4 to start, 8 at most; LMB walks them, the last looping to the first) and the **specials**
   (RMB tapped, with W, with S; an empty forward or back slot is the tap's; the Stinger on the tap). *Not:* the kit (the Pneuka Box and
   the belt), nor the fixed grammar (S + LMB the launcher, the air and pause strings, the dash, the charge, R the special art, V the
@@ -286,6 +290,41 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
   `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
   "cancel" bare, which is the opposites' (an agate).
+- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`, Calissa's; the cutlass's own UI, MELEE-LOADOUT.md section 4):
+  while the cutlass is drawn (the belt says), the melee loadout's string at the bottom middle of the screen, one **pip** a slot (4 to 8)
+  threaded on a line, in the maker's pixel kit (1x, the icons' hand, palette-swapped, whole-number scaled). **The lit pip** is the slot
+  the next LMB plays (gold, raised two art pixels); the slots this run has **struck** stand before it in clay, those still ahead at half
+  strength. A pip is the move's UI icon where it has one (its catalogue row's `icon`, else `sondelass.<id>`), else a plain shape for its
+  effect: stagger a small diamond, knock the diamond grown with a bright core, launch a double chevron up, guard break a cracked
+  square. While the move on show is open for the paid cut (`Moveset.paidCutOpen`, its cost affordable), **the glint**: the lit pip wears
+  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. **The pause string's row** (never "the fork", which is the Dreamvane's): a pause string (a press
+  0.25-0.8 real s after the slot it branches from ends) as a second row of pips over the first, its thread rising from the gap after
+  that slot; shown while a press would take it (its first pip lit, no slot lit) and while its run goes on (its next lit; its last
+  struck, the string's first lit). Read from the engine (`string`, `stringPlace()` with its `branch`), so it resets where the engine
+  resets and holds through a blink cancel. Out of a fight and idle 3 real s it fades;
+  the first blow brings it back. *Not:* the slot row (a loadout in a choice card), Strawman's attack strings, the shell palette.
+- **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`, Calissa's; the hook's own UI): while the hook form is in hand with no line
+  out, a ring with a point at its heart, in the Mind's lines with the wire compass's keyline (`compassMaterial`, no program of its own),
+  on the point the grapnel would bite: the throw's own probe (`Hookshot.probe()`: the eye's ray along the aim, 40 m). An **anchor** is
+  the ring alone; a **catch** (under 60 kg, a clapperjar, a light creature: it comes to them) adds four brackets that close on it once.
+  Faint when the pool cannot pay the throw. A fixed size in the scene's 480 lines; no words. It replaced the chevron there (the chevron
+  is what F would do). *Not:* the chevron, the lock-on reticle, the Grapple's mount preview.
+- **a guard break** (`hit.guardBreak` on a move's hit, `tools/moveset.js`; God Hand's guard break, Soulcalibur's Guard Crush): the thing
+  struck is asked `breakGuard(point, dir, by)` before the blow lands, so that blow goes through. Strawman on guard throws its sleeves wide
+  and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop) (`GUARD_OPEN`, `world/testroom/room.js`; its look `S.open(t)`, `vfx/strawman.js`); nothing else guards
+  yet. *Not:* the guard (V, the held block), nor the parry, nor a stun.
+- **the loadout editor** (`tools/sondelass/loadouteditor.js`; `docs/plans/MELEE-LOADOUT.md` phase 3): God Hand's technique list beside its
+  Combo Tree. On the left the string's slots (`slotRow`: the open ones, filled or **empty**, then the ones not yet open shown **closed**
+  with what opens each) and the specials' three (RMB, W + RMB, S + RMB); on the right every move of the catalogue that fits the slot
+  picked, as choice cards (label, one line, power, reach, speed and cost, the effect's keyword, compare arrows against what the slot
+  holds; a locked move shown locked with the move it grows from). Opened at the sparring circle's lectern (its LOADOUT row: the Index's
+  window, `showPage`) and on the Codex's SONDELASS shelf; Esc or F closes it. **The loadout chosen** (`SondelassLoadout`,
+  `game.sondelassLoadout`, `loadoutchosen.js`): the choice kept in the save (section `sondelassLoadout`, scope player) and handed to the
+  combo engine checked against the catalogue and what is open, a slot that no longer fits falling back to the default's. **What is open**
+  (`loadoutopen.js`): 4 string slots, slots 5 to 8 at 300, 1,000, 3,000 and 8,000 cutlass hits (`cut.hit`) or a run of 8, 10, 12 or 14
+  (`sond.string.best`); today's four normals and the stinger known from the start, any other row by its `earn` predicate over the
+  ledger; in DEBUG the lend panel's `moves` row lends every move and all 8 slots (the hollow mark). A change is `loadout.set { tool,
+  slot, move, label, by }`, said in the log. *Not:* the lend panel, the Pneuka Box, the kit.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
@@ -352,8 +391,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   keylined; **the jet ring** (`JetRing`): at the feet while a jet runs, the hover's fuel draining, the rocket's gather filling, eight
   segments between two lines of the Mind, the rocket's **burst** when full; **the shine** (`CleanShine`): where the mop or Clean takes the
   last of a blot or of paint, a ring going out with **glints** and a **twinkle** over it. **The bottle's arc** (`BottleArc`,
-  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial right of the crosshair, the **meniscus** where it stands, quarter
-  **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
+  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial just right of the paint reticle's ring on the screen (beside the
+  Courier's chest while mopping or a jet runs; the screen's middle in first person), the **meniscus** where it stands, quarter
+  **notches**, the red cross when it runs dry; it lingers 0.8 real s after the load stops, and goes at once when the brush is stowed or
+  another tool is asked for (a jet aside). **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
   sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
   glyph.
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle); `bakeClip` is its bake without the skeleton
@@ -1109,6 +1150,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   speeds and times by √k, gravity real), as miniature effects are shot; the Great Slip Jelly's and the bowl's effects use it.
 - **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
   played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
+- **a room glaze** (`ROOM_GLAZES`, `src/vfx/roomglazes.js`): a real glaze, with its history, fired onto a room's built surface or given to
+  its ware: natural ash, firebrick (bare), majolica white, tenmoku, hare's fur, shino, oribe, sang de boeuf, salt glaze, celadon,
+  slip-trailed earthenware, terracotta and bisque. A row says the clay **body** under it (its colour is the row's **colour id**, what a room
+  builder passes: `ROOM_GLAZE_ID.kiln`), where it lies (**cover** on floor-facing and wall-facing faces, **runs** down the sides), how it
+  pools **thick** or runs **thin** (the colours), its **specks**, **orange peel**, **gloss** and **sheen**, and its **ware** colour (a pot's).
+  **The table** (`ROOM_SURFACES`): each kind of built surface (kiln, chimney, plinth, stand, hubWall, index) and its room glaze, the one
+  place the choice is made. **The showroom's ware** (`SHOWROOM_WARE`, `wareFor`): which pots upstairs wear which. **The room glaze atlas**
+  (`glazeAtlas()`, `vfx/surfaces.js`): one 128 x 128 texture, a metre a tile (R the pooling, G the runs, B the orange peel, A the specks),
+  drawn from noise at startup and read by the built surfaces' one program (`dress`); its finest mark 4 texels. *Not:* a glaze (the
+  Courier's, `courier/vessel/glazes.js`), a kiln pattern (`vfx/finish.js`), the clay patterns (`SURFACE`: plaster, planks, tiles, brick),
+  a material (Soul Alchemy's).
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
   shattering, a reprogramming): one screen pass in the glow (`post.screen`) that splits the colour, tears bands of rows, moshes blocks
   of the frame before, crushes colour to the code's cyan and magenta, drains toward a point, or cuts to a dark beat (**the drop-out**).
@@ -1134,7 +1186,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   where the sun catches it.
 - **a keyword** (`KEYWORDS`, `keywordEl`, `keyworded`, `src/ui/keywords.js`; CLARITY.md section 5, Dovina's table, Espada's words): one
   of twelve genre words the UI explains on hover wherever it stands (Slay the Spire's): **Absorb**, **Parry**, **Bomb**, **Lock-on**,
-  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**. In text it is bold, in the window's
+  **Weak point**, **Stun**, **Energy**, **Cooldown**, **Charges**, **Hull**, **Fuel**, **Passive**; and the melee loadout's four effects
+  (a move's `effect`, shown on the loadout editor's cards; placeholders for Espada's word): **Stagger** (`stagger`), **Knockback**
+  (`knock`), **Launch** (`launch`), **Guard break** (`guardBreak`). In text it is bold, in the window's
   gold, its icon before it; a hover or keyboard focus opens **its tip** (`#kwtip`: the icon, the word, what it means in one line). A new
   mechanic reuses one if it can; adding one is an entry here first. Each names in the UI a thing the glossary already has: Energy is
   the pool, Lock-on the lock-on, Hull the ship's hull (its `bears`), Fuel the bunker, Charges a mount's uses a crossing (*not* the
@@ -1171,11 +1225,45 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   *Also, the music copy in "Music":* **the overture** (`OVERTURE`, `src/music/overture.js`): the title's opening cue, a hair-metal JRPG opening that hands on, on the bar line,
   into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
 - **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
+- **the Lockheart's gauge** and **the hoover's reach** (`LockheartMarks`, `game.lockheartMarks`, `src/vfx/lockheartmarks.js`; docs/plans/MELEE-LOADOUT.md
+  section 4): the Lockheart's own marks while it is in the hands, gone on its stow or another tool's draw, and while it opens. **The gauge**:
+  a padlock in the icons' hand (13 by 18 art pixels, two of the 480 lines' pixels each, on their grid) standing beside the coffin on the
+  side away from the body: its body fills with Lachryma's violet from the foot as the coffin fills to its own measure (`fill`, seven
+  steps), a **socket** under it for each place on the keyring (four), gold where a Possibilikey hangs and grey where none does; when the
+  coffin would open (a coffin, full, a Possibilikey, and for the Warden's a Figment laid low before it) the shackle springs up, the
+  iron turns gold and the keyhole is lit. **The reach**: the hoover's cone laid on the ground before the coffin, 7 m and 0.7 rad either
+  side of the aim (`HOOVER`), the nearer arc where a mind laid low is drained (3.6 m), three arcs running in, in the Vacuum's violet (the
+  mount preview's own shape). A sprite on the glyphs' program and a wire on the rail mark's: no program of their own. *Not:* the wheel of
+  odds (`tools/lockheart/wheel.js`), the lid's glow (the coffin's load on the model), the Lachryma ring at the feet (the pool).
+- **the carry throw's mark** (`CarryThrowMark`, `game.carryThrowMark`, `src/vfx/carrythrowmark.js`): while a carried thing can be thrown (the
+  carry holds it and nothing is drawn from the belt), where it would land: the paint reticle's look (a point, a ring of 0.8 m, what a
+  throw hits round where it stops, four ticks, the far one down the throw) in the crosshair's cream on what the flight meets first, and
+  the flight to it in faint dashes. The flight is the carry's throw worked forward (the release over the hold, the carry's speed, the
+  physics' gravity and the body's damping): over seven throws at 2 to 8 m it fell within 0.03 to 0.3 m of the impact. Gone the moment
+  the throw begins. *Not:* the crosshair (the psygun's alone), the god hand's throw (`god.throw`), the paint reticle (the Soul Brush's).
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
   wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
   the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
   as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
   *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **the lens's frame** (`VeritomeFrame`, `game.veritomeFrame`, `src/vfx/veritomeframe.js`): the Veritome's own mark in the third person
+  (the owner, 2026-10-11: "each tool should have its own UI according to what it does"): four corners in the Flash's warm white, keylined
+  in the stone's ink, round what a plate would hold: the lens's field (the zoom it was left at, the plate's 8 by 5 shape cut from the
+  viewfinder's aperture) from the Courier's eye along the aim, cut where the aim meets the world (the **focus**, eased like an autofocus)
+  and seen from the camera over the shoulder, so a near subject draws it smaller and to the side (parallax, corrected as a rangefinder's
+  bright-line frames are). Drawn, its corners come in from a little wide and settle; through the lift (RMB, before first person) they open
+  out to the viewfinder's aperture, and with the lens raised it is gone. Shown only while the Veritome is in the hands with its book open
+  (the bash shuts it); no words, no numbers, no centre mark. It has no charge: the capture charge fills only through the raised lens.
+  The Snapshot's look (the rail-mark program's wire). *Not:* the viewfinder (the lens raised, first person), the Snapshot's preview (the
+  mount at the pier), the viewfinder's focus brackets (on each subject), the crosshair (the psygun's).
+- **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`; MELEE-LOADOUT.md section 4): what a toll of the Crucibelle
+  would stagger, on the ground round the Courier while the bell is in the hands, every size the toll's own (`TOLL`, the toll string's
+  rows): **the reach**, the arc of a ring at the next toll's range across its cone (4.2 m, 63 degrees either side of where it would face,
+  turned to what the toll itself would turn to), its two **edges** faint at the feet; the string's last toll the whole ring (5.2 m). Lit
+  through the bell's on-beat window round each eighth (a quarter brighter, the bar's downbeat a heavier line), dim between, a faint
+  **ripple** running out to reach the ring on the next beat; a small ring under each creature and clapperjar a toll would stagger now.
+  In the Bomb's coral on the mount preview's line (`vfx/railmark.js`, the wire), no program of its own; gone on a stow or a swap.
+  *Not:* the toll's smoke ring (the particles as it rings), the Bomb's blast ring (a mount's preview), the pendulum.
 - **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
@@ -1346,3 +1434,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **tuned**: marked on the panel, listed under Tuned with a reset, said in the log at the start of play (`tuning.tuned`), shown at the
   top of QAIS's Brief and carried on every report, so a tuned game is never mistaken for a bug. *Not:* a setting (never a warning).
 - **the workbench** (`/workbench`, `src/workbench/`): the studio for effects, models and sequences.
+- **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS, first in the list): the Workbench's stage for reviewing
+  the Courier's animation without playing for it. Its Courier is a rig of its own (`animrig.js`, built as a sibling's) run through the game's
+  own stack and tools on a stand-in world (`animshim.js`: nothing it plays reaches the ledger, the log, the pool, the save, the world or the
+  Courier's own rig). A **take** (`animtake.js`) is a play recorded frame by frame at 60 a second and laid back at any frame; every take
+  begins from the rig's **fresh state** (`animfresh.js`: what the rig and the tools held as they were built, kept and put back), so it is
+  the same whatever was played before it. The body is **pinned** where it stands, its travel drawn as a ghost line. Its **overlays** (`animoverlay.js`, `workbench.animOverlays`) are measures
+  that return marks (axes, points, segments, joint rings) the Anim Lab draws: the bones' axes now, the pose audit's when it lands.

@@ -25,7 +25,8 @@
 //   S.setMode('still' | 'guard' | 'swing')   (the guard crosses the sleeves in an X in front of its chest, a boxer's cross-arm block:
 //   SLEEVES.guard)   S.play(id, { onContact(blow, contact), onEnd })   S.breakOff(channels?)   S.playing (the move's id, or null)
 //   S.parts.left | right | both | hat   (what strikes: the parry mark rides there)   S.yaw, S.yawTo (the facing, turned toward
-//   yawTo between moves, held through one)   S.engaged (a string runs: the guard stays down)
+//   yawTo between moves, held through one)   S.engaged (a string runs: the guard stays down)   S.open(t) (a guard break: the sleeves
+//   thrown wide and the guard down for t real s)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
@@ -165,6 +166,8 @@ export class StrawmanModel {
   /** The mode F cycles (Dovina's, docs/plans/STRAWMAN.md): 'still', 'guard' (the sleeves fold into an X across its front: it blocks from
    *  the front), 'swing' (the room's clock plays the swing every 3 sim seconds: world/testroom/strawmanstrings.js). */
   setMode(m) { this.mode = m; }
+  /** A guard break: the guard thrown open for `t` seconds (it folds back in after, as from a string), the doll rocked back. */
+  open(t) { this.opened = t; this.av.x -= 2.2; }
   /** A move from the table (vfx/strawmanmoves.js), from its first frame: `onContact(blow, contact)` at each moment a blow's part meets
    *  the air in front (contact 0 is the strike; a spin's second sleeve is contact 1), `onEnd()` when it is back at rest. Its facing is
    *  held from here: the aim it was begun with is the aim it lands on. */
@@ -236,7 +239,8 @@ export class StrawmanModel {
     this.s.clampScalar(-0.6, 0.6);
     this.hatV += -this.hatA * 320 * dt; this.hatV *= Math.exp(-dt * 5); this.hatA = THREE.MathUtils.clamp(this.hatA + this.hatV * dt, -0.5, 0.5);
     // the guard: the sleeves fold forward into an X across the front (and stay down while a string runs or a move is under way)
-    this.pose += ((this.mode === 'guard' && !this.engaged && !live ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * 8));
+    this.opened = Math.max(0, (this.opened || 0) - dt);
+    this.pose += ((this.mode === 'guard' && !this.engaged && !live && !this.opened ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * (this.opened ? 22 : 8))); // (broken: thrown open fast)
     const g = this.pose, GD = SLEEVES.guard;
     // (a sleeve on side s swings forward, toward +z, the way it faces, by rotation.y = -s * forward, and tips up by rotation.z = s * up.
     // The signs were the other way round, and the guard and the swing pointed backwards: the owner's T51, v133)

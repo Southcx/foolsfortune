@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE KEYWORDS: the twelve genre words the UI explains on hover wherever they stand (docs/plans/CLARITY.md section 5, Dovina's table;
+// and the melee loadout's four effects, Stagger, Knockback, Launch, Guard break, the loadout editor's;
 // the words are Espada's to settle, so every label and line here is a placeholder until then). A keyword in text is bold, in the
 // window's gold, with its icon before it (ui/icons/keywordart.js), and a hover or a keyboard focus on it opens a small tip: its icon,
 // its word, and what it means in one line; it follows its keyword each frame and goes when the keyword does (a window closed or
@@ -17,7 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import { iconEl } from './icons/icons.js';
 
-/** The twelve (CLARITY.md section 5: label and line as Dovina wrote them; Espada's to settle). */
+/** The twelve (CLARITY.md section 5: label and line as Dovina wrote them; Espada's to settle), and the melee loadout's four. */
 export const KEYWORDS = {
   absorb: { label: 'Absorb', means: 'A shot of your colour is drunk, not taken.', forms: /\babsorb(?:s|ed|ing)?\b/i },
   parry: { label: 'Parry', means: 'Press at the right moment to send it back.', forms: /\bparr(?:y|ies|ied|ying)\b/i },
@@ -31,6 +32,12 @@ export const KEYWORDS = {
   hull: { label: 'Hull', means: 'Hits your ship can take.', forms: /\bhull\b/i },
   fuel: { label: 'Fuel', means: 'How far the ship can go.', forms: /\bfuel\b/i },
   passive: { label: 'Passive', means: 'Always on, nothing to press.', forms: /\bpassive\b/i },
+  // the melee loadout's four effects (a move's `effect`: the loadout editor's cards, tools/sondelass/loadouteditor.js); placeholders for
+  // Espada's word, as the twelve are (CLARITY.md section 5: a keyword is a glossary entry first)
+  stagger: { label: 'Stagger', means: 'The target reels, its attack broken off.', forms: /\bstagger(?:s|ed|ing)?\b/i },
+  knockback: { label: 'Knockback', means: 'Throws the target back.', forms: /\bknock(?:back|s back|ed back)\b/i },
+  launch: { label: 'Launch', means: 'Throws the target up, open to blows in the air.', forms: /\blaunch(?:es|ed|ing)?\b/i },
+  guardbreak: { label: 'Guard break', means: 'Breaks a blocking target\'s guard.', forms: /\bguard ?breaks?\b/i },
 };
 for (const [id, K] of Object.entries(KEYWORDS)) K.icon = `kw.${id}`;
 

@@ -17,6 +17,9 @@
 //              where the workbench's camera is, at the scrub's time
 //   CARDS      the choice card (ui/choicecard.js) on a sheet: the seven mounts, the slot row, compare, the keywords, every icon in each
 //              palette, in each window colour (workbench/cardsheet.js)
+//   THE ANIM LAB  (MODELS, first in the list) the Courier's own animation stack on a stage: a tool in the hands, a stance, a move, an
+//              emote or a raw clip played, stepped and scrubbed, front, side and top, every other tool off (workbench/animstage.js); a
+//              stage may draw through a camera of its own (`userData.camera()`), and its overlays are `workbench.animOverlays`
 //
 // Prior art: the engine editor's asset browser and its preview pane (Unity's inspector preview, Unreal's Niagara and static-mesh
 // editors: an effect or a mesh on a turntable, its stats beside it), the "sound test" and "model viewer" of the sixth generation's
@@ -36,6 +39,7 @@ import { ITEMS } from '../pneuka/items.js';
 import { buildThing } from '../pneuka/thingmodels.js';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { CURIOS } from '../world/treasure/treasure.js';
+import { ANIM_OVERLAYS } from './animoverlay.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -73,6 +77,7 @@ export class Workbench {
   constructor(game) {
     this.game = game; this.open = false; this.tab = 'effects';
     this.loader = new GLTFLoader();
+    this.animOverlays = ANIM_OVERLAYS; // (the Anim Lab's overlays: the pose audit adds its own here, workbench/animoverlay.js)
   }
 
   // ------------------------------------------------------------------ the stage (made the first time it opens)
@@ -165,7 +170,7 @@ export class Workbench {
     if (this.tab === 'cinema') return Object.entries(SEQUENCES).flatMap(([n, d]) => Object.keys(d.segments || {}).map((sg) => ({ id: `${n}|${sg}`, grp: n, label: sg })));
     if (this.tab === 'effects') return Object.keys(LIBRARY).sort().map((n) => ({ id: n, grp: n.split('.')[0], label: n }));
     if (this.tab === 'textures') return [...vfxTextureNames().map((n) => ({ id: `tex:${n}`, grp: 'effect textures', label: n })), { id: 'atlas', grp: 'sprites', label: 'the sprite atlas' }];
-    const out = [];
+    const out = [{ id: 'anim:lab', grp: 'animation', label: 'the Anim Lab (a tool, a stance, a move, an emote or a clip: played, stepped and scrubbed, front, side and top)' }];
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' }, { id: 'ships:classes', grp: 'ships', label: 'the ship classes in echelon (sloop, frigate, destroyer, galleon, tanker; from ahead, the side, astern, above)' }, { id: 'ships:mounts', grp: 'ships', label: "a mount's preview on a moored sloop and frigate (each mount in turn, eight real seconds: from the jetty and from above)" });
@@ -619,6 +624,6 @@ export class Workbench {
       if (this.packHip) this.packHip.position.fromArray(pose.p);
     }
     if (this.tab === 'cinema') this.cineFrame(raw);
-    g.post.render(this.scene, this.tab === 'cinema' && this.cv?.view === 'shot' && this.shotCam ? this.shotCam : this.camera);
+    g.post.render(this.scene, this.tab === 'cinema' && this.cv?.view === 'shot' && this.shotCam ? this.shotCam : this.model?.userData.camera?.() || this.camera); // (a stage's own camera: the Anim Lab's views)
   }
 }
