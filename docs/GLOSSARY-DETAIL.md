@@ -1193,6 +1193,16 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
   as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
   *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **the lens's frame** (`VeritomeFrame`, `game.veritomeFrame`, `src/vfx/veritomeframe.js`): the Veritome's own mark in the third person
+  (the owner, 2026-10-11: "each tool should have its own UI according to what it does"): four corners in the Flash's warm white, keylined
+  in the stone's ink, round what a plate would hold: the lens's field (the zoom it was left at, the plate's 8 by 5 shape cut from the
+  viewfinder's aperture) from the Courier's eye along the aim, cut where the aim meets the world (the **focus**, eased like an autofocus)
+  and seen from the camera over the shoulder, so a near subject draws it smaller and to the side (parallax, corrected as a rangefinder's
+  bright-line frames are). Drawn, its corners come in from a little wide and settle; through the lift (RMB, before first person) they open
+  out to the viewfinder's aperture, and with the lens raised it is gone. Shown only while the Veritome is in the hands with its book open
+  (the bash shuts it); no words, no numbers, no centre mark. It has no charge: the capture charge fills only through the raised lens.
+  The Snapshot's look (the rail-mark program's wire). *Not:* the viewfinder (the lens raised, first person), the Snapshot's preview (the
+  mount at the pier), the viewfinder's focus brackets (on each subject), the crosshair (the psygun's).
 - **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
