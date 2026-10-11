@@ -75,6 +75,29 @@ Every move in `SONDELASS_MOVES` names a **parent** (the move it grows from) and 
   the tree with the next row's two ways. Espada names the moves and the log line.
 - **Lent** in DEBUG by the lend panel's `moves` row, as today's moveset unlocks are.
 
+**As written** (`progress/combat/moves.js`, 2026-10-11, on Calissa's phase 3 catalogue):
+
+| move | parent | count way | feat way |
+|---|---|---|---|
+| Quick Slash, Body Blow | c1 | c1 landed 60 | c1 finishes 5 strings |
+| Backhand | c2 | c2 landed 60 | c2 finishes 5 |
+| Guard Break | c2 | c2 landed 60 | c2 finishes 5, or 3 guards broken |
+| Lunge Slash | c3 | c3 landed 60 | c3 finishes 5 |
+| Low Sweep | c3 | c3 landed 60 | c3 finishes 5, or 3 trips |
+| Heavy Chop | c4 | c4 landed 60 | c4 finishes 5 |
+| Push Kick | c4 | c4 landed 60, or 60 unarmed kicks landed | c4 finishes 5, or 5 knocked away |
+| Spin Slash (special) | Backhand | Backhand landed 60 | three struck by one blow |
+| Power Slash (special) | Heavy Chop | Heavy Chop landed 60 | Heavy Chop finishes 5 |
+| Rising Cut (special) | Quick Slash | Quick Slash landed 60 | 10 launches |
+| Guard Crush (special) | the stinger | 30 stingers | one guard broken |
+| Backstep Slash (special) | c3 | c3 landed 30 | 10 parries with the Sondelass |
+
+- The guard-broken, trip, knock-away and struck-by-one feats read `move.blow`'s `effect` and `struck` (rules in
+  `feedback/tracking/moves.js`); Calissa adds the two fields at the blow. Until then those rows open by their count way only.
+- **The stinger** (Calissa's flag): its lunge strikes at 2.2x its row (6.6 in 0.38 real s, 17.2 power a second measured), against the
+  band's 2.6. Ruled: its row's 3.0 a strike. It is a gap-closer that pierces a line and costs 6 Lachryma; it should not out-damage the
+  string. One number in `cutlass.js` `stingStep` (Calissa's). The owner will feel it; said in the round's report.
+
 ## 3. What a move is worth (so the editor's choice is a choice)
 
 - **The rule:** the string's damage a real second (`dps`, `moves.js`) stays within ±15% whatever the four-to-eight slots hold. A
