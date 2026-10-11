@@ -167,7 +167,7 @@ export class PneukaBox {
     this.emit('lure.untie', { lure: id });
     return true;
   }
-  /** Tie on whatever has this id, from the box: what the angler's 9 / 0 call. */
+  /** Tie on whatever has this id, from the box: what the angler's - / = call. */
   tie(id) { if (!id || id === this.lure) return false; const i = this.slots.findIndex((s) => s?.id === id); return i >= 0 ? this.tieOn(i) : false; }
 
   // ---------------------------------------------------------------- the fittings (an instrument, a coffin, keys)

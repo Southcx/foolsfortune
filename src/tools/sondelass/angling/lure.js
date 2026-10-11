@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // THE LURE: the Courier's mind, projected. A ghost of their mask on a line of light, tinted by the ASPECT they have chosen to think
-// (dread, wonder, grief, desire, mirth), that floats where it lands, sinks when asked, comes home when reeled and is what the
+// (dread, wonder, grief, desire, mirth, gall, fury), that floats where it lands, sinks when asked, comes home when reeled and is what the
 // entities are drawn to. Also the ripples: rings of light spread on the water for a splash, a nibble, a bite.
+// Gall and Fury also wear their paint's motif on the mask (vfx/paintmotifs.js), so neither is told by colour alone: Gall's curds (dark
+// bumps, each with a pale skin) and Fury's cracks (the mask charred, split by lines of light).
 //
 //   air     thrown along an arc to where the cast was aimed (a ballistic lob solved for the flight time)
 //   float   on the surface until it sinks toward `depthT` (RMB sinks it, the wheel sets it, reeling raises it); it HOLDS the depth it is
@@ -12,13 +14,43 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LURES, tasteOf, attraction } from './lures.js';
-import { ASPECTS } from './species.js';
+import { ASPECTS, knownAspects } from './species.js';
 import { sfx } from '../../../audio/sfx.js';
 import { stream } from '../../../core/rng.js';
 const simRand = stream('tools/sondelass/angling/lure'); // (the simulation's chance: core/rng.js, the same twice)
 
 const G = 9.81;
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
+
+/** Gall's and Fury's marks on the mask (`head`, an icosahedron of radius 0.085): curds round the crown and cheeks, cracks across the brow
+ *  and down one cheek; each shown only while its aspect is on the lure (setAspect). The front (+Z, the eyes) is left clear. */
+function maskMotifs(head) {
+  const R = 0.085, onSkin = (x, y, z, lift = 1) => new THREE.Vector3(x, y, z).normalize().multiplyScalar(R * lift);
+  const gall = new THREE.Group(), fury = new THREE.Group();
+  const curd = new THREE.MeshStandardMaterial({ color: 0x2c1640, emissive: 0x3a1c5a, emissiveIntensity: 0.6, roughness: 0.25, flatShading: true }); // (wetter than the rest)
+  const curdSkin = new THREE.MeshStandardMaterial({ color: 0xe8dcf4, emissive: 0x8a5ac8, emissiveIntensity: 0.35, roughness: 0.5, flatShading: true });
+  const CURDS = [[0.2, 0.9, 0.1, 0.018], [-0.5, 0.75, -0.1, 0.014], [0.7, 0.5, -0.3, 0.012], [-0.85, 0.2, 0.2, 0.016], [0.9, -0.1, 0.3, 0.011], [-0.3, 0.6, -0.7, 0.013], [0.4, -0.2, -0.85, 0.017], [-0.6, -0.5, -0.4, 0.01], [0.1, 0.5, -0.9, 0.009]];
+  for (const [x, y, z, r] of CURDS) {
+    const p = onSkin(x, y, z, 0.96), n = p.clone().normalize();
+    const d = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), curd); d.position.copy(p); gall.add(d);
+    const sk = new THREE.Mesh(new THREE.IcosahedronGeometry(r * 0.55, 0), curdSkin); sk.position.copy(p).addScaledVector(n, r * 0.6); gall.add(sk);
+  }
+  const crack = new THREE.MeshBasicMaterial({ color: 0xffc890, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  // (each crack a zigzag of directions on the mask, drawn as thin bars from one to the next)
+  const CRACKS = [[[-0.1, 1, 0.35], [0.2, 0.85, 0.5], [0.05, 0.6, 0.8], [0.3, 0.35, 0.9]], [[0.2, 0.85, 0.5], [0.55, 0.75, 0.35], [0.8, 0.5, 0.35], [0.85, 0.15, 0.5]],
+    [[-0.3, 0.9, 0.2], [-0.6, 0.7, 0.3], [-0.65, 0.35, 0.65], [-0.85, 0.05, 0.5]], [[0.8, 0.5, 0.35], [0.9, 0.35, -0.2], [0.7, 0.1, -0.7]]];
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Vector3();
+  for (const pts of CRACKS) for (let i = 1; i < pts.length; i++) {
+    _a.copy(onSkin(...pts[i - 1], 1.01)); _b.copy(onSkin(...pts[i], 1.01));
+    const len = _a.distanceTo(_b), bar = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.003, len + 0.003), crack);
+    bar.position.copy(_m.addVectors(_a, _b).multiplyScalar(0.5)).normalize().multiplyScalar(R * 1.012);
+    bar.lookAt(_b); // (along the crack: +Z at the next point; it has no parent yet, so this is the mask's own frame)
+    fury.add(bar);
+  }
+  gall.visible = fury.visible = false;
+  head.add(gall, fury);
+  return { gall, fury };
+}
 
 export class Ripples {
   constructor(scene, n = 10) {
@@ -60,8 +92,8 @@ export class Lure {
     this.aspect = 0; this.depth = 0; this.depthT = 0; this.pref = 0;
     this.echo = null;
     this.item = LURES[0]; // (what is tied on: lures.js; its taste is what the fish come to)
-    this.boost = [0, 0, 0, 0, 0]; // (what the soundings have pushed into it: fades)
-    this._taste = [0, 0, 0, 0, 0];
+    this.boost = ASPECTS.map(() => 0); // (what the soundings have pushed into it: fades)
+    this._taste = ASPECTS.map(() => 0); this._known = ASPECTS.map(() => true);
     this.speed = 0; this.twitch = 0; this.dip = 0; this.dipV = 0; this.attention = 0; this.claimed = false;
     this.pool = null; this.ground = 0;
     const g = (this.group = new THREE.Group());
@@ -73,6 +105,7 @@ export class Lure {
     g.add(head);
     const eyeM = new THREE.MeshBasicMaterial({ color: 0x1c0d08 });
     for (const s of [-1, 1]) { const e = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.012, 0.02), eyeM); e.position.set(s * 0.038, 0.012, 0.075); g.add(e); }
+    this.motifs = maskMotifs(head);
     this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: game.fx.haloTexture, color: 0xffb27a, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.halo.scale.setScalar(0.75);
     g.add(this.halo);
@@ -94,7 +127,10 @@ export class Lure {
 
   setAspect(a) {
     this.aspect = a;
-    const c = new THREE.Color(ASPECTS[a].color);
+    const c = new THREE.Color(ASPECTS[a].color), id = ASPECTS[a].id;
+    this.motifs.gall.visible = id === 'gall'; this.motifs.fury.visible = id === 'fury';
+    this.skin.color.setHex(id === 'fury' ? 0x5a2418 : 0xf3c9a8); // (Fury's mask is charred, its cracks lit)
+    this.skin.emissiveIntensity = id === 'fury' ? 0.55 : 0.9;
     this.skin.emissive.copy(c);
     this.halo.material.color.copy(c);
     this.plumb.material.color.copy(c); this.plumbRing.material.color.copy(c);
@@ -116,7 +152,7 @@ export class Lure {
   }
 
   /** How much a species wants this lure now: its taste and the soundings' push, against the species' own (lures.js). */
-  tasteFor(sp) { return attraction(tasteOf(this.item, this.boost, this._taste), sp); }
+  tasteFor(sp) { return attraction(tasteOf(this.item, this.boost, this._taste, knownAspects(this.game, this._known)), sp); } // (Gall and Fury count only once known)
   /** A sounding: the aspect pushed into the lure for a while. */
   push(aspect, k = 0.9) { this.boost[aspect] = Math.min(1.2, this.boost[aspect] + k); }
 
@@ -131,7 +167,7 @@ export class Lure {
   update(dt, ctx) {
     if (this.state === 'none') return;
     this.twitch = Math.max(0, this.twitch - dt);
-    for (let i = 0; i < 5; i++) this.boost[i] *= Math.exp(-dt / 7); // (a sounding's push lasts some seconds)
+    for (let i = 0; i < this.boost.length; i++) this.boost[i] *= Math.exp(-dt / 7); // (a sounding's push lasts some seconds)
     // the dip spring
     this.dipV += (-90 * this.dip - 11 * this.dipV) * dt;
     this.dip += this.dipV * dt;

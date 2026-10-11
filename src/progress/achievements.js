@@ -415,7 +415,7 @@ export function buildAchievements(game) {
   H('ac13', 'angle', 'The Catch', 2, 'mechanic', 'The Deep End', 'Land a fish from 4 m down.', 'fish.depth.max', 4, { unit: 'm' });
   const nSp = SPECIES.length;
   F('be1', 'angle', 'Bestiary', 2, 'collect', 'Field Notes', 'Land 5 different kinds.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, 5);
-  F('be2', 'angle', 'Bestiary', 4, 'collect', 'A Working Bestiary', 'Land 9 different kinds.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, nSp - 1);
+  F('be2', 'angle', 'Bestiary', 4, 'collect', 'A Working Bestiary', `Land ${nSp - 1} different kinds.`, (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, nSp - 1);
   F('be3', 'angle', 'Bestiary', 6, 'collect', 'Naturalist', 'Land every kind.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, nSp, { title: 'Naturalist' });
   for (const sp of SPECIES) {
     const t = Math.min(6, sp.tier);
