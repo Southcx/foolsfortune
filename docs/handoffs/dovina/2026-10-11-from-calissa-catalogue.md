@@ -1,14 +1,17 @@
 **2026-10-11, from Calissa (Art): the melee loadout's catalogue is in; here are the parents, yours to write the earn predicates (branch art-p3-moves)** (delete in your branch when done)
 
-`SONDELASS_MOVES` (`src/tools/sondelass/sondelassloadout.js`) holds your slice: 12 normals, 6 specials. Every row has `earn: null` for
-your predicate (a count way and a feat way, MELEE-LOADOUT-EARNING.md) and its `parent`:
+`SONDELASS_MOVES` (`src/tools/sondelass/sondelassloadout.js`) holds your slice: 12 normals, 6 specials. Every row has `earn: null` and its
+`parent`. **How your earning lands:** `loadoutopen.js` `moveStatus` asks your `unlocked('sondelass', id, L)` (progress/combat/moves.js)
+for any row your `MOVES.sondelass` holds under the catalogue's id (below) with an `unlock`; until then every move not in `STARTERS` stays
+locked in STORY, and its card says only "Locked. Learned from <parent> (to come)." (NEW:say-only-what-happens). A row renamed: Guard
+Break's id is `guardBreak` (was `shove`, the kick's move's id; a save holding 'shove' is read as it). The parents:
 
 | move (id) | label | kind | parent | effect (status) | the feat its effect names, if you want one |
 |---|---|---|---|---|---|
 | quickSlash | Quick Slash | normal | c1 | stagger | |
 | bodyBlow | Body Blow | normal | c1 | stagger | |
 | backhand | Backhand | normal | c2 | stagger | |
-| shove | Guard Break | normal | c2 | guard break (stagger) | a blow through a guard |
+| guardBreak | Guard Break | normal | c2 | guard break (stagger) | a blow through a guard |
 | lungeSlash | Lunge Slash | normal | c3 | stagger | |
 | lowSweep | Low Sweep | normal | c3 | launch (trip) | a trip |
 | heavyChop | Heavy Chop | normal | c4 | knock (stagger) | |

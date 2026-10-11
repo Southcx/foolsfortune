@@ -281,7 +281,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   each (its kind, **normal** or **special**; its clip; its **effect** on a body: stagger, knock, launch or guard break; its
   **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`, or its own `stats` until Dovina takes
   it in; its **label**, the genre word the UI shows, and one line of effect). Phase 3's slice (2026-10-11): the normals Slash, Rising
-  Slash, Hop Slash, Leap Strike (c1 .. c4), Quick Slash, Backhand, Lunge Slash, Heavy Chop, Guard Break (`shove`), Push Kick, Low Sweep
+  Slash, Hop Slash, Leap Strike (c1 .. c4), Quick Slash, Backhand, Lunge Slash, Heavy Chop, Guard Break (`guardBreak`; was `shove`, the kick's), Push Kick, Low Sweep
   (`lowSweep`: a low cut of the blade; *not* a sweep, the testing tool, nor the kick's leg sweep) and Body Blow; the specials Stinger,
   Spin Slash, Power Slash, Rising Cut, Guard Crush and Backstep Slash (SONDELASS-STRINGS.md section 7). **The loadout** (`SONDELASS_LOADOUT`):
   the **string**'s slots in order (c1 .. c4 to start, 8 at most; LMB walks them, the last looping to the first) and the **specials**

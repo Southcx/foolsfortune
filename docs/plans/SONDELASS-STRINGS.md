@@ -304,7 +304,7 @@ measured (7b), hit-stops in (today's blows: 1.94).
 | N | backhand | Backhand | swordB x1, then swordBRec | 0-0.20 | 0.20-0.31 | 0.38 | 0.53 (+0.75 rec) | 1.1 | 2.6 | stagger | c2 | 2.89 | 1.94 |
 | N | lungeSlash | Lunge Slash | meleeHook x0.9, whole; its 0.24 m and a step of 0.78 m | 0-0.26 | 0.26-0.31 | 0.50 | 0.52 | 1.4 | 3.0 | stagger (push 2) | c3 | 2.80 | 2.00 |
 | N | heavyChop | Heavy Chop | swordC x1.2, whole, 0-1.45 | 0-0.50 (a hop) | 0.50-0.59 | 0.92 | 1.21 | 2.4 | 2.6 | knock (push 7; stagger) | c4 | 2.61 | 2.09 |
-| N | shove | Guard Break | Fist_Shove x1.1, whole, 0-0.85; both hands | 0-0.12 | 0.12-0.19 | 0.42 | 0.77 | 1.1 | 1.6 | guard break (push 5; stagger) | c2 | 2.62 | 1.78 |
+| N | guardBreak | Guard Break | Fist_Shove x1.1, whole, 0-0.85; both hands | 0-0.12 | 0.12-0.19 | 0.42 | 0.77 | 1.1 | 1.6 | guard break (push 5; stagger) | c2 | 2.62 | 1.78 |
 | N | pushKick | Push Kick | Fist_Kick x1.1, whole, 0-1.05; the left foot, its strike typed 0.40-0.62 clip s | 0-0.36 | 0.36-0.56 | 0.60 | 0.95 | 1.45 | 1.7 | knock (push 7) | c4 | 2.42 | 1.81 |
 | N | lowSweep | Low Sweep | swordHeavy x1.1, whole, 0-1.05 | 0-0.33 | 0.33-0.49 | 0.55 | 0.95 | 1.35 | 2.7 | launch (lift 3; trip) | c3 | 2.45 | 1.80 |
 | N | bodyBlow | Body Blow | Fist_Combo1 x1.15, 0-0.60; the left fist | 0-0.06 | 0.06-0.15 | 0.30 | 0.52 | 0.9 | 1.6 | stagger (push 1.5) | c1 | 3.00 | 1.86 |

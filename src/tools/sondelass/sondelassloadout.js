@@ -7,7 +7,7 @@
 //     { id, kind: 'normal' | 'special', label (what the UI calls it: a genre word, docs/plans/CLARITY.md), line (its one line of effect,
 //       verb first, 8 words at most), lore (the world's name: Espada's, null till then), clip, effect: 'stagger' | 'knock' | 'launch' |
 //       'guardBreak' (what it does to a body), parent (the move whose use opens it: Dovina's earning; null for the ones known from the
-//       start), earn (its ledger predicate: Dovina's to write, null till then), rule (its row in progress/combat/moves.js, which wins),
+//       start), earn (null: a move is earned where Dovina's table says, `unlocked(tool, id, L)` in progress/combat/moves.js, asked by loadoutopen.js; locked till then), rule (its row in progress/combat/moves.js, which wins),
 //       stats ({ power a hit, hits, time real s (its speed: when the next may begin), range m (its reach from the body: the clip's
 //       measured tip and the blade), cost Lachryma, status }: the card's numbers, and the engine's where no `rule` names a row),
 //       (a row's `play.hit.away`: what it strikes is sent straight away from the Courier, never along the swing, so a row whose line
@@ -48,7 +48,7 @@ export const SONDELASS_MOVES = {
   // (c4's chain window is read only where it is not the last slot: there its row's time, 0.78, is when the next begins, as its free cut)
   c4: { id: 'c4', kind: 'normal', label: 'Leap Strike', line: 'Leaps in and cuts down; knocks back', lore: null, clip: 'Sond_Combo4', effect: 'knock', parent: null, earn: null, rule: 'combo4', // (finisher: the whole body's leap and overhead cut)
     stats: { power: 2.0, time: 0.78, range: 2.9 },
-    play: { body: 'whole', root: 'xz', chain: [0.45, 1.3], hit: { power: 2.0, dmg: 1.9, push: 6, away: 1 }, heat: 1, arc: 'over' } },
+    play: { body: 'whole', root: 'xz', chain: [0.45, 1.3], hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' } }, // (no `away`, the carry's travel cut its own: today's c4, frame for frame)
   // the catalogue's normals (phase 3): UAL's split swings and the suite's fists and feet, each a job of its own. `rec` is an upper
   // move's recovery clip (UAL's swordA and swordB are cut from their recoveries); a fist or a foot is measured on itself (`limb`, `tip`)
   // and reaches a hand's or a foot's width past it (`reach`), not a blade's; a kick or a shove leaves no ribbon
@@ -60,19 +60,19 @@ export const SONDELASS_MOVES = {
     play: { rate: 1.0, chain: [0.31, 0.53], to: 0.53, fade: 0.08, rec: 'swordBRec', hit: { power: 1.1, dmg: 0.9 }, lunge: 3.0, arc: 'l2r' } },
   lungeSlash: { id: 'lungeSlash', kind: 'normal', label: 'Lunge Slash', line: 'Lunges far in with a down-cut', lore: null, clip: 'meleeHook', effect: 'stagger', parent: 'c3', earn: null, // (UAL's melee hook: a deep lunge and a cut down across, the reach of the set)
     stats: { power: 1.4, time: 0.5, range: 3.0 },
-    play: { body: 'whole', root: 'xz', rate: 0.9, step: { v: 3.5, at: [0.04, 0.24] }, chain: [0.3, 0.47], hit: { power: 1.4, dmg: 1.2, push: 2, away: 1 }, heat: 0.5, arc: 'over' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 0.9, step: { v: 3.5, at: [0.04, 0.24] }, chain: [0.3, 0.47], hit: { power: 1.4, dmg: 1.2, push: 2, away: 1 }, heat: 0.5, arc: 'over' } },
   heavyChop: { id: 'heavyChop', kind: 'normal', label: 'Heavy Chop', line: 'Chops down hard; knocks back', lore: null, clip: 'swordC', effect: 'knock', parent: 'c4', earn: null, // (UAL's Sword_Regular_C: a hop, the blade overhead, chopped down; slow in, hard)
     stats: { power: 2.4, time: 0.92, range: 2.6, status: 'stagger' },
-    play: { body: 'whole', root: 'xz', rate: 1.2, chain: [0.75, 1.45], to: 1.45, hit: { power: 2.4, dmg: 2.2, push: 7, away: 1 }, heat: 1, arc: 'over' } },
-  shove: { id: 'shove', kind: 'normal', label: 'Guard Break', line: 'Shoves through a guard; staggers', lore: null, clip: 'Fist_Shove', effect: 'guardBreak', parent: 'c2', earn: null, // (the suite's two-handed shove, the blade across the front)
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.2, chain: [0.75, 1.45], to: 1.45, hit: { power: 2.4, dmg: 2.2, push: 7, away: 1 }, heat: 1, arc: 'over' } },
+  guardBreak: { id: 'guardBreak', kind: 'normal', label: 'Guard Break', line: 'Shoves through a guard; staggers', lore: null, clip: 'Fist_Shove', effect: 'guardBreak', parent: 'c2', earn: null, // (the suite's two-handed shove, the blade across the front)
     stats: { power: 1.1, time: 0.42, range: 1.6, status: 'stagger' },
-    play: { body: 'whole', root: 'xz', rate: 1.1, limb: 'L', tip: 0.12, reach: 0.35, ribbon: false, chain: [0.25, 0.85], to: 0.85, hit: { power: 1.1, dmg: 0.6, push: 5, away: 1, guardBreak: true, cause: 'bashed' }, heat: 0.4, arc: 'raise' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.1, limb: 'L', tip: 0.12, reach: 0.35, ribbon: false, chain: [0.25, 0.85], to: 0.85, hit: { power: 1.1, dmg: 0.6, push: 5, away: 1, guardBreak: true, cause: 'bashed' }, heat: 0.4, arc: 'raise' } },
   pushKick: { id: 'pushKick', kind: 'normal', label: 'Push Kick', line: 'Kicks them away', lore: null, clip: 'Fist_Kick', effect: 'knock', parent: 'c4', earn: null, // (the suite's front kick, the off hand's side: the left foot, as God Hand mixes them in)
     stats: { power: 1.45, time: 0.6, range: 1.7 },
-    play: { body: 'whole', root: 'xz', rate: 1.1, limb: 'footL', tip: 0.22, reach: 0.35, ribbon: false, strike: [0.4, 0.62], chain: [0.62, 1.05], to: 1.05, hit: { power: 1.45, dmg: 1.0, push: 7, away: 1, cause: 'kick' }, heat: 0.6, arc: 'raise' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.1, limb: 'footL', tip: 0.22, reach: 0.35, ribbon: false, strike: [0.4, 0.62], chain: [0.62, 1.05], to: 1.05, hit: { power: 1.45, dmg: 1.0, push: 7, away: 1, cause: 'kick' }, heat: 0.6, arc: 'raise' } },
   lowSweep: { id: 'lowSweep', kind: 'normal', label: 'Low Sweep', line: 'Cuts low; trips them up', lore: null, clip: 'swordHeavy', effect: 'launch', parent: 'c3', earn: null, // (UAL's heavy sword's first cut: a deep lunge, the blade along the floor)
     stats: { power: 1.35, time: 0.55, range: 2.7, status: 'trip' },
-    play: { body: 'whole', root: 'xz', rate: 1.1, chain: [0.56, 1.0], to: 1.05, hit: { power: 1.35, dmg: 1.0, push: 1.5, away: 1, lift: 3 }, heat: 0.6, arc: 'r2l' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.1, chain: [0.56, 1.0], to: 1.05, hit: { power: 1.35, dmg: 1.0, push: 1.5, away: 1, lift: 3 }, heat: 0.6, arc: 'r2l' } },
   bodyBlow: { id: 'bodyBlow', kind: 'normal', label: 'Body Blow', line: 'Jabs with the off hand, fast', lore: null, clip: 'Fist_Combo1', effect: 'stagger', parent: 'c1', earn: null, // (the suite's jab: the left fist, the blade held back)
     stats: { power: 0.9, time: 0.3, range: 1.6 },
     play: { rate: 1.15, limb: 'L', tip: 0.1, reach: 0.35, ribbon: false, chain: [0.18, 0.55], to: 0.6, fade: 0.25, hit: { power: 0.9, dmg: 0.6, push: 1.5, away: 1, cause: 'bashed' }, lunge: 2.2, arc: 'raise' } },
@@ -87,19 +87,19 @@ export const SONDELASS_MOVES = {
   // (a special pays for what it does to a body, never in damage: progress/combat/moves.js's rule, as the Tidecutter's 2.7)
   spinSlash: { id: 'spinSlash', kind: 'special', label: 'Spin Slash', line: 'Spins, cutting everything around you', lore: null, clip: 'Sond_SpinSlash', effect: 'knock', parent: 'backhand', earn: null, // (the suite's spin: 2.8 turns, four cuts round)
     stats: { power: 0.85, hits: 4, time: 1.17, cost: 8, range: 2.4 },
-    play: { body: 'whole', rate: 1.15, to: 1.35, hit: { power: 0.85, dmg: 0.9, push: 5, away: 1 }, heat: 0.8, arc: 'r2l' } },
+    play: { body: 'whole', travelCut: 'peak', rate: 1.15, to: 1.35, hit: { power: 0.85, dmg: 0.9, push: 5, away: 1 }, heat: 0.8, arc: 'r2l' } },
   powerSlash: { id: 'powerSlash', kind: 'special', label: 'Power Slash', line: 'A full-charge cut at once; knocks back', lore: null, clip: 'Sond_ChargeRelease', effect: 'knock', parent: 'heavyChop', earn: null, // (the charge's release, its 331 degrees, without the hold)
     stats: { power: 3.0, time: 1.2, cost: 8, range: 2.5 },
-    play: { body: 'whole', root: 'xz', rate: 1.0, to: 1.2, hit: { power: 3.0, dmg: 2.6, push: 9, away: 1 }, heat: 1, arc: 'r2l' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.0, to: 1.2, hit: { power: 3.0, dmg: 2.6, push: 9, away: 1 }, heat: 1, arc: 'r2l' } },
   risingCut: { id: 'risingCut', kind: 'special', label: 'Rising Cut', line: 'Cuts upward, launching them', lore: null, clip: 'Fist_Uppercut', effect: 'launch', parent: 'quickSlash', earn: null, // (the suite's uppercut, the blade in the fist: a hop and a cut straight up)
     stats: { power: 2.3, time: 0.9, cost: 6, range: 2.0, status: 'airborne' },
-    play: { body: 'whole', root: 'xyz', rate: 1.0, to: 0.9, hit: { power: 2.3, dmg: 1.8, push: 1, away: 1, lift: 8 }, heat: 0.8, arc: 'raise' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xyz', rate: 1.0, to: 0.9, hit: { power: 2.3, dmg: 1.8, push: 1, away: 1, lift: 8 }, heat: 0.8, arc: 'raise' } },
   guardCrush: { id: 'guardCrush', kind: 'special', label: 'Guard Crush', line: 'Thrusts through a guard; staggers', lore: null, clip: 'Sond_Thrust', effect: 'guardBreak', parent: 'stinger', earn: null, // (the suite's thrust, planted: a step and the point driven through)
     stats: { power: 2.8, time: 1.11, cost: 6, range: 2.7, status: 'stagger' },
-    play: { body: 'whole', root: 'xz', rate: 0.9, step: { v: 3, at: [0.05, 0.2] }, to: 1.0, hit: { power: 2.8, dmg: 2.2, push: 5, away: 1, guardBreak: true }, heat: 0.9, arc: 'raise' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 0.9, step: { v: 3, at: [0.05, 0.2] }, to: 1.0, hit: { power: 2.8, dmg: 2.2, push: 5, away: 1, guardBreak: true }, heat: 0.9, arc: 'raise' } },
   backstepSlash: { id: 'backstepSlash', kind: 'special', label: 'Backstep Slash', line: 'Hops back, cutting as you go', lore: null, clip: 'Sond_Combo3', effect: 'stagger', parent: 'c3', earn: null, // (c3's hop and flat cut, the hop taken backward: 1.4 m out of reach; the back slot's)
     stats: { power: 2.5, time: 1.0, cost: 5, range: 2.1 }, // (range: from where they stand when it is pressed, the hop back taken; measured, S + RMB and tapped, a slip jelly and Strawman: lands at 2.1 m, misses at 2.2; it said 2.4)
-    play: { body: 'whole', root: 'xz', rate: 1.1, step: { v: -5, at: [0.3, 0.55] }, to: 1.1, hit: { power: 2.5, dmg: 1.6, push: 3, away: 1 }, heat: 0.7, arc: 'r2l' } },
+    play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.1, step: { v: -5, at: [0.3, 0.55] }, to: 1.1, hit: { power: 2.5, dmg: 1.6, push: 3, away: 1 }, heat: 0.7, arc: 'r2l' } },
 };
 
 /** The default loadout: today's moves, so the string plays exactly as it did before there was a loadout. */

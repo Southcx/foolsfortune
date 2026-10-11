@@ -52,6 +52,8 @@
 //             high: { lift } (a launcher held at its strike), strike: [t0, t1] (typed over the measured), parts: [t..] (a row's hits begin),
 //             aim (rad: where off the facing the blade's arc passes, for a cut whose arc never crosses the front),
 //             ringHit (the landing ring's own hit, where the strike's differs), lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
+//             travelCut: 'peak' (a whole-body move's travel cut by the hips' farthest ahead, toward the lock's target, its sidestep
+//             dropped when aimed: casebook NEW:travel-cut-to-the-peak; without it, the old cut: the whole clip scaled by where it ends),
 //             step: { v, at: [t0, t1] } (a whole-body move's own step, m/s along the facing between clip times t0 and t1, over the clip's
 //             travel: back when v < 0, the backstep's; never through what it goes to), reach (m past the measured tip: a fist's or a
 //             foot's, where the tool's is a blade's), limb, tip (melee.js: what the reach is measured on), ribbon: false (no ribbon: a
@@ -379,11 +381,15 @@ export class Moveset {
     // never through what it was aimed at (the lock's target, else the magnet's): the travel ahead is cut so the farthest it goes stops a
     // reach short of it, to none when they are there already; the clip's sidestep is dropped (a string of them walked round it and off
     // the magnet's cone); a rise is the move's own (casebook rule 192, NEW:travel-cut-to-the-peak)
-    const aim = this.aimedAt(m);
-    let scale = 1;
-    const fwd = (R ? (def.ahead ??= R.ahead(def.from || 0, def.to ?? this.dur(def))) : 0) + (def.step?.v > 0 ? def.step.v * (def.step.at[1] - def.step.at[0]) / (def.rate || 1) : 0); // (m: the hips' farthest ahead in the move and its own step forward)
-    if (aim && fwd > 0.01) scale = THREE.MathUtils.clamp((aim.dist - aim.r - 0.9) / fwd, 0, 1);
-    const side = aim ? 0 : 1;
+    // `travelCut: 'peak'` asks for it (the catalogue's new moves, phase 3); every move before them keeps the old cut, the whole clip's
+    // travel scaled by the magnet's distance over where the clip ends, 0.15 at least (today's string, frame for frame: MELEE-LOADOUT.md)
+    const peak = def.travelCut === 'peak', aim = peak ? this.aimedAt(m) : null;
+    let scale = 1, side = 1;
+    if (peak) {
+      const fwd = (R ? (def.ahead ??= R.ahead(def.from || 0, def.to ?? this.dur(def))) : 0) + (def.step?.v > 0 ? def.step.v * (def.step.at[1] - def.step.at[0]) / (def.rate || 1) : 0); // (m: the hips' farthest ahead in the move and its own step forward)
+      if (aim && fwd > 0.01) scale = THREE.MathUtils.clamp((aim.dist - aim.r - 0.9) / fwd, 0, 1);
+      side = aim ? 0 : 1;
+    } else if (R && m) { const want = Math.hypot(R.end.x, R.end.z); if (want > 0.3) scale = THREE.MathUtils.clamp((m.dist - m.r - 0.9) / want, 0.15, 1); }
     c.scale = scale; c.tag = `${this.id}.${c.id}`; c.grav = def.plunge ? 0 : xyz ? 0 : def.gravity ?? (P.grounded ? 1 : HANG);
     const v0 = new THREE.Vector3(P.vel.x * 0.3, def.lift ?? (P.grounded ? 0 : Math.max(0, P.vel.y)), P.vel.z * 0.3);
     L.go(v0, {
@@ -395,7 +401,9 @@ export class Moveset {
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
         if (R) {
           const t0 = c.t, t1 = c.t + dt * (def.rate || 1);
-          R.at(t1, _a).sub(R.at(t0, _b)).divideScalar(Math.max(1e-4, dt)); _a.x *= side; _a.z *= scale; toWorld(_a, yaw, _k);
+          if (peak) { R.at(t1, _a).sub(R.at(t0, _b)).divideScalar(Math.max(1e-4, dt)); _a.x *= side; _a.z *= scale; }
+          else R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt));
+          toWorld(_a, yaw, _k);
           vel.x = _k.x; vel.z = _k.z; if (xyz && !this.arc) vel.y = _k.y; // (High Time's arc has the rise once it begins)
         }
         const st = def.step; // (the move's own step over the clip's travel: forward cut short as the travel is, back in full)

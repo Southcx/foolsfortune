@@ -163,7 +163,7 @@ export function loadoutEditor(game) { let E = EDITORS.get(game); if (!E) EDITORS
 
 /** The editor as a page of the Index's window (the sparring circle's lectern's LOADOUT row): Esc or F closes it. */
 export function showLoadoutPage(game) {
-  const menu = game.course?.menu || game.indexMenu;
+  const menu = game.indexMenu;
   if (!menu?.showPage) return false;
   const E = loadoutEditor(game);
   menu.showPage('the melee loadout', (im) => { im.style.width = 'min(940px, calc(100% - 24px))'; E.render(im, { redraw: () => menu.render() }); }, PAGE);

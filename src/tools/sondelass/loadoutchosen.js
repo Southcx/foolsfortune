@@ -4,7 +4,8 @@
 // through cutlass.js: `loadout: () => game.sondelassLoadout.get()`).
 //
 //   THE SAVE      one section, `sondelassLoadout`, scope player (core/save.js): { string: [ids], specials: { tap, forward, back } } as set,
-//                 or null for never set (the default plays). Marked dirty on every change.
+//                 or null for never set (the default plays). Marked dirty on every change. An id since renamed is read as its new one
+//                 (RENAMED: a save holding 'shove' plays Guard Break, `guardBreak`).
 //   THE CHECK     get() is what plays: every slot's id checked against the catalogue (SONDELASS_MOVES: the row is there, of the slot's
 //                 kind, and playable) and against what the Courier knows (loadoutopen.js), the string cut to the slots open. A move no
 //                 longer known or a row gone falls back to the default for its slot (SONDELASS_LOADOUT; a slot past the default's four is
@@ -27,7 +28,9 @@ import { labelOf } from './loadoutwords.js';
 
 export const SECTION = 'sondelassLoadout';
 const DIRS = ['tap', 'forward', 'back'];
-const str = (x) => (typeof x === 'string' && x ? x : null);
+/** Ids a save may hold that a row has since been renamed from (Guard Break was `shove`, the kick's own move's id and its clip's word). */
+export const RENAMED = { shove: 'guardBreak' };
+const str = (x) => (typeof x === 'string' && x ? RENAMED[x] || x : null);
 
 /** What was kept, in its shape only (ids are checked when they are played: get()). Null for nothing usable. */
 function shape(d) {

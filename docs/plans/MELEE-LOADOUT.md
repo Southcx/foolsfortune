@@ -67,7 +67,7 @@ five runs the same). The chart and the table: SONDELASS-STRINGS.md section 7. Sh
 editor (`tools/sondelass/loadouteditor.js`), God Hand's technique list beside its Combo Tree: on the left the string's slots (`slotRow`:
 4 open, the rest shown CLOSED with what opens each, "300 hits"; the run's way unshown until its record has a writer) and the specials'
 three (RMB, W + RMB, S + RMB); on the right every move of the catalogue that fits the slot picked, as choice cards (label, one line, power, reach, speed and cost, the effect's
-keyword, compare arrows against what the slot holds; a locked move shown locked, "Learned by using Rising Cut.", never hidden). Click a
+keyword, compare arrows against what the slot holds; a locked move shown locked, "Locked. Learned from Rising Slash (to come).", never hidden). Click a
 slot, then a move. It lists whatever `SONDELASS_MOVES` holds (two rows put in at run time by the probe were listed, locked and lent,
 with nothing changed in the editor); a row's own `label`, `does` and `numbers` win, and `loadoutwords.js` stands in for today's five
 (Flat Cut, Rising Cut, Hop Cut, Leap Chop, Stinger: placeholders for Espada's; reach measured from the clips, c1 1.52 m, c2 1.74,
@@ -125,6 +125,17 @@ change in the editor is written at once (`save.flush()` after `dirty()`: the mai
 NEW:write-what-a-window-changes). (4) A closed slot says only "300 hits" (1,000, 3,000, 8,000): "or 8 in a row" comes back when
 `sond.string.best` has a writer. And three minors: the W + RMB and S + RMB lists show their own key caps, a quick second change to a
 slot is said (the log's throttle dropped it), and Backstep Slash's reach says 2.1 m (measured: lands at 2.1, misses at 2.2; it said 2.4). Harness in Calissa's scratchpad (`p3/repair2/`).
+
+**Phase 3, repaired a third time (2026-10-11, Calissa; the verifiers' third round):** (1) The default loadout plays phase 2's string
+frame for frame again: c4 has no `hit.away` (its knock is along the swing, as before), and the carry's peak travel cut is opt-in
+(`travelCut: 'peak'`, the ten new whole-body rows); every move that existed keeps the old cut. c4's chain window is read only when c4 is
+not the last slot, so never by the default (casebook NEW:default-plays-as-before). Phase 2's `string.mjs`, its five runs against
+art-melee-p2 (02836dd), the slip jelly free and pinned: identical on every frame (begins, hits, cuts, the pool, the Courier's x, z). (2)
+A locked move promises nothing: until Dovina's `unlocked('sondelass', id, L)` has a row for it (`loadoutopen.js` asks it where her
+table holds one with an `unlock`), every move not in `STARTERS` stays locked in STORY, and its card says "Locked. Learned from <parent>
+(to come)." (NEW:say-only-what-happens); DEBUG's `moves` lend still opens all 18. (3) The editor reaches the Index's window through
+`game.indexMenu` (not `game.course`, a retired word); Guard Break's id is `guardBreak` (was `shove`, the kick's move's id), and a save
+holding 'shove' plays it (`RENAMED`, `loadoutchosen.js`). Harness in Calissa's scratchpad (`p3/repair3/`).
 
 ## 2. The loadout (God Hand's Combo Tree, ours)
 

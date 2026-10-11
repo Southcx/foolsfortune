@@ -562,11 +562,28 @@ NEW:knock-away-not-along. **A knock back goes back.** A swing's direction at the
 NEW:say-only-what-happens. **A line the player reads is what the click or the play will do.** A choice's card line and the log line
     after it are read against the state the click leaves (a slot emptied, a string ended), and a way to open a thing is shown only
     when what it reads has a writer: a record nothing keeps is a promise nothing keeps.
+NEW:default-plays-as-before. **A new option never moves the default.** An engine change or a data fix made for new rows is opt-in
+    on the row (`travelCut: 'peak'`, `hit.away`), never applied to the rows that already played, and the default is proven by the old
+    probe run as it was, frame for frame, against a free target as well as a pinned one.
 NEW:write-what-a-window-changes. **A change made in a window is written when it is made.** The main loop writes the save once a frame
     only while no window is open (`main.js`), and nothing writes it when the page goes, so what a window changes (the loadout editor,
     a page of the Index's window, the Codex) calls `save.flush()` itself after `dirty()`; flush waits only on a hold.
 
 ## Cases
+
+### 2026-10-11 · The default string no longer played as phase 2's after c4's hit (the melee loadout's verifiers, phase 3, third round)
+
+- **Seen:** phase 2's `string.mjs`, a free calmed slip jelly 1.9 m ahead: frame for frame through c4's hit (frames 132 and 120), then the
+  jelly 2.74 m off where it lay 1.95 m, and the loop's next c1 cut air (its hit at 154 gone). Also changed for every move that existed:
+  `Moveset.carry`'s travel cut (by the hips' farthest ahead, to none, sidestep dropped), and c4 had a chain window.
+- **Cause:** the second repair gave c4 `hit.away: 1` with the eleven new pushing rows, and rewrote the carry's cut for every whole-body
+  move, not only the catalogue's new ones.
+- **Fix:** c4 has no `away` again; the peak cut is opt-in, `travelCut: 'peak'` on the ten new whole-body rows, and every other move
+  keeps the old cut (the clip's end, 0.15 at least, the sidestep kept). c4's chain window stays: the engine reads it only through
+  `nextOf`, which gives none for the string's last slot, so the default never reads it. Measured: `string.mjs`'s five runs against phase
+  2 (art-melee-p2, 02836dd), free and pinned: every move's begin, hit, cut, the pool, and the Courier's x, z on all 260 frames identical,
+  and the free run identical to `string-after.json`.
+- **Rule:** NEW:default-plays-as-before.
 
 ### 2026-10-11 · Every knock back sent a free slip jelly sideways (the melee loadout's verifiers, phase 3, second round)
 
@@ -580,7 +597,7 @@ NEW:write-what-a-window-changes. **A change made in a window is written when it 
   `side`); the cutlass's catalogue never had.
 - **Fix:** `tools/moveset.js` `blow`: a hit with `away` (0..1) is sent that share straight away from the Courier, the rest along the
   swing (`awayDir`), for its push and its flinch; none, as before, so no other tool changes. The catalogue's twelve rows that push
-  carry `away: 1` (c4, Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
+  carry `away: 1` (c4 at first, taken off in the third round, NEW:default-plays-as-before; Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
   Guard Crush, Backstep Slash); the cuts with no push (c1 to c3, Quick Slash, Backhand) and the fixed grammar are unchanged.
   Measured, along / across: Push Kick 1.33 / 0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0 (with the lock-on the same),
   Guard Break 1.69 / 0.52 (0.96 / 0 locked on), Lunge Slash 0.58 / 0.51, Spin Slash 1.85 / 0, Power Slash 1.86 / 0, Guard Crush 1.18 / 0,
