@@ -8,7 +8,9 @@
 // through a few hooks, so switching one off gives back the core exactly.
 //
 //   step(dt)       an active tech owns the fixed step (the core doesn't run); an
-//                  idle tech may claim it (`canStart`). One active tech at a time.
+//                  idle tech may claim it (`canStart`). One active tech at a time; a cutting tech (`cuts`: the blink) may take
+//                  the step from an active one that yields to it (`yields()`: a tool's blow carried by the launch), the owner's
+//                  "a blink cancels any move" (2026-10-11, docs/plans/MELEE-LOADOUT.md 9)
 //   onLand(v)      landing events from the controller (fall speed, what's underfoot)
 //   animate(...)   blend its own pose over the core animation, then IK (optional)
 //   camera(...)    adjust the first-person eye / third-person pivot (optional)
@@ -64,6 +66,7 @@ export class Techs {
   step(dt) {
     if (this.active) {
       const a = this.active;
+      if (a.yields?.()) for (const t of this.list) if (t.cuts && t !== a && !t.passive && t.usable() && t.canStart()) { this.begin(t); t.update(dt); return true; } // (the blink cuts in: the blow's own moveset hears 'move.blink' and lets it go)
       a.t += dt;
       if (a.update(dt) !== false && this.active === a) return true;
       if (this.active === a) this.stop();
