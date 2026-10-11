@@ -453,7 +453,7 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
-  game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model)] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js)
+  game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model), game.player?.techs?.get('carry')?.item?.mesh] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js; the pot in the hands too, placed from them: CASEBOOK rule 193)
   // the idle chosen at the kiln (the owner's R21: courier/vessel/kilnui.js STANCE; Calissa's IDLES): kept with the player's progress
   game.save?.section('courierIdle', { scope: 'player', version: 1, dump: () => ({ stand: character.idles?.stand ?? IDLES.default }),
     load: (d) => { if (!character.idles?.choose(d?.stand)) character.idles?.choose(IDLES.default); }, reset: () => character.idles?.choose(IDLES.default) });

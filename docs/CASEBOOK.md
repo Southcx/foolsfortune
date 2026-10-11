@@ -531,38 +531,61 @@ the rules before building in the same area; a rule a machine can check goes into
 192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
-193. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read before any IK),
-    in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still while the body bobs under it and the
-    IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the feet against the same run without it.
+193. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
+    is posed and before any hand's IK), in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still
+    while the body bobs under it and the IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the
+    feet against the same run without it.
+194. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
+    keeps out of the Courier's collider and the character controller's query until its shape is a margin clear of the capsule. The
+    controller sees a collider where the last step left it; made solid inside or against the capsule, it shoves the capsule out in one
+    step. Measured as the capsule's step on the frame of the release, at the floor's edge too.
 
 ## Cases
 
 ### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
 
-- **Seen:** the owner, holding a pot. Measured headless (a 0.44 m jar lifted with F in the workshop: 3 real s still, 4 on W at
+- **Seen:** the owner, holding a pot. Measured headless (a 0.44 m pot, kind `jar`, lifted with F in the workshop: 3 real s still, 4 on W at
   3.02 m/s, crouched, the throw; a turn in the movement lab; a 0.7 m crate), against the same runs with nothing in the hands at the
   same speed: standing still, the hips rose and fell 8.8 cm and swayed 5.9 cm every 2.0 real s while the pot did not move at all, and
   both feet sank to -7.3 cm (87 of 180 frames more than 1 cm under the floor; without the pot -0.2 cm throughout). Walking, the hips
   kept that 9 cm bob on its own clock instead of the walk's 16 cm in step; stopping, the feet sank to -7.9 cm (without: -0.5).
   Crouched, the whole body hung 22 to 37 cm off the floor. The throw sank the feet 20.5 cm.
+  At the gate, the first fix (de27b96) shoved the whole Courier, and the camera, 19.3 cm back in one step on every throw of the pot
+  (10.7 cm with the crate), and thrown from the floor's edge beside the Shrine (x 5 to 8.5, z -14.5 to -12.5) left them sunk into the
+  floor until they walked: 9.7 cm (pot), 22.3 cm (crate). The pot trailed the hands up to 12.5 cm after the core's turn-in, and a
+  second set-down started where the first had (a crate's first frame of it 207 cm from where it was drawn).
 - **Cause (measured):** the hold and the throw blended their clips over `MASK_UPPER` with `Clips.blend`'s default `hipW` of 1
   (`courier/moves/carry.js`), so the pelvis was Walk_Carry_Loop's (65.0 to 73.8 cm on its own clock, 0.5 clip seconds a real second
   when still) or OverhandThrow's (down to 50.3 cm), under legs that kept the idle's, the walk's or the prowl's rotations; the foot IK
   follows only the ground, so every dip went into the feet (rule 43). And the pot was placed from the capsule (`renderPos` + 1.0 m, its
   own 1.5 cm sine), the palms pulled onto it by the IK from 11.7 to 34.1 cm away: the hands stayed with the pot, the body moved under both.
-- **Fix:** `carry.js` alone. Both upper-body blends pass `hipW` 0, and the carrying clip runs on the legs' phase (`ht = st.phi x dur`:
-  its left foot is forward at its frame 0, as at the legs' phase 0, measured with `analyseGait`), still when they are. The pot rides the
-  hands (`ride()`): its grip at the midpoint of the clip's palms read before the IK, 2 cm ahead, in the body's frame, eased at 30 a
-  second; through the throw exactly between the throw's palms. The kinematic body (`fixed()`), the set-down's start and the release read
-  that same `held` place. After: walking, stopping, turning and the crouched walk, the hips, legs and feet match the empty-handed run
-  frame for frame (walking, feet -2.8 to +11.2 cm, the walk's own); still, the feet -0.3 to -0.1 cm and the hips move 0.7 cm (the
-  idle a passive tech stands on, `IDLE.under`); the throw -0.5 cm. The IK moves the palms 2.1 to 2.9 cm still and 1.8 to 4.8 cm
-  walking, and they sit 1.6 cm off the pot's sides; the pot's largest jerk (second difference) is half the palms'.
-  The pot sits where the clip's hands hold a box, lower than before: its grip 92 to 95 cm up still, 67 to 83 walking (was 100, and 98.5
-  to 101.5). A 0.7 m crate is held out 8 cm past the palms (`push`, the old hold's clearance), the IK moving its palms 17 to 21 cm
-  (was 19 to 34). The physics body is the mesh's place a frame late: 0.4 to 1.9 cm apart walking, 6 to 11 cm in the throw (was 24 to
-  93).
-- **Rule:** 193 (new).
+  The first fix's shove: through the throw its kinematic body now followed the throw's hands, overhead and inside the 0.3 m capsule,
+  and `restore()` gave its collider back its groups on the release step; the controller found it there, where the last step had left
+  it, and pushed the capsule out (moving the release 0.35 m further forward changed nothing; keeping the collider off for 8 steps took
+  the shove away). The old throw had kept its body 0.55 m ahead, clear by luck. The second set-down's start was the pose read after the
+  state had already changed to `put`, which is the last set-down's start.
+- **Fix:** `carry.js` (and one line of `main.js`). Both upper-body blends pass `hipW` 0, and the carrying clip runs on the legs' phase
+  (`ht = st.phi x dur`: its left foot is forward at its frame 0, as at the legs' phase 0, measured with `analyseGait`), still when they
+  are. The pot rides the hands (`followHands()`, in `afterPose`: the body posed, no hand's IK yet): its grip at the midpoint of the
+  clip's palms, 2 cm ahead, in the body's frame, eased at 30 a second and never more than 4 cm behind (`LAG`); through the throw exactly
+  between the throw's palms. The kinematic body (`fixed()`) reads that same `handGrip`; the release and the set-down start where the pot
+  was last drawn (`drawn`). What is let go of (`restore()`: thrown, set down, dropped) takes `LET_GO`'s groups (a member of `G.DEBRIS`,
+  solid to the world, the props and the creatures, no prop to the controller's query, nothing to the Courier's collider) and its own back
+  each step once `contactCollider` finds it 6 cm clear of the capsule (`clearLetGo()`): a pot 2 steps after the release, a crate 3;
+  lifted again before that, its own groups are the ones kept. The arms ease out of the hold into the throw over 0.07 s (`THROW_IN`): in
+  one frame they, and the pot, had jumped 30 cm; now 2 to 18 cm a frame. A hard landing's squash presses the pot with the hands
+  (`main.js`, the squash's `carried`). After: walking, stopping, turning and the crouched walk, the hips, legs and feet match the
+  empty-handed run frame for frame (walking, feet -2.8 to +11.2 cm, the walk's own); still, the feet -0.3 to -0.1 cm and the hips move
+  0.7 cm (the idle a passive tech stands on, `IDLE.under`); the throw -0.5 cm. The IK moves the palms 2.1 to 2.9 cm still and 1.8 to 4.8
+  cm walking, and they sit 1.6 cm off the pot's sides; the pot's largest jerk (second difference) is half the palms'. The pot sits where
+  the clip's hands hold a box, lower than before: its grip 92 to 95 cm up still, 67 to 83 walking (was 100, and 98.5 to 101.5). A 0.7 m
+  crate is held out 8 cm past the palms (`clearance`, the old hold's), the IK moving its palms 17 to 21 cm (was 19 to 34). The physics
+  body is the mesh's place a frame late: 0.4 to 1.9 cm apart walking, 6 to 11 cm in the throw (was 24 to 93). The throw: the capsule
+  moves 0.0 cm on the release, pot and crate, on the floor and at the floor's edge, at 60, 144 and 40 Hz steps; thrown at a wall 1.1 m
+  ahead the pot still strikes it and breaks. The core's turn-in: the pot trails the palms 4.0 cm at most (was 12.5), the IK pulling them
+  8.9 cm at most (was 15.6). A set-down's first frame moves the pot 0.6 cm, the second as the first. Not changed: crouch-walking, the
+  leading thigh still passes into a held pot's side (645 skinned vertices, 13 cm, as before the fix).
+- **Rule:** 193, 194 (new).
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 

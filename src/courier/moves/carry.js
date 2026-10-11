@@ -13,6 +13,11 @@
 // it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never at a height fixed to the
 // capsule with the body bobbing under it. A held prop follows the hand that holds it, as an engine attaches one to a hand socket
 // (Unreal's AttachToComponent on a hand bone), the hands then closed on its sides by IK.
+// What is let go of (thrown, set down, dropped) is kept off the Courier until it is clear of them (LET_GO, CASEBOOK rule 194), as a
+// projectile ignores the one who threw it (Unity's Physics.IgnoreCollision, Unreal's IgnoreActorWhenMoving on the instigator).
+//
+//   const carry = techs.get('carry')   carry.find()   carry.item   carry.state ('lift' | 'hold' | 'throw' | 'put')   carry.drop()
+//   (a passive Tech: fixed(dt) takes F and the fire button; animate lays the clips, afterPose reads the palms, hands closes them on it)
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
@@ -22,7 +27,15 @@ const simRand = stream('courier/moves/carry'); // (the simulation's chance: core
 
 const UP = new THREE.Vector3(0, 1, 0);
 const CARRIED = groups(G.PROP, 0); // touches nothing while it's in your hands
+// let go of, until it is clear of the Courier: solid to the world, the props and the creatures, but no prop (G.PROP) to the character
+// controller's query and nothing to the Courier's own collider. Let go of inside or against the capsule with its groups back at once,
+// the controller shoved the capsule out of it: 19 cm back in one step on every throw, and off the floor's edge into the floor beside the
+// Shrine (measured); a margin (m) clear and it is a prop again
+const LET_GO = groups(G.DEBRIS, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER), LET_GO_CLEAR = 0.06;
 const LIFT = 0.55, THROW_AT = 0.17, THROW_END = 0.32, PUT = 0.34;
+// how long the arms take out of the hold into the throw's wind-up (s): in one frame they, and the pot in them, jumped 30 cm; eased over
+// this they gather 2 to 18 cm a frame, as a wind-up does
+const THROW_IN = 0.07;
 // where in each clip the move's beats fall (seconds of the clip): the lift's lowest reach and the top of its rise; the throw's
 // wind-up, its release and how far its follow-through runs
 const LIFT_CLIP = { from: 0.12, low: 0.55, to: 0.95 };
@@ -31,11 +44,12 @@ const THROW_CLIP = { from: 0.1, release: 0.31, to: 0.78 };
 // to 41.2 forward): where the lift brings it, and where the hold starts before it rides the palms themselves
 const HOLD = { up: 0.92, fwd: 0.41 };
 // its grip a little ahead of the palms, so they close on its sides; and, at those palms, its back no nearer the body's middle than
-// CLEAR (`push`: a crate as wide as the arms is held out by as much more, the old hold's rule)
+// CLEAR (`clearance`: a crate as wide as the arms is held out by as much more, the old hold's rule)
 const AHEAD = 0.02, CLEAR = 0.16;
-// how fast the hold follows the palms (a damping rate per second of the body's own step, `st.dt`, in the body's frame): enough to
-// halve a frame's jerk (the palms' second difference), not the body's bob; it trails the palms by 3 cm at most walking
-const FOLLOW = 30;
+// how fast the hold follows the palms (a damping rate per second of the frame, in the body's frame): enough to halve a frame's jerk (the
+// palms' second difference), not the body's bob; it trails the palms by 3 cm at most walking, and never by more than LAG (a body that
+// moves a long way in one frame, the core's turn-in, takes it along)
+const FOLLOW = 30, LAG = 0.04;
 const sm = (u) => u * u * (3 - 2 * u);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3(), _h = new THREE.Vector3();
@@ -50,8 +64,10 @@ export class Carry extends Tech {
     this.state = 'idle'; // lift | hold | throw | put
     this.st = 0;
     this.flying = [];
-    this.held = null; // (where the hands have it: its grip in the body's frame, x left, y up, z forward; ride())
-    this.push = 0;
+    this.handGrip = null; // (where the hands have it: its grip in the body's frame, x left, y up, z forward; followHands())
+    this.clearance = 0;
+    this.drawn = null; // (where it was last drawn, world: the throw and the set-down start there)
+    this.letGo = []; // ({ e, col, groups }: let go of, kept off the Courier until clear: LET_GO)
     this.fireHold = 0;
   }
 
@@ -105,6 +121,7 @@ export class Carry extends Tech {
     const P = this.P, c = this.cfg;
     this.fireHold -= dt;
     this.trackFlying(dt);
+    this.clearLetGo();
     if (!this.item) {
       if (this.state !== 'idle') { this.st += dt; if (this.st > 0.4) this.state = 'idle'; }
       const other = this.game.interact?.cur; // (F is for whatever the chevron is on: a gong or a chest nearer than the pot is theirs)
@@ -122,7 +139,8 @@ export class Carry extends Tech {
       if (this.st >= LIFT) { this.state = 'hold'; this.st = 0; }
     } else if (this.state === 'hold') {
       if (P.latch('Mouse0')) { this.state = 'throw'; this.st = 0; this.released = false; P.latch('KeyF'); this.game.weapon && (this.game.weapon.buffer = 0); }
-      else if (P.latch('KeyF')) { this.state = 'put'; this.st = 0; this.putFrom = this.pose(P.pos, null).p.clone(); }
+      // (the set-down starts where it is drawn: its pose read after the state had changed was the last set-down's start)
+      else if (P.latch('KeyF')) { this.putFrom = (this.drawn || this.pose(P.pos, null).p).clone(); this.state = 'put'; this.st = 0; }
     } else if (this.state === 'throw') {
       if (!this.released && this.st >= THROW_AT) this.release();
       if (this.st >= THROW_END) { this.state = 'idle'; this.st = 0; }
@@ -145,14 +163,15 @@ export class Carry extends Tech {
     let gf = 0.2, gw = this.widthAt(e, gf);
     for (const f of [0.12, 0.16, 0.24, 0.28]) { const r = this.widthAt(e, f); if (r > gw + 0.005) { gw = r; gf = f; } }
     this.grip = { f: gf, w: gw };
-    this.push = Math.max(0, CLEAR + gw - HOLD.fwd - AHEAD);
-    this.held = null;
+    this.clearance = Math.max(0, CLEAR + gw - HOLD.fwd - AHEAD);
+    this.handGrip = null; this.drawn = null;
     this.st = 0;
     const t = body.translation(), r = body.rotation();
     this.from = { p: new THREE.Vector3(t.x, t.y, t.z), q: new THREE.Quaternion(r.x, r.y, r.z, r.w) };
     body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
     this.col = e.col || body.collider(0);
-    this.groups = this.col.collisionGroups();
+    const was = this.letGo.findIndex((g) => g.e === e); // (picked up again before it was clear: its own groups are the ones kept)
+    this.groups = was >= 0 ? this.letGo.splice(was, 1)[0].groups : this.col.collisionGroups();
     this.col.setCollisionGroups(CARRIED);
     e.carried = true;
     P.setLow(false);
@@ -165,12 +184,12 @@ export class Carry extends Tech {
     const P = this.P, e = this.item, h = this.size(e);
     const yaw = P.bodyYaw;
     const upright = _q.setFromAxisAngle(UP, yaw);
-    // (held at its grip between the carrying clip's palms, where the hands have it (ride()), or before they do, where they are at the
-    //  idle: it comes down with a crouch)
+    // (held at its grip between the carrying clip's palms, where the hands have it (followHands()), or before they do, where they are
+    //  at the idle: it comes down with a crouch)
     const grip = this.grip || { f: 0.2, w: 0.2 };
     const c0 = this.originUp(e); // (a pot's origin is its foot; a crate's its middle)
     const fw = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), lf = _v1.set(Math.cos(yaw), 0, -Math.sin(yaw));
-    const off = this.held || this.holdAt(_h);
+    const off = this.handGrip || this.holdAt(_h);
     const hold = new THREE.Vector3(base.x, base.y + off.y - h * grip.f + c0, base.z).addScaledVector(lf, off.x).addScaledVector(fw, off.z);
     const p = new THREE.Vector3(), q = new THREE.Quaternion();
     if (this.state === 'lift') {
@@ -191,27 +210,42 @@ export class Carry extends Tech {
   }
 
   /** The hold before the hands have it (the lift's end): its grip where the carrying clip's palms are at the idle, in the body's frame. */
-  holdAt(out) { return out.set(0, HOLD.up - 0.35 * (this.P.crouchBlend || 0), HOLD.fwd + AHEAD + this.push); }
+  holdAt(out) { return out.set(0, HOLD.up - 0.35 * (this.P.crouchBlend || 0), HOLD.fwd + AHEAD + this.clearance); }
 
   floorAt(x, z, y) {
     const hit = this.P.physics.raycast({ x, y: y + 1.2, z }, { x: 0, y: -1, z: 0 }, 3, this.P.collider, GROUPS.controllerQuery, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     return hit ? hit.point.y : y;
   }
 
+  /** Out of the hands: dynamic again, and solid again once it is clear of the Courier (LET_GO, clearLetGo()). */
   restore() {
     const e = this.item;
     if (!e.body?.isValid?.()) return; // (cleared out from under us)
     e.body.setBodyType(RAPIER.RigidBodyType.Dynamic, true);
-    this.col.setCollisionGroups(this.groups);
+    this.col.setCollisionGroups(LET_GO);
+    this.letGo.push({ e, col: this.col, groups: this.groups });
     e.carried = false;
     e.body.wakeUp();
+  }
+
+  /** Each step: what was let go of gets its own groups back once its shape is LET_GO_CLEAR from the capsule (both where the last step
+   *  left them, which is what the controller's query sees). */
+  clearLetGo() {
+    const cap = this.P.collider;
+    for (let i = this.letGo.length - 1; i >= 0; i--) {
+      const g = this.letGo[i];
+      if (!g.col.isValid?.() || !g.e.body?.isValid?.() || g.e.alive === false) { this.letGo.splice(i, 1); continue; } // (broken, or gone)
+      if (cap?.isValid?.() && g.col.contactCollider(cap, LET_GO_CLEAR)) continue;
+      g.col.setCollisionGroups(g.groups);
+      this.letGo.splice(i, 1);
+    }
   }
 
   release() {
     const P = this.P, e = this.item, c = this.cfg;
     this.released = true;
     const pose = this.pose(P.pos, null);
-    if (this.shown) { pose.p.copy(this.shown); this.shown = null; } // (from where the throw's hands have it, not where the hold had it)
+    if (this.drawn) pose.p.copy(this.drawn); // (from where the throw's hands have it, as drawn)
     // (the ray to where we're looking: aim at what the crosshair lands on)
     const look = P.lookDir(new THREE.Vector3());
     const mass = e.body.mass();
@@ -293,6 +327,7 @@ export class Carry extends Tech {
 
   animate(ch, base, dt) {
     const C = ch.clips;
+    this.frameDt = dt;
     if (!C.clips.chestOpen || !C.clips.carryWalk || !C.clips.throw) return;
     const st = this.state;
     if (st === 'lift') {
@@ -307,7 +342,9 @@ export class Carry extends Tech {
       // two hands back over the head and through: the wind-up to the release by THROW_AT, the follow-through after
       const T0 = THROW_CLIP, s2 = this.st;
       const t = s2 < THROW_AT ? T0.from + (T0.release - T0.from) * (s2 / THROW_AT) : T0.release + (T0.to - T0.release) * Math.min(1, (s2 - THROW_AT) / (THROW_END - THROW_AT + 0.12));
-      C.blend(base, this.twoHanded(ch, 'throw', t, 'L'), this.w, ch.MASK_UPPER, 0); // (the hips are the legs': CASEBOOK rule 43)
+      const into = Math.min(1, s2 / THROW_IN); // (out of the hold's arms, not in one frame)
+      if (into < 1 && this.ht != null) C.blend(base, C.sample('carryWalk', this.ht, ch.P.tmp, true), this.w, ch.MASK_UPPER, 0);
+      C.blend(base, this.twoHanded(ch, 'throw', t, 'L'), this.w * into, ch.MASK_UPPER, 0); // (the hips are the legs': CASEBOOK rule 43)
     } else if (this.item) {
       // the hold: the carrying clip's arms over whatever the legs are doing (its own walk would skate against theirs), in step with
       // them (Walk_Carry_Loop's left foot is forward at its frame 0, the legs' phase 0: measured with analyseGait), still when they
@@ -338,14 +375,13 @@ export class Carry extends Tech {
   hands(ch) {
     if (!this.item || this.w < 0.02) return;
     const P = this.P, e = this.item, w = this.w;
-    if (this.state === 'hold' || this.state === 'throw') this.ride(ch);
     const pose = this.pose(P.renderPos, { p: new THREE.Vector3(), q: new THREE.Quaternion() });
-    // (the mesh rides the interpolated body, not last step's physics pose; the physics body is set from the same `held` in fixed())
+    // (the mesh rides the interpolated body, not last step's physics pose; the physics body is set from the same `handGrip` in fixed())
     e.mesh.position.copy(pose.p);
     e.mesh.quaternion.copy(pose.q);
     e.mesh.updateMatrixWorld(true);
-    if (this.state === 'throw') { (this.shown ||= new THREE.Vector3()).copy(pose.p); return; } // (no IK: the clip throws it)
-    this.shown = null;
+    (this.drawn ||= new THREE.Vector3()).copy(pose.p);
+    if (this.state === 'throw') return; // (no IK: the clip throws it)
     const h = this.size(e), gf = this.grip.f, gw = this.grip.w;
     const left = new THREE.Vector3(Math.cos(P.bodyYaw), 0, -Math.sin(P.bodyYaw));
     const fwd = new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
@@ -365,21 +401,28 @@ export class Carry extends Tech {
     }
   }
 
+  /** The body posed and its feet set, before any hand's IK (the gun's, the wall's, the ledge's, ours): where the hands have it. */
+  afterPose(ch) {
+    if (this.item && (this.state === 'hold' || this.state === 'throw')) this.followHands(ch);
+  }
+
   /**
-   * Where the hands have it: its grip at the midpoint of the palms as the clip and the body put them (read before any IK closes
-   * them), in the body's frame, so it bobs and sways with the body and never the body under it. Held, a little ahead of them and out by
-   * `push`, eased by FOLLOW; through the throw, exactly between them (the clip throws it).
+   * Where the hands have it: its grip at the midpoint of the palms as the clip and the body put them (read in afterPose, before any IK
+   * moves them), in the body's frame, so it bobs and sways with the body and never the body under it. Held, a little ahead of them and
+   * out by `clearance`, eased by FOLLOW and never more than LAG behind; through the throw, exactly between them (the clip throws it).
    */
-  ride(ch) {
+  followHands(ch) {
     const P = this.P, yaw = P.bodyYaw;
     const mid = _v2.set(0, 0, 0);
     for (const sd of ['L', 'R']) { const a = ch.arm[sd]; a.hand.updateWorldMatrix(true, false); mid.add(_v3.copy(a.palmPt).applyMatrix4(a.hand.matrixWorld)); }
     mid.multiplyScalar(0.5).sub(P.renderPos);
     const want = _v4.set(mid.x * Math.cos(yaw) - mid.z * Math.sin(yaw), mid.y, mid.x * Math.sin(yaw) + mid.z * Math.cos(yaw));
-    if (this.state === 'throw') { (this.held ||= new THREE.Vector3()).copy(want); return; }
-    want.z += AHEAD + this.push;
-    if (!this.held) this.held = this.holdAt(new THREE.Vector3());
-    this.held.lerp(want, 1 - Math.exp(-FOLLOW * (ch.st.dt ?? 1 / 60)));
+    if (this.state === 'throw') { (this.handGrip ||= new THREE.Vector3()).copy(want); return; }
+    want.z += AHEAD + this.clearance;
+    if (!this.handGrip) this.handGrip = this.holdAt(new THREE.Vector3());
+    const g = this.handGrip.lerp(want, 1 - Math.exp(-FOLLOW * (this.frameDt ?? 1 / 60)));
+    const lag = _v3.subVectors(g, want), d = lag.length();
+    if (d > LAG) g.copy(want).addScaledVector(lag, LAG / d);
   }
 
   label() { return this.item ? 'CARRY' : ''; }
