@@ -551,8 +551,24 @@ NEW:outcome-after-window. **An outcome is sent once nothing can change it.** An 
 NEW:window-runs-unread. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
     update (the string's window, `Moveset.after`) stops when its owner stops calling it (the Sondelass's rod or hook form): tick it
     from the owner every frame it is not read (`Moveset.idle`), or read the time from a clock that always runs.
+NEW:count-what-the-record-names. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
+    ledger (a run, a streak) takes its definition from the plan that owns the record (Dovina's `sond.string.best`: "LMB string blows"),
+    not from whatever reaches the same door; every kind that reaches it is named in or out, and a test mixes in the kinds left out.
 
 ## Cases
+
+### 2026-10-11 · A stinger between string blows opened a string slot a blow early (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. c1 to c4 landed on a slip jelly, a stinger landed, c1 to c3 landed: `move.string.end
+  { run 8, pause }`, where the LMB blows were 7 and 8 is slot 5's feat threshold. The iaido's draw cut and the Tidecutter after c1
+  read `{ run 2 }` against 1. In 3 of 20 random sequences the best run read one higher than the LMB blows alone.
+- **Cause (measured):** `Moveset.markBlow` raised the string run at every counted contact, whatever the blow's kind; only
+  `closeBlow` treated a special's blow (`kind` special or iaido, the stinger's `own`) as apart, and only from the miss. Dovina's rule is
+  "the longest unbroken run of LMB string blows".
+- **Fix:** `specialBlow(c)`, asked by both: a special's blow sends its `move.blow` but neither adds to the run nor ends it; and
+  `markBlow` marks nothing on a blow already closed. Measured: the same sequence `{ run 7, pause }`; the draw cut, the Tidecutter, and
+  R inside a whiffing c2, each after c1, `{ run 1, pause }`; a whiffed stinger inside a run still ends nothing (`{ run 4, pause }`).
+- **Rule:** NEW:count-what-the-record-names.
 
 ### 2026-10-11 · A blow said hit: false, then struck; a string run lived through a form switch (the verifier, before merge: the blow events)
 

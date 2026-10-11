@@ -28,19 +28,27 @@ stinger reports through `ownBlow` / `markBlow` / `closeBlow` (`cutlass.js`). The
     and past the sweep's own padded end, `strike[1]` + 0.012 clip s, `STRIKE_PAD`, which the moveset now hands the sweep).
   - It also fires when the blow is cut short: by the next move, the blink cancel, a cancel or a stow.
   - The stinger's fires when its lunge ends.
-- **The run:** it goes up at a blow's first counted contact, not when the blow closes, so a hit that lands before a blow taken
-  belongs to the run that blow ends.
+- **The run:** the LMB blows landed in a row (the ground string, the pause strings, the launcher, the air string, the dash, the
+  charge and the counter). It goes up at a blow's first counted contact, not when the blow closes, so a hit that lands before a blow
+  taken belongs to the run that blow ends. Nothing is marked on a blow once its `move.blow` is sent.
 - **Neither a hit nor a miss:** these leave the run as it was.
   - a training body (`isTraining` on the creature, and on a pot's `def` for the Throwing Room's pots)
   - a sibling or a spirit (`ally`)
   - a struckable thing (a crystal: it can be struck forever)
   - a move whose row is worth nothing (the pick's shove)
-- **Never ends the run:**
-  - a special's blow (R, RMB's, the iaido's draw cut, the stinger). It still adds to the run when it lands.
-  - a blow cut short before its strike was past. This is why a blink cut keeps the run, as it keeps the string's place.
+- **Apart from the run:** a special's blow (R, RMB's, the iaido's draw cut, the stinger: `specialBlow()`). It sends its `move.blow`
+  (slot null, `hit` as it struck) but neither adds to the run nor ends it.
+- **Never ends the run:** a blow cut short before its strike was past. This is why a blink cut keeps the run, as it keeps the
+  string's place.
 - **My call on training bodies:** I left them out entirely, never `'miss'`. Strawman stands still and takes everything, so counting a
   blow on him either way would make the run a matter of where you practise, not how. A blow on Strawman is `hit: false`, and a whole
   string on him sends no `move.string.end` at all.
+- **My call on specials (2026-10-11, the verifier's blocking finding):** your ask says "the blows landed in a row" and Dovina's rule
+  (`MELEE-LOADOUT-EARNING.md` section 1) says "the longest unbroken run of LMB string blows". I built Dovina's. The record is hers, its
+  thresholds (8, 10, 12, 14: twice the slots you have) are counted in string blows, and it opens string slots. Before this, a landed
+  stinger counted, so c1 to c4, a stinger and c1 to c3 read 8 and opened slot 5 one blow early; stingers between blows (6 Lachryma, 0.5 s
+  cooldown) roughly halved the LMB blows a slot asks. A whiffed special doesn't end the run either, since it is not part of it. If you
+  rule for the literal reading instead, it is one line in `closeBlow` (drop the `special` exemption) and one in `markBlow` (count it).
 
 **As measured** (headless, at 60 frames a real second; f is the frame from the first press)
 
@@ -53,9 +61,11 @@ stinger reports through `ownBlow` / `markBlow` / `closeBlow` (`cutlass.js`). The
 | stowed during c3 (Q on c3's third frame) | `c1` and `c2` hit; `c3` `hit: false` (cut short) at f63, then `end {run 2, stow}` the same frame |
 | blink cut on c2's second frame, then LMB | `c2` `hit: false` at f32, the frame of `move.blink`, and no end; `c3` at slot 2 and `c4` hit (finish); `end {run 3, pause}`* |
 | the string on Strawman | `c1` .. `c4` all `hit: false` and `finish: false`; no `move.string.end` |
-| the stinger (extra) | `c1` hit; the stinger turned away `hit: false` (slot null, no end); locked on, `hit: true`; `t1` hit; `end {run 3, pause}` |
-| the iaido's draw cut (extra) | `c1` hit; `iai` slot null `hit: true`; `end {run 2, pause}` |
-| the Tidecutter, R (extra) | `c1` hit; `tide` slot null `hit: true` at f192; `end {run 2, pause}` |
+| stingers in a string (extra) | `c1` .. `c4` hit (finish); the stinger `hit: true`; `c1` .. `c3` hit; `end {run 7, pause}` (was 8) |
+| the stinger whiffs in a run (extra) | `c1` hit; the stinger turned away `hit: false` (slot null, no end); `c2` .. `c4` hit (finish); `end {run 4, pause}` |
+| the iaido's draw cut (extra) | `c1` hit; `iai` slot null `hit: true`; `end {run 1, pause}` (was 2) |
+| the Tidecutter, R (extra) | `c1` hit; `tide` slot null `hit: true`; `end {run 1, pause}` (was 2) |
+| R inside a whiffing c2 (extra) | `c1` hit; `c2` `hit: false`, cut short (no miss); `tide` hit; `end {run 1, pause}` (was 2) |
 | the kick and the Soul Brush (extra) | `unarmed` `j1` and `j2` hit, `end {run 2, pause}`; `brush` `c1` hit, `c2` cut by G, `end {run 1, stow}` |
 
 \* The blink's 5.5 m took the Courier past the jelly, so the harness set the jelly 1.9 m in front of them again before the LMB.

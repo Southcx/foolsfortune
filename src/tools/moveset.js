@@ -60,12 +60,14 @@
 //               `move.blow { tool, move, slot, hit, finish, by }` once a blow, when it can strike no more (spent(): past the sweep's
 //               padded end) or it is cut short (slot: its place in the ground string, null off it; hit: it struck a creature, a
 //               clapperjar or a pot that counts; finish: the ground string's last slot, on a creature), and `move.string.end { tool, run,
-//               why, by }` when a STRING RUN stops (run: the blows landed in a row; why: 'miss' a blow whose strike ran its course and
-//               struck nothing, 'hurt' a blow taken, 'pause' past the string's window (RESET; it runs on while the tool is not the one
-//               read: idle()), 'stow'). Neither a hit nor a miss: a training body (Strawman, a roly-poly, the Throwing Room's pots:
-//               progress/combat/testroom.js isTraining), a sibling, a struckable thing (a crystal), a row worth nothing (a shove). A
-//               special's blow (slot null: R, RMB's, the iaido's draw cut, the stinger by ownBlow()) lands in the run and never ends it;
-//               nor does a blow cut short before its strike was past (the blink cancel keeps the run as it keeps the string).
+//               why, by }` when a STRING RUN stops (run: the LMB blows landed in a row, Dovina's `sond.string.best`; why: 'miss' a
+//               blow whose strike ran its course and struck nothing, 'hurt' a blow taken, 'pause' past the string's window (RESET; it
+//               runs on while the tool is not the one read: idle()), 'stow'). Neither a hit nor a miss: a training body (Strawman, a
+//               roly-poly, the Throwing Room's pots: progress/combat/testroom.js isTraining), a sibling, a struckable thing (a crystal),
+//               a row worth nothing (a shove). A special's blow (specialBlow(): slot null, R, RMB's, the iaido's draw cut, the stinger
+//               by ownBlow()) sends its move.blow but is apart from the run: it neither adds to it nor ends it (MELEE-LOADOUT-EARNING.md
+//               section 1, "the longest unbroken run of LMB string blows"); nor does a blow cut short before its strike was past end it
+//               (the blink cancel keeps the run as it keeps the string).
 //
 // Prior art: Devil May Cry's grammar (the Launcher on back + attack, High Time held to rise with what it launched, the air string, the
 // jump cancel that keeps it flowing, the Helm Breaker plunge, the pause combo), Guilty Gear's Roman Cancel (a recovery cut short for a
@@ -90,7 +92,7 @@
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
 //   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)
 //   M.ownBlow(id) -> b, M.markBlow(b, kind, ent), M.closeBlow(b) (a blow the tool plays itself, the cutlass's stinger: move.blow once)
-//   M.stringRun (the blows landed in a row)
+//   M.stringRun (the LMB blows landed in a row)   M.specialBlow(c) (a special's blow: apart from the run)
 //   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
 //   spec.sound: the swing's sound (heavy) -> (default sfx.slash; false when the tool sounds its own in onBegin)
 // ---------------------------------------------------------------------------------------
@@ -161,7 +163,7 @@ export class Moveset {
     // table, built once (a move's swing is measured once and kept on it: melee.js)
     this.table = { ...spec.moves };
     for (const r of Object.values(spec.catalogue || {})) if (r.play && !this.table[r.id]) this.table[r.id] = { rule: r.rule, clip: r.clip, ...r.play };
-    this.stringRun = 0; // (the blows landed in a row: move.string.end)
+    this.stringRun = 0; // (the LMB blows landed in a row: move.string.end)
     const deal = this.blow; // (every blow judged once dealt, the engine's or a tool's own rules for it: club.js, pick.js, kick.js)
     this.blow = (kind, ent, at, dir, h, c) => { const r = deal.call(this, kind, ent, at, dir, h, c); this.markBlow(c, kind, ent); return r; };
     this.listen(); // (or at the first update(), once the game is there)
@@ -215,7 +217,7 @@ export class Moveset {
   stowing() { return this.tool.drawTarget === 0; }
 
   /** A blow the tool plays itself (the cutlass's stinger): marked as it strikes (markBlow), closed when it is over (closeBlow); a
-   *  special's (slot null, never a miss). */
+   *  special's (slot null, apart from the run). */
   ownBlow(id) { return { id, own: true, slot: null, tally: { hit: 0, creature: 0, idle: 0, landed: false, closed: false } }; }
   /** What a thing struck is to the blows: 'creature' (hurtable, of game.creatures), 'hit' (a clapperjar, a pot), or 'idle', neither a hit
    *  nor a miss: a training body (isTraining: Strawman, a roly-poly; a Throwing Room pot by its def), a sibling or a spirit (an ally:
@@ -226,19 +228,23 @@ export class Moveset {
     if (kind === 'creature') return hasTag(ent, 'hurtable') ? 'creature' : 'idle';
     return 'hit';
   }
-  /** Blow `c` struck `ent`: counted; its first counted contact lands it, and the string run goes up by one. */
+  /** A special's blow (R, RMB's, the iaido's draw cut, the stinger): its move.blow is sent, but it is apart from the string run, which
+   *  is the LMB blows' alone (Dovina's rule: a stinger between them would open a string slot a blow early). */
+  specialBlow(c) { return !!(c.own || c.kind === 'special' || c.kind === 'iaido'); }
+  /** Blow `c` struck `ent`: counted; its first counted contact lands it, and the string run goes up by one (an LMB blow's). Nothing
+   *  is marked once its move.blow is sent. */
   markBlow(c, kind, ent) {
-    const tally = c?.tally; if (!tally) return;
+    const tally = c?.tally; if (!tally || tally.closed) return;
     const w = this.blowCounts(kind, ent, c);
     tally[w]++;
-    if (w !== 'idle' && !tally.landed) { tally.landed = true; this.stringRun++; }
+    if (w !== 'idle' && !tally.landed) { tally.landed = true; if (!this.specialBlow(c)) this.stringRun++; }
   }
   /** Blow `c` is over, its strike past or cut short (the next move, the blink, a cancel, a stow): `move.blow`, once. One whose strike
    *  ran its course and struck nothing at all is a miss and ends the run; a special's, or one cut short before its strike was past, never. */
   closeBlow(c) {
     const tally = c?.tally; if (!tally || tally.closed) return;
     tally.closed = true;
-    const special = c.own || c.kind === 'special' || c.kind === 'iaido', short = !c.own && !this.recovering(c);
+    const special = this.specialBlow(c), short = !c.own && !this.recovering(c);
     this.game.events?.emit('move.blow', { tool: this.S.rules || this.id, move: c.id, slot: c.slot ?? null, hit: tally.landed, finish: !!(c.last && tally.creature), by: 'courier' });
     if (!tally.landed && !tally.idle && !special && !short) this.endStringRun('miss');
   }
