@@ -112,6 +112,10 @@ export class Sondelass extends Tech {
     this.renderStrip();
   }
 
+  /** Every tech reset (course.teleport, a fall out of the world: courier/moves/techs.js reset()): the Courier set down by no move of their
+   *  own, so a string run ends ('pause': tools/moveset.js leave(), Dovina's ruling); nothing else of the tool's changes. */
+  reset() { this.cutlass.moves.leave(); }
+
   // ---------------------------------------------------------------- sockets (measured from the UAL sword pose: tools/grip.js)
   computeSocket(ch) {
     const g = (this.grip = measureGrip(ch));
