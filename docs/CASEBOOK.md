@@ -620,8 +620,41 @@ NEW:threshold-fixed-band. **A pattern cut from a texture keeps a band of its own
     run, a line) as its own soft profile, never cut at a level; and on a curved face blend the box mapping's projections (a switch of
     axis is a seam, and every quad on it reads a blurred mip). Measure crawl over a frozen world with the camera slid a quarter pixel a
     frame, against the build before and against the shader with the new part switched off.
+NEW:fresh-preview. **A preview that runs the game's own code begins every run from a kept fresh state, standing where the game's
+    stands.** A second copy of a stateful stack (the Anim Lab's rig and tools) carries whatever the last run left in it: a clock, a foot
+    lock, a cast, a flag set once. Keep its state once it is built, and settled a frame so that what is built on the first frame is built
+    only once. Put that state back before every run (`workbench/animfresh.js`), and never write back what the game holds. Step it with
+    its parent at the world's origin, as the game's rig stands, since the IK and the holster are worked out in the world. To check it,
+    record the same run after a different one: the bones are identical.
 
 ## Cases
+
+### 2026-10-11 · The Anim Lab's takes carried the last one in, its travel line sat off the body, the psygun stayed drawn (the verifier, before it landed)
+
+- **Seen:** the verifier's probes of the Anim Lab (b3e2c75). The same play recorded again after another one differed by up to 81 degrees
+  (c1 after the guard, at footL), 69 (the rod's idle A after a cast, at handL), and 41.6 (the Lockheart's string.1 after string.3, at frame
+  0). After the drawn run was shown at frame 120, the next take's travel line sat 8.47 m off the hips. After a switch to the Soul Brush
+  while the psygun's ADS played, the new take showed the gun in its holster in 254 of 254 frames, with OTHER TOOLS HIDDEN.
+- **Cause (measured):** three causes.
+  - `AnimRig.put()` reset the body and cancelled the movesets, and nothing else. The rig's clock, the idle's phase, the foot locks,
+    `st`, the lazily made fields, and each tool's own state carried over to the next take.
+  - The rig stands in the stage's carry, which still held the travel of the last frame shown. Everything worked out in the world was
+    off by that travel: the hips a take keeps (`getWorldPosition`), the foot locks, `headRel` and `holsterLocal`. A state dump by path
+    showed the kick recorded after the sprint differing from the same kick recorded after itself only there (`holsterLocal` 0.11 m,
+    the foot locks 0.11 m).
+  - `choose()` records the take 20 ms later, and in the meantime `tick()` laid the old take's frames on the gun. `wear()` hides the gun
+    once, and `belt.tick` hides it only when `gunOff` changes, so the new take recorded the gun as the old take had left it.
+- **Fix:** four changes.
+  - The seven tools are made when the rig is, in the game's order. The rig then steps two frames with none worn, so what a tool builds
+    on its first frame (the Lockheart's coffin) is built once. Kept with tools made one at a time, the coffin was built anew, with new
+    geometry, every take.
+  - `workbench/animfresh.js` keeps that fresh state, and `put()` puts it back. The walk never writes back what the game holds (it walks
+    from the game and the config tables) or the clip library. After that, `put()` lays the worn tools on again (`dress()`), which sets
+    the gun's shown flag too.
+  - The holder is put at the origin while the rig steps (`home()`).
+  - A take keeps the hips in the holder's frame.
+- **Measured:** MEASURED
+- **Rule:** NEW:fresh-preview.
 
 ### 2026-10-11 · The ash-glazed kilns crawled at 480 lines (the room glazes' verifier, d391bcd)
 
