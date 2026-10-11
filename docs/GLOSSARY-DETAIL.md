@@ -1189,6 +1189,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   *Also, the music copy in "Music":* **the overture** (`OVERTURE`, `src/music/overture.js`): the title's opening cue, a hair-metal JRPG opening that hands on, on the bar line,
   into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
 - **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
+- **the Lockheart's gauge** and **the hoover's reach** (`LockheartMarks`, `game.lockheartMarks`, `src/vfx/lockheartmarks.js`; docs/plans/MELEE-LOADOUT.md
+  section 4): the Lockheart's own marks while it is in the hands, gone on its stow or another tool's draw, and while it opens. **The gauge**:
+  a padlock in the icons' hand (13 by 18 art pixels, two of the 480 lines' pixels each, on their grid) standing beside the coffin on the
+  side away from the body: its body fills with Lachryma's violet from the foot as the coffin fills to its own measure (`fill`, seven
+  steps), a **socket** under it for each place on the keyring (four), gold where a Possibilikey hangs and grey where none does; when the
+  coffin would open (a coffin, full, a Possibilikey, and for the Warden's a Figment laid low before it) the shackle springs up, the
+  iron turns gold and the keyhole is lit. **The reach**: the hoover's cone laid on the ground before the coffin, 7 m and 0.7 rad either
+  side of the aim (`HOOVER`), the nearer arc where a mind laid low is drained (3.6 m), three arcs running in, in the Vacuum's violet (the
+  mount preview's own shape). A sprite on the glyphs' program and a wire on the rail mark's: no program of their own. *Not:* the wheel of
+  odds (`tools/lockheart/wheel.js`), the lid's glow (the coffin's load on the model), the Lachryma ring at the feet (the pool).
+- **the carry throw's mark** (`CarryThrowMark`, `game.carryThrowMark`, `src/vfx/carrythrowmark.js`): while a carried thing can be thrown (the
+  carry holds it and nothing is drawn from the belt), where it would land: the paint reticle's look (a point, a ring of 0.8 m, what a
+  throw hits round where it stops, four ticks, the far one down the throw) in the crosshair's cream on what the flight meets first, and
+  the flight to it in faint dashes. The flight is the carry's throw worked forward (the release over the hold, the carry's speed, the
+  physics' gravity and the body's damping): over seven throws at 2 to 8 m it fell within 0.03 to 0.3 m of the impact. Gone the moment
+  the throw begins. *Not:* the crosshair (the psygun's alone), the god hand's throw (`god.throw`), the paint reticle (the Soul Brush's).
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
   wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
   the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
