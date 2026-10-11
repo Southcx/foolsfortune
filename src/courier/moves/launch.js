@@ -6,7 +6,8 @@
 // speed. Whatever asked for it can watch each step (`onStep`) and hear when it ends (`onEnd`).
 //
 //   techs.get('launch').go(velocity, { time, gravity, drag, steer, until: 'time' | 'ground', endSpeed, yaw, clip, clipMap, onStep, onEnd, tag,
-//                                      drive, poseFix })
+//                                      drive, poseFix, cuttable })
+//   `cuttable` (a tool's blow: tools/moveset.js) lets a cutting tech take the step mid-flight (the blink: techs.js), its `onEnd` called.
 //   `clip` is one of the baked clips, played over the whole body for the move; `clipMap(t)` says where in it (the thrust holds its lunge).
 //   `drive(vel, dt)` sets the velocity before each step (a move carried by its clip's own travel: tools/moveset.js); `poseFix(pose)`
 //   corrects the sampled pose (that travel taken out of the hips, so the body is not carried twice: casebook rule 19). A move may follow
@@ -36,6 +37,9 @@ export class Launch extends Tech {
   label() { return this.o?.tag === 'stinger' ? 'STINGER' : 'FLIGHT'; }
 
   /** Take the step and carry the body with `vel`. */
+  /** Whatever asked for it with `cuttable` (a tool's blow) yields to the blink (techs.js); the rest (a pad's flight, a swing's release) never. */
+  yields() { return !!this.o?.cuttable; }
+
   go(vel, o = {}) {
     this.o = { time: 0.3, gravity: 1, drag: 0.03, steer: 0, until: 'time', endSpeed: null, face: true, minAir: 0.12, jumpExit: false, onStep: null, onEnd: null, tag: 'launch', ...o };
     this.P.vel.copy(vel);

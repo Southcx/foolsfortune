@@ -14,6 +14,7 @@ const fxRand = stream('courier/moves/blink.fx'); // (the look's chance, a stream
 export class Blink extends Tech {
   constructor(mgr) {
     super(mgr, 'blink');
+    this.cuts = true; // (it may cut in over a tool's blow at any frame: techs.js, the owner's "a blink cancels any move")
     this.charges = this.cfg.charges;
     this.recharge = 0;
     this.ghosts = new Afterimages(mgr.game, { opacity: 0.45 }); // (the one afterimage: vfx/afterimage.js, shared with the stinger and the paid cut)

@@ -25,7 +25,7 @@ export const PAGES = [
     rows: [
       ['W A S D · Shift', 'move · sprint (any way but back)'],
       ['Space', 'jump; again in the air, the double jump'],
-      ['C', 'crouch; at a run, the slide'],
+      ['C', 'crouch, prone, stand (each press); at a run, the slide'],
       ['Z · O', 'first or third person · the other shoulder'],
       ['F · V', 'interact (pick up, push, talk, use) · kick'],
       ['E', 'blink'],
@@ -48,7 +48,7 @@ export const PAGES = [
       ['hold Alt', 'walk'],
       ['Space · Space in the air', 'jump · double jump; into a ledge, you mantle it'],
       ['Space by a wall, hold W', 'wallrun; Space again to jump off the wall'],
-      ['C', 'crouch; at a run, a slide (C then Space: the slide-hop, which keeps the speed)'],
+      ['C', 'crouch, then prone, then stand (each press; Space gets up); at a run, a slide (C then Space: the slide-hop, which keeps the speed)'],
       ['Shift in the air', 'air-dash (it costs Lachryma)'],
       ['shoot down in the air', 'recoil jump: the Psygun pushes you up (three shots a jump)'],
     ],

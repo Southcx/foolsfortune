@@ -15,6 +15,7 @@ import { RAPIER, GROUPS } from '../core/physics.js';
 import { T, DEG } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
+import { CRAWL } from './anim/crawl.js';
 const simRand = stream('courier/player'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -24,15 +25,20 @@ const _shotM = new THREE.Matrix4(), _shotQ = new THREE.Quaternion(), _shotR = ne
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
 const LOW_HALF = 0.375; // crouched / sliding: 1.35 m (the posed body, hair included, fits under 1.5 m)
 const BLOB_HALF = 0.05; // slip form (a tech): 0.7 m, through gaps nothing else fits
-const HALVES = { stand: HALF, low: LOW_HALF, blob: BLOB_HALF };
+const PRONE_HALF = 0.13; // flat on the belly: 0.8 m (the belly crawl's posed top 0.74 m, hair included: courier/anim/crawl.js)
+const HALVES = { stand: HALF, low: LOW_HALF, blob: BLOB_HALF, prone: PRONE_HALF };
 const STAND_SHAPE = new RAPIER.Capsule(HALF, RADIUS - 0.02);
 const LOW_SHAPE = new RAPIER.Capsule(LOW_HALF, RADIUS - 0.03);
 const BLOB_SHAPE = new RAPIER.Capsule(BLOB_HALF, RADIUS - 0.03);
-const SHAPES = { stand: STAND_SHAPE, low: LOW_SHAPE, blob: BLOB_SHAPE };
+const PRONE_SHAPE = new RAPIER.Capsule(PRONE_HALF, RADIUS - 0.03);
+const SHAPES = { stand: STAND_SHAPE, low: LOW_SHAPE, blob: BLOB_SHAPE, prone: PRONE_SHAPE };
 const UNDERFOOT = new RAPIER.Ball(RADIUS * 0.9);
 // "is the body actually inside something?": the shapes shrunk enough that skin and float noise never count
-const EMBED = { stand: new RAPIER.Capsule(HALF - 0.05, RADIUS - 0.08), low: new RAPIER.Capsule(LOW_HALF - 0.05, RADIUS - 0.08), blob: new RAPIER.Capsule(0.001, RADIUS - 0.08) };
+const EMBED = { stand: new RAPIER.Capsule(HALF - 0.05, RADIUS - 0.08), low: new RAPIER.Capsule(LOW_HALF - 0.05, RADIUS - 0.08), blob: new RAPIER.Capsule(0.001, RADIUS - 0.08), prone: new RAPIER.Capsule(Math.max(0.001, PRONE_HALF - 0.05), RADIUS - 0.08) };
 const QF = RAPIER.QueryFilterFlags;
+// getting down onto the belly (s): Loco_CrawlEnter's 0.67 from standing, from its 0.2 out of the crouch (CRAWL.enterFrom); getting up is
+// the exit clip's, to the crouch or to standing (CRAWL.exitTo). The body is held still while it plays and keeps the prone shape rising.
+const PRONE_DOWN = { stand: 0.67, crouch: 0.67 - CRAWL.enterFrom.crouch };
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const hlen = (v) => Math.hypot(v.x, v.z);
@@ -77,7 +83,12 @@ export class Player {
 
     // movement actions
     this.low = false; // short capsule
-    this.shape = 'stand'; // stand | low | blob
+    this.shape = 'stand'; // stand | low | blob | prone
+    this.posture = 'stand'; // stand | crouch | prone: what C chose (C cycles them; the shape follows where it fits)
+    this.postureBuf = 0; // (a C press made on the ground, kept for the fixed step)
+    this.postureT = 0; // (getting down or up: the crawl's enter and exit clips play out, the body held still)
+    this.prone = false; // (flat on the belly and on the ground: the crawl's look reads it)
+    this.proneBlend = 0;
     this.latches = {}; // edge presses, buffered for the fixed step: code -> seconds left
     this.techs = null; // optional movement techs (set by main)
     this.sliding = false;
@@ -173,6 +184,7 @@ export class Player {
     this.carry.set(0, 0, 0); this.drift.set(0, 0, 0); this.wade = 1;
     this.wedged = 0;
     this.techs?.reset();
+    this.posture = 'stand'; this.postureT = 0; this.postureBuf = 0; this.prone = false;
     this.setShape('stand');
     this.game?.character?.setHidden(false);
     this.place();
@@ -188,7 +200,7 @@ export class Player {
 
     if (inp.wasPressed('KeyZ') && (this.game?.belt?.allows('firstPerson') ?? true)) this.view = this.fp ? 'tp' : 'fp'; // (every tool has its first person; lock-on is the middle button)
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step
-    if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
+    if (inp.wasPressed('KeyC')) { this.slideBuf = T.movement.slideBuffer; if (this.grounded) this.postureBuf = T.movement.slideBuffer; }
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
     if (inp.wasPressed('KeyO')) this.shoulder *= -1; // (over-the-shoulder side; Q draws the Sondelass)
     for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG', 'KeyF', 'KeyV', 'Mouse0', 'KeyY']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
@@ -268,6 +280,26 @@ export class Player {
 
   canStand() { return this.fits(this.pos, false); }
 
+  /** The posture C chose: stand, crouch or prone (the shape follows where it fits). Getting down onto the belly and up from it takes the
+   *  crawl's enter and exit clips' time, the body held still meanwhile. */
+  setPosture(to) {
+    const from = this.posture;
+    if (to === from) return;
+    this.posture = to;
+    if (to === 'prone') this.postureT = from === 'crouch' ? PRONE_DOWN.crouch : PRONE_DOWN.stand;
+    else if (from === 'prone') this.postureT = to === 'stand' ? CRAWL.exitTo.stand : CRAWL.exitTo.crouch;
+    this.ev('move.posture', { from, to });
+  }
+
+  /** C on the ground: stand to crouch to prone to stand (as far up as there is room). In a fight on the line, the crouch is the brace:
+   *  stand and crouch only. */
+  cyclePosture(locked) {
+    const p = this.posture;
+    if (p === 'stand') this.setPosture('crouch');
+    else if (p === 'crouch') this.setPosture(locked ? (this.canStand() ? 'stand' : 'crouch') : 'prone');
+    else this.setPosture(this.canStand() ? 'stand' : this.fits(this.pos, 'low') ? 'crouch' : 'prone');
+  }
+
   /** Would the capsule (standing, low or blob) fit with its feet at p? Loose props don't count. */
   fits(p, low) {
     const kind = low === true ? 'low' : low === false || low === undefined ? 'stand' : low;
@@ -335,6 +367,8 @@ export class Player {
     const M = T.movement, inp = this.input;
     this.prevPos.copy(this.pos);
     this.slideBuf -= dt;
+    this.postureBuf -= dt;
+    this.postureT = Math.max(0, this.postureT - dt);
     this.dashBuf -= dt;
     this.slideCd -= dt;
     this.slideBoostCd -= dt;
@@ -392,11 +426,20 @@ export class Player {
       this.sfx.slide();
     }
 
-    // capsule: low while sliding or crouching (and while there's no headroom to stand)
-    const wantLow = this.sliding || (crouchKey && this.grounded) || (this.low && crouchKey);
-    if (wantLow) this.setLow(true);
-    else if (this.low && this.canStand()) this.setLow(false);
+    // ---- posture: C cycles stand, crouch, prone (the owner, 2026-10-11: "C becomes a crouch toggle, and prone joins the cycle"). C while
+    // fast is still the slide (above: it spends the press); held, C still keeps them low (out of a slide) as it did. Sprint stands up out
+    // of the crouch (the Roll art, when it is theirs, takes the press first: techs run before this); off the ground the belly gives way.
+    if (this.sliding) this.postureBuf = 0;
+    else if (this.postureBuf > 0 && this.grounded && this.postureT <= 0) { this.postureBuf = 0; this.slideBuf = 0; this.cyclePosture(locked); }
+    if (this.posture === 'crouch' && sprintKey && iz > 0 && this.grounded && this.canStand()) this.setPosture('stand');
+    if (this.posture === 'prone' && !this.grounded && this.airT > 0.2) { this.posture = 'crouch'; this.postureT = 0; }
+    // capsule: low while sliding or crouching (and while there's no headroom to stand), flat while prone and while getting up from it
+    const wantLow = this.sliding || this.posture !== 'stand' || (crouchKey && this.grounded) || (this.low && crouchKey);
+    const wantShape = !this.sliding && (this.posture === 'prone' || (this.postureT > 0 && this.shape === 'prone')) ? 'prone' : wantLow ? 'low' : 'stand';
+    if (wantShape !== this.shape && this.shape !== 'blob' && (HALVES[wantShape] < HALVES[this.shape] || this.fits(this.pos, wantShape))) this.setShape(wantShape);
+    else if (wantShape === 'stand' && this.shape === 'prone' && this.fits(this.pos, 'low')) this.setShape('low'); // (no room to stand: as far up as there is)
     this.crouching = this.low && !this.sliding && this.grounded;
+    this.prone = this.posture === 'prone';
     // sprint in any direction except backwards
     this.sprinting = sprintKey && !this.walking && iz >= 0 && (iz > 0 || ix !== 0) && adsT < 0.3 && !wantsFire && !this.low;
 
@@ -406,6 +449,7 @@ export class Player {
     this.jumpBuf = liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
     this.jumpHeldLast = inp.isDown('Space');
     if (this.grounded) { this.airJumps = M.airJumps; this.dashCharges = M.dashCharges; }
+    if (this.jumpBuf > 0 && (this.shape === 'prone' || this.postureT > 0)) { if (this.posture === 'prone' && this.postureT <= 0) this.setPosture(this.fits(this.pos, 'low') ? 'crouch' : 'prone'); this.jumpBuf = 0; } // (from the belly, Space gets up to the crouch: no jump)
     if (this.jumpBuf > 0) {
       if (this.wallrun) {
         this.wallJump(hv, wishDir);
@@ -435,7 +479,7 @@ export class Player {
         jumped = true;
         this.ev('move.jump', { kind: 'air' });
       }
-      if (jumped) { this.jumpBuf = 0; this.grounded = false; }
+      if (jumped) { this.jumpBuf = 0; this.grounded = false; if (this.posture === 'crouch' && this.canStand()) this.setPosture('stand'); } // (a jump from the crouch stands them up, where there is room)
     }
 
     // ---- wallrun ----
@@ -472,7 +516,7 @@ export class Player {
     } else if (this.dashT > 0) {
       this.dashT -= dt; // the dash owns the velocity for its duration
     } else {
-      let speed = this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : this.walking ? M.walkSlowSpeed : M.walkSpeed;
+      let speed = this.shape === 'prone' ? (this.postureT > 0 ? 0 : M.proneSpeed) : this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : this.walking ? M.walkSlowSpeed : M.walkSpeed;
       speed *= THREE.MathUtils.lerp(1, M.adsSpeedMult, adsT);
       speed *= this.techs?.speedMult ?? 1;
       speed *= this.wade; // (the place's: world/well/bowl.js's rim shallows)
@@ -1000,6 +1044,7 @@ export class Player {
     this.mantleBlend = THREE.MathUtils.damp(this.mantleBlend, this.mantle ? 1 : 0, 16, dt);
     this.dashBlend = THREE.MathUtils.damp(this.dashBlend, this.dashT > 0 ? 1 : 0, this.dashT > 0 ? 25 : 6, dt);
     this.crouchBlend = THREE.MathUtils.damp(this.crouchBlend, this.crouching ? 1 : 0, 12, dt);
+    this.proneBlend = THREE.MathUtils.damp(this.proneBlend, this.shape === 'prone' ? 1 : 0, 6, dt);
     this.wallBlend = THREE.MathUtils.damp(this.wallBlend, this.wallrun ? this.wallrun.side : 0, 10, dt);
 
     const sh = this.shake * this.shake;
@@ -1037,7 +1082,7 @@ export class Player {
 
     // third person over-the-shoulder with collision
     const pivot = this.renderPos.clone();
-    const drop = this.slideBlend * 0.55 + this.crouchBlend * 0.35;
+    const drop = this.slideBlend * 0.55 + this.crouchBlend * 0.35 + this.proneBlend * 0.45; // (flat on the belly: the pivot 0.7 m up, by the body's top)
     pivot.y += C.tpPivotHeight - drop;
     this.techs?.camera(fpPos, pivot, dt);
     const dist = THREE.MathUtils.lerp(C.tpDistance, C.tpAdsDistance, adsT) * cf.dist;
