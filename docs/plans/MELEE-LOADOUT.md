@@ -65,8 +65,8 @@ five runs the same). The chart and the table: SONDELASS-STRINGS.md section 7. Sh
 
 **Phase 3, the choosing, built (2026-10-11, Calissa; the catalogue's new rows are another builder's, on their own branch):** the loadout
 editor (`tools/sondelass/loadouteditor.js`), God Hand's technique list beside its Combo Tree: on the left the string's slots (`slotRow`:
-4 open, the rest shown CLOSED with what opens each, "300 hits, or 8 in a row") and the specials' three (RMB, W + RMB, S + RMB); on the
-right every move of the catalogue that fits the slot picked, as choice cards (label, one line, power, reach, speed and cost, the effect's
+4 open, the rest shown CLOSED with what opens each, "300 hits"; the run's way unshown until its record has a writer) and the specials'
+three (RMB, W + RMB, S + RMB); on the right every move of the catalogue that fits the slot picked, as choice cards (label, one line, power, reach, speed and cost, the effect's
 keyword, compare arrows against what the slot holds; a locked move shown locked, "Learned by using Rising Cut.", never hidden). Click a
 slot, then a move. It lists whatever `SONDELASS_MOVES` holds (two rows put in at run time by the probe were listed, locked and lent,
 with nothing changed in the editor); a row's own `label`, `does` and `numbers` win, and `loadoutwords.js` stands in for today's five
@@ -113,6 +113,18 @@ cycles 2 and 3): the 30 random loadouts of 4 to 8 slots (seed 7) are all inside 
 (Push Kick 7, Guard Break 5) shove a free jelly sideways; stunned, with no lock-on and the camera never turned, [Push Kick, Body Blow,
 Lunge Slash, Push Kick] put it 58 degrees off the camera's look by blow 11, past the magnet's cone (with the lock-on, 15 hits in 10
 real s). Harness in Calissa's scratchpad (`p3/repair/`).
+
+**Phase 3, repaired again (2026-10-11, Calissa; the verifiers' second round, four blocking):** (1) A knock back goes back: a blow's
+direction was its swing's tangent (`melee.js`), so every pushing blow sent a free slip jelly sideways (Push Kick 0.00 m along the line
+from the Courier, 1.33 across). The engine's `hit.away` (0..1, `tools/moveset.js`) sends that share straight away, its push and the
+flinch; the catalogue's twelve rows that push carry `away: 1` (casebook NEW:knock-away-not-along). Along / across now: Push Kick 1.33 /
+0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0, Power Slash 1.86 / 0. The default string is phase 2's frame for frame through
+c4's hit; after it the jelly lies 2.74 m off (was 1.95 m to the side) and the loop's next c1 cuts air. (2) Empty in a middle slot ends
+the string there, the slots after it with it, as its card and the log say (it cut the slot out; NEW:say-only-what-happens). (3) A
+change in the editor is written at once (`save.flush()` after `dirty()`: the main loop writes nothing while a window is open;
+NEW:write-what-a-window-changes). (4) A closed slot says only "300 hits" (1,000, 3,000, 8,000): "or 8 in a row" comes back when
+`sond.string.best` has a writer. And three minors: the W + RMB and S + RMB lists show their own key caps, a quick second change to a
+slot is said (the log's throttle dropped it), and Backstep Slash's reach says 2.1 m (measured: lands at 2.1, misses at 2.2; it said 2.4). Harness in Calissa's scratchpad (`p3/repair2/`).
 
 ## 2. The loadout (God Hand's Combo Tree, ours)
 

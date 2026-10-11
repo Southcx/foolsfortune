@@ -55,13 +55,13 @@ class LoadoutEditor {
   constructor(game) { this.game = game; this.pick = null; } // (the slot picked: { row: 'string', i } | { row: 'special', dir }; null: none yet)
   get kept() { return this.game.sondelassLoadout; }
 
-  /** A row of the catalogue as a choice card's row. `equipped`: it is what the picked slot holds. */
-  card(row, { equipped = false } = {}) {
+  /** A row of the catalogue as a choice card's row. `equipped`: it is what the picked slot holds; `key`: the picked slot's key cap. */
+  card(row, { equipped = false, key = null } = {}) {
     const st = moveStatus(this.game, row), n = numbersOf(row, RULES.sondelass?.[row.rule]), kw = effectKeyword(row);
     return {
       id: row.id, name: labelOf(row), does: lineOf(row), lore: row.lore || null, detail: row.detail || null,
       power: n.power, reach: n.reach, speed: n.speed, cost: n.cost, keywords: kw ? [kw] : [], icon: kw ? `kw.${kw}` : null,
-      key: row.kind === 'special' ? 'RMB' : 'LMB', state: !st.known ? 'locked' : equipped ? 'equipped' : 'ready',
+      key: key || (row.kind === 'special' ? 'RMB' : 'LMB'), state: !st.known ? 'locked' : equipped ? 'equipped' : 'ready',
       opens: st.known ? null : moveOpening(row, SONDELASS_MOVES), lent: this.game.mode === 'debug' && st.known ? st.lent : undefined,
     };
   }
@@ -111,7 +111,7 @@ class LoadoutEditor {
       const S = SPECIAL_SLOTS.find((s) => s.dir === p.dir);
       list.append(head(special ? 'SPECIALS' : 'NORMALS', special ? `for ${S.said}` : `for slot ${slot}, the ${ordinal(slot)} press`));
       const cards = this.rows(kind).map((r) => {
-        const c = new ChoiceCard(this.card(r, { equipped: r.id === inSlot }), { onPick: (row) => this.assign(slot, row.id, redraw) });
+        const c = new ChoiceCard(this.card(r, { equipped: r.id === inSlot, key: special ? S.key : null }), { onPick: (row) => this.assign(slot, row.id, redraw) }); // (W + RMB's list shows W + RMB, not RMB)
         if (base && r.id !== inSlot && c.row.state !== 'locked') c.compareTo(base);
         return c;
       });

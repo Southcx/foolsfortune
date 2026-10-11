@@ -48,7 +48,7 @@
 //   forward or back slot is the tap's). Without one, `strings.ground` is the string, as before. A row's numbers are its `rule` row of
 //   progress/combat/moves.js where it names one (the rule wins), else its own `stats` ({ power, hits, time, cost, status }: the same
 //   shape, so the catalogue's new moves keep their numbers beside their clips until Dovina takes them into her table).
-//   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift },
+//   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift, away },
 //             high: { lift } (a launcher held at its strike), strike: [t0, t1] (typed over the measured), parts: [t..] (a row's hits begin),
 //             aim (rad: where off the facing the blade's arc passes, for a cut whose arc never crosses the front),
 //             ringHit (the landing ring's own hit, where the strike's differs), lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
@@ -57,6 +57,9 @@
 //             foot's, where the tool's is a blade's), limb, tip (melee.js: what the reach is measured on), ribbon: false (no ribbon: a
 //             kick, a shove), rec (an upper move's recovery clip, played on after it: UAL's split swings),
 //             hit.guardBreak (the blow opens a guard first: the thing struck is asked `breakGuard(point, dir, by)`, then struck),
+//             hit.away (0..1: that share of the blow's direction, its push and the flinch of what it strikes, straight away from them,
+//             the rest along the swing; none, along the swing, a blade's cut: melee.js. A knock along the swing alone shoves a thing
+//             sideways, never back: casebook NEW:knock-away-not-along),
 //             legs: false (an upper move standing still keeps the stance's legs, not the clip's: the iaido's cut from the crouch),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
@@ -118,6 +121,7 @@ const RING_UP = 1.5; // (m: a ring strikes what is within this of the ground it 
 const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5, up: 0.1, still: 0.2 };
 const _c1 = new THREE.Color(), _c2 = new THREE.Color();
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+const _w = new THREE.Vector3(), _s = new THREE.Vector3();
 const roots = new Map();
 
 /** A clip's hip travel from its first frame, per frame (body space: +Z ahead, +X their left): the move's own motion. */
@@ -511,6 +515,7 @@ export class Moveset {
   /** One blow on one thing: its damage, its knock (the launcher's lift, the plunge's spike), its event. */
   blow(kind, ent, at, dir, h, c) {
     const g = this.game, S = this.S, cause = h.cause || S.cause || 'sliced';
+    if (h.away) dir = this.awayDir(at, dir, h.away); // (a knock back goes back: `hit.away` of it straight away from them)
     const power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = (c?.high && c.def.high?.lift) || (h.lift ?? 0);
     if (c?.kind === 'air' && kv.y > 1 && this.juggle?.ent === ent && this.juggle.v.y > kv.y) kv.y = this.juggle.v.y; // (a lift is a floor, never a ceiling: an air blow on what is still rising faster keeps its rise, so High Time's climb is the launcher's whatever the presses; it cut it at a1, 2.6 m)
@@ -527,6 +532,16 @@ export class Moveset {
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
     S.onHit?.(kind, ent, at, dir, h, c, this.rule(c?.def));
+  }
+
+  /** The direction a blow sends what it strikes: `k` (0..1) of it straight away from them, the rest along the swing (melee.js's
+   *  tangent; the kick's own `side` is the same rule from the other end: courier/moves/kick.js). A new vector; `dir` where the thing
+   *  is on top of them. */
+  awayDir(at, dir, k) {
+    const out = _w.set(at.x - this.P.pos.x, 0, at.z - this.P.pos.z);
+    if (out.lengthSq() < 1e-6) return dir;
+    out.normalize().multiplyScalar(Math.min(1, k)).addScaledVector(_s.copy(dir).setY(0).normalize(), 1 - Math.min(1, k));
+    return out.lengthSq() > 1e-6 ? out.normalize().clone() : dir;
   }
 
   /** What a blow is worth to a creature (creatures.strike's power): its row's, a charge from half of it to all; with no row, the tool's

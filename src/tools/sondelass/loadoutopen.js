@@ -17,7 +17,8 @@
 // count anyone reaches, or a feat that proves the skill), and Monster Hunter's weapon trees (a branch opens from the one before it).
 //
 //   SLOTS { start, most }   SLOT_OPENS [{ slot, hits, run }]   STARTERS
-//   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits, or 8 in a row')
+//   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits': the count way only, while the feat way's
+//   record has no writer)
 //   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Learned by using Backhand.')
 // ---------------------------------------------------------------------------------------
 import { labelOf } from './loadoutwords.js';
@@ -47,10 +48,11 @@ export function slotsOpen(game) {
   return { n: lent ? SLOTS.most : earned, earned, lent };
 }
 
-/** What opens a closed slot, in one line (words placeholders for Espada's). */
+/** What opens a closed slot, in one line (words placeholders for Espada's). Only the count way: nothing writes `sond.string.best` yet,
+ *  so "or 8 in a row" promised a way that could not open it (it comes back, `, or ${o.run} in a row`, with the record's writer). */
 export function slotOpening(slot) {
   const o = SLOT_OPENS.find((x) => x.slot === slot);
-  return o ? `${o.hits.toLocaleString('en-GB')} hits, or ${o.run} in a row` : '';
+  return o ? `${o.hits.toLocaleString('en-GB')} hits` : '';
 }
 
 /** Whether the Courier knows a move: `earned` (one of today's, or its `earn` predicate passes over the ledger), `lent` (DEBUG's lend

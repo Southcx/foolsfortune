@@ -11,8 +11,10 @@
 //                 left empty and the string closes up); a forward or back special falls back to empty (the tap's). It never throws. The
 //                 choice itself is kept as set, so a move lent in DEBUG comes back when the lend does.
 //   A CHANGE      set(slot, move): `slot` 1..8 (the string's) or 'tap' | 'forward' | 'back' (RMB's); `move` an id the Courier knows, or
-//                 null to empty a slot past the fourth or a forward or back special. Built on what plays now, so what is kept is what
-//                 was shown. Emits `loadout.set { tool, slot, move, label, by: 'courier' }` (its log line: feedback/tracking/moves.js).
+//                 null to end the string before a slot past the fourth (the slots after it go with it: the Empty card's line, "Ends the
+//                 string before this slot.") or to empty a forward or back special. Built on what plays now, so what is kept is what
+//                 was shown. Written at once (save.flush: the main loop writes none while a window is open, and the editor is one).
+//                 Emits `loadout.set { tool, slot, move, label, by: 'courier' }` (its log line: feedback/tracking/moves.js).
 //
 // Prior art: God Hand's Combo Tree (a chain of slots, each filled from the techniques learned), redux-persist's named slices (one
 // section, written whole), and the console rule that a save that no longer fits falls back to a default rather than failing to load.
@@ -97,15 +99,19 @@ export class SondelassLoadout {
         string[at] = move; slot = at + 1;
       } else {
         if (i < this.base.string.length || i >= string.length) return false; // (the first four always hold a move)
-        string.splice(i, 1);
+        string.length = i; // (the string ends before this slot, as the Empty card and the log say: never a slot cut out of the middle)
       }
     }
     this.chosen = { string, specials }; this.rev++;
-    this.game.save?.dirty?.(SECTION);
+    this.keep();
     this.game.events?.emit('loadout.set', { tool: 'sondelass', slot, move, label: move ? labelOf(this.cat[move]) : null, by: 'courier' });
     return true;
   }
 
   /** Back to the default loadout (kept as never set). */
-  reset() { this.chosen = null; this.rev++; this.game.save?.dirty?.(SECTION); }
+  reset() { this.chosen = null; this.rev++; this.keep(); }
+
+  /** Marked dirty and written now: the main loop's once-a-frame flush is skipped while the Index's window or the Codex is open (main.js),
+   *  and the editor is opened in one, so a change made there and the tab closed was lost (flush waits only on a hold: core/save.js). */
+  keep() { const S = this.game.save; S?.dirty?.(SECTION); S?.flush?.(); }
 }

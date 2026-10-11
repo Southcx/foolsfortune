@@ -26,7 +26,7 @@ export function moveRules({ on, L, log }) {
     const S = SPECIAL_SLOTS.find((s) => s.dir === e.slot), what = e.move ? e.label || e.move : null;
     const text = S ? (what ? `${S.said} now plays ${what}.` : `${S.said} now plays your tap's special.`)
       : what ? `Your string's ${ordinal(e.slot)} blow is now ${what}.` : `Your string now ends after its ${ordinal(e.slot - 1)} blow.`;
-    log.say('info', text, { key: `loadout.${e.slot}`, throttle: 0.15 });
+    log.say('info', text, { key: `loadout.${e.slot}` }); // (no throttle: every change is its own line, so the last one names what the slot holds)
   });
   // the skiff (Calissa's suite): skiff.bail { speed, by }, skiff.ollie { geyser, by }
   on('courier.idle', (e) => log.say('info', `You will stand ${(IDLES.labels[e.stand]?.name ?? e.stand).toLowerCase()}.`, { key: 'courier.idle', throttle: 1 })); // (the kiln's STANCE kept: courier/vessel/kilnui.js; words a stand-in, Espada's)

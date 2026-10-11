@@ -313,7 +313,7 @@ measured (7b), hit-stops in (today's blows: 1.94).
 | S | powerSlash | Power Slash | Sond_ChargeRelease x1, whole, 0-1.2 | none: the charge skipped | 0.00-0.11 | - | 1.20 | 3.0 | 2.5 | knock (push 9) | heavyChop | 2.50 | 2.07 |
 | S | risingCut | Rising Cut | Fist_Uppercut x1, whole, the hop's 0.38 m carried (`root: 'xyz'`), 0-0.9 | 0-0.23 | 0.23-0.34 | - | 0.90 | 2.3 | 2.0 | launch (lift 8; airborne) | quickSlash | 2.56 | 2.03 |
 | S | guardCrush | Guard Crush | Sond_Thrust x0.9, whole; its 0.45 m and a step of 0.5 m | 0-0.19 | 0.19-0.27 | - | 1.11 | 2.8 | 2.7 | guard break (push 5; stagger) | stinger | 2.52 | 2.07 |
-| S | backstepSlash | Backstep Slash | Sond_Combo3 x1.1, whole; a step back of 1.14 m through its hop (0.27-0.50) | 0-0.36 | 0.36-0.43 | - | 1.00 | 2.5 | 2.4 | stagger (push 3) | c3 | 2.50 | 2.06 |
+| S | backstepSlash | Backstep Slash | Sond_Combo3 x1.1, whole; a step back of 1.14 m through its hop (0.27-0.50) | 0-0.36 | 0.36-0.43 | - | 1.00 | 2.5 | 2.1 (from the press: 2.2 misses) | stagger (push 3) | c3 | 2.50 | 2.06 |
 
 Costs: the stinger 6, Spin Slash 8, Power Slash 8, Rising Cut 6, Guard Crush 6, Backstep Slash 5 (Lachryma, spent on the press; from a
 blow's recovery the paid cut's 5 with it, as the stinger). Every normal plays in every slot: a chain window for when it is not the last
