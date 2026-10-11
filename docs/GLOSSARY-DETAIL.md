@@ -293,8 +293,11 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   strength. A pip is the move's UI icon where it has one (its catalogue row's `icon`, else `sondelass.<id>`), else a plain shape for its
   effect: stagger a small diamond, knock the diamond grown with a bright core, launch a double chevron up, guard break a cracked
   square. While the move on show is open for the paid cut (`Moveset.paidCutOpen`, its cost affordable), **the glint**: the lit pip wears
-  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. Read from the engine (`string`,
-  `stringPlace()`), so it resets where the engine resets and holds through a blink cancel. Out of a fight and idle 3 real s it fades;
+  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. **The fork**: a pause string (a press
+  0.25-0.8 real s after the slot it branches from ends) as a second row of pips over the first, its thread rising from the gap after
+  that slot; shown while a press would take it (its first pip lit, no slot lit) and while its run goes on (its next lit; its last
+  struck, the string's first lit). Read from the engine (`string`, `stringPlace()` with its `branch`), so it resets where the engine
+  resets and holds through a blink cancel. Out of a fight and idle 3 real s it fades;
   the first blow brings it back. *Not:* the slot row (a loadout in a choice card), Strawman's attack strings, the shell palette.
 - **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`, Calissa's; the hook's own UI): while the hook form is in hand with no line
   out, a ring with a point at its heart, in the Mind's lines with the wire compass's keyline (`compassMaterial`, no program of its own),
@@ -370,7 +373,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   last of a blot or of paint, a ring going out with **glints** and a **twinkle** over it. **The bottle's arc** (`BottleArc`,
   `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial just right of the paint reticle's ring on the screen (beside the
   Courier's chest while mopping or a jet runs; the screen's middle in first person), the **meniscus** where it stands, quarter
-  **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
+  **notches**, the red cross when it runs dry; it lingers 0.8 real s after the load stops, and goes at once when the brush is stowed or
+  another tool is asked for (a jet aside). **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
   sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
   glyph.
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle); `bakeClip` is its bake without the skeleton

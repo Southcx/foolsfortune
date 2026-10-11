@@ -548,8 +548,41 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
 NEW:registered-name. **A name a class gives itself on `game` is its owner's alone.** A class that registers itself where others find it
     (`game.paintReticle = this`) is built under that name once; a second use of its look asks not to take it (`{ aim: false }`), or the
     last one built holds the name and everything that reads it follows the wrong one. Before reusing a class, grep it for `game.<x> =`.
+NEW:read-every-branch. **A mark that says what a press will do reads every way the engine can take it.** A read of the engine's choice
+    (the string row's lit pip: `Moveset.stringPlace()`) follows the engine's own rules down every branch (the pause window, a pause
+    string's run, the blink's offset), not the common path alone; it is tested against each branch, the rare one first.
+NEW:linger-asks-belt. **A tool's mark lingers only while the tool is asked for.** A mark kept up a moment after its use (the bottle's
+    arc, 0.8 real s) asks the belt each frame (`belt.get(id).wants`): stowed or another tool asked for, the linger is cut that frame.
 
 ## Cases
+
+### 2026-10-11 · The string row lit the wrong pip through a pause string (melee phase 6, the verifier)
+
+- **Seen:** headless (960x600, the Throwing Room), c1 and c2, then LMB 18 frames after c2 ended: j1 began with c3 lit, j2 and j3 with
+  c1 lit; after c1 alone, t1 began with c2 lit and t2 with c1. 10 of 10 pause-string blows on the wrong pip, 31 of 31 plain ground
+  blows right (8 plans: pauses of 18 and 30 frames, the plain string, mashing, pauses of 8 and 52 frames, outside the window).
+- **Cause (measured):** `Moveset.stringPlace()` read the ground string only: in the PAUSE window after the slot a pause string
+  branches from it answered the next slot, and through a pause string's run (`str` 'pause') the first; the row drew only the
+  loadout's slots, so a pause string's blow had no pip to light.
+- **Fix:** `stringPlace()` follows `opener()` and `nextOf()` into the pause strings too (`branch`: the slot it forks from, its moves,
+  its next, its struck); the row draws it as **the fork**, a second row of pips over the string, its thread rising from the gap after
+  that slot, its next lit and no slot lit (`ui/cutlassstringrow.js`); the string's row never moves (the fork's room kept, bottom
+  anchored: the row's rect 442,502 76x18 before, its string at the same 442,502 in a 116x38 canvas after). Measured: 0 of 41 blows
+  on the wrong pip, the same 8 plans; the shader programs 163 before and after with the cutlass drawn (the row is a 2D canvas).
+- **Rule:** NEW:read-every-branch.
+
+### 2026-10-11 · The bottle's arc stayed up after the brush was stowed (melee phase 6, the verifier)
+
+- **Seen:** headless, paint, let go, G 10 frames later: the arc at full strength 24 frames after the key, last seen 36 frames after,
+  18 of them with the brush gone from the hands; LMB held through the key, 34 full frames, last at 46; J (the Veritome asked for) the
+  same, 24 and 35.
+- **Cause (measured):** `feedback/loadgauge.js` keeps `show` at LINGER (0.8 real s) after the load stops and never asked the belt;
+  phase 6 moved the arc beside the body once the paint reticle is gone, and the reticle goes with the brush, so the linger stood at the
+  chest with nothing in the hands.
+- **Fix:** `show` drops to 0 the frame the brush is no longer asked for (`belt.get('soulbrush').wants`), unless a jet runs. Measured:
+  0 frames shown after the key in all four (G and J, let go and held); a rocket gathered and flown with the brush stowed keeps the arc
+  while it runs (opacity 1 over 28 frames).
+- **Rule:** NEW:linger-asks-belt.
 
 ### 2026-10-11 · The bottle's arc stood at the Courier's chest while painting (melee phase 6, at the merge)
 

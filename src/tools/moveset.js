@@ -76,7 +76,7 @@
 //   M.begin(id, kind, n, join) (`join`: a pose the move begins from, faded out over 0.1 s, as a chained move's)   M.blinkCancel()
 //   M.string (the ground string's move ids)   M.specialOf(dir) -> its catalogue row   M.special(dir, { paid }) -> bool   M.costOf(row)
 //   M.recovering() (the move on show is past its strike)   M.cut(also) -> bool (the paid cut, for the tool's own next: `also` its cost)
-//   M.stringPlace() -> { next, struck, len } (the ground string's place, read)   M.paidCutOpen(also) -> bool (a press now would be the paid cut, read)
+//   M.stringPlace() -> { next, struck, len, branch } (the string's place, a pause string's too, read)   M.paidCutOpen(also) -> bool (a press now would be the paid cut, read)
 //   M.catalogueRow(id) (a slot's move as data)
 //     (both read, never driven: the cutlass's string row, ui/cutlassstringrow.js, asks the engine so it never says other than it does)
 //   spec.ghosts: an Afterimages the tool ticks itself (the engine keeps its own otherwise)
@@ -211,15 +211,23 @@ export class Moveset {
     return !!R && !!free && since >= soon && c.t > (c.def.track?.strike[1] ?? 0);
   }
 
-  /** The ground string's place as the next plain LMB takes it (read, never driven): `next` the slot it plays, `struck` how many of the
-   *  string's slots this run has struck (0 none), `len` the slots. The engine's own rules: a ground blow on show (or any move, the place
-   *  kept under it) goes on to the next slot, the last looping to the first; nothing on show, the next within RESET of the last, else
-   *  the first; a pause string's run, or none, begins it again. A blink cancel keeps it (blinkCancel). */
+  /** The ground string's place as the next plain LMB takes it (read, never driven): `next` the slot it plays (-1: a pause string's blow,
+   *  no slot), `struck` how many of the string's slots this run has struck (0 none), `len` the slots, and `branch` the pause string the
+   *  press is in (its window open after the slot it branches from, or its run going on), else null: { at (the slot), to (its moves),
+   *  next (the one the press plays; -1, its last struck: the string begun again), struck (how many of its blows) }. The engine's own
+   *  rules (opener(), nextOf()): a ground blow on show (or any move, the place kept under it) goes on to the next slot, the last
+   *  looping to the first; nothing on show, the pause string's first inside PAUSE after the slot it branches from (never out of a
+   *  blink), else the next within RESET of the last, else the first; a pause string's run goes on to its next blow, then begins the
+   *  string again. A blink cancel keeps it (blinkCancel). */
   stringPlace() {
-    const len = this.string.length;
-    if (!len) return { next: -1, struck: 0, len };
-    const live = this.str === 'ground' && this.n >= 0 && this.n < len && (!!this.cur || this.after <= RESET);
-    return live ? { next: (this.n + 1) % len, struck: this.n + 1, len } : { next: 0, struck: 0, len };
+    const len = this.string.length, c = this.cur, fresh = !!c || this.after <= RESET;
+    if (!len) return { next: -1, struck: 0, len, branch: null };
+    const b = this.branch;
+    if (this.str === 'pause' && this.n >= 0 && b && fresh) { const k = this.n + 1 < b.to.length ? this.n + 1 : -1; return { next: k < 0 ? 0 : -1, struck: b.at + 1, len, branch: { at: b.at, to: b.to, next: k, struck: this.n + 1 } }; }
+    const live = this.str === 'ground' && this.n >= 0 && this.n < len && fresh;
+    const br = live && !c && !this.offset && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((p) => p.at === this.n && this.open(p.to[0]));
+    if (br) return { next: -1, struck: this.n + 1, len, branch: { at: br.at, to: br.to, next: 0, struck: 0 } };
+    return live ? { next: (this.n + 1) % len, struck: this.n + 1, len, branch: null } : { next: 0, struck: 0, len, branch: null };
   }
 
   /** Whether a press now would be THE PAID CUT (read, never driven): the move on show in its recovery, before the free ways open (the
