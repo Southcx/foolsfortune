@@ -276,6 +276,10 @@ export class Player {
     const half = HALVES[kind];
     this.collider.setHalfHeight(half);
     this.collider.setTranslationWrtParent({ x: 0, y: half + RADIUS, z: 0 });
+    // CROSSING (Calissa, 2026-10-11, the crouch jump): Rapier moves a parented collider to its new offset only in world.step, so the
+    // controller asked in this step judged the new capsule from the old one's centre: grown in the air the step after a jump from the
+    // crouch toggle, it sat 0.175 m low, in the floor, read as grounded, and the jump ended 0.20 m up (casebook NEW:collider-pose-same-step)
+    this.collider.setTranslation({ x: this.pos.x, y: this.pos.y + half + RADIUS, z: this.pos.z });
   }
 
   canStand() { return this.fits(this.pos, false); }
@@ -430,7 +434,7 @@ export class Player {
     // fast is still the slide (above: it spends the press); held, C still keeps them low (out of a slide) as it did. Sprint stands up out
     // of the crouch (the Roll art, when it is theirs, takes the press first: techs run before this); off the ground the belly gives way.
     if (this.sliding) this.postureBuf = 0;
-    else if (this.postureBuf > 0 && this.grounded && this.postureT <= 0) { this.postureBuf = 0; this.slideBuf = 0; this.cyclePosture(locked); }
+    else if (this.postureBuf > 0 && this.grounded && this.postureT <= 0) { this.postureBuf = 0; this.slideBuf = 0; this.cyclePosture(locked || !!this.techs?.get('carry')?.item); } // (CROSSING, Calissa, 2026-10-11: a pot in the hands keeps them off the belly, stand and crouch only as on the line: lying down with one, or set down on the way, read as a flop; tools/proneholster.js)
     if (this.posture === 'crouch' && sprintKey && iz > 0 && this.grounded && this.canStand()) this.setPosture('stand');
     if (this.posture === 'prone' && !this.grounded && this.airT > 0.2) { this.posture = 'crouch'; this.postureT = 0; }
     // capsule: low while sliding or crouching (and while there's no headroom to stand), flat while prone and while getting up from it
