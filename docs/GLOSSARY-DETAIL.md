@@ -278,8 +278,12 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   yet.
 - **the melee loadout** (working name, Espada's and the owner's to rule; `tools/sondelass/sondelassloadout.js`, read by `tools/moveset.js`;
   `docs/plans/MELEE-LOADOUT.md`): God Hand's Combo Tree, ours. **The catalogue** (`SONDELASS_MOVES`): every move a slot can hold, a row
-  each (its kind, **normal** or **special**; its Sond_ clip; its **effect** on a body: stagger, knock, launch or guard break; its
-  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`). **The loadout** (`SONDELASS_LOADOUT`):
+  each (its kind, **normal** or **special**; its clip; its **effect** on a body: stagger, knock, launch or guard break; its
+  **parent**, the move whose use opens it, Dovina's earning; its row of `progress/combat/moves.js`, or its own `stats` until Dovina takes
+  it in; its **label**, the genre word the UI shows, and one line of effect). Phase 3's slice (2026-10-11): the normals Slash, Rising
+  Slash, Hop Slash, Leap Strike (c1 .. c4), Quick Slash, Backhand, Lunge Slash, Heavy Chop, Guard Break (`shove`), Push Kick, Low Sweep
+  (`lowSweep`: a low cut of the blade; *not* a sweep, the testing tool, nor the kick's leg sweep) and Body Blow; the specials Stinger,
+  Spin Slash, Power Slash, Rising Cut, Guard Crush and Backstep Slash (SONDELASS-STRINGS.md section 7). **The loadout** (`SONDELASS_LOADOUT`):
   the **string**'s slots in order (c1 .. c4 to start, 8 at most; LMB walks them, the last looping to the first) and the **specials**
   (RMB tapped, with W, with S; an empty forward or back slot is the tap's; the Stinger on the tap). *Not:* the kit (the Pneuka Box and
   the belt), nor the fixed grammar (S + LMB the launcher, the air and pause strings, the dash, the charge, R the special art, V the
@@ -287,6 +291,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
   `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
   "cancel" bare, which is the opposites' (an agate).
+- **a guard break** (`hit.guardBreak` on a move's hit, `tools/moveset.js`; God Hand's guard break, Soulcalibur's Guard Crush): the thing
+  struck is asked `breakGuard(point, dir, by)` before the blow lands, so that blow goes through. Strawman on guard throws its sleeves wide
+  and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop) (`GUARD_OPEN`, `world/testroom/room.js`; its look `S.open(t)`, `vfx/strawman.js`); nothing else guards
+  yet. *Not:* the guard (V, the held block), nor the parry, nor a stun.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the

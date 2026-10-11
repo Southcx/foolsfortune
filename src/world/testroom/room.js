@@ -40,6 +40,7 @@ import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
 export { TR };
 const _src = new THREE.Vector3(); // (where a blow came from, when nothing struck it but a point and a way: Strawman's guard)
+const GUARD_OPEN = 1.0; // (sim s Strawman's guard stays open after a guard break: God Hand's guard break, a beat to land the string)
 
 
 /** The static room: floor, walls, roof, beams, the lane and the mark, the clay wall, the shelf. Returns the wall's collider. */
@@ -136,7 +137,7 @@ export class TestRoom {
     model.group.position.copy(at); model.group.rotation.y = 0; // (facing +z: toward the lane and the mark)
     g.scene.add(model.group);
     const height = model.height || 2.45, radius = 0.45, hits = [];
-    let clock = 0, lastHit = -1e9, mode = 'still';
+    let clock = 0, lastHit = -1e9, mode = 'still', open = 0; // (`open`: sim s its guard stays broken: a guard break's, the melee loadout)
     const S = {
       type: 'creature', kind: 'strawman', name: 'Strawman', training: true,
       pos: at.clone(), radius, height, alive: true, yaw: 0, poise: 1, stunFor: 4, mindRest: 0,
@@ -152,7 +153,7 @@ export class TestRoom {
         // convention and missed them all: the owner's T51, v131)
         const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
         const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, y = model.yaw, front = !!src && dx * Math.sin(y) + dz * Math.cos(y) > 0.5 * Math.hypot(dx, dz); // (its front is where it faces: it turns on its ball in a string)
-        const blocked = mode === 'guard' && front, dmg = blocked ? 0 : power;
+        const blocked = mode === 'guard' && front && open <= 0, dmg = blocked ? 0 : power;
         hits.push({ at: clock, dmg, type: blocked ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;
         if (blocked) { // (a block is shown as one: the resist mark where it struck, the guard's clank, the sack barely stirring: the owner's T51, v132)
@@ -162,13 +163,16 @@ export class TestRoom {
         }
         model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
       },
+      /** A guard break (tools/moveset.js `hit.guardBreak`: the cutlass's Guard Break and Guard Crush): the sleeves thrown open for a beat,
+       *  and every blow lands through it meanwhile (the blow that broke it too: it asks before it strikes). */
+      breakGuard() { if (mode !== 'guard') return; open = GUARD_OPEN; model.open?.(GUARD_OPEN); },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
       setMode(m) { if (m === mode) return; mode = m; model.setMode?.(m); g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); }, // (still or guard: the sparring circle's lectern; the swing is an attack string's now)
       onParried() { S.strings.parried(); }, // (the blow broken off: it rocks back, its sleeve eases home)
       /** Once a frame: the body, its moves and its strings on the sim clock (the clock its windups count in: creatures.js); the bout's
        *  end on real seconds (STRAWMAN.boutGap). */
       tick(dt, raw = dt) {
-        clock += raw;
+        clock += raw; open = Math.max(0, open - dt); // (the guard's break on the sim clock, as the sleeves' (vfx/strawman.js): a hit-stop holds both)
         model.update?.(dt);
         S.strings.update(dt); S.yaw = model.yaw;
         if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }

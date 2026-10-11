@@ -48,6 +48,21 @@ blow, the iaido's charge or blade mode gives the blink on that frame's fixed ste
 and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
 out of the stinger read its 30 m/s as its exit (casebook rule NEW:launch-end-speed). Sheets in Calissa's scratchpad (`melee-p2/`).
 
+**Phase 3, the catalogue, built (2026-10-11, Calissa):** `SONDELASS_MOVES` holds Dovina's slice, 12 normals and 6 specials, each row with
+its label (CLARITY's genre word), one line of effect, `lore: null` (Espada's), `earn: null` (Dovina's), its parent, its effect and its
+`stats` (power, hits, time, range, cost, status). The new normals: **Quick Slash** (UAL swordA; parent c1), **Backhand** (swordB; c2),
+**Lunge Slash** (the melee hook, a step in; c3), **Heavy Chop** (swordC; c4), **Guard Break** (the suite's shove; c2), **Push Kick** (the
+front kick, the off hand's foot; c4), **Low Sweep** (swordHeavy's low cut; c3), **Body Blow** (the left jab; c1). The new specials:
+**Spin Slash** (Sond_SpinSlash; parent Backhand), **Power Slash** (the charge's release without the hold; Heavy Chop), **Rising Cut**
+(the uppercut with the blade, a launch; Quick Slash), **Guard Crush** (a planted thrust through a guard; the stinger), **Backstep Slash**
+(c3's hop taken 1.14 m back, for S + RMB; c3). No clip authored. The engine gained what they needed (`tools/moveset.js`): a row's own
+`stats` where moves.js names none, a move's own `reach`, `ribbon: false`, a typed `step` (forward or back), and `hit.guardBreak` (the
+thing struck asked `breakGuard()` first: Strawman's guard thrown open 1.0 s of the sim clock, `world/testroom/room.js` and `vfx/strawman.js`).
+Dovina's row rule holds, measured against a slip jelly: every new normal in every slot within -2.9% and +2.2% of today's string (1.956
+power a real second, hit-stops in), the four slowest together -7.7%, every special -8.5% to +6.0%; the stinger, today's, is +780% (its
+lunge strikes 2.2 x its row: a finding for Dovina, unchanged). The default loadout is today's to the frame (phase 2's `string.mjs`, all
+five runs the same). The chart and the table: SONDELASS-STRINGS.md section 7. Sheets in Calissa's scratchpad (`p3/moves/`).
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned
