@@ -545,8 +545,25 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
+NEW:registered-name. **A name a class gives itself on `game` is its owner's alone.** A class that registers itself where others find it
+    (`game.paintReticle = this`) is built under that name once; a second use of its look asks not to take it (`{ aim: false }`), or the
+    last one built holds the name and everything that reads it follows the wrong one. Before reusing a class, grep it for `game.<x> =`.
 
 ## Cases
+
+### 2026-10-11 · The bottle's arc stood at the Courier's chest while painting (melee phase 6, at the merge)
+
+- **Seen:** headless, the four phase 6 branches merged (960x600, the Soul Brush painting at Strawman): the bottle's arc beside the
+  Courier's chest, not beside the paint reticle's ring on Strawman; `game.paintReticle.mesh.visible` false while painting, and true
+  while carrying a pot with nothing drawn.
+- **Cause (measured):** two builders in parallel, each right alone. The bell-and-brush branch had `PaintReticle`'s constructor register
+  itself (`game.paintReticle = this`) so the arc could stand beside it; the Lockheart-and-throw branch built a second `PaintReticle` for
+  the carry throw's landing (`CarryThrowMark`, built in `main.js` after the brush's). The last built took the name: the arc read the
+  carry's reticle, hidden while painting, and fell back to the chest.
+- **Fix:** a borrowed look is built `new PaintReticle(game, { aim: false })` (`vfx/brushmarks.js`, `vfx/carrythrowmark.js`). Measured:
+  painting, the reticle at (462, 312) with a 34 px ring and the arc at (475, 312); carrying, the landing shown and the brush's reticle
+  hidden; the programs 163 before and after.
+- **Rule:** NEW:registered-name.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 

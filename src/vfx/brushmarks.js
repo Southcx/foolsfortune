@@ -19,7 +19,8 @@
 // Sunshine's FLUDD gauge and its washed-goop sparkle, Breath of the Wild's stamina wheel (segments, shown only while it is spent),
 // PowerWash Simulator's completion ping.
 //
-//   const R = new PaintReticle(game) (it is game.paintReticle)   R.set(on, point, normal, { ring, along, color }, rawDt)
+//   const R = new PaintReticle(game) (it is game.paintReticle; `{ aim: false }` for a reticle that is not the brush's aim, the carry
+//   throw's landing)   R.set(on, point, normal, { ring, along, color }, rawDt)
 //   R.screenAt(out) -> { x, y, r } (CSS pixels: its point on the screen and its ring's half-width there) | null   R.dispose()
 //   const J = new JetRing(game)        J.set(k (0..1, < 0 none), kind ('hover' | 'rocket'), feetPos, rawDt)
 //   const S = new CleanShine(game)     S.at(pos, size)  (a shine where ground was cleaned)   S.update(rawDt)
@@ -38,12 +39,13 @@ const flatMark = (look, u, name, order) => {
 };
 
 export class PaintReticle {
-  constructor(game) {
+  constructor(game, { aim = true } = {}) {
     this.game = game; this.alpha = 0; this.ring = 0; this.on = false;
     this.u = { uC: { value: new THREE.Color(1, 1, 1) }, uK: { value: 0 }, uP: { value: new THREE.Vector4() } };
     this.mesh = flatMark('reticle', this.u, 'paint-reticle', 30);
     game.scene?.add(this.mesh);
-    game.paintReticle = this; // (the one the Courier's brush aims with; the bottle's arc stands beside it, vfx/bottlearc.js)
+    if (aim) game.paintReticle = this; // (the one the Courier's brush aims with; the bottle's arc stands beside it, vfx/bottlearc.js. The carry
+    // throw's landing borrows the look, never the name: CASEBOOK, the reticle that took the brush's name)
   }
 
   /** Where it stands on the screen while shown, in CSS pixels: its point, and its ring's half-width there (`r`); null when hidden or

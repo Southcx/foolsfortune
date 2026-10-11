@@ -102,20 +102,20 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
 
 ## 4. Every tool its own UI: the audit (phase 6's first step, 2026-10-11)
 
-The owner: "each tool should have its own UI according to what it does, much like the Dreamvane already". What each shows today (the
-crosshair is now the psygun's alone), and a proposal for what it should show; nothing in the last column is built. The Dreamvane is the
-model: its marks live on the wire compass and in the world, and each says what the tool is doing (where the Lachryma is, how near).
+The owner: "each tool should have its own UI according to what it does, much like the Dreamvane already". What each showed before (the
+crosshair is now the psygun's alone), and what phase 6 built for it (the last column; it was the proposal). The Dreamvane is the model:
+its marks live on the wire compass and in the world, and each says what the tool is doing (where the Lachryma is, how near).
 
-| tool | on screen today | in the world today | should show (proposal, for the owner) |
+| tool | on screen before phase 6 | in the world before phase 6 | built (phase 6, 2026-10-11) |
 |---|---|---|---|
-| **the psygun** | the crosshair and its spread, the hitmarker, the charge ring, the shell palette and its glove, the reload bar | tracer, muzzle flash | as today: these are the gun's |
-| **the Sondelass** | the form strip (cutlass, rod, hook, the clay bob; the rod's lures on 4 to 8) | blade mode's guide line; the rod's reticle on the water and the fish portrait | the cutlass: the loadout's string as a short row of slots, the next LMB's slot lit (God Hand's combo tree), the paid cut's window as a glint on it; the hook: a mark on what it can catch, in reach; the rod: as today |
-| **the Soul Brush** | the bottle's arc (it stood beside the crosshair: it now stands alone, to be judged); the paint radial | the paint reticle (where the stream lands), the jet ring, the shine, Celestial mode's mark | as today: the paint reticle is its aim; the arc may want to move to the reticle's side |
-| **the Veritome** | the viewfinder while the lens is raised (first person) | plates; the flash | a small frame of the lens's field in the third person before it is raised (what the plate will hold) |
-| **the Dreamvane** | the wire compass and its own marks (the vane's dowse and survey) | the dowsing bead, the fork's ring | the model, as today |
-| **the Crucibelle** | the pendulum on the wire compass (its beat for the eye) | the toll's ring, the mirage | the toll's reach as a ring at the feet on the beat (what it staggers) |
-| **the Lockheart** | nothing | its load as the lid's glow (ajar a crack when full); the wheel of odds when it opens | the fill and the Possibilikeys on the ring as one small gauge at the coffin (whether it can open); the hoover's reach while it draws |
-| **nothing in the hands** (the kick, carrying) | nothing (the crosshair went with the psygun) | the lock-on reticle (any tool) | a throw's aim mark only while something carried can be thrown: a carried thing is thrown at the screen's middle (`courier/moves/carry.js`), which is now unmarked |
+| **the psygun** | the crosshair and its spread, the hitmarker, the charge ring, the shell palette and its glove, the reload bar | tracer, muzzle flash | as today: the crosshair and the rest are the gun's |
+| **the Sondelass** | the form strip (cutlass, rod, hook, the clay bob; the rod's lures on 4 to 8) | blade mode's guide line; the rod's reticle on the water and the fish portrait | the cutlass's **string row** (`ui/cutlassstringrow.js`): a pip a slot at the bottom middle, the next LMB's lit, the struck before it, the paid cut's glint; the hook's **mark** (`vfx/hookmark.js`): a ring where the grapnel would bite, brackets closing for a catch, in place of the chevron; the rod as today |
+| **the Soul Brush** | the bottle's arc (it stood beside the crosshair: it now stands alone, to be judged); the paint radial | the paint reticle (where the stream lands), the jet ring, the shine, Celestial mode's mark | the bottle's arc moved beside the paint reticle's ring (`vfx/bottlearc.js`), beside the chest while mopping or a jet runs; the rest as today |
+| **the Veritome** | the viewfinder while the lens is raised (first person) | plates; the flash | the **lens's frame** (`vfx/veritomeframe.js`): four corners round what a plate would hold, set where the aim meets the world, opening out to the viewfinder through the lift |
+| **the Dreamvane** | the wire compass and its own marks (the vane's dowse and survey) | the dowsing bead, the fork's ring | as today: the model |
+| **the Crucibelle** | the pendulum on the wire compass (its beat for the eye) | the toll's ring, the mirage | the **toll's reach** (`vfx/tollreach.js`): the next toll's arc and cone at the feet, lit on the beat, a ring under each thing it would stagger |
+| **the Lockheart** | nothing | its load as the lid's glow (ajar a crack when full); the wheel of odds when it opens | the **Lockheart's gauge** (`vfx/lockheartmarks.js`): a padlock beside the coffin filling with its load, a socket a Possibilikey, the shackle up when it would open; **the hoover's reach** on the ground while it draws |
+| **nothing in the hands** (the kick, carrying) | nothing (the crosshair went with the psygun) | the lock-on reticle (any tool) | the **carry throw's mark** (`vfx/carrythrowmark.js`): where a carried thing would land (the paint reticle's look in the crosshair's cream) and its flight dashed, only while it is held |
 
 
 **Phase 6, the Sondelass, built (2026-10-11, Calissa):** the cutlass's **string row** (`ui/cutlassstringrow.js`, God Hand's combo tree):
@@ -125,3 +125,11 @@ glint runs over it; a blink cancel keeps the lit pip, the string's reset resets 
 blow brings it back. The hook's **mark** (`vfx/hookmark.js`, Zelda's hookshot sight): a ring on the point the grapnel would bite (the
 throw's own probe, 40 m), brackets closing on it for a catch, faint when the pool cannot pay; it replaces the chevron there. The rod as
 today. No new shader program (the hook's mark is the wire compass's; the row is DOM pixel art). Sheets: Calissa's scratchpad, `p6/sond/`.
+
+**Phase 6, built (2026-10-11, Calissa; four builders merged on `art-p6`):** every row's last column above. No new shader program: 163
+with each tool drawn in turn, as on the base (the marks draw on the wire compass's, the rail mark's, the glyphs' and the ribbons'
+programs; the string row is page pixel art). Each mark is gone on a stow or a swap (measured headless, every tool in turn). Two things
+at the merge: the carry throw's landing had taken the brush's reticle's name, so the bottle's arc stood at the chest (CASEBOOK
+NEW:registered-name); and the toll's reach now draws with the one shared wire (`wireStrip`, `vfx/railmark.js`; its buffers identical
+over 240 frames). Open for the owner: feel in play; the toll's and the hoover's reaches are faint on noon sand; window sizes past 960
+px. Sheet: Calissa's scratchpad, `p6/integrated/sheet.png`.

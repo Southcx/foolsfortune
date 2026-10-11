@@ -41,7 +41,7 @@ const _p = new THREE.Vector3(), _q = new THREE.Vector3(), _v = new THREE.Vector3
 export class CarryThrowMark {
   constructor(game) {
     this.game = game;
-    this.reticle = new PaintReticle(game); this.reticle.mesh.name = 'carry-throw-reticle';
+    this.reticle = new PaintReticle(game, { aim: false }); this.reticle.mesh.name = 'carry-throw-reticle';
     this.buf = new MarkBuffer(120, { renderOrder: 39 });
     this.buf.mat.depthTest = true; // (a state, not a program)
     this.buf.mesh.name = 'carry-throw-arc'; this.buf.mesh.visible = false;

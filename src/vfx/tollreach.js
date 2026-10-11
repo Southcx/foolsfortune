@@ -33,7 +33,7 @@
 //   const R = new TollReach(game)   (its mesh is added to the scene)   R.update(rawDt) (each frame, after the tools)   R.read() (tests)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MarkBuffer, STYLE } from './railmark.js';
+import { MarkBuffer, wireStrip } from './railmark.js';
 import { MOUNT_LOOK } from './mountpreview.js';
 import { TOLL, WINDOW } from '../tools/crucibelle/crucibelle.js';
 import { magnet } from '../tools/melee.js';
@@ -44,17 +44,17 @@ const R0 = 0.95;       // metres from the feet where the cone's edges begin (out
 const LIFT = 0.06;     // metres over the ground
 const STEP = 0.32;     // metres between the points of a line (it follows the ground)
 const CELL = 0.3;      // metres: the ground's heights are sampled on this grid and kept (a ray down each, once)
-// a line's half-width: metres, held between lo and hi pixels of the 480-line present; `heart` the Mind's schiller along it
+// a line's half-width: metres, held between lo and hi pixels of the 480-line present; `wire` the Mind's schiller along its heart
 // (wide enough that the wire's dark edges show: the lines hold on the Dunes' noon sand as on the workshop's red floor)
-const MAIN = { m: 0.04, lo: 2.0, hi: 3.0, heart: true };   // the reach, its edges, the struck
-const DOWN = { m: 0.055, lo: 2.8, hi: 3.8, heart: true };  // the reach on the bar's downbeat: the same line, heavier
-const THIN = { m: 0.022, lo: 1.3, hi: 1.8, heart: false }; // the ripple
+const MAIN = { m: 0.04, lo: 2.0, hi: 3.0, wire: true };   // the reach, its edges, the struck
+const DOWN = { m: 0.055, lo: 2.8, hi: 3.8, wire: true };  // the reach on the bar's downbeat: the same line, heavier
+const THIN = { m: 0.022, lo: 1.3, hi: 1.8, wire: false }; // the ripple
 const DIM = 0.5;       // the reach between the beats (1 on a beat)
 const OWN = 0.8;       // how bright on the bell's own clock (no music), against the music's
 const MAX_STRUCK = 8;
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const _f = new THREE.Vector3(), _d = new THREE.Vector3(), _e = new THREE.Vector3(), _o = new THREE.Vector3(), _c = new THREE.Color();
+const _f = new THREE.Vector3(), _d = new THREE.Vector3(), _o = new THREE.Vector3(), _c = new THREE.Color();
 const DOWNWARD = new THREE.Vector3(0, -1, 0);
 /** What the lines lie on: the fixed world, never a body that moves (a creature's, a pot's) nor a sensor. */
 const GROUND = (c) => !c.isSensor() && !c.parent()?.isDynamic() && !c.parent()?.isKinematic();
@@ -69,7 +69,7 @@ export class TollReach {
     _c.set(COLOR); this.rgb = [_c.r, _c.g, _c.b];
     this.alpha = 0; this.yaw = null; this.magT = 0; this.mag = null;
     this.ground = new Map(); this.groundY = null; this.groundT = 0; // (the ground's heights on a grid, kept while they stand on one floor)
-    this.pw = []; this.pa = []; this.pts = []; // (a line's points in the world and their half-widths; reused)
+    this.pw = []; this.pts = []; // (a line's points in the world; reused)
     this.view = { shown: false, range: 0, cone: 0, struck: 0, beat: 0, down: false, own: true, lines: 0 };
   }
 
@@ -92,7 +92,7 @@ export class TollReach {
     if (!want && this.alpha < 0.02) { this.alpha = 0; this.yaw = null; B.flush(); this.mesh.visible = false; Object.assign(this.view, { shown: false, struck: 0, lines: 0, alpha: 0 }); return; }
     const cam = g.camera; cam.updateMatrixWorld();
     this.pxk = cam.projectionMatrix.elements[5] * 0.5 * (g.post?.target?.height || 480); // (pixels a metre at a metre's depth, in the present's lines)
-    this.V = cam.matrixWorldInverse;
+    this.cam = cam;
 
     // where the toll would face: the aim, turned onto the best thing in front (on the ground; asked eight times a second)
     const M = b.moves, f = M.aimDir(_f), feet = P.renderPos;
@@ -162,23 +162,14 @@ export class TollReach {
     return out;
   }
   /** A line through flat points [x, y, z, ...] (closed: the last joins the first), its look, its alpha (a number, or one a point:
-   *  (i, count) -> alpha). As the mount's preview's strip. */
+   *  (i, count) -> alpha). The mount's preview's wire, built once (vfx/railmark.js wireStrip). */
   strip(flat, look, a, closed = false) {
-    const B = this.buf, W = this.pw, H = this.pa;
+    const W = this.pw;
     let m = flat.length / 3;
     if (closed && m > 2 && Math.abs(flat[0] - flat[m * 3 - 3]) + Math.abs(flat[2] - flat[m * 3 - 1]) < 1e-3) m--; // (a whole circle's last point is its first)
     if (m < 2 || (typeof a === 'number' && a < 0.01)) return;
-    for (let i = 0; i < m; i++) {
-      const w = (W[i] ||= new THREE.Vector3()).set(flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]);
-      const pxm = this.pxk / Math.max(0.3, -_e.copy(w).applyMatrix4(this.V).z), px = Math.min(look.hi, Math.max(look.lo, look.m * pxm));
-      H[i] = (px / pxm) * (look.heart ? 1 : -1); // (a negative half-width: the colour alone, no schiller at its heart)
-    }
-    const [cr, cg, cb] = this.rgb, segs = closed ? m : m - 1;
-    for (let i = 0; i < segs && B.count < B.cap; i++) {
-      const j = (i + 1) % m, p = W[i > 0 ? i - 1 : closed ? m - 1 : i], q = W[j + 1 < m ? j + 1 : closed ? (j + 1) % m : j], u = W[i], v = W[j];
-      const ai = typeof a === 'function' ? a(i, m) : a, aj = typeof a === 'function' ? a(j, m) : a;
-      B.put(B.count++, u.x, u.y, u.z, H[i], v.x, v.y, v.z, H[j], p.x, p.y, p.z, ai, q.x, q.y, q.z, aj, STYLE.wire, cr, cg, cb);
-    }
+    for (let i = 0; i < m; i++) (W[i] ||= new THREE.Vector3()).set(flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]);
+    wireStrip(this.buf, W, m, { look, a: typeof a === 'function' ? (i) => a(i, m) : a, rgb: this.rgb, camera: this.cam, pxk: this.pxk, closed });
   }
 
   dispose() { this.buf.dispose(); }
