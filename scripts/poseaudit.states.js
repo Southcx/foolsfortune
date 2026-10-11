@@ -87,7 +87,7 @@ window.__paStates = (() => {
   add('loco.run', 'locomotion', 'running (W)', (c) => lab(c).hold('KeyW').warm(40).run(70));
   add('loco.sprint', 'locomotion', 'sprinting (W + Shift)', (c) => lab(c).hold('KeyW', 'ShiftLeft').warm(50).run(60));
   add('loco.skid', 'locomotion', 'the skid stop: a sprint let go', (c) => lab(c).hold('KeyW', 'ShiftLeft').warm(55).free('KeyW', 'ShiftLeft').run(70));
-  add('loco.halfTurn', 'locomotion', 'the half turn: a run reversed (W, then S)', (c) => lab(c).hold('KeyW').warm(50).free('KeyW').hold('KeyS').run(70));
+  add('loco.reversal', 'locomotion', 'a run reversed (W, then S): the body\'s own turn over the gait', (c) => lab(c).hold('KeyW').warm(50).free('KeyW').hold('KeyS').run(70));
   add('loco.crouch', 'locomotion', 'crouched, still', (c) => lab(c).posture('crouch').run(120));
   add('loco.prowl', 'locomotion', 'the prowl: crouched, W', (c) => lab(c).posture('crouch').hold('KeyW').warm(20).run(100));
   add('loco.crawl', 'locomotion', 'the belly crawl: down onto it, W, and up', (c) => { lab(c); c.P.setPosture('prone'); c.run(60).hold('KeyW').run(120).free('KeyW'); c.P.setPosture('stand'); c.run(60); });

@@ -94,17 +94,17 @@ const MOVES = {
   spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
   tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
   // crouched, RMB let go before the charge is full: THE IAIDO'S DRAW CUT. The suite's rising cut (c2's clip, low left to high right: the
-  // sweep a blade drawn from the left hip makes) from just before its strike, at 1.4x (the strike 0.05 real s after the release),
-  // begun from the iaido's pose (begin's `join`). No row of its own yet (progress/combat/moves.js is Dovina's): k x 1.1 = 1.54 a hit,
+  // sweep a blade drawn from the left hip makes) from 0.22 s, its strike begun, at 1.4x, begun from the iaido's pose (begin's `join`;
+  // from 0.1, the join swept the blade 7 cm through the crouched left thigh, from 0.18 1.5 cm: the pose audit, 2026-10-11). No row of its own yet (progress/combat/moves.js is Dovina's): k x 1.1 = 1.54 a hit,
   // between c3's 1.4 and c4's 2.0; about 0.6 real s a cut with the shortest charge, 2.5 power a second, the string's 2.7 or under
-  iai: { clip: 'Sond_Combo2', from: 0.1, rate: 1.4, to: 0.9, fade: 0.3, hit: { power: 1.1, dmg: 1.4, push: 3 }, lunge: 4.5, heat: 0.7, arc: 'l2r', legs: false }, // (the crouch's legs kept: the clip's stood them up mid-cut)
+  iai: { clip: 'Sond_Combo2', from: 0.22, rate: 1.4, to: 0.9, fade: 0.3, hit: { power: 1.1, dmg: 1.4, push: 3 }, lunge: 4.5, heat: 0.7, arc: 'l2r', legs: false }, // (the crouch's legs kept: the clip's stood them up mid-cut)
 };
 const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
 const STING = SONDELASS_MOVES.stinger.sting; // (the stinger's numbers are its catalogue row's)
 // THE IAIDO: `charge` real s held to blade mode (the owner's "charge-up", about half a second); the pose eased in over `in` and out over
 // `out` real s; the off hand at the guard, `left` m along the tool from the blade hand
-const IAIDO = { charge: 0.5, in: 0.08, out: 0.1, left: 0.2 };
+const IAIDO = { charge: 0.5, in: 0.08, out: 0.1, left: 0.16 }; // (left: at 0.2, on the guard itself, the hand sat 3 cm into the crouched thigh)
 const PARRY_WIN = 0.28, RMB_BUFFER = 0.35; // (an RMB press inside a strike waits this long, real s, for the free way)
 const DMG = 62;
 const _up = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3();
@@ -138,7 +138,7 @@ export class Cutlass {
   get busy() { return this.moves.busy || this.stinging || this.blade.active || this.guardOn || !!this.iai; }
   get playing() { return this.moves.playing || this.blade.active || this.blade.k > 0.05 || this.guardW > 0.02 || this.parryT < 0.9 || this.iaiW > 0.01; }
   /** The off hand on the hilt (sondelass.js hands(): the light IK): while the iaido's pose shows, 0..1. */
-  get leftHand() { return this.moves.cur ? 0 : this.iaiW; }
+  get leftHand() { const b = this.blade; return this.moves.cur || b.swing > 0 ? 0 : Math.max(this.iaiW, b.active ? 1 : Math.min(1, b.k)); } // (and while blade mode holds the iaido's pose: whole, never dipping as the charge hands over to it)
   /** Where along the tool the off hand takes it (m from the blade hand: at the guard). */
   get leftAt() { return IAIDO.left; }
   get game() { return this.tool.game; }
@@ -228,7 +228,7 @@ export class Cutlass {
   /** THE DRAW CUT: one fast rising cut forward (MOVES.iai), begun from the pose on show (the stance under the iaido's, by its weight). */
   drawCut() {
     const C = this.game.character.clips, pose = (this._jp ||= C.pose());
-    if (this.tool.track) this.tool.track.sample(pose); else C.sample('Sond_Idle', 0, pose, false);
+    if (this.tool.track) this.tool.track.sample(pose); else C.sample(this.tool.idleClip, 0, pose, false);
     C.blend(pose, C.sample('stance:cutlassIaido', 0, (this._ip ||= C.pose()), false), this.iaiW);
     this.moves.begin('iai', 'iaido', 0, pose);
   }
@@ -267,7 +267,7 @@ export class Cutlass {
     sfx.stinger();
     g.events?.emit('cut.stinger', { locked: !!g.lock?.active });
     P.fovPunch = Math.max(P.fovPunch || 0, 9);
-    this.tool.track?.play('Sond_Idle', 0, 0.1);
+    this.tool.track?.play(this.tool.idleClip, 0, 0.1);
     const root = rootOf(g.character.clips, 'Sond_Thrust');
     // (the suite's thrust: its wind-up in a blink, the point held out for the whole lunge, then the way back; its own step taken out of the hips)
     const map = (tt) => (tt < 0.07 ? (tt / 0.07) * 0.17 : tt < STING.dash + 0.04 ? 0.17 + ((tt - 0.07) / (STING.dash - 0.03)) * 0.07 : 0.24 + (tt - STING.dash - 0.04) * 1.6);
@@ -373,10 +373,11 @@ export class Cutlass {
     const b = this.blade;
     if (b.active || b.k > 0.05) {
       if (b.swing > 0) { const B = b.swingKind % 2 === 1; C.sample(B ? 'Sond_Combo2' : 'Sond_Combo1', 0.05 + (1 - b.swing) * (B ? 0.3 : 0.26), out, false); return { pose: out, w: 1 }; }
+      // (blade mode's stance is the iaido's own: the blade still at the hip, the cut waiting. It was the suite's charge held at 0.4 s, blended
+      //  in from the iaido's pose: the hilt cut 8 cm into the crouched right thigh, and the blend swept the blade through it: the pose audit)
+      if (C.clips['stance:cutlassIaido']) { C.sample('stance:cutlassIaido', 0, out, false); return { pose: out, w: Math.min(1, b.k + this.iaiW) }; }
       C.sample('Sond_ChargeHold', 0.4, out, false);
-      const bw = 0.85 * b.k, iw = this.iaiW;
-      if (iw > 0.01) { C.blend(out, C.sample('stance:cutlassIaido', 0, (this._ip ||= C.pose()), false), iw / (iw + bw)); return { pose: out, w: Math.min(1, bw + iw) }; } // (out of the iaido's pose into blade mode's stance)
-      return { pose: out, w: bw };
+      return { pose: out, w: 0.85 * b.k };
     }
     if (this.parryT < 0.9) { C.sample('Sond_Parry', 0.12 + this.parryT, out, false); return { pose: out, w: 1 - THREE.MathUtils.smoothstep(this.parryT, 0.6, 0.9) }; } // (the deflect: the suite's parry, struck through)
     if (this.guardW > 0.02) { C.sample('Sond_Block', 0.4, out, false); return { pose: out, w: this.guardW }; }

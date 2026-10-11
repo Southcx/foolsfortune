@@ -79,7 +79,7 @@ window.__paRun = (() => {
     if (h) { const t = g.techs.get(h.id), M = h.id === 'psygun' ? g.weapon?.moves?.moves : t?.moves || t?.cutlass?.moves || t?.club?.moves || t?.pick?.moves; out.push(`tool:${h.id}${h.id === 'sondelass' ? `:${t?.form}` : ''}`); if (M?.cur) out.push(`move:${h.id}.${M.cur.id || M.cur.def?.id || '?'}`); }
     const cut = g.techs.get('sondelass')?.cutlass; if (cut?.iai) out.push('cutlass:iaido'); if (cut?.blade?.active) out.push('cutlass:bladeMode'); if (cut?.stinging) out.push('cutlass:stinger'); if (cut?.guardOn) out.push('cutlass:guard');
     if (P.wallrun) out.push('wallrun'); if (P.mantle) out.push('mantle'); if (P.sliding) out.push('slide'); if (!P.grounded) out.push('air'); if (P.posture !== 'stand') out.push(`posture:${P.posture}`);
-    const st = ch.stopTurn; if (st) { if (st.turnW > 0.5) out.push('halfTurn'); else if (st.w > 0.5) out.push('skid'); }
+    if ((ch.skidStop?.w ?? 0) > 0.5) out.push('skid');
     if (ch.idles?.brk) out.push(`idleB:${ch.idles.brk}`);
     if (ch.hidden) out.push('hidden');
     return out;

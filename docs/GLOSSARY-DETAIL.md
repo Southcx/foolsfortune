@@ -189,9 +189,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   glitch.
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
-  Its looks (`docs/ART.md` section 10), shown only, never changing the move: **the skid stop** (`SKID`, `src/courier/anim/stopturn.js`:
-  Loco_SprintStop when a sprint is let go), **the half turn** (`TURN`, the same file: Loco_Turn180 on a reversal at speed, its frame
-  picked by how far the body has turned), **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
+  Its looks (`docs/ART.md` section 10), shown only, never changing the move: **the skid stop** (`SKID`, `src/courier/anim/skidstop.js`:
+  Loco_SprintStop when a sprint is let go; the half turn that was beside it, Loco_Turn180 on a reversal, was taken out on 2026-10-11),
+  **the sneak** (`SNEAK`, `src/courier/character.js`: Loco_SneakWalk, the crouch's moving loop,
   let down to the crouch's height), **the crawl's clearance** (`CRAWL.outline`, `Crawl.clear`, `src/courier/anim/crawl.js`: the belly posed past its
   capsule, slid in the pelvis off a wall it would poke through; the capsule is Petra's). *Not:* a tech (they never take the body), a Movement Art.
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB

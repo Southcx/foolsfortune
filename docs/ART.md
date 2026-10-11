@@ -231,8 +231,8 @@ Every clip below is the Courier's suite (`source_assets/Courier/courier_anims_mo
 decoded and the posed body squared again after IK (the hinge repair, `courier/anim/hinges.js`). The gait shares one phase (each loop's
 left heel strike at phase 0) and plays at the ground speed over the loop's own (measured from its planted foot: walk 0.77 m/s, jog
 4.81, sprint 4.43, the prowl 0.61), part longer strides (to 1.65x walking, 1.3x running, 1.4x prowling), the rest cadence; planted
-feet lock. The skid stop and the half turn are one-shots over it (`courier/anim/stopturn.js`), the hips' travel out in the clip's own
-frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the speeds and the body's yaw.
+feet lock. The skid stop is a one-shot over it (`courier/anim/skidstop.js`), the hips' travel out in the clip's own frame (casebook
+rule 180): player.js keeps the speeds and the body's yaw.
 
 | state | clip | blend |
 | --- | --- | --- |
@@ -240,11 +240,11 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | walk | `walk` (Loco_WalkMasc) | 0.5 to 2.4 m/s |
 | run | `jog` (Loco_RunMasc) | smoothstep from the walk, 2.4 to 3.4; whole at 4.2 |
 | sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
-| run, sprint with the cutlass drawn (new) | `stance:cutlassRun` (`jog` baked: `courier/anim/stances.js`) and `stance:cutlassSprint` (`sprint`): the loop's chest and free arm as captured, the blade arm's swing at 0.3 of the run's, its hand turned so the blade points back, a little down and out, held 0.8 of the way to that (`steady`), the hand moved to the hip, behind it; no blade run in the suite, UAL or CMU (`tools/sondelass/sondelass.js` drawnRun) | the upper body's tool layer in place of the en garde idle, by the gait's running share (`st.run`: the jog's and the sprint's weights, out in the air, a slide, mantle, dash, wallrun, crouch, crawl or skid; damped 12/s), the sprint's bake by its share, on the shared phase; a stroke or the guard over it |
+| run, sprint with the cutlass drawn (new) | `stance:cutlassRun` (`jog` baked: `courier/anim/stances.js`) and `stance:cutlassSprint` (`sprint`): the loop's chest and free arm as captured, the blade arm's swing at 0.2 of the run's (0.15 sprinting), its elbow carried out to the side (the nudge's pole), the hand beside and ahead of the hip with the forearm hanging under the elbow, the blade laid back along `aim` square to the forearm; no blade run in the suite, UAL or CMU (`tools/sondelass/sondelass.js` drawnRun) | the upper body's tool layer in place of the en garde, by the gait's running share (`st.run`: the jog's and the sprint's weights, out in the air, a slide, mantle, dash, wallrun, crouch, crawl or skid; damped 12/s), the sprint's bake by its share, on the shared phase; a stroke or the guard over it |
 | backpedal, strafe | the same loops, run backward past 110 degrees | the hips turned toward the move (70 at most), the chest back to the aim |
 | starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
 | skid stop (new) | Loco_SprintStop from its brace (0.07 s) at 1.15x, in place: when the speed falls under 4 m/s within 0.25 s of 5.6 m/s or more, still heading within 20 degrees of the sprint (a stop, or a reversal on its way through zero) | in 0.08; out as it stands (its 0.72 to 0.95 s); cut over 0.12 s when the move picks up 1.2 m/s again or the ground, a crouch, slide, mantle or dash takes over; not in first person |
-| half turn (new) | Loco_Turn180, its frame the one whose hips have turned as far as the body (time-warped onto player.js's turn; at its own pace once the body is round), in place and unturned, mirrored for a turn to the right; to 0.7 s (its frame 22 is its first again) | on a reversal: the move over 100 degrees behind, from 3 m/s or more through under 1.5 within 0.3 s, the body turning to it at 1.5 rad/s or more; in 0.06, out 0.42 to 0.58 s (the run back on the legs as the body faces the move); the skid gives way to it; its feet planted only under 1 to 3 m/s (the capsule is back at a run 0.08 s after the reversal) |
+| a reversal | the gait, the body's own turn (player.js), the hips toward the move as in a backpedal; a sprint's passes through the skid | the half turn (Loco_Turn180 over a reversal at speed, 2026-10-10) taken out (the owner, 2026-10-11: "it's slow and breaks flow"): below |
 | crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held half still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
 | crawl (new, its body to come) | Loco_CrawlEnter, Loco_Crawl (hands and knees), Loco_CrawlProne (the belly), Loco_CrawlExit (`CRAWL`, `courier/anim/crawl.js`) | while `s.crawl` (player.js has no body for it yet: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md); down by the enter from its squat (0.2 s in) when crouched, faded in 0.15; the loops on their own phase at the move's speed over theirs (0.29 and 0.39 m/s), strides to 1.3x; `s.prone` blends to the belly; up by the exit to its squat (0.4 s) or standing (0.64); the foot IK, the reach drop, the knee guard and the prowl's head give way to it. Posed top 1.05 m (hands and knees), 0.74 (belly). The belly lies past its capsule (fingers 0.97 m ahead of the axis, toes 1.25 m behind, 0.46 m to each side; `CRAWL.outline`), so the clearance (`Crawl.clear`) casts 48 rays round the axis at 0.3 m and slides the pelvis along each surface's normal until nothing met is inside the outline (opposite walls cancel, a corner adds, the poke of a conflict shared over 4 rounds), by at most 1 m, in 0.017 s and out in about 0.15 s; ~0.09 ms a frame prone |
 | jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
@@ -259,10 +259,20 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | air dash | Air_AirDash, AirDashL, AirDashR, AirDashBack by the dash's direction | from 0.1 s at 1.5x through the dash |
 | ladder, swim | Trav_LadderClimb, Trav_LadderIdle, Trav_LadderEnter; the old pack's swim and tread | the techs' own (moves/ladder.js, moves/swim.js) |
 
-In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_SneakWalk
-and Loco_CreepSideR. Loco_SprintStop and Loco_Turn180 moved into the core pack (2026-10-10: core.bin 2,920,462 to 2,950,390 bytes, 161
-to 163 clips); then the prowl round (2026-10-10): Loco_CrouchWalk and the four crawl clips in, Loco_SneakWalk out (core.bin to
-3,004,786 bytes, 167 clips).
+In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_SneakWalk,
+Loco_CreepSideR and Loco_Turn180 (the half turn's, out 2026-10-11: it stays in core.bin until the next bake, which places a clip by
+whether the code names it, `scripts/bake_suite.mjs`). Loco_SprintStop and Loco_Turn180 moved into the core pack (2026-10-10: core.bin
+2,920,462 to 2,950,390 bytes, 161 to 163 clips); then the prowl round (2026-10-10): Loco_CrouchWalk and the four crawl clips in,
+Loco_SneakWalk out (core.bin to 3,004,786 bytes, 167 clips).
+
+**The half turn, taken out** (the owner, 2026-10-11: "remove the animation for the 180 degree turnaround, it's slow and breaks flow").
+The code and its knobs went (`TURN`, the turn's foot plants and its weight on the lean, hip warp and footsteps); the skid stop stays.
+Measured headless, a run (W, 70 frames) reversed (S), before and after: the move through zero 0.083 s after S and at full speed back
+(4.2 m/s) at 0.15 s, the body round (175 degrees) at 0.567 s, both times (from a sprint: 0.333, 0.417 and 0.817 s, the skid 5 frames
+before and 7 after): player.js's numbers, unchanged. What is shown: before, the turn's clip held 27 frames (0.45 s) and the pelvis
+within 7.1 degrees of the game's yaw (mean 3.5); after, the run's own legs and the body's turn, the hips leading it toward the move by
+up to 35 degrees and swinging across to 37 the other way as the move passes 110 degrees behind (the backpedal's warp changing sides,
+damped at 10 a second: 25 degrees in the fastest frame), mean 8.4.
 
 **The prowl** (the owner, 2026-10-10: "a hunting, predatory sort of movement, like a lion prowling. Note that felines have a very still
 head"). The three crouched loops rendered at the crouch's 2.2 m/s, every tool off, front and side, the head measured in the world against
@@ -289,11 +299,45 @@ crouched (player.js), so it is as still.
 **The cutlass's drawn run** (the owner, 2026-10-11: "The Sondelass needs an animation for running while the Sondelass is drawn"). Before,
 the run's legs carried the en garde idle's upper body (Sond_Idle over the upper-body mask): both arms held out still, the blade up and
 ahead of them to the right (its tip 0.9 to 1.3 m out to the right, 1.4 to 1.8 m up, 0.8 to 1.2 m ahead). No blade run is in the suite
-(courier_anims_melee.glb, courier_anims_move.glb), UAL (anims.bin) or CMU, so the run's own loop is baked into one: the hand's turn solved
-from the blade's own direction (the socket's), averaged over the loop, then held to it 0.8 of the way (`steady`, new in stances.js), the
-hand moved to the hip by IK. Measured in game, the run (4.2 m/s) / the sprint (6.8): the hand 0.76 to 1.02 m up, 0.03 to 0.29 m behind;
-the tip 0.44 to 0.79 / 0.42 to 0.74 m up, 1.16 to 1.47 m behind, 0.31 to 0.41 m out to the right; the chest and the free arm the run's.
-Judged front and side, every other tool off (Calissa's scratchpad, `melee-p1a/drawnrun/`).
+(courier_anims_melee.glb, courier_anims_move.glb), UAL (anims.bin) or CMU, so the run's own loop is baked into one. The first bake turned
+the hand to point the blade back, held it 0.8 of the way to its average (`steady`) and pulled the hand 47 cm back to the hip by IK: the
+owner (2026-10-11): "the wrist hyperflexed and arm clipping into the body"; measured (the pose audit), the wrist 96 degrees toward the
+little finger (102 sprinting), the elbow bent 54 back, the handle 9 cm into the lower back and the hand 5.6 into the pelvis. A blade on
+the thumb's side of a fist points back only with the arm turned in at the shoulder and the forearm turned palm-out, near 180 degrees
+between them: no wrist reaches it. Now (casebook 2026-10-11) the shoulder and the elbow do it: the elbow carried out to the side (the
+nudge's pole), the hand beside and 30 cm ahead of the hip, the forearm hanging under the elbow, and the blade laid back along it square to
+the forearm every frame (`aim`, new in stances.js, the hand's length kept along the forearm's); the arms hinge-squared after (hinges.js).
+Measured over the loops: the wrist 30 degrees toward the little finger at most, the forearm 78 turned (the run; 91 sprinting), nothing in
+the body; through the blend from the en garde into the run, 37 and 36 for a few frames (the pose audit's marginal: past its "about" 35 by
+under its 8 degrees of slack). Judged front, side and above, every other tool off (Calissa's scratchpad, `anim-review/fixA/`).
+
+**The cutlass's en garde** (the owner, 2026-10-11: "the torso rotated approximately 20 degrees CCW ... more like a fencing pose"; "The
+Sondelass should rest posed centerline with the main mass of the Courier"). `stance:cutlass` (stances.js): Sond_Idle with the spine turned
+toward their left (spine001 6, spine002 12, spine003 20 degrees; the upper-body mask takes 0.3, 0.65 and 1 of them), the neck giving 8
+and 10 back, the blade hand brought onto the centre line (nudge, the elbow's pole out to their right and up) and turned to point the blade
+forward, 30 degrees up, held 0.6 of the way to its average. Before and after, over the whole loop (the pose audit's measures, degrees
+counter-clockwise from above against the heading, cm off the hips' midline, + their right):
+
+| measure | before (Sond_Idle as captured) | after |
+| --- | --- | --- |
+| chest / head / pelvis / feet line | -8.4 / -17.8 / 0 / 0 | 21.0 / 2.2 / 0 / 0 |
+| guard off the midline | 61 (the blade 62 degrees to their right of forward, 46 up) | 2 (0.5 to 2.8) |
+| tip off the midline | 111 | 2 (-2.6 to 6) |
+| blade yaw, pitch | -62, 46 | 0, 34 |
+| the wrist, the forearm's turn | clean | 28 toward the little finger, 86 turned (under 35 and 90) |
+
+**The iaido, blade mode and the hook** (the owner, 2026-10-11: "same with the iaido charge, the Sondelass clips into the body"). The
+iaido's hold (`stance:cutlassIaido`) re-posed as a sheathed blade lies: the hilt before the belly's left, the blade back and out past the
+hip's side and over the crouched thigh, laid along `aim` from the forearm that crosses the body palm-down (the wrist 13 degrees toward the
+thumb, the forearm 87 turned); the off hand takes the blade at its mouth, thumb toward the hilt, 0.16 m along it, its elbow out to their
+left, eased about the blade to meet its forearm (`easeGrip`, tools/grip.js) and carried there along a reach with its wrist in line
+(`offHand`, sondelass.js). Before: the blade 7.7 cm into the left thigh, the guard 7.1 into the belly, both elbows 72 to 78 off their
+hinges; after, the hold: nothing in the body, every joint within the audit's limits. Blade mode holds the iaido's pose (it was the suite's
+charge at 0.4 s, its hilt 8 cm into the right thigh), the off hand kept on; the draw cut begins at 0.22 s of Sond_Combo2 (at 0.1 its join
+swept the blade 7 cm through the left thigh). The hook is aimed as a rod is pointed, the forearm 60 degrees below the shaft (it was the
+forearm along the shaft, the wrist folded 116 to 129); held (`stance:hookHeld`, torchIdle), its hand 14 cm ahead of where the torch idle
+has it, clear of the running thigh. The Sondelass's butt slides in for the cutlass and the hook (0.1 m behind the palm; the rod's 0.18,
+was 0.28 for every form: the pommel 6 to 10 cm into the chest in the strokes).
 
 **The idles' A and B** (the owner, 2026-10-10: "A should play 4x to 5x more often than the B"). A is the standing idle's loop; a B a
 break, or an idle's own gesture held out of its loop (`IDLES.calm`, idlebreak.js: the bones' frames bridged, the loop as captured kept as

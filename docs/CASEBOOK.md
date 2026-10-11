@@ -546,7 +546,44 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
 
+NEW:point-with-the-arm. **A held thing is pointed by the shoulder and the elbow; the wrist only finishes it.** A blade on the thumb's
+    side of a fist points within 55 to 110 degrees of the forearm and to the thumb's side of the elbow's bend, give or take the forearm's
+    90 degrees of turn: a pose that asks the tool to point elsewhere is solved by moving the elbow (the pole) and the hand, the hand laid
+    along its forearm (`aim` in courier/anim/stances.js; an off hand on a handle eased about it, `easeGrip` in tools/grip.js), never by
+    turning the hand alone, and never by an IK reach left to its default pole. A tool's set taken up is hinge-repaired whole, its clips and
+    its posed arms (hinges.js HINGED, `hingedArms`). Proved by the pose audit (scripts/poseaudit.mjs) on the states it touches, its
+    blends included, before it ships.
+
 ## Cases
+
+### 2026-10-11 · The half turn slow, the cutlass's run folding the wrist, the iaido through the thigh, the en garde off the line (the owner's animation review)
+
+- **Seen:** the owner: "remove the animation for the 180 degree turnaround, it's slow and breaks flow"; the en garde wanted "the torso
+  rotated approximately 20 degrees CCW ... more like a fencing pose", the blade "posed centerline with the main mass"; "The Sondelass being
+  held while running has the wrist hyperflexed and arm clipping into the body, same with the iaido charge". Measured with the pose audit
+  (285 states; the Sondelass's 46 and 22 more): the drawn run's wrist 96 degrees toward the little finger (102 sprinting), the elbow bent
+  54 back, the handle 9 cm into the lower back, the hand 5.6 into the pelvis; the iaido's blade 7.7 cm into the crouched left thigh and
+  its guard 7.1 into the belly, both elbows 72 to 78 off their hinges; the en garde's chest 8 degrees the wrong way, its blade 61 to 111
+  cm to their right; the pommel 6 to 10 cm into the chest in c1, the charge, the launcher, the dash and the counter.
+- **Cause (measured):** the drawn run turned the hand to point the blade back (`rot`, held by `steady`) and pulled it 47 cm to the hip by
+  IK with the default pole: a blade on the thumb's side of a fist points back only with the arm turned in at the shoulder and the forearm
+  turned palm-out (near 180 degrees between them), so the wrist took it all, and the default pole bent the elbow backward. The iaido's
+  hand turn laid the blade through the crouched thigh and its reach broke the elbow. The arms' hinge pass was off with any tool out, and
+  the Sond_ clips were not hinge-repaired. The en garde was Sond_Idle as captured. The handle ran 0.28 m behind the palm for every form
+  (the rod's butt).
+- **Fix:** the half turn out (`courier/anim/skidstop.js`, the skid stop kept; the reversal's numbers unchanged, docs/ART.md section 10).
+  The en garde a stance (`stance:cutlass`): the chest 21 degrees toward their left, the head 2, the guard and tip 2 cm off the midline.
+  The drawn run and the iaido re-posed by the shoulder and the elbow: the elbow's pole placed, the hand laid along its forearm with the
+  blade where it is wanted (`aim`, new in stances.js); the iaido's off hand eased about the blade at its mouth, thumb toward the hilt, and
+  carried there along a reach with its wrist in line (`offHand`, `easeGrip`); blade mode holds the iaido's pose; the draw cut begins at
+  0.22 s of its clip. The Sondelass's set hinge-repaired, clips and posed arms (`hingedArms`). The butt slid in for the cutlass and the
+  hook (0.1 m; the rod's 0.18). The hook aimed as a rod is pointed (the forearm 60 degrees below the shaft); its hand clear of the running
+  thigh (`stance:hookHeld`). After (the same audit): the en garde and its walk clean; the run and the sprint 37 and 36 degrees at the wrist
+  for a few frames of the blend into them (marginal), nothing in the body; the iaido's hold clean, nothing in the body; the pommel out of
+  every stroke. Not fixed, with their causes, in the report: the strokes' wrists (62 to 70 degrees toward the little finger) and forearm
+  turns (140 to 180) as the Sond_ clips hold them, which the hinge repair does not reach; the launcher's guard through the head; the
+  Tidecutter's left forearm in the chest; the stinger's exit into the run; the off hand's first frames into the iaido.
+- **Rule:** NEW:point-with-the-arm.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 
