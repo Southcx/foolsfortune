@@ -673,13 +673,13 @@ Other divisions own the code in these files; Espada edits their strings only. Th
 (https://claude.ai/artifact/BKxDknY5d9YRpZrkxABzWf) and the trope compendium (https://claude.ai/artifact/CKmZihsnahST2VtB7kUFQL,
 tab *07 World and narrative*).
 
-### The awakening *(Dovina's FEELINGS-AWAKENING.md; Espada's words, proposed, 2026-10-11)*
+### The awakening *(Dovina's FEELINGS-AWAKENING.md; Espada's words; ruled by the owner, 2026-10-11, the lines standing in)*
 - **Awakening**: learning a feeling by living it once. The root is the Buddhist *bodhi*, waking up; on an Island of Ego, a feeling a
-  mind did not have is a part of it waking. The verb is **awaken** ("Awaken Gall"), so that **wake** keeps its own jobs: the Wake
+  mind did not have is a part of it waking. The phrase is **awaken to** ("Awaken to Gall"; the owner's ruling): the feeling was always there, and you come to understand it. "Awaken Gall" would be an order, taking something you lacked. **Awaken** is the verb, so that **wake** keeps its own jobs: the Wake
   Whistle, a ship's wake, and the Great Slip Jelly waking in its bowl.
-- **A vantage** stays the code's and the docs' word (`vantage.<id>`). Player text says **viewpoint**, the genre's word for a placed
-  lookout (Assassin's Creed, Ghost of Tsushima).
-- **The lines**, one each, each in its own feeling's shape (the owner, 2026-10-11: "they all need their OWN flavor"):
+- **A vantage** stays the code's and the docs' word (`vantage.<id>`). Player text says **vantage point** (the owner's ruling), the same word whole.
+- **The lines**, one each, each in its own feeling's shape (the owner, 2026-10-11: "they all need their OWN flavor"). They stand in
+  until better ones come (the owner: "still a little cringe, but we need something in there"):
   - **Wonder** (the owner's): "It feels like the sky goes on further than you ever knew."
   - **Mirth**: "Laughter fizzes up through you, a shaken bottle whose cork was never going to hold." (Joy as pressure let go: the
     giggle you cannot swallow.)
@@ -693,8 +693,8 @@ tab *07 World and narrative*).
     (The lid is also the Great Slip Jelly's Lidfall, the cast Fury is woken against.)
   - **Gall**: "Your stomach curdles like milk gone sour, and you roll up your sleeves anyway." (Curds are Gall's own paint motif;
     *gall* is bile and nerve both, and the sleeves are the nerve.)
-- **The Codex's one line of how** (genre words, verb first): Stand at a viewpoint and look out. · Play for a crowd, or make the folk
+- **The Codex's one line of how** (genre words, verb first): Stand at a vantage point and look out. · Play for a crowd, or make the folk
   laugh. · Want something, and have it. · Lose what you staked, or what you carried. · Face what waits below. · Answer a blow with a
   blow. · Clean up what rots.
-- **The achievements**: Acquired Taste, "Awaken Gall: clean up what rots." · Seeing Red, "Awaken Fury: answer a blow with a blow." ·
-  Full Spectrum, "Awaken all seven feelings."
+- **The achievements**: Acquired Taste, "Awaken to Gall: clean up what rots." · Seeing Red, "Awaken to Fury: answer a blow with a
+  blow." · Full Spectrum, "Awaken to all seven feelings."
