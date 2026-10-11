@@ -578,6 +578,7 @@ export class Course {
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();
+    p.standUp(); // (arrived on their feet: a shatter on the belly was made whole still prone)
     const hs = p.techs?.get?.('sondelass')?.hookshot; // (a line out does not come along: it would drag the Courier back across the world)
     if (hs?.att) hs.release('stow');
     hs?.cancel?.();
