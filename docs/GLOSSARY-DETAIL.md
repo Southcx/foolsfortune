@@ -1212,10 +1212,33 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   miasma (gall): **fog lenses** (pancakes of low fog sat on the ground, more in the hollows, drawn as the ellipse each projects to),
   **flies** (a few loose clouds low over the ground) and the **curdled film** (`SOUR_U`, `vfx/water.js`: a mottled skin on still water
   and Lachryma); the hail (fury): **hailstones** (short white streaks falling nearly straight), each **landing** with one bounce and
-  lying as a **scatter** that melts, and **pocks** (small rings in the ripple tank). Never thunder or lightning for the hail. An **agate** sky's second feeling colours the sky, the
+  lying as a **scatter** that melts, and **pocks** (small rings in the ripple tank). No thunder for the hail until it runs heavy. An **agate** sky's second feeling colours the sky, the
   clouds and what falls, and may raise its own mark; it never falls. Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.
+- **a heavy look** (`LOOK[aspect].heavy`, `heavyOf(k)`, `src/vfx/weather.js`; the owner, 2026-10-11, "much more impressive visually";
+  docs/plans/FEELINGS-AWAKENING.md section 3): what a weather's look leans to as its spell runs heavy (strength 0.65 to 1: nothing below,
+  all of it at 1), on the weather's own programs (counts, sizes, colours and uniforms; no program of its own), each its feeling's big
+  gesture in its colour and paint motif: Wonder's **aurora filling the sky** (by night all round and to 58 degrees, by day faint over a
+  sky deepened to lapis), the halo and sun dogs bright, diamond dust thick; Mirth's **confetti of light** (gold motes in a storm, each its
+  own shade, catching the sun) under a **double bow** (the secondary at 51 degrees, its colours reversed); Desire's **dust storm** (the
+  streaks long and rippling, the haze closing in amber-rose); Grief's rain in **sheets** (curtains of it sweeping on with the wind,
+  slanting, pocking still water); Dread's sky **pressing down** (near black-green, the cloud closed, ash sinking, an ink fog low, the cloud
+  lit from inside); Fury's **close bolts** (the hail's own lightning, forked, 55 to 170 m off, about one a second, mostly where you look, a
+  red glow behind each); Gall's miasma **risen** (its fog lenses to the chest, the flies in swarms). The sky shows it wherever a spell runs
+  heavy; `lightOf(aspect, strength)` is the light a heavy spell would leave on the scene (for render/daylight.js). *Not:* a stronger
+  spell (the rules' strength is the same; this is how it looks at the top of it).
+- **the awakening's look** (`game.awakeningLook`, `src/vfx/awakeninglook.js`): Calissa's share of an awakening (the moment and its glitch
+  are Petra's, `feedback/awakening.js`). **the flood**: on `feeling.wake`, that feeling's heavy look breaking out round the Courier for
+  about four real seconds (in over 0.5, held 3, out over 1.3), wherever they stand, indoors too: a second set of the weather's own falling
+  pieces in a short column centred on them (12 m round), its own overhead map cast from just over their head so it lands on a room's
+  floor; in an open place the sky takes it too (`weatherLook.surge`). Never over a fight's danger: nothing within 3.5 m of the Courier,
+  the middle of the screen kept clear, a third as much while a fight is on or a creature has noticed them. **a feeling's clip**
+  (`FEELING_CLIPS`, `src/courier/anim/feelingclips.js`): on `feeling.embody` (said once the Courier is free), the suite's own clip for the
+  feeling, played by the emote tech as an emote is (moving fades it out) but no emote (no event, never logged or counted): Wonder the
+  stretch's rise (looking up), Mirth the belly laugh, Desire hugging the air (a reach, then held to the chest), Fury rage (the fists),
+  Gall disgust (the recoil), Grief crying (the head bowed, the hands to the face), Dread the startle (the flinch). `/awaken <feeling>`
+  (DEBUG) plays the flood and the clip, nothing learned. *Not:* an emote, the glitch, the awakening itself (the act that wakes a feeling).
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
   the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
   `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
