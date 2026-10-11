@@ -1267,8 +1267,9 @@ export class Character {
       this.reachMark = false; this.standoff.apply(bound); this.reachMark = true;
     }
     // (the limits last, after the knee guard: CLAUDE.md. A tech that owns the body, a ladder, a pole, has posed the hands to its own
-    //  handholds, and keeps them)
-    if ((o.techs?.override || 0) < 0.5) this.limits.apply();
+    //  handholds, and keeps them; one whose hands are a tool's, `limitsLast` (the hook's line: tools/sondelass/grapple.js), does not.
+    //  CROSSING, Calissa's: the hang's fingers were 5 to 42 degrees past their range, unclamped)
+    if ((o.techs?.override || 0) < 0.5 || o.techs?.active?.limitsLast) this.limits.apply();
     root.updateMatrixWorld(true);
   }
 

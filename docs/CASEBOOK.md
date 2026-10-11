@@ -640,7 +640,55 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     its posed arms (hinges.js HINGED, `hingedArms`). Proved by the pose audit (scripts/poseaudit.mjs) on the states it touches, its
     blends included, before it ships.
 
+NEW:one-owner-one-clock. **What is posed every frame has one owner, on one clock, and no bearing taken from nothing.** A tech
+    that sets the body's facing (or a hand's target) in the fixed step while the core eases it once a render frame makes a sawtooth at
+    every frame rate but 60 Hz: give it to one of them (the core's stance turn, or the tech's `faceYaw()`), and measure headless at
+    144 Hz as well (`tick(1 / 144)`). A direction worked out from a vector that passes through zero in play (the anchor's bearing from
+    under it, `atan2` of its horizontal, `dir × up` for a line straight up) turns 180 degrees in a frame: take it from the body's frame
+    there. A rope with no more length than its span is drawn straight; a few-pass Verlet chain is not left to hold it.
+
 ## Cases
+
+### 2026-10-11 · Hanging on the grapnel's line: the line sagged under load and the body jittered (the owner, v155)
+
+- **Seen:** the owner: "hanging from the ceiling not only has the fishing line itself still sagging but now IK fighting is causing huge
+  amounts of jittering in the hanging position." Headless, hung from the basement hub's ceiling (the anchor 2.07 m from the chest, then
+  5.97 m), the Courier started 8 cm off the anchor's plumb line and left to hang, 2 s logged: at 144 Hz the right hand moved 80 mm a frame
+  on average (692 at most), the right elbow 59 (469), and the body's yaw 9.6 degrees a frame; at 60 Hz the hand moved 24 (695), the yaw
+  turning 180 degrees in one frame each time the body passed under the anchor. The line stood 0.3 to 0.7 m off the straight between the
+  tool's tip and the grapnel, on a span of 0.55 m. Hung dead still on the plumb line, the hand moved 0.3 mm a frame (the clip's
+  breath), and the line still sagged 0.32 to 0.44 m.
+- **Cause (measured):** three, none of them the IK fighting itself.
+  - **Two owners of the facing, on two clocks.** `grapple.js` set `P.bodyYaw` in the fixed step: to the swing's travel above 2 m/s,
+    else to `atan2` of the anchor's horizontal bearing from the chest. Under the anchor that bearing is nothing, and it flipped 180
+    degrees at every pass. The core's stance turn (`player.js` `updateBody`, once a render frame; the hook is aimed while a line is out,
+    so `techs.stance`) eased the same value toward the camera's yaw. At 144 Hz most frames have no fixed step, so the yaw sawed between
+    the two (37, then 42 to 52 degrees, frame by frame), and every hand target with it.
+  - **The hook's aim had a bearing from nothing too.** The right hand's target (`sondelass.js` `hands`) was laid off the aim's right,
+    `dir × up`, from the last frame's shoulder (`hookshot.aimDir`). As the shoulder passed under the anchor that right turned 180
+    degrees: with the facing fixed, a swing still swept the hand 0.4 m across the face in 8 frames at each pass (58 mm a frame, body-relative).
+  - **The rope.** `vfx/rope.js` is a Verlet chain held by 7 passes of its distance constraints; the grapnel's has 76 links. Under
+    gravity, with velocity carried frame to frame, so few passes cannot keep 76 links at their rest length: the loaded line, given no
+    slack at all (`slack: 0`, the loaded test in `hookshot.js` was right), stretched to about twice its span and hung in a belly.
+    (`hangSlack` was set at the throw and read nowhere: removed.)
+  - Also found: the grapple owns the body (`overrides = 1`), so `character.js` skipped rom.js for it; the hang's fingers stood 5 to 42
+    degrees past their range (12 joints).
+- **Fix:**
+  - `grapple.js` no longer sets the facing: the core's stance turn owns it, eased once a frame. On the line the Courier faces the aim, as
+    with any tool drawn and aimed, not the swing's travel (the swing's clip reads its phase from the rope's angle against the body, so it
+    plays whatever the facing).
+  - `sondelass.js`: with a line out, the hook's aim is taken from this frame's shoulder; on the line in the air its right is the body's,
+    square to the line (and the tool's Z is that right, negated, so the hand does not turn over on the shaft).
+  - `rope.js`: a rope with no more length than its span is laid on the straight between its ends and its motion spent, eased in by the
+    sag its spare length would make (straight at 0, the chain's own from 3 cm). The fishing line's slack and tension look is unchanged
+    above that.
+  - `character.js` (a CROSSING, Petra's, one line): a tech that owns the body but whose hands are a tool's says `limitsLast`, and
+    rom.js runs for it last as for everything else. The grapple says it.
+  - Measured after, the same runs: at 144 Hz the right hand moved 0.8 mm a frame (1.4 at most), the body under it 1.0: the hang's own
+    slow swing; body-relative, 0.26 (0.52). The elbow 0.87 (1.54), the yaw 0. Left to swing naturally (0.57 m out, 1.7 m/s), the hand 4.3 mm
+    a frame body-relative (6.9 at most; was 41, and 694). The line's sag 0 mm, on the 0.55 m span and on a 4.3 m line. rom.js clamps
+    nothing more in the hang.
+- **Rule:** NEW:one-owner-one-clock.
 
 ### 2026-10-11 · A string run lived through a 5.5 s charge, a trip across the island and a held iaido (Dovina's rulings on the run's edges)
 

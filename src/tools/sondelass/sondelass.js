@@ -274,13 +274,23 @@ export class Sondelass extends Tech {
         //  way toward the little finger, the hand a little out from the body. It was held 0.5 m out along the aim from the shoulder, the
         //  forearm along the shaft, and the wrist folded 116 to 129 degrees to lay the shaft across the knuckles: the pose audit)
         const sh = ch.shoulder('R', new THREE.Vector3());
-        const dir = this.hookshot.aimDir, up = _v2.set(0, 1, 0);
-        const side = new THREE.Vector3().crossVectors(dir, up), down = new THREE.Vector3().crossVectors(dir, side);
-        if (side.lengthSq() < 1e-6) side.set(-Math.cos(this.P.bodyYaw ?? 0), 0, Math.sin(this.P.bodyYaw ?? 0)), down.crossVectors(dir, side);
-        side.normalize(); down.normalize(); // (side: the aim's right; down: square to the aim, toward the ground)
+        // (with a line out, on the anchor from this frame's shoulder: the hook's own aimDir is the last frame's, and on the line the body
+        //  under the hand has moved since)
+        const att = this.hookshot.att, dir = att ? new THREE.Vector3().subVectors(att.point, sh).normalize() : this.hookshot.aimDir, up = _v2.set(0, 1, 0);
+        const side = new THREE.Vector3().crossVectors(dir, up);
+        // (on the line in the air, the grapple's: the body's right, square to the line. The aim's own right is the anchor's bearing from
+        //  the shoulder turned a quarter, and it turns 180 degrees as the shoulder passes under the anchor: in a swing it swept the hand
+        //  0.4 m across the face in 8 frames at each pass, the hand turning over on the shaft with it)
+        if ((att && (this.mgr.get('grapple')?.w ?? 0) > 0.5) || side.lengthSq() < 1e-6) {
+          const y = this.P.bodyYaw ?? 0;
+          side.set(-Math.cos(y), 0, Math.sin(y));
+          side.addScaledVector(dir, -side.dot(dir));
+        }
+        side.normalize();
+        const down = new THREE.Vector3().crossVectors(dir, side).normalize(); // (side: the aim's right; down: square to the aim, toward the ground)
         const fore = dir.clone().multiplyScalar(Math.cos(AIM.fore * Math.PI / 180)).addScaledVector(down, Math.sin(AIM.fore * Math.PI / 180));
         const pos = sh.clone().addScaledVector(fore, AIM.reach).addScaledVector(side, AIM.out);
-        const X = dir.clone(), Zt = new THREE.Vector3().crossVectors(up.set(0, 1, 0), X).normalize();
+        const X = dir.clone(), Zt = side.clone().negate(); // (the tool's Z: the aim's left, up x the aim where that is defined)
         const Yt = new THREE.Vector3().crossVectors(Zt, X);
         const G = new THREE.Matrix4().makeBasis(X, Yt, Zt).setPosition(pos);
         this.handFromTool(G, 'R', hp, 0, 0, 0, hq);
