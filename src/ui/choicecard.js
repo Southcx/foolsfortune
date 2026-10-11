@@ -43,7 +43,7 @@ import { lentMark } from './lendpanel.js';
 export const STATE_WORDS = { equipped: 'EQUIPPED', ready: 'READY', locked: 'LOCKED', always: 'ALWAYS MOUNTED', empty: 'EMPTY', closed: 'CLOSED' };
 /** The chips, in the order they are shown: the row's field, its icon, its unit, and which way is better. */
 const CHIPS = [
-  { k: 'power', icon: 'chip.power', fmt: (v) => `${fix(v)}`, unit: '', word: 'Power', up: true },
+  { k: 'power', icon: 'chip.power', fmt: (v) => `${fix2(v)}`, unit: '', word: 'Power', up: true }, // (to the hundredth: Push Kick's 1.45 is not Low Sweep's 1.35)
   { k: 'reach', icon: 'chip.range', fmt: (v) => `${fix(v)}`, unit: 'm', word: 'Reach', up: true },
   { k: 'range', icon: 'chip.range', fmt: (v) => `${fix(v)}`, unit: 'm', word: 'Range', up: true },
   { k: 'angle', icon: 'chip.angle', fmt: (v) => `${fix(v)}°`, unit: '', word: 'Angle', up: true },

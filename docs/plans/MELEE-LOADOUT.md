@@ -89,6 +89,16 @@ speed: `ui/choicecard.js`, `ui/icons/chipart.js`). Measured headless: the defaul
 38, 67 and 115, then c1 at 146; the page reloaded, the save still held c1 c2 c4 c3. Sheets in Calissa's scratchpad (`p3/editor/`).
 Not built: `move.learn` (the log's line when a move opens: Dovina's earning), the tree view of a move's two ways in the Codex.
 
+**Phase 3, joined (2026-10-11, Calissa):** the catalogue and the editor merged on `art-p3`. The editor lists all 18 rows with the
+rows' own words (Slash, Rising Slash, Hop Slash, Leap Strike, Stinger for today's five: `loadoutwords.js`'s placeholders are now a
+fallback only). Two fits, both in the card's numbers: a row's `stats.range` is its reach (the catalogue's measure, SONDELASS-STRINGS.md
+7a: what the card shows), and a row's power is a hit's times its `hits` (Spin Slash 0.85 x 4 = 3.4); the power chip shows hundredths
+(Push Kick 1.45, Low Sweep 1.35). Measured headless, DEBUG with Tool Moves lent: 18 cards for 18 rows, 8 slots open; Quick Slash, Body
+Blow and Lunge Slash put in slots 1 to 3 and Spin Slash and Backstep Slash in W and S through the editor, kept in the save as set, said
+in the log; the string played quickSlash, bodyBlow, lungeSlash, c4 (begun at frames 1, 32, 55, 98, LMB every 6 frames), striking a
+slip jelly 1.9 m ahead for 1.0, 0.9 and 1.4; W + RMB played Spin Slash and S + RMB Backstep Slash. In STORY the new rows stay locked:
+their `earn` is null until Dovina writes it. Sheet in Calissa's scratchpad (`p3/integrated/`).
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned

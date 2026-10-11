@@ -18,7 +18,7 @@
 //
 //   SLOTS { start, most }   SLOT_OPENS [{ slot, hits, run }]   STARTERS
 //   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits, or 8 in a row')
-//   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Learned by using Rising Cut.')
+//   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Learned by using Backhand.')
 // ---------------------------------------------------------------------------------------
 import { labelOf } from './loadoutwords.js';
 

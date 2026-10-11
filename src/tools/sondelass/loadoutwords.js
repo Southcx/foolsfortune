@@ -13,15 +13,17 @@
 //   numbersOf(row, rule) -> { power, reach, speed, cost } (each a number or undefined)   SPECIAL_SLOTS   ordinal(n)
 // ---------------------------------------------------------------------------------------
 
-/** Today's five, until their rows carry `label` and `does` (placeholders for Espada's). `reach`: m from the feet to the blade's tip at
- *  its farthest in the strike (the step in left out), measured from the clips headless 2026-10-11 (tools/melee.js measureSwing: c1 1.52,
- *  c2 1.74, c3 1.56, c4 2.11); the stinger's is its lunge (8.4 m measured, nothing locked, in the open) and the 2 m its point reaches
- *  past the body. */
+/** A fallback for a row with no words or range of its own (placeholders for Espada's). Every row of the catalogue now carries its
+ *  own `label`, `line` and `stats.range` (phase 3's catalogue, merged 2026-10-11), and a row's own always wins, so these are not shown
+ *  today. `reach`: m from the feet to the blade's tip at its farthest in the strike (the step in left out), measured from the clips
+ *  headless 2026-10-11 (tools/melee.js measureSwing: c1 1.52, c2 1.74, c3 1.56, c4 2.11); the stinger's is its lunge (8.4 m measured,
+ *  nothing locked, in the open) and the 2 m its point reaches past the body. The labels are the rows' own (c2's was "Rising Cut", now
+ *  the special's: one word, one meaning). */
 export const PLACEHOLDER = {
-  c1: { label: 'Flat Cut', does: 'Cuts flat across, right to left.', reach: 1.5 },
-  c2: { label: 'Rising Cut', does: 'Cuts upward, left to right.', reach: 1.7 },
-  c3: { label: 'Hop Cut', does: 'Hops in with a fast flat cut.', reach: 1.6 },
-  c4: { label: 'Leap Chop', does: 'Leaps in and chops straight down.', reach: 2.1 },
+  c1: { label: 'Slash', does: 'Cuts flat across, right to left.', reach: 1.5 },
+  c2: { label: 'Rising Slash', does: 'Cuts upward, left to right.', reach: 1.7 },
+  c3: { label: 'Hop Slash', does: 'Hops in with a fast flat cut.', reach: 1.6 },
+  c4: { label: 'Leap Strike', does: 'Leaps in and chops straight down.', reach: 2.1 },
   stinger: { label: 'Stinger', does: 'Lunges 8 m, piercing all in line.', reach: 10.4 },
 };
 
@@ -58,15 +60,17 @@ export function lineOf(row) {
 export const effectKeyword = (row) => EFFECT_KEYWORD[row?.effect] || null;
 
 /** The card's numbers. The row's own `numbers` (or `stats`) first; then its row of progress/combat/moves.js (`rule`: what the engine
- *  plays: power times hits, `time` the real seconds a blow takes, `cost` Lachryma); then the row's play and its special's own. `speed` is
- *  real seconds a blow takes (moves.js `time`): lower is faster. */
+ *  plays: power times hits, `time` the real seconds a blow takes, `cost` Lachryma); then the row's play and its special's own. `power`
+ *  is a hit's times its `hits` (Spin Slash's four cuts); `reach` is the row's `reach` or its `range` (the catalogue's: the farthest the
+ *  measured tip goes in the strike plus what the sweep adds, SONDELASS-STRINGS.md section 7a); `speed` is real seconds a blow takes
+ *  (moves.js `time`): lower is faster. */
 export function numbersOf(row, rule = null) {
   if (!row) return {};
   const N = row.numbers || row.stats || {}, S = row.sting || {};
   const num = (...v) => v.find((x) => typeof x === 'number' && Number.isFinite(x));
   return {
-    power: num(N.power, rule && rule.power * (rule.hits || 1), S.power, row.play?.hit?.power),
-    reach: num(N.reach, PLACEHOLDER[row.id]?.reach),
+    power: num(N.power * (N.hits || 1), rule && rule.power * (rule.hits || 1), S.power, row.play?.hit?.power),
+    reach: num(N.reach, N.range, PLACEHOLDER[row.id]?.reach),
     speed: num(N.speed, N.time, rule?.time),
     cost: num(N.cost, rule?.cost, S.cost, row.play?.cost) || undefined, // (a free move shows no cost chip)
   };
