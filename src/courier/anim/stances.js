@@ -98,6 +98,19 @@ export const STANCES = {
     base: 'sprint', exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
     rot: [['handR', 'x', -111.1], ['handR', 'y', 31.9], ['handR', 'z', -37.5]], steady: [['R', 0.8]], nudge: [['R', [0.071, -0.084, -0.513]]],
   },
+  // THE IAIDO'S CHARGE (the owner, 2026-10-11: "an Iaido-like striking pose for the charge-up"; crouched, hold RMB: cutlass.js). No iaido
+  // in the suite, UAL or CMU; the suite's own Gun_QuickDraw at its first frame is the nearest (low, the hand at the hip before the draw),
+  // its fingers the cutlass's (Sond_Idle's grip). The battojutsu's hold laid over it: the blade hand across to the belly's left front,
+  // the cutlass along the belt with its point trailing back past the left hip as a sheathed blade lies (0.30 out to their left, 0.22
+  // down, 0.93 back: the hand's turn and place solved over the crouch in game, Calissa's probe, 0.5 degrees and 4 mm off), the chest
+  // coiled to their left for the cut that sweeps back across, the head kept on what is ahead. The off hand takes the hilt at the guard
+  // in the game (the light IK the Sondelass's hands() allows: tools/sondelass/sondelass.js). Laid over the crouch's legs as the
+  // cutlass's upper layer.
+  cutlassIaido: {
+    base: 'Gun_QuickDraw', hold: 0, overlay: [['Sond_Idle', '^(f_|thumb).*R$']],
+    rot: [['spine002', 'y', 10], ['spine003', 'y', 12], ['spine003', 'x', 6], ['head', 'y', -18], ['handR', 'x', -93.8], ['handR', 'y', 40.9], ['handR', 'z', -154.1]],
+    reach: [['R', [-0.023, 0.996, 0.152], [-0.45, 1, 0.35]]],
+  },
 };
 
 const AX = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };

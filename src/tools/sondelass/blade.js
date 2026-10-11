@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// BLADE MODE: hold RMB with the cutlass out and the world all but stops (a twentieth of its speed, and a low-passed hush under it),
+// BLADE MODE: crouched, hold RMB with the cutlass out through the iaido's charge (cutlass.js; the owner, 2026-10-11: not crouched, RMB
+// is the special and never this) and the world all but stops (a twentieth of its speed, and a low-passed hush under it),
 // the frame closes to bars, and the blade is yours to place. The mouse turns a line of light through the thing you are locked to
 // (its angle is the direction you last moved the mouse); LMB cuts along it, as many times as you like while the mind holds out, and
 // what is cut comes apart in the slow air: every pot and every piece of a pot the line passes through is sliced by the same mesh

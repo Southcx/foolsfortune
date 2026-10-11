@@ -33,6 +33,21 @@ division's files is asked for, never edited past the smallest call-site (CROSSIN
 sparring circle's lectern (COMBAT-LAB.md section 2); the status bench's roly-polies alive (COMBAT-LAB.md section 5); the psygun's
 crosshair shown only while the psygun is drawn (`feedback/hud.js`, CROSSING). Phase 6's audit is section 4.
 
+**Phase 2, built (2026-10-11, Calissa):** the loadout as data (`tools/sondelass/sondelassloadout.js`: `SONDELASS_MOVES`, c1 to c4 and the
+stinger, each with its kind, clip, effect and a null parent; `SONDELASS_LOADOUT`, the string c1 to c4 and the specials { tap: stinger,
+forward: null, back: null }), read by the engine (`tools/moveset.js`: `catalogue`, `loadout`, `special(dir)`), so any tool can take one.
+The default plays today's string to the frame (headless, free, paid, air and pause runs: every blow's start, hit and paid cut on the same
+frame before and after). RMB is the specials button, changed only in `cutlass.js`: at once on the press (the stinger's press-to-lunge,
+headless: 117 ms for a 100 ms tap before, which waited for the release; 17 ms after, whatever the hold), W + RMB the forward slot, S + RMB
+the back, an empty slot the tap's; never blade mode. Crouched (`player.crouching`), RMB is **the iaido**: the charge's pose (the suite's
+Gun_QuickDraw with the blade along the belt, its point past the left hip, the off hand at the guard: `stance:cutlassIaido`, solved in
+game), held 0.5 real s into blade mode as before, let go before into **the draw cut** (Sond_Combo2 from 0.1 clip s at 1.4x, the crouch's
+legs kept; a slip jelly 2.4 m ahead struck 5 frames, 83 ms, after the release). **The blink cancel** (`Moveset.blinkCancel` on
+`move.blink`, every tool's moveset; `cuttable` on the carry and the stinger): E at any frame of c2, the launcher, the stinger, an air
+blow, the iaido's charge or blade mode gives the blink on that frame's fixed step (blade mode: 2 frames, the world brought back up first),
+and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
+out of the stinger read its 30 m/s as its exit (casebook rule NEW:launch-end-speed). Sheets in Calissa's scratchpad (`melee-p2/`).
+
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
 **Prior art:** God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned
