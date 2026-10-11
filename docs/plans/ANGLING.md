@@ -100,7 +100,7 @@ point here, not clutter.
   survives it: a silhouette that reads at a glance, its feeling in its colour and fins, a wet sheen, an eye, and a wriggle clip.
   Sixteen bodies at the end; the ten that exist are refired first.
 
-## 4. Numbers (mine; checked by `scripts/fishsim.mjs`)
+## 4. Numbers (mine; the targets are judged in the owner's play, no sim)
 
 | what | today | new |
 |---|---|---|
@@ -124,12 +124,17 @@ point here, not clutter.
 - **Two more waters, where the island already is:** the shore (the Emocean's edge, half-Egregore fish, one legend that rises only in a
   strong spell of one weather) and the sumps (the Great Dunemaw's bowl pools: still water, blind things). Three species each: 16 in
   all. Styles spread so each water holds every answer.
+- **Release is Possession** (the owner, 2026-10-11: "the Sondelass has always been about linking minds"). A fight is two minds on
+  one line, so a released fish pays Possession experience and nothing else: `angle.release { species, tier, secs, answered, by }`
+  (Calissa's to emit), a source in `progress/domains.js` (mine) paid in `acts` as the big acts are, one act per 10 real seconds of
+  fight (`PACE`, 6 acts a real minute), its quality the share of pulls answered. A kept fish pays its worth in cubes and no
+  experience: the choice is cubes or growth.
 - **Size kept:** `fish.size.<id>` (a ledger `hi`); the Codex's bestiary shows your biggest. Size ladders per species as achievements.
 - **Bite Sense** (a knack; Espada names it): the !!! window 30% wider; opens at 200 bites set or 25 set in the window's first third.
 
 ## 6. Order
 
-1. **The instrument** (the owner's three): the rope rule, Shift + LMB, brace in S, the rod's bend. Calissa. Numbers and the sim: Dovina.
+1. **The instrument** (the owner's three): the rope rule, Shift + LMB, brace in S, the rod's bend. Calissa. Numbers: Dovina.
 2. **The voice and the moments:** the line's song and the drag (Wanda); the hook set, the leap, the snap, the landing, the pump in the
    model (Calissa).
 3. **The catch and the fish:** the cinematic, the ten bodies refired, the bodies' tells; the reticle carries the intent (Calissa;
@@ -140,5 +145,5 @@ point here, not clutter.
 ## 7. Open, for the owner
 
 1. ~~Retire the reticle?~~ No (the owner, 2026-10-11): it stays and carries the intent.
-2. ~~Release or keep?~~ Released by default, kept on a key (the owner, 2026-10-11). A release is counted (`fish.release`); what it
-   pays, if anything, is mine to price with the sim.
+2. ~~Release or keep?~~ Released by default, kept on a key (the owner, 2026-10-11). A release pays no cubes, only Possession
+   experience (section 5).
