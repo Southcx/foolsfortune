@@ -525,6 +525,9 @@ the rules before building in the same area; a rule a machine can check goes into
     it: look at those too (the stances over braced).
 190. **A sweep reaches a thing the way the player can, every way the game offers.** A list the game shows (the Index's rooms) may hold
    entries with no key of their own; a sweep that presses only keys throws on the first one, and every check after it never runs.
+191. **A listener on the bus asks the same filter the ledger's rules ask.** Anything that pays for an event outside tracking.js (the domains'
+   exp, Soul Alchemy's seasoning) skips a training body (`isTraining`, `combat/testroom.js`): one list of what never pays, for every payer.
+
 
 ## Cases
 
@@ -2828,3 +2831,11 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** a room with no key is picked as the Index itself offers, with arrows from its current selection and Enter. The basement
   sweep: 362 pass, 0 fail, the two debug chests' rooms reached by arrows.
 - **Rule:** 190.
+
+### 2026-10-11 · Training bodies seasoned Focus and paid Divination's exp (Calissa's handoff, melee phase 1)
+- **Seen:** six statuses built on the status bench's roly-polies raised `alchemy.s.season.focus` from 0 to 6, while the ledger stayed 0.
+- **Cause:** `alchemy.js` and `psyche.js` listen to the bus directly; only tracking.js's `on` wrapper skipped Strawman (`training`,
+  `kind: 'strawman'`), and the roly-polies were new.
+- **Fix:** `isTraining(e)` in `progress/combat/testroom.js` (Strawman, the roly-polies, anything marked `training`), asked by Soul Alchemy's
+  seasoning and the domains' exp; tracking.js may ask it too (Petra's).
+- **Rule:** 191.
