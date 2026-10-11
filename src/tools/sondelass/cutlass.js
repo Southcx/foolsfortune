@@ -277,7 +277,7 @@ export class Cutlass {
       clipMap: map,
       poseFix: root ? (pose) => { root.at(map(launch.clipT), _p); pose.p[0] -= _p.x; pose.p[2] -= _p.z; } : null,
       onStep: (dt) => this.stingStep(dt),
-      onEnd: () => { shedSpeed(P.vel, 6); this.stinging = false; this.trail.gap(); }, // (its exit speed however it ends: a blink cutting in read 30 m/s as its own, rule NEW:launch-end-speed)
+      onEnd: () => { shedSpeed(P.vel, 6); this.stinging = false; this.trail.gap(); }, // (its exit speed however it ends: a blink cutting in read 30 m/s as its own, rule 195)
       cuttable: true, // (the blink may cut in at any frame: courier/moves/techs.js; onEnd above lets it go)
     });
     const lt = P.techs.get('launch'); if (lt) lt.blendIn = 30;

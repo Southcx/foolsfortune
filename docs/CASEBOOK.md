@@ -541,7 +541,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
     and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
     goes to its owner with the numbers.
-NEW:launch-end-speed. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+195. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
@@ -560,7 +560,7 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
   ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
   the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
   slash; now c3).
-- **Rule:** NEW:launch-end-speed.
+- **Rule:** 195.
 
 ### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
 
