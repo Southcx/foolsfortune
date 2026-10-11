@@ -541,30 +541,32 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
     and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
     goes to its owner with the numbers.
-NEW:launch-end-speed. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+195. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
-NEW:outcome-after-window. **An outcome is sent once nothing can change it.** An event that says how something went (a blow's
+196. **An outcome is sent once nothing can change it.** An event that says how something went (a blow's
     `move.blow`: hit or not) is sent when the check that decides it has run its whole window (the sweep's strike, padded as the sweep
     pads it: `Moveset.spent()`), never on a tighter window of its own; a test of it places the thing at the window's edges.
-NEW:window-runs-unread. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
+197. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
     update (the string's window, `Moveset.after`) stops when its owner stops calling it (the Sondelass's rod or hook form): tick it
     from the owner every frame it is not read (`Moveset.idle`), or read the time from a clock that always runs.
-NEW:count-what-the-record-names. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
+198. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
     ledger (a run, a streak) takes its definition from the plan that owns the record (Dovina's `sond.string.best`: "LMB string blows"),
     not from whatever reaches the same door; every kind that reaches it is named in or out, and a test mixes in the kinds left out.
-NEW:collider-pose-same-step. **A collider's shape and its place change in the same call.** A collider moved on its parent
+199. **A collider's shape and its place change in the same call.** A collider moved on its parent
     (`setTranslationWrtParent`) is moved in the world only by the next `world.step`; anything asked in this step (the character
     controller, a shape cast) meets the new shape at the old place. Set its world translation there and then too (`player.setShape`).
-NEW:takeoff-holds-pose. **A layer that hands the body to another keeps its weight until the other is whole.** Two weights eased at
+200. **A layer that hands the body to another keeps its weight until the other is whole.** Two weights eased at
     their own rates (the crouch out at 12/s, the air in at 10/s) show whatever lies under both for the length of the handover (the
     standing idle, at 0.29). Hold the outgoing one's weight under the incoming one until it is whole, then let it go at its own rate;
     and when the handover turns back before it is done (a jump cut short by a roof), keep the hold until the layer has climbed back.
-NEW:hands-given-back. **What takes the hands puts the tool away through the belt and gives it back through it.** The one asked out
+201. **What takes the hands puts the tool away through the belt and gives it back through it.** The one asked out
     is remembered and drawn again once the hands are free; one put away by hand meanwhile stays away; and nothing pressed while
     the hands were taken (a draw key, the aim held, the trigger's own queue: a tap, a shell, a charge) is kept for after
     (`tools/proneholster.js`; the psygun's queue is its own, let go in `weapon.js`).
+202. **Every way of setting the Courier down puts back the same state, through one method.** A respawn and a teleport
+    that each list what they reset drift apart; the posture is the Courier's (`player.standUp`), and both call it.
 
 ## Cases
 
@@ -596,7 +598,7 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   the take-off frame's crouch and the frame before's (getting up from the belly lets the crouch start falling on the take-off frame:
   0.82, the idle 0.29). Measured: the tunnel's crouch weight 0.80 throughout, the idle 0.198 at most (the crouch's own 0.20), the hip
   back to 0.46 m by k16; the get-up jump's first frame lifts the head 0.083 m (was 0.177; the C-toggle jump's 0.085), the idle 0.169.
-- **Rule:** NEW:collider-pose-same-step; NEW:takeoff-holds-pose.
+- **Rule:** 199; 200.
 
 ### 2026-10-11 · Tools stayed in the hands on the belly (the owner: "it looks SUPER goofy otherwise")
 
@@ -631,7 +633,7 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   Measured (the verifier's own case: the Sondelass put away by the holster, a pot 0.9 m ahead, C at k160, F at k170): no lift on any
   frame of the getting up (k161 to k200), the Sondelass drawn again at k201; F at k203, once up, lifts at k204 as before; F lying down
   (k130) lifts nothing.
-- **Rule:** NEW:hands-given-back.
+- **Rule:** 201.
 
 ### 2026-10-11 · A stinger between string blows opened a string slot a blow early (the verifier, before merge: the blow events)
 
@@ -644,7 +646,7 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
 - **Fix:** `specialBlow(c)`, asked by both: a special's blow sends its `move.blow` but neither adds to the run nor ends it; and
   `markBlow` marks nothing on a blow already closed. Measured: the same sequence `{ run 7, pause }`; the draw cut, the Tidecutter, and
   R inside a whiffing c2, each after c1, `{ run 1, pause }`; a whiffed stinger inside a run still ends nothing (`{ run 4, pause }`).
-- **Rule:** NEW:count-what-the-record-names.
+- **Rule:** 198.
 
 ### 2026-10-11 · A blow said hit: false, then struck; a string run lived through a form switch (the verifier, before merge: the blow events)
 
@@ -660,7 +662,7 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   of 8 placements `hit: true`, j1 7, the launcher 4, a1 3 (the others no contact at all), no blow marked after its close. (2)
   `Moveset.idle(dt)`, called by the Sondelass every frame the cutlass is not read: the same 5 s on the rod or the hook sends `end
   { run 2, pause }` 0.9 s after c2, and the next LMB is c1, a new run.
-- **Rule:** NEW:outcome-after-window, NEW:window-runs-unread.
+- **Rule:** 196, 197.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 
@@ -674,7 +676,7 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
   the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
   slash; now c3).
-- **Rule:** NEW:launch-end-speed.
+- **Rule:** 195.
 
 ### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
 
@@ -3038,3 +3040,12 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
 - **Fix:** `isTraining(e)` in `progress/combat/testroom.js` (Strawman, the roly-polies, anything marked `training`), asked by Soul Alchemy's
   seasoning and the domains' exp; tracking.js may ask it too (Petra's).
 - **Rule:** 193 (191 as Dovina wrote it, renumbered at the gate: Calissa's 191 and 192 were first).
+
+### 2026-10-11 · Made whole after a shatter on the belly, the Courier was still prone (Calissa's verifier, crouch-jump round)
+- **Seen:** shattered while prone, the Courier was made whole at the workshop upright for a moment, then down on the belly by about
+  step 345, in posture 'prone' with the prone capsule.
+- **Cause:** `course.teleport` (world/basement/basement.js), which the reform calls, resets the techs and the movement but never the
+  posture; `player.respawn` did, in its own copy of the lines.
+- **Fix:** `player.standUp()` (posture stand, its timers and buffer cleared, the standing shape), called by both; the shape's own check
+  lowers them where there is no headroom.
+- **Rule:** 202.

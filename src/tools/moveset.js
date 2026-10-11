@@ -149,7 +149,7 @@ export function rootOf(C, name) {
 }
 /** A launch's exit speed honoured however it ends (`max` m/s, the horizontal): Launch.finish() sheds to its `endSpeed`, but a blink that
  *  cuts the launch ends it without finish(), and read the blow's own speed as its exit (the stinger's 30 m/s: casebook
- *  rule NEW:launch-end-speed). */
+ *  rule 195). */
 export function shedSpeed(vel, max) { const h = Math.hypot(vel.x, vel.z); if (h > max) { vel.x *= max / h; vel.z *= max / h; } }
 /** Body space to the world, facing `yaw`. */
 const toWorld = (v, yaw, out) => out.set(v.x * Math.cos(yaw) + v.z * Math.sin(yaw), v.y, -v.x * Math.sin(yaw) + v.z * Math.cos(yaw));

@@ -166,6 +166,10 @@ export class Player {
     this.physics.world.propagateModifiedBodyPositionsToColliders();
   }
 
+  /** Set down on their feet: a respawn or a teleport arrives standing, whatever posture was left behind (shattered on the belly, made
+   *  whole at the workshop still prone: the verifier, 2026-10-11). The shape's own check lowers them again where there is no headroom. */
+  standUp() { this.posture = 'stand'; this.postureT = 0; this.postureBuf = 0; this.prone = false; this.setShape('stand'); }
+
   /** Somewhere we know is clear (the guard's fallback): after a teleport, where we are now. */
   markSafe() { this.safe.pos.copy(this.pos); this.safe.shape = this.shape; this.safe.t = 0; }
 
@@ -184,8 +188,7 @@ export class Player {
     this.carry.set(0, 0, 0); this.drift.set(0, 0, 0); this.wade = 1;
     this.wedged = 0;
     this.techs?.reset();
-    this.posture = 'stand'; this.postureT = 0; this.postureBuf = 0; this.prone = false;
-    this.setShape('stand');
+    this.standUp();
     this.game?.character?.setHidden(false);
     this.place();
     this.markSafe();
@@ -278,7 +281,7 @@ export class Player {
     this.collider.setTranslationWrtParent({ x: 0, y: half + RADIUS, z: 0 });
     // CROSSING (Calissa, 2026-10-11, the crouch jump): Rapier moves a parented collider to its new offset only in world.step, so the
     // controller asked in this step judged the new capsule from the old one's centre: grown in the air the step after a jump from the
-    // crouch toggle, it sat 0.175 m low, in the floor, read as grounded, and the jump ended 0.20 m up (casebook NEW:collider-pose-same-step)
+    // crouch toggle, it sat 0.175 m low, in the floor, read as grounded, and the jump ended 0.20 m up (casebook 199)
     this.collider.setTranslation({ x: this.pos.x, y: this.pos.y + half + RADIUS, z: this.pos.z });
   }
 

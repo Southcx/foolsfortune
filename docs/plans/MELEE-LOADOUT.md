@@ -46,7 +46,7 @@ legs kept; a slip jelly 2.4 m ahead struck 5 frames, 83 ms, after the release). 
 `move.blink`, every tool's moveset; `cuttable` on the carry and the stinger): E at any frame of c2, the launcher, the stinger, an air
 blow, the iaido's charge or blade mode gives the blink on that frame's fixed step (blade mode: 2 frames, the world brought back up first),
 and the next LMB is the next slot (c2 to c3, a1 to a2, High Time to a1), never the pause branch nor the dash. Found on the way: a blink
-out of the stinger read its 30 m/s as its exit (casebook rule NEW:launch-end-speed). Sheets in Calissa's scratchpad (`melee-p2/`).
+out of the stinger read its 30 m/s as its exit (casebook rule 195). Sheets in Calissa's scratchpad (`melee-p2/`).
 
 ## 2. The loadout (God Hand's Combo Tree, ours)
 
