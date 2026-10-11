@@ -24,6 +24,9 @@ const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the 
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
 const SOLE_MAX = 0.06; // m: the most the sole is raised onto the ground under it (footIK)
+// m: the same while a tech kneels (st.footDown): the stoop blended into the kneel puts the back toe up to 10.6 cm under the floor on
+// the way down and up (the carry's set-down, measured)
+const SOLE_KNEEL = 0.14;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
@@ -406,17 +409,16 @@ export class Character {
   analyseGait(name) {
     const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
     this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
-    const soles = this.soles ||= this.measureSoles();
+    this.soles ||= this.measureSoles(); // (footIK's soles: read once, in the rest pose)
     const fr = [];
     for (let f = 0; f < c.n - 1; f++) {
       this.applyPose(C.sample(name, f / C.fps, p));
       this.root.updateMatrixWorld(true);
       const g = (b) => b.getWorldPosition(new THREE.Vector3());
-      const lowest = (s) => { let y = 1e9; for (const [b, v] of soles[s]) y = Math.min(y, _v1.copy(v).applyMatrix4(b.matrixWorld).y); return y - soles.rest; };
-      fr.push({ L: g(B.footL), R: g(B.footR), tL: g(B.toeL), tR: g(B.toeR), sL: lowest('L'), sR: lowest('R') });
+      fr.push({ L: g(B.footL), R: g(B.footR), tL: g(B.toeL), tR: g(B.toeR) });
     }
     const n = fr.length, contact = {};
-    let best = -1e9, off = 0, vsum = 0, wsum = 0, sole = 0;
+    let best = -1e9, off = 0, vsum = 0, wsum = 0;
     for (const s of ['L', 'R']) {
       // planted: the lowest point of the foot (heel or toe) near its lowest, and the foot
       // travelling backward under the body (a foot coming down at the end of a swing is
@@ -428,9 +430,6 @@ export class Character {
         return (1 - smooth(0.04, 0.09, y - lo)) * smooth(0, -0.01, dz);
       });
       contact[s] = raw.map((c, f) => (raw[(f + n - 1) % n] + 2 * c + raw[(f + 1) % n]) / 4); // soften the edges
-      // (how far the planted sole stands under the rest pose's: the skin's lowest point while the foot is more down than up, the heel's
-      //  strike included, against the rest pose's lowest: measureSoles())
-      for (let f = 0; f < n; f++) if (contact[s][f] > 0.5) sole = Math.min(sole, fr[f]['s' + s]);
       for (let f = 0; f < n; f++) {
         const w = contact[s][f] > 0.9 ? 1 : 0; // mid-stance only
         if (!w) continue;
@@ -441,11 +440,11 @@ export class Character {
     for (let f = 0; f < n; f++) if (fr[f].L.z - fr[f].R.z > best) { best = fr[f].L.z - fr[f].R.z; off = f / n; }
     const speed = wsum > 0 ? vsum / wsum : 1;
     this.resetPose();
-    return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n, lift: Math.max(0, -sole) };
+    return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n };
   }
 
-  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel) within 4 cm of the rest
-   *  pose's lowest, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
+  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel), those within 4 cm of the
+   *  rest pose's lowest densely and the rest thinly, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
    *  than its ankle bone says), and `rest`, that lowest point at rest. Read once, in the rest pose. */
   measureSoles() {
     this.resetPose();
@@ -469,9 +468,11 @@ export class Character {
     for (const s of ['L', 'R']) for (const [, w] of all[s]) rest = Math.min(rest, w.y);
     const out = { rest };
     for (const s of ['L', 'R']) {
-      const near = all[s].filter(([, w]) => w.y < rest + 0.04);
-      const step = Math.max(1, Math.floor(near.length / 120));
-      out[s] = near.filter((_, i) => i % step === 0).map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
+      // (the sole densely, and the rest of the foot thinly: a foot pointed back in a kneel lies on its instep and toes' tops, which stand
+      //  over 4 cm up at rest; read only the sole, the back toe went 4.5 cm into the floor getting up from the set-down's knee)
+      const near = all[s].filter(([, w]) => w.y < rest + 0.04), top = all[s].filter(([, w]) => w.y >= rest + 0.04);
+      const thin = (a, n) => { const step = Math.max(1, Math.floor(a.length / n)); return a.filter((_, i) => i % step === 0); };
+      out[s] = [...thin(near, 120), ...thin(top, 60)].map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
     }
     return out;
   }
@@ -674,12 +675,6 @@ export class Character {
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
-    // (each loop's planted sole stood on the floor: the suite's walk and run plant theirs 2.6 to 3.5 cm under the rig's rest sole, and the
-    //  feet went into the floor at every pace (CASEBOOK NEW:clip-sole-on-floor). The body is raised by each loop's own depth, by its weight;
-    //  the idle and the crouch's idle stand on theirs)
-    let lift = 0;
-    for (const [i, n] of moving) lift += W[i] * g[n].lift;
-    st.soleLift = THREE.MathUtils.lerp(lift, cwk * g[PROWL.clip].lift, cr);
     // (no skid stop and no half turn over the gait: the owner, 2026-10-11, "it's slow and breaks flow"; both were anim/stopturn.js)
     // (how much of the gait is running ground, and how much of that a sprint: a drawn tool's run of its own reads it, the cutlass's)
     st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
@@ -775,12 +770,12 @@ export class Character {
       C.blend(base, mv.pose, wM, mv.arm === 'R' ? this.MASK_GUN_R : prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
     }
     // movement techs blend their own poses in (swim, roll, climb...)
+    st.footDown = 0; // (a tech's kneel lets the feet down on to the floor: footIK)
     s.techs?.animate(this, base, dt, s);
     this.applyPose(base);
 
     // ---- procedural layer ----
     root.position.y -= st.dip;
-    root.position.y += (st.soleLift || 0) * (1 - air) * (1 - sl) * (1 - mn) * (1 - da) * (1 - crw);
     st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
     const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
     // sliding on a slope: lie along it (pitch down a hill, roll across one)
@@ -897,7 +892,11 @@ export class Character {
         if (!lo) continue;
         const x = tgt[k].x + lo.x - F.x, z = tgt[k].z + lo.z - F.z, y = tgt[k].y + lo.y - F.y;
         const gy = s.ground(x, z, s.pos.y + 0.6);
-        if (gy !== null && gy > y) tgt[k].y += Math.min(SOLE_MAX, gy - y) * planted;
+        if (gy === null) continue;
+        if (gy > y) tgt[k].y += Math.min(st.footDown > 0 ? SOLE_KNEEL : SOLE_MAX, gy - y) * planted;
+        // (and let down on to it while a tech kneels, by how much of the body is the kneel's (st.footDown: the carry's set-down): a clip
+        //  that kneels in the air on this rig, 7 to 9 cm up, measured)
+        else if (st.footDown > 0) tgt[k].y -= Math.min(SOLE_MAX, y - gy) * planted * st.footDown;
       }
     }
     // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a

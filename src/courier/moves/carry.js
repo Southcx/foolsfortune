@@ -48,6 +48,10 @@ const THROW_CLIP = { from: 0.1, release: 0.31, to: 0.78 };
 // reach (`kneel` at KNEEL_T: its palms 22 to 24 cm up and 55 cm ahead, its hips 34 cm, measured) by how far under the stoop's reach the
 // grip will be (`stoop` to `knelt`, its palms' height), and the pot is set where those palms are (`ahead`, before `clearance`)
 const PUT = { ahead: 0.58, stoop: 0.62, knelt: 0.24 }, KNEEL_T = 1.6;
+// (Fixing_Kneeling on this rig kneels in the air: at KNEEL_T its knee's skin is 4.0 cm over the floor and its soles 7.4 to 9.1, measured;
+//  so its hips go down 2.5 cm (KNEEL_SINK) and the feet are let down the rest by the foot IK, a light correction (st.footDown), which
+//  brings the knee on to the floor with them: sunk the whole 4.0, the knee went 1.1 cm into it, 2.0 turning)
+const KNEEL_SINK = 0.025;
 // the carry's hold, in the body's frame (metres): the midpoint of the carrying clip's palms at the idle, measured (91.7 to 95.3 cm up,
 // 40.8 to 41.2 forward): where the lift brings it, and where the carry's hold starts before it rides the palms themselves
 const HOLD = { up: 0.92, fwd: 0.41 };
@@ -387,7 +391,7 @@ export class Carry extends Tech {
       if (into < 1) this.carryArms(ch, base);
       C.blend(base, this.twoHanded(ch, 'chestOpen', L.to + (L.low - L.to) * sm(k), 'R'), this.w * into, null, 2 - into);
       // (down on to a knee by how far under the stoop's reach it goes: PUT)
-      if (this.putDeep > 0 && C.clips.kneel) C.blend(base, C.sample('kneel', KNEEL_T, ch.P.tmp, false), this.w * into * this.putDeep * sm(k));
+      if (this.putDeep > 0 && C.clips.kneel) this.kneel(ch, base, this.w * into * this.putDeep * sm(k));
     } else if (st === 'throw') {
       // two hands back over the head and through: the wind-up to the release by THROW_AT, the follow-through after
       const T0 = THROW_CLIP, s2 = this.throwT;
@@ -411,10 +415,19 @@ export class Carry extends Tech {
       if (o.f <= 0) this.out = null;
       else if (o.kind === 'put') {
         C.blend(base, this.twoHanded(ch, 'chestOpen', LIFT_CLIP.low, 'R'), o.w0 * o.f);
-        if (o.deep > 0 && C.clips.kneel) C.blend(base, C.sample('kneel', KNEEL_T, ch.P.tmp, false), o.w0 * o.f * o.deep);
+        if (o.deep > 0 && C.clips.kneel) this.kneel(ch, base, o.w0 * o.f * o.deep);
       }
       else C.blend(base, this.twoHanded(ch, 'throw', o.clipT ?? THROW_CLIP.to, 'L'), o.w0 * o.f, ch.MASK_UPPER, 0);
     }
+  }
+
+  /** The set-down's knee, blended in by w: Fixing_Kneeling at KNEEL_T with its hips let down by KNEEL_SINK onto the knee, and the feet
+   *  let down to the floor by the foot IK by as much (st.footDown, read by Character.footIK). */
+  kneel(ch, base, w) {
+    const p = ch.clips.sample('kneel', KNEEL_T, ch.P.tmp, false);
+    p.p[1] -= KNEEL_SINK;
+    ch.clips.blend(base, p, w);
+    ch.st.footDown = Math.max(ch.st.footDown || 0, Math.min(1, w));
   }
 
   /** How far down on to a knee the set-down goes (0 .. 1): the grip's height where it will be set, from the stoop's palms (`PUT.stoop`)

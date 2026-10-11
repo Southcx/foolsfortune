@@ -580,9 +580,9 @@ NEW:drawn-on-render-clock. **What is drawn moves on the render clock.** A move's
     the body. The drawn pose and the drawn prop take their time from the frame (0 on the state's first drawn frame); the physics keeps
     the fixed step's. Measured at 144 Hz as the prop's reversals against the palms.
 NEW:clip-sole-on-floor. **A clip's planted sole stands on the floor it is played over.** A new pack of the same captures can plant its
-    feet lower than the rig's rest sole; measure each loop's planted sole on the skin (heel and toe, not the ankle bone) as the gait is
-    analysed and raise the body by it, and keep each foot's lowest skinned point on the ground under that point, not under the ankle.
-    Measured as the lowest sole vertex against the floor, every frame, at every pace, turning and on a ramp.
+    feet lower than the rig's rest sole; keep each foot's lowest skinned point on the ground under that point, not under the ankle, per
+    foot. Never raise the whole body by a loop's deepest strike: the flat stance foot then stands in the air. Measured as the lowest sole
+    vertex against the floor, every frame, at every pace, turning and on a ramp, its median as well as its minimum.
 
 ## Cases
 
@@ -605,10 +605,22 @@ NEW:clip-sole-on-floor. **A clip's planted sole stands on the floor it is played
   on them (the lowest while the foot's contact is over 0.5) and keeps its depth as `lift`; the body is raised by the loops' depths by
   their weights (`st.soleLift`, by the gait's share of the body: none in the air, a slide, a mantle, a dash or a crawl). Then in
   footIK each foot's lowest skinned point is raised to the ground under that point when it would go under, by `planted`, at most
-  `SOLE_MAX` (6 cm): a light correction. After, the same harness: 1.3 and 2.2 m/s 0.00 cm, 3.02 -0.03, 4.2 -0.05, the turn -0.10, up the
+  `SOLE_MAX` (6 cm): a light correction. After (0c3f367), the same harness: 1.3 and 2.2 m/s 0.00 cm, 3.02 -0.03, 4.2 -0.05, the turn -0.10, up the
   ramp -1.78 (one frame), down it -0.06, the prowl 0.00; 0 frames more than 1 cm under on the flat, turning and down the ramp, 1 up it.
   The feet's largest one-frame change of their step against the capsule is as before (walk 1.0 to 2.8 cm, the run 4.4, the turn 16.5
   where it was 17.6, the base's 18.4). With the pot, walking at 3.02 m/s: -2.83 cm and 71 of 180 frames under 1 cm, now -0.03 and 0.
+- **Seen again (the verifier on 0c3f367):** the feet floated instead. The slow walk's lowest foot, steady, no pot: median +3.22 cm, p90
+  +5.72, both feet over 2 cm up in 107 of 150 frames (5610152: -0.23, +2.27, 22); the prowl +1.80 against -1.64, 72 frames against 2.
+- **Cause (measured):** `st.soleLift` raised the whole body by each loop's deepest planted sole (the walk's 3.45 cm is its heel strike's),
+  so the flat foot in mid-stance, which stood at about 0, stood 3.4 cm up, and more as the heel rose. The per-foot raise in footIK was
+  already enough on its own.
+- **Fix:** `st.soleLift` and the gait's `lift` are gone; the per-foot raise stays, and `measureSoles` also keeps the foot's upper skin,
+  thinly (a foot lying on its instep). Steady, no pot, lowest foot min / median / p90 (cm), 5610152 then now: the slow walk -3.65 / -0.23
+  / +2.27 then 0.00 / 0.00 / +2.27, both over 2 cm 22 then 22; 3.02 m/s -2.83 / +1.03 / +8.81 then -0.08 / +1.03 / +8.81; the run -1.69
+  then -0.08 (median +6.33 both); the prowl -3.59 / -1.64 / +0.57 then 0.00 / 0.00 / +0.57. Left, all fewer and shallower than 5610152's:
+  the turn at 4.2 m/s -3.38 cm (3 frames under 1 cm; base -5.35, 42), down the ramp -1.94 (3; -7.45, 59), down the stairs -2.71 (8;
+  -8.71, 74), up them with the pot -3.34 (2; -7.11, 27): a swinging or landing foot the raise weighs down by `planted`, which the whole
+  body's lift had hidden. Stopping out of the prowl -5.95 for 8 frames (base -11.95, 58).
 - **Rule:** NEW:clip-sole-on-floor.
 
 ### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
@@ -701,6 +713,14 @@ NEW:clip-sole-on-floor. **A clip's planted sole stands on the floor it is played
   walking the palms stay 0 to 2 cm off its sides all the way down and let go of it on the floor; the IK pulls them 2 to 17 cm (was up to
   40). Left: walking on, the kneel's feet slide with the capsule for its 0.34 s, as the stoop's did; and walked straight on, the Courier
   reaches the pot set down sooner (it is 27 cm nearer) and passes it while it is still `LET_GO`.
+  Then the verifier: the kneel was done in mid-air, the shin and both feet 7 to 9 cm over the floor for about 10 frames (standing 7.5,
+  walking 9.1, turning 7.4), and getting up the back toe went 3 cm into it. Measured on the skin: Fixing_Kneeling at KNEEL_T kneels in
+  the air on this rig, its knee 4.0 cm up, its soles 7.4 to 9.1; and the stoop blended into it puts the back toe up to 10.6 cm under the
+  floor on the way down and up, past footIK's 6 cm raise. Now the kneel's hips go down 2.5 cm (`KNEEL_SINK`, `Carry.kneel`) and while
+  it is on the body footIK lets the feet down on to the floor by its weight (`st.footDown`, at most 6 cm) and raises them by up to 14
+  (`SOLE_KNEEL`). Lowest foot (cm), still / walking / turning: kneeling 0.0 to +0.4 / 0.0 to +0.4 / 0.0 to +0.2, the whole set-down
+  never under 0.0 (was -3.0, 0.0, -2.4 before the change, with the 7 to 9 cm float); the knee's skin -0.7 / -0.7 / -1.4 at the bottom
+  (on it). The palms stay 0 to 2 cm off the pot.
 - **Rule:** NEW:carry-from-hands, NEW:let-go-clear, NEW:drawn-on-render-clock; rules 46 and 56 for the hand-offs; NEW:clip-sole-on-floor
   for the feet under it.
 
