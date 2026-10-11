@@ -240,11 +240,12 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | walk | `walk` (Loco_WalkMasc) | 0.5 to 2.4 m/s |
 | run | `jog` (Loco_RunMasc) | smoothstep from the walk, 2.4 to 3.4; whole at 4.2 |
 | sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
+| run, sprint with the cutlass drawn (new) | `stance:cutlassRun` (`jog` baked: `courier/anim/stances.js`) and `stance:cutlassSprint` (`sprint`): the loop's chest and free arm as captured, the blade arm's swing at 0.3 of the run's, its hand turned so the blade points back, a little down and out, held 0.8 of the way to that (`steady`), the hand moved to the hip, behind it; no blade run in the suite, UAL or CMU (`tools/sondelass/sondelass.js` drawnRun) | the upper body's tool layer in place of the en garde idle, by the gait's running share (`st.run`: the jog's and the sprint's weights, out in the air, a slide, mantle, dash, wallrun, crouch, crawl or skid; damped 12/s), the sprint's bake by its share, on the shared phase; a stroke or the guard over it |
 | backpedal, strafe | the same loops, run backward past 110 degrees | the hips turned toward the move (70 at most), the chest back to the aim |
 | starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
 | skid stop (new) | Loco_SprintStop from its brace (0.07 s) at 1.15x, in place: when the speed falls under 4 m/s within 0.25 s of 5.6 m/s or more, still heading within 20 degrees of the sprint (a stop, or a reversal on its way through zero) | in 0.08; out as it stands (its 0.72 to 0.95 s); cut over 0.12 s when the move picks up 1.2 m/s again or the ground, a crouch, slide, mantle or dash takes over; not in first person |
 | half turn (new) | Loco_Turn180, its frame the one whose hips have turned as far as the body (time-warped onto player.js's turn; at its own pace once the body is round), in place and unturned, mirrored for a turn to the right; to 0.7 s (its frame 22 is its first again) | on a reversal: the move over 100 degrees behind, from 3 m/s or more through under 1.5 within 0.3 s, the body turning to it at 1.5 rad/s or more; in 0.06, out 0.42 to 0.58 s (the run back on the legs as the body faces the move); the skid gives way to it; its feet planted only under 1 to 3 m/s (the capsule is back at a run 0.08 s after the reversal) |
-| crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
+| crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held half still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
 | crawl (new, its body to come) | Loco_CrawlEnter, Loco_Crawl (hands and knees), Loco_CrawlProne (the belly), Loco_CrawlExit (`CRAWL`, `courier/anim/crawl.js`) | while `s.crawl` (player.js has no body for it yet: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md); down by the enter from its squat (0.2 s in) when crouched, faded in 0.15; the loops on their own phase at the move's speed over theirs (0.29 and 0.39 m/s), strides to 1.3x; `s.prone` blends to the belly; up by the exit to its squat (0.4 s) or standing (0.64); the foot IK, the reach drop, the knee guard and the prowl's head give way to it. Posed top 1.05 m (hands and knees), 0.74 (belly) |
 | jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
 | off a ledge | Air_JumpLoop from 0.5 s | 0.25 |
@@ -272,14 +273,27 @@ the capsule (bob up and down, sway side to side, its turn's speed):
 | Loco_SneakWalk, let down 0.38 m (the crouch to now) | 0.40 m/s, 4.8x its cadence | 19 cm | 56 cm | 1,448 / 2,731 degrees a second |
 | Loco_CreepSideR (a sidestep creep) | 0.32 | 15 | 38 | 712 / 1,824 |
 | Loco_CrouchWalk, as it is | 0.61 | 8.5 | 11 | 23 / 36 |
-| the prowl: Loco_CrouchWalk, the head held | 0.61, 1.4x strides | 3.0 | 4.1 | 3 / 6 |
+| the prowl: Loco_CrouchWalk, the head held (2026-10-10) | 0.61, 1.4x strides | 3.0 | 4.1 | 3 / 6 |
+| the prowl now: the hold at half (`PROWL.still` 0.5, 2026-10-11) | 0.61, 1.4x strides | 5.2 | 6.9 | 11 / 18 |
 
-The sneak's head swings with its tiptoe at any pace, and its cadence multiplied it (casebook rule 187). The head held is a cat's: its turn
+The owner (2026-10-11): "the head is a little TOO still. Can we split the difference between the two versions?" Both passes below are laid
+on at `PROWL.still` of their weight (1 the cat's whole hold, 0 the clip's own head): at 0.5 the head lives a little, halfway in bob, sway
+and turn between the two; the body under it (the hands, the knees, the hips, the feet) measures the same to the millimetre. The sneak's
+head swings with its tiptoe at any pace, and its cadence multiplied it (casebook rule 188). The head held is a cat's: its turn
 in the body's heading frame followed slowly (2.5/s) and levelled to a gaze 10 degrees below the horizon, shared up the neck (spine004 a
 quarter, spine005 three tenths, the head the rest, each capped at 22, 20 and 30 degrees off the clip), before the aim's look; after the
 feet, its place against the capsule followed slowly (2/s) and the neck's base swung to hold it there (0.85 of the way). A turning prowl
 (1.2 rad/s): bob 3.0, sway 4.1, the head turning with the body at 69 degrees a second. The first-person eye rides the posed head while
 crouched (player.js), so it is as still.
+
+**The cutlass's drawn run** (the owner, 2026-10-11: "The Sondelass needs an animation for running while the Sondelass is drawn"). Before,
+the run's legs carried the en garde idle's upper body (Sond_Idle over the upper-body mask): both arms held out still, the blade up and
+ahead of them to the right (its tip 0.9 to 1.3 m out to the right, 1.4 to 1.8 m up, 0.8 to 1.2 m ahead). No blade run is in the suite
+(courier_anims_melee.glb, courier_anims_move.glb), UAL (anims.bin) or CMU, so the run's own loop is baked into one: the hand's turn solved
+from the blade's own direction (the socket's), averaged over the loop, then held to it 0.8 of the way (`steady`, new in stances.js), the
+hand moved to the hip by IK. Measured in game, the run (4.2 m/s) / the sprint (6.8): the hand 0.76 to 1.02 m up, 0.03 to 0.29 m behind;
+the tip 0.44 to 0.79 / 0.42 to 0.74 m up, 1.16 to 1.47 m behind, 0.31 to 0.41 m out to the right; the chest and the free arm the run's.
+Judged front and side, every other tool off (Calissa's scratchpad, `melee-p1a/drawnrun/`).
 
 **The idles' A and B** (the owner, 2026-10-10: "A should play 4x to 5x more often than the B"). A is the standing idle's loop; a B a
 break, or an idle's own gesture held out of its loop (`IDLES.calm`, idlebreak.js: the bones' frames bridged, the loop as captured kept as

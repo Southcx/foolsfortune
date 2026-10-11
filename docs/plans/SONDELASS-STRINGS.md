@@ -33,10 +33,10 @@ at its row's time, into a new opener. "Paid" is where the paid cut lands (the st
 | | j3 | Sond_JrpgCombo3, whole body | finisher: overhead, lift 3, staggers | 0.53-0.68 | - | 0.68-1.57 | at 0.90 | 0.68 | 0.22 |
 | charge (hold LMB) | c1, then hold | c1 held past 0.30 clip s, then Sond_ChargeHold looped (full at 1.1 real s) | wind-up | - | release | - | - | - | - |
 | | burst | Sond_ChargeRelease, whole body | finisher: 331-degree cut on release | 0.00-0.11 | - | 0.11-1.63 | at 1.30 (new) | 0.11 | 1.19 |
-| launcher (S + LMB) | up | Sond_Launcher, whole body, rises its own 0.92 m | launcher: tapped, lift 5.5 (the feet to 1.13 m); held to its strike, lift 9.2 and they ride it up (High Time: the feet to 3.93 m, 2.2 x their height) | 0.17-0.28 | 0.55 (0.30-1.08) | 0.28-1.10 (held, to the target's turn) | - | 0.28 | 0.27 |
-| | a1 | Sond_AirCombo1 | juggle: flat cut, lift 2, push 0.5 | 0.03-0.24 | 0.35 (0.22-0.80) | 0.24-0.83 | - | 0.24 | 0.11 |
-| | a2 | Sond_AirCombo2 | juggle: a somersault cut, lift 2, push 0.5; aimed 42 degrees | 0.13-0.38 | 0.38 (0.36-1.00) | 0.38-1.03 | - | 0.38 | 0 |
-| | a3 | Sond_AirPlunge | plunge: a chop (push 2, lift 0), falls at 26 m/s from 0.32 clip s; a 2.6 m ring on landing, near the ground only; staggers; the landing settles the body (the Courier's squash, 6 %) | a chop at 0.07-0.24, then the ring | - | 1.05 on the ground after landing | 0.6 after landing (new) | landing | 0.6 |
+| launcher (S + LMB) | up | Sond_Launcher, whole body, rises its own 0.92 m | launcher: tapped, lift 5.5 (the feet to 1.13 m); held to its strike, High Time: they rise on an arc of their own to 3.92 m (2.2 x their height) whatever was struck, and it is lifted 9.2 to meet the blade (section 3c) | 0.17-0.28 | 0.55 (0.30-1.08) | 0.28-1.10 (held, to their arc's turn) | - | 0.28 | 0.27 |
+| | a1 | Sond_AirCombo1 | juggle: flat cut, lift 1.2, push 0.5; their hang x0.3 | 0.03-0.24 | 0.35 (0.22-0.80) | 0.24-0.83 | - | 0.24 | 0.11 |
+| | a2 | Sond_AirCombo2 | juggle: a somersault cut, lift 1.2, push 0.5; aimed 42 degrees; their hang x0.3 | 0.13-0.38 | 0.38 (0.36-1.00) | 0.38-1.03 | - | 0.38 | 0 |
+| | a3 | Sond_AirPlunge, x1.25 | plunge: a chop (push 2, lift 0), falls at 30 m/s from 0.26 clip s; a 2.6 m ring on landing, near the ground only; staggers; the landing settles the body (the Courier's squash, 6 %) | a chop at 0.06-0.19, then the ring | - | 0.89 on the ground after landing | 0.6 after landing (new) | landing | 0.6 |
 | dash (LMB sprinting) | dash | Sond_DashSlash, whole body, 2.3 m travel | opener and finisher alone: push 8 | 0.23-0.35 | - | 0.35-1.50 | at 0.50 (new) | 0.35 | 0.15 |
 | special (R, 12 Lachryma) | tide | Sond_SpecialTidecutter, whole body | finisher: the 4.2 m ring at 1.86; its row's time now the clip's 2.63 | 1.80-1.94 | - | 1.94-2.63 | none (plays out) | 1.94 | 0.69 |
 | counter (LMB from the guard) | spin | Sond_SpinSlash, whole body | 2.8 turns; its own row (`counter`: 0.8 x 4) | 0.20-0.94 | - | 0.94-1.70 | none (plays out) | 0.94 | 0.76 |
@@ -156,6 +156,45 @@ tick) and lifted before anything reads it (the start of the next): the capsule, 
 the body as posed; a drawn tool and the psygun move with the hand and keep their shape. Not in first person. Prior art: the twelve
 principles' squash and stretch, Super Mario 64's landing squash, Ratchet & Clank's, a critically damped spring (Holden's "Spring-It-On").
 
+## 3c. High Time on its own arc, and the air string tightened (the owner, 2026-10-11)
+
+> "As for High time and the air combos, I think they're a little too floaty, also the launcher is linked to chasing the target it hits,
+> so the action breaks when attempting to use it on the Strawman." (the owner, 2026-10-11)
+
+What was built (`tools/moveset.js`: `HIGH`, `leap()`, `rise()`; `tools/sondelass/cutlass.js`'s table; casebook, "High Time chased what
+it struck", rule 190):
+
+- **The rise is theirs.** From the launcher's strike end (held), a ballistic arc to 3.92 m over the ground they left, at 14.7 m/s²
+  (x0.7 the core's 21): the top 0.71 s after the strike's end. The launcher's last pose holds till that arc turns over (3 m/s down). An
+  air blow begun on the way up keeps the arc to its top, so a press never stops or stretches the rise. Whatever was struck, or nothing.
+- **What can be lifted meets the blade** (9.2, as before); the ride (1.3 m under its centre) is laid on only past the top, and only on
+  a thing seen to rise (0.1 m in 0.2 s); what took the hit and stayed put (Strawman) is let go, and the air string plays over it, or
+  strikes it if it is tall enough (a paid cut into a1 struck Strawman on the way up).
+- **Tighter:** a1's and a2's hang x0.3 (6.3 m/s², was x0.12, 2.5) where nothing is ridden; their lift on what they ride 1.2 (was 2),
+  so the pair sinks about 0.3 m a blow instead of holding level; the plunge's wind-up at 1.25x to 0.26 clip s (the chop's end; was 1x
+  to 0.32) and its fall 30 m/s (was 26). The tapped launcher, the core jump and the rows of `moves.js` are unchanged.
+
+Measured (the combat wing, the pool empty so only the free grammar plays; S + LMB held, then LMB every 0.1 real s; heights the feet
+above the floor; real s from the press, hit-stops included):
+
+| | before | after |
+| --- | --- | --- |
+| a slip jelly (the juggle pen): the top | 3.93 m at 1.80 s, riding it (3.80 at 1.35 with no press) | 3.92 m at 1.35 s (1.17 with no press) |
+| the jelly: a1 / a2 / the chop hit, feet and gap | 0.78 s 2.32 m 1.20 / 1.43 s 3.75 m 1.27 / 1.95 s 3.86 m 1.28 | 0.78 s 2.90 m 0.62 / 1.43 s 3.92 m 1.10 / 1.93 s 3.66 m 1.25 |
+| the jelly: the launcher to the plunge's landing | 2.58 s (from 3.83 m) | 2.45 s (from 3.66 m) |
+| Strawman (the sparring circle): the top | 0.43 m: the ride held them on the ground | 3.92 m at 1.17 s |
+| Strawman: the air string | a1, a2 and the chop on the ground | a1 and a2 over its head, the plunge from 3.82 m lands at 1.85 s, its ring strikes it |
+| Strawman, no press after: the launcher's last pose | frozen 1.42 s on the ground | 0.08 s at the top |
+| nothing struck | 1.08 m (no ride: the clip's rise) | 3.92 m at 0.97 s; the plunge lands at 1.68 s |
+| tapped, a jelly (unchanged launcher) | a1 / a2 / chop at 1.05 / 0.76 / 0.88 m; lands 2.47 s | 1.05 / 0.71 / 0.62 m (sinking); lands 2.38 s |
+| the hang where nothing is ridden | x0.12 (2.5 m/s²) | x0.3 (6.3 m/s²) |
+
+Every air blow lands on the jelly, held and tapped. The paid cut keeps working through it (pool 100, LMB every 2 frames): from the
+launcher's recovery into a1 at 0.47 s (the arc kept: 3.92 m), from a1 into a2 at 0.93 s, from the plunge's landing at 2.1 s into the
+ground string; the free recovery cut after the landing at the row's 0.6 s. No row of `moves.js` changed, so its 2.9 power a second
+over the air string (on the rows' times) stands; in real time, hit-stops and all, the string's 4.7 power (the launcher's with it) took
+2.58 s on a jelly and takes 2.45 (1.8 to 1.9 a second).
+
 ## 4. The other changes the clips asked for (built)
 
 1. **j1, j2**: their chain windows open at 0.53 and 0.66 clip s, once their arcs finish (j1 into j2 at 0.48 real s, j2 into j3 at 0.62).
@@ -222,7 +261,8 @@ are in Calissa's scratchpad (`sondelass-chart/`), the pass's in `sondelass-pass/
 string, at the cut, 5 and 12 frames after: the afterimage and the filmed ribbon) and `sheet-hightime` (the hold-launcher's air string
 against a slip jelly, every 0.1 s, side-on); the second pass's in `hightime-squash/`: `sheet-arc-b` (High Time's arc, a fixed side
 camera, the heights graphed and labelled) and `sheet-land-b` (the plunge's landing frame by frame, the squash on and off in pairs, its
-curve graphed). None are in the repo.
+curve graphed); the 2026-10-11 pass's in `melee-p1a/hightime/`: `sheet-arc-jelly-before`, `-after`, `sheet-arc-strawman-before`,
+`-after` (High Time against a slip jelly and against Strawman, a fixed side camera, the heights graphed and labelled). None are in the repo.
 
 Not checked: nothing was watched at speed, only stills; the hit-stop is not in the tables; only a slip jelly was juggled (a clapperjar
 rides the same way in code, untried); a2 and t2 aimed off their targets were seen side-on only, not from the front; the paid cut from

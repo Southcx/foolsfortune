@@ -19,6 +19,8 @@
 //  - Zelda's Hookshot / Just Cause's grapple: the hook flies fast, then the line draws you in at a constant speed and lets go
 //    with a hop; jump cancels and keeps the momentum.
 //  - Monster Hunter's weapon-form switch: one instrument, three shapes, the sections sliding in and out between them.
+//  - The drawn run (drawnRun): Ghost of Tsushima's and Sekiro's run with the blade out, Monster Hunter's sword-and-shield run with the
+//    weapon drawn: the run's own body, the blade carried low and back (a stance baked over the run, courier/anim/stances.js).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RestBake } from '../../render/restbake.js';
@@ -211,6 +213,7 @@ export class Sondelass extends Tech {
     if (!this.cutlass.playing && !this.angler?.castClip && tr.cur !== want) tr.play(want, 0, 0.25);
     tr.update(dt);
     const layer = tr.sample(this.P1);
+    if (this.form === 'cutlass') this.drawnRun(ch, layer, dt); // (running, the run's own upper body with the blade held low and back)
     // a cutlass stroke, or the cast: a clip played over the ready stance
     const cl = this.cutlass.pose(C, this.P2);
     if (cl) C.blend(layer, cl.pose, cl.w);
@@ -221,6 +224,21 @@ export class Sondelass extends Tech {
     if (!this.MASK_HOOK) { this.MASK_HOOK = Float32Array.from(ch.MASK_UPPER); C.bones.forEach((b, i) => { if (/L$/.test(b) && /arm|hand|f_|thumb/.test(b)) this.MASK_HOOK[i] = 0; }); }
     C.blend(base, layer, layerW, this.form === 'hook' && !this.hookshot.att ? this.MASK_HOOK : ch.MASK_UPPER, 0);
     if (this.form === 'cutlass') this.cutlass.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the stroke's: tools/moveset.js)
+  }
+
+  /** THE DRAWN RUN (the owner, 2026-10-11: "The Sondelass needs an animation for running while the Sondelass is drawn"): running or
+   *  sprinting with the cutlass out, the upper body is the run's own (its chest and free arm, on the gait's shared phase) and the blade
+   *  arm holds the cutlass low and back (stances.js: cutlassRun over the jog, cutlassSprint over the sprint), in place of the en garde
+   *  idle laid over the running legs, which held both arms out still. By the gait's running share (character.js `st.run`); a stroke, the
+   *  guard or the stinger is laid over it as over the idle. */
+  drawnRun(ch, layer, dt) {
+    const C = ch.clips, st = ch.st, g = ch.gait;
+    this.runW = THREE.MathUtils.damp(this.runW || 0, st.run || 0, 12, dt);
+    if (this.runW < 0.001 || !C.clips['stance:cutlassRun'] || !g?.jog) return;
+    const at = (n, clip) => ((st.phi + g[n].off) % 1) * C.clips[clip].dur; // (the loop the stance was baked over: its own frames, the same phase)
+    const pose = C.sample('stance:cutlassRun', at('jog', 'stance:cutlassRun'), (this.P3 ||= C.pose()));
+    if ((st.sprint || 0) > 0.001 && C.clips['stance:cutlassSprint'] && g.sprint) C.blend(pose, C.sample('stance:cutlassSprint', at('sprint', 'stance:cutlassSprint'), (this.P4 ||= C.pose())), st.sprint);
+    C.blend(layer, pose, this.runW);
   }
 
   // ---------------------------------------------------------------- hands: the draw, the hook's aim, the reel, and where the tool ends up
