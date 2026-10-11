@@ -389,6 +389,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   round its creature; a creature's body showing its mental state (never text).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`) — how the weather and hour are drawn: streaks, motes, halo, aurora, rainbow,
   bolts, and each one's heavy look at strength 1; only an open place gets them. → detail
+- **a room glaze / the room glaze atlas** (`ROOM_GLAZES`, `ROOM_SURFACES`, `src/vfx/roomglazes.js` / `glazeAtlas()`, `src/vfx/surfaces.js`) — a
+  real glaze fired onto a room's built surface or its ware (the kilns' natural ash, the hub's salt-glazed brick, the gallery's majolica
+  plinths) / the one texture they are drawn from. *Not:* a glaze (the Courier's, `GLAZES`), a material, a surface pattern (`SURFACE`). → detail
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the overture** (`OVERTURE`, `src/music/overture.js`) — the title's opening cue, "Fortune Favours the Fool", handing on into the title theme;
@@ -489,6 +492,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
+| glaze | the Courier's (`GLAZES`, fired at the kiln); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words

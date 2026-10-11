@@ -174,16 +174,56 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
     as you go round it) edged and veined in gold, on plum-dark bark; the gold glows a little more by night, low and steady. A crown
     may take a tint (Myggdrasil's tincture), which leans its flash and keeps its value.
 
-### Room palettes (proposed, waiting on the room glaze atlas)
+### The room glazes (built 2026-10-11: `vfx/roomglazes.js`, drawn by the room glaze atlas in `vfx/surfaces.js`)
 
-| room | clay | accent |
-|---|---|---|
-| the workshop | red earthenware | kiln orange |
-| the hub and the index | grey stoneware | celadon |
-| the movement lab | buff bisque, a test grid | ochre |
-| the mill and kiln stack | iron-red and soot | ember |
-| the siege | black basalt, raku white | oxblood |
-| the circuits | porcelain, blue underglaze | cobalt |
+One look: **the building is fired clay**, and a potter's building at that. Downstairs is the making, upstairs the showing, the hub the
+measuring. Terracotta stays the ground everywhere (the floors, the walls, the iron-dark wood); a glaze goes only where a potter would
+put it, a few to a room, never a rainbow. A room glaze is not a glaze (the Courier's, section 4): it is a row of `ROOM_GLAZES`, chosen for
+each kind of built surface in one table (`ROOM_SURFACES`), and the rooms carry one colour id each (`ROOM_GLAZE_ID.kiln`).
+
+| where | room glaze | why |
+| --- | --- | --- |
+| both kiln domes, the lintel over the mouth | **natural ash** (Bizen's goma where thin, Shigaraki's green bidoro pooled) on firebrick | the kiln's own glaze: the fire lays ash on whatever faces it, the kiln first; it lies on the shoulder and runs down the sides. The body is firebrick now (it was drawn as planks) |
+| both chimneys | firebrick, bare | |
+| the ground floor's ware | bisque and terracotta (as they were) | a workshop's shelves hold ware waiting for its glaze firing |
+| the gallery's plinths and bases | **majolica white** (tin glaze) | haniwa, dogu and Jomon pots were unglazed earthenware: the sculpture stays bare and stands on white, as a museum shows it |
+| the showroom's stepped stand | **tenmoku** (Jian), rust only as specks | a dark ground for the pale ware; hare's fur streaks are not drawn (on a flat slab they read as wood grain) |
+| the showroom's ware | **celadon** on the west table; white porcelain and **tenmoku** tea bowls on the east; **shino** with one **oribe** on the stand; one **sang de boeuf** vase at its top | the showing: Longquan, Jian, Mino and Jingdezhen side by side; the building's one red glaze is as rare as the real one |
+| the hub's four walls | **salt glaze** on grey stoneware brick | the glazed brick of a Victorian works, put where a wall must wash and throw the lamplight back; grey where the salt lay thin, toffee where the flame flashed it. Their backs are the course's inner walls: the hub is a grey box in the red course, a landmark |
+| the Index's pedestal | **celadon** (Longquan) | the hub's one glaze; Pip in bisque beside it |
+| the hub's heights ladder | its tone ramp, unglazed | a code by what each height takes, already the clay's own firing range, bisque to iron |
+
+**How a room glaze is drawn** (no new program: the built surfaces' one program, `dress`, reads it, and a palette colour has no glaze and
+draws exactly as it did). The clay body's pattern first (plaster, tiles, planks, brick), then the glaze over it from **the room glaze
+atlas**: one 128 x 128 texture, a metre a tile, mipmapped. **R the pooling** (soft blotches, read at 2.7 m and at 1 m a tile and mixed, so a
+40 m wall shows no repeat), **G the runs** (rivulets 6 to 12 cm wide that start thin and end in a bead), **B the orange peel** (6 and 12 cm
+dimples), **A the specks** (3 to 5.5 cm: iron, ash, rust, a pinhole). A glaze **lies** where its row says (on floor-facing faces, on
+wall-facing faces, and for a glaze the fire laid, the ash, on top and running down the sides), **pools thick** in the floor-facing faces,
+the pooling's blotches and the body's recesses (mortar, grout, a seam), and **runs thin** over what stands proud, where its specks show.
+A clear glaze (salt, ash) shows the body's relief through it; an opaque one (majolica, tenmoku) hides it. **The gloss** is the glass's
+own (the ash's glass 0.5, a lamp's highlight broad and soft; the bare firebrick 0.88), and **the sheen** is the room's own light (its
+ambient and hemisphere) taken as a dim surround and reflected by the standard material, so the glass shows at its turn and not face on;
+a black glaze takes little of it (the tenmoku 0.3: an even sheen on black lies as a grey veil, and its lustre is the lamps' highlights).
+
+**No crawl:** the finest mark is 4 texels (3 cm, three pixels at 4 m at 480 lines), mipmapped to plain tone beyond. Where a glaze stops
+is a fixed band of its cover, never one widened by `fwidth()` (one value a 2x2 quad: the edge moved with the quads as the camera slid),
+and its runs are their own soft profile, never cut at a level (a cut sharpens what the mips softened); on a curved face the atlas is
+read along the three axes and blended by the normal, so the box mapping's switch of axis leaves no seam (NEW:threshold-fixed-band).
+**Not drawn, and why:** crackle (a net a texel wide would crawl), slip-trailed earthenware (a
+trailed line is the same; it belongs later on the drying rack's plates, with the dip), hare's fur on a built surface (see the stand).
+The glazed ware's bare foot (**the dip**) is asked of Petra (`world/props/pottery.js`).
+
+Prior art: the glazes' own history (each row in `roomglazes.js` says where and when); Okami's and The Wind Waker's painted surfaces, a
+few broad colours to a surface and the light doing the rest; the PS2's tiling texture over a colour (section 7, precept 1).
+
+| room | clay | accent | state |
+|---|---|---|---|
+| the workshop | red earthenware | kiln orange; the ash glaze's green on the kilns | built (2026-10-11) |
+| the hub and the index | grey stoneware (salt glaze) | celadon | built (2026-10-11) |
+| the movement lab | buff bisque, a test grid | ochre | proposed |
+| the mill and kiln stack | iron-red and soot | ember | proposed |
+| the siege | black basalt, raku white | oxblood | proposed |
+| the circuits | porcelain, blue underglaze | cobalt | proposed |
 
 ## 6. The Courier's face
 
@@ -197,7 +237,8 @@ What each kind of thing looks like, so a new feature knows how to draw itself (t
 precept N"). Precepts 1 to 3 are three materials of meaning, each with one language, never borrowing.
 
 1. **Clay is solid, warm and outlined:** the world, the folk, the pots. The cel ramp (`render/toon.js`), an ink outline, the terracotta
-   palette; built surfaces are one modest tiling texture times a palette colour (`vfx/surfaces.js`). Clay squashes, wobbles, settles,
+   palette; built surfaces are one modest tiling texture times a palette colour (`vfx/surfaces.js`), a room glaze over it where a potter would
+   put one (section 5, "The room glazes"). Clay squashes, wobbles, settles,
    breaks into shards; it never glows except where it holds Lachryma or a kiln's heat.
 2. **Lachryma is matter, never line** (its colours: section 3). How much is shown by **volume, fill and brightness**, never a digit
    (the tube, the beads, the rim, the filigree lit with its load).

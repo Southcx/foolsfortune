@@ -17,6 +17,7 @@ import { buildCircuitRooms } from './basement/circuitrooms.js';
 import { buildWeir, spawnWeir } from '../tools/sondelass/angling/weir.js';
 import * as THREE from 'three';
 import { dress } from '../vfx/surfaces.js';
+import { ROOM_GLAZE_ID as RG, wareFor } from '../vfx/roomglazes.js'; // (the kilns, chimneys, plinths, stand and ware: Calissa's room glazes)
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { zoneOf } from '../render/zones.js';
 const _center = new THREE.Vector3();
@@ -284,12 +285,12 @@ export class Level {
     this.rampCollider(-9.2, 1.6, z0, 2.6, z0 + n * run, F2);
     this.box([-8.35, 4.8, 7], [0.08, 4.4, 10.2], C.dark, { collide: false });
     // gallery: plinths for the sculpture
-    this.box([0, y + 0.2, 11.2], [1.8, 0.4, 1.8], C.dark);
-    for (const x of [-5, -2.5, 2.5, 5]) this.box([x, y + 0.25, 13.9], [0.8, 0.5, 0.8], C.mid);
-    for (const x of [-6.5, 6.5]) this.box([x, y + 0.55, 8], [0.55, 1.1, 0.55], C.mid);
-    for (const x of [-3, 3]) this.box([x, y + 0.1, 8.2], [0.7, 0.2, 0.7], C.dark);
+    this.box([0, y + 0.2, 11.2], [1.8, 0.4, 1.8], RG.plinth);
+    for (const x of [-5, -2.5, 2.5, 5]) this.box([x, y + 0.25, 13.9], [0.8, 0.5, 0.8], RG.plinth);
+    for (const x of [-6.5, 6.5]) this.box([x, y + 0.55, 8], [0.55, 1.1, 0.55], RG.plinth);
+    for (const x of [-3, 3]) this.box([x, y + 0.1, 8.2], [0.7, 0.2, 0.7], RG.plinth);
     // the kiln chimney carries on up through the gallery to the roof
-    this.cylinder([0, (F2 + H) / 2, 13.4], 0.45, H - F2, C.dark, 8);
+    this.cylinder([0, (F2 + H) / 2, 13.4], 0.45, H - F2, RG.chimney, 8);
     // upstairs wall shelves (east wall, showroom end)
     for (const z of [-11.5, -8.2]) this.shelf(W - 0.35, z, -1, 3.0, y);
     // drying rack on the ground floor: plates standing on edge
@@ -302,16 +303,16 @@ export class Level {
       this.box([x, y + 0.9, -10.5], [1.0, 0.1, 6], C.wood);
       for (const dz of [-2.8, 0, 2.8]) for (const dx of [-0.4, 0.4]) this.box([x + dx, y + 0.425, -10.5 + dz], [0.1, 0.85, 0.1], C.dark);
     }
-    this.box([0, y + 0.2, -11.5], [3.2, 0.4, 3.2], C.mid);
-    this.box([0, y + 0.6, -11.5], [2.2, 0.4, 2.2], C.wood);
-    this.box([0, y + 1.0, -11.5], [1.2, 0.4, 1.2], C.mid);
+    this.box([0, y + 0.2, -11.5], [3.2, 0.4, 3.2], RG.stand);
+    this.box([0, y + 0.6, -11.5], [2.2, 0.4, 2.2], RG.stand);
+    this.box([0, y + 1.0, -11.5], [1.2, 0.4, 1.2], RG.stand);
     // west showcase platform
     this.box([-6.2, y + 0.15, -1], [3.0, 0.3, 4.4], C.mid);
     // upper kiln where the upstairs clapperjars are born
     const kr = 1.1, kpos = new THREE.Vector3(8.7, y, 2.6);
     const g = new THREE.SphereGeometry(kr, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2);
     g.translate(kpos.x, kpos.y, kpos.z);
-    this.addGeo(g, C.dark, true);
+    this.addGeo(g, RG.kiln, true);
     this.physics.world.createCollider(RAPIER.ColliderDesc.ball(kr).setTranslation(kpos.x, kpos.y, kpos.z).setCollisionGroups(GROUPS.static), this.fixedBody);
     const mouth = new THREE.Mesh(new THREE.CircleGeometry(0.45, 8, 0, Math.PI), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
     mouth.position.set(kpos.x - kr + 0.08, y + 0.02, kpos.z);
@@ -458,16 +459,16 @@ export class Level {
     const r = 2.2, pos = new THREE.Vector3(0, 0, 12.6);
     const g = new THREE.SphereGeometry(r, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
     g.translate(pos.x, pos.y, pos.z);
-    this.addGeo(g, C.dark, true);
+    this.addGeo(g, RG.kiln, true);
     this.physics.world.createCollider(RAPIER.ColliderDesc.ball(r).setTranslation(pos.x, pos.y, pos.z).setCollisionGroups(GROUPS.static), this.fixedBody);
-    this.cylinder([0, 4.6, 13.4], 0.45, 5, C.dark, 8);
+    this.cylinder([0, 4.6, 13.4], 0.45, 5, RG.chimney, 8);
     // glowing mouth
     const mouth = new THREE.Mesh(new THREE.CircleGeometry(0.75, 8, 0, Math.PI), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
     mouth.position.set(0, 0.02, pos.z - r + 0.12);
     mouth.rotation.y = Math.PI;
     mouth.scale.set(1, 1.3, 1);
     this.scene.add(mouth);
-    this.box([0, 1.05, pos.z - r + 0.2], [1.8, 0.15, 0.3], C.deep, { collide: false });
+    this.box([0, 1.05, pos.z - r + 0.2], [1.8, 0.15, 0.3], RG.kiln, { collide: false });
   }
 
   buildRange() {
@@ -662,14 +663,14 @@ export class Level {
     for (const x of [-3, 3]) sculpt('endless', x, y + 0.2, 8.2, 1.05, { color: C.wood });
     // showroom tables: rows of porcelain (diamond dust)
     for (const x of [-6, 6]) {
-      for (let z = -12.9; z <= -7.9; z += 1.0) pot(pick(['cup', 'bottle', 'crown', 'twist', 'vase']), x + rand(-0.2, 0.2), y + 0.95, z, rand(0.8, 1.05));
+      for (let z = -12.9; z <= -7.9; z += 1.0) pot(pick(['cup', 'bottle', 'crown', 'twist', 'vase']), x + rand(-0.2, 0.2), y + 0.95, z, rand(0.8, 1.05), wareFor(x < 0 ? 'westTable' : 'eastTable', Math.round(z + 12.9)));
     }
     // stepped pyramid stand
     const tiers = [[1.35, 0.4, 7], [0.85, 0.8, 4], [0.3, 1.2, 2]];
     for (const [r, h, n] of tiers) {
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2 + 0.3;
-        pot(pick([...smalls, 'jar', 'melon']), Math.cos(a) * r, y + h, -11.5 + Math.sin(a) * r, 0.8);
+        pot(pick([...smalls, 'jar', 'melon']), Math.cos(a) * r, y + h, -11.5 + Math.sin(a) * r, 0.8, wareFor(h > 1 && i === 0 ? 'standTop' : 'stand', i));
       }
     }
     B.spawn({ kind: 'ember', ember: true, pos: [0, y + 1.202, -11.5], scale: 0.8 });
