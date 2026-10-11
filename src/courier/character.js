@@ -23,6 +23,10 @@ import { dressFiligree } from '../vfx/filigree.js';
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
+const SOLE_MAX = 0.06; // m: the most the sole is raised onto the ground under it (footIK)
+// m: the same while a tech kneels (st.footDown): the stoop blended into the kneel puts the back toe up to 10.6 cm under the floor on
+// the way down and up (the carry's set-down, measured)
+const SOLE_KNEEL = 0.14;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
@@ -405,6 +409,7 @@ export class Character {
   analyseGait(name) {
     const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
     this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    this.soles ||= this.measureSoles(); // (footIK's soles: read once, in the rest pose)
     const fr = [];
     for (let f = 0; f < c.n - 1; f++) {
       this.applyPose(C.sample(name, f / C.fps, p));
@@ -436,6 +441,40 @@ export class Character {
     const speed = wsum > 0 ? vsum / wsum : 1;
     this.resetPose();
     return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n };
+  }
+
+  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel), those within 4 cm of the
+   *  rest pose's lowest densely and the rest thinly, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
+   *  than its ankle bone says), and `rest`, that lowest point at rest. Read once, in the rest pose. */
+  measureSoles() {
+    this.resetPose();
+    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    this.root.updateMatrixWorld(true);
+    const all = { L: [], R: [] }, v = new THREE.Vector3();
+    this.root.traverse((m) => {
+      if (!m.isSkinnedMesh || m.userData.isOutline) return;
+      const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight;
+      if (!si) return;
+      for (let i = 0; i < si.count; i++) {
+        let b = -1, w = 0;
+        for (let k = 0; k < 4; k++) { const x = sw.getComponent(i, k); if (x > w) { w = x; b = si.getComponent(i, k); } }
+        const bone = m.skeleton.bones[b], side = /^(foot|toe|heel02)([LR])$/.exec(bone?.name || '')?.[2];
+        if (!side) continue;
+        m.getVertexPosition(i, v); v.applyMatrix4(m.matrixWorld);
+        all[side].push([bone, v.clone()]);
+      }
+    });
+    let rest = 1e9;
+    for (const s of ['L', 'R']) for (const [, w] of all[s]) rest = Math.min(rest, w.y);
+    const out = { rest };
+    for (const s of ['L', 'R']) {
+      // (the sole densely, and the rest of the foot thinly: a foot pointed back in a kneel lies on its instep and toes' tops, which stand
+      //  over 4 cm up at rest; read only the sole, the back toe went 4.5 cm into the floor getting up from the set-down's knee)
+      const near = all[s].filter(([, w]) => w.y < rest + 0.04), top = all[s].filter(([, w]) => w.y >= rest + 0.04);
+      const thin = (a, n) => { const step = Math.max(1, Math.floor(a.length / n)); return a.filter((_, i) => i % step === 0); };
+      out[s] = [...thin(near, 120), ...thin(top, 60)].map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
+    }
+    return out;
   }
 
   /** Contact weight (0..1) of foot s at loop phase u (0..1 of the clip). */
@@ -731,6 +770,7 @@ export class Character {
       C.blend(base, mv.pose, wM, mv.arm === 'R' ? this.MASK_GUN_R : prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
     }
     // movement techs blend their own poses in (swim, roll, climb...)
+    st.footDown = 0; // (a tech's kneel lets the feet down on to the floor: footIK)
     s.techs?.animate(this, base, dt, s);
     this.applyPose(base);
 
@@ -839,6 +879,26 @@ export class Character {
     // stride with the hips at clip height would straighten the legs and drag the feet)
     const tgt = {};
     for (const k of ['L', 'R']) { tgt[k] = anim[k].clone().sub(new THREE.Vector3(offs0[k].x, 0, offs0[k].z)).add(new THREE.Vector3(offs[k].x, d[k], offs[k].z)); }
+    // the sole kept on the floor: the skin's lowest point of each foot (its posed turn kept through the leg's IK, so its place against the
+    // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
+    // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
+    // heel struck toe-up or a toe on a slope: walking up a ramp the toes went 3.8 cm into it, down it the heels 5.8 (CASEBOOK
+    // NEW:clip-sole-on-floor)
+    if (this.soles && planted > 0.05 && s.ground) {
+      for (const k of ['L', 'R']) {
+        const F = this.leg[k].foot.getWorldPosition(_v1);
+        let lo = null;
+        for (const [b, v] of this.soles[k]) { const w = _v2.copy(v).applyMatrix4(b.matrixWorld); if (!lo || w.y < lo.y) lo = (this._soleLo ||= new THREE.Vector3()).copy(w); }
+        if (!lo) continue;
+        const x = tgt[k].x + lo.x - F.x, z = tgt[k].z + lo.z - F.z, y = tgt[k].y + lo.y - F.y;
+        const gy = s.ground(x, z, s.pos.y + 0.6);
+        if (gy === null) continue;
+        if (gy > y) tgt[k].y += Math.min(st.footDown > 0 ? SOLE_KNEEL : SOLE_MAX, gy - y) * planted;
+        // (and let down on to it while a tech kneels, by how much of the body is the kneel's (st.footDown: the carry's set-down): a clip
+        //  that kneels in the air on this rig, 7 to 9 cm up, measured)
+        else if (st.footDown > 0) tgt[k].y -= Math.min(SOLE_MAX, y - gy) * planted * st.footDown;
+      }
+    }
     // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a
     // lower patch of ground does not pull the hips down mid-stride; then sprung, not snapped (the alternating feet on a slope made the
     // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)
