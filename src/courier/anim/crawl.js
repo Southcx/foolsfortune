@@ -50,7 +50,7 @@ export class Crawl {
     const C = this.C, want = !!s.crawl;
     if (!C.clips[CRAWL.knees]) return 0;
     if (want && !this.on) { this.on = true; this.out = null; this.t = cr > 0.5 ? CRAWL.enterFrom.crouch : CRAWL.enterFrom.stand; }
-    if (!want && this.on) { this.on = false; this.out = { t: 0, to: cr > 0.5 ? CRAWL.exitTo.crouch : CRAWL.exitTo.stand }; }
+    if (!want && this.on) { this.on = false; this.out = { t: 0, to: (s.posture ? s.posture === 'crouch' : cr > 0.5) ? CRAWL.exitTo.crouch : CRAWL.exitTo.stand }; } // (the posture C chose, where the body gives it: crouchBlend stays 1 while prone)
     if (!this.on && !this.out) { this.w = 0; return 0; }
     // the loop, on its own phase at the move's speed
     const prone = THREE.MathUtils.clamp(s.prone || 0, 0, 1), sp = this.speed;

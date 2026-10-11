@@ -20,6 +20,7 @@
 //
 //   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(dt)   S.dispose()   (dt: sim seconds,
 //   the clock the windups count in: creatures.js)
+//   rockStep(a, av, dt, k?, damp?)   ROCK   (the roly-poly's spring on its ball, one step: Strawman's, and the status bench's roly-polies')
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
 //   S.setMode('still' | 'guard' | 'swing')   (the guard crosses the sleeves in an X in front of its chest, a boxer's cross-arm block:
 //   SLEEVES.guard)   S.play(id, { onContact(blow, contact), onEnd })   S.breakOff(channels?)   S.playing (the move's id, or null)
@@ -29,6 +30,14 @@
 import * as THREE from 'three';
 import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
 export { SLEEVES };
+
+/** The roly-poly's spring (the weight low in the ball: a stiff spring, a little damping, a lean it never passes), one step: `a` the
+ *  lean about x and z (a Vector2, radians), `av` its rate. Strawman's rock, and the status bench's roly-polies (world/testroom/statusbench.js). */
+export const ROCK = { k: 38, damp: 3.2, max: 0.75 };
+export function rockStep(a, av, dt, k = ROCK.k, damp = ROCK.damp) {
+  av.addScaledVector(a, -k * dt).multiplyScalar(Math.exp(-dt * damp)); a.addScaledVector(av, dt);
+  a.clampScalar(-ROCK.max, ROCK.max);
+}
 
 const BODY_H = 0.95, TARGET_Y = -BODY_H + 0.44 * BODY_H; // (the sack's height; the target's middle, metres below the neck)
 const C = { burlap: 0xcdb48c, seam: 0x6b5236, sleeve: 0x3a2f3a, cuff: 0xefe3c8, hat: 0x2c2731, band: 0x8d7f92, post: 0x3b2a1e, lacquer: 0x121014, red: 0xb8402e, cream: 0xf3e6c8, straw: 0xe0c070 };
@@ -221,8 +230,7 @@ export class StrawmanModel {
     if (!live) { const d = wrap(this.yawTo - this.yaw); this.yaw = wrap(this.yaw + Math.sign(d) * Math.min(Math.abs(d), 5 * dt, Math.abs(d) * 8 * dt + 0.002)); }
     // the roly-poly: a stiff spring (the weight low in the ball) with a little damping, the swing softer and slower; the sack is also
     // swung by the keyed lean and tilt, a beat behind them (the follow-through), and the hat bounces on its own spring
-    this.av.addScaledVector(this.a, -38 * dt).multiplyScalar(Math.exp(-dt * 3.2)); this.a.addScaledVector(this.av, dt);
-    this.a.clampScalar(-0.75, 0.75);
+    rockStep(this.a, this.av, dt);
     this.sv.x -= (p.lean - this.lastLean) * 2; this.sv.y -= (p.tilt - this.lastTilt) * 2; this.lastLean = p.lean; this.lastTilt = p.tilt;
     this.sv.addScaledVector(this.s, -16 * dt).addScaledVector(this.av, -0.4 * dt * 10).multiplyScalar(Math.exp(-dt * 2.2)); this.s.addScaledVector(this.sv, dt);
     this.s.clampScalar(-0.6, 0.6);

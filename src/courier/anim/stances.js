@@ -17,6 +17,8 @@
 //                on top. For a hand that has to be somewhere exact (at an ear, on a hip), which turns alone get to only by guesswork
 //   nudge        [side, [x, y, z], [pole x, y, z]?]: a hand moved this far (body frame, metres) from where the clip has it, every
 //                frame, its arm solved again as `reach` solves it: the clip's own motion kept, the hand held somewhere else
+//   steady       [side, k]: a hand's turn in the body frame drawn k of the way to its average over the loop (after `rot`, before `reach`
+//                and `nudge`, which keep it): what it holds stays pointed where it points while the arm and the chest keep their swing
 //   drop         the hips lowered (metres): a wider, readier stance
 //   hold         0..1: one frame of the base held for the whole clip (a pose, not a loop)
 //   closeLoop    frames at the base's end that jump to meet its start (a loop exported with a pop at its end): dropped, and the
@@ -78,9 +80,24 @@ export const STANCES = {
     rot: [['spine', 'y', 10], ['spine002', 'x', -4], ['handR', 'x', -100], ['handR', 'z', 18], ['head', 'x', -6], ['head', 'z', -5]],
     reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at their shoulder; the other on their hip)
   },
-  // (THE SONDELASS: no stance of its own. The cutlass is held in the UAL sword idle as captured, the rod in the torch idle: a real
-  //  sword-ready stance reads better than any offset laid over it (R40: the en garde tried here crossed the blade over the waist and
+  // (THE SONDELASS standing: no stance of its own. The cutlass is held in the suite's Sond_Idle as captured, the rod in Sond_CastIdle: a
+  //  real sword-ready stance reads better than any offset laid over it (R40: the en garde tried here crossed the blade over the waist and
   //  put the off-hand fist before the face).)
+  // THE CUTLASS'S DRAWN RUN (the owner, 2026-10-11; no blade run in the suite, UAL or CMU: sondelass.js drawnRun): the run's own loop, its
+  // chest and its free arm as captured, the blade arm's swing calmed and the cutlass carried low and back, its point trailing: a
+  // swordsman's run (Ghost of Tsushima's and Sekiro's drawn-blade run, Monster Hunter's sword-and-shield run with the weapon out). The
+  // blade arm's swing at 0.3 of the run's; its hand turned so the blade points back, a little down and out (-0.19, -0.25, -0.95 in the
+  // body frame, averaged over the loop: the hand's turn solved from the blade's own direction, Calissa's probe) and held there 0.8 of the
+  // way (`steady`), the hand moved to the hip, behind it (-0.26, 0.89, -0.08 m on average, from the run's 0.35 m ahead of it). Measured
+  // in game: the tip 0.43 to 0.78 m off the ground through the jog's cycle, 1.1 to 1.5 m behind the body's centre (docs/ART.md section 10)
+  cutlassRun: {
+    base: 'jog', exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
+    rot: [['handR', 'x', -93.3], ['handR', 'y', 40.7], ['handR', 'z', -44.9]], steady: [['R', 0.8]], nudge: [['R', [0.108, -0.148, -0.472]]],
+  },
+  cutlassSprint: {
+    base: 'sprint', exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
+    rot: [['handR', 'x', -111.1], ['handR', 'y', 31.9], ['handR', 'z', -37.5]], steady: [['R', 0.8]], nudge: [['R', [0.071, -0.084, -0.513]]],
+  },
 };
 
 const AX = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
@@ -153,7 +170,7 @@ export function bakeStances(ch, table = STANCES) {
     const { n, q, p } = c;
     // the pose of the stance, over every frame
     const pose = C.pose();
-    for (let f = 0; f < n; f++) {
+    const posed = (f) => {
       pose.q.set(q.subarray(f * nb * 4, (f + 1) * nb * 4)); pose.p.set(p.subarray(f * 3, f * 3 + 3));
       ch.resetPose(); ch.applyPose(pose); root.updateMatrixWorld(true);
       for (const [bone, axis, deg] of S.rot || []) {
@@ -162,6 +179,23 @@ export function bakeStances(ch, table = STANCES) {
         ch.rotW(b, AX[axis], (deg * Math.PI) / 180);
         b.updateMatrixWorld(true);
       }
+    };
+    // (steady: each hand's turn averaged over the loop first, as posed with `rot`; the same sign-aligned mean as the exaggeration's)
+    const means = (S.steady || []).map(([side]) => {
+      const m = new THREE.Quaternion(0, 0, 0, 0), h = new THREE.Quaternion(), first = new THREE.Quaternion();
+      for (let f = 0; f < n; f++) {
+        posed(f); ch.arm[side].hand.getWorldQuaternion(h); if (!f) first.copy(h);
+        const sgn = h.dot(first) < 0 ? -1 : 1; m.x += h.x * sgn; m.y += h.y * sgn; m.z += h.z * sgn; m.w += h.w * sgn;
+      }
+      return m.normalize();
+    });
+    for (let f = 0; f < n; f++) {
+      posed(f);
+      (S.steady || []).forEach(([side, k], i) => {
+        const hand = ch.arm[side].hand;
+        ch.setWorldQuat(hand, hand.getWorldQuaternion(_q).slerp(means[i], k));
+        hand.updateMatrixWorld(true);
+      });
       for (const [side, at, pole] of S.reach || []) {
         const arm = ch.arm[side], hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
         ch.reachHand(side, _v.set(...at), hq, 1, 0, pole ? new THREE.Vector3(...pole) : null);

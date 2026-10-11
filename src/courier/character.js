@@ -628,6 +628,8 @@ export class Character {
     // ---- the skid stop and the half turn: a sprint let go, the move reversed at speed (anim/stopturn.js) ----
     const free = footed && s.grounded && !s.techs?.active && !s.techs?.legsOwn ? (1 - cr) * (1 - crw) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - (s.techs?.override || 0)) : 0;
     const brk = this.stopTurn.pose(dt, s, speed, free, base, st.contact);
+    // (how much of the gait is running ground, and how much of that a sprint: a drawn tool's run of its own reads it, the cutlass's)
+    st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw) * (1 - brk.w); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
     // footsteps: the left heel lands at phase 0, the right at 0.5 (the skid's and the turn's own while they play)
     const ph = st.phi;
     if (footed && wm > 0.2 && sl < 0.5 && brk.w < 0.5 && st.lastPhi !== undefined) {

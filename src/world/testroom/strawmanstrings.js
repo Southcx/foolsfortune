@@ -8,6 +8,7 @@
 //             `area` a Figment attack telegraph draws at the Courier's Divination, the drawn area the hit area), then the strike: harmless
 //             (Strawman never hurts: a shove), counted as landed or not (`strawman.strike`). A parry breaks the blow off (the sleeve eases
 //             back) and the punish is the move's recovery; a one-two's first blow parried, its second still comes.
+//   THE STANCE still or guard (Strawman's mode), the lectern's first rows (it was F at Strawman, the owner moved it here: 2026-10-11)
 //   A STRING  moves and pauses on a loop (STRAWMAN_STRINGS), picked at the circle's lectern (F: the page), run only while the Courier is
 //             inside the circle (step out and it stops: the ring is the rule), Strawman turning on its ball to face them between moves.
 //   THE TEMPO 0.25x, 0.5x or 1x (DEBUG only): the world slowed through game.time while a string runs, the Courier too (a study of the
@@ -31,6 +32,10 @@ const R = stream('strawman.strings');
 const TEMPOS = [1, 0.5, 0.25];
 const ENTER_BREATH = 1.0; // (real seconds at 1x after the Courier steps into the circle before a string begins)
 const LECTERN_REACH = 1.8;
+const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'click a stance or a string · F closes', aside: 'left' };
+/** Strawman's stances, the lectern's first rows (the owner, 2026-10-11: "Strawman setting should be moved to the nearby lectern"; it was
+ *  F at Strawman). Words placeholders for Espada's. */
+const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.']];
 const _v = new THREE.Vector3();
 
 export class StrawmanStrings {
@@ -118,7 +123,7 @@ export class StrawmanStrings {
     const g = this.game, P = g.player, S = this.S, model = this.model;
     if (g.interact?.cur?.id === 'sparring.lectern' && P.peekLatch?.('KeyF')) {
       P.latch('KeyF');
-      g.course?.menu?.showPage?.('the sparring circle', (im, el) => this.page(im, el), { title: 'THE SPARRING CIRCLE', sub: 'click a string · F closes', aside: 'left' });
+      g.course?.menu?.showPage?.('the sparring circle', (im, el) => this.page(im, el), PAGE);
     }
     if (this.rest > 0) this.rest -= dt;
     const was = this.running;
@@ -143,9 +148,17 @@ export class StrawmanStrings {
     else this.attack(this.order?.[nth] ?? step.move);
   }
 
-  /** The lectern's page: the four strings and none; in DEBUG, the tempo. */
+  /** The lectern's page: Strawman's stance (still, guard), the four strings and none; in DEBUG, the tempo. */
   page(im, el) {
-    const g = this.game, menu = g.course?.menu;
+    const g = this.game, menu = g.course?.menu, again = () => menu?.showPage?.('the sparring circle', (i2, e2) => this.page(i2, e2), PAGE);
+    im.appendChild(el('div', 'grp', 'STANCE · How Strawman takes a blow'));
+    const sg = el('div', 'rooms');
+    for (const [m, label, line] of STANCES) {
+      const r = el('div', 'room', `<span class="n">${m === this.S.mode ? '●' : '○'}</span><span><b>${label}</b><s>${line}</s></span>`);
+      r.onclick = () => { this.S.setMode(m); again(); };
+      sg.appendChild(r);
+    }
+    im.appendChild(sg);
     im.appendChild(el('div', 'grp', 'STRINGS · Pick one, then step into the circle'));
     const grid = el('div', 'rooms');
     const row = (id, label, line) => {
@@ -161,7 +174,7 @@ export class StrawmanStrings {
     const tg = el('div', 'rooms');
     for (const k of TEMPOS) {
       const r = el('div', 'room', `<span class="n">${k === this.tempo ? '●' : '○'}</span><span><b>${k}x</b><s>${k === 1 ? 'full speed: the test' : `every number x${1 / k} in real seconds`}</s></span>`);
-      r.onclick = () => { this.setTempo(k); menu?.showPage?.('the sparring circle', (i2, e2) => this.page(i2, e2), { title: 'THE SPARRING CIRCLE', sub: 'click a string · F closes', aside: 'left' }); };
+      r.onclick = () => { this.setTempo(k); again(); };
       tg.appendChild(r);
     }
     im.appendChild(tg);

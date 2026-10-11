@@ -62,9 +62,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
   negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked; each is learned at its awakening. *Not:* "hunger", "Faith" (cut). → detail
-- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`; `docs/plans/FEELINGS-AWAKENING.md`) — the moment a feeling is
-  learned (the verb: awaken to, never "wake", which is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its weather floods round you, the body answers,
-  one line in its own voice / a hand-placed lookout whose view awakens Wonder; player text says "vantage point". *Not:* a notice from the System.
+- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`, its moment `feedback/awakening.js` / `VANTAGES`, `vantage.reach`,
+  `src/world/vantages.js`; `docs/plans/FEELINGS-AWAKENING.md`) — the moment a feeling is learned (the verb: awaken to, never "wake", which
+  is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its
+  weather floods round you, one line in its own voice, the body's answer once free (`feeling.embody`) / a hand-placed lookout whose view
+  awakens Wonder; player text says "vantage point". *Not:* a notice from the System.
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a
@@ -139,8 +141,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **the prowl / the crawl** (`PROWL`, `src/courier/anim/prowl.js` / `CRAWL`, `s.crawl`, `src/courier/anim/crawl.js`) — the crouch on the move,
-  low, its head held still / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
+  low, its head held steady / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
   crouch, prone; a 0.8 m capsule). *Not:* a tech, nor the wall latch's crawl along a wall.
+- **the drawn run** (`stance:cutlassRun`, `stance:cutlassSprint`, `courier/anim/stances.js`; `drawnRun`, `tools/sondelass/sondelass.js`) — the run
+  and the sprint with the cutlass in hand: the run's own body, the blade held low and back. *Not:* the dash slash, a tech.
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
   Movement Art.
 - **Movement Art** (`src/progress/skills.js`) — a tech the System teaches; a variant is one of its versions.

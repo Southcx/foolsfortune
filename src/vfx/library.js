@@ -211,6 +211,10 @@ export const LIBRARY = {
     L({ type: 'sprites', dur: Infinity, rate: 5, shape: 'bubble', offset: [0, 0.4, 0], spawn: 'ring', r: 0.3, dir: 'swirl', lift: 0.15, speed: [0.2, 0.45], size: [0.08, 0.13], sizeEnd: 0.17, life: [0.9, 1.4], color: [0x9a5ad0, 0x7ad08a], alpha: 0.85, alphaEnd: 0 }),
     L({ type: 'sprites', dur: Infinity, rate: 2, pool: 'alpha', shape: 'drip', offset: [0, 0.35, 0], spawn: 'sphere', r: 0.35, size: [0.05, 0.08], life: [0.6, 0.9], color: [0x6a3a90, 0x4a8a5a], alpha: 0.9, alphaEnd: 0.3, gravity: 3, floor: 'ground' }),
   ] },
+  'aura.soaked': { layers: [ // soaked (the next hit doubled): wet through, drops running off it and a cold sheen over it, its glyph's teal
+    L({ type: 'sprites', dur: Infinity, rate: 5, pool: 'alpha', shape: 'drip', offset: [0, 0.1, 0], spawn: 'sphere', r: 0.42, size: [0.05, 0.08], life: [0.5, 0.8], color: [0x8fd0c8, 0x5fa8b0], alpha: 0.9, alphaEnd: 0.4, gravity: 4, floor: 'ground' }),
+    L({ type: 'sprites', dur: Infinity, rate: 3, shape: 'glint', offset: [0, 0.25, 0], spawn: 'shell', r: 0.4, size: [0.07, 0.11], sizeEnd: 0, life: [0.4, 0.6], color: [0xd8f4f0, 'white'], twinkle: 10 }),
+  ] },
   // =============================================================================================== TEMPER (held, on a creature: vfx/temper.js)
   // a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own
   'temper.stoic': { layers: [ // dry: flakes of a fired surface falling, a little dust at the feet

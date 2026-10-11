@@ -589,8 +589,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   wall (`SparringMirror`, `mirrorPane`, `vfx/sparringmirror.js`: a real mirror while the Courier is inside the bales, the room drawn
   again from the eye mirrored in the glass, bodies and never marks; the stand-in's dull glass outside them; *not* a mirage); **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
   "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
-  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (eleven **roly-polies**, Strawman's
-  kin, each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's
+  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (`StatusBench`, `world/testroom/statusbench.js`:
+  eleven **roly-polies** (kind `rolypoly`; never "dummies"), Strawman's kin, each a training creature with one status (`benchStatus`)
+  that rocks on its ball when struck and takes that status at its real time; **the lit roly-poly**, the one the bench's lectern lights as
+  the target, or each in turn; each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's
   full height, for the launcher and the air string). Places: `sparring.circle`, `figment.telegraph.floor`, `parry.range`,
   `status.bench`, `juggle.pen`. *Not:* "the combat lab" (the plan's working title; the basement is never "the lab").
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
