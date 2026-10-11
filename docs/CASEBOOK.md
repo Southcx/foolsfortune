@@ -2,6 +2,8 @@
 
 One case per fix, newest first: the cause (measured, not guessed), the fix, and **the rule** that keeps it from happening twice. Read
 the rules before building in the same area; a rule a machine can check goes into `npm run check` or a test too. (The owner, 2026-10-06.)
+A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wherever it is cited) and numbered at the gate by
+`scripts/casebook-number.mjs`; `npm run check` fails on a number used twice or a rule a case cites that is not here (2026-10-11).
 
 ## The rules, short (from the cases below)
 
