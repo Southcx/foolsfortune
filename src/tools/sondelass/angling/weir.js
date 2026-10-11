@@ -234,17 +234,19 @@ export class Weir {
     g.fillText('THE TALLY', 40, 68);
     g.fillStyle = '#fbe3cf'; g.font = `26px ${FONT.sys}`; g.textAlign = 'right';
     g.fillText(`${L.get('fish.total')} landed · ${L.under('fish.sp.').filter(([, v]) => v > 0).length}/${SPECIES.length} kinds`, b.c.width - 40, 66);
+    // (two rows, as many columns as that takes: twelve kinds since Gall's and Fury's, so six of 220 px)
+    const cols = Math.ceil(SPECIES.length / 2), step = Math.floor((b.c.width - 80) / cols), w = step - 16, cx = w / 2;
     SPECIES.forEach((sp, i) => {
-      const col = i % 5, row = Math.floor(i / 5), x = 40 + col * 270, y = 110 + row * 250;
+      const col = i % cols, row = Math.floor(i / cols), x = 40 + col * step, y = 110 + row * 250;
       const n = L.get(`fish.sp.${sp.id}`), cm = L.best(`fish.cm.${sp.id}`);
-      g.fillStyle = 'rgba(255,178,122,.10)'; g.fillRect(x, y, 250, 230);
+      g.fillStyle = 'rgba(255,178,122,.10)'; g.fillRect(x, y, w, 230);
       g.fillStyle = n ? `#${sp.color.toString(16).padStart(6, '0')}` : '#3b1c13';
-      g.beginPath(); g.ellipse(x + 125, y + 78, 62 + (sp.size[1] > 200 ? 10 : 0), 26, 0, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.moveTo(x + 185, y + 78); g.lineTo(x + 225, y + 48); g.lineTo(x + 225, y + 108); g.closePath(); g.fill();
-      g.fillStyle = '#fbe3cf'; g.font = `500 24px ${FONT.ui}`; g.textAlign = 'center';
-      g.fillText(n ? sp.name.toUpperCase() : '? ? ?', x + 125, y + 150);
-      g.font = `22px ${FONT.sys}`; g.fillStyle = '#ffb27a';
-      g.fillText(n ? `${n} · best ${Math.round(cm)} cm` : 'not yet landed', x + 125, y + 190);
+      g.beginPath(); g.ellipse(x + cx - 10, y + 78, 56 + (sp.size[1] > 200 ? 8 : 0), 24, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.moveTo(x + cx + 44, y + 78); g.lineTo(x + cx + 80, y + 50); g.lineTo(x + cx + 80, y + 106); g.closePath(); g.fill();
+      g.fillStyle = '#fbe3cf'; g.font = `500 22px ${FONT.ui}`; g.textAlign = 'center';
+      g.fillText(n ? sp.name.toUpperCase() : '? ? ?', x + cx, y + 150, w - 12);
+      g.font = `20px ${FONT.sys}`; g.fillStyle = '#ffb27a';
+      g.fillText(n ? `${n} · best ${Math.round(cm)} cm` : 'not yet landed', x + cx, y + 190, w - 12);
     });
     b.tex.needsUpdate = true;
   }
