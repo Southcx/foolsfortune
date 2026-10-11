@@ -18,7 +18,7 @@ export const WAKE_COUNT = 5;
 /** Each feeling's feat (the owner's table, 2026-10-11), and its line in the log, in the feeling's own voice (Espada's, each in its own flavour; Wonder's
  *  is the owner's). `does` is the Codex's one line of how. */
 export const FEELING_WAKE = {
-  wonder: { does: 'Stand at a viewpoint and look out.', feat: (L) => (L?.firstCount?.('vantage.') || 0) >= 1,
+  wonder: { does: 'Stand at a vantage point and look out.', feat: (L) => (L?.firstCount?.('vantage.') || 0) >= 1,
     line: 'It feels like the sky goes on further than you ever knew.' },
   mirth:  { does: 'Play for a crowd, or make the folk laugh.', feat: (L) => G(L, 'rhythm.combo') >= 10 || G(L, 'npc.mood.joy') >= 6,
     line: 'Laughter fizzes up through you, a shaken bottle whose cork was never going to hold.' },
