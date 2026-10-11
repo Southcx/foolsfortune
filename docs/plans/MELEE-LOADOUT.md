@@ -94,6 +94,10 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
   - Target for the slice: about 12 normals and 6 specials.
 - **The row rule:** whatever the loadout holds, the string's damage per second stays within ±15%. A move that does more to a body pays
   for it in time or in power.
+- **Its two events (built 2026-10-11, Calissa; the rules are Petra's):** `move.blow { tool, move, slot, hit, finish, by }` once a blow,
+  and `move.string.end { tool, run, why, by }` when a string run stops (the LMB blows landed in a row: a special's blow is apart from
+  it, neither adding nor ending; `tools/moveset.js`; what fires when, as measured:
+  `docs/handoffs/petra/2026-10-11-from-calissa-blow-events.md`).
 
 ## 3. Open (for the owner)
 
