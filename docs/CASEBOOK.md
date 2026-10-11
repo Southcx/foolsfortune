@@ -523,8 +523,24 @@ the rules before building in the same area; a rule a machine can check goes into
 189. **A gesture in every loop is a B.** An idle's loop holds no gesture that plays each time round: it is held out of the loop (A) and,
     if it is wanted, kept as a B played 1 in 4 to 5 (`IDLES.calm`, idlebreak.js). A clip changed in place changes every bake built on
     it: look at those too (the stances over braced).
+190. **A line of sight to a thing never counts the thing.** A ray from the eye to a target's middle ends inside the target: its own
+    collider is left out of the test (by entity, `physics.entityOf`), or every solid target reads as hidden behind itself. Measure the
+    ray's hit before blaming the candidate list.
 
 ## Cases
+
+### 2026-10-11 · Strawman could not be locked on to (the owner: "It is also impossible to lock on to the Strawman")
+
+- **Seen:** the owner: Z never locks Strawman; the cutlass and blade mode never aim at it.
+- **Cause (measured):** Strawman was a candidate all along (`game.creatures.list`, 26 m reach; headless, the sparring circle, 2 m in
+  front of it: `candidates()` listed `strawman`). The line-of-sight test (`lockon.js clear`) cast from the eye to its middle (1.35 m up)
+  and hit Strawman's own capsule first: a static collider with no rigid body, so the filter that skips moving bodies kept it (`clear`
+  false, `acquire` false). Every creature the lock had held so far had a dynamic body and passed by that filter.
+- **Fix:** `clear(pt, ref)` leaves out the colliders whose entity is the target. Petra's ruling: a training body comes to the lock
+  through `game.lock.add(ref)`, added by the room that owns it (Strawman, the status bench's eleven roly-polies), and the creature loop
+  skips `training`; its `lock.on` carries `training`, so the ledger never counts it. Measured after: `acquire` locks Strawman (the
+  reticle on it; the cutlass's moves and blade mode aim through `game.lock`, not entered headless); `lock.on` 0 in the ledger.
+- **Rule:** 190 (new).
 
 ### 2026-10-10 · The crouch walk's head swung (the owner: "that crouch walk has a lot of excessive head movement")
 

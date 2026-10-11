@@ -12,6 +12,8 @@
 //  - Dark Souls / The Witcher 3 on PC: the mouse flick that switches the lock, the camera doing the work, a lost target released.
 //
 //   game.lock.toggle()     game.lock.cycle(+1 | -1)     game.lock.target -> { type, ref } | null     game.lock.point(out)
+//   game.lock.add(ref)  .remove(ref)   a thing to lock to that no list here finds: a `training` body (Strawman, the status bench's
+//   roly-polies: world/testroom/), added by the room that owns it; its lock is never counted (`lock.on { training }`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Reticle } from '../tools/sondelass/angling/reticle.js';
@@ -29,6 +31,7 @@ export class LockOn {
     this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/ART.md precept 3)
     this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0;
     this.assist = true;
+    this.extra = new Set(); // (lock targets added by their owners: `add`)
     game.player.lookScale = game.player.lookScale || { lock: 1, blade: 1 };
   }
   get active() { return !!this.target; }
@@ -51,13 +54,17 @@ export class LockOn {
     if (m) { m.updateMatrixWorld(); out.setFromMatrixPosition(m.matrixWorld); return out.setY(out.y + (t.ref.P?.height ?? 0.5) * 0.45); }
     return this.pointOf(t, out);
   }
+  /** A thing to lock to (a creature's contract: pos, center or lockPoint, radius, height, alive), added by its owner. */
+  add(ref) { this.extra.add(ref); return ref; }
+  remove(ref) { this.extra.delete(ref); if (this.target?.ref === ref) this.release('gone'); }
   alive(t) { return !!t && t.ref.alive !== false && (t.type !== 'clapper' || !t.ref.ally); }
 
   /** Everything that could be locked to, near the Courier. */
   candidates() {
     const g = this.game, P = g.player, out = [], p = P.pos;
     for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceToSquared(p) < KEEP * KEEP) out.push({ type: 'clapper', ref: c });
-    for (const c of g.creatures?.list || []) if (c.alive && c.pos.distanceToSquared(p) < KEEP * KEEP && Math.abs(c.pos.y - p.y) < 8) out.push({ type: 'creature', ref: c });
+    for (const c of g.creatures?.list || []) if (c.alive && !c.training && c.pos.distanceToSquared(p) < KEEP * KEEP && Math.abs(c.pos.y - p.y) < 8) out.push({ type: 'creature', ref: c }); // (a training body comes through `add`, from its room)
+    for (const c of this.extra) if (c.alive !== false && c.pos.distanceToSquared(p) < KEEP * KEEP && Math.abs(c.pos.y - p.y) < 8) out.push({ type: 'creature', ref: c });
     for (const e of g.breakables?.items || []) {
       if (!e.alive || e.def?.trial || !e.body) continue;
       const t = e.body.translation();
@@ -67,14 +74,15 @@ export class LockOn {
     return out;
   }
 
-  /** Is there a clear line from the eye to the point? */
-  clear(pt) {
+  /** Is there a clear line from the eye to the point? (The target's own collider is not in the way: a static body, Strawman's capsule,
+   *  stood between the eye and its own middle and was never clear: casebook, 2026-10-11.) */
+  clear(pt, ref = null) {
     const g = this.game, P = g.player;
     g.camera.getWorldPosition(_e);
     _b.copy(pt).sub(_e);
     const d = _b.length();
     if (d < 0.6) return true;
-    const hit = g.physics.raycast(_e, _b.multiplyScalar(1 / d), d - 0.4, P.collider, GROUPS.controllerQuery, (c) => !c.isSensor() && !c.parent()?.isDynamic());
+    const hit = g.physics.raycast(_e, _b.multiplyScalar(1 / d), d - 0.4, P.collider, GROUPS.controllerQuery, (c) => !c.isSensor() && !c.parent()?.isDynamic() && (!ref || g.physics.entityOf(c) !== ref));
     return !hit;
   }
 
@@ -89,7 +97,7 @@ export class LockOn {
       const dot = _b.copy(_a).sub(_e).multiplyScalar(1 / d).dot(_f);
       if (dot < 0.35) continue;
       const score = (1 - dot) * 2.4 + (d / RANGE) * 0.7 - (t.type === 'clapper' ? 0.25 : 0);
-      if (score < bs && this.clear(_a)) { bs = score; best = t; }
+      if (score < bs && this.clear(_a, t.ref)) { bs = score; best = t; }
     }
     if (!best) return false;
     this.set(best);
@@ -100,7 +108,7 @@ export class LockOn {
     this.target = t; this.blocked = 0; this.losT = 0;
     this.reticle.flash = 1;
     sfx.lockOn?.(1);
-    this.game.events?.emit('lock.on', { type: t.type });
+    this.game.events?.emit('lock.on', { type: t.type, ...(t.ref.training && { training: true }) }); // (a training body's lock is never counted)
   }
 
   release(why = 'let go') {
@@ -125,7 +133,7 @@ export class LockOn {
       if (_a.distanceTo(cam.position) > RANGE) continue;
       const v = _b.copy(_a).project(cam);
       if (v.z > 1 || Math.abs(v.y) > 1.1) continue;
-      if (!this.clear(_a)) continue;
+      if (!this.clear(_a, t.ref)) continue;
       const dx = (v.x - x0) * dir;
       if (dx > 0.02 && dx < bd) { bd = dx; best = t; }
       if (dir > 0 ? v.x < wx : v.x > wx) { wx = v.x; wrapBest = t; }
@@ -146,7 +154,7 @@ export class LockOn {
     if (dist > KEEP || g.god?.controlling) { this.release('far'); this.reticle.update(dt, g.camera); return; }
     // a wall in the way for a moment is nothing; for more than one, the lock lets go
     this.losT -= dt;
-    if (this.losT <= 0) { this.losT = 0.15; this.blocked = this.clear(_a) ? 0 : this.blocked + 0.15; if (this.blocked > 1.2) { this.release('lost'); this.reticle.update(dt, g.camera); return; } }
+    if (this.losT <= 0) { this.losT = 0.15; this.blocked = this.clear(_a, t.ref) ? 0 : this.blocked + 0.15; if (this.blocked > 1.2) { this.release('lost'); this.reticle.update(dt, g.camera); return; } }
     // the camera does the work: it keeps the target in the middle, a little from above; the mouse is quiet
     this.shownOf(t, _a);
     if (this.assist) {

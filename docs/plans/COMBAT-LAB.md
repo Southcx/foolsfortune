@@ -78,8 +78,9 @@ room is, so the hall never vanishes behind the arcade. The basement's ceiling sl
 **For:** the parry against a blow, in its window's glint, and the answer after it. **Teaches** (the law: the mechanic is the lesson):
 reading a body's tell rather than a mark; that a window is short and late; that what follows a parry is a punish window of a known length.
 
-- **Strawman** stands at the centre (moved from the room's south side: `TR.strawman`; the `strawman` place follows it). F at it still
-  cycles still, guard, swing; the bout is still said in the log. While a string runs it turns on its ball to face you between moves
+- **Strawman** stands at the centre (moved from the room's south side: `TR.strawman`; the `strawman` place follows it). F at it does
+  nothing now (the owner, 2026-10-11): its stance is the lectern's; the bout is still said in the log. It is a lock target (Z, the
+  reticle on it), added by the room through `game.lock.add` (casebook rule 190). While a string runs it turns on its ball to face you between moves
   (each move is aimed where it faced as it began, and held: the drawn area is where it lands), and faces the arcade again when it stops.
 - **The ring** is a sumo dohyo's: a disc of tamped clay bounded by straw bales sunk to their middles, each with two cords, the four at
   the quarters set out a hand (the tokudawara). Strawman is straw; the ring is the rule: built. A string runs only while you are inside
@@ -93,8 +94,10 @@ reading a body's tell rather than a mark; that a window is short and late; that 
 - **The mirror** (an extra): a long glass on the west wall in a dark wood frame, a dance studio's; silvered grey with the cartoon
   mirror's glints, and a real mirror while the Courier is inside the bales (a second render: see section 7).
 - **The lectern** (still the shut book's stand-in; built as a mechanic): F opens its page, set aside to the left so the circle stays in
-  view (`indexmenu.showPage`, `aside`): the four strings and None (section 6), and in DEBUG the tempo (1x, 0.5x, 0.25x). Picking a
-  string closes the page and says it in the log (`strawman.string`); the tempo is said too (`strawman.tempo`).
+  view (`indexmenu.showPage`, `aside`): Strawman's **stance** (Still: takes every blow; Guard: blocks a blow from in front), the four
+  strings and None (section 6), and in DEBUG the tempo (1x, 0.5x, 0.25x). Picking a stance or the tempo keeps the page up; picking a
+  string closes it; each is said in the log (`strawman.mode`, `strawman.string`, `strawman.tempo`). The old swing mode is gone (the
+  swing is an attack string's move). Words placeholders for Espada's.
 - **Debug chest** `sparring`: the seven tools (each answers a blow its own way: courier/parry.js `how`).
 - **Built (2026-10-10, Calissa; the owner put Strawman wholly in Calissa's hands):** the moves and strings (section 6), the lectern's
   page, the tempo, the ring's rule, Strawman's clock on the sim step (casebook rule 184). **Still needs:** the frame meter's lighting
@@ -149,11 +152,28 @@ does to a creature (each creature decides what it means: `creatures.status`), by
   First laid flat on the floor, the glyphs were unreadable at the striker's grazing angle; hung on the bench they read as labels.
 - **The explanation** is the log only (a line when a status lands, `status.land { status, on, by }` and a rule in
   `feedback/tracking/*.js`; the words Espada's), and the Codex's status page. No floating text.
-- **The lectern** (stand-in): which roly-poly is lit as the target, or "each in turn".
+- **The lectern** (built): F opens its page, set aside: **each in turn** (the default: the lit one warms from within; a beat, 1.2 s,
+  after it takes its status, the light moves to the next), one roly-poly lit, or none.
 - **Debug chest** `statusbench`: the seven tools and a Lachrymato Bottle.
-- **Needs:** the eleven as creatures that take statuses and show them (Petra: `game.creatures`, `hurtable`, `training`; each a small body
-  that rocks like Strawman: Calissa's model), the event and its rule (Petra, the words Espada's), the Codex's status page (Petra's
-  Codex, Espada's words, Calissa's glyphs), the auras exist (`vfx/library.js aura.<status>`).
+- **Built (2026-10-11, Calissa; the owner: "your roly-polies ... have no visible interaction"):** `world/testroom/statusbench.js`
+  (`StatusBench`). Each roly-poly is a creature as Strawman is (`game.creatures`, `hurtable`, `training`, kind `rolypoly`) and a lock
+  target (`game.lock.add`), with a capsule the psygun's ray finds. Struck by any tool it rocks on its ball (Strawman's spring, shared:
+  `vfx/strawman.js rockStep`; double when soaked, and the soak is spent) and takes **its** status for that status's real time
+  (`STATUS_BENCH_TIME`, read from the game's own sources: the stun 4.5 s, stun.js's default; halt 8, calm 30, sleep 14, melt 9, the
+  Veritome's Functions; slow 3, the gelid rings; doubt 6, charm 4, blind 5, confusion 6, each type's build; soaked 20, the crown bash)
+  through `creatures.apply` (the stun through `game.stun`), at a Balanced mind so the time is the status's own (the Courier's Focus still
+  widens it). Its aura shows (`aura.<status>`; `aura.soaked` new: drops and a cold sheen; drawn at a metre-high body's size,
+  `c.auraScale`, so it reads on a small one), its glyph pops over it (`glyphs.pop('status.<id>')`, STATUS_ART, in its GLYPH_TINT; the
+  stun pops its own star), and its body shows what the status means to it: halted it freezes mid-rock, slowed and asleep its spring
+  runs slow (asleep it leans back and breathes), calmed it settles at once, melted it slumps, stunned it circles, charmed it leans to
+  you, blind it sways, confused it wobbles. Only its own status holds (a type's build shrugged off), so each shows one thing beside the
+  other ten. The log says the status in one line the first time each is struck in a visit (within 10 m of the bench):
+  `statusbench.status { status, dur, by }`, its rule in `feedback/tracking/testroom.js` (words `STATUS_BENCH_WORDS`, Espada's to
+  replace). At rest the eleven are parked in a prop batch (one draw and its outline's); one that rocks, or the lit one, is drawn on
+  its own (two each). Never counted: the ledger's rules skip kind `rolypoly` (tracking.js), `lock.on` carries `training`.
+- **Still needs:** calm's and melt's glyphs (Calissa: their plaques are plain, and they pop none); the Codex's status page (Petra's
+  Codex, Espada's words, Calissa's glyphs); Soul Alchemy's seasoning still hears `creature.status` from training bodies, Strawman's
+  and the roly-polies' (Dovina's `progress/alchemy.js`: handed over).
 
 ## 6. Strawman's attack strings (built, 2026-10-10)
 
