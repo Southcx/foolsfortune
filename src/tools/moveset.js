@@ -117,6 +117,7 @@ const STRIKE_PAD = 0.012;
 // a blow taken ends the string run: the pool's shield, the clay's crack, the shatter (courier/vessel/damage.js; the Great Dunemaw's escape
 // hears the same three)
 const HURT_EVENTS = ['vessel.shield', 'vessel.shieldbreak', 'vessel.crack', 'courier.shatter'];
+const AWAY_EVENTS = ['god.enter', 'garden.enter', 'rail.start']; // (the body leaves play: the god hand, the Spirit Garden, a crossing; techs are not ticked there, so the string's window cannot run out on its own)
 // HIGH TIME's own arc (the owner, 2026-10-11: the launcher "linked to chasing the target it hits, so the action breaks when attempting
 // to use it on the Strawman"): from the strike's end the Courier rises on a ballistic arc of their own to `apex` m above the ground
 // they launched from (the feet: 2.2 x 1.78 m, the owner's "2.2x their own height", 2026-10-10), at `gravity` x the core's 21 m/s²
@@ -174,6 +175,7 @@ export class Moveset {
     if (!E || this.offBlink) return;
     this.offBlink = E.on('move.blink', () => this.blinkCancel());
     for (const n of HURT_EVENTS) E.on(n, () => this.endStringRun('hurt'));
+    for (const n of AWAY_EVENTS) E.on(n, () => this.lapse()); // (a run never lives through them: 'pause', and the string's place goes back to its start)
   }
   get game() { return this.tool.game; }
   get P() { return this.tool.P; }
