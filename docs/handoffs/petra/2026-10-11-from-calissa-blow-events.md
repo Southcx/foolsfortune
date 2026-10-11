@@ -17,12 +17,15 @@ stinger reports through `ownBlow` / `markBlow` / `closeBlow` (`cutlass.js`). The
     - `'miss'`: a blow's strike ran its course and struck nothing.
     - `'hurt'`: a blow taken (`vessel.shield`, `vessel.shieldbreak`, `vessel.crack` or `courier.shatter`, the same set the Great
       Dunemaw's escape hears).
-    - `'pause'`: the moment the engine resets the string's place (RESET, 0.9 real s after the last move ends).
+    - `'pause'`: the moment the engine resets the string's place (RESET, 0.9 s after the last move ends). The window runs on while
+      the Sondelass is in its rod or hook form, or going away (`Moveset.idle()`, from `sondelass.js`), so a switch inside it keeps
+      the run and the place, and a longer one ends the run 0.9 s after the last blow.
     - `'stow'`: the tool's `drawTarget` is 0 when the moveset is cancelled.
 
 **What fires when**
 - **`move.blow`:**
-  - It fires the frame the blow's strike window closes (`recovering()`: its strike and ring are past, or a plunge has landed).
+  - It fires the frame the blow can strike nothing more (`spent()`: in its recovery, its strike and ring past or a plunge landed,
+    and past the sweep's own padded end, `strike[1]` + 0.012 clip s, `STRIKE_PAD`, which the moveset now hands the sweep).
   - It also fires when the blow is cut short: by the next move, the blink cancel, a cancel or a stow.
   - The stinger's fires when its lunge ends.
 - **The run:** it goes up at a blow's first counted contact, not when the blow closes, so a hit that lands before a blow taken
@@ -73,6 +76,10 @@ engine.
 - No other tool's moveset run: the Veritome's, the Crucibelle's, the Lockheart's, the Dreamvane's pick and the psygun's.
 - Not tried: clapperjars, pots, a crystal or a sibling.
 - The psygun's moves and the kick never send `'stow'`, because their moveset's tool has no `drawTarget`. Their runs end by `'pause'`.
-- Switching the Sondelass's form leaves a run open until the cutlass's next update, which then ends it with `'pause'`.
+- My reading, yours to rule on: the window holds while the cutlass is busy with a move of its own (the stinger's lunge, the iaido's
+  charge, Blade Mode), as it holds while the engine's own LMB charge is held; Blade Mode's cuts send no `move.blow`.
+- Left as they are, from the verifier (minor): R inside a whiffing blow's strike cuts it short, so that whiff is never a miss; only
+  the ground string's last slot can finish (`t2`, `j3`, the plunge never do); the psygun's whip is a string of one, so every whip
+  on a creature is `finish: true`; `'hurt'` comes from any `vessel.shield` / `shieldbreak` / `crack`, `by: 'environment'` too.
 - Seen in the code, not measured: `cut.hit` on a Throwing Room pot carries no `training` mark, so I think your `on()` counts it in
   `cut.hit`. That count gates the launcher (50) and the Tidecutter (500).

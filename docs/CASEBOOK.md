@@ -545,8 +545,30 @@ NEW:launch-end-speed. **A launch hands back the speed it promised, however it en
     (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
     launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
     speed at a handover reads the move's own speed otherwise.
+NEW:outcome-after-window. **An outcome is sent once nothing can change it.** An event that says how something went (a blow's
+    `move.blow`: hit or not) is sent when the check that decides it has run its whole window (the sweep's strike, padded as the sweep
+    pads it: `Moveset.spent()`), never on a tighter window of its own; a test of it places the thing at the window's edges.
+NEW:window-runs-unread. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
+    update (the string's window, `Moveset.after`) stops when its owner stops calling it (the Sondelass's rod or hook form): tick it
+    from the owner every frame it is not read (`Moveset.idle`), or read the time from a clock that always runs.
 
 ## Cases
+
+### 2026-10-11 · A blow said hit: false, then struck; a string run lived through a form switch (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. (1) c3 with a slip jelly 0.9 m away at 2.66 to 2.84 rad off the facing (12 of 12
+  tries): `move.blow { move: 'c3', hit: false }` at t 0.477, the jelly struck the next frame at t 0.495; the same band behind j1, the
+  launcher and a1. (2) c1, c2 landed, the rod (2) for 5 real s, the cutlass (1): `M.after` read 0.5, the run 2 was still open, and
+  j1, j2, j3 grew it to 5 with no `move.string.end`; the hook the same.
+- **Cause (measured):** (1) `melee.js` `sweep()` strikes to `strike[1] + pad` (0.012 clip s); the moveset closed the blow at
+  `t > strike[1]`, so a thing in the pad was struck after its blow was reported. (2) `Moveset.after` grows only in `update()`, which the
+  Sondelass calls only in the cutlass form: the string's window (RESET, 0.9 s) stopped with it.
+- **Fix:** (1) the moveset passes the sweep its pad (`STRIKE_PAD`) and closes a blow at `spent()`: in its recovery and past
+  `strike[1] + STRIKE_PAD`; a whiff cut short in the pad by the next move is still a miss (its strike ran its course). Measured: c3 8
+  of 8 placements `hit: true`, j1 7, the launcher 4, a1 3 (the others no contact at all), no blow marked after its close. (2)
+  `Moveset.idle(dt)`, called by the Sondelass every frame the cutlass is not read: the same 5 s on the rod or the hook sends `end
+  { run 2, pause }` 0.9 s after c2, and the next LMB is c1, a new run.
+- **Rule:** NEW:outcome-after-window, NEW:window-runs-unread.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
 

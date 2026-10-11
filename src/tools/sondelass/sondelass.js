@@ -173,10 +173,9 @@ export class Sondelass extends Tech {
     if (this.angler && this.form === 'rod') m.setBend(this.angler.bend());
     else m.setBend(THREE.MathUtils.damp(m.bend, 0, 10, dt));
     // the sub-systems
-    if (held) {
-      if (this.form === 'cutlass') this.cutlass.update(dt, inp);
-      else if (this.form === 'hook') this.hookshot.update(dt, inp);
-    }
+    if (held && this.form === 'cutlass') this.cutlass.update(dt, inp);
+    else this.cutlass.moves.idle(dt); // (the cutlass not in the hand: its string's window still runs out, tools/moveset.js idle())
+    if (held && this.form === 'hook') this.hookshot.update(dt, inp);
     this.hookshot.tickFlight?.(dt);
     if (this.form === 'rod' || this.angler?.lure) this.angler?.update(dt, inp, held && this.form === 'rod');
     this.strip.classList.toggle('on', this.drawT > 0.02);
