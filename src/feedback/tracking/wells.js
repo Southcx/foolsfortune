@@ -25,6 +25,7 @@ export function wellRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     if (e.how === 'abandon') { enteredAt = null; log.say('warn', "You leave the Well by another way. It keeps this run's finds."); return; } // (travelled out of a run: world/places.js; words a placeholder, Espada's)
     if (!e.shattered) L.inc('well.out');
+    else if ((e.floors || 0) + (e.foes || 0) > 0) L.inc('well.haul.lost'); // (shattered with a haul to lose: Grief's awakening, progress/feelings.js)
     if (!e.shattered && e.how !== 'escape' && enteredAt != null && !cracked) L.inc('well.run.whole'); // (up and out, the clay never cracked)
     if (e.how === 'escape') L.inc('well.escape'); // (the Wake Whistle: docs/plans/SHRINES.md)
     L.hi('well.charted', Math.round((e.charted || 0) * 100));

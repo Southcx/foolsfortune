@@ -61,8 +61,12 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **mental state** (`game.courierMind`, `src/courier/mind.js`; creatures': `progress/combat/mind.js`) — the Courier's: pushed up by Lachryma
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
-  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked and are learned by drinking each where it falls
-  (Anagami's five, `NATIVE`, in its weather; Gall and Fury far off). *Not:* "hunger", "Faith" (cut). → detail
+  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked; each is learned at its awakening. *Not:* "hunger", "Faith" (cut). → detail
+- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`, its moment `feedback/awakening.js` / `VANTAGES`, `vantage.reach`,
+  `src/world/vantages.js`; `docs/plans/FEELINGS-AWAKENING.md`; working words, Espada's) — the
+  moment a feeling is learned, by an act that is that feeling (or drinking it in its weather on 5 occasions): its weather floods round you, the body answers,
+  one line in its own voice, the body's answer once free (`feeling.embody`) / a hand-placed lookout whose view wakes Wonder. *Not:* a notice
+  from the System.
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a

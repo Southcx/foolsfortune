@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
 import { TYPE_OF, NAMES, clockAt } from '../../progress/weather.js';
+import { FEELING_WAKE } from '../../progress/feelings.js';
 
 const PLACE = (id) => (id === 'well:dunemaw' ? 'the Great Dunemaw' : NODES[id]?.name || id);
 const STATUS_OF = { impact: 'stun', ego: 'doubt', influence: 'charm', illusion: 'blind', delirium: 'confusion' };
@@ -34,14 +35,14 @@ export function weatherRules({ on, L, log, g }) {
     const c = clockAt(e.ms);
     log.say('info', `Game day ${c.day}, ${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}.`, { key: 'clock', throttle: 1 });
   });
-  // a feeling learned by drinking it (GALL-AND-FURY.md section 5): feeling.drink { aspect, by } as the drunk feeling changes (courier/mind.js);
-  // every feeling is known from its first drink (the owner, 2026-10-11: all seven start locked), and the radial's slot and the achievements
-  // read that count
-  on('feeling.drink', (e) => {
-    if (e.by !== 'courier' || !e.aspect) return;
-    const first = !L.get(`feeling.known.${e.aspect}`);
-    L.inc(`feeling.known.${e.aspect}`);
-    if (first) log.say('system', `${e.aspect[0].toUpperCase() + e.aspect.slice(1)} known. Refine it now.`, { key: 'feeling.known' }); // (Espada's words)
+  // a feeling drunk (feeling.drink { aspect, by }, courier/mind.js, on a change of the feeling drunk): an occasion counted toward its
+  // awakening's count way; the awakening itself (feeling.wake { feeling, how, by }, progress/feelings.js) is counted known and said once,
+  // in the feeling's own voice (FEELINGS-AWAKENING.md section 3: the moment's look and sound are Calissa's and Wanda's, on the same event)
+  on('feeling.drink', (e) => { if (e.by === 'courier' && e.aspect) L.inc(`feeling.drunk.${e.aspect}`); });
+  on('feeling.wake', (e) => {
+    if (e.by !== 'courier' || !e.feeling) return;
+    L.inc(`feeling.known.${e.feeling}`); L.inc(`feeling.wake.${e.how}`);
+    log.say('art', FEELING_WAKE[e.feeling]?.line || '', { key: `wake.${e.feeling}` }); // (the EVENT tab, as a Movement Art's learning)
   });
   on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built

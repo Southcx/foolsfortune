@@ -33,7 +33,7 @@ export function dunemawRules({ on, L, log }) {
     if (e.warped) L.inc('find.warped');
   });
   on('foe.wipe', (e) => { if (e.by === 'courier') { L.inc('foe.wipe'); log.say('warn', 'The Dunemaw takes you back to the Lip Stone.', { key: 'wipe', throttle: 3 }); } });
-  on('foe.cast', (e) => { const n = NAMES[e.cast]; if (n) log.say('combat', `The Great Slip Jelly readies ${n}.`, { key: 'cast', throttle: 0.5 }); }); // (foe.cast { cast }: Espada's names)
+  on('foe.cast', (e) => { L.inc('foe.faced'); const n = NAMES[e.cast]; if (n) log.say('combat', `The Great Slip Jelly readies ${n}.`, { key: 'cast', throttle: 0.5 }); }); // (foe.cast { cast }: Espada's names)
   // the fight's moments (Espada's lines): foe.moment { what, by: 'creature' }
   const MOMENT = { crack: "The Great Slip Jelly's crown cracks.", mirror: 'Eye Cup turns back. The Great Slip Jelly is stunned.', sink: 'The Great Slip Jelly sinks into the dish.',
     feed: 'A brood reaches the Great Slip Jelly. It heals.', sherds: 'The Great Slip Jelly breaks into four sherds.', mend: 'The sherds mend. The Great Slip Jelly heals.',
