@@ -669,7 +669,7 @@ export class Tracking {
     const SHOPNAME = (id) => ({ raku: 'Raku', grog: 'Old Grog' })[id] || 'The keeper';
     on('shop.open', (e) => { L.inc('shop.open'); L.inc(`shop.open.${e.shop}`); first('shop', 'Logged: a counter. Click a good to buy it, a thing in your box to sell it. Prices climb as a shelf empties and fall back in time.'); });
     on('shop.buy', (e) => {
-      L.inc('shop.bought'); L.inc(`shop.bought.${e.shop}`); L.inc('shop.spent', e.price);
+      L.inc('shop.bought'); L.inc(`shop.bought.${e.shop}`); L.inc('shop.spent', e.price); L.hi('shop.buy.best', e.price || 0);
       if (e.haggled) { L.inc('haggle.won'); L.inc('haggle.saved', Math.max(0, Math.round(e.worth * 1.45) - e.price)); }
       log.say('loot', `You buy the ${ITEM(e.item)} from ${SHOPNAME(e.shop)} for ${plural(e.price, 'cube')}.`, { tone: '#ffd98a', key: `buy.${e.item}`, fmt: (n) => `You buy ${n} ${ITEM(e.item)} from ${SHOPNAME(e.shop)}.` });
     });

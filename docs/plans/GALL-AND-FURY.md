@@ -88,7 +88,7 @@ The names of the weathers (WHEEL.md's placeholders, Espada's to settle):
 - **Gall: the miasma.** A low sour fog, flies in it, a curdled film on water.
 - **Fury: the hail.** Hard white pellets on clay and glaze, never thunder (thunder is Dread's).
 
-## 5. Learning a feeling (how the Courier gets them; the owner, 2026-10-11: all seven start locked)
+## 5. Learning a feeling (superseded: docs/plans/FEELINGS-AWAKENING.md, the owner, 2026-10-11)
 
 The Courier refines crude into feelings, but only the ones they **know**.
 - **A feeling is known once you have drunk it.** You don't have to remember: you learn one by drinking Lachryma of that feeling (a

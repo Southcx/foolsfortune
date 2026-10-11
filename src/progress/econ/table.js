@@ -135,10 +135,7 @@ export const ECON = {
     margarite: { worth: 0.5, volatility: 0.5, island: 'margarite', name: 'Margarite crude' },   // light and sweet: easy to carry, cheap
     dunemaw:   { worth: 0.85, volatility: 1.1, island: 'anagami', name: 'Dunemaw crude' },    // the Great Dunemaw's: the slice's own
     entra:     { worth: 1.25, volatility: 1.6, island: 'entra', name: 'Entropolis crude' }, // (names Espada's: "a cask of Dunemaw crude", "3 casks of Dunemaw crude")      // heavy and sour: the richest and the most dangerous to carry
-  },
-  /** The casks named by feeling before the owner's ruling, read as their field until the items are renamed (Petra's: pneuka/items.js);
-   *  then this map goes. */
-  legacy: { mirth: 'margarite', wonder: 'margarite', desire: 'dunemaw', grief: 'dunemaw', dread: 'entra' } },
+  } },
   /** THE SHIPS (the Vessoul's Emocean forms, by trade: LORE.md): how much each holds, of what, how slow a hop is (x the hop's time),
    *  its `hull` (x the spill chance; 1 when unsaid), and its `fill` (x the hop's fuel, the price of a full tank: rail/ships.js `burn` is what a waypoint burns; its `slow` when unsaid: a light hull burns little,
    *  so a sloop's small hold still pays a short errand, R57: at the tanker's burn it lost 25-35 cubes a run). */
@@ -152,7 +149,7 @@ export const ECON = {
   /** THE ISLANDS ON THE LAW-CHAOS LINE (docs/LORE.md, "The King and the Queen"; the owner, R43: "a stable mind is safer and less
    *  lucrative, a chaotic mind riskier and richer"). Each island's Wells: `deeper` (how much richer each floor down is), `floors` (how
    *  deep they run), `risk` (the chance a floor ends the run for a middling diver: a skilled one halves it, a masterful one quarters it),
-   *  `foes` (FOEs a run), the crude `field` it yields (and, until the casks are renamed, the legacy `grades` its casks still carry), the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
+   *  `foes` (FOEs a run), the crude `field` it yields, the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
    *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entropolis
    *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). `crude` is where the island's price
    *  for crude sits inside the demand band (0 the bottom .. 1 the top, with its slow wave about it): Chaos digs it up and sells it
@@ -161,9 +158,9 @@ export const ECON = {
    *  shrugs, and an island knows its own mind (a map of Anagami's Well is worth little on Anagami), so a good map is worth sailing to
    *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
   islands: {
-    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, field: 'margarite', grades: ['mirth', 'wonder'],  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, field: 'dunemaw', grades: ['wonder', 'desire', 'grief'], classes: [0, 1, 2] },
-    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, field: 'entra', grades: ['grief', 'dread'],   classes: [1, 2, 3] },
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, field: 'margarite',  classes: [0, 1] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, field: 'dunemaw', classes: [0, 1, 2] },
+    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, field: 'entra',   classes: [1, 2, 3] },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
    *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */
@@ -236,8 +233,5 @@ export const ECON = {
     night: { signature: 1.5 },
   },
 };
-/** A cask's crude by its id's suffix (`cask.dunemaw`, or a legacy `cask.grief` read as its field): what the callers that price, spill or
- *  sort casks read (`ECON.crude.grades[suffix]`). The fields' rows, and each legacy name pointing at its field's. */
-ECON.crude.grades = { ...ECON.crude.fields, ...Object.fromEntries(Object.entries(ECON.crude.legacy).map(([g, f]) => [g, ECON.crude.fields[f]])) };
-/** The field a cask's suffix names (a field, or a legacy feeling read as its field). */
-export const crudeFieldOf = (suffix) => (ECON.crude.fields[suffix] ? suffix : ECON.crude.legacy[suffix] || null);
+/** The field a cask's suffix names (`cask.dunemaw` -> 'dunemaw'), or null. */
+export const crudeFieldOf = (suffix) => (ECON.crude.fields[suffix] ? suffix : null);
