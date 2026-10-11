@@ -9,12 +9,13 @@
 // OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
 // swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT), which are the
 // game's feel and do not change. IK only closes the palms on the pot's sides.
-// The hold rides the hands (CASEBOOK rules 43 and 193): the carrying clip lays its arms and spine over the walk and leaves the hips to
-// it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never at a height fixed to the
-// capsule with the body bobbing under it. A held prop follows the hand that holds it, as an engine attaches one to a hand socket
-// (Unreal's AttachToComponent on a hand bone), the hands then closed on its sides by IK.
-// What is let go of (thrown, set down, dropped) is kept off the Courier until it is clear of them (LET_GO, CASEBOOK rule 194), as a
-// projectile ignores the one who threw it (Unity's Physics.IgnoreCollision, Unreal's IgnoreActorWhenMoving on the instigator).
+// The carry's hold rides the hands (CASEBOOK rules 43 and NEW:carry-from-hands): the carrying clip lays its arms and spine over the
+// walk and leaves the hips to it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never
+// at a height fixed to the capsule with the body bobbing under it. A held prop follows the hand that holds it, as an engine attaches
+// one to a hand socket (Unreal's AttachToComponent on a hand bone), the hands then closed on its sides by IK.
+// What is let go of (thrown, set down, dropped) is kept off the Courier until it is clear of them (LET_GO, CASEBOOK rule
+// NEW:let-go-clear), as a projectile ignores the one who threw it (Unity's Physics.IgnoreCollision, Unreal's IgnoreActorWhenMoving on
+// the instigator).
 //
 //   const carry = techs.get('carry')   carry.find()   carry.item   carry.state ('lift' | 'hold' | 'throw' | 'put')   carry.drop()
 //   (a passive Tech: fixed(dt) takes F and the fire button; animate lays the clips, afterPose reads the palms, hands closes them on it)

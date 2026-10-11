@@ -531,11 +531,11 @@ the rules before building in the same area; a rule a machine can check goes into
 192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
-193. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
+NEW:carry-from-hands. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
     is posed and before any hand's IK), in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still
     while the body bobs under it and the IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the
     feet against the same run without it.
-194. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
+NEW:let-go-clear. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
     keeps out of the Courier's collider and the character controller's query until its shape is a margin clear of the capsule. The
     controller sees a collider where the last step left it; made solid inside or against the capsule, it shoves the capsule out in one
     step. Measured as the capsule's step on the frame of the release, at the floor's edge too.
@@ -585,7 +585,7 @@ the rules before building in the same area; a rule a machine can check goes into
   ahead the pot still strikes it and breaks. The core's turn-in: the pot trails the palms 4.0 cm at most (was 12.5), the IK pulling them
   8.9 cm at most (was 15.6). A set-down's first frame moves the pot 0.6 cm, the second as the first. Not changed: crouch-walking, the
   leading thigh still passes into a held pot's side (645 skinned vertices, 13 cm, as before the fix).
-- **Rule:** 193, 194 (new).
+- **Rule:** NEW:carry-from-hands, NEW:let-go-clear.
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 
