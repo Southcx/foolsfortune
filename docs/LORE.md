@@ -4,7 +4,7 @@ Who lives in this world, where things are, what things are called and why, and h
 before writing words a player will see. The owner builds the lore functionally: the frame first, details when a feature needs them.
 Blanks stay blank.
 
-**How firm:** unmarked is **canon** (the owner has ruled). *Proposed* waits on the owner. *Open* is a blank kept on purpose. Words
+**How firm:** unmarked is **canon** (the owner has ruled). *Proposed* waits on the owner. *Parked* is set aside by the owner; not raised again until asked. *Open* is a blank kept on purpose. Words
 already in the build that this page does not name are provisional. Strings that live in code are not repeated here: the code is the
 record (section 12 says where).
 
@@ -190,7 +190,7 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   ids stay in code. Grain is climate, mood is weather: an island sets its Figments' mean Grain; an Egregore has the widest spread; the
   slip jellies carry the boomtown's (bold, erratic). Lines: "Grain: curious, bold, steady. Weak to: Illusion, Impact." · "You turn its
   Grain: skittish to steady." Kaolin's own Grain: *open*.
-- **The five phases** *(proposed)*: wonder wood, mirth fire, desire earth, **grief metal, dread water** (the tradition's own pairing:
+- **The five phases** *(parked by the owner, 2026-10-11)*: wonder wood, mirth fire, desire earth, **grief metal, dread water** (the tradition's own pairing:
   grief to the lungs, fear to the kidneys). The generating cycle then runs in the shown order, Wonder → Mirth → Desire → Grief → Dread →
   Wonder, and that last step is awe. Overcoming: wonder checks desire, desire checks dread, dread checks mirth, mirth checks grief,
   grief checks wonder. Metal for grief is kintsugi's gold; water for dread is the deep the Leviathans rise from.
@@ -316,7 +316,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   Blowout (a pot with trapped water bursts in the kiln), Broodwake, Centring, Slake and Wedge, Decant, the Sherds (they mend: kintsugi
   turned on you), the Overflow (the mother who overflows), The Dunemaw Swallows; the status **Sodden**. Hope is never a cast: the core
   is what you strike.
-- **The crossing's cast** *(proposed)*: **glints** (Guppies that flash as they turn) and **the Conductor** (it drives the shoal on the
+- **The crossing's cast** *(parked by the owner, 2026-10-11)*: **glints** (Guppies that flash as they turn) and **the Conductor** (it drives the shoal on the
   beat: down it and the music stops); **the Wreckers** (the coast's thieves who hung false lights: the lighthouse inside out;
   Contractors under no letter) and their brig the ***False Light*** (their origin *open*); **Old Nobody**, a rogue Leviathan
   (authored by no one, and what Odysseus told the Cyclops): it comes back, and Letty posts WANTED: NOBODY.
@@ -443,7 +443,7 @@ roly-poly toy that rights itself, and a cup).
   pieced together), Set in Stone, Epigrapher (*epi* + *graphein*, writing upon: the title).
 - **Monster Rancher's disc stone stays the plates' job** (a Veritome photograph awakens a spirit at the Athanor); ostraca are words only.
 
-### The round robin's proposals *(Espada's, for the owner)*
+### The round robin's proposals *(Espada's; parked by the owner, 2026-10-11)*
 - **The town that was is Elpis** (from Hesiod's *Works and Days*): Greek for hope, the one thing left in Pandora's jar when everything
   else flew out. The boomtown named itself for hope; its jar became the Pithos; the bright core at the bottom is what is left of it.
   Grog says the name once, and never again.
