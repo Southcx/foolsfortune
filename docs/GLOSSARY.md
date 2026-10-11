@@ -124,6 +124,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   its strike past, that pays Lachryma for the next move at once. *Not:* a cancel, nor the free recovery cut. → detail
 - **the melee loadout** (working name, Espada's and the owner's to rule; `SONDELASS_LOADOUT`, `SONDELASS_MOVES`, `sondelass/sondelassloadout.js`) —
   the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
+- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`) — the melee loadout's string as pips at the bottom middle while the
+  cutlass is drawn: the next LMB's lit gold, the film's glint while the paid cut is open. *Not:* the slot row, Strawman's attack strings. → detail
+- **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`) — the ring on the point the hook would bite, within its reach, while the hook form is
+  in hand; brackets close on it for a catch. *Not:* the chevron, the lock-on reticle. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.
 - **damage type** (`src/progress/combat/types.js`) — what kind of force a blow is: Impact, Ego, Influence, Illusion, Delirium; each builds a
   status and trumps one other. *Not:* an element. → detail

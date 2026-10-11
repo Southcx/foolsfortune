@@ -117,3 +117,11 @@ model: its marks live on the wire compass and in the world, and each says what t
 | **the Lockheart** | nothing | its load as the lid's glow (ajar a crack when full); the wheel of odds when it opens | the fill and the Possibilikeys on the ring as one small gauge at the coffin (whether it can open); the hoover's reach while it draws |
 | **nothing in the hands** (the kick, carrying) | nothing (the crosshair went with the psygun) | the lock-on reticle (any tool) | a throw's aim mark only while something carried can be thrown: a carried thing is thrown at the screen's middle (`courier/moves/carry.js`), which is now unmarked |
 
+
+**Phase 6, the Sondelass, built (2026-10-11, Calissa):** the cutlass's **string row** (`ui/cutlassstringrow.js`, God Hand's combo tree):
+a pip a slot of the loadout's string at the bottom middle, the next LMB's lit gold and raised, the struck ones before it, the rest dim;
+while the paid cut is open (`Moveset.paidCutOpen`, the engine's own test, its cost affordable) the lit pip wears the oil film and a pale
+glint runs over it; a blink cancel keeps the lit pip, the string's reset resets it; out of a fight and idle 3 real s it fades, the first
+blow brings it back. The hook's **mark** (`vfx/hookmark.js`, Zelda's hookshot sight): a ring on the point the grapnel would bite (the
+throw's own probe, 40 m), brackets closing on it for a catch, faint when the pool cannot pay; it replaces the chevron there. The rod as
+today. No new shader program (the hook's mark is the wire compass's; the row is DOM pixel art). Sheets: Calissa's scratchpad, `p6/sond/`.
