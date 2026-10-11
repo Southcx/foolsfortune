@@ -72,7 +72,7 @@ export class Rocket extends Tech {
   canStart() {
     const P = this.P, down = !!P.input?.isDown('Space'), fresh = down && !this.was; this.was = down;
     // (the press itself, before the core's jump takes it: crouched and still, Space starts the gather instead of the crouch jump)
-    return fresh && P.grounded && P.crouching && Math.hypot(P.vel.x, P.vel.z) < 0.6;
+    return fresh && P.grounded && P.crouching && !P.prone && Math.hypot(P.vel.x, P.vel.z) < 0.6; // (never from the belly: Space gets up from it)
   }
   start() { this.gather = 0; this.P.endCore(); sfx.jetCharge?.(); }
   update(dt) {

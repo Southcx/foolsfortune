@@ -136,8 +136,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **the prowl / the crawl** (`PROWL`, `src/courier/anim/prowl.js` / `CRAWL`, `s.crawl`, `src/courier/anim/crawl.js`) — the crouch on the move,
-  low, its head held still / on all fours or the belly under what the crouch cannot pass (the look built, its body to come). *Not:* a
-  tech, nor the wall latch's crawl along a wall.
+  low, its head held still / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
+  crouch, prone; a 0.8 m capsule). *Not:* a tech, nor the wall latch's crawl along a wall.
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
   Movement Art.
 - **Movement Art** (`src/progress/skills.js`) — a tech the System teaches; a variant is one of its versions.

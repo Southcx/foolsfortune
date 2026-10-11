@@ -24,6 +24,7 @@ export const DEFAULTS = {
     overspeedDecel: 10, // m/s² bleed of extra speed on the ground (so a quick hop keeps it)
     groundSteer: 6,
     crouchSpeed: 2.2,
+    proneSpeed: 0.6, // flat on the belly (C, C: the crawl's loop at 1.3 times its own stride, past which it scurries: courier/anim/crawl.js)
     // slide: crouch above slideMinSpeed (or out of a sprint); slopes push you along
     slideSpeed: 9.5, // a boosted slide starts at least this fast
     slideBoost: 2, // added on top of your speed when the boost is ready

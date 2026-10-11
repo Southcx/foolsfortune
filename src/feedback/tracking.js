@@ -748,7 +748,7 @@ export class Tracking {
     if (P.mantle) return 'mantle';
     if (P.dashT > 0) return 'dash';
     if (!P.grounded) return 'air';
-    if (P.crouching) return 'crouch';
+    if (P.crouching) return P.prone ? 'prone' : 'crouch';
     const sp = Math.hypot(P.vel.x, P.vel.z);
     if (sp < 0.3) return 'idle';
     return P.sprinting ? 'sprint' : P.walking ? 'walk' : 'run';
