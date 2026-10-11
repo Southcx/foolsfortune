@@ -38,12 +38,19 @@ at its row's time, into a new opener. "Paid" is where the paid cut lands (the st
 | | a2 | Sond_AirCombo2 | juggle: a somersault cut, lift 1.2, push 0.5; aimed 42 degrees; their hang x0.3 | 0.13-0.38 | 0.38 (0.36-1.00) | 0.38-1.03 | - | 0.38 | 0 |
 | | a3 | Sond_AirPlunge, x1.25 | plunge: a chop (push 2, lift 0), falls at 30 m/s from 0.26 clip s; a 2.6 m ring on landing, near the ground only; staggers; the landing settles the body (the Courier's squash, 6 %) | a chop at 0.06-0.19, then the ring | - | 0.89 on the ground after landing | 0.6 after landing (new) | landing | 0.6 |
 | dash (LMB sprinting) | dash | Sond_DashSlash, whole body, 2.3 m travel | opener and finisher alone: push 8 | 0.23-0.35 | - | 0.35-1.50 | at 0.50 (new) | 0.35 | 0.15 |
+| RMB, the specials (the melee loadout: 2026-10-11) | stinger | the tap's slot (W + RMB the forward, S + RMB the back; empty: the tap's); Sond_Thrust held out, a 6 m lunge (launch.js), 6 Lachryma | special: pierces and throws | from the press, f+1 (was on release: a 100 ms tap, f+7) | - | - | - | from any blow's recovery (5 + 6) | - |
+| crouched, hold RMB | iaido | the charge's pose (`stance:cutlassIaido`: Gun_QuickDraw, the blade along the belt past the left hip, the off hand at the guard); held 0.5 real s: blade mode | wind-up | - | - | - | - | from any blow's recovery (5) | - |
+| | draw | let go before 0.5 s: Sond_Combo2 from 0.1 clip s, x1.4, the crouch's legs kept; no row yet (k x 1.1 = 1.54) | a rising cut from the left hip | 0.05-0.15 | - | 0.15-0.57 | - | 0.15 | - |
+| E (the blink), any move | - | the blink cancel: the move let go on the blink's frame (`Moveset.blinkCancel`), the string's place kept | - | - | the next slot (within 0.9 real s of the blink) | none owed | - | - | - |
 | special (R, 12 Lachryma) | tide | Sond_SpecialTidecutter, whole body | finisher: the 4.2 m ring at 1.86; its row's time now the clip's 2.63 | 1.80-1.94 | - | 1.94-2.63 | none (plays out) | 1.94 | 0.69 |
 | counter (LMB from the guard) | spin | Sond_SpinSlash, whole body | 2.8 turns; its own row (`counter`: 0.8 x 4) | 0.20-0.94 | - | 0.94-1.70 | none (plays out) | 0.94 | 0.76 |
 
 R (the special) still cuts any upper-body blow (c1-c3, t1, j1, j2) at any moment, for its 12 Lachryma; from a whole-body blow's
 recovery it is the paid cut (5 + 12). The stinger (RMB) and the guard (V) wait until no blow is playing, or come at once from a
-recovery for the paid cut (5 + the stinger's 6; 5 for the guard).
+recovery for the paid cut (5 + the stinger's 6; 5 for the guard). Since 2026-10-11 (the melee loadout, MELEE-LOADOUT.md section 2) the
+ground string's c1 to c4 and RMB's specials are the loadout's (`tools/sondelass/sondelassloadout.js`); RMB acts on the press, a press
+inside a strike waits 0.35 real s for the free way, and crouched it is the iaido; E (the blink) lets any move go and keeps the string's
+place.
 
 **Measured** (headless, the movement lab, at the air, 60 frames a real second): the ground string's cycle is 2.20 real s free (LMB every
 0.1 s; 2.16 on paper), 1.50 with the paid cut (LMB every 2 frames: each cut waits for a press after the strike's end; 1.37 on paper),

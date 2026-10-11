@@ -529,8 +529,26 @@ the rules before building in the same area; a rule a machine can check goes into
 191. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
+NEW:launch-end-speed. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+    (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
+    launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
+    speed at a handover reads the move's own speed otherwise.
 
 ## Cases
+
+### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
+
+- **Seen:** headless, the blink cancel's probe: E 2 or 8 frames into the stinger, the Courier came out of the blink at 14 m/s and went
+  8.03 m in the 30 frames from the press, against 6.3 m/s and 5.4 m out of c2, the launcher or the iaido's charge; an LMB 4 frames
+  after was the dash slash, not the string.
+- **Cause (measured):** the blink's exit is the body's speed at its start or its own 7 m/s, the greater (`blink.js`, `hs0`). The
+  stinger's launch carries them at 30 m/s and sheds to its `endSpeed` 6 only in `Launch.finish()`; the cut-in ends the launch with
+  `end()` alone, so the blink read 30 m/s, and the core's cap left 14.
+- **Fix:** the stinger's `onEnd` and every carried move's (`Moveset.carry`) shed to the launch's `endSpeed` (`shedSpeed`; on the
+  ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
+  the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
+  slash; now c3).
+- **Rule:** NEW:launch-end-speed.
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 

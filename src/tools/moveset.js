@@ -33,10 +33,24 @@
 //                          settles the drawn body (courier/anim/squash.js)
 //     LMB while sprinting  the DASH: the clip's own travel, carried
 //     R                    the SPECIAL: a costly move of the tool's own (Lachryma)
+//     E (the blink)        THE BLINK CANCEL (the owner, 2026-10-11: "the player should be able to Blink dodge cancel moves at any
+//                          time"): the blink (courier/moves/blink.js) emits `move.blink`; the moveset of the tool in the hand hears it
+//                          and lets the move go at any frame: no recovery owed, an upper move's pose eased out (a whole-body move's
+//                          launch fades its own), its launch's `onEnd` spent, and THE STRING'S PLACE KEPT: the next press is the next
+//                          slot (Bayonetta's dodge offset), inside the string's own reset window (RESET) from the blink; never a pause
+//                          branch, nor the dash (the blink's exit speed is not a sprint). No move begins while the blink has the body
+//                          (the press waits, buffered). A whole-body move's launch is asked for `cuttable` (the blink may take the step
+//                          from it: courier/moves/techs.js, Petra's half), and hands back its `endSpeed` however it ends (shedSpeed)
+//   THE LOADOUT (the melee loadout, working name: tools/sondelass/sondelassloadout.js, God Hand's Combo Tree): a tool may hand the engine a
+//   `catalogue` (moves as rows: { id, kind: 'normal' | 'special', rule, play (a move, below), wraps (a special the tool plays itself) })
+//   and a `loadout` ({ string: [ids], specials: { tap, forward, back } }, or a function that returns one): LMB walks the string's slots
+//   in order, the last looping to the first (the GROUND string is the loadout's), and `special(dir)` plays the slot's special (an empty
+//   forward or back slot is the tap's). Without one, `strings.ground` is the string, as before.
 //   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift },
 //             high: { lift } (a launcher held at its strike), strike: [t0, t1] (typed over the measured), parts: [t..] (a row's hits begin),
 //             aim (rad: where off the facing the blade's arc passes, for a cut whose arc never crosses the front),
 //             ringHit (the landing ring's own hit, where the strike's differs), lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
+//             legs: false (an upper move standing still keeps the stance's legs, not the clip's: the iaido's cut from the crouch),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
 //   THE EVENTS  the tool's own swing and hit events (`cut.swing {n, move, by}`, `cut.hit {what, combo, move, by}`); and Dovina's
@@ -53,9 +67,14 @@
 //
 //   const M = new Moveset(tool, { id, moves, strings, reach, pot, k, cause, events: { swing, hit }, segment(a, b), trail, button ('Mouse0'),
 //                                 specialKey ('KeyR'), tip, limb ('R' | 'L' | 'footR' | 'footL' | 'auto': what a move's reach is measured on),
-//                                 onBegin(c), onAt(c) (once a move, at def.at or its strike's start), onUpdate(c, dt), onHit(...), onEnd(c) })
+//                                 onBegin(c), onAt(c) (once a move, at def.at or its strike's start), onUpdate(c, dt), onHit(...), onEnd(c),
+//                                 catalogue, loadout, wraps: { [id]: (row, { paid }) -> bool } (a slotted special the tool plays itself),
+//                                 drawn() (the tool is the one in the hand: the blink cancel listens only then), onBlinkCancel(c) (the blink
+//                                 cancel heard: the tool lets its own moves go) })
 //   strings.charge: { hold, release?, after? } (no release: letting go ends the hold; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
+//   M.begin(id, kind, n, join) (`join`: a pose the move begins from, faded out over 0.1 s, as a chained move's)   M.blinkCancel()
+//   M.string (the ground string's move ids)   M.specialOf(dir) -> its catalogue row   M.special(dir, { paid }) -> bool   M.costOf(row)
 //   M.recovering() (the move on show is past its strike)   M.cut(also) -> bool (the paid cut, for the tool's own next: `also` its cost)
 //   spec.ghosts: an Afterimages the tool ticks itself (the engine keeps its own otherwise)
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
@@ -75,7 +94,7 @@ const fxRand = stream('tools/moveset.fx'); // (the look's chance: the afterimage
 
 const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
 
-const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12;
+const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12, DROP = 0.12; // (DROP: real s an upper move's pose eases out when the blink cancels it)
 // HIGH TIME's own arc (the owner, 2026-10-11: the launcher "linked to chasing the target it hits, so the action breaks when attempting
 // to use it on the Strawman"): from the strike's end the Courier rises on a ballistic arc of their own to `apex` m above the ground
 // they launched from (the feet: 2.2 x 1.78 m, the owner's "2.2x their own height", 2026-10-10), at `gravity` x the core's 21 m/s²
@@ -105,6 +124,10 @@ export function rootOf(C, name) {
   roots.set(name, r);
   return r;
 }
+/** A launch's exit speed honoured however it ends (`max` m/s, the horizontal): Launch.finish() sheds to its `endSpeed`, but a blink that
+ *  cuts the launch ends it without finish(), and read the blow's own speed as its exit (the stinger's 30 m/s: casebook
+ *  rule NEW:launch-end-speed). */
+export function shedSpeed(vel, max) { const h = Math.hypot(vel.x, vel.z); if (h > max) { vel.x *= max / h; vel.z *= max / h; } }
 /** Body space to the world, facing `yaw`. */
 const toWorld = (v, yaw, out) => out.set(v.x * Math.cos(yaw) + v.z * Math.sin(yaw), v.y, -v.x * Math.sin(yaw) + v.z * Math.cos(yaw));
 
@@ -114,13 +137,33 @@ export class Moveset {
     this.cur = null; this.n = -1; this.str = 'ground'; this.after = 9; this.buffer = 0; this.airN = 0; this.airHits = 0;
     this.hit = new Set(); this.combo = 0; this.charge = 0; this.held = false; this.wholeOn = false;
     this.juggle = null; this.ghosts = spec.ghosts || null;
+    // the moves the engine plays: a catalogue's rows (a normal's or a slotted special's `play`, with its clip and row) and the tool's own
+    // table, built once (a move's swing is measured once and kept on it: melee.js)
+    this.table = { ...spec.moves };
+    for (const r of Object.values(spec.catalogue || {})) if (r.play && !this.table[r.id]) this.table[r.id] = { rule: r.rule, clip: r.clip, ...r.play };
+    this.offBlink = this.game?.events?.on('move.blink', () => this.blinkCancel()) || null; // (the blink cancel; or at the first update(), once the game is there)
   }
   get game() { return this.tool.game; }
   get P() { return this.tool.P; }
   get busy() { return !!this.cur; }
   get playing() { return !!this.cur || (this.rec && this.rec.t < this.rec.dur); }
   get whole() { return !!this.cur && this.cur.def.body === 'whole'; }
-  def(id) { return this.S.moves[id]; }
+  def(id) { return this.table[id]; }
+  /** The loadout in force (the tool's, or none). */
+  get loadout() { const L = this.S.loadout; return typeof L === 'function' ? L() : L || null; }
+  /** The ground string: the loadout's slots in order, or the tool's `strings.ground`. */
+  get string() { return this.loadout?.string || this.S.strings.ground || []; }
+  /** The special a slot holds (`dir`: 'tap' | 'forward' | 'back'), its catalogue row; an empty forward or back slot is the tap's. */
+  specialOf(dir = 'tap') { const L = this.loadout?.specials, id = L && ((dir !== 'tap' && L[dir]) || L.tap); return (id && this.S.catalogue?.[id]) || null; }
+  /** What a row or a move costs in Lachryma (its row of moves.js first). */
+  costOf(r) { return (r && (this.rule(r)?.cost ?? r.play?.cost ?? r.cost)) || 0; }
+  /** Play the special a slot holds: one the tool plays itself (`wraps`), or a move of the catalogue's. `paid`: a paid cut goes into it. */
+  special(dir = 'tap', { paid = false } = {}) {
+    const r = this.specialOf(dir);
+    if (!r) return false;
+    if (r.wraps) return !!this.S.wraps?.[r.wraps]?.(r, { paid });
+    return paid ? this.paid(r.id, 'special') : this.begin(r.id, 'special');
+  }
   /** A move's row in Dovina's table (progress/combat/moves.js), or null. */
   rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || null; }
   /** Whether a move is open to the Courier (its row's unlock over the ledger; a move with no row always is). */
@@ -129,6 +172,7 @@ export class Moveset {
   branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; }
 
   cancel() {
+    this.drop = null;
     if (this.cur?.def.body === 'whole') { const L = this.P.techs.get('launch'); if (L?.active && L.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (its launch ends with it: left to run out its time it froze the pose and shut the core out, the brush and vane review)
     this.cur = null; this.rec = null; this.buffer = 0; this.charge = 0; this.juggle = null; this.arc = null; this.S.trail?.gap();
     if (!this.S.ghosts) this.ghosts?.clear();
@@ -164,9 +208,26 @@ export class Moveset {
   /** Begin the move a paid cut goes into, marked paid (its ribbon wears the film). */
   paid(id, kind, n) { const ok = this.begin(id, kind, n); if (ok && this.cur) { this.cur.paid = true; this.cur.ph = fxRand(); } return ok; }
 
+  /** THE BLINK CANCEL (`move.blink`, heard while the tool is the one in the hand): the move on show let go at any frame, as Bayonetta's
+   *  dodge offset keeps the combo. No recovery is owed; an upper move's last pose eases out over DROP (a whole-body move's launch has
+   *  already yielded to the blink and fades its own clip); its launch's `onEnd` is spent (it only marked the move, `ended`, and this
+   *  comes first: update()); the string's place is kept (n, the string, the air string's count, the branch), so the next press within
+   *  RESET is the next slot. Then the tool's own (`onBlinkCancel`: the cutlass's stinger, iaido and blade mode). */
+  blinkCancel() {
+    if (this.S.drawn && !this.S.drawn()) return;
+    const c = this.cur, upper = c && c.def.body !== 'whole' && this.last;
+    if (c) { this.cancel(); this.after = 0; this.offset = true; if (upper) this.drop = { t: 0 }; }
+    this.rec = null;
+    this.S.onBlinkCancel?.(c);
+  }
+
   /** Once a frame while the tool is in the hand. `allow`: the tool is not doing something of its own (a guard, blade mode). */
   update(dt, inp, { allow = true } = {}) {
     const P = this.P, S = this.S, st = S.strings;
+    this.offBlink ||= this.game.events?.on('move.blink', () => this.blinkCancel()) || null; // (once, as soon as the tool is first in the hand)
+    if (this.cur?.ended) this.finish(); // (its launch ran out: carry()'s onEnd marks it, so a blink that cut the launch can cancel it first)
+    const dodging = !!P.techs?.active?.cuts; // (the blink has the body: no move begins, the press waits in the buffer)
+    if (dodging) allow = false;
     this.after += dt;
     if (P.grounded) { if (this.airN && this.airHits >= 1) this.game.events?.emit('move.air', { tool: this.S.rules || this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; if (this.cur?.kind !== 'launcher') { this.juggle = null; this.arc = null; } }
     if (!S.ghosts) this.ghosts?.update(dt);
@@ -183,7 +244,7 @@ export class Moveset {
     }
     const c = this.cur;
     if (!c) {
-      if (this.after > RESET) { this.n = -1; this.str = 'ground'; }
+      if (this.after > RESET) { this.n = -1; this.str = 'ground'; this.offset = false; }
       if (allow && this.buffer > 0) this.opener(inp);
       return;
     }
@@ -233,10 +294,10 @@ export class Moveset {
     const speed = Math.hypot(P.vel.x, P.vel.z);
     if (!grounded && st.air && this.airN < st.air.length && P.techs.active?.id !== 'swim' && this.open(st.air[this.airN])) return this.begin(st.air[this.airN], 'air', this.airN);
     if (st.launcher && grounded && inp.isDown('KeyS') && this.open(st.launcher)) return this.begin(st.launcher, 'launcher');
-    if (st.dash && grounded && speed > 5.6 && this.open(st.dash)) return this.begin(st.dash, 'dash');
-    const g = st.ground || [];
+    if (st.dash && grounded && speed > 5.6 && !this.offset && this.open(st.dash)) return this.begin(st.dash, 'dash'); // (not out of a blink cancel: its 7 m/s exit is not a sprint, and the string goes on)
+    const g = this.string;
     if (!g.length) return;
-    const br = this.str === 'ground' && this.n >= 0 && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((b) => b.at === this.n && this.open(b.to[0]));
+    const br = !this.offset && this.str === 'ground' && this.n >= 0 && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((b) => b.at === this.n && this.open(b.to[0]));
     if (br) { this.branch = br; return this.begin(br.to[0], 'pause', 0); }
     if (this.str === 'pause' && this.n >= 0 && this.after <= RESET && this.branch && this.n + 1 < this.branch.to.length) return this.begin(this.branch.to[this.n + 1], 'pause', this.n + 1);
     const n = this.str === 'ground' && this.n >= 0 && this.after <= RESET ? (this.n + 1) % g.length : 0;
@@ -248,7 +309,8 @@ export class Moveset {
   nextOf(c) {
     const st = this.S.strings;
     if (c.def.next) return { id: c.def.next, kind: c.kind === 'launcher' ? 'air' : c.kind, n: c.n + 1 };
-    if (c.kind === 'ground' && st.ground && c.n + 1 < st.ground.length) return { id: st.ground[c.n + 1], kind: 'ground', n: c.n + 1 };
+    const g = this.string;
+    if (c.kind === 'ground' && c.n + 1 < g.length) return { id: g[c.n + 1], kind: 'ground', n: c.n + 1 };
     if (c.kind === 'pause' && this.branch && c.n + 1 < this.branch.to.length) return { id: this.branch.to[c.n + 1], kind: 'pause', n: c.n + 1 };
     if ((c.kind === 'air' || c.kind === 'launcher') && st.air) { const k = c.kind === 'launcher' ? 0 : c.n + 1; if (k < st.air.length && this.airN < st.air.length && this.open(st.air[k])) return { id: st.air[k], kind: 'air', n: k }; }
     return null;
@@ -256,8 +318,8 @@ export class Moveset {
 
   dur(def) { const c = this.tool.game.character?.clips.clips[def.clip]; return c ? c.dur : 1; }
 
-  /** Start move `id`. */
-  begin(id, kind = 'ground', n = 0) {
+  /** Start move `id` (`join`: a pose it begins from, faded out over 0.1 s as a chained move's is: a stance the tool held, the iaido's). */
+  begin(id, kind = 'ground', n = 0, join = null) {
     const def = this.def(id), g = this.game, P = this.P, ch = g.character;
     if (!def || !ch?.clips.clips[def.clip]) return false;
     const R = this.rule(def), cost = R?.cost ?? def.cost;
@@ -266,7 +328,9 @@ export class Moveset {
     if (prev && this.last) { (this.from ||= this.last.constructor ? new this.last.constructor(this.last.q.length / 4) : null)?.copy(this.last); this.fadeT = 0; } // (what was showing, held and faded out over the new move: no pop at a join)
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (the whole-body move's launch ends: the core has the step again)
     if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
+    if (join) { (this.from ||= ch.clips.pose()).copy(join); this.fadeT = 0; }
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false, holdB: kind === 'launcher' });
+    this.offset = false; this.drop = null;
     if (kind === 'launcher') { this.juggle = null; this.arc = null; c.y0 = P.pos.y; }
     else if (kind !== 'air') this.arc = null; // (only the air string keeps High Time's arc)
     this.hit.clear(); this.buffer = 0; this.rec = null;
@@ -322,7 +386,8 @@ export class Moveset {
         if (ride) this.ride(vel);
       },
       poseFix: (pose) => { if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } this.joined(C, pose); },
-      onEnd: () => { if (this.cur === c && c.phase !== 'fall') this.finish(); },
+      onEnd: () => { shedSpeed(P.vel, def.endSpeed ?? 4); if (this.cur === c && c.phase !== 'fall') c.ended = true; }, // (finished in update() this frame; a blink cutting in cancels it first)
+      cuttable: true, // (the blink may take the step at any frame: courier/moves/techs.js; blinkCancel() lets the move go)
     });
     this.wholeOn = true;
   }
@@ -467,6 +532,11 @@ export class Moveset {
   /** The upper-body layer while an upper move (or its recovery) plays: { pose, w } | null. */
   pose(C, out) {
     const c = this.cur;
+    if (!c && this.drop && this.last) { // (the blink cancelled an upper move: its last pose eased out, not dropped in a frame)
+      this.drop.t += this.game.rawDt || 1 / 60;
+      const w = 1 - THREE.MathUtils.smoothstep(this.drop.t, 0, DROP);
+      if (w <= 0.01) this.drop = null; else { out.copy(this.last); return { pose: out, w }; }
+    }
     if (!c) {
       const r = this.rec; if (!r) return null;
       C.sample(r.clip, r.t, out, false);
@@ -494,7 +564,7 @@ export class Moveset {
    *  the legs are the run's. `w`: the tool's layer weight (its draw, the override). */
   legs(ch, base, w = 1, dt = 1 / 60) {
     const c = this.cur, P = this.P, C = ch.clips;
-    const want = c && c.def.body !== 'whole' && P.grounded ? 1 - THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.6) : 0;
+    const want = c && c.def.body !== 'whole' && c.def.legs !== false && P.grounded ? 1 - THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.6) : 0; // (`legs: false`: the stance's own, a cut from the crouch)
     this.legW = THREE.MathUtils.damp(this.legW || 0, want, want > (this.legW || 0) ? 14 : 8, dt);
     if (this.legW < 0.01 || (!c && !this.legHeld)) { this.legHeld = false; return; }
     if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);

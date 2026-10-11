@@ -117,6 +117,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   not a cancel. *Not:* a combo. → detail
 - **the paid cut** (working name, Espada's and the owner's to rule; `paidCut`, `move.cut`, `tools/moveset.js`) — a press in a blow's recovery,
   its strike past, that pays Lachryma for the next move at once. *Not:* a cancel, nor the free recovery cut. → detail
+- **the melee loadout** (working name, Espada's and the owner's to rule; `SONDELASS_LOADOUT`, `SONDELASS_MOVES`, `sondelass/sondelassloadout.js`) —
+  the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.
 - **damage type** (`src/progress/combat/types.js`) — what kind of force a blow is: Impact, Ego, Influence, Illusion, Delirium; each builds a
   status and trumps one other. *Not:* an element. → detail
@@ -456,6 +458,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | dome | the sky's (`vfx/sky.js`); the stern of the Solar Skiff's hull | "the sky's dome", "the skiff's dome" |
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
+| cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
