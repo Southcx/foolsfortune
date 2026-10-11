@@ -5,8 +5,9 @@
 //   LMB         four strokes, the fourth the whole body's (a leap and a cut); after a pause at the first, a THRUST and its follow;
 //               after a pause at the second, the three wide arcs of the JRPG string
 //   hold LMB    the CHARGE: the blade drawn back while held, the charged slash on release
-//   S + LMB     the LAUNCHER: tapped, what it cuts goes up to the blade; held, up they go with it (Devil May Cry's High Time); LMB in
-//               the air: two cuts that keep it at the blade, then the PLUNGE, the blade driven down with a blast round them on the ground
+//   S + LMB     the LAUNCHER: tapped, what it cuts goes up to the blade; held, up they go on an arc of their own, 3.92 m, and it with
+//               them if it can be lifted (Devil May Cry's High Time); LMB in the air: two cuts that keep it at the blade, then the PLUNGE,
+//               the blade driven down with a blast round them on the ground
 //   a press in a blow's recovery: THE PAID CUT (tools/moveset.js): Lachryma paid, the next move at once; RMB the stinger, V the guard
 //   sprinting   LMB: the DASH SLASH (its own 2.3 m, carried)
 //   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
@@ -59,19 +60,21 @@ const MOVES = {
   j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.66, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
   j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
   // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes. Tapped, lift 5.5 (an apex of 1.55 m about as a1 cuts, the
-  // Courier on the clip's own rise); held to its strike, lift 9.2 and they ride up with it (High Time, tools/moveset.js): the owner's
-  // "about 2.2x their own height", 2.2 x 1.78 m = 3.92 m to the feet. They ride 1.3 m under a slip jelly's centre (0.45 m under its
-  // base), so its base must reach 4.37 m: 9.2^2 / (2 x 9.81) = 4.31, and a2's lift near the top adds the rest (measured: the feet 3.93 m
-  // pressing on, 3.80 m with no press after; 9.5 took them to 4.18). An air blow never slows its rise (a lift is a floor: moveset.js), or
-  // a1 stopped it at 2.6 m. LMB in the air: two cuts that keep it at the blade (lift 2: back to the same height in the 0.4 s to the next,
-  // 9.81 x 0.4 / 2; push 0.5, not 1.5 and 2, which carried the two of them sideways at 3.8 m/s into the nearest wall) and the plunge,
-  // whose landing ring strikes only what is near the ground, its lift gone (what it threw overhead flew 9 m)
+  // Courier on the clip's own rise); held to its strike (High Time, tools/moveset.js), they rise on an arc of their own to the owner's
+  // "about 2.2x their own height", 2.2 x 1.78 m = 3.92 m to the feet, whatever was struck (2026-10-11: riding what it launched, the rise
+  // broke on Strawman), and what it struck is lifted 9.2 to meet the blade: a slip jelly's base tops out at 9.2^2 / (2 x 9.81) = 4.31 m,
+  // its centre 1.2 m over their top, where the air blows ride it (1.3 m under its centre). An air blow never slows its rise (a lift is a
+  // floor: moveset.js). LMB in the air: two cuts that hold it near the blade, sinking (lift 1.2: 0.3 m down in the 0.4 s to the next,
+  // where 2 held it level and the string hung; push 0.5, not 1.5 and 2, which carried the two of them sideways at 3.8 m/s into the
+  // nearest wall), the Courier's own hang x0.3 (6.3 m/s², was 0.12) where nothing is ridden; and the plunge, its wind-up at 1.25x to
+  // 0.26 clip s (the chop's end, was 0.32 at 1x) and its fall 30 m/s (was 26), whose landing ring strikes only what is near the ground,
+  // its lift gone (what it threw overhead flew 9 m). The owner (2026-10-11): "a little too floaty"; measured: docs/plans/SONDELASS-STRINGS.md
   up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.2 }, arc: 'over' },
-  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 2, push: 0.5 }, arc: 'r2l' },
+  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.3, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 1.2, push: 0.5 }, arc: 'r2l' },
   // (a2's somersault turns the blade in an upright circle 37-49 degrees to their left, never across the front: aim turns them that far
   // off the target, so the circle's front passes through it; measured from the clip, melee.js)
-  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 2, push: 0.5 }, arc: 'l2r', heat: 0.5 },
-  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
+  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.3, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 1.2, push: 0.5 }, arc: 'l2r', heat: 0.5 },
+  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', rate: 1.25, plunge: { hold: 0.26, speed: 30 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard, and the special (R)
   dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
   hold: { clip: 'Sond_ChargeHold' },

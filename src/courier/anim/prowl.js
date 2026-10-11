@@ -15,6 +15,9 @@
 //              and the neck's base (spine004) swung to keep the head there, PROWL.head.hold of the way, the head's turn kept. Each bone's
 //              share is capped (PROWL.head.cap) off the pose as animated: rom.js holds no neck limits (its table is the fingers'), so
 //              the cap is what keeps the neck where a neck goes; rom.js's pass still runs last.
+//   HOW STILL  PROWL.still (0..1) scales both passes: 1 the cat's full hold (the head bobbed 3.0 cm, swayed 4.1, turned 3 degrees a second),
+//              0 the clip's own (8.5, 11, 23). The owner (2026-10-11): "the head is a little TOO still ... split the difference":
+//              PROWL.still, the head living a little (measured: docs/ART.md section 10). The body under it is the clip's, untouched.
 //
 // Prior art: a cat's head stabilisation (the vestibulo-collic reflex: the head held steady in space while the trunk moves, the neck
 // absorbing the motion; the same in birds' head-bobbing hold phase); the predator stalks of Shadow of the Colossus's and Ghost of
@@ -33,6 +36,7 @@ const DEG = Math.PI / 180;
  *  hold. Measured in game at 2.2 m/s, every tool off (docs/ART.md section 10). */
 export const PROWL = {
   clip: 'Loco_CrouchWalk',
+  still: 0.5, // (0..1: how much of the head's hold is laid on, both passes; 1 the cat's whole hold, 0 the clip's own head)
   lift: 0.14, // (m: the hips over the clip's squat, 0.51 to 0.56 m: its long low steps read as a stalk, the trailing knee kept 25 cm off the ground, not a lunge's 13)
   stride: 1.4, // (1.71 m a stride, 1.29 a second: 2.6 steps a second, where 1.15 was 3.1, a scurry, and 1.45 reached 83 cm between the feet)
   head: {
@@ -79,6 +83,7 @@ export class Prowl {
 
   gaze(dt, s, w) {
     const B = this.ch.bones, H = PROWL.head;
+    w *= PROWL.still;
     this.heading(s);
     B.head.getWorldQuaternion(_w);
     const R = _r.copy(_hi).multiply(_w).multiply(this.headInv); // (the head's turn from its rest, in the heading frame)
@@ -104,6 +109,7 @@ export class Prowl {
 
   steady(dt, s, w) {
     const B = this.ch.bones, H = PROWL.head;
+    w *= PROWL.still;
     this.heading(s);
     const hp = B.head.getWorldPosition(_a);
     const rel = _t.copy(hp).sub(s.pos).applyQuaternion(_hi);

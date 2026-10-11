@@ -22,12 +22,15 @@
 //     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow
 //     S + LMB (ground)     the LAUNCHER: it lifts them and what it strikes (`knock` upward: each creature decides what that means).
 //                          Tapped, the hit's lift; held at its strike (a move's `high`), the higher lift, and from the strike's end
-//                          they RIDE up with what it launched (Devil May Cry's High Time), the clip's last pose held till it turns over
-//     LMB in the air       the AIR string (once a jump): they hang while it plays (gravity x0.12); with something launched in reach
-//                          they ride it instead (its measured speed, a blade's height below it: the two hang alike, whatever its own
-//                          gravity), and a blow's lift is a floor, never a ceiling (what still rises faster keeps rising: High Time's
-//                          climb is the launcher's whatever the presses); its last move may PLUNGE to the ground, whose ring strikes only
-//                          what is near the ground, and whose landing settles the drawn body (courier/anim/squash.js)
+//                          they rise on an ARC OF THEIR OWN (Devil May Cry's High Time; HIGH: the feet to 3.92 m, 2.2 x their height,
+//                          whatever was struck), the clip's last pose held till the arc turns over. What can be lifted goes up to
+//                          the blade; what cannot (Strawman, a heavy thing) only takes the hit, and the rise is the same
+//     LMB in the air       the AIR string (once a jump): they hang while it plays (gravity x0.12, or a move's own); a blow begun while High
+//                          Time's arc still rises keeps the arc to its top; past it, with something launched in reach that was seen
+//                          to rise, they ride it instead (its measured speed, a blade's height below it: the two hang alike, whatever
+//                          its own gravity), and a blow's lift is a floor, never a ceiling (what still rises faster keeps rising);
+//                          its last move may PLUNGE to the ground, whose ring strikes only what is near the ground, and whose landing
+//                          settles the drawn body (courier/anim/squash.js)
 //     LMB while sprinting  the DASH: the clip's own travel, carried
 //     R                    the SPECIAL: a costly move of the tool's own (Lachryma)
 //   A MOVE  { clip, from, to, rate, body: 'upper'|'whole', chain: [t0, t1] (clip seconds), hit: { power, dmg, cause, push, lift },
@@ -67,16 +70,26 @@ import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
 import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
 import { stream } from '../core/rng.js';
+import { T } from '../core/config.js';
 const fxRand = stream('tools/moveset.fx'); // (the look's chance: the afterimage's and the ribbon's hue, never the simulation's)
 
 const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
 
 const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12;
+// HIGH TIME's own arc (the owner, 2026-10-11: the launcher "linked to chasing the target it hits, so the action breaks when attempting
+// to use it on the Strawman"): from the strike's end the Courier rises on a ballistic arc of their own to `apex` m above the ground
+// they launched from (the feet: 2.2 x 1.78 m, the owner's "2.2x their own height", 2026-10-10), at `gravity` x the core's 21 m/s²
+// (14.7 m/s²: the top 0.71 s after the strike's end, 1.17 real s from the press against a slip jelly or Strawman, where riding a jelly
+// topped out at 3.80 m at 1.35 s with no press after and 3.93 m at 1.80 s pressing on; the core's own 21 m/s² is up in 0.6 s, too far
+// ahead of a jelly lifted at 9.81 to meet it at the blade). Whatever was struck: on Strawman, who cannot be lifted, the ride held them
+// at 0.4 m with the launcher's last pose frozen for 1.4 s (casebook, "High Time chased what it struck")
+const HIGH = { apex: 3.92, gravity: 0.7 };
 // THE RIDE: what was launched kept at the blade. `gap` m from its centre down to their feet (a1's tip runs 1.15-1.46 m above the feet),
 // `near` m apart on the ground's plane; `k` /s the pull back to both, at most `max` m/s; lost past `reach` m; the launcher's last pose held
-// until what it launched falls at `turn` m/s (0.3 s past its apex at 9.81), at most `hold` real s
+// until their own arc (HIGH) falls at `turn` m/s (0.2 s past its top), at most `hold` real s
 const RING_UP = 1.5; // (m: a ring strikes what is within this of the ground it is laid on, its lowest point to their feet)
-const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5 };
+// (`up`: what was launched is ridden only once seen to rise this far, m; not risen in `still` real s, it cannot be lifted: let go)
+const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5, up: 0.1, still: 0.2 };
 const _c1 = new THREE.Color(), _c2 = new THREE.Color();
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const roots = new Map();
@@ -117,7 +130,7 @@ export class Moveset {
 
   cancel() {
     if (this.cur?.def.body === 'whole') { const L = this.P.techs.get('launch'); if (L?.active && L.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (its launch ends with it: left to run out its time it froze the pose and shut the core out, the brush and vane review)
-    this.cur = null; this.rec = null; this.buffer = 0; this.charge = 0; this.juggle = null; this.S.trail?.gap();
+    this.cur = null; this.rec = null; this.buffer = 0; this.charge = 0; this.juggle = null; this.arc = null; this.S.trail?.gap();
     if (!this.S.ghosts) this.ghosts?.clear();
   }
 
@@ -155,7 +168,7 @@ export class Moveset {
   update(dt, inp, { allow = true } = {}) {
     const P = this.P, S = this.S, st = S.strings;
     this.after += dt;
-    if (P.grounded) { if (this.airN && this.airHits >= 1) this.game.events?.emit('move.air', { tool: this.S.rules || this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; if (this.cur?.kind !== 'launcher') this.juggle = null; }
+    if (P.grounded) { if (this.airN && this.airHits >= 1) this.game.events?.emit('move.air', { tool: this.S.rules || this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; if (this.cur?.kind !== 'launcher') { this.juggle = null; this.arc = null; } }
     if (!S.ghosts) this.ghosts?.update(dt);
     this.track(dt);
     if (this.rec) { this.rec.t += dt * (Math.hypot(P.vel.x, P.vel.z) > 2 ? 2.2 : 1); if (this.rec.t >= this.rec.dur) this.rec = null; }
@@ -181,8 +194,9 @@ export class Moveset {
     if (c.phase === 'fall') { if (P.grounded) this.land(); }
     else c.t += dt * (c.def.rate || 1);
     if (c.kind === 'launcher' && c.high == null && c.t >= (c.def.track?.strike[0] ?? 0)) c.high = !!(c.def.high && c.holdB); // (held to its strike: High Time)
+    if (c.kind === 'launcher' && c.high && !this.arc && c.t >= (c.def.track?.strike[1] ?? 0)) this.leap(c); // (from its strike's end: their own arc, before a cut can go on from it)
     const end = c.def.to ?? this.dur(c.def);
-    if (c.kind === 'launcher' && c.high && this.juggle && c.t >= end - 0.03 && this.juggle.v.y > -RIDE.turn && c.age < RIDE.hold) c.t = end - 0.03; // (riding: its last pose held till what it launched turns over)
+    if (c.kind === 'launcher' && c.high && this.arc && c.t >= end - 0.03 && P.vel.y > -RIDE.turn && c.age < RIDE.hold) c.t = end - 0.03; // (High Time: its last pose held till their own arc turns over)
     if (c.phase !== 'fall' && c.def.plunge && c.t >= c.def.plunge.hold && !c.landed) { c.t = c.def.plunge.hold; c.phase = 'fall'; }
     // charge: the opener held becomes the hold, the hold released becomes the blow
     if (c.kind === 'charge-hold') { this.charge = Math.min(1, this.charge + dt / 1.1); if (!inp.isDown(B)) { if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return; } }
@@ -253,7 +267,8 @@ export class Moveset {
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (the whole-body move's launch ends: the core has the step again)
     if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false, holdB: kind === 'launcher' });
-    if (kind === 'launcher') this.juggle = null;
+    if (kind === 'launcher') { this.juggle = null; this.arc = null; c.y0 = P.pos.y; }
+    else if (kind !== 'air') this.arc = null; // (only the air string keeps High Time's arc)
     this.hit.clear(); this.buffer = 0; this.rec = null;
     if (kind === 'ground' || kind === 'pause') { this.n = n; this.str = kind; }
     if (kind === 'air' || kind === 'launcher') this.airN = kind === 'air' ? n + 1 : 0;
@@ -300,10 +315,10 @@ export class Moveset {
         if (R) {
           const t0 = c.t, t1 = c.t + dt * (def.rate || 1);
           R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt)); toWorld(_a, yaw, _k);
-          vel.x = _k.x; vel.z = _k.z; if (xyz) vel.y = _k.y;
+          vel.x = _k.x; vel.z = _k.z; if (xyz && !this.arc) vel.y = _k.y; // (High Time's arc has the rise once it begins)
         }
-        const ride = this.riding(c);
-        if (tech?.o) { tech.o.gravity = ride ? 0 : c.grav; if (ride) tech.o.time = Math.max(tech.o.time, tech.t + 0.1); } // (riding, the move's launch lasts as long as the ride)
+        const up = this.rise(c, vel), ride = !up && this.riding(c), held = c.kind === 'launcher' && !!this.arc; // (held: over the top, the launcher falls on its own arc till its pose lets go)
+        if (tech?.o) { tech.o.gravity = up || held ? this.arc.g : ride ? 0 : c.grav; if (ride || up || held) tech.o.time = Math.max(tech.o.time, tech.t + 0.1); } // (rising, riding or held at the top, the move's launch lasts as long as it does)
         if (ride) this.ride(vel);
       },
       poseFix: (pose) => { if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } this.joined(C, pose); },
@@ -319,18 +334,32 @@ export class Moveset {
     if (!j.ent.alive) { this.juggle = null; return; }
     const p = this.centreOf(j, _e);
     if (dt > 1e-5 && !j.fresh) j.v.set((p.x - j.p.x) / dt, (p.y - j.p.y) / dt, (p.z - j.p.z) / dt);
-    j.fresh = false; j.p.copy(p);
+    j.fresh = false; j.p.copy(p); j.age += dt;
+    if (!j.up && p.y - j.y0 > RIDE.up) j.up = true;
+    if (!j.up && j.age > RIDE.still) this.juggle = null; // (it took the hit and did not rise: Strawman, a heavy thing: never ridden)
   }
   centreOf(j, out) { return j.kind === 'creature' ? j.ent.center(out) : out.copy(j.ent.pos).setY(j.ent.pos.y + 0.35); }
   /** Whether move `c` rides what was launched: a launcher held to its strike, from the strike's end; an air blow with it in reach. */
   riding(c) {
     const j = this.juggle, P = this.P;
-    if (!j || this.cur !== c || c.phase === 'fall') return false;
-    if (c.kind === 'launcher') return !!c.high && c.t >= (c.def.track?.strike[1] ?? 0);
-    if (c.kind !== 'air') return false;
+    if (!j || !j.up || this.cur !== c || c.phase === 'fall' || c.kind !== 'air') return false;
     const dy = j.p.y - P.pos.y;
     return Math.hypot(j.p.x - P.pos.x, j.p.z - P.pos.z) < RIDE.reach && dy > -0.5 && dy < RIDE.gap + 3;
   }
+  /** HIGH TIME's own arc begins (the launcher held, its strike past): the speed that takes their feet to HIGH.apex over the ground they
+   *  left, under the arc's gravity (the launch tech's). */
+  leap(c) {
+    const P = this.P, g = HIGH.gravity * T.movement.gravity, h = Math.max(0, c.y0 + HIGH.apex - P.pos.y);
+    this.arc = { g: HIGH.gravity };
+    P.vel.y = Math.sqrt(2 * g * h) + 0.5 * g / 60; // (the fixed step's own loss: the launch tech takes gravity before it moves, main.js's 1/60)
+  }
+  /** While High Time's arc rises (the launcher, or an air blow begun on the way up): the arc's gravity, no ride. False once over the top. */
+  rise(c, vel) {
+    if (!this.arc || (c.kind !== 'launcher' && c.kind !== 'air')) return false;
+    if (vel.y <= 0) { if (c.kind === 'air') this.arc = null; return false; } // (over the top: the air string's own hang, or the ride)
+    return true;
+  }
+
   /** Ride it: its speed, and a pull back to a blade's height below it and a blade's length from it (Devil May Cry's High Time). */
   ride(vel) {
     const j = this.juggle, P = this.P, cl = THREE.MathUtils.clamp;
@@ -396,7 +425,7 @@ export class Moveset {
     const power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = (c?.high && c.def.high?.lift) || (h.lift ?? 0);
     if (c?.kind === 'air' && kv.y > 1 && this.juggle?.ent === ent && this.juggle.v.y > kv.y) kv.y = this.juggle.v.y; // (a lift is a floor, never a ceiling: an air blow on what is still rising faster keeps its rise, so High Time's climb is the launcher's whatever the presses; it cut it at a1, 2.6 m)
-    if ((kind === 'creature' || kind === 'clapper') && kv.y > 1 && (c?.kind === 'launcher' || c?.kind === 'air') && (!this.juggle || !this.juggle.ent.alive)) this.juggle = { ent, kind, p: this.centreOf({ ent, kind }, new THREE.Vector3()), v: kv.clone(), fresh: true }; // (what is launched is ridden)
+    if ((kind === 'creature' || kind === 'clapper') && kv.y > 1 && (c?.kind === 'launcher' || c?.kind === 'air') && (!this.juggle || !this.juggle.ent.alive)) { const p = this.centreOf({ ent, kind }, new THREE.Vector3()); this.juggle = { ent, kind, p, y0: p.y, v: kv.clone(), fresh: true, age: 0, up: false }; } // (what is launched is ridden, once it rises)
     else if (this.juggle?.ent === ent && kv.y <= 1 && (h.push ?? 0) >= 4) this.juggle = null; // (thrown off, not held up: never followed)
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', this.id);
     else if (kind === 'pot') g.breakables.damage(ent, (S.pot ?? 62) * (h.dmg ?? 1), at, dir, power);
