@@ -411,6 +411,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **playtest** (`npm run playtest`) — a scenario an agent plays to its goals. The stress test fuzzes; a playtest plays.
 - **a sweep** (`scripts/sweeps/<room>.mjs`) — one room entered, worked and left headless, a PASS/FAIL line a check. *Not:* the stress test, a
   playtest, the Soul Brush's mop, the kick's leg sweep.
+- **the pose audit** (`scripts/poseaudit.mjs`, its manifest `scripts/poseaudit.states.js`) — the Courier's poses measured headless, state by state:
+  a held tool or a limb through the body (cm), a joint past its range (degrees); a contact sheet of the worst frames. *Not:* a sweep, rom.js.
 - **replay** (`game.replay`, `src/core/replay.js`) — a session kept so it plays again the same: a header and the frames. *Not:* a chat command. →
   detail
 - **the casebook** (`docs/CASEBOOK.md`) — every bug fixed, with its cause and the rule it left. *Not:* the log, a report, the ledger.
