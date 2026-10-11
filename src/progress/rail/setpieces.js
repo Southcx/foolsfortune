@@ -13,7 +13,7 @@
 // unless felled (Panzer Dragoon's sea-beasts, Sin & Punishment's leviathan, Shadow of the Colossus's Phalanx, Moby-Dick), and once
 // driven off it is a bounty for Letty Marque to post.
 //
-//   LANCE   WAVES   SHOAL   PIRATES (.chance(casks, danger))   LEVIATHAN   CHARYBDIS   charybdisHurt(form, y) -> times   leviathanDeck(danger, aspect?) -> n   lootGrade(island, route, day) -> grade
+//   LANCE   WAVES   SHOAL   PIRATES (.chance(casks, danger))   LEVIATHAN   CHARYBDIS   charybdisHurt(form, y) -> times   leviathanDeck(danger, aspect?) -> n   lootField(island) -> field
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 
@@ -125,10 +125,5 @@ export function leviathanDeck(danger = 0, aspect = null) {
   return aspect === 'dread' ? Math.max(D.min, Math.round(n * D.pall)) : n;
 }
 
-/** What grade of crude the pirates carry: one the island left behind yields (ECON.islands[island].grades), chosen by the day's dice. */
-export function lootGrade(island, route = '', day = 0) {
-  const g = ECON.islands[island]?.grades || ['grief'];
-  let h = 2166136261; const s = `loot:${route}:${Math.floor(day)}`;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return g[(h >>> 0) % g.length];
-}
+/** What crude the pirates carry: the field of the island left behind (crude is named for its field: the owner, 2026-10-11). */
+export const lootField = (island) => ECON.islands[island]?.field || 'dunemaw';

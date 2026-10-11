@@ -102,7 +102,7 @@ function ahead(state, chart) {
 
 /** An encounter's choice made: the trip's state after it, and what the world must do besides (each ask a plain object, `ask` its kind):
  *    exact { waypoints }          their portents shown as they are (the sea chart's; ghostConvoy.follow, driftBottle.read)
- *    casks { n, grade }           crude into the hold (ghostConvoy.loot; the hold's limit is the world's)
+ *    casks { n, field }           crude into the hold (ghostConvoy.loot; the hold's limit is the world's)
  *    bounty { waypoint, cubes }   that waypoint sailed as a bounty leg, its feeling kept; cleared, it pays `cubes` (lettysCutter.bounty)
  *    sellRutter { cubes }         the carried rutter given to Letty for this (lettysCutter.sell; ctx.rutter is its worth today)
  *    hiddenLeg { form, pays, after }  a leg added after this waypoint, sailed in that form, its score times `pays` (lightWhale.follow)
@@ -117,7 +117,7 @@ export function apply(state, id, choice, ctx = {}) {
   const on = chart ? ahead(s, chart) : [], w = chart?.waypoints?.[s.at];
   switch (`${id}.${choice}`) {
     case 'ghostConvoy.follow': { const cols = [...new Set(on.map((x) => chart.waypoints[x].col))].slice(0, E.follow); asks.push({ ask: 'exact', waypoints: on.filter((x) => cols.includes(chart.waypoints[x].col)) }); break; }
-    case 'ghostConvoy.loot': s.drawn = { ...(s.drawn || {}), wreckers: (s.drawn?.wreckers || 0) + E.loot.wreckers }; asks.push({ ask: 'casks', n: E.loot.casks, grade: w?.feel || s.feel || 'mirth' }); break;
+    case 'ghostConvoy.loot': s.drawn = { ...(s.drawn || {}), wreckers: (s.drawn?.wreckers || 0) + E.loot.wreckers }; asks.push({ ask: 'casks', n: E.loot.casks, field: ECON.islands[chart?.from]?.field || 'dunemaw' }); // (the convoy's crude, of the island it left) break;
     case 'lettysCutter.bounty': { const t = on.find((x) => classOf(chart.waypoints[x].type) === 'threat') ?? on[on.length - 1]; if (t) asks.push({ ask: 'bounty', waypoint: t, cubes: postedBounty(chart.waypoints[t]) }); break; }
     case 'lettysCutter.sell': if (ctx.rutter) asks.push({ ask: 'sellRutter', cubes: Math.round(ctx.rutter * E.sell) }); break;
     case 'lightWhale.listen': s.sharp = (s.sharp || 0) + E.listen; break;

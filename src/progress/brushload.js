@@ -9,7 +9,7 @@
 // A Lachrymato Bottle is worn against the upper back (its own place, 'bottle', listed in the Pneuka Box's equipment): a reserve that feeds the pool and the brush.
 // It is glass: a broken shield can crack it and spill it, and the spill is a stain where you stood. A full one gives off a signature.
 // So a "tanky" build carries more and risks more; the core movement is never touched (CLAUDE.md).
-// Stains are spilled crude, graded by feeling (the voyage's spills come ashore at the Shore). Left alone a stain grows by the game day,
+// Blots are spilled crude, named for its field (no feeling: the owner, 2026-10-11) (the voyage's spills come ashore at the Shore). Left alone a stain grows by the game day,
 // and a grown stain spawns an aberrant Figment (the bounties' quarry: Letty Marque). Cleaning is a Courier helping the place.
 //
 // Prior art: Super Mario Sunshine (FLUDD's tank and spray, the goop that spawns Piranha Plants and is cleaned for access, Shadow Mario
@@ -50,7 +50,7 @@ export function bottleFeed(bottle, held, poolShare, dt) {
 /** A broken shield's blow to the bottle: `roll` in [0, 1) from the simulation's stream; returns the share spilled, or 0. */
 export const crack = (bottle, roll) => { const B = BOTTLES[bottle]; return B && roll < B.crack ? B.spill : 0; };
 
-/** STAINS: spilled crude, graded by feeling. Left alone a stain grows a stage each game day; at the last stage it spawns an aberrant
+/** STAINS: blots, spilled crude named for its field (no feeling). Left alone a stain grows a stage each game day; at the last stage it spawns an aberrant
  *  Figment (once, then it holds). Mopped up, its crude goes into the bottle (its grade colours what is painted next). */
 export const STAINS = {
   stages: 3, perDay: 1, // (a stage a game day: a stain left for three game days spawns)
