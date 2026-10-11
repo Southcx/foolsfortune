@@ -65,6 +65,17 @@ the snap. In the band it sits in the fish's aspect mode, so a fight held well is
 **The fish shows its intent with its body**, a beat ahead: it turns before it runs, rises before it leaps, shudders before it thrashes,
 rolls and shows its flank when tired. That is the coarse read, at the water.
 
+**Fatigue: the body and the line's core** (the owner, 2026-10-11: "a line drawn within the fishing line's filament").
+- **The body:** the tail beats slower as stamina falls (its swim clip's rate is `0.5 + 0.5 x stamina`); under a third it rides higher
+  and rolls; at the end it lies on its flank at the surface. That is when to land it.
+- **The core:** while a fish is on, the line is drawn as a sheath with a bright thread inside it. The sheath keeps the tension's colour;
+  the thread is the fish's stamina. Full, it runs the whole length from rod to hook; as the fish tires it draws back down the line
+  toward the fish, the fight running out of it. Spent, it is a bead at the hook. It pulses with each tail beat, so it slows as the body
+  does, and the two reads are one.
+- **At 480 lines** a 1-pixel line can't hold a thread, so while a fish is on the line is drawn at least 3 pixels wide in screen space
+  (sheath 3, core 1), thinning back to a hair when the fight ends. Calissa's, in `angling/line.js`.
+- Two quantities, one filament: the sheath says the danger now (tension), the core says how far there is to go (stamina).
+
 **The reticle stays, and carries the fine read** (the owner, 2026-10-11: "it's not always easy to watch both sides of the screen").
 The rod is at one side of the view and the fish at the other, so the reticle, where the eye already is, says what the body only hints:
 the next move's kind, its direction, its weight, and how long until it lands (the fill). One mark, drawn plainly; redundancy is the
@@ -83,7 +94,7 @@ point here, not clutter.
   2. The camera cuts close and low; the Courier holds it up in both hands, the fish wriggling, facing the camera. Animal Crossing's lift.
   3. A short sting in the fish's aspect mode (Wanda); bigger for a new species, a record or a legend.
   4. One line in the log, in the catch's voice: species, size, "a new record" if it is one. Espada writes the lines.
-  5. Back to the rod: the fish goes to the Pneuka Box or back in the water (section 7).
+  5. Back to the rod: it goes back in the water, or into the Pneuka Box if you press the keep key (the owner, 2026-10-11).
   - A first of a species also offers the Veritome's plate before it goes.
 - **The fish, made worth holding up** (Calissa): the catch puts a fish a metre from the camera, so each species needs a body that
   survives it: a silhouette that reads at a glance, its feeling in its colour and fins, a wet sheen, an eye, and a wriggle clip.
@@ -129,4 +140,5 @@ point here, not clutter.
 ## 7. Open, for the owner
 
 1. ~~Retire the reticle?~~ No (the owner, 2026-10-11): it stays and carries the intent.
-2. **Release or keep** a landed fish? My call: release by default, a key to keep. The Pneuka Box stays light and the loop stays gentle.
+2. ~~Release or keep?~~ Released by default, kept on a key (the owner, 2026-10-11). A release is counted (`fish.release`); what it
+   pays, if anything, is mine to price with the sim.
