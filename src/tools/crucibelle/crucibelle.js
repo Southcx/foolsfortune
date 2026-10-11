@@ -47,7 +47,7 @@ import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const WINDOW = 0.085; // (a note on the beat: within this many real seconds; Calissa's pendulum reads it, vfx/crucibellehud.js)
-const OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown)
+const OWN_BPM = 96; export const TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown; the toll's reach reads range and cone, vfx/tollreach.js)
 // The toll string, a table for the combo engine (tools/moveset.js). Each move is a toll at `at` (clip seconds: the swing's fastest moment,
 // measured), begun near it (`from`) so the bell rings with the press: a rhythm game's blow lands on the input, never a windup later.
 // The chain windows are the old cooldown (0.4 s between tolls) reshaped to the string: the next toll may begin 0.3 s after this one, so

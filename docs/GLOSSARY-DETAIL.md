@@ -353,7 +353,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   keylined; **the jet ring** (`JetRing`): at the feet while a jet runs, the hover's fuel draining, the rocket's gather filling, eight
   segments between two lines of the Mind, the rocket's **burst** when full; **the shine** (`CleanShine`): where the mop or Clean takes the
   last of a blot or of paint, a ring going out with **glints** and a **twinkle** over it. **The bottle's arc** (`BottleArc`,
-  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial right of the crosshair, the **meniscus** where it stands, quarter
+  `vfx/bottlearc.js`): the Lachrymato Bottle's fill as a curved vial just right of the paint reticle's ring on the screen (beside the
+  Courier's chest while mopping or a jet runs; the screen's middle in first person), the **meniscus** where it stands, quarter
   **notches**, the red cross when it runs dry. **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
   sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
   glyph.
@@ -1177,6 +1178,14 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
   as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
   *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`; MELEE-LOADOUT.md section 4): what a toll of the Crucibelle
+  would stagger, on the ground round the Courier while the bell is in the hands, every size the toll's own (`TOLL`, the toll string's
+  rows): **the reach**, the arc of a ring at the next toll's range across its cone (4.2 m, 63 degrees either side of where it would face,
+  turned to what the toll itself would turn to), its two **edges** faint at the feet; the string's last toll the whole ring (5.2 m). Lit
+  through the bell's on-beat window round each eighth (a quarter brighter, the bar's downbeat a heavier line), dim between, a faint
+  **ripple** running out to reach the ring on the next beat; a small ring under each creature and clapperjar a toll would stagger now.
+  In the Bomb's coral on the mount preview's line (`vfx/railmark.js`, the wire), no program of its own; gone on a stow or a swap.
+  *Not:* the toll's smoke ring (the particles as it rings), the Bomb's blast ring (a mount's preview), the pendulum.
 - **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near

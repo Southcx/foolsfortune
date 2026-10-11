@@ -156,6 +156,7 @@ import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
+import { TollReach } from './vfx/tollreach.js';
 import { Cubes } from './world/treasure/cubes.js';
 import { Mood } from './core/mood.js';
 import { Chests, ChestTech } from './world/treasure/chests.js';
@@ -1273,6 +1274,7 @@ async function main() {
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
     (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
+    (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)
