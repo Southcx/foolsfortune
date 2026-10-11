@@ -615,6 +615,13 @@ NEW:hands-given-back. **What takes the hands puts the tool away through the belt
   charged release, the charge held through, and the same with the Sondelass or nothing coming back (X later): before, a shot or shell
   at k204, k299 or k314; after, none, and nothing queued on any frame down. A tap or a shell after getting up fires as before (k344 and
   k341 in both). Also: a seam's reset while getting up no longer ends the refusal early (`down` is read from the posture alone).
+- **Found at the second review (the verifier):** F lifted a pot while the Courier was still getting up off the belly. The pickup
+  refused only on `P.prone`, which is false from the frame C starts the getting up (posture 'stand', `postureT` > 0), so the lift (k171,
+  `postureT` 0.47) cut the exit clip short: the capsule went from prone to standing on the lift frame and the body was pulled upright
+  mid-rise. Fix: the pickup also waits on the holster's `busy` (lying down or getting up), in the same CROSSING in carry.js.
+  Measured (the verifier's own case: the Sondelass put away by the holster, a pot 0.9 m ahead, C at k160, F at k170): no lift on any
+  frame of the getting up (k161 to k200), the Sondelass drawn again at k201; F at k203, once up, lifts at k204 as before; F lying down
+  (k130) lifts nothing.
 - **Rule:** NEW:hands-given-back.
 
 ### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
