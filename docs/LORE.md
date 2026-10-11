@@ -98,17 +98,17 @@ Porcelain and the Court wait for the owner's models.
 
 ### Lachryma as crude
 Set the condition (a feeling-made, mind-radioactive substance that behaves like petroleum) and let the consequences fall:
-- **Crude is fossil feeling**: the deeper, the older, until it is a feeling nobody remembers having. *Proposed (the owner's unification,
-  2026-10-09):* so crude carries **no feeling**: it is feeling gone flat, Lachryma that has forgotten what it felt. The cycle is
+- **Crude is fossil feeling**: the deeper, the older, until it is a feeling nobody remembers having. *Ruled (the owner's unification,
+  2026-10-09; approved 2026-10-11):* so crude carries **no feeling**: it is feeling gone flat, Lachryma that has forgotten what it felt. The cycle is
   petroleum's: weather falls on an island as fresh, aspected Lachryma; it soaks down, and buried long enough it flattens into crude;
   refining wakes a feeling in it again. Crude is named for its **field**, never a feeling (as Brent and West Texas are named for where
   they come up): Dunemaw crude, and later each island's own.
 - **Drawing a Well down is working a feeling through.** A Well that runs dry is a mind that has healed; that is why Wells drift and
   Cogitomaps go stale. The moral axis of the economy: harvesting helps; a greedy driller wants the Well to keep filling. Intent, not
   alignment, decides which a Courier is.
-- **Grades** by field (*proposed*: was by aspect); each island pays for each field its own price. The unit is the **cask**.
+- **Grades** by field (was by aspect); each island pays for each field its own price. The unit is the **cask**.
 - **Liquid is unstable** (a bauble sours from cream to black); Lachrymite is inert. **Couriers are refineries** and the Pneuka Jar a
-  containment vessel: only a Courier turns liquid to solid, so the currency is a refined product. *Proposed:* refining is also what
+  containment vessel: only a Courier turns liquid to solid, so the currency is a refined product. Refining is also what
   gives crude a feeling back (**wonder Lachryma**, **grief Lachryma**: the player's words), and the Courier is one of two refineries:
   the other is Margarite's **Stillhouse**, where the King's crude is distilled into aqua regia (a still house is a distillery's
   stills: *stillare*, to drip). A blot is crude spilled, so it has no feeling either; it oxidises as a bauble does, darkening with age.
@@ -207,14 +207,14 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   brimming." · "You settle." Never "drunk".
 - **The Lachrymato Bottles** (the owner's name): a *lachrymatory* is an old tear bottle mourners filled. Worn on the upper back: a
   reserve the Soul Brush paints from and mops into. Glass: a broken shield can crack one.
-- **Blots and blotlings** *(proposed; code says stain)*: spilled crude soaks in as a blot (a stain, and an inkblot a mind reads shapes
+- **Blots and blotlings** *(code says stain)*: spilled crude soaks in as a blot (a stain, and an inkblot a mind reads shapes
   into) and grows each game day; full-grown, it gives up a **blotling**. Mopping one is working a feeling through before it grows teeth.
-  "You mop up a blot of grief crude." · "A blotling crawls out of a blot of dread crude."
+  "You mop up a blot of Dunemaw crude." · "A blotling crawls out of a blot."
 - **Shrines**: a roadside shrine (a *hokora*), the size of a small kiln. Resting there is a refiring in small: whole again, pool full,
-  mind settled. "You rest at the Shrine.", never "Game saved." None in Wells. Named *(proposed)* for what sits in the niche: **the
+  mind settled. "You rest at the Shrine.", never "Game saved." None in Wells. Named for what sits in the niche: **the
   Bisque Shrine** (by Saggar's kiln: the first firing), **the Lamp Shrine** (the Dunemaw's lip), **the Float Shrine** (Grog's pier:
   a float stays up whatever pulls), **the Pearl Shrine** (Margarite's dock: a wound made beautiful).
-- **The Wake Whistle** *(proposed)*: a clay ocarina, a pot you play. A Well is going round and round; the way out is to *wake* (and a
+- **The Wake Whistle**: a clay ocarina, a pot you play. A Well is going round and round; the way out is to *wake* (and a
   wake is the line a ship leaves).
 
 ## 5. Places
@@ -244,7 +244,7 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   chimney-crown). Bought later: the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed (a layer of old bones: the fossils).
 - **The Inner Realm**: your garden by its name, offered in neuralese words the Veritome teaches, drawn as runes: HEMA-LUNO (home,
   rest), KITH-HEMA, LUNO-DEO, STIL-DEO, EZA-LON, ROMI-LON, SIVA-LUNO (an oasis), HUSA-HEMA, AMI-HEMA, MOR-LUNO (where grief rests).
-- **The Firings** *(names proposed)*: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
+- **The Firings**: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
   **Sinter** (grains fuse into one body), **Lustre** (the third firing), **Salt** (thrown in at the hottest: it stings, and it glazes),
   **Reduction** (starved of air, the colours change from inside), **Anagama** (the days-long wood firing; the island's own name). After
   that, numbers only: no potter has fired past an anagama. The tribulation is **the Heavenly Kiln**. The spirits' kinds: *open* until
@@ -311,7 +311,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   nature: they drink, rest, play and mourn.
 - **The Pithos** (the folk's name; the log says the Great Slip Jelly): a *pithos* is the ancient storage jar, Pandora's real "box":
   everything flew out and hope stayed at the bottom. A brood jelly grew in the town's crude jar and outgrew it; under the crown is the
-  core, the bright thing at the bottom. **Its casts** *(proposed)*, each a jar's part or a potter's step that also says what to do:
+  core, the bright thing at the bottom. **Its casts**, each a jar's part or a potter's step that also says what to do:
   Lidfall, Shoulder Charge, Throwing Rings, Slick Trail (was Slip Trail), Eye Cup (the Greek cup painted with eyes to stare evil back), Unstopped,
   Blowout (a pot with trapped water bursts in the kiln), Broodwake, Centring, Slake and Wedge, Decant, the Sherds (they mend: kintsugi
   turned on you), the Overflow (the mother who overflows), The Dunemaw Swallows; the status **Sodden**. Hope is never a cast: the core
@@ -329,8 +329,8 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   was always Lachryma). The slip jellies, the urn crown, the brood and slip roe are bodies laden with it. Underfoot it is crude, in two
   kinds: **a blot** (spilled; it stays, grows and is mopped up) and **a slick** (thrown or welled up in a fight; it oxidises and fades).
   From the Courier it is **paint** (refined, in a feeling). The Pithos grew in a crude jar, so it bleeds crude. Renamed in player text
-  (*proposed*; the code ids stay): the slip geyser is **a gusher**; the bowl's slip pools **the sumps**; the Slip Trail **the Slick
-  Trail**; the slide's **paint trail**, the **Paint Shell** (was the slip shell), the brush's **flick** of paint. **Kintsugi**: breakage mended in gold.
+  (the code ids stay): the slip geyser is **a gusher**; the bowl's slip pools **the sumps**; the Slip Trail **the Slick
+  Trail**; the Lockheart's slip nuke **the Prismatic Overload** (the owner's name, 2026-10-11; label **Overload**): *prismatic* is the top of a creature's mental state, every colour at once, as white light splits through a prism, and an overload is more than a circuit can carry; the jackpot is every feeling let out at once, past the brim; the slide's **paint trail**, the **Paint Shell** (was the slip shell), the brush's **flick** of paint. **Kintsugi**: breakage mended in gold.
 - **Lachryma's look**: black, oily, ultraviolet, iridescent; it pops against terracotta and paper. Baubles are cream (the pot people's
   centres); Lachryma is the black.
 - **The worth of a look**: the folk rank a glaze by the clay it belongs on. What a tier wears is common to it; the tier above is aspired to.
@@ -388,7 +388,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 | Anagami Island; Kaolin Anagami | | the island; its owner and ego |
 | Entropolis | Entra Polaeris's Island | |
 | the Great Dunemaw (a Well) | the Well | the Weir's Well is a place |
-| a cask of Dunemaw crude | a cask of grief crude | name the field (*proposed*: crude has no feeling) |
+| a cask of Dunemaw crude | a cask of grief crude | name the field (crude has no feeling) |
 | the Pneuka Jar, the Pneuka Box | Pneuma | |
 | Lachryma, Lachrymite | Lacrima, Lachrima | the HUD's *Lachrimeter* spelling: *open* |
 | clapperjar; slip jelly | clapper jar | |
@@ -410,17 +410,17 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Thick Walls**,
 **Perfect Pitch**, **Early Tell**, **Rule of Thirds**, **Half Time**, **Crib Sheet** (the English beside each neuralese word you have
 found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of an agate shown on a creature's body).
-*Proposed, 2026-10-08:* **Held Breath** (a blow's parry window a beat longer; replaces Early Tell), **Wet Ink** (Celestial mode waits
+*Approved 2026-10-11:* **Held Breath** (a blow's parry window a beat longer; replaces Early Tell), **Wet Ink** (Celestial mode waits
 longer after the last stroke: the ink stays wet), **Ariadne's Thread** (the map shows the way back to the last Shrine: the thread
 that led Theseus out of the labyrinth).
 
-### The press's seals *(Calissa's shapes, one an attribute; names proposed, 2026-10-08)*
+### The press's seals *(Calissa's shapes, one an attribute; names approved 2026-10-11)*
 **the Peak** (Willpower), **the Still Point** (Focus: "at the still point of the turning world", Eliot, and the press is a wheel),
 **the Fan** (Charisma: a fan held, and a fan who follows), **the Gaze** (Perception), **the Swift** (Dexterity: the bird, and the
 speed), **the Cloud** (Visualization: shapes seen in clouds; "the Finder" said what, not how), **the Tumbler** (Resilience: the
 roly-poly toy that rights itself, and a cup).
 
-### Digging for words: the ostraca *(the owner's direction, 2026-10-08; names Espada's, proposed)*
+### Digging for words: the ostraca *(the owner's direction, 2026-10-08; names Espada's, approved 2026-10-11)*
 - **The direction**: the Crib Sheet glosses more words for the player who explores; archaeology is the motif (Indiana Jones, Spelunky,
   La-Mulana's tablets read with its glyph reader, Heaven's Vault's inscriptions, Chants of Sennaar's deduced glossary). It shares its
   dig with the Lachrymite fossils (found with the Dreamvane, the Dunes and the Wells).
@@ -522,7 +522,7 @@ capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOUR
   these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a
   portent) "Inside, a note in a steady hand: the graveyard is ahead."
 
-### The trip's pressures *(Espada's words for Dovina's five rules, PASSAGE.md section 14; proposed, 2026-10-08)*
+### The trip's pressures *(Espada's words for Dovina's five rules, PASSAGE.md section 14; approved 2026-10-11)*
 - **The hull** stays (it carries its hits from leg to leg).
 - **The tank becomes the bunker.** A ship's fuel store is its bunker, and taking fuel on is **bunkering** (coal bunkers first, oil
   bunkers since): the Purser's buoy bunkers you mid-sea. "Tank" is refused twice over: the tanker is a ship, and the Lachrymato Bottle is
@@ -537,12 +537,12 @@ capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOUR
   weather's word for no feeling, so only the second half is taken).
 - **A storm mark becomes a squall**: a sudden, violent, local storm, which is what it is (the weather has no storm; the eyewall is a
   leg). Shown as a flame on its waypoint (Calissa's).
-- **Why the sea between two islands carries their feelings** (proposed): an island's weather falls on it and runs off into the
+- **Why the sea between two islands carries their feelings**: an island's weather falls on it and runs off into the
   Emocean, and the run-off spreads out from its shore as a **plume**, as a great river's fresh water colours the sea for miles past its
   mouth. Between two islands the plumes meet, so the sea's feeling slides from one island's to the other's along the way; far from both,
   a tenth of the sea is fair, the Emocean's own water that no island has reached. The sea chart is laid from the game day's first
   weather because a plume takes a game day to cross.
-- **Why squalls gather where they do** (proposed): a squall rises where two plumes meet and one shoulders into the other: a **front**,
+- **Why squalls gather where they do**: a squall rises where two plumes meet and one shoulders into the other: a **front**,
   as storms form where warm and cold air meet. The stronger feeling wins the front, so a squall is one feeling at full strength, and
   Figments are drawn to it and come out of it a class bigger. A front lies across the open lanes, never in a narrows, so a squall can
   always be sailed round. (The lesson, unsaid: weather fronts.)
@@ -553,7 +553,7 @@ capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOUR
   today: 4,820." and beaten: "High water on this sea today: 5,140, over 4,820." · a following sea: "A following sea: your draught trumps
   what waits ahead."
 
-### The mycelium *(Espada's names for Dovina's plan, `docs/plans/MYCELIUM.md`; proposed, 2026-10-08)*
+### The mycelium *(Espada's names for Dovina's plan, `docs/plans/MYCELIUM.md`; approved 2026-10-11)*
 - **The World Mushroom is Myggdrasil** (MIG-dra-sil): *myco-*, fungus; *my*, because every player's is their own; and Yggdrasil, the
   world-ash, which means "Odin's horse", the gallows-tree he hung on for nine nights to win the runes (the Hanged Man, before the
   tarot). One word, three roots, all of them showing.
@@ -610,7 +610,7 @@ capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOUR
   "Dawn. Myggdrasil fruits: 4. One shines.") · a cap opens: "Myggdrasil's girth grows. The Foundation opens." · a branch hung: "You hang
   The Tower on its branch. Myggdrasil will fruit once more each dawn." · a sporeling: "A sporeling drops from Myggdrasil's crown."
 
-### The labels *(CLARITY.md section 9; Espada's settlement of Dovina's placeholders, proposed, 2026-10-08)*
+### The labels *(CLARITY.md section 9; Espada's settlement of Dovina's placeholders, approved 2026-10-11)*
 One label per thing; the name stays in the world. The label is what the card says; the name is what the folk say.
 
 | thing | name (world, Codex) | label (UI) | why |
@@ -634,7 +634,7 @@ One label per thing; the name stays in the world. The label is what the card say
 
 **Blot** is ruled the player's word (Dovina, 2026-10-08); the code keeps `stain`.
 
-### Gall and Fury *(Dovina's GALL-AND-FURY.md; Espada's words, proposed, 2026-10-09)*
+### Gall and Fury *(Dovina's GALL-AND-FURY.md; Espada's words, approved 2026-10-11)*
 - **Gall** (Old English *gealla*, bile: bitterness you can taste) and **Fury** (Latin *furia*, the Furies who pursue). Their weathers
   are **the miasma** and **the hail** (section 3).
 - **Rings** (mild, basic, intense): Gall **boredom, disgust, loathing**; Fury **annoyance, anger, rage**. Plain and kid-safe; the

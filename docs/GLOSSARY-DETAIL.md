@@ -275,8 +275,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `juggle`: its measured motion, a blade's height below it; Devil May Cry's High Time); the air blows ride it too. A **bail** is being
   thrown off the Solar Skiff. *Not:* a combo (the club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one
   yet.
-- **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
-  **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
+- **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to Overload), drawn from its coffin's
+  **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the Overload (the Prismatic Overload in the Codex; code `nuke`).
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
   press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
   the **guard** (held). A **parryable** thing wears a Lachryma outline (Cuphead's pink); one

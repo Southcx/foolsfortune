@@ -32,7 +32,7 @@ export const OUTCOMES = {
   kin:    { label: 'KIN', color: 0xff9ad5, rank: 3, does: 'Everything near takes you for its own kind, for a while.' },
   spirit: { label: 'SPIRITS', color: 0xb49be6, rank: 3, does: 'Smoke spirits stand up out of it, on your side.' },
   chest:  { label: 'CHEST', color: 0xffb27a, rank: 3, does: 'A treasure chest falls out of the air.' },
-  nuke:   { label: 'SLIP NUKE', color: 0xff5ad0, rank: 4, does: 'Everything near is drowned in slip and burst.' },
+  nuke:   { label: 'OVERLOAD', color: 0xff5ad0, rank: 4, does: 'Every feeling floods out. Everything near bursts.' },
 };
 
 /** The coffins. The one on the chain is the wheel. */

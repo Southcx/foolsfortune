@@ -71,7 +71,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **faucet / drain** — where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute`) — what ordinary play should earn in a real hour (480 cubes); a source is judged as a multiple of it.
 - **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden). *Not:* any drain (the Tithe is a drain, not a sink).
-- **crude** (`ECON.crude`) — liquid Lachryma as a cargo, graded by aspect; volatile, so it can spill. *Not:* a bauble.
+- **crude** (`ECON.crude`) — liquid Lachryma gone flat, a cargo with no feeling, named for its field (Dunemaw crude); refined, it takes a
+  feeling again (wonder Lachryma); volatile, so it can spill. *Not:* a bauble.
 - **cask** (`cask.<grade>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
 - **the Purser** (`purserPrice`) — the trader at Margarite's dock who buys crude, materials and Cogitomaps at a posted price, never haggled. The
   role is the name.
@@ -89,8 +90,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
   held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
-- **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, graded by feeling; left alone it grows, and a
-  full-grown one gives up a blotling (an aberrant Figment). *Not:* "stain" in player text. → detail
+- **blot / slick** (`stain`, `STAINS`, `src/world/ground/stains.js`; `slick`) — spilled crude on the ground: a blot stays and grows, and a
+  full-grown one gives up a blotling (an aberrant Figment); a slick is thrown up in a fight and fades. *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
   jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
 - **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
@@ -174,7 +175,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
 - **cogitohazard** — the umbrella word for Lachryma's dangers in the environment and maliciously aligned Figments.
-- **aqua regia / amethyst** — Margarite's lamp fuel, refined from crude / Entropolis's charm for a clear head.
+- **aqua regia / amethyst** — Margarite's lamp fuel, refined from crude at the Stillhouse / Entropolis's charm for a clear head.
 - **Charybdis** (`CHARYBDIS`, `world/emocean/charybdis.js`) — the Whale (class 3) Egregore of the maelstrom, rising Astral and diving Umbral; one
   in every maelstrom. *Not:* the maelstrom (the leg, a place). → detail
 - **the whirlpool**, **Charybdis's look** (`vfx/whirlpool.js`, `vfx/charybdis.js`) — the maelstrom's crude turning round its heart, and

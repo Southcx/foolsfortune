@@ -464,7 +464,7 @@ export function buildAchievements(game) {
   C('cb3', 'battle', 'The Crucibelle', 3, 'perfect', 'Fever Pitch', 'Play a song in full fever.', 'song.fever', 1);
   C('cb4', 'battle', 'The Crucibelle', 2, 'count', 'Roadies', 'Call up ten smoke spirits.', 'spirit.summon', 10);
   C('lh1', 'battle', 'The Lockheart', 1, 'count', 'Pull', 'Open a Lockheart.', 'lockheart.open', 1);
-  C('lh2', 'battle', 'The Lockheart', 3, 'perfect', 'Jackpot', 'Let a slip nuke out of a Lockheart.', 'lockheart.out.nuke', 1);
+  C('lh2', 'battle', 'The Lockheart', 3, 'perfect', 'Jackpot', 'Let an Overload out of a Lockheart.', 'lockheart.out.nuke', 1);
   C('lh3', 'battle', 'The Lockheart', 2, 'mechanic', 'House Rules', 'Open a Lockheart with three keys on its ring.', 'lockheart.three', 1);
   C('lh4', 'battle', 'The Lockheart', 2, 'count', 'Hoover', 'Fill a Lockheart with five hundred Lachryma.', 'lockheart.fed', 500);
   // ---------------------------------------------------------------- EXPLORATION
