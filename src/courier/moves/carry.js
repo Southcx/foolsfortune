@@ -132,6 +132,7 @@ export class Carry extends Tech {
     let gf = 0.2, gw = this.widthAt(e, gf);
     for (const f of [0.12, 0.16, 0.24, 0.28]) { const r = this.widthAt(e, f); if (r > gw + 0.005) { gw = r; gf = f; } }
     this.grip = { f: gf, w: gw };
+    this.outline = this.outlineOf(e); this.clear = new THREE.Vector3(); // (its points kept out of the body: offBody)
     this.st = 0;
     const t = body.translation(), r = body.rotation();
     this.from = { p: new THREE.Vector3(t.x, t.y, t.z), q: new THREE.Quaternion(r.x, r.y, r.z, r.w) };
@@ -145,8 +146,8 @@ export class Carry extends Tech {
     this.game.events?.emit('carry.lift', { kind: e.kind || 'crate' });
   }
 
-  /** Where the item is (world, for a player at `base`) in the current state. */
-  pose(base, out) {
+  /** Where the item is (world, for a player at `base`) in the current state; `withClear`: moved out of the body as the drawn one last was. */
+  pose(base, out, withClear = true) {
     const P = this.P, e = this.item, h = this.size(e);
     const yaw = P.bodyYaw;
     const upright = _q.setFromAxisAngle(UP, yaw);
@@ -176,6 +177,7 @@ export class Carry extends Tech {
       p.lerpVectors(this.putFrom || hold, to, k);
       q.copy(upright);
     } else { p.copy(hold); q.copy(upright); }
+    if (withClear && this.clear && this.state !== 'lift') p.add(this.clear); // (as far out of the body as the drawn one last had to go: offBody)
     if (out) { out.p.copy(p); out.q.copy(q); return out; }
     return { p, q };
   }
@@ -323,7 +325,7 @@ export class Carry extends Tech {
   hands(ch) {
     if (!this.item || this.w < 0.02) return;
     const P = this.P, e = this.item, w = this.w;
-    const pose = this.pose(P.renderPos, { p: new THREE.Vector3(), q: new THREE.Quaternion() });
+    const pose = this.pose(P.renderPos, { p: new THREE.Vector3(), q: new THREE.Quaternion() }, false);
     if (this.state === 'throw') {
       // through the throw it rides between the clip's hands, its grip where the palms are (no IK: the clip throws it)
       const mid = new THREE.Vector3();
@@ -331,6 +333,7 @@ export class Carry extends Tech {
       mid.multiplyScalar(0.5);
       const at = mid.addScaledVector(UP, -(this.size(e) * this.grip.f - this.originUp(e)));
       e.mesh.position.copy(at); e.mesh.quaternion.copy(pose.q); e.mesh.updateMatrixWorld(true);
+      at.add(this.offBody(ch, e)); // (over the head and through: the clip's hands pass behind the head, and it went through it, 11.6 cm)
       (this.shown ||= new THREE.Vector3()).copy(at);
       return;
     }
@@ -339,6 +342,7 @@ export class Carry extends Tech {
     e.mesh.position.copy(pose.p);
     e.mesh.quaternion.copy(pose.q);
     e.mesh.updateMatrixWorld(true);
+    pose.p.add(this.offBody(ch, e));
     const h = this.size(e), gf = this.grip.f, gw = this.grip.w;
     const left = new THREE.Vector3(Math.cos(P.bodyYaw), 0, -Math.sin(P.bodyYaw));
     const fwd = new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
@@ -346,9 +350,13 @@ export class Carry extends Tech {
     for (const s of ['L', 'R']) {
       const sg = s === 'L' ? 1 : -1;
       const inward = left.clone().multiplyScalar(-sg);
-      // palm against its side, fingers up and a little forward over its shoulder
-      const fingers = UP.clone().multiplyScalar(0.8).addScaledVector(fwd, 0.25).addScaledVector(inward, 0.3).normalize(); // (curving in with the pot)
-      const q = ch.handQuat(ch.arm[s], fingers, inward);
+      // palm against its side, the fingers on along the forearm's line (laid on its side) and a little up over its belly: a wrist bends
+      // 20 degrees toward the thumb, so fingers turned up from a forearm that comes from below and behind bent it 122 to 131 (the pose
+      // audit); the elbow swings for what is left (courier/anim/wristease.js)
+      const arm = ch.arm[s], fa = arm.hand.getWorldPosition(new THREE.Vector3()).sub(arm.fore.getWorldPosition(new THREE.Vector3())).normalize();
+      fa.addScaledVector(inward, -fa.dot(inward)); if (fa.dot(fwd) < 0.2) fa.addScaledVector(fwd, 0.2 - fa.dot(fwd));
+      const fingers = fa.normalize().addScaledVector(UP, 0.25).addScaledVector(inward, 0.15).normalize();
+      const q = ch.handQuat(arm, fingers, inward);
       const at = base.clone().addScaledVector(left, sg * (gw + 0.015)).addScaledVector(fwd, -0.02);
       at.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
       ch.reachHand(s, at, q, w);
@@ -356,6 +364,33 @@ export class Carry extends Tech {
       const curl = THREE.MathUtils.clamp(0.12 / Math.max(0.08, gw), 0.15, 0.6);
       for (const f of ch.arm[s].fingers) f.quaternion.slerp(ch.rest.get(f).q, w * (1 - curl * 0.5));
     }
+  }
+
+  /** Points round the thing (its own frame: a pot's profile at six heights, eight round each; a crate's corners and faces), kept out of the
+   *  body (offBody). */
+  outlineOf(e) {
+    const pts = e.P?.pts, out = [];
+    if (pts?.length) {
+      for (let k = 0; k < 6; k++) { const p = pts[Math.round((k * (pts.length - 1)) / 5)]; for (let a = 0; a < 8; a++) { const t = (a / 8) * Math.PI * 2; out.push({ x: p.x * Math.cos(t), y: p.y, z: p.x * Math.sin(t) }); } }
+      return out;
+    }
+    const w = this.halfW(e), h = this.size(e) / 2;
+    for (const x of [-w, 0, w]) for (const y of [-h, 0, h]) for (const z of [-w, 0, w]) if (x || y || z) out.push({ x, y, z });
+    return out;
+  }
+
+  /** The thing out of the body whole (courier/anim/bodyproxies.js pushOff): moved along the way out of its deepest point, the mesh with it;
+   *  the move kept (eased, in `clear`) so the physics' pose follows the drawn one. -> the move this frame (world). */
+  offBody(ch, e) {
+    const v = (this._off ||= new THREE.Vector3()).set(0, 0, 0);
+    if (!ch.body || !this.outline) return v;
+    ch.root.updateMatrixWorld(true); ch.body.place();
+    e.mesh.updateMatrixWorld(true);
+    const M = (this._offM ||= new THREE.Matrix4()).copy(e.mesh.matrixWorld);
+    ch.body.pushOff(M, this.outline, { parts: ['head', 'neck', 'chest', 'spine', 'pelvis', 'thighL', 'thighR'], max: 0.3, out: v });
+    if (v.lengthSq() > 1e-8) { e.mesh.position.add(v); e.mesh.updateMatrixWorld(true); }
+    this.clear.lerp(v, 0.3);
+    return v;
   }
 
   label() { return this.item ? 'CARRY' : ''; }

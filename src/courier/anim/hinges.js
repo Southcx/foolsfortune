@@ -19,13 +19,12 @@
 //      frame's, never flipped across the half turn)
 //   3. the end bone keeps its orientation in the limb's frame (the sole on the ground, the palm where it faced)
 // Every joint stays where the clip put it: the silhouette, the foot contacts and the hips' path do not change, only which way the knees
-// and elbows face. The clips of the set being polished are repaired (HINGED: the core movement's, the owner's ask of 2026-10-10); the
-// tools' sets join it as each is taken up (the owner: one set at a time): the Sondelass's Sond_ (2026-10-11).
+// and elbows face. Every clip set of the suite is repaired (HINGED): the core movement's first (the owner's ask of 2026-10-10), the
+// Sondelass's (2026-10-11), then all the others in the owner's animation review the same day.
 // THE SAME, EVERY FRAME (LimbHinges): what IK and blending do after the clips (the feet put on the ground, a knee re-solved toward its
 // pole, a hand on a wall, two clips' twists averaged) bends a limb off its hinge again (in game: the strafe's knees to 101 degrees, the
 // wallrun's wall hand's elbow to 163), so the posed body is squared the same way last, before the joint limits (character.js poseHands),
-// its joints always kept: the legs always (the core movement's own), the arms by a weight the caller gives (nothing in the hands, or a
-// tool whose set is repaired: `hingedArms`; another tool's arms are its set's).
+// its joints always kept: the legs and the arms always (the caller may give each a weight).
 //
 // Prior art: the swing-twist decomposition (Dobrowolski, "Swing-twist decomposition in Clifford algebra"; the rom.js pass); the pole
 // vector of a two-bone IK solve (Blender's IK pole, Unreal's Two Bone IK and IK Retargeter's pole matching), which sets the upper bone's
@@ -63,10 +62,12 @@ export const TURN_SPEED = 360 * DEG;
 /** The same on the posed body, every frame (LimbHinges): faster, because what it squares (a hand put on a wall, a knee re-solved) moves
  *  faster than a clip's frame steps. */
 export const TURN_SPEED_POSED = 720 * DEG;
-/** The clips repaired: the core movement's (the suite's Loco_, Air_ and Trav_, and the old pack's swim and tread), and the Sondelass's
- *  (Sond_, 2026-10-11: the owner's animation review; its posed arms are squared too, `hingedArms`). */
+/** The clips repaired: every set of the suite (the core movement's Loco_, Air_ and Trav_; the tools' Sond_, Brush_, Vane_, Bell_, Lock_,
+ *  Tome_, Gun_ and Fist_; the Solar Skiff's rider; the emotes, dances, flirts and taunts), and the old pack's swim and tread. The core
+ *  movement's first (2026-10-10), the Sondelass's next; the rest in the owner's animation review (2026-10-11: "Clipping with the body
+ *  or breaking joints is not [acceptable]"), the posed arms squared with them whatever is in the hands (character.js). */
 const OLD = new Set(['swim', 'tread']);
-export const HINGED = (name) => /^(Loco|Air|Trav|Sond)_/.test(name) || OLD.has(name);
+export const HINGED = (name) => /^(Loco|Air|Trav|Sond|Brush|Vane|Bell|Lock|Tome|Gun|Fist|Skiff|Emote|Dance|Flirt|Taunt)_/.test(name) || OLD.has(name);
 
 // ---- quaternions [x, y, z, w] and vectors, plain (this runs over every frame of every clip it repairs, once) ----
 const mul = (a, b, o = [0, 0, 0, 0]) => {

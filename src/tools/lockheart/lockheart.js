@@ -78,6 +78,7 @@ export class Lockheart extends HeldTool {
       idle: 'Lock_Idle', idles: ['Lock_Idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: the suite's Lock_Idle; hands() below)
     });
     this.model = { group: new THREE.Group() };
+    this.ridesHand = null; // (the coffin hangs from the left hand's place on its chain, never from its turn: either palm may ease, courier/anim/wristease.js)
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));
     this.chain.rotation.z = -Math.PI / 2; this.chain.position.x = 0.06; this.model.group.add(this.chain);
     this.mount();
