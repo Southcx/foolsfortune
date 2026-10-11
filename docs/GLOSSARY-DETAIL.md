@@ -287,6 +287,22 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
   `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
   "cancel" bare, which is the opposites' (an agate).
+- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`, Calissa's; the cutlass's own UI, MELEE-LOADOUT.md section 4):
+  while the cutlass is drawn (the belt says), the melee loadout's string at the bottom middle of the screen, one **pip** a slot (4 to 8)
+  threaded on a line, in the maker's pixel kit (1x, the icons' hand, palette-swapped, whole-number scaled). **The lit pip** is the slot
+  the next LMB plays (gold, raised two art pixels); the slots this run has **struck** stand before it in clay, those still ahead at half
+  strength. A pip is the move's UI icon where it has one (its catalogue row's `icon`, else `sondelass.<id>`), else a plain shape for its
+  effect: stagger a small diamond, knock the diamond grown with a bright core, launch a double chevron up, guard break a cracked
+  square. While the move on show is open for the paid cut (`Moveset.paidCutOpen`, its cost affordable), **the glint**: the lit pip wears
+  the oil film's hue (the paid cut's afterimage's, `featTint`) and a pale band runs across it. Read from the engine (`string`,
+  `stringPlace()`), so it resets where the engine resets and holds through a blink cancel. Out of a fight and idle 3 real s it fades;
+  the first blow brings it back. *Not:* the slot row (a loadout in a choice card), Strawman's attack strings, the shell palette.
+- **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`, Calissa's; the hook's own UI): while the hook form is in hand with no line
+  out, a ring with a point at its heart, in the Mind's lines with the wire compass's keyline (`compassMaterial`, no program of its own),
+  on the point the grapnel would bite: the throw's own probe (`Hookshot.probe()`: the eye's ray along the aim, 40 m). An **anchor** is
+  the ring alone; a **catch** (under 60 kg, a clapperjar, a light creature: it comes to them) adds four brackets that close on it once.
+  Faint when the pool cannot pay the throw. A fixed size in the scene's 480 lines; no words. It replaced the chevron there (the chevron
+  is what F would do). *Not:* the chevron, the lock-on reticle, the Grapple's mount preview.
 - **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
   **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 - **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the

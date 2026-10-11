@@ -156,6 +156,8 @@ import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
+import { CutlassStringRow } from './ui/cutlassstringrow.js';
+import { HookMark } from './vfx/hookmark.js';
 import { Cubes } from './world/treasure/cubes.js';
 import { Mood } from './core/mood.js';
 import { Chests, ChestTech } from './world/treasure/chests.js';
@@ -536,6 +538,7 @@ async function main() {
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
+  game.cutlassStringRow = new CutlassStringRow(game, px); game.hookMark = new HookMark(game); // (the Sondelass's own UI: the cutlass's string row, the hook's mark)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   const baubles = new Baubles(game);
@@ -565,13 +568,7 @@ async function main() {
       const e = carry.find(); if (!e) return null;
       const p = spot(e); return { pos: p, d: p.distanceTo(player.pos), ref: e };
     });
-    // where the grapnel would bite, while the hook is out and nothing is on the line
-    game.interact.add('grapple', () => {
-      const tool = techs.get('sondelass');
-      if (!tool?.held || tool.form !== 'hook' || tool.hookshot.busy) return null;
-      const r = tool.hookshot.probe();
-      return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
-    });
+    // (where the grapnel would bite is the hook's own mark, not the chevron: vfx/hookmark.js)
     game.interact.add('item', () => (game.god?.controlling ? null : game.ground.nearest(player))); // (what lies on the ground: F picks it up)
     game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d, ref: t.chest || t.kind } : null; });
     // the clay folk: F to talk (npc/folk.js, npc/dialogue.js)
@@ -1273,6 +1270,7 @@ async function main() {
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
     (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
+    game.cutlassStringRow.update(game.rawDt ?? dt); game.hookMark.update(game.rawDt ?? dt); // (the Sondelass's own UI, while its form is in the hands)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)
