@@ -1185,7 +1185,7 @@ async function main() {
         groundVel: player.groundVel,
         wall: player.wallBlend,
         slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
-        dash: player.dashBlend, crouch: player.crouchBlend, crawl: player.prone, prone: 1, // (prone is the belly crawl: courier/anim/crawl.js)
+        dash: player.dashBlend, crouch: player.crouchBlend, crawl: player.prone, prone: 1, posture: player.posture, // (prone is the belly crawl: courier/anim/crawl.js)
         aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
         aimYawOffset: player.aimYawOffset,
         combat: Math.max(weapon.combatBlend * held, player.fpWeight),
