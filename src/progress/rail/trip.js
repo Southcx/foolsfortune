@@ -31,7 +31,7 @@
 import { SHIPS } from './ships.js';
 import { LEG } from '../econ/emocean.js';
 import { STORM, next, lanes, classOf } from '../econ/passage.js';
-import { TYPE_OF, OPPOSITE } from '../weather.js';
+import { TYPE_OF } from '../weather.js';
 import { TRUMPS } from '../combat/types.js';
 
 export const TRIP = {
@@ -47,7 +47,7 @@ export const TRIP = {
   /** How the shots of a waypoint fall between the forms: the astral share by feeling (fair: half and half). */
   astral: { wonder: 0.75, mirth: 0.65, desire: 0.5, grief: 0.35, dread: 0.25, gall: 0.3, fury: 0.2 },
   /** Crude at a waypoint of its own feeling and of its opposite. */
-  spill: { same: 0.75, opposite: 1.5 },
+  spill: { feeling: 1.2 }, // (crude carries no feeling (the owner, 2026-10-11): a feeling at the waypoint stirs flat crude, a fair one leaves it be)
 };
 
 /** The measures a ship burns sailing from one waypoint to the next (null: from the pier into the first column). */
@@ -122,8 +122,8 @@ export function draughtTrump(prev, feel) {
   const a = TYPE_OF[prev], b = TYPE_OF[feel];
   return TRUMPS[a] === b ? 'trumps' : TRUMPS[b] === a ? 'trumped' : null;
 }
-/** A cask's spill chance at a waypoint, by its grade against the waypoint's feeling. */
-export const spillAt = (grade, feel) => (!feel ? 1 : feel === grade ? TRIP.spill.same : OPPOSITE[grade] === feel ? TRIP.spill.opposite : 1);
+/** A cask's spill chance at a waypoint: crude has no feeling, so any feeling there stirs it alike (its field's volatility is spillChance's). */
+export const spillAt = (_field, feel) => (feel ? TRIP.spill.feeling : 1);
 
 /** The day's best: one record a route, replaced when the game day turns or a score beats it. */
 export const boardKey = (chart) => `${chart.route}:${chart.day}`;
