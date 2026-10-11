@@ -39,6 +39,8 @@
 //   (points in the mesh's parent's frame, the scene's in the game: the world; wa, wb half-widths in metres; aa, ab alpha at A and B;
 //    style a STYLE; s1..s3 by style: astral/umbral (outlined 0|1, -, seed), gun/ribbon/spark/wire (r, g, b in linear light))
 //   B.time(t)   the film's and the schiller's drift (seconds)
+//   wireStrip(B, pts, n, { look, a, rgb, camera, pxk, closed })   a strip of world points as wire segments (a mount's preview, the
+//   Lockheart's reach, the carry throw's arc: one helper, built once)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
@@ -240,4 +242,23 @@ export class MarkBuffer {
     if (n) { this.buf.clearUpdateRanges(); this.buf.addUpdateRange(0, n * STRIDE); this.buf.needsUpdate = true; }
   }
   dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mat.dispose(); }
+}
+
+const _e = new THREE.Vector3(), _ww = [];
+/** A strip of world points `pts` (n of them) as wire segments into `B` from its count on (a mount's preview, the Lockheart's and the carry
+ *  throw's marks: vfx/mountpreview.js, vfx/lockheartmarks.js, vfx/carrythrowmark.js). `look`: { m: half-width in metres, held between `lo`
+ *  and `hi` pixels; `wire`: the Mind's schiller in its heart }; `a`: an alpha, or one a point (a function of its index); `rgb`: its colour
+ *  (linear); `pxk`: pixels a metre at a metre's depth (the camera's projection times half the lines drawn). */
+export function wireStrip(B, pts, n, { look, a = 1, rgb, camera, pxk, closed = false }) {
+  if (n < 2) return;
+  const V = camera.matrixWorldInverse, A = _ww;
+  for (let i = 0; i < n; i++) {
+    const depth = Math.max(0.3, -_e.copy(pts[i]).applyMatrix4(V).z), pxm = pxk / depth;
+    A[i] = (Math.min(look.hi, Math.max(look.lo, look.m * pxm)) / pxm) * (look.wire ? 1 : -1); // (a negative half-width: the colour alone)
+  }
+  const al = typeof a === 'function' ? a : () => a, segs = closed ? n : n - 1;
+  for (let i = 0; i < segs && B.count < B.cap; i++) {
+    const j = (i + 1) % n, P = pts[i > 0 ? i - 1 : closed ? n - 1 : i], N = pts[j + 1 < n ? j + 1 : closed ? (j + 1) % n : j], Pa = pts[i], Pb = pts[j];
+    B.put(B.count++, Pa.x, Pa.y, Pa.z, A[i], Pb.x, Pb.y, Pb.z, A[j], P.x, P.y, P.z, al(i), N.x, N.y, N.z, al(j), STYLE.wire, rgb[0], rgb[1], rgb[2]);
+  }
 }

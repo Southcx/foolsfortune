@@ -22,6 +22,7 @@ import { sfx } from '../../audio/sfx.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
 import { crackPaths, randomPaths, setCracks } from './potcracks.js';
 import { hasTag, unregister } from '../../core/tags.js';
+import { wareGlossy } from '../../vfx/roomglazes.js';
 import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from '../../tools/slicing.js';
 import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('world/props/breakables'); // (the simulation's chance: core/rng.js, the same twice)
@@ -95,7 +96,7 @@ export class Breakables {
     const scale = def.scale ?? 1;
     const P = prepProfile(kind, scale, { mat: def.mat });
     const color = def.color ?? (def.ember ? PALETTE.dark : P.mat === 'porcelain' ? PALETTE.cream : PALETTE.pot);
-    const mesh = new THREE.Mesh(buildPotGeometry(P, color), P.mat === 'porcelain' ? glazeMat : potMat);
+    const mesh = new THREE.Mesh(buildPotGeometry(P, color), P.mat === 'porcelain' || wareGlossy(color) ? glazeMat : potMat); // (a glossy room glaze on any body: vfx/roomglazes.js)
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     addOutline(mesh);

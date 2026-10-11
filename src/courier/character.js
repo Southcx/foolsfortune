@@ -1,6 +1,9 @@
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 import { courierLimits } from './anim/rom.js';
 import { LimbHinges } from './anim/hinges.js';
+import { BodyProxies } from './anim/bodyproxies.js';
+import { Standoff } from './anim/standoff.js';
+import { WristEase } from './anim/wristease.js';
 import { kneeProfile } from '../world/props/poles.js';
 import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
@@ -23,7 +26,12 @@ import { dressFiligree } from '../vfx/filigree.js';
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
+const SOLE_MAX = 0.06; // m: the most the sole is raised onto the ground under it (footIK)
+// m: the same while a tech kneels (st.footDown): the stoop blended into the kneel puts the back toe up to 10.6 cm under the floor on
+// the way down and up (the carry's set-down, measured)
+const SOLE_KNEEL = 0.14;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
+const NECK_TURN = 64 * DEG; // the most the head turns on the neck against the chest (a neck's own range is about 70 to 80: the pose audit holds it to 70)
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -164,6 +172,12 @@ export class Character {
       this.arm[s].fingers = Object.values(B).filter((b) => /^(f_|thumb)/.test(b.name) && b.name.endsWith(s));
     }
     this.hipsRestY = B.spine.position.y;
+    // the body's proxies (anim/bodyproxies.js), and what keeps the arms to a body's own: the hands and forearms out of it (anim/standoff.js),
+    // each wrist within its range (anim/wristease.js). `reached`: how much each hand was set on something by the IK this frame (reachHand)
+    this.body = new BodyProxies(B);
+    this.standoff = new Standoff(this, this.body);
+    this.wrists = new WristEase(this, this.body);
+    this.reached = { L: 0, R: 0 }; this.reachMark = true;
 
     // gun
     this.gun = new THREE.Group();
@@ -405,6 +419,7 @@ export class Character {
   analyseGait(name) {
     const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
     this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    this.soles ||= this.measureSoles(); // (footIK's soles: read once, in the rest pose)
     const fr = [];
     for (let f = 0; f < c.n - 1; f++) {
       this.applyPose(C.sample(name, f / C.fps, p));
@@ -436,6 +451,40 @@ export class Character {
     const speed = wsum > 0 ? vsum / wsum : 1;
     this.resetPose();
     return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n };
+  }
+
+  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel), those within 4 cm of the
+   *  rest pose's lowest densely and the rest thinly, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
+   *  than its ankle bone says), and `rest`, that lowest point at rest. Read once, in the rest pose. */
+  measureSoles() {
+    this.resetPose();
+    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    this.root.updateMatrixWorld(true);
+    const all = { L: [], R: [] }, v = new THREE.Vector3();
+    this.root.traverse((m) => {
+      if (!m.isSkinnedMesh || m.userData.isOutline) return;
+      const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight;
+      if (!si) return;
+      for (let i = 0; i < si.count; i++) {
+        let b = -1, w = 0;
+        for (let k = 0; k < 4; k++) { const x = sw.getComponent(i, k); if (x > w) { w = x; b = si.getComponent(i, k); } }
+        const bone = m.skeleton.bones[b], side = /^(foot|toe|heel02)([LR])$/.exec(bone?.name || '')?.[2];
+        if (!side) continue;
+        m.getVertexPosition(i, v); v.applyMatrix4(m.matrixWorld);
+        all[side].push([bone, v.clone()]);
+      }
+    });
+    let rest = 1e9;
+    for (const s of ['L', 'R']) for (const [, w] of all[s]) rest = Math.min(rest, w.y);
+    const out = { rest };
+    for (const s of ['L', 'R']) {
+      // (the sole densely, and the rest of the foot thinly: a foot pointed back in a kneel lies on its instep and toes' tops, which stand
+      //  over 4 cm up at rest; read only the sole, the back toe went 4.5 cm into the floor getting up from the set-down's knee)
+      const near = all[s].filter(([, w]) => w.y < rest + 0.04), top = all[s].filter(([, w]) => w.y >= rest + 0.04);
+      const thin = (a, n) => { const step = Math.max(1, Math.floor(a.length / n)); return a.filter((_, i) => i % step === 0); };
+      out[s] = [...thin(near, 120), ...thin(top, 60)].map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
+    }
+    return out;
   }
 
   /** Contact weight (0..1) of foot s at loop phase u (0..1 of the clip). */
@@ -731,6 +780,7 @@ export class Character {
       C.blend(base, mv.pose, wM, mv.arm === 'R' ? this.MASK_GUN_R : prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
     }
     // movement techs blend their own poses in (swim, roll, climb...)
+    st.footDown = 0; // (a tech's kneel lets the feet down on to the floor: footIK)
     s.techs?.animate(this, base, dt, s);
     this.applyPose(base);
 
@@ -771,8 +821,15 @@ export class Character {
     const rightW = _v4.set(-1, 0, 0).applyQuaternion(root.quaternion);
     this.rotW(B.spine003, rightW, -(s.recoil || 0) * 5 * DEG);
     const lookW = 1 - wU;
-    this.rotW(B.spine004, upW, s.aimYawOffset * (1 - cw) * 0.25);
-    this.rotW(B.head, upW, s.aimYawOffset * (1 - cw) * 0.35);
+    // (the head's look toward the camera's way: the offset as player.js clamps it (80 either way) while the camera is within 100 degrees of
+    //  where they face, eased to nothing as it comes round behind them, so it never flips from one shoulder to the other the frame the
+    //  body passes 180 from the camera (the pose audit: the head 49 degrees in a frame, running toward the camera); and the neck's whole
+    //  turn, the clip's own swing with it, held to NECK_TURN)
+    const rawLook = s.techs?.player ? Math.atan2(Math.sin(s.techs.player.yaw - s.yaw), Math.cos(s.techs.player.yaw - s.yaw)) : s.aimYawOffset;
+    const look = s.aimYawOffset * (1 - smooth(100 * DEG, 175 * DEG, Math.abs(rawLook)));
+    this.rotW(B.spine004, upW, look * (1 - cw) * 0.25);
+    this.rotW(B.head, upW, look * (1 - cw) * 0.35);
+    this.holdNeck();
     this.rotW(B.head, rightW, s.aimPitch * 0.45 * lookW);
     root.updateMatrixWorld(true);
 
@@ -786,8 +843,19 @@ export class Character {
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
     Object.assign(st, { air, sl, mn, da, cr, wr, aw, gaitW, speed });
     st.dt = dt;
-    const handsFree = !s.techs?.game?.belt?.others(null) && !((s.gun?.drawT ?? 0) > 0) && wU < 0.01;
-    st.hingeArms = damp(st.hingeArms ?? 1, handsFree ? 1 : 0, 8, dt); // (the arms' hinge pass, eased as a tool comes out or goes away)
+  }
+
+  /** The head's turn about its own length against the chest (spine003), from rest (the pose audit's neck measure), held to NECK_TURN by
+   *  turning the head back about its own length: a look laid over a clip's own swing went to 88 degrees. */
+  holdNeck() {
+    const B = this.bones;
+    this.root.updateMatrixWorld(true);
+    this._neckRest ||= this.restCharQ.get(B.spine003).clone().invert().multiply(this.restCharQ.get(B.head)).invert();
+    B.spine003.getWorldQuaternion(_q1); B.head.getWorldQuaternion(_q2);
+    _q1.invert().multiply(_q2).premultiply(this._neckRest);
+    if (_q1.w < 0) _q1.set(-_q1.x, -_q1.y, -_q1.z, -_q1.w);
+    const turn = 2 * Math.atan2(_q1.y, _q1.w), over = Math.abs(turn) - NECK_TURN;
+    if (over > 0) this.rotW(B.head, _v1.set(0, 1, 0).applyQuaternion(_q2), -Math.sign(turn) * over); // (about the head's own length)
   }
 
   /**
@@ -839,6 +907,26 @@ export class Character {
     // stride with the hips at clip height would straighten the legs and drag the feet)
     const tgt = {};
     for (const k of ['L', 'R']) { tgt[k] = anim[k].clone().sub(new THREE.Vector3(offs0[k].x, 0, offs0[k].z)).add(new THREE.Vector3(offs[k].x, d[k], offs[k].z)); }
+    // the sole kept on the floor: the skin's lowest point of each foot (its posed turn kept through the leg's IK, so its place against the
+    // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
+    // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
+    // heel struck toe-up or a toe on a slope: walking up a ramp the toes went 3.8 cm into it, down it the heels 5.8 (CASEBOOK
+    // 215)
+    if (this.soles && planted > 0.05 && s.ground) {
+      for (const k of ['L', 'R']) {
+        const F = this.leg[k].foot.getWorldPosition(_v1);
+        let lo = null;
+        for (const [b, v] of this.soles[k]) { const w = _v2.copy(v).applyMatrix4(b.matrixWorld); if (!lo || w.y < lo.y) lo = (this._soleLo ||= new THREE.Vector3()).copy(w); }
+        if (!lo) continue;
+        const x = tgt[k].x + lo.x - F.x, z = tgt[k].z + lo.z - F.z, y = tgt[k].y + lo.y - F.y;
+        const gy = s.ground(x, z, s.pos.y + 0.6);
+        if (gy === null) continue;
+        if (gy > y) tgt[k].y += Math.min(st.footDown > 0 ? SOLE_KNEEL : SOLE_MAX, gy - y) * planted;
+        // (and let down on to it while a tech kneels, by how much of the body is the kneel's (st.footDown: the carry's set-down): a clip
+        //  that kneels in the air on this rig, 7 to 9 cm up, measured)
+        else if (st.footDown > 0) tgt[k].y -= Math.min(SOLE_MAX, y - gy) * planted * st.footDown;
+      }
+    }
     // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a
     // lower patch of ground does not pull the hips down mid-stride; then sprung, not snapped (the alternating feet on a slope made the
     // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)
@@ -935,6 +1023,7 @@ export class Character {
    */
   reachHand(side, pos, quat, w, shift = 0, poleOverride = null) {
     if (w <= 0.001) return;
+    if (this.reachMark) this.reached[side] = Math.max(this.reached[side], w); // (a hand set on something this frame: the wrist's ease leaves its turn alone)
     const arm = this.arm[side];
     const hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
     const hp = arm.hand.getWorldPosition(new THREE.Vector3());
@@ -1006,6 +1095,7 @@ export class Character {
     const B = this.bones, st = this.st, root = this.root;
     const HOLD = T.weapon.drawGrab;
     const inHand = o.drawT > HOLD;
+    this.reached.L = this.reached.R = 0;
     const Mg = new THREE.Matrix4(), gp = new THREE.Vector3(), gq = new THREE.Quaternion();
     const hp = new THREE.Vector3(), hq = new THREE.Quaternion();
     const rq = root.quaternion;
@@ -1158,14 +1248,28 @@ export class Character {
       for (const f of this.arm[side].fingers) f.quaternion.slerp(this.rest.get(f).q, k * 0.85);
     }
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
+    // the hands and forearms out of the body before what they hold is placed from them (anim/standoff.js): a hand holding the gun or set
+    // on something by now (the draw, a wall, a ledge, the gun's support) stays where it is. Not in first person (the view-model's arms)
+    const tp = (o.fw || 0) < 0.5, dtA = st.dt ?? 1 / 60;
+    const tool = o.techs?.game?.belt?.inHand, tt = tool && tool.id !== 'psygun' ? o.techs.get?.(tool.id) : null, rides = tt && (tt.drawT ?? 0) > 0.02 ? (tt.ridesHand === undefined ? 'R' : tt.ridesHand) : null;
+    if (tp) { this.reachMark = false; this.standoff.apply({ L: Math.max(this.reached.L, holdL), R: Math.max(this.reached.R, holdR) }); this.reachMark = true; }
     o.techs?.hands(this, o);
     if (!o.techs?.unitFrame?.()) this.guardKnees((1 - Math.min(1, o.techs?.override || 0)) * (1 - (st.crawlW || 0)));
-    // (the knees and elbows back on their hinge after the IK, the joints where they are: the legs always, the arms while nothing is in the
-    //  hands, a tool's arms being its own set's: anim/hinges.js)
-    this.hinges.apply(st.dt ?? 1 / 60, 1, st.hingeArms ?? 1);
+    // (each wrist within its range, anim/wristease.js: a hand something rides or the IK set (the tool's hand, the gun's, a hand on a haft, a
+    //  pot or a wall) keeps its place and turn and the elbow swings for it; then the knees and elbows back on their hinge, the joints
+    //  where they are, the legs and the arms always (anim/hinges.js: every clip set is repaired); then a free hand's palm turned about its
+    //  fingers' line and a bend past range eased back, and that free hand kept out of the body once more, its fingers moved)
+    const bound = { L: Math.max(this.reached.L, holdL, rides === 'L' ? 1 : 0), R: Math.max(this.reached.R, holdR, rides === 'R' ? 1 : 0) };
+    if (tp) this.wrists.apply(dtA, bound);
+    this.hinges.apply(dtA, 1, 1);
+    if (tp) {
+      this.wrists.relax(dtA, bound);
+      this.reachMark = false; this.standoff.apply(bound); this.reachMark = true;
+    }
     // (the limits last, after the knee guard: CLAUDE.md. A tech that owns the body, a ladder, a pole, has posed the hands to its own
-    //  handholds, and keeps them)
-    if ((o.techs?.override || 0) < 0.5) this.limits.apply();
+    //  handholds, and keeps them; one whose hands are a tool's, `limitsLast` (the hook's line: tools/sondelass/grapple.js), does not.
+    //  CROSSING, Calissa's: the hang's fingers were 5 to 42 degrees past their range, unclamped)
+    if ((o.techs?.override || 0) < 0.5 || o.techs?.active?.limitsLast) this.limits.apply();
     root.updateMatrixWorld(true);
   }
 

@@ -19,6 +19,8 @@
 //     fpArc()                 -> { arc, u, lift } for first person (tools/viewmodel.js)
 //     restSig()               the numbers of its pose that, unchanged, let it be baked at rest (render/restbake.js)
 //     placed(M)               after the model is placed this frame (a fork that flies on its own, a wheel that spins)
+//     offBody                 [{ x, y, z, r }]: points of it (tool frame) kept out of the Courier's body, the tool turned about the hand
+//                             (tools/toolbody.js keepOffBody: the suite's clips were made with other props, and swing these through it)
 //
 // Prior art: the belt's own contract (one draw, one stow, the hands freed first) and Unreal's weapon base class (Lyra's equipment
 // instance: a shared draw/holster/fire scaffold, the weapon its fire and its look).
@@ -32,6 +34,7 @@ import { T } from '../core/config.js';
 import { measureGrip, handFromTool } from './grip.js';
 import { drawHands } from './draw.js';
 import { fpToolMatrix } from './viewmodel.js';
+import { keepOffBody } from './toolbody.js';
 
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _v = new THREE.Vector3(), _p = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -140,6 +143,7 @@ export class HeldTool extends Tech {
     const holster = _m1.multiplyMatrices(this.holsterBone.matrixWorld, this.holsterLocal).clone();
     const M = new THREE.Matrix4();
     const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: T.weapon.drawGrab, twist: D.twist ?? -10, lean: D.lean ?? 8, via: this.mirrored && D.via ? [-D.via[0], D.via[1], D.via[2]] : D.via || [-0.35, 1.15, 0.4], pole: D.pole, out: M });
+    if (phase === 'held' && !P.fp && this.offBody) keepOffBody(ch, this.grip, M, this.offBody); // (turned off the body about the hand: tools/toolbody.js)
     if (P.fp && this.drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, this.drawT / 0.6), ...(this.fpArc?.() || {}) }, M);
     if (!M.elements.every(Number.isFinite)) M.copy(holster); // (never a NaN placed in the world)
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);

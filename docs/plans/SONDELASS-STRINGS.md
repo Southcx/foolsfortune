@@ -8,7 +8,9 @@ Calissa's hands, the numbers in `src/progress/combat/moves.js` included (Dovina 
 > if you're willing to spend resources. I also had issues with the aerial portion of the launch combo." (the owner, 2026-10-10)
 
 How to read it. The cutlass's table is `MOVES`/`STRINGS` in `src/tools/sondelass/cutlass.js`, played by the one combo engine
-(`src/tools/moveset.js`); each move's row (power, hits, time, cost, unlock) is in `src/progress/combat/moves.js`. Times are **real
+(`src/tools/moveset.js`); each move's row (power, hits, time, cost, unlock) is in `src/progress/combat/moves.js`. Since 2026-10-11 the
+string's normals and RMB's specials are the melee loadout's catalogue (`SONDELASS_MOVES`, `tools/sondelass/sondelassloadout.js`); the
+catalogue's new moves carry their own numbers there (`stats`) until Dovina takes them into her table, charted in section 7. Times are **real
 seconds from the blow's start** unless marked **clip s** (a move at rate 1.1 plays 1.1 clip s a real second). The **strike** is the
 blade's fast part, measured by `melee.js` from the clip (the tip's fastest stretch, down to a third of its peak speed), or typed where
 the clip asks. The hit-stop (about 0.1 real s a hit) is left out. **The paid cut** is a working name: the glossary keeps "cancel" for
@@ -275,3 +277,132 @@ Not checked: nothing was watched at speed, only stills; the hit-stop is not in t
 rides the same way in code, untried); a2 and t2 aimed off their targets were seen side-on only, not from the front; the paid cut from
 the launcher (into a1 at once, which stops the rise early) and from the air string was not measured; the feel of the price is the
 owner's.
+
+## 7. The catalogue (the melee loadout, phase 3: 2026-10-11, Calissa)
+
+> "I want to really expand and bulletproof the Sondelass melee combo system. I was thinking about something like the game God Hand for
+> ps2 where you can essentially build out your combo kit yourself." (the owner, 2026-10-11)
+
+Twelve normals (a string slot each) and six specials (RMB tapped, with W, with S), Dovina's slice. Every clip is the packs' own: UAL
+Standard's split swings (swordA/B with their recoveries, swordC, swordHeavy's first cut, the melee hook) and the Courier's suite (Sond_,
+Fist_); none authored. Each was judged from the front and the side with every other tool off (the sheets, section 7c). A fist or a foot
+is measured on itself (`limb`, `tip`) and reaches a hand's width past it (`reach` 0.35), not a blade's (0.80); a kick or a shove leaves
+no ribbon. **Range** is the farthest the measured tip goes in the strike plus what the sweep adds: what the card shows. Times are real
+seconds from the blow's start (the clip's at its rate); "next" is when the next slot may begin (the later of its chain window and its
+row's time; in the last slot, its free cut); "row/s" is its power over its time, hit-stops out (today's string: 2.73); "meas/s" is
+measured (7b), hit-stops in (today's blows: 1.94).
+
+### 7a. The chart
+
+| | move (id) | label | clip, rate, part | wind-up | strike | next | recovery to | power x hits | range | effect (status) | parent | row/s | meas/s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| N | c1 | Slash | Sond_Combo1 x1.1, 0-0.85 | 0-0.06 | 0.06-0.25 | 0.42 | 0.77 | 1.2 | 2.3 | stagger | (known) | 2.86 | 1.94 |
+| N | c2 | Rising Slash | Sond_Combo2 x1.1, 0-0.90 | 0-0.15 | 0.15-0.28 | 0.46 | 0.82 | 1.3 | 2.5 | stagger | (known) | 2.83 | 1.95 |
+| N | c3 | Hop Slash | Sond_Combo3 x1.1, 0-1.05 | 0-0.36 | 0.36-0.43 | 0.50 | 0.95 | 1.4 | 2.4 | stagger | (known) | 2.80 | 2.00 |
+| N | c4 | Leap Strike | Sond_Combo4 x1, whole | 0-0.33 | 0.33-0.41 | 0.78 | 1.70 | 2.0 | 2.9 | knock (push 6) | (known) | 2.56 | 1.94 |
+| N | quickSlash | Quick Slash | swordA x1, then swordARec | 0-0.17 | 0.17-0.31 | 0.34 | 0.43 (+0.75 rec) | 1.0 | 2.4 | stagger | c1 | 2.94 | 1.93 |
+| N | backhand | Backhand | swordB x1, then swordBRec | 0-0.20 | 0.20-0.31 | 0.38 | 0.53 (+0.75 rec) | 1.1 | 2.6 | stagger | c2 | 2.89 | 1.94 |
+| N | lungeSlash | Lunge Slash | meleeHook x0.9, whole; its 0.24 m and a step of 0.78 m | 0-0.26 | 0.26-0.31 | 0.50 | 0.52 | 1.4 | 3.0 | stagger (push 2) | c3 | 2.80 | 2.00 |
+| N | heavyChop | Heavy Chop | swordC x1.2, whole, 0-1.45 | 0-0.50 (a hop) | 0.50-0.59 | 0.92 | 1.21 | 2.4 | 2.6 | knock (push 7; stagger) | c4 | 2.61 | 2.09 |
+| N | guardBreak | Guard Break | Fist_Shove x1.1, whole, 0-0.85; both hands | 0-0.12 | 0.12-0.19 | 0.42 | 0.77 | 1.1 | 1.6 | guard break (push 5; stagger) | c2 | 2.62 | 1.78 |
+| N | pushKick | Push Kick | Fist_Kick x1.1, whole, 0-1.05; the left foot, its strike typed 0.40-0.62 clip s | 0-0.36 | 0.36-0.56 | 0.60 | 0.95 | 1.45 | 1.7 | knock (push 7) | c4 | 2.42 | 1.81 |
+| N | lowSweep | Low Sweep | swordHeavy x1.1, whole, 0-1.05 | 0-0.33 | 0.33-0.49 | 0.55 | 0.95 | 1.35 | 2.7 | launch (lift 3; trip) | c3 | 2.45 | 1.80 |
+| N | bodyBlow | Body Blow | Fist_Combo1 x1.15, 0-0.60; the left fist | 0-0.06 | 0.06-0.15 | 0.30 | 0.52 | 0.9 | 1.6 | stagger (push 1.5) | c1 | 3.00 | 1.86 |
+| S | stinger | Stinger | Sond_Thrust held out, a 6 m lunge (cutlass.js) | 0 | from f+1 | - | 0.38 | 3.0 (6.6 to a creature) | 8 | knock | (known) | 4.29 | 17.2 |
+| S | spinSlash | Spin Slash | Sond_SpinSlash x1.15, whole, 0-1.35 | 0-0.17 | 0.17-0.82, four cuts | - | 1.17 | 0.85 x 4 | 2.4 | knock (push 5), all round | backhand | 2.91 | 1.79 |
+| S | powerSlash | Power Slash | Sond_ChargeRelease x1, whole, 0-1.2 | none: the charge skipped | 0.00-0.11 | - | 1.20 | 3.0 | 2.5 | knock (push 9) | heavyChop | 2.50 | 2.07 |
+| S | risingCut | Rising Cut | Fist_Uppercut x1, whole, the hop's 0.38 m carried (`root: 'xyz'`), 0-0.9 | 0-0.23 | 0.23-0.34 | - | 0.90 | 2.3 | 2.0 | launch (lift 8; airborne) | quickSlash | 2.56 | 2.03 |
+| S | guardCrush | Guard Crush | Sond_Thrust x0.9, whole; its 0.45 m and a step of 0.5 m | 0-0.19 | 0.19-0.27 | - | 1.11 | 2.8 | 2.7 | guard break (push 5; stagger) | stinger | 2.52 | 2.07 |
+| S | backstepSlash | Backstep Slash | Sond_Combo3 x1.1, whole; a step back of 1.14 m through its hop (0.27-0.50) | 0-0.36 | 0.36-0.43 | - | 1.00 | 2.5 | 2.1 (from the press: 2.2 misses) | stagger (push 3) | c3 | 2.50 | 2.06 |
+
+Costs: the stinger 6, Spin Slash 8, Power Slash 8, Rising Cut 6, Guard Crush 6, Backstep Slash 5 (Lachryma, spent on the press; from a
+blow's recovery the paid cut's 5 with it, as the stinger). Every normal plays in every slot: a chain window for when it is not the last
+(c4's added, read only there), a row time for its free cut when it is. The jobs: Quick Slash and Backhand the fast pokes, Body Blow the
+quickest and shortest, Lunge Slash the reach, Heavy Chop the finisher that pays in time, Guard Break and Push Kick and Low Sweep the
+ones that do more to a body and pay in power; Spin Slash clears round, Power Slash is the charge without the hold, Rising Cut launches,
+Guard Crush opens a guard from range, Backstep Slash gets out (1.14 m back, most of it after the cut has begun: a slip jelly 1.0 to
+2.2 m ahead is struck alike; the first try stepped back from 0.15 clip s and missed one 2.2 m ahead).
+
+**A guard break** (`hit.guardBreak`, `tools/moveset.js`): the thing struck is asked `breakGuard(point, dir, by)` before the blow lands,
+so that blow goes through. Strawman (on guard, the sparring circle's lectern) throws its sleeves wide and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop)
+(`GUARD_OPEN`, `world/testroom/room.js`; the look `S.open(t)`, `vfx/strawman.js`): measured, Slash blocked, Guard Break 1.1 through,
+Hop Slash 1.4 through; Guard Crush 2.8 through. Nothing else guards yet; on a slip jelly it is its stagger.
+
+**Engine support** (`tools/moveset.js`, built once): a catalogue row's own `stats` where no `rule` names a row (the same shape as
+moves.js's); a move's own `reach` past its measured tip; `ribbon: false`; `step: { v, at }` (a whole-body move's own step along the
+facing, back when negative, a forward one cut short as the travel is so it never goes through what it is aimed at); `hit.guardBreak`.
+The cutlass's RMB already played any special a slot holds (phase 2): nothing changed there.
+
+### 7b. The row rule, measured
+
+Dovina's rule: whatever the loadout holds, the string's power a real second stays within 15% of today's default string. Measured
+headless in the combat wing's juggle pen: a slip jelly 1.9 m ahead, put back in place and made whole every frame (so every blow can land
+and nothing bursts it), LMB every 0.1 real s, the pool held empty (the free grammar), hit-stops in; the power handed to
+`creatures.strike` summed over two whole cycles, from the second opener to the fourth.
+
+Today's default: **1.956 power a real second** (5.9 power, 3.017 s a cycle; 2.73 on its rows, hit-stops out).
+
+| loadout | cycle s | power | power/s | vs today |
+|---|---|---|---|---|
+| c1, c2, c3, c4 (today's) and its six swaps | 3.017 | 5.90 | 1.956 | 0.0% |
+| Quick Slash in slot 1 / 2 / 3 / 4 | 2.933 / 2.883 / 2.833 / 2.533 | 5.7 / 5.6 / 5.5 / 4.9 | 1.943 / 1.942 / 1.941 / 1.934 | -0.7 / -0.7 / -0.8 / -1.1% |
+| Backhand in slot 1 / 2 / 3 / 4 | 2.983 / 2.917 / 2.867 / 2.583 | 5.8 / 5.7 / 5.6 / 5.0 | 1.944 / 1.954 / 1.953 / 1.935 | -0.6 / -0.1 / -0.2 / -1.1% |
+| Lunge Slash in slot 1 / 2 / 3 / 4 | 3.100 / 3.050 / 3.000 / 2.717 | 6.1 / 6.0 / 5.9 / 5.3 | 1.968 / 1.967 / 1.967 / 1.951 | +0.6 / +0.6 / +0.6 / -0.3% |
+| Heavy Chop in slot 1 / 2 / 3 / 4 | 3.550 / 3.500 / 3.467 / 3.150 | 7.1 / 7.0 / 6.9 / 6.3 | 2.000 / 2.000 / 1.990 / 2.000 | +2.2 / +2.2 / +1.7 / +2.2% |
+| Guard Break in slot 1 / 2 / 3 / 4 | 3.008 / 2.958 / 2.917 / 2.600 | 5.8 / 5.7 / 5.6 / 5.0 | 1.928 / 1.927 / 1.920 / 1.923 | -1.4 / -1.5 / -1.8 / -1.7% |
+| Push Kick in slot 1 / 2 / 3 / 4 | 3.192 / 3.142 / 3.100 / 2.817 | 6.15 / 6.05 / 5.95 / 5.35 | 1.927 / 1.926 / 1.919 / 1.899 | -1.5 / -1.5 / -1.9 / -2.9% |
+| Low Sweep in slot 1 / 2 / 3 / 4 | 3.150 / 3.100 / 3.050 / 2.750 | 6.05 / 5.95 / 5.85 / 5.25 | 1.921 / 1.919 / 1.918 / 1.909 | -1.8 / -1.9 / -1.9 / -2.4% |
+| Body Blow in slot 1 / 2 / 3 / 4 | 2.883 / 2.833 / 2.783 / 2.500 | 5.6 / 5.5 / 5.4 / 4.8 | 1.942 / 1.941 / 1.940 / 1.920 | -0.7 / -0.8 / -0.8 / -1.8% |
+| the four slowest: Guard Break, Low Sweep, Push Kick, Body Blow | 2.658 | 4.80 | 1.806 | -7.7% |
+| the four quickest: Heavy Chop, Lunge Slash, Quick Slash, Backhand | 2.983 | 5.90 | 1.978 | +1.1% |
+| a mix: Quick Slash, Body Blow, Guard Break, Heavy Chop | 2.800 | 5.40 | 1.929 | -1.4% |
+
+Each blow on its own is inside the band too (meas/s in 7a, -8.8% Guard Break to +6.7% Heavy Chop against today's blows' 1.94; on the
+rows, -11.5% Push Kick to +9.8% Body Blow against 2.73), so any four, and any eight, stay inside it: a string's rate is its blows'
+rates weighed by their times. The first run had Push Kick at -10.7% in the last slot (its foot's measured strike ran to 0.91 clip s, and
+the free cut waited for it; typed to the extension, 0.40-0.62) and Guard Break, Low Sweep and Body Blow at -15% to -18% as blows; their
+power went up 0.1 to 0.15.
+
+The specials, from rest (RMB tapped, the slot the tap's; its own time from the press to the Courier free; a slip jelly 2.2 m ahead,
+Backstep Slash's 1.4 m, the same at 1.0, 1.8 and 2.2):
+
+| special | cost | power | own s | power/s | vs today's string |
+|---|---|---|---|---|---|
+| Spin Slash | 8 | 3.4 (0.85 x 4) | 1.900 | 1.789 | -8.5% |
+| Power Slash | 8 | 3.0 | 1.450 | 2.069 | +5.8% |
+| Rising Cut | 6 | 2.3 | 1.133 | 2.029 | +3.7% |
+| Guard Crush | 6 | 2.8 | 1.350 | 2.074 | +6.0% |
+| Backstep Slash | 5 | 2.5 | 1.217 | 2.055 | +5.1% |
+| the stinger (today's) | 6 | 6.6 | 0.383 | 17.2 | +780% |
+
+A special does a bigger single thing for its Lachryma (all its power in one go and what it does to a body), never more power a second:
+moves.js's own rule ("a special is a burst that costs Lachryma, not a free raise"), as the Tidecutter's 7 in 2.63 s (2.66 on its row).
+**The stinger is outside the band, and was before phase 3**: its lunge strikes a creature at 2.2 x its row's 3.0 (`cutlass.js`
+`stingStep`), 6.6 in 0.38 s, where its row says 3.0 in 0.7 s (4.29 a second, +57% on paper). Left as it is (the default plays as it
+did); Dovina's to rule (`docs/handoffs/dovina/2026-10-11-from-calissa-catalogue.md`).
+
+The default plays today's string to the frame: phase 2's probe (`string.mjs`: free LMB every 6 frames, paid every 2, the held launcher's
+air string, the pause branch, the stinger), every blow's begin, hit and cut on the same frame as phase 2's `string-after.json`.
+
+**Measured again after the repair (2026-10-11).** The table above put one new move in a four-slot string. The verifiers' wider measure
+(random loadouts of 4 to 8 slots, and one move in every slot) found whole-body blows walking through the jelly and round Strawman
+(casebook 206). Repaired, by the same measure: the 30 loadouts of seed 7 are -6.2% to +3.1% against both a
+pinned slip jelly and Strawman, and every normal alone in 4 and 8 slots (same on both):
+
+| alone, 4 or 8 slots | c1 | c2 | c3 | c4 | Quick Slash | Backhand | Lunge Slash | Heavy Chop | Guard Break | Push Kick | Low Sweep | Body Blow |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| vs today | -0.5% | -0.3% | -0.2% | +0.6% | -4.1% | -3.6% | -0.2% | +6.7% | -8.8% | -7.4% | -8.0% | -4.8% |
+
+### 7c. The sheets, and what was not checked
+
+In Calissa's scratchpad (`p3/moves/`): `sheet-normals` and `sheet-specials` (each new move at its wind-up, strike, the strike's middle and
+end, and its recovery, front and side, every other tool off), `sheet-guardbreak` (Strawman on guard: Slash blocked, the shove, the
+sleeves thrown open, Hop Slash through), `sheet-dps` (7b as an image), `sheet-survey1` to `-3` (the candidates: swordA/B/C, swordAtk,
+swordHeavy, swordDash, the melee hook, the suite's kicks and fists, Vane_SpinSweep). None are in the repo.
+
+Not checked: nothing was watched at speed, only stills; a pinned jelly is not a fight (a knock or a launch sends a free one out of the
+next blow's reach: Push Kick, Heavy Chop, Low Sweep and Rising Cut pay for that in play, more than the table says); Fist_Sweep was passed
+over for Low Sweep (its body lies on the floor, and the worn tools would lie through it); the clapperjars and pots take the play's
+`hit.power` and `dmg`, not measured; W + RMB and S + RMB were tried standing (the forward and back slots), not running; the paid cut into a new special once
+(Spin Slash from c1's recovery: 5 + 8), not out of each new move; the feel is the owner's.
+

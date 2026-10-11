@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // THE LOAD'S GAUGES: nothing spends in silence (docs/plans/LACHRYMA-LOOP.md section 4). What the Soul Brush's load spends is shown where
 // you are looking when you spend it:
-//   - THE ARC: a thin arc beside the crosshair, the Lachrymato Bottle's fill (else the pool's, bottle-less), while you paint, mop or a jet
-//     runs; it lingers a moment after, and flashes when it runs dry (the log's "The bristles run dry." is the load's own).
+//   - THE ARC: a thin arc beside the paint reticle, the Lachrymato Bottle's fill (else the pool's, bottle-less), while you paint, mop or a jet
+//     runs; it lingers a moment after (never past the brush: stowed or swapped, it goes at once, a jet aside), and flashes when it runs
+//     dry (the log's "The bristles run dry." is the load's own).
 //   - THE HOVER'S RING at the feet, draining over its 1.6 s; THE ROCKET'S RING filling over its 0.55 s gather (world marks: no words).
 // The looks are Calissa's (vfx/bottlearc.js: the arc; vfx/brushmarks.js: the jet ring); the numbers are the load's own
 // (tools/soulbrush/load.js, courier/moves/jets.js).
@@ -21,7 +22,7 @@ const LINGER = 0.8, FLASH = 0.6; // (real seconds shown after; the dry flash's l
 export class LoadGauge {
   constructor(game) {
     this.game = game; this.show = 0; this.flash = 0; this.lastHeld = null;
-    this.arc = new BottleArc(); this.el = this.arc.el; // (the arc beside the crosshair: vfx/bottlearc.js)
+    this.arc = new BottleArc(game); this.el = this.arc.el; // (the arc beside the brush's aim, the paint reticle: vfx/bottlearc.js)
     this.ring = new JetRing(game); // (the jets' ring at the feet: drawn as much of a turn as is left (hover) or gathered (rocket): vfx/brushmarks.js)
   }
 
@@ -34,8 +35,9 @@ export class LoadGauge {
   }
 
   update(raw) {
-    const r = this.read(), P = this.game.player;
-    if (r.active) this.show = LINGER; else this.show = Math.max(0, this.show - raw);
+    const r = this.read(), P = this.game.player, brush = this.game.belt?.get?.('soulbrush');
+    if (brush && !brush.wants && !r.jet) this.show = 0; // (the arc is the brush's: stowed or another tool asked for, it goes that frame, no linger; a jet spends the load whatever is in the hands)
+    else if (r.active) this.show = LINGER; else this.show = Math.max(0, this.show - raw);
     if (r.active && r.empty && this.flash <= 0) this.flash = FLASH; else this.flash = Math.max(0, this.flash - raw);
     const on = this.show > 0 && !this.game.god?.active;
     this.arc.set({ show: on ? Math.min(1, this.show / 0.25) : 0, frac: r.frac, flash: this.flash / FLASH, low: r.frac < 0.25 }, raw);

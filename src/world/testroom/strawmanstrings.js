@@ -8,7 +8,8 @@
 //             `area` a Figment attack telegraph draws at the Courier's Divination, the drawn area the hit area), then the strike: harmless
 //             (Strawman never hurts: a shove), counted as landed or not (`strawman.strike`). A parry breaks the blow off (the sleeve eases
 //             back) and the punish is the move's recovery; a one-two's first blow parried, its second still comes.
-//   THE STANCE still or guard (Strawman's mode), the lectern's first rows (it was F at Strawman, the owner moved it here: 2026-10-11)
+//   THE LOADOUT the lectern's first row: the loadout editor's page (tools/sondelass/loadouteditor.js), the melee loadout chosen here
+//   THE STANCE still or guard (Strawman's mode), the lectern's next rows (it was F at Strawman, the owner moved it here: 2026-10-11)
 //   A STRING  moves and pauses on a loop (STRAWMAN_STRINGS), picked at the circle's lectern (F: the page), run only while the Courier is
 //             inside the circle (step out and it stops: the ring is the rule), Strawman turning on its ball to face them between moves.
 //   THE TEMPO 0.25x, 0.5x or 1x (DEBUG only): the world slowed through game.time while a string runs, the Courier too (a study of the
@@ -27,12 +28,13 @@ import * as THREE from 'three';
 import { STRAWMAN_MOVES, STRAWMAN_STRINGS, KEEP_OUT, PUSH, reachOf, inArea } from '../../vfx/strawmanmoves.js';
 import { stream } from '../../core/rng.js';
 import { TR } from './layout.js';
+import { showLoadoutPage } from '../../tools/sondelass/loadouteditor.js';
 
 const R = stream('strawman.strings');
 const TEMPOS = [1, 0.5, 0.25];
 const ENTER_BREATH = 1.0; // (real seconds at 1x after the Courier steps into the circle before a string begins)
 const LECTERN_REACH = 1.8;
-const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'click a stance or a string · F closes', aside: 'left' };
+const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'your loadout, a stance or a string · F closes', aside: 'left' };
 /** Strawman's stances, the lectern's first rows (the owner, 2026-10-11: "Strawman setting should be moved to the nearby lectern"; it was
  *  F at Strawman). Words placeholders for Espada's. */
 const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.']];
@@ -148,9 +150,14 @@ export class StrawmanStrings {
     else this.attack(this.order?.[nth] ?? step.move);
   }
 
-  /** The lectern's page: Strawman's stance (still, guard), the four strings and none; in DEBUG, the tempo. */
+  /** The lectern's page: the melee loadout (its editor's page), Strawman's stance (still, guard), the four strings and none; in DEBUG,
+   *  the tempo. */
   page(im, el) {
     const g = this.game, menu = g.course?.menu, again = () => menu?.showPage?.('the sparring circle', (i2, e2) => this.page(i2, e2), PAGE);
+    im.appendChild(el('div', 'grp', 'LOADOUT · Your Sondelass moves')); // (the loadout editor: tools/sondelass/loadouteditor.js; words placeholders for Espada's)
+    const lg = el('div', 'rooms'), lr = el('div', 'room', '<span class="n">▤</span><span><b>Build your string</b><s>Choose what LMB and RMB play.</s></span>');
+    lr.onclick = () => showLoadoutPage(g);
+    lg.appendChild(lr); im.appendChild(lg);
     im.appendChild(el('div', 'grp', 'STANCE · How Strawman takes a blow'));
     const sg = el('div', 'rooms');
     for (const [m, label, line] of STANCES) {

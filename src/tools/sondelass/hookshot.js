@@ -114,7 +114,6 @@ export class Hookshot {
     this.flying = true; this.phase = 'out'; this.t = 0;
     this.grap.visible = true; this.grap.scale.setScalar(GRAP);
     this.line.rope.reset(this.pos, this.pos);
-    this.hangSlack = 0;
     sfx.hookFire();
     g.events?.emit('hook.fire', { hit: !!r, kind: r?.kind || 'miss' });
   }

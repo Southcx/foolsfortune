@@ -7,7 +7,8 @@
 //   Q     draw / stow (the Psygun goes away first; X also stows it)           1 / 2 / 3   CUTLASS / ROD / HOOK
 //   CUTLASS  LMB the loadout's string · RMB the special (the Stinger) · crouched, hold RMB: the iaido into Blade Mode · MMB lock on · V hold:
 //            guard, in time: parry · E (the blink) cancels any move
-//   ROD      hold LMB to charge a cast, release to throw · 4-8 / wheel: the lure's aspect · wheel (lure out): its depth · RMB sinks it · MMB sounds
+//   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (Gall, Fury once known) · - / =: the lure tied on ·
+//            wheel (lure out): its depth · RMB sinks it · MMB sounds
 //            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
 //   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),
 //            hold RMB to pay out, tap RMB to let go, Space to jump off it; A/D/W/S pump a swing (tools/sondelass/grapple.js)
@@ -33,13 +34,18 @@ import { SondelassModel } from './model.js';
 import { Cutlass } from './cutlass.js';
 import { Hookshot } from './hookshot.js';
 import { Angler } from './angling/angler.js';
-import { measureGrip, handFromTool } from '../grip.js';
+import { measureGrip, handFromTool, easeGrip } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { buildLure } from './angling/luremodels.js';
 
 const HOLD = T.weapon.drawGrab;
+/** The hook's aim (hands()): the forearm `fore` degrees below the shaft's line, the hand `reach` m along it from the shoulder and `out` m to
+ *  the aim's right. */
+const AIM = { fore: 60, reach: 0.46, out: 0.06 };
+const AXIS_X = new THREE.Vector3(1, 0, 0), AXIS_Z = new THREE.Vector3(0, 0, 1); // (a handle's axis in the tool's frame: the haft; the crank knob's stem)
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
+const _m2 = new THREE.Matrix4(), _m3 = new THREE.Matrix4(), _m4 = new THREE.Matrix4();
 const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();
 
 export const FORMS = [
@@ -66,6 +72,7 @@ export class Sondelass extends Tech {
     super(mgr, 'sondelass');
     this.passive = true;
     this.alwaysHands = true;
+    this.hingedArms = true; // (its set is hinge-repaired, Sond_ in courier/anim/hinges.js HINGED, so the posed arms are squared too: character.js)
     this.overrides = 0;
     this.state = 'stowed'; // 'stowed' | 'held' (drawT says how far)
     this.form = 'cutlass';
@@ -111,6 +118,10 @@ export class Sondelass extends Tech {
     this.game.events?.emit('sondelass.form', { form: id });
     this.renderStrip();
   }
+
+  /** Every tech reset (course.teleport, a fall out of the world: courier/moves/techs.js reset()): the Courier set down by no move of their
+   *  own, so a string run ends ('pause': tools/moveset.js leave(), Dovina's ruling); nothing else of the tool's changes. */
+  reset() { this.cutlass.moves.leave(); }
 
   // ---------------------------------------------------------------- sockets (measured from the UAL sword pose: tools/grip.js)
   computeSocket(ch) {
@@ -202,14 +213,14 @@ export class Sondelass extends Tech {
   animate(ch, base, dt) {
     const C = ch.clips, P = ch.P;
     if (!this.track) {
-      this.track = new Track(C, new Set(['Sond_Idle', 'Sond_CastIdle', 'torchIdle', 'idle']));
+      this.track = new Track(C, new Set(['stance:cutlass', 'stance:hookHeld', 'Sond_Idle', 'Sond_CastIdle', 'torchIdle', 'idle']));
       this.track.play('torchIdle', 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose();
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
     if (layerW <= 0.001) return;
     const tr = this.track;
-    const want = this.form === 'cutlass' ? 'Sond_Idle' : this.form === 'rod' ? 'Sond_CastIdle' : 'torchIdle'; // (the cutlass en garde and the rod held out: the suite's own idles; the hook as the UAL torch idle holds it)
+    const want = this.form === 'cutlass' ? this.idleClip : this.form === 'rod' ? 'Sond_CastIdle' : C.clips['stance:hookHeld'] ? 'stance:hookHeld' : 'torchIdle'; // (the cutlass en garde: the suite's Sond_Idle turned side-on, courier/anim/stances.js; the rod held out: the suite's own idle; the hook as the UAL torch idle holds it, the hand clear of the running thigh)
     if (!this.cutlass.playing && !this.angler?.castClip && tr.cur !== want) tr.play(want, 0, 0.25);
     tr.update(dt);
     const layer = tr.sample(this.P1);
@@ -225,6 +236,10 @@ export class Sondelass extends Tech {
     C.blend(base, layer, layerW, this.form === 'hook' && !this.hookshot.att ? this.MASK_HOOK : ch.MASK_UPPER, 0);
     if (this.form === 'cutlass') this.cutlass.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the stroke's: tools/moveset.js)
   }
+
+  /** The cutlass's en garde (stances.js `cutlass`: Sond_Idle, the chest turned side-on and the blade on the centre line), or the suite's
+   *  own if the stance was not baked. */
+  get idleClip() { return this.game.character?.clips?.clips['stance:cutlass'] ? 'stance:cutlass' : 'Sond_Idle'; }
 
   /** THE DRAWN RUN (the owner, 2026-10-11: "The Sondelass needs an animation for running while the Sondelass is drawn"): running or
    *  sprinting with the cutlass out, the upper body is the run's own (its chest and free arm, on the gait's shared phase) and the blade
@@ -255,14 +270,32 @@ export class Sondelass extends Tech {
       // in the hand: the hook's aim swings the arm; otherwise the clip's own hand carries it
       const aimW = this.hookshot.aimBlend;
       if (aimW > 0.01 && this.hookshot.aimDir) {
+        // (the shaft along the aim, held as a rod is pointed: the forearm AIM.fore degrees below the aim, the wrist turned the rest of the
+        //  way toward the little finger, the hand a little out from the body. It was held 0.5 m out along the aim from the shoulder, the
+        //  forearm along the shaft, and the wrist folded 116 to 129 degrees to lay the shaft across the knuckles: the pose audit)
         const sh = ch.shoulder('R', new THREE.Vector3());
-        const dir = this.hookshot.aimDir;
-        const pos = sh.clone().addScaledVector(dir, 0.5 + model.shaftLength() * 0.0).addScaledVector(_v2.set(0, 1, 0), -0.06);
-        const X = dir.clone(), Zt = new THREE.Vector3().crossVectors(_v2.set(0, 1, 0), X).normalize();
+        // (with a line out, on the anchor from this frame's shoulder: the hook's own aimDir is the last frame's, and on the line the body
+        //  under the hand has moved since)
+        const att = this.hookshot.att, dir = att ? new THREE.Vector3().subVectors(att.point, sh).normalize() : this.hookshot.aimDir, up = _v2.set(0, 1, 0);
+        const side = new THREE.Vector3().crossVectors(dir, up);
+        // (on the line in the air, the grapple's: the body's right, square to the line. The aim's own right is the anchor's bearing from
+        //  the shoulder turned a quarter, and it turns 180 degrees as the shoulder passes under the anchor: in a swing it swept the hand
+        //  0.4 m across the face in 8 frames at each pass, the hand turning over on the shaft with it)
+        if ((att && (this.mgr.get('grapple')?.w ?? 0) > 0.5) || side.lengthSq() < 1e-6) {
+          const y = this.P.bodyYaw ?? 0;
+          side.set(-Math.cos(y), 0, Math.sin(y));
+          side.addScaledVector(dir, -side.dot(dir));
+        }
+        side.normalize();
+        const down = new THREE.Vector3().crossVectors(dir, side).normalize(); // (side: the aim's right; down: square to the aim, toward the ground)
+        const fore = dir.clone().multiplyScalar(Math.cos(AIM.fore * Math.PI / 180)).addScaledVector(down, Math.sin(AIM.fore * Math.PI / 180));
+        const pos = sh.clone().addScaledVector(fore, AIM.reach).addScaledVector(side, AIM.out);
+        const X = dir.clone(), Zt = side.clone().negate(); // (the tool's Z: the aim's left, up x the aim where that is defined)
         const Yt = new THREE.Vector3().crossVectors(Zt, X);
         const G = new THREE.Matrix4().makeBasis(X, Yt, Zt).setPosition(pos);
         this.handFromTool(G, 'R', hp, 0, 0, 0, hq);
-        ch.reachHand('R', hp, hq, aimW);
+        const pole = sh.clone().addScaledVector(fore, 0.2).addScaledVector(dir, -0.35).addScaledVector(side, 0.15); // (the elbow behind the hand and out)
+        ch.reachHand('R', hp, hq, aimW, 0, pole);
       }
       // the free hand on the reel, cranking (or at the foregrip of the rod while it holds a fish)
       const hookLeft = this.form === 'hook' && this.hookshot.att ? 1 : 0; // (hanging or swinging: the free hand takes the shaft)
@@ -270,22 +303,13 @@ export class Sondelass extends Tech {
       this.leftW = this.form === 'cutlass' ? iaido : THREE.MathUtils.damp(this.leftW, Math.max(this.angler?.leftHand ?? 0, hookLeft), 10, 1 / 60); // (the cutlass's eases with the pose's own weight)
       M.multiplyMatrices(B.handR.matrixWorld, this.socketR);
       if (this.leftW > 0.01 && this.form === 'cutlass') {
-        model.group.matrixWorld.copy(M);
-        this.handFromTool(M, 'L', hp, this.cutlass.leftAt, 0, 0, hq);
-        const yaw = this.P.bodyYaw ?? this.P.yaw, pole = _v3.set(0.45 * Math.cos(yaw) - 0.15 * Math.sin(yaw), 0.75, -0.45 * Math.sin(yaw) - 0.15 * Math.cos(yaw)).add(this.P.renderPos); // (the elbow out to their left and a little back)
-        ch.reachHand('L', hp, hq, this.leftW, 0, pole.clone());
+        const yaw = this.P.bodyYaw ?? this.P.yaw, pole = new THREE.Vector3(0.55 * Math.cos(yaw) + 0.22 * Math.sin(yaw), 0.77, -0.55 * Math.sin(yaw) + 0.22 * Math.cos(yaw)).add(this.P.renderPos); // (the elbow out to their left and a little ahead: the forearm across to the blade square to its line, the pose audit)
+        this.offHand(ch, M, this.cutlass.leftAt, 0, 0, AXIS_X, this.leftW, pole, true); // (the thumb toward the hilt, as on a scabbard's mouth: iaido's koiguchi)
       }
-      if (this.leftW > 0.01 && this.form === 'hook') {
-        model.group.matrixWorld.copy(M);
-        this.handFromTool(M, 'L', hp, 0.55, 0.0, 0.0, hq);
-        ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
-      }
+      if (this.leftW > 0.01 && this.form === 'hook') this.offHand(ch, M, 0.55, 0, 0, AXIS_X, this.leftW, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       if (this.leftW > 0.01 && this.form === 'rod') {
-        model.group.matrixWorld.copy(M); // (the crank's place in the world for the left hand)
-        const a = model.spin;
-        const knob = _v2.set(0.09 + Math.cos(a) * 0.07, 0.088 + Math.sin(a) * 0.07, 0.05);
-        this.handFromTool(M, 'L', hp, knob.x, knob.y, knob.z, hq);
-        ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
+        const a = model.spin; // (the crank's knob, turning about the reel's axle: the fingers turn about the knob's own stem, the tool's Z)
+        this.offHand(ch, M, 0.09 + Math.cos(a) * 0.07, 0.088 + Math.sin(a) * 0.07, 0.05, AXIS_Z, this.leftW, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       }
     }
     // the rod out and nothing cast: the free hand holds what is tied on (luremodels.js), the way an angler holds the lure before a cast
@@ -302,6 +326,34 @@ export class Sondelass extends Tech {
     model.group.updateMatrixWorld(true);
     ch.root.updateMatrixWorld(true);
     this.cutlass.afterHands(this.dt || 1 / 60); // (the blade is where it is for this frame: its ribbon and the afterimages)
+  }
+
+  /** THE OFF HAND on the tool at (x, y, z) in its frame (M: the tool's world matrix), by weight w, its elbow toward `pole`: the hand turned
+   *  about the handle's axis (`axis`, tool frame) to meet the forearm it comes on (tools/grip.js easeGrip), the arm reached once to learn
+   *  that way and put back, then reached for good. `flip`: the hand the other way round on the handle (its thumb toward the tool's butt). */
+  offHand(ch, M, x, y, z, axis, w, pole, flip = false) {
+    const arm = ch.arm.L, hp = new THREE.Vector3(), hq = new THREE.Quaternion();
+    this.model.group.matrixWorld.copy(M);
+    this.handFromTool(flip ? _m2.copy(M).multiply(_m3.makeTranslation(x, y, z)).multiply(_m4.makeRotationZ(Math.PI)).multiply(_m3.makeTranslation(-x, -y, -z)) : M, 'L', hp, x, y, z, hq);
+    const bones = [arm.upper, arm.fore, arm.hand], keep = bones.map((b) => b.quaternion.clone()), keepP = arm.upper.position.clone();
+    const from = arm.hand.getWorldPosition(new THREE.Vector3()), fromQ = arm.hand.getWorldQuaternion(new THREE.Quaternion()), elbow = arm.fore.getWorldPosition(new THREE.Vector3());
+    ch.reachHand('L', hp, hq, 1, 0, pole.clone());
+    const fore = arm.hand.getWorldPosition(new THREE.Vector3()).sub(arm.fore.getWorldPosition(_v1)).normalize();
+    bones.forEach((b, i) => b.quaternion.copy(keep[i])); arm.upper.position.copy(keepP); arm.upper.updateMatrixWorld(true);
+    easeGrip(hp, hq, _v1.set(x, y, z).applyMatrix4(M), _v2.copy(axis).transformDirection(M), fore);
+    // (by its weight, the hand carried from where the clip has it to the handle, turning on the way, and the elbow from the clip's toward
+    //  the pole: a reach at part weight solved the elbow whole toward the pole for a target part of the way there, and the iaido's first
+    //  frames folded the wrist 155 degrees and the elbow back: the pose audit)
+    ch.reachHand('L', from.lerp(hp, w), fromQ.slerp(hq, w), 1, 0, elbow.lerp(pole, w));
+    // (on the way, the hand kept in line with its forearm, its turn about its length free: the slerp alone swung the wrist 70 to 140
+    //  degrees mid-reach; let go over the last of the reach, where the grip's own turn takes over)
+    const keepLine = 1 - THREE.MathUtils.smoothstep(w, 0.7, 1);
+    if (keepLine > 0.001) {
+      const f = arm.hand.getWorldPosition(_v1).sub(arm.fore.getWorldPosition(_v2)).normalize(), q = arm.hand.getWorldQuaternion(_q1);
+      const turn = new THREE.Quaternion().setFromUnitVectors(_v3.set(0, 1, 0).applyQuaternion(q), f);
+      ch.setWorldQuat(arm.hand, new THREE.Quaternion().slerp(turn, keepLine).multiply(q));
+      arm.hand.updateMatrixWorld(true);
+    }
   }
 
   /** The lure on the line, in their left hand (rod out, nothing cast): rebuilt when another is tied on. */
