@@ -11,10 +11,14 @@
 // moveset); the belt; character.animate (layers, stances, the foot IK, the prowl's head); poseHands (the gun, the tools placed, the
 // hands, the knee guard, the hinge repair and the joint limits, rom.js, last); the psygun's flourish after the hands.
 //
+// Every take begins from the fresh state (workbench/animfresh.js: what the rig, the techs, the belt, the body, the keys and the seven
+// tools held once all were built and two frames stepped), the worn tools laid on again, and the holder at the origin while the rig
+// steps, so a take is the same whatever was played before it and the world-space work (the foot locks, the holster) is the rig's own.
+//
 // Prior art: Unreal's Persona preview scene (an editor's own copy of the character, its anim blueprint run for real on it, nothing of
 // the level touched), and the co-op sibling (coop/sibling.js: the Courier's own body and rig, driven by keys a mind presses).
 //
-//   const R = await AnimRig.create(game, holder)   R.wear(tool, form, { others })   R.put({ at, speed, posture })   R.step(dt)
+//   const R = await AnimRig.create(game, holder)   R.wear(tool, form, { others })   R.put({ at, speed, posture }) (fresh)   R.step(dt)
 //   R.rig (the Character)  R.body (LabBody)  R.keys (VirtualKeys)  R.techs  R.belt  R.tool (the tool in the hand: its tech, or the Weapon)
 //   R.moveset (that tool's Moveset, or the kick's)  R.toolModel (what is drawn in the hand)  R.objects() (every Object3D a take records)
 //   R.shoot({ from, speed }) (a shot flown at them: what a parry meets)   R.dispose()
@@ -40,6 +44,7 @@ import { Lockheart } from '../tools/lockheart/lockheart.js';
 import { VirtualKeys } from '../coop/sibling.js';
 import { T } from '../core/config.js';
 import { labGame, LabBody } from './animshim.js';
+import { gameHeld, keepFresh } from './animfresh.js';
 
 /** The seven tools, in the game's order (main.js: the techs' list and the belt's): how each is made and worn. */
 export const LAB_TOOLS = [
@@ -96,7 +101,12 @@ export class AnimRig {
     this.belt = new ToolBelt(this.g); this.own.belt = this.belt;
     this.belt.worn = new Set();
     this.made = {}; // tool id -> its tech (or the Weapon)
-    this.toolId = null; this.form = null;
+    this.toolId = null; this.form = null; this.wearing = { id: null, form: null, want: new Set() };
+    // the fresh state every take begins from (animfresh.js): every tool made, in the game's order, as the game has them all; two frames
+    // stepped with none worn, so what a tool builds on its first frame (the Lockheart's coffin) is built once, not again each take
+    for (const t of LAB_TOOLS) this.make(t.id);
+    this.put(); this.step(); this.step();
+    this.fresh = keepFresh([this.own, this.made], { held: gameHeld(game, { leave: [game.workbench] }), never: [game, this.g, this.rig.clips], nodes: [...this.objects(), this.junk] });
   }
 
   /** Run `fn`, keeping every element it adds to the page (a tool's strip, its viewfinder, its styles) to take away at dispose(). */
@@ -106,7 +116,7 @@ export class AnimRig {
     try { return fn(); } finally { for (const m of seen.takeRecords()) for (const n of m.addedNodes) added.push(n); seen.disconnect(); }
   }
 
-  /** The lab's instance of a tool (made the first time it is asked for), its model moved out of the junk onto the stage. */
+  /** The lab's instance of a tool (made once, as the rig is), its model moved out of the junk onto the stage. */
   make(id) {
     if (this.made[id]) return this.made[id];
     const spec = LAB_TOOLS.find((t) => t.id === id);
@@ -128,12 +138,18 @@ export class AnimRig {
   }
 
   /** The tool in the hands (null: none; the kick is then the moveset), its form, and whether the others are worn (`others`: the
-   *  ones the Courier wears in the game, game.belt.worn, on their places on the body; off: none of them made or shown). */
+   *  ones the Courier wears in the game, game.belt.worn, on their places on the body; off: none of them shown). */
   wear(id, form = null, { others = false } = {}) {
-    this.toolId = id || null; this.form = form;
     const want = new Set(id ? [id] : []);
     if (others) for (const t of LAB_TOOLS) if (this.game.belt?.isWorn?.(t.id)) want.add(t.id);
-    for (const w of want) this.make(w);
+    this.wearing = { id: id || null, form, want };
+    this.dress();
+  }
+
+  /** What `wear` asked for, laid on the tools: the one in the hands drawn, its form, the others worn or hidden, the gun shown or not. */
+  dress() {
+    const { id, form, want } = this.wearing;
+    this.toolId = id; this.form = form;
     this.belt.worn = new Set(want);
     const t = id ? this.made[id] : null;
     if (t && form && t.form !== undefined) t.form = form; // (the Sondelass's form, set as the strip's key would: setForm waits out a move)
@@ -162,6 +178,7 @@ export class AnimRig {
   /** Put the body down for a take: `at` (y over the floor: 0 standing, more for an air blow), the stance's `speed` (m/s, ahead: the
    *  pinned body's treadmill), its `posture` ('stand' | 'crouch' | 'prone'). */
   put({ at = new THREE.Vector3(), speed = 0, posture = 'stand' } = {}) {
+    this.home(); this.fresh?.restore(); this.dress(); // (every take begins from the fresh state: animfresh.js)
     const B = this.body;
     B.reset(at.clone().add(FAR));
     this.aimCam.position.set(-0.55, 1.7, -3.2).add(FAR); this.aimCam.lookAt(FAR.x - 0.55, 1.45, FAR.z + 10); this.aimCam.updateMatrixWorld(true);
@@ -174,6 +191,10 @@ export class AnimRig {
     this.techs.get('kick')?.stop?.();
     for (const t of Object.values(this.made)) { if (t.cutlass) t.cutlass.cancel(); else if (t.club) t.club.cancel(); else movesetOf(t)?.cancel(); }
   }
+
+  /** The holder back at the origin (the stage moves it to pin the body on show): while the rig steps its frame is the world's, as the
+   *  game's rig stands in the scene's (the foot locks, the holster and the head's place are worked out in the world). */
+  home() { this.holder.position.set(0, 0, 0); this.holder.updateMatrixWorld(true); }
 
   /** A shot flown at the body's chest from `from` m ahead at `speed` m/s (a plain shot, as a slip jelly spits one: what the parry meets).
    *  It flies with the frames and is gone when it is met or past them. */

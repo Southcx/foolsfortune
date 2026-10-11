@@ -2,13 +2,13 @@
 // THE ANIM LAB'S TAKES: a play (workbench/animplays.js) recorded on the Anim Lab's Courier (workbench/animrig.js) frame by frame at the
 // game's own 60 a second, and laid back on it at any frame, forward or back, so a pose can be stepped and scrubbed though the stack that
 // made it (damped blends, foot locks, a combo engine's clock) only ever runs forward. A take keeps, each frame: the root, every bone's
-// place and turn, the hips in the world (the travel's ghost line), the travel itself (the pinned body's: how far the move or the
+// place and turn, the hips in the rig's own frame (the travel's ghost line), the travel itself (the pinned body's: how far the move or the
 // treadmill carried it), and every part of the gun and of each tool's model (the Sondelass's sections slide), shown or not; and what
 // was on show (the move, its clip and clip time, and whether its strike was live: the scrub bar's band).
 //
-// Before the first recorded frame the stance is settled and the tool drawn (`pre` s, not kept), then `lead` s of the stance before the
-// drive's first action, then until it is over (animplays.js quiet) and `tail` s more, or its own length. A raw clip is sampled onto the
-// bones as captured, no layers and no IK, the tool in the hand carried by it.
+// Before the first recorded frame, from the rig's fresh state (R.put: workbench/animfresh.js), the stance is settled and the tool drawn
+// (`pre` s, not kept), then `lead` s of the stance before the drive's first action, then until it is over (animplays.js quiet) and `tail`
+// s more, or its own length. A raw clip is sampled onto the bones as captured, no layers and no IK, the tool in the hand carried by it.
 //
 // Prior art: a motion-capture take and the editor's cached preview (Unreal's Persona and Sequencer play an animation into a pose cache
 // and scrub that, never the graph backwards); Blender's dope sheet, frame by frame.
@@ -31,13 +31,14 @@ export function recordTake(R, play, { fps = FPS, pre = PRE } = {}) {
   B.start.copy(B.pos);
   const bones = Object.values(R.rig.bones), objs = [], tops = new Set(R.objects()), O = new THREE.Vector3(B.start.x, 0, B.start.z); // (kept from where the take began, the floor's height kept: the body is put down far off, animrig.js FAR)
   for (const o of tops) o.traverse((x) => objs.push(x));
+  R.holder.updateWorldMatrix(true, false); // (the hips are kept in the rig's own frame: the stage's carry still holds the last take's travel)
   const take = { play, fps, bones, objs, frames: [], vis: [], layers: [], info: [], marks: [], n: 0 };
   const nb = bones.length, no = objs.length, stride = 7 + 3 + 3 + nb * 7 + no * 10;
   const capture = (raw) => {
     const F = new Float32Array(stride), V = new Uint8Array(no), L = new Int32Array(no), r = R.rig.root;
     _s.copy(r.position).sub(O).toArray(F, 0); r.quaternion.toArray(F, 3);
     if (!raw) { F[7] = B.pos.x - B.start.x; F[8] = B.pos.y - B.start.y; F[9] = B.pos.z - B.start.z; }
-    R.rig.root.updateMatrixWorld(true); R.rig.bones.spine.getWorldPosition(_s).sub(O).toArray(F, 10);
+    R.rig.root.updateMatrixWorld(true); R.holder.worldToLocal(R.rig.bones.spine.getWorldPosition(_s)).sub(O).toArray(F, 10);
     let i = 13;
     for (const b of bones) { b.position.toArray(F, i); b.quaternion.toArray(F, i + 3); i += 7; }
     objs.forEach((x, j) => { (tops.has(x) ? _s.copy(x.position).sub(O) : x.position).toArray(F, i); x.quaternion.toArray(F, i + 3); x.scale.toArray(F, i + 7); i += 10; V[j] = x.visible ? 1 : 0; L[j] = x.layers.mask; });
