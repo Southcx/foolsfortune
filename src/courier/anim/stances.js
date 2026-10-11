@@ -19,6 +19,11 @@
 //                frame, its arm solved again as `reach` solves it: the clip's own motion kept, the hand held somewhere else
 //   steady       [side, k]: a hand's turn in the body frame drawn k of the way to its average over the loop (after `rot`, before `reach`
 //                and `nudge`, which keep it): what it holds stays pointed where it points while the arm and the chest keep their swing
+//   aim          [side, axis [x, y, z], dir [x, y, z]]: what the hand holds laid along `dir` (body frame), every frame after reach and
+//                nudge: `axis` is its line in the hand's own frame (a tool's grip socket: tools/grip.js), and the hand turned so that line
+//                points along dir with the hand's length as near its forearm's as that leaves (the wrist bends only by how far dir is off
+//                square to the forearm, never folds; the turn about the forearm is the forearm's to carry, the hinge pass's). The arm is
+//                placed (reach, nudge and their pole) so that dir comes out square to it: the shoulder and the elbow do the pointing
 //   drop         the hips lowered (metres): a wider, readier stance
 //   hold         0..1: one frame of the base held for the whole clip (a pose, not a loop)
 //   closeLoop    frames at the base's end that jump to meet its start (a loop exported with a pop at its end): dropped, and the
@@ -35,6 +40,9 @@
 //                       standing idles are baked with it too, courier/anim/idlebreak.js); null if the base is not in the pack
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+
+/** The cutlass's line in the right hand's own frame: the grip's socket +X (tools/grip.js measureGrip, from torchIdle), for `aim`. */
+const CUTLASS_LINE = [-0.044, -0.0411, 0.9982];
 
 export const STANCES = {
   // THE DREAMVANE: a pilgrim with their crook. The staff stands upright at their right, the right hand at their chest and the left high on
@@ -80,41 +88,78 @@ export const STANCES = {
     rot: [['spine', 'y', 10], ['spine002', 'x', -4], ['handR', 'x', -100], ['handR', 'z', 18], ['head', 'x', -6], ['head', 'z', -5]],
     reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at their shoulder; the other on their hip)
   },
-  // (THE SONDELASS standing: no stance of its own. The cutlass is held in the suite's Sond_Idle as captured, the rod in Sond_CastIdle: a
-  //  real sword-ready stance reads better than any offset laid over it (R40: the en garde tried here crossed the blade over the waist and
-  //  put the off-hand fist before the face).)
+  // THE CUTLASS'S EN GARDE (the owner, 2026-10-11: "the torso rotated approximately 20 degrees CCW ... more like a fencing pose"; "the
+  // Sondelass should rest posed centerline with the main mass of the Courier"). The suite's Sond_Idle (its breathing, its grip) turned
+  // side-on: the chest a fencer's, toward their left so the blade shoulder leads, spread up the spine (the lower spine a little, the chest
+  // most: the upper-body mask takes 0.3, 0.65 and 1 of them), the neck giving some back so the head faces ahead; the blade hand brought
+  // onto the centre line before the navel and the sternum, the point forward and up at what they face (the sabre's guard). Not R40's: the
+  // blade never crosses the waist and the off hand stays clear of the face. The hand's turn solved in game from the blade's direction
+  // (forward, 30 degrees up) and the elbow's swivel and the grip's roll about the haft searched for the wrist's ease (Calissa's probe:
+  // the wrist 28 degrees toward the little finger, the forearm 81 turned, under the pose audit's 35 and 90; a lower point bent the wrist
+  // past them), the hand's turn held 0.6 of the way to its average so the point stays on the line while the chest breathes. Measured
+  // (docs/ART.md section 10): the chest 21 degrees toward their left, the head 2, the hips and feet square; the guard 2 cm and the tip
+  // 2.5 cm off the hips' midline (at most 4 and 5.5), the blade 0.4 degrees off forward, 34 up. Prior art: the sabre's and the
+  // smallsword's en garde (the blade shoulder and the point on the line, the guard before the body's middle); Monster Hunter's long sword
+  // idle (one silhouette, the point on the line).
+  cutlass: {
+    base: 'Sond_Idle',
+    rot: [['spine001', 'y', 6], ['spine002', 'y', 12], ['spine003', 'y', 20], ['spine004', 'y', -8], ['head', 'y', -10], ['handR', 'x', 18.1], ['handR', 'y', 31.3], ['handR', 'z', 8.1]],
+    steady: [['R', 0.6]], nudge: [['R', [0.035, -0.044, -0.111], [-0.49, 1.1, 0.4]]],
+  },
+  // (THE ROD standing: the suite's Sond_CastIdle as captured.)
+  // THE HOOK held: the UAL torch idle the grapnel's grip was measured from (tools/grip.js), its hand a little out and ahead of the hip:
+  // where the torch idle holds it, the running thigh swung 7 cm through the hand and the grip (the pose audit, 2026-10-11).
+  hookHeld: { base: 'torchIdle', nudge: [['R', [-0.07, 0.04, 0.14]]] },
   // THE CUTLASS'S DRAWN RUN (the owner, 2026-10-11; no blade run in the suite, UAL or CMU: sondelass.js drawnRun): the run's own loop, its
   // chest and its free arm as captured, the blade arm's swing calmed and the cutlass carried low and back, its point trailing: a
   // swordsman's run (Ghost of Tsushima's and Sekiro's drawn-blade run, Monster Hunter's sword-and-shield run with the weapon out). The
-  // blade arm's swing at 0.3 of the run's; its hand turned so the blade points back, a little down and out (-0.19, -0.25, -0.95 in the
-  // body frame, averaged over the loop: the hand's turn solved from the blade's own direction, Calissa's probe) and held there 0.8 of the
-  // way (`steady`), the hand moved to the hip, behind it (-0.26, 0.89, -0.08 m on average, from the run's 0.35 m ahead of it). Measured
-  // in game: the tip 0.43 to 0.78 m off the ground through the jog's cycle, 1.1 to 1.5 m behind the body's centre (docs/ART.md section 10)
+  // shoulder and the elbow do the pointing (the owner, 2026-10-11: "the wrist hyperflexed and arm clipping into the body"; casebook
+  // 2026-10-11): a blade on the thumb's side of the fist points back only with the arm turned in at the shoulder and the forearm turned
+  // palm-out, so the elbow is carried out to the side (the pole), the hand beside and ahead of the hip, the forearm hanging under the
+  // elbow, and the blade laid back along `aim` square to it (the wrist 30 degrees toward the little finger at most, the forearm 78 turned,
+  // where the hand turned to point it, with the hand pulled to the hip, folded the wrist 96 to 102 degrees and bent the elbow backward).
+  // The blade arm's swing at 0.2 of the run's (0.15 sprinting).
   cutlassRun: {
-    base: 'jog', exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
-    rot: [['handR', 'x', -93.3], ['handR', 'y', 40.7], ['handR', 'z', -44.9]], steady: [['R', 0.8]], nudge: [['R', [0.108, -0.148, -0.472]]],
+    base: 'jog', exaggerate: [0.2, '^(upper_arm|forearm|hand)R$'],
+    nudge: [['R', [0.063, -0.225, -0.144], [-0.7, 1.15, 0.35]]], aim: [['R', CUTLASS_LINE, [-0.03, -0.22, -0.97]]],
   },
   cutlassSprint: {
-    base: 'sprint', exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
-    rot: [['handR', 'x', -111.1], ['handR', 'y', 31.9], ['handR', 'z', -37.5]], steady: [['R', 0.8]], nudge: [['R', [0.071, -0.084, -0.513]]],
+    base: 'sprint', exaggerate: [0.15, '^(upper_arm|forearm|hand)R$'],
+    nudge: [['R', [0.062, -0.239, -0.103], [-0.7, 1.15, 0.35]]], aim: [['R', CUTLASS_LINE, [-0.03, -0.22, -0.97]]],
   },
   // THE IAIDO'S CHARGE (the owner, 2026-10-11: "an Iaido-like striking pose for the charge-up"; crouched, hold RMB: cutlass.js). No iaido
   // in the suite, UAL or CMU; the suite's own Gun_QuickDraw at its first frame is the nearest (low, the hand at the hip before the draw),
-  // its fingers the cutlass's (Sond_Idle's grip). The battojutsu's hold laid over it: the blade hand across to the belly's left front,
-  // the cutlass along the belt with its point trailing back past the left hip as a sheathed blade lies (0.30 out to their left, 0.22
-  // down, 0.93 back: the hand's turn and place solved over the crouch in game, Calissa's probe, 0.5 degrees and 4 mm off), the chest
-  // coiled to their left for the cut that sweeps back across, the head kept on what is ahead. The off hand takes the hilt at the guard
-  // in the game (the light IK the Sondelass's hands() allows: tools/sondelass/sondelass.js). Laid over the crouch's legs as the
-  // cutlass's upper layer.
+  // its fingers the cutlass's (Sond_Idle's grip). The battojutsu's hold laid over it, as a sheathed blade lies beside the left hip and not
+  // through it (the owner, 2026-10-11: "the iaido charge, the Sondelass clips into the body"; it lay 7.7 cm into the crouched left thigh
+  // and the guard 7.1 cm into the belly, the blade hand's elbow bent backward): the hilt before the belly's left, forward of the hip, the
+  // blade back and out past the hip's side and over the thigh (0.5 out to their left, 0.12 down, 0.86 back in game), laid along `aim`
+  // from the forearm that crosses the body palm-down (the wrist 13 degrees toward the thumb, the forearm 87 turned); the bake's line is
+  // the game's turned by the crouch under the layer (solved in game, Calissa's probe). The chest coiled to their left for the cut that
+  // sweeps back across, the head kept on what is ahead. The off hand takes the blade at its mouth, thumb toward the hilt (sondelass.js
+  // offHand), its elbow out to their left. Laid over the crouch's legs as the cutlass's upper layer.
   cutlassIaido: {
     base: 'Gun_QuickDraw', hold: 0, overlay: [['Sond_Idle', '^(f_|thumb).*R$']],
-    rot: [['spine002', 'y', 10], ['spine003', 'y', 12], ['spine003', 'x', 6], ['head', 'y', -18], ['handR', 'x', -93.8], ['handR', 'y', 40.9], ['handR', 'z', -154.1]],
-    reach: [['R', [-0.023, 0.996, 0.152], [-0.45, 1, 0.35]]],
+    rot: [['spine002', 'y', 10], ['spine003', 'y', 12], ['spine003', 'x', 6], ['head', 'y', -18]],
+    nudge: [['R', [0.298, 0.252, 0.171], [-0.45, 0.8, 0.3]]], aim: [['R', CUTLASS_LINE, [0.614, -0.44, -0.655]]],
   },
 };
 
 const AX = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
 const _q = new THREE.Quaternion(), _m = new THREE.Quaternion(), _d = new THREE.Quaternion(), _share = new THREE.Quaternion(), _v = new THREE.Vector3(), _n = new THREE.Vector3();
+
+const _f = new THREE.Vector3(), _b = new THREE.Vector3(), _h = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _z = new THREE.Vector3(), _bz = new THREE.Vector3();
+const _ML = new THREE.Matrix4(), _MW = new THREE.Matrix4();
+/** The hand's world turn that lays its held line (`axis`, hand frame) along `dir` (world) with its length (+Y) as near the forearm's as
+ *  that leaves: the forearm's way made square to dir. */
+function aimHand(arm, axis, dir) {
+  _f.copy(arm.hand.getWorldPosition(_h)).sub(arm.fore.getWorldPosition(_x)).normalize();
+  _b.set(...dir).normalize();
+  _h.copy(_f).addScaledVector(_b, -_f.dot(_b)).normalize();
+  _x.set(...axis); _x.addScaledVector(_y, -_x.dot(_y)).normalize(); _z.crossVectors(_x, _y);
+  _bz.crossVectors(_b, _h);
+  _ML.makeBasis(_x, _y, _z); _MW.makeBasis(_b, _h, _bz);
+  return new THREE.Quaternion().setFromRotationMatrix(_MW.multiply(_ML.transpose()));
+}
 
 /** q = mean * (mean⁻¹ q)^k: the joint's swing away from its average, scaled. */
 function exaggerate(q, mean, k) {
@@ -218,6 +263,11 @@ export function bakeStances(ch, table = STANCES) {
         const arm = ch.arm[side], hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
         ch.reachHand(side, arm.hand.getWorldPosition(_v).add(_n.set(...by)), hq, 1, 0, pole ? new THREE.Vector3(...pole) : null);
         root.updateMatrixWorld(true);
+      }
+      for (const [side, axis, dir] of S.aim || []) {
+        const arm = ch.arm[side];
+        ch.setWorldQuat(arm.hand, aimHand(arm, axis, dir));
+        arm.hand.updateMatrixWorld(true);
       }
       for (let i = 0; i < d.length; i++) d[i].quaternion.toArray(q, (f * nb + i) * 4);
       p[f * 3 + 1] -= S.drop || 0;
