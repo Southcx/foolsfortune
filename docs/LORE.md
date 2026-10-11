@@ -672,3 +672,24 @@ One label per thing; the name stays in the world. The label is what the card say
 Other divisions own the code in these files; Espada edits their strings only. The owner's sources: the world web
 (https://claude.ai/artifact/BKxDknY5d9YRpZrkxABzWf) and the trope compendium (https://claude.ai/artifact/CKmZihsnahST2VtB7kUFQL,
 tab *07 World and narrative*).
+
+### The awakening *(Dovina's FEELINGS-AWAKENING.md; Espada's words, proposed, 2026-10-11)*
+- **Awakening**: learning a feeling by living it once. The root is the Buddhist *bodhi*, waking up; on an Island of Ego, a feeling a
+  mind did not have is a part of it waking. The verb is **awaken** ("Awaken Gall"), so that **wake** keeps its own jobs: the Wake
+  Whistle, a ship's wake, and the Great Slip Jelly waking in its bowl.
+- **A vantage** stays the code's and the docs' word (`vantage.<id>`). Player text says **viewpoint**, the genre's word for a placed
+  lookout (Assassin's Creed, Ghost of Tsushima).
+- **The lines**, one each, in the feeling's own voice. Every one begins "It feels like", because that is how a feeling introduces itself
+  (the owner wrote the first and set the refrain):
+  - **Wonder** (the owner's): "It feels like the sky goes on further than you ever knew."
+  - **Mirth**: "It feels like a laugh got out before you could catch it."
+  - **Desire**: "It feels like having it, and still wanting more."
+  - **Grief**: "It feels like the space it left weighs more than it did."
+  - **Dread**: "It feels like something below knows you are here."
+  - **Fury**: "It feels like a fire that wants somewhere to go."
+  - **Gall**: "It feels like a bitter taste, and the nerve to swallow it." (*Gall* is both: bile, and nerve, as in "the gall to".)
+- **The Codex's one line of how** (genre words, verb first): Stand at a viewpoint and look out. · Play for a crowd, or make the folk
+  laugh. · Want something, and have it. · Lose what you staked, or what you carried. · Face what waits below. · Answer a blow with a
+  blow. · Clean up what rots.
+- **The achievements**: Acquired Taste, "Awaken Gall: clean up what rots." · Seeing Red, "Awaken Fury: answer a blow with a blow." ·
+  Full Spectrum, "Awaken all seven feelings."
