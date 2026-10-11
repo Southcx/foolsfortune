@@ -579,8 +579,37 @@ NEW:drawn-on-render-clock. **What is drawn moves on the render clock.** A move's
     60 Hz steps under a faster frame, and a thing placed from it and from the interpolated body (`renderPos`) goes back and forth against
     the body. The drawn pose and the drawn prop take their time from the frame (0 on the state's first drawn frame); the physics keeps
     the fixed step's. Measured at 144 Hz as the prop's reversals against the palms.
+NEW:clip-sole-on-floor. **A clip's planted sole stands on the floor it is played over.** A new pack of the same captures can plant its
+    feet lower than the rig's rest sole; measure each loop's planted sole on the skin (heel and toe, not the ankle bone) as the gait is
+    analysed and raise the body by it, and keep each foot's lowest skinned point on the ground under that point, not under the ankle.
+    Measured as the lowest sole vertex against the floor, every frame, at every pace, turning and on a ramp.
 
 ## Cases
+
+### 2026-10-11 · The feet went into the floor at every pace since the suite came in (found verifying the carry's fix: "the walk at the carry's speed dips the feet into the floor, with or without a pot")
+
+- **Seen:** the verifier, then measured headless with nothing in the hands (the lowest skinned vertex of each sole against the floor
+  under it, every frame, 120 frames after 60 to settle; the workshop at 0, -13.5; the ramp at x 8): on 72eac06 the lowest foot was
+  -3.65 cm walking at 1.3 and 2.2 m/s (52 and 45 frames more than 1 cm under), -2.83 at the carry's 3.02 (47), -1.69 at the run's 4.2
+  (12), -4.19 turning at 3.02, -5.35 up the ramp and -7.40 down it, the prowl -3.59 (72). On fe9ed52: +0.03, +0.43, +0.53, +4.89, +0.04,
+  -2.83 and +0.21, 0 frames under 1 cm on the flat. This is what the owner saw as the pot "causing the feet to clip into the floor".
+- **Cause (measured):** bisected (`git bisect run`, good when the 3.02 m/s walk's lowest foot is at or above -1 cm; 10 steps of 808
+  commits): **afb6154**, "The Courier's own suite in the game", where the walk, the run, the sprint and the crouched walk began to play
+  from the suite's packs (`scripts/bake_suite.mjs`, `courier/anim/suite.js`). Their planted feet sit lower against the hips than the
+  rig's rest pose stands: measured on the skin in each loop's stance, the walk 3.45 cm under, Loco_CrouchWalk 3.44, the run 0.73, the
+  sprint 0.18. The foot IK (`character.js` footIK) moved the feet only by the ground's height under the ankle bone (0 on a flat floor),
+  so the clip's depth went straight into the floor; a heel struck toe-up went lower than its ankle said, and on a slope the toe or the
+  heel met ground the ankle's ray never read.
+- **Fix:** the animation side only (`character.js`; player.js and the core movement's numbers untouched). `measureSoles()` reads each
+  foot's skinned vertices within 4 cm of the rest pose's lowest, in their bones' frames; `analyseGait` measures each loop's planted sole
+  on them (the lowest while the foot's contact is over 0.5) and keeps its depth as `lift`; the body is raised by the loops' depths by
+  their weights (`st.soleLift`, by the gait's share of the body: none in the air, a slide, a mantle, a dash or a crawl). Then in
+  footIK each foot's lowest skinned point is raised to the ground under that point when it would go under, by `planted`, at most
+  `SOLE_MAX` (6 cm): a light correction. After, the same harness: 1.3 and 2.2 m/s 0.00 cm, 3.02 -0.03, 4.2 -0.05, the turn -0.10, up the
+  ramp -1.78 (one frame), down it -0.06, the prowl 0.00; 0 frames more than 1 cm under on the flat, turning and down the ramp, 1 up it.
+  The feet's largest one-frame change of their step against the capsule is as before (walk 1.0 to 2.8 cm, the run 4.4, the turn 16.5
+  where it was 17.6, the base's 18.4). With the pot, walking at 3.02 m/s: -2.83 cm and 71 of 180 frames under 1 cm, now -0.03 and 0.
+- **Rule:** NEW:clip-sole-on-floor.
 
 ### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
 
@@ -655,7 +684,25 @@ NEW:drawn-on-render-clock. **What is drawn moves on the render clock.** A move's
   pot through the head in the throw's wind-up (on the base too); a let-go thing is `G.DEBRIS` for its 2 to 3 steps, or while the Courier
   stands over a dropped one, so the grapnel (`HOOKABLE`) and a sibling's collider pass it (their filters are Petra's); a 5 cm sideways
   step of the pelvis in a walking turn (the core's, on the base too).
-- **Rule:** NEW:carry-from-hands, NEW:let-go-clear, NEW:drawn-on-render-clock; rules 46 and 56 for the hand-offs.
+  The verifiers' third look (b0b0ef3): a throw begun in the hold's first steps dropped the lift's last pose from the legs and hips in
+  one frame. `liftFade` ran in the throw only while the throw's `into` was under 1, so the weight still left in it at `THROW_IN`
+  (0.07 s) went at once: a throw 1 frame into the hold stepped the right ankle 13.2 cm and the toe 14.9 against the capsule in one frame
+  (3 frames in: 7.4 and 8.3; 6 and 12 frames in: under 3.3), the pelvis 2.1; walking, the feet 36 to 41 cm (1 frame in) and 19 to 22
+  (3). Now the lift's last pose eases out on its own clock (`handT`, CATCH) whatever `into` is: still, at 1, 3, 6 and 12 frames in, the
+  pelvis 0.4 to 0.5 cm a frame at most and the ankles 1.9 to 3.0 (the stance sliding back from the stoop's, smoothly: its second
+  difference 1.1 cm, as in a hold with no throw); walking, the feet change their step against the capsule by 5.7 to 7.4 cm at most (the
+  walk's own 4.5 to 5.5; was 28 to 39). Left: walking, the pelvis moves 3.4 to 4.1 cm against the capsule on the release frame (2.9 to
+  3.6 before), as the carry's slow lets go and the gait's speed goes from 3.02 to 3.94 m/s in a step (the core movement's).
+  And a set-down on a flat floor lost the pot from the hands, standing or walking: Chest_Open's stoop brings the palms no lower than 57
+  cm, and the pot went on to the floor 0.85 m ahead, its grip 13 cm up, the palms 1 to 100 cm off it from 12 frames of 20 on (only a
+  set-down on a raised place had kept them on it). Now the stoop goes on down on to a knee (Fixing_Kneeling at 1.6 s, its palms 22 to 24
+  cm up and 55 cm ahead: `PUT`, `KNEEL_T`, `deepOf()`) by how far under the stoop's reach the grip will go (a table: none; the floor:
+  whole), and the pot is set where those palms are, 0.58 m ahead (plus `clearance`); `PUT` the move's time is `PUT_T`. Standing and
+  walking the palms stay 0 to 2 cm off its sides all the way down and let go of it on the floor; the IK pulls them 2 to 17 cm (was up to
+  40). Left: walking on, the kneel's feet slide with the capsule for its 0.34 s, as the stoop's did; and walked straight on, the Courier
+  reaches the pot set down sooner (it is 27 cm nearer) and passes it while it is still `LET_GO`.
+- **Rule:** NEW:carry-from-hands, NEW:let-go-clear, NEW:drawn-on-render-clock; rules 46 and 56 for the hand-offs; NEW:clip-sole-on-floor
+  for the feet under it.
 
 ### 2026-10-11 · Space from the crouch toggle hiccuped into the standing idle (the owner, v144's posture)
 

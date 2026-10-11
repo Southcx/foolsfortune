@@ -23,6 +23,7 @@ import { dressFiligree } from '../vfx/filigree.js';
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
 const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
+const SOLE_MAX = 0.06; // m: the most the sole is raised onto the ground under it (footIK)
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
@@ -405,15 +406,17 @@ export class Character {
   analyseGait(name) {
     const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
     this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    const soles = this.soles ||= this.measureSoles();
     const fr = [];
     for (let f = 0; f < c.n - 1; f++) {
       this.applyPose(C.sample(name, f / C.fps, p));
       this.root.updateMatrixWorld(true);
       const g = (b) => b.getWorldPosition(new THREE.Vector3());
-      fr.push({ L: g(B.footL), R: g(B.footR), tL: g(B.toeL), tR: g(B.toeR) });
+      const lowest = (s) => { let y = 1e9; for (const [b, v] of soles[s]) y = Math.min(y, _v1.copy(v).applyMatrix4(b.matrixWorld).y); return y - soles.rest; };
+      fr.push({ L: g(B.footL), R: g(B.footR), tL: g(B.toeL), tR: g(B.toeR), sL: lowest('L'), sR: lowest('R') });
     }
     const n = fr.length, contact = {};
-    let best = -1e9, off = 0, vsum = 0, wsum = 0;
+    let best = -1e9, off = 0, vsum = 0, wsum = 0, sole = 0;
     for (const s of ['L', 'R']) {
       // planted: the lowest point of the foot (heel or toe) near its lowest, and the foot
       // travelling backward under the body (a foot coming down at the end of a swing is
@@ -425,6 +428,9 @@ export class Character {
         return (1 - smooth(0.04, 0.09, y - lo)) * smooth(0, -0.01, dz);
       });
       contact[s] = raw.map((c, f) => (raw[(f + n - 1) % n] + 2 * c + raw[(f + 1) % n]) / 4); // soften the edges
+      // (how far the planted sole stands under the rest pose's: the skin's lowest point while the foot is more down than up, the heel's
+      //  strike included, against the rest pose's lowest: measureSoles())
+      for (let f = 0; f < n; f++) if (contact[s][f] > 0.5) sole = Math.min(sole, fr[f]['s' + s]);
       for (let f = 0; f < n; f++) {
         const w = contact[s][f] > 0.9 ? 1 : 0; // mid-stance only
         if (!w) continue;
@@ -435,7 +441,39 @@ export class Character {
     for (let f = 0; f < n; f++) if (fr[f].L.z - fr[f].R.z > best) { best = fr[f].L.z - fr[f].R.z; off = f / n; }
     const speed = wsum > 0 ? vsum / wsum : 1;
     this.resetPose();
-    return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n };
+    return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n, lift: Math.max(0, -sole) };
+  }
+
+  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel) within 4 cm of the rest
+   *  pose's lowest, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
+   *  than its ankle bone says), and `rest`, that lowest point at rest. Read once, in the rest pose. */
+  measureSoles() {
+    this.resetPose();
+    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    this.root.updateMatrixWorld(true);
+    const all = { L: [], R: [] }, v = new THREE.Vector3();
+    this.root.traverse((m) => {
+      if (!m.isSkinnedMesh || m.userData.isOutline) return;
+      const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight;
+      if (!si) return;
+      for (let i = 0; i < si.count; i++) {
+        let b = -1, w = 0;
+        for (let k = 0; k < 4; k++) { const x = sw.getComponent(i, k); if (x > w) { w = x; b = si.getComponent(i, k); } }
+        const bone = m.skeleton.bones[b], side = /^(foot|toe|heel02)([LR])$/.exec(bone?.name || '')?.[2];
+        if (!side) continue;
+        m.getVertexPosition(i, v); v.applyMatrix4(m.matrixWorld);
+        all[side].push([bone, v.clone()]);
+      }
+    });
+    let rest = 1e9;
+    for (const s of ['L', 'R']) for (const [, w] of all[s]) rest = Math.min(rest, w.y);
+    const out = { rest };
+    for (const s of ['L', 'R']) {
+      const near = all[s].filter(([, w]) => w.y < rest + 0.04);
+      const step = Math.max(1, Math.floor(near.length / 120));
+      out[s] = near.filter((_, i) => i % step === 0).map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
+    }
+    return out;
   }
 
   /** Contact weight (0..1) of foot s at loop phase u (0..1 of the clip). */
@@ -636,6 +674,12 @@ export class Character {
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
+    // (each loop's planted sole stood on the floor: the suite's walk and run plant theirs 2.6 to 3.5 cm under the rig's rest sole, and the
+    //  feet went into the floor at every pace (CASEBOOK NEW:clip-sole-on-floor). The body is raised by each loop's own depth, by its weight;
+    //  the idle and the crouch's idle stand on theirs)
+    let lift = 0;
+    for (const [i, n] of moving) lift += W[i] * g[n].lift;
+    st.soleLift = THREE.MathUtils.lerp(lift, cwk * g[PROWL.clip].lift, cr);
     // (no skid stop and no half turn over the gait: the owner, 2026-10-11, "it's slow and breaks flow"; both were anim/stopturn.js)
     // (how much of the gait is running ground, and how much of that a sprint: a drawn tool's run of its own reads it, the cutlass's)
     st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
@@ -736,6 +780,7 @@ export class Character {
 
     // ---- procedural layer ----
     root.position.y -= st.dip;
+    root.position.y += (st.soleLift || 0) * (1 - air) * (1 - sl) * (1 - mn) * (1 - da) * (1 - crw);
     st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
     const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
     // sliding on a slope: lie along it (pitch down a hill, roll across one)
@@ -839,6 +884,22 @@ export class Character {
     // stride with the hips at clip height would straighten the legs and drag the feet)
     const tgt = {};
     for (const k of ['L', 'R']) { tgt[k] = anim[k].clone().sub(new THREE.Vector3(offs0[k].x, 0, offs0[k].z)).add(new THREE.Vector3(offs[k].x, d[k], offs[k].z)); }
+    // the sole kept on the floor: the skin's lowest point of each foot (its posed turn kept through the leg's IK, so its place against the
+    // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
+    // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
+    // heel struck toe-up or a toe on a slope: walking up a ramp the toes went 3.8 cm into it, down it the heels 5.8 (CASEBOOK
+    // NEW:clip-sole-on-floor)
+    if (this.soles && planted > 0.05 && s.ground) {
+      for (const k of ['L', 'R']) {
+        const F = this.leg[k].foot.getWorldPosition(_v1);
+        let lo = null;
+        for (const [b, v] of this.soles[k]) { const w = _v2.copy(v).applyMatrix4(b.matrixWorld); if (!lo || w.y < lo.y) lo = (this._soleLo ||= new THREE.Vector3()).copy(w); }
+        if (!lo) continue;
+        const x = tgt[k].x + lo.x - F.x, z = tgt[k].z + lo.z - F.z, y = tgt[k].y + lo.y - F.y;
+        const gy = s.ground(x, z, s.pos.y + 0.6);
+        if (gy !== null && gy > y) tgt[k].y += Math.min(SOLE_MAX, gy - y) * planted;
+      }
+    }
     // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a
     // lower patch of ground does not pull the hips down mid-stride; then sprung, not snapped (the alternating feet on a slope made the
     // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)

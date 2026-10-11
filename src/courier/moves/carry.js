@@ -4,10 +4,10 @@
 // the head, along where you look. Pots shatter where they land, and hit what they hit.
 //
 // The motion is UAL's (CC0), modified (CLAUDE.md: find a clip, blend it in; author only when nothing fits): the lift and the
-// set-down are Chest_Open (a stoop and a rise with the hands low), the hold is Walk_Carry_Loop's arms over the walk (in step with
-// the legs, its hips left to them), the throw is
+// set-down are Chest_Open (a stoop and a rise with the hands low; a set-down to the floor goes on down on to a knee, Fixing_Kneeling),
+// the hold is Walk_Carry_Loop's arms over the walk (in step with the legs, its hips left to them), the throw is
 // OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
-// swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT), which are the
+// swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT_T), which are the
 // game's feel and do not change. IK only closes the palms on the pot's sides.
 // The carry's hold rides the hands (CASEBOOK rules 43 and NEW:carry-from-hands): the carrying clip lays its arms and spine over the
 // walk and leaves the hips to it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never
@@ -35,7 +35,7 @@ const CARRIED = groups(G.PROP, 0); // touches nothing while it's in your hands
 // the controller shoved the capsule out of it: 19 cm back in one step on every throw, and off the floor's edge into the floor beside the
 // Shrine (measured); a margin (m) clear and it is a prop again
 const LET_GO = groups(G.DEBRIS, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER), LET_GO_CLEAR = 0.06;
-const LIFT = 0.55, THROW_AT = 0.17, THROW_END = 0.32, PUT = 0.34;
+const LIFT = 0.55, THROW_AT = 0.17, THROW_END = 0.32, PUT_T = 0.34;
 // how long the arms take out of the hold into the throw's wind-up (s): in one frame they, and the pot in them, jumped 30 cm; eased over
 // this they gather 2 to 18 cm a frame, as a wind-up does
 const THROW_IN = 0.07;
@@ -43,6 +43,11 @@ const THROW_IN = 0.07;
 // wind-up, its release and how far its follow-through runs
 const LIFT_CLIP = { from: 0.12, low: 0.55, to: 0.95 };
 const THROW_CLIP = { from: 0.1, release: 0.31, to: 0.78 };
+// the set-down to the floor: Chest_Open's stoop brings the palms no lower than 57 to 65 cm (measured), and a pot set 0.85 m ahead on the
+// floor went on down without the hands, 45 cm under them (standing or walking); so the stoop goes on down into Fixing_Kneeling's low
+// reach (`kneel` at KNEEL_T: its palms 22 to 24 cm up and 55 cm ahead, its hips 34 cm, measured) by how far under the stoop's reach the
+// grip will be (`stoop` to `knelt`, its palms' height), and the pot is set where those palms are (`ahead`, before `clearance`)
+const PUT = { ahead: 0.58, stoop: 0.62, knelt: 0.24 }, KNEEL_T = 1.6;
 // the carry's hold, in the body's frame (metres): the midpoint of the carrying clip's palms at the idle, measured (91.7 to 95.3 cm up,
 // 40.8 to 41.2 forward): where the lift brings it, and where the carry's hold starts before it rides the palms themselves
 const HOLD = { up: 0.92, fwd: 0.41 };
@@ -164,7 +169,7 @@ export class Carry extends Tech {
       if (!this.released && this.st >= THROW_AT) this.release();
       if (this.st >= THROW_END) { this.state = 'idle'; this.st = 0; }
     } else if (this.state === 'put') {
-      if (this.st >= PUT) { this.setDown(); return; }
+      if (this.st >= PUT_T) { this.setDown(); return; }
     }
     if (this.item) {
       const pose = this.pose(P.pos, null);
@@ -218,9 +223,10 @@ export class Carry extends Tech {
       p.y += Math.sin(Math.PI * k) * 0.18;
       q.copy(this.from.q).slerp(upright, k);
     } else if (this.state === 'put') {
-      const k = sm(Math.min(1, t / PUT));
-      const floor = this.floorAt(base.x + fw.x * 0.85, base.z + fw.z * 0.85, base.y);
-      const to = new THREE.Vector3(base.x + fw.x * 0.85, floor + this.originUp(e) + 0.03, base.z + fw.z * 0.85);
+      const k = sm(Math.min(1, t / PUT_T));
+      const a = PUT.ahead + this.clearance;
+      const floor = this.floorAt(base.x + fw.x * a, base.z + fw.z * a, base.y);
+      const to = new THREE.Vector3(base.x + fw.x * a, floor + this.originUp(e) + 0.03, base.z + fw.z * a);
       // (from where the hands had it, in the body's frame: walking on, it stays in the hands, not where it was in the world)
       const pf = this.putFrom, from = pf ? new THREE.Vector3(base.x, base.y + pf.y, base.z).addScaledVector(lf, pf.x).addScaledVector(fw, pf.z) : hold;
       p.lerpVectors(from, to, k);
@@ -300,7 +306,7 @@ export class Carry extends Tech {
     // (the stoop and the hands on it let go of over CATCH, the hands where they had it in the body's frame: walking on, they do not
     //  reach back for it)
     const at = this.drawn ? this.toBody(_v1.copy(this.drawn)) : null;
-    this.out = { kind: 'put', t: 0, f: 1, w0: this.w, e, at: at && at.clone() };
+    this.out = { kind: 'put', t: 0, f: 1, w0: this.w, e, at: at && at.clone(), deep: this.putDeep || 0 };
     this.st = 0;
     this.game.events?.emit('carry.put', { kind: e.kind || 'crate' });
     sfx.thunk?.(0.5, 3);
@@ -360,7 +366,7 @@ export class Carry extends Tech {
     const st = this.state, was = this.drawnState;
     this.drawnState = st;
     // (a set-down begun while the lift's last pose is still easing out starts the stoop from as much of it as is left)
-    if (st === 'put' && was !== 'put') this.putW0 = was === 'hold' ? 1 - sm(Math.min(1, this.handT / CATCH)) : 0;
+    if (st === 'put' && was !== 'put') { this.putW0 = was === 'hold' ? 1 - sm(Math.min(1, this.handT / CATCH)) : 0; this.putDeep = this.deepOf(); }
     // (the move's own clocks for what is drawn, on the render clock, 0 on the first frame drawn: on the fixed step's `st` the stoop and
     //  the throw moved at 60 Hz under a faster frame)
     const on = (...a) => a.includes(st) && a.includes(was);
@@ -374,19 +380,24 @@ export class Carry extends Tech {
       const t = k < 0.45 ? L.from + (L.low - L.from) * sm(k / 0.45) : L.low + (L.to - L.low) * sm((k - 0.45) / 0.55);
       C.blend(base, this.twoHanded(ch, 'chestOpen', t, 'R'), this.w);
     } else if (st === 'put') {
-      const k = Math.min(1, this.putT / PUT), L = LIFT_CLIP; // (the lift backwards: down from the chest to the low reach)
+      const k = Math.min(1, this.putT / PUT_T), L = LIFT_CLIP; // (the lift backwards: down from the chest to the low reach)
       // (out of the carry's hold, not in one frame: its arms over the legs and the stoop eased in, the stoop's hips first, on
       //  into x (2 - into) (hipW 2 - into): bent legs straightening lengthen fast at first, the mirror of liftFade's)
       const into = this.putW0 + (1 - this.putW0) * sm(Math.min(1, this.putT / CATCH));
       if (into < 1) this.carryArms(ch, base);
       C.blend(base, this.twoHanded(ch, 'chestOpen', L.to + (L.low - L.to) * sm(k), 'R'), this.w * into, null, 2 - into);
+      // (down on to a knee by how far under the stoop's reach it goes: PUT)
+      if (this.putDeep > 0 && C.clips.kneel) C.blend(base, C.sample('kneel', KNEEL_T, ch.P.tmp, false), this.w * into * this.putDeep * sm(k));
     } else if (st === 'throw') {
       // two hands back over the head and through: the wind-up to the release by THROW_AT, the follow-through after
       const T0 = THROW_CLIP, s2 = this.throwT;
       const t = s2 < THROW_AT ? T0.from + (T0.release - T0.from) * (s2 / THROW_AT) : T0.release + (T0.to - T0.release) * Math.min(1, (s2 - THROW_AT) / (THROW_END - THROW_AT + 0.12));
       this.throwClipT = t;
       const into = Math.min(1, s2 / THROW_IN); // (out of the hold's arms, not in one frame)
-      if (into < 1) { this.carryArms(ch, base); this.liftFade(ch, base); }
+      if (into < 1) this.carryArms(ch, base);
+      // (the lift's last pose eases out on its own clock (`handT`, CATCH) whatever the throw's `into` is: a throw begun in the hold's
+      //  first steps had it dropped from the legs and hips the frame `into` reached 1)
+      this.liftFade(ch, base);
       C.blend(base, this.twoHanded(ch, 'throw', t, 'L'), this.w * into, ch.MASK_UPPER, 0); // (the hips are the legs': CASEBOOK rule 43)
     } else if (this.item) {
       this.carryArms(ch, base);
@@ -398,9 +409,22 @@ export class Carry extends Tech {
       o.t += dt;
       o.f = 1 - sm(Math.min(1, o.t / CATCH));
       if (o.f <= 0) this.out = null;
-      else if (o.kind === 'put') C.blend(base, this.twoHanded(ch, 'chestOpen', LIFT_CLIP.low, 'R'), o.w0 * o.f);
+      else if (o.kind === 'put') {
+        C.blend(base, this.twoHanded(ch, 'chestOpen', LIFT_CLIP.low, 'R'), o.w0 * o.f);
+        if (o.deep > 0 && C.clips.kneel) C.blend(base, C.sample('kneel', KNEEL_T, ch.P.tmp, false), o.w0 * o.f * o.deep);
+      }
       else C.blend(base, this.twoHanded(ch, 'throw', o.clipT ?? THROW_CLIP.to, 'L'), o.w0 * o.f, ch.MASK_UPPER, 0);
     }
+  }
+
+  /** How far down on to a knee the set-down goes (0 .. 1): the grip's height where it will be set, from the stoop's palms (`PUT.stoop`)
+   *  to the kneeling palms (`PUT.knelt`). A pot set on a table stays a stoop; on the floor, a knee. */
+  deepOf() {
+    const P = this.P, e = this.item;
+    if (!e) return 0;
+    const a = PUT.ahead + this.clearance, base = P.renderPos;
+    const grip = this.floorAt(base.x + Math.sin(P.bodyYaw) * a, base.z + Math.cos(P.bodyYaw) * a, base.y) + 0.03 + this.size(e) * (this.grip?.f ?? 0.2) - base.y;
+    return THREE.MathUtils.clamp((PUT.stoop - grip) / (PUT.stoop - PUT.knelt), 0, 1);
   }
 
   /** The carry's hold: the carrying clip's arms over whatever the legs are doing (its own walk would skate against theirs), in step with
