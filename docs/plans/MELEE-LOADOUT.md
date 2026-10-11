@@ -52,6 +52,16 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
 - **The loadout as data:** `SONDELASS_LOADOUT` (the slots) over `SONDELASS_MOVES` (the catalogue), read by the moveset engine (`tools/moveset.js`,
   built once: any tool can have a loadout later).
 
+**Petra's bindings (2026-10-11, checked against main):**
+- **RMB changes only in `cutlass.js`.** The hook aims on RMB held (`hookshot.js`) and the rod reels on it (`angler.js`); both stay. MMB
+  stays the cutlass's lock-on toggle.
+- **"Crouched" is `player.crouching`** (grounded and low), never C held: C held means the wall latch, the slam looking down, swimming
+  down, the ladder and pole slides and the balance drop, and after phase 4 C is a toggle.
+- **The blink cancel, split.** Petra's half (`techs.js`, `blink.js`): Techs lets the blink (E) cut in over a moveset's `launch` tech.
+  Calissa's half: every Moveset listens for `move.blink` and cancels itself. No recovery is owed, the string's place is kept, the clip
+  fades, and its launch's `onEnd` is nulled. Nothing in `blink.js` calls into tools, so every tool's moveset gets the cancel free.
+- **Strawman's lock-on** goes through a candidate hook in `lockon.js`, never `game.creatures`, so the ledger never counts Strawman.
+
 ## 3. Open (for the owner)
 
 - How many string slots to start with, and the most (God Hand's chain grows to about 8)?
