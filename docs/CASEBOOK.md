@@ -531,8 +531,38 @@ the rules before building in the same area; a rule a machine can check goes into
 192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
+193. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read before any IK),
+    in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still while the body bobs under it and the
+    IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the feet against the same run without it.
 
 ## Cases
+
+### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
+
+- **Seen:** the owner, holding a pot. Measured headless (a 0.44 m jar lifted with F in the workshop: 3 real s still, 4 on W at
+  3.02 m/s, crouched, the throw; a turn in the movement lab; a 0.7 m crate), against the same runs with nothing in the hands at the
+  same speed: standing still, the hips rose and fell 8.8 cm and swayed 5.9 cm every 2.0 real s while the pot did not move at all, and
+  both feet sank to -7.3 cm (87 of 180 frames more than 1 cm under the floor; without the pot -0.2 cm throughout). Walking, the hips
+  kept that 9 cm bob on its own clock instead of the walk's 16 cm in step; stopping, the feet sank to -7.9 cm (without: -0.5).
+  Crouched, the whole body hung 22 to 37 cm off the floor. The throw sank the feet 20.5 cm.
+- **Cause (measured):** the hold and the throw blended their clips over `MASK_UPPER` with `Clips.blend`'s default `hipW` of 1
+  (`courier/moves/carry.js`), so the pelvis was Walk_Carry_Loop's (65.0 to 73.8 cm on its own clock, 0.5 clip seconds a real second
+  when still) or OverhandThrow's (down to 50.3 cm), under legs that kept the idle's, the walk's or the prowl's rotations; the foot IK
+  follows only the ground, so every dip went into the feet (rule 43). And the pot was placed from the capsule (`renderPos` + 1.0 m, its
+  own 1.5 cm sine), the palms pulled onto it by the IK from 11.7 to 34.1 cm away: the hands stayed with the pot, the body moved under both.
+- **Fix:** `carry.js` alone. Both upper-body blends pass `hipW` 0, and the carrying clip runs on the legs' phase (`ht = st.phi x dur`:
+  its left foot is forward at its frame 0, as at the legs' phase 0, measured with `analyseGait`), still when they are. The pot rides the
+  hands (`ride()`): its grip at the midpoint of the clip's palms read before the IK, 2 cm ahead, in the body's frame, eased at 30 a
+  second; through the throw exactly between the throw's palms. The kinematic body (`fixed()`), the set-down's start and the release read
+  that same `held` place. After: walking, stopping, turning and the crouched walk, the hips, legs and feet match the empty-handed run
+  frame for frame (walking, feet -2.8 to +11.2 cm, the walk's own); still, the feet -0.3 to -0.1 cm and the hips move 0.7 cm (the
+  idle a passive tech stands on, `IDLE.under`); the throw -0.5 cm. The IK moves the palms 2.1 to 2.9 cm still and 1.8 to 4.8 cm
+  walking, and they sit 1.6 cm off the pot's sides; the pot's largest jerk (second difference) is half the palms'.
+  The pot sits where the clip's hands hold a box, lower than before: its grip 92 to 95 cm up still, 67 to 83 walking (was 100, and 98.5
+  to 101.5). A 0.7 m crate is held out 8 cm past the palms (`push`, the old hold's clearance), the IK moving its palms 17 to 21 cm
+  (was 19 to 34). The physics body is the mesh's place a frame late: 0.4 to 1.9 cm apart walking, 6 to 11 cm in the throw (was 24 to
+  93).
+- **Rule:** 193 (new).
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
 
