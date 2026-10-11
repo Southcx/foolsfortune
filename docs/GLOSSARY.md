@@ -63,7 +63,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
   negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked; each is learned at its awakening. *Not:* "hunger", "Faith" (cut). → detail
 - **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`; `docs/plans/FEELINGS-AWAKENING.md`; working words, Espada's) — the
-  moment a feeling is learned, by an act that is that feeling (or 20 drinks in its weather): its weather floods round you, the body answers,
+  moment a feeling is learned, by an act that is that feeling (or drinking it in its weather on 5 occasions): its weather floods round you, the body answers,
   one line in its own voice / a hand-placed lookout whose view wakes Wonder. *Not:* a notice from the System.
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail

@@ -1,4 +1,4 @@
-# Learning a feeling: the awakening (the owner, 2026-10-11; a proposal until the owner rules on section 2's table)
+# Learning a feeling: the awakening (the owner, 2026-10-11; section 2's table ruled "good enough for bones", built: `progress/feelings.js`)
 
 Kept by Dovina (what wakes each feeling, and the ledger). The moment's look is Calissa's, its sound Wanda's, its words Espada's, the
 wiring Petra's. This supersedes "learned by drinking it" (GALL-AND-FURY.md section 5).
@@ -21,8 +21,8 @@ wiring Petra's. This supersedes "learned by drinking it" (GALL-AND-FURY.md secti
 - **All seven start locked** (the owner, 2026-10-11). Until the first is learned, the brush sprays only Clean.
 - **A feeling is learned by living it once:** an act that *is* that feeling (section 2). That is the **feat way**, and it is the
   moment.
-- **The count way, so no one is stuck:** drink that feeling's Lachryma in its own weather enough times (`feeling.drunk.<id>`, 20
-  drinks). It is quieter, but it is still an awakening.
+- **The count way, so no one is stuck:** drink that feeling's Lachryma in its own weather enough times (`feeling.drunk.<id>`, 5
+  occasions, a change of the feeling drunk being one: `WAKE_COUNT`). It is quieter, but it is still an awakening.
 - **It is a moment, not a notice** (section 3). Nothing is said by the System. The world shows it, and one line of the feeling's own
   goes to the log.
 
@@ -38,6 +38,15 @@ wiring Petra's. This supersedes "learned by drinking it" (GALL-AND-FURY.md secti
 | **Fury** | anger, the strike back | answer violence with violence: take a blow and land the counter within a second, ten times in one fight; or break the Great Slip Jelly's crown | the parry's counter (built); the crown (built) |
 | **Gall** | disgust, refusal | wade into the filth: mop up a full-grown blot before its blotling hatches, or break a clutch of slip roe in the nursery | the mop and blots (built); the nursery (built) |
 
+- **As built (the bones; each predicate in `FEELING_WAKE`):**
+  - Wonder: `vantage.<id>` first. Vantages are not yet placed, so until then only the count way wakes it.
+  - Mirth: a rhythm combo of 10 (`rhythm.combo`), or six joyful lines from the folk (`npc.mood.joy`).
+  - Desire: one purchase of 480 or more (`shop.buy.best`, new), or an epic or prismatic chest.
+  - Grief: three duds on the Lockheart's wheel (`lockheart.out.dud`), or a haul lost to a shatter in a Well (`well.haul.lost`, new).
+  - Dread: the Great Slip Jelly's first cast with you in its bowl (`foe.faced`, new).
+  - Fury: a run of ten parries (`parry.run.best`), or its crown broken (`foe.break`).
+  - Gall: a full-grown blot mopped (`stain.wash.grown`), or a clutch broken (`clutch.break`).
+  - The wheel's stake is a Possibilikey, not cubes: the owner's "fine for the Lockheart to be the gambling stand-in for now".
 - Each feat is **once**, in play, by the Courier (`by: 'courier'`). The event is `feeling.wake { feeling, how: 'feat' | 'count', by }`.
   Its rule counts `feeling.known.<id>` (as now, so the radial, Full Spectrum and the Figment-telegraph steps already read it).
 - **Where they fall in a first session:** Mirth, Desire and Wonder in the first hour (play, shop, look). Fury and Grief in the
@@ -56,8 +65,8 @@ What happens the instant a feeling wakes, in order, about 4 real seconds and nev
    clenched fists for Fury, a recoil for Gall). It plays only when the Courier is free; in a fight it waits until the fight ends.
    Calissa's.
 4. **Its music:** the feeling's mode sounded once over the cue, a phrase not a sting. Wanda's (the modes exist).
-5. **One line in the log,** in the feeling's own voice, not the System's (Espada's), e.g. Wonder: "The sky goes on further than you
-   knew." Never "X known."
+5. **One line in the log,** in the feeling's own voice, not the System's (Espada's), e.g. Wonder (the owner's): "It feels like the sky goes on
+   further than you ever knew." Never "X known."
 6. **The radial's new slot** lights the next time the brush is drawn, with no words.
 
 **The weather made impressive** (the owner: "compound by making the weather events much more impressive visually"): each feeling's
