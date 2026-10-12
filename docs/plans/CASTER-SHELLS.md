@@ -289,6 +289,17 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 3. **The shaders** S1 to S9 (Calissa), with M5, M6, M9, M12: the Clock, the portals, the made things.
 4. **The Caster's own** (M3, M7, M11, S6, S10) and the toll. Last, because they are the rarest and the loudest.
 
+**As built** (Petra, v168, 2026-10-12): all hundred fire; M1 to M12 are the runner's parts (`shellsplitchain.js`, `shelldeployables.js`,
+`shellbodies.js`, `shellspacetime.js`, `shellcastersown.js`, `shellkit.js`); the toll is `game.vesselDamage.toll` (the least-cracked
+part to 0.6, past the shield; the shatter begins with three cracked). A FOE (any creature of class 1 or more) takes a fixed blow
+instead of removal: Inside Out 30, Leyline 20, Corrupt 20, Rift 10, God Hand 10, Pottify 8.
+- **Petra's numbers where the table was silent** (mine to move): a chain jumps 8 m (the Lightning Rod's pull 10 m); Upfall's column
+  10 m tall; Glassmaker's sheet lasts 40 s; a portal passes within 1.1 m; Brainwash ends 8 s after no foe is near; Capacitor charges
+  while it is the selected shell; The Fool doubles power and count.
+- **Not built yet:** Flamer's baking of paint, Bloom's mending and growing, Calm's weather to fair (no weather override exists),
+  Twelve's lamps, Shrinker's carry.
+- **Unverified:** balance and feel (one crash pass: all hundred fired twice, no page errors). The owner's play is the test.
+
 ## 6. Ruled (the owner, 2026-10-12)
 
 1. **Thirteen's backfire stays:** if what it hit lives, you shatter ("we like a little kakegurui around here").
