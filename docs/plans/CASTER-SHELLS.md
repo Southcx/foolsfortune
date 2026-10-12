@@ -34,7 +34,7 @@ so the big ones are moments, not the button you lean on.
 | id | carrier | exists? |
 |---|---|---|
 | `bolt` | straight and fast | yes (the round) |
-| `lob` | an arc, lands or times out | yes (bomb, slip) |
+| `lob` | an arc, lands or times out | yes (bomb, paint) |
 | `bounce` | skips or caroms, n bounces | yes (BANK) |
 | `seek` | homes on a creature | yes (SEEK) |
 | `beam` | a held line from the muzzle | yes (the charge's beam) |
@@ -46,7 +46,7 @@ so the big ones are moments, not the button you lean on.
 | `self` | fired at your own feet: it acts on the Courier | new, small |
 
 **Payloads** (what it does): `blast` (radial damage and push), `type` (a damage type's build-up), `status` (any of `STATUSES`),
-`pull` (the well), `pin` (the anchor), `cut` (the slicing plane), `paint` (slip or a feeling's paint), `crude` (a slick), `charm`
+`pull` (the well), `pin` (the anchor), `cut` (the slicing plane), `paint` (a feeling's paint on the paint map), `crude` (a slick), `charm`
 (an ally flip: HATCH), `decoy` (`game.ai.decoys`), `summon` (an ally body), `split` (children on impact), `chain` (arcs between
 targets), `morph` (a body swapped for a harmless one), `time` (a local time scale), `space` (move, swap or fold a thing), `mass`
 (scale or weight), `feel` (a feeling's weather, burst), `dispel` (statuses and weather cleared), `world` (a thing made or unmade).
@@ -61,7 +61,7 @@ holds), `rift` (a portal).
 | M1 | split on impact (children with their own carrier) | Petra | 13, 19, 23, 42 |
 | M2 | chain targets (next nearest, falloff, no repeats) | Petra | 11, 31, 32, 35 |
 | M3 | a steered round (the camera hand-off, a timeout) | Petra | 93 |
-| M4 | deployables with a lifetime (turret, wall, totem) | Petra | 29, 36, 74, 76, 77 |
+| M4 | deployables with a lifetime (turret, wall, mine) | Petra | 29, 36, 74, 76, 77, 79 |
 | M5 | a portal pair (two rifts, anything passes) | Petra, Calissa | 43, 44 |
 | M6 | a local time scale for bodies in a zone (not the global hold) | Petra | 51, 52, 58 |
 | M7 | morph: a creature's body swapped for a harmless one, restored | Petra, Calissa | 27, 64 |
@@ -121,10 +121,10 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 01 | Push | I | a cone of force |
 | 02 | Well | II | a lobbed singularity that drags in, then pops |
 | 03 | Mark | I | stuns critters, marks things to drop Lachryma |
-| 04 | Bomb | I | a clay grenade: splash, molten slip, a hot pool |
+| 04 | Bomb | I | a clay grenade: splash, molten clay, a hot pool |
 | 05 | Bank | I | ricochets |
 | 06 | Seek | I | homes |
-| 07 | Slip | I | paints liquid clay to dive through |
+| 07 | Paint | I | paints the ground to Paint Dive through (renamed from Slip after the paint overhaul) |
 | 08 | Groove | II | everything with a pulse dances |
 | 09 | Anchor | II | pins one thing where it is, even in mid-air |
 | 10 | Hatch | II | a pot hatches a clapperjar; a clapperjar turns friendly |
@@ -144,13 +144,13 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 19 | Petal Rain | II | Zodiac, in small | lob · split, blast | hangs at its apex for half a second, then blooms into forty petals that rain down in a ring | glazed petals falling in a slow spiral, each a tiny hit (M1) |
 | 20 | Stake | III | Trigun's Cross Punisher | bolt · pin, type | a ceramic stake that nails a creature to the nearest wall behind it | gold kintsugi seams on the stake, cracks spidering out on the wall |
 
-### TYPE-21 to TYPE-30: the Kiln (heat, molten slip and crude)
+### TYPE-21 to TYPE-30: the Kiln (heat, molten clay and crude)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
-| 21 | Flamer | I | Pyrocitor | cone · type, world | a held flame cone for 4 s; clay it touches is fired hard, and slip it touches bakes into ground you can stand on | heat haze over an orange-to-white flame, ash drifting up (S1) |
+| 21 | Flamer | I | Pyrocitor | cone · type, world | a held flame cone for 4 s; clay it touches is fired hard, and paint it touches bakes into ground you can stand on | heat haze over an orange-to-white flame, ash drifting up (S1) |
 | 22 | Meteor | II | Lava Gun to Meteor Gun | call · blast, pool | mark a spot; three molten clay meteors fall on it a second later and leave hot pools | the meteors trail like lava lamps; the pools crust over as they cool (M10, S9) |
-| 23 | Lava Lamp | II | the Lava Gun's glob | seek (slow) · blast, split | a wobbling blob of molten slip that drifts after the nearest creature and splits into three when it hits | a lava-lamp wax body, its crust breaking as it moves (S9, M1) |
+| 23 | Lava Lamp | II | the Lava Gun's glob | seek (slow) · blast, split | a wobbling blob of molten clay that drifts after the nearest creature and splits into three when it hits | a lava-lamp wax body, its crust breaking as it moves (S9, M1) |
 | 24 | Napalm | II | the Napalm mod | lob · crude, pool | a crude slick that catches a second later and burns for 8 s | fire on an oil film; the film keeps its labradorite flash under the flames |
 | 25 | Detonator | I | Nitro Launcher | bolt · blast | a charge that sticks; it goes off when you fire your next shell, any kind | a putty lump with a blinking glaze bead |
 | 26 | Glassmaker | II | sand and heat | lob · world | sand where it lands fuses into a sheet of glass: a platform or a ramp that holds you, and breaks | green glass with a refraction edge, cracks spreading when struck (M12). Teaches: sand and heat make glass |
@@ -198,7 +198,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 53 | Overdrive | II | haste | self · time | for 6 s your tools fire and swing faster (never your body: the core movement is untouched) | a ticking on the beat; your tool's trails doubled |
 | 54 | Rewind | III | rewind | bolt · time | sends the creature hit back to where it was 3 s ago, its last attack undone | a ghost trail running backward along its path (M9, S7) |
 | 55 | Echo | II | afterimages | self · time | for 5 s every shot you fire is fired again a second later by your ghost | a glassy afterimage of the Courier (`afterimage.js`) (M9) |
-| 56 | Weather Away | II | entropy | bolt · status (soft), world | the clay hit dries and cracks over 4 s: creatures soften, props crumble, slip hardens | crazing spreading across the surface (S4) |
+| 56 | Weather Away | II | entropy | bolt · status (soft), world | the clay hit dries and cracks over 4 s: creatures soften, props crumble, paint dries and flakes | crazing spreading across the surface (S4) |
 | 57 | Bloom | II | youth | lob · world, dispel | in 5 m: cracked pots mend with gold, plants grow, a slip jelly becomes a small slipling | gold kintsugi lines knitting, green rising (M12) |
 | 58 | Stop-Motion | II | the metronome | lob · time, field: zone | in 8 m everything moves in steps, on the beat; your hits on the beat do double | the zone drawn at twelve frames a second, on the music (M6, S7) |
 | 59 | Bookmark | II | save state | self · space | marks you; fire again within 10 s to return to the mark, your pool as it was then | a hovering bookmark where you stood (M9) |
@@ -230,9 +230,9 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 75 | Hydra | III | Spitting Hydra, Tempest | bolt · lock-on, seek | locks up to six creatures in view and sends a lance at each | six heads uncoil from the muzzle (the lock-on reticle on foot) |
 | 76 | Holowall | II | Holoshield Glove | deploy · field: wall | a hex wall of hard light; blocks projectiles and throws back any it can parry | hexes in your glaze colour, cracking where struck (S2, S8, M4) |
 | 77 | Barrier | III | Shield Charger, Tesla Barrier | self · field: dome | a dome round you for 6 s: blocks everything and shocks what touches it | a glass dome, arcs crawling over it (S2, S3) |
-| 78 | Golem | III | the golem | lob · summon, world | a 3 m golem rises from clay or slip ground and fights for 30 s | the ground heaves into a body; its eyes two kiln glows (M12) |
-| 79 | Spirit Call | II | the Spirit Garden | self · summon | calls one of your bound spirits into the fight for 30 s | the spirit steps out of your Pneuka Jar's light |
-| 80 | Sibling Flare | III | the party | self · summon | calls a sibling you have met for 30 s, no Shrine needed | a flare in the sibling's division colour, their tool's sound |
+| 78 | Golem | III | the golem | lob · summon, world | a 3 m golem rises from clay or painted ground and fights for 30 s | the ground heaves into a body; its eyes two kiln glows (M12) |
+| 79 | Minefield | I | Mine Glove | deploy · blast | scatters six proximity mines in a ring; each arms after a second and bursts when a creature comes within 2 m | little glazed domes blinking in your glaze colour, faster as a creature nears (M4) |
+| 80 | Marionette | III | Agents of Dread, a puppeteer (Possession) | bolt · summon | a creature you have just downed stands back up on strings of light and fights for you for 20 s, then falls for good | threads from the sky to its joints, its head lolling, moved like a puppet |
 
 ### TYPE-81 to TYPE-90: the Feelings (only this game has these)
 
@@ -282,14 +282,16 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 
 1. **The runner and the table** (Petra; Dovina the table): the existing eleven move onto rows. Then everything that needs no new part:
    11 (without the chain), 12, 14, 16, 18, 21, 24, 25, 28, 35, 38, 41, 46, 47, 53, 56, 61, 62, 64 (body swap later), 66, 67, 68, 70,
-   72, 79, 81 to 87. About thirty shells.
-2. **The parts** M1, M2, M4, M8, M10: 13, 19, 22, 23, 29, 31 to 34, 36, 42, 45, 50, 74, 76, 77, 91, 92. About twenty.
+   72, 81 to 87. About thirty shells.
+2. **The parts** M1, M2, M4, M8, M10: 13, 19, 22, 23, 29, 31 to 34, 36, 42, 45, 50, 74, 76, 77, 79, 91, 92. About twenty.
 3. **The shaders** S1 to S9 (Calissa), with M5, M6, M9, M12: the Clock, the portals, the made things.
 4. **The Caster's own** (M3, M7, M11, S6, S10) and the toll. Last, because they are the rarest and the loudest.
 
-## 6. For the owner
+## 6. Ruled (the owner, 2026-10-12)
 
-1. **Thirteen's backfire:** if it doesn't kill, you shatter. Keep the gamble? (My call: yes. It is the most Fool's Fortune shell
-   here.)
-2. **The toll:** a tier IV cracks a region, four in a row shatter you. Too harsh, or exactly Outlaw Star? (My call: exactly.)
-3. **The sibling flare (80)** calls a sibling outside a Shrine. Fine, or should siblings stay Shrine-only?
+1. **Thirteen's backfire stays:** if what it hit lives, you shatter ("we like a little kakegurui around here").
+2. **The toll stands as written:** a tier IV cracks a region and the fourth with three cracked shatters you; not too harsh, since the
+   cracks mend as the vessel's do when you ease off spending Lachryma.
+3. **No shell summons a sibling or a spirit:** the party and the Spirit Garden are their own systems. Spirit Call and Sibling Flare are
+   cut; 79 is now Minefield and 80 Marionette (a downed creature, never a bound spirit).
+4. **The Slip shell is the Paint shell** (TYPE-07), after the paint overhaul.
