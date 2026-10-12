@@ -654,7 +654,20 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 223. **A window on the screen is placed by its measured size and capped to the screen**, never by a guess per row:
     lists grow (a menu of a hundred shells); what is taller than the screen scrolls.
+224. **A ray cast straight down at a height field is nudged off its grid lines** (a millimetre in x and z): Rapier lets
+    a vertical ray along a grid line through, and a body set down on whole metres stood on one.
 ## Cases
+
+### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
+- **Seen:** two of the Dunes' three slip jellies by the Weir never moved and never animated, held in whatever frame they were made in;
+  they could still be struck.
+- **Cause:** measured headless: a vertical ray at x = 1985 or 2015 (on the Dunes' 2.5 m height-field grid, from x = 2000) found no
+  sand, from 0.7 m or from 30 m up; at x = 1984, 1986 or 1985.013 it found it at once. `SlipJellies.ground` returned null for the two
+  set down on those lines, and a jelly with no ground yet skips its whole update (`continue`): no mind, no move, no pose. The third
+  stood off the lines.
+- **Fix:** the jelly's ground ray (and the Lantern Wisp's) starts a millimetre off the point in x and z (creatures/jelly/slipjelly.js
+  `ground`); the three are also set down on the sand's own height. Measured: all three ground and act.
+- **Rule:** 224.
 
 ### 2026-10-12 · The Pneuka Box's chamber menu ran off the top of the screen (the owner, v169)
 - **Seen:** right-clicking a psygun chamber listed all hundred caster shells; the menu ran off the top of the screen with no way to scroll,

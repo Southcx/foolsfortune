@@ -132,7 +132,9 @@ export class SlipJellies {
     // (looked for from a little over its feet, as high as it could step (0.6) and no higher: from 3 m up, a jelly pressed to a wall cast
     // from inside it, took the hit at the ray's own start for ground, and climbed a wall's height a probe at a time onto the roof:
     // the Well's playtest found one on a ceiling, scripts/playtest/well.mjs; in the air, from where it is now)
-    const from = _a.set(x, Math.max(c.groundY ?? c.pos.y, c.air ? c.pos.y : -Infinity) + 0.7, z);
+    // (nudged off the exact point by a hair: a ray straight down a height field's grid line misses it in Rapier, and two of the Weir's
+    // jellies, set down on whole metres on the Dunes' 2.5 m grid, never found the sand and never took a step: the owner, v170)
+    const from = _a.set(x + 0.0013, Math.max(c.groundY ?? c.pos.y, c.air ? c.pos.y : -Infinity) + 0.7, z + 0.0017);
     const hit = g.physics.raycast(from, _b.set(0, -1, 0), 40, c.col, undefined, this.solid);
     return hit ? hit.point.y : null;
   }

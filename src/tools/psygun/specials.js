@@ -109,7 +109,7 @@ export class Specials {
         const broke = g.breakables.damage(ent, R.damage * mult * (ent.marked ? T.shells.mark.damageMult : 1), hit.point, dir, 1 + 0.25 * bounces);
         through = broke; // a pot that survives (big stoneware) deflects the round
       } else if (ent?.type === 'clapper') { hits++; g.clappers.hit(ent, hit.point, dir, 1.2, bounces ? 'ricochet' : 'shot'); through = true; }
-      else if (hasTag(ent, 'hurtable')) { hits++; g.creatures.strike(ent, hit.point, dir, 1.3, bounces ? 'ricochet' : 'shot'); }
+      else if (hasTag(ent, 'hurtable')) { hits++; g.creatures.strike(ent, hit.point, dir, 2.2 * Math.pow(T.shells.ricochet.bounceMult, bounces), bounces ? 'ricochet' : 'shot'); } // (each bank makes it harder, on a creature as on a pot: the owner's buff, v170)
       else if (ent?.type === 'rope') { g.breakables.cutRope(ent.rope, ent.index, hit.point, dir); through = true; }
       else if (ent?.type === 'slice') { hits++; g.breakables.crumble(ent, hit.point, dir); through = true; }
       else if (ent?.type === 'bauble' || hit.collider.isSensor()) through = true;
@@ -311,7 +311,7 @@ export class Specials {
     const normal = hit ? hit.normal.clone() : dir.clone().negate();
     if (ent?.type === 'breakable' && ent.alive) g.breakables.damage(ent, H.damage * (ent.marked ? T.shells.mark.damageMult : 1), point, dir, 1.2);
     else if (ent?.type === 'clapper' && ent.alive) g.clappers.hit(ent, point, dir, 1.1, 'homing');
-    else if (hasTag(ent, 'hurtable')) g.creatures.strike(ent, point, dir, 1.5, 'homing');
+    else if (hasTag(ent, 'hurtable')) g.creatures.strike(ent, point, dir, 2.6, 'homing');
     else if (ent?.type === 'rope') g.breakables.cutRope(ent.rope, ent.index, point, dir);
     else if (ent?.type === 'slice') g.breakables.crumble(ent, point, dir);
     // a small pop around the impact

@@ -178,24 +178,27 @@ export const DEFAULTS = {
     reliquaryCooldown: 20,
     rackTime: 0.6,
     kick: 1.8,
-    groove: { speed: 16, lift: 2.4, radius: 6.5, duration: 9, hop: 3.4 },
-    anchor: { duration: 12 },
-    hatch: { maxAllies: 5 },
-    slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160, width: 4.2, speed: 46, range: 40 }, // (the Cleave: shells.js)
-    push: { range: 10, angle: 32, velocity: 13, selfKnock: 3 },
-    well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11,
+    // the caster shells' buff (the owner, v170: "the individual shells don't feel anywhere near powerful enough given the limited number of
+    // shots per shell"): every runner shell's numbers multiplied as it is fired (shells.js buffRow): blows, reach, how long, how many
+    buff: { power: 1.75, reach: 1.35, dur: 1.4, count: 1.5 },
+    groove: { speed: 16, lift: 2.4, radius: 9, duration: 12, hop: 3.4 },
+    anchor: { duration: 18 },
+    hatch: { maxAllies: 7 },
+    slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160, width: 6, speed: 52, range: 60, creaturePower: 6 }, // (the Cleave: shells.js)
+    push: { range: 13, angle: 36, velocity: 20, selfKnock: 3, creaturePower: 1.5, creatureKnock: 14 },
+    well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 4.5, radius: 9, pull: 36, swirl: 9, playerPull: 5, popRadius: 5, popVelocity: 14, creaturePull: 30, creaturePower: 4,
       // debris crushed at the core (zone grows by compressGrow over the well's life, at most
       // compressMax per step); every compressPer pieces condense into a bauble, up to compressDrops
       compressRadius: 0.8, compressGrow: 1.5, compressMax: 6, compressPer: 5, compressDrops: 8 },
-    mark: { radius: 2.4, stun: 4.5, duration: 15, damageMult: 2 },
-    bomb: { speed: 13, lift: 4, fuse: 1.8, bounces: 2, radius: 3.6, damage: 260, velocity: 10, droplets: 110, dropletDamage: 10,
+    mark: { radius: 3.6, stun: 7, duration: 15, damageMult: 2 },
+    bomb: { speed: 13, lift: 4, fuse: 1.8, bounces: 2, radius: 5, damage: 420, velocity: 13, droplets: 110, dropletDamage: 10, creaturePower: 5,
       splatLife: 11, poolRadius: 1.6, poolLife: 12, poolDps: 45 },
     // banks off walls/floors; every bounce multiplies damage and bends toward a target in seekAngle
-    ricochet: { bounces: 5, damage: 90, bounceMult: 1.35, seekAngle: 30, seekRange: 16, range: 45 },
+    ricochet: { bounces: 7, damage: 150, bounceMult: 1.35, seekAngle: 30, seekRange: 16, range: 55 },
     // hold to paint (cone around the crosshair, lockTime per target), release to fire one seeker per lock
     slip: { speed: 15, lift: 3, droplets: 90, spread: 6, patch: 1.6 },
-    homing: { maxLocks: 6, lockTime: 0.18, cone: 12, range: 32, launchSpeed: 7, speed: 19, fan: 5, stagger: 0.06,
-      turn: 5, turnGrow: 14, maxFlight: 4, damage: 150, splash: 0.9 },
+    homing: { maxLocks: 8, lockTime: 0.18, cone: 12, range: 40, launchSpeed: 7, speed: 19, fan: 5, stagger: 0.06,
+      turn: 5, turnGrow: 14, maxFlight: 4, damage: 240, splash: 0.9 },
   },
   recoil: {
     kickPitch: 3.4,

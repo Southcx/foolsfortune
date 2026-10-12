@@ -192,6 +192,7 @@ import { Flash } from './tools/veritome/flash.js';
 import { Reprogram } from './tools/veritome/reprogram.js';
 import { SlipJellies } from './creatures/jelly/slipjelly.js';
 import { WEIR_SPAWN } from './tools/sondelass/angling/weir.js';
+import { LanternWisps } from './creatures/wisp/lanternwisp.js';
 import jellyB64 from './assets/slipjelly.glb?b64';
 import { Dialogue } from './npc/dialogue.js';
 import { placePeople, PEOPLE } from './npc/people.js';
@@ -712,7 +713,11 @@ async function main() {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)
-  for (const [dx, dz] of [[-12, -42], [4, -48], [18, -40]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
+  // (each set on the sand's own height; the ground ray that froze two of them is fixed in slipjelly.js `ground`: the owner, v170)
+  for (const [dx, dz] of [[-12, -42], [4, -48], [18, -40]]) { const x = WEIR_SPAWN.pos[0] + dx, z = WEIR_SPAWN.pos[2] + dz; game.jellies.spawn(new THREE.Vector3(x, game.dunes?.heightAt?.(x, z) ?? WEIR_SPAWN.pos[1], z)); }
+  // (the Lantern Wisps: the Dunes' second creature, on the owner's model (the owner, v170): three round the oasis, away from the jellies)
+  game.wisps = new LanternWisps(game, await loader.parseAsync(bytes((await import('./assets/lantern_wisp.glb?b64')).default), ''));
+  for (const [dx, dz] of [[-38, -72], [10, -86], [40, -60]]) { const x = WEIR_SPAWN.pos[0] + dx, z = WEIR_SPAWN.pos[2] + dz; game.wisps.spawn(new THREE.Vector3(x, game.dunes?.heightAt?.(x, z) ?? WEIR_SPAWN.pos[1], z)); }
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
@@ -1158,7 +1163,7 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
-    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.wisps?.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
