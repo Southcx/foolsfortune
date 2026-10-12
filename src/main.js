@@ -17,8 +17,8 @@ import { FX } from './vfx/particles.js';
 import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
 import { PaintMap } from './world/ground/paintmap.js';
+import { PaintTrack } from './world/ground/painttrack.js';
 import { Stains } from './world/ground/stains.js';
-import { Slicks } from './vfx/slicks.js';
 import { LoadGauge } from './feedback/loadgauge.js';
 import { loadAspect } from './tools/soulbrush/load.js';
 import { Character } from './courier/character.js';
@@ -95,7 +95,7 @@ import { crackPrewarm } from './vfx/crackskin.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
-import { Water, Ladders, SlipField } from './courier/moves/env.js';
+import { Water, Ladders } from './courier/moves/env.js';
 import { Events } from './core/events.js';
 import { Movers } from './world/props/movers.js';
 import { System } from './progress/system.js';
@@ -402,7 +402,8 @@ async function main() {
   game.chests = new Chests(game); // (treasure chests, the Tithe and how they open: see chests.js)
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js; compiled and drawn once by the warm-up below, with the rest)
   mark('sky');
-  game.paintmap = new PaintMap(); // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
+  game.paintmap = new PaintMap();
+  game.paintTrack = new PaintTrack(game); // (the Courier through paint: prints and smears, world/ground/painttrack.js) // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
   const level = new Level(scene, physics, breakables); level.paintmap = game.paintmap; // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
@@ -421,15 +422,14 @@ async function main() {
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
-  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
+  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
   game.loadGauge = new LoadGauge(game); // (what the brush's load spends, shown where you look: the arc, the jets' rings: feedback/loadgauge.js)
   game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
-  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
-  // all slip is Lachryma (LACHRYMA-LOOP.md 5, rule 7): what the Courier lays is its paint, in the brush's feeling; anyone else's, a slick
-  // (the ground's look only: game.slip's discs are as they were, for the dive)
-  game.slicks = new Slicks(game); // (a slick drawn where it lies, oxidising as it goes: vfx/slicks.js)
-  if (game.slip) game.slip.onLay = (c, n, r, by, life) => { if (n.y < 0.5 || !game.paintmap) return; if (by === 'courier') game.paintmap.stamp(c.x, c.y, c.z, r, loadAspect(game), 0.6); else { game.paintmap.slick(c.x, c.y, c.z, r, 0.8); game.slicks.spill(c, r, life, { normal: n }); } };
+  game.water = env.water; game.ladders = env.ladders; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
+  // every coat is the paint map's (docs/plans/PAINT.md, one store): the Courier's laid in the brush's feeling, anyone else's a slick
+  game.paintmap.aspectOf = () => loadAspect(game);
+  game.ai?.eco.provide('slip', (pos, range) => game.paintmap.spots.filter((d) => d.age > d.delay && d.life - d.age > 4 && d.r > 0.7 && d.n.y > 0.7 && d.c.distanceTo(pos) < range).slice(0, 6).map((d) => ({ pos: d.c, radius: d.r, ref: d }))); // (wet ground is water to anything made of sand and water: creatures/ai/ecology.js; the offer's id is the minds' data)
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(game); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); hot, with a glint, while V would answer it: vfx/parrymark.js)
@@ -1168,10 +1168,9 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
-    game.paintmap.update(dt, camera.position.x, camera.position.z); game.slicks?.update(dt); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
+    game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
-    env.slip.update(dt);
     if (!godOn && !game.realm?.active) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);

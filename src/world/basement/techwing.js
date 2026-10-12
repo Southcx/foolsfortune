@@ -113,19 +113,22 @@ export function buildTechLab(L, env) {
     strip(S, [-13, B + 8.01, -66.05], [10, 0.02, 0.08]);
   }
 
-  // ---- SLIP: a lane, a blob-only gap, a slip-coated wall ----
+  // ---- THE PAINT DIVE: a lane of crude, a blob-only gap, a coated wall ----
   {
     const up = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0);
-    env.slip.addRect(new THREE.Vector3(4, B + 0.005, -56), up, X, 2, 12); // lane x 2..6, z -68..-44
+    L.paintmap.coatRect(new THREE.Vector3(4, B + 0.005, -56), up, X, 2, 12); // lane x 2..6, z -68..-44: a fixed coat of crude in the paint map
     // the gap wall: only the blob fits under it (0.8 m) over the lane; walk round at the ends
     blk(-2, 2, 0, 3, -55.2, -54.8, C.wood);
     blk(6, 10, 0, 3, -55.2, -54.8, C.wood);
     blk(2, 6, 0.8, 3, -55.2, -54.8, C.wood);
-    env.slip.addRect(new THREE.Vector3(4, B + 0.005, -55), up, X, 2, 0.6, false);
     // the slip wall: 6 m up onto a platform
     blk(0, 8, 0, 6, -72, -68, C.pot);
-    env.slip.addRect(new THREE.Vector3(4, B + 3, -67.99), new THREE.Vector3(0, 0, 1), X, 2, 3);
-    label(S, 'SLIP', [4, B + 0.02, -45.5], { width: 1.6, help: 'Hold C to dive into slip and Space to come out; 8 loads SLIP shells.' });
+    L.paintmap.coatRect(new THREE.Vector3(4, B + 3, -67.99), new THREE.Vector3(0, 0, 1), X, 2, 3);
+    { // (its look until walls are the paint map's charts, docs/plans/PAINT.md phase 2: a sheet of crude on the wall)
+      const g = new THREE.PlaneGeometry(4, 6); g.translate(4, B + 3, -67.975);
+      L.addGeo(g, 0x2a1d17, false, false); // (merged with the room's static batch: one call a look a zone)
+    }
+    label(S, 'PAINT DIVE', [4, B + 0.02, -45.5], { width: 2.2, help: 'Hold C in wet paint or crude to dive in, and Space to come out; 8 loads SLIP shells.' });
     label(S, '0.8 m', [4, B + 1.4, -54.75], { rotY: Math.PI, width: 1, vertical: true, sub: 'blob only' });
     label(S, '6 m', [4, B + 6.02, -70], { width: 1 });
   }

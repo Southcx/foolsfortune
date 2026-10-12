@@ -34,7 +34,7 @@ export class SlipDive extends Tech {
     this.trailT = 0;
   }
 
-  get field() { return this.game.slip; }
+  get field() { return this.game.paintmap; } // (the one store: world/ground/paintmap.js wet)
 
   makeBlob() {
     const g = new THREE.SphereGeometry(1, 20, 12);
@@ -45,11 +45,9 @@ export class SlipDive extends Tech {
     return m;
   }
 
-  /** Wet enough under p to dive into: the paint map first (a feeling's paint, a blot, a slick, as deep as `cfg.wet`: docs/plans/PAINT.md
-   *  phase 1, one store), then the old slip field's fixed lanes and walls until they are painted cells (phase 2). */
+  /** Wet enough under p to dive into: the paint map's cells (a feeling's paint, a blot, a slick, a fixed coat), as deep as `cfg.wet`. */
   wetUnder(p) {
-    const c = this.game.paintmap?.at(p.x, p.y, p.z);
-    return c && c.k >= (this.cfg.wet ?? 0.3) ? UP : this.field?.at(p, UP, 0.35) || null;
+    return this.field?.wet(p, UP, 0.35, this.cfg.wet ?? 0.3) || null;
   }
 
   canStart() {
@@ -89,7 +87,7 @@ export class SlipDive extends Tech {
       const hit = P.physics.raycast({ x: P.pos.x, y: P.pos.y + 0.3, z: P.pos.z }, dir, 0.6, P.collider, GROUPS.controllerQuery, (col) => !col.isSensor() && !col.parent()?.isDynamic());
       if (hit && Math.abs(hit.normal.y) < 0.3) {
         const n = new THREE.Vector3(hit.normal.x, 0, hit.normal.z).normalize();
-        const on = this.field.at(new THREE.Vector3(hit.point.x, hit.point.y, hit.point.z), n, 0.3);
+        const on = this.field.wet(new THREE.Vector3(hit.point.x, hit.point.y, hit.point.z), n, 0.3);
         if (on && -dir.dot(n) > 0.5) { this.mode = 'wall'; this.normal.copy(n); }
       }
     }
@@ -97,7 +95,7 @@ export class SlipDive extends Tech {
       const n = this.normal;
       // still slip under us on the wall, and still pushing into it?
       const probe = P.physics.raycast({ x: P.pos.x, y: P.pos.y + 0.3, z: P.pos.z }, n.clone().negate(), 0.7, P.collider, GROUPS.controllerQuery);
-      const onWall = probe && this.field.at(new THREE.Vector3(probe.point.x, probe.point.y, probe.point.z), n, 0.3);
+      const onWall = probe && this.field.wet(new THREE.Vector3(probe.point.x, probe.point.y, probe.point.z), n, 0.3);
       const pushing = -(wish.x * n.x + wish.z * n.z) > 0.2;
       if (!probe) {
         // over the top: flop onto it

@@ -34,7 +34,9 @@ So a slick and paint overlapped as two layers, the dive asked a store you could 
 Draw calls +0 (the same meshes, one more texture read); programs +0 to 1; GPU memory +16 to 64 MB (the atlas); **JS heap budget 395 ->
 415 MB** for the kept copy; CPU about 0.1 to 0.3 ms a frame for stamps and the upload. Estimates, to be measured when built.
 
-## 4. Phases (one at a time; check and build each, a crash glance at the end: the owner's test lean)
+## 4. Phases (done 2026-10-12, v159: the dive reads the map; the slip field retired into coats (`coat`, `coatRect`, `wet`); the slick
+meshes retired, their cells drawn by the map with the oxidation ramp; feet print and slides and the Paint Dive smear: `world/ground/painttrack.js`.
+Still to do: box faces as charts, so walls are cells and drawn; the look. One at a time; check and build each, a crash glance at the end: the owner's test lean)
 
 1. **One store.** The Paint Dive reads the paint map (wet enough is deep enough); the slip field retired (its fixed lanes become painted
    cells); the slick meshes retired (slick cells drawn by the map). Charts as the store's shape, floors first. Petra.
