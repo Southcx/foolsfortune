@@ -19,7 +19,6 @@ import { tag } from '../../core/tags.js';
 import { st } from '../creatures.js';
 import { ECON } from '../../progress/econ/table.js';
 import { yieldOf } from '../../progress/combat/emo.js';
-import { sfx } from '../../audio/sfx.js';
 import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
 import { wispMind } from './mind.js';
 import { stream } from '../../core/rng.js';
@@ -114,7 +113,6 @@ export class LanternWisps {
     c.drives.add('fear', (0.15 + 0.1 * power) / (c.traits.bold ?? 1));
     g.ai?.stimuli.emit('pain', c.pos, { radius: 16, strength: 0.9, by, source: c, about: culprit, aboutPos: culprit?.pos });
     c.brain.signal();
-    sfx.hitmarker?.();
     g.events?.emit('wisp.hit', { cause, by });
     if (c.hp <= 0) this.burst(c, by, cause, culprit); else this.play(c, 'Hit', { once: true, fade: 0.08 });
   }
@@ -150,7 +148,6 @@ export class LanternWisps {
     c.attack = { move, foe, t: W.wind * (st(c, 'doubt') ? 1.6 : 1) };
     g.creatures.windup?.(c, { at: foe?.pos ?? c.pos, radius: 1, eta: c.attack.t, kind: 'cast', parry: false, type: 'illusion', read: true });
     this.play(c, 'Attack_Cast', { once: true, fade: 0.1 });
-    sfx.shellFire?.('bolt', 1);
   }
   cancel(c) { if (!c.attack) return; c.attack = null; this.game.creatures.unwind?.(c, 'cancel'); }
   release(c) {
