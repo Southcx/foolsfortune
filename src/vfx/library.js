@@ -360,6 +360,25 @@ export const LIBRARY = {
     L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'swirl', spawn: 'disc', r: 2.5, dir: 'up', speed: [0.2, 0.5], size: [0.8, 1.2], sizeEnd: 2, life: [2, 3], color: 'ink', alpha: 0.3, alphaEnd: 0, spin: [-1, 1] }),
   ] },
 
+  // =============================================================================================== THE LANTERN WISP (vfx/lanternwisplook.js)
+  // its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a
+  // halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and its Lachryma rising as motes
+  'wisp.cast': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.14, color: 'white', colorEnd: 'ember' }),
+    L({ type: 'sprites', count: [5, 7], shape: 'soft', dir: 'cone', cone: 40, speed: [1, 2.5], size: [0.06, 0.1], sizeEnd: 0, life: [0.2, 0.35], drag: 4, color: 'ember', colorEnd: 'gold' }),
+  ] },
+  'wisp.cast.flight': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 120, shape: 'core', spawn: 'sphere', r: 0.03, size: [0.26, 0.32], sizeEnd: 0.03, life: 0.11, color: 'gold', colorEnd: 'ember', alpha: 0.9 }),
+    L({ type: 'sprites', dur: Infinity, rate: 40, shape: 'soft', size: 0.55, sizeEnd: 0.4, life: 0.05, color: 'ember', alpha: 0.45 }),
+    L({ type: 'sprites', dur: Infinity, rate: 22, shape: 'soft', spawn: 'sphere', r: 0.08, dir: 'sphere', speed: [0.3, 0.9], size: [0.04, 0.07], sizeEnd: 0, life: [0.3, 0.5], drag: 2, gravity: 2, color: ['ember', 'gold'] }),
+  ] },
+  'wisp.snuff': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'core', size: 0.4, sizeEnd: 0.05, life: 0.18, color: 'gold', colorEnd: 'ember', powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: [6, 8], shape: 'puff', spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.4, 0.9], size: [0.25, 0.35], sizeEnd: 0.9, life: [1.2, 1.8], drag: 1.2, color: [0x4a403c, 0x6a5e56], alpha: 0.6, spin: [-1, 1] }),
+    L({ type: 'sprites', count: [10, 14], shape: 'soft', spawn: 'sphere', r: 0.2, dir: 'cone', axis: 'up', cone: 50, speed: [0.6, 1.6], size: [0.07, 0.11], sizeEnd: 0, life: [0.8, 1.3], drag: 1.5, gravity: -0.6, color: ['ember', 'gold'] }),
+    L({ type: 'sprites', count: [14, 18], shape: 'sparkle', spawn: 'sphere', r: 0.45, dir: 'up', speed: [0.3, 0.8], size: [0.1, 0.15], sizeEnd: 0, life: [1.6, 2.4], drag: 0.6, gravity: -0.4, color: ['lach', 'film', 'gold'], twinkle: 8, delay: [0, 0.4] }),
+  ] },
+
   // =============================================================================================== THE LOCKHEART'S OPENING
   // (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle
