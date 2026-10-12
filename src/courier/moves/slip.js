@@ -1,4 +1,4 @@
-// Slip dive (Splatoon's ink swim, in liquid clay). Hold C on wet slip and the
+// THE PAINT DIVE (the owner's name, 2026-10-12; was the slip dive: Splatoon's ink swim). Hold C in wet paint or crude and the
 // Courier melts into it: a fast, low blob that only moves quickly through slip,
 // climbs walls where they're slip-coated, and fits through gaps nothing else does.
 // Space launches you out (higher than a jump, keeping the speed); let go of C to
@@ -45,11 +45,16 @@ export class SlipDive extends Tech {
     return m;
   }
 
-  wetUnder(p) { return this.field?.at(p, UP, 0.35); }
+  /** Wet enough under p to dive into: the paint map first (a feeling's paint, a blot, a slick, as deep as `cfg.wet`: docs/plans/PAINT.md
+   *  phase 1, one store), then the old slip field's fixed lanes and walls until they are painted cells (phase 2). */
+  wetUnder(p) {
+    const c = this.game.paintmap?.at(p.x, p.y, p.z);
+    return c && c.k >= (this.cfg.wet ?? 0.3) ? UP : this.field?.at(p, UP, 0.35) || null;
+  }
 
   canStart() {
     const P = this.P;
-    if (!this.field || P.mantle || !P.grounded) return false;
+    if (P.mantle || !P.grounded) return false;
     if (!(P.input.isDown('KeyC') || P.peekLatch('KeyC'))) return false;
     return !!this.wetUnder(P.pos);
   }
