@@ -699,21 +699,12 @@ tab *07 World and narrative*).
 - **The achievements**: Acquired Taste, "Awaken to Gall: clean up what rots." · Seeing Red, "Awaken to Fury: answer a blow with a
   blow." · Full Spectrum, "Awaken to all seven feelings."
 
-### The caster shells' families *(Dovina's CASTER-SHELLS.md; Espada's names, proposed, 2026-10-12)*
-Lore names for the nine families, mostly from the potter's own shop, since the island is clay. The labels stay genre words, but three
-of Dovina's working labels collide with the glossary and want changing: **Well** (a Well is a dungeon), **Mind** (a homonym three times
-over) and **Kiln** (the workshop's). Proposed labels for those three: **Gravity**, **Psyche**, **Heat**.
-- **The Edge → the Wire**: a potter cuts a pot off the wheel with a wire. It cuts clean, and it is the first tool a thrower picks up.
-- **The Kiln → the Firebox**: the chamber of a kiln where the fuel burns, under the ware.
-- **The Storm → the Levin**: the old English word for lightning (*levin-bolt*, Spenser's and the ballads'), a word that strikes once and
-  is gone.
-- **The Well → the Gyre**: a turning that pulls inward (Yeats: "turning and turning in the widening gyre"), as gravity and portals do.
-- **The Clock → the Hourglass**: time counted in sand, and sand is what the Dunes are made of.
-- **The Mind → the Mask**: Ego, Influence and Illusion are what a persona does, and *persona* is Latin for an actor's mask (and the
-  Courier's mask is one of the vessel's regions).
-- **The Company → the Retinue**: those a lord keeps about them (Old French *retenue*, the kept), summoned and set down.
-- **The Feelings → the Palette**: the feelings as paint, seven colours on a board.
-- **The Caster's own**: kept as it is. It is Outlaw Star's own phrase, and the toll it takes is the point.
+### The caster shells' families *(Dovina's CASTER-SHELLS.md; ruled by the owner, 2026-10-12)*
+Six families keep Dovina's names: **the Edge, the Storm, the Clock, the Company, the Feelings, the Caster's own**. The shells were not
+made on Kaolin Anagami's island, so their names stay neutral and broadly read, not the potter's (the owner: "Dovina's terms are more
+neutral and broadly interpretable"). Three of Dovina's names share a word with something else in the glossary and want other neutral
+names (the owner's choice, *open*): **the Well** (a Well; offered: the Vortex, the Void, the Pull), **the Kiln** (the workshop's;
+offered: the Forge, the Furnace, the Ember), **the Mind** (a creature's mind; offered: the Will, the Glamour, the Veil).
 
 The hundred shells' lore names and first-use log lines are *parked* until the mechanics week is done (the owner, 2026-10-11: "This week
 is mechanics heavy"). The labels serve until then. When they come, the Outlaw Star homages keep a nod to their numbers (40 Twelve,
