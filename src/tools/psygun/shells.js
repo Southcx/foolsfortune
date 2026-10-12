@@ -6,9 +6,14 @@
 //   mark    – stuns critters and marks things (marked things drop Lachryma)
 //   bomb    – a lobbed clay grenade: splash damage, molten slip, hot pool
 //   ricochet, homing – see specials.js
-//   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
+//   paint   – the Paint shell: a lobbed ball of liquid Lachryma that paints floors and walls wet (dive in: C, the Paint Dive)
+//   groove, anchor, hatch – see casters.js
+// Every shell is a row of progress/combat/castershells.js (its number, tier and cost); those after the founding eleven are flown by the
+// shell runner (shellrunner.js) from their rows.
 // ---------------------------------------------------------------------------
-import { PSYGUNS, DEFAULT_PSYGUN, capacityOf, typeNo } from './kinds.js';
+import { PSYGUNS, DEFAULT_PSYGUN, capacityOf } from './kinds.js';
+import { shellById, shellByNo, typeLabel, fireCost } from '../../progress/combat/castershells.js';
+import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, DEG, PALETTE } from '../../core/config.js';
@@ -22,7 +27,7 @@ import { hasTag, registered } from '../../core/tags.js';
 import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/psygun/shells'); // (the simulation's chance: core/rng.js, the same twice)
 
-// (each has a number, TYPE-00 to TYPE-10, by its place here: tools/psygun/kinds.js typeNo; which a psygun carries is its chambers)
+// (each has its row's number, TYPE-00 to TYPE-99: castershells.js; which a psygun carries is its chambers)
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'CLEAVE', glyph: '═' }, // (the id is the old one: the ledger's counts are kept under it)
   { id: 'push', name: 'PUSH', glyph: '⟫' },
@@ -31,13 +36,15 @@ export const SHELL_TYPES = [
   { id: 'bomb', name: 'BOMB', glyph: '●' },
   { id: 'ricochet', name: 'BANK', glyph: '⟀' },
   { id: 'homing', name: 'SEEK', glyph: '◇' },
-  { id: 'slip', name: 'SLIP', glyph: '≈' }, // paints liquid clay to dive through (the slip tech)
+  { id: 'paint', name: 'PAINT', glyph: '≈' }, // paints liquid Lachryma to dive through (the Paint Dive; the id was 'slip')
   { id: 'groove', name: 'GROOVE', glyph: '♪' }, // caster shells: see casters.js
   { id: 'anchor', name: 'ANCHOR', glyph: '⚓︎' },
   { id: 'hatch', name: 'HATCH', glyph: '❦' },
+  // (the runner's: a glyph a family until Calissa's icons)
+  ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', heat: '♨', storm: 'ϟ', gravity: '◎', clock: '⧗', psyche: '☍', company: '⚑', feelings: '❀' }[r.family] || '•', runner: true })),
 ];
 export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
-SHELL_TYPES.forEach((t, i) => { t.no = typeNo(i); });
+SHELL_TYPES.forEach((t) => { t.row = shellById(t.id); t.no = typeLabel(t.row.no); });
 const GUN_KEY = 'foolsfortune.psygun.v1';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -60,6 +67,7 @@ export class Shells {
     this.spatter = new Spatter(game);
     this.specials = new Specials(this);
     this.casters = new Casters(this);
+    this.runner = new ShellRunner(this);
   }
 
   /** The shell types in the chambers, in order (what 1, 2, 3... pick; the HUD's slots). */
@@ -79,7 +87,7 @@ export class Shells {
   setGun(id, chambers = null, quiet = false) {
     const G = PSYGUNS[id]; if (!G) return false;
     this.gun = G;
-    const want = (chambers || G.loadout).filter((t, i, a) => SHELL_TYPES.some((x) => x.id === t) && a.indexOf(t) === i).slice(0, G.chambers);
+    const want = (chambers || G.loadout).map((t) => shellById(t)?.id || t).filter((t, i, a) => SHELL_TYPES.some((x) => x.id === t) && a.indexOf(t) === i).slice(0, G.chambers);
     for (const t of G.loadout) if (want.length < G.chambers && !want.includes(t)) want.push(t);
     this.chambers = want;
     for (const t of SHELL_TYPES) this.counts[t.id] = Math.min(this.counts[t.id] ?? 0, this.max(t.id));
@@ -126,15 +134,21 @@ export class Shells {
 
   /** Fire the selected shell. Returns false if the tube is empty. */
   fire(ctx) {
-    const t = this.type;
-    if (this.counts[t.id] <= 0) { sfx.dryFire(); this.game.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); this.game.events?.emit('shell.dry', { id: t.id }); return false; }
+    const t = this.type, g = this.game, f = t.row.n.feeling;
+    if (this.counts[t.id] <= 0) { sfx.dryFire(); g.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); g.events?.emit('shell.dry', { id: t.id }); return false; }
+    // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
+    if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
+    const cost = fireCost(t.id).lachryma;
+    if (cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
     this.counts[t.id]--;
+    this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
     this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });
     const { camera, player, character, weapon } = ctx;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const ray = weapon.shotRay(camera, player, character, fwd);
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
-    this[t.id]({ ...ctx, ray, muzzle, fwd });
+    if (t.runner) this.runner.fire(t.row, { ...ctx, ray, muzzle, fwd });
+    else this[t.id]({ ...ctx, ray, muzzle, fwd });
     // every shell kicks hard and needs racking
     const k = T.shells.kick * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase);
     player.addRecoil(T.recoil.kickPitch * k, (simRand() * 2 - 1) * T.recoil.kickYaw * k);
@@ -327,7 +341,7 @@ export class Shells {
     const g = this.game;
     const mesh = kind === 'well'
       ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), new THREE.MeshBasicMaterial({ color: 0x1c0d08 }))
-      : kind === 'slip' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3 }))
+      : kind === 'paint' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3 }))
       : kind === 'groove' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), new THREE.MeshStandardMaterial({ color: 0xdff4ff, flatShading: true, metalness: 0.4, roughness: 0.15, emissive: 0x9a5cff, emissiveIntensity: 1 }))
       : new THREE.Mesh(new THREE.DodecahedronGeometry(0.09, 0), new THREE.MeshStandardMaterial({ color: PALETTE.dark, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0.3 }));
     if (kind === 'well') {
@@ -351,13 +365,13 @@ export class Shells {
     sfx.thump();
   }
 
-  slip({ ray, muzzle }) {
-    this.launch('slip', muzzle, ray.dir, T.shells.slip.speed, T.shells.slip.lift);
+  paint({ ray, muzzle }) {
+    this.launch('paint', muzzle, ray.dir, T.shells.slip.speed, T.shells.slip.lift);
     sfx.thump();
   }
 
-  /** A slip ball bursts: liquid clay everywhere, harmless, and wet enough to dive into. */
-  burstSlip(pos, normal = UP) {
+  /** A paint ball bursts: liquid Lachryma everywhere, harmless, and wet enough to dive into. */
+  burstPaint(pos, normal = UP) {
     const g = this.game, S = T.shells.slip;
     sfx.splosh(g.listenerDistance(pos));
     for (let k = 0; k < S.droplets; k++) {
@@ -387,7 +401,7 @@ export class Shells {
       if (hit) {
         const ent = hit.entity;
         p.pos.copy(hit.point).addScaledVector(hit.normal, 0.1);
-        if (p.kind === 'well' || p.kind === 'slip' || p.kind === 'groove' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
+        if (p.kind === 'well' || p.kind === 'paint' || p.kind === 'groove' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
         else {
           // bounce: reflect with loss
           p.vel.reflect(hit.normal).multiplyScalar(0.45);
@@ -404,7 +418,7 @@ export class Shells {
         g.scene.remove(p.mesh);
         this.projectiles.splice(i, 1);
         if (p.kind === 'well') this.openWell(p.pos.clone().addScaledVector(p.normal || UP, 0.5));
-        else if (p.kind === 'slip') this.burstSlip(p.pos.clone(), p.normal || UP);
+        else if (p.kind === 'paint') this.burstPaint(p.pos.clone(), p.normal || UP);
         else if (p.kind === 'groove') this.casters.openGroove(p.pos.clone().addScaledVector(p.normal || UP, 1.0));
         else this.explodeBomb(p.pos.clone(), p.normal);
       }
@@ -578,6 +592,7 @@ export class Shells {
     this.stepWells(dt);
     this.spatter.fixedUpdate(dt);
     this.specials.fixedUpdate(dt);
+    this.runner.fixedUpdate(dt);
   }
 
   update(dt) {
@@ -608,6 +623,7 @@ export class Shells {
     this.updateCleaves(dt);
     this.specials.update(dt);
     this.casters.update(dt);
+    this.runner.update(dt);
   }
 
   unmark(ent) {
@@ -628,6 +644,7 @@ export class Shells {
     for (const e of [...this.marked]) this.unmark(e);
     this.specials.clear();
     this.casters.clear();
+    this.runner.clear();
     this.projectiles = []; this.wells = [];
   }
 }

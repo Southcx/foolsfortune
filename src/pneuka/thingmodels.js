@@ -125,7 +125,7 @@ function shard() {
 }
 
 /** A caster shell (a placeholder: Calissa's models come): a brass case, a band of the shell's colour and its number stamped as notches. */
-const SHELL_COLOR = { slicer: 0xffe0c0, push: 0x9ad0ff, well: 0x8a6ad0, mark: 0xffd76a, bomb: 0xd0432a, ricochet: 0xb8f2a6, homing: 0xff9ad5, slip: 0xb3905f, groove: 0xffb27a, anchor: 0x6a8aa0, hatch: 0x9be36a };
+const SHELL_COLOR = { slicer: 0xffe0c0, push: 0x9ad0ff, well: 0x8a6ad0, mark: 0xffd76a, bomb: 0xd0432a, ricochet: 0xb8f2a6, homing: 0xff9ad5, paint: 0xb3905f, groove: 0xffb27a, anchor: 0x6a8aa0, hatch: 0x9be36a };
 function shell(id) {
   const t = id.slice(6), brass = brassM(), band = mat(SHELL_COLOR[t] ?? 0xcccccc, { emissive: SHELL_COLOR[t] ?? 0, emissiveIntensity: 0.25 }), dark = mat(0x2a1a14);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.05, 10), brass);
