@@ -59,11 +59,12 @@ export function lureList(ledger, box = null) {
 export const lureById = (id, ledger, box) => (id ? lureList(ledger, box).find((l) => l.id === id) || LURES.find((l) => l.id === id) : null) || BARE;
 export const isCurio = (id) => id?.startsWith('curio.') && !!CURIO_BY_ID[id.slice(6)];
 
-/** A lure's taste now: its own, and what the soundings have pushed into it (boost: [7], fading). `known` (species.js knownAspects): an
- *  aspect not yet known is carried as nothing (Gall and Fury until their feelings are known); without it, all seven count. */
+/** A lure's taste now: its own, and what the soundings have pushed into it (boost: [7], fading). `known` (species.js knownAspects): a
+ *  made lure is bait, matter rather than feeling, so its own taste always counts; only a sounding's push of a feeling not yet known is
+ *  carried as nothing (Dovina, 2026-10-11: gated on the bait, a fresh save had nothing bite at all). Without `known`, all of it counts. */
 export function tasteOf(lure, boost = null, out = new Array(N).fill(0), known = null) {
   const k = lure?.pull ?? 1;
-  for (let i = 0; i < N; i++) out[i] = known && !known[i] ? 0 : Math.min(1.6, (lure?.taste?.[i] ?? 0.3) * k + (boost ? boost[i] : 0));
+  for (let i = 0; i < N; i++) out[i] = Math.min(1.6, (lure?.taste?.[i] ?? 0.3) * k + (boost && !(known && !known[i]) ? boost[i] : 0));
   return out;
 }
 

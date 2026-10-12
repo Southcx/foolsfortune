@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // The angling strip: the lure tied on (- / = change it: lures.js) and the seven aspects of the Courier's mind a sounding pushes into it,
 // in display order (Wonder, Mirth, Desire, Fury, Gall, Grief, Dread), on the tool strip beside the forms (keys 4 to 0; the wheel too,
-// until the lure is in the water: then it sets the depth). An aspect not yet known (Gall and Fury, until that feeling is) shows LOCKED,
+// until the lure is in the water: then it sets the depth). An aspect not yet known (any of the seven, until that feeling is) shows LOCKED,
 // never hidden: dimmed, its glyph grey, the gold padlock chip on it, as the Soul Brush's radial shows a feeling not yet drunk. That is all the
 // angler has on the HUD. Everything else is in the world: the line is the colour of its load, the reticle sits on the fish, the ping is
 // a shell of light, the bite is a mark over the lure.

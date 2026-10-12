@@ -116,10 +116,10 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 
 | measure | budget | tolerance against the last build |
 | --- | --- | --- |
-| draw calls a frame (every pass) | 450 | +8% |
-| triangles a frame | 350,000 | +8% |
+| draw calls a frame (every pass) | 450: the owner's RTX 3060 Ti on Firefox (which reports it as a GTX 980: Firefox buckets the GPU name) spends about 26 µs a call on the CPU (177 calls, 4.68 ms, 2026-10-12), so 450 is about 12 ms of a 16.7 ms frame with the tick beside it; merge, batch and instance rather than raise it | +8% |
+| triangles a frame | 1,000,000 (the owner, 2026-10-12: "get a lil crazy with the level geometry"; at 480 lines the GPU idled at 88k, the frame on vsync with 4 ms of CPU; was 350,000) | +8% |
 | shader programs alive | 160: one shared program a look, every one compiled in the warm-up; raised only by a commit that names the looks and the reason (the last: Round 4's cocoon pod, Lachrymite crystal and stone, the Heavenly Kiln's eye, bolt and ring, 152 to 160) | +6% |
-| JS heap | 340 MB (the owner, 2026-10-07: Calissa's animation suite, 337 measured, its boot pack 2.65 MB; raised from 320 to 330 earlier when main sat on it; 44 MB of geometry belongs to no zone, the next cut) | +12% |
+| JS heap | 415 MB (the owner, 2026-10-12: one paint surface's kept copy, docs/plans/PAINT.md; the stale "340" here was 395 in perf.mjs since v138) (the owner, 2026-10-07: Calissa's animation suite, 337 measured, its boot pack 2.65 MB; raised from 320 to 330 earlier when main sat on it; 44 MB of geometry belongs to no zone, the next cut) | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |
 

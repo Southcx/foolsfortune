@@ -239,7 +239,7 @@ export class SoulBrush extends Tech {
       const dir = this.lastDab && d < 2 ? down.point.clone().sub(this.lastDab).normalize() : _v3.set(P.vel.x, 0, P.vel.z).normalize().clone();
       if (d > 2) this.paint.gap();
       this.paint.add(down.point, down.normal, dir, TRAIL_W * (0.85 + 0.15 * Math.min(1, hs / 8)));
-      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
+      g.paintmap?.coat(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
       if (simRand() < 0.35) sfx.inkDab?.(0.35);

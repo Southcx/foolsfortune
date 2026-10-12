@@ -1,4 +1,4 @@
-// Slip dive (Splatoon's ink swim, in liquid clay). Hold C on wet slip and the
+// THE PAINT DIVE (the owner's name, 2026-10-12; was the slip dive: Splatoon's ink swim). Hold C in wet paint or crude and the
 // Courier melts into it: a fast, low blob that only moves quickly through slip,
 // climbs walls where they're slip-coated, and fits through gaps nothing else does.
 // Space launches you out (higher than a jump, keeping the speed); let go of C to
@@ -34,7 +34,7 @@ export class SlipDive extends Tech {
     this.trailT = 0;
   }
 
-  get field() { return this.game.slip; }
+  get field() { return this.game.paintmap; } // (the one store: world/ground/paintmap.js wet)
 
   makeBlob() {
     const g = new THREE.SphereGeometry(1, 20, 12);
@@ -45,11 +45,14 @@ export class SlipDive extends Tech {
     return m;
   }
 
-  wetUnder(p) { return this.field?.at(p, UP, 0.35); }
+  /** Wet enough under p to dive into: the paint map's cells (a feeling's paint, a blot, a slick, a fixed coat), as deep as `cfg.wet`. */
+  wetUnder(p) {
+    return this.field?.wet(p, UP, 0.35, this.cfg.wet ?? 0.3) || null;
+  }
 
   canStart() {
     const P = this.P;
-    if (!this.field || P.mantle || !P.grounded) return false;
+    if (P.mantle || !P.grounded) return false;
     if (!(P.input.isDown('KeyC') || P.peekLatch('KeyC'))) return false;
     return !!this.wetUnder(P.pos);
   }
@@ -84,7 +87,7 @@ export class SlipDive extends Tech {
       const hit = P.physics.raycast({ x: P.pos.x, y: P.pos.y + 0.3, z: P.pos.z }, dir, 0.6, P.collider, GROUPS.controllerQuery, (col) => !col.isSensor() && !col.parent()?.isDynamic());
       if (hit && Math.abs(hit.normal.y) < 0.3) {
         const n = new THREE.Vector3(hit.normal.x, 0, hit.normal.z).normalize();
-        const on = this.field.at(new THREE.Vector3(hit.point.x, hit.point.y, hit.point.z), n, 0.3);
+        const on = this.field.wet(new THREE.Vector3(hit.point.x, hit.point.y, hit.point.z), n, 0.3);
         if (on && -dir.dot(n) > 0.5) { this.mode = 'wall'; this.normal.copy(n); }
       }
     }
@@ -92,7 +95,7 @@ export class SlipDive extends Tech {
       const n = this.normal;
       // still slip under us on the wall, and still pushing into it?
       const probe = P.physics.raycast({ x: P.pos.x, y: P.pos.y + 0.3, z: P.pos.z }, n.clone().negate(), 0.7, P.collider, GROUPS.controllerQuery);
-      const onWall = probe && this.field.at(new THREE.Vector3(probe.point.x, probe.point.y, probe.point.z), n, 0.3);
+      const onWall = probe && this.field.wet(new THREE.Vector3(probe.point.x, probe.point.y, probe.point.z), n, 0.3);
       const pushing = -(wish.x * n.x + wish.z * n.z) > 0.2;
       if (!probe) {
         // over the top: flop onto it
