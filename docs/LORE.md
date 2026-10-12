@@ -698,3 +698,23 @@ tab *07 World and narrative*).
   blow. · Clean up what rots.
 - **The achievements**: Acquired Taste, "Awaken to Gall: clean up what rots." · Seeing Red, "Awaken to Fury: answer a blow with a
   blow." · Full Spectrum, "Awaken to all seven feelings."
+
+### The caster shells' families *(Dovina's CASTER-SHELLS.md; Espada's names, proposed, 2026-10-12)*
+Lore names for the nine families, mostly from the potter's own shop, since the island is clay. The labels stay genre words, but three
+of Dovina's working labels collide with the glossary and want changing: **Well** (a Well is a dungeon), **Mind** (a homonym three times
+over) and **Kiln** (the workshop's). Proposed labels for those three: **Gravity**, **Psyche**, **Heat**.
+- **The Edge → the Wire**: a potter cuts a pot off the wheel with a wire. It cuts clean, and it is the first tool a thrower picks up.
+- **The Kiln → the Firebox**: the chamber of a kiln where the fuel burns, under the ware.
+- **The Storm → the Levin**: the old English word for lightning (*levin-bolt*, Spenser's and the ballads'), a word that strikes once and
+  is gone.
+- **The Well → the Gyre**: a turning that pulls inward (Yeats: "turning and turning in the widening gyre"), as gravity and portals do.
+- **The Clock → the Hourglass**: time counted in sand, and sand is what the Dunes are made of.
+- **The Mind → the Mask**: Ego, Influence and Illusion are what a persona does, and *persona* is Latin for an actor's mask (and the
+  Courier's mask is one of the vessel's regions).
+- **The Company → the Retinue**: those a lord keeps about them (Old French *retenue*, the kept), summoned and set down.
+- **The Feelings → the Palette**: the feelings as paint, seven colours on a board.
+- **The Caster's own**: kept as it is. It is Outlaw Star's own phrase, and the toll it takes is the point.
+
+The hundred shells' lore names and first-use log lines are *parked* until the mechanics week is done (the owner, 2026-10-11: "This week
+is mechanics heavy"). The labels serve until then. When they come, the Outlaw Star homages keep a nod to their numbers (40 Twelve,
+94 Inside Out, 95 Leyline, 96 Thirteen).
