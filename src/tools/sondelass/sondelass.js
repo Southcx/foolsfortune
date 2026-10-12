@@ -7,7 +7,7 @@
 //   Q     draw / stow (the Psygun goes away first; X also stows it)           1 / 2 / 3   CUTLASS / ROD / HOOK
 //   CUTLASS  LMB the loadout's string · RMB the special (the Stinger) · crouched, hold RMB: the iaido into Blade Mode · MMB lock on · V hold:
 //            guard, in time: parry · E (the blink) cancels any move
-//   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (Gall, Fury once known) · - / =: the lure tied on ·
+//   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (each once known) · - / =: the lure tied on ·
 //            wheel (lure out): its depth · RMB sinks it · MMB sounds
 //            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
 //   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),

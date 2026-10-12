@@ -22,7 +22,7 @@ function slipRing(R, at, r0, r1, life) {
   const g = R.g, mid = (r0 + r1) / 2, w = Math.max(1.2, (r1 - r0) / 2), n = Math.max(6, Math.round((2 * Math.PI * mid) / (w * 1.6)));
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2, x = at.x + Math.sin(a) * mid, z = at.z + Math.cos(a) * mid;
-    g.slip?.addDisc(new THREE.Vector3(x, R.ground(x, z), z), UP, w, life);
+    g.paintmap?.coat(new THREE.Vector3(x, R.ground(x, z), z), UP, w, life);
   }
 }
 
@@ -50,7 +50,7 @@ export const DO = {
     blow: (R, d) => {
       const A = d.area;
       for (let i = 0; i < A.drops; i++) R.after(i * A.every, () => R.lob(R.F.c.pos.clone().setY(R.F.c.pos.y + R.F.c.height * 0.95), R.P.pos.clone(), 0.8 + 0.04 * R.F.c.height, (at) => { // (from its top, as big as its body: Calissa's measure at x14)
-        R.g.slip?.addDisc(at.clone(), UP, A.radius, A.lasts);
+        R.g.paintmap?.coat(at.clone(), UP, A.radius, A.lasts);
         sfx.jellySquelch?.(R.g.listenerDistance(at), 1);
         if (flat(R.P.pos, at) < A.radius && Math.abs(R.P.pos.y - at.y) < 2) R.hit('oozeRain', d.effect, { from: at });
       }));
@@ -87,7 +87,7 @@ export const DO = {
     begin: (R, d) => R.F.cast(d.windup, { pose: 1.35, lockAt: Math.max(0, d.windup - 0.4) }),
     blow: (R, d) => {
       const F = R.F, at = F.c.pos, dir = F.dir, half = (d.area.degrees / 2) * (Math.PI / 180), P = R.P.pos;
-      for (let i = 1; i <= 4; i++) { const r = (i / 4) * d.area.length; R.g.slip?.addDisc(at.clone().addScaledVector(dir, r).setY(R.ground(at.x + dir.x * r, at.z + dir.z * r)), UP, 1 + r * 0.35, 4); }
+      for (let i = 1; i <= 4; i++) { const r = (i / 4) * d.area.length; R.g.paintmap?.coat(at.clone().addScaledVector(dir, r).setY(R.ground(at.x + dir.x * r, at.z + dir.z * r)), UP, 1 + r * 0.35, 4); }
       sfx.jellySquelch?.(R.g.listenerDistance(at), 1.4);
       const to = new THREE.Vector3(P.x - at.x, 0, P.z - at.z), r = to.length();
       if (r < d.area.length && to.normalize().dot(dir) > Math.cos(half)) R.hit('brineCascade', d.effect, { from: at });

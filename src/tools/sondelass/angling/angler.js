@@ -7,7 +7,7 @@
 // What is tied on is a LURE (lures.js; - and = change it while no line is out): each has a taste of its own that the fish come to
 // or don't, and any curio the Courier holds can be tied on. The aspect (4 to 0, the seven in display order: Wonder, Mirth, Desire,
 // Fury, Gall, Grief, Dread) is what a sounding pushes into the lure, and every sounding stirs every fish in that water, the nearer the
-// more. Gall and Fury are shown locked, and refused, until that feeling is known (species.js aspectKnown).
+// more. An aspect is shown locked, and refused, until that feeling is known (species.js aspectKnown): all seven, as the brush's radial.
 // (The keys: 1 to 3 are the Sondelass's forms, so the seven aspects take 4 to 0 and the lure moved from 9 / 0 to the two keys after
 // them, - and =: the psygun's - is held up while a tool is out, psygun/weapon.js deadInput, and the log's [ and ] are its tabs.)
 // A fish that has noticed the lure gets a "!" over it, probes it (small dips), and then bites: a "!!!" over the lure, a hard dip and
@@ -150,7 +150,7 @@ export class Angler {
   get aspectColor() { return ASPECTS[this.aspect].color; }
   setAspect(a) {
     if (a === this.aspect) return;
-    if (!aspectKnown(this.game, a)) { // (Gall and Fury, before the feeling is known: refused, and said; the words a placeholder for Espada's)
+    if (!aspectKnown(this.game, a)) { // (before the feeling is known: refused, and said; the words a placeholder for Espada's)
       sfx.fizzle?.();
       this.game.log?.say('warn', `You do not know ${ASPECTS[a].name[0]}${ASPECTS[a].name.slice(1).toLowerCase()} yet.`, { key: 'aspectlocked', throttle: 2 });
       return;
@@ -372,7 +372,10 @@ export class Angler {
     const y = this.lure.pool?.surface ?? this.weir.poolAt(src.x, src.z)?.surface ?? null; // (where the shell meets the water it draws a ring on it)
     g.pulse.emit(src, PING_R, this.aspectColor, { life: PING_LIFE, surfaceY: y });
     // the active lure: the aspect is pushed into it for a while, and the whole of that water is stirred (the nearer, the more)
-    if (this.lure.active) this.lure.push(this.aspect);
+    // (a feeling not yet known is not pushed: with none known the sounding still stirs and lights the water, plain, and says so once;
+    //  the words a placeholder for Espada's)
+    if (!aspectKnown(g, this.aspect)) { if (!this.saidPlain) { this.saidPlain = true; g.log?.say('info', 'Your sounding carries no feeling yet.', { key: 'angle.plain', throttle: 60 }); } }
+    else if (this.lure.active) this.lure.push(this.aspect);
     const pool = this.lure.pool || this.weir.poolAt(src.x, src.z);
     const taste = tasteOf(this.lure.active ? this.lure.item : this.lureDef(), this.lure.active ? this.lure.boost : null, undefined, knownAspects(this.game));
     let stirred = 0;

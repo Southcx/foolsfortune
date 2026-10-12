@@ -152,7 +152,7 @@ export class Lure {
   }
 
   /** How much a species wants this lure now: its taste and the soundings' push, against the species' own (lures.js). */
-  tasteFor(sp) { return attraction(tasteOf(this.item, this.boost, this._taste, knownAspects(this.game, this._known)), sp); } // (Gall and Fury count only once known)
+  tasteFor(sp) { return attraction(tasteOf(this.item, this.boost, this._taste, knownAspects(this.game, this._known)), sp); } // (a sounding's push counts only once known)
   /** A sounding: the aspect pushed into the lure for a while. */
   push(aspect, k = 0.9) { this.boost[aspect] = Math.min(1.2, this.boost[aspect] + k); }
 
