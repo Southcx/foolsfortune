@@ -92,9 +92,10 @@ export class Level {
   }
 
   box(pos, size, color, { outline = true, rotX = 0, rotY = 0, collide = true, shadow = true } = {}) {
-    const g = new THREE.BoxGeometry(size[0], size[1], size[2]);
+    let g = new THREE.BoxGeometry(size[0], size[1], size[2]);
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(rotX, rotY, 0));
     g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), q, new THREE.Vector3(1, 1, 1)));
+    if (this.charting && this.paintmap) { g = g.toNonIndexed(); this.paintmap.walls.chartBox(g); } // (its side faces, charts the paint map can paint: world/ground/paintwalls.js)
     this.addGeo(g, color, outline, shadow);
     if (!collide) return null;
     const cd = RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
@@ -127,7 +128,9 @@ export class Level {
   }
 
   finalizeStatic() {
+    if (this.charting) this.paintmap?.walls.pack(); // (the walls' charts laid out, every face known: world/ground/paintwalls.js)
     for (const { color, outline, shadow, zone, geos } of this.batches.values()) {
+      if (geos.some((g) => g.getAttribute('pmChart'))) for (const g of geos) if (!g.getAttribute('pmChart')) g.setAttribute('pmChart', new THREE.BufferAttribute(new Float32Array(g.getAttribute('position').count * 2), 2)); // (a merge needs one set of attributes: no chart is 0)
       const merged = mergeGeometries(geos.map((g) => { g.deleteAttribute('uv'); return g; }), false);
       const m = new THREE.Mesh(merged, this.mat(color));
       m.userData.zone = zone;
@@ -141,6 +144,7 @@ export class Level {
 
   // ---------------------------------------------------------------------------
   build() {
+    this.charting = true; // (the build's boxes are charted for the paint map's walls; what is added later is not)
     const C = PALETTE;
     // shell: walls and roof don't cast shadows, so sun spills through the skylights
     // onto the upper floor and down the atrium onto the ground floor
@@ -234,6 +238,7 @@ export class Level {
     this.box([-4.5, 0.25, 9.8], [1.8, 0.5, 0.9], C.mid);
 
     this.finalizeStatic();
+    this.charting = false;
 
     // lights
     const kilnLight = new THREE.PointLight(0xff9050, 30, 14, 1.5);

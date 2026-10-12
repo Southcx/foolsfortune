@@ -181,7 +181,8 @@ export class BrushLoad {
       const W = g.water?.at(d.p.x, d.p.y, d.p.z);
       if (W && d.p.y + _b.y <= W.surface) { g.water.disturb(d.p.x, d.p.z, 0.25, 'drop'); this.drops.splice(i, 1); continue; }
       if (hit && hit.normal.y > 0.5) { this.land(d, hit.point, hit.normal); this.drops.splice(i, 1); continue; }
-      if (hit) { d.v.reflect(hit.normal).multiplyScalar(0.25); continue; } // (a wall: it runs down it)
+      if (hit && hit.normal.y > -0.5 && this.land(d, hit.point, hit.normal)) { this.drops.splice(i, 1); continue; } // (a wall with a chart: it sticks, Splatoon's ink)
+      if (hit) { d.v.reflect(hit.normal).multiplyScalar(0.25); continue; } // (a wall with none, or a ceiling: it runs down it)
       d.p.add(_b);
       if ((d.trail += len) >= SPRAY.trail) { d.trail = 0; g.fx?.alpha.emit({ pos: d.p.clone(), vel: d.v.clone().multiplyScalar(0.05), life: 0.25, size: 0.07, sizeEnd: 0.02, color: d.clean ? CLEAN_COLOR : ASPECT_COLOR[d.aspect], alpha: 0.7, drag: 2, gravity: 4 }); } // (a droplet along the arc each metre; Clean's clear)
     }
@@ -226,6 +227,11 @@ export class BrushLoad {
 
   land(d, at, normal = _d.set(0, 1, 0)) {
     const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
+    if (normal.y < 0.5) { // (a wall: its chart, world/ground/paintwalls.js; Clean washes it. False where no chart lies: the drop runs on down)
+      if (d.clean) { if ((g.paintmap?.wipeWall(at, normal, sp.r * 1.5, 99) || 0) > 0) g.brushLoad?.shine?.(at, sp.r * 2); return !!g.paintmap?.walls.touched; }
+      this.paintArea += g.paintmap?.stampWall(at, normal, sp.r, d.aspect, 0.9) || 0; this.paintAspect = d.aspect;
+      return !!g.paintmap?.walls.touched;
+    }
     if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
       const got = (g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, false).got || 0) + (g.paintmap?.wipe(at.x, at.z, at.x, at.z, at.y, sp.r * 2, 99, 'slick').got || 0);
       g.stains?.wipe({ x: at.x, z: at.z }, { x: at.x, z: at.z }, at.y, 99, sp.r * 2);

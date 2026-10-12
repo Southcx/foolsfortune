@@ -124,10 +124,6 @@ export function buildTechLab(L, env) {
     // the slip wall: 6 m up onto a platform
     blk(0, 8, 0, 6, -72, -68, C.pot);
     L.paintmap.coatRect(new THREE.Vector3(4, B + 3, -67.99), new THREE.Vector3(0, 0, 1), X, 2, 3);
-    { // (its look until walls are the paint map's charts, docs/plans/PAINT.md phase 2: a sheet of crude on the wall)
-      const g = new THREE.PlaneGeometry(4, 6); g.translate(4, B + 3, -67.975);
-      L.addGeo(g, 0x2a1d17, false, false); // (merged with the room's static batch: one call a look a zone)
-    }
     label(S, 'PAINT DIVE', [4, B + 0.02, -45.5], { width: 2.2, help: 'Hold C in wet paint or crude to dive in, and Space to come out; 8 loads SLIP shells.' });
     label(S, '0.8 m', [4, B + 1.4, -54.75], { rotY: Math.PI, width: 1, vertical: true, sub: 'blob only' });
     label(S, '6 m', [4, B + 6.02, -70], { width: 1 });
