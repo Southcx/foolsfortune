@@ -60,11 +60,13 @@ import { casterShaderStage, CASTER_SHADER_STAGE_IDS } from './castershaderstage.
 import { strainBed } from '../vfx/garden/strains.js';
 import { lekythos } from '../vfx/garden/lekythos.js';
 import { animStage } from './animstage.js';
+import { casterShaderStage2, CASTER_SHADER_STAGE2_IDS } from './castershaderstage2.js';
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 
 export function buildStage(id, game) {
   let obj = null;
   if (id === 'anim:lab') return animStage(game); // (the Anim Lab: the Courier's animation stack, played, stepped and scrubbed: workbench/animstage.js)
+  if (CASTER_SHADER_STAGE2_IDS.includes(id)) return casterShaderStage2(game); // (the caster shaders S6 to S10, each with its sliders: workbench/castershaderstage2.js)
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
   if (CASTER_SHADER_STAGE_IDS.includes(id)) return casterShaderStage(id, game); // (the caster shells' shaders S1 to S5, with their sliders: workbench/castershaderstage.js)
   if (FIGMENT_TELEGRAPH_STAGE_IDS.includes(id)) return figmentTelegraphStage(id); // (the Figment attack telegraphs' marks and glyphs: workbench/figmenttelegraphstage.js)

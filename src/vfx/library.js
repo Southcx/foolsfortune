@@ -480,4 +480,24 @@ export const LIBRARY = {
   'caster.rift': { layers: [
     L({ type: 'caster', shader: 'portal', mode: 'rift', dur: 6, width: 2.4, height: 1.6, k: [[0, 1], [1, 1]] }),
   ] },
+  // =============================================================================================== CASTER SHELLS: S6 TO S10 (vfx/caster/: docs/plans/CASTER-SHELLS.md)
+  // (each a `caster` layer: its module's look, placed, scaled and faded as a mesh is; the runner's other layers go beside them)
+  'shell.insideOut': { layers: [ // (94: a small black hole, the world bent round a dot of nothing, its ring turning; grown, held, gone)
+    L({ type: 'caster', shader: 'lensing', dur: 3.2, size: 0.35, scale: 1, k: [[0, 0], [0.12, 1], [0.8, 1], [1, 0]], tint: 0xfff0c8 }),
+  ] },
+  'shell.stasis': { layers: [ // (51: a sphere of stopped time, its colour drained and its grain frozen)
+    L({ type: 'caster', shader: 'timegrade', dur: 5, radius: 2.6, drain: 0.95, grain: 0.55, rim: 0.7, k: [[0, 0], [0.04, 1], [0.92, 1], [1, 0]] }),
+  ] },
+  'shell.stopMotion': { layers: [ // (58: the zone drawn at twelve frames a real second, half drained)
+    L({ type: 'caster', shader: 'timegrade', dur: 8, radius: 4, drain: 0.45, grain: 0.35, rim: 0.4, hold: 12, k: [[0, 0], [0.03, 1], [0.94, 1], [1, 0]] }),
+  ] },
+  'shell.holowall': { layers: [ // (76: a hex wall of hard light; the caller's tint is your glaze's)
+    L({ type: 'caster', shader: 'hologram', dur: 6, hex: 1, k: [[0, 0], [0.05, 1], [0.9, 1], [1, 0]] }),
+  ] },
+  'shell.lavaLamp': { layers: [ // (23: a glob of molten clay, crusting over as it goes)
+    L({ type: 'caster', shader: 'molten', dur: 5, size: 0.5, blobs: 5, crust: 0.1, crustEnd: 0.85, heat: 0.9, offset: [0, 0.5, 0], k: [[0, 0], [0.08, 1], [0.9, 1], [1, 0]] }),
+  ] },
+  'shell.corrupt': { layers: [ // (97: the body hit drawn as broken data, then drained into the point it was shot from; ctx.target the body)
+    L({ type: 'caster', shader: 'corrupted', dur: 6, tear: 0.7, crush: 0.7, k: [[0, 0], [0.05, 1], [1, 1]] }),
+  ] },
 };
