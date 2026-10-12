@@ -110,7 +110,8 @@ holds), `rift` (a portal).
 ## 3. The hundred
 
 The eleven that exist keep their numbers. The new eighty-nine come in nine families of ten (the last of nine), each a corner of the
-psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**, **from** (the prior art), **recipe**
+psyche, named with no article (the owner, 2026-10-12, through Espada): Edge, Ember, Storm, Pull, Clock, Will, Company, Feelings,
+Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**, **from** (the prior art), **recipe**
 (carrier · payloads · field), **what it does**, **the look** (and the shader or mechanic it needs).
 
 ### TYPE-00 to TYPE-10: the founding eleven (exist; `shells.js`, `specials.js`, `casters.js`)
@@ -129,7 +130,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 09 | Anchor | II | pins one thing where it is, even in mid-air |
 | 10 | Hatch | II | a pot hatches a clapperjar; a clapperjar turns friendly |
 
-### TYPE-11 to TYPE-20: Edge, the Wire (Impact; things that cut, skip and strike)
+### TYPE-11 to TYPE-20: Edge (Impact; things that cut, skip and strike)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -144,7 +145,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 19 | Petal Rain | II | Zodiac, in small | lob · split, blast | hangs at its apex for half a second, then blooms into forty petals that rain down in a ring | glazed petals falling in a slow spiral, each a tiny hit (M1) |
 | 20 | Stake | III | Trigun's Cross Punisher | bolt · pin, type | a ceramic stake that nails a creature to the nearest wall behind it | gold kintsugi seams on the stake, cracks spidering out on the wall |
 
-### TYPE-21 to TYPE-30: Heat, the Firebox (molten clay and crude)
+### TYPE-21 to TYPE-30: Ember (molten clay and crude)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -155,11 +156,11 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 25 | Detonator | I | Nitro Launcher | bolt · blast | a charge that sticks; it goes off when you fire your next shell, any kind | a putty lump with a blinking glaze bead |
 | 26 | Glassmaker | II | sand and heat | lob · world | sand where it lands fuses into a sheet of glass: a platform or a ramp that holds you, and breaks | green glass with a refraction edge, cracks spreading when struck (M12). Teaches: sand and heat make glass |
 | 27 | Bisque | III | firing | bolt · morph, status (halt) | fires a creature to bisque: it stands as a terracotta statue for 5 s, and an Impact blow shatters it for double | bisque spreads over the body from the hit (S4, M7) |
-| 28 | Ember | I | the Pyrocitor's sparks | swarm · type | a flitting ember that drifts for 10 s and sets alight what it touches; it goes where the wind goes | a single ember and its smoke ribbon, carried by the weather's wind |
+| 28 | Cinder | I | the Pyrocitor's sparks | swarm · type | a flitting ember that drifts for 10 s and sets alight what it touches; it goes where the wind goes | a single ember and its smoke ribbon, carried by the weather's wind |
 | 29 | Volcano | III | the Lava Gun's ground | deploy · blast, pool | a small cone of clay rises where it lands and throws a molten bomb every second for 8 s | the cone heaves, cracks glow, heat haze over it (M4, S1, S9) |
 | 30 | Slag Rain | II | volcanic ash | lob · blast, field: cloud | throws hot drops up that fall for 3 s in a ring of 6 m | the weather's streaks, glowing; a hiss on every surface they hit (S9) |
 
-### TYPE-31 to TYPE-40: Storm, the Levin (lightning and charge)
+### TYPE-31 to TYPE-40: Storm (lightning and charge)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -174,7 +175,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 39 | Lodestone | II | the grapnel's need | bolt · world | sets a magnet in mid-air or on any wall: a point the Sondelass's hook can bite, anywhere | a floating iron star, the hook's mark ringing it. A traversal shell |
 | 40 | Twelve | III | Outlaw Star #12 | bolt · status (sleep), dispel | an electric blast that knocks out anything with a mind it touches and stops anything that runs (lamps, movers, turrets) for 10 s | a gold shell with a blue kanji; lamps die in a ring as it spreads (S3) |
 
-### TYPE-41 to TYPE-50: Gravity, the Gyre (space and portals)
+### TYPE-41 to TYPE-50: Pull (space and portals)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -189,7 +190,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 49 | Swap | II | the swapper | bolt · space | you and the point hit trade places (a creature, a prop, a wall's face) | two pale silhouettes left behind, folding shut |
 | 50 | Shrinker | II | the shrink ray | bolt · mass | the creature hit shrinks to a third for 8 s: you can carry it and throw it | the body scaling down with a whistle; its voice pitched up (M8) |
 
-### TYPE-51 to TYPE-60: Clock, the Hourglass (time)
+### TYPE-51 to TYPE-60: Clock (time)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -204,7 +205,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 59 | Bookmark | II | save state | self · space | marks you; fire again within 10 s to return to the mark, your pool as it was then | a hovering bookmark where you stood (M9) |
 | 60 | Last Word | III | delayed damage | bolt · type | does nothing for 3 s, then deals again all the damage the creature took in those 3 s | a ticking glyph over it; the hits replay as ghosts (M9) |
 
-### TYPE-61 to TYPE-70: Psyche, the Mask (Ego, Influence and Illusion)
+### TYPE-61 to TYPE-70: Will (Ego, Influence and Illusion)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -219,7 +220,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 69 | Mind Swap | III | the body swap | bolt ×2 · space (minds) | two creatures hit in turn swap minds: a slip jelly thinks like a clapperjar, and the reverse | two threads of light trading places between the heads (M11) |
 | 70 | Forget Me | II | the forget status | bolt · status (forget) | the creature hit forgets you exist for 10 s | you fade to it: a grey fog over your body in its eyes |
 
-### TYPE-71 to TYPE-80: Company, the Retinue (summons and things set down)
+### TYPE-71 to TYPE-80: Company (summons and things set down)
 
 | no. | label | tier | from | recipe | does | the look |
 |---|---|---|---|---|---|---|
@@ -234,7 +235,7 @@ psyche. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **tier**
 | 79 | Minefield | I | Mine Glove | deploy · blast | scatters six proximity mines in a ring; each arms after a second and bursts when a creature comes within 2 m | little glazed domes blinking in your glaze colour, faster as a creature nears (M4) |
 | 80 | Marionette | III | Agents of Dread, a puppeteer (Possession) | bolt · summon | a creature you have just downed stands back up on strings of light and fights for you for 20 s, then falls for good | threads from the sky to its joints, its head lolling, moved like a puppet |
 
-### TYPE-81 to TYPE-90: Feelings, the Palette (only this game has these)
+### TYPE-81 to TYPE-90: Feelings (only this game has these)
 
 Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 
@@ -251,7 +252,7 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 | 89 | Calm | III | Outlaw Star #3 and #5 (the dispel) | beam · dispel | clears every status, summon and field in 8 m, and the weather there to fair for a game hour | a red beam that leaves the air clear and still |
 | 90 | Prismatic | III | the wheel of feelings | bolt · feel ×7 | a rainbow round: each creature it touches gets the feeling it is weakest to | all seven colours in a spiralling band |
 
-### TYPE-91 to TYPE-99: the Caster's own (tier IV: the toll is paid in the vessel)
+### TYPE-91 to TYPE-99: Caster's own (tier IV: the toll is paid in the vessel)
 
 | no. | label | from | recipe | does | the look |
 |---|---|---|---|---|---|

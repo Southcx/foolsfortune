@@ -25,18 +25,18 @@ export const TIERS = {
   4: { name: "the Caster's own", worth: 400, holds: 1, lachryma: 0, toll: true, sold: false },
 };
 
-/** The families, by number (CASTER-SHELLS.md section 3): a label (no glossary word reused: Espada, 2026-10-12) and Espada's lore name. */
+/** The families, by number (CASTER-SHELLS.md section 3), named with no article (the owner, 2026-10-12, through Espada). */
 export const FAMILIES = [
-  { id: 'founding', from: 0, to: 10, label: 'the founding eleven', lore: null },
-  { id: 'edge', from: 11, to: 20, label: 'Edge', lore: 'the Wire' },
-  { id: 'heat', from: 21, to: 30, label: 'Heat', lore: 'the Firebox' },
-  { id: 'storm', from: 31, to: 40, label: 'Storm', lore: 'the Levin' },
-  { id: 'gravity', from: 41, to: 50, label: 'Gravity', lore: 'the Gyre' },
-  { id: 'clock', from: 51, to: 60, label: 'Clock', lore: 'the Hourglass' },
-  { id: 'psyche', from: 61, to: 70, label: 'Psyche', lore: 'the Mask' },
-  { id: 'company', from: 71, to: 80, label: 'Company', lore: 'the Retinue' },
-  { id: 'feelings', from: 81, to: 90, label: 'Feelings', lore: 'the Palette' },
-  { id: 'caster', from: 91, to: 99, label: "the Caster's own", lore: "the Caster's own" },
+  { id: 'founding', from: 0, to: 10, label: 'the founding eleven' },
+  { id: 'edge', from: 11, to: 20, label: 'Edge' },
+  { id: 'ember', from: 21, to: 30, label: 'Ember' },
+  { id: 'storm', from: 31, to: 40, label: 'Storm' },
+  { id: 'pull', from: 41, to: 50, label: 'Pull' },
+  { id: 'clock', from: 51, to: 60, label: 'Clock' },
+  { id: 'will', from: 61, to: 70, label: 'Will' },
+  { id: 'company', from: 71, to: 80, label: 'Company' },
+  { id: 'feelings', from: 81, to: 90, label: 'Feelings' },
+  { id: 'caster', from: 91, to: 99, label: "Caster's own" },
 ];
 const familyOf = (no) => FAMILIES.find((f) => no >= f.from && no <= f.to).id;
 
@@ -59,7 +59,7 @@ export const CASTER_SHELLS = [
   S(8, 'groove', 'Groove', 2, 'lob', ['status'], 'zone', [], { r: 8, dur: 6, status: 'calm' }, 'a mirror ball'),
   S(9, 'anchor', 'Anchor', 2, 'bolt', ['pin'], null, [], { dur: 8 }, 'the anchor'),
   S(10, 'hatch', 'Hatch', 2, 'bolt', ['charm', 'summon'], null, [], {}, 'kintsugi'),
-  // ---- the Edge (Impact)
+  // ---- Edge (Impact)
   S(11, 'ricochetSaw', 'Ricochet Saw', 1, 'bounce', ['blast', 'chain'], null, ['M2'], { power: 1.6, count: 5, type: 'impact' }, 'Chopper, Disc Blade Gun'),
   S(12, 'skipstone', 'Skipstone', 1, 'bounce', ['blast'], null, [], { power: 1.2, r: 1.5, count: 5, water: 2 }, 'Bouncer'),
   S(13, 'splitter', 'Splitter', 2, 'bolt', ['type', 'split'], null, ['M1'], { power: 2, count: 7, type: 'impact' }, 'Flux and Splitter Rifle'),
@@ -70,7 +70,7 @@ export const CASTER_SHELLS = [
   S(18, 'pinball', 'Pinball', 2, 'bounce', ['blast'], null, [], { power: 1, dur: 6, gain: 1.15 }, 'the arcade'),
   S(19, 'petalRain', 'Petal Rain', 2, 'lob', ['split', 'blast'], null, ['M1'], { power: 0.5, count: 40, r: 5, hang: 0.5 }, 'Zodiac, in small'),
   S(20, 'stake', 'Stake', 3, 'bolt', ['pin', 'type'], null, [], { power: 6, dur: 6, type: 'impact' }, "Trigun's Cross Punisher"),
-  // ---- Heat (molten clay and crude)
+  // ---- Ember (molten clay and crude)
   S(21, 'flamer', 'Flamer', 1, 'cone', ['type', 'world'], null, ['S1'], { power: 0.6, dur: 4, r: 5 }, 'Pyrocitor'),
   S(22, 'meteor', 'Meteor', 2, 'call', ['blast'], 'pool', ['M10', 'S9'], { power: 4, count: 3, r: 2.5, delay: 1 }, 'Lava Gun to Meteor Gun'),
   S(23, 'lavaLamp', 'Lava Lamp', 2, 'seek', ['blast', 'split'], null, ['S9', 'M1'], { power: 3, count: 3, speed: 3 }, "the Lava Gun's glob"),
@@ -78,10 +78,10 @@ export const CASTER_SHELLS = [
   S(25, 'detonator', 'Detonator', 1, 'bolt', ['blast'], null, [], { power: 5, r: 3 }, 'Nitro Launcher'),
   S(26, 'glassmaker', 'Glassmaker', 2, 'lob', ['world'], null, ['M12'], { size: 4, breaks: 3 }, 'sand and heat'),
   S(27, 'bisque', 'Bisque', 3, 'bolt', ['morph', 'status'], null, ['S4', 'M7'], { dur: 5, status: 'halt', shatter: 2 }, 'firing'),
-  S(28, 'ember', 'Ember', 1, 'swarm', ['type'], null, [], { power: 0.4, dur: 10 }, "the Pyrocitor's sparks"),
+  S(28, 'cinder', 'Cinder', 1, 'swarm', ['type'], null, [], { power: 0.4, dur: 10 }, "the Pyrocitor's sparks"),
   S(29, 'volcano', 'Volcano', 3, 'deploy', ['blast'], 'pool', ['M4', 'S1', 'S9'], { power: 3, dur: 8, every: 1, r: 2 }, "the Lava Gun's ground"),
   S(30, 'slagRain', 'Slag Rain', 2, 'lob', ['blast'], 'cloud', ['S9'], { power: 0.5, r: 6, dur: 3 }, 'volcanic ash'),
-  // ---- the Storm (lightning)
+  // ---- Storm (lightning)
   S(31, 'teslaNode', 'Tesla Node', 1, 'deploy', ['chain'], null, ['S3', 'M2'], { power: 0.8, count: 2, every: 0.5, dur: 6 }, 'Tesla Claw'),
   S(32, 'chainBolt', 'Chain Bolt', 2, 'bolt', ['chain', 'status'], null, ['S3'], { power: 3, count: 8, falloff: 0.8, status: 'stun' }, 'Shock Cannon'),
   S(33, 'ballLightning', 'Ball Lightning', 2, 'seek', ['chain'], null, ['S3'], { power: 0.6, r: 4, speed: 2, dur: 8 }, 'Plasma Coil'),
@@ -92,7 +92,7 @@ export const CASTER_SHELLS = [
   S(38, 'staticCling', 'Static Cling', 2, 'bolt', ['status'], null, [], { r: 8, dur: 6, status: 'slow', power: 0.5 }, 'magnetism'),
   S(39, 'lodestone', 'Lodestone', 2, 'bolt', ['world'], null, [], { dur: 30 }, "the grapnel's need"),
   S(40, 'twelve', 'Twelve', 3, 'bolt', ['status', 'dispel'], null, ['S3'], { r: 6, dur: 10, status: 'sleep' }, 'Outlaw Star #12'),
-  // ---- Gravity (space and portals)
+  // ---- Pull (gravity, space and portals)
   S(41, 'inhaler', 'Inhaler', 2, 'cone', ['pull'], null, [], { count: 5, r: 6 }, 'Suck Cannon'),
   S(42, 'slingshot', 'Slingshot', 2, 'lob', ['pull', 'split'], null, ['M1'], { r: 6, dur: 1.5, fling: 18 }, 'Gravity Bomb, Vortex Cannon'),
   S(43, 'rift', 'Rift', 3, 'lob', ['space'], 'rift', ['S5', 'M5'], { dur: 6, drop: 8 }, 'Rift Inducer'),
@@ -103,7 +103,7 @@ export const CASTER_SHELLS = [
   S(48, 'moonlet', 'Moonlet', 3, 'self', ['pull'], null, [], { r: 3, dur: 12, holds: 8 }, 'orbiting shields'),
   S(49, 'swap', 'Swap', 2, 'bolt', ['space'], null, [], { range: 40 }, 'the swapper'),
   S(50, 'shrinker', 'Shrinker', 2, 'bolt', ['mass'], null, ['M8'], { dur: 8, scale: 0.33 }, 'the shrink ray'),
-  // ---- the Clock (time)
+  // ---- Clock (time)
   S(51, 'stasis', 'Stasis', 3, 'lob', ['time'], 'zone', ['S2', 'S7', 'M6'], { r: 5, dur: 5, scale: 0 }, 'time stop'),
   S(52, 'slowField', 'Slow Field', 2, 'lob', ['time'], 'zone', ['S2', 'S7', 'M6'], { r: 6, dur: 8, scale: 0.25 }, 'slow time'),
   S(53, 'overdrive', 'Overdrive', 2, 'self', ['time'], null, [], { dur: 6, tools: 1.5 }, 'haste (the tools only: the core movement is untouched)'),
@@ -114,7 +114,7 @@ export const CASTER_SHELLS = [
   S(58, 'stopMotion', 'Stop-Motion', 2, 'lob', ['time'], 'zone', ['M6', 'S7'], { r: 8, dur: 8, onBeat: 2 }, 'the metronome'),
   S(59, 'bookmark', 'Bookmark', 2, 'self', ['space'], null, ['M9'], { dur: 10 }, 'a save state'),
   S(60, 'lastWord', 'Last Word', 3, 'bolt', ['type'], null, ['M9'], { delay: 3, repeat: 1 }, 'delayed damage'),
-  // ---- Psyche (Ego, Influence, Illusion)
+  // ---- Will (Ego, Influence, Illusion)
   S(61, 'infector', 'Infector', 2, 'bolt', ['charm'], null, [], { dur: 8, jumps: true }, 'Infector, Infecto-Bomb'),
   S(62, 'tauntDoll', 'Taunt Doll', 1, 'deploy', ['decoy', 'blast'], null, ['M4'], { r: 15, dur: 6, power: 3 }, 'Taunter'),
   S(63, 'double', 'Double', 2, 'deploy', ['decoy'], null, ['S8'], { dur: 10 }, 'Decoy Glove, a mirage'),
@@ -125,7 +125,7 @@ export const CASTER_SHELLS = [
   S(68, 'lullaby', 'Lullaby', 1, 'lob', ['status'], 'cloud', [], { r: 5, dur: 6, status: 'sleep' }, 'sleep'),
   S(69, 'mindSwap', 'Mind Swap', 3, 'bolt', ['space'], null, ['M11'], { dur: 12, pair: true }, 'the body swap'),
   S(70, 'forgetMe', 'Forget Me', 2, 'bolt', ['status'], null, [], { dur: 10, status: 'forget' }, 'the forget status'),
-  // ---- the Company (summons and things set down; never a sibling or a spirit: the owner, 2026-10-12)
+  // ---- Company (summons and things set down; never a sibling or a spirit: the owner, 2026-10-12)
   S(71, 'shabti', 'Shabti', 2, 'lob', ['summon'], null, [], { count: 3, dur: 20, power: 0.8 }, 'Synthenoid'),
   S(72, 'agents', 'Agents', 2, 'swarm', ['blast'], null, [], { count: 6, power: 2, r: 1.5 }, 'Glove of Doom, Agents of Doom'),
   S(73, 'droneHalo', 'Drone Halo', 2, 'self', ['summon'], null, [], { count: 3, dur: 15, power: 0.5 }, 'Drone Device'),
@@ -136,7 +136,7 @@ export const CASTER_SHELLS = [
   S(78, 'golem', 'Golem', 3, 'lob', ['summon', 'world'], null, ['M12'], { dur: 30, power: 3, h: 3 }, 'the golem'),
   S(79, 'minefield', 'Minefield', 1, 'deploy', ['blast'], null, ['M4'], { count: 6, r: 2, arm: 1, power: 3, dur: 60 }, 'Mine Glove'),
   S(80, 'marionette', 'Marionette', 3, 'bolt', ['summon'], null, [], { dur: 20 }, 'Agents of Dread, a puppeteer'),
-  // ---- the Feelings (each needs its feeling known: FEELINGS-AWAKENING.md)
+  // ---- Feelings (each needs its feeling known: FEELINGS-AWAKENING.md)
   S(81, 'wonder', 'Wonder', 2, 'lob', ['feel', 'status'], null, [], { r: 20, dur: 4, status: 'halt', reveal: 40, feeling: 'wonder' }, 'the vantage'),
   S(82, 'mirth', 'Mirth', 2, 'lob', ['feel', 'status'], null, [], { r: 10, dur: 3, status: 'stun', feeling: 'mirth' }, 'the pratfall'),
   S(83, 'desire', 'Desire', 2, 'lob', ['feel', 'pull'], null, [], { r: 20, dur: 5, feeling: 'desire' }, 'the lure'),
@@ -147,7 +147,7 @@ export const CASTER_SHELLS = [
   S(88, 'agate', 'Agate', 3, 'bolt', ['feel'], null, [], { feelings: 2 }, 'the agate'),
   S(89, 'calm', 'Calm', 3, 'beam', ['dispel'], null, [], { r: 8, fair: 1 }, 'Outlaw Star #3 and #5'),
   S(90, 'prismatic', 'Prismatic', 3, 'bolt', ['feel'], null, [], { feelings: 7 }, 'the wheel of feelings'),
-  // ---- the Caster's own (tier IV: the toll)
+  // ---- Caster's own (tier IV: the toll)
   S(91, 'zodiac', 'Zodiac', 4, 'call', ['blast'], null, ['M10'], { count: 12, power: 10 }, 'Zodiac'),
   S(92, 'ryno', 'RYNO', 4, 'swarm', ['blast'], null, [], { count: 24, power: 4, r: 2 }, 'the RYNO I to III'),
   S(93, 'visibomb', 'Visibomb', 4, 'steer', ['blast'], null, ['M3', 'S8'], { dur: 8, power: 14, r: 5 }, 'Visibomb Gun'),
