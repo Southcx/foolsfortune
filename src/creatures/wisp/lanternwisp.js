@@ -23,6 +23,7 @@ import { sfx } from '../../audio/sfx.js';
 import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
 import { wispMind } from './mind.js';
 import { stream } from '../../core/rng.js';
+import { LanternWispLook } from '../../vfx/lanternwisplook.js'; // [look] Calissa's
 const simRand = stream('creatures/wisp/lanternwisp'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** Its numbers. hp in blows of power 1; hover: its feet over the ground (m); cast: wind (s), speed (m/s), life (s), k (a vessel
@@ -41,8 +42,7 @@ export class LanternWisps {
     this.game = game; this.gltf = gltf; this.list = []; this.bolts = [];
     this.clips = new Map(gltf.animations.map((c) => [c.name, c]));
     this.mind = wispMind(this);
-    this.boltGeo = new THREE.IcosahedronGeometry(0.16, 1);
-    this.boltMat = new THREE.MeshStandardMaterial({ color: 0xffb060, emissive: 0xff8a2a, emissiveIntensity: 2, roughness: 0.4 });
+    this.look = new LanternWispLook(game); // [look] its light, ember, flash and snuff: vfx/lanternwisplook.js (Calissa's)
   }
 
   // ---------------------------------------------------------------- a body
@@ -80,6 +80,7 @@ export class LanternWisps {
     g.creatures.add(c); g.ai?.add(c.brain);
     this.list.push(c);
     this.play(c, 'Idle');
+    this.look.dress(c); // [look]
     return c;
   }
   head(c) { return new THREE.Vector3(c.pos.x, c.pos.y + WISP.hover + WISP.height + 0.2, c.pos.z); }
@@ -160,7 +161,7 @@ export class LanternWisps {
     const to = foe === g.player ? _a.copy(g.player.pos).setY(g.player.pos.y + 1.1) : (foe.center?.(_a) ?? _a.copy(foe.pos));
     const flight = from.distanceTo(to) / W.speed, lead = _b.copy(foe.vel ?? UP.clone().set(0, 0, 0)).setY(0).multiplyScalar(Math.min(0.8, flight));
     const v = to.clone().add(lead).sub(from).normalize().multiplyScalar(W.speed);
-    const m = new THREE.Mesh(this.boltGeo, this.boltMat); m.position.copy(from); m.userData.zoneFree = true; g.scene.add(m);
+    const m = this.look.bolt(from); // [look] the ember, its tail and its spark (in the scene)
     const q = { m, pos: m.position, vel: v, v, t: 0, c, foe, lachryma: 1, from: c, mark: g.parryMark?.mark(m), vanish: () => { q.gone = true; } };
     this.bolts.push(q); (g.projectiles ||= new Set()).add(q);
     g.events?.emit('wisp.cast', { by: 'creature' });
@@ -221,5 +222,6 @@ export class LanternWisps {
       this.play(c, clip);
     }
     this.updateBolts(dt);
+    this.look.update(dt); // [look]
   }
 }
