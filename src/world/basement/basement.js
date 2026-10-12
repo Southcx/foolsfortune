@@ -38,6 +38,7 @@ import { FONT } from '../../ui/theme.js';
 import { TECH_CPS, TECH_PITS } from './techwing.js';
 import { MILL_CPS, MILL_PITS } from './mill.js';
 import { IndexMenu } from '../../feedback/indexmenu.js';
+import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js'; // (the hub's salt-glazed walls, the Index's celadon: Calissa's room glazes)
 import { addOutline } from '../../render/outline.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
@@ -183,8 +184,8 @@ export function buildBasement(L, W, D) {
   wallZ(-OUT - Wt / 2, -OUT, OUT, [[-2.5, 2.5, 0, 3.5]]); // (room 1's south door: the tech lab)
   wallZ(OUT + Wt / 2, -OUT, OUT);
   // hub walls: one door to room 1
-  wallZ(-HUB, -HUB, HUB, [[-2, 2, 0, 3.5]]);
-  wallZ(HUB, -HUB, HUB); wallX(-HUB, -HUB, HUB); wallX(HUB, -HUB, HUB);
+  wallZ(-HUB, -HUB, HUB, [[-2, 2, 0, 3.5]], RG.hubWall);
+  wallZ(HUB, -HUB, HUB, [], RG.hubWall); wallX(-HUB, -HUB, HUB, [], RG.hubWall); wallX(HUB, -HUB, HUB, [], RG.hubWall);
   // (the ring was eight rooms behind dividers; it is one room now, THE COURSE, with eight stations round it. The one wall kept is
   // the low station's: it makes the tunnel the only way through from the chute to the start)
   wallX(-HUB, -OUT, -HUB, [[-35.5, -31.5, 0, 4]]); // 8 | 1 (only the tunnel mouth)
@@ -482,7 +483,7 @@ export class Course {
       return Math.abs(P.pos.y - BASE_Y) < 0.5 && d < 2.3 ? { pos: new THREE.Vector3(cx, BASE_Y + 1.9, cz), d } : null;
     });
     // the console: a pedestal with a lit face, on a glowing ring
-    const ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.8), new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.85, flatShading: true }));
+    const ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.8), this.game.level.mat(RG.index));
     ped.position.set(cx, B + 0.55, cz);
     addOutline(ped);
     const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.05, 4, 36), glowMat);
@@ -578,6 +579,7 @@ export class Course {
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();
+    p.standUp(); // (arrived on their feet: a shatter on the belly was made whole still prone)
     const hs = p.techs?.get?.('sondelass')?.hookshot; // (a line out does not come along: it would drag the Courier back across the world)
     if (hs?.att) hs.release('stow');
     hs?.cancel?.();

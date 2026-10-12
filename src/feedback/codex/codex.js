@@ -3,13 +3,14 @@
 // learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
 // of the ones you don't (a hint, and a bar that only fills as you get closer), and which
 // variant is selected. In DEBUG its LENDS shelf is the lend panel (ui/lendpanel.js), and a lent art wears the hollow mark, an earned one
-// the solid. The Codex pauses the game while it's
-// open. Fired-clay tablets, the same ink as the rest of the HUD.
+// the solid. Its SONDELASS shelf is the loadout editor (tools/sondelass/loadouteditor.js: the melee loadout chosen; F closes it too).
+// The Codex pauses the game while it's open. Fired-clay tablets, the same ink as the rest of the HUD.
 // ---------------------------------------------------------------------------
 import { ABILITIES, GOD_ARTS, BY_ID } from '../../progress/skills.js';
 import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledger.js';
 import { renderVeritome } from '../../tools/veritome/ui.js';
 import { renderTools } from '../../tools/codexpage.js';
+import { renderLoadoutShelf } from '../../tools/sondelass/loadouteditor.js';
 import { renderSoundTest } from '../../music/soundtest.js';
 import { lendPanel, lentMark, saveName } from '../../ui/lendpanel.js';
 
@@ -30,8 +31,8 @@ const CSS = `
 #codex .switch u { text-decoration: none; color: #fff1dc; min-width: 66px; display: inline-block; }
 #codex .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #codex .x:hover, #codex button:hover { background: rgba(var(--jsel),.35); }
-#codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; gap: 22px; }
-#codex .shelf .tab { cursor: var(--jcur-pointer, pointer); opacity: .5; padding-bottom: 3px; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
+#codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; flex-wrap: wrap; gap: 6px 22px; }
+#codex .shelf .tab { cursor: var(--jcur-pointer, pointer); opacity: .5; padding-bottom: 3px; white-space: nowrap; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
@@ -80,10 +81,11 @@ export class Codex {
     this.root.id = 'codex';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); });
-    // (Esc closes it anywhere; over the title, where the game's tick (B) does not run, B does too: the SOUND TEST is opened from there)
+    // (Esc closes it anywhere; over the title, where the game's tick (B) does not run, B does too: the SOUND TEST is opened from there;
+    // on the SONDELASS shelf, F too, as the loadout editor's page at the sparring circle's lectern closes: tools/sondelass/loadouteditor.js)
     addEventListener('keydown', (e) => {
       if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
-      if (e.code === 'Escape' || (e.code === 'KeyB' && this.game.title?.active)) { e.preventDefault(); e.stopPropagation(); this.close(); }
+      if (e.code === 'Escape' || (e.code === 'KeyB' && this.game.title?.active) || (e.code === 'KeyF' && this.shelf === 'sondelass')) { e.preventDefault(); e.stopPropagation(); this.game.input?.spend?.(e.code); this.close(); }
     }, true);
     document.body.appendChild(this.root);
     this.sys.listeners.add(() => { if (this.open) this.render(); });
@@ -152,7 +154,7 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['sondelass', 'SONDELASS'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
@@ -164,8 +166,8 @@ export class Codex {
       this.shelf = 'move';
     }
     if (this.shelf === 'records') cx.appendChild(el('div', 'shelf', saveName(this.game).toUpperCase())); // (which save these are: DEBUG-MODE.md section 2)
-    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire') {
-      (this.shelf === 'grimoire' ? (c, host) => this.game.codexPages?.grimoire?.(c, host) : this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
+    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire' || this.shelf === 'sondelass') {
+      (this.shelf === 'grimoire' ? (c, host) => this.game.codexPages?.grimoire?.(c, host) : this.shelf === 'sondelass' ? renderLoadoutShelf : this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;
       const foot = el('footer');
       foot.appendChild(el('span', 'msg', 'counted quietly as you play · the log (lower left) says the rest'));

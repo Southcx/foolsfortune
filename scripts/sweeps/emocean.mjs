@@ -456,7 +456,7 @@ if (part('dock')) {
 if (part('back')) {
   S.phase = 'back';
   if (!crossed) { await S.go('margarite'); await S.ticks(30); }
-  await S.ev(() => { const g = __game.game; for (let i = 0; i < 4; i++) g.pneuka.add('cask.mirth', 'test'); });
+  await S.ev(() => { const g = __game.game; for (let i = 0; i < 4; i++) g.pneuka.add('cask.margarite', 'test'); });
   const casks0 = await S.ev(() => __game.game.voyage.casks());
   const b = await board('margarite', 'Anagami', 'pirates', { direct: true }); // (the script's acts: the Wreckers' first beat and the continue)
   let s = await st();
@@ -548,8 +548,8 @@ if (part('repeat')) {
   }
   const rw = await S.ev(async () => { const { worthOf, SHOPS } = await import('/src/progress/shop/catalogue.js'), { today } = await import('/src/core/calendar.js');
     return { today: worthOf('rutter', { worth: 100, day: today() }), dayOn: worthOf('rutter', { worth: 100, day: today() - 1 }), buys: SHOPS.purser.buys.includes('rutter') }; });
-  const bf = await S.ev(() => { const g = __game.game, S = g.shops, id = 'cask.mirth', p0 = S.price('purser', id), o0 = S.offer('purser', 'cask.grief');
-    S.open('purser', { factor: { sell: 0.5, buy: 2 } }); /* (factors big enough to read through the rounding of a 5-cube cask) */ const p1 = S.price('purser', id), o1 = S.offer('purser', 'cask.grief'); S.close(); const p2 = S.price('purser', id);
+  const bf = await S.ev(() => { const g = __game.game, S = g.shops, id = 'cask.margarite', p0 = S.price('purser', id), o0 = S.offer('purser', 'cask.dunemaw');
+    S.open('purser', { factor: { sell: 0.5, buy: 2 } }); /* (factors big enough to read through the rounding of a 5-cube cask) */ const p1 = S.price('purser', id), o1 = S.offer('purser', 'cask.dunemaw'); S.close(); const p2 = S.price('purser', id);
     return { p0, p1, p2, o0, o1 }; });
   S.check('passage: the barge\'s counter is the Purser\'s at its factors, and only while open', Math.abs(bf.p1 / bf.p0 - 2) < 0.25 && Math.abs(bf.o1 / bf.o0 - 0.5) < 0.15 && bf.p2 === bf.p0, bf);
   S.check('passage: a rutter is worth its worth today, half that a game day on, and the Purser buys it', rw.today === 100 && rw.dayOn === 50 && rw.buys, rw);

@@ -51,6 +51,13 @@ const CATCH = { clip: 'Vane_ForkCatch', at: 0.12, end: 0.77 };
 const COUNTER = 0.8; // (seconds after a parry in which LMB is the counter)
 // what of the vane must stay out of the ground (tool frame, and a radius): the hoop in the crook, the crook's top, the fork's tines, the pick
 const OFF_GROUND = [{ x: 1.0, y: 0.275, r: 0.2 }, { x: 1.0, y: 0.55, r: 0.03 }, { x: -1.0, r: 0.02 }, { x: 0.83, y: 0.26, r: 0.0 }];
+// what of it must stay out of their body (tool frame): the staff heel to crook, the crook's arc, the dreamcatcher's hoop (the suite's
+// swings were made with a shorter staff and no hoop: its far end went 9.5 cm into the chest, the pose audit; tools/toolbody.js)
+const OFF_BODY = [
+  ...Array.from({ length: 21 }, (_, i) => ({ x: -1.0 + i * 0.1, r: 0.02 })),
+  ...Array.from({ length: 7 }, (_, i) => { const a = (i / 6) * Math.PI * 1.15; return { x: 1.0 + 0.275 * Math.sin(a), y: 0.275 - 0.275 * Math.cos(a), r: 0.02 }; }),
+  ...Array.from({ length: 8 }, (_, i) => { const a = (i / 8) * Math.PI * 2; return { x: 1.0 + 0.19 * Math.cos(a), y: 0.275 + 0.19 * Math.sin(a), r: 0.01 }; }),
+];
 const TAP = 0.16, RANGE = 70, FORK = { speed: 34, gravity: 6, ring: 7, back: 28, reach: 60, life: 2.2 };
 export const ATTUNE = [ // (exported: the compass's vane layer wears each mode's colour and sigil, vfx/vanehud.js)
   { id: 'any', kinds: null, color: 0xe8d7b6 },
@@ -78,6 +85,7 @@ export class Dreamvane extends HeldTool {
     this.rmbT = -1; this.dowsing = false; this.att = 0; this.glow = 0; this.tickT = 0; this.found = new WeakSet(); this.charted = new WeakSet();
     this.throwT = -1; this.thrown = false; this.surveyT = -1; this.catchT = -1; this.counterT = 0;
     this.dowseW = 0; this.dowseT = 0; this.freeW = 0; this.legClip = null; this.legState = {}; this.leftHold = {};
+    this.offBody = OFF_BODY; // (kept out of their body about the hand: tools/heldtool.js)
     // the blows (pick.js); the arc of the head through the air is vfx/library.js 'swing.dreamvane'
     this.trail = this.mgr.game.vfx?.swing('swing.dreamvane') || null;
     this.moves = new VaneMoves(this, {

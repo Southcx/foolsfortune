@@ -44,7 +44,7 @@ export const SLEEVES = {
 };
 /** A blow a parry broke off: what it moved eases back to rest at this rate (1/s). */
 export const MOVE_EASE = 12;
-/** A blow that lands shoves the Courier this fast (m/s; Strawman never hurts: STRAWMAN.swing.harm 0). */
+/** A blow that lands shoves the Courier this fast (m/s; Strawman never hurts). */
 export const PUSH = 4;
 
 const SW = SLEEVES.swing;

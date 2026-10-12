@@ -17,8 +17,11 @@
 //
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
 //   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
+//   .statusBench (statusbench.js: the eleven roly-polies, each a status, and the bench's lectern)
 //   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
 //   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
+//   Strawman's stance (still, guard) is chosen on the sparring circle's lectern with its strings (the owner, 2026-10-11): F at Strawman
+//   does nothing; it is a lock target added here (game.lock.add: the lock lists no training body of its own)
 //   events: strawman.mode, strawman.bout; Strawman's moves and attack strings (strawmanstrings.js, Calissa's): strawman.windup,
 //   strawman.strike { move, landed, cleared }, strawman.parried { move }, strawman.string, strawman.tempo
 // ---------------------------------------------------------------------------------------
@@ -31,11 +34,13 @@ import { StrawmanModel } from '../../vfx/strawman.js';
 import { PaintRange } from './paintrange.js';
 import { buildCombatWing } from './combatwing.js';
 import { StrawmanStrings } from './strawmanstrings.js';
+import { StatusBench } from './statusbench.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
 export { TR };
 const _src = new THREE.Vector3(); // (where a blow came from, when nothing struck it but a point and a way: Strawman's guard)
+const GUARD_OPEN = 1.0; // (sim s Strawman's guard stays open after a guard break: God Hand's guard break, a beat to land the string)
 
 
 /** The static room: floor, walls, roof, beams, the lane and the mark, the clay wall, the shelf. Returns the wall's collider. */
@@ -100,14 +105,11 @@ export class TestRoom {
     this.strawman = this.makeStrawman();
     this.drills = new Drills(g, this);
     this.paintRange = new PaintRange(g); // (the floor rings at 3, 6 and 9 m: painting at range, paintrange.js)
-    // F: the console opens the Index on its page; Strawman cycles its mode
+    this.statusBench = new StatusBench(g); // (the combat wing's status bench: eleven roly-polies, each a status: statusbench.js)
+    // F: the console opens the Index on its page (Strawman's stance is the sparring circle's lectern's: strawmanstrings.js)
     g.interact?.add('testroom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);
       return dd < 1.8 && Math.abs(P.pos.y - TR.console.y) < 1.2 ? { pos: TR.console.clone().setY(1.75), d: dd } : null;
-    });
-    g.interact?.add('strawman', (P) => {
-      const S = this.strawman, dd = Math.hypot(P.pos.x - S.pos.x, P.pos.z - S.pos.z) - 0.4;
-      return dd < 1.6 && Math.abs(P.pos.y - S.pos.y) < 1.2 ? { pos: S.pos.clone().setY(S.height + 0.25), d: dd } : null;
     });
     this.buildConsole();
   }
@@ -135,7 +137,7 @@ export class TestRoom {
     model.group.position.copy(at); model.group.rotation.y = 0; // (facing +z: toward the lane and the mark)
     g.scene.add(model.group);
     const height = model.height || 2.45, radius = 0.45, hits = [];
-    let clock = 0, lastHit = -1e9, mode = 'still', swingT = 0;
+    let clock = 0, lastHit = -1e9, mode = 'still', open = 0; // (`open`: sim s its guard stays broken: a guard break's, the melee loadout)
     const S = {
       type: 'creature', kind: 'strawman', name: 'Strawman', training: true,
       pos: at.clone(), radius, height, alive: true, yaw: 0, poise: 1, stunFor: 4, mindRest: 0,
@@ -151,7 +153,7 @@ export class TestRoom {
         // convention and missed them all: the owner's T51, v131)
         const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
         const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, y = model.yaw, front = !!src && dx * Math.sin(y) + dz * Math.cos(y) > 0.5 * Math.hypot(dx, dz); // (its front is where it faces: it turns on its ball in a string)
-        const blocked = mode === 'guard' && front, dmg = blocked ? 0 : power;
+        const blocked = mode === 'guard' && front && open <= 0, dmg = blocked ? 0 : power;
         hits.push({ at: clock, dmg, type: blocked ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;
         if (blocked) { // (a block is shown as one: the resist mark where it struck, the guard's clank, the sack barely stirring: the owner's T51, v132)
@@ -161,26 +163,26 @@ export class TestRoom {
         }
         model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
       },
+      /** A guard break (tools/moveset.js `hit.guardBreak`: the cutlass's Guard Break and Guard Crush): the sleeves thrown open for a beat,
+       *  and every blow lands through it meanwhile (the blow that broke it too: it asks before it strikes). */
+      breakGuard() { if (mode !== 'guard') return; open = GUARD_OPEN; model.open?.(GUARD_OPEN); },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
-      setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); },
-      /** A swing at whoever stands in front (the swing mode's): one of Strawman's moves (strawmanstrings.js, vfx/strawmanmoves.js): a
-       *  windup the parry answers, then the sweep; unanswered, it lands on the Courier in reach as a shove, no harm (the owner's T51, v133). */
-      swing() { S.strings.attack('swing'); },
+      setMode(m) { if (m === mode) return; mode = m; model.setMode?.(m); g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); }, // (still or guard: the sparring circle's lectern; the swing is an attack string's now)
       onParried() { S.strings.parried(); }, // (the blow broken off: it rocks back, its sleeve eases home)
       /** Once a frame: the body, its moves and its strings on the sim clock (the clock its windups count in: creatures.js); the bout's
-       *  end on real seconds (STRAWMAN.boutGap); the swing mode's slow sweep (harmless: STRAWMAN.swing.harm). */
+       *  end on real seconds (STRAWMAN.boutGap). */
       tick(dt, raw = dt) {
-        clock += raw;
+        clock += raw; open = Math.max(0, open - dt); // (the guard's break on the sim clock, as the sleeves' (vfx/strawman.js): a hit-stop holds both)
         model.update?.(dt);
         S.strings.update(dt); S.yaw = model.yaw;
         if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
-        if (mode === 'swing' && !S.strings.running && (swingT += dt) > STRAWMAN.swing.every) { swingT = 0; S.swing(); }
       },
       last: null,
     };
     const col = g.physics.world.createCollider(RAPIER.ColliderDesc.capsule(height * 0.32, radius).setTranslation(at.x, height * 0.5, at.z).setCollisionGroups(GROUPS.static));
     g.physics.register(col, S);
     g.creatures?.add(S);
+    g.lock?.add(S); // (a lock target: the lock-on lists no training body of its own, courier/lockon.js)
     S.strings = new StrawmanStrings(g, S); // (its moves and attack strings, the sparring circle's lectern: strawmanstrings.js)
     return S;
   }
@@ -188,11 +190,7 @@ export class TestRoom {
   update(dt, raw = dt) {
     const g = this.game, P = g.player;
     this.strawman.tick(dt, raw);
-    if (g.interact?.cur?.id === 'strawman' && P.peekLatch?.('KeyF')) {
-      P.latch('KeyF');
-      const M = STRAWMAN.modes, S = this.strawman;
-      S.setMode(M[(M.indexOf(S.mode) + 1) % M.length]);
-    }
+    this.statusBench.update(dt);
     if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);
   }

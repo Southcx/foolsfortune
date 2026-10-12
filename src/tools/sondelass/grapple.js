@@ -21,6 +21,8 @@
 // The hang is the authored bar hang (the zipline's); the swing is the suite's (Trav_Swing), its phase read from the rope's angle against
 // the body (never from time: a 2 s capture is the swing of a 2.1 m rope, and this rope is any length), the whole pose moved so its hands
 // are on the line; a fling off it plays the suite's release (Trav_SwingRelease) over the flight. The free hand closes on the line.
+// One owner each: the facing is the core's stance turn (the hook is aimed while a line is out), the hands are the Sondelass's (its aim on
+// the anchor, square to the body's right; the free hand on the shaft), and rom.js has the last word on both (`limitsLast`).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../../courier/moves/techs.js';
@@ -41,6 +43,7 @@ export class Grapple extends Tech {
   constructor(mgr) {
     super(mgr, 'grapple');
     this.overrides = 1;
+    this.limitsLast = true; // (it owns the body, but its hands are the Sondelass's, on the shaft: rom.js still has the last word, character.js)
     this.blendIn = 9;
     this.hangK = 0; // how hung (slow, taut) rather than swinging, 0..1
     this.speedK = 0;
@@ -123,13 +126,13 @@ export class Grapple extends Tech {
       _p.copy(P.pos).addScaledVector(fix, -(fl - h.L) / fl);
       if (P.fits?.(_p, P.shape) ?? true) { P.pos.copy(_p); P.body?.setNextKinematicTranslation?.(P.pos); }
     }
-    // facing and the pose
+    // the pose. (The facing is not set here: on the line the hook is aimed, so the core's stance turn faces the aim, eased, once a frame
+    //  (player.js updateBody). Set here as well, to the swing's travel or the anchor's bearing, it had two owners: under the anchor that
+    //  bearing is atan2 of nothing and flipped 180 degrees each pass, and on a frame with no fixed step the stance turned it back, a
+    //  sawtooth of 8 to 15 degrees a frame at 144 Hz that threw the hands 0.1 m a frame: CASEBOOK)
     const sp = P.vel.length();
     this.peak = Math.max(this.peak, sp);
     this.swingT += dt;
-    _w.copy(P.vel).setY(0);
-    if (_w.lengthSq() > 4) P.bodyYaw = Math.atan2(_w.x, _w.z);
-    else P.bodyYaw = Math.atan2(dir.x, dir.z);
     const taut = fl > h.L - 0.25;
     this.hangK = THREE.MathUtils.damp(this.hangK, taut && sp < 3.2 ? 1 : 0, 6, dt);
     this.speedK = THREE.MathUtils.damp(this.speedK, Math.min(1, sp / 16), 6, dt);

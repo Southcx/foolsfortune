@@ -77,7 +77,7 @@ export class Nursery {
   hurt(k, p, dir, power, cause, by) {
     if (!k.alive) return;
     k.hp -= 1; k.shake = 0.3;
-    this.game.slip?.addDisc(k.pos.clone(), new THREE.Vector3(0, 1, 0), 0.6, 10, 0.5);
+    this.game.paintmap?.coat(k.pos.clone(), new THREE.Vector3(0, 1, 0), 0.6, 10, 0.5);
     sfx.jellySquelch?.(this.game.listenerDistance(k.pos), 0.6);
     if (k.hp <= 0) this.break(k, by);
   }
@@ -91,7 +91,7 @@ export class Nursery {
     g.creatures.remove(k);
     const up = new THREE.Vector3(0, 1, 0);
     g.shells?.addSplat?.(k.pos.clone().setY(k.pos.y + 0.02), up, 2.2, 'crude');
-    g.slip?.addDisc(k.pos.clone(), up, 1.4, 18);
+    g.paintmap?.coat(k.pos.clone(), up, 1.4, 18);
     if (g.fx?.alpha?.emit) for (let e = 0; e < 18; e++) g.fx.alpha.emit({ pos: k.pos.clone().setY(k.pos.y + 0.3), vel: new THREE.Vector3((simRand() - 0.5) * 4, 2 + simRand() * 4, (simRand() - 0.5) * 4), life: 0.9, size: 0.07, sizeEnd: 0.02, color: new THREE.Color(0xd9c19a), alpha: 0.9, drag: 0.5, gravity: 9 });
     sfx.jellyPop?.(g.listenerDistance(k.pos));
     g.ai?.stimuli.emit('alarm', k.pos, { radius: NURSERY.guard.alarm, strength: 1, by, source: k, about: by === 'courier' ? g.player : null, aboutPos: g.player.pos });

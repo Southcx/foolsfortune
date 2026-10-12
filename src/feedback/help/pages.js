@@ -100,8 +100,10 @@ export const PAGES = [
     lead: 'One instrument, three shapes: a cutlass, a rod and a hook, its sections sliding between them. Worn on the back.',
     rows: [
       ['Q · 1 2 3', 'draw or stow · CUTLASS, ROD, HOOK'],
-      ['CUTLASS: LMB', 'a three-stroke combo'],
-      ['RMB tap · RMB hold', 'the Stinger (a lunge) · Blade Mode: time all but stops, the mouse turns the line of the cut, LMB cuts'],
+      ['CUTLASS: LMB', 'the combo: four strokes, the last looping back to the first'],
+      ['RMB', 'the special, at once: the Stinger (a lunge)'],
+      ['crouched (C), hold RMB', 'the iaido: let go for one fast draw cut, or hold on into Blade Mode: time all but stops, the mouse turns the line of the cut, LMB cuts'],
+      ['E', 'blink: cancels any stroke at once, and the next LMB carries the combo on'],
       ['MMB · hold V', 'lock on · guard (in time: a parry)'],
       ['ROD: hold LMB, let go', 'charge and cast the lure; tap LMB to twitch it, the wheel for its depth, RMB sinks it, MMB sounds'],
       ['a fish on', 'A D lean, S haul, W bow, C brace; LMB reels, RMB gives line'],

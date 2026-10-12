@@ -5,7 +5,8 @@
 //   1. the icon (ui/icons/: pixel art, scaled by a whole number; palette-swapped to grey while locked)
 //   2. the label, big (the genre word: `name`)
 //   3. one line of effect (`does`: verb first; its keywords marked and its numbers in colour: ui/keywords.js)
-//   4. the stat chips: a small icon, a number, a unit (range m, angle °, energy, charges ×n, cooldown s, duration s; real seconds only)
+//   4. the stat chips: a small icon, a number, a unit (power, reach m, range m, angle °, speed s, energy, charges ×n, cooldown s, duration
+//      s; real seconds only), and a keyword the thing is (`keywords`: the melee loadout's effect, Stagger, Knockback ...: ui/keywords.js)
 //   5. the key ([1], [LMB], or the Passive keyword)
 //   6. the state (EQUIPPED with a tick, READY, LOCKED with a padlock and its one opening line), a word beside every colour
 // The detail (the lore name and the whole text) shows only on hover, on keyboard focus, or while the card is held.
@@ -17,9 +18,11 @@
 // game's: core/input.js), a window drawn again after a key's pick gives that card its focus back (by the row's `id`), a held press shows the detail.
 //
 // Data in: a row with Dovina's fields (`id`, `name`, `does`, `lore`, `detail`, `cost`, `charges`, `cooldown` in real seconds, `duration` in
-// real seconds, `range` m, `angle` degrees, `always`) and the card's own (`icon` an icon id, `key` a string or a list of them or
-// 'passive', `state` 'equipped' | 'ready' | 'locked', `opens` the locked card's line). A table in bars is turned to seconds before it
-// comes here (ui/mountcards.js). The words on the card are the row's: the state's three words are placeholders for Espada's.
+// real seconds, `range` m, `angle` degrees, `always`; a blow's `power`, `reach` m and `speed`, real seconds a blow) and the card's own
+// (`icon` an icon id, `key` a string or a list of them or 'passive', `state` 'equipped' | 'ready' | 'locked', `opens` the locked card's
+// line, `keywords` [ids], `lent` true | false in the DEBUG save: the lend panel's hollow or solid mark, ui/lendpanel.js). A table in
+// bars is turned to seconds before it comes here (ui/mountcards.js). The words on the card are the row's: the state's words are
+// placeholders for Espada's.
 //
 // Prior art: Hades' boon cards (an icon, a name, one line, the number in colour), Slay the Spire's keywords, Breath of the Wild's item
 // and rune screens (an icon, one line, the button), Gradius' power-up bar, Monster Hunter's equipment compare, and the Xbox
@@ -27,23 +30,31 @@
 //
 //   new ChoiceCard(row, { onPick, base }) -> .el   .set(row)   .compareTo(base | null)
 //   choiceCard(row, opts) -> element                 cardList(cards, { cols }) -> element (the arrows move between them)
-//   slotRow({ slots, filled: [row | null], always: row?, onPick(i) }) -> element      STATE_WORDS (placeholders)      installChoiceCards()
+//   slotRow({ slots, filled: [row | null], always: row?, onPick(i), keys: [cap], closed: [{ opens }], sel: i, pickEmpty }) -> element
+//     (keys: each slot's cap, its number by default; closed: slots past `slots` not yet open, a padlock and what opens each; sel: the slot
+//     picked, lit; pickEmpty: an empty slot can be picked, to fill it; id: the row's name, where a window has two)
+//   STATE_WORDS (placeholders)      installChoiceCards()
 // ---------------------------------------------------------------------------------------
 import { iconEl, hasIcon } from './icons/icons.js';
-import { keyworded, keywordEl, installKeywords } from './keywords.js';
+import { keyworded, keywordEl, installKeywords, KEYWORDS } from './keywords.js';
+import { lentMark } from './lendpanel.js';
 
 /** The state's words (placeholders for Espada's). */
-export const STATE_WORDS = { equipped: 'EQUIPPED', ready: 'READY', locked: 'LOCKED', always: 'ALWAYS MOUNTED', empty: 'EMPTY' };
+export const STATE_WORDS = { equipped: 'EQUIPPED', ready: 'READY', locked: 'LOCKED', always: 'ALWAYS MOUNTED', empty: 'EMPTY', closed: 'CLOSED' };
 /** The chips, in the order they are shown: the row's field, its icon, its unit, and which way is better. */
 const CHIPS = [
+  { k: 'power', icon: 'chip.power', fmt: (v) => `${fix2(v)}`, unit: '', word: 'Power', up: true }, // (to the hundredth: Push Kick's 1.45 is not Low Sweep's 1.35)
+  { k: 'reach', icon: 'chip.range', fmt: (v) => `${fix(v)}`, unit: 'm', word: 'Reach', up: true },
   { k: 'range', icon: 'chip.range', fmt: (v) => `${fix(v)}`, unit: 'm', word: 'Range', up: true },
   { k: 'angle', icon: 'chip.angle', fmt: (v) => `${fix(v)}°`, unit: '', word: 'Angle', up: true },
+  { k: 'speed', icon: 'chip.speed', fmt: (v) => `${fix2(v)}`, unit: 's', word: 'Speed (real seconds a blow; less is faster)', up: false },
   { k: 'cost', icon: 'chip.energy', fmt: (v) => `${fix(v)}`, unit: '', word: 'Energy', up: false },
   { k: 'charges', icon: 'chip.charges', fmt: (v) => `×${fix(v)}`, unit: '', word: 'Charges', up: true },
   { k: 'cooldown', icon: 'chip.cooldown', fmt: (v) => `${fix(v)}`, unit: 's', word: 'Cooldown', up: false },
   { k: 'duration', icon: 'chip.duration', fmt: (v) => `${fix(v)}`, unit: 's', word: 'Duration', up: true },
 ];
 const fix = (v) => String(+(+v).toFixed(1));
+const fix2 = (v) => String(+(+v).toFixed(2)); // (a blow's time: 0.42 s, not 0.4)
 
 const CSS = `
 .ccards { display: grid; grid-template-columns: repeat(var(--cc-cols, 2), minmax(0, 1fr)); gap: 6px; }
@@ -89,6 +100,12 @@ const CSS = `
 .slotrow .sl.empty { border-style: dashed; border-color: rgba(255,230,200,.35); background: rgba(0,0,0,.18); color: #f3e2cc; }
 .slotrow .sl .hole { width: 32px; height: 32px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255,230,200,.25); background: rgba(0,0,0,.3); }
 .slotrow .sl .uicon { image-rendering: pixelated; }
+.slotrow .sl.on { border-color: #ffd98a; box-shadow: inset 0 0 0 1px rgba(255,217,138,.55), 0 0 8px rgba(255,217,138,.25); background: linear-gradient(180deg, rgba(var(--jsel, 196,106,69), .5), rgba(var(--jbot, 34,15,9), .8)); }
+.slotrow .sl.empty.pick { cursor: var(--jcur-pointer, pointer); }
+.slotrow .sl.closed { border-style: dashed; border-color: rgba(255,230,200,.25); background: rgba(0,0,0,.28); color: rgba(243,226,204,.7); cursor: default; }
+.slotrow .sl .sl-opens { max-width: 78px; font: 600 9.5px/1.15 var(--f-ui, sans-serif); letter-spacing: .02em; text-transform: none; color: #f3e2cc; opacity: .8; }
+.slotrow .sl .lentmark, .cc .lentmark { margin-right: 3px; }
+.cc .cc-chips .kw { font-size: 11px; padding: 1px 4px 1px 2px; border-radius: 9px; background: rgba(0,0,0,.32); box-shadow: inset 0 0 0 1px rgba(255,217,138,.32); }
 `;
 let installed = false;
 let keep = null; // (what a keyboard pick had in focus, to give it back when the window is drawn anew: { id | slot, at })
@@ -185,12 +202,14 @@ export class ChoiceCard {
       }
       chips.append(chip);
     }
+    for (const k of [].concat(r.keywords || [])) if (KEYWORDS[k]) chips.append(keywordEl(k)); // (what the thing is, as a keyword: the melee loadout's effect)
     // 5. the key; 6. the state
     const side = make('div', 'cc-side');
     side.append(keyCaps(r.key));
     const st = make('span', 'cc-state');
     if (state === 'equipped') st.append(iconEl('chip.check', { px: 1 }));
     if (locked) st.append(iconEl('chip.lock', { pal: 'grey', px: 1 }));
+    if (!locked && typeof r.lent === 'boolean') st.insertAdjacentHTML('afterbegin', lentMark(r.lent ? 'lent' : 'earned')); // (DEBUG: a lent thing is never shown as earned)
     st.append(r.always ? STATE_WORDS.always : STATE_WORDS[state] || state.toUpperCase());
     side.append(st);
     el.append(ic, name, side, does, chips);
@@ -202,7 +221,7 @@ export class ChoiceCard {
       if (r.detail) d.append(r.detail);
       el.append(d);
     }
-    el.setAttribute('aria-label', [r.name, r.does, r.always ? STATE_WORDS.always : STATE_WORDS[state]].filter(Boolean).join('. '));
+    el.setAttribute('aria-label', [r.name, r.does, r.lent ? 'lent' : '', r.always ? STATE_WORDS.always : STATE_WORDS[state]].filter(Boolean).join('. '));
     return this;
   }
 
@@ -233,24 +252,36 @@ export function cardList(cards, { cols = 2 } = {}) {
   return box;
 }
 
-/** A loadout's slots as a bar (Gradius): the one always fitted first, then each slot with what fills it and the key that fires it. A slot
- *  with a mount in it can be picked (it comes ashore); an empty one cannot, and nor can the one always fitted. */
-export function slotRow({ slots = 2, filled = [], always = null, onPick = null } = {}) {
+/** A loadout's slots as a bar (Gradius): the one always fitted first, then each slot with what fills it and the key that fires it, then
+ *  the slots not yet open (`closed`: a padlock, CLOSED and what opens each, never hidden). A slot with something in it can be picked (the
+ *  pier: it comes ashore; the loadout editor: it is the slot the list fills); an empty one only with `pickEmpty`; never the one always
+ *  fitted nor a closed one. `sel`: the slot picked, lit. A row's `lent` (true | false, DEBUG) wears the lend panel's mark by its name. */
+export function slotRow({ slots = 2, filled = [], always = null, onPick = null, keys = null, closed = [], sel = null, pickEmpty = false, id = null } = {}) {
   installChoiceCards();
-  const box = make('div', 'slotrow'), live = [], k = kept(), want = k?.slot;
-  const sock = (row, key, i) => {
-    const s = make('div', `sl${row ? '' : ' empty'}${i < 0 ? ' always' : ''}`);
-    s.append(row && hasIcon(row.icon) ? iconEl(row.icon, { px: 2 }) : make('span', 'hole'), make('span', '', row ? row.name : STATE_WORDS.empty), keyCaps(key));
-    s.title = row ? [row.name, row.does].join(': ') : STATE_WORDS.empty;
-    if (i >= 0 && row) {
+  const box = make('div', 'slotrow'), live = [], k = kept(), want = k && (k.row ?? null) === id ? k.slot : undefined; // (`id`: which row a kept slot was in, when a window has two)
+  const sock = (row, key, i, shut = null) => {
+    const can = i >= 0 && !shut && (row || pickEmpty);
+    const s = make('div', `sl${row ? '' : ' empty'}${i < 0 ? ' always' : ''}${shut ? ' closed' : ''}${can && !row ? ' pick' : ''}${i >= 0 && i === sel ? ' on' : ''}`);
+    const name = make('span', '', shut ? STATE_WORDS.closed : row ? row.name : STATE_WORDS.empty);
+    if (row && typeof row.lent === 'boolean') name.insertAdjacentHTML('afterbegin', lentMark(row.lent ? 'lent' : 'earned'));
+    s.append(shut ? iconEl('chip.lock', { pal: 'grey', px: 2 }) : row && hasIcon(row.icon) ? iconEl(row.icon, { px: 2 }) : make('span', 'hole'), name, keyCaps(key));
+    if (shut?.opens) s.append(make('small', 'sl-opens', shut.opens));
+    s.title = shut ? [STATE_WORDS.closed, shut.opens].filter(Boolean).join(': ') : row ? [row.name, row.does].filter(Boolean).join(': ') : STATE_WORDS.empty;
+    if (i >= 0 && i === sel) s.setAttribute('aria-current', 'true');
+    if (can) {
       s.tabIndex = 0; s.setAttribute('role', 'button'); live.push([i, s]);
       const go = () => onPick?.(i, row); s.addEventListener('click', go);
-      s.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { keepFocus({ slot: i }); go(); e.preventDefault(); e.stopPropagation(); } });
+      s.addEventListener('keydown', (e) => {
+        if (e.code === 'Enter' || e.code === 'Space') { keepFocus({ slot: i, row: id }); go(); e.preventDefault(); e.stopPropagation(); return; }
+        const step = { ArrowRight: 1, ArrowLeft: -1 }[e.code], at = live.findIndex(([j]) => j === i); // (the arrows walk the row's slots)
+        if (step && live[at + step]) { live[at + step][1].focus(); e.preventDefault(); e.stopPropagation(); }
+      });
     }
     box.append(s);
   };
   if (always) sock(always, [].concat(always.key || 'LMB')[0], -1);
-  for (let i = 0; i < slots; i++) sock(filled[i] || null, String(i + 1), i);
+  for (let i = 0; i < slots; i++) sock(filled[i] || null, keys?.[i] ?? String(i + 1), i);
+  closed.forEach((c, j) => sock(null, keys?.[slots + j] ?? String(slots + j + 1), slots + j, c || {}));
   const back = want !== undefined && (live.find(([i]) => i === want) || live[0]); // (the slot that was picked, or the first left; else the cards take it)
   if (back) { keep = null; requestAnimationFrame(() => { if (back[1].isConnected) back[1].focus(); }); }
   return box;

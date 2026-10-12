@@ -29,7 +29,7 @@ import { ECON } from './econ/table.js';
 import { NODES, hop, routeId, opensNode } from './econ/emocean.js';
 import { spillChance } from './econ/islands.js';
 import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.js';
-import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
+import { LEVIATHAN, leviathanDeck, lootField } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
 import { raceRank } from './rail/encounters.js';
 import { TRIP } from './rail/trip.js';
@@ -38,12 +38,12 @@ import { boardKey, better } from './rail/trip.js';
 import { deckDraw } from './econ/deck.js';
 import { stageWx } from './weather.js';
 import { rutterWorth } from './econ/passage.js';
-import { crudeGrade } from './shop/catalogue.js';
+import { crudeField } from './shop/catalogue.js';
 import { today } from '../core/calendar.js';
 import { stream } from '../core/rng.js';
 
 const simRand = stream('progress/voyage'); // (a spill's chance: core/rng.js, the same twice)
-const GRADES = Object.keys(ECON.crude.grades);
+const FIELDS = Object.keys(ECON.crude.fields);
 const fresh = () => ({ at: 'anagami', sailing: null, manifest: {}, reckon: {}, opened: {}, best: {} });
 
 export class Voyage {
@@ -54,19 +54,19 @@ export class Voyage {
     const E = game.events;
     // the manifest: every cask bought is remembered with where and for how much; every one sold or lost leaves it first in, first out
     E?.on('shop.buy', (e) => {
-      const g = crudeGrade(e.item);
+      const g = crudeField(e.item);
       if (!g || e.by !== 'courier') return;
       (this.s.manifest[g] ||= []).push({ from: e.island || this.s.at, paid: e.price });
-      E.emit('crude.buy', { island: e.island || this.s.at, grade: g, units: 1, price: e.price, by: 'courier' });
+      E.emit('crude.buy', { island: e.island || this.s.at, field: g, units: 1, price: e.price, by: 'courier' });
       this.dirty();
     });
     E?.on('shop.sell', (e) => {
       if (e.by !== 'courier') return;
-      const g = crudeGrade(e.item);
+      const g = crudeField(e.item);
       if (g) {
         this.agree(1); // (the cask just sold has left the box already: the manifest keeps one more until it is shifted below)
         const c = (this.s.manifest[g] || []).shift() || { from: e.island || this.s.at, paid: 0 };
-        E.emit('crude.sell', { island: e.island || this.s.at, grade: g, units: 1, price: e.price, from: c.from, profit: e.price - c.paid, by: 'courier' });
+        E.emit('crude.sell', { island: e.island || this.s.at, field: g, units: 1, price: e.price, from: c.from, profit: e.price - c.paid, by: 'courier' });
         this.dirty();
       } else if (e.item === 'cogitomap') {
         E.emit('cogitomap.sell', { island: e.island || this.s.at, well: e.data?.well || null, worth: e.worth, price: e.price, by: 'courier' });
@@ -80,14 +80,14 @@ export class Voyage {
   agree(pending = 0) {
     const box = this.game.pneuka;
     if (!box) return;
-    for (const g of GRADES) { const m = this.s.manifest[g]; if (!m) continue; const keep = (box.count(`cask.${g}`) || 0) + pending; if (m.length > keep) { m.splice(0, m.length - keep); this.dirty(); } }
+    for (const g of FIELDS) { const m = this.s.manifest[g]; if (!m) continue; const keep = (box.count(`cask.${g}`) || 0) + pending; if (m.length > keep) { m.splice(0, m.length - keep); this.dirty(); } }
   }
   get at() { return this.s.at; }
   get sailing() { return this.s.sailing; }
 
   // ---------------------------------------------------------------- the hold
   /** Casks aboard (in the Pneuka Box), by grade. */
-  cargo() { this.agree(); const box = this.game.pneuka, out = {}; for (const g of GRADES) { const n = box?.count(`cask.${g}`) || 0; if (n) out[g] = n; } return out; }
+  cargo() { this.agree(); const box = this.game.pneuka, out = {}; for (const g of FIELDS) { const n = box?.count(`cask.${g}`) || 0; if (n) out[g] = n; } return out; }
   casks() { return Object.values(this.cargo()).reduce((a, n) => a + n, 0); }
 
   // ---------------------------------------------------------------- the node map
@@ -157,8 +157,8 @@ export class Voyage {
     let lost = 0, spilled = false;
     // the pirates: what the boarders took goes first (the dearest grade: a thief knows the cargo), then what was gathered of their loot
     const took = stolen;
-    if (stolen > 0) for (const g of [...GRADES].sort((a, b) => ECON.crude.grades[b].worth - ECON.crude.grades[a].worth)) { const n = Math.min(stolen, this.cargo()[g] || 0); if (n) { this.lose(g, n); stolen -= n; lost += n; } }
-    const lootG = won > 0 ? lootGrade(V.from, routeId(V.from, V.to), V.day) : null;
+    if (stolen > 0) for (const g of [...FIELDS].sort((a, b) => ECON.crude.fields[b].worth - ECON.crude.fields[a].worth)) { const n = Math.min(stolen, this.cargo()[g] || 0); if (n) { this.lose(g, n); stolen -= n; lost += n; } }
+    const lootG = won > 0 ? lootField(V.from, routeId(V.from, V.to), V.day) : null;
     for (let i = 0; i < won; i++) if ((this.game.pneuka?.add(`cask.${lootG}`, 'loot') ?? -1) >= 0) (this.s.manifest[lootG] ||= []).push({ from: 'pirates', paid: 0 });
     // the Leviathan: a shard of Lachrymite driven off, three felled
     const shards = end === 'felled' ? LEVIATHAN.pay.felled : end === 'driven' ? LEVIATHAN.pay.driven : 0;

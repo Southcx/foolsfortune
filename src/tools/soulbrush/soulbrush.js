@@ -44,7 +44,7 @@ import { tickInscriptions, clearInscriptions } from './inscribe.js';
 import { stream, randDir } from '../../core/rng.js';
 import { BrushLoad } from './load.js';
 import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
-import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand } from '../toolbody.js';
+import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand, keepOffBody } from '../toolbody.js';
 const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -55,6 +55,9 @@ const PAINT_GLIDE = 2.2; // (a second's worth of the slide's lost speed given ba
 const IDLE = 'Brush_Idle', SLIDE = 'Brush_BrushSlide'; // (the suite's own stance and slide; stance:soulbrush and the authored brushSlide stand in without them)
 // what of the brush must stay out of the ground (tool frame: along the haft, and a radius): the bristles' point, the head, the butt
 const OFF_GROUND = [{ x: BRUSH.tip, r: 0.03 }, { x: 1.0, r: BRUSH.radius }, { x: BRUSH.back, r: 0.03 }];
+// what of it must stay out of their body (tool frame): the haft butt to ferrule, the tuft (the suite's blows were made with a shorter brush:
+// the haft through the shoulder in the stance, 10.4 cm through the chest in the third blow, the pose audit; tools/toolbody.js)
+const OFF_BODY = [...Array.from({ length: 12 }, (_, i) => ({ x: BRUSH.back + i * (BRUSH.root - BRUSH.back) / 11, r: 0.02 })), { x: 1.0, r: 0.06 }, { x: 1.13, r: 0.045 }, { x: BRUSH.tip, r: 0.02 }];
 const TAP = 0.16, SLIDE_STEP = 0.32, TRAIL_W = 0.62, TRAIL_WET = 14, TRAIL_SETTLE = 0.55;
 const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();
 
@@ -236,7 +239,7 @@ export class SoulBrush extends Tech {
       const dir = this.lastDab && d < 2 ? down.point.clone().sub(this.lastDab).normalize() : _v3.set(P.vel.x, 0, P.vel.z).normalize().clone();
       if (d > 2) this.paint.gap();
       this.paint.add(down.point, down.normal, dir, TRAIL_W * (0.85 + 0.15 * Math.min(1, hs / 8)));
-      g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
+      g.paintmap?.coat(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE, 'courier');
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
       if (simRand() < 0.35) sfx.inkDab?.(0.35);
@@ -315,7 +318,7 @@ export class SoulBrush extends Tech {
         }
       }
     }
-    if (phase === 'held' && this.slideW < 0.5 && !this.P.fp) this.offGround(ch, M);
+    if (phase === 'held' && this.slideW < 0.5 && !this.P.fp) { keepOffBody(ch, this.grip, M, OFF_BODY); this.offGround(ch, M); } // (off the body, then off the ground: tools/toolbody.js)
     if (this.P.fp && this.drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, this.drawT / 0.6), ...this.club.fpArc() }, M);
     if (!M.elements.every(Number.isFinite)) M.copy(holster); // (never a NaN placed in the world)
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);

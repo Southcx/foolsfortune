@@ -17,8 +17,8 @@ import { FX } from './vfx/particles.js';
 import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
 import { PaintMap } from './world/ground/paintmap.js';
+import { PaintTrack } from './world/ground/painttrack.js';
 import { Stains } from './world/ground/stains.js';
-import { Slicks } from './vfx/slicks.js';
 import { LoadGauge } from './feedback/loadgauge.js';
 import { loadAspect } from './tools/soulbrush/load.js';
 import { Character } from './courier/character.js';
@@ -95,7 +95,7 @@ import { crackPrewarm } from './vfx/crackskin.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
-import { Water, Ladders, SlipField } from './courier/moves/env.js';
+import { Water, Ladders } from './courier/moves/env.js';
 import { Events } from './core/events.js';
 import { Movers } from './world/props/movers.js';
 import { System } from './progress/system.js';
@@ -128,6 +128,8 @@ import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
 import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
+import { AwakeningLook } from './vfx/awakeninglook.js';
+import { FEELING_CLIPS } from './courier/anim/feelingclips.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
 import { StormWarp } from './vfx/stormwarp.js';
@@ -156,6 +158,12 @@ import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
+import { CutlassStringRow } from './ui/cutlassstringrow.js';
+import { HookMark } from './vfx/hookmark.js';
+import { VeritomeFrame } from './vfx/veritomeframe.js';
+import { TollReach } from './vfx/tollreach.js';
+import { LockheartMarks } from './vfx/lockheartmarks.js';
+import { CarryThrowMark } from './vfx/carrythrowmark.js';
 import { Cubes } from './world/treasure/cubes.js';
 import { Mood } from './core/mood.js';
 import { Chests, ChestTech } from './world/treasure/chests.js';
@@ -194,6 +202,7 @@ import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
+import { ProneHolster } from './tools/proneholster.js';
 import { Dreamvane } from './tools/dreamvane/dreamvane.js';
 import { Crucibelle } from './tools/crucibelle/crucibelle.js';
 import { Lockheart } from './tools/lockheart/lockheart.js';
@@ -226,6 +235,9 @@ import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
 import { Knacks } from './progress/knacks.js';
+import { Feelings } from './progress/feelings.js';
+import { Vantages } from './world/vantages.js';
+import { Awakening } from './feedback/awakening.js';
 import { Lend } from './progress/lend.js';
 import { DebugChests } from './debug/debugchest.js';
 import { Ostraca } from './world/ostraca.js';
@@ -390,7 +402,8 @@ async function main() {
   game.chests = new Chests(game); // (treasure chests, the Tithe and how they open: see chests.js)
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js; compiled and drawn once by the warm-up below, with the rest)
   mark('sky');
-  game.paintmap = new PaintMap(); // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
+  game.paintmap = new PaintMap();
+  game.paintTrack = new PaintTrack(game); // (the Courier through paint: prints and smears, world/ground/painttrack.js) // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
   const level = new Level(scene, physics, breakables); level.paintmap = game.paintmap; // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
@@ -401,6 +414,7 @@ async function main() {
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
+  game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
   game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors, the aurora over the sea at the Shore; vfx/nightsky.js)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
   mark('dunes');
@@ -408,15 +422,14 @@ async function main() {
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
-  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
+  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
   game.loadGauge = new LoadGauge(game); // (what the brush's load spends, shown where you look: the arc, the jets' rings: feedback/loadgauge.js)
   game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
-  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
-  // all slip is Lachryma (LACHRYMA-LOOP.md 5, rule 7): what the Courier lays is its paint, in the brush's feeling; anyone else's, a slick
-  // (the ground's look only: game.slip's discs are as they were, for the dive)
-  game.slicks = new Slicks(game); // (a slick drawn where it lies, oxidising as it goes: vfx/slicks.js)
-  if (game.slip) game.slip.onLay = (c, n, r, by, life) => { if (n.y < 0.5 || !game.paintmap) return; if (by === 'courier') game.paintmap.stamp(c.x, c.y, c.z, r, loadAspect(game), 0.6); else { game.paintmap.slick(c.x, c.y, c.z, r, 0.8); game.slicks.spill(c, r, life, { normal: n }); } };
+  game.water = env.water; game.ladders = env.ladders; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
+  // every coat is the paint map's (docs/plans/PAINT.md, one store): the Courier's laid in the brush's feeling, anyone else's a slick
+  game.paintmap.aspectOf = () => loadAspect(game);
+  game.ai?.eco.provide('slip', (pos, range) => game.paintmap.spots.filter((d) => d.age > d.delay && d.life - d.age > 4 && d.r > 0.7 && d.n.y > 0.7 && d.c.distanceTo(pos) < range).slice(0, 6).map((d) => ({ pos: d.c, radius: d.r, ref: d }))); // (wet ground is water to anything made of sand and water: creatures/ai/ecology.js; the offer's id is the minds' data)
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(game); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); hot, with a glint, while V would answer it: vfx/parrymark.js)
@@ -453,7 +466,7 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
-  game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model)] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js)
+  game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model), game.player?.techs?.get('carry')?.item?.mesh] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js; the pot in the hands too, placed from them: CASEBOOK rule 212)
   // the idle chosen at the kiln (the owner's R21: courier/vessel/kilnui.js STANCE; Calissa's IDLES): kept with the player's progress
   game.save?.section('courierIdle', { scope: 'player', version: 1, dump: () => ({ stand: character.idles?.stand ?? IDLES.default }),
     load: (d) => { if (!character.idles?.choose(d?.stand)) character.idles?.choose(IDLES.default); }, reset: () => character.idles?.choose(IDLES.default) });
@@ -495,6 +508,7 @@ async function main() {
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
+  game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
   game.parries = new Parries(game); // (V with a tool in the hands: the tool's own parry, docs/plans/PARRY.md; courier/parries.js)
@@ -533,6 +547,8 @@ async function main() {
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
+  game.cutlassStringRow = new CutlassStringRow(game, px); game.hookMark = new HookMark(game); // (the Sondelass's own UI: the cutlass's string row, the hook's mark)
+  game.lockheartMarks = new LockheartMarks(game); game.carryThrowMark = new CarryThrowMark(game); // (the Lockheart's gauge and its hoover's reach; where a carried thing would land: vfx/lockheartmarks.js, vfx/carrythrowmark.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   const baubles = new Baubles(game);
@@ -562,13 +578,7 @@ async function main() {
       const e = carry.find(); if (!e) return null;
       const p = spot(e); return { pos: p, d: p.distanceTo(player.pos), ref: e };
     });
-    // where the grapnel would bite, while the hook is out and nothing is on the line
-    game.interact.add('grapple', () => {
-      const tool = techs.get('sondelass');
-      if (!tool?.held || tool.form !== 'hook' || tool.hookshot.busy) return null;
-      const r = tool.hookshot.probe();
-      return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
-    });
+    // (where the grapnel would bite is the hook's own mark, not the chevron: vfx/hookmark.js)
     game.interact.add('item', () => (game.god?.controlling ? null : game.ground.nearest(player))); // (what lies on the ground: F picks it up)
     game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d, ref: t.chest || t.kind } : null; });
     // the clay folk: F to talk (npc/folk.js, npc/dialogue.js)
@@ -741,6 +751,8 @@ async function main() {
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
+  game.feelings = new Feelings(game); // (the seven feelings' awakenings: progress/feelings.js, FEELINGS-AWAKENING.md)
+  game.vantages = new Vantages(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
   game.lend = new Lend(game); // (the lend panel: what DEBUG unlocks without the ledger, a category at a time: progress/lend.js, DEBUG-MODE.md)
   game.ostraca = new Ostraca(game); // (the inscribed sherds and the stelae: world/ostraca.js)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
@@ -794,6 +806,7 @@ async function main() {
   } });
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
+  game.chat.add('awaken', { debug: true, help: `a feeling's awakening as it looks, nothing learned: /awaken ${Object.keys(FEELING_CLIPS).join(' | ')} (its flood, then its clip)`, run: ([f]) => { if (game.awakeningLook.flood(f)) setTimeout(() => game.awakeningLook.embody(f), 600); } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
@@ -1098,6 +1111,7 @@ async function main() {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
+      game.proneHolster.update(); // (before the psygun and the tools read their keys)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
@@ -1154,10 +1168,9 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
-    game.paintmap.update(dt, camera.position.x, camera.position.z); game.slicks?.update(dt); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
+    game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
-    env.slip.update(dt);
     if (!godOn && !game.realm?.active) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);
@@ -1185,7 +1198,7 @@ async function main() {
         groundVel: player.groundVel,
         wall: player.wallBlend,
         slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
-        dash: player.dashBlend, crouch: player.crouchBlend, crawl: player.prone, prone: 1, // (prone is the belly crawl: courier/anim/crawl.js)
+        dash: player.dashBlend, crouch: player.crouchBlend, crawl: player.prone, prone: 1, posture: player.posture, // (prone is the belly crawl: courier/anim/crawl.js)
         aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
         aimYawOffset: player.aimYawOffset,
         combat: Math.max(weapon.combatBlend * held, player.fpWeight),
@@ -1227,7 +1240,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1244,7 +1257,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -1268,6 +1281,10 @@ async function main() {
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
     (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
+    game.cutlassStringRow.update(game.rawDt ?? dt); game.hookMark.update(game.rawDt ?? dt); // (the Sondelass's own UI, while its form is in the hands)
+    (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
+    (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
+    game.lockheartMarks.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); // (each tool its own marks: the Lockheart's, and empty hands' throw)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

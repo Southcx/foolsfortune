@@ -206,7 +206,7 @@ export class SlipJellies {
     }
     if (g.fx?.alpha?.emit) for (let i = 0; i < 14; i++) g.fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3(rnd(-1.5, 1.5), rnd(3, 6), rnd(-1.5, 1.5)), life: rnd(0.8, 1.4), size: 0.06, sizeEnd: 0.02, color: new THREE.Color(0xb3905f), alpha: 0.85, drag: 0.6, gravity: 9 });
     g.shells?.addSplat?.(c.pos.clone().setY(c.pos.y + 0.02), UP, 2.6, 'crude');
-    g.slip?.addDisc(c.pos.clone(), UP, 1.6, 20);
+    g.paintmap?.coat(c.pos.clone(), UP, 1.6, 20);
     // (its Lachryma: what it was, and whatever it had swallowed of theirs, back on the sand whoever burst it)
     if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? Math.round(ECON.jelly.burst * yieldOf(c.emo)) : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
     c.stash = 0;
@@ -433,7 +433,7 @@ export class SlipJellies {
       c.trailT = JELLY.trailEvery;
       const at = _a.set(c.pos.x, c.groundY + 0.015, c.pos.z);
       this.trail.add(at, UP, _b.copy(c.vel).normalize(), 0.7, c); // (each jelly its own stroke: two near each other never join)
-      g.slip?.addDisc(at, UP, 0.42, 14, 0.4);
+      g.paintmap?.coat(at, UP, 0.42, 14, 0.4);
     } else if (c.vel.lengthSq() <= 0.15) this.trail.gap(c);
     c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + c.height * 0.5, z: c.pos.z });
   }
@@ -446,7 +446,7 @@ export class SlipJellies {
     c.vel.multiplyScalar(0.25);
     sfx.jellyLand(g.listenerDistance(c.pos));
     g.shells?.addSplat?.(c.pos.clone().setY(c.groundY + 0.02), UP, 1.4, 'crude');
-    g.slip?.addDisc(c.pos.clone(), UP, 0.9, 16);
+    g.paintmap?.coat(c.pos.clone(), UP, 0.9, 16);
     if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm') && !st(c, 'charm')) {
       const F = A.foe.pos;
       if (Math.hypot(F.x - c.pos.x, F.z - c.pos.z) < JELLY.lunge.hit && Math.abs(F.y - c.pos.y) < 1.6) { A.hit = true; this.strike(c, A.foe, 'lunge'); }
@@ -489,7 +489,7 @@ export class SlipJellies {
       if (hitP || nearF || hitC || q.t > 4) {
         const at = hitP ? hitP.point : q.m.position.clone(), n = hitP && hitP.normal.lengthSq() > 0.5 ? hitP.normal : UP;
         if (hitP) g.shells?.addSplat?.(at, n, 1.2, 'crude');
-        g.slip?.addDisc(at, n, 0.8, 14);
+        g.paintmap?.coat(at, n, 0.8, 14);
         if (q.paint && n.y > 0.5) g.paintmap?.stamp(at.x, at.y, at.z, 1.1, q.paint, 0.8); // (the brush's bat sent it back in its feeling)
         sfx.jellySquelch(g.listenerDistance(at), 0.8);
         if (nearF && q.c.alive) this.strike(q.c, foe, 'spit');

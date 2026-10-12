@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // SPATTER: liquid clay thrown about. Droplets fly (one instanced mesh, stretched along their speed), land as splats on the world (decals
 // that grow rather than stack) and as pools on the floor. Hot (a bomb's molten slip: it scalds clapperjars and cooks pots, and cools from
-// orange through terracotta to dark clay) or cold (slip: harmless, and wet enough to dive into, so each lays a disc in game.slip). The
+// orange through terracotta to dark clay) or cold (slip: harmless, and wet enough to dive into, so each lays a coat in the paint map, game.paintmap.coat). The
 // psygun's bomb and slip shells throw it, and so do a burst barrel, the Soul Brush, the slip jellies and the Lockheart's outcomes, all
 // through game.shells (shells.js passes them on). Split out of shells.js (R45's clean-up).
 //
@@ -148,7 +148,7 @@ export class Spatter {
     g.scene.add(m);
     const life = T.shells.bomb.splatLife * (0.8 + simRand() * 0.4);
     this.splats.push({ m, age: 0, life, slip, wet, dry: wet && this.dryOf(wet) });
-    if (slip) g.slip?.addDisc(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife), 0, slip === 'crude' ? 'creature' : 'courier'); // wet enough to dive into, for a while (crude is a slick on the ground, the Courier's slip their paint)
+    if (slip) g.paintmap?.coat(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife), 0, slip === 'crude' ? 'creature' : 'courier'); // wet enough to dive into, for a while (crude is a slick on the ground, the Courier's slip their paint)
     if (this.splats.length > 220) { const s = this.splats.shift(); g.scene.remove(s.m); s.m.material.dispose(); }
   }
 
@@ -163,7 +163,7 @@ export class Spatter {
     m.renderOrder = 1;
     g.scene.add(m);
     this.pools.push({ m, pos: point.clone(), age: 0, life: B.poolLife, r: B.poolRadius * (slip ? 0.8 : 1), slip, wet, dry: wet && this.dryOf(wet) });
-    if (slip) g.slip?.addDisc(point, normal, B.poolRadius * 0.8, Math.min(B.poolLife * 0.7, T.tech.slip.coverLife), 0, slip === 'crude' ? 'creature' : 'courier');
+    if (slip) g.paintmap?.coat(point, normal, B.poolRadius * 0.8, Math.min(B.poolLife * 0.7, T.tech.slip.coverLife), 0, slip === 'crude' ? 'creature' : 'courier');
   }
 
   stepPools(dt) {

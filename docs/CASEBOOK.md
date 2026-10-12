@@ -2,6 +2,8 @@
 
 One case per fix, newest first: the cause (measured, not guessed), the fix, and **the rule** that keeps it from happening twice. Read
 the rules before building in the same area; a rule a machine can check goes into `npm run check` or a test too. (The owner, 2026-10-06.)
+A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wherever it is cited) and numbered at the gate by
+`scripts/casebook-number.mjs`; `npm run check` fails on a number used twice or a rule a case cites that is not here (2026-10-11).
 
 ## The rules, short (from the cases below)
 
@@ -525,8 +527,753 @@ the rules before building in the same area; a rule a machine can check goes into
     it: look at those too (the stances over braced).
 190. **A sweep reaches a thing the way the player can, every way the game offers.** A list the game shows (the Index's rooms) may hold
    entries with no key of their own; a sweep that presses only keys throws on the first one, and every check after it never runs.
+191. **A line of sight to a thing never counts the thing.** A ray from the eye to a target's middle ends inside the target: its own
+    collider is left out of the test (by entity, `physics.entityOf`), or every solid target reads as hidden behind itself. Measure the
+    ray's hit before blaming the candidate list.
+192. **A move's own motion is its own.** What the Courier does in a move (a rise, a lunge, a fall) is a number of the move, never borrowed
+    from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
+    only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
+193. **A listener on the bus asks the same filter the ledger's rules ask.** Anything that pays for an event outside tracking.js (the domains'
+   exp, Soul Alchemy's seasoning) skips a training body (`isTraining`, `combat/testroom.js`): one list of what never pays, for every payer.
+194. **A pose longer than its capsule is cleared where it is drawn.** A look that lies past the capsule it stands on (the belly crawl: 2.2 m
+    over a circle 0.27 m in radius) pokes through what the capsule stops at, and a thing's extent is measured, not guessed: the posed
+    mesh's reach by angle about the capsule's axis, then the poke at a plain wall in each way the body meets one (into it, along it,
+    turning beside it). The look slides off what it meets (`Crawl.clear`: rays from the axis, the pelvis only), never bends its pose
+    and never asks the capsule for room it was not given; what no slide can hold (a gap narrower than the body) is the body's, and
+    goes to its owner with the numbers.
+195. **A launch hands back the speed it promised, however it ends.** A move carried by the launch
+    (`courier/moves/launch.js`) names its exit speed (`endSpeed`), and `finish()` sheds to it; a cut-in (the blink: `techs.js`) ends the
+    launch without `finish()`, so the caller's `onEnd` sheds to it too (`shedSpeed`, `tools/moveset.js`). Whatever reads the body's
+    speed at a handover reads the move's own speed otherwise.
+196. **An outcome is sent once nothing can change it.** An event that says how something went (a blow's
+    `move.blow`: hit or not) is sent when the check that decides it has run its whole window (the sweep's strike, padded as the sweep
+    pads it: `Moveset.spent()`), never on a tighter window of its own; a test of it places the thing at the window's edges.
+197. **A window kept in an update runs on while that update is not called.** A clock a module adds `dt` to in its own
+    update (the string's window, `Moveset.after`) stops when its owner stops calling it (the Sondelass's rod or hook form): tick it
+    from the owner every frame it is not read (`Moveset.idle`), or read the time from a clock that always runs.
+198. **A count for a record counts what the record's own rule names.** A counter an engine keeps for the
+    ledger (a run, a streak) takes its definition from the plan that owns the record (Dovina's `sond.string.best`: "LMB string blows"),
+    not from whatever reaches the same door; every kind that reaches it is named in or out, and a test mixes in the kinds left out.
+199. **A collider's shape and its place change in the same call.** A collider moved on its parent
+    (`setTranslationWrtParent`) is moved in the world only by the next `world.step`; anything asked in this step (the character
+    controller, a shape cast) meets the new shape at the old place. Set its world translation there and then too (`player.setShape`).
+200. **A layer that hands the body to another keeps its weight until the other is whole.** Two weights eased at
+    their own rates (the crouch out at 12/s, the air in at 10/s) show whatever lies under both for the length of the handover (the
+    standing idle, at 0.29). Hold the outgoing one's weight under the incoming one until it is whole, then let it go at its own rate;
+    and when the handover turns back before it is done (a jump cut short by a roof), keep the hold until the layer has climbed back.
+201. **What takes the hands puts the tool away through the belt and gives it back through it.** The one asked out
+    is remembered and drawn again once the hands are free; one put away by hand meanwhile stays away; and nothing pressed while
+    the hands were taken (a draw key, the aim held, the trigger's own queue: a tap, a shell, a charge) is kept for after
+    (`tools/proneholster.js`; the psygun's queue is its own, let go in `weapon.js`).
+202. **Every way of setting the Courier down puts back the same state, through one method.** A respawn and a teleport
+    that each list what they reset drift apart; the posture is the Courier's (`player.standUp`), and both call it.
+203. **A name a class gives itself on `game` is its owner's alone.** A class that registers itself where others find it
+    (`game.paintReticle = this`) is built under that name once; a second use of its look asks not to take it (`{ aim: false }`), or the
+    last one built holds the name and everything that reads it follows the wrong one. Before reusing a class, grep it for `game.<x> =`.
+204. **A mark that says what a press will do reads every way the engine can take it.** A read of the engine's choice
+    (the string row's lit pip: `Moveset.stringPlace()`) follows the engine's own rules down every branch (the pause window, a pause
+    string's run, the blink's offset), not the common path alone; it is tested against each branch, the rare one first.
+205. **A tool's mark lingers only while the tool is asked for.** A mark kept up a moment after its use (the bottle's
+    arc, 0.8 real s) asks the belt each frame (`belt.get(id).wants`): stowed or another tool asked for, the linger is cut that frame.
+206. **A move's travel toward a thing is cut by the farthest it goes, down to none.** A whole-body move carried
+    toward what it is aimed at (the lock's target, else the magnet's: `aimedAt`, `tools/moveset.js`) is cut so the hips' farthest point
+    ahead in the move, with its own step, stops a reach short of it. Never by where the clip ends (a kick or a hop goes out and comes
+    back), never with a floor, never skipped for a short clip: a held slip jelly does not stop the capsule, and any travel left over
+    walks them through it. Aimed at a thing, the clip's sidestep is dropped (a string of them walks round it); the rise stays the
+    move's own (192). Test every whole-body move alone in every slot against a thing that cannot move and a thing that does not block,
+    with the lock-on and without.
+207. **A number in a card's line is the row's stat.** A figure written into a line (a reach, a time) is checked
+    against the row's `stats` where the row is written, and a join that lets one source's words win over another's is read card by
+    card for the numbers it now shows.
+208. **A knock back goes back.** A swing's direction at the thing it strikes is the tangent of its arc (`melee.js`),
+    across the striker, so a push along it alone sends the thing sideways, never away. A blow whose words say it knocks, shoves, kicks
+    or launches drives what it strikes away from the one who struck (`hit.away`, `tools/moveset.js`; the kick's `side`, the same rule),
+    measured as the thing's travel along and across the line between them, at a free target, never a pinned one.
+209. **A line the player reads is what the click or the play will do.** A choice's card line and the log line
+    after it are read against the state the click leaves (a slot emptied, a string ended), and a way to open a thing is shown only
+    when what it reads has a writer: a record nothing keeps is a promise nothing keeps.
+210. **A new option never moves the default.** An engine change or a data fix made for new rows is opt-in
+    on the row (`travelCut: 'peak'`, `hit.away`), never applied to the rows that already played, and the default is proven by the old
+    probe run as it was, frame for frame, against a free target as well as a pinned one.
+211. **A change made in a window is written when it is made.** The main loop writes the save once a frame
+    only while no window is open (`main.js`), and nothing writes it when the page goes, so what a window changes (the loadout editor,
+    a page of the Index's window, the Codex) calls `save.flush()` itself after `dirty()`; flush waits only on a hold.
+212. **A thing in the hands is placed from the hands.** A held prop goes where the clip's palms are (their midpoint, read once the body
+    is posed and before any hand's IK), in the body's frame, and the IK only closes them on it. Placed from the capsule, it stands still
+    while the body bobs under it and the IK drags the arms to it. Measured as the IK's pull on the palms (a few cm, not tens) and the
+    feet against the same run without it.
+213. **What is let go of is solid to the Courier only once it is clear of them.** A thing out of the hands (thrown, set down, dropped)
+    keeps out of the Courier's collider and the character controller's query until its shape is a margin clear of the capsule. The
+    controller sees a collider where the last step left it; made solid inside or against the capsule, it shoves the capsule out in one
+    step. Measured as the capsule's step on the frame of the release, at the floor's edge too.
+214. **What is drawn moves on the render clock.** A move's progress read from the fixed step (`st`) moves in
+    60 Hz steps under a faster frame, and a thing placed from it and from the interpolated body (`renderPos`) goes back and forth against
+    the body. The drawn pose and the drawn prop take their time from the frame (0 on the state's first drawn frame); the physics keeps
+    the fixed step's. Measured at 144 Hz as the prop's reversals against the palms.
+215. **A clip's planted sole stands on the floor it is played over.** A new pack of the same captures can plant its
+    feet lower than the rig's rest sole; keep each foot's lowest skinned point on the ground under that point, not under the ankle, per
+    foot. Never raise the whole body by a loop's deepest strike: the flat stance foot then stands in the air. Measured as the lowest sole
+    vertex against the floor, every frame, at every pace, turning and on a ramp, its median as well as its minimum.
+216. **A pattern cut from a texture keeps a band of its own.** A smoothstep of a texture (a glaze's edge, a mask,
+    a rim) sharpens what the mips softened: give it a fixed band in the texture's own units, wide enough to span pixels at play distance,
+    never one widened by `fwidth()` (one value a 2x2 quad: the edge moves with the quads as the camera slides). Draw a thin feature (a
+    run, a line) as its own soft profile, never cut at a level; and on a curved face blend the box mapping's projections (a switch of
+    axis is a seam, and every quad on it reads a blurred mip). Measure crawl over a frozen world with the camera slid a quarter pixel a
+    frame, against the build before and against the shader with the new part switched off.
+217. **A preview that runs the game's own code begins every run from a kept fresh state, standing where the game's
+    stands.** A second copy of a stateful stack (the Anim Lab's rig and tools) carries whatever the last run left in it: a clock, a foot
+    lock, a cast, a flag set once. Keep its state once it is built, and settled a frame so that what is built on the first frame is built
+    only once. Put that state back before every run (`workbench/animfresh.js`), and never write back what the game holds. Step it with
+    its parent at the world's origin, as the game's rig stands, since the IK and the holster are worked out in the world. To check it,
+    record the same run after a different one: the bones are identical.
+218. **A streak names every way it ends, and bounds every way it waits.** A count kept in a row for a record (the
+    string run) is ended by every way the body leaves play, heard where all of them already pass (`course.teleport` and the respawn
+    reset the techs: the tool's `reset()`; a seam, read while it is under way; the guard's rescues, as events), never one caller at a
+    time. A clock that waits on a held input waits a stated time (`HOLD_MAX`), never for as long as it is held; and a wait made by not
+    calling the clock's update (the iaido's charge, Blade Mode) is a wait too: named in the rule, and bounded or ruled to stand.
+
+219. **A held thing is pointed by the shoulder and the elbow; the wrist only finishes it.** A blade on the thumb's
+    side of a fist points within 55 to 110 degrees of the forearm and to the thumb's side of the elbow's bend, give or take the forearm's
+    90 degrees of turn: a pose that asks the tool to point elsewhere is solved by moving the elbow (the pole) and the hand, the hand laid
+    along its forearm (`aim` in courier/anim/stances.js; an off hand on a handle eased about it, `easeGrip` in tools/grip.js), never by
+    turning the hand alone, and never by an IK reach left to its default pole. A tool's set taken up is hinge-repaired whole, its clips and
+    its posed arms (hinges.js HINGED, `hingedArms`). Proved by the pose audit (scripts/poseaudit.mjs) on the states it touches, its
+    blends included, before it ships.
+
+220. **What is posed every frame has one owner, on one clock, and no bearing taken from nothing.** A tech
+    that sets the body's facing (or a hand's target) in the fixed step while the core eases it once a render frame makes a sawtooth at
+    every frame rate but 60 Hz: give it to one of them (the core's stance turn, or the tech's `faceYaw()`), and measure headless at
+    144 Hz as well (`tick(1 / 144)`). A direction worked out from a vector that passes through zero in play (the anchor's bearing from
+    under it, `atan2` of its horizontal, `dir × up` for a line straight up) turns 180 degrees in a frame: take it from the body's frame
+    there. A rope with no more length than its span is drawn straight; a few-pass Verlet chain is not left to hold it.
 
 ## Cases
+
+### 2026-10-11 · Hanging on the grapnel's line: the line sagged under load and the body jittered (the owner, v155)
+
+- **Seen:** the owner: "hanging from the ceiling not only has the fishing line itself still sagging but now IK fighting is causing huge
+  amounts of jittering in the hanging position." Headless, hung from the basement hub's ceiling (the anchor 2.07 m from the chest, then
+  5.97 m), the Courier started 8 cm off the anchor's plumb line and left to hang, 2 s logged: at 144 Hz the right hand moved 80 mm a frame
+  on average (692 at most), the right elbow 59 (469), and the body's yaw 9.6 degrees a frame; at 60 Hz the hand moved 24 (695), the yaw
+  turning 180 degrees in one frame each time the body passed under the anchor. The line stood 0.3 to 0.7 m off the straight between the
+  tool's tip and the grapnel, on a span of 0.55 m. Hung dead still on the plumb line, the hand moved 0.3 mm a frame (the clip's
+  breath), and the line still sagged 0.32 to 0.44 m.
+- **Cause (measured):** three, none of them the IK fighting itself.
+  - **Two owners of the facing, on two clocks.** `grapple.js` set `P.bodyYaw` in the fixed step: to the swing's travel above 2 m/s,
+    else to `atan2` of the anchor's horizontal bearing from the chest. Under the anchor that bearing is nothing, and it flipped 180
+    degrees at every pass. The core's stance turn (`player.js` `updateBody`, once a render frame; the hook is aimed while a line is out,
+    so `techs.stance`) eased the same value toward the camera's yaw. At 144 Hz most frames have no fixed step, so the yaw sawed between
+    the two (37, then 42 to 52 degrees, frame by frame), and every hand target with it.
+  - **The hook's aim had a bearing from nothing too.** The right hand's target (`sondelass.js` `hands`) was laid off the aim's right,
+    `dir × up`, from the last frame's shoulder (`hookshot.aimDir`). As the shoulder passed under the anchor that right turned 180
+    degrees: with the facing fixed, a swing still swept the hand 0.4 m across the face in 8 frames at each pass (58 mm a frame, body-relative).
+  - **The rope.** `vfx/rope.js` is a Verlet chain held by 7 passes of its distance constraints; the grapnel's has 76 links. Under
+    gravity, with velocity carried frame to frame, so few passes cannot keep 76 links at their rest length: the loaded line, given no
+    slack at all (`slack: 0`, the loaded test in `hookshot.js` was right), stretched to about twice its span and hung in a belly.
+    (`hangSlack` was set at the throw and read nowhere: removed.)
+  - Also found: the grapple owns the body (`overrides = 1`), so `character.js` skipped rom.js for it; the hang's fingers stood 5 to 42
+    degrees past their range (12 joints).
+- **Fix:**
+  - `grapple.js` no longer sets the facing: the core's stance turn owns it, eased once a frame. On the line the Courier faces the aim, as
+    with any tool drawn and aimed, not the swing's travel (the swing's clip reads its phase from the rope's angle against the body, so it
+    plays whatever the facing).
+  - `sondelass.js`: with a line out, the hook's aim is taken from this frame's shoulder; on the line in the air its right is the body's,
+    square to the line (and the tool's Z is that right, negated, so the hand does not turn over on the shaft).
+  - `rope.js`: a rope with no more length than its span is laid on the straight between its ends and its motion spent, eased in by the
+    sag its spare length would make (straight at 0, the chain's own from 3 cm). The fishing line's slack and tension look is unchanged
+    above that.
+  - `character.js` (a CROSSING, Petra's, one line): a tech that owns the body but whose hands are a tool's says `limitsLast`, and
+    rom.js runs for it last as for everything else. The grapple says it.
+  - Measured after, the same runs: at 144 Hz the right hand moved 0.8 mm a frame (1.4 at most), the body under it 1.0: the hang's own
+    slow swing; body-relative, 0.26 (0.52). The elbow 0.87 (1.54), the yaw 0. Left to swing naturally (0.57 m out, 1.7 m/s), the hand 4.3 mm
+    a frame body-relative (6.9 at most; was 41, and 694). The line's sag 0 mm, on the 0.55 m span and on a 4.3 m line. rom.js clamps
+    nothing more in the hang.
+- **Rule:** 220.
+
+### 2026-10-11 · A string run lived through a 5.5 s charge, a trip across the island and a held iaido (Dovina's rulings on the run's edges)
+
+- **Seen:** headless, the blow events' battery on the base (5240719). c1 landed and LMB was held 5.5 real s: the run lived the whole
+  hold and ended only at the release's whiff (`{ run 1, miss }`, 310 frames into the hold). c1 and c2 landed, then
+  `places.travel('kiln')` set them down 45 m away in the workshop: the run lived it, and c3, c4 there made `{ run 4, pause }`. The
+  iaido's charge and Blade Mode kept the string's window from running at all, for as long as they were held.
+- **Cause (measured):** the run ended on a miss, a blow taken, the window's lapse, a stow, or the god hand, the garden or a crossing,
+  and nothing else. A move on show holds the window, so the charge's hold kept it as long as LMB was down. The iaido's charge and Blade
+  Mode return before the cutlass reads the engine, so its window waited for them. A place change (`course.teleport`, the respawn), a
+  seam and the guard's rescue sent nothing the moveset heard, and a teleport is instant, inside any window.
+- **Fix:** Dovina's four rulings (MELEE-LOADOUT-EARNING.md section 1), in `tools/moveset.js` (THE RUN'S EDGES). `holding(t)` ends the
+  run (`pause`) past 2 real s of a hold: the engine's charge-hold, timed in `rawDt`, and the iaido's charge (`cutlass.js`). `leave()`
+  ends it (`pause`) on a seam under way (`game.seam.busy`, read in `update` and `idle`), a guard's `courier.rescue` (not the
+  controller's `clip`), `courier.respawn` and every `course.teleport` (it resets the techs: the Sondelass's new `reset()`). The cut over
+  a whiff and Blade Mode needed no change: they were measured as already built. The string's place is left to its window.
+  Measured after, a case for each side:
+  - **The hold.** 1.5 s held: no end in it, and c1 with the charged slash made `{ run 2, pause }`. 2.5 s held: `{ run 5, pause }` 121
+    frames into the hold, then the slash landed as a new run of 1.
+  - **The iaido's charge** (too little Lachryma for Blade Mode). 1.5 s: run 2 lived it, and c3 made it 3. 2.5 s: `{ run 2, pause }`
+    120 frames after the press; the draw cut stays apart, and c3 opened a new run.
+  - **The Courier's own moves** inside the window: an air dash (8.6 m), the roll (4.0 m) and the hook's pull (14 frames reeled) each
+    carried the run to 3.
+  - **What is not theirs:** a seam, `places.travel`, a guard's rescue (`reset`) and `respawn` each sent `{ run 2, pause }` on the frame
+    it happened (the seam's before the dark had covered anything).
+  - **Blade Mode**, held 2.5 real s with three cuts: no `move.blow` from its cuts; the window stood at 0.017 s on entry and 0.021 s at
+    exit; c3 made `{ run 3, pause }`.
+  - **The cut over a whiff.** R, or the blink, before c2's strike (t 0.073 and 0) ended nothing; nor did the blink inside it (t 0.202,
+    nothing struck yet). After it (t 0.33), R, the blink, the paid cut into the stinger and the guard all left `{ run 1, miss }`, sent
+    on the frame the window passed. RMB before the strike is no cut: its press waits for the blow to end (`cutlass.js` `rmb`), so c2
+    whiffed on its own and ended the run `{ run 1, miss }` as any whiff does.
+  - **Every old case** (31, and 8 random) is unchanged but where the rulings reach: the travel cases and the long hold.
+- **Rule:** 218.
+
+### 2026-10-11 · The Anim Lab's takes carried the last one in, its travel line sat off the body, the psygun stayed drawn (the verifier, before it landed)
+
+- **Seen:** the verifier's probes of the Anim Lab (b3e2c75). The same play recorded again after another one differed by up to 81 degrees
+  (c1 after the guard, at footL), 69 (the rod's idle A after a cast, at handL), and 41.6 (the Lockheart's string.1 after string.3, at frame
+  0). After the drawn run was shown at frame 120, the next take's travel line sat 8.47 m off the hips. After a switch to the Soul Brush
+  while the psygun's ADS played, the new take showed the gun in its holster in 254 of 254 frames, with OTHER TOOLS HIDDEN.
+- **Cause (measured):** three causes.
+  - `AnimRig.put()` reset the body and cancelled the movesets, and nothing else. The rig's clock, the idle's phase, the foot locks,
+    `st`, the lazily made fields, and each tool's own state carried over to the next take.
+  - The rig stands in the stage's carry, which still held the travel of the last frame shown. Everything worked out in the world was
+    off by that travel: the hips a take keeps (`getWorldPosition`), the foot locks, `headRel` and `holsterLocal`. A state dump by path
+    showed the kick recorded after the sprint differing from the same kick recorded after itself only there (`holsterLocal` 0.11 m,
+    the foot locks 0.11 m).
+  - `choose()` records the take 20 ms later, and in the meantime `tick()` laid the old take's frames on the gun. `wear()` hides the gun
+    once, and `belt.tick` hides it only when `gunOff` changes, so the new take recorded the gun as the old take had left it.
+- **Fix:** four changes.
+  - The seven tools are made when the rig is, in the game's order. The rig then steps two frames with none worn, so what a tool builds
+    on its first frame (the Lockheart's coffin) is built once. Kept with tools made one at a time, the coffin was built anew, with new
+    geometry, every take.
+  - `workbench/animfresh.js` keeps that fresh state, and `put()` puts it back. The walk never writes back what the game holds (it walks
+    from the game and the config tables) or the clip library. After that, `put()` lays the worn tools on again (`dress()`), which sets
+    the gun's shown flag too.
+  - The holder is put at the origin while the rig steps (`home()`).
+  - A take keeps the hips in the holder's frame.
+- **Measured:** MEASURED
+- **Rule:** 217.
+
+### 2026-10-11 · The ash-glazed kilns crawled at 480 lines (the room glazes' verifier, d391bcd)
+
+- **Seen:** headless at 854 x 480, the world frozen and the camera slid a quarter pixel a frame for 60 frames: the share of the kiln's
+  pixels whose second difference of luma passed 6 levels went 10.4% -> 13.9% (the dome at 5.6 m), 22.3% -> 33.8% (at 12.5 m) and
+  14.8% -> 18.0% (the upper kiln) against the build before; the heat maps showed the box mapping's seams across the dome and checkered
+  patches beside the runs. The upper kiln's cap also read as plastic: a hard white hotspot from the lamp.
+- **Cause (measured):** the glaze, not the firebrick under it. With the glaze switched off in the shader (the brick body alone): 10.3%,
+  22.4%, 15.1%, the build before's numbers; with the brick flat and the glaze on: 14.0% at 5.6 m. The glaze's edge was
+  `smoothstep(0.5 ± (0.08 + fwidth(cover)))` over a cover that held the runs (rivulets 6 to 12 cm): the band was one value a 2x2 quad, so
+  the edge moved with the quads as the camera slid, and the threshold cut the mip-softened runs back into hard edges. The box mapping
+  switched axis across the dome, so the cover jumped at a seam (blending the axes alone took 13.8% to 12.7% at 5.6 m); the glass's
+  highlight added more (its gloss and sheen off: 12.1%). (The glitch was switched off to measure: a tear set off by an event lay across
+  some of the upper kiln's frames, and its steps follow the real clock.)
+- **Fix:** `vfx/surfaces.js`: the edge a fixed band of the cover (0.35 to 0.65), the runs their own soft profile (`max` with
+  `run * 1.25`), the room glaze atlas read along the three axes and blended by the normal (a box's face takes one, as before);
+  `vfx/roomglazes.js`: the ash's gloss 0.3 -> 0.5 (the lamp's highlight broad and soft), the tenmoku's sheen 1.0 -> 0.3 (an even sheen
+  on black lay as a grey veil: the stand read as charcoal). Measured, the same probe, the glitch off: the kiln's flickering share
+  13.8% -> 11.0% at 5.6 m, 33.8% -> 23.4% at 12.5 m, 18.8% -> 15.0% upstairs (the brick alone: 10.3%, 22.4%, 15.1%); the pixels hot
+  only with the glaze (above 6 where the glaze-off frame is calm, its hot pixels widened 1 px) 2,966 -> 249, 1,196 -> 43, 1,558 -> 0
+  of 409,920. Programs 163 at boot and in every view; reading the brick with explicit gradients as well changed nothing measurable (10.9% at 5.6 m, 14.9% upper), so it was left out.
+- **Rule:** 216.
+
+### 2026-10-11 · The feet went into the floor at every pace since the suite came in (found verifying the carry's fix: "the walk at the carry's speed dips the feet into the floor, with or without a pot")
+
+- **Seen:** the verifier, then measured headless with nothing in the hands (the lowest skinned vertex of each sole against the floor
+  under it, every frame, 120 frames after 60 to settle; the workshop at 0, -13.5; the ramp at x 8): on 72eac06 the lowest foot was
+  -3.65 cm walking at 1.3 and 2.2 m/s (52 and 45 frames more than 1 cm under), -2.83 at the carry's 3.02 (47), -1.69 at the run's 4.2
+  (12), -4.19 turning at 3.02, -5.35 up the ramp and -7.40 down it, the prowl -3.59 (72). On fe9ed52: +0.03, +0.43, +0.53, +4.89, +0.04,
+  -2.83 and +0.21, 0 frames under 1 cm on the flat. This is what the owner saw as the pot "causing the feet to clip into the floor".
+- **Cause (measured):** bisected (`git bisect run`, good when the 3.02 m/s walk's lowest foot is at or above -1 cm; 10 steps of 808
+  commits): **afb6154**, "The Courier's own suite in the game", where the walk, the run, the sprint and the crouched walk began to play
+  from the suite's packs (`scripts/bake_suite.mjs`, `courier/anim/suite.js`). Their planted feet sit lower against the hips than the
+  rig's rest pose stands: measured on the skin in each loop's stance, the walk 3.45 cm under, Loco_CrouchWalk 3.44, the run 0.73, the
+  sprint 0.18. The foot IK (`character.js` footIK) moved the feet only by the ground's height under the ankle bone (0 on a flat floor),
+  so the clip's depth went straight into the floor; a heel struck toe-up went lower than its ankle said, and on a slope the toe or the
+  heel met ground the ankle's ray never read.
+- **Fix:** the animation side only (`character.js`; player.js and the core movement's numbers untouched). `measureSoles()` reads each
+  foot's skinned vertices within 4 cm of the rest pose's lowest, in their bones' frames; `analyseGait` measures each loop's planted sole
+  on them (the lowest while the foot's contact is over 0.5) and keeps its depth as `lift`; the body is raised by the loops' depths by
+  their weights (`st.soleLift`, by the gait's share of the body: none in the air, a slide, a mantle, a dash or a crawl). Then in
+  footIK each foot's lowest skinned point is raised to the ground under that point when it would go under, by `planted`, at most
+  `SOLE_MAX` (6 cm): a light correction. After (0c3f367), the same harness: 1.3 and 2.2 m/s 0.00 cm, 3.02 -0.03, 4.2 -0.05, the turn -0.10, up the
+  ramp -1.78 (one frame), down it -0.06, the prowl 0.00; 0 frames more than 1 cm under on the flat, turning and down the ramp, 1 up it.
+  The feet's largest one-frame change of their step against the capsule is as before (walk 1.0 to 2.8 cm, the run 4.4, the turn 16.5
+  where it was 17.6, the base's 18.4). With the pot, walking at 3.02 m/s: -2.83 cm and 71 of 180 frames under 1 cm, now -0.03 and 0.
+- **Seen again (the verifier on 0c3f367):** the feet floated instead. The slow walk's lowest foot, steady, no pot: median +3.22 cm, p90
+  +5.72, both feet over 2 cm up in 107 of 150 frames (5610152: -0.23, +2.27, 22); the prowl +1.80 against -1.64, 72 frames against 2.
+- **Cause (measured):** `st.soleLift` raised the whole body by each loop's deepest planted sole (the walk's 3.45 cm is its heel strike's),
+  so the flat foot in mid-stance, which stood at about 0, stood 3.4 cm up, and more as the heel rose. The per-foot raise in footIK was
+  already enough on its own.
+- **Fix:** `st.soleLift` and the gait's `lift` are gone; the per-foot raise stays, and `measureSoles` also keeps the foot's upper skin,
+  thinly (a foot lying on its instep). Steady, no pot, lowest foot min / median / p90 (cm), 5610152 then now: the slow walk -3.65 / -0.23
+  / +2.27 then 0.00 / 0.00 / +2.27, both over 2 cm 22 then 22; 3.02 m/s -2.83 / +1.03 / +8.81 then -0.08 / +1.03 / +8.81; the run -1.69
+  then -0.08 (median +6.33 both); the prowl -3.59 / -1.64 / +0.57 then 0.00 / 0.00 / +0.57. Left, all fewer and shallower than 5610152's:
+  the turn at 4.2 m/s -3.38 cm (3 frames under 1 cm; base -5.35, 42), down the ramp -1.94 (3; -7.45, 59), down the stairs -2.71 (8;
+  -8.71, 74), up them with the pot -3.34 (2; -7.11, 27): a swinging or landing foot the raise weighs down by `planted`, which the whole
+  body's lift had hidden. Stopping out of the prowl -5.95 for 8 frames (base -11.95, 58).
+- **Rule:** 215.
+
+### 2026-10-11 · The carried pot stood still and the body bobbed under it (the owner: "the 'holding a pot' animation moves the main courier body relative to the pot, causing the feet to clip into the floor periodically instead of the pot in the hands moving relative to the Courier")
+
+- **Seen:** the owner, holding a pot. Measured headless (a 0.44 m pot, kind `jar`, lifted with F in the workshop: 3 real s still, 4 on W at
+  3.02 m/s, crouched, the throw; a turn in the movement lab; a 0.7 m crate), against the same runs with nothing in the hands at the
+  same speed: standing still, the hips rose and fell 8.8 cm and swayed 5.9 cm every 2.0 real s while the pot did not move at all, and
+  both feet sank to -7.3 cm (87 of 180 frames more than 1 cm under the floor; without the pot -0.2 cm throughout). Walking, the hips
+  kept that 9 cm bob on its own clock instead of the walk's 16 cm in step; stopping, the feet sank to -7.9 cm (without: -0.5).
+  Crouched, the whole body hung 22 to 37 cm off the floor. The throw sank the feet 20.5 cm.
+  At the gate, the first fix (de27b96) shoved the whole Courier, and the camera, 19.3 cm back in one step on every throw of the pot
+  (10.7 cm with the crate), and thrown from the floor's edge beside the Shrine (x 5 to 8.5, z -14.5 to -12.5) left them sunk into the
+  floor until they walked: 9.7 cm (pot), 22.3 cm (crate). The pot trailed the hands up to 12.5 cm after the core's turn-in, and a
+  second set-down started where the first had (a crate's first frame of it 207 cm from where it was drawn).
+  At the gate again (090b1c5): its two rules were numbered 193 and 194, which the default branch had given to others (now written
+  NEW:<slug>); and a lift ended on the move snapped the pot, and the hands on it, to the walking palms in one frame. Measured (the jar
+  lifted with W held at 3.02 m/s, turning, crouched and moving, the crate; set down and thrown as they were; 60 and 144 Hz steps): on
+  the hold's first frames the pot stepped 15.6 cm a frame walking, 9.9 turning, 27.5 crouched (the palms 46.9), 21.3 with the crate,
+  and the body with it out of the lift's stance (the pelvis 8.4 cm walking, 36.6 crouched; a foot 12.6). The set-down's end and the
+  throw's end moved the hands 51 to 67 cm in one frame and the hips up to 30 (on the base too). At 144 Hz the pot went back and forth
+  against the palms 19 to 33 times in every lift on the move, and 6 to 15 in every set-down.
+- **Cause (measured):** the hold and the throw blended their clips over `MASK_UPPER` with `Clips.blend`'s default `hipW` of 1
+  (`courier/moves/carry.js`), so the pelvis was Walk_Carry_Loop's (65.0 to 73.8 cm on its own clock, 0.5 clip seconds a real second
+  when still) or OverhandThrow's (down to 50.3 cm), under legs that kept the idle's, the walk's or the prowl's rotations; the foot IK
+  follows only the ground, so every dip went into the feet (rule 43). And the pot was placed from the capsule (`renderPos` + 1.0 m, its
+  own 1.5 cm sine), the palms pulled onto it by the IK from 11.7 to 34.1 cm away: the hands stayed with the pot, the body moved under both.
+  The first fix's shove: through the throw its kinematic body now followed the throw's hands, overhead and inside the 0.3 m capsule,
+  and `restore()` gave its collider back its groups on the release step; the controller found it there, where the last step had left
+  it, and pushed the capsule out (moving the release 0.35 m further forward changed nothing; keeping the collider off for 8 steps took
+  the shove away). The old throw had kept its body 0.55 m ahead, clear by luck. The second set-down's start was the pose read after the
+  state had already changed to `put`, which is the last set-down's start.
+  The second gate's snap: the lift ends where the carrying clip's palms are at the idle (`carryHoldAt`), and the hold's first frame put
+  the pot within `LAG` (4 cm) of the walking or crouched palms, 9 to 32 cm away. The lift lays Chest_Open whole, so its last pose
+  (standing) gave way to the walk's or the crouch's in one frame, and the set-down's and the throw's poses were dropped the frame they
+  ended (rule 46); crouched, the lift's end was 35 cm under the standing stoop's reach. The lift's and the set-down's progress were read
+  from the fixed step's `st` while the pot was placed from the interpolated `renderPos`, and the set-down's start was held in the world.
+- **Fix:** `carry.js` (and one line of `main.js`). Both upper-body blends pass `hipW` 0, and the carrying clip runs on the legs' phase
+  (`ht = st.phi x dur`: its left foot is forward at its frame 0, as at the legs' phase 0, measured with `analyseGait`), still when they
+  are. The pot rides the hands (`followHands()`, in `afterPose`: the body posed, no hand's IK yet): its grip at the midpoint of the
+  clip's palms, 2 cm ahead, in the body's frame, eased at 30 a second and never more than 4 cm behind (`LAG`); through the throw exactly
+  between the throw's palms. The kinematic body (`fixed()`) reads that same `handGrip`; the release and the set-down start where the pot
+  was last drawn (`drawn`). What is let go of (`restore()`: thrown, set down, dropped) takes `LET_GO`'s groups (a member of `G.DEBRIS`,
+  solid to the world, the props and the creatures, no prop to the controller's query, nothing to the Courier's collider) and its own back
+  each step once `contactCollider` finds it 6 cm clear of the capsule (`clearLetGo()`): a pot 2 steps after the release, a crate 3;
+  lifted again before that, its own groups are the ones kept. The arms ease out of the hold into the throw over 0.07 s (`THROW_IN`): in
+  one frame they, and the pot, had jumped 30 cm; now 2 to 18 cm a frame. A hard landing's squash presses the pot with the hands
+  (`main.js`, the squash's `carried`). After: walking, stopping, turning and the crouched walk, the hips, legs and feet match the
+  empty-handed run frame for frame (walking, feet -2.8 to +11.2 cm, the walk's own); still, the feet -0.3 to -0.1 cm and the hips move
+  0.7 cm (the idle a passive tech stands on, `IDLE.under`); the throw -0.5 cm. The IK moves the palms 2.1 to 2.9 cm still and 1.8 to 4.8
+  cm walking, and they sit 1.6 cm off the pot's sides; the pot's largest jerk (second difference) is half the palms'. The pot sits where
+  the clip's hands hold a box, lower than before: its grip 92 to 95 cm up still, 67 to 83 walking (was 100, and 98.5 to 101.5). A 0.7 m
+  crate is held out 8 cm past the palms (`clearance`, the old hold's), the IK moving its palms 17 to 21 cm (was 19 to 34). The physics
+  body is the mesh's place a frame late: 0.4 to 1.9 cm apart walking, 6 to 11 cm in the throw (was 24 to 93). The throw: the capsule
+  moves 0.0 cm on the release, pot and crate, on the floor and at the floor's edge, at 60, 144 and 40 Hz steps; thrown at a wall 1.1 m
+  ahead the pot still strikes it and breaks. The core's turn-in: the pot trails the palms 4.0 cm at most (was 12.5), the IK pulling them
+  8.9 cm at most (was 15.6). A set-down's first frame moves the pot 0.6 cm, the second as the first. Not changed: crouch-walking, the
+  leading thigh still passes into a held pot's side (645 skinned vertices, 13 cm, as before the fix).
+  The second gate's: every hand-off is a crossfade over `CATCH` (0.2 s) on the render clock. The lift's last pose eases out under the
+  hold (`liftFade`), its hips last (on 1 - s²: a leg's length is the cosine of its half bend, so hips lowered at the rotations' rate into
+  the crouch sank both feet 7 cm); the pot comes from where the lift left it to the palms along the same smoothstep while it rides them
+  (`catchFrom`); the set-down's stoop eases in over the hold, its hips first; what the hands let go of eases out (`out`: the stoop and the
+  hands on the pot set down, the throw's follow-through). The lift's end is no longer lowered for a crouch. The drawn lift, set-down and
+  throw run on render-clock times (`liftT`, `putT`, `throwT`), the physics body on `st`; the set-down starts where the hands had it, in
+  the body's frame. `holdAt` is `carryHoldAt`, "the carry's hold" a row of the glossary's "hold". After, the same harness: the hold's first frames
+  move the pot 3.2 cm a frame at most walking (was 15.6), 3.8 turning (9.9), 7.6 crouched (27.5, the body going down with it), 1.6 with
+  the crate (21.3); the pelvis 1.5, 2.3 and 4.6 cm a frame (8.4, 3.7, 36.6); the feet no lower than before in any hand-off (crouched
+  -0.1 cm, was -3.5; walking -1.0, the walk's own -2.8). The set-down's end moves the hands 2.9 to 12.7 cm a frame and the hips 0.7 to
+  3.7 (51 to 66 and 7 to 30); the throw's end the hands 8.6 to 8.8 (57 to 67). At 144 Hz, 0 reversals in every lift and set-down. The
+  hold itself is unchanged: 30 frames on, the first two runs equal 090b1c5's frame for frame within 0.01 cm (the later ones within
+  0.6 cm: the earlier set-downs left the room a little apart), and still, walking, stopping, crouched and turning the feet, the IK's pull
+  and the mesh against the physics body equal the first fix's numbers above. Left as they were: the
+  crate's palms pulled 17 to 21 cm (Walk_Carry_Loop's palms are 25 cm apart, the crate 70 cm wide: a wider grip wants another clip); the
+  pot through the head in the throw's wind-up (on the base too); a let-go thing is `G.DEBRIS` for its 2 to 3 steps, or while the Courier
+  stands over a dropped one, so the grapnel (`HOOKABLE`) and a sibling's collider pass it (their filters are Petra's); a 5 cm sideways
+  step of the pelvis in a walking turn (the core's, on the base too).
+  The verifiers' third look (b0b0ef3): a throw begun in the hold's first steps dropped the lift's last pose from the legs and hips in
+  one frame. `liftFade` ran in the throw only while the throw's `into` was under 1, so the weight still left in it at `THROW_IN`
+  (0.07 s) went at once: a throw 1 frame into the hold stepped the right ankle 13.2 cm and the toe 14.9 against the capsule in one frame
+  (3 frames in: 7.4 and 8.3; 6 and 12 frames in: under 3.3), the pelvis 2.1; walking, the feet 36 to 41 cm (1 frame in) and 19 to 22
+  (3). Now the lift's last pose eases out on its own clock (`handT`, CATCH) whatever `into` is: still, at 1, 3, 6 and 12 frames in, the
+  pelvis 0.4 to 0.5 cm a frame at most and the ankles 1.9 to 3.0 (the stance sliding back from the stoop's, smoothly: its second
+  difference 1.1 cm, as in a hold with no throw); walking, the feet change their step against the capsule by 5.7 to 7.4 cm at most (the
+  walk's own 4.5 to 5.5; was 28 to 39). Left: walking, the pelvis moves 3.4 to 4.1 cm against the capsule on the release frame (2.9 to
+  3.6 before), as the carry's slow lets go and the gait's speed goes from 3.02 to 3.94 m/s in a step (the core movement's).
+  And a set-down on a flat floor lost the pot from the hands, standing or walking: Chest_Open's stoop brings the palms no lower than 57
+  cm, and the pot went on to the floor 0.85 m ahead, its grip 13 cm up, the palms 1 to 100 cm off it from 12 frames of 20 on (only a
+  set-down on a raised place had kept them on it). Now the stoop goes on down on to a knee (Fixing_Kneeling at 1.6 s, its palms 22 to 24
+  cm up and 55 cm ahead: `PUT`, `KNEEL_T`, `deepOf()`) by how far under the stoop's reach the grip will go (a table: none; the floor:
+  whole), and the pot is set where those palms are, 0.58 m ahead (plus `clearance`); `PUT` the move's time is `PUT_T`. Standing and
+  walking the palms stay 0 to 2 cm off its sides all the way down and let go of it on the floor; the IK pulls them 2 to 17 cm (was up to
+  40). Left: walking on, the kneel's feet slide with the capsule for its 0.34 s, as the stoop's did; and walked straight on, the Courier
+  reaches the pot set down sooner (it is 27 cm nearer) and passes it while it is still `LET_GO`.
+  Then the verifier: the kneel was done in mid-air, the shin and both feet 7 to 9 cm over the floor for about 10 frames (standing 7.5,
+  walking 9.1, turning 7.4), and getting up the back toe went 3 cm into it. Measured on the skin: Fixing_Kneeling at KNEEL_T kneels in
+  the air on this rig, its knee 4.0 cm up, its soles 7.4 to 9.1; and the stoop blended into it puts the back toe up to 10.6 cm under the
+  floor on the way down and up, past footIK's 6 cm raise. Now the kneel's hips go down 2.5 cm (`KNEEL_SINK`, `Carry.kneel`) and while
+  it is on the body footIK lets the feet down on to the floor by its weight (`st.footDown`, at most 6 cm) and raises them by up to 14
+  (`SOLE_KNEEL`). Lowest foot (cm), still / walking / turning: kneeling 0.0 to +0.4 / 0.0 to +0.4 / 0.0 to +0.2, the whole set-down
+  never under 0.0 (was -3.0, 0.0, -2.4 before the change, with the 7 to 9 cm float); the knee's skin -0.7 / -0.7 / -1.4 at the bottom
+  (on it). The palms stay 0 to 2 cm off the pot.
+- **Rule:** 212, 213, 214; rules 46 and 56 for the hand-offs; 215
+  for the feet under it.
+
+### 2026-10-11 · The default string no longer played as phase 2's after c4's hit (the melee loadout's verifiers, phase 3, third round)
+
+- **Seen:** phase 2's `string.mjs`, a free calmed slip jelly 1.9 m ahead: frame for frame through c4's hit (frames 132 and 120), then the
+  jelly 2.74 m off where it lay 1.95 m, and the loop's next c1 cut air (its hit at 154 gone). Also changed for every move that existed:
+  `Moveset.carry`'s travel cut (by the hips' farthest ahead, to none, sidestep dropped), and c4 had a chain window.
+- **Cause:** the second repair gave c4 `hit.away: 1` with the eleven new pushing rows, and rewrote the carry's cut for every whole-body
+  move, not only the catalogue's new ones.
+- **Fix:** c4 has no `away` again; the peak cut is opt-in, `travelCut: 'peak'` on the ten new whole-body rows, and every other move
+  keeps the old cut (the clip's end, 0.15 at least, the sidestep kept). c4's chain window stays: the engine reads it only through
+  `nextOf`, which gives none for the string's last slot, so the default never reads it. Measured: `string.mjs`'s five runs against phase
+  2 (art-melee-p2, 02836dd), free and pinned: every move's begin, hit, cut, the pool, and the Courier's x, z on all 260 frames identical,
+  and the free run identical to `string-after.json`.
+- **Rule:** 210.
+
+### 2026-10-11 · Every knock back sent a free slip jelly sideways (the melee loadout's verifiers, phase 3, second round)
+
+- **Seen:** the verifiers, headless: one blow of each normal at a free, calmed slip jelly 1.9 m ahead. Its travel along the line from
+  the Courier / across it (m): Push Kick 0.00 / 1.33, Heavy Chop 0.00 / 1.45, Low Sweep 0.00 / 1.66, c4 (Leap Strike) 0.00 / 1.24,
+  the same with the lock-on; Guard Break -0.38 / 1.79, Lunge Slash -0.77 / 0.79. The cards say "Kicks them away", "knocks back", and
+  wear the Knockback keyword. Measured here also: Spin Slash 4.11 m across, Power Slash 1.86, Guard Crush 1.18, Rising Cut 3.31.
+- **Cause (measured):** `melee.js` `sweep` hands every hit the direction `(cos(rel + yaw), 0, -sin(rel + yaw))`, the tangent of the
+  swing's arc at the thing, at right angles to the line between them; `Moveset.blow` scaled it by `hit.push` for the knock, and the
+  slip jelly's own flinch (`slipjelly.js` hurt) shoves it along the same. The kick had solved this for its own blows (`FistMoves.blow`,
+  `side`); the cutlass's catalogue never had.
+- **Fix:** `tools/moveset.js` `blow`: a hit with `away` (0..1) is sent that share straight away from the Courier, the rest along the
+  swing (`awayDir`), for its push and its flinch; none, as before, so no other tool changes. The catalogue's twelve rows that push
+  carry `away: 1` (c4 at first, taken off in the third round, 210; Lunge Slash, Heavy Chop, Guard Break, Push Kick, Low Sweep, Body Blow, Spin Slash, Power Slash, Rising Cut,
+  Guard Crush, Backstep Slash); the cuts with no push (c1 to c3, Quick Slash, Backhand) and the fixed grammar are unchanged.
+  Measured, along / across: Push Kick 1.33 / 0, Heavy Chop 1.45 / 0, Low Sweep 1.66 / 0, c4 1.24 / 0 (with the lock-on the same),
+  Guard Break 1.69 / 0.52 (0.96 / 0 locked on), Lunge Slash 0.58 / 0.51, Spin Slash 1.85 / 0, Power Slash 1.86 / 0, Guard Crush 1.18 / 0,
+  Rising Cut 3.31 / 0. Phase 2's `string.mjs`: the air, pause and stinger runs as before; the free and paid strings frame for frame
+  through c4's hit (frames 132 and 120), after which the jelly is 2.74 m off, not 1.95, and the next c1 cuts air where it struck at
+  154 (the finisher knocks it out of the loop's reach, as a finisher does). The row rule is measured on pinned targets: unchanged.
+- **Rule:** 208.
+
+### 2026-10-11 · Empty in a middle slot cut it out, and the card and the log said the string ended (the verifiers, phase 3)
+
+- **Seen:** DEBUG, 1280x720 and 960x600: an 8-blow string [c1, c2, c3, c4, Quick Slash, Backhand, Push Kick, Body Blow], slot 6 picked,
+  its Empty card ("Ends the string before this slot.") clicked: a 7-blow string [.., Quick Slash, Push Kick, Body Blow], and the log
+  "Your string now ends after its fifth blow."
+- **Cause:** `SondelassLoadout.set(slot, null)` did `string.splice(i, 1)`, a removal; the card's line and the log's rule were written
+  for an ending.
+- **Fix:** `loadoutchosen.js`: `string.length = i`, the string ends before that slot and the slots after it go with it, as the card and
+  the log say.
+- **Rule:** 209.
+
+### 2026-10-11 · A loadout set with the editor open was lost on a reload (the verifiers, phase 3)
+
+- **Seen:** DEBUG, 1280 and 960: Heavy Chop put in slot 1 through the editor, 120 frames ticked with the window open: the stored
+  `sondelassLoadout.data.string[0]` still `c1`, and `c1` after a reload. Closed first, the change was kept.
+- **Cause:** `main.js` returns before `save.flush()` whenever a window is open (`modalOpen()`: the Index's window, the Codex), and no
+  `pagehide` or `beforeunload` writes the save; the editor is opened only in those windows. `set()` marked the section dirty and
+  waited for a flush that would not come until the window closed.
+- **Fix:** `SondelassLoadout.keep()`: `dirty()` then `save.flush()`, on every `set()` and `reset()` (flush waits only on a hold).
+- **Rule:** 211.
+
+### 2026-10-11 · Every closed string slot promised "or 8 in a row", which nothing could keep (the verifiers, phase 3)
+
+- **Seen:** STORY, 960x600: after 20 unbroken string blows on a slip jelly, `ledger.best('sond.string.best')` was null and slot 5
+  still read "CLOSED 300 hits, or 8 in a row" (10, 12 and 14 for slots 6 to 8). The count way works: at 300 `cut.hit` slot 5 opens.
+- **Cause:** nothing in `src/` writes the record `sond.string.best` (Dovina's earning names it; its tracking rule is to come);
+  `loadoutopen.js` reads it as 0, and `slotOpening` named it all the same.
+- **Fix:** `slotOpening` says only the count way ("300 hits"); the feat way stays in `SLOT_OPENS` and in `slotsOpen`, and comes back to
+  the line with the record's writer.
+- **Rule:** 209.
+
+### 2026-10-11 · W + RMB's list showed RMB, a quick second change lost its log line, Backstep Slash's reach said 2.4 m (the verifiers, phase 3)
+
+- **Seen:** the loadout editor, the W + RMB and S + RMB lists: every special's card wore the key cap RMB (only Empty showed S+RMB).
+  STORY: `set(1, 'c2')` then `set(1, 'c3')` in one moment, both true; one log line, naming Rising Slash, while the slot held Hop Slash.
+  Backstep Slash's reach chip 2.4 m: pressed S + RMB from rest it missed a slip jelly and Strawman at 2.2 m.
+- **Cause:** `loadouteditor.js` `card()` set `key` by the row's kind, never the picked slot's. The `loadout.set` rule throttled on
+  `loadout.<slot>` for 0.15 real s (`feedback/tracking/moves.js`), so a second change to a slot inside it was not said.
+- **Fix:** the picked special slot's key cap is handed to its cards (`W+RMB`, `S+RMB`); the rule keeps its key without a throttle (a
+  change is never repeated, `set()` refuses no change, and the same line again merges by the key). Backstep Slash's `stats.range` is
+  2.1, measured from where it is pressed (the hop back taken): S + RMB and tapped, at a slip jelly and Strawman, it lands at 1.8, 1.9,
+  2.0 and 2.1 m and misses at 2.2 (3 of 4). Measured: two changes in one moment, two lines, the last "Hop Slash"; DEBUG at 1280x720,
+  the S + RMB list's cards all S+RMB.
+- **Rule:** 209.
+
+### 2026-10-11 · Whole-body blows walked the Courier through what they struck (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the verifiers, headless. Against Strawman, the string [Guard Break, Lunge Slash, Push Kick, Lunge Slash, Push Kick, Heavy
+  Chop x3], no lock: blows 1 to 17 landed, each Heavy Chop carried the Courier about 0.14 m sideways, and from blow 18 every blow
+  whiffed while they walked 4 m past Strawman's side (-39.5% power a real second against the default). A slip jelly held by halt,
+  Guard Break x8: through it by blow 7, facing 180 degrees away, nothing landed after. 11 of 30 random loadouts were outside the row
+  rule's 15% against a pinned slip jelly (to -94.9%). Measured here as well: with the lock-on, the same Guard Break string stood
+  inside the halted jelly (0.05 to 0.27 m from its middle, its radius 0.5), and the default string walked to 0.34 m of a stunned one;
+  without it, the default crept 0.1 m nearer a cycle (1.77, 1.36, 1.26, 1.15 m).
+- **Cause (measured):** `Moveset.carry` cut a whole-body move's travel by `(dist - r - 0.9) / fwd`, held to 0.15..1, only when `fwd`
+  (where the clip's hips END, plus its own step) was over 0.3 m, and only toward the magnet's target. Guard Break, Push Kick, Heavy Chop
+  and Low Sweep end within 0.25 m of where they began, though their hips go 0.12 to 0.43 m ahead first (and Heavy Chop's and Low
+  Sweep's 0.16 m to the side), so they were never cut: Guard Break went its full 0.27 m a blow however close. Lunge Slash and c4 went
+  0.15 of theirs at the closest. Under the lock-on the magnet is not asked, so nothing was cut. A slip jelly does not stop the capsule;
+  past it, the magnet (1 rad of the camera's look) never finds it again. Strawman does stop it, and a blow pushed into its capsule
+  slid off round it.
+- **Fix:** `tools/moveset.js` `carry`: the cut is by the hips' farthest ahead over the move's span (`rootOf(...).ahead`) plus the
+  step, from 0 to 1, for any travel, toward the lock's target, else the magnet's (`aimedAt`); aimed at something, the clip's sidestep
+  is dropped; an xyz move's rise is no longer scaled with the cut (the launcher's 0.9 m hip rise went with it, to 15% close in: rule
+  192). Measured: the halted jelly with Guard Break x8 holds them at 1.40 m, lock-on or not, 16 hits in 10 real s; the loadout above
+  holds them at 1.35 m from Strawman, every blow facing it; the default holds at 1.41 m. The default string's begin, hit, cut and
+  stinger frames are the same in all five of phase 2's runs (`string.mjs`). The row rule, measured as the verifiers did: the 30
+  loadouts of seed 7, -6.2% to +3.1% against both a pinned slip jelly and Strawman (the loadout above +0.8%); every normal alone in
+  4 and 8 slots, -8.8% (Guard Break) to +6.7% (Heavy Chop), both targets. The launcher from 1 m rises as it does from 1.9 m (High
+  Time's top 3.92 m).
+- **Rule:** 206.
+
+### 2026-10-11 · The Stinger's card said "Lunges 6 m" beside an 8 m reach (the melee loadout's verifiers, phase 3)
+
+- **Seen:** the loadout editor, the default special: STINGER, "Lunges 6 m, piercing everything in line", its reach chip 8 m; the lunge
+  measures 8.4 m.
+- **Cause:** the catalogue row's `line` was written from the comment above it ("six metres in a quarter of a real second"), older than
+  the lunge's numbers (30 m/s for 0.26 s, `range: 8`). The editor's placeholder said 8 m, and the join let the row's own words win.
+- **Fix:** the row's line says "Lunges 8 m"; the two comments that said six metres (`sondelassloadout.js`, `cutlass.js`) say eight.
+- **Rule:** 207.
+
+### 2026-10-11 · The string row lit the next slot through a charge's release, the special and the dash (melee phase 6, the verifier)
+
+- **Seen:** headless (960x600, the Throwing Room), a press on every 4th or 6th frame: after c1 held into the charge and let go, 19
+  of 20 presses played c1 with c2 lit; after c1, c2 and R (the special), 7 of 16 played c1 with c3 lit; after c1, c2, a sprint and the
+  dash, 17 of 19 played c1 with c3 lit. Idle into the dash, 0 of 17.
+- **Cause (measured):** `Moveset.stringPlace()` kept the string's place under any move on show (`fresh = !!c`), but a move with no
+  next (`nextOf()` null: the charge's release, the special, the dash) goes through `opener()`, which begins the string again once
+  `after` is past RESET (11 real s into the burst's recovery in the charge's case). A press made before such a move's free recovery cut
+  opens waits in the buffer and is taken when the cut opens, so the `after` that counts is that later one (the dash: 4 of 19 still
+  wrong with the first half of the fix alone, pressed at 0.85 to 0.89 s and taken past RESET).
+- **Fix:** the read keeps the place only under a move with a next; under one with none it asks RESET and the PAUSE window as
+  `opener()` does, at the `after` the press will be taken at (`Moveset.takenAfter`: now if the paid or free cut is open, else when
+  the free cut opens, 0 if the move ends first) (`src/tools/moveset.js`, 10 lines). Measured: 0 of 72 presses on the wrong pip in the
+  same four scans; the verifier's 25 string plans unchanged (the charge's plan 1 to 0; the two 16-frame pauses keep their known
+  one-frame buffered press); the shader programs 163 with the cutlass drawn (no new material).
+- **Rule:** 204.
+
+### 2026-10-11 · The string row lit the wrong pip through a pause string (melee phase 6, the verifier)
+
+- **Seen:** headless (960x600, the Throwing Room), c1 and c2, then LMB 18 frames after c2 ended: j1 began with c3 lit, j2 and j3 with
+  c1 lit; after c1 alone, t1 began with c2 lit and t2 with c1. 10 of 10 pause-string blows on the wrong pip, 31 of 31 plain ground
+  blows right (8 plans: pauses of 18 and 30 frames, the plain string, mashing, pauses of 8 and 52 frames, outside the window).
+- **Cause (measured):** `Moveset.stringPlace()` read the ground string only: in the PAUSE window after the slot a pause string
+  branches from it answered the next slot, and through a pause string's run (`str` 'pause') the first; the row drew only the
+  loadout's slots, so a pause string's blow had no pip to light.
+- **Fix:** `stringPlace()` follows `opener()` and `nextOf()` into the pause strings too (`branch`: the slot it branches from, its moves,
+  its next, its struck); the row draws it as **the pause string's row**, a second row of pips over the string, its thread rising from the gap after
+  that slot, its next lit and no slot lit (`ui/cutlassstringrow.js`); the string's row never moves (that row's room kept, bottom
+  anchored: the row's rect 442,502 76x18 before, its string at the same 442,502 in a 116x38 canvas after). Measured: 0 of 41 blows
+  on the wrong pip, the same 8 plans; the shader programs 163 before and after with the cutlass drawn (the row is a 2D canvas).
+- **Rule:** 204.
+
+### 2026-10-11 · The bottle's arc stayed up after the brush was stowed (melee phase 6, the verifier)
+
+- **Seen:** headless, paint, let go, G 10 frames later: the arc at full strength 24 frames after the key, last seen 36 frames after,
+  18 of them with the brush gone from the hands; LMB held through the key, 34 full frames, last at 46; J (the Veritome asked for) the
+  same, 24 and 35.
+- **Cause (measured):** `feedback/loadgauge.js` keeps `show` at LINGER (0.8 real s) after the load stops and never asked the belt;
+  phase 6 moved the arc beside the body once the paint reticle is gone, and the reticle goes with the brush, so the linger stood at the
+  chest with nothing in the hands.
+- **Fix:** `show` drops to 0 the frame the brush is no longer asked for (`belt.get('soulbrush').wants`), unless a jet runs. Measured:
+  0 frames shown after the key in all four (G and J, let go and held); a rocket gathered and flown with the brush stowed keeps the arc
+  while it runs (opacity 1 over 28 frames).
+- **Rule:** 205.
+
+### 2026-10-11 · The bottle's arc stood at the Courier's chest while painting (melee phase 6, at the merge)
+
+- **Seen:** headless, the four phase 6 branches merged (960x600, the Soul Brush painting at Strawman): the bottle's arc beside the
+  Courier's chest, not beside the paint reticle's ring on Strawman; `game.paintReticle.mesh.visible` false while painting, and true
+  while carrying a pot with nothing drawn.
+- **Cause (measured):** two builders in parallel, each right alone. The bell-and-brush branch had `PaintReticle`'s constructor register
+  itself (`game.paintReticle = this`) so the arc could stand beside it; the Lockheart-and-throw branch built a second `PaintReticle` for
+  the carry throw's landing (`CarryThrowMark`, built in `main.js` after the brush's). The last built took the name: the arc read the
+  carry's reticle, hidden while painting, and fell back to the chest.
+- **Fix:** a borrowed look is built `new PaintReticle(game, { aim: false })` (`vfx/brushmarks.js`, `vfx/carrythrowmark.js`). Measured:
+  painting, the reticle at (462, 312) with a 34 px ring and the arc at (475, 312); carrying, the landing shown and the brush's reticle
+  hidden; the programs 163 before and after.
+- **Rule:** 203.
+
+### 2026-10-11 · Space from the crouch toggle hiccuped into the standing idle (the owner, v144's posture)
+
+- **Seen:** the owner: "jumping from crouched state causing a sort of hiccup like the courier is TRYING to jump but they transition to
+  standing idle instead". Headless, every frame from Space (60 Hz, at 19.5, 0, -32.1): with C pressed once (the v144 toggle), the
+  jump fired on the press frame (`move.jump` 'ground', 6.05 m/s up) but rose 0.196 m and was back on the floor at k9 (150 ms), upright,
+  the standing idle at 0.40 by k9 and 0.97 by k20; standing or with C held, 0.922 m, down at k34 or k35. Still or walking, Space 1, 30
+  or 120 frames after the C, all alike. With C held the jump was whole, but the standing idle showed at 0.29 in its first 0.05 s.
+- **Cause (measured):** a jump from the crouch stands them up (player.js, `setPosture('stand')`), so the step after it grows the capsule
+  from low to standing in the air (`setShape`). `setShape` moved the collider with `setTranslationWrtParent` alone, which Rapier
+  applies only in `world.step`: the controller asked in that same step met the standing capsule at the low one's centre, its foot
+  0.175 m below the feet, 7.4 cm in the floor, and called it grounded while it rose; the next step's grounded branch zeroed the jump.
+  (C held kept the capsule low in the air, so nothing grew.) A Rapier-only probe: a world translation set on a parented collider moves
+  it at once and leaves its offset alone; the next step puts it back at parent times offset, so the two never disagree for long.
+  Over that, the crouch's weight fell at 12/s while the air's rose at 10/s, and the standing idle under both showed through.
+- **Fix:** `setShape` sets the collider's world translation from `this.pos` in the same call (a CROSSING in player.js: one line under
+  a three-line comment; handoff to Petra). The take-off from the crouch holds the crouch's weight under the air's until the air has the whole body
+  (`character.js`, `st.crHold`; `st.crouchW` is the weight as laid). Measured: every crouch case 0.922 m and down at k34 (standing:
+  k35, the fixed step's accumulator); the standing idle shown falls from the crouch's own 0.20 at k-1 (0.17 at k0) and never rises;
+  walking crouched, the walk shown 0.017 at most where it was 0.96. The slide hop with C tapped: 0.199 m before, 0.926 after (C held:
+  0.926 both). C held and let go, crouch to prone to stand, sprinting out of the crouch: feet heights and grounding unchanged, no rescue.
+- **Found at review (the verifier):** in the basement tunnel (a 1.5 m roof, no room to stand) the crouch jump hits the roof at 0.119 m
+  and lands at k6, before the air is whole; the hold was let go on landing at 12/s while the crouch (fallen to 0.30 in the air: player.js
+  aims it at 0 off the ground) climbed back at 12/s, and the two crossed: the crouch's weight 0.80 to 0.44 at k8, the standing idle 0.41,
+  the hip 0.455 to 0.625 m over the feet until about k20. Fix: landed into a crouch that is climbing back, the hold is kept until the
+  crouch reaches it (the landing frame itself too, where the crouch still falls one more step), and the hold is taken at the larger of
+  the take-off frame's crouch and the frame before's (getting up from the belly lets the crouch start falling on the take-off frame:
+  0.82, the idle 0.29). Measured: the tunnel's crouch weight 0.80 throughout, the idle 0.198 at most (the crouch's own 0.20), the hip
+  back to 0.46 m by k16; the get-up jump's first frame lifts the head 0.083 m (was 0.177; the C-toggle jump's 0.085), the idle 0.169.
+- **Rule:** 199; 200.
+
+### 2026-10-11 · Tools stayed in the hands on the belly (the owner: "it looks SUPER goofy otherwise")
+
+- **Seen:** the owner: prone (C, C) with a tool out, the tool stayed in the hand along the crawl (read in the code, not measured before:
+  nothing put one away or kept one in). Building the fix, a second, measured: the aim held (and the fire button) lying down, with no
+  tool out, brought the psygun out on getting up.
+- **Cause:** nothing put a tool away for the posture (the core's, v144); the belt could put a tool away but not bring one out. The
+  psygun's own `stowed` (its ladder and swim return) remembered a combat press made while the hands were taken.
+- **Fix:** `tools/proneholster.js`: going prone stows the tool asked out through the belt (its own stow), as the body goes down (in the
+  holster 20 frames after); while down a worn tool's key is spent before the tools read it, with a throttled log line (a placeholder
+  for Espada), and `busy` (the passive techs' both hands taken) keeps the psygun's own draws off; once up (the getting up played out),
+  the one that was out is drawn again (`belt.draw`, whose adapters now have `out()`: a CROSSING in belt.js); one put away by hand as it
+  went back stays away; the psygun's memory is let go each frame down. A pot in the hands keeps them off the belly (C from the crouch
+  stands them up: a CROSSING in player.js), and F picks nothing up lying down (carry.js). Measured, headless: the cutlass and the
+  psygun in the holster by k90 (prone at k70), drawT 0 while down, Q, X, LMB, R and RMB held all refused, drawn again at k190 (the
+  getting up done at k189), in hand at k205; Q pressed as the cutlass went back: it stayed away.
+- **Found at review (the verifier):** the psygun kept presses made lying down and fired them later by itself. LMB tapped prone: the
+  quick-draw buffer was held at 0.05 (`tryFire` keeps it while the gun is not up) and the shot left as the gun came back; the middle
+  button: `wantShell` held, a slicer shell spent; a charge released prone: `releaseCharged` held, a charged beam; a charge held into
+  prone: frozen at 0.37 with its Lachryma reserved, and resumed once the gun was back. With the Sondelass or nothing coming back, the
+  same fired at the next psygun draw. Cause: the holster stowed the gun every frame, but the gun's own trigger queue is not the
+  belt's, and the gun read its keys after the holster had run. Fix: a CROSSING in `tools/psygun/weapon.js`: while the prone holster is
+  `busy` the gun reads as another tool out (every one of its keys held up, the charge cancelled and refunded, a move cancelled), and its
+  buffer, its press clock, a shell asked for and a homing paint are let go. Measured, headless, both builds: the tap, the shell, the
+  charged release, the charge held through, and the same with the Sondelass or nothing coming back (X later): before, a shot or shell
+  at k204, k299 or k314; after, none, and nothing queued on any frame down. A tap or a shell after getting up fires as before (k344 and
+  k341 in both). Also: a seam's reset while getting up no longer ends the refusal early (`down` is read from the posture alone).
+- **Found at the second review (the verifier):** F lifted a pot while the Courier was still getting up off the belly. The pickup
+  refused only on `P.prone`, which is false from the frame C starts the getting up (posture 'stand', `postureT` > 0), so the lift (k171,
+  `postureT` 0.47) cut the exit clip short: the capsule went from prone to standing on the lift frame and the body was pulled upright
+  mid-rise. Fix: the pickup also waits on the holster's `busy` (lying down or getting up), in the same CROSSING in carry.js.
+  Measured (the verifier's own case: the Sondelass put away by the holster, a pot 0.9 m ahead, C at k160, F at k170): no lift on any
+  frame of the getting up (k161 to k200), the Sondelass drawn again at k201; F at k203, once up, lifts at k204 as before; F lying down
+  (k130) lifts nothing.
+- **Rule:** 201.
+
+### 2026-10-11 · A stinger between string blows opened a string slot a blow early (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. c1 to c4 landed on a slip jelly, a stinger landed, c1 to c3 landed: `move.string.end
+  { run 8, pause }`, where the LMB blows were 7 and 8 is slot 5's feat threshold. The iaido's draw cut and the Tidecutter after c1
+  read `{ run 2 }` against 1. In 3 of 20 random sequences the best run read one higher than the LMB blows alone.
+- **Cause (measured):** `Moveset.markBlow` raised the string run at every counted contact, whatever the blow's kind; only
+  `closeBlow` treated a special's blow (`kind` special or iaido, the stinger's `own`) as apart, and only from the miss. Dovina's rule is
+  "the longest unbroken run of LMB string blows".
+- **Fix:** `specialBlow(c)`, asked by both: a special's blow sends its `move.blow` but neither adds to the run nor ends it; and
+  `markBlow` marks nothing on a blow already closed. Measured: the same sequence `{ run 7, pause }`; the draw cut, the Tidecutter, and
+  R inside a whiffing c2, each after c1, `{ run 1, pause }`; a whiffed stinger inside a run still ends nothing (`{ run 4, pause }`).
+- **Rule:** 198.
+
+### 2026-10-11 · A blow said hit: false, then struck; a string run lived through a form switch (the verifier, before merge: the blow events)
+
+- **Seen:** headless, the blow events' oracle. (1) c3 with a slip jelly 0.9 m away at 2.66 to 2.84 rad off the facing (12 of 12
+  tries): `move.blow { move: 'c3', hit: false }` at t 0.477, the jelly struck the next frame at t 0.495; the same band behind j1, the
+  launcher and a1. (2) c1, c2 landed, the rod (2) for 5 real s, the cutlass (1): `M.after` read 0.5, the run 2 was still open, and
+  j1, j2, j3 grew it to 5 with no `move.string.end`; the hook the same.
+- **Cause (measured):** (1) `melee.js` `sweep()` strikes to `strike[1] + pad` (0.012 clip s); the moveset closed the blow at
+  `t > strike[1]`, so a thing in the pad was struck after its blow was reported. (2) `Moveset.after` grows only in `update()`, which the
+  Sondelass calls only in the cutlass form: the string's window (RESET, 0.9 s) stopped with it.
+- **Fix:** (1) the moveset passes the sweep its pad (`STRIKE_PAD`) and closes a blow at `spent()`: in its recovery and past
+  `strike[1] + STRIKE_PAD`; a whiff cut short in the pad by the next move is still a miss (its strike ran its course). Measured: c3 8
+  of 8 placements `hit: true`, j1 7, the launcher 4, a1 3 (the others no contact at all), no blow marked after its close. (2)
+  `Moveset.idle(dt)`, called by the Sondelass every frame the cutlass is not read: the same 5 s on the rod or the hook sends `end
+  { run 2, pause }` 0.9 s after c2, and the next LMB is c1, a new run.
+- **Rule:** 196, 197.
+### 2026-10-11 · The half turn slow, the cutlass's run folding the wrist, the iaido through the thigh, the en garde off the line (the owner's animation review)
+
+- **Seen:** the owner: "remove the animation for the 180 degree turnaround, it's slow and breaks flow"; the en garde wanted "the torso
+  rotated approximately 20 degrees CCW ... more like a fencing pose", the blade "posed centerline with the main mass"; "The Sondelass being
+  held while running has the wrist hyperflexed and arm clipping into the body, same with the iaido charge". Measured with the pose audit
+  (285 states; the Sondelass's 46 and 22 more): the drawn run's wrist 96 degrees toward the little finger (102 sprinting), the elbow bent
+  54 back, the handle 9 cm into the lower back, the hand 5.6 into the pelvis; the iaido's blade 7.7 cm into the crouched left thigh and
+  its guard 7.1 into the belly, both elbows 72 to 78 off their hinges; the en garde's chest 8 degrees the wrong way, its blade 61 to 111
+  cm to their right; the pommel 6 to 10 cm into the chest in c1, the charge, the launcher, the dash and the counter.
+- **Cause (measured):** the drawn run turned the hand to point the blade back (`rot`, held by `steady`) and pulled it 47 cm to the hip by
+  IK with the default pole: a blade on the thumb's side of a fist points back only with the arm turned in at the shoulder and the forearm
+  turned palm-out (near 180 degrees between them), so the wrist took it all, and the default pole bent the elbow backward. The iaido's
+  hand turn laid the blade through the crouched thigh and its reach broke the elbow. The arms' hinge pass was off with any tool out, and
+  the Sond_ clips were not hinge-repaired. The en garde was Sond_Idle as captured. The handle ran 0.28 m behind the palm for every form
+  (the rod's butt).
+- **Fix:** the half turn out (`courier/anim/skidstop.js`, the skid stop kept; the reversal's numbers unchanged, docs/ART.md section 10).
+  The en garde a stance (`stance:cutlass`): the chest 21 degrees toward their left, the head 2, the guard and tip 2 cm off the midline.
+  The drawn run and the iaido re-posed by the shoulder and the elbow: the elbow's pole placed, the hand laid along its forearm with the
+  blade where it is wanted (`aim`, new in stances.js); the iaido's off hand eased about the blade at its mouth, thumb toward the hilt, and
+  carried there along a reach with its wrist in line (`offHand`, `easeGrip`); blade mode holds the iaido's pose; the draw cut begins at
+  0.22 s of its clip. The Sondelass's set hinge-repaired, clips and posed arms (`hingedArms`). The butt slid in for the cutlass and the
+  hook (0.1 m; the rod's 0.18). The hook aimed as a rod is pointed (the forearm 60 degrees below the shaft); its hand clear of the running
+  thigh (`stance:hookHeld`). After (the same audit): the en garde and its walk clean; the run and the sprint 37 and 36 degrees at the wrist
+  for a few frames of the blend into them (marginal), nothing in the body; the iaido's hold clean, nothing in the body; the pommel out of
+  every stroke. Not fixed, with their causes, in the report: the strokes' wrists (62 to 70 degrees toward the little finger) and forearm
+  turns (140 to 180) as the Sond_ clips hold them, which the hinge repair does not reach; the launcher's guard through the head; the
+  Tidecutter's left forearm in the chest; the stinger's exit into the run; the off hand's first frames into the iaido.
+- **Rule:** 219.
+
+### 2026-10-11 · A blink out of the stinger flung them on at 14 m/s (found building the blink cancel, melee phase 2)
+
+- **Seen:** headless, the blink cancel's probe: E 2 or 8 frames into the stinger, the Courier came out of the blink at 14 m/s and went
+  8.03 m in the 30 frames from the press, against 6.3 m/s and 5.4 m out of c2, the launcher or the iaido's charge; an LMB 4 frames
+  after was the dash slash, not the string.
+- **Cause (measured):** the blink's exit is the body's speed at its start or its own 7 m/s, the greater (`blink.js`, `hs0`). The
+  stinger's launch carries them at 30 m/s and sheds to its `endSpeed` 6 only in `Launch.finish()`; the cut-in ends the launch with
+  `end()` alone, so the blink read 30 m/s, and the core's cap left 14.
+- **Fix:** the stinger's `onEnd` and every carried move's (`Moveset.carry`) shed to the launch's `endSpeed` (`shedSpeed`; on the
+  ordinary end it has already been shed, so nothing changes). Measured: out of the stinger 6.3 m/s, 5.38 m, the next LMB c1. With it,
+  the dash is not taken out of a blink cancel (its 7 m/s exit is not a sprint: an LMB 3 frames after a blink out of c2 was the dash
+  slash; now c3).
+- **Rule:** 195.
+
+### 2026-10-11 · The belly crawl poked through walls (Petra's v144: "the head and outstretched arms can poke into a wall")
+
+- **Seen:** prone (C, C) at the workshop's south wall (the plane z = -15; the capsule's axis can come to 0.32 m of it), the posed body
+  measured against the plane, mesh and bones, three ways. Crawling straight at it: the hands 31 and 36 cm through, the fingers 61 cm,
+  the mesh 64 cm (the head's bone stopped 4 cm short: the arms lead the head, they do not follow it). Crawling along it, leaning on it:
+  the shin 11 cm, the mesh 15 cm (the knees flare 0.46 m each side). Turning in place beside it (the combat stance, 90 degrees a second): a toe
+  86 cm, the mesh 92 cm, facing away (the feet trail 1.25 m behind the axis); 64 cm with the capsule 0.6 m off the plane.
+- **Cause (measured):** the capsule stands upright, 0.27 m in radius, 0.8 m tall: it knows nothing of the body lying on it. The belly's
+  outline about the axis, from every vertex over a crawl cycle (hair, fingers, toes): 0.97 m ahead (the hands, at 15 degrees off the
+  facing), 0.46 m to each side, 1.25 m behind (the toes). The wall stops the circle 0.32 m off; the rest of the body goes through.
+- **Fix:** the clearance in the look (`courier/anim/crawl.js`; the body is Petra's, so `player.js` is untouched). 48 rays round the axis at
+  0.3 m, each as long as the outline reaches that way and half a metre more; each surface point inside the outline (a convex polygon of
+  24 support planes, `CRAWL.outline`) is moved out along its normal by the polygon's nearest edge, the planes found added by the way
+  they face, and the body so slid tried again against every point (4 rounds: a prop's push into a wall is given back, the poke shared).
+  The slide goes on the pelvis only (the pose, the hands and the feet are the clips'), at most 1 m, in at a rate of 60 a second (a
+  rate of 30 left 14 cm of toe through the wall in a 540 degree-a-second turn) and out over about 0.15 s. Two first tries fell
+  short: the plane the support function gave for a hit, taken as infinite, pushed the body 0.85 m out of the way of the end faces of two
+  short walls it could pass between; the push of one surface alone sent the body 14 cm into the wall beside a prop. Measured after
+  (the same harness, the clearance patched off for before): straight at it, the mesh 0.2 cm through at worst (1 cm short at rest), along
+  it, 2 cm short; turning, 0.6 cm short, 4 and 6 cm through for a tick or two at 540 and 1080 degrees a second; in the open, a slide
+  of exactly 0; 0.09 ms a frame prone. What it cannot hold: a gap narrower than the body (0.7 m wide, two walls: 10 cm through each,
+  the same as before); handed to Petra with the numbers (`docs/handoffs/petra/2026-10-11-from-calissa-prone-reach.md`).
+- **Rule:** 194 (new; 193 as Calissa wrote it, renumbered at the gate: Dovina's 193 was first).
+
+### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
+
+- **Seen:** the owner, at Strawman's sparring circle: S + LMB held does not go up. Measured (Strawman 1.9 m ahead, S + LMB held,
+  then LMB every 0.1 s): the Courier's feet topped out at 0.43 m; with no press after it, the launcher's last pose stood frozen 1.4 real
+  s on the ground; the air string played on the ground.
+- **Cause (measured):** High Time was the ride (`tools/moveset.js`): from the launcher's strike the Courier was carried 1.3 m under the
+  centre of what it had struck, at that thing's measured speed, and the launcher's pose was held until that thing fell at 3 m/s. Strawman
+  takes a knock as nothing (its `knock` is empty): its centre stays at 1.35 m, so the ride held the Courier on the ground, and it never
+  falls, so the pose held to the ride's 2.5 s cap. Any target that cannot be lifted did the same.
+- **Fix:** the rise is the Courier's own (`HIGH`, `leap()`): from the strike's end a ballistic arc to 3.92 m over the ground they left
+  (2.2 x 1.78 m) at 14.7 m/s², the launcher's pose held till that arc turns over; an air blow begun on the way up keeps the arc to its
+  top. What was struck still gets the held lift (9.2) and goes up to the blade; the ride is laid on only past the top, and only on a
+  thing seen to rise 0.1 m in 0.2 s (`RIDE.up`, `RIDE.still`), else let go. Measured: Strawman 3.92 m at 1.17 s, the air blows over its
+  head, the plunge from 3.82 m lands at 1.85 s and its ring strikes it; a slip jelly 3.92 m (the same rise), every air blow lands (gaps
+  0.62, 1.10, 1.25 m); with nothing struck, 3.92 m at 0.97 s. The paid cut from the launcher into a1 keeps the arc (3.92 m).
+- **Rule:** 192 (new; 191 as Calissa wrote it, renumbered at the gate: Dovina's 190 was first).
+
+### 2026-10-11 · Strawman could not be locked on to (the owner: "It is also impossible to lock on to the Strawman")
+
+- **Seen:** the owner: Z never locks Strawman; the cutlass and blade mode never aim at it.
+- **Cause (measured):** Strawman was a candidate all along (`game.creatures.list`, 26 m reach; headless, the sparring circle, 2 m in
+  front of it: `candidates()` listed `strawman`). The line-of-sight test (`lockon.js clear`) cast from the eye to its middle (1.35 m up)
+  and hit Strawman's own capsule first: a static collider with no rigid body, so the filter that skips moving bodies kept it (`clear`
+  false, `acquire` false). Every creature the lock had held so far had a dynamic body and passed by that filter.
+- **Fix:** `clear(pt, ref)` leaves out the colliders whose entity is the target. Petra's ruling: a training body comes to the lock
+  through `game.lock.add(ref)`, added by the room that owns it (Strawman, the status bench's eleven roly-polies), and the creature loop
+  skips `training`; its `lock.on` carries `training`, so the ledger never counts it. Measured after: `acquire` locks Strawman (the
+  reticle on it; the cutlass's moves and blade mode aim through `game.lock`, not entered headless); `lock.on` 0 in the ledger.
+- **Rule:** 191 (new; 190 as Calissa wrote it, renumbered at the gate).
 
 ### 2026-10-10 · The crouch walk's head swung (the owner: "that crouch walk has a lot of excessive head movement")
 
@@ -2828,3 +3575,20 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** a room with no key is picked as the Index itself offers, with arrows from its current selection and Enter. The basement
   sweep: 362 pass, 0 fail, the two debug chests' rooms reached by arrows.
 - **Rule:** 190.
+
+### 2026-10-11 · Training bodies seasoned Focus and paid Divination's exp (Calissa's handoff, melee phase 1)
+- **Seen:** six statuses built on the status bench's roly-polies raised `alchemy.s.season.focus` from 0 to 6, while the ledger stayed 0.
+- **Cause:** `alchemy.js` and `psyche.js` listen to the bus directly; only tracking.js's `on` wrapper skipped Strawman (`training`,
+  `kind: 'strawman'`), and the roly-polies were new.
+- **Fix:** `isTraining(e)` in `progress/combat/testroom.js` (Strawman, the roly-polies, anything marked `training`), asked by Soul Alchemy's
+  seasoning and the domains' exp; tracking.js may ask it too (Petra's).
+- **Rule:** 193 (191 as Dovina wrote it, renumbered at the gate: Calissa's 191 and 192 were first).
+
+### 2026-10-11 · Made whole after a shatter on the belly, the Courier was still prone (Calissa's verifier, crouch-jump round)
+- **Seen:** shattered while prone, the Courier was made whole at the workshop upright for a moment, then down on the belly by about
+  step 345, in posture 'prone' with the prone capsule.
+- **Cause:** `course.teleport` (world/basement/basement.js), which the reform calls, resets the techs and the movement but never the
+  posture; `player.respawn` did, in its own copy of the lines.
+- **Fix:** `player.standUp()` (posture stand, its timers and buffer cleared, the standing shape), called by both; the shape's own check
+  lowers them where there is no headroom.
+- **Rule:** 202.

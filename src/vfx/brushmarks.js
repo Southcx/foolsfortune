@@ -19,7 +19,9 @@
 // Sunshine's FLUDD gauge and its washed-goop sparkle, Breath of the Wild's stamina wheel (segments, shown only while it is spent),
 // PowerWash Simulator's completion ping.
 //
-//   const R = new PaintReticle(game)   R.set(on, point, normal, { ring, along, color }, rawDt)   R.dispose()
+//   const R = new PaintReticle(game) (it is game.paintReticle; `{ aim: false }` for a reticle that is not the brush's aim, the carry
+//   throw's landing)   R.set(on, point, normal, { ring, along, color }, rawDt)
+//   R.screenAt(out) -> { x, y, r } (CSS pixels: its point on the screen and its ring's half-width there) | null   R.dispose()
 //   const J = new JetRing(game)        J.set(k (0..1, < 0 none), kind ('hover' | 'rocket'), feetPos, rawDt)
 //   const S = new CleanShine(game)     S.at(pos, size)  (a shine where ground was cleaned)   S.update(rawDt)
 // ---------------------------------------------------------------------------------------
@@ -37,11 +39,27 @@ const flatMark = (look, u, name, order) => {
 };
 
 export class PaintReticle {
-  constructor(game) {
+  constructor(game, { aim = true } = {}) {
     this.game = game; this.alpha = 0; this.ring = 0; this.on = false;
     this.u = { uC: { value: new THREE.Color(1, 1, 1) }, uK: { value: 0 }, uP: { value: new THREE.Vector4() } };
     this.mesh = flatMark('reticle', this.u, 'paint-reticle', 30);
     game.scene?.add(this.mesh);
+    if (aim) game.paintReticle = this; // (the one the Courier's brush aims with; the bottle's arc stands beside it, vfx/bottlearc.js. The carry
+    // throw's landing borrows the look, never the name: CASEBOOK, the reticle that took the brush's name)
+  }
+
+  /** Where it stands on the screen while shown, in CSS pixels: its point, and its ring's half-width there (`r`); null when hidden or
+   *  out of view. The bottle's arc stands beside it, so the fill reads with the brush's own aim (vfx/bottlearc.js). */
+  screenAt(out = {}) {
+    const cam = this.game.camera;
+    if (!this.on || !this.mesh.visible || !cam) return null;
+    _c.copy(this.mesh.position).project(cam);
+    if (_c.z > 1 || Math.abs(_c.x) > 1.05 || Math.abs(_c.y) > 1.05) return null;
+    const W = innerWidth, H = innerHeight;
+    out.x = (_c.x + 1) * 0.5 * W; out.y = (1 - _c.y) * 0.5 * H;
+    cam.getWorldQuaternion(_q); _c.set(1, 0, 0).applyQuaternion(_q).multiplyScalar(this.ring).add(this.mesh.position).project(cam);
+    out.r = Math.abs((_c.x + 1) * 0.5 * W - out.x);
+    return out;
   }
 
   /** Shown (`on`) at `point` on a surface of `normal`: the spread's ring `ring` metres across its middle, the stream thrown along
@@ -67,7 +85,7 @@ export class PaintReticle {
     this.u.uK.value = this.alpha;
   }
 
-  dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
+  dispose() { if (this.game.paintReticle === this) this.game.paintReticle = null; this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
 
 const JET_R = 0.85; // (metres: the quad's half-size; the band runs 0.57 to 0.68 m from the feet, inside the Lachryma ring's 0.62 to 0.71)

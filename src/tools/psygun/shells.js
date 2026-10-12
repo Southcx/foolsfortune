@@ -367,7 +367,7 @@ export class Shells {
     }
     // a big wet patch right where it hit (a wall too)
     this.addSplat(pos.clone().addScaledVector(normal, -0.08), normal, S.patch * 2.2, true);
-    g.slip?.addDisc(pos.clone().addScaledVector(normal, -0.1), normal, S.patch, T.tech.slip.coverLife, 0, 'courier');
+    g.paintmap?.coat(pos.clone().addScaledVector(normal, -0.1), normal, S.patch, T.tech.slip.coverLife, 0, 'courier');
     g.events?.emit('slip.splat', {});
   }
 
@@ -624,7 +624,7 @@ export class Shells {
     for (const p of this.projectiles) g.scene.remove(p.mesh);
     for (const w of this.wells) { g.scene.remove(w.group); w.sound?.stop(); }
     this.spatter.clear();
-    g.slip?.clear();
+    g.paintmap?.clearCoats();
     for (const e of [...this.marked]) this.unmark(e);
     this.specials.clear();
     this.casters.clear();

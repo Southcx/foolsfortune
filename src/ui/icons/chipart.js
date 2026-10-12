@@ -4,6 +4,7 @@
 //   range     a span with its ends marked (metres)          angle     a wedge and its arc (degrees)
 //   energy    a drop (the pool's cost)                      charges   three upright pips (uses a crossing: a row of dots read as an ellipsis at 1x)
 //   cooldown  a clock (real seconds before it is ready)     duration  an hourglass (real seconds it lasts)
+//   power     a burst, the blow landing (a blow's power)    speed     a chevron with its wake (real seconds a blow takes)
 //   lock      a padlock (a card not yet opened)             check     a tick (a card equipped)
 //   up, down  an arrow (a compared number rising or falling; drawn solid for better and hollow for worse, so the comparison never
 //             rests on its green or red alone)
@@ -68,6 +69,26 @@ export const CHIP_ART = {
     '..#++#..',
     '.#++++#.',
     '########',
+  ],
+  power: [
+    '...#....',
+    '.#.##.#.',
+    '..####..',
+    '#######.',
+    '.#####..',
+    '..####..',
+    '.#.##.#.',
+    '...#....',
+  ],
+  speed: [
+    '...##...',
+    '....##..',
+    '#.#..##.',
+    '......##',
+    '#.#..##.',
+    '....##..',
+    '...##...',
+    '........',
   ],
   lock: [
     '..####..',

@@ -9,7 +9,7 @@
 //
 //   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted) -> cubes (it keeps its worth)
 //   demand(island, kind, day, sold) -> multiplier      purserPrice(worth, island, day, sold) -> cubes      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
-//   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
+//   fuel(distance) -> cubes      spillChance(field, units, hull) -> 0..1      crudeRun({ ship, field, buy, sell, distance, failed }) -> cubes
 //   wellSeed(wellId, day) -> uint32 (the Well as it is that day: a Cogitomap carries it)      wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
@@ -39,9 +39,9 @@ export function demand(island, kind, day = 0, sold = 0) {
   let wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
   // (crude: the island's own place in the band, the wave a narrow swing about it: Entropolis sells it cheap, Margarite buys it dear)
   // (Cogitomaps likewise: Margarite buys them dear)
-  const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : kind === 'cogitomap' ? ECON.islands[island]?.maps : undefined;
+  const centre = ECON.crude.fields[kind] ? ECON.islands[island]?.crude : kind === 'cogitomap' ? ECON.islands[island]?.maps : undefined;
   if (centre !== undefined) wave = Math.max(0, Math.min(1, centre + (wave - 0.5) * 0.4));
-  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * (ECON.crude.grades[kind] ? ECON.crude.glut : I.glut));
+  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * (ECON.crude.fields[kind] ? ECON.crude.glut : I.glut));
 }
 
 /** The fuel for a hop of `distance` units across the Emocean. */
@@ -56,15 +56,15 @@ export function haulProfit({ buy, sell, units, worth, distance, failed = 0 }) {
   return Math.round(got - units * worth * buy - fuel(distance));
 }
 
-/** The chance a failed stage spills crude of `grade`, `units` aboard (cubes never spill). */
-export const spillChance = (grade, units, hull = 1) => Math.min(1, ECON.crude.spill * (ECON.crude.grades[grade]?.volatility ?? 1) * Math.sqrt(units / 10) * hull);
+/** The chance a failed stage spills crude of `field`, `units` aboard (cubes never spill). */
+export const spillChance = (field, units, hull = 1) => Math.min(1, ECON.crude.spill * (ECON.crude.fields[field]?.volatility ?? 1) * Math.sqrt(units / 10) * hull);
 
-/** A crude run: a ship's hold of `grade` bought at `buy` and sold at `sell` (demand multipliers), `distance` away, `failed` stages
+/** A crude run: a ship's hold of `field` bought at `buy` and sold at `sell` (demand multipliers), `distance` away, `failed` stages
  *  failed on the way (each may spill the whole hold, by spillChance). The expected profit, fuel paid. */
-export function crudeRun({ ship = 'tanker', grade = 'grief', buy = 0.8, sell = 1.3, distance = 4, failed = 0 }) {
-  const S = ECON.ships[ship], G = ECON.crude.grades[grade];
+export function crudeRun({ ship = 'tanker', field = 'dunemaw', buy = 0.8, sell = 1.3, distance = 4, failed = 0 }) {
+  const S = ECON.ships[ship], G = ECON.crude.fields[field];
   if (!S?.carries.includes('crude') || !G) return 0;
-  const units = S.hold, worth = M(G.worth), keep = Math.pow(1 - spillChance(grade, units, S.hull ?? 1), failed);
+  const units = S.hold, worth = M(G.worth), keep = Math.pow(1 - spillChance(field, units, S.hull ?? 1), failed);
   let got = 0;
   for (let i = 0; i < units; i++) got += worth * Math.max(0, sell - i * ECON.crude.glut);
   return Math.round(got * keep - units * worth * buy - fuel(distance) * (S.fill ?? S.slow));

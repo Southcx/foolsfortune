@@ -30,7 +30,7 @@
 //   heading, the bow's way; lines: the pixels of the picture's height; color: the ship's feeling, for the mounts that wear yours)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MarkBuffer, STYLE } from './railmark.js';
+import { MarkBuffer, wireStrip } from './railmark.js';
 import { MOUNTS } from '../progress/rail/mounts.js';
 import { T } from '../core/config.js';
 
@@ -69,7 +69,7 @@ function arc(cx, cz, r, a0, a1, n) {
   return out;
 }
 
-const _c = new THREE.Color(), _e = new THREE.Vector3();
+const _c = new THREE.Color();
 
 export class MountPreview {
   constructor({ cap = 900, renderOrder = 39 } = {}) {
@@ -78,7 +78,7 @@ export class MountPreview {
     this.mesh = this.buf.mesh; this.mesh.name = 'mount-preview'; this.mesh.visible = false;
     this.tool = null; this.since = 0; this.t = 0; this.ctx = null; this.alpha = 1;
     this.f = new THREE.Vector3(); this.r = new THREE.Vector3();
-    this.pw = []; this.pa = []; this.rgb = [1, 1, 1]; // (a strip's points, in the world, and their half-widths; the colour: reused)
+    this.pw = []; this.rgb = [1, 1, 1]; // (a strip's points, in the world; the colour: reused)
   }
 
   /** Draw this mount's preview (a tool id of MOUNTS), or none. Drawn at once where the last draw stood, at the start of its fade (faint:
@@ -118,19 +118,10 @@ export class MountPreview {
 
   /** A strip of points (the ship's frame), its look MAIN or THIN, its alpha a number or one per point (a function of the index). */
   strip(pts, look = MAIN, a = 1, closed = false) {
-    const B = this.buf, n = pts.length; if (n < 2) return;
-    const cam = this.ctx.camera, V = cam.matrixWorldInverse, W = this.pw, A = this.pa;
-    for (let i = 0; i < n; i++) {
-      const w = (W[i] ||= new THREE.Vector3()); this.world(pts[i], w);
-      const depth = Math.max(0.3, -_e.copy(w).applyMatrix4(V).z), pxm = this.pxk / depth;
-      const px = Math.min(look.hi, Math.max(look.lo, look.m * pxm));
-      A[i] = (px / pxm) * (look.wire ? 1 : -1); // (a negative half-width: the colour alone, no schiller in its heart)
-    }
-    const al = (i) => this.alpha * (typeof a === 'function' ? a(i) : a), [cr, cg, cb] = this.rgb, segs = closed ? n : n - 1;
-    for (let i = 0; i < segs && B.count < B.cap; i++) {
-      const j = (i + 1) % n, P = W[i > 0 ? i - 1 : closed ? n - 1 : i], N = W[j + 1 < n ? j + 1 : closed ? (j + 1) % n : j], Pa = W[i], Pb = W[j];
-      B.put(B.count++, Pa.x, Pa.y, Pa.z, A[i], Pb.x, Pb.y, Pb.z, A[j], P.x, P.y, P.z, al(i), N.x, N.y, N.z, al(j), STYLE.wire, cr, cg, cb);
-    }
+    const n = pts.length; if (n < 2) return;
+    const W = this.pw;
+    for (let i = 0; i < n; i++) this.world(pts[i], (W[i] ||= new THREE.Vector3()));
+    wireStrip(this.buf, W, n, { look, a: (i) => this.alpha * (typeof a === 'function' ? a(i) : a), rgb: this.rgb, camera: this.ctx.camera, pxk: this.pxk, closed }); // (vfx/railmark.js: the wire, built once)
   }
 }
 

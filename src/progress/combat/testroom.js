@@ -65,6 +65,11 @@ export function group(points = [], aim = { x: 0, y: 0 }) {
 /** A run is recorded only on the stock game: any tuned knob (debug/tuned.js) and it is said, marked tuned, and kept out of the ledger.
  *  The player's own settings (sensitivity, resolution, volume) never count against it. */
 export const recordable = (tunedKnobs = []) => tunedKnobs.length === 0;
+/** Was this event's target a training body (Strawman, the status bench's roly-polies, anything marked `training`)? The Throwing Room
+ *  measures and never pays (COMBAT-LAB.md): the ledger's rules (tracking.js), the domains' exp (psyche.js) and Soul Alchemy's
+ *  seasoning (alchemy.js) all skip what this says yes to. */
+export const TRAINING_KINDS = ['strawman', 'rolypoly'];
+export const isTraining = (e) => !!(e && (e.training || TRAINING_KINDS.includes(e.kind) || TRAINING_KINDS.includes(e.what)));
 
 /** The pots: only the testing room's come back. They pay nothing (no cubes, no curios, no finds); they give Lachryma, so the psygun can
  *  keep firing, and never reach the ledger (`training`). Everywhere else a broken pot stays broken. */

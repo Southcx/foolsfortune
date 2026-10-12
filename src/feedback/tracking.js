@@ -97,9 +97,9 @@ export class Tracking {
   // ---------------------------------------------------------------- events
   listen() {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
-    // (the Throwing Room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
-    // drill.*, carry neither mark: world/testroom/, feedback/tracking/testroom.js)
-    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.what === 'strawman') return; f(e); });
+    // (the Throwing Room measures and never counts: its pots and lock targets (`training`), Strawman and the status bench's roly-polies
+    // never reach a rule here; its own rules, strawman.*, statusbench.* and drill.*, carry no mark: world/testroom/, feedback/tracking/testroom.js)
+    const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.kind === 'rolypoly' || e?.what === 'strawman') return; f(e); });
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };
 
     // ---- breaking
@@ -297,7 +297,7 @@ export class Tracking {
       hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it.',
-      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 8 choose a feeling, hold LMB and let go to cast, MMB sounds the water. With the hook, LMB throws, hold to reel, RMB pays out. The treasury\'s chests open with F and come back; the Tithe takes cubes for a sealed chest on the dais. Y brings the skiff.',
+      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB sounds the water. With the hook, LMB throws, hold to reel, RMB pays out. The treasury\'s chests open with F and come back; the Tithe takes cubes for a sealed chest on the dais. Y brings the skiff.',
       dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
@@ -669,7 +669,7 @@ export class Tracking {
     const SHOPNAME = (id) => ({ raku: 'Raku', grog: 'Old Grog' })[id] || 'The keeper';
     on('shop.open', (e) => { L.inc('shop.open'); L.inc(`shop.open.${e.shop}`); first('shop', 'Logged: a counter. Click a good to buy it, a thing in your box to sell it. Prices climb as a shelf empties and fall back in time.'); });
     on('shop.buy', (e) => {
-      L.inc('shop.bought'); L.inc(`shop.bought.${e.shop}`); L.inc('shop.spent', e.price);
+      L.inc('shop.bought'); L.inc(`shop.bought.${e.shop}`); L.inc('shop.spent', e.price); L.hi('shop.buy.best', e.price || 0);
       if (e.haggled) { L.inc('haggle.won'); L.inc('haggle.saved', Math.max(0, Math.round(e.worth * 1.45) - e.price)); }
       log.say('loot', `You buy the ${ITEM(e.item)} from ${SHOPNAME(e.shop)} for ${plural(e.price, 'cube')}.`, { tone: '#ffd98a', key: `buy.${e.item}`, fmt: (n) => `You buy ${n} ${ITEM(e.item)} from ${SHOPNAME(e.shop)}.` });
     });

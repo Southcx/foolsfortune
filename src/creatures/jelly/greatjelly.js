@@ -268,7 +268,7 @@ export class GreatJelly {
   /** Its slam: a ring FOE.slam.radius about it; on a fallen stalactite, its own crown cracks three points (the hammer's way). */
   slam(at) {
     const g = this.game, P = g.player, B = this.bowl, L = B.local(at);
-    g.slip?.addDisc(at.clone(), new THREE.Vector3(0, 1, 0), this.slamR, 22);
+    g.paintmap?.coat(at.clone(), new THREE.Vector3(0, 1, 0), this.slamR, 22);
     sfx.slam?.(1.2);
     const d = Math.hypot(P.pos.x - at.x, P.pos.z - at.z);
     if (d < this.slamR + 0.4 && P.pos.y - at.y < 1.6 * this.k) this.strike('slam');
