@@ -253,6 +253,7 @@ import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
+const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
 const QAIS_ON = import.meta.env.VITE_PUBLIC !== '1'; // (a public build is made without QAIS: `VITE_PUBLIC=1 npm run build`; its window and store are not bundled then)
@@ -949,6 +950,7 @@ async function main() {
   const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js)
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
+  const parkCaster = Object.values(CASTER_SHADERS).map((m) => m.prewarm?.(game)).filter(Boolean); // (the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.gardenMycelium?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
@@ -964,7 +966,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkCracks(); parkFigmentTelegraphs();
+  parkWeather?.(); parkDrain(); parkCracks(); parkFigmentTelegraphs(); parkCaster.forEach((f) => f());
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
