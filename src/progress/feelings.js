@@ -15,23 +15,23 @@ import { ASPECTS } from './weather.js';
 const G = (L, k) => L?.get?.(k) || 0;
 /** Drinking a feeling in its own weather on this many occasions wakes it too (a change of the feeling drunk is an occasion: mind.js). */
 export const WAKE_COUNT = 5;
-/** Each feeling's feat (the owner's table, 2026-10-11), and its line in the log, in the feeling's own voice (Espada's to finish; Wonder's
+/** Each feeling's feat (the owner's table, 2026-10-11), and its line in the log, in the feeling's own voice (Espada's, each in its own flavour; Wonder's
  *  is the owner's). `does` is the Codex's one line of how. */
 export const FEELING_WAKE = {
-  wonder: { does: 'Stand at a vantage and look out.', feat: (L) => (L?.firstCount?.('vantage.') || 0) >= 1,
+  wonder: { does: 'Stand at a vantage point and look out.', feat: (L) => (L?.firstCount?.('vantage.') || 0) >= 1,
     line: 'It feels like the sky goes on further than you ever knew.' },
   mirth:  { does: 'Play for a crowd, or make the folk laugh.', feat: (L) => G(L, 'rhythm.combo') >= 10 || G(L, 'npc.mood.joy') >= 6,
-    line: 'Something in you laughs before you know why.' },
+    line: 'Laughter fizzes up through you, a shaken bottle whose cork was never going to hold.' },
   desire: { does: 'Want something, and have it.', feat: (L) => G(L, 'shop.buy.best') >= 480 || G(L, 'chest.open.epic') + G(L, 'chest.open.prismatic') >= 1,
-    line: 'You wanted it, and now it is yours, and you want more.' },
-  grief:  { does: 'Lose what you staked.', feat: (L) => G(L, 'lockheart.out.dud') >= 3 || G(L, 'well.haul.lost') >= 1,
-    line: 'It is gone, and the place where it was stays.' },
+    line: 'You lean toward it as a moth leans to a lamp, and having it only turns up the flame.' },
+  grief:  { does: 'Lose what you staked, or what you carried.', feat: (L) => G(L, 'lockheart.out.dud') >= 3 || G(L, 'well.haul.lost') >= 1,
+    line: 'There is a hollow in you the exact shape of what you lost, and nothing else will fit.' },
   dread:  { does: 'Face what waits below.', feat: (L) => G(L, 'foe.faced') >= 1,
-    line: 'The dark leans closer, and you hold still.' },
+    line: 'Every shadow holds its breath at once, and so do you.' },
   fury:   { does: 'Answer a blow with a blow.', feat: (L) => G(L, 'parry.run.best') >= 10 || G(L, 'foe.break') >= 1,
-    line: 'Your hands are shaking, and not from fear.' },
+    line: 'You steam and rattle like a kettle on the boil, and you have stopped wanting the lid on.' },
   gall:   { does: 'Clean up what rots.', feat: (L) => G(L, 'stain.wash.grown') >= 1 || G(L, 'clutch.break') >= 1,
-    line: 'Your throat closes on it. You do it anyway.' },
+    line: 'Your stomach curdles like milk gone sour, and you roll up your sleeves anyway.' },
 };
 /** How a feeling would wake now: by its feat, by the count, or not yet (null). */
 export function wakeOf(id, L) {

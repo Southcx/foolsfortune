@@ -20,6 +20,7 @@
 //   worthOf(itemId, data?) -> cubes (what the thing is worth: the base of every price)    demandKey(itemId) -> the kind an island wants
 //   glazePrice(prestige) -> cubes | null
 // ---------------------------------------------------------------------------------------
+import { worthOfShell } from '../combat/castershells.js';
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
 import { LURES } from '../../tools/sondelass/angling/lures.js';
@@ -38,6 +39,7 @@ export function worthOf(id, data = null) {
   if (it.kind === 'material' && data?.tier != null) return M(1 + data.tier); // (a Well's material: rarer walks further)
   if (it.kind === 'fish') return ECON.fish[it.tier] || 0;
   if (it.kind === 'curio') return ECON.curio[it.tier] || 0;
+  if (it.kind === 'shell') return M(worthOfShell(it.key)); // (a caster shell: its tier's, castershells.js)
   if (it.kind === 'lure') return M(ECON.goods.lure);
   if (ECON.goods[id] != null) return M(ECON.goods[id]);
   if (it.kind === 'key') return M(6);

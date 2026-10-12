@@ -14,7 +14,7 @@
 // document v0.1 (the seven skills, the EXP curve floor(level^1.5 * 50 + 100) a level, "The World" ascension), Rhythm Heaven's and Gran
 // Turismo's graded results (how well, not only how often).
 //
-//   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts, quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
+//   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts | acts(e), quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
 //   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
 //   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
 //   WIDEN[key] = { domain, mult | plus, at99, does }      widenAt(key, level) -> a multiplier, or a bonus to a count
@@ -62,6 +62,9 @@ export const SOURCES = [
   { event: 'brush.canvas',    domain: 'ouranurgy',      base: 6,  quality: (e) => (e.open ? null : q01((e.drawings || 0) / 3)) },
   { event: 'reprogram.run',   domain: 'possession',     base: 20, quality: (e) => (e.refused ? 0 : q01(e.q)) },
   { event: 'lockheart.drain', domain: 'possession',     base: 6,  quality: () => 0.5 },
+  // a fish released: two minds on one line (the owner, 2026-10-11; ANGLING.md 5), an act per 10 real seconds of fight, quality the
+  // pulls answered; a kept fish pays cubes instead, never both
+  { event: 'angle.release',   domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.secs || 0) / 10)), quality: (e) => (e.by === 'courier' ? q01(e.answered ?? 0.5) : null) },
   { event: 'god.sunder',      domain: 'alteration',     base: 10, quality: (e) => q01((e.cuts || 1) / 4) },
   { event: 'god.swell',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
   { event: 'god.wring',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
@@ -102,11 +105,11 @@ export function scaleOf(domain) {
   return SCALE[domain] || 1;
 }
 
-/** A source's base: its own, or (a big act) `acts` times its domain's average ordinary base. */
-function baseOf(s) {
+/** A source's base: its own, or (a big act) `acts` (a number, or of the event: a fight's length) times its domain's average ordinary base. */
+function baseOf(s, e) {
   if (s.base != null) return s.base;
   const src = SOURCES.filter((x) => x.domain === s.domain && x.base != null);
-  return s.acts * src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
+  return (typeof s.acts === 'function' ? s.acts(e) : s.acts) * src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
 }
 
 /** The EXP an event is worth, by domain: base x the domain's scale x skillWeight(quality). A source whose quality is null does not count. */
@@ -116,7 +119,7 @@ export function expFor(e) {
     if (s.event !== e.name) continue;
     const q = s.quality(e);
     if (q == null) continue;
-    out.push([s.domain, Math.round(baseOf(s) * scaleOf(s.domain) * skillWeight(q))]);
+    out.push([s.domain, Math.round(baseOf(s, e) * scaleOf(s.domain) * skillWeight(q))]);
   }
   return out;
 }

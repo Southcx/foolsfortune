@@ -179,4 +179,9 @@ export const ALL_ARTS = [...ABILITIES, ...GOD_ARTS];
 
 /** All the arts by id; BY_TECH covers the Movement Arts only (the rest of the techs (swim, ladders, hanging) are body moves). */
 export const BY_ID = Object.fromEntries(ALL_ARTS.map((a) => [a.id, a]));
+/** The techs the log counts as used (`tech.<id>` firsts) and "Every Tech, Once" asks for: those that start (a passive one, the
+ *  carry, kick, recoil, the prone holster, never does) and are not the body's other business (an emote, a talk, the rhythm mode,
+ *  a shatter, an ultimate). */
+export const UNLOGGED_TECHS = ['emote', 'talk', 'rhythm', 'death', 'ultimate'];
+export const loggedTechs = (techs) => (techs?.list || []).filter((t) => !t.passive && !UNLOGGED_TECHS.includes(t.id)).map((t) => t.id);
 export const BY_TECH = Object.fromEntries(ABILITIES.map((a) => [a.tech, a]));

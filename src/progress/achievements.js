@@ -19,7 +19,7 @@
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
-import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf } from './skills.js';
+import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
 import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
@@ -559,7 +559,7 @@ export function buildAchievements(game) {
   F('lg2', 'collect', 'Logged', 2, 'collect', 'Getting Filled In', 'Log 30 firsts.', (L) => L.firstCount(), 30);
   F('lg3', 'collect', 'Logged', 3, 'collect', "Captain's Log", 'Log 60 firsts.', (L) => L.firstCount(), 60);
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
-  F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
+  F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => loggedTechs(game.techs).filter((id) => L.firsts[`tech.${id}`] != null).length, loggedTechs(game.techs).length || 17); // (only techs that start: a passive one never does. Petra, v154)
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
 
   // ---------------------------------------------------------------- THE DOMAINS (progress/psyche.js: EXP in the ledger as `exp.<domain>`)
@@ -622,9 +622,9 @@ export function buildAchievements(game) {
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   // the two feelings past Anagami's five, learned by drinking them where they fall (GALL-AND-FURY.md section 5; Espada's names): the count
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
-  C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Wake Gall: clean up what rots.', 'feeling.known.gall', 1);
-  C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Wake Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
-  F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Wake all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)
+  C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
+  C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
+  F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Awaken to all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)
   F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
   C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);
