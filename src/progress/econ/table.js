@@ -20,6 +20,10 @@ export const ECON = {
   // ---- the faucets (cubes into the world)
   /** A slip jelly burst by them (plus whatever it had swallowed of theirs); a zandatsu's core. */
   jelly: { burst: 6, core: 3 },
+  /** A Lantern Wisp burst by them (Petra's creature, v171): hp 5 against a jelly's 8, so 5/8 of a jelly's 6 is 3.75; it flies and casts
+   *  from range, harder to reach, so 5. Respawning every 45 real s, one spot farmed alone pays about 400 an hour at the top of its EmO
+   *  band: under the aim (480), as a fight's side income should be. */
+  wisp: { burst: 5 },
   /** A crystal formation broken open: base + size x perSize (twice if the fork rang in it). */
   crystal: { base: 2, perSize: 4.5, // (was 8 + 10: a round of the dune sea paid three times the aim; 3 + 6 until R57: still 1.74x)
     // tuned by ear (world/dunes/crystaltuning.js): a formation broken open by plain strikes pays this share by its nature; found at its sweet
