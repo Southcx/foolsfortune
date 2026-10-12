@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OPPOSITE, ASPECTS, COLOR } from '../../progress/weather.js';
-import { paintMotifCode, PAINT_LOOK_HEAD, PAINT_LOOK_BODY, PAINT_LOOK_ROUGH } from '../../vfx/paintmotifs.js';
+import { paintMotifCode, PAINT_DRY, PAINT_LOOK_HEAD, PAINT_LOOK_BODY, PAINT_LOOK_ROUGH, PAINT_LOOK_NORMAL } from '../../vfx/paintmotifs.js';
 
 const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, SLICK_LIFE = 40, NONE = -1e4, NEAR = 0.8, FLAT = 0x3b2b22; // (a slick: crude thrown or welled up in a fight, flat (no feeling), gone in 40 real seconds)
 /** Which cells a wipe or a count takes: true a blot's crude, 'slick' a slick's, false paint. */
@@ -39,6 +39,7 @@ export class PaintMap {
     this.asp = new Int8Array(N * N).fill(-1); // its feeling (index into ASPECTS)
     this.crude = new Uint8Array(N * N); // 1: crude, a blot's (world/ground/stains.js), which keeps; 2: a slick, crude that fades; 0: paint, which fades
     this.h = new Float32Array(N * N).fill(NONE); // the height it lies at
+    this.wetT = new Float32Array(N * N); this.clock = 0; // (when a cell was last wetted, real seconds: the look dries it, vfx/paintmotifs.js PAINT_DRY) (CROSSING, Calissa: the look)
     this.x0 = -SPAN / 2; this.z0 = -SPAN / 2; // (the window's corner, in whole cells)
     this.live = new Set(); this.dirty = true; this.upT = 0;
     this.colData = new Uint8Array(N * N * 4); this.hData = new Float32Array(N * N * 2); // (the height a cell lies at, and its motif: vfx/paintmotifs.js)
@@ -71,7 +72,7 @@ export class PaintMap {
       if (this.k[n] >= 0.05 && this.asp[n] === opp && !crude && !this.crude[n]) { this.k[n] = Math.max(0, this.k[n] - add); if (this.k[n] < 0.05) { this.k[n] = 0; this.asp[n] = -1; } this.live.add(n); continue; } // (opposites cancel)
       if (this.asp[n] === a && this.crude[n] === (crude ? 1 : 0)) this.k[n] = Math.min(1, this.k[n] + add); // (the same: it thickens)
       else { this.asp[n] = a; this.k[n] = Math.min(1, Math.max(add, crude ? this.k[n] : 0)); this.crude[n] = crude ? 1 : 0; } // (another: the last writer takes it)
-      this.h[n] = y; this.live.add(n);
+      this.h[n] = y; this.wetT[n] = this.clock; this.live.add(n);
     }
     this.dirty = true;
     return fresh;
@@ -219,7 +220,7 @@ export class PaintMap {
     else if (kind) { this.asp[m] = -1; this.crude[m] = kind; this.k[m] = Math.max(k, t); } // (crude over paint takes the cell)
     else if (ASPECTS[asp] && OPPOSITE[ASPECTS[asp]] === ASPECTS[this.asp[m]]) { this.k[m] = Math.max(0, k - t); if (this.k[m] < 0.05) { this.k[m] = 0; this.asp[m] = -1; } }
     else if (t > k) { this.asp[m] = asp; this.k[m] = t; }
-    if (this.k[m] > 0) { this.h[m] = y; this.live.add(m); }
+    if (this.k[m] > 0) { this.h[m] = y; this.wetT[m] = this.clock; this.live.add(m); }
   }
 
   /** The paint at a point of the ground (within 0.8 m of the height it was laid at), or null. */
@@ -232,7 +233,7 @@ export class PaintMap {
   update(dt, fx, fz) {
     const want0 = Math.floor((fx - SPAN / 2) / CELL) * CELL, want1 = Math.floor((fz - SPAN / 2) / CELL) * CELL;
     if (Math.abs(want0 - this.x0) > SPAN / 4 || Math.abs(want1 - this.z0) > SPAN / 4) this.recentre(want0, want1);
-    const fade = dt / LIFE;
+    const fade = dt / LIFE; this.clock += dt;
     for (const n of this.live) { if (this.crude[n] === 1 && this.k[n] > 0) continue; this.k[n] -= this.crude[n] === 2 ? dt / SLICK_LIFE : fade; if (this.k[n] <= 0) { this.k[n] = 0; this.asp[n] = -1; this.h[n] = NONE; this.crude[n] = 0; this.live.delete(n); } } // (crude keeps: a blot stays until it is wiped)
     for (let i = this.spots.length - 1; i >= 0; i--) { const s = this.spots[i]; if ((s.age += dt) > s.life) this.spots.splice(i, 1); }
     if (this.live.size) this.dirty = true;
@@ -242,12 +243,12 @@ export class PaintMap {
 
   recentre(x0, z0) {
     const di = Math.round((x0 - this.x0) / CELL), dj = Math.round((z0 - this.z0) / CELL);
-    const k = new Float32Array(N * N), a = new Int8Array(N * N).fill(-1), h = new Float32Array(N * N).fill(NONE), cr = new Uint8Array(N * N), live = new Set();
+    const k = new Float32Array(N * N), a = new Int8Array(N * N).fill(-1), h = new Float32Array(N * N).fill(NONE), cr = new Uint8Array(N * N), wt = new Float32Array(N * N), live = new Set();
     for (const n of this.live) {
       const i = (n % N) - di, j = Math.floor(n / N) - dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
-      const m = j * N + i; k[m] = this.k[n]; a[m] = this.asp[n]; h[m] = this.h[n]; cr[m] = this.crude[n]; live.add(m);
+      const m = j * N + i; k[m] = this.k[n]; a[m] = this.asp[n]; h[m] = this.h[n]; cr[m] = this.crude[n]; wt[m] = this.wetT[n]; live.add(m);
     }
-    this.k = k; this.asp = a; this.h = h; this.crude = cr; this.live = live; this.x0 = x0; this.z0 = z0;
+    this.k = k; this.asp = a; this.h = h; this.crude = cr; this.wetT = wt; this.live = live; this.x0 = x0; this.z0 = z0;
     for (const R of this.fixed) this.layFixed(R); // (the fixed coats, laid again)
     this.onRecentre?.(); // (what keeps, the blots, is laid again into the new window: stains.js)
     this.uniforms.uPmWin.value.set(x0, z0, SPAN, 1 / N);
@@ -258,7 +259,7 @@ export class PaintMap {
     const C = this.colData, Hh = this.hData, tmp = new THREE.Color();
     for (let n = 0; n < N * N; n++) {
       const p = this.k[n], o = n * 4;
-      if (p > 0.02) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n] === 1) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n * 2] = this.h[n]; Hh[n * 2 + 1] = paintMotifCode(this.asp[n], this.crude[n], p); C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] === 1 ? Math.max(p, 0.6) : p)); } // (a slick's cells too, now the slicks' meshes are gone: its motif carries its age, the oxidation ramp, vfx/paintmotifs.js) // (crude's look is its motif's, oil-black: vfx/paintmotifs.js)
+      if (p > 0.02) { if (this.asp[n] < 0) tmp.setHex(FLAT); else tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); if (this.crude[n] === 1) tmp.multiplyScalar(this.asp[n] < 0 ? 1 : 0.42); Hh[n * 2] = this.h[n]; Hh[n * 2 + 1] = paintMotifCode(this.asp[n], this.crude[n], p, (this.clock - this.wetT[n]) / PAINT_DRY); C[o + 3] = Math.round(255 * Math.min(1, this.crude[n] === 1 ? Math.max(p, 0.6) : p)); } // (a slick's cells too, now the slicks' meshes are gone: its motif carries its age, the oxidation ramp, vfx/paintmotifs.js) // (crude's look is its motif's, oil-black: vfx/paintmotifs.js)
       else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n * 2] = NONE; Hh[n * 2 + 1] = 0; continue; } // (black under nothing: an edge filters toward the colour, not away from it)
       const a = C[o + 3] / 255; C[o] = Math.round(tmp.r * a * 255); C[o + 1] = Math.round(tmp.g * a * 255); C[o + 2] = Math.round(tmp.b * a * 255); // (premultiplied)
     }
@@ -282,7 +283,8 @@ uniform sampler2D uPmCol; uniform sampler2D uPmH; uniform vec4 uPmWin;
 ${PAINT_LOOK_HEAD}
 ` + sh.fragmentShader.replace('#include <alphamap_fragment>', `${PAINT_LOOK_BODY}
   #include <alphamap_fragment>`).replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += pmGlow;')
-        .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>${PAINT_LOOK_ROUGH}`); // (the look, the motifs and the gloss: Calissa's, vfx/paintmotifs.js)
+        .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>${PAINT_LOOK_ROUGH}`)
+        .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>${PAINT_LOOK_NORMAL}`); // (the look, the motifs and the gloss: Calissa's, vfx/paintmotifs.js)
     };
     material.customProgramCacheKey = () => `pm|${before}`;
     material.userData.paintmap = true; material.needsUpdate = true;
