@@ -30,6 +30,10 @@ const RULES = {
   'skiff.glide': (s) => s.skiffGlide?.(), // (the wings' wind: audio/moves.js skiffLoop)
   'skiff.tumble': (s, e) => s.tumbleThump?.(e.speed), // (the bail's ragdoll on the sand, a thump a contact)
   'sibling.hit': (s, e) => s.siblingHit?.(e.down), // (a sibling's clay struck: audio/vessel.js)
+  'wisp.notice': (s) => s.wispNotice?.(), // (the Lantern Wisp: audio/wisp.js)
+  'wisp.cast': (s) => s.wispCast?.(),
+  'wisp.hit': (s) => s.wispHit?.(),
+  'wisp.burst': (s) => s.wispOut?.(),
   'feeling.wake': (s, e, g) => { if (e.by === 'courier') g.music?.awaken?.(e.feeling); }, // (the awakening's phrase: music/awaken.js)
   'feeling.drink': (s, e) => { if (e.by === 'courier') s.feelingDrink?.(e.aspect); }, // (the drunk feeling changed: audio/vessel.js)
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
