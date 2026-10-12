@@ -500,4 +500,210 @@ export const LIBRARY = {
   'shell.corrupt': { layers: [ // (97: the body hit drawn as broken data, then drained into the point it was shot from; ctx.target the body)
     L({ type: 'caster', shader: 'corrupted', dur: 6, tear: 0.7, crush: 0.7, k: [[0, 0], [0.05, 1], [1, 1]] }),
   ] },
+  // =============================================================================================== CASTER SHELLS, BATCH 1: THEIR LOOKS
+  // (docs/plans/CASTER-SHELLS.md section 3's look column; vfx/shelllooks.js plays them by shell id: `fly` while its round is in the air,
+  // `touch` at each bounce, `land` where it lands, `fire` at the muzzle, `set` on a thing set down. A held one (dur Infinity) is followed
+  // and stopped by shelllooks.js at the shell's own `dur`; `r` is the context's (the shell's reach). No words, no numbers.)
+  'shell.trail': { layers: [ // (any round with no tail of its own: a short one in its family's colour)
+    L({ type: 'sprites', rate: 40, dur: Infinity, shape: 'soft', size: [0.12, 0.16], sizeEnd: 0.02, life: 0.22, color: 'tint', alpha: 0.9 }),
+  ] },
+  'shell.land': { layers: [ // (where any of them lands without a look of its own: a ring and a glint of its colour)
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.1, life: 0.22, color: 'tint', rot: 0 }),
+    L({ type: 'sprites', count: 5, shape: 'sparkle', spawn: 'sphere', r: 0.3, size: [0.15, 0.25], sizeEnd: 0, life: [0.25, 0.45], color: ['tint', 'white'], twinkle: 16 }),
+  ] },
+  // 11 Ricochet Saw: a fired-clay throwing wheel, its gold rim, a smear of motion; sparks at each bounce
+  'shell.ricochetSaw.fly': { layers: [
+    L({ type: 'sprites', rate: 36, dur: Infinity, shape: 'crescent', size: [0.4, 0.5], sizeEnd: 0.3, life: 0.12, color: 0xc46a45, colorEnd: 'gold', alpha: 0.7, spin: [14, 22] }),
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'glint', spawn: 'shell', r: 0.18, size: [0.14, 0.22], sizeEnd: 0, life: 0.18, color: 'gold', twinkle: 24 }),
+  ] },
+  'shell.ricochetSaw.touch': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.7, sizeEnd: 0.1, life: 0.14, color: 'white', colorEnd: 'gold' }),
+    L({ type: 'sprites', count: [9, 13], shape: 'streak', dir: 'cone', axis: 'normal', cone: 70, speed: [4, 9], size: [0.12, 0.2], sizeEnd: 0.02, life: [0.18, 0.3], drag: 5, stretch: 1.8, gravity: 6, color: ['gold', 'white'], colorEnd: 'ember' }),
+  ] },
+  // 12 Skipstone: a flat Lachrymite stone glinting, a ring laid on the ground at each skip (on crude, its oil film)
+  'shell.skipstone.fly': { layers: [
+    L({ type: 'sprites', rate: 14, dur: Infinity, shape: 'sparkle', size: [0.1, 0.16], sizeEnd: 0, life: 0.3, color: 'labradorite', twinkle: 18 }),
+  ] },
+  'shell.skipstone.touch': { layers: [
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.55, scale: [[0, 0.12], [1, 0.75]], stretch: [1, [[0, 0.6], [1, 0.15]], 1], k: [[0, 1.4], [1, 0]], tint: 'tint', labradorite: 0.6 }),
+    L({ type: 'sprites', pool: 'alpha', count: [4, 6], shape: 'puff', spawn: 'ring', r: 0.25, dir: 'out', lift: 0.4, speed: [0.6, 1.4], size: [0.2, 0.3], sizeEnd: 0.5, life: [0.4, 0.6], drag: 3, color: 0xd9b89a, alpha: 0.45 }),
+    L({ type: 'sprites', count: [4, 6], shape: 'soft', dir: 'cone', axis: 'up', cone: 40, speed: [2, 3.5], size: 0.07, life: [0.35, 0.5], gravity: 9, color: 'tint' }),
+  ] },
+  'shell.skipstone.touch.crude': { extends: 'shell.skipstone.touch', layers: [
+    L({ type: 'sprites', count: 6, shape: 'ripple', spawn: 'disc', r: 0.3, size: [0.3, 0.5], sizeEnd: 1.1, life: [0.4, 0.6], color: ['film0', 'film1', 'film2', 'film3'], alpha: 0.6 }),
+  ] },
+  // 14 Hailstorm: twenty-four shards in the glazes' colours, out of the muzzle at once
+  'shell.hailstorm.fire': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.08, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 24, shape: 'shard', dir: 'cone', cone: 13, speed: [26, 40], size: [0.08, 0.13], sizeEnd: 0.05, life: [0.22, 0.36], color: [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0], spin: [-20, 20], powerCount: false }),
+  ] },
+  // 16 Mallet: the clay head that bloomed in flight slams down: a ring along the floor, a cake of dust, chips
+  'shell.mallet.fly': { layers: [
+    L({ type: 'sprites', pool: 'alpha', rate: 10, dur: Infinity, shape: 'puff', size: [0.15, 0.22], sizeEnd: 0.4, life: 0.4, drag: 2, color: 0xd9b89a, alpha: 0.35 }),
+  ] },
+  'shell.mallet.land': { layers: [
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.6, scale: [[0, 0.4], [1, 3.4]], stretch: [1, [[0, 1.2], [1, 0.3]], 1], k: [[0, 1.6], [1, 0]], tint: 0xf3e6d8, labradorite: 0.1 }),
+    L({ type: 'sprites', pool: 'alpha', count: 18, shape: 'puff', spawn: 'ring', r: 0.7, dir: 'out', lift: 0.12, speed: [3, 6], size: [0.6, 0.9], sizeEnd: 1.6, life: [0.7, 1.1], drag: 3, color: [0xd9b89a, 0xc9a27a], alpha: 0.6, spin: [-1, 1], powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 14, shape: 'chip', dir: 'cone', axis: 'up', cone: 70, speed: [3, 7], size: [0.07, 0.14], life: [0.6, 0.9], gravity: 14, color: [0xb4603f, 0x8c4a33, 0xc46a45], alphaEnd: 0.8, spin: [-14, 14], floor: 'ground', powerCount: false }),
+    L({ type: 'shake', k: 0.5 }),
+    L({ type: 'hitstop', dur: 0.06 }),
+  ] },
+  // 18 Pinball: chrome, its tail reddening with its speed (shelllooks.js turns the tint); each wall rings like a bumper
+  'shell.pinball.fly': { layers: [
+    L({ type: 'sprites', rate: 70, dur: Infinity, shape: 'soft', size: [0.16, 0.2], sizeEnd: 0.02, life: 0.25, color: 'tint', alpha: 0.85 }),
+  ] },
+  'shell.pinball.touch': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.3, sizeEnd: 1.5, life: 0.2, color: 'tint', rot: 0, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.8, sizeEnd: 0.1, life: 0.12, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 6, shape: 'glint', dir: 'cone', axis: 'normal', cone: 80, speed: [2, 4], size: [0.15, 0.25], sizeEnd: 0, life: 0.2, drag: 4, color: ['white', 'tint'], twinkle: 24 }),
+  ] },
+  // 21 Flamer: heat haze over an orange-to-white flame along the aim, ash drifting up (held for its dur at the muzzle)
+  'shell.flamer.fire': { extends: 'caster.heatHaze.flame', layers: [
+    L({ type: 'sprites', rate: 80, dur: Infinity, shape: 'soft', dir: 'cone', cone: 14, speed: [6, 9], size: [0.1, 0.16], sizeEnd: 0.5, life: [0.35, 0.55], drag: 1.6, gravity: -1.5, color: 'white', colorEnd: [0xff7a2a, 0xe0401a], alpha: 0.9 }),
+    L({ type: 'sprites', rate: 20, dur: Infinity, shape: 'streak', dir: 'cone', cone: 20, speed: [7, 11], size: [0.12, 0.2], sizeEnd: 0.03, life: [0.2, 0.3], stretch: 1.6, color: 0xffd08a, colorEnd: 'ember' }),
+  ] },
+  // 24 Napalm: the slick (the paint map's oil film, its labradorite flash) catches a second later and burns
+  'shell.napalm.land': { layers: [
+    L({ type: 'sprites', count: 10, shape: 'drip', dir: 'cone', axis: 'up', cone: 60, speed: [2, 4], size: [0.1, 0.16], life: [0.4, 0.6], gravity: 12, color: ['film0', 'film1', 'film2', 'film3'], floor: 'ground', powerCount: false }),
+    L({ type: 'sprites', at: 1, rate: 45, dur: Infinity, shape: 'soft', spawn: 'disc', r: 'r', dir: 'up', speed: [1, 2.4], size: [0.3, 0.42], sizeEnd: 0.05, life: [0.5, 0.8], gravity: -1.5, color: 0xffd08a, colorEnd: [0xff7a2a, 0xc8401a], alpha: 0.9 }),
+    L({ type: 'sprites', at: 1, rate: 12, dur: Infinity, shape: 'glint', spawn: 'disc', r: 'r', size: [0.14, 0.24], sizeEnd: 0, life: [0.3, 0.5], color: 'labradorite', twinkle: 10 }),
+    L({ type: 'sprites', at: 1, pool: 'alpha', rate: 6, dur: Infinity, shape: 'puff', spawn: 'disc', r: 'r', dir: 'up', speed: [0.8, 1.4], size: [0.4, 0.6], sizeEnd: 1.3, life: [1.2, 1.8], drag: 0.6, color: [0x2a2420, 0x3a302a], alpha: 0.4, spin: [-0.6, 0.6] }),
+    L({ type: 'light', at: 1, color: 'ember', k: 30, range: 7, dur: 1.2 }),
+  ] },
+  // 25 Detonator: a putty lump with a glaze bead (its body: shelllooks.js); a red spark trailing it
+  'shell.detonator.fly': { layers: [
+    L({ type: 'sprites', rate: 24, dur: Infinity, shape: 'soft', size: 0.08, sizeEnd: 0.01, life: 0.16, color: 0xff3a2a }),
+  ] },
+  // 28 Cinder: one ember and its ribbon of smoke
+  'shell.cinder.fly': { layers: [
+    L({ type: 'sprites', pool: 'alpha', rate: 26, dur: Infinity, shape: 'puff', size: [0.05, 0.07], sizeEnd: 0.2, life: [0.8, 1.1], drag: 1.2, gravity: -0.5, color: [0x3a302a, 0x5b4c40], alpha: 0.45, spin: [-1, 1] }),
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'soft', size: 0.05, sizeEnd: 0, life: [0.2, 0.4], dir: 'sphere', speed: [0.2, 0.6], color: 0xffb060, colorEnd: 0xff5a1a }),
+  ] },
+  // 35 Lightning Rod: a copper glint on the body that holds it
+  'shell.lightningRod.land': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.8, sizeEnd: 0.1, life: 0.2, color: 0xf0c090, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.2, life: 0.25, color: 0xd99a5a, rot: 0, powerCount: false }),
+    L({ type: 'sprites', rate: 6, dur: Infinity, shape: 'sparkle', spawn: 'shell', r: 0.45, size: [0.12, 0.2], sizeEnd: 0, life: [0.4, 0.6], color: [0xd99a5a, 0xf0c090], twinkle: 10 }),
+  ] },
+  // 38 Static Cling: sparks where the props meet the body, crackling in to it
+  'shell.staticCling.land': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.9, sizeEnd: 0.1, life: 0.16, color: 0xbfe0ff, powerCount: false }),
+    L({ type: 'sprites', rate: 16, dur: Infinity, shape: 'streak', spawn: 'shell', r: 0.7, dir: 'in', speed: [2, 4], size: [0.1, 0.16], sizeEnd: 0.02, life: [0.12, 0.2], stretch: 1.6, color: [0xbfe0ff, 'white'] }),
+    L({ type: 'sprites', rate: 5, dur: Infinity, shape: 'glint', spawn: 'shell', r: 0.4, size: [0.15, 0.25], sizeEnd: 0, life: 0.15, color: 0x9fd0ff, twinkle: 30 }),
+  ] },
+  // 41 Inhaler: a vortex at the muzzle drawing in (held while it draws; the clods it spits fly as clods)
+  'shell.inhaler.fire': { layers: [
+    L({ type: 'sprites', rate: 70, dur: Infinity, shape: 'soft', spawn: 'shell', r: 1.4, dir: 'in', speed: [3, 4.5], size: [0.05, 0.09], sizeEnd: 0.02, life: 0.32, color: [0xd9c8b0, 'lach'], alpha: 0.85 }),
+    L({ type: 'sprites', rate: 5, dur: Infinity, shape: 'swirl', size: 0.7, sizeEnd: 0.2, life: 0.35, spin: [8, 10], color: 'lach', alpha: 0.7 }),
+  ] },
+  'shell.clod.fly': { layers: [
+    L({ type: 'sprites', pool: 'alpha', rate: 12, dur: Infinity, shape: 'puff', size: [0.12, 0.18], sizeEnd: 0.3, life: 0.35, drag: 2, color: 0xb89a7a, alpha: 0.4 }),
+  ] },
+  // 46 Balloon: the body bobbing on the air, light bubbles rising from under it
+  'shell.balloon.land': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 8, shape: 'puff', spawn: 'sphere', r: 0.4, dir: 'out', speed: [0.6, 1.2], size: [0.3, 0.45], sizeEnd: 0.8, life: 0.6, drag: 3, color: [0xffd6e6, 0xd6ecff], alpha: 0.5, powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', rate: 4, dur: Infinity, shape: 'bubble', spawn: 'sphere', r: 0.5, offset: [0, -0.4, 0], dir: 'up', speed: [0.4, 0.9], size: [0.1, 0.2], sizeEnd: 0.25, life: [1, 1.4], color: [0xffc0d8, 0xc0e0ff, 0xfff0a0], alpha: 0.85 }),
+  ] },
+  // 47 Leadweight: the ground dimples under it; dust settling
+  'shell.leadweight.land': { layers: [
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.5, scale: [[0, 0.2], [1, 1.5]], stretch: [1, [[0, 0.5], [1, 0.1]], 1], k: [[0, 1.2], [1, 0]], tint: 0x8a6a4a, offset: [0, -0.5, 0] }),
+    L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'puff', spawn: 'ring', r: 0.5, offset: [0, -0.5, 0], dir: 'out', lift: 0.3, speed: [1.5, 3], size: [0.3, 0.45], sizeEnd: 0.8, life: [0.8, 1.1], drag: 3, gravity: 1.2, color: 0xc9a27a, alpha: 0.5, powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', rate: 3, dur: Infinity, shape: 'puff', spawn: 'ring', r: 0.4, offset: [0, -0.5, 0], dir: 'out', speed: [0.2, 0.5], size: 0.25, sizeEnd: 0.5, life: 1, gravity: 0.6, color: 0xbfa080, alpha: 0.35 }),
+  ] },
+  // 56 Weather Away: crazing spreads over the clay hit (S4's craze) and dry flakes fall off it
+  'shell.weatherAway.land': { extends: 'caster.craze', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 8, shape: 'puff', spawn: 'sphere', r: 0.3, speed: [0.3, 0.8], size: [0.25, 0.35], sizeEnd: 0.6, life: 0.7, drag: 2, color: 0xe0c8a8, alpha: 0.5, powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: 4, shape: 'chip', spawn: 'sphere', r: 0.45, speed: [0.1, 0.4], size: [0.04, 0.08], life: [0.8, 1.2], gravity: 6, color: [0xe0c8a8, 0xc9a27a], alphaEnd: 0.6, spin: [-8, 8], floor: 'ground' }),
+  ] },
+  // 61 Infector: a green glow, a sickly bubbling round the body (held while it is infected)
+  'shell.infector.land': { layers: [
+    L({ type: 'sprites', rate: 5, dur: Infinity, shape: 'soft', size: [0.7, 0.9], sizeEnd: 0.5, life: 0.6, color: 0x5a9a3a, alpha: 0.35 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 12, dur: Infinity, shape: 'bubble', spawn: 'sphere', r: 0.45, dir: 'up', speed: [0.3, 0.8], size: [0.06, 0.14], sizeEnd: 0.18, life: [0.5, 0.8], color: [0x8ad06a, 0xb8f070, 0x5a9a3a], alpha: 0.9 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 3, dur: Infinity, shape: 'drip', spawn: 'sphere', r: 0.35, size: [0.06, 0.1], life: 0.6, gravity: 8, color: 0x7ab85a, alpha: 0.9 }),
+  ] },
+  // 62 Taunt Doll: the painted doll spinning where it was set down; its bell's ring seen as a ring going out from it
+  'shell.tauntDoll.fly': { layers: [
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'sparkle', size: [0.1, 0.16], sizeEnd: 0, life: 0.3, color: 'gold', twinkle: 18 }),
+  ] },
+  'shell.tauntDoll.set': { layers: [
+    L({ type: 'sprites', rate: 1.6, dur: Infinity, shape: 'ringthin', offset: [0, 0.8, 0], size: 0.2, sizeEnd: 1.4, life: 0.5, color: 'gold', alpha: 0.8, rot: 0 }),
+    L({ type: 'sprites', rate: 4, dur: Infinity, shape: 'glint', offset: [0, 0.8, 0], spawn: 'sphere', r: 0.12, size: [0.15, 0.25], sizeEnd: 0, life: 0.25, color: ['gold', 'white'], twinkle: 20 }),
+  ] },
+  // 64 Pottify: a puff of slip (the pot's body is M7's, later)
+  'shell.pottify.land': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 16, shape: 'puff', spawn: 'sphere', r: 0.4, dir: 'sphere', speed: [1, 2.4], size: [0.4, 0.55], sizeEnd: 1, life: [0.6, 0.9], drag: 3, color: [0xe8d6c0, 0xd9c2a5], alpha: 0.8, spin: [-1, 1], powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 8, shape: 'drip', dir: 'cone', axis: 'up', cone: 70, speed: [1.5, 3], size: [0.08, 0.12], life: 0.6, gravity: 10, color: 0xe8d6c0, floor: 'ground', powerCount: false }),
+    L({ type: 'glyph', kind: 'bang1', color: 0xe8d6c0, size: 0.45, up: 0.9 }),
+  ] },
+  // 66 Stage Fright: a spotlight from nowhere on each one frozen, motes hanging in its beam
+  'shell.stageFright.land': { layers: [
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 0.32, tint: 0xfff4d6, labradorite: 0, opacity: 0.9, spin: 0, offset: [0, 1.2, 0], in: 8, out: 3 }),
+    L({ type: 'sprites', rate: 8, dur: Infinity, shape: 'soft', spawn: 'column', r: [0.1, 0.6], height: 3, offset: [0, -0.4, 0], dir: 'up', speed: [0.05, 0.15], size: [0.04, 0.07], life: [1.2, 1.8], color: 0xfff4d6, alpha: 0.6 }),
+    L({ type: 'light', color: 0xfff4d6, k: 30, range: 6, dur: 0.8, up: 2.5 }),
+  ] },
+  // 67 Paranoia: question marks popping over it as its eyes dart
+  'shell.paranoia.land': { layers: [
+    L({ type: 'glyph', kind: 'ask', color: 0xc8a0e0, size: 0.45, up: 0.7 }),
+    L({ type: 'glyph', kind: 'ask', at: 1.6, color: 0xc8a0e0, size: 0.35, up: 0.8, burst: false }),
+    L({ type: 'glyph', kind: 'ask', at: 3.4, color: 0xc8a0e0, size: 0.35, up: 0.7, burst: false }),
+    L({ type: 'glyph', kind: 'ask', at: 5.4, color: 0xc8a0e0, size: 0.35, up: 0.8, burst: false }),
+  ] },
+  // 68 Lullaby: a cloud of drifting notes (the notes themselves are Wanda's, in the music's scale)
+  'shell.lullaby.land': { layers: [
+    L({ type: 'glyph', kind: 'note', color: 0xbcd6ff, size: 0.45, up: 0.6 }),
+    L({ type: 'glyph', kind: 'note', at: 1.5, color: 0xd6c8ff, size: 0.35, up: 1.1, burst: false }),
+    L({ type: 'glyph', kind: 'note', at: 3, color: 0xbcd6ff, size: 0.35, up: 0.8, burst: false }),
+    L({ type: 'glyph', kind: 'note', at: 4.5, color: 0xd6c8ff, size: 0.35, up: 1.2, burst: false }),
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'sparkle', spawn: 'sphere', r: 'r', dir: 'swirl', lift: 0.2, speed: [0.2, 0.5], size: [0.12, 0.2], sizeEnd: 0, life: [1.4, 2], color: [0xbcd6ff, 0xe0d0ff, 'white'], twinkle: 4 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 3, dur: Infinity, shape: 'puff', spawn: 'disc', r: 'r', dir: 'swirl', lift: 0, speed: [0.2, 0.4], size: [1, 1.5], sizeEnd: 2, life: [2, 3], color: 0xc8d8f0, alpha: 0.18, spin: [-0.3, 0.3] }),
+  ] },
+  // 70 Forget Me: a grey fog over the Courier (how it sees you now), a breath of it where it struck
+  'shell.forgetMe.land': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 8, shape: 'puff', spawn: 'sphere', r: 0.3, speed: [0.3, 0.8], size: [0.3, 0.45], sizeEnd: 0.8, life: 0.8, drag: 2, color: 0x9a9aa0, alpha: 0.5, powerCount: false }),
+  ] },
+  'shell.forgetMe.courier': { layers: [
+    L({ type: 'sprites', pool: 'alpha', rate: 5, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 0.5, offset: [0, 1, 0], speed: [0.1, 0.3], size: [0.5, 0.7], sizeEnd: 1, life: [1, 1.4], color: [0x9a9aa0, 0xb0b0b8], alpha: 0.22, spin: [-0.4, 0.4] }),
+  ] },
+  // 72 Agents: tiny clappers with fuse tails, sputtering
+  'shell.agents.fly': { layers: [
+    L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'soft', offset: [0, 0.12, 0], size: 0.06, sizeEnd: 0, life: 0.15, dir: 'up', speed: [0.5, 1.5], color: 0xffd08a, colorEnd: 'ember' }),
+    L({ type: 'sprites', rate: 6, dur: Infinity, shape: 'glint', offset: [0, 0.12, 0], size: [0.1, 0.16], sizeEnd: 0, life: 0.12, color: 'gold', twinkle: 30 }),
+  ] },
+  // 53 Overdrive: a gold tick going out from the hands on the beat, the tools' haste in the air round them
+  'shell.overdrive.fire': { layers: [
+    L({ type: 'sprites', rate: 2, dur: Infinity, shape: 'ringthin', offset: [0, 1.1, 0], size: 0.4, sizeEnd: 1.3, life: 0.35, color: 0xe8d080, alpha: 0.8, rot: 0 }),
+    L({ type: 'sprites', rate: 12, dur: Infinity, shape: 'streak', spawn: 'sphere', r: 0.45, offset: [0, 1.1, 0], dir: 'up', speed: [1, 2], size: [0.1, 0.16], sizeEnd: 0.02, life: 0.3, stretch: 1.4, color: [0xe8d080, 'white'] }),
+  ] },
+  // 81 to 87, the Feelings: each its feeling's colour (the context's tint) and its paint motif
+  'shell.wonder.land': { layers: [ // (an aurora overhead, frost glinting on the ground)
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.5, sizeEnd: 5, life: 0.5, color: 'tint', rot: 0, powerCount: false }),
+    L({ type: 'sprites', rate: 16, dur: Infinity, shape: 'streak', spawn: 'disc', r: 6, offset: [0, 7, 0], dir: 'up', speed: [0.2, 0.5], size: [1.4, 2.2], sizeEnd: 1.6, stretch: 3, life: [1.6, 2.6], color: ['tint', 0x7af0c0, 0xb49be6], alpha: 0.5 }),
+    L({ type: 'sprites', rate: 26, dur: Infinity, shape: 'sparkle', spawn: 'disc', r: 4, offset: [0, 0.1, 0], size: [0.1, 0.2], sizeEnd: 0, life: [0.8, 1.2], color: ['white', 0xbfe8ff], twinkle: 6 }),
+  ] },
+  'shell.mirth.land': { layers: [ // (confetti in Mirth's dots)
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 1.4, sizeEnd: 0.2, life: 0.2, color: 'tint', powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 70, shape: 'disc', dir: 'cone', axis: 'up', cone: 55, speed: [4, 8], size: [0.07, 0.11], life: [1.6, 2.4], drag: 1.4, gravity: 5, color: ['tint', 0xfff0c0, 0xff8ab0, 0x8ad0ff, 0x9ae070], spin: [-6, 6], floor: 'ground', powerCount: false }),
+  ] },
+  'shell.desire.land': { layers: [ // (rings drawing in along the ground, a warm pull of light)
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, scale: [[0, 3.5], [1, 0.3]], stretch: [1, 0.25, 1], k: [[0, 0], [0.3, 1.2], [1, 0]], tint: 'tint', labradorite: 0.2 }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, at: 0.45, scale: [[0, 3.5], [1, 0.3]], stretch: [1, 0.25, 1], k: [[0, 0], [0.3, 1.2], [1, 0]], tint: 'tint', labradorite: 0.2 }),
+    L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'soft', spawn: 'shell', r: 'r', dir: 'in', speed: [3, 5], size: [0.1, 0.16], sizeEnd: 0.04, life: [1, 1.4], color: ['tint', 0xffc080], alpha: 0.8 }),
+  ] },
+  'shell.fury.land': { layers: [ // (cracks of red thrown off the body, a hard ring pulsing out of it)
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 1, sizeEnd: 0.1, life: 0.16, color: 'tint', powerCount: false }),
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'shard', spawn: 'sphere', r: 0.5, dir: 'out', speed: [1, 2], size: [0.1, 0.18], sizeEnd: 0.04, life: 0.4, color: ['tint', 0xff4020], spin: [-6, 6] }),
+    L({ type: 'sprites', rate: 1.5, dur: Infinity, shape: 'ring', size: 0.3, sizeEnd: 1.6, life: 0.3, color: 0xff3020, rot: 0 }),
+  ] },
+  'shell.gall.land': { layers: [ // (a curdled cloud)
+    L({ type: 'sprites', pool: 'alpha', rate: 10, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 'r', dir: 'swirl', lift: 0.1, speed: [0.2, 0.5], size: [0.8, 1.1], sizeEnd: 1.6, life: [1.5, 2.2], color: ['tint', 0x6a7a3a, 0xa08ad0], alpha: 0.42, spin: [-0.5, 0.5] }),
+    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: Infinity, shape: 'bubble', spawn: 'sphere', r: 'r', speed: [0.1, 0.3], size: [0.1, 0.2], sizeEnd: 0.05, life: [1, 1.5], color: 0xd0c8a0, alpha: 0.8 }),
+  ] },
+  'shell.grief.land': { layers: [ // (one cloud over its head, raining on it)
+    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 0.4, offset: [0, 0.7, 0], speed: [0.05, 0.15], size: [0.5, 0.7], sizeEnd: 0.9, life: 1.2, color: [0x4a5a7a, 0x5a6a8a], alpha: 0.6, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'streak', spawn: 'disc', r: 0.4, offset: [0, 0.5, 0], dir: 'up', speed: [-7, -5], size: 0.14, sizeEnd: 0.1, stretch: 2, life: 0.28, color: 'tint', alpha: 0.85 }),
+  ] },
+  'shell.dread.land': { layers: [ // (shadows spreading along the ground, Dread's marbling in them)
+    L({ type: 'sprites', pool: 'alpha', count: 30, shape: 'puff', spawn: 'disc', r: 1, dir: 'out', lift: 0, speed: [3, 6], size: [1, 1.4], sizeEnd: 2.6, life: [1.6, 2.4], drag: 1.5, color: [0x140c1e, 0x1f2a22], alpha: 0.6, spin: [-0.4, 0.4], powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'swirl', spawn: 'disc', r: 3, size: [1, 1.6], life: [1.8, 2.4], color: ['tint', 0x2a3a2a], alpha: 0.5, spin: [-0.6, 0.6], powerCount: false }),
+  ] },
 };

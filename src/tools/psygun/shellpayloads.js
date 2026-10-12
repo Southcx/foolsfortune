@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { COLOR, TYPE_OF } from '../../progress/weather.js';
 import { stream } from '../../core/rng.js';
+import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
 const simRand = stream('tools/psygun/shellpayloads'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3(), _d = new THREE.Vector3();
@@ -48,9 +49,10 @@ function statusOn(R, row, at, target) {
 
 /** A feeling's colour, as a three.js colour. */
 const feelCol = (f) => new THREE.Color(COLOR[f] ?? 0xffffff);
-/** A puff of motes in a colour round a point (the look until Calissa's). */
+/** A puff of motes in a colour round a point (the look until Calissa's; every shell that called it has its look in vfx/shelllooks.js
+ *  now, so it draws nothing: Petra's to remove with its calls). */
 export function motes(g, at, col, n = 18, r = 1, up = 2) {
-  for (let i = 0; i < n; i++) g.fx?.alpha?.emit?.({ pos: at.clone().add(new THREE.Vector3((simRand() - 0.5) * r * 2, simRand() * r, (simRand() - 0.5) * r * 2)), vel: new THREE.Vector3((simRand() - 0.5) * 2, up * (0.5 + simRand()), (simRand() - 0.5) * 2), life: 0.8, size: 0.12, sizeEnd: 0.02, color: col, alpha: 0.8, drag: 2 });
+  // (was: n motes of col within r, rising at up)
 }
 
 /** A feeling's burst (the Feelings family, TYPE-81 to TYPE-87): its paint on the ground round the point, its colour in the air, and
@@ -158,6 +160,7 @@ function infect(R, row, c, dur) {
 /** What a shell does where it lands: its own way if it has one, else each payload in turn; and Wanda's landing sound. */
 export function land(R, row, at, normal = UP, target = null, dir = UP, hitEnt = null) {
   sfx.shellHit?.(row.payloads, { tier: row.tier, type: row.n.type || null, feeling: row.n.feeling || null });
+  shellLook(R.game, 'land', row, { at, normal, target, dir, ent: hitEnt });
   const own = LANDS[row.id];
   if (own) return own(R, row, at, normal, target, dir, hitEnt);
   for (const p of row.payloads) PAYLOADS[p]?.(R, row, at, normal, target, dir);

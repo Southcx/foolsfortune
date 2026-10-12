@@ -4,6 +4,8 @@
 //
 //   game.vfx.play('hit.blunt.clay', { pos, dir, normal, tint, power })      a one-shot (a hit, a poof, a pickup)
 //   const h = game.vfx.play('ult.pillar', { pos }); ... h.pos.copy(p); h.k = 0.5; ... h.stop()      a held one (a channel, an aura)
+//   game.vfx.play('shell.grief.land', { pos, follow: (h, raw) => alive && (h.pos.copy(at), true) })   one that follows on its own,
+//   asked every frame before it is drawn (set h.pos, h.dir, h.k, h.ctx.tint); false stops it (vfx/shelllooks.js)
 //
 // THE NAME is what happened, not what it looks like (`hit.slash.crystal`, `chest.burst.epic`, `ult.key`), so the look can be
 // redirected without touching the code that asked. A name is looked up from the most particular to the least: `hit.slash.crystal`,
@@ -227,6 +229,7 @@ export class Vfx {
     for (const B of Object.values(this.budget)) B.fill(raw);
     for (let i = this.live.length - 1; i >= 0; i--) {
       const h = this.live[i];
+      if (h.ctx.follow && !h.stopped && h.ctx.follow(h, raw) === false) h.stop(); // (a held one that follows its thing: false, it is gone)
       h.t += raw;
       let busy = false;
       for (const s of h.layers) busy = this.step(h, s, raw) || busy;

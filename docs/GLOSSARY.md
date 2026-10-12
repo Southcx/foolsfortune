@@ -99,6 +99,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
 - **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
   carrier, then its payloads (`shellpayloads.js`) where it lands. *Not:* the Shells class (the psygun's chambers and counts).
+- **a shell's look** (`shellLook`, `SHELL_LOOKS`, `src/vfx/shelllooks.js`; effects `shell.<id>.<moment>`) — a caster shell's body, tail and
+  marks at its moments (fly, touch, land, fire, set), asked by the shell runner by shell id. *Not:* the caster shaders (its parts).
 - **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grapnel). →
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō

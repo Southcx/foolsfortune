@@ -19,6 +19,7 @@ import { hasTag } from '../../core/tags.js';
 import { COLOR } from '../../progress/weather.js';
 import { stream } from '../../core/rng.js';
 import { land, blast, foesNear, motes } from './shellpayloads.js';
+import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
 const simRand = stream('tools/psygun/shellrunner'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** The shells this runner flies, by number: CASTER-SHELLS.md section 5, batch 1 (the ones the parts already make; 11 without its
@@ -77,6 +78,7 @@ export class ShellRunner {
   /** Fly a shell from its row (the Shells class has already counted and paid for it). */
   fire(row, ctx) {
     sfx.shellFire?.(row.carrier, row.tier);
+    shellLook(this.game, 'fire', row, ctx);
     const own = FIRES[row.id];
     if (own) return own(this, row, ctx);
     this.launch(row.carrier === 'lob' ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir);
@@ -91,6 +93,7 @@ export class ShellRunner {
     g.scene.add(mesh);
     const p = { kind, row, mesh, pos: from.clone(), vel: dir.clone().multiplyScalar(opts.speed ?? C.speed).addScaledVector(UP, C.lift), age: 0, life: opts.life ?? C.life, C, bounces: 0, struck: new Map(), ...opts.extra };
     this.flying.push(p);
+    shellLook(g, 'fly', row, { mesh, p, kind });
     return p;
   }
 
@@ -110,7 +113,7 @@ export class ShellRunner {
   /** The Detonator: a charge stuck where it landed (on a creature, it rides it) until the next shell is fired. */
   arm({ row, at, target }) {
     const mesh = new THREE.Mesh(this.geo, this.mat(0xff3a2a)); mesh.scale.setScalar(1.4); mesh.userData.zoneFree = true;
-    mesh.position.copy(at); this.game.scene.add(mesh);
+    mesh.position.copy(at); this.game.scene.add(mesh); shellLook(this.game, 'set', row, { obj: mesh });
     this.armed.push({ row, at: at.clone(), target, mesh, t: 0 });
   }
   detonate(a) {
@@ -169,6 +172,7 @@ export class ShellRunner {
     if (!contact) { p.pos.addScaledVector(dir, len); p.mesh.position.copy(p.pos); return p.age > p.life; }
     p.pos.copy(contact.at).addScaledVector(contact.normal, 0.1);
     p.mesh.position.copy(p.pos);
+    shellLook(g, 'touch', p.row, contact);
     return (HIT[p.kind] || HIT.bolt)(this, p, contact, dir);
   }
 
@@ -210,7 +214,7 @@ export class ShellRunner {
     const g = this.game, grp = new THREE.Group(), m = this.mat(colourOf(row));
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.2, 0.6, 8).translate(0, 0.3, 0), m);
     const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.14, 1).translate(0, 0.75, 0), m);
-    grp.add(body, head); grp.position.copy(at); grp.userData.zoneFree = true; g.scene.add(grp);
+    grp.add(body, head); grp.position.copy(at); grp.userData.zoneFree = true; g.scene.add(grp); shellLook(g, 'set', row, { obj: grp });
     const d = { type: 'player', kind: 'courier', decoy: true, pos: grp.position, vel: new THREE.Vector3(), alive: true, loud: 2, height: 0.9, t: row.n.dur, grp, row,
       struck: () => { d.t = Math.min(d.t, 0.01); } };
     g.ai?.decoys.push(d); this.decoys.push(d);
