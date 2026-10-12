@@ -120,7 +120,7 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 |---|---|---|---|
 | 00 | Cleave | I | a line of light that cuts everything it passes through |
 | 01 | Push | I | a cone of force |
-| 02 | Well | II | a lobbed singularity that drags in, then pops |
+| 02 | Singularity | II | a lobbed singularity that drags in, then pops (renamed from Well: a Well is the dungeon; the owner, 2026-10-12; its id `well` kept for the ledger) |
 | 03 | Mark | I | stuns critters, marks things to drop Lachryma |
 | 04 | Bomb | I | a clay grenade: splash, molten clay, a hot pool |
 | 05 | Bank | I | ricochets |
@@ -297,3 +297,6 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 3. **No shell summons a sibling or a spirit:** the party and the Spirit Garden are their own systems. Spirit Call and Sibling Flare are
    cut; 79 is now Minefield and 80 Marionette (a downed creature, never a bound spirit).
 4. **The Slip shell is the Paint shell** (TYPE-07), after the paint overhaul.
+5. **The Well shell is the Singularity** (TYPE-02), since a Well is the dungeon (the owner, 2026-10-12, on Dovina's call).
+6. **Shell achievements:** A Shell of Each (lg6) is the founding eleven; Full Rack (shc) is every kind the psygun can chamber, so
+   Master (tier 5), its goal growing with each batch (42 with batch 1).

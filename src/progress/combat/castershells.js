@@ -50,7 +50,7 @@ export const CASTER_SHELLS = [
   // ---- the founding eleven (exist: shells.js, specials.js, casters.js; their numbers are the runner's to carry over)
   S(0, 'slicer', 'Cleave', 1, 'bolt', ['cut'], null, [], { range: 40 }, 'the slicing plane'),
   S(1, 'push', 'Push', 1, 'cone', ['blast'], null, [], { r: 6 }, 'force'),
-  S(2, 'well', 'Well', 2, 'lob', ['pull', 'blast'], null, [], { r: 6, dur: 2.5 }, 'Gravity Bomb'),
+  S(2, 'well', 'Singularity', 2, 'lob', ['pull', 'blast'], null, [], { r: 6, dur: 2.5 }, 'Gravity Bomb'),
   S(3, 'mark', 'Mark', 1, 'bolt', ['status'], null, [], { status: 'stun' }, 'the mark'),
   S(4, 'bomb', 'Bomb', 1, 'lob', ['blast'], 'pool', [], { power: 4, r: 3 }, 'Bomb Glove'),
   S(5, 'ricochet', 'Bank', 1, 'bounce', ['type'], null, [], { count: 4 }, 'the bank shot'),

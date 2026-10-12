@@ -18,6 +18,7 @@
 // (`unlocks`: the art or variant it teaches: the System reads it).
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
+import { CASTER_SHELLS } from './combat/castershells.js';
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
 import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
@@ -27,6 +28,7 @@ import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
+const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
 export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', mechanic: 'Mechanic', endure: 'Stamina', collect: 'Collection' };
@@ -106,7 +108,7 @@ export function buildAchievements(game) {
   C('sh1', 'break', 'Shells', 1, 'count', 'Loaded', 'Fire 100 shells.', 'shell.fire', 100);
   C('sh2', 'break', 'Shells', 3, 'count', 'Ordnance', 'Fire 1,000 shells.', 'shell.fire', 1000);
   C('sh3', 'break', 'Shells', 5, 'endure', 'Arsenal', 'Fire 10,000 shells.', 'shell.fire', 10000);
-  F('shc', 'break', 'Shells', 3, 'collect', 'Full Rack', 'Fire every kind of shell.', (L) => L.under('shell.fire.').filter(([, v]) => v > 0).length, SHELL_TYPES.length);
+  F('shc', 'break', 'Shells', 5, 'collect', 'Full Rack', 'Fire every kind of shell.', (L) => SHELL_TYPES.filter((t) => L.get(`shell.fire.${t.id}`) > 0).length, SHELL_TYPES.length); // (every kind the psygun can chamber: 42 with batch 1, a hundred at the end, so Master. Dovina, 2026-10-12)
   C('shs', 'break', 'Shells', 2, 'count', 'Charged Up', 'Fire 25 charged shots.', 'shot.charged', 25);
   H('shx', 'break', 'Shells', 3, 'mechanic', 'Three at Once', 'Slice through 3 targets with one shell.', 'shell.slice.best', 3);
   H('shy', 'break', 'Shells', 4, 'mechanic', 'Mandoline', 'Slice through 6 targets with one shell.', 'shell.slice.best', 6);
@@ -560,7 +562,7 @@ export function buildAchievements(game) {
   F('lg3', 'collect', 'Logged', 3, 'collect', "Captain's Log", 'Log 60 firsts.', (L) => L.firstCount(), 60);
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
   F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => loggedTechs(game.techs).filter((id) => L.firsts[`tech.${id}`] != null).length, loggedTechs(game.techs).length || 17); // (only techs that start: a passive one never does. Petra, v154)
-  F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
+  F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each of the founding eleven once.', (L) => FOUNDING_SHELLS.filter((id) => L.firsts[`shell.${id}`] != null).length, FOUNDING_SHELLS.length); // (the eleven TYPE-00 to 10; Full Rack is all of them)
 
   // ---------------------------------------------------------------- THE DOMAINS (progress/psyche.js: EXP in the ledger as `exp.<domain>`)
   const lv = (L, d) => levelOf(L.get(`exp.${d}`)), DIDS = Object.keys(DOMAINS);
