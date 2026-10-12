@@ -390,6 +390,18 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   only while the carry holds it and nothing is drawn. *Not:* the crosshair (the psygun's), the god hand's throw. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
   under the effects.
+- **the caster shaders** (`src/vfx/caster/`; the library's `caster` layer, `caster.*` effects; Dovina's plan's S1 to S10) — the looks the caster
+  shells are built from, a module a look, each warmed at boot (S1 to S5: `vfx/caster/warmups1tos5.js`). *Not:* a shell, an effect.
+- **heat haze** (`HeatHaze`, `vfx/caster/heathaze.js`) — the world bent through hot air in a volume (a flame's cone, a volcano's column, the
+  Piercer's glass tube), read from the frame drawn so far (`sceneGrab`, `vfx/caster/casterkit.js`). *Not:* the storm warp's veil.
+- **the bubble** (`Bubble`, `vfx/caster/bubble.js`) — a fresnel shell of glass or hard light: a geodesic hex net, guan crackle or clear,
+  the thin film over it; rings out where struck. *Not:* the ult dome, the Shrine's.
+- **a lightning arc** (`Lightning`, `vfx/caster/lightning.js`) — procedural lightning between two points, branching, regrown at a rate; one
+  mesh a copy however many paths. *Not:* the carrier `bolt`, the weather's bolts, the Heavenly Kiln's.
+- **a grown skin** (`FrostBisque`, `vfx/caster/frostbisque.js`) — a skin grown over a body from a hit: fired to bisque, frosted, or crazed
+  dry. *Not:* a glaze, the vessel's cracks.
+- **a portal / a rift** (`Portal`, `vfx/caster/portal.js`) — a linked pair of crude-rimmed eyes, each a window on the other's view / one
+  alone on the ground, the Emocean turning below it. *Not:* a seam, a Well's mouth.
 - **damage look / aura / temper** (`damage.<type>`, `aura.<status>`, `game.temper`) — a damage type's colour and motif on a hit; a status shown
   round its creature; a creature's body showing its mental state (never text).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`) — how the weather and hour are drawn: streaks, motes, halo, aurora, rainbow,
