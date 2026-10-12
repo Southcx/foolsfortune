@@ -700,11 +700,10 @@ tab *07 World and narrative*).
   blow." · Full Spectrum, "Awaken to all seven feelings."
 
 ### The caster shells' families *(Dovina's CASTER-SHELLS.md; ruled by the owner, 2026-10-12)*
-Six families keep Dovina's names: **the Edge, the Storm, the Clock, the Company, the Feelings, the Caster's own**. The shells were not
-made on Kaolin Anagami's island, so their names stay neutral and broadly read, not the potter's (the owner: "Dovina's terms are more
-neutral and broadly interpretable"). Three of Dovina's names share a word with something else in the glossary and want other neutral
-names (the owner's choice, *open*): **the Well** (a Well; offered: the Vortex, the Void, the Pull), **the Kiln** (the workshop's;
-offered: the Forge, the Furnace, the Ember), **the Mind** (a creature's mind; offered: the Will, the Glamour, the Veil).
+The nine families (the owner, 2026-10-12), with no article: **Edge, Ember, Storm, Pull, Clock, Will, Company, Feelings, Caster's
+own**. Six are Dovina's; **Ember**, **Pull** and **Will** replace her Kiln, Well and Mind, which each shared a word with something else
+in the glossary. The shells were not made on Kaolin Anagami's island, so the names stay neutral and broadly read (the owner: "Dovina's
+terms are more neutral and broadly interpretable").
 
 The hundred shells' lore names and first-use log lines are *parked* until the mechanics week is done (the owner, 2026-10-11: "This week
 is mechanics heavy"). The labels serve until then. When they come, the Outlaw Star homages keep a nod to their numbers (40 Twelve,
