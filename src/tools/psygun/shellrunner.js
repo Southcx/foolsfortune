@@ -26,7 +26,7 @@ const simRand = stream('tools/psygun/shellrunner'); // (the simulation's chance:
 export const RUNNER_SHELLS = [11, 12, 14, 16, 18, 21, 24, 25, 28, 35, 38, 41, 46, 47, 53, 56, 61, 62, 64, 66, 67, 68, 70, 72, 81, 82, 83, 84, 85, 86, 87];
 
 /** A family's colour for its rounds (the look until Calissa's: a feeling's own colour for the Feelings). */
-const FAMILY_COLOR = { edge: 0xe6dccb, heat: 0xff7a2a, storm: 0x9fd0ff, gravity: 0x8a7aff, clock: 0xe8d080, psyche: 0xd080c0, company: 0xc0a070, feelings: 0xffffff };
+const FAMILY_COLOR = { edge: 0xe6dccb, ember: 0xff7a2a, storm: 0x9fd0ff, pull: 0x8a7aff, clock: 0xe8d080, will: 0xd080c0, company: 0xc0a070, feelings: 0xffffff };
 const colourOf = (row) => (row.n.feeling ? COLOR[row.n.feeling] : FAMILY_COLOR[row.family]) ?? 0xffffff;
 
 /** How each carrier flies: speed (m/s), lift (m/s up at the muzzle), grav (a share of gravity), life (real s before it lands or is
@@ -37,7 +37,7 @@ export const CARRIER = {
   saw: { speed: 30, lift: 0, grav: 0, life: 6, r: 0.3 },
   skip: { speed: 20, lift: 1, grav: 1, life: 6, r: 0.2 },
   pinball: { speed: 16, lift: 0, grav: 0, life: 6, r: 0.18, cap: 48 },
-  ember: { speed: 8, lift: 1, grav: 0, life: 10, r: 0.2, seek: 4, sight: 10 },
+  cinder: { speed: 8, lift: 1, grav: 0, life: 10, r: 0.2, seek: 4, sight: 10 },
   agent: { speed: 6, lift: 2, grav: 1, life: 10, r: 0.2, sight: 25 },
   clod: { speed: 40, lift: 0.5, grav: 0.3, life: 1.5, r: 0.2 },
 };
@@ -235,7 +235,7 @@ export class ShellRunner {
   }
 }
 
-/** A blow from a round passing through or carroming off a creature (not a landing: the saw, the pinball, the ember). */
+/** A blow from a round passing through or carroming off a creature (not a landing: the saw, the pinball, the cinder). */
 function graze(R, p, c, at, dir, power, again = 0.4) {
   p.struck.set(c, again);
   R.game.creatures.strike(c, at.clone(), dir.clone(), power, 'shot', 'courier', null, p.row.n.type || 'impact');
@@ -278,8 +278,8 @@ const HIT = {
     sfx.clonk?.(R.game.listenerDistance?.(k.at));
     return false;
   },
-  // an Ember: a creature touched burns a little; the world is passed by
-  ember: (R, p, k, dir) => { if (k.target) graze(R, p, k.target, k.at, dir, p.row.n.power, 0.6); else p.vel.reflect(k.normal).multiplyScalar(0.5); return false; },
+  // a Cinder: a creature touched burns a little; the world is passed by
+  cinder: (R, p, k, dir) => { if (k.target) graze(R, p, k.target, k.at, dir, p.row.n.power, 0.6); else p.vel.reflect(k.normal).multiplyScalar(0.5); return false; },
   // an Agent: on the ground it runs; on a creature it bursts
   agent: (R, p, k, dir) => {
     if (k.target) { AGENT_BURST(R, p); return true; }
@@ -320,8 +320,8 @@ const FLY = {
     R.game.water.disturb?.(p.pos.x, p.pos.z, 1, 'drop', w.surface);
     if (++p.bounces >= p.row.n.count) p.age = p.life + 1;
   },
-  // an Ember drifts and leans toward the nearest foe
-  ember: (R, p, dt) => {
+  // a Cinder drifts and leans toward the nearest foe
+  cinder: (R, p, dt) => {
     const c = foesNear(R.game, p.pos, p.C.sight)[0];
     if (c) { _v.copy(c.pos).setY(c.pos.y + c.height * 0.5).sub(p.pos).normalize(); p.vel.addScaledVector(_v, p.C.seek * 3 * dt); }
     else p.vel.add(_v.set(simRand() - 0.5, simRand() - 0.45, simRand() - 0.5).multiplyScalar(4 * dt));
@@ -392,8 +392,8 @@ const FIRES = {
       for (const c of g.clappers?.list || []) { const d = c.pos.distanceTo(m); if (c.alive && d < n.r) g.clappers.pull?.(c, m, 0.5 * (1 - d / n.r), 0.05); }
     } });
   },
-  // Ember: sparks that drift a while, leaning toward foes
-  ember: (R, row, { muzzle, ray }) => { for (let i = 0; i < 8; i++) R.launch('ember', row, muzzle, spreadDir(ray.dir, 50), { life: row.n.dur, scale: 0.6, speed: 4 + simRand() * 4 }); },
+  // Cinder: sparks that drift a while, leaning toward foes
+  cinder: (R, row, { muzzle, ray }) => { for (let i = 0; i < 8; i++) R.launch('cinder', row, muzzle, spreadDir(ray.dir, 50), { life: row.n.dur, scale: 0.6, speed: 4 + simRand() * 4 }); },
   // Agents: little runners that drop, find their feet and go for the nearest foe
   agents: (R, row, { muzzle, ray }) => { for (let i = 0; i < row.n.count; i++) R.launch('agent', row, muzzle, spreadDir(ray.dir, 40), { scale: 1.5, speed: 6 }); },
   tauntDoll: (R, row, { muzzle, ray }) => { R.launch('doll', row, muzzle, ray.dir, { speed: 14, scale: 2 }); },

@@ -31,7 +31,7 @@ const simRand = stream('tools/psygun/shells'); // (the simulation's chance: core
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'CLEAVE', glyph: '═' }, // (the id is the old one: the ledger's counts are kept under it)
   { id: 'push', name: 'PUSH', glyph: '⟫' },
-  { id: 'well', name: 'WELL', glyph: '◉' },
+  { id: 'well', name: 'SINGULARITY', glyph: '◉' }, // (the id is the old one: the ledger's counts are kept under it; a Well is the dungeon)
   { id: 'mark', name: 'MARK', glyph: '✳' },
   { id: 'bomb', name: 'BOMB', glyph: '●' },
   { id: 'ricochet', name: 'BANK', glyph: '⟀' },
@@ -41,7 +41,7 @@ export const SHELL_TYPES = [
   { id: 'anchor', name: 'ANCHOR', glyph: '⚓︎' },
   { id: 'hatch', name: 'HATCH', glyph: '❦' },
   // (the runner's: a glyph a family until Calissa's icons)
-  ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', heat: '♨', storm: 'ϟ', gravity: '◎', clock: '⧗', psyche: '☍', company: '⚑', feelings: '❀' }[r.family] || '•', runner: true })),
+  ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', ember: '♨', storm: 'ϟ', pull: '◎', clock: '⧗', will: '☍', company: '⚑', feelings: '❀' }[r.family] || '•', runner: true })),
 ];
 export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 SHELL_TYPES.forEach((t) => { t.row = shellById(t.id); t.no = typeLabel(t.row.no); });
