@@ -123,7 +123,7 @@ export class BrushLoad {
     const fx = (tip.x + P.pos.x) / 2, fz = (tip.z + P.pos.z) / 2; // (between the feet and the bristles)
     if (room <= 0.01) { // (full: the head smears what it cannot drink along the stroke, a thin slick the mop and Clean take later: LACHRYMA-LOOP.md 3, rule 8)
       g.log?.say('info', 'Your Lachrymato Bottle is full.', { key: 'bottlefull', throttle: 4 });
-      if ((this.smearT = (this.smearT ?? 0) - dt) <= 0) { this.smearT = 0.1; g.paintmap?.slick(fx, P.pos.y, fz, 0.3, 0.5); g.slicks?.spill(new THREE.Vector3(fx, P.pos.y, fz), 0.3, 12); }
+      if ((this.smearT = (this.smearT ?? 0) - dt) <= 0) { this.smearT = 0.1; g.paintmap?.slick(fx, P.pos.y, fz, 0.4, 0.45); }
       this.mopAt = null; return;
     }
     // the stroke this frame: from where the mop was to where it is, wiped as a strip (stains.js wipe: rim first, a smear pushed on)

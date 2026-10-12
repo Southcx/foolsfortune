@@ -646,6 +646,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     144 Hz as well (`tick(1 / 144)`). A direction worked out from a vector that passes through zero in play (the anchor's bearing from
     under it, `atan2` of its horizontal, `dir × up` for a line straight up) turns 180 degrees in a frame: take it from the body's frame
     there. A rope with no more length than its span is drawn straight; a few-pass Verlet chain is not left to hold it.
+221. **An achievement's goal counts only what the player can do.** A goal read off a whole list
+    (`game.techs.list.length`) grows with every entry, reachable or not; the predicate and its goal read one named set, shared
+    with the rule that writes the ledger (`loggedTechs`).
 
 ## Cases
 
@@ -3592,3 +3595,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `player.standUp()` (posture stand, its timers and buffer cleared, the standing shape), called by both; the shape's own check
   lowers them where there is no headroom.
 - **Rule:** 202.
+
+### 2026-10-11 · Every Tech, Once could not be earned (Petra, v154's prone holster)
+- **Seen:** lg5's goal was 37 techs, and no play could reach it.
+- **Cause:** the goal was `game.techs.list.length`, which counts the passive techs (carry, kick, recoil, the six tools' holsters, the
+  prone holster) that never start, and the five the tracking rule never logs (emote, talk, rhythm, death, ultimate). Out of reach
+  since the holsters joined the list; v154 only made it 37.
+- **Fix:** `loggedTechs(techs)` in `progress/skills.js`: the startable, logged techs. The tracking rule's firsts and lg5's predicate
+  and goal all read it. Measured: 21.
+- **Rule:** 221.

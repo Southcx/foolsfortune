@@ -22,6 +22,7 @@
 import { Arranger } from './arranger.js';
 import { Band } from './band.js';
 import { moodLayer, moodScale, DEFAULT_SCALE } from './mood.js';
+import { awakenEvents } from './awaken.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const KEY = 'foolsfortune.music.v1';
@@ -72,6 +73,19 @@ export class MusicPlayer {
   /** The beat to play along with (the Crucibelle plays in time and in tune with what is playing: tools/crucibelle/crucibelle.js): a bar's start
    *  on the audio clock, seconds a beat, beats a bar, and the key (the root's MIDI note: every theme here is a minor pentatonic one, or
    *  near enough; E flat unless the score says). Null when nothing plays. */
+  /** A feeling awakened (feeling.wake: music/awaken.js): its mode's phrase over the cue, in its key and on its next beat, on a band of its
+   *  own (so the cue's duck does not take it down with it); the cue ducked under it for its length. */
+  awaken(feeling) {
+    const g = this.grid(), root = g?.root ?? 64, ev = awakenEvents(feeling, root); if (!ev || !this.ctx) return;
+    const now = this.ctx.currentTime, spb0 = g?.spb || 0.5, spb = spb0 * Math.max(1, Math.round(0.5 / spb0)); // (a beat near half a real second, kept on the cue's grid)
+    const t0 = g ? g.t0 + Math.ceil((now + 0.05 - g.t0) / spb0) * spb0 : now + 0.05;
+    if (!this.wakeBand) { const c = this.ctx, out = c.createGain(); out.gain.value = 0.9; out.connect(this.sfx.main ?? this.sfx.master);
+      const verb = c.createConvolver(); verb.buffer = this.sfx.impulse(3.4, 2.4); const vin = c.createGain(); vin.gain.value = 0.5; vin.connect(verb).connect(out);
+      this.wakeBand = { band: new Band(c, { dry: out, pump: out, verb: vin, echo: vin }, this.sfx.noiseBuf), jitter: 0, thin: null }; }
+    this.wakeBand.spb = spb;
+    for (const e of ev) Arranger.prototype.play1.call(this.wakeBand, e, t0, 1);
+    this.duck(8 * spb, 0.55);
+  }
   grid() {
     const A = this.arr;
     if (A.alive && !A.ended && A.score) { const sec = A.score.sections[A.section]; return { t0: A.next, spb: A.spb, beats: sec?.beats || A.score.beats || 4, root: sec?.root ?? A.score.root ?? 63, swing: 0.5 }; } // (a section may be in its own key: a crossing's legs, music/legs.js)

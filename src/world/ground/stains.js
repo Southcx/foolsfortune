@@ -77,7 +77,7 @@ export class Stains {
       const per = this.perCell(s), r = pm.wipe(a.x, a.z, b.x, b.z, s.y, w, (want - got) / per, true, s);
       if (r.got <= 0) continue;
       const t = Math.min(this.crudeOf(s), r.got * per); s.drunk += t; got += t; field = s.field; at = s; smear = r.smear;
-      if (r.smear) pm.stamp(r.smear.x, s.y, r.smear.z, 0.3, null, 0.15, true); // (the smear: the crude the stroke pushed along, thin)
+      if (r.smear) pm.slick(r.smear.x, s.y, r.smear.z, 0.4, 0.3); // (the smear: the crude the stroke pushed along, thin, a slick that fades: never a blot's crude, which kept a square of it forever)
       if (this.crudeOf(s) <= 0.01 || !pm.count(s.x, s.y, s.z, this.reach(s), true)) { got += this.crudeOf(s); s.drunk += this.crudeOf(s); this.wash(s); } // (no crude cell left of it: emptied, all of it taken)
     }
     if (got) this.save();

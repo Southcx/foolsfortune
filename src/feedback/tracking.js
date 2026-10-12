@@ -28,7 +28,7 @@ import { KNACKS } from '../progress/knacks.js';
 import { PSYGUNS } from '../tools/psygun/kinds.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { sfx } from '../audio/sfx.js';
-import { BY_ID } from '../progress/skills.js';
+import { BY_ID, UNLOGGED_TECHS } from '../progress/skills.js';
 import { DOMAINS } from '../progress/domains.js';
 const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
@@ -199,7 +199,7 @@ export class Tracking {
     on('updraft.enter', () => L.inc('updraft.enter'));
 
     // ---- the movement arts
-    on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); if (!['emote', 'talk', 'rhythm', 'death', 'ultimate'].includes(e.id)) first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
+    on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); if (!UNLOGGED_TECHS.includes(e.id)) first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
     on('tech.end', (e) => {
       L.inc(`time.tech.${e.id}`, e.dur || 0); L.hi(`tech.longest.${e.id}`, e.dur || 0);
       if (e.id === 'roll') L.inc('roll.end');

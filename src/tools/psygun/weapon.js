@@ -158,7 +158,7 @@ export class Weapon {
     const step = dt / Math.max(0.01, W.adsTime);
     this.adsT = wantAds ? Math.min(1, this.adsT + step) : Math.max(0, this.adsT - step);
     this.adsEase = this.adsT * this.adsT * (3 - 2 * this.adsT);
-    this.cooldown -= dt;
+    this.cooldown -= dt * (this.haste || 1); // (the Overdrive shell's haste: shellrunner.js)
     this.buffer -= dt;
     this.bloom = Math.max(0, this.bloom - W.bloomRecovery * dt);
 
@@ -177,7 +177,7 @@ export class Weapon {
 
     if (this.reloading) {
       const prev = this.reloadT;
-      this.reloadT += dt / T.shells.rackTime;
+      this.reloadT += dt * (this.haste || 1) / T.shells.rackTime;
       if (prev < 0.18 && this.reloadT >= 0.18) sfx.reloadOut();
       if (prev < 0.68 && this.reloadT >= 0.68) sfx.reloadIn();
       if (this.reloadT >= 1) this.reloadT = -1;
