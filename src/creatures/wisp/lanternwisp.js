@@ -124,7 +124,7 @@ export class LanternWisps {
     g.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: culprit, aboutPos: culprit?.pos, ttl: 2 });
     this.play(c, 'Death', { once: true, fade: 0.1 });
     const at = c.center(new THREE.Vector3());
-    if (by === 'courier') g.cubes?.burst?.(at, Math.round(ECON.jelly.burst * yieldOf(c.emo)), { count: 4, up: 3, from: 'wisp' });
+    if (by === 'courier') g.cubes?.burst?.(at, Math.round(ECON.wisp.burst * yieldOf(c.emo)), { count: 4, up: 3, from: 'wisp' });
     g.fx?.absorbSparkle?.(at);
     g.events?.emit('wisp.burst', { by, cause });
   }
