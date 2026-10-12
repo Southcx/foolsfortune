@@ -652,6 +652,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 222. **A thing that ends one way does not also end the other.** A step that can finish a round two ways (a touch,
     its time run out) returns which, and only that ending runs its code; a bare `true` from both lets the caller run both.
 
+223. **A window on the screen is placed by its measured size and capped to the screen**, never by a guess per row:
+    lists grow (a menu of a hundred shells); what is taller than the screen scrolls.
 ## Cases
 
 ### 2026-10-12 · The Pneuka Box's chamber menu ran off the top of the screen (the owner, v169)
@@ -662,7 +664,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** the menu is capped to the screen and scrolls (its border counted, no sideways scrollbar), the wheel scrolls it and not the
   game, its title stays at the top, and it is placed by its measured size. Measured headless at 600 px tall: a hundred rows sit at
   8..592 px and scroll; three rows sit where they did.
-- **Rule:** NEW:measure-the-box. A window placed on the screen is placed by its measured size and capped to the screen, never by a guess
+- **Rule:** 223. A window placed on the screen is placed by its measured size and capped to the screen, never by a guess
   per row: lists grow.
 
 ### 2026-10-12 · What a caster shell set down stayed for good after a room change (Calissa's find, v168)
