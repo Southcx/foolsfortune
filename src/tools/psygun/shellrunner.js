@@ -3,14 +3,18 @@
 // how it goes (its CARRIER: bolt, lob, bounce, cone, swarm, deploy, self) and, where it lands, what it does (its payloads:
 // tools/psygun/shellpayloads.js). The founding eleven keep their own code in shells.js, specials.js and casters.js; every shell after
 // them is flown here, so a new one is a row (and, if its recipe says more than its parts, an entry in LANDS or FIRES). What lasts is a
-// TIMED effect ticked here (a burn, a cloud, a status kept on), with Wanda's field sound (`sfx.shellField`) while it runs.
+// TIMED effect ticked here (a burn, a cloud, a status kept on), with Wanda's field sound (`sfx.shellField`) while it runs. The plan's
+// new mechanics (M1 to M12) are PARTS in modules of their own, each adding its carriers, hits, fires and lands to the tables here and
+// ticked with the runner: shellsplitchain.js (M1, M2, the Storm), shelldeployables.js (M4, the Company), shellbodies.js (M7, M8, M9,
+// M11), shellspacetime.js (M5, M6, M10, M12), shellcastersown.js (M3, the lock-on, the Feelings' last three, the Caster's own).
 //
 // Prior art: Ratchet & Clank's arsenal (the Disc Blade Gun's return, the Bouncer, the Walloper, the Agents of Doom, the Taunter, the
 // Suck Cannon's store), Noita's wands (a projectile is a carrier and its effects are parts), Monster Hunter's bowgun pellets (a spread
 // of small hitscan rounds).
 //
 //   game.shells.runner = new ShellRunner(shells)   .fire(row, ctx)   .onShellFired()   .timed({ delay, t, every, field, tier, tick, end })
-//   .arm({ row, at, target })   .rod   .fixedUpdate(dt)   .update(dt)   .clear()   RUNNER_SHELLS (the numbers it flies: batch 1)
+//   .arm({ row, at, target })   .rod   .fixedUpdate(dt)   .update(dt)   .clear()   RUNNER_SHELLS (the numbers it flies: 11 to 99)
+//   a part: { carrier, hit, fly, expire, fires, lands, tick(R, dt), frame(R, dt), clear(R), onShot(R, e), onShellFired(R) }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -18,13 +22,18 @@ import { T, DEG } from '../../core/config.js';
 import { hasTag } from '../../core/tags.js';
 import { COLOR } from '../../progress/weather.js';
 import { stream } from '../../core/rng.js';
-import { land, blast, foesNear } from './shellpayloads.js';
+import { land, blast, foesNear, LANDS } from './shellpayloads.js';
+import { spreadDir, graze } from './shellkit.js';
+import { SPLIT_CHAIN } from './shellsplitchain.js';
+import { DEPLOYABLES } from './shelldeployables.js';
+import { BODIES } from './shellbodies.js';
+import { SPACETIME } from './shellspacetime.js';
+import { CASTERS_OWN } from './shellcastersown.js';
 import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
 const simRand = stream('tools/psygun/shellrunner'); // (the simulation's chance: core/rng.js, the same twice)
 
-/** The shells this runner flies, by number: CASTER-SHELLS.md section 5, batch 1 (the ones the parts already make; 11 without its
- *  chain, 64 without its body swap). The next batches add their numbers here as their parts land. */
-export const RUNNER_SHELLS = [11, 12, 14, 16, 18, 21, 24, 25, 28, 35, 38, 41, 46, 47, 53, 56, 61, 62, 64, 66, 67, 68, 70, 72, 81, 82, 83, 84, 85, 86, 87];
+/** The shells this runner flies, by number: every one after the founding eleven (CASTER-SHELLS.md section 5, all four batches). */
+export const RUNNER_SHELLS = Array.from({ length: 89 }, (_, i) => 11 + i);
 
 /** A family's colour for its rounds (the look until Calissa's: a feeling's own colour for the Feelings). */
 const FAMILY_COLOR = { edge: 0xe6dccb, ember: 0xff7a2a, storm: 0x9fd0ff, pull: 0x8a7aff, clock: 0xe8d080, will: 0xd080c0, company: 0xc0a070, feelings: 0xffffff };
@@ -41,18 +50,11 @@ export const CARRIER = {
   cinder: { speed: 8, lift: 1, grav: 0, life: 10, r: 0.2, seek: 4, sight: 10 },
   agent: { speed: 6, lift: 2, grav: 1, life: 10, r: 0.2, sight: 25 },
   clod: { speed: 40, lift: 0.5, grav: 0.3, life: 1.5, r: 0.2 },
+  lobPart: { speed: 18, lift: 3, grav: 1, life: 3, r: 0.15 }, // (a part's lob: where it lands (or its time runs out) it calls its own `land(R, p, at, contact)`)
 };
 
 const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
-const _v = new THREE.Vector3(), _c = new THREE.Vector3(), _q = new THREE.Quaternion();
-
-/** A direction within `deg` of an axis (a cone's spread). */
-function spreadDir(axis, deg) {
-  const a = simRand() * Math.PI * 2, r = Math.sqrt(simRand()) * Math.tan(deg * DEG * 0.5);
-  const side = _v.crossVectors(axis, Math.abs(axis.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : UP).normalize().clone();
-  const up = new THREE.Vector3().crossVectors(side, axis).normalize();
-  return axis.clone().addScaledVector(side, Math.cos(a) * r).addScaledVector(up, Math.sin(a) * r).normalize();
-}
+const _v = new THREE.Vector3(), _c = new THREE.Vector3();
 
 export class ShellRunner {
   constructor(shells) {
@@ -70,7 +72,7 @@ export class ShellRunner {
   }
 
   mat(col) {
-    if (!this.mats.has(col)) this.mats.set(col, new THREE.MeshBasicMaterial({ color: col, fog: false }));
+    if (!this.mats.has(col)) this.mats.set(col, new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.6, roughness: 0.5 })); // (lit, the scene's own program: an unlit one was compiled late, the first time a shell flew)
     return this.mats.get(col);
   }
 
@@ -81,7 +83,7 @@ export class ShellRunner {
     shellLook(this.game, 'fire', row, ctx);
     const own = FIRES[row.id];
     if (own) return own(this, row, ctx);
-    this.launch(row.carrier === 'lob' ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir);
+    this.launch(['lob', 'deploy', 'call'].includes(row.carrier) ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir);
   }
 
   /** A round in flight: a small bright stone in its family's colour. */
@@ -97,10 +99,11 @@ export class ShellRunner {
     return p;
   }
 
-  /** Called before any shell is fired: the Detonator's charges go off. */
+  /** Called before any shell is fired: the Detonator's charges go off (and a part's own: the Visibomb bursts). */
   onShellFired() {
     for (const a of this.armed) this.detonate(a);
     this.armed.length = 0;
+    for (const P of PARTS) P.onShellFired?.(this);
   }
 
   // ---------------------------------------------------------------- what the payloads ask of the runner
@@ -125,6 +128,7 @@ export class ShellRunner {
   }
   /** The Lightning Rod: a plain shot that misses bends to the creature it marked, if it passed within `bend` m of it. */
   onShot(e) {
+    for (const P of PARTS) P.onShot?.(this, e);
     const r = this.rod; if (!r || !e?.dir || !e.at) return;
     if (e.ent && hasTag(e.ent, 'hurtable')) return;
     const c = r.c; if (!c.alive) return;
@@ -159,7 +163,7 @@ export class ShellRunner {
     if (FLY[p.kind]) FLY[p.kind](this, p, dt); // (its own steering)
     p.vel.y -= T.physics.gravity * C.grav * dt;
     const len = p.vel.length() * dt;
-    if (len < 1e-5) return p.age > p.life;
+    if (len < 1e-5) return p.age > p.life ? 'expire' : false;
     const dir = p.vel.clone().normalize();
     const hit = p.ghost ? null : g.physics.raycast(p.pos, dir, len + 0.08, g.player.collider, undefined, (col) => !col.isSensor());
     const foe = this.creatureOn(p.pos, dir, hit ? hit.distance : len, C.r, (c) => p.struck.has(c));
@@ -169,18 +173,19 @@ export class ShellRunner {
       const ent = hit.entity, target = ent && hasTag(ent, 'hurtable') && ent.alive && !ent.ally ? ent : null;
       contact = { at: hit.point.clone(), normal: hit.normal.clone(), target, ent };
     }
-    if (!contact) { p.pos.addScaledVector(dir, len); p.mesh.position.copy(p.pos); return p.age > p.life; }
+    if (!contact) { p.pos.addScaledVector(dir, len); p.mesh.position.copy(p.pos); return p.age > p.life ? 'expire' : false; }
     p.pos.copy(contact.at).addScaledVector(contact.normal, 0.1);
     p.mesh.position.copy(p.pos);
     shellLook(g, 'touch', p.row, contact);
-    return (HIT[p.kind] || HIT.bolt)(this, p, contact, dir);
+    return (HIT[p.kind] || HIT.bolt)(this, p, contact, dir) ? 'hit' : false; // (spent on a touch: its landing was the hit's, so no expiry after)
   }
 
   // ---------------------------------------------------------------- per tick
   fixedUpdate(dt) {
     for (let i = this.flying.length - 1; i >= 0; i--) {
       const p = this.flying[i];
-      if (this.step(p, dt)) { (EXPIRE[p.kind] || (() => {}))(this, p); this.game.scene.remove(p.mesh); this.flying.splice(i, 1); }
+      const end = this.step(p, dt);
+      if (end) { if (end === 'expire') EXPIRE[p.kind]?.(this, p); this.game.scene.remove(p.mesh); this.flying.splice(i, 1); }
     }
     for (let i = this.effects.length - 1; i >= 0; i--) {
       const e = this.effects[i];
@@ -191,6 +196,7 @@ export class ShellRunner {
       if (e.left <= 0) { this.effects.splice(i, 1); e.end?.(e); e.sound?.stop?.(); }
     }
     if (this.rod && ((this.rod.t -= dt) <= 0 || !this.rod.c.alive)) this.rod = null;
+    for (const P of PARTS) P.tick?.(this, dt);
     for (let i = this.decoys.length - 1; i >= 0; i--) {
       const d = this.decoys[i];
       if ((d.t -= dt) > 0 && d.alive) continue;
@@ -204,6 +210,7 @@ export class ShellRunner {
       if (a.target?.alive) a.mesh.position.copy(a.target.pos).setY(a.target.pos.y + a.target.height * 0.5);
     }
     for (const d of this.decoys) d.grp.rotation.y += dt * 2;
+    for (const P of PARTS) P.frame?.(this, dt);
   }
 
   /** The Taunt Doll set down: every creature that sees it takes it for the Courier (game.ai.decoys) until its time is up. */
@@ -233,14 +240,8 @@ export class ShellRunner {
     this.flying = []; this.effects = []; this.armed = []; this.decoys = [];
     this.rod = null; this.stored = 0;
     if (g.weapon) g.weapon.haste = 1;
+    for (const P of PARTS) P.clear?.(this);
   }
-}
-
-/** A blow from a round passing through or carroming off a creature (not a landing: the saw, the pinball, the cinder). */
-function graze(R, p, c, at, dir, power, again = 0.4) {
-  p.struck.set(c, again);
-  R.game.creatures.strike(c, at.clone(), dir.clone(), power, 'shot', 'courier', null, p.row.n.type || 'impact');
-  R.game.hud?.hitmarker?.(!c.alive);
 }
 
 /** What a round does on touching something, by its kind; true: it is spent. */
@@ -252,9 +253,16 @@ const HIT = {
     return true;
   },
   lob: (R, p, k, dir) => { land(R, p.row, k.at.clone().addScaledVector(k.normal, 0.15), k.normal, k.target, dir, k.ent); return true; },
-  // the Ricochet Saw: through every creature, off every wall, `count` times, then home to the muzzle
+  lobPart: (R, p, k) => { if (!p.landed) { p.landed = true; p.land?.(R, p, k.at.clone().addScaledVector(k.normal, 0.15), k); } return true; },
+  // the Ricochet Saw: through every creature and on to the next nearest (M2's chain: up to `count`, none twice), off every wall, then
+  // home to the muzzle
   saw: (R, p, k, dir) => {
-    if (k.target) { graze(R, p, k.target, k.at, dir, p.row.n.power, 1); sfx.shellHit?.(['blast'], { tier: p.row.tier, type: 'impact' }); return false; }
+    if (k.target) {
+      graze(R, p, k.target, k.at, dir, p.row.n.power, 99); sfx.shellHit?.(['blast'], { tier: p.row.tier, type: 'impact' });
+      const next = foesNear(R.game, k.target.pos, 10).find((c) => c !== k.target && !p.struck.has(c));
+      if (++p.bounces >= p.row.n.count) { p.ghost = true; p.home = true; } else if (next) p.vel.copy(_v.copy(next.pos).setY(next.pos.y + next.height * 0.5).sub(p.pos).normalize().multiplyScalar(p.C.speed));
+      return false;
+    }
     if (k.ent?.type === 'clapper') R.game.clappers.hit(k.ent, k.at, dir, 1, 'sliced');
     if (k.ent?.type === 'breakable') R.game.breakables.damage(k.ent, 120, k.at, dir, 1);
     p.vel.reflect(k.normal); sfx.clonk?.(R.game.listenerDistance?.(k.at));
@@ -300,11 +308,18 @@ const EXPIRE = {
   lob: (R, p) => land(R, p.row, p.pos, UP, null, p.vel.clone().normalize()),
   doll: (R, p) => R.decoy(p.row, p.pos),
   pinball: (R, p) => { blast(R, p.pos, 1.5, p.row.n.power * 2, 'explosion'); sfx.shellHit?.(['blast'], { tier: p.row.tier }); },
+  lobPart: (R, p) => { if (!p.landed) { p.landed = true; p.land?.(R, p, p.pos.clone(), null); } },
   agent: AGENT_BURST,
 };
 
 /** A kind's own steering, each tick before it moves. */
 const FLY = {
+  // a part's lob that hangs at its apex (`hangAt`: Petal Rain), then lands where it hangs
+  lobPart: (R, p, dt) => {
+    if (!p.hangAt || p.landed) return;
+    if (p.hanging == null && p.vel.y <= 0) { p.hanging = p.row.n.hang ?? 0.5; p.vel.set(0, 0, 0); p.C = { ...p.C, grav: 0 }; }
+    if (p.hanging != null && (p.hanging -= dt) <= 0) { p.landed = true; p.land?.(R, p, p.pos.clone(), null); p.age = p.life + 1; }
+  },
   // the saw on its way home
   saw: (R, p) => {
     if (!p.home) return;
@@ -406,3 +421,10 @@ const FIRES = {
 };
 // (the doll and the clod fly as lobs and bolts)
 CARRIER.doll = CARRIER.lob;
+
+// ---------------------------------------------------------------- the parts (CASTER-SHELLS.md section 1's mechanics), merged in
+const PARTS = [SPLIT_CHAIN, DEPLOYABLES, BODIES, SPACETIME, CASTERS_OWN];
+for (const P of PARTS) {
+  Object.assign(CARRIER, P.carrier || {}); Object.assign(HIT, P.hit || {}); Object.assign(FLY, P.fly || {});
+  Object.assign(EXPIRE, P.expire || {}); Object.assign(FIRES, P.fires || {}); Object.assign(LANDS, P.lands || {});
+}

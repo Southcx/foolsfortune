@@ -12,7 +12,7 @@
 // shell runner (shellrunner.js) from their rows.
 // ---------------------------------------------------------------------------
 import { PSYGUNS, DEFAULT_PSYGUN, capacityOf } from './kinds.js';
-import { shellById, shellByNo, typeLabel, fireCost } from '../../progress/combat/castershells.js';
+import { shellById, shellByNo, typeLabel, fireCost, tollShatters } from '../../progress/combat/castershells.js';
 import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -41,7 +41,7 @@ export const SHELL_TYPES = [
   { id: 'anchor', name: 'ANCHOR', glyph: '⚓︎' },
   { id: 'hatch', name: 'HATCH', glyph: '❦' },
   // (the runner's: a glyph a family until Calissa's icons)
-  ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', ember: '♨', storm: 'ϟ', pull: '◎', clock: '⧗', will: '☍', company: '⚑', feelings: '❀' }[r.family] || '•', runner: true })),
+  ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', ember: '♨', storm: 'ϟ', pull: '◎', clock: '⧗', will: '☍', company: '⚑', feelings: '❀', caster: '✶' }[r.family] || '•', runner: true })),
 ];
 export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 SHELL_TYPES.forEach((t) => { t.row = shellById(t.id); t.no = typeLabel(t.row.no); });
@@ -138,7 +138,7 @@ export class Shells {
     if (this.counts[t.id] <= 0) { sfx.dryFire(); g.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); g.events?.emit('shell.dry', { id: t.id }); return false; }
     // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
     if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
-    const cost = fireCost(t.id).lachryma;
+    const { lachryma: cost, crack } = fireCost(t.id);
     if (cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
     this.counts[t.id]--;
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
@@ -149,6 +149,7 @@ export class Shells {
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
     if (t.runner) this.runner.fire(t.row, { ...ctx, ray, muzzle, fwd });
     else this[t.id]({ ...ctx, ray, muzzle, fwd });
+    if (crack) g.vesselDamage?.toll({ by: 'courier', shatters: tollShatters }); // (the Caster's toll: a tier IV is paid in the clay)
     // every shell kicks hard and needs racking
     const k = T.shells.kick * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase);
     player.addRecoil(T.recoil.kickPitch * k, (simRand() * 2 - 1) * T.recoil.kickYaw * k);

@@ -649,8 +649,18 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 221. **An achievement's goal counts only what the player can do.** A goal read off a whole list
     (`game.techs.list.length`) grows with every entry, reachable or not; the predicate and its goal read one named set, shared
     with the rule that writes the ledger (`loggedTechs`).
+222. **A thing that ends one way does not also end the other.** A step that can finish a round two ways (a touch,
+    its time run out) returns which, and only that ending runs its code; a bare `true` from both lets the caller run both.
 
 ## Cases
+
+### 2026-10-12 · A lobbed caster shell landed twice (Petra, the shell runner's batch 2)
+- **Seen:** reading the runner to add the rest of the caster shells: a lob that touched the ground ran its landing in its hit and then
+  again as its time ran out (Napalm's slick and fire twice, every lobbed Feelings shell's burst twice); since v165.
+- **Cause:** `ShellRunner.step` returned `true` both when a round touched something and when its life ran out, and the caller ran
+  `EXPIRE[kind]` on any `true`; `EXPIRE.lob` lands where the round is.
+- **Fix:** `step` returns `'hit'` or `'expire'`; only `'expire'` runs the expiry (tools/psygun/shellrunner.js).
+- **Rule:** 222.
 
 ### 2026-10-11 · Hanging on the grapnel's line: the line sagged under load and the body jittered (the owner, v155)
 

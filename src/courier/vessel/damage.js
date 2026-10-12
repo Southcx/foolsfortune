@@ -15,6 +15,8 @@
 //
 //   REGIONS (names, in order)   regionOfBone(name)   new Hitboxes(character)  .nearest(point) .raycast(origin, dir) -> { region, t }
 //   new VesselDamage(game, vessel)   .hit({ point?, from?, dir?, k, why, by })   .update(dt)   .crack (Float32Array per region)
+//   .toll({ by }) -> 'crack' | 'shatter'   the Caster's toll (a tier IV caster shell: docs/plans/CASTER-SHELLS.md section 2): paid in the
+//   clay, never the pool; one of the four parts (mask, torso, arms, legs) cracked, and fired with three already cracked, it shatters
 //   .mend (Float32Array per region, 0..1: how far a mending region's cracks have turned to gold; the owner, 2026-10-04: gold where a
 //   crack mends, gone when the mend is done)
 // ---------------------------------------------------------------------------------------
@@ -155,6 +157,18 @@ export class VesselDamage {
     sfx.vesselCrack?.(this.crack[region], REGIONS[region]); // (Wanda's: docs/HANDOFFS.md)
     this.game.events?.emit('vessel.crack', { region: REGIONS[region], k: +this.crack[region].toFixed(2), why, by });
     return region;
+  }
+
+  /** The Caster's toll: the least cracked of the four parts (mask, torso, arms, legs) cracked past the shield; with three of them already
+   *  cracked, the vessel shatters instead (castershells.js tollShatters). The cracks mend as any do. */
+  toll({ by = 'courier', shatters = (n) => n >= 3 } = {}) {
+    const parts = [[0], [1], [2, 3], [4, 5]], worst = (p) => Math.max(...p.map((i) => this.crack[i]));
+    if (shatters(parts.filter((p) => worst(p) > 0.05).length)) { this.game.death?.begin({ why: 'toll', by, region: 'torso' }); return 'shatter'; }
+    const p = parts.reduce((a, b) => (worst(b) < worst(a) ? b : a)), i = p[0];
+    this.crack[i] = Math.max(this.crack[i], 0.6); this.quiet[i] = 0; this.peak[i] = Math.max(this.peak[i], this.crack[i]);
+    sfx.vesselCrack?.(this.crack[i], REGIONS[i]);
+    this.game.events?.emit('vessel.crack', { region: REGIONS[i], k: +this.crack[i].toFixed(2), why: 'toll', by });
+    return 'crack';
   }
 
   /** Mended at once (the kiln's refiring, or made whole again after shattering): every region, or the one named. */
