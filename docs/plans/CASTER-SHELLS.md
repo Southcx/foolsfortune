@@ -267,8 +267,9 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 
 ## 4. The rules for all hundred
 
-1. **A shell is data.** Every row is a recipe in `CASTER_SHELLS` (a data table, mine: numbers, tier, recipe) read by one runner
-   (Petra's), so a new shell is a row once its parts exist.
+1. **A shell is data.** Every row is a recipe in `CASTER_SHELLS` (`src/progress/combat/castershells.js`, mine: all hundred, their
+   tiers, recipes and numbers; 22 common, 48 uncommon, 21 rare, 9 the Caster's own) read by one runner (Petra's), so a new shell is a row
+   once its parts exist. A shell's worth is its tier's already (`worthOf`).
 2. **Every outcome carries `by`**, and the log says what a shell did, once, in a line (no pop-ups). Achievements read the ledger:
    `shell.fire.<id>`, `shell.kill.<id>`; "A Shell of Each" (lg6) counts all a hundred, so it becomes a Grandmaster.
 3. **The core movement is untouched.** No shell changes how the Courier runs, jumps or climbs (Overdrive is the tools only; Upfall
