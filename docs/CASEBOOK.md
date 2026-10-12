@@ -654,6 +654,14 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 ## Cases
 
+### 2026-10-12 · What a caster shell set down stayed for good after a room change (Calissa's find, v168)
+- **Seen:** after `shells.clear()` (a seam, a respawn) the Volcano's cone and haze, the Faraday Cage's arcs, the bubbles and the Golem
+  stayed in the world, never taken away.
+- **Cause:** `ShellRunner.clear()` dropped its timed effects and stopped their sounds without calling their `end`, which is where each
+  takes away what it set down.
+- **Fix:** `clear()` ends every timed effect as if its time were up (tools/psygun/shellrunner.js).
+- **Rule:** 222 (a thing that ends one way does not also end the other; and a thing that ends does end).
+
 ### 2026-10-12 · A lobbed caster shell landed twice (Petra, the shell runner's batch 2)
 - **Seen:** reading the runner to add the rest of the caster shells: a lob that touched the ground ran its landing in its hit and then
   again as its time ran out (Napalm's slick and fire twice, every lobbed Feelings shell's burst twice); since v165.

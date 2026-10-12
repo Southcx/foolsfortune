@@ -235,7 +235,8 @@ export class ShellRunner {
     const g = this.game;
     for (const p of this.flying) g.scene.remove(p.mesh);
     for (const a of this.armed) g.scene.remove(a.mesh);
-    for (const e of this.effects) e.sound?.stop?.();
+    const ending = this.effects; this.effects = []; // (each timed effect ended as if its time were up: what it set down is taken away, Calissa's find)
+    for (const e of ending) { try { e.end?.(e); } catch (err) { console.warn('shell effect end', err); } e.sound?.stop?.(); }
     for (const d of this.decoys) this.unDecoy(d, true);
     this.flying = []; this.effects = []; this.armed = []; this.decoys = [];
     this.rod = null; this.stored = 0;
