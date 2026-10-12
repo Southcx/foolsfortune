@@ -46,8 +46,8 @@ export class SlipDive extends Tech {
   }
 
   /** Wet enough under p to dive into: the paint map's cells (a feeling's paint, a blot, a slick, a fixed coat), as deep as `cfg.wet`. */
-  wetUnder(p) {
-    return this.field?.wet(p, UP, 0.35, this.cfg.wet ?? 0.3) || null;
+  wetUnder(p, stay = false) {
+    return this.field?.wet(p, UP, 0.35, stay ? this.cfg.wetStay ?? 0.12 : this.cfg.wet ?? 0.3) || null;
   }
 
   canStart() {
@@ -67,7 +67,7 @@ export class SlipDive extends Tech {
     P.vel.set(hv.x, 0, hv.z); // a slide keeps its speed going in
     this.mode = 'floor';
     this.normal.copy(UP);
-    this.melt = 0; this.rise = null; // (the body melts down over MELT seconds: tick)
+    this.melt = 0; this.rise = null; this.dryT = 0; // (the body melts down over MELT seconds: tick)
     this.blob.visible = true;
     sfx.slipDive();
     this.splash(P.pos, 1.2);
@@ -76,7 +76,8 @@ export class SlipDive extends Tech {
   update(dt) {
     const P = this.P, c = this.cfg, inp = P.input, M = T.movement;
     const wish = P.wishDir();
-    const wetFloor = this.wetUnder(P.pos);
+    const wetFloor = this.wetUnder(P.pos, true); // (in, it takes less to stay than to go in: a thin edge is still wet)
+    this.dryT = wetFloor || !P.grounded ? 0 : (this.dryT || 0) + dt; // (how long on dry ground: a gap is crossed under the grace)
     // surface: let go of C (standing room permitting), or launch with Space
     if (P.latch('Space')) return this.launch(wish);
     if (!inp.isDown('KeyC') && P.fits(P.pos, false)) return false;
@@ -129,7 +130,7 @@ export class SlipDive extends Tech {
     if (P.grounded) this.normal.lerp(UP, Math.min(1, 12 * dt));
     if (wetFloor) this.regen(dt);
     // high and dry: stand up as soon as there's room
-    if (P.grounded && !this.wetUnder(P.pos) && this.t > 0.2 && P.fits(P.pos, false)) return false;
+    if (P.grounded && this.dryT > (c.grace ?? 0.25) && this.t > 0.2 && P.fits(P.pos, false)) return false; // (out only after `grace` real seconds on dry ground: Splatoon's swim crosses a crack)
     return true;
   }
 

@@ -131,9 +131,9 @@ export class PaintWalls {
   /** Wash or mop up to `want` cell-fulls of a kind (0 paint, 2 a slick; null either) in a sphere at p. Returns what was taken. */
   wipe(p, n, r, want, kind = null) {
     let got = 0;
-    this.each(p, n, r, (m) => {
+    this.each(p, n, r, (m, d) => {
       if (got >= want || this.k[m] <= 0 || this.kind[m] === 1 || (kind != null && this.kind[m] !== kind)) return;
-      const t = Math.min(this.k[m], want - got); this.k[m] -= t; got += t; if (this.k[m] <= 0.02) { this.k[m] = 0; this.asp[m] = -1; this.kind[m] = 0; }
+      const t = Math.min(this.k[m] * (1 - 0.8 * d * d), want - got); // (more at the middle: a soft edge) this.k[m] -= t; got += t; if (this.k[m] <= 0.02) { this.k[m] = 0; this.asp[m] = -1; this.kind[m] = 0; }
     });
     if (got) this.dirty = true;
     return got;

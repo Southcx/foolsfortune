@@ -31,6 +31,11 @@ import { PaintWalls, PAINT_WALLS } from './paintwalls.js';
 
 const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, SLICK_LIFE = 40, NONE = -1e4, NEAR = 0.8, FLAT = 0x3b2b22; // (a slick: crude thrown or welled up in a fight, flat (no feeling), gone in 40 real seconds)
 /** Which cells a wipe or a count takes: true a blot's crude, 'slick' a slick's, false paint. */
+/** How fresh paint settles (the owner, 2026-10-12: "more like liquid versus revealing the nature of the grid"): for `fresh` real seconds
+ *  after it is laid, a cell's paint runs into its four neighbours while it stands more than `yield` above them (a Bingham fluid: paint
+ *  holds its shape below a slope, Sunshine's goop and Splatoon's ink both pool and stop), `rate` of the excess a second, `hz` times a
+ *  second. It fills the gaps between drops and rounds a stamp's square cells; it never spreads paint thin forever. */
+export const PAINT_FLOW = { fresh: 2.5, yield: 0.22, rate: 4, hz: 15 };
 const KIND = (crude) => (crude === 'slick' ? 2 : crude ? 1 : 0);
 const UP = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
 export const ASPECT_COLOR = Object.fromEntries(ASPECTS.map((a) => [a, new THREE.Color(COLOR[a])]));
@@ -130,7 +135,8 @@ export class PaintMap {
       if (Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) > r) continue;
       const n = j * N + i; if (this.crude[n] === 1 && this.k[n] > 0.05) continue;
       if (this.h[n] !== NONE && Math.abs(this.h[n] - y) > NEAR && this.k[n] > 0.05) continue;
-      this.asp[n] = -1; this.crude[n] = 2; this.k[n] = Math.max(this.k[n], k); this.h[n] = y; this.live.add(n);
+      const d = Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) / r; // (a soft rim, as the paint's: the look rounds it)
+      this.asp[n] = -1; this.crude[n] = 2; this.k[n] = Math.max(this.k[n], k * (1 - 0.5 * d * d)); this.h[n] = y; this.wetT[n] = this.clock; this.live.add(n);
     }
     this.dirty = true;
   }
@@ -147,11 +153,12 @@ export class PaintMap {
       const px = this.x0 + (i + 0.5) * CELL - ax, pz = this.z0 + (j + 0.5) * CELL - az, along = px * ux + pz * uz, across = Math.abs(px * uz - pz * ux);
       if (across > half || along < -half || along > len + half) continue;
       const cx = centre ? this.x0 + (i + 0.5) * CELL - centre.x : 0, cz = centre ? this.z0 + (j + 0.5) * CELL - centre.z : 0;
-      cells.push([n, centre ? -(cx * cx + cz * cz) : -across]); // (the rim first: farthest from the blot's middle, else the strip's edge)
+      const ed = Math.max(across / half, along < 0 ? -along / half : along > len ? (along - len) / half : 0), w = 1 - Math.min(1, Math.max(0, (ed - 0.55) / 0.45)) ** 2;
+      cells.push([n, centre ? -(cx * cx + cz * cz) : -across, Math.max(0.15, w)]); // (the rim first: farthest from the blot's middle, else the strip's edge)
     }
     cells.sort((p, q) => p[1] - q[1]);
     let got = 0, aspect = null;
-    for (const [n] of cells) { if (got >= want) break; const t = Math.min(this.k[n], want - got); this.k[n] -= t; got += t; aspect = ASPECTS[this.asp[n]]; if (this.k[n] <= 0.02) { this.k[n] = 0; this.asp[n] = -1; this.crude[n] = 0; } }
+    for (const [n, , w] of cells) { if (got >= want) break; const t = Math.min(this.k[n] * w, want - got); this.k[n] -= t; got += t; aspect = ASPECTS[this.asp[n]]; if (this.k[n] <= 0.02) { this.k[n] = 0; this.asp[n] = -1; this.crude[n] = 0; } } // (w: the stroke takes all at its middle and less toward its edge, so what it leaves is a soft edge, not a cell's step)
     if (got) this.dirty = true;
     return { got, aspect, smear: got > 0 ? { x: bx + ux * 0.5, z: bz + uz * 0.5 } : null };
   }
@@ -163,8 +170,8 @@ export class PaintMap {
     for (let dj = -c; dj <= c && got < want; dj++) for (let di = -c; di <= c && got < want; di++) {
       const i = ci + di, j = cj + dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
       const n = j * N + i; if (this.k[n] <= 0 || this.crude[n] || Math.abs(this.h[n] - y) > NEAR) continue; // (paint: crude is the blots', wipe())
-      if (Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) > r) continue;
-      const t = Math.min(this.k[n], want - got); this.k[n] -= t; got += t;
+      const d = Math.hypot(this.x0 + (i + 0.5) * CELL - x, this.z0 + (j + 0.5) * CELL - z) / r; if (d > 1) continue;
+      const t = Math.min(this.k[n] * (1 - 0.8 * d * d), want - got); this.k[n] -= t; got += t; // (more at the middle: a soft edge)
     }
     if (got) this.dirty = true;
     return got;
@@ -209,10 +216,22 @@ export class PaintMap {
     }
     this.dirty = true;
   }
-  /** Wet enough to dive into at p? On a floor (n up, or none): its cells as deep as `wet`. On another surface facing n (dot > 0.7):
+  /** The paint's depth at a point as the eye sees it: the four nearest cells' blended (bilinear), as the look's smoothed field is, so a
+   *  gap the look fills is no gap here (cells on another floor count as none). */
+  kAt(x, y, z) {
+    const fx = (x - this.x0) / CELL - 0.5, fz = (z - this.z0) / CELL - 0.5, i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j;
+    let s = 0;
+    for (const [di, dj, w] of [[0, 0, (1 - u) * (1 - v)], [1, 0, u * (1 - v)], [0, 1, (1 - u) * v], [1, 1, u * v]]) {
+      const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= N || b >= N) continue;
+      const n = b * N + a; if (this.k[n] > 0 && Math.abs(this.h[n] - y) <= NEAR) s += this.k[n] * w;
+    }
+    return s;
+  }
+
+  /** Wet enough to dive into at p? On a floor (n up, or none): the depth the eye sees (kAt) as deep as `wet`. On another surface facing n (dot > 0.7):
    *  a fixed coat or a coat's disc within `depth` of it. Returns the surface's normal, or null. */
   wet(p, n = null, depth = 0.3, wet = 0.3) {
-    if (!n || n.y > 0.7) { const c = this.at(p.x, p.y, p.z); return c && c.k >= wet ? UP : null; }
+    if (!n || n.y > 0.7) return this.kAt(p.x, p.y, p.z) >= wet ? UP : null;
     const w = this.walls.at(p, n, depth); if (w && w.k >= wet) return w.normal;
     for (const r of this.rects) {
       if (r.n.dot(n) < 0.7) continue;
@@ -281,6 +300,7 @@ export class PaintMap {
   update(dt, fx, fz) {
     const want0 = Math.floor((fx - SPAN / 2) / CELL) * CELL, want1 = Math.floor((fz - SPAN / 2) / CELL) * CELL;
     if (Math.abs(want0 - this.x0) > SPAN / 4 || Math.abs(want1 - this.z0) > SPAN / 4) this.recentre(want0, want1);
+    if ((this.flowT = (this.flowT || 0) + dt) >= 1 / PAINT_FLOW.hz) { this.settle(this.flowT); this.flowT = 0; }
     const fade = dt / LIFE; this.clock += dt;
     for (const n of this.live) { if (this.crude[n] === 1 && this.k[n] > 0) continue; this.k[n] -= this.crude[n] === 2 ? dt / SLICK_LIFE : fade; if (this.k[n] <= 0) { this.k[n] = 0; this.asp[n] = -1; this.h[n] = NONE; this.crude[n] = 0; this.live.delete(n); } } // (crude keeps: a blot stays until it is wiped)
     this.walls.update(dt);
@@ -288,6 +308,29 @@ export class PaintMap {
     if (this.live.size) this.dirty = true;
     this.upT -= dt;
     if (this.dirty && this.upT <= 0) { this.upload(); this.upT = 0.1; this.dirty = false; } // (ten uploads a second at most)
+  }
+
+  /** Fresh paint runs (PAINT_FLOW): each fresh cell gives its four neighbours a share of what it stands above them past the yield, into
+   *  an empty cell or one of its own kind and feeling (it never mixes by running), on its own floor. A blot's crude keeps its shape. */
+  settle(dt) {
+    const F = PAINT_FLOW, moves = [];
+    for (const n of this.live) {
+      if (this.crude[n] === 1 || this.clock - this.wetT[n] > F.fresh) continue;
+      const k = this.k[n]; if (k <= F.yield) continue;
+      const i = n % N, j = (n - i) / N;
+      for (const m of [i > 0 ? n - 1 : -1, i < N - 1 ? n + 1 : -1, j > 0 ? n - N : -1, j < N - 1 ? n + N : -1]) {
+        if (m < 0) continue;
+        const km = this.k[m];
+        if (km > 0.02 && (Math.abs(this.h[m] - this.h[n]) > 0.3 || this.crude[m] !== this.crude[n] || this.asp[m] !== this.asp[n])) continue;
+        const ex = k - km - F.yield; if (ex > 0) moves.push(n, m, ex * Math.min(0.25, F.rate * dt));
+      }
+    }
+    for (let q = 0; q < moves.length; q += 3) {
+      const n = moves[q], m = moves[q + 1], t = Math.min(moves[q + 2], this.k[n] * 0.25); if (t <= 0) continue;
+      if (this.k[m] <= 0.02) { this.asp[m] = this.asp[n]; this.crude[m] = this.crude[n]; this.h[m] = this.h[n]; this.wetT[m] = this.wetT[n]; this.k[m] = 0; }
+      this.k[n] -= t; this.k[m] += t; this.live.add(m);
+    }
+    if (moves.length) this.dirty = true;
   }
 
   recentre(x0, z0) {
