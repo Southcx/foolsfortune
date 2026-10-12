@@ -12,9 +12,9 @@
 // ---------------------------------------------------------------------------------------
 
 /** pick: how much of a cell's depth the foot takes up; print: how much of what it carries a print lays; fade: what is left after a
- *  print; stride: metres between prints; side: a foot's offset from the middle (m); foot: a print's radius (m); smearR: the body's
+ *  print; stride: metres between prints; side: a foot's offset from the middle (m); foot: a print's radius (m: at least half a cell's diagonal, 0.177, or a print can land in no cell); smearR: the body's
  *  reach on a slide (m); share: how much of a cell a slide drags along per metre of the reach crossed. */
-export const PAINT_TRACK = { pick: 0.5, print: 0.6, fade: 0.7, stride: 0.62, side: 0.12, foot: 0.12, smearR: 0.5, share: 0.35 };
+export const PAINT_TRACK = { pick: 0.5, print: 0.6, fade: 0.7, stride: 0.62, side: 0.12, foot: 0.18, smearR: 0.5, share: 0.35 };
 
 export class PaintTrack {
   constructor(game) {
