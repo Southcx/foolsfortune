@@ -9,6 +9,7 @@
 //   - THE MIND IS LABRADORITE, LACHRYMA IS GOLD AND VIOLET, the clay is warm (the palette's named colours: gold, lach, ember, labradorite).
 //   - NO FLICKER: a flash is one wash in and out; nothing large beats at a rate.
 // ---------------------------------------------------------------------------------------
+import { SHELL_EFFECTS } from './shelllooks/index.js'; // (the caster shells' looks, batches 2 to 4: one module a family)
 const L = (o) => o; // (a layer: only for readability)
 
 export const LIBRARY = {
@@ -706,4 +707,6 @@ export const LIBRARY = {
     L({ type: 'sprites', pool: 'alpha', count: 30, shape: 'puff', spawn: 'disc', r: 1, dir: 'out', lift: 0, speed: [3, 6], size: [1, 1.4], sizeEnd: 2.6, life: [1.6, 2.4], drag: 1.5, color: [0x140c1e, 0x1f2a22], alpha: 0.6, spin: [-0.4, 0.4], powerCount: false }),
     L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'swirl', spawn: 'disc', r: 3, size: [1, 1.6], life: [1.8, 2.4], color: ['tint', 0x2a3a2a], alpha: 0.5, spin: [-0.6, 0.6], powerCount: false }),
   ] },
+  // (batches 2 to 4, each family's effects in its own module: vfx/shelllooks/<family>.js)
+  ...SHELL_EFFECTS,
 };
