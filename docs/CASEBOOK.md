@@ -654,6 +654,17 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 ## Cases
 
+### 2026-10-12 · The Pneuka Box's chamber menu ran off the top of the screen (the owner, v169)
+- **Seen:** right-clicking a psygun chamber listed all hundred caster shells; the menu ran off the top of the screen with no way to scroll,
+  so the shells before TYPE-68 could not be chosen.
+- **Cause:** the menu (`PneukaUI.menu`, src/pneuka/ui.js) was placed by a guess at its height (26 px a row) with no height limit and no
+  scroll; a hundred rows is about 2,500 px.
+- **Fix:** the menu is capped to the screen and scrolls (its border counted, no sideways scrollbar), the wheel scrolls it and not the
+  game, its title stays at the top, and it is placed by its measured size. Measured headless at 600 px tall: a hundred rows sit at
+  8..592 px and scroll; three rows sit where they did.
+- **Rule:** NEW:measure-the-box. A window placed on the screen is placed by its measured size and capped to the screen, never by a guess
+  per row: lists grow.
+
 ### 2026-10-12 · What a caster shell set down stayed for good after a room change (Calissa's find, v168)
 - **Seen:** after `shells.clear()` (a seam, a respawn) the Volcano's cone and haze, the Faraday Cage's arcs, the bubbles and the Golem
   stayed in the world, never taken away.
