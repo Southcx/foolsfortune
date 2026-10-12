@@ -18,7 +18,7 @@ import { T, DEG } from '../../core/config.js';
 import { hasTag } from '../../core/tags.js';
 import { COLOR } from '../../progress/weather.js';
 import { stream } from '../../core/rng.js';
-import { land, blast, foesNear, motes } from './shellpayloads.js';
+import { land, blast, foesNear } from './shellpayloads.js';
 import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
 const simRand = stream('tools/psygun/shellrunner'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -199,13 +199,10 @@ export class ShellRunner {
   }
 
   update(dt) {
-    const now = performance.now() * 0.001;
     for (const a of this.armed) {
       a.t += dt;
       if (a.target?.alive) a.mesh.position.copy(a.target.pos).setY(a.target.pos.y + a.target.height * 0.5);
-      a.mesh.visible = Math.sin(now * 14) > -0.3;
     }
-    if (this.rod?.c.alive && simRand() < dt * 12) motes(this.game, this.rod.c.pos.clone().setY(this.rod.c.pos.y + this.rod.c.height), new THREE.Color(0xd99a5a), 1, 0.3, 1);
     for (const d of this.decoys) d.grp.rotation.y += dt * 2;
   }
 
@@ -404,7 +401,7 @@ const FIRES = {
   // Overdrive: the tools in the hands work faster for `dur` (the weapon's haste); the core movement is untouched
   overdrive: (R, row) => {
     const g = R.game, w = g.weapon; if (w) w.haste = row.n.tools;
-    R.timed({ t: row.n.dur, every: 0.3, tick: () => motes(g, g.player.pos.clone().setY(g.player.pos.y + 1), new THREE.Color(0xe8d080), 3, 0.4, 1.5), end: () => { if (w) w.haste = 1; } });
+    R.timed({ t: row.n.dur, end: () => { if (w) w.haste = 1; } });
   },
 };
 // (the doll and the clod fly as lobs and bolts)

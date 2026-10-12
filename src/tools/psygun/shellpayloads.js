@@ -13,9 +13,7 @@
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { COLOR, TYPE_OF } from '../../progress/weather.js';
-import { stream } from '../../core/rng.js';
 import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
-const simRand = stream('tools/psygun/shellpayloads'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3(), _d = new THREE.Vector3();
 /** A pot's damage a unit of power (the Bomb's 260 at power 4, config.js shells.bomb). */
@@ -47,20 +45,12 @@ function statusOn(R, row, at, target) {
   for (const c of who) g.creatures.apply(c, name, n.dur || 4, 1);
 }
 
-/** A feeling's colour, as a three.js colour. */
-const feelCol = (f) => new THREE.Color(COLOR[f] ?? 0xffffff);
-/** A puff of motes in a colour round a point (the look until Calissa's; every shell that called it has its look in vfx/shelllooks.js
- *  now, so it draws nothing: Petra's to remove with its calls). */
-export function motes(g, at, col, n = 18, r = 1, up = 2) {
-  // (was: n motes of col within r, rising at up)
-}
 
 /** A feeling's burst (the Feelings family, TYPE-81 to TYPE-87): its paint on the ground round the point, its colour in the air, and
  *  its damage type's build on every foe within reach (TYPE_OF: Wonder builds Ego's, Dread Delirium's...). */
 function feel(R, row, at, target) {
   const g = R.game, f = row.n.feeling, r = row.n.r || 3;
   g.paintmap?.stamp(at.x, at.y, at.z, Math.min(3, r * 0.3), f, 0.7);
-  motes(g, at, feelCol(f), 24, Math.min(3, r * 0.2));
   for (const c of target ? [target] : foesNear(g, at, r)) g.creatures.build(c, TYPE_OF[f], 3, 'courier', 'shell');
 }
 
@@ -76,17 +66,17 @@ const PAYLOADS = {
  *  shell's row and the place, the target (a creature) if one was hit, and the way it was going. */
 export const LANDS = {
   // Mallet: the head slams down where it lands: a big blast and a sure stun round it
-  mallet: (R, row, at) => { blast(R, at, row.n.r, row.n.power, 'slam'); for (const c of foesNear(R.game, at, row.n.r)) R.game.stun?.add?.(c, 99, { by: 'courier', cause: 'slam' }); R.game.fx?.shockwave?.(at, row.n.r); },
+  mallet: (R, row, at) => { blast(R, at, row.n.r, row.n.power, 'slam'); for (const c of foesNear(R.game, at, row.n.r)) R.game.stun?.add?.(c, 99, { by: 'courier', cause: 'slam' }); },
   // Napalm: a slick that catches a second later and burns for `dur`
   napalm: (R, row, at) => {
     const g = R.game, n = row.n; g.paintmap?.slick(at.x, at.y, at.z, n.r, 1);
     R.timed({ delay: n.delay, t: n.dur, every: 0.5, field: 'pool', tier: row.tier,
-      tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.strike(c, c.pos.clone(), UP, n.power, 'explosion', 'courier', null, 'impact'); motes(g, at, new THREE.Color(0xff7a2a), 10, n.r * 0.5, 2.5); } });
+      tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.strike(c, c.pos.clone(), UP, n.power, 'explosion', 'courier', null, 'impact'); } });
   },
   // Detonator: the charge waits on what it stuck to, until the next shell is fired (the runner's `armed`)
   detonator: (R, row, at, normal, target) => { R.arm({ row, at: at.clone(), target }); },
   // Lightning Rod: the creature hit draws your misses to it for `dur` (the runner bends a missed shot within `bend` m to it)
-  lightningRod: (R, row, at, normal, target) => { if (target) R.rod = { c: target, t: row.n.dur, bend: row.n.bend }; motes(R.game, at, new THREE.Color(0xd99a5a), 12, 0.4); },
+  lightningRod: (R, row, at, normal, target) => { if (target) R.rod = { c: target, t: row.n.dur, bend: row.n.bend }; },
   // Static Cling: loose props within r fly to the creature hit and stick, each one a hit, and it slows under them
   staticCling: (R, row, at, normal, target) => {
     if (!target) return; const g = R.game, n = row.n, stuck = new Set();
@@ -105,21 +95,20 @@ export const LANDS = {
   // Balloon: the creature hit loses its weight and bobs up on the air for `dur`, an easy juggle
   balloon: (R, row, at, normal, target) => { if (!target) return; R.game.creatures.apply(target, 'halt', row.n.dur, 1); R.timed({ t: row.n.dur, every: 0.1, tick: (e) => target.alive && target.knock?.(new THREE.Vector3(0, e.left > row.n.dur * 0.5 ? 2.2 : 0.4, 0)) }); },
   // Leadweight: crushed to the ground, half speed, no jumps
-  leadweight: (R, row, at, normal, target) => { if (!target) return; R.game.creatures.apply(target, 'slow', row.n.dur, 1); R.timed({ t: row.n.dur, every: 0.1, tick: () => target.alive && target.knock?.(new THREE.Vector3(0, -6, 0)) }); R.game.fx?.shockwave?.(target.pos, 1); },
+  leadweight: (R, row, at, normal, target) => { if (!target) return; R.game.creatures.apply(target, 'slow', row.n.dur, 1); R.timed({ t: row.n.dur, every: 0.1, tick: () => target.alive && target.knock?.(new THREE.Vector3(0, -6, 0)) }); },
   // Weather Away: the clay it hits dries and cracks: a creature softens (double from every blow), a pot crumbles
   weatherAway: (R, row, at, normal, target, dir, hitEnt) => {
     const g = R.game; if (target) g.creatures.apply(target, 'soft', row.n.dur, 1);
     if (hitEnt?.type === 'breakable') g.breakables.damage(hitEnt, 999, at.clone(), dir.clone(), 1);
-    motes(g, at, new THREE.Color(0xc9a27a), 14, 0.6, 0.6);
   },
   // Infector: the creature hit fights its own side for `dur` (charmed and counted the Courier's); when it falls the infection jumps on
   infector: (R, row, at, normal, target) => { if (target) infect(R, row, target, row.n.dur); },
   // Pottify (its body swap is M7, later): for now it is calmed and slowed, harmless, for `dur`
-  pottify: (R, row, at, normal, target) => { if (!target) return; R.game.creatures.apply(target, 'calm', row.n.dur, 1); R.game.creatures.apply(target, 'slow', row.n.dur, 1); motes(R.game, at, new THREE.Color(0xe8d6c0), 24, 0.6); },
+  pottify: (R, row, at, normal, target) => { if (!target) return; R.game.creatures.apply(target, 'calm', row.n.dur, 1); R.game.creatures.apply(target, 'slow', row.n.dur, 1); },
   // Stage Fright: every creature in r freezes in a spotlight, its guard dropped, and a crowd murmurs (Wanda's)
   stageFright: (R, row, at) => { const g = R.game; for (const c of foesNear(g, at, row.n.r)) { g.creatures.apply(c, 'doubt', row.n.dur, 1); g.creatures.apply(c, 'halt', Math.min(2, row.n.dur), 1); } sfx.crowdMurmur?.(row.n.dur); g.pulse?.emit?.(at, row.n.r, 0xfff4d6, { life: 0.8 }); },
   // Lullaby: a cloud of drifting notes; creatures inside sleep, and the notes are played in the music's scale
-  lullaby: (R, row, at) => { const g = R.game, n = row.n; R.timed({ t: n.dur, every: 0.5, field: 'cloud', tier: row.tier, tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.apply(c, 'sleep', 2, 1); motes(g, at, new THREE.Color(0xbcd6ff), 4, n.r * 0.6, 0.4); sfx.lullabyNote?.(g.music?.scale?.(), g.music?.grid?.()?.root); } }); },
+  lullaby: (R, row, at) => { const g = R.game, n = row.n; R.timed({ t: n.dur, every: 0.5, field: 'cloud', tier: row.tier, tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.apply(c, 'sleep', 2, 1); sfx.lullabyNote?.(g.music?.scale?.(), g.music?.grid?.()?.root); } }); },
   // Wonder: creatures in r stop and stare; every signature within `reveal` m is shown (the pulse)
   wonder: (R, row, at, normal, target) => { feel(R, row, at, target); statusOn(R, row, at, null); R.game.pulse?.emit?.(at, row.n.reveal, COLOR.wonder, { life: 1.6 }); },
   // Mirth: creatures fall over laughing (a stun), and loose things bounce
@@ -135,11 +124,11 @@ export const LANDS = {
   // Fury: the creature hit is enraged, its output at the top, and it takes double (both ways is the creature's to read: `fury`)
   fury: (R, row, at, normal, target) => { if (!target) return; feel(R, row, at, target); target.emo = 1; target.fury = row.n.dur; R.game.creatures.apply(target, 'soft', row.n.dur, 1); },
   // Gall: a cloud; creatures inside retch and stop, over and over
-  gall: (R, row, at, normal, target) => { const g = R.game, n = row.n; feel(R, row, at, target); R.timed({ t: n.dur, every: 1.2, field: 'cloud', tier: row.tier, tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.apply(c, 'halt', 0.6, 1); motes(g, at, feelCol('gall'), 10, n.r * 0.6, 0.5); } }); },
+  gall: (R, row, at, normal, target) => { const g = R.game, n = row.n; feel(R, row, at, target); R.timed({ t: n.dur, every: 1.2, field: 'cloud', tier: row.tier, tick: () => { for (const c of foesNear(g, at, n.r)) g.creatures.apply(c, 'halt', 0.6, 1); } }); },
   // Grief: a small cloud follows the creature and rains on it; slowed, it weeps Lachryma you can drink
   grief: (R, row, at, normal, target) => {
     if (!target) return; const g = R.game, n = row.n; feel(R, row, at, target); g.creatures.apply(target, 'slow', n.dur, 1);
-    R.timed({ t: n.dur, every: 1, tick: () => { if (!target.alive) return; motes(g, target.pos.clone().setY(target.pos.y + target.height + 0.6), feelCol('grief'), 6, 0.4, -2); g.baubles?.spawn?.(target.pos.clone().setY(target.pos.y + 0.5), 1, { spread: 0.4, up: 2 }); } });
+    R.timed({ t: n.dur, every: 1, tick: () => { if (!target.alive) return; g.baubles?.spawn?.(target.pos.clone().setY(target.pos.y + 0.5), 1, { spread: 0.4, up: 2 }); } });
   },
   // Dread: every creature in r flees the point
   dread: (R, row, at, normal, target) => { feel(R, row, at, target); statusOn(R, row, at, null); },
@@ -149,7 +138,6 @@ export const LANDS = {
  *  time, it jumps to the nearest of its kind's side within 8 m with what is left. */
 function infect(R, row, c, dur) {
   const g = R.game; g.creatures.apply(c, 'charm', dur, 1); c.infected = dur;
-  motes(g, c.pos.clone().setY(c.pos.y + c.height * 0.5), new THREE.Color(0x8ad06a), 16, 0.5);
   R.timed({ t: dur, every: 0.25, tick: (e) => {
     if (c.alive) return;
     e.left = 0; const next = foesNear(g, c.pos, 8).find((x) => x !== c && !x.infected);
