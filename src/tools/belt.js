@@ -121,8 +121,9 @@ export class ToolBelt {
   others(tool) { return this.tools.some((t) => t !== tool && (t.drawT > 0.02 || t.wants)); }
   /** May this tool come out yet? (every other one is back in its holster) */
   mayDraw(tool) { return !(tool.id !== 'psygun' && this.game.techs?.active?.oneHand) && this.tools.every((t) => t === tool || t.drawT < 0.02); } // (a tech that leaves one hand free, a walking climb, lets only the gun out: SWEEPS group 8)
-  /** Ask for a tool: the others are put away first. */
-  draw(tool) { for (const t of this.tools) if (t !== tool && (t.wants || t.drawT > 0)) t.stow(); }
+  /** Ask for a tool: the others are put away first, and it is asked out (`out()`: CROSSING, Calissa, 2026-10-11: the belt could put a tool
+   *  away but not bring one out, which the prone holster needs to give back what it put away: tools/proneholster.js). */
+  draw(tool) { for (const t of this.tools) if (t !== tool && (t.wants || t.drawT > 0)) t.stow(); tool.out?.(); }
   /** What the tool in the hands allows (true when nothing is out). */
   allows(rule) {
     for (const t of this.tools) if (t.drawT > 0.25 && !t.rules[rule]) return false;
@@ -140,6 +141,7 @@ export const psygunTool = (weapon) => ({
   get drawT() { return weapon.drawT; },
   get wants() { return weapon.drawTarget > 0; },
   stow() { weapon.drawTarget = 0; weapon.manualHolster = true; },
+  out() { weapon.drawTarget = 1; weapon.manualHolster = false; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
   rules: { mouse: true, digits: true, kick: false, firstPerson: true },
 });
 
@@ -148,6 +150,7 @@ export const sondelassTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
   get model() { return tech.model?.group; },
   rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (V is its guard)
 });
@@ -157,6 +160,7 @@ export const veritomeTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
   get model() { return tech.model?.group; },
   rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (1 is its flash: tools/veritome/flash.js)
 });
@@ -167,6 +171,7 @@ export const heldTool = (tech, name, slot, start = false) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
   get model() { return tech.model?.group; },
   rules: { mouse: true, digits: true, kick: false, firstPerson: true },
 });
@@ -176,6 +181,7 @@ export const soulBrushTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
   get model() { return tech.model?.group; },
   rules: { mouse: true, digits: false, kick: false, firstPerson: true },
 });

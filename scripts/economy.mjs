@@ -208,11 +208,11 @@ console.log(`island demand for edges over a week (multipliers, days 0..6): ${[0,
 console.log(`\nthe spirit press: how far one material of each kind moves a colour (tier 0 / tier 4)`);
 console.log(KIND_IDS.map((k) => `${k} ${distance({ h: 20, s: 0.5 }, press({ h: 20, s: 0.5 }, [makeMaterial(k, 1, 0)]).colour).toFixed(2)} / ${distance({ h: 20, s: 0.5 }, press({ h: 20, s: 0.5 }, [makeMaterial(k, 1, 4)]).colour).toFixed(2)}`).join(', '));
 
-// crude Lachryma (LORE.md, "Lachryma as crude"): a run's expected profit by ship and grade, hauled where it is wanted (bought at 0.8,
+// crude Lachryma (LORE.md, "Lachryma as crude"): a run's expected profit by ship and field, hauled where it is wanted (bought at 0.8,
 // sold at 1.3, distance 4), with no stage failed and with one; and the spill odds of a stage failed
 console.log(`\ncrude runs: expected profit a run (clean / one stage failed), cubes an hour clean (a hop of ${PLAY.hauler.hopMin} min x the ship's slowness), and the spill chance of a failed stage`);
-for (const ship of ['sloop', 'tanker']) for (const grade of Object.keys(ECON.crude.grades))
-  console.log(`${pad(ship, 8)}${pad(grade, 8)}${String(crudeRun({ ship, grade })).padStart(7)}${String(crudeRun({ ship, grade, failed: 1 })).padStart(7)}${String(Math.round(crudeRun({ ship, grade }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow))).padStart(7)}/h ${(crudeRun({ ship, grade }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow) / aim).toFixed(2)}x   spill ${(spillChance(grade, ECON.ships[ship].hold, ECON.ships[ship].hull ?? 1) * 100).toFixed(0)}%`);
+for (const ship of ['sloop', 'tanker']) for (const field of Object.keys(ECON.crude.fields))
+  console.log(`${pad(ship, 8)}${pad(field, 10)}${String(crudeRun({ ship, field })).padStart(7)}${String(crudeRun({ ship, field, failed: 1 })).padStart(7)}${String(Math.round(crudeRun({ ship, field }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow))).padStart(7)}/h ${(crudeRun({ ship, field }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow) / aim).toFixed(2)}x   spill ${(spillChance(field, ECON.ships[ship].hold, ECON.ships[ship].hull ?? 1) * 100).toFixed(0)}%`);
 let fill = 1; const fills = [];
 for (let r = 0; r < 8; r++) { fills.push(wellYield(fill).toFixed(2)); fill = drawWell(fill, 1, 0); }
 console.log(`a Well's yield over eight runs back to back: ${fills.join(' ')}; it refills ${ECON.wellFill.refillPerH * 100}% an hour (dry to full in ${Math.round(1 / ECON.wellFill.refillPerH)} hours)`);
@@ -229,9 +229,9 @@ for (const [id, I] of Object.entries(ECON.islands)) {
 // the toxic symbiosis (the owner, 2026-10-04): Chaos digs crude up and sells it cheap, Law buys it dear, and Letty brings in Chaos's strays
 // for the King. The crude route Entropolis -> Margarite by tanker, over a fortnight of days (a clean run, distance 6), and bounties
 const route = [];
-for (let d = 0; d < 14; d++) { const buy = demand('entra', 'dread', d), sell = demand('margarite', 'dread', d); route.push(crudeRun({ ship: 'tanker', grade: 'dread', buy, sell, distance: 6 })); }
+for (let d = 0; d < 14; d++) { const buy = demand('entra', 'entra', d), sell = demand('margarite', 'entra', d); route.push(crudeRun({ ship: 'tanker', field: 'entra', buy, sell, distance: 6 })); }
 const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
-console.log(`\nthe crude route, Entropolis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
+console.log(`\nthe crude route, Entropolis -> Margarite (tanker, Entropolis crude, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
 console.log(`bounties (a hunt's worth x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan `);
 console.log(`a Well drifts daily: the dunes Well's seed on days 0, 1, 2: ${[0, 1, 2].map((d) => wellSeed('dunes', d)).join(', ')} (the same day, the same Well)`);
 

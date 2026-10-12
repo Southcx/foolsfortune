@@ -20,6 +20,9 @@
 const always = () => true;
 const uses = (key, n) => (L) => (L.get(key) || 0) >= n;      // (a count in the ledger)
 const best = (key, n) => (L) => (L.best(key) || 0) >= n;     // (a record)
+const hits = (move, n) => uses(`sond.move.${move}.hit`, n);       // (a Sondelass move's blows landed: tracking/moves.js)
+const finishes = (move, n) => uses(`sond.move.${move}.finish`, n); // (its strings finished on a creature)
+const either = (...ways) => (L) => ways.some((w) => w(L));          // (the count way or the feat way, whichever first)
 
 /** Each move: `power` per hit (creatures.strike's power; a slip jelly bursts at 8), `hits` in the move, `time` real seconds of the move
  *  (its clip at the speed it plays), `cost` Lachryma, `status` it puts on what it strikes (creatures.apply; each creature decides what
@@ -38,6 +41,25 @@ export const MOVES = {
     dash: { power: 1.6, time: 0.5, unlock: always },
     counter: { power: 0.8, hits: 4, time: 1.7, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
     stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
+    iaido: { power: 1.54, time: 0.6, parent: 'stinger', unlock: always },                                     // (the draw cut: crouched, RMB let go before the iaido's 0.5 s; Calissa's measured 1.4 x 1.1 a cut, 0.6 real s at the shortest charge, 2.57 a second, under the string's 2.7; free and known from the start, since it is Blade Mode's door, and Blade Mode came with the tool)
+    // THE MELEE LOADOUT'S CATALOGUE (Calissa's phase 3, keyed by SONDELASS_MOVES' ids; MELEE-LOADOUT-EARNING.md section 2, Dovina's):
+    // each opens by its parent's use (the count way) or by a feat (the feat way), whichever first. A normal: its parent landed 60 times, or
+    // its parent finishing a string on a creature 5 times, or the feat its effect names. A special: its parent landed 30 times (60 when
+    // the parent is itself earned: the counts double along the tree), or its feat once. The numbers are Calissa's measured `stats`
+    // (every normal in any slot -2.9..+2.2% of today's string a second; every special -8.5..+6%).
+    quickSlash: { power: 1.0, time: 0.34, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5)) },
+    bodyBlow: { power: 0.9, time: 0.3, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5)) },
+    backhand: { power: 1.1, time: 0.38, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5)) },
+    guardBreak: { power: 1.1, time: 0.42, status: 'stagger', parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('sond.effect.guardBreak', 3)) },
+    lungeSlash: { power: 1.4, time: 0.5, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5)) },
+    lowSweep: { power: 1.35, time: 0.55, status: 'trip', parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('sond.effect.trip', 3)) },
+    heavyChop: { power: 2.4, time: 0.92, status: 'stagger', parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5)) },
+    pushKick: { power: 1.45, time: 0.6, parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) }, // (a kick: the unarmed kick's blows open it too)
+    spinSlash: { power: 0.85, hits: 4, time: 1.17, cost: 8, parent: 'backhand', unlock: either(hits('backhand', 60), best('sond.struck.best', 3)) }, // (three struck by one blow)
+    powerSlash: { power: 3.0, time: 1.2, cost: 8, parent: 'heavyChop', unlock: either(hits('heavyChop', 60), finishes('heavyChop', 5)) },
+    risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', unlock: either(hits('quickSlash', 60), uses('move.launch', 10)) },
+    guardCrush: { power: 2.8, time: 1.11, cost: 6, status: 'stagger', parent: 'stinger', unlock: either(uses('cut.stinger', 30), uses('sond.effect.guardBreak', 1)) },
+    backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', unlock: either(hits('c3', 30), uses('parry.sondelass', 10)) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
     special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
     // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
     // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js

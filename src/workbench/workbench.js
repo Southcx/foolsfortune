@@ -17,6 +17,9 @@
 //              where the workbench's camera is, at the scrub's time
 //   CARDS      the choice card (ui/choicecard.js) on a sheet: the seven mounts, the slot row, compare, the keywords, every icon in each
 //              palette, in each window colour (workbench/cardsheet.js)
+//   THE ANIM LAB  (MODELS, first in the list) the Courier's own animation stack on a stage: a tool in the hands, a stance, a move, an
+//              emote or a raw clip played, stepped and scrubbed, front, side and top, every other tool off (workbench/animstage.js); a
+//              stage may draw through a camera of its own (`userData.camera()`), and its overlays are `workbench.animOverlays`
 //
 // Prior art: the engine editor's asset browser and its preview pane (Unity's inspector preview, Unreal's Niagara and static-mesh
 // editors: an effect or a mesh on a turntable, its stats beside it), the "sound test" and "model viewer" of the sixth generation's
@@ -36,6 +39,7 @@ import { ITEMS } from '../pneuka/items.js';
 import { buildThing } from '../pneuka/thingmodels.js';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { CURIOS } from '../world/treasure/treasure.js';
+import { ANIM_OVERLAYS } from './animoverlay.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -73,6 +77,7 @@ export class Workbench {
   constructor(game) {
     this.game = game; this.open = false; this.tab = 'effects';
     this.loader = new GLTFLoader();
+    this.animOverlays = ANIM_OVERLAYS; // (the Anim Lab's overlays: the pose audit adds its own here, workbench/animoverlay.js)
   }
 
   // ------------------------------------------------------------------ the stage (made the first time it opens)
@@ -165,7 +170,7 @@ export class Workbench {
     if (this.tab === 'cinema') return Object.entries(SEQUENCES).flatMap(([n, d]) => Object.keys(d.segments || {}).map((sg) => ({ id: `${n}|${sg}`, grp: n, label: sg })));
     if (this.tab === 'effects') return Object.keys(LIBRARY).sort().map((n) => ({ id: n, grp: n.split('.')[0], label: n }));
     if (this.tab === 'textures') return [...vfxTextureNames().map((n) => ({ id: `tex:${n}`, grp: 'effect textures', label: n })), { id: 'atlas', grp: 'sprites', label: 'the sprite atlas' }];
-    const out = [];
+    const out = [{ id: 'anim:lab', grp: 'animation', label: 'the Anim Lab (a tool, a stance, a move, an emote or a clip: played, stepped and scrubbed, front, side and top)' }];
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' }, { id: 'ships:classes', grp: 'ships', label: 'the ship classes in echelon (sloop, frigate, destroyer, galleon, tanker; from ahead, the side, astern, above)' }, { id: 'ships:mounts', grp: 'ships', label: "a mount's preview on a moored sloop and frigate (each mount in turn, eight real seconds: from the jetty and from above)" });
@@ -186,6 +191,8 @@ export class Workbench {
     out.push({ id: 'dunes:ostraca', grp: 'the Dunes', label: 'the ostraca (the sixteen words and their pictures, one word with none) and a stele (twelve of them as stand-in words): dug, buried, dug; on a loop' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
     out.push({ id: 'slice:foe', grp: 'the slice', label: "the Great Slip Jelly's windups (each cast in turn, read from the body; then the Sherds and the Overflow)" });
+    out.push(...[['heathaze', "S1 heat haze: a clay volcano with hot air over it, a flame cone, the Piercer's glass tube"], ['bubble', 'S2 the bubble: a geodesic hex shell, guan crackle or clear glass, the thin film; struck every 2 real seconds'], ['lightning', "S3 lightning: an arc between two clay insulators, a Faraday cage, Ball Lightning's tendrils"], ['frostbisque', 'S4 frost and bisque: a clay body fired to bisque, frosted or crazed from a hit (on a loop)'], ['portal', "S5 the portal: a linked pair rimmed in crude (each the other's view) and a rift on the ground"], ['all', 'S1 to S5 in a row, with all their sliders']].map(([k, label]) => ({ id: `caster:${k}`, grp: "the caster shells' shaders", label }))); // (workbench/castershaderstage.js)
+    out.push({ id: 'caster:shaders2', grp: "the caster shells' shaders", label: 'the caster shaders S6 to S10: lensing, the time grade, the hologram, molten, the corrupted body (each with its sliders; FOCUS takes the camera to one)' });
     out.push({ id: 'combat:figmentTelegraphs', grp: 'Figment attack telegraphs', label: 'the ladder: circle, out-in, cone, line, lunge and baited at Divination 1, 2, 8, 20 and 35 (the body alone, where, when, what kind, how to answer; on a loop)' }, { id: 'combat:figmentTelegraphs.more', grp: 'Figment attack telegraphs', label: 'floor, tracked, left, gaze, adds and raidwide at the same five levels' }, { id: 'combat:figmentTelegraphs.variants', grp: 'Figment attack telegraphs', label: "every ground shape at step 4 over its numbers in magenta, the friendly outline, the caution edge, overlapping drops as one edge, a mark over a ridge" }, { id: 'combat:figmentTelegraphs.glyphs', grp: 'Figment attack telegraphs', label: 'the glyph sheet: every answer, mark and status glyph over pale and dark ground' }, { id: 'combat:figmentTelegraphs.bowl', grp: 'Figment attack telegraphs', label: "the Great Slip Jelly's casts at their own size on a dish 140 m across (Divination 35)" });
     out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });
     out.push({ id: 'garden:galaxy', grp: 'the Spirit Garden', label: "the garden as a galaxy (the six planetoids, the spirit veins, the cloud sea, the Jar hopping; day to night)" });
@@ -619,6 +626,6 @@ export class Workbench {
       if (this.packHip) this.packHip.position.fromArray(pose.p);
     }
     if (this.tab === 'cinema') this.cineFrame(raw);
-    g.post.render(this.scene, this.tab === 'cinema' && this.cv?.view === 'shot' && this.shotCam ? this.shotCam : this.camera);
+    g.post.render(this.scene, this.tab === 'cinema' && this.cv?.view === 'shot' && this.shotCam ? this.shotCam : this.model?.userData.camera?.() || this.camera); // (a stage's own camera: the Anim Lab's views)
   }
 }

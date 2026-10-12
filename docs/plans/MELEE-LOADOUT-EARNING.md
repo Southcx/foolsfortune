@@ -30,7 +30,16 @@ lands; until then this is the rule each row follows.
 | 8 | 8,000 | 14 | 13 real hours |
 
 - The ledger needs one new record: `sond.string.best`, the longest unbroken run of LMB string blows. It breaks on a miss, a blow taken
-  or a pause past the string's window. Petra's (the tracking rule, on `cut.combo`).
+  or a pause past the string's window. Built (Petra, fb1a85d: `move.string.end`'s `run`, `feedback/tracking/moves.js`).
+- **The run's edges** (Dovina, 2026-10-11; Calissa's to build):
+  1. **A press that cuts a whiffing blow** (R, or any cut): if the blow's strike has passed without a hit, it was a miss and the run
+     ends. Cut before the strike, no blow was thrown, so nothing ends. A cancel never launders a miss.
+  2. **A held charge** freezes the string's window, for up to 2 real seconds held (a full charge is 1.3); past that the run ends. Its
+     release is a blow like any other: it lands or it ends the run.
+  3. **A move across space** carries the run only if it is the Courier's own (a dash, a Movement Art, the hook's pull) inside the window.
+     A seam, a rescue or a place change ends it: the body left play.
+  4. **Blade Mode's cuts** count nothing toward the run or `sond.move.*`, and neither break it: Blade Mode is stopped time, paid in
+     Ouranurgy (`blade.exit`), not a string. The run resumes from where it was when time runs again.
 
 ## 2. Moves (normals in the string, specials on RMB)
 
@@ -53,13 +62,41 @@ Every move in `SONDELASS_MOVES` names a **parent** (the move it grows from) and 
 
 - **Start known:** the four normals of today's string, the stinger (RMB tap), the launcher, the air string, the pause string, the dash.
   Nothing anyone has today is taken away.
-- **The slice's catalogue,** a target for Calissa's list: **about 12 normals and 6 specials**, so 8 normals and 5 specials to earn.
+- **The slice's catalogue,** a target for Calissa's list: **about 18 normals and 12 specials** (widened 2026-10-11 for the CMU
+  mocap pass: 7 kicks and off-hand blows as normals, 6 as specials, added beside the 12 and 6 from UAL and the suite, none replaced).
+  God Hand's tree is a hundred deep; breadth is the point, and the loadout's slots, not the catalogue, keep a string short.
+- **The CMU rows' count way is the kick:** their parent is the nearest Sondelass move, but a kick normal also opens at 60 blows of the
+  unarmed kick landed (`kick.hit`), a kick special at 150. Feet trained bare carry over to the blade.
 - **Pacing:** in the first 3 real hours of Sondelass play, a new move about every 20 real minutes; after that, the deeper rows come
-  slower (the counts above double along the tree).
+  slower (the counts above double along the tree). With 24 rows to earn, the whole tree is about 12 real hours by counts alone, and
+  about half that for a player who takes the feat ways.
 - **One move, one parent.** No row needs two others. A loadout never asks a player to grind a move they don't want for one they do.
 - Each opening is said in the log once (`move.learn { tool, move, by }`, as the Movement Arts are), and the Codex's Sondelass page shows
   the tree with the next row's two ways. Espada names the moves and the log line.
 - **Lent** in DEBUG by the lend panel's `moves` row, as today's moveset unlocks are.
+
+**As written** (`progress/combat/moves.js`, 2026-10-11, on Calissa's phase 3 catalogue):
+
+| move | parent | count way | feat way |
+|---|---|---|---|
+| Quick Slash, Body Blow | c1 | c1 landed 60 | c1 finishes 5 strings |
+| Backhand | c2 | c2 landed 60 | c2 finishes 5 |
+| Guard Break | c2 | c2 landed 60 | c2 finishes 5, or 3 guards broken |
+| Lunge Slash | c3 | c3 landed 60 | c3 finishes 5 |
+| Low Sweep | c3 | c3 landed 60 | c3 finishes 5, or 3 trips |
+| Heavy Chop | c4 | c4 landed 60 | c4 finishes 5 |
+| Push Kick | c4 | c4 landed 60, or 60 unarmed kicks landed | c4 finishes 5, or 5 knocked away |
+| Spin Slash (special) | Backhand | Backhand landed 60 | three struck by one blow |
+| Power Slash (special) | Heavy Chop | Heavy Chop landed 60 | Heavy Chop finishes 5 |
+| Rising Cut (special) | Quick Slash | Quick Slash landed 60 | 10 launches |
+| Guard Crush (special) | the stinger | 30 stingers | one guard broken |
+| Backstep Slash (special) | c3 | c3 landed 30 | 10 parries with the Sondelass |
+
+- The guard-broken, trip, knock-away and struck-by-one feats read `move.blow`'s `effect` and `struck` (rules in
+  `feedback/tracking/moves.js`); Calissa adds the two fields at the blow. Until then those rows open by their count way only.
+- **The stinger** (Calissa's flag): its lunge strikes at 2.2x its row (6.6 in 0.38 real s, 17.2 power a second measured), against the
+  band's 2.6. Ruled: its row's 3.0 a strike. It is a gap-closer that pierces a line and costs 6 Lachryma; it should not out-damage the
+  string. One number in `cutlass.js` `stingStep` (Calissa's). The owner will feel it; said in the round's report.
 
 ## 3. What a move is worth (so the editor's choice is a choice)
 

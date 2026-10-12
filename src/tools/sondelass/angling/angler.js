@@ -1,12 +1,15 @@
 // ---------------------------------------------------------------------------------------
-// THE ANGLER: the rod form of the Sondelass, end to end. Choose an aspect of the Courier's mind (keys 4 to 8, or the wheel), hold
+// THE ANGLER: the rod form of the Sondelass, end to end. Choose an aspect of the Courier's mind (keys 4 to 0, or the wheel), hold
 // LMB to charge a cast (the arc it will fly shows in the air) and release to throw the lure; it lands where the crosshair points,
 // out as far as the charge allows. The lure floats and the entities of the water come to it, or don't. While waiting: tap LMB to
 // twitch it (a jig that fish notice), hold RMB to sink it, the wheel to set its depth (it HOLDS the depth it is left at), hold LMB
 // to reel it home, middle click to sound: a psychic ping, a sphere of light that leaves the lure and lights what it passes.
-// What is tied on is a LURE (lures.js; 9 and 0 change it while the line is in): each has a taste of its own that the fish come to
-// or don't, and any curio the Courier holds can be tied on. The aspect (4 to 8) is what a sounding pushes into the lure, and every
-// sounding stirs every fish in that water, the nearer the more.
+// What is tied on is a LURE (lures.js; - and = change it while no line is out): each has a taste of its own that the fish come to
+// or don't, and any curio the Courier holds can be tied on. The aspect (4 to 0, the seven in display order: Wonder, Mirth, Desire,
+// Fury, Gall, Grief, Dread) is what a sounding pushes into the lure, and every sounding stirs every fish in that water, the nearer the
+// more. An aspect is shown locked, and refused, until that feeling is known (species.js aspectKnown): all seven, as the brush's radial.
+// (The keys: 1 to 3 are the Sondelass's forms, so the seven aspects take 4 to 0 and the lure moved from 9 / 0 to the two keys after
+// them, - and =: the psygun's - is held up while a tool is out, psygun/weapon.js deadInput, and the log's [ and ] are its tabs.)
 // A fish that has noticed the lure gets a "!" over it, probes it (small dips), and then bites: a "!!!" over the lure, a hard dip and
 // a ring of light. Press LMB inside the window to set the hook.
 //
@@ -32,7 +35,7 @@ import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
 import { aspectStrip } from './ui.js';
 import { lureList, attraction, tasteOf, BARE } from './lures.js';
-import { ASPECTS, SHOWN, BY_SPECIES, TIDES } from './species.js';
+import { ASPECTS, SHOWN, BY_SPECIES, TIDES, aspectKnown, knownAspects } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
 import { sfx } from '../../../audio/sfx.js';
 import { stream } from '../../../core/rng.js';
@@ -41,7 +44,9 @@ const simRand = stream('tools/sondelass/angling/angler'); // (the simulation's c
 const COST = 10, SOUND_COST = 5;
 /** The default sounding: how far it reaches (m) and how long it takes to get there (s). */
 export const PING_R = 54, PING_LIFE = 2.0;
-const ASPECT_KEYS = ['Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
+/** The seven aspects' keys, in the order shown (species.js SHOWN); the lure's are the two after them. */
+const ASPECT_KEYS = ['Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'];
+const LURE_KEYS = ['Minus', 'Equal']; // (the previous lure, the next)
 /** A sounding's stir falls off with distance from where it went off (metres at which it is half as strong). */
 const STIR_HALF = 16;
 const G = 9.81;
@@ -120,7 +125,7 @@ export class Angler {
   emit(name, data) { this.game.events?.emit(name, data); }
   bend() { return this.bendX; }
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
-  stripHtml() { return aspectStrip(this.aspect, this.lureDef()); }
+  stripHtml() { return aspectStrip(this.aspect, this.lureDef(), knownAspects(this.game)); }
   /** The lure on the line is what the Pneuka Box says is worn there (pneuka/box.js). */
   get lureId() { return this.game.pneuka?.lure ?? this.ownLure; }
   set lureId(id) { if (this.game.pneuka) this.game.pneuka.tie(id); else this.ownLure = id; }
@@ -145,9 +150,29 @@ export class Angler {
   get aspectColor() { return ASPECTS[this.aspect].color; }
   setAspect(a) {
     if (a === this.aspect) return;
+    if (!aspectKnown(this.game, a)) { // (before the feeling is known: refused, and said; the words a placeholder for Espada's)
+      sfx.fizzle?.();
+      this.game.log?.say('warn', `You do not know ${ASPECTS[a].name[0]}${ASPECTS[a].name.slice(1).toLowerCase()} yet.`, { key: 'aspectlocked', throttle: 2 });
+      return;
+    }
     this.aspect = a;
     if (this.lure?.active) this.lure.setAspect(a);
     this.tool.renderStrip(); sfx.plink(a * 2);
+  }
+
+  /** The wheel steps through the aspects in the order shown, past the locked ones. */
+  wheelAspect(d) {
+    const n = SHOWN.length;
+    let k = SHOWN.indexOf(this.aspect);
+    for (let s = 0; s < n; s++) { k = (k + d + n) % n; if (aspectKnown(this.game, SHOWN[k])) { this.setAspect(SHOWN[k]); return; } }
+  }
+  /** A feeling known (or a lend switched) since the strip was drawn: draw it again; an aspect no longer known gives way to Wonder. */
+  checkKnown() {
+    const K = knownAspects(this.game, this._known || (this._known = [])), sig = K.map((k) => (k ? 1 : 0)).join('');
+    if (sig === this.knownSig) return;
+    this.knownSig = sig;
+    if (!K[this.aspect]) { this.aspect = SHOWN[0]; if (this.lure?.active) this.lure.setAspect(this.aspect); }
+    this.tool.renderStrip();
   }
 
   // ---------------------------------------------------------------- landing point of a cast
@@ -208,15 +233,15 @@ export class Angler {
     if (!this.lure) { if (g.weir) this.init(g.weir); else return; }
     if (this.echo) { this.echo.t -= dt; if (this.echo.t <= 0) this.echo = null; }
     this.twitchCool -= dt; this.soundCool -= dt; this.tremble = Math.max(0, this.tremble - dt * 0.8); this.trembleT = this.tremble > 0.01 ? 1 : 0;
-    // the aspect (keys 4 to 8; the wheel too, until the lure is in the water) and the depth (the wheel, with it in)
+    // the aspect (keys 4 to 0; the wheel too, until the lure is in the water) and the depth (the wheel, with it in)
     let depthNudge = 0;
+    if (held) this.checkKnown();
     if (held && this.state !== 'fight' && this.state !== 'catch') {
       ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(SHOWN[i]); }); // (the keys follow the order shown: species.js SHOWN)
-      if (inp.wasPressed('Digit9')) this.cycleLure(-1);
-      if (inp.wasPressed('Digit0')) this.cycleLure(1);
+      LURE_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.cycleLure(i ? 1 : -1); });
       if (inp.wheel) {
         if (this.lure.inWater) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
-        else this.setAspect((this.aspect + (inp.wheel > 0 ? 1 : ASPECTS.length - 1)) % ASPECTS.length);
+        else this.wheelAspect(inp.wheel > 0 ? 1 : -1);
       }
     }
     const down = held && inp.isDown('Mouse0'), press = held && inp.wasPressed('Mouse0');
@@ -347,9 +372,12 @@ export class Angler {
     const y = this.lure.pool?.surface ?? this.weir.poolAt(src.x, src.z)?.surface ?? null; // (where the shell meets the water it draws a ring on it)
     g.pulse.emit(src, PING_R, this.aspectColor, { life: PING_LIFE, surfaceY: y });
     // the active lure: the aspect is pushed into it for a while, and the whole of that water is stirred (the nearer, the more)
-    if (this.lure.active) this.lure.push(this.aspect);
+    // (a feeling not yet known is not pushed: with none known the sounding still stirs and lights the water, plain, and says so once;
+    //  the words a placeholder for Espada's)
+    if (!aspectKnown(g, this.aspect)) { if (!this.saidPlain) { this.saidPlain = true; g.log?.say('info', 'Your sounding carries no feeling yet.', { key: 'angle.plain', throttle: 60 }); } }
+    else if (this.lure.active) this.lure.push(this.aspect);
     const pool = this.lure.pool || this.weir.poolAt(src.x, src.z);
-    const taste = tasteOf(this.lure.active ? this.lure.item : this.lureDef(), this.lure.active ? this.lure.boost : null);
+    const taste = tasteOf(this.lure.active ? this.lure.item : this.lureDef(), this.lure.active ? this.lure.boost : null, undefined, knownAspects(this.game));
     let stirred = 0;
     if (pool) for (const f of this.weir.fish) {
       if (f.pool !== pool) continue;

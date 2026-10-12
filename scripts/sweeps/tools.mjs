@@ -150,7 +150,7 @@ await S.common('base lab');
 // ================================================================== 2. every tool drawn and stowed by its key, its verbs, and the core movement after
 const VERBS = {
   psygun: [['LMB', 'Mouse0', 0], ['LMB held', 'Mouse0', 80], ['RMB held (aim)', 'Mouse2', 40], ['V (parry: the stagger)', 'KeyV']],
-  sondelass: [['LMB (the cutlass string)', 'Mouse0', 0], ['LMB held', 'Mouse0', 60], ['RMB tap (the Stinger)', 'Mouse2', 0], ['RMB held (Blade Mode)', 'Mouse2', 50], ['V (parry: the deflect, the guard)', 'KeyV']],
+  sondelass: [['LMB (the cutlass string)', 'Mouse0', 0], ['LMB held', 'Mouse0', 60], ['RMB tap (the Stinger)', 'Mouse2', 0], ['RMB held, standing (the stinger)', 'Mouse2', 50], ['V (parry: the deflect, the guard)', 'KeyV']],
   soulbrush: [['LMB (the club)', 'Mouse0', 0], ['LMB held (saturate)', 'Mouse0', 90], ['RMB tap', 'Mouse2', 0], ['RMB held (Celestial mode)', 'Mouse2', 50], ['V (parry: the bat)', 'KeyV']],
   veritome: [['LMB', 'Mouse0', 0], ['RMB held (the lens)', 'Mouse2', 50], ['V (parry: the shutter)', 'KeyV']],
   dreamvane: [['LMB (the pick)', 'Mouse0', 0], ['LMB held', 'Mouse0', 60], ['RMB tap (the fork)', 'Mouse2', 0], ['RMB held (dowse)', 'Mouse2', 60], ['V (parry: the twirl)', 'KeyV']],
@@ -249,14 +249,16 @@ if (part('sondelass')) {
   await settledChecks('sondelass stowed from the hook', { expectOut: null });
   // Blade Mode held, then stowed while held
   await key('KeyQ', 2); await S.ticks(60); await key('Digit1', 2); await S.ticks(20);
+  await key('KeyC', 2); await S.ticks(20); // (Blade Mode is the crouched iaido held: standing, RMB is the stinger. Calissa, phase 2)
   await tl("mdown('Mouse2')"); await S.ticks(40);
-  const bm = await tl('world()');
+  const bm = await tl('world()'), bmIn = (await tl('sond()')).bladeMode;
   S.note('sondelass: Blade Mode held', { holds: bm.holds, scale: bm.scale, look: bm.look, cinema: bm.cinema, sond: await tl('sond()') });
   await key('KeyQ', 2); await S.ticks(10); await tl("mup('Mouse2')"); await S.ticks(30);
   const bq = await tl('world()'), bs = await tl('sond()'), bt = (await tl('tools()')).find((t) => t.id === 'sondelass');
-  S.check('sondelass: Q in Blade Mode, RMB let go: Blade Mode ends and time runs again', !bs.bladeMode && !bq.holds.includes('blade') && bq.scale > 0.9,
-    { bladeMode: bs.bladeMode, holds: bq.holds, scale: bq.scale, drawT: bt.drawT, cause: bs.bladeMode ? 'sondelass.js: Q sets drawTarget 0, so held (drawT >= 1) goes false and cutlass.update (which runs blade.update, the RMB let-go and the drain) stops; cutlass.cancel() waits for drawT <= 0.02, and the holster runs on dt scaled by Blade Mode\'s own 0.05' : null });
+  S.check('sondelass: Q in Blade Mode, RMB let go: Blade Mode ends and time runs again', bmIn && !bs.bladeMode && !bq.holds.includes('blade') && bq.scale > 0.9,
+    { entered: bmIn, bladeMode: bs.bladeMode, holds: bq.holds, scale: bq.scale, drawT: bt.drawT, cause: !bmIn ? 'Blade Mode never started: crouched, RMB held 40 ticks (cutlass.js, the iaido)' : bs.bladeMode ? 'sondelass.js: Q sets drawTarget 0, so held (drawT >= 1) goes false and cutlass.update (which runs blade.update, the RMB let-go and the drain) stops; cutlass.cancel() waits for drawT <= 0.02, and the holster runs on dt scaled by Blade Mode\'s own 0.05' : null });
   for (let i = 0; i < 40 && (await tl('world()')).holds.length; i++) await S.ticks(30); // (let it wind down before measuring the rest)
+  await key('KeyC', 2); await S.ticks(20); await key('KeyC', 2); await S.ticks(20); // (stand again: C cycles stand, crouch, prone)
   await settledChecks('sondelass stowed mid-Blade-Mode (wound down)', { expectOut: null });
   const c = await core();
   S.check('sondelass forms: the core movement exactly as before', sameCore(c), { base: BASE, now: c });
@@ -418,12 +420,14 @@ if (part('god')) {
     await stowAll();
   }
   // mid-Blade-Mode
-  await key('KeyQ', 2); await S.ticks(60); await tl("mdown('Mouse2')"); await S.ticks(40);
+  await key('KeyQ', 2); await S.ticks(60); await key('KeyC', 2); await S.ticks(20); await tl("mdown('Mouse2')"); await S.ticks(40);
+  const gIn = (await tl('sond()')).bladeMode;
   await key('Backquote', 2); await tl("mup('Mouse2')"); await S.ticks(120);
   const gb = await tl('world()'), gs = await tl('sond()'), gt = await S.ev(() => +__game.game.god.t.toFixed(2));
-  S.check('god hand over Blade Mode: refused, or Blade Mode ends and time runs again', gb.god === 'off' || (!gs.bladeMode && gb.scale > 0.9),
-    { god: gb.god, godT: gt, after: '2 real s', bladeMode: gs.bladeMode, holds: gb.holds, scale: gb.scale, cause: gs.bladeMode ? "godhand.js canEnter() does not ask for Blade Mode; the tools' ticks stop under the god hand, so blade.update (RMB let go, the drain) never runs and the hold 'blade' (0.05) stays: the god hand's 1.2 s entry takes 24 real s" : null });
+  S.check('god hand over Blade Mode: refused, or Blade Mode ends and time runs again', gIn && (gb.god === 'off' || (!gs.bladeMode && gb.scale > 0.9)),
+    { entered: gIn, god: gb.god, godT: gt, after: '2 real s', bladeMode: gs.bladeMode, holds: gb.holds, scale: gb.scale, cause: gs.bladeMode ? "godhand.js canEnter() does not ask for Blade Mode; the tools' ticks stop under the god hand, so blade.update (RMB let go, the drain) never runs and the hold 'blade' (0.05) stays: the god hand's 1.2 s entry takes 24 real s" : null });
   for (let i = 0; i < 120; i++) { const w = await tl('world()'); if (w.god === 'off' && !w.holds.length) break; if (w.god === 'on') await key('Backquote', 2); await S.ticks(60); } // (wound down: up to 2 real minutes of ticks)
+  await key('KeyC', 2); await S.ticks(20); await key('KeyC', 2); await S.ticks(20); // (stand again: C cycles stand, crouch, prone)
   await stowAll();
   await settledChecks('god hand mid-Blade-Mode (wound down)', { expectOut: null });
   await S.common('god hand left');

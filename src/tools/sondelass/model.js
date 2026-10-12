@@ -25,7 +25,10 @@ const SEG_MAX = [0.62, 0.58, 0.52, 0.46];
 const SEG_R = [0.0165, 0.0135, 0.0108, 0.0084];
 const X0 = 0.25; // where the first section starts (past the guard)
 export const BLADE_LEN = 0.82;
-export const HANDLE = { back: -0.28, front: 0.22 };
+/** The handle (m along the tool from the palm's middle): `back` the rod's butt, `short` the butt slid in for the cutlass and the hook (the
+ *  pommel just behind the fist: at the rod's 0.28 m it went 6 to 10 cm into the chest in the cutlass's strokes and lay inside the forearm
+ *  in the hook's aim; the pose audit, 2026-10-11), between them by the extension past the hook's (`slide`). */
+export const HANDLE = { back: -0.18, short: -0.1, front: 0.22, slide: [0.32, 1] };
 
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.15, flatShading: true, ...o });
 
@@ -64,14 +67,14 @@ export class SondelassModel {
     const cylX = (r0, r1, len, seg = 8) => { const geo = new THREE.CylinderGeometry(r1, r0, len, seg); geo.rotateZ(-Math.PI / 2); return geo; };
 
     // the handle: a wrapped grip, a pommel, a shell guard, a knuckle bow
-    const hl = HANDLE.front - HANDLE.back;
-    add(cylX(0.019, 0.019, hl), M.wrap).position.x = (HANDLE.back + HANDLE.front) / 2;
-    for (let i = 0; i < 5; i++) { const r = add(new THREE.TorusGeometry(0.02, 0.0035, 4, 10), M.brass, g, false); r.rotation.y = Math.PI / 2; r.position.x = -0.2 + i * 0.085; }
-    add(new THREE.SphereGeometry(0.03, 8, 6), M.brass).position.x = HANDLE.back - 0.01;
+    // (the grip's wrap a unit long, scaled to the handle and the rings spread over it as the butt slides: layout())
+    this.wrap = add(cylX(0.019, 0.019, 1), M.wrap);
+    this.rings = Array.from({ length: 5 }, () => { const r = add(new THREE.TorusGeometry(0.02, 0.0035, 4, 10), M.brass, g, false); r.rotation.y = Math.PI / 2; return r; });
+    this.pommel = add(new THREE.SphereGeometry(0.03, 8, 6), M.brass);
     const guard = add(new THREE.CylinderGeometry(0.075, 0.07, 0.012, 14), M.brass);
     guard.rotation.z = Math.PI / 2; guard.position.x = HANDLE.front + 0.012;
     const bow = add(new THREE.TorusGeometry(0.11, 0.0055, 5, 16, Math.PI), M.brass);
-    bow.rotation.z = -Math.PI / 2; bow.rotation.x = 0; bow.position.set((HANDLE.front + HANDLE.back) / 2 + 0.02, 0.028, 0); bow.scale.set(1.0, 1.45, 1);
+    bow.rotation.z = -Math.PI / 2; bow.rotation.x = 0; bow.position.set(-0.01, 0.028, 0); bow.scale.set(1.0, 1.45, 1); // (round the fist, its back end at the short pommel)
     // the reel: a spool low on the +Y side with a crank on the +Z side
     const reel = (this.reel = new THREE.Group());
     reel.position.set(0.09, 0.088, 0);
@@ -120,7 +123,15 @@ export class SondelassModel {
   setHook(on) { this.hookOn = on; this.hook.visible = on; }
   setReel(a) { this.spin = a; this.spool.rotation.z = a; }
 
+  /** Where the butt ends at extension e (m along the tool, negative). */
+  handleBack(e = this.ext) { const [a, b] = HANDLE.slide, k = THREE.MathUtils.clamp((e - a) / (b - a), 0, 1); return THREE.MathUtils.lerp(HANDLE.short, HANDLE.back, k * k * (3 - 2 * k)); }
+
   layout() {
+    // the handle: the butt slid out with the rod, in for the cutlass and the hook
+    const back = this.handleBack(), hl = HANDLE.front - back;
+    this.wrap.position.x = (back + HANDLE.front) / 2; this.wrap.scale.set(hl, 1, 1);
+    this.rings.forEach((r, i) => { r.position.x = back + 0.08 + (i / 4) * (hl - 0.16); });
+    this.pommel.position.x = back - 0.01;
     let x = X0, y = 0, ang = 0;
     const n = this.secs.length;
     this.secs.forEach((sec, i) => {

@@ -5,9 +5,9 @@
 // gold wherever it stands), GREY a card not yet opened, BETTER and WORSE a compared number's arrow (green and red, and solid against
 // hollow so the colour is never alone), LINE the sea chart's pale labradorite.
 //
-// The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5), 'mount.<tool>' (ui/icons/mountart.js, the seven at
-// sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration; and lock, check, up, down, upHollow,
-// downHollow), 'paint.<pick>' (ui/icons/paintart.js: the Soul Brush's radial, the seven feelings and Clean, each in its own palette
+// The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5 and the melee loadout's four effects), 'mount.<tool>'
+// (ui/icons/mountart.js, the seven at sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration, power,
+// speed; and lock, check, up, down, upHollow, downHollow), 'paint.<pick>' (ui/icons/paintart.js: the Soul Brush's radial, the seven feelings and Clean, each in its own palette
 // 'paint.<pick>', the feeling's colour at the body's middle tone: `paintRamp`), and the Figment attack telegraphs' glyphs: 'answer.<id>',
 // 'status.<id>', 'figmentMark.<id>' (ui/icons/figmenttelegraphart.js, which the world draws from its own atlas:
 // vfx/figmenttelegraph/figmenttelegraphatlas.js).

@@ -49,7 +49,8 @@ import { stream } from '../../core/rng.js';
 const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
 
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
-const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4, CATCH_REACH = 8;
+const CAP = 100, ECHO_DELAY = 1.4, CATCH_REACH = 8;
+export const HOOVER = { range: 7, cone: 0.7, pull: 9, drain: 3.6 }; // (its reach: loose Lachryma, a mind laid low; drawn by vfx/lockheartmarks.js)
 // The flail, a table for the combo engine (tools/moveset.js): the coffin in the LEFT hand, its chain let out to CHAIN.out while it is
 // swung, so a blow's reach is the forearm's line out to the coffin (melee.js measures the left hand, `tip` past it). `strike`: the blow's
 // own window in the clip (the windup's backswing is not a blow). Numbers proposed to Dovina (docs/handoffs/dovina/): a coffin is heavier
@@ -78,6 +79,7 @@ export class Lockheart extends HeldTool {
       idle: 'Lock_Idle', idles: ['Lock_Idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: the suite's Lock_Idle; hands() below)
     });
     this.model = { group: new THREE.Group() };
+    this.ridesHand = null; // (the coffin hangs from the left hand's place on its chain, never from its turn: either palm may ease, courier/anim/wristease.js)
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));
     this.chain.rotation.z = -Math.PI / 2; this.chain.position.x = 0.06; this.model.group.add(this.chain);
     this.mount();
@@ -325,7 +327,7 @@ export class Lockheart extends HeldTool {
     this.drainT -= dt;
     if (this.drainT <= 0) {
       this.drainT = 0.6;
-      for (const c of g.creatures.near(P.pos, 3.6)) {
+      for (const c of g.creatures.near(P.pos, HOOVER.drain)) {
         if (c.ally || !g.stun?.vulnerable(c)) continue;
         const d = c.pos.clone().sub(P.pos).setY(0); if (d.lengthSq() > 0.2 && d.normalize().angleTo(f) > HOOVER.cone) continue;
         g.baubles?.spawn(c.center(new THREE.Vector3()), 1, { spread: 0.3, up: 1.5, ox: 0.8 });

@@ -61,8 +61,15 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **mental state** (`game.courierMind`, `src/courier/mind.js`; creatures': `progress/combat/mind.js`) — the Courier's: pushed up by Lachryma
   drunk, settled by quiet. A creature's: Stoic to Prismatic. *Not:* mood (`npc.mood`), nor EmO. → detail
 - **the seven feelings** (`ASPECTS`, `DISPLAY_ORDER`, `src/progress/weather.js`) — the aspects of Lachryma, always shown most positive to most
-  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked and are learned by drinking each where it falls
-  (Anagami's five, `NATIVE`, in its weather; Gall and Fury far off). *Not:* "hunger", "Faith" (cut). → detail
+  negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread. All seven start locked; each is learned at its awakening. *Not:* "hunger", "Faith" (cut). → detail
+- **an awakening / a vantage** (`feeling.wake`, `progress/feelings.js`, its moment `feedback/awakening.js` / `VANTAGES`, `vantage.reach`,
+  `src/world/vantages.js`; `docs/plans/FEELINGS-AWAKENING.md`) — the moment a feeling is learned (the verb: awaken to, never "wake", which
+  is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its
+  weather floods round you, one line in its own voice, the body's answer once free (`feeling.embody`) / a hand-placed lookout whose view
+  awakens Wonder; player text says "vantage point". *Not:* a notice from the System.
+- **a heavy look / the flood / a feeling's clip** (`LOOK[aspect].heavy`, `heavyOf`, `vfx/weather.js` / `game.awakeningLook`, `vfx/awakeninglook.js` /
+  `FEELING_CLIPS`, `courier/anim/feelingclips.js`) — a weather's look at strength 1, its feeling's big gesture / that look breaking out round the
+  Courier for about four real seconds at an awakening, indoors too / the Courier's body answering it (on `feeling.embody`). *Not:* a spell, an emote. → detail
 - **agate** (`AGATES`, `agateOf`) — two feelings felt at once, shown as one: the stronger is what happens, the weaker its colour. Opposites cancel
   instead. → detail
 - **weather** (`game.weather`, `src/progress/weather.js`) — an island's mood, falling as Lachryma: one of the five aspects or calm, with a
@@ -82,10 +89,20 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Crucibelle, Lockheart. *Not:* a Node script.
 - **the belt** (`game.belt`, `src/tools/belt.js`) — where tools are worn; "is a tool out?" asks here. **Draw / stow** take a tool in hand / put it
   back.
+- **the prone holster** (`game.proneHolster`, `src/tools/proneholster.js`) — lying down puts the tool in the hands away through the belt and
+  draws it again once up; no tool comes out on the belly. *Not:* a holster (where a tool is worn).
 - **fitting** (`FITTINGS`, `src/pneuka/box.js`) — what fits into a tool (a lure, an instrument, the Lockheart's keys), kept in the Pneuka Box. A
   tool never has an inventory of its own.
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`) — the gun. A shot is one round; a charge winds up a piercing beam; a shell is a
   special round in a chamber. → detail
+- **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
+  field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
+- **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
+  carrier, then its payloads (`shellpayloads.js`) where it lands; the plan's mechanics are its **parts** (`shellsplitchain.js`,
+  `shelldeployables.js`, `shellbodies.js`, `shellspacetime.js`, `shellcastersown.js`). *Not:* the Shells class (the chambers and counts).
+- **a shell's look** (`shellLook`, `SHELL_LOOKS`, `src/vfx/shelllooks.js`, a family's in `vfx/shelllooks/<family>.js`; effects
+  `shell.<id>.<moment>`) — a caster shell's body, tail and marks at its moments (fly, touch, land, fire, set), asked by the shell runner
+  by shell id. *Not:* the caster shaders (its parts).
 - **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grapnel). →
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
@@ -103,7 +120,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   frost, Mirth dots, Desire ripples, Fury cracks, Gall curds, Grief streaks, Dread marbling); crude's is an oil film. *Not:* a kiln pattern. → detail
 - **the paint reticle / the jet ring / the shine / the bottle's arc** (`PaintReticle`, `JetRing`, `CleanShine`, `src/vfx/brushmarks.js`;
   `BottleArc`, `src/vfx/bottlearc.js`) — where the stream lands and its spread; the hover's fuel or the rocket's gather at the feet; ground
-  just cleaned; the bottle's fill beside the crosshair. No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
+  just cleaned; the bottle's fill beside the paint reticle (`game.paintReticle`). No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
 - **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
   Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
@@ -118,6 +135,18 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   not a cancel. *Not:* a combo. → detail
 - **the paid cut** (working name, Espada's and the owner's to rule; `paidCut`, `move.cut`, `tools/moveset.js`) — a press in a blow's recovery,
   its strike past, that pays Lachryma for the next move at once. *Not:* a cancel, nor the free recovery cut. → detail
+- **the melee loadout** (working name, Espada's and the owner's to rule; `SONDELASS_LOADOUT`, `SONDELASS_MOVES`, `sondelass/sondelassloadout.js`) —
+  the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
+- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`) — the melee loadout's string as pips at the bottom middle while the
+  cutlass is drawn: the next LMB's lit gold, the pause string's row over it, the oil film's glint while the paid cut is open. *Not:* the slot
+  row, Strawman's attack strings; its pause string's row is never "the fork" (the Dreamvane's). → detail
+- **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`) — the ring on the point the hook would bite, within its reach, while the hook form is
+  in hand; brackets close on it for a catch. *Not:* the chevron, the lock-on reticle. → detail
+- **a guard break** (`hit.guardBreak`, `breakGuard()`, `tools/moveset.js`) — a blow that opens a guard (Strawman's) for a beat and lands
+  through it: the cutlass's Guard Break and Guard Crush. *Not:* the guard (V), nor the parry. → detail
+- **the loadout editor** (`tools/sondelass/loadouteditor.js`; kept by `game.sondelassLoadout`, save section `sondelassLoadout`; what is open:
+  `loadoutopen.js`) — where the melee loadout is chosen: its slot rows beside its moves as choice cards, at the sparring circle's lectern and on
+  the Codex's SONDELASS shelf. *Not:* the lend panel, the Pneuka Box. → detail
 - **shot** — a psygun shot, and only that. A scripted camera is a camera shot (`cinema.shot`); a photograph is a plate.
 - **damage type** (`src/progress/combat/types.js`) — what kind of force a blow is: Impact, Ego, Influence, Illusion, Delirium; each builds a
   status and trumps one other. *Not:* an element. → detail
@@ -137,8 +166,15 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the core movement** — walk, sprint, slide, jump, wallrun, mantle, dash, and the humanoid moves (swim, ladders, hanging, poles, grates,
   balance, carrying, pushing). The gold standard: nothing changes it.
 - **the prowl / the crawl** (`PROWL`, `src/courier/anim/prowl.js` / `CRAWL`, `s.crawl`, `src/courier/anim/crawl.js`) — the crouch on the move,
-  low, its head held still / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
+  low, its head held steady / on the belly under what the crouch cannot pass: prone, the third of C's cycle (`player.posture`: stand,
   crouch, prone; a 0.8 m capsule). *Not:* a tech, nor the wall latch's crawl along a wall.
+- **the drawn run** (`stance:cutlassRun`, `stance:cutlassSprint`, `courier/anim/stances.js`; `drawnRun`, `tools/sondelass/sondelass.js`) — the run
+  and the sprint with the cutlass in hand: the run's own body, the blade held low and back. *Not:* the dash slash, a tech.
+- **the Paint Dive** (`courier/moves/slip.js` for now; `docs/plans/PAINT.md`) — C held in wet paint or crude: the Courier melts into it
+  and swims, Splatoon's squid form. *Not:* the brush's dive, a dive into the water. *Retired:* "slip dive".
+- **the paint map** (`game.paintmap`, `src/world/ground/paintmap.js`; `docs/plans/PAINT.md`) — the one store of Lachryma on surfaces: a
+  feeling's paint or a field's crude, cell by cell, in charts (a floor, a box's face); everything that paints, mops, spills or dives
+  asks and writes it. *Not:* the trail map (prints in sand), the map (M).
 - **tech** (`Tech`, `src/courier/moves/techs.js`) — code only: anything that takes the Courier's body for a while. In the game, a learned one is a
   Movement Art.
 - **Movement Art** (`src/progress/skills.js`) — a tech the System teaches; a variant is one of its versions.
@@ -155,6 +191,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **clapperjar** (`clapper`, `src/creatures/clappers.js`) — the clapping pots, the folk's lowest tier (earthenware). The code's shorter word is
   accepted.
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
+- **the Lantern Wisp** (`game.wisps`, `src/creatures/wisp/`) — the Dunes' second creature, on the owner's model and its clip suite: it
+  hovers, keeps its distance and casts a ball of its flame the parry sends back. *Not:* a spirit, the Wisp's emote clips (its suite's).
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
 - **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
@@ -345,19 +383,48 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   state, its detail on hover; **compare** arrows on what would change; **the slot row** (`slotRow`) a loadout as a bar. *Not:* a card (the
   Veritome's). → detail
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
-  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive. *Not:* a label. → detail
+  Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive; and the melee loadout's four effects, Stagger, Knockback, Launch,
+  Guard break (placeholders for Espada's word). *Not:* a label. → detail
 - **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
+- **the lens's frame** (`VeritomeFrame`, `src/vfx/veritomeframe.js`) — four corners round what a plate would hold, in the third person while the
+  Veritome is drawn and its lens down, set where the aim meets the world. *Not:* the viewfinder (the lens raised), the Snapshot's preview. → detail
+- **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`) — the next toll's reach and cone on the ground round the Courier
+  while the Crucibelle is in the hands, lit on the beat, a ring under each thing it would stagger. No words. *Not:* the toll's smoke ring. → detail
+- **the Lockheart's gauge / the hoover's reach** (`LockheartMarks`, `src/vfx/lockheartmarks.js`) — while the Lockheart is drawn, a padlock beside
+  the coffin filling with its load, a socket for each Possibilikey, its shackle up when it would open / the hoover's cone on the ground while it
+  draws. *Not:* the wheel of odds, the Lachryma ring. → detail
+- **the carry throw's mark** (`CarryThrowMark`, `src/vfx/carrythrowmark.js`) — where a carried thing thrown now would land, and its flight dashed;
+  only while the carry holds it and nothing is drawn. *Not:* the crosshair (the psygun's), the god hand's throw. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
   under the effects.
+- **the caster shaders** (`src/vfx/caster/`; the library's `caster` layer, `caster.*` effects; Dovina's plan's S1 to S10) — the looks the caster
+  shells are built from, a module a look, each warmed at boot (S1 to S5: `vfx/caster/warmups1tos5.js`). *Not:* a shell, an effect.
+- **heat haze** (`HeatHaze`, `vfx/caster/heathaze.js`) — the world bent through hot air in a volume (a flame's cone, a volcano's column, the
+  Piercer's glass tube), read from the frame drawn so far (`sceneGrab`, `vfx/caster/casterkit.js`). *Not:* the storm warp's veil.
+- **the bubble** (`Bubble`, `vfx/caster/bubble.js`) — a fresnel shell of glass or hard light: a geodesic hex net, guan crackle or clear,
+  the thin film over it; rings out where struck. *Not:* the ult dome, the Shrine's.
+- **a lightning arc** (`Lightning`, `vfx/caster/lightning.js`) — procedural lightning between two points, branching, regrown at a rate; one
+  mesh a copy however many paths. *Not:* the carrier `bolt`, the weather's bolts, the Heavenly Kiln's.
+- **a grown skin** (`FrostBisque`, `vfx/caster/frostbisque.js`) — a skin grown over a body from a hit: fired to bisque, frosted, or crazed
+  dry. *Not:* a glaze, the vessel's cracks.
+- **a portal / a rift** (`Portal`, `vfx/caster/portal.js`) — a linked pair of crude-rimmed eyes, each a window on the other's view / one
+  alone on the ground, the Emocean turning below it. *Not:* a seam, a Well's mouth.
 - **damage look / aura / temper** (`damage.<type>`, `aura.<status>`, `game.temper`) — a damage type's colour and motif on a hit; a status shown
   round its creature; a creature's body showing its mental state (never text).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`) — how the weather and hour are drawn: streaks, motes, halo, aurora, rainbow,
-  far bolts; only an open place gets them. → detail
+  bolts, and each one's heavy look at strength 1; only an open place gets them. → detail
+- **a room glaze / the room glaze atlas** (`ROOM_GLAZES`, `ROOM_SURFACES`, `src/vfx/roomglazes.js` / `glazeAtlas()`, `src/vfx/surfaces.js`) — a
+  real glaze fired onto a room's built surface or its ware (the kilns' natural ash, the hub's salt-glazed brick, the gallery's majolica
+  plinths) / the one texture they are drawn from. *Not:* a glaze (the Courier's, `GLAZES`), a material, a surface pattern (`SURFACE`). → detail
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
+- **lensing / the time grade / the hologram / molten / the corrupted body** (caster shaders S6 to S10: `Lensing`, `TimeGrade`, `Hologram`,
+  `Molten`, `Corrupted`, `src/vfx/caster/`) — the Caster's black hole bending the frame round its accretion ring / a sphere drained of colour,
+  its grain frozen / a body of hard light, scanlined, slipping / a lava-lamp metaball crusting as it cools / one mesh torn in the glitch.
+  The first two are **screen volumes** (`post.volumes`, `render/glow.js`): a pass drawn only while one is alive. *Not:* the glitch (the screen's).
 - **the overture** (`OVERTURE`, `src/music/overture.js`) — the title's opening cue, "Fortune Favours the Fool", handing on into the title theme;
   **the trailer** (`game.overture`) is the cinematic cut to it. *Not:* "the opening" (the Lockheart's). → detail
 - **score** (`src/music/*.js`) — a piece of music written as data. **Track**: a score as the sound test lists it. **Cue**: the score a place or
@@ -403,6 +470,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **playtest** (`npm run playtest`) — a scenario an agent plays to its goals. The stress test fuzzes; a playtest plays.
 - **a sweep** (`scripts/sweeps/<room>.mjs`) — one room entered, worked and left headless, a PASS/FAIL line a check. *Not:* the stress test, a
   playtest, the Soul Brush's mop, the kick's leg sweep.
+- **the pose audit** (`scripts/poseaudit.mjs`, its manifest `scripts/poseaudit.states.js`) — the Courier's poses measured headless, state by state:
+  a held tool or a limb through the body (cm), a joint past its range (degrees); a contact sheet of the worst frames. *Not:* a sweep, rom.js.
 - **replay** (`game.replay`, `src/core/replay.js`) — a session kept so it plays again the same: a header and the frames. *Not:* a chat command. →
   detail
 - **the casebook** (`docs/CASEBOOK.md`) — every bug fixed, with its cause and the rule it left. *Not:* the log, a report, the ledger.
@@ -415,6 +484,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the kit** (the `kit` section) — the Pneuka Box and the belt, kept as one. *Not:* the Lockheart's kit.
 - **the tuning panel** (Tab, `src/debug/tuning.js`) — live sliders and actions. A **setting** is the player's own preference; a **knob** is any
   other number; a knob off its default is tuned. → detail
+- **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS) — the Workbench's stage that plays a stance, a move, an emote or a
+  clip on the game's own animation stack as a take, stepped and scrubbed front, side and top. *Not:* the movement lab, the pose audit. → detail
 
 - **a label / a lore name** (`name` / `lore` on a data table; `docs/plans/CLARITY.md`) — what the UI calls a thing (a genre word: *Grapple*,
   *Bomb*) / the world's name for it (*the hook*, *the toll*). The UI shows only the label. *Not:* two things.
@@ -438,7 +509,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (`today()`); the bright part of it (`phaseAt` 'day') | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the swells laid down for a stage's breather | "fair" for weather; "a calm" for the stage |
-| hold | a ship's hold (casks); to hold the save; a rig's hold (a clip's stretch rocked while a move is held) | "the ship's hold"; "hold the save"; "the clip's hold" |
+| hold | a ship's hold (casks); to hold the save; a rig's hold (a clip's stretch rocked while a move is held); a pot in both hands (`carry.js`, `carryHoldAt`) | "the ship's hold"; "hold the save"; "the clip's hold"; "the carry's hold" |
 | move | a blow of the combo engine (`kick.hit`); a rig's move (`RigClips`: a named clip choice) | "a blow" or "the kick's move"; "a rig's move" |
 | hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`) | "a hop" is the Emocean's; "the Jar's hop". A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (air, ground); the Great Slip Jelly's; the god hand's clip | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
@@ -447,7 +518,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | art | God Arts; Movement Arts; the god hand's garden strokes (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden `realm.jarBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code `jarBody` for the garden's body |
 | emote | the Courier's (`EMOTES`); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
-| dive | the Soul Brush's dash attack (`Brush_Dive`); a dive into water or wet slip (`waterfx`); the ledger's old `brush.slam.dive` | "the brush's dive"; "a dive into the water" |
+| dive | the Soul Brush's dash attack (`Brush_Dive`); a dive into the water (`waterfx`); the Paint Dive; the ledger's old `brush.slam.dive` | "the brush's dive"; "a dive into the water"; "the Paint Dive" in full |
 | counter | the ledger's count (`L.inc`); the blow that answers a guard or parry (kind `counter`) | "a ledger counter"; "the counter" is the blow |
 | eye | the EYE CUP kiln pattern (6); the camera's point of view; Old Nobody's; the shoal silhouette's (`SilhouetteEye`); Charybdis's six | "the eye" is the kiln pattern; "the camera's eye" or "round the view"; "Old Nobody's eye"; "the silhouette's eye"; "Charybdis's eyes" |
 | wheel | Plutchik's wheel of feelings; the Lockheart's wheel of odds; the party's order wheel (T held); the colour wheel (Soul Alchemy's; in play, the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
@@ -455,6 +526,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | dome | the sky's (`vfx/sky.js`); the stern of the Solar Skiff's hull | "the sky's dome", "the skiff's dome" |
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
+| cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
+| glaze | the Courier's (`GLAZES`, fired at the kiln); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
@@ -465,4 +538,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | Lab mode | the all-arts switch (`lendAll`, `setLendAll`; label "ALL ARTS" for now) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | polarity (the ship's feeling on the rail) | the Astral and Umbral forms | `src/courier/ship/`, `world/emocean/` (29 uses; the check's list is Petra's) |
+| slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |

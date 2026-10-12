@@ -13,20 +13,31 @@
 //  - Animal Crossing / Zelda: the silhouette in the water tells you roughly how big it is before it bites.
 //  - Dredge: the fish are the horror. They are a little wrong; the deep ones more so.
 // ---------------------------------------------------------------------------------------
-import { COLOR } from '../../../progress/weather.js';
+import { COLOR, DISPLAY_ORDER } from '../../../progress/weather.js';
 
 // (the colours are the feelings' canon ones, progress/weather.js COLOR: the owner's ruling, R58)
+// Gall and Fury are appended at 5 and 6 (MELEE-LOADOUT-EARNING.md section 4, Dovina's), so every species' `aff` and every lure's taste
+// keeps the meaning its first five had. All seven are known only once the feeling is (aspectKnown, below). Gall's and Fury's hints are
+// placeholders for Espada's words.
 export const ASPECTS = [
   { id: 'dread', name: 'DREAD', glyph: '◐', color: COLOR.dread, hint: 'the cold that comes before a shape' },
   { id: 'wonder', name: 'WONDER', glyph: '✦', color: COLOR.wonder, hint: 'the held breath at the top of a stair' },
   { id: 'grief', name: 'GRIEF', glyph: '☂', color: COLOR.grief, hint: 'a room kept exactly as it was' },
   { id: 'desire', name: 'DESIRE', glyph: '◍', color: COLOR.desire, hint: 'wanting, with nothing yet in mind' },
   { id: 'mirth', name: 'MIRTH', glyph: '♪', color: COLOR.mirth, hint: 'a laugh that has lost its joke' },
+  { id: 'gall', name: 'GALL', glyph: '⁂', color: COLOR.gall, hint: 'a thing swallowed that will not stay down' }, // (the glyph: curds, its paint's motif)
+  { id: 'fury', name: 'FURY', glyph: '※', color: COLOR.fury, hint: 'the heat in the hands before the blow' }, // (the glyph: a crack, its paint's motif)
 ];
 export const ASPECT_IDX = Object.fromEntries(ASPECTS.map((a, i) => [a.id, i]));
-/** The order the five are shown in, most positive to most negative (the owner's ruling: GLOSSARY, DISPLAY_ORDER), as indices into
+/** The order the seven are shown in, most positive to most negative (the owner's ruling: GLOSSARY, DISPLAY_ORDER), as indices into
  *  ASPECTS. ASPECTS keeps its own order: every species' `aff` and every lure's profile is indexed by it. */
-export const SHOWN = ['wonder', 'mirth', 'desire', 'grief', 'dread'].map((id) => ASPECT_IDX[id]);
+export const SHOWN = DISPLAY_ORDER.map((id) => ASPECT_IDX[id]);
+/** May the angler push this aspect now (choose it, sound it)? Only once that feeling is known (`feeling.known.*`, the ledger's:
+ *  progress/feelings.js; the lend panel's feelings row lends them), all seven, as the Soul Brush's radial (Dovina, 2026-10-11). The bait
+ *  is not gated: a lure's own taste always counts (lures.js tasteOf); what is gated is the feeling a sounding pushes into it. */
+export const aspectKnown = (game, i) => !!game?.lend?.has?.('feelings') || (game?.ledger?.get?.(`feeling.known.${ASPECTS[i].id}`) || 0) > 0;
+/** Every aspect's aspectKnown, as an array indexed like ASPECTS (lures.js tasteOf takes it). */
+export const knownAspects = (game, out = []) => { for (let i = 0; i < ASPECTS.length; i++) out[i] = aspectKnown(game, i); return out; };
 
 /** The Weir's tide: four windows, each 80 s. Species come at some of them. */
 export const TIDES = [
@@ -41,56 +52,70 @@ export const TIDE_LEN = 80;
 // mooch: what it is drawn to when the lure carries the echo of a fish just landed (FFXIV's mooching: a small catch is bait for a large one)
 // needsEcho: it will not come to anything less (the Drowned Lachryma wants the echo of something large)
 // bite: what the bite feels like, in the order it escalates (nibble < tug < gulp)
-// aff: how much each aspect draws it (dread, wonder, grief, desire, mirth: ASPECTS' order)
+// aff: how much each aspect draws it (dread, wonder, grief, desire, mirth, gall, fury: ASPECTS' order; the first ten barely notice Gall and
+//      Fury, 0.05 each: Dovina's rows)
 export const SPECIES = [
   {
     id: 'regret', name: 'Pale Regret', blurb: 'A translucent carp that turns to look back at where it has just been. It rings faintly when it swims.',
-    tier: 1, aff: [0.1, 0.2, 1.0, 0.3, 0.05], depth: [0.4, 2.6], tides: [0, 1, 3], size: [26, 62], kg: 2.4, rarity: 12, color: 0xd9e6ff,
-    style: 'drift', pull: 0.34, stamina: 9, thrash: 0.1, bite: ['nibble', 'tug'], window: 1.25, inspect: [2.5, 6], sense: 8, lach: 8, shy: 0.15, mooch: ['comet'], mooch: ['mirth', 'thread'], mooch: ['mirth', 'regret'], body: 'carp',
+    tier: 1, aff: [0.1, 0.2, 1.0, 0.3, 0.05, 0.05, 0.05], depth: [0.4, 2.6], tides: [0, 1, 3], size: [26, 62], kg: 2.4, rarity: 12, color: 0xd9e6ff,
+    style: 'drift', pull: 0.34, stamina: 9, thrash: 0.1, bite: ['nibble', 'tug'], window: 1.25, inspect: [2.5, 6], sense: 8, lach: 8, shy: 0.15, mooch: ['mirth', 'regret'], body: 'carp',
   },
   {
     id: 'mirth', name: 'Tin Mirth', blurb: 'A shoal-fish, a hand long, that laughs in a voice like a spoon on a cup. Bites before it has decided to.',
-    tier: 1, aff: [0.05, 0.3, 0.05, 0.25, 1.0], depth: [0.2, 1.8], tides: [1, 2, 3], size: [9, 24], kg: 0.6, rarity: 16, color: 0xe6f7a0,
+    tier: 1, aff: [0.05, 0.3, 0.05, 0.25, 1.0, 0.05, 0.05], depth: [0.2, 1.8], tides: [1, 2, 3], size: [9, 24], kg: 0.6, rarity: 16, color: 0xe6f7a0,
     style: 'dart', pull: 0.24, stamina: 5, thrash: 0.05, bite: ['nibble', 'nibble', 'tug'], window: 0.7, inspect: [0.8, 2.4], sense: 7, lach: 4, shy: 0.4, body: 'minnow',
   },
   {
     id: 'bellows', name: 'Bellows Carp', blurb: 'Round, patient and enormous of mouth. It fills with whatever you offer it, and then keeps going.',
-    tier: 1, aff: [0.15, 0.2, 0.2, 1.0, 0.55], depth: [0.6, 3.2], tides: [0, 1, 2], size: [24, 58], kg: 3.4, rarity: 13, color: 0xffc38a,
+    tier: 1, aff: [0.15, 0.2, 0.2, 1.0, 0.55, 0.05, 0.05], depth: [0.6, 3.2], tides: [0, 1, 2], size: [24, 58], kg: 3.4, rarity: 13, color: 0xffc38a,
     style: 'anchor', pull: 0.46, stamina: 11, thrash: 0.18, bite: ['tug', 'gulp'], window: 1.4, inspect: [2, 5], sense: 8, lach: 9, shy: 0.1, body: 'puff',
   },
   {
     id: 'thread', name: "Widow's Thread", blurb: 'A ribbon of a fish, all length. It takes the line for a relation and goes to see the others.',
-    tier: 2, aff: [0.55, 0.15, 0.85, 0.1, 0.1], depth: [1.2, 4.2], tides: [0, 3], size: [70, 150], kg: 1.6, rarity: 8, color: 0xc7a6ff,
+    tier: 2, aff: [0.55, 0.15, 0.85, 0.1, 0.1, 0.05, 0.05], depth: [1.2, 4.2], tides: [0, 3], size: [70, 150], kg: 1.6, rarity: 8, color: 0xc7a6ff,
     style: 'sweep', pull: 0.5, stamina: 12, thrash: 0.15, bite: ['tug', 'tug'], window: 1.0, inspect: [3, 7], sense: 9, lach: 15, shy: 0.25, mooch: ['mirth'], body: 'ribbon',
   },
   {
     id: 'comet', name: 'Quiet Comet', blurb: 'It crosses the pool in one stroke and leaps clear of it, and for a moment the room is very still.',
-    tier: 2, aff: [0.1, 1.0, 0.1, 0.2, 0.5], depth: [0.2, 2.0], tides: [2, 1], size: [18, 44], kg: 0.9, rarity: 7, color: 0xfff1a8,
+    tier: 2, aff: [0.1, 1.0, 0.1, 0.2, 0.5, 0.05, 0.05], depth: [0.2, 2.0], tides: [2, 1], size: [18, 44], kg: 0.9, rarity: 7, color: 0xfff1a8,
     style: 'leap', pull: 0.42, stamina: 8, thrash: 0.3, bite: ['tug'], window: 0.6, inspect: [1.2, 3], sense: 10, lach: 14, shy: 0.5, body: 'comet',
   },
   {
+    // (Gall's: Dovina's row, MELEE-LOADOUT-EARNING.md section 4: tier, aff, style, tides, depth, bite; the rest Calissa's, beside its tier's
+    //  peers, for Dovina to tune. The name and the blurb are placeholders for Espada's)
+    id: 'gall', name: 'Sour Grudge', blurb: 'A lump of a fish that lies on the bottom, curdled all over. It has been holding on to something for a long time, and it will not let it go to you.',
+    tier: 2, aff: [0.2, 0, 0.3, 0, 0, 1.0, 0], depth: [2.4, 3.6], tides: [0, 3], size: [30, 70], kg: 2.6, rarity: 7, color: COLOR.gall,
+    style: 'anchor', pull: 0.52, stamina: 13, thrash: 0.1, bite: ['nibble', 'nibble', 'tug'], window: 1.3, inspect: [3, 7], sense: 8, lach: 15, shy: 0.2, body: 'sculpin',
+  },
+  {
     id: 'wonder', name: 'Wonder Ray', blurb: 'A slow wing of light, sailing over the deep the way a hand passes over a face. Almost too gentle to hook.',
-    tier: 3, aff: [0.05, 1.0, 0.35, 0.05, 0.3], depth: [1.6, 5.0], tides: [1, 2], size: [60, 140], kg: 2.2, rarity: 5, color: 0xffe7a0,
+    tier: 3, aff: [0.05, 1.0, 0.35, 0.05, 0.3, 0.05, 0.05], depth: [1.6, 5.0], tides: [1, 2], size: [60, 140], kg: 2.2, rarity: 5, color: 0xffe7a0,
     style: 'drift', pull: 0.58, stamina: 16, thrash: 0.2, bite: ['nibble', 'nibble', 'gulp'], window: 1.1, inspect: [4, 9], sense: 11, lach: 26, shy: 0.3, body: 'ray',
   },
   {
     id: 'hunger', name: 'Hollow Hunger', blurb: 'An eel with a very long throat and nothing at the end of it. It does not take the lure. It takes the direction.',
-    tier: 3, aff: [0.4, 0.05, 0.1, 1.0, 0.05], depth: [2.4, 5.4], tides: [0, 3, 1], size: [90, 190], kg: 3.2, rarity: 5, color: 0xff9a70,
+    tier: 3, aff: [0.4, 0.05, 0.1, 1.0, 0.05, 0.05, 0.05], depth: [2.4, 5.4], tides: [0, 3, 1], size: [90, 190], kg: 3.2, rarity: 5, color: 0xff9a70,
     style: 'run', pull: 0.72, stamina: 20, thrash: 0.25, bite: ['tug', 'gulp'], window: 0.9, inspect: [2, 5], sense: 10, lach: 30, shy: 0.2, body: 'eel',
   },
   {
     id: 'dread', name: 'Lantern Dread', blurb: 'It hangs a small warm light in front of its face, so you will come close. Every part of you knows not to.',
-    tier: 3, aff: [1.0, 0.1, 0.3, 0.35, 0.0], depth: [3.0, 6.0], tides: [0, 3], size: [50, 120], kg: 4.0, rarity: 4, color: 0xb59aff,
+    tier: 3, aff: [1.0, 0.1, 0.3, 0.35, 0.0, 0.05, 0.05], depth: [3.0, 6.0], tides: [0, 3], size: [50, 120], kg: 4.0, rarity: 4, color: 0xb59aff,
     style: 'thrash', pull: 0.66, stamina: 15, thrash: 0.6, bite: ['gulp'], window: 0.55, inspect: [3, 8], sense: 12, lach: 34, shy: 0.35, body: 'angler',
   },
   {
+    // (Fury's: Dovina's row, as Gall's above; the name and the blurb are placeholders for Espada's)
+    id: 'fury', name: 'Short Fuse', blurb: 'A red pike, cracked all through with light, as if what is in it is too hot to hold. It takes the lure at once and spends itself on the line.',
+    tier: 3, aff: [0, 0, 0, 0.3, 0.2, 0, 1.0], depth: [0.2, 1.2], tides: [2], size: [40, 95], kg: 2.0, rarity: 4, color: COLOR.fury,
+    style: 'thrash', pull: 0.7, stamina: 12, thrash: 0.75, bite: ['gulp'], window: 0.5, inspect: [0.6, 2], sense: 11, lach: 30, shy: 0.15, body: 'pike',
+  },
+  {
     id: 'hush', name: 'Mother Hush', blurb: 'Vast, flat and very old. She does not fight. She simply does not come, and you find you are the one being reeled.',
-    tier: 4, aff: [0.35, 0.1, 1.0, 0.2, 0.0], depth: [3.6, 6.4], tides: [0], size: [150, 270], kg: 5.4, rarity: 2, color: 0x9fb3c8,
+    tier: 4, aff: [0.35, 0.1, 1.0, 0.2, 0.0, 0.05, 0.05], depth: [3.6, 6.4], tides: [0], size: [150, 270], kg: 5.4, rarity: 2, color: 0x9fb3c8,
     style: 'anchor', pull: 0.82, stamina: 34, thrash: 0.12, bite: ['nibble', 'nibble', 'gulp'], window: 1.3, inspect: [6, 12], sense: 13, lach: 80, shy: 0.05, mooch: ['regret', 'bellows'], body: 'catfish',
   },
   {
     id: 'lachryma', name: 'The Drowned Lachryma', blurb: 'What the workshop weeps, all in one place, given a shape it did not ask for. It has been waiting for someone with a mind worth borrowing.',
-    tier: 5, aff: [1, 1, 1, 1, 1], depth: [5.0, 9.0], tides: [2], size: [640, 930], kg: 3.0, rarity: 0, color: 0xffb27a, legend: true,
+    tier: 5, aff: [1, 1, 1, 1, 1, 0.05, 0.05], depth: [5.0, 9.0], tides: [2], size: [640, 930], kg: 3.0, rarity: 0, color: 0xffb27a, legend: true,
     style: 'legend', pull: 0.9, stamina: 70, thrash: 0.4, bite: ['nibble', 'nibble', 'gulp'], window: 1.6, inspect: [8, 14], sense: 18, lach: 400, shy: 0, needsEcho: true, mooch: ['hush', 'dread', 'hunger', 'wonder'], body: 'leviathan',
   },
 ];

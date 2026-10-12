@@ -20,6 +20,7 @@
 //   worthOf(itemId, data?) -> cubes (what the thing is worth: the base of every price)    demandKey(itemId) -> the kind an island wants
 //   glazePrice(prestige) -> cubes | null
 // ---------------------------------------------------------------------------------------
+import { worthOfShell } from '../combat/castershells.js';
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
 import { LURES } from '../../tools/sondelass/angling/lures.js';
@@ -29,8 +30,8 @@ const M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
 
 /** What a thing is worth, in cubes: the base its prices move from. */
 export function worthOf(id, data = null) {
-  const grade = crudeGrade(id);
-  if (grade) return M(ECON.crude.grades[grade].worth); // (a cask of crude: its grade's worth)
+  const field = crudeField(id);
+  if (field) return M(ECON.crude.fields[field].worth); // (a cask of crude: its field's worth)
   const it = itemOf(id);
   if (!it) return 0;
   if (it.kind === 'map') return data?.worth ? Math.max(1, Math.round(data.worth)) : 0; // (a map keeps its worth: the owner, R58)
@@ -38,6 +39,7 @@ export function worthOf(id, data = null) {
   if (it.kind === 'material' && data?.tier != null) return M(1 + data.tier); // (a Well's material: rarer walks further)
   if (it.kind === 'fish') return ECON.fish[it.tier] || 0;
   if (it.kind === 'curio') return ECON.curio[it.tier] || 0;
+  if (it.kind === 'shell') return M(worthOfShell(it.key)); // (a caster shell: its tier's, castershells.js)
   if (it.kind === 'lure') return M(ECON.goods.lure);
   if (ECON.goods[id] != null) return M(ECON.goods[id]);
   if (it.kind === 'key') return M(6);
@@ -47,10 +49,10 @@ export function worthOf(id, data = null) {
   return M(1);
 }
 
-/** A cask's grade (`cask.grief` -> 'grief'), or null. */
-export const crudeGrade = (id) => (id?.startsWith('cask.') && ECON.crude.grades[id.slice(5)] ? id.slice(5) : null);
+/** A cask's field (`cask.dunemaw` -> 'dunemaw'), or null. */
+export const crudeField = (id) => (id?.startsWith('cask.') && ECON.crude.fields[id.slice(5)] ? id.slice(5) : null);
 /** What an island's demand is asked for: a cask by its grade, a map as 'cogitomap', anything else by its item kind. */
-export const demandKey = (id) => crudeGrade(id) || (itemOf(id)?.kind === 'map' ? 'cogitomap' : itemOf(id)?.kind || id);
+export const demandKey = (id) => crudeField(id) || (itemOf(id)?.kind === 'map' ? 'cogitomap' : itemOf(id)?.kind || id);
 
 export const SHOPS = {
   raku: {
@@ -73,14 +75,14 @@ export const SHOPS = {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
     blurb: 'Lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.',
     // (and Anagami's crude, at Anagami's price: the hop's cargo is bought on the pier it leaves from)
-    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8, 'bottle.small': 2, 'bottle.medium': 1, 'bottle.large': 1, 'whistle.wake': 3 }, // (the bottles: a crude man's glass; the Wake Whistle: the Wells' way out)
+    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.dunemaw': 24, 'bottle.small': 2, 'bottle.medium': 1, 'bottle.large': 1, 'whistle.wake': 3 }, // (the bottles: a crude man's glass; the Wake Whistle: the Wells' way out)
     trade: ['fish'], buys: ['fish', 'lure', 'crude'],
     markup: 1, haggle: false, island: 'anagami',
   },
   purser: {
     id: 'purser', keeper: 'purser', name: "THE PURSER'S COUNTER",
     blurb: "Margarite's dock. Buys crude, Cogitomaps, rutters and whatever a Well gives, and pays as the King's island pays: dear, for order.",
-    sells: { 'cask.mirth': 8, 'cask.wonder': 8 }, // (Margarite's own grades: light, cheap to carry)
+    sells: { 'cask.margarite': 16 }, // (Margarite's own field: light, cheap to carry)
     trade: ['crude', 'map', 'rutter'], buys: ['crude', 'map', 'rutter', 'material'],
     markup: 1, haggle: false, island: 'margarite',
   },

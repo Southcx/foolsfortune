@@ -442,17 +442,24 @@ if (part('throwing')) {
     const b = await S.ev(() => ({ active: __game.game.testroom.drills.active?.id || null, shown: __game.game.testroom.drills.targets.filter((t) => t.mesh.visible).length }));
     S.check(`throwing: ${name} ends when the Courier leaves the room`, !b.active && b.shown === 0, b);
   }
-  // Strawman: F cycles the mode, one step a press
+  // Strawman: its stance is the sparring circle's lectern's (the owner, 2026-10-11: F at Strawman does nothing; the page's Guard row sets it)
   const sp = await S.ev(() => { const p = __game.game.testroom.strawman.pos; return [p.x, p.z]; }); // (1.3 m in front of it, wherever it stands: the combat wing's sparring circle now, world/testroom/layout.js TR.strawman)
   await ws(`stand([${sp[0]}, 0.05, ${sp[1] + 1.3}], 3.14159)`); await S.ticks(30);
-  const sch = await ws('chevron()');
-  S.check('throwing: the chevron is on Strawman', sch.cur === 'strawman' && sch.off < 0.8, sch);
   const s0 = await S.ev(() => __game.game.events.counts['strawman.mode'] || 0);
-  for (let k = 0; k < 5; k++) await F(8);
-  const s1 = await S.ev(() => __game.game.events.counts['strawman.mode'] || 0);
-  S.check('throwing: F at Strawman changes the mode once a press', s1 - s0 === 5, { presses: 5, modeChanges: s1 - s0, mode: await S.ev(() => __game.game.testroom.strawman.mode) });
+  for (let k = 0; k < 3; k++) await F(8);
+  S.check('throwing: F at Strawman changes nothing', (await S.ev(() => __game.game.events.counts['strawman.mode'] || 0)) === s0 && !(await ws('win()')).index, { presses: 3 });
+  const lk = await S.ev(() => { const g = __game.game, ok = g.lock.acquire(), t = g.lock.target?.ref?.kind || null; g.lock.release(); return { ok, t }; });
+  S.check('throwing: Strawman can be locked on to', lk.t === 'strawman', lk);
+  const lp = [12.4, -8.2]; // (the sparring circle's lectern: world/testroom/layout.js TR.wing.circle.lectern)
+  await ws(`stand([${lp[0] + 0.9}, 0.05, ${lp[1] - 0.9}], -0.785)`); await S.ticks(30);
+  const sch = await ws('chevron()');
+  S.check('throwing: the chevron is on the sparring lectern', sch.cur === 'sparring.lectern', sch);
+  await F(8);
+  const picked = await S.ev(() => { const r = [...document.querySelectorAll('#indexmenu .room')].find((e) => /Guard/.test(e.textContent)); r?.click(); return !!r; });
+  await S.ticks(4);
+  S.check('throwing: the sparring lectern\'s Guard row sets Strawman\'s stance', picked && (await S.ev(() => __game.game.testroom.strawman.mode)) === 'guard', { picked });
   await shotCommon('throwing-strawman');
-  await S.ev(() => { const S = __game.game.testroom.strawman; while (S.mode !== 'still') S.setMode(['still', 'guard', 'swing'][0]); });
+  await closeAll(); await S.ev(() => __game.game.testroom.strawman.setMode('still'));
   // careless: the page opened twenty times, P and B over it
   const c0 = await ws('counts()');
   await ws('stand([12.4, 0.05, 0.6], 3.14159)'); await S.ticks(20);

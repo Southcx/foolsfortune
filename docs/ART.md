@@ -32,7 +32,14 @@ Lawful is straight, crystalline, still; chaotic curls, flows, never rests. **A w
 and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, grief long rain, dread the pall), and Gall and Fury their
 own motifs (docs/plans/GALL-AND-FURY.md): **the miasma** is rot (violet fog greyed toward bile lying in the hollows, flies, a curdled film
 on still water, a bruise at the horizon), **the hail** is heat turned hard (white stones that bounce once and lie melting, pocks on
-water, a bright grey-green overcast with a red edge; never thunder, which is Dread's). Each is known by what it does before its colour.
+water, a bright grey-green overcast with a red edge; no thunder until it runs heavy). Each is known by what it does before its colour.
+
+**Built (2026-10-11): the heavy looks and the flood.** Each weather has a **heavy look** at strength 1 (`LOOK[aspect].heavy`,
+`vfx/weather.js`), its feeling's big gesture in its colour and paint motif: Wonder's aurora filling the sky (frost), Mirth's confetti
+of light under a double bow (dots), Desire's rippling dust storm (ripples), Grief's rain in sheets (streaks), Dread's sky pressing down
+(marbling), Fury's close forked bolts (cracks), Gall's risen miasma (curds). On the weather's own programs: no program added. The
+awakening borrows it as **the flood** round the Courier, indoors too (`vfx/awakeninglook.js`), and the Courier answers with **a
+feeling's clip** (`courier/anim/feelingclips.js`).
 
 ## 3. Materials and shapes
 
@@ -130,6 +137,9 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   crawl), lifted a hand over the drawn crude and hidden by whatever stands in front (the jetty, the hull, the Courier, the sand). It
   breathes at one slow rate and carries no word or number. It is seen as the mount is chosen, not after: the pier's page is set aside from
   the hull with no veil, and the game's loop keeps the preview moving under it.
+- **The lens's frame** (`vfx/veritomeframe.js`): the Snapshot's corners on foot, in the same warm white and wire, keylined in the stone's
+  ink so they hold on noon sand and in the basement's dark: what a plate would hold, set where the aim meets the world and corrected for
+  the camera's parallax (a rangefinder's bright lines), opening out to the viewfinder's aperture as the lens comes up. One draw, no program.
 - **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror
   flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
   stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
@@ -164,16 +174,56 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
     as you go round it) edged and veined in gold, on plum-dark bark; the gold glows a little more by night, low and steady. A crown
     may take a tint (Myggdrasil's tincture), which leans its flash and keeps its value.
 
-### Room palettes (proposed, waiting on the room glaze atlas)
+### The room glazes (built 2026-10-11: `vfx/roomglazes.js`, drawn by the room glaze atlas in `vfx/surfaces.js`)
 
-| room | clay | accent |
-|---|---|---|
-| the workshop | red earthenware | kiln orange |
-| the hub and the index | grey stoneware | celadon |
-| the movement lab | buff bisque, a test grid | ochre |
-| the mill and kiln stack | iron-red and soot | ember |
-| the siege | black basalt, raku white | oxblood |
-| the circuits | porcelain, blue underglaze | cobalt |
+One look: **the building is fired clay**, and a potter's building at that. Downstairs is the making, upstairs the showing, the hub the
+measuring. Terracotta stays the ground everywhere (the floors, the walls, the iron-dark wood); a glaze goes only where a potter would
+put it, a few to a room, never a rainbow. A room glaze is not a glaze (the Courier's, section 4): it is a row of `ROOM_GLAZES`, chosen for
+each kind of built surface in one table (`ROOM_SURFACES`), and the rooms carry one colour id each (`ROOM_GLAZE_ID.kiln`).
+
+| where | room glaze | why |
+| --- | --- | --- |
+| both kiln domes, the lintel over the mouth | **natural ash** (Bizen's goma where thin, Shigaraki's green bidoro pooled) on firebrick | the kiln's own glaze: the fire lays ash on whatever faces it, the kiln first; it lies on the shoulder and runs down the sides. The body is firebrick now (it was drawn as planks) |
+| both chimneys | firebrick, bare | |
+| the ground floor's ware | bisque and terracotta (as they were) | a workshop's shelves hold ware waiting for its glaze firing |
+| the gallery's plinths and bases | **majolica white** (tin glaze) | haniwa, dogu and Jomon pots were unglazed earthenware: the sculpture stays bare and stands on white, as a museum shows it |
+| the showroom's stepped stand | **tenmoku** (Jian), rust only as specks | a dark ground for the pale ware; hare's fur streaks are not drawn (on a flat slab they read as wood grain) |
+| the showroom's ware | **celadon** on the west table; white porcelain and **tenmoku** tea bowls on the east; **shino** with one **oribe** on the stand; one **sang de boeuf** vase at its top | the showing: Longquan, Jian, Mino and Jingdezhen side by side; the building's one red glaze is as rare as the real one |
+| the hub's four walls | **salt glaze** on grey stoneware brick | the glazed brick of a Victorian works, put where a wall must wash and throw the lamplight back; grey where the salt lay thin, toffee where the flame flashed it. Their backs are the course's inner walls: the hub is a grey box in the red course, a landmark |
+| the Index's pedestal | **celadon** (Longquan) | the hub's one glaze; Pip in bisque beside it |
+| the hub's heights ladder | its tone ramp, unglazed | a code by what each height takes, already the clay's own firing range, bisque to iron |
+
+**How a room glaze is drawn** (no new program: the built surfaces' one program, `dress`, reads it, and a palette colour has no glaze and
+draws exactly as it did). The clay body's pattern first (plaster, tiles, planks, brick), then the glaze over it from **the room glaze
+atlas**: one 128 x 128 texture, a metre a tile, mipmapped. **R the pooling** (soft blotches, read at 2.7 m and at 1 m a tile and mixed, so a
+40 m wall shows no repeat), **G the runs** (rivulets 6 to 12 cm wide that start thin and end in a bead), **B the orange peel** (6 and 12 cm
+dimples), **A the specks** (3 to 5.5 cm: iron, ash, rust, a pinhole). A glaze **lies** where its row says (on floor-facing faces, on
+wall-facing faces, and for a glaze the fire laid, the ash, on top and running down the sides), **pools thick** in the floor-facing faces,
+the pooling's blotches and the body's recesses (mortar, grout, a seam), and **runs thin** over what stands proud, where its specks show.
+A clear glaze (salt, ash) shows the body's relief through it; an opaque one (majolica, tenmoku) hides it. **The gloss** is the glass's
+own (the ash's glass 0.5, a lamp's highlight broad and soft; the bare firebrick 0.88), and **the sheen** is the room's own light (its
+ambient and hemisphere) taken as a dim surround and reflected by the standard material, so the glass shows at its turn and not face on;
+a black glaze takes little of it (the tenmoku 0.3: an even sheen on black lies as a grey veil, and its lustre is the lamps' highlights).
+
+**No crawl:** the finest mark is 4 texels (3 cm, three pixels at 4 m at 480 lines), mipmapped to plain tone beyond. Where a glaze stops
+is a fixed band of its cover, never one widened by `fwidth()` (one value a 2x2 quad: the edge moved with the quads as the camera slid),
+and its runs are their own soft profile, never cut at a level (a cut sharpens what the mips softened); on a curved face the atlas is
+read along the three axes and blended by the normal, so the box mapping's switch of axis leaves no seam (216).
+**Not drawn, and why:** crackle (a net a texel wide would crawl), slip-trailed earthenware (a
+trailed line is the same; it belongs later on the drying rack's plates, with the dip), hare's fur on a built surface (see the stand).
+The glazed ware's bare foot (**the dip**) is asked of Petra (`world/props/pottery.js`).
+
+Prior art: the glazes' own history (each row in `roomglazes.js` says where and when); Okami's and The Wind Waker's painted surfaces, a
+few broad colours to a surface and the light doing the rest; the PS2's tiling texture over a colour (section 7, precept 1).
+
+| room | clay | accent | state |
+|---|---|---|---|
+| the workshop | red earthenware | kiln orange; the ash glaze's green on the kilns | built (2026-10-11) |
+| the hub and the index | grey stoneware (salt glaze) | celadon | built (2026-10-11) |
+| the movement lab | buff bisque, a test grid | ochre | proposed |
+| the mill and kiln stack | iron-red and soot | ember | proposed |
+| the siege | black basalt, raku white | oxblood | proposed |
+| the circuits | porcelain, blue underglaze | cobalt | proposed |
 
 ## 6. The Courier's face
 
@@ -187,7 +237,8 @@ What each kind of thing looks like, so a new feature knows how to draw itself (t
 precept N"). Precepts 1 to 3 are three materials of meaning, each with one language, never borrowing.
 
 1. **Clay is solid, warm and outlined:** the world, the folk, the pots. The cel ramp (`render/toon.js`), an ink outline, the terracotta
-   palette; built surfaces are one modest tiling texture times a palette colour (`vfx/surfaces.js`). Clay squashes, wobbles, settles,
+   palette; built surfaces are one modest tiling texture times a palette colour (`vfx/surfaces.js`), a room glaze over it where a potter would
+   put one (section 5, "The room glazes"). Clay squashes, wobbles, settles,
    breaks into shards; it never glows except where it holds Lachryma or a kiln's heat.
 2. **Lachryma is matter, never line** (its colours: section 3). How much is shown by **volume, fill and brightness**, never a digit
    (the tube, the beads, the rim, the filigree lit with its load).
@@ -231,8 +282,8 @@ Every clip below is the Courier's suite (`source_assets/Courier/courier_anims_mo
 decoded and the posed body squared again after IK (the hinge repair, `courier/anim/hinges.js`). The gait shares one phase (each loop's
 left heel strike at phase 0) and plays at the ground speed over the loop's own (measured from its planted foot: walk 0.77 m/s, jog
 4.81, sprint 4.43, the prowl 0.61), part longer strides (to 1.65x walking, 1.3x running, 1.4x prowling), the rest cadence; planted
-feet lock. The skid stop and the half turn are one-shots over it (`courier/anim/stopturn.js`), the hips' travel out in the clip's own
-frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the speeds and the body's yaw.
+feet lock. No one-shot is laid over a stop or a reversal: the skid stop and the half turn (Loco_SprintStop, Loco_Turn180) were cut
+(the owner, 2026-10-11: "it's slow and breaks flow"); a stop and a turn show the gait and the body's own yaw, as player.js gives them.
 
 | state | clip | blend |
 | --- | --- | --- |
@@ -240,13 +291,15 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | walk | `walk` (Loco_WalkMasc) | 0.5 to 2.4 m/s |
 | run | `jog` (Loco_RunMasc) | smoothstep from the walk, 2.4 to 3.4; whole at 4.2 |
 | sprint | `sprint` (Loco_Sprint) | linear from the run, 4.2 to 6.8 |
+| run, sprint with the cutlass drawn (new) | `stance:cutlassRun` (`jog` baked: `courier/anim/stances.js`) and `stance:cutlassSprint` (`sprint`): the loop's chest and free arm as captured, the blade arm's swing at 0.2 of the run's (0.15 sprinting), its elbow carried out to the side (the nudge's pole), the hand beside and ahead of the hip with the forearm hanging under the elbow, the blade laid back along `aim` square to the forearm; no blade run in the suite, UAL or CMU (`tools/sondelass/sondelass.js` drawnRun) | the upper body's tool layer in place of the en garde, by the gait's running share (`st.run`: the jog's and the sprint's weights, out in the air, a slide, mantle, dash, wallrun, crouch, crawl or skid; damped 12/s), the sprint's bake by its share, on the shared phase; a stroke or the guard over it |
 | backpedal, strafe | the same loops, run backward past 110 degrees | the hips turned toward the move (70 at most), the chest back to the aim |
 | starts, stops, turns | the gait on its speed (damped 12/s) | a let-go foot lock eases out and waits for the next step; the body leans into a turn |
+
 | skid stop (new) | Loco_SprintStop from its brace (0.07 s) at 1.15x, in place: when the speed falls under 4 m/s within 0.25 s of 5.6 m/s or more, still heading within 20 degrees of the sprint (a stop, or a reversal on its way through zero) | in 0.08; out as it stands (its 0.72 to 0.95 s); cut over 0.12 s when the move picks up 1.2 m/s again or the ground, a crouch, slide, mantle or dash takes over; not in first person |
-| half turn (new) | Loco_Turn180, its frame the one whose hips have turned as far as the body (time-warped onto player.js's turn; at its own pace once the body is round), in place and unturned, mirrored for a turn to the right; to 0.7 s (its frame 22 is its first again) | on a reversal: the move over 100 degrees behind, from 3 m/s or more through under 1.5 within 0.3 s, the body turning to it at 1.5 rad/s or more; in 0.06, out 0.42 to 0.58 s (the run back on the legs as the body faces the move); the skid gives way to it; its feet planted only under 1 to 3 m/s (the capsule is back at a run 0.08 s after the reversal) |
-| crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
-| crawl (new, its body to come) | Loco_CrawlEnter, Loco_Crawl (hands and knees), Loco_CrawlProne (the belly), Loco_CrawlExit (`CRAWL`, `courier/anim/crawl.js`) | while `s.crawl` (player.js has no body for it yet: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md); down by the enter from its squat (0.2 s in) when crouched, faded in 0.15; the loops on their own phase at the move's speed over theirs (0.29 and 0.39 m/s), strides to 1.3x; `s.prone` blends to the belly; up by the exit to its squat (0.4 s) or standing (0.64); the foot IK, the reach drop, the knee guard and the prowl's head give way to it. Posed top 1.05 m (hands and knees), 0.74 (belly) |
-| jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3 |
+| a reversal | the gait, the body's own turn (player.js), the hips toward the move as in a backpedal; a sprint's passes through the skid | the half turn (Loco_Turn180 over a reversal at speed, 2026-10-10) taken out (the owner, 2026-10-11: "it's slow and breaks flow"): below |
+| crouch | Loco_CrouchIdle; moving, the prowl: Loco_CrouchWalk (`PROWL`, `courier/anim/prowl.js`; new, after Loco_SneakWalk) by 0.5 m/s; the head held half still (below) | the idle at 0.8 of the crouch's weight, the prowl whole once moving, on the shared phase; the foot IK lifts its hips 0.14 m over the clip's squat (0.51 to 0.56 m: the trailing knee 25 cm off the ground, where at the clip's own 0.37 it knelt at 13 and read as a lunge); strides to 1.4x, the rest cadence (2.6 steps a second); posed top 1.40 m, under the basement tunnel's 1.5 |
+| crawl (new, its body to come) | Loco_CrawlEnter, Loco_Crawl (hands and knees), Loco_CrawlProne (the belly), Loco_CrawlExit (`CRAWL`, `courier/anim/crawl.js`) | while `s.crawl` (player.js has no body for it yet: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md); down by the enter from its squat (0.2 s in) when crouched, faded in 0.15; the loops on their own phase at the move's speed over theirs (0.29 and 0.39 m/s), strides to 1.3x; `s.prone` blends to the belly; up by the exit to its squat (0.4 s) or standing (0.64); the foot IK, the reach drop, the knee guard and the prowl's head give way to it. Posed top 1.05 m (hands and knees), 0.74 (belly). The belly lies past its capsule (fingers 0.97 m ahead of the axis, toes 1.25 m behind, 0.46 m to each side; `CRAWL.outline`), so the clearance (`Crawl.clear`) casts 48 rays round the axis at 0.3 m and slides the pelvis along each surface's normal until nothing met is inside the outline (opposite walls cancel, a corner adds, the poke of a conflict shared over 4 rounds), by at most 1 m, in 0.017 s and out in about 0.15 s; ~0.09 ms a frame prone; every tool put away as the body goes down and the one that was out drawn again once up (`tools/proneholster.js`) |
+| jump, rise | Air_JumpStart from 0.15 s, then Air_JumpLoop | in 0.06; to the loop at 0.9 s over 0.3; from the crouch, the crouch held under the air until the air is whole (`st.crHold`, 2026-10-11: never through the standing idle), and landed back into it first (a roof too low to stand), kept until the crouch is back |
 | off a ledge | Air_JumpLoop from 0.5 s | 0.25 |
 | fall | Air_FallLoop past 5 m/s down after 0.45 s in the air | 0.35 |
 | double jump | Air_DoubleJump from 0.07 s, 1.25x until upright | in 0.08; to the loop at 0.82 s over 0.2 |
@@ -258,10 +311,20 @@ frame and, for the turn, its yaw too (casebook rule 180): player.js keeps the sp
 | air dash | Air_AirDash, AirDashL, AirDashR, AirDashBack by the dash's direction | from 0.1 s at 1.5x through the dash |
 | ladder, swim | Trav_LadderClimb, Trav_LadderIdle, Trav_LadderEnter; the old pack's swim and tread | the techs' own (moves/ladder.js, moves/swim.js) |
 
-In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_SneakWalk
-and Loco_CreepSideR. Loco_SprintStop and Loco_Turn180 moved into the core pack (2026-10-10: core.bin 2,920,462 to 2,950,390 bytes, 161
-to 163 clips); then the prowl round (2026-10-10): Loco_CrouchWalk and the four crawl clips in, Loco_SneakWalk out (core.bin to
-3,004,786 bytes, 167 clips).
+In the suite and not played (the social pack): Loco_WalkFem, Loco_RunFem and Loco_SprintHero (other walks and runs), Loco_SneakWalk,
+Loco_CreepSideR and Loco_Turn180 (the half turn's, out 2026-10-11: it stays in core.bin until the next bake, which places a clip by
+whether the code names it, `scripts/bake_suite.mjs`). Loco_SprintStop and Loco_Turn180 moved into the core pack (2026-10-10: core.bin
+2,920,462 to 2,950,390 bytes, 161 to 163 clips); then the prowl round (2026-10-10): Loco_CrouchWalk and the four crawl clips in,
+Loco_SneakWalk out (core.bin to 3,004,786 bytes, 167 clips).
+
+**The half turn, taken out** (the owner, 2026-10-11: "remove the animation for the 180 degree turnaround, it's slow and breaks flow").
+The code and its knobs went (`TURN`, the turn's foot plants and its weight on the lean, hip warp and footsteps); the skid stop stays.
+Measured headless, a run (W, 70 frames) reversed (S), before and after: the move through zero 0.083 s after S and at full speed back
+(4.2 m/s) at 0.15 s, the body round (175 degrees) at 0.567 s, both times (from a sprint: 0.333, 0.417 and 0.817 s, the skid 5 frames
+before and 7 after): player.js's numbers, unchanged. What is shown: before, the turn's clip held 27 frames (0.45 s) and the pelvis
+within 7.1 degrees of the game's yaw (mean 3.5); after, the run's own legs and the body's turn, the hips leading it toward the move by
+up to 35 degrees and swinging across to 37 the other way as the move passes 110 degrees behind (the backpedal's warp changing sides,
+damped at 10 a second: 25 degrees in the fastest frame), mean 8.4.
 
 **The prowl** (the owner, 2026-10-10: "a hunting, predatory sort of movement, like a lion prowling. Note that felines have a very still
 head"). The three crouched loops rendered at the crouch's 2.2 m/s, every tool off, front and side, the head measured in the world against
@@ -272,14 +335,61 @@ the capsule (bob up and down, sway side to side, its turn's speed):
 | Loco_SneakWalk, let down 0.38 m (the crouch to now) | 0.40 m/s, 4.8x its cadence | 19 cm | 56 cm | 1,448 / 2,731 degrees a second |
 | Loco_CreepSideR (a sidestep creep) | 0.32 | 15 | 38 | 712 / 1,824 |
 | Loco_CrouchWalk, as it is | 0.61 | 8.5 | 11 | 23 / 36 |
-| the prowl: Loco_CrouchWalk, the head held | 0.61, 1.4x strides | 3.0 | 4.1 | 3 / 6 |
+| the prowl: Loco_CrouchWalk, the head held (2026-10-10) | 0.61, 1.4x strides | 3.0 | 4.1 | 3 / 6 |
+| the prowl now: the hold at half (`PROWL.still` 0.5, 2026-10-11) | 0.61, 1.4x strides | 5.2 | 6.9 | 11 / 18 |
 
-The sneak's head swings with its tiptoe at any pace, and its cadence multiplied it (casebook rule 187). The head held is a cat's: its turn
+The owner (2026-10-11): "the head is a little TOO still. Can we split the difference between the two versions?" Both passes below are laid
+on at `PROWL.still` of their weight (1 the cat's whole hold, 0 the clip's own head): at 0.5 the head lives a little, halfway in bob, sway
+and turn between the two; the body under it (the hands, the knees, the hips, the feet) measures the same to the millimetre. The sneak's
+head swings with its tiptoe at any pace, and its cadence multiplied it (casebook rule 188). The head held is a cat's: its turn
 in the body's heading frame followed slowly (2.5/s) and levelled to a gaze 10 degrees below the horizon, shared up the neck (spine004 a
 quarter, spine005 three tenths, the head the rest, each capped at 22, 20 and 30 degrees off the clip), before the aim's look; after the
 feet, its place against the capsule followed slowly (2/s) and the neck's base swung to hold it there (0.85 of the way). A turning prowl
 (1.2 rad/s): bob 3.0, sway 4.1, the head turning with the body at 69 degrees a second. The first-person eye rides the posed head while
 crouched (player.js), so it is as still.
+
+**The cutlass's drawn run** (the owner, 2026-10-11: "The Sondelass needs an animation for running while the Sondelass is drawn"). Before,
+the run's legs carried the en garde idle's upper body (Sond_Idle over the upper-body mask): both arms held out still, the blade up and
+ahead of them to the right (its tip 0.9 to 1.3 m out to the right, 1.4 to 1.8 m up, 0.8 to 1.2 m ahead). No blade run is in the suite
+(courier_anims_melee.glb, courier_anims_move.glb), UAL (anims.bin) or CMU, so the run's own loop is baked into one. The first bake turned
+the hand to point the blade back, held it 0.8 of the way to its average (`steady`) and pulled the hand 47 cm back to the hip by IK: the
+owner (2026-10-11): "the wrist hyperflexed and arm clipping into the body"; measured (the pose audit), the wrist 96 degrees toward the
+little finger (102 sprinting), the elbow bent 54 back, the handle 9 cm into the lower back and the hand 5.6 into the pelvis. A blade on
+the thumb's side of a fist points back only with the arm turned in at the shoulder and the forearm turned palm-out, near 180 degrees
+between them: no wrist reaches it. Now (casebook 2026-10-11) the shoulder and the elbow do it: the elbow carried out to the side (the
+nudge's pole), the hand beside and 30 cm ahead of the hip, the forearm hanging under the elbow, and the blade laid back along it square to
+the forearm every frame (`aim`, new in stances.js, the hand's length kept along the forearm's); the arms hinge-squared after (hinges.js).
+Measured over the loops: the wrist 30 degrees toward the little finger at most, the forearm 78 turned (the run; 91 sprinting), nothing in
+the body; through the blend from the en garde into the run, 37 and 36 for a few frames (the pose audit's marginal: past its "about" 35 by
+under its 8 degrees of slack). Judged front, side and above, every other tool off (Calissa's scratchpad, `anim-review/fixA/`).
+
+**The cutlass's en garde** (the owner, 2026-10-11: "the torso rotated approximately 20 degrees CCW ... more like a fencing pose"; "The
+Sondelass should rest posed centerline with the main mass of the Courier"). `stance:cutlass` (stances.js): Sond_Idle with the spine turned
+toward their left (spine001 6, spine002 12, spine003 20 degrees; the upper-body mask takes 0.3, 0.65 and 1 of them), the neck giving 8
+and 10 back, the blade hand brought onto the centre line (nudge, the elbow's pole out to their right and up) and turned to point the blade
+forward, 30 degrees up, held 0.6 of the way to its average. Before and after, over the whole loop (the pose audit's measures, degrees
+counter-clockwise from above against the heading, cm off the hips' midline, + their right):
+
+| measure | before (Sond_Idle as captured) | after |
+| --- | --- | --- |
+| chest / head / pelvis / feet line | -8.4 / -17.8 / 0 / 0 | 21.0 / 2.2 / 0 / 0 |
+| guard off the midline | 61 (the blade 62 degrees to their right of forward, 46 up) | 2 (0.5 to 2.8) |
+| tip off the midline | 111 | 2 (-2.6 to 6) |
+| blade yaw, pitch | -62, 46 | 0, 34 |
+| the wrist, the forearm's turn | clean | 28 toward the little finger, 86 turned (under 35 and 90) |
+
+**The iaido, blade mode and the hook** (the owner, 2026-10-11: "same with the iaido charge, the Sondelass clips into the body"). The
+iaido's hold (`stance:cutlassIaido`) re-posed as a sheathed blade lies: the hilt before the belly's left, the blade back and out past the
+hip's side and over the crouched thigh, laid along `aim` from the forearm that crosses the body palm-down (the wrist 13 degrees toward the
+thumb, the forearm 87 turned); the off hand takes the blade at its mouth, thumb toward the hilt, 0.16 m along it, its elbow out to their
+left, eased about the blade to meet its forearm (`easeGrip`, tools/grip.js) and carried there along a reach with its wrist in line
+(`offHand`, sondelass.js). Before: the blade 7.7 cm into the left thigh, the guard 7.1 into the belly, both elbows 72 to 78 off their
+hinges; after, the hold: nothing in the body, every joint within the audit's limits. Blade mode holds the iaido's pose (it was the suite's
+charge at 0.4 s, its hilt 8 cm into the right thigh), the off hand kept on; the draw cut begins at 0.22 s of Sond_Combo2 (at 0.1 its join
+swept the blade 7 cm through the left thigh). The hook is aimed as a rod is pointed, the forearm 60 degrees below the shaft (it was the
+forearm along the shaft, the wrist folded 116 to 129); held (`stance:hookHeld`, torchIdle), its hand 14 cm ahead of where the torch idle
+has it, clear of the running thigh. The Sondelass's butt slides in for the cutlass and the hook (0.1 m behind the palm; the rod's 0.18,
+was 0.28 for every form: the pommel 6 to 10 cm into the chest in the strokes).
 
 **The idles' A and B** (the owner, 2026-10-10: "A should play 4x to 5x more often than the B"). A is the standing idle's loop; a B a
 break, or an idle's own gesture held out of its loop (`IDLES.calm`, idlebreak.js: the bones' frames bridged, the loop as captured kept as

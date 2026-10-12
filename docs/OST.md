@@ -75,7 +75,11 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   frame drum, grief a cello, dread a drone with the Tear, fury driving low strings with the tritone stabbed, gall a reed's sour hum);
   an agate plays both, a torn sky neither. Fury's mode is a tritone minor [0 3 6 7 10], gall's a Hijaz [0 1 4 7 8] that borrows no note
   (it has no opposite; docs/plans/GALL-AND-FURY.md). Their beds (`audio/ambience.js`): fury's hail on clay and glaze over a hot low
-  pressure (never thunder), gall's flies, sour hum and drip. The Crucibelle plays in the
+  pressure (never thunder), gall's flies, sour hum and drip.
+- **The caster shells** (`audio/shellparts.js`, CASTER-SHELLS.md): a sound a part, never a shell: `shellFire(carrier)`, `shellHit(payloads)`,
+  `shellField(field)` (a loop, its handle stopped), `shellFall` (the call's whistle); Stage Fright's `crowdMurmur`, Lullaby's `lullabyNote`.
+- **The awakening** (`music/awaken.js`, feeling.wake): the first time a feeling is lived, its mode climbed once over the cue on
+  its own voice (four real seconds, its colour note held under, the cue ducked), in the cue's key and on its beat. The Crucibelle plays in the
   cue's scale, or the weather's mode where nothing plays (`game.music.scale()`). A track's aspect for busking: `music/aspects.js`.
 - **Played along** (Rez): the rail's lock tones and downs, the catch's sting wait for the music's next sixteenth or beat, in the key
   of the bar sounding (a crossing's legs each have one: a section's `root`).

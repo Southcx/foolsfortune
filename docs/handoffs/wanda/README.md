@@ -18,3 +18,5 @@
 - **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
   the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
   their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
+- **The caster shells' music moments** (CASTER-SHELLS.md, later batches): RYNO (92) jumping the cue to its climax, The Fool (99) the
+  Lockheart's wheel and landing, Stop-Motion (58) the field on the beat, Thirteen (96) the silence after the bolt; once their runner exists.

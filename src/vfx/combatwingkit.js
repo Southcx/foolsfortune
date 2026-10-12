@@ -18,15 +18,17 @@
 //                    status's glyph (the Figment attack telegraphs' own pictures, ui/icons/figmenttelegraphart.js STATUS_ART, in the icons'
 //                    hand): no words. (Laid flat on the floor first, they were unreadable at the striker's grazing angle.)
 //   THE STAND-INS    the parry range's pitcher (a big clay jug on a plinth, its spout toward the marks), the Figment telegraph floor's
-//                    caster (a tall urn on a turntable), the status bench's eleven little roly-polies (Strawman's kin, a Daruma's
-//                    shape in burlap): static bodies where the mechanic is not built
+//                    caster (a tall urn on a turntable): static bodies where the mechanic is not built
+//   THE ROLY-POLIES  the status bench's eleven (Strawman's kin, a Daruma's shape in burlap on a black ball foot), alive: each rocks on
+//                    its ball when struck and wears its status (world/testroom/statusbench.js); the lit one warms from within
 //
 // Prior art: the sumo dohyo (clay and straw, the ring as the rule), the dance studio's mirror wall and the fencing salle's strip, the
 // fighting games' training stage (Tekken's and Street Fighter's grid floors, a frame meter under the fight), the batting cage's pitching
 // machine (the pitcher), the okiagari-koboshi and the Daruma (the roly-polies), the paint range's tiles and tallies (testroomkit.js).
 //
 //   WING_COLOR   the wing's colours (the level merges by colour: world/testroom/combatwing.js builds with these)
-//   lecternParts() strawRoly() parryPitcher() telegraphCaster() -> [{ geo, color, outline }]   (local frames; the place sets them down)
+//   lecternParts() parryPitcher() telegraphCaster() -> [{ geo, color, outline }]   (local frames; the place sets them down)
+//   rolyPolyGeometry() -> BufferGeometry (vertex colours, origin the ball's centre)   rolyPolyMaterials() -> { rest, lit }   ROLY_POLY
 //   markTiles(list [{ x, z, yaw, y }]) -> Mesh   (the quarry tiles, one draw; chevron toward local +x turned by yaw)
 //   statusPlaques(list [{ x, y, z, yaw, status }]) -> Mesh   (one draw; a glyph a plaque, standing, its face toward local +z turned by yaw)
 //   mirrorGlass(w, h) -> Mesh   STATUS_BENCH_ORDER
@@ -61,16 +63,38 @@ export function lecternParts() {
   return out;
 }
 
-/** One of the status bench's little roly-polies (Strawman's kin): a burlap body on a black ball foot, a round head, a stitched band;
- *  about 0.55 m high, standing on its origin. A stand-in for a creature that takes statuses (the mechanic: COMBAT-LAB.md section 5). */
-export function strawRoly() {
-  const C = PALETTE;
-  return [
-    { geo: T(new THREE.SphereGeometry(0.08, 10, 6), M(0, 0.08, 0)), color: C.outline, outline: false },
-    { geo: T(new THREE.SphereGeometry(0.17, 12, 8), M(0, 0.24, 0, 0, 0, 0, 1)).scale(1, 1.15, 1).translate(0, -0.035, 0), color: WING_COLOR.burlap, outline: true },
-    { geo: T(new THREE.SphereGeometry(0.11, 12, 8), M(0, 0.47, 0)), color: WING_COLOR.burlap, outline: true },
-    { geo: T(new THREE.CylinderGeometry(0.115, 0.13, 0.04, 12), M(0, 0.395, 0)), color: WING_COLOR.oxblood, outline: false }, // (the neck's cord)
-  ];
+/** One of the status bench's roly-polies (Strawman's kin): a burlap body on a black ball foot, a round head, a stitched oxblood cord at
+ *  the neck; about 0.55 m high. One geometry, its colours in its vertices (the pots' way: breakables.js), so a roly-poly at rest is
+ *  parked in a prop batch (render/propbatch.js) and only one that rocks is drawn on its own. Its origin is the ball's centre, the pivot
+ *  it rocks on (Strawman's rock: vfx/strawman.js); it stands ROLY_POLY.pivot above what it sits on. Made once and shared. */
+let ROLY_GEO = null;
+export const ROLY_POLY = { pivot: 0.08, height: 0.58, radius: 0.19 };
+export function rolyPolyGeometry() {
+  if (ROLY_GEO) return ROLY_GEO;
+  const C = PALETTE, y0 = -ROLY_POLY.pivot, col = new THREE.Color();
+  const part = (geo, hex) => { // (each part's colour in its vertices: Color takes the hex as sRGB and keeps it linear, as a material would)
+    col.setHex(hex); const n = geo.attributes.position.count, a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { a[i * 3] = col.r; a[i * 3 + 1] = col.g; a[i * 3 + 2] = col.b; }
+    geo.setAttribute('color', new THREE.BufferAttribute(a, 3)); geo.deleteAttribute('uv'); return geo;
+  };
+  ROLY_GEO = mergeGeometries([
+    part(new THREE.SphereGeometry(0.08, 10, 6).translate(0, 0.08 + y0, 0), C.outline),
+    part(new THREE.SphereGeometry(0.17, 12, 8).scale(1, 1.15, 1).translate(0, 0.241 + y0, 0), WING_COLOR.burlap),
+    part(new THREE.SphereGeometry(0.11, 12, 8).translate(0, 0.47 + y0, 0), WING_COLOR.burlap),
+    part(new THREE.CylinderGeometry(0.115, 0.13, 0.04, 12).translate(0, 0.395 + y0, 0), WING_COLOR.oxblood), // (the neck's cord)
+  ]);
+  ROLY_GEO.name = 'roly-poly';
+  return ROLY_GEO;
+}
+let ROLY_M = null;
+/** The roly-poly's materials: the pots' own parameters (vertex colours, flat shading: one program with them, casebook rule 5), and the
+ *  lit one's, the same warmed from within (the target the bench's lectern lit: an emissive, a uniform, no new program). */
+export function rolyPolyMaterials() {
+  if (ROLY_M) return ROLY_M;
+  const base = { vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true };
+  ROLY_M = { rest: new THREE.MeshStandardMaterial({ ...base, name: 'roly-poly' }), lit: new THREE.MeshStandardMaterial({ ...base, name: 'roly-poly-lit', emissive: 0xffb45a, emissiveIntensity: 0.55 }) };
+  for (const m of Object.values(ROLY_M)) m.userData.shared = true; // (one for the bench: a room taken down never disposes it, casebook rule 24)
+  return ROLY_M;
 }
 
 /** The parry range's pitcher, a stand-in for the thing that lobs: a big clay jug on a plinth, about 1.9 m high to its lip, its spout

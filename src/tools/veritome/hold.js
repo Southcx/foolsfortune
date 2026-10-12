@@ -6,8 +6,8 @@
 // The arms come from a clip (the Courier's own suite: Tome_Idle, both hands before them at the waist; and the book's other clips, the
 // lens raised, the Flash thrust out, the survey's bow over it), and in third person THE HANDS CARRY THE BOOK: it sits between the two
 // palms where the clip has them, its pages turned to the eyes (handsFrame), so a clip that moves the hands moves the book. The hands are
-// then CLOSED ON THE EDGES of the open book (a light IK correction, as CLAUDE.md allows: a hand set on a handle): each palm behind its
-// half, fingers round toward the spine, the thumb over the page. In first person the book is placed before the eye (bookFrame).
+// then CLOSED ON THE EDGES of the open book (a light IK correction, as CLAUDE.md allows: a hand set on a handle): each palm on its half's
+// outer edge facing the spine, the fingers on along the forearm and round behind, the thumb over the page. In first person the book is placed before the eye (bookFrame).
 //
 // Prior art: holding an iPad up to photograph (both hands on the edges, the screen toward the eye, elbows in), the reading pose of
 // every JRPG's menu-book idle (Dark Cloud 2's Max with his photo album, Ni no Kuni's Wizard's Companion), and FFXIV's Scholar, whose
@@ -71,12 +71,16 @@ export function holdBook(ch, model, w, { fp = false } = {}) {
   for (const s of ['L', 'R']) {
     const sg = s === 'L' ? -1 : 1, arm = ch.arm[s];
     model.edgeWorld(s, _e);
-    // palm behind the half, facing the reader (+Z); the fingers pointing in toward the spine and a little down
-    _palm.copy(bz);
+    // the palm on the cover's outer edge, facing in toward the spine, the fingers on along the forearm's line and round behind the book,
+    // the thumb over the page: a big book is held by its sides, the forearm at its own middle turn (the palm behind the half, facing the
+    // reader, its fingers turned in to the spine, folded the wrists 95 degrees and turned the forearms 135 to 140, the pose audit)
     _in.copy(bx).multiplyScalar(-sg);
-    _fing.copy(_in).multiplyScalar(0.8).addScaledVector(by, -0.35).normalize();
+    _palm.copy(_in);
+    arm.hand.getWorldPosition(_fing).sub(arm.fore.getWorldPosition(_c)).normalize();
+    _fing.addScaledVector(_in, -_fing.dot(_in)).addScaledVector(bz, -0.25);
+    if (_fing.lengthSq() < 1e-4) _fing.copy(by); else _fing.normalize();
     const q = ch.handQuat(arm, _fing, _palm);
-    const at = _e.clone().addScaledVector(bz, -0.03).sub(arm.palmPt.clone().applyQuaternion(q));
+    const at = _e.clone().addScaledVector(_in, -0.015).addScaledVector(bz, -0.01).sub(arm.palmPt.clone().applyQuaternion(q));
     ch.reachHand(s, at, q, w, fp ? 1 : 0);
     // the fingers curl round the cover's edge
     for (const f of arm.fingers) f.quaternion.slerp(ch.rest.get(f).q, w * 0.35);

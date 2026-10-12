@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // AURAS: what a status looks like on whatever has it. Each frame this reads every creature's statuses (creatures.js: sleep, halt,
-// slow, melt, calm, soft, haste, empower, forget, and the four the damage types build: doubt, charm, blind, confusion) and holds the library's look for each (`aura.<status>`, or `aura.<status>.<kind>`
+// slow, melt, calm, soft, haste, empower, forget, and the four the damage types build: doubt, charm, blind, confusion; soaked, the status bench's) and holds the library's look for each (`aura.<status>`, or `aura.<status>.<kind>`
 // for one creature's own), on the creature, sized to it, as strong as the status and fading out as it runs down. The creature's body
 // still decides what a status MEANS (a sleeping jelly sags); this is only the particles round it. A status with no look in the
 // library shows nothing here (stun has its own wheel of stars: vfx/dizzy.js).
@@ -9,6 +9,7 @@
 // the status, tuned apart from it), Kingdom Hearts' sleep bubbles and stop-frost, Monster Hunter's status particles over a monster.
 //
 //   game.auras = new Auras(game)   .update()  (main.js, every frame, after creatures)
+//   c.auraScale   a creature's own size for its auras (default its height, 0.5 to 2.5: the status bench's small roly-polies ask 1, to be read)
 //   auras.throughWalls = false | true | (c) -> bool   drawn over walls (off: a wall hides an aura as it hides its creature: vfx/glyphs.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -38,7 +39,7 @@ export class Auras {
         let h = m.get(name);
         const xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
         if (h && !!h.ctx?.throughWalls !== xr) { h.stop?.(); h = null; } // (the switch thrown: played again into the other pools)
-        if (!h || !h.alive) { h = V.play(fx, { pos: this.centre(c), scale: THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), power: 1, throughWalls: xr }); m.set(name, h); }
+        if (!h || !h.alive) { h = V.play(fx, { pos: this.centre(c), scale: c.auraScale ?? THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), power: 1, throughWalls: xr }); m.set(name, h); }
         this.centre(c, h.pos);
         h.k = Math.min(1, s.k ?? 1) * Math.min(1, s.t / FADE);
         seen.add(h);

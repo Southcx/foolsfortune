@@ -15,7 +15,6 @@ import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 import { INSTRUMENTS } from '../tools/crucibelle/songs.js';
 import { SPECIES } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
-import { typeNo } from '../tools/psygun/kinds.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
 import { ECON } from '../progress/econ/table.js';
 import { BOTTLES } from '../progress/brushload.js';
@@ -54,7 +53,7 @@ for (const [id, K] of Object.entries(KEYS)) ITEMS[id] = { id, kind: 'key', key: 
 // a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: progress/shop/catalogue.js)
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
-for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
+for (const t of SHELL_TYPES) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${t.no} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: t.row.tier, examine: `Caster shell ${t.no}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
 // the Wake Whistle: out of a Well alive (docs/plans/SHRINES.md; the words are Espada's); broken when blown, one carried at a time
 ITEMS['whistle.wake'] = { id: 'whistle.wake', kind: 'whistle', key: 'wake', name: 'WAKE WHISTLE', glyph: '♫', color: 0xc89a6a, tier: 1, examine: 'A small clay whistle. Blow it in a Well, and you wake at the Well\'s mouth with what you carry. It breaks when you use it. You can carry one.', card: null, lure: false, stack: false };
 // the Lachrymato Bottles: worn one at a time in their own place, 'bottle', on the upper back (progress/brushload.js has their numbers; the words are Espada's)

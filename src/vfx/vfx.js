@@ -4,6 +4,8 @@
 //
 //   game.vfx.play('hit.blunt.clay', { pos, dir, normal, tint, power })      a one-shot (a hit, a poof, a pickup)
 //   const h = game.vfx.play('ult.pillar', { pos }); ... h.pos.copy(p); h.k = 0.5; ... h.stop()      a held one (a channel, an aura)
+//   game.vfx.play('shell.grief.land', { pos, follow: (h, raw) => alive && (h.pos.copy(at), true) })   one that follows on its own,
+//   asked every frame before it is drawn (set h.pos, h.dir, h.k, h.ctx.tint); false stops it (vfx/shelllooks.js)
 //
 // THE NAME is what happened, not what it looks like (`hit.slash.crystal`, `chest.burst.epic`, `ult.key`), so the look can be
 // redirected without touching the code that asked. A name is looked up from the most particular to the least: `hit.slash.crystal`,
@@ -18,6 +20,9 @@
 //   light     a lamp that blooms and fades (one of a few, the light budget lends them as it lends any lamp)
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
 //   glyph     a mark (vfx/glyphs.js)   sound  an sfx method by name (audio: Wanda's)   fx  another effect, by name
+//   caster    a caster shader by its module's name (`shader: 'lensing'`: vfx/caster/<name>.js). S1 to S5 (heat haze, the bubble,
+//             lightning, frost and bisque, the portal) give `vfxLayer` and place themselves (`frame`); S6 to S10 give `layer(game, L,
+//             ctx)`, placed, scaled and faded as a mesh is; `ctx.target` a body for the ones worn on a mesh
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
 // hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash), 'film' or 'film0'..'film3' (Lachryma's oil film, a
 // feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`) or 'gold' / 'lach' / 'white'. `power` (the context's)
@@ -42,6 +47,9 @@ import { LIBRARY } from './library.js';
 import { sfx } from '../audio/sfx.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 import { featTint } from './oxidation.js';
+
+// the caster shaders (vfx/caster/: each module's `layer(game, L, ctx)` -> { group, u, set(k), update(raw), dispose() }), by file name
+const CASTER = Object.fromEntries(Object.entries(import.meta.glob('./caster/*.js', { eager: true })).map(([f, m]) => [f.split('/').pop().replace(/\.js$/, ''), m]));
 
 // the textures a decal can wear (src/assets/vfx/tex/*.png, by file name: the spell circles the owner's wife drew among them)
 const TEX_SRC = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/tex/*.png', { query: '?b64', import: 'default', eager: true }))
@@ -221,6 +229,7 @@ export class Vfx {
     for (const B of Object.values(this.budget)) B.fill(raw);
     for (let i = this.live.length - 1; i >= 0; i--) {
       const h = this.live[i];
+      if (h.ctx.follow && !h.stopped && h.ctx.follow(h, raw) === false) h.stop(); // (a held one that follows its thing: false, it is gone)
       h.t += raw;
       let busy = false;
       for (const s of h.layers) busy = this.step(h, s, raw) || busy;
@@ -253,18 +262,16 @@ export class Vfx {
       }
       return false;
     }
-    if ((L.type === 'mesh' || L.type === 'decal') && s.mesh) {
+    if ((L.type === 'mesh' || L.type === 'decal' || L.type === 'caster') && s.mesh) {
       const m = s.mesh;
       if (held) {
         s.fade = h.stopped ? Math.max(0, (s.fade ?? 0) - raw * (L.out ?? 2)) : THREE.MathUtils.damp(s.fade ?? 0, 1, L.in ?? 6, raw); // (in: eased; out: a steady fade, gone in 1/out s)
         const t = (lt % (L.loop || 1e9)) / (L.loop || 1e9);
-        this.placeMesh(h, s, t, s.fade * h.k);
-        m.update(raw);
+        if (m.frame) m.frame(h, t, s.fade * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, s.fade * h.k); m.update(raw); }
         return !(h.stopped && s.fade < 0.01);
       }
       const t = Math.min(1, lt / Math.max(1e-3, dur));
-      this.placeMesh(h, s, t, h.k);
-      m.update(raw);
+      if (m.frame) m.frame(h, t, curve(L.k ?? [[0, 1], [0.7, 1], [1, 0]], t) * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, h.k); m.update(raw); }
       return t < 1;
     }
     return false;
@@ -288,6 +295,7 @@ export class Vfx {
     switch (L.type) {
       case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P))); break;
       case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), labradorite: L.labradorite ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
+      case 'caster': { const M = CASTER[L.shader]; s.mesh = (M?.layer ? M.layer(g, L, { ...ctx, pos: h.pos, tint: color(L.tint ?? 'tint', ctx) }) : M?.vfxLayer?.(g, h, L, color)) || null; break; }
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
         const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };

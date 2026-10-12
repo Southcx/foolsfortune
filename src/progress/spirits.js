@@ -51,7 +51,6 @@ export function feed(s, item = {}) {
   if (stat) { const was = s.stats[stat]; s.stats[stat] = Math.min(MAX, was + FEED.perTier[t]); out[stat] = s.stats[stat] - was; }
   if (FEED.bond.includes(item.kind)) { s.bond = Math.min(100, s.bond + FEED.perTier[t] / 2); out.bond = FEED.perTier[t] / 2; }
   if (item.curio != null) { const b = FEED.curioBond[t]; s.bond = Math.min(100, s.bond + b); out.bond = b; }
-  if (item.grade && STATS[item.grade]) { s.lean = s.lean || {}; s.lean[item.grade] = (s.lean[item.grade] || 0) + FEED.feeling; out.feeling = item.grade; }
   return out;
 }
 /** Its form, once mature: the feeling of its strongest stat and its side of the line; null before. */

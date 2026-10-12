@@ -12,6 +12,11 @@
 //
 //   const g = measureGrip(character)          g.R / g.RInv / g.L / g.LInv     (Matrix4: hand -> tool, and back)
 //   handFromTool(g, M, 'R', outPos, x, y, z, outQuat)    the hand's world pose that puts the tool at world matrix M (the hand at x,y,z along it)
+//   easeGrip(pos, quat, at, axis, fore)      a hand on a haft (or a knob) turned about the haft's axis through `at`, so the hand's length
+//                                            meets the forearm's way (`fore`, world): a hand closing on a handle takes it from the side
+//                                            its arm comes from, never with the wrist folded over (the pose audit, 2026-10-11: the off hand
+//                                            on the cutlass's guard, the hook's shaft and the rod's crank had their wrists bent 85 to 115
+//                                            degrees, the grip taken as the blade hand's socket). In place; -> the turn (rad)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -54,4 +59,20 @@ export function handFromTool(grip, M, side, out, x = 0, y = 0, z = 0, quatOut = 
   _m1.premultiply(M).multiply(_m2);
   _m1.decompose(out, quatOut || _q, _s);
   return out;
+}
+
+const _a = new THREE.Vector3(), _h = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Quaternion();
+/** A hand on a handle turned about the handle's axis (world unit `axis`, through world point `at`) until the hand's length (its local +Y)
+ *  is as near the forearm's way (`fore`, world unit) as a turn about that axis brings it: the light IK of a hand closing on a haft. */
+export function easeGrip(pos, quat, at, axis, fore) {
+  _a.copy(axis).normalize();
+  _h.set(0, 1, 0).applyQuaternion(quat); _h.addScaledVector(_a, -_h.dot(_a));
+  _f.copy(fore); _f.addScaledVector(_a, -_f.dot(_a));
+  if (_h.lengthSq() < 1e-8 || _f.lengthSq() < 1e-8) return 0;
+  _h.normalize(); _f.normalize();
+  const ang = Math.atan2(_s.crossVectors(_h, _f).dot(_a), _h.dot(_f));
+  _r.setFromAxisAngle(_a, ang);
+  quat.premultiply(_r);
+  pos.sub(at).applyQuaternion(_r).add(at);
+  return ang;
 }
