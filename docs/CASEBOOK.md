@@ -652,7 +652,41 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 222. **A thing that ends one way does not also end the other.** A step that can finish a round two ways (a touch,
     its time run out) returns which, and only that ending runs its code; a bare `true` from both lets the caller run both.
 
+223. **A window on the screen is placed by its measured size and capped to the screen**, never by a guess per row:
+    lists grow (a menu of a hundred shells); what is taller than the screen scrolls.
+224. **A ray cast straight down at a height field is nudged off its grid lines** (a millimetre in x and z): Rapier lets
+    a vertical ray along a grid line through, and a body set down on whole metres stood on one.
 ## Cases
+
+### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
+- **Seen:** two of the Dunes' three slip jellies by the Weir never moved and never animated, held in whatever frame they were made in;
+  they could still be struck.
+- **Cause:** measured headless: a vertical ray at x = 1985 or 2015 (on the Dunes' 2.5 m height-field grid, from x = 2000) found no
+  sand, from 0.7 m or from 30 m up; at x = 1984, 1986 or 1985.013 it found it at once. `SlipJellies.ground` returned null for the two
+  set down on those lines, and a jelly with no ground yet skips its whole update (`continue`): no mind, no move, no pose. The third
+  stood off the lines.
+- **Fix:** the jelly's ground ray (and the Lantern Wisp's) starts a millimetre off the point in x and z (creatures/jelly/slipjelly.js
+  `ground`); the three are also set down on the sand's own height. Measured: all three ground and act.
+- **Rule:** 224.
+
+### 2026-10-12 · The Pneuka Box's chamber menu ran off the top of the screen (the owner, v169)
+- **Seen:** right-clicking a psygun chamber listed all hundred caster shells; the menu ran off the top of the screen with no way to scroll,
+  so the shells before TYPE-68 could not be chosen.
+- **Cause:** the menu (`PneukaUI.menu`, src/pneuka/ui.js) was placed by a guess at its height (26 px a row) with no height limit and no
+  scroll; a hundred rows is about 2,500 px.
+- **Fix:** the menu is capped to the screen and scrolls (its border counted, no sideways scrollbar), the wheel scrolls it and not the
+  game, its title stays at the top, and it is placed by its measured size. Measured headless at 600 px tall: a hundred rows sit at
+  8..592 px and scroll; three rows sit where they did.
+- **Rule:** 223. A window placed on the screen is placed by its measured size and capped to the screen, never by a guess
+  per row: lists grow.
+
+### 2026-10-12 · What a caster shell set down stayed for good after a room change (Calissa's find, v168)
+- **Seen:** after `shells.clear()` (a seam, a respawn) the Volcano's cone and haze, the Faraday Cage's arcs, the bubbles and the Golem
+  stayed in the world, never taken away.
+- **Cause:** `ShellRunner.clear()` dropped its timed effects and stopped their sounds without calling their `end`, which is where each
+  takes away what it set down.
+- **Fix:** `clear()` ends every timed effect as if its time were up (tools/psygun/shellrunner.js).
+- **Rule:** 222 (a thing that ends one way does not also end the other; and a thing that ends does end).
 
 ### 2026-10-12 · A lobbed caster shell landed twice (Petra, the shell runner's batch 2)
 - **Seen:** reading the runner to add the rest of the caster shells: a lob that touched the ground ran its landing in its hit and then

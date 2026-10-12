@@ -14,22 +14,30 @@
 // the Agents' little runners, the Taunter's doll), the shot's look kept apart from its rules as Final Fantasy XIV's .avfx and Unreal's
 // Niagara keep it (an effect named by its use, played by name), and Noita's projectiles (a body, a trail, a hit, each a part).
 //
+// Batches 2 to 4 (the other 58) are rows in one module a family (vfx/shelllooks/<family>.js, gathered by shelllooks/index.js), their
+// effects beside them, and add: a sub-round's own look by its carrier kind (`kinds`: Petal Rain's petals, the RYNO's rockets), a look
+// where a round is SPENT (`end`: the parts' lobs that land on their own), a look at the AIM (`fire: 'aim'`), and a row's own hook where
+// data will not say it (`onFire`, `onLand`: the Thunderhead's rain kept over its cloud's quarry, Swap's afterimage).
+//
 //   shellLook(game, moment, row, ctx)   moment: 'fly' { mesh, p, kind } | 'touch' { p, at, normal, target, ent } | 'land' { at, normal,
 //                                       target, dir, ent } | 'fire' { muzzle, ray, camera, character } | 'set' { obj }
 //   SHELL_LOOKS (by shell id: body, the moments it has, how long a held one stays)   SHELL_FAMILY_TINT   shellTint(row)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
+import { SHELL_LOOK_ROWS } from './shelllooks/index.js';
+import { DUR, bodyMesh, onCreature, atPlace, aimAt } from './shelllooks/kit.js';
 
 /** A family's colour: its rounds' glaze bead and tail (the runner's FAMILY_COLOR was the placeholder). */
 export const SHELL_FAMILY_TINT = { edge: 0xe6dccb, ember: 0xff7a2a, storm: 0x9fd0ff, pull: 0x8a7aff, clock: 0xe8d080, will: 0xc890d8, company: 0xc46a45, feelings: 0xffffff };
 export const shellTint = (row) => (row?.n?.feeling ? COLOR[row.n.feeling] : SHELL_FAMILY_TINT[row?.family]) ?? 0xffffff;
 
-// (how long a held look stays: the shell's `dur`, or its own)
-const DUR = (row) => row.n.dur ?? 3;
-/** Each shell's look. body: a round's (BODIES); fly / touch / fire / set: it has that moment's effect; land: where its landing look sits
- *  ('point', 'target' its creature, 'foes' every creature in its reach); hold: how long a held one stays (real s); r: its reach for the
- *  effect's spread. */
+/** Each shell's look. body: a round's (BODIES); fly / touch / fire / set: it has that moment's effect (fly may name another's); land:
+ *  where its landing look sits ('point', 'target' its creature, 'foes' every creature in its reach); hold: how long a held one stays
+ *  (real s); r: its reach for the effect's spread; kinds: a sub-round's { body, fly, end, hold } by its carrier kind; end: the effect
+ *  where that round is spent; fire 'aim' (lift: off the face, m; power: its strength), 'courier' (held on them), 'courierAt' (where
+ *  they stand), 'muzzle' (held there), true (once there); over / until: a target look over the head / stopped early; tints: [tint, tip];
+ *  onFire / onLand: a row's own hook. Batch 1 is here; batches 2 to 4 are vfx/shelllooks/<family>.js. */
 export const SHELL_LOOKS = {
   ricochetSaw: { body: 'wheel', fly: true, touch: true, land: false },
   skipstone: { body: 'stone', fly: true, touch: true, land: false },
@@ -63,6 +71,7 @@ export const SHELL_LOOKS = {
   gall: { land: 'point', hold: DUR, r: (row) => row.n.r * 0.6 },
   grief: { land: 'target', hold: DUR, over: true },
   dread: { land: 'point' },
+  ...SHELL_LOOK_ROWS,
 };
 
 // ---------------------------------------------------------------- the bodies (module-wide, never disposed: the casebook's rules 17, 18)
@@ -81,6 +90,8 @@ const MAT = {
   bead: () => lit(0x401008, { emissive: 0xff3a2a, emissiveIntensity: 1.6 }), // (lit, glowing: the plain lit program, nothing compiled)
   ember: () => lit(0x402010, { emissive: 0xffb060, emissiveIntensity: 2 }),
   glaze: (c) => lit(c, { roughness: 0.3, emissive: c, emissiveIntensity: 0.35 }),
+  glow: (c) => lit(0x101018, { emissive: c, emissiveIntensity: 1.8 }),
+  ink: () => lit(0x07060a, { roughness: 0.15, metalness: 0.4 }), // (crude, and a dot of nothing)
 };
 const GEO = {
   wheel: () => once('gWheel', () => new THREE.CylinderGeometry(0.085, 0.085, 0.1, 18)),
@@ -96,8 +107,24 @@ const GEO = {
   doll: () => once('gDoll', () => new THREE.CylinderGeometry(0.06, 0.09, 0.22, 10)),
   dollHead: () => once('gDollHead', () => new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.17, 0)),
   bead: () => once('gBead', () => new THREE.IcosahedronGeometry(0.08, 1)),
+  // batches 2 to 4: a needle, a stake, a petal, an insulator's discs, a rocket's nose, a shell casing (each along +Y, turned to its flight)
+  needle: () => once('gNeedle', () => new THREE.CylinderGeometry(0.012, 0.02, 0.45, 6)),
+  stake: () => once('gStake', () => new THREE.ConeGeometry(0.035, 0.42, 8)),
+  band: () => once('gBand', () => new THREE.TorusGeometry(0.04, 0.008, 4, 12).rotateX(Math.PI / 2)),
+  petal: () => once('gPetal', () => new THREE.SphereGeometry(0.06, 8, 6).scale(1, 0.22, 0.6)),
+  rock: () => once('gRock', () => new THREE.IcosahedronGeometry(0.12, 1)),
+  disc: () => once('gDisc', () => new THREE.CylinderGeometry(0.07, 0.07, 0.025, 12)),
+  post: () => once('gPost', () => new THREE.CylinderGeometry(0.025, 0.035, 0.22, 8)),
+  tube: () => once('gTube', () => new THREE.CylinderGeometry(0.035, 0.035, 0.18, 8)),
+  nose: () => once('gNose', () => new THREE.ConeGeometry(0.035, 0.08, 8).translate(0, 0.13, 0)),
+  casing: () => once('gCasing', () => new THREE.CylinderGeometry(0.035, 0.035, 0.14, 10)),
 };
 const part = (geo, mat, y = 0) => { const m = new THREE.Mesh(geo, mat); m.position.y = y; m.userData.zoneFree = true; return m; };
+/** The glazes' own colours (Petal Rain's petals: the Hailstorm's seven). */
+const GLAZE_COLOURS = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0];
+const UP = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3(), _ax = new THREE.Vector3();
+/** Turn a round along its flight (+Y forward), as a needle, a stake or a rocket flies. */
+const along = (m, p) => { if (p?.vel?.lengthSq() > 1e-6) m.quaternion.setFromUnitVectors(UP, _d.copy(p.vel).normalize()); };
 /** Dress a round's mesh as its body (its geometry and material swapped for shared ones, parts added). Returns what turns it in flight. */
 const BODIES = {
   wheel: (m) => { m.geometry = GEO.wheel(); m.material = MAT.clay(); m.add(part(GEO.rim(), MAT.gold())); return (raw) => { m.rotation.y += raw * 32; }; },
@@ -114,38 +141,53 @@ const BODIES = {
     let age = 0;
     return (raw) => { age += raw; m.scale.setScalar(0.15 + 0.85 * Math.min(1, age / 0.35) ** 2); m.rotation.x += raw * 7; };
   },
-  bead: (m, row) => { m.geometry = GEO.bead(); m.material = MAT.glaze(shellTint(row)); m.scale.setScalar(1); },
+  bead: (m, row, p, tint) => { m.geometry = GEO.bead(); m.material = MAT.glaze(tint ?? shellTint(row)); m.scale.setScalar(1); },
+  // ---- batches 2 to 4
+  hidden: (m) => { m.visible = false; }, // (a round drawn by its part's own look: the Lava Lamp's glob)
+  needle: (m, row, p) => { m.geometry = GEO.needle(); m.material = MAT.chrome(); m.scale.setScalar(1); return () => along(m, p); },
+  thread: (m, row, p) => { m.geometry = GEO.needle(); m.material = MAT.glow(0x9fe8ff); m.scale.setScalar(0.6); return () => along(m, p); },
+  stake: (m, row, p) => { m.geometry = GEO.stake(); m.material = MAT.white(); m.scale.setScalar(1); m.add(part(GEO.band(), MAT.gold(), -0.05)); return () => along(m, p); },
+  lance: (m, row, p) => { m.geometry = GEO.needle(); m.material = MAT.gold(); m.scale.setScalar(1); return () => along(m, p); },
+  twelve: (m, row, p) => { m.geometry = GEO.casing(); m.material = MAT.gold(); m.scale.setScalar(1); m.add(part(GEO.band(), MAT.glow(0x5fa8ff), 0.02)); return () => along(m, p); },
+  rocket: (m, row, p) => { m.geometry = GEO.tube(); m.material = MAT.clay(); m.scale.setScalar(1); m.add(part(GEO.nose(), MAT.white()), part(GEO.dot(), MAT.ember(), -0.1)); return () => along(m, p); },
+  // the Cartwheel: a clay wheel stood on its rim, rolling the way it goes
+  cartwheel: (m, row, p) => {
+    m.geometry = GEO.wheel(); m.material = MAT.clay(); m.add(part(GEO.rim(), MAT.gold())); let roll = 0;
+    return (raw) => {
+      if (!(p?.vel?.lengthSq() > 1e-4)) return;
+      _ax.crossVectors(p.vel, UP); if (_ax.lengthSq() < 1e-6) return;
+      roll -= raw * Math.hypot(p.vel.x, p.vel.z) / (0.085 * m.scale.x);
+      m.quaternion.setFromUnitVectors(UP, _ax.normalize()); m.rotateY(roll);
+    };
+  },
+  petal: (m, row, p) => {
+    m.geometry = GEO.petal(); m.material = MAT.glaze(GLAZE_COLOURS[(p?.mesh?.id ?? 0) % GLAZE_COLOURS.length]); m.scale.setScalar(1.2);
+    return (raw) => { m.rotation.x += raw * 5; m.rotation.y += raw * 3; };
+  },
+  meteorite: (m) => { m.geometry = GEO.rock(); m.material = MAT.ember(); return (raw) => { m.rotation.x += raw * 4; m.rotation.z += raw * 3; }; },
+  insulator: (m) => { m.geometry = GEO.post(); m.material = MAT.white(); m.scale.setScalar(1.4); m.add(part(GEO.disc(), MAT.glaze(0x8a3a2a), 0.03), part(GEO.disc(), MAT.glaze(0x8a3a2a), -0.05)); },
+  spark: (m) => { m.geometry = GEO.ember(); m.material = MAT.glow(0x9fd0ff); m.scale.setScalar(1.6); },
+  orb: (m) => { m.geometry = GEO.ball(); m.material = MAT.glow(0xc49bff); },
+  visi: (m) => { m.geometry = GEO.ball(); m.material = MAT.chrome(); m.add(part(GEO.dot(), MAT.glow(0x9fe8ff), 0.09)); },
+  void: (m) => { m.geometry = GEO.ball(); m.material = MAT.ink(); m.scale.setScalar(1); m.add(part(GEO.rim(), MAT.gold())); return (raw) => { m.rotation.y += raw * 6; m.rotation.x = 0.4; }; },
+  crude: (m) => { m.geometry = GEO.bead(); m.material = MAT.ink(); m.scale.setScalar(1.2); },
+  glitch: (m) => { m.geometry = GEO.bead(); m.material = MAT.glow(0xff3cc8); m.scale.setScalar(1); return (raw) => { m.rotation.y += raw * 20; }; },
+  // Agate: a banded stone, the stronger feeling's colour and a band of the weaker's
+  agate: (m, row, p, tint, tip) => { m.geometry = GEO.ball(); m.material = MAT.glaze(tint); m.scale.setScalar(0.9); m.add(part(GEO.rim(), MAT.glaze(tip ?? tint))); return (raw) => { m.rotation.y += raw * 9; m.rotation.x += raw * 4; }; },
 };
 
 // ---------------------------------------------------------------- the moments
-const _v = new THREE.Vector3();
 const PINK = new THREE.Color(0xff3020), _c = new THREE.Color();
-/** A creature's body as one mesh, for a look worn on it (S4's craze): its own `body`, or the first mesh under it. */
-function bodyMesh(c) {
-  if (c?.body?.isMesh) return c.body;
-  let hit = null;
-  (c?.root || c?.group || c?.mesh)?.traverse?.((o) => { if (!hit && o.isMesh) hit = o; });
-  return hit;
-}
-const centre = (c, out) => out.set(c.pos.x, c.pos.y + (c.height || 1) * 0.5, c.pos.z);
-/** Play `name` held on a creature (at its middle, or over its head) until it falls or `t` real seconds pass. */
-function onCreature(g, name, c, t, ctx = {}, over = false) {
-  return g.vfx.play(name, { ...ctx, pos: centre(c, _v), follow: (h) => {
-    if (!c.alive || h.t > t) return false;
-    centre(c, h.pos); if (over) h.pos.y = c.pos.y + (c.height || 1) + 0.4;
-    return true;
-  } });
-}
-/** Play `name` at a place, let go after `t` real seconds (Infinity: it ends on its own). */
-const atPlace = (g, name, pos, t, ctx = {}) => g.vfx.play(name, { ...ctx, pos, follow: (h) => h.t <= t });
 
 const MOMENTS = {
   fly(g, row, L, { mesh, p, kind }) {
-    const id = kind === 'clod' ? 'clod' : row.id, look = SHELL_LOOKS[id] || L;
-    const turn = BODIES[look?.body || 'bead']?.(mesh, row);
-    const name = look?.fly ? `shell.${id}.fly` : 'shell.trail', tint = shellTint(row);
-    g.vfx.play(name, { pos: mesh.position, tint, follow: (h, raw) => {
-      if (!mesh.parent) return false;
+    const id = kind === 'clod' ? 'clod' : row.id, look = SHELL_LOOKS[id] || L, K = look?.kinds?.[kind] ?? look;
+    const [tint, tip] = look?.tints?.(g, row) ?? [shellTint(row)];
+    const turn = BODIES[K?.body || 'bead']?.(mesh, row, p, tint, tip);
+    const name = typeof K?.fly === 'string' ? K.fly : K?.fly ? `shell.${id}.fly` : 'shell.trail';
+    const end = K?.end, endT = K?.hold?.(row) ?? Infinity, list = g.shells?.runner?.flying; // (a clear gives the runner a new list: no end look then)
+    g.vfx.play(name, { pos: mesh.position, tint, tip, follow: (h, raw) => {
+      if (!mesh.parent) { if (end && g.shells?.runner?.flying === list) atPlace(g, end, mesh.position.clone(), endT, { tint, r: look?.r?.(row) ?? 1, floor: mesh.position.y - 0.3 }); return false; } // (spent: where it was)
       h.pos.copy(mesh.position); turn?.(raw);
       if (id === 'pinball' && p?.vel) h.ctx.tint = _c.setHex(0xffffff).lerp(PINK, THREE.MathUtils.clamp((p.vel.length() - 16) / 32, 0, 1)).getHex();
       return true;
@@ -156,24 +198,30 @@ const MOMENTS = {
     const crude = row.id === 'skipstone' && g.paintmap?.at?.(at.x, at.y, at.z)?.crude;
     g.vfx.play(`shell.${row.id}.touch${crude ? '.crude' : ''}`, { pos: at, normal, dir: normal, tint: row.id === 'skipstone' ? 0xb49be6 : 0xffd76a, floor: at.y - 0.05, ent });
   },
-  land(g, row, L, { at, normal, target, dir }) {
+  land(g, row, L, ctx) {
+    const { at, normal, target, dir } = ctx;
+    L?.onLand?.(g, row, ctx, L);
     if (L?.land === false || !at) return;
     const tint = shellTint(row), t = L?.hold?.(row) ?? Infinity, r = L?.r?.(row) ?? 1, name = L?.land ? `shell.${row.id}.land` : 'shell.land';
-    const ctx = { normal, dir, tint, r, floor: at.y - 0.05 };
+    const fx = { normal, dir, tint, r, floor: at.y - 0.05 };
     if (L?.land === 'target') {
-      if (!target) return atPlace(g, 'shell.land', at, Infinity, ctx);
-      onCreature(g, name, target, t, { ...ctx, target: L.mesh ? bodyMesh(target) : undefined, scale: 1 }, L.over);
+      if (!target) return atPlace(g, 'shell.land', at, Infinity, fx);
+      onCreature(g, name, target, t, { ...fx, target: L.mesh ? bodyMesh(target) : undefined, scale: 1 }, L.over, L.until);
       if (L.courier && g.player) g.vfx.play(`shell.${row.id}.courier`, { pos: g.player.pos, follow: (h) => h.t <= t && (h.pos.copy(g.player.pos), true) });
       return;
     }
-    if (L?.land === 'foes') { for (const c of (g.creatures?.near?.(at, row.n.r) || []).filter((c) => c.alive && !c.ally)) onCreature(g, name, c, t, ctx); return; }
-    atPlace(g, name, at, t, ctx);
+    if (L?.land === 'foes') { for (const c of (g.creatures?.near?.(at, row.n.r) || []).filter((c) => c.alive && !c.ally)) onCreature(g, name, c, t, fx); return; }
+    atPlace(g, name, at, t, fx);
   },
-  fire(g, row, L, { muzzle, ray, camera, character }) {
+  fire(g, row, L, ctx) {
+    const { muzzle, ray, camera, character } = ctx;
+    if (L?.onFire) return L.onFire(g, row, ctx, L);
     if (!L?.fire) return;
     if (row.id === 'inhaler' && g.shells?.runner?.stored > 0) return; // (it spits what it holds: the clods' own look)
     const name = `shell.${row.id}.fire`, t = L.hold?.(row) ?? Infinity, P = g.player;
     if (L.fire === 'courier') return g.vfx.play(name, { pos: P.pos, follow: (h) => h.t <= t && (h.pos.copy(P.pos), true) });
+    if (L.fire === 'courierAt') return g.vfx.play(name, { pos: P.pos.clone() });
+    if (L.fire === 'aim') { const { at, normal } = aimAt(g, ray); at.addScaledVector(normal, L.lift ?? 0); return atPlace(g, name, at, t, { normal, dir: normal, power: L.power?.(g, row) ?? 1, floor: at.y - 0.05 }); }
     if (L.fire === 'muzzle') return g.vfx.play(name, { pos: muzzle, dir: ray?.dir, follow: (h) => {
       if (h.t > t) return false;
       character?.gunPoint?.('muzzle', h.pos); if (camera) h.dir.set(0, 0, -1).applyQuaternion(camera.quaternion);

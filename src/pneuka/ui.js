@@ -69,7 +69,8 @@ const CSS = `
 #pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
 #pneuka footer { margin-top: 10px; font-size: 10px; letter-spacing: .08em; opacity: .55; }
-#pneuka .menu { position: fixed; z-index: 10; background: #1a0c07; border: 1px solid rgba(255,178,122,.6); font-size: 12px; min-width: 150px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
+#pneuka .menu { position: fixed; z-index: 10; background: #1a0c07; border: 1px solid rgba(255,178,122,.6); font-size: 12px; min-width: 150px; box-shadow: 0 6px 18px rgba(0,0,0,.6); box-sizing: border-box; max-height: calc(100vh - 16px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
+#pneuka .menu .h { position: sticky; top: 0; background: #1a0c07; }
 #pneuka .menu div { padding: 4px 10px; cursor: var(--jcur-pointer, pointer); } #pneuka .menu div:hover { background: rgba(var(--jsel),.45); }
 #pneuka .menu .h { color: #e7c46a; cursor: default; font-size: 10px; letter-spacing: .14em; border-bottom: 1px solid rgba(255,178,122,.25); } #pneuka .menu .h:hover { background: none; }
 #pneuka .menu b { color: #ffd98a; font-weight: normal; }
@@ -127,8 +128,14 @@ export class PneukaUI {
     m.appendChild(el('div', 'h', 'CHOOSE OPTION'));
     for (const a of acts) { const d = el('div', '', `${a.label} <b>${name}</b>`); d.onclick = (ev) => { ev.stopPropagation(); this.hideMenu(); a.run(); this.render(); }; m.appendChild(d); }
     const c = el('div', '', 'Cancel'); c.onclick = (ev) => { ev.stopPropagation(); this.hideMenu(); }; m.appendChild(c);
-    m.style.left = `${Math.min(innerWidth - 170, e.clientX - 20)}px`; m.style.top = `${Math.min(innerHeight - 30 - acts.length * 26, e.clientY - 8)}px`;
+    m.onwheel = (ev) => ev.stopPropagation(); // (a long list scrolls itself: the hundred caster shells; the wheel is not the game's)
     this.root.appendChild(m);
+    // (kept on the screen: placed at the click, then pulled back in by its measured size; taller than the screen, it scrolls)
+    const k = m.getBoundingClientRect().height / Math.max(1, m.offsetHeight); // (the window's own scale, if it is drawn scaled)
+    m.style.maxHeight = `${(innerHeight - 16) / (k || 1)}px`;
+    const r = m.getBoundingClientRect();
+    m.style.left = `${Math.max(8, Math.min(innerWidth - r.width - 8, e.clientX - 20))}px`;
+    m.style.top = `${Math.max(8, Math.min(innerHeight - r.height - 8, e.clientY - 8))}px`;
   }
   hideMenu() { this.menuEl?.remove(); this.menuEl = null; }
 

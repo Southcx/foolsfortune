@@ -24,12 +24,14 @@ import { blowRules } from './blows.js';
 import { figmentTelegraphRules } from './figmenttelegraphs.js';
 import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
+import { wispRules } from './wisps.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
   wellRules(ctx);
   railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
+  wispRules(ctx); // (the Lantern Wisps)
   voyageRules(ctx);
   gardenRules(ctx);
   weatherRules(ctx);

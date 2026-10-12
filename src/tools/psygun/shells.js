@@ -14,6 +14,7 @@
 import { PSYGUNS, DEFAULT_PSYGUN, capacityOf } from './kinds.js';
 import { shellById, shellByNo, typeLabel, fireCost, tollShatters } from '../../progress/combat/castershells.js';
 import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
+import { foesNear } from './shellpayloads.js';
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, DEG, PALETTE } from '../../core/config.js';
@@ -45,6 +46,15 @@ export const SHELL_TYPES = [
 ];
 export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 SHELL_TYPES.forEach((t) => { t.row = shellById(t.id); t.no = typeLabel(t.row.no); });
+
+/** A runner shell's numbers with the buff on them (T.shells.buff, the owner's v170): its blows, its reach, how long it lasts and how many
+ *  it makes, multiplied as it is fired; its table (castershells.js) is left as Dovina wrote it. */
+const BUFF_KEYS = { power: ['power', 'full', 'fling', 'throw', 'water'], reach: ['r', 'bend', 'wall', 'size', 'w', 'up'], dur: ['dur'], count: ['count', 'holds'] };
+export function buffRow(row, B = T.shells.buff) {
+  const n = { ...row.n };
+  for (const [k, keys] of Object.entries(BUFF_KEYS)) for (const key of keys) if (typeof n[key] === 'number') n[key] = key === 'count' || key === 'holds' ? Math.round(n[key] * B[k]) : n[key] * B[k];
+  return { ...row, n };
+}
 const GUN_KEY = 'foolsfortune.psygun.v1';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -135,19 +145,20 @@ export class Shells {
   /** Fire the selected shell. Returns false if the tube is empty. */
   fire(ctx) {
     const t = this.type, g = this.game, f = t.row.n.feeling;
-    if (this.counts[t.id] <= 0) { sfx.dryFire(); g.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); g.events?.emit('shell.dry', { id: t.id }); return false; }
+    const lent = g.lend?.has?.('shells'); // (DEBUG's lend: every shell never runs out and costs no Lachryma: the owner's v170)
+    if (!lent && this.counts[t.id] <= 0) { sfx.dryFire(); g.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); g.events?.emit('shell.dry', { id: t.id }); return false; }
     // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
     if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
     const { lachryma: cost, crack } = fireCost(t.id);
-    if (cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
-    this.counts[t.id]--;
+    if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
+    if (!lent) this.counts[t.id]--;
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
     this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });
     const { camera, player, character, weapon } = ctx;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const ray = weapon.shotRay(camera, player, character, fwd);
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
-    if (t.runner) this.runner.fire(t.row, { ...ctx, ray, muzzle, fwd });
+    if (t.runner) this.runner.fire(buffRow(t.row), { ...ctx, ray, muzzle, fwd });
     else this[t.id]({ ...ctx, ray, muzzle, fwd });
     if (crack) g.vesselDamage?.toll({ by: 'courier', shatters: tollShatters }); // (the Caster's toll: a tier IV is paid in the clay)
     // every shell kicks hard and needs racking
@@ -262,6 +273,12 @@ export class Shells {
         if (cl.done.has(c) || !c.alive) continue;
         if (test(c, c.pos.clone().setY(c.pos.y + 0.4), 0.55)) { cl.done.add(c); g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), cl.fwd, 1.2, 'sliced'); cl.cuts++; }
       }
+      // (the creatures it passes through: a heavy cut each, once: the owner's v170)
+      for (const c of foesNear(g, cl.o.clone().addScaledVector(cl.fwd, (d0 + d1) / 2), (d1 - d0) / 2 + C.width / 2 + 1)) {
+        if (cl.done.has(c)) continue;
+        const mid = c.pos.clone().setY(c.pos.y + c.height * 0.5);
+        if (test(c, mid, c.radius + c.height * 0.3)) { cl.done.add(c); g.creatures.strike(c, mid, cl.fwd, C.creaturePower, 'shot', 'courier', null, 'impact'); cl.cuts++; }
+      }
       // the line, where it has got to
       const at = cl.o.clone().addScaledVector(cl.fwd, d1);
       const m = cl.mesh;
@@ -331,6 +348,14 @@ export class Shells {
       _v.subVectors(c.pos, origin);
       const d = _v.length();
       if (d < P.range && _v.normalize().dot(axis) > cosA) g.clappers.knock(c, _v.clone().setY(0.4).normalize().multiplyScalar(P.velocity * 0.8 * (1 - d / P.range)));
+    }
+    // (and the creatures in the cone: shoved hard and struck, the owner's v170: the founding shells never touched them)
+    for (const c of foesNear(g, origin, P.range)) {
+      _v.subVectors(c.pos, origin); const d = _v.length();
+      if (_v.normalize().dot(axis) < cosA) continue;
+      const k = 1 - d / P.range, out = _v.clone().setY(0.35).normalize();
+      c.knock?.(out.clone().multiplyScalar(P.creatureKnock * k));
+      g.creatures.strike(c, c.pos.clone().setY(c.pos.y + c.height * 0.5), out, P.creaturePower * (0.5 + k), 'explosion', 'courier', null, 'impact');
     }
     player.vel.addScaledVector(axis, -P.selfKnock);
     g.fx.pushWave(muzzle, axis, P.range, P.angle);
@@ -488,6 +513,7 @@ export class Shells {
         const d = c.pos.distanceTo(w.pos);
         if (d < W.radius) g.clappers.pull(c, w.pos, (1 - d / W.radius) * ramp, dt);
       }
+      for (const c of foesNear(g, w.pos, W.radius)) { _v2.subVectors(w.pos, c.pos).setY(0); const d = _v2.length(); if (d > 0.6) c.knock?.(_v2.multiplyScalar((W.creaturePull * (1 - d / W.radius) * ramp * dt) / d)); }
       const pd = g.player.renderPos.clone().setY(g.player.renderPos.y + 0.9).distanceTo(w.pos);
       if (pd < W.radius) g.player.vel.addScaledVector(w.pos.clone().sub(g.player.pos).setY(0).normalize(), W.playerPull * (1 - pd / W.radius) * dt);
       if (w.t >= w.dur) this.collapseWell(i);
@@ -516,6 +542,7 @@ export class Shells {
     g.scene.remove(w.group);
     w.sound?.stop();
     g.breakables.explode(w.pos, { radius: W.popRadius, breakFrac: 0.5, velocity: W.popVelocity, fx: false, cause: 'well' });
+    for (const c of foesNear(g, w.pos, W.popRadius)) { const out = c.pos.clone().sub(w.pos).setY(0.5).normalize(); g.creatures.strike(c, c.pos.clone().setY(c.pos.y + c.height * 0.5), out, W.creaturePower * Math.max(0.4, 1 - c.pos.distanceTo(w.pos) / W.popRadius), 'explosion', 'courier', null, 'impact'); c.knock?.(out.multiplyScalar(8)); }
     for (const c of g.clappers.list) if (c.pos.distanceTo(w.pos) < W.popRadius * 0.5 && c.alive) g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.3), c.pos.clone().sub(w.pos).normalize(), 1.4, 'well');
     g.fx.shockwave(w.pos, W.popRadius);
     g.fx.implode(w.pos);
@@ -541,6 +568,7 @@ export class Shells {
     for (const c of g.clappers.list) {
       if (c.alive && (hit?.entity === c || c.pos.distanceTo(end) < M.radius + 0.4)) { g.clappers.stun(c, M.stun, this.glowOutline, this.xray); n++; }
     }
+    for (const c of foesNear(g, end, M.radius)) { g.stun?.add?.(c, 99, { by: 'courier', cause: 'mark' }); g.creatures.apply(c, 'soft', M.duration, 1); n++; } // (a creature marked: knocked out of itself, and every blow on it doubled while the mark holds)
     if (n) { g.events?.emit('shell.mark', { n }); g.hud.hitmarker(false); }
   }
 
@@ -570,6 +598,7 @@ export class Shells {
       if (d < B.radius) g.breakables.damage(ent, B.damage * (1 - d / B.radius), c, c.clone().sub(pos).normalize(), 1.3);
     }
     g.breakables.explode(pos, { radius: B.radius, breakFrac: 0, velocity: B.velocity, fx: false, cause: 'bomb' });
+    for (const c of foesNear(g, pos, B.radius)) { const k = Math.max(0.3, 1 - c.pos.distanceTo(pos) / B.radius), out = c.pos.clone().sub(pos).setY(0.4).normalize(); g.creatures.strike(c, c.pos.clone().setY(c.pos.y + c.height * 0.5), out, B.creaturePower * k, 'explosion', 'courier', null, 'impact'); c.knock?.(out.multiplyScalar(9 * k)); }
     // molten slip: a burst of droplets
     for (let k = 0; k < B.droplets; k++) {
       const v = randDir(simRand, new THREE.Vector3());
