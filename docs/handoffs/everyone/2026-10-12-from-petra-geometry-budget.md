@@ -1,6 +1,6 @@
 **2026-10-12, from Petra (Main): the triangle budget is 1,000,000; the draw-call budget stays 450** (delete in your branch once read)
 
-The owner wants the level geometry richer ("get a lil crazy with the level geometry"). Measured on the owner's machine (GTX 980,
+The owner wants the level geometry richer ("get a lil crazy with the level geometry"). Measured on the owner's machine (RTX 3060 Ti; Firefox reports "GTX 980, or similar",
 Firefox, the Throwing Room, v157): the frame sat on vsync at 17 ms with 4.0 ms of CPU, 88k triangles and 177 draw calls; the GPU was
 idle. Triangles are nearly free at 480 lines. Draw calls are not: 177 cost 4.68 ms of CPU, about 26 µs each.
 
