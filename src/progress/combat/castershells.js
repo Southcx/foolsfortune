@@ -25,18 +25,18 @@ export const TIERS = {
   4: { name: "the Caster's own", worth: 400, holds: 1, lachryma: 0, toll: true, sold: false },
 };
 
-/** The families, by number (CASTER-SHELLS.md section 3); names are working words for Espada's. */
+/** The families, by number (CASTER-SHELLS.md section 3): a label (no glossary word reused: Espada, 2026-10-12) and Espada's lore name. */
 export const FAMILIES = [
-  { id: 'founding', from: 0, to: 10, label: 'the founding eleven' },
-  { id: 'edge', from: 11, to: 20, label: 'the Edge' },
-  { id: 'kiln', from: 21, to: 30, label: 'the Kiln' },
-  { id: 'storm', from: 31, to: 40, label: 'the Storm' },
-  { id: 'well', from: 41, to: 50, label: 'the Well' },
-  { id: 'clock', from: 51, to: 60, label: 'the Clock' },
-  { id: 'mind', from: 61, to: 70, label: 'the Mind' },
-  { id: 'company', from: 71, to: 80, label: 'the Company' },
-  { id: 'feelings', from: 81, to: 90, label: 'the Feelings' },
-  { id: 'caster', from: 91, to: 99, label: "the Caster's own" },
+  { id: 'founding', from: 0, to: 10, label: 'the founding eleven', lore: null },
+  { id: 'edge', from: 11, to: 20, label: 'Edge', lore: 'the Wire' },
+  { id: 'heat', from: 21, to: 30, label: 'Heat', lore: 'the Firebox' },
+  { id: 'storm', from: 31, to: 40, label: 'Storm', lore: 'the Levin' },
+  { id: 'gravity', from: 41, to: 50, label: 'Gravity', lore: 'the Gyre' },
+  { id: 'clock', from: 51, to: 60, label: 'Clock', lore: 'the Hourglass' },
+  { id: 'psyche', from: 61, to: 70, label: 'Psyche', lore: 'the Mask' },
+  { id: 'company', from: 71, to: 80, label: 'Company', lore: 'the Retinue' },
+  { id: 'feelings', from: 81, to: 90, label: 'Feelings', lore: 'the Palette' },
+  { id: 'caster', from: 91, to: 99, label: "the Caster's own", lore: "the Caster's own" },
 ];
 const familyOf = (no) => FAMILIES.find((f) => no >= f.from && no <= f.to).id;
 
@@ -70,7 +70,7 @@ export const CASTER_SHELLS = [
   S(18, 'pinball', 'Pinball', 2, 'bounce', ['blast'], null, [], { power: 1, dur: 6, gain: 1.15 }, 'the arcade'),
   S(19, 'petalRain', 'Petal Rain', 2, 'lob', ['split', 'blast'], null, ['M1'], { power: 0.5, count: 40, r: 5, hang: 0.5 }, 'Zodiac, in small'),
   S(20, 'stake', 'Stake', 3, 'bolt', ['pin', 'type'], null, [], { power: 6, dur: 6, type: 'impact' }, "Trigun's Cross Punisher"),
-  // ---- the Kiln (heat, molten clay and crude)
+  // ---- Heat (molten clay and crude)
   S(21, 'flamer', 'Flamer', 1, 'cone', ['type', 'world'], null, ['S1'], { power: 0.6, dur: 4, r: 5 }, 'Pyrocitor'),
   S(22, 'meteor', 'Meteor', 2, 'call', ['blast'], 'pool', ['M10', 'S9'], { power: 4, count: 3, r: 2.5, delay: 1 }, 'Lava Gun to Meteor Gun'),
   S(23, 'lavaLamp', 'Lava Lamp', 2, 'seek', ['blast', 'split'], null, ['S9', 'M1'], { power: 3, count: 3, speed: 3 }, "the Lava Gun's glob"),
@@ -92,7 +92,7 @@ export const CASTER_SHELLS = [
   S(38, 'staticCling', 'Static Cling', 2, 'bolt', ['status'], null, [], { r: 8, dur: 6, status: 'slow', power: 0.5 }, 'magnetism'),
   S(39, 'lodestone', 'Lodestone', 2, 'bolt', ['world'], null, [], { dur: 30 }, "the grapnel's need"),
   S(40, 'twelve', 'Twelve', 3, 'bolt', ['status', 'dispel'], null, ['S3'], { r: 6, dur: 10, status: 'sleep' }, 'Outlaw Star #12'),
-  // ---- the Well (gravity, space and portals)
+  // ---- Gravity (space and portals)
   S(41, 'inhaler', 'Inhaler', 2, 'cone', ['pull'], null, [], { count: 5, r: 6 }, 'Suck Cannon'),
   S(42, 'slingshot', 'Slingshot', 2, 'lob', ['pull', 'split'], null, ['M1'], { r: 6, dur: 1.5, fling: 18 }, 'Gravity Bomb, Vortex Cannon'),
   S(43, 'rift', 'Rift', 3, 'lob', ['space'], 'rift', ['S5', 'M5'], { dur: 6, drop: 8 }, 'Rift Inducer'),
@@ -114,7 +114,7 @@ export const CASTER_SHELLS = [
   S(58, 'stopMotion', 'Stop-Motion', 2, 'lob', ['time'], 'zone', ['M6', 'S7'], { r: 8, dur: 8, onBeat: 2 }, 'the metronome'),
   S(59, 'bookmark', 'Bookmark', 2, 'self', ['space'], null, ['M9'], { dur: 10 }, 'a save state'),
   S(60, 'lastWord', 'Last Word', 3, 'bolt', ['type'], null, ['M9'], { delay: 3, repeat: 1 }, 'delayed damage'),
-  // ---- the Mind (Ego, Influence, Illusion)
+  // ---- Psyche (Ego, Influence, Illusion)
   S(61, 'infector', 'Infector', 2, 'bolt', ['charm'], null, [], { dur: 8, jumps: true }, 'Infector, Infecto-Bomb'),
   S(62, 'tauntDoll', 'Taunt Doll', 1, 'deploy', ['decoy', 'blast'], null, ['M4'], { r: 15, dur: 6, power: 3 }, 'Taunter'),
   S(63, 'double', 'Double', 2, 'deploy', ['decoy'], null, ['S8'], { dur: 10 }, 'Decoy Glove, a mirage'),
