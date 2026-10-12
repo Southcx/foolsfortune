@@ -27,7 +27,7 @@ const simRand = stream('creatures/wisp/lanternwisp'); // (the simulation's chanc
 
 /** Its numbers. hp in blows of power 1; hover: its feet over the ground (m); cast: wind (s), speed (m/s), life (s), k (a vessel
  *  blow's size), reach (m from the Courier's chest it hits at); respawn: real s before it forms again at home (if the Courier is away). */
-export const WISP = { hp: 5, poise: 2.5, stunFor: 2, sight: 18, scale: 0.9, hover: 1.3, bob: 0.18, radius: 0.4, height: 1.5, respawn: 45,
+export const WISP = { hp: 5, poise: 2.5, stunFor: 2, sight: 18, scale: 0.9, hover: 1.0, bob: 0.18, radius: 0.4, height: 1.5, respawn: 45,
   cast: { wind: 0.75, speed: 11, life: 4, k: 0.45, reach: 0.75, power: 2 } };
 
 const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
