@@ -22,16 +22,43 @@
 // drags it on (`smear`, world/ground/painttrack.js).
 //   pm.coat(c, n, r, life, delay, by)   pm.coatRect(c, n, u, hu, hv)   pm.wet(p, n, depth, wet) -> the surface's normal | null
 //   pm.smear(x, y, z, r, vx, vz, dt, share) -> cells moved   pm.clearCoats()   pm.spots (the coats as discs: the ecology's wet ground)
+//   pm.walls (the box faces as charts, world/ground/paintwalls.js)   pm.stampWall(p, n, r, aspect, k)   pm.wipeWall(p, n, r, want) -> got
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OPPOSITE, ASPECTS, COLOR } from '../../progress/weather.js';
 import { paintMotifCode, PAINT_LOOK_HEAD, PAINT_LOOK_BODY, PAINT_LOOK_ROUGH } from '../../vfx/paintmotifs.js';
+import { PaintWalls, PAINT_WALLS } from './paintwalls.js';
 
 const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, SLICK_LIFE = 40, NONE = -1e4, NEAR = 0.8, FLAT = 0x3b2b22; // (a slick: crude thrown or welled up in a fight, flat (no feeling), gone in 40 real seconds)
 /** Which cells a wipe or a count takes: true a blot's crude, 'slick' a slick's, false paint. */
 const KIND = (crude) => (crude === 'slick' ? 2 : crude ? 1 : 0);
 const UP = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
 export const ASPECT_COLOR = Object.fromEntries(ASPECTS.map((a) => [a, new THREE.Color(COLOR[a])]));
+
+/** The walls' look: the floor's (Calissa's PAINT_LOOK_BODY, vfx/paintmotifs.js), read from a face's own chart in the walls' atlas
+ *  (vPmChart, offset by 2: a mesh with no charts reads 0). Its motif is laid in the chart's own metres. Phase 3 makes the two one. */
+const PAINT_WALL_BODY = /* glsl */`{
+    if (vPmChart.x >= 2.0) {
+      vec2 wuv = vPmChart - 2.0;
+      vec4 pc = texture2D(uPmWCol, wuv);
+      if (pc.a > 0.004) {
+        float cw = texture2D(uPmWH, wuv).r, code = floor(cw + 0.02), age = clamp(cw - code, 0.0, 1.0);
+        vec2 wm = wuv * ${(PAINT_WALLS.A * PAINT_WALLS.CELL).toFixed(1)};
+        float grain = pmoH1(floor(wm * 6.0));
+        vec3 col = pc.rgb / max(pc.a, 0.05);
+        float k = smoothstep(0.25, 0.5, pc.a + (grain - 0.5) * 0.1) * (1.0 - smoothstep(0.7, 0.95, age));
+        if (k > 0.001) {
+          vec3 emit; float wet;
+          col *= min(0.72, 0.5 / max(max(col.r, max(col.g, col.b)), 0.01));
+          col = paintMotif(col, wm, code, age, normalize(cameraPosition - vPmPos), emit, wet);
+          if (code > 7.5) col = mix(col, diffuseColor.rgb * vec3(0.42, 0.36, 0.34), smoothstep(0.1, 0.8, age));
+          diffuseColor.rgb = mix(diffuseColor.rgb, col, k * 0.9);
+          pmGlow = (col * 0.08 + emit) * k;
+          pmWet = wet; pmK = k * (1.0 - smoothstep(0.1, 0.8, age));
+        }
+      }
+    }
+  }`;
 
 export class PaintMap {
   constructor() {
@@ -46,8 +73,9 @@ export class PaintMap {
     this.hTex = new THREE.DataTexture(this.hData, N, N, THREE.RGFormat, THREE.FloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
     this.colTex.needsUpdate = this.hTex.needsUpdate = true;
     this.spots = []; this.rects = []; this.fixed = []; // (coats as discs; fixed coats on walls; fixed coats on floors, laid as cells)
+    this.walls = new PaintWalls(); // (every level.box side face, a chart: world/ground/paintwalls.js)
     this.aspectOf = null; // (the feeling the Courier's coats are laid in: main.js, the brush's load)
-    this.uniforms = { uPmCol: { value: this.colTex }, uPmH: { value: this.hTex }, uPmWin: { value: new THREE.Vector4(this.x0, this.z0, SPAN, 1 / N) } };
+    this.uniforms = { uPmCol: { value: this.colTex }, uPmH: { value: this.hTex }, uPmWin: { value: new THREE.Vector4(this.x0, this.z0, SPAN, 1 / N) }, uPmWCol: { value: this.walls.colTex }, uPmWH: { value: this.walls.hTex } };
   }
 
   cell(x, z) { const i = Math.floor((x - this.x0) / CELL), j = Math.floor((z - this.z0) / CELL); return i < 0 || j < 0 || i >= N || j >= N ? -1 : j * N + i; }
@@ -143,8 +171,8 @@ export class PaintMap {
   coat(c, n, r, life, delay = 0, by = 'creature') {
     if (this.spots.length > 400) this.spots.shift();
     this.spots.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0, delay });
-    if (n.y < 0.5) return;
     const a = by === 'courier' ? this.aspectOf?.() : null;
+    if (n.y < 0.5) { this.walls.stamp(c, n, r, a ? ASPECTS.indexOf(a) : -1, a ? 0.6 : 0.8, a ? 0 : 2); return; } // (a wall's: its chart)
     if (a) this.stamp(c.x, c.y, c.z, r, a, 0.6); else this.slick(c.x, c.y, c.z, r, 0.8);
   }
   /** A fixed coat that keeps: centre c, normal n, half extents hu along u and hv along n x u. A floor's is laid as crude cells (again
@@ -152,7 +180,7 @@ export class PaintMap {
   coatRect(c, n, u, hu, hv) {
     const R = { c: c.clone(), n: n.clone().normalize(), u: u.clone().normalize(), hu, hv };
     R.v = new THREE.Vector3().crossVectors(R.n, R.u).normalize();
-    if (R.n.y > 0.7) { this.fixed.push(R); this.layFixed(R); } else this.rects.push(R);
+    if (R.n.y > 0.7) { this.fixed.push(R); this.layFixed(R); } else { this.walls.fixedRect(R); this.rects.push(R); } // (a wall's drawn on its chart; kept as a rectangle too, so it is wet where no box face lies)
     return R;
   }
   layFixed(R) {
@@ -169,6 +197,7 @@ export class PaintMap {
    *  a fixed coat or a coat's disc within `depth` of it. Returns the surface's normal, or null. */
   wet(p, n = null, depth = 0.3, wet = 0.3) {
     if (!n || n.y > 0.7) { const c = this.at(p.x, p.y, p.z); return c && c.k >= wet ? UP : null; }
+    const w = this.walls.at(p, n, depth); if (w && w.k >= wet) return w.normal;
     for (const r of this.rects) {
       if (r.n.dot(n) < 0.7) continue;
       _d.subVectors(p, r.c); const h = _d.dot(r.n);
@@ -184,6 +213,10 @@ export class PaintMap {
     return null;
   }
   clearCoats() { this.spots.length = 0; }
+  /** A feeling's paint on the walls facing n within r of p (the brush's drop that hit a wall). Returns the area covered. */
+  stampWall(p, n, r, aspect, k = 1) { const a = ASPECTS.indexOf(aspect); if (a < 0) { this.walls.touched = 0; return 0; } return this.walls.stamp(p, n, r, a, k, 0); }
+  /** Wash paint and slicks off the walls facing n within r of p (Clean). Returns what was taken. */
+  wipeWall(p, n, r, want) { return this.walls.wipe(p, n, r, want); }
 
   /** Something moving through it drags it on (a slide, the Paint Dive, a Brush Slide: world/ground/painttrack.js): within r of (x, z)
    *  at height y, a share of each cell is lifted and laid a step on along the motion, the front cells first so nothing moves twice
@@ -234,6 +267,7 @@ export class PaintMap {
     if (Math.abs(want0 - this.x0) > SPAN / 4 || Math.abs(want1 - this.z0) > SPAN / 4) this.recentre(want0, want1);
     const fade = dt / LIFE;
     for (const n of this.live) { if (this.crude[n] === 1 && this.k[n] > 0) continue; this.k[n] -= this.crude[n] === 2 ? dt / SLICK_LIFE : fade; if (this.k[n] <= 0) { this.k[n] = 0; this.asp[n] = -1; this.h[n] = NONE; this.crude[n] = 0; this.live.delete(n); } } // (crude keeps: a blot stays until it is wiped)
+    this.walls.update(dt);
     for (let i = this.spots.length - 1; i >= 0; i--) { const s = this.spots[i]; if ((s.age += dt) > s.life) this.spots.splice(i, 1); }
     if (this.live.size) this.dirty = true;
     this.upT -= dt;
@@ -273,14 +307,16 @@ export class PaintMap {
     material.onBeforeCompile = (sh, r) => {
       prev?.call(material, sh, r);
       Object.assign(sh.uniforms, U);
-      sh.vertexShader = 'varying vec3 vPmPos;\nvarying vec3 vPmN;\n' + sh.vertexShader
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\n  { mat4 pmM = modelMatrix;\n  #ifdef USE_INSTANCING\n    pmM = pmM * instanceMatrix;\n  #endif\n    vPmPos = (pmM * vec4(transformed, 1.0)).xyz; }')
+      sh.vertexShader = 'varying vec3 vPmPos;\nvarying vec3 vPmN;\nattribute vec2 pmChart;\nvarying vec2 vPmChart;\n' + sh.vertexShader
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\n  vPmChart = pmChart;\n  { mat4 pmM = modelMatrix;\n  #ifdef USE_INSTANCING\n    pmM = pmM * instanceMatrix;\n  #endif\n    vPmPos = (pmM * vec4(transformed, 1.0)).xyz; }')
         .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\n  vPmN = normalize(mat3(modelMatrix) * objectNormal);');
       sh.fragmentShader = `varying vec3 vPmPos;
 varying vec3 vPmN;
-uniform sampler2D uPmCol; uniform sampler2D uPmH; uniform vec4 uPmWin;
+varying vec2 vPmChart;
+uniform sampler2D uPmCol; uniform sampler2D uPmH; uniform vec4 uPmWin; uniform sampler2D uPmWCol; uniform sampler2D uPmWH;
 ${PAINT_LOOK_HEAD}
 ` + sh.fragmentShader.replace('#include <alphamap_fragment>', `${PAINT_LOOK_BODY}
+${PAINT_WALL_BODY}
   #include <alphamap_fragment>`).replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += pmGlow;')
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>${PAINT_LOOK_ROUGH}`); // (the look, the motifs and the gloss: Calissa's, vfx/paintmotifs.js)
     };

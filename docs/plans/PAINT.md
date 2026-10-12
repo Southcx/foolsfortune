@@ -36,7 +36,9 @@ Draw calls +0 (the same meshes, one more texture read); programs +0 to 1; GPU me
 
 ## 4. Phases (done 2026-10-12, v159: the dive reads the map; the slip field retired into coats (`coat`, `coatRect`, `wet`); the slick
 meshes retired, their cells drawn by the map with the oxidation ramp; feet print and slides and the Paint Dive smear: `world/ground/painttrack.js`.
-Still to do: box faces as charts, so walls are cells and drawn; the look. One at a time; check and build each, a crash glance at the end: the owner's test lean)
+v160: every level.box side face a chart in one 1024² atlas (world/ground/paintwalls.js: 1,788 faces, 102,869 m², those over 50 m² at
+0.5 m cells, packed tallest first into 858 rows); the brush's drops stick to walls and Clean washes them; coats on walls are cells.
+Still to do: the look (Calissa's); imported meshes; cell mixing as agates. One at a time; check and build each, a crash glance at the end: the owner's test lean)
 
 1. **One store.** The Paint Dive reads the paint map (wet enough is deep enough); the slip field retired (its fixed lanes become painted
    cells); the slick meshes retired (slick cells drawn by the map). Charts as the store's shape, floors first. Petra.
