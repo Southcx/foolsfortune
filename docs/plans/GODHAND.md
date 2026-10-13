@@ -91,7 +91,7 @@ planetoids and the island run, so the garden and the island obey the same physic
 
 ## 4. Miracles: the seven feelings
 
-A **miracle** is a feeling's weather called down onto one place. The hand **draws its sign** (the gesture reader the Soul Brush uses:
+A **miracle** is a feeling's weather called down onto one place, Spellscription's power (section 8). The hand **draws its sign** (the gesture reader the Soul Brush uses:
 seven signs, one a feeling) and lets go over where it falls. It needs the feeling known (its awakening), as everything of a feeling
 does.
 
@@ -120,16 +120,19 @@ does.
 
 ## 5. Epic miracles
 
-Four, the Caster's-own of the hand. Each is drawn as a larger sign (the feeling's sign ringed), takes 3 real s of charge that cannot be
-cancelled, and is **paid in the jar** (the god hand's jar is cracked a quarter of its strength, the toll's rule in the god hand's
-body); one a game hour.
+Seven, one a domain (section 8), the Caster's-own of the hand. Each is drawn as a larger sign (its sign ringed), takes 3 real s of
+charge that cannot be cancelled, and is **paid in the jar** (the god hand's jar is cracked a quarter of its strength, the toll's rule
+in the god hand's body); one a game hour.
 
-| epic | sign | what it does | from |
+| epic | domain | what it does | from |
 |---|---|---|---|
-| Earthquake | Fury, ringed | for 8 s the ground in 30 m heaves: clay and sand thrown up and resettled at random, a fault opened across it | Populous |
-| Volcano | Fury and Gall | a cone rises in 6 s and runs lava for 30 s: a new liquid layer that flows like crude, burns, and cools to clay (new ground, kept until the mending) | Populous, From Dust |
-| Maelstrom | Desire, ringed | a vortex 25 m across for 12 s lifting creatures, props and liquids round and up, and flinging them out at the end | Charybdis's look, the Hurricane |
-| Deluge | Grief, ringed | Lachryma of your draught's feeling floods from the sky for 20 s: a valley becomes a lake | Populous's flood |
+| Stopped Hour | Ouranurgy | time stops in 40 m for 10 s for everything but the hand: rearrange a frozen battle, pour into a frozen river | Braid, The World |
+| Volcano | Manifestation | a cone rises in 6 s and runs lava for 30 s: a new liquid layer that flows like crude, burns, and cools to clay (new ground, kept until the mending) | Populous, From Dust |
+| Prophecy | Divination | the next game hour is shown: the weather spells to come, the raid's waves and where they will enter, where crude will well; you may strike one of them out | Majora's Mask's Bombers' notebook, a fortune told |
+| Maelstrom | Psychokinesis | a vortex 25 m across for 12 s lifts creatures, props and liquids round and up, and flings them out at the end | Charybdis's look, the Hurricane |
+| Stampede | Possession | every creature in 40 m obeys one stroke for 15 s: where the hand draws the line, they run | Populous's Armageddon, Pikmin's swarm |
+| Earthquake | Alteration | for 8 s the ground in 30 m heaves: clay and sand thrown up and resettled, a fault opened across it | Populous |
+| Deluge | Spellscription | a feeling's sign written the size of the valley: its Lachryma floods from the sky for 20 s, and a valley becomes a lake | Populous's flood, B&W's great miracles |
 
 ## 6. The hand's body
 
@@ -152,13 +155,36 @@ body); one a game hour.
 - The risk is cost: measure a 10 m wall's remesh against the frame budget first (`npm run perf`). If it is too slow, fall back to
   Manifest's mesh walls, and voxels stay a later round.
 
-## 8. Order
+## 8. The seven domains' god powers
+
+Every power of the hand belongs to one of the seven domains (`progress/domains.js`; no new domains, ever). Using it pays that domain's
+experience, better done paying more (the design law), and the domain's level widens it (`WIDEN`: reach, size, capacity, never accuracy).
+So the god hand trains the same psyche the Courier does, and a Courier strong in a domain is a god strong in it.
+
+| domain | what it is (the owner's) | the powers (existing in bold) | its epic | its level widens | quality (what pays more) |
+|---|---|---|---|---|---|
+| **Ouranurgy** | the rules of the space around you: displacement, and time slowed or stopped | **Rift** pair (pour into one, it falls out of the other: an aqueduct through space); **Fold** (two patches of ground trade places, what stands on them included); **Hasten / Stay** (the matter's time over a patch runs 4x, or stops: a river frozen mid-flow, a flood settled in seconds) | Stopped Hour | a rift's span, a fold's size, Hasten's rate | what crossed or was changed in the slowed time |
+| **Manifestation** | solidifying thought into structures | **Manifest** (the wall); **Sculpt** (a voxel creation: a ramp, an arch, a bridge, a pillar, drawn as a shape and raised; section 7); **Fire** (a creation fired hard: it stands until the mending, not a few minutes); **Totem** (a standing stone that holds a miracle's weather on its spot for a game hour) | Volcano | a creation's size, a totem's reach | how much of a creation is used (walked, stood behind) |
+| **Divination** | perceiving the hidden: signatures, habits, the true pitch | **Strata** (see the matter's layers under the hand: crude under sand, a spring under clay); **Course** (a pour or a miracle shown before it falls: where the water will run, the From Dust prediction line); **Read** (from above, a creature's next intent drawn over it: the Figment telegraph from the sky) | Prophecy | how deep Strata sees, how far ahead Course runs | a hidden thing found and then used (a buried spring tapped) |
+| **Psychokinesis** | moving things by will | **Telekinesis** (lift and throw, by the flick); **Scoop / Pour** (section 3); **Gust** (a stroke of wind: drifts sand, pushes liquids, knocks creatures down); **Slab** (lift a whole slab of ground, what stands on it with it, and set it down elsewhere) | Maelstrom | weight lifted, Scoop's capacity (20 m³ at level 1), Gust's reach | speed and distance moved |
+| **Possession** | exerting will over other minds | **Herd** (draw a line: creatures near it walk it, a sheepdog's work); **Take** (the hand goes into one creature and you play it from above, Dungeon Keeper's possession; it costs Lachryma a second); **Muster** (hatched clapperjars carry matter where the hand points: the folk's labour, Godus's) | Stampede | how many Herd moves, how long Take holds, how much a Muster carries | creatures moved where they would not have gone |
+| **Alteration** | reshaping what already is | **Sunder**, **Swell**, **Wring**; **Raise / Lower**, **Smooth**, **Carve** (section 3); **Transmute** (a patch of matter becomes another: sand to clay, clay to sand, one feeling's Lachryma to another's) | Earthquake | a brush's size, Transmute's patch | how much ground changed and then held (a channel that carries water) |
+| **Spellscription** | transcribing a thing down: glyphs, macros, maps | **the seven miracles** (section 4: written as signs, so they are this domain's); **Ward** (a circle drawn on the ground: creatures cannot cross it for its time); **Stamp** (a patch of terrain copied as a rutter of the land and pressed down elsewhere: a blueprint, the Cogitomap's cousin) | Deluge | a sign's size, a ward's span, a stamp's area | how cleanly the sign is drawn (the gesture's fit, as the brush's glyphs are scored) |
+
+- **Unlocked as the house does it** (arts only by achievement): the existing five stay as they are; each new power opens by its
+  domain's level (a power at levels 1, 15, 35, 60 of its domain, in the order listed) or by a feat of the domain on foot. The epics open
+  at 80 of their domain. The numbers are mine once the powers exist.
+- **The ledger** gets `god.<power>` counts and each its `domain` source in `domains.js` (mine), as `god.manifest` and `god.sunder` are now.
+
+## 9. Order
 
 1. **Matter** (Petra): the garden's simulation made shared and flat, over the ZoI's chunks; Scoop, Pour, Raise and Lower; the mending.
    Calissa: the layers' looks from above.
 2. **Miracles** (Petra; Calissa's weathers at strength, the heavy looks exist): the seven signs on the gesture reader, the seven
    miracles, their effects on matter.
 3. **The hand's body** (Petra): the flick, the swing, the slap, the shadow.
-4. **Epic miracles**, then **voxel creations** (after the perf measure).
+4. **The domains' powers** (section 8), a domain at a time, the ones that reuse built parts first: Herd and Take (the minds exist),
+   Strata and Course (the matter's own data), Rift (the caster shells' portal), Ward (the gesture reader).
+5. **Epic miracles**, then **voxel creations** (after the perf measure).
 
 Names (miracle, the seven, the epics) are working words for Espada's.

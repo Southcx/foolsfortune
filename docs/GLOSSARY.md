@@ -41,7 +41,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
-  drawing its sign / one of four great ones paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
+  drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your
   Pneuka Jar", never "the jar". *Not:* the vessel. → detail
 
