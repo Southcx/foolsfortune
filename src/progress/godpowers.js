@@ -33,7 +33,7 @@ export const GOD_POWERS = {
   rift: { domain: 'ouranurgy', label: 'Rift', at: 15, built: false, does: 'a linked pair of holes: what goes in one comes out the other' },
   fold: { domain: 'ouranurgy', label: 'Fold', at: 35, built: false, does: 'two patches of ground trade places' },
   hasten: { domain: 'ouranurgy', label: 'Hasten / Stay', at: 15, built: false, does: 'matter\'s time over a patch runs four times as fast, or stops' },
-  sculpt: { domain: 'manifestation', label: 'Sculpt', at: 15, built: false, does: 'raise a ramp, an arch or a bridge' },
+  sculpt: { domain: 'manifestation', label: 'Sculpt', at: 15, built: true, does: 'raise a pillar, an arch, a bridge or a ramp of clay', made: 0.6 },
   fire: { domain: 'manifestation', label: 'Fire', at: 35, built: false, does: 'harden a creation until the mending' },
   totem: { domain: 'manifestation', label: 'Totem', at: 60, built: false, does: 'hold a miracle\'s weather on one spot for a game hour' },
   strata: { domain: 'divination', label: 'Strata', at: 15, built: false, does: 'see the layers under the hand' },

@@ -88,6 +88,7 @@ export const SOURCES = [
   { event: 'god.pour',        domain: 'psychokinesis',  base: 6,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 20) : null) },
   { event: 'god.shape',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
   { event: 'god.carve',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
+  { event: 'god.sculpt',      domain: 'manifestation',  base: 12, quality: (e) => (e.by === 'courier' ? q01((e.volume || 0) / 12) : null) },
   { event: 'god.miracle',     domain: 'spellscription', base: 12, quality: (e) => (e.by === 'courier' ? q01(e.score) * (0.6 + 0.4 * q01(e.size)) : null) },
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'god.epic',      domain: d,                acts: 10, quality: (e) => (e.by === 'courier' && e.domain === d ? 1 : null) })),

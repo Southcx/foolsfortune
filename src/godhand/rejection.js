@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import { REJECTION, heatOf, stepOf } from '../progress/rejection.js';
 import { stream } from '../core/rng.js';
 
-const ACTS = ['god.scoop', 'god.pour', 'god.shape', 'god.carve', 'god.miracle', 'god.epic', 'god.throw'];
+const ACTS = ['god.scoop', 'god.pour', 'god.shape', 'god.carve', 'god.sculpt', 'god.miracle', 'god.epic', 'god.throw'];
 const rand = stream('godhand/rejection');
 
 export class Rejection {

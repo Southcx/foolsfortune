@@ -28,6 +28,11 @@ export function godRules({ on, L, log }) {
   matter('scoop'); matter('pour');
   matter('shape', () => 'The ground moves under your hand.');
   matter('carve', () => 'You cut a channel.');
+  on('god.sculpt', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('god.sculpt'); L.inc(`god.sculpt.${e.shape}`); L.hi('god.sculpt.volume', Math.round(e.volume || 0));
+    log.say('god', { pillar: 'You raise a pillar of clay.', arch: 'You raise an arch of clay.', ramp: 'You raise a ramp of clay.' }[e.shape] || 'You raise clay.', { key: 'gsc', throttle: 1 });
+  });
   on('god.miracle', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.miracle'); L.inc(`god.miracle.${e.feeling}`); L.hi('god.miracle.score', Math.round((e.score || 0) * 100));

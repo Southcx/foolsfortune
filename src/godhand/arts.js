@@ -40,6 +40,7 @@ export const ARTS = [
   { id: 'scoop', key: '6', name: 'SCOOP', glyph: '◒', needs: 1, blurb: 'take up and pour matter', color: '#9fd8e0' },
   { id: 'shape', key: '7', name: 'SHAPE', glyph: '⛰', needs: 1, blurb: 'raise or lower the ground', color: '#d8b878' },
   { id: 'carve', key: '8', name: 'CARVE', glyph: '⌇', needs: 1, blurb: 'cut a channel', color: '#c08a5a' },
+  { id: 'sculpt', key: '9', name: 'SCULPT', glyph: '⌒', needs: 1, blurb: 'raise an arch, a ramp or a pillar', color: '#b8784a' },
 ];
 export const ART_BY_ID = Object.fromEntries(ARTS.map((a) => [a.id, a]));
 

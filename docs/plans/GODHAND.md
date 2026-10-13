@@ -245,5 +245,13 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   the sign's score, more for a bigger one), an epic its own domain.
 - **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.rejection.step`,
   `god.rejection.beaten`; the hand's new subs Matter, Miracles and Rejection (`gx1..3`, `gq1..3`, `gja`, `gjb`).
-- **Not built yet** (`GOD_POWERS[id].built` false): the domains' other seventeen powers (section 8). Voxel creations wait on a perf
-  measure of the matter in a full scene. The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.
+- **Creations** (`godhand/voxels.js`, pure; `godhand/creations.js`, `game.creations`): Sculpt (key 9, Manifestation 15) drags a line:
+  a pillar for a short stroke, an arch (a bridge when long) for a long one, a ramp with Shift. Sparse 16-cube chunks of 0.25 m voxels,
+  stamped from a signed distance with a 2 m ramp and meshed by naive surface nets; one mesh and one trimesh collider a chunk, remeshed
+  only when touched, inside 1.5 ms a frame. Paid from the carried matter first, then 0.6 Lachryma a cubic metre. The mending ebbs
+  every voxel evenly every 30 real seconds, so a creation goes from the outside in (a 1 m wall in about a game day); what it loses goes
+  back into the island's matter as clay. Measured headless in the Dunes (v178 + this): a 10 m arch stamped in 8.8 ms, 11.6 m³, 19
+  chunks, 5,532 triangles with a pillar and a ramp beside it; ticks 6.0 ms before, 5.9 ms with them standing; frames 7 to 24 ms
+  while its chunks remeshed (about 17 frames), at the old 2.5 ms budget.
+- **Not built yet** (`GOD_POWERS[id].built` false): the domains' other sixteen powers (section 8). The island's own antibody Figment
+  (rejection's answer) is the ordinary Figments for now.

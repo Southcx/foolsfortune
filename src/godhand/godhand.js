@@ -271,7 +271,7 @@ export class GodMode {
     if (input.wasPressed('KeyQ')) C.yawT += Math.PI / 4;
     if (input.wasPressed('KeyE')) C.yawT -= Math.PI / 4;
     if (input.wheel) C.distT = THREE.MathUtils.clamp(C.distT * Math.exp(input.wheel * 0.0012), T.god.minDist, T.god.maxDist);
-    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
   }
 
   /** The turnable isometric camera: pans, turns in eighths, zooms; ceilings cut away. */

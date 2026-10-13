@@ -7,6 +7,9 @@
 //   SHAPE   hold LMB and drag up or down: the ground under the hand rises or sinks, the matter taken from the ring round it (or made, and
 //           paid for). With Shift held, it levels toward the height where the stroke began (terraces).
 //   CARVE   drag a line: a channel is cut along it into the matter, its spoil heaped along the banks.
+//   SCULPT  drag a line: a creation of voxel clay is raised along it (godhand/creations.js): an arch, a bridge when long; with Shift a
+//           ramp; a short stroke a pillar. It is built from the matter the hand carries first, then from Lachryma; it crumbles back to
+//           clay over about a game day.
 // Each act is said by an event with `by` (god.scoop, god.pour, god.shape, god.carve: the domains' sources read them).
 //
 // Prior art: From Dust (the god carries a ball of matter under the hand and lets it fall); Populous (raise and lower); the Spirit
@@ -22,8 +25,9 @@ import { GOD_POWERS } from '../progress/godpowers.js';
 /** The verbs' numbers. `carry` the most the hand holds (m³, at level 1; Psychokinesis widens it: WIDEN 'psychokinesis.carry'); `takeRate` and
  *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
  *  and depth (m). Made matter costs `GOD_POWERS[id].made` Lachryma a cubic metre. */
-export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 1.4, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 } };
-export const MATTER_ARTS = new Set(['scoop', 'shape', 'carve']);
+export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 1.4, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 },
+  sculpt: { maxLen: 16, pillar: 1.5, w: 2, t: 0.6, arch: [1.5, 5], archK: 0.3, ramp: 4, rampK: 0.4 } };
+export const MATTER_ARTS = new Set(['scoop', 'shape', 'carve', 'sculpt']);
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -94,9 +98,9 @@ export class MatterArts {
         if (r.made > 0 && !this.arts.drainOk(r.made * GOD_POWERS.shape.made / Math.max(dt, 1e-3), dt)) return;
         L.moved += r.moved; L.made += r.made;
       }
-    } else if (L.id === 'carve') {
-      const b = p.clone(); const d = b.clone().sub(L.a).setY(0);
-      if (d.length() > VERBS.carve.maxLen) b.copy(L.a).addScaledVector(d.normalize(), VERBS.carve.maxLen);
+    } else if (L.id === 'carve' || L.id === 'sculpt') {
+      const b = p.clone(); const d = b.clone().sub(L.a).setY(0), max = VERBS[L.id].maxLen;
+      if (d.length() > max) b.copy(L.a).addScaledVector(d.normalize(), max);
       L.b = b;
       this.arts.showBlade(L.a, b, 0.4, true);
     }
@@ -111,9 +115,28 @@ export class MatterArts {
       L.moved = r.moved;
       sfx.thump();
     }
+    if (L.id === 'sculpt') { this.sculpt(L); return; }
     if (L.moved <= 1e-3) return;
     const ev = L.id === 'scoop' ? (L.pouring ? 'god.pour' : 'god.scoop') : `god.${L.id}`;
     g.events?.emit(ev, { moved: +L.moved.toFixed(2), made: +L.made.toFixed(2), by: 'courier' });
+  }
+
+  /** Raise the stroke's creation: a pillar, an arch (a bridge when long), or with Shift a ramp. Paid from the carried matter first, then
+   *  Lachryma for the rest (an estimate of the volume, before it is stamped). */
+  sculpt(L) {
+    const g = this.game, S = VERBS.sculpt, a = L.a, b = L.b || a, len = Math.hypot(b.x - a.x, b.z - a.z);
+    if (!g.creations) return;
+    const shift = g.input.isDown('ShiftLeft') || g.input.isDown('ShiftRight');
+    const shape = len < S.pillar ? 'pillar' : shift ? 'ramp' : 'arch';
+    const opts = shape === 'pillar' ? {} : shape === 'ramp' ? { w: S.w, rise: Math.min(S.ramp, len * S.rampK) }
+      : { w: S.w, t: S.t, h: THREE.MathUtils.clamp(len * S.archK, S.arch[0], S.arch[1]) };
+    const est = shape === 'pillar' ? Math.PI * 0.36 * 3.5 : shape === 'ramp' ? S.w * len * (opts.rise / 2 + 0.5) : S.w * S.t * len * 1.2;
+    const fromHeld = Math.min(est, this.carried), made = est - fromHeld;
+    if (made > 0 && !g.lachryma.spend(made * GOD_POWERS.sculpt.made, 'god')) { g.log.say('warn', 'Not enough Lachryma, or matter in hand, to raise that.', { key: 'sculpt.pay', throttle: 2 }); return; }
+    if (fromHeld > 0) { const H = this.held, k = fromHeld / this.carried; H.water -= H.water * k; H.sand -= H.sand * k; H.clay -= H.clay * k; }
+    const r = g.creations.raise(shape, a, b, opts);
+    sfx.thump();
+    g.events?.emit('god.sculpt', { shape, volume: +r.volume.toFixed(2), moved: +fromHeld.toFixed(2), made: +made.toFixed(2), by: 'courier' });
   }
 
   /** The ball of held matter under the hand, sized by its volume and coloured by what it is. */

@@ -9,3 +9,11 @@ The owner told me to build GODHAND.md directly, so I edited your files; please r
   creations wait on that number.
 - The Spirit Garden's clay and water (`world/garden/`) and this field could share one sim later; I did not merge them.
 - Seventeen domain powers are tabled but not built (`GOD_POWERS[id].built` false). Yours to schedule.
+
+## Voxel creations (after your v178 gate)
+- New: `godhand/voxels.js` (pure), `godhand/creations.js` (`game.creations`, made and updated in `main.js`). Sculpt is key 9 in
+  `arts.js` (ARTS) and `godhand.js` (Digit9).
+- The perf run you asked for, headless in the Dunes, is in GODHAND.md under "As built", "Creations". In short: steady ticks 6.0 ms
+  before and 5.9 ms after; 19 chunks; 5,532 triangles. Frames ran 7 to 24 ms while the chunks remeshed, about 17 frames. The remesh budget
+  is now 1.5 ms a frame (it was 2.5 for that run). One chunk's mesh plus its trimesh can still exceed the budget on its own. Moving the
+  trimesh build a frame after the mesh would be the next cut, if `npm run perf` says it matters.

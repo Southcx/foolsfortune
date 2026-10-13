@@ -8,3 +8,5 @@ Placeholders waiting for your one look:
   Each wants its weather falling over its circle (the heavy look, `LOOK[aspect].heavy`, is the obvious donor); the epics their own.
 - The drawn sign: an SVG polyline overlay for now.
 - Rejection's answer: ordinary slip jellies and Lantern Wisps. An island's antibody Figment wants a body (Espada names it).
+- Voxel creations (`godhand/creations.js`): one plain clay MeshStandardMaterial, smooth normals from surface nets. They want firing
+  marks, a glaze, and crazing as the mending eats them (`grid` densities fall evenly; the surface walks in).

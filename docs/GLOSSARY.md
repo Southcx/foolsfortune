@@ -42,6 +42,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
   drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
+- **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel clay the hand raises with Sculpt (a pillar, an
+  arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day. *Not:* Manifest's wall, the island's matter.
 - **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response to the hand scarring it: five steps, each
   calling stronger Figments, cooled by the mending and a Shrine. *Not:* the mending, a raid.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your

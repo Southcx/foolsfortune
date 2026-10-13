@@ -212,6 +212,8 @@ export function buildAchievements(game) {
   C('gx1', 'hand', 'Matter', 1, 'count', 'Handful', 'Move 100 cubic metres of matter with the hand.', 'god.moved', 100);
   C('gx2', 'hand', 'Matter', 3, 'count', 'Earthmover', 'Move 5,000 cubic metres of matter with the hand.', 'god.moved', 5000);
   C('gx3', 'hand', 'Matter', 2, 'count', 'Riverwright', 'Carve 25 channels.', 'god.carve', 25);
+  C('gx4', 'hand', 'Matter', 2, 'count', 'Bridgewright', 'Sculpt 10 creations.', 'god.sculpt', 10);
+  F('gx5', 'hand', 'Matter', 3, 'collect', 'Pillar, Arch and Ramp', 'Sculpt each of the three shapes.', (L) => ['pillar', 'arch', 'ramp'].filter((s) => L.get(`god.sculpt.${s}`) > 0).length, 3);
   C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
   F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);
   F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });
