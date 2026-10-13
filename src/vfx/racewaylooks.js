@@ -3,12 +3,13 @@
 // of one of Dovina's placeholders (world/raceway/raceway.js, race.js). World marks only: no words, no numbers.
 //   - THE SUN PLATES: each the sun's glyph set into the sand: a low glazed disc, gold rim and white face, sixteen rays; chevrons in front
 //     and behind running the track's way; a slow shimmer; ridden over, a flash and a ring of light (`raceway.plate`). ALL the plates are
-//     two instanced meshes: the glazed glyph (lit) and its glow (added light), so two draw calls however many plates.
+//     two merged meshes: the glazed glyph (lit) and its glow (added light; the chevrons scrolled by its map's offset), two draw calls.
 //   - THE START ARCH'S COUNTDOWN: three sun glyphs hung under the arch's lintel, facing the grid, lit one a count (3, 2, 1: race.count)
 //     and all three flaring on GO (race.go); they glow again while the line is next (the eight gates passed).
 //   - THE GATES: a small sun glyph on the face of each gate pillar; the next gate's pair glows (race.next), the rest stay dim; a gate
-//     passed flashes as it goes (race.gate). The arch's lamps and the gates' marks are two more instanced meshes, of the same two
-//     materials (so two programs in all, warmed at boot: prewarmRacewayLooks).
+//     passed flashes as it goes (race.gate). The arch's lamps and the gates' marks are one instanced mesh, lit by its instance colour,
+//     their glow the shared particle pools (`raceway.lamp`, `raceway.gate`). Every material is stock and matches a program the boot
+//     already builds (measured: no program added, Petra's cap).
 //   - THE CARVE'S SPARKS BY TIER: while a carve loads (skiff.carve.charge { tier }), sand and sparks off the board's outside edge, growing
 //     by tier (sand; gold sparks; white-gold sparks with the sail's glow); let go (skiff.carve { tier }), a burst and a short sand wake.
 //     The library's effects (vfx/racewayeffects.js) on the shared particle pools: no meshes of its own.
@@ -27,7 +28,6 @@
 //   racewayLooks.dress(raceway)       the sun plates, the arch's lamps and the gates' marks, built over Dovina's placeholders (hidden)
 //   racewayLooks.dressGhost(group)    the ghost's group worn as the skiff's hologram (as soon as the skiff's model is parsed)
 //   racewayLooks.plateHit(i)          sun plate i flashes and rings (heard on skiff.plate, the plate under the Courier found)
-//   prewarmRacewayLooks(scene) -> park    (main.js, before the compile: the two programs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -47,7 +47,7 @@ export const RACEWAY_LOOK = {
 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _c = new THREE.Color();
-const GLOW = new THREE.Color(RACEWAY_LOOK.colour.glow), FLARE = new THREE.Color(RACEWAY_LOOK.colour.flare);
+const GLOW = new THREE.Color(RACEWAY_LOOK.colour.glow);
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 
 // ------------------------------------------------------------------ the shapes
@@ -96,82 +96,57 @@ function sunGlyph(chevrons) {
   return mergeGeometries(parts);
 }
 
-/** The glow's atlas: the left half a sun's soft halo with rays, the right half one chevron pointing up its column (it repeats down v). */
+/** The glow's atlas: the left half a gradient across u only (bright at u 0, gone by u 0.5: the halo's fan carries its radius in u, so
+ *  its v never matters), the right half one chevron pointing up its column (repeating down v). The map's offset scrolls v, which runs
+ *  the chevrons the track's way and leaves the halo as it is: one stock material, one mesh. */
 function glowAtlas() {
-  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
-  const g = c.getContext('2d'), R = 64;
-  const gr = g.createRadialGradient(R, R, 0, R, R, R);
-  for (const [t, a] of [[0, 0.95], [0.3, 0.55], [0.62, 0.18], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
-  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-  g.save(); g.translate(R, R); g.globalCompositeOperation = 'lighter';
-  for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, len = R * (k % 2 ? 0.75 : 0.98), w = 0.05; const rg = g.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len); rg.addColorStop(0, 'rgba(255,255,255,0.35)'); rg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = rg; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a - w) * len, Math.sin(a - w) * len); g.lineTo(Math.cos(a + w) * len, Math.sin(a + w) * len); g.fill(); }
-  g.restore();
-  // the chevron (its column's middle, pointing to the canvas's top: v up), soft at its sides so the column never shows its edge
-  const cx = 192, gx = g.createLinearGradient(128, 0, 256, 0);
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 124, 0);
+  for (const [t, a] of [[0, 0.95], [0.3, 0.5], [0.65, 0.15], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 64);
+  const cx = 192, gx = g.createLinearGradient(128, 0, 256, 0); // (the chevron, soft at its sides so the column never shows its edge)
   for (const [t, a] of [[0, 0], [0.18, 1], [0.82, 1], [1, 0]]) gx.addColorStop(t, `rgba(255,255,255,${a})`);
-  g.save(); g.beginPath(); g.moveTo(cx - 46, 92); g.lineTo(cx, 40); g.lineTo(cx + 46, 92); g.lineTo(cx + 46, 116); g.lineTo(cx, 64); g.lineTo(cx - 46, 116); g.closePath();
-  g.clip(); g.fillStyle = gx; g.fillRect(128, 0, 128, 128); g.restore();
+  g.save(); g.beginPath(); g.moveTo(cx - 46, 46); g.lineTo(cx, 20); g.lineTo(cx + 46, 46); g.lineTo(cx + 46, 58); g.lineTo(cx, 32); g.lineTo(cx - 46, 58); g.closePath();
+  g.clip(); g.fillStyle = gx; g.fillRect(128, 0, 128, 64); g.restore();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
   return t;
 }
 
-/** The glow's quads (y up, +Z the way): a halo of radius 1 (the atlas's left half), and for a plate the chevron strips fore and aft
- *  (its right half), which scroll the track's way (`aScroll` 1) and fade at their ends (vertex colour). */
-function glowGeometry(chevrons) {
-  const pos = [], uv = [], col = [], scr = [], idx = [];
-  const quad = (x0, x1, z0, z1, u0, u1, v0, v1, fade, scroll, rows = 1) => {
-    const b = pos.length / 3;
-    for (let r = 0; r <= rows; r++) { const k = r / rows, z = z0 + (z1 - z0) * k, v = v0 + (v1 - v0) * k, f = fade ? Math.sin(Math.PI * k) : 1;
-      pos.push(x0, 0, z, x1, 0, z); uv.push(u0, v, u1, v); col.push(f, f, f, f, f, f); scr.push(scroll, scroll); }
-    for (let r = 0; r < rows; r++) { const a = b + r * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
-  };
-  const H = chevrons ? 2.2 : 1; quad(-H, H, H, -H, 0, 0.5, 0, 1, false, 0); // (the halo: a plate's runs out over the sand round it)
-  if (chevrons) { // (in glyph radii, as the inlaid chevrons: two strips, each a little over three chevrons long)
-    const w = 0.66, L = 0.8;
-    quad(-w, w, 1.55, 1.55 + L, 0.5, 1, 0, L / 0.36, true, 1, 6);
-    quad(-w, w, -1.55 - L, -1.55, 0.5, 1, 0, L / 0.36, true, 1, 6);
-  }
+/** A plate's glow in glyph radii (y up, +Z the way): a halo as a fan (its radius in u: 0 at the middle, 0.49 at its rim), sixteen soft
+ *  rays the same way, and the chevron strips fore and aft (the atlas's right half, v along the way). Position and uv only. */
+function plateGlowGeometry() {
+  const pos = [], uv = [], H = 2.2, N = 24, U = 0.49;
+  const tri = (a, b, c) => { for (const [x, z, u, v] of [a, b, c]) { pos.push(x, 0, z); uv.push(u, v); } };
+  for (let k = 0; k < N; k++) { const a0 = (k / N) * Math.PI * 2, a1 = ((k + 1) / N) * Math.PI * 2;
+    tri([0, 0, 0, 0.5], [Math.cos(a1) * H, Math.sin(a1) * H, U, 0.5], [Math.cos(a0) * H, Math.sin(a0) * H, U, 0.5]); }
+  for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, r1 = k % 2 ? 2.0 : 2.6, w = 0.07, r0 = 0.9;
+    tri([Math.cos(a - w) * r0, Math.sin(a - w) * r0, U * 0.35, 0.5], [Math.cos(a) * r1, Math.sin(a) * r1, U, 0.5], [Math.cos(a + w) * r0, Math.sin(a + w) * r0, U * 0.35, 0.5]); }
+  const strip = (z0, z1) => { const w = 0.66, v1 = (z1 - z0) / 0.36; tri([-w, z0, 0.5, 0], [w, z0, 1, 0], [w, z1, 1, v1]); tri([-w, z0, 0.5, 0], [w, z1, 1, v1], [-w, z1, 0.5, v1]); };
+  strip(1.55, 2.35); strip(-2.35, -1.55);
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('aScroll', new THREE.Float32BufferAttribute(scr, 1));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(new Array(pos.length).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
-  g.setIndex(idx);
   return g;
 }
 
-// ------------------------------------------------------------------ the two materials (shared by every Raceway: two programs)
+// ------------------------------------------------------------------ the materials: stock ones, each matching a program the boot warms
+// (Petra's cap on programs: measured on a primed boot, each of these added none. The plates' glyph is the vertex-coloured standard of
+// the props and the garden's ware, merged and not instanced; the marks' glyph the instanced standard of the barnacles (vfx/leviathan.js
+// as drawn there, not flat); the glow the additive mapped basic of the halos (vfx/charybdis.js), merged. The marks glow with the
+// shared particle pools.)
 let MATS = null;
 function materials() {
   if (MATS) return MATS;
   const C = RACEWAY_LOOK.colour;
   const glaze = new THREE.MeshStandardMaterial({ name: 'raceway-glyph', vertexColors: true, roughness: 0.3, metalness: 0.1, emissive: C.emissive, emissiveIntensity: 0.2 });
-  const scroll = { value: 0 };
-  const glow = new THREE.MeshBasicMaterial({ name: 'raceway-glow', map: glowAtlas(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-  glow.onBeforeCompile = (sh) => { // (the chevrons' strips run the track's way: their v scrolled, the halo's held)
-    sh.uniforms.uScroll = scroll;
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aScroll;\nuniform float uScroll;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv.y -= aScroll * uScroll;\n#endif');
-  };
-  glow.customProgramCacheKey = () => 'raceway-glow';
-  glow.userData.shared = glaze.userData.shared = true; // (one for the game: a room taken down never disposes it)
-  MATS = { glaze, glow, scroll };
+  const marks = new THREE.MeshStandardMaterial({ name: 'raceway-marks', roughness: 0.3, metalness: 0.1, emissive: C.emissive, emissiveIntensity: 0.12 });
+  const map = glowAtlas();
+  const glow = new THREE.MeshBasicMaterial({ name: 'raceway-glow', map, color: C.glow, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  glow.userData.shared = glaze.userData.shared = marks.userData.shared = true; // (one for the game: a room taken down never disposes it)
+  MATS = { glaze, marks, glow, map };
   return MATS;
 }
-
-/** One batch: an instanced glyph and its instanced glow, n each, in `parent`. */
-function batch(parent, n, chevrons, zone) {
-  const M = materials();
-  const glyph = new THREE.InstancedMesh(sunGlyph(chevrons), M.glaze, n), glow = new THREE.InstancedMesh(glowGeometry(chevrons), M.glow, n);
-  for (const m of [glyph, glow]) { m.instanceMatrix.setUsage(THREE.StaticDrawUsage); m.frustumCulled = false; if (zone) m.userData.zone = zone; for (let i = 0; i < n; i++) m.setColorAt(i, _c.set(1, 1, 1)); parent.add(m); }
-  glyph.receiveShadow = true; glyph.castShadow = false; glow.renderOrder = 3;
-  glyph.name = chevrons ? 'raceway-plates' : 'raceway-marks'; glow.name = `${glyph.name}-glow`;
-  return { glyph, glow, n };
-}
-function place(B, i, pos, q, r, glowR, glowLift, flat = 1) {
-  B.glyph.setMatrixAt(i, _m.compose(pos, q, _s.set(r, r * flat, r)));
-  _v.set(0, glowLift, 0).applyQuaternion(q).add(pos);
-  B.glow.setMatrixAt(i, _m.compose(_v, q, _s.set(glowR, 1, glowR)));
-}
+/** Copies of a geometry, each put where a matrix says, merged into one. */
+function mergedAt(geo, matrices) { return mergeGeometries(matrices.map((m) => geo.clone().applyMatrix4(m))); }
 
 // ------------------------------------------------------------------ the looks
 export class RacewayLooks {
@@ -194,9 +169,9 @@ export class RacewayLooks {
       for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopCarve());
       E.on('race.start', () => { this.lit = 0; this.flareT = 0; this.goneT = 9; });
       E.on('race.count', (e) => { this.lit = Math.max(this.lit, Math.min(3, 4 - (e.n | 0))); }); // (3, 2, 1: one lamp, two, three)
-      E.on('race.go', () => { this.lit = 3; this.flareT = 1; this.goneT = 0; });
+      E.on('race.go', () => { this.lit = 3; this.flareT = 1; this.goneT = 0; this.flareLamps(); });
       for (const n of ['race.end', 'race.finish']) E.on(n, () => { this.lit = 0; this.flareT = 0; this.goneT = 9; });
-      E.on('race.gate', (e) => { const i = (e.gate | 0) - 1; if (i >= 0) this.gateFlash[i] = 1; });
+      E.on('race.gate', (e) => { const i = (e.gate | 0) - 1; if (i >= 0) { this.gateFlash[i] = 1; this.passGate(i); } });
     }
   }
 
@@ -212,10 +187,15 @@ export class RacewayLooks {
       m.visible = false; m.userData.dressed = true;
       return { pos, q, n };
     }));
-    const B = (this.plates = batch(parent, Math.max(1, P.length), true, 'raceway'));
-    P.forEach((p, i) => place(B, i, p.pos, p.q, L.plate.r, L.plate.r, 0.13, L.plate.flat)); // (the glow in glyph radii too: its strips lie on the inlaid chevrons)
-    B.glyph.count = B.glow.count = P.length;
-    this.flash = P.map(() => 0);
+    const M0 = materials(), glyphGeo = sunGlyph(true), glowGeo = plateGlowGeometry();
+    const at = (p, flat, lift) => new THREE.Matrix4().compose(_v.set(0, lift, 0).applyQuaternion(p.q).add(p.pos), p.q, _s.set(L.plate.r, L.plate.r * flat, L.plate.r));
+    const B = (this.plates = {
+      glyph: new THREE.Mesh(P.length ? mergedAt(glyphGeo, P.map((p) => at(p, L.plate.flat, 0))) : new THREE.BufferGeometry(), M0.glaze),
+      glow: new THREE.Mesh(P.length ? mergedAt(glowGeo, P.map((p) => at(p, 1, 0.13))) : new THREE.BufferGeometry(), M0.glow),
+    });
+    glyphGeo.dispose(); glowGeo.dispose();
+    B.glyph.name = 'raceway-plates'; B.glow.name = 'raceway-plates-glow'; B.glyph.receiveShadow = true; B.glow.renderOrder = 3;
+    for (const m of [B.glyph, B.glow]) { m.userData.zone = 'raceway'; m.frustumCulled = false; parent.add(m); }
     // the start arch's lamps and the gates' marks, as raceway.js builds the arch and the pillars (her numbers: the arch 3 m outside the
     // track's edge and 11 m over the higher foot, the lintel 1.4 m deep and 2 m thick over it; a gate's pillar 2.5 m outside, 8 m tall
     // from 1.5 m under its foot, 1.5 m square)
@@ -227,23 +207,23 @@ export class RacewayLooks {
       for (let k = -1; k <= 1; k++) marks.push({ kind: 'lamp', k: k + 1, pos: mid.clone().addScaledVector(right, k * L.lamp.spacing).addScaledVector(n, 1.0), n, r: L.lamp.r, glow: L.lamp.glow }); }
     T.gates.forEach((s, gi) => { const F = T.frame(s), n = facing(s);
       for (const sg of [-1, 1]) { const p = side(s, sg * (F.w + 2.5)); marks.push({ kind: 'gate', gate: gi, pos: p.clone().setY(p.y + L.gateMark.up).addScaledVector(n, 0.75 + 0.02), n, r: L.gateMark.r, glow: L.gateMark.glow }); } });
-    const M = (this.marks = batch(parent, marks.length, false, 'raceway'));
-    marks.forEach((k, i) => { k.q = new THREE.Quaternion().setFromUnitVectors(UP, k.n); place(M, i, k.pos, k.q, k.r, k.glow / 2, 0.15); });
-    this.markList = marks;
+    const K = (this.marks = new THREE.InstancedMesh(sunGlyph(false), M0.marks, Math.max(1, marks.length)));
+    marks.forEach((k, i) => { k.q = new THREE.Quaternion().setFromUnitVectors(UP, k.n); K.setMatrixAt(i, _m.compose(k.pos, k.q, _s.set(k.r, k.r, k.r))); K.setColorAt(i, _c.set(L.colour.rim).multiplyScalar(0.3)); k.glowAt = k.pos.clone().addScaledVector(k.n, 0.25); });
+    K.count = marks.length; K.name = 'raceway-marks'; K.userData.zone = 'raceway'; K.frustumCulled = false; parent.add(K);
+    this.markList = marks; this.markH = marks.map(() => null);
     this.gateK = T.gates.map(() => 0); this.gateFlash = T.gates.map(() => 0);
-    for (const X of [B, M]) { X.glyph.instanceMatrix.needsUpdate = X.glow.instanceMatrix.needsUpdate = true; X.glyph.computeBoundingSphere?.(); }
     this.R = R;
     return this;
   }
   undress() {
-    for (const X of [this.plates, this.marks]) if (X) for (const m of [X.glyph, X.glow]) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
-    this.plates = this.marks = null;
+    for (const m of [this.plates?.glyph, this.plates?.glow, this.marks]) if (m) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
+    for (const h of this.markH || []) h?.stop();
+    this.plates = this.marks = null; this.markH = [];
   }
 
-  /** Sun plate i ridden over: its glyph and glow flash, and a ring of light runs out over the sand. */
+  /** Sun plate i ridden over: a flash on it, and a ring of light runs out over the sand. */
   plateHit(i) {
     const p = this.plateAt?.[i]; if (!p) return;
-    this.flash[i] = 1;
     this.vfxOf()?.play('raceway.plate', { pos: p.pos, normal: p.n });
   }
   /** skiff.plate: the plate the Courier is on (the payload's `plate` if it says, else the nearest within its length). */
@@ -316,17 +296,11 @@ export class RacewayLooks {
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
     if (!this.plates) return;
     const L = RACEWAY_LOOK, M = materials(), t = this.t, gl = _c;
-    // the plates: a slow shimmer through the glaze (all together) and the glow (each a beat behind the last), the chevrons running
-    M.glaze.emissiveIntensity = 0.16 + 0.1 * (0.5 + 0.5 * Math.sin(t * L.shimmer.rate));
-    M.scroll.value = (t * L.plate.scroll) % 1;
-    const B = this.plates;
-    for (let i = 0; i < this.flash.length; i++) {
-      const f = (this.flash[i] = Math.max(0, this.flash[i] - dt / L.plate.flash)), e = f * f;
-      const sh = L.shimmer.lo + (L.shimmer.hi - L.shimmer.lo) * (0.5 + 0.5 * Math.sin(t * L.shimmer.rate * 1.7 - i * 1.3));
-      B.glyph.setColorAt(i, gl.setScalar(1 + 1.3 * e));
-      B.glow.setColorAt(i, gl.copy(GLOW).multiplyScalar(sh + 1.8 * e));
-    }
-    B.glyph.instanceColor.needsUpdate = B.glow.instanceColor.needsUpdate = true;
+    // the plates: a slow shimmer through the glaze and the glow (all together), the chevrons running the track's way
+    const sh = 0.5 + 0.5 * Math.sin(t * L.shimmer.rate);
+    M.glaze.emissiveIntensity = 0.16 + 0.1 * sh;
+    M.glow.color.copy(GLOW).multiplyScalar(L.shimmer.lo + (L.shimmer.hi - L.shimmer.lo) * sh);
+    M.map.offset.y = -((t * L.plate.scroll) % 1);
     // the arch's lamps: one a count, all flaring on GO and fading after; glowing again while the line is next
     const race = this.raceOf(), running = !!race?.running, lineNext = running && race.state === 'run' && race.next >= (this.gateK.length || 8);
     this.flareT = Math.max(0, this.flareT - dt / 0.9); if (this.goneT < 9) this.goneT += dt;
@@ -341,23 +315,20 @@ export class RacewayLooks {
       const want = running && race.state === 'run' && race.next === g ? 1 : 0;
       this.gateK[g] = damp(this.gateK[g], want, want ? 10 : 3, dt); this.gateFlash[g] = Math.max(0, (this.gateFlash[g] || 0) - dt / 0.5);
     }
-    const K = this.marks, flare = this.goneT < 1.4 ? this.flareT : 0;
+    // the marks: the glyph's own brightness (instanced), and a glow of the shared particles held on each lit one
+    const K = this.marks, V = this.vfxOf();
     this.markList.forEach((k, i) => {
-      if (k.kind === 'lamp') { const v = this.lamps[k.k];
-        K.glyph.setColorAt(i, gl.setScalar(0.22 + 1.4 * Math.min(1.6, v))); // (unlit: dull bronze; lit: bright glaze)
-        K.glow.setColorAt(i, gl.copy(GLOW).lerp(FLARE, Math.min(1, flare)).multiplyScalar(1.4 * v)); }
-      else { const v = this.gateK[k.gate] * (0.85 + 0.15 * Math.sin(t * 1.9)), f = this.gateFlash[k.gate];
-        K.glyph.setColorAt(i, gl.setScalar(0.3 + 1.5 * v + 1.2 * f));
-        K.glow.setColorAt(i, gl.copy(GLOW).multiplyScalar(1.6 * v + 1.6 * f)); }
+      const v = k.kind === 'lamp' ? Math.min(1.6, this.lamps[k.k]) : this.gateK[k.gate] * (0.85 + 0.15 * Math.sin(t * 1.9)) + (this.gateFlash[k.gate] || 0);
+      K.setColorAt(i, gl.set(L.colour.rim).multiplyScalar(0.3 + 1.3 * v));
+      const on = v > 0.25, H = this.markH[i];
+      if (on && !H?.alive && V) this.markH[i] = V.play(k.kind === 'lamp' ? 'raceway.lamp' : 'raceway.gate', { pos: k.glowAt });
+      else if (!on && H) { H.stop(); this.markH[i] = null; }
+      if (this.markH[i]) this.markH[i].k = Math.min(1.5, v);
     });
-    K.glyph.instanceColor.needsUpdate = K.glow.instanceColor.needsUpdate = true;
+    K.instanceColor.needsUpdate = true;
   }
-}
-
-/** The boot's warm-up (main.js): one batch of each kind 50 m down for the compile, hidden after the prime draw (the materials live on). */
-export function prewarmRacewayLooks(scene) {
-  const g = new THREE.Group(); g.position.set(0, -50, 0); g.userData.zoneFree = true; scene.add(g);
-  const a = batch(g, 1, true), b = batch(g, 1, false);
-  for (const X of [a, b]) for (const m of [X.glyph, X.glow]) { m.setMatrixAt(0, _m.identity()); m.userData.zoneFree = true; }
-  return () => { g.visible = false; };
+  /** GO: every lamp flares at once (a burst of the shared particles at each). */
+  flareLamps() { const V = this.vfxOf(); for (const k of this.markList || []) if (k.kind === 'lamp') V?.play('raceway.lamp.go', { pos: k.glowAt }); }
+  /** A gate passed: its two marks flash as it goes. */
+  passGate(g) { const V = this.vfxOf(); for (const k of this.markList || []) if (k.kind === 'gate' && k.gate === g) V?.play('raceway.gate.pass', { pos: k.glowAt }); }
 }

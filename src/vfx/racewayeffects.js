@@ -7,6 +7,8 @@
 //   skiff.carve.release              the carve let go: a flash, a ring, sand thrown back, sparks (`power` the tier's)
 //   skiff.carve.wake                 the short sand wake after a release, held at the stern for 0.6 real seconds
 //   raceway.plate                    a sun plate ridden over: a ring of light out over the sand, a flash, glints rising
+//   raceway.lamp / raceway.gate      held on a lit countdown lamp / the next gate's marks: a soft glow (`k` its brightness)
+//   raceway.lamp.go / raceway.gate.pass   GO's flare at each lamp / a gate passed
 //
 // Prior art: Mario Kart's drift sparks and mini-turbo tiers (blue, orange, purple: ours are sand, gold, white), the rooster tail of
 // Wave Race's and Jet Moto's craft (the sand thrown off the edge, the wake after), F-Zero's dash plates (the flash and the ring as one
@@ -47,6 +49,22 @@ export const RACEWAY_EFFECTS = {
   'skiff.carve.wake': { layers: [
     { type: 'sprites', pool: 'alpha', rate: 70, dur: 0.6, shape: 'puff', spawn: 'disc', r: 0.5, dir: 'up', speed: [0.5, 1.5], size: [0.3, 0.45], sizeEnd: 1.2, life: [0.6, 1.0], drag: 2.5, gravity: -0.1, color: 0xe8b070, alpha: 0.42, spin: [-1, 1] },
     { type: 'sprites', pool: 'alpha', rate: 60, dur: 0.6, shape: 'chip', dir: 'cone', cone: 50, speed: [2, 4], size: [0.04, 0.08], life: [0.3, 0.5], gravity: 9, drag: 1, color: SAND, alpha: 0.9, alphaEnd: 0.5 },
+  ] },
+  // ---- the start arch's lamps and the gates' marks: a glow held on each lit one (`k` its brightness), GO's flare, a gate passed
+  'raceway.lamp': { layers: [
+    { type: 'sprites', rate: 26, dur: Infinity, shape: 'core', size: [2.6, 3.2], sizeEnd: 3.6, life: 0.3, color: 0xffd27a, alpha: 0.3, alphaEnd: 0 },
+  ] },
+  'raceway.lamp.go': { layers: [
+    { type: 'sprites', count: 1, shape: 'core', size: 5, sizeEnd: 2, life: 0.4, color: 'white', colorEnd: 'gold' },
+    { type: 'sprites', count: 1, shape: 'ring', size: 1, sizeEnd: 5, life: 0.35, color: 0xfff4dc, alphaEnd: 0, rot: 0 },
+    { type: 'sprites', count: 10, shape: 'sparkle', spawn: 'sphere', r: 0.8, dir: 'sphere', speed: [1.5, 3], size: [0.2, 0.3], sizeEnd: 0, life: [0.35, 0.6], drag: 3, color: 'white', colorEnd: 'gold' },
+  ] },
+  'raceway.gate': { layers: [
+    { type: 'sprites', rate: 22, dur: Infinity, shape: 'core', size: [1.8, 2.3], sizeEnd: 2.6, life: 0.3, color: 0xffd27a, alpha: 0.3, alphaEnd: 0 },
+  ] },
+  'raceway.gate.pass': { layers: [
+    { type: 'sprites', count: 1, shape: 'core', size: 3.4, sizeEnd: 1, life: 0.3, color: 'white', colorEnd: 'gold' },
+    { type: 'sprites', count: 8, shape: 'glint', spawn: 'sphere', r: 0.6, dir: 'up', speed: [1.5, 3], size: [0.2, 0.3], sizeEnd: 0, life: [0.3, 0.5], drag: 2, color: 'white', colorEnd: 'gold' },
   ] },
   // ---- a sun plate ridden over: F-Zero's dash plate, a ring of light run out over the sand
   'raceway.plate': { layers: [
