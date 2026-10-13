@@ -48,7 +48,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Pneuka Jar", never "the jar". *Not:* the vessel. → detail
 - **the bracelet** (working name; `Bracelet`, `src/vfx/bracelet.js`; `docs/plans/BRACELET.md`) — one ring worn by the Vessoul in every form
   (the hand's wrist, the Pneuka Jar's choker, the Courier's wrist): seven domain sockets and a clasp holding charms; its glow is the hand's
-  state. *Not:* a tool, a Possibilikey, the data drain's petals (`vfx/datadrain.js`).
+  state. *Not:* a tool, a Possibilikey, .hack's bracelet (the data drain plays on the Veritome).
 
 ## 2. Lachryma, feelings, weather and money
 
