@@ -88,14 +88,14 @@ export class GodPowers {
     const r = withCost(g.lachryma, B?.costOf?.(dom) ?? 1, fn);
     if (!this.emitted || this.repeating || !B) return r;
     for (const [charm, C] of B.on(dom)) {
-      if (!C.repeat) { g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' }); // (`id`: the label the ring's look keys on) continue; }
+      if (!C.repeat) { g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' }); continue; }
       if (NO_REPEAT.has(id)) continue;
       let t = 0; const P = this;
       this.keep({ id: 'repeat', tick(dt) {
         if ((t += dt) < C.delay) return false;
         P.repeating = true;
         try { withCost(g.lachryma, B.costOf(dom), fn); } finally { P.repeating = false; }
-        g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' }); // (`id`: the label the ring's look keys on)
+        g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' });
         return true;
       } });
     }

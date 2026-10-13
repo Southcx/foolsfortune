@@ -658,6 +658,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     a vertical ray along a grid line through, and a body set down on whole metres stood on one.
 225. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
     bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
+NEW:gate-reads-exit-code. **A gate's result is its exit code, never its last line through a pipe**: `npm run check | tail` and
+    `npm run build | tail` return tail's success, so a failing gate let a broken commit through. Chain a gate bare, or with `set -o pipefail`.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3660,3 +3662,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `shadowSide: THREE.BackSide` on the corrupted material, so its shadow uses the depth program the slip jelly already warms.
   The shadow looks the same. Measured: Corrupt, Meteor, Thunderhead, Hailstorm and Volcano fired twice, 0 compiled late.
 - **Rule:** 225.
+
+### 2026-10-13 · A broken god hand was committed past a failing check and build (Dovina, the bracelet's sync)
+- **Seen:** commit 375c381 pushed `godhand/powers.js` with a syntax error. `npm run check` printed FAILED and the build errored, but the
+  commit and the push ran anyway.
+- **Cause:** two causes. An inline `// (...)` comment, added by a find-and-replace into a one-line `if (...) { emit(...); continue; }`,
+  commented out the `continue; }` that closed the block. And the gates ran as `npm run check 2>&1 | tail -1 && ...`: a pipe's status is
+  its last command's, so tail's success let the `&&` chain go on.
+- **Fix:** the comment removed (cd 2026-10-13); the TWIN repeat retried headless (one repeat, `bracelet.charm:TWIN`).
+- **Rule:** NEW:gate-reads-exit-code.
