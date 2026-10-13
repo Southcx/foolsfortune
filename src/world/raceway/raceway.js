@@ -7,8 +7,8 @@
 // wind is the course's own: it follows the track (Wind Waker HD's Swift Sail), swung off it where the track says. Built the first
 // time it is entered, never for a session that does not come. Reached from the Index (THE RACEWAY); raced from the start's pillar
 // (world/raceway/race.js).
-// Placeholder looks, Calissa's to make: the sun plates (gold slabs), the sandfall (a flat sheet down the face: her scrolling-UV
-// curtain is the plan), the gates' pillars are the Dunes' own.
+// The looks are Calissa's: the sandfall (vfx/racewaysandfall.js); the sun plates' glyphs, the arch's lamps and the gates' marks dress
+// the placeholders here when `game.racewayLooks` is in; the gates' pillars are the Dunes' own.
 //
 // Prior art: the test tracks of racing games (Gran Turismo's licence courses, MK8's Time Trial as the first place a track is learned);
 // Motorstorm's and SSX's courses cut into open ground; the Dunes themselves (world/dunes/dunes.js), whose parts are all reused.
@@ -24,6 +24,7 @@ import { mergeStatic } from '../../render/merge.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Barrier } from '../dunes/barrier.js';
 import { SlipGeyser } from '../../vfx/slipgeyser.js';
+import { RacewaySandfall } from '../../vfx/racewaysandfall.js';
 import { track, RW, FEATURES } from './track.js';
 
 const GEYSER = { up: 18, r: 4, over: 4 }; // (as the Dunes' slip geysers: world/dunes/geysers.js LAUNCH)
@@ -77,6 +78,7 @@ export class Raceway {
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 20, y1: RW.y + 300 });
     this.buildKit();
     this.buildMarks();
+    g.racewayLooks?.dress(this); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
   }
 
   /** The Dunes' ruins, set out as a circuit's furniture: the start's arch, a pair of pillars at each gate, the slalom's columns, the
@@ -123,20 +125,18 @@ export class Raceway {
       const s = T.sOf(P.cp, P.at), Fr = T.frame(s + P.len / 2), c = this.local(Fr.x - Fr.fz * P.lat, Fr.z + Fr.fx * P.lat);
       const m = new THREE.Mesh(new THREE.PlaneGeometry(P.w * 2, P.len).rotateX(-Math.PI / 2), plateMat);
       m.position.copy(c).setY(c.y + 0.08); m.rotation.y = Math.atan2(Fr.fx, Fr.fz); m.userData.zone = 'raceway'; m.renderOrder = 3; g.scene.add(m);
-      this.plates.push({ s0: s, s1: s + P.len, lat: P.lat, w: P.w, mesh: m });
+      this.plates.push({ s0: s, s1: s + P.len, lat: P.lat, w: P.w, mesh: m, index: this.plates.length });
     }
     for (const [i, G] of F.geysers.entries()) {
       const s = T.sOf(G.cp, G.at), Fr = T.frame(s), pos = this.local(Fr.x - Fr.fz * G.lat, Fr.z + Fr.fx * G.lat);
       const look = new SlipGeyser({ height: 24, radius: GEYSER.r, seed: 40 + i }); look.group.position.copy(pos); look.group.userData.zone = 'raceway'; g.scene.add(look.group);
       this.geysers.push({ look, pos, thrown: false });
     }
-    // the sandfall's sheet, down the face under the lip: a placeholder for Calissa's curtain (SKIFF-RACING.md 6); where it hangs is data
+    // the sandfall, down the face under the lip: where it hangs is data, its look Calissa's
     { const L = F.glideLip, s = T.sOf(L.cp, 3), Fr = T.frame(s), top = this.local(Fr.x, Fr.z), base = T.frame(T.sOf(L.cp + 1, 0)), w = Fr.w * 2 + 10;
       const h = top.y - (RW.y + base.y) + 2;
       this.sandfall = { top: top.clone(), dir: new THREE.Vector3(Fr.fx, 0, Fr.fz), width: w, height: h };
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: 0xe8b070, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
-      m.position.copy(top).addScaledVector(this.sandfall.dir, 0.6).setY(top.y - h / 2 + 1); m.rotation.y = Math.atan2(Fr.fx, Fr.fz); m.userData.zone = 'raceway'; m.name = 'sandfall';
-      g.scene.add(m); this.sandfall.mesh = m; }
+      this.sandfall.look = new RacewaySandfall(g, { ...this.sandfall, zone: 'raceway' }); this.sandfall.mesh = this.sandfall.look.object; g.scene.add(this.sandfall.mesh); } // (Calissa's curtain: vfx/racewaysandfall.js, placed at `top` along `dir`)
   }
 
   // ------------------------------------------------------------------ what the board asks
@@ -175,6 +175,7 @@ export class Raceway {
     const g = this.game, cam = g.camera, here = this.active;
     this.chunks.update(cam.position.x - RW.x, cam.position.z - RW.z);
     if (!here) return;
+    this.sandfall?.look?.update(dt);
     this.barrier.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
     // the Courier's place on the line, followed along it (never jumping to a switchback's other leg), found afresh when far off it

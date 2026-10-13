@@ -343,7 +343,7 @@ export class Skiffing extends Tech {
 
     // ---- the sun plates (the Raceway's): a flare's push, free
     const plate = D.plateAt?.(P.pos);
-    if (plate && plate !== this.lastPlate && !held) { this.kick(PLATE.add, PLATE.dur, PLATE.kick); g.events?.emit('skiff.plate', { by: 'courier' }); }
+    if (plate && plate !== this.lastPlate && !held) { this.kick(PLATE.add, PLATE.dur, PLATE.kick); g.events?.emit('skiff.plate', { plate: plate.index, by: 'courier' }); }
     this.lastPlate = plate;
 
     // ---- steering: it turns on the spot, and carves once it is moving (less so the faster it goes)

@@ -254,7 +254,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the Emocean** — the collective unconscious, a sea of pure Lachryma outside every island.
 - **an Island of Ego** — an island precipitated out of the Emocean where an identity is strong enough; **Anagami Island** is this one, and
   **Kaolin Anagami** the ego it is.
-- **layer** (`LAYERS`, `src/feedback/cartography.js`) — one level of the map: the upper floor, the ground floor, the basement, the Dunes.
+- **layer** (`LAYERS`, `src/feedback/cartography.js`) — one level of the map: the upper floor, the ground floor, the basement, the Dunes, the Great
+  Dunemaw; and places at the Dunes' height told apart by their render zone, not their height (the Raceway, Margarite's dock).
 - **room** — a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **place** (`game.places`, `src/world/places.js`) — a named spot anything can be sent to by id (`well.mouth`, `kiln`). A point, *not* a room.
 - **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the Zone of Influence, nor a crystal's fret. →

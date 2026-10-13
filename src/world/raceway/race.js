@@ -124,6 +124,7 @@ export class Race {
       const hull = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 2.6), m); hull.position.y = -0.5;
       const sail = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -0.3, 0.6), new THREE.Vector3(0, 2.6, 0.2), new THREE.Vector3(0, -0.3, -0.9)]), m); sail.material.side = THREE.DoubleSide;
       this.ghost.add(hull, sail); this.game.scene.add(this.ghost);
+      this.game.racewayLooks?.dressGhost(this.ghost); // (Calissa's hologram of the skiff)
     }
     const F = G.frames, t = this.lapT; let i = 0; while (i < F.length - 2 && F[i + 1][0] < t) i++;
     const a = F[i], b = F[i + 1], u = Math.max(0, Math.min(1, (t - a[0]) / Math.max(1e-3, b[0] - a[0])));
