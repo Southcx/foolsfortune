@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------------------
 import { SHELL_EFFECTS } from './shelllooks/index.js'; // (the caster shells' looks, batches 2 to 4: one module a family)
 import { groundRing, scorch, debris } from './shelllooks/kit.js'; // (the ludicrous ten's ground rings, scorches and debris)
+import { RACEWAY_EFFECTS } from './racewayeffects.js'; // (the carve's sparks by tier and the sun plate's ring: vfx/racewaylooks.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -753,4 +754,5 @@ export const LIBRARY = {
   ] },
   // (batches 2 to 4, each family's effects in its own module: vfx/shelllooks/<family>.js)
   ...SHELL_EFFECTS,
+  ...RACEWAY_EFFECTS,
 };
