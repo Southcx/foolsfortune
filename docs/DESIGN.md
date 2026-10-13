@@ -406,5 +406,5 @@ The skiff took from the racers what fits a sail. From MK8: the carve (a drift lo
 (here the solar start, a pump timed to GO), and time trials with a ghost. From Sonic Riders: tricks refill the boost (a spin landed square
 gives Lachryma). From SSX: the late pop. From MK8 and F-Zero: boost pads (here sun plates). The glide flies as a hang glider: W dives,
 S flares, Q and E bank, A and D spin. A bail now has one rule: something stopped you head-on, or the board landed pointing away from its
-travel. The Raceway is the test circuit, built of the Dunes' kit, with the sandfall drop the owner asked for. Rivals (the siblings),
-slipstream and grind rails are the next steps; items and rubber banding are left out on purpose.
+travel. The Raceway is the test circuit, built of the Dunes' kit, with the sandfall drop the owner asked for. Grind rails come next, on
+the skiff alone (no other tool: the owner); rivals and slipstream are skipped for now; items and rubber banding are left out on purpose.

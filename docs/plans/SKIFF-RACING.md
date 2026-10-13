@@ -35,8 +35,8 @@ A good base: a sail is a throttle you have to manage, and the trick-for-speed lo
 | **respawn on the track** | MK8's Lakitu | **yes** | Left far off the track for a few seconds, or R: set back on the track at the last gate, mounted. |
 | **wind as course design** | (ours) | **yes** | **the course's wind**: on the Raceway the wind follows the track (Wind Waker HD's Swift Sail), mostly behind you, swung across in the gale section. Headwinds are left out: on a lap they are only slow. |
 | shortcuts at a risk | MK8, Sonic Riders | yes, through the glide | Off the sandfall, a skilled dive lands sooner than drifting down. Branching paths come later. |
-| grind rails | Sonic Riders, R&C, Jet Set Radio | later | Wants the hook (the grapnel) as a rail grab; its own round. |
-| rivals and slipstream | MK8, Sonic Riders' turbulence | later | The siblings as rivals (a mind that races) is the natural next step, and slipstream comes with them. |
+| grind rails | Sonic Riders, R&C, Jet Set Radio | later, the skiff alone | **The Solar Skiff only, no other tool** (the owner, 2026-10-13). The board's own keel fin drops onto a rail it lands on or hops onto; Space hops off. See section 7. |
+| rivals and slipstream | MK8, Sonic Riders' turbulence | **skipped** (the owner, 2026-10-13) | Not now. Slipstream only makes sense with rivals, so it waits with them. |
 | items | MK8 | no | Skill only: the flare is the item. |
 | rubber banding | MK8 | no | A time trial wants none. |
 
@@ -102,6 +102,21 @@ measures the line and they move with it). Each medal pays once, ever (a test, no
 Events: `race.start`, `race.go { solarStart }`, `race.gate { lap, gate, split }`, `race.lap { lap, seconds, best }`,
 `race.finish { seconds, medal, laps }`, `race.end { why }`, `race.respawn`; and the skiff's new `skiff.carve { tier }`,
 `skiff.pop { late }`, `skiff.plate`, `skiff.landhard { impact }`.
+
+## 7. Grind rails: the skiff alone (a spec for a later round)
+
+The owner's rule (2026-10-13): a grind involves **no tool but the Solar Skiff**. No hook, no grapnel, nothing drawn from the belt.
+- **Getting on.** The board lands on a rail, or hops onto it (Space, as any hop), within 1.2 m of its line and heading within 35° of it.
+  The keel fin (the hull's forefoot fin, boat.js) drops and locks to the rail. No button for it.
+- **On the rail.** The board runs along the rail's line at the speed it came in with. A downhill rail gains speed, an uphill one loses it,
+  and so does the sail's wind along it. The sail stays worked as on the sand (W, S), and Shift still flares.
+- **Balance** (Tony Hawk's). A/D lean against a slow drift that grows with time on the rail. Lean too far one way and you drop off that
+  side: no bail, you land and ride on. Holding balance a long time makes the grind a trick, and like a spin it pays Lachryma.
+- **Getting off.** Space hops off: a pop, higher if timed at the rail's kicked end. Or ride off the end.
+- **Data.** Rails are polylines on the track, as features (`FEATURES.rails`: from a control point and metres on, a height over the
+  track, a length), drawn from the Dunes' kit: a fallen column, a toppled arch's lintel, a ruin wall's top.
+- **Events.** `skiff.grind { by }` on, `skiff.grind.end { metres, why: 'hop' | 'end' | 'fell', by }` off.
+- No bail on a rail: falling off is only a lost line.
 
 ## 6. Who does what
 
