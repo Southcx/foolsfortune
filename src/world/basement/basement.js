@@ -474,7 +474,7 @@ export class Course {
       { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
       { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
     ];
-    this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
+    this.menu = new IndexMenu(this.game, this.rooms, (id) => this.game.gateRing?.depart(() => this.goRoom(id)) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js)
     this.game.indexMenu = this.menu;
     this.console = { x: cx, z: cz };
     this.game.interact?.add('index', (P) => { // (the hub's Index offers the chevron as every other F does: SWEEPS group 8)
