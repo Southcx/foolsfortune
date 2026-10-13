@@ -72,7 +72,7 @@ flying. A and D turned the heading but not the velocity, so a turn in the air al
   sine of the pitch, less drag (0.008 v²), less the bank's drag; vertical speed is the path's; under 9 m/s it stalls and sinks faster.
 - **No brake in the air at all**: S lets the sail down and nothing more. Every turn in the air carries the velocity with it.
 
-## 5. The Raceway (working name, Espada's to name)
+## 5. The Raceway (Espada's name, 2026-10-13)
 
 A test circuit built of the Dunes' kit (their sand, sky, dune noise, ruins, columns, arches, geysers) in a place of its own, at the
 Dunes' layer far to the east (x 5200). It is entered from the Index (R: THE RACEWAY) and raced from the start line (F at the start's
@@ -126,5 +126,6 @@ The owner's rule (2026-10-13): a grind involves **no tool but the Solar Skiff**.
   face with a scrolling UV texture of falling sand (the owner's ask: elegant and cheap), with a puff where it meets the hill; the carve's
   sparks by tier; the sun plates' glyph; the gate's countdown lights; the ghost's look; anything the track wants to read.
 - **Wanda**: the race's cue, the countdown, the carve's charge and release, the plate, the gate chime.
-- **Espada**: the place's name, the sun plates', the carve's and the solar start's player words.
+- **Espada**: named them (2026-10-13): the Raceway, the carve, a late pop, a sun plate (its UI label: Boost pad), the glide lip, the
+  solar start; the log's lines stand.
 - **Petra**: the gate; the medal line, measured.

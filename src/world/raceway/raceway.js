@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE RACEWAY (working name, Espada's to name; docs/plans/SKIFF-RACING.md section 5): a test circuit for the Solar Skiff, built of the
+// THE RACEWAY (Espada's name; docs/plans/SKIFF-RACING.md section 5): a test circuit for the Solar Skiff, built of the
 // Dunes' kit (their sand and its shader, their sky and light, their ruin pillars, columns and slip geysers) in a place of its own at
 // the Dunes' layer, far east of them (render/zonemap.js 'raceway'). The ground is the track's one height function (world/raceway/
 // track.js), sampled into the same chunked terrain and physics height field the Dunes use; the board reads it through the same few
