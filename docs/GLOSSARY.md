@@ -21,13 +21,16 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   text.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`) — the Courier's store of Lachryma; it pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
-- **vessel** (`game.vessel`, `src/courier/vessel/`) — the Courier's clay body and what is done to it: glazes, cracks, shattering, reforming.
-  *Not:* the god hand's jar.
-- **crack** — damage to the vessel, per region (mask, torso, arms, legs); it mends slowly or at once at the kiln (MEND). *Not:* a pot's cracks.
+- **vessel** (`game.vessel`, `src/courier/vessel/`) — the Courier's body, of its base material, and what is done to it: glazes, cracks, shattering,
+  reforming. Its words hold for any material (`docs/plans/REGISTERS.md`). *Not:* the god hand's jar.
+- **base material** (working name, Espada's and the owner's to name) — what the vessel is made of: clay first (Kaolin Anagami's format), others
+  earned where other islands adapted it (a Glass Courier); your look, carried everywhere. *Not:* a material (Soul Alchemy's), a glaze.
+- **crack** — damage to the vessel, per region (mask, torso, arms, legs), in the base material's way (clay cracks, glass crazes); it mends
+  slowly or at once at a finishing station (on Anagami, the kiln: MEND). *Not:* a pot's cracks.
 - **shatter / made whole** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`) — the Courier's death, and being made whole again
   in the workshop. Player text says "made whole" or "re-formed", never "reform".
-- **glaze** (`src/courier/vessel/glazes.js`) — a colour fired onto a region at the kiln: FIRE keeps a look, MEND refires the cracks; a rare one
-  also has a kiln pattern. *Not:* a material, nor a Firing. → detail
+- **glaze** (`src/courier/vessel/glazes.js`) — the vessel's coat, a colour fired onto a region at a finishing station (on Anagami, the kiln):
+  FIRE keeps a look, MEND refires the cracks; a rare one also has a kiln pattern. Holds for any base material. *Not:* a material, nor a Firing. → detail
 - **sibling** (`game.party`, `src/coop/sibling.js`) — one of the five divisions as a Courier in the owner's world, with its own mind and tool; met
   once, then called or dismissed at a Shrine. *Not:* a spirit, nor a guest. → detail
 - **a sibling's shatter** (`game.siblingShatter`, `src/vfx/siblingshatter.js`; `sibling.reform`) — a sibling emptied by your blows breaking into
@@ -41,9 +44,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
-  drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
-- **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel clay the hand raises with Sculpt (a pillar, an
-  arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day. *Not:* Manifest's wall, the island's matter.
+  drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
+- **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel matter of the island's firm layer the hand raises
+  with Sculpt (a pillar, an arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day, unless Set. *Not:* Manifest's wall, the island's matter.
 - **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
   each a domain's, opened by its level / each power's numbers from where it opens to 99, Creative mode at the top (GODHAND.md 11). *Not:* a widening.
 - **the bracelet / a charm** (working names, Espada's and the owner's; `docs/plans/BRACELET.md`) — the one ring the Vessoul wears in every form
@@ -91,7 +94,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the day's phases** (`phaseAt`, `lightAt`) — night, dawn, daytime and dusk on the game clock. *Not:* a game day.
 - **faucet / drain** — where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute`) — what ordinary play should earn in a real hour (480 cubes); a source is judged as a multiple of it.
-- **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden). *Not:* any drain (the Tithe is a drain, not a sink).
+- **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden, base materials). *Not:* any drain (the Tithe is a drain, not a sink).
 - **crude** (`ECON.crude`) — liquid Lachryma as a cargo, carrying no feeling, named for its **field** (`ECON.crude.fields`: Margarite, Dunemaw,
   Entropolis) as oil is Brent; refined, it takes a feeling again (wonder Lachryma); volatile, so it can spill. *Not:* a bauble, nor graded by feeling (the owner, 2026-10-11).
 - **cask** (`cask.<field>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
@@ -202,7 +205,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.
-- **clapperjar** (`clapper`, `src/creatures/clappers.js`) — the clapping pots, the folk's lowest tier (earthenware). The code's shorter word is
+- **clapperjar** (`clapper`, `src/creatures/clappers.js`) — the clapping pots, the clay folk's lowest tier (earthenware). The code's shorter word is
   accepted.
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
 - **the Lantern Wisp** (`game.wisps`, `src/creatures/wisp/`) — the Dunes' second creature, on the owner's model and its clip suite: it
@@ -221,8 +224,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   sparring circle's lectern. *Not:* a tool's string (the moveset). → detail
 - **the Pithos** — what the folk call the Great Slip Jelly, the Great Dunemaw's FOE, crowned with the broken urn it grew in; the log says "the
   Great Slip Jelly". → detail
-- **the folk** (`npc`, `src/npc/`) — the clay people, fragments of Kaolin Anagami: earthenware (clapperjars) < stoneware < porcelain < the Court.
-  In the game "the folk" are the ones who speak. → detail
+- **the folk** (`npc`, `src/npc/`) — any island's people who speak. Anagami's are **the clay folk**, fragments of Kaolin Anagami, in their tiers:
+  earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
@@ -406,7 +409,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Guard break (placeholders for Espada's word). *Not:* a label. → detail
 - **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
-- **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's kiln glaze, tile and icon; never a feeling's colour.
+- **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's colour, sign and icon; never a feeling's colour. Anagami dresses it as a
+  kiln-glaze tile; the identity is the colour and the sign.
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **the lens's frame** (`VeritomeFrame`, `src/vfx/veritomeframe.js`) — four corners round what a plate would hold, in the third person while the
@@ -431,7 +435,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a grown skin** (`FrostBisque`, `vfx/caster/frostbisque.js`) — a skin grown over a body from a hit: fired to bisque, frosted, or crazed
   dry. *Not:* a glaze, the vessel's cracks.
 - **a portal / a rift** (`Portal`, `vfx/caster/portal.js`) — a linked pair of crude-rimmed eyes, each a window on the other's view / one
-  alone on the ground, the Emocean turning below it. *Not:* a seam, a Well's mouth.
+  alone on the ground, the Emocean turning below it. The god power Portal (Ouranurgy) opens a portal. *Not:* a seam, a Well's mouth.
 - **damage look / aura / temper** (`damage.<type>`, `aura.<status>`, `game.temper`) — a damage type's colour and motif on a hit; a status shown
   round its creature; a creature's body showing its mental state (never text).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`) — how the weather and hour are drawn: streaks, motes, halo, aurora, rainbow,
@@ -525,7 +529,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
 | card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
-| tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
+| tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the clay folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the clay folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
 | chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail | "a chain of ...", "a feeling chain" |
@@ -539,7 +543,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`) | "a hop" is the Emocean's; "the Jar's hop". A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (air, ground); the Great Slip Jelly's; the god hand's clip | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry; a mount on the rail; the Pneuka Jar's clip | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
-| kiln | the workshop's (the kiln station, `kilnUI`); the Heavenly Kiln (`Tribulation`, `world/garden/tribulation.js`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
+| kiln | the workshop's (the kiln station, `kilnUI`: Anagami's finishing station); the Heavenly Kiln (`Tribulation`, `world/garden/tribulation.js`: dressed by your base material, REGISTERS.md 11) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's garden strokes (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden `realm.jarBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code `jarBody` for the garden's body |
 | emote | the Courier's (`EMOTES`); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
@@ -552,7 +556,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
-| glaze | the Courier's (`GLAZES`, fired at the kiln); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
+| glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words

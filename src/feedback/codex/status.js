@@ -3,8 +3,8 @@
 // "The World" at all 99) and Soul Alchemy's seven attributes (their ranks), each with its numbers beneath as stats (docs/plans/
 // CLARITY.md: shown, then said). A faint outer ring on each axis is the way to the next step: EXP to the next level, an attribute's
 // seasoning. Drawn on demand from game.psyche and game.alchemy, never kept in step by hand. The look is Calissa's (2026-10-13): the next
-// step a dashed outline (each axis pushed out by its own progress), the domains' tips in their kiln glazes on unglazed bisque (kintsugi
-// gold at "The World"), the attributes' tips in their own wheel hues over your soul colour; three faint rings, axes in ink, numbers as
+// step a dashed outline (each axis pushed out by its own progress), the domains' tips in their colours over the Codex's own amber (the
+// System's register, docs/plans/REGISTERS.md 10; gold, the tarot card's, at "The World"), the attributes' tips in their own wheel hues over your soul colour; three faint rings, axes in ink, numbers as
 // stat chips beneath and none on the chart.
 //
 // Prior art: the radar (spider) chart of Pro Evolution Soccer's player cards and Persona 5's social stats; OSRS's skills tab (a level
@@ -97,7 +97,7 @@ export function renderStatus(codex, host) {
   const total = doms.reduce((n, d) => n + d.lv, 0), world = doms.every((d) => d.lv >= MAX_LEVEL);
   const a = document.createElement('div'); a.className = 'st-card';
   a.innerHTML = `<h3>THE DOMAINS</h3><div class="st-sum"><b>${total}</b>total level of ${MAX_LEVEL * 7}${world ? ' · THE WORLD' : ''}</div>`
-    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(201,168,130,.35)', world ? '#d4a53c' : '#c9a882') // (unglazed bisque; kintsugi gold at The World)
+    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(255,178,122,.28)', world ? '#d4a53c' : '#ffb27a') // (the Codex's amber; The World's gold)
     + `<div class="st-chips">${doms.map((d) => `<span class="st-chip"><i style="background:${d.colour}"></i>${d.name}<b>${d.lv}</b><small>${d.lv >= MAX_LEVEL ? 'max' : `${Math.round(d.into * 100)}% to ${d.lv + 1}`}</small></span>`).join('')}</div>`;
   // Soul Alchemy's attributes: a rank each (0..ranks), its seasoning toward the next as the faint ring
   const atts = Object.values(ATTRIBUTES).map((t) => {

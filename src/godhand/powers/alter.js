@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // ALTERATION'S GOD POWER BEYOND THE MATTER'S VERBS (docs/plans/GODHAND.md section 8), a handler for the runner (godhand/powers.js).
 // Sunder, Swell and Wring are the God Arts of old (godhand/arts.js); Shape and Carve are the matter's verbs (godhand/matterarts.js).
-//   TRANSMUTE  press: the sand under the hand turns to clay and the clay to sand. With Shift, the Lachryma there takes your draught's
+//   TRANSMUTE  press: the loose layer under the hand turns firm and the firm loose (on Anagami, sand to clay and back). With Shift, the Lachryma there takes your draught's
 //              feeling (the feeling you last drank).
 // Prior art: Fullmetal Alchemist's circle (the same matter, another form); From Dust's Jungle and Water stones that turn the ground.
 // ---------------------------------------------------------------------------------------

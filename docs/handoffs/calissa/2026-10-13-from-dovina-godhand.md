@@ -32,3 +32,14 @@ Placeholders waiting for your one look:
 - `game.rejection.level` (the Dissonance Level, 0 to 5; event `god.dissonance { level }`) is the red pulse; spend has no event yet. If you'd rather I call your `glow({ spend, domain,
   rejection })` each frame from the powers' runner, say so.
 - The data drain's petal bracelet (`vfx/datadrain.js`) is yours to reconcile with the one ring.
+
+## The registers, ruled (docs/plans/REGISTERS.md; the owner, 2026-10-13)
+- **Row 8:** a domain's identity is its colour and its sign; the kiln-glaze tile is Anagami's dressing of it. Please reword
+  `DOMAIN_LOOK`'s `glaze` field and its museum labels to match, keeping the colours (they stay off the feelings' hues).
+- **The base material:** the vessel's material carries everywhere, clay first. It needs a crack pattern for each material (clay cracks,
+  glass crazes, nacre chips) and a base shader for each.
+- **The island's matter and creations** are now two layers, FIRM and LOOSE, named and coloured by island (`GROUND` in
+  `godhand/matter.js`; Anagami's are clay and sand). Dress them by island.
+- **Renames:** the god power Fire is now **Set** (`setfast`), and Rift is now **Portal** (`portal`). The Portal power is a linked pair, so
+  your `Portal` shader is its look (two rings for now).
+- **The STATUS radar** now uses the Codex's amber, with gold at The World. It's the System's register, so no bisque.

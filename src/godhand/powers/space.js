@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // OURANURGY'S GOD POWERS (docs/plans/GODHAND.md section 8): the rules of space and time over the island, as handlers for the runner
 // (godhand/powers.js).
-//   RIFT    drag from one point to another: a linked pair of holes. A creature, a loose thing or the Courier that comes within one
+//   PORTAL  drag from one point to another: a linked pair of holes (the glossary's portal: a rift is one alone). A creature, a loose thing or the Courier that comes within one
 //           comes out of the other, and Lachryma pooled in the fuller runs through to the emptier. Several pairs at a high level.
 //   FOLD    drag from one patch to another: the two patches of the island's matter trade places, with what stands on them.
 //   HASTEN  press: matter's time over the patch runs fast (it slumps, runs and mends that much sooner). With Shift, STAY: it stops,
@@ -11,16 +11,16 @@
 import * as THREE from 'three';
 
 const _o = new THREE.Vector3();
-const DROP = 0.3; // (real seconds a thing is left alone after coming out of a rift, so it does not go straight back in)
+const DROP = 0.3; // (real seconds a thing is left alone after coming out of a portal, so it does not go straight back in)
 
 export const SPACE = {
-  rift: {
+  portal: {
     begin(P) { return !!P.F; },
     hold(P, L) { P.arts.showBlade(L.a, L.b, 0.2, true); },
     end(P, L) {
       if (L.a.distanceTo(L.b) < 3) return;
-      const g = P.game, r = P.ramp('rift', 'r'), life = P.ramp('rift', 'dur'), col = P.domainColour('rift');
-      P.cap('rift', Math.round(P.ramp('rift', 'pairs')));
+      const g = P.game, r = P.ramp('portal', 'r'), life = P.ramp('portal', 'dur'), col = P.domainColour('portal');
+      P.cap('portal', Math.round(P.ramp('portal', 'pairs')));
       const ends = [L.a.clone(), L.b.clone()], rings = ends.map((e) => P.ring(e, r, col)), rest = new WeakMap();
       let t = 0;
       const pass = (thing, from, to, pos) => {
@@ -29,10 +29,10 @@ export const SPACE = {
         _o.copy(pos).sub(from).setY(0);
         const at = to.clone().add(_o.setLength(Math.min(_o.length(), r * 0.5) + r + 0.3)); at.y = Math.max(at.y, to.y) + 0.2;
         P.place(thing, at);
-        g.events?.emit('god.rift.pass', { what: thing.type === 'creature' ? thing.kind : thing === g.player ? 'courier' : 'thing', by: 'environment' });
+        g.events?.emit('god.portal.pass', { what: thing.type === 'creature' ? thing.kind : thing === g.player ? 'courier' : 'thing', by: 'environment' });
       };
       P.keep({
-        id: 'rift',
+        id: 'portal',
         tick(dt) {
           t += dt;
           for (let s = 0; s < 2; s++) {
@@ -52,7 +52,7 @@ export const SPACE = {
         },
         dispose() { rings.forEach((m) => P.drop(m)); },
       });
-      P.emit('rift', { len: +L.a.distanceTo(L.b).toFixed(1) });
+      P.emit('portal', { len: +L.a.distanceTo(L.b).toFixed(1) });
     },
   },
 

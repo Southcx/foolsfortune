@@ -8,8 +8,8 @@
 > format of the Couriers/Pneuka Jar, but I'm sure that other Islands would have taken and adapted the technology. A Glass Courier sounds
 > very interesting."
 
-Dovina, 2026-10-13. Every glossary entry (251) is sorted below. **Nothing is renamed yet**: the numbered list in section 4 is for the
-owner to rule on, and each ruling then goes to the file's owner.
+Dovina, 2026-10-13. Every glossary entry (251) is sorted below. **Ruled** (the owner, 2026-10-13): yes to every row of section 4 but
+12, whose terms (the ostracon, the Wake Whistle, Strawman) are already neutral and stay as the neutral words.
 
 ## 1. The registers
 
@@ -118,7 +118,7 @@ Section 4 is the list to rule on.
 11. **the Heavenly Kiln** (the Spirit Garden's tribulation). The Spirit Garden is inside your Pneuka Jar, so it travels with you: it is
     the vessel's, not Anagami's. → Its dressing follows your **base material**: a clay Courier's garden fires in a kiln, a glass one's
     in a furnace. Or rename it to something psyche, such as **the Heavenly Crucible**. Owner and Espada.
-12. **an ostracon / the Wake Whistle (a clay whistle) / Strawman (stitched by Pip)**: Anagami's dress on universal mechanics (a word
+12. **(Ruled no: these are neutral already, and stay.)** **an ostracon / the Wake Whistle (a clay whistle) / Strawman (stitched by Pip)**: Anagami's dress on universal mechanics (a word
     found, a way out of a Well, a training dummy). → Keep them on Anagami. The *mechanic* names in code should be neutral where they are
     shared: `ostraca.js` → a neuralese find, dressed as an ostracon on Anagami. The Petra and Espada rows are for when a second island
     is built, not now.
@@ -132,3 +132,13 @@ Section 4 is the list to rule on.
 - **Calissa**: crack patterns by material, the island-dressed looks of creations and matter, and the domains' look without "kiln" as
   its identity.
 - **Nothing in Anagami's own register changes.** The clay stays exactly where it belongs: on Anagami.
+
+## 6. Applied (2026-10-13, Dovina)
+- 1, 2, 3, 9, 13 and the base material: glossary lines. The base material's name, and the Heavenly Kiln's neutral name (11), are
+  Espada's and the owner's.
+- 4: the matter's layers are FIRM and LOOSE in code (`godhand/matter.js` `GROUND`: Anagami's are clay and sand, by name and colour).
+- 5: creations are the island's firm layer and its colour.
+- 6: Fire is **Set** (code id `setfast`, `creations.setFast`, event `god.setfast`, `SET_FOREVER`).
+- 7: Rift is **Portal** (code id `portal`, events `god.portal` and `god.portal.pass`). Its look should become Calissa's `Portal`.
+- 10: the STATUS radar's polygon is in the Codex's amber, with gold at The World.
+- 8 (the domains' look) and the dressing of 3 and 5 are Calissa's; 9's other folk and 11's name are Espada's (handoffs).

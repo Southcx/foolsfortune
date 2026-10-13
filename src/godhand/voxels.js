@@ -72,7 +72,7 @@ export class VoxelGrid {
   ebb(dk, skip = null) {
     const out = [];
     for (const [k, c] of this.chunks) {
-      if (skip?.(c)) continue; // (a fired chunk: Fire, godhand/powers/make.js)
+      if (skip?.(c)) continue; // (a set chunk: Set, godhand/powers/make.js)
       let any = false; const d = c.d;
       for (let i = 0; i < d.length; i++) if (d[i] > 0) { d[i] = Math.max(0, d[i] - dk); any = true; }
       if (!any) continue;

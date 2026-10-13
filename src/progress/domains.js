@@ -89,9 +89,9 @@ export const SOURCES = [
   { event: 'god.shape',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
   { event: 'god.carve',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
   { event: 'god.sculpt',      domain: 'manifestation',  base: 12, quality: (e) => (e.by === 'courier' ? q01((e.volume || 0) / 12) : null) },
-  // the domains' other god powers (GODHAND.md 8): quality is how much the act took on (a long rift, a full slab, a crowd herded)
-  ...[['rift', 'ouranurgy', 10, (e) => e.len / 40], ['fold', 'ouranurgy', 12, (e) => e.moved / 60], ['hasten', 'ouranurgy', 6, (e) => e.r / 20],
-    ['fire', 'manifestation', 8, (e) => e.chunks / 6], ['totem', 'manifestation', 12, () => 0.6],
+  // the domains' other god powers (GODHAND.md 8): quality is how much the act took on (a long portal, a full slab, a crowd herded)
+  ...[['portal', 'ouranurgy', 10, (e) => e.len / 40], ['fold', 'ouranurgy', 12, (e) => e.moved / 60], ['hasten', 'ouranurgy', 6, (e) => e.r / 20],
+    ['setfast', 'manifestation', 8, (e) => e.chunks / 6], ['totem', 'manifestation', 12, () => 0.6],
     ['strata', 'divination', 4, (e) => e.len / 30], ['course', 'divination', 3, (e) => e.steps / 120], ['read', 'divination', 4, (e) => e.n / 6],
     ['gust', 'psychokinesis', 6, (e) => (e.hit + e.moved) / 6], ['slab', 'psychokinesis', 8, (e) => e.moved / 40],
     ['herd', 'possession', 8, (e) => e.n / 8], ['take', 'possession', 8, () => 0.5], ['muster', 'possession', 10, (e) => e.n / 8],

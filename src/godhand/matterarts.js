@@ -1,15 +1,15 @@
 // ---------------------------------------------------------------------------------------
 // THE MATTER'S VERBS (docs/plans/GODHAND.md section 3): the three God Arts that move the island's matter (godhand/matter.js through
 // godhand/islandmatter.js), run by GodArts (godhand/arts.js) when one of them is selected.
-//   SCOOP   hold LMB on matter: the hand takes it up (Lachryma first, then sand, then clay), to what it can carry; hold LMB again with
+//   SCOOP   hold LMB on matter: the hand takes it up (Lachryma first, then the loose layer, then the firm), to what it can carry; hold LMB again with
 //           something held: it pours out where the hand points, and runs, piles and slumps by its own rules. Where the hand finds no matter
-//           it takes the authored ground's (sand in the Dunes and the Wells, clay elsewhere), and that is made from nothing: Lachryma pays.
+//           it takes the authored ground's (the loose layer in the Dunes and the Wells, the firm elsewhere: on Anagami, sand and clay), and that is made from nothing: Lachryma pays.
 //   SHAPE   hold LMB and drag up or down: the ground under the hand rises or sinks, the matter taken from the ring round it (or made, and
 //           paid for). With Shift held, it levels toward the height where the stroke began (terraces).
 //   CARVE   drag a line: a channel is cut along it into the matter, its spoil heaped along the banks.
-//   SCULPT  drag a line: a creation of voxel clay is raised along it (godhand/creations.js): an arch, a bridge when long; with Shift a
+//   SCULPT  drag a line: a creation of voxel matter (the island's firm layer) is raised along it (godhand/creations.js): an arch, a bridge when long; with Shift a
 //           ramp; a short stroke a pillar. It is built from the matter the hand carries first, then from Lachryma; it crumbles back to
-//           clay over about a game day.
+//           the island's firm layer over about a game day.
 // Each act is said by an event with `by` (god.scoop, god.pour, god.shape, god.carve: the domains' sources read them).
 //
 // Prior art: From Dust (the god carries a ball of matter under the hand and lets it fall); Populous (raise and lower); the Spirit
@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
+import { groundOf } from './matter.js';
 
 /** The verbs' numbers. `carry` the most the hand holds (m³, where Scoop opens; the ramp takes it to 400 at 99: RAMP.scoop); `takeRate` and
  *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
@@ -34,21 +35,21 @@ const UP = new THREE.Vector3(0, 1, 0);
 export class MatterArts {
   constructor(arts) {
     this.arts = arts; this.god = arts.god; this.game = arts.game;
-    this.held = { water: 0, sand: 0, clay: 0, feeling: null };
+    this.held = { water: 0, loose: 0, firm: 0, feeling: null };
     this.L = null;
     const g = this.game;
-    this.ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 2), new THREE.MeshStandardMaterial({ color: 0x9a5a3a, roughness: 0.6, transparent: true, opacity: 0.9 }));
+    this.ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 2), new THREE.MeshStandardMaterial({ color: groundOf().firm.colour, roughness: 0.6, transparent: true, opacity: 0.9 }));
     this.ball.visible = false;
     g.scene.add(this.ball);
   }
 
-  get carried() { return this.held.water + this.held.sand + this.held.clay; }
+  get carried() { return this.held.water + this.held.loose + this.held.firm; }
   get cap() { return rampOf('scoop', 'carry', this.game) ?? VERBS.carry; }
   /** Lachryma a cubic metre of matter made from nothing, for a verb (GODHAND.md 11: free at 99). */
   madeCost(id) { return rampOf(id, 'made', this.game) ?? GOD_POWERS[id]?.made ?? 0.5; }
   field() { return this.game.matter?.ensure(this.god.jar.pos); }
-  /** The authored ground's own matter at a height: the Dunes' and the Wells' are sand, the rest clay. */
-  groundKind(y) { const id = this.game.cartography?.layerOf?.(y)?.id; return id === 'dunes' || id === 'well' ? 'sand' : 'clay'; }
+  /** The authored ground's own matter at a height: the Dunes' and the Wells' are the loose layer, the rest the firm. */
+  groundKind(y) { const id = this.game.cartography?.layerOf?.(y)?.id; return id === 'dunes' || id === 'well' ? 'loose' : 'firm'; }
 
   begin(id) {
     const K = this.god.cursor;
@@ -68,7 +69,7 @@ export class MatterArts {
       if (L.pouring) {
         const total = this.carried; if (total <= 1e-3) return;
         const v = Math.min(total, VERBS.pourRate * dt), H = this.held;
-        for (const kind of ['water', 'sand', 'clay']) {
+        for (const kind of ['water', 'loose', 'firm']) {
           const part = v * (H[kind] / total); if (part <= 0) continue;
           F.pour(p.x, p.z, VERBS.r, part, { kind, feeling: kind === 'water' ? H.feeling : null });
           H[kind] -= part;
@@ -77,10 +78,10 @@ export class MatterArts {
       } else {
         const room = this.cap - this.carried; if (room <= 1e-3) return;
         const got = F.take(p.x, p.z, VERBS.r, Math.min(room, VERBS.takeRate * dt));
-        const n = got.water + got.sand + got.clay;
+        const n = got.water + got.loose + got.firm;
         if (n > 1e-4) {
           if (got.water > 0 && (this.held.water < 0.01 || got.feeling === this.held.feeling)) this.held.feeling = got.feeling;
-          this.held.water += got.water; this.held.sand += got.sand; this.held.clay += got.clay; L.moved += n;
+          this.held.water += got.water; this.held.loose += got.loose; this.held.firm += got.firm; L.moved += n;
         } else {
           // no matter here: the authored ground's own, made from nothing (and paid for)
           const v = Math.min(room, VERBS.takeRate * dt * 0.5);
@@ -135,7 +136,7 @@ export class MatterArts {
     const est = shape === 'pillar' ? Math.PI * opts.r * opts.r * (opts.h + 0.5) : shape === 'ramp' ? opts.w * len * (opts.rise / 2 + 0.5) : opts.w * opts.t * len * 1.2;
     const fromHeld = Math.min(est, this.carried), made = est - fromHeld;
     if (made > 0 && !g.lachryma.spend(made * this.madeCost('sculpt'), 'god')) { g.log.say('warn', 'Not enough Lachryma, or matter in hand, to raise that.', { key: 'sculpt.pay', throttle: 2 }); return; }
-    if (fromHeld > 0) { const H = this.held, k = fromHeld / this.carried; H.water -= H.water * k; H.sand -= H.sand * k; H.clay -= H.clay * k; }
+    if (fromHeld > 0) { const H = this.held, k = fromHeld / this.carried; H.water -= H.water * k; H.loose -= H.loose * k; H.firm -= H.firm * k; }
     const r = g.creations.raise(shape, a, b, opts);
     sfx.thump();
     g.events?.emit('god.sculpt', { shape, volume: +r.volume.toFixed(2), moved: +fromHeld.toFixed(2), made: +made.toFixed(2), by: 'courier' });
@@ -148,9 +149,9 @@ export class MatterArts {
     if (!B.visible) return;
     const H = this.held, s = Math.cbrt(v) * 0.55;
     B.scale.setScalar(s);
-    B.material.color.setHex(H.water >= H.sand && H.water >= H.clay ? 0x9fd8e0 : H.sand >= H.clay ? 0xd8b878 : 0x9a5a3a);
+    B.material.color.setHex(H.water >= H.loose && H.water >= H.firm ? 0x9fd8e0 : H.loose >= H.firm ? groundOf().loose.colour : groundOf().firm.colour);
     B.position.copy(this.god.cursor.point).addScaledVector(UP, T.god.hoverH + s);
   }
 
-  clear() { this.held = { water: 0, sand: 0, clay: 0, feeling: null }; this.L = null; this.ball.visible = false; }
+  clear() { this.held = { water: 0, loose: 0, firm: 0, feeling: null }; this.L = null; this.ball.visible = false; }
 }

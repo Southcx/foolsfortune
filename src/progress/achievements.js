@@ -223,7 +223,7 @@ export function buildAchievements(game) {
   charm('echo', 'Echo Charm', 'Call down 50 miracles, or draw a sign scored 95. The ECHO charm: the act comes again.', ['god.miracle', 50], ['god.miracle.score', 95]);
   charm('quiet', 'Quiet Charm', "Write 25 wards, or put down an island's whole answer. The QUIET charm: the island feels half.", ['god.power.ward', 25], ['god.rejection.beaten', 1]);
   charm('thrift', 'Thrift Charm', 'Move 5,000 cubic metres of matter, or set down 30 slabs. The THRIFT charm: made matter costs half.', ['god.moved', 5000], ['god.power.slab', 60]);
-  charm('linger', 'Linger Charm', 'Open 30 rifts, or raise 10 totems. The LINGER charm: what stands, stands twice as long.', ['god.power.rift', 30], ['god.power.totem', 10]);
+  charm('linger', 'Linger Charm', 'Open 30 portals, or raise 10 totems. The LINGER charm: what stands, stands twice as long.', ['god.power.portal', 30], ['god.power.totem', 10]);
   charm('gentle', 'Gentle Charm', 'Herd creatures 50 times, or take 20 in hand. The GENTLE charm: no harm, only a push.', ['god.power.herd', 50], ['god.power.take', 20]);
   C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
   F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);

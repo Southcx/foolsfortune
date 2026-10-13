@@ -163,8 +163,8 @@ So the god hand trains the same psyche the Courier does, and a Courier strong in
 
 | domain | what it is (the owner's) | the powers (existing in bold) | its epic | its level widens | quality (what pays more) |
 |---|---|---|---|---|---|
-| **Ouranurgy** | the rules of the space around you: displacement, and time slowed or stopped | **Rift** pair (pour into one, it falls out of the other: an aqueduct through space); **Fold** (two patches of ground trade places, what stands on them included); **Hasten / Stay** (the matter's time over a patch runs 4x, or stops: a river frozen mid-flow, a flood settled in seconds) | Stopped Hour | a rift's span, a fold's size, Hasten's rate | what crossed or was changed in the slowed time |
-| **Manifestation** | solidifying thought into structures | **Manifest** (the wall); **Sculpt** (a voxel creation: a ramp, an arch, a bridge, a pillar, drawn as a shape and raised; section 7); **Fire** (a creation fired hard: it stands until the mending, not a few minutes); **Totem** (a standing stone that holds a miracle's weather on its spot for a game hour) | Volcano | a creation's size, a totem's reach | how much of a creation is used (walked, stood behind) |
+| **Ouranurgy** | the rules of the space around you: displacement, and time slowed or stopped | **Portal** pair (pour into one, it falls out of the other: an aqueduct through space); **Fold** (two patches of ground trade places, what stands on them included); **Hasten / Stay** (the matter's time over a patch runs 4x, or stops: a river frozen mid-flow, a flood settled in seconds) | Stopped Hour | a rift's span, a fold's size, Hasten's rate | what crossed or was changed in the slowed time |
+| **Manifestation** | solidifying thought into structures | **Manifest** (the wall); **Sculpt** (a voxel creation: a ramp, an arch, a bridge, a pillar, drawn as a shape and raised; section 7); **Set** (a creation set fast: it stands until the mending, not a few minutes; on Anagami it looks fired); **Totem** (a standing stone that holds a miracle's weather on its spot for a game hour) | Volcano | a creation's size, a totem's reach | how much of a creation is used (walked, stood behind) |
 | **Divination** | perceiving the hidden: signatures, habits, the true pitch | **Strata** (see the matter's layers under the hand: crude under sand, a spring under clay); **Course** (a pour or a miracle shown before it falls: where the water will run, the From Dust prediction line); **Read** (from above, a creature's next intent drawn over it: the Figment telegraph from the sky) | Prophecy | how deep Strata sees, how far ahead Course runs | a hidden thing found and then used (a buried spring tapped) |
 | **Psychokinesis** | moving things by will | **Telekinesis** (lift and throw, by the flick); **Scoop / Pour** (section 3); **Gust** (a stroke of wind: drifts sand, pushes liquids, knocks creatures down); **Slab** (lift a whole slab of ground, what stands on it with it, and set it down elsewhere) | Maelstrom | weight lifted, Scoop's capacity (20 m³ at level 1), Gust's reach | speed and distance moved |
 | **Possession** | exerting will over other minds | **Herd** (draw a line: creatures near it walk it, a sheepdog's work); **Take** (the hand goes into one creature and you play it from above, Dungeon Keeper's possession; it costs Lachryma a second); **Muster** (hatched clapperjars carry matter where the hand points: the folk's labour, Godus's) | Stampede | how many Herd moves, how long Take holds, how much a Muster carries | creatures moved where they would not have gone |
@@ -220,7 +220,7 @@ is its step, 0 to 5 (GTA's stars). **Rejection** is the island's answer at a lev
    miracles, their effects on matter.
 3. **The hand's body** (Petra): the flick, the swing, the slap, the shadow.
 4. **The domains' powers** (section 8), a domain at a time, the ones that reuse built parts first: Herd and Take (the minds exist),
-   Strata and Course (the matter's own data), Rift (the caster shells' portal), Ward (the gesture reader).
+   Strata and Course (the matter's own data), Portal (the caster shells' portal), Ward (the gesture reader).
 5. **Epic miracles**, then **voxel creations** (after the perf measure).
 6. **Rejection** (section 10): it needs the matter's delta (1) and the epics (5) to have something to read.
 
@@ -232,13 +232,13 @@ Names (miracle, the seven, the epics) are working words for Espada's.
 > scaling ramp. Like if max power is full on Minecraft Creative mode, then that's an interesting premise to design limitations around."
 
 **The top: all seven domains at 99 ("The World") is Creative mode.** Matter made from nothing is free. Scoop carries 400 m³ and Sculpt
-raises arches three times the size. Carve cuts 64 m channels 6 m deep. A Rift stands for twenty real minutes, four pairs at once, and Fold
-swaps 24 m squares. Hasten runs matter at sixteen times. Fire stands a creation for good, kept in the save. Six wards and five totems
+raises arches three times the size. Carve cuts 64 m channels 6 m deep. A Portal stands for twenty real minutes, four pairs at once, and Fold
+swaps 24 m squares. Hasten runs matter at sixteen times. Set stands a creation for good, kept in the save. Six wards and five totems
 stand at once. Miracles cost a fifth and fall twice as wide. The island feels a tenth of the dissonance.
 
 **What never loosens: the walls Creative mode is designed around.**
 1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
-2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a fired creation at 99. A
+2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a set creation at 99. A
    master leaves what they meant to leave; everything else heals.
 3. **One epic a game hour, paid in the jar.**
 4. **The island notices.** Dissonance never reaches zero. A tenth of it, in a long session of large works, still calls the
@@ -259,10 +259,10 @@ below the open level are the open values. A lend (DEBUG's arts) opens a power bu
 | Carve | width / depth / length m | 1.4 / 1.2 / 18 | 5 / 6 / 64 |
 | Sculpt | stroke m / size x / made | 16 / 1 / 0.6 | 64 / 3 / 0 |
 | Miracles | cost x / size x | 1 / 1 | 0.2 / 2 |
-| Rift | pairs / real s / radius m | 1 / 60 / 1.5 | 4 / 1200 / 4 |
+| Portal | pairs / real s / radius m | 1 / 60 / 1.5 | 4 / 1200 / 4 |
 | Fold | side m | 4 | 24 |
 | Hasten | radius m / speed x / real s | 4 / 4 / 20 | 20 / 16 / 300 |
-| Fire | real s / radius m | 150 / 3 | for good / 12 |
+| Set | real s / radius m | 150 / 3 | for good / 12 |
 | Totem | count / real s / radius | 1 / 150 / 6 | 5 / 3600 / 16 |
 | Strata / Course / Read | length m / steps / reach m | 12 / 80 / 20 | 60 / 600 / 80 |
 | Gust | length m / power | 10 / 6 | 40 / 24 |
@@ -311,7 +311,7 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
 - **The domains' other sixteen powers** (`godhand/powers.js`, the runner; a module a domain in `godhand/powers/`: space, make, sight,
   force, will, alter, script). All of them are built and tried headless (2026-10-13), with no page errors. Each act is `god.<id>` with `act` (dissonance
   scaled by the domain's level; seeing is not an act). EXP for each act goes to its domain (`domains.js`), and its count to `god.power.<id>`. Fold
-  and Stamp are `MatterField.patch`. Fire marks voxel chunks (`creations.fire`); for good is a `creations` save section (world scope),
+  and Stamp are `MatterField.patch`. Set marks voxel chunks (`creations.setFast`); for good is a `creations` save section (world scope),
   its chunks kept as runs. Herd and Take set a creature's mind aside while it walks (`P.walk`). Looks are rings and lines in the
   domain's colour (`DOMAIN_COLOUR`). The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.
 - **The Codex's STATUS shelf** (`feedback/codex/status.js`): two radars, the domains' levels and Soul Alchemy's ranks, with the next

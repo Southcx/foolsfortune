@@ -3,7 +3,7 @@
 // hand has its mind set aside while it walks (P.walk), and given back when the time is up.
 //   HERD    drag from a crowd to a place: the creatures near where the stroke began walk to where it ended.
 //   TAKE    press on a creature: it is yours to play from above; press on the ground and it goes there; press on it again to let it go.
-//   MUSTER  drag from a source to a place: clay workers come up and carry the matter from one to the other, trip by trip, for a while.
+//   MUSTER  drag from a source to a place: workers of the island's ground come up and carry the matter from one to the other, trip by trip, for a while.
 // Prior art: Pikmin (the whistle's herd, the carriers); Black & White's leashed creature; Dungeon Keeper's possession; Populous's walkers.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -57,8 +57,8 @@ export const WILL = {
           for (const w of crew) {
             const to = w.toB ? b : a, d = to.clone().sub(w.p).setY(0), dist = d.length();
             if (dist < 0.4) {
-              if (w.toB && w.carry) { for (const kind of ['clay', 'sand', 'water']) if (w.carry[kind] > 0) F.pour(b.x, b.z, WORKER.r, w.carry[kind], { kind, feeling: w.carry.feeling }); moved += w.carry.clay + w.carry.sand + w.carry.water; w.carry = null; }
-              else if (!w.toB) { const got = F.take(a.x, a.z, WORKER.r, load); if (got.clay + got.sand + got.water > 0.01) w.carry = got; }
+              if (w.toB && w.carry) { for (const kind of ['firm', 'loose', 'water']) if (w.carry[kind] > 0) F.pour(b.x, b.z, WORKER.r, w.carry[kind], { kind, feeling: w.carry.feeling }); moved += w.carry.firm + w.carry.loose + w.carry.water; w.carry = null; }
+              else if (!w.toB) { const got = F.take(a.x, a.z, WORKER.r, load); if (got.firm + got.loose + got.water > 0.01) w.carry = got; }
               w.toB = !w.toB;
             } else w.p.addScaledVector(d.multiplyScalar(1 / dist), Math.min(dist, WORKER.speed * dt));
             const y = F.groundAt(w.p.x, w.p.z); w.p.y = Number.isFinite(y) ? y : w.p.y;

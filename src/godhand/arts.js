@@ -35,13 +35,13 @@ import { planeFrom } from '../tools/slicing.js';
 // `key` is the domain's key. A placeholder until Calissa rules on the selector's look (docs/handoffs/calissa/).
 export const ARTS = [
   // 1 Ouranurgy
-  { id: 'rift', domain: 'ouranurgy', key: '1', name: 'RIFT', glyph: '◎', needs: 1, blurb: 'drag: a linked pair of holes', color: '#9a8cff' },
+  { id: 'portal', domain: 'ouranurgy', key: '1', name: 'PORTAL', glyph: '◎', needs: 1, blurb: 'drag: a linked pair of holes', color: '#9a8cff' },
   { id: 'fold', domain: 'ouranurgy', key: '1', name: 'FOLD', glyph: '⇄', needs: 1, blurb: 'drag: two patches trade places', color: '#9a8cff' },
   { id: 'hasten', domain: 'ouranurgy', key: '1', name: 'HASTEN', glyph: '⧗', needs: 1, blurb: 'time runs fast here; Shift: it stops', color: '#9a8cff' },
   // 2 Manifestation
   { id: 'manifest', domain: 'manifestation', key: '2', name: 'MANIFEST', glyph: '▲', needs: 1, blurb: 'raise clay', color: '#ffc65c' },
   { id: 'sculpt', domain: 'manifestation', key: '2', name: 'SCULPT', glyph: '⌒', needs: 1, blurb: 'raise an arch, a ramp or a pillar', color: '#ffc65c' },
-  { id: 'fire', domain: 'manifestation', key: '2', name: 'FIRE', glyph: '♨', needs: 1, blurb: 'harden a creation', color: '#ffc65c' },
+  { id: 'setfast', domain: 'manifestation', key: '2', name: 'SET', glyph: '♨', needs: 1, blurb: 'set a creation so it stands', color: '#ffc65c' },
   { id: 'totem', domain: 'manifestation', key: '2', name: 'TOTEM', glyph: '⏉', needs: 1, blurb: 'hold your last miracle on a spot', color: '#ffc65c' },
   // 3 Divination
   { id: 'strata', domain: 'divination', key: '3', name: 'STRATA', glyph: '☰', needs: 1, blurb: 'drag: see the layers', color: '#7fe0ff' },

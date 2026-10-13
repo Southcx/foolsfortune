@@ -146,7 +146,7 @@ export class Miracles {
     }
   }
 
-  /** A bolt from the Storm: the most agitated creature under it, else the highest ground; fuses sand where it lands, and strikes everything
+  /** A bolt from the Storm: the most agitated creature under it, else the highest ground; fuses the loose layer where it lands, and strikes everything
    *  standing in the Lachryma it falls into. */
   bolt(m, power) {
     const g = this.game, C = g.creatures, F = g.matter?.field;
@@ -170,7 +170,7 @@ export class Miracles {
     const g = this.game, E = EPICS[m.epic], F = g.matter?.field, C = g.creatures;
     if (m.epic === 'stoppedHour') { if (pulse) { ap('halt', 1.5); F?.hold(m.x, m.z, m.r, 1.6); } this.bodies(m, (b) => { b.setLinvel({ x: 0, y: 0, z: 0 }, true); b.setAngvel({ x: 0, y: 0, z: 0 }, true); }); }
     else if (m.epic === 'volcano') {
-      if (m.t < 6) F?.pour(m.x, m.z, E.cone, (Math.PI * E.cone * E.cone * E.cone / 3) * dt / 6, { kind: 'clay' }); // (the cone rises)
+      if (m.t < 6) F?.pour(m.x, m.z, E.cone, (Math.PI * E.cone * E.cone * E.cone / 3) * dt / 6, { kind: 'firm' }); // (the cone rises)
       else { F?.pour(m.x, m.z, 1.5, E.lava * dt * 3, { kind: 'water', feeling: 'fury' }); F?.heat(m.x, m.z, E.r, 2); }
       if (m.every <= 0 && m.t > 2) { m.every = 1.5; const a = simRand() * 6.28, d = 3 + simRand() * (E.r - 3), at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); g.fx?.explosion?.(at, 1.6); for (const c of C?.near?.(at, 2.5) || []) if (!c.friend) { if (g.bracelet?.gentle?.('manifestation')) c.knock?.(UP.clone().multiplyScalar(6)); else C.strike(c, c.pos, UP, 4, 'miracle', 'courier', null, 'impact'); } }
     }

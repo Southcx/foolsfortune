@@ -2,15 +2,16 @@
 // DIVINATION'S GOD POWERS (docs/plans/GODHAND.md section 8), as handlers for the runner (godhand/powers.js). Seeing is not an act on
 // the island: none of these raises the island's dissonance.
 //   STRATA  hold LMB and drag: the ground along the stroke is drawn as a section held up over it, layer by layer (the authored ground,
-//           clay, sand, Lachryma), and stays a few real seconds after.
+//           the firm and loose layers, Lachryma), and stays a few real seconds after.
 //   COURSE  while it is chosen: where a drop let go under the hand would run, drawn downhill to where it would pool. LMB marks it.
 //   READ    while it is chosen: each creature near your Pneuka Jar shows what it means to do next, a line to it (a blow on its way, red; a
 //           hunt, to its quarry; a walk, where it is headed). LMB marks what is read.
 // Prior art: From Dust's terrain cutaway; Dwarf Fortress's layer view; Hitman's instinct and XCOM's enemy intent lines.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { groundOf } from '../matter.js';
 
-const LAYERS = [[0x3a3330, 'base'], [0x9a5a3a, 'clay'], [0xd8b878, 'sand'], [0x7fd0e0, 'w']];
+const LAYERS = [[0x3a3330, 'base'], [groundOf().firm.colour, 'firm'], [groundOf().loose.colour, 'loose'], [0x7fd0e0, 'w']]; // (the island's own layers: matter.js GROUND)
 const CAP = 160;
 const _m = new THREE.Matrix4(), _c = new THREE.Color(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
 let section = null, courseLine = null, readLines = null, courseT = 0, sectionLife = 0;
@@ -38,7 +39,7 @@ function drawSection(P, a, b) {
   _q.setFromAxisAngle(_p.set(0, 1, 0), yaw);
   let j = 0;
   for (const [x, z, k] of cols) {
-    let y = top + lift - (F.base[k] - base0) - F.clay[k] - F.sand[k] - F.w[k]; // (the section's foot, so the columns keep their heights)
+    let y = top + lift - (F.base[k] - base0) - F.firm[k] - F.loose[k] - F.w[k]; // (the section's foot, so the columns keep their heights)
     for (const [hex, L] of LAYERS) {
       const h = L === 'base' ? F.base[k] - base0 : F[L][k]; if (h <= 0.005) continue;
       _m.compose(_p.set(x, y + h / 2, z), _q, _s.set(0.5, h, 0.12)); S.setMatrixAt(j, _m); S.setColorAt(j, _c.setHex(hex)); j++; y += h;

@@ -2,7 +2,7 @@
 // THE DOMAINS' GOD POWERS, AT RUN TIME (docs/plans/GODHAND.md sections 8 and 11): the runner for the sixteen powers that are not the
 // God Arts of old nor the matter's verbs. Each power is a handler in its domain's module (godhand/powers/<domain>.js) with a small
 // contract, and this runner gives them the hand's cursor, the island's matter, the ramp (progress/godpowers.js RAMP: its numbers by the
-// domain's level), marks on the ground, and what lasts (a rift, a ward, a totem: `keep`). Every act is an event `god.<id>` with `by`
+// domain's level), marks on the ground, and what lasts (a portal, a ward, a totem: `keep`). Every act is an event `god.<id>` with `by`
 // and `act` (the domains' sources and dissonance reads it).
 // Placeholder looks throughout: plain rings and lines in the domain's colour (Calissa's to dress).
 //

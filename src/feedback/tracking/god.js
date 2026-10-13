@@ -9,7 +9,7 @@
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from '../../progress/godpowers.js';
 
 // the domains' other powers, counted alike (`god.power.<id>`); what each says, where it says anything (placeholders for Espada's)
-const POWER_SAYS = { rift: 'A rift opens, and its twin.', fold: 'The ground folds over.', fire: 'The clay takes the fire.', totem: 'A totem holds the weather.', herd: 'They walk where you drew.', take: 'You take it in hand.', muster: 'Clay hands come up to carry.', ward: 'A ward is written.', stamp: 'The ground is pressed again.' };
+const POWER_SAYS = { portal: 'A portal opens, and its twin.', fold: 'The ground folds over.', setfast: 'It sets fast.', totem: 'A totem holds the weather.', herd: 'They walk where you drew.', take: 'You take it in hand.', muster: 'Clay hands come up to carry.', ward: 'A ward is written.', stamp: 'The ground is pressed again.' };
 
 
 const LEVEL_SAYS = [ // (the Dissonance Level, 0 to 5)

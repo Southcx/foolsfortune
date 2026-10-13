@@ -10,3 +10,8 @@ Placeholder words, yours to rule:
 - The 16 powers' labels and blurbs (`ARTS` in `godhand/arts.js`, `GOD_POWERS` in `progress/godpowers.js`), and their log lines
   (`POWER_SAYS` in `feedback/tracking/god.js`). Achievements: Seven Hands, Every Power (title Demiurge), Bridgewright, "Pillar, Arch
   and Ramp".
+- **The registers, ruled** (docs/plans/REGISTERS.md):
+  - Name the **base material** (the vessel's material: clay first, glass and others earned).
+  - Give **the Heavenly Kiln** a neutral name, or its dressing follows your base material.
+  - Write **other islands' folk** and their tiers ("the folk" is now any island's people who speak; Anagami's are the clay folk).
+  - The god powers **Set** (was Fire) and **Portal** (was Rift) need lines.

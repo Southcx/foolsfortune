@@ -31,7 +31,7 @@ export const CHARMS = {
   echo: { label: 'ECHO', does: 'The act comes again where it ended, three real seconds on.', repeat: true, delay: 3, cost: 1.3, mods: {} },
   quiet: { label: 'QUIET', does: 'Half the dissonance.', cost: 1, mods: { size: 0.8 }, dissonance: 0.5 },
   thrift: { label: 'THRIFT', does: 'Matter made from nothing costs half.', cost: 1, mods: { made: 0.5, rate: 0.8 } },
-  linger: { label: 'LINGER', does: 'Rifts, wards, totems and the rest stand twice as long.', cost: 1.3, mods: { time: 2 } },
+  linger: { label: 'LINGER', does: 'Portals, wards, totems and the rest stand twice as long.', cost: 1.3, mods: { time: 2 } },
   gentle: { label: 'GENTLE', does: 'No harm to creatures: a blow becomes a push.', cost: 1, mods: {}, gentle: true },
 };
 

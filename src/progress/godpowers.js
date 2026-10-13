@@ -30,11 +30,11 @@ export const GOD_POWERS = {
   // the seven miracles: Spellscription's (GODHAND.md section 4), each also needing its feeling known
   miracle: { domain: 'spellscription', label: 'Miracles', at: 1, built: true, does: 'draw a feeling\'s sign to call its weather down' },
   // the domains' other powers (GODHAND.md section 8): the order listed is the order they open
-  rift: { domain: 'ouranurgy', label: 'Rift', at: 15, built: true, does: 'a linked pair of holes: what goes in one comes out the other' },
+  portal: { domain: 'ouranurgy', label: 'Portal', at: 15, built: true, does: 'a linked pair of holes: what goes in one comes out the other' },
   fold: { domain: 'ouranurgy', label: 'Fold', at: 35, built: true, does: 'two patches of ground trade places' },
   hasten: { domain: 'ouranurgy', label: 'Hasten / Stay', at: 15, built: true, does: 'matter\'s time over a patch runs four times as fast, or stops' },
   sculpt: { domain: 'manifestation', label: 'Sculpt', at: 15, built: true, does: 'raise a pillar, an arch, a bridge or a ramp of clay', made: 0.6 },
-  fire: { domain: 'manifestation', label: 'Fire', at: 35, built: true, does: 'harden a creation until the mending' },
+  setfast: { domain: 'manifestation', label: 'Set', at: 35, built: true, does: 'set a creation so the mending leaves it be' },
   totem: { domain: 'manifestation', label: 'Totem', at: 60, built: true, does: 'hold a miracle\'s weather on one spot for a game hour' },
   strata: { domain: 'divination', label: 'Strata', at: 15, built: true, does: 'see the layers under the hand' },
   course: { domain: 'divination', label: 'Course', at: 35, built: true, does: 'see where a pour will run before it falls' },
@@ -50,7 +50,7 @@ export const GOD_POWERS = {
 };
 
 /** The domains' other powers (GODHAND.md 8), each an event `god.<id>` (godhand/powers.js; counted in feedback/tracking/god.js). */
-export const POWER_EVENTS = ['rift', 'fold', 'hasten', 'fire', 'totem', 'strata', 'course', 'read', 'gust', 'slab', 'herd', 'take', 'muster', 'transmute', 'ward', 'stamp'];
+export const POWER_EVENTS = ['portal', 'fold', 'hasten', 'setfast', 'totem', 'strata', 'course', 'read', 'gust', 'slab', 'herd', 'take', 'muster', 'transmute', 'ward', 'stamp'];
 
 /** Each domain's kiln glaze (Calissa, 2026-10-13: glazes, not hues, since the seven feelings own the wheel's hues): its tile's two colours
  *  (`a` to `b`), the mark colour on the ground and the radar's tip (`mark`), and its glyph (unicode until her pixel icons). */
@@ -69,10 +69,10 @@ export const DOMAIN_COLOUR = Object.fromEntries(Object.entries(DOMAIN_GLAZE).map
 export const DOMAIN_ORDER = ['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'];
 
 /** THE RAMP (GODHAND.md section 11): the endgame first. At 99 in a domain its powers are Creative mode (Minecraft's): matter made from
- *  nothing is free, the reach and the sizes are the island's, a fired creation stands for good. Each row is a number's value where its
+ *  nothing is free, the reach and the sizes are the island's, a set creation stands for good. Each row is a number's value where its
  *  power opens and at 99, `[open, at99]`; between them it follows the level on RAMP_CURVE, so most of the gain comes late (OSRS's
  *  curve: the last levels are the ones that change what you can do). What never loosens: the Zone of Influence (only ground you know),
- *  the island's mending (but a fired creation), one epic a game hour and its toll in the jar, and the island noticing (its
+ *  the island's mending (but a set creation), one epic a game hour and its toll in the jar, and the island noticing (its
  *  dissonance, at a tenth). */
 export const RAMP = {
   scoop: { carry: [20, 400], made: [0.5, 0] },
@@ -80,10 +80,10 @@ export const RAMP = {
   carve: { w: [1.4, 5], depth: [1.2, 6], len: [18, 64] },
   sculpt: { len: [16, 64], scale: [1, 3], made: [0.6, 0] },
   miracle: { cost: [1, 0.2], size: [1, 2] },
-  rift: { pairs: [1, 4], dur: [60, 1200], r: [1.5, 4] },
+  portal: { pairs: [1, 4], dur: [60, 1200], r: [1.5, 4] },
   fold: { side: [4, 24] },
   hasten: { r: [4, 20], scale: [4, 16], dur: [20, 300] },
-  fire: { hold: [150, 3600], r: [3, 12] }, // (real seconds a fired creation stands; at 99, for good: FIRE_FOREVER)
+  setfast: { hold: [150, 3600], r: [3, 12] }, // (real seconds a set creation stands; at 99, for good: SET_FOREVER)
   totem: { n: [1, 5], dur: [150, 3600], r: [6, 16] },
   strata: { len: [12, 60] },
   course: { steps: [80, 600] },
@@ -99,7 +99,7 @@ export const RAMP = {
   dissonance: { scale: [1, 0.1] }, // (the dissonance a domain's acts raise, by that domain's level from 1)
 };
 export const RAMP_CURVE = 1.6;
-export const FIRE_FOREVER = 99;
+export const SET_FOREVER = 99;
 
 /** A ramped number for a power now, by its domain's level (a lend opens a power, and leaves its numbers where the level has them). */
 export function rampOf(id, key, game) {
