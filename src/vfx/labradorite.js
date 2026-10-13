@@ -65,42 +65,21 @@ export const mindTime = { value: 0 };
  *  the same as once. */
 export function mindTick(t = performance.now() / 1000) { mindTime.value = t % 3600; }
 
-const LINE_V = /* glsl */`
-varying vec3 vW; varying vec3 vView;
-void main() {
-  vec4 w = modelMatrix * vec4(position, 1.0);
-  vW = w.xyz; vView = normalize(cameraPosition - w.xyz);
-  gl_Position = projectionMatrix * viewMatrix * w;
-}`;
-const LINE_F = /* glsl */`
-uniform float uOpacity, uBright;
-varying vec3 vW; varying vec3 vView;
-${LAB_GLSL}
-void main() {
-  gl_FragColor = vec4(labSoft(labPhase(vW, vView)) * uBright, uOpacity);
-}`;
-
-/** Lines of the Mind (wireframes, edges): additive, softly rainbow. */
-export function mindLineMaterial({ opacity = 1, depthTest = false, bright = 1 } = {}) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uOpacity: { value: opacity }, uBright: { value: bright }, uMindT: mindTime },
-    vertexShader: LINE_V, fragmentShader: LINE_F,
-    transparent: true, depthWrite: false, depthTest, blending: THREE.AdditiveBlending, fog: false,
-  });
-}
-
-const FILL_V = /* glsl */`
+// the Mind's lines and its fills are one program (a uniform tells them apart, and the lines are DoubleSide too: a line has no face to
+// cull, so the side changes nothing but the program's key)
+const MIND_V = /* glsl */`
 varying vec3 vW; varying vec3 vView; varying vec3 vN;
 void main() {
   vec4 w = modelMatrix * vec4(position, 1.0);
-  vW = w.xyz; vView = normalize(cameraPosition - w.xyz); vN = normalize(mat3(modelMatrix) * normal);
+  vW = w.xyz; vView = normalize(cameraPosition - w.xyz); vN = mat3(modelMatrix) * normal; // (normalized in the fragment: a line has no normal)
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
-const FILL_F = /* glsl */`
-uniform float uOpacity, uInk;
+const MIND_F = /* glsl */`
+uniform float uOpacity, uInk, uBright, uLine;
 varying vec3 vW; varying vec3 vView; varying vec3 vN;
 ${LAB_GLSL}
 void main() {
+  if (uLine > 0.5) { gl_FragColor = vec4(labSoft(labPhase(vW, vView)) * uBright, uOpacity); return; }
   vec3 n = normalize(vN) * (gl_FrontFacing ? 1.0 : -1.0);
   float ndv = abs(dot(n, normalize(vView)));
   float rim = pow(1.0 - ndv, 1.6);
@@ -109,11 +88,20 @@ void main() {
   gl_FragColor = vec4(c, uOpacity * mix(0.55 + 0.45 * rim, 0.75 + 0.25 * rim, uInk));
 }`;
 
+/** Lines of the Mind (wireframes, edges): additive, softly rainbow. */
+export function mindLineMaterial({ opacity = 1, depthTest = false, bright = 1 } = {}) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uOpacity: { value: opacity }, uBright: { value: bright }, uInk: { value: 0 }, uLine: { value: 1 }, uMindT: mindTime },
+    vertexShader: MIND_V, fragmentShader: MIND_F,
+    transparent: true, depthWrite: false, depthTest, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
+  });
+}
+
 /** The body of a Mind mark: ink with the schiller at the turn of it (normal blending), or with ink 0 a glassy glow. */
 export function mindFillMaterial({ opacity = 0.5, depthTest = false, ink = 1 } = {}) {
   return new THREE.ShaderMaterial({
-    uniforms: { uOpacity: { value: opacity }, uInk: { value: ink }, uMindT: mindTime },
-    vertexShader: FILL_V, fragmentShader: FILL_F,
+    uniforms: { uOpacity: { value: opacity }, uInk: { value: ink }, uBright: { value: 1 }, uLine: { value: 0 }, uMindT: mindTime },
+    vertexShader: MIND_V, fragmentShader: MIND_F,
     transparent: true, depthWrite: false, depthTest, side: THREE.DoubleSide, fog: false,
   });
 }

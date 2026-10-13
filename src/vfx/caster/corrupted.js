@@ -92,7 +92,9 @@ function material() {
   const u = { uColor: { value: new THREE.Color() }, uLight: { value: new THREE.Vector3(0.4, 0.8, 0.35) }, uMap: { value: WHITE }, uHasMap: { value: false },
     uSeed: { value: 0 }, uTear: { value: 0 }, uCrush: { value: 0 }, uDrain: { value: 0 }, uDrop: { value: 0 }, uCell: { value: 0.18 }, uK: { value: 1 },
     uSide: { value: new THREE.Vector3(1, 0, 0) }, uAt: { value: new THREE.Vector3() } };
-  MAT = new THREE.ShaderMaterial({ name: 'caster-corrupted', vertexShader: VERT, fragmentShader: FRAG, uniforms: u, side: THREE.DoubleSide, fog: false });
+  // (its shadow cast as a front-faced body casts it, `shadowSide` BackSide: the sun's depth program the slip jelly already uses, warm
+  // at boot; left DoubleSide, the shadow pass wanted a double-sided depth program nothing else draws, compiled late at the first strike)
+  MAT = new THREE.ShaderMaterial({ name: 'caster-corrupted', vertexShader: VERT, fragmentShader: FRAG, uniforms: u, side: THREE.DoubleSide, shadowSide: THREE.BackSide, fog: false });
   MAT.defines = { USE_UV: '' }; // (the mesh's own texture read through the uv chunks)
   return MAT;
 }

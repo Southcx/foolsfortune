@@ -95,6 +95,8 @@ const MAT = {
   white: () => lit(0xf3efe6, { roughness: 0.35 }),
   bead: () => lit(0x401008, { emissive: 0xff3a2a, emissiveIntensity: 1.6 }), // (lit, glowing: the plain lit program, nothing compiled)
   ember: () => lit(0x402010, { emissive: 0xffb060, emissiveIntensity: 2 }),
+  magma: () => lit(0x401008, { emissive: 0xff4a12, emissiveIntensity: 2.6 }), // (the mega meteor's seams: saturated, so bloom keeps it orange, never cream)
+  char: () => lit(0x2e1c14, { roughness: 0.9 }),
   glaze: (c) => lit(c, { roughness: 0.3, emissive: c, emissiveIntensity: 0.35 }),
   glow: (c) => lit(0x101018, { emissive: c, emissiveIntensity: 1.8 }),
   ink: () => lit(0x07060a, { roughness: 0.15, metalness: 0.4 }), // (crude, and a dot of nothing)
@@ -173,12 +175,16 @@ const BODIES = {
   // the Meteor's: a molten rock, its size the row's (`n.size` times the runner's own; the mega meteor's `n.mega.size`), tumbling slower the bigger
   meteorite: (m, row, p, tint, tip, size = 1) => { m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(size); const s = 1 / Math.sqrt(size); return (raw) => { m.rotation.x += raw * 4 * s; m.rotation.z += raw * 3 * s; }; },
   megaMeteor: (m, row, p, tint, tip, size = 1) => {
-    m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(size);
-    m.add(part(GEO.rock(), MAT.clay(), 0.035), part(GEO.rock(), MAT.ink(), -0.03)); m.children[0].scale.setScalar(0.8); m.children[1].scale.setScalar(0.7); // (a crust of char and clay over the glow)
+    m.geometry = GEO.rock(); m.material = MAT.magma(); m.scale.multiplyScalar(size * 2); // (twice the runner's reach: the refire, too big for the screen)
+    // (a crust of char and clay in plates over the glow, the molten rock showing in the seams between: at this size a bare glow reads
+    // as a flat pale disc)
+    for (const [mat, s, x, y, z] of [[MAT.char(), 0.86, 0.03, 0.04, 0], [MAT.ink(), 0.8, -0.045, -0.015, 0.03], [MAT.ink(), 0.76, 0.012, -0.035, -0.045]]) {
+      const c = part(GEO.rock(), mat); c.scale.setScalar(s); c.position.set(x, y, z); m.add(c);
+    }
     return (raw) => { m.rotation.x += raw * 1.1; m.rotation.z += raw * 0.7; };
   },
   // the Volcano's bomb: a lump of molten rock, not a spark
-  lavaBomb: (m) => { m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(1.4); return (raw) => { m.rotation.x += raw * 6; }; },
+  lavaBomb: (m) => { m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(2.8); return (raw) => { m.rotation.x += raw * 6; }; },
   insulator: (m) => { m.geometry = GEO.post(); m.material = MAT.white(); m.scale.setScalar(1.4); m.add(part(GEO.disc(), MAT.glaze(0x8a3a2a), 0.03), part(GEO.disc(), MAT.glaze(0x8a3a2a), -0.05)); },
   spark: (m) => { m.geometry = GEO.ember(); m.material = MAT.glow(0x9fd0ff); m.scale.setScalar(1.6); },
   orb: (m) => { m.geometry = GEO.ball(); m.material = MAT.glow(0xc49bff); },
