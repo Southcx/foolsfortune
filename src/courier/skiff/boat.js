@@ -162,12 +162,7 @@ export class Skiff {
       // open a thousandfold too (CASEBOOK, 2026-10-08)
       if (src.name === 'Skiff_Hull' || src.name === 'Skiff_Parts') addOutline(m);
     }
-    // the hover glow under the hull, riding the hull bone (it bobs, pitches and rises out of the sand with it): steady, warm, no flicker
-    const emitMat = new THREE.MeshBasicMaterial({ color: C.energy, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-    this.emit = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), emitMat);
-    this.emit.rotation.x = -Math.PI / 2; this.emit.position.y = -0.36; this.emit.scale.set(0.9, 3.4, 1);
-    this.emit.frustumCulled = false;
-    this.bone.hull.add(this.emit);
+    // (no hover glow under the hull: the owner, 2026-10-13, it clipped into the sand; the glow lives on the cloth and the energy parts)
     this.P = new BoatPose(gltf.animations, bones);
     this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
     // the glide's wings: Skiff_Glide's oars, each its rest turned by the pose (SKIFF_GLIDE), held while gliding (skiff.js `wings`). The
@@ -225,7 +220,6 @@ export class Skiff {
     if (!this.P) return;
     this.clothMat.emissiveIntensity = PAINT_LIGHT + 0.7 * glow;
     this.energyMat.emissiveIntensity = 0.3 + 1.4 * glow;
-    this.emit.material.opacity = 0.38 + 0.22 * Math.min(1, (speed || 0) / 24) + 0.3 * glow;
   }
 
   /** The ride: the boat's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
