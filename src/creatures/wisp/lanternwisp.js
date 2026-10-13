@@ -188,7 +188,7 @@ export class LanternWisps {
     for (const c of this.list) {
       c.mixer.update(dt);
       if (!c.alive) {
-        if (c.dying != null && (c.dying -= dt) <= 0) { c.dying = null; c.root.visible = false; }
+        if (c.dying != null && (c.dying -= dt) <= 0) { c.dying = null; if (this.game.figmentScatter?.play(c, { hide: true }) == null) c.root.visible = false; } // (a Figment's scatter, then gone: vfx/figmentscatter.js)
         c.deadT += dt;
         if (c.deadT > WISP.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 12) this.reform(c);
         continue;

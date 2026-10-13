@@ -207,6 +207,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
 - **the Lantern Wisp** (`game.wisps`, `src/creatures/wisp/`) — the Dunes' second creature, on the owner's model and its clip suite: it
   hovers, keeps its distance and casts a ball of its flame the parry sends back. *Not:* a spirit, the Wisp's emote clips (its suite's).
+- **a Figment's scatter** (`FigmentScatter`, `game.figmentScatter`, `src/vfx/figmentscatter.js`) — a Figment's or Egregore's death: two vertex-snap
+  steps, a beat of its wire, then a pop of motes in its feeling's colour, into the air and the ground. *Not:* a sibling's shatter, the dissolve.
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
 - **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
@@ -247,6 +249,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the workshop** — the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement** — below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
 - **the hub** — the basement's centre, where the Index stands. **The Index** (`src/feedback/indexmenu.js`): the console there; F, and pick a room.
+- **the Gate's hoops / the gate-out** (`GateRing`, `game.gateRing`, `src/vfx/gatering.js`) — three glazed hoops turning round a pale sphere over
+  the Index / bands of light climbing the Courier as a room is chosen there, under the seam, and coming down over them on arrival. *Not:* a ring.
 - **the course** — the basement's loop of eight stations (checkpoints), with laps and splits.
 - **the siege** (`src/world/basement/siege.js`) — the god hand's arena; raids happen there and nowhere else.
 - **the Dunes** (`dunes`) — the sand sea, a region of Anagami Island, capitalised in player text; the oasis, the Weir (pools and pier), the Weir's

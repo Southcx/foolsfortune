@@ -181,7 +181,7 @@ export class SlipJellies {
   burst(c, dir, by, cause, culprit = null) {
     const g = this.game;
     if (!c.alive) return;
-    c.alive = false; c.dying = 0.14; c.deadT = 0; c.attack = null;
+    c.alive = false; c.dying = g.figmentScatter?.play(c, { min: 0.14 }) ?? 0.14; c.deadT = 0; c.attack = null; // (a Figment's scatter first: vfx/figmentscatter.js)
     c.col.setEnabled(false);
     c.deform.kick(9, null, 0.3); c.deform.target.squash = 1.55; // (the rearing: up on its toes, before it goes)
     c.brain.end('burst');

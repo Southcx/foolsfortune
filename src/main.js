@@ -190,6 +190,8 @@ import { Daylight } from './render/daylight.js';
 import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
+import { FigmentScatter } from './vfx/figmentscatter.js';
+import { GateRing } from './vfx/gatering.js';
 import { SiblingShatter } from './vfx/siblingshatter.js';
 import { Flash } from './tools/veritome/flash.js';
 import { Reprogram } from './tools/veritome/reprogram.js';
@@ -675,6 +677,7 @@ async function main() {
   const course = new Course(game);
   mark('course');
   game.course = course;
+  game.gateRing = new GateRing(game); // (the Index's hoops and the gate-out under the seam: vfx/gatering.js)
   game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
   course.menu.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // Mind Mapping: the map and compass, and the named places in them
@@ -718,6 +721,7 @@ async function main() {
   (game.testroomDress = new TestRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/testroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
+  game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)
   // (each set on the sand's own height; the ground ray that froze two of them is fixed in slipjelly.js `ground`: the owner, v170)
@@ -1175,7 +1179,7 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
-    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.wisps?.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.wisps?.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
@@ -1280,7 +1284,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
