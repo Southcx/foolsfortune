@@ -136,7 +136,7 @@ export const SPLIT_CHAIN = {
             const t = b.translation(); if (_v.set(t.x - at.x, t.y - at.y, t.z - at.z).length() > n.r) return;
             g.physics.kick(b, { x: aim.x * n.fling * b.mass(), y: aim.y * n.fling * b.mass(), z: aim.z * n.fling * b.mass() });
           });
-          g.fx?.shockwave?.(at, n.r * 0.5); sfx.push?.();
+          g.fx?.shockwave?.(at, n.r * 0.5); sfx.push?.(); R2.weigh(at, 'slingshot');
         } });
       } } });
     },
@@ -164,7 +164,7 @@ export const SPLIT_CHAIN = {
         const c = foes.reduce((a, b) => ((b.emo ?? 0) > (a.emo ?? 0) ? b : a));
         cloud.position.set(c.pos.x, c.pos.y + 7, c.pos.z);
         zap(g, cloud.position, centerOf(c), 0xffffff);
-        g.creatures.strike(c, centerOf(c), new THREE.Vector3(0, -1, 0), n.power * fury, 'shot', 'courier', null, 'impact');
+        g.creatures.strike(c, centerOf(c), new THREE.Vector3(0, -1, 0), n.power * fury, 'shot', 'courier', null, 'impact'); R.weigh(centerOf(c), 'thunderhead');
       }, end: () => g.scene.remove(cloud) });
     },
     // Capacitor: it charges while it sits selected in its chamber; the longer, the bigger; full, a pillar of lightning
