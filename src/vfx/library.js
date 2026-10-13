@@ -10,7 +10,9 @@
 //   - NO FLICKER: a flash is one wash in and out; nothing large beats at a rate.
 // ---------------------------------------------------------------------------------------
 import { SHELL_EFFECTS } from './shelllooks/index.js'; // (the caster shells' looks, batches 2 to 4: one module a family)
+import { groundRing, scorch, debris } from './shelllooks/kit.js'; // (the ludicrous ten's ground rings, scorches and debris)
 const L = (o) => o; // (a layer: only for readability)
+const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
 export const LIBRARY = {
   // =============================================================================================== HITS (the start of combat's)
@@ -502,8 +504,13 @@ export const LIBRARY = {
   ] },
   // =============================================================================================== CASTER SHELLS: S6 TO S10 (vfx/caster/: docs/plans/CASTER-SHELLS.md)
   // (each a `caster` layer: its module's look, placed, scaled and faded as a mesh is; the runner's other layers go beside them)
-  'shell.insideOut': { layers: [ // (94: a small black hole, the world bent round a dot of nothing, its ring turning; grown, held, gone)
-    L({ type: 'caster', shader: 'lensing', dur: 3.2, size: 0.35, scale: 1, k: [[0, 0], [0.12, 1], [0.8, 1], [1, 0]], tint: 0xfff0c8 }),
+  'shell.insideOut': { layers: [ // (94: a black hole three times the size it was, the world bent round a dot of nothing, its ring turning;
+    // grown, held, gone; the dust and light round it drawn in. What it does to the ground is shell.insideOut.land, vfx/shelllooks/caster.js)
+    L({ type: 'caster', shader: 'lensing', dur: 3.2, size: 1.05, scale: 1, k: [[0, 0], [0.12, 1], [0.8, 1], [1, 0]], tint: 0xfff0c8 }),
+    L({ type: 'sprites', rate: 50, dur: 2.5, shape: 'glint', spawn: 'shell', r: 7, dir: 'in', speed: [5.5, 7], size: [0.3, 0.5], sizeEnd: 0, life: [1, 1.2], color: ['lach', 'white', 'labradorite'], twinkle: 12 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 26, dur: 2.5, shape: 'puff', spawn: 'ring', r: 6, dir: 'swirl', lift: -0.1, speed: [5, 7], drag: 0.5, size: [1.4, 2], sizeEnd: 0.3, life: [1.1, 1.4], color: [0xd9b89a, 0x8a7aff], alpha: 0.5, spin: [-3, 3] }),
+    L({ type: 'sprites', at: 2.6, count: 70, shape: 'streak', dir: 'sphere', speed: [22, 36], size: [0.5, 0.8], sizeEnd: 0.05, life: [0.35, 0.55], drag: 2, stretch: 2.5, color: ['white', 'lach', 0x8a7aff], powerCount: false }),
+    L({ type: 'sprites', at: 2.6, count: 1, shape: 'ring', size: 2, sizeEnd: 16, life: 0.45, color: 'lach', powerCount: false }),
   ] },
   'shell.stasis': { layers: [ // (51: a sphere of stopped time, its colour drained and its grain frozen)
     L({ type: 'caster', shader: 'timegrade', dur: 5, radius: 2.6, drain: 0.95, grain: 0.55, rim: 0.7, k: [[0, 0], [0.04, 1], [0.92, 1], [1, 0]] }),
@@ -552,19 +559,34 @@ export const LIBRARY = {
   'shell.skipstone.touch.crude': { extends: 'shell.skipstone.touch', layers: [
     L({ type: 'sprites', count: 6, shape: 'ripple', spawn: 'disc', r: 0.3, size: [0.3, 0.5], sizeEnd: 1.1, life: [0.4, 0.6], color: ['film0', 'film1', 'film2', 'film3'], alpha: 0.6 }),
   ] },
-  // 14 Hailstorm: twenty-four shards in the glazes' colours, out of the muzzle at once
+  // 14 Hailstorm: twenty-four shards in the glazes' colours, four times the size, out of the muzzle at once in a ring of white; where the cone
+  // lands, a ring out along the ground and the shards stuck in it, glinting a while
   'shell.hailstorm.fire': { layers: [
-    L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.08, color: 'white', powerCount: false }),
-    L({ type: 'sprites', count: 24, shape: 'shard', dir: 'cone', cone: 13, speed: [26, 40], size: [0.08, 0.13], sizeEnd: 0.05, life: [0.22, 0.36], color: [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0], spin: [-20, 20], powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'core', size: 2.2, sizeEnd: 0.2, life: 0.1, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.4, sizeEnd: 3.2, life: 0.18, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 24, shape: 'shard', dir: 'cone', cone: 13, speed: [26, 40], size: [0.32, 0.5], sizeEnd: 0.18, life: [0.22, 0.36], color: GLAZES, spin: [-20, 20], powerCount: false }),
+    L({ type: 'sprites', count: 16, shape: 'glint', dir: 'cone', cone: 16, speed: [18, 30], size: [0.3, 0.5], sizeEnd: 0, life: [0.2, 0.3], color: 'white', twinkle: 20, powerCount: false }),
+  ] },
+  'shell.hailstorm.land': { layers: [
+    groundRing({ to: 9, from: 0.5, dur: 0.4, tint: 0xf3efe6, k: 1.2 }),
+    L({ type: 'sprites', count: 30, shape: 'star4', spawn: 'disc', r: 2.4, size: [0.5, 0.9], sizeEnd: 0, life: [0.12, 0.2], color: 'white', powerCount: false }),
+    debris({ shape: 'shard', count: 36, spawn: 'disc', r: 2.4, speed: [2, 5], cone: 50, size: [0.22, 0.38], life: [4, 5.5], color: GLAZES, pool: 'add' }),
+    L({ type: 'sprites', pool: 'alpha', count: 14, shape: 'puff', spawn: 'disc', r: 2.2, dir: 'up', speed: [0.6, 1.4], size: [0.6, 0.9], sizeEnd: 1.6, life: [0.8, 1.2], drag: 2, color: 0xd9b89a, alpha: 0.45, powerCount: false }),
+    L({ type: 'sprites', rate: 14, dur: 4, shape: 'glint', spawn: 'disc', r: 2.4, size: [0.25, 0.4], sizeEnd: 0, life: 0.4, color: ['white', 'labradorite'], twinkle: 12 }),
   ] },
   // 16 Mallet: the clay head that bloomed in flight slams down: a ring along the floor, a cake of dust, chips
   'shell.mallet.fly': { layers: [
-    L({ type: 'sprites', pool: 'alpha', rate: 10, dur: Infinity, shape: 'puff', size: [0.15, 0.22], sizeEnd: 0.4, life: 0.4, drag: 2, color: 0xd9b89a, alpha: 0.35 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 14, dur: Infinity, shape: 'puff', size: [0.5, 0.7], sizeEnd: 1.3, life: 0.5, drag: 2, color: 0xd9b89a, alpha: 0.4 }),
   ] },
-  'shell.mallet.land': { layers: [
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.6, scale: [[0, 0.4], [1, 3.4]], stretch: [1, [[0, 1.2], [1, 0.3]], 1], k: [[0, 1.6], [1, 0]], tint: 0xf3e6d8, labradorite: 0.1 }),
-    L({ type: 'sprites', pool: 'alpha', count: 18, shape: 'puff', spawn: 'ring', r: 0.7, dir: 'out', lift: 0.12, speed: [3, 6], size: [0.6, 0.9], sizeEnd: 1.6, life: [0.7, 1.1], drag: 3, color: [0xd9b89a, 0xc9a27a], alpha: 0.6, spin: [-1, 1], powerCount: false }),
-    L({ type: 'sprites', pool: 'alpha', count: 14, shape: 'chip', dir: 'cone', axis: 'up', cone: 70, speed: [3, 7], size: [0.07, 0.14], life: [0.6, 0.9], gravity: 14, color: [0xb4603f, 0x8c4a33, 0xc46a45], alphaEnd: 0.8, spin: [-14, 14], floor: 'ground', powerCount: false }),
+  'shell.mallet.land': { layers: [ // (the head three times its old size: its ring out along the floor past the room, a dent pressed in, the floor's
+    // chips and clods thrown up and lying there; the shake and hitstop it always had, nothing more)
+    L({ type: 'sprites', count: 1, shape: 'core', size: 4.5, sizeEnd: 0.5, life: 0.2, color: 'white', colorEnd: 0xf3e6d8, powerCount: false }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.7, scale: [[0, 1], [1, 10]], stretch: [1, [[0, 1.4], [1, 0.3]], 1], k: [[0, 1.8], [1, 0]], tint: 0xf3e6d8, labradorite: 0.1 }),
+    groundRing({ to: 26, from: 1.5, dur: 0.65, tint: 0xf3e6d8 }),
+    scorch({ size: 5.5, dur: 6, tint: 0x8a8e96 }),
+    L({ type: 'sprites', pool: 'alpha', count: 30, shape: 'puff', spawn: 'ring', r: 1.6, dir: 'out', lift: 0.12, speed: [6, 13], size: [1.4, 2], sizeEnd: 4, life: [0.9, 1.4], drag: 2.6, color: [0xd9b89a, 0xc9a27a], alpha: 0.6, spin: [-1, 1], powerCount: false }),
+    debris({ count: 40, speed: [5, 12], size: [0.15, 0.35], life: [4, 6] }),
+    debris({ shape: 'facet', count: 10, speed: [4, 8], cone: 50, size: [0.4, 0.7], life: [5, 7], color: [0xb4603f, 0x8c4a33] }),
     L({ type: 'shake', k: 0.5 }),
     L({ type: 'hitstop', dur: 0.06 }),
   ] },

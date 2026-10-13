@@ -15,7 +15,8 @@
 // starts). Layer types:
 //   sprites   shaped particles (vfx/sprites.js): a burst (`count`) or a stream (`rate` a second, for `dur`)
 //   mesh      an effect mesh from Mesh Create (vfx/meshfx.js), with its scale, fade and turn over its life
-//   decal     a picture laid on the ground (or stood to the camera), turning: the spell circles (src/assets/vfx/tex/)
+//   decal     a picture laid on the ground (or stood to the camera), turning: the spell circles (src/assets/vfx/tex/), and two drawn
+//             here ('shockring', a shockwave's front; 'scorch', burnt ground with `blend: 'darken'`)
 //   flash     the screen washes to a colour and back (capped: a flash, never a flicker)
 //   light     a lamp that blooms and fades (one of a few, the light budget lends them as it lends any lamp)
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
@@ -55,8 +56,35 @@ const CASTER = Object.fromEntries(Object.entries(import.meta.glob('./caster/*.js
 const TEX_SRC = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/tex/*.png', { query: '?b64', import: 'default', eager: true }))
   .map(([f, b64]) => [f.split('/').pop().replace(/\.png$/, ''), b64]));
 const TEX = {};
+// (and two drawn here, for the ground under a big blow: a shockwave's front, and a scorch with its splash of rays)
+const DRAWN = {
+  shockring: (g, R) => {
+    const gr = g.createRadialGradient(R, R, 0, R, R, R);
+    for (const [t, a] of [[0, 0], [0.55, 0], [0.8, 0.18], [0.92, 0.75], [0.96, 1], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
+    g.fillStyle = gr; g.fillRect(0, 0, R * 2, R * 2);
+  },
+  scorch: (g, R) => {
+    let seed = 7; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const gr = g.createRadialGradient(R, R, 0, R, R, R * 0.62);
+    for (const [t, a] of [[0, 1], [0.6, 0.92], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
+    g.fillStyle = gr; g.fillRect(0, 0, R * 2, R * 2);
+    g.fillStyle = '#fff';
+    for (let k = 0; k < 26; k++) { // (the splash: rays thrown out from the middle, thinning)
+      const a = r() * Math.PI * 2, len = R * (0.55 + r() * 0.42), w = R * (0.03 + r() * 0.05);
+      g.globalAlpha = 0.35 + r() * 0.4; g.beginPath(); g.moveTo(R + Math.cos(a + 1.57) * w, R + Math.sin(a + 1.57) * w);
+      g.lineTo(R + Math.cos(a) * len, R + Math.sin(a) * len); g.lineTo(R + Math.cos(a - 1.57) * w, R + Math.sin(a - 1.57) * w); g.fill();
+    }
+    for (let k = 0; k < 40; k++) { const a = r() * Math.PI * 2, d = R * (0.4 + r() * 0.5), rr = R * (0.015 + r() * 0.04); g.globalAlpha = 0.3 + r() * 0.5; g.beginPath(); g.arc(R + Math.cos(a) * d, R + Math.sin(a) * d, rr, 0, Math.PI * 2); g.fill(); }
+    g.globalAlpha = 1;
+  },
+};
 export function vfxTexture(name) {
   if (TEX[name]) return TEX[name];
+  if (DRAWN[name]) {
+    const c = Object.assign(document.createElement('canvas'), { width: 256, height: 256 }); DRAWN[name](c.getContext('2d'), 128);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter;
+    return (TEX[name] = t);
+  }
   if (!TEX_SRC[name]) return null;
   const t = new THREE.TextureLoader().load(`data:image/png;base64,${TEX_SRC[name]}`);
   t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter;
@@ -74,6 +102,14 @@ void main() {
   gl_FragColor = vec4(c * a, a);
 }`;
 let _quad = null;
+/** One decal kept by the shells' warm-up (vfx/shelllooks/warmup.js), so the decal's program is compiled on the loading screen and never
+ *  released between two blows (the casebook's rules 17, 18). It draws nothing (its k is 0). */
+export function decalWarmMesh() {
+  const u = { uMap: { value: vfxTexture('shockring') }, uTint: { value: new THREE.Color(0xffffff) }, uK: { value: 0 }, uLabradorite: { value: 0 }, uGlow: { value: 1 }, uMindT: mindTime };
+  const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
+  const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat); m.userData.moodExempt = true; m.renderOrder = 4;
+  return m;
+}
 
 const NAMED = { gold: 0xffd76a, lach: 0xb49be6, white: 0xffffff, ember: 0xff9a5c, blue: 0x7fb2ff, ink: 0x140c1e };
 // (the labradorite's flash, as hex: the stone's palette in vfx/labradorite.js, for particles that take one colour each)
@@ -299,7 +335,9 @@ export class Vfx {
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
         const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
-        const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, depthTest: !ctx.throughWalls, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
+        const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, depthTest: !ctx.throughWalls, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
+          // (added light; or `blend: 'darken'`, the ground burnt under it: what is there times one less the tint, the same program)
+          ...(L.blend === 'darken' ? { blendSrc: THREE.ZeroFactor, blendDst: THREE.OneMinusSrcColorFactor } : { blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor }) });
         const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat);
         m.renderOrder = L.order ?? 4; m.frustumCulled = false; m.userData.moodExempt = true; m.visible = false;
         g.scene.add(m);

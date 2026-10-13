@@ -6,6 +6,7 @@
 //   - a glyph pop (vfx/glyphs.js: Paranoia's question marks, Lullaby's notes): one sprite kept;
 //   - a bauble's oxidised Lachryma (vfx/oxidation.js: Grief's weeping drops): one kept;
 //   - a psychic pulse (vfx/pulse.js: Wonder's reveal, Twelve's, Calm's): one taken out of its list, so it is never dropped;
+//   - a decal (vfx/vfx.js: the ludicrous ten's ground rings and scorches, `groundRing` and `scorch` in shelllooks/kit.js): one kept;
 //   - the Portal's view (vfx/caster/portal.js): its pair's first look out drawn now, into its own target, so what that draw compiles
 //     is compiled on the loading screen.
 // Kept 50 m under the world, hidden after the prime and never disposed.
@@ -19,6 +20,7 @@ import { meshFx } from '../meshfx.js';
 import { oxidationMaterial } from '../oxidation.js';
 import { Portal } from '../caster/portal.js';
 import { GROUND_Y } from '../caster/casterkit.js';
+import { decalWarmMesh } from '../vfx.js';
 
 export async function prewarmShellLooks(game) {
   const { scene, renderer } = game, kept = [];
@@ -28,6 +30,7 @@ export async function prewarmShellLooks(game) {
   const dot = new THREE.CanvasTexture(Object.assign(document.createElement('canvas'), { width: 4, height: 4 }));
   keep(new THREE.Sprite(new THREE.SpriteMaterial({ map: dot, transparent: true, depthWrite: false, fog: false })));
   keep(new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 4), oxidationMaterial(0)));
+  keep(decalWarmMesh());
   const pulse = game.pulse?.emit?.(new THREE.Vector3(0, GROUND_Y, 0), 1);
   if (pulse) { game.pulse.pulses.splice(game.pulse.pulses.indexOf(pulse), 1); keep(pulse.shell); keep(pulse.ring); }
   // the Portal pair: one look out of each, drawn now (the scene's programs as the portal's target draws them), then put away
