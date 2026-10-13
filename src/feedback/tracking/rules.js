@@ -25,6 +25,7 @@ import { figmentTelegraphRules } from './figmenttelegraphs.js';
 import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
+import { godRules } from './god.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -32,6 +33,7 @@ export function areaRules(ctx) {
   railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
+  godRules(ctx); // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(ctx);
   gardenRules(ctx);
   weatherRules(ctx);

@@ -28,6 +28,7 @@ import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
+import { MIRACLES, EPICS } from './godpowers.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -36,7 +37,7 @@ export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial'] },
-  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
+  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Raids', 'Rejection', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
@@ -207,6 +208,15 @@ export function buildAchievements(game) {
   H('gs3', 'hand', 'Arts', 3, 'mechanic', 'Three with One Stroke', 'Sunder 3 clapperjars with one stroke.', 'god.cuts.best', 3);
   H('gs4', 'hand', 'Arts', 5, 'mechanic', 'A Clean Sweep', 'Sunder 6 clapperjars with one stroke.', 'god.cuts.best', 6);
   C('gm1', 'hand', 'Arts', 2, 'count', 'Bricklayer', 'Manifest 10 walls.', 'god.manifest', 10);
+  // the hand's matter, miracles and the island's rejection (docs/plans/GODHAND.md 3 to 5, 10)
+  C('gx1', 'hand', 'Matter', 1, 'count', 'Handful', 'Move 100 cubic metres of matter with the hand.', 'god.moved', 100);
+  C('gx2', 'hand', 'Matter', 3, 'count', 'Earthmover', 'Move 5,000 cubic metres of matter with the hand.', 'god.moved', 5000);
+  C('gx3', 'hand', 'Matter', 2, 'count', 'Riverwright', 'Carve 25 channels.', 'god.carve', 25);
+  C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
+  F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);
+  F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });
+  H('gja', 'hand', 'Rejection', 2, 'endure', 'Unwelcome', 'Have an island push back against your hand.', 'god.rejection.step', 2, { hidden: true });
+  C('gjb', 'hand', 'Rejection', 5, 'endure', 'Antibody', "Put down an island's whole answer to your hand.", 'god.rejection.beaten', 1, { title: 'the Unrejected' });
   F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
   // the arts and their variants: each is the reward of an achievement, the one way skills are unlocked (the owner's rule: skills.js), its
   // goals predicates over the ledger, so an art is retroactive like everything here; the System unlocks it when this is done (`unlocks`)

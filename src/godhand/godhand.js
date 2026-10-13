@@ -23,6 +23,7 @@ import { RAPIER } from '../core/physics.js';
 import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
 import { GodArts, ART_BY_ID, ARTS } from './arts.js';
+import { Miracles } from './miracles.js';
 import { ZoiVeil } from '../feedback/cartography.js';
 import { Raids } from '../world/basement/raids.js';
 import { stream } from '../core/rng.js';
@@ -74,6 +75,7 @@ export class GodMode {
     this.buildCursor();
     this.buildHud();
     this.arts = new GodArts(this);
+    this.miracles = new Miracles(this); // (a feeling's sign drawn with the middle button: godhand/miracles.js)
     this.catch = new HandCatch(this); // (a stunned Figment grabbed and held over the Jar's mouth: godhand/catch.js)
     this.raids = new Raids(game, this); // (raids happen in the Siege room only: raids.js)
     this.veil = new ZoiVeil(game, game.cartography);
@@ -190,7 +192,7 @@ export class GodMode {
   exit() {
     const g = this.game, P = g.player;
     this.releaseGrab(true);
-    this.arts.cancel(); this.arts.closeWheel(false);
+    this.arts.cancel(); this.arts.closeWheel(false); this.arts.matter?.clear(); this.miracles.clear();
     this.state = 'out'; this.active = false; this.t = 0;
     this.cam.exitFrom = null;
     g.character.setHidden(false);
@@ -258,7 +260,7 @@ export class GodMode {
     this.handleKeys(dt);
     this.updateView(dt);
     this.updateCursor();
-    if (this.t > 0.6) this.updateHand(dt);
+    if (this.t > 0.6) { this.updateHand(dt); this.miracles.update(dt); }
     this.jar.update(dt);
     this.raids.update(dt);
     this.updateHud(dt);
@@ -269,7 +271,7 @@ export class GodMode {
     if (input.wasPressed('KeyQ')) C.yawT += Math.PI / 4;
     if (input.wasPressed('KeyE')) C.yawT -= Math.PI / 4;
     if (input.wheel) C.distT = THREE.MathUtils.clamp(C.distT * Math.exp(input.wheel * 0.0012), T.god.minDist, T.god.maxDist);
-    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
   }
 
   /** The turnable isometric camera: pans, turns in eighths, zooms; ceilings cut away. */
@@ -468,7 +470,7 @@ export class GodMode {
     }
     this.grab = grab;
     this.samples.length = 0;
-    g.events?.emit('god.grab', { clapper: !!t.clapper });
+    g.events?.emit('god.grab', { clapper: !!t.clapper, by: 'courier' });
   }
 
   releaseGrab(silent) {
@@ -499,12 +501,13 @@ export class GodMode {
       if (t.ball) { t.ball.grabbed = false; t.ball.parried = true; t.ball.reflected = true; } // (a ball you throw back rings the targets it hits)
       if (v.length() > 4) this.thrown.push({ body: b, t: 0, ball: t.ball, ent: t.ent });
     }
-    if (!silent) { if (v.length() > 3) sfx.toss(Math.min(1, v.length() / 20)); g.events?.emit('god.throw', { speed: v.length() }); }
+    if (!silent) { if (v.length() > 3) sfx.toss(Math.min(1, v.length() / 20)); g.events?.emit('god.throw', { speed: v.length(), by: 'courier' }); }
   }
 
   /** Physics-step work: drag the held thing to the hand; chip the jar with what's thrown at it. */
   fixed(dt) {
     const g = this.game, V = this.jar, gr = this.grab;
+    this.miracles.fixed(dt);
     if (gr?.target && gr.t.creature) { if (!this.catch.hold(gr.target, dt)) this.grab = null; } // (its struggle: godhand/catch.js)
     else if (gr && gr.target) {
       const t = gr.t;

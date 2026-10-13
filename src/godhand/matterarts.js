@@ -1,0 +1,131 @@
+// ---------------------------------------------------------------------------------------
+// THE MATTER'S VERBS (docs/plans/GODHAND.md section 3): the three God Arts that move the island's matter (godhand/matter.js through
+// godhand/islandmatter.js), run by GodArts (godhand/arts.js) when one of them is selected.
+//   SCOOP   hold LMB on matter: the hand takes it up (Lachryma first, then sand, then clay), to what it can carry; hold LMB again with
+//           something held: it pours out where the hand points, and runs, piles and slumps by its own rules. Where the hand finds no matter
+//           it takes the authored ground's (sand in the Dunes and the Wells, clay elsewhere), and that is made from nothing: Lachryma pays.
+//   SHAPE   hold LMB and drag up or down: the ground under the hand rises or sinks, the matter taken from the ring round it (or made, and
+//           paid for). With Shift held, it levels toward the height where the stroke began (terraces).
+//   CARVE   drag a line: a channel is cut along it into the matter, its spoil heaped along the banks.
+// Each act is said by an event with `by` (god.scoop, god.pour, god.shape, god.carve: the domains' sources read them).
+//
+// Prior art: From Dust (the god carries a ball of matter under the hand and lets it fall); Populous (raise and lower); the Spirit
+// Garden's clay brush (godhand's sister: world/garden/clay.js, the stroke that levels to where it began).
+//
+//   const M = new MatterArts(arts)   M.begin(id) -> bool   M.hold(dt)   M.end()   M.held   M.update(dt) (the carried ball, every frame)
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { T } from '../core/config.js';
+import { sfx } from '../audio/sfx.js';
+import { GOD_POWERS } from '../progress/godpowers.js';
+
+/** The verbs' numbers. `carry` the most the hand holds (m³, at level 1; Psychokinesis widens it: WIDEN 'psychokinesis.carry'); `takeRate` and
+ *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
+ *  and depth (m). Made matter costs `GOD_POWERS[id].made` Lachryma a cubic metre. */
+export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 1.4, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 } };
+export const MATTER_ARTS = new Set(['scoop', 'shape', 'carve']);
+
+const UP = new THREE.Vector3(0, 1, 0);
+
+export class MatterArts {
+  constructor(arts) {
+    this.arts = arts; this.god = arts.god; this.game = arts.game;
+    this.held = { water: 0, sand: 0, clay: 0, feeling: null };
+    this.L = null;
+    const g = this.game;
+    this.ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 2), new THREE.MeshStandardMaterial({ color: 0x9a5a3a, roughness: 0.6, transparent: true, opacity: 0.9 }));
+    this.ball.visible = false;
+    g.scene.add(this.ball);
+  }
+
+  get carried() { return this.held.water + this.held.sand + this.held.clay; }
+  get cap() { return VERBS.carry * (this.game.psyche?.widen?.('psychokinesis.carry') ?? 1); }
+  field() { return this.game.matter?.ensure(this.god.jar.pos); }
+  /** The authored ground's own matter at a height: the Dunes' and the Wells' are sand, the rest clay. */
+  groundKind(y) { const id = this.game.cartography?.layerOf?.(y)?.id; return id === 'dunes' || id === 'well' ? 'sand' : 'clay'; }
+
+  begin(id) {
+    const K = this.god.cursor;
+    if (!K.ok || !this.game.matter) return false;
+    const F = this.field();
+    if (!F.contains(K.point.x, K.point.z)) { this.game.log.say('warn', 'Too far from your Pneuka Jar.', { key: 'matter.far', throttle: 2 }); return false; }
+    this.L = { id, t: 0, a: K.point.clone(), my: this.game.input.my, y0: F.groundAt(K.point.x, K.point.z), pouring: id === 'scoop' && this.carried > 0.05, moved: 0, made: 0 };
+    return true;
+  }
+
+  hold(dt) {
+    const L = this.L, g = this.game, K = this.god.cursor, input = g.input, F = this.field();
+    if (!L || !F) return;
+    L.t += dt;
+    const p = K.point;
+    if (L.id === 'scoop') {
+      if (L.pouring) {
+        const total = this.carried; if (total <= 1e-3) return;
+        const v = Math.min(total, VERBS.pourRate * dt), H = this.held;
+        for (const kind of ['water', 'sand', 'clay']) {
+          const part = v * (H[kind] / total); if (part <= 0) continue;
+          F.pour(p.x, p.z, VERBS.r, part, { kind, feeling: kind === 'water' ? H.feeling : null });
+          H[kind] -= part;
+        }
+        L.moved += v;
+      } else {
+        const room = this.cap - this.carried; if (room <= 1e-3) return;
+        const got = F.take(p.x, p.z, VERBS.r, Math.min(room, VERBS.takeRate * dt));
+        const n = got.water + got.sand + got.clay;
+        if (n > 1e-4) {
+          if (got.water > 0 && (this.held.water < 0.01 || got.feeling === this.held.feeling)) this.held.feeling = got.feeling;
+          this.held.water += got.water; this.held.sand += got.sand; this.held.clay += got.clay; L.moved += n;
+        } else {
+          // no matter here: the authored ground's own, made from nothing (and paid for)
+          const v = Math.min(room, VERBS.takeRate * dt * 0.5);
+          if (!this.arts.drainOk(v * GOD_POWERS.scoop.made / dt, dt)) return;
+          this.held[this.groundKind(p.y)] += v; L.moved += v; L.made += v;
+        }
+      }
+    } else if (L.id === 'shape') {
+      if (input.isDown('ShiftLeft') || input.isDown('ShiftRight')) {
+        const r = F.smooth(p.x, p.z, VERBS.r * 1.4, L.y0, VERBS.levelK);
+        if (r.made > 0 && !this.arts.drainOk(r.made * GOD_POWERS.shape.made / Math.max(dt, 1e-3), dt)) return;
+        L.moved += r.moved; L.made += r.made;
+      } else {
+        const drag = THREE.MathUtils.clamp((L.my - input.my) / 120, -1, 1); // (up raises, down lowers)
+        if (Math.abs(drag) < 0.08) return;
+        const r = F.raise(p.x, p.z, VERBS.r, drag * VERBS.shapeRate * dt);
+        if (r.made > 0 && !this.arts.drainOk(r.made * GOD_POWERS.shape.made / Math.max(dt, 1e-3), dt)) return;
+        L.moved += r.moved; L.made += r.made;
+      }
+    } else if (L.id === 'carve') {
+      const b = p.clone(); const d = b.clone().sub(L.a).setY(0);
+      if (d.length() > VERBS.carve.maxLen) b.copy(L.a).addScaledVector(d.normalize(), VERBS.carve.maxLen);
+      L.b = b;
+      this.arts.showBlade(L.a, b, 0.4, true);
+    }
+  }
+
+  end() {
+    const L = this.L, g = this.game, F = this.game.matter?.field;
+    this.L = null;
+    if (!L || !F) return;
+    if (L.id === 'carve' && L.b && L.a.distanceTo(L.b) > 0.8) {
+      const r = F.carve(L.a.x, L.a.z, L.b.x, L.b.z, VERBS.carve.w, VERBS.carve.depth);
+      L.moved = r.moved;
+      sfx.thump();
+    }
+    if (L.moved <= 1e-3) return;
+    const ev = L.id === 'scoop' ? (L.pouring ? 'god.pour' : 'god.scoop') : `god.${L.id}`;
+    g.events?.emit(ev, { moved: +L.moved.toFixed(2), made: +L.made.toFixed(2), by: 'courier' });
+  }
+
+  /** The ball of held matter under the hand, sized by its volume and coloured by what it is. */
+  update() {
+    const v = this.carried, B = this.ball;
+    B.visible = !!this.god.active && v > 0.05;
+    if (!B.visible) return;
+    const H = this.held, s = Math.cbrt(v) * 0.55;
+    B.scale.setScalar(s);
+    B.material.color.setHex(H.water >= H.sand && H.water >= H.clay ? 0x9fd8e0 : H.sand >= H.clay ? 0xd8b878 : 0x9a5a3a);
+    B.position.copy(this.god.cursor.point).addScaledVector(UP, T.god.hoverH + s);
+  }
+
+  clear() { this.held = { water: 0, sand: 0, clay: 0, feeling: null }; this.L = null; this.ball.visible = false; }
+}

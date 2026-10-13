@@ -221,3 +221,29 @@ place and the place itself comes for you).
 6. **Rejection** (section 10): it needs the matter's delta (1) and the epics (5) to have something to read.
 
 Names (miracle, the seven, the epics) are working words for Espada's.
+
+## As built (Dovina, 2026-10-13)
+
+What is in, and what is not yet. Numbers live in the modules named; nothing here overrides them.
+
+- **The island's matter** (`godhand/matter.js`, pure; `godhand/islandmatter.js`, the look and the collider; `game.matter`). A 144 x 144
+  field of 0.5 m cells (72 m square) laid round your Pneuka Jar when the hand first touches matter, its bedrock sampled once by rays.
+  Layers: clay, sand, Lachryma (water, with the seven feelings' shares). Virtual-pipe flow at 30 Hz, slump at the angle of repose (sand
+  0.67, clay 1.19), the mending back to the authored shape (`mendTau` 1200 real seconds). Work is limited to a bounding box of touched
+  cells and the water's rows; the collider (a Rapier heightfield over that box) is rebuilt at 3 Hz while the hand works and every 5 real
+  seconds while it only mends. Measured headless: 0.6 ms a step at 144 squared.
+- **The verbs** (`godhand/matterarts.js`): Scoop (keys 6), Shape (7, Shift levels), Carve (8). Made matter costs Lachryma
+  (`GOD_POWERS[id].made` a cubic metre). Scoop's carry is widened by Psychokinesis (`WIDEN 'psychokinesis.carry'`, x2 at 99).
+- **Miracles** (`godhand/miracles.js`): MMB held draws the sign (the Soul Brush's gesture reader); a sign's size on screen sets the
+  miracle's size and cost. Needs the feeling awakened and the ground in the Zone of Influence. Shift turns the sign into its epic (one a
+  game hour, paid in the jar). All seven of each run; their looks are placeholder rings and the existing weather/status looks.
+- **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): heat from matter moved (0.5 a m³, made 1),
+  a miracle 8, an epic 60, a throw 2; steps at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real
+  seconds, at most 8 alive; the fifth step's answer is a size-2.2 class-2 slip jelly, and putting it down clears the heat
+  (`god.rejection.beaten`). A Shrine's rest clears it. The answer carries cubes (`REJECTION.stash`) and arrives at EmO 0.8.
+- **Experience** (`progress/domains.js`): scoop and pour Psychokinesis, shape and carve Alteration, a miracle Spellscription (quality:
+  the sign's score, more for a bigger one), an epic its own domain.
+- **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.rejection.step`,
+  `god.rejection.beaten`; the hand's new subs Matter, Miracles and Rejection (`gx1..3`, `gq1..3`, `gja`, `gjb`).
+- **Not built yet** (`GOD_POWERS[id].built` false): the domains' other seventeen powers (section 8). Voxel creations wait on a perf
+  measure of the matter in a full scene. The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.

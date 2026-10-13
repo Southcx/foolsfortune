@@ -20,6 +20,8 @@
 // the variants the System teaches change them (system.artCfg).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { MatterArts, MATTER_ARTS } from './matterarts.js';
+import { GOD_POWERS, powerOpen } from '../progress/godpowers.js';
 import { mindLineMaterial } from '../vfx/labradorite.js';
 import { ReachDome } from '../vfx/wiremarks.js';
 import { T, PALETTE } from '../core/config.js';
@@ -34,6 +36,10 @@ export const ARTS = [
   { id: 'swell', key: '3', name: 'SWELL', glyph: '⤢', needs: 1, blurb: 'grow or shrink', color: '#ffb27a' },
   { id: 'wring', key: '4', name: 'WRING', glyph: '↺', needs: 1, blurb: 'twist the clay', color: '#ff9a6a' },
   { id: 'manifest', key: '5', name: 'MANIFEST', glyph: '▲', needs: 1, blurb: 'raise clay', color: '#ffc65c' },
+  // the matter's verbs (godhand/matterarts.js; GODHAND.md section 3)
+  { id: 'scoop', key: '6', name: 'SCOOP', glyph: '◒', needs: 1, blurb: 'take up and pour matter', color: '#9fd8e0' },
+  { id: 'shape', key: '7', name: 'SHAPE', glyph: '⛰', needs: 1, blurb: 'raise or lower the ground', color: '#d8b878' },
+  { id: 'carve', key: '8', name: 'CARVE', glyph: '⌇', needs: 1, blurb: 'cut a channel', color: '#c08a5a' },
 ];
 export const ART_BY_ID = Object.fromEntries(ARTS.map((a) => [a.id, a]));
 
@@ -76,11 +82,12 @@ export class GodArts {
     this.tipMsg = '';
     this.buildUi();
     this.buildFx();
+    this.matter = new MatterArts(this);
   }
 
   get art() { return ARTS[this.sel]; }
   cfg(id) { return this.game.system?.artCfg ? this.game.system.artCfg(id) : T.arts[id]; }
-  owns(id) { return this.game.system?.has(id) ?? true; }
+  owns(id) { return GOD_POWERS[id] && !GOD_POWERS[id].built ? false : MATTER_ARTS.has(id) ? powerOpen(id, this.game) : (this.game.system?.has(id) ?? true); }
 
   select(i) {
     if (i < 0 || i >= ARTS.length || i === this.sel) return;
@@ -238,6 +245,13 @@ export class GodArts {
     if (this.wheelOpen) return;
     // (telekinesis lives in godhand/godhand.js: begin/release grab, and its drain)
     if (a.id === 'telekinesis') return;
+    this.matter.update();
+    if (MATTER_ARTS.has(a.id)) { // (the matter's verbs: godhand/matterarts.js)
+      if (!this.matter.L) { if (input.wasPressed('Mouse0') && K.ok && this.gate(a, K.point)) this.matter.begin(a.id); }
+      else if (!input.isDown('Mouse0')) { this.matter.end(); this.hideFx(); }
+      else this.matter.hold(dt);
+      return;
+    }
     if (!this.live) {
       if (input.wasPressed('Mouse0') && K.ok && this.gate(a, K.point)) this.begin(a);
     } else {
@@ -490,6 +504,7 @@ export class GodArts {
   }
 
   clear() {
+    this.matter?.end();
     for (const m of [...this.manifests]) this.crumble(m);
     this.cancel();
   }

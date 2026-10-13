@@ -91,6 +91,8 @@ import { Recoil } from './courier/moves/recoil.js';
 import { Rigging } from './courier/moves/rigging.js';
 import { Lobbers } from './creatures/lobber.js';
 import { GodMode } from './godhand/godhand.js';
+import { Rejection } from './godhand/rejection.js';
+import { IslandMatter } from './godhand/islandmatter.js';
 import { crackPrewarm } from './vfx/crackskin.js';
 import { prewarmCasterShadersS1toS5 } from './vfx/caster/warmups1tos5.js';
 import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
@@ -567,6 +569,8 @@ async function main() {
   const god = new GodMode(game, renderer, handG, jarG);
   mark('god');
   game.god = god;
+  game.matter = new IslandMatter(game); // (the island's matter the hand moves: godhand/islandmatter.js; GODHAND.md 3)
+  game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
@@ -1117,6 +1121,8 @@ async function main() {
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
     const aboard = !!game.emocean?.stage.active || !!game.realm?.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
+    game.rejection?.update(dt);
     if (godOn) god.update(dt);
     else if (!aboard) {
       player.look(dt, weapon.adsEase || 0);
