@@ -66,7 +66,7 @@ export const DRAIN_SEQUENCE = {
 
 const N = 360, PAGES = 9, SHRINK = 0.88, SMALLEST = 0.7;
 const CYAN = new THREE.Color(0x46f0ff), MAGENTA = new THREE.Color(0xff3fd2), WHITE = new THREE.Color(0xffffff);
-const PAPER = 0xf1e7d0;
+const PAPER = 0xf1e7d0, GILT = 0xd9a04a; // (the paper, and the gilt of its edges: the Veritome's brass, tools/veritome/model.js)
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _f = new THREE.Vector3(), _z = new THREE.Vector3(), _c = new THREE.Color(), _e = new THREE.Euler();
 const clamp01 = (x) => Math.min(1, Math.max(0, x)), ease = (x) => { x = clamp01(x); return x * x * (3 - 2 * x); };
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -114,11 +114,11 @@ export class DataDrain {
     // the Veritome's pages: leaves hinged at the lens, fanning open round the beam's axis like a riffled book stood on its spine, and
     // cupped toward the creature (so the fan reads from behind the Courier and from the side); the lens at the hinge, two rings closing to focus
     const plain = (color, opacity = 1) => new THREE.MeshBasicMaterial({ name: 'datadrain-page', color, transparent: true, opacity, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide });
-    const leaf = new THREE.PlaneGeometry(0.2, 0.28); leaf.translate(0, 0.17, 0);
-    const edge = new THREE.PlaneGeometry(0.2, 0.016); edge.translate(0, 0.31, 0.001);
+    const leaf = new THREE.PlaneGeometry(0.3, 0.42); leaf.translate(0, 0.25, 0);
+    const edge = new THREE.PlaneGeometry(0.3, 0.03); edge.translate(0, 0.455, 0.001);
     this.book = new THREE.Group(); this.pages = [];
     for (let i = 0; i < PAGES; i++) {
-      const p = new THREE.Group(), m = new THREE.Mesh(leaf, plain(PAPER)), e = new THREE.Mesh(edge, plain(i % 2 ? MAGENTA : CYAN));
+      const p = new THREE.Group(), m = new THREE.Mesh(leaf, plain(PAPER)), e = new THREE.Mesh(edge, plain(GILT));
       p.add(m, e); this.book.add(p); this.pages.push({ g: p, mats: [m.material, e.material] });
     }
     this.lens = new THREE.Group();
