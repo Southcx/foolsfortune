@@ -17,6 +17,7 @@ import { ATTRIBUTES } from '../../progress/alchemy.js';
 import { ECON } from '../../progress/econ/table.js';
 import { DOMAIN_ORDER, DOMAIN_GLAZE } from '../../progress/godpowers.js';
 import { wheelSRGB } from '../../vfx/wheelcolour.js';
+import { CHARMS, SOCKETS, SOCKET_AT } from '../../progress/bracelet.js';
 
 const CSS = `
 #codex .st-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
@@ -35,6 +36,10 @@ const CSS = `
 #codex .st-chip i { font-style: normal; display: inline-block; width: 8px; height: 8px; border-radius: 2px; align-self: center; }
 #codex .st-chip b { font-weight: normal; color: #fff1dc; font-size: 13px; }
 #codex .st-chip small { opacity: .55; font-size: 10px; }
+#codex .st-bracelet { grid-column: 1 / -1; }
+#codex .st-socket { cursor: var(--jcur-pointer, pointer); min-width: 120px; } #codex .st-socket.shut { cursor: default; opacity: .45; }
+#codex .st-socket:hover:not(.shut) { border-color: var(--accent); }
+#codex .st-charm.no { opacity: .45; }
 `;
 let styled = false;
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
@@ -53,6 +58,31 @@ function radar(axes, rings, fill, stroke) {
     s += `<text class="st-label" x="${lx}" y="${ly + 3}" text-anchor="${Math.abs(lx - C) < 8 ? 'middle' : lx > C ? 'start' : 'end'}">${ax.name.toUpperCase()}</text>`;
   });
   return `${s}</svg>`;
+}
+
+/** THE BRACELET (progress/bracelet.js): a socket a domain; a click puts the next charm you own in it (and then none). Under it, the
+ *  charms: yours, or how each is earned. */
+function bracelet(codex) {
+  const g = codex.game, B = g.bracelet, c = document.createElement('div'); c.className = 'st-card st-bracelet';
+  if (!B) return c;
+  c.innerHTML = `<h3>THE BRACELET</h3><div class="st-sum">a charm in a domain's socket bends that domain's powers · click a socket to change it</div>`;
+  const row = document.createElement('div'); row.className = 'st-chips';
+  for (const s of SOCKETS) {
+    const open = B.open(s), id = B.charmAt(s), G = DOMAIN_GLAZE[s], chip = document.createElement('span');
+    chip.className = `st-chip st-socket${open ? '' : ' shut'}`;
+    chip.innerHTML = `<i style="background:${G.b}"></i>${DOMAINS[s].name}<b>${open ? (id ? CHARMS[id].label : '·') : '—'}</b><small>${open ? '' : `opens at ${SOCKET_AT}`}</small>`;
+    if (open) chip.onclick = () => { const mine = Object.keys(CHARMS).filter((k) => B.owned(k)), order = [null, ...mine], i = order.indexOf(id); B.set(s, order[(i + 1) % order.length]); codex.render(); };
+    row.appendChild(chip);
+  }
+  const list = document.createElement('div'); list.className = 'st-chips';
+  for (const [k, C] of Object.entries(CHARMS)) {
+    const have = B.owned(k), A = g.achievements?.list?.find?.((x) => x.id === `charm.${k}`), chip = document.createElement('span');
+    chip.className = `st-chip st-charm${have ? '' : ' no'}`; chip.title = have ? C.does : (A?.desc || C.does);
+    chip.innerHTML = `${C.label}<small>${have ? C.does : 'not yet earned'}</small>`;
+    list.appendChild(chip);
+  }
+  c.append(row, list);
+  return c;
 }
 
 export function renderStatus(codex, host) {
@@ -79,6 +109,6 @@ export function renderStatus(codex, host) {
   b.innerHTML = `<h3>SOUL ALCHEMY</h3><div class="st-sum"><b>${atts.reduce((n, t) => n + t.r, 0)}</b>ranks of ${ranks * 7}</div>`
     + radar(atts, [1 / 3, 2 / 3, 1], `rgba(${soul.join(',')},.35)`, `rgb(${soul.join(',')})`)
     + `<div class="st-chips">${atts.map((t) => `<span class="st-chip" title="${t.does}"><i style="background:${t.colour}"></i>${t.name}<b>${t.r}/${ranks}</b><small>seasoning ${Math.round(t.s * 100)}</small></span>`).join('')}</div>`;
-  wrap.append(a, b);
+  wrap.append(a, b, bracelet(codex));
   host.appendChild(wrap);
 }

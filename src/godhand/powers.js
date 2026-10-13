@@ -26,6 +26,16 @@ import { ALTER } from './powers/alter.js';
 import { hideSight } from './powers/sight.js';
 import { dropSlab } from './powers/force.js';
 
+/** Run `fn` with every Lachryma the pool spends or drains in it multiplied by `k` (a charm's cost: progress/bracelet.js). */
+export function withCost(pool, k, fn) {
+  if (!pool || k === 1) return fn();
+  const s = pool.spend, d = pool.drain, ownS = Object.hasOwn(pool, 'spend'), ownD = Object.hasOwn(pool, 'drain');
+  pool.spend = (a, ...r) => s.call(pool, a * k, ...r); pool.drain = (a, ...r) => d.call(pool, a * k, ...r);
+  try { return fn(); } finally { if (ownS) pool.spend = s; else delete pool.spend; if (ownD) pool.drain = d; else delete pool.drain; }
+}
+/** Powers TWIN and ECHO never repeat: a toggle (Slab, Take) or seeing (Strata, Course, Read). */
+const NO_REPEAT = new Set(['slab', 'take', 'strata', 'course', 'read']);
+
 export const HANDLERS = { ...SPACE, ...MAKE, ...SIGHT, ...FORCE, ...WILL, ...ALTER, ...SCRIPT };
 export const POWER_IDS = new Set(Object.keys(HANDLERS));
 
@@ -58,7 +68,7 @@ export class GodPowers {
     const K = this.god.cursor, H = HANDLERS[id];
     if (!H || !K.ok) return false;
     const L = { id, a: K.point.clone(), b: K.point.clone(), t: 0, shift: this.shift() };
-    if (H.begin && H.begin(this, L) === false) return false;
+    if (H.begin && this.act(id, () => H.begin(this, { ...L, a: L.a.clone(), b: L.b.clone() })) === false) return false;
     this.L = L;
     return true;
   }
@@ -67,7 +77,29 @@ export class GodPowers {
     L.t += dt; L.b.copy(this.god.cursor.point);
     HANDLERS[L.id].hold?.(this, L, dt);
   }
-  end() { const L = this.L; this.L = null; this.arts.hideFx(); if (L) HANDLERS[L.id].end?.(this, L); }
+  end() { const L = this.L; this.L = null; this.arts.hideFx(); const H = L && HANDLERS[L.id]; if (H?.end) this.act(L.id, () => H.end(this, { ...L, a: L.a.clone(), b: L.b.clone() })); }
+
+  /** One act of a power under the bracelet (progress/bracelet.js): its charms' cost on the Lachryma it spends, and TWIN's and ECHO's
+   *  repeat of it if it acted (it emitted); each charm that bent it is said for the ring's gold line (`bracelet.charm`). */
+  act(id, fn) {
+    const g = this.game, dom = GOD_POWERS[id]?.domain, B = g.bracelet;
+    this.emitted = false;
+    const r = withCost(g.lachryma, B?.costOf?.(dom) ?? 1, fn);
+    if (!this.emitted || this.repeating || !B) return r;
+    for (const [charm, C] of B.on(dom)) {
+      if (!C.repeat) { g.events?.emit('bracelet.charm', { charm, domain: dom, power: id, by: 'courier' }); continue; }
+      if (NO_REPEAT.has(id)) continue;
+      let t = 0; const P = this;
+      this.keep({ id: 'repeat', tick(dt) {
+        if ((t += dt) < C.delay) return false;
+        P.repeating = true;
+        try { withCost(g.lachryma, B.costOf(dom), fn); } finally { P.repeating = false; }
+        g.events?.emit('bracelet.charm', { charm, domain: dom, power: id, by: 'courier' });
+        return true;
+      } });
+    }
+    return r;
+  }
 
   /** Every frame the hand is up: the selected power's passive (Read, Course) and the walk of taken creatures. */
   passive(id, dt) { hideSight(id); HANDLERS[id]?.passive?.(this, dt); }
@@ -75,7 +107,7 @@ export class GodPowers {
   /** Every frame, hand up or not: what lasts. */
   update(dt) {
     if (!this.chatted && this.game.chat?.add) this.addChat();
-    for (let i = this.kept.length - 1; i >= 0; i--) { const k = this.kept[i]; if (k.tick(dt)) { k.dispose?.(); this.kept.splice(i, 1); } }
+    for (const k of [...this.kept]) if (this.kept.includes(k) && k.tick(dt)) { k.dispose?.(); const i = this.kept.indexOf(k); if (i >= 0) this.kept.splice(i, 1); } // (by identity: a tick may cap and remove others)
     for (const c of this.walking) this.step(c, dt);
     for (let i = this.marks.length - 1; i >= 0; i--) { const m = this.marks[i]; if ((m.life -= dt) <= 0) { this.drop(m.obj); this.marks.splice(i, 1); } }
   }
@@ -84,7 +116,7 @@ export class GodPowers {
   /** The oldest of a power's lasting things goes when one more than its count is made. */
   cap(id, n) { const mine = this.kept.filter((k) => k.id === id); while (mine.length >= n) { const k = mine.shift(); k.dispose?.(); this.kept.splice(this.kept.indexOf(k), 1); } }
 
-  emit(id, payload = {}) { this.game.events?.emit(`god.${id}`, { act: true, ...payload, by: 'courier' }); }
+  emit(id, payload = {}) { this.emitted = true; this.game.events?.emit(`god.${id}`, { act: true, ...payload, ...(this.repeating ? { repeat: true } : {}), by: 'courier' }); }
   domainColour(id) { return DOMAIN_COLOUR[GOD_POWERS[id]?.domain] ?? 0xffffff; }
 
   // ---- marks (placeholders: a ring on the ground, a line; flash marks go after `life` real seconds)

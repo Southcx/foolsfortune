@@ -221,6 +221,7 @@ import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
 import { installPsyche } from './progress/psyche.js';
+import { Bracelet } from './progress/bracelet.js';
 import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
 import { SporeBeds } from './progress/sporebeds.js';
@@ -754,6 +755,7 @@ async function main() {
   game.letters = new Letters(game); // ("/letter petra ...": the division's own session answers in minutes: coop/letters.js)
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
+  game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)

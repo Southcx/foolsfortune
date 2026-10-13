@@ -4,6 +4,8 @@
 > as ties in a line of thinking I had about 'Rings' and 'Halos' and 'Aura' a long time ago. 'Bracelet' is a great consolidation of all of
 > them, and can also be visualized as a 'Choker' around the Pneuka Jar."
 
+**Approved** (the owner, 2026-10-13: "I fully concur with the design Dovina has laid out. It's got good bones."), without the clasp.
+
 **What it is.** One ring, worn by the Vessoul in every form. On the god hand it is a bracelet at the wrist; on the Pneuka Jar a choker at
 the neck; on the Courier a band at the wrist. It holds the **charms** that modify the hand's powers. Its glow is the hand's state, shown
 on the thing and never said: a world mark.
@@ -15,15 +17,13 @@ carries to the hand.
 
 ## The decisions, with the reason for each
 
-1. **Seven sockets, one for each domain, plus the clasp.**
+1. **Seven sockets, one for each domain.**
    - Each socket is a band glazed in its domain's kiln glaze (Calissa's `DOMAIN_LOOK`).
    - A charm in a domain's socket bends only that domain's powers. So a build is a choice per domain, and the radar on the STATUS shelf
      shows what the bracelet can hold.
-   - A domain's socket opens at level 30 of that domain.
-   - **The clasp** holds one charm that bends every power. It opens at a total level of 350, about half of "The World".
-   - At most eight charms are worn at once.
-   - Why: across-all-arts charms would make one best charm. Per-domain sockets make eight small decisions, and they read on the ring
-     itself.
+   - A domain's socket opens at level 30 of that domain. At most seven charms are worn, one charm per socket.
+   - No socket bends all the arts (the owner, 2026-10-13: "Sockets are a yes, no need to have a special clasp slot"). A slot for all
+     the arts would make one best charm.
 2. **Earned, never bought: arts by achievement** (DESIGN.md section 22).
    - Each charm comes from an achievement, with a count way and a feat way.
    - Echo: a power used 200 times, or a power that hits five things at once.
@@ -63,7 +63,19 @@ cracked part past the shield, and shatters the vessel when three parts are alrea
 `tools/lockheart/table.js` (`OUTCOMES.nuke.recoil`), the code in `outcomes.js`, the event is `lockheart.recoil`, and the rule is in
 `feedback/tracking/lockheart.js`. Draining itself never hurts the Courier. The look of the recoil (pressure, cracks) is Calissa's.
 
-## Not built yet
-The bracelet itself. Its look comes first (Calissa), then the sockets and charms as data in `progress/godpowers.js` (a `CHARMS` table and
-`charmOf(id, socket)` folded into `rampOf`), the achievements, and the ring's glow as one mark. The owner rules on the shape before it is
-built.
+## As built (2026-10-13)
+- `progress/bracelet.js`: `CHARMS`, `SOCKETS` (the seven domains), `SOCKET_AT` 30, and `game.bracelet`, which holds the sockets and the
+  save section `bracelet` (player). A lend (DEBUG's arts) opens every socket and charm.
+- The numbers reach the powers through the ramp: `rampOf` multiplies by `bracelet.mod(domain, key)` through `FAMILY` (size, time,
+  made, rate), and QUIET halves rejection's heat through `heatScale`.
+- A charm's Lachryma cost wraps every act of its domain's powers. That includes the matter's verbs (`withCost`, `godhand/powers.js`) and
+  the miracles' spend.
+- TWIN and ECHO repeat an act of the domains' other powers, a beat or three real seconds on. Toggles and seeing never repeat. A
+  repeated act's event carries `repeat`.
+- GENTLE turns a miracle's or a Volcano's blows into pushes.
+- Events: `bracelet.set { socket, charm }` and `bracelet.charm { charm, domain, power }` (the ring's gold line: Calissa's look listens).
+- Each charm is earned by the achievement `charm.<id>` (THE HAND, Bracelet), by its count way or its feat way.
+- Sockets are on the Codex's STATUS shelf: click a socket to cycle through the charms you own.
+- Tried headless: TWIN repeats a rift once and ECHO a ward once, with no page errors.
+- Known: under a power's count cap (one rift pair at its open level), TWIN's second act replaces the first. It pays off only once the
+  count ramps up.

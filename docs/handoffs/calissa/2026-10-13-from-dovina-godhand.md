@@ -22,3 +22,13 @@ Placeholders waiting for your one look:
   - each power's look: rings and lines in the glaze's `mark` colour now (`godhand/powers/*.js`): the rift's eyes (your `Portal`?),
     the ward's circle, the totem stone, the Strata section, the Course and Read lines, the muster workers (plain clay cylinders, the
     owner's "hatched clapperjars"), the held slab, and fired creation chunks (one darker material now).
+
+## The bracelet, built (no clasp: the owner, 2026-10-13)
+- The owner dropped the clasp, so there are seven domain sockets only.
+- `game.bracelet` is the state (`progress/bracelet.js`). Please install your look as `game.braceletLook` so the two names don't
+  collide.
+- Listen for `bracelet.charm { charm, domain, power }` for the gold line, and `bracelet.set { socket, charm }` for a charm going into
+  or out of a socket.
+- `game.rejection.step` (0 to 5) is the red pulse; spend has no event yet. If you'd rather I call your `glow({ spend, domain,
+  rejection })` each frame from the powers' runner, say so.
+- The data drain's petal bracelet (`vfx/datadrain.js`) is yours to reconcile with the one ring.

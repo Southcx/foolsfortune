@@ -37,7 +37,7 @@ export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial'] },
-  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Raids', 'Rejection', 'Lachryma'] },
+  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
@@ -216,6 +216,15 @@ export function buildAchievements(game) {
   F('gx5', 'hand', 'Matter', 3, 'collect', 'Pillar, Arch and Ramp', 'Sculpt each of the three shapes.', (L) => ['pillar', 'arch', 'ramp'].filter((s) => L.get(`god.sculpt.${s}`) > 0).length, 3);
   F('gp1', 'hand', 'Arts', 3, 'collect', 'Seven Hands', 'Use a god power of every domain.', (L) => ['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].filter((d) => Object.entries(GOD_POWERS).some(([id, p]) => p.domain === d && L.get(`god.power.${id}`) > 0)).length, 7);
   F('gp2', 'hand', 'Arts', 5, 'collect', 'Every Power', "Use every one of the domains' god powers.", (L) => POWER_EVENTS.filter((id) => L.get(`god.power.${id}`) > 0).length, POWER_EVENTS.length, { title: 'Demiurge' });
+  // the bracelet's charms (progress/bracelet.js; BRACELET.md): each opens by a count way or a feat way, whichever comes first
+  const charm = (id, name, desc, [ck, cn], [fk, fn]) => F(`charm.${id}`, 'hand', 'Bracelet', 3, 'mechanic', name, desc, (L) => Math.min(1, Math.max(L.get(ck) / cn, L.get(fk) >= fn ? 1 : 0)), 1);
+  charm('twin', 'Twin Charm', 'Use the god powers 200 times, or sunder 3 clapperjars with one stroke. The TWIN charm: a power acts twice.', ['god.power', 200], ['god.cuts.best', 3]);
+  charm('wide', 'Wide Charm', 'Move 2,000 cubic metres of matter, or sculpt one creation of 20 cubic metres. The WIDE charm: half again the reach.', ['god.moved', 2000], ['god.sculpt.volume', 20]);
+  charm('echo', 'Echo Charm', 'Call down 50 miracles, or draw a sign scored 95. The ECHO charm: the act comes again.', ['god.miracle', 50], ['god.miracle.score', 95]);
+  charm('quiet', 'Quiet Charm', "Write 25 wards, or put down an island's whole answer. The QUIET charm: the island feels half.", ['god.power.ward', 25], ['god.rejection.beaten', 1]);
+  charm('thrift', 'Thrift Charm', 'Move 5,000 cubic metres of matter, or set down 30 slabs. The THRIFT charm: made matter costs half.', ['god.moved', 5000], ['god.power.slab', 60]);
+  charm('linger', 'Linger Charm', 'Open 30 rifts, or raise 10 totems. The LINGER charm: what stands, stands twice as long.', ['god.power.rift', 30], ['god.power.totem', 10]);
+  charm('gentle', 'Gentle Charm', 'Herd creatures 50 times, or take 20 in hand. The GENTLE charm: no harm, only a push.', ['god.power.herd', 50], ['god.power.take', 20]);
   C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
   F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);
   F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });

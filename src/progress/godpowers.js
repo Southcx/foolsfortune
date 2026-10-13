@@ -107,12 +107,12 @@ export function rampOf(id, key, game) {
   const p = GOD_POWERS[id], domain = p?.domain, at = p?.at ?? 1;
   const level = domain ? game?.psyche?.level?.(domain) ?? 1 : 1;
   const t = Math.max(0, Math.min(1, (level - at) / Math.max(1, 99 - at)));
-  return row[0] + (row[1] - row[0]) * Math.pow(t, RAMP_CURVE);
+  return (row[0] + (row[1] - row[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.mod?.(domain, key) ?? 1); // (the bracelet's charms: progress/bracelet.js)
 }
 /** Rejection's heat scale for an act of a domain (RAMP.heat over that domain's level from 1). */
 export function heatScale(domain, game) {
   const level = game?.psyche?.level?.(domain) ?? 1, t = Math.max(0, Math.min(1, (level - 1) / 98));
-  return RAMP.heat.scale[0] + (RAMP.heat.scale[1] - RAMP.heat.scale[0]) * Math.pow(t, RAMP_CURVE);
+  return (RAMP.heat.scale[0] + (RAMP.heat.scale[1] - RAMP.heat.scale[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.heat?.(domain) ?? 1); // (QUIET)
 }
 
 /** Open for this Courier now: its domain's level, or a lend. */

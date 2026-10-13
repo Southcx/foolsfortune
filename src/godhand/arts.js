@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MatterArts, MATTER_ARTS } from './matterarts.js';
-import { GodPowers, POWER_IDS } from './powers.js';
+import { GodPowers, POWER_IDS, withCost } from './powers.js';
 import { GOD_POWERS, powerOpen, DOMAIN_ORDER, DOMAIN_GLAZE } from '../progress/godpowers.js';
 import { mindLineMaterial } from '../vfx/labradorite.js';
 import { ReachDome } from '../vfx/wiremarks.js';
@@ -322,9 +322,10 @@ export class GodArts {
     }
     this.powers.passive(null, dt);
     if (MATTER_ARTS.has(a.id)) { // (the matter's verbs: godhand/matterarts.js)
+      const k = g.bracelet?.costOf?.(GOD_POWERS[a.id]?.domain) ?? 1; // (the bracelet's charms on what it spends: progress/bracelet.js)
       if (!this.matter.L) { if (input.wasPressed('Mouse0') && K.ok && this.gate(a, K.point)) this.matter.begin(a.id); }
-      else if (!input.isDown('Mouse0')) { this.matter.end(); this.hideFx(); }
-      else this.matter.hold(dt);
+      else if (!input.isDown('Mouse0')) { withCost(g.lachryma, k, () => this.matter.end()); this.hideFx(); }
+      else withCost(g.lachryma, k, () => this.matter.hold(dt));
       return;
     }
     if (!this.live) {

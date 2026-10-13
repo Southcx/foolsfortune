@@ -83,7 +83,7 @@ export class Miracles {
     if (epic) return this.castEpic(EPIC_BY_SIGN[feeling], at);
     const M = MIRACLES[feeling], u = THREE.MathUtils.clamp((Math.max(x1 - x0, y1 - y0) / innerHeight - 0.2) / 0.4, 0, 1);
     const cost = lerp(M.cost[0], M.cost[1], u) * (rampOf('miracle', 'cost', g) ?? 1), big = rampOf('miracle', 'size', g) ?? 1; // (GODHAND.md 11)
-    if (!g.lachryma.spend(cost, 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
+    if (!g.lachryma.spend(cost * (g.bracelet?.costOf?.('spellscription') ?? 1), 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
     const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u) * big, dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
     this.begin(m); this.last = feeling; // (the last miracle's feeling: a Totem holds it, godhand/powers/make.js)
     g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), by: 'courier' });
@@ -152,11 +152,11 @@ export class Miracles {
     const g = this.game, C = g.creatures, F = g.matter?.field;
     const list = (C?.near?.({ x: m.x, y: m.y, z: m.z }, m.r) || []).filter((c) => !c.friend && c.alive);
     let at;
-    if (list.length) { const c = list.reduce((a, b) => ((b.emo || 0) > (a.emo || 0) ? b : a)); at = c.pos.clone(); C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); }
+    if (list.length) { const c = list.reduce((a, b) => ((b.emo || 0) > (a.emo || 0) ? b : a)); at = c.pos.clone(); if (g.bracelet?.gentle?.('spellscription')) c.knock?.(UP.clone().multiplyScalar(6)); else C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); } // (GENTLE: a push, no harm)
     else { const a = simRand() * Math.PI * 2, d = Math.sqrt(simRand()) * m.r; at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); if (F) { const y = F.groundAt(at.x, at.z); if (Number.isFinite(y)) at.y = y; } }
     if (F) {
       F.fuse(at.x, at.z, 1.5);
-      if (F.depthAt(at.x, at.z) > 0.05) for (const c of list) if (c.alive && F.depthAt(c.pos.x, c.pos.z) > 0.05) C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); // (the whole pool is struck)
+      if (F.depthAt(at.x, at.z) > 0.05 && !g.bracelet?.gentle?.('spellscription')) for (const c of list) if (c.alive && F.depthAt(c.pos.x, c.pos.z) > 0.05) C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); // (the whole pool is struck)
     }
     const flash = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 30, 5), new THREE.MeshBasicMaterial({ color: 0xfff6e0 }));
     flash.position.set(at.x, at.y + 15, at.z);
@@ -172,7 +172,7 @@ export class Miracles {
     else if (m.epic === 'volcano') {
       if (m.t < 6) F?.pour(m.x, m.z, E.cone, (Math.PI * E.cone * E.cone * E.cone / 3) * dt / 6, { kind: 'clay' }); // (the cone rises)
       else { F?.pour(m.x, m.z, 1.5, E.lava * dt * 3, { kind: 'water', feeling: 'fury' }); F?.heat(m.x, m.z, E.r, 2); }
-      if (m.every <= 0 && m.t > 2) { m.every = 1.5; const a = simRand() * 6.28, d = 3 + simRand() * (E.r - 3), at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); g.fx?.explosion?.(at, 1.6); for (const c of C?.near?.(at, 2.5) || []) if (!c.friend) C.strike(c, c.pos, UP, 4, 'miracle', 'courier', null, 'impact'); }
+      if (m.every <= 0 && m.t > 2) { m.every = 1.5; const a = simRand() * 6.28, d = 3 + simRand() * (E.r - 3), at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); g.fx?.explosion?.(at, 1.6); for (const c of C?.near?.(at, 2.5) || []) if (!c.friend) { if (g.bracelet?.gentle?.('manifestation')) c.knock?.(UP.clone().multiplyScalar(6)); else C.strike(c, c.pos, UP, 4, 'miracle', 'courier', null, 'impact'); } }
     }
     else if (m.epic === 'maelstrom') {
       this.bodies(m, (b, d, dx, dz) => { const s = E.swirl * (1 - d / m.r) + 2; b.setLinvel({ x: -dz / d * s - dx / d * 3, y: E.lift * (1 - d / m.r), z: dx / d * s - dz / d * 3 }, true); });
