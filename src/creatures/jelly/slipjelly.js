@@ -574,6 +574,7 @@ export class SlipJellies {
     c.deform.sq = 0.1; c.deform.sqV = 0; c.deform.target.squash = 1; c.deform.kick(2, null, 0.3);
     c.mem.wipe(); c.drives.set('fear', 0); c.drives.set('thirst', 0.1); c.rel.clear(); c.macro = null;
     c.brain.decide(); // (it has a mind again from its first moment)
+    if (!c.spirit) g.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (it forms again by rising from the sand: vfx/spawnlook.js)
     g.events?.emit('jelly.reform', {});
   }
 

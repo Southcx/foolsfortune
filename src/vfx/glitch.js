@@ -28,6 +28,8 @@
 //   .drop(beats = 2)          the cut before a slam: dark for that many frames (at 60 a second), then back
 //   .drain(at, dur)           the data drain toward a world point
 //   .on   .render(post, src) -> a target   (the glow's screen hook: src in, the torn frame out)
+//   REGION: a pulse with `region` ({ u0, v0, u1, v1 }, screen 0..1, the caller may move it each frame) tears only inside it, its edge
+//   soft (a seam in the air: vfx/spawnlook.js); while every live pulse has one, the pass is held to their union, never the whole screen
 //   MOMENTS: which events tear the picture, and how (it listens on game.events itself)
 //
 // THE VEIL rides in the same pass (one program, not two): the storm's haze, split and light (vfx/stormwarp.js writes them) and the
@@ -41,7 +43,7 @@ import { T } from '../core/config.js';
 const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
 const FRAG = /* glsl */`
 uniform sampler2D tSrc, tHist; uniform vec2 uRes, uAt; uniform float uSeed, uSplit, uTear, uMosh, uCrush, uDrain, uDrop; uniform bool uFresh;
-uniform float uHaze, uVSplit, uVT, uBelow, uLine; uniform vec3 uVLight, uVDeep;
+uniform float uHaze, uVSplit, uVT, uBelow, uLine; uniform vec3 uVLight, uVDeep; uniform vec4 uRegion;
 varying vec2 vUv;
 float h1(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h1(i), h1(i + vec2(1.0, 0.0)), f.x), mix(h1(i + vec2(0.0, 1.0)), h1(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -61,23 +63,25 @@ void main() {
   }
   float lip = 0.0;
   if (uLine >= 0.0) { float dl = vUv.y - lineY; lip = exp(-dl * dl / 0.00015); uv.y += 0.025 * lip * sign(dl); } // (the lens's lip of crude, bending the band at it)
+  // REGION: the tear held to a box on the screen (the whole of it when no pulse asks for one), its edge feathered
+  float inR = smoothstep(0.0, 0.02, min(min(vUv.x - uRegion.x, uRegion.z - vUv.x), min(vUv.y - uRegion.y, uRegion.w - vUv.y)));
   // TEAR: bands of rows, each band its height and its shove (only some bands move)
   float s0 = floor(uSeed), bandH = mix(5.0, 42.0, h1(vec2(s0, 3.1)));
   float band = floor(px.y / bandH), hb = h1(vec2(band, s0));
   float torn = step(1.0 - uTear * 0.55, hb);
-  float tear = torn * (hb - 0.5) * 0.18 * uTear;
+  float tear = torn * (hb - 0.5) * 0.18 * uTear * inR;
   uv.x += tear;
   // DRAIN: 12-pixel blocks pulled toward the point, the near ones most, each block its own pace
   vec2 blk = floor(px / 12.0); float hd = h1(blk + floor(uSeed * 0.5));
   vec2 to = uAt - uv; float d = length(to * vec2(uRes.x / uRes.y, 1.0));
-  float pull = uDrain * (1.0 - smoothstep(0.0, 0.85, d)) * (0.3 + 0.7 * hd);
+  float pull = uDrain * (1.0 - smoothstep(0.0, 0.85, d)) * (0.3 + 0.7 * hd) * inR;
   uv += to * pull * 0.7;
   // SPLIT: red out, blue in, from the middle and along the tear
-  vec2 c = uv - 0.5, off = c * (uSplit * 0.035 + uVSplit * 0.008 * edge * keepHere + lip * 0.02) + vec2(tear * 0.5 + uSplit * 0.003, 0.0);
+  vec2 c = uv - 0.5, off = c * (uSplit * 0.035 * inR + uVSplit * 0.008 * edge * keepHere + lip * 0.02) + vec2(tear * 0.5 + uSplit * 0.003 * inR, 0.0);
   vec3 col = vec3(texture2D(tSrc, uv + off).r, texture2D(tSrc, uv).g, texture2D(tSrc, uv - off).b);
   // MOSH: 16-pixel blocks that keep the frame before (this pass's own last output), dragged a hair each frame
   vec2 mb = floor(px / 16.0); float hm = h1(mb + vec2(17.0, floor(uSeed / 3.0)));
-  if (!uFresh && hm < uMosh) {
+  if (!uFresh && hm < uMosh * inR) {
     vec2 drag = (vec2(h1(mb + 1.3), h1(mb + 7.1)) - 0.5) * 0.012 + vec2(0.002, -0.001);
     col = texture2D(tHist, vUv - drag).rgb;
   }
@@ -85,7 +89,7 @@ void main() {
   // (in RUNS along a torn band, a few blocks long, not single blocks: a broken line of signal, not confetti)
   float runW = 12.0 * (2.0 + floor(5.0 * h1(vec2(band, s0 + 1.0))));
   vec2 run = vec2(floor(px.x / runW), band);
-  float g = max(torn * uTear, pull * 1.6);
+  float g = max(torn * uTear * inR, pull * 1.6);
   if (h1(run * 1.7 + s0) < uCrush * g * 0.4) {
     float L = max(col.r, max(col.g, col.b)) + 1e-3;
     col = floor(col / L * 4.0 + 0.5) / 4.0 * L * mix(vec3(0.35, 1.25, 1.2), vec3(1.25, 0.35, 1.15), step(0.5, h1(run + 9.0)));
@@ -97,7 +101,7 @@ void main() {
   col += uVLight * lip * 0.3;
   // DROP: the beat of silence
   float l = dot(col, vec3(0.299, 0.587, 0.114));
-  col = mix(col, vec3(l * 0.12), uDrop);
+  col = mix(col, vec3(l * 0.12), uDrop * inR);
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
 
@@ -119,7 +123,7 @@ export class Glitch {
     this.pulses = []; this.amt = Object.fromEntries(PARTS.map((p) => [p, 0]));
     this.at = new THREE.Vector2(0.5, 0.5); this.atWorld = null;
     this.seed = 0; this.seedT = 0; this.dropFrames = 0; this.fresh = true;
-    this.mat = null; this.hist = null; this.w = 0; this.moments = MOMENTS;
+    this.mat = null; this.hist = null; this.w = 0; this.moments = MOMENTS; this.region = new THREE.Vector4(-1, -1, 2, 2);
     this.veil = { haze: 0, split: 0, t: 0, light: new THREE.Color(1, 0.92, 0.74), below: 0, line: -1, deep: new THREE.Color(0x140a22) }; // (the storm's and the deep's share of the pass)
     for (const [ev, M] of Object.entries(MOMENTS)) game.events?.on?.(ev, (e) => this.moment(M, e));
   }
@@ -128,7 +132,7 @@ export class Glitch {
     if (this.mat) return;
     this.mat = new THREE.ShaderMaterial({
       name: 'glitch-screen', vertexShader: VERT, fragmentShader: FRAG, depthTest: false, depthWrite: false,
-      uniforms: { tSrc: { value: null }, tHist: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uAt: { value: this.at }, uSeed: { value: 0 }, uFresh: { value: true },
+      uniforms: { uRegion: { value: new THREE.Vector4(0, 0, 1, 1) }, tSrc: { value: null }, tHist: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uAt: { value: this.at }, uSeed: { value: 0 }, uFresh: { value: true },
         uHaze: { value: 0 }, uVSplit: { value: 0 }, uVT: { value: 0 }, uBelow: { value: 0 }, uLine: { value: -1 }, uVLight: { value: this.veil.light }, uVDeep: { value: this.veil.deep },
         ...Object.fromEntries(PARTS.map((p) => [`u${p[0].toUpperCase()}${p.slice(1)}`, { value: 0 }])) },
     });
@@ -149,8 +153,8 @@ export class Glitch {
   }
 
   /** A tear: each part's peak (0..1), shaped up fast and down slower over `dur` real seconds. */
-  pulse({ dur = 0.6, at = null, ...amts } = {}) {
-    const p = { t: 0, dur: Math.max(0.05, dur), amts: {} };
+  pulse({ dur = 0.6, at = null, region = null, ...amts } = {}) {
+    const p = { t: 0, dur: Math.max(0.05, dur), amts: {}, region };
     for (const k of PARTS) if (amts[k]) p.amts[k] = amts[k];
     this.pulses.push(p);
     if (at) this.aim(at);
@@ -176,6 +180,10 @@ export class Glitch {
       for (const [part, v] of Object.entries(P.amts)) this.amt[part] = Math.max(this.amt[part], v * env * k);
     }
     this.pulses = this.pulses.filter((P) => P.t < P.dur);
+    // the region: the union of the regional pulses' boxes while every pulse has one; else (or with a drop or the veil) the whole screen
+    const R = this.region.set(1, 1, 0, 0), all = this.pulses.length > 0 && this.dropFrames === 0 && !this.veiled && this.pulses.every((P) => P.region);
+    if (all) for (const { region: b } of this.pulses) R.set(Math.min(R.x, b.u0), Math.min(R.y, b.v0), Math.max(R.z, b.u1), Math.max(R.w, b.v1));
+    else R.set(-1, -1, 2, 2);
     if (this.dropFrames > 0) { this.amt.drop = Math.max(this.amt.drop, k); if (--this.dropFrames === 0 && this.after) { this.pulse(this.after); this.after = null; } }
     // the seed jumps a few times a second, at an uneven pace (a stutter, not a glide)
     if ((this.seedT -= raw) <= 0) { this.seed = (this.seed + 1 + Math.floor(Math.random() * 7)) % 997; this.seedT = 0.1 + Math.random() * 0.067; } // (6 to 10 steps a second)
@@ -190,7 +198,7 @@ export class Glitch {
     const w = src.width, h = src.height;
     if (this.w !== w || this.h !== h) { for (const t of this.hist) t.setSize(w, h); this.w = w; this.h = h; this.fresh = true; }
     const u = this.mat.uniforms, out = this.hist[this.flip ? 1 : 0], past = this.hist[this.flip ? 0 : 1];
-    u.tSrc.value = src.texture; u.tHist.value = past.texture; u.uRes.value.set(w, h); u.uSeed.value = this.seed; u.uFresh.value = this.fresh;
+    u.tSrc.value = src.texture; u.tHist.value = past.texture; u.uRes.value.set(w, h); u.uSeed.value = this.seed; u.uFresh.value = this.fresh; u.uRegion.value.copy(this.region);
     for (const p of PARTS) u[`u${p[0].toUpperCase()}${p.slice(1)}`].value = this.amt[p];
     const V = this.veil; u.uHaze.value = V.haze; u.uVSplit.value = V.split; u.uVT.value = V.t; u.uBelow.value = V.below; u.uLine.value = V.line;
     post.pass(this.mat, out);
