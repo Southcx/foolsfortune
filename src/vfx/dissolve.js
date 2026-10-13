@@ -2,7 +2,9 @@
 // DISSOLVE: what a zandatsu leaves of a creature. Its body is cut along the blade's planes into pieces (the mesh slicer: slicing.js),
 // the pieces fly apart in the slow air, and in under a second each comes undone into Lachryma: LIQUID (baubles, already turned:
 // the drops that refill the Courier) and SOLID (cubes: their money), thrown out of it as it shrinks and darkens to nothing, and drawn to
-// them. Nothing of it is left lying about.
+// them. Nothing of it is left lying about. As they fly, each piece first shows what it is made of (a Figment's scatter, its first
+// beats: vfx/figmentscatter.js): two steps through a coarser grid and one beat of its wire; where it ends, its motes of Lachryma in its
+// feeling's colour go into the air and the ground. `visual.glitch` off: no steps and no wire.
 //
 // Prior art: Kingdom Hearts' Heartless (a defeated one comes apart into dark mist and a fountain of HP and MP orbs and munny that fly
 // to Sora), Metal Gear Rising's zandatsu (the pieces in the slowed air), and the sixth generation's way of making a death a reward you
@@ -13,9 +15,12 @@
 import * as THREE from 'three';
 import { splitTriangles, toGeometry } from '../tools/slicing.js';
 import { sfx } from '../audio/sfx.js';
+import { T } from '../core/config.js';
+import { SCATTER, snapGeometry, figmentColour } from './figmentscatter.js';
 
 const LIFE = 0.85;
-const _v = new THREE.Vector3();
+const _v = new THREE.Vector3(), _o = new THREE.Vector3();
+const MIND_LINE = 0x5087fa; // (the Mind's line colour, as the scatter's wire)
 
 export class Dissolve {
   constructor(game) {
@@ -41,7 +46,7 @@ export class Dissolve {
       }
       if (next.length) pieces = next;
     }
-    const share = pieces.length;
+    const share = pieces.length, feel = figmentColour(centre), steps = T.visual?.glitch !== false;
     for (const p of pieces) {
       const { geometry, center } = toGeometry(p);
       const m = new THREE.Mesh(geometry, this.mat.clone());
@@ -50,7 +55,7 @@ export class Dissolve {
       const out = _v.copy(center).sub(centre); out.y = 0; if (out.lengthSq() < 1e-4) out.set(Math.random() - 0.5, 0, Math.random() - 0.5);
       const vel = out.normalize().multiplyScalar(2 + Math.random() * 1.5).add(new THREE.Vector3(0, 2.2 + Math.random() * 1.5, 0));
       const spin = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(9);
-      this.list.push({ m, vel, spin, t: 0, mp: Math.max(1, Math.round(mp / share)), worth: Math.max(1, Math.round(worth / share)), let: 0 });
+      this.list.push({ m, vel, spin, t: 0, mp: Math.max(1, Math.round(mp / share)), worth: Math.max(1, Math.round(worth / share)), let: 0, feel, motes: Math.ceil(SCATTER.motes / share), stage: steps ? -1 : 3, geo: m.geometry });
     }
     sfx.rainstick?.(this.game.listenerDistance(centre), 0.9);
   }
@@ -67,14 +72,31 @@ export class Dissolve {
       const s = Math.max(0.001, 1 - k * k);
       q.m.scale.setScalar(s);
       q.m.material.emissiveIntensity = 1.6 * k; q.m.material.color.setScalar(1 - 0.8 * k);
+      if (q.stage < 3) this.scatterStep(q);
       if (Math.random() < dt * 30) g.fx?.alpha?.emit?.({ pos: q.m.position.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.8, (Math.random() - 0.5) * 0.6), life: 0.6, size: 0.08, sizeEnd: 0.02, color: new THREE.Color(0x3a2466), alpha: 0.7, drag: 1.5 });
       if (q.let === 0 && k > 0.35) { q.let = 1; g.baubles?.spawn(q.m.position.clone(), q.mp, { ox: 1, up: 2.2, spread: 0.5 }); }
       if (k >= 1) {
         g.cubes?.burst?.(q.m.position.clone(), q.worth, { count: Math.min(4, q.worth), up: 3, from: 'zandatsu' });
-        g.scene.remove(q.m); q.m.geometry.dispose(); q.m.material.dispose();
+        g.figmentScatter?.motes(q.m.position.clone(), q.feel, q.motes);
+        g.scene.remove(q.m); q.m.geometry.dispose(); if (q.geo !== q.m.geometry) q.geo.dispose(); q.m.material.dispose();
         this.list.splice(i, 1);
       }
     }
+  }
+
+  /** A piece's first beats (a Figment's scatter): snapped twice, coarser each time, then its wire for a beat, then itself again. */
+  scatterStep(q) {
+    const S = SCATTER, M = q.m.material, stage = q.t < S.snap ? 0 : q.t < 2 * S.snap ? 1 : q.t < 2 * S.snap + S.wire ? 2 : 3;
+    if (stage === 2) { M.color.setScalar(0); M.emissiveIntensity = 1.6; } // (the wire's colour holds over the fade above)
+    if (stage === q.stage) return;
+    if (q.m.geometry !== q.geo) q.m.geometry.dispose();
+    q.m.geometry = q.geo; M.wireframe = false; M.emissive.setHex(0x2a1450);
+    if (stage <= 1) {
+      if (!q.geo.boundingBox) q.geo.computeBoundingBox();
+      const s = q.geo.boundingBox.getSize(_o).length() * S.steps[stage] * 1.5, j = s * S.jitter; // (a piece is smaller than a body: its grid a little coarser for it)
+      q.m.geometry = snapGeometry(q.geo, s, _o.set((Math.random() - 0.5) * j, (Math.random() - 0.5) * j, (Math.random() - 0.5) * j));
+    } else if (stage === 2) { M.wireframe = true; M.emissive.setHex(MIND_LINE); M.color.setScalar(0); M.emissiveIntensity = 1.6; }
+    q.stage = stage;
   }
 }
 
