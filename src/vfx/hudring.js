@@ -8,6 +8,8 @@
 //                 on after it, paler
 //   THE FRAME     the band is held between two fine labradorite lines (the Mind's: vfx/labradorite.js)
 //   THE BEADS     the Blink's charges, as beads of Lachryma set in the frame before the band begins (an empty socket when spent)
+//   THICK WALLS while the knack is on and the pool is under a full blow's cost, a notch where that blow ends and the pool below
+//                 it breathing: one more full blow reaches the clay
 //   BLOWS         a blow taken shows on the ring the way it came from, across the whole band: a flash of labradorite when the
 //                 shield (the Lachryma) paid for it, a pale, jagged crack when it got through to the clay; it fades over a few seconds
 //                 (the hit-direction indicator of every shooter since Halo, laid on the ground at their feet instead of the screen)
@@ -26,6 +28,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+import * as vesselDamage from '../courier/vessel/damage.js';
+const SHIELD = vesselDamage.SHIELD ?? 35; // (a full blow's cost to the pool: Thick Walls marks the last one, docs/plans/SPINE.md 1.3)
 
 const ONLINE = 1.6; // (seconds to come online: the battle theme's change-over, music/player.js stops the last cue over 1.5 s)
 const MAX_THREATS = 6;
@@ -45,6 +49,7 @@ const F = /* glsl */`
 varying vec2 vP; varying vec3 vW;
 uniform float uFill, uRes, uAlpha, uStart, uSign, uOnline; // (uOnline: 0..1 as it comes online for a fight, 1 when it is)
 uniform vec3 uBeads;                  // count, max, the next one's fill
+uniform vec2 uWalls;                  // Thick Walls: a full blow's share of the band, and how strongly it is marked
 uniform vec4 uThreat[${MAX_THREATS}];  // angle, half-width, heat (0 far .. 1 close), alpha
 uniform vec4 uBlow[${MAX_BLOWS}];      // angle, half-width, kind (0 the shield took it, 1 the clay cracked), strength
 ${LAB_GLSL}
@@ -70,6 +75,13 @@ void main() {
     vec3 oil = labInk(ph * 2.3 + r * 3.0, 0.22 + 0.4 * pow(1.0 - abs(view.y), 2.0)); // (near-black, the oil film in streaks)
     vec3 c = oil * liquid + mix(oil, labLin(vec3(0.8, 0.74, 0.86)), 0.6) * held + labLin(vec3(0.12, 0.1, 0.16)) * (1.0 - liquid - held);
     col = vec4(c, b * (0.9 * liquid + 0.75 * held + 0.18 * (1.0 - liquid - held)) * drawn);
+  }
+  // Thick Walls: a notch across the band where a full blow ends, and the pool below it breathing (its last full blow)
+  if (uWalls.y > 0.0) {
+    float fw = fwidth(d) * 1.5, pulse = 0.5 + 0.5 * sin(uMindT * 4.5);
+    float notch = (1.0 - smoothstep(0.3 * fw, 1.2 * fw, abs(d - uWalls.x))) * band(r, 0.665, 0.895);
+    float seg = (1.0 - smoothstep(uWalls.x - fw, uWalls.x + fw, d)) * band(r, 0.72, 0.84);
+    col = mix(col, vec4(labSoft(ph + 0.45) * 1.5, 1.0), clamp(notch * 0.9 + seg * pulse * 0.32, 0.0, 1.0) * uWalls.y * drawn);
   }
   // the frame: two fine lines of the Mind
   float fr = max(line(r, 0.7), line(r, 0.86));
@@ -135,7 +147,7 @@ export class HudRing {
     const threats = Array.from({ length: MAX_THREATS }, () => new THREE.Vector4());
     this.u = {
       uFill: { value: 1 }, uRes: { value: 0 }, uAlpha: { value: 0 }, uStart: { value: 0 }, uSign: { value: 1 }, uOnline: { value: 1 },
-      uBeads: { value: new THREE.Vector3(0, 0, 0) }, uThreat: { value: threats }, uMindT: mindTime,
+      uBeads: { value: new THREE.Vector3(0, 0, 0) }, uWalls: { value: new THREE.Vector2() }, uThreat: { value: threats }, uMindT: mindTime,
       uBlow: { value: Array.from({ length: MAX_BLOWS }, () => new THREE.Vector4()) },
     };
     this.mesh = new THREE.Mesh(new THREE.RingGeometry(0.55, 1.0, 96, 1), new THREE.ShaderMaterial({
@@ -147,7 +159,7 @@ export class HudRing {
     this.mesh.renderOrder = 6; this.mesh.frustumCulled = false;
     game.scene.add(this.mesh);
     this.visible = true;
-    this.fill = 1; this.res = 0; this.alpha = 0; this.busy = 0; this.last = -1;
+    this.fill = 1; this.res = 0; this.walls = 0; this.alpha = 0; this.busy = 0; this.last = -1;
     this.threats = threats.map(() => ({ a: 0, w: 0, heat: 0, k: 0 }));
     // the blows: the vessel says whether the shield took it or the clay cracked (courier/vessel/damage.js, which hears the blow first), and
     // the blow itself says where it came from (a jelly's place, or the way an impulse pushed: it came from the other side)
@@ -225,6 +237,8 @@ export class HudRing {
     this.u.uStart.value = aF + Math.PI; // (from the near side, which their body never hides, clockwise on the screen)
     this.u.uSign.value = Math.sin(aR - aF) > 0 ? 1 : -1;
     this.u.uFill.value = this.fill; this.u.uRes.value = this.res;
+    this.walls += ((g.knacks?.on?.('thickWalls') && pool && pool.value < SHIELD ? 1 : 0) - this.walls) * (1 - Math.exp(-dt * 5));
+    this.u.uWalls.value.set(pool ? SHIELD / pool.max : 0, this.walls);
     this.u.uBeads.value.set(blink ? blink.n : 0, blink ? blink.max : 0, blink ? blink.fill : 0);
     this.u.uAlpha.value = this.alpha; this.u.uOnline.value = this.online;
   }

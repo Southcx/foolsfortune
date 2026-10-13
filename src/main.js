@@ -154,6 +154,7 @@ import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
 import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
+import { ReleaseCrack } from './vfx/releasecrack.js';
 import { ChestFx } from './vfx/chestfx.js';
 import { Vfx } from './vfx/vfx.js';
 import { Auras } from './vfx/auras.js';
@@ -557,6 +558,7 @@ async function main() {
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
+  game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
   game.cutlassStringRow = new CutlassStringRow(game, px); game.hookMark = new HookMark(game); // (the Sondelass's own UI: the cutlass's string row, the hook's mark)
   game.lockheartMarks = new LockheartMarks(game); game.carryThrowMark = new CarryThrowMark(game); // (the Lockheart's gauge and its hoover's reach; where a carried thing would land: vfx/lockheartmarks.js, vfx/carrythrowmark.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
@@ -1303,6 +1305,7 @@ async function main() {
     game.vfx.update(game.rawDt || dt);
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
+    game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held; // (the compass is the Dreamvane's: worn, it shows; and the Crucibelle's in the hands, for its pendulum)
     game.wireCompass.update(dt);
