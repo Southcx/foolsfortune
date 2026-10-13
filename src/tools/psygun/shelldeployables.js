@@ -61,13 +61,13 @@ export const DEPLOYABLES = {
     // Volcano: a cone of clay rises where it lands and throws a molten bomb every second for `dur`
     volcano: (R, row, { muzzle, ray }) => R.launch('lobPart', row, muzzle, ray.dir, { extra: { land: (R2, p, at) => {
       const g = R2.game, n = row.n, gp = groundAt(g, at) ?? at;
-      const cone = setDown(R2, [mesh(R2, new THREE.ConeGeometry(1.1, 1.2, 9, 1, true).translate(0, 0.6, 0), 0x8c4a33)], gp);
-      const haze = g.vfx?.play?.('caster.heatHaze', { pos: gp.clone().setY(gp.y + 1.2) }); R2.weigh(gp, 'volcano');
+      const cone = setDown(R2, [mesh(R2, new THREE.ConeGeometry(2.2, 2.4, 9, 1, true).translate(0, 1.2, 0), 0x8c4a33)], gp);
+      const haze = g.vfx?.play?.('caster.heatHaze', { pos: gp.clone().setY(gp.y + 2.4) }); R2.weigh(gp, 'volcano');
       R2.timed({ t: n.dur, every: n.every, field: 'pool', tier: row.tier, tick: () => {
         const c = foesNear(g, gp, 12)[0];
         const dir = c ? _v.subVectors(c.pos, gp).setY(0) : _v.set(shellRand() - 0.5, 0, shellRand() - 0.5);
         const flat = dir.length(); dir.normalize();
-        R2.launch('bomblet', row, gp.clone().setY(gp.y + 1.3), dir, { speed: Math.min(12, Math.max(2, flat * 0.9)), scale: 2, col: 0xff7a2a });
+        R2.launch('bomblet', row, gp.clone().setY(gp.y + 2.5), dir, { speed: Math.min(12, Math.max(2, flat * 0.9)), scale: 2, col: 0xff7a2a });
         cone.scale.y = 1.15;
       }, end: () => { g.scene.remove(cone); haze?.stop?.(); } });
       R2.timed({ t: n.dur, every: 1 / 20, tick: () => { cone.scale.y += (1 - cone.scale.y) * 0.2; } });

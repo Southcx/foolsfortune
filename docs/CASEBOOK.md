@@ -656,7 +656,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     lists grow (a menu of a hundred shells); what is taller than the screen scrolls.
 224. **A ray cast straight down at a height field is nudged off its grid lines** (a millimetre in x and z): Rapier lets
     a vertical ray along a grid line through, and a body set down on whole metres stood on one.
-NEW:double-sided-shadow-side. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
+225. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
     bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
 ## Cases
 
@@ -3659,4 +3659,4 @@ NEW:double-sided-shadow-side. **A double-sided material sets its `shadowSide`** 
   skinned or single-sided.
 - **Fix:** `shadowSide: THREE.BackSide` on the corrupted material, so its shadow uses the depth program the slip jelly already warms.
   The shadow looks the same. Measured: Corrupt, Meteor, Thunderhead, Hailstorm and Volcano fired twice, 0 compiled late.
-- **Rule:** NEW:double-sided-shadow-side.
+- **Rule:** 225.
