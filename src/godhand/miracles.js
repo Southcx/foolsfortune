@@ -94,7 +94,7 @@ export class Miracles {
     if (!powerOpen(id, g)) { g.log.say('warn', `You have not learned ${E.label}.`, { key: 'epic.locked', throttle: 2 }); sfx.dryFire(); return; }
     if (this.epicReady > 0) { g.log.say('warn', 'An epic miracle once a game hour.', { key: 'epic.wait', throttle: 2 }); sfx.dryFire(); return; }
     this.epicReady = EPIC_EVERY;
-    g.vesselDamage?.release({ amount: E.release, why: 'epic', by: 'courier' }); // (a release from the one body: SPINE.md 4.3; the jar's strength is the raids')
+    g.vesselDamage?.release({ amount: E.release, why: 'epic', domain: E.domain, by: 'courier' }); // (a release from the one body: SPINE.md 4.3; the jar's strength is the raids')
     this.god.cam.shake = Math.max(this.god.cam.shake, 1.2);
     const m = { epic: id, kind: 'epic', feeling: E.sign, x: at.x, y: at.y, z: at.z, r: E.r, dur: E.dur, t: 0, tick: 0, every: 0 };
     this.begin(m);
