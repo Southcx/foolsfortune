@@ -27,6 +27,7 @@ import { WELL_FLOORS } from './well.js';
 import { GREAT_JELLY, setFight } from './greatjelly.js';
 import { GARDEN, AWAKENING, setGarden } from './garden.js';
 import { KILN, setKiln } from './kiln.js';
+import { RACEWAY, hearRace } from './raceway.js';
 import { phaseAt } from '../progress/weather.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -61,6 +62,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
     S.deep = v?.kind === 'lachryma' || (S.deep ? depth > DEEP_OUT : depth > DEEP_IN);
     return S.deep ? DEEP : SHALLOWS;
   }
+  if (game.raceway?.active) { hearRace(game); return RACEWAY; } // (the Raceway: the place, the countdown, the race and its last lap, music/raceway.js)
   const riding = !!game.techs?.get('skiff')?.riding;
   if (riding && !S.riding) S.shanty = (S.shanty + 1) % WORK_SONGS.length;
   S.riding = riding;
