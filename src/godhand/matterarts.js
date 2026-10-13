@@ -22,7 +22,7 @@ import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
 
-/** The verbs' numbers. `carry` the most the hand holds (m³, at level 1; Psychokinesis widens it: WIDEN 'psychokinesis.carry'); `takeRate` and
+/** The verbs' numbers. `carry` the most the hand holds (m³, where Scoop opens; the ramp takes it to 400 at 99: RAMP.scoop); `takeRate` and
  *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
  *  and depth (m). Made matter costs `GOD_POWERS[id].made` Lachryma a cubic metre. */
 export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 1.4, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 },

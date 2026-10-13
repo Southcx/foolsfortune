@@ -284,7 +284,7 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   cells and the water's rows; the collider (a Rapier heightfield over that box) is rebuilt at 3 Hz while the hand works and every 5 real
   seconds while it only mends. Measured headless: 0.6 ms a step at 144 squared.
 - **The verbs** (`godhand/matterarts.js`): Scoop (keys 6), Shape (7, Shift levels), Carve (8). Made matter costs Lachryma
-  (`GOD_POWERS[id].made` a cubic metre). Scoop's carry is widened by Psychokinesis (`WIDEN 'psychokinesis.carry'`, x2 at 99).
+  (`GOD_POWERS[id].made` a cubic metre). Scoop's carry follows the ramp (`RAMP.scoop.carry`, 20 to 400 m³; section 11).
 - **Miracles** (`godhand/miracles.js`): MMB held draws the sign (the Soul Brush's gesture reader); a sign's size on screen sets the
   miracle's size and cost. Needs the feeling awakened and the ground in the Zone of Influence. Shift turns the sign into its epic (one a
   game hour, paid in the jar). All seven of each run; their looks are placeholder rings and the existing weather/status looks.
