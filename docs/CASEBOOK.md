@@ -660,6 +660,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
 NEW:gate-reads-exit-code. **A gate's result is its exit code, never its last line through a pipe**: `npm run check | tail` and
     `npm run build | tail` return tail's success, so a failing gate let a broken commit through. Chain a gate bare, or with `set -o pipefail`.
+NEW:ledger-record-goal. **A goal over the ledger reads a record with `best`, never `get`**: `L.hi` keeps a best apart from the counters,
+    so `L.get('parry.run.best')` is always 0. Read a goal's key through `ledOf` (progress/skills.js), which takes either.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3671,3 +3673,13 @@ NEW:gate-reads-exit-code. **A gate's result is its exit code, never its last lin
   its last command's, so tail's success let the `&&` chain go on.
 - **Fix:** the comment removed (cd 2026-10-13); the TWIN repeat retried headless (one repeat, `bracelet.charm:TWIN`).
 - **Rule:** NEW:gate-reads-exit-code.
+
+### 2026-10-13 · Knacks' and arts' feat ways on a record never opened (Dovina, headless)
+- **Seen:** a probe set `grapple.swing.peak` to 15 (Portal's feat way, 14) and Portal stayed locked; Sculpt's goal bar read 0 with
+  `god.manifest.len` at 5 of 10.
+- **Cause:** a record (`L.hi`) lives in the ledger's `rec`, and `L.get` reads only the counters. `goalFracOf` (progress/skills.js) and the
+  knacks' `G` (progress/knacks.js) read `get`, so every goal on a record was 0: Perfect Pitch's `crystal.sweet.run`, Held Breath's
+  `parry.run.best`, Guide Tone's and Wet Ink's bests among them.
+- **Fix:** `ledOf(L, key)` reads the greater of the counter and the record; goals, the System's goal values and the knacks read through
+  it. Measured: Portal opens by the feat, Sculpt's bar reads 0.5.
+- **Rule:** NEW:ledger-record-goal.

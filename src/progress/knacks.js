@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { CRIB } from './ostraca.js';
 
-const G = (L, k) => L.get(k) || 0;
+const G = (L, k) => Math.max(L.get(k) || 0, L.best?.(k) || 0); // (a counter or a record: `parry.run.best` and the like are records, CASEBOOK)
 const under = (L, prefix) => (L.under ? L.under(prefix).filter(([, v]) => v > 0).length : 0);
 /** Each knack: what it does, and the ledger's ways to open it (the patient's count, the skilled feat; any one). `switch` is where the
  *  game reads it (Petra wires each: `game.knacks.on(id)`); `number` what it changes. The names are Espada's, approved by the owner. */
@@ -26,9 +26,9 @@ export const KNACKS = {
   wideBore: { name: 'Wide Bore', does: "Makes the psygun's shots a third wider",
     opens: (L) => G(L, 'drill.hits') >= 5000 || G(L, 'chain.max') >= 25,
     switch: "tools/psygun/weapon.js (a shot's radius)", number: 'x 4/3' },
-  thickWalls: { name: 'Thick Walls', does: 'Lets the shield take a tenth more before the clay',
+  thickWalls: { name: 'Thick Walls', does: 'Marks on the Lachryma ring when the shield could not take one more full blow', // (an assist, no longer +10% shield: SPINE.md 1.3, the owner 2026-10-13; the name is Espada's to keep or change)
     opens: (L) => G(L, 'vessel.mends') >= 200 || G(L, 'well.run.whole') >= 1,
-    switch: "courier/vessel/damage.js (the shield's cost)", number: 'a full blow costs 35 / 1.1 Lachryma' },
+    switch: "the Lachryma ring (Calissa's: lit while game.knacks.on('thickWalls') and the pool holds under SHIELD, courier/vessel/damage.js)", number: 'the last 35 Lachryma of the pool marked' },
   perfectPitch: { name: 'Perfect Pitch', does: "Sounds a crystal's target note once more before you strike",
     opens: (L) => G(L, 'crystal.strike') >= 300 || G(L, 'crystal.sweet.run') >= 10,
     switch: 'world/dunes/crystals.js (the reference note)', number: 'one more reference, a beat before the strike' },

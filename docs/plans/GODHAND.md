@@ -240,7 +240,7 @@ stand at once. Miracles cost a fifth and fall twice as wide. The island feels a 
 1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
 2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a set creation at 99. A
    master leaves what they meant to leave; everything else heals.
-3. **One epic a game hour, paid in the jar.**
+3. **One epic a game hour, paid as a release:** pressure on the vessel through the stones' aperture (SPINE.md 4).
 4. **The island notices.** Dissonance never reaches zero. A tenth of it, in a long session of large works, still calls the
    answer, so the top stays a game.
 5. **No new domains, and no new verbs at 99.** The top is the same verbs, unbounded, never a new button.
@@ -248,14 +248,14 @@ stand at once. Miracles cost a fifth and fall twice as wide. The island feels a 
 **The ramp, worked back from the top.** Every number a power has is a row in `RAMP` (`progress/godpowers.js`): its value when the power
 opens (at its `at` level) and at 99. In between it follows `t^1.6` of the way from `at` to 99 (`RAMP_CURVE`), so most of the gain comes
 in the last third, as in OSRS. Level 70 feels like a strong hand; 99 feels like a different game. The open values are set so the power
-already does its job on the slice's ground: a 4 m fold, a 6 m herd, one rift. The 99 values are set to the island's own scale. Values
+already does its job on the slice's ground: a 4 m fold, a 6 m herd, one rift. The 99 values are set to the island's own scale. A power opens by achievement, its level OR a feat (SPINE.md 2; the GOD ARTS shelf). Values
 below the open level are the open values. A lend (DEBUG's arts) opens a power but leaves its numbers where your level puts them.
 `/psyche 99` (DEBUG) raises the domains to try the top.
 
 | power | the number | open | 99 |
 | --- | --- | --- | --- |
 | Scoop | carry m³ / made Lachryma a m³ | 20 / 0.5 | 400 / 0 |
-| Shape | rate m/s / radius m / made | 1.4 / 1.6 / 0.5 | 6 / 6 / 0 |
+| Shape | radius m / made (its rate is Visualization's: 2 m/s, 4 at rank 10) | 1.6 / 0.5 | 6 / 0 |
 | Carve | width / depth / length m | 1.4 / 1.2 / 18 | 5 / 6 / 64 |
 | Sculpt | stroke m / size x / made | 16 / 1 / 0.6 | 64 / 3 / 0 |
 | Miracles | cost x / size x | 1 / 1 | 0.2 / 2 |
@@ -272,6 +272,28 @@ below the open level are the open values. A lend (DEBUG's arts) opens a power bu
 | Ward | count / radius / real s | 1 / 6 / 60 | 6 / 18 / 1200 |
 | Stamp | side m / made | 4 / 0.5 | 24 / 0 |
 | dissonance | x, by the acting domain's level from 1 | 1 | 0.1 |
+
+Since SPINE.md 1.1 the table also holds the tools' widening (`RAMP.tools`, the old WIDEN rows): each opens at level 1 and follows the
+same curve to its 99 value.
+
+**Charms are trades, never upgrades (SPINE.md 1.4).** A charm that raises a magnitude pays for it: WIDE (x1.5 size) costs x1.5 Lachryma,
+LINGER (x2 time) x1.3, THRIFT (x0.5 made) slows the rate to x0.8, QUIET (x0.5 dissonance) shrinks the size to x0.8. A new charm with no
+cost is refused.
+
+**Every number's top, all tracks stacked (SPINE.md 1.5).** The most a number can be with every domain at 99, the charm that raises it
+socketed, and every attribute at rank 10:
+
+| number | 99 alone | + best charm | + attribute | the top |
+| --- | --- | --- | --- | --- |
+| a size (Scoop's carry, Fold's side, a radius) | the table's 99 | x1.5 (WIDE) | none | 99 x 1.5 (Scoop 600 m³) |
+| a time (Portal, Totem, Ward, Set) | the table's 99 | x2 (LINGER) | none | 99 x 2 (Set: for good already) |
+| made matter's cost | 0 | (THRIFT halves 0) | none | 0 |
+| Shape's rate (m/s) | 2 (not a domain's) | x0.8 (THRIFT: a cost) | x2 (Visualization) | 4 |
+| Manifest's rise (real s) | 0.55 | none | /2 (Visualization) | 0.275 |
+| a miracle's cost | x0.2 | x1.5 (WIDE: a cost) | none | x0.2 |
+| dissonance | x0.1 | x0.5 (QUIET) | none | x0.05 |
+| the shield (Lachryma) | the stones' pool | none | x1.5 (Willpower) | pool x 1.5 (Thick Walls is a mark now: SPINE.md 1.3) |
+| a release's pressure | 1 unit a 40 Lachryma | none | none | / aperture 1.5 (amethyst) |
 
 **The selector.** The hand's 25 arts are grouped by their seven domains. Keys 1 to 7 pick a domain, and pressing the same key again steps
 through its arts. The bar shows that domain's arts under a strip of the seven domains. This is a placeholder until Calissa rules on the

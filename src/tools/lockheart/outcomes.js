@@ -15,6 +15,7 @@ import { sfx } from '../../audio/sfx.js';
 import { ECON } from '../../progress/econ/table.js';
 import { stream } from '../../core/rng.js';
 import { OUTCOMES } from './table.js';
+import { PRESSURE } from '../../progress/stones.js';
 const simRand = stream('tools/lockheart/outcomes');       // (what the outcome decides: the chest's tier; core/rng.js, the same twice)
 const fxRand = stream('tools/lockheart/outcomes.fx');     // (its spray: a stream of its own, so the particles never shift the tier's draws)
 
@@ -107,8 +108,7 @@ export const OUTCOME_FX = {
     // the recoil: the pressure of it all let out at once cracks the vessel (table.js OUTCOMES.nuke.recoil; the look of it is Calissa's)
     if (by === 'courier' && g.vesselDamage) {
       const tolls = Math.max(1, Math.round((power || 1) * (OUTCOMES.nuke.recoil ?? 1)));
-      let shattered = false;
-      for (let i = 0; i < tolls && !shattered; i++) shattered = g.vesselDamage.toll({ by: 'courier' }) === 'shatter';
+      const shattered = g.vesselDamage.release({ amount: tolls * PRESSURE.unit, why: 'overload', by: 'courier' }) === 'shatter'; // (a release: progress/stones.js PRESSURE)
       g.events?.emit('lockheart.recoil', { tolls, shattered, by: 'courier' });
     }
     return n;

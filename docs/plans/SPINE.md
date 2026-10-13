@@ -4,7 +4,19 @@
 > numbers; (2) the god powers open by domain level, against the design law "arts only by achievement"; (4) the vessel's damage has four
 > sources and no one rule.
 
-Dovina, 2026-10-13. A proposal for each audit, with what changes in code. Nothing is changed until the owner rules (the numbered asks).
+Dovina, 2026-10-13. A proposal for each audit, with what changes in code.
+
+**Ruled (the owner, 2026-10-13): yes to every ask but 1.2, and no to 4.4 as picked.** On 1.2: "I feel like Visualization is more broadly
+applicable than that, like determining the speed at which you can Manifest an object." So the rule is sharper than proposed: **the domains
+own how big; the attributes own how fast and how well** (the body's constants, the tempo of an act, its efficiency). Built:
+- 1.1: `RAMP.tools` in progress/godpowers.js holds the old WIDEN rows; `game.psyche.widen` reads `widenOf`.
+- 1.2: Visualization's `visualization.make` (x1 to x2 by rank) sets Manifest's rise and Shape's rate (no longer a ramp row); its
+  `visualization.canvas` stays the Soul Brush's ink.
+- 1.3: Thick Walls is an assist: no shield factor; Calissa marks the pool's last full blow on the Lachryma ring.
+- 1.4, 1.5: GODHAND.md 11 (charms as trades; the stacked tops).
+- 2.1, 2.2: `POWER_ARTS` and `EPIC_ARTS` in progress/skills.js, on the GOD ARTS shelf, each `any`: its count way or its feat way. A power
+  opens when the System has it (`powerOpen` asks `system.has`).
+- 4.1 to 4.3: `vesselDamage.release()` (stones' `PRESSURE`, `apertureOf`); the toll, the Overload and the epic are releases.
 
 ## 1. Every track gets one job
 
@@ -117,7 +129,7 @@ all of them.
 | # | ask | Dovina's pick |
 | --- | --- | --- |
 | 1.1 | WIDEN folds into the ramp: one table, one curve | yes |
-| 1.2 | Visualization: the Soul Brush's ink only | yes |
+| 1.2 | Visualization: the Soul Brush's ink only | yes (ruled: the tempo of making, and the ink) |
 | 1.3 | Thick Walls: an assist that shows the shield's last tenth (or a stone's trade) | the assist |
 | 1.4 | A charm that touches magnitude is always a trade | yes |
 | 1.5 | Every number's top, with every track stacked, is written in the ramp's table | yes |

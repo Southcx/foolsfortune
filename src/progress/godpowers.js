@@ -11,7 +11,7 @@
 // MOVES table (progress/combat/moves.js: unlocks as ledger predicates).
 //
 //   GOD_POWERS[id] = { id, domain, label, at, built, cost?, does }   powerOpen(id, game) -> bool   MIRACLE_SIGNS[shape+sigil] -> feeling
-//   MIRACLES[feeling] = { label, status, dur, sizes }   EPICS[id] = { domain, label, sign, r, dur, jar }   EPIC_EVERY (real s)
+//   MIRACLES[feeling] = { label, status, dur, sizes }   EPICS[id] = { domain, label, sign, r, dur, release }   EPIC_EVERY (real s)
 // ---------------------------------------------------------------------------------------
 
 /** `at`: the domain's level that opens it (1 open from the start); `built`: whether the hand has it yet (the rest are in GODHAND.md
@@ -76,7 +76,7 @@ export const DOMAIN_ORDER = ['ouranurgy', 'manifestation', 'divination', 'psycho
  *  dissonance, at a tenth). */
 export const RAMP = {
   scoop: { carry: [20, 400], made: [0.5, 0] },
-  shape: { rate: [1.4, 6], r: [1.6, 6], made: [0.5, 0] },
+  shape: { r: [1.6, 6], made: [0.5, 0] }, // (its rate is Visualization's, the tempo of making: SPINE.md 1.2)
   carve: { w: [1.4, 5], depth: [1.2, 6], len: [18, 64] },
   sculpt: { len: [16, 64], scale: [1, 3], made: [0.6, 0] },
   miracle: { cost: [1, 0.2], size: [1, 2] },
@@ -97,8 +97,35 @@ export const RAMP = {
   ward: { n: [1, 6], r: [6, 18], dur: [60, 1200] },
   stamp: { side: [4, 24], made: [0.5, 0] },
   dissonance: { scale: [1, 0.1] }, // (the dissonance a domain's acts raise, by that domain's level from 1)
+  // the tools' widening (was domains.js WIDEN, folded in: SPINE.md 1.1): a multiplier from 1, or a bonus to a count from 0, at level 1 to
+  // its value at 99, on the same curve; read by `game.psyche.widen(key)`
+  tools: {
+    'ouranurgy.reach': { domain: 'ouranurgy', row: [1, 1.5], does: 'blink and grapple reach (an art: the core movement is untouched)' },
+    'ouranurgy.still': { domain: 'ouranurgy', row: [1, 1.3], does: 'how long time stays slowed or stopped (blade mode, the reprogramming window, Celestial mode)' },
+    'ouranurgy.lane': { domain: 'ouranurgy', row: [1, 1.5], does: "the ship's lane-change speed on the rail" },
+    'manifestation.span': { domain: 'manifestation', row: [1, 1.5], does: 'how long a manifested structure stands' },
+    'manifestation.count': { domain: 'manifestation', row: [0, 2], plus: true, does: 'how many manifested structures stand at once' },
+    'divination.survey': { domain: 'divination', row: [1, 1.6], does: "a survey pulse's radius (charting, the Well's floors)" },
+    'divination.reveal': { domain: 'divination', row: [1, 1.5], does: 'the radius veiled crystal is revealed in' },
+    'divination.reckon': { domain: 'divination', row: [1, 1.5], does: "how far ahead a reckoning marks a wave's lane (RECKON.lead)" },
+    'divination.forecast': { domain: 'divination', row: [1, 4], does: 'how far ahead the weather can be known (progress/weather.js forecast)' },
+    'psychokinesis.weight': { domain: 'psychokinesis', row: [1, 2], does: 'how heavy a thing the god hand can lift' },
+    'psychokinesis.throw': { domain: 'psychokinesis', row: [1, 1.5], does: 'how far the god hand throws' },
+    'possession.macro': { domain: 'possession', row: [1, 1.5], does: 'how long a macro a mind will take' },
+    'possession.hold': { domain: 'possession', row: [0, 2], plus: true, does: 'how many Figments a Lockheart holds when summoning' },
+    'alteration.cuts': { domain: 'alteration', row: [0, 3], plus: true, does: 'how many cuts a sunder makes' },
+    'alteration.swell': { domain: 'alteration', row: [1, 1.5], does: 'how far a swell or a wring reshapes' },
+    'spellscription.slots': { domain: 'spellscription', row: [0, 3], plus: true, does: 'how many macros the Veritome keeps' },
+    'spellscription.copy': { domain: 'spellscription', row: [0, 3], plus: true, does: 'how many copies of a Cogitomap can be transcribed (the owner: Spellscription duplicates maps)' },
+  },
 };
 export const RAMP_CURVE = 1.6;
+/** A tool's widening at a domain level (RAMP.tools), on the ramp's curve: a multiplier, or a whole bonus to a count. */
+export function widenOf(key, level = 1) {
+  const w = RAMP.tools[key]; if (!w) return 1;
+  const t = Math.pow(Math.max(0, Math.min(1, (level - 1) / 98)), RAMP_CURVE), v = w.row[0] + (w.row[1] - w.row[0]) * t;
+  return w.plus ? Math.round(v) : v;
+}
 export const SET_FOREVER = 99;
 
 /** A ramped number for a power now, by its domain's level (a lend opens a power, and leaves its numbers where the level has them). */
@@ -115,13 +142,13 @@ export function dissonanceScale(domain, game) {
   return (RAMP.dissonance.scale[0] + (RAMP.dissonance.scale[1] - RAMP.dissonance.scale[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.dissonance?.(domain) ?? 1); // (QUIET)
 }
 
-/** Open for this Courier now: its domain's level, or a lend. */
+/** Open for this Courier now: learned on the GOD ARTS shelf (progress/skills.js POWER_ARTS and EPIC_ARTS: its domain's level OR a feat,
+ *  SPINE.md 2), basic, or lent. Without the System (a bare probe), the domain's level alone. */
 export function powerOpen(id, game) {
   const p = GOD_POWERS[id] || EPICS[id];
   if (!p) return false;
-  if (game?.system?.lendAll || game?.lend?.has?.('arts')) return true;
-  const level = game?.psyche?.level?.(p.domain) ?? 1;
-  return level >= (p.at ?? 80);
+  if (game?.system?.has) return game.system.has(id);
+  return (game?.psyche?.level?.(p.domain) ?? 1) >= (p.at ?? 80);
 }
 
 /** The miracles' signs: the gesture reader's shape (and, for a line, its sigil) to a feeling. Read as the feeling looks: Wonder a peak
@@ -143,16 +170,16 @@ export const MIRACLES = {
   dread: { label: 'Eclipse', status: 'flee', r: [6, 20], dur: [10, 30], cost: [10, 40] },
 };
 
-/** The seven epic miracles (GODHAND.md section 5): one a domain, drawn as the sign with Shift held, paid in the jar (`jar`, a share of
- *  its strength), one a game hour (EPIC_EVERY, real seconds); open at 80 of their domain. */
+/** The seven epic miracles (GODHAND.md section 5): one a domain, drawn as the sign with Shift held, paid as a release (`release`, Lachryma let
+ *  out through the stones: progress/stones.js PRESSURE; SPINE.md 4.3), one a game hour (EPIC_EVERY, real seconds); open at 80 of their domain. */
 export const EPICS = {
-  stoppedHour: { domain: 'ouranurgy', label: 'Stopped Hour', sign: 'dread', r: 40, dur: 10, jar: 0.25, at: 80 },
-  volcano: { domain: 'manifestation', label: 'Volcano', sign: 'fury', r: 12, dur: 30, jar: 0.25, at: 80, cone: 5, lava: 0.7 },
-  prophecy: { domain: 'divination', label: 'Prophecy', sign: 'wonder', r: 60, dur: 4, jar: 0.25, at: 80 },
-  maelstrom: { domain: 'psychokinesis', label: 'Maelstrom', sign: 'desire', r: 25, dur: 12, jar: 0.25, at: 80, lift: 9, swirl: 14 },
-  stampede: { domain: 'possession', label: 'Stampede', sign: 'mirth', r: 40, dur: 15, jar: 0.25, at: 80 },
-  earthquake: { domain: 'alteration', label: 'Earthquake', sign: 'gall', r: 30, dur: 8, jar: 0.25, at: 80, heave: 0.6 },
-  deluge: { domain: 'spellscription', label: 'Deluge', sign: 'grief', r: 30, dur: 20, jar: 0.25, at: 80, rate: 0.05 },
+  stoppedHour: { domain: 'ouranurgy', label: 'Stopped Hour', sign: 'dread', r: 40, dur: 10, release: 40, at: 80 },
+  volcano: { domain: 'manifestation', label: 'Volcano', sign: 'fury', r: 12, dur: 30, release: 40, at: 80, cone: 5, lava: 0.7 },
+  prophecy: { domain: 'divination', label: 'Prophecy', sign: 'wonder', r: 60, dur: 4, release: 40, at: 80 },
+  maelstrom: { domain: 'psychokinesis', label: 'Maelstrom', sign: 'desire', r: 25, dur: 12, release: 40, at: 80, lift: 9, swirl: 14 },
+  stampede: { domain: 'possession', label: 'Stampede', sign: 'mirth', r: 40, dur: 15, release: 40, at: 80 },
+  earthquake: { domain: 'alteration', label: 'Earthquake', sign: 'gall', r: 30, dur: 8, release: 40, at: 80, heave: 0.6 },
+  deluge: { domain: 'spellscription', label: 'Deluge', sign: 'grief', r: 30, dur: 20, release: 40, at: 80, rate: 0.05 },
 };
 export const EPIC_BY_SIGN = Object.fromEntries(Object.entries(EPICS).map(([id, e]) => [e.sign, id]));
 export const EPIC_EVERY = 150; // (a game hour: 150 real seconds)

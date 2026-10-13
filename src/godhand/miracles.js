@@ -4,7 +4,7 @@
 // sign was drawn, as wide as the sign was drawn large (a fifth of the view's height small, three fifths great). It needs the feeling
 // known (its awakening) and is paid in Lachryma. Each one does something to the creatures under it AND to the island's matter
 // (godhand/matter.js), so two together make a third thing: Rain then Storm strikes the whole flood; Rain then Aurora freezes a lake to
-// walk on. With Shift held the sign calls its domain's EPIC miracle instead (progress/godpowers.js EPICS), paid in the jar, one a game
+// walk on. With Shift held the sign calls its domain's EPIC miracle instead (progress/godpowers.js EPICS), paid as a release from the vessel (SPINE.md 4.3), one a game
 // hour. Said by events with `by`: god.miracle { feeling, size, score }, god.epic { epic, domain }.
 // The looks here are stand-ins (a ring on the ground in the feeling's colour, a flash for a bolt): Calissa's to dress, the weathers'
 // heavy looks to borrow (vfx/weather.js).
@@ -16,7 +16,6 @@
 //   const M = new Miracles(god)   M.update(dt) (every frame the hand is up)   M.fixed(dt)   M.live   M.clear()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { COLOR } from '../progress/weather.js';
 import { recognize } from '../tools/soulbrush/gesture.js';
@@ -86,16 +85,16 @@ export class Miracles {
     if (!g.lachryma.spend(cost * (g.bracelet?.costOf?.('spellscription') ?? 1), 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
     const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u) * big, dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
     this.begin(m); this.last = feeling; // (the last miracle's feeling: a Totem holds it, godhand/powers/make.js)
-    g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), by: 'courier' });
+    g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), level: g.rejection?.level ?? 0, by: 'courier' });
   }
 
   castEpic(id, at) {
     const g = this.game, E = EPICS[id];
     if (!E) return;
-    if (!powerOpen(id, g)) { g.log.say('warn', `${E.label} opens at ${E.at} in its domain.`, { key: 'epic.locked', throttle: 2 }); sfx.dryFire(); return; }
+    if (!powerOpen(id, g)) { g.log.say('warn', `You have not learned ${E.label}.`, { key: 'epic.locked', throttle: 2 }); sfx.dryFire(); return; }
     if (this.epicReady > 0) { g.log.say('warn', 'An epic miracle once a game hour.', { key: 'epic.wait', throttle: 2 }); sfx.dryFire(); return; }
     this.epicReady = EPIC_EVERY;
-    this.god.hitJar(T.god.jarHp * E.jar, UP.clone(), 'epic'); // (the toll: paid in the god hand's body)
+    g.vesselDamage?.release({ amount: E.release, why: 'epic', by: 'courier' }); // (a release from the one body: SPINE.md 4.3; the jar's strength is the raids')
     this.god.cam.shake = Math.max(this.god.cam.shake, 1.2);
     const m = { epic: id, kind: 'epic', feeling: E.sign, x: at.x, y: at.y, z: at.z, r: E.r, dur: E.dur, t: 0, tick: 0, every: 0 };
     this.begin(m);

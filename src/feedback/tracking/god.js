@@ -26,7 +26,7 @@ export function godRules({ on, L, log }) {
   const matter = (verb, says) => on(`god.${verb}`, (e) => {
     if (e.by !== 'courier') return;
     const m = Math.round(e.moved || 0), made = Math.round(e.made || 0);
-    L.inc(`god.${verb}`); if (m) L.inc('god.moved', m); if (made) L.inc('god.made', made);
+    L.inc(`god.${verb}`); if (m) { L.inc('god.moved', m); L.hi(`god.${verb}.best`, m); } if (made) L.inc('god.made', made);
     if (says) log.say('god', says(e), { key: `gm.${verb}`, throttle: 3 });
   });
   matter('scoop'); matter('pour');
@@ -46,13 +46,14 @@ export function godRules({ on, L, log }) {
   on('god.miracle', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.miracle'); L.inc(`god.miracle.${e.feeling}`); L.hi('god.miracle.score', Math.round((e.score || 0) * 100));
+    if (e.size >= 0.9 && e.score >= 0.95 && e.level >= 5) L.inc(`god.miracle.${e.feeling}.great`); // (an epic's feat way: skills.js EPIC_ARTS)
     log.say('god', `You call down ${MIRACLES[e.feeling]?.label || 'a miracle'}.`, { key: 'gmir', throttle: 1 });
     first('god.miracle', 'Logged: your first miracle.');
   });
   on('god.epic', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.epic'); L.inc(`god.epic.${e.epic}`);
-    log.say('god', `${EPICS[e.epic]?.label || 'An epic miracle'}. Your Pneuka Jar pays for it.`);
+    log.say('god', `${EPICS[e.epic]?.label || 'An epic miracle'}. The release cracks you.`);
     if (e.epic === 'prophecy') log.say('god', 'You see the next raid coming, and it comes later.');
   });
   on('god.dissonance', (e) => {

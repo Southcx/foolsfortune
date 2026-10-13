@@ -545,7 +545,7 @@ export class GodArts {
     mesh.position.set(mid.x, gy - h / 2 - 0.05, mid.z);
     mesh.quaternion.copy(q);
     g.scene.add(mesh);
-    const m = { body, col, mesh, t: 0, rise: 0.55, life: C.life, h, gy, mid, len, w, yaw };
+    const m = { body, col, mesh, t: 0, rise: 0.55 / (g.alchemy?.widen?.('visualization.make') ?? 1), life: C.life, h, gy, mid, len, w, yaw };
     this.manifests.push(m);
     g.fx.impact?.(new THREE.Vector3(mid.x, gy, mid.z), UP, { sparks: 6, dust: 18 });
     sfx.thump();

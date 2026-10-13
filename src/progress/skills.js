@@ -10,13 +10,20 @@
 // (the owner's rule), so a goal is a predicate over the ledger like every achievement, and retroactive: the System unlocks an art when
 // its achievement is done. A variant unlocks once its ability is yours (its goals can only be met with the ability in hand anyway).
 // `cfg` is laid over the tech's tuning while the variant is selected; nothing else about the tech changes.
+// An art marked `any` opens when ANY one of its goals is met (the god powers': a count way or a feat way, SPINE.md 2.1), not all.
 // ---------------------------------------------------------------------------
+import { GOD_POWERS, EPICS, DOMAIN_GLAZE } from './godpowers.js';
+import { DOMAINS, expAt } from './domains.js';
 
 export const led = (key, n, label) => ({ key, n, label });
 /** The achievement whose completion unlocks an art or a variant ('blink' -> 'art_blink', 'blink.rush' -> 'art_blink_rush'). */
 export const achOf = (id) => `art_${id.replace('.', '_')}`;
 /** How far a goal has come, from the ledger: [0..1]. */
-export const goalFracOf = (L, g) => (g.n > 0 ? Math.min(1, (L?.get(g.key) || 0) / g.n) : 1);
+/** A goal's key read as a counter or a record (`L.hi`: a best kept apart from the counters), whichever it is. */
+export const ledOf = (L, key) => Math.max(L?.get?.(key) || 0, L?.best?.(key) || 0);
+export const goalFracOf = (L, g) => (g.n > 0 ? Math.min(1, ledOf(L, g.key) / g.n) : 1);
+/** How far a set of goals has come: their mean, or for an `any` art the furthest one. */
+export const goalsFracOf = (L, goals, any = false) => (!goals.length ? 1 : any ? Math.max(...goals.map((g) => goalFracOf(L, g))) : goals.reduce((n, g) => n + goalFracOf(L, g), 0) / goals.length);
 
 export const ABILITIES = [
   {
@@ -175,6 +182,48 @@ export const GOD_ARTS = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// The god powers and the epic miracles as God Arts (SPINE.md 2, the owner's ruling of 2026-10-13: "arts only by achievement"). Each
+// opens by its COUNT WAY, its domain at the level it used to open at (the grind closes the gap), or its FEAT WAY, a skilled act of the
+// same domain that can be done before the power is yours (skill skips the grind). The matter's verbs and the miracles are basic.
+// The feats are drafts, tuned in play; each is a ledger key tracking.js already keeps (or tracking/god.js: `god.scoop.best`,
+// `god.miracle.<feeling>.great`). Prior art: OSRS's quest-or-level gates; Monster Hunter's key quests beside the HR grind.
+// ---------------------------------------------------------------------------
+const POWER_FEATS = {
+  sculpt: led('god.manifest.len', 10, 'a manifested wall 10 m long'),
+  setfast: led('god.sculpt.volume', 20, 'a sculpted creation of 20 m³'),
+  totem: led('god.miracle.score', 90, "a miracle's sign drawn at 90 or better"),
+  portal: led('grapple.swing.peak', 14, 'a grapple swing at 14 m/s'),
+  hasten: led('blade.cuts.best', 8, 'blade mode left with 8 cuts'),
+  fold: led('blade.zandatsu', 1, 'a zandatsu'),
+  strata: led('map.room', 6, 'six places mapped'),
+  course: led('crystal.sweet.run', 10, "a crystal's sweet spot ten times running"),
+  read: led('parry.run.best', 5, 'five windups parried running'),
+  gust: led('god.throw.speed', 25, 'a thing thrown by the hand at 25 m/s'),
+  slab: led('god.scoop.best', 20, '20 m³ scooped in one stroke'),
+  herd: led('reprogram.held5', 1, 'a mind reprogrammed with a held five-word macro'),
+  take: led('lockheart.three', 1, 'the Lockheart opened with three Possibilikeys'),
+  muster: led('god.wave.max', 10, 'wave 10 in a raid'),
+  transmute: led('god.cuts.best', 3, 'three things sundered with one stroke'),
+  ward: led('sigil.cleared.best', 3, 'three sigils cleared in one Celestial mode'),
+  stamp: led('cogitomap.get', 1, 'a Cogitomap brought home'),
+};
+const OLD_FIVE = new Set(GOD_ARTS.map((a) => a.id));
+const countWay = (domain, at) => led(`exp.${domain}`, expAt(at), `${DOMAINS[domain].name} ${at}`);
+const powerArt = (id, P, feat, extra = {}) => ({
+  realm: 'god', id, name: P.label, glyph: DOMAIN_GLAZE[P.domain]?.glyph || '✦', input: 'the hand: its domain (1 to 7), then the wheel',
+  blurb: `${P.does[0].toUpperCase()}${P.does.slice(1)}. ${DOMAINS[P.domain].name}'s.`, power: true, domain: P.domain, variants: [],
+  ...(P.at <= 1 ? { basic: true, goals: [], hint: 'Yours from the start.' }
+    : { any: true, goals: [countWay(P.domain, P.at), feat], hint: `Reach ${DOMAINS[P.domain].name} ${P.at}, or: ${feat.label}.` }),
+  ...extra,
+});
+export const POWER_ARTS = Object.entries(GOD_POWERS).filter(([id, P]) => !OLD_FIVE.has(id) && P.built && P.domain)
+  .map(([id, P]) => powerArt(id, P, POWER_FEATS[id] || led(`god.power.${id}`, 1, 'once')));
+export const EPIC_ARTS = Object.entries(EPICS).map(([id, E]) => powerArt(id, { ...E, does: `the epic miracle of the ${E.sign} sign, drawn with Shift` },
+  led(`god.miracle.${E.sign}.great`, 1, `its feeling's miracle at full size, its sign at 95, at Dissonance Level 5`)));
+GOD_ARTS.push(...POWER_ARTS, ...EPIC_ARTS);
+
 export const ALL_ARTS = [...ABILITIES, ...GOD_ARTS];
 
 /** All the arts by id; BY_TECH covers the Movement Arts only (the rest of the techs (swim, ladders, hanging) are body moves). */

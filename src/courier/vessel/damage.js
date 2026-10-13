@@ -23,12 +23,12 @@
 import * as THREE from 'three';
 import { HURT } from '../../vfx/filigree.js';
 import { sfx } from '../../audio/sfx.js';
-import { courierMindEffect } from '../../progress/stones.js';
+import { courierMindEffect, PRESSURE, pressureOf } from '../../progress/stones.js';
 
 export const REGIONS = ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'];
 const MEND_AFTER = 6, MEND_RATE = 0.025; // (seconds of quiet before a region mends, and how much of it mends a second: ~40 s from full;
 //                                          the kiln mends it at once, for cubes: vessel.mend / kilnui.js)
-const SHIELD = 35; // (Lachryma a full blow (k = 1) costs the pool, Halo's shield: the pool takes the blow first, the clay only what is left)
+export const SHIELD = 35; // (Lachryma a full blow (k = 1) costs the pool, Halo's shield: the pool takes the blow first, the clay only what is left)
 const BREAK_AT = 3.6; // (the vessel shatters when a blow lands on a region already cracked through, or the cracks together pass this)
 
 /** The region a bone belongs to (the Courier's rig: three.js drops the dots from the names: 'upper_arm.L' is 'upper_armL'). */
@@ -134,7 +134,7 @@ export class VesselDamage {
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
     const pool = this.game.lachryma;
     if (pool) {
-      const cost = (k * SHIELD) / (this.game.knacks?.on('thickWalls') ? 1.1 : 1), had = pool.value; // (Thick Walls, a knack: a tenth more before the clay)
+      const cost = k * SHIELD, had = pool.value; // (Thick Walls is an assist now, a mark, never a number: SPINE.md 1.3)
       if (had >= cost) { pool.drain(cost, 'shield'); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
       if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
       k *= 1 - had / cost;
@@ -159,17 +159,25 @@ export class VesselDamage {
     return region;
   }
 
-  /** The Caster's toll: the least cracked of the four parts (mask, torso, arms, legs) cracked past the shield; with three of them already
-   *  cracked, the vessel shatters instead (castershells.js tollShatters). The cracks mend as any do. */
-  toll({ by = 'courier', shatters = (n) => n >= 3 } = {}) {
-    const parts = [[0], [1], [2, 3], [4, 5]], worst = (p) => Math.max(...p.map((i) => this.crack[i]));
-    if (shatters(parts.filter((p) => worst(p) > 0.05).length)) { this.game.death?.begin({ why: 'toll', by, region: 'torso' }); return 'shatter'; }
-    const p = parts.reduce((a, b) => (worst(b) < worst(a) ? b : a)), i = p[0];
-    this.crack[i] = Math.max(this.crack[i], 0.6); this.quiet[i] = 0; this.peak[i] = Math.max(this.peak[i], this.crack[i]);
-    sfx.vesselCrack?.(this.crack[i], REGIONS[i]);
-    this.game.events?.emit('vessel.crack', { region: REGIONS[i], k: +this.crack[i].toFixed(2), why: 'toll', by });
+  /** A RELEASE (docs/plans/SPINE.md 4; progress/stones.js PRESSURE): `amount` Lachryma let out through the stones. Each whole unit of its
+   *  pressure cracks the least cracked region by PRESSURE.crack, past the shield (the shield is outside). One shatter rule for the way in
+   *  and the way out: a region pushed past 1, or all the cracks past BREAK_AT. Returns 'crack' or 'shatter'. */
+  release({ amount = PRESSURE.unit, why = 'release', by = 'courier' } = {}) {
+    if (this.game.death?.active) return 'shatter';
+    const n = pressureOf(amount, this.game.vessel?.look?.stones);
+    for (let u = 0; u < n; u++) {
+      let i = 0; for (let r = 1; r < REGIONS.length; r++) if (this.crack[r] < this.crack[i]) i = r;
+      const sum = this.crack.reduce((a, c) => a + c, 0) + PRESSURE.crack;
+      if (this.crack[i] + PRESSURE.crack > 1 || sum >= BREAK_AT) { this.game.death?.begin({ why, by, region: REGIONS[i] }); return 'shatter'; }
+      this.crack[i] += PRESSURE.crack; this.quiet[i] = 0; this.peak[i] = Math.max(this.peak[i], this.crack[i]);
+      sfx.vesselCrack?.(this.crack[i], REGIONS[i]);
+      this.game.events?.emit('vessel.crack', { region: REGIONS[i], k: +this.crack[i].toFixed(2), why, by });
+    }
+    this.game.events?.emit('vessel.release', { amount, units: n, why, by });
     return 'crack';
   }
+  /** The Caster's toll: a tier IV caster shell is a release of one unit (castershells.js). Kept as a name for its callers. */
+  toll({ by = 'courier' } = {}) { return this.release({ amount: PRESSURE.unit, why: 'toll', by }); }
 
   /** Mended at once (the kiln's refiring, or made whole again after shattering): every region, or the one named. */
   mendAll(quiet = false) {

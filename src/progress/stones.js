@@ -23,6 +23,7 @@
 //   intake(id, amount, { full, night, luckRoll? }) -> { take, flushed, cubes, heady }   draughtOf(id, aspect, strength, second?) -> { aspect: share }
 //   COURIER_MIND = { perDrink, perOverflow, settlePerSec }   COURIER_MIND_EFFECT[state] = { power, fragility }   courierMindEffect(mind)
 //   DRAUGHT = { build, fadePerSec }   reachOf(id, { night }) -> magnet radius x
+//   PRESSURE = { unit, crack }   apertureOf(id) -> x   pressureOf(amount, id) -> whole units (docs/plans/SPINE.md 4: the way OUT)
 // ---------------------------------------------------------------------------------------
 import { stateOf } from './combat/mind.js';
 
@@ -47,10 +48,19 @@ export const DRAUGHT = { build: 0.5, fadePerSec: 1 / 60 };
 /** The stones. `reach` multiplies the bauble magnet's radius; `heady` how far a drink pushes the mind; `tint` how strongly the place's
  *  feeling comes in with it; `gulp` caps the take a second (the rest waits in the stones and arrives smoothly); `overflow` where the
  *  overflow goes: `lockheart` (the share the Lockheart drinks), `bleed` (lost, harmlessly). Every number is a trade against the Maker's. */
+/** THE WAY OUT (docs/plans/SPINE.md 4; the owner, 2026-10-13: "an open cup when putting things in, but a pressurized vessel when taking
+ *  things out"). A RELEASE (a tier IV caster shell, an Overload, an epic miracle) lets Lachryma out through the stones; its PRESSURE is how
+ *  much over the APERTURE (a stone's `aperture`, the Maker's 1): every whole `unit` of it cracks the least cracked part of the vessel by
+ *  `crack`, never through the shield (the shield is outside). A wide aperture is a stone's trade (safer releases), a narrow one a cost. */
+export const PRESSURE = { unit: 40, crack: 0.6 };
+export const apertureOf = (id) => STONES[id]?.aperture ?? 1;
+/** Whole units of pressure a release of `amount` Lachryma makes through a stone set (at least one: a release is never free). */
+export const pressureOf = (amount, id) => Math.max(1, Math.round(amount / (PRESSURE.unit * apertureOf(id))));
+
 export const STONES = {
-  maker: { pool: {}, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 } }, // (the Prince's choice: the baseline)
+  maker: { pool: {}, reach: 1, heady: 1, tint: 1, aperture: 1, overflow: { lockheart: 0.8 } }, // (the Prince's choice: the baseline)
   amethyst: { // the sober stone: a big gulp comes in gently, the head stays clear, the weather's feeling barely reaches you
-    pool: { regenMult: 0.85 }, reach: 0.8, heady: 0.4, tint: 0.5, gulp: 25, overflow: { lockheart: 0, bleed: 1 },
+    pool: { regenMult: 0.85 }, reach: 0.8, heady: 0.4, tint: 0.5, gulp: 25, aperture: 1.5, overflow: { lockheart: 0, bleed: 1 }, // (and lets a release out gently)
   },
   citrine: { // the merchant's stone: a tenth of what is drunk is kept as cubes; a smaller vessel to drink into
     pool: { maxBonus: -15 }, reach: 1, heady: 1, tint: 1, cubes: 0.1, overflow: { lockheart: 0.8 },
@@ -60,7 +70,7 @@ export const STONES = {
     night: { regenMult: 1.3, reach: 1.3 }, day: { regenMult: 0.85, reach: 0.9 },
   },
   onyx: { // grounding: nothing of the weather comes in, and every drop of overflow goes to the Lockheart; a slower, shorter reach
-    pool: { regenMult: 0.9 }, reach: 0.85, heady: 0.75, tint: 0, overflow: { lockheart: 1 },
+    pool: { regenMult: 0.9 }, reach: 0.85, heady: 0.75, tint: 0, aperture: 1.25, overflow: { lockheart: 1 }, // (grounded: a release runs to earth)
   },
   emerald: { // the garden inside it: drinks wide and deep of the place's feeling, and feels it
     pool: {}, reach: 1.5, heady: 1.3, tint: 2, overflow: { lockheart: 0.8 },
@@ -69,10 +79,10 @@ export const STONES = {
     pool: { costMult: { '*': 0.85 }, regenMult: 0.8 }, reach: 1, heady: 0.75, tint: 1, overflow: { lockheart: 0.8 },
   },
   ruby: { // fire: a bigger vessel that burns hot (every use costs more, and it is heady)
-    pool: { maxBonus: 30, costMult: { '*': 1.15 } }, reach: 1, heady: 1.25, tint: 1, overflow: { lockheart: 0.8 },
+    pool: { maxBonus: 30, costMult: { '*': 1.15 } }, reach: 1, heady: 1.25, tint: 1, aperture: 0.75, overflow: { lockheart: 0.8 }, // (and a release burns: it cracks sooner)
   },
   diamond: { // splits the light: a drink pushes the mind twice as far (Prismatic is near), and an agate's two feelings both come in
-    pool: {}, reach: 1, heady: 2, tint: 1, split: true, overflow: { lockheart: 0.8 },
+    pool: {}, reach: 1, heady: 2, tint: 1, split: true, aperture: 0.75, overflow: { lockheart: 0.8 },
   },
   opal: { // play of colour: each drink is a little game of chance, paid out by Luck (progress/luck.js)
     pool: {}, reach: 1, heady: 1, tint: 1, luck: { double: 0.1, none: 0.1 }, overflow: { lockheart: 0.8 },

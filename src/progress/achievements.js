@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import { CASTER_SHELLS } from './combat/castershells.js';
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
-import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, loggedTechs } from './skills.js';
+import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, goalsFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
 import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
@@ -230,14 +230,14 @@ export function buildAchievements(game) {
   F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });
   H('gja', 'hand', 'Rejection', 2, 'endure', 'Unwelcome', 'Have an island push back against your hand.', 'god.dissonance.level', 2, { hidden: true });
   C('gjb', 'hand', 'Rejection', 5, 'endure', 'Antibody', "Put down an island's whole answer to your hand.", 'god.rejection.beaten', 1, { title: 'the Unrejected' });
-  F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
+  F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => !a.power && (sys.unlocked(a.id) || a.basic)).length, GOD_ARTS.filter((a) => !a.power).length);
   // the arts and their variants: each is the reward of an achievement, the one way skills are unlocked (the owner's rule: skills.js), its
   // goals predicates over the ledger, so an art is retroactive like everything here; the System unlocks it when this is done (`unlocks`)
   const artAch = (a, v, cat, sub) => {
     const id = v ? `${a.id}.${v.id}` : a.id, goals = v ? v.goals : a.goals;
     if (!goals.length) return; // (a basic art is yours from the start)
     F(achOf(id), cat, sub, v ? 3 : 2, 'mechanic', v ? `${a.name}: ${v.name}` : a.name, `Learn ${v ? v.name : a.name}. ${(v || a).hint}`,
-      (L) => goals.reduce((n, g) => n + goalFracOf(L, g), 0), goals.length, { unlocks: id });
+      ...(!v && a.any ? [(L) => goalsFracOf(L, goals, true), 1] : [(L) => goals.reduce((n, g) => n + goalFracOf(L, g), 0), goals.length]), { unlocks: id }); // (an `any` art: a count way OR a feat way)
   };
   for (const a of ABILITIES) { artAch(a, null, 'move', 'The Arts'); for (const v of a.variants) artAch(a, v, 'move', 'The Arts'); }
   for (const a of GOD_ARTS) { artAch(a, null, 'hand', 'Arts'); for (const v of a.variants) artAch(a, v, 'hand', 'Arts'); }

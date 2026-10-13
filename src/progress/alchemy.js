@@ -29,7 +29,7 @@ export const ATTRIBUTES = {
   charisma:      { name: 'Charisma',      does: 'what the folk pay and ask (prices, the haggle)',   widen: { 'charisma.trade': { mult: true, atMax: 1.15 } } },
   perception:    { name: 'Perception',    does: "how far ahead a creature's intent shows",          widen: { 'perception.notice': { mult: true, atMax: 1.5 } } },
   dexterity:     { name: 'Dexterity',     does: 'drawing and stowing a tool',                       widen: { 'dexterity.draw': { mult: true, atMax: 1.3 } } },
-  visualization: { name: 'Visualization', does: 'the canvas the Soul Brush and the hand work on',   widen: { 'visualization.canvas': { mult: true, atMax: 1.4 } } },
+  visualization: { name: 'Visualization', does: 'how fast what you imagine takes form, and the ink it costs', widen: { 'visualization.make': { mult: true, atMax: 2 }, 'visualization.canvas': { mult: true, atMax: 1.4 } } }, // (the tempo of making: Manifest's rise, Shape's rate; the owner, SPINE.md 1.2)
   resilience:    { name: 'Resilience',    does: 'the clay mending, and the hits a ship bears',      widen: { 'resilience.mend': { mult: true, atMax: 1.5 }, 'resilience.bears': { plus: true, atMax: 2 } } },
 };
 Object.entries(ATTRIBUTES).forEach(([id, a], i) => { a.id = id; a.hue = Math.round(i * 360 / 7 + 20); });

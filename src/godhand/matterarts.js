@@ -24,9 +24,10 @@ import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
 import { groundOf } from './matter.js';
 
 /** The verbs' numbers. `carry` the most the hand holds (m³, where Scoop opens; the ramp takes it to 400 at 99: RAMP.scoop); `takeRate` and
- *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
+ *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag (Visualization's
+ *  tempo of making doubles it at its top: SPINE.md 1.2); `carve` the channel's width
  *  and depth (m). Made matter costs `GOD_POWERS[id].made` Lachryma a cubic metre. */
-export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 1.4, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 },
+export const VERBS = { carry: 20, takeRate: 8, pourRate: 6, r: 1.6, shapeRate: 2, levelK: 0.12, carve: { w: 1.4, depth: 1.2, maxLen: 18 },
   sculpt: { maxLen: 16, pillar: 1.5, w: 2, t: 0.6, arch: [1.5, 5], archK: 0.3, ramp: 4, rampK: 0.4 } };
 export const MATTER_ARTS = new Set(['scoop', 'shape', 'carve', 'sculpt']);
 
@@ -97,7 +98,7 @@ export class MatterArts {
       } else {
         const drag = THREE.MathUtils.clamp((L.my - input.my) / 120, -1, 1); // (up raises, down lowers)
         if (Math.abs(drag) < 0.08) return;
-        const r = F.raise(p.x, p.z, rampOf('shape', 'r', g) ?? VERBS.r, drag * (rampOf('shape', 'rate', g) ?? VERBS.shapeRate) * dt);
+        const r = F.raise(p.x, p.z, rampOf('shape', 'r', g) ?? VERBS.r, drag * VERBS.shapeRate * (g.alchemy?.widen?.('visualization.make') ?? 1) * (g.bracelet?.mod?.('manifestation', 'rate') ?? 1) * dt);
         if (r.made > 0 && !this.arts.drainOk(r.made * this.madeCost('shape') / Math.max(dt, 1e-3), dt)) return;
         L.moved += r.moved; L.made += r.made;
       }
