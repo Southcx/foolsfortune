@@ -33,7 +33,7 @@ export const SCATTER = { snap: 0.1, wire: 0.06, steps: [1 / 11, 1 / 6], jitter: 
 const LEAD = 2 * SCATTER.snap + SCATTER.wire; // the snaps and the wire, before the pop (0.26 real s)
 const MIND_LINE = new THREE.Color(0x5087fa); // (labSoft at the stone's blue, vfx/labradorite.js: the Mind's line colour)
 const LACHRYMA = 0xd9c8ff; // (Lachryma with no feeling: the glyphs' lilac)
-const _v = new THREE.Vector3(), _c = new THREE.Color();
+const _v = new THREE.Vector3(), _c = new THREE.Color(), _w = new THREE.Color(1, 1, 1);
 
 /** A copy of `geo` with its positions snapped to a grid of `step`, the grid shifted by `offset` (the jitter). */
 export function snapGeometry(geo, step, offset = _v.set(0, 0, 0)) {
@@ -75,17 +75,18 @@ export class FigmentScatter {
     return at;
   }
 
-  /** The pop's motes: half sink into the ground, half rise into the sky, in the feeling's colour. */
+  /** The pop's motes: half rise into the sky, additive and the feeling's colour lightened; half sink into the ground, drawn over in a
+   *  darker tint of the same hue. */
   motes(pos, color, n = SCATTER.motes) {
-    const fx = this.game.fx; if (!fx?.alpha?.emit) return;
-    const col = _c.set(color);
+    const fx = this.game.fx; if (!fx?.add?.emit || !fx?.alpha?.emit) return;
+    const light = _c.set(color).lerp(_w, 0.45), dark = new THREE.Color(color).multiplyScalar(0.55);
     for (let i = 0; i < n; i++) {
       const up = i % 2 === 0, a = Math.random() * Math.PI * 2, r = 0.3 + Math.random() * 1.1;
-      (i % 3 === 0 ? fx.add : fx.alpha).emit({ // (two in three drawn over (they read on bright sand), one in three a glint)
+      (up ? fx.add : fx.alpha).emit({
         pos: pos.clone().add(_v.set((Math.random() - 0.5) * 0.5, (Math.random() - 0.3) * 0.6, (Math.random() - 0.5) * 0.5)),
         vel: new THREE.Vector3(Math.cos(a) * r, up ? 1.4 + Math.random() * 2.2 : -(0.6 + Math.random() * 1.2), Math.sin(a) * r),
-        life: up ? 1.3 + Math.random() * 0.8 : 0.7 + Math.random() * 0.5, size: 0.07 + Math.random() * 0.05, sizeEnd: 0.015,
-        color: col.clone(), alpha: 0.9, drag: up ? 1.1 : 0.6, gravity: up ? -0.6 : 2.5, floor: -1e9, // (no floor: the sinking ones go into it)
+        life: up ? 1.3 + Math.random() * 0.8 : 0.7 + Math.random() * 0.5, size: 0.11 + Math.random() * 0.07, sizeEnd: 0.03,
+        color: (up ? light : dark).clone(), alpha: up ? 1 : 0.85, drag: up ? 1.1 : 0.6, gravity: up ? -0.6 : 2.5, floor: -1e9, // (no floor: the sinking ones go into it)
       });
     }
   }

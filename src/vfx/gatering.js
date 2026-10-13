@@ -21,12 +21,20 @@ import * as THREE from 'three';
 import { ROOM_GLAZES } from './roomglazes.js';
 
 const HOOPS = [ // radius (m), tube, glaze, turn (radians a real second), tilt about x and z (radians)
-  { r: 0.8, tube: 0.045, glaze: 'celadon', turn: 0.30, tilt: [1.15, 0.25] },
-  { r: 0.64, tube: 0.04, glaze: 'shino', turn: -0.42, tilt: [0.35, 1.05] },
-  { r: 0.49, tube: 0.035, glaze: 'oribe', turn: 0.55, tilt: [-0.6, -0.4] },
+  { r: 1.3, tube: 0.07, glaze: 'celadon', turn: 0.30, tilt: [1.15, 0.25] },
+  { r: 1.04, tube: 0.06, glaze: 'shino', turn: -0.42, tilt: [0.35, 1.05] },
+  { r: 0.8, tube: 0.05, glaze: 'oribe', turn: 0.55, tilt: [-0.6, -0.4] },
 ];
-const SPHERE = { r: 0.2, glaze: 'majolica', glow: 0x2a1c10, lift: 2.35 }; // (the pale sphere's centre over the hub's floor, m)
+const LINE = { tube: 0.012, glow: 0.9 }; // the glowing line on each hoop's inner edge: its tube (m), and how much of the glaze's ware colour it gives off
+const SPHERE = { r: 0.34, glaze: 'majolica', glow: 0x3a2814, lift: 2.75, forward: 0.5 }; // (the pale sphere's centre over the hub's floor, m, at about head height
+// over the pedestal; pulled forward, to +z, off the pedestal's back so it stands clear of the metrics board on the south wall)
 const BANDS = [0xfff1dc, 0xbfe3cf, 0xf4c2b8]; // (cream, celadon, rose: the light warm, DATA-LOOK.md "what stays cute")
+const LAYERS = [ // one ring of light: radius (x the ring's), height (m), opacity, colour gain (over 1: the glow's bloom takes it)
+  { r: 1.0, h: 0.016, op: 1.0, gain: 2.2 }, // the rim
+  { r: 1.02, h: 0.07, op: 0.32, gain: 1.2 }, // its halo
+  { r: 1.05, h: 0.18, op: 0.1, gain: 1.0 }, // the soft fall-off
+  { r: 0.86, h: 0.05, op: 0.1, gain: 1.0 }, // a faint skin inside
+];
 const SWEEP = 0.42; // one band's travel, feet to crown (real s)
 const STAGGER = 0.07; // between bands (real s)
 const OUT = SWEEP + 2 * STAGGER; // the cover's dip under the gate-out (the seam's `out`, real s): the last band reaches the crown as it closes
@@ -41,7 +49,7 @@ export class GateRing {
     if (at && disc && game.level?.mat) {
       const floor = disc.position.y - 0.03;
       this.idle = new THREE.Group();
-      this.idle.position.set(at.x, floor + SPHERE.lift, at.z);
+      this.idle.position.set(at.x, floor + SPHERE.lift, at.z + SPHERE.forward);
       const sphere = new THREE.Mesh(new THREE.SphereGeometry(SPHERE.r, 20, 14), game.level.mat(ROOM_GLAZES[SPHERE.glaze].body, SPHERE.glow));
       this.idle.add(sphere);
       this.sphere = sphere;
@@ -49,17 +57,26 @@ export class GateRing {
         const tilt = new THREE.Group(); tilt.rotation.set(h.tilt[0], 0, h.tilt[1]);
         const m = new THREE.Mesh(new THREE.TorusGeometry(h.r, h.tube, 8, 56), game.level.mat(ROOM_GLAZES[h.glaze].body));
         m.rotation.x = Math.PI / 2; // (the torus lies in its tilt group's floor plane, and turns about the group's up)
-        const spin = new THREE.Group(); spin.add(m); tilt.add(spin); this.idle.add(tilt);
+        // its inner edge lit: a thin hoop just inside it, the level's one program again, given off in the glaze's own ware colour
+        const G = ROOM_GLAZES[h.glaze], glow = new THREE.Color(G.ware).multiplyScalar(LINE.glow).getHex();
+        const line = new THREE.Mesh(new THREE.TorusGeometry(h.r - h.tube * 0.95, LINE.tube, 4, 72), game.level.mat(G.ware, glow));
+        line.rotation.x = Math.PI / 2;
+        const spin = new THREE.Group(); spin.add(m, line); tilt.add(spin); this.idle.add(tilt);
         return { ...h, spin, tiltG: tilt };
       });
       game.scene.add(this.idle);
     }
-    // the bands of light: open cylinders round the body, one material each (the tracer's program: vfx/particles.js)
-    const g = new THREE.CylinderGeometry(1, 1, 0.035, 32, 1, true);
+    // the rings of light: each a stack of open cylinders round the body, additive (the tracer's program: vfx/particles.js): a thin bright
+    // rim, a wider soft halo over it, and a faint skin a little inside, so it reads as light with an edge and no body
     this.bands = new THREE.Group(); this.bands.visible = false; this.bands.userData.zoneFree = true; // (it goes where the Courier goes)
-    this.bandMeshes = BANDS.map((color) => {
-      const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-      m.frustumCulled = false; this.bands.add(m); return m;
+    const geo = new THREE.CylinderGeometry(1, 1, 1, 40, 1, true);
+    this.bandRings = BANDS.map((color) => {
+      const ring = new THREE.Group();
+      ring.layers3 = LAYERS.map((L) => {
+        const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(L.gain), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+        m.scale.set(L.r, L.h, L.r); m.frustumCulled = false; m.userData.op = L.op; ring.add(m); return m;
+      });
+      this.bands.add(ring); return ring;
     });
     game.scene.add(this.bands);
   }
@@ -91,15 +108,15 @@ export class GateRing {
     if (P) this.bands.position.copy(P);
     this.bands.visible = true;
     let live = false;
-    for (const [i, m] of this.bandMeshes.entries()) {
+    for (const [i, ring] of this.bandRings.entries()) {
       const k = (J.t - i * STAGGER) / SWEEP; // (0..1 along the body)
-      if (k < 0 || k > 1) { m.material.opacity = 0; if (k < 0) live = true; continue; }
+      if (k < 0 || k > 1) { for (const m of ring.layers3) m.material.opacity = 0; if (k < 0) live = true; continue; }
       live = true;
       const e = k * k * (3 - 2 * k), h = J.kind === 'out' ? e : 1 - e; // (out: feet to crown; in: crown to feet)
-      m.position.y = 0.05 + h * HEIGHT;
-      const r = 0.5 - 0.18 * h; // (narrower at the crown, as a body is)
-      m.scale.set(r, 1 + 0.8 * Math.sin(Math.PI * k), r);
-      m.material.opacity = 0.85 * Math.sin(Math.PI * k);
+      ring.position.y = 0.05 + h * HEIGHT;
+      const r = 0.55 - 0.2 * h, f = Math.sin(Math.PI * k); // (narrower at the crown, as a body is; in and out softly)
+      ring.scale.set(r, 1, r);
+      for (const m of ring.layers3) m.material.opacity = m.userData.op * f;
     }
     if (!live) { this.job = null; this.bands.visible = false; }
   }
