@@ -72,8 +72,8 @@ export const DOMAIN_ORDER = ['ouranurgy', 'manifestation', 'divination', 'psycho
  *  nothing is free, the reach and the sizes are the island's, a fired creation stands for good. Each row is a number's value where its
  *  power opens and at 99, `[open, at99]`; between them it follows the level on RAMP_CURVE, so most of the gain comes late (OSRS's
  *  curve: the last levels are the ones that change what you can do). What never loosens: the Zone of Influence (only ground you know),
- *  the island's mending (but a fired creation), one epic a game hour and its toll in the jar, and the island noticing (rejection,
- *  heat at a tenth). */
+ *  the island's mending (but a fired creation), one epic a game hour and its toll in the jar, and the island noticing (its
+ *  dissonance, at a tenth). */
 export const RAMP = {
   scoop: { carry: [20, 400], made: [0.5, 0] },
   shape: { rate: [1.4, 6], r: [1.6, 6], made: [0.5, 0] },
@@ -96,7 +96,7 @@ export const RAMP = {
   transmute: { r: [2, 10] },
   ward: { n: [1, 6], r: [6, 18], dur: [60, 1200] },
   stamp: { side: [4, 24], made: [0.5, 0] },
-  heat: { scale: [1, 0.1] }, // (rejection's heat from a domain's acts, by that domain's level from 1)
+  dissonance: { scale: [1, 0.1] }, // (the dissonance a domain's acts raise, by that domain's level from 1)
 };
 export const RAMP_CURVE = 1.6;
 export const FIRE_FOREVER = 99;
@@ -109,10 +109,10 @@ export function rampOf(id, key, game) {
   const t = Math.max(0, Math.min(1, (level - at) / Math.max(1, 99 - at)));
   return (row[0] + (row[1] - row[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.mod?.(domain, key) ?? 1); // (the bracelet's charms: progress/bracelet.js)
 }
-/** Rejection's heat scale for an act of a domain (RAMP.heat over that domain's level from 1). */
-export function heatScale(domain, game) {
+/** The dissonance an act of a domain raises, as a scale (RAMP.dissonance over that domain's level from 1). */
+export function dissonanceScale(domain, game) {
   const level = game?.psyche?.level?.(domain) ?? 1, t = Math.max(0, Math.min(1, (level - 1) / 98));
-  return (RAMP.heat.scale[0] + (RAMP.heat.scale[1] - RAMP.heat.scale[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.heat?.(domain) ?? 1); // (QUIET)
+  return (RAMP.dissonance.scale[0] + (RAMP.dissonance.scale[1] - RAMP.dissonance.scale[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.dissonance?.(domain) ?? 1); // (QUIET)
 }
 
 /** Open for this Courier now: its domain's level, or a lend. */

@@ -29,7 +29,7 @@ export const CHARMS = {
   twin: { label: 'TWIN', does: 'The power acts twice, a beat apart.', repeat: true, delay: 0.4, cost: 1.6, mods: {} },
   wide: { label: 'WIDE', does: 'Half again the reach and the size.', cost: 1.5, mods: { size: 1.5 } },
   echo: { label: 'ECHO', does: 'The act comes again where it ended, three real seconds on.', repeat: true, delay: 3, cost: 1.3, mods: {} },
-  quiet: { label: 'QUIET', does: 'The island feels half of it.', cost: 1, mods: { size: 0.8 }, heat: 0.5 },
+  quiet: { label: 'QUIET', does: 'Half the dissonance.', cost: 1, mods: { size: 0.8 }, dissonance: 0.5 },
   thrift: { label: 'THRIFT', does: 'Matter made from nothing costs half.', cost: 1, mods: { made: 0.5, rate: 0.8 } },
   linger: { label: 'LINGER', does: 'Rifts, wards, totems and the rest stand twice as long.', cost: 1.3, mods: { time: 2 } },
   gentle: { label: 'GENTLE', does: 'No harm to creatures: a blow becomes a push.', cost: 1, mods: {}, gentle: true },
@@ -67,7 +67,7 @@ export class Bracelet {
   on(domain) { const id = this.charmAt(domain); return id ? [[id, CHARMS[id]]] : []; }
   /** What a ramp's number is multiplied by, for a power of this domain. */
   mod(domain, key) { const f = FAMILY[key]; if (!f) return 1; let k = 1; for (const [, C] of this.on(domain)) k *= C.mods[f] ?? 1; return k; }
-  heat(domain) { let k = 1; for (const [, C] of this.on(domain)) k *= C.heat ?? 1; return k; }
+  dissonance(domain) { let k = 1; for (const [, C] of this.on(domain)) k *= C.dissonance ?? 1; return k; }
   costOf(domain) { let k = 1; for (const [, C] of this.on(domain)) k *= C.cost ?? 1; return k; }
   gentle(domain) { return this.on(domain).some(([, C]) => C.gentle); }
   repeatOf(domain) { return this.on(domain).filter(([, C]) => C.repeat).map(([id, C]) => ({ charm: id, delay: C.delay })); }

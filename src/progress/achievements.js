@@ -228,7 +228,7 @@ export function buildAchievements(game) {
   C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
   F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);
   F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });
-  H('gja', 'hand', 'Rejection', 2, 'endure', 'Unwelcome', 'Have an island push back against your hand.', 'god.rejection.step', 2, { hidden: true });
+  H('gja', 'hand', 'Rejection', 2, 'endure', 'Unwelcome', 'Have an island push back against your hand.', 'god.dissonance.level', 2, { hidden: true });
   C('gjb', 'hand', 'Rejection', 5, 'endure', 'Antibody', "Put down an island's whole answer to your hand.", 'god.rejection.beaten', 1, { title: 'the Unrejected' });
   F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
   // the arts and their variants: each is the reward of an achievement, the one way skills are unlocked (the owner's rule: skills.js), its

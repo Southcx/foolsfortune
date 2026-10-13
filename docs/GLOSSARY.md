@@ -49,8 +49,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the bracelet / a charm** (working names, Espada's and the owner's; `docs/plans/BRACELET.md`) — the one ring the Vessoul wears in every form
   (the hand's wrist, the Pneuka Jar's choker, the Courier's wrist), its glow the hand's state / what sits in one of its seven domain
   sockets and bends that domain's powers. *Not:* a Possibilikey, a tool, the Lachryma ring.
-- **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response to the hand scarring it: five steps, each
-  calling stronger Figments, cooled by the mending and a Shrine. *Not:* the mending, a raid.
+- **dissonance / the Dissonance Level** (`game.rejection.dissonance`, `.level`; event `god.dissonance`; the owner's words, 2026-10-13) — how far an
+  island knows it is being warped by the hand, climbing with each act and ebbing in quiet (as in cognitive dissonance) / its step, 0 to 5.
+  *Not:* "heat", nor the mending.
+- **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response at a Dissonance Level: the stronger
+  Figments it sends; cooled by the mending and a Shrine. *Not:* the mending, a raid.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your
   Pneuka Jar", never "the jar". *Not:* the vessel. → detail
 

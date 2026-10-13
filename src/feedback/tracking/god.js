@@ -12,7 +12,7 @@ import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from '../../progress/godpow
 const POWER_SAYS = { rift: 'A rift opens, and its twin.', fold: 'The ground folds over.', fire: 'The clay takes the fire.', totem: 'A totem holds the weather.', herd: 'They walk where you drew.', take: 'You take it in hand.', muster: 'Clay hands come up to carry.', ward: 'A ward is written.', stamp: 'The ground is pressed again.' };
 
 
-const STEP_SAYS = [
+const LEVEL_SAYS = [ // (the Dissonance Level, 0 to 5)
   'The island settles.',
   'The island stirs against you.',
   'The island pushes back.',
@@ -55,9 +55,9 @@ export function godRules({ on, L, log }) {
     log.say('god', `${EPICS[e.epic]?.label || 'An epic miracle'}. Your Pneuka Jar pays for it.`);
     if (e.epic === 'prophecy') log.say('god', 'You see the next raid coming, and it comes later.');
   });
-  on('god.rejection', (e) => {
-    if (e.step > 0) L.hi('god.rejection.step', e.step);
-    log.say(e.step ? 'warn' : 'god', STEP_SAYS[e.step] || STEP_SAYS[0], { key: 'grej', throttle: 2 });
+  on('god.dissonance', (e) => {
+    if (e.level > 0) L.hi('god.dissonance.level', e.level);
+    log.say(e.level ? 'warn' : 'god', LEVEL_SAYS[e.level] || LEVEL_SAYS[0], { key: 'gdis', throttle: 2 });
   });
   on('god.rejection.beaten', (e) => {
     if (e.by !== 'courier') return;

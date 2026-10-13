@@ -37,7 +37,7 @@ carries to the hand.
    | TWIN | the power acts twice, a beat apart | x1.6 Lachryma |
    | WIDE | x1.5 reach and size | x1.5 Lachryma |
    | ECHO | the act repeats once where it ended, after 3 real seconds | x1.3 Lachryma |
-   | QUIET | half of rejection's heat | x0.8 size |
+   | QUIET | half the dissonance | x0.8 size |
    | THRIFT | half of the made matter's Lachryma | x0.8 rate |
    | LINGER | twice as long (rifts, wards, totems, statuses) | x1.3 Lachryma |
    | GENTLE | no harm to creatures (blows become knockbacks) | none (a choice) |
@@ -48,7 +48,7 @@ carries to the hand.
 5. **The halo and the aura: the ring's glow.** One glow is read four ways:
    - its brightness is how much of the pool a power is spending;
    - its colour is the glaze of the domain in use;
-   - a slow red pulse is rejection's step (0 to 5);
+   - a slow red pulse is the Dissonance Level (0 to 5);
    - a gold line is a charm triggering.
    This folds in the rings and halos already scattered through the game. The HUD's Lachryma ring, the reach dome and the jar's choker
    become one mark.
@@ -67,7 +67,7 @@ cracked part past the shield, and shatters the vessel when three parts are alrea
 - `progress/bracelet.js`: `CHARMS`, `SOCKETS` (the seven domains), `SOCKET_AT` 30, and `game.bracelet`, which holds the sockets and the
   save section `bracelet` (player). A lend (DEBUG's arts) opens every socket and charm.
 - The numbers reach the powers through the ramp: `rampOf` multiplies by `bracelet.mod(domain, key)` through `FAMILY` (size, time,
-  made, rate), and QUIET halves rejection's heat through `heatScale`.
+  made, rate), and QUIET halves the dissonance through `dissonanceScale`.
 - A charm's Lachryma cost wraps every act of its domain's powers. That includes the matter's verbs (`withCost`, `godhand/powers.js`) and
   the miracles' spend.
 - TWIN and ECHO repeat an act of the domains' other powers, a beat or three real seconds on. Toggles and seeing never repeat. A

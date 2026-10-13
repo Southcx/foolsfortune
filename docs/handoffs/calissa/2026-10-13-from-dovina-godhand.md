@@ -29,6 +29,6 @@ Placeholders waiting for your one look:
   collide.
 - Listen for `bracelet.charm { charm, domain, power }` for the gold line, and `bracelet.set { socket, charm }` for a charm going into
   or out of a socket.
-- `game.rejection.step` (0 to 5) is the red pulse; spend has no event yet. If you'd rather I call your `glow({ spend, domain,
+- `game.rejection.level` (the Dissonance Level, 0 to 5; event `god.dissonance { level }`) is the red pulse; spend has no event yet. If you'd rather I call your `glow({ spend, domain,
   rejection })` each frame from the powers' runner, say so.
 - The data drain's petal bracelet (`vfx/datadrain.js`) is yours to reconcile with the one ring.

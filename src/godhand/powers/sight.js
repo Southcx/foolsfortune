@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // DIVINATION'S GOD POWERS (docs/plans/GODHAND.md section 8), as handlers for the runner (godhand/powers.js). Seeing is not an act on
-// the island: none of these raises rejection's heat.
+// the island: none of these raises the island's dissonance.
 //   STRATA  hold LMB and drag: the ground along the stroke is drawn as a section held up over it, layer by layer (the authored ground,
 //           clay, sand, Lachryma), and stays a few real seconds after.
 //   COURSE  while it is chosen: where a drop let go under the hand would run, drawn downhill to where it would pool. LMB marks it.

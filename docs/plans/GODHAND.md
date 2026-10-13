@@ -186,13 +186,17 @@ security level** (a mind's cognition noticing an intruder and sending stronger S
 there is, an ego defending itself. Assassin's Creed's notoriety (fed by acts, eased by deeds). Noita's Stevari (strike in the holy
 place and the place itself comes for you).
 
-- **What feeds it: harm to the island's self-image, never use of the hand.** It is the mending read backward:
+**The words** (the owner, 2026-10-13: "Dissonance Level", as in cognitive dissonance). **Dissonance** is how far the island knows
+it is being warped from outside, a running amount that climbs with each act and ebbs in quiet (GTA's heat). **The Dissonance Level**
+is its step, 0 to 5 (GTA's stars). **Rejection** is the island's answer at a level: the Figments it sends.
+
+- **What feeds the dissonance: harm to the island's self-image, never use of the hand.** It is the mending read backward:
   - how far the ground stands from its authored shape (the matter's delta, section 3), weighted by how fast it was made (a flood in
     a second weighs more than a valley carved over an hour);
   - acts against the folk (a clapperjar thrown, one of the folk struck, the hand's slap on them);
   - epic miracles (each a big push).
   Building gently (a bridge, a ford, a channel) weighs little. The player who sculpts is left alone; the one who scars is not.
-- **Five steps of rejection**, each calling a stronger answer, spawned at the edge of the hand's view and coming for the jar:
+- **Five Dissonance Levels**, each calling a stronger answer (rejection), spawned at the edge of the hand's view and coming for the jar:
   1. strays: Figments of class 1 drift in;
   2. a pack, and the Figments wear the island's feeling;
   3. aberrants, and blotlings well up from the crude in the ZoI;
@@ -203,10 +207,10 @@ place and the place itself comes for you).
   stack, Rez's layers). No stars drawn on the screen.
 - **How it cools:** stop scarring and it falls a step a real minute while the mending runs. A Shrine is sanctuary: no Figment of the
   rejection follows you into one, and resting there clears it. Leaving the god hand does not clear it; the Courier walks out into it.
-- **The gamble** (the house's taste): a Figment of the rejection pays its yield at the rejection's step, ×1 to ×3, and its EmO starts
+- **The gamble** (the house's taste): a Figment of the rejection pays its yield at the Dissonance Level, ×1 to ×3, and its EmO starts
   high. So scarring the island on purpose to farm what it throws at you is a real strategy, and it can shatter you.
 - Working name **rejection** (Espada's to name). The ledger: `god.rejection.<step>` firsts and the highest step reached; an achievement
-  for beating the step-5 answer, and one for a day of terraforming that never passed step 1.
+  for beating the level-5 answer, and one for a day of terraforming that never passed Dissonance Level 1.
 
 ## 9. Order
 
@@ -230,14 +234,14 @@ Names (miracle, the seven, the epics) are working words for Espada's.
 **The top: all seven domains at 99 ("The World") is Creative mode.** Matter made from nothing is free. Scoop carries 400 m³ and Sculpt
 raises arches three times the size. Carve cuts 64 m channels 6 m deep. A Rift stands for twenty real minutes, four pairs at once, and Fold
 swaps 24 m squares. Hasten runs matter at sixteen times. Fire stands a creation for good, kept in the save. Six wards and five totems
-stand at once. Miracles cost a fifth and fall twice as wide. Rejection hears a tenth of the heat.
+stand at once. Miracles cost a fifth and fall twice as wide. The island feels a tenth of the dissonance.
 
 **What never loosens: the walls Creative mode is designed around.**
 1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
 2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a fired creation at 99. A
    master leaves what they meant to leave; everything else heals.
 3. **One epic a game hour, paid in the jar.**
-4. **The island notices.** Rejection's heat never reaches zero. A tenth of it, in a long session of large works, still calls the
+4. **The island notices.** Dissonance never reaches zero. A tenth of it, in a long session of large works, still calls the
    answer, so the top stays a game.
 5. **No new domains, and no new verbs at 99.** The top is the same verbs, unbounded, never a new button.
 
@@ -267,7 +271,7 @@ below the open level are the open values. A lend (DEBUG's arts) opens a power bu
 | Transmute | radius m | 2 | 10 |
 | Ward | count / radius / real s | 1 / 6 / 60 | 6 / 18 / 1200 |
 | Stamp | side m / made | 4 / 0.5 | 24 / 0 |
-| rejection | heat x, by the acting domain's level from 1 | 1 | 0.1 |
+| dissonance | x, by the acting domain's level from 1 | 1 | 0.1 |
 
 **The selector.** The hand's 25 arts are grouped by their seven domains. Keys 1 to 7 pick a domain, and pressing the same key again steps
 through its arts. The bar shows that domain's arts under a strip of the seven domains. This is a placeholder until Calissa rules on the
@@ -288,13 +292,13 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
 - **Miracles** (`godhand/miracles.js`): MMB held draws the sign (the Soul Brush's gesture reader); a sign's size on screen sets the
   miracle's size and cost. Needs the feeling awakened and the ground in the Zone of Influence. Shift turns the sign into its epic (one a
   game hour, paid in the jar). All seven of each run; their looks are placeholder rings and the existing weather/status looks.
-- **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): heat from matter moved (0.5 a m³, made 1),
-  a miracle 8, an epic 60, a throw 2; steps at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real
-  seconds, at most 8 alive; the fifth step's answer is a size-2.2 class-2 slip jelly, and putting it down clears the heat
+- **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): dissonance from matter moved (0.5 a m³, made 1),
+  a miracle 8, an epic 60, a throw 2; Dissonance Levels at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real
+  seconds, at most 8 alive; the fifth level's answer is a size-2.2 class-2 slip jelly, and putting it down clears the dissonance
   (`god.rejection.beaten`). A Shrine's rest clears it. The answer carries cubes (`REJECTION.stash`) and arrives at EmO 0.8.
 - **Experience** (`progress/domains.js`): scoop and pour Psychokinesis, shape and carve Alteration, a miracle Spellscription (quality:
   the sign's score, more for a bigger one), an epic its own domain.
-- **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.rejection.step`,
+- **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.dissonance.level`,
   `god.rejection.beaten`; the hand's new subs Matter, Miracles and Rejection (`gx1..3`, `gq1..3`, `gja`, `gjb`).
 - **Creations** (`godhand/voxels.js`, pure; `godhand/creations.js`, `game.creations`): Sculpt (key 9, Manifestation 15) drags a line:
   a pillar for a short stroke, an arch (a bridge when long) for a long one, a ramp with Shift. Sparse 16-cube chunks of 0.25 m voxels,
@@ -305,7 +309,7 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   chunks, 5,532 triangles with a pillar and a ramp beside it; ticks 6.0 ms before, 5.9 ms with them standing; frames 7 to 24 ms
   while its chunks remeshed (about 17 frames), at the old 2.5 ms budget.
 - **The domains' other sixteen powers** (`godhand/powers.js`, the runner; a module a domain in `godhand/powers/`: space, make, sight,
-  force, will, alter, script). All of them are built and tried headless (2026-10-13), with no page errors. Each act is `god.<id>` with `act` (rejection's heat
+  force, will, alter, script). All of them are built and tried headless (2026-10-13), with no page errors. Each act is `god.<id>` with `act` (dissonance
   scaled by the domain's level; seeing is not an act). EXP for each act goes to its domain (`domains.js`), and its count to `god.power.<id>`. Fold
   and Stamp are `MatterField.patch`. Fire marks voxel chunks (`creations.fire`); for good is a `creations` save section (world scope),
   its chunks kept as runs. Herd and Take set a creature's mind aside while it walks (`P.walk`). Looks are rings and lines in the
