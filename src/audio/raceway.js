@@ -6,7 +6,7 @@
 //           let go, a whoosh as long and bright as its tier, the tier's note on top
 //   PLATE   skiff.plate: a sun plate run over: a gold ping (E and B) and a boost's rush;   POP  skiff.pop: a spring off the lip
 //   GATE    race.gate { split }: a chime; ahead of your best lap a fourth up, behind it a step down, no best yet the root
-//   LAP     race.lap { seconds, best }: two notes at the line, and a run up the triad when it is a new best
+//   LAP     race.lap { best }: two notes at the line, and a run up the triad when it is a new best (best: true)
 //   LAND    skiff.landhard: the hull slapping the sand, a thud and grit;   FINISH  race.finish { medal }: a bell a step of the medal
 // Prior art: Mario Kart's countdown (three low beeps, one high: the most learned countdown there is) and its rocket start; SSX's and
 // Wave Race's boost whooshes; Trackmania's checkpoint chime that says ahead or behind before you read the split.

@@ -34,7 +34,7 @@ const RULES = {
   'race.go': (s) => s.raceGo?.(),
   'race.solarstart': (s) => s.raceSolarStart?.(),
   'race.gate': (s, e) => s.raceGate?.(e.split),
-  'race.lap': (s, e) => s.raceLap?.(e.best == null || e.seconds <= e.best),
+  'race.lap': (s, e) => s.raceLap?.(e.best === true), // (best: true when this lap is the new best)
   'race.finish': (s, e) => s.raceFinish?.(e.medal),
   'skiff.carve.charge': (s, e) => s.carveCharge?.(e.tier),
   'skiff.carve': (s, e) => s.carveRelease?.(e.tier),

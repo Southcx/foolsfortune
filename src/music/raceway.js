@@ -16,7 +16,7 @@
 import { MOTIF, quote } from './motifs.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
-const R = { state: 'idle', lap: 1, laps: 3, flag: false, heard: false };
+const R = { state: 'idle', lap: 1, laps: 3, flag: false, heard: false }; // (laps: RACE.laps in world/raceway/race.js, imported once that module is on main)
 
 const CH = [[52, [0, 4, 7]], [50, [0, 4, 7]], [45, [0, 4, 7]], [47, [0, 4, 7]]]; // (E D A B: I bVII IV V)
 const chordAt = (i) => CH[Math.floor(i / 2) % 4];
