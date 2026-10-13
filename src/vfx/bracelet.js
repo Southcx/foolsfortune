@@ -3,7 +3,7 @@
 // look. At the god hand's wrist a bracelet, round the Pneuka Jar's neck a choker, at the Courier's left wrist a slim band (shown only).
 // One job: the ring's body and its glow. What it is worn on and what drives it is vfx/braceletwear.js.
 //
-//   THE BODY   a band of clay with seven sockets round it, one a domain (progress/domains.js order), and the clasp between the first
+//   THE BODY   a band of clay with seven sockets round it, one a domain (progress/domains.js order), and a gold kintsugi join between the first
 //              and the last: a small gold knot, kintsugi's gold tied. A socket whose domain is under level 30 is closed: raised bisque,
 //              unfired-looking (BISQUE). An open one is glazed in its domain's kiln glaze, its tile's character as the texture
 //              (ui/domainlook.js glazeTile, DOMAIN_LOOK). Gold beads part the sockets. A charm sits proud of its socket
@@ -11,28 +11,28 @@
 //   THE GLOW   one mark, read four ways, never text (BRACELET.md decision 5):
 //                - its brightness is the share of the pool a power is spending (`spend` 0..1);
 //                - its colour is the glaze of the domain in use (its accent, or its body);
-//                - a slow red pulse is rejection's step (0..5): each step quicker and deeper;
+//                - a slow red pulse is the Dissonance Level (0..5): each step quicker and deeper;
 //                - a gold line running once round the ring is a charm triggering (`charm(id)`).
 //              Drawn as a soft ribbon over the band (an additive strip whose edges fade in its own texture, so at 480 lines it never
 //              crawls), the socket in use lit from within (its emissive), and round the Pneuka Jar a brief aura: a soft ring sprite.
 //
 // Prior art: Vagrant Story's gem slots (a weapon's sockets, each gem bending it), Final Fantasy VII's materia slots (the linked pair read
 // on the bangle itself), Hollow Knight's charm notches (few notches, a build); .hack's Twilight Bracelet for the glow worn as a state;
-// the kintsugi knot for the clasp. Materials only (MeshStandardMaterial, MeshBasicMaterial, SpriteMaterial): no shader of its own.
+// the kintsugi knot at the join (no clasp slot: the owner, 2026-10-13). Materials only (MeshStandardMaterial, MeshBasicMaterial, SpriteMaterial): no shader of its own.
 //
 //   const B = new Bracelet(game, { form: 'hand' | 'jar' | 'courier', aura? })
 //   B.attach(boneOrObject, offset?: Vector3, scale?: number, { yaw? })   (the ring's axis is the parent's +Y; unit radius 1 x scale)
-//   B.setSockets({ [domain]: open bool })   B.setLevels({ [domain]: level })   B.setCharm(socket, id | null)  (socket: a domain or 'clasp')
-//   B.glow({ spend, domain, rejection })     B.charm(id)     B.update(dt)     B.object     B.dispose()
+//   B.setSockets({ [domain]: open bool })   B.setLevels({ [domain]: level })   B.setCharm(socket, id | null)  (socket: a domain)
+//   B.glow({ spend, domain, dissonance })     B.charm(id)     B.update(dt)     B.object     B.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DOMAINS } from '../progress/domains.js';
 import { DOMAIN_LOOK, glazeTile, BISQUE, THE_WORLD_GOLD } from '../ui/domainlook.js';
 import { charmGeometry, charmMaterials } from './braceletcharms.js';
 
-export const SOCKETS = Object.keys(DOMAINS); // (the seven, in the domains' own order; the clasp is the eighth place)
+export const SOCKETS = Object.keys(DOMAINS); // (the seven, in the domains' own order; the join is the eighth place, holding nothing)
 export const SOCKET_OPENS_AT = 30; // (a domain's level that opens its socket: BRACELET.md decision 1)
-const PLACES = SOCKETS.length + 1; // (the clasp sits at place 0, the sockets at 1..7)
+const PLACES = SOCKETS.length + 1; // (the join sits at place 0, the sockets at 1..7)
 const STEP = (Math.PI * 2) / PLACES;
 const REJECTION_RED = new THREE.Color(1.0, 0.12, 0.08);
 const GOLD = new THREE.Color(THE_WORLD_GOLD);
@@ -106,7 +106,7 @@ export class Bracelet {
     this.game = game; this.form = FORMS[form] ? form : 'hand';
     const F = FORMS[this.form], S = shared();
     this.object = new THREE.Group(); this.object.name = `Bracelet.${this.form}`;
-    this.ring = new THREE.Group(); this.object.add(this.ring); // (turned by `yaw`: where the clasp faces)
+    this.ring = new THREE.Group(); this.object.add(this.ring); // (turned by `yaw`: where the join faces)
     this.geos = [];
     const keep = (g) => (this.geos.push(g), g);
     const ri = 1 - F.t * 0.5, ro = 1 + F.t * 0.5;
@@ -125,7 +125,7 @@ export class Bracelet {
       this.ring.add(mesh, holder);
       this.sockets[d] = { mesh, seat, mid, open: false, charm: null, charmMesh: null };
     });
-    // the gold beads between the sockets, and the clasp's knot at place 0
+    // the gold beads between the sockets, and the join's knot at place 0
     const bead = keep(new THREE.SphereGeometry(F.h * 0.42, 10, 8));
     for (let i = 1; i < PLACES; i++) {
       const a = (i + 0.5) * STEP, m = new THREE.Mesh(bead, S.gold);
@@ -133,9 +133,7 @@ export class Bracelet {
     }
     const knotGeo = keep(new THREE.TorusKnotGeometry(F.h * 0.62, F.h * 0.2, 48, 6, 2, 3));
     const knot = new THREE.Mesh(knotGeo, S.gold); knot.position.set(0, 0, ro + F.rise); knot.scale.set(1, 1, 0.55); this.ring.add(knot);
-    const claspSeat = new THREE.Object3D(); claspSeat.position.set(0, 0, ro + F.rise + F.h * 0.25); this.ring.add(claspSeat);
-    this.sockets.clasp = { mesh: knot, seat: claspSeat, mid: 0, open: true, charm: null, charmMesh: null, clasp: true };
-    // the glow: a soft ribbon just over the band, and the charm's gold line (two turns long, so its run never wraps)
+        // the glow: a soft ribbon just over the band, and the charm's gold line (two turns long, so its run never wraps)
     this.glowMat = glowMat(S.softTex);
     this.glowMesh = new THREE.Mesh(keep(ribbonGeometry(ro + F.rise + 0.012, F.h * 2 * (1 + F.glowW), 64)), this.glowMat);
     this.glowMesh.renderOrder = 3; this.ring.add(this.glowMesh);
@@ -150,7 +148,7 @@ export class Bracelet {
     }
     this.object.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; } });
     // the state the glow eases toward
-    this.state = { spend: 0, domain: null, rejection: 0 };
+    this.state = { spend: 0, domain: null, dissonance: 0 };
     this.lit = 0; this.kick = 0; this.col = new THREE.Color(); this.t = 0; this.flashT = -1; this.flashFrom = 0;
   }
 
@@ -175,7 +173,7 @@ export class Bracelet {
   /** The sockets opened by the domains' levels (a socket opens at level 30). */
   setLevels(levels = {}) { return this.setSockets(Object.fromEntries(Object.entries(levels).map(([d, l]) => [d, l >= SOCKET_OPENS_AT]))); }
 
-  /** A charm set in a socket (a domain, or 'clasp'), or taken out (null). Shown only in an open socket, never on the Courier's band. */
+  /** A charm set in a domain's socket, or taken out (null). Shown only in an open socket, never on the Courier's band. */
   setCharm(socket, id) {
     const s = this.sockets[socket]; if (!s) return this;
     if (s.charmMesh) { s.charmMesh.removeFromParent(); s.charmMesh = null; }
@@ -183,25 +181,26 @@ export class Bracelet {
     const geo = id && charmGeometry(id);
     if (geo) {
       const m = new THREE.Mesh(geo, charmMaterials()); m.castShadow = false;
-      const k = FORMS[this.form].h / 0.17; m.scale.setScalar(k * (s.clasp ? 0.9 : 1));
+      const k = FORMS[this.form].h / 0.17; m.scale.setScalar(k);
       m.visible = s.open && FORMS[this.form].charms;
       s.seat.add(m); s.charmMesh = m;
     }
     return this;
   }
 
-  /** The glow's state: how much of the pool a power is spending (0..1), the domain in use, rejection's step (0..5). Any may be left out. */
-  glow({ spend, domain, rejection } = {}) {
+  /** The glow's state: how much of the pool a power is spending (0..1), the domain in use, the Dissonance Level (0..5; `rejection` is its old name). Any may be left out. */
+  glow({ spend, domain, dissonance, rejection } = {}) {
+    if (dissonance === undefined) dissonance = rejection;
     const S = this.state;
     if (spend !== undefined) S.spend = THREE.MathUtils.clamp(+spend || 0, 0, 1);
     if (domain !== undefined) S.domain = DOMAIN_LOOK[domain] ? domain : null;
-    if (rejection !== undefined) S.rejection = THREE.MathUtils.clamp(Math.round(+rejection || 0), 0, 5);
+    if (dissonance !== undefined) S.dissonance = THREE.MathUtils.clamp(Math.round(+dissonance || 0), 0, 5);
     return this;
   }
   /** A power used: the glow kicks up by `k` (0..1) and falls back over about a real second (the aura rides it). */
   pulse(k = 0.6) { this.kick = Math.max(this.kick, THREE.MathUtils.clamp(k, 0, 1)); return this; }
 
-  /** A charm triggering: a gold line runs once round the ring, from the socket that holds it (or the clasp). */
+  /** A charm triggering: a gold line runs once round the ring, from the socket that holds it. */
   charm(id) {
     let from = 0;
     for (const [, s] of Object.entries(this.sockets)) if (s.charm && s.charm === id) { from = s.mid; break; }
@@ -218,9 +217,9 @@ export class Bracelet {
     // the domain's colour, brightness by spend; an ember at rest so the ring never reads as dead
     const base = S.domain ? G[S.domain].accent : GOLD;
     this.col.copy(base).multiplyScalar(0.05 + this.lit * 1.5);
-    // rejection's pulse: slow and shallow at step 1, quicker and deeper by step 5
-    if (S.rejection > 0) {
-      const hz = 0.22 + 0.13 * S.rejection, depth = 0.18 + 0.16 * S.rejection;
+    // the Dissonance Level's pulse: slow and shallow at 1, quicker and deeper by 5
+    if (S.dissonance > 0) {
+      const hz = 0.22 + 0.13 * S.dissonance, depth = 0.18 + 0.16 * S.dissonance;
       const p = 0.5 - 0.5 * Math.cos(this.t * hz * Math.PI * 2);
       this.col.lerp(REJECTION_RED, Math.min(1, depth * p * 0.9)).add(_red.copy(REJECTION_RED).multiplyScalar(depth * p * 0.9));
     }
@@ -250,7 +249,7 @@ export class Bracelet {
   /** For the warm-up: every look shown at once (open sockets, a charm in each, the flash and the aura). */
   showAll() {
     this.setSockets(Object.fromEntries(SOCKETS.map((d) => [d, true])));
-    ['clasp', ...SOCKETS].forEach((s, i) => this.setCharm(s, ['TWIN', 'WIDE', 'ECHO', 'QUIET', 'THRIFT', 'LINGER', 'GENTLE', 'TWIN'][i]));
+    SOCKETS.forEach((s, i) => this.setCharm(s, ['TWIN', 'WIDE', 'ECHO', 'QUIET', 'THRIFT', 'LINGER', 'GENTLE'][i]));
     this.flashMesh.visible = true; this.flashMesh.geometry.setDrawRange(0, 96);
     if (this.aura) { this.aura.visible = true; this.auraMat.opacity = 0.5; }
     return this;

@@ -12,16 +12,16 @@
 //   the hand's acts             god.scoop, god.pour, god.shape, god.carve, god.sunder, god.swell, god.wring, god.manifest, god.grab,
 //                               god.throw, god.miracle (Spellscription), god.epic {domain}: a pulse of the glow in that act's domain
 //   game.lachryma 'spend'       while the hand or the garden is out: the glow kicks by the share of the pool spent
-//   god.rejection {step}        rejection's red pulse
+//   god.dissonance {level}      the Dissonance Level's red pulse
 //   god.enter, garden.enter, domain.level    the sockets re-read from the domains' levels (open at 30: game.psyche.level)
-//   bracelet.charm {id}         (not emitted yet: Dovina's, with the CHARMS table) a charm's gold line
+//   bracelet.charm {id, domain} (Dovina's progress/bracelet.js: a charm bending an act) a charm's gold line
 // The charms worn are not data yet (BRACELET.md "Not built yet"): `setCharm` is how the table will set them.
 //
 // Prior art: the house's own marks that live on the bus (vfx/glyphs.js, vfx/hookmark.js), Hollow Knight's charms shown on the Knight's
 // inventory as worn.
 //
 //   wearBracelet(game, form, bone) -> Bracelet   (WEAR: each form's bone, its offset and size)
-//   game.bracelets = installBracelets(game)   .hand .jar .courier (Bracelets)   .glow({ spend, domain, rejection })   .charm(id)
+//   game.bracelets = installBracelets(game)   .hand .jar .courier (Bracelets)   .glow({ spend, domain, dissonance })   .charm(id)
 //   .setCharm(socket, id)   .refresh()   .update(dt)   .prewarm() -> park()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -84,7 +84,7 @@ export function installBracelets(game) {
   on('god.select', (e) => { const d = domainOf(e.id); if (d) H.glow({ domain: d }); });
   for (const [ev, power] of Object.entries(ACTS)) on(ev, () => { const d = domainOf(power); if (d) H.glow({ domain: d }); H.pulse(0.55); });
   on('god.epic', (e) => { H.glow({ domain: e.domain }); H.pulse(1); });
-  on('god.rejection', (e) => H.glow({ rejection: e.step || 0 }));
+  on('god.dissonance', (e) => H.glow({ dissonance: e.level || 0 }));
   for (const n of ['god.enter', 'garden.enter', 'domain.level']) on(n, () => H.refresh());
   on('bracelet.charm', (e) => H.charm(e.id));
   game.lachryma?.on?.('spend', (e) => {
