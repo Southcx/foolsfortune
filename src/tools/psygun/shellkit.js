@@ -10,9 +10,10 @@
 //
 //   spreadDir(axis, deg)  centerOf(c, out)  isBoss(c)  graze(R, p, c, at, dir, power, again)  inView(g, c)  foesInView(g, max, range)
 //   moveCourier(g, to, yaw?)  stash(g, c) / unstash(g, c, at)  fightFor(g, c, { dur, power, end })  projPos(pr, out)  projVel(pr, out)
+//   weigh(g, at, id)  a landing's hit-stop and camera kick (T.shells.weight[id]; the time pulse is core/time.js's, the hitstop of Street Fighter)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { DEG } from '../../core/config.js';
+import { DEG, T } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 import { foesNear } from './shellpayloads.js';
 const simRand = stream('tools/psygun/shellkit'); // (the simulation's chance: core/rng.js, the same twice)
@@ -127,3 +128,12 @@ export const projVel = (pr, out) => (pr.body ? out.copy(pr.body.linvel()) : out.
 export const setProjVel = (pr, v) => { if (pr.body) pr.body.setLinvel(v, true); else (pr.vel ?? pr.v)?.copy(v); };
 /** A projectile taken out of the air (caught, blocked). */
 export const takeProj = (g, pr) => { pr.blocked = true; pr.mark?.clear?.(); if (pr.vanish) pr.vanish(); else g.projectiles?.delete(pr); };
+
+/** A landing's weight, by its row in T.shells.weight: the world held `frames` (one pulse a shell, so a volley holds once, not ten
+ *  times) and the camera shaken and punched, less the further the Courier stands past 4 m. */
+export function weigh(g, at, id) {
+  const W = T.shells.weight?.[id]; if (!W) return;
+  const P = g.player, d = at && P ? Math.max(0, P.pos.distanceTo(at) - 4) : 0, k = 1 / (1 + d * 0.12);
+  if (W.frames) g.time?.pulse?.(`shell.${id}`, 0.03, W.frames / 60, { release: 0.08 });
+  if (P) { P.shake = Math.max(P.shake || 0, W.shake * k); P.fovPunch = Math.max(P.fovPunch || 0, W.punch * k); }
+}

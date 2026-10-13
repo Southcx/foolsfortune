@@ -23,7 +23,7 @@ import { hasTag } from '../../core/tags.js';
 import { COLOR } from '../../progress/weather.js';
 import { stream } from '../../core/rng.js';
 import { land, blast, foesNear, LANDS } from './shellpayloads.js';
-import { spreadDir, graze } from './shellkit.js';
+import { spreadDir, graze, weigh as weighLanding } from './shellkit.js';
 import { SPLIT_CHAIN } from './shellsplitchain.js';
 import { DEPLOYABLES } from './shelldeployables.js';
 import { BODIES } from './shellbodies.js';
@@ -85,6 +85,9 @@ export class ShellRunner {
     if (own) return own(this, row, ctx);
     this.launch(['lob', 'deploy', 'call'].includes(row.carrier) ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir);
   }
+
+  /** A landing's weight (hit-stop, shake, punch) by its row in T.shells.weight: shellkit.js weigh. */
+  weigh(at, id) { weighLanding(this.game, at, id); }
 
   /** A round in flight: a small bright stone in its family's colour. */
   launch(kind, row, from, dir, opts = {}) {
@@ -377,7 +380,7 @@ const FIRES = {
       else if (ent?.type === 'breakable') { g.breakables.damage(ent, 26, end, d, 0.5); any++; }
       else if (hit) g.fx?.impact?.(end, hit.normal, { sparks: 2, dust: 1 });
     }
-    if (any) { sfx.shellHit?.(row.payloads, { tier: row.tier, type: 'impact' }); g.hud?.hitmarker?.(false); }
+    if (any) { sfx.shellHit?.(row.payloads, { tier: row.tier, type: 'impact' }); g.hud?.hitmarker?.(false); R.weigh(muzzle, 'hailstorm'); }
   },
   // Flamer: a cone of fire from the muzzle along the aim for `dur`, a burn every third of a second
   flamer: (R, row, { camera, character }) => {

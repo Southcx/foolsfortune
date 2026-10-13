@@ -66,7 +66,7 @@ const PAYLOADS = {
  *  shell's row and the place, the target (a creature) if one was hit, and the way it was going. */
 export const LANDS = {
   // Mallet: the head slams down where it lands: a big blast and a sure stun round it
-  mallet: (R, row, at) => { blast(R, at, row.n.r, row.n.power, 'slam'); for (const c of foesNear(R.game, at, row.n.r)) R.game.stun?.add?.(c, 99, { by: 'courier', cause: 'slam' }); },
+  mallet: (R, row, at) => { blast(R, at, row.n.r, row.n.power, 'slam'); R.weigh?.(at, 'mallet'); for (const c of foesNear(R.game, at, row.n.r)) R.game.stun?.add?.(c, 99, { by: 'courier', cause: 'slam' }); },
   // Napalm: a slick that catches a second later and burns for `dur`
   napalm: (R, row, at) => {
     const g = R.game, n = row.n; g.paintmap?.slick(at.x, at.y, at.z, n.r, 1);

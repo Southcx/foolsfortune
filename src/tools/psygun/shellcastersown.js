@@ -45,7 +45,7 @@ export const CASTERS_OWN = {
   },
   hit: {
     lance: (R, p, k, dir) => { if (k.target) R.game.creatures.strike(k.target, k.at, dir, p.row.n.power, 'shot', 'courier', null, 'impact'); R.game.hud?.hitmarker?.(false); return true; },
-    rocket: (R, p, k) => { blast(R, k.at, p.row.n.r, p.row.n.power, 'explosion'); sfx.explosion?.(R.game.listenerDistance?.(k.at)); return true; },
+    rocket: (R, p, k) => { blast(R, k.at, p.row.n.r, p.row.n.power, 'explosion'); sfx.explosion?.(R.game.listenerDistance?.(k.at)); R.weigh(k.at, 'ryno'); return true; },
     visi: (R, p, k) => { visiBurst(R, p, k.at); return true; },
   },
   fly: {
@@ -76,7 +76,7 @@ export const CASTERS_OWN = {
       foesInView(g, n.count).forEach((c, i) => R.timed({ delay: 0.5 + i * 0.15, t: 0.05, every: 1, tick: () => {
         if (!c.alive) return; const at = centerOf(c);
         zap(g, at.clone().setY(at.y + 30), at, 0xfff4d6);
-        g.creatures.strike(c, at, DOWN.clone(), n.power, 'shot', 'courier', null, 'ego');
+        g.creatures.strike(c, at, DOWN.clone(), n.power, 'shot', 'courier', null, 'ego'); R.weigh(at, 'zodiac');
       } }));
       sfx.shellFall?.(0.5, row.tier);
     },
@@ -90,7 +90,7 @@ export const CASTERS_OWN = {
     thirteen: (R, row, { ray, muzzle }) => {
       const g = R.game, n = row.n, { foes, end } = alongLine(g, ray.origin, ray.dir, 200, 2.5, true);
       zap(g, muzzle, end, 0x9cff8a); zap(g, muzzle, end, 0xffd860);
-      g.glitch?.pulse?.({ dur: 0.5, drain: 1, split: 0.6 });
+      g.glitch?.pulse?.({ dur: 0.5, drain: 1, split: 0.6 }); R.weigh(muzzle, 'thirteen');
       for (const c of foes) for (const t of TYPE_IDS) g.creatures.strike(c, centerOf(c), ray.dir.clone(), n.power / TYPE_IDS.length, 'shot', 'courier', null, t);
       if (!foes.length) return;
       R.timed({ delay: 0.2, t: 0.05, every: 1, tick: () => { if (foes.some((c) => c.alive)) g.death?.begin?.({ why: 'thirteen', by: 'courier' }); } });
@@ -133,7 +133,7 @@ export const CASTERS_OWN = {
     // Inside Out: a small black hole: the creature is turned inside out and gone (a FOE has a stage torn off instead)
     insideOut: (R, row, at) => {
       const g = R.game, c = foesNear(g, at, row.n.r)[0];
-      g.vfx?.play?.('shell.insideOut', { pos: at.clone().setY(at.y + 0.8), target: c?.root });
+      g.vfx?.play?.('shell.insideOut', { pos: at.clone().setY(at.y + 0.8), target: c?.root }); R.weigh(at, 'insideOut');
       for (const x of foesNear(g, at, row.n.r * 2)) x.knock?.(_v.subVectors(at, x.pos).setY(0).normalize().multiplyScalar(4));
       if (!c) return;
       if (isBoss(c)) wrench(g, c, 30); else R.timed({ delay: 0.6, t: 0.05, every: 1, tick: () => c.alive && unmake(g, c, 'insideOut') });

@@ -16,6 +16,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { Portal } from '../../vfx/caster/portal.js';
 import { foesNear, blast } from './shellpayloads.js';
@@ -85,7 +86,11 @@ export const SPACETIME = {
     slag: { speed: 10, lift: 0, grav: 1, life: 3, r: 0.12 },
   },
   hit: {
-    meteor: (R, p, k) => { blast(R, k.at, p.row.n.r, p.row.n.power, 'explosion'); R.game.paintmap?.slick?.(k.at.x, k.at.y, k.at.z, p.row.n.r * 0.6, 1); sfx.explosion?.(R.game.listenerDistance?.(k.at)); R.game.onExplosion?.(k.at, p.row.n.r); return true; },
+    meteor: (R, p, k) => {
+      const m = p.mega ?? p.row.n; // (the mega meteor carries its own numbers: the row's `n.mega`)
+      blast(R, k.at, m.r, m.power, 'explosion'); R.game.paintmap?.slick?.(k.at.x, k.at.y, k.at.z, m.r * 0.6, 1); sfx.explosion?.(R.game.listenerDistance?.(k.at)); R.game.onExplosion?.(k.at, m.r);
+      R.weigh(k.at, p.mega ? 'meteor.mega' : 'meteor'); return true;
+    },
     slag: (R, p, k) => { blast(R, k.at, 0.9, p.row.n.power, 'explosion'); return true; },
   },
   fires: {
@@ -110,12 +115,21 @@ export const SPACETIME = {
       g.vfx?.play?.('caster.heatHaze.tube', { pos: muzzle, from: muzzle.clone(), to: from.clone(), dir });
       if (struck.size) { sfx.shellHit?.(row.payloads, { tier: row.tier, type: n.type }); g.hud?.hitmarker?.(false); }
     },
-    // Meteor: mark a spot; `count` molten meteors fall on it `delay` later and leave hot pools
+    // Meteor: mark a spot; `count` molten meteors `size` times as big fall on it `delay` later and leave hot pools; then, `mega.delay` after
+    // them, one mega meteor (the owner, 2026-10-13: the three 200% bigger, then a mega one 500%)
     meteor: (R, row, { ray }) => {
       const g = R.game, n = row.n, at = aimPoint(g, ray, 80)?.point ?? ray.origin.clone().addScaledVector(ray.dir, 30);
       g.vfx?.play?.('shell.land', { pos: at, scale: 3 }); sfx.shellFall?.(n.delay, row.tier);
       R.timed({ delay: n.delay, t: 0.05, every: 1, tick: () => {
-        for (let i = 0; i < n.count; i++) { const o = new THREE.Vector3((shellRand() - 0.5) * 4, 24 + i * 3, (shellRand() - 0.5) * 4); R.launch('meteor', row, at.clone().add(o), new THREE.Vector3(-o.x * 0.02, -1, -o.z * 0.02).normalize(), { scale: 4, col: 0xff7a2a }); }
+        const size = n.size ?? 1, C = SPACETIME.carrier.meteor;
+        for (let i = 0; i < n.count; i++) { const o = new THREE.Vector3((shellRand() - 0.5) * 4 * size, 24 + i * 3 + 4 * size, (shellRand() - 0.5) * 4 * size); R.launch('meteor', row, at.clone().add(o), new THREE.Vector3(-o.x * 0.02, -1, -o.z * 0.02).normalize(), { scale: 4 * size, col: 0xff7a2a, extra: { C: { ...C, r: C.r * size } } }); }
+      } });
+      if (!n.mega) return;
+      const B = T.shells.buff, M = n.mega, mega = { r: M.r * B.reach, power: M.power * B.power, size: M.size * B.reach };
+      R.timed({ delay: n.delay + M.delay, t: 0.05, every: 1, tick: () => {
+        const C = SPACETIME.carrier.meteor;
+        R.launch('meteor', row, at.clone().setY(at.y + 40), DOWN.clone(), { scale: 4 * mega.size, col: 0xff5a1a, speed: 40, extra: { mega, C: { ...C, r: C.r * mega.size } } });
+        sfx.shellFall?.(1, row.tier);
       } });
     },
     // Slag Rain: hot drops thrown up fall for `dur` in a ring of r

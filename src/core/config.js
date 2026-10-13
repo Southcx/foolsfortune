@@ -181,6 +181,15 @@ export const DEFAULTS = {
     // the caster shells' buff (the owner, v170: "the individual shells don't feel anywhere near powerful enough given the limited number of
     // shots per shell"): every runner shell's numbers multiplied as it is fired (shells.js buffRow): blows, reach, how long, how many
     buff: { power: 1.75, reach: 1.35, dur: 1.4, count: 1.5 },
+    // the ludicrous ten's weight where they land (the owner, 2026-10-13: "borderline ludicrous"; CASTER-SHELLS.md section 5): a hit-stop of
+    // `frames` (at 60 a real second), the camera's shake (0..1.5, squared at the camera) and a punch of the field of view (degrees), all
+    // falling off with the Courier's distance past 4 m (shellkit.js weigh). Ratchet & Clank's rule: the weapon too big for the screen.
+    weight: {
+      meteor: { frames: 4, shake: 0.55, punch: 3 }, 'meteor.mega': { frames: 8, shake: 1.3, punch: 9 }, mallet: { frames: 6, shake: 0.8, punch: 5 },
+      hailstorm: { frames: 3, shake: 0.3, punch: 2 }, thunderhead: { frames: 4, shake: 0.45, punch: 3 }, slingshot: { frames: 6, shake: 0.75, punch: 6 },
+      volcano: { frames: 5, shake: 0.7, punch: 4 }, 'volcano.bomb': { frames: 3, shake: 0.3, punch: 1.5 }, zodiac: { frames: 4, shake: 0.5, punch: 3 },
+      ryno: { frames: 3, shake: 0.35, punch: 2 }, insideOut: { frames: 8, shake: 0.9, punch: 7 }, thirteen: { frames: 8, shake: 1.3, punch: 10 },
+    },
     groove: { speed: 16, lift: 2.4, radius: 9, duration: 12, hop: 3.4 },
     anchor: { duration: 18 },
     hatch: { maxAllies: 7 },
