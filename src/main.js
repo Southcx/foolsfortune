@@ -190,6 +190,7 @@ import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { FigmentScatter } from './vfx/figmentscatter.js';
+import { SpawnLook } from './vfx/spawnlook.js';
 import { GateRing } from './vfx/gatering.js';
 import { SiblingShatter } from './vfx/siblingshatter.js';
 import { Flash } from './tools/veritome/flash.js';
@@ -718,6 +719,7 @@ async function main() {
   (game.testroomDress = new TestRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/testroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
+  game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)
@@ -957,6 +959,7 @@ async function main() {
   // open with a compile of its own) and the shore's crude sea and swash (else built on the first view of the Dunes)
   game.mawWipe.make?.(); const wipe = game.mawWipe.mesh; if (wipe) wipe.visible = true;
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
+  const parkSpawnLook = game.spawnLook.prewarm(); // (a creature's rise and tear: the slit, the crust plates, the blocks)
   const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
   const parkCracks = crackPrewarm(scene, god.jar.jarBody); // (the Pneuka Jar's skinned crack and gold seam: vfx/crackskin.js)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
@@ -983,7 +986,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks();
+  parkWeather?.(); parkDrain(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks();
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1278,7 +1281,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

@@ -31,6 +31,7 @@ export class Cavern {
     // (laid again after a wipe: the clutches broken in this run stay broken, and their guards are not set again: raid.js)
     const J = game.jellies, spots = this.bowl.clutchSpots, broken = run ? (run.broken ||= new Set()) : new Set();
     this.guards = J ? spots.filter((p, i) => !broken.has(i)).map((p) => J.spawn(p.clone().lerp(BOWL_AT.clone().setY(p.y), 2.2 / ARENA.clutches.r).setY(p.y + 0.05), { once: true })) : [];
+    for (const c of this.guards) game.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (they rise from the dish: vfx/spawnlook.js)
     this.nursery = new Nursery(game, { floor: 3, spots: spots.slice(0, NURSERY.clutches[2]), skip: broken, guards: this.guards, haul: run?.haul });
     this.foe = J ? new GreatJelly(game, { bowl: this.bowl, nursery: this.nursery, at: this.bowl.pools[0].pos.clone().setY(this.bowl.pools[0].pos.y + 0.05) }) : null;
     this.raid = this.foe ? new Raid(game, { cavern: this }) : null; // (the fight as an extreme trial: its timeline, its casts, the wipe)

@@ -128,6 +128,7 @@ export class Stains {
       const c = J.spawn(new THREE.Vector3(s.x, s.y + 0.1, s.z), { cls: 1 });
       const aspect = this.game.weather?.here?.(new THREE.Vector3(s.x, s.y, s.z))?.aspect || null; // (the weather's feeling where it rises: crude has none of its own)
       if (c) { c.aberrant = true; c.name = 'Aberrant Slip Jelly'; c.grade = aspect; } // (Espada names it; a bounty's quarry)
+      if (c) this.game.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (it rises from its blot: vfx/spawnlook.js)
       this.game.events?.emit('stain.spawn', { field: s.field, aspect, kind: STAINS.spawn.kind, by: 'environment' });
       this.save();
     }
