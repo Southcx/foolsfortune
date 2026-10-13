@@ -36,6 +36,16 @@ import { DOMAIN_LOOK } from '../ui/domainlook.js';
 import { crackMat } from '../world/props/potcracks.js';
 import { crackRibbon } from './crackskin.js';
 import { stream, randDir } from '../core/rng.js';
+import { LIBRARY } from './library.js';
+
+// the burst at the break: light leaking out through the cracks as shafts (Hollow Knight's Shade, Okami's), read at play distance where
+// lines on a 60-pixel body cannot be; sprites only (the shared pools), drawn at the chest, in the release's own light
+if (!LIBRARY['vessel.release.burst']) LIBRARY['vessel.release.burst'] = { layers: [
+  { type: 'sprites', count: 1, shape: 'star4', size: 1.6, sizeEnd: 0.3, life: 0.2, color: 'white', colorEnd: 'tint', powerCount: false },
+  { type: 'sprites', count: 14, shape: 'streak', spawn: 'sphere', r: 0.12, dir: 'out', speed: [7, 12], size: [0.07, 0.11], sizeEnd: 0.02, stretch: 7, life: [0.18, 0.3], drag: 4, color: ['white', 'tint'], colorEnd: 'tint' },
+  { type: 'sprites', count: 1, shape: 'core', size: 1.1, sizeEnd: 0.2, life: 0.28, color: 'tint', colorEnd: 'tint', powerCount: false },
+  { type: 'light', color: 'tint', k: 26, range: 6, dur: 0.3 },
+] };
 const rng = stream('vfx/releasecrack'); // (its chance from the game's seed: core/rng.js)
 
 const PRESS = 0.25, BREAK = 0.6, SETTLE = 1.55;   // (real seconds of each beat)
@@ -147,6 +157,8 @@ export class ReleaseCrack {
 
   /** The cracks open: the lines laid, the flakes thrown, the vents set. */
   breakOpen(R) {
+    const ch = this.game.character, chest = ch?.bones?.spine003 || ch?.bones?.spine002 || ch?.root;
+    if (chest && this.game.vfx?.play) { this.lightOf(R, 1, _c); this.game.vfx.play('vessel.release.burst', { pos: chest.getWorldPosition(new THREE.Vector3()), tint: _c.getHex(), power: Math.min(2.2, R.units) }); }
     const g = this.game, bodies = this.bodies();
     const perRegion = Math.max(2, Math.round((2 + 2 * R.units) / Math.sqrt(R.regions.length)));
     for (const r of R.regions) {
