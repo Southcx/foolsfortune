@@ -67,7 +67,7 @@ export function renderStatus(codex, host) {
   const total = doms.reduce((n, d) => n + d.lv, 0), world = doms.every((d) => d.lv >= MAX_LEVEL);
   const a = document.createElement('div'); a.className = 'st-card';
   a.innerHTML = `<h3>THE DOMAINS</h3><div class="st-sum"><b>${total}</b>total level of ${MAX_LEVEL * 7}${world ? ' · THE WORLD' : ''}</div>`
-    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,175,55,.85)' : 'rgba(201,168,130,.35)', world ? '#f4d77a' : '#c9a882') // (unglazed bisque; kintsugi gold at The World)
+    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(201,168,130,.35)', world ? '#d4a53c' : '#c9a882') // (unglazed bisque; kintsugi gold at The World)
     + `<div class="st-chips">${doms.map((d) => `<span class="st-chip"><i style="background:${d.colour}"></i>${d.name}<b>${d.lv}</b><small>${d.lv >= MAX_LEVEL ? 'max' : `${Math.round(d.into * 100)}% to ${d.lv + 1}`}</small></span>`).join('')}</div>`;
   // Soul Alchemy's attributes: a rank each (0..ranks), its seasoning toward the next as the faint ring
   const atts = Object.values(ATTRIBUTES).map((t) => {

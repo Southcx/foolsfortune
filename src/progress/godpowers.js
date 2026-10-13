@@ -57,7 +57,7 @@ export const POWER_EVENTS = ['rift', 'fold', 'hasten', 'fire', 'totem', 'strata'
 export const DOMAIN_GLAZE = {
   ouranurgy: { glaze: 'Ru celadon', a: '#9cc3b8', b: '#9cc3b8', mark: 0x9cc3b8, glyph: '☁' }, // (a cloud with a spiral)
   manifestation: { glaze: 'fire-flashed shino', a: '#e8d6c0', b: '#d9814a', mark: 0xd9814a, glyph: '✍' }, // (a hand drawing a shape from a dot)
-  divination: { glaze: 'yohen tenmoku', a: '#1a1418', b: '#6fd0e8', mark: 0x6fd0e8, glyph: '◉' }, // (an eye in a ring)
+  divination: { glaze: 'yohen tenmoku', a: '#1a1418', b: '#b9b4e8', mark: 0xb9b4e8, glyph: '◉' }, // (an eye in a ring; violet-silver spots, off Wonder's colour)
   psychokinesis: { glaze: 'oxblood', a: '#8e1f1f', b: '#8e1f1f', mark: 0x8e1f1f, glyph: '⟫' }, // (three arcs pushing out)
   possession: { glaze: 'Jun ware', a: '#7d93c4', b: '#8a4f9e', mark: 0x7d93c4, glyph: '◐' }, // (a mask)
   alteration: { glaze: 'flambé', a: '#a8324a', b: '#4a5fa8', mark: 0xa8324a, glyph: '↻' }, // (a looped arrow)
