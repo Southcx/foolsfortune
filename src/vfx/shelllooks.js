@@ -26,7 +26,7 @@
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
 import { SHELL_LOOK_ROWS } from './shelllooks/index.js';
-import { DUR, bodyMesh, onCreature, atPlace, aimAt } from './shelllooks/kit.js';
+import { DUR, bodyMesh, onCreature, atPlace, aimAt, toGround } from './shelllooks/kit.js';
 
 /** A family's colour: its rounds' glaze bead and tail (the runner's FAMILY_COLOR was the placeholder). */
 export const SHELL_FAMILY_TINT = { edge: 0xe6dccb, ember: 0xff7a2a, storm: 0x9fd0ff, pull: 0x8a7aff, clock: 0xe8d080, will: 0xc890d8, company: 0xc46a45, feelings: 0xffffff };
@@ -34,14 +34,20 @@ export const shellTint = (row) => (row?.n?.feeling ? COLOR[row.n.feeling] : SHEL
 
 /** Each shell's look. body: a round's (BODIES); fly / touch / fire / set: it has that moment's effect (fly may name another's); land:
  *  where its landing look sits ('point', 'target' its creature, 'foes' every creature in its reach); hold: how long a held one stays
- *  (real s); r: its reach for the effect's spread; kinds: a sub-round's { body, fly, end, hold } by its carrier kind; end: the effect
+ *  (real s); r: its reach for the effect's spread; kinds: a sub-round's { body, fly, end, hold, size, scale, ground } by its carrier kind (size: its body's, scale: its looks', from the row;
+ *  ground: its end look laid on the ground under where it was spent); end: the effect
  *  where that round is spent; fire 'aim' (lift: off the face, m; power: its strength), 'courier' (held on them), 'courierAt' (where
  *  they stand), 'muzzle' (held there), true (once there); over / until: a target look over the head / stopped early; tints: [tint, tip];
  *  onFire / onLand: a row's own hook. Batch 1 is here; batches 2 to 4 are vfx/shelllooks/<family>.js. */
 export const SHELL_LOOKS = {
   ricochetSaw: { body: 'wheel', fly: true, touch: true, land: false },
   skipstone: { body: 'stone', fly: true, touch: true, land: false },
-  hailstorm: { fire: true },
+  // 14 Hailstorm: the shards out of the muzzle four times the size they were, and a spray of them stuck in the ground where the cone lands
+  hailstorm: { onFire(g, row, { muzzle, ray }) {
+    g.vfx.play('shell.hailstorm.fire', { pos: muzzle, dir: ray?.dir });
+    const { at, normal, hit } = aimAt(g, ray, 40);
+    if (hit) g.vfx.play('shell.hailstorm.land', { pos: at, normal, dir: normal, floor: at.y - 0.05 });
+  } },
   mallet: { body: 'mallet', fly: true, land: 'point' },
   pinball: { body: 'ball', fly: true, touch: true },
   flamer: { fire: 'muzzle', hold: DUR },
@@ -138,8 +144,8 @@ const BODIES = {
   // the Mallet: a round that blooms in flight into the clay head, tumbling
   mallet: (m) => {
     m.geometry = GEO.head(); m.material = MAT.clay(); m.add(part(GEO.handle(), MAT.wood())); m.scale.setScalar(0.15);
-    let age = 0;
-    return (raw) => { age += raw; m.scale.setScalar(0.15 + 0.85 * Math.min(1, age / 0.35) ** 2); m.rotation.x += raw * 7; };
+    let age = 0; // (it blooms to three times the head it was: the owner, 2026-10-13, "borderline ludicrous")
+    return (raw) => { age += raw; m.scale.setScalar(0.15 + 2.85 * Math.min(1, age / 0.4) ** 2); m.rotation.x += raw * 5; };
   },
   bead: (m, row, p, tint) => { m.geometry = GEO.bead(); m.material = MAT.glaze(tint ?? shellTint(row)); m.scale.setScalar(1); },
   // ---- batches 2 to 4
@@ -149,7 +155,7 @@ const BODIES = {
   stake: (m, row, p) => { m.geometry = GEO.stake(); m.material = MAT.white(); m.scale.setScalar(1); m.add(part(GEO.band(), MAT.gold(), -0.05)); return () => along(m, p); },
   lance: (m, row, p) => { m.geometry = GEO.needle(); m.material = MAT.gold(); m.scale.setScalar(1); return () => along(m, p); },
   twelve: (m, row, p) => { m.geometry = GEO.casing(); m.material = MAT.gold(); m.scale.setScalar(1); m.add(part(GEO.band(), MAT.glow(0x5fa8ff), 0.02)); return () => along(m, p); },
-  rocket: (m, row, p) => { m.geometry = GEO.tube(); m.material = MAT.clay(); m.scale.setScalar(1); m.add(part(GEO.nose(), MAT.white()), part(GEO.dot(), MAT.ember(), -0.1)); return () => along(m, p); },
+  rocket: (m, row, p, tint, tip, size = 1) => { m.geometry = GEO.tube(); m.material = MAT.clay(); m.scale.setScalar(size); m.add(part(GEO.nose(), MAT.white()), part(GEO.dot(), MAT.ember(), -0.1)); return () => along(m, p); },
   // the Cartwheel: a clay wheel stood on its rim, rolling the way it goes
   cartwheel: (m, row, p) => {
     m.geometry = GEO.wheel(); m.material = MAT.clay(); m.add(part(GEO.rim(), MAT.gold())); let roll = 0;
@@ -164,12 +170,20 @@ const BODIES = {
     m.geometry = GEO.petal(); m.material = MAT.glaze(GLAZE_COLOURS[(p?.mesh?.id ?? 0) % GLAZE_COLOURS.length]); m.scale.setScalar(1.2);
     return (raw) => { m.rotation.x += raw * 5; m.rotation.y += raw * 3; };
   },
-  meteorite: (m) => { m.geometry = GEO.rock(); m.material = MAT.ember(); return (raw) => { m.rotation.x += raw * 4; m.rotation.z += raw * 3; }; },
+  // the Meteor's: a molten rock, its size the row's (`n.size` times the runner's own; the mega meteor's `n.mega.size`), tumbling slower the bigger
+  meteorite: (m, row, p, tint, tip, size = 1) => { m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(size); const s = 1 / Math.sqrt(size); return (raw) => { m.rotation.x += raw * 4 * s; m.rotation.z += raw * 3 * s; }; },
+  megaMeteor: (m, row, p, tint, tip, size = 1) => {
+    m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(size);
+    m.add(part(GEO.rock(), MAT.clay(), 0.035), part(GEO.rock(), MAT.ink(), -0.03)); m.children[0].scale.setScalar(0.8); m.children[1].scale.setScalar(0.7); // (a crust of char and clay over the glow)
+    return (raw) => { m.rotation.x += raw * 1.1; m.rotation.z += raw * 0.7; };
+  },
+  // the Volcano's bomb: a lump of molten rock, not a spark
+  lavaBomb: (m) => { m.geometry = GEO.rock(); m.material = MAT.ember(); m.scale.multiplyScalar(1.4); return (raw) => { m.rotation.x += raw * 6; }; },
   insulator: (m) => { m.geometry = GEO.post(); m.material = MAT.white(); m.scale.setScalar(1.4); m.add(part(GEO.disc(), MAT.glaze(0x8a3a2a), 0.03), part(GEO.disc(), MAT.glaze(0x8a3a2a), -0.05)); },
   spark: (m) => { m.geometry = GEO.ember(); m.material = MAT.glow(0x9fd0ff); m.scale.setScalar(1.6); },
   orb: (m) => { m.geometry = GEO.ball(); m.material = MAT.glow(0xc49bff); },
   visi: (m) => { m.geometry = GEO.ball(); m.material = MAT.chrome(); m.add(part(GEO.dot(), MAT.glow(0x9fe8ff), 0.09)); },
-  void: (m) => { m.geometry = GEO.ball(); m.material = MAT.ink(); m.scale.setScalar(1); m.add(part(GEO.rim(), MAT.gold())); return (raw) => { m.rotation.y += raw * 6; m.rotation.x = 0.4; }; },
+  void: (m, row, p, tint, tip, size = 1) => { m.geometry = GEO.ball(); m.material = MAT.ink(); m.scale.setScalar(size); m.add(part(GEO.rim(), MAT.gold())); return (raw) => { m.rotation.y += raw * 6; m.rotation.x = 0.4; }; },
   crude: (m) => { m.geometry = GEO.bead(); m.material = MAT.ink(); m.scale.setScalar(1.2); },
   glitch: (m) => { m.geometry = GEO.bead(); m.material = MAT.glow(0xff3cc8); m.scale.setScalar(1); return (raw) => { m.rotation.y += raw * 20; }; },
   // Agate: a banded stone, the stronger feeling's colour and a band of the weaker's
@@ -183,11 +197,15 @@ const MOMENTS = {
   fly(g, row, L, { mesh, p, kind }) {
     const id = kind === 'clod' ? 'clod' : row.id, look = SHELL_LOOKS[id] || L, K = look?.kinds?.[kind] ?? look;
     const [tint, tip] = look?.tints?.(g, row) ?? [shellTint(row)];
-    const turn = BODIES[K?.body || 'bead']?.(mesh, row, p, tint, tip);
+    const turn = BODIES[K?.body || 'bead']?.(mesh, row, p, tint, tip, K?.size?.(row) ?? 1);
     const name = typeof K?.fly === 'string' ? K.fly : K?.fly ? `shell.${id}.fly` : 'shell.trail';
     const end = K?.end, endT = K?.hold?.(row) ?? Infinity, list = g.shells?.runner?.flying; // (a clear gives the runner a new list: no end look then)
-    g.vfx.play(name, { pos: mesh.position, tint, tip, follow: (h, raw) => {
-      if (!mesh.parent) { if (end && g.shells?.runner?.flying === list) atPlace(g, end, mesh.position.clone(), endT, { tint, r: look?.r?.(row) ?? 1, floor: mesh.position.y - 0.3 }); return false; } // (spent: where it was)
+    const scale = K?.scale?.(row) ?? 1; // (its looks drawn at the size the row says: the Meteor's `n.size`, its mega's)
+    g.vfx.play(name, { pos: mesh.position, tint, tip, scale, follow: (h, raw) => {
+      if (!mesh.parent) { // (spent: where it was, or on the ground under it for a look that lies there: `ground`)
+        if (end && g.shells?.runner?.flying === list) { const at = mesh.position.clone(), on = K.ground ? toGround(g, at) : null; atPlace(g, end, at, endT, { tint, scale, r: look?.r?.(row) ?? 1, floor: on ? at.y - 0.05 : at.y - 0.3 }); }
+        return false;
+      }
       h.pos.copy(mesh.position); turn?.(raw);
       if (id === 'pinball' && p?.vel) h.ctx.tint = _c.setHex(0xffffff).lerp(PINK, THREE.MathUtils.clamp((p.vel.length() - 16) / 32, 0, 1)).getHex();
       return true;

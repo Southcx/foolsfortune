@@ -9,7 +9,7 @@
 //
 //   LOOKS (by shell id)   EFFECTS (`shell.<id>.<moment>`)
 // ---------------------------------------------------------------------------------------
-import { L, aimAt } from './kit.js';
+import { L, aimAt, groundRing, scorch, debris } from './kit.js';
 
 const BLUE = 0x9fd0ff, VIOLET = 0xc49bff;
 const foeMax = (g, at, r) => (g.creatures?.near?.(at, r) || []).filter((c) => c.alive && !c.ally).reduce((a, b) => (!a || (b.emo ?? 0) > (a.emo ?? 0) ? b : a), null);
@@ -18,14 +18,17 @@ export const LOOKS = {
   teslaNode: { kinds: { lobPart: { body: 'insulator', end: 'shell.teslaNode.land', hold: (row) => row.n.dur } } },
   chainBolt: { body: 'spark', fly: true, land: 'point' },
   ballLightning: { kinds: { orb: { body: 'orb', fly: 'shell.ballLightning.fly' } } },
-  // 34 Thunderhead: its cloud's own rain, kept over the creature the cloud is after (the runner moves the cloud on its strikes)
+  // 34 Thunderhead: a storm three times the runner's cloud and its own rain, kept over the creature the cloud is after (the runner moves the
+  // cloud on its strikes); where each bolt falls (the runner's, every `every` real s from the first frame), the ground's own look
   thunderhead: { onFire(g, row, { ray }) {
-    const pos = aimAt(g, ray).at, t = row.n.dur;
+    const pos = aimAt(g, ray).at, t = row.n.dur, every = row.n.every ?? 1.5;
     pos.y += 7;
+    let next = 0;
     g.vfx.play('shell.thunderhead.fire', { pos, follow: (h, raw) => {
       if (h.t > t) return false;
       const c = g.player && foeMax(g, g.player.pos, 20);
       if (c) { const k = Math.min(1, raw * 4); h.pos.x += (c.pos.x - h.pos.x) * k; h.pos.z += (c.pos.z - h.pos.z) * k; h.pos.y += (c.pos.y + 7 - h.pos.y) * k; }
+      if (h.t >= next) { next += every; if (c) g.vfx.play('shell.thunderhead.strike', { pos: c.pos.clone(), floor: c.pos.y - 0.05 }); }
       return true;
     } });
   } },
@@ -59,8 +62,19 @@ export const EFFECTS = {
   ] },
   // 34 Thunderhead: a low black cloud's own rain under it
   'shell.thunderhead.fire': { layers: [
-    L({ type: 'sprites', pool: 'alpha', rate: 8, dur: Infinity, shape: 'puff', spawn: 'disc', r: 1.6, size: [1, 1.5], sizeEnd: 1.9, life: [1.2, 1.8], color: [0x1e1a24, 0x2a2630, 0x3a3644], alpha: 0.55, spin: [-0.4, 0.4] }),
-    L({ type: 'sprites', rate: 50, dur: Infinity, shape: 'streak', spawn: 'disc', r: 1.6, offset: [0, -0.4, 0], dir: 'up', speed: [-11, -9], size: 0.2, sizeEnd: 0.14, stretch: 2.4, life: 0.6, color: 0x9fb4d0, alpha: 0.6 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 16, dur: Infinity, shape: 'puff', spawn: 'disc', r: 5, size: [3, 4.5], sizeEnd: 5.5, life: [1.4, 2], color: [0x1e1a24, 0x2a2630, 0x3a3644], alpha: 0.6, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', pool: 'alpha', rate: 8, dur: Infinity, shape: 'puff', spawn: 'disc', r: 3.5, offset: [0, 1.2, 0], size: [3.5, 5], sizeEnd: 6, life: [1.6, 2.2], color: [0x2a2630, 0x4a4656], alpha: 0.5, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', rate: 150, dur: Infinity, shape: 'streak', spawn: 'disc', r: 5, offset: [0, -0.8, 0], dir: 'up', speed: [-13, -10], size: 0.26, sizeEnd: 0.18, stretch: 2.6, life: 0.6, color: 0x9fb4d0, alpha: 0.6 }),
+    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'glint', spawn: 'disc', r: 4, size: [0.5, 0.8], sizeEnd: 0, life: 0.2, color: [BLUE, 'white'], twinkle: 20 }),
+  ] },
+  // where a bolt falls: a white star, a blue ring out along the ground, the sand fused black and fizzing a while
+  'shell.thunderhead.strike': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'core', size: 5, sizeEnd: 0.5, life: 0.22, color: 'white', colorEnd: BLUE, powerCount: false }),
+    groundRing({ to: 14, from: 0.8, dur: 0.5, tint: BLUE, k: 1.6 }),
+    scorch({ size: 3.4, dur: 6 }),
+    L({ type: 'sprites', count: 24, shape: 'streak', dir: 'cone', axis: 'up', cone: 70, speed: [8, 16], drag: 2, size: [0.3, 0.5], sizeEnd: 0.04, life: [0.25, 0.45], stretch: 2, color: [BLUE, 'white'], powerCount: false }),
+    debris({ count: 16, speed: [4, 9], size: [0.12, 0.26], life: [3.5, 5], color: [0x1e1a24, 0x3a3644, 0xd9b89a] }),
+    L({ type: 'sprites', rate: 14, dur: 3, shape: 'glint', spawn: 'disc', r: 1.4, size: [0.2, 0.34], sizeEnd: 0, life: 0.25, color: [BLUE, 'white'], twinkle: 24 }),
   ] },
   // 36 Faraday Cage: its edges humming, sparks running up the corners (the arcs are S3's)
   'shell.faradayCage.land': { layers: [
