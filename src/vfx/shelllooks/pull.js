@@ -8,12 +8,13 @@
 //
 //   LOOKS (by shell id)   EFFECTS (`shell.<id>.<moment>`)
 // ---------------------------------------------------------------------------------------
-import { L, leaveGhost } from './kit.js';
+import { L, leaveGhost, groundRing, scorch, debris } from './kit.js';
 
 const PULL = 0x8a7aff;
 
 export const LOOKS = {
-  slingshot: { kinds: { lobPart: { body: 'void', fly: 'shell.slingshot.fly', end: 'shell.slingshot.land', hold: (row) => row.n.dur + 0.5 } } },
+  // 42 Slingshot: a well twice the size, all its reach drawn round and in, then thrown out past the screen
+  slingshot: { kinds: { lobPart: { body: 'void', size: () => 2, scale: () => 2, fly: 'shell.slingshot.fly', end: 'shell.slingshot.land', hold: (row) => row.n.dur + 0.5 } } },
   rift: { body: 'crude', fly: 'shell.slingshot.fly', land: false },
   portal: { fire: 'aim' },
   upfall: { land: 'point', hold: (row) => row.n.dur, r: (row) => row.n.r },
@@ -28,12 +29,18 @@ export const EFFECTS = {
   'shell.slingshot.fly': { layers: [
     L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'soft', spawn: 'shell', r: 0.4, dir: 'in', speed: [1.5, 2.5], size: [0.06, 0.1], sizeEnd: 0.01, life: 0.2, color: [PULL, 'lach'] }),
   ] },
-  'shell.slingshot.land': { layers: [
-    L({ type: 'sprites', rate: 4, dur: Infinity, shape: 'swirl', offset: [0, 1, 0], size: [1.8, 2.2], sizeEnd: 0.6, life: 0.5, spin: [6, 8], color: PULL, alpha: 0.6 }),
-    L({ type: 'sprites', pool: 'alpha', rate: 30, dur: Infinity, shape: 'puff', spawn: 'disc', r: 5, dir: 'swirl', lift: 0.3, speed: [2, 4], size: [0.25, 0.4], sizeEnd: 0.1, life: [0.6, 1], color: 0xd9b89a, alpha: 0.45 }),
-    L({ type: 'sprites', rate: 24, dur: Infinity, shape: 'glint', spawn: 'shell', r: 3, offset: [0, 1, 0], dir: 'in', speed: [3, 5], size: [0.12, 0.2], sizeEnd: 0, life: 0.5, color: ['lach', 'white'], twinkle: 14 }),
-    L({ type: 'sprites', at: 1.5, count: 24, shape: 'streak', offset: [0, 1, 0], dir: 'sphere', speed: [10, 16], size: [0.2, 0.32], sizeEnd: 0.04, life: 0.3, drag: 3, stretch: 2, color: ['white', PULL], powerCount: false }),
-    L({ type: 'sprites', at: 1.5, count: 1, shape: 'ring', offset: [0, 1, 0], size: 0.5, sizeEnd: 4, life: 0.3, color: PULL, powerCount: false }),
+  'shell.slingshot.land': { layers: [ // (played at scale 2: shelllooks/pull.js's row; the fling at 1.5 real s, its `dur`)
+    L({ type: 'decal', tex: 'shockring', dur: Infinity, loop: 0.5, scale: [[0, 7], [1, 0.6]], k: [[0, 0], [0.3, 1.1], [1, 0.3]], tint: PULL, glow: 1.4, offset: [0, 0.07, 0], in: 6, out: 10 }),
+    L({ type: 'sprites', rate: 6, dur: Infinity, shape: 'swirl', offset: [0, 0.6, 0], size: [3, 3.6], sizeEnd: 1, life: 0.5, spin: [6, 8], color: PULL, alpha: 0.6 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 40, dur: Infinity, shape: 'puff', spawn: 'disc', r: 3.5, dir: 'swirl', lift: 0.3, speed: [4, 7], size: [0.4, 0.6], sizeEnd: 0.15, life: [0.6, 1], color: 0xd9b89a, alpha: 0.5 }),
+    L({ type: 'sprites', rate: 36, dur: Infinity, shape: 'glint', spawn: 'shell', r: 3, offset: [0, 0.5, 0], dir: 'in', speed: [8, 11], size: [0.12, 0.2], sizeEnd: 0, life: 0.6, color: ['lach', 'white'], twinkle: 14 }),
+    L({ type: 'sprites', at: 1.5, count: 60, shape: 'streak', offset: [0, 0.5, 0], dir: 'sphere', speed: [18, 30], size: [0.25, 0.4], sizeEnd: 0.03, life: 0.4, drag: 3, stretch: 2.5, color: ['white', PULL], powerCount: false }),
+    L({ type: 'sprites', at: 1.5, count: 1, shape: 'ring', offset: [0, 0.5, 0], size: 0.5, sizeEnd: 8, life: 0.35, color: PULL, powerCount: false }),
+    L({ type: 'mesh', at: 1.5, mesh: 'chest_shock', dur: 0.6, scale: [[0, 0.5], [1, 6]], stretch: [1, [[0, 1.2], [1, 0.2]], 1], k: [[0, 1.6], [1, 0]], tint: PULL, labradorite: 0.4 }),
+    groundRing({ at: 1.5, to: 17, from: 0.5, dur: 0.6, tint: PULL, k: 1.8 }),
+    scorch({ at: 1.5, size: 2.4, dur: 6, tint: 0xb0b8a0 }),
+    L({ type: 'sprites', at: 1.5, pool: 'alpha', count: 24, shape: 'puff', spawn: 'ring', r: 0.6, dir: 'out', lift: 0.15, speed: [12, 20], drag: 2.5, size: [0.6, 0.9], sizeEnd: 2, life: [0.9, 1.3], color: [0xd9b89a, 0xc9a27a], alpha: 0.55, powerCount: false }),
+    debris({ at: 1.5, count: 30, speed: [8, 15], cone: 80, size: [0.06, 0.14], life: [4, 6], color: [0xd9b89a, 0xb4603f, 0x8c4a33] }),
   ] },
   // 44 Portal: crude splashed where each end opens (the ovals and their views are S5's)
   'shell.portal.fire': { layers: [

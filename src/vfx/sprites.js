@@ -83,6 +83,7 @@ void main() {
   if (p.y < aP3.x) { p.y = aP3.x; v = vec3(0.0); }
   float t = age / life;
   vec4 c = mix(aCol0, aCol1, t);
+  c.a = min(c.a, 1.0); // (an alpha over 1 holds it whole until the fade brings it under: debris that lies a while, then goes)
   c.a *= min(1.0, t * 14.0 + 0.25);
   vColor = c;
   float s = mix(aP1.x, aP1.y, t);
