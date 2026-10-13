@@ -2,12 +2,15 @@
 // THE SPAWN LOOK: how a creature comes into the world (the owner, 2026-10-13). Two looks, chosen by where it comes from:
 //
 //   RISE   the Island of Ego's own Figments (slip jellies, Lantern Wisps, blotlings, the island's rejection answers) rise from the ground.
-//          0.00  the ground darkens in a circle (the scorch decal, darkening: the data bug's stain, already warm)
-//          0.00  the sand swells: a ring of crust plates lifts as a dome
-//          0.22  it cracks: the plates tip outward on their outer edges, clods thrown, dust; Lachryma motes in its feeling's colour seep
-//                up from the cracks
+//          0.00  the ground darkens in a wide circle, a darker ring at its edge (the scorch and the shockring decals, darkening: warm)
+//          0.00  the sand swells: a ring of wet-clay crust plates (dark umber, a lighter broken edge) lifts as a dome
+//          0.20  the body breaks the surface and the crust cracks: the plates flung outward and up, tumbling, landing and lying; clods
+//                thrown, a ring of dust kicked out along the ground, and a burst of bright Lachryma motes in its feeling's colour
+//                (lightened) from the cracks, then a seep of them
 //          0.18  the body pushes up out of it (sunk its own height, eased up with a little overshoot), clods falling off it as it comes
-//          0.90  up; the plates settle back into the sand and the stain fades over a real second or so
+//          0.90  up; the plates sink back into the sand and the stain fades over a real second or so
+//          A slip jelly is held still while it comes (the flag the bodies already honour for a thing moved by a script, `c.taking`: its
+//          mind and its blows stood aside), and let go as it is fully out; a Lantern Wisp is not (its own update places its hover).
 //   TEAR   Egregores and stray Figments invade from outside and tear in from midair.
 //          0.00  a seam opens a metre or two up: a hairline grows to its height, crude-black edged in hot magenta and white, and the
 //                glitch's tear held to that box on the screen only (vfx/glitch.js's region), never the whole picture
@@ -40,9 +43,9 @@ import { T } from '../core/config.js';
 /** Where a creature comes from, read from its own fields: an Egregore or a stray tears in; the island's own rise. */
 export const spawnLookOf = (c) => (c?.stray || c?.egregore ? 'tear' : 'rise');
 
-export const RISE = { dur: 1.6, crack: 0.22, up: [0.18, 0.9], plates: 7 };
+export const RISE = { dur: 1.8, crack: 0.2, up: [0.18, 0.9], plates: 7 };
 export const TEAR = { dur: 0.95, grow: 0.12, wide: 0.38, drop: [0.38, 0.62], shut: [0.74, 0.8], above: 1.1 };
-const SAND = 0xa88a62, MAGENTA = 0xff2fb4, WHITE = 0xffffff, CRUDE = 0x0b0710;
+const CLAY = 0x5a3a28, CLAY_EDGE = 0x9c7458, MAGENTA = 0xff2fb4, WHITE = 0xffffff, CRUDE = 0x0b0710;
 const BLOCKS = 192;
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 const ease = (x) => { x = clamp01(x); return x * x * (3 - 2 * x); };
@@ -53,15 +56,17 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vect
 // the looks' particles and the stain, as data (vfx/vfx.js), written into the library when the module is built
 const EFFECTS = {
   'spawn.rise.ground': { layers: [
-    { type: 'decal', tex: 'scorch', blend: 'darken', dur: 2.4, scale: 2.4, k: [[0, 0], [0.06, 1], [0.55, 1], [1, 0]], tint: 0x9a9488, glow: 0.85, offset: [0, 0.03, 0], spin: 0.04 },
+    { type: 'decal', tex: 'scorch', blend: 'darken', dur: 2.6, scale: 4.8, k: [[0, 0], [0.05, 1], [0.6, 1], [1, 0]], tint: 0xd8d2c8, glow: 0.95, offset: [0, 0.03, 0], spin: 0.04 },
+    { type: 'decal', tex: 'shockring', blend: 'darken', dur: 2.6, scale: 3.3, k: [[0, 0], [0.05, 1], [0.6, 1], [1, 0]], tint: 0xffffff, glow: 1, offset: [0, 0.035, 0] }, // (the darker ring at its edge)
   ] },
   'spawn.rise.crack': { layers: [ // (the crust breaking: clods out and down, a low dust, and the motes from the cracks)
-    { type: 'sprites', pool: 'alpha', count: 22, shape: 'chip', spawn: 'ring', r: 0.45, dir: 'out', lift: 1.3, speed: [1.4, 3.0], gravity: 9, drag: 0.4, floor: 'ground', size: [0.07, 0.15], life: [0.7, 1.1], color: [0x9a7c55, 0xb3905f, 0x7d5f3e], alpha: 1, alphaEnd: 1, spin: [-8, 8] },
-    { type: 'sprites', pool: 'alpha', count: 10, shape: 'puff', spawn: 'ring', r: 0.55, dir: 'out', lift: 0.25, speed: [0.4, 0.9], drag: 1.5, size: [0.35, 0.6], sizeEnd: 1.1, life: [0.8, 1.3], color: 0xc8b08a, alpha: 0.45, alphaEnd: 0 },
+    { type: 'sprites', pool: 'alpha', count: 26, shape: 'chip', spawn: 'ring', r: 0.5, dir: 'out', lift: 1.3, speed: [1.6, 3.4], gravity: 9, drag: 0.4, floor: 'ground', size: [0.08, 0.17], life: [0.8, 1.2], color: [CLAY, 0x6e4a33, CLAY_EDGE], alpha: 1, alphaEnd: 1, spin: [-8, 8] },
+    { type: 'sprites', pool: 'alpha', count: 20, shape: 'puff', spawn: 'ring', r: 0.55, dir: 'out', lift: 0.04, speed: [2.4, 4.0], drag: 2.6, size: [0.4, 0.7], sizeEnd: 1.5, life: [0.9, 1.4], color: [0xd8c4a0, 0xc8b08a], alpha: 0.6, alphaEnd: 0, offset: [0, 0.12, 0] }, // (the ring of dust kicked out along the ground)
+    { type: 'sprites', count: 44, shape: 'soft', spawn: 'ring', r: 0.55, dir: 'cone', axis: 'up', cone: 28, speed: [1.6, 3.6], drag: 1.6, gravity: -0.3, size: [0.09, 0.17], sizeEnd: 0.03, life: [0.8, 1.4], color: 'tip', alpha: 1, alphaEnd: 0, twinkle: 0.4 }, // (the burst from the cracks as it breaks the surface: bright, additive)
     { type: 'sprites', rate: 34, dur: 1.1, shape: 'soft', spawn: 'ring', r: 0.5, dir: 'up', speed: [0.25, 0.7], size: [0.05, 0.1], sizeEnd: 0.02, life: [1.0, 1.7], drag: 0.3, gravity: -0.15, color: 'tint', alpha: 0.95, alphaEnd: 0, twinkle: 0.5 },
   ] },
   'spawn.rise.clods': { layers: [ // (clods falling off the body as it comes up: `ctx.h` the height of it above the sand)
-    { type: 'sprites', pool: 'alpha', count: 7, shape: 'chip', spawn: 'column', r: 'r', height: 'h', dir: 'out', lift: 0.2, speed: [0.3, 0.9], gravity: 9, floor: 'ground', size: [0.05, 0.1], life: [0.5, 0.9], color: [0x9a7c55, 0x7d5f3e], alpha: 1, alphaEnd: 1, spin: [-6, 6] },
+    { type: 'sprites', pool: 'alpha', count: 7, shape: 'chip', spawn: 'column', r: 'r', height: 'h', dir: 'out', lift: 0.2, speed: [0.3, 0.9], gravity: 9, floor: 'ground', size: [0.05, 0.1], life: [0.5, 0.9], color: [CLAY, 0x6e4a33], alpha: 1, alphaEnd: 1, spin: [-6, 6] },
   ] },
   'spawn.tear.seal': { layers: [ // (the snap shut: a crack of sparks off the seam, a jolt)
     { type: 'sprites', count: 16, shape: 'streak', spawn: 'line', r: 0.02, dir: 'sphere', speed: [1.5, 3.5], stretch: 2.5, drag: 3, size: [0.08, 0.16], life: [0.15, 0.3], color: [MAGENTA, WHITE], alpha: 1, alphaEnd: 0 },
@@ -102,7 +107,8 @@ export class SpawnLook {
     g.add(this.cubes);
     this.slitGeo = slitGeometry();
     this.plateGeo = new THREE.BoxGeometry(1, 1, 1);
-    this.plateMat = new THREE.MeshStandardMaterial({ name: 'spawnlook-crust', color: SAND, roughness: 1, metalness: 0 });
+    this.plateMat = new THREE.MeshStandardMaterial({ name: 'spawnlook-crust', color: CLAY, roughness: 0.55, metalness: 0 }); // (wet clay: a little gloss)
+    this.edgeMat = new THREE.MeshStandardMaterial({ name: 'spawnlook-crust-edge', color: CLAY_EDGE, roughness: 0.9, metalness: 0 }); // (its broken edge, drier; the same program)
     this.group = g;
     this.game.scene?.add(g);
   }
@@ -125,7 +131,7 @@ export class SpawnLook {
     let P = this.plates.find((x) => !x.busy);
     if (!P) {
       const o = new THREE.Group(), list = [];
-      for (let i = 0; i < RISE.plates; i++) { const pv = new THREE.Object3D(), m = new THREE.Mesh(this.plateGeo, this.plateMat); m.castShadow = false; m.receiveShadow = true; pv.add(m); o.add(pv); list.push({ pv, m }); }
+      for (let i = 0; i < RISE.plates; i++) { const pv = new THREE.Object3D(), m = new THREE.Mesh(this.plateGeo, this.plateMat), e = new THREE.Mesh(this.plateGeo, this.edgeMat); m.receiveShadow = e.receiveShadow = true; pv.add(m, e); o.add(pv); list.push({ pv, m, e }); }
       o.visible = false; this.group.add(o);
       P = { o, list, busy: false }; this.plates.push(P);
     }
@@ -149,10 +155,11 @@ export class SpawnLook {
 
   startRise(R) {
     const g = this.game, c = R.c, k = R.r / 0.5;
-    R.tint = figmentColour(c);
+    R.tint = figmentColour(c); R.bright = _c.set(R.tint).lerp(new THREE.Color(WHITE), 0.45).multiplyScalar(1.6).getHex();
+    if (!c.taking && c.kind !== 'wisp') R.took = c.taking = true; // (held still till it is out: the bodies' flag for a thing a script moves; not a Lantern Wisp, whose hover its own update places)
     g.vfx?.play?.('spawn.rise.ground', { pos: _v.copy(c.pos).setY(R.ground), scale: k });
     R.plates = this.takePlates(); R.plates.o.position.set(c.pos.x, R.ground, c.pos.z); R.plates.o.rotation.y = hash(c.id ?? 1) * 6.28; R.plates.o.scale.setScalar(k);
-    R.plates.list.forEach((p, i) => { p.a = (i / RISE.plates) * Math.PI * 2 + (hash(i + (c.id ?? 0)) - 0.5) * 0.4; p.w = 0.36 + 0.14 * hash(i * 5.3); p.tilt = 0.8 + 0.5 * hash(i * 2.9); p.m.scale.set(0.42, 0.09, p.w); });
+    R.plates.list.forEach((p, i) => { p.a = (i / RISE.plates) * Math.PI * 2 + (hash(i + (c.id ?? 0)) - 0.5) * 0.4; p.w = 0.36 + 0.14 * hash(i * 5.3); p.tilt = 0.8 + 0.5 * hash(i * 2.9); p.m.scale.set(0.84, 0.16, p.w * 2); p.e.scale.set(0.14, 0.2, p.w * 1.9); p.e.position.set(0.4, 0.02, 0); p.out = 1.4 + 1.2 * hash(i * 4.1); p.up = 2.2 + 1.2 * hash(i * 6.7); p.spin = (hash(i * 8.3) - 0.3) * 9; });
   }
 
   startTear(R) {
@@ -173,8 +180,12 @@ export class SpawnLook {
     root.position.y = R.wrote = R.base + off;
   }
 
+  /** The body let go: its mind and its blows back (only if the look took it). */
+  letGo(R) { if (R.took && R.c.taking === true) R.c.taking = false; R.took = false; }
+
   finish(R) {
     if (!R) return;
+    this.letGo(R);
     const root = R.c.root;
     if (Math.abs(root.position.y - R.wrote) < 1e-6) root.position.y = R.base;
     root.scale.copy(R.s0);
@@ -203,18 +214,19 @@ export class SpawnLook {
     // the body: sunk its own height, pushed up with a little overshoot
     const [u0, u1] = RISE.up, u = (t - u0) / (u1 - u0);
     this.place(R, u >= 1 ? 0 : -(R.top + 0.05) * (1 - outBack(u)));
-    if (t >= RISE.crack) once('crack', () => g.vfx?.play?.('spawn.rise.crack', { pos: _v.copy(c.pos).setY(R.ground + 0.04), scale: R.r / 0.5, tint: R.tint, floor: R.ground }));
+    if (t >= RISE.crack) once('crack', () => g.vfx?.play?.('spawn.rise.crack', { pos: _v.copy(c.pos).setY(R.ground + 0.04), scale: R.r / 0.5, tint: R.tint, tip: R.bright, floor: R.ground }));
     for (const [i, at] of [0.36, 0.55, 0.74].entries()) if (t >= at) once(`clods${i}`, () => {
       const h = Math.max(0.2, R.top * clamp01(outBack(u)));
       g.vfx?.play?.('spawn.rise.clods', { pos: _v.copy(c.pos).setY(R.ground), r: R.r * 0.8, h, floor: R.ground });
     });
-    if (t >= u1) once('land', () => c.deform?.kick?.(-1.2, null, 0.08));
-    // the plates: swelled as a dome, then cracked (tipped outward and pushed out), then settled back into the sand
-    const swell = ease(t / RISE.crack), crack = ease((t - RISE.crack) / 0.18), settle = ease((t - 0.95) / 0.6);
+    if (t >= u1) once('land', () => { c.deform?.kick?.(-1.2, null, 0.08); this.letGo(R); });
+    // the plates: swelled as a dome, then flung outward and up as it cracks, tumbling, landing and lying; then sunk back into the sand
+    const swell = ease(t / RISE.crack), tc = Math.max(0, t - RISE.crack), settle = ease((t - 1.15) / 0.6);
     for (const p of R.plates.list) {
-      const d = 0.3 + 0.12 * swell + 0.28 * crack;
-      p.pv.position.set(Math.cos(p.a) * d, -0.06 + 0.12 * swell + 0.04 * crack - 0.2 * settle, Math.sin(p.a) * d);
-      p.pv.rotation.set(0, -p.a, (0.12 * swell - 0.85 * p.tilt * crack) * (1 - 0.6 * settle));
+      const fly = Math.min(tc, (2 * p.up) / 9.8); // (in the air until it comes down again)
+      const d = 0.5 + 0.12 * swell + p.out * fly, y = -0.08 + 0.14 * swell + p.up * fly - 4.9 * fly * fly;
+      p.pv.position.set(Math.cos(p.a) * d, Math.max(-0.08, y) - 0.25 * settle, Math.sin(p.a) * d);
+      p.pv.rotation.set(0, -p.a, 0.12 * swell - p.spin * fly - (tc > 0 ? 0.25 * p.tilt : 0));
     }
   }
 
