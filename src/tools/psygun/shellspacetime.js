@@ -80,17 +80,21 @@ function zone(R, row, at, mode) {
   }, end: () => { for (const b of held.values()) if (b.isValid?.() !== false) b.setGravityScale(1, true); looks.forEach((h) => h?.stop?.()); } });
 }
 
+/** A meteor's landing: its blast, its hot pool, the sound, the world's answer and its weight. */
+function meteorLands(R, at, m, weight) {
+  blast(R, at, m.r, m.power, 'explosion'); R.game.paintmap?.slick?.(at.x, at.y, at.z, m.r * 0.6, 1); sfx.explosion?.(R.game.listenerDistance?.(at)); R.game.onExplosion?.(at, m.r);
+  R.weigh(at, weight); return true;
+}
+
 export const SPACETIME = {
   carrier: {
     meteor: { speed: 28, lift: 0, grav: 1, life: 4, r: 0.4 },
+    mega: { speed: 40, lift: 0, grav: 1, life: 5, r: 0.4 }, // (the Meteor's mega meteor: its own kind, so its look is its own: Calissa's `kinds.mega`)
     slag: { speed: 10, lift: 0, grav: 1, life: 3, r: 0.12 },
   },
   hit: {
-    meteor: (R, p, k) => {
-      const m = p.mega ?? p.row.n; // (the mega meteor carries its own numbers: the row's `n.mega`)
-      blast(R, k.at, m.r, m.power, 'explosion'); R.game.paintmap?.slick?.(k.at.x, k.at.y, k.at.z, m.r * 0.6, 1); sfx.explosion?.(R.game.listenerDistance?.(k.at)); R.game.onExplosion?.(k.at, m.r);
-      R.weigh(k.at, p.mega ? 'meteor.mega' : 'meteor'); return true;
-    },
+    meteor: (R, p, k) => meteorLands(R, k.at, p.row.n, 'meteor'),
+    mega: (R, p, k) => meteorLands(R, k.at, p.mega, 'meteor.mega'), // (its own numbers: the row's `n.mega`, buffed as it fell)
     slag: (R, p, k) => { blast(R, k.at, 0.9, p.row.n.power, 'explosion'); return true; },
   },
   fires: {
@@ -121,14 +125,14 @@ export const SPACETIME = {
       const g = R.game, n = row.n, at = aimPoint(g, ray, 80)?.point ?? ray.origin.clone().addScaledVector(ray.dir, 30);
       g.vfx?.play?.('shell.land', { pos: at, scale: 3 }); sfx.shellFall?.(n.delay, row.tier);
       R.timed({ delay: n.delay, t: 0.05, every: 1, tick: () => {
-        const size = n.size ?? 1, C = SPACETIME.carrier.meteor;
-        for (let i = 0; i < n.count; i++) { const o = new THREE.Vector3((shellRand() - 0.5) * 4 * size, 24 + i * 3 + 4 * size, (shellRand() - 0.5) * 4 * size); R.launch('meteor', row, at.clone().add(o), new THREE.Vector3(-o.x * 0.02, -1, -o.z * 0.02).normalize(), { scale: 4 * size, col: 0xff7a2a, extra: { C: { ...C, r: C.r * size } } }); }
+        const size = n.size ?? 1, C = SPACETIME.carrier.meteor; // (drawn at `size` by its look; struck at it here)
+        for (let i = 0; i < n.count; i++) { const o = new THREE.Vector3((shellRand() - 0.5) * 4 * size, 24 + i * 3 + 4 * size, (shellRand() - 0.5) * 4 * size); R.launch('meteor', row, at.clone().add(o), new THREE.Vector3(-o.x * 0.02, -1, -o.z * 0.02).normalize(), { scale: 4, col: 0xff7a2a, extra: { C: { ...C, r: C.r * size } } }); }
       } });
       if (!n.mega) return;
-      const B = T.shells.buff, M = n.mega, mega = { r: M.r * B.reach, power: M.power * B.power, size: M.size * B.reach };
+      const B = T.shells.buff, M = n.mega, mega = { r: M.r * B.reach, power: M.power * B.power };
       R.timed({ delay: n.delay + M.delay, t: 0.05, every: 1, tick: () => {
-        const C = SPACETIME.carrier.meteor;
-        R.launch('meteor', row, at.clone().setY(at.y + 40), DOWN.clone(), { scale: 4 * mega.size, col: 0xff5a1a, speed: 40, extra: { mega, C: { ...C, r: C.r * mega.size } } });
+        const C = SPACETIME.carrier.mega;
+        R.launch('mega', row, at.clone().setY(at.y + 40), DOWN.clone(), { scale: 4, col: 0xff5a1a, extra: { mega, C: { ...C, r: C.r * M.size } } });
         sfx.shellFall?.(1, row.tier);
       } });
     },
