@@ -6,7 +6,7 @@
 //
 //   ouranurgy       Ru celadon                   the blue of the sky after rain
 //   manifestation   fire-flashed shino           a cream glaze blushing orange where the flame licked it
-//   divination      yohen tenmoku                a black glaze with star spots of blue in it
+//   divination      yohen tenmoku                a black glaze with star spots in it, iridescent violet-silver
 //   psychokinesis   oxblood (sang de boeuf)      copper red, pale at the rim where it thinned
 //   possession      Jun ware                     a milky blue with a purple splash
 //   alteration      flambe                       copper red running into blue as it fired
@@ -15,9 +15,9 @@
 // Prior art: the glazes themselves, as each entry's `label` says (museum-label style); the tile is drawn as the pixel kit draws
 // (ui/pixel.js: drawn at 1x, shown scaled by whole numbers), one ImageData pass, no shader.
 //
-//   DOMAIN_LOOK[id] = { id, glaze, colours: { body, accent?, ground? }, icon: 'domain.<id>', pal: 'domain.<id>', iconHex, glint?, label }
+//   DOMAIN_LOOK[id] = { id, glaze, colours: { body, accent?, edge?, ground? }, icon: 'domain.<id>', pal: 'domain.<id>', iconHex, glint?: { core, edge }, label }
 //     colours are CSS hex strings; `icon` and `pal` go to uiIcon / iconEl (ui/icons/icons.js); `iconHex` is the colour the icon's
-//     palette is ramped from (ui/icons/icons.js paintRamp), `glint` the highlights' colour where it is not the body's lit
+//     palette is ramped from (ui/icons/icons.js paintRamp), `glint` the highlights' colours where they are not the body's lit
 //   glazeTile(id, { w = 48, h = 12 }) -> canvas (1x, cached): the glaze's character (the tenmoku's spots, the flambe's run, the shino's
 //     flash, the cobalt brushed on white); show it scaled by whole numbers, `image-rendering: pixelated`, behind a domain's power row
 //   glazeTileUrl(id, opts) -> a data URL, for a CSS background (`background: url(...) 0 0 / 300% 300%; image-rendering: pixelated`)
@@ -39,8 +39,8 @@ const LOOK = {
     label: 'Shino ware. Momoyama period, Mino province, Japan, late 16th century. A thick feldspar glaze, pinholed, flashed orange where the fire licked it.',
   },
   divination: {
-    glaze: 'yohen tenmoku', colours: { body: '#1a1418', accent: '#6fd0e8' }, iconHex: '#3a3038', glint: '#6fd0e8',
-    label: 'Yohen tenmoku. Southern Song, Jian kilns, Fujian, 12th to 13th century. A black glaze whose spots fired to stars of shifting blue.',
+    glaze: 'yohen tenmoku', colours: { body: '#1a1418', accent: '#b9b4e8', edge: '#7a6fc4' }, iconHex: '#3a3038', glint: { core: '#b9b4e8', edge: '#7a6fc4' },
+    label: 'Yohen tenmoku. Southern Song, Jian kilns, Fujian, 12th to 13th century. A black glaze whose spots fired to stars, iridescent blue going to violet.',
   },
   psychokinesis: {
     glaze: 'oxblood (sang de boeuf)', colours: { body: '#8e1f1f' }, iconHex: '#a2282a',
@@ -93,15 +93,15 @@ const PAINT = {
     if (hash(x, y, 6) < 0.025) col = shade(col, 0.7); // (a pinhole)
     return col;
   },
-  divination(x, y) { // the black, a brown hare's-fur streak through it, and the stars: spots of blue with a halo
-    const body = rgb('#1a1418'), star = rgb('#6fd0e8');
+  divination(x, y) { // the black, a brown hare's-fur streak through it, and the stars: violet-silver spots in a violet halo, a few with one cool highlight (kept off Wonder's cyan)
+    const body = rgb('#1a1418'), core = rgb('#b9b4e8'), edge = rgb('#7a6fc4');
     let col = mix(body, [70, 46, 30], Math.max(0, noise(x * 3, y, 3, 7) - 0.62) * 1.4);
     const sx = Math.floor(x / 6), sy = Math.floor(y / 6);
     for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
       const cx = sx + i, cy = sy + j; if (hash(cx, cy, 8) > 0.55) continue;
       const px = cx * 6 + 1 + hash(cx, cy, 9) * 4, py = cy * 6 + 1 + hash(cx, cy, 10) * 4, d = Math.hypot(x + 0.5 - px, y + 0.5 - py);
-      if (d < 0.9) col = lift(star, 0.25);
-      else if (d < 2.1) col = mix(col, mix(star, [120, 90, 200], hash(cx, cy, 11)), 0.45 * (2.1 - d));
+      if (d < 0.9) col = hash(cx, cy, 11) < 0.35 && x + 0.5 < px && y + 0.5 < py ? [214, 222, 240] : core; // (a 1 px cool highlight)
+      else if (d < 2.1) col = mix(col, edge, 0.5 * (2.1 - d));
     }
     return col;
   },

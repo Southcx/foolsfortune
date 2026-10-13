@@ -58,7 +58,7 @@ export const ICON_PALS = {
 /** A domain's palette: its glaze's ramp, its two highlights the glaze's glint where it has one (the tenmoku's stars). */
 function glazeRamp({ iconHex, glint }) {
   const r = paintRamp(parseInt(iconHex.slice(1), 16));
-  if (glint) { const c = css2rgb(glint); r[10] = c.map((v, i) => Math.round(v * 0.82 + r[9][i] * 0.18)); r[11] = c.map((v) => Math.round(v + (255 - v) * 0.35)); }
+  if (glint) { r[10] = css2rgb(glint.edge); r[11] = css2rgb(glint.core); }
   return r;
 }
 
