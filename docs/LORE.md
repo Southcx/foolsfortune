@@ -708,3 +708,10 @@ terms are more neutral and broadly interpretable").
 The hundred shells' lore names and first-use log lines are *parked* until the mechanics week is done (the owner, 2026-10-11: "This week
 is mechanics heavy"). The labels serve until then. When they come, the Outlaw Star homages keep a nod to their numbers (40 Twelve,
 94 Inside Out, 95 Leyline, 96 Thirteen).
+
+### The Raceway *(Dovina's SKIFF-RACING.md; Espada's ruling, 2026-10-13)*
+All six working names stand; each is already the sport's own word or a clean pun on the skiff:
+- **the Raceway** (the place); **the carve** (snowboarding's word for a power turn on the edge: SSX's, and sand surfing's); **a late
+  pop** (skating's: an ollie popped late off the lip); **a sun plate** (a boost pad, in the UI and the log "boost pad" where a label is
+  wanted); **the glide lip**; **the solar start** (Mario Kart's rocket start, taken by Solar Skiffing: you leave with the sun behind you).
+- The log's placeholders in `tracking/race.js` and `BAIL_SAYS` stand as written: verb first, short, the right clock.
