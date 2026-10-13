@@ -26,6 +26,7 @@ import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { godRules } from './god.js';
+import { lockheartRules } from './lockheart.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -33,7 +34,8 @@ export function areaRules(ctx) {
   railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
-  godRules(ctx); // (the god hand's matter, miracles, epics and the island's rejection)
+  godRules(ctx);
+  lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(ctx);
   gardenRules(ctx);
   weatherRules(ctx);

@@ -46,6 +46,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day. *Not:* Manifest's wall, the island's matter.
 - **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
   each a domain's, opened by its level / each power's numbers from where it opens to 99, Creative mode at the top (GODHAND.md 11). *Not:* a widening.
+- **the bracelet / a charm** (working names, Espada's and the owner's; `docs/plans/BRACELET.md`) — the one ring the Vessoul wears in every form
+  (the hand's wrist, the Pneuka Jar's choker, the Courier's wrist), its glow the hand's state / what sits in one of its seven domain
+  sockets or the clasp and bends the hand's powers. *Not:* a Possibilikey, a tool, the Lachryma ring.
 - **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response to the hand scarring it: five steps, each
   calling stronger Figments, cooled by the mending and a Shrine. *Not:* the mending, a raid.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your

@@ -32,8 +32,14 @@ export const OUTCOMES = {
   kin:    { label: 'KIN', color: 0xff9ad5, rank: 3, does: 'Everything near takes you for its own kind, for a while.' },
   spirit: { label: 'SPIRITS', color: 0xb49be6, rank: 3, does: 'Smoke spirits stand up out of it, on your side.' },
   chest:  { label: 'CHEST', color: 0xffb27a, rank: 3, does: 'A treasure chest falls out of the air.' },
-  nuke:   { label: 'OVERLOAD', color: 0xff5ad0, rank: 4, does: 'Every feeling floods out. Everything near bursts.' },
+  nuke:   { label: 'OVERLOAD', color: 0xff5ad0, rank: 4, does: 'Every feeling floods out. Everything near bursts. It cracks you too.', recoil: 1 },
 };
+
+/** THE OVERLOAD'S RECOIL (the owner, 2026-10-13: the vessel is "an open cup when putting things in, but a pressurized vessel when taking
+ *  things out"): so much let out through so small an aperture cracks the one who let it out. `recoil` is the Caster's tolls an Overload
+ *  takes from the vessel for each unit of the coffin's power (a full coffin 1, one filled twice over 2): a toll cracks the least cracked
+ *  part past the shield, and with three parts cracked it shatters (courier/vessel/damage.js toll). Draining itself never hurts the
+ *  Courier: that is what the tools are for. */
 
 /** The coffins. The one on the chain is the wheel. */
 export const HEARTS = {
