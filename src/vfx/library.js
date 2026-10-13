@@ -559,20 +559,23 @@ export const LIBRARY = {
   'shell.skipstone.touch.crude': { extends: 'shell.skipstone.touch', layers: [
     L({ type: 'sprites', count: 6, shape: 'ripple', spawn: 'disc', r: 0.3, size: [0.3, 0.5], sizeEnd: 1.1, life: [0.4, 0.6], color: ['film0', 'film1', 'film2', 'film3'], alpha: 0.6 }),
   ] },
-  // 14 Hailstorm: twenty-four shards in the glazes' colours, four times the size, out of the muzzle at once in a ring of white; where the cone
-  // lands, a ring out along the ground and the shards stuck in it, glinting a while
+  // 14 Hailstorm (refired at twice the size): thirty-two shards in the glazes' colours out of the muzzle at once in a ring of white and a
+  // spray of frost; where the cone lands, a white star, a ring out along the ground, the ground frost-bitten, shards stuck in it glinting
   'shell.hailstorm.fire': { layers: [
-    L({ type: 'sprites', count: 1, shape: 'core', size: 2.2, sizeEnd: 0.2, life: 0.1, color: 'white', powerCount: false }),
-    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.4, sizeEnd: 3.2, life: 0.18, color: 'white', powerCount: false }),
-    L({ type: 'sprites', count: 24, shape: 'shard', dir: 'cone', cone: 13, speed: [26, 40], size: [0.32, 0.5], sizeEnd: 0.18, life: [0.22, 0.36], color: GLAZES, spin: [-20, 20], powerCount: false }),
-    L({ type: 'sprites', count: 16, shape: 'glint', dir: 'cone', cone: 16, speed: [18, 30], size: [0.3, 0.5], sizeEnd: 0, life: [0.2, 0.3], color: 'white', twinkle: 20, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'core', size: 4.4, sizeEnd: 0.4, life: 0.12, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.8, sizeEnd: 6.4, life: 0.22, color: 'white', powerCount: false }),
+    L({ type: 'sprites', count: 32, shape: 'shard', dir: 'cone', cone: 13, speed: [26, 40], size: [0.64, 1], sizeEnd: 0.36, life: [0.24, 0.4], color: GLAZES, spin: [-20, 20], powerCount: false }),
+    L({ type: 'sprites', count: 24, shape: 'glint', dir: 'cone', cone: 16, speed: [18, 30], size: [0.6, 1], sizeEnd: 0, life: [0.2, 0.32], color: 'white', twinkle: 20, powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'puff', dir: 'cone', cone: 18, speed: [10, 18], drag: 3, size: [0.8, 1.2], sizeEnd: 2.6, life: [0.4, 0.6], color: [0xf3efe6, 0xdfe8f0], alpha: 0.5, powerCount: false }),
   ] },
   'shell.hailstorm.land': { layers: [
-    groundRing({ to: 9, from: 0.5, dur: 0.4, tint: 0xf3efe6, k: 1.2 }),
-    L({ type: 'sprites', count: 30, shape: 'star4', spawn: 'disc', r: 2.4, size: [0.5, 0.9], sizeEnd: 0, life: [0.12, 0.2], color: 'white', powerCount: false }),
-    debris({ shape: 'shard', count: 36, spawn: 'disc', r: 2.4, speed: [2, 5], cone: 50, size: [0.22, 0.38], life: [4, 5.5], color: GLAZES, pool: 'add' }),
-    L({ type: 'sprites', pool: 'alpha', count: 14, shape: 'puff', spawn: 'disc', r: 2.2, dir: 'up', speed: [0.6, 1.4], size: [0.6, 0.9], sizeEnd: 1.6, life: [0.8, 1.2], drag: 2, color: 0xd9b89a, alpha: 0.45, powerCount: false }),
-    L({ type: 'sprites', rate: 14, dur: 4, shape: 'glint', spawn: 'disc', r: 2.4, size: [0.25, 0.4], sizeEnd: 0, life: 0.4, color: ['white', 'labradorite'], twinkle: 12 }),
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 9, sizeEnd: 0.5, life: 0.22, color: 'white', powerCount: false }),
+    groundRing({ to: 18, from: 1, dur: 0.5, tint: 0xf3efe6, k: 1.4 }),
+    scorch({ size: 7, dur: 6, tint: 0x6a5a48 }),
+    L({ type: 'sprites', count: 40, shape: 'star4', spawn: 'disc', r: 4.8, size: [1, 1.8], sizeEnd: 0, life: [0.14, 0.24], color: 'white', powerCount: false }),
+    debris({ shape: 'shard', count: 48, spawn: 'disc', r: 4.8, speed: [3, 8], cone: 50, size: [0.44, 0.76], life: [4, 5.5], color: GLAZES, pool: 'add' }),
+    L({ type: 'sprites', pool: 'alpha', count: 20, shape: 'puff', spawn: 'disc', r: 4.4, dir: 'up', speed: [1.2, 2.8], size: [1.2, 1.8], sizeEnd: 3.2, life: [0.9, 1.3], drag: 2, color: [0xd9b89a, 0xf3efe6], alpha: 0.5, powerCount: false }),
+    L({ type: 'sprites', rate: 22, dur: 4, shape: 'glint', spawn: 'disc', r: 4.8, size: [0.5, 0.8], sizeEnd: 0, life: 0.4, color: ['white', 'labradorite'], twinkle: 12 }),
   ] },
   // 16 Mallet: the clay head that bloomed in flight slams down: a ring along the floor, a cake of dust, chips
   'shell.mallet.fly': { layers: [

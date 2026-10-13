@@ -18,9 +18,13 @@ export const L = (o) => o;
 
 // ---- the ludicrous layers: three pieces every big blow of the ten shares (docs/plans/CASTER-SHELLS.md, before section 6). Each is a
 // layer on the programs already warm: the decal (vfx.js, its two drawn pictures) and the sprites' alpha pool; never a mesh a chip.
-/** A shockwave's front running out flat along the ground, `from` to `to` m across over `dur` real s. */
-export const groundRing = ({ to = 10, from = 0.5, dur = 0.7, tint = 'tint', at = 0, k = 1.6, y = 0.06 } = {}) =>
-  L({ type: 'decal', tex: 'shockring', at, dur, scale: [[0, from], [1, to]], k: [[0, k], [0.5, k * 0.55], [1, 0]], tint, glow: 1.4, offset: [0, y, 0] });
+/** A shockwave's front running out flat along the ground, `from` to `to` m across over `dur` real s. Two layers (an effect's layers are
+ *  flattened: vfx.js): a dark band just inside the front, the scorch's darken (the decal's one program, another blend state), so the
+ *  ring reads on the Dunes' white sand where added light alone is lost; and the added front over it, for dark ground. */
+export const groundRing = ({ to = 10, from = 0.5, dur = 0.7, tint = 'tint', at = 0, k = 1.6, y = 0.06 } = {}) => [
+  L({ type: 'decal', tex: 'shockring', blend: 'darken', order: 3, at, dur, scale: [[0, from * 0.92], [1, to * 0.92]], k: [[0, 1], [0.5, 0.75], [1, 0]], tint: 0x9a968e, glow: 0.85, offset: [0, y - 0.005, 0] }),
+  L({ type: 'decal', tex: 'shockring', at, dur, scale: [[0, from], [1, to]], k: [[0, k], [0.5, k * 0.55], [1, 0]], tint, glow: 1.4, offset: [0, y, 0] }),
+];
 /** The ground burnt under a blow, `size` m across: it lies `dur` real s, then fades (darkening what is there: no light of its own). */
 export const scorch = ({ size = 3, dur = 6, at = 0, tint = 0xd0d8e0, y = 0.04 } = {}) =>
   L({ type: 'decal', tex: 'scorch', blend: 'darken', at, dur, scale: [[0, size * 0.55], [0.05, size], [1, size]], k: [[0, 0], [0.03, 1], [0.7, 1], [1, 0]], tint, glow: 0.9, offset: [0, y, 0] });

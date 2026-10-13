@@ -184,7 +184,7 @@ export class Vfx {
   }
   layersOf(def, seen = 0) {
     const base = def.extends && seen < 8 ? this.layersOf(this.lib[def.extends] || {}, seen + 1) : [];
-    return [...base, ...(def.layers || [])];
+    return [...base, ...(def.layers || []).flat()]; // (a layer may come as a pair: shelllooks/kit.js's groundRing)
   }
 
   play(name, ctx = {}) {

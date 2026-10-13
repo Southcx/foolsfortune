@@ -27,6 +27,7 @@
 import * as THREE from 'three';
 import { GROUPS } from '../core/physics.js';
 import { sfx } from '../audio/sfx.js';
+import { beamMaterial } from './beam.js';
 
 const BPM = 124, SPB = 60 / BPM, BEATS = 14, DUR = BEATS * SPB;
 const NEON = [0xff2fb0, 0x22e8ff, 0xb6ff2a, 0xff8a1f, 0x9a5cff, 0xffe600, 0xff3a3a, 0x3a7bff];
@@ -35,23 +36,7 @@ const D = THREE.MathUtils.damp, lerp = THREE.MathUtils.lerp, clamp = THREE.MathU
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _q = new THREE.Quaternion(), _col = new THREE.Color(), _m = new THREE.Matrix4();
 const DOWN = new THREE.Vector3(0, -1, 0), Z = new THREE.Vector3(0, 0, 1);
 
-const CONE_V = `
-varying float vY; varying vec3 vN; varying vec3 vV;
-void main() {
-  vY = -position.y / ${'LEN'};
-  vec4 wp = modelMatrix * vec4(position, 1.0);
-  vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - wp.xyz);
-  gl_Position = projectionMatrix * viewMatrix * wp;
-}`;
-const CONE_F = `
-uniform vec3 uColor; uniform float uOpacity;
-varying float vY; varying vec3 vN; varying vec3 vV;
-void main() {
-  float fall = pow(1.0 - clamp(vY, 0.0, 1.0), 1.15);
-  float edge = pow(abs(dot(normalize(vN), normalize(vV))), 1.6);
-  gl_FragColor = vec4(uColor, uOpacity * fall * edge);
-  #include <colorspace_fragment>
-}`;
+// (the beams' cones are the chests' beam's own program: vfx/beam.js's beamMaterial, hung from the fixture, `flip`)
 
 /** The paint that only shows under a black light: neon splatter, zig-zags, stars, drips and rings, on one transparent sheet. */
 function uvSheet(seed) {
@@ -93,8 +78,7 @@ export class Rave {
     const BL = 9; // (the length they are built to; they are scaled to the height of the room)
     const geo = new THREE.ConeGeometry(1, 1, 28, 1, true); geo.translate(0, -0.5, 0); geo.scale(1, BL, 1);
     for (let i = 0; i < N_BEAMS; i++) {
-      const mat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color(NEON[i]) }, uOpacity: { value: 0 } }, vertexShader: CONE_V.replace('LEN', BL.toFixed(1)), fragmentShader: CONE_F,
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+      const mat = beamMaterial({ color: NEON[i], opacity: 0, foot: 1.15, edge: 1.6, white: 0, flip: true, additive: true });
       const cone = new THREE.Mesh(geo, mat); cone.frustumCulled = false; cone.renderOrder = 6; this.root.add(cone);
       const pool = new THREE.Mesh(new THREE.CircleGeometry(1, 28), new THREE.MeshBasicMaterial({ map: game.fx.haloTexture, color: NEON[i], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0, toneMapped: false }));
       pool.rotation.x = -Math.PI / 2; pool.renderOrder = 3; this.root.add(pool);
