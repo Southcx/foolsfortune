@@ -189,7 +189,7 @@ export class Dunemaw {
     // (in the room's clear middle, 2 m off its centre: prefabs.js keeps 2.5 m round the middle clear of every piece)
     const nests = rooms.slice(0, n < FLOORS ? NURSERY.clutches[n - 1] : 0).map((c) => { const p = this.cur.onSand(c.c, c.r, 1.6, 1.2); p.y += 0.02; return p; });
     this.nursery = new Nursery(g, { floor: n, spots: nests, guards: this.mobs, haul: R.haul });
-    this.finds = new Finds(g, { floor: n, cur: this.cur, run: R, seed: R.seed, onShift: (p) => this.nursery?.brood.push(g.jellies?.spawn(p, { once: true })) });
+    this.finds = new Finds(g, { floor: n, cur: this.cur, run: R, seed: R.seed, onShift: (p) => { const c = g.jellies?.spawn(p, { once: true }); if (c) g.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); this.nursery?.brood.push(c); } });
     R.floor = n; R.deepest = Math.max(R.deepest, n);
     this.moving = 2; // (a couple of frames for the teleport to land before the zone check below)
     g.player.killY = this.killY; // (now, not next frame: the floor is far above the dunes' killY, the mouth far below the Well's)
@@ -213,7 +213,7 @@ export class Dunemaw {
     const at = (c, dx = 0) => { // (in the room's lair when its design has one (prefabs.js), else on the sand, off the pool)
       const lair = !dx && c.spots?.find((s) => s.kind === 'lair'); if (lair) return lair.pos.clone().setY(lair.pos.y + 0.05);
       const p = F.onSand(c.c, c.r, dx, c.role === 'exit' ? 3 : 0); p.y += 0.05; return p; };
-    for (const c of rooms.slice(0, 1 + n)) this.mobs.push(J.spawn(at(c), { once: true }));
+    for (const c of rooms.slice(0, 1 + n)) { const m = J.spawn(at(c), { once: true }); g.spawnLook?.play(m, m.stray || m.egregore ? 'tear' : 'rise'); this.mobs.push(m); } // (each rises from the sand: vfx/spawnlook.js)
     return rooms.slice(0, 1 + n); // (the rooms that have jellies: their clutches go there)
   }
 

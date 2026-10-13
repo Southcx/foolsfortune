@@ -2,7 +2,7 @@
 // THE WORKBENCH'S BRACELET STAGE (working name, Espada's and the owner's to rule; docs/plans/BRACELET.md): the one ring (vfx/bracelet.js)
 // on the Vessoul's three forms side by side, worn where the game wears it (vfx/braceletwear.js WEAR): the god hand's wrist, the Pneuka
 // Jar's neck, the Courier's left wrist; and in front, two loose rings for reference, every socket closed and every socket open with a
-// charm in each. Its sliders on the right (lil-gui, as the tuning panel is): the glow's spend, domain and rejection step, each socket
+// charm in each. Its sliders on the right (lil-gui, as the tuning panel is): the glow's spend, domain and Dissonance Level, each socket
 // open or closed, a charm set in a socket, and the charm's flash; a demo loop drives the glow as the hand's acts would.
 //
 // Prior art: the caster shader stages beside it (workbench/castershaderstage.js), Unreal's material instance editor (a preview with its
@@ -27,9 +27,9 @@ export function braceletStage(game) {
   const obj = new THREE.Group(), B = {}, loader = new GLTFLoader();
   obj.userData.placed = true;
   obj.userData.view = { pos: new THREE.Vector3(0, 1.5, 3.6), look: new THREE.Vector3(0, 0.8, 0) };
-  const P = { spend: 0.4, domain: 'psychokinesis', rejection: 0, demo: false, socket: 'clasp', charmId: 'TWIN', ...Object.fromEntries(SOCKETS.map((d) => [d, true])) };
+  const P = { spend: 0.4, domain: 'psychokinesis', dissonance: 0, demo: false, socket: 'psychokinesis', charmId: 'TWIN', ...Object.fromEntries(SOCKETS.map((d) => [d, true])) };
   const worn = () => [B.hand, B.jar, B.courier].filter(Boolean);
-  const apply = () => { for (const b of worn()) { b.glow({ spend: P.spend, domain: P.domain, rejection: P.rejection }); b.setSockets(Object.fromEntries(SOCKETS.map((d) => [d, P[d]]))); } };
+  const apply = () => { for (const b of worn()) { b.glow({ spend: P.spend, domain: P.domain, dissonance: P.dissonance }); b.setSockets(Object.fromEntries(SOCKETS.map((d) => [d, P[d]]))); } };
 
   // the god hand, upright, its wrist at 0.55 m
   loader.parseAsync(bytes(handB64), '').then((gl) => {
@@ -61,7 +61,7 @@ export function braceletStage(game) {
     if (open) { b.showAll(); b.flashMesh.visible = false; b.glow({ spend: 0.35, domain: 'divination' }); }
     return b;
   };
-  const charms = { clasp: 'TWIN', psychokinesis: 'WIDE', alteration: 'ECHO', manifestation: 'GENTLE' };
+  const charms = { ouranurgy: 'TWIN', psychokinesis: 'WIDE', alteration: 'ECHO', manifestation: 'GENTLE' };
   function seed(b) { for (const [s, id] of Object.entries(charms)) b.setCharm(s, id); }
   B.closed = loose(-0.3, false); B.open = loose(0.3, true);
   if (B.courier) seed(B.courier);
@@ -73,14 +73,14 @@ export function braceletStage(game) {
   const g1 = gui.addFolder('the glow');
   g1.add(P, 'spend', 0, 1, 0.01).name('spend (share of the pool)').listen().onChange(apply);
   g1.add(P, 'domain', SOCKETS).name('domain in use').listen().onChange(apply);
-  g1.add(P, 'rejection', 0, 5, 1).name('rejection step').listen().onChange(apply);
+  g1.add(P, 'dissonance', 0, 5, 1).name('Dissonance Level').listen().onChange(apply);
   g1.add(P, 'demo').name('demo: the hand at work');
   const g2 = gui.addFolder('the sockets (open at level 30)');
   for (const d of SOCKETS) g2.add(P, d).onChange(apply);
   g2.add({ all: () => { SOCKETS.forEach((d) => { P[d] = true; }); g2.controllers.forEach((c) => c.updateDisplay()); apply(); } }, 'all').name('all open');
   g2.add({ none: () => { SOCKETS.forEach((d) => { P[d] = false; }); g2.controllers.forEach((c) => c.updateDisplay()); apply(); } }, 'none').name('all closed');
   const g3 = gui.addFolder('the charms');
-  g3.add(P, 'socket', ['clasp', ...SOCKETS]);
+  g3.add(P, 'socket', SOCKETS);
   g3.add(P, 'charmId', ['none', ...CHARM_IDS]).name('charm');
   g3.add({ set: () => { const id = P.charmId === 'none' ? null : P.charmId; charms[P.socket] = id; for (const b of worn()) b.setCharm(P.socket, id); } }, 'set').name('set it in the socket');
   g3.add({ flash: () => { for (const b of [...worn(), B.open]) b.charm(charms[P.socket] || P.charmId); } }, 'flash').name('the charm triggers (flash)');
@@ -88,9 +88,9 @@ export function braceletStage(game) {
   let last = 0, demoT = 0, beat = 0;
   obj.userData.tick = (t) => {
     const dt = Math.min(0.1, Math.max(0, t - last)); last = t;
-    if (P.demo) { // (the hand at work: a power every 1.4 real s in turn, a charm now and then, rejection climbing)
+    if (P.demo) { // (the hand at work: a power every 1.4 real s in turn, a charm now and then, the Dissonance Level climbing)
       demoT += dt;
-      if (demoT > 1.4) { demoT = 0; beat++; P.domain = SOCKETS[beat % SOCKETS.length]; P.spend = 0; for (const b of worn()) { b.glow({ domain: P.domain, spend: 0 }); b.pulse(0.4 + 0.6 * ((beat * 7) % 5) / 4); } if (beat % 3 === 0) for (const b of worn()) b.charm('TWIN'); if (beat % 5 === 0) { P.rejection = (P.rejection + 1) % 6; apply(); } }
+      if (demoT > 1.4) { demoT = 0; beat++; P.domain = SOCKETS[beat % SOCKETS.length]; P.spend = 0; for (const b of worn()) { b.glow({ domain: P.domain, spend: 0 }); b.pulse(0.4 + 0.6 * ((beat * 7) % 5) / 4); } if (beat % 3 === 0) for (const b of worn()) b.charm('TWIN'); if (beat % 5 === 0) { P.dissonance = (P.dissonance + 1) % 6; apply(); } }
     }
     for (const b of [...worn(), B.closed, B.open]) b?.update(dt);
   };

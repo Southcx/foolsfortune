@@ -139,6 +139,7 @@ export class LanternWisps {
     c.alive = true; c.hp = WISP.hp; c.dying = null; c.attack = null; c.pos.copy(c.home); c.vel.set(0, 0, 0); c.lift = 0;
     c.root.visible = true; c.col.setEnabled(true); c.mem.wipe(); c.drives.set('fear', 0); c.rel.clear(); c.macro = null;
     this.play(c, 'Idle'); c.brain.decide();
+    this.game.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (it forms again by rising from the sand: vfx/spawnlook.js)
   }
   /** A place it is set down (a shell's swap, a rift). */
   place(c, at) { c.pos.copy(at); c.vel.set(0, 0, 0); c.root.position.copy(at); c.rb.setTranslation({ x: at.x, y: at.y + WISP.hover + WISP.height * 0.5, z: at.z }, true); }
