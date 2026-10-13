@@ -176,6 +176,38 @@ So the god hand trains the same psyche the Courier does, and a Courier strong in
   at 80 of their domain. The numbers are mine once the powers exist.
 - **The ledger** gets `god.<power>` counts and each its `domain` source in `domains.js` (mine), as `god.manifest` and `god.sunder` are now.
 
+## 10. Rejection: the island's immune response (the owner, 2026-10-13)
+
+> "An almost GTA-like Wanted system where if you take too many hostile actions or attempt to warp someone's Island of Ego excessively,
+> then the island itself has like a cognitive immune response to reject you by summoning stronger Figments."
+
+**Prior art:** GTA's wanted stars (heat that climbs with crimes, decays out of sight, escalates the response). **Persona 5's Palace
+security level** (a mind's cognition noticing an intruder and sending stronger Shadows, calmed by staying unseen): the nearest match
+there is, an ego defending itself. Assassin's Creed's notoriety (fed by acts, eased by deeds). Noita's Stevari (strike in the holy
+place and the place itself comes for you).
+
+- **What feeds it: harm to the island's self-image, never use of the hand.** It is the mending read backward:
+  - how far the ground stands from its authored shape (the matter's delta, section 3), weighted by how fast it was made (a flood in
+    a second weighs more than a valley carved over an hour);
+  - acts against the folk (a clapperjar thrown, one of the folk struck, the hand's slap on them);
+  - epic miracles (each a big push).
+  Building gently (a bridge, a ford, a channel) weighs little. The player who sculpts is left alone; the one who scars is not.
+- **Five steps of rejection**, each calling a stronger answer, spawned at the edge of the hand's view and coming for the jar:
+  1. strays: Figments of class 1 drift in;
+  2. a pack, and the Figments wear the island's feeling;
+  3. aberrants, and blotlings well up from the crude in the ZoI;
+  4. a class 2, a FOE out of its Well;
+  5. the island's own answer, a class 3 made of the ground you scarred (its body your clay and sand, Espada's to name, Calissa's to
+     shape): beat it and the rejection resets to nothing.
+- **Read without words:** the sky darkens a step at a time, the ground's grain stands up like hackles, and the music thickens (Wanda's
+  stack, Rez's layers). No stars drawn on the screen.
+- **How it cools:** stop scarring and it falls a step a real minute while the mending runs. A Shrine is sanctuary: no Figment of the
+  rejection follows you into one, and resting there clears it. Leaving the god hand does not clear it; the Courier walks out into it.
+- **The gamble** (the house's taste): a Figment of the rejection pays its yield at the rejection's step, ×1 to ×3, and its EmO starts
+  high. So scarring the island on purpose to farm what it throws at you is a real strategy, and it can shatter you.
+- Working name **rejection** (Espada's to name). The ledger: `god.rejection.<step>` firsts and the highest step reached; an achievement
+  for beating the step-5 answer, and one for a day of terraforming that never passed step 1.
+
 ## 9. Order
 
 1. **Matter** (Petra): the garden's simulation made shared and flat, over the ZoI's chunks; Scoop, Pour, Raise and Lower; the mending.
@@ -186,5 +218,6 @@ So the god hand trains the same psyche the Courier does, and a Courier strong in
 4. **The domains' powers** (section 8), a domain at a time, the ones that reuse built parts first: Herd and Take (the minds exist),
    Strata and Course (the matter's own data), Rift (the caster shells' portal), Ward (the gesture reader).
 5. **Epic miracles**, then **voxel creations** (after the perf measure).
+6. **Rejection** (section 10): it needs the matter's delta (1) and the epics (5) to have something to read.
 
 Names (miracle, the seven, the epics) are working words for Espada's.
