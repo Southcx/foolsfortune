@@ -17,7 +17,7 @@
 // sides, its liquid pack, all reused here as an idea; its program is a flat door's and stays its own). Free fall's speed sqrt(2 g d)
 // for the warp along v; the billboard puff of every console's dust (Shadow of the Colossus's sand at a footfall).
 //
-//   const f = new Sandfall(game, { top, dir, width, height, curve?, lean?, speed?, zone? })   scene.add(f.object)   f.update(dt)   f.dispose()
+//   const f = new RacewaySandfall(game, { top, dir, width, height, curve?, lean?, speed?, zone? })   scene.add(f.object)   f.update(dt)   f.dispose()
 //     top: the lip's middle (world); dir: the way out over it (horizontal); width, height: metres. curve: how far the sand is thrown out
 //     before it turns down (m); lean: how much further out the foot is than the turn (m, to keep it off a face that slopes out).
 //   f.set({ speed, width, curve, lean })   (the Workbench's sliders: width, curve and lean rebuild the sheet)
@@ -161,7 +161,7 @@ function material() {
   });
 }
 
-export class Sandfall {
+export class RacewaySandfall {
   constructor(game, { top = new THREE.Vector3(), dir = new THREE.Vector3(0, 0, 1), width = 30, height = 26, curve = SANDFALL.curve, lean = SANDFALL.lean, speed = SANDFALL.speed, zone } = {}) {
     this.game = game;
     this.opts = { width, height, curve, lean }; this.speed = speed; this.t = 0;
@@ -189,7 +189,7 @@ export class Sandfall {
 
 /** One copy 50 m under the world for main.js's compile; kept and never disposed, so its program lives (the casebook's rules 17 and 18). */
 export function prewarmSandfall(scene) {
-  const f = new Sandfall(null, { width: 4, height: 4 });
+  const f = new RacewaySandfall(null, { width: 4, height: 4 });
   f.object.position.set(0, -50, 0); f.object.frustumCulled = false; f.object.userData.zoneFree = true; f.object.visible = true; scene.add(f.object);
   return () => { f.object.visible = false; };
 }

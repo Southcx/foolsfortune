@@ -96,7 +96,7 @@ import { IslandMatter } from './godhand/islandmatter.js';
 import { crackPrewarm } from './vfx/crackskin.js';
 import { prewarmCasterShadersS1toS5 } from './vfx/caster/warmups1tos5.js';
 import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
-import { prewarmSandfall } from './vfx/sandfall.js';
+import { prewarmSandfall } from './vfx/racewaysandfall.js';
 import { installBracelets } from './vfx/braceletwear.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
@@ -975,7 +975,7 @@ async function main() {
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
   const parkCasterS1toS5 = prewarmCasterShadersS1toS5(scene); // (the caster shells' shaders S1 to S5, one copy each 50 m down: their six programs, vfx/caster/)
   const parkCaster = Object.values(CASTER_SHADERS).filter((m) => m.layer).map((m) => m.prewarm?.(game)).filter(Boolean); // (S6 to S10, the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
-  const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/sandfall.js)
+  const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)

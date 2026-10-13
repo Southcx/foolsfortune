@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE WORKBENCH'S SANDFALL STAGE ('raceway:sandfall'): the Raceway's sandfall (vfx/sandfall.js) at the Raceway's own numbers, down a
+// THE WORKBENCH'S SANDFALL STAGE ('raceway:sandfall'): the Raceway's sandfall (vfx/racewaysandfall.js) at the Raceway's own numbers, down a
 // stand-in of its face: the lip at control point 18 (100 m), the foot at 19 (74 m) some 6 m further out, the landing hill beyond
 // (world/raceway/track.js, Dovina's), the track 28 m wide and the sheet 38 m (her `width`: the track's plus 10). Its sliders (lil-gui, as
 // the caster shaders' stages) for speed, width, curve and lean, so the owner can judge it before the Raceway drives it.
@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import GUI from 'lil-gui';
-import { Sandfall, SANDFALL } from '../vfx/sandfall.js';
+import { RacewaySandfall, SANDFALL } from '../vfx/racewaysandfall.js';
 
 const RACEWAY = { width: 38, height: 28, drop: 26, run: 6 }; // (her sandfall's width and height, the face's drop and run)
 
@@ -34,7 +34,7 @@ export function sandfallStage(game) {
   const gui = new GUI({ title: 'the Raceway\'s sandfall' }); gui.domElement.classList.add('ff-tuning'); gui.domElement.id = 'sandfallSliders'; gui.domElement.style.zIndex = '45';
   if (!document.getElementById('sandfallSlidersCss')) document.head.appendChild(Object.assign(document.createElement('style'), { id: 'sandfallSlidersCss', textContent: 'body #sandfallSliders.lil-gui { display: block !important; }' })); // (the workbench steps the HUD's panels out: these are the stage's own)
   const P = { speed: SANDFALL.speed, width: RACEWAY.width, curve: SANDFALL.curve, lean: SANDFALL.lean };
-  const f = new Sandfall(game, { top: new THREE.Vector3(0, 0, 0), dir: new THREE.Vector3(0, 0, 1), width: P.width, height: RACEWAY.height, curve: P.curve, lean: P.lean });
+  const f = new RacewaySandfall(game, { top: new THREE.Vector3(0, 0, 0), dir: new THREE.Vector3(0, 0, 1), width: P.width, height: RACEWAY.height, curve: P.curve, lean: P.lean });
   obj.add(f.object);
   const apply = () => f.set(P);
   gui.add(P, 'speed', 0, 3, 0.05).name('speed (time\'s scale)').onChange(apply);
