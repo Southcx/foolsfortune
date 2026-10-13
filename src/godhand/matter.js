@@ -124,11 +124,11 @@ export class MatterField {
   }
   /** Take up to `vol` cubic metres from the top of r: Lachryma first, then sand, then clay. What it got, by kind (and the water's leading
    *  feeling). The authored ground is never taken. */
-  take(x, z, r, vol) {
+  take(x, z, r, vol, layers = ['w', 'sand', 'clay']) {
     const a = this.cell * this.cell, got = { water: 0, sand: 0, clay: 0, feeling: null }, mixSum = new Float32Array(NF);
     let wsum = 0; this.each(x, z, r, (k, w) => { wsum += w; });
     if (!wsum) return got;
-    for (const layer of ['w', 'sand', 'clay']) {
+    for (const layer of layers) {
       const want = vol - got.water - got.sand - got.clay;
       if (want <= 1e-6) break;
       this.each(x, z, r, (k, w) => {
@@ -143,6 +143,29 @@ export class MatterField {
     if (got.sand || got.clay) this.version++;
     return got;
   }
+  /** Two square patches (half side h) trade their matter (Fold), or the first is pressed over the second (Stamp: `copy`). What a copy
+   *  lays over less is `made` (m³). Cells off the field or over no ground are left. */
+  patch(ax, az, bx, bz, h, { copy = false } = {}) {
+    const c = this.cell, n = this.n, m = Math.max(1, Math.round(h / c)), a = c * c;
+    const ia = Math.floor((ax - this.ox) / c), ja = Math.floor((az - this.oz) / c), ib = Math.floor((bx - this.ox) / c), jb = Math.floor((bz - this.oz) / c);
+    const ok = (i, j) => i >= 0 && j >= 0 && i < n && j < n && !this.void[j * n + i];
+    let made = 0, moved = 0;
+    for (let dj = -m; dj < m; dj++) for (let di = -m; di < m; di++) {
+      const iA = ia + di, jA = ja + dj, iB = ib + di, jB = jb + dj;
+      if (!ok(iA, jA) || !ok(iB, jB)) continue;
+      const A = jA * n + iA, B = jB * n + iB;
+      const was = this.clay[B] + this.sand[B] + this.w[B], now = this.clay[A] + this.sand[A] + this.w[A];
+      for (const L of [this.clay, this.sand, this.w]) { const t = L[A]; if (!copy) L[A] = L[B]; L[B] = t; }
+      for (let f = 0; f < NF; f++) { const t = this.mix[A * NF + f]; if (!copy) this.mix[A * NF + f] = this.mix[B * NF + f]; this.mix[B * NF + f] = t; }
+      if (copy) made += Math.max(0, now - was) * a; else moved += (now + was) * a;
+    }
+    this.grow(ia - m, ia + m, ja - m, ja + m); this.grow(ib - m, ib + m, jb - m, jb + m);
+    this.j0 = Math.max(0, Math.min(this.j0, ja - m, jb - m)); this.j1 = Math.min(n - 1, Math.max(this.j1, ja + m, jb + m));
+    this.water = 0; for (let k = 0; k < n * n; k++) this.water += this.w[k]; this.water *= a;
+    this.version++; this.wversion++;
+    return { moved, made };
+  }
+
   /** Raise the ground at r by dh (negative lowers it): the matter comes from (or goes to) the ring r..2r round it, as clay. What had no
    *  matter to come from is `made` (the caller pays Lachryma for it); lowering never digs below the authored ground. */
   raise(x, z, r, dh) {

@@ -27,6 +27,13 @@ export class Creations {
     this.queue = new Set();
     this.mendT = 0;
     this.mat = new THREE.MeshStandardMaterial({ color: 0xa8673f, roughness: 0.85 });
+    this.firedMat = new THREE.MeshStandardMaterial({ color: 0x6e3a22, roughness: 0.55 }); // (fired: darker, a little glossy; Calissa's to dress)
+    this.t = 0;
+    // a creation fired for good (Fire at 99, GODHAND.md 11) is kept, as its chunks' densities in runs; the rest is the mending's
+    game.save?.section('creations', { scope: 'world', version: 1,
+      dump: () => [...this.grid.chunks.values()].filter((c) => c.forever).map((c) => this.grid.pack(c.k)),
+      load: (d) => { for (const p of Array.isArray(d) ? d : []) { const c = this.grid.unpack(p); c.forever = true; } for (const k of this.grid.takeDirty()) this.queue.add(k); },
+      reset: () => {} });
     this.group = new THREE.Group(); this.group.name = 'god-creations';
     game.scene.add(this.group);
   }
@@ -42,10 +49,10 @@ export class Creations {
 
   update(dt) {
     if (!this.grid.chunks.size && !this.queue.size && !this.parts.size) return;
-    this.mendT += dt;
+    this.mendT += dt; this.t += dt;
     if (this.mendT >= CREATIONS.mendEvery) {
       const dk = (0.25 / CREATIONS.life) * this.mendT; this.mendT = 0;
-      for (const { k, lost } of this.grid.ebb(dk)) this.giveBack(k, lost);
+      for (const { k, lost } of this.grid.ebb(dk, (c) => c.forever || (c.firedUntil ?? 0) > this.t)) this.giveBack(k, lost);
       for (const k of this.grid.takeDirty()) this.queue.add(k);
     }
     if (!this.queue.size) return;
@@ -72,12 +79,27 @@ export class Creations {
     geo.setAttribute('position', new THREE.BufferAttribute(m.pos, 3));
     geo.setIndex(new THREE.BufferAttribute(m.idx, 1));
     geo.computeVertexNormals(); geo.computeBoundingSphere();
-    const mesh = new THREE.Mesh(geo, this.mat);
+    const C = this.grid.chunks.get(k), mesh = new THREE.Mesh(geo, C && (C.forever || (C.firedUntil ?? 0) > this.t) ? this.firedMat : this.mat);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
     const body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed());
     W.createCollider(RAPIER.ColliderDesc.trimesh(m.pos, m.idx, TRI_FLAGS).setFriction(0.9).setCollisionGroups(GROUPS.static), body);
     this.parts.set(k, { mesh, body });
+  }
+
+  /** Fire the creation within r of a point: its chunks stand `secs` real seconds before the mending touches them, or for good (kept in
+   *  the save). Returns how many chunks took the fire. */
+  fire(at, r, secs, forever = false, dry = false) {
+    const w = VOXEL.n * VOXEL.size; let n = 0;
+    for (const c of this.grid.chunks.values()) {
+      const x = (c.cx + 0.5) * w, y = (c.cy + 0.5) * w, z = (c.cz + 0.5) * w;
+      if (Math.hypot(x - at.x, y - at.y, z - at.z) > r + w * 0.87 || c.vol <= 0) continue;
+      if (dry) { n++; continue; }
+      if (forever) c.forever = true; else c.firedUntil = Math.max(c.firedUntil ?? 0, this.t + secs);
+      this.queue.add(c.k); n++;
+    }
+    if (forever && n && !dry) this.game.save?.dirty('creations');
+    return n;
   }
 
   /** Everything gone at once (a new world; nothing is given back). */

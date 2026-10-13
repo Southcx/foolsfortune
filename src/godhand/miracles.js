@@ -20,7 +20,7 @@ import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { COLOR } from '../progress/weather.js';
 import { recognize } from '../tools/soulbrush/gesture.js';
-import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen } from '../progress/godpowers.js';
+import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen, rampOf } from '../progress/godpowers.js';
 import { stream } from '../core/rng.js';
 const simRand = stream('godhand/miracles'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -82,10 +82,10 @@ export class Miracles {
     if (!at || g.cartography.tierAt(at.x, at.y, at.z).tier < 1) { g.log.say('warn', 'A miracle falls only on ground you know.', { key: 'miracle.zoi', throttle: 2 }); sfx.dryFire(); return; }
     if (epic) return this.castEpic(EPIC_BY_SIGN[feeling], at);
     const M = MIRACLES[feeling], u = THREE.MathUtils.clamp((Math.max(x1 - x0, y1 - y0) / innerHeight - 0.2) / 0.4, 0, 1);
-    const cost = lerp(M.cost[0], M.cost[1], u);
+    const cost = lerp(M.cost[0], M.cost[1], u) * (rampOf('miracle', 'cost', g) ?? 1), big = rampOf('miracle', 'size', g) ?? 1; // (GODHAND.md 11)
     if (!g.lachryma.spend(cost, 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
-    const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u), dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
-    this.begin(m);
+    const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u) * big, dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
+    this.begin(m); this.last = feeling; // (the last miracle's feeling: a Totem holds it, godhand/powers/make.js)
     g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), by: 'courier' });
   }
 

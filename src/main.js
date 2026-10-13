@@ -1125,6 +1125,7 @@ async function main() {
     const aboard = !!game.emocean?.stage.active || !!game.realm?.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
+    game.god?.arts?.powers?.update(dt); // (what the hand's powers leave lasting: rifts, wards, totems, workers: godhand/powers.js)
     game.rejection?.update(dt);
     if (godOn) god.update(dt);
     else if (!aboard) {

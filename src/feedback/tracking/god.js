@@ -6,7 +6,11 @@
 //
 //   godRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
-import { MIRACLES, EPICS } from '../../progress/godpowers.js';
+import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from '../../progress/godpowers.js';
+
+// the domains' other powers, counted alike (`god.power.<id>`); what each says, where it says anything (placeholders for Espada's)
+const POWER_SAYS = { rift: 'A rift opens, and its twin.', fold: 'The ground folds over.', fire: 'The clay takes the fire.', totem: 'A totem holds the weather.', herd: 'They walk where you drew.', take: 'You take it in hand.', muster: 'Clay hands come up to carry.', ward: 'A ward is written.', stamp: 'The ground is pressed again.' };
+
 
 const STEP_SAYS = [
   'The island settles.',
@@ -32,6 +36,12 @@ export function godRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('god.sculpt'); L.inc(`god.sculpt.${e.shape}`); L.hi('god.sculpt.volume', Math.round(e.volume || 0));
     log.say('god', { pillar: 'You raise a pillar of clay.', arch: 'You raise an arch of clay.', ramp: 'You raise a ramp of clay.' }[e.shape] || 'You raise clay.', { key: 'gsc', throttle: 1 });
+  });
+  for (const id of POWER_EVENTS) on(`god.${id}`, (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('god.power'); L.inc(`god.power.${id}`);
+    if (POWER_SAYS[id]) log.say('god', POWER_SAYS[id], { key: `gp.${id}`, throttle: 2 });
+    if (L.first(`god.power.${id}`)) log.say('record', `Logged: your first ${GOD_POWERS[id].label}.`);
   });
   on('god.miracle', (e) => {
     if (e.by !== 'courier') return;

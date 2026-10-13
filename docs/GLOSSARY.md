@@ -44,6 +44,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
 - **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel clay the hand raises with Sculpt (a pillar, an
   arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day. *Not:* Manifest's wall, the island's matter.
+- **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
+  each a domain's, opened by its level / each power's numbers from where it opens to 99, Creative mode at the top (GODHAND.md 11). *Not:* a widening.
 - **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response to the hand scarring it: five steps, each
   calling stronger Figments, cooled by the mending and a Shrine. *Not:* the mending, a raid.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your
@@ -344,6 +346,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
 - **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+  Its **STATUS shelf** (`codex/status.js`): the domains' levels and Soul Alchemy's ranks as two radar charts.
 - **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent

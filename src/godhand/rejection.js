@@ -13,9 +13,13 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REJECTION, heatOf, stepOf } from '../progress/rejection.js';
+import { GOD_POWERS, heatScale } from '../progress/godpowers.js';
 import { stream } from '../core/rng.js';
 
-const ACTS = ['god.scoop', 'god.pour', 'god.shape', 'god.carve', 'god.sculpt', 'god.miracle', 'god.epic', 'god.throw'];
+// (every power that works on the island; seeing (Strata, Course, Read) is not an act on it)
+const SEEN = new Set(['strata', 'course', 'read', 'telekinesis', 'miracle']);
+const ACTS = ['god.pour', 'god.miracle', 'god.epic', 'god.throw', ...Object.keys(GOD_POWERS).filter((id) => !SEEN.has(id)).map((id) => `god.${id}`)];
+const domainOf = (name, e) => (name === 'god.epic' ? e.domain : name === 'god.pour' ? 'psychokinesis' : name === 'god.throw' ? 'psychokinesis' : name === 'god.miracle' ? 'spellscription' : GOD_POWERS[name.slice(4)]?.domain);
 const rand = stream('godhand/rejection');
 
 export class Rejection {
@@ -29,7 +33,7 @@ export class Rejection {
   }
 
   feel(name, e) {
-    const h = heatOf(name, e);
+    const h = heatOf(name, e) * heatScale(domainOf(name, e), this.game); // (a master's hand scars less: GODHAND.md 11)
     if (h <= 0) return;
     this.heat += h; this.quiet = 0;
   }

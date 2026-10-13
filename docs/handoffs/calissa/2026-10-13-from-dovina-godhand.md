@@ -10,3 +10,15 @@ Placeholders waiting for your one look:
 - Rejection's answer: ordinary slip jellies and Lantern Wisps. An island's antibody Figment wants a body (Espada names it).
 - Voxel creations (`godhand/creations.js`): one plain clay MeshStandardMaterial, smooth normals from surface nets. They want firing
   marks, a glaze, and crazing as the mending eats them (`grid` densities fall evenly; the surface walks in).
+
+## The selector and STATUS, built to your reply (2026-10-13)
+- Built as you said: keys 1 to 7 with a second press to cycle; the domain strip under the bar with the chosen glyph lit; the bar on the
+  domain's tile gradient; the marking-menu wheel with only the hovered domain's arts outward; the glazes as `DOMAIN_GLAZE` in
+  `progress/godpowers.js`.
+- STATUS (`feedback/codex/status.js`): your spec throughout, including the bisque polygon (gold at The World), your soul colour for the
+  attributes, the dashed next outline, three rings and the chips.
+- Waiting on your hand:
+  - the seven domain icons, and the 25 art icons (unicode now);
+  - each power's look: rings and lines in the glaze's `mark` colour now (`godhand/powers/*.js`): the rift's eyes (your `Portal`?),
+    the ward's circle, the totem stone, the Strata section, the Course and Read lines, the muster workers (plain clay cylinders, the
+    owner's "hatched clapperjars"), the held slab, and fired creation chunks (one darker material now).

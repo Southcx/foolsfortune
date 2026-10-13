@@ -18,7 +18,7 @@
 export const REJECTION = {
   steps: [25, 60, 110, 170, 240],
   fall: 0.7,
-  rise: { moved: 0.5, made: 1, miracle: 8, epic: 60, throw: 2 },
+  rise: { moved: 0.5, made: 1, miracle: 8, epic: 60, throw: 2, act: 3 }, // (`act`: one of the domains' other powers worked on the island)
   ebb: 2,
   quiet: 12,
   every: 20,
@@ -42,7 +42,7 @@ export function heatOf(name, e) {
   if (name === 'god.miracle') return R.miracle;
   if (name === 'god.epic') return R.epic;
   if (name === 'god.throw') return R.throw;
-  return (e.moved || 0) * R.moved + (e.made || 0) * R.made;
+  return (e.moved || 0) * R.moved + (e.made || 0) * R.made + (e.act ? R.act : 0);
 }
 
 /** The step for a heat, given the step now (a step falls only below `fall` of its own start, so it does not flicker). */

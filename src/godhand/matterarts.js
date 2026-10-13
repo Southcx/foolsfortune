@@ -20,7 +20,7 @@
 import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
-import { GOD_POWERS } from '../progress/godpowers.js';
+import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
 
 /** The verbs' numbers. `carry` the most the hand holds (m³, at level 1; Psychokinesis widens it: WIDEN 'psychokinesis.carry'); `takeRate` and
  *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag; `carve` the channel's width
@@ -43,7 +43,9 @@ export class MatterArts {
   }
 
   get carried() { return this.held.water + this.held.sand + this.held.clay; }
-  get cap() { return VERBS.carry * (this.game.psyche?.widen?.('psychokinesis.carry') ?? 1); }
+  get cap() { return rampOf('scoop', 'carry', this.game) ?? VERBS.carry; }
+  /** Lachryma a cubic metre of matter made from nothing, for a verb (GODHAND.md 11: free at 99). */
+  madeCost(id) { return rampOf(id, 'made', this.game) ?? GOD_POWERS[id]?.made ?? 0.5; }
   field() { return this.game.matter?.ensure(this.god.jar.pos); }
   /** The authored ground's own matter at a height: the Dunes' and the Wells' are sand, the rest clay. */
   groundKind(y) { const id = this.game.cartography?.layerOf?.(y)?.id; return id === 'dunes' || id === 'well' ? 'sand' : 'clay'; }
@@ -82,24 +84,24 @@ export class MatterArts {
         } else {
           // no matter here: the authored ground's own, made from nothing (and paid for)
           const v = Math.min(room, VERBS.takeRate * dt * 0.5);
-          if (!this.arts.drainOk(v * GOD_POWERS.scoop.made / dt, dt)) return;
+          if (!this.arts.drainOk(v * this.madeCost('scoop') / dt, dt)) return;
           this.held[this.groundKind(p.y)] += v; L.moved += v; L.made += v;
         }
       }
     } else if (L.id === 'shape') {
       if (input.isDown('ShiftLeft') || input.isDown('ShiftRight')) {
-        const r = F.smooth(p.x, p.z, VERBS.r * 1.4, L.y0, VERBS.levelK);
-        if (r.made > 0 && !this.arts.drainOk(r.made * GOD_POWERS.shape.made / Math.max(dt, 1e-3), dt)) return;
+        const r = F.smooth(p.x, p.z, (rampOf('shape', 'r', g) ?? VERBS.r) * 1.4, L.y0, VERBS.levelK);
+        if (r.made > 0 && !this.arts.drainOk(r.made * this.madeCost('shape') / Math.max(dt, 1e-3), dt)) return;
         L.moved += r.moved; L.made += r.made;
       } else {
         const drag = THREE.MathUtils.clamp((L.my - input.my) / 120, -1, 1); // (up raises, down lowers)
         if (Math.abs(drag) < 0.08) return;
-        const r = F.raise(p.x, p.z, VERBS.r, drag * VERBS.shapeRate * dt);
-        if (r.made > 0 && !this.arts.drainOk(r.made * GOD_POWERS.shape.made / Math.max(dt, 1e-3), dt)) return;
+        const r = F.raise(p.x, p.z, rampOf('shape', 'r', g) ?? VERBS.r, drag * (rampOf('shape', 'rate', g) ?? VERBS.shapeRate) * dt);
+        if (r.made > 0 && !this.arts.drainOk(r.made * this.madeCost('shape') / Math.max(dt, 1e-3), dt)) return;
         L.moved += r.moved; L.made += r.made;
       }
     } else if (L.id === 'carve' || L.id === 'sculpt') {
-      const b = p.clone(); const d = b.clone().sub(L.a).setY(0), max = VERBS[L.id].maxLen;
+      const b = p.clone(); const d = b.clone().sub(L.a).setY(0), max = rampOf(L.id, 'len', g) ?? VERBS[L.id].maxLen;
       if (d.length() > max) b.copy(L.a).addScaledVector(d.normalize(), max);
       L.b = b;
       this.arts.showBlade(L.a, b, 0.4, true);
@@ -111,7 +113,7 @@ export class MatterArts {
     this.L = null;
     if (!L || !F) return;
     if (L.id === 'carve' && L.b && L.a.distanceTo(L.b) > 0.8) {
-      const r = F.carve(L.a.x, L.a.z, L.b.x, L.b.z, VERBS.carve.w, VERBS.carve.depth);
+      const r = F.carve(L.a.x, L.a.z, L.b.x, L.b.z, rampOf('carve', 'w', g) ?? VERBS.carve.w, rampOf('carve', 'depth', g) ?? VERBS.carve.depth);
       L.moved = r.moved;
       sfx.thump();
     }
@@ -127,12 +129,12 @@ export class MatterArts {
     const g = this.game, S = VERBS.sculpt, a = L.a, b = L.b || a, len = Math.hypot(b.x - a.x, b.z - a.z);
     if (!g.creations) return;
     const shift = g.input.isDown('ShiftLeft') || g.input.isDown('ShiftRight');
-    const shape = len < S.pillar ? 'pillar' : shift ? 'ramp' : 'arch';
-    const opts = shape === 'pillar' ? {} : shape === 'ramp' ? { w: S.w, rise: Math.min(S.ramp, len * S.rampK) }
-      : { w: S.w, t: S.t, h: THREE.MathUtils.clamp(len * S.archK, S.arch[0], S.arch[1]) };
-    const est = shape === 'pillar' ? Math.PI * 0.36 * 3.5 : shape === 'ramp' ? S.w * len * (opts.rise / 2 + 0.5) : S.w * S.t * len * 1.2;
+    const shape = len < S.pillar ? 'pillar' : shift ? 'ramp' : 'arch', k = rampOf('sculpt', 'scale', g) ?? 1; // (bigger with Manifestation: GODHAND.md 11)
+    const opts = shape === 'pillar' ? { r: 0.6 * k, h: 3 * k } : shape === 'ramp' ? { w: S.w * k, rise: Math.min(S.ramp * k, len * S.rampK) }
+      : { w: S.w * k, t: S.t * k, h: THREE.MathUtils.clamp(len * S.archK, S.arch[0], S.arch[1] * k) };
+    const est = shape === 'pillar' ? Math.PI * opts.r * opts.r * (opts.h + 0.5) : shape === 'ramp' ? opts.w * len * (opts.rise / 2 + 0.5) : opts.w * opts.t * len * 1.2;
     const fromHeld = Math.min(est, this.carried), made = est - fromHeld;
-    if (made > 0 && !g.lachryma.spend(made * GOD_POWERS.sculpt.made, 'god')) { g.log.say('warn', 'Not enough Lachryma, or matter in hand, to raise that.', { key: 'sculpt.pay', throttle: 2 }); return; }
+    if (made > 0 && !g.lachryma.spend(made * this.madeCost('sculpt'), 'god')) { g.log.say('warn', 'Not enough Lachryma, or matter in hand, to raise that.', { key: 'sculpt.pay', throttle: 2 }); return; }
     if (fromHeld > 0) { const H = this.held, k = fromHeld / this.carried; H.water -= H.water * k; H.sand -= H.sand * k; H.clay -= H.clay * k; }
     const r = g.creations.raise(shape, a, b, opts);
     sfx.thump();

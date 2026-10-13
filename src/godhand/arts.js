@@ -21,7 +21,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MatterArts, MATTER_ARTS } from './matterarts.js';
-import { GOD_POWERS, powerOpen } from '../progress/godpowers.js';
+import { GodPowers, POWER_IDS } from './powers.js';
+import { GOD_POWERS, powerOpen, DOMAIN_ORDER, DOMAIN_GLAZE } from '../progress/godpowers.js';
 import { mindLineMaterial } from '../vfx/labradorite.js';
 import { ReachDome } from '../vfx/wiremarks.js';
 import { T, PALETTE } from '../core/config.js';
@@ -30,17 +31,41 @@ import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
 import { planeFrom } from '../tools/slicing.js';
 
+// The hand's arts by the seven domains (GODHAND.md section 8; DOMAIN_ORDER): keys 1 to 7 pick a domain, again to go through its arts.
+// `key` is the domain's key. A placeholder until Calissa rules on the selector's look (docs/handoffs/calissa/).
 export const ARTS = [
-  { id: 'telekinesis', key: '1', name: 'TELEKINESIS', glyph: '⤒', needs: 1, blurb: 'lift and throw', color: '#ffe0c0' },
-  { id: 'sunder', key: '2', name: 'SUNDER', glyph: '╱', needs: 1, blurb: 'draw a blade', color: '#ffd696' },
-  { id: 'swell', key: '3', name: 'SWELL', glyph: '⤢', needs: 1, blurb: 'grow or shrink', color: '#ffb27a' },
-  { id: 'wring', key: '4', name: 'WRING', glyph: '↺', needs: 1, blurb: 'twist the clay', color: '#ff9a6a' },
-  { id: 'manifest', key: '5', name: 'MANIFEST', glyph: '▲', needs: 1, blurb: 'raise clay', color: '#ffc65c' },
-  // the matter's verbs (godhand/matterarts.js; GODHAND.md section 3)
-  { id: 'scoop', key: '6', name: 'SCOOP', glyph: '◒', needs: 1, blurb: 'take up and pour matter', color: '#9fd8e0' },
-  { id: 'shape', key: '7', name: 'SHAPE', glyph: '⛰', needs: 1, blurb: 'raise or lower the ground', color: '#d8b878' },
-  { id: 'carve', key: '8', name: 'CARVE', glyph: '⌇', needs: 1, blurb: 'cut a channel', color: '#c08a5a' },
-  { id: 'sculpt', key: '9', name: 'SCULPT', glyph: '⌒', needs: 1, blurb: 'raise an arch, a ramp or a pillar', color: '#b8784a' },
+  // 1 Ouranurgy
+  { id: 'rift', domain: 'ouranurgy', key: '1', name: 'RIFT', glyph: '◎', needs: 1, blurb: 'drag: a linked pair of holes', color: '#9a8cff' },
+  { id: 'fold', domain: 'ouranurgy', key: '1', name: 'FOLD', glyph: '⇄', needs: 1, blurb: 'drag: two patches trade places', color: '#9a8cff' },
+  { id: 'hasten', domain: 'ouranurgy', key: '1', name: 'HASTEN', glyph: '⧗', needs: 1, blurb: 'time runs fast here; Shift: it stops', color: '#9a8cff' },
+  // 2 Manifestation
+  { id: 'manifest', domain: 'manifestation', key: '2', name: 'MANIFEST', glyph: '▲', needs: 1, blurb: 'raise clay', color: '#ffc65c' },
+  { id: 'sculpt', domain: 'manifestation', key: '2', name: 'SCULPT', glyph: '⌒', needs: 1, blurb: 'raise an arch, a ramp or a pillar', color: '#ffc65c' },
+  { id: 'fire', domain: 'manifestation', key: '2', name: 'FIRE', glyph: '♨', needs: 1, blurb: 'harden a creation', color: '#ffc65c' },
+  { id: 'totem', domain: 'manifestation', key: '2', name: 'TOTEM', glyph: '⏉', needs: 1, blurb: 'hold your last miracle on a spot', color: '#ffc65c' },
+  // 3 Divination
+  { id: 'strata', domain: 'divination', key: '3', name: 'STRATA', glyph: '☰', needs: 1, blurb: 'drag: see the layers', color: '#7fe0ff' },
+  { id: 'course', domain: 'divination', key: '3', name: 'COURSE', glyph: '⤵', needs: 1, blurb: 'see where it would run', color: '#7fe0ff' },
+  { id: 'read', domain: 'divination', key: '3', name: 'READ', glyph: '◉', needs: 1, blurb: 'see what creatures mean to do', color: '#7fe0ff' },
+  // 4 Psychokinesis
+  { id: 'telekinesis', domain: 'psychokinesis', key: '4', name: 'TELEKINESIS', glyph: '⤒', needs: 1, blurb: 'lift and throw', color: '#9fd8e0' },
+  { id: 'scoop', domain: 'psychokinesis', key: '4', name: 'SCOOP', glyph: '◒', needs: 1, blurb: 'take up and pour matter', color: '#9fd8e0' },
+  { id: 'gust', domain: 'psychokinesis', key: '4', name: 'GUST', glyph: '≋', needs: 1, blurb: 'drag: a stroke of wind', color: '#9fd8e0' },
+  { id: 'slab', domain: 'psychokinesis', key: '4', name: 'SLAB', glyph: '▤', needs: 1, blurb: 'lift a slab; press again to set it', color: '#9fd8e0' },
+  // 5 Possession
+  { id: 'herd', domain: 'possession', key: '5', name: 'HERD', glyph: '➶', needs: 1, blurb: 'drag: creatures walk it', color: '#ff8ad0' },
+  { id: 'take', domain: 'possession', key: '5', name: 'TAKE', glyph: '✋', needs: 1, blurb: 'play a creature from above', color: '#ff8ad0' },
+  { id: 'muster', domain: 'possession', key: '5', name: 'MUSTER', glyph: '⚒', needs: 1, blurb: 'drag: workers carry matter', color: '#ff8ad0' },
+  // 6 Alteration
+  { id: 'sunder', domain: 'alteration', key: '6', name: 'SUNDER', glyph: '╱', needs: 1, blurb: 'draw a blade', color: '#ffa060' },
+  { id: 'swell', domain: 'alteration', key: '6', name: 'SWELL', glyph: '⤢', needs: 1, blurb: 'grow or shrink', color: '#ffa060' },
+  { id: 'wring', domain: 'alteration', key: '6', name: 'WRING', glyph: '↺', needs: 1, blurb: 'twist the clay', color: '#ffa060' },
+  { id: 'shape', domain: 'alteration', key: '6', name: 'SHAPE', glyph: '⛰', needs: 1, blurb: 'raise or lower the ground', color: '#ffa060' },
+  { id: 'carve', domain: 'alteration', key: '6', name: 'CARVE', glyph: '⌇', needs: 1, blurb: 'cut a channel', color: '#ffa060' },
+  { id: 'transmute', domain: 'alteration', key: '6', name: 'TRANSMUTE', glyph: '⚗', needs: 1, blurb: 'sand to clay; Shift: your feeling', color: '#ffa060' },
+  // 7 Spellscription (the miracles are MMB: godhand/miracles.js)
+  { id: 'ward', domain: 'spellscription', key: '7', name: 'WARD', glyph: '◯', needs: 1, blurb: 'drag: a circle none cross', color: '#fff1dc' },
+  { id: 'stamp', domain: 'spellscription', key: '7', name: 'STAMP', glyph: '⎘', needs: 1, blurb: 'drag: copy ground onto ground', color: '#fff1dc' },
 ];
 export const ART_BY_ID = Object.fromEntries(ARTS.map((a) => [a.id, a]));
 
@@ -50,7 +75,13 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const clamp = THREE.MathUtils.clamp;
 
 const CSS = `
-#godarts { position: absolute; left: 50%; bottom: calc(20px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 8px; }
+#goddomains { position: absolute; left: 50%; bottom: calc(14px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 14px; white-space: nowrap; font: 600 10px var(--f-title); letter-spacing: .12em; color: rgba(251,227,207,.5); text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
+#goddomains b { color: var(--accent); font: 11px var(--f-sys); margin-right: 4px; }
+#goddomains span.on { color: #fbe3cf; border-bottom: 2px solid var(--accent); }
+#goddomains i { font-style: normal; font-size: 14px; margin-right: 4px; opacity: .5; } #goddomains span.on i { opacity: 1; }
+#godwheel .w.art { fill: rgba(28,13,8,.82); stroke: rgba(255,178,122,.45); stroke-width: 1.5; }
+#godwheel .w.dom.sel { stroke: #ffe0c0; stroke-width: 2; }
+#godarts { position: absolute; left: 50%; bottom: calc(40px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 8px; padding: 6px; border-radius: 7px; }
 #godarts .slot { width: 84px; height: 62px; box-sizing: border-box; border: 1px solid var(--jmid); background: linear-gradient(180deg, rgba(var(--jtop), .72), rgba(var(--jbot), .86)); border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 2px 4px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .78; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
 #godarts .slot i { font-style: normal; font-size: 22px; line-height: 1; }
 #godarts .slot span { font: 600 10px var(--f-title); letter-spacing: .1em; margin-top: 4px; }
@@ -76,7 +107,7 @@ export class GodArts {
   constructor(god) {
     this.god = god;
     this.game = god.game;
-    this.sel = 0;
+    this.sel = ARTS.findIndex((a) => a.id === 'telekinesis'); // (the hand's first art: the grab)
     this.live = null; // the art in use right now: { id, ... }
     this.manifests = [];
     this.wheelOpen = false;
@@ -84,11 +115,18 @@ export class GodArts {
     this.buildUi();
     this.buildFx();
     this.matter = new MatterArts(this);
+    this.powers = new GodPowers(this); // (the domains' god powers: godhand/powers.js)
   }
 
   get art() { return ARTS[this.sel]; }
   cfg(id) { return this.game.system?.artCfg ? this.game.system.artCfg(id) : T.arts[id]; }
-  owns(id) { return GOD_POWERS[id] && !GOD_POWERS[id].built ? false : MATTER_ARTS.has(id) ? powerOpen(id, this.game) : (this.game.system?.has(id) ?? true); }
+  owns(id) { return GOD_POWERS[id] && !GOD_POWERS[id].built ? false : MATTER_ARTS.has(id) || POWER_IDS.has(id) ? powerOpen(id, this.game) : (this.game.system?.has(id) ?? true); }
+  /** A domain's key (1 to 7): its first art, or the next of its arts if one is chosen already. */
+  selectDomain(key) {
+    const mine = ARTS.map((a, i) => [a, i]).filter(([a]) => a.key === key); if (!mine.length) return;
+    const at = mine.findIndex(([, i]) => i === this.sel);
+    this.select(mine[at >= 0 ? (at + 1) % mine.length : 0][1]);
+  }
 
   select(i) {
     if (i < 0 || i >= ARTS.length || i === this.sel) return;
@@ -109,6 +147,11 @@ export class GodArts {
     document.getElementById('hud').appendChild(bar);
     this.bar = bar;
     this.slots = [...bar.querySelectorAll('.slot')];
+    // the seven domains over the bar, the chosen one lit (keys 1 to 7; a placeholder for Calissa's selector)
+    this.domains = document.createElement('div'); this.domains.id = 'goddomains';
+    this.domains.innerHTML = DOMAIN_ORDER.map((d, i) => `<span data-d="${d}"><b>${i + 1}</b><i>${DOMAIN_GLAZE[d].glyph}</i>${d.toUpperCase()}</span>`).join('');
+    document.getElementById('hud').appendChild(this.domains);
+    this.domainTabs = [...this.domains.querySelectorAll('span')];
     this.tip = document.createElement('div');
     this.tip.id = 'godtip';
     document.body.appendChild(this.tip);
@@ -118,20 +161,30 @@ export class GodArts {
     this.buildWheel();
   }
 
-  buildWheel() {
-    const R0 = 46, R1 = 150, n = ARTS.length, gap = 0.03;
+  /** The wheel (RMB held) is a marking menu (Calissa, 2026-10-13): the seven domains round the hub, and outward from the hovered one only its
+   *  own arts. Flick toward a domain and keep going out to pick an art; let go on a domain for its first. */
+  buildWheel() { this.wheelDom = -1; this.drawWheel(-1); }
+  drawWheel(dom) {
+    const R0 = 40, R1 = 92, R2 = 162, n = DOMAIN_ORDER.length, gap = 0.03, TAU = Math.PI * 2;
     const pt = (r, a) => [Math.sin(a) * r, -Math.cos(a) * r];
+    const arc = (r0, r1, a0, a1) => { const [x0, y0] = pt(r0, a0), [x1, y1] = pt(r1, a0), [x2, y2] = pt(r1, a1), [x3, y3] = pt(r0, a1), big = a1 - a0 > Math.PI ? 1 : 0; return `M${x0},${y0} L${x1},${y1} A${r1},${r1} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${r0},${r0} 0 ${big} 0 ${x0},${y0} Z`; };
     let svg = '<svg viewBox="-170 -170 340 340">';
-    ARTS.forEach((a, i) => {
-      const a0 = (i / n) * Math.PI * 2 + gap, a1 = ((i + 1) / n) * Math.PI * 2 - gap;
-      const [x0, y0] = pt(R0, a0), [x1, y1] = pt(R1, a0), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R0, a1);
-      svg += `<path class="w" data-i="${i}" d="M${x0},${y0} L${x1},${y1} A${R1},${R1} 0 0 1 ${x2},${y2} L${x3},${y3} A${R0},${R0} 0 0 0 ${x0},${y0} Z"/>`;
-      const [tx, ty] = pt((R0 + R1) / 2, (a0 + a1) / 2);
-      svg += `<text class="g" x="${tx}" y="${ty + 2}">${a.glyph}</text><text x="${tx}" y="${ty + 20}">${a.name}</text>`;
+    DOMAIN_ORDER.forEach((d, i) => {
+      const a0 = (i / n) * TAU + gap, a1 = ((i + 1) / n) * TAU - gap, G = DOMAIN_GLAZE[d], [tx, ty] = pt((R0 + R1) / 2, (a0 + a1) / 2);
+      svg += `<path class="w dom${i === dom ? ' sel' : ''}" d="${arc(R0, R1, a0, a1)}" style="fill:${G.a};fill-opacity:${i === dom ? 0.95 : 0.6}"/><text class="g" x="${tx}" y="${ty + 8}">${G.glyph}</text>`;
     });
-    svg += '<circle class="hub" r="42"/><text id="gw-name" y="-2"></text><text class="s" id="gw-sub" y="12"></text></svg>';
+    this.wheelArc = null;
+    if (dom >= 0) { // (the hovered domain's arts, in an arc centred on it)
+      const arts = ARTS.map((a, i) => [a, i]).filter(([a]) => a.domain === DOMAIN_ORDER[dom]), m = arts.length, w = 0.5, c = ((dom + 0.5) / n) * TAU, start = c - (m * w) / 2;
+      this.wheelArc = { start, w, arts: arts.map(([, i]) => i) };
+      arts.forEach(([a, i], j) => {
+        const a0 = start + j * w + gap, a1 = start + (j + 1) * w - gap, [tx, ty] = pt((R1 + 6 + R2) / 2, (a0 + a1) / 2);
+        svg += `<path class="w art" data-i="${i}" d="${arc(R1 + 6, R2, a0, a1)}"/><text class="g" x="${tx}" y="${ty}">${a.glyph}</text><text x="${tx}" y="${ty + 16}">${a.name}</text>`;
+      });
+    }
+    svg += '<circle class="hub" r="36"/><text id="gw-name" y="-2"></text><text class="s" id="gw-sub" y="12"></text></svg>';
     this.wheel.innerHTML = svg;
-    this.wheelPaths = [...this.wheel.querySelectorAll('path.w')];
+    this.wheelPaths = [...this.wheel.querySelectorAll('path.art')];
     this.wName = this.wheel.querySelector('#gw-name');
     this.wSub = this.wheel.querySelector('#gw-sub');
   }
@@ -140,7 +193,7 @@ export class GodArts {
     this.cancel();
     this.wheelOpen = true;
     this.wheelAt = { x, y };
-    this.wheelPick = -1;
+    this.wheelPick = -1; this.wheelDom = -1; this.drawWheel(-1);
     this.wheel.style.left = `${x}px`; this.wheel.style.top = `${y}px`;
     this.wheel.style.display = 'block';
     sfx.lockOn?.(1);
@@ -148,32 +201,44 @@ export class GodArts {
   }
 
   updateWheel(mx, my) {
-    const dx = mx - this.wheelAt.x, dy = my - this.wheelAt.y, d = Math.hypot(dx, dy);
-    let pick = -1;
-    if (d > 26) { const a = (Math.atan2(dx, -dy) + Math.PI * 2) % (Math.PI * 2); pick = Math.floor(a / (Math.PI * 2 / ARTS.length)); }
+    const dx = mx - this.wheelAt.x, dy = my - this.wheelAt.y, d = Math.hypot(dx, dy), TAU = Math.PI * 2, n = DOMAIN_ORDER.length;
+    const ang = (Math.atan2(dx, -dy) + TAU) % TAU;
+    let dom = this.wheelDom, pick = -1;
+    if (d <= 26) dom = -1;
+    else if (d < 92 || dom < 0) dom = Math.floor(ang / (TAU / n)); // (inside the domains' ring, or out past it before one was chosen)
+    if (dom !== this.wheelDom) { this.wheelDom = dom; this.drawWheel(dom); if (dom >= 0) sfx.click(); }
+    if (d >= 92 && this.wheelArc) { // (out in the arts' ring: the art at this angle, the nearest end if past it)
+      const W = this.wheelArc, rel = ((ang - W.start) % TAU + TAU + Math.PI) % TAU - Math.PI;
+      pick = W.arts[Math.max(0, Math.min(W.arts.length - 1, Math.floor(rel / W.w)))];
+    }
     if (pick !== this.wheelPick) { this.wheelPick = pick; if (pick >= 0) sfx.click(); }
-    const show = pick >= 0 ? pick : this.sel, A = ARTS[show];
-    this.wheelPaths.forEach((p, i) => { p.classList.toggle('sel', i === show); p.classList.toggle('lock', !this.owns(ARTS[i].id)); });
-    this.wName.textContent = A.name;
-    this.wSub.textContent = this.owns(A.id) ? A.blurb : 'not yet learned';
+    this.wheelPaths.forEach((p) => { const i = +p.dataset.i; p.classList.toggle('sel', i === pick); p.classList.toggle('lock', !this.owns(ARTS[i].id)); });
+    const A = pick >= 0 ? ARTS[pick] : null, D = dom >= 0 ? DOMAIN_ORDER[dom] : null;
+    this.wName.textContent = A ? A.name : D ? D.toUpperCase() : this.art.name;
+    this.wSub.textContent = A ? (this.owns(A.id) ? A.blurb : 'not yet learned') : D ? DOMAIN_GLAZE[D].glaze : '';
   }
 
   closeWheel(commit) {
     if (!this.wheelOpen) return;
     this.wheelOpen = false;
     this.wheel.style.display = 'none';
-    if (commit && this.wheelPick >= 0) this.select(this.wheelPick);
+    if (!commit) return;
+    if (this.wheelPick >= 0) this.select(this.wheelPick);
+    else if (this.wheelDom >= 0) this.selectDomain(String(this.wheelDom + 1));
   }
 
-  showBar(on) { this.bar.style.display = on ? 'flex' : 'none'; if (!on) this.dome?.hide(); }
+  showBar(on) { this.domains.style.display = on ? 'flex' : 'none'; this.domainTabs?.forEach((t) => t.classList.toggle('on', t.dataset.d === this.art.domain)); this.bar.style.display = on ? 'flex' : 'none'; if (!on) this.dome?.hide(); }
 
   /** Per frame: the bar (which art, what the cursor's ground allows) and the tooltip at the cursor. */
   updateUi(dt) {
     const g = this.game, K = this.god.cursor, input = g.input;
     const tierHere = K.tier ?? 0;
+    this.domainTabs?.forEach((t) => t.classList.toggle('on', t.dataset.d === this.art.domain));
+    const G = DOMAIN_GLAZE[this.art.domain]; if (G && this.barGlaze !== G) { this.barGlaze = G; this.bar.style.background = `linear-gradient(90deg, ${G.a}55, ${G.b}55)`; } // (the chosen domain's arts on its tile)
     this.slots.forEach((s, i) => {
       const a = ARTS[i];
       s.classList.toggle('sel', i === this.sel);
+      s.style.display = a.key === this.art.key ? '' : 'none'; // (only the chosen domain's arts on the bar)
       s.classList.toggle('no', !this.owns(a.id) || tierHere < a.needs);
       s.classList.toggle('out', this.lack === a.id);
     });
@@ -247,6 +312,15 @@ export class GodArts {
     // (telekinesis lives in godhand/godhand.js: begin/release grab, and its drain)
     if (a.id === 'telekinesis') return;
     this.matter.update();
+    if (POWER_IDS.has(a.id)) { // (the domains' god powers: godhand/powers.js)
+      const P = this.powers;
+      P.passive(a.id, dt);
+      if (!P.L) { if (input.wasPressed('Mouse0') && K.ok && this.gate(a, K.point)) P.begin(a.id); }
+      else if (!input.isDown('Mouse0')) P.end();
+      else P.hold(dt);
+      return;
+    }
+    this.powers.passive(null, dt);
     if (MATTER_ARTS.has(a.id)) { // (the matter's verbs: godhand/matterarts.js)
       if (!this.matter.L) { if (input.wasPressed('Mouse0') && K.ok && this.gate(a, K.point)) this.matter.begin(a.id); }
       else if (!input.isDown('Mouse0')) { this.matter.end(); this.hideFx(); }
@@ -506,6 +580,7 @@ export class GodArts {
 
   clear() {
     this.matter?.end();
+    this.powers?.clear();
     for (const m of [...this.manifests]) this.crumble(m);
     this.cancel();
   }

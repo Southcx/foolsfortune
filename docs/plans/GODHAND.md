@@ -222,6 +222,57 @@ place and the place itself comes for you).
 
 Names (miracle, the seven, the epics) are working words for Espada's.
 
+## 11. The endgame first, then the ramp (the owner, 2026-10-13)
+
+> "We should plan for 'What does endgame look like, maxed out powers, the whole nine yards', and then work backwards to determine the power
+> scaling ramp. Like if max power is full on Minecraft Creative mode, then that's an interesting premise to design limitations around."
+
+**The top: all seven domains at 99 ("The World") is Creative mode.** Matter made from nothing is free. Scoop carries 400 m³ and Sculpt
+raises arches three times the size. Carve cuts 64 m channels 6 m deep. A Rift stands for twenty real minutes, four pairs at once, and Fold
+swaps 24 m squares. Hasten runs matter at sixteen times. Fire stands a creation for good, kept in the save. Six wards and five totems
+stand at once. Miracles cost a fifth and fall twice as wide. Rejection hears a tenth of the heat.
+
+**What never loosens: the walls Creative mode is designed around.**
+1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
+2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a fired creation at 99. A
+   master leaves what they meant to leave; everything else heals.
+3. **One epic a game hour, paid in the jar.**
+4. **The island notices.** Rejection's heat never reaches zero. A tenth of it, in a long session of large works, still calls the
+   answer, so the top stays a game.
+5. **No new domains, and no new verbs at 99.** The top is the same verbs, unbounded, never a new button.
+
+**The ramp, worked back from the top.** Every number a power has is a row in `RAMP` (`progress/godpowers.js`): its value when the power
+opens (at its `at` level) and at 99. In between it follows `t^1.6` of the way from `at` to 99 (`RAMP_CURVE`), so most of the gain comes
+in the last third, as in OSRS. Level 70 feels like a strong hand; 99 feels like a different game. The open values are set so the power
+already does its job on the slice's ground: a 4 m fold, a 6 m herd, one rift. The 99 values are set to the island's own scale. Values
+below the open level are the open values. A lend (DEBUG's arts) opens a power but leaves its numbers where your level puts them.
+`/psyche 99` (DEBUG) raises the domains to try the top.
+
+| power | the number | open | 99 |
+| --- | --- | --- | --- |
+| Scoop | carry m³ / made Lachryma a m³ | 20 / 0.5 | 400 / 0 |
+| Shape | rate m/s / radius m / made | 1.4 / 1.6 / 0.5 | 6 / 6 / 0 |
+| Carve | width / depth / length m | 1.4 / 1.2 / 18 | 5 / 6 / 64 |
+| Sculpt | stroke m / size x / made | 16 / 1 / 0.6 | 64 / 3 / 0 |
+| Miracles | cost x / size x | 1 / 1 | 0.2 / 2 |
+| Rift | pairs / real s / radius m | 1 / 60 / 1.5 | 4 / 1200 / 4 |
+| Fold | side m | 4 | 24 |
+| Hasten | radius m / speed x / real s | 4 / 4 / 20 | 20 / 16 / 300 |
+| Fire | real s / radius m | 150 / 3 | for good / 12 |
+| Totem | count / real s / radius | 1 / 150 / 6 | 5 / 3600 / 16 |
+| Strata / Course / Read | length m / steps / reach m | 12 / 80 / 20 | 60 / 600 / 80 |
+| Gust | length m / power | 10 / 6 | 40 / 24 |
+| Slab | side m | 3 | 16 |
+| Herd / Take / Muster | radius, count, real s / real s / workers, rate | 6, 4, 20 / 20 / 2, 0.5 | 24, 30, 120 / 600 / 12, 6 |
+| Transmute | radius m | 2 | 10 |
+| Ward | count / radius / real s | 1 / 6 / 60 | 6 / 18 / 1200 |
+| Stamp | side m / made | 4 / 0.5 | 24 / 0 |
+| rejection | heat x, by the acting domain's level from 1 | 1 | 0.1 |
+
+**The selector.** The hand's 25 arts are grouped by their seven domains. Keys 1 to 7 pick a domain, and pressing the same key again steps
+through its arts. The bar shows that domain's arts under a strip of the seven domains. This is a placeholder until Calissa rules on the
+look (her handoff). Miracles stay on MMB.
+
 ## As built (Dovina, 2026-10-13)
 
 What is in, and what is not yet. Numbers live in the modules named; nothing here overrides them.
@@ -253,5 +304,11 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   back into the island's matter as clay. Measured headless in the Dunes (v178 + this): a 10 m arch stamped in 8.8 ms, 11.6 m³, 19
   chunks, 5,532 triangles with a pillar and a ramp beside it; ticks 6.0 ms before, 5.9 ms with them standing; frames 7 to 24 ms
   while its chunks remeshed (about 17 frames), at the old 2.5 ms budget.
-- **Not built yet** (`GOD_POWERS[id].built` false): the domains' other sixteen powers (section 8). The island's own antibody Figment
-  (rejection's answer) is the ordinary Figments for now.
+- **The domains' other sixteen powers** (`godhand/powers.js`, the runner; a module a domain in `godhand/powers/`: space, make, sight,
+  force, will, alter, script). All of them are built and tried headless (2026-10-13), with no page errors. Each act is `god.<id>` with `act` (rejection's heat
+  scaled by the domain's level; seeing is not an act). EXP for each act goes to its domain (`domains.js`), and its count to `god.power.<id>`. Fold
+  and Stamp are `MatterField.patch`. Fire marks voxel chunks (`creations.fire`); for good is a `creations` save section (world scope),
+  its chunks kept as runs. Herd and Take set a creature's mind aside while it walks (`P.walk`). Looks are rings and lines in the
+  domain's colour (`DOMAIN_COLOUR`). The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.
+- **The Codex's STATUS shelf** (`feedback/codex/status.js`): two radars, the domains' levels and Soul Alchemy's ranks, with the next
+  step as a faint ring and the numbers beneath.

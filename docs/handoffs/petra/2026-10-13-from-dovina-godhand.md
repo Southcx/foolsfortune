@@ -17,3 +17,19 @@ The owner told me to build GODHAND.md directly, so I edited your files; please r
   before and 5.9 ms after; 19 chunks; 5,532 triangles. Frames ran 7 to 24 ms while the chunks remeshed, about 17 frames. The remesh budget
   is now 1.5 ms a frame (it was 2.5 for that run). One chunk's mesh plus its trimesh can still exceed the budget on its own. Moving the
   trimesh build a frame after the mesh would be the next cut, if `npm run perf` says it matters.
+
+## The domains' other sixteen powers and the STATUS shelf (the owner, 2026-10-13)
+- New: `godhand/powers.js` (the runner) and `godhand/powers/{space,make,sight,force,will,alter,script}.js`, plus
+  `feedback/codex/status.js`.
+- Edited:
+  - `godhand/arts.js`: ARTS is now 25 rows by domain; keys 1 to 7 pick a domain; the wheel is a two-ring marking menu, to Calissa's
+    spec; a strip of the domains under the bar.
+  - `godhand/godhand.js`: Digit1..7 go to `selectDomain`.
+  - `main.js`: `game.god.arts.powers.update(dt)` every frame.
+  - `feedback/codex/codex.js`: the STATUS tab, first in the row.
+  - `feedback/tracking.js`: the hand's help line.
+- New save section: `creations` (world scope). Only creations fired at Manifestation 99 are kept, as runs of their chunk densities.
+- DEBUG: `/psyche 99` (or `/psyche <domain> <level>`) raises the domains through the ledger's `exp.<domain>` counters. It never lowers
+  them.
+- Tried headless: all 16 powers fire their events, with no page errors. 5.7 ms a tick with a rift, two hastens, a totem, a taken
+  jelly, muster workers and a ward standing.

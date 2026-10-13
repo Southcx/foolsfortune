@@ -28,7 +28,7 @@ import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
-import { MIRACLES, EPICS } from './godpowers.js';
+import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -214,6 +214,8 @@ export function buildAchievements(game) {
   C('gx3', 'hand', 'Matter', 2, 'count', 'Riverwright', 'Carve 25 channels.', 'god.carve', 25);
   C('gx4', 'hand', 'Matter', 2, 'count', 'Bridgewright', 'Sculpt 10 creations.', 'god.sculpt', 10);
   F('gx5', 'hand', 'Matter', 3, 'collect', 'Pillar, Arch and Ramp', 'Sculpt each of the three shapes.', (L) => ['pillar', 'arch', 'ramp'].filter((s) => L.get(`god.sculpt.${s}`) > 0).length, 3);
+  F('gp1', 'hand', 'Arts', 3, 'collect', 'Seven Hands', 'Use a god power of every domain.', (L) => ['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].filter((d) => Object.entries(GOD_POWERS).some(([id, p]) => p.domain === d && L.get(`god.power.${id}`) > 0)).length, 7);
+  F('gp2', 'hand', 'Arts', 5, 'collect', 'Every Power', "Use every one of the domains' god powers.", (L) => POWER_EVENTS.filter((id) => L.get(`god.power.${id}`) > 0).length, POWER_EVENTS.length, { title: 'Demiurge' });
   C('gq1', 'hand', 'Miracles', 1, 'count', 'Sign of the Times', 'Call down a miracle.', 'god.miracle', 1);
   F('gq2', 'hand', 'Miracles', 4, 'collect', 'Seven Skies', 'Call down a miracle of each of the seven feelings.', (L) => Object.keys(MIRACLES).filter((f) => L.get(`god.miracle.${f}`) > 0).length, Object.keys(MIRACLES).length);
   F('gq3', 'hand', 'Miracles', 6, 'collect', 'Seven Wonders', 'Cast each of the seven epic miracles.', (L) => Object.keys(EPICS).filter((e) => L.get(`god.epic.${e}`) > 0).length, Object.keys(EPICS).length, { title: 'Wonderworker' });

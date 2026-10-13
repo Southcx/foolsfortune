@@ -69,9 +69,10 @@ export class VoxelGrid {
 
   /** The mending: every voxel loses `dk` of density; a chunk left empty is dropped. Returns [{ k, lost }] for the chunks whose solid
    *  volume fell (the runtime gives that volume back to the island's matter as clay). */
-  ebb(dk) {
+  ebb(dk, skip = null) {
     const out = [];
     for (const [k, c] of this.chunks) {
+      if (skip?.(c)) continue; // (a fired chunk: Fire, godhand/powers/make.js)
       let any = false; const d = c.d;
       for (let i = 0; i < d.length; i++) if (d[i] > 0) { d[i] = Math.max(0, d[i] - dk); any = true; }
       if (!any) continue;
@@ -141,6 +142,21 @@ export class VoxelGrid {
 
   /** A chunk with no voxels may still mesh the faces of its neighbours above (it reads their low layer). */
   near(k) { const [x, y, z] = k.split(',').map(Number); return this.chunks.has(this.key(x + 1, y, z)) || this.chunks.has(this.key(x, y + 1, z)) || this.chunks.has(this.key(x, y, z + 1)); }
+
+  /** A chunk's densities as runs, for the save: [value (0..255), count, ...]; and back. */
+  pack(k) {
+    const c = this.chunks.get(k); if (!c) return null;
+    const out = []; let v = -1, n = 0;
+    for (const x of c.d) { const q = Math.round(x * 255); if (q === v) n++; else { if (n) out.push(v, n); v = q; n = 1; } }
+    out.push(v, n);
+    return { k, d: out };
+  }
+  unpack({ k, d }) {
+    const [cx, cy, cz] = k.split(',').map(Number), c = this.chunk(cx, cy, cz, true);
+    let i = 0; for (let r = 0; r < d.length; r += 2) for (let n = 0; n < d[r + 1] && i < c.d.length; n++) c.d[i++] = d[r] / 255;
+    this.measure(k); this.touch(c);
+    return c;
+  }
 
   takeDirty() { const d = [...this.dirty]; this.dirty.clear(); return d; }
 }

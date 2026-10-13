@@ -89,6 +89,14 @@ export const SOURCES = [
   { event: 'god.shape',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
   { event: 'god.carve',       domain: 'alteration',     base: 8,  quality: (e) => (e.by === 'courier' ? q01((e.moved || 0) / 15) : null) },
   { event: 'god.sculpt',      domain: 'manifestation',  base: 12, quality: (e) => (e.by === 'courier' ? q01((e.volume || 0) / 12) : null) },
+  // the domains' other god powers (GODHAND.md 8): quality is how much the act took on (a long rift, a full slab, a crowd herded)
+  ...[['rift', 'ouranurgy', 10, (e) => e.len / 40], ['fold', 'ouranurgy', 12, (e) => e.moved / 60], ['hasten', 'ouranurgy', 6, (e) => e.r / 20],
+    ['fire', 'manifestation', 8, (e) => e.chunks / 6], ['totem', 'manifestation', 12, () => 0.6],
+    ['strata', 'divination', 4, (e) => e.len / 30], ['course', 'divination', 3, (e) => e.steps / 120], ['read', 'divination', 4, (e) => e.n / 6],
+    ['gust', 'psychokinesis', 6, (e) => (e.hit + e.moved) / 6], ['slab', 'psychokinesis', 8, (e) => e.moved / 40],
+    ['herd', 'possession', 8, (e) => e.n / 8], ['take', 'possession', 8, () => 0.5], ['muster', 'possession', 10, (e) => e.n / 8],
+    ['transmute', 'alteration', 6, (e) => e.r / 10], ['ward', 'spellscription', 8, (e) => e.r / 18], ['stamp', 'spellscription', 10, (e) => e.side / 24],
+  ].map(([id, domain, base, q]) => ({ event: `god.${id}`, domain, base, quality: (e) => (e.by === 'courier' ? q01(q(e)) : null) })),
   { event: 'god.miracle',     domain: 'spellscription', base: 12, quality: (e) => (e.by === 'courier' ? q01(e.score) * (0.6 + 0.4 * q01(e.size)) : null) },
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'god.epic',      domain: d,                acts: 10, quality: (e) => (e.by === 'courier' && e.domain === d ? 1 : null) })),
@@ -160,7 +168,6 @@ export const WIDEN = {
   'divination.forecast':  { domain: 'divination',     mult: true, at99: 4,   does: 'how far ahead the weather can be known (progress/weather.js forecast)' },
   'psychokinesis.weight': { domain: 'psychokinesis',  mult: true, at99: 2,   does: 'how heavy a thing the god hand can lift' },
   'psychokinesis.throw':  { domain: 'psychokinesis',  mult: true, at99: 1.5, does: 'how far the god hand throws' },
-  'psychokinesis.carry':  { domain: 'psychokinesis',  mult: true, at99: 2,   does: "how much matter the god hand's Scoop carries (godhand/matterarts.js)" },
   'possession.macro':     { domain: 'possession',     mult: true, at99: 1.5, does: 'how long a macro a mind will take' },
   'possession.hold':      { domain: 'possession',     plus: true, at99: 2,   does: 'how many Figments a Lockheart holds when summoning' },
   'alteration.cuts':      { domain: 'alteration',     plus: true, at99: 3,   does: 'how many cuts a sunder makes' },
