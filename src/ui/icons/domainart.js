@@ -3,9 +3,9 @@
 // the icons' hand (ui/icons/hand.js: the light shape only; the bevel and the keyline are the hand's, 16 x 16 with it), coloured by the
 // domain's own glaze (ui/domainlook.js, palettes 'domain.<id>' in ui/icons/icons.js) and readable in grey before its colour:
 //   ouranurgy       a cloud with a spiral in it (the space round you, turned)
-//   manifestation   a cube's outline growing out of a dot: one corner solid, its other edges still dashed (thought made solid)
+//   manifestation   a small solid cube, and the spark it came from, joined by dots (thought made solid)
 //   divination      an eye in a ring (the hidden seen)
-//   psychokinesis   a stone lifted off the ground, its shadow left well below and the lift's ticks beside it (moved by will)
+//   psychokinesis   a boulder lifted off the ground, the gap and its shadow below it (moved by will)
 //   possession      a mask, its ties at the sides (another's face worn)
 //   alteration      a looped arrow, coming round on itself (what is, made other)
 //   spellscription  a brush stroke, wet at its head and dry at its tail (a thing written down)
@@ -35,15 +35,22 @@ export const DOMAIN_ART = {
     '..##########..',
     '..............',
   ],
-  manifestation: grid(14, 14, (x, y) => {
-    if (x <= 1 && y >= 12) return '+'; // (the dot it grows out of)
-    const solid = (x === 2 && y >= 8 && y <= 11) || (y === 11 && x >= 2 && x <= 5); // (the corner already made)
-    if (solid) return '#';
-    const face = ((x === 2 || x === 9) && y >= 4 && y <= 11) || ((y === 4 || y === 11) && x >= 2 && x <= 9) // (the front face)
-      || (y === 1 && x >= 5 && x <= 12) || (x === 12 && y >= 1 && y <= 8); // (the back face's seen edges)
-    const between = (x + y === 6 || x + y === 13 || x + y === 20) && y >= 1 && y <= 11 && x >= 2 && x <= 12 && (x <= 5 || x >= 9); // (the three edges between)
-    return (face && (x + y) % 3 !== 2) || (between && x % 2 === 1) ? '+' : null; // (dashed: still coming into being)
-  }),
+  manifestation: [
+    '........bb....',
+    '......bbbbbb..',
+    '.....bbbbbbbb.',
+    '.....77bbbb44.',
+    '.....77774444.',
+    '.....77774444.',
+    '.....77774444.',
+    '......777444..',
+    '........74....',
+    '......+.......',
+    '..b.+.........',
+    '..b...........',
+    'bb+bb.........',
+    '..b...........',
+  ],
   divination: grid(14, 14, (x, y) => {
     const px = x + 0.5 - 7, py = y + 0.5 - 7, r = Math.hypot(px, py);
     if (r >= 5.9 && r <= 7) return '#';
@@ -56,19 +63,19 @@ export const DOMAIN_ART = {
   }),
   psychokinesis: [
     '..............',
-    '.....####.....',
+    '.....###......',
+    '..#######.##..',
+    '.############.',
+    '.############.',
+    '##############',
+    '##############',
+    '.############.',
     '...########...',
-    '..##########..',
-    '..##########..',
-    '+..########..+',
-    '+....####....+',
-    '+............+',
     '..............',
     '..............',
     '..............',
     '....------....',
-    '..............',
-    '..............',
+    '.....----.....',
   ],
   possession: grid(14, 14, (x, y) => {
     const px = x + 0.5 - 7, py = y + 0.5 - 7;
