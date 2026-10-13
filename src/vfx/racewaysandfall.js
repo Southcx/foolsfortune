@@ -5,14 +5,20 @@
 // sides and its foot. Behind it a wider, fainter sheet for depth, and at its foot a few puffs of dust. All three are one geometry and
 // one material: ONE draw call, under 1,000 triangles (16 x 24 + 8 x 12 cells + 5 camera-facing quads: 970), one program.
 //
-// The fall is drawn as it falls: the streaks are the noise sampled in the sand's own time (tau, the seconds since a grain left the
-// lip, from its fall d down the sheet: tau = (sqrt(w0^2 + 2 g d) - w0) / g), so a streak stretches as it speeds up, faster and
-// longer lower down; two layers (the marbling and the bubbles of the liquid pack, vfx/liquid.js) fall at different rates and drift
-// sideways at different rates, so it never visibly loops. The Dunes' sand (0xe8b070, the terrain's), its shade (the Dunemaw door's
-// 0xb8834e) and its crests lighter (the spray's 0xf0c890, world/ground/groundmarks.js SAND).
+// The fall is drawn as it falls, procedurally (no texture: the owner, 2026-10-13, "some pretty aggressive tiling" when the liquid pack
+// repeated across the 38 m sheet): the sheet is split across into thin columns (8 cm), each with its own fall speed (+-35%), phase,
+// brightness (the shade to the crest) and streak length from a hash of its index, its streaks 1D value noise in the sand's own time
+// (tau, the seconds since a grain left the lip, from its fall d: tau = (sqrt(w0^2 + 2 g d) - w0) / g), so a streak stretches as it
+// speeds up; neighbours blended softly so they never read as stripes, and a coarser set of bundles (60 cm) under them. Over both, the
+// curtains: a density field of three octaves (12, 6 and 3 m) drifting sideways, thick pours and thin gaps with a few stray grains; it
+// frays the sides and pushes the lean, so neither edge nor foot is straight. The column detail fades by its own footprint (fwidth)
+// into the curtain density before it is thinner than a pixel (the 480-line look: no crawl). The sheet behind takes another seed and
+// a slower fall, so the two never line up. The Dunes' sand (0xe8b070, the terrain's), its shade (the Dunemaw door's 0xb8834e) and its
+// crests lighter (the spray's 0xf0c890, world/ground/groundmarks.js SAND).
 //
 // Prior art: the scrolling-UV waterfalls of the sixth generation (Wind Waker's falls and Spyro's: a strip of noise scrolled down a
-// bent sheet, its edges alpha'd away), Dune's sandfalls off the Shield Wall (a curtain that curls before it drops), Journey's sand
+// bent sheet, its edges alpha'd away; here hashed per column rather than tiled), the hash of Dave Hoskins ("Hash without Sine", Shadertoy
+// 4djSRW) and value noise (Perlin's lattice, smoothstepped), Dune's sandfalls off the Shield Wall (a curtain that curls before it drops), Journey's sand
 // pouring from the broken ceilings; the Great Dunemaw's own sandfall door (vfx/dunemaw.js Sandfall: its two falling layers, its frayed
 // sides, its liquid pack, all reused here as an idea; its program is a flat door's and stays its own). Free fall's speed sqrt(2 g d)
 // for the warp along v; the billboard puff of every console's dust (Shadow of the Colossus's sand at a footfall).
@@ -24,7 +30,6 @@
 //   const park = prewarmSandfall(scene)   (main.js, before the compile)   park()   (after the prime draw: one copy kept, never disposed)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
 
 export const SANDFALL = {
   across: 16, down: 24, // (the front sheet's cells)
@@ -32,13 +37,32 @@ export const SANDFALL = {
   puffs: 5, puffSize: 5.5, puffRise: 4, // (the dust at the foot: camera-facing quads)
   curve: 2.6, lean: 3.4, spread: 1.08, // (thrown out before the turn; the foot's further lean; the foot's width over the lip's)
   w0: 1.6, g: 9.8, speed: 1, // (the speed a grain leaves the lip at, m a real second; gravity; the time's scale)
+  column: 0.08, bundle: 0.6, // (the streaks' columns and the bundles under them, m across)
+  curtains: [12, 6, 3], drift: 0.25, // (the curtains' wavelengths, m; their sideways drift, m a real second at the shortest)
+  leanWobble: 1.4, backSlow: 0.72, backSeed: 41.7, // (the lean's swing along the width, m at the foot; the sheet behind: its fall's scale, its seed)
   sand: 0xe8b070, shade: 0xb8834e, crest: 0xf0c890,
 };
 
+const NOISE = /* glsl */`
+float sfHash(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); } // (Hoskins, "Hash without Sine")
+vec4 sfHash4(float p) { vec4 q = fract(vec4(p) * vec4(0.1031, 0.1030, 0.0973, 0.1099)); q += dot(q, q.wzxy + 33.33); return fract((q.xxyz + q.yzzw) * q.zywx); }
+float sfHash2(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
+float sfNoise(float x) { float i = floor(x), f = fract(x); return mix(sfHash(i), sfHash(i + 1.0), f * f * (3.0 - 2.0 * f)); }
+float sfNoise2(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(sfHash2(i), sfHash2(i + vec2(1.0, 0.0)), f.x), mix(sfHash2(i + vec2(0.0, 1.0)), sfHash2(i + 1.0), f.x), f.y); }
+// the curtains: thick pours and thin gaps across the sheet, three octaves drifting sideways, breathing slowly down the fall
+float sfCurtain(float x, float tau, float t, float seed, vec3 L, float drift) {
+  float c = sfNoise2(vec2(x / L.x + t * drift / L.z * 0.15 + seed, (tau - t) * 0.05)) * 0.55
+          + sfNoise2(vec2(x / L.y - t * drift / L.z * 0.4 + seed * 1.7, (tau - t) * 0.09 + 3.1)) * 0.3
+          + sfNoise2(vec2(x / L.z + t * drift / L.z + seed * 2.3, (tau - t) * 0.16 + 7.7)) * 0.15;
+  return c;
+}`;
 const V = /* glsl */`
 attribute vec4 aSand; // (x: 0 the front sheet, 1 the back sheet, 2 a puff; yz: a puff's corner; w: a puff's seed)
 varying vec2 vU; varying float vD, vX, vKind, vLife; varying vec2 vC;
-uniform float uT, uPuffSize, uPuffRise;
+uniform float uT, uPuffSize, uPuffRise, uLeanWobble, uBackSeed;
+uniform vec3 uCurtains;
+${NOISE}
 #include <fog_pars_vertex>
 void main() {
   vKind = aSand.x; vU = uv; vD = uv.y; vX = position.x; vC = aSand.yz; vLife = 0.0;
@@ -48,42 +72,66 @@ void main() {
     vec3 c = position + vec3(0.0, life * uPuffRise, 0.0);
     mvPosition = modelViewMatrix * vec4(c, 1.0);
     mvPosition.xy += aSand.yz * uPuffSize * (0.55 + 0.75 * life);
-  } else mvPosition = modelViewMatrix * vec4(position, 1.0);
+  } else { // a sheet: the lean swung a little along the width (the foot line not straight), the back sheet on its own seed
+    float seed = aSand.x * uBackSeed;
+    float lw = sfNoise(position.x / uCurtains.x + 0.37 + seed) * 0.7 + sfNoise(position.x / uCurtains.y + 5.1 + seed) * 0.3 - 0.5;
+    vec3 p = position; p.z += lw * 2.0 * uLeanWobble * uv.y * uv.y;
+    mvPosition = modelViewMatrix * vec4(p, 1.0);
+  }
   gl_Position = projectionMatrix * mvPosition;
   #include <fog_vertex>
 }`;
 const F = /* glsl */`
 varying vec2 vU; varying float vD, vX, vKind, vLife; varying vec2 vC;
-uniform float uT, uLen, uW, uW0, uG, uBackAlpha;
-uniform vec3 uSand, uShade, uCrest;
-${LIQUID_GLSL}
+uniform float uT, uLen, uW, uW0, uG, uBackAlpha, uColumn, uBundle, uDrift, uBackSlow, uBackSeed;
+uniform vec3 uSand, uShade, uCrest, uCurtains;
+${NOISE}
 #include <fog_pars_fragment>
+// one column's streak: its own speed, phase and length from the hash of its index; the streak is value noise in its own fall time
+vec2 sfColumn(float k, float tau, float ftau, float t, float seed) {
+  vec4 h = sfHash4(k + seed * 131.0);
+  float sp = 1.0 + 0.7 * (h.x - 0.5); // (+-35%)
+  float len = mix(0.07, 0.32, h.w); // (the streak's length, in seconds of fall)
+  float n = mix(sfNoise((t - tau / sp) / len + h.y * 97.0), 0.5, smoothstep(0.35, 1.0, ftau / len)); // (faded to its mean before a streak is shorter than a pixel)
+  return vec2(smoothstep(0.3, 0.85, n), h.z); // (the streak, the column's brightness)
+}
+// a set of columns of width w across x: each blended into its neighbour with a soft edge (never a hard stripe)
+vec2 sfColumns(float x, float w, float tau, float ftau, float t, float seed) {
+  float c = x / w - 0.5, k = floor(c), f = smoothstep(0.15, 0.85, fract(c));
+  return mix(sfColumn(k, tau, ftau, t, seed), sfColumn(k + 1.0, tau, ftau, t, seed), f);
+}
 void main() {
   vec3 col; float a;
   if (vKind > 1.5) { // the dust: a soft disc with a noisy rim, in at its birth and out as it rises
-    float r = length(vC) * 2.0, n = liqTap(vC * 0.35 + vec2(vLife * 0.2, 0.0) + vX * 0.013).g;
+    float r = length(vC) * 2.0, n = sfNoise2(vC * 3.0 + vec2(vLife * 1.5, 0.0) + vX * 0.13);
     a = (1.0 - smoothstep(0.35, 1.0, r + 0.25 * (n - 0.5))) * smoothstep(0.0, 0.18, vLife) * (1.0 - smoothstep(0.45, 1.0, vLife)) * 0.42;
     col = mix(uSand, uCrest, 0.45 + 0.3 * n);
   } else {
+    bool back = vKind > 0.5;
+    float seed = back ? uBackSeed : 0.0, t = back ? uT * uBackSlow : uT;
     float d = vD * uLen, v = vD; // (metres down the sheet; 0..1)
     float tau = (sqrt(uW0 * uW0 + 2.0 * uG * d) - uW0) / uG; // (the grain's own time since the lip: the warp along v)
     float x = vX;
-    // two layers, falling and drifting at their own rates: threads, not blobs (fine across, long down)
-    vec2 p1 = vec2(x * 0.36 + 0.07 * sin(uT * 0.31 + tau * 0.8), (tau - uT) * 0.55);
-    vec2 p2 = vec2(x * 0.83 + 0.41 + uT * 0.013, (tau - uT * 1.37) * 1.05 + 0.29);
-    float s1 = liqTap(p1).r, s2 = liqTap(p2).g, s3 = liqTap(p1 * vec2(2.1, 0.7) + 0.53).a;
-    float grains = s1 * 0.55 + s2 * 0.45;
-    // the frayed sides: the edge eaten into by the streaks, wider and rougher lower down
+    float fw = max(fwidth(x), 1e-4); // (metres across a pixel: the columns fade out before they are thinner than one)
+    float dCol = 1.0 - smoothstep(0.25, 0.7, fw / uColumn), dBun = 1.0 - smoothstep(0.25, 0.7, fw / uBundle); // (gone by 1.4 px a column)
+    float ftau = fwidth(tau); // (seconds of fall down a pixel)
+    vec2 cs = sfColumns(x, uColumn, tau, ftau, t, seed), bs = sfColumns(x + 0.31, uBundle, tau * 0.35, ftau * 0.35, t * 0.93 * 0.35, seed + 0.5); // (the bundles' streaks longer: never blocks)
+    float streak = mix(0.5, mix(bs.x, mix(bs.x, cs.x, 0.6), dCol), dBun); // (the fine set over the bundles; each fades to its mean, the finer first)
+    float bright = mix(0.5, mix(bs.y, mix(bs.y, cs.y, 0.55), dCol), dBun);
+    float dens = sfCurtain(x, tau, t, seed, uCurtains, uDrift);
+    float thick = smoothstep(0.32, 0.62, dens); // (a pour, or a gap)
+    // the frayed sides: the edge eaten into by the curtains and the streaks, wider and rougher lower down
     float across = 1.0 - abs(vU.x - 0.5) * 2.0;
-    float fray = 0.12 + 0.22 * v;
-    a = smoothstep(0.0, fray, across - (0.5 - grains) * fray * 0.9);
+    float fray = 0.1 + 0.22 * v;
+    a = smoothstep(0.0, fray, across - (0.55 - dens) * fray * 1.6 - (0.5 - streak) * fray * 0.5);
     a *= smoothstep(0.0, 0.03, v); // (in at the lip)
-    a *= 1.0 - smoothstep(0.78, 1.0, v + (grains - 0.5) * 0.18); // (thinned into the dust at the foot)
-    a *= mix(0.62, 1.0, smoothstep(0.3, 0.7, grains)); // (thin between the threads)
-    col = mix(uShade, uSand, smoothstep(0.25, 0.75, grains));
-    col = mix(col, uCrest, smoothstep(0.62, 0.9, s3 * 0.6 + grains * 0.4) * 0.8); // (the crests, lighter)
+    a *= 1.0 - smoothstep(0.76, 1.0, v + (streak - 0.5) * 0.12 + (0.5 - dens) * 0.16); // (thinned into the dust at the foot, not on a line)
+    float strays = mix(0.12, smoothstep(0.75, 0.95, cs.x * cs.y + 0.15), dCol); // (in a gap only a few grains: at a distance a faint haze)
+    a *= mix(strays * 0.55, 0.62 + 0.38 * streak, thick);
+    col = mix(uShade, uCrest, clamp(bright * 0.55 + streak * 0.45, 0.0, 1.0));
+    col = mix(col, uSand, 0.25 * (1.0 - thick)); // (the strays in the gaps lit through, the sand's own)
     col *= mix(1.08, 0.78, smoothstep(0.08, 0.9, v)); // (the curl in the sun, the fall in the cliff's shade)
-    if (vKind > 0.5) { a *= uBackAlpha; col *= 0.82; }
+    if (back) { a *= uBackAlpha; col *= 0.82; }
   }
   gl_FragColor = vec4(col, a);
   #include <colorspace_fragment>
@@ -151,9 +199,11 @@ function buildGeometry({ width, height, curve, lean }) {
 function material() {
   const S = SANDFALL;
   return new THREE.ShaderMaterial({
-    name: 'raceway-sandfall', vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
+    name: 'raceway-sandfall', vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, fog: true, // (one pass, one program: no back pass's flipSided twin)
     uniforms: {
-      ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), ...liquidUniforms(),
+      ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
+      uColumn: { value: S.column }, uBundle: { value: S.bundle }, uCurtains: { value: new THREE.Vector3(...S.curtains) }, uDrift: { value: S.drift },
+      uLeanWobble: { value: S.leanWobble }, uBackSlow: { value: S.backSlow }, uBackSeed: { value: S.backSeed },
       uT: { value: 0 }, uLen: { value: 1 }, uW: { value: 1 }, uW0: { value: S.w0 }, uG: { value: S.g }, uBackAlpha: { value: S.backAlpha },
       uPuffSize: { value: S.puffSize }, uPuffRise: { value: S.puffRise },
       uSand: { value: new THREE.Color(S.sand) }, uShade: { value: new THREE.Color(S.shade) }, uCrest: { value: new THREE.Color(S.crest) },
