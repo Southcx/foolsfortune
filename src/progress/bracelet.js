@@ -43,7 +43,12 @@ export class Bracelet {
       dump: () => this.sockets,
       load: (d) => { this.sockets = d && typeof d === 'object' ? { ...d } : {}; },
       reset: () => { this.sockets = {}; } });
+    // the ring's look (Calissa's vfx/bracelet.js, `game.bracelets`) is told what sits in each socket: now, and whenever it reads them again
+    for (const n of ['god.enter', 'garden.enter', 'domain.level']) game.events?.on(n, () => this.sync());
   }
+
+  /** Tell the ring's look what is socketed (its charm ids are the labels: TWIN, WIDE ...); a soft call, none if the look is not there. */
+  sync() { const L = this.game.bracelets; if (!L?.setCharm) return; for (const s of SOCKETS) { const id = this.charmAt(s); L.setCharm(s, id ? CHARMS[id].label : null); } }
 
   /** Earned (its achievement done), or lent (DEBUG: the arts row). */
   owned(id) { const g = this.game; return !!CHARMS[id] && (!!g.system?.lendAll || !!g.lend?.has?.('arts') || !!g.achievements?.done?.(`charm.${id}`)); }
@@ -61,6 +66,7 @@ export class Bracelet {
     if (id) this.sockets[socket] = id; else delete this.sockets[socket];
     this.game.save?.dirty('bracelet');
     this.game.events?.emit('bracelet.set', { socket, charm: id, by: 'courier' });
+    this.sync();
     return true;
   }
   /** The charm bending a domain's powers: its socket's (as a list, for the callers' loops). */

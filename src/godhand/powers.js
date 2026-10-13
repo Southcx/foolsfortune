@@ -16,6 +16,7 @@
 import * as THREE from 'three';
 import { GOD_POWERS, rampOf, DOMAIN_COLOUR, DOMAIN_ORDER } from '../progress/godpowers.js';
 import { expAt } from '../progress/domains.js';
+import { CHARMS } from '../progress/bracelet.js';
 import { SPACE } from './powers/space.js';
 import { MAKE } from './powers/make.js';
 import { SIGHT } from './powers/sight.js';
@@ -87,14 +88,14 @@ export class GodPowers {
     const r = withCost(g.lachryma, B?.costOf?.(dom) ?? 1, fn);
     if (!this.emitted || this.repeating || !B) return r;
     for (const [charm, C] of B.on(dom)) {
-      if (!C.repeat) { g.events?.emit('bracelet.charm', { charm, domain: dom, power: id, by: 'courier' }); continue; }
+      if (!C.repeat) { g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' }); // (`id`: the label the ring's look keys on) continue; }
       if (NO_REPEAT.has(id)) continue;
       let t = 0; const P = this;
       this.keep({ id: 'repeat', tick(dt) {
         if ((t += dt) < C.delay) return false;
         P.repeating = true;
         try { withCost(g.lachryma, B.costOf(dom), fn); } finally { P.repeating = false; }
-        g.events?.emit('bracelet.charm', { charm, domain: dom, power: id, by: 'courier' });
+        g.events?.emit('bracelet.charm', { id: CHARMS[charm].label, charm, domain: dom, power: id, by: 'courier' }); // (`id`: the label the ring's look keys on)
         return true;
       } });
     }
