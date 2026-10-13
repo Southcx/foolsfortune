@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -40,6 +40,8 @@ export const ZONE_TESTS = [
   { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 24000 && p.y > -470 && p.y < -360 },
   // the Spirit Garden (world/garden/place.js GARDEN_AT): six planetoids over the world's north, entered at a Shrine
   { id: 'garden', test: (p) => Math.abs(p.x) < 250 && p.z > 2750 && p.z < 3250 && p.y > 1000 && p.y < 1500 },
+  // the Raceway (world/raceway/track.js RW: x 5200, at the dunes' layer): the Solar Skiff's test circuit, under the dunes' sky
+  { id: 'raceway', test: (p) => p.x > 4300 && p.x < 6100 && p.z > -900 && p.z < 900 && p.y < -150 && p.y > -600 },
   // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer
   { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];
@@ -52,5 +54,5 @@ export function zoneOf(p) {
 }
 /** The zone a point is in, or the one that zone is part of (the beach is part of the dunes). */
 export function wholeOf(p) { const z = zoneOf(p); return z === null ? null : BY_ID[z].partOf ?? z; }
-/** Under the open sky of the dunes' layer, but not the dunes: the crossing and the far islands' docks (their sky is the dunes'). */
-export const openSea = (p) => { const z = zoneOf(p); return z === 'emocean' || z === 'margarite'; };
+/** Under the open sky of the dunes' layer, but not the dunes: the crossing, the far islands' docks and the Raceway (their sky is the dunes'). */
+export const openSea = (p) => { const z = zoneOf(p); return z === 'emocean' || z === 'margarite' || z === 'raceway'; };

@@ -399,3 +399,12 @@ The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. S
 - Taken from FFXIV (the shapes, head markers that carry the answer), WildStar (the fill as the clock), WoW 11.1 (a crisp edge, a tinted
   inside), Monster Hunter (the body is the tell, and the answer is the opening), and the accessibility guidelines (never colour alone).
   Seeing Figment attack telegraphs as a levelled sense is ours.
+
+## 24. Solar Skiffing as a racer (the owner, 2026-10-13; docs/plans/SKIFF-RACING.md)
+
+The skiff took from the racers what fits a sail. From MK8: the carve (a drift loading in three tiers), glider lips, the rocket start
+(here the solar start, a pump timed to GO), and time trials with a ghost. From Sonic Riders: tricks refill the boost (a spin landed square
+gives Lachryma). From SSX: the late pop. From MK8 and F-Zero: boost pads (here sun plates). The glide flies as a hang glider: W dives,
+S flares, Q and E bank, A and D spin. A bail now has one rule: something stopped you head-on, or the board landed pointing away from its
+travel. The Raceway is the test circuit, built of the Dunes' kit, with the sandfall drop the owner asked for. Rivals (the siblings),
+slipstream and grind rails are the next steps; items and rubber banding are left out on purpose.

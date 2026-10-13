@@ -4,7 +4,7 @@
 // (tracking/moves.js); here only its kinds and its speed. The ride's own rules (start, pump, hop, trick, wobble) stay in tracking.js. The
 // words are placeholders for Espada's.
 //
-//   skiff.summon {by}   skiff.mount {by}   skiff.park {by}   skiff.recall {by}   skiff.bail { why: 'wall' | 'land' | 'crooked', speed, by }
+//   skiff.summon {by}   skiff.mount {by}   skiff.park {by}   skiff.recall {by}   skiff.bail { why: 'wall' | 'sideways' | 'land', speed, by }
 //
 //   skiffRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------

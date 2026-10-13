@@ -100,6 +100,7 @@ export function installPlaces(game) {
     P.add('shore', { name: 'the shore', at: () => b.landing().pos, note: 'where the sand meets the Emocean, due east of the oasis' });
     P.add('jetty', { name: 'the jetty\'s end', at: () => b.jetty.end.clone(), yaw: -Math.PI / 2, deck: true, note: 'over the crude; the sloop moors here' });
   }
+  if (game.raceway) P.add('raceway', { name: 'the Raceway', at: () => game.raceway.startPillar.clone(), via: () => { game.raceway.arrive(); return true; }, note: 'the Solar Skiff\'s test circuit; F at the start\'s pillar: a race' });
   if (game.margarite) P.add('margarite', { name: "Margarite's dock", at: () => game.margarite.spot('landing').pos.clone().setX(game.margarite.spot('landing').pos.x - 6), yaw: -Math.PI / 2, note: 'the far end of the crossing: the Pearl Shrine, the Purser, Letty, the pier home' });
   if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), near: 1, note: 'F: down into the Well' }); // (its reach is 2.4 m, and the sand round it slips)
   for (const n of game.folk?.list || []) P.add(`folk.${n.def?.id || n.id}`, { name: n.def?.name || n.name || 'one of the folk', at: () => n.pos.clone(), note: 'F: talk' });

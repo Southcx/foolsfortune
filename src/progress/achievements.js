@@ -36,7 +36,7 @@ export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', me
 export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
-  { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial'] },
+  { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial', 'The Raceway'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
@@ -529,6 +529,15 @@ export function buildAchievements(game) {
   F('su3', 'skiff', 'The Sundial', 3, 'mechanic', 'Silver Hour', 'Take silver in the Solar Skiffing trial.', (L) => L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);
   C('su4', 'skiff', 'The Sundial', 4, 'mechanic', 'Golden Hour', 'Take gold in the Solar Skiffing trial.', 'trial.solar.gold', 1);
   C('su5', 'skiff', 'The Sundial', 4, 'mechanic', 'Long Shadows', 'Take every lit ring at dawn or dusk.', 'trial.solar.allLitLong', 1);
+  // the Raceway (docs/plans/SKIFF-RACING.md: a medal is a test passed once; the carve, the solar start and the plates are its verbs)
+  C('rw1', 'skiff', 'The Raceway', 1, 'mechanic', 'Lights Out', 'Finish a race at the Raceway.', 'race.raceway.finish', 1);
+  F('rw2', 'skiff', 'The Raceway', 2, 'mechanic', 'Podium', 'Take bronze at the Raceway.', (L) => L.get('race.raceway.bronze') + L.get('race.raceway.silver') + L.get('race.raceway.gold'), 1);
+  F('rw3', 'skiff', 'The Raceway', 3, 'mechanic', 'Second Wind', 'Take silver at the Raceway.', (L) => L.get('race.raceway.silver') + L.get('race.raceway.gold'), 1);
+  C('rw4', 'skiff', 'The Raceway', 5, 'mechanic', 'Gold Leaf', 'Take gold at the Raceway.', 'race.raceway.gold', 1, { title: 'Sunracer' });
+  C('rw5', 'skiff', 'The Raceway', 2, 'mechanic', 'Sunrise Start', 'Make a solar start: the sail run up full just as the race begins.', 'race.raceway.solarstart', 1);
+  H('rw6', 'skiff', 'The Raceway', 3, 'mechanic', 'White Heat', 'Let go of a carve at its third tier.', 'skiff.carve.best', 3);
+  C('rw7', 'skiff', 'The Raceway', 2, 'count', 'Sunbather', 'Ride over 50 sun plates.', 'skiff.plate', 50);
+  C('rw8', 'skiff', 'The Raceway', 3, 'mechanic', 'Late Bloomer', 'Make 25 late pops off a crest or a kicker.', 'skiff.pop', 25);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);

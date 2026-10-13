@@ -202,6 +202,14 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   once, looped, or as a triple. *Not:* a gesture, nor a creature's emote clips. → detail
 - **the skiff / Solar Skiffing** (`src/courier/skiff/skiff.js`) — the sand boat, and sailing it in the Dunes. *Retired:* "surfer". *Not:* the
   sloop (the Emocean's ship). → detail
+- **the carve / a late pop / a sun plate / the glide lip** (working names, Espada's; `CARVE`, `POP`, `PLATE`, skiff.js; `docs/plans/SKIFF-RACING.md`)
+  — Space held through a hard turn at speed: the board slides and loads in three tiers, let go it pops out with a push (MK8's drift) / a hop
+  let go just after leaving a crest, higher / a glyph on the Raceway's sand that gives a flare's push for free / the Raceway's lip whose
+  air opens the glide by itself. *Not:* the club's combo, the hop, the flare, the Gnomon's rings.
+- **the Raceway / a race / the solar start** (working names, Espada's; `game.raceway`, `game.race`, `src/world/raceway/`) — the Solar Skiff's
+  test circuit, of the Dunes' kit in a place of its own (x 5200), its line laid in `track.js` / three laps through eight gates against
+  the clock, begun at the start's pillar / the sail run up full just after GO, a push off the line. *Not:* the Solar Skiffing trial
+  (the Gnomon's rings), the course (the basement's).
 
 ## 4. Creatures and folk
 

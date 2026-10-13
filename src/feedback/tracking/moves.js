@@ -11,6 +11,8 @@ import { MOVES } from '../../progress/combat/moves.js';
 import { IDLES } from '../../courier/anim/idlebreak.js';
 import { ordinal, SPECIAL_SLOTS } from '../../tools/sondelass/loadoutwords.js';
 
+const BAIL_SAYS = { wall: 'You hit it head-on and bail.', sideways: 'You land sideways and bail.', land: 'The drop is too sheer. You bail.' };
+
 export function moveRules({ on, L, log }) {
   // move.launch { tool, by }: a launcher lifted something; move.air { tool, hits, by }: an air string ended with `hits` blows landed
   on('move.launch', (e) => { if (e.by === 'courier') L.inc('move.launch'); });
@@ -37,7 +39,7 @@ export function moveRules({ on, L, log }) {
   on('move.blow', (e) => { if (e.by !== 'courier' || e.tool !== 'sondelass' || !e.move) return; if (e.hit) L.inc(`sond.move.${e.move}.hit`); if (e.finish) L.inc(`sond.move.${e.move}.finish`); if (e.struck) L.hi('sond.struck.best', e.struck); if (e.hit && e.effect) L.inc(`sond.effect.${e.effect}`); });
   on('move.string.end', (e) => { if (e.by === 'courier' && e.tool === 'sondelass') L.hi('sond.string.best', e.run || 0); });
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
-  on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', 'You bail.', { key: 'bail', throttle: 3 }); } });
+  on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', BAIL_SAYS[e.why] || 'You bail.', { key: 'bail', throttle: 3 }); } }); // (why, said: docs/plans/SKIFF-RACING.md section 3)
   on('skiff.ollie', (e) => { if (e.by !== 'courier') return; L.inc('skiff.ollie'); if (e.geyser) L.inc('skiff.ollie.geyser'); });
   // the blows the unlocks count that no other rule keeps
   on('dreamvane.hit', (e) => { if ((e.by ?? 'courier') === 'courier') L.inc('dreamvane.hit'); });

@@ -27,6 +27,7 @@ import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { godRules } from './god.js';
 import { lockheartRules } from './lockheart.js';
+import { raceRules } from './race.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -35,6 +36,7 @@ export function areaRules(ctx) {
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
   godRules(ctx);
+  raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(ctx);
   gardenRules(ctx);
