@@ -658,9 +658,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     a vertical ray along a grid line through, and a body set down on whole metres stood on one.
 225. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
     bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
-NEW:gate-reads-exit-code. **A gate's result is its exit code, never its last line through a pipe**: `npm run check | tail` and
+226. **A gate's result is its exit code, never its last line through a pipe**: `npm run check | tail` and
     `npm run build | tail` return tail's success, so a failing gate let a broken commit through. Chain a gate bare, or with `set -o pipefail`.
-NEW:ledger-record-goal. **A goal over the ledger reads a record with `best`, never `get`**: `L.hi` keeps a best apart from the counters,
+227. **A goal over the ledger reads a record with `best`, never `get`**: `L.hi` keeps a best apart from the counters,
     so `L.get('parry.run.best')` is always 0. Read a goal's key through `ledOf` (progress/skills.js), which takes either.
 ## Cases
 
@@ -3672,7 +3672,7 @@ NEW:ledger-record-goal. **A goal over the ledger reads a record with `best`, nev
   commented out the `continue; }` that closed the block. And the gates ran as `npm run check 2>&1 | tail -1 && ...`: a pipe's status is
   its last command's, so tail's success let the `&&` chain go on.
 - **Fix:** the comment removed (cd 2026-10-13); the TWIN repeat retried headless (one repeat, `bracelet.charm:TWIN`).
-- **Rule:** NEW:gate-reads-exit-code.
+- **Rule:** 226.
 
 ### 2026-10-13 · Knacks' and arts' feat ways on a record never opened (Dovina, headless)
 - **Seen:** a probe set `grapple.swing.peak` to 15 (Portal's feat way, 14) and Portal stayed locked; Sculpt's goal bar read 0 with
@@ -3682,4 +3682,4 @@ NEW:ledger-record-goal. **A goal over the ledger reads a record with `best`, nev
   `parry.run.best`, Guide Tone's and Wet Ink's bests among them.
 - **Fix:** `ledOf(L, key)` reads the greater of the counter and the record; goals, the System's goal values and the knacks read through
   it. Measured: Portal opens by the feat, Sculpt's bar reads 0.5.
-- **Rule:** NEW:ledger-record-goal.
+- **Rule:** 227.
