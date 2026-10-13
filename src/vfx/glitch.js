@@ -107,7 +107,7 @@ export const MOMENTS = {
   'well.foe': { drop: 1, beats: 3, then: { split: 0.8, tear: 0.9, mosh: 0.35, crush: 0.8, dur: 0.9 } }, // (the FOE shows itself: the cut, then the wall)
   'lockheart.ultimate': { split: 0.7, tear: 0.5, mosh: 0.25, crush: 0.5, dur: 0.7 },
   'courier.shatter': { split: 1, tear: 1, mosh: 0.6, crush: 1, dur: 1.4 },
-  'reprogram.run': { drain: 1, split: 0.5, crush: 0.9, dur: 1.1, atCreature: true, unlessRefused: true }, // (a mind rewritten: the data drain)
+  // ('reprogram.run' is not here: the data drain plays its DROP and its DRAIN on its own beats, after the crackle break: vfx/datadrain.js)
   'slam.impact': { split: 0.35, tear: 0.25, dur: 0.25, min: { power: 0.6 } }, // (a hard slam only)
   'well.crown': (e) => (e.stage >= 3 ? { drop: 1, beats: 2, then: { split: 0.9, tear: 0.8, mosh: 0.3, crush: 0.7, dur: 0.9 } } : { split: 0.3 + 0.15 * e.stage, crush: 0.3, dur: 0.3 }), // (the Pithos's crown: a tick at each crack; the burst is the drop, Wanda's beat of silence then the wall)
 };
