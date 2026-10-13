@@ -14,11 +14,13 @@
 //
 //   game.reprogram.start(creature)   .close(why)   .open (bool)   (main.js calls claim(input) before the weapon, and update(rawDt))
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
 import { sfx } from '../../audio/sfx.js';
 import { FUNCTIONS } from './mind/functions.js';
 import { runMacro } from './mind/macros.js';
 import { runeStrip } from './mind/runes.js';
+import { DRAIN_BEATS } from '../../vfx/datadrain.js';
 
 const SHOWN = 5, PENALTY = 0.6, HOLD = 1.5, REACH = 3.4;
 const BASE = 2.2, PER = 0.42; // (the time to type a macro: seconds, and seconds a letter, before its quality)
@@ -201,6 +203,18 @@ export class Reprogram {
     g.glyphs?.pop('note', c.head?.() ?? c.pos.clone(), { color: 0xb49be6, size: 0.55, life: 1.2, burst: true });
     g.events?.emit('reprogram.run', { macro: words, kind: c.kind, q: +m.q.toFixed(2), effects: m.effects.map((e) => e.fn), refused: r.refused, chars: this.line.length, misses: this.bad, secs: +(this.total - this.t).toFixed(1) });
     this.close('ran');
+    this.drainCamera(c);
+  }
+
+  /** The data drain's camera (cine/sequences.js 'reprogram.drain'), stepped in update on the drain's own beats; facing the creature. */
+  drainCamera(c) {
+    const g = this.game, P = g.player, D = g.dataDrain;
+    if (!g.cine || !D?.run || !c) return;
+    const lens = new THREE.Vector3();
+    this.drainCam?.stop();
+    this.drainCam = g.cine.play('reprogram.drain', { id: 'reprogram.drain', yaw: Math.atan2(c.pos.x - P.pos.x, c.pos.z - P.pos.z),
+      anchors: { courier: () => P.pos, veritome: () => D.lensAt?.(lens) ?? lens.copy(P.pos).setY(P.pos.y + 1.2), creature: () => c.pos } });
+    this.drainSeg = 'break';
   }
 
   close(why = 'closed') {
@@ -220,6 +234,14 @@ export class Reprogram {
 
   update(rawDt) {
     const g = this.game, P = g.player;
+    if (this.drainCam) { // (the drain's camera follows its beats; gone with the drain)
+      const t = g.dataDrain?.run?.t;
+      if (t == null || t >= DRAIN_BEATS.end) { this.drainCam.stop(); this.drainCam = null; }
+      else {
+        const seg = ['set', 'strip', 'beam', 'pages', 'freeze', 'break'].find((k) => t >= DRAIN_BEATS[k]);
+        if (seg !== this.drainSeg) { this.drainSeg = seg; this.drainCam.go(seg); }
+      }
+    }
     // the orders and bonds written into minds wear off in their time
     for (const c of this.programmed) {
       if (!c.alive || !c.macro || (c.brain && c.brain.now > c.macro.until)) {

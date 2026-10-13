@@ -4,7 +4,10 @@
 // real seconds from a segment's start. `preview` places the anchors on the workbench's stage.
 // ---------------------------------------------------------------------------------------
 import { SEA_SEQUENCES } from '../vfx/encounters/sequences.js';
+import { DRAIN_SEQUENCE } from '../vfx/datadrain.js';
 export const SEQUENCES = {
+  // THE DATA DRAIN (Calissa's shot list, vfx/datadrain.js; tools/veritome/reprogram.js steps it on the drain's own beats, DRAIN_BEATS)
+  'reprogram.drain': DRAIN_SEQUENCE,
   // THE LOCKHEART'S OPENING (tools/lockheart/ultimate.js says when each segment begins; the beats and their effects are here)
   'lockheart.opening': {
     anchors: ['courier', 'coffin', 'wheel'],
