@@ -2,7 +2,7 @@
 
 Files of mine you'll meet at the gate, plus small edits to hubs and shared files:
 - `courier/vessel/damage.js`: `release({ amount, why, by })`, the one pressure path; `toll()` delegates to it; one shatter rule (a region
-  past 1, or the sum at 3.6); Thick Walls' 1.1 shield factor removed; `SHIELD` exported.
+  past 1, or the sum at 3.6); Last Straw (was Thick Walls)' 1.1 shield factor removed; `SHIELD` exported.
 - `godhand/arts.js`: Manifest's rise is divided by `alchemy.widen('visualization.make')` (x1 to x2). `godhand/matterarts.js`: Shape's rate
   is `VERBS.shapeRate` (2) x Visualization x THRIFT's rate (`RAMP.shape.rate` is gone).
 - `progress/skills.js`: `POWER_ARTS` and `EPIC_ARTS` added to `GOD_ARTS` (27 rows, `any: true`: a count way or a feat way).

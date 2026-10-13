@@ -12,7 +12,7 @@ own how big; the attributes own how fast and how well** (the body's constants, t
 - 1.1: `RAMP.tools` in progress/godpowers.js holds the old WIDEN rows; `game.psyche.widen` reads `widenOf`.
 - 1.2: Visualization's `visualization.make` (x1 to x2 by rank) sets Manifest's rise and Shape's rate (no longer a ramp row); its
   `visualization.canvas` stays the Soul Brush's ink.
-- 1.3: Thick Walls is an assist: no shield factor; Calissa marks the pool's last full blow on the Lachryma ring.
+- 1.3: Thick Walls (now Last Straw, Espada's name) is an assist: no shield factor; Calissa marks the pool's last full blow on the Lachryma ring.
 - 1.4, 1.5: GODHAND.md 11 (charms as trades; the stacked tops).
 - 2.1, 2.2: `POWER_ARTS` and `EPIC_ARTS` in progress/skills.js, on the GOD ARTS shelf, each `any`: its count way or its feat way. A power
   opens when the System has it (`powerOpen` asks `system.has`).

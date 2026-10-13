@@ -134,7 +134,7 @@ export class VesselDamage {
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
     const pool = this.game.lachryma;
     if (pool) {
-      const cost = k * SHIELD, had = pool.value; // (Thick Walls is an assist now, a mark, never a number: SPINE.md 1.3)
+      const cost = k * SHIELD, had = pool.value; // (Last Straw (the knack thickWalls) is an assist now, a mark, never a number: SPINE.md 1.3)
       if (had >= cost) { pool.drain(cost, 'shield'); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
       if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
       k *= 1 - had / cost;
