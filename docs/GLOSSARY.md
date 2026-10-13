@@ -426,6 +426,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   plinths) / the one texture they are drawn from. *Not:* a glaze (the Courier's, `GLAZES`), a material, a surface pattern (`SURFACE`). → detail
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
+- **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
+  bursting (about 0.3 real s) just before the data drain takes it (.hack's Protect Break). *Not:* the bubble, a guard break, the vessel's cracks.
+- **a data bug** (working name; `DataBugs`, `game.dataBugs`, `src/vfx/databug.js`) — an aberrant or stray Figment or a blotling drawn wrong on
+  purpose: one still error (a limb off its socket, its skin slid, a magenta cast) and a dark aura; a drain mends it. Always "a data bug" in
+  full. *Not:* a bug in the code, the corrupted body.
 - **lensing / the time grade / the hologram / molten / the corrupted body** (caster shaders S6 to S10: `Lensing`, `TimeGrade`, `Hologram`,
   `Molten`, `Corrupted`, `src/vfx/caster/`) — the Caster's black hole bending the frame round its accretion ring / a sphere drained of colour,
   its grain frozen / a body of hard light, scanlined, slipping / a lava-lamp metaball crusting as it cools / one mesh torn in the glitch.

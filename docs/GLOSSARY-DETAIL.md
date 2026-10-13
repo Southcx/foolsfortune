@@ -1136,8 +1136,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
-  the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
-  not kill.
+  a ceremony in beats (`DRAIN_BEATS`): the crackle break, the freeze and the glitch's DROP, the Veritome's pages fanning open and its
+  lens fixing, the beam, the creature stripped to polygons streaming into the lens, and set down changed (smaller, a step paler, a
+  data bug mended). It rewrites; it does not kill, and it never marks the Courier. There is no bracelet (the owner, 2026-10-13).
 - **the dialogue box** (`src/npc/dialogue.js`): the one window of words in the world.
 - **a page set aside** (`showPage(name, render, { aside: 'left' | 'right' })`, `src/feedback/indexmenu.js`; the review of Calissa's mount preview, 2026-10-08):
   an index-window page set in a column (340 px, its rooms one to a row) at one side of the screen, no veil over the rest, for a window whose
