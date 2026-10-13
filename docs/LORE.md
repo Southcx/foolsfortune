@@ -407,7 +407,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   blot/blotling, the crossing's cast.
 
 ### The knacks *(canon: the owner, 2026-10-08)*
-An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Thick Walls**,
+An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Last Straw** (was Thick Walls, when it added shield; now it marks the blow the shield cannot take: the straw that breaks the camel's back; id `thickWalls` kept),
 **Perfect Pitch**, **Early Tell**, **Rule of Thirds**, **Half Time**, **Crib Sheet** (the English beside each neuralese word you have
 found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of an agate shown on a creature's body).
 *Approved 2026-10-11:* **Held Breath** (a blow's parry window a beat longer; replaces Early Tell), **Wet Ink** (Celestial mode waits
