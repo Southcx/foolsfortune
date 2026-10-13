@@ -8,8 +8,9 @@
 //   PRESSURE  0.00 .. 0.25 real s   light pushing out at the apertures (the mask's eyes and mouth, the hands, the joints' seams) in the
 //                                   Lachryma's own oil film (vfx/oxidation.js featTint), the skin's Lachryma brightening, and the
 //                                   cracked region's clay bulging a hair (its bones scaled); the region's crack mark held back
-//   BREAK     0.25 .. 0.85          cracks running out across the region from inside, bright-edged (skinned ribbons on the body's own
-//                                   skeleton: vfx/crackskin.js), the glaze lifting off them in flakes thrown outward, vapour venting
+//   BREAK     0.25 .. 0.85          cracks running out across the region from inside, forking once or twice, a white-hot core in an
+//                                   edge of the source's tint, over-bright as they grow so the glow takes them (two skinned ribbons on
+//                                   the body's own skeleton: vfx/crackskin.js), the glaze lifting off them in flakes thrown outward, vapour venting
 //                                   from the lines, the region's crack mark (courier/vessel/kintsugi.js uDmg) opening with them
 //   SETTLE    0.85 .. 2.4           the bright lines cool to the lacquer's dark and go, leaving the vessel's own crack mark to mend
 //
@@ -34,6 +35,8 @@ import { SHELL_FAMILY_TINT } from './shelllooks.js';
 import { DOMAIN_LOOK } from '../ui/domainlook.js';
 import { crackMat } from '../world/props/potcracks.js';
 import { crackRibbon } from './crackskin.js';
+import { stream, randDir } from '../core/rng.js';
+const rng = stream('vfx/releasecrack'); // (its chance from the game's seed: core/rng.js)
 
 const PRESS = 0.25, BREAK = 0.6, SETTLE = 1.55;   // (real seconds of each beat)
 const FLAKES = 64, GRAV = 9.8;
@@ -67,7 +70,8 @@ export class ReleaseCrack {
 
   make() {
     if (this.made) return; this.made = true;
-    this.lineMat = crackMat.clone(); // (the same program as the Pneuka Jar's skinned crack: only the colour moves)
+    this.lineMat = crackMat.clone(); // (the same program as the Pneuka Jar's skinned crack: only the colour moves; the edge, in the source's tint)
+    this.coreMat = crackMat.clone(); this.coreMat.polygonOffsetFactor = this.coreMat.polygonOffsetUnits = -4; // (the white-hot core, drawn over the edge)
     this.flakes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'releasecrack-flakes', fog: false, toneMapped: false }), FLAKES);
     this.flakes.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(FLAKES * 3), 3);
     this.flakes.frustumCulled = false; this.flakes.visible = false; this.flakes.userData.zoneFree = true;
@@ -109,22 +113,22 @@ export class ReleaseCrack {
       for (let s = 0; s < steps; s++) {
         const n0 = cur.n;
         h.addScaledVector(n0, -h.dot(n0)).normalize(); // (along the surface)
-        h.applyAxisAngle(n0, (Math.random() - 0.5) * 1.2).normalize(); // (jagged)
-        const step = 0.028 + Math.random() * 0.012;
+        h.applyAxisAngle(n0, (rng() - 0.5) * 1.2).normalize(); // (jagged)
+        const step = 0.028 + rng() * 0.012;
         const nx = nearest(_s.copy(cur.p).addScaledVector(h, step), cur.i);
         if (nx < 0) break;
         const next = pt(nx);
         if (next.p.distanceTo(cur.p) < 0.004) break;
         segs.push({ pts: [cur, next], depth: d0 + s });
-        if (depth < 1 && s === 2) walk(next, h.clone().applyAxisAngle(n0, Math.random() < 0.5 ? 0.9 : -0.9), Math.max(2, steps - 3), depth + 1, d0 + s + 1);
+        if (depth < 1 && (s === 1 || (s === 3 && rng() < 0.6))) walk(next, h.clone().applyAxisAngle(n0, rng() < 0.5 ? 0.8 : -0.8), Math.max(2, steps - s - 1), depth + 1, d0 + s + 1); // (a main line forks once or twice)
         cur = next;
       }
     };
     for (let k = 0; k < n; k++) {
-      const seed = pt(L[Math.floor(Math.random() * L.length)]);
-      const a = new THREE.Vector3().randomDirection();
-      walk(seed, a, 6 + Math.floor(Math.random() * 3), 0, 0);
-      walk(seed, a.clone().negate(), 3 + Math.floor(Math.random() * 3), 0, 0); // (both ways from the seed: it opened in the middle)
+      const seed = pt(L[Math.floor(rng() * L.length)]);
+      const a = randDir(rng, new THREE.Vector3());
+      walk(seed, a, 6 + Math.floor(rng() * 3), 0, 0);
+      walk(seed, a.clone().negate(), 3 + Math.floor(rng() * 3), 0, 0); // (both ways from the seed: it opened in the middle)
     }
     return segs.sort((x, y) => x.depth - y.depth);
   }
@@ -138,7 +142,7 @@ export class ReleaseCrack {
     const hold = regions.map((r) => this.seen[r]);
     // the skin's Lachryma (the light inside), kept to be given back
     const skin = ch.regionMats?.skin, rest = skin?.emissive ? { c: skin.emissive.clone(), k: skin.emissiveIntensity } : null;
-    this.run = { e, units, regions, hold, tint: sourceTint(e), prism: e.why === 'overload', t: 0, broke: false, lines: [], vents: [], flakes: [], skin, rest, scaled: new Map(), phase: Math.random() };
+    this.run = { e, units, regions, hold, tint: sourceTint(e), prism: e.why === 'overload', t: 0, broke: false, lines: [], vents: [], flakes: [], skin, rest, scaled: new Map(), phase: rng() };
   }
 
   /** The cracks open: the lines laid, the flakes thrown, the vents set. */
@@ -152,10 +156,12 @@ export class ReleaseCrack {
       if (!o) continue;
       const segs = this.paths(o, r, perRegion);
       if (!segs.length) continue;
-      const mesh = crackRibbon(o, segs.map((s) => s.pts), 0.011 + 0.003 * R.units, this.lineMat);
-      mesh.renderOrder = 3; mesh.userData.zoneFree = true;
-      mesh.geometry.setDrawRange(0, 0);
-      R.lines.push({ mesh, n: segs.length });
+      for (const [mat, w, ro] of [[this.lineMat, 0.034 + 0.008 * R.units, 3], [this.coreMat, 0.012 + 0.003 * R.units, 4]]) {
+        const mesh = crackRibbon(o, segs.map((s) => s.pts), w, mat); // (about 3x a blow's crack: it must read at 480 lines from 5 m)
+        mesh.renderOrder = ro; mesh.userData.zoneFree = true;
+        mesh.geometry.setDrawRange(0, 0);
+        R.lines.push({ mesh, n: segs.length, o, segs });
+      }
       // the vents and the flakes: from points along the lines, as the body is posed now
       const centre = (g.character.bones[REGION_BONES[r][0]] || g.character.bones.spine)?.getWorldPosition(new THREE.Vector3()) || new THREE.Vector3();
       for (let k = 0; k < segs.length; k += 2) {
@@ -165,17 +171,17 @@ export class ReleaseCrack {
       o.updateMatrixWorld();
       const share = Math.round((FLAKES * Math.min(1, 0.45 + 0.3 * R.units)) / R.regions.length);
       for (let k = 0; k < share && R.flakes.length < FLAKES; k++) {
-        const s = segs[Math.floor(Math.random() * segs.length)], i = s.pts[1].i;
+        const s = segs[Math.floor(rng() * segs.length)], i = s.pts[1].i;
         const at = o.getVertexPosition(i, new THREE.Vector3()).applyMatrix4(o.matrixWorld);
         const out = at.clone().sub(centre); out.y *= 0.4; if (out.lengthSq() < 1e-6) out.set(0, 0, 1); out.normalize();
-        const v = out.multiplyScalar(1.6 + 1.8 * Math.random() * (0.7 + 0.3 * R.units)).add(_p.set(0, 0.9 + Math.random(), 0));
-        R.flakes.push({ at, v, spin: new THREE.Vector3().randomDirection().multiplyScalar(12), turn: new THREE.Euler(Math.random() * 6, Math.random() * 6, 0),
-          size: 0.018 + 0.02 * Math.random(), delay: (s.depth / Math.max(1, segs[segs.length - 1].depth)) * BREAK * 0.7, life: 0.7 + 0.4 * Math.random() });
+        const v = out.multiplyScalar(1.6 + 1.8 * rng() * (0.7 + 0.3 * R.units)).add(_p.set(0, 0.9 + rng(), 0));
+        R.flakes.push({ at, v, spin: randDir(rng, new THREE.Vector3()).multiplyScalar(12), turn: new THREE.Euler(rng() * 6, rng() * 6, 0),
+          size: 0.018 + 0.02 * rng(), delay: (s.depth / Math.max(1, segs[segs.length - 1].depth)) * BREAK * 0.7, life: 0.7 + 0.4 * rng() });
       }
     }
     // the glaze's colour on the flakes (the region's glaze, lifted toward the light on their undersides: a few of them are the light)
     const glaze = new THREE.Color(g.vessel?.glaze?.(g.vessel.look?.body)?.color ?? PALETTE.pale);
-    R.flakes.forEach((f, k) => this.flakes.setColorAt(k, k % 5 === 0 ? this.lightOf(R, k / FLAKES, _c2) : _c.copy(glaze).lerp(WHITE, 0.15 * Math.random())));
+    R.flakes.forEach((f, k) => this.flakes.setColorAt(k, k % 5 === 0 ? this.lightOf(R, k / FLAKES, _c2) : _c.copy(glaze).lerp(WHITE, 0.15 * rng())));
     if (this.flakes.instanceColor) this.flakes.instanceColor.needsUpdate = true;
     this.flakes.count = R.flakes.length; this.flakes.visible = R.flakes.length > 0;
   }
@@ -223,11 +229,11 @@ export class ReleaseCrack {
         ch.root.getWorldDirection(_f); _f.y = 0; _f.normalize(); _r.crossVectors(_f, _u).negate(); // (their facing frame: forward, right)
         const per = raw * 60 * (0.6 + 0.4 * R.units);
         for (const [bn, rx, uy, fz] of APERTURES) {
-          const b = ch.bones[bn]; if (!b || Math.random() > per) continue;
+          const b = ch.bones[bn]; if (!b || rng() > per) continue;
           b.getWorldPosition(_p).addScaledVector(_r, rx).addScaledVector(_u, uy).addScaledVector(_f, fz);
-          const out = _s.copy(_f).multiplyScalar(fz ? 0.6 : 0).add(_s.clone().randomDirection().multiplyScalar(0.35));
-          fx.add.emit({ pos: _p.clone(), vel: out.clone(), life: 0.22 + 0.1 * Math.random(), size: (bn === 'head' ? 0.05 : 0.07) * (0.8 + 0.3 * x * R.units), sizeEnd: 0.16 * (0.7 + 0.3 * R.units),
-            color: this.lightOf(R, x + Math.random() * 0.2, new THREE.Color()), alpha: 0.55 + 0.4 * x, drag: 3, gravity: 0 });
+          const out = _s.copy(_f).multiplyScalar(fz ? 0.6 : 0).add(randDir(rng, _s.clone()).multiplyScalar(0.35));
+          fx.add.emit({ pos: _p.clone(), vel: out.clone(), life: 0.22 + 0.1 * rng(), size: (bn === 'head' ? 0.05 : 0.07) * (0.8 + 0.3 * x * R.units), sizeEnd: 0.16 * (0.7 + 0.3 * R.units),
+            color: this.lightOf(R, x + rng() * 0.2, new THREE.Color()), alpha: 0.55 + 0.4 * x, drag: 3, gravity: 0 });
         }
       }
       return;
@@ -244,19 +250,31 @@ export class ReleaseCrack {
     if (R.skin && R.rest) { const k = Math.max(0, 1 - tb / 0.5); this.lightOf(R, 1, _c); R.skin.emissive.copy(R.rest.c).lerp(_c, 0.8 * k); R.skin.emissiveIntensity = R.rest.k + (0.9 + 0.5 * R.units) * k; }
     // the lines: running out (their segments in the order they open), bright, then cooling to the lacquer
     const cool = THREE.MathUtils.clamp((tb - BREAK * 0.6) / (SETTLE * 0.7), 0, 1);
-    this.lightOf(R, 0.5 + tb * 0.3, _c).lerp(WHITE, 0.35 * (1 - x)).multiplyScalar(1.6 * (1 - cool) + 0.2);
+    // (white-hot at the core going into the source's tint at the edge; over-bright while they grow, so the glow takes them: render/glow.js)
+    const hot = 1 + 2.2 * (1 - x) + 0.6 * (1 - cool);
+    this.lightOf(R, 0.5 + tb * 0.3, _c).multiplyScalar(1.3 * hot * (1 - cool) + 0.15);
     this.lineMat.color.copy(_c).lerp(LACQUER, cool * cool);
-    for (const L of R.lines) L.mesh.geometry.setDrawRange(0, 6 * Math.ceil(L.n * Math.min(1, x * 1.25)));
+    this.coreMat.color.copy(WHITE).lerp(_c2.setRGB(1, 0.92, 0.8), 0.3).multiplyScalar(1.4 * hot * (1 - cool) + 0.1).lerp(LACQUER, cool * cool);
+    const grow = Math.min(1, x * 1.25);
+    for (const L of R.lines) {
+      const was = L.shown || 0, now = Math.ceil(L.n * grow); L.shown = now;
+      L.mesh.geometry.setDrawRange(0, 6 * now);
+      // (the glow as each line runs: a bloom of light at its growing tips)
+      if (L.mesh.material === this.coreMat && g.fx?.add) for (let k = was; k < now; k++) {
+        const at = L.o.getVertexPosition(L.segs[k].pts[1].i, new THREE.Vector3()).applyMatrix4(L.o.matrixWorld);
+        g.fx.add.emit({ pos: at, vel: randDir(rng, _s).multiplyScalar(0.15).clone(), life: 0.35, size: 0.09 + 0.03 * R.units, sizeEnd: 0.02, color: this.lightOf(R, k / L.n, new THREE.Color()).lerp(WHITE, 0.4), alpha: 0.85, drag: 3, gravity: 0 });
+      }
+    }
     // the vapour: venting from the lines as they open, thinning as they cool
     if (g.fx?.alpha && tb < BREAK + SETTLE * 0.6) {
       const vent = (1 - cool) * raw * 30 * (0.6 + 0.4 * R.units);
       for (const v of R.vents) {
-        if (v.at > x * 1.25 || Math.random() > vent / Math.max(1, R.vents.length / 6)) continue;
+        if (v.at > x * 1.25 || rng() > vent / Math.max(1, R.vents.length / 6)) continue;
         const at = v.o.getVertexPosition(v.i, new THREE.Vector3()).applyMatrix4(v.o.matrixWorld);
         const c = ch.bones[v.centre]?.getWorldPosition(_p) || at;
-        const out = at.clone().sub(c); out.y = Math.max(0, out.y) * 0.3; out.normalize().multiplyScalar(0.5 + 0.4 * Math.random()).add(_s.set(0, 0.7, 0));
-        g.fx.alpha.emit({ pos: at, vel: out, life: 0.7 + 0.5 * Math.random(), size: 0.04, sizeEnd: 0.22 + 0.06 * R.units, color: _c2.setHex(PALETTE.pale).lerp(this.lightOf(R, Math.random(), _c), 0.25).clone(), alpha: 0.32, drag: 2.2, gravity: -0.4 });
-        if (Math.random() < 0.35 && g.fx.add) g.fx.add.emit({ pos: at, vel: out.clone().multiplyScalar(1.4), life: 0.25, size: 0.03, sizeEnd: 0.005, color: this.lightOf(R, Math.random(), new THREE.Color()), alpha: 0.9, drag: 2, gravity: 0 });
+        const out = at.clone().sub(c); out.y = Math.max(0, out.y) * 0.3; out.normalize().multiplyScalar(0.5 + 0.4 * rng()).add(_s.set(0, 0.7, 0));
+        g.fx.alpha.emit({ pos: at, vel: out, life: 0.7 + 0.5 * rng(), size: 0.04, sizeEnd: 0.22 + 0.06 * R.units, color: _c2.setHex(PALETTE.pale).lerp(this.lightOf(R, rng(), _c), 0.25).clone(), alpha: 0.32, drag: 2.2, gravity: -0.4 });
+        if (rng() < 0.35 && g.fx.add) g.fx.add.emit({ pos: at, vel: out.clone().multiplyScalar(1.4), life: 0.25, size: 0.03, sizeEnd: 0.005, color: this.lightOf(R, rng(), new THREE.Color()), alpha: 0.9, drag: 2, gravity: 0 });
       }
     }
     // the flakes: the glaze lifting off, out from the lines, spinning, falling
