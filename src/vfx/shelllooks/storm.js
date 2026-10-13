@@ -18,8 +18,8 @@ export const LOOKS = {
   teslaNode: { kinds: { lobPart: { body: 'insulator', end: 'shell.teslaNode.land', hold: (row) => row.n.dur } } },
   chainBolt: { body: 'spark', fly: true, land: 'point' },
   ballLightning: { kinds: { orb: { body: 'orb', fly: 'shell.ballLightning.fly' } } },
-  // 34 Thunderhead: a storm three times the runner's cloud and its own rain, kept over the creature the cloud is after (the runner moves the
-  // cloud on its strikes); where each bolt falls (the runner's, every `every` real s from the first frame), the ground's own look
+  // 34 Thunderhead: a storm nine times the runner's cloud across and its own rain, kept over the creature the cloud is after (the runner
+  // moves the cloud on its strikes); where each bolt falls (the runner's, every `every` real s from the first frame), the ground's own look
   thunderhead: { onFire(g, row, { ray }) {
     const pos = aimAt(g, ray).at, t = row.n.dur, every = row.n.every ?? 1.5;
     pos.y += 7;
@@ -60,21 +60,30 @@ export const EFFECTS = {
     L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'streak', spawn: 'shell', r: 0.3, dir: 'out', speed: [2, 4], size: [0.16, 0.26], sizeEnd: 0.02, life: [0.08, 0.14], stretch: 2, color: [VIOLET, 'white'] }),
     L({ type: 'sprites', rate: 12, dur: Infinity, shape: 'core', size: [0.6, 0.8], sizeEnd: 0.4, life: 0.2, color: VIOLET, alpha: 0.6 }),
   ] },
-  // 34 Thunderhead: a low black cloud's own rain under it
+  // 34 Thunderhead (refired at twice the size): a low black anvil twenty metres across, banked high, its own rain a curtain under it and
+  // its belly lit from inside
   'shell.thunderhead.fire': { layers: [
-    L({ type: 'sprites', pool: 'alpha', rate: 16, dur: Infinity, shape: 'puff', spawn: 'disc', r: 5, size: [3, 4.5], sizeEnd: 5.5, life: [1.4, 2], color: [0x1e1a24, 0x2a2630, 0x3a3644], alpha: 0.6, spin: [-0.3, 0.3] }),
-    L({ type: 'sprites', pool: 'alpha', rate: 8, dur: Infinity, shape: 'puff', spawn: 'disc', r: 3.5, offset: [0, 1.2, 0], size: [3.5, 5], sizeEnd: 6, life: [1.6, 2.2], color: [0x2a2630, 0x4a4656], alpha: 0.5, spin: [-0.3, 0.3] }),
-    L({ type: 'sprites', rate: 150, dur: Infinity, shape: 'streak', spawn: 'disc', r: 5, offset: [0, -0.8, 0], dir: 'up', speed: [-13, -10], size: 0.26, sizeEnd: 0.18, stretch: 2.6, life: 0.6, color: 0x9fb4d0, alpha: 0.6 }),
-    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'glint', spawn: 'disc', r: 4, size: [0.5, 0.8], sizeEnd: 0, life: 0.2, color: [BLUE, 'white'], twinkle: 20 }),
+    L({ type: 'sprites', pool: 'alpha', rate: 26, dur: Infinity, shape: 'puff', spawn: 'disc', r: 10, size: [6, 9], sizeEnd: 11, life: [1.6, 2.2], color: [0x1e1a24, 0x2a2630, 0x3a3644], alpha: 0.65, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', pool: 'alpha', rate: 14, dur: Infinity, shape: 'puff', spawn: 'disc', r: 7, offset: [0, 2.6, 0], size: [7, 10], sizeEnd: 12, life: [1.8, 2.4], color: [0x2a2630, 0x4a4656], alpha: 0.55, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: Infinity, shape: 'puff', spawn: 'disc', r: 4, offset: [0, 5, 0], size: [7, 9], sizeEnd: 11, life: [2, 2.6], color: [0x3a3644, 0x5a5666], alpha: 0.45, spin: [-0.3, 0.3] }),
+    L({ type: 'sprites', rate: 320, dur: Infinity, shape: 'streak', spawn: 'disc', r: 10, offset: [0, -1.2, 0], dir: 'up', speed: [-15, -12], size: 0.4, sizeEnd: 0.28, stretch: 2.8, life: 0.55, color: 0x9fb4d0, alpha: 0.6 }),
+    L({ type: 'sprites', rate: 6, dur: Infinity, shape: 'core', spawn: 'disc', r: 7, offset: [0, 0.6, 0], size: [5, 8], sizeEnd: 2, life: 0.18, color: [BLUE, VIOLET], alpha: 0.7 }),
+    L({ type: 'sprites', rate: 16, dur: Infinity, shape: 'glint', spawn: 'disc', r: 8, size: [1, 1.6], sizeEnd: 0, life: 0.2, color: [BLUE, 'white'], twinkle: 20 }),
   ] },
-  // where a bolt falls: a white star, a blue ring out along the ground, the sand fused black and fizzing a while
+  // where a bolt falls: a white star, a pillar of light from the cloud down, a blue ring out along the ground, the sand fused black and
+  // fizzing a while
   'shell.thunderhead.strike': { layers: [
-    L({ type: 'sprites', count: 1, shape: 'core', size: 5, sizeEnd: 0.5, life: 0.22, color: 'white', colorEnd: BLUE, powerCount: false }),
-    groundRing({ to: 14, from: 0.8, dur: 0.5, tint: BLUE, k: 1.6 }),
-    scorch({ size: 3.4, dur: 6 }),
-    L({ type: 'sprites', count: 24, shape: 'streak', dir: 'cone', axis: 'up', cone: 70, speed: [8, 16], drag: 2, size: [0.3, 0.5], sizeEnd: 0.04, life: [0.25, 0.45], stretch: 2, color: [BLUE, 'white'], powerCount: false }),
-    debris({ count: 16, speed: [4, 9], size: [0.12, 0.26], life: [3.5, 5], color: [0x1e1a24, 0x3a3644, 0xd9b89a] }),
-    L({ type: 'sprites', rate: 14, dur: 3, shape: 'glint', spawn: 'disc', r: 1.4, size: [0.2, 0.34], sizeEnd: 0, life: 0.25, color: [BLUE, 'white'], twinkle: 24 }),
+    L({ type: 'sprites', count: 1, shape: 'core', size: 10, sizeEnd: 1, life: 0.26, color: 'white', colorEnd: BLUE, powerCount: false }),
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 14, sizeEnd: 1, life: 0.18, color: 'white', powerCount: false }),
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: 0.3, scale: 1, stretch: [0.3, [[0, 0.85], [1, 0.85]], 0.3], k: [[0, 2], [1, 0]], tint: 0xe8f4ff, labradorite: 0, offset: [0, 3.6, 0] }),
+    L({ type: 'flash', color: 0xe8f4ff, k: 0.3, dur: 0.18 }),
+    L({ type: 'light', color: BLUE, k: 60, range: 22, dur: 0.35 }),
+    groundRing({ to: 28, from: 1.6, dur: 0.6, tint: BLUE, k: 1.8 }),
+    scorch({ size: 7, dur: 6 }),
+    L({ type: 'sprites', count: 36, shape: 'streak', dir: 'cone', axis: 'up', cone: 70, speed: [14, 28], drag: 2, size: [0.6, 1], sizeEnd: 0.08, life: [0.3, 0.5], stretch: 2.2, color: [BLUE, 'white'], powerCount: false }),
+    debris({ count: 24, speed: [6, 13], size: [0.24, 0.52], life: [3.5, 5], color: [0x1e1a24, 0x3a3644, 0xd9b89a] }),
+    L({ type: 'sprites', pool: 'alpha', count: 8, shape: 'puff', spawn: 'disc', r: 1.5, dir: 'up', speed: [1.5, 3], size: [1.6, 2.4], sizeEnd: 4.5, life: [1, 1.5], drag: 1, color: [0x3a3644, 0xd9b89a], alpha: 0.5, powerCount: false }),
+    L({ type: 'sprites', rate: 22, dur: 3, shape: 'glint', spawn: 'disc', r: 2.8, size: [0.4, 0.68], sizeEnd: 0, life: 0.25, color: [BLUE, 'white'], twinkle: 24 }),
   ] },
   // 36 Faraday Cage: its edges humming, sparks running up the corners (the arcs are S3's)
   'shell.faradayCage.land': { layers: [

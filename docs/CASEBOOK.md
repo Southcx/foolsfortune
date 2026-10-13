@@ -656,6 +656,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     lists grow (a menu of a hundred shells); what is taller than the screen scrolls.
 224. **A ray cast straight down at a height field is nudged off its grid lines** (a millimetre in x and z): Rapier lets
     a vertical ray along a grid line through, and a body set down on whole metres stood on one.
+225. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
+    bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3648,3 +3650,13 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `loggedTechs(techs)` in `progress/skills.js`: the startable, logged techs. The tracking rule's firsts and lg5's predicate
   and goal all read it. Measured: 21.
 - **Rule:** 221.
+
+### 2026-10-13 · The Corrupt shell compiled a program mid-fight (Calissa, the shells' refire)
+- **Seen:** the last late compile after every caster shell was fired twice near slip jellies: Corrupt's struck body, one program,
+  key bit 2048 different from any warmed one.
+- **Cause:** the corrupted material (`vfx/caster/corrupted.js`) is double-sided on a plain, not skinned, slip jelly; its sun-shadow
+  depth variant (double-sided, rigid) is used by nothing at boot. Parking stand-ins as shadow casters could not warm it: they were
+  skinned or single-sided.
+- **Fix:** `shadowSide: THREE.BackSide` on the corrupted material, so its shadow uses the depth program the slip jelly already warms.
+  The shadow looks the same. Measured: Corrupt, Meteor, Thunderhead, Hailstorm and Volcano fired twice, 0 compiled late.
+- **Rule:** 225.
