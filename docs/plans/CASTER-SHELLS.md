@@ -300,6 +300,16 @@ instead of removal: Inside Out 30, Leyline 20, Corrupt 20, Rift 10, God Hand 10,
   Twelve's lamps, Shrinker's carry.
 - **Unverified:** balance and feel (one crash pass: all hundred fired twice, no page errors). The owner's play is the test.
 
+**Still too weak in feel** (the owner, 2026-10-13, after v171's buff: "might be a more VFX oriented thing ... borderline ludicrous
+effects; for instance Meteor's projectiles being about 200% bigger, and follow up with a mega 500% Meteor after a delay"). So the
+power is now in the look and the hit, not the numbers:
+- **Meteor (22)** as the owner said: its three meteors at three times the size, then one mega meteor five times the size 2.5 real s
+  later (`n.size`, `n.mega` in the row).
+- **The ludicrous ten** (Calissa's looks, Petra's hit-stop and camera): Meteor, Mallet, Hailstorm, Thunderhead, Slingshot, Volcano,
+  Zodiac, RYNO, Inside Out, Thirteen. Each gets at least one of: 2 to 5 times the scale, a hit-stop of 3 to 8 frames, a camera punch or
+  shake, a shockwave ring on the ground, debris that stays a while. The rule of thumb is Ratchet & Clank's: the screen should look
+  like the weapon is too big for it.
+
 ## 6. Ruled (the owner, 2026-10-12)
 
 1. **Thirteen's backfire stays:** if what it hit lives, you shatter ("we like a little kakegurui around here").

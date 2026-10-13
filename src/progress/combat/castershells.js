@@ -72,7 +72,7 @@ export const CASTER_SHELLS = [
   S(20, 'stake', 'Stake', 3, 'bolt', ['pin', 'type'], null, [], { power: 6, dur: 6, type: 'impact' }, "Trigun's Cross Punisher"),
   // ---- Ember (molten clay and crude)
   S(21, 'flamer', 'Flamer', 1, 'cone', ['type', 'world'], null, ['S1'], { power: 0.6, dur: 4, r: 5 }, 'Pyrocitor'),
-  S(22, 'meteor', 'Meteor', 2, 'call', ['blast'], 'pool', ['M10', 'S9'], { power: 4, count: 3, r: 2.5, delay: 1 }, 'Lava Gun to Meteor Gun'),
+  S(22, 'meteor', 'Meteor', 2, 'call', ['blast'], 'pool', ['M10', 'S9'], { power: 4, count: 3, r: 2.5, delay: 1, size: 3, mega: { delay: 2.5, size: 5, power: 14, r: 7 } }, 'Lava Gun to Meteor Gun'), // (the owner, 2026-10-13: the three come 200% bigger, then one mega meteor five times the size)
   S(23, 'lavaLamp', 'Lava Lamp', 2, 'seek', ['blast', 'split'], null, ['S9', 'M1'], { power: 3, count: 3, speed: 3 }, "the Lava Gun's glob"),
   S(24, 'napalm', 'Napalm', 2, 'lob', ['crude'], 'pool', [], { power: 0.8, r: 3, dur: 8, delay: 1 }, 'the Napalm mod'),
   S(25, 'detonator', 'Detonator', 1, 'bolt', ['blast'], null, [], { power: 5, r: 3 }, 'Nitro Launcher'),
