@@ -74,7 +74,7 @@ export class Rejection {
     if (!A || this.sent.length >= R.cap) return;
     const home = this.origin(); if (!home) return;
     const stash = R.stash[this.level] || 0;
-    const mark = (c) => { if (!c) return; c.emo = R.emo; c.stash = (c.stash || 0) + stash; c.rejection = this.level; this.sent.push(c); return c; };
+    const mark = (c) => { if (!c) return; g.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); c.emo = R.emo; c.stash = (c.stash || 0) + stash; c.rejection = this.level; this.sent.push(c); return c; };
     const room = () => this.sent.length < R.cap;
     for (let i = 0; i < (A.jelly || 0) && room(); i++) {
       const at = home.clone().add(new THREE.Vector3((rand() - 0.5) * 6, 0, (rand() - 0.5) * 6));

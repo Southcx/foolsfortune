@@ -198,6 +198,7 @@ export class Raid {
     this.sherds = [45, 135, 225, 315].map((b) => {
       const r = 12 * (ARENA.scale ?? 1), p = bearingXZ(b, r), c = J.spawn(this.B.world(p.x, dishY(r) + 0.05, p.z), { once: true, cls: 1 });
       c.hp = c.maxHp = hp; c.sherd = true; c.name = 'Sherd';
+      this.g.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (each rises from the dish: vfx/spawnlook.js)
       const hurt = c.hurt; c.hurt = (...a) => { const was = Math.max(0, c.hp); hurt(...a); F.c.hp = Math.max(1, F.c.hp - (was - Math.max(0, c.hp))); };
       c.deform?.kick(8, null, 0.3);
       return c;
