@@ -16,6 +16,14 @@
 //   - THE GHOST of your best lap (game.race.ghost): the Solar Skiff's own model cloned (SkeletonUtils, skinned as the model is) and worn
 //     as the caster hologram (vfx/caster/hologram.js, one shared material) in a pale sand-gold. No new program: the hologram's skinned one
 //     is warmed with the caster shaders.
+//   - THE EDGE STRINGS (round 2, the owner's ask after the first race): beads of light on a thread along both edges of the running
+//     surface, a bright run flowing the race's way just ahead of the board (vfx/racewayedgestrings.js; data raceway.edgeLines).
+//   - THE GRIND RAILS: Dovina's ruin lintels re-cut as glazed stone (an amber ame glaze over an iron-dark drip line, the top worn
+//     through to pale bisque where the keel runs, the columns the Dunes' clay with a gold capital), the same mesh, material and draw.
+//     While the keel grinds (skiff.grind .. skiff.grind.end): sparks and sand off the contact, a bright streak left on the rail's top,
+//     a soft hum of gold under the board; a burst as it locks on and lets go. The library's effects on the shared particle pools.
+//   - THE SUN RINGS (Dovina's SolarRing, hung in the air): flown through (skiff.ring), a flash at the heart, the air's motes drawn in
+//     round the rim and out through it, and the ring pulsing once (SolarRing.pulse).
 //
 // Prior art: F-Zero's dash plates (the flash and the arrows running the way to go), Mario Kart's boost pads (the chevrons) and its drift
 // sparks and mini-turbo tiers (blue, orange, purple: ours sand, gold, white), Mario Kart's start lights on Lakitu's rod (a lamp a count,
@@ -28,11 +36,16 @@
 //   racewayLooks.dress(raceway)       the sun plates, the arch's lamps and the gates' marks, built over Dovina's placeholders (hidden)
 //   racewayLooks.dressGhost(group)    the ghost's group worn as the skiff's hologram (as soon as the skiff's model is parsed)
 //   racewayLooks.plateHit(i)          sun plate i flashes and rings (heard on skiff.plate, the plate under the Courier found)
+//   racewayLooks.dressRound2(raceway) the edge strings, the rails' glaze and the rings' passes (dress() calls it; call it again if the
+//                                     rails, rings or edges are built after dress)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { Hologram } from './caster/hologram.js';
+import { RacewayEdgeStrings, EDGE_STRINGS } from './racewayedgestrings.js';
+import { ensureSmoothNormals } from '../render/outline.js';
+import { lightAt } from '../progress/weather.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
  *  the shimmer (its rate, rad a real second, and the glow's low and high); the arch's lamps (radius, spacing, drop under the lintel, glow);
@@ -44,6 +57,10 @@ export const RACEWAY_LOOK = {
   gateMark: { r: 0.6, up: 4.6, glow: 3.4 },
   colour: { rim: 0xf2b33a, face: 0xfff3d6, boss: 0xf6c04e, rayLong: 0xffd77a, rayShort: 0xfff0c8, glow: 0xffd27a, flare: 0xfff4dc, emissive: 0xffb84a },
   ghost: { tint: 0xf0d49a, alpha: 0.62, slip: 0.25, flicker: 0.15, sweep: 0.7 },
+  // the grind rails' glaze (the lintel's body, its drip line, the glaze thinning to the edge, the top worn through; the columns' clay and
+  // gold capital; the glaze's sheen; metres between columns), and the grind's contact (m under the board's origin: the keel on the rail)
+  rail: { body: 0xb8692e, drip: 0x4a2414, edge: 0xd9944e, worn: 0xfff0c8, clay: 0xd9906a, capital: 0xffd696, roughness: 0.5, post: 8 },
+  grind: { contact: 0.4 },
 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _c = new THREE.Color();
@@ -172,7 +189,13 @@ export class RacewayLooks {
       E.on('race.go', () => { this.lit = 3; this.flareT = 1; this.goneT = 0; this.flareLamps(); });
       for (const n of ['race.end', 'race.finish']) E.on(n, () => { this.lit = 0; this.flareT = 0; this.goneT = 9; });
       E.on('race.gate', (e) => { const i = (e.gate | 0) - 1; if (i >= 0) { this.gateFlash[i] = 1; this.passGate(i); } });
+      E.on('skiff.grind', () => this.grind());
+      E.on('skiff.grind.end', (e) => this.grindEnd(e));
+      for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopGrind());
+      E.on('skiff.ring', (e) => this.ringPass(e.ring));
     }
+    this.nightOf = o.night || (() => Math.min(1, Math.max(0, (0.45 - lightAt()) / 0.37))); // (0 by day, 1 at night: the strings cool)
+    this.strings = null; this.grindH = []; this.nightK = 0; this.nightT = 9;
   }
 
   // ---------------------------------------------------------------- the sun plates, the arch's lamps, the gates' marks
@@ -213,9 +236,93 @@ export class RacewayLooks {
     this.markList = marks; this.markH = marks.map(() => null);
     this.gateK = T.gates.map(() => 0); this.gateFlash = T.gates.map(() => 0);
     this.R = R;
+    return this.dressRound2(R);
+  }
+
+  // ---------------------------------------------------------------- round 2: the edge strings, the rails' glaze, the rings
+  /** What the Raceway has of them: the edge strings strung on edgeLines, the rail mesh re-cut as glazed stone, the rings kept for passes. */
+  dressRound2(R) {
+    this.R = R;
+    if (R.edgeLines) {
+      this.strings?.dispose();
+      this.strings = new RacewayEdgeStrings({ parent: this.parent || this.game.scene, zone: 'raceway' }).build(R.edgeLines(EDGE_STRINGS.step), EDGE_STRINGS.step);
+    }
+    if (R.railMesh && R.rails?.length && !R.railMesh.userData.glazed) this.glazeRails(R);
     return this;
   }
+  /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier. */
+  glazeRails(R) {
+    const mesh = R.railMesh, C = RACEWAY_LOOK.rail, parts = [];
+    for (const rail of R.rails) {
+      const { pts, cum } = rail, n = pts.length - 1;
+      for (let i = 0; i < n; i++) {
+        const p = pts[i], q = pts[i + 1], len = p.distanceTo(q) + 0.05, m = new THREE.Matrix4().lookAt(p, q, UP).setPosition(p.clone().lerp(q, 0.5));
+        parts.push(painted(new THREE.BoxGeometry(0.54, 0.24, len).applyMatrix4(m), C.body)); // (the body, its top at +0.12)
+        parts.push(painted(new THREE.BoxGeometry(0.6, 0.07, len).translate(0, -0.12, 0).applyMatrix4(m), C.drip)); // (the drip line under)
+        parts.push(painted(new THREE.BoxGeometry(0.46, 0.03, len).translate(0, 0.13, 0).applyMatrix4(m), C.edge)); // (the glaze thinning to the edge)
+        parts.push(painted(new THREE.BoxGeometry(0.24, 0.03, len).translate(0, 0.155, 0).applyMatrix4(m), C.worn)); // (worn through where the keel runs)
+      }
+      for (let d = 0; d <= cum[n]; d += C.post) {
+        let i = 0; while (i < n - 1 && cum[i + 1] < d) i++;
+        const p = pts[i].clone().lerp(pts[i + 1], (d - cum[i]) / Math.max(1e-6, cum[i + 1] - cum[i])), foot = R.heightAt(p.x, p.z) - 0.4, h = p.y - 0.15 - foot;
+        if (h <= 0.2) continue;
+        parts.push(painted(new THREE.CylinderGeometry(0.2, 0.28, h, 6).translate(p.x, foot + h / 2, p.z), C.clay));
+        parts.push(painted(new THREE.BoxGeometry(0.62, 0.16, 0.62).translate(p.x, p.y - 0.23, p.z), C.capital));
+      }
+    }
+    if (!parts.length) return;
+    const geo = ensureSmoothNormals(mergeGeometries(parts)), old = mesh.geometry;
+    mesh.geometry = geo; if (mesh.userData.outline) mesh.userData.outline.geometry = geo;
+    old.dispose(); for (const g of parts) g.dispose();
+    mesh.material.roughness = C.roughness; mesh.userData.glazed = true;
+  }
+
+  // ---------------------------------------------------------------- the grind
+  /** The board's contact with the rail (`h.pos`) and the way back along it (`h.dir`), for a held effect; under the board for the hum. */
+  contact(h, B, kind) {
+    const a = B.heading, f = _v.set(Math.sin(a), 0, Math.cos(a));
+    h.pos.copy(B.group.position); h.pos.y -= kind === 'hum' ? 0.15 : RACEWAY_LOOK.grind.contact;
+    if (kind === 'sparks') h.pos.addScaledVector(f, -0.5);
+    h.dir.copy(f).negate().addScaledVector(UP, kind === 'sparks' ? 0.35 : 0).normalize();
+    if (B.vel) h.ctx.vel = B.vel;
+  }
+  grind() {
+    const V = this.vfxOf(), B = this.boardOf(); if (!V || !B) return;
+    this.stopGrind(); this.grinding = true;
+    const h0 = { pos: new THREE.Vector3(), dir: new THREE.Vector3(), ctx: {} }; this.contact(h0, B, 'on');
+    V.play('raceway.grind.on', { pos: h0.pos, dir: _s.copy(h0.dir).addScaledVector(UP, 0.6).normalize() });
+    for (const kind of ['sparks', 'streak', 'hum']) {
+      const follow = (h) => { const b = this.boardOf(); if (!this.grinding || !b) return false; this.contact(h, b, kind); return true; };
+      const h = V.play(`raceway.grind.${kind}`, { follow }); follow(h); this.grindH.push(h);
+    }
+  }
+  grindEnd(e) {
+    const V = this.vfxOf(), B = this.boardOf(), was = this.grinding;
+    this.stopGrind(); if (!V || !B || !was) return;
+    const h = { pos: new THREE.Vector3(), dir: new THREE.Vector3(), ctx: {} }; this.contact(h, B, 'off');
+    V.play('raceway.grind.off', { pos: h.pos, dir: h.dir, power: e?.why === 'hop' ? 1.6 : 1 });
+  }
+  stopGrind() { for (const h of this.grindH || []) h?.stop(); this.grindH = []; this.grinding = false; }
+
+  // ---------------------------------------------------------------- the sun rings
+  /** Ring i flown through: a flash at its heart, motes drawn in round the rim and out through it, the ring pulsing once. */
+  ringPass(i) {
+    const Rg = this.R?.rings?.[i], V = this.vfxOf(); if (!Rg) return;
+    Rg.look?.pulse?.();
+    if (!V) return;
+    const c = (Rg.pos || Rg.look.group.position).clone(), dir = new THREE.Vector3().copy(Rg.dir || _s.set(0, 0, 1).applyQuaternion(Rg.look.group.quaternion)).normalize();
+    const r = Rg.look?.mesh?.geometry?.parameters?.radius || 3.2, right = new THREE.Vector3().crossVectors(dir, UP), up = new THREE.Vector3();
+    if (right.lengthSq() < 1e-4) right.set(1, 0, 0);
+    right.normalize(); up.crossVectors(right, dir).normalize();
+    V.play('raceway.ring.pass', { pos: c, dir });
+    const out = c.clone().addScaledVector(dir, 2.5);
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 2, rim = c.clone().addScaledVector(dir, -2.4).addScaledVector(right, Math.cos(a) * r * 1.4).addScaledVector(up, Math.sin(a) * r * 1.4);
+      V.play('raceway.ring.draw', { pos: rim, dir: out.clone().sub(rim).normalize() });
+    }
+  }
   undress() {
+    this.strings?.dispose(); this.strings = null; this.stopGrind();
     for (const m of [this.plates?.glyph, this.plates?.glow, this.marks]) if (m) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
     for (const h of this.markH || []) h?.stop();
     this.plates = this.marks = null; this.markH = [];
@@ -294,6 +401,11 @@ export class RacewayLooks {
   update(dt) {
     this.t += dt;
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
+    if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)
+      if ((this.nightT += dt) > 1) { this.nightT = 0; this.nightK = this.nightOf(); }
+      const R = this.R, near = this.boardOf() && R && R.s != null;
+      this.strings.update(dt, { s: near ? R.s : null, d: R?.d ?? 0, night: this.nightK });
+    }
     if (!this.plates) return;
     const L = RACEWAY_LOOK, M = materials(), t = this.t, gl = _c;
     // the plates: a slow shimmer through the glaze and the glow (all together), the chevrons running the track's way
