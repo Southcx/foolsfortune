@@ -78,6 +78,10 @@ function sweep(out, frames, section, caps) {
   if (caps) { caps(frames[0], -1); caps(frames[frames.length - 1], 1); }
 }
 
+/** The maw's throat and a mandible (sd -1 the left), shared: the antlion chaser wears them (vfx/racewayprops.js). */
+export const antlionThroat = () => RacewayPark.prototype.throatGeometry();
+export const antlionMandible = (sd) => RacewayPark.prototype.mandible(sd);
+
 export class RacewayPark {
   constructor(game, o = {}) {
     this.game = game; this.parent = o.parent || null; this.vfxOf = () => o.vfx || game.vfx;

@@ -13,6 +13,7 @@ import { SHELL_EFFECTS } from './shelllooks/index.js'; // (the caster shells' lo
 import { groundRing, scorch, debris } from './shelllooks/kit.js'; // (the ludicrous ten's ground rings, scorches and debris)
 import { RACEWAY_EFFECTS } from './racewayeffects.js'; // (the carve's sparks by tier and the sun plate's ring: vfx/racewaylooks.js plays them)
 import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crystal vein ridden: vfx/racewaycavern.js plays it)
+import { RACEWAY_PROPS_EFFECTS } from './racewaypropseffects.js'; // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js plays them)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
 import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
 const L = (o) => o; // (a layer: only for readability)
@@ -761,4 +762,5 @@ export const LIBRARY = {
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,
   ...SKIFF_BOARD_EFFECTS,
+  ...RACEWAY_PROPS_EFFECTS,
 };
