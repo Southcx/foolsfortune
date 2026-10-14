@@ -662,6 +662,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     `npm run build | tail` return tail's success, so a failing gate let a broken commit through. Chain a gate bare, or with `set -o pipefail`.
 227. **A goal over the ledger reads a record with `best`, never `get`**: `L.hi` keeps a best apart from the counters,
     so `L.get('parry.run.best')` is always 0. Read a goal's key through `ledOf` (progress/skills.js), which takes either.
+228. **A shader patch is applied to a material once.** `withFade` and its kin add uniforms by string replacement; run
+    twice on one material (a helper that already wraps, wrapped again) it declares them twice, the program fails to link, and the mesh
+    draws nothing with no error in play. Pass the patch's options to the helper that applies it; check a new material's link status.
+229. **What lets a body go does not take it again at once.** A lock that is tested every frame (a grind, a grab, a
+    ledge) and releases at the place it would lock is retaken the next frame, forever: the place just left is barred for a beat, and a
+    lock never takes a point past its own ends.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3683,3 +3689,20 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `ledOf(L, key)` reads the greater of the counter and the record; goals, the System's goal values and the knacks read through
   it. Measured: Portal opens by the feat, Sculpt's bar reads 0.5.
 - **Rule:** 227.
+
+### 2026-10-14 · The skiff's sail drew nothing (the owner, v195)
+- **Seen:** the Solar Skiff's sail was wholly transparent, from v194 on.
+- **Cause:** v194 gave the sail its own screen-door fade by wrapping it in `withFade`, but `vessoulPainted` already wraps every painted
+  material in `withFade`. Two wraps declared `uFade`, `uDissolve` and `uDisBase` twice, and the sail's program failed to link.
+  Measured headless: `LINK_STATUS` false before, true after.
+- **Fix:** the sail's own fade uniforms are passed to `vessoulPainted` (its third argument) instead of a second wrap (`courier/skiff/boat.js`).
+- **Rule:** 228.
+
+### 2026-10-14 · The skiff hung at a rail's end (the owner, v195)
+- **Seen:** a grind let run to the end of its rail left the board stuck there.
+- **Cause:** the grind let go at the rail's last point with no upward speed, and the next frame `tryLock` found that same point, 0 m away
+  and inside the heading's cone, and locked again: an end and a lock every frame. A fall off the side set the board 1.3 m out, inside
+  the 1.4 m reach, so it was retaken the same way.
+- **Fix:** the rail just left cannot lock for 0.6 real s (`GRIND.relock`); no lock past a rail's ends; a fall lands outside the reach
+  (`courier/skiff/grind.js`). Measured headless: one lock, one end, and the board 20.8 m past the end 4 real s later.
+- **Rule:** 229.

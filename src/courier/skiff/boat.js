@@ -29,7 +29,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, rigUniforms } from '../../render/outline.js';
 import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
 import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
@@ -72,7 +72,7 @@ const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a),
 
 // the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do): the Vessoul's painted material,
 // so the hull and the parts share the god hand's and the Pneuka Jar's shader program (vfx/vessoulpaint.js)
-const painted = (map, o = {}) => vessoulPainted(map, o);
+const painted = (map, o = {}, U) => vessoulPainted(map, o, U);
 /** A texture the glTF brought, filtered so it never crawls: mipmapped down, and `near` (Blender's Closest) kept only up close. */
 function filtered(tex, near) {
   if (!tex) return null;
@@ -150,7 +150,7 @@ export class Skiff {
       const src = m.material, tex = src.emissiveMap || src.map;
       if (src.name === 'Skiff_Hull') m.material = painted(filtered(tex, true));
       else if (src.name === 'Skiff_Parts') m.material = painted(filtered(tex, false));
-      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }); }
+      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }, this.sailFade = rigUniforms()); } // (the screen-door fade, its own uniforms: the ride sees through the sail, skiff.js; painted is already withFade's, a second wrap declared uFade twice and the sail's program failed: nothing drawn)
       else if (src.name === 'CourierEnergy') m.material = this.energyMat = new THREE.MeshStandardMaterial({ color: src.color.clone(), roughness: 0.35, metalness: 0.2, emissive: PALETTE.glow ?? C.energy, emissiveIntensity: 0.3 });
       m.material.name = src.name;
       src.dispose?.();
