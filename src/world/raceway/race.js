@@ -4,7 +4,7 @@
 // run up full in the quarter second after GO it is a SOLAR START, a push off the line (MK8's rocket start; up too soon, the pump is
 // spent while held and it luffs). Then three laps through eight gates in order (a gate missed is gone back for: the line counts only
 // after all eight), a split at the half lap against your best lap's, a lap's time at the line, and a ghost of your best lap riding beside
-// you. A bail in a race is got up from and set back on the track where it happened (MK8's Lakitu). The time takes a medal; each medal
+// you (kept in the save). R in a race goes back to the last gate passed (Trackmania's checkpoint respawn). A bail in a race is got up from and set back on the track where it happened (MK8's Lakitu). The time takes a medal; each medal
 // pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it.
 // Events (each with `by`): race.start, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
 // seconds, best }, race.finish { seconds, medal, laps }, race.end { why }.
@@ -34,6 +34,10 @@ export class Race {
     game.interact?.add('race', () => (game.dialogue?.open ? null : this.offer()));
     game.events?.on('skiff.pump', () => { if (this.state === 'run' && this.goT != null && this.goT <= RACE.solar.window && !this.solarDone) { this.solarDone = true; this.skiff?.kick(RACE.solar.add, RACE.solar.dur, RACE.solar.kick); game.events.emit('race.solarstart', { by: 'courier' }); } });
     game.events?.on('skiff.bail', () => { if (this.running) this.bailT = 0; });
+    // the best lap's ghost is kept (the save's `raceGhost`, player scope: a build's progress, reset with it); its frames to a tenth
+    game.save?.section('raceGhost', { scope: 'player', version: 1,
+      dump: () => this.bestLap ? { seconds: this.bestLap.seconds, splits: this.bestLap.splits.map((v) => +v.toFixed(2)), frames: this.bestLap.frames.map((f) => f.map((v) => +v.toFixed(1))) } : null,
+      load: (d) => { this.bestLap = d?.frames?.length ? d : null; }, reset: () => { this.bestLap = null; } });
   }
   get R() { return this.game.raceway; }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
@@ -73,6 +77,8 @@ export class Race {
     this.t += dt; this.lapT += dt; this.goT += dt;
     if (S) S.hold = false;
     if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(R.s); }
+    // R: back to the last gate passed, mounted (Trackmania's respawn at a checkpoint): the lap goes on, the clock with it
+    if (g.input?.wasPressed?.('KeyR') && !g.log?.typing) { this.bailT = null; const gs = this.next > 0 ? R.T.gates[this.next - 1] : R.T.line; R.respawn(gs + 2); this.prevS = R.s; g.events?.emit('race.back', { gate: this.next, by: 'courier' }); }
     // the ghost's samples of this lap
     if ((this.ghostT += dt) >= 1 / RACE.ghostHz) { this.ghostT = 0; this.frames.push([+this.lapT.toFixed(2), PL.pos.x, PL.pos.y, PL.pos.z, S?.heading ?? PL.bodyYaw]); }
     // gates crossed: the place on the line moved forward past one, inside the track
@@ -95,7 +101,7 @@ export class Race {
   }
   lapDone() {
     const g = this.game, seconds = +this.lapT.toFixed(2), best = !this.bestLap || seconds < this.bestLap.seconds;
-    if (best) this.bestLap = { seconds, splits: this.splits.slice(), frames: this.frames };
+    if (best) { this.bestLap = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); }
     this.laps.push(seconds);
     g.events?.emit('race.lap', { lap: this.lap, seconds, best, by: 'courier' });
     if (this.lap >= RACE.laps) { this.finish(); return; }

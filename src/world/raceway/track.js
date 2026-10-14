@@ -47,6 +47,18 @@ export const FEATURES = {
   glideLip: { cp: 18, from: -4, to: 70 }, // (in the air over this stretch the wings open by themselves: MK8's glider ramp)
   slalom: { from: [7, -20], to: [8, 10], every: 22, lat: 5 }, // (ruin columns in the line, alternating sides)
   canyon: { from: [21, 20], to: [23, 0], berm: 7 }, // (high berms: the canyon's walls)
+  // grind rails (SKIFF-RACING.md 7: the skiff alone): from a point on the line to another, each [cp, at, lat], `lift` metres over the
+  // ground at its ends, never under `clear` over the ground between (a ruin's lintel on its columns)
+  rails: [
+    { from: [3, -60, -3], to: [4, 30, -3], lift: 1.6 }, // (turn one's chord, inside: shorter than the sweep, for who can land on it)
+    { from: [5, 10, 0], to: [6, -10, 0], lift: 2.6 }, //  (over the whoops: the smooth line)
+    { from: [7, -10, 0], to: [8, 0, 0], lift: 1.6 }, //   (down the slalom's middle, between the columns)
+    { from: [22, -10, 0], to: [23, -45, 0], lift: 1.8 }, // (the canyon's spine, the geysers beside it)
+    { from: [24, 15, 4], to: [25, -15, 4], lift: 1.4 }, // (the gale: a line out of the crosswind's push)
+  ].map((r) => ({ ...r, clear: 0.9 })),
+  // sun rings in the air (the Gnomon's rings, flown through: a push and a little Lachryma): [cp, at, lat, metres over the line]
+  rings: [[2, -22, 0, 4], [16, 14, 0, 4.2], [17, 24, 0, 4.2], [18, 22, 0, 0], [18, 45, 0, 0], [18, 70, 0, 0], [21, 44, 0, 4]],
+  ringGlide: 5, // (the drop's rings hang on a 5-to-1 glide from the lip, where the `0` heights are)
 };
 const BERM = { w: 6, h: 1.4, blend: 46 }; // (the berm's width and height, the blend back to the sea, metres)
 const BANK = { k: 24, max: 0.42, smooth: 15 }; // (tan of the bank = k x the bend (1/m), capped; the bend smoothed over metres)

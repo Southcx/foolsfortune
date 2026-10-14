@@ -76,6 +76,9 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   an agate plays both, a torn sky neither. Fury's mode is a tritone minor [0 3 6 7 10], gall's a Hijaz [0 1 4 7 8] that borrows no note
   (it has no opposite; docs/plans/GALL-AND-FURY.md). Their beds (`audio/ambience.js`): fury's hail on clay and glaze over a hot low
   pressure (never thunder), gall's flies, sour hum and drip.
+- **The Raceway** (`music/raceway.js`, `audio/raceway.js`; SKIFF-RACING.md): one score following the time trial (paddock, grid,
+  race, the last lap with the Answer on brass, the flag), on the bar line from race.* events; the countdown, solar start, carve, plate,
+  pop, gate (ahead a fourth up, behind a step down), lap, hard landing and the medal's bells, all in E.
 - **The caster shells** (`audio/shellparts.js`, CASTER-SHELLS.md): a sound a part, never a shell: `shellFire(carrier)`, `shellHit(payloads)`,
   `shellField(field)` (a loop, its handle stopped), `shellFall` (the call's whistle); Stage Fright's `crowdMurmur`, Lullaby's `lullabyNote`.
 - **The awakening** (`music/awaken.js`, feeling.wake): the first time a feeling is lived, its mode climbed once over the cue on

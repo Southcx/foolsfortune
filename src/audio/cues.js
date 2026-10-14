@@ -30,6 +30,17 @@ const RULES = {
   'skiff.glide': (s) => s.skiffGlide?.(), // (the wings' wind: audio/moves.js skiffLoop)
   'skiff.tumble': (s, e) => s.tumbleThump?.(e.speed), // (the bail's ragdoll on the sand, a thump a contact)
   'sibling.hit': (s, e) => s.siblingHit?.(e.down), // (a sibling's clay struck: audio/vessel.js)
+  'race.count': (s, e) => s.raceCount?.(e.n), // (the Raceway: audio/raceway.js; its cue is music/raceway.js)
+  'race.go': (s) => s.raceGo?.(),
+  'race.solarstart': (s) => s.raceSolarStart?.(),
+  'race.gate': (s, e) => s.raceGate?.(e.split),
+  'race.lap': (s, e) => s.raceLap?.(e.best === true), // (best: true when this lap is the new best)
+  'race.finish': (s, e) => s.raceFinish?.(e.medal),
+  'skiff.carve.charge': (s, e) => s.carveCharge?.(e.tier),
+  'skiff.carve': (s, e) => s.carveRelease?.(e.tier),
+  'skiff.plate': (s) => s.skiffPlate?.(),
+  'skiff.pop': (s) => s.skiffPop?.(),
+  'skiff.landhard': (s) => s.skiffLandHard?.(),
   'wisp.notice': (s) => s.wispNotice?.(), // (the Lantern Wisp: audio/wisp.js)
   'wisp.cast': (s) => s.wispCast?.(),
   'wisp.hit': (s) => s.wispHit?.(),

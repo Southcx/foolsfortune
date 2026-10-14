@@ -5,7 +5,7 @@
 //
 //   race.start  race.count { n }  race.go  race.solarstart  race.gate { gate, lap, split }  race.lap { lap, seconds, best }
 //   race.finish { seconds, medal, laps }  race.end { why }  race.respawn   skiff.carve { tier }  skiff.pop { late }  skiff.plate
-//   skiff.landhard { impact }   (each with `by`)
+//   skiff.landhard { impact }  skiff.grind  skiff.grind.end { metres, why }  skiff.ring { ring }  race.back { gate }   (each with `by`)
 //
 //   raceRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -36,5 +36,13 @@ export function raceRules({ on, L, log }) {
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });
   on('skiff.pop', (e) => { if (e.by === 'courier') L.inc('skiff.pop'); });
   on('skiff.plate', (e) => { if (e.by === 'courier') L.inc('skiff.plate'); });
+  on('skiff.grind', (e) => { if (e.by === 'courier') L.inc('skiff.grind'); });
+  on('skiff.grind.end', (e) => {
+    if (e.by !== 'courier') return; L.inc('skiff.grind.metres', Math.round(e.metres)); L.hi('skiff.grind.best', e.metres);
+    if (e.metres >= 12) log.say('skiff', `A ${Math.round(e.metres)} m grind.`, { key: 'grind', throttle: 2 });
+    if (e.why === 'fell') log.say('warn', 'You lose your balance off the rail.', { key: 'grind.fell', throttle: 3 });
+  });
+  on('skiff.ring', (e) => { if (e.by === 'courier') L.inc('skiff.ring'); });
+  on('race.back', () => L.inc('race.raceway.back'));
   on('skiff.landhard', (e) => { if (e.by === 'courier') { L.inc('skiff.landhard'); log.say('warn', 'A hard landing. The hover takes it, and your speed with it.', { key: 'skiff.hard', throttle: 4 }); } });
 }

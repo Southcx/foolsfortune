@@ -45,6 +45,7 @@ import { Wake } from '../../world/ground/wake.js';
 import { Rider } from './rider.js';
 import { rootOf } from '../../tools/moveset.js';
 import { Ragdoll } from '../anim/ragdoll.js';
+import { Grind, GRIND } from './grind.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -69,7 +70,8 @@ const GLIDE = { trim: 0.2, dive: 0.45, flare: 0.35, ease: 4, drag: 0.008, bankDr
 const CARVE = { min: 10, tiers: [0.6, 1.3, 2.2], add: [5, 8, 12], dur: [0.7, 1.0, 1.3], kick: [1.5, 2.5, 4], turn: 1.25, grip: 0.3 };
 const PLATE = { add: 10, dur: 1.2, kick: 4 }; // (a sun plate's push: as a carve's best, a little longer)
 const POP = { window: 0.22, up: 0.7 }; // (a late pop: real seconds after leaving a crest, and of a hop's height)
-const TRICK = { lachryma: 6 }; // (Lachryma a whole turn landed gives the pool)
+const TRICK = { lachryma: 6 };
+const SAIL_SEE = 0.5; // (the sail's screen-door fade under way: half its dots, so the track shows through) // (Lachryma a whole turn landed gives the pool)
 // how much of the wind's push the sail uses, by cos(angle between the heading and where the wind goes): 1 dead downwind .. -1 into it
 const POLAR = [[-1, 0.28], [-0.6, 0.42], [-0.2, 0.7], [0.2, 0.92], [0.7, 1.0], [1, 1.0]];
 const polar = (c) => {
@@ -100,6 +102,7 @@ export class Skiffing extends Tech {
     const game = mgr.game;
     this.skiff = new Skiff(game.scene); // (the owner's model, parsed on first use: courier/skiff/boat.js load)
     this.wake = new Wake(game.scene, game.fx);
+    this.grind = new Grind(this); // (the board on a rail, the skiff alone: courier/skiff/grind.js)
     this.phase = 'ride'; this.phaseT = 0; this.next = null;
     this.parked = null; // { pos, heading }: the board left hovering, to be mounted again (F) or replaced by a summon (Y)
     this.board = { pos: new THREE.Vector3(), heading: 0, v: new THREE.Vector3() }; // (where the board is when the rider is not on it)
@@ -273,13 +276,14 @@ export class Skiffing extends Tech {
     // (what the frame interpolates from: the body is drawn between the last step and this one, like the camera is)
     this.hPrev = this.heading; this.spinPrev = this.spin; this.rollPrev = this.roll;
     this.rideT = (this.rideT || 0) + dt;
+    if (this.grind.on) return this.grindStep(dt);
     const held = !!this.hold; // (a race's countdown: the board is held on the line, the sail free to be readied: world/raceway/race.js)
     const steerIn = held ? 0 : (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
     const keyW = inp.isDown('KeyW'), keyS = inp.isDown('KeyS');
     const flare = !held && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight'));
     const sp2 = !held && inp.isDown('Space');
     this.steer = damp(this.steer, steerIn, 10, dt);
-    const bankIn = held ? 0 : (inp.isDown('KeyE') ? 1 : 0) - (inp.isDown('KeyQ') ? 1 : 0); // (the glider's bank: Q left, E right, so A / D stay the spin)
+    const bankIn = held ? 0 : (inp.isDown('KeyE') ? 1 : 0) - (inp.isDown('KeyQ') ? 1 : 0); // (the glider's bank: Q left, E right, as A / D steer, so A / D stay the spin)
     this.bank = damp(this.bank || 0, bankIn, 6, dt);
     // ---- the glide (Space held in the air, with the art; or opened by the course's glide lip: MK8's glider ramp). W and S are the
     // glider's pitch while it flies, never the sail's
@@ -393,8 +397,7 @@ export class Skiffing extends Tech {
       g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
     } else if (!sp2 && this.spaceWas && this.air && this.launchT < POP.window && !this.gliding) {
       P.vel.y = Math.max(P.vel.y, 0) + c.hop * POP.up + c.hopCharge * this.charge * 0.5; this.v.addScaledVector(f, 1.5); this.launchT = 9; this.popT = 0;
-      sfx.airJump();
-      g.events?.emit('skiff.pop', { late: true, by: 'courier' });
+      g.events?.emit('skiff.pop', { late: true, by: 'courier' }); // (its sound is Wanda's: audio/raceway.js)
       g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
     }
     if (!sp2) this.charge = Math.max(0, this.charge - dt * 4);
@@ -431,6 +434,7 @@ export class Skiffing extends Tech {
     P.grounded = !this.air;
     P.bodyYaw = this.heading;
     if (this.safe && !P.embedded?.()) this.safe.copy(P.pos);
+    if (D.rails?.length && this.air && !this.grind.on && this.grind.tryLock(D.rails, P.pos, this.v, P.vel.y)) { this.air = false; this.gliding = false; this.autoGlide = false; this.carve = null; this.spin = 0; this.spinRest = 0; } // (the keel fin onto a rail: no button)
 
     // ---- the camera swings round behind where the board goes, unless you are looking about
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
@@ -438,9 +442,34 @@ export class Skiffing extends Tech {
 
     this.speed = this.v.length();
     // (the lean: into the turn, and out of a slide; roll about the boat's own long axis)
-    const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(-this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks)
+    const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks into its turn, as the board leans into one on the sand: it leaned out, the owner's "reversed", 2026-10-14)
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
+    g.events?.emit('skiff.tick', { speed: this.speed });
+    return true;
+  }
+
+  /** On a rail (grind.js): its line carries the board; A / D answer the balance, Space pops off, the sail's wind along it pushes. */
+  grindStep(dt) {
+    const g = this.game, P = this.P, inp = P.input, D = this.dunes, W = D.wind, c = this.cfg;
+    const steerIn = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0), sp = inp.isDown('Space');
+    this.steer = damp(this.steer, steerIn, 10, dt);
+    const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading)), push = this.L * Math.max(0, W.dir.x * f.x + W.dir.y * f.z) * W.gust;
+    const R = this.grind.step(dt, { steer: this.steer, hopUp: !sp && this.spaceWas, sailPush: push });
+    this.spaceWas = sp;
+    if (!R) return true;
+    this.hPrev = this.heading; this.heading = R.heading;
+    P.pos.copy(R.pos); this.v.copy(R.vel); P.vel.set(R.vel.x, R.vy, R.vel.z);
+    this.roll = damp(this.roll, clamp(R.lean * 0.35, -0.4, 0.4), 12, dt);
+    this.speed = this.v.length(); P.grounded = !R.done; P.bodyYaw = this.heading;
+    if (R.done) {
+      this.air = true; this.airT = 0; this.spin = 0; this.launchT = 9; this.popT = this.grind.why === 'hop' ? 0 : null;
+      if (this.grind.why === 'hop') { sfx.airJump(); g.events?.emit('skiff.hop', { by: 'courier' }); }
+      if (R.metres >= GRIND.trick) g.lachryma?.gain?.(Math.min(GRIND.cap, R.metres * GRIND.lachryma), 'trick'); // (a long grind is a trick: it pays the pool as a spin does)
+    }
+    if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
+    if (this.mouseIdle > 0.5) P.yaw += wrap(this.heading - P.yaw) * Math.min(1, dt * 3);
+    if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, 0, false);
     g.events?.emit('skiff.tick', { speed: this.speed });
     return true;
   }
@@ -508,6 +537,8 @@ export class Skiffing extends Tech {
     this.fill = damp(this.fill, this.L * (this.L > 0.7 ? 1 : 0.6) * (0.25 + 0.75 * fill), 4, dt);
     this.wingK = damp(this.wingK || 0, this.gliding && this.phase === 'ride' ? 1 : 0, 8, dt); // (the oars out as wings while gliding)
     this.skiff.set({ sail: this.L, side: -Math.sign(this.boom || 1), fill: this.fill, boom: this.boom, glow: this.boosting, t: this.time, speed: this.speed, wings: this.wingK });
+    // the sail screened to see through while riding under way (render/outline.js's screen-door fade, the sail's own: the way ahead stays in view)
+    if (this.skiff.sailFade) this.skiff.sailFade.fade.value = damp(this.skiff.sailFade.fade.value, this.phase === 'ride' && this.speed > 4 ? SAIL_SEE : 1, 6, dt);
     // ---- one quaternion for the whole unit: heading, then the slope, then the lean and the pitch, with the spin about its own up
     // (heading, spin and roll change in the 60 Hz step; the skiff and the rider are drawn between steps, the way the camera and the wake are)
     qA.setFromAxisAngle(UP, hv + sv);

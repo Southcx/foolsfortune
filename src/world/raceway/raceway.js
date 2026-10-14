@@ -14,7 +14,7 @@
 // Motorstorm's and SSX's courses cut into open ground; the Dunes themselves (world/dunes/dunes.js), whose parts are all reused.
 //
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight   .normalAt   .wind   .s (the Courier's place on the line)
-//   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .arrive()   .respawn(s?)   .update(dt)   .T (the track)
+//   .edgeLines(step) -> [{ side, pts }]   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .rails (the grind's: railsrings.js)   .rings   .arrive()   .respawn(s?)   .update(dt)   .T (the track)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -26,10 +26,12 @@ import { Barrier } from '../dunes/barrier.js';
 import { SlipGeyser } from '../../vfx/slipgeyser.js';
 import { RacewaySandfall } from '../../vfx/racewaysandfall.js';
 import { track, RW, FEATURES } from './track.js';
+import { buildRails, buildRings, flyRings } from './railsrings.js';
 
 const GEYSER = { up: 18, r: 4, over: 4 }; // (as the Dunes' slip geysers: world/dunes/geysers.js LAUNCH)
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
-const OFF = { far: 40, secs: 3 }; // (metres past the track's edge, and real seconds there, before the board is set back on the track)
+const OFF = { far: 40, secs: 3 };
+const SANDFALL_FOOT = 0.6; // (the slope (m down a m out) under which the face has become the hill: the sandfall's foot) // (metres past the track's edge, and real seconds there, before the board is set back on the track)
 
 export class Raceway {
   constructor(game) {
@@ -38,7 +40,7 @@ export class Raceway {
     this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false;
-    this.geysers = []; this.plates = [];
+    this.geysers = []; this.plates = []; this.rails = []; this.rings = [];
     const F = this.T.frame(this.T.line);
     this.startPillar = this.local(F.x - F.fz * -(F.w + 7), F.z + F.fx * -(F.w + 7)); // (left of the line, beyond the berm: F there begins a race)
   }
@@ -78,6 +80,7 @@ export class Raceway {
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 20, y1: RW.y + 300 });
     this.buildKit();
     this.buildMarks();
+    this.rails = buildRails(this); this.rings = buildRings(this); // (the grind's rails and the sun rings: world/raceway/railsrings.js)
     g.racewayLooks?.dress(this); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
   }
 
@@ -133,10 +136,22 @@ export class Raceway {
       this.geysers.push({ look, pos, thrown: false });
     }
     // the sandfall, down the face under the lip: where it hangs is data, its look Calissa's
-    { const L = F.glideLip, s = T.sOf(L.cp, 3), Fr = T.frame(s), top = this.local(Fr.x, Fr.z), base = T.frame(T.sOf(L.cp + 1, 0)), w = Fr.w * 2 + 10;
-      const h = top.y - (RW.y + base.y) + 2;
-      this.sandfall = { top: top.clone(), dir: new THREE.Vector3(Fr.fx, 0, Fr.fz), width: w, height: h };
-      this.sandfall.look = new RacewaySandfall(g, { ...this.sandfall, zone: 'raceway' }); this.sandfall.mesh = this.sandfall.look.object; g.scene.add(this.sandfall.mesh); } // (Calissa's curtain: vfx/racewaysandfall.js, placed at `top` along `dir`)
+    // (hung at the lip itself, and down to where the ground stops being sheer, measured on the ground as drawn: hung 3 m past the lip and
+    // measured to the track's control point, it began partway down and ended a third of the way: the owner, 2026-10-14)
+    { const L = F.glideLip, s = T.sOf(L.cp, 0), Fr = T.frame(s), top = this.local(Fr.x, Fr.z), w = Fr.w * 2 + 10, dir = new THREE.Vector3(Fr.fx, 0, Fr.fz);
+      const ground = (z) => this.heightAt(top.x + dir.x * z, top.z + dir.z * z);
+      let foot = 4; while (foot < 40 && ground(foot) - ground(foot + 1) > SANDFALL_FOOT) foot++; // (out past the face until the slope eases)
+      const h = top.y - ground(foot) + 1, curve = 2.6;
+      this.sandfall = { top: top.clone(), dir, width: w, height: h, foot };
+      this.sandfall.look = new RacewaySandfall(g, { ...this.sandfall, curve, lean: Math.max(1, foot - curve), zone: 'raceway' }); this.sandfall.mesh = this.sandfall.look.object; g.scene.add(this.sandfall.mesh); } // (Calissa's curtain: vfx/racewaysandfall.js, placed at `top` along `dir`)
+  }
+
+  /** The track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
+   *  strings hang (Calissa's look, the owner's ask of 2026-10-14). [{ side: -1 | 1, pts: [Vector3] }], left then right. */
+  edgeLines(step = 4) {
+    const T = this.T, out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
+    for (let s = 0; s < T.length; s += step) { const F = T.frame(s); for (const E of out) { const lat = E.side * (F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += 1; E.pts.push(p); } }
+    return out;
   }
 
   // ------------------------------------------------------------------ what the board asks
@@ -176,6 +191,7 @@ export class Raceway {
     this.chunks.update(cam.position.x - RW.x, cam.position.z - RW.z);
     if (!here) return;
     this.sandfall?.look?.update(dt);
+    flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
     this.barrier.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
     // the Courier's place on the line, followed along it (never jumping to a switchback's other leg), found afresh when far off it

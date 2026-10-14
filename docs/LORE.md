@@ -407,7 +407,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   blot/blotling, the crossing's cast.
 
 ### The knacks *(canon: the owner, 2026-10-08)*
-An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Thick Walls**,
+An assist earned by practice, switched on or off (Dovina's `docs/plans/TRAINING.md`): **Steady Hand**, **Wide Bore**, **Last Straw** (was Thick Walls, when it added shield; now it marks the blow the shield cannot take: the straw that breaks the camel's back; id `thickWalls` kept),
 **Perfect Pitch**, **Early Tell**, **Rule of Thirds**, **Half Time**, **Crib Sheet** (the English beside each neuralese word you have
 found glossed: a student's crib, and a cradle) and **Two-Tone** (both colours of an agate shown on a creature's body).
 *Approved 2026-10-11:* **Held Breath** (a blow's parry window a beat longer; replaces Early Tell), **Wet Ink** (Celestial mode waits
@@ -708,3 +708,10 @@ terms are more neutral and broadly interpretable").
 The hundred shells' lore names and first-use log lines are *parked* until the mechanics week is done (the owner, 2026-10-11: "This week
 is mechanics heavy"). The labels serve until then. When they come, the Outlaw Star homages keep a nod to their numbers (40 Twelve,
 94 Inside Out, 95 Leyline, 96 Thirteen).
+
+### The Raceway *(Dovina's SKIFF-RACING.md; Espada's ruling, 2026-10-13)*
+All six working names stand; each is already the sport's own word or a clean pun on the skiff:
+- **the Raceway** (the place); **the carve** (snowboarding's word for a power turn on the edge: SSX's, and sand surfing's); **a late
+  pop** (skating's: an ollie popped late off the lip); **a sun plate** (a boost pad, in the UI and the log "boost pad" where a label is
+  wanted); **the glide lip**; **the solar start** (Mario Kart's rocket start, taken by Solar Skiffing: you leave with the sun behind you).
+- The log's placeholders in `tracking/race.js` and `BAIL_SAYS` stand as written: verb first, short, the right clock.
