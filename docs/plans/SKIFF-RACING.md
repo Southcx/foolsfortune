@@ -135,9 +135,84 @@ Three laps in 5:48, with bails. What changed:
   (Trackmania's checkpoint respawn); and **the best lap's ghost is kept** in the save.
 - **For Calissa:** the edge strings the owner asked for (motes along both sides of the track); the rails' and rings' look.
 
+## 9. Round three (2026-10-14): conditions, the trick combo, grabs, curves, ramps, the cavern
+
+The owner: expand the conditions and the combo; a cavern course under the circuit; grabs on the free mouse buttons; what Crash Team Racing
+and Kirby Air Ride do that we can take; curved rails; more ramps; a mark when a pop is nailed; bigger carve sparks; a Lachryma-coloured
+boost. The goal at each scale: the next 30 seconds is a chain of tricks into a banked flare; the lap is a choice of lines (the cavern or
+the mesa, a side ramp or the berm); the week is the boards (each condition its own best) and the night lap.
+
+**What the two games have, and what we take.**
+| from | what it does | ours |
+| --- | --- | --- |
+| CTR | power-slide boosts in tiers, timed by a press | the carve already loads in tiers (MK8's way); kept |
+| CTR | **reserves**: boosts chained while one runs bank their time, and the speed holds | **taken**: a push while another runs adds its length, to 4 real s (`TURBO.cap`) |
+| CTR | Wumpa fruit: ten held, everything faster | not taken: the pool is our resource; the combo is the reward |
+| CTR | the turbo counter, the boost meter's colour going red at the moment to press | not taken: the carve's tiers show on the board (Calissa's sparks) |
+| KAR | landing on a downslope keeps the fall as speed | **taken**: the slope landing (below), and it is a trick |
+| KAR | one button: charge to brake, release to boost | ours is the hop's crouch already (Space charges, releases) |
+| KAR | gliding machines that dive for speed and pull up | the glide (section 4) |
+| KAR | City Trial: minutes in an open map gathering patches, then a stadium event | **later**: a Dunes mode, its patches the stones' stats (a pitch, not built) |
+| KAR | rails ridden by touching them | the grind (section 7) |
+| SSX Tricky | tricks fill a boost meter; a bail loses what the run added | **taken**: the trick combo |
+| THPS | the multiplier, a variety bonus, the manual as the link on the ground | **taken**: kinds raise the multiplier; the link runs 2 real s on the sand |
+
+**Conditions** (`world/raceway/conditions.js`). The Raceway now has Anagami's sky (`weather.js` ZONE_PLACE: open), read every half a real
+second. The sun feeds the sun plates: light under 0.12 (night) none, full from 0.62, a plate's push scaled by it (dawn and dusk weak, night
+dead: `skiff.plate { power }`). The weather, scaled by its strength: Grief (the long rain) wet sand, grip x0.6, carve loads x1.35, drag
+x0.85, the sun x0.55; Mirth (a sunshower) wet sand under the sun; Fury (the hail) squalls, the wind swinging +-45% and shoving the board
+across it (10 m/s^2 for a whole gust's excess, crosswind); Gall (the miasma) drag x1.25, grip x1.2; Desire the course wind x1.35; Wonder
+the rings x1.4; Dread fog (the look Calissa's). The lesson under it is land sailing's: wet beach sand is the fast, hard surface; dry sand
+drags. A race says its condition at the start and keeps its time on that condition's board (`race.raceway.best.<light>.<aspect>`, light
+day, twilight or night): 24 boards. **Not built:** one seeded condition per game day (the weather already changes by the game hour block).
+
+**The trick combo** (`courier/skiff/combo.js`). Points: a spin landed square 100 a turn; a grab 80 a real second (to 3) and 50 for a tweak
+held 0.6 s, the double x1.5; a grind 6 a metre (from 12 m); a late pop 50, a perfect one 100; a carve let go 40, 90, 160 by tier; a sun
+ring 60; a slope landing 50. Each kind past the first adds 0.5 to the multiplier (to x4). The chain lives in the air, on a rail and in a
+carve, and 2 real seconds on the sand after a trick; then it is banked: 1,000 points a banked flare, three at most, each 1.5 real s of
+Shift's flare, spent before the pool. A wobble banks at once; a bail or a respawn loses it. It replaces the Lachryma a spin, a grind and a
+ring gave the pool: tricks pay in speed. Measured on the autopilot (no tricks but its carves and pops): see the round's report.
+
+**Grabs** (LMB the nose, RMB the tail, both the double), held in the air; let go before landing and it is a trick. Still held as you land:
+a wobble (speed x0.8), nothing for the grab, the chain banked. The board tweaks (0.3 rad nose or tail down, rolled for the double) as a
+placeholder until Calissa's rider reaches for the board (IK on the hand: a light correction, as CLAUDE.md asks).
+
+**The pop, nailed.** Let go of Space in the first 0.08 real s after leaving a crest (of the late pop's 0.22) and it is a perfect pop: 0.95
+of a hop's height (the late pop's 0.7), more push, a mark on the board (a glyph pop, Lachryma's colour, a placeholder for Calissa's),
+`skiff.pop { perfect }`, and the log says so. Let go up to 0.5 s and it is a missed pop (`skiff.pop.miss`): the log says how to time it.
+
+**The slope landing** (KAR's, and every board game's transition). Landing square on a downslope keeps 0.8 of the fall's speed along it
+(the fall times the slope's tilt along the travel, to 8 m/s); from 2 m/s it is a trick. Landed on the flat, the hover takes it all.
+
+**Curves.** Rails now follow the line (`along`), its lat eased between the ends, the slalom's weaving 1.8 m across; a new long one round the
+last switchback's bend onto the mesa, and the cavern's. On a curved rail the lean is thrown outward by v^2 x the bend (`GRIND.bend` 0.04):
+a fast grind round a bend is held into it with A or D.
+
+**Ramps.** Three more full kickers (turn one's exit, a big one after the whoops, 3.2 m over 12, the last turn's) and six side ramps over
+part of the width only (SSX's side hits: [1, 90] right, [5, -40] left, [10, 30], [13, -40], the canyon's, the gale's), with rings over two
+landings.
+
+**The cavern** (working name; `world/raceway/cavern.js`, `track.js` BRANCH). A branch off the line 25 m after the landing hill's foot
+(cp 21) that runs down into a gorge through the circuit's middle and back onto the line at the gale's end (cp 25), past gate 8: 337 m
+against the line's 389. Its floor falls to 0 m (the line there runs at 22 to 26), its walls rise 15 to 18 m to the sand, steep over 3 m;
+where they stand 7 m or more (about 175 m of it) a roof of stone slabs lies across at the sand's height, one slab in seven left out for a
+shaft of sun, stalactites toward the walls (7 m clear of the floor at least), Lachryma crystals glowing low on the walls. It is one height
+field with the rest (a heightfield cannot overhang, so the cave is a roofed gorge: the board rides and collides as anywhere). Where the
+branch and the line meet, a running surface wins over the other's berm or wall. Its wind is the course's at 0.7 (a cave breathes); its
+pads are crystal veins, fed by Lachryma, not the sun: **the night lap's line goes under**. A rail down its middle (62 to 150 m), a kicker
+at 178 m, three veins. The race maps the branch onto the stretch of line it stands for, so gate 8 is crossed for you and the ghost runs as
+ever; a bail in it sets you back in it. Through it whole from its fork: `raceway.branch { branch }`.
+
+**For the other divisions.** Calissa: bigger carve sparks (the owner); the flare and the board's boost glow in Lachryma's colour (it is
+Lachryma-fuelled); the perfect pop's mark; the grab (the rider's hand to the board); the combo's gauge and the banked flares (no words, no
+numbers); the dark sun plate and the plates' brightness by `raceway.sun`; the cavern's rock, crystals, veins and its dark; Dread's fog; rain
+not falling under the cavern's roof; the cavern's edge strings (`edgeLines(step, 'cavern')`). Wanda: the grab, the perfect pop and the
+missed one, the combo's bank and its loss, the cavern's sound (inside a stone gorge), wet sand under the board. Espada: the cavern's name,
+the log's lines. Petra: the hubs touched (`weather.js` ZONE_PLACE), and the medal line again (the cavern and the ramps move it).
+
 ## 6. Who does what
 
-- **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick refill); the track, the
+- **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the
   race, the ledger, the achievements; the Raceway's ground and props from the Dunes' kit.
 - **Calissa**: remove the oval glow under the hull (boat.js `emit`: it clips); **the sandfall**: a curved, waterfall-like plane down the
   face with a scrolling UV texture of falling sand (the owner's ask: elegant and cheap), with a puff where it meets the hill; the carve's

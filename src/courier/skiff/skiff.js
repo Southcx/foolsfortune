@@ -22,8 +22,12 @@
 //   Space     held in the air (after a hop, or off a crest; or opened by the Raceway's glide lip): GLIDE, the oars spread as wings, flown
 //             as a hang glider: W dives, S flares, Q / E bank and the flight turns with them, A / D still spin (skiff.glide { by }; a Movement Art:
 //             skiffGlide; BotW's paraglider, Wind Waker's Deku Leaf, MK8's glider)
-//   a sun plate (the Raceway's): a flare's push, free (skiff.plate); a whole spin landed square gives the pool 6 Lachryma a turn
-//   Shift     solar flare: the emblem blazes and top speed and acceleration jump, for Lachryma
+//   LMB / RMB held in the air: a GRAB, the nose or the tail (both: the double), the board tweaked under you; let go before you land and
+//             it is a trick, worth more the longer held; still held as you land, a wobble and nothing for it (skiff.grab { grab, seconds },
+//             skiff.grab.late: SSX's grabs, Tony Hawk's)
+//   a sun plate (the Raceway's): a flare's push, free, as strong as the sun (skiff.plate { plate, power }); every trick links into THE
+//             TRICK COMBO (courier/skiff/combo.js), banked into free flares; a landing down a slope keeps the fall's speed (skiff.land.slope)
+//   Shift     solar flare: the emblem blazes and top speed and acceleration jump, from a banked flare first, then for Lachryma
 //   Y         on foot: SUMMON the board (it rises out of the sand under them, the mast telescopes up, they hop on: 2.2 s);
 //             riding: RECALL it (they step down and it shrinks into the raised hand). The psygun is stowed while you ride.
 //   F         riding slowly: DISMOUNT (they step off and the board is left PARKED, hovering where it was); at a parked board: MOUNT
@@ -46,6 +50,7 @@ import { Rider } from './rider.js';
 import { rootOf } from '../../tools/moveset.js';
 import { Ragdoll } from '../anim/ragdoll.js';
 import { Grind, GRIND } from './grind.js';
+import { SkiffCombo, COMBO } from './combo.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -69,9 +74,17 @@ const GLIDE = { trim: 0.2, dive: 0.45, flare: 0.35, ease: 4, drag: 0.008, bankDr
 // kick now (m/s); the turn's multiplier; the grip it leaves
 const CARVE = { min: 10, tiers: [0.6, 1.3, 2.2], add: [5, 8, 12], dur: [0.7, 1.0, 1.3], kick: [1.5, 2.5, 4], turn: 1.25, grip: 0.3 };
 const PLATE = { add: 10, dur: 1.2, kick: 4 }; // (a sun plate's push: as a carve's best, a little longer)
-const POP = { window: 0.22, up: 0.7 }; // (a late pop: real seconds after leaving a crest, and of a hop's height)
-const TRICK = { lachryma: 6 };
-const SAIL_SEE = 0.5; // (the sail's screen-door fade under way: half its dots, so the track shows through) // (Lachryma a whole turn landed gives the pool)
+// a late pop: real seconds after leaving a crest it is taken, and of a hop's height; let go in the first `perfect` of them it is a perfect
+// pop, higher (`perfectUp`; skiff.pop { perfect }: the owner's "let me know when I nailed it"); let go up to `miss` it was late (skiff.pop.miss)
+const POP = { window: 0.22, up: 0.7, perfect: 0.08, perfectUp: 0.95, miss: 0.5 };
+// a grab: its tweak of the board (rad: the nose down, the tail down, the double rolled), how long a grab counts at most (real s), the
+// double's worth; a landing down a slope keeps this share of the fall's speed along it, and is a trick from `trick` m/s of it
+const GRAB = { tweak: 0.3, cap: 3, double: 1.5 };
+const SLOPE = { keep: 0.8, max: 8, trick: 2 };
+// the pushes stack (Crash Team Racing's reserves): another while one runs adds its length, to `cap` real seconds
+const TURBO = { cap: 4 };
+const LACHRYMA_TINT = 0x7fdcff; // (a placeholder for the perfect pop's glyph: Lachryma's colour is Calissa's)
+const SAIL_SEE = 0.5; // (the sail's screen-door fade under way: half its dots, so the track shows through)
 // how much of the wind's push the sail uses, by cos(angle between the heading and where the wind goes): 1 dead downwind .. -1 into it
 const POLAR = [[-1, 0.28], [-0.6, 0.42], [-0.2, 0.7], [0.2, 0.92], [0.7, 1.0], [1, 1.0]];
 const polar = (c) => {
@@ -103,6 +116,8 @@ export class Skiffing extends Tech {
     this.skiff = new Skiff(game.scene); // (the owner's model, parsed on first use: courier/skiff/boat.js load)
     this.wake = new Wake(game.scene, game.fx);
     this.grind = new Grind(this); // (the board on a rail, the skiff alone: courier/skiff/grind.js)
+    this.combo = new SkiffCombo(this); // (tricks linked into a chain, banked into free flares: courier/skiff/combo.js)
+    this.grab = null; // { kind: 'nose' | 'tail' | 'double', t }: a grab held in the air
     this.phase = 'ride'; this.phaseT = 0; this.next = null;
     this.parked = null; // { pos, heading }: the board left hovering, to be mounted again (F) or replaced by a summon (Y)
     this.board = { pos: new THREE.Vector3(), heading: 0, v: new THREE.Vector3() }; // (where the board is when the rider is not on it)
@@ -159,7 +174,7 @@ export class Skiffing extends Tech {
     this.air = this.phase === 'ride'; this.spin = 0; this.spinRest = 0; this.airT = 0;
     this.L = this.phase === 'ride' && this.v.length() > 6 ? 0.6 : 0; // (mounted on the move, the sail is already out; from a stand it is furled)
     this.hoistDir = 0; this.pumpReady = true; this.pumpFresh = true; this.steer = 0; this.roll = 0;
-    this.rideT = 0; this.grind.offR = null; this.carve = null; this.autoGlide = false; this.gliding = false; this.turbo = 0; this.kickV = 0; this.launchT = 9; this.lastPlate = null;
+    this.rideT = 0; this.grind.offR = null; this.carve = null; this.grab = null; this.combo.drop('off'); this.autoGlide = false; this.gliding = false; this.turbo = 0; this.kickV = 0; this.launchT = 9; this.lastPlate = null;
     this.nS.copy(UP);
     this.animT = 0; this.popT = null; this.landT = null; this.rider.dy = 0;
     this.skiff.load(this.game); this.skiff.visible = true; // (the model is asked for on the way into the Dunes, tick; a ride begun before it is parsed rides an undrawn board)
@@ -219,6 +234,7 @@ export class Skiffing extends Tech {
   /** A crash: thrown off. */
   bail(why) {
     if (this.phase !== 'ride') return;
+    this.combo.drop('bail'); this.grab = null;
     this.game.events?.emit('skiff.bail', { why, speed: +this.v.length().toFixed(1), by: 'courier' });
     this.enter('bail');
   }
@@ -268,7 +284,7 @@ export class Skiffing extends Tech {
 
   // ------------------------------------------------------------------ the ride (fixed step)
   update(dt) {
-    const g = this.game, P = this.P, c = this.cfg, inp = P.input, D = this.dunes, W = D.wind;
+    const g = this.game, P = this.P, c = this.cfg, inp = P.input, D = this.dunes, W = D.wind, CD = D.condition; // (CD: the Raceway's hour and weather, conditions.js)
     if (!D.active || this.stowNow) { this.want = false; return false; }
     if (this.phase !== 'ride') return this.stepPhase(dt);
     if (P.latch('KeyY')) { if (!this.air) this.enter('recall'); else return false; return this.stepPhase(dt); } // (in the air there is no stepping down: it is simply stowed)
@@ -321,16 +337,17 @@ export class Skiffing extends Tech {
     this.turbo = Math.max(0, (this.turbo || 0) - dt);
     let target = c.cruise * this.L * windF, accel = c.accel * (0.45 + 0.55 * this.L);
     this.flaring = false; this.furling = furlKey && (this.L > 0.001 || vf > 2);
-    if (flare && g.lachryma.drain(c.boostCost * dt, 'skiff') > 0) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; this.flaring = true; }
+    if (flare && (this.combo.spend(dt) || g.lachryma.drain(c.boostCost * dt, 'skiff') > 0)) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; this.flaring = true; } // (a banked flare first: courier/skiff/combo.js)
     else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting; accel = c.boostAccel * 0.6; }
     if (this.turbo > 0) { target = Math.max(target, c.cruise * 0.6) + this.turboAdd; accel = Math.max(accel, c.boostAccel); this.boosting = Math.max(this.boosting, 0.6); } // (a carve's, a sun plate's, a solar start's push: free of Lachryma)
     if (vf < target) vf = Math.min(target, vf + accel * dt);
-    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * dt);
+    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * (CD?.coast ?? 1) * dt);
     if (furlKey && vf > 0 && !this.air) vf = Math.max(0, vf - c.brake * dt); // (the brake is the sand's: in the air S lets the sail down and nothing more, the owner's "W and S kill the momentum")
     vf += pump + (this.kickV || 0); this.kickV = 0;
     if (target === 0 && vf < 0.15 && !this.air) vf = 0;
     if (this.air) vf *= Math.exp(-0.015 * dt);
-    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : this.carve ? CARVE.grip : 1)); // (a carve lets the board slide out)
+    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : (this.carve ? CARVE.grip : 1) * (CD?.grip ?? 1))); // (a carve lets the board slide out; wet sand holds less)
+    if (CD?.shove && !held) vl += CD.shove * (W.gust - 1) * wgo.dot(r) * dt; // (a squall's gust shoves the board across the wind)
     if (Math.abs(vl) < 0.02 && !this.air) vl = 0;
     if (held) { vf = 0; vl = 0; }
 
@@ -347,7 +364,7 @@ export class Skiffing extends Tech {
 
     // ---- the sun plates (the Raceway's): a flare's push, free
     const plate = D.plateAt?.(P.pos);
-    if (plate && plate !== this.lastPlate && !held) { this.kick(PLATE.add, PLATE.dur, PLATE.kick); g.events?.emit('skiff.plate', { plate: plate.index, by: 'courier' }); }
+    if (plate && plate !== this.lastPlate && !held) { const pw = plate.power ?? 1; if (pw > 0.05) this.kick(PLATE.add * pw, PLATE.dur * pw, PLATE.kick * pw); g.events?.emit('skiff.plate', { plate: plate.index, power: +pw.toFixed(2), by: 'courier' }); } // (as strong as the sun: dead at night, conditions.js)
     this.lastPlate = plate;
 
     // ---- steering: it turns on the spot, and carves once it is moving (less so the faster it goes)
@@ -359,7 +376,7 @@ export class Skiffing extends Tech {
     if (this.carve && (this.air || sp0 < CARVE.min * 0.6)) this.carve = null; // (off a crest, or slowed to a crawl: it is lost)
     let steerEff = this.steer;
     if (this.carve) {
-      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1); // (steered out of it, it loads at half)
+      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1) * (CD?.carve ?? 1); // (steered out of it, it loads at half; on wet sand sooner)
       const tier = CARVE.tiers.filter((t) => C.t >= t).length;
       if (tier > C.tier) { C.tier = tier; g.events?.emit('skiff.carve.charge', { tier, by: 'courier' }); }
       steerEff = C.dir * (CARVE.turn + 0.45 * steerIn * C.dir);
@@ -387,7 +404,7 @@ export class Skiffing extends Tech {
     if (sp2 && !this.air) this.charge = Math.min(1, this.charge + dt / c.hopTime);
     if (this.carve && carveIn !== this.carve.dir) { // (its key let go: it runs out with its push, on the sand)
       const C = this.carve; this.carve = null;
-      if (C.tier > 0) { this.kick(CARVE.add[C.tier - 1], CARVE.dur[C.tier - 1], CARVE.kick[C.tier - 1]); g.events?.emit('skiff.carve', { tier: C.tier, by: 'courier' }); }
+      if (C.tier > 0) { this.kick(CARVE.add[C.tier - 1], CARVE.dur[C.tier - 1], CARVE.kick[C.tier - 1]); g.events?.emit('skiff.carve', { tier: C.tier, by: 'courier' }); this.combo.add('carve', COMBO.points.carve[C.tier - 1]); }
     }
     if (!sp2 && this.spaceWas && !this.air) {
       P.vel.y = c.hop + c.hopCharge * this.charge;
@@ -397,9 +414,21 @@ export class Skiffing extends Tech {
       g.events?.emit('skiff.hop', { by: 'courier' });
       g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
     } else if (!sp2 && this.spaceWas && this.air && this.launchT < POP.window && !this.gliding) {
-      P.vel.y = Math.max(P.vel.y, 0) + c.hop * POP.up + c.hopCharge * this.charge * 0.5; this.v.addScaledVector(f, 1.5); this.launchT = 9; this.popT = 0;
-      g.events?.emit('skiff.pop', { late: true, by: 'courier' }); // (its sound is Wanda's: audio/raceway.js)
+      const perfect = this.launchT < POP.perfect; // (let go in its first moment: the nailed pop, the owner's ask)
+      P.vel.y = Math.max(P.vel.y, 0) + c.hop * (perfect ? POP.perfectUp : POP.up) + c.hopCharge * this.charge * 0.5; this.v.addScaledVector(f, perfect ? 2.5 : 1.5); this.launchT = 9; this.popT = 0;
+      g.events?.emit('skiff.pop', { late: true, perfect, by: 'courier' }); // (its sound is Wanda's: audio/raceway.js; its mark Calissa's, the glyph a placeholder)
+      if (perfect) g.glyphs?.pop('star', P.pos.clone().setY(P.pos.y + 1.2), { color: LACHRYMA_TINT, size: 0.7, burst: true, ring: true, life: 0.7, follow: () => P.pos });
       g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
+      this.combo.add('pop', perfect ? COMBO.points.perfect : COMBO.points.pop);
+    } else if (!sp2 && this.spaceWas && this.air && this.launchT < POP.miss && !this.gliding && this.launchT !== 9) g.events?.emit('skiff.pop.miss', { late: +this.launchT.toFixed(2), by: 'courier' }); // (let go too late: said, so the timing can be learned)
+    // ---- grabs: LMB the nose, RMB the tail, both the double, held in the air; let go before landing, a trick by the time held
+    if (this.air && !held) {
+      const nose = inp.isDown('Mouse0'), tail = inp.isDown('Mouse2');
+      if (nose || tail) { const kind = nose && tail ? 'double' : nose ? 'nose' : 'tail'; if (!this.grab) this.grab = { kind, t: 0 }; else if (kind === 'double') this.grab.kind = 'double'; this.grab.t += dt; }
+      else if (this.grab) {
+        const G = this.grab, secs = Math.min(GRAB.cap, G.t); this.grab = null;
+        if (secs > 0.15) { g.events?.emit('skiff.grab', { grab: G.kind, seconds: +secs.toFixed(2), by: 'courier' }); this.combo.add('grab', (COMBO.points.grab * secs + (secs >= 0.6 ? COMBO.points.tweak : 0)) * (G.kind === 'double' ? GRAB.double : 1)); }
+      }
     }
     if (!sp2) this.charge = Math.max(0, this.charge - dt * 4);
     this.spaceWas = sp2;
@@ -446,6 +475,7 @@ export class Skiffing extends Tech {
     const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks into its turn, as the board leans into one on the sand: it leaned out, the owner's "reversed", 2026-10-14)
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
+    this.combo.step(dt, this.air || !!this.carve || this.grind.on); // (the chain lives in the air, on a rail, in a carve; on the sand its link runs down)
     g.events?.emit('skiff.tick', { speed: this.speed });
     return true;
   }
@@ -466,7 +496,7 @@ export class Skiffing extends Tech {
     if (R.done) {
       this.air = true; this.airT = 0; this.spin = 0; this.launchT = 9; this.popT = this.grind.why === 'hop' ? 0 : null;
       if (this.grind.why === 'hop') { sfx.airJump(); g.events?.emit('skiff.hop', { by: 'courier' }); }
-      if (R.metres >= GRIND.trick) g.lachryma?.gain?.(Math.min(GRIND.cap, R.metres * GRIND.lachryma), 'trick'); // (a long grind is a trick: it pays the pool as a spin does)
+      if (R.metres >= GRIND.trick) this.combo.add('grind', R.metres * COMBO.points.grind); // (a grind is a trick: its metres into the combo)
     }
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
     if (this.mouseIdle > 0.5) P.yaw += wrap(this.heading - P.yaw) * Math.min(1, dt * 3);
@@ -476,14 +506,14 @@ export class Skiffing extends Tech {
   }
 
   /** A push free of Lachryma (a carve let go, a sun plate, a solar start): `add` m/s on the sail's aim for `dur` real seconds, and `kick` now. */
-  kick(add, dur, kick = 0) { this.turboAdd = this.turbo > 0 ? Math.max(this.turboAdd || 0, add) : add; this.turbo = Math.max(this.turbo || 0, dur); this.kickV = (this.kickV || 0) + kick; }
+  kick(add, dur, kick = 0) { this.turboAdd = this.turbo > 0 ? Math.max(this.turboAdd || 0, add) : add; this.turbo = this.turbo > 0 ? Math.min(TURBO.cap, this.turbo + dur) : dur; this.kickV = (this.kickV || 0) + kick; } // (another while one runs stacks its length: CTR's reserves)
   /** No bail under BAIL.min m/s, nor in the first half second on the board. */
   canBail() { return this.v.length() > BAIL.min && (this.rideT || 0) > BAIL.grace; }
 
   land(vyT) {
     const P = this.P, g = this.game;
     // into the sand along its normal: what the hover takes (a steep landing hill takes a fall gently; R8: never the bare fall)
-    const impact = (vyT - P.vel.y) * Math.max(0.2, this.n.y);
+    const impact = (vyT - P.vel.y) * Math.max(0.2, this.n.y), fall = Math.max(0, -P.vel.y);
     this.air = false; this.gliding = false; this.autoGlide = false; this.popT = null; this.landT = 0; this.launchT = 9;
     P.vel.y = vyT * 0.6;
     this.landDip = clamp(impact / 9, 0.25, 1);
@@ -494,14 +524,24 @@ export class Skiffing extends Tech {
     const square = Math.abs(near) >= 1 && off < 0.9;
     this.spinRest = this.spin - near * TAU;
     this.spin = 0;
+    const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
+    if (this.grab) { // (still grabbing as it lands: the grab counts for nothing, and the board wobbles: let go first)
+      this.grab = null; this.v.multiplyScalar(0.8); g.events?.emit('skiff.grab.late', { by: 'courier' }); this.combo.bank();
+    }
     if (square) {
-      const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
       this.v.addScaledVector(f, 3 + 2 * Math.abs(near));
-      g.lachryma?.gain?.(TRICK.lachryma * Math.abs(near), 'trick'); // (tricks feed the flare: Sonic Riders' air, SSX's boost)
       g.events?.emit('skiff.trick', { turns: Math.abs(near), by: 'courier' });
+      this.combo.add('spin', COMBO.points.spin * Math.abs(near)); // (tricks feed the combo, banked into free flares: SSX's boost, Sonic Riders' air)
       sfx.parry?.();
     } else if (off > BAIL.broadside && this.canBail()) { this.bail('sideways'); return; }
-    else if (off > BAIL.wobble) { this.v.multiplyScalar(0.7); this.spinRest = 0; g.events?.emit('skiff.wobble', { spin: +off.toFixed(2), by: 'courier' }); }
+    else if (off > BAIL.wobble) { this.v.multiplyScalar(0.7); this.spinRest = 0; g.events?.emit('skiff.wobble', { spin: +off.toFixed(2), by: 'courier' }); this.combo.bank(); }
+    // down a slope, the fall is kept along it (a landing in the transition: Kirby Air Ride's slope boost, every board game's landing): the
+    // share of the fall the slope turns forward, as speed; landed on the flat it is all taken by the hover
+    if (off <= BAIL.wobble) {
+      const down = this.n.x * f.x + this.n.z * f.z, gain = Math.min(SLOPE.max, fall * Math.max(0, down) * SLOPE.keep);
+      if (gain > 0.5) this.v.addScaledVector(f, gain);
+      if (gain >= SLOPE.trick) { g.events?.emit('skiff.land.slope', { gain: +gain.toFixed(1), by: 'courier' }); this.combo.add('slope', COMBO.points.slope); }
+    }
     // a hard landing slows it; only a sheer drop onto the flat throws them
     if (impact > BAIL.land && this.canBail()) { this.bail('land'); return; }
     if (impact > BAIL.hard) { this.v.multiplyScalar(Math.max(0.55, 1 - 0.02 * (impact - BAIL.hard))); P.shake = Math.max(P.shake, 0.3); g.events?.emit('skiff.landhard', { impact: +impact.toFixed(1), by: 'courier' }); }
@@ -549,6 +589,9 @@ export class Skiffing extends Tech {
     unitQ.multiply(qC);
     qC.setFromAxisAngle(X, this.air ? -clamp(P.vel.y * 0.035, -0.45, 0.45) : 0);
     unitQ.multiply(qC);
+    // a grab's tweak (a placeholder for the rider's grab, Calissa's: the board itself pitched nose or tail down, rolled for the double)
+    this.tweak = damp(this.tweak || 0, this.grab && this.phase === 'ride' ? 1 : 0, 12, dt);
+    if (this.tweak > 0.01) { const kd = this.grab?.kind ?? this.tweakKind; this.tweakKind = kd; qC.setFromAxisAngle(kd === 'double' ? Z : X, GRAB.tweak * this.tweak * (kd === 'tail' ? -1 : 1)); unitQ.multiply(qC); }
     // (no bob of the group's own: the board's clips bob the hull, and the rider's the body on it, together)
     const ph = this.phase, pt = this.phaseT, off = ph === 'dismount' || ph === 'bail' || ph === 'getup';
     const G = this.skiff.group;
@@ -640,5 +683,5 @@ export class Skiffing extends Tech {
     pivot.y += 1.5 * this.w;
   }
 
-  label() { if (this.phase !== 'ride') return this.phase.toUpperCase(); return `SAIL ${Math.round(this.L * 100)}% · ${Math.round((this.speed || 0) * 3.6)} km/h${this.boosting > 0.3 ? ' · FLARE' : ''}`; }
+  label() { if (this.phase !== 'ride') return this.phase.toUpperCase(); return `SAIL ${Math.round(this.L * 100)}% · ${Math.round((this.speed || 0) * 3.6)} km/h${this.boosting > 0.3 ? ' · FLARE' : ''}${this.combo.stocks >= 0.01 ? ` · BANKED ${this.combo.stocks.toFixed(1)}` : ''}`; }
 }

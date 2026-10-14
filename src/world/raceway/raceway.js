@@ -10,11 +10,16 @@
 // The looks are Calissa's: the sandfall (vfx/racewaysandfall.js); the sun plates' glyphs, the arch's lamps and the gates' marks dress
 // the placeholders here when `game.racewayLooks` is in; the gates' pillars are the Dunes' own.
 //
+// THE CAVERN (world/raceway/cavern.js; SKIFF-RACING.md 9): a branch off the line into a roofed gorge and back. While the Courier is on it
+// `line` is 'cavern', `sb` its place along it, `d` and `lat` from its line, and `s` the place on the line it stands for (the race's gates
+// and ghost read `s` as ever); through it whole, raceway.branch { branch, by }.
+//
 // Prior art: the test tracks of racing games (Gran Turismo's licence courses, MK8's Time Trial as the first place a track is learned);
 // Motorstorm's and SSX's courses cut into open ground; the Dunes themselves (world/dunes/dunes.js), whose parts are all reused.
 //
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight   .normalAt   .wind   .s (the Courier's place on the line)
-//   .edgeLines(step) -> [{ side, pts }]   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .rails (the grind's: railsrings.js)   .rings   .arrive()   .respawn(s?)   .update(dt)   .T (the track)
+//   .line ('main' | 'cavern': which the Courier is on)   .sb (metres along the cavern's branch)   .sun (0..1)   .condition (conditions.js)
+//   .edgeLines(step, line?) -> [{ side, pts }]   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .rails (the grind's: railsrings.js)   .rings   .arrive()   .respawn(s?)   .update(dt)   .T (the track)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -25,8 +30,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Barrier } from '../dunes/barrier.js';
 import { SlipGeyser } from '../../vfx/slipgeyser.js';
 import { RacewaySandfall } from '../../vfx/racewaysandfall.js';
-import { track, RW, FEATURES } from './track.js';
+import { track, RW, FEATURES, BRANCH } from './track.js';
 import { buildRails, buildRings, flyRings } from './railsrings.js';
+import { buildCavern } from './cavern.js';
+import { conditionAt } from './conditions.js';
 
 const GEYSER = { up: 18, r: 4, over: 4 }; // (as the Dunes' slip geysers: world/dunes/geysers.js LAUNCH)
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
@@ -38,7 +45,8 @@ export class Raceway {
   constructor(game) {
     this.game = game;
     this.T = track();
-    this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0;
+    this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0; this.line = 'main'; this.sb = 0; this.branchIn = false;
+    this.sun = 1; this.condition = null; this.condT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false;
     this.geysers = []; this.plates = []; this.rails = []; this.rings = [];
@@ -79,9 +87,10 @@ export class Raceway {
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), body);
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 20, y1: RW.y + 300 });
+    this.rails = buildRails(this); this.rings = buildRings(this); // (the grind's rails and the sun rings: world/raceway/railsrings.js; the rails before the kit, which keeps its columns off them)
     this.buildKit();
     this.buildMarks();
-    this.rails = buildRails(this); this.rings = buildRings(this); // (the grind's rails and the sun rings: world/raceway/railsrings.js)
+    this.cavern = buildCavern(this); // (its roof, stalactites and crystals: world/raceway/cavern.js)
     g.racewayLooks?.dress(this); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
   }
 
@@ -112,8 +121,7 @@ export class Raceway {
     // the slalom: broken columns in the line, every so often, side to side
     // (none within RAIL_CLEAR of a rail's line: rail 2 runs straight down the slalom while its columns follow the bend, and one stood in
     // its lintel, the owner's v195 / Petra's measure)
-    const railLines = FEATURES.rails.map((r) => [side(T.sOf(r.from[0], r.from[1]), r.from[2]), side(T.sOf(r.to[0], r.to[1]), r.to[2])]);
-    const nearRail = (p) => railLines.some(([a, b]) => { const dx = b.x - a.x, dz = b.z - a.z, u = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz))); return Math.hypot(p.x - a.x - dx * u, p.z - a.z - dz * u) < RAIL_CLEAR; });
+    const nearRail = (p) => this.rails.some(({ pts }) => pts.some((a, i) => { const b = pts[i + 1]; if (!b) return false; const dx = b.x - a.x, dz = b.z - a.z, u = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz))); return Math.hypot(p.x - a.x - dx * u, p.z - a.z - dz * u) < RAIL_CLEAR; }));
     { const S = FEATURES.slalom, s0 = T.sOf(...S.from), s1 = T.sOf(...S.to); let k = 0;
       for (let s = s0; s < s1; s += S.every, k++) { const p = side(s, (k % 2 ? 1 : -1) * S.lat), h = 4 + (k % 3), w = 1.3; if (nearRail(p)) continue;
         solid(painted(new THREE.CylinderGeometry(w * 0.8, w, h, 8), k % 2 ? 0xd9906a : 0x8a4a3a), p.clone().setY(p.y + h / 2 - 0.6), yawQ(k), RAPIER.ColliderDesc.cylinder(h / 2, w * 0.9)); } }
@@ -133,7 +141,15 @@ export class Raceway {
       const s = T.sOf(P.cp, P.at), Fr = T.frame(s + P.len / 2), c = this.local(Fr.x - Fr.fz * P.lat, Fr.z + Fr.fx * P.lat);
       const m = new THREE.Mesh(new THREE.PlaneGeometry(P.w * 2, P.len).rotateX(-Math.PI / 2), plateMat);
       m.position.copy(c).setY(c.y + 0.08); m.rotation.y = Math.atan2(Fr.fx, Fr.fz); m.userData.zone = 'raceway'; m.renderOrder = 3; g.scene.add(m);
-      this.plates.push({ s0: s, s1: s + P.len, lat: P.lat, w: P.w, mesh: m, index: this.plates.length });
+      this.plates.push({ line: 'main', s0: s, s1: s + P.len, lat: P.lat, w: P.w, mesh: m, index: this.plates.length });
+    }
+    // the cavern's crystal veins: pads as the plates, on its branch, fed by Lachryma, not the sun (their look Calissa's: a placeholder slab)
+    const veinMat = plateMat.clone(); veinMat.color.set(0x7fdcff);
+    for (const P of BRANCH.pads) {
+      const Fr = T.branch.frame(P.at + P.len / 2), c = this.local(Fr.x - Fr.fz * P.lat, Fr.z + Fr.fx * P.lat);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(P.w * 2, P.len).rotateX(-Math.PI / 2), veinMat);
+      m.position.copy(c).setY(c.y + 0.08); m.rotation.y = Math.atan2(Fr.fx, Fr.fz); m.userData.zone = 'raceway'; m.renderOrder = 3; g.scene.add(m);
+      this.plates.push({ line: 'cavern', vein: true, s0: P.at, s1: P.at + P.len, lat: P.lat, w: P.w, mesh: m, index: this.plates.length });
     }
     for (const [i, G] of F.geysers.entries()) {
       const s = T.sOf(G.cp, G.at), Fr = T.frame(s), pos = this.local(Fr.x - Fr.fz * G.lat, Fr.z + Fr.fx * G.lat);
@@ -153,22 +169,27 @@ export class Raceway {
 
   /** The track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
    *  strings hang (Calissa's look, the owner's ask of 2026-10-14). [{ side: -1 | 1, pts: [Vector3] }], left then right. */
-  edgeLines(step = 4) {
-    const T = this.T, out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
-    for (let s = 0; s < T.length; s += step) { const F = T.frame(s); for (const E of out) { const lat = E.side * (F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += 1; E.pts.push(p); } }
+  edgeLines(step = 4, line = 'main') {
+    const T = this.T, Bn = line === 'cavern' ? T.branch : null, len = Bn ? Bn.length : T.length, out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
+    for (let s = 0; s < len; s += step) { const F = Bn ? Bn.frame(s) : T.frame(s); for (const E of out) { const lat = E.side * (F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += 1; E.pts.push(p); } }
     return out;
   }
 
   // ------------------------------------------------------------------ what the board asks
   /** A sun plate under the Courier (riding its stretch of the line, within its width), or null. */
+  /** Its `power` (0..1): a sun plate's the sun's (conditions.js), a crystal vein's always whole. */
   plateAt(pos) {
     if (!this.plates.length || this.d > 30) return null;
     const L = this.T.length;
-    for (const P of this.plates) { const u = ((this.s - P.s0) % L + L) % L; if (u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) return P; }
+    for (const P of this.plates) {
+      if (P.line !== this.line) continue;
+      const u = P.line === 'cavern' ? this.sb - P.s0 : ((this.s - P.s0) % L + L) % L;
+      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun; return P; }
+    }
     return null;
   }
   /** Over the glide lip's stretch (the wings open by themselves there: MK8's glider ramp)? */
-  glideAt() { const G = FEATURES.glideLip, s0 = this.T.sOf(G.cp, G.from), L = this.T.length, u = ((this.s - s0) % L + L) % L; return this.d < 40 && u <= G.to - G.from; }
+  glideAt() { const G = FEATURES.glideLip, s0 = this.T.sOf(G.cp, G.from), L = this.T.length, u = ((this.s - s0) % L + L) % L; return this.line === 'main' && this.d < 40 && u <= G.to - G.from; }
 
   /** Into the Raceway from the Index: set down on foot beside the start's pillar, facing the line. */
   arrive() {
@@ -177,14 +198,19 @@ export class Raceway {
     const p = this.startPillar, at = this.at(this.T.line), to = p.clone().addScaledVector(new THREE.Vector3(Math.sin(at.yaw), 0, Math.cos(at.yaw)), -6).add(new THREE.Vector3(Math.sin(at.yaw + Math.PI / 2), 0, Math.cos(at.yaw + Math.PI / 2)).multiplyScalar(4));
     to.y = this.heightAt(to.x, to.z) + 0.05;
     g.course.teleport(to, Math.atan2(p.x - to.x, p.z - to.z));
-    this.s = this.T.line;
+    this.s = this.T.line; this.line = 'main'; this.branchIn = false;
     g.events?.emit('raceway.enter', { by: 'courier' });
   }
-  /** Set back on the track at s (or where they are along it), mounted, facing along it (MK8's Lakitu). */
-  respawn(s = this.s) {
-    const g = this.game, at = this.at(s); at.pos.y += 0.6;
+  /** Set back on the track at s (or where they are along it: in the cavern, on its branch), mounted, facing along it (MK8's Lakitu). */
+  respawn(s) {
+    const g = this.game, inCave = s == null && this.line === 'cavern';
+    if (s == null) s = this.s;
+    let at = this.at(s);
+    if (inCave) { const F = this.T.branch.frame(this.sb); at = { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz) }; }
+    at.pos.y += 0.6;
+    g.player.techs?.get?.('skiff')?.combo?.drop('respawn'); // (set back: the chain is lost, as in a bail)
     g.course.teleport(at.pos, at.yaw);
-    this.s = s; this.offT = 0;
+    this.s = s; this.offT = 0; if (!inCave) { this.line = 'main'; this.branchIn = false; }
     g.player.techs?.get?.('skiff')?.mount();
     g.events?.emit('race.respawn', { by: 'courier' });
   }
@@ -199,12 +225,27 @@ export class Raceway {
     flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
     this.barrier.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
-    // the Courier's place on the line, followed along it (never jumping to a switchback's other leg), found afresh when far off it
-    const n = (this.d < 60 ? this.T.nearest(lx, lz, this.s) : null) || this.T.nearest(lx, lz);
-    if (n) { this.s = n.s; this.d = n.d; this.lat = n.lat; }
-    // the course's wind: along the track, turned off it by the track's own angle
-    const F = this.T.frame(this.s), a = Math.atan2(F.fz, F.fx) + F.wind;
-    this.wind.dir.set(Math.cos(a), Math.sin(a)); this.wind.gust = 1 + 0.05 * Math.sin(performance.now() * 0.0003); this.wind.speed = WIND.speed * this.wind.gust;
+    // the hour and the weather (conditions.js), read a few times a real second
+    if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g); this.sun = this.condition.sun; }
+    const C = this.condition;
+    // the Courier's place on the line, followed along it (never jumping to a switchback's other leg), found afresh when far off it; and on
+    // the cavern's branch when they are nearer its line than the circuit's (by 3 m: no flicker where the two run as one at the fork and merge)
+    const n = (this.d < 60 && this.line === 'main' ? this.T.nearest(lx, lz, this.s) : null) || this.T.nearest(lx, lz);
+    const Bn = this.T.branch, nb = Bn.nearest(lx, lz), bw = nb ? Bn.frame(nb.sb).w : 0;
+    const wasLine = this.line;
+    if (nb && nb.d < bw + 6 && (!n || nb.d < n.d - (this.line === 'cavern' ? -3 : 3))) this.line = 'cavern'; else this.line = 'main';
+    if (this.line === 'cavern') { this.sb = nb.sb; this.d = nb.d; this.lat = nb.lat; this.s = Bn.mainOf(nb.sb); }
+    else if (n) { this.s = n.s; this.d = n.d; this.lat = n.lat; }
+    if (this.line !== wasLine) {
+      if (this.line === 'cavern') this.branchIn = this.sb < BRANCH.hold * 2; // (in at its fork, not dropped into its middle)
+      else { if (this.branchIn && this.sb > Bn.length - BRANCH.hold * 2) g.events?.emit('raceway.branch', { branch: BRANCH.id, by: 'courier' }); this.branchIn = false; }
+    }
+    // the course's wind: along the track, turned off it by the track's own angle; in the cavern along its branch, weaker (a cave breathes);
+    // the weather's strength and squalls on it
+    const F = this.line === 'cavern' ? Bn.frame(this.sb) : this.T.frame(this.s), a = Math.atan2(F.fz, F.fx) + F.wind, t = performance.now() * 0.001;
+    const swing = C?.gust ? C.gust * (Math.sin(t * 0.9) * 0.6 + Math.sin(t * 2.3 + 1) * 0.4) : 0;
+    this.wind.dir.set(Math.cos(a), Math.sin(a)); this.wind.gust = 1 + 0.05 * Math.sin(t * 0.3) + swing;
+    this.wind.speed = WIND.speed * this.wind.gust * (C?.wind ?? 1) * (this.line === 'cavern' ? BRANCH.wind : 1);
     // the slip geysers: on their cycle, throwing whatever is in the column up (as the Dunes')
     for (const G of this.geysers) {
       G.look.update(dt);
@@ -217,6 +258,6 @@ export class Raceway {
     // far off the track on the board for a while: set back on it
     const riding = g.techs?.active?.id === 'skiff' && g.techs.active.phase === 'ride';
     this.offT = riding && this.d > F.w + OFF.far ? this.offT + dt : 0;
-    if (this.offT > OFF.secs) this.respawn(this.s);
+    if (this.offT > OFF.secs) this.respawn();
   }
 }

@@ -4,7 +4,8 @@
 // (no button). On the rail it runs at the speed it came in with: downhill gains, uphill loses, the sail's wind along the rail pushes a
 // little, and it drags a little. BALANCE, Tony Hawk's: a lean that drifts and grows the longer the grind, answered with A and D; lean
 // past the edge and the board drops off that side and rides on (never a bail). Space lets go with a pop off the rail; the rail's end
-// lets it go on its own. A grind of GRIND.trick metres or more is a trick, and pays the pool as a spin does.
+// lets it go on its own. A grind of GRIND.trick metres or more is a trick (into the trick combo: combo.js). A curved rail throws the lean
+// to the outside of its bend by the speed squared (the owner: "racing is all about curves"): a fast grind round one is held into it.
 // Events: skiff.grind { by }, skiff.grind.end { metres, why: 'hop' | 'end' | 'fell' | 'stall', by }.
 //
 // Prior art: Tony Hawk's Pro Skater (the balance meter, a grind as a trick), Sonic Adventure 2's and Sonic Riders' rails (a lock on with
@@ -17,10 +18,10 @@ import * as THREE from 'three';
 
 /** Reach to lock on (m across, m over the rail's top, m under it), the heading's cone (rad, either way along), the board's ride over the
  *  rail (m); the speed it never keeps under (m/s: it stalls off); gravity along the rail's slope (x g), drag (/s), the sail's push along
- *  it (m/s^2 at a full sail dead downwind); the balance's drift (/s, growing /s), A/D's answer (/s), the pop off (m/s up); metres that
- *  make it a trick, and the Lachryma a metre then pays (capped). */
+ *  it (m/s^2 at a full sail dead downwind); the balance's drift (/s, growing /s), A/D's answer (/s), a bend's throw (the lean a second
+ *  for each m/s^2 of its pull, v^2 x its curvature), the pop off (m/s up); metres that make it a trick. */
 export const GRIND = { reach: 1.4, over: 1.8, under: 0.5, cone: 0.62, ride: 0.55, stall: 3, gravity: 1, drag: 0.03, sail: 4,
-  drift: 0.35, driftGrow: 0.06, answer: 1.8, pop: 9, trick: 12, lachryma: 0.5, cap: 30, relock: 0.6 };
+  drift: 0.35, driftGrow: 0.06, answer: 1.8, bend: 0.04, pop: 9, trick: 12, relock: 0.6 };
 // (relock: real seconds the rail just left will not take the board again: let go at its end, it locked again at once, every frame, and
 // the board hung there (the owner, 2026-10-14))
 
@@ -68,7 +69,10 @@ export class Grind {
     this.V += (-g * GRIND.gravity * slope / Math.sqrt(1 + slope * slope) + sailPush * GRIND.sail - GRIND.drag * this.V) * dt;
     // the balance: a drift that wanders and grows with the grind, answered by A / D
     const drift = (Math.sin(this.t * 1.7 + this.seed) * 0.6 + Math.sin(this.t * 3.1 + this.seed * 2) * 0.4) * (GRIND.drift + GRIND.driftGrow * this.t);
-    this.lean += (drift - steer * GRIND.answer * 0.5) * dt * 2;
+    // a bend throws the lean outward: the heading's turn over the next metre and a half of travel, times v^2 (a left turn's outside: right)
+    const h0 = Math.atan2(_d.x, _d.z); this.at(Math.max(0, Math.min(this.R.len, this.s + this.dir * 1.5)), _a); const h1 = Math.atan2(_d.x, _d.z);
+    const kappa = Math.atan2(Math.sin(h1 - h0), Math.cos(h1 - h0)) / 1.5;
+    this.lean += (drift + kappa * this.V * this.V * GRIND.bend - steer * GRIND.answer * 0.5) * dt * 2;
     const step = this.V * dt; this.s += step * this.dir; this.run += step;
     const end = this.s <= 0 || this.s >= this.R.len;
     let why = hopUp ? 'hop' : end ? 'end' : Math.abs(this.lean) > 1 ? 'fell' : this.V < GRIND.stall ? 'stall' : null;

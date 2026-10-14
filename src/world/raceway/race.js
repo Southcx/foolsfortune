@@ -5,9 +5,11 @@
 // spent while held and it luffs). Then three laps through eight gates in order (a gate missed is gone back for: the line counts only
 // after all eight), a split at the half lap against your best lap's, a lap's time at the line, and a ghost of your best lap riding beside
 // you (kept in the save). R in a race goes back to the last gate passed (Trackmania's checkpoint respawn). A bail in a race is got up from and set back on the track where it happened (MK8's Lakitu). The time takes a medal; each medal
-// pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it.
-// Events (each with `by`): race.start, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
-// seconds, best }, race.finish { seconds, medal, laps }, race.end { why }.
+// pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it. A race is run under the hour's and the
+// weather's condition at its start (conditions.js: said then, and its time kept on that condition's board too, Trackmania's "the same
+// track, another board"). The cavern's branch counts as the stretch of line it stands for (raceway.js maps it), its gate 8 with it.
+// Events (each with `by`): race.start { condition, light, aspect }, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
+// seconds, best }, race.finish { seconds, medal, laps, condition }, race.end { why }.
 // The ghost's look is a placeholder (Calissa's): a pale hull and sail.
 //
 // Prior art: MK8's time trials (the ghost, the rocket start, a medal as a test passed once), Gran Turismo's licence tests, Wave Race's and
@@ -17,6 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ECON } from '../../progress/econ/table.js';
+import { conditionAt } from './conditions.js';
 
 /** The numbers: laps; the countdown (real s); the solar start's window after GO and its push; the medals by total time (real s, three
  *  laps: drafts until Petra measures the line, and they move with it); each medal's pay once (minutes of play); the ghost's samples a
@@ -53,7 +56,8 @@ export class Race {
     const grid = R.T.line - 20; R.respawn((grid + R.T.length) % R.T.length);
     this.running = true; this.state = 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
     this.lap = 1; this.next = 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0;
-    g.events?.emit('race.start', { by: 'courier' });
+    const C = (this.condition = conditionAt(g));
+    g.events?.emit('race.start', { condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, by: 'courier' });
     return true;
   }
 
@@ -76,7 +80,7 @@ export class Race {
     // ---- the run
     this.t += dt; this.lapT += dt; this.goT += dt;
     if (S) S.hold = false;
-    if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(R.s); }
+    if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(); } // (where they are: in the cavern, on its branch)
     // R: back to the last gate passed, mounted (Trackmania's respawn at a checkpoint): the lap goes on, the clock with it
     if (g.input?.wasPressed?.('KeyR') && !g.log?.typing) { this.bailT = null; const gs = this.next > 0 ? R.T.gates[this.next - 1] : R.T.line; R.respawn(gs + 2); this.prevS = R.s; g.events?.emit('race.back', { gate: this.next, by: 'courier' }); }
     // the ghost's samples of this lap
@@ -110,7 +114,7 @@ export class Race {
   finish() {
     const g = this.game, L = g.ledger, seconds = +this.laps.reduce((a, b) => a + b, 0).toFixed(2), medal = medalOfRace(seconds);
     const first = medal && !(L?.get?.(`race.raceway.${medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
-    g.events?.emit('race.finish', { seconds, medal, laps: this.laps.slice(), by: 'courier' });
+    g.events?.emit('race.finish', { seconds, medal, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', by: 'courier' });
     if (first) g.cubes?.earn(Math.round(RACE.pay[medal] * ECON.perMinute), 'trial');
     this.running = false; this.state = 'idle';
   }

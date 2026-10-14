@@ -5,7 +5,10 @@
 //
 //   race.start  race.count { n }  race.go  race.solarstart  race.gate { gate, lap, split }  race.lap { lap, seconds, best }
 //   race.finish { seconds, medal, laps }  race.end { why }  race.respawn   skiff.carve { tier }  skiff.pop { late }  skiff.plate
-//   skiff.landhard { impact }  skiff.grind  skiff.grind.end { metres, why }  skiff.ring { ring }  race.back { gate }   (each with `by`)
+//   skiff.landhard { impact }  skiff.grind  skiff.grind.end { metres, why }  skiff.ring { ring }  race.back { gate }
+//   skiff.combo.bank { points, n, mult, stocks }  skiff.combo.drop { points, n, why }  skiff.grab { grab, seconds }  skiff.grab.late
+//   skiff.pop.miss  skiff.land.slope { gain }  raceway.branch { branch }   (each with `by`)
+// A race's condition (world/raceway/conditions.js) is said at its start, and its time kept on that condition's own board too.
 //
 //   raceRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -13,10 +16,20 @@
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const signed = (s) => `${s >= 0 ? '+' : '−'}${Math.abs(s).toFixed(2)}`;
 const MEDAL = { gold: 'gold', silver: 'silver', bronze: 'bronze' };
+// what a condition does, said at a race's start (placeholders for Espada's words)
+const LIGHT_SAYS = { night: 'Night: the sun plates are dark, and the cavern\'s crystal veins still burn.', twilight: 'A low sun: the sun plates are weak.' };
+const WEATHER_SAYS = {
+  mirth: 'A sunshower: the sand is wet, fast and slick, and the plates still drink the sun.', wonder: 'The aurora: the sun rings drink it, and push harder.',
+  desire: 'The wanting wind: it blows harder down the course.', fury: 'The hail: squalls shove you across the wind.',
+  gall: 'The miasma: the air is thick and the sand clings.', grief: 'The long rain: the sand is wet, fast and slick; the sun is dim.', dread: 'The pall: fog over the course.',
+};
 
 export function raceRules({ on, L, log }) {
   on('raceway.enter', () => log.say('info', 'The Raceway. F at the start\'s pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
-  on('race.start', () => { L.inc('race.raceway.start'); log.say('skiff', 'To the line. Ready your sail.', { key: 'race.start', throttle: 2 }); });
+  on('race.start', (e) => {
+    L.inc('race.raceway.start'); log.say('skiff', 'To the line. Ready your sail.', { key: 'race.start', throttle: 2 });
+    const says = [LIGHT_SAYS[e.light], WEATHER_SAYS[e.aspect]].filter(Boolean); if (says.length) log.say('skiff', says.join(' '), { key: 'race.cond', throttle: 2 });
+  });
   on('race.count', (e) => log.say('skiff', `${e.n}…`, { key: `race.count.${e.n}`, throttle: 0.5 }));
   on('race.go', () => log.say('skiff', 'Go!', { key: 'race.go', throttle: 0.5 }));
   on('race.solarstart', () => { L.inc('race.raceway.solarstart'); log.say('skiff', 'A solar start: you are off the line with the sun behind you.', { key: 'race.ss', throttle: 2 }); });
@@ -28,14 +41,26 @@ export function raceRules({ on, L, log }) {
   on('race.finish', (e) => {
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
     if (e.medal) L.inc(`race.raceway.${e.medal}`);
+    if (e.condition) { L.inc(`race.raceway.finish.${e.condition.split('.')[0]}`); const b = L.lo(`race.raceway.best.${e.condition}`, e.seconds); if (b && b !== 'new') log.say('record', 'Your best under this sky.', { key: 'race.condbest', throttle: 2 }); }
     log.say('record', `Finished in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); });
   on('race.respawn', () => L.inc('race.raceway.respawn'));
   // the skiff's racing verbs
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });
-  on('skiff.pop', (e) => { if (e.by === 'courier') L.inc('skiff.pop'); });
-  on('skiff.plate', (e) => { if (e.by === 'courier') L.inc('skiff.plate'); });
+  on('skiff.pop', (e) => { if (e.by !== 'courier') return; L.inc('skiff.pop'); if (e.perfect) { L.inc('skiff.pop.perfect'); log.say('skiff', 'A perfect pop.', { key: 'pop.perfect', throttle: 1.5 }); } });
+  on('skiff.pop.miss', (e) => { if (e.by === 'courier') log.say('info', 'Too late to pop: let go of Space as the board leaves the crest.', { key: 'pop.miss', throttle: 12 }); });
+  on('skiff.plate', (e) => { if (e.by !== 'courier') return; if (e.power > 0.05) L.inc('skiff.plate'); else log.say('info', 'The sun plate is dark: no sun to feed it.', { key: 'plate.dark', throttle: 30 }); });
+  // the trick combo (courier/skiff/combo.js): what it banks and loses, said; its gauge is Calissa's
+  on('skiff.combo.bank', (e) => {
+    if (e.by !== 'courier') return; L.inc('skiff.combo.bank'); L.hi('skiff.combo.best', e.points); L.hi('skiff.combo.longest', e.n);
+    if (e.n >= 2) log.say('skiff', `A combo of ${e.n}, x${e.mult}: ${e.points}. Banked flares: ${Math.floor(e.stocks)} of 3.`, { key: 'combo.bank', throttle: 1 });
+  });
+  on('skiff.combo.drop', (e) => { if (e.by !== 'courier') return; L.inc('skiff.combo.drop'); if (e.n >= 2 && e.why !== 'off') log.say('warn', `Your combo of ${e.n} is lost.`, { key: 'combo.drop', throttle: 2 }); });
+  on('skiff.grab', (e) => { if (e.by !== 'courier') return; L.inc('skiff.grab'); L.inc(`skiff.grab.${e.grab}`); L.hi('skiff.grab.best', e.seconds); });
+  on('skiff.grab.late', (e) => { if (e.by === 'courier') log.say('warn', 'You land still grabbing: let go before the sand.', { key: 'grab.late', throttle: 6 }); });
+  on('skiff.land.slope', (e) => { if (e.by === 'courier') L.inc('skiff.land.slope'); });
+  on('raceway.branch', (e) => { if (e.by !== 'courier') return; L.inc('raceway.cavern'); log.say('skiff', 'Through the cavern and out.', { key: 'rw.cavern', throttle: 10 }); });
   on('skiff.grind', (e) => { if (e.by === 'courier') L.inc('skiff.grind'); });
   on('skiff.grind.end', (e) => {
     if (e.by !== 'courier') return; L.inc('skiff.grind.metres', Math.round(e.metres)); L.hi('skiff.grind.best', e.metres);
