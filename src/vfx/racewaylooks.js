@@ -32,6 +32,12 @@
 //     the board (vfx/skiffcombomarks.js), its link, step, bank and drop each a moment. The sun plates by the sun (raceway.sun): their
 //     glow, glaze and chevrons dim toward night; ridden dark (skiff.plate { power: 0 }) a cold dull answer. The cavern's crystal veins
 //     are left out of the plates' dress (their look is the cavern's own).
+//   - ROUND 4, THE PARK (Dovina's handoff, 2026-10-14; SKIFF-RACING.md 10): every track's arch, gates and start pillar dressed with the
+//     same lamps and marks (in the same one instanced draw; only the raced track's light), a sun glyph on each start pillar breathing
+//     while the Courier is near and no race runs; every track's edge strings in the one set of draws (the board's track runs), broken
+//     where edgeLines says a point lies on the other line's road, hung over a bridge's deck; the combo's marks moved aft (the owner);
+//     and the grind's balance mark (vfx/grindbalancemark.js) worn behind the stern while the keel grinds (the owner). The sandfalls
+//     are dressed where they are hung (world/raceway/kit.js, cavern.js: RacewaySandfall, one program for all five).
 //
 // Prior art: F-Zero's dash plates (the flash and the arrows running the way to go), Mario Kart's boost pads (the chevrons) and its drift
 // sparks and mini-turbo tiers (blue, orange, purple: ours sand, gold, white), Mario Kart's start lights on Lakitu's rod (a lamp a count,
@@ -56,6 +62,7 @@ import { RacewayEdgeStrings, EDGE_STRINGS } from './racewayedgestrings.js';
 import { ensureSmoothNormals } from '../render/outline.js';
 import { lightAt } from '../progress/weather.js';
 import { SkiffComboMarks } from './skiffcombomarks.js';
+import { GrindBalanceMark } from './grindbalancemark.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
  *  the shimmer (its rate, rad a real second, and the glow's low and high); the arch's lamps (radius, spacing, drop under the lintel, glow);
@@ -65,6 +72,7 @@ export const RACEWAY_LOOK = {
   shimmer: { rate: 0.9, lo: 0.22, hi: 0.4 },
   lamp: { r: 0.95, spacing: 2.9, drop: 1.6, glow: 4.2 },
   gateMark: { r: 0.6, up: 4.6, glow: 3.4 },
+  startMark: { r: 0.75, up: 5, out: 2.45, near: 16 }, // (a start pillar's: on its face toward the line, 5 m up, 2.45 m out from its axis; lit within 16 m)
   colour: { rim: 0xf2b33a, face: 0xfff3d6, boss: 0xf6c04e, rayLong: 0xffd77a, rayShort: 0xfff0c8, glow: 0xffd27a, flare: 0xfff4dc, emissive: 0xffb84a },
   ghost: { tint: 0xf0d49a, alpha: 0.62, slip: 0.25, flicker: 0.15, sweep: 0.7 },
   // the grind rails' glaze (the lintel's body, its drip line, the glaze thinning to the edge, the top worn through; the columns' clay and
@@ -188,11 +196,11 @@ export class RacewayLooks {
     this.parent = o.parent || null; // (where the meshes go: the scene, or a Workbench stage)
     this.vfxOf = () => o.vfx || game.vfx;
     this.raceOf = o.race || (() => game.race);
-    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, boat: S.skiff } : null; });
+    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, grind: S.grind, boat: S.skiff } : null; });
     this.skiffModelOf = o.skiffModel || (() => game.player?.techs?.get?.('skiff')?.skiff?.model || null);
     this.playerOf = o.player || (() => game.player?.pos);
     this.t = 0; this.plates = null; this.marks = null; this.ghost = null;
-    this.lit = 0; this.flareT = 0; this.goneT = 9; this.lamps = [0, 0, 0]; this.gateK = []; this.gateFlash = [];
+    this.lit = 0; this.flareT = 0; this.goneT = 9; this.lamps = [0, 0, 0]; this.gateK = {}; this.gateFlash = {}; this.startK = [];
     this.carveH = null; this.sailH = null; this.tier = 0;
     const E = o.events || game.events;
     if (E) {
@@ -204,7 +212,7 @@ export class RacewayLooks {
       E.on('race.count', (e) => { this.lit = Math.max(this.lit, Math.min(3, 4 - (e.n | 0))); }); // (3, 2, 1: one lamp, two, three)
       E.on('race.go', () => { this.lit = 3; this.flareT = 1; this.goneT = 0; this.flareLamps(); });
       for (const n of ['race.end', 'race.finish']) E.on(n, () => { this.lit = 0; this.flareT = 0; this.goneT = 9; });
-      E.on('race.gate', (e) => { const i = (e.gate | 0) - 1; if (i >= 0) { this.gateFlash[i] = 1; this.passGate(i); } });
+      E.on('race.gate', (e) => { const i = (e.gate | 0) - 1, id = this.raceTrack(); if (i >= 0 && this.gateFlash[id]) { this.gateFlash[id][i] = 1; this.passGate(i, id); } });
       E.on('skiff.grind', () => this.grind());
       E.on('skiff.grind.end', (e) => this.grindEnd(e));
       for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopGrind());
@@ -247,19 +255,27 @@ export class RacewayLooks {
     // the start arch's lamps and the gates' marks, as raceway.js builds the arch and the pillars (her numbers: the arch 3 m outside the
     // track's edge and 11 m over the higher foot, the lintel 1.4 m deep and 2 m thick over it; a gate's pillar 2.5 m outside, 8 m tall
     // from 1.5 m under its foot, 1.5 m square)
-    const side = (s, lat) => { const F = T.frame(s); return R.local(F.x - F.fz * lat, F.z + F.fx * lat); };
-    const facing = (s) => { const F = T.frame(s); return new THREE.Vector3(-F.fx, 0, -F.fz).normalize(); }; // (toward the oncoming board)
+    // Round 4 (the park): every track's arch and gates dressed alike (kit.js lays them all by the same numbers), each mark keeping its
+    // track; and a sun glyph on each track's start pillar (R.pillars), facing its line, breathing while the Courier is near and no race runs
     const marks = [];
-    { const s = T.line, F = T.frame(s), a = side(s, -(F.w + 3)), b = side(s, F.w + 3), top = Math.max(a.y, b.y) + 11, n = facing(s);
-      const right = new THREE.Vector3(-F.fz, 0, F.fx).normalize(), mid = a.clone().add(b).multiplyScalar(0.5).setY(top - 0.1 - L.lamp.drop);
-      for (let k = -1; k <= 1; k++) marks.push({ kind: 'lamp', k: k + 1, pos: mid.clone().addScaledVector(right, k * L.lamp.spacing).addScaledVector(n, 1.0), n, r: L.lamp.r, glow: L.lamp.glow }); }
-    T.gates.forEach((s, gi) => { const F = T.frame(s), n = facing(s);
-      for (const sg of [-1, 1]) { const p = side(s, sg * (F.w + 2.5)); marks.push({ kind: 'gate', gate: gi, pos: p.clone().setY(p.y + L.gateMark.up).addScaledVector(n, 0.75 + 0.02), n, r: L.gateMark.r, glow: L.gateMark.glow }); } });
+    for (const Tk of R.tracks || [T]) {
+      const tid = Tk.id ?? 'sun', side = (s, lat) => { const F = Tk.frame(s); return R.local(F.x - F.fz * lat, F.z + F.fx * lat); };
+      const facing = (s) => { const F = Tk.frame(s); return new THREE.Vector3(-F.fx, 0, -F.fz).normalize(); }; // (toward the oncoming board)
+      { const s = Tk.line, F = Tk.frame(s), a = side(s, -(F.w + 3)), b = side(s, F.w + 3), top = Math.max(a.y, b.y) + 11, n = facing(s);
+        const right = new THREE.Vector3(-F.fz, 0, F.fx).normalize(), mid = a.clone().add(b).multiplyScalar(0.5).setY(top - 0.1 - L.lamp.drop);
+        for (let k = -1; k <= 1; k++) marks.push({ kind: 'lamp', track: tid, k: k + 1, pos: mid.clone().addScaledVector(right, k * L.lamp.spacing).addScaledVector(n, 1.0), n, r: L.lamp.r, glow: L.lamp.glow }); }
+      Tk.gates.forEach((s, gi) => { const F = Tk.frame(s), n = facing(s);
+        for (const sg of [-1, 1]) { const p = side(s, sg * (F.w + 2.5)); marks.push({ kind: 'gate', track: tid, gate: gi, pos: p.clone().setY(p.y + L.gateMark.up).addScaledVector(n, 0.75 + 0.02), n, r: L.gateMark.r, glow: L.gateMark.glow }); } });
+      const Pl = (R.pillars || []).find((p) => p.track === Tk.id);
+      if (Pl) { const F = Tk.frame(Tk.line), n = new THREE.Vector3(-F.fz, 0, F.fx).normalize(); // (from the pillar toward its line: kit.js sets it left of the line)
+        marks.push({ kind: 'start', track: tid, pos: Pl.pos.clone().setY(Pl.pos.y + L.startMark.up).addScaledVector(n, L.startMark.out), n, r: L.startMark.r, glow: L.gateMark.glow, at: Pl.pos }); }
+    }
     const K = (this.marks = new THREE.InstancedMesh(sunGlyph(false), M0.marks, Math.max(1, marks.length)));
     marks.forEach((k, i) => { k.q = new THREE.Quaternion().setFromUnitVectors(UP, k.n); K.setMatrixAt(i, _m.compose(k.pos, k.q, _s.set(k.r, k.r, k.r))); K.setColorAt(i, _c.set(L.colour.rim).multiplyScalar(0.3)); k.glowAt = k.pos.clone().addScaledVector(k.n, 0.25); });
     K.count = marks.length; K.name = 'raceway-marks'; K.userData.zone = 'raceway'; K.frustumCulled = false; parent.add(K);
-    this.markList = marks; this.markH = marks.map(() => null);
-    this.gateK = T.gates.map(() => 0); this.gateFlash = T.gates.map(() => 0);
+    this.markList = marks; this.markH = marks.map(() => null); this.startK = marks.map(() => 0);
+    this.gateK = {}; this.gateFlash = {};
+    for (const Tk of R.tracks || [T]) { this.gateK[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); this.gateFlash[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); }
     this.R = R;
     return this.dressRound2(R);
   }
@@ -268,9 +284,17 @@ export class RacewayLooks {
   /** What the Raceway has of them: the edge strings strung on edgeLines, the rail mesh re-cut as glazed stone, the rings kept for passes. */
   dressRound2(R) {
     this.R = R;
-    if (R.edgeLines) {
+    if (R.edgeLines) { // (every track's two edges in the one set of draws, each its track's group; on a bridge's deck, hung over the deck)
       this.strings?.dispose();
-      this.strings = new RacewayEdgeStrings({ parent: this.parent || this.game.scene, zone: 'raceway' }).build(R.edgeLines(EDGE_STRINGS.step), EDGE_STRINGS.step);
+      const step = EDGE_STRINGS.step, lines = [];
+      for (const Tk of R.tracks || [R.T]) {
+        const got = R.tracks ? R.edgeLines(step, 'main', Tk.id) : R.edgeLines(step);
+        for (const L of got) {
+          if (Tk.decks?.length && R.center) L.pts.forEach((p, i) => { const s = i * step; if (Tk.decks.some((D) => s >= D.s0 && s <= D.s1)) p.y = R.center.y + Tk.frame(s).y + 1; });
+          lines.push({ ...L, group: Tk.id ?? 'sun' });
+        }
+      }
+      this.strings = new RacewayEdgeStrings({ parent: this.parent || this.game.scene, zone: 'raceway' }).build(lines, step);
     }
     if (R.railMesh && R.rails?.length && !R.railMesh.userData.glazed) this.glazeRails(R);
     return this;
@@ -430,7 +454,7 @@ export class RacewayLooks {
     const M = this.comboMarks(B), before = M.steps; M.link(e?.mult);
     const at = B.group.getWorldPosition(new THREE.Vector3());
     V?.play('skiff.combo.link', { pos: at.clone().setY(at.y - 0.3), phase: this.t * 0.3 });
-    if (M.steps > before) V?.play('skiff.combo.step', { pos: new THREE.Vector3(0, 0, 3.0).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 });
+    if (M.steps > before) V?.play('skiff.combo.step', { pos: new THREE.Vector3(0, 0, -3.0).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 });
   }
   comboBank() {
     const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
@@ -471,12 +495,14 @@ export class RacewayLooks {
     { const B = this.boardOf(); // (round 3: the boost's look and the combo's gauge, wherever the skiff is ridden)
       this.boost(B);
       if (B?.combo && (this.combo || B.combo.n || B.combo.stocks > 0.01)) this.comboMarks(B);
-      this.combo?.update(dt, B?.combo || null, this.t); }
+      this.combo?.update(dt, B?.combo || null, this.t);
+      if (B?.grind?.on && !this.balance) this.balance = new GrindBalanceMark({ map: materials().map }); // (the grind's balance mark: made the first time a board grinds)
+      if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, B?.grind || null); } }
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
     if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)
       if ((this.nightT += dt) > 1) { this.nightT = 0; this.nightK = this.nightOf(); }
       const R = this.R, near = this.boardOf() && R && R.s != null;
-      this.strings.update(dt, { s: near ? R.s : null, d: R?.d ?? 0, night: this.nightK });
+      this.strings.update(dt, { s: near ? R.s : null, d: R?.d ?? 0, night: this.nightK, group: R?.track?.id ?? 'sun' });
     }
     if (!this.plates) return;
     const L = RACEWAY_LOOK, M = materials(), t = this.t, gl = _c;
@@ -489,7 +515,8 @@ export class RacewayLooks {
     this.scrollV = ((this.scrollV || 0) + dt * L.plate.scroll * (S.scrollNight + (1 - S.scrollNight) * sk)) % 1;
     M.map.offset.y = -this.scrollV;
     // the arch's lamps: one a count, all flaring on GO and fading after; glowing again while the line is next
-    const race = this.raceOf(), running = !!race?.running, lineNext = running && race.state === 'run' && race.next >= (this.gateK.length || 8);
+    const race = this.raceOf(), running = !!race?.running, rt = this.raceTrack(), gk = this.gateK[rt] || [];
+    const lineNext = running && race.state === 'run' && race.next >= (gk.length || 8);
     this.flareT = Math.max(0, this.flareT - dt / 0.9); if (this.goneT < 9) this.goneT += dt;
     for (let k = 0; k < 3; k++) {
       let want = (running && k < this.lit) ? 1 : 0;
@@ -498,14 +525,23 @@ export class RacewayLooks {
       this.lamps[k] = damp(this.lamps[k], want, want > this.lamps[k] ? 22 : 4, dt);
     }
     // the gates: the next pair glows (a slow breath, never a blink); a gate passed flashes as it goes
-    for (let g = 0; g < this.gateK.length; g++) {
-      const want = running && race.state === 'run' && race.next === g ? 1 : 0;
-      this.gateK[g] = damp(this.gateK[g], want, want ? 10 : 3, dt); this.gateFlash[g] = Math.max(0, (this.gateFlash[g] || 0) - dt / 0.5);
+    for (const id of Object.keys(this.gateK)) {
+      const K0 = this.gateK[id], Fl = this.gateFlash[id];
+      for (let g = 0; g < K0.length; g++) {
+        const want = running && id === rt && race.state === 'run' && race.next === g ? 1 : 0;
+        K0[g] = damp(K0[g], want, want ? 10 : 3, dt); Fl[g] = Math.max(0, (Fl[g] || 0) - dt / 0.5);
+      }
     }
+    // the start pillars: a slow breath while the Courier is near one and no race runs (F there races its track)
+    const at = this.playerOf(), SM = L.startMark;
     // the marks: the glyph's own brightness (instanced), and a glow of the shared particles held on each lit one
     const K = this.marks, V = this.vfxOf();
     this.markList.forEach((k, i) => {
-      const v = k.kind === 'lamp' ? Math.min(1.6, this.lamps[k.k]) : this.gateK[k.gate] * (0.85 + 0.15 * Math.sin(t * 1.9)) + (this.gateFlash[k.gate] || 0);
+      let v;
+      if (k.kind === 'lamp') v = k.track === rt ? Math.min(1.6, this.lamps[k.k]) : 0;
+      else if (k.kind === 'gate') v = this.gateK[k.track][k.gate] * (0.85 + 0.15 * Math.sin(t * 1.9)) + (this.gateFlash[k.track][k.gate] || 0);
+      else { const near = !running && at && (at.x - k.at.x) ** 2 + (at.z - k.at.z) ** 2 < SM.near * SM.near ? 0.7 + 0.2 * Math.sin(t * 1.6) : 0;
+        v = this.startK[i] = damp(this.startK[i] || 0, near, near ? 6 : 3, dt); }
       K.setColorAt(i, gl.set(L.colour.rim).multiplyScalar(0.3 + 1.3 * v));
       const on = v > 0.25, H = this.markH[i];
       if (on && !H?.alive && V) this.markH[i] = V.play(k.kind === 'lamp' ? 'raceway.lamp' : 'raceway.gate', { pos: k.glowAt });
@@ -515,7 +551,9 @@ export class RacewayLooks {
     K.instanceColor.needsUpdate = true;
   }
   /** GO: every lamp flares at once (a burst of the shared particles at each). */
-  flareLamps() { const V = this.vfxOf(); for (const k of this.markList || []) if (k.kind === 'lamp') V?.play('raceway.lamp.go', { pos: k.glowAt }); }
+  flareLamps() { const V = this.vfxOf(), id = this.raceTrack(); for (const k of this.markList || []) if (k.kind === 'lamp' && k.track === id) V?.play('raceway.lamp.go', { pos: k.glowAt }); }
   /** A gate passed: its two marks flash as it goes. */
-  passGate(g) { const V = this.vfxOf(); for (const k of this.markList || []) if (k.kind === 'gate' && k.gate === g) V?.play('raceway.gate.pass', { pos: k.glowAt }); }
+  passGate(g, id = this.raceTrack()) { const V = this.vfxOf(); for (const k of this.markList || []) if (k.kind === 'gate' && k.track === id && k.gate === g) V?.play('raceway.gate.pass', { pos: k.glowAt }); }
+  /** The track the race runs on (its lamps and gates are the lit ones), else the Sun Circuit. */
+  raceTrack() { return this.raceOf()?.T?.id || 'sun'; }
 }

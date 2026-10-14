@@ -16,9 +16,12 @@
 //
 // Round 3: a string per line. The cavern's branch has its own (vfx/racewaycavern.js: `line: 'cavern'`, not a loop, so the run stops at
 // its end); only the line the Courier is on runs (`EDGE_LINE.lit`, set from raceway.line), the other's beads and thread stay still.
+// Round 4, the park (SKIFF-RACING.md 10): every track strung, all of them in the same three draws (each line its `group`, the track's
+// id; only the board's track runs and brightens); and the strings BROKEN where a point lies on the other line's road (edgeLines'
+// `hide`: the cavern's fork and merge, where the owner saw them cut across it): no bead, no thread, no run there.
 //
-//   const S = new RacewayEdgeStrings({ parent, zone, line?, loop? })   S.build(edgeLines, step)   S.update(dt, { s, d, night })   S.dispose()
-//   (built by vfx/racewaylooks.js dress(): s the board's place on the line, d its distance off it, night 0..1)   EDGE_LINE.lit
+//   const S = new RacewayEdgeStrings({ parent, zone, line?, loop? })   S.build(edgeLines, step)   S.update(dt, { s, d, night, group })   S.dispose()
+//   (built by vfx/racewaylooks.js dress(): s the board's place on its line, d its distance off it, night 0..1, group its track's id)   EDGE_LINE.lit
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -55,93 +58,111 @@ function dotTexture() {
 }
 
 export class RacewayEdgeStrings {
-  constructor({ parent, zone = 'raceway', line = 'main', loop = true } = {}) { this.parent = parent; this.zone = zone; this.line = line; this.loop = loop; this.t = 0; this.sides = []; this.objects = []; this.lastI = -1; this.night = -1; }
+  constructor({ parent, zone = 'raceway', line = 'main', loop = true } = {}) { this.parent = parent; this.zone = zone; this.line = line; this.loop = loop; this.t = 0; this.sides = []; this.objects = []; this.lastI = -1; this.lastG = undefined; this.night = -1; }
 
-  /** Strung on edgeLines ([{ side, pts }], every `step` metres along the line from s = 0). */
+  /** Strung on edgeLines ([{ side, pts, hide?, group? }], every `step` metres along each line from s = 0). Lines of several tracks may
+   *  be strung at once, each with its `group` (the track's id): one set of draws for all, the run only on the group asked for. A point
+   *  with `hide` 1 lies on another line's road: no bead there, no thread to or from it, no run across it. */
   build(lines, step = EDGE_STRINGS.step) {
     this.dispose();
-    const E = EDGE_STRINGS, n = lines[0]?.pts.length || 0; if (!n) return this;
-    this.step = step; this.n = n; this.len = n * step;
-    const pos = new Float32Array(lines.length * n * 3), index = [];
-    lines.forEach((L, k) => {
-      const o = k * n; L.pts.forEach((p, i) => p.toArray(pos, (o + i) * 3));
-      for (let i = 0; i < n - 1; i++) index.push(o + i, o + i + 1);
-      if (this.loop && L.pts[n - 1].distanceTo(L.pts[0]) < step * 3) index.push(o + n - 1, o); // (round the lap's seam)
-      this.sides.push({ o, pts: L.pts });
-    });
-    const P = new THREE.BufferAttribute(pos, 3);
-    // the beads
-    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', P); bg.computeBoundingSphere();
+    const E = EDGE_STRINGS, total = lines.reduce((a, L) => a + L.pts.length, 0); if (!total) return this;
+    this.step = step;
+    const pos = new Float32Array(total * 3), bead = [], index = [];
+    let o = 0;
+    for (const L of lines) {
+      const n = L.pts.length, hide = L.hide || null, hid = (i) => !!hide?.[i];
+      L.pts.forEach((p, i) => { p.toArray(pos, (o + i) * 3); if (!hid(i)) bead.push(p.x, p.y, p.z); });
+      for (let i = 0; i < n - 1; i++) if (!hid(i) && !hid(i + 1)) index.push(o + i, o + i + 1);
+      const loop = this.loop && n > 2 && L.pts[n - 1].distanceTo(L.pts[0]) < step * 3;
+      if (loop && !hid(n - 1) && !hid(0)) index.push(o + n - 1, o); // (round the lap's seam)
+      this.sides.push({ o, n, len: n * step, loop, pts: L.pts, hide, group: L.group ?? null });
+      o += n;
+    }
+    // the beads (only those shown: their own positions)
+    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.Float32BufferAttribute(bead, 3)); bg.computeBoundingSphere();
     this.beadMat = new THREE.PointsMaterial({ name: 'edge-beads', map: dotTexture(), size: E.bead.size, transparent: true, depthWrite: false });
     this.beads = new THREE.Points(bg, this.beadMat); this.beads.name = 'raceway-edge-beads';
     // the thread
-    const tg = new THREE.BufferGeometry(); tg.setAttribute('position', P); tg.setIndex(index);
+    const tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); tg.setIndex(index);
     this.col = new Float32Array(pos.length); tg.setAttribute('color', new THREE.BufferAttribute(this.col, 3)); tg.computeBoundingSphere();
     this.threadMat = new THREE.LineBasicMaterial({ name: 'edge-thread', vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     this.thread = new THREE.LineSegments(tg, this.threadMat); this.thread.name = 'raceway-edge-thread';
-    // the run
+    // the run: motes enough for the most strings one group has (its two edges)
     const R = E.run, lane = (from, to) => Math.max(1, Math.round((to - from) / R.spacing));
     this.lanes = [{ from: R.from, to: R.to, n: lane(R.from, R.to), phase: 0, band: false }, { from: R.band[0] - R.ramp, to: R.band[1] + R.ramp, n: lane(R.band[0] - R.ramp, R.band[1] + R.ramp), phase: 0.5, band: true }];
-    const count = lines.length * (this.lanes[0].n + this.lanes[1].n);
+    const per = new Map(); for (const S of this.sides) per.set(S.group, (per.get(S.group) || 0) + 1);
+    const count = Math.max(...per.values()) * (this.lanes[0].n + this.lanes[1].n);
     this.runMat = new THREE.MeshBasicMaterial({ name: 'edge-run', fog: false, toneMapped: false });
     const run = (this.run = new THREE.InstancedMesh(new THREE.OctahedronGeometry(1, 0), this.runMat, count)); run.name = 'raceway-edge-run';
     for (let i = 0; i < count; i++) { run.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0)); run.setColorAt(i, _c.setRGB(1, 1, 1)); }
     run.frustumCulled = false; run.instanceMatrix.setUsage(THREE.DynamicDrawUsage); run.instanceColor.setUsage(THREE.DynamicDrawUsage);
-    for (const o of (this.objects = [this.beads, this.thread, run])) { o.userData.zone = this.zone; o.renderOrder = 3; this.parent?.add(o); }
-    this.lastI = -1; this.night = -1;
+    for (const o2 of (this.objects = [this.beads, this.thread, run])) { o2.userData.zone = this.zone; o2.renderOrder = 3; this.parent?.add(o2); }
+    this.lastI = -1; this.lastG = undefined; this.night = -1;
     return this;
   }
 
-  /** A point on side k's string at s (m along the line, wrapping the lap; an open string's held at its ends), into out. */
+  /** Side k's string at s (m along its line, wrapping a lap; an open string's held at its ends): the point into out; returns whether it
+   *  is shown there (false where either bead of its stretch is hidden). */
   at(k, s, out) {
-    const S = this.sides[k], n = this.n, f = this.loop ? (((s / this.step) % n) + n) % n : Math.max(0, Math.min(n - 1.001, s / this.step)), i = Math.floor(f), j = (i + 1) % n;
-    return out.copy(S.pts[i]).lerp(S.pts[j], f - i);
+    const S = this.sides[k], n = S.n, f = S.loop ? (((s / this.step) % n) + n) % n : Math.max(0, Math.min(n - 1.001, s / this.step)), i = Math.floor(f), j = (i + 1) % n;
+    out.copy(S.pts[i]).lerp(S.pts[j], f - i);
+    return !(S.hide && (S.hide[i] || S.hide[j]));
   }
 
-  /** Each frame: s the board's place on the line (null: no board), d its distance off it, night 0..1. */
-  update(dt, { s = null, d = 0, night = 0 } = {}) {
+  /** Each frame: s the board's place on its line (null: no board), d its distance off it, night 0..1, group the board's track (that
+   *  group's strings run and brighten ahead; the rest stay still at the far glow). */
+  update(dt, { s = null, d = 0, night = 0, group = null } = {}) {
     if (!this.run) return;
     const E = EDGE_STRINGS, on = s != null && d < E.near && this.line === EDGE_LINE.lit;
     this.t += dt;
     // the colour of the hour (redone only as it changes)
     if (Math.abs(night - this.night) > 0.01) {
       this.night = night; _t.copy(_gold).lerp(_night, night * E.night.mix);
-      this.beadMat.color.copy(_t).multiplyScalar(E.bead.k); this.lastI = -2; // (the thread recoloured below)
+      this.beadMat.color.copy(_t).multiplyScalar(E.bead.k); this.lastI = -2; this.lastG = undefined; // (the thread recoloured below)
     }
-    // the thread: dim behind the board, brighter ahead (the window rewritten as the board's place moves on a bead)
+    // the thread: dim behind the board, brighter ahead (the window rewritten as the board's place moves on a bead); the other groups'
+    // strings written at the far glow only when the group changes
     const iNow = on ? Math.floor(s / this.step) : -1;
-    if (iNow !== this.lastI) {
-      this.lastI = iNow; const T = E.thread, n = this.n, col = this.col;
-      for (const S of this.sides) for (let i = 0; i < n; i++) {
-        let k = T.far;
-        if (on) {
-          let dd = (i - iNow) * this.step; if (this.loop) dd = ((dd % this.len) + this.len * 1.5) % this.len - this.len / 2; // (signed, the short way round)
-          if (dd >= 0) k = T.far + (T.ahead - T.far) * (1 - smooth(T.fore * 0.5, T.fore, dd));
-          else k = T.behind + (T.far - T.behind) * smooth(0, T.back, -dd); // (darkest right behind, back to the far glow by T.back)
+    if (iNow !== this.lastI || group !== this.lastG) {
+      const all = group !== this.lastG || iNow === -1 || this.lastI === -2, T = E.thread, col = this.col;
+      this.lastI = iNow; this.lastG = group;
+      for (const S of this.sides) {
+        const mine = on && S.group === group; if (!mine && !all) continue;
+        for (let i = 0; i < S.n; i++) {
+          let k = T.far;
+          if (mine) {
+            let dd = (i - iNow) * this.step; if (S.loop) dd = ((dd % S.len) + S.len * 1.5) % S.len - S.len / 2; // (signed, the short way round)
+            if (dd >= 0) k = T.far + (T.ahead - T.far) * (1 - smooth(T.fore * 0.5, T.fore, dd));
+            else k = T.behind + (T.far - T.behind) * smooth(0, T.back, -dd); // (darkest right behind, back to the far glow by T.back)
+          }
+          _c.copy(_t).multiplyScalar(k).toArray(col, (S.o + i) * 3);
         }
-        _c.copy(_t).multiplyScalar(k).toArray(col, (S.o + i) * 3);
       }
       this.thread.geometry.attributes.color.needsUpdate = true;
     }
-    // the run: two lanes of motes per string flowing the race's way, grown in and shrunk away at the window's ends
+    // the run: two lanes of motes per string of the board's group flowing the race's way, grown in and shrunk away at the window's
+    // ends, none across a hidden stretch
     const run = this.run, M = run.instanceMatrix.array, C = run.instanceColor.array, R = E.run;
     let m = 0;
-    for (let k = 0; k < this.sides.length; k++) for (const ln of this.lanes) {
-      const span = ln.to - ln.from;
-      for (let j = 0; j < ln.n; j++) {
-        const o = m * 16, c = m * 3; m++;
-        if (!on) { M[o] = M[o + 5] = M[o + 10] = 0; continue; }
-        const ahead = ln.from + ((((j + ln.phase) * R.spacing + this.t * R.speed) % span) + span) % span;
-        const band = smooth(R.band[0] - R.ramp, R.band[0], ahead) * (1 - smooth(R.band[1], R.band[1] + R.ramp, ahead));
-        const env = ln.band ? band : smooth(R.from, R.from + 5, ahead) * (1 - smooth(R.to - 8, R.to, ahead));
-        const end = this.loop ? 1 : 1 - smooth(this.len - 8, this.len - 1, s + ahead); // (an open string's run fades out before its end)
-        const r = (ln.band ? R.rBand : R.r + (R.rBand - R.r) * band) * env * end;
-        this.at(k, s + ahead, _p);
-        M[o] = M[o + 5] = M[o + 10] = r; M[o + 1] = M[o + 2] = M[o + 4] = M[o + 6] = M[o + 8] = M[o + 9] = 0; M[o + 15] = 1;
-        M[o + 12] = _p.x; M[o + 13] = _p.y; M[o + 14] = _p.z;
-        _c.copy(_t).multiplyScalar(R.k + (R.kBand - R.k) * band).toArray(C, c);
+    if (on) for (let k = 0; k < this.sides.length; k++) {
+      const S = this.sides[k]; if (S.group !== group) continue;
+      for (const ln of this.lanes) {
+        const span = ln.to - ln.from;
+        for (let j = 0; j < ln.n && m < run.count; j++) {
+          const o = m * 16, c = m * 3; m++;
+          const ahead = ln.from + ((((j + ln.phase) * R.spacing + this.t * R.speed) % span) + span) % span;
+          const band = smooth(R.band[0] - R.ramp, R.band[0], ahead) * (1 - smooth(R.band[1], R.band[1] + R.ramp, ahead));
+          const env = ln.band ? band : smooth(R.from, R.from + 5, ahead) * (1 - smooth(R.to - 8, R.to, ahead));
+          const end = S.loop ? 1 : 1 - smooth(S.len - 8, S.len - 1, s + ahead); // (an open string's run fades out before its end)
+          const shown = this.at(k, s + ahead, _p);
+          const r = shown ? (ln.band ? R.rBand : R.r + (R.rBand - R.r) * band) * env * end : 0;
+          M[o] = M[o + 5] = M[o + 10] = r; M[o + 1] = M[o + 2] = M[o + 4] = M[o + 6] = M[o + 8] = M[o + 9] = 0; M[o + 15] = 1;
+          M[o + 12] = _p.x; M[o + 13] = _p.y; M[o + 14] = _p.z;
+          _c.copy(_t).multiplyScalar(R.k + (R.kBand - R.k) * band).toArray(C, c);
+        }
       }
     }
+    for (; m < run.count; m++) { const o = m * 16; M[o] = M[o + 5] = M[o + 10] = 0; } // (the motes no string took)
     run.instanceMatrix.needsUpdate = true; run.instanceColor.needsUpdate = true;
   }
 
