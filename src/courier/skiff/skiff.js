@@ -54,7 +54,7 @@ import { SkiffCombo, COMBO } from './combo.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
-const qA = new THREE.Quaternion(), qB = new THREE.Quaternion(), qC = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), qFace = new THREE.Quaternion().setFromAxisAngle(UP, -Math.PI / 2);
+const _m4 = new THREE.Matrix4(), _g1 = new THREE.Vector3(), _g2 = new THREE.Vector3(), _g3 = new THREE.Vector3(), qA = new THREE.Quaternion(), qB = new THREE.Quaternion(), qC = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), qFace = new THREE.Quaternion().setFromAxisAngle(UP, -Math.PI / 2);
 const clamp = THREE.MathUtils.clamp, damp = THREE.MathUtils.damp;
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -490,6 +490,7 @@ export class Skiffing extends Tech {
     this.hPrev = this.heading; this.heading = R.heading;
     P.pos.copy(R.pos); this.v.copy(R.vel); P.vel.set(R.vel.x, R.vy, R.vel.z);
     this.roll = damp(this.roll, clamp(R.lean * 0.35, -0.4, 0.4), 12, dt);
+    (this.railUp ||= new THREE.Vector3()).copy(R.up); (this.railFwd ||= new THREE.Vector3()).copy(R.fwd); // (the unit stands on the rail: tick)
     this.speed = this.v.length(); P.grounded = !R.done; P.bodyYaw = this.heading;
     if (R.done) {
       this.air = true; this.airT = 0; this.spin = 0; this.launchT = 9; this.popT = this.grind.why === 'hop' ? 0 : null;
@@ -583,9 +584,13 @@ export class Skiffing extends Tech {
     qA.setFromAxisAngle(UP, hv + sv);
     qB.setFromUnitVectors(UP, this.nS);
     const unitQ = qB.multiply(qA);
+    if (this.grind.on && this.railUp) { // (on a coaster rail: stood on the rail's up, along its tangent, through banks and loops: grind.js)
+      const zf = _g1.copy(this.railFwd), yu = _g2.copy(this.railUp).addScaledVector(zf, -this.railUp.dot(zf)).normalize(), xr = _g3.crossVectors(yu, zf).normalize();
+      unitQ.setFromRotationMatrix(_m4.makeBasis(xr, yu, zf));
+    }
     qC.setFromAxisAngle(Z, rv + Math.sin(this.time * 30) * 0.02 * this.landDip);
     unitQ.multiply(qC);
-    qC.setFromAxisAngle(X, this.air ? -clamp(P.vel.y * 0.035, -0.45, 0.45) : 0);
+    qC.setFromAxisAngle(X, this.air && !this.grind.on ? -clamp(P.vel.y * 0.035, -0.45, 0.45) : 0);
     unitQ.multiply(qC);
     // a grab's tweak (a placeholder for the rider's grab, Calissa's: the board itself pitched nose or tail down, rolled for the double)
     this.tweak = damp(this.tweak || 0, this.grab && this.phase === 'ride' ? 1 : 0, 12, dt);

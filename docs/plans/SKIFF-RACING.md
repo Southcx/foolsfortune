@@ -210,6 +210,77 @@ not falling under the cavern's roof; the cavern's edge strings (`edgeLines(step,
 missed one, the combo's bank and its loss, the cavern's sound (inside a stone gorge), wet sand under the board. Espada: the cavern's name,
 the log's lines. Petra: the hubs touched (`weather.js` ZONE_PLACE), and the medal line again (the cavern and the ramps move it).
 
+## 10. Round four (2026-10-14): the Raceway as a park of tracks
+
+The owner: "quadruple the size of the raceway level ... nest multiple tracks into one map ... THE zone where we're going to test ALL of
+our racing module mechanics. We need water features, spirals, loop-de-loops and rollercoaster-like grind rail sections, an antlion
+sandpit, more sandfalls, CANYONS ... think in layers of complexity." And: the edge lights cut across the main track at the cavern; the
+cavern wants more ceiling clearance and more intrigue; the flares' indicator to the board's back; a balance indicator for the grind.
+
+**Research** (a reference catalogue and 16 pictures, kept out of the repo): Laguna Seca's Corkscrew (a blind crest and an 18 m fall over
+137 m), Spa's Eau Rouge (a dip into a 15 to 17 percent climb), the Nordschleife's Karussell (a banked bowl), Suzuka's figure eight (the
+crossover), Mount Panorama's ridge, Mario Kart's Shy Guy Falls, Dry Dry Desert and Bone-Dry Dunes, Sonic Riders' Sand Ruins, SSX's rail
+lines and forks within 5 percent of each other, Antelope Canyon and Beggar's Canyon, roller coasters (the lift, the first drop,
+camelbacks, the loop, the helix finale), Hot Wheels' and F-Zero's loops. What a height field cannot do (an overhang, a crossover, a loop)
+is done another way below: bridges, decks, coaster rails.
+
+**The park** (`world/raceway/park.js`). 2.6 km across (it was 1.1), at x 6000, its round barrier at 1,270 m. One height function: the
+sand, the park's base shapes (the hub's plaza, the craters), every track's corridor pulled in (a running surface wins over another's berm;
+two at once, their mean), then its cut shapes (the half-pipe, the lakes' beds, the antlion pits). The Index sets you down at THE HUB,
+the middle, among the three tracks' starts. Layers of complexity:
+| layer | track | where | what it tests |
+| --- | --- | --- | --- |
+| 1 | the Sun Circuit (2,855 m, the cavern 368 m) | south-west, turned to face the hub | the carve, the plates, the glide off the lip, the first rails, the cavern line |
+| 2 | the Gorge Run (3,751 m) | south-east | lines and hazards: a blind crest, two cliffs with sandfalls, a slot canyon, a crater's spiral round an antlion pit, a crossover under a bridge, a lake ford, Eau Rouge, a Karussell bowl |
+| 3 | the Coaster (2,428 m, its rail 896 m) | north-east | grinding as a line: a lift to a mesa, then the road down or the coaster rail (a first drop, camelbacks, a banked turn, a loop, a helix round a tower) |
+| free | the antlion's pit, the half-pipe | north-west, by the hub | free riding, the pit's pull, air in the pipe |
+
+**New mechanics, each general (any track can use them).**
+- **Cuts** (a control point's sixth number, `cut`): the walls rise steeply over that many metres to the ground beside the line: a slot
+  canyon. A track can be laid 20 m under the sand and ride between walls.
+- **Bridges** (`features.bridges`; `world/raceway/features.js`): a stretch of the line left out of the height field and built as a stone
+  deck on piers, collided; another line passes under it (the Gorge's climb out of the crater runs under its spiral's first turn:
+  Suzuka's crossover). The board rides the deck through `rideHeight` (the deck under the Courier when they are above it).
+- **Craters and the spiral**: a bowl sunk into the sand (`PARK.craters`); a track's control points can spiral down its wall
+  (`tracks/gorge.js` spiral()), its road a shelf on the cone.
+- **The antlion pits** (`PARK.pits`): cones at the sand's angle of repose (33 degrees: dry sand will not lie steeper, which is the
+  antlion's whole trick); inside the rim the sand flows to the middle and drags the board (9 m/s^2 at the bottom); the maw takes a board
+  that reaches it (a bail, `raceway.pit`), and you are set back on the track. One free in the north-west, one at the crater's floor.
+- **Water** (`PARK.lakes`, a track's `fords`, the cavern's `pools`): a flat sheet the board skims (`rideHeight`); the bed under it.
+- **Banked bowls** (`features.bowls`): a stretch banked steeper than its bend asks (the Karussell: 37 degrees).
+- **Coaster rails** (`world/raceway/coasterrail.js`): grind rails laid in three dimensions from a few points, with a loop and a helix
+  spliced in. Each point carries the rail's up (banked into turns, toward a loop's middle) and a push (a Lachryma conduit drives a loop,
+  16 m/s^2). The grind (`courier/skiff/grind.js`) now runs gravity along the rail's tangent in three dimensions, stands the board on
+  the rail's up, holds the balance through a loop, takes a banked turn's pull off the balance (g tan(bank): a banked curve rides
+  itself, as on a coaster), lets a coaster rail's drift never grow (it is ridden for its curves), and leaves a rail's end with its
+  climb (a kicker). It locks only where the rail is upright. Measured: the Coaster's rail ridden end to end, 895 m, through the loop
+  upside down and the helix, off at the end with no bail, 53 m/s at the fastest.
+- **Multi-track races**: F at any track's start pillar races that track; each keeps its own ghost; the ledger keeps each track's best
+  (`race.track.<id>.best`); medals stay the Sun Circuit's until the others are measured.
+- **The cavern, again**: its floor 6 to 8 m lower and wider (its walls 22 to 32 m), the roof only where the walls stand 11 m, the
+  stalactites 10 m clear; inside it now a pool under the roof with a kicker to jump it, four crystal pillars to weave (collided), and a
+  sandfall pouring through a skylight. The edge strings' points that lie on the other line's running surface are marked `hide` (the
+  fork and the merge): Calissa's strings break there.
+
+**The tools** (the owner asked whether better diagnostics would help: yes, and they are built).
+- `node scripts/raceway/map.mjs out.png [--px m] [--at x,z --size m] [--trace t.json]`: the park from above as a PNG, from the same height
+  function, in about 2 real seconds with no browser: hill-shaded sand tinted by height, the water, every line, branch, gate, start,
+  plate, rail (the coaster rail magenta, darker upside down), sandfall, pit, pipe; a drive's trace over it, coloured by speed, with its
+  bails.
+- `node scripts/raceway/drive.mjs --track sun|gorge|coaster [--laps n] [--cave] [--rail <id>] [--trace t.json]`: the game headless, an
+  autopilot racing the track (or dropped onto a coaster rail and riding it out), and a report: laps, gates, bails and why, grinds and
+  how they ended, the pits, the combo, top speed.
+Measured this round (autopilot, a fair day): the Sun Circuit 114.4 s, through the cavern 109.7 s; the Gorge Run 152.2 s; the Coaster
+102.8 s on the road; the Coaster's rail 895 m. No bails on any lap. Building the park takes about 5 real seconds on arrival, headless
+(the field is 1.1 million samples).
+
+**For the other divisions.** Calissa: the flares' indicator to the board's back (the owner: the front is hidden by the skiff); a balance
+mark for the grind (`techs.get('skiff').grind.lean`, -1..1, past 1 you fall; `grind.on`); the edge strings for every track
+(`edgeLines(step, line, trackId)`) honouring `hide`; the gates' marks and lamps for the Gorge and the Coaster; looks for the water, the
+bridge decks, the antlion's maw, the coaster rail and its helix tower, the cavern's pillars and pool. Petra: the shader cap to 200 (the
+owner's word); the zone map's bounds; the 5 s build on arrival. Wanda: the coaster rail (the loop, the helix), skimming water, the
+antlion. Espada: names (the hub, the Gorge Run, the Break, the Step, the Mirror, the Coaster, the Station, the antlion).
+
 ## 6. Who does what
 
 - **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the
