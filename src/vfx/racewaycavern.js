@@ -86,7 +86,7 @@ function painted(geo, paint) {
 }
 
 /** The spire of the Dunes' crystals (world/dunes/crystals.js: a six-sided prism 0.8 m with a 0.35 m point, 1 m tall, on its base). */
-function spireGeometry() {
+export function spireGeometry() { // (shared: the vein lanes' crystals, vfx/racewayprops.js)
   const A = new THREE.CylinderGeometry(0.5, 0.5, 0.8, 6, 1).translate(0, 0.4, 0).toNonIndexed(), B = new THREE.ConeGeometry(0.5, 0.35, 6).translate(0, 0.975, 0).toNonIndexed();
   const out = new THREE.BufferGeometry();
   for (const k of ['position', 'normal']) { const x = A.attributes[k].array, y = B.attributes[k].array, z = new Float32Array(x.length + y.length); z.set(x); z.set(y, x.length); out.setAttribute(k, new THREE.BufferAttribute(z, 3)); }
@@ -95,7 +95,7 @@ function spireGeometry() {
 }
 
 let PULSE = null; // (the veins' glow: a bright core leaded dark at its sides, a pulse along the core; one for the game)
-function pulseTexture() {
+export function pulseTexture() { // (shared: the vein lanes' glow, vfx/racewayprops.js)
   if (PULSE) return PULSE;
   const c = document.createElement('canvas'); c.width = 64; c.height = 128;
   const g = c.getContext('2d'), img = g.createImageData(64, 128);

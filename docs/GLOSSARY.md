@@ -520,6 +520,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the park's dress** (`RacewayPark`, `game.racewayPark`, `src/vfx/racewaypark.js`) — the Raceway park's water (the pond's and the Well's own
   liquids), bridge decks, coaster rail (a lajvardina-glazed lintel) and its helix tower, and the antlion's maw, dressed over Dovina's
   placeholders. *Not:* the park (Dovina's ground and tracks, `world/raceway/park.js`), the cavern's look.
+- **the Raceway's props** (`RacewayProps`, `game.racewayProps`, `src/vfx/racewayprops.js`) — Dovina's round six placeholders dressed: the vein
+  lanes as Lachrymite in the sand (a pulsing glow, spires at the edges, a fretted stave at each end), the pot smash's pots as the workshop's
+  pottery, the antlion chaser as the pits' maw ploughing up the road, the City Trial's patches as gems shaped by kind. *Not:* the modes (Dovina's).
 - **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
   laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
