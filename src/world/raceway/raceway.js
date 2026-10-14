@@ -36,9 +36,11 @@ import { buildCavern } from './cavern.js';
 import { buildKit, buildMarks, GEYSER } from './kit.js';
 import { buildDecks, deckAt, buildWater, buildPits, stepPits } from './features.js';
 import { conditionAt } from './conditions.js';
+import { fieldOf, fieldJob } from './parkfield.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
+const PREFETCH_AFTER = 12; // (real seconds after the Raceway is made (at boot) before its field is worked out in a worker)
 const KEEP = 12; // (metres nearer another track's line must be before the Courier is counted on it: no flicker where two run close)
 
 export class Raceway {
@@ -53,6 +55,7 @@ export class Raceway {
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
     this.startPillar = this.local(F.x + F.fz * (F.w + 7), F.z - F.fx * (F.w + 7)); // (the Sun Circuit's: left of its line, beyond the berm)
+    if (typeof setTimeout !== 'undefined') setTimeout(() => this.prefetch(), PREFETCH_AFTER * 1000); // (the field worked out in idle time once the boot has settled)
   }
   get center() { return new THREE.Vector3(RW.x, RW.y, RW.z); }
   /** A local point (metres from the Raceway's middle) on the ground, in the world. */
@@ -87,20 +90,35 @@ export class Raceway {
   // ------------------------------------------------------------------ built the first time it is entered
   build() {
     if (this.built) return; this.built = true;
-    const g = this.game, P = this.P;
+    const g = this.game, P = this.P, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
+    let t = performance.now();
+    // the field: the park's heights on the terrain's grid, worked out in idle time after boot (prefetch: parkfield.js), or here
+    const field = this.field || fieldOf(P); this.field = field; t = lap(this.fieldFrom ? 'field (ready, worked out in idle time)' : 'field', t);
+    const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
     // the ground: the Dunes' own sand material on a field of this place's heights, and its height field to stand on
     const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
-    const TR = (this.chunks = new ChunkTerrain({ height: (x, z) => P.heightAt(x, z), half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
+    const TR = (this.chunks = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
     this.grid = { n: TR.n, heights: TR.heights };
     const mesh = (this.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
+    t = lap('terrain', t);
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), body);
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
-    this.rails = buildRails(this); this.rings = buildRings(this); // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
-    buildKit(this); buildMarks(this); // (every track's furniture: kit.js)
-    this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); // (the bridges, the water, the antlion pits: features.js)
-    this.cavern = buildCavern(this); // (its roof, stalactites and crystals: world/raceway/cavern.js)
-    g.racewayLooks?.dress(this); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+    t = lap('collider', t);
+    this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
+    buildKit(this); buildMarks(this); t = lap('kit', t); // (every track's furniture: kit.js)
+    this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
+    this.cavern = buildCavern(this); t = lap('cavern', t); // (its roof, stalactites and crystals: world/raceway/cavern.js)
+    g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+  }
+  /** Work the field out in the idle time between frames, once the game has booted (it is the same function: parkfield.js), so the first
+   *  trip here finds it ready (Petra's v198 measure: 4.5 s inside the travel). A few rows a slice, never past the frame's idle time. */
+  prefetch() {
+    if (this.field || this.fieldJob) return;
+    const job = (this.fieldJob = fieldJob(this.P));
+    const idle = typeof requestIdleCallback === 'function' ? (f) => requestIdleCallback(f, { timeout: 1000 }) : (f) => setTimeout(() => f({ timeRemaining: () => 4 }), 50);
+    const slice = (dl) => { if (this.field) return; if (job.step(() => dl.timeRemaining() > 1)) { this.field = job.field; this.fieldFrom = 'idle'; } else idle(slice); };
+    idle(slice);
   }
 
   /** A track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
