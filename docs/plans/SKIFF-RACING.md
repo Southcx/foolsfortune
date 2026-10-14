@@ -281,6 +281,28 @@ bridge decks, the antlion's maw, the coaster rail and its helix tower, the caver
 owner's word); the zone map's bounds; the 5 s build on arrival. Wanda: the coaster rail (the loop, the helix), skimming water, the
 antlion. Espada: names (the hub, the Gorge Run, the Break, the Step, the Mirror, the Coaster, the Station, the antlion).
 
+## 11. Round five (2026-10-14): the owner's notes on v198
+
+| the owner's note | what was done | whose |
+| --- | --- | --- |
+| banked flares need their own key, C | C spends a banked flare (free); Shift spends the pool | Dovina |
+| A and D feel reversed on the rail | the balance answers the other way: lean right, press A (Tony Hawk's) | Dovina |
+| grind tricks by double-clicking LMB / RMB | a double click on a rail: nose grind (LMB) or tail slide (RMB); 120 points, a new kind for the multiplier, the grind's metres worth half again, the balance 1.4 times livelier; the board tweaked (`skiff.grind.trick`) | Dovina (the pose: Calissa) |
+| boosting in midair gives no course correction | Q / E steer the flight in the air (0.45 rad/s, 1.3 while flaring) | Dovina |
+| carve sparks 20% sooner, for snaking | the carve's tiers at 0.48, 1.04, 1.76 real s (were 0.6, 1.3, 2.2) | Dovina |
+| edge markers jagged in the canyons | between walls (a cut, a berm over 3 m, the cavern) the edge lines sit 1 m inside the floor's edge | Dovina |
+| no way to quick retire | R held 1.2 real s retires; /retire | Dovina |
+| racetrack selection | a race board at the hub (F: the tracks, your bests, click to race); /race sun / gorge / coaster [solo] | Dovina |
+| clapperjars on mini skiffs as rivals, rubber banding | three rivals (`world/raceway/rivals.js`): a lane and a skill each, braking for the bend they see (v = sqrt(grip / curvature)), gliding off drops, one taking the cavern; rubber banding (a leader eases to 0.8, a trailer is pushed to 1.18); your place each lap and at the finish | Dovina (their look and riding: Calissa) |
+| Flatout / Burnout bumping | touching pushes both apart by the closing speed; a side hit over 7 m/s is a TAKEDOWN: the rival spins out 2.4 s, you get a push and a third of a banked flare (Burnout 3's) | Dovina |
+| no wake or trail over water, nor entering the Lachryma pool | `skiff.water { on }` when the board starts and stops skimming (and `skiff.onWater`) | Calissa (the splash, the wake), Wanda (the sound) |
+| the water's glare too strong at a low angle | | Calissa |
+| the boost's sound plays on in the pause menu; soften it | | Wanda |
+| what are the diamonds on the board? | the combo's multiplier: one lit for each kind of trick in the chain (each adds x0.5) | (answered) |
+
+Measured: the Sun Circuit with three rivals, autopilot, three laps: no errors, 24 gates, the rivals 304.9, 314.9 and 326.1 s against the
+autopilot's 338.1 s (which never carves or flares), before the band was tightened.
+
 ## 6. Who does what
 
 - **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the

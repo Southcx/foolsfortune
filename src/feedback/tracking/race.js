@@ -16,6 +16,7 @@
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const signed = (s) => `${s >= 0 ? '+' : '−'}${Math.abs(s).toFixed(2)}`;
 const MEDAL = { gold: 'gold', silver: 'silver', bronze: 'bronze' };
+const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const TRACK_NAMES = { sun: 'The Sun Circuit', gorge: 'The Gorge Run', coaster: 'The Coaster' }; // (working names: Espada's to rule)
 // what a condition does, said at a race's start (placeholders for Espada's words)
 const LIGHT_SAYS = { night: 'Night: the sun plates are dark, and the cavern\'s crystal veins still burn.', twilight: 'A low sun: the sun plates are weak.' };
@@ -38,16 +39,20 @@ export function raceRules({ on, L, log }) {
   on('race.gate', (e) => { L.inc('race.raceway.gate'); if (e.gate === 4 && e.split != null) log.say('skiff', `Half a lap: ${signed(e.split)} on your best.`, { key: 'race.split', throttle: 1 }); });
   on('race.lap', (e) => {
     L.inc('race.raceway.lap'); L.lo('race.raceway.lap.best', e.seconds);
-    log.say('skiff', `Lap ${e.lap}: ${clock(e.seconds)}${e.best ? ', your best lap.' : '.'}`, { key: `race.lap.${e.lap}`, throttle: 1 });
+    log.say('skiff', `Lap ${e.lap}: ${clock(e.seconds)}${e.best ? ', your best lap' : ''}${e.place ? `; ${ORD(e.place)} of ${e.of}` : ''}.`, { key: `race.lap.${e.lap}`, throttle: 1 });
   });
   on('race.finish', (e) => {
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
     if (e.medal) L.inc(`race.raceway.${e.medal}`);
     if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); }
     if (e.condition) { L.inc(`race.raceway.finish.${e.condition.split('.')[0]}`); const b = L.lo(`race.raceway.best.${e.condition}`, e.seconds); if (b && b !== 'new') log.say('record', 'Your best under this sky.', { key: 'race.condbest', throttle: 2 }); }
-    log.say('record', `Finished in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
+    if (e.of > 1) { L.inc(`race.raceway.place${Math.min(e.place, 4)}`); if (e.place === 1) L.inc('race.raceway.win'); }
+    log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
-  on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); });
+  on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });
+  on('race.takedown', (e) => { if (e.by !== 'courier') return; L.inc('race.takedown'); log.say('skiff', 'Takedown: the rival spins out, and the push is yours.', { key: 'race.takedown', throttle: 2 }); });
+  on('race.bump', (e) => { if (e.by === 'courier') L.inc('race.bump'); });
+  on('skiff.grind.trick', (e) => { if (e.by !== 'courier') return; L.inc('skiff.grind.trick'); L.inc(`skiff.grind.trick.${e.trick}`); });
   on('race.respawn', () => L.inc('race.raceway.respawn'));
   // the skiff's racing verbs
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });
