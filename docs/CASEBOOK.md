@@ -668,9 +668,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 229. **What lets a body go does not take it again at once.** A lock that is tested every frame (a grind, a grab, a
     ledge) and releases at the place it would lock is retaken the next frame, forever: the place just left is barred for a beat, and a
     lock never takes a point past its own ends.
-NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
+230. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
     it (the roll it draws, the mark it shows, the push it gives) takes its sign from one named vector, never a re-derived perpendicular.
-NEW:service-made-later. **A module that asks a service at construction asks it again once that service exists.** Boot order is not a
+231. **A module that asks a service at construction asks it again once that service exists.** Boot order is not a
     contract: a `game.chat?.add` (or any `game.x?.`) in a constructor that runs before `game.x` is made silently does nothing. Register on
     first use (a lazy `commands()` from `update`), or construct after the service, and check the command exists headless.
 ## Cases
@@ -3717,7 +3717,7 @@ NEW:service-made-later. **A module that asks a service at construction asks it a
 - **Cause:** the fall's offset took the perpendicular (-vz, 0, vx), which is the board's right (as skiff.js's), and multiplied it by
   minus the lean's sign: the roll and the fall read the same sign through two different vectors, one negated.
 - **Fix:** the fall moves along the right by the lean's own sign (`courier/skiff/grind.js`).
-- **Rule:** NEW:sign-one-frame.
+- **Rule:** 230.
 
 ### 2026-10-14 · /race and /retire did nothing (Dovina, building the race modes)
 - **Seen:** the chat line's `/race` and `/retire`, added in round five, answered as unknown commands.
@@ -3726,4 +3726,4 @@ NEW:service-made-later. **A module that asks a service at construction asks it a
   undefined in the Race's constructor, and the two commands were missing from the chat line's list.
 - **Fix:** the commands are added by `commands()`, called from the Race's first `update` once `game.chat` exists
   (`world/raceway/race.js`). The skiff's own settings are made after the chat line (`main.js`).
-- **Rule:** NEW:service-made-later.
+- **Rule:** 231.

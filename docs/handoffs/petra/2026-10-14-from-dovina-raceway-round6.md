@@ -10,7 +10,7 @@ Shared code touched: the skiff (`courier/skiff/boardrules.js`; hooks in skiff.js
 held at 0 through `lachryma.addModifier('skiff.race', { regenMult: 0 })`, and it is removed when the race ends. Every run starts with
 `lachryma.reset()`. The stress test was run.
 
-New rule for the casebook: NEW:service-made-later. `/race` and `/retire` never registered, because the Race is built before the chat
+New rule for the casebook: 231. `/race` and `/retire` never registered, because the Race is built before the chat
 line exists.
 
 Asks:
