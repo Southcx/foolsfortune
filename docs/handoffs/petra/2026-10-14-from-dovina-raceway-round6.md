@@ -6,9 +6,8 @@ Hub edits:
 - The Raceway's achievements moved from `progress/achievements.js` (now 742 lines) to `progress/raceachievements.js`, called inside
   `buildAchievements`.
 
-Shared code touched: the skiff (`courier/skiff/boardrules.js`; hooks in skiff.js and grind.js). While a race runs, the pool's regen is
-held at 0 through `lachryma.addModifier('skiff.race', { regenMult: 0 })`, and it is removed when the race ends. Every run starts with
-`lachryma.reset()`. The stress test was run.
+Shared code touched: the skiff (`courier/skiff/boardrules.js`; hooks in skiff.js and grind.js). The board drains and refills the
+Courier's own pool and never touches its regen (the owner: "the literal same pool"). The stress test was run.
 
 New rule for the casebook: NEW:service-made-later. `/race` and `/retire` never registered, because the Race is built before the chat
 line exists.

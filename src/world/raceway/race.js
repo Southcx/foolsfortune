@@ -109,7 +109,6 @@ export class Race {
     this.lap = 1; this.next = plan.gate ?? 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0; this.pushed = false; this.flyAt = plan.flyAt ?? T.line;
     const C = (this.condition = conditionAt(g));
     this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
-    g.lachryma?.reset?.(); // (every run starts with the pool full: it is the hull, and in a race it refills only on a vein lane)
     this.rewind.clear(); ruleset?.begin?.(this, plan);
     if (M.flyover && !opts.again) this.flyover.begin(T, R);
     g.events?.emit('race.start', { track: T.id, mode: modeId, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, cup: !!opts.cup, city: !!opts.city, by: 'courier' });
@@ -210,8 +209,7 @@ export class Race {
   }
   /** The run's own things put away (the rivals, the ruleset's props, the rewind): the race no longer running. */
   stopRun() {
-    if (this.skiff) { this.skiff.hold = false; if (this.skiff.rules) this.skiff.rules.held = false; }
-    this.game.lachryma?.removeModifier?.('skiff.race'); // (the pool's own regen back, even if the race ended off the board: boardrules.js holds it while racing)
+    if (this.skiff) this.skiff.hold = false;
     this.flyover.stop(); this.rewind.clear(); this.ruleset?.stop?.(this);
     this.rivals.stop(); this.running = false; this.state = 'idle';
   }

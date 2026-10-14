@@ -311,8 +311,8 @@ The owner took the whole list from the last round's answer. What each is, where 
 
 | rule | what it does | numbers | taken from |
 | --- | --- | --- | --- |
-| the pool is the hull | a bump drains 0.9 a m/s of closing speed, a wall 1.4 a m/s lost past 4, a hard landing 0.6 a m/s past the hard line, a bail 12; with the pool empty (under 0.5), a hit of 3 or more WRECKS the board. In a race the pool does not refill by itself, and every run starts full | `HULL` | F-Zero's energy (health and boost one bar); the owner: "so resonant with the ARPG portion" |
-| a vein lane | a strip of Lachrymite beside the line, refilling the pool 40 a real second while ridden; off the line's best, so a pit is a choice | `lanes` on each track; `HULL.refill` | F-Zero's pit strip |
+| the pool is the hull | the Courier's own pool, its regen untouched (the owner, 2026-10-14: "the literal same pool"; round 6 first held its regen in a race and filled it at each start: both undone). A bump drains 0.9 a m/s of closing speed, a wall 1.4 a m/s lost past 4, a hard landing 0.6 a m/s past the hard line, a bail 12; with the pool empty (under 0.5), a hit of 3 or more WRECKS the board | `HULL` | F-Zero's energy (health and boost one bar); the owner: "so resonant with the ARPG portion" |
+| a vein lane | a strip of Lachrymite beside the line, refilling the pool 40 a real second while ridden (ten times its regen, and with no wait after a spend); off the line's best, so a pit is a choice | `lanes` on each track; `HULL.refill` | F-Zero's pit strip |
 | the scorch | a flare held builds heat 0.4 a real second (cools 0.5); full, the sail luffs 2 real s at 0.6 of its pace | `SCORCH` | Excitebike's overheat |
 | the manual | W and S together on the sand with a combo live: balanced on the tail, A / D answering a drift that grows; the link held while it lasts, 30 points a real second; a fall banks the combo | `MANUAL` | Tony Hawk's Pro Skater 2 |
 | snaking | a carve begun the other way within 1.2 real s of letting one go loads 25% faster, up to twice | `SNAKE` | Mario Kart Wii |
@@ -336,7 +336,7 @@ door: rw22). Chosen at the race board's GARAGE tab. The balance's answer can be 
 | practice | laps until you retire; Backspace held rewinds (20 frames a real second, 30 real s kept); nothing recorded | |
 | pot smash | one lap, 30 pots on the line at the track's own seed; each smashed takes a real second off | `pottrial.js` |
 | escape | the Gorge Run's crater: from gate 4, round the spiral and up the climb out, the antlion behind you (from 120 m back, 16 m/s gaining 0.28 a real second to 30); caught within 3 m, wrecked | `escape.js` |
-| licence | a stretch, a rule, a medal (gold, silver, bronze at 27, 24, 20 m/s over the stretch); seven tests: Carve (no flare), Snake (three snaking carves), Grind (40 m of grind), Hull (the pool over 60%), Pit lane (from a quarter to 75%), Big air (a spin landed square), Clean lap (no bump, wall or bail) | `licences.js` |
+| licence | a stretch, a rule, a medal (gold, silver, bronze at 27, 24, 20 m/s over the stretch); seven tests: Carve (no flare), Snake (three snaking carves), Grind (40 m of grind), Hull (the pool over 60%), Pit lane (from a quarter, ride the lane, end over 75%), Big air (a spin landed square), Clean lap (no bump, wall or bail) | `licences.js` |
 
 Above the modes: **the cups** (`cups.js`: three races, 10/6/4/2 points by place; the Clay Cup against the clapperjars, the Sibling Cup
 against the siblings), **the City Trial** (`citytrial.js`: 150 real s to roam the park taking 48 patches (top, acceleration, grip, the pool,

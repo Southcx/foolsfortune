@@ -426,8 +426,9 @@ it are real: the antlion's pit stands at the sand's angle of repose; a banked tu
 is the price of its fall. The tools that let the design be seen headless (a map from above, an autopilot with a trace) are part of it.
 
 Round six (SKIFF-RACING.md 12) gave the board stakes and the park its modes. The keystone is F-Zero's: the pool is the hull. A bump, a
-wall, a hard landing and a bail each drain it, the flare spends it, and in a race it refills only on a vein lane beside the line, so a
-lap is a budget of Lachryma spent on speed or kept as health, the same choice the ARPG asks of the shield (the owner's "chef's kiss").
+wall, a hard landing and a bail each drain it, the flare spends it; it is the Courier's own pool with its own regen, untouched (the owner: "the
+literal same pool": the elegance is that every module draws from the one substrate; a mode never gives the pool rules of its own), and a vein lane beside the line refills it ten times faster, so a lap is a budget of Lachryma spent on speed or
+kept as health, the same choice the ARPG asks of the shield (the owner's "chef's kiss").
 Around it, each skill verb from the genre that made it: Excitebike's overheat (the scorch), Tony Hawk's manual and gaps, Mario Kart Wii's
 snaking, F-Zero GX's side attack, Burnout's near misses and aftertouch, Wave Race 64's buoys (power raised by keeping the line, lost by
 missing one). The rivals got minds of their own (a blocker, a rail hog, a gambler, a clean racer) and a grudge (the nemesis), and the

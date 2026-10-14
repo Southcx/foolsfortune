@@ -15,7 +15,7 @@ const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m
 const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster' }; // (working names: Espada's)
 const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const CUP_NAMES = { clay: 'the Clay Cup', sibling: 'the Sibling Cup' };
-const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
+const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the vein lane.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
 const STADIUM = { race: 'a race against the rivals', hotlap: 'a hot lap', pots: 'a pot smash', escape: 'the escape' };
 
 export function raceModeRules({ on, L, log }) {

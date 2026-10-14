@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------------------
 // THE BOARD'S RULES (docs/plans/SKIFF-RACING.md section 12; the owner, 2026-10-14: "build everything"): what the Solar Skiff answers to
 // beside its sailing (skiff.js keeps the sailing; this keeps the stakes), at the Raceway.
-//   - THE POOL IS THE HULL (F-Zero's energy, and the ARPG's shield: the owner's "chef's kiss"): a bump, a wall, a hard landing and a bail
-//     each drain the pool; Shift's flare drains it as ever; with the pool empty the next real hit WRECKS the board. While a race runs the
-//     pool does not refill by itself: the vein lanes refill it (a long strip of Lachrymite beside the line: F-Zero's pit, chosen, slower
-//     than the line). Events: skiff.hull { kind, damage, left }, skiff.wreck { kind }, skiff.refill { fresh, share } (every 0.2 real s on a lane).
+//   - THE POOL IS THE HULL (F-Zero's energy, and the ARPG's shield: the owner's "chef's kiss"): the Courier's own pool, the very same one,
+//     with its own regen untouched (the owner, 2026-10-14: "the literal same pool"). A bump, a wall, a hard landing and a bail each drain
+//     it; Shift's flare drains it as ever; with the pool empty the next real hit WRECKS the board. The vein lanes refill it faster than
+//     its regen (a long strip of Lachrymite beside the line: F-Zero's pit, chosen, off the line's best). Events: skiff.hull { kind, damage, left }, skiff.wreck { kind }, skiff.refill { fresh, share } (every 0.2 real s on a lane).
 //   - THE SCORCH (Excitebike's overheat): a flare held too long scorches the sail; full, the sail luffs for a beat (no flare, slower).
 //     Events: skiff.scorch.
 //   - THE MANUAL (Tony Hawk's): W and S held together on the sand with a combo live balances the board on its tail: the combo's link
@@ -47,17 +47,15 @@ export const NEAR = { r: 1.3, speed: 18, points: 40, again: 2 };
 const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3();
 
 export class BoardRules {
-  constructor(S) { this.S = S; this.scorch = 0; this.luffT = 0; this.manualOn = false; this.mLean = 0; this.mT = 0; this.snake = 0; this.last = { dir: 0, t: -9 }; this.taps = {}; this.shoulderT = 0; this.near = new Map(); this.held = false; }
+  constructor(S) { this.S = S; this.scorch = 0; this.luffT = 0; this.manualOn = false; this.mLean = 0; this.mT = 0; this.snake = 0; this.last = { dir: 0, t: -9 }; this.taps = {}; this.shoulderT = 0; this.near = new Map(); }
   get game() { return this.S.game; }
   get here() { return !!this.game.raceway?.active; }
   get racing() { return !!this.game.race?.running && this.here; }
   /** The garage's multiplier for one of the board's numbers. */
   mult(key) { const g = this.game; return (g.skiffParts?.mult(key) ?? 1) * (g.cityTrial?.mult(key) ?? 1) * (this.here ? g.raceway.buoys?.mult(key) ?? 1 : 1); } // (the parts, the City Trial's patches, the buoys' power)
 
-  /** Each ride step: the pool held from refilling itself while a race runs (the vein lanes refill it). */
+  /** Each ride step: the cooldowns run down. (The pool keeps its own regen, race or not: the owner, 2026-10-14.) */
   step(dt) {
-    const L = this.game.lachryma; if (!L) return;
-    if (this.racing !== this.held) { this.held = this.racing; if (this.held) L.addModifier('skiff.race', { regenMult: 0 }); else L.removeModifier('skiff.race'); }
     this.shoulderT = Math.max(0, this.shoulderT - dt);
     for (const [k, t] of this.near) if ((t - dt) <= 0) this.near.delete(k); else this.near.set(k, t - dt);
   }
