@@ -506,6 +506,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the rivals' look** (`RacewayRivals`, `src/vfx/racewayrivals.js`) — the race's three rivals dressed: a mini Solar Skiff, its sail in
   the rival's glaze, a clapperjar riding it that leans into bends, claps as it passes you and tumbles when taken down. *Not:* the rivals
   (Dovina's racers, `world/raceway/rivals.js`).
+- **the sibling riders** (`RacewaySiblingRiders`, `src/vfx/racewaysiblingriders.js`) — the Sibling roster's rivals in their own rigs on the
+  Solar Skiff, riding the Courier's rider clips, their boards in their divisions' glazes. *Not:* the party's siblings, the rivals' look.
+- **a hull glaze** (`glazeHull`, `src/vfx/hullglaze.js`; Dovina's `skiffGlaze`) — a glaze fired on the Solar Skiff's hull at the kiln (its
+  HULL tab), at a firing's price, tinting the hull's painting. *Not:* a glaze on the vessel, a room glaze.
 - **the edge strings** (`RacewayEdgeStrings`, `src/vfx/racewayedgestrings.js`) — beads of light on a thread along both edges of the Raceway's
   running surface, a bright run flowing the race's way just ahead of the board. *Not:* the sun plates' chevrons, the wire compass.
 - **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in Lachryma's colour: the link
@@ -643,7 +647,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
-| glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
+| glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware); a hull glaze (the Solar Skiff's, `glazeHull`) | "a glaze" is the Courier's; "a room glaze", "a hull glaze" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words

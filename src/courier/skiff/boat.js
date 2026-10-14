@@ -38,6 +38,7 @@ import { BoatPose } from './boatpose.js';
 import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
 import { featTint } from '../../vfx/oxidation.js';
 import { LACHRYMA_TINT } from '../../vfx/racewayeffects.js';
+import { glazeHull } from '../../vfx/hullglaze.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
 // rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
@@ -126,6 +127,7 @@ export class Skiff {
       .then(({ default: b64 }) => new GLTFLoader().parseAsync(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, ''))
       .then(async (gltf) => {
         this.build(gltf);
+        this.hullGlaze(game); // (the glaze fired on the hull at the kiln: hullGlaze below)
         // (its programs built off the main thread before its first frame, as the warm-up builds the rest, and for the buffer the frame is
         // drawn into, as it does: nothing compiles in play. compileAsync compiles at the call and only waits after, so the target is put back
         // at once. An empty frame first, as main.js's warm-up does: compile reads the clipping state the last render left, and the trail
@@ -194,6 +196,15 @@ export class Skiff {
     this.body = new THREE.Group(); this.body.name = 'SolarSkiffBody'; // (the stakes' tilt and a wreck's hiding are the body's: the model is never moved)
     this.body.add(model); this.group.add(this.body);
     this.P.write(this.P.rest);
+  }
+
+  // ------------------------------------------------------------------ the hull's glaze (Calissa's: fired at the kiln, vfx/hullglaze.js)
+  /** The hull in the glaze fired on it (Dovina's `game.skiffParts.glaze()`; none until it is there), and again whenever one is fired. */
+  hullGlaze(game) {
+    this.model?.traverse((o) => { if (!this.hullMat && o.isMesh && !o.userData.isOutline && o.material?.name === 'Skiff_Hull') this.hullMat = o.material; });
+    const apply = (id) => glazeHull(this.hullMat, id ? (game?.vessel?.glaze?.(id) ?? id) : null);
+    apply(game?.skiffParts?.glaze?.() ?? null);
+    if (!this.hullGlazeOn) { this.hullGlazeOn = true; game?.events?.on?.('skiff.glaze', (e) => apply(e?.glaze ?? null)); }
   }
 
   // ------------------------------------------------------------------ the sheet (a rope to the rider's hands)
