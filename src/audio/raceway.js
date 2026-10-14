@@ -7,6 +7,11 @@
 //   PLATE   skiff.plate: a sun plate run over: a gold ping (E and B) and a boost's rush;   POP  skiff.pop: a spring off the lip
 //   GATE    race.gate { split }: a chime; ahead of your best lap a fourth up, behind it a step down, no best yet the root
 //   LAP     race.lap { best }: two notes at the line, and a run up the triad when it is a new best (best: true)
+//   GRIND   skiff.grind: the board locked on a rail, a held scrape (metal on metal: noise through a ringing band, a hum under it, a
+//           spark now and then) until skiff.grind.end { metres, why }: let go clean ('hop', 'end') with a ring of the rail as long as the grind,
+//           or dropped off ('fell', 'stall') in a stutter
+//   RING    skiff.ring { ring }: a sun ring flown through, each one a step higher up E's pentatonic (a run of rings plays a scale)
+//   BACK    race.back: R, set back at the last gate: the run rewound (a reversed swell and a click into place)
 //   LAND    skiff.landhard: the hull slapping the sand, a thud and grit;   FINISH  race.finish { medal }: a bell a step of the medal
 // Prior art: Mario Kart's countdown (three low beeps, one high: the most learned countdown there is) and its rocket start; SSX's and
 // Wave Race's boost whooshes; Trackmania's checkpoint chime that says ahead or behind before you read the split.
@@ -68,6 +73,37 @@ export class RacewaySounds {
     if (!this.ok() || !this.allow('skiffLandHard', 4)) return;
     const t = this.ctx.currentTime, d = this.out(0.5, 0.2);
     this.tone(t, 0.2, { f0: 110, f1: 55, gain: 0.5, dest: d }); this.noise(t, 0.25, { f0: 1800, f1: 300, gain: 0.45, dest: d });
+  }
+  skiffGrind() {
+    if (!this.ok()) return;
+    this.skiffGrindEnd(null);
+    const c = this.ctx, t = c.currentTime, g = c.createGain(), d = this.out(0.5, 0.25);
+    g.gain.value = 0.0001; g.gain.setTargetAtTime(1, t, 0.03); g.connect(d);
+    const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true; const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 6;
+    const ng = c.createGain(); ng.gain.value = 0.22; s.connect(bp).connect(ng).connect(g); s.start();
+    const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 82; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400; const og = c.createGain(); og.gain.value = 0.05;
+    o.connect(lp).connect(og).connect(g); o.start();
+    const G = this._grind = { g, s, o, bp, t0: t, timer: setInterval(() => { if (this.ok() && Math.random() < 0.6) this.noise(c.currentTime, 0.015, { type: 'highpass', f0: 5000, gain: 0.25, dest: g }); bp.frequency.setTargetAtTime(2000 + Math.random() * 900, c.currentTime, 0.05); }, 90) };
+    G.cap = setTimeout(() => this.skiffGrindEnd('end'), 20000); // (never left running if its end is lost)
+  }
+  skiffGrindEnd(why = 'end', metres = 0) {
+    const G = this._grind; if (!G) return; this._grind = null; clearInterval(G.timer); clearTimeout(G.cap);
+    const c = this.ctx, t = c.currentTime; G.g.gain.cancelScheduledValues(t); G.g.gain.setTargetAtTime(0.0001, t, why === 'fell' || why === 'stall' ? 0.02 : 0.06);
+    setTimeout(() => { try { G.s.stop(); G.o.stop(); } catch { /* gone */ } G.g.disconnect(); }, 600);
+    if (!why || !this.ok()) return;
+    const d = this.out(0.35, 0.4);
+    if (why === 'fell' || why === 'stall') for (let i = 0; i < 3; i++) this.noise(t + i * 0.05, 0.03, { type: 'bandpass', f0: 1800 - i * 400, q: 3, gain: 0.3, dest: d });
+    else { const ring = Math.min(1.6, 0.4 + (metres || 0) / 40); [1, 2.71].forEach((r, i) => this.tone(t, ring / (1 + i), { f0: hz(76) * r, gain: i ? 0.03 : 0.08, dest: d })); }
+  }
+  skiffRing(ring = 0) {
+    if (!this.ok() || !this.allow('skiffRing', 8)) return;
+    const P = [0, 2, 4, 7, 9], k = Math.max(0, ring | 0), m = 76 + P[k % 5] + 12 * Math.floor(k / 5) % 24, t = this.ctx.currentTime, d = this.out(0.3, 0.5, true);
+    this.tone(t, 0.6, { f0: hz(m), gain: 0.12, dest: d }); this.tone(t, 0.4, { f0: hz(m + 12), gain: 0.04, dest: d }); this.noise(t, 0.3, { type: 'highpass', f0: 6000, gain: 0.08, dest: d });
+  }
+  raceBack() {
+    if (!this.ok() || !this.allow('raceBack', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.3);
+    this.noise(t, 0.45, { type: 'bandpass', f0: 3000, f1: 400, q: 1, gain: 0.35, attack: 0.4, dest: d }); this.tone(t + 0.45, 0.06, { f0: 1400, f1: 900, type: 'triangle', gain: 0.2, dest: d });
   }
   raceFinish(medal = null) {
     if (!this.ok()) return;
