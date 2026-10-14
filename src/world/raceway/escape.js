@@ -5,7 +5,8 @@
 // (it starts slow, ends faster than a careless line), so the escape is a race against a clock you can see in your mirror.
 // Events (with `by`): race.escape.wake, race.escape.near { metres } (it is close), race.escape.caught (by: creature); the race's finish
 // (mode escape) is the escape.
-// The antlion is a placeholder (a dark cone of jaws on the road: Calissa's to make, the pits' maw's kin).
+// The antlion here is the crater's own, the eldest: the pits' maws are its younger kin (Espada's proposal, 2026-10-14, until the owner
+// rules). Its body is a placeholder (a dark cone of jaws on the road: Calissa's to make).
 //
 // Prior art: Crash Bandicoot's boulder and polar bear chases, Sonic Adventure's orca, Temple Run, Burnout's pursuit: a chaser whose
 // pace is a curve, so the run is about the line, not the reflex.

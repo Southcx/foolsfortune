@@ -19,7 +19,7 @@ import { ECON } from '../../progress/econ/table.js';
 export const LICENCES = [
   { id: 'carve', label: 'Carve', track: 'sun', from: 0, to: 2, rule: 'noflare', line: 'To gate 2 without a flare: carve for your speed.' },
   { id: 'snake', label: 'Snake', track: 'sun', from: 0, to: 1, rule: 'snakes', n: 3, line: 'To gate 1 with three snaking carves: each the other way, soon after the last.' },
-  { id: 'rails', label: 'Rails', track: 'sun', from: 0, to: 3, rule: 'grind', n: 40, line: 'To gate 3, grinding 40 metres of rail on the way.' },
+  { id: 'grind', label: 'Grind', track: 'sun', from: 0, to: 3, rule: 'grind', n: 40, line: 'To gate 3, grinding 40 metres of rail on the way.' },
   { id: 'hull', label: 'Hull', track: 'gorge', from: 0, to: 3, rule: 'hull', n: 0.6, line: 'Through the canyon to gate 3 with your pool still over 60%.' },
   { id: 'pit', label: 'Pit lane', track: 'sun', from: 5, to: 6, rule: 'refill', n: 0.75, pool: 0.25, pace: 0.85, line: 'Your pool at a quarter: reach gate 6 with it over 75%. Ride the vein lane.' },
   { id: 'air', label: 'Big air', track: 'sun', from: 6, to: 7, rule: 'trick', n: 1, line: 'Off the lip, land a spin square, and on to gate 7.' },
