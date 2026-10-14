@@ -13,6 +13,9 @@
 //     itself": the chase camera sees the back), filled left to right as seen from behind, each a pie by its share of `combo.stocks`
 //     (0..3); Shift's flare drains them as it spends one. A bank flashes them; a drop dulls the ring a moment as it breaks (the effects' moments are the
 //     library's: skiff.combo.bank / .drop, played by vfx/racewaylooks.js).
+//   - THE BUOYS' POWER (round 6, Dovina's handoff item 9: world/raceway/buoys.js `power`, 0..5): a row of five small chevrons across the
+//     board just aft of the stern, the step pips' kin, lit from the left as seen from behind, one a step; a step flashes its chevron,
+//     and a buoy missed (the power to nothing) dims the row out dull. Shown only while there is power (or as it is lost).
 // One merged mesh, one draw call, on the plates' glow material's program (a mapped basic: the strength of each vertex is read off the
 // glow atlas's gradient by its u, so no vertex colours and no new program). Blended over, not added: unlit, its deep Lachryma reads
 // on noon sand as well as at night, where an added glow washed to white (measured headless); its geometry is built once and only its
@@ -23,7 +26,7 @@
 // reserve pips (banked boost counted, never numbered), a rank's stacked chevrons and Mario Kart's mini-turbo going blue to orange (the
 // step pips: more stripes, bigger, warmer, is more), Sonic Riders' air tank; the sun's glyph (vfx/racewaylooks.js) for the stocks.
 //
-//   const M = new SkiffComboMarks({ map })   M.attach(group)   M.update(dt, combo, t)   M.link(mult)   M.bank()   M.drop()   M.dispose()
+//   const M = new SkiffComboMarks({ map })   M.attach(group)   M.update(dt, combo, t, power?)   M.link(mult)   M.bank()   M.drop()   M.dispose()
 //   COMBO_MARKS (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -45,6 +48,7 @@ export const COMBO_MARKS = {
   aft: Math.PI,
   lit: 0.95, socket: 0.14, flash: { link: 0.35, step: 0.5, bank: 0.7, drop: 0.55 },
   dull: 0x6a6478, fade: { in: 12, out: 3 },
+  power: { n: 5, z: 2.08, apart: 0.3, w: 0.11, depth: 0.55, thick: 0.06, flash: 0.45, lost: 0.6 }, // (the buoys' power: z aft of the middle, x apart, a chevron's half width)
 };
 
 // the glow atlas's gradient (vfx/racewaylooks.js glowAtlas: its left half, alpha by u), and its inverse: the u that gives a brightness
@@ -101,6 +105,13 @@ function build() {
       v(cx + Math.sin(b - w) * ra, cz + Math.cos(b - w) * ra, rc, 0.8); v(cx + Math.sin(b + w) * ra, cz + Math.cos(b + w) * ra, rc, 0.8); v(cx + Math.sin(b) * rb, cz + Math.cos(b) * rb, rc, 0);
     }
   }
+  // the buoys' power: a row of small chevrons across, aft of the stern, pointing to the bow (cells after the suns')
+  const W = C.power, pow0 = sun0 + 3 * (S.segs + 1);
+  for (let i = 0; i < W.n; i++) {
+    const cx = ((W.n - 1) / 2 - i) * W.apart, z = -W.z, w = W.w, h = w * W.depth, th = W.thick, c = pow0 + i; // (i 0 at +X: the left as seen from behind)
+    const A = [cx, z + h / 2], Lf = [cx - w, z - h / 2], Rt = [cx + w, z - h / 2], A2 = [cx, z + h / 2 - th], L2 = [cx - w, z - h / 2 - th], R2 = [cx + w, z - h / 2 - th];
+    for (const [o, e, o2, e2] of [[A, Lf, A2, L2], [A, Rt, A2, R2]]) { v(o[0], o[1], c, 1); v(e[0], e[1], c, 0.7); v(e2[0], e2[1], c, 0.45); v(o[0], o[1], c, 1); v(e2[0], e2[1], c, 0.45); v(o2[0], o2[1], c, 0.6); }
+  }
   // (each triangle wound to face up: one side drawn, as the plates' glow is, so the program is theirs; upside down in a flip it is unseen)
   for (let i = 0; i < cell.length; i += 3) {
     const A = i * 3, Bq = A + 3, Cq = A + 6, ny = (pos[Bq + 2] - pos[A + 2]) * (pos[Cq] - pos[A]) - (pos[Bq] - pos[A]) * (pos[Cq + 2] - pos[A + 2]);
@@ -109,7 +120,7 @@ function build() {
   const n = cell.length, g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(n * 2).fill(0.49), 2).setUsage(THREE.DynamicDrawUsage));
-  return { g, cell: Int16Array.from(cell), wt: Float32Array.from(wt), cells: sun0 + 3 * (S.segs + 1), pip0, sun0 };
+  return { g, cell: Int16Array.from(cell), wt: Float32Array.from(wt), cells: pow0 + W.n, pip0, sun0, pow0 };
 }
 
 export class SkiffComboMarks {
@@ -134,12 +145,15 @@ export class SkiffComboMarks {
   bank() { this.bankT = 1; this.dropT = 0; this.steps = 0; }
   drop() { this.dropT = 1; this.steps = 0; }
 
-  /** Each frame: `combo` the skiff's live combo (n, t, mult, stocks) or null; `t` real seconds (the film's walk). */
-  update(dt, combo, t) {
-    const C = COMBO_MARKS, B = this.B, b = this.b;
+  /** Each frame: `combo` the skiff's live combo (n, t, mult, stocks) or null; `t` real seconds (the film's walk); `power` the buoys' (0..5). */
+  update(dt, combo, t, power = 0) {
+    const C = COMBO_MARKS, B = this.B, b = this.b, W = C.power;
     const n = combo?.n || 0, stocks = combo?.stocks || 0, live = n > 0;
     for (const k of ['linkT', 'stepT', 'bankT', 'dropT']) this[k] = Math.max(0, this[k] - dt / C.flash[k.slice(0, -1)]);
-    const want = live || stocks > 0.01 || this.dropT > 0 || this.bankT > 0 ? 1 : 0;
+    const pw = Math.max(0, Math.min(W.n, Math.round(power || 0)));
+    if (pw > (this.power || 0)) { this.powT = 1; this.powPip = pw - 1; } else if (pw < (this.power || 0) && pw === 0) { this.lostT = 1; this.lostN = this.power; }
+    this.power = pw; this.powT = Math.max(0, (this.powT || 0) - dt / W.flash); this.lostT = Math.max(0, (this.lostT || 0) - dt / W.lost);
+    const want = live || stocks > 0.01 || this.dropT > 0 || this.bankT > 0 || pw > 0 || this.lostT > 0 ? 1 : 0;
     this.show = damp(this.show, want, want ? C.fade.in : C.fade.out, dt);
     this.mesh.visible = this.show > 0.01 && !!this.mesh.parent;
     if (!this.mesh.visible) return;
@@ -164,6 +178,8 @@ export class SkiffComboMarks {
       for (let s = 0; s < S.segs; s++) b[base + s] = any ? (s + 0.5 < share * S.segs ? k : C.socket) : 0;
       b[base + S.segs] = share >= 0.999 ? k * (0.75 + 0.25 * Math.sin(t * 4 + i)) : 0;
     }
+    // the buoys' power: lit from the left one a step, the newest flashing; lost, the row dims out
+    for (let i = 0; i < W.n; i++) b[B.pow0 + i] = pw > 0 ? (i < pw ? C.lit * (1 + (i === this.powPip ? 1.2 * this.powT : 0)) : C.socket) : (i < (this.lostN || 0) ? C.lit * 0.7 * this.lostT : 0);
     // into the uv: each vertex its cell's brightness by its weight, the whole by how shown
     const uv = B.g.attributes.uv, a = uv.array, sh = this.show;
     for (let i = 0, m = B.cell.length; i < m; i++) a[i * 2] = uOf(b[B.cell[i]] * B.wt[i] * sh);
@@ -171,7 +187,7 @@ export class SkiffComboMarks {
     // the colour: Lachryma's, the oil film walking through it slowly, warming toward gold as the stack climbs (one material: the whole
     // gauge warms, so the step pips' heat reads at a glance); a drop turns it dull a moment
     this.warmK = damp(this.warmK || 0, live ? this.steps / P.n : 0, 6, dt);
-    this.mat.color.copy(LACH).lerp(featTint(t * 0.12, _f, { bright: 1 }), 0.15).lerp(WARM, this.warmK * C.warmMax).lerp(_c.copy(DULL), this.dropT * (live ? 0 : 0.85));
+    this.mat.color.copy(LACH).lerp(featTint(t * 0.12, _f, { bright: 1 }), 0.15).lerp(WARM, this.warmK * C.warmMax).lerp(_c.copy(DULL), Math.max(this.dropT * (live ? 0 : 0.85), pw || live ? 0 : this.lostT * 0.85));
   }
   dispose() { this.mesh.parent?.remove(this.mesh); this.B.g.dispose(); this.mat.dispose(); }
 }

@@ -14,6 +14,7 @@ import { groundRing, scorch, debris } from './shelllooks/kit.js'; // (the ludicr
 import { RACEWAY_EFFECTS } from './racewayeffects.js'; // (the carve's sparks by tier and the sun plate's ring: vfx/racewaylooks.js plays them)
 import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crystal vein ridden: vfx/racewaycavern.js plays it)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
+import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -759,4 +760,5 @@ export const LIBRARY = {
   ...RACEWAY_EFFECTS,
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,
+  ...SKIFF_BOARD_EFFECTS,
 };

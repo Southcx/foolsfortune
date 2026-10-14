@@ -38,6 +38,9 @@
 //     where edgeLines says a point lies on the other line's road, hung over a bridge's deck; the combo's marks moved aft (the owner);
 //     and the grind's balance mark (vfx/grindbalancemark.js) worn behind the stern while the keel grinds (the owner). The sandfalls
 //     are dressed where they are hung (world/raceway/kit.js, cavern.js: RacewaySandfall, one program for all five).
+//   - ROUND 6 (Dovina's handoff, 2026-10-14; SKIFF-RACING.md 12): the board's stakes worn on it (vfx/skiffboardlooks.js: the scorch, the
+//     hull's damage and wear, a wreck, the manual's tail-up tilt), the grind's balance mark shown for the manual's lean too, the buoys
+//     dressed as the Raceway's kit (vfx/racewaybuoys.js) and their power as a row of chevrons on the board (vfx/skiffcombomarks.js).
 //
 // Prior art: F-Zero's dash plates (the flash and the arrows running the way to go), Mario Kart's boost pads (the chevrons) and its drift
 // sparks and mini-turbo tiers (blue, orange, purple: ours sand, gold, white), Mario Kart's start lights on Lakitu's rod (a lamp a count,
@@ -63,6 +66,8 @@ import { ensureSmoothNormals } from '../render/outline.js';
 import { lightAt } from '../progress/weather.js';
 import { SkiffComboMarks, COMBO_MARKS } from './skiffcombomarks.js';
 import { GrindBalanceMark } from './grindbalancemark.js';
+import { SkiffBoardLooks } from './skiffboardlooks.js';
+import { RacewayBuoys } from './racewaybuoys.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
  *  the shimmer (its rate, rad a real second, and the glow's low and high); the arch's lamps (radius, spacing, drop under the lintel, glow);
@@ -196,7 +201,7 @@ export class RacewayLooks {
     this.parent = o.parent || null; // (where the meshes go: the scene, or a Workbench stage)
     this.vfxOf = () => o.vfx || game.vfx;
     this.raceOf = o.race || (() => game.race);
-    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, grind: S.grind, boat: S.skiff } : null; });
+    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, grind: S.grind, boat: S.skiff, manual: S.phase === 'ride' && !!S.rules?.manualOn, manualLean: S.manualLean || 0 } : null; });
     this.skiffModelOf = o.skiffModel || (() => game.player?.techs?.get?.('skiff')?.skiff?.model || null);
     this.playerOf = o.player || (() => game.player?.pos);
     this.t = 0; this.plates = null; this.marks = null; this.ghost = null;
@@ -227,6 +232,10 @@ export class RacewayLooks {
     this.boostH = null; this.combo = null; this.sunK = 1;
     this.nightOf = o.night || (() => Math.min(1, Math.max(0, (0.45 - lightAt()) / 0.37))); // (0 by day, 1 at night: the strings cool)
     this.strings = null; this.grindH = []; this.nightK = 0; this.nightT = 9;
+    // round 6: the board's stakes and the buoys (their own modules; the Workbench, which passes its own board, gets no stakes)
+    this.stakes = o.board ? null : new SkiffBoardLooks(game, { events: E, vfx: this.vfxOf });
+    this.buoys = new RacewayBuoys(game, { parent: this.parent, vfx: this.vfxOf });
+    E?.on('skiff.buoy', (e) => { if (e.by === 'courier') this.buoys.pass(e); });
   }
 
   // ---------------------------------------------------------------- the sun plates, the arch's lamps, the gates' marks
@@ -297,6 +306,7 @@ export class RacewayLooks {
       this.strings = new RacewayEdgeStrings({ parent: this.parent || this.game.scene, zone: 'raceway' }).build(lines, step);
     }
     if (R.railMesh && R.rails?.length && !R.railMesh.userData.glazed) this.glazeRails(R);
+    if (R.buoys?.group && !R.buoys.group.userData.dressed) this.buoys.dress(R); // (round 6: the buoys as the Raceway's kit)
     return this;
   }
   /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier. */
@@ -494,10 +504,13 @@ export class RacewayLooks {
     this.t += dt;
     { const B = this.boardOf(); // (round 3: the boost's look and the combo's gauge, wherever the skiff is ridden)
       this.boost(B);
-      if (B?.combo && (this.combo || B.combo.n || B.combo.stocks > 0.01)) this.comboMarks(B);
-      this.combo?.update(dt, B?.combo || null, this.t);
-      if (B?.grind?.on && !this.balance) this.balance = new GrindBalanceMark({ map: materials().map }); // (the grind's balance mark: made the first time a board grinds)
-      if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, B?.grind || null); } }
+      const power = B && this.game.raceway?.active ? this.game.raceway.buoys?.power || 0 : 0; // (the buoys' power: round 6)
+      if (B?.combo && (this.combo || B.combo.n || B.combo.stocks > 0.01 || power > 0)) this.comboMarks(B);
+      this.combo?.update(dt, B?.combo || null, this.t, power);
+      const bal = B?.grind?.on ? B.grind : B?.manual ? { on: true, lean: B.manualLean } : null; // (the manual's lean on the grind's mark: round 6)
+      if (bal && !this.balance) this.balance = new GrindBalanceMark({ map: materials().map }); // (the grind's balance mark: made the first time a board grinds)
+      if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, bal); } }
+    this.stakes?.update(dt);
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
     if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)
       if ((this.nightT += dt) > 1) { this.nightT = 0; this.nightK = this.nightOf(); }
