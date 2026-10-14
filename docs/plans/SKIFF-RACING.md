@@ -193,14 +193,14 @@ part of the width only (SSX's side hits: [1, 90] right, [5, -40] left, [10, 30],
 landings.
 
 **The cavern** (working name; `world/raceway/cavern.js`, `track.js` BRANCH). A branch off the line 25 m after the landing hill's foot
-(cp 21) that runs down into a gorge through the circuit's middle and back onto the line at the gale's end (cp 25), past gate 8: 337 m
-against the line's 389. Its floor falls to 0 m (the line there runs at 22 to 26), its walls rise 15 to 18 m to the sand, steep over 3 m;
+(cp 21) that runs down into a gorge through the circuit's middle and back onto the line at the gale's end (cp 25), past gate 8: 368 m
+against the line's 389 (an S through the circuit's middle; about 2 to 4 s faster than the line on the autopilot). Its floor falls to 0 m (the line there runs at 22 to 26), its walls rise 15 to 18 m to the sand, steep over 3 m;
 where they stand 7 m or more (about 175 m of it) a roof of stone slabs lies across at the sand's height, one slab in seven left out for a
 shaft of sun, stalactites toward the walls (7 m clear of the floor at least), Lachryma crystals glowing low on the walls. It is one height
 field with the rest (a heightfield cannot overhang, so the cave is a roofed gorge: the board rides and collides as anywhere). Where the
-branch and the line meet, a running surface wins over the other's berm or wall. Its wind is the course's at 0.7 (a cave breathes); its
+branch and the line meet, a running surface wins over the other's berm or wall. Its wind is the course's at 0.45 (a cave breathes); its
 pads are crystal veins, fed by Lachryma, not the sun: **the night lap's line goes under**. A rail down its middle (62 to 150 m), a kicker
-at 178 m, three veins. The race maps the branch onto the stretch of line it stands for, so gate 8 is crossed for you and the ghost runs as
+at 178 m, two veins. The race maps the branch onto the stretch of line it stands for, so gate 8 is crossed for you and the ghost runs as
 ever; a bail in it sets you back in it. Through it whole from its fork: `raceway.branch { branch }`.
 
 **For the other divisions.** Calissa: bigger carve sparks (the owner); the flare and the board's boost glow in Lachryma's colour (it is

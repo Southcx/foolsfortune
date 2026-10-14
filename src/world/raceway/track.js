@@ -77,9 +77,9 @@ export const FEATURES = {
 // crystal veins: a push the sun does not feed, [metres along it, lat]) and kickers.
 export const BRANCH = {
   id: 'cavern', from: [21, 25], to: [25, 0],
-  ctrl: [[-356, 22, 22, 10], [-340, -50, 4, 10], [-328, -125, 0, 11], [-322, -195, 10, 10]],
-  hold: 30, wall: 3, blend: 24, roof: 7, wind: 0.7,
-  pads: [[45, 0], [120, -3], [205, 2]].map(([at, lat]) => ({ at, lat, len: 7, w: 2.6 })),
+  ctrl: [[-350, 20, 22, 10], [-296, -36, 4, 10], [-286, -116, 0, 11], [-322, -196, 10, 10]], // (an S through the circuit's middle: straighter, it ran 6 s faster than the line)
+  hold: 30, wall: 3, blend: 24, roof: 7, wind: 0.45, // (wind 0.7 ran it 6 s faster than the line on the autopilot: a shortcut for nothing)
+  pads: [[45, 0], [215, 2]].map(([at, lat]) => ({ at, lat, len: 7, w: 2.6 })),
   kickers: [{ at: 178, h: 2.2, len: 8 }],
 };
 const BERM = { w: 6, h: 1.4, blend: 46 }; // (the berm's width and height, the blend back to the sea, metres)
@@ -190,7 +190,7 @@ export function track() {
   // the side ramps: each sample's ramps (a kicker over part of the width: corridor() adds it where the lat is inside it)
   const RAMPS = new Map();
   for (const K of F.ramps) { const s0 = sOf(K.cp, K.at); for (let u = 0; u < K.len + 3; u += ds) { const i = idx(s0 + u), h = u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; let l = RAMPS.get(i); if (!l) RAMPS.set(i, (l = [])); l.push({ lat: K.lat, w: K.w, h }); } }
-  const rampAt = (i, lat) => { const l = RAMPS.get(i); if (!l) return 0; let h = 0; for (const K of l) h = Math.max(h, K.h * (1 - sstep(K.w, K.w + 2.5, Math.abs(lat - K.lat)))); // (its sides bevelled over 2.5 m: a board clipping its edge is tipped, not walled) return h; };
+  const rampAt = (i, lat) => { const l = RAMPS.get(i); if (!l) return 0; let h = 0; for (const K of l) h = Math.max(h, K.h * (1 - sstep(K.w, K.w + 2.5, Math.abs(lat - K.lat)))); return h; }; // (its sides bevelled over 2.5 m: a board clipping its edge is tipped, not walled)
   // ---- the grid: which samples lie in each 16 m cell (to find the line from any point without a search of all of it)
   const G = new Map(), key = cellKey;
   for (let i = 0; i < N; i++) { const k = key(Math.floor(X[i] / CELL), Math.floor(Z[i] / CELL)); let a = G.get(k); if (!a) G.set(k, (a = [])); a.push(i); }
