@@ -362,7 +362,9 @@ name and line (Espada).
 Measured (the autopilot, which never carves, flares or takes a lane): a race lap of the Sun Circuit 113.2 s with the flyover, four buoys
 and a near miss, no errors; the Coaster's pot smash 7 of 30 pots, 97.5 s less 7; the escape caught at the climb out at 65 s before the
 antlion was eased (34 m/s and 0.32 to 30 and 0.28); the Carve licence silver (22.95 s over 588 m); the Pit lane licence failed (the
-autopilot keeps to the line, so never takes the lane).
+autopilot keeps to the line, so never takes the lane). After the easing: a City Trial whose Stadium drew the escape, escaped in 71.95 s
+with 76 m to spare. The Clay Cup run whole: three races, three flyovers, 9 laps, 72 gates, 21 hull hits, 15 bumps, a takedown, 4 gaps,
+39 buoys; the autopilot 4th each time (6 points), Clink its nemesis throughout; no errors. The stress test: 24 runs, 0 violations.
 
 ## 6. Who does what
 
