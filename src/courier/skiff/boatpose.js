@@ -103,7 +103,8 @@ export class BoatPose {
   /**
    * The ride, weight for weight as the rider's (rider.js ride: R is the Rider, read after it has posed the body this frame):
    * RideIdle to RideCruise by speed, the carve by R.turnW, the sail's work by R.unfurlW / R.furlW, the flare by R.boost, the Ollie by
-   * R.ollieW with its lift taken off the hull (the hop's physics carries the boat, as it carries the body). s: { t, speed, steer, L }.
+   * R.ollieW with its lift taken off the hull (the hop's physics carries the boat, as it carries the body), the grab's crouch by
+   * R.grabs.under. s: { t, speed, steer, L }.
    */
   ride(R, s) {
     const A = this.A, B = this.B;
@@ -121,6 +122,15 @@ export class BoatPose {
       const lift = R.lift('Skiff_Ollie', R.ot), h = this.index.hull * 3, u = this.hullUp;
       B.p[h] -= u.x * lift; B.p[h + 1] -= u.y * lift; B.p[h + 2] -= u.z * lift;
       this.blend(A, B, R.ollieW);
+    }
+    // the grab's crouch (rider.js / grabreach.js: the rider's Skiff_Ollie at its crouch under the grab, by its weight): its partner here,
+    // so the deck stays under the feet
+    const gu = R.grabs?.under || 0;
+    if (gu > 0.01) {
+      const at = R.grabs.at, lift = R.lift('Skiff_Ollie', at), h = this.index.hull * 3, u = this.hullUp;
+      this.sample('Skiff_Ollie', at, B, false);
+      B.p[h] -= u.x * lift; B.p[h + 1] -= u.y * lift; B.p[h + 2] -= u.z * lift;
+      this.blend(A, B, gu * gu * (3 - 2 * gu));
     }
     return A;
   }

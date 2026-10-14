@@ -213,9 +213,32 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a grind / a rail / a sun ring** (working names, Espada's; `Grind`, `courier/skiff/grind.js`; `railsrings.js`) — the skiff's keel fin locked to a
   rail, run with A / D's balance, no tool but the skiff / a ruin's lintel on the Raceway the keel locks to / the Gnomon's ring hung in the
   Raceway's air, flown through for a push. *Not:* the rail (the Emocean's crossing), a Solar Skiffing ring (the Gnomon's trial).
+- **the grab's reach** (`GrabReach`, `GRIPS`, `src/courier/skiff/grabreach.js`) — a grab's hand on the skiff's gunwale while held: the front
+  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch. *Not:* the
+  grab's trick (skiff.js), the board's tweak, the carry's hold.
 
 ## 4. Creatures and folk
 
+- **the cavern** (working name, Espada's to rule; `BRANCH`, `T.branch`, `world/raceway/cavern.js`) — the Raceway's alternate course: a branch
+  off the line into a gorge under a roof of stone and back, its pads crystal veins (fed by Lachryma, not the sun). *Not:* a Well, the canyon.
+- **the trick combo / a banked flare** (`SkiffCombo`, `skiff.combo`, `courier/skiff/combo.js`) — the skiff's tricks chained, each kind
+  raising the multiplier, banked when the chain's link runs out on the sand, lost on a bail / a flare's worth of push it banks, spent by
+  Shift before the pool. *Not:* the club's combo, a rhythm combo, a ledger chain.
+- **a grab / a perfect pop / a slope landing** (`skiff.grab`, `skiff.pop { perfect }`, `skiff.land.slope`) — LMB (the nose) or RMB (the
+  tail) held in the air, let go before landing / a late pop let go in its first moment / landing square down a slope, the fall kept as speed.
+- **the park / the hub** (`park()`, `PARK`, `world/raceway/park.js`) — the Raceway since round 4: one ground of several tracks, 2.6 km
+  across / its middle, where the Index sets you down among the tracks' starts. *Not:* the basement's hub (the Index's).
+- **the Gorge Run / the Coaster** (working names, Espada's; `tracks/gorge.js`, `tracks/coaster.js`) — the park's second and third tracks:
+  canyons, cliffs and a crater's spiral / a lift to a mesa and a coaster rail down. *Not:* the canyon (the Sun Circuit's stretch).
+- **a cut / a bridge / a bowl / a ford** (`cut`, `features.bridges`, `.bowls`, `.fords`) — a stretch of line laid between steep walls to
+  the sand / a stretch built as a deck that another line passes under (`world/raceway/features.js`) / a stretch banked steeper than its
+  bend / a stretch under water, skimmed. *Not:* the paid cut, the cutlass.
+- **a coaster rail** (`coasterPath`, `world/raceway/coasterrail.js`) — a grind rail laid in three dimensions, with a loop and a helix, each
+  point its up and push. *Not:* a rail (a ruin's lintel), the Emocean's rail.
+- **an antlion pit / the antlion** (working names; `PARK.pits`, `raceway.pit`) — a cone at the sand's angle of repose whose sand flows to
+  its middle / the maw at its bottom that takes a board. *Not:* a Well, a crater (no maw).
+- **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
+  plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.
@@ -464,6 +487,18 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   countdown lamps, the gates' marks, the carve's sparks by tier and the ghost's hologram. *Not:* the Raceway (the track, Dovina's).
 - **the edge strings** (`RacewayEdgeStrings`, `src/vfx/racewayedgestrings.js`) — beads of light on a thread along both edges of the Raceway's
   running surface, a bright run flowing the race's way just ahead of the board. *Not:* the sun plates' chevrons, the wire compass.
+- **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in Lachryma's colour: the link
+  ring closing as its clock runs out, the step pips aft of the stern, the banked flares as three little suns behind them. No words. *Not:* the Lachryma ring.
+- **the grind's balance mark** (`GrindBalanceMark`, `src/vfx/grindbalancemark.js`) — the grind's lean as a needle on an arc standing behind the
+  Solar Skiff's stern while the keel grinds, warming to an ember toward the ends (Tony Hawk's arrow). No words. *Not:* the balance (a core move).
+- **the cavern's look / a crystal vein** (`RacewayCavern`, `game.racewayCavern`, `src/vfx/racewaycavern.js`) — the Raceway's cavern dressed: its
+  stone and ruin-slab roof with the dark baked in, Lachrymite clusters with their lamps, its edge strings; and a vein of Lachrymite in its
+  floor, the cavern's push (`raceway.plates` with `vein`). *Not:* the cavern (Dovina's course), a sun plate, a Dunes crystal.
+- **the park's dress** (`RacewayPark`, `game.racewayPark`, `src/vfx/racewaypark.js`) — the Raceway park's water (the pond's and the Well's own
+  liquids), bridge decks, coaster rail (a lajvardina-glazed lintel) and its helix tower, and the antlion's maw, dressed over Dovina's
+  placeholders. *Not:* the park (Dovina's ground and tracks, `world/raceway/park.js`), the cavern's look.
+- **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
+  laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
@@ -554,7 +589,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
 | chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail | "a chain of ...", "a feeling chain" |
-| combo | the club's chain of blows; the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
+| combo | the club's chain of blows; the rhythm mode's run of notes; the skiff's chain of tricks (`SkiffCombo`) | "the club's combo", "a rhythm combo", "the trick combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (`today()`); the bright part of it (`phaseAt` 'day') | "game day"; "daytime" |

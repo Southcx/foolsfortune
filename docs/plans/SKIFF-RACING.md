@@ -24,7 +24,7 @@ A good base: a sail is a throttle you have to manage, and the trick-for-speed lo
 
 | element | where it's from | take it? | how, in our terms |
 | --- | --- | --- | --- |
-| **drift with a charged boost** | MK8 (mini-turbo tiers), Sonic Riders (drift) | **yes** | **the carve**: Space held while steering hard at speed. The board slides and the springs load in three tiers; let go and it pops out with a boost by tier. Space already means "load the springs, let go to hop", so the carve is the same verb held through a turn. |
+| **drift with a charged boost** | MK8 (mini-turbo tiers), Sonic Riders (drift) | **yes** | **the carve**: Q or E held on the sand at speed (the side it carves to). The board slides and loads in three tiers; let go and it pops out with a boost by tier. (First built on Space held through a turn; a hop in a turn then began carves nobody asked for, so Petra moved it to Q and E in v196 and Space is the hop alone. Q and E are the glide's bank in the air, so one pair of keys leans the board on the sand and in the air.) |
 | **boost pads** | MK8 dash panels, Sonic Riders' dash panels, F-Zero | **yes** | **sun plates**: glyphs on the sand that throw a flare's push without its Lachryma. Solar, so they read as the skiff's own power. |
 | **ramp tricks for boost** | MK8 (trick off a ramp), Sonic Riders, SSX | **yes, deepened** | **the late pop**: a hop let go in the first fifth of a second after a crest or kicker throws you higher, and counts as a pop. Spins already pay boost. |
 | **tricks refill the boost meter** | Sonic Riders (tricks fill air), SSX (tricks fill boost) | **yes** | A landed spin gives Lachryma to the pool (6 a turn), so tricks fuel the flare: one meter, two ways to fill it. |
@@ -135,9 +135,155 @@ Three laps in 5:48, with bails. What changed:
   (Trackmania's checkpoint respawn); and **the best lap's ghost is kept** in the save.
 - **For Calissa:** the edge strings the owner asked for (motes along both sides of the track); the rails' and rings' look.
 
+## 9. Round three (2026-10-14): conditions, the trick combo, grabs, curves, ramps, the cavern
+
+The owner: expand the conditions and the combo; a cavern course under the circuit; grabs on the free mouse buttons; what Crash Team Racing
+and Kirby Air Ride do that we can take; curved rails; more ramps; a mark when a pop is nailed; bigger carve sparks; a Lachryma-coloured
+boost. The goal at each scale: the next 30 seconds is a chain of tricks into a banked flare; the lap is a choice of lines (the cavern or
+the mesa, a side ramp or the berm); the week is the boards (each condition its own best) and the night lap.
+
+**What the two games have, and what we take.**
+| from | what it does | ours |
+| --- | --- | --- |
+| CTR | power-slide boosts in tiers, timed by a press | the carve already loads in tiers (MK8's way); kept |
+| CTR | **reserves**: boosts chained while one runs bank their time, and the speed holds | **taken**: a push while another runs adds its length, to 4 real s (`TURBO.cap`) |
+| CTR | Wumpa fruit: ten held, everything faster | not taken: the pool is our resource; the combo is the reward |
+| CTR | the turbo counter, the boost meter's colour going red at the moment to press | not taken: the carve's tiers show on the board (Calissa's sparks) |
+| KAR | landing on a downslope keeps the fall as speed | **taken**: the slope landing (below), and it is a trick |
+| KAR | one button: charge to brake, release to boost | ours is the hop's crouch already (Space charges, releases) |
+| KAR | gliding machines that dive for speed and pull up | the glide (section 4) |
+| KAR | City Trial: minutes in an open map gathering patches, then a stadium event | **later**: a Dunes mode, its patches the stones' stats (a pitch, not built) |
+| KAR | rails ridden by touching them | the grind (section 7) |
+| SSX Tricky | tricks fill a boost meter; a bail loses what the run added | **taken**: the trick combo |
+| THPS | the multiplier, a variety bonus, the manual as the link on the ground | **taken**: kinds raise the multiplier; the link runs 2 real s on the sand |
+
+**Conditions** (`world/raceway/conditions.js`). The Raceway now has Anagami's sky (`weather.js` ZONE_PLACE: open), read every half a real
+second. The sun feeds the sun plates: light under 0.12 (night) none, full from 0.62, a plate's push scaled by it (dawn and dusk weak, night
+dead: `skiff.plate { power }`). The weather, scaled by its strength: Grief (the long rain) wet sand, grip x0.6, carve loads x1.35, drag
+x0.85, the sun x0.55; Mirth (a sunshower) wet sand under the sun; Fury (the hail) squalls, the wind swinging +-45% and shoving the board
+across it (10 m/s^2 for a whole gust's excess, crosswind); Gall (the miasma) drag x1.25, grip x1.2; Desire the course wind x1.35; Wonder
+the rings x1.4; Dread fog (the look Calissa's). The lesson under it is land sailing's: wet beach sand is the fast, hard surface; dry sand
+drags. A race says its condition at the start and keeps its time on that condition's board (`race.raceway.best.<light>.<aspect>`, light
+day, twilight or night): 24 boards. **Not built:** one seeded condition per game day (the weather already changes by the game hour block).
+
+**The trick combo** (`courier/skiff/combo.js`). Points: a spin landed square 100 a turn; a grab 80 a real second (to 3) and 50 for a tweak
+held 0.6 s, the double x1.5; a grind 6 a metre (from 12 m); a late pop 50, a perfect one 100; a carve let go 40, 90, 160 by tier; a sun
+ring 60; a slope landing 50. Each kind past the first adds 0.5 to the multiplier (to x4). The chain lives in the air, on a rail and in a
+carve, and 2 real seconds on the sand after a trick; then it is banked: 1,000 points a banked flare, three at most, each 1.5 real s of
+Shift's flare, spent before the pool. A wobble banks at once; a bail or a respawn loses it. It replaces the Lachryma a spin, a grind and a
+ring gave the pool: tricks pay in speed. Measured on the autopilot (no tricks but its carves and pops): see the round's report.
+
+**Grabs** (LMB the nose, RMB the tail, both the double), held in the air; let go before landing and it is a trick. Still held as you land:
+a wobble (speed x0.8), nothing for the grab, the chain banked. The board tweaks (0.3 rad nose or tail down, rolled for the double) as a
+placeholder until Calissa's rider reaches for the board (IK on the hand: a light correction, as CLAUDE.md asks).
+
+**The pop, nailed.** Let go of Space in the first 0.08 real s after leaving a crest (of the late pop's 0.22) and it is a perfect pop: 0.95
+of a hop's height (the late pop's 0.7), more push, a mark on the board (a glyph pop, Lachryma's colour, a placeholder for Calissa's),
+`skiff.pop { perfect }`, and the log says so. Let go up to 0.5 s and it is a missed pop (`skiff.pop.miss`): the log says how to time it.
+
+**The slope landing** (KAR's, and every board game's transition). Landing square on a downslope keeps 0.8 of the fall's speed along it
+(the fall times the slope's tilt along the travel, to 8 m/s); from 2 m/s it is a trick. Landed on the flat, the hover takes it all.
+
+**Curves.** Rails now follow the line (`along`), its lat eased between the ends, the slalom's weaving 1.8 m across; a new long one round the
+last switchback's bend onto the mesa, and the cavern's. On a curved rail the lean is thrown outward by v^2 x the bend (`GRIND.bend` 0.04):
+a fast grind round a bend is held into it with A or D.
+
+**Ramps.** Three more full kickers (turn one's exit, a big one after the whoops, 3.2 m over 12, the last turn's) and six side ramps over
+part of the width only (SSX's side hits: [1, 90] right, [5, -40] left, [10, 30], [13, -40], the canyon's, the gale's), with rings over two
+landings.
+
+**The cavern** (working name; `world/raceway/cavern.js`, `track.js` BRANCH). A branch off the line 25 m after the landing hill's foot
+(cp 21) that runs down into a gorge through the circuit's middle and back onto the line at the gale's end (cp 25), past gate 8: 368 m
+against the line's 389 (an S through the circuit's middle; about 2 to 4 s faster than the line on the autopilot). Its floor falls to 0 m (the line there runs at 22 to 26), its walls rise 15 to 18 m to the sand, steep over 3 m;
+where they stand 7 m or more (about 175 m of it) a roof of stone slabs lies across at the sand's height, one slab in seven left out for a
+shaft of sun, stalactites toward the walls (7 m clear of the floor at least), Lachryma crystals glowing low on the walls. It is one height
+field with the rest (a heightfield cannot overhang, so the cave is a roofed gorge: the board rides and collides as anywhere). Where the
+branch and the line meet, a running surface wins over the other's berm or wall. Its wind is the course's at 0.45 (a cave breathes); its
+pads are crystal veins, fed by Lachryma, not the sun: **the night lap's line goes under**. A rail down its middle (62 to 150 m), a kicker
+at 178 m, two veins. The race maps the branch onto the stretch of line it stands for, so gate 8 is crossed for you and the ghost runs as
+ever; a bail in it sets you back in it. Through it whole from its fork: `raceway.branch { branch }`.
+
+**For the other divisions.** Calissa: bigger carve sparks (the owner); the flare and the board's boost glow in Lachryma's colour (it is
+Lachryma-fuelled); the perfect pop's mark; the grab (the rider's hand to the board); the combo's gauge and the banked flares (no words, no
+numbers); the dark sun plate and the plates' brightness by `raceway.sun`; the cavern's rock, crystals, veins and its dark; Dread's fog; rain
+not falling under the cavern's roof; the cavern's edge strings (`edgeLines(step, 'cavern')`). Wanda: the grab, the perfect pop and the
+missed one, the combo's bank and its loss, the cavern's sound (inside a stone gorge), wet sand under the board. Espada: the cavern's name,
+the log's lines. Petra: the hubs touched (`weather.js` ZONE_PLACE), and the medal line again (the cavern and the ramps move it).
+
+## 10. Round four (2026-10-14): the Raceway as a park of tracks
+
+The owner: "quadruple the size of the raceway level ... nest multiple tracks into one map ... THE zone where we're going to test ALL of
+our racing module mechanics. We need water features, spirals, loop-de-loops and rollercoaster-like grind rail sections, an antlion
+sandpit, more sandfalls, CANYONS ... think in layers of complexity." And: the edge lights cut across the main track at the cavern; the
+cavern wants more ceiling clearance and more intrigue; the flares' indicator to the board's back; a balance indicator for the grind.
+
+**Research** (a reference catalogue and 16 pictures, kept out of the repo): Laguna Seca's Corkscrew (a blind crest and an 18 m fall over
+137 m), Spa's Eau Rouge (a dip into a 15 to 17 percent climb), the Nordschleife's Karussell (a banked bowl), Suzuka's figure eight (the
+crossover), Mount Panorama's ridge, Mario Kart's Shy Guy Falls, Dry Dry Desert and Bone-Dry Dunes, Sonic Riders' Sand Ruins, SSX's rail
+lines and forks within 5 percent of each other, Antelope Canyon and Beggar's Canyon, roller coasters (the lift, the first drop,
+camelbacks, the loop, the helix finale), Hot Wheels' and F-Zero's loops. What a height field cannot do (an overhang, a crossover, a loop)
+is done another way below: bridges, decks, coaster rails.
+
+**The park** (`world/raceway/park.js`). 2.6 km across (it was 1.1), at x 6000, its round barrier at 1,270 m. One height function: the
+sand, the park's base shapes (the hub's plaza, the craters), every track's corridor pulled in (a running surface wins over another's berm;
+two at once, their mean), then its cut shapes (the half-pipe, the lakes' beds, the antlion pits). The Index sets you down at THE HUB,
+the middle, among the three tracks' starts. Layers of complexity:
+| layer | track | where | what it tests |
+| --- | --- | --- | --- |
+| 1 | the Sun Circuit (2,855 m, the cavern 368 m) | south-west, turned to face the hub | the carve, the plates, the glide off the lip, the first rails, the cavern line |
+| 2 | the Gorge Run (3,751 m) | south-east | lines and hazards: a blind crest, two cliffs with sandfalls, a slot canyon, a crater's spiral round an antlion pit, a crossover under a bridge, a lake ford, Eau Rouge, a Karussell bowl |
+| 3 | the Coaster (2,428 m, its rail 896 m) | north-east | grinding as a line: a lift to a mesa, then the road down or the coaster rail (a first drop, camelbacks, a banked turn, a loop, a helix round a tower) |
+| free | the antlion's pit, the half-pipe | north-west, by the hub | free riding, the pit's pull, air in the pipe |
+
+**New mechanics, each general (any track can use them).**
+- **Cuts** (a control point's sixth number, `cut`): the walls rise steeply over that many metres to the ground beside the line: a slot
+  canyon. A track can be laid 20 m under the sand and ride between walls.
+- **Bridges** (`features.bridges`; `world/raceway/features.js`): a stretch of the line left out of the height field and built as a stone
+  deck on piers, collided; another line passes under it (the Gorge's climb out of the crater runs under its spiral's first turn:
+  Suzuka's crossover). The board rides the deck through `rideHeight` (the deck under the Courier when they are above it).
+- **Craters and the spiral**: a bowl sunk into the sand (`PARK.craters`); a track's control points can spiral down its wall
+  (`tracks/gorge.js` spiral()), its road a shelf on the cone.
+- **The antlion pits** (`PARK.pits`): cones at the sand's angle of repose (33 degrees: dry sand will not lie steeper, which is the
+  antlion's whole trick); inside the rim the sand flows to the middle and drags the board (9 m/s^2 at the bottom); the maw takes a board
+  that reaches it (a bail, `raceway.pit`), and you are set back on the track. One free in the north-west, one at the crater's floor.
+- **Water** (`PARK.lakes`, a track's `fords`, the cavern's `pools`): a flat sheet the board skims (`rideHeight`); the bed under it.
+- **Banked bowls** (`features.bowls`): a stretch banked steeper than its bend asks (the Karussell: 37 degrees).
+- **Coaster rails** (`world/raceway/coasterrail.js`): grind rails laid in three dimensions from a few points, with a loop and a helix
+  spliced in. Each point carries the rail's up (banked into turns, toward a loop's middle) and a push (a Lachryma conduit drives a loop,
+  16 m/s^2). The grind (`courier/skiff/grind.js`) now runs gravity along the rail's tangent in three dimensions, stands the board on
+  the rail's up, holds the balance through a loop, takes a banked turn's pull off the balance (g tan(bank): a banked curve rides
+  itself, as on a coaster), lets a coaster rail's drift never grow (it is ridden for its curves), and leaves a rail's end with its
+  climb (a kicker). It locks only where the rail is upright. Measured: the Coaster's rail ridden end to end, 895 m, through the loop
+  upside down and the helix, off at the end with no bail, 53 m/s at the fastest.
+- **Multi-track races**: F at any track's start pillar races that track; each keeps its own ghost; the ledger keeps each track's best
+  (`race.track.<id>.best`); medals stay the Sun Circuit's until the others are measured.
+- **The cavern, again**: its floor 6 to 8 m lower and wider (its walls 22 to 32 m), the roof only where the walls stand 11 m, the
+  stalactites 10 m clear; inside it now a pool under the roof with a kicker to jump it, four crystal pillars to weave (collided), and a
+  sandfall pouring through a skylight. The edge strings' points that lie on the other line's running surface are marked `hide` (the
+  fork and the merge): Calissa's strings break there.
+
+**The tools** (the owner asked whether better diagnostics would help: yes, and they are built).
+- `node scripts/raceway/map.mjs out.png [--px m] [--at x,z --size m] [--trace t.json]`: the park from above as a PNG, from the same height
+  function, in about 2 real seconds with no browser: hill-shaded sand tinted by height, the water, every line, branch, gate, start,
+  plate, rail (the coaster rail magenta, darker upside down), sandfall, pit, pipe; a drive's trace over it, coloured by speed, with its
+  bails.
+- `node scripts/raceway/drive.mjs --track sun|gorge|coaster [--laps n] [--cave] [--rail <id>] [--trace t.json]`: the game headless, an
+  autopilot racing the track (or dropped onto a coaster rail and riding it out), and a report: laps, gates, bails and why, grinds and
+  how they ended, the pits, the combo, top speed.
+Measured this round (autopilot, a fair day): the Sun Circuit 114.4 s, through the cavern 109.7 s; the Gorge Run 152.2 s; the Coaster
+102.8 s on the road; the Coaster's rail 895 m. No bails on any lap. Building the park takes about 5 real seconds on arrival, headless
+(the field is 1.1 million samples).
+
+**For the other divisions.** Calissa: the flares' indicator to the board's back (the owner: the front is hidden by the skiff); a balance
+mark for the grind (`techs.get('skiff').grind.lean`, -1..1, past 1 you fall; `grind.on`); the edge strings for every track
+(`edgeLines(step, line, trackId)`) honouring `hide`; the gates' marks and lamps for the Gorge and the Coaster; looks for the water, the
+bridge decks, the antlion's maw, the coaster rail and its helix tower, the cavern's pillars and pool. Petra: the shader cap to 200 (the
+owner's word); the zone map's bounds; the 5 s build on arrival. Wanda: the coaster rail (the loop, the helix), skimming water, the
+antlion. Espada: names (the hub, the Gorge Run, the Break, the Step, the Mirror, the Coaster, the Station, the antlion).
+
 ## 6. Who does what
 
-- **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick refill); the track, the
+- **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the
   race, the ledger, the achievements; the Raceway's ground and props from the Dunes' kit.
 - **Calissa**: remove the oval glow under the hull (boat.js `emit`: it clips); **the sandfall**: a curved, waterfall-like plane down the
   face with a scrolling UV texture of falling sand (the owner's ask: elegant and cheap), with a puff where it meets the hill; the carve's

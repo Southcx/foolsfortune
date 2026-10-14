@@ -408,3 +408,19 @@ gives Lachryma). From SSX: the late pop. From MK8 and F-Zero: boost pads (here s
 S flares, Q and E bank, A and D spin. A bail now has one rule: something stopped you head-on, or the board landed pointing away from its
 travel. The Raceway is the test circuit, built of the Dunes' kit, with the sandfall drop the owner asked for. Grind rails come next, on
 the skiff alone (no other tool: the owner); rivals and slipstream are skipped for now; items and rubber banding are left out on purpose.
+
+Round three (SKIFF-RACING.md 9) made the lap a set of choices and the tricks a currency of speed. From SSX Tricky and Tony Hawk's: the
+trick combo (tricks chained, a variety multiplier, banked into free flares, lost on a bail), which replaces the Lachryma a trick gave: the
+pool stays the shield's, tricks pay in speed. From SSX: grabs (the mouse buttons, free on the board) and side ramps. From Crash Team
+Racing: reserves (pushes stack their time). From Kirby Air Ride: the slope landing (the fall kept as speed down a slope, a real lesson in
+transitions). The hour and the weather change the race (the sun plates are solar and die at night; rain wets the sand, which is fast and
+slick, as land sailors race the wet beach), and each condition keeps its own best. The cavern is a branch through a roofed gorge whose
+pads run on Lachryma: the night's line. Every source still pays for doing it at all (a plain lap finishes; a trick of one kind banks) and
+pays more for doing it well (the multiplier, the perfect pop) (section 22's law).
+
+Round four (SKIFF-RACING.md 10) made the Raceway a park, the one place every racing mechanic is tested, in layers: the Sun Circuit
+(learn the board), the Gorge Run (read lines and hazards: a blind crest, cliffs, a slot canyon, a spiral down a crater round an antlion
+pit, a crossover, a ford), the Coaster (grind as a line: a 3D rail with drops, a banked turn, a loop and a helix), and free ground (a
+half-pipe, a pit). What a height field cannot do is done another way: bridges for crossovers, coaster rails for loops. The lessons under
+it are real: the antlion's pit stands at the sand's angle of repose; a banked turn takes g tan(bank) of its own pull; a coaster's lift
+is the price of its fall. The tools that let the design be seen headless (a map from above, an autopilot with a trace) are part of it.

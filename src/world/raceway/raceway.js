@@ -1,187 +1,186 @@
 // ---------------------------------------------------------------------------------------
-// THE RACEWAY (Espada's name; docs/plans/SKIFF-RACING.md section 5): a test circuit for the Solar Skiff, built of the
-// Dunes' kit (their sand and its shader, their sky and light, their ruin pillars, columns and slip geysers) in a place of its own at
-// the Dunes' layer, far east of them (render/zonemap.js 'raceway'). The ground is the track's one height function (world/raceway/
-// track.js), sampled into the same chunked terrain and physics height field the Dunes use; the board reads it through the same few
-// calls it asks of the Dunes (active, heightAt, rideHeight, normalAt, wind), so courier/skiff/skiff.js rides it unchanged. Here the
-// wind is the course's own: it follows the track (Wind Waker HD's Swift Sail), swung off it where the track says. Built the first
-// time it is entered, never for a session that does not come. Reached from the Index (THE RACEWAY); raced from the start's pillar
-// (world/raceway/race.js).
-// The looks are Calissa's: the sandfall (vfx/racewaysandfall.js); the sun plates' glyphs, the arch's lamps and the gates' marks dress
-// the placeholders here when `game.racewayLooks` is in; the gates' pillars are the Dunes' own.
+// THE RACEWAY (Espada's name; docs/plans/SKIFF-RACING.md sections 5 and 10): the Solar Skiff's test park, built of the Dunes' kit (their
+// sand and its shader, their sky and light, their ruin pillars, columns and slip geysers) in a place of its own at the Dunes' layer, far
+// east of them (render/zonemap.js 'raceway'). Since round 4 (the owner, 2026-10-14: "quadruple the size ... nest multiple tracks into one
+// map ... THE zone where we test ALL of our racing module mechanics") it is a park 2.2 km across: a hub where the Index sets you down,
+// and round it three tracks in layers of complexity (the Sun Circuit, the Gorge Run, the Coaster: world/raceway/park.js and tracks/),
+// with bridges, lakes, a crater, the antlion pits and a half-pipe between them. The ground is the park's one height function, sampled
+// into the same chunked terrain and physics height field the Dunes use; the board reads it through the same few calls it asks of the
+// Dunes (active, heightAt, rideHeight, normalAt, wind), so courier/skiff/skiff.js rides it unchanged; rideHeight adds the water it skims
+// and the bridge deck it is on. The wind is the course's own: it follows the track the Courier is on (Wind Waker HD's Swift Sail), swung
+// off it where the track says. Built the first time it is entered. Raced from each track's start pillar (world/raceway/race.js).
+// The looks are Calissa's: the sandfalls (vfx/racewaysandfall.js), the plates' glyphs, lamps and gates' marks (vfx/racewaylooks.js),
+// the cavern (vfx/racewaycavern.js), the fog.
 //
-// Prior art: the test tracks of racing games (Gran Turismo's licence courses, MK8's Time Trial as the first place a track is learned);
-// Motorstorm's and SSX's courses cut into open ground; the Dunes themselves (world/dunes/dunes.js), whose parts are all reused.
+// WHERE THE COURIER IS: `track` the track whose line they are on (the race's while racing; else the nearest, kept until another is nearer
+// by a margin), `s` their place on its line, `d` and `lat` from it; `T` is always the Sun Circuit (the looks dressed on it read it).
+// THE CAVERN (world/raceway/cavern.js; SKIFF-RACING.md 9): the Sun Circuit's branch into a roofed gorge and back. While the Courier is on it
+// `line` is 'cavern', `sb` its place along it, `d` and `lat` from its line, and `s` the place on the line it stands for (the race's gates
+// and ghost read `s` as ever); through it whole, raceway.branch { branch, by }.
 //
-//   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight   .normalAt   .wind   .s (the Courier's place on the line)
-//   .edgeLines(step) -> [{ side, pts }]   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .rails (the grind's: railsrings.js)   .rings   .arrive()   .respawn(s?)   .update(dt)   .T (the track)
+// Prior art: the test tracks of racing games (Gran Turismo's licence courses, MK8's Time Trial), Burnout Paradise's and Kirby Air Ride's
+// City Trial's one map of many tests; Motorstorm's and SSX's courses cut into open ground; the Dunes themselves (world/dunes/dunes.js).
+//
+//   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
+//   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
+//   .plateAt(pos) -> plate | null   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { ChunkTerrain } from '../../render/terrain.js';
-import { addOutline } from '../../render/outline.js';
-import { mergeStatic } from '../../render/merge.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Barrier } from '../dunes/barrier.js';
-import { SlipGeyser } from '../../vfx/slipgeyser.js';
-import { RacewaySandfall } from '../../vfx/racewaysandfall.js';
-import { track, RW, FEATURES } from './track.js';
+import { RW, BRANCH } from './track.js';
+import { park } from './park.js';
 import { buildRails, buildRings, flyRings } from './railsrings.js';
+import { buildCavern } from './cavern.js';
+import { buildKit, buildMarks, GEYSER } from './kit.js';
+import { buildDecks, deckAt, buildWater, buildPits, stepPits } from './features.js';
+import { conditionAt } from './conditions.js';
+import { fieldOf, fieldJob } from './parkfield.js';
 
-const GEYSER = { up: 18, r: 4, over: 4 }; // (as the Dunes' slip geysers: world/dunes/geysers.js LAUNCH)
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
-const OFF = { far: 40, secs: 3 };
-const SANDFALL_FOOT = 0.6; // (the slope (m down a m out) under which the face has become the hill: the sandfall's foot) // (metres past the track's edge, and real seconds there, before the board is set back on the track)
+const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
+const PREFETCH_AFTER = 12; // (real seconds after the Raceway is made (at boot) before its field is worked out in a worker)
+const KEEP = 12; // (metres nearer another track's line must be before the Courier is counted on it: no flicker where two run close)
 
 export class Raceway {
   constructor(game) {
     this.game = game;
-    this.T = track();
-    this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0;
+    this.P = park();
+    this.tracks = this.P.tracks; this.T = this.P.track('sun'); this.track = this.T;
+    this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0; this.line = 'main'; this.sb = 0; this.branchIn = false;
+    this.sun = 1; this.condition = null; this.condT = 0; this.pitT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false;
-    this.geysers = []; this.plates = []; this.rails = []; this.rings = [];
+    this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
-    this.startPillar = this.local(F.x - F.fz * -(F.w + 7), F.z + F.fx * -(F.w + 7)); // (left of the line, beyond the berm: F there begins a race)
+    this.startPillar = this.local(F.x + F.fz * (F.w + 7), F.z - F.fx * (F.w + 7)); // (the Sun Circuit's: left of its line, beyond the berm)
+    if (typeof setTimeout !== 'undefined') setTimeout(() => this.prefetch(), PREFETCH_AFTER * 1000); // (the field worked out in idle time once the boot has settled)
   }
   get center() { return new THREE.Vector3(RW.x, RW.y, RW.z); }
   /** A local point (metres from the Raceway's middle) on the ground, in the world. */
   local(lx, lz) { const x = RW.x + lx, z = RW.z + lz; return new THREE.Vector3(x, this.heightAt(x, z), z); }
   /** Is the Courier here? */
-  get active() { const p = this.game.player?.pos; if (!p) return false; return Math.hypot(p.x - RW.x, p.z - RW.z) < RW.edge + 40 && p.y < -150 && p.y > -600; }
+  get active() { const p = this.game.player?.pos; if (!p) return false; return Math.abs(p.x - RW.x) < RW.half + 60 && Math.abs(p.z - RW.z) < RW.half + 60 && p.y < -150 && p.y > -600; }
+  /** The track the race runs on, or the one the Courier is on. */
+  trackOf(id) { return this.P.track(id); }
 
   /** World height of the ground at world x, z: the field's own samples where it is built (what is drawn and collided), else the function. */
   heightAt(x, z) {
     const lx = x - RW.x, lz = z - RW.z, G = this.grid;
-    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + this.T.heightAt(lx, lz);
+    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + this.P.heightAt(lx, lz);
     const fx = (lx + RW.half) / RW.step, fz = (lz + RW.half) / RW.step, i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j, n = G.n, H = G.heights;
     const h00 = H[i * n + j], h10 = H[(i + 1) * n + j], h01 = H[i * n + j + 1], h11 = H[(i + 1) * n + j + 1];
     return RW.y + (h00 * (1 - u) + h10 * u) * (1 - v) + (h01 * (1 - u) + h11 * u) * v;
   }
-  rideHeight(x, z) { return this.heightAt(x, z); }
+  /** The height a board rides at: the ground, the water over it (the lakes, the fords: skimmed), or the bridge deck the Courier is on. */
+  rideHeight(x, z) {
+    let h = this.heightAt(x, z);
+    const w = this.P.waterAt(x - RW.x, z - RW.z); if (w != null) h = Math.max(h, RW.y + w);
+    if (this.decks.length) { const top = deckAt(this, x, z, this.game.player?.pos.y ?? -1e9); if (top != null) h = Math.max(h, top); }
+    return h;
+  }
   normalAt(x, z, out = new THREE.Vector3()) {
     const e = 0.7, hx = this.heightAt(x + e, z) - this.heightAt(x - e, z), hz = this.heightAt(x, z + e) - this.heightAt(x, z - e);
     return out.set(-hx / (2 * e), 1, -hz / (2 * e)).normalize();
   }
-  /** Where on the line s is, in the world, and which way it runs (yaw, as the Courier's: atan2(fx, fz)). */
-  at(s) { const F = this.T.frame(s); return { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz), w: F.w }; }
+  /** Where on a track's line s is, in the world, and which way it runs (yaw, as the Courier's: atan2(fx, fz)). */
+  at(s, T = this.track) { const F = T.frame(s); return { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz), w: F.w }; }
 
   // ------------------------------------------------------------------ built the first time it is entered
   build() {
     if (this.built) return; this.built = true;
-    const g = this.game, T = this.T;
+    const g = this.game, P = this.P, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
+    let t = performance.now();
+    // the field: the park's heights on the terrain's grid, worked out in idle time after boot (prefetch: parkfield.js), or here
+    const field = this.field || fieldOf(P); this.field = field; t = lap(this.fieldFrom ? 'field (ready, worked out in idle time)' : 'field', t);
+    const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
     // the ground: the Dunes' own sand material on a field of this place's heights, and its height field to stand on
     const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
-    const TR = (this.chunks = new ChunkTerrain({ height: (x, z) => T.heightAt(x, z), half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
+    const TR = (this.chunks = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
     this.grid = { n: TR.n, heights: TR.heights };
     const mesh = (this.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
+    t = lap('terrain', t);
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), body);
-    this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 20, y1: RW.y + 300 });
-    this.buildKit();
-    this.buildMarks();
-    this.rails = buildRails(this); this.rings = buildRings(this); // (the grind's rails and the sun rings: world/raceway/railsrings.js)
-    g.racewayLooks?.dress(this); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+    this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
+    t = lap('collider', t);
+    this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
+    buildKit(this); buildMarks(this); t = lap('kit', t); // (every track's furniture: kit.js)
+    this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
+    this.cavern = buildCavern(this); t = lap('cavern', t); // (its roof, stalactites and crystals: world/raceway/cavern.js)
+    g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+  }
+  /** Work the field out in the idle time between frames, once the game has booted (it is the same function: parkfield.js), so the first
+   *  trip here finds it ready (Petra's v198 measure: 4.5 s inside the travel). A few rows a slice, never past the frame's idle time. */
+  prefetch() {
+    if (this.field || this.fieldJob) return;
+    const job = (this.fieldJob = fieldJob(this.P));
+    const idle = typeof requestIdleCallback === 'function' ? (f) => requestIdleCallback(f, { timeout: 1000 }) : (f) => setTimeout(() => f({ timeRemaining: () => 4 }), 50);
+    const slice = (dl) => { if (this.field) return; if (job.step(() => dl.timeRemaining() > 1)) { this.field = job.field; this.fieldFrom = 'idle'; } else idle(slice); };
+    idle(slice);
   }
 
-  /** The Dunes' ruins, set out as a circuit's furniture: the start's arch, a pair of pillars at each gate, the slalom's columns, the
-   *  start's pillar (a small Gnomon), all one batch (render/merge.js) with their colliders. */
-  buildKit() {
-    const g = this.game, T = this.T, W = g.physics.world, group = (this.group = new THREE.Group()); group.userData.zone = 'raceway';
-    const vc = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true });
-    const painted = (geo, color) => { const g2 = geo.index ? geo.toNonIndexed() : geo, c = new THREE.Color(color), n = g2.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g2.setAttribute('color', new THREE.BufferAttribute(a, 3)); for (const k of Object.keys(g2.attributes)) if (!['position', 'normal', 'color'].includes(k)) g2.deleteAttribute(k); return g2; };
-    const solid = (geo, pos, quat, collider) => {
-      const m = new THREE.Mesh(geo, vc); m.position.copy(pos); m.quaternion.copy(quat); m.castShadow = m.receiveShadow = true; addOutline(m); group.add(m);
-      const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(pos.x, pos.y, pos.z).setRotation(quat)); W.createCollider(collider.setCollisionGroups(GROUPS.static).setFriction(0.9), b);
+  /** A track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
+   *  strings hang (Calissa's look). [{ side: -1 | 1, pts: [Vector3], hide: Uint8Array }], left then right; `hide` marks the points
+   *  that lie where another line's running surface is (the cavern's fork and merge: a string there would cut across the other road). */
+  edgeLines(step = 4, line = 'main', trackId = 'sun') {
+    const T = this.P.track(trackId), Bn = line === 'cavern' ? T.branch : null, len = Bn ? Bn.length : T.length, out = [{ side: -1, pts: [], hide: [] }, { side: 1, pts: [], hide: [] }];
+    const other = (lx, lz) => { // (on the running surface of the line not drawn: the branch's for the main, the main's for the branch)
+      if (Bn) { const n = T.nearest(lx, lz, null, 2); return n && n.d < T.frame(n.s).w + 1.5; }
+      const b = T.branch?.nearest(lx, lz); return !!b && b.sb > 1 && b.sb < T.branch.length - 1 && b.d < T.branch.frame(b.sb).w + 1.5;
     };
-    const yawQ = (yaw) => new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-    // a ruin pillar (the Dunes' own: clay, a gold band, a dark cap), standing h tall
-    const pillar = (p, h, w = 1.6, yaw = 0) => {
-      const geo = mergeGeometries([painted(new THREE.BoxGeometry(w, h, w), 0xd9906a), painted(new THREE.BoxGeometry(w * 1.02, 0.25, w * 1.02).translate(0, h * 0.22, 0), 0xffd696), painted(new THREE.ConeGeometry(w * 0.72, w * 1.1, 4).rotateY(Math.PI / 4).translate(0, h / 2 + w * 0.5, 0), 0x8a4a3a)]);
-      solid(geo, p.clone().setY(p.y + h / 2 - 1.5), yawQ(yaw), RAPIER.ColliderDesc.cuboid(w / 2, h / 2, w / 2));
-    };
-    const side = (s, lat) => { const F = T.frame(s); return this.local(F.x - F.fz * lat, F.z + F.fx * lat); }; // (lat: metres to the track's right)
-    const yawAt = (s) => { const F = T.frame(s); return Math.atan2(F.fx, F.fz); };
-    // the start's arch over the line, and a gate's pair of pillars at each of the eight gates
-    { const s = T.line, F = T.frame(s), a = side(s, -(F.w + 3)), b = side(s, F.w + 3), top = Math.max(a.y, b.y) + 11;
-      pillar(a, top - a.y + 1.5, 2.2, yawAt(s)); pillar(b, top - b.y + 1.5, 2.2, yawAt(s));
-      const mid = a.clone().add(b).multiplyScalar(0.5).setY(top + 0.6), len = a.distanceTo(b.clone().setY(a.y)) + 2.6;
-      solid(painted(new THREE.BoxGeometry(len, 1.4, 2.0), 0x8a4a3a), mid, yawQ(yawAt(s) + Math.PI / 2), RAPIER.ColliderDesc.cuboid(len / 2, 0.7, 1.0)); }
-    for (const s of T.gates) { const F = T.frame(s); pillar(side(s, -(F.w + 2.5)), 8, 1.5, yawAt(s)); pillar(side(s, F.w + 2.5), 8, 1.5, yawAt(s)); }
-    // the slalom: broken columns in the line, every so often, side to side
-    { const S = FEATURES.slalom, s0 = T.sOf(...S.from), s1 = T.sOf(...S.to); let k = 0;
-      for (let s = s0; s < s1; s += S.every, k++) { const p = side(s, (k % 2 ? 1 : -1) * S.lat), h = 4 + (k % 3), w = 1.3;
-        solid(painted(new THREE.CylinderGeometry(w * 0.8, w, h, 8), k % 2 ? 0xd9906a : 0x8a4a3a), p.clone().setY(p.y + h / 2 - 0.6), yawQ(k), RAPIER.ColliderDesc.cylinder(h / 2, w * 0.9)); } }
-    // the start's pillar: a small Gnomon (F at its foot: a race)
-    { const p = this.startPillar, spire = painted(new THREE.CylinderGeometry(0.8, 3, 16, 6), 0xf6d9b8);
-      solid(spire, p.clone().setY(p.y + 7.5), yawQ(0), RAPIER.ColliderDesc.cylinder(8, 2.4)); }
-    g.scene.add(group);
-    group.updateMatrixWorld(true);
-    mergeStatic(group);
-  }
-
-  /** The sun plates, the geysers and the sandfall: placeholders where they are looks (Calissa's), real where they act. */
-  buildMarks() {
-    const g = this.game, T = this.T, F = FEATURES;
-    const plateMat = new THREE.MeshBasicMaterial({ color: 0xffd36b, transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
-    for (const P of F.plates) {
-      const s = T.sOf(P.cp, P.at), Fr = T.frame(s + P.len / 2), c = this.local(Fr.x - Fr.fz * P.lat, Fr.z + Fr.fx * P.lat);
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(P.w * 2, P.len).rotateX(-Math.PI / 2), plateMat);
-      m.position.copy(c).setY(c.y + 0.08); m.rotation.y = Math.atan2(Fr.fx, Fr.fz); m.userData.zone = 'raceway'; m.renderOrder = 3; g.scene.add(m);
-      this.plates.push({ s0: s, s1: s + P.len, lat: P.lat, w: P.w, mesh: m, index: this.plates.length });
+    for (let s = 0; s < len; s += step) {
+      const F = Bn ? Bn.frame(s) : T.frame(s);
+      for (const E of out) { const lat = E.side * (Bn ? F.w - 1 : F.w + 0.5), lx = F.x - F.fz * lat, lz = F.z + F.fx * lat, p = this.local(lx, lz); p.y += Bn ? 1.2 : 1; E.pts.push(p); E.hide.push(other(lx, lz) ? 1 : 0); } // (the cavern's: 1 m inside its floor's edge: Calissa, 2026-10-14)
     }
-    for (const [i, G] of F.geysers.entries()) {
-      const s = T.sOf(G.cp, G.at), Fr = T.frame(s), pos = this.local(Fr.x - Fr.fz * G.lat, Fr.z + Fr.fx * G.lat);
-      const look = new SlipGeyser({ height: 24, radius: GEYSER.r, seed: 40 + i }); look.group.position.copy(pos); look.group.userData.zone = 'raceway'; g.scene.add(look.group);
-      this.geysers.push({ look, pos, thrown: false });
-    }
-    // the sandfall, down the face under the lip: where it hangs is data, its look Calissa's
-    // (hung at the lip itself, and down to where the ground stops being sheer, measured on the ground as drawn: hung 3 m past the lip and
-    // measured to the track's control point, it began partway down and ended a third of the way: the owner, 2026-10-14)
-    { const L = F.glideLip, s = T.sOf(L.cp, 0), Fr = T.frame(s), top = this.local(Fr.x, Fr.z), w = Fr.w * 2 + 10, dir = new THREE.Vector3(Fr.fx, 0, Fr.fz);
-      const ground = (z) => this.heightAt(top.x + dir.x * z, top.z + dir.z * z);
-      let foot = 4; while (foot < 40 && ground(foot) - ground(foot + 1) > SANDFALL_FOOT) foot++; // (out past the face until the slope eases)
-      const h = top.y - ground(foot) + 1, curve = 2.6;
-      this.sandfall = { top: top.clone(), dir, width: w, height: h, foot };
-      this.sandfall.look = new RacewaySandfall(g, { ...this.sandfall, curve, lean: Math.max(1, foot - curve), zone: 'raceway' }); this.sandfall.mesh = this.sandfall.look.object; g.scene.add(this.sandfall.mesh); } // (Calissa's curtain: vfx/racewaysandfall.js, placed at `top` along `dir`)
-  }
-
-  /** The track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
-   *  strings hang (Calissa's look, the owner's ask of 2026-10-14). [{ side: -1 | 1, pts: [Vector3] }], left then right. */
-  edgeLines(step = 4) {
-    const T = this.T, out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
-    for (let s = 0; s < T.length; s += step) { const F = T.frame(s); for (const E of out) { const lat = E.side * (F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += 1; E.pts.push(p); } }
+    for (const E of out) E.hide = Uint8Array.from(E.hide);
     return out;
   }
 
   // ------------------------------------------------------------------ what the board asks
-  /** A sun plate under the Courier (riding its stretch of the line, within its width), or null. */
+  /** A sun plate under the Courier (riding its stretch of its line, within its width), or null. Its `power` (0..1): a sun plate's the
+   *  sun's (conditions.js), a crystal vein's always whole. */
   plateAt(pos) {
     if (!this.plates.length || this.d > 30) return null;
-    const L = this.T.length;
-    for (const P of this.plates) { const u = ((this.s - P.s0) % L + L) % L; if (u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) return P; }
+    const T = this.track, L = T.length;
+    for (const P of this.plates) {
+      if (P.track !== T.id || P.line !== this.line) continue;
+      const u = P.line === 'cavern' ? this.sb - P.s0 : ((this.s - P.s0) % L + L) % L;
+      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun; return P; }
+    }
     return null;
   }
-  /** Over the glide lip's stretch (the wings open by themselves there: MK8's glider ramp)? */
-  glideAt() { const G = FEATURES.glideLip, s0 = this.T.sOf(G.cp, G.from), L = this.T.length, u = ((this.s - s0) % L + L) % L; return this.d < 40 && u <= G.to - G.from; }
+  /** Over a glide lip's stretch of the track they are on (the wings open by themselves there: MK8's glider ramp)? */
+  glideAt() {
+    if (this.line !== 'main' || this.d > 40) return false;
+    const T = this.track, L = T.length;
+    return T.features.glideLips.some((G) => { const s0 = T.sOf(G.cp, G.from); return ((this.s - s0) % L + L) % L <= G.to - G.from; });
+  }
 
-  /** Into the Raceway from the Index: set down on foot beside the start's pillar, facing the line. */
+  /** Into the Raceway from the Index: set down on foot at the hub, among the tracks' starts. */
   arrive() {
     const g = this.game; this.build();
-    g.player.killY = RW.y - 90;
-    const p = this.startPillar, at = this.at(this.T.line), to = p.clone().addScaledVector(new THREE.Vector3(Math.sin(at.yaw), 0, Math.cos(at.yaw)), -6).add(new THREE.Vector3(Math.sin(at.yaw + Math.PI / 2), 0, Math.cos(at.yaw + Math.PI / 2)).multiplyScalar(4));
-    to.y = this.heightAt(to.x, to.z) + 0.05;
-    g.course.teleport(to, Math.atan2(p.x - to.x, p.z - to.z));
-    this.s = this.T.line;
-    g.events?.emit('raceway.enter', { by: 'courier' });
+    g.player.killY = RW.y - 120;
+    const H = this.P.hub, to = this.local(H.x - 8, H.z - 8);
+    to.y += 0.05;
+    g.course.teleport(to, Math.atan2(1, 0));
+    this.track = this.T; this.s = this.T.line; this.line = 'main'; this.branchIn = false;
+    g.events?.emit('raceway.enter', { tracks: this.tracks.map((T) => T.id), by: 'courier' });
   }
-  /** Set back on the track at s (or where they are along it), mounted, facing along it (MK8's Lakitu). */
-  respawn(s = this.s) {
-    const g = this.game, at = this.at(s); at.pos.y += 0.6;
+  /** Set back on the track at s (or where they are along it: in the cavern, on its branch), mounted, facing along it (MK8's Lakitu). */
+  respawn(s, T = this.track) {
+    const g = this.game, inCave = s == null && this.line === 'cavern' && T.branch;
+    if (s == null) s = this.s;
+    let at = this.at(s, T);
+    if (inCave) { const F = T.branch.frame(this.sb); at = { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz) }; }
+    { const top = this.decks.length ? deckAt(this, at.pos.x, at.pos.z, at.pos.y + 50) : null; if (top != null && T.decks.some((D) => s >= D.s0 && s <= D.s1)) at.pos.y = top; } // (set back on a bridge: on its deck)
+    at.pos.y += 0.6;
+    g.player.techs?.get?.('skiff')?.combo?.drop('respawn'); // (set back: the chain is lost, as in a bail)
     g.course.teleport(at.pos, at.yaw);
-    this.s = s; this.offT = 0;
+    this.track = T; this.s = s; this.offT = 0; if (!inCave) { this.line = 'main'; this.branchIn = false; }
     g.player.techs?.get?.('skiff')?.mount();
-    g.events?.emit('race.respawn', { by: 'courier' });
+    g.events?.emit('race.respawn', { track: T.id, by: 'courier' });
   }
 
   // ------------------------------------------------------------------ per frame
@@ -190,16 +189,35 @@ export class Raceway {
     const g = this.game, cam = g.camera, here = this.active;
     this.chunks.update(cam.position.x - RW.x, cam.position.z - RW.z);
     if (!here) return;
-    this.sandfall?.look?.update(dt);
+    for (const F of this.sandfalls) F.look?.update(dt);
     flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
     this.barrier.update(dt);
+    stepPits(this, dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
-    // the Courier's place on the line, followed along it (never jumping to a switchback's other leg), found afresh when far off it
-    const n = (this.d < 60 ? this.T.nearest(lx, lz, this.s) : null) || this.T.nearest(lx, lz);
-    if (n) { this.s = n.s; this.d = n.d; this.lat = n.lat; }
-    // the course's wind: along the track, turned off it by the track's own angle
-    const F = this.T.frame(this.s), a = Math.atan2(F.fz, F.fx) + F.wind;
-    this.wind.dir.set(Math.cos(a), Math.sin(a)); this.wind.gust = 1 + 0.05 * Math.sin(performance.now() * 0.0003); this.wind.speed = WIND.speed * this.wind.gust;
+    // the hour and the weather (conditions.js), read a few times a real second
+    if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g); this.sun = this.condition.sun; }
+    const C = this.condition;
+    // which track: the race's while racing; else the nearest line, kept until another's is nearer by KEEP metres
+    const race = g.race?.running ? g.race.T : null;
+    let T = race || this.track, n = (this.d < 60 && this.line === 'main' ? T.nearest(lx, lz, this.s) : null) || T.nearest(lx, lz);
+    if (!race) for (const T2 of this.tracks) { if (T2 === T) continue; const n2 = T2.nearest(lx, lz); if (n2 && (!n || n2.d < n.d - KEEP)) { T = T2; n = n2; } }
+    if (T !== this.track) { this.track = T; this.line = 'main'; this.branchIn = false; }
+    // on the cavern's branch when they are nearer its line than the circuit's (by 3 m: no flicker where the two run as one at the fork and merge)
+    const Bn = T.branch, nb = Bn?.nearest(lx, lz), bw = nb ? Bn.frame(nb.sb).w : 0;
+    const wasLine = this.line;
+    if (nb && nb.d < bw + 6 && (!n || nb.d < n.d - (this.line === 'cavern' ? -3 : 3))) this.line = 'cavern'; else this.line = 'main';
+    if (this.line === 'cavern') { this.sb = nb.sb; this.d = nb.d; this.lat = nb.lat; this.s = Bn.mainOf(nb.sb); }
+    else if (n) { this.s = n.s; this.d = n.d; this.lat = n.lat; }
+    if (this.line !== wasLine) {
+      if (this.line === 'cavern') this.branchIn = this.sb < BRANCH.hold * 2; // (in at its fork, not dropped into its middle)
+      else { if (this.branchIn && this.sb > Bn.length - BRANCH.hold * 2) g.events?.emit('raceway.branch', { branch: Bn.id, by: 'courier' }); this.branchIn = false; }
+    }
+    // the course's wind: along the track, turned off it by the track's own angle; in the cavern along its branch, weaker (a cave breathes);
+    // the weather's strength and squalls on it
+    const F = this.line === 'cavern' ? Bn.frame(this.sb) : T.frame(this.s), a = Math.atan2(F.fz, F.fx) + F.wind, t = performance.now() * 0.001;
+    const swing = C?.gust ? C.gust * (Math.sin(t * 0.9) * 0.6 + Math.sin(t * 2.3 + 1) * 0.4) : 0;
+    this.wind.dir.set(Math.cos(a), Math.sin(a)); this.wind.gust = 1 + 0.05 * Math.sin(t * 0.3) + swing;
+    this.wind.speed = WIND.speed * this.wind.gust * (C?.wind ?? 1) * (this.line === 'cavern' ? BRANCH.wind : 1);
     // the slip geysers: on their cycle, throwing whatever is in the column up (as the Dunes')
     for (const G of this.geysers) {
       G.look.update(dt);
@@ -209,9 +227,9 @@ export class Raceway {
       const S = g.techs?.active; if (S?.id === 'skiff') { S.air = true; S.spin = 0; S.airT = 0; }
       g.events?.emit('geyser.launch', { by: 'environment' });
     }
-    // far off the track on the board for a while: set back on it
-    const riding = g.techs?.active?.id === 'skiff' && g.techs.active.phase === 'ride';
-    this.offT = riding && this.d > F.w + OFF.far ? this.offT + dt : 0;
-    if (this.offT > OFF.secs) this.respawn(this.s);
+    // far off the track on the board for a while: set back on it (only while racing: the park is free to ride)
+    const riding = g.techs?.active?.id === 'skiff' && g.techs.active.phase === 'ride' && !g.techs.active.grind?.on;
+    this.offT = riding && race && this.d > F.w + OFF.far ? this.offT + dt : 0;
+    if (this.offT > OFF.secs) this.respawn();
   }
 }

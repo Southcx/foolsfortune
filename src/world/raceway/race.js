@@ -1,13 +1,16 @@
 // ---------------------------------------------------------------------------------------
-// THE RACE AT THE RACEWAY (docs/plans/SKIFF-RACING.md section 5): F at the start's pillar begins a time trial of three laps. The board is
+// THE RACE AT THE RACEWAY (docs/plans/SKIFF-RACING.md sections 5 and 10): F at a track's start pillar begins a time trial of three laps
+// on that track (the park has several: world/raceway/park.js; each keeps its own best lap's ghost). The board is
 // set on the grid and held for the countdown (3, 2, 1, GO: said in the log, the gate's lights Calissa's); the sail can be readied, and
 // run up full in the quarter second after GO it is a SOLAR START, a push off the line (MK8's rocket start; up too soon, the pump is
 // spent while held and it luffs). Then three laps through eight gates in order (a gate missed is gone back for: the line counts only
 // after all eight), a split at the half lap against your best lap's, a lap's time at the line, and a ghost of your best lap riding beside
 // you (kept in the save). R in a race goes back to the last gate passed (Trackmania's checkpoint respawn). A bail in a race is got up from and set back on the track where it happened (MK8's Lakitu). The time takes a medal; each medal
-// pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it.
-// Events (each with `by`): race.start, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
-// seconds, best }, race.finish { seconds, medal, laps }, race.end { why }.
+// pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it. A race is run under the hour's and the
+// weather's condition at its start (conditions.js: said then, and its time kept on that condition's board too, Trackmania's "the same
+// track, another board"). The cavern's branch counts as the stretch of line it stands for (raceway.js maps it), its gate 8 with it.
+// Events (each with `by`): race.start { condition, light, aspect }, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
+// seconds, best }, race.finish { seconds, medal, laps, condition, track }, race.end { why }.
 // The ghost's look is a placeholder (Calissa's): a pale hull and sail.
 //
 // Prior art: MK8's time trials (the ghost, the rocket start, a medal as a test passed once), Gran Turismo's licence tests, Wave Race's and
@@ -17,6 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ECON } from '../../progress/econ/table.js';
+import { conditionAt } from './conditions.js';
 
 /** The numbers: laps; the countdown (real s); the solar start's window after GO and its push; the medals by total time (real s, three
  *  laps: drafts until Petra measures the line, and they move with it); each medal's pay once (minutes of play); the ghost's samples a
@@ -30,30 +34,36 @@ export const medalOfRace = (seconds) => (seconds <= RACE.medals.gold ? 'gold' : 
 export class Race {
   constructor(game) {
     this.game = game; this.running = false; this.state = 'idle';
-    this.bestLap = null; // { seconds, splits: [s at each gate], frames: [[t, x, y, z, yaw]] } (the session's: the ledger keeps the time)
+    this.bestLaps = {}; // { [track]: { seconds, splits: [s at each gate], frames: [[t, x, y, z, yaw]] } } (the ledger keeps the times)
+    this.T = null; // (the track raced)
     game.interact?.add('race', () => (game.dialogue?.open ? null : this.offer()));
     game.events?.on('skiff.pump', () => { if (this.state === 'run' && this.goT != null && this.goT <= RACE.solar.window && !this.solarDone) { this.solarDone = true; this.skiff?.kick(RACE.solar.add, RACE.solar.dur, RACE.solar.kick); game.events.emit('race.solarstart', { by: 'courier' }); } });
     game.events?.on('skiff.bail', () => { if (this.running) this.bailT = 0; });
     // the best lap's ghost is kept (the save's `raceGhost`, player scope: a build's progress, reset with it); its frames to a tenth
-    game.save?.section('raceGhost', { scope: 'player', version: 1,
-      dump: () => this.bestLap ? { seconds: this.bestLap.seconds, splits: this.bestLap.splits.map((v) => +v.toFixed(2)), frames: this.bestLap.frames.map((f) => f.map((v) => +v.toFixed(1))) } : null,
-      load: (d) => { this.bestLap = d?.frames?.length ? d : null; }, reset: () => { this.bestLap = null; } });
+    const pack = (B) => ({ seconds: B.seconds, splits: B.splits.map((v) => +v.toFixed(2)), frames: B.frames.map((f) => f.map((v) => +v.toFixed(1))) });
+    game.save?.section('raceGhost', { scope: 'player', version: 2,
+      dump: () => Object.fromEntries(Object.entries(this.bestLaps).map(([k, B]) => [k, pack(B)])),
+      load: (d) => { this.bestLaps = {}; for (const [k, B] of Object.entries(d || {})) if (B?.frames?.length) this.bestLaps[k] = B; }, reset: () => { this.bestLaps = {}; } });
   }
   get R() { return this.game.raceway; }
+  get bestLap() { return this.T ? this.bestLaps[this.T.id] || null : null; }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
 
   offer() {
     const R = this.R, P = this.game.player; if (!R?.built || this.running || !R.active) return null;
-    const p = R.startPillar, d = Math.hypot(P.pos.x - p.x, P.pos.z - p.z); return d < 7 ? { pos: p.clone().setY(p.y + 3), d } : null;
+    let best = null;
+    for (const Pl of R.pillars) { const d = Math.hypot(P.pos.x - Pl.pos.x, P.pos.z - Pl.pos.z); if (d < 7 && (!best || d < best.d)) best = { pos: Pl.pos.clone().setY(Pl.pos.y + 3), d, track: Pl.track }; }
+    this.offered = best?.track; return best;
   }
 
-  start() {
+  start(trackId = this.offered || 'sun') {
     if (this.running) return false;
     const g = this.game, R = this.R; if (!R?.active) return false;
-    const grid = R.T.line - 20; R.respawn((grid + R.T.length) % R.T.length);
+    const T = (this.T = R.trackOf(trackId) || R.T), grid = T.line - 20; R.respawn((grid + T.length) % T.length, T);
     this.running = true; this.state = 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
     this.lap = 1; this.next = 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0;
-    g.events?.emit('race.start', { by: 'courier' });
+    const C = (this.condition = conditionAt(g));
+    g.events?.emit('race.start', { track: T.id, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, by: 'courier' });
     return true;
   }
 
@@ -76,18 +86,18 @@ export class Race {
     // ---- the run
     this.t += dt; this.lapT += dt; this.goT += dt;
     if (S) S.hold = false;
-    if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(R.s); }
+    if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(); } // (where they are: in the cavern, on its branch)
     // R: back to the last gate passed, mounted (Trackmania's respawn at a checkpoint): the lap goes on, the clock with it
-    if (g.input?.wasPressed?.('KeyR') && !g.log?.typing) { this.bailT = null; const gs = this.next > 0 ? R.T.gates[this.next - 1] : R.T.line; R.respawn(gs + 2); this.prevS = R.s; g.events?.emit('race.back', { gate: this.next, by: 'courier' }); }
+    if (g.input?.wasPressed?.('KeyR') && !g.log?.typing) { this.bailT = null; const T = this.T, gs = this.next > 0 ? T.gates[this.next - 1] : T.line; R.respawn(gs + 2, T); this.prevS = R.s; g.events?.emit('race.back', { gate: this.next, by: 'courier' }); }
     // the ghost's samples of this lap
     if ((this.ghostT += dt) >= 1 / RACE.ghostHz) { this.ghostT = 0; this.frames.push([+this.lapT.toFixed(2), PL.pos.x, PL.pos.y, PL.pos.z, S?.heading ?? PL.bodyYaw]); }
     // gates crossed: the place on the line moved forward past one, inside the track
-    const L = R.T.length, d = ((R.s - this.prevS + L * 1.5) % L) - L / 2; // (how far along the line since the last step, signed)
-    const within = R.d < R.T.frame(R.s).w + 10;
+    const T = this.T, L = T.length, d = ((R.s - this.prevS + L * 1.5) % L) - L / 2; // (how far along the line since the last step, signed)
+    const within = R.d < T.frame(R.s).w + 10;
     if (d > 0 && d < 60 && within) {
       const crossed = (gs) => { const u = ((gs - this.prevS) % L + L) % L; return u > 0 && u <= d; };
-      if (this.next < R.T.gates.length && crossed(R.T.gates[this.next])) this.gate();
-      else if (this.next >= R.T.gates.length && crossed(R.T.line)) this.lapDone();
+      if (this.next < T.gates.length && crossed(T.gates[this.next])) this.gate();
+      else if (this.next >= T.gates.length && crossed(T.line)) this.lapDone();
     }
     this.back = d < 0 && within ? this.back - d : Math.max(0, this.back - Math.max(0, d)); // (wrong way: running back along the line)
     if (this.back > 30) { g.log?.say('warn', 'Wrong way.', { key: 'race.wrong', throttle: 4 }); this.back = 0; }
@@ -101,16 +111,16 @@ export class Race {
   }
   lapDone() {
     const g = this.game, seconds = +this.lapT.toFixed(2), best = !this.bestLap || seconds < this.bestLap.seconds;
-    if (best) { this.bestLap = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); }
+    if (best) { this.bestLaps[this.T.id] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); }
     this.laps.push(seconds);
-    g.events?.emit('race.lap', { lap: this.lap, seconds, best, by: 'courier' });
+    g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, by: 'courier' });
     if (this.lap >= RACE.laps) { this.finish(); return; }
     this.lap++; this.next = 0; this.lapT = 0; this.splits = []; this.frames = [];
   }
   finish() {
-    const g = this.game, L = g.ledger, seconds = +this.laps.reduce((a, b) => a + b, 0).toFixed(2), medal = medalOfRace(seconds);
+    const g = this.game, L = g.ledger, seconds = +this.laps.reduce((a, b) => a + b, 0).toFixed(2), medal = this.T.id === 'sun' ? medalOfRace(seconds) : null; // (medals are the Sun Circuit's for now: the others' times are not yet measured)
     const first = medal && !(L?.get?.(`race.raceway.${medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
-    g.events?.emit('race.finish', { seconds, medal, laps: this.laps.slice(), by: 'courier' });
+    g.events?.emit('race.finish', { seconds, medal, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, by: 'courier' });
     if (first) g.cubes?.earn(Math.round(RACE.pay[medal] * ECON.perMinute), 'trial');
     this.running = false; this.state = 'idle';
   }

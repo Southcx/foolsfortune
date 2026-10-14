@@ -22,6 +22,7 @@
 // them; until it is parsed and its materials compiled the boat is not drawn, and nothing else waits on it.
 //   const skiff = new Skiff(scene);   skiff.load(game)  (a promise; again: the same one)   skiff.ready
 //   skiff.set({ sail, side, fill, boom, glow, t, speed, wings })   // per frame: what the sail is doing (wings 0..1: the glide)
+//   skiff.pulse(k)                                           // a short flash of the boost's Lachryma glow (a perfect pop, a bank)
 //   skiff.placePennant(windDir, strength, t)                 // per frame, once the group is placed
 //   skiff.pose(rider, s) or skiff.posePhase(clip, t)         // after the rider is posed (skiff.js animate)
 //   skiff.group.position / .quaternion                       // where it is
@@ -33,6 +34,8 @@ import { addOutline, rigUniforms } from '../../render/outline.js';
 import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
 import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
+import { featTint } from '../../vfx/oxidation.js';
+import { LACHRYMA_TINT } from '../../vfx/racewayeffects.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
 // rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
@@ -51,6 +54,12 @@ const FURLED = { yard: 0.055, sail: 0.06 };
 // the belly at full fill: each sail bone out to the side of the one below (m), from Skiff_RideCruise; Skiff_RideIdle is a third of it
 const BELLY = [0.27, 0.22, -0.14];
 const C = { rope: 0xe9d4a4, energy: 0xffc65c };
+// THE BOOST'S GLOW (round 3, the owner: the push is Lachryma's, so it glows in Lachryma's colour): the flare and every turbo (`glow`,
+// skiff.boosting 0..1) turn the energy parts' warm light to Lachryma's and tint the cloth's own glow with it, the oil film walking
+// through it (`film` of it, at `filmRate` loops a real second: vfx/oxidation.js featTint); `pulse()` a short flash of it (a perfect pop,
+// a bank: real seconds `pulseDur`). Uniforms only: the hull's, the cloth's and the energy's programs are as they were.
+export const SKIFF_BOOST_GLOW = { energy: 1.6, cloth: 0.9, tintCloth: 0.85, film: 0.25, filmRate: 0.3, pulse: { energy: 2.2, cloth: 1.2 }, pulseDur: 0.45 };
+const WARM = new THREE.Color(PALETTE.glow ?? C.energy), LACH = new THREE.Color(LACHRYMA_TINT), WHITE = new THREE.Color(1, 1, 1), _lc = new THREE.Color(), _fc = new THREE.Color();
 const Zax = new THREE.Vector3(0, 0, 1), Xax = new THREE.Vector3(1, 0, 0);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3();
 // SKIFF_GLIDE: the glide's pose of the boat (Space held in the air; the owner's R8: "a Skiff_Glide pose, oars out as wings"). The oars
@@ -92,7 +101,7 @@ export class Skiff {
     this.group.visible = false;
     this.group.userData.zoneFree = true; // (shown and hidden by the tech, in the Dunes only: the zones placed it, waiting at the origin, in the workshop, and hid the first summon a quarter second: CASEBOOK, 2026-10-08)
     scene.add(this.group);
-    this.side = 1; this.boomAngle = 0.5; this.L = 0; this.fill = 0; this.glow = 0; this.t = 0; this.folded = 1;
+    this.side = 1; this.boomAngle = 0.5; this.L = 0; this.fill = 0; this.glow = 0; this.t = 0; this.folded = 1; this.pulseK = 0;
     this.wind = { yaw: 0, str: 0.6, t: 0 };
     this.ground = -0.6; // (the sand's height in the group's frame: skiff.js says, each frame)
     this.tip = new THREE.Vector3(); // the boom's end, in world space (for the sheet)
@@ -216,11 +225,20 @@ export class Skiff {
   /** sail 0..1 hoisted; side +-1; fill 0..1; boom = the boom's angle from dead aft (radians, + to the boat's right); glow 0..1 (a flare); t seconds. */
   set({ sail, side, fill, boom, glow, t, speed, wings = 0 }) {
     this.wings = wings;
+    const dt = Math.min(0.1, Math.max(0, t - this.t)), G = SKIFF_BOOST_GLOW;
     this.L = sail; this.side = side; this.fill = fill; this.boomAngle = boom; this.glow = glow; this.t = t;
+    this.pulseK = Math.max(0, this.pulseK - dt / G.pulseDur);
     if (!this.P) return;
-    this.clothMat.emissiveIntensity = PAINT_LIGHT + 0.7 * glow;
-    this.energyMat.emissiveIntensity = 0.3 + 1.4 * glow;
+    // the boost's glow: Lachryma's colour (the film walking through it) over the energy's warm light and the cloth's own, by the push
+    const k = THREE.MathUtils.clamp(glow, 0, 1), p = this.pulseK * this.pulseK, tint = smooth(0, 0.4, Math.max(k, p));
+    _lc.copy(LACH).lerp(featTint(t * G.filmRate, _fc, { bright: 1.1 }), G.film).lerp(WHITE, 0.35 * p);
+    this.energyMat.emissive.copy(WARM).lerp(_lc, tint);
+    this.clothMat.emissive.copy(WHITE).lerp(_lc, G.tintCloth * tint);
+    this.clothMat.emissiveIntensity = PAINT_LIGHT + G.cloth * k + G.pulse.cloth * p;
+    this.energyMat.emissiveIntensity = 0.3 + G.energy * k + G.pulse.energy * p;
   }
+  /** A short flash of Lachryma's light through the boat (a perfect pop, a bank: vfx/racewaylooks.js), fading in SKIFF_BOOST_GLOW.pulseDur. */
+  pulse(k = 1) { this.pulseK = Math.max(this.pulseK, Math.min(1, k)); }
 
   /** The ride: the boat's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
   pose(R, s) {
