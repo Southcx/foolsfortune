@@ -83,7 +83,6 @@ const GRAB = { tweak: 0.3, cap: 3, double: 1.5 };
 const SLOPE = { keep: 0.8, max: 8, trick: 2 };
 // the pushes stack (Crash Team Racing's reserves): another while one runs adds its length, to `cap` real seconds
 const TURBO = { cap: 4 };
-const LACHRYMA_TINT = 0x7fdcff; // (a placeholder for the perfect pop's glyph: Lachryma's colour is Calissa's)
 const SAIL_SEE = 0.5; // (the sail's screen-door fade under way: half its dots, so the track shows through)
 // how much of the wind's push the sail uses, by cos(angle between the heading and where the wind goes): 1 dead downwind .. -1 into it
 const POLAR = [[-1, 0.28], [-0.6, 0.42], [-0.2, 0.7], [0.2, 0.92], [0.7, 1.0], [1, 1.0]];
@@ -416,8 +415,7 @@ export class Skiffing extends Tech {
     } else if (!sp2 && this.spaceWas && this.air && this.launchT < POP.window && !this.gliding) {
       const perfect = this.launchT < POP.perfect; // (let go in its first moment: the nailed pop, the owner's ask)
       P.vel.y = Math.max(P.vel.y, 0) + c.hop * (perfect ? POP.perfectUp : POP.up) + c.hopCharge * this.charge * 0.5; this.v.addScaledVector(f, perfect ? 2.5 : 1.5); this.launchT = 9; this.popT = 0;
-      g.events?.emit('skiff.pop', { late: true, perfect, by: 'courier' }); // (its sound is Wanda's: audio/raceway.js; its mark Calissa's, the glyph a placeholder)
-      if (perfect) g.glyphs?.pop('star', P.pos.clone().setY(P.pos.y + 1.2), { color: LACHRYMA_TINT, size: 0.7, burst: true, ring: true, life: 0.7, follow: () => P.pos });
+      g.events?.emit('skiff.pop', { late: true, perfect, by: 'courier' }); // (its sound is Wanda's: audio/raceway.js; its mark Calissa's: vfx/racewaylooks.js, the sun's glyph struck in Lachryma)
       g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
       this.combo.add('pop', perfect ? COMBO.points.perfect : COMBO.points.pop);
     } else if (!sp2 && this.spaceWas && this.air && this.launchT < POP.miss && !this.gliding && this.launchT !== 9) g.events?.emit('skiff.pop.miss', { late: +this.launchT.toFixed(2), by: 'courier' }); // (let go too late: said, so the timing can be learned)

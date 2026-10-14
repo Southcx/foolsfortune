@@ -9,11 +9,15 @@
 // Round 2: the straight is the first leg of a stadium loop (two straights, two bends, about 297 m) that answers edgeLines(step), with a
 // rider going round it (R.s) for the edge strings' bright run; a glazed rail on the back straight that the skiff grinds (skiff.grind,
 // skiff.grind.end); a sun ring hung over the far bend, flown through (skiff.ring).
+// Round 3: the board's boost (its Lachryma glow and the stern's throw), the late pop (perfect, plain, missed), a stand-in trick combo
+// (links on a clock, banked into flares, spent by a flare, dropped) for the gauge on the board, and the sun (a slider: the plates by it,
+// a dark plate ridden at 0).
 //
 // Prior art: the sandfall's stage beside it (workbench/sandfallstage.js: a look at its real numbers on a stand-in of its place).
 //
 //   racewayLooksStage(game) -> Object3D (userData.tick(t), .dispose(), .view, .api { auto, count(n), go(), next(i), carve(tier),
-//     release(), plate(i), rider(s), grind(), grindEnd(why), ring(), night(k), ready })
+//     release(), plate(i), rider(s), grind(), grindEnd(why), ring(), night(k), boost(), pop(kind), link(kind), bank(), drop(), sun(k),
+//     ready })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import GUI from 'lil-gui';
@@ -23,6 +27,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RacewayLooks } from '../vfx/racewaylooks.js';
 import { SolarRing } from '../vfx/solarring.js';
 import { addOutline } from '../render/outline.js';
+import { COMBO } from '../courier/skiff/combo.js';
 
 const TRACK = { w: 7, line: -14, gates: [24, 36], plates: [0, 8, 16], len: 7, plateW: 2.6 }; // (half width; s of the line, gates, plates)
 const SKIFF_AT = new THREE.Vector3(14, 0.6, 6), GHOST_AT = new THREE.Vector3(10, 0.6, 6); // (the board hovers 0.6 m over the sand)
@@ -49,7 +54,7 @@ function standIn(root) {
   const edgeLines = (step = 4) => { const out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
     for (let u = 0; u < LOOP.len; u += step) { const F = loopFrame(u); for (const E of out) { const lat = E.side * LOOP.w; E.pts.push(v(F.x - F.fz * lat, 1, F.z + F.fx * lat)); } }
     return out; };
-  return { T, plates, s: 10, d: 0, edgeLines, local: (lx, lz) => v(lx, 0, lz), heightAt: () => 0, normalAt: (x, z, out = new THREE.Vector3()) => out.set(0, 1, 0) };
+  return { T, plates, s: 10, d: 0, sun: 1, edgeLines, local: (lx, lz) => v(lx, 0, lz), heightAt: () => 0, normalAt: (x, z, out = new THREE.Vector3()) => out.set(0, 1, 0) };
 }
 
 /** railsrings.js's rail at its numbers (a lintel on columns, one merged vertex-coloured mesh with its outline) and its ring. */
@@ -94,7 +99,9 @@ export function racewayLooksStage(game) {
   // the skiff, its ghost, and the board the carve's sparks ask for (the stage's own: heading +Z, carving to the right)
   const skiff = new Skiff(root), ghost = new THREE.Group(); ghost.position.copy(GHOST_AT); root.add(ghost);
   { const m = new THREE.MeshBasicMaterial({ color: 0xfff1d6, transparent: true, opacity: 0.35, depthWrite: false }), hull = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 2.6), m); hull.position.y = -0.5; ghost.add(hull); } // (her placeholder, until the model is parsed)
-  const board = { group: skiff.group, heading: 0, carve: null, vel: new THREE.Vector3(0, 0, 0) };
+  // (round 3: the boost's push, 0..1, and a stand-in of the skiff's trick combo, courier/skiff/combo.js's live state and its events)
+  const combo = { n: 0, t: 0, mult: 1, stocks: 0, kinds: new Set(), points: 0 };
+  const board = { group: skiff.group, heading: 0, carve: null, vel: new THREE.Vector3(0, 0, 0), boosting: 0, combo, boat: skiff };
   const race = { running: false, state: 'idle', next: 0 };
   const looks = new RacewayLooks(game, { parent: root, vfx: wb.vfx, events, race: () => race, board: () => (skiff.ready ? board : null), skiffModel: () => (skiff.ready ? skiff.model : null), player: () => skiff.group.position });
   looks.dress(R);
@@ -125,12 +132,22 @@ export function racewayLooksStage(game) {
     home() { skiff.group.position.copy(SKIFF_AT); skiff.group.rotation.set(0, 0, 0); board.heading = 0; board.vel.set(0, 0, 0); },
     ring() { R.rings[0].look.pass(); events.emit('skiff.ring', { ring: 0, by: 'courier' }); },
     night(k) { looks.nightOf = () => k; looks.nightT = 9; },
+    boost() { board.boosting = 1; boostT = 1.4; },
+    pop(kind = 'perfect') { if (kind === 'miss') events.emit('skiff.pop.miss', { late: 0.4, by: 'courier' }); else { events.emit('skiff.pop', { late: true, perfect: kind === 'perfect', by: 'courier' }); api.link('pop'); } },
+    link(kind = 'spin') { combo.n++; combo.points += 100; combo.kinds.add(kind); combo.mult = Math.min(COMBO.maxMult, 1 + COMBO.kinds * (combo.kinds.size - 1)); combo.t = COMBO.link; events.emit('skiff.combo', { kind, n: combo.n, points: Math.round(combo.points * combo.mult), mult: combo.mult, by: 'courier' }); },
+    bank() { if (!combo.n) return; const points = Math.round(combo.points * combo.mult), n = combo.n, mult = combo.mult; combo.stocks = Math.min(COMBO.stocks, combo.stocks + points / COMBO.stock); combo.n = 0; combo.points = 0; combo.kinds.clear(); combo.mult = 1; events.emit('skiff.combo.bank', { points, n, mult, stocks: combo.stocks, by: 'courier' }); },
+    drop() { if (!combo.n) return; const points = Math.round(combo.points * combo.mult), n = combo.n; combo.n = 0; combo.points = 0; combo.kinds.clear(); combo.mult = 1; events.emit('skiff.combo.drop', { points, n, why: 'bail', by: 'courier' }); },
+    flare() { if (combo.stocks > 0.01) { spendT = 1.5; api.boost(); } },
+    sun(k) { R.sun = k; },
+    platePower(i, power) { events.emit('skiff.plate', { plate: i, power, by: 'courier' }); },
   };
+  let boostT = 0, spendT = 0;
   let grindS = null;
   const gui = new GUI({ title: "the Raceway's looks" }); gui.domElement.classList.add('ff-tuning'); gui.domElement.id = 'racewayLooksButtons'; gui.domElement.style.zIndex = '45';
   if (!document.getElementById('racewayLooksCss')) document.head.appendChild(Object.assign(document.createElement('style'), { id: 'racewayLooksCss', textContent: 'body #racewayLooksButtons.lil-gui { display: block !important; }' }));
   gui.add(api, 'auto').name('on a loop');
-  const B = { grind: () => api.grind(), 'grind: let go': () => api.grindEnd('hop'), 'fly the ring': () => api.ring(), 'count 3': () => api.count(3), 'count 2': () => api.count(2), 'count 1': () => api.count(1), GO: () => api.go(), 'next gate': () => api.next((race.next + 1) % 3), 'carve tier 1': () => api.carve(1), 'carve tier 2': () => api.carve(2), 'carve tier 3': () => api.carve(3), 'let go': () => api.release(), 'ride a plate': () => api.plate(Math.floor(Math.random() * 3)) };
+  gui.add(R, 'sun', 0, 1, 0.01).name('the sun');
+  const B = { boost: () => api.boost(), 'perfect pop': () => api.pop('perfect'), 'late pop': () => api.pop('late'), 'missed pop': () => api.pop('miss'), 'trick: spin': () => api.link('spin'), 'trick: grab': () => api.link('grab'), 'trick: grind': () => api.link('grind'), bank: () => api.bank(), drop: () => api.drop(), 'flare (spend)': () => api.flare(), 'ride a dark plate': () => api.platePower(0, 0), grind: () => api.grind(), 'grind: let go': () => api.grindEnd('hop'), 'fly the ring': () => api.ring(), 'count 3': () => api.count(3), 'count 2': () => api.count(2), 'count 1': () => api.count(1), GO: () => api.go(), 'next gate': () => api.next((race.next + 1) % 3), 'carve tier 1': () => api.carve(1), 'carve tier 2': () => api.carve(2), 'carve tier 3': () => api.carve(3), 'let go': () => api.release(), 'ride a plate': () => api.plate(Math.floor(Math.random() * 3)) };
   for (const k of Object.keys(B)) gui.add(B, k);
   // the loop: an eight-second race, a seven-second carve, a plate every two seconds
   let last = 0, rk = -1, ck = -1, pk = -1;
@@ -141,8 +158,19 @@ export function racewayLooksStage(game) {
       if (rs !== rk) { rk = rs; if (rs === 0) { api.end(); api.count(3); } else if (rs === 1) api.count(2); else if (rs === 2) api.count(1); else if (rs === 3) api.go(); else api.next(1); }
       const c = t % 7, cs = c < 1.2 ? 1 : c < 2.4 ? 2 : c < 3.6 ? 3 : 4;
       if (cs !== ck) { ck = cs; if (cs <= 3) api.carve(cs); else api.release(); }
-      const p = Math.floor(t / 2) % 3; if (p !== pk) { pk = p; api.plate(p); }
+      const p = Math.floor(t / 2) % 3; if (p !== pk) { pk = p; api.platePower(p, R.sun); }
+      // round 3's loop (eleven seconds): three tricks linked, one a perfect pop, the clock run out to a bank, a flare spent; every
+      // third loop the chain dropped instead
+      const k = t % 11, ks = k < 0.5 ? 0 : k < 1.5 ? 1 : k < 2.5 ? 2 : k < 6 ? 3 : k < 8 ? 4 : 5;
+      if (ks !== tk) { tk = ks; const loop = Math.floor(t / 11);
+        if (ks === 0) api.link('spin'); else if (ks === 1) api.link('grab'); else if (ks === 2) api.pop(loop % 2 ? 'late' : 'perfect');
+        else if (ks === 3 && loop % 3 === 2) api.drop(); else if (ks === 5) api.flare(); }
     }
+    // the stand-in combo's clock (on the sand: it runs, and banks at nought), a flare spending a banked one, the boost's push easing off
+    if (combo.n && (combo.t -= dt) <= 0) api.bank();
+    if (spendT > 0) { spendT -= dt; combo.stocks = Math.max(0, combo.stocks - dt / COMBO.flare); board.boosting = 1; boostT = Math.max(boostT, 0.2); }
+    if ((boostT -= dt) <= 0) board.boosting = Math.max(0, board.boosting - dt * 2.2);
+    if (posed) skiff.set({ sail: 1, side: 1, fill: 0.8, boom: 0.7, glow: board.boosting, t, speed: 10 });
     if (grindS != null) { // (on the rail at 14 m/s, let go at its end)
       grindS += 14 * dt; const L = R.rails[0], f = Math.min(1, grindS / L.len);
       skiff.group.position.copy(L.pts[0]).lerp(L.pts[L.pts.length - 1], f).add(new THREE.Vector3(0, 0.55, 0));
@@ -156,7 +184,7 @@ export function racewayLooksStage(game) {
     for (const Rg of R.rings) Rg.look.update(dt);
     looks.update(dt);
   };
-  let gk = -1, rgk = -1;
+  let gk = -1, rgk = -1, tk = -1;
   root.userData.placed = true; root.userData.bare = true; // (its own ground)
   root.userData.view = { pos: new THREE.Vector3(-30, 40, -70), look: new THREE.Vector3(20, 0, 15) };
   root.userData.looks = looks; root.userData.api = api; root.userData.skiff = skiff; root.userData.ghost = ghost;

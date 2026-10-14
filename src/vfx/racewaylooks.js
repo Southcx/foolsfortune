@@ -24,6 +24,14 @@
 //     a soft hum of gold under the board; a burst as it locks on and lets go. The library's effects on the shared particle pools.
 //   - THE SUN RINGS (Dovina's SolarRing, hung in the air): flown through (skiff.ring), a flash at the heart, the air's motes drawn in
 //     round the rim and out through it, and the ring pulsing once (SolarRing.pulse).
+//   - ROUND 3 (Dovina's handoff, 2026-10-14; the owner after his first race): the carve's sparks much bigger, clearly up a tier, tier 3
+//     a real spray (racewayeffects.js). Every boost glows in Lachryma's colour (skiff.boosting): the boat's energy and cloth (boat.js
+//     SKIFF_BOOST_GLOW) and Lachryma thrown back off the stern (`skiff.boost`, held while pushed), the carve's release and a plate's
+//     push in it too. The perfect pop (skiff.pop { perfect }) the sun's glyph struck in Lachryma on the board, the boat flashing with
+//     it; a plain late pop a small ring; one too late (skiff.pop.miss) a dud puff. The trick combo's gauge and banked flares worn on
+//     the board (vfx/skiffcombomarks.js), its link, step, bank and drop each a moment. The sun plates by the sun (raceway.sun): their
+//     glow, glaze and chevrons dim toward night; ridden dark (skiff.plate { power: 0 }) a cold dull answer. The cavern's crystal veins
+//     are left out of the plates' dress (their look is the cavern's own).
 //
 // Prior art: F-Zero's dash plates (the flash and the arrows running the way to go), Mario Kart's boost pads (the chevrons) and its drift
 // sparks and mini-turbo tiers (blue, orange, purple: ours sand, gold, white), Mario Kart's start lights on Lakitu's rod (a lamp a count,
@@ -36,6 +44,7 @@
 //   racewayLooks.dress(raceway)       the sun plates, the arch's lamps and the gates' marks, built over Dovina's placeholders (hidden)
 //   racewayLooks.dressGhost(group)    the ghost's group worn as the skiff's hologram (as soon as the skiff's model is parsed)
 //   racewayLooks.plateHit(i)          sun plate i flashes and rings (heard on skiff.plate, the plate under the Courier found)
+//   racewayLooks.pop(e) / comboLink(e) / comboBank() / comboDrop()   round 3's moments (heard on their events)
 //   racewayLooks.dressRound2(raceway) the edge strings, the rails' glaze and the rings' passes (dress() calls it; call it again if the
 //                                     rails, rings or edges are built after dress)
 // ---------------------------------------------------------------------------------------
@@ -46,6 +55,7 @@ import { Hologram } from './caster/hologram.js';
 import { RacewayEdgeStrings, EDGE_STRINGS } from './racewayedgestrings.js';
 import { ensureSmoothNormals } from '../render/outline.js';
 import { lightAt } from '../progress/weather.js';
+import { SkiffComboMarks } from './skiffcombomarks.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
  *  the shimmer (its rate, rad a real second, and the glow's low and high); the arch's lamps (radius, spacing, drop under the lintel, glow);
@@ -61,9 +71,15 @@ export const RACEWAY_LOOK = {
   // gold capital; the glaze's sheen; metres between columns), and the grind's contact (m under the board's origin: the keel on the rail)
   rail: { body: 0xb8692e, drip: 0x4a2414, edge: 0xd9944e, worn: 0xfff0c8, clay: 0xd9906a, capital: 0xffd696, roughness: 0.5, post: 8 },
   grind: { contact: 0.4 },
+  // round 3: the plates by the sun (the glow's and the glaze's share left at night, the chevrons' scroll's; the hit's colour cold to
+  // warm by power; how fast the look follows the sun, per real second); the boost's look (shown from this much push; the stern, m);
+  // the carve's wake by tier (real seconds)
+  sun: { glowNight: 0.06, glazeNight: 0.05, scrollNight: 0.12, cold: 0x9fb0c8, warm: 0xffe2a0, follow: 1.5 },
+  boost: { from: 0.12, stern: 1.6, up: -0.05 },
+  wake: [0.5, 0.8, 1.1],
 };
 const UP = new THREE.Vector3(0, 1, 0);
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _c = new THREE.Color();
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color();
 const GLOW = new THREE.Color(RACEWAY_LOOK.colour.glow);
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 
@@ -172,7 +188,7 @@ export class RacewayLooks {
     this.parent = o.parent || null; // (where the meshes go: the scene, or a Workbench stage)
     this.vfxOf = () => o.vfx || game.vfx;
     this.raceOf = o.race || (() => game.race);
-    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v } : null; });
+    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, boat: S.skiff } : null; });
     this.skiffModelOf = o.skiffModel || (() => game.player?.techs?.get?.('skiff')?.skiff?.model || null);
     this.playerOf = o.player || (() => game.player?.pos);
     this.t = 0; this.plates = null; this.marks = null; this.ghost = null;
@@ -193,7 +209,14 @@ export class RacewayLooks {
       E.on('skiff.grind.end', (e) => this.grindEnd(e));
       for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopGrind());
       E.on('skiff.ring', (e) => this.ringPass(e.ring));
+      E.on('skiff.pop', (e) => this.pop(e));
+      E.on('skiff.pop.miss', () => this.pop({ miss: true }));
+      E.on('skiff.combo', (e) => this.comboLink(e));
+      E.on('skiff.combo.bank', () => this.comboBank());
+      E.on('skiff.combo.drop', () => this.comboDrop());
+      for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopBoost());
     }
+    this.boostH = null; this.combo = null; this.sunK = 1;
     this.nightOf = o.night || (() => Math.min(1, Math.max(0, (0.45 - lightAt()) / 0.37))); // (0 by day, 1 at night: the strings cool)
     this.strings = null; this.grindH = []; this.nightK = 0; this.nightT = 9;
   }
@@ -204,12 +227,14 @@ export class RacewayLooks {
     this.undress();
     const parent = this.parent || this.game.scene, L = RACEWAY_LOOK, T = R.T;
     // the plates: where her slabs lie, tilted to the sand under them, the glyph's +Z along the track
-    const P = (this.plateAt = R.plates.map((p) => {
+    this.plateAt = R.plates.map((p) => {
+      if (p.vein) return null; // (the cavern's crystal veins: Lachryma's, not the sun's; their look is the cavern's own)
       const m = p.mesh, pos = m.position.clone(); pos.y = R.heightAt(pos.x, pos.z) + L.plate.lift;
       const n = R.normalAt(pos.x, pos.z, new THREE.Vector3()), q = new THREE.Quaternion().setFromUnitVectors(UP, n).multiply(_q.setFromAxisAngle(UP, m.rotation.y));
       m.visible = false; m.userData.dressed = true;
-      return { pos, q, n };
-    }));
+      return { pos, q, n, fwd: new THREE.Vector3(0, 0, 1).applyQuaternion(q) };
+    });
+    const P = this.plateAt.filter(Boolean);
     const M0 = materials(), glyphGeo = sunGlyph(true), glowGeo = plateGlowGeometry();
     const at = (p, flat, lift) => new THREE.Matrix4().compose(_v.set(0, lift, 0).applyQuaternion(p.q).add(p.pos), p.q, _s.set(L.plate.r, L.plate.r * flat, L.plate.r));
     const B = (this.plates = {
@@ -322,25 +347,27 @@ export class RacewayLooks {
     }
   }
   undress() {
-    this.strings?.dispose(); this.strings = null; this.stopGrind();
+    this.strings?.dispose(); this.strings = null; this.stopGrind(); this.stopBoost();
     for (const m of [this.plates?.glyph, this.plates?.glow, this.marks]) if (m) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
     for (const h of this.markH || []) h?.stop();
     this.plates = this.marks = null; this.markH = [];
   }
 
   /** Sun plate i ridden over: a flash on it, and a ring of light runs out over the sand. */
-  plateHit(i) {
+  plateHit(i, power = 1) {
     const p = this.plateAt?.[i]; if (!p) return;
-    this.vfxOf()?.play('raceway.plate', { pos: p.pos, normal: p.n });
+    const S = RACEWAY_LOOK.sun, pw = Math.max(0, Math.min(1, power ?? 1));
+    if (pw <= 0.05) { this.vfxOf()?.play('raceway.plate.dark', { pos: p.pos, normal: p.n }); return; } // (a dark plate: cold, dull, no push)
+    this.vfxOf()?.play('raceway.plate', { pos: p.pos, normal: p.n, dir: p.fwd, power: 0.35 + 0.65 * pw, phase: this.t * 0.3, tint: _c.set(S.cold).lerp(_c2.set(S.warm), pw).getHex() });
   }
   /** skiff.plate: the plate the Courier is on (the payload's `plate` if it says, else the nearest within its length). */
   plateUnder(e) {
     if (!this.plateAt) return;
-    if (Number.isInteger(e?.plate)) { this.plateHit(e.plate); return; }
+    if (Number.isInteger(e?.plate)) { this.plateHit(e.plate, e.power); return; }
     const at = this.playerOf(); if (!at) return;
     let best = -1, bd = 36; // (within 6 m of a plate's middle: a plate is 7 m long)
-    this.plateAt.forEach((p, i) => { const d = (p.pos.x - at.x) ** 2 + (p.pos.z - at.z) ** 2; if (d < bd) { bd = d; best = i; } });
-    if (best >= 0) this.plateHit(best);
+    this.plateAt.forEach((p, i) => { if (!p) return; const d = (p.pos.x - at.x) ** 2 + (p.pos.z - at.z) ** 2; if (d < bd) { bd = d; best = i; } });
+    if (best >= 0) this.plateHit(best, e?.power);
   }
 
   // ---------------------------------------------------------------- the carve's sparks
@@ -357,7 +384,7 @@ export class RacewayLooks {
     const tint = [0xf0c890, 0xffc24a, 0xfff6e0][Math.min(3, Math.max(1, tier)) - 1];
     const follow = (h) => { const b = this.boardOf(); if (!b?.carve || this.tier !== tier) return false; this.edge(h, b, false); return true; };
     this.carveH = V.play(`skiff.carve.charge.${Math.min(3, Math.max(1, tier))}`, { follow }); follow(this.carveH);
-    const pop = V.play('skiff.carve.tier', { tint, pos: this.carveH.pos, dir: this.carveH.dir }); pop.ctx.vel = B.vel;
+    const pop = V.play('skiff.carve.tier', { tint, pos: this.carveH.pos, dir: this.carveH.dir, power: Math.min(3, Math.max(1, tier)) }); pop.ctx.vel = B.vel;
     if (tier >= 3 && !this.sailH?.alive) {
       const sail = (h) => { const b = this.boardOf(); if (!b?.carve || this.tier < 3) return false; h.pos.set(0, 2.4, 0.2); b.group.localToWorld(h.pos); return true; };
       this.sailH = V.play('skiff.carve.sail', {}); sail(this.sailH); this.sailH.ctx.follow = sail;
@@ -368,12 +395,53 @@ export class RacewayLooks {
     this.stopCarve(); if (!V || !B) return;
     const t = Math.min(3, Math.max(1, tier | 0)), tint = [0xf0c890, 0xffc24a, 0xfff6e0][t - 1];
     const h = { pos: new THREE.Vector3(), dir: new THREE.Vector3(), ctx: {} }; this.edge(h, B, true);
-    V.play('skiff.carve.release', { pos: h.pos, dir: h.dir, tint, power: 0.6 + 0.4 * t });
-    let left = 0.6; // (the wake: held at the stern a moment, as the board runs out of the carve)
+    V.play('skiff.carve.release', { pos: h.pos, dir: h.dir, tint, power: t, phase: this.t * 0.3 });
+    let left = RACEWAY_LOOK.wake[t - 1]; // (the wake: held at the stern a moment, as the board runs out of the carve; longer by tier)
     const wake = (w, raw) => { const b = this.boardOf(); if (!b || (left -= raw) < 0) return false; this.edge(w, b, true); return true; };
-    const w = V.play('skiff.carve.wake', { pos: h.pos, dir: h.dir, follow: wake }); w.ctx.vel = B.vel;
+    const w = V.play('skiff.carve.wake', { pos: h.pos, dir: h.dir, follow: wake, power: 0.7 + 0.3 * t, phase: this.t * 0.3 }); w.ctx.vel = B.vel;
   }
   stopCarve() { this.carveH?.stop(); this.sailH?.stop(); this.carveH = this.sailH = null; this.tier = 0; }
+
+  // ---------------------------------------------------------------- round 3: the boost, the pop, the combo
+  /** Every boost (skiff.boosting): Lachryma thrown back off the stern while it pushes, its strength the push (the boat's glow: boat.js). */
+  boost(B) {
+    const V = this.vfxOf(), k = B?.boosting || 0, C = RACEWAY_LOOK.boost;
+    if (!V || k < C.from) { if (this.boostH && k < C.from * 0.5) this.stopBoost(); return; }
+    if (this.boostH?.alive) return;
+    const follow = (h) => { const b = this.boardOf(); if (!b || (b.boosting || 0) < C.from * 0.5) return false;
+      h.pos.set(0, C.up, -C.stern); b.group.localToWorld(h.pos); h.dir.set(0, 0.08, -1).applyQuaternion(b.group.getWorldQuaternion(_q2)).normalize();
+      h.k = Math.min(1, b.boosting); h.ctx.phase = this.t * 0.3; if (b.vel) h.ctx.vel = b.vel; return true; };
+    this.boostH = V.play('skiff.boost', { follow, phase: 0 }); follow(this.boostH);
+  }
+  stopBoost() { this.boostH?.stop(); this.boostH = null; }
+  /** A late pop (skiff.pop): nailed, the sun's glyph struck in Lachryma on the board and the boat flashing; plain, a small ring; let go
+   *  too late (skiff.pop.miss), a dud puff. */
+  pop(e) {
+    const V = this.vfxOf(), B = this.boardOf(); if (!V || !B) return;
+    const at = B.group.getWorldPosition(new THREE.Vector3());
+    if (e?.miss) { V.play('skiff.pop.miss', { pos: at.setY(at.y - 0.3) }); return; }
+    if (e?.perfect) { V.play('skiff.pop.perfect', { pos: at, phase: this.t * 0.3 }); B.boat?.pulse?.(1); }
+    else V.play('skiff.pop.late', { pos: at });
+  }
+  /** The combo's gauge on the board, made the first time a board is seen (vfx/skiffcombomarks.js). */
+  comboMarks(B) { if (!this.combo) this.combo = new SkiffComboMarks({ map: materials().map }); if (B) this.combo.attach(B.group); return this.combo; }
+  comboLink(e) {
+    const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
+    const M = this.comboMarks(B), before = M.steps; M.link(e?.mult);
+    const at = B.group.getWorldPosition(new THREE.Vector3());
+    V?.play('skiff.combo.link', { pos: at.clone().setY(at.y - 0.3), phase: this.t * 0.3 });
+    if (M.steps > before) V?.play('skiff.combo.step', { pos: new THREE.Vector3(0, 0, 3.0).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 });
+  }
+  comboBank() {
+    const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
+    this.comboMarks(B).bank(); B.boat?.pulse?.(0.7);
+    V?.play('skiff.combo.bank', { pos: B.group.getWorldPosition(new THREE.Vector3()), phase: this.t * 0.3 });
+  }
+  comboDrop() {
+    const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
+    this.comboMarks(B).drop();
+    const at = B.group.getWorldPosition(new THREE.Vector3()); V?.play('skiff.combo.drop', { pos: at.setY(at.y - 0.3) });
+  }
 
   // ---------------------------------------------------------------- the ghost
   /** The ghost's group (race.js updateGhost, once made): worn as the skiff's hologram as soon as the model is there; her placeholder hull
@@ -400,6 +468,10 @@ export class RacewayLooks {
   // ---------------------------------------------------------------- per frame
   update(dt) {
     this.t += dt;
+    { const B = this.boardOf(); // (round 3: the boost's look and the combo's gauge, wherever the skiff is ridden)
+      this.boost(B);
+      if (B?.combo && (this.combo || B.combo.n || B.combo.stocks > 0.01)) this.comboMarks(B);
+      this.combo?.update(dt, B?.combo || null, this.t); }
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
     if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)
       if ((this.nightT += dt) > 1) { this.nightT = 0; this.nightK = this.nightOf(); }
@@ -409,10 +481,13 @@ export class RacewayLooks {
     if (!this.plates) return;
     const L = RACEWAY_LOOK, M = materials(), t = this.t, gl = _c;
     // the plates: a slow shimmer through the glaze and the glow (all together), the chevrons running the track's way
-    const sh = 0.5 + 0.5 * Math.sin(t * L.shimmer.rate);
-    M.glaze.emissiveIntensity = 0.16 + 0.1 * sh;
-    M.glow.color.copy(GLOW).multiplyScalar(L.shimmer.lo + (L.shimmer.hi - L.shimmer.lo) * sh);
-    M.map.offset.y = -((t * L.plate.scroll) % 1);
+    // and all of it by the sun (raceway.sun: 0 at night), followed gently so a cloud never blinks them
+    const S = L.sun, sun = Math.max(0, Math.min(1, this.R?.sun ?? 1)); this.sunK = damp(this.sunK, sun, S.follow, dt);
+    const sk = this.sunK, sh = 0.5 + 0.5 * Math.sin(t * L.shimmer.rate);
+    M.glaze.emissiveIntensity = (0.16 + 0.1 * sh) * (S.glazeNight + (1 - S.glazeNight) * sk);
+    M.glow.color.copy(GLOW).multiplyScalar((L.shimmer.lo + (L.shimmer.hi - L.shimmer.lo) * sh) * (S.glowNight + (1 - S.glowNight) * sk));
+    this.scrollV = ((this.scrollV || 0) + dt * L.plate.scroll * (S.scrollNight + (1 - S.scrollNight) * sk)) % 1;
+    M.map.offset.y = -this.scrollV;
     // the arch's lamps: one a count, all flaring on GO and fading after; glowing again while the line is next
     const race = this.raceOf(), running = !!race?.running, lineNext = running && race.state === 'run' && race.next >= (this.gateK.length || 8);
     this.flareT = Math.max(0, this.flareT - dt / 0.9); if (this.goneT < 9) this.goneT += dt;
