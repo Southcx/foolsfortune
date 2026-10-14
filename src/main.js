@@ -100,6 +100,7 @@ import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
 import { prewarmSandfall } from './vfx/racewaysandfall.js';
 import { RacewayLooks } from './vfx/racewaylooks.js';
 import { RacewayCavern } from './vfx/racewaycavern.js';
+import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayFog } from './vfx/racewayfog.js';
 import { installBracelets } from './vfx/braceletwear.js';
 import { Cartography } from './feedback/cartography.js';
@@ -510,7 +511,7 @@ async function main() {
   applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game);
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
-  game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
+  game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
   applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)

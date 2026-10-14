@@ -21,6 +21,11 @@
 //   - THE EDGE STRINGS of the branch (vfx/racewayedgestrings.js, `line: 'cavern'`, raceway.edgeLines(step, 'cavern')): run while
 //     raceway.line is 'cavern' (raceway.sb its place along it), cooled to the night's white-blue under the roof; the main line's
 //     run waits meanwhile (`EDGE_LINE.lit`).
+//   - ROUND 4 (the park; Dovina's handoff of 2026-10-14): the deeper cavern re-fit by the same numbers (its slabs, dripstone and skin
+//     read BRANCH and ROOF as they are now). THE CRYSTAL PILLARS (BRANCH.pillars; her colliders kept): each a column of Lachrymite, one of
+//     the Dunes' spires grown to the roof (its point through the slabs, seen from outside), fretted up its height, on a ruin plinth with
+//     a gold band, lesser spires at its foot, all in the crystals' one draw. THE POOL (its water dressed in liquid Lachryma by
+//     vfx/racewaypark.js) ringed by clusters on both banks and one lamp over it: lit by its crystals.
 //   - THE RAIN kept out: the roof is a cover for the weather's overhead map (vfx/overhead.js OVERHEAD_COVERS), so nothing falls under
 //     a slab and the shafts of the skylights still take it.
 // Every material is one already built: her rock material (the kit's vertex-coloured flat standard), the Dunes' crystal program (its
@@ -58,6 +63,8 @@ export const RACEWAY_CAVERN = {
   dark: { floor: 0.26, lip: 0.5 },
   roof: { under: 0.5, band: 0.22, top: 0xb98a5c, side: 0x9a6a48, low: 0x5a3a2c, belly: 0x2e2019, gold: 0xffd696, jitter: 0.14 },
   drip: { bands: [0xc4a888, 0xa88866, 0x8a6a58], tip: 0xbfefff },
+  pillar: { plinth: 1.6, band: 0.25, gold: 0xffd696, stone: 0x6a3a24, top: 0xa8643a, foot: [3, 5] },
+  pool: { banks: [0.15, 0.5, 0.85], lamp: 0.5, lift: 3 },
   crystal: { every: 7.5, both: 0.35, stave: [1.3, 2.6], width: [0.5, 0.75], lesser: [2, 4], base: 0xcdb8f2, lach: 0x7fdcff, emissive: 0x2c5a8a, glow: 0.85,
     lampEvery: 3, lamp: { colour: 0x7fdcff, k: 9, range: 12, decay: 1.5 }, bounce: { r: 4, k: 0.22 } },
   vein: { spine: 7, barbs: 3, glowW: 1.1, barbW: 0.6, pulse: 0.55, colour: 0x7fdcff, k: 1.25 },
@@ -171,13 +178,18 @@ export class RacewayCavern {
         out.push({ sb: sb2, side, lat, foot, inward: new THREE.Vector3(F.fz * side, 0, -F.fx * side), fwd: new THREE.Vector3(F.fx, 0, F.fz), n: out.length, lamp: out.length % X.lampEvery === 1 });
       }
     }
+    // the pool's banks: a cluster each side at each of C.pool.banks along it (no lamp: the pool's own hangs over its middle)
+    for (const Pl of BRANCH.pools || []) for (const k of C.pool.banks) for (const side of [-1, 1]) {
+      const sb = Pl.at + Pl.len * k, F = Bn.frame(sb), lat = side * (F.w + 0.7), foot = R.local(F.x - F.fz * lat, F.z + F.fx * lat); foot.y -= 0.25;
+      out.push({ sb, side, lat, foot, inward: new THREE.Vector3(F.fz * side, 0, -F.fx * side), fwd: new THREE.Vector3(F.fx, 0, F.fz), n: out.length, lamp: false });
+    }
     return out;
   }
 
   // ---------------------------------------------------------------- the stone: the roof, the dripstone and the skin, one draw
   cutStone(R) {
     const mesh = R.cavern.mesh; if (!mesh) return;
-    const roof = [...this.roofParts(R)], skin = this.skinGeometry(R);
+    const roof = [...this.roofParts(R), ...this.pillarParts(R)], skin = this.skinGeometry(R);
     const outlined = ensureSmoothNormals(mergeGeometries(roof));
     const geo = mergeGeometries([...roof.map((g) => g.clone()), ...(skin ? [skin] : [])]);
     this.old = { mesh, geo: mesh.geometry, outline: mesh.userData.outline?.geometry };
@@ -222,6 +234,22 @@ export class RacewayCavern {
           for (const p of parts) yield p.applyQuaternion(q).translate(c.x, c.y, c.z);
         }
       }
+    }
+  }
+
+  /** The crystal pillars where cavern.js stands them ([sb, lat, r]: its collider a cylinder 0.9 r round, from a metre under the floor
+   *  to the wall's top): their foot, height and radius, for the stone and the spires. */
+  pillarList(R) {
+    const Bn = R.T.branch;
+    return (BRANCH.pillars || []).map(([sb, lat, r], n) => { const f = Bn.frame(sb); return { n, sb, r, f, pos: new THREE.Vector3(RW.x + f.x - f.fz * lat, RW.y + f.y - 1, RW.z + f.z + f.fx * lat), h: f.wall + 1 }; });
+  }
+  /** Each pillar's ruin plinth: dark stone a little wider than the crystal, a gold band round its top, a pale course under it. */
+  *pillarParts(R) {
+    const X = C.pillar;
+    for (const Pp of this.pillarList(R)) {
+      const { pos: p, r } = Pp, h = X.plinth + 1;
+      yield painted(new THREE.CylinderGeometry(r * 1.02, r * 1.12, h, 7).translate(p.x, p.y + h / 2, p.z), (x, y) => _c.set(y > p.y + h - 0.35 ? X.top : X.stone));
+      yield painted(new THREE.CylinderGeometry(r * 1.05, r * 1.05, X.band, 7).translate(p.x, p.y + h - 0.35 - X.band / 2, p.z), () => _c.set(X.gold));
     }
   }
 
@@ -309,6 +337,17 @@ export class RacewayCavern {
         spires.push({ pos: p, dir: d, h: h * (0.3 + 0.3 * hash(n * 13 + j)), w: w * (0.45 + 0.2 * hash(n + j)), stave: false, cl });
       }
     }
+    // the pillars: a spire grown to the roof (its prism to the wall's top, its point on through the slabs), fretted up its height,
+    // radius 0.9 r (her collider's), and lesser spires round its foot
+    for (const Pp of this.pillarList(R)) {
+      const H = Pp.h / 0.8, base = Pp.pos.clone().setY(Pp.pos.y + 0.6);
+      spires.push({ pos: base, dir: UP.clone(), h: H, w: Pp.r * 1.8, stave: true, pillar: true });
+      const m = C.pillar.foot[0] + Math.floor(hash(Pp.n * 4.3) * (C.pillar.foot[1] - C.pillar.foot[0] + 1));
+      for (let j = 0; j < m; j++) {
+        const a = (j / m) * Math.PI * 2 + hash(Pp.n + j), out = new THREE.Vector3(Math.cos(a), 0, Math.sin(a)), p = base.clone().addScaledVector(out, Pp.r * 0.95).setY(Pp.pos.y + C.pillar.plinth + 0.9);
+        spires.push({ pos: p, dir: UP.clone().addScaledVector(out, 0.3 + 0.2 * hash(j * 7 + Pp.n)).normalize(), h: 0.8 + 0.9 * hash(Pp.n * 9 + j), w: 0.35 + 0.2 * hash(j + Pp.n * 3), stave: false });
+      }
+    }
     this.veinSpires = this.veinSpireList(R); spires.push(...this.veinSpires);
     if (!spires.length) return;
     const mat = (this.crystalMat = crystalFretMaterial({ color: 0xffffff, emissive: X.emissive, emissiveIntensity: X.glow, roughness: 0.22, metalness: 0.15, flatShading: true }, X.base)); // (the Dunes' crystals' very parameters: their program)
@@ -328,6 +367,12 @@ export class RacewayCavern {
       if (!cl.lamp) continue;
       const L = X.lamp, l = new THREE.PointLight(L.colour, L.k, L.range, L.decay);
       l.position.copy(cl.foot).addScaledVector(cl.inward, 1.3).addScaledVector(UP, 1.4); l.userData.zone = 'raceway';
+      this.parentOf().add(l); this.lend(l); this.lamps.push(l);
+    }
+    // the pool's lamp: Lachryma's light over the middle of the water, from the crystals on its banks
+    for (const Pl of BRANCH.pools || []) {
+      const F = R.T.branch.frame(Pl.at + Pl.len * C.pool.lamp), L = X.lamp, l = new THREE.PointLight(L.colour, L.k * 1.4, L.range * 1.6, L.decay);
+      l.position.copy(R.local(F.x, F.z)).addScaledVector(UP, C.pool.lift); l.userData.zone = 'raceway';
       this.parentOf().add(l); this.lend(l); this.lamps.push(l);
     }
   }
