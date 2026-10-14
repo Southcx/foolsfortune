@@ -48,7 +48,12 @@ const RULES = {
   'skiff.combo.bank': (s, e) => s.skiffComboBank?.(e.mult),
   'skiff.combo.drop': (s) => s.skiffComboDrop?.(),
   'raceway.branch': (s) => s.racewayBranch?.(),
-  'race.start': (s, e) => s.raceWet?.(e.aspect === 'grief' || e.aspect === 'mirth'), // (rain: wet sand under the board)
+  'skiff.water': (s, e) => s.skiffWater?.(e.on !== false, e.speed),
+  'skiff.grind.trick': (s) => s.skiffGrindTrick?.(),
+  'race.bump': (s, e) => s.raceBump?.(e.impact),
+  'race.takedown': (s) => s.raceTakedown?.(),
+  'race.place': (s, e) => s.racePlace?.(e.place),
+  'race.start': (s, e) => { s._place = null; s.raceWet?.(e.aspect === 'grief' || e.aspect === 'mirth'); }, // (rain: wet sand under the board)
   'race.end': (s) => s.raceWet?.(false),
   'skiff.landhard': (s) => s.skiffLandHard?.(),
   'skiff.grind': (s) => s.skiffGrind?.(),

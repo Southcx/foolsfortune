@@ -670,6 +670,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     lock never takes a point past its own ends.
 NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
     it (the roll it draws, the mark it shows, the push it gives) takes its sign from one named vector, never a re-derived perpendicular.
+NEW:loops-quiet-under-menus. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
+    grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
+    while a menu is over the game.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3715,3 +3718,12 @@ NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a
   minus the lean's sign: the roll and the fall read the same sign through two different vectors, one negated.
 - **Fix:** the fall moves along the right by the lean's own sign (`courier/skiff/grind.js`).
 - **Rule:** NEW:sign-one-frame.
+
+### 2026-10-14 · The skiff's boost kept roaring under the pause menu (the owner, v198: "soften the boost noise")
+- **Seen:** opening the pause menu mid-ride left the skiff's hiss and the flare's hum sounding at full, for as long as the menu stayed open.
+- **Cause:** the skiff's loop (`sfx.skiffLoop`) is set by skiff.js each frame of play; paused, nothing sets it, so it held its last level, and
+  it went straight to the world's bus, which no menu touches. The flare's layer also rose to 0.17 of a hum and 0.36 of noise: loud.
+- **Fix:** a loop bus (`sfx.loopBus`, `quietLoops`: audio/core.js) silenced by the ambience while `menusUp()`; the skiff's loop, the grind,
+  wet sand and a shell's field go through it. The flare's layer cut to a lift (hum +0.025, noise to 0.23 at full speed), and the Raceway's
+  boost whooshes (the carve's release, a sun plate, the solar start, a slope landing) to a third of their gain.
+- **Rule:** NEW:loops-quiet-under-menus.

@@ -21,6 +21,10 @@
 //           raceway.branch: through it whole, an echoed chime
 //   WET     race.start { aspect }: a race in rain (mirth's sunshower, grief's long rain) puts wet sand's hiss under the board, as fast
 //           as it rides, until the race ends;   a dark plate (skiff.plate { power: 0 }, night): a dull clunk, no push
+//   WATER   skiff.water { on, speed }: onto water a slap and spray as hard as it rides; off it the hull shedding drips
+//   RIVALS  race.bump { impact }: hulls knocking, as hard as the impact; race.takedown: a rival wrecked (Burnout's crunch: a slam, the
+//           hull splintering, a breath of slow air); race.place { place }: gaining a place a step up, losing one a step down;
+//           skiff.grind.trick: a flick of the board on the rail, a click and the rail ringing a step up
 //   LAND    skiff.landhard: the hull slapping the sand, a thud and grit;   FINISH  race.finish { medal }: a bell a step of the medal
 // Prior art: Mario Kart's countdown (three low beeps, one high: the most learned countdown there is) and its rocket start; SSX's and
 // Wave Race's boost whooshes; Trackmania's checkpoint chime that says ahead or behind before you read the split.
@@ -43,7 +47,7 @@ export class RacewaySounds {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.45, 0.5);
     [64, 68, 71, 76, 80, 83, 88, 92, 95, 100].forEach((m, k) => this.tone(t + k * 0.03, 0.8, { f0: hz(m), gain: 0.07, dest: d }));
-    this.noise(t, 0.9, { type: 'bandpass', f0: 600, f1: 4000, q: 0.8, gain: 0.5, attack: 0.05, dest: d });
+    this.noise(t, 0.9, { type: 'bandpass', f0: 600, f1: 2800, q: 0.8, gain: 0.18, attack: 0.08, dest: d });
   }
   carveCharge(tier = 1) {
     if (!this.ok() || !this.allow('carveCharge', 8)) return;
@@ -53,7 +57,7 @@ export class RacewaySounds {
   carveRelease(tier = 1) {
     if (!this.ok() || !this.allow('carveRelease', 6)) return;
     const k = Math.max(1, Math.min(3, tier)), t = this.ctx.currentTime, d = this.out(0.45, 0.3);
-    this.noise(t, 0.35 + 0.2 * k, { type: 'bandpass', f0: 500, f1: 1500 + 1200 * k, q: 0.9, gain: 0.35 + 0.15 * k, attack: 0.01, dest: d });
+    this.noise(t, 0.35 + 0.2 * k, { type: 'bandpass', f0: 500, f1: 1500 + 1200 * k, q: 0.9, gain: 0.12 + 0.05 * k, attack: 0.03, dest: d });
     this.tone(t, 0.4, { f0: hz(TRIAD[k - 1] + 12), gain: 0.08, dest: d });
   }
   skiffPlate(power = 1) {
@@ -61,7 +65,7 @@ export class RacewaySounds {
     const t = this.ctx.currentTime, d = this.out(0.4, 0.35);
     if (!power) { this.tone(t, 0.2, { f0: 150, f1: 110, type: 'triangle', gain: 0.3, dest: d }); this.noise(t, 0.08, { f0: 600, f1: 200, gain: 0.25, dest: d }); return; } // (a dark plate: a clunk)
     this.tone(t, 0.5, { f0: hz(88), gain: 0.12, dest: d }); this.tone(t + 0.04, 0.5, { f0: hz(95), gain: 0.08, dest: d });
-    this.noise(t, 0.5, { type: 'bandpass', f0: 800, f1: 3000, q: 0.8, gain: 0.35, dest: d });
+    this.noise(t, 0.5, { type: 'bandpass', f0: 800, f1: 2200, q: 0.8, gain: 0.12, attack: 0.03, dest: d });
   }
   skiffPop(perfect = false) {
     if (!this.ok() || !this.allow('skiffPop', 6)) return;
@@ -89,7 +93,7 @@ export class RacewaySounds {
   skiffLandSlope(gain = 2) {
     if (!this.ok() || !this.allow('skiffLandSlope', 4)) return;
     const k = Math.min(1, gain / 8), t = this.ctx.currentTime, d = this.out(0.4, 0.3);
-    this.noise(t, 0.5 + 0.4 * k, { type: 'bandpass', f0: 400, f1: 1600 + 2000 * k, q: 0.8, gain: 0.3 + 0.3 * k, attack: 0.05, dest: d });
+    this.noise(t, 0.5 + 0.4 * k, { type: 'bandpass', f0: 400, f1: 1600 + 2000 * k, q: 0.8, gain: 0.1 + 0.1 * k, attack: 0.08, dest: d });
   }
   skiffCombo(n = 1) {
     if (!this.ok() || !this.allow('skiffCombo', 10)) return;
@@ -119,7 +123,7 @@ export class RacewaySounds {
     if (W || !this.ok()) return;
     const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true;
     const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2500; const g = c.createGain(); g.gain.value = 0.0001;
-    s.connect(hp).connect(g).connect(this.out(1, 0.1)); s.start();
+    s.connect(hp).connect(g).connect(this.loopBus || this.out(1, 0.1)); s.start();
     this._wet = { s, g, timer: setInterval(() => g.gain.setTargetAtTime(0.12 * (this._skiffK || 0), c.currentTime, 0.15), 100) };
   }
   /** Inside the cavern (a roofed stone gorge): the room's reverb sent up, so everything rings off stone. */
@@ -147,7 +151,7 @@ export class RacewaySounds {
     if (!this.ok()) return;
     this.skiffGrindEnd(null);
     const c = this.ctx, t = c.currentTime, g = c.createGain(), d = this.out(0.5, 0.25);
-    g.gain.value = 0.0001; g.gain.setTargetAtTime(1, t, 0.03); g.connect(d);
+    g.gain.value = 0.0001; g.gain.setTargetAtTime(1, t, 0.03); g.connect(this.loopBus || d);
     const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true; const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 6;
     const ng = c.createGain(); ng.gain.value = 0.22; s.connect(bp).connect(ng).connect(g); s.start();
     const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 82; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400; const og = c.createGain(); og.gain.value = 0.05;
@@ -173,6 +177,35 @@ export class RacewaySounds {
     if (!this.ok() || !this.allow('raceBack', 2)) return;
     const t = this.ctx.currentTime, d = this.out(0.4, 0.3);
     this.noise(t, 0.45, { type: 'bandpass', f0: 3000, f1: 400, q: 1, gain: 0.35, attack: 0.4, dest: d }); this.tone(t + 0.45, 0.06, { f0: 1400, f1: 900, type: 'triangle', gain: 0.2, dest: d });
+  }
+  skiffWater(on = true, speed = 10) {
+    if (!this.ok() || !this.allow('skiffWater', 3)) return;
+    const t = this.ctx.currentTime, d = this.out(0.45, 0.25), k = Math.min(1, speed / 18);
+    if (on) { this.noise(t, 0.4, { f0: 3000, f1: 600, gain: 0.25 + 0.2 * k, dest: d }); this.tone(t, 0.12, { f0: 160, f1: 90, gain: 0.25, dest: d }); }
+    else for (let i = 0; i < 5; i++) { const s = t + 0.05 + Math.random() * 0.6, f = 800 + Math.random() * 600; this.tone(s, 0.05, { f0: f, f1: f * 1.8, gain: 0.05, dest: d }); }
+  }
+  skiffGrindTrick() {
+    if (!this.ok() || !this.allow('skiffGrindTrick', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.3);
+    this.noise(t, 0.03, { type: 'bandpass', f0: 3500, q: 5, gain: 0.3, dest: d }); [1, 2.71].forEach((r, i) => this.tone(t + 0.02, 0.5 / (1 + i), { f0: hz(81) * r, gain: i ? 0.03 : 0.08, dest: d }));
+  }
+  raceBump(impact = 3) {
+    if (!this.ok() || !this.allow('raceBump', 6)) return;
+    const k = Math.min(1, impact / 10), t = this.ctx.currentTime, d = this.out(0.5, 0.2);
+    this.tone(t, 0.15, { f0: 140, f1: 80, type: 'triangle', gain: 0.25 + 0.3 * k, dest: d }); this.noise(t, 0.08, { type: 'bandpass', f0: 1200, q: 1.5, gain: 0.2 + 0.3 * k, dest: d });
+  }
+  raceTakedown() {
+    if (!this.ok() || !this.allow('raceTakedown', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.4);
+    this.tone(t, 0.3, { f0: 110, f1: 40, gain: 0.6, dest: d }); this.noise(t, 0.4, { f0: 3000, f1: 300, gain: 0.5, dest: d });
+    for (let i = 0; i < 8; i++) this.noise(t + 0.05 + i * 0.04 + Math.random() * 0.03, 0.03, { type: 'bandpass', f0: 1500 + Math.random() * 2500, q: 4, gain: 0.25, dest: d }); // (the hull splintering)
+    this.noise(t + 0.2, 1, { type: 'bandpass', f0: 1200, f1: 300, q: 0.7, gain: 0.1, attack: 0.3, dest: d }); // (slow air)
+  }
+  racePlace(place = 1) {
+    if (!this.ok()) return;
+    const was = this._place; this._place = place; if (was == null || was === place) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.3, true), up = place < was;
+    [up ? [76, 81] : [76, 74]].flat().forEach((m, k) => this.tone(t + k * 0.08, 0.3, { f0: hz(m), type: 'triangle', gain: 0.09, dest: d }));
   }
   raceFinish(medal = null) {
     if (!this.ok()) return;
