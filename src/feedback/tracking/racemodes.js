@@ -61,7 +61,7 @@ export function raceModeRules({ on, L, log }) {
   // ---- the board's rules (courier/skiff/boardrules.js)
   on('skiff.hull', (e) => { if (e.by !== 'courier') return; L.inc('skiff.hull'); L.inc('skiff.hull.damage', Math.round(e.damage)); if (e.left < 20) say('warn', 'Your pool runs low: one more hard knock wrecks the board. Find a vein lane.', 'hull.low', 8); });
   on('skiff.wreck', (e) => { if (e.by !== 'courier') return; L.inc('skiff.wreck'); say('warn', 'The board is wrecked: your pool was empty.', 'wreck', 2); });
-  on('skiff.refill', (e) => { if (e.by !== 'courier') return; L.inc('skiff.refill'); say('skiff', 'The vein lane fills your pool.', 'refill', 10); });
+  on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'The vein lane fills your pool.', 'refill', 10); });
   on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Your sail scorches and luffs: ease off the flare.', 'scorch', 4); });
   on('skiff.manual', (e) => { if (e.by !== 'courier') return; L.inc('skiff.manual'); L.hi('skiff.manual.best', e.seconds); if (e.fell) say('warn', 'You lose the manual.', 'manual', 3); else if (e.seconds >= 2) say('skiff', `A ${e.seconds.toFixed(1)} s manual.`, 'manual', 2); });
   on('skiff.shoulder', (e) => { if (e.by === 'courier') L.inc('skiff.shoulder'); });
