@@ -83,7 +83,7 @@ export class RacewayRivals {
     sk.model.traverse((o) => {
       if (!o.isMesh || o.userData.isOutline) return;
       const n = o.material?.name;
-      if (n === 'Skiff_Hull') M.hull = o.material;
+      if (n === 'Skiff_Hull') M.hull = sk.cleanHull ?? o.material; // (the unworn hull: the Courier's own wears its stakes, boat.js)
       else if (n === 'Skiff_Parts') M.parts = o.material;
       else if (n === 'CourierEnergy') { M.energy = o.material.clone(); M.energy.emissiveIntensity = 0.3; }
       else if (n === 'Skiff_Cloth') M.cloth = o.material;
