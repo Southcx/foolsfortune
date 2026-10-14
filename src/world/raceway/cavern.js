@@ -20,7 +20,7 @@ import { BRANCH, RW } from './track.js';
 
 /** The slabs' spacing and length (m), their overhang past the walls; every `skylight`th slab left out; the stalactites' clearance over the
  *  floor (m, the least); a crystal cluster every `crystal` metres each side. */
-const ROOF = { every: 6, len: 6.6, over: 5, thick: 2.4, skylight: 7, CLEAR: 7, crystal: 9 };
+export const ROOF = { every: 6, len: 6.6, over: 5, thick: 2.4, skylight: 7, CLEAR: 7, crystal: 9 };
 const COLOUR = { rock: 0x6e4a3c, under: 0x4a3028, drip: 0x8a6a58, crystal: 0x7fdcff };
 
 const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };

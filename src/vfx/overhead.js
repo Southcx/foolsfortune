@@ -12,6 +12,8 @@
 //   const O = new Overhead(game, { n, cell, from })   O.update(cameraPos, raysPerFrame)   O.u (uniforms: uOcc, uOccK)   OVERHEAD_GLSL
 //   `from`: how far over the given point each ray starts (40 m: the roof over a room; the awakening's flood starts just over the
 //   Courier's head, so a room's floor is what it finds and the flood falls indoors: vfx/awakening.js)   O.fill(pos) every cell at once
+//   OVERHEAD_COVERS: a cover with no collider (the Raceway's cavern roof: vfx/racewaycavern.js) is a function (x, z) -> its underside's
+//   height there, or null; a cell takes the higher of the ray's hit and every cover over it
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { G, groups } from '../core/physics.js';
@@ -19,6 +21,8 @@ import { G, groups } from '../core/physics.js';
 const OPEN = -1e4; // (nothing over this spot: open to the sky all the way down)
 const NUDGE = 0.0173; // (metres off a cell's centre, on no grid a level is built on)
 const ONLY_STATIC = groups(0xffff, G.STATIC); // (the level: roofs, walls, the ground; never the Courier, a pot or a creature)
+/** Covers no ray can find (no collider): (x, z) -> the height of the cover over that spot, or null. */
+export const OVERHEAD_COVERS = new Set();
 const _o = { x: 0, y: 0, z: 0 }, _d = { x: 0, y: -1, z: 0 };
 
 /** The shader's side: overheadY(world xz) -> the height of the topmost thing over it (OPEN if unknown or nothing). */
@@ -55,7 +59,9 @@ export class Overhead {
       _o.x = (x + 0.5) * this.cell + NUDGE; _o.y = top; _o.z = (z + 0.5) * this.cell + NUDGE; // (a hair off the cell's centre: a straight-down ray on a heightfield's grid line goes through it, CASEBOOK 2026-10-09)
       const hit = P.raycast(_o, _d, 120, undefined, ONLY_STATIC, this.pred);
       const t = ((((z % n) + n) % n) * n + (((x % n) + n) % n)) * 4;
-      this.data[t] = hit ? hit.point.y : OPEN; this.data[t + 1] = x; this.data[t + 2] = z;
+      let y = hit ? hit.point.y : OPEN;
+      for (const cover of OVERHEAD_COVERS) { const cy = cover(_o.x, _o.z); if (cy != null && cy > y) y = cy; }
+      this.data[t] = y; this.data[t + 1] = x; this.data[t + 2] = z;
     }
     this.tex.needsUpdate = true;
   }
