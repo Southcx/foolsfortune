@@ -127,6 +127,18 @@ window.__paStates = (() => {
     c.press('KeyY').until(() => k.active && k.phase === 'ride', 200).hold('KeyW').run(120).press('Space').run(70).free('KeyW').hold('KeyS').run(60).free('KeyS');
     c.note('phase', k.phase);
   });
+  // a grab (LMB the nose, RMB the tail, both the double) held through a long air (the hop's rise lifted to 7 m/s so it lasts), let go
+  // before the landing: the hand to the rail (courier/skiff/grabreach.js); noted, the palm's worst gap to its grip once fully in (cm)
+  for (const [kind, keys] of [['nose', ['Mouse0']], ['tail', ['Mouse2']], ['double', ['Mouse0', 'Mouse2']]]) add(`skiff.grab.${kind}`, 'locomotion', `the Solar Skiff: a hop, the ${kind} grab held in the air, let go, landed`, (c) => {
+    c.travel('dunes');
+    const k = c.g.techs.get('skiff'), gap = {};
+    c.press('KeyY').until(() => k.active && k.phase === 'ride', 200).hold('KeyW').warm(90).hold('Space').warm(12).free('Space').warm(2);
+    c.P.vel.y = Math.max(c.P.vel.y, 7);
+    c.after(() => { const G = k.rider.R?.grabs; if (!G || G.weight < 0.95) return; for (const [s, d] of Object.entries(G.gap(c.ch, k))) gap[s] = Math.max(gap[s] || 0, d); });
+    c.hold(...keys).run(45).free(...keys).until(() => !k.air, 120).run(30).free('KeyW');
+    c.after(null);
+    c.note('grab', k.grab ? 'still held' : 'let go').note('gapCm', Object.fromEntries(Object.entries(gap).map(([s, d]) => [s, +(d * 100).toFixed(1)])));
+  });
 
   // ---------------------------------------------------------------- the tools: stance, gait, moveset
   const TOOLS = [['psygun', null, 'tools'], ['sondelass', 'cutlass', 'sondelass'], ['sondelass', 'rod', 'sondelass'], ['sondelass', 'hook', 'sondelass'], ['soulbrush', null, 'tools'], ['veritome', null, 'tools'], ['dreamvane', null, 'tools'], ['crucibelle', null, 'tools'], ['lockheart', null, 'tools']];
