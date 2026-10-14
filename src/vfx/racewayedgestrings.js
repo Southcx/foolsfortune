@@ -41,7 +41,8 @@ function dotTexture() {
   if (DOT) return DOT;
   const c = document.createElement('canvas'); c.width = c.height = 32;
   const g = c.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
-  for (const [t, a] of [[0, 1], [0.22, 0.9], [0.5, 0.28], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
+  // (a lit bead with a dark rim, drawn over the sand, not added to it: additive gold vanished on bright noon sand)
+  for (const [t, v, a] of [[0, 255, 1], [0.38, 235, 1], [0.55, 60, 1], [0.72, 30, 0.85], [1, 30, 0]]) gr.addColorStop(t, `rgba(${v},${v},${v},${a})`);
   g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
   DOT = new THREE.CanvasTexture(c); DOT.colorSpace = THREE.SRGBColorSpace;
   return DOT;
@@ -65,7 +66,7 @@ export class RacewayEdgeStrings {
     const P = new THREE.BufferAttribute(pos, 3);
     // the beads
     const bg = new THREE.BufferGeometry(); bg.setAttribute('position', P); bg.computeBoundingSphere();
-    this.beadMat = new THREE.PointsMaterial({ name: 'edge-beads', map: dotTexture(), size: E.bead.size, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    this.beadMat = new THREE.PointsMaterial({ name: 'edge-beads', map: dotTexture(), size: E.bead.size, transparent: true, depthWrite: false });
     this.beads = new THREE.Points(bg, this.beadMat); this.beads.name = 'raceway-edge-beads';
     // the thread
     const tg = new THREE.BufferGeometry(); tg.setAttribute('position', P); tg.setIndex(index);
