@@ -125,17 +125,9 @@ export class RacewayCavern {
     this.cutStone(R);
     this.growCrystals(R);
     this.dressVeins(R);
-    if (R.edgeLines) this.strings = new RacewayEdgeStrings({ parent: this.parentOf(), zone: 'raceway', line: 'cavern', loop: false }).build(this.onFloor(R, R.edgeLines(EDGE_STRINGS.step, 'cavern')), EDGE_STRINGS.step);
+    if (R.edgeLines) this.strings = new RacewayEdgeStrings({ parent: this.parentOf(), zone: 'raceway', line: 'cavern', loop: false }).build(R.edgeLines(EDGE_STRINGS.step, 'cavern'), EDGE_STRINGS.step);
     this.cover = (x, z) => this.roofOver(x, z); OVERHEAD_COVERS.add(this.cover);
     return this;
-  }
-  /** The branch's edge lines brought in off the walls' foot to a metre inside the floor's edge, 1.2 m over the floor's own height
-   *  (edgeLines hangs them 0.5 m past the running surface, where the gorge's wall already rises: on the field's 2.5 m cells they
-   *  zigzagged up and down it, measured headless). */
-  onFloor(R, lines) {
-    const Bn = R.T.branch;
-    for (const E of lines) E.pts.forEach((p, i) => { const F = Bn.frame(i * EDGE_STRINGS.step), lat = E.side * (F.w - 1), q = R.local(F.x - F.fz * lat, F.z + F.fx * lat); p.set(q.x, RW.y + F.y + 1.2, q.z); });
-    return lines;
   }
   parentOf() { return this.parent || this.game.scene; }
   add(o) { o.userData.zone = 'raceway'; this.parentOf().add(o); this.objects.push(o); return o; }
