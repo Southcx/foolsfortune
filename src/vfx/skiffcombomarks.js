@@ -4,10 +4,11 @@
 //   - THE LINK RING: a ring of light round the hull, a little under the deck. While the chain is live (in the air, on a rail, in a
 //     carve) it is whole; on the sand it closes in from the stern up both sides as the link's clock (`combo.t` of COMBO.link) runs out,
 //     and is gone at the bow when the chain banks. A trick linked fills it again with a flash.
-//   - THE STEP PIPS: six small diamonds over the bow, lit from the middle out, one a step of the multiplier (`combo.mult`, a step of
+//   - THE STEP PIPS: six small diamonds aft of the stern, lit from the middle out, one a step of the multiplier (`combo.mult`, a step of
 //     COMBO.kinds); a step taken flashes its pip.
-//   - THE BANKED FLARES: three little suns out ahead of the bow (where the chase camera looks), each filled as a pie by its share of `combo.stocks` (0..3); Shift's flare
-//     drains them as it spends one. A bank flashes them; a drop dulls the ring a moment as it breaks (the effects' moments are the
+//   - THE BANKED FLARES: three little suns further aft (the owner, 2026-10-14: "everything on the front end gets occluded by the skiff
+//     itself": the chase camera sees the back), filled left to right as seen from behind, each a pie by its share of `combo.stocks`
+//     (0..3); Shift's flare drains them as it spends one. A bank flashes them; a drop dulls the ring a moment as it breaks (the effects' moments are the
 //     library's: skiff.combo.bank / .drop, played by vfx/racewaylooks.js).
 // One merged mesh, one draw call, on the plates' glow material's program (a mapped basic: the strength of each vertex is read off the
 // glow atlas's gradient by its u, so no vertex colours and no new program). Blended over, not added: unlit, its deep Lachryma reads
@@ -27,14 +28,15 @@ import { featTint } from './oxidation.js';
 import { LACHRYMA_DEEP } from './racewayeffects.js';
 
 /** The numbers, in the board's own frame (+Z the bow, Y up; m and rad): the marks' height under the deck; the link ring (radius, band
- *  width, segments); the step pips (how many, their radius out, how far either side of the bow, size); the banked flares (radius out,
- *  rad apart round the bow, a sun's radius, its segments); brightness lit and as an empty socket; the flashes' real seconds; the
+ *  width, segments); the step pips (how many, their radius out, how far either side of the stern, size); the banked flares (radius out,
+ *  rad apart round the stern, a sun's radius, its segments); where the pips and flares sit (rad from the bow: PI, the stern); brightness lit and as an empty socket; the flashes' real seconds; the
  *  drop's dull colour; how fast the whole fades in and out. */
 export const COMBO_MARKS = {
   y: -0.3,
   ring: { r: 2.4, w: 0.28, segs: 56 },
   pips: { n: 6, r: 3.0, spread: 0.62, size: 0.34 },
   stocks: { r: 4.0, apart: 0.34, size: 0.55, segs: 18 },
+  aft: Math.PI,
   lit: 0.95, socket: 0.14, flash: { link: 0.35, step: 0.5, bank: 0.7, drop: 0.55 },
   dull: 0x6a6478, fade: { in: 12, out: 3 },
 };
@@ -68,17 +70,17 @@ function build() {
       v(p0x, p0z, c, wa); v(q1x, q1z, c, wb); v(q0x, q0z, c, wb);
     }
   }
-  // the step pips: diamonds over the bow (a bright heart, soft points), cells after the ring's
+  // the step pips: diamonds aft of the stern (a bright heart, soft points, pointing away from the board), cells after the ring's
   const P = C.pips, pip0 = R.segs;
   for (let i = 0; i < P.n; i++) {
-    const a = -P.spread + (2 * P.spread * i) / (P.n - 1), [cx, cz] = at(a, P.r), s = P.size, ux = Math.cos(a), uz = -Math.sin(a), fx = Math.sin(a), fz = Math.cos(a);
+    const a = C.aft - P.spread + (2 * P.spread * i) / (P.n - 1), [cx, cz] = at(a, P.r), s = P.size, ux = Math.cos(a), uz = -Math.sin(a), fx = Math.sin(a), fz = Math.cos(a);
     const pts = [[cx + fx * s * 1.4, cz + fz * s * 1.4], [cx + ux * s, cz + uz * s], [cx - fx * s * 1.1, cz - fz * s * 1.1], [cx - ux * s, cz - uz * s]];
     for (let k = 0; k < 4; k++) { const p = pts[k], q = pts[(k + 1) % 4]; v(cx, cz, pip0 + i, 1); v(q[0], q[1], pip0 + i, 0.6); v(p[0], p[1], pip0 + i, 0.6); }
   }
-  // the banked flares: little suns ahead of the bow, each a fan of wedges (a wedge its own cell, for the pie) and eight short rays
+  // the banked flares: little suns aft of the pips (the first on the left as the chase camera sees it), each a fan of wedges (a wedge its own cell, for the pie) and eight short rays
   const S = C.stocks, sun0 = pip0 + P.n;
   for (let i = 0; i < 3; i++) {
-    const a = (i - 1) * S.apart, [cx, cz] = at(a, S.r);
+    const a = C.aft + (i - 1) * S.apart, [cx, cz] = at(a, S.r); // (i 0 at +X: the board's left, the left as seen from behind)
     for (let k = 0; k < S.segs; k++) {
       const b0 = (k / S.segs) * Math.PI * 2, b1 = ((k + 1) / S.segs) * Math.PI * 2, c = sun0 + i * (S.segs + 1) + k;
       v(cx, cz, c, 1); v(cx + Math.sin(b1) * S.size, cz + Math.cos(b1) * S.size, c, 0.85); v(cx + Math.sin(b0) * S.size, cz + Math.cos(b0) * S.size, c, 0.85);
