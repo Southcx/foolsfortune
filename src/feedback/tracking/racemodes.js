@@ -6,7 +6,7 @@
 //
 //   hot lap, pots, escape, licence: race.start / race.finish { mode, ... }   race.restart   race.rewind   race.pot   race.escape.*
 //   licence.fail   cup.*   citytrial.*   wager.*   skiff.hull / .wreck / .refill / .scorch / .manual / .shoulder / .nearmiss / .gap
-//   / .buoy / .part / .setting   race.taunt / .nemesis / .takedown { how }   (each with `by`)
+//   / .buoy / .part / .glaze / .setting   race.taunt / .nemesis / .takedown { how }   (each with `by`)
 //
 //   raceModeRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -69,6 +69,7 @@ export function raceModeRules({ on, L, log }) {
   on('skiff.gap', (e) => { if (e.by !== 'courier') return; L.inc('skiff.gap'); L.inc(`skiff.gap.${e.gap}`); const n = L.get(`skiff.gap.${e.gap}`); say('skiff', `Gap: ${e.label}, ${e.points}.${n === 1 ? ' Your first time.' : ''}`, `gap.${e.gap}`, 1); });
   on('skiff.buoy', (e) => { if (e.by !== 'courier') return; L.inc(e.hit ? 'skiff.buoy.hit' : 'skiff.buoy.miss'); L.hi('skiff.buoy.power', e.power); if (!e.hit) say('warn', 'You miss a buoy: your power is gone.', 'buoy', 3); else if (e.power === 5) say('skiff', 'Full power.', 'buoy.full', 6); });
   on('skiff.part', (e) => say('skiff', `You fit the ${e.part.split('.').reverse().join(' ')}.`, 'part', 0.5));
+  on('skiff.glaze', (e) => { if (e.by !== 'courier') return; L.inc('skiff.glaze'); say('skiff', e.glaze ? 'Your hull comes out of the kiln glazed.' : 'Your hull is bare again.', 'skiff.glaze', 0.5); });
   on('skiff.setting', (e) => say('info', e.on ? 'The balance is turned round: A pushes the lean left.' : 'The balance is as it was: A pushes the lean right.', 'skiff.set', 0.5));
   // ---- the rivals' grudges and takedowns (world/raceway/rivals.js)
   on('race.taunt', (e) => say('skiff', `${e.who} claps at you as it passes.`, 'taunt', 8));

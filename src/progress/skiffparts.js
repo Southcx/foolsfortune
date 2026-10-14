@@ -8,8 +8,11 @@
 // Prior art: Mario Kart 8's kart parts (body, tyres, glider: stats traded, none strictly better), Kirby Air Ride's machines (each a
 // different feel, not a different rank), Gran Turismo's tuning shop; OSRS's gear as a choice of trade-offs, opened by quests.
 //
+// THE HULL'S GLAZE (Calissa's ask, 2026-10-14): the Solar Skiff's hull fired with one of the Courier's glazes at the kiln (Calissa's kiln UI sets it,
+// the hull's material reads it); kept as `skiffGlaze` (player scope), `{ glaze: <a GLAZES id> | null }`. Event: skiff.glaze { glaze }.
+//
 //   game.skiffParts = new SkiffParts(game)   .mult(key) -> number   .chosen { sail, keel, hull }   .open(id) -> bool   .choose(slot, id)
-//   PARTS (the table)
+//   .glaze() -> id | null   .setGlaze(id | null)   PARTS (the table)
 // ---------------------------------------------------------------------------------------
 
 /** Each part: its slot, its label and one line (CLARITY.md), what it multiplies (top speed, acceleration, the sand's grip, the grind's
@@ -30,6 +33,8 @@ const STANDARD = { sail: 'sail.standard', keel: 'keel.standard', hull: 'hull.sta
 export class SkiffParts {
   constructor(game) {
     this.game = game; this.chosen = { ...STANDARD };
+    this.hullGlaze = null;
+    game.save?.section('skiffGlaze', { scope: 'player', version: 1, dump: () => ({ glaze: this.hullGlaze }), load: (d) => { this.hullGlaze = typeof d?.glaze === 'string' ? d.glaze : null; }, reset: () => { this.hullGlaze = null; } });
     game.save?.section('skiffParts', { scope: 'player', version: 1, dump: () => this.chosen, load: (d) => { this.chosen = { ...STANDARD, ...(d || {}) }; }, reset: () => { this.chosen = { ...STANDARD }; } });
   }
   /** Is a part open (its achievement got, or no achievement asked)? */
@@ -38,6 +43,14 @@ export class SkiffParts {
     const P = PARTS[id]; if (!P || P.slot !== slot || !this.open(id)) return false;
     this.chosen[slot] = id; this.game.save?.dirty('skiffParts');
     this.game.events?.emit('skiff.part', { slot, part: id, by: 'courier' });
+    return true;
+  }
+  /** The hull's glaze (a GLAZES id), or null for the bare hull. */
+  glaze() { return this.hullGlaze; }
+  setGlaze(id) {
+    const glaze = typeof id === 'string' ? id : null; if (glaze === this.hullGlaze) return false;
+    this.hullGlaze = glaze; this.game.save?.dirty('skiffGlaze');
+    this.game.events?.emit('skiff.glaze', { glaze, by: 'courier' });
     return true;
   }
   /** The product of the chosen parts' multipliers for one number (1 where none touches it). */
