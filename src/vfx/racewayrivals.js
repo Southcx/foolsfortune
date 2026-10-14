@@ -18,6 +18,9 @@
 //       the tumble while spun out by a takedown (r.wreck: the group's spin is Dovina's): the rider cartwheels off the deck and lands
 //                  back, lid open, arms flung; dizzy wobble after
 //       the cheer  arms up and the lid open when it finishes (race.rival.finish)
+//   THE SIBLINGS (the Sibling roster): no clapperjar; each its own rig riding the board at the Courier's size, its hull in its division's
+//     body glaze and its sail dyed its trim's (vfx/racewaysiblingriders.js; the hull's glaze: vfx/hullglaze.js). The rivals' hull is a
+//     painted copy of the Courier's own, so a hull glaze fired at the kiln stays on the Courier's board.
 // Ticked by the rivals themselves (rivals.js update: one line). Materials all already built or a copy of one: 0 programs added. Draw
 // calls a rival: the board's meshes and the hull's and parts' outlines (as the Courier's board), the clapperjar, its outline, its
 // pupils; the placeholders' three removed.
@@ -37,6 +40,8 @@ import { cloneTinted } from './greytint.js';
 import { JointLimits, SKIFF_ROM, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { GLAZES } from '../courier/vessel/glazes.js';
 import { sfx } from '../audio/sfx.js';
+import { RacewaySiblingRiders, SIBLING_RIDE } from './racewaysiblingriders.js';
+import { glazeHull } from './hullglaze.js';
 
 /** The numbers. The board: its scale of the Solar Skiff, the boom's swing to leeward (rad per rad/s of turn); the rider: its scale, where
  *  it stands (m, the board's frame: +Z the bow), how far it sits into the deck; the lean (rad at most, the board's share of it, the
@@ -83,7 +88,7 @@ export class RacewayRivals {
     sk.model.traverse((o) => {
       if (!o.isMesh || o.userData.isOutline) return;
       const n = o.material?.name;
-      if (n === 'Skiff_Hull') M.hull = o.material;
+      if (n === 'Skiff_Hull') { M.hull = vessoulPainted(o.material.map ?? null, {}); M.hull.name = n; } // (its own copy, the same program: the Courier's hull carries a glaze fired at the kiln, theirs does not)
       else if (n === 'Skiff_Parts') M.parts = o.material;
       else if (n === 'CourierEnergy') { M.energy = o.material.clone(); M.energy.emissiveIntensity = 0.3; }
       else if (n === 'Skiff_Cloth') M.cloth = o.material;
@@ -101,7 +106,10 @@ export class RacewayRivals {
       o.removeFromParent();
       if (o.isMesh && !o.isSkinnedMesh) { o.geometry?.dispose(); o.material?.dispose?.(); } // (her box, sail and pot are her own; the jar's clone shares the creatures')
     }
-    const glaze = new THREE.Color(GLAZES[A.glazes[i % A.glazes.length]]?.color ?? 0xb4603f);
+    const sib = r.P?.sibling ? (this.siblings ||= new RacewaySiblingRiders(this.game)).of(r.name) : null, look = sib ? this.siblings.look(sib) : null;
+    const glaze = new THREE.Color(GLAZES[sib ? look.trim : A.glazes[i % A.glazes.length]]?.color ?? 0xb4603f);
+    const scale = sib ? SIBLING_RIDE.board : A.mini.scale;
+    let hull = M.hull; if (sib) { hull = vessoulPainted(M.hull.map, {}); hull.name = 'Skiff_Hull'; glazeHull(hull, look.body); } // (a sibling's board in its body's glaze)
     const unit = new THREE.Group(); // (banked as one: the board and its rider)
     group.add(unit);
     // ---- the mini skiff
@@ -110,13 +118,13 @@ export class RacewayRivals {
     sk.model.traverse((o) => { if (o.userData.outline) { kept.push([o, o.userData.outline]); delete o.userData.outline; } });
     const board = cloneSkinned(sk.model);
     for (const [o, ol] of kept) o.userData.outline = ol;
-    board.scale.setScalar(A.mini.scale);
+    board.scale.setScalar(scale);
     const cloth = vessoulPainted(M.cloth?.map ?? null, { side: THREE.DoubleSide, roughness: 0.9 }); // (the Courier's cloth's program, its fade its own)
     cloth.color.set(0xffffff).lerp(glaze, A.dye); cloth.emissive.copy(cloth.color); cloth.name = 'Skiff_Cloth';
     board.traverse((o) => {
       if (!o.isMesh || o.userData.isOutline) return;
       const n = o.material?.name;
-      o.material = n === 'Skiff_Hull' ? M.hull : n === 'Skiff_Parts' ? M.parts : n === 'CourierEnergy' ? M.energy : n === 'Skiff_Cloth' ? cloth : o.material;
+      o.material = n === 'Skiff_Hull' ? hull : n === 'Skiff_Parts' ? M.parts : n === 'CourierEnergy' ? M.energy : n === 'Skiff_Cloth' ? cloth : o.material;
       o.castShadow = n === 'Skiff_Hull'; o.receiveShadow = false; // (one shadow a board: the hull's)
     });
     let skin = null;
@@ -125,6 +133,11 @@ export class RacewayRivals {
     const rom = new JointLimits();
     for (const [name, spec] of Object.entries(SKIFF_ROM)) { const k = sk.P.index[name], b = bones[k]; if (b) rom.add(b, _q.fromArray(sk.P.rest.q, k * 4), spec); }
     unit.add(board);
+    if (sib) { // ---- a sibling riding it (its rig seated when it is in: vfx/racewaysiblingriders.js)
+      const L = { unit, board, bones, rom, cloth, mat: hull, scale, sibling: sib, frame: new sk.P.A.constructor(sk.P.nb), phase: i * 1.7, lean: 0, yaw: null, turn: 0, clapT: 0, cheer: 0, tumble: 0, out: 0, rel: null };
+      group.userData.rivalLook = L;
+      return L;
+    }
     // ---- the clapperjar riding it
     const jar = cloneSkinned(cl.gltf.scene);
     jar.scale.setScalar(A.rider.scale);
@@ -165,7 +178,7 @@ export class RacewayRivals {
     this.V = V; this.t += dt;
     if (!V?.list?.length) return;
     // a new race's rivals: the last race's own copies let go (the cloth's and the clay's; the shared materials and geometry kept)
-    if (this.list !== V.list) { for (const L of this.dressed || []) { L.cloth.dispose(); L.mat.dispose(); } this.dressed = []; this.list = V.list; }
+    if (this.list !== V.list) { for (const L of this.dressed || []) { L.cloth.dispose(); L.mat?.dispose(); } this.dressed = []; this.list = V.list; }
     const src = this.sources;
     const me = race && V.T ? V.mine(race) : null, running = race?.state === 'run';
     for (const r of V.list) {
@@ -201,6 +214,12 @@ export class RacewayRivals {
       const boom = B[P.index.boom];
       if (boom) boom.quaternion.multiply(_q.setFromAxisAngle(Z, clamp(A.mini.boomRest * Math.sign(L.turn || 1) + L.turn * A.mini.boom, -1, 1)));
       L.rom.apply();
+    }
+    // ---- a sibling's rider (seated once its rig is in): vfx/racewaysiblingriders.js
+    if (L.sibling) {
+      if (!L.rider) this.siblings.seat(L, L.sibling);
+      if (L.rider) this.siblings.ride(L, r, dt, t, { turn: L.turn, tumble: tumbling ? tp : -1 });
+      return;
     }
     // ---- the rider: reset to rest, then the layers, then the limits
     const J = L.jb, R = L.rest, I = L.inv;
