@@ -121,7 +121,9 @@ The owner's rule (2026-10-13): a grind involves **no tool but the Solar Skiff**.
 ## 8. The owner's first race (2026-10-14), and what came of it
 
 Three laps in 5:48, with bails. What changed:
-- **Q and E were reversed** for the owner: Q now banks one way and E the other, flipped.
+- **Q and E felt reversed** to the owner. The turn was right (E turns right, as D does); the board's lean in the glide was wrong: it leaned
+  out of the turn where on the sand it leans in. Fixed in the lean; the keys stay Q left, E right. (Flipping the keys instead sent the
+  test autopilot off the lip and round a respawn loop.)
 - **The sandfall stopped a third of the way down.** It hung 3 m past the lip and was measured to the track's control point, so it began
   partway down the face and ended early. Now it hangs at the lip and runs down to where the ground stops being sheer (the slope under
   0.6), measured on the ground as drawn.

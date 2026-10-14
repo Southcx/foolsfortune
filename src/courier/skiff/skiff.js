@@ -283,7 +283,7 @@ export class Skiffing extends Tech {
     const flare = !held && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight'));
     const sp2 = !held && inp.isDown('Space');
     this.steer = damp(this.steer, steerIn, 10, dt);
-    const bankIn = held ? 0 : (inp.isDown('KeyQ') ? 1 : 0) - (inp.isDown('KeyE') ? 1 : 0); // (the glider's bank: Q left, E right (the sign the owner felt right, 2026-10-14), so A / D stay the spin)
+    const bankIn = held ? 0 : (inp.isDown('KeyE') ? 1 : 0) - (inp.isDown('KeyQ') ? 1 : 0); // (the glider's bank: Q left, E right, as A / D steer, so A / D stay the spin)
     this.bank = damp(this.bank || 0, bankIn, 6, dt);
     // ---- the glide (Space held in the air, with the art; or opened by the course's glide lip: MK8's glider ramp). W and S are the
     // glider's pitch while it flies, never the sail's
@@ -442,7 +442,7 @@ export class Skiffing extends Tech {
 
     this.speed = this.v.length();
     // (the lean: into the turn, and out of a slide; roll about the boat's own long axis)
-    const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(-this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks)
+    const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks into its turn, as the board leans into one on the sand: it leaned out, the owner's "reversed", 2026-10-14)
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
     g.events?.emit('skiff.tick', { speed: this.speed });
