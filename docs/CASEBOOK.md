@@ -668,6 +668,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 229. **What lets a body go does not take it again at once.** A lock that is tested every frame (a grind, a grab, a
     ledge) and releases at the place it would lock is retaken the next frame, forever: the place just left is barred for a beat, and a
     lock never takes a point past its own ends.
+NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
+    it (the roll it draws, the mark it shows, the push it gives) takes its sign from one named vector, never a re-derived perpendicular.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3706,3 +3708,10 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** the rail just left cannot lock for 0.6 real s (`GRIND.relock`); no lock past a rail's ends; a fall lands outside the reach
   (`courier/skiff/grind.js`). Measured headless: one lock, one end, and the board 20.8 m past the end 4 real s later.
 - **Rule:** 229.
+
+### 2026-10-14 · A grind's fall threw the board off the wrong side (Calissa, building the balance mark)
+- **Seen:** the board rolled to its right as the balance leaned right, then fell off to its left.
+- **Cause:** the fall's offset took the perpendicular (-vz, 0, vx), which is the board's right (as skiff.js's), and multiplied it by
+  minus the lean's sign: the roll and the fall read the same sign through two different vectors, one negated.
+- **Fix:** the fall moves along the right by the lean's own sign (`courier/skiff/grind.js`).
+- **Rule:** NEW:sign-one-frame.

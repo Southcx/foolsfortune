@@ -89,7 +89,7 @@ export class Grind {
     const p = this.at(Math.max(0, Math.min(this.R.len, this.s)), _b).clone(); p.addScaledVector(this.up, GRIND.ride);
     const heading = Math.atan2(_d.x, _d.z), vel = new THREE.Vector3(_d.x, 0, _d.z).normalize().multiplyScalar(this.V);
     if (why) { this.on = false; this.why = why; this.offR = this.R; this.offUntil = (this.skiff.rideT || 0) + GRIND.relock; this.skiff.game.events?.emit('skiff.grind.end', { metres: +this.run.toFixed(1), why, by: 'courier' }); }
-    if (why === 'fell') p.add(new THREE.Vector3(-vel.z, 0, vel.x).normalize().multiplyScalar(-Math.sign(this.lean) * (GRIND.reach + 0.4))); // (off the side it leaned to, out of the lock's reach)
+    if (why === 'fell') p.add(new THREE.Vector3(-vel.z, 0, vel.x).normalize().multiplyScalar(Math.sign(this.lean) * (GRIND.reach + 0.4))); // (off the side it leaned to, out of the lock's reach: (-vz, 0, vx) is the right, + lean is the right; it threw to the left, Calissa 2026-10-14)
     const flat = Math.hypot(_d.x, _d.z) || 1e-3, vel3 = vel.clone().multiplyScalar(Math.hypot(_d.x, _d.z) / flat); // (the horizontal share of the rail's speed)
     return { pos: p, vel: vel3, vy: why === 'hop' ? GRIND.pop + Math.max(0, this.V * _d.y) : why === 'fell' || why === 'stall' ? Math.min(0, this.V * _d.y) : this.V * _d.y, heading, lean: this.lean, done: !!why, metres: this.run, up: this.up, fwd: _d.clone() };
   }
