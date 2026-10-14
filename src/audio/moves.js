@@ -17,7 +17,7 @@ export class MoveSounds {
     const og = ctx.createGain(); og.gain.value = 0;
     o.connect(of).connect(og).connect(this.master);
     src.start(); o.start();
-    let G = null, gliding = false, lastK = 0;
+    let G = null, gliding = false, lastK = 0; const sfx = this;
     const glide = (on) => {
       const t = ctx.currentTime;
       if (on && !G) { // (built on the first glide: the wind's body, its gusts, the cloth)
@@ -43,7 +43,7 @@ export class MoveSounds {
     return {
       glide,
       set(k, boost = 0, air = 0, glideOn) {
-        const t = ctx.currentTime; lastK = k;
+        const t = ctx.currentTime; lastK = k; sfx._skiffK = air ? 0 : k; // (the board's speed on the ground: the wet sand's hiss reads it, audio/raceway.js)
         if (glideOn !== undefined) glide(!!glideOn); else if (!air && gliding) glide(false); // (no word from the caller: the landing ends it)
         if (G && gliding) { G.gust.frequency.setTargetAtTime(1.2 + Math.random() * 1.4, t, 0.4); G.lp.frequency.setTargetAtTime(380 + k * 500, t, 0.2); } // (the gusts uneven: a wandering rate)
         bp.frequency.setTargetAtTime(500 + k * 2600 + boost * 900, t, 0.08);

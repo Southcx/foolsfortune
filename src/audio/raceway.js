@@ -12,6 +12,15 @@
 //           or dropped off ('fell', 'stall') in a stutter
 //   RING    skiff.ring { ring }: a sun ring flown through, each one a step higher up E's pentatonic (a run of rings plays a scale)
 //   BACK    race.back: R, set back at the last gate: the run rewound (a reversed swell and a click into place)
+//   GRAB    skiff.grab { grab, seconds }: let go, a snap and the board's note (nose high, tail low, a double both), longer held, brighter;
+//           skiff.grab.late: landed still holding, a wobble   POP  skiff.pop { perfect }: a perfect pop rings a bright ping over the spring;
+//           skiff.pop.miss: a flat thud   SLOPE  skiff.land.slope { gain }: the fall kept as speed, a swell as big as the gain
+//   COMBO   skiff.combo { n, mult }: each trick linked a tick a step higher up E's pentatonic; skiff.combo.bank { mult }: banked, a run
+//           up the triad and a bell for each step of the multiplier; skiff.combo.drop: dropped, the run falling in the minor
+//   CAVERN  while `game.raceway.line === 'cavern'` (a roofed stone gorge) the room's reverb is sent up: everything rings off stone;
+//           raceway.branch: through it whole, an echoed chime
+//   WET     race.start { aspect }: a race in rain (mirth's sunshower, grief's long rain) puts wet sand's hiss under the board, as fast
+//           as it rides, until the race ends;   a dark plate (skiff.plate { power: 0 }, night): a dull clunk, no push
 //   LAND    skiff.landhard: the hull slapping the sand, a thud and grit;   FINISH  race.finish { medal }: a bell a step of the medal
 // Prior art: Mario Kart's countdown (three low beeps, one high: the most learned countdown there is) and its rocket start; SSX's and
 // Wave Race's boost whooshes; Trackmania's checkpoint chime that says ahead or behind before you read the split.
@@ -47,16 +56,76 @@ export class RacewaySounds {
     this.noise(t, 0.35 + 0.2 * k, { type: 'bandpass', f0: 500, f1: 1500 + 1200 * k, q: 0.9, gain: 0.35 + 0.15 * k, attack: 0.01, dest: d });
     this.tone(t, 0.4, { f0: hz(TRIAD[k - 1] + 12), gain: 0.08, dest: d });
   }
-  skiffPlate() {
+  skiffPlate(power = 1) {
     if (!this.ok() || !this.allow('skiffPlate', 6)) return;
     const t = this.ctx.currentTime, d = this.out(0.4, 0.35);
+    if (!power) { this.tone(t, 0.2, { f0: 150, f1: 110, type: 'triangle', gain: 0.3, dest: d }); this.noise(t, 0.08, { f0: 600, f1: 200, gain: 0.25, dest: d }); return; } // (a dark plate: a clunk)
     this.tone(t, 0.5, { f0: hz(88), gain: 0.12, dest: d }); this.tone(t + 0.04, 0.5, { f0: hz(95), gain: 0.08, dest: d });
     this.noise(t, 0.5, { type: 'bandpass', f0: 800, f1: 3000, q: 0.8, gain: 0.35, dest: d });
   }
-  skiffPop() {
+  skiffPop(perfect = false) {
     if (!this.ok() || !this.allow('skiffPop', 6)) return;
     const t = this.ctx.currentTime, d = this.out(0.4, 0.2);
     this.tone(t, 0.16, { f0: 220, f1: 520, type: 'triangle', gain: 0.25, dest: d }); this.noise(t, 0.1, { type: 'bandpass', f0: 2500, q: 2, gain: 0.25, dest: d });
+    if (perfect) { this.tone(t + 0.04, 0.5, { f0: hz(95), gain: 0.1, dest: d }); this.tone(t + 0.04, 0.3, { f0: hz(107), gain: 0.04, dest: d }); }
+  }
+  skiffPopMiss() {
+    if (!this.ok() || !this.allow('skiffPopMiss', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.15); this.tone(t, 0.12, { f0: 160, f1: 120, type: 'triangle', gain: 0.22, dest: d });
+  }
+  skiffGrab(grab = 'nose', seconds = 0.3) {
+    if (!this.ok() || !this.allow('skiffGrab', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.3), up = Math.min(7, Math.floor(seconds * 4));
+    this.noise(t, 0.04, { type: 'bandpass', f0: 3000, q: 4, gain: 0.35, dest: d });
+    for (const m of grab === 'double' ? [76, 83] : [grab === 'tail' ? 71 : 83]) this.tone(t + 0.02, 0.35, { f0: hz(m + up), type: 'triangle', gain: 0.1, dest: d });
+  }
+  skiffGrabLate() {
+    if (!this.ok() || !this.allow('skiffGrabLate', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.2), o = this.ctx.createOscillator(), g = this.ctx.createGain(), l = this.ctx.createOscillator(), lg = this.ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = 180; l.frequency.value = 9; lg.gain.value = 30; l.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5); o.connect(g).connect(d); o.start(t); l.start(t); o.stop(t + 0.55); l.stop(t + 0.55);
+    this.noise(t, 0.3, { type: 'bandpass', f0: 1200, f1: 500, q: 1, gain: 0.25, dest: d });
+  }
+  skiffLandSlope(gain = 2) {
+    if (!this.ok() || !this.allow('skiffLandSlope', 4)) return;
+    const k = Math.min(1, gain / 8), t = this.ctx.currentTime, d = this.out(0.4, 0.3);
+    this.noise(t, 0.5 + 0.4 * k, { type: 'bandpass', f0: 400, f1: 1600 + 2000 * k, q: 0.8, gain: 0.3 + 0.3 * k, attack: 0.05, dest: d });
+  }
+  skiffCombo(n = 1) {
+    if (!this.ok() || !this.allow('skiffCombo', 10)) return;
+    const P = [0, 2, 4, 7, 9], k = Math.max(0, (n | 0) - 1), m = 76 + P[k % 5] + 12 * Math.min(1, Math.floor(k / 5)), t = this.ctx.currentTime, d = this.out(0.25, 0.3, true);
+    this.tone(t, 0.18, { f0: hz(m), type: 'triangle', gain: 0.09, dest: d });
+  }
+  skiffComboBank(mult = 1) {
+    if (!this.ok() || !this.allow('skiffComboBank', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.45, true);
+    [76, 80, 83, 88].forEach((m, k) => this.tone(t + k * 0.06, 0.5, { f0: hz(m), gain: 0.09, dest: d }));
+    for (let k = 0; k < Math.min(4, Math.max(1, Math.round(mult))); k++) this.tone(t + 0.3 + k * 0.12, 0.9, { f0: hz(100 + [0, 4, 7, 12][k]), gain: 0.06, dest: d });
+  }
+  skiffComboDrop() {
+    if (!this.ok() || !this.allow('skiffComboDrop', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.3, true);
+    [83, 79, 76, 71].forEach((m, k) => this.tone(t + k * 0.08, 0.3, { f0: hz(m), type: 'triangle', gain: 0.07, dest: d }));
+  }
+  racewayBranch() {
+    if (!this.ok() || !this.allow('racewayBranch', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.9, true);
+    [0, 0.25, 0.5].forEach((s, k) => this.tone(t + s, 0.7, { f0: hz(88), gain: 0.1 * Math.pow(0.5, k), dest: d })); // (its echo off the gorge)
+  }
+  /** The race's ground: wet sand's hiss under the board in rain (race.start's aspect), as fast as it rides; off when the race ends. */
+  raceWet(on) {
+    const W = this._wet;
+    if (!on) { if (!W) return; this._wet = null; clearInterval(W.timer); W.g.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.3); setTimeout(() => { try { W.s.stop(); } catch { /* gone */ } W.g.disconnect(); }, 1500); return; }
+    if (W || !this.ok()) return;
+    const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true;
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2500; const g = c.createGain(); g.gain.value = 0.0001;
+    s.connect(hp).connect(g).connect(this.out(1, 0.1)); s.start();
+    this._wet = { s, g, timer: setInterval(() => g.gain.setTargetAtTime(0.12 * (this._skiffK || 0), c.currentTime, 0.15), 100) };
+  }
+  /** Inside the cavern (a roofed stone gorge): the room's reverb sent up, so everything rings off stone. */
+  setCavern(on) {
+    if (!this.verbSend || !!on === !!this._cavern) return; this._cavern = !!on;
+    this.verbSend.gain.setTargetAtTime(on ? 0.6 : 0.22, this.ctx.currentTime, 0.4);
   }
   raceGate(split = null) {
     if (!this.ok() || !this.allow('raceGate', 6)) return;

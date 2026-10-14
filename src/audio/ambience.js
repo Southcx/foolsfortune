@@ -78,6 +78,7 @@ export class Ambience {
     if (!this.bus) this.build();
     const g = this.game, W = this.want, c = sfx.ctx, t = c.currentTime;
     const under = !!(g.emocean?.stage?.active && g.emocean.form === 'umbral'); // (the rail's Umbral form: everything heard through the crude)
+    sfx.setCavern?.(g.raceway?.active && g.raceway.line === 'cavern'); // (the Raceway's cavern: everything rings off stone, audio/raceway.js)
     if (under !== !!this.under) { sfx.railSurface?.(under); this.under = under; sfx.setUnder?.(under); g.music?.setUnder?.(under); }
     const quiet = this.menusUp();
     this.ease('bus', this.bus.gain, quiet ? 0 : 1, 0.25, t);
