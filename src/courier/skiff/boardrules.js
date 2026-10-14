@@ -4,7 +4,7 @@
 //   - THE POOL IS THE HULL (F-Zero's energy, and the ARPG's shield: the owner's "chef's kiss"): a bump, a wall, a hard landing and a bail
 //     each drain the pool; Shift's flare drains it as ever; with the pool empty the next real hit WRECKS the board. While a race runs the
 //     pool does not refill by itself: the vein lanes refill it (a long strip of Lachrymite beside the line: F-Zero's pit, chosen, slower
-//     than the line). Events: skiff.hull { kind, damage, left }, skiff.wreck { kind }, skiff.refill.
+//     than the line). Events: skiff.hull { kind, damage, left }, skiff.wreck { kind }, skiff.refill { fresh, share } (every 0.2 real s on a lane).
 //   - THE SCORCH (Excitebike's overheat): a flare held too long scorches the sail; full, the sail luffs for a beat (no flare, slower).
 //     Events: skiff.scorch.
 //   - THE MANUAL (Tony Hawk's): W and S held together on the sand with a combo live balances the board on its tail: the combo's link
@@ -74,7 +74,11 @@ export class BoardRules {
     return false;
   }
   /** On a vein lane: the pool refilled (a real second's share). */
-  refill(dt, plate, fresh) { const L = this.game.lachryma; if (!L) return; L.gain(HULL.refill * dt, 'vein'); if (fresh) this.game.events?.emit('skiff.refill', { by: 'courier' }); }
+  refill(dt, plate, fresh) { // (said every fifth of a real second while on the lane: Wanda's shimmer holds while they come; `fresh` on entering it)
+    const L = this.game.lachryma; if (!L) return; L.gain(HULL.refill * dt, 'vein');
+    this.refillT = fresh ? 0 : (this.refillT || 0) - dt; if (this.refillT > 0) return; this.refillT = 0.2;
+    this.game.events?.emit('skiff.refill', { fresh: !!fresh, share: +(L.value / L.max).toFixed(2), by: 'courier' });
+  }
 
   /** The flare asked for this step: allowed unless the sail is luffing from a scorch; the scorch built while flaring, cooled while not. */
   flare(dt, want) {
