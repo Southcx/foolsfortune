@@ -18,6 +18,11 @@
 //   raceway.grind.streak             held there too: light left on the rail's top behind the board, a bright streak fading back
 //   raceway.grind.hum                held under the board: a soft gold glow and motes, the keel's hum made light
 //   raceway.ring.pass / .draw        a sun ring flown through: the flash at its heart / motes drawn in round its rim and out through it
+//   skiff.water.enter / .lachryma    the board coming onto water: a crown of drops and a puff of mist off the keel; on Lachryma, its
+//                                    drops in Lachryma's colour with the film's glints and a soft glow (vfx/skiffwaterlook.js plays these)
+//   skiff.water.exit                 off the water: drops falling from the hull
+//   skiff.water.spray / .lachryma    held off either side of the keel while it skims (`dir` out, up and back; `k` the speed): a fan of
+//                                    drops and a little mist, no glints (the water's glare was the owner's complaint: none added)
 //
 // Prior art: Mario Kart's drift sparks and mini-turbo tiers (blue, orange, purple: ours are sand, gold, white), the rooster tail of
 // Wave Race's and Jet Moto's craft (the sand thrown off the edge, the wake after), Tony Hawk's and Jet Set Radio's grind sparks
@@ -112,7 +117,7 @@ export const RACEWAY_EFFECTS = {
     { type: 'sprites', count: 5, shape: 'sparkle', spawn: 'ring', r: 2.3, dir: 'up', speed: [0.6, 1.4], size: [0.16, 0.24], sizeEnd: 0, life: [0.3, 0.5], drag: 2, color: 'film', colorEnd: LACHRYMA_TINT },
     { type: 'sprites', pool: 'alpha', count: 1, shape: 'ringthin', size: 1.2, sizeEnd: 3.6, life: 0.26, color: LACHRYMA_DEEP, alpha: 0.8, alphaEnd: 0, rot: 0, powerCount: false },
   ] },
-  'skiff.combo.step': { layers: [ // (at the bow's pips: a multiplier's step taken)
+  'skiff.combo.step': { layers: [ // (at the step pips' chevron just lit: a multiplier's step taken)
     { type: 'sprites', count: 1, shape: 'star4', size: 1.8, sizeEnd: 0, life: 0.3, color: 'white', colorEnd: LACHRYMA_TINT, rot: 0, powerCount: false },
     { type: 'sprites', count: 6, shape: 'glint', spawn: 'sphere', r: 0.3, dir: 'up', speed: [1.5, 3], size: [0.2, 0.3], sizeEnd: 0, life: [0.25, 0.4], drag: 2, color: 'film', colorEnd: 'white' },
   ] },
@@ -193,5 +198,28 @@ export const RACEWAY_EFFECTS = {
   'raceway.ring.draw': { layers: [ // (played round the rim, upstream: `dir` the way in, through the heart)
     { type: 'sprites', count: [3, 4], shape: 'glint', spawn: 'sphere', r: 0.5, dir: 'cone', cone: 6, speed: [9, 13], size: [0.2, 0.3], sizeEnd: 0, life: [0.45, 0.6], drag: 1.6, color: 'gold', colorEnd: 'white' },
     { type: 'sprites', count: 2, shape: 'streak', spawn: 'sphere', r: 0.4, dir: 'cone', cone: 4, speed: [10, 14], size: [0.14, 0.2], sizeEnd: 0.02, life: [0.4, 0.55], stretch: 2, drag: 1.6, color: 'white', colorEnd: 'gold' },
+  ] },
+
+  // ---- the board on water (the owner's notes on v198: no wake, no trail, no splash): drops blended over, never added, so they never glare
+  'skiff.water.enter': { layers: [
+    { type: 'sprites', pool: 'alpha', count: 34, shape: 'soft', spawn: 'disc', r: 0.7, dir: 'cone', axis: 'up', cone: 38, speed: [3, 7], size: [0.12, 0.24], sizeEnd: 0.06, life: [0.5, 0.85], gravity: 11, drag: 0.6, color: [0xeaf6f4, 0xcfe8ec], alpha: 0.9, alphaEnd: 0.3, inherit: 0.25 },
+    { type: 'sprites', pool: 'alpha', count: 8, shape: 'puff', spawn: 'disc', r: 0.8, dir: 'up', speed: [0.8, 2], size: [0.6, 0.9], sizeEnd: 2.2, life: [0.6, 0.9], drag: 2.2, color: 0xeef8f6, alpha: 0.4, spin: [-1, 1], inherit: 0.15 },
+  ] },
+  'skiff.water.enter.lachryma': { layers: [
+    { type: 'sprites', pool: 'alpha', count: 34, shape: 'soft', spawn: 'disc', r: 0.7, dir: 'cone', axis: 'up', cone: 38, speed: [2.5, 5.5], size: [0.14, 0.26], sizeEnd: 0.07, life: [0.6, 0.95], gravity: 9, drag: 0.9, color: [LACHRYMA_DEEP, 0x1c3f8a], alpha: 0.95, alphaEnd: 0.4, inherit: 0.2 },
+    { type: 'sprites', count: 10, shape: 'glint', spawn: 'disc', r: 0.6, dir: 'cone', axis: 'up', cone: 45, speed: [1.5, 3.5], size: [0.16, 0.24], sizeEnd: 0, life: [0.3, 0.5], drag: 2, color: 'film', colorEnd: LACHRYMA_TINT },
+    { type: 'sprites', count: 1, shape: 'soft', size: 2.6, sizeEnd: 3.4, life: 0.4, color: LACHRYMA_TINT, alpha: 0.35, alphaEnd: 0, powerCount: false },
+    { type: 'light', color: LACHRYMA_TINT, range: 6, k: 5, dur: 0.4, up: 0.3 },
+  ] },
+  'skiff.water.exit': { layers: [
+    { type: 'sprites', pool: 'alpha', count: 12, shape: 'soft', spawn: 'disc', r: 0.9, dir: 'cone', axis: 'up', cone: 60, speed: [0.5, 1.5], size: [0.07, 0.12], sizeEnd: 0.04, life: [0.4, 0.6], gravity: 9.8, color: 0xd2e8ec, alpha: 0.85, alphaEnd: 0.4, inherit: 0.6 },
+  ] },
+  'skiff.water.spray': { layers: [ // (h.k the speed: the rate follows it)
+    { type: 'sprites', pool: 'alpha', rate: 150, dur: Infinity, shape: 'soft', dir: 'cone', cone: 18, speed: [3, 7], size: [0.08, 0.16], sizeEnd: 0.05, life: [0.35, 0.6], gravity: 10, drag: 0.8, color: [0xeaf6f4, 0xcfe8ec], alpha: 0.85, alphaEnd: 0.25, inherit: 0.35 },
+    { type: 'sprites', pool: 'alpha', rate: 22, dur: Infinity, shape: 'puff', dir: 'cone', cone: 25, speed: [1.5, 3], size: [0.35, 0.55], sizeEnd: 1.6, life: [0.45, 0.7], drag: 2.4, gravity: -0.1, color: 0xeef8f6, alpha: 0.28, spin: [-1, 1], inherit: 0.3 },
+  ] },
+  'skiff.water.spray.lachryma': { layers: [ // (Lachryma is heavier: fewer, fatter drops, lower, and the film's glints in them)
+    { type: 'sprites', pool: 'alpha', rate: 110, dur: Infinity, shape: 'soft', dir: 'cone', cone: 14, speed: [2.5, 5], size: [0.1, 0.18], sizeEnd: 0.06, life: [0.35, 0.55], gravity: 12, drag: 1, color: [LACHRYMA_DEEP, 0x1c3f8a], alpha: 0.95, alphaEnd: 0.35, inherit: 0.35 },
+    { type: 'sprites', rate: 14, dur: Infinity, shape: 'glint', dir: 'cone', cone: 20, speed: [2, 4], size: [0.12, 0.18], sizeEnd: 0, life: [0.25, 0.4], drag: 2, color: 'film', colorEnd: LACHRYMA_TINT },
   ] },
 };
