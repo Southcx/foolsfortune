@@ -9,8 +9,8 @@
 // is TAKEN DOWN, spun out for a beat, and you are paid in speed (a push) and a third of a banked flare (Burnout's boost for a takedown).
 // Their places are counted against yours (race.place), and a race's finish says where you came.
 // Events: race.place { place, of }, race.bump { rival, impact }, race.takedown { rival }, race.rival.finish { rival, seconds } (with `by`).
-// Placeholders: a clapperjar (the creatures' own model, held still) on a board of a box and a sail; their look and their riding are
-// Calissa's to make.
+// Placeholders: a clapperjar (the creatures' own model, held still) on a board of a box and a sail, dressed by Calissa's look as a mini
+// Solar Skiff with a clapperjar riding it (vfx/racewayrivals.js, ticked at the end of update).
 //
 // Prior art: Mario Kart's rubber banding and its CPU racers on a racing line; Gran Turismo's AI braking for what it can see; Burnout 3's
 // takedowns (a side hit spins a rival out and fills your boost) and FlatOut's bumping; Crash Team Racing's pack.
@@ -20,6 +20,7 @@
 import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RW } from './track.js';
+import { RacewayRivals } from '../../vfx/racewayrivals.js';
 
 /** Their pace (top speed m/s at skill 1, acceleration and braking m/s^2, the grip a bend is taken at m/s^2, metres ahead a bend is read),
  *  each one's skill, lane (m right of the line) and reaction at GO (real s); the rubber band (metres ahead or behind at which it is at its
@@ -103,6 +104,7 @@ export class Rivals {
       this.place3d(r, dt);
     }
     if (running) { this.bumps(dt); this.ranks(me, race); }
+    (this.look ||= new RacewayRivals(g)).update(dt, this, race); // (their look and riding: Calissa's, vfx/racewayrivals.js)
   }
 
   /** Your place: one more than the rivals ahead of you (a finished one is ahead of a racer still running). */

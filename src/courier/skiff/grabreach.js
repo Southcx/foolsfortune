@@ -19,12 +19,16 @@
 //             their limits, unclamped, and the whole table switched on with a grab snapped them)
 //   WEIGHTS   each hand's own, eased in over the grab's first moments (REACH.in) and out on the let-go or the landing (REACH.out): a
 //             nose grab turned into the double brings the second hand in on its own, never a snap
+//   GRIND TRICKS  on a rail (skiff.js `grindTrick`, skiff.grind.trick; the board's own tweak is Dovina's and stays): the TAIL SLIDE is
+//             the tail grab's hand on the stern dome's lip, over the same crouch, as a skater's hand drags the board's tail on the
+//             ledge; the NOSE GRIND is the crouch with no hand, the spine leant out over the bow (NOSE.lean, spread as the reach's lean
+//             is), the weight on the front foot over the nose pressed to the rail. Eased in and out by the same rates as a grab
 //
-// Prior art: SSX's and Tony Hawk's grabs (a held air pose, the hand to the board's edge, the board tweaked under it), Unity's Animation
+// Prior art: SSX's and Tony Hawk's grabs and grinds (THPS's nosegrind leans the body over the front truck; its tailslide reaches back) (a held air pose, the hand to the board's edge, the board tweaked under it), Unity's Animation
 // Rigging Two Bone IK and Unreal's hand IK on a prop (a hand onto a handle, the animated pose kept under it), and the skiff's own ollie
 // cut (rider.js: the crouch frame with its lift taken off the hips, casebook rule 19).
 //
-//   const G = new GrabReach(ch)   G.pose(rider, A, s, dt)  (in Rider.ride: the weights and the under-pose)
+//   const G = new GrabReach(ch)   G.pose(rider, A, s, dt)  (in Rider.ride: the weights and the under-pose; s.grab, s.air, s.grindTrick)
 //   G.reach(ch, tech)  (in the skiff's hands(): the lean, the IK, the fingers)   G.gap(ch, tech)  palm to grip (m), each hand on the rail
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -44,6 +48,9 @@ export const GRIPS = {
   },
 };
 const HANDS = { nose: ['L'], tail: ['R'], double: ['L', 'R'] };
+// a grind trick (skiff.js grindTrick: 'nose' | 'tail'): the tail slide's hand is the tail grab's; the nose grind's lean over the bow (rad)
+const GRIND_HANDS = { tail: 'tail' };
+const NOSE = { lean: 0.38 };
 const UNDER = { legs: 'Skiff_Ollie', at: 0.23, arms: 'kneel', armsAt: 0.5 }; // (the ollie's crouch, rider.js OLLIE.crouch)
 const REACH = { in: 14, out: 9, curl: 0.9, thumb: 0.35, palm: 0.025, wrap: 0.25, twist: 0.6, poleAt: 0.3, bent: 0.03, open: 0.6 };
 // (rates per real second; curl rad; the palm this far out from the rail's edge, m; how far the fingers turn out over it; the most the hand
@@ -60,6 +67,7 @@ export class GrabReach {
     this.w = { L: 0, R: 0 };
     this.under = 0;
     this.dbl = 0; // (how far the grips are the double's: eased, so a nose turned double slides the front hand along the rail)
+    this.nose = 0; // (the nose grind's lean over the bow, 0..1)
     this.U = ch.clips.pose(); this.V = ch.clips.pose();
     this.upper = ch.clips.mask({ spine001: 1, spine002: 1, spine003: 1, spine004: 1, spine005: 1, head: 1, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
     // each hand's fingers and their limits (the Courier's own table, courier/anim/rom.js): curled about the hinge, clamped by it
@@ -75,20 +83,23 @@ export class GrabReach {
 
   /** In Rider.ride, after the ollie and the glide: each hand's weight eased, then the under-pose blended into A by the larger. */
   pose(R, A, s, dt) {
-    const g = s.grab && s.air ? s.grab : null, want = g ? HANDS[g.kind] || [] : [];
+    const trick = s.grindTrick || null; // (on a rail: skiff.js passes it only while grinding)
+    const g = s.grab && s.air ? s.grab : GRIND_HANDS[trick] ? { kind: GRIND_HANDS[trick] } : null, want = g ? HANDS[g.kind] || [] : [];
     for (const side of ['L', 'R']) {
       const on = want.includes(side);
       this.w[side] = damp(this.w[side], on ? 1 : 0, on ? REACH.in : REACH.out, dt);
       if (this.w[side] < 1e-3 && !on) this.w[side] = 0;
     }
     this.dbl = damp(this.dbl, g?.kind === 'double' ? 1 : g ? 0 : this.dbl, REACH.in, dt); // (let go: the grips stay where they were)
-    this.under = this.weight;
+    this.nose = damp(this.nose, trick === 'nose' ? 1 : 0, trick === 'nose' ? REACH.in : REACH.out, dt);
+    if (this.nose < 1e-3 && trick !== 'nose') this.nose = 0;
+    this.under = Math.max(this.weight, this.nose);
     if (this.under <= 0.01) return;
     const C = this.ch.clips, U = this.U;
     if (!C.clips[UNDER.legs]) return;
     C.sample(UNDER.legs, UNDER.at, U, false);
     U.p[1] -= R.lift(UNDER.legs, UNDER.at); // (the feet stay on the deck: rider.js, casebook rule 19)
-    if (C.clips[UNDER.arms]) C.blend(U, C.sample(UNDER.arms, UNDER.armsAt, this.V, false), 1, this.upper, 0);
+    if (C.clips[UNDER.arms] && this.weight > 0.01) C.blend(U, C.sample(UNDER.arms, UNDER.armsAt, this.V, false), Math.min(1, this.weight / this.under), this.upper, 0); // (the kneel's arms only for a hand on the rail: the nose grind keeps the ride's, the sheet in hand)
     C.blend(A, U, smooth(this.under));
   }
 
@@ -125,10 +136,15 @@ export class GrabReach {
   /** In the skiff's hands(): the lean toward the grips, each hand onto its grip, its fingers over the rail. */
   reach(ch, tech) {
     const wMax = this.weight;
-    if (wMax < 1e-3 || !tech.skiff?.group) return;
+    if ((wMax < 1e-3 && this.nose < 1e-3) || !tech.skiff?.group) return;
     const M = this.frame(tech.skiff, this._M ||= new THREE.Matrix4());
     const sides = ['L', 'R'].filter((s) => this.w[s] > 1e-3), B = ch.bones;
     ch.root.updateMatrixWorld(true);
+    // the nose grind: the spine leant out over the bow (about the board's up crossed with its bow: the top of the body toward the nose)
+    if (this.nose > 1e-3) {
+      const up = _up.set(0, 1, 0).transformDirection(M), bow = _h.set(0, 0, 1).transformDirection(M), ax = _k.crossVectors(up, bow).normalize();
+      for (const [b, k] of LEAN.share) if (B[b]) { ch.rotW(B[b], ax, NOSE.lean * k * smooth(Math.min(1, this.nose))); B[b].updateMatrixWorld(true); }
+    }
     // the lean: the spine bent from the hips toward the grips by what the arms are short of them; for the double, toward the hand
     // further short the more (each side's shoulder and grip weighed by its shortfall), by the larger shortfall. In LEAN.passes, each
     // measured again from where the last left the shoulders (an arc of the shortfall's length closes less than the shortfall)
@@ -185,7 +201,7 @@ export class GrabReach {
       arm.hand.updateMatrixWorld(true);
     }
     // the sheet runs to the left hand (skiff.js afterPose draws it before the hands are set): drawn again to where that hand went
-    if (this.w.L > 1e-3 && tech.skiff.rope?.visible) tech.skiff.drawRope(tech.game.scene, ch.arm.L.hand.getWorldPosition(_a));
+    if ((this.w.L > 1e-3 || this.nose > 1e-3) && tech.skiff.rope?.visible) tech.skiff.drawRope(tech.game.scene, ch.arm.L.hand.getWorldPosition(_a));
   }
 
   /** How far to lean (rad) and about what (into _k, the world): from the hips, the shoulders toward the grips by their shortfall. */
