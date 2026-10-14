@@ -20,7 +20,9 @@ import * as THREE from 'three';
  *  it (m/s^2 at a full sail dead downwind); the balance's drift (/s, growing /s), A/D's answer (/s), the pop off (m/s up); metres that
  *  make it a trick, and the Lachryma a metre then pays (capped). */
 export const GRIND = { reach: 1.4, over: 1.8, under: 0.5, cone: 0.62, ride: 0.55, stall: 3, gravity: 1, drag: 0.03, sail: 4,
-  drift: 0.35, driftGrow: 0.06, answer: 1.8, pop: 9, trick: 12, lachryma: 0.5, cap: 30 };
+  drift: 0.35, driftGrow: 0.06, answer: 1.8, pop: 9, trick: 12, lachryma: 0.5, cap: 30, relock: 0.6 };
+// (relock: real seconds the rail just left will not take the board again: let go at its end, it locked again at once, every frame, and
+// the board hung there (the owner, 2026-10-14))
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
 
@@ -32,9 +34,13 @@ export class Grind {
     if (this.on || !rails?.length || vy > 1.5) return false;
     const sp = Math.hypot(v.x, v.z); if (sp < GRIND.stall + 1) return false;
     let best = null;
+    const now = this.skiff.rideT || 0;
     for (const R of rails) for (let i = 0; i < R.pts.length - 1; i++) {
+      if (R === this.offR && now < this.offUntil) break;
       const a = R.pts[i], b = R.pts[i + 1], dx = b.x - a.x, dz = b.z - a.z, l2 = dx * dx + dz * dz;
-      const u = Math.max(0, Math.min(1, ((pos.x - a.x) * dx + (pos.z - a.z) * dz) / l2)), px = a.x + dx * u, pz = a.z + dz * u, top = a.y + (b.y - a.y) * u;
+      const u0 = ((pos.x - a.x) * dx + (pos.z - a.z) * dz) / l2;
+      if ((i === 0 && u0 < 0) || (i === R.pts.length - 2 && u0 > 1)) continue; // (past the rail's ends: nothing to lock to)
+      const u = Math.max(0, Math.min(1, u0)), px = a.x + dx * u, pz = a.z + dz * u, top = a.y + (b.y - a.y) * u;
       const d = Math.hypot(pos.x - px, pos.z - pz), up = pos.y - GRIND.ride - top;
       if (d > GRIND.reach || up > GRIND.over || up < -GRIND.under) continue;
       const l = Math.sqrt(l2), cos = (v.x * dx + v.z * dz) / (sp * l);
@@ -68,8 +74,8 @@ export class Grind {
     let why = hopUp ? 'hop' : end ? 'end' : Math.abs(this.lean) > 1 ? 'fell' : this.V < GRIND.stall ? 'stall' : null;
     const p = this.at(Math.max(0, Math.min(this.R.len, this.s)), _b).clone(); p.y += GRIND.ride;
     const heading = Math.atan2(_d.x, _d.z), vel = new THREE.Vector3(_d.x, 0, _d.z).normalize().multiplyScalar(this.V);
-    if (why) { this.on = false; this.why = why; this.skiff.game.events?.emit('skiff.grind.end', { metres: +this.run.toFixed(1), why, by: 'courier' }); }
-    if (why === 'fell') p.add(new THREE.Vector3(-vel.z, 0, vel.x).normalize().multiplyScalar(-Math.sign(this.lean) * 1.3)); // (off the side it leaned to)
+    if (why) { this.on = false; this.why = why; this.offR = this.R; this.offUntil = (this.skiff.rideT || 0) + GRIND.relock; this.skiff.game.events?.emit('skiff.grind.end', { metres: +this.run.toFixed(1), why, by: 'courier' }); }
+    if (why === 'fell') p.add(new THREE.Vector3(-vel.z, 0, vel.x).normalize().multiplyScalar(-Math.sign(this.lean) * (GRIND.reach + 0.4))); // (off the side it leaned to, out of the lock's reach)
     return { pos: p, vel, vy: why === 'hop' ? GRIND.pop : why ? 0 : this.V * _d.y, heading, lean: this.lean, done: !!why, metres: this.run };
   }
 }
