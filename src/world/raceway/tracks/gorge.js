@@ -51,6 +51,7 @@ export const GORGE = {
     kickers: [[1, 30, 2.4, 9], [8, 20, 2, 8], [SPIRAL1 + 2, -20, 2.6, 10]].map(([cp, at, h, len]) => ({ cp, at, h, len })),
     ramps: [[9, 30, -4, 3, 2.4, 8], [SPIRAL0 + 5, 0, 5, 3.5, 2.2, 8]].map(([cp, at, lat, w, h, len]) => ({ cp, at, lat, w, h, len })),
     plates: [[0, 60, 0], [2, 40, 3], [9, 10, 0], [SPIRAL0 + 8, 0, 0], [CONTROL.length - 6, 20, 0], [CONTROL.length - 3, 20, -3]].map(([cp, at, lat]) => ({ cp, at, lat, len: 7, w: 2.6 })),
+    lanes: [[0, 110, -8, 50], [0, 2400, 7, 60]].map(([cp, at, lat, len]) => ({ cp, at, lat, len, w: 2.4 })), // (the vein lanes: the pool refilled: boardrules.js)
     geysers: [[SPIRAL1 + 1, 20, 3]].map(([cp, at, lat]) => ({ cp, at, lat })),
     glideLips: [{ cp: 5, from: -4, to: 60 }, { cp: 11, from: -2, to: 30 }],
     sandfalls: [{ cp: 5 }, { cp: 11 }],

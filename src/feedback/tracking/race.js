@@ -30,6 +30,7 @@ export function raceRules({ on, L, log }) {
   on('raceway.enter', () => log.say('info', 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. F at a track\'s start pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
   on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
+    if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
     L.inc('race.raceway.start'); L.inc(`race.track.${e.track || 'sun'}.start`); log.say('skiff', `${TRACK_NAMES[e.track] || 'The race'}: to the line. Ready your sail.`, { key: 'race.start', throttle: 2 });
     const says = [LIGHT_SAYS[e.light], WEATHER_SAYS[e.aspect]].filter(Boolean); if (says.length) log.say('skiff', says.join(' '), { key: 'race.cond', throttle: 2 });
   });
@@ -38,10 +39,11 @@ export function raceRules({ on, L, log }) {
   on('race.solarstart', () => { L.inc('race.raceway.solarstart'); log.say('skiff', 'A solar start: you are off the line with the sun behind you.', { key: 'race.ss', throttle: 2 }); });
   on('race.gate', (e) => { L.inc('race.raceway.gate'); if (e.gate === 4 && e.split != null) log.say('skiff', `Half a lap: ${signed(e.split)} on your best.`, { key: 'race.split', throttle: 1 }); });
   on('race.lap', (e) => {
-    L.inc('race.raceway.lap'); L.lo('race.raceway.lap.best', e.seconds);
+    L.inc('race.raceway.lap'); if (!e.mode || e.mode === 'race' || e.mode === 'hotlap') L.lo('race.raceway.lap.best', e.seconds); // (practice rewinds; a part's lap is not a clean one)
     log.say('skiff', `Lap ${e.lap}: ${clock(e.seconds)}${e.best ? ', your best lap' : ''}${e.place ? `; ${ORD(e.place)} of ${e.of}` : ''}.`, { key: `race.lap.${e.lap}`, throttle: 1 });
   });
   on('race.finish', (e) => {
+    if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
     if (e.medal) L.inc(`race.raceway.${e.medal}`);
     if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); }
@@ -50,7 +52,7 @@ export function raceRules({ on, L, log }) {
     log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });
-  on('race.takedown', (e) => { if (e.by !== 'courier') return; L.inc('race.takedown'); log.say('skiff', 'Takedown: the rival spins out, and the push is yours.', { key: 'race.takedown', throttle: 2 }); });
+  on('race.takedown', (e) => { if (e.by !== 'courier') return; L.inc('race.takedown'); log.say('skiff', `Takedown: ${e.who || 'the rival'} spins out, and the push is yours.`, { key: 'race.takedown', throttle: 2 }); });
   on('race.bump', (e) => { if (e.by === 'courier') L.inc('race.bump'); });
   on('skiff.grind.trick', (e) => { if (e.by !== 'courier') return; L.inc('skiff.grind.trick'); L.inc(`skiff.grind.trick.${e.trick}`); });
   on('race.respawn', () => L.inc('race.raceway.respawn'));

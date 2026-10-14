@@ -56,6 +56,7 @@ import { rootOf } from '../../tools/moveset.js';
 import { Ragdoll } from '../anim/ragdoll.js';
 import { Grind, GRIND } from './grind.js';
 import { SkiffCombo, COMBO } from './combo.js';
+import { BoardRules, SCORCH } from './boardrules.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -124,6 +125,7 @@ export class Skiffing extends Tech {
     this.wake = new Wake(game.scene, game.fx);
     this.grind = new Grind(this); // (the board on a rail, the skiff alone: courier/skiff/grind.js)
     this.combo = new SkiffCombo(this); // (tricks linked into a chain, banked into free flares: courier/skiff/combo.js)
+    this.rules = new BoardRules(this); // (the pool as the hull, the scorch, the manual, snaking, the shoulder, aftertouch, near misses: boardrules.js)
     this.grab = null; // { kind: 'nose' | 'tail' | 'double', t }: a grab held in the air
     this.phase = 'ride'; this.phaseT = 0; this.next = null;
     this.parked = null; // { pos, heading }: the board left hovering, to be mounted again (F) or replaced by a summon (Y)
@@ -241,7 +243,7 @@ export class Skiffing extends Tech {
   /** A crash: thrown off. */
   bail(why) {
     if (this.phase !== 'ride') return;
-    this.combo.drop('bail'); this.grab = null;
+    this.combo.drop('bail'); this.grab = null; if (why !== 'wrecked') this.rules.hit('bail', 1);
     this.game.events?.emit('skiff.bail', { why, speed: +this.v.length().toFixed(1), by: 'courier' });
     this.enter('bail');
   }
@@ -278,6 +280,7 @@ export class Skiffing extends Tech {
       // the board slides on to a stop, upright; the rider is thrown off where they were and lies there, then gets up
       const b = this.board; b.v.multiplyScalar(Math.exp(-2.5 * dt)); b.pos.addScaledVector(b.v, dt); b.pos.y = D.rideHeight(b.pos.x, b.pos.z) + hover;
       this.rider.dy = hover * smooth(0.12, 0.45, this.phase === 'bail' ? t : 9);
+      if (this.phase === 'bail') this.rules.aftertouch(dt, P.input); // (aftertouch: the thrown body steered, Burnout's)
       if (this.rag?.active) { this.rag.step(dt); if (this.phase === 'bail') { const h = this.rag.hips; if (h && this.clearAt(h.x, P.pos.y, h.z)) this.rider.pos.set(h.x, this.rider.pos.y, h.z); } } // (the capsule goes where the body tumbles)
       { const y = D.rideHeight(this.rider.pos.x, this.rider.pos.z); if (this.clearAt(this.rider.pos.x, y, this.rider.pos.z)) P.pos.set(this.rider.pos.x, y, this.rider.pos.z); else this.rider.pos.set(P.pos.x, this.rider.pos.y, P.pos.z); } P.vel.set(0, 0, 0);
       const done = this.phase === 'getup' ? t >= len : t >= len && !g.character.clips.clips.getUp;
@@ -298,7 +301,7 @@ export class Skiffing extends Tech {
     if (P.latch('KeyF') && !this.air && this.v.length() < 6) { this.enter('dismount'); return this.stepPhase(dt); }
     // (what the frame interpolates from: the body is drawn between the last step and this one, like the camera is)
     this.hPrev = this.heading; this.spinPrev = this.spin; this.rollPrev = this.roll;
-    this.rideT = (this.rideT || 0) + dt;
+    this.rideT = (this.rideT || 0) + dt; this.rules.step(dt);
     if (this.grind.on) return this.grindStep(dt);
     const held = !!this.hold; // (a race's countdown: the board is held on the line, the sail free to be readied: world/raceway/race.js)
     const steerIn = held ? 0 : (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
@@ -317,7 +320,9 @@ export class Skiffing extends Tech {
  this.gV = Math.hypot(this.v.length(), P.vel.y); this.pitch = clamp(Math.atan2(-P.vel.y, Math.max(0.1, this.v.length())), -0.5, 0.9);
       g.events?.emit('skiff.glide', { by: 'courier' }); // (the wind under the wings is the skiff's loop: sfxLoop.set's glide, Wanda's)
     }
-    const hoistKey = keyW && !this.gliding, furlKey = keyS && !this.gliding;
+    const manualOn = this.rules.manual(dt, inp, !this.air && !held && !this.carve, steerIn); // (W and S together with a combo live: the manual, boardrules.js)
+    const hoistKey = keyW && !this.gliding && !manualOn, furlKey = keyS && !this.gliding && !manualOn;
+    if (!this.air && !held) this.rules.shoulder(dt, inp);
 
     // ---- the sail: hoisted with W, lowered with S (which also brakes); it stays where you leave it
     const wasL = this.L;
@@ -342,9 +347,9 @@ export class Skiffing extends Tech {
     // ---- speed: the sail sets where the boat settles; it gets there by the sail's pull, coasts down otherwise
     this.boosting = Math.max(0, this.boosting - dt * 2.2);
     this.turbo = Math.max(0, (this.turbo || 0) - dt);
-    let target = c.cruise * this.L * windF, accel = c.accel * (0.45 + 0.55 * this.L);
+    let target = c.cruise * this.L * windF * this.rules.mult('top') * (this.rules.luffing ? SCORCH.pace : 1), accel = c.accel * (0.45 + 0.55 * this.L) * this.rules.mult('accel'); // (the garage's parts; a scorched sail luffs)
     this.flaring = false; this.furling = furlKey && (this.L > 0.001 || vf > 2);
-    if ((banked && this.combo.spend(dt)) || (flare && g.lachryma.drain(c.boostCost * dt, 'skiff') > 0)) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; this.flaring = true; } // (a banked flare first: courier/skiff/combo.js)
+    if (this.rules.flare(dt, (banked && this.combo.stocks > 0.001) || flare) && ((banked && this.combo.spend(dt)) || (flare && g.lachryma.drain(c.boostCost * dt, 'skiff') > 0))) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; this.flaring = true; } // (a banked flare first: courier/skiff/combo.js)
     else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting; accel = c.boostAccel * 0.6; }
     if (this.turbo > 0) { target = Math.max(target, c.cruise * 0.6) + this.turboAdd; accel = Math.max(accel, c.boostAccel); this.boosting = Math.max(this.boosting, 0.6); } // (a carve's, a sun plate's, a solar start's push: free of Lachryma)
     if (vf < target) vf = Math.min(target, vf + accel * dt);
@@ -353,7 +358,7 @@ export class Skiffing extends Tech {
     vf += pump + (this.kickV || 0); this.kickV = 0;
     if (target === 0 && vf < 0.15 && !this.air) vf = 0;
     if (this.air) vf *= Math.exp(-0.015 * dt);
-    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : (this.carve ? CARVE.grip : 1) * (CD?.grip ?? 1))); // (a carve lets the board slide out; wet sand holds less)
+    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : (this.carve ? CARVE.grip : 1) * (CD?.grip ?? 1) * this.rules.mult('grip'))); // (a carve lets the board slide out; wet sand holds less)
     if (CD?.shove && !held) vl += CD.shove * (W.gust - 1) * wgo.dot(r) * dt; // (a squall's gust shoves the board across the wind)
     if (Math.abs(vl) < 0.02 && !this.air) vl = 0;
     if (held) { vf = 0; vl = 0; }
@@ -373,7 +378,8 @@ export class Skiffing extends Tech {
 
     // ---- the sun plates (the Raceway's): a flare's push, free
     const plate = D.plateAt?.(P.pos);
-    if (plate && plate !== this.lastPlate && !held) { const pw = plate.power ?? 1; if (pw > 0.05) this.kick(PLATE.add * pw, PLATE.dur * pw, PLATE.kick * pw); g.events?.emit('skiff.plate', { plate: plate.index, power: +pw.toFixed(2), by: 'courier' }); } // (as strong as the sun: dead at night, conditions.js)
+    if (plate?.lane && !held) this.rules.refill(dt, plate, plate !== this.lastPlate); // (a vein lane: the pool refilled, F-Zero's pit)
+    else if (plate && plate !== this.lastPlate && !held) { const pw = plate.power ?? 1; if (pw > 0.05) this.kick(PLATE.add * pw, PLATE.dur * pw, PLATE.kick * pw); g.events?.emit('skiff.plate', { plate: plate.index, power: +pw.toFixed(2), by: 'courier' }); } // (as strong as the sun: dead at night, conditions.js)
     this.lastPlate = plate;
 
     // ---- steering: it turns on the spot, and carves once it is moving (less so the faster it goes)
@@ -381,11 +387,11 @@ export class Skiffing extends Tech {
     // the carve: Q or E held on the sand at speed (its side): the board slides, loads in tiers, and let go it runs out with a push (MK8's
     // mini-turbo, Sonic Riders' drift). Its own keys: on Space it shared the hop, and a hop in a turn began a carve (the owner, 2026-10-14)
     const carveIn = this.air ? 0 : bankIn; // (Q / E bank the glider in the air; on the sand they carve)
-    if (!this.carve && carveIn !== 0 && sp0 > CARVE.min) this.carve = { dir: carveIn, t: 0, tier: 0 };
+    if (!this.carve && carveIn !== 0 && sp0 > CARVE.min) this.carve = { dir: carveIn, t: 0, tier: 0, rate: this.rules.carveStart(carveIn) }; // (rate: snaking's)
     if (this.carve && (this.air || sp0 < CARVE.min * 0.6)) this.carve = null; // (off a crest, or slowed to a crawl: it is lost)
     let steerEff = this.steer;
     if (this.carve) {
-      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1) * (CD?.carve ?? 1); // (steered out of it, it loads at half; on wet sand sooner)
+      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1) * (CD?.carve ?? 1) * (C.rate || 1); // (steered out of it, it loads at half; on wet sand sooner)
       const tier = CARVE.tiers.filter((t) => C.t >= t).length;
       if (tier > C.tier) { C.tier = tier; g.events?.emit('skiff.carve.charge', { tier, by: 'courier' }); }
       steerEff = C.dir * (CARVE.turn + 0.45 * steerIn * C.dir);
@@ -415,7 +421,7 @@ export class Skiffing extends Tech {
     // go just after leaving a crest is a LATE POP, higher (MK8's ramp trick, SSX's pop)
     if (sp2 && !this.air) this.charge = Math.min(1, this.charge + dt / c.hopTime);
     if (this.carve && carveIn !== this.carve.dir) { // (its key let go: it runs out with its push, on the sand)
-      const C = this.carve; this.carve = null;
+      const C = this.carve; this.carve = null; this.rules.carveRelease(C.dir);
       if (C.tier > 0) { this.kick(CARVE.add[C.tier - 1], CARVE.dur[C.tier - 1], CARVE.kick[C.tier - 1]); g.events?.emit('skiff.carve', { tier: C.tier, by: 'courier' }); this.combo.add('carve', COMBO.points.carve[C.tier - 1]); }
     }
     if (!sp2 && this.spaceWas && !this.air) {
@@ -465,6 +471,7 @@ export class Skiffing extends Tech {
     P.move(dt);
     const moved = _v3.set((P.pos.x - before.x) / dt, 0, (P.pos.z - before.z) / dt);
     const lost = Math.hypot(vIn.x - moved.x, vIn.z - moved.z);
+    if (lost > 4 && vIn.length() > 3 && this.rules.hit('wall', lost - 4)) return this.stepPhase(dt); // (the hull: a wall drains the pool; empty, it wrecks)
     if (vIn.length() > 3 && lost > 0.25 * vIn.length()) {
       if (lost > BAIL.wall && this.canBail()) { this.bail('wall'); return this.stepPhase(dt); }
       if (lost > 8) { sfx.thunk?.(1.2, 3); g.fx?.impact?.(P.pos.clone().setY(P.pos.y), UP, { sparks: 8, dust: 12 }); P.shake = Math.max(P.shake, 0.25); }
@@ -486,7 +493,7 @@ export class Skiffing extends Tech {
     const wantRoll = clamp(steerEff * 0.12 * clamp(this.speed / 12, 0.15, 1), -0.15, 0.15) + (this.air ? (this.gliding ? clamp(this.bank * 0.35, -0.35, 0.35) : 0) : clamp(-vl * 0.03, -0.2, 0.2)); // (a quarter of the lean it had: the rider's carve and the board's own Skiff_RideTurnL/R (8 degrees) lean the rest; the glider banks into its turn, as the board leans into one on the sand: it leaned out, the owner's "reversed", 2026-10-14)
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
-    this.combo.step(dt, this.air || !!this.carve || this.grind.on); // (the chain lives in the air, on a rail, in a carve; on the sand its link runs down)
+    this.combo.step(dt, this.air || !!this.carve || this.grind.on || this.rules.manualOn); this.rules.nearMiss(dt); // (the chain lives in the air, on a rail, in a carve; on the sand its link runs down)
     g.events?.emit('skiff.tick', { speed: this.speed });
     return true;
   }
@@ -564,6 +571,7 @@ export class Skiffing extends Tech {
     }
     // a hard landing slows it; only a sheer drop onto the flat throws them
     if (impact > BAIL.land && this.canBail()) { this.bail('land'); return; }
+    if (impact > BAIL.hard && this.rules.hit('land', impact - BAIL.hard)) return;
     if (impact > BAIL.hard) { this.v.multiplyScalar(Math.max(0.55, 1 - 0.02 * (impact - BAIL.hard))); P.shake = Math.max(P.shake, 0.3); g.events?.emit('skiff.landhard', { impact: +impact.toFixed(1), by: 'courier' }); }
   }
 

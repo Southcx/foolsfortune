@@ -244,6 +244,19 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
 - **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
   plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
+- **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull
+  (empty, a hard knock **wrecks** it), **the scorch** (a flare held too long luffs the sail), **the manual** (W and S), **snaking**, **the
+  shoulder** (Q / E twice), **aftertouch** (a bail steered), **a near miss**. *Not:* the sailing (skiff.js).
+- **a vein lane / a gap / a buoy run** (`lanes`; `GAPS`, `world/raceway/gaps.js`; `BUOYS`, `buoys.js`) — a strip of Lachrymite beside a
+  Raceway line that refills the pool / a named jump / buoys passed on their sides for **power**. *Not:* a crystal vein (the cavern's push).
+- **a mode / its ruleset** (`MODES`, `world/raceway/modes.js`; `race.ruleset`) — what a run at the Raceway is: a race, a **hot lap**,
+  **practice**, a **pot smash**, **the escape**, a **licence test** / the module adding its rules. *Not:* the board's rules, a trial.
+- **a cup / the City Trial / a patch / the Stadium** (`cups.js`, `citytrial.js`) — three races for points / Kirby Air Ride's: the park
+  roamed for patches that build the board, then one drawn event. *Not:* a chest tier, the Solar Skiffing trial.
+- **the wager / the garage / a skiff part** (`progress/econ/wager.js`; `PARTS`, `progress/skiffparts.js`) — cubes staked on your own
+  race at the house's odds / the race board's tab where a sail, keel and hull are chosen, each a trade. *Not:* the shell runner's parts.
+- **the flyover / the restart / the rewind / the nemesis** (`flyover.js`, `rewind.js`, `rivals.js`) — the camera's cuts along the line
+  before a race / Backspace tapped / Backspace held in practice / the rival that beat you last, quicker and clapping. *Not:* a camera shot's name.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.

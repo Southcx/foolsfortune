@@ -303,6 +303,67 @@ antlion. Espada: names (the hub, the Gorge Run, the Break, the Step, the Mirror,
 Measured: the Sun Circuit with three rivals, autopilot, three laps: no errors, 24 gates, the rivals 304.9, 314.9 and 326.1 s against the
 autopilot's 338.1 s (which never carves or flares), before the band was tightened.
 
+## 12. Round six (2026-10-14): everything (the owner: "Build. Everything.")
+
+The owner took the whole list from the last round's answer. What each is, where it lives, and the prior art it was taken from.
+
+**The board's rules** (`courier/skiff/boardrules.js`; skiff.js keeps the sailing, this keeps the stakes):
+
+| rule | what it does | numbers | taken from |
+| --- | --- | --- | --- |
+| the pool is the hull | a bump drains 0.9 a m/s of closing speed, a wall 1.4 a m/s lost past 4, a hard landing 0.6 a m/s past the hard line, a bail 12; with the pool empty (under 0.5), a hit of 3 or more WRECKS the board. In a race the pool does not refill by itself, and every run starts full | `HULL` | F-Zero's energy (health and boost one bar); the owner: "so resonant with the ARPG portion" |
+| a vein lane | a strip of Lachrymite beside the line, refilling the pool 40 a real second while ridden; off the line's best, so a pit is a choice | `lanes` on each track; `HULL.refill` | F-Zero's pit strip |
+| the scorch | a flare held builds heat 0.4 a real second (cools 0.5); full, the sail luffs 2 real s at 0.6 of its pace | `SCORCH` | Excitebike's overheat |
+| the manual | W and S together on the sand with a combo live: balanced on the tail, A / D answering a drift that grows; the link held while it lasts, 30 points a real second; a fall banks the combo | `MANUAL` | Tony Hawk's Pro Skater 2 |
+| snaking | a carve begun the other way within 1.2 real s of letting one go loads 25% faster, up to twice | `SNAKE` | Mario Kart Wii |
+| the shoulder | Q or E tapped twice: 7 m/s sideways; a rival within 3.5 m that side is taken down | `SHOULDER` | F-Zero GX's side attack |
+| aftertouch | thrown in a bail, W A S D push the tumbling body (9 m/s a real second for 1.4 s); onto a rival, a takedown | `AFTER` | Burnout 3 |
+| a near miss | past a pillar, a column, an arch or a rival at 18 m/s or more, within 1.3 m and not touching: 40 points to the combo | `NEAR`; the kit's near-miss grid | Burnout |
+| a gap | a named jump, off one stretch and onto another: said by name, points to the combo, kept on the ledger (seven to find) | `GAPS`, `world/raceway/gaps.js` | Tony Hawk's gaps |
+| a buoy run | buoys passed on their sides (red: go right of it; yellow: left) raise the POWER a step to five (2% top speed each); one missed, it drops to nothing | `BUOYS`, `world/raceway/buoys.js` | Wave Race 64 |
+
+**The garage** (`progress/skiffparts.js`): a sail, a keel and a hull, each a trade, never an upgrade (MK8's parts), opened by achievements:
+the Racing Sail (top 1.07, acceleration 0.88: rw21), the Storm Sail (0.95 / 1.15: rw5), the Grind Keel (a steadier rail, a looser carve:
+rw9), the Deep Keel (more grip, a wobblier rail: rw6), the Light Hull (quicker, lighter in a bump: rw13), the Heavy Hull (hits like a kiln
+door: rw22). Chosen at the race board's GARAGE tab. The balance's answer can be turned round: `/skiff invert` (a setting, kept).
+
+**The modes** (`world/raceway/modes.js`; one race engine, a mode and its ruleset):
+
+| mode | what | ruleset |
+| --- | --- | --- |
+| race | three laps against the rivals, standing start, the flyover first, medals on the Sun Circuit | |
+| hot lap | one lap alone, a flying start (220 m back, pushed off at 24 m/s); the clock starts at the line | |
+| practice | laps until you retire; Backspace held rewinds (20 frames a real second, 30 real s kept); nothing recorded | |
+| pot smash | one lap, 30 pots on the line at the track's own seed; each smashed takes a real second off | `pottrial.js` |
+| escape | the Gorge Run's crater: from gate 4, round the spiral and up the climb out, the antlion behind you (from 120 m back, 16 m/s gaining 0.28 a real second to 30); caught within 3 m, wrecked | `escape.js` |
+| licence | a stretch, a rule, a medal (gold, silver, bronze at 27, 24, 20 m/s over the stretch); seven tests: Carve (no flare), Snake (three snaking carves), Rails (40 m of grind), Hull (the pool over 60%), Pit lane (from a quarter to 75%), Big air (a spin landed square), Clean lap (no bump, wall or bail) | `licences.js` |
+
+Above the modes: **the cups** (`cups.js`: three races, 10/6/4/2 points by place; the Clay Cup against the clapperjars, the Sibling Cup
+against the siblings), **the City Trial** (`citytrial.js`: 150 real s to roam the park taking 48 patches (top, acceleration, grip, the pool,
+a banked flare), then the Stadium: a race, a hot lap, a pot smash or the escape, drawn), and **the wager** (`progress/econ/wager.js`; docs/
+ECONOMY.md).
+
+**The run's keys**: Backspace tapped RESTARTS the run where it began (Trackmania's Delete; the R+W I offered collides with R, which is
+already the gate respawn and, held, the retire, and W is always held); Backspace held rewinds in practice. F or Space skips the flyover.
+
+**The rivals' minds** (`rivals.js`): four personalities on the one mind. A BLOCKER takes your line when you are within 25 m behind it; a
+RAIL HOG rides the track's lintels (8% quicker there); a GAMBLER takes the inside of every bend (3 m) and the cavern; a CLEAN racer keeps
+its lane. THE NEMESIS: the rival that beat you last is 3% quicker next race and claps at you as it passes; beat it and the grudge is
+settled (the save's `raceNemesis`). THE SIBLINGS: Petra (clean), Calissa (rail hog) and Espada (gambler) on skiffs, the hard field, opened
+by winning a race (rw21) or the DEBUG save's Racing lend.
+
+**The race board** (`raceboard.js`): RACES (each track's four modes, the rivals to race, the wager), CUPS, LICENCES, TRIALS (the escape,
+the City Trial), GARAGE.
+
+**Left to other divisions** (docs/handoffs/): tracks on the map (M) and a photo finish (Petra); the looks of the vein lanes, the scorch, the
+hull's damage, the sibling riders, the pots, the antlion chaser, the patches, the buoys, a wreck (Calissa); their sounds (Wanda); every
+name and line (Espada).
+
+Measured (the autopilot, which never carves, flares or takes a lane): a race lap of the Sun Circuit 113.2 s with the flyover, four buoys
+and a near miss, no errors; the Coaster's pot smash 7 of 30 pots, 97.5 s less 7; the escape caught at the climb out at 65 s before the
+antlion was eased (34 m/s and 0.32 to 30 and 0.28); the Carve licence silver (22.95 s over 588 m); the Pit lane licence failed (the
+autopilot keeps to the line, so never takes the lane).
+
 ## 6. Who does what
 
 - **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the

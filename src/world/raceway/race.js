@@ -9,26 +9,43 @@
 // pays once, ever (a test, not a farm: as the Solar Skiffing trial). Leaving the Raceway ends it. A race is run under the hour's and the
 // weather's condition at its start (conditions.js: said then, and its time kept on that condition's board too, Trackmania's "the same
 // track, another board"). The cavern's branch counts as the stretch of line it stands for (raceway.js maps it), its gate 8 with it.
-// Events (each with `by`): race.start { condition, light, aspect }, race.count { n }, race.go, race.solarstart, race.gate { gate, lap, split }, race.lap { lap,
-// seconds, best }, race.finish { seconds, medal, laps, condition, track }, race.end { why }.
+// MODES (round 6: world/raceway/modes.js): a run is a race, a hot lap (a flying start), practice (rewound with Backspace held), a pot
+// smash, an escape or a licence test; the mode's RULESET (pottrial.js, escape.js, licences.js) adds its rules through the same few hooks
+// (begin, update, gate, result, stop). Backspace tapped RESTARTS the run where it began (Trackmania's Delete: no menu between tries);
+// a race's grid opens on a camera's FLYOVER of the line (flyover.js), skipped with F or Space. The race board at the hub is
+// world/raceway/raceboard.js.
+// Events (each with `by`): race.start { track, mode, condition, light, aspect }, race.count { n }, race.go, race.solarstart, race.gate
+// { gate, lap, split }, race.lap { lap, seconds, best }, race.finish { seconds, medal, laps, condition, track, mode, place, of },
+// race.end { why }, race.restart { mode }.
 // The ghost's look is a placeholder (Calissa's): a pale hull and sail.
 //
 // Prior art: MK8's time trials (the ghost, the rocket start, a medal as a test passed once), Gran Turismo's licence tests, Wave Race's and
 // Pilotwings' gates in order, Trackmania's checkpoint splits.
 //
-//   game.race = new Race(game)   .offer() -> { pos, d } | null   .start()   .update(dt)   .running   RACE (the numbers)
+//   game.race = new Race(game)   .offer() -> { pos, d } | null   .start(trackId, { mode, roster, solo, test, again })   .update(dt)
+//   .running   .mode   .modeId   .T   .lap   .t   .end(why)   .finish()   RACE (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ECON } from '../../progress/econ/table.js';
 import { conditionAt } from './conditions.js';
 import { Rivals } from './rivals.js';
+import { MODES, FLY } from './modes.js';
+import { Flyover } from './flyover.js';
+import { Rewind } from './rewind.js';
+import { PotTrial } from './pottrial.js';
+import { Escape } from './escape.js';
+import { Licences } from './licences.js';
+import { RaceBoard } from './raceboard.js';
+import { Cups } from './cups.js';
+import { CityTrial } from './citytrial.js';
+import { Wager } from '../../progress/econ/wager.js';
 
 /** The numbers: laps; the countdown (real s); the solar start's window after GO and its push; the medals by total time (real s, three
  *  laps: drafts until Petra measures the line, and they move with it); each medal's pay once (minutes of play); the ghost's samples a
  *  second; real seconds after a bail before the board is set back on the track. */
 export const RACE = {
   laps: 3, countdown: 3, solar: { window: 0.3, add: 12, dur: 1.3, kick: 4 },
-  medals: { gold: 255, silver: 285, bronze: 330 }, pay: { gold: 10, silver: 6, bronze: 4 }, ghostHz: 10, bailBack: 2.9, retire: 1.2, // (retire: real s R held)
+  medals: { gold: 255, silver: 285, bronze: 330 }, pay: { gold: 10, silver: 6, bronze: 4 }, ghostHz: 10, bailBack: 2.9, retire: 1.2, restart: 0.25, // (retire: real s R held; restart: Backspace let go within this (real s); held longer, practice rewinds)
 };
 export const medalOfRace = (seconds) => (seconds <= RACE.medals.gold ? 'gold' : seconds <= RACE.medals.silver ? 'silver' : seconds <= RACE.medals.bronze ? 'bronze' : null);
 
@@ -38,11 +55,13 @@ export class Race {
     this.bestLaps = {}; // { [track]: { seconds, splits: [s at each gate], frames: [[t, x, y, z, yaw]] } } (the ledger keeps the times)
     this.T = null; // (the track raced)
     this.rivals = new Rivals(game); this.lapsTotal = RACE.laps; // (three clapperjars on mini skiffs: rivals.js)
+    this.modeId = 'race'; this.mode = MODES.race; this.opts = {};
+    this.flyover = new Flyover(game); this.rewind = new Rewind(game, this); this.board = new RaceBoard(game, this);
+    this.rulesets = { pots: new PotTrial(game, this), escape: new Escape(game, this), licence: new Licences(game, this) };
+    this.cups = new Cups(game, this); this.city = game.cityTrial = new CityTrial(game, this); game.wager = new Wager(game); // (the cups, the City Trial, the wager: their own modules)
     game.interact?.add('race', () => (game.dialogue?.open ? null : this.offer()));
     // the race board at the hub: F there, and pick a track (the owner, v198: "racetrack selection"); and the chat line's /race, /retire
     game.interact?.add('raceboard', () => { const R = this.R, P = game.player; if (!R?.built || !R.active || this.running || !R.board || game.dialogue?.open) return null; const d = Math.hypot(P.pos.x - R.board.x, P.pos.z - R.board.z); return d < 6 ? { pos: R.board.clone().setY(R.board.y + 3), d } : null; });
-    game.chat?.add('race', { help: 'race a track of the Raceway: /race sun, /race gorge, /race coaster (add "solo" for no rivals)', run: ([id, solo]) => { const no = (w) => game.log?.say('warn', w, { key: 'race.cmd', throttle: 1 }); if (!this.R?.active) return no('You are not at the Raceway.'); if (this.running) return no('A race is under way: /retire first.'); if (id && !this.R.trackOf(id)) return no('No such track: sun, gorge or coaster.'); this.solo = solo === 'solo'; this.start(id || 'sun'); } });
-    game.chat?.add('retire', { help: 'retire from the race under way', run: () => { if (!this.running) return game.log?.say('warn', 'No race under way.', { key: 'race.cmd', throttle: 1 }); this.end('retired'); } });
     game.events?.on('skiff.pump', () => { if (this.state === 'run' && this.goT != null && this.goT <= RACE.solar.window && !this.solarDone) { this.solarDone = true; this.skiff?.kick(RACE.solar.add, RACE.solar.dur, RACE.solar.kick); game.events.emit('race.solarstart', { by: 'courier' }); } });
     game.events?.on('skiff.bail', () => { if (this.running) this.bailT = 0; });
     // the best lap's ghost is kept (the save's `raceGhost`, player scope: a build's progress, reset with it); its frames to a tenth
@@ -52,20 +71,20 @@ export class Race {
       load: (d) => { this.bestLaps = {}; for (const [k, B] of Object.entries(d || {})) if (B?.frames?.length) this.bestLaps[k] = B; }, reset: () => { this.bestLaps = {}; } });
   }
   get R() { return this.game.raceway; }
-  /** The race board's page: every track, its length and your bests; a click races it. */
-  openBoard() {
-    const g = this.game, menu = g.indexMenu || g.course?.menu, R = this.R; if (!menu?.showPage || !R) return;
-    menu.showPage('raceway.board', (im, el) => {
-      const rows = el('div', 'rooms'), L = g.ledger, clock = (s) => (s ? `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}` : '—');
-      for (const T of R.tracks) {
-        const lap = this.bestLaps[T.id]?.seconds, best = L?.best?.(`race.track.${T.id}.best`) || (T.id === 'sun' ? L?.best?.('race.raceway.best') : 0);
-        const d = el('div', 'room', `<span class="n">◇</span><span><b>${T.name}</b><s>${(T.length / 1000).toFixed(1)} km a lap · best lap ${clock(lap)} · best race ${clock(best)}</s></span>`);
-        d.style.cursor = 'pointer'; d.onclick = () => { menu.close(); this.solo = false; this.start(T.id); };
-        rows.appendChild(d);
-      }
-      im.appendChild(el('div', 'grp', 'THREE LAPS, WITH RIVALS')); im.appendChild(rows);
-    }, { title: 'RACES', sub: 'click a track · F closes' });
+  /** The chat line's /race and /retire (added once the chat line is made: it comes after the Raceway at boot). */
+  commands() {
+    const game = this.game; this.cmds = true;
+    game.chat?.add('race', { help: 'race a track of the Raceway: /race sun, /race gorge, /race coaster; then a mode (race, hotlap, practice, pots), "solo" or "siblings"', run: (args) => {
+      const no = (w) => game.log?.say('warn', w, { key: 'race.cmd', throttle: 1 }), [id, ...rest] = args;
+      if (!this.R?.active) return no('You are not at the Raceway.'); if (this.running) return no('A race is under way: /retire first.'); if (id && !this.R.trackOf(id)) return no('No such track: sun, gorge or coaster.');
+      const mode = rest.find((w) => MODES[w] && w !== 'licence' && w !== 'escape') || 'race';
+      if (rest.includes('siblings') && !this.board.siblingsOpen) return no('The siblings race only those who have won a race.');
+      this.start(id || 'sun', { mode, solo: rest.includes('solo'), roster: rest.includes('siblings') ? 'siblings' : 'clapperjars' });
+    } });
+    game.chat?.add('retire', { help: 'retire from the race under way', run: () => { if (!this.running) return game.log?.say('warn', 'No race under way.', { key: 'race.cmd', throttle: 1 }); this.end('retired'); } });
   }
+  /** The race board's pages (raceboard.js). */
+  openBoard() { this.board.open(); }
   get bestLap() { return this.T ? this.bestLaps[this.T.id] || null : null; }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
 
@@ -76,38 +95,71 @@ export class Race {
     this.offered = best?.track; return best;
   }
 
-  start(trackId = this.offered || 'sun') {
+  /** A run on a track: `mode` (modes.js), `roster` of rivals, `solo`, `test` (a licence's), `again` (a restart: no flyover). */
+  start(trackId = this.offered || 'sun', opts = {}) {
     if (this.running) return false;
     const g = this.game, R = this.R; if (!R?.active) return false;
-    const T = (this.T = R.trackOf(trackId) || R.T), grid = T.line - 20; R.respawn((grid + T.length) % T.length, T);
-    this.running = true; this.state = 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
-    this.lap = 1; this.next = 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0;
+    const modeId = MODES[opts.mode] ? opts.mode : 'race', M = MODES[modeId], ruleset = M.ruleset ? this.rulesets[M.ruleset] : null;
+    this.modeId = modeId; this.mode = M; this.opts = { ...opts, mode: modeId }; this.ruleset = ruleset;
+    const plan = ruleset?.plan?.(trackId, opts) || {}; // (a ruleset may choose the track, where the run begins and how many laps)
+    const T = (this.T = R.trackOf(plan.track || trackId) || R.T), L = T.length;
+    this.lapsTotal = plan.laps ?? M.laps ?? RACE.laps;
+    const from = plan.from ?? (M.flying ? T.line - FLY.back : T.line - 20); R.respawn(((from % L) + L) % L, T);
+    this.running = true; this.state = plan.flying ?? M.flying ? 'flying' : 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
+    this.lap = 1; this.next = plan.gate ?? 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0; this.pushed = false; this.flyAt = plan.flyAt ?? T.line;
     const C = (this.condition = conditionAt(g));
-    this.rivals.start(T, this.solo); this.solo = false;
-    g.events?.emit('race.start', { track: T.id, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, by: 'courier' });
+    this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
+    g.lachryma?.reset?.(); // (every run starts with the pool full: it is the hull, and in a race it refills only on a vein lane)
+    this.rewind.clear(); ruleset?.begin?.(this, plan);
+    if (M.flyover && !opts.again) this.flyover.begin(T, R);
+    g.events?.emit('race.start', { track: T.id, mode: modeId, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, cup: !!opts.cup, city: !!opts.city, by: 'courier' });
     return true;
+  }
+  /** The run again from where it began, at once (Trackmania's restart: no menu, no flyover). */
+  restart() {
+    if (!this.running) return;
+    const id = this.T.id, opts = { ...this.opts, again: true };
+    this.stopRun(); this.game.events?.emit('race.restart', { mode: this.modeId, by: 'courier' });
+    this.start(id, opts);
   }
 
   update(dt) {
     const g = this.game, R = this.R, PL = g.player, it = g.interact?.cur;
+    if (!this.cmds && g.chat) this.commands();
     if (it?.id === 'race' && PL.peekLatch?.('KeyF') && !g.god?.controlling) { PL.latch('KeyF'); this.start(); }
     if (it?.id === 'raceboard' && PL.peekLatch?.('KeyF') && !g.god?.controlling) { PL.latch('KeyF'); this.openBoard(); }
-    this.updateGhost();
+    this.updateGhost(); this.cups.update(dt); this.city.update(dt);
     if (this.rivals.list.length && R?.active) this.rivals.update(dt, this); else if (this.rivals.list.length) this.rivals.stop();
     if (!this.running) return;
     if (!R?.active) { this.end('left'); return; }
     const S = this.skiff, riding = g.techs?.active?.id === 'skiff' && S?.phase === 'ride';
-    // ---- the grid and the countdown: the board held on the line until GO
+    // ---- Backspace: tapped, the run again from its start; held, in practice, the run rewound (rewind.js)
+    const bk = g.input?.isDown?.('Backspace') && !g.log?.typing;
+    if (bk) { this.bkT = (this.bkT || 0) + dt; if (this.mode.rewind && this.bkT > RACE.restart && this.state === 'run') { this.rewind.back(dt); return; } }
+    else if (this.bkT) { const tap = this.bkT <= RACE.restart; this.bkT = 0; this.rewind.release(); if (tap) { this.restart(); return; } }
+    // ---- the grid and the countdown: the board held on the line until GO (after the flyover, if there is one)
     if (this.state === 'grid') {
       if (!riding) return; // (mounting: the countdown waits for the board)
-      S.hold = true; this.count -= dt;
+      S.hold = true;
+      if (this.flyover.on) { this.flyover.update(dt); return; }
+      this.count -= dt;
       const n = Math.ceil(this.count);
       if (n !== this.said && n > 0) { this.said = n; g.events?.emit('race.count', { n, by: 'courier' }); }
       if (this.count <= 0) { S.hold = false; this.state = 'run'; this.goT = 0; this.prevS = R.s; this.rivals.go(); g.events?.emit('race.go', { by: 'courier' }); }
       return;
     }
+    // ---- a flying start: pushed off FLY.back before the line; the clock starts as the line is crossed
+    if (this.state === 'flying') {
+      if (!riding) return;
+      if (!this.pushed) { this.pushed = true; S.v.set(Math.sin(S.heading), 0, Math.cos(S.heading)).multiplyScalar(FLY.push); }
+      const L = this.T.length, d = ((R.s - this.prevS + L * 1.5) % L) - L / 2, u = ((this.flyAt - this.prevS) % L + L) % L;
+      if (d > 0 && d < 60 && u > 0 && u <= d) { this.state = 'run'; this.goT = 9; this.solarDone = true; this.rivals.go(); g.events?.emit('race.go', { flying: true, by: 'courier' }); }
+      this.prevS = R.s; if (this.state !== 'run') return;
+    }
     // ---- the run
     this.t += dt; this.lapT += dt; this.goT += dt;
+    if (this.mode.rewind) this.rewind.keep(dt);
+    if (this.ruleset?.update?.(this, dt) === false) return; // (the ruleset ended the run)
     if (S) S.hold = false;
     if (this.bailT != null && (this.bailT += dt) > RACE.bailBack) { this.bailT = null; R.respawn(); } // (where they are: in the cavern, on its branch)
     // R: back to the last gate passed, mounted (Trackmania's respawn at a checkpoint): the lap goes on, the clock with it
@@ -131,36 +183,47 @@ export class Race {
   }
 
   gate() {
-    const i = this.next++, best = this.bestLap?.splits?.[i];
+    const i = this.next++, best = this.mode.record && this.modeId !== 'licence' ? this.bestLap?.splits?.[i] : null;
     this.splits.push(this.lapT);
-    this.game.events?.emit('race.gate', { gate: i + 1, lap: this.lap, split: best != null ? +(this.lapT - best).toFixed(2) : null, by: 'courier' });
+    this.game.events?.emit('race.gate', { gate: i + 1, lap: this.lap, split: best != null ? +(this.lapT - best).toFixed(2) : null, mode: this.modeId, by: 'courier' });
+    if (this.ruleset?.gate?.(this, i)) this.finish(); // (a licence test ends at its gate)
   }
   lapDone() {
-    const g = this.game, seconds = +this.lapT.toFixed(2), best = !this.bestLap || seconds < this.bestLap.seconds;
+    const g = this.game, seconds = +this.lapT.toFixed(2), clean = this.mode.record && !this.ruleset, best = clean && (!this.bestLap || seconds < this.bestLap.seconds); // (a lap of practice or of a ruleset's is not the ghost's)
     if (best) { this.bestLaps[this.T.id] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); }
     this.laps.push(seconds);
-    g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, place: this.rivals.on ? this.rivals.place : null, of: this.rivals.list.length + 1, by: 'courier' });
-    if (this.lap >= RACE.laps) { this.finish(); return; }
+    g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, mode: this.modeId, place: this.rivals.on ? this.rivals.place : null, of: this.rivals.list.length + 1, by: 'courier' });
+    if (this.lap >= this.lapsTotal) { this.finish(); return; }
     this.lap++; this.next = 0; this.lapT = 0; this.splits = []; this.frames = [];
   }
   finish() {
-    const g = this.game, L = g.ledger, seconds = +this.laps.reduce((a, b) => a + b, 0).toFixed(2), medal = this.T.id === 'sun' ? medalOfRace(seconds) : null; // (medals are the Sun Circuit's for now: the others' times are not yet measured)
-    const first = medal && !(L?.get?.(`race.raceway.${medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
-    const of = this.rivals.on ? this.rivals.list.length + 1 : 1, place = this.rivals.on ? 1 + this.rivals.list.filter((r) => r.done != null).length : 1;
-    g.events?.emit('race.finish', { seconds, medal, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, place, of, by: 'courier' });
-    if (first) g.cubes?.earn(Math.round(RACE.pay[medal] * ECON.perMinute), 'trial');
-    this.running = false; this.state = 'idle';
+    const g = this.game, L = g.ledger, M = this.mode, raw = +(this.laps.length ? this.laps.reduce((a, b) => a + b, 0) : this.t).toFixed(2);
+    const out = { seconds: raw, medal: null, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, mode: this.modeId, place: 1, of: 1, cup: !!this.opts.cup, city: !!this.opts.city, by: 'courier' };
+    if (this.rivals.on) { out.of = this.rivals.list.length + 1; out.place = 1 + this.rivals.list.filter((r) => r.done != null).length; out.order = this.rivals.order(this); }
+    if (M.medals && this.T.id === 'sun') out.medal = medalOfRace(raw); // (medals are the Sun Circuit's for now: the others' times are not yet measured)
+    this.ruleset?.result?.(this, out); // (a ruleset's own reckoning: the pots' seconds off, a licence's medal)
+    const first = M.medals && out.medal && !(L?.get?.(`race.raceway.${out.medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
+    if (this.rivals.on) this.rivals.settle(out.place);
+    this.stopRun();
+    g.events?.emit('race.finish', out);
+    if (first) g.cubes?.earn(Math.round(RACE.pay[out.medal] * ECON.perMinute), 'trial');
+  }
+  /** The run's own things put away (the rivals, the ruleset's props, the rewind): the race no longer running. */
+  stopRun() {
+    if (this.skiff) { this.skiff.hold = false; if (this.skiff.rules) this.skiff.rules.held = false; }
+    this.game.lachryma?.removeModifier?.('skiff.race'); // (the pool's own regen back, even if the race ended off the board: boardrules.js holds it while racing)
+    this.flyover.stop(); this.rewind.clear(); this.ruleset?.stop?.(this);
+    this.rivals.stop(); this.running = false; this.state = 'idle';
   }
   end(why) {
-    if (this.skiff) this.skiff.hold = false;
-    this.rivals.stop();
-    this.running = false; this.state = 'idle';
-    this.game.events?.emit('race.end', { why, by: 'courier' });
+    if (!this.running) return;
+    this.stopRun();
+    this.game.events?.emit('race.end', { why, mode: this.modeId, cup: !!this.opts.cup, city: !!this.opts.city, by: 'courier' });
   }
 
   /** The best lap, ridden again beside you as the lap's clock runs (a placeholder hull and sail: Calissa's look). */
   updateGhost() {
-    const G = this.bestLap, on = this.running && this.state === 'run' && G?.frames?.length > 2;
+    const G = this.bestLap, on = this.running && this.state === 'run' && !this.ruleset && G?.frames?.length > 2; // (no ghost under a ruleset: its stretch is not a lap)
     if (!on) { if (this.ghost) this.ghost.visible = false; return; }
     if (!this.ghost) {
       const m = new THREE.MeshBasicMaterial({ color: 0xfff1d6, transparent: true, opacity: 0.35, depthWrite: false });

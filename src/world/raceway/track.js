@@ -49,6 +49,7 @@ export const FEATURES = {
     .map(([cp, at, lat, w, h, len]) => ({ cp, at, lat, w, h, len })),
   plates: [[3, -20, 0], [12, -10, -3], [13, 30, 2], [15, 10, 0], [16, 40, 4], [24, 0, 0], [26, 0, -2]].map(([cp, at, lat]) => ({ cp, at, lat, len: 7, w: 2.6 })),
   geysers: [[22, 0, 2], [23, -30, -3]].map(([cp, at, lat]) => ({ cp, at, lat })),
+  lanes: [[0, -55, -8, 45], [16, 0, 9, 100]].map(([cp, at, lat, len]) => ({ cp, at, lat, len, w: 2.4 })), // (the vein lanes: the pool refilled, off the line's best: boardrules.js)
   glideLip: { cp: 18, from: -4, to: 70 }, // (in the air over this stretch the wings open by themselves: MK8's glider ramp)
   slalom: { from: [7, -20], to: [8, 10], every: 22, lat: 5 }, // (ruin columns in the line, alternating sides)
   canyon: { from: [21, 20], to: [23, 0], berm: 7 }, // (high berms: the canyon's walls)
@@ -169,7 +170,7 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   const at = def.at || { x: 0, z: 0, rot: 0 }, cr = Math.cos(at.rot || 0), sr = Math.sin(at.rot || 0);
   const place = (x, z) => [at.x + x * cr - z * sr, at.z + x * sr + z * cr];
   const C = def.control.map((c) => [...place(c[0], c[1]), c[2], c[3], c[4] ?? 0, c[5] ?? 0]), n = C.length;
-  const FEATURES = { kickers: [], ramps: [], plates: [], geysers: [], rails: [], rings: [], gates: [], ...def.features };
+  const FEATURES = { kickers: [], ramps: [], plates: [], lanes: [], geysers: [], rails: [], rings: [], gates: [], ...def.features };
   FEATURES.glideLips ||= FEATURES.glideLip ? [FEATURES.glideLip] : []; FEATURES.sandfalls ||= FEATURES.glideLip ? [{ cp: FEATURES.glideLip.cp }] : []; FEATURES.coaster ||= [];
   const BRANCH = def.branch ? { ...def.branch, ctrl: def.branch.ctrl.map((c) => [...place(c[0], c[1]), c[2], c[3]]) } : null;
   // ---- the line: centripetal Catmull-Rom through the points, closed

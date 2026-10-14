@@ -424,3 +424,13 @@ pit, a crossover, a ford), the Coaster (grind as a line: a 3D rail with drops, a
 half-pipe, a pit). What a height field cannot do is done another way: bridges for crossovers, coaster rails for loops. The lessons under
 it are real: the antlion's pit stands at the sand's angle of repose; a banked turn takes g tan(bank) of its own pull; a coaster's lift
 is the price of its fall. The tools that let the design be seen headless (a map from above, an autopilot with a trace) are part of it.
+
+Round six (SKIFF-RACING.md 12) gave the board stakes and the park its modes. The keystone is F-Zero's: the pool is the hull. A bump, a
+wall, a hard landing and a bail each drain it, the flare spends it, and in a race it refills only on a vein lane beside the line, so a
+lap is a budget of Lachryma spent on speed or kept as health, the same choice the ARPG asks of the shield (the owner's "chef's kiss").
+Around it, each skill verb from the genre that made it: Excitebike's overheat (the scorch), Tony Hawk's manual and gaps, Mario Kart Wii's
+snaking, F-Zero GX's side attack, Burnout's near misses and aftertouch, Wave Race 64's buoys (power raised by keeping the line, lost by
+missing one). The rivals got minds of their own (a blocker, a rail hog, a gambler, a clean racer) and a grudge (the nemesis), and the
+siblings race as the hard field. One race engine runs every mode (a race, a hot lap, practice with a rewind, a pot smash, the escape, the
+licences), and above it the cups, Kirby Air Ride's City Trial and a wager whose odds are the ledger's read of you, so getting better beats
+the house until it learns (section 22's law, as an economy). The garage's parts are trades opened by achievements, never upgrades.

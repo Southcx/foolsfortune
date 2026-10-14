@@ -140,6 +140,18 @@ tanker run between them (distance 6) pays -0.73x to 1.09x over a fortnight of ga
 **Cogitomaps**: a ticket to a seeded run of one Well as charted; Spellscription copies good ones. **Materials** come in broad kinds,
 each with a hue, a saturation and a path at the spirit press (DESIGN.md section 16).
 
+## The Raceway: tests that pay once, and the wager (SKIFF-RACING.md 12)
+
+- **Tests pay once, ever** (a faucet that closes): a race medal on the Sun Circuit (gold 10, silver 6, bronze 4 minutes of play), a
+  licence medal (3, 2, 1 each, seven tests), a cup's first win (the Clay Cup 12, the Sibling Cup 20). All of it together is about
+  2.5 hours of the aim, earned once: the Raceway is a place to get good, not a living.
+- **The wager** (`progress/econ/wager.js`): 1, 3 or 5 minutes of play staked on your own race, to win or to make the podium. The payout's
+  multiple is (1 - 0.12) / p, where p is the house's read of you on that track: (made + share x 4) / (races + 4), the share 0.25 to win
+  and 0.75 for the podium (Laplace's rule of succession, weighted to an even field of four), held between 1.1 and 6. A racer the house
+  knows well is paid fair odds less 12%: a slow drain. A racer getting better beats the house until the ledger catches up: skill pays
+  (DESIGN.md section 22). Retiring, restarting or leaving loses the stake. At the cap a win to win at even odds against the field pays
+  5 x 8 x 3.5 = 140 cubes, about 17 minutes of play, so the most a wager can be is a spice on a race.
+
 ## Measuring it
 
 - **F3**'s `econ` line (and F4's report): cubes an hour in and out, the aim, the top three faucets and top two drains. It reads only

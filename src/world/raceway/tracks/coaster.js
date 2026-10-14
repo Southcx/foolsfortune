@@ -31,6 +31,7 @@ export const COASTER = {
     kickers: [[2, 30, 2.4, 9], [8, 40, 3, 11], [10, 30, 2.4, 9], [14, 20, 2.6, 10]].map(([cp, at, h, len]) => ({ cp, at, h, len })),
     ramps: [[4, 20, 5, 3.5, 2.6, 9], [9, -30, -5, 3.5, 2.4, 9], [15, 30, 5, 3.5, 2.4, 8]].map(([cp, at, lat, w, h, len]) => ({ cp, at, lat, w, h, len })),
     plates: [[1, 60, 0], [3, 20, 3], [5, 10, -3], [8, 10, 0], [12, 30, 0], [16, 10, 0]].map(([cp, at, lat]) => ({ cp, at, lat, len: 7, w: 2.6 })),
+    lanes: [[0, 100, -8, 50], [0, 1550, 8, 60]].map(([cp, at, lat, len]) => ({ cp, at, lat, len, w: 2.4 })), // (the vein lanes: the pool refilled: boardrules.js)
     bowls: [{ from: [11, -40], to: [13, 0], bank: 0.7 }],
     glideLips: [{ cp: 8, from: 40, to: 90 }],
     rails: [

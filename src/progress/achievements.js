@@ -29,6 +29,7 @@ import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
+import { racewayAchievements } from './raceachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -529,33 +530,7 @@ export function buildAchievements(game) {
   F('su3', 'skiff', 'The Sundial', 3, 'mechanic', 'Silver Hour', 'Take silver in the Solar Skiffing trial.', (L) => L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);
   C('su4', 'skiff', 'The Sundial', 4, 'mechanic', 'Golden Hour', 'Take gold in the Solar Skiffing trial.', 'trial.solar.gold', 1);
   C('su5', 'skiff', 'The Sundial', 4, 'mechanic', 'Long Shadows', 'Take every lit ring at dawn or dusk.', 'trial.solar.allLitLong', 1);
-  // the Raceway (docs/plans/SKIFF-RACING.md: a medal is a test passed once; the carve, the solar start and the plates are its verbs)
-  C('rw1', 'skiff', 'The Raceway', 1, 'mechanic', 'Lights Out', 'Finish a race at the Raceway.', 'race.raceway.finish', 1);
-  F('rw2', 'skiff', 'The Raceway', 2, 'mechanic', 'Podium', 'Take bronze at the Raceway.', (L) => L.get('race.raceway.bronze') + L.get('race.raceway.silver') + L.get('race.raceway.gold'), 1);
-  F('rw3', 'skiff', 'The Raceway', 3, 'mechanic', 'Second Wind', 'Take silver at the Raceway.', (L) => L.get('race.raceway.silver') + L.get('race.raceway.gold'), 1);
-  C('rw4', 'skiff', 'The Raceway', 5, 'mechanic', 'Gold Leaf', 'Take gold at the Raceway.', 'race.raceway.gold', 1, { title: 'Sunracer' });
-  C('rw5', 'skiff', 'The Raceway', 2, 'mechanic', 'Sunrise Start', 'Make a solar start: the sail run up full just as the race begins.', 'race.raceway.solarstart', 1);
-  H('rw6', 'skiff', 'The Raceway', 3, 'mechanic', 'White Heat', 'Let go of a carve at its third tier.', 'skiff.carve.best', 3);
-  C('rw7', 'skiff', 'The Raceway', 2, 'count', 'Sunbather', 'Ride over 50 sun plates.', 'skiff.plate', 50);
-  C('rw8', 'skiff', 'The Raceway', 3, 'mechanic', 'Late Bloomer', 'Make 25 late pops off a crest or a kicker.', 'skiff.pop', 25);
-  H('rw9', 'skiff', 'The Raceway', 3, 'mechanic', 'Keel and Lintel', 'Grind a rail for 40 metres in one go.', 'skiff.grind.best', 40, { unit: 'm' });
-  C('rw10', 'skiff', 'The Raceway', 2, 'count', 'Ringleader', 'Fly through 50 sun rings.', 'skiff.ring', 50);
-  // round 3 (SKIFF-RACING.md 9): the trick combo, the grabs, the perfect pop, the cavern, and the night lap
-  H('rw11', 'skiff', 'The Raceway', 3, 'mechanic', 'Daisy Chain', 'Link 8 tricks into one combo and bank it.', 'skiff.combo.longest', 8);
-  H('rw12', 'skiff', 'The Raceway', 4, 'mechanic', 'Full Tank', 'Bank a combo worth 3,000.', 'skiff.combo.best', 3000);
-  C('rw13', 'skiff', 'The Raceway', 3, 'mechanic', 'Nailed It', 'Make 25 perfect pops.', 'skiff.pop.perfect', 25);
-  H('rw14', 'skiff', 'The Raceway', 2, 'mechanic', 'Stalefish', 'Hold a grab for 2 real seconds and let go before you land.', 'skiff.grab.best', 2, { unit: 's' });
-  C('rw15', 'skiff', 'The Raceway', 2, 'mechanic', 'Undercroft', 'Ride the cavern through, from its fork to its end.', 'raceway.cavern', 1);
-  C('rw16', 'skiff', 'The Raceway', 3, 'mechanic', 'Moonlighting', 'Finish a race at night, the sun plates dark.', 'race.raceway.finish.night', 1);
-  // round 4 (SKIFF-RACING.md 10): the park's other tracks, the coaster rail, the antlion
-  C('rw17', 'skiff', 'The Raceway', 2, 'mechanic', 'Into the Gorge', 'Finish a race on the Gorge Run.', 'race.track.gorge.finish', 1);
-  C('rw18', 'skiff', 'The Raceway', 2, 'mechanic', 'Season Pass', 'Finish a race on the Coaster.', 'race.track.coaster.finish', 1);
-  H('rw19', 'skiff', 'The Raceway', 4, 'mechanic', 'Loop the Loop', 'Ride the Coaster\'s rail end to end: 850 metres in one grind.', 'skiff.grind.best', 850, { unit: 'm' });
-  C('rw20', 'skiff', 'The Raceway', 1, 'mechanic', 'Doodlebug', 'Be taken by the antlion.', 'raceway.pit', 1);
-  // round 5 (SKIFF-RACING.md 11): the rivals, the takedown, the grind tricks
-  C('rw21', 'skiff', 'The Raceway', 2, 'mechanic', 'Podium Pottery', 'Win a race against the rivals.', 'race.raceway.win', 1);
-  C('rw22', 'skiff', 'The Raceway', 2, 'mechanic', 'Crockery', 'Take down a rival: hit one hard from the side.', 'race.takedown', 1);
-  C('rw23', 'skiff', 'The Raceway', 3, 'mechanic', 'Grindhouse', 'Make 25 grind tricks: LMB or RMB clicked twice on a rail.', 'skiff.grind.trick', 25);
+  racewayAchievements({ C, H, F }); // (the Raceway's own: progress/raceachievements.js)
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);

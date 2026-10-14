@@ -670,6 +670,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     lock never takes a point past its own ends.
 NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
     it (the roll it draws, the mark it shows, the push it gives) takes its sign from one named vector, never a re-derived perpendicular.
+NEW:service-made-later. **A module that asks a service at construction asks it again once that service exists.** Boot order is not a
+    contract: a `game.chat?.add` (or any `game.x?.`) in a constructor that runs before `game.x` is made silently does nothing. Register on
+    first use (a lazy `commands()` from `update`), or construct after the service, and check the command exists headless.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3715,3 +3718,12 @@ NEW:sign-one-frame. **A side has one sign, written once.** Where a value means a
   minus the lean's sign: the roll and the fall read the same sign through two different vectors, one negated.
 - **Fix:** the fall moves along the right by the lean's own sign (`courier/skiff/grind.js`).
 - **Rule:** NEW:sign-one-frame.
+
+### 2026-10-14 · /race and /retire did nothing (Dovina, building the race modes)
+- **Seen:** the chat line's `/race` and `/retire`, added in round five, answered as unknown commands.
+- **Cause:** the Race is made with the Raceway, before `game.chat` (main.js makes the chat line later in the boot), and its constructor
+  called `game.chat?.add(...)`: the optional chain met `undefined` and added nothing, with no error. Measured headless: `game.chat` was
+  undefined in the Race's constructor, and the two commands were missing from the chat line's list.
+- **Fix:** the commands are added by `commands()`, called from the Race's first `update` once `game.chat` exists
+  (`world/raceway/race.js`). The skiff's own settings are made after the chat line (`main.js`).
+- **Rule:** NEW:service-made-later.
