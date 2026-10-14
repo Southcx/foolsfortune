@@ -16,8 +16,8 @@
 //   - THE VEINS (raceway.plates with `vein`): a vein of Lachrymite in the floor, not a sun plate: a spine of spires lying in the stone
 //     pointing the race's way, barbs swept back from it like an arrow's fletching (in the crystals' draw), and a glow along the same
 //     shape, leaded dark at its sides so it reads on noon sand, with pulses running forward (one draw for every vein). Ridden over: `raceway.vein` (vfx/racewaycaverneffects.js)
-//     and the frets of the staves near it run foot to point. The sun plate's dress (vfx/racewaylooks.js, the board builder's) is
-//     taken off them here: their gold glyph copies folded to nothing and their gold flash skipped.
+//     and the frets of the staves near it run foot to point. The sun plates' dress (vfx/racewaylooks.js) leaves
+//     the veins out itself (no gold glyph, no gold flash).
 //   - THE EDGE STRINGS of the branch (vfx/racewayedgestrings.js, `line: 'cavern'`, raceway.edgeLines(step, 'cavern')): run while
 //     raceway.line is 'cavern' (raceway.sb its place along it), cooled to the night's white-blue under the roof; the main line's
 //     run waits meanwhile (`EDGE_LINE.lit`).
