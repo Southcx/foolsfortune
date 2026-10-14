@@ -195,7 +195,8 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   const Y = new Float32Array(N), W = new Float32Array(N), WIND = new Float32Array(N), BK = new Float32Array(N), BH = new Float32Array(N).fill(BERM.h), BMW = new Float32Array(N).fill(BERM.w), BMB = new Float32Array(N).fill(BERM.blend);
   for (let i = 0; i < N; i++) { const s = i * ds; Y[i] = yOf(s); W[i] = wOf(s); WIND[i] = windOf(s); }
   // the cuts: where a control point asks for one, the walls rise steeply to the sand beside the line (a canyon); eased in and out
-  for (let i = 0; i < N; i++) { const c = cutOf(i * ds); if (c < 0.5) continue; const w = W[i] + c, l = ground(X[i] + FZ[i] * w, Z[i] - FX[i] * w), r = ground(X[i] - FZ[i] * w, Z[i] + FX[i] * w); BMW[i] = Math.max(2, c); BMB[i] = BERM.cutBlend; BH[i] = Math.max(BERM.h, Math.min(l, r) - Y[i] + 0.5); }
+  const CT = new Float32Array(N);
+  for (let i = 0; i < N; i++) { const c = cutOf(i * ds); CT[i] = c; if (c < 0.5) continue; const w = W[i] + c, l = ground(X[i] + FZ[i] * w, Z[i] - FX[i] * w), r = ground(X[i] - FZ[i] * w, Z[i] + FX[i] * w); BMW[i] = Math.max(2, c); BMB[i] = BERM.cutBlend; BH[i] = Math.max(BERM.h, Math.min(l, r) - Y[i] + 0.5); }
   // the features that shape the ground: whoops, kickers, the canyon's high berms
   const F = FEATURES, idx = (s) => ((Math.round(s / ds) % N) + N) % N, span = (a, b) => { const s0 = sOf(...a), s1 = sOf(...b); return [s0, s1 >= s0 ? s1 : s1 + L]; };
   if (F.whoops) { const [s0, s1] = span(F.whoops.from, F.whoops.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += F.whoops.h * e * (1 - Math.cos((2 * Math.PI * u) / F.whoops.wave)) / 2; } }
@@ -328,7 +329,7 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   /** The line at s: where it is, which way it runs, its half-width and the wind's angle off it. */
   function frame(s) {
     const t = (((s % L) + L) % L) / ds, i = Math.floor(t) % N, i2 = (i + 1) % N, u = t - Math.floor(t), lerp = (A) => A[i] + (A[i2] - A[i]) * u;
-    return { x: lerp(X), z: lerp(Z), y: lerp(Y), fx: FX[i], fz: FZ[i], w: lerp(W), wind: lerp(WIND), bank: lerp(BK) };
+    return { x: lerp(X), z: lerp(Z), y: lerp(Y), fx: FX[i], fz: FZ[i], w: lerp(W), wind: lerp(WIND), bank: lerp(BK), cut: lerp(CT), berm: lerp(BH) }; // (cut: the walls' metres where the line runs in a cut, else 0)
   }
   const gates = F.gates.map(([cp, at]) => sOf(cp, at));
   return { id: def.id, name: def.name, def, features: F, decks, length: L, ds, N, X, Z, Y, W, BK, FX, FZ, cpS, sOf, nearest, heightAt, pull, frame, gates, line: sOf(F.start.cp, F.start.at), reach, branch };

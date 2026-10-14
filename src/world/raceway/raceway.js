@@ -132,7 +132,7 @@ export class Raceway {
     };
     for (let s = 0; s < len; s += step) {
       const F = Bn ? Bn.frame(s) : T.frame(s);
-      for (const E of out) { const lat = E.side * (Bn ? F.w - 1 : F.w + 0.5), lx = F.x - F.fz * lat, lz = F.z + F.fx * lat, p = this.local(lx, lz); p.y += Bn ? 1.2 : 1; E.pts.push(p); E.hide.push(other(lx, lz) ? 1 : 0); } // (the cavern's: 1 m inside its floor's edge: Calissa, 2026-10-14)
+      const walled = Bn || F.cut > 0.5 || F.berm > 3; for (const E of out) { const lat = E.side * (walled ? F.w - 1 : F.w + 0.5), lx = F.x - F.fz * lat, lz = F.z + F.fx * lat, p = this.local(lx, lz); p.y += walled ? 1.2 : 1; E.pts.push(p); E.hide.push(other(lx, lz) ? 1 : 0); } // (between walls, the cavern's and a canyon's cut: 1 m inside the floor's edge, where the wall has not begun to rise: Calissa, 2026-10-14; the owner's v198 "jagged in the canyon")
     }
     for (const E of out) E.hide = Uint8Array.from(E.hide);
     return out;

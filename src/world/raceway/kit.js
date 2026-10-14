@@ -57,6 +57,8 @@ export function buildKit(R) {
     { const F = T.frame(T.line), p = R.local(F.x + F.fz * (F.w + 7), F.z - F.fx * (F.w + 7)), spire = painted(new THREE.CylinderGeometry(0.8, 3, 16, 6), T.id === 'sun' ? 0xf6d9b8 : T.id === 'gorge' ? 0xe0805a : 0x9ad8a0);
       solid(spire, p.clone().setY(p.y + 7.5), yawQ(0), RAPIER.ColliderDesc.cylinder(8, 2.4)); R.pillars.push({ track: T.id, pos: p }); }
   }
+  // the race board at the hub: a squat stone with a sun on it (F there: the tracks, race.js openBoard)
+  { const H = R.P.hub, p = R.local(H.x + 6, H.z + 2); solid(painted(new THREE.BoxGeometry(3.2, 2.4, 0.8), 0x8a4a3a), p.clone().setY(p.y + 1.1), yawQ(0), RAPIER.ColliderDesc.cuboid(1.6, 1.2, 0.4)); R.board = p; }
   g.scene.add(group); group.updateMatrixWorld(true); mergeStatic(group);
 }
 

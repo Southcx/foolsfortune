@@ -552,6 +552,10 @@ export function buildAchievements(game) {
   C('rw18', 'skiff', 'The Raceway', 2, 'mechanic', 'Season Pass', 'Finish a race on the Coaster.', 'race.track.coaster.finish', 1);
   H('rw19', 'skiff', 'The Raceway', 4, 'mechanic', 'Loop the Loop', 'Ride the Coaster\'s rail end to end: 850 metres in one grind.', 'skiff.grind.best', 850, { unit: 'm' });
   C('rw20', 'skiff', 'The Raceway', 1, 'mechanic', 'Doodlebug', 'Be taken by the antlion.', 'raceway.pit', 1);
+  // round 5 (SKIFF-RACING.md 11): the rivals, the takedown, the grind tricks
+  C('rw21', 'skiff', 'The Raceway', 2, 'mechanic', 'Podium Pottery', 'Win a race against the rivals.', 'race.raceway.win', 1);
+  C('rw22', 'skiff', 'The Raceway', 2, 'mechanic', 'Crockery', 'Take down a rival: hit one hard from the side.', 'race.takedown', 1);
+  C('rw23', 'skiff', 'The Raceway', 3, 'mechanic', 'Grindhouse', 'Make 25 grind tricks: LMB or RMB clicked twice on a rail.', 'skiff.grind.trick', 25);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
