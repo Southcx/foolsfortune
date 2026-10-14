@@ -31,6 +31,7 @@ import { buildRails, buildRings, flyRings } from './railsrings.js';
 const GEYSER = { up: 18, r: 4, over: 4 }; // (as the Dunes' slip geysers: world/dunes/geysers.js LAUNCH)
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 };
+const RAIL_CLEAR = 2.5; // (metres a slalom column keeps from a rail's line: the column's radius, the lintel's half-width and room for the board)
 const SANDFALL_FOOT = 0.6; // (the slope (m down a m out) under which the face has become the hill: the sandfall's foot) // (metres past the track's edge, and real seconds there, before the board is set back on the track)
 
 export class Raceway {
@@ -109,8 +110,12 @@ export class Raceway {
       solid(painted(new THREE.BoxGeometry(len, 1.4, 2.0), 0x8a4a3a), mid, yawQ(yawAt(s) + Math.PI / 2), RAPIER.ColliderDesc.cuboid(len / 2, 0.7, 1.0)); }
     for (const s of T.gates) { const F = T.frame(s); pillar(side(s, -(F.w + 2.5)), 8, 1.5, yawAt(s)); pillar(side(s, F.w + 2.5), 8, 1.5, yawAt(s)); }
     // the slalom: broken columns in the line, every so often, side to side
+    // (none within RAIL_CLEAR of a rail's line: rail 2 runs straight down the slalom while its columns follow the bend, and one stood in
+    // its lintel, the owner's v195 / Petra's measure)
+    const railLines = FEATURES.rails.map((r) => [side(T.sOf(r.from[0], r.from[1]), r.from[2]), side(T.sOf(r.to[0], r.to[1]), r.to[2])]);
+    const nearRail = (p) => railLines.some(([a, b]) => { const dx = b.x - a.x, dz = b.z - a.z, u = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz))); return Math.hypot(p.x - a.x - dx * u, p.z - a.z - dz * u) < RAIL_CLEAR; });
     { const S = FEATURES.slalom, s0 = T.sOf(...S.from), s1 = T.sOf(...S.to); let k = 0;
-      for (let s = s0; s < s1; s += S.every, k++) { const p = side(s, (k % 2 ? 1 : -1) * S.lat), h = 4 + (k % 3), w = 1.3;
+      for (let s = s0; s < s1; s += S.every, k++) { const p = side(s, (k % 2 ? 1 : -1) * S.lat), h = 4 + (k % 3), w = 1.3; if (nearRail(p)) continue;
         solid(painted(new THREE.CylinderGeometry(w * 0.8, w, h, 8), k % 2 ? 0xd9906a : 0x8a4a3a), p.clone().setY(p.y + h / 2 - 0.6), yawQ(k), RAPIER.ColliderDesc.cylinder(h / 2, w * 0.9)); } }
     // the start's pillar: a small Gnomon (F at its foot: a race)
     { const p = this.startPillar, spire = painted(new THREE.CylinderGeometry(0.8, 3, 16, 6), 0xf6d9b8);

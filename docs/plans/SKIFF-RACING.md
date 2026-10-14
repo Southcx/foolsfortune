@@ -24,7 +24,7 @@ A good base: a sail is a throttle you have to manage, and the trick-for-speed lo
 
 | element | where it's from | take it? | how, in our terms |
 | --- | --- | --- | --- |
-| **drift with a charged boost** | MK8 (mini-turbo tiers), Sonic Riders (drift) | **yes** | **the carve**: Space held while steering hard at speed. The board slides and the springs load in three tiers; let go and it pops out with a boost by tier. Space already means "load the springs, let go to hop", so the carve is the same verb held through a turn. |
+| **drift with a charged boost** | MK8 (mini-turbo tiers), Sonic Riders (drift) | **yes** | **the carve**: Q or E held on the sand at speed (the side it carves to). The board slides and loads in three tiers; let go and it pops out with a boost by tier. (First built on Space held through a turn; a hop in a turn then began carves nobody asked for, so Petra moved it to Q and E in v196 and Space is the hop alone. Q and E are the glide's bank in the air, so one pair of keys leans the board on the sand and in the air.) |
 | **boost pads** | MK8 dash panels, Sonic Riders' dash panels, F-Zero | **yes** | **sun plates**: glyphs on the sand that throw a flare's push without its Lachryma. Solar, so they read as the skiff's own power. |
 | **ramp tricks for boost** | MK8 (trick off a ramp), Sonic Riders, SSX | **yes, deepened** | **the late pop**: a hop let go in the first fifth of a second after a crest or kicker throws you higher, and counts as a pop. Spins already pay boost. |
 | **tricks refill the boost meter** | Sonic Riders (tricks fill air), SSX (tricks fill boost) | **yes** | A landed spin gives Lachryma to the pool (6 a turn), so tricks fuel the flare: one meter, two ways to fill it. |
