@@ -171,7 +171,7 @@ export class Raceway {
    *  strings hang (Calissa's look, the owner's ask of 2026-10-14). [{ side: -1 | 1, pts: [Vector3] }], left then right. */
   edgeLines(step = 4, line = 'main') {
     const T = this.T, Bn = line === 'cavern' ? T.branch : null, len = Bn ? Bn.length : T.length, out = [{ side: -1, pts: [] }, { side: 1, pts: [] }];
-    for (let s = 0; s < len; s += step) { const F = Bn ? Bn.frame(s) : T.frame(s); for (const E of out) { const lat = E.side * (F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += 1; E.pts.push(p); } }
+    for (let s = 0; s < len; s += step) { const F = Bn ? Bn.frame(s) : T.frame(s); for (const E of out) { const lat = E.side * (Bn ? F.w - 1 : F.w + 0.5), p = this.local(F.x - F.fz * lat, F.z + F.fx * lat); p.y += Bn ? 1.2 : 1; E.pts.push(p); } } // (the cavern's: 1 m inside its floor's edge, where its wall has not yet begun to rise: Calissa, 2026-10-14)
     return out;
   }
 
