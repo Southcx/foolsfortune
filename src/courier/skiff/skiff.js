@@ -16,8 +16,8 @@
 //   A / D     steer (the board can turn on the spot, and carves at speed)
 //   Space     hold to crouch the springs, release to hop. In the air A / D spin the whole skiff, rider and
 //             all: land a whole turn square for a boost (skiff.ollie { geyser, by }: the hop, or a geyser caught crouched)
-//   Space     held while steering hard at speed: the CARVE, the board slides and the springs load in three tiers; let go, it pops out
-//             with a push by tier (skiff.carve.charge { tier }, skiff.carve { tier }: MK8's mini-turbo; docs/plans/SKIFF-RACING.md)
+//   Q / E     held on the sand at speed: the CARVE, left or right, the board slides and loads in three tiers (A / D tighten or widen
+//             it); let go, it runs out with a push by tier (its own keys, not Space: the owner, 2026-10-14, a hop began unwanted carves) (skiff.carve.charge { tier }, skiff.carve { tier }: MK8's mini-turbo; docs/plans/SKIFF-RACING.md)
 //   Space     let go just after leaving a crest or a kicker: a LATE POP, higher (skiff.pop { late }: MK8's ramp trick, SSX's pop)
 //   Space     held in the air (after a hop, or off a crest; or opened by the Raceway's glide lip): GLIDE, the oars spread as wings, flown
 //             as a hang glider: W dives, S flares, Q / E bank and the flight turns with them, A / D still spin (skiff.glide { by }; a Movement Art:
@@ -159,7 +159,7 @@ export class Skiffing extends Tech {
     this.air = this.phase === 'ride'; this.spin = 0; this.spinRest = 0; this.airT = 0;
     this.L = this.phase === 'ride' && this.v.length() > 6 ? 0.6 : 0; // (mounted on the move, the sail is already out; from a stand it is furled)
     this.hoistDir = 0; this.pumpReady = true; this.pumpFresh = true; this.steer = 0; this.roll = 0;
-    this.rideT = 0; this.carve = null; this.autoGlide = false; this.gliding = false; this.turbo = 0; this.kickV = 0; this.launchT = 9; this.lastPlate = null;
+    this.rideT = 0; this.grind.offR = null; this.carve = null; this.autoGlide = false; this.gliding = false; this.turbo = 0; this.kickV = 0; this.launchT = 9; this.lastPlate = null;
     this.nS.copy(UP);
     this.animT = 0; this.popT = null; this.landT = null; this.rider.dy = 0;
     this.skiff.load(this.game); this.skiff.visible = true; // (the model is asked for on the way into the Dunes, tick; a ride begun before it is parsed rides an undrawn board)
@@ -352,13 +352,14 @@ export class Skiffing extends Tech {
 
     // ---- steering: it turns on the spot, and carves once it is moving (less so the faster it goes)
     const sp0 = this.v.length(), speedFrac = clamp(sp0 / c.maxSpeed, 0, 1);
-    // the carve: Space held while steering hard at speed: the board slides, the springs load in tiers, and let go it pops out with a push
-    // (MK8's mini-turbo, Sonic Riders' drift; Space already means "load the springs, let go to hop")
-    if (!this.carve && sp2 && !this.air && steerIn !== 0 && sp0 > CARVE.min) { this.carve = { dir: steerIn, t: 0, tier: 0 }; this.charge = 0; }
+    // the carve: Q or E held on the sand at speed (its side): the board slides, loads in tiers, and let go it runs out with a push (MK8's
+    // mini-turbo, Sonic Riders' drift). Its own keys: on Space it shared the hop, and a hop in a turn began a carve (the owner, 2026-10-14)
+    const carveIn = this.air ? 0 : bankIn; // (Q / E bank the glider in the air; on the sand they carve)
+    if (!this.carve && carveIn !== 0 && sp0 > CARVE.min) this.carve = { dir: carveIn, t: 0, tier: 0 };
     if (this.carve && (this.air || sp0 < CARVE.min * 0.6)) this.carve = null; // (off a crest, or slowed to a crawl: it is lost)
     let steerEff = this.steer;
     if (this.carve) {
-      const C = this.carve; C.t += dt * (steerIn === C.dir ? 1 : 0.5);
+      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1); // (steered out of it, it loads at half)
       const tier = CARVE.tiers.filter((t) => C.t >= t).length;
       if (tier > C.tier) { C.tier = tier; g.events?.emit('skiff.carve.charge', { tier, by: 'courier' }); }
       steerEff = C.dir * (CARVE.turn + 0.45 * steerIn * C.dir);
@@ -383,12 +384,12 @@ export class Skiffing extends Tech {
 
     // ---- hop: hold Space to crouch the springs (a tap is a hop), let go to launch; a carve let go pops out with its push; and a hop let
     // go just after leaving a crest is a LATE POP, higher (MK8's ramp trick, SSX's pop)
-    if (sp2 && !this.air && !this.carve) this.charge = Math.min(1, this.charge + dt / c.hopTime);
-    if (!sp2 && this.spaceWas && this.carve) {
+    if (sp2 && !this.air) this.charge = Math.min(1, this.charge + dt / c.hopTime);
+    if (this.carve && carveIn !== this.carve.dir) { // (its key let go: it runs out with its push, on the sand)
       const C = this.carve; this.carve = null;
       if (C.tier > 0) { this.kick(CARVE.add[C.tier - 1], CARVE.dur[C.tier - 1], CARVE.kick[C.tier - 1]); g.events?.emit('skiff.carve', { tier: C.tier, by: 'courier' }); }
-      P.vel.y = c.hop * 0.4; this.air = true; this.spin = 0; this.airT = 0; this.popT = 0; this.launchT = 9;
-    } else if (!sp2 && this.spaceWas && !this.air) {
+    }
+    if (!sp2 && this.spaceWas && !this.air) {
       P.vel.y = c.hop + c.hopCharge * this.charge;
       this.v.addScaledVector(f, 1.2 + 2 * this.charge);
       this.air = true; this.spin = 0; this.airT = 0; this.popT = 0; this.launchT = 9;
