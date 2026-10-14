@@ -16,14 +16,15 @@
 // Blooper's wake, Wind Waker's wake behind the boat, and the ripple render targets of the seventh generation (Uncharted's and
 // Crysis's interactive water: a camera-centred height field stamped by what touches it).
 //
-//   const T = new RippleTank(renderer)   T.disturb(d)   T.update(rawDt, cameraPos, { lachryma })   RIPPLE_U (the water's uniforms)
+//   const T = new RippleTank(renderer)   T.disturb(d)   T.update(rawDt, cameraPos, { lachryma, fast })   (fast: twice the rings' speed, while a
+//                                        board skims, so its V opens: c 0.3 or 0.16 cells a step, well inside the step's stable range)   RIPPLE_U (the water's uniforms)
 //   RIPPLE_GLSL: ripSlope(xz) -> vec3(dh/dx, dh/dz, h) (the slope filtered over four cells: soft crests, never a one-cell edge)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const N = 128, CELL = 0.2, SIZE = N * CELL, HZ = 60, MAX_SPLATS = 12;
 // a disturbance's dent: its radius (metres) and its depth, by kind (scaled by its strength)
-const DENT = { dive: [0.6, 0.42], land: [0.5, 0.3], drop: [0.3, 0.2], fish: [0.35, 0.22], stroke: [0.35, 0.22], wake: [0.3, 0.16] };
+const DENT = { dive: [0.6, 0.42], land: [0.5, 0.3], drop: [0.3, 0.2], fish: [0.35, 0.22], stroke: [0.35, 0.22], wake: [0.3, 0.16], keel: [0.4, 0.2], skiffSplash: [0.9, 0.5] }; // (keel: the Solar Skiff skimming; skiffSplash: it coming down on the water: vfx/skiffwaterlook.js)
 
 /** The water's side: the tank's uniforms (shared by every water material) and the read. */
 export const RIPPLE_U = { uRip: { value: null }, uRipO: { value: new THREE.Vector4(0, 0, SIZE, 0) } };
@@ -76,14 +77,14 @@ export class RippleTank {
   /** A disturbance ({ x, z, s, kind }): a dent knocked into the field at the next step. */
   disturb(d) { if (this.queue.length < 32) this.queue.push(d); this.live = 6; } // (the field runs for 6 real seconds after the last touch)
 
-  update(raw, cam, { lachryma = false } = {}) {
+  update(raw, cam, { lachryma = false, fast = false } = {}) {
     if (this.live <= 0) { RIPPLE_U.uRipO.value.w = 0; this.queue.length = 0; this.cleared = false; return; } // (still water: nothing stepped, nothing read; cleared before it runs again)
     this.live -= raw;
     if (!this.cleared) { this.clear(); this.cleared = true; }
     // the window, a cell at a time round the eye
     const ox = Math.floor(cam.x / CELL) * CELL - SIZE / 2, oz = Math.floor(cam.z / CELL) * CELL - SIZE / 2;
     if (this.ox === null) { this.ox = ox; this.oz = oz; }
-    this.u.uC2.value = lachryma ? 0.0064 : 0.0225; this.u.uDamp.value = lachryma ? 0.994 : 0.992; // (c 0.08 or 0.15 cells a step: 1 or 1.8 m/s)
+    this.u.uC2.value = (lachryma ? 0.0064 : 0.0225) * (fast ? 4 : 1); this.u.uDamp.value = lachryma ? 0.994 : 0.992; // (c 0.08 or 0.15 cells a step: 1 or 1.8 m/s)
     this.acc = Math.min(this.acc + raw, 3 / HZ);
     let first = true;
     while (this.acc >= 1 / HZ) {

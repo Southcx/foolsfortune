@@ -649,11 +649,11 @@ export class Skiffing extends Tech {
       if (ph !== 'recall') this.unit.pos.y -= this.rider.dy; // (in the recall the group came down with them already)
       this.unit.quat.copy(ph === 'ride' ? unitQ : G.quaternion).multiply(qFace);
     }
-    // the pennant at the masthead (the wind, shown), and the wake from the bow
+    // the pennant at the masthead (the wind, shown), and the wake from the bow (on water it gives way to the water's own: vfx/skiffwaterlook.js)
     const right = _v3.set(-f.z, 0, f.x);
     this.skiff.placePennant(W.dir, W.speed / 10, this.time);
     const bow = _v.copy(pos).addScaledVector(f, SKIFF.half + 0.2);
-    if (ph === 'ride') this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air, glow: this.boosting, ground: (x, z) => D.rideHeight(x, z) });
+    if (ph === 'ride') this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air || this.onWater, glow: this.boosting, ground: (x, z) => D.rideHeight(x, z) });
     else this.wake.update(dt, { bow, fwd: f, right, speed: 0, air: true, glow: 0, ground: (x, z) => D.rideHeight(x, z) });
     this.skiff.ground = D.rideHeight(G.position.x, G.position.z) - G.position.y; // (the sand under the board, in its frame: the summon's sigil lies on it)
     this.poseBoat(); // (posed again after the rider in the ride: animate)
@@ -685,7 +685,7 @@ export class Skiffing extends Tech {
     this.rider.R ||= new Rider(ch);
     const R = this.rider.R;
     if (this.phase === 'ride') {
-      R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT, glide: this.wingK || 0, grab: this.grab }, dt);
+      R.ride(base, this.w, { t: this.animT, speed: this.speed, steer: this.steer, L: this.L, hoistDir: this.hoistDir, furling: this.furling, flaring: this.flaring, charge: this.charge, air: this.air, popT: this.popT, landT: this.landT, glide: this.wingK || 0, grab: this.grab, grindTrick: this.grind.on ? this.grindTrick : null }, dt);
       if (this.active) this.poseBoat(); // (the board's clips by the rider's weights of this very frame)
       return;
     }

@@ -61,7 +61,7 @@ import { Hologram } from './caster/hologram.js';
 import { RacewayEdgeStrings, EDGE_STRINGS } from './racewayedgestrings.js';
 import { ensureSmoothNormals } from '../render/outline.js';
 import { lightAt } from '../progress/weather.js';
-import { SkiffComboMarks } from './skiffcombomarks.js';
+import { SkiffComboMarks, COMBO_MARKS } from './skiffcombomarks.js';
 import { GrindBalanceMark } from './grindbalancemark.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
@@ -454,7 +454,7 @@ export class RacewayLooks {
     const M = this.comboMarks(B), before = M.steps; M.link(e?.mult);
     const at = B.group.getWorldPosition(new THREE.Vector3());
     V?.play('skiff.combo.link', { pos: at.clone().setY(at.y - 0.3), phase: this.t * 0.3 });
-    if (M.steps > before) V?.play('skiff.combo.step', { pos: new THREE.Vector3(0, 0, -3.0).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 });
+    if (M.steps > before) { const P = COMBO_MARKS.pips; V?.play('skiff.combo.step', { pos: new THREE.Vector3(0, COMBO_MARKS.y, -(P.r + P.gap * (M.steps - 1))).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 }); } // (at the chevron just lit)
   }
   comboBank() {
     const B = this.boardOf(), V = this.vfxOf(); if (!B) return;

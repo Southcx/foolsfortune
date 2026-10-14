@@ -15,8 +15,8 @@
 // each with its own personality (opened by winning a race, or lent in DEBUG).
 // Events: race.place { place, of }, race.bump { rival, impact }, race.takedown { rival, how }, race.rival.finish { rival, seconds },
 // race.nemesis { rival, beaten }, race.taunt { rival } (with `by`).
-// Placeholders: a clapperjar (the creatures' own model, held still) on a board of a box and a sail; their look and their riding are
-// Calissa's to make.
+// Placeholders: a clapperjar (the creatures' own model, held still) on a board of a box and a sail, dressed by Calissa's look as a mini
+// Solar Skiff with a clapperjar riding it (vfx/racewayrivals.js, ticked at the end of update); a sibling's rider is a capsule.
 //
 // Prior art: Mario Kart's rubber banding and its CPU racers on a racing line; Gran Turismo's AI braking for what it can see; Burnout 3's
 // takedowns (a side hit spins a rival out and fills your boost) and FlatOut's bumping; Crash Team Racing's pack.
@@ -27,6 +27,7 @@
 import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RW } from './track.js';
+import { RacewayRivals } from '../../vfx/racewayrivals.js';
 
 /** The rosters: each rival's name (working names: the clapperjars' Espada's), personality, skill and colour. */
 export const ROSTERS = {
@@ -134,6 +135,7 @@ export class Rivals {
       this.place3d(r, dt);
     }
     if (running) { this.bumps(dt); this.ranks(me, race); }
+    (this.look ||= new RacewayRivals(g)).update(dt, this, race); // (their look and riding: Calissa's, vfx/racewayrivals.js)
   }
 
   /** Your place: one more than the rivals ahead of you (a finished one is ahead of a racer still running). */

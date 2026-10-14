@@ -4,9 +4,12 @@
 //   - THE LINK RING: a ring of light round the hull, a little under the deck. While the chain is live (in the air, on a rail, in a
 //     carve) it is whole; on the sand it closes in from the stern up both sides as the link's clock (`combo.t` of COMBO.link) runs out,
 //     and is gone at the bow when the chain banks. A trick linked fills it again with a flash.
-//   - THE STEP PIPS: six small diamonds aft of the stern, lit from the middle out, one a step of the multiplier (`combo.mult`, a step of
-//     COMBO.kinds); a step taken flashes its pip.
-//   - THE BANKED FLARES: three little suns further aft (the owner, 2026-10-14: "everything on the front end gets occluded by the skiff
+//   - THE STEP PIPS: a stack of six chevrons on the centreline aft of the stern, pointing to the bow, each bigger than the one before it;
+//     lit from the stern back, one a step of the multiplier (`combo.mult`, a step of COMBO.kinds: x1.5, x2 ... x4), so a higher
+//     multiplier is a longer, bigger stack (the owner asked what the old diamonds were: more must read as more at a glance, with no
+//     numbers); the unlit ones a faint socket, so the ladder's top shows; a step taken flashes its chevron, and the whole gauge warms
+//     from Lachryma's blue toward gold as the stack climbs.
+//   - THE BANKED FLARES: three little suns further aft, past the stack (the owner, 2026-10-14: "everything on the front end gets occluded by the skiff
 //     itself": the chase camera sees the back), filled left to right as seen from behind, each a pie by its share of `combo.stocks`
 //     (0..3); Shift's flare drains them as it spends one. A bank flashes them; a drop dulls the ring a moment as it breaks (the effects' moments are the
 //     library's: skiff.combo.bank / .drop, played by vfx/racewaylooks.js).
@@ -17,7 +20,8 @@
 //
 // Prior art: SSX Tricky's boost meter and Tony Hawk's combo multiplier (the chain and its step), Mario Kart's item roulette ring and
 // Splatoon's ink tank worn on the body (a gauge on the thing, not the screen), Dead Space's diegetic spine meter, Crash Team Racing's
-// reserve pips (banked boost counted, never numbered), Sonic Riders' air tank; the sun's glyph (vfx/racewaylooks.js) for the stocks.
+// reserve pips (banked boost counted, never numbered), a rank's stacked chevrons and Mario Kart's mini-turbo going blue to orange (the
+// step pips: more stripes, bigger, warmer, is more), Sonic Riders' air tank; the sun's glyph (vfx/racewaylooks.js) for the stocks.
 //
 //   const M = new SkiffComboMarks({ map })   M.attach(group)   M.update(dt, combo, t)   M.link(mult)   M.bank()   M.drop()   M.dispose()
 //   COMBO_MARKS (the numbers)
@@ -28,14 +32,16 @@ import { featTint } from './oxidation.js';
 import { LACHRYMA_DEEP } from './racewayeffects.js';
 
 /** The numbers, in the board's own frame (+Z the bow, Y up; m and rad): the marks' height under the deck; the link ring (radius, band
- *  width, segments); the step pips (how many, their radius out, how far either side of the stern, size); the banked flares (radius out,
+ *  width, segments); the step pips (how many; the first chevron's distance aft and the gap between them; the first's half width and
+ *  how much each next one grows; its depth by its width; an arm's thickness and its growth a step); the warmth the gauge climbs to; the banked flares (radius out,
  *  rad apart round the stern, a sun's radius, its segments); where the pips and flares sit (rad from the bow: PI, the stern); brightness lit and as an empty socket; the flashes' real seconds; the
  *  drop's dull colour; how fast the whole fades in and out. */
 export const COMBO_MARKS = {
   y: -0.3,
   ring: { r: 2.4, w: 0.28, segs: 56 },
-  pips: { n: 6, r: 3.0, spread: 0.62, size: 0.34 },
-  stocks: { r: 4.0, apart: 0.34, size: 0.55, segs: 18 },
+  pips: { n: 6, r: 2.8, gap: 0.22, w: 0.28, grow: 1.16, depth: 0.5, thick: 0.1, thickGrow: 0.012 },
+  stocks: { r: 5.0, apart: 0.3, size: 0.55, segs: 18 },
+  warm: 0xe8901c, warmMax: 0.6,
   aft: Math.PI,
   lit: 0.95, socket: 0.14, flash: { link: 0.35, step: 0.5, bank: 0.7, drop: 0.55 },
   dull: 0x6a6478, fade: { in: 12, out: 3 },
@@ -52,7 +58,7 @@ function uOf(b) {
   return GRAD[GRAD.length - 1][0];
 }
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
-const _c = new THREE.Color(), _f = new THREE.Color(), LACH = new THREE.Color(LACHRYMA_DEEP), DULL = new THREE.Color(COMBO_MARKS.dull);
+const _c = new THREE.Color(), _f = new THREE.Color(), LACH = new THREE.Color(LACHRYMA_DEEP), DULL = new THREE.Color(COMBO_MARKS.dull), WARM = new THREE.Color(COMBO_MARKS.warm);
 
 /** The marks' geometry: triangles, each vertex with a cell (which mark and part it belongs to) and a weight (its share of the cell's
  *  brightness: a band's edges soft, its middle whole). Position, uv; the cells and weights kept on the side. */
@@ -70,12 +76,16 @@ function build() {
       v(p0x, p0z, c, wa); v(q1x, q1z, c, wb); v(q0x, q0z, c, wb);
     }
   }
-  // the step pips: diamonds aft of the stern (a bright heart, soft points, pointing away from the board), cells after the ring's
+  // the step pips: a stack of chevrons on the centreline aft of the stern, pointing to the bow, each bigger than the last (a bright
+  // front edge, its back edge softer), cells after the ring's
   const P = C.pips, pip0 = R.segs;
   for (let i = 0; i < P.n; i++) {
-    const a = C.aft - P.spread + (2 * P.spread * i) / (P.n - 1), [cx, cz] = at(a, P.r), s = P.size, ux = Math.cos(a), uz = -Math.sin(a), fx = Math.sin(a), fz = Math.cos(a);
-    const pts = [[cx + fx * s * 1.4, cz + fz * s * 1.4], [cx + ux * s, cz + uz * s], [cx - fx * s * 1.1, cz - fz * s * 1.1], [cx - ux * s, cz - uz * s]];
-    for (let k = 0; k < 4; k++) { const p = pts[k], q = pts[(k + 1) % 4]; v(cx, cz, pip0 + i, 1); v(q[0], q[1], pip0 + i, 0.6); v(p[0], p[1], pip0 + i, 0.6); }
+    const w = P.w * Math.pow(P.grow, i), h = w * P.depth, th = P.thick + P.thickGrow * i, z = -(P.r + P.gap * i); // (z: aft is -Z)
+    const A = [0, z + h / 2], Lf = [-w, z - h / 2], Rt = [w, z - h / 2], A2 = [0, z + h / 2 - th], L2 = [-w, z - h / 2 - th], R2 = [w, z - h / 2 - th];
+    for (const [o, e, o2, e2] of [[A, Lf, A2, L2], [A, Rt, A2, R2]]) { // (each arm a quad: the front edge whole, the back edge soft, its tip softer)
+      v(o[0], o[1], pip0 + i, 1); v(e[0], e[1], pip0 + i, 0.7); v(e2[0], e2[1], pip0 + i, 0.45);
+      v(o[0], o[1], pip0 + i, 1); v(e2[0], e2[1], pip0 + i, 0.45); v(o2[0], o2[1], pip0 + i, 0.6);
+    }
   }
   // the banked flares: little suns aft of the pips (the first on the left as the chase camera sees it), each a fan of wedges (a wedge its own cell, for the pie) and eight short rays
   const S = C.stocks, sun0 = pip0 + P.n;
@@ -144,9 +154,9 @@ export class SkiffComboMarks {
       const fill = Math.max(0, Math.min(1, (shown - off) * R / 2 + 0.5));
       b[j] = live || this.dropT ? Math.max(live ? C.socket : 0, ringK * fill) : 0;
     }
-    // the pips: lit from the middle out, the newest flashing
-    const P = C.pips, order = [2, 3, 1, 4, 0, 5];
-    for (let i = 0; i < P.n; i++) { const rank = order.indexOf(i), on = rank < this.steps; b[B.pip0 + i] = live ? (on ? C.lit * (1 + (rank === this.stepPip ? 1.2 * this.stepT : 0)) : C.socket) : 0; }
+    // the pips: the stack lit from the stern back, the newest flashing
+    const P = C.pips;
+    for (let i = 0; i < P.n; i++) { const on = i < this.steps; b[B.pip0 + i] = live ? (on ? C.lit * (1 + (i === this.stepPip ? 1.2 * this.stepT : 0)) : C.socket) : 0; }
     // the banked flares: each sun filled as a pie by its share, its rays out when whole; a bank flashes them
     const S = C.stocks, any = live || stocks > 0.01;
     for (let i = 0; i < 3; i++) {
@@ -158,8 +168,10 @@ export class SkiffComboMarks {
     const uv = B.g.attributes.uv, a = uv.array, sh = this.show;
     for (let i = 0, m = B.cell.length; i < m; i++) a[i * 2] = uOf(b[B.cell[i]] * B.wt[i] * sh);
     uv.needsUpdate = true;
-    // the colour: Lachryma's, the oil film walking through it slowly; a drop turns it dull a moment
-    this.mat.color.copy(LACH).lerp(featTint(t * 0.12, _f, { bright: 1 }), 0.15).lerp(_c.copy(DULL), this.dropT * (live ? 0 : 0.85));
+    // the colour: Lachryma's, the oil film walking through it slowly, warming toward gold as the stack climbs (one material: the whole
+    // gauge warms, so the step pips' heat reads at a glance); a drop turns it dull a moment
+    this.warmK = damp(this.warmK || 0, live ? this.steps / P.n : 0, 6, dt);
+    this.mat.color.copy(LACH).lerp(featTint(t * 0.12, _f, { bright: 1 }), 0.15).lerp(WARM, this.warmK * C.warmMax).lerp(_c.copy(DULL), this.dropT * (live ? 0 : 0.85));
   }
   dispose() { this.mesh.parent?.remove(this.mesh); this.B.g.dispose(); this.mat.dispose(); }
 }
