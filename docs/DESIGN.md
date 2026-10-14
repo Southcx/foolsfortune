@@ -417,3 +417,10 @@ transitions). The hour and the weather change the race (the sun plates are solar
 slick, as land sailors race the wet beach), and each condition keeps its own best. The cavern is a branch through a roofed gorge whose
 pads run on Lachryma: the night's line. Every source still pays for doing it at all (a plain lap finishes; a trick of one kind banks) and
 pays more for doing it well (the multiplier, the perfect pop) (section 22's law).
+
+Round four (SKIFF-RACING.md 10) made the Raceway a park, the one place every racing mechanic is tested, in layers: the Sun Circuit
+(learn the board), the Gorge Run (read lines and hazards: a blind crest, cliffs, a slot canyon, a spiral down a crater round an antlion
+pit, a crossover, a ford), the Coaster (grind as a line: a 3D rail with drops, a banked turn, a loop and a helix), and free ground (a
+half-pipe, a pit). What a height field cannot do is done another way: bridges for crossovers, coaster rails for loops. The lessons under
+it are real: the antlion's pit stands at the sand's angle of repose; a banked turn takes g tan(bank) of its own pull; a coaster's lift
+is the price of its fall. The tools that let the design be seen headless (a map from above, an autopilot with a trace) are part of it.

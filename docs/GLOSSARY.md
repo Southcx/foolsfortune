@@ -226,6 +226,17 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Shift before the pool. *Not:* the club's combo, a rhythm combo, a ledger chain.
 - **a grab / a perfect pop / a slope landing** (`skiff.grab`, `skiff.pop { perfect }`, `skiff.land.slope`) — LMB (the nose) or RMB (the
   tail) held in the air, let go before landing / a late pop let go in its first moment / landing square down a slope, the fall kept as speed.
+- **the park / the hub** (`park()`, `PARK`, `world/raceway/park.js`) — the Raceway since round 4: one ground of several tracks, 2.6 km
+  across / its middle, where the Index sets you down among the tracks' starts. *Not:* the basement's hub (the Index's).
+- **the Gorge Run / the Coaster** (working names, Espada's; `tracks/gorge.js`, `tracks/coaster.js`) — the park's second and third tracks:
+  canyons, cliffs and a crater's spiral / a lift to a mesa and a coaster rail down. *Not:* the canyon (the Sun Circuit's stretch).
+- **a cut / a bridge / a bowl / a ford** (`cut`, `features.bridges`, `.bowls`, `.fords`) — a stretch of line laid between steep walls to
+  the sand / a stretch built as a deck that another line passes under (`world/raceway/features.js`) / a stretch banked steeper than its
+  bend / a stretch under water, skimmed. *Not:* the paid cut, the cutlass.
+- **a coaster rail** (`coasterPath`, `world/raceway/coasterrail.js`) — a grind rail laid in three dimensions, with a loop and a helix, each
+  point its up and push. *Not:* a rail (a ruin's lintel), the Emocean's rail.
+- **an antlion pit / the antlion** (working names; `PARK.pits`, `raceway.pit`) — a cone at the sand's angle of repose whose sand flows to
+  its middle / the maw at its bottom that takes a board. *Not:* a Well, a crater (no maw).
 - **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
   plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls

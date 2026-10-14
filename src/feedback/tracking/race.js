@@ -16,6 +16,7 @@
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const signed = (s) => `${s >= 0 ? '+' : '−'}${Math.abs(s).toFixed(2)}`;
 const MEDAL = { gold: 'gold', silver: 'silver', bronze: 'bronze' };
+const TRACK_NAMES = { sun: 'The Sun Circuit', gorge: 'The Gorge Run', coaster: 'The Coaster' }; // (working names: Espada's to rule)
 // what a condition does, said at a race's start (placeholders for Espada's words)
 const LIGHT_SAYS = { night: 'Night: the sun plates are dark, and the cavern\'s crystal veins still burn.', twilight: 'A low sun: the sun plates are weak.' };
 const WEATHER_SAYS = {
@@ -25,9 +26,10 @@ const WEATHER_SAYS = {
 };
 
 export function raceRules({ on, L, log }) {
-  on('raceway.enter', () => log.say('info', 'The Raceway. F at the start\'s pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
+  on('raceway.enter', () => log.say('info', 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. F at a track\'s start pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
+  on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
-    L.inc('race.raceway.start'); log.say('skiff', 'To the line. Ready your sail.', { key: 'race.start', throttle: 2 });
+    L.inc('race.raceway.start'); L.inc(`race.track.${e.track || 'sun'}.start`); log.say('skiff', `${TRACK_NAMES[e.track] || 'The race'}: to the line. Ready your sail.`, { key: 'race.start', throttle: 2 });
     const says = [LIGHT_SAYS[e.light], WEATHER_SAYS[e.aspect]].filter(Boolean); if (says.length) log.say('skiff', says.join(' '), { key: 'race.cond', throttle: 2 });
   });
   on('race.count', (e) => log.say('skiff', `${e.n}…`, { key: `race.count.${e.n}`, throttle: 0.5 }));
@@ -41,6 +43,7 @@ export function raceRules({ on, L, log }) {
   on('race.finish', (e) => {
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
     if (e.medal) L.inc(`race.raceway.${e.medal}`);
+    if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); }
     if (e.condition) { L.inc(`race.raceway.finish.${e.condition.split('.')[0]}`); const b = L.lo(`race.raceway.best.${e.condition}`, e.seconds); if (b && b !== 'new') log.say('record', 'Your best under this sky.', { key: 'race.condbest', throttle: 2 }); }
     log.say('record', `Finished in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });

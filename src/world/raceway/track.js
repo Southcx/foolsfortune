@@ -17,7 +17,7 @@
 // ---------------------------------------------------------------------------------------
 
 /** Where the Raceway lies: at the Dunes' layer, far east of them (render/zonemap.js 'raceway'); its field and its far ring. */
-export const RW = { x: 5200, y: -420, z: 0, half: 560, step: 2.5, outer: 900, edge: 500 };
+export const RW = { x: 6000, y: -420, z: 0, half: 1320, step: 2.5, outer: 1950, edge: 1270 }; // (half: a whole number of the terrain's 80 m chunks) // (a park of tracks, the owner 2026-10-14: "quadruple the size"; 2.6 km across, its round barrier clear of every line)
 
 // The circuit, one lap about 2.7 km, laid counter-clockwise from the start straight (local metres: x east, z north; y the track's height
 // over the layer's floor; w its half-width; wind the course wind's angle off the track, 0 dead behind, 1.4 nearly across).
@@ -77,12 +77,21 @@ export const FEATURES = {
 // crystal veins: a push the sun does not feed, [metres along it, lat]) and kickers.
 export const BRANCH = {
   id: 'cavern', from: [21, 25], to: [25, 0],
-  ctrl: [[-350, 20, 22, 10], [-296, -36, 4, 10], [-286, -116, 0, 11], [-322, -196, 10, 10]], // (an S through the circuit's middle: straighter, it ran 6 s faster than the line)
-  hold: 30, wall: 3, blend: 24, roof: 7, wind: 0.45, // (wind 0.7 ran it 6 s faster than the line on the autopilot: a shortcut for nothing)
-  pads: [[45, 0], [215, 2]].map(([at, lat]) => ({ at, lat, len: 7, w: 2.6 })),
-  kickers: [{ at: 178, h: 2.2, len: 8 }],
+  // (deeper and wider since round 4: the owner, "it needs more ceiling clearance": the floor 6 to 8 m lower, the roof only where the walls
+  // stand 11 m, the stalactites 10 m clear)
+  ctrl: [[-350, 20, 20, 10], [-296, -36, -3, 11], [-286, -116, -8, 12], [-322, -196, 4, 10]], // (an S through the circuit's middle)
+  hold: 30, wall: 3, blend: 24, roof: 11, wind: 0.45,
+  pads: [[45, 0], [228, 2]].map(([at, lat]) => ({ at, lat, len: 7, w: 2.6 })),
+  kickers: [{ at: 150, h: 2.6, len: 9 }], // (the jump over the pool)
+  // inside it (cavern.js): THE POOL (water under the roof, skimmed: park.js lays it, `depth` under the floor), the crystal PILLARS to weave
+  // (metres along, lat, radius: stone, collided), and THE SKYLIGHT FALL (sand pouring through a gap in the roof, at metres along)
+  pools: [{ at: 162, len: 46, depth: 2.5 }],
+  pillars: [[205, -3.5, 2], [232, 4, 2.2], [258, -2, 1.8], [270, 6, 1.6]],
+  skyfall: { at: 186 },
 };
-const BERM = { w: 6, h: 1.4, blend: 46 }; // (the berm's width and height, the blend back to the sea, metres)
+/** The Sun Circuit, as the park lays it: where its local frame sits in the park's (metres), and turned (radians). */
+export const SUN = { id: 'sun', name: 'the Sun Circuit', at: { x: -520, z: -440, rot: Math.PI } }; // (turned so its start straight faces the hub)
+const BERM = { w: 6, h: 1.4, blend: 46, cutBlend: 24 }; // (a cut's walls rise over its `cut` metres to the sand, then blend in over cutBlend) // (the berm's width and height, the blend back to the sea, metres)
 const BANK = { k: 24, max: 0.42, smooth: 15 }; // (tan of the bank = k x the bend (1/m), capped; the bend smoothed over metres)
 const STEP = 2; // (metres between samples of the line)
 
@@ -152,9 +161,17 @@ function nearMap(X, Z, N, reach, closed = true) {
   return M;
 }
 
-/** Lay the track: the line sampled, its heights, widths, banks and winds, the features placed, the grid that finds the line fast. */
-export function track() {
-  const C = CONTROL, n = C.length;
+/** Lay a track: the line sampled, its heights, widths, banks and winds, the features placed, the grid that finds the line fast. `def`:
+ *  { id, at: { x, z, rot }, control: [[x, z, y, halfWidth, wind, cut?]], features, branch? } (the Sun Circuit's by default). A control
+ *  point's `cut` (m) makes the line there a CUT: its walls rise steeply over that many metres to the sand beside it (a canyon), never a
+ *  berm's gentle slope. */
+export function track(def = { ...SUN, control: CONTROL, features: FEATURES, branch: BRANCH }, ground = sandAt) {
+  const at = def.at || { x: 0, z: 0, rot: 0 }, cr = Math.cos(at.rot || 0), sr = Math.sin(at.rot || 0);
+  const place = (x, z) => [at.x + x * cr - z * sr, at.z + x * sr + z * cr];
+  const C = def.control.map((c) => [...place(c[0], c[1]), c[2], c[3], c[4] ?? 0, c[5] ?? 0]), n = C.length;
+  const FEATURES = { kickers: [], ramps: [], plates: [], geysers: [], rails: [], rings: [], gates: [], ...def.features };
+  FEATURES.glideLips ||= FEATURES.glideLip ? [FEATURES.glideLip] : []; FEATURES.sandfalls ||= FEATURES.glideLip ? [{ cp: FEATURES.glideLip.cp }] : []; FEATURES.coaster ||= [];
+  const BRANCH = def.branch ? { ...def.branch, ctrl: def.branch.ctrl.map((c) => [...place(c[0], c[1]), c[2], c[3]]) } : null;
   // ---- the line: centripetal Catmull-Rom through the points, closed
   const pts = [];
   const cpAt = []; // (each control point's index among the dense points)
@@ -173,20 +190,29 @@ export function track() {
   const cpS = cpAt.map((k) => cum[k]);
   // ---- heights, widths and winds by s on monotone cubics (closed: the first point again at L)
   const xs = [...cpS, L], mono = (col) => monotone(xs, [...C.map((c) => c[col]), C[0][col]]);
-  const yOf = mono(2), wOf = mono(3), windOf = mono(4);
+  const yOf = mono(2), wOf = mono(3), windOf = mono(4), cutOf = mono(5);
   const sOf = (cp, at = 0) => ((cpS[((cp % n) + n) % n] + at) % L + L) % L;
-  const Y = new Float32Array(N), W = new Float32Array(N), WIND = new Float32Array(N), BK = new Float32Array(N), BH = new Float32Array(N).fill(BERM.h);
+  const Y = new Float32Array(N), W = new Float32Array(N), WIND = new Float32Array(N), BK = new Float32Array(N), BH = new Float32Array(N).fill(BERM.h), BMW = new Float32Array(N).fill(BERM.w), BMB = new Float32Array(N).fill(BERM.blend);
   for (let i = 0; i < N; i++) { const s = i * ds; Y[i] = yOf(s); W[i] = wOf(s); WIND[i] = windOf(s); }
+  // the cuts: where a control point asks for one, the walls rise steeply to the sand beside the line (a canyon); eased in and out
+  for (let i = 0; i < N; i++) { const c = cutOf(i * ds); if (c < 0.5) continue; const w = W[i] + c, l = ground(X[i] + FZ[i] * w, Z[i] - FX[i] * w), r = ground(X[i] - FZ[i] * w, Z[i] + FX[i] * w); BMW[i] = Math.max(2, c); BMB[i] = BERM.cutBlend; BH[i] = Math.max(BERM.h, Math.min(l, r) - Y[i] + 0.5); }
   // the features that shape the ground: whoops, kickers, the canyon's high berms
   const F = FEATURES, idx = (s) => ((Math.round(s / ds) % N) + N) % N, span = (a, b) => { const s0 = sOf(...a), s1 = sOf(...b); return [s0, s1 >= s0 ? s1 : s1 + L]; };
-  { const [s0, s1] = span(F.whoops.from, F.whoops.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += F.whoops.h * e * (1 - Math.cos((2 * Math.PI * u) / F.whoops.wave)) / 2; } }
+  if (F.whoops) { const [s0, s1] = span(F.whoops.from, F.whoops.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += F.whoops.h * e * (1 - Math.cos((2 * Math.PI * u) / F.whoops.wave)) / 2; } }
   for (const K of F.kickers) { const s0 = sOf(K.cp, K.at); for (let u = 0; u < K.len + 3; u += ds) Y[idx(s0 + u)] += u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; }
-  { const [s0, s1] = span(F.canyon.from, F.canyon.to); for (let s = s0; s < s1; s += ds) BH[idx(s)] = BERM.h + (F.canyon.berm - BERM.h) * sstep(0, 30, s - s0) * sstep(0, 30, s1 - s); }
+  // the bridges: a stretch of the line laid as a deck over whatever runs under it (the ground there is left to the sand and the other
+  // tracks: a deck is built and collided in world/raceway/decks.js, and the board rides it: raceway.rideHeight)
+  const DECK = new Uint8Array(N), decks = (F.bridges || []).map((Bd) => { const [s0, s1] = span(Bd.from, Bd.to); for (let s = s0; s <= s1; s += ds) DECK[idx(s)] = 1; return { s0, s1 }; });
+  if (F.canyon) { const [s0, s1] = span(F.canyon.from, F.canyon.to); for (let s = s0; s < s1; s += ds) BH[idx(s)] = Math.max(BH[idx(s)], BERM.h + (F.canyon.berm - BERM.h) * sstep(0, 30, s - s0) * sstep(0, 30, s1 - s)); }
+  // dips: the line pressed down under a flat water's surface over a stretch (a ford: the board skims it, water.js), eased in and out
+  for (const D of F.fords || []) { const [s0, s1] = span(D.from, D.to); for (let s = s0; s < s1; s += ds) Y[idx(s)] -= D.depth * sstep(0, 12, s - s0) * sstep(0, 12, s1 - s); }
   // the bank: tan = k x the bend toward the right, smoothed; the outside of a turn stands higher
   const bend = new Float32Array(N);
   for (let i = 0; i < N; i++) { const a = (i + N - 1) % N, b = (i + 1) % N, dfx = (FX[b] - FX[a]) / (2 * ds), dfz = (FZ[b] - FZ[a]) / (2 * ds); bend[i] = dfx * -FZ[i] + dfz * FX[i]; } // (the turn toward the right: d(fwd)/ds . right, right = (-fz, fx))
   const r = Math.round(BANK.smooth / ds);
   for (let i = 0; i < N; i++) { let s = 0; for (let k = -r; k <= r; k++) s += bend[(i + k + N) % N]; BK[i] = Math.max(-BANK.max, Math.min(BANK.max, (s / (2 * r + 1)) * BANK.k)); }
+  // the bowls: a stretch banked steeper than the bend asks, the outside a wall to lean on (the Nordschleife's Karussell), eased in and out
+  for (const Bw of F.bowls || []) { const [s0, s1] = span(Bw.from, Bw.to); for (let s = s0; s < s1; s += ds) { const i = idx(s), k = sstep(0, 15, s - s0) * sstep(0, 15, s1 - s); BK[i] += (Math.sign(BK[i] || 1) * Bw.bank - BK[i]) * k; } }
   // the side ramps: each sample's ramps (a kicker over part of the width: corridor() adds it where the lat is inside it)
   const RAMPS = new Map();
   for (const K of F.ramps) { const s0 = sOf(K.cp, K.at); for (let u = 0; u < K.len + 3; u += ds) { const i = idx(s0 + u), h = u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; let l = RAMPS.get(i); if (!l) RAMPS.set(i, (l = [])); l.push({ lat: K.lat, w: K.w, h }); } }
@@ -194,7 +220,7 @@ export function track() {
   // ---- the grid: which samples lie in each 16 m cell (to find the line from any point without a search of all of it)
   const G = new Map(), key = cellKey;
   for (let i = 0; i < N; i++) { const k = key(Math.floor(X[i] / CELL), Math.floor(Z[i] / CELL)); let a = G.get(k); if (!a) G.set(k, (a = [])); a.push(i); }
-  const reach = Math.max(...C.map((c) => c[3])) + BERM.w + BERM.blend + 4, rc = Math.ceil(reach / CELL);
+  const reach = Math.max(...C.map((c) => c[3] + Math.max(BERM.w + BERM.blend, c[5] + BERM.cutBlend))) + 4, rc = Math.ceil(reach / CELL);
 
   /** The line's nearest point to (x, z): its s, the signed distance to its right (lat), the distance, the sample. Searched near `hintS`
    *  (within 80 m of it) when given, so a lap's progress never jumps to a switchback's other leg. */
@@ -214,9 +240,9 @@ export function track() {
    *  surface. */
   const corridor = (i, u, lat) => {
     const i2 = (i + 1) % N, lerp = (A) => A[i] + (A[i2] - A[i]) * u;
-    const y = lerp(Y), w = lerp(W), bk = lerp(BK), bh = lerp(BH), a = Math.abs(lat), edge = y - bk * Math.sign(lat) * Math.min(a, w);
-    const cy = a <= w ? y - bk * lat + rampAt(u < 0.5 ? i : i2, lat) : edge + bh * sstep(0, BERM.w, a - w);
-    return { cy, alpha: 1 - sstep(w + BERM.w, w + BERM.w + BERM.blend, a), on: a <= w };
+    const y = lerp(Y), w = lerp(W), bk = lerp(BK), bh = lerp(BH), bw = lerp(BMW), bb = lerp(BMB), a = Math.abs(lat), edge = y - bk * Math.sign(lat) * Math.min(a, w);
+    const cy = a <= w ? y - bk * lat + rampAt(u < 0.5 ? i : i2, lat) : edge + bh * sstep(0, bw, a - w);
+    return { cy, alpha: 1 - sstep(w + bw, w + bw + bb, a), on: a <= w };
   };
   const NEAR = nearMap(X, Z, N, reach);
   const apart = (s1, s2) => Math.abs(((s1 - s2 + L * 1.5) % L) - L / 2), R2 = reach * reach;
@@ -228,6 +254,8 @@ export function track() {
   const latOf = (Xa, Za, FXa, FZa, n, i, u, x, z) => { const i2 = (i + 1) % n; return (x - Xa[i] - (Xa[i2] - Xa[i]) * u) * -FZa[i] + (z - Za[i] - (Za[i2] - Za[i]) * u) * FXa[i]; };
 
   // ---- THE CAVERN'S BRANCH (BRANCH): an open line from the fork to the merge, laid as the circuit's is, cut down into the sand as a gorge
+  const branch = BRANCH ? layBranch() : null;
+  function layBranch() {
   const B = BRANCH, bs0 = sOf(...B.from), bs1 = sOf(...B.to), bspan = ((bs1 - bs0) % L + L) % L, mainPt = (s) => { const f = frame(s); return [f.x, f.z]; };
   const BP = [mainPt(bs0 - 25), mainPt(bs0), ...B.ctrl.map((c) => [c[0], c[1]]), mainPt(bs1), mainPt(bs1 + 25)], bpts = [], bcp = [];
   for (let i = 1; i < BP.length - 2; i++) { bcp.push(bpts.length); catmull(BP[i - 1], BP[i], BP[i + 1], BP[i + 2], bpts); }
@@ -244,7 +272,7 @@ export function track() {
     for (let i = 0; i < BN; i++) { BY[i] = yB(i * bds); BW[i] = wB(i * bds); }
     for (const K of B.kickers) for (let u = 0; u < K.len + 3; u += bds) { const i = Math.round((K.at + u) / bds); if (i < BN) BY[i] += u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; }
     // its walls rise to the sand beside it (a gorge: never under a berm's height), steep: the board runs between them
-    for (let i = 0; i < BN; i++) { const w = BW[i] + B.wall, l = sandAt(BX[i] + BFZ[i] * w, BZ[i] - BFX[i] * w), r = sandAt(BX[i] - BFZ[i] * w, BZ[i] + BFX[i] * w); BWH[i] = Math.max(BERM.h, Math.min(l, r) - BY[i] + 0.5); }
+    for (let i = 0; i < BN; i++) { const w = BW[i] + B.wall, l = ground(BX[i] + BFZ[i] * w, BZ[i] - BFX[i] * w), r = ground(BX[i] - BFZ[i] * w, BZ[i] + BFX[i] * w); BWH[i] = Math.max(BERM.h, Math.min(l, r) - BY[i] + 0.5); }
   }
   const breach = Math.max(...BW) + B.wall + B.blend + 4, BNEAR = nearMap(BX, BZ, BN, breach, false), BR2 = breach * breach;
   const corridorB = (i, u, lat) => {
@@ -264,43 +292,44 @@ export function track() {
     return { x: lerp(BX), z: lerp(BZ), y: lerp(BY), fx: BFX[i], fz: BFZ[i], w: lerp(BW), wind: 0, bank: 0, wall: lerp(BWH) };
   }
   const mainOfB = (sb) => (bs0 + (Math.max(0, Math.min(BL, sb)) / BL) * bspan) % L;
+  return { id: B.id, def: B, length: BL, ds: bds, N: BN, X: BX, Z: BZ, Y: BY, W: BW, wall: BWH, FX: BFX, FZ: BFZ, from: bs0, to: bs1, span: bspan, nearest: nearestB, frame: frameB, mainOf: mainOfB,
+    pull(x, z) { const bl = BNEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL))); if (!bl) return null; let bi = -1, bu = 0, bd = BR2;
+      for (let k = 0; k < bl.length; k++) { const i = bl[k], d = d2Of(BX, BZ, BN, i, x, z); if (d < bd) { bd = d; bi = i; bu = pu; } }
+      return bi < 0 ? null : corridorB(bi, bu, latOf(BX, BZ, BFX, BFZ, BN, bi, bu, x, z)); } };
+  }
 
-  /** The ground (local metres over the layer's floor) at local x, z: the sand, and the nearest two legs of the corridor (points of the
-   *  line more than 100 m apart along it), each pulling the ground to its own surface by its weight (all of it inside its berm); then the
-   *  cavern's gorge. Where the line and the branch meet, a running surface wins over the other's berm or wall (both running surfaces:
-   *  their mean; at the fork and the merge they are one height). */
-  function heightAt(x, z) {
-    const base = sandAt(x, z), list = NEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL)));
-    let sum = base, wt = 1, onY = null;
+  /** What the line pulls the ground toward at local x, z, without the sand: the nearest two legs of the corridor (points of the line more
+   *  than 100 m apart along it), each pulling to its own surface by its weight (all of it inside its berm), then the branch's gorge.
+   *  { sum, wt } a weighted sum to add to the sand's (weight 1), and `on`: the running surface's height where the point is on one (a
+   *  running surface wins over another's berm or wall; two running surfaces: their mean). null where it reaches nothing. */
+  function pull(x, z) {
+    const list = NEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL)));
+    let sum = 0, wt = 0, onY = null, any = false;
     if (list) {
       let ai = -1, au = 0, ad = R2, bi = -1, bu = 0, bd = R2;
       for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < ad) { ad = d; ai = i; au = pu; } }
       if (ai >= 0) {
-        const as = (ai + au) * ds;
+        any = true; const as = (ai + au) * ds;
         for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < bd && apart((i + pu) * ds, as) > 100) { bd = d; bi = i; bu = pu; } }
-        const pull = (i, u, first) => { const c = corridor(i, u, latOf(X, Z, FX, FZ, N, i, u, x, z)); if (first && c.on) onY = c.cy; if (c.alpha <= 0) return; const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; };
-        pull(ai, au, true); if (bi >= 0) pull(bi, bu, false);
+        const one = (i, u, first) => { if (DECK[i]) return; const c = corridor(i, u, latOf(X, Z, FX, FZ, N, i, u, x, z)); if (first && c.on) onY = c.cy; if (c.alpha <= 0) return; const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; };
+        one(ai, au, true); if (bi >= 0) one(bi, bu, false);
       }
     }
-    const bl = BNEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL)));
-    if (bl) {
-      let bi = -1, bu = 0, bd = BR2;
-      for (let k = 0; k < bl.length; k++) { const i = bl[k], d = d2Of(BX, BZ, BN, i, x, z); if (d < bd) { bd = d; bi = i; bu = pu; } }
-      if (bi >= 0) {
-        const c = corridorB(bi, bu, latOf(BX, BZ, BFX, BFZ, BN, bi, bu, x, z));
-        if (c.on) return onY == null ? c.cy : (onY + c.cy) / 2;
-        if (onY != null) return onY;
-        if (c.alpha > 0) { const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; }
-      }
+    const c = branch?.pull(x, z);
+    if (c) {
+      any = true;
+      if (c.on) return { sum: 0, wt: 0, on: onY == null ? c.cy : (onY + c.cy) / 2 };
+      if (onY == null && c.alpha > 0) { const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; }
     }
-    return sum / wt;
+    return any ? { sum, wt, on: onY } : null;
   }
+  /** The ground at local x, z with this track alone on the sand (the park's own heightAt nests every track: park.js). */
+  function heightAt(x, z) { const P = pull(x, z); if (!P) return ground(x, z); if (P.on != null) return P.on; return (ground(x, z) + P.sum) / (1 + P.wt); }
   /** The line at s: where it is, which way it runs, its half-width and the wind's angle off it. */
   function frame(s) {
     const t = (((s % L) + L) % L) / ds, i = Math.floor(t) % N, i2 = (i + 1) % N, u = t - Math.floor(t), lerp = (A) => A[i] + (A[i2] - A[i]) * u;
     return { x: lerp(X), z: lerp(Z), y: lerp(Y), fx: FX[i], fz: FZ[i], w: lerp(W), wind: lerp(WIND), bank: lerp(BK) };
   }
   const gates = F.gates.map(([cp, at]) => sOf(cp, at));
-  const branch = { id: B.id, length: BL, ds: bds, N: BN, X: BX, Z: BZ, Y: BY, W: BW, wall: BWH, FX: BFX, FZ: BFZ, from: bs0, to: bs1, span: bspan, nearest: nearestB, frame: frameB, mainOf: mainOfB };
-  return { length: L, ds, N, X, Z, Y, W, BK, FX, FZ, cpS, sOf, nearest, heightAt, frame, gates, line: sOf(F.start.cp, F.start.at), reach, branch };
+  return { id: def.id, name: def.name, def, features: F, decks, length: L, ds, N, X, Z, Y, W, BK, FX, FZ, cpS, sOf, nearest, heightAt, pull, frame, gates, line: sOf(F.start.cp, F.start.at), reach, branch };
 }

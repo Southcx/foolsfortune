@@ -5,7 +5,8 @@
 // stand `roof` metres or more (a slab left out now and then: a shaft of sun), stalactites under it toward the walls (clear of the
 // running line), and Lachryma crystals in the walls, glowing (no lamps: emissive, the light budget untouched). Placeholders where they
 // are looks: the rock, the crystals, the dark inside are Calissa's. No colliders: nothing here is in reach of the board's line (the
-// roof stands over the gorge at the sand's height, the stalactites end over `CLEAR` metres up).
+// roof stands over the gorge at the sand's height, the stalactites end over `CLEAR` metres up). Inside it since round 4: the pool (park.js
+// lays its water), crystal pillars standing through the floor (collided: a lane to weave), and a sandfall through a skylight.
 //
 // Prior art: the cave sections of racers (Crash Team Racing's Dragon Mines, Mario Kart's Wario's Gold Mine and DK Pass's tunnels, SSX
 // Tricky's Mercury City under the ice, F-Zero's tunnels: a dark lane with lights in the walls); Wind Cave (South Dakota), whose air
@@ -17,10 +18,12 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../../render/outline.js';
 import { BRANCH, RW } from './track.js';
+import { RAPIER, GROUPS } from '../../core/physics.js';
+import { RacewaySandfall } from '../../vfx/racewaysandfall.js';
 
 /** The slabs' spacing and length (m), their overhang past the walls; every `skylight`th slab left out; the stalactites' clearance over the
  *  floor (m, the least); a crystal cluster every `crystal` metres each side. */
-export const ROOF = { every: 6, len: 6.6, over: 5, thick: 2.4, skylight: 7, CLEAR: 7, crystal: 9 };
+export const ROOF = { every: 6, len: 6.6, over: 5, thick: 2.4, skylight: 7, CLEAR: 10, crystal: 9 }; // (CLEAR 7 -> 10: the owner's "more ceiling clearance", round 4)
 const COLOUR = { rock: 0x6e4a3c, under: 0x4a3028, drip: 0x8a6a58, crystal: 0x7fdcff };
 
 const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
@@ -57,7 +60,23 @@ export function buildCavern(R) {
       }
     }
   }
+  // the crystal pillars: stone standing up through the floor, crowned with Lachryma (collided: a lane to weave, the owner's "more
+  // intrigue"), and the skylight fall: sand pouring through a gap in the roof onto the floor (Calissa's curtain, hung from the roof's edge)
+  const W = g.physics?.world, pillarGeos = [];
+  for (const [sb, lat, r] of BRANCH.pillars || []) {
+    const f = Bn.frame(sb), x = RW.x + f.x - f.fz * lat, z = RW.z + f.z + f.fx * lat, y0 = RW.y + f.y - 1, h = f.wall + 1;
+    pillarGeos.push(paint(new THREE.CylinderGeometry(r * 0.8, r, h, 7).translate(x, y0 + h / 2, z), COLOUR.under));
+    const o = new THREE.OctahedronGeometry(r * 0.9, 0).scale(1, 2.2, 1).translate(x, y0 + 2.8, z); glow.push(o);
+    if (W) { const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y0 + h / 2, z)); W.createCollider(RAPIER.ColliderDesc.cylinder(h / 2, r * 0.9).setCollisionGroups(GROUPS.static).setFriction(0.9), b); }
+  }
+  if (pillarGeos.length) rock.push(...pillarGeos);
   const out = {};
+  if (BRANCH.skyfall && RacewaySandfall) {
+    const f = Bn.frame(BRANCH.skyfall.at), dir = new THREE.Vector3(f.fx, 0, f.fz), top = new THREE.Vector3(RW.x + f.x, RW.y + f.y + f.wall + 0.4, RW.z + f.z).addScaledVector(dir, -2);
+    out.skyfall = { top, dir, width: f.w * 0.9, height: f.wall + 1, foot: 2 };
+    out.skyfall.look = new RacewaySandfall(g, { ...out.skyfall, curve: 0.8, lean: 1.2, zone: 'raceway' }); g.scene.add(out.skyfall.look.object);
+    R.sandfalls?.push({ track: 'sun', ...out.skyfall });
+  }
   if (rock.length) {
     const mesh = (out.mesh = new THREE.Mesh(mergeGeometries(rock), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.95, flatShading: true })));
     mesh.castShadow = mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; mesh.name = 'raceway-cavern'; addOutline(mesh); g.scene.add(mesh);

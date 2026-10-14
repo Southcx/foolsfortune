@@ -547,6 +547,11 @@ export function buildAchievements(game) {
   H('rw14', 'skiff', 'The Raceway', 2, 'mechanic', 'Stalefish', 'Hold a grab for 2 real seconds and let go before you land.', 'skiff.grab.best', 2, { unit: 's' });
   C('rw15', 'skiff', 'The Raceway', 2, 'mechanic', 'Undercroft', 'Ride the cavern through, from its fork to its end.', 'raceway.cavern', 1);
   C('rw16', 'skiff', 'The Raceway', 3, 'mechanic', 'Moonlighting', 'Finish a race at night, the sun plates dark.', 'race.raceway.finish.night', 1);
+  // round 4 (SKIFF-RACING.md 10): the park's other tracks, the coaster rail, the antlion
+  C('rw17', 'skiff', 'The Raceway', 2, 'mechanic', 'Into the Gorge', 'Finish a race on the Gorge Run.', 'race.track.gorge.finish', 1);
+  C('rw18', 'skiff', 'The Raceway', 2, 'mechanic', 'Season Pass', 'Finish a race on the Coaster.', 'race.track.coaster.finish', 1);
+  H('rw19', 'skiff', 'The Raceway', 4, 'mechanic', 'Loop the Loop', 'Ride the Coaster\'s rail end to end: 850 metres in one grind.', 'skiff.grind.best', 850, { unit: 'm' });
+  C('rw20', 'skiff', 'The Raceway', 1, 'mechanic', 'Doodlebug', 'Be taken by the antlion.', 'raceway.pit', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);

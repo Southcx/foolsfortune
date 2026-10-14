@@ -40,8 +40,8 @@ export const ZONE_TESTS = [
   { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 24000 && p.y > -470 && p.y < -360 },
   // the Spirit Garden (world/garden/place.js GARDEN_AT): six planetoids over the world's north, entered at a Shrine
   { id: 'garden', test: (p) => Math.abs(p.x) < 250 && p.z > 2750 && p.z < 3250 && p.y > 1000 && p.y < 1500 },
-  // the Raceway (world/raceway/track.js RW: x 5200, at the dunes' layer): the Solar Skiff's test circuit, under the dunes' sky
-  { id: 'raceway', test: (p) => p.x > 4300 && p.x < 6100 && p.z > -900 && p.z < 900 && p.y < -150 && p.y > -600 },
+  // the Raceway (world/raceway/track.js RW: x 6000, at the dunes' layer): the Solar Skiff's test circuit, under the dunes' sky
+  { id: 'raceway', test: (p) => p.x > 4300 && p.x < 7700 && p.z > -1800 && p.z < 1800 && p.y < -150 && p.y > -600 }, // (the park, 2.6 km across at x 6000: Dovina, 2026-10-14)
   // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer
   { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];
