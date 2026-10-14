@@ -99,6 +99,8 @@ import { prewarmCasterShadersS1toS5 } from './vfx/caster/warmups1tos5.js';
 import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
 import { prewarmSandfall } from './vfx/racewaysandfall.js';
 import { RacewayLooks } from './vfx/racewaylooks.js';
+import { RacewayCavern } from './vfx/racewaycavern.js';
+import { RacewayFog } from './vfx/racewayfog.js';
 import { installBracelets } from './vfx/braceletwear.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
@@ -508,6 +510,7 @@ async function main() {
   applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game);
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
+  game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
   applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
@@ -1317,6 +1320,7 @@ async function main() {
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.racewayLooks.update(game.rawDt || dt);
+    game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt);
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)

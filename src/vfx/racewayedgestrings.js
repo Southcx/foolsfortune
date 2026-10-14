@@ -14,8 +14,11 @@
 // Prior art: the edge lights of an airport taxiway and of F-Zero's and Wipeout's tracks (a dotted line read at speed), the chase lights
 // of a theatre marquee (light that runs the way to go), Mario Kart's Rainbow Road rails, and the house's own sun plates' gold.
 //
-//   const S = new RacewayEdgeStrings({ parent, zone })   S.build(edgeLines, step)   S.update(dt, { s, d, night })   S.dispose()
-//   (built by vfx/racewaylooks.js dress(): s the board's place on the line, d its distance off it, night 0..1)
+// Round 3: a string per line. The cavern's branch has its own (vfx/racewaycavern.js: `line: 'cavern'`, not a loop, so the run stops at
+// its end); only the line the Courier is on runs (`EDGE_LINE.lit`, set from raceway.line), the other's beads and thread stay still.
+//
+//   const S = new RacewayEdgeStrings({ parent, zone, line?, loop? })   S.build(edgeLines, step)   S.update(dt, { s, d, night })   S.dispose()
+//   (built by vfx/racewaylooks.js dress(): s the board's place on the line, d its distance off it, night 0..1)   EDGE_LINE.lit
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -33,6 +36,9 @@ export const EDGE_STRINGS = {
   colour: 0xffc45a, night: { colour: 0xcfe0ff, mix: 0.55 },
 };
 
+/** Which line's run is lit: raceway.line ('main' | 'cavern'), set each frame by the cavern's look (vfx/racewaycavern.js). */
+export const EDGE_LINE = { lit: 'main' };
+
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const _c = new THREE.Color(), _t = new THREE.Color(), _night = new THREE.Color(EDGE_STRINGS.night.colour), _gold = new THREE.Color(EDGE_STRINGS.colour);
 
@@ -49,7 +55,7 @@ function dotTexture() {
 }
 
 export class RacewayEdgeStrings {
-  constructor({ parent, zone = 'raceway' } = {}) { this.parent = parent; this.zone = zone; this.t = 0; this.sides = []; this.objects = []; this.lastI = -1; this.night = -1; }
+  constructor({ parent, zone = 'raceway', line = 'main', loop = true } = {}) { this.parent = parent; this.zone = zone; this.line = line; this.loop = loop; this.t = 0; this.sides = []; this.objects = []; this.lastI = -1; this.night = -1; }
 
   /** Strung on edgeLines ([{ side, pts }], every `step` metres along the line from s = 0). */
   build(lines, step = EDGE_STRINGS.step) {
@@ -60,7 +66,7 @@ export class RacewayEdgeStrings {
     lines.forEach((L, k) => {
       const o = k * n; L.pts.forEach((p, i) => p.toArray(pos, (o + i) * 3));
       for (let i = 0; i < n - 1; i++) index.push(o + i, o + i + 1);
-      if (L.pts[n - 1].distanceTo(L.pts[0]) < step * 3) index.push(o + n - 1, o); // (round the lap's seam)
+      if (this.loop && L.pts[n - 1].distanceTo(L.pts[0]) < step * 3) index.push(o + n - 1, o); // (round the lap's seam)
       this.sides.push({ o, pts: L.pts });
     });
     const P = new THREE.BufferAttribute(pos, 3);
@@ -86,16 +92,16 @@ export class RacewayEdgeStrings {
     return this;
   }
 
-  /** A point on side k's string at s (m along the line, wrapping the lap), into out. */
+  /** A point on side k's string at s (m along the line, wrapping the lap; an open string's held at its ends), into out. */
   at(k, s, out) {
-    const S = this.sides[k], n = this.n, f = (((s / this.step) % n) + n) % n, i = Math.floor(f), j = (i + 1) % n;
+    const S = this.sides[k], n = this.n, f = this.loop ? (((s / this.step) % n) + n) % n : Math.max(0, Math.min(n - 1.001, s / this.step)), i = Math.floor(f), j = (i + 1) % n;
     return out.copy(S.pts[i]).lerp(S.pts[j], f - i);
   }
 
   /** Each frame: s the board's place on the line (null: no board), d its distance off it, night 0..1. */
   update(dt, { s = null, d = 0, night = 0 } = {}) {
     if (!this.run) return;
-    const E = EDGE_STRINGS, on = s != null && d < E.near;
+    const E = EDGE_STRINGS, on = s != null && d < E.near && this.line === EDGE_LINE.lit;
     this.t += dt;
     // the colour of the hour (redone only as it changes)
     if (Math.abs(night - this.night) > 0.01) {
@@ -109,7 +115,7 @@ export class RacewayEdgeStrings {
       for (const S of this.sides) for (let i = 0; i < n; i++) {
         let k = T.far;
         if (on) {
-          let dd = (i - iNow) * this.step; dd = ((dd % this.len) + this.len * 1.5) % this.len - this.len / 2; // (signed, the short way round)
+          let dd = (i - iNow) * this.step; if (this.loop) dd = ((dd % this.len) + this.len * 1.5) % this.len - this.len / 2; // (signed, the short way round)
           if (dd >= 0) k = T.far + (T.ahead - T.far) * (1 - smooth(T.fore * 0.5, T.fore, dd));
           else k = T.behind + (T.far - T.behind) * smooth(0, T.back, -dd); // (darkest right behind, back to the far glow by T.back)
         }
@@ -128,7 +134,8 @@ export class RacewayEdgeStrings {
         const ahead = ln.from + ((((j + ln.phase) * R.spacing + this.t * R.speed) % span) + span) % span;
         const band = smooth(R.band[0] - R.ramp, R.band[0], ahead) * (1 - smooth(R.band[1], R.band[1] + R.ramp, ahead));
         const env = ln.band ? band : smooth(R.from, R.from + 5, ahead) * (1 - smooth(R.to - 8, R.to, ahead));
-        const r = (ln.band ? R.rBand : R.r + (R.rBand - R.r) * band) * env;
+        const end = this.loop ? 1 : 1 - smooth(this.len - 8, this.len - 1, s + ahead); // (an open string's run fades out before its end)
+        const r = (ln.band ? R.rBand : R.r + (R.rBand - R.r) * band) * env * end;
         this.at(k, s + ahead, _p);
         M[o] = M[o + 5] = M[o + 10] = r; M[o + 1] = M[o + 2] = M[o + 4] = M[o + 6] = M[o + 8] = M[o + 9] = 0; M[o + 15] = 1;
         M[o + 12] = _p.x; M[o + 13] = _p.y; M[o + 14] = _p.z;
