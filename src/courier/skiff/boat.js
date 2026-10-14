@@ -29,7 +29,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, withFade, rigUniforms } from '../../render/outline.js';
 import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
 import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
@@ -150,7 +150,7 @@ export class Skiff {
       const src = m.material, tex = src.emissiveMap || src.map;
       if (src.name === 'Skiff_Hull') m.material = painted(filtered(tex, true));
       else if (src.name === 'Skiff_Parts') m.material = painted(filtered(tex, false));
-      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }); }
+      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = withFade(painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }), 'skiff-cloth', this.sailFade = rigUniforms()); } // (the screen-door fade, its own: the ride sees through the sail, skiff.js)
       else if (src.name === 'CourierEnergy') m.material = this.energyMat = new THREE.MeshStandardMaterial({ color: src.color.clone(), roughness: 0.35, metalness: 0.2, emissive: PALETTE.glow ?? C.energy, emissiveIntensity: 0.3 });
       m.material.name = src.name;
       src.dispose?.();

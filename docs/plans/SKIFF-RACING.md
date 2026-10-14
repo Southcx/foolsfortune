@@ -103,7 +103,7 @@ Events: `race.start`, `race.go { solarStart }`, `race.gate { lap, gate, split }`
 `race.finish { seconds, medal, laps }`, `race.end { why }`, `race.respawn`; and the skiff's new `skiff.carve { tier }`,
 `skiff.pop { late }`, `skiff.plate`, `skiff.landhard { impact }`.
 
-## 7. Grind rails: the skiff alone (a spec for a later round)
+## 7. Grind rails: the skiff alone (built 2026-10-14: courier/skiff/grind.js, world/raceway/railsrings.js)
 
 The owner's rule (2026-10-13): a grind involves **no tool but the Solar Skiff**. No hook, no grapnel, nothing drawn from the belt.
 - **Getting on.** The board lands on a rail, or hops onto it (Space, as any hop), within 1.2 m of its line and heading within 35° of it.
@@ -117,6 +117,21 @@ The owner's rule (2026-10-13): a grind involves **no tool but the Solar Skiff**.
   track, a length), drawn from the Dunes' kit: a fallen column, a toppled arch's lintel, a ruin wall's top.
 - **Events.** `skiff.grind { by }` on, `skiff.grind.end { metres, why: 'hop' | 'end' | 'fell', by }` off.
 - No bail on a rail: falling off is only a lost line.
+
+## 8. The owner's first race (2026-10-14), and what came of it
+
+Three laps in 5:48, with bails. What changed:
+- **Q and E were reversed** for the owner: Q now banks one way and E the other, flipped.
+- **The sandfall stopped a third of the way down.** It hung 3 m past the lip and was measured to the track's control point, so it began
+  partway down the face and ended early. Now it hangs at the lip and runs down to where the ground stops being sheer (the slope under
+  0.6), measured on the ground as drawn.
+- **The sail hid what was ahead.** The house's screen-door fade (`render/outline.js` `withFade`, as when the camera squeezes the Courier
+  against a wall) now screens the sail to half while riding under way.
+- **New:** grind rails (section 7: five on the circuit, on turn one's inside, the whoops, the slalom, the canyon and the gale); **sun
+  rings**, the Gnomon's rings hung in the air after the kickers and down the drop on a 5-to-1 glide's line (a glide flown well takes them,
+  a dive does not), each a push of 8 m/s for a real second and 4 Lachryma; **R in a race** goes back to the last gate passed
+  (Trackmania's checkpoint respawn); and **the best lap's ghost is kept** in the save.
+- **For Calissa:** the edge strings the owner asked for (motes along both sides of the track); the rails' and rings' look.
 
 ## 6. Who does what
 

@@ -538,6 +538,8 @@ export function buildAchievements(game) {
   H('rw6', 'skiff', 'The Raceway', 3, 'mechanic', 'White Heat', 'Let go of a carve at its third tier.', 'skiff.carve.best', 3);
   C('rw7', 'skiff', 'The Raceway', 2, 'count', 'Sunbather', 'Ride over 50 sun plates.', 'skiff.plate', 50);
   C('rw8', 'skiff', 'The Raceway', 3, 'mechanic', 'Late Bloomer', 'Make 25 late pops off a crest or a kicker.', 'skiff.pop', 25);
+  H('rw9', 'skiff', 'The Raceway', 3, 'mechanic', 'Keel and Lintel', 'Grind a rail for 40 metres in one go.', 'skiff.grind.best', 40, { unit: 'm' });
+  C('rw10', 'skiff', 'The Raceway', 2, 'count', 'Ringleader', 'Fly through 50 sun rings.', 'skiff.ring', 50);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
