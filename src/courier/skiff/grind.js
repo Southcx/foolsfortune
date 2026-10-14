@@ -5,7 +5,7 @@
 // little, and it drags a little. BALANCE, Tony Hawk's: a lean that drifts and grows the longer the grind, answered with A and D; lean
 // past the edge and the board drops off that side and rides on (never a bail). Space lets go with a pop off the rail; the rail's end
 // lets it go on its own. A grind of GRIND.trick metres or more is a trick (into the trick combo: combo.js). A curved rail throws the lean
-// to the outside of its bend by the speed squared (the owner: "racing is all about curves"): a fast grind round one is held into it.
+// to the outside of its bend by the speed squared (A / D push the lean their own way: lean right, answer with A) (the owner: "racing is all about curves"): a fast grind round one is held into it.
 // COASTER RAILS (world/raceway/coasterrail.js): a rail with `ups` (the way the board stands on it: banked, or round a loop's middle) and a
 // `push` (a conduit's drive, m/s^2, through a loop): gravity acts along the rail's tangent in three dimensions, the board stands on the
 // rail's up (skiff.js turns the whole unit to it), the conduit drives it round, and off a rail's end it flies on with the rail's own
@@ -77,12 +77,12 @@ export class Grind {
     this.at(this.s); const g = this.skiff.cfg.gravity;
     this.V += (-g * GRIND.gravity * _d.y + sailPush * GRIND.sail * Math.max(0, this.up.y) + this.pushNow - GRIND.drag * this.V) * dt; // (gravity along the rail's tangent: a loop's climb slows it, its fall speeds it; a conduit drives it)
     // the balance: a drift that wanders and grows with the grind, answered by A / D
-    const drift = (Math.sin(this.t * 1.7 + this.seed) * 0.6 + Math.sin(this.t * 3.1 + this.seed * 2) * 0.4) * (this.R.coaster ? GRIND.drift * 0.5 : GRIND.drift + GRIND.driftGrow * this.t); // (a coaster rail's drift never grows: it is ridden for its curves, not held for a count)
+    const drift = (Math.sin(this.t * 1.7 + this.seed) * 0.6 + Math.sin(this.t * 3.1 + this.seed * 2) * 0.4) * (this.R.coaster ? GRIND.drift * 0.5 : GRIND.drift + GRIND.driftGrow * this.t) * (this.style || 1); // (a coaster rail's drift never grows: it is ridden for its curves, not held for a count)
     // a bend throws the lean outward: the heading's turn over the next metre and a half of travel, times v^2 (a left turn's outside: right)
     const h0 = Math.atan2(_d.x, _d.z); this.at(Math.max(0, Math.min(this.R.len, this.s + this.dir * 1.5)), _a); const h1 = Math.atan2(_d.x, _d.z);
     const kappa = Math.atan2(Math.sin(h1 - h0), Math.cos(h1 - h0)) / 1.5;
     const held = this.pushNow > 0 || this.up.y < 0.7 || Math.hypot(_d.x, _d.z) < 0.5; // (in a loop, or steep: the conduit holds the keel, no balance to keep)
-    if (!held) this.lean += (drift + Math.max(-GRIND.bendMax, Math.min(GRIND.bendMax, (kappa * this.V * this.V + g * (this.up.x * -_d.z + this.up.z * _d.x) / Math.max(0.3, this.up.y)) * GRIND.bend)) - steer * GRIND.answer * 0.5) * dt * 2; // (the turn's pull less what the bank takes, g tan(bank): a banked curve rides itself, as on a coaster; capped: a kink where a loop rejoins is not a bend to be thrown off by)
+    if (!held) this.lean += (drift + Math.max(-GRIND.bendMax, Math.min(GRIND.bendMax, (kappa * this.V * this.V + g * (this.up.x * -_d.z + this.up.z * _d.x) / Math.max(0.3, this.up.y)) * GRIND.bend)) + steer * GRIND.answer * 0.5) * dt * 2; // (A / D push the lean their way, Tony Hawk's: lean right, press A; it was the other way, the owner's v198 "reversed") (the turn's pull less what the bank takes, g tan(bank): a banked curve rides itself, as on a coaster; capped: a kink where a loop rejoins is not a bend to be thrown off by)
     const step = this.V * dt; this.s += step * this.dir; this.run += step;
     const end = this.s <= 0 || this.s >= this.R.len;
     let why = hopUp ? 'hop' : end ? 'end' : Math.abs(this.lean) > 1 ? 'fell' : this.V < GRIND.stall ? 'stall' : null;

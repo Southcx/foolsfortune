@@ -214,7 +214,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   rail, run with A / D's balance, no tool but the skiff / a ruin's lintel on the Raceway the keel locks to / the Gnomon's ring hung in the
   Raceway's air, flown through for a push. *Not:* the rail (the Emocean's crossing), a Solar Skiffing ring (the Gnomon's trial).
 - **the grab's reach** (`GrabReach`, `GRIPS`, `src/courier/skiff/grabreach.js`) — a grab's hand on the skiff's gunwale while held: the front
-  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch. *Not:* the
+  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch; a grind trick's too (the tail slide's hand to the stern, the nose grind's lean over the bow). *Not:* the
   grab's trick (skiff.js), the board's tweak, the carry's hold.
 
 ## 4. Creatures and folk
@@ -237,6 +237,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   point its up and push. *Not:* a rail (a ruin's lintel), the Emocean's rail.
 - **an antlion pit / the antlion** (working names; `PARK.pits`, `raceway.pit`) — a cone at the sand's angle of repose whose sand flows to
   its middle / the maw at its bottom that takes a board. *Not:* a Well, a crater (no maw).
+- **a rival / rubber banding / a takedown** (working names; `Rivals`, `RIVAL`, `world/raceway/rivals.js`) — a clapperjar on a mini skiff
+  racing your race / a leader eased and a trailer pushed by its gap to you / a rival hit hard from the side and spun out, your push.
+  *Not:* a creature's foe, a sibling.
+- **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — LMB or RMB clicked twice on a rail: a nose grind or a tail
+  slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
 - **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
   plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
@@ -485,10 +490,15 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   scrolling sheet, a fainter one behind, dust at its foot. *Not:* a Great Dunemaw sandfall (a floor's door, `vfx/dunemaw.js`).
 - **the Raceway's looks** (`RacewayLooks`, `game.racewayLooks`, `src/vfx/racewaylooks.js`) — the sun plates' glyphs, the start arch's
   countdown lamps, the gates' marks, the carve's sparks by tier and the ghost's hologram. *Not:* the Raceway (the track, Dovina's).
+- **the rivals' look** (`RacewayRivals`, `src/vfx/racewayrivals.js`) — the race's three rivals dressed: a mini Solar Skiff, its sail in
+  the rival's glaze, a clapperjar riding it that leans into bends, claps as it passes you and tumbles when taken down. *Not:* the rivals
+  (Dovina's racers, `world/raceway/rivals.js`).
 - **the edge strings** (`RacewayEdgeStrings`, `src/vfx/racewayedgestrings.js`) — beads of light on a thread along both edges of the Raceway's
   running surface, a bright run flowing the race's way just ahead of the board. *Not:* the sun plates' chevrons, the wire compass.
 - **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in Lachryma's colour: the link
-  ring closing as its clock runs out, the step pips aft of the stern, the banked flares as three little suns behind them. No words. *Not:* the Lachryma ring.
+  ring closing as its clock runs out, the step pips (a stack of chevrons aft of the stern, bigger and warmer a step), the banked flares as three little suns behind them. No words. *Not:* the Lachryma ring.
+- **the skiff on water** (`SkiffWaterLook`, `game.waterFx.skiff`, `src/vfx/skiffwaterlook.js`) — the Solar Skiff skimming water: the splash on and off
+  (in Lachryma's colour on Lachryma), the spray off the keel, its V in the ripple tank. *Not:* the wake (on sand, `world/ground/wake.js`).
 - **the grind's balance mark** (`GrindBalanceMark`, `src/vfx/grindbalancemark.js`) — the grind's lean as a needle on an arc standing behind the
   Solar Skiff's stern while the keel grinds, warming to an ember toward the ends (Tony Hawk's arrow). No words. *Not:* the balance (a core move).
 - **the cavern's look / a crystal vein** (`RacewayCavern`, `game.racewayCavern`, `src/vfx/racewaycavern.js`) — the Raceway's cavern dressed: its
