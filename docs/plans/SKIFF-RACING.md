@@ -356,7 +356,7 @@ by winning a race (rw21) or the DEBUG save's Racing lend.
 the City Trial), GARAGE.
 
 **Left to other divisions** (docs/handoffs/): tracks on the map (M) and a photo finish (Petra); the looks of the vein lanes, the scorch, the
-hull's damage, the sibling riders, the pots, the antlion chaser, the patches, the buoys, a wreck (Calissa); their sounds (Wanda); every
+hull's damage, the sibling riders, the pots, the antlion chaser, the patches, the buoys, a wreck, and hull glazes fired at the kiln (Calissa); their sounds (Wanda); every
 name and line (Espada).
 
 Measured (the autopilot, which never carves, flares or takes a lane): a race lap of the Sun Circuit 113.2 s with the flyover, four buoys

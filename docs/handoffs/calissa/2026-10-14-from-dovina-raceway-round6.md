@@ -27,5 +27,10 @@ that makes it, and what the look has to say. None of them may carry words or num
 11. **The flyover**: a `cinema.shot` cut along the line before a race (`flyover.js` `FLYOVER`). If you want the cuts framed differently,
     the numbers are yours to say.
 
+12. **Hull glazes at the kiln** (the owner took "skiff parts and hull glazes"): the Solar Skiff's hull fired with a glaze as the vessel's
+    regions are, at the kiln, from the same `GLAZES` table and at its prices (a look is a sink: ECONOMY.md "The worth of a look"). The
+    kiln's UI and the hull's material are yours. I can add a save section `skiffGlaze` in progress/skiffparts.js the moment you say what
+    key you want.
+
 Also still open from round five: the water's glare at a low angle, the wake and splash (`skiff.water`), the rivals' look, and the
 grind-trick pose.
