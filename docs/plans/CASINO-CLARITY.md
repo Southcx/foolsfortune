@@ -108,9 +108,12 @@ The fallback page (`world/bazaar/views.js`) is drawn from the coach now; Calissa
   claim, tell), and the table view resolves it to its own pieces.
 - **The count-up's steps and scale:** `coach/ceremony.js`. Querent's two biggest bonuses come first and the rest are rolled into one.
   `SCALE` holds each game's median and 90th percentile.
-- **The labels** (Espada's, 2026-10-15; `TABLES[].genre`): Querent RUMMY, Zodiac SHUT THE BOX, Event Horizon DICE BLACKJACK, Supernova Run DICE
-  BUILDER, Nebula Bluff LIAR'S DICE. The keywords: Set, Run, Steal, Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. Zodiac's Shut and
-  Lock are two different moves: Shut is what your dice do to tiles, and Lock is the doubles prize that keeps one shut forever.
+- **No genre labels** (the owner, 2026-10-15: "It cheapens the idea that we're positioning to have very unique game modules (that are going to
+  expand with the tarot major arcana archetypes) and also breaks in-universe immersion"). A table is called only by its own name (Querent,
+  Zodiac, Event Horizon, Supernova Run, Nebula Bluff), never "rummy" or "liar's dice": here the casino overrides CLARITY.md's genre-word
+  label. The how-to teaches what the game is. The keywords stay, as in-game verbs: Set, Run, Steal, Shut, Lock, Attack, Bust, Fuse, Split,
+  Claim, Call. Zodiac's Shut and Lock are two different moves: Shut is what your dice do to tiles, and Lock is the doubles prize that keeps
+  one shut forever.
 - **The suggestion is a knack**, Inside Tip (Espada's name; the id is `houseWhisper`). The design laws say an assist is earned and switchable: it opens after
   three practice games finished or one game won, and practice tables always show the suggestion, since practice is for learning.
 

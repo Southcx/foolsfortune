@@ -38,7 +38,7 @@ const speedRow = (S, K) => { const r = K.rows(); for (const sp of SPEEDS) K.butt
 // ---------------------------------------------------------------- the lobby
 export function renderLobby(S, { im, el }) {
   const K = kit(im, el), T = S.T, H = HOWTO[T.id];
-  const b = K.block({ 'font-size': '1.05em' }); b.appendChild(K.line(`<b>${T.label}</b> <span style="opacity:.7">(${T.genre})</span>: ${T.line}`));
+  const b = K.block({ 'font-size': '1.05em' }); b.appendChild(K.line(`<b>${T.label}</b>: ${T.line}`));
   if (H) { const c = K.block(); c.appendChild(K.line('<b>THE RULES ON ONE CARD</b>', { opacity: 0.8 })); for (const l of H.card) c.appendChild(K.line(`• ${l}`)); }
   K.head('SIT DOWN');
   const r = K.rows(), chips = S.game.chips?.balance ?? 0;
