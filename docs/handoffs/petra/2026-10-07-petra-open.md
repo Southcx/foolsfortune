@@ -1,29 +1,23 @@
-**Petra's open items** (the folder's done notes cleared 2026-10-07; what was still open in them is here)
-- **The renames' pass** (SWEEPS.md: room -> station, lab -> movementLab, testroom -> throwingRoom, game.emocean -> game.rail, the rail's foe -> hostile, the Veritome's film -> memory, rank.up -> standing.up, the weir.js move): the Shrine ids are done (v112); the rest in one round, with the mapping to every division first.
-- **The slip jelly mount** (gj3's drop): a feature of its own, open.
-- **Publishing binaries**: the host serves no .bin; Calissa's packs go as application/wasm under their own names.
-- **The draught**: nothing sets `game.draught` (Dovina's stones, `progress/stones.js`, are the Courier's Lachryma intake; the intake itself
-  belongs in `courier/lachryma.js`). Wanda's garden cue and Calissa's garden sky read it; both default to wonder until it exists.
-- **The Crucibelle's scale**: wire the Crucibelle to `game.music.scale()` (Wanda's: the bar's five notes, agate and torn skies included).
-- **The trailer's weather**: reset `game.weather.last` when the trailer ends, so the first `weather.now` fires at play start.
-- **The Dunes made bigger** (`docs/plans/DUNES.md`): waits on the owner (it moves the shore, the jetty and the crossing's start).
-- **The stress test's rare `embedded` / `guard:nudge` at cp T1** (about 1 run in 10, fresh page only, after a grapple swing): not seen
-  since R57; reopen if it returns.
-- **The heap**: 322 MB at 6d900d1, budget raised to 330. 44 MB of geometry hangs on meshes with no zone (35 MB unnamed `Mesh`), 7.8 MB in
-  `shards`; find what they are (the crossing's parked sea and ship?) and whether they need to live from boot. The garden is 1 MB.
-- **The belt's draw calls**: about 30 in every zone (the Veritome's rest bake 10 draws, the Sondelass's 6, the Soul Brush's 6 at rest and
-  11 awake, the psygun's 2). `render/restbake.js` should merge a tool's meshes by material (vertex colours for the rest): the Veritome's 10
-  to 2. The Dunemaw floor's budget went 80 to 88 for it.
-- **Dovina's unwired data** (her note, 2026-10-07): the weather's `mindDrift`, `fishPull`, `signatureMult` have no callers and
-  `buildMult` reaches `friendly.js` only; Grain (`progress/combat/temperament.js`) is imported by nothing; `voyage.reckon` and
-  `reckonLead` are never called (Divination does not chart a crossing, the owner's R57 ruling). For the next round.
-- **Wanda's asks** (round robin): the ground's material under a step (`move.step { surface }`), and an `acoustic` on each zone.
-- **The siblings' draw calls**: five in view +58 (the workshop 483, over 450), so two are out; rest-bake merging is the cut (above).
-- **Perf's draw times are noise on the software renderer** (the Dunes' draw 13.6 to 21.6 ms between runs of one build, today): a
-  median of three runs before the gate compares, or the draw row read with a wider tolerance; the baseline at v102 is a high one.
-- **Co-op built so far** (v105; the page declares `room` and `sample` since v105, the owner's OK): siblings met, called at Shrines, two out, /sib, beside you, the channel at Dovina's cadence, fighting by temperament
-  at 0.4 of the sustained damage, the order wheel (T), pointing at what lies loose; Calissa's looks and Wanda's body sounds and footsteps; asking a sibling (@name, seconds, `sample`), letters to the sessions (/letter, minutes), guests and their chat over the room; the safeguards (v106: every goal a give-up, `warp`, the co-op meter `/usage`, deadlines on every call out of the page). **Still to build:** the tools in their hands (Calissa's
-  models; Dovina's coffin, Espada's dowsing of Lachryma), the god hand's art wheel onto feedback/wheel.js, siblings that can be struck and shatter, the
-  guests' shared errand (the Dunemaw run, host-owned), siblings a guest can see (each page has its own), and the room's lag measured
-  with two real people (T114).
-- **The build id** is `__BUILD__`: `grep -o '"mu[a-z0-9]\{6\}"' dist/assets/game.js` (a `mux...` match is base64, not the id).
+**Petra's open items** (the folder closed out 2026-10-15: fourteen notes read against the code; what is done was deleted; this is what is
+still open, one line each, with its source. The owner's calls are marked.)
+
+- **The Crucibelle plays in the bar's scale**: wire it to `game.music.scale()` (Wanda's). Nothing in `tools/crucibelle/` asks it yet.
+- **The weather's effects where a thing stands**: `mindDrift`, `fishPull`, `signatureMult` have no callers; `buildMult` reaches
+  `friendly.js` only. Grain (`progress/combat/temperament.js`) is imported by nothing (Dovina, 2026-10-07).
+- **Wanda's two asks**: the ground's material under a step (`move.step { surface }`) and an `acoustic` on each zone.
+- **The renames' pass** (SWEEPS.md: testroom -> throwingRoom, game.emocean -> game.rail, the rail's foe -> hostile, the film -> memory,
+  rank.up -> standing.up): one round, with the mapping sent to every division first. Polarity's 30 uses are the check's list.
+- **The slip jelly mount** (gj3's drop): a feature of its own, not begun.
+- **The Throwing Room over 450 calls** where the Workshop's door is in view (455 to 497 measured by Calissa, 2026-10-10): an occlusion
+  test through the doorway, or a portal backdrop. Not yet measured since the wing's later rounds.
+- **The belt's draw calls** (about 30 in every zone): `render/restbake.js` merging a tool's meshes by material (the Veritome 10 to 2).
+- **The pier's islands and ships are mouse-only** (`.room` rows): the mounts' cards take the keyboard, those rows do not. The compare
+  arrows on a mount's card wait on which mount a pick bumps (`slice(-n)`). The rail is in flux: the owner's call when.
+- **The parry's press in three places**: `parries.js` WINDOW 0.25, the kick's `PARRY_TO` 0.26, the cutlass's 0.28; the parry mark reads
+  the shortest. One number means a feel change of up to 0.03 real s: the owner's call. And `jelly/deform.js` could export its GLSL
+  so the parry mark stops copying it.
+- **A photo finish** (Dovina, round six): a rival within 0.3 s of you at the line (`race.rival.finish` against `race.finish`) takes a
+  plate at the line. Not built: it wants the Veritome's plate taken without the lens up, which does not exist yet.
+- **Co-op, still to build**: the tools in the siblings' hands, the guests'
+  shared errand (the Dunemaw run, host-owned), siblings a guest can see, the room's lag with two real people (T114).
+- **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).

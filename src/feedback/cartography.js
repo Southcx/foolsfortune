@@ -19,6 +19,7 @@
 // Ariadne's Thread (a knack, progress/knacks.js): the way walked since the last Shrine rested at, a point every 3 m, a loop cut off
 // where the way crosses itself (so it is the way back, not the way wandered), drawn on the map from you to that Shrine; switched off,
 // nothing is drawn. Prior art: the thread itself, and Hansel's pebbles; kept for the session only (after a reload, a straight line).
+// The Raceway's layer draws its tracks as roads with their names at their starts (`drawTracks`), as a racing game's course map does.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
@@ -218,6 +219,20 @@ export class Cartography {
       if (pen) c.lineTo(sx, sy); else c.moveTo(sx, sy); pen = true; prev = q;
     }
     c.stroke(); c.restore();
+  }
+
+  /** The Raceway's tracks on its layer (Dovina's round-six ask): each line as a road at its width, its name at its start. The points are
+   *  taken once (a frame every 10 m, `raceway.local` to the world), since a track never moves. */
+  drawTracks(c, l, V) {
+    const R = this.game.raceway; if (l.id !== 'raceway' || !R?.tracks?.length) return;
+    this.trackPts ||= R.tracks.map((T) => { const pts = []; for (let s = 0; s < T.length; s += 10) { const F = T.frame(s), p = R.local(F.x, F.z); pts.push({ x: p.x, z: p.z, w: F.w }); } const F0 = T.frame(T.line), p0 = R.local(F0.x, F0.z); return { name: T.name || T.id, pts, start: { x: p0.x, z: p0.z } }; });
+    c.save(); c.lineJoin = c.lineCap = 'round'; c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
+    for (const [pass, style] of [[0, 'rgba(20,8,4,.7)'], [1, 'rgba(231,196,106,.55)']]) for (const K of this.trackPts) {
+      c.strokeStyle = style; c.lineWidth = Math.max(2, 2 * K.pts[0].w * V.scale) + (pass ? 0 : 3);
+      c.beginPath(); K.pts.forEach((q, i) => { const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale; if (i) c.lineTo(sx, sy); else c.moveTo(sx, sy); }); c.closePath(); c.stroke();
+    }
+    for (const K of this.trackPts) { const sx = (K.start.x - V.x) * V.scale, sy = (K.start.z - V.z) * V.scale; c.fillStyle = '#ffe0a0'; c.fillRect(sx - 4, sy - 4, 8, 8); c.fillStyle = 'rgba(251,227,207,.9)'; c.fillText(K.name, sx, sy - 9); }
+    c.restore();
   }
 
   /** Walking about: what is near and in sight is slowly sensed, and charted with a little time (never past .5). */
@@ -594,6 +609,7 @@ export class Cartography {
     c.save();
     c.translate(W / 2, H / 2);
     this.paint(c, l, V.x, V.z, V.scale, W, { halfW: W / 2, halfH: H / 2 });
+    this.drawTracks(c, l, V);
     // named places
     c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
     for (const a of this.anchors) {

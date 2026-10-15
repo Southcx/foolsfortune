@@ -42,7 +42,8 @@ import { COLOR, OPPOSITE } from '../../progress/weather.js';
 import { axes, planeOf, VIEW_RIGS, CRUISE } from './views.js';
 import { SHIPS } from '../../progress/rail/ships.js';
 
-const D2R = Math.PI / 180, SCALE = 0.24; // (the sloop is 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
+const D2R = Math.PI / 180;
+export const SCALE = 0.24; // (the sloop is 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
 const damp = THREE.MathUtils.damp, clamp = THREE.MathUtils.clamp;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3(), _sp = new THREE.Vector3(), _st = new THREE.Vector3();
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
