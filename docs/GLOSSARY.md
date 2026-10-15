@@ -276,6 +276,18 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   mark). *Not:* a chain reaction elsewhere, the Supernova as a star.
 - **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
 - **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
+- **the table HUD / a seat plate / the goal bar / the turn banner** (`TableHud`, `src/ui/tablehud.js`; `seatPlate`, `ui/seatplate.js`;
+  `goalBar`, `ui/goalbar.js`; wired by `TableClarity`, `vfx/tableclarity.js`) — the table view's words over its cloth: a seat's name and numbers in its seat
+  colour and shape (the acting one in the film) / one bar toward the goal, a track a seat / YOUR TURN and the coach's line. Always "seat plate" in
+  full. *Not:* a plate (the Veritome's photograph), the game's own HUD (hidden while seated).
+- **a seat colour / the table marks** (`SEAT_LOOK`, `src/vfx/seatlook.js`, from `SEAT_COLOURS`; `TableMarks`, `src/vfx/tablemarks.js`) — one of the
+  eight board-game colours with its shape (you Red, Raku Black), only on rims, tokens and seat plates / on the cloth: the turn ring at the acting
+  seat, seat rims, the film rim on legal pieces, the chosen piece lifted. *Not:* a suit's colour (card faces only).
+- **the action bar / a table tip** (`actionBar`, `src/ui/tablebuttons.js`; `tableTip`, `ui/tabletip.js`) — the choices with no piece on the cloth
+  as buttons (amount, preview in its tone ✔ ⚠ ✖, the suggestion in gold, keys 1 to 9) / a piece's hover card. *Not:* a choice card, the slot row.
+- **the score ceremony** (`ScoreCeremony`, `src/ui/scoreceremony.js`; `RollingNumber`, `ui/rollnum.js`; `Reel`, `ui/reel.js`) — the count-up drawn:
+  the hand's name, BASE × MULT rolling, the reasons flying in, the total slammed down, the film on a top tier (Balatro's). *Not:* the count-up (the
+  coach's steps it plays).
 - **the coach / a how-to / practice / the count-up** (`coach()`, `src/progress/casino/coach/`; `HOWTO`, `progress/casino/howto.js`;
   `session.play(true)`; `docs/plans/CASINO-CLARITY.md`) — a table's every moment said plainly for a view (the goal, the turn's one line,
   each choice with what it brings, the house's suggestion) / a game taught in a few steps, on first sitting and on asking / a game for no
