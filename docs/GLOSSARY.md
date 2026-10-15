@@ -260,10 +260,13 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   until mended) / an arch across a Raceway track that drinks the pool to a quarter as you pass under it, standing only in the Pit lane licence. *Not:* the shield, the regen.
 - **the flyover / the restart / the rewind / the nemesis** (`flyover.js`, `rewind.js`, `rivals.js`) — the camera's cuts along the line
   before a race / Backspace tapped / Backspace held in practice / the rival that beat you last, quicker and clapping. *Not:* a camera shot's name.
-- **Raku's bazaar / a table** (working names, Espada's; `docs/plans/CASINO.md`; `src/progress/casino/table.js`) — Raku's casino split off
+- **Raku's Bazaar / a table** (Espada's, 2026-10-15; `docs/plans/CASINO.md`; `src/progress/casino/table.js`) — Raku's casino split off
   the Weir's Treasury, in the Gold Saucer's look / one game's place in it, and its engine: a rules module played by seats, bots and the
   simulator (`scripts/casino.mjs`); the room `game.bazaar` (`src/world/bazaar/`), a seat `TableSession`. *Not:* the Treasury, the Tithe, a chest.
-- **a chip** (working name, Espada's; `game.chips`, `src/progress/casino/chips.js`) — the bazaar's stake, bought from Raku for a cube each
+- **the Treasury** (`TREASURY`, `buildTreasury`, `stockTreasury`, `src/world/treasury.js`) — five plinths (a chest of each tier), the Tithe's
+  console and its dais, Raku beside it; a piece placed by an origin, in Raku's Bazaar since 2026-10-15 (it stood on the Weir's north beach).
+  *Not:* the bazaar, the shop's RAKU'S TREASURY page.
+- **Raku chips / a chip** (Espada's, 2026-10-15; `game.chips`, `src/progress/casino/chips.js`) — the bazaar's stake, bought from Raku for a cube each
   and cashed back, winnings capped a game day. *Not:* a cube, the clay knock's chips.
 - **Querent / Astroll** (Querent: Espada's and the owner's, 2026-10-15; Astroll: the owner's; `casino/querent/`, `casino/zodiac.js`, `casino/eventhorizon.js`) — the owner's tarot game
   (melds, steals, the Fate Clause, Major Arcana flipped as boons) / the owner's dice games with a standard set (Zodiac, Event Horizon,

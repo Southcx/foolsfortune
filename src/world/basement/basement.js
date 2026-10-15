@@ -470,7 +470,7 @@ export class Course {
       { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
-      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the gate to Raku\'s bazaar', group: 'THE OPEN', spawn: 'dunes' },
       { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
       { id: 'raceway', code: 'KeyR', tag: 'R', name: 'THE RACEWAY', blurb: 'the Solar Skiff\'s test circuit: three laps against the clock, F at the start\'s pillar · the sandfall drop', group: 'THE OPEN', spawn: 'raceway' },
       { id: 'bazaar', code: 'KeyG', tag: 'G', name: "RAKU'S BAZAAR", blurb: 'the casino under the dome: Querent, Zodiac, Event Horizon · chips at Raku\'s cage', group: 'THE OPEN', spawn: 'bazaar' },

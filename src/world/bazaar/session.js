@@ -26,11 +26,11 @@ const seatRand = stream('casino'); // (a session's seed: the game's own stream i
 /** The tables: their game, who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
  *  (chips: Querent's buy-in, the winner takes the table's less Raku's tenth; Zodiac's purse, played out of; Event Horizon's ante a round). */
 export const TABLES = [
-  { id: 'querent', game: QUERENT, seats: 4, names: ['you', 'Raku', 'Clink', 'Glaze'], bots: [null, [querentBot, { thief: 0.3 }], [querentBot, { thief: 0.6 }], [querentBot, { thief: 0.1 }]],
+  { id: 'querent', game: QUERENT, seats: 4, names: ['you', 'Raku', 'Clink', 'Celadon'], bots: [null, [querentBot, { thief: 0.3 }], [querentBot, { thief: 0.6 }], [querentBot, { thief: 0.1 }]],
     at: { x: -24, z: 4 }, r: 2.6, stake: 25, rake: 0.1, label: 'Querent', line: 'The tarot game: three melds of three; steal, declare your Fate Clause, flip the Major Arcana.' },
   { id: 'zodiac', game: ZODIAC, seats: 2, names: ['you', 'Raku'], bots: [null, [zodiacBot, { greed: 0.4 }]],
     at: { x: 24, z: 4 }, r: 2.2, stake: 40, label: 'Zodiac', line: 'Shut the Box as a duel: shut your twelve tiles first; your attack die reopens Raku\'s.' },
-  { id: 'eventhorizon', game: EVENT_HORIZON, seats: 3, names: ['you', 'Crock', 'Glaze'], bots: [null, [horizonBot, { bold: 0.2 }], [horizonBot, { bold: 0.7 }]],
+  { id: 'eventhorizon', game: EVENT_HORIZON, seats: 3, names: ['you', 'Crock', 'Celadon'], bots: [null, [horizonBot, { bold: 0.2 }], [horizonBot, { bold: 0.7 }]],
     at: { x: 0, z: 22 }, r: 2.4, stake: 10, label: 'Event Horizon', line: 'Hit the dealer\'s total exactly with your dice; read the dealer\'s handful for 3x or 5x.' },
 ];
 /** Real seconds between a bot's moves (so its turn can be followed). */

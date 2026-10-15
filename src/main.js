@@ -62,7 +62,7 @@ import { Shrines } from './world/shrines.js';
 import { Emocean } from './world/emocean/stage.js';
 import { Pier } from './world/emocean/pier.js';
 import { Margarite } from './world/emocean/margarite.js';
-import { Bazaar } from './world/bazaar/bazaar.js';
+import { Bazaar, BAZAAR } from './world/bazaar/bazaar.js';
 import { BazaarHall } from './vfx/bazaarhall.js';
 import { BazaarTable } from './vfx/bazaartable.js';
 import { Chips } from './progress/casino/chips.js';
@@ -141,7 +141,8 @@ import { GameLog } from './feedback/gamelog.js';
 import { Stats } from './progress/stats.js';
 import { Tracking } from './feedback/tracking.js';
 import { Achievements } from './progress/achievements.js';
-import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
+import { Weir } from './tools/sondelass/angling/weir.js';
+import { buildTreasury, stockTreasury } from './world/treasury.js';
 import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
@@ -439,6 +440,7 @@ async function main() {
   game.margarite = new Margarite(game); // (Margarite's dock: the far end of the crossing, built with the level's static geometry; world/emocean/margarite.js)
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
+  const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
@@ -723,7 +725,7 @@ async function main() {
   // what is counted and what is said about it, then the achievements over the counts
   mark('circuits+carto');
   game.weir = new Weir(game); // (the Sondelass's own room: the tide and the shoals)
-  stockTreasury(game); // (a chest of each tier on the Weir's plinths, and the Tithe's console)
+  stockTreasury(game, treasuryAt); // (a chest of each tier on the Treasury's plinths, and the Tithe's console: in Raku's bazaar since 2026-10-15)
   {
     // a common chest in the hub, off to one side of where you arrive, on whatever floor is there; a rare one on a dune, half in the sand
     // (the hub's floor is flat; a ray here would see nothing yet, the physics world has not stepped)
@@ -1147,8 +1149,8 @@ async function main() {
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
-    game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, and its clock while the table's page holds the world: vfx/bazaartable.js)
-    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.mooring?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1)
+    game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, its clock is the bazaar's own tickModal: vfx/bazaartable.js)
+    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1)
     if (started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     game.courierSquash.lift(); // (and the Courier's true shape, before anything reads the body: courier/anim/squash.js)

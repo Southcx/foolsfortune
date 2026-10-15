@@ -676,6 +676,10 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 232. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
     grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
     while a menu is over the game.
+NEW:modal-pauses-the-table. **What runs under its own window keeps its clock there.** A page that counts as a modal window (the index's,
+   the Codex's) stops the world's tick; a game played on that page (a table's bots, a timer) is ticked from main.js's modal line
+   (`tickModal`), never only from the module's `update`. A headless probe that calls `update` itself does not prove it.
+
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3739,3 +3743,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
   wet sand and a shell's field go through it. The flare's layer cut to a lift (hum +0.025, noise to 0.23 at full speed), and the Raceway's
   boost whooshes (the carve's release, a sun plate, the solar start, a slope landing) to a third of their gain.
 - **Rule:** 232.
+
+### 2026-10-15 · The folk at Raku's tables never took their turns (Calissa, dressing the bazaar, v208)
+- **Seen:** seated at a table, after your own move the page waited on "RAKU IS THINKING…" for ever.
+- **Cause:** a table's page is an index page, so `modalOpen()` is true and main.js's tick returns before `game.bazaar.update`, which was
+  the only caller of `TableSession.update` (the bots' beat). The headless probe drove `update` by hand, so it passed.
+- **Fix:** `Bazaar.tickModal(dt)` runs the seat's clock from main.js's modal line while a session is open (`world/bazaar/bazaar.js`).
+  Calissa's table view (`vfx/bazaartable.js`) had ticked it too, as a stopgap; one caller is kept (hers is dropped at the merge).
+- **Rule:** NEW:modal-pauses-the-table.

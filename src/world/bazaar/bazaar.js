@@ -16,7 +16,7 @@
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
 import { TableSession, TABLES } from './session.js';
-import { OX, OY, OZ, TREASURY } from '../../tools/sondelass/angling/weir.js';
+import { OX, OY, OZ, NORTH_BEACH } from '../../tools/sondelass/angling/weir.js';
 
 /** Where it stands (Petra's place, 2026-10-15: empty ground south of the basement, out of every sky), the hall's radius and height, and
  *  where things are on its floor (local metres: x east, z north is -z). The Treasury's slot: flat floor 34 m by 8 m, for Petra's
@@ -25,7 +25,7 @@ export const BAZAAR = {
   x: 0, y: 200, z: -3000, r: 58, wall: 16, dome: 46,
   arrive: { x: 0, z: 44, yaw: Math.PI }, gate: { x: 0, z: 54 }, cage: { x: 0, z: -24 },
   treasury: { x: 0, z: -3042, yaw: 0 }, // (world x, z: Petra's slot; the plinths face south, into the hall)
-  weirGate: { x: 14, z: TREASURY.z }, // (the twin on the Weir's north beach, east of where the Treasury stands: metres from the oasis's origin)
+  weirGate: { x: 14, z: NORTH_BEACH.z }, // (the twin on the Weir's north beach, east of where the Treasury stood: metres from the oasis's origin)
 };
 /** The hall's air (Calissa's, 2026-10-15: a warm night carnival): the fog's colour (the dome's violet warmed by the lanterns) and density
  *  (exp2: the far wall at 110 m still half seen). */
@@ -110,7 +110,7 @@ export class Bazaar {
     menu.showPage('bazaar.cage', (im, el) => {
       const rows = el('div', 'rooms'), row = (t, s, go) => { const d = el('div', 'room', `<span><b>${t}</b><s>${s}</s></span>`); d.onclick = () => { go(); this.openCage(); }; rows.appendChild(d); };
       im.appendChild(el('div', 'grp', `YOUR CHIPS: ${C2.balance} · CUBES: ${g.cubes?.balance ?? 0} · CASHABLE NOW: ${Math.min(C2.balance, C2.room)}`));
-      for (const n of [50, 100, 250]) row(`Buy ${n} chips`, `${n} cubes`, () => C2.buy(n));
+      for (const n of [50, 100, 250]) row(`Buy ${n} Raku chips`, `${n} cubes`, () => C2.buy(n));
       row('Cash out', 'chips back to cubes, your winnings up to the day\'s cap', () => C2.cash());
       im.appendChild(rows);
     }, { title: "RAKU'S CAGE", sub: 'one cube a chip · F closes', aside: 'right' });
@@ -123,6 +123,10 @@ export class Bazaar {
     const g = this.game, F = g.scene.fog; if (!F || zoneOf(g.camera.position) !== 'bazaar') return;
     F.color.setHex(AIR.fog); F.density = AIR.density;
   }
+
+  /** While a window holds the world (the table's own page is one: main.js returns before update), the seat's clock still runs, so the
+   *  folk take their turns under it (CASEBOOK, NEW:modal-pauses-the-table). */
+  tickModal(dt) { if (this.session?.open) this.session.update(dt); }
 
   update(dt) {
     this.wire();

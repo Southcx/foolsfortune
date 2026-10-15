@@ -56,12 +56,12 @@ export class BazaarTable {
   }
   get active() { return !!this.s; }
 
-  /** Every frame: sit down, keep the seat's clock, lay out, animate, frame; or rise. */
+  /** Every frame: sit down, lay out, animate, frame; or rise. */
   tick(dt) {
     const g = this.game, s = g.bazaar?.session, menu = s?.menu, up = !!(s?.open && menu?.open && menu.page?.name === 'bazaar.table');
     if (up && this.s !== s) this.enter(s); else if (!up && this.s) this.leave();
     if (!this.s) return;
-    s.update(dt); // (the bots' turns: the page pauses the world's tick, so the seat's clock runs here)
+
     if (!s.open) { this.leave(); return; }
     this.t += dt;
     if (s.S !== this.S) { this.S = s.S; this.seen = 0; this.zsel.clear(); this.lastDice = null; } // (a new game at the table: again)
