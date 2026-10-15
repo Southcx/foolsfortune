@@ -270,7 +270,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   and cashed back, winnings capped a game day. *Not:* a cube, the clay knock's chips.
 - **Querent / Astroll** (Querent: Espada's and the owner's, 2026-10-15; Astroll: the owner's; `casino/querent/`, `casino/zodiac.js`, `casino/eventhorizon.js`) — the owner's tarot game
   (melds, steals, the Fate Clause, Major Arcana flipped as boons) / the owner's dice games with a standard set (Zodiac, Event Horizon,
-  ...). *Not:* the game's own title (Fool's Fortune), the Veritome's Major Arcana page.
+  Supernova Run, Nebula Bluff, ...). *Not:* the game's own title (Fool's Fortune), the Veritome's Major Arcana page.
+- **a reaction / a Supernova / a tell** (`supernova.js`, `nebula.js`) — Supernova Run's turn of rolling every die until none shows a
+  maximum or a 1 / its natural 20 on a d20: points doubled, every hand reset / a Nebula Bluff player's body giving away a bluff (a world
+  mark). *Not:* a chain reaction elsewhere, the Supernova as a star.
 - **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
 - **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls

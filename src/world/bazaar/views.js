@@ -24,6 +24,8 @@ export function renderTable(S, { im, el, P, R, V, waiting }) {
   const line = (html) => im.appendChild(el('div', 'grp', html));
   if (T.id === 'querent') querent(S, { V, P, names, grp, btn, line, el, im });
   else if (T.id === 'zodiac') zodiac(S, { V, P, names, grp, btn, line });
+  else if (T.id === 'supernova') supernova(S, { V, P, names, grp, btn, line });
+  else if (T.id === 'nebula') nebula(S, { V, P, names, grp, btn, line });
   else horizon(S, { V, P, names, grp, btn, line });
   if (waiting) line(`${waiting.toUpperCase()} IS THINKING…`);
   if (R) {
@@ -104,4 +106,38 @@ function horizon(S, { V, P, names, grp, btn, line }) {
     const m = P.moves.find((x) => x.dice && x.dice.slice().sort((a, b) => a - b).join() === dice.join()); S.dsel = []; if (m) S.move(m);
   });
   btn(rows, 'Stand', 'roll no more this round', () => S.move({ stand: true }));
+}
+
+// ---------------------------------------------------------------- Supernova Run
+const dice = (h) => h.map((x) => `d${x}`).join(' ') || 'none';
+function supernova(S, { V, P, names, grp, btn, line }) {
+  line(`ROUND ${V.round} · ${V.threshold} WINS · A NATURAL 20 ON A d20: SUPERNOVA (POINTS x2, EVERY HAND BACK TO 4d6)`);
+  const seats = grp('THE PLAYERS');
+  for (let q = 0; q < V.n; q++) btn(seats, `${names[q]}: ${V.points[q]} points`, `hand ${dice(V.hands[q])}`, () => {});
+  const L = V.last; if (L?.react != null) line(`${names[L.seat].toUpperCase()} RAN A REACTION: ${L.faces.join(' + ') || 'nothing'} = ${L.react}${L.born ? ` · ${L.born} DICE BORN` : ''}${L.decayed ? ` · ${L.decayed} DECAYED` : ''}${L.lost ? ` · ${L.lost} LOST` : ''}`);
+  if (!P) return;
+  const rows = grp('YOUR TURN');
+  for (const m of P.moves) {
+    if (m.react) btn(rows, 'Run a reaction', `roll ${dice(V.mine)}: maximums make dice, 1s decay`, () => S.move(m));
+    else if (m.fuse) btn(rows, `Fuse ${dice(m.fuse)} into a d${m.into}`, m.into === 20 ? 'a d20: a Supernova waits on its 20' : '', () => S.move(m));
+    else btn(rows, `Split a d${m.split} into ${dice(m.into)}`, '', () => S.move(m));
+  }
+}
+
+// ---------------------------------------------------------------- Nebula Bluff
+function nebula(S, { V, P, names, grp, btn, line }) {
+  line(`ROUND ${V.round} · POT ${V.pot} · ${V.claim != null ? `CLAIM ${V.claim} BY ${names[V.claimant].toUpperCase()}` : 'NO CLAIM YET'} · RAISES ${V.raises} OF ${V.limit}`);
+  const seats = grp('THE TABLE');
+  for (let q = 0; q < V.n; q++) {
+    const tell = q === V.claimant && V.tell ? ' · ◆ a tell' : '';
+    btn(seats, `${names[q]}: ${V.counts[q]} ${V.counts[q] === 1 ? 'die' : 'dice'} · ${V.chips[q]} chips`, `${V.inRound?.[q] ? `in, paid ${V.paid[q]}` : 'out of the round'}${tell}`, () => {});
+  }
+  if (V.faces) line(`YOUR HAND ${V.mine.map((s, i) => `d${s}:${V.faces[i]}${V.faces[i] === s ? '★' : ''}`).join(' ')} · WORTH ${V.worth}`);
+  if (!P) return;
+  const rows = grp(P.kind === 'open' ? 'OPEN THE BIDDING' : 'YOUR BID');
+  for (const m of P.moves) {
+    if (m.claim != null) btn(rows, `Claim ${m.claim}`, `${Math.max(1, Math.ceil(m.claim / 10))} chips${m.claim > V.worth ? ' · a bluff' : ''}`, () => S.move(m));
+    else if (m.callout) btn(rows, `Call ${names[V.claimant]}'s bluff`, `${Math.max(1, Math.ceil(V.claim / 10))} chips; wrong costs you two dice`, () => S.move(m));
+    else if (m.fold) btn(rows, 'Fold', 'lose a die; what you paid stays', () => S.move(m));
+  }
 }

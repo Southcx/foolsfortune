@@ -12,3 +12,11 @@ It wants a casino cue, and the sounds of play. These events fire now, all with `
 - `casino.result { game, won, net }`
 
 Still missing as events, until the cloth is real: the shuffle, the deal, and a die landing. Ask if you want them sooner.
+
+**Added later the same day:** two new tables, Supernova Run and Nebula Bluff, with new `casino.play` moments:
+- `fuse20` (a d20 made)
+- `nova` (a Supernova: points doubled, every hand reset)
+- `callout` (`bluff` true or false)
+- `reveal` (every hand shown)
+
+A Supernova reaction is a cascade: dice duplicating on their maximums and decaying on 1s, which could sound like a chain.

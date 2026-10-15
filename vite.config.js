@@ -22,6 +22,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     chunkSizeWarningLimit: 5000,
-    rollupOptions: { output: { entryFileNames: 'assets/game.js' } },
+    // (three.js in a chunk of its own: the host takes 16 MiB a file, and game.js passed it at v209, 16,786,559 bytes)
+    rollupOptions: { output: { entryFileNames: 'assets/game.js', manualChunks: (id) => (id.includes('/node_modules/three/') ? 'three' : undefined) } },
   },
 });

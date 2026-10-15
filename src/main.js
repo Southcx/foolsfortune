@@ -439,8 +439,8 @@ async function main() {
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   game.margarite = new Margarite(game); // (Margarite's dock: the far end of the crossing, built with the level's static geometry; world/emocean/margarite.js)
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
-  game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
+  game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
@@ -1052,7 +1052,7 @@ async function main() {
   // --- loop -------------------------------------------------------------------
   let acc = 0;
   let last = performance.now();
-  const clock = { frame: 0 };
+  const clock = (game.clock = { frame: 0 }); // (the frame count, on the game for what must step once a frame however many call it: world/bazaar/session.js)
   let simTime = 0;
   function frame(now) {
     requestAnimationFrame(frame);

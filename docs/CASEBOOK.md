@@ -3749,5 +3749,6 @@ NEW:modal-pauses-the-table. **What runs under its own window keeps its clock the
 - **Cause:** a table's page is an index page, so `modalOpen()` is true and main.js's tick returns before `game.bazaar.update`, which was
   the only caller of `TableSession.update` (the bots' beat). The headless probe drove `update` by hand, so it passed.
 - **Fix:** `Bazaar.tickModal(dt)` runs the seat's clock from main.js's modal line while a session is open (`world/bazaar/bazaar.js`).
-  Calissa's table view (`vfx/bazaartable.js`) had ticked it too, as a stopgap; one caller is kept (hers is dropped at the merge).
+  Calissa's table view (`vfx/bazaartable.js`) ticks it too; both stay, and `TableSession.update` steps once a frame however many call
+  it (`game.clock.frame`, main.js), so neither caller has to know of the other.
 - **Rule:** NEW:modal-pauses-the-table.

@@ -132,17 +132,85 @@ may belong to the last seat instead (the owner's call). *Decided* (the owner, 20
 reroll is the **last seat's** (`S.rerollSeat`), and the first seat turns each game (`opts.first`). Measured at four seats: -0.083,
 -0.161, -0.279, +0.165 antes a round (was +0.572 for the first seat).
 
-## 6. Phase 2 and 3 games: what each needs first
+## 6. Phase 2 and 3 games
 
-- **Supernova Run**: pin the reaction loop (roll every die; a maximum duplicates the die and rerolls both; a natural 1 downgrades two
-  steps, or loses a d4; the reaction ends when no die shows a maximum or a minimum; its faces score); splitting and fusing as a turn
-  instead of a reaction; a natural 20 is the Supernova. Then simulate the score curve.
-- **Nebula Bluff**: bots that lie at a rate and leak tells (the opponents' styles, section 7).
+### Supernova Run (`supernova.js`, built 2026-10-15)
+Each player starts with four d6. A turn is one of three:
+- **Run a reaction:** every die is rolled. A die on its maximum is duplicated (the copy stays in your hand) and both roll again. A natural
+  1 decays the die two steps (a d6 or d8 to a d4) and it rolls again; a d4's 1 is lost. The reaction runs until no die shows a maximum or
+  a 1, and the settled faces are your points.
+- **Split** one die into two real dice whose sides add up to it.
+- **Fuse** two or three dice into one.
+
+A natural 20 on a d20 is a **Supernova**: the reaction stops, your points double, and the round ends, with every hand reset to four d6.
+The first to **500 points** wins the pot.
+
+*Decided* (the owner, "do that", 2026-10-15, on Dovina's pins):
+- The threshold is the game's end; a Supernova ends a *round*, not the game.
+- Duplicates stay in the hand, which holds 12 dice at most.
+- A d6's 1 decays to a d4.
+- Fusing takes 2 or 3 dice.
+- A game past 240 turns goes to the most points.
+
+**Measured** (3,000 games a size; bots that build toward a d20 at a set rate):
+- **As first built** (one round, a Supernova an instant win): never building won 60% against a half-builder. Turns spent fusing weren't
+  worth even a win.
+- **With the threshold at 500 and the owner's x2,** no pure strategy dominates against a half-builder:
+
+  | Strategy | Win rate |
+  | --- | --- |
+  | never build | 46.5% |
+  | build a quarter of the time | 51.3% |
+  | build half the time | 48.2% |
+  | always build | 45.5% |
+
+  Reading when to build is the skill. At 800 points, never building drops to 37%; at 300, it rises to 61%.
+- **By table size:**
+  - 2 players: 50.2 / 49.8%, about 20 turns each, 0.5 Supernovas a game.
+  - 3 players: about 19 turns each.
+  - 4 players: about 18 turns each. The heaviest builder wins least here (20.5%), because others' Supernovas wipe its half-built
+    engines.
+
+### Nebula Bluff (`nebula.js`, built 2026-10-15)
+Liar's dice on a hand's worth. Six dice each (d4 to d20). A hand is worth its faces plus 10 for each die on its maximum.
+- **Claim:** "my hand is worth at least N"; pay a tenth of N (rounded up).
+- **Counter:** a higher claim, paid the same way.
+- **Call out:** pay the standing claim and say it's a bluff. If the claimant was under, the caller takes the pot and the bluffer loses two
+  dice; if not, the claimant takes the pot and the caller loses two.
+- **Fold:** lose a die; what you paid stays in the pot.
+
+When the raises reach the cap, every hand still in is shown. The claimant gets +10 for each other player still in, the best hand takes the
+pot, and every other shown hand loses a die. Lost dice are drawn at random and never shown. The last player holding dice wins. A bot leaks
+a **tell** on a bluff at its own rate, and sometimes on an honest claim; the tell is a world mark for the cloth's look (Calissa's).
+
+*Decided:*
+- A claim's price is a tenth of it (the doc's "value equal to the bid" would cost 40 chips a raise).
+- Dice lost are drawn at random.
+- The reveal bonus counts the other players.
+- **The raise cap is a third of the dice in play** (12 at most). This one is a change from the doc and the owner's to overrule. At the
+  doc's full count, a reveal came in 0.1% of rounds, so the bluff reversal never showed; at a third it comes in 11%.
+
+**Measured** (2,000 games):
+- **2 players:** about 5.5 rounds a game. 55% of bluffs are caught.
+- **The liar** (bluffs 40% of the time) wins least at every table size; **the reader** wins most at 3 and 4 seats.
+- **A tell reader** (a Bayesian read of a tell's odds) against an average one:
+
+  | Reader | Win rate |
+  | --- | --- |
+  | blind | 45.1% |
+  | average | 49.5% |
+  | sharp eye | 50.2% |
+
+  So tells are a real skill, and the cloth's tells must read on the folk's bodies.
+
+### Still to build
 - **Gravity Well**: real flicked dice on the house's physics (Rapier), zones as data; a dexterity game, so the owner's play is its test.
-- **Charity Gamble**: four to six seats; the hidden deposit's denominations (1, 5, 10) as the bluff.
-- **Celestial Skirmish**: a chess move generator and a search bot; the dice as pieces and their natural-maximum specials.
-- **Entropy Tactics**: merges Fatelink (the owner: Entropy Tactics "is a newer, more refined version"). A design pass first: the 7 x 7
-  board, the Hungry Die, the Grand Bomb, tokens by suit, and 21 more characters to write beside the Fool.
+  It waits until the owner has played the tables.
+- **Charity Gamble**: four to six seats; the hidden deposit's denominations (1, 5, 10) as the bluff. Small.
+- **Celestial Skirmish**: a chess move generator and a search bot; the dice as pieces and their natural-maximum specials. The heaviest.
+- **Entropy Tactics** (Fatelink merged in): **the design pass is `docs/plans/ENTROPY-TACTICS.md`**, six questions for the owner before
+  any code.
+- **Event Horizon's interference** (swap, steal, reroll another's dice): the owner's doc puts the game there; it comes back as abilities.
 
 ## 7. The opponents
 
@@ -171,7 +239,7 @@ neon bands cycling, six lamps of the light budget, its own violet air (`AIR`: fo
 Index's row (G, THE OPEN) and a gate on the Weir's north beach beside the Treasury; out: the gate in the south wall. On the floor:
 Raku's cage (chips for cubes, and back), three tables (session.js `TABLES`: Querent at four seats with Raku, Clink and Celadon, a 25-chip
 buy-in, the winner takes the table less Raku's tenth; Zodiac against Raku with a 40-chip purse; Event Horizon at three seats with Crock
-and Celadon, a 10-chip ante a round), and the Treasury's slot on the north side (`BAZAAR.treasury`: flat floor, 34 m by 8 m, for
+and Celadon, a 10-chip ante a round), Supernova Run (added 2026-10-15, south-west, with Clink and Crock, a 20-chip buy-in, the winner takes the table less Raku's tenth) and Nebula Bluff (south-east, with Raku and Celadon, a 60-chip purse played out of), and the Treasury's slot on the north side (`BAZAAR.treasury`: flat floor, 34 m by 8 m, for
 Petra's move). F at a table sits you down (`TableSession`): the stake comes out of your chips, the bots take their turns 0.6 real s
 apart, your choices are clicked on a page set aside (`views.js`, a placeholder until the cloth, cards and dice are real objects),
 and the table's moments and the result go to the log (`feedback/tracking/casino.js`). Rising mid-game forfeits the stake.

@@ -161,6 +161,8 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
   makes it a small one a game day, worth an evening's play and never a living.
 - **The house's drains:** Raku takes a tenth of Querent's table (4 x 25 chips in, the winner takes 90). Event Horizon's edge is about 11%
   for one seat against the house (measured, CASINO.md 5). Zodiac is even: you play Raku for a purse.
+- Supernova Run takes Raku's tenth as Querent does (3 x 20 chips in, the winner takes 54). Nebula Bluff is played out of a purse among
+  the players, with nothing to the house, so it is even, like Zodiac: what you win there, the folk lost.
 - First wins pay once, ever, as the Raceway's tests do: to be set when the medals are, with the cloth.
 
 ## Measuring it
