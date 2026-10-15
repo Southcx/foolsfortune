@@ -2,11 +2,16 @@
 // THE BAZAAR'S FACES (docs/plans/CASINO.md section 9; Dovina's handoff of 2026-10-15, items 2 to 5): every face Raku's tables show,
 // painted once into one canvas atlas, so the cards, the dice, the Zodiac tiles, the chips and the three cloths are one texture and one
 // stock material (vfx/bazaarpieces.js builds the bodies). No words: only what a real card, die, tile or chip carries.
-//   - THE HOUSE DECK: the 78 cards of a Tarot, 64 x 104 at 1x (the title's falling cards' size and back: title/scene.js, its moons and
+//   (GROWN 2026-10-15, the casino clarity pass, Calissa's brief section 5: the atlas is 2048 x 2048; cards 128 x 208 with a big corner
+//   index, dice faces 64 x 64, tiles 64 x 96, chips 64 x 64, SEAT CELLS (eight colours x rim, token, plate: vfx/seatlook.js), and DIM
+//   TWINS of the cards, dice faces and tiles, drawn smaller and sunk into the felt for what may not be touched. Words are the DOM's.)
+//   - THE HOUSE DECK: the 78 cards of a Tarot, drawn in a 64 x 104 frame and fired at 2x (the title's falling cards' size and back: title/scene.js, its moons and
 //     stars in plum and cream, repainted here with the labradorite's schiller in the great moon). The 22 Major Arcana on a plum field,
 //     each its numeral (0 to XXI) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
 //     pool); the 56 Minor on cream, pips of their suit (cups, swords, pentacles, wands) in the playing-card layouts, the courts a figure
-//     under its headgear, an index in two corners.
+//     under its headgear, an index in two corners: big, the suit's symbol under it and its playing-card pip (hearts for cups, spades for
+//     swords, diamonds for pentacles, clubs for wands) beside the symbol; each suit in its own colour (cups blue, swords green, pentacles
+//     yellow, wands red), on the card's face only.
 //   - THE DICE: a cell a face (32 x 32), each die of the standard set its own glaze (d4 celadon, d6 shino, d8 lapis, d10 tenmoku, d12
 //     copper red, d20 plum with the schiller in its numerals), Raku's attack die in gold; 6 and 9 underlined; the d4's three corner
 //     numbers a face, the one read is the one on top.
@@ -22,22 +27,29 @@
 // layouts, playing cards' corner indices, Chessex's and Crystal Caste's dice (opposite faces summing to one more than the sides, the
 // underlined 6 and 9), casino chips' edge inserts (Paulson's), Shut the Box's numbered tiles, the title's own card back.
 //
-//   bazaarAtlas() -> { tex, card(i), die(skin, face), tile(n, state), chip(kind, part), cup(), cloth(id) }   (each a uv rect [u0, v0, u1, v1])
+//   bazaarAtlas() -> { tex, card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
+//   (each a uv rect [u0, v0, u1, v1]; `dim` asks the sunk twin)
 //   CARD_BACK   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { schillerInk } from './oxidation.js';
+import { SUIT_COLOURS } from '../progress/casino/table.js';
+import { SEAT_NAMES, SEAT_KINDS, drawSeatCell, seatCellIndex } from './seatlook.js';
 
-const W = 1024, H = 1280; // (the two Astroll cloths in a second row under the first three)
-/** Where each kind of face lies in the atlas (pixels). */
-const AT = { card: { x: 0, y: 0, w: 64, h: 104, cols: 16 }, die: { x: 0, y: 520, s: 32, cols: 32 }, tile: { x: 0, y: 648, w: 32, h: 48 },
-  chip: { x: 0, y: 700, s: 32 }, cloth: { x: 0, y: 736, s: 256 } };
+const W = 2048, H = 2048;
+/** Where each kind of face lies in the atlas (pixels). 128 x 208 cards (16 x 5), 64 dice (32 x 5), 64 x 96 tiles, 64 chips, 24 seat cells
+ *  of 64, five cloths of 256 in a row, then the dim twins (cards 48 x 78, dice 32, tiles 32 x 48) in the foot. */
+const AT = { card: { x: 0, y: 0, w: 128, h: 208, cols: 16 }, die: { x: 0, y: 1040, s: 64, cols: 32 }, tile: { x: 0, y: 1360, w: 64, h: 96 },
+  chip: { x: 0, y: 1456, s: 64 }, seat: { x: 512, y: 1456, s: 64 }, cloth: { x: 0, y: 1520, s: 256, cols: 5 },
+  dimCard: { x: 0, y: 1776, w: 48, h: 78, cols: 42 }, dimDie: { x: 0, y: 1932, s: 32, cols: 64 }, dimTile: { x: 0, y: 1996, w: 32, h: 48 } };
 export const CARD_BACK = 78;
 const CARD_EDGE = 79;
 /** A Querent card ({ r: 1..14, s: 0..3 }) as its index in the deck: the 22 Major Arcana first, then the suits in the seat suits' order. */
 export const cardIndex = (c) => 22 + c.s * 14 + (c.r - 1);
-/** The suits' inks (cups, swords, pentacles, wands: views.js's colours, kept so the page and the cloth agree). */
-export const SUIT_INK = ['#2f8f86', '#5c6a80', '#b8892a', '#b8452e'];
+/** The suits' inks (cups blue, swords green, pentacles yellow, wands red: SUIT_COLOURS, Dovina's data; cups, swords, pentacles, wands).
+ *  A suit's colour is only ever on a card's face, with its symbol and its playing-card pip; a seat's colour never is. */
+export const SUIT_INK = SUIT_COLOURS.map((c) => c.hex);
+const OUTLINE = '#1c1220';
 const K = { cream: '#efe2c4', paper: '#f4ead2', gold: '#e8c35a', goldDeep: '#a87a22', plum: '#3a2148', deep: '#24132e', ink: '#2a1a24', felt: '#1f6b4a' };
 /** The dice's glazes: body, numeral, and whether the numeral carries the schiller. */
 export const DIE_SKINS = {
@@ -56,29 +68,46 @@ export function bazaarAtlas() {
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
   g.fillStyle = K.deep; g.fillRect(0, 0, W, H);
-  for (let i = 0; i < 22; i++) cell(g, AT.card, i, () => major(g, i));
-  for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) cell(g, AT.card, cardIndex({ r, s }), () => minor(g, r, s));
-  cell(g, AT.card, CARD_BACK, () => back(g)); cell(g, AT.card, CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
+  const card = (i, draw) => cell(g, AT.card, i, () => { g.scale(2, 2); draw(); }); // (a card is drawn in its 64 x 104 frame, fired at 2x)
+  for (let i = 0; i < 22; i++) card(i, () => major(g, i));
+  for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) card(cardIndex({ r, s }), () => minor(g, r, s));
+  card(CARD_BACK, () => back(g)); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
   let k = 0; const dieAt = {};
   for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); dieAt[key] = k; for (let f = 0; f < sides; f++, k++) dieCell(g, k, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
   dieAt.ash = k; ashCell(g, k++);
+  const dieCount = k;
   for (let n = 1; n <= 12; n++) for (const [j, st] of ['open', 'locked'].entries()) tileCell(g, (n - 1) * 2 + j, n, st);
   tileCell(g, 24, 0, 'back');
   [['1', '#efe6d2', '#5a1e2a'], ['5', '#b8322a', '#f4e3c0'], ['25', '#2f5aa8', '#e8c35a'], ['gold', '#e8c35a', '#7a4a12']].forEach(([, body, ink], j) => chipCells(g, j, body, ink));
+  SEAT_NAMES.forEach((name) => SEAT_KINDS.forEach((kind) => { const c = seatCellIndex(name, kind), S = AT.seat.s; g.save(); g.translate(AT.seat.x + c * S, AT.seat.y); drawSeatCell(g, name, kind, S); g.restore(); }));
   CLOTHS.forEach((id, j) => clothCell(g, j, id));
+  // the dim twins: the same faces, smaller, desaturated and sunk toward the felt's ink (a piece the table will not take right now)
+  const dim = (sx, sy, sw, sh, dx, dy, dw, dh) => { // (an opaque source, so the veil is exact)
+    g.save(); g.imageSmoothingEnabled = true; g.drawImage(cv, sx, sy, sw, sh, dx, dy, dw, dh);
+    g.globalCompositeOperation = 'saturation'; g.fillStyle = 'rgba(128,128,128,0.8)'; g.fillRect(dx, dy, dw, dh);
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(23,17,31,0.58)'; g.fillRect(dx, dy, dw, dh); g.restore();
+  };
+  for (let i = 0; i < 80; i++) dim(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h,
+    AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h);
+  for (let c = 0; c < dieCount; c++) dim(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s,
+    AT.dimDie.x + (c % AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.y + Math.floor(c / AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.s, AT.dimDie.s);
+  for (let c = 0; c < 25; c++) dim(AT.tile.x + c * AT.tile.w, AT.tile.y, AT.tile.w, AT.tile.h, AT.dimTile.x + c * AT.dimTile.w, AT.dimTile.y, AT.dimTile.w, AT.dimTile.h);
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
   const chipIx = { 1: 0, 5: 1, 25: 2, gold: 3 };
+  const dieCell_ = (skin, f) => dieAt[skin] + (skin === 'ash' ? 0 : f);
   ATLAS = {
     tex, canvas: cv,
-    card: (i) => rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
+    card: (i, dim = false) => dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
+      : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
     edge: () => ATLAS.card(CARD_EDGE),
-    die: (skin, f) => { const c = dieAt[skin] + (skin === 'ash' ? 0 : f); return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 1); },
-    cup: () => { const c = dieAt.cup; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 4); },
-    tile: (n, st) => { const c = st === 'back' ? 24 : (n - 1) * 2 + (st === 'locked' ? 1 : 0); return rect(AT.tile.x + c * AT.tile.w, AT.tile.y, AT.tile.w, AT.tile.h); },
+    die: (skin, f, dim = false) => { const c = dieCell_(skin, f), A = dim ? AT.dimDie : AT.die; return rect(A.x + (c % A.cols) * A.s, A.y + Math.floor(c / A.cols) * A.s, A.s, A.s, 1); },
+    cup: () => { const c = dieAt.cup; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 8); },
+    tile: (n, st, dim = false) => { const c = st === 'back' ? 24 : (n - 1) * 2 + (st === 'locked' ? 1 : 0), A = dim ? AT.dimTile : AT.tile; return rect(A.x + c * A.w, A.y, A.w, A.h); },
     chip: (kind, part) => rect(AT.chip.x + (chipIx[kind] * 2 + (part === 'edge' ? 1 : 0)) * AT.chip.s, AT.chip.y, AT.chip.s, AT.chip.s, 1),
-    cloth: (id) => { const j = Math.max(0, CLOTHS.indexOf(id)); return rect(AT.cloth.x + (j % 4) * AT.cloth.s, AT.cloth.y + Math.floor(j / 4) * AT.cloth.s, AT.cloth.s, AT.cloth.s, 1); },
+    seat: (colour, kind) => rect(AT.seat.x + seatCellIndex(colour, kind) * AT.seat.s, AT.seat.y, AT.seat.s, AT.seat.s, 1),
+    cloth: (id) => { const j = Math.max(0, CLOTHS.indexOf(id)); return rect(AT.cloth.x + (j % AT.cloth.cols) * AT.cloth.s, AT.cloth.y + Math.floor(j / AT.cloth.cols) * AT.cloth.s, AT.cloth.s, AT.cloth.s, 1); },
   };
   return ATLAS;
 }
@@ -103,7 +132,7 @@ const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
 function major(g, i) {
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, K.goldDeep); box(g, 3, 3, 58, 98, K.plum);
   box(g, 6, 15, 52, 76, K.deep); // (the picture's window)
-  text(g, ROMAN[i], 32, 9, 9, K.gold);
+  text(g, ROMAN[i], 32, 9, i > 17 ? 10 : 12, K.gold);
   box(g, 22, 95, 20, 2, K.gold); circ(g, 32, 96, 2, K.gold);
   g.save(); g.beginPath(); g.rect(6, 15, 52, 76); g.clip(); PICTURES[i](g); g.restore();
 }
@@ -137,10 +166,25 @@ const PICTURES = [
 // ------------------------------------------------------------------ the Minor Arcana
 /** A suit's mark at (x, y), `s` its size in pixels. */
 function suit(g, s, x, y, z, c = SUIT_INK[s]) {
+  if (c === SUIT_INK[s]) suitMark(g, s, x, y, z * 1.22, OUTLINE); // (a dark keyline under a suit's own colour: yellow and green must read on cream)
+  suitMark(g, s, x, y, z, c);
+}
+function suitMark(g, s, x, y, z, c) {
   if (s === 0) { g.beginPath(); g.arc(x, y - z * 0.15, z * 0.42, 0, Math.PI); fill(g, c); box(g, x - z * 0.42, y - z * 0.2, z * 0.84, z * 0.12, c); box(g, x - 0.6, y + z * 0.2, 1.4, z * 0.22, c); box(g, x - z * 0.25, y + z * 0.38, z * 0.5, z * 0.1, c); }
   else if (s === 1) { poly(g, [[x, y - z * 0.5], [x + z * 0.1, y + z * 0.2], [x - z * 0.1, y + z * 0.2]], c); box(g, x - z * 0.28, y + z * 0.18, z * 0.56, z * 0.1, c); box(g, x - 0.6, y + z * 0.26, 1.4, z * 0.22, c); }
   else if (s === 2) { ring(g, x, y, z * 0.42, Math.max(1, z * 0.1), c); star(g, x, y, z * 0.34, z * 0.14, 5, c); }
   else { line(g, x - z * 0.3, y + z * 0.45, x + z * 0.3, y - z * 0.45, Math.max(1.2, z * 0.14), c); circ(g, x + z * 0.12, y - z * 0.1, z * 0.1, '#6a9a4a'); circ(g, x - z * 0.12, y + z * 0.12, z * 0.1, '#6a9a4a'); }
+}
+/** A playing-card pip (hearts for cups, spades for swords, diamonds for pentacles, clubs for wands: SUIT_COLOURS' pip), drawn as a path so no font is needed. */
+function pip(g, s, x, y, z, c = SUIT_INK[s]) {
+  const one = (k, col) => {
+    g.fillStyle = col; g.beginPath();
+    if (s === 0) { g.moveTo(x, y + k * 0.5); g.bezierCurveTo(x - k * 0.75, y, x - k * 0.5, y - k * 0.55, x, y - k * 0.2); g.bezierCurveTo(x + k * 0.5, y - k * 0.55, x + k * 0.75, y, x, y + k * 0.5); g.fill(); }
+    else if (s === 1) { g.moveTo(x, y - k * 0.5); g.bezierCurveTo(x + k * 0.75, y, x + k * 0.5, y + k * 0.4, x + k * 0.1, y + k * 0.2); g.lineTo(x + k * 0.2, y + k * 0.5); g.lineTo(x - k * 0.2, y + k * 0.5); g.lineTo(x - k * 0.1, y + k * 0.2); g.bezierCurveTo(x - k * 0.5, y + k * 0.4, x - k * 0.75, y, x, y - k * 0.5); g.fill(); }
+    else if (s === 2) { g.moveTo(x, y - k * 0.55); g.lineTo(x + k * 0.4, y); g.lineTo(x, y + k * 0.55); g.lineTo(x - k * 0.4, y); g.closePath(); g.fill(); }
+    else { for (const [u, v] of [[0, -0.28], [-0.28, 0.12], [0.28, 0.12]]) { g.beginPath(); g.arc(x + u * k, y + v * k, k * 0.24, 0, Math.PI * 2); g.fill(); } g.fillRect(x - k * 0.06, y, k * 0.12, k * 0.5); }
+  };
+  one(z * 1.2, OUTLINE); one(z, c);
 }
 /** Pip places on a 1 x 1 field (the playing card's layouts, the Tarot de Marseille's for 7 to 10). */
 const PIPS = { 2: [[0.5, 0.15], [0.5, 0.85]], 3: [[0.5, 0.15], [0.5, 0.5], [0.5, 0.85]], 4: [[0.28, 0.15], [0.72, 0.15], [0.28, 0.85], [0.72, 0.85]],
@@ -152,10 +196,12 @@ const INDEX = [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'P', 'Kn
 function minor(g, r, s) {
   const ink = SUIT_INK[s];
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, ink); box(g, 3, 3, 58, 98, K.paper);
-  const corner = () => { text(g, INDEX[r], 9, 10, r === 10 || r === 12 ? 7 : 9, ink); suit(g, s, 9, 20, 7); };
+  const corner = () => { // (the index big, the tarot suit's symbol under it, the playing-card pip under the symbol: the corner column only, x under 17, the pip field starts at x 22)
+    text(g, INDEX[r], 11, 11, r === 10 || r === 12 ? 13 : 17, ink); suit(g, s, 8, 28, 8); pip(g, s, 10, 41, 6.5);
+  };
   corner(); g.save(); g.translate(64, 104); g.rotate(Math.PI); corner(); g.restore();
   if (r === 1) { ring(g, 32, 52, 15, 1, K.gold); suit(g, s, 32, 52, 22); return; }
-  if (r <= 10) { for (const [u, v] of PIPS[r]) suit(g, s, 18 + u * 28, 20 + v * 64, 10); return; }
+  if (r <= 10) { for (const [u, v] of PIPS[r]) suit(g, s, 32 + (u - 0.5) * 26, 20 + v * 64, 9); return; }
   // the courts: a figure, what it wears says which (a page's cap, a knight's plume, a queen's crown, a king's crown and cross)
   box(g, 14, 22, 36, 60, '#e6d6b4'); figure(g, 32, 56, 13, ink, K.cream);
   if (r === 11) box(g, 27, 32, 10, 3, K.goldDeep);
@@ -175,21 +221,21 @@ function back(g) {
 // ------------------------------------------------------------------ the dice
 /** One face of a die: its glaze, its numeral (or the d6's pips; the d4's three corner numbers, read from the vertex on top). */
 function dieCell(g, c, sides, f, skin) {
-  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * S, y0 = AT.die.y + Math.floor(c / AT.die.cols) * S;
-  g.save(); g.translate(x0, y0); g.beginPath(); g.rect(0, 0, S, S); g.clip();
+  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * AT.die.s, y0 = AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s;
+  g.save(); g.translate(x0, y0); g.scale(2, 2); g.beginPath(); g.rect(0, 0, S, S); g.clip(); // (drawn in a 32 frame, fired at 2x)
   box(g, 0, 0, S, S, skin.body);
   const ink = skin.ink || sch(f / Math.max(1, sides));
   if (sides === 0) { box(g, 0, 0, S, 3, skin.ink); box(g, 0, 29, S, 3, skin.ink); for (let k = 0; k < 4; k++) star(g, 4 + k * 8, 16, 2.5, 1, 4, skin.ink, 0); } // (the dealer's cup: a gold lip and stars)
-  else if (sides === 6) { for (const [u, v] of D6_PIPS[f + 1]) circ(g, 6 + u * 20, 6 + v * 20, 3, ink); }
+  else if (sides === 6) { for (const [u, v] of D6_PIPS[f + 1]) circ(g, 6 + u * 20, 6 + v * 20, 3.6, ink); }
   else if (sides === 4) { // (the corners of the cell's triangle: bazaarpieces.js maps each face's vertices onto these)
-    const vs = D4_FACES[f]; D4_CORNERS.forEach(([u, v], k) => { const x = 16 + (u - 0.5) * 22, y = 16 + (v - 0.5) * 22; g.save(); g.translate(x, y); g.rotate(Math.atan2(y - 18, x - 16) + Math.PI / 2); text(g, String(vs[k] + 1), 0, 0, 9, ink); g.restore(); });
-  } else { const n = String(f + 1); text(g, n, 16, 16, n.length > 1 ? 13 : 16, ink); if ((n === '6' || n === '9') && sides > 6) box(g, 11, 25, 10, 2, ink); }
+    const vs = D4_FACES[f]; D4_CORNERS.forEach(([u, v], k) => { const x = 16 + (u - 0.5) * 22, y = 16 + (v - 0.5) * 22; g.save(); g.translate(x, y); g.rotate(Math.atan2(y - 18, x - 16) + Math.PI / 2); text(g, String(vs[k] + 1), 0, 0, 11, ink); g.restore(); });
+  } else { const n = String(f + 1); const big = sides === 20 ? 0 : 2; text(g, n, 16, 16, (n.length > 1 ? 13 : 16) + big, ink); if ((n === '6' || n === '9') && sides > 6) box(g, 11, 25 + big / 2, 10, 2, ink); }
   g.restore();
 }
 /** The spent die: grey clay crazed, a dark crack across, no numeral (every face of it the same cell). */
 function ashCell(g, c) {
-  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * S, y0 = AT.die.y + Math.floor(c / AT.die.cols) * S;
-  g.save(); g.translate(x0, y0); box(g, 0, 0, S, S, '#8a8580'); box(g, 2, 2, 28, 28, '#9c968f');
+  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * AT.die.s, y0 = AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s;
+  g.save(); g.translate(x0, y0); g.scale(2, 2); box(g, 0, 0, S, S, '#8a8580'); box(g, 2, 2, 28, 28, '#9c968f');
   for (const [a, b, e, f] of [[3, 9, 14, 15], [14, 15, 29, 7], [14, 15, 18, 29], [18, 29, 26, 24], [6, 27, 18, 29]]) line(g, a, b, e, f, 1, '#3a3430');
   g.restore();
 }
@@ -202,18 +248,18 @@ export const D4_CORNERS = [[0.5, 0.06], [0.06, 0.86], [0.94, 0.86]];
 // ------------------------------------------------------------------ the Zodiac's tiles, the chips, the cloths
 const SIGNS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
 function tileCell(g, c, n, st) {
-  g.save(); g.translate(AT.tile.x + c * AT.tile.w, AT.tile.y);
+  g.save(); g.translate(AT.tile.x + c * AT.tile.w, AT.tile.y); g.scale(2, 2); // (a 32 x 48 frame, fired at 2x)
   if (st === 'back') { box(g, 0, 0, 32, 48, K.plum); g.strokeStyle = K.gold; g.strokeRect(2.5, 2.5, 27, 43); star(g, 16, 24, 7, 3, 8, K.gold); g.restore(); return; }
   const locked = st === 'locked';
   box(g, 0, 0, 32, 48, locked ? K.gold : '#efe6d2'); box(g, 2, 2, 28, 44, locked ? '#f2d27a' : K.paper);
-  text(g, String(n), 16, 16, n > 9 ? 14 : 17, locked ? K.plum : '#5a1e2a');
-  text(g, SIGNS[n - 1] + '︎', 16, 35, 12, locked ? '#7a4a12' : '#2f5aa8');
+  text(g, String(n), 16, 16, n > 9 ? 17 : 21, locked ? K.plum : '#5a1e2a');
+  text(g, SIGNS[n - 1] + '︎', 16, 36, 12, locked ? '#7a4a12' : '#2f5aa8');
   g.restore();
 }
 function chipCells(g, j, body, ink) {
-  const S = 32, x = AT.chip.x + j * 2 * S, y = AT.chip.y;
+  const S = 32, x = AT.chip.x + j * 2 * AT.chip.s, y = AT.chip.y;
   // the top: rings, the edge inserts, Raku's kiln mark in the middle
-  g.save(); g.translate(x, y); box(g, 0, 0, S, S, body);
+  g.save(); g.translate(x, y); g.scale(2, 2); box(g, 0, 0, S, S, body);
   ring(g, 16, 16, 14, 1, ink); for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4; box(g, 16 + Math.cos(a) * 12.5 - 1.5, 16 + Math.sin(a) * 12.5 - 1.5, 3, 3, ink); }
   ring(g, 16, 16, 8, 1, ink); poly(g, [[16, 10], [21, 19], [11, 19]], ink); box(g, 13, 19, 6, 2, ink);
   // the edge: the inserts as stripes
@@ -221,7 +267,7 @@ function chipCells(g, j, body, ink) {
   g.restore();
 }
 function clothCell(g, j, id) {
-  const S = 256, x0 = AT.cloth.x + (j % 4) * S, y0 = AT.cloth.y + Math.floor(j / 4) * S, c = 128;
+  const S = 256, x0 = AT.cloth.x + (j % AT.cloth.cols) * S, y0 = AT.cloth.y + Math.floor(j / AT.cloth.cols) * S, c = 128;
   g.save(); g.translate(x0, y0); g.beginPath(); g.rect(0, 0, S, S); g.clip();
   const felt = { querent: '#1f6b4a', zodiac: '#1b4f5e', eventhorizon: '#2a1a3e', supernova: '#3e1a1c', nebula: '#16243e' }[id];
   box(g, 0, 0, S, S, felt);

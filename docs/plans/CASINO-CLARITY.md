@@ -85,6 +85,32 @@ Also on the session:
 
 The fallback page (`world/bazaar/views.js`) is drawn from the coach now; Calissa's cloth reads the same.
 
+**Added for the table view** (Calissa's art brief, section 7, answered 2026-10-15):
+- **More fields on the coach:**
+  - `phase`: yours, waiting, over or idle
+  - `progress`: the goal's `perSeat`
+  - `suggested`: the marked move, or null
+  - `steps`: the latest outcome as count-up steps, with `at` (its log index), so each outcome is counted up once
+- **One goal shape for every game:** `{ label, line, target, unit, perSeat: [{ seat, value }] }`.
+- **More fields on each move:** `id`, `line`, `amount` (chips, where a price applies), and `pieceIds` in the table view's own ids:
+  - `tile:<seat>:<n>`
+  - `h:<rank>.<suit>#<nth>` (the nth of that face in hand order)
+  - `ed:<seat>:<sides>:<nth>` (the nth die of those sides among the dice left)
+  - `top:<seat>`, `deck`, `fool:<id>`, `rank:<r>`
+- **`selectable(moves, chosen)`** answers a pick made piece by piece (the moves still possible, the pieces still choosable, the move it
+  completes).
+- **A `kind` on every seat stat:** score, money, lives or count.
+- **Each Querent seat's `flipped` arcana**, with their `does`.
+- **Event Horizon's real `faces`** per seat, now in its view (the same draws as before).
+- **A colour per person**, the same at every table (`coach/seats.js` `PERSON_COLOURS`): you Red, Raku Black (the house), Clink Yellow,
+  Celadon Green, Crock Blue.
+- **The how-to steps** also carry `{ line, target, wait, demo }`. `target` is a role (goal, hand, moves, seats, centre, dice, tiles,
+  claim, tell), and the table view resolves it to its own pieces.
+- **The count-up's steps and scale:** `coach/ceremony.js`. Querent's two biggest bonuses come first and the rest are rolled into one.
+  `SCALE` holds each game's median and 90th percentile.
+- **The suggestion is a knack**, Raku's Whisper (a working name). The design laws say an assist is earned and switchable: it opens after
+  three practice games finished or one game won, and practice tables always show the suggestion, since practice is for learning.
+
 ## 5. Each game: the two-minute version, and the size ladder
 
 The ladder lists each game's elements largest first: the goal and what is yours, then the shared numbers, then the opponents, then

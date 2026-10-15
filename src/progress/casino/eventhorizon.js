@@ -43,7 +43,7 @@ export const EVENT_HORIZON = {
   id: 'eventhorizon', seats: [1, 4],
   setup({ seats, r, opts = {} }) {
     const D = dealerHand(r), ante = opts.ante ?? EH.ante;
-    const S = { n: seats, dealer: D, total: D.total, par: D.dice.length, ante, pot: ante * seats, net: Array(seats).fill(-ante), houseNet: 0, sums: Array(seats).fill(0), used: [...Array(seats)].map(() => []), left: [...Array(seats)].map(() => DND_SET.slice()), out: Array(seats).fill(false), reroll: true, turn: (opts.first ?? 0) % seats, pending: [], log: [], done: false };
+    const S = { n: seats, dealer: D, total: D.total, par: D.dice.length, ante, pot: ante * seats, net: Array(seats).fill(-ante), houseNet: 0, sums: Array(seats).fill(0), used: [...Array(seats)].map(() => []), faces: [...Array(seats)].map(() => []), left: [...Array(seats)].map(() => DND_SET.slice()), out: Array(seats).fill(false), reroll: true, turn: (opts.first ?? 0) % seats, pending: [], log: [], done: false };
     S.rerollSeat = (S.turn + seats - 1) % seats; // (the free reroll is the last seat's: going first was worth +0.57 antes a round with it too)
     queue(S);
     return S;
@@ -51,12 +51,13 @@ export const EVENT_HORIZON = {
   pending: (S) => S.pending[0] || null,
   apply(S, m, r) {
     const P = S.pending.shift(), p = P.seat;
-    if (P.kind === 'reroll') { if (m.reroll) { S.sums[p] -= S.last.sum; S.reroll = false; const sum = S.last.dice.reduce((a, s) => a + die(r, s), 0); S.sums[p] += sum; S.last.sum = sum; S.log.push({ reroll: sum }); } return this.resolve(S, p); }
+    if (P.kind === 'reroll') { if (m.reroll) { S.sums[p] -= S.last.sum; S.reroll = false; const f = S.last.dice.map((s) => die(r, s)), sum = f.reduce((a, b) => a + b, 0); S.faces[p].splice(-f.length, f.length, ...S.last.dice.map((s, i) => ({ sides: s, face: f[i] }))); S.sums[p] += sum; S.last.sum = sum; S.last.faces = f; S.log.push({ reroll: sum, seat: p, faces: f }); } return this.resolve(S, p); }
     if (m.stand) { S.out[p] = true; return next(S); }
-    const sum = m.dice.reduce((a, s) => a + die(r, s), 0);
+    const f = m.dice.map((s) => die(r, s)), sum = f.reduce((a, b) => a + b, 0); // (the same draws in the same order as a sum of them: the faces kept for the table to show)
+    S.faces[p].push(...m.dice.map((s, i) => ({ sides: s, face: f[i] })));
     for (const s of m.dice) S.left[p].splice(S.left[p].indexOf(s), 1);
-    S.used[p].push(...m.dice); S.sums[p] += sum; S.last = { dice: m.dice, sum };
-    S.log.push({ seat: p, roll: m.dice, sum, total: S.sums[p] });
+    S.used[p].push(...m.dice); S.sums[p] += sum; S.last = { dice: m.dice, sum, faces: f };
+    S.log.push({ seat: p, roll: m.dice, faces: f, sum, total: S.sums[p] });
     if (p === S.rerollSeat && S.reroll && S.sums[p] !== S.total) { S.pending.push({ seat: p, kind: 'reroll', moves: [{ reroll: true }, { reroll: false }] }); return; }
     this.resolve(S, p);
   },
@@ -69,7 +70,7 @@ export const EVENT_HORIZON = {
     next(S);
   },
   result: (S) => (S.done ? { winner: S.winner ?? null, read: S.read ?? null, net: S.net.slice(), houseNet: S.houseNet, total: S.total, par: S.par } : null),
-  view: (S, seat) => ({ seat, n: S.n, total: S.total, par: S.par, sums: S.sums, left: S.left, used: S.used, mine: S.left[seat], need: S.total - S.sums[seat], last: S.last }),
+  view: (S, seat) => ({ seat, n: S.n, total: S.total, par: S.par, sums: S.sums, left: S.left, used: S.used, faces: S.faces, mine: S.left[seat], need: S.total - S.sums[seat], last: S.last }),
 };
 
 /** A bot: roll the handful whose average lands nearest what it needs without its top end overshooting much; a reroll when it went over or

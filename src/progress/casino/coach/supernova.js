@@ -27,7 +27,8 @@ export function reactionOdds(hand) {
 
 export function supernovaCoach({ T, S, seat, P, mine, R, V }) {
   const lead = [...Array(V.n).keys()].filter((q) => q !== seat).reduce((b, q) => (b == null || V.points[q] > V.points[b] ? q : b), null);
-  const goal = { text: `First to ${V.threshold} points wins. A d20 that rolls 20 is a SUPERNOVA: your points double.`, you: { value: V.points[seat], of: V.threshold, label: 'points' }, best: lead != null ? { seat: lead, value: V.points[lead] } : null };
+  const goal = { text: `First to ${V.threshold} points wins. A d20 that rolls 20 is a SUPERNOVA: your points double.`, you: { value: V.points[seat], of: V.threshold, label: 'points' }, best: lead != null ? { seat: lead, value: V.points[lead] } : null,
+    label: 'Points', target: V.threshold, unit: 'points', perSeat: V.points.map((v, q) => ({ seat: q, value: v })) };
   const centre = [{ label: 'Round', value: V.round, big: false }, { label: 'To win', value: V.threshold, big: true }];
   const moves = []; let say = null;
   if (mine) {
@@ -46,7 +47,7 @@ export function supernovaCoach({ T, S, seat, P, mine, R, V }) {
       }
     }
   }
-  const seats = seatsOf(T, S, (q) => ({ stats: [{ label: 'Points', value: V.points[q], big: true }, { label: 'Dice', value: dice(V.hands[q]) }], badge: V.hands[q].includes(20) ? 'Has a d20' : null, hand: V.hands[q] }), P?.seat);
+  const seats = seatsOf(T, S, (q) => ({ stats: [{ label: 'Points', value: V.points[q], kind: 'score', big: true }, { label: 'Dice', value: dice(V.hands[q]), kind: 'lives' }], badge: V.hands[q].includes(20) ? 'Has a d20' : null, hand: V.hands[q] }), P?.seat);
   if (R) say = R.winner === seat ? `You reach ${R.points[seat]}: you win!` : `${T.names[R.winner]} wins with ${R.points[R.winner]}.`;
   return { goal, turn: { say }, moves, seats, centre, extra: { last: V.last, rules: SUPERNOVA_RULES } };
 }

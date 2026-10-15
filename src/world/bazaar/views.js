@@ -92,7 +92,7 @@ export function renderTable(S, { im, el }) {
     if (q.tell) d.appendChild(K.line('<b>◆ a tell</b>: their top chip wiggled', { color: '#f2c14e' }));
   }
   // the end, or the footer
-  if (over) { K.head('AGAIN?'); const r = K.rows(); K.button(r, `Again for ${T.stake} chips`, '', () => S.again(false)); K.button(r, 'Practise', 'free', () => S.again(true)); K.button(r, 'Rise from the table', '', () => S.close()); }
+  if (over) { K.head('AGAIN?'); const r = K.rows(); K.button(r, `Again for ${T.stake} chips`, '', () => S.again(false)); K.button(r, 'Practise', 'free', () => S.again(true)); K.button(r, 'Leave the table', '', () => S.close()); }
   K.head('TABLE'); const f = K.rows();
   K.button(f, 'How to play', 'the steps again', () => S.showHowto());
   speedRow(S, K);

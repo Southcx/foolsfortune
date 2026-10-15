@@ -15,15 +15,26 @@
 // Prior art: three.js's PolyhedronGeometry (the solids' vertices), the d10's trapezohedron worked from its planarity (apex height =
 // ring height x (1 + cos 36°) / (1 - cos 36°)), Chessex's numbering, Tabletop Simulator's and Hearthstone's pieces drawn as one batch.
 //
-//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h)   dieTpl(sides, skin: '6', 'atk6', 'ash')   dieRest(sides, value, yaw, out) -> lift
-//   chipTpl(kind)   tileTpl(n, state)   cupTpl(r, h)   clothTpl(id, r)   new PieceBatch(materials)  .clear()  .add(tpl, matrix, slot, id)
+// GROWN 2026-10-15 (casino clarity pass, brief sections 2 and 5): SIZE TIERS (`TIER`, `tierScale`: XL 1.25x, L 1.0x, M 0.8x, S 0.6x of
+// PIECE, by how much a piece matters to the mechanics: the thing you decide on is biggest), DIM TWINS (a trailing `dim` flag on a card,
+// die or tile: the sunk twin cell, for what may not be touched now), and the SEAT PIECES: a seat token (its colour's shape standing up
+// on a foot, never a flat round disk, so it is never read as one of Raku's chips) and a seat rim (a thin flat band in the seat colour
+// under what a seat owns). The seat looks are vfx/seatlook.js's.
+//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h, dim)   dieTpl(sides, skin: '6', 'atk6', 'ash', k, dim)   dieRest(sides, value, yaw, out, k) -> lift
+//   chipTpl(kind, k)   tileTpl(n, state, k, dim)   cupTpl(r, h)   clothTpl(id, r)   tokenTpl(colour, k)   seatRimTpl(colour, w, d, band)
+//   TIER   tierScale(tier) -> k   new PieceBatch(materials)  .clear()  .add(tpl, matrix, slot, id)
 //   .write()  .pick(raycaster) -> id   .mesh
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
+import { shapeOutline, seatCue } from './seatlook.js';
 
 /** The sizes (metres: a table's pieces read from a seat's camera, so bigger than life by about three). */
 export const PIECE = { card: { w: 0.2, h: 0.325, gap: 0.003 }, die: 0.072, chip: { r: 0.042, h: 0.011, segs: 14 }, tile: { w: 0.11, h: 0.165, d: 0.03 } };
+/** The size tiers (brief section 2): a piece's scale by its importance. XL the thing you decide on, L the default, M a label's worth, S a hint's. */
+export const TIER = { XL: 1.25, L: 1, M: 0.8, S: 0.6 };
+/** A tier's scale (an unknown tier is L). */
+export const tierScale = (tier) => TIER[tier] ?? 1;
 
 let MATS = null;
 /** The three materials (one program: their parameters are the stock map material's; only uniforms differ). */
@@ -46,11 +57,11 @@ const TPL = new Map();
 const memo = (key, make) => { let t = TPL.get(key); if (!t) TPL.set(key, (t = make())); return t; };
 
 /** A card: face `i` up (+z), the back behind; its middle at the origin, its top at +y. */
-export function cardTpl(i, w = PIECE.card.w, h = PIECE.card.h) {
-  return memo(`card:${i}:${w}`, () => {
+export function cardTpl(i, w = PIECE.card.w, h = PIECE.card.h, dim = false) {
+  return memo(`card:${i}:${w}:${h}:${dim}`, () => {
     const A = bazaarAtlas(), b = builder(), x = w / 2, y = h / 2, z = PIECE.card.gap / 2;
-    b.quad([-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z], [0, 0, 1], A.card(i));
-    b.quad([x, -y, -z], [-x, -y, -z], [-x, y, -z], [x, y, -z], [0, 0, -1], A.card(CARD_BACK));
+    b.quad([-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z], [0, 0, 1], A.card(i, dim));
+    b.quad([x, -y, -z], [-x, -y, -z], [-x, y, -z], [x, y, -z], [0, 0, -1], A.card(CARD_BACK, dim));
     return b.done();
   });
 }
@@ -88,11 +99,11 @@ function dieFaces(sides) {
   DIE.set(sides, (D = out)); return D;
 }
 /** A die of `sides` in a skin ('4', 'atk6', ...: bazaarfaces.js DIE_SKINS), radius PIECE.die. */
-export function dieTpl(sides, skin = String(sides)) {
-  return memo(`die:${skin}:${sides}`, () => { // (the spent skin is one cell for every size: keyed by both)
-    const A = bazaarAtlas(), b = builder(), R = PIECE.die, F = dieFaces(sides);
+export function dieTpl(sides, skin = String(sides), k = 1, dim = false) {
+  return memo(`die:${skin}:${sides}:${k}:${dim}`, () => { // (the spent skin is one cell for every size: keyed by both)
+    const A = bazaarAtlas(), b = builder(), R = PIECE.die * k, F = dieFaces(sides);
     for (const f of F) {
-      const [u0, v0, u1, v1] = A.die(skin, f.value - 1), cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = (u1 - u0) / 2, hv = (v1 - v0) / 2;
+      const [u0, v0, u1, v1] = A.die(skin, f.value - 1, dim), cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = (u1 - u0) / 2, hv = (v1 - v0) / 2;
       const P = f.poly.map((v) => v.clone().multiplyScalar(R).toArray());
       let U;
       if (sides === 4) U = D4_CORNERS.map(([x, y]) => [u0 + x * (u1 - u0), v1 - y * (v1 - v0)]);
@@ -108,18 +119,18 @@ export function dieTpl(sides, skin = String(sides)) {
 const _up = new THREE.Vector3(0, 1, 0), _q = new THREE.Quaternion(), _qy = new THREE.Quaternion(), _v = new THREE.Vector3();
 /** The turn that rests a die with `value` read on top (the d4: its vertex up), turned `yaw` about the vertical; returns the height its
  *  middle sits above the cloth. */
-export function dieRest(sides, value, yaw, out = new THREE.Quaternion()) {
+export function dieRest(sides, value, yaw, out = new THREE.Quaternion(), k = 1) {
   const F = dieFaces(sides), f = F.find((x) => x.value === value) || F[0];
   if (sides === 4) _q.setFromUnitVectors(_v.copy(f.up).normalize(), _up); else _q.setFromUnitVectors(f.n, _up);
   out.copy(_qy.setFromAxisAngle(_up, yaw)).multiply(_q);
-  let low = 0; for (const g of F) for (const v of g.poly) low = Math.min(low, _v.copy(v).multiplyScalar(PIECE.die).applyQuaternion(out).y);
+  let low = 0; for (const g of F) for (const v of g.poly) low = Math.min(low, _v.copy(v).multiplyScalar(PIECE.die * k).applyQuaternion(out).y);
   return -low;
 }
 
 /** A chip: a short cylinder, its edge striped and its top the value's face; its foot at y 0. */
-export function chipTpl(kind) {
-  return memo(`chip:${kind}`, () => {
-    const A = bazaarAtlas(), b = builder(), { r, h, segs } = PIECE.chip, [t0, tv0, t1, tv1] = A.chip(kind, 'top'), [e0, ev0, e1, ev1] = A.chip(kind, 'edge');
+export function chipTpl(kind, k = 1) {
+  return memo(`chip:${kind}:${k}`, () => {
+    const A = bazaarAtlas(), b = builder(), { segs } = PIECE.chip, r = PIECE.chip.r * k, h = PIECE.chip.h * k, [t0, tv0, t1, tv1] = A.chip(kind, 'top'), [e0, ev0, e1, ev1] = A.chip(kind, 'edge');
     for (let k = 0; k < segs; k++) {
       const a0 = (k / segs) * Math.PI * 2, a1 = ((k + 1) / segs) * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1), am = (a0 + a1) / 2;
       const ua = e0 + ((k % 4) / 4) * (e1 - e0), ub = e0 + (((k % 4) + 1) / 4) * (e1 - e0);
@@ -132,10 +143,10 @@ export function chipTpl(kind) {
 }
 
 /** A Zodiac tile standing: its face (`state` 'open' | 'locked') toward +z, the back behind, its foot at y 0. */
-export function tileTpl(n, state = 'open') {
-  return memo(`tile:${n}:${state}`, () => {
-    const A = bazaarAtlas(), b = builder(), { w, h, d } = PIECE.tile, x = w / 2, z = d / 2, side = A.tile(n, 'back'), rim = [side[0], side[1], side[0] + (side[2] - side[0]) * 0.1, side[3]];
-    b.quad([-x, 0, z], [x, 0, z], [x, h, z], [-x, h, z], [0, 0, 1], A.tile(n, state));
+export function tileTpl(n, state = 'open', k = 1, dim = false) {
+  return memo(`tile:${n}:${state}:${k}:${dim}`, () => {
+    const A = bazaarAtlas(), b = builder(), w = PIECE.tile.w * k, h = PIECE.tile.h * k, d = PIECE.tile.d * k, x = w / 2, z = d / 2, side = A.tile(n, 'back', dim), rim = [side[0], side[1], side[0] + (side[2] - side[0]) * 0.1, side[3]];
+    b.quad([-x, 0, z], [x, 0, z], [x, h, z], [-x, h, z], [0, 0, 1], A.tile(n, state, dim));
     b.quad([x, 0, -z], [-x, 0, -z], [-x, h, -z], [x, h, -z], [0, 0, -1], side);
     b.quad([-x, h, z], [x, h, z], [x, h, -z], [-x, h, -z], [0, 1, 0], rim);
     b.quad([x, 0, z], [x, 0, -z], [x, h, -z], [x, h, z], [1, 0, 0], rim);
@@ -156,6 +167,46 @@ export function cupTpl(r = 0.075, h = 0.11, open = false) {
       if (!open) b.tri([0, h, 0], [rt * Math.cos(a1), h, rt * Math.sin(a1)], [rt * Math.cos(a0), h, rt * Math.sin(a0)], [0, 1, 0], [cu, cv], [cu, v1], [cu, v1]);
       else { const ri = rb * 0.92; b.quad([rb * Math.cos(a0), 0.006, rb * Math.sin(a0)], [ri * Math.cos(a0), 0.006, ri * Math.sin(a0)], [ri * Math.cos(a1), 0.006, ri * Math.sin(a1)], [rb * Math.cos(a1), 0.006, rb * Math.sin(a1)], [0, 1, 0], [u0, v0, u0, v0]); }
     }
+    return b.done();
+  });
+}
+
+/** A seat token: its colour's shape (vfx/seatlook.js `shapeOutline`) stood upright on a small foot, glyph and pattern on both faces,
+ *  radius 0.05 m x `k`, its foot at y 0, facing +z. Never a flat disk (a chip is), whatever the shape, so the circle's too reads as a token. */
+export function tokenTpl(colour, k = 1) {
+  return memo(`token:${colour}:${k}`, () => {
+    const A = bazaarAtlas(), b = builder(), [u0, v0, u1, v1] = A.seat(colour, 'token'), [r0, rv0, r1, rv1] = A.seat(colour, 'rim');
+    const R = 0.05 * k, foot = 0.026 * k, t = 0.012 * k, cy = foot + R * 1.02, cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = ((u1 - u0) / 2) * 0.8, hv = ((v1 - v0) / 2) * 0.8;
+    let P = shapeOutline(seatCue(colour).shape); if (P.reduce((acc, [x, y], i) => { const [x2, y2] = P[(i + 1) % P.length]; return acc + x * y2 - x2 * y; }, 0) < 0) P = P.slice().reverse(); // (counter-clockwise, y up)
+    const V2 = P.map(([x, y]) => new THREE.Vector2(x, y)), idx = THREE.ShapeUtils.triangulateShape(V2, []), rc = [(r0 + r1) / 2, (rv0 + rv1) / 2];
+    for (const [a, c, d] of idx) { // (a face each way; triangulateShape may wind either, so each is made counter-clockwise by its own normal)
+      const tri = [a, c, d].map((i) => P[i]), area = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0]) * (tri[1][1] - tri[0][1]), o = area < 0 ? [0, 2, 1] : [0, 1, 2];
+      const at = (i, z) => [tri[i][0] * R, cy + tri[i][1] * R, z], uv = (i) => [cu + tri[i][0] * hu, cv + tri[i][1] * hv];
+      b.tri(at(o[0], t / 2), at(o[1], t / 2), at(o[2], t / 2), [0, 0, 1], uv(o[0]), uv(o[1]), uv(o[2]));
+      b.tri(at(o[0], -t / 2), at(o[2], -t / 2), at(o[1], -t / 2), [0, 0, -1], uv(o[0]), uv(o[2]), uv(o[1]));
+    }
+    const n = P.length; // (the edge, on the rim cell's centre)
+    for (let i = 0; i < n; i++) {
+      const [ax, ay] = P[i], [bx, by] = P[(i + 1) % n], len = Math.hypot(bx - ax, by - ay) || 1, nx = (by - ay) / len, ny = -(bx - ax) / len;
+      b.quad([ax * R, cy + ay * R, -t / 2], [bx * R, cy + by * R, -t / 2], [bx * R, cy + by * R, t / 2], [ax * R, cy + ay * R, t / 2], [nx, ny, 0], [rc[0], rc[1], rc[0], rc[1]]);
+    }
+    const fw = R * 0.6, ft = t * 1.8; // (the foot: a small block under the glyph)
+    b.quad([-fw, 0, ft], [fw, 0, ft], [fw, foot + 0.004, ft], [-fw, foot + 0.004, ft], [0, 0, 1], [rc[0], rc[1], rc[0], rc[1]]);
+    b.quad([fw, 0, -ft], [-fw, 0, -ft], [-fw, foot + 0.004, -ft], [fw, foot + 0.004, -ft], [0, 0, -1], [rc[0], rc[1], rc[0], rc[1]]);
+    b.quad([-fw, foot + 0.004, ft], [fw, foot + 0.004, ft], [fw, foot + 0.004, -ft], [-fw, foot + 0.004, -ft], [0, 1, 0], [rc[0], rc[1], rc[0], rc[1]]);
+    b.quad([fw, 0, ft], [fw, 0, -ft], [fw, foot + 0.004, -ft], [fw, foot + 0.004, ft], [1, 0, 0], [rc[0], rc[1], rc[0], rc[1]]);
+    b.quad([-fw, 0, -ft], [-fw, 0, ft], [-fw, foot + 0.004, ft], [-fw, foot + 0.004, -ft], [-1, 0, 0], [rc[0], rc[1], rc[0], rc[1]]);
+    return b.done();
+  });
+}
+/** A seat rim: a thin flat frame of the seat colour (and its pattern) round a w x d footprint on the cloth, `band` wide, 2 mm proud
+ *  (slot 1, the glaze); put it under what a seat owns. Centred on the origin, lying in x and z. */
+export function seatRimTpl(colour, w, d, band = 0.012) {
+  return memo(`seatrim:${colour}:${w}:${d}:${band}`, () => {
+    const A = bazaarAtlas(), b = builder(), r = A.seat(colour, 'rim'), x = w / 2 + band, z = d / 2 + band, xi = w / 2, zi = d / 2, y = 0.002;
+    const q = (a, bb, c, dd) => b.quad(a, bb, c, dd, [0, 1, 0], r);
+    q([-x, y, z], [x, y, z], [x, y, zi], [-x, y, zi]); q([-x, y, -zi], [x, y, -zi], [x, y, -z], [-x, y, -z]);
+    q([-x, y, zi], [-xi, y, zi], [-xi, y, -zi], [-x, y, -zi]); q([xi, y, zi], [x, y, zi], [x, y, -zi], [xi, y, -zi]);
     return b.done();
   });
 }
