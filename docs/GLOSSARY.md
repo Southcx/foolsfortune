@@ -268,6 +268,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **Querent / Astroll** (Querent: Espada's and the owner's, 2026-10-15; Astroll: the owner's; `casino/querent/`, `casino/zodiac.js`, `casino/eventhorizon.js`) — the owner's tarot game
   (melds, steals, the Fate Clause, Major Arcana flipped as boons) / the owner's dice games with a standard set (Zodiac, Event Horizon,
   ...). *Not:* the game's own title (Fool's Fortune), the Veritome's Major Arcana page.
+- **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
+- **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.
@@ -636,7 +638,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | key | a keyboard key; a Possibilikey | "Possibilikey", in full |
 | station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
-| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
+| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`); a card of the house deck (Raku's tables: `cardTpl`) | "card" is the Veritome's; the title's are scenery; "a choice card", "a house card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the clay folk's (earthenware .. the Court); a Querent hand's (1 .. 3) | "chest tier", "achievement tier", "fish tier", "the clay folk's tiers", "a hand's tier" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
