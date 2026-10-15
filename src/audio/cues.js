@@ -76,6 +76,11 @@ const RULES = {
   'citytrial.stadium': (s) => s.cityTrialStadium?.(),
   'wager.place': (s) => s.wagerPlace?.(),
   'wager.settle': (s, e) => s.wagerSettle?.(!!e.won),
+  'bazaar.enter': (s) => s.bazaarEnter?.(), // (Raku's bazaar: audio/casino.js; its cue music/casino.js)
+  'casino.chips': (s, e) => s.casinoChips?.(!!e.cash),
+  'casino.sit': (s) => s.casinoSit?.(),
+  'casino.play': (s, e) => s.casinoPlay?.(e.what),
+  'casino.result': (s, e) => s.casinoResult?.(!!e.won),
   'race.escape.wake': (s) => s.escapeWake?.(),
   'race.escape.caught': (s) => s.escapeCaught?.(),
   'race.start': (s, e) => { s._place = null; s.raceWet?.(e.aspect === 'grief' || e.aspect === 'mirth'); }, // (rain: wet sand under the board)
