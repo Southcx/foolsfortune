@@ -679,6 +679,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 NEW:modal-pauses-the-table. **What runs under its own window keeps its clock there.** A page that counts as a modal window (the index's,
    the Codex's) stops the world's tick; a game played on that page (a table's bots, a timer) is ticked from main.js's modal line
    (`tickModal`), never only from the module's `update`. A headless probe that calls `update` itself does not prove it.
+NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place whose ground or geometry runs to tens of MB builds it on
+   arrival and gives it back a few real seconds after the Courier has left (keeping only what is slow to work out again, like a
+   field of heights); the heap after a visit is measured, not only the heap inside.
 
 ## Cases
 
@@ -3752,3 +3755,15 @@ NEW:modal-pauses-the-table. **What runs under its own window keeps its clock the
   Calissa's table view (`vfx/bazaartable.js`) ticks it too; both stay, and `TableSession.update` steps once a frame however many call
   it (`game.clock.frame`, main.js), so neither caller has to know of the other.
 - **Rule:** NEW:modal-pauses-the-table.
+
+### 2026-10-15 · The Raceway park kept 160 MB after one visit (Petra, the gate: `npm run perf` over budget, 466 MB against 445)
+- **Seen:** the built game, after gc: 290 MB at boot, 452 after one visit to the Raceway, still 452 in the bazaar afterwards.
+- **Cause, measured** (dev heap, gc'd): the park's chunked terrain is 108 MB on its 1,057 x 1,057 grid (positions and normals 29, the
+  chunks' index lists 42, the index buffer 31, heights 4.5); its physics height field 5; the field of heights 4.5; my rails, kit and
+  features 12; Calissa's dressing 17 at arrival and 36 more in the first seconds there. All of it was kept for the session.
+- **Fix:** the ground is lent (`world/raceway/raceway.js`): `releaseGround()` after 10 real seconds away gives back the terrain and its
+  height field's body; `buildGround()` makes them again from the kept field on the next arrival (0.64 s dev, 0.74 s built, under the
+  travel's cover). Built: 295 at boot, 467 inside, **364 after leaving** (was 452). The dressing can follow by `onRelease`
+  (Calissa's); the terrain's own arrays could shrink (lists built on demand, the index buffer sized to what is drawn: Petra's
+  `render/terrain.js`).
+- **Rule:** NEW:lend-the-big-ground.
