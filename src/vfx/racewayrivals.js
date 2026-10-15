@@ -18,6 +18,11 @@
 //       the tumble while spun out by a takedown (r.wreck: the group's spin is Dovina's): the rider cartwheels off the deck and lands
 //                  back, lid open, arms flung; dizzy wobble after
 //       the cheer  arms up and the lid open when it finishes (race.rival.finish)
+//       the knock  a bump (race.bump { impact, at }): the whole unit jolted away from the Courier and back (a shove out, an overshoot,
+//                  settled over JOLT.dur), banked off the hit, the jar squashed and its lid popped, sized by the impact; a clay knock
+//                  at `at` (vfx/racewayknockeffects.js raceway.rival.bump: chips of its glaze and bare clay, grit, dust)
+//       the break  a takedown (race.takedown): the jolt at full, the board spun flat about its up as the rider cartwheels (the
+//                  tumble), and the big break: sparks, sherds of its glaze, dust, a beat of the house's hit-stop (raceway.rival.takedown)
 //   THE SIBLINGS (the Sibling roster): no clapperjar; each its own rig riding the board at the Courier's size, its hull in its division's
 //     body glaze and its sail dyed its trim's (vfx/racewaysiblingriders.js; the hull's glaze: vfx/hullglaze.js). The rivals' hull is a
 //     painted copy of the Courier's own, so a hull glaze fired at the kiln stays on the Courier's board.
@@ -26,7 +31,7 @@
 // pupils; the placeholders' three removed.
 //
 // Prior art: Mario Kart's and Crash Team Racing's CPU racers (each its own colour and body, a taunt as it passes you, a tumble when hit),
-// Burnout 3's takedown spin, Kirby Air Ride's little riders leaning on their stars; the workshop's own clapperjars (creatures/clappers.js:
+// Burnout 3's takedown spin (and its held frame), Mario Kart's bump (a shove and a spark), Kirby Air Ride's little riders leaning on their stars; the workshop's own clapperjars (creatures/clappers.js:
 // the lid's clap, the arm's wave, the stunned wobble), whose numbers these follow.
 //
 //   const L = new RacewayRivals(game)   L.update(dt, rivals, race)  (rivals.js: dresses each rival's group once both models are in)
@@ -46,20 +51,22 @@ import { glazeHull } from './hullglaze.js';
 /** The numbers. The board: its scale of the Solar Skiff, the boom's swing to leeward (rad per rad/s of turn); the rider: its scale, where
  *  it stands (m, the board's frame: +Z the bow), how far it sits into the deck; the lean (rad at most, the board's share of it, the
  *  rider's extra); the bob (hops a second at top speed, its height m, squash); the clap (real s, flaps a second); the tumble (real s of
- *  the spin-out it takes, its hop m); the glazes, one a rival; the sail's dye (share of the glaze over the cream). */
+ *  the spin-out it takes, its hop m, the board's turns flat); the jolt (real s, m at full, the bank (rad a metre), squash, the impact at
+ *  full (m/s of closing), a takedown's jolt against a full bump's); the glazes, one a rival; the sail's dye (share of the glaze over the cream). */
 export const RIVAL_LOOK = {
   mini: { scale: 0.72, boom: 0.5, boomRest: 0.35 },
   rider: { scale: 2.0, z: -0.34, sink: 0.02 },
   lean: { max: 0.55, board: 0.6, rider: 0.3, ease: 6 },
   bob: { rate: 2.6, hop: 0.05, squash: 0.06, top: 30 },
   clap: { dur: 1.1, rate: 13 },
-  tumble: { dur: 1.1, hop: 0.9 },
+  tumble: { dur: 1.1, hop: 0.9, spin: 1.5 },
+  jolt: { dur: 0.55, shift: 0.35, bank: 0.5, squash: 0.18, impact: 6, takedown: 1.6 },
   glazes: ['celadon', 'jun', 'oxblood'],
   dye: 0.55,
 };
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
-const _q = new THREE.Quaternion(), _v = new THREE.Vector3();
+const _q = new THREE.Quaternion(), _v = new THREE.Vector3(), _w = new THREE.Vector3();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const clamp = THREE.MathUtils.clamp, damp = THREE.MathUtils.damp;
 const smooth = (x) => { const t = clamp(x, 0, 1); return t * t * (3 - 2 * t); };
@@ -71,7 +78,8 @@ export class RacewayRivals {
     const E = game.events;
     const of = (e) => this.V?.list?.[e.rival]?.group?.userData.rivalLook;
     // a bump the Courier made that did not take it down: it claps back; a finish: it cheers (a takedown is its r.wreck, read each frame)
-    E?.on('race.bump', (e) => { const L = of(e); if (L) this.clap(L); });
+    E?.on('race.bump', (e) => { const L = of(e); if (L) { this.clap(L); this.knock(L, e, 'bump'); } });
+    E?.on('race.takedown', (e) => { const L = of(e); if (L) this.knock(L, e, 'takedown'); });
     E?.on('race.rival.finish', (e) => { const L = of(e); if (L) L.cheer = 1; });
   }
 
@@ -173,6 +181,20 @@ export class RacewayRivals {
 
   clap(L) { if (L.clapT <= 0) L.clapT = RIVAL_LOOK.clap.dur; }
 
+  /** A bump or a takedown landed on a rival: its jolt (the way from the Courier through it, in its own frame, and how hard) and the
+   *  clay's knock or break played where it was struck. */
+  knock(L, e, kind) {
+    const J = RIVAL_LOOK.jolt, G = L.unit.parent, P = this.game.player?.pos; if (!G) return;
+    const big = kind === 'takedown', k = big ? J.takedown : clamp((e.impact ?? 3) / J.impact, 0.25, 1);
+    const at = e.at ? _w.set(e.at.x, e.at.y, e.at.z) : G.getWorldPosition(_w);
+    const dir = P ? _v.set(at.x - P.x, 0, at.z - P.z) : _v.set(0, 0, 0);
+    if (dir.lengthSq() < 1e-4) dir.set(1, 0, 0); dir.normalize();
+    L.joltDir = (L.joltDir || new THREE.Vector3()).copy(dir).applyQuaternion(G.getWorldQuaternion(_q).invert()).setY(0).normalize();
+    L.joltK = Math.max(k, (L.jolt || 0) > 0.5 ? L.joltK || 0 : 0); L.jolt = 1; // (a knock on a knock still settling keeps the harder)
+    const pos = at.clone().addScaledVector(UP, 0.6), d = dir.clone().addScaledVector(UP, big ? 0.8 : 0.5).normalize();
+    this.game.vfx?.play(big ? 'raceway.rival.takedown' : 'raceway.rival.bump', { pos, dir: d, tint: L.mat?.color?.getHex?.() ?? 0xb4603f, power: big ? 1 : 0.6 + k, floor: at.y });
+  }
+
   /** Per frame, from rivals.js: dress what is new, then ride each. */
   update(dt, V, race) {
     this.V = V; this.t += dt;
@@ -207,7 +229,12 @@ export class RacewayRivals {
     if (wrecked) L.tumble += dt;
     const tp = wrecked ? clamp(L.tumble / A.tumble.dur, 0, 1) : 1, tumbling = wrecked && tp < 1;
     // ---- the board: banked (its share), a wobble while spun out
-    L.unit.quaternion.setFromAxisAngle(Z, -L.lean * A.lean.board + (wrecked ? Math.sin(t * 11) * 0.12 * (r.wreck / (L.out || 1)) : 0));
+    // the jolt: shoved out from the hit, over and back, settled (p 0..1 through it), banked off it; a takedown's board spun flat
+    let jolt = 0;
+    if (L.jolt > 0) { L.jolt = Math.max(0, L.jolt - dt / A.jolt.dur); const p = 1 - L.jolt; jolt = Math.sin(p * Math.PI * 2.5) * (1 - p) * (1 - p) * (L.joltK || 0); }
+    if (L.joltDir) L.unit.position.copy(L.joltDir).multiplyScalar(jolt * A.jolt.shift);
+    L.unit.quaternion.setFromAxisAngle(Z, -L.lean * A.lean.board + (wrecked ? Math.sin(t * 11) * 0.12 * (r.wreck / (L.out || 1)) : 0) + (L.joltDir ? L.joltDir.x * jolt * A.jolt.shift * A.jolt.bank : 0));
+    if (tumbling) L.unit.quaternion.premultiply(_q.setFromAxisAngle(UP, smooth(tp) * Math.PI * 2 * A.tumble.spin));
     if (sk?.P) {
       const P = sk.P, F = P.sample('Skiff_RideCruise', t, L.frame, true), B = L.bones;
       for (let i = 0; i < P.nb; i++) { const b = B[i]; if (!b) continue; b.position.fromArray(F.p, i * 3); b.quaternion.fromArray(F.q, i * 4); b.scale.fromArray(F.s, i * 3); }
@@ -238,6 +265,7 @@ export class RacewayRivals {
     }
     if (r.done != null) L.cheer = 1;
     if (L.cheer > 0) { armL = 1.8 + Math.sin(t * 9) * 0.2; armR = -1.8 - Math.sin(t * 9 + 1) * 0.2; lid = Math.max(lid, 0.6); }
+    if (jolt) { squash -= Math.abs(jolt) * A.jolt.squash; lid = Math.max(lid, Math.abs(jolt) * 0.8); }
     if (wrecked) { lid = Math.max(lid, tumbling ? 0.9 : 0.4); armL = 2.2 + Math.sin(t * 17) * 0.4; armR = -2.2 - Math.sin(t * 15) * 0.4; foreL = Math.sin(t * 13) * 0.8; foreR = -Math.sin(t * 12) * 0.8; squash = tumbling ? -0.08 : squash; }
     if (J.body) J.body.scale.set(1 - squash * 0.5, 1 + squash, 1 - squash * 0.5);
     // the head: the lid (about its hinge) and a look toward the Courier when near, a dizzy sway after a takedown
