@@ -20,6 +20,11 @@
 //                                                 target null (or absent) puts no hole in: the whole page dims and the line is centred
 //   howTo.stop()                                 ends a lesson without calling onDone or onSkip
 //   howTo.playing                                true while a lesson runs
+//   playCoach(steps, { resolve, isDone, onDone, onSkip })
+//                                                the coach's steps (Dovina's session.howto.steps: { say, show, line, target, wait }) on
+//                                                the same overlay. target (else show) is a role the caller resolves: resolve(role) ->
+//                                                DOMRect | null (null: no hole, the line centred). A truthy wait holds the step until
+//                                                isDone(step) is true (the player's own move); with no isDone it is a plain NEXT step.
 //   helpButton(onReplay) -> element              the small "?" that replays a how-to (its own button, always on top of the veil)
 // ---------------------------------------------------------------------------------------
 import { filmColour } from '../vfx/oxidation.js';
@@ -267,6 +272,24 @@ let shared = null;
 export function howTo() {
   if (!shared) shared = new HowTo({ root: document.body });
   return shared;
+}
+
+// The coach's lesson on the page's how-to: a role is resolved to a rectangle by the caller each frame, so a moving piece keeps its hole.
+// A step's wait is met by isDone(step); a failing resolve or isDone reads as no hole and not met, never a throw.
+export function playCoach(steps = [], { resolve = () => null, isDone = null, onDone = null, onSkip = null } = {}) {
+  const mapped = (steps || []).map((s) => {
+    const role = s.target ?? s.show ?? null;
+    const step = {
+      line: String(s.line ?? s.say ?? ''),
+      target: () => {
+        if (role == null) return null;
+        try { return resolve(role) || null; } catch (err) { return null; }
+      },
+    };
+    if (s.wait && isDone) step.wait = () => { try { return !!isDone(s); } catch (err) { return false; } };
+    return step;
+  });
+  return howTo().play(mapped, { onDone, onSkip });
 }
 
 // The small "?" that replays a how-to. It sits at the top right of the page, over the veil, and calls onReplay (the caller's play).

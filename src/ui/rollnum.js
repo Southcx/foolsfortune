@@ -6,14 +6,17 @@
 //                the columns staggered 50 ms left to right. A new length rebuilds the columns (rolling up from 0).
 //   THOUSANDS    thin spaces. A minus sign stands as its own glyph.
 //   THE POP      once every digit has settled the whole number jumps 1.12x and back (0.18 s), the cue that it is final.
-//   TIERS        XL 56px, L 34px, M 20px, S 14px at 1080 lines (the brief's size tiers), scaled by the viewport height (--rn-scale).
+//   TIERS        XXL 128px (the ceremony's total), BOX 72px (its two boxes), XL 56px, L 34px, M 20px, S 14px at 1080 lines, scaled by the
+//                viewport height (--rn-scale). A caller may fit one to its box with `n.fit(maxWidthPx)`.
+//   NO FILM      a number never wears the film itself (background-clip:text does not paint through the columns' transforms): a caller lays
+//                the film on a plain overlay once the number has settled (scoreceremony.js).
 //
 // Prior art: Balatro's score counter (Crosley's approximate timings: ~0.4 s roll, 50 ms stagger, pop on settle), the mechanical
 // odometer, and the split-flap board's per-column delay. CSS transform transitions are the browser's own (no dependency).
 //
 //   const n = new RollingNumber(el, { tier: 'L', colour: '#f4ecd8', speed: 1 })   n.set(v)   n.to(v, { dur, stagger }) -> Promise   n.value   n.destroy()
 // ---------------------------------------------------------------------------------------
-export const TIERS = { XL: 56, L: 34, M: 20, S: 14 }; // (CSS px at 1080 lines)
+export const TIERS = { XXL: 128, BOX: 72, XL: 56, L: 34, M: 20, S: 14 }; // (CSS px at 1080 lines; XXL is the ceremony's total, BOX its BASE and MULT)
 export const ROLL = { dur: 0.4, stagger: 0.05, ease: 'cubic-bezier(.34,1.56,.64,1)', pop: 0.18 };
 
 const CSS = `
@@ -52,6 +55,13 @@ export class RollingNumber {
     this.text = '0';
     this.build(this.text);
     this.settle(this.text, 0, 0);
+  }
+
+  /** Shrink the size (never grow it) so the value shown, or `v`, fits `maxPx` wide at the current --rn-scale. */
+  fit(maxPx, v = this.value) {
+    const t = formatNumber(v), em = [...t].reduce((a, c) => a + (c === ' ' ? 0.28 : 0.62), 0);
+    const base = parseFloat(this.el.style.getPropertyValue('--rn-size')) || 34, sc = parseFloat(getComputedStyle(this.el).getPropertyValue('--rn-scale')) || 1; // (a unitless number set by the caller)
+    this.el.style.setProperty('--rn-size', Math.max(10, Math.min(base, maxPx / (em * sc))) + 'px');
   }
 
   colour(c) { this.el.style.setProperty('--rn-colour', c); }

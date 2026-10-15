@@ -12,21 +12,23 @@
 // Prior art: Slay the Spire's side box (a card's keyword explained beside it, the reading order label, text, keywords), Hearthstone's
 // keyword glossary panel, and the Xbox Accessibility Guidelines 101 and 103 (readable text, a number's meaning also in its word).
 //
-//   tableTip({ label, line, stats, keywords }) -> el     stats: [{ label, value, kind: 'score'|'money'|'loss'|'count' }]
+//   tableTip({ label, line, stats, keywords }) -> el     a visible box (div.tt-box) for one piece's info, placed by the caller
+//                                                         stats: [{ label, value, kind: 'score'|'money'|'loss'|'count' }]
 //                                                         keywords: ['stun', ...] (ids of ui/keywords.js) or [{ label, means }]
 //   showTableTip(info, x, y)                             the one tip (made once, in the body); x, y in client pixels
 //   hideTableTip()
-//   DEMO_TIP                                             a sample with two keywords, for the stub
+//   DEMO_TIP                                             a sample (Nebula Bluff's words) with two keywords, for the stub
 // ---------------------------------------------------------------------------------------
 import { keyworded, installKeywords, KEYWORDS } from './keywords.js';
 import { iconEl } from './icons/icons.js';
 
 const CSS = `
-.tt-tip { position: fixed; z-index: 75; display: none; box-sizing: border-box; width: max-content; max-width: min(34vh, 92vw); pointer-events: none;
+.tt-tip { position: fixed; z-index: 75; display: none; box-sizing: border-box; width: max-content; pointer-events: none; }
+.tt-tip.on { display: block; }
+.tt-box { box-sizing: border-box; width: max-content; max-width: min(34vh, 92vw); pointer-events: none;
   padding: .7em .9em .8em; border-radius: 6px; color: #f6ead8; font: 500 max(12px, 1.3vh) / 1.35 var(--f-ui, sans-serif);
   background: linear-gradient(180deg, #3a2a46 0%, #17111f 100%); border: 1px solid rgba(246, 234, 216, .32);
   box-shadow: 0 0 0 1px #0a060e, 0 8px 18px rgba(0, 0, 0, .6); text-shadow: 1px 1px 0 rgba(8, 3, 1, .6); }
-.tt-tip.on { display: block; }
 .tt-head { font: 800 max(16px, 2.6vh) / 1.1 var(--f-ui, sans-serif); letter-spacing: .05em; color: #f6ead8; margin-bottom: .35em; }
 .tt-line { font: 500 max(12px, 1.5vh) / 1.35 var(--f-ui, sans-serif); color: #efe2d4; }
 .tt-line .cnum { color: #ffd98a; font-weight: 800; }
@@ -43,7 +45,7 @@ const CSS = `
 `;
 
 let installed = false, tip = null;
-/** Its CSS and its element, once. */
+/** Its CSS and its host element, once: the one shared tip, hidden until showTableTip places it. */
 function install() {
   if (installed || typeof document === 'undefined') return;
   installed = true; installKeywords();
@@ -65,12 +67,11 @@ function keywordRow(k) {
   return row;
 }
 
-/** A tip's element for one piece's info (not yet placed): the genre word, the line, the stat chips, the keywords explained. */
+/** A visible box for one piece's info: the genre word, the line, the stat chips, the keywords explained. The caller places it. */
 export function tableTip({ label = '', line = '', stats = [], keywords = [] } = {}) {
   install();
   const el = document.createElement('div');
-  el.className = 'tt-tip';
-  el.setAttribute('role', 'tooltip');
+  el.className = 'tt-box';
   const head = document.createElement('div'); head.className = 'tt-head'; head.textContent = label;
   el.append(head);
   if (line) { const l = document.createElement('div'); l.className = 'tt-line'; l.append(keyworded(line)); el.append(l); }
@@ -97,8 +98,7 @@ export function tableTip({ label = '', line = '', stats = [], keywords = [] } = 
 export function showTableTip(info, x, y) {
   install();
   if (!tip) return;
-  const next = tableTip(info);
-  tip.replaceChildren(...next.childNodes);
+  tip.replaceChildren(tableTip(info));
   tip.classList.add('on');
   const w = tip.offsetWidth, h = tip.offsetHeight, pad = 14;
   const left = x + pad + w > innerWidth ? x - pad - w : x + pad;
@@ -110,11 +110,13 @@ export function showTableTip(info, x, y) {
 /** The tip goes away (a piece left, the seat left, a view drawn again). */
 export function hideTableTip() { tip?.classList.remove('on'); }
 
-/** A sample for the stub: a piece with two keywords (a listed one, and one the line already names). */
+/** A sample for the stub: Nebula Bluff's words, with two keywords explained (a game's own, in the coach's words; no Parry, no Seal). */
 export const DEMO_TIP = {
-  label: 'SHUT THE BOX',
-  line: 'Shut this tile to score it. Your Parry seals it early.',
-  stats: [{ label: 'SHUT', value: '7 / 12' }, { label: 'POT', value: 30, kind: 'money' }, { label: 'LOCKS', value: 2, kind: 'count' }],
-  keywords: ['parry', { label: 'Seal', means: 'Shut the tiles that add to your dice.' }],
+  label: "LIAR'S DICE",
+  line: 'Claim what your hand is worth. Others can Call your bluff, or back down.',
+  stats: [{ label: 'YOUR HAND', value: 49 }, { label: 'DICE', value: 4, kind: 'count' }, { label: 'POT', value: 18, kind: 'money' }],
+  keywords: [
+    { label: 'Claim', means: 'Say what your dice are worth. A claim you cannot make good costs you dice.' },
+    { label: 'Call', means: 'Say the claimant is lying. Their cups lift and the dice are counted.' },
+  ],
 };
-

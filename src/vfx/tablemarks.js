@@ -3,26 +3,27 @@
 // table view's world marks, drawn on the cloth and carrying no words. The film (violet, teal, gold, magenta, walking) means only
 // "now / you can / it matters"; the seat colour means only "whose", and always travels with its shape (a second cue for the
 // colour-blind: Red circle, Yellow triangle, Green square, Blue diamond, Purple hexagon, Pink star, Black cross, White ring).
-//   - THE TURN RING: round the acting seat (a bot's too), the seat's colour outside and a ring of film-lit arcs walking round inside.
+//   - THE TURN RING: a slim ring (r 0.07 m) at the seat's edge of the cloth, behind its hand, the seat's colour outside, film-lit arcs walking
+//     inside and the seat's shape at its heart (a bot's turn too).
 //   - THE SEAT MARKER: the seat's shape lying on the cloth at its place, and a small copy of it at the corner of every piece it owns.
 //   - A SEAT RIM: a thin band in the seat colour round each piece the seat owns (`seats[].owns`).
-//   - A LEGAL RIM: a film-lit band, a hair proud of the cloth, round each piece you may take.
+//   - A LEGAL RIM: a clear film-lit band (15 mm, thick enough for 480 lines), round each piece you may take, which rises a hair (`lift`).
 //   - THE CHOSEN: a wider white-gold rim, double banded, and a lift (`lift(id)`, 0.06 m) the table adds to the piece.
-//   - THE DIM: no rim; a dark well in the felt round the piece, and `sink(id)` / `shade(id)` for the table to lower and darken it.
+//   - THE DIM: no mark of its own (an opaque quad reads as a hole): the layout chooses the atlas's dim twin of the piece; `sink(id)` / `shade(id)` ease it.
 // Everything is one PieceBatch (vfx/bazaarpieces.js) of its own, so three draw calls however many marks. 0 new programs: its three
 // materials are the stock MeshStandardMaterial with a map (the bazaar pieces' own parameters), told apart only by uniforms; the
-// map is a 64 px atlas of flat cells (the eight seat colours, the film's base, white-gold, the well), drawn once. The lit
+// map is a 64 px atlas of flat cells (the eight seat colours, the film's base, white-gold), one per seat look. The lit
 // material's emissive walks the film by `schillerInk` (vfx/oxidation.js), as the table's own lit pieces do: never a second iridescence.
 //
 // Prior art: Mahjong Soul's and Hearthstone's lit playable pieces, a poker client's acting-seat halo and fold-dim, Slay the Spire's
 // glowing playable cards, Okabe-Ito's colour-blind palette plus a shape cue (the brief's hexes), Overcooked's turn rings.
 //
 //   const marks = new TableMarks(sceneOrGroup, { frame, clothY, seatLook })   frame: an Object3D whose world matrix the marks follow (the
-//     table's piece mesh, so they sit in its frame); clothY: the cloth's height in that frame (default 0); seatLook: { Red: { hex, shape }, ... }
+//     table's piece mesh, so they sit in its frame); the mesh's local matrix is parent.matrixWorld^-1 * frame.matrixWorld, so any parent works; clothY: the cloth's height in that frame (default 0); seatLook: { Red: { hex, shape }, ... }
 //     to use instead of the built-in eight (Calissa's seatlook.js at the merge).
 //   marks.set({ turnSeat, seats: [{ seat, colour, at: Vector3, owns?: [pieceId] }], legal: [id], chosen: [id], dim: [id] },
 //             pieceAt)   pieceAt(id) -> { pos: Vector3 (its place on the cloth; only x and z are read), size: number | { w, d }, yaw?, round? } | null
-//   marks.update(dt)   marks.lift(id) -> metres to add to the piece   marks.sink(id) -> metres (negative) to add   marks.shade(id) -> 1..0.35
+//   marks.update(dt)   marks.lift(id) -> metres to add to the piece (chosen 0.06, legal 0.008)   marks.sink(id) -> metres (negative) to add   marks.shade(id) -> 1..0.35
 //   marks.dispose()    marks.mesh    SEAT_MARK_LOOK    markSeatShape(colour)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -41,20 +42,21 @@ export const markSeatShape = (colour, look = SEAT_MARK_LOOK) => (typeof colour =
 
 /** The numbers (metres, real seconds): the turn ring's radius and band widths, the rims' reach and widths, the seat marker's radius,
  *  the chosen lift, the dim sink, how fast a mark comes or goes (per second) and the film's walk. */
-export const MARKS = { turn: { r: 0.35, outer: 0.024, inner: 0.02, arcs: 12, spin: 0.35, pulse: 0.03 }, rim: 0.004, band: 0.005, legal: 0.005, chosen: 0.009,
-  marker: 0.05, pip: 0.016, lift: 0.06, sink: -0.003, ease: 14, glint: 0.22, y: 0.004, shade: 0.35 };
+export const MARKS = { turn: { r: 0.07, outer: 0.009, inner: 0.007, arcs: 10, spin: 0.35, pulse: 0.04, out: 0.14, glyph: 0.026 }, rim: 0.004, band: 0.005, legal: 0.015, chosen: 0.016,
+  marker: 0.05, pip: 0.016, lift: 0.06, hair: 0.008, sink: -0.003, ease: 14, glint: 0.22, y: 0.004, shade: 0.35 };
 
 // ------------------------------------------------------------------ the atlas: 8 columns of flat cells; a cell's colour read at its centre
 const CELLS = 8, PX = 8;
-const CELL = { film: 8, gold: 9, well: 10, dark: 11 }; // (seat colours are 0..7 in NAMES' order)
-let ATLAS = null;
+const CELL = { film: 8, gold: 9, dark: 11 }; // (seat colours are 0..7 in NAMES' order)
+const ATLASES = new WeakMap(); // (a look -> its atlas; the cells' places are the same in every one, so the templates below hold for all)
+const cellUv = (i) => [((i % CELLS) + 0.5) / CELLS, 1 - (Math.floor(i / CELLS) + 0.5) / CELLS];
 function atlas(look) {
-  if (ATLAS) return ATLAS;
+  if (ATLASES.has(look)) return ATLASES.get(look);
   const cv = document.createElement('canvas'); cv.width = cv.height = CELLS * PX; const g = cv.getContext('2d');
   const fill = (i, hex) => { g.fillStyle = `#${hex.toString(16).padStart(6, '0')}`; g.fillRect((i % CELLS) * PX, Math.floor(i / CELLS) * PX, PX, PX); };
-  NAMES.forEach((n, i) => fill(i, look[n].hex)); fill(CELL.film, 0x2a2038); fill(CELL.gold, 0xfff0b8); fill(CELL.well, 0x07050b); fill(CELL.dark, 0x120d18);
+  NAMES.forEach((n, i) => fill(i, look[n].hex)); fill(CELL.film, 0x2a2038); fill(CELL.gold, 0xfff0b8); fill(CELL.dark, 0x120d18);
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.anisotropy = 4; // (as bazaarfaces.js's)
-  return (ATLAS = { tex, uv: (i) => [((i % CELLS) + 0.5) / CELLS, 1 - (Math.floor(i / CELLS) + 0.5) / CELLS] });
+  const a = { tex, uv: cellUv }; ATLASES.set(look, a); return a;
 }
 
 // ------------------------------------------------------------------ templates: flat shapes in the xz plane facing up, y 0
@@ -90,15 +92,15 @@ function shapePts(shape, r) {
 function markerTpl(shape, r, cell, keyCell) {
   return memo(`marker:${shape}:${r}:${cell}:${keyCell}`, () => {
     const b = flat(), P = shapePts(shape, r);
-    if (keyCell != null) b.fan(shapePts(shape, r * 1.28), 0, atlas().uv(keyCell));
-    if (shape === 'ring') { b.band(ngon(20, r * 0.62), r * 0.38, 0.0008, atlas().uv(cell)); } else b.fan(P, 0.0008, atlas().uv(cell));
+    if (keyCell != null) b.fan(shapePts(shape, r * 1.28), 0, cellUv(keyCell));
+    if (shape === 'ring') { b.band(ngon(20, r * 0.62), r * 0.38, 0.0008, cellUv(cell)); } else b.fan(P, 0.0008, cellUv(cell));
     return b.done();
   });
 }
 /** The turn ring: the seat's colour outside; inside, arcs of film-lit band (which turn, being their own template per slot). */
-const turnOuterTpl = (cell) => memo(`turn:o:${cell}`, () => { const b = flat(), { r, outer } = MARKS.turn; b.band(ngon(64, r), outer, 0, atlas().uv(cell)); return b.done(); });
+const turnOuterTpl = (cell) => memo(`turn:o:${cell}`, () => { const b = flat(), { r, outer } = MARKS.turn; b.band(ngon(64, r), outer, 0, cellUv(cell)); return b.done(); });
 const turnArcsTpl = () => memo('turn:arcs', () => {
-  const b = flat(), { r, inner, arcs } = MARKS.turn, u = atlas().uv(CELL.film);
+  const b = flat(), { r, inner, arcs } = MARKS.turn, u = cellUv(CELL.film);
   for (let k = 0; k < arcs; k++) { const a0 = (k / arcs) * Math.PI * 2, span = (Math.PI * 2 / arcs) * 0.62, pts = [], seg = 5;
     for (let s = 0; s <= seg; s++) { const a = a0 + (s / seg) * span; pts.push([r * Math.cos(a), r * Math.sin(a)]); }
     for (let s = 0; s < seg; s++) { const p = pts[s], q = pts[s + 1], pi = [p[0] * (1 - inner / r), p[1] * (1 - inner / r)], qi = [q[0] * (1 - inner / r), q[1] * (1 - inner / r)]; b.tri(p, q, qi, 0.0012, u); b.tri(p, qi, pi, 0.0012, u); } }
@@ -111,7 +113,7 @@ function rimTpl(w, d, round, m, width, cell, y = 0) {
     const b = flat(); let pts;
     if (round) pts = ngon(28, Math.max(w, d) / 2 + m);
     else pts = rectCorners(w / 2 + m, d / 2 + m, Math.min(0.012, Math.min(w, d) / 2 * 0.4));
-    b.band(pts, width, y, atlas().uv(cell));
+    b.band(pts, width, y, cellUv(cell));
     return b.done();
   });
 }
@@ -120,14 +122,8 @@ function rectCorners(x, z, c) { // (a rounded rectangle, counter-clockwise: four
   for (const [cx, cz, a0] of [[x - c, z - c, 0], [-(x - c), z - c, 0.5], [-(x - c), -(z - c), 1], [x - c, -(z - c), 1.5]]) for (let s = 0; s <= 3; s++) { const a = (a0 + (s / 3) * 0.5) * Math.PI; out.push([cx + c * Math.cos(a), cz + c * Math.sin(a)]); }
   return out;
 }
-/** A dark well in the felt: a dark band round the piece (so the sunk piece itself still reads, dimmed). */
-function wellTpl(w, d, round, m) {
-  const q = (v) => Math.round(v * 1000);
-  return memo(`well:${q(w)}:${q(d)}:${round}:${q(m)}`, () => { const b = flat(), pts = round ? ngon(24, Math.max(w, d) / 2 + m) : rectCorners(w / 2 + m, d / 2 + m, Math.min(0.012, (Math.min(w, d) / 2 + m) * 0.4)); b.band(pts, 0.014, 0.0004, atlas().uv(CELL.well)); return b.done(); });
-}
-
 // ------------------------------------------------------------------ the marks
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _c = new THREE.Color();
+const _m = new THREE.Matrix4(), _inv = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _c = new THREE.Color();
 const ease = (cur, to, k) => cur + (to - cur) * k;
 const footprint = (info) => { const s = info.size; return typeof s === 'number' ? { w: s, d: s, round: !!info.round } : { w: s.w, d: s.d ?? s.w, round: !!info.round }; };
 
@@ -144,7 +140,8 @@ export class TableMarks {
     this.t = 0; this.state = { turnSeat: null, seats: [], legal: [], chosen: [], dim: [] }; this.pieceAt = () => null;
     this.k = new Map(); // id -> { legal, chosen, dim } eased 0..1
     this.turn = { seat: null, k: 0 };
-    this.mats.lit.emissive.set(0x000000);
+    this.mats.lit.emissive.set(0x000000); this.mats.paper.map = this.mats.glaze.map = this.mats.lit.map = A.tex;
+    this._mp = Array.from({ length: 64 }, () => new THREE.Matrix4()); this._mi = 0; // (a pool of matrices for the batch: no allocation a frame)
   }
 
   /** The state to show: the acting seat, the seats (colour name or hex, place on the cloth, the ids they own), the ids you may take, those picked, those out of play. */
@@ -156,7 +153,7 @@ export class TableMarks {
   _look(colour) { return this.look[NAMES[this._cell(colour)]]; }
   _e(id) { let e = this.k.get(id); if (!e) this.k.set(id, (e = { legal: 0, chosen: 0, dim: 0 })); return e; }
   /** How far a picked piece rises (metres; the table adds it to the piece's own lift). */
-  lift(id) { return MARKS.lift * (this.k.get(id)?.chosen || 0); }
+  lift(id) { const e = this.k.get(id); return e ? MARKS.lift * e.chosen + MARKS.hair * e.legal : 0; }
   /** How far a piece out of play sinks into the felt (metres, negative). */
   sink(id) { return MARKS.sink * (this.k.get(id)?.dim || 0); }
   /** How bright a piece out of play is (1 lit .. MARKS.shade): the table scales the piece's colour by it, where it can. */
@@ -165,12 +162,13 @@ export class TableMarks {
   /** Every frame: ease each mark in or out, walk the film, and rebuild the batch (a few dozen small shapes). */
   update(dt) {
     this.t += dt; const S = this.state, k = 1 - Math.exp(-MARKS.ease * dt);
-    if (this.frame) { this.frame.updateMatrixWorld?.(); this.mesh.matrixAutoUpdate = false; this.mesh.matrix.copy(this.frame.matrixWorld); this.mesh.matrixWorldNeedsUpdate = true; }
+    if (this.frame) { this.frame.updateMatrixWorld?.(); this.mesh.matrixAutoUpdate = false; this.parent?.updateMatrixWorld?.(); this.mesh.matrix.multiplyMatrices(_inv.copy(this.parent?.matrixWorld || _m.identity()).invert(), this.frame.matrixWorld); this.mesh.matrixWorldNeedsUpdate = true; }
     const legal = new Set(S.legal), chosen = new Set(S.chosen), dim = new Set(S.dim), ids = new Set([...legal, ...chosen, ...dim, ...this.k.keys()]);
     for (const id of ids) { const e = this._e(id); e.legal = ease(e.legal, legal.has(id) && !chosen.has(id) ? 1 : 0, k); e.chosen = ease(e.chosen, chosen.has(id) ? 1 : 0, k); e.dim = ease(e.dim, dim.has(id) && !legal.has(id) && !chosen.has(id) ? 1 : 0, k);
       if (e.legal < 0.01 && e.chosen < 0.01 && e.dim < 0.01 && !legal.has(id) && !chosen.has(id) && !dim.has(id)) this.k.delete(id); }
     const B = this.batch, y0 = this.clothY + MARKS.y; B.clear();
-    const add = (tpl, x, y, z, yaw, sc, slot, id) => { const m = new THREE.Matrix4(); m.compose(_p.set(x, y, z), _q.setFromAxisAngle(_y, yaw), _s.set(sc, 1, sc)); B.add(tpl, m, slot, id); };
+    this._mi = 0;
+    const add = (tpl, x, y, z, yaw, sc, slot, id) => { const m = this._mp[this._mi] || (this._mp[this._mi] = new THREE.Matrix4()); this._mi++; m.compose(_p.set(x, y, z), _q.setFromAxisAngle(_y, yaw), _s.set(sc, 1, sc)); B.add(tpl, m, slot, id); };
 
     // the seats: their marker on the cloth, the turn ring round the acting one, a rim and a pip on what each owns
     const turn = S.seats.find((s) => s.seat === S.turnSeat); this.turn.k = ease(this.turn.k, turn ? 1 : 0, k);
@@ -186,19 +184,21 @@ export class TableMarks {
     }
     if (turn?.at && this.turn.k > 0.02) {
       const cell = this._cell(turn.colour), pulse = 1 + MARKS.turn.pulse * Math.sin(this.t * 3.2), sc = (0.6 + 0.4 * this.turn.k) * pulse;
-      add(turnOuterTpl(cell), turn.at.x, y0, turn.at.z, 0, sc, 1, `mk:turn:${turn.seat}`);
-      add(turnArcsTpl(), turn.at.x, y0, turn.at.z, -this.t * MARKS.turn.spin * Math.PI * 2, sc, 2, `mk:arcs:${turn.seat}`);
+      const d = Math.hypot(turn.at.x, turn.at.z) || 1, tx = turn.at.x + (turn.at.x / d) * MARKS.turn.out, tz = turn.at.z + (turn.at.z / d) * MARKS.turn.out; // (out toward the cloth's edge, behind the hand)
+      const L = this._look(turn.colour), key = L.keyline != null ? (L.keyline === 0x1a1420 || L.keyline === 0x1a1a1a ? CELL.dark : CELL.gold) : null;
+      add(turnOuterTpl(cell), tx, y0, tz, 0, sc, 1, `mk:turn:${turn.seat}`);
+      add(turnArcsTpl(), tx, y0, tz, -this.t * MARKS.turn.spin * Math.PI * 2, sc, 2, `mk:arcs:${turn.seat}`);
+      add(markerTpl(L.shape, MARKS.turn.glyph, cell, key), tx, y0, tz, 0, 1, 1, `mk:glyph:${turn.seat}`);
     }
 
     // the pieces: a legal rim (film), the chosen's white-gold double band, the dim's well
     for (const [id, e] of this.k) {
       const info = this.pieceAt(id); if (!info) continue; const f = footprint(info), yaw = info.yaw || 0, x = info.pos.x, z = info.pos.z;
-      if (e.dim > 0.02) add(wellTpl(f.w, f.d, f.round, 0.006), x, y0 - 0.002, z, yaw, 1, 0, `mk:dim:${id}`);
-      if (e.legal > 0.02) add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2, MARKS.legal, CELL.film), x, y0, z, yaw, 1 + (1 - e.legal) * 0.12, 2, `mk:legal:${id}`);
+      if (e.legal > 0.02) add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2, MARKS.legal, CELL.film), x, y0 + MARKS.hair * e.legal, z, yaw, 1 + (1 - e.legal) * 0.12, 2, `mk:legal:${id}`);
       if (e.chosen > 0.02) {
         const sc = 1 + (1 - e.chosen) * 0.12;
-        add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2, MARKS.chosen, CELL.gold), x, y0 + 0.0004, z, yaw, sc, 2, `mk:chosen:${id}`);
-        add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2 + MARKS.chosen + 0.006, MARKS.legal, CELL.film), x, y0, z, yaw, sc, 2, `mk:halo:${id}`);
+        add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2, MARKS.chosen, CELL.gold), x, y0 + MARKS.lift * e.chosen + 0.0004, z, yaw, sc, 2, `mk:chosen:${id}`);
+        add(rimTpl(f.w, f.d, f.round, MARKS.rim * 2 + MARKS.chosen + 0.006, MARKS.band, CELL.film), x, y0 + MARKS.lift * e.chosen, z, yaw, sc, 2, `mk:halo:${id}`);
       }
     }
     B.write(); this.mesh.visible = B.list.length > 0;
