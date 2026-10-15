@@ -183,6 +183,9 @@ decoration.
   4. the others' dice counts
   5. the pot
   6. the tell: the claimant's top chip wiggles. Calissa's riffle; later, on the folk's bodies, if they come to sit.
+- **The claims offered** (Calissa's ask, 2026-10-15: a bar of nine wrapped over your dice): the five nearest your hand's worth, the
+  smallest bluff, and the house's suggestion (`CLAIMS_SHOWN`, coach/nebula.js); Call and Fold always. Measured over 40 games: at most 8
+  choices on the bar, and the suggestion always among them. The pot is shown small, and only once it holds chips.
 - **The moment:** a call flips the claimant's dice face up one by one, totting up against the claim like a slot reel, and stops on
   CAUGHT or TRUE.
 
