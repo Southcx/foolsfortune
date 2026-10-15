@@ -12,6 +12,9 @@
 //     the game has them (`game.sfx.casinoTick / casinoMult / casinoReel / casinoFlourish`), and a shake of the camera in proportion.
 //   - THE HOW-TO (ui/howto.js `playCoach`): the coach's steps on a spotlight on the part of the table each is about, from the session's
 //     howto (the first sit, or the "?" button).
+//   - THE SEAT'S QUIET (G3): while seated the game's own HUD (the compass, the Lachryma meter) steps out and the log folds to its tab (it
+//     stays the record; the player's saved fold is never touched); the plates are kept inside the screen and out of the banner's and the
+//     action bar's way; the bar rises clear of the log.
 // Everything goes away on close(). No localStorage; no shader programs (DOM and CSS).
 //
 // Prior art: the poker clients' seats and action buttons, Monster Train's previews, Balatro's HUD and count-up, Slay the Spire's tips.
@@ -33,7 +36,7 @@ const GOLD = '#f2c14e';
 const CSS = `
 .tc-layer { position: fixed; inset: 0; z-index: 4; pointer-events: none; --u: calc(100vh / 1080); font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #f4ecd8; }
 .tc-lab { position: absolute; left: 0; top: 0; white-space: nowrap; text-shadow: 0 calc(2 * var(--u)) 0 #000c, 0 0 calc(10 * var(--u)) #000; font-weight: 900; will-change: transform; }
-.tc-lab.equation { font-size: calc(38 * var(--u)); letter-spacing: .03em; padding: calc(4 * var(--u)) calc(16 * var(--u)); background: #12163acc; border-radius: calc(10 * var(--u)); }
+.tc-lab.equation { font-size: calc(50 * var(--u)); letter-spacing: .03em; padding: calc(4 * var(--u)) calc(16 * var(--u)); background: #12163acc; border-radius: calc(10 * var(--u)); }
 .tc-lab.need { font-size: calc(30 * var(--u)); color: ${GOLD}; padding: calc(4 * var(--u)) calc(16 * var(--u)); background: #12163acc; border-radius: calc(10 * var(--u)); }
 .tc-lab.odds { font-size: calc(26 * var(--u)); padding: calc(6 * var(--u)) calc(14 * var(--u)); background: #12163aee; border: calc(2 * var(--u)) solid ${GOLD}; border-radius: calc(10 * var(--u)); }
 .tc-lab.legend { font-size: calc(18 * var(--u)); color: #cfc6dc; opacity: .9; }
@@ -45,6 +48,9 @@ const CSS = `
 .tc-lab.centre div { display: flex; flex-direction: column; align-items: center; line-height: 1; margin-bottom: calc(12 * var(--u)); }
 .tc-lab.centre b { font-size: calc(30 * var(--u)); } .tc-lab.centre i { font-style: normal; font-size: calc(15 * var(--u)); letter-spacing: .08em; color: #cfc6dc; text-transform: uppercase; }
 .tc-lab.centre .big b { font-size: calc(76 * var(--u)); } .tc-lab.centre .big i { font-size: calc(20 * var(--u)); color: ${GOLD}; }
+.tc-lab.centre .small b { font-size: calc(20 * var(--u)); } .tc-lab.centre .small i { font-size: calc(13 * var(--u)); }
+/* (while seated: the game's own HUD, the compass and the Lachryma meter, steps out; the table's words are the only ones) */
+body.bztable-seated #hud, body.bztable-seated #lachryma, body.bztable-seated #compass, body.bztable-seated #cubes { opacity: 0 !important; visibility: hidden !important; }
 .tc-br { position: absolute; left: 0; top: 0; height: 0; transform-origin: 0 50%; border-bottom: calc(5 * var(--u)) solid var(--bc); filter: drop-shadow(0 0 calc(5 * var(--u)) var(--bg)); }
 .tc-br::before, .tc-br::after { content: ''; position: absolute; bottom: calc(-5 * var(--u)); width: calc(5 * var(--u)); height: calc(18 * var(--u)); background: var(--bc); }
 .tc-br::before { left: 0; } .tc-br::after { right: 0; }
@@ -77,13 +83,26 @@ export class TableClarity {
     this.ceremony = new ScoreCeremony({ root: document.body, events: this.game.events, hud: { shake: (p) => this.shake(p) },
       onBeat: (kind, info) => { try { this.game.sfx?.[BEAT_SFX[kind]]?.(info); } catch { /* a sound never stops the count */ } } });
     this.help = helpButton(() => (this.sess?.real || this.sess)?.showHowto?.(), { label: 'How to play' });
+    this.quiet(true);
+  }
+  /** Seated: the game's own HUD out of the way (the cinema's class hides the compass and the tape; ours the meter), the log folded to its tab (not saved). */
+  quiet(on) {
+    const b = document.body, log = this.game.log;
+    if (on) {
+      this.cineWas = b.classList.contains('cine'); b.classList.add('bztable-seated', 'cine');
+      this.logWas = !!log?.mini; if (log && !log.mini) log.setMini(true, false);
+    } else {
+      b.classList.remove('bztable-seated'); if (!this.cineWas && !this.game.cinema?.cine) b.classList.remove('cine');
+      if (log && !this.logWas && log.mini) log.setMini(false, false);
+    }
   }
   close() {
     if (!this.layer) return;
-    this.stopHowto(); this.ceremony?.close(); this.ceremony = null; hideTableTip();
+    this.quiet(false); this.stopHowto(); this.ceremony?.close(); this.ceremony = null; hideTableTip();
     this.bar?.dispose?.(); this.bar?.remove(); this.bar = null; this.help?.remove(); this.help = null;
     this.hud?.unmount(); this.hud = null; this.layer.remove(); this.layer = null; this.labels.clear();
     this.sess = null; this.coach = null; this.S = null; this.barKey = ''; this.seenAt = -1;
+    document.getElementById('tc-style')?.remove();
   }
 
   shake(power) { this.shakeP = Math.max(this.shakeP, power); this.shakeLeft = 0.2 + 0.3 * power; }
@@ -161,20 +180,56 @@ export class TableClarity {
   /** Every frame: place the plates and the goal, write the words on the cloth, show the bar and the tip. */
   frame(dt, { anchors = [], pick = null, chosen = null, actable = null, hoverId = null, hoverTip = null, mouse = null } = {}) {
     if (!this.layer || !this.coach) return;
-    const W = innerWidth, H = innerHeight, u = H / 1080, seen = new Set(), c = this.coach;
+    const W = innerWidth, H = innerHeight, u = H / 1080, seen = new Set(), c = this.coach, plates = [];
     for (const a of anchors) {
       const p = this.project(a.at);
-      if (a.key.startsWith('seat:')) { const q = +a.key.slice(5); if (q === 0) this.hud.place(a.key, 230 * u, H * 0.5); else this.hud.place(a.key, Math.max(130 * u, Math.min(W - 130 * u, p.x)), Math.max(95 * u, Math.min(H - 215 * u, p.y))); continue; } // (yours stands at the left, clear of the log)
+      if (a.key.startsWith('seat:')) { const q = +a.key.slice(5), at = q === 0 ? { x: 230 * u, y: H * 0.5 } : p; plates.push([a.key, at.x, at.y]); continue; } // (yours stands at the left, clear of the log; all settled below)
       if (a.key === 'goal') { const g = this.hud.anchors.get('goal'); if (g) { g.style.display = ''; g.style.transform = `translate(${14 * u + 252 * u}px, ${14 * u + 104 * u}px) translate(-50%, -50%) scale(.7)`; } continue; }
-      if (a.key === 'centre') { this.write('centre', 'centre', p, c.centre.filter((e) => !HIDE_CENTRE.has(e.label)), seen); continue; }
+      if (a.key === 'centre') { this.write('centre', 'centre', p, this.centreRows(c), seen); continue; }
       if (a.text || a.kind === 'bracket') this.write(a.key, a.kind || 'legend', p, a, seen, a.to ? this.project(a.to) : null);
     }
     for (const [k, v] of this.labels) if (!seen.has(k)) { v.el.remove(); this.labels.delete(k); }
+    this.settlePlates(plates, W, H, u);
     // the bar: the coach's moves that are no single piece, and a handful or a set of tiles when few; the house's pick; AGAIN and STAND UP at the end
     const moves = this.barMoves(c, pick, chosen, actable), key = JSON.stringify(moves.map((m) => [m.id, m.best, m.label, m.preview]));
     if (key !== this.barKey) { this.barKey = key; this.bar.set(moves); this.bar.style.display = moves.length ? '' : 'none'; }
+    this.clearLog(H, u);
     // the tip under the cursor
     if (hoverTip && mouse && !this.ceremony?.el) showTableTip(hoverTip, mouse.x, mouse.y); else hideTableTip();
+  }
+
+  /** The shared numbers on the cloth, one number to a game with a small label (the explainers are the tip's): Querent's round; Zodiac's pot small
+   *  under the equation; Event Horizon's target and the house's count (its pot is the chips, with a tip). */
+  centreRows(c) {
+    const id = this.sess?.T?.id, rows = c.centre.filter((e) => !HIDE_CENTRE.has(e.label));
+    if (id === 'querent') return rows.filter((e) => e.label === 'Round').slice(0, 1);
+    if (id === 'zodiac') return rows.map((e) => ({ ...e, big: false, small: true }));
+    if (id === 'eventhorizon') return rows.filter((e) => e.label !== 'Pot').map((e) => (e.big ? e : { ...e, small: true }));
+    return rows;
+  }
+
+  /** The seat plates, each kept whole inside the screen and out of the turn banner's and the action bar's boxes (the smallest push that clears). */
+  settlePlates(plates, W, H, u) {
+    const m = 8 * u, hit = [this.hud.turn, this.bar?.style.display !== 'none' ? this.bar : null].filter((e) => e && !e.hidden).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
+    for (const [key, x0, y0] of plates) {
+      const el = this.hud.plates.get(+key.slice(5)), w = ((el?.offsetWidth || 220 * u) * 1.12) / 2, h = ((el?.offsetHeight || 120 * u) * 1.12) / 2; // (the acting plate swells a tenth)
+      const inside = (x, y) => [Math.max(w + m, Math.min(W - w - m, x)), Math.max(h + m, Math.min(H - h - m, y))];
+      let [x, y] = inside(x0, y0);
+      for (let pass = 0; pass < 2; pass++) for (const r of hit) {
+        const over = (X, Y) => X + w > r.left - m && X - w < r.right + m && Y + h > r.top - m && Y - h < r.bottom + m;
+        if (!over(x, y)) continue;
+        const cands = [[r.left - m - w, y], [r.right + m + w, y], [x, r.top - m - h], [x, r.bottom + m + h]].map(([X, Y]) => inside(X, Y)).filter(([X, Y]) => !over(X, Y));
+        if (cands.length) { cands.sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y)); [x, y] = cands[0]; }
+      }
+      this.hud.place(key, x, y);
+    }
+  }
+
+  /** The action bar never sits over the log: if their boxes meet, the bar rises just above the log's top. */
+  clearLog(H, u) {
+    const bar = this.bar, log = document.getElementById('chatlog'); if (!bar || bar.style.display === 'none' || !log) return;
+    bar.style.bottom = ''; const b = bar.getBoundingClientRect(), l = log.getBoundingClientRect();
+    if (b.width > 0 && b.right > l.left && b.left < l.right && b.bottom > l.top) bar.style.bottom = `${H - l.top + 10 * u}px`;
   }
 
   barMoves(c, pick, chosen, actable) {
@@ -202,7 +257,7 @@ export class TableClarity {
     const sig = kind === 'centre' ? JSON.stringify(a) : `${a.text}|${a.sub || ''}|${a.tone || ''}`;
     if (sig !== L.sig) {
       L.sig = sig; e.className = `tc-lab ${kind}${a.tone === 'dim' ? ' dim' : ''}`;
-      if (kind === 'centre') { e.replaceChildren(...a.map((r) => { const d = el(r.big ? 'big' : ''); d.append(el('', 'b', String(r.value)), el('', 'i', r.label)); return d; })); }
+      if (kind === 'centre') { e.replaceChildren(...a.map((r) => { const d = el(r.big ? 'big' : r.small ? 'small' : ''); d.append(el('', 'b', String(r.value)), el('', 'i', r.label)); return d; })); }
       else { e.textContent = a.text; if (a.sub) { const s = el('', 'small', a.sub); e.appendChild(s); } }
     }
     const left = kind === 'arcana';

@@ -12,7 +12,7 @@
 // you may take, what is chosen, whose it is) are vfx/tablemarks.js's, in the seats' colours and shapes (vfx/seatlook.js). The page
 // (world/bazaar/views.js) is hidden while the view is up: the bar, AGAIN and STAND UP, the stake and "?" do all it did. At the first sit
 // the how-to plays on a dealt demo table (never the session's own), so its spotlight has the very pieces to point at.
-// Also, at every table at all times, its cloth: felt, a gold border, the game's sigil (one mesh for the three).
+// G3: the canvas listeners and the style belong to a seat (made in enter, taken down in leave). Also, at every table at all times, its cloth: felt, a gold border, the game's sigil (one mesh for the three).
 //
 // The index page pauses the world's tick (main.js: a modal window), so this runs from main.js before that pause: it keeps the seat's
 // clock (the bots' turns, session.update) and the camera itself while the page is up, the shot's pose in vfx/cinema.js's form (a place
@@ -71,13 +71,10 @@ export class BazaarTable {
     pb.mesh.visible = false; pb.mesh.userData.zone = 'bazaar'; pb.mesh.name = 'bazaar-pieces'; game.scene.add(pb.mesh);
     this.ray = new THREE.Raycaster();
     this.clarity = new TableClarity(game, { project: (v) => this.project(v), pieceRect: (role) => this.pieceRect(role), hover: (ids) => { this.hoverIds = ids; }, picked: () => this.clearPicks() });
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-    const el = game.renderer?.domElement;
-    if (el) {
-      const at = (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; this.mouse = { x: e.clientX, y: e.clientY }; };
-      el.addEventListener('pointermove', (e) => { if (this.s) at(e); });
-      el.addEventListener('pointerdown', (e) => { if (this.s && e.button === 0 && !this.clarity.busy) { at(e); this.click(); } });
-    }
+    // (the style and the canvas listeners are made when a seat is taken and taken down when it is left: enter/leave)
+    const at = (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; this.mouse = { x: e.clientX, y: e.clientY }; };
+    this.onMove = (e) => { if (this.s) at(e); };
+    this.onDown = (e) => { if (this.s && e.button === 0 && !this.clarity.busy) { at(e); this.click(); } };
   }
   get active() { return !!this.s; }
 
@@ -114,11 +111,15 @@ export class BazaarTable {
     this.marks = new TableMarks(g.scene, { frame: m, clothY: 0, seatLook: MARK_LOOK });
     this.clarity.open(s);
     s0.menu?.root?.classList.add('bztable');
+    this.style = document.createElement('style'); this.style.textContent = CSS; document.head.appendChild(this.style);
+    const el = (this.canvas = g.renderer?.domElement); el?.addEventListener('pointermove', this.onMove); el?.addEventListener('pointerdown', this.onDown);
   }
   leave() {
     const s0 = this.src; this.s = null; this.src = null; this.batch.mesh.visible = false; this.pieces.clear(); this.batch.clear(); this.hover = null; this.hoverIds = null; this.ndc = null;
     this.marks?.dispose(); this.marks = null; this.clarity.close(); this.coach = null;
     s0?.menu?.root?.classList.remove('bztable'); this.game.bazaar?.session?.menu?.root?.classList.remove('bztable');
+    this.canvas?.removeEventListener('pointermove', this.onMove); this.canvas?.removeEventListener('pointerdown', this.onDown); this.canvas = null;
+    this.style?.remove(); this.style = null;
   }
   clearPicks() { this.zsel.clear(); this.s.dsel = []; this.s.sel = new Set(); }
 
@@ -231,7 +232,9 @@ export class BazaarTable {
       } else { e.cur.lerp(e.to, k); e.q.slerp(e.toQ, k); }
       _v.copy(e.cur); _v.y += e.lift;
       e.m.compose(_v, e.q, _one);
-      B.add(e.tpl, e.m, e.act || e.sel || e.glow || named ? 2 : e.glaze ? 1 : 0, e.id);
+      // (the lit glaze's emissive washes a face out: the hand is lit only when picked, hovered or named; the marks' rims say what it may take)
+      const lit = e.role === 'hand' && e.tier === 'XL' ? e.sel || e.glow || named || this.hover === e.id : e.act || e.sel || e.glow || named;
+      B.add(e.tpl, e.m, lit ? 2 : e.glaze ? 1 : 0, e.id);
     }
   }
 

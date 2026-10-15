@@ -43,6 +43,7 @@ import { cardTpl, dieTpl, dieRest, chipTpl, tileTpl, cupTpl, PIECE, tierScale } 
 import { cardIndex, CARD_BACK } from './bazaarfaces.js';
 import { seatColour } from './seatlook.js';
 import { selectable } from '../progress/casino/coach/index.js';
+import { handIds } from '../progress/casino/coach/querent.js';
 
 const _e = new THREE.Euler();
 export const qOf = (x, y, z, order = 'YXZ') => new THREE.Quaternion().setFromEuler(_e.set(x, y, z, order));
@@ -51,6 +52,7 @@ const UP = (yaw = 0) => qOf(-Math.PI / 2, yaw, 0), DOWN = (yaw = 0) => qOf(Math.
 /** A point at a seat: `rho` metres out from the middle toward seat q of n, `x` along that seat's edge (to its right). */
 export function seatAt(q, n, rho, x = 0) { const a = (q * Math.PI * 2) / n, c = Math.cos(a), s = Math.sin(a); return [x * c + rho * s, -x * s + rho * c]; }
 /** The size of a card at a tier. */
+const HAND_BIG = 1.12; // (Querent's hand a size over the XL tier: the first thing in its ladder)
 const cardSize = (tier) => { const k = tierScale(tier); return [PIECE.card.w * k, PIECE.card.h * k]; };
 /** The contract's fields on a piece (tier, dim, role, owner, tip), and the piece into `out`. */
 function put(out, piece, o = {}) { out.push(Object.assign(piece, { tier: o.tier || 'L', dim: !!o.dim, role: o.role || null }, o.owner != null ? { owner: o.owner } : null, o.tip ? { tip: o.tip } : null)); return piece; }
@@ -109,39 +111,40 @@ function querent(out, S, V, P, R, ctx, T) {
   const rankOf = (cl) => byRank(cl.idx[0], cl.idx[0]) || hand[cl.idx[0]].r;
   const clusters = [...shape.groups.map((g) => ({ kind: 'group', idx: g.slice().sort(byRank) })), ...shape.pairs.map((p) => ({ kind: 'pair', idx: p.slice().sort(byRank) })), { kind: 'loose', idx: shape.loose.slice().sort(byRank) }]
     .filter((c) => c.idx.length).sort((a, b) => (a.kind === 'loose') - (b.kind === 'loose') || (a.kind === 'pair') - (b.kind === 'pair') || rankOf(a) - rankOf(b));
-  const step = Math.min(0.17, 1.55 / Math.max(1, k)), gap = clusters.length > 1 ? 0.05 : 0, width = (k - 1) * step + (clusters.length - 1) * gap, seen = {};
-  const [cw, ch] = cardSize('XL'); let cx = -width / 2;
+  const step = Math.min(0.19, 1.8 / Math.max(1, k)), gap = clusters.length > 1 ? 0.05 : 0, width = (k - 1) * step + (clusters.length - 1) * gap;
+  const hid = handIds(hand), [cw0, ch0] = cardSize('XL'), cw = cw0 * HAND_BIG, ch = ch0 * HAND_BIG; let cx = -width / 2; // (the coach's ids, nth in hand order; the hand a size over XL: ladder 1)
   const waits = {}; for (const m of C?.moves || []) if (m.card != null) waits[m.card] = m.waits;
   clusters.forEach((cl, ci) => {
     const x0 = cx;
     cl.idx.forEach((i) => {
-      const c = hand[i], key = `${c.r}.${c.s}`, o = (seen[key] = (seen[key] ?? -1) + 1), x = cx, grouped = cl.kind === 'group';
+      const c = hand[i], x = cx, grouped = cl.kind === 'group';
       let act = null;
       if (P?.kind === 'discard' && find((m) => m.discard === i)) act = move({ discard: i });
       else if (P?.kind === 'wheel') act = () => { if (sel.has(i)) sel.delete(i); else sel.add(i); S.render(); };
-      put(out, { id: `h:${key}#${o}`, tpl: cardTpl(cardIndex(c), cw, ch), p: [x, 0.2 - Math.abs(x) * 0.12 + (grouped ? 0.025 : 0), 1.32 + (x + width / 2) * 0.004], q: qOf(-0.85, 0, -x * 0.45, 'XYZ'), act, sel: sel.has(i), from: [1.0, 0.05, 0.9] }, { tier: 'XL', role: 'hand' });
-      if (P?.kind === 'discard' && waits[i] != null) anchor(out, `waits:${i}`, x, 0.36, 1.12, { kind: 'waits', text: String(waits[i]), tone: waits[i] > 0 ? 'good' : 'dim' });
+      put(out, { id: hid[i], tpl: cardTpl(cardIndex(c), cw, ch), p: [x, 0.2 - Math.abs(x) * 0.12 + (grouped ? 0.025 : 0), 1.3 + (x + width / 2) * 0.004], q: qOf(-0.85, 0, -x * 0.45, 'XYZ'), act, sel: sel.has(i), from: [1.0, 0.05, 0.9] },
+        { tier: 'XL', role: 'hand', tip: { label: 'YOUR HAND', line: `Make 3 groups of 3.${C?.extra?.seatSuit ? ` Your seat suit is ${C.extra.seatSuit}.` : ''}` } });
+      if (P?.kind === 'discard' && waits[i] > 0) anchor(out, `waits:${i}`, x, 0.4, 1.1, { kind: 'waits', text: String(waits[i]), tone: 'good' }); // (only a throw that leaves winners: never a row of zeros)
       cx += step;
     });
     const x1 = cx - step;
     if (cl.kind !== 'loose') anchor(out, `bracket:${ci}`, x0 - step * 0.45, 0.012, 1.55, { kind: 'bracket', tone: cl.kind === 'group' ? 'gold' : 'rim', to: new THREE.Vector3(x1 + step * 0.45, 0.012, 1.55) });
     cx += gap;
   });
-  if (P?.kind === 'discard') anchor(out, 'legend:waits', 0, 0.4, 0.92, { kind: 'legend', text: 'The number: how many cards would win if you throw this one', tone: 'dim' });
+  // (what the number means is the throw's tip: "Then N different cards would win")
   // the draw pile at your right hand: a draw, or the Wheel's throw back
   let pile = null;
   if (P?.kind === 'acquire') { const m = find((x) => x.draw); if (m) pile = move(m); }
   else if (P?.kind === 'wheel') pile = () => { const ix = [...sel].sort((a, b) => a - b); S.sel = new Set(); S.move(P.moves.find((m) => m.throw.length === ix.length && m.throw.every((v, j) => v === ix[j])) || { throw: [] }); };
   const [dw, dh] = cardSize('L');
-  for (let i = 0; i < 7; i++) put(out, { id: 'deck', tpl: cardTpl(CARD_BACK, dw, dh), p: [1.0, 0.004 + i * 0.006, 0.9], q: DOWN(0.1), act: pile }, { role: 'moves', tip: { label: 'YOUR PILE', line: 'Cards you draw come from the top. A surprise.' } });
+  for (let i = 0; i < 7; i++) put(out, { id: i === 6 ? 'deck' : `deck:pile:${i}`, tpl: cardTpl(CARD_BACK, dw, dh), p: [1.0, 0.004 + i * 0.006, 0.9], q: DOWN(0.1), act: i === 6 ? pile : null }, { role: 'moves', tip: { label: 'YOUR PILE', line: 'Cards you draw come from the top. A surprise.' } });
   // each seat: its top discard toward the middle (the one you may steal, big and lifted; the others dim), its hand face down before it
   // (shown if the Sun showed it), its Major Arcana beside it
   for (let q = 0; q < n; q++) {
     const top = V.tops[q], [dx, dz] = seatAt(q, n, 0.62);
     if (top) {
-      const steal = P?.kind === 'acquire' && find((m) => m.steal === q), [tw, th] = cardSize(steal ? 'XL' : 'L');
-      put(out, { id: `top:${q}`, tpl: cardTpl(top.hidden ? CARD_BACK : cardIndex(top), tw, th), p: [dx, steal ? 0.03 : 0.004, dz], q: top.hidden ? DOWN() : UP(), act: steal ? move(steal) : targetOf(q) },
-        { tier: steal ? 'XL' : 'L', role: 'moves', owner: q, dim: P?.kind === 'acquire' && !steal, tip: { label: q ? `${T.names[q]}'S LAST THROW` : 'YOUR LAST THROW', line: 'The card on top of their throw-away pile. Stealing it gives them a Major Arcana.' } });
+      const steal = P?.kind === 'acquire' && find((m) => m.steal === q), [tw, th] = cardSize(steal ? 'XL' : 'L'), dm = P?.kind === 'acquire' && !steal;
+      put(out, { id: `top:${q}`, tpl: cardTpl(top.hidden ? CARD_BACK : cardIndex(top), tw, th, dm), p: [dx, steal ? 0.03 : 0.004, dz], q: top.hidden ? DOWN() : UP(), act: steal ? move(steal) : targetOf(q) },
+        { tier: steal ? 'XL' : 'L', role: 'moves', owner: q, dim: dm, tip: { label: q ? `${T.names[q]}'S LAST THROW` : 'YOUR LAST THROW', line: 'The card on top of their throw-away pile. Stealing it gives them a Major Arcana.' } });
     }
     const Q = V.players[q], a = (q * Math.PI * 2) / n;
     if (q > 0) {
@@ -172,7 +175,7 @@ function querent(out, S, V, P, R, ctx, T) {
 
 // ---------------------------------------------------------------- Zodiac
 function zodiac(out, S, V, P, R, ctx) {
-  const zsel = ctx.zsel, turn = S.S.turn, d = V.dice;
+  const zsel = ctx.zsel, turn = ctx.coach?.turn?.seat ?? S.S.turn, d = V.dice; // (whose roll it is: the coach's; the rules' only before the coach has worked)
   const pick = (kind, q) => (t) => {
     if (P?.kind !== kind) return null;
     const id = `tile:${q}:${t}`, ok = ctx.coach ? ctx.legal.has(id) || ctx.chosen.has(id) : P.moves.some((m) => (kind === 'attack' ? m.target === q && m.tiles : m.tiles)?.includes(t));
@@ -204,7 +207,7 @@ function zodiac(out, S, V, P, R, ctx) {
   die(out, 'zd:a', 6, d.a, -0.2, side, '6', { act: roll, ...white });
   die(out, 'zd:b', 6, d.b, 0.0, side + 0.02, '6', { act: roll, ...white });
   die(out, 'zd:atk', V.attack[turn], d.atk, 0.22, side - 0.01, `atk${V.attack[turn]}`, { act: P?.kind === 'attack' ? roll : null, tier: 'XL', role: 'dice', tip: { label: 'THE GOLD ATTACK DIE', line: 'It reopens shut tiles of the other seat that add up to its roll.' } });
-  if (d.a) anchor(out, 'equation', 0, 0.04, side + (turn === 0 ? 0.2 : -0.2), { kind: 'equation', text: `${d.a} + ${d.b} = ${d.a + d.b}   ·   ${d.a} × ${d.b} = ${d.a * d.b}` });
+  if (d.a) anchor(out, 'equation', 0, 0.04, side + (turn === 0 ? 0.28 : -0.28), { kind: 'equation', text: `${d.a} + ${d.b} = ${d.a + d.b}   ·   ${d.a} × ${d.b} = ${d.a * d.b}` });
   if (V.pot > 0) chips(out, 'pot', V.pot, -0.5, -0.05, undefined, { role: 'centre' });
   anchor(out, 'centre', 0, 0, 0.04);
 }
@@ -214,7 +217,7 @@ function zodiac(out, S, V, P, R, ctx) {
 function horizon(out, S, V, P, R, ctx) {
   const n = V.n, St = S.S, dsel = (S.dsel ||= []);
   for (let q = 0; q < n; q++) {
-    const used = V.used[q], left = V.left[q], faces = splitSum(V.sums[q], used), cu = {}, cl = {}, mine = q === 0;
+    const used = V.used[q], left = V.left[q], faces = V.faces?.[q]?.length === used.length ? V.faces[q].map((f) => f.face) : splitSum(V.sums[q], used), cu = {}, cl = {}, mine = q === 0;
     used.forEach((s, i) => {
       const [x, z] = seatAt(q, n, 0.62, (i - (used.length - 1) / 2) * (mine ? 0.2 : 0.15)), [fx, fz] = seatAt(q, n, 1.08, 0);
       die(out, `ex:${q}:${s}:${(cu[s] = (cu[s] ?? -1) + 1)}`, s, faces[i], x, z, String(s), { roll: q, tier: mine ? 'L' : 'M', role: 'hand', owner: q, from: [fx, 0.2, fz] });
@@ -232,15 +235,17 @@ function horizon(out, S, V, P, R, ctx) {
   if (P?.kind === 'reroll') { const m = P.moves.find((x) => x.reroll); for (const e of out) if (e.roll === 0 && e.die) e.act = () => S.move(m); }
   // your total and what you need; the chosen handful's odds beside the cup
   const need = ctx.coach?.extra?.need ?? V.total - V.sums[0];
-  if (!R) anchor(out, 'need', 0, 0.04, 0.95, { kind: 'need', text: `You have ${V.sums[0]}  ·  you need ${need}` });
-  const done = ctx.pick?.complete;
-  if (!R && P?.kind === 'roll' && done?.preview) anchor(out, 'odds', 1.05, 0.04, 0.34, { kind: 'odds', text: done.preview });
+  if (!R) anchor(out, 'need', 0, 0.04, 0.38, { kind: 'need', text: `You have ${V.sums[0]}  ·  you need ${need}` });
+  const done = ctx.pick?.complete; // (the odds line only once a die is chosen: with none, the cup says nothing)
+  if (!R && P?.kind === 'roll' && dsel.length && ctx.chosen.size && done?.preview) anchor(out, 'odds', 1.05, 0.04, 0.3, { kind: 'odds', text: done.preview });
   // the dealer's handful: under cups until the round is done, then shown
-  const D = St.dealer;
+  const D = St.dealer; // (the one read of the rules' state left: the dealer's handful is no part of the view or the coach until the round is done)
   if (!R) for (let i = 0; i < V.par; i++) put(out, { id: `dealer:cup:${i}`, tpl: cupTpl(), p: [(i - (V.par - 1) / 2) * 0.2, 0, -0.1], q: qOf(0, i, 0), glaze: true }, { tier: 'M', role: 'centre', tip: i ? null : { label: "THE HOUSE'S DICE", line: `The house threw ${V.par} dice under the cups. Their total is the target.` } });
   else { const f = splitSum(D.total, D.dice); D.dice.forEach((s, i) => die(out, `dealer:die:${i}`, s, f[i], (i - (D.dice.length - 1) / 2) * 0.2, -0.1, String(s), { tier: 'M', role: 'centre' })); }
-  if (!R && St.pot > 0) chips(out, 'pot', St.pot, -0.05, 0.22, undefined, { role: 'centre' });
-  anchor(out, 'centre', 0, 0, 0.3);
+  // (the pot: the coach's centre row "Pot", else the rules' pot; its chips low on the left, the target and the house's count in a stack beside the cups, clear of both)
+  const pot = parseInt(ctx.coach?.centre?.find((r) => r.label === 'Pot')?.value, 10) || St.pot;
+  if (!R && pot > 0) chips(out, 'pot', pot, -1.1, 0.62, undefined, { role: 'centre', tip: { label: 'THE POT', line: `${pot} chips. A hit takes it.` } });
+  anchor(out, 'centre', -1.1, 0, 0.05);
 }
 
 registerLayout('querent', querent);
