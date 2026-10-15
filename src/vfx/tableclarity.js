@@ -8,8 +8,8 @@
 //   - THE TIP (ui/tabletip.js): the label, the line and the preview of the piece under the cursor.
 //   - WORDS ON THE CLOTH (the layout's anchors with `text`): the shared numbers, the equation, what you need, the odds, a throw's waits,
 //     a Major Arcana's line, the gold brackets round the hand's groups. Each is projected every frame, written when it changes.
-//   - THE COUNT-UP (ui/scoreceremony.js): each new outcome in the coach's steps told once, with Wanda's casino sounds on its beats if
-//     the game has them (`game.sfx.casinoTick / casinoMult / casinoReel / casinoFlourish`), and a shake of the camera in proportion.
+//   - THE COUNT-UP (ui/scoreceremony.js): each new outcome in the coach's steps told once, with Wanda's casino sounds on its beats
+//     (heard on its events, table.ceremony.begin / .beat: audio/cues.js), and a shake of the camera in proportion.
 //   - THE HOW-TO (ui/howto.js `playCoach`): the coach's steps on a spotlight on the part of the table each is about, from the session's
 //     howto (the first sit, or the "?" button).
 //   - THE SEAT'S QUIET (G3): while seated the game's own HUD (the compass, the Lachryma meter) steps out and the log folds to its tab (it
@@ -30,7 +30,6 @@ import { ScoreCeremony, readCeremony } from '../ui/scoreceremony.js';
 import { playCoach, howTo, helpButton } from '../ui/howto.js';
 
 const SPEED = { normal: 1, fast: 1.6, fastest: 2.6 };
-const BEAT_SFX = { tick: 'casinoTick', mult: 'casinoMult', reel: 'casinoReel', flourish: 'casinoFlourish' };
 const HIDE_CENTRE = new Set(['Dice', 'Attack die']); // (the dice are on the cloth, and the equation under them)
 const GOLD = '#f2c14e';
 const CSS = `
@@ -89,8 +88,7 @@ export class TableClarity {
     this.hud = new TableHud().mount(this.layer); this.hud.root.style.position = 'absolute'; this.hud.root.style.zIndex = '1'; this.hud.show();
     this.bar = actionBar([], (id) => this.pick(id), { onHover: (m) => this.onHover?.(m ? new Set(m.pieceIds || []) : null) });
     this.bar.style.display = 'none'; document.body.appendChild(this.bar);
-    this.ceremony = new ScoreCeremony({ root: document.body, events: this.game.events, hud: { shake: (p) => this.shake(p) },
-      onBeat: (kind, info) => { try { this.game.sfx?.[BEAT_SFX[kind]]?.(info); } catch { /* a sound never stops the count */ } } });
+    this.ceremony = new ScoreCeremony({ root: document.body, events: this.game.events, hud: { shake: (p) => this.shake(p) } }); // (its sounds are Wanda's, heard on table.ceremony.beat: audio/cues.js)
     this.help = helpButton(() => (this.sess?.real || this.sess)?.showHowto?.(), { label: 'How to play' });
     this.quiet(true);
   }
