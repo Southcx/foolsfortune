@@ -23,8 +23,15 @@
 // Prior art: liar's dice's cups (Perudo; Pirates of the Caribbean's game), a cribbage board's peg rail for points, Balatro's and Slay
 // the Spire's cascades read beat by beat, Red Dead's poker tells (a twitch the player learns to watch), a fission chain's picture.
 //
+// CLARITY PASS (docs/plans/CASINO-CLARITY.md section 5, 2026-10-15): each piece carries a `tier` (XL your dice, L what you act with, M a
+// label's worth, S the others'), a `role` (goal, hand, moves, seats, centre, dice, claim, tell: the how-to's targets), and `dim` when it is
+// not part of the choice being made (the atlas's dim twin); `out.anchors` lists where the HUD and how-to hang (`seat:<q>`, `goal`,
+// `centre`, `role:<role>`). A die's id is the coach's own (`ed:<seat>:<sides>:<nth>`). The last reaction comes from `ctx.coach.extra.last`
+// (a seat's resting faces still read the rules' log: the coach does not give them). Words and numbers belong to the HUD, not the cloth.
+//
 //   (no exports for the game: importing this registers 'supernova' and 'nebula')   ASTROLL_LOOK   assignFaces(hand, faces)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { dieTpl, dieRest, chipTpl, cupTpl, PIECE } from './bazaarpieces.js';
 import { registerLayout, qOf, seatAt, chips, die, splitSum } from './bazaarlayout.js';
 import { SUPERNOVA_RULES } from '../progress/casino/supernova.js';
@@ -39,6 +46,20 @@ export const ASTROLL_LOOK = {
 };
 const L = ASTROLL_LOOK, SIZES = SUPERNOVA_RULES.sizes;
 const decay = (s) => SIZES[Math.max(0, SIZES.indexOf(s) - 2)];
+/** Tag the pieces pushed since `from` with a tier, a role and (a die swaps to the atlas's dim twin) dim. */
+function mark(out, from, tier, role, dim = false) {
+  for (let i = from; i < out.length; i++) {
+    const e = out[i]; e.tier ??= tier; e.role ??= role;
+    if (dim) { e.dim = true; if (e.die) e.tpl = dieTpl(e.die.sides, e.die.skin, 1, true); }
+  }
+}
+/** Anchors: a point in the table's frame for the HUD and the how-to; each role's anchor is the middle of its pieces. */
+function anchor(out, key, x, z, y = 0.05) { (out.anchors ||= []).push({ key, at: new THREE.Vector3(x, y, z) }); }
+function roleAnchors(out) {
+  const sum = new Map();
+  for (const e of out) { if (!e.role) continue; const a = sum.get(e.role) || { x: 0, y: 0, z: 0, k: 0 }; a.x += e.p[0]; a.y += e.p[1]; a.z += e.p[2]; a.k++; sum.set(e.role, a); }
+  for (const [r, a] of sum) anchor(out, `role:${r}`, a.x / a.k, a.z / a.k, a.y / a.k + 0.05);
+}
 const ordinals = (hand) => { const c = {}; return hand.map((s) => (c[s] = (c[s] ?? -1) + 1)); };
 
 /** A reaction's faces on a hand's dice (the rules keep them apart): the highest face first, each on the smallest die that could show it
@@ -55,14 +76,12 @@ export function assignFaces(hand, faces) {
 
 // ---------------------------------------------------------------- Supernova Run
 /** What the layout remembers of a session between frames: the hands of the last frame (a reaction's "before") and its moment. */
-function memo(S, St, t) {
+function memo(S, St, last, t) {
   let M = S.astroll;
-  if (!M || M.S !== St) M = S.astroll = { S: St, seen: St.log.length, hands: St.hands.map((h) => h.slice()), moment: null };
-  if (St.log.length > M.seen) {
-    let x = null, ix = -1, nova = false;
-    for (let i = M.seen; i < St.log.length; i++) { const e = St.log[i]; if (e.react != null) { x = e; ix = i; } if (e.nova != null) nova = true; }
-    if (x) M.moment = { at: t, x, ix, nova, before: M.hands };
-    M.seen = St.log.length;
+  if (!M || M.S !== St) M = S.astroll = { S: St, seen: last ?? null, ix: 0, hands: St.hands.map((h) => h.slice()), moment: null };
+  if (last && last !== M.seen) {
+    M.seen = last; M.ix++;
+    if (last.react != null || last.nova != null) M.moment = { at: t, x: last, ix: M.ix, nova: last.nova != null, before: M.hands };
   }
   M.hands = St.hands.map((h) => h.slice());
   return M;
@@ -87,11 +106,13 @@ function handSlot(q, n, i, k) {
 function spent(out, id, sides, x, z, dy) { die(out, id, sides, 1, x, z, 'ash', { still: true }); out[out.length - 1].p[1] += dy; }
 
 function supernova(out, S, V, P, R, ctx) {
-  const St = S.S, n = V.n, t = ctx.t ?? 0, M = memo(S, St, t), mo = M.moment, age = mo ? t - mo.at : 1e9;
+  const St = S.S, n = V.n, t = ctx.t ?? 0, M = memo(S, St, ctx.coach?.extra?.last ?? V.last, t), mo = M.moment, age = mo ? t - mo.at : 1e9;
   const nova = mo?.nova && age < L.nova, sel = (S.ssel ||= new Set()), mine = new Map();
   if (!P) sel.clear();
+  const picked = (id) => sel.has(id) || !!ctx.chosen?.has(id), picking = sel.size > 0 || !!ctx.chosen?.size;
   for (let q = 0; q < n; q++) {
     const hand = V.hands[q], ords = ordinals(hand), last = lastReaction(St.log, q, hand);
+    const mine0 = q === 0, tier = mine0 ? 'XL' : 'S', role = mine0 ? 'dice' : 'seats', from0 = out.length;
     const live = mo && !mo.nova && age < L.fade && mo.x.seat === q, before = live ? mo.before[q] || [] : null;
     // the cascade: what the reaction added and took away (counted by size: a die's identity is its size and its place among its size)
     const added = new Map(), products = new Map();
@@ -108,26 +129,39 @@ function supernova(out, S, V, P, R, ctx) {
       }
     }
     hand.forEach((s, i) => {
-      const id = `sn:${q}:r${V.round}:${s}:${ords[i]}`, [x, z] = handSlot(q, n, i, hand.length), v = last.vals[i] ?? s;
+      const id = `ed:${q}:${s}:${ords[i]}`, [x, z] = handSlot(q, n, i, hand.length), v = last.vals[i] ?? s;
       const extra = { rollKey: `${V.round}:${last.ix}` };
       if (nova) extra.from = [0, 0.3, 0];
       else if (products.has(i)) extra.from = products.get(i);
       else if (added.has(i) && age < L.pop) Object.assign(extra, { still: true, glow: true, rollKey: `pop:${mo.ix}`, from: [x, 0.24, z] });
       else if (added.has(i)) extra.from = [x, 0.24, z];
-      if (q === 0 && P) { mine.set(id, s); extra.act = () => { if (sel.has(id)) sel.delete(id); else sel.add(id); }; extra.sel = sel.has(id); }
+      if (q === 0 && P) { mine.set(id, s); extra.act = () => { if (sel.has(id)) sel.delete(id); else sel.add(id); }; extra.sel = picked(id); }
       die(out, id, s, added.has(i) && age < L.pop && !products.has(i) ? s : v, x, z, String(s), extra);
     });
+    // (your dice not among those picked step back while you pick)
+    mark(out, from0, tier, role);
+    if (mine0 && P && picking) for (let i = from0; i < out.length; i++) { const e = out[i]; if (e.die && e.id.startsWith('ed:') && !picked(e.id)) { e.dim = true; e.tpl = dieTpl(e.die.sides, e.die.skin, 1, true); } }
     // the points: a gold token on a rail of ivory chips, the threshold three lapis chips at its end
+    const railFrom = out.length;
     const a = (q * Math.PI * 2) / n, { rail, railW, ties } = L.sn, f = Math.min(1, V.points[q] / V.threshold);
     for (let i = 0; i <= ties; i++) { const [x, z] = seatAt(q, n, rail, -railW + (i * 2 * railW) / ties); out.push({ id: `snr:${q}:${i}`, tpl: chipTpl('1'), p: [x, 0, z], q: qOf(0, a + i, 0), glaze: true }); }
     for (let j = 0; j < 3; j++) { const [x, z] = seatAt(q, n, rail, railW + 0.1); out.push({ id: `snt:${q}:${j}`, tpl: chipTpl('25'), p: [x, j * PIECE.chip.h, z], q: qOf(0, a + j * 0.6, 0), glaze: true }); }
     const [px, pz] = seatAt(q, n, rail, -railW + f * 2 * railW); out.push({ id: `snp:${q}`, tpl: chipTpl('gold'), p: [px, PIECE.chip.h, pz], q: qOf(0, a, 0), glaze: true });
+    // (your reaction, if rolled: where its expected points would put the token, a ghost on the rail)
+    const odds = mine0 && P ? ctx.coach?.moves?.find((m) => m.move?.react)?.odds : null;
+    if (odds && odds.points > 0) { const [gx, gz] = seatAt(q, n, rail, -railW + Math.min(1, (V.points[q] + odds.points) / V.threshold) * 2 * railW); out.push({ id: `snghost:${q}`, tpl: chipTpl('gold'), p: [gx, PIECE.chip.h, gz], q: qOf(0, a, 0), glow: true }); }
+    mark(out, railFrom, mine0 ? 'L' : 'S', mine0 ? 'goal' : 'seats');
+    const [ax, az] = seatAt(q, n, 1.95, 0); anchor(out, `seat:${q}`, ax, az);
+    if (mine0) { const [gx, gz] = seatAt(0, n, rail, 0); anchor(out, 'goal', gx, gz); }
   }
-  if (nova) burst(out, mo, age, n);
+  anchor(out, 'centre', 0, 0);
+  if (nova) { const b0 = out.length; burst(out, mo, age, n); for (let i = b0; i < out.length; i++) { const e = out[i]; if (e.id.startsWith('snn:')) { e.tier = 'XL'; e.role = 'centre'; } else if (e.id.startsWith('snb:')) { e.tier = 'M'; e.role = 'centre'; } } }
+  roleAnchors(out);
   if (!P) return;
   // your turn: the cup reacts; a die chosen shows its splits, two or three what they fuse into
   for (const id of [...sel]) if (!mine.has(id)) sel.delete(id);
   const react = P.moves.find((m) => m.react);
+  const m0 = out.length;
   out.push({ id: 'sncup', tpl: cupTpl(0.085, 0.13, true), p: [L.sn.cup[0], 0, L.sn.cup[1]], q: qOf(0, 0, 0), glaze: true, act: react ? () => { sel.clear(); S.move(react); } : null });
   const chosen = [...sel].map((id) => mine.get(id)).sort((a, b) => a - b), go = (m) => () => { sel.clear(); S.move(m); };
   if (chosen.length === 1) {
@@ -137,6 +171,9 @@ function supernova(out, S, V, P, R, ctx) {
     const m = P.moves.find((x) => x.fuse && x.fuse.length === chosen.length && x.fuse.every((s, i) => s === chosen[i]));
     if (m) die(out, `snfuse:${m.into}`, m.into, m.into, 0, L.sn.options, String(m.into), { act: go(m), from: [0, 0.2, 1.1] });
   }
+  mark(out, m0, 'L', 'moves');
+  for (let i = m0; i < out.length; i++) if (out[i].id.startsWith('sn') && out[i].id !== 'sncup') out[i].tier = 'XL'; // (the results of a choice are the choice)
+  const mv = out.slice(m0); if (mv.length) { const c = mv.reduce((a, e) => [a[0] + e.p[0] / mv.length, a[1] + e.p[2] / mv.length], [0, 0]); anchor(out, 'role:moves', c[0], c[1]); }
 }
 /** The Supernova: the d20 risen lit on its 20, a ring of gold bursting from it, the old hands blown outward as spent clay. */
 function burst(out, mo, age, n) {
@@ -152,45 +189,63 @@ function burst(out, mo, age, n) {
     before.forEach((s, i) => {
       const [x, z] = handSlot(q, n, i, before.length), d = Math.hypot(x, z) || 1, o = u * 1.3;
       spent(out, `snx:${q}:${mo.ix}:${s}:${i}`, s, x + (x / d) * o, z + (z / d) * o, Math.sin(u * Math.PI) * 0.2 - Math.max(0, u - 0.6) * 0.8);
+      out[out.length - 1].tier = q === 0 ? 'XL' : 'S'; out[out.length - 1].role = q === 0 ? 'dice' : 'seats';
     });
   }
 }
 
 // ---------------------------------------------------------------- Nebula Bluff
 function nebula(out, S, V, P, R, ctx) {
-  const n = V.n, t = ctx.t ?? 0, N = L.nb, find = (f) => P?.moves.find(f);
+  const n = V.n, t = ctx.t ?? 0, N = L.nb, find = (f) => P?.moves.find(f), folded = V.inRound ? !V.inRound[0] : false;
   for (let q = 0; q < n; q++) {
-    const a = (q * Math.PI * 2) / n, inRound = !!V.inRound?.[q], rho = N.row + (inRound ? 0 : N.back);
+    const a = (q * Math.PI * 2) / n, inRound = !!V.inRound?.[q], rho = N.row + (inRound ? 0 : N.back), from0 = out.length;
     if (q === 0) {
-      V.mine.forEach((s, i) => { const [x, z] = seatAt(0, n, rho, (i - (V.mine.length - 1) / 2) * N.gap); die(out, `nb:0:${V.round}:${i}`, s, V.faces?.[i] ?? s, x, z, String(s), { rollKey: V.round, from: [N.cup[0], 0.2, N.cup[1]] }); });
+      const ords = ordinals(V.mine);
+      V.mine.forEach((s, i) => { const [x, z] = seatAt(0, n, rho, (i - (V.mine.length - 1) / 2) * N.gap); die(out, `ed:0:${s}:${ords[i]}`, s, V.faces?.[i] ?? s, x, z, String(s), { rollKey: V.round, from: [N.cup[0], 0.2, N.cup[1]] }); });
+      mark(out, from0, 'XL', 'hand', folded); // (a hand you folded sits back, dim)
     } else {
       const k = V.counts[q];
       for (let i = 0; i < k; i++) { const [x, z] = seatAt(q, n, rho, (i - (k - 1) / 2) * N.cupGap); out.push({ id: `nbc:${q}:${i}`, tpl: cupTpl(0.045, 0.07), p: [x, 0, z], q: qOf(0, a + i, 0), glaze: true }); }
+      mark(out, from0, 'M', 'seats');
     }
-    const [px, pz] = seatAt(q, n, N.purse[0], N.purse[1]);
+    const [px, pz] = seatAt(q, n, N.purse[0], N.purse[1]), p0 = out.length;
     chips(out, `nbp:${q}`, V.chips[q], px, pz);
+    mark(out, p0, 'L', 'seats'); // (a stack keeps its chips' own height: the HUD's plate carries the count)
+    const [ax, az] = seatAt(q, n, 1.95, 0); anchor(out, `seat:${q}`, ax, az);
   }
   // your cup: fold
-  const fold = find((m) => m.fold);
+  const fold = find((m) => m.fold), c0 = out.length;
   out.push({ id: 'nbcup', tpl: cupTpl(0.085, 0.13, true), p: [N.cup[0], 0, N.cup[1]], q: qOf(0, 0, 0), glaze: true, act: fold ? () => S.move(fold) : null });
+  mark(out, c0, 'L', 'moves');
   // the claim: gold d20s whose faces add up to it, the claimant's token; calling it out is clicking it
+  const k0 = out.length;
   if (V.claim != null && V.claimant != null) {
     const k = Math.max(1, Math.ceil(V.claim / 20)), faces = splitSum(V.claim, Array(k).fill(20)), call = find((m) => m.callout), act = call ? () => S.move(call) : null;
     faces.forEach((v, i) => die(out, `nbclaim:${i}`, 20, v, (i - (k - 1) / 2) * 0.17, N.claimZ, 'atk20', { rollKey: `${V.round}:${V.claim}`, act, from: [0, 0.25, 0] }));
     const [tx, tz] = seatAt(V.claimant, n, N.token, 0);
     out.push({ id: 'nbtoken', tpl: chipTpl('gold'), p: [tx, 0, tz], q: qOf(0, 0, 0), glaze: true, act });
   }
+  mark(out, k0, 'L', 'claim');
+  const z0 = out.length;
   if (V.pot > 0) chips(out, 'nbpot', V.pot, N.pot[0], N.pot[1]);
+  mark(out, z0, 'M', 'centre');
+  const r0 = out.length;
   for (let i = 0; i < V.limit; i++) out.push({ id: `nbr:${i}`, tpl: chipTpl(i < V.raises ? '5' : '1'), p: [(i - (V.limit - 1) / 2) * 0.1, 0, N.raiseZ], q: qOf(0, i * 0.9, 0), glaze: true });
-  if (V.tell && V.claimant != null && V.claimant !== 0) riffle(out, V.chips[V.claimant] > 0 ? `nbp:${V.claimant}:` : 'nbtoken', t, V.claimant);
+  mark(out, r0, 'S', 'centre');
+  const tell = V.tell && V.claimant != null && V.claimant !== 0 ? riffle(out, V.chips[V.claimant] > 0 ? `nbp:${V.claimant}:` : 'nbtoken', t, V.claimant) : null;
+  roleAnchors(out);
+  const [hx, hz] = seatAt(0, n, N.row, 0); anchor(out, 'goal', hx, hz); anchor(out, 'centre', 0, 0);
+  if (!tell && V.claimant != null && V.claimant !== 0) { const [tx, tz] = seatAt(V.claimant, n, N.purse[0], N.purse[1]); anchor(out, 'role:tell', tx, tz); } // (the purse, to point at before it riffles)
 }
 /** A tell's riffle: the top chip of the first stack (or the piece) lifting and turning a beat, every couple of real seconds. */
 function riffle(out, prefix, t, q) {
-  const all = out.filter((e) => e.id.startsWith(prefix)); if (!all.length) return;
+  const all = out.filter((e) => e.id.startsWith(prefix)); if (!all.length) return null;
   const f = all[0], top = all.filter((e) => e.p[0] === f.p[0] && e.p[2] === f.p[2]).reduce((a, e) => (e.p[1] > a.p[1] ? e : a), f);
-  const { every, dur, lift, tilt } = L.riffle, ph = (t + q * 0.77) % every; if (ph > dur) return;
+  top.role = 'tell'; // (the how-to's tell: the claimant's top chip, riffling or not)
+  const { every, dur, lift, tilt } = L.riffle, ph = (t + q * 0.77) % every; if (ph > dur) return top;
   const s = Math.sin((ph / dur) * Math.PI);
   top.p = [top.p[0], top.p[1] + lift * s, top.p[2]]; top.q = qOf(tilt * s, (ph / dur) * 1.4, tilt * 0.4 * s);
+  return top;
 }
 
 registerLayout('supernova', supernova);
