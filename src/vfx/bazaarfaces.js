@@ -196,8 +196,8 @@ const INDEX = [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'P', 'Kn
 function minor(g, r, s) {
   const ink = SUIT_INK[s];
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, ink); box(g, 3, 3, 58, 98, K.paper);
-  const corner = () => { // (the index big, the tarot suit's symbol under it, the playing-card pip beside the symbol)
-    text(g, INDEX[r], 11, 11, r === 10 || r === 12 ? 13 : 17, ink); suit(g, s, 8, 28, 8); pip(g, s, 18, 28, 8);
+  const corner = () => { // (the index big, the tarot suit's symbol under it, the playing-card pip under the symbol: the corner column only, x under 17, the pip field starts at x 22)
+    text(g, INDEX[r], 11, 11, r === 10 || r === 12 ? 13 : 17, ink); suit(g, s, 8, 28, 8); pip(g, s, 10, 41, 6.5);
   };
   corner(); g.save(); g.translate(64, 104); g.rotate(Math.PI); corner(); g.restore();
   if (r === 1) { ring(g, 32, 52, 15, 1, K.gold); suit(g, s, 32, 52, 22); return; }
