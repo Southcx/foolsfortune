@@ -105,7 +105,7 @@ export const NEBULA = {
     if (m.callout) {
       pay(S, p, priceOf(S.claim));
       const k = S.claimant, bluff = S.worth[k] < S.claim;
-      S.log.push({ seat: p, callout: k, claim: S.claim, worth: S.worth[k], bluff });
+      S.log.push({ seat: p, callout: k, claim: S.claim, worth: S.worth[k], bluff, shown: S.dice[k].map((s, i) => ({ sides: s, face: S.faces[k][i] })) }); // (the hand as it was shown: the next round rolls anew)
       if (bluff) { S.caught[k]++; loseDice(S, k, 2, r); win(S, p, 'callout'); } else { loseDice(S, p, 2, r); win(S, k, 'callout'); }
       return startRound(S, r);
     }
@@ -113,7 +113,7 @@ export const NEBULA = {
   /** The raise cap reached: every hand still in shown, the claimant's with the bonus. */
   reveal(S, r) {
     const ins = [...Array(S.n).keys()].filter((q) => S.inRound[q]), k = S.claimant;
-    const shown = ins.map((q) => ({ seat: q, worth: S.worth[q] + (q === k ? R.revealBonus * (ins.length - 1) : 0) }));
+    const shown = ins.map((q) => ({ seat: q, worth: S.worth[q] + (q === k ? R.revealBonus * (ins.length - 1) : 0), faces: S.dice[q].map((s, i) => ({ sides: s, face: S.faces[q][i] })) }));
     let best = shown[0]; for (const x of shown) if (x.worth > best.worth || (x.worth === best.worth && x.seat === k)) best = x;
     S.log.push({ reveal: shown });
     for (const x of shown) if (x.seat !== best.seat) loseDice(S, x.seat, 1, r);

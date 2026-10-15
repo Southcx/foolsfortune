@@ -37,7 +37,7 @@ export function casinoRules({ on, L, log }) {
     else if (e.what === 'reveal') say('info', `The raises run out; every hand is shown: ${e.shown.join(', ')}.`, 'reveal', 0.3);
   });
   on('casino.result', (e) => {
-    if (e.practice) { say('info', `Practice at ${NAMES[e.game]}: ${e.won ? 'you win' : 'you lose'}. Nothing was at stake.`, 'result'); return; }
+    if (e.practice) { L.inc('casino.practised'); say('info', `Practice at ${NAMES[e.game]}: ${e.won ? 'you win' : 'you lose'}. Nothing was at stake.`, 'result'); return; } // (practice games finished: Raku's Whisper opens at three, progress/knacks.js)
     if (e.won) { L.inc('casino.won'); L.inc(`casino.${e.game}.won`); }
     if (e.net > 0) L.inc('casino.net.won', e.net); else L.inc('casino.net.lost', -e.net);
     say(e.won ? 'record' : 'info', e.forfeit ? `You rise from ${NAMES[e.game]}; the stake stays on the table.` : `${NAMES[e.game]}: ${e.won ? 'you win' : 'you lose'}, ${e.net >= 0 ? `+${e.net}` : e.net} chips.`, 'result');

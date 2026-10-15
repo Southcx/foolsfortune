@@ -165,7 +165,7 @@ export const QUERENT = {
     const P = S.players[seat];
     return { seat, n: S.n, round: S.round, hand: P.hand, quads: P.quads, arcana: P.arcana, seatSuit: P.seatSuit, fate: P.fate, stole: P.stole,
       tops: S.players.map((Q) => { const t = Q.discards[Q.discards.length - 1]; return t ? (t.hidden ? { hidden: true } : t.card) : null; }),
-      players: S.players.map((Q, q) => ({ arcana: Q.arcana.length, stole: Q.stole, handSize: Q.hand.length, hand: P.sees === q ? Q.hand : null })), scores: S.scores,
+      players: S.players.map((Q, q) => ({ arcana: Q.arcana.length, flipped: Q.arcana.slice(), stole: Q.stole, handSize: Q.hand.length, hand: P.sees === q ? Q.hand : null })), scores: S.scores, // (the Major Arcana are flipped face up: everyone sees which)
       peek: S.queue[0]?.kind === 'hermit' && S.queue[0].seat === seat ? P.deck.slice(0, 9) : null, mine: P.arcana }; // (the Hermit's nine are seen by the one who flipped it)
   },
 };

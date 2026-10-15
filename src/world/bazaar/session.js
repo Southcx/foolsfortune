@@ -57,7 +57,7 @@ export class TableSession {
   get menu() { return this.game.indexMenu || this.game.course?.menu; }
   get beat() { return (SPEEDS.find((x) => x.id === this.game.bazaar?.prefs?.speed) || SPEEDS[0]).beat; }
   /** Everything this moment means, for any view (progress/casino/coach/). */
-  coach() { return this.S ? coach(this.T, this.S, 0) : null; }
+  coach() { return this.S ? coach(this.T, this.S, 0, { suggest: this.practice || !!this.game.knacks?.on?.('houseWhisper') }) : null; } // (the house's suggestion: always while you practise; for chips, the knack)
   /** Sit down: a game dealt, and the stake taken from your chips unless it is practice (no chips in, none out, nothing counted). */
   sit(practice = false) {
     const g = this.game, T = this.T, C = g.chips;
@@ -73,7 +73,7 @@ export class TableSession {
   /** From the lobby or a game's end: deal a game, for chips or for practice. */
   play(practice = false) { if (!this.sit(practice)) { this.where = 'lobby'; this.render(); return; } this.where = 'table'; this.render(); }
   /** The how-to, from its first step (the bots wait while it is up). */
-  showHowto(first = false) { this.howto = { step: 0, first, steps: HOWTO[this.T.id]?.steps || [] }; this.where = 'howto'; this.render(); }
+  showHowto(first = false) { this.howto = { step: 0, first, steps: (HOWTO[this.T.id]?.steps || []).map((x) => ({ ...x, line: x.say, target: x.show, wait: 'next', demo: null })) }; this.where = 'howto'; this.render(); } // (each step also as { line, target (a role the table view resolves to its pieces), wait, demo }: Calissa's shape)
   /** Step through it; past the last step, or skipped, it is done (counted once a showing: the ledger says it has been seen). */
   howtoStep(by) {
     const H = this.howto; if (!H) return;
