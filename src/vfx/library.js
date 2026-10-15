@@ -16,6 +16,7 @@ import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crysta
 import { RACEWAY_PROPS_EFFECTS } from './racewaypropseffects.js'; // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js plays them)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
 import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
+import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -763,4 +764,5 @@ export const LIBRARY = {
   ...RACEWAY_PARK_EFFECTS,
   ...SKIFF_BOARD_EFFECTS,
   ...RACEWAY_PROPS_EFFECTS,
+  ...RACEWAY_SIPHON_EFFECTS,
 };
