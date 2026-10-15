@@ -725,3 +725,15 @@ one change:
 - **The antlion of the Gorge's crater** *(proposed)*: the crater's own, the eldest. An antlion's pit is its trap and its home, and a
   crater is the largest pit there is; the pits' maws in the Dunes are its younger kin. One family, so the Gorge's chase is the big one
   the small ones grow toward.
+
+### Raku's casino *(Dovina's CASINO.md; ruled 2026-10-15)*
+- **Querent** (the owner's pick): the owner's tarot card game in the world. Latin *quaerere*, to ask: the querent is the one who comes
+  to ask the cards, so the game is named for its player. *Not:* Fool's Fortune (the game's own title), nor Everwell (a Well).
+- **Raku's Bazaar** and **Raku chips** *(proposed)*: kept plain, because the name already carries the joke. Raku is the firing where a
+  pot is pulled red-hot from the kiln and thrown into straw, and no potter knows what will come out: a gamble in clay (and *raku*,
+  樂, means enjoyment).
+- **The game's terms stay the owner's:** the Fate Clause, the seat suit, Heaven's blessing (Riichi Mahjong's *tenhō*, the heavenly
+  hand), a ladder of sets, fortune favours, the fated one.
+- **The folk at the tables** *(proposed)*: Clink and Crock stay; **Glaze** becomes **Celadon**, since a glaze is the Courier's in the
+  glossary. Celadon is the shepherd of *L'Astrée* who dressed in grey-green ribbons, and the jade glaze was named after his coat.
+- **Raku's croupier lines** go in `npc/talks.js`, like every line the folk speak; the log rules only report what happens at the table.
