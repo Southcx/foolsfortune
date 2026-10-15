@@ -16,7 +16,7 @@
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
 import { TableSession, TABLES } from './session.js';
-import { OX, OY, OZ, TREASURY } from '../../tools/sondelass/angling/weir.js';
+import { OX, OY, OZ, NORTH_BEACH } from '../../tools/sondelass/angling/weir.js';
 
 /** Where it stands (Petra's place, 2026-10-15: empty ground south of the basement, out of every sky), the hall's radius and height, and
  *  where things are on its floor (local metres: x east, z north is -z). The Treasury's slot: flat floor 34 m by 8 m, for Petra's
@@ -25,7 +25,7 @@ export const BAZAAR = {
   x: 0, y: 200, z: -3000, r: 58, wall: 16, dome: 46,
   arrive: { x: 0, z: 44, yaw: Math.PI }, gate: { x: 0, z: 54 }, cage: { x: 0, z: -24 },
   treasury: { x: 0, z: -3042, yaw: 0 }, // (world x, z: Petra's slot; the plinths face south, into the hall)
-  weirGate: { x: 14, z: TREASURY.z }, // (the twin on the Weir's north beach, east of where the Treasury stands: metres from the oasis's origin)
+  weirGate: { x: 14, z: NORTH_BEACH.z }, // (the twin on the Weir's north beach, east of where the Treasury stood: metres from the oasis's origin)
 };
 /** The hall's air: the fog's colour (the dome's violet) and density (exp2: the far wall at 110 m still a third seen). */
 export const AIR = { fog: 0x1a0d2e, density: 0.009 };
