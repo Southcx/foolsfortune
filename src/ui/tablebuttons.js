@@ -50,6 +50,9 @@ const CSS = `
 .tb-btn.big .tb-label { font-size: max(17px, 3.2vh); }
 .tb-btn.small { min-width: 13vh; padding: .5em .7em .55em; }
 .tb-btn.small .tb-label { font-size: max(12px, 2.1vh); }
+.tb-bar.many .tb-btn { min-width: 0; max-width: 18vh; padding: .5em .6em .55em; column-gap: .4em; }
+.tb-bar.many .tb-label { font-size: max(12px, 2vh); }
+.tb-bar.many .tb-line { max-width: 16vh; font-size: max(11px, 1.15vh); }
 .tb-btn.small .tb-amt { font-size: max(15px, 2.4vh); }
 .tb-btn:hover, .tb-btn:focus-visible { border-color: rgba(246, 234, 216, .6); }
 .tb-btn:focus-visible { box-shadow: 0 0 0 2px #f6ead8, 0 4px 10px rgba(0, 0, 0, .5); }
@@ -134,6 +137,7 @@ export function actionBar(moves = [], onPick = () => {}, { onHover = null } = {}
   let list = [];
   const build = (next) => {
     list = next.slice(0, MAX_MOVES);
+    bar.classList.toggle('many', list.length > 5); // (six to nine on one row: Nebula's claims, Call and Fold; the plates narrow, nothing wraps)
     bar.replaceChildren(...list.map((m, i) => buildButton(m, i, (id) => onPick(id), onHover)));
   };
   const onKey = (e) => {
