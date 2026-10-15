@@ -84,7 +84,7 @@ export class ShellPartSounds {
   shellField(field = 'pool', tier = 1) {
     const F = FIELD[field]; if (!F || !this.ok()) return { stop() {} };
     const c = this.ctx, t = c.currentTime, g = c.createGain(), v = F.v * k_(tier), nodes = [];
-    g.gain.value = 0.0001; g.connect(this.out(1, 0.4)); g.gain.setTargetAtTime(v, t, 0.3);
+    g.gain.value = 0.0001; g.connect(this.loopBus || this.out(1, 0.4)); g.gain.setTargetAtTime(v, t, 0.3);
     if (F.noise) { const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true; const f = c.createBiquadFilter(); f.type = F.noise[0]; f.frequency.value = F.noise[1]; f.Q.value = 1.2;
       if (F.rise) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 0.3; lg.gain.value = 400; l.connect(lg).connect(f.frequency); l.start(); nodes.push(l); }
       s.connect(f).connect(g); s.start(); nodes.push(s); }

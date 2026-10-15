@@ -78,8 +78,9 @@ export class Ambience {
     if (!this.bus) this.build();
     const g = this.game, W = this.want, c = sfx.ctx, t = c.currentTime;
     const under = !!(g.emocean?.stage?.active && g.emocean.form === 'umbral'); // (the rail's Umbral form: everything heard through the crude)
+    sfx.setCavern?.(g.raceway?.active && g.raceway.line === 'cavern'); // (the Raceway's cavern: everything rings off stone, audio/raceway.js)
     if (under !== !!this.under) { sfx.railSurface?.(under); this.under = under; sfx.setUnder?.(under); g.music?.setUnder?.(under); }
-    const quiet = this.menusUp();
+    const quiet = this.menusUp(); sfx.quietLoops?.(quiet); // (the held loops too: the skiff's run held its level under the pause menu, the owner's v198)
     this.ease('bus', this.bus.gain, quiet ? 0 : 1, 0.25, t);
     if (quiet) { if (this.fog) { this.fog = 0; sfx.setFog?.(0); } if (this.moodSent !== 'quiet') { this.moodSent = 'quiet'; g.music?.setMood?.(null, 0); } return; }
     const root = g.music?.grid?.()?.root ?? 64, key = ((((root - 64) % 12) + 18) % 12) - 6; // (semitones from E to the music's key, -6..5)

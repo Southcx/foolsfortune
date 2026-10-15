@@ -673,6 +673,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 231. **A module that asks a service at construction asks it again once that service exists.** Boot order is not a
     contract: a `game.chat?.add` (or any `game.x?.`) in a constructor that runs before `game.x` is made silently does nothing. Register on
     first use (a lazy `commands()` from `update`), or construct after the service, and check the command exists headless.
+232. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
+    grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
+    while a menu is over the game.
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3727,3 +3730,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** the commands are added by `commands()`, called from the Race's first `update` once `game.chat` exists
   (`world/raceway/race.js`). The skiff's own settings are made after the chat line (`main.js`).
 - **Rule:** 231.
+
+### 2026-10-14 · The skiff's boost kept roaring under the pause menu (the owner, v198: "soften the boost noise")
+- **Seen:** opening the pause menu mid-ride left the skiff's hiss and the flare's hum sounding at full, for as long as the menu stayed open.
+- **Cause:** the skiff's loop (`sfx.skiffLoop`) is set by skiff.js each frame of play; paused, nothing sets it, so it held its last level, and
+  it went straight to the world's bus, which no menu touches. The flare's layer also rose to 0.17 of a hum and 0.36 of noise: loud.
+- **Fix:** a loop bus (`sfx.loopBus`, `quietLoops`: audio/core.js) silenced by the ambience while `menusUp()`; the skiff's loop, the grind,
+  wet sand and a shell's field go through it. The flare's layer cut to a lift (hum +0.025, noise to 0.23 at full speed), and the Raceway's
+  boost whooshes (the carve's release, a sun plate, the solar start, a slope landing) to a third of their gain.
+- **Rule:** 232.

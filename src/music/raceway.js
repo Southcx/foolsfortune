@@ -6,6 +6,9 @@
 //   GRID     the countdown held on the line: the heartbeat kick on one, a riser drawn over the bar, the hats ticking (one bar, looped)
 //   RACE     from GO: four on the floor and the offbeat hats, the sub in eighths, a supersaw's arpeggio, a guitar's stab on the turn
 //   FINAL    the last lap: all of the race, with the Answer (the game's motif of a thing done) on brass over it, and the crash every bar
+//   CHASE    the antlion's chase (race.escape.wake / near / caught): a pursuit layer over whatever section plays: woken, a low heartbeat
+//            and a growl under the root; near, the heartbeat doubles, strings saw the tritone in eighths and a riser climbs every two
+//            bars; caught or let go (about fifteen real seconds unheard), it lifts
 //   FLAG     the finish: the turnaround landed on E and rung out, then back to the paddock
 // It moves on the bar line (the arranger's jump), so GO lands within half a real second of the countdown's last beep.
 // Prior art: Mario Kart's final lap (the same tune, faster and fuller: here, fuller), F-Zero's and Wipeout's driving loops, Gran Turismo's
@@ -16,7 +19,7 @@
 import { MOTIF, quote } from './motifs.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
-const R = { state: 'idle', lap: 1, laps: 3, flag: false, heard: false }; // (laps: RACE.laps in world/raceway/race.js, imported once that module is on main)
+const R = { state: 'idle', lap: 1, laps: 3, flag: false, heard: false, escape: 0, escapeAt: 0 }; // (laps: RACE.laps in world/raceway/race.js, imported once that module is on main)
 
 const CH = [[52, [0, 4, 7]], [50, [0, 4, 7]], [45, [0, 4, 7]], [47, [0, 4, 7]]]; // (E D A B: I bVII IV V)
 const chordAt = (i) => CH[Math.floor(i / 2) % 4];
@@ -40,6 +43,16 @@ const SECTIONS = [
   { id: 'flag', bars: 2, gain: 2.6, bar: (i) => (i === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.4), ...[64, 68, 71, 76].map((n, k) => E('brass', k * 0.25, 3.5 - k * 0.25, n, 0.26)),
     E('sub', 0, 4, 40, 0.4), E('strings', 0, 8, [52, 56, 59, 64, 68], 0.09, { attack: 0.05 })] : [...[76, 80, 83, 88].map((n, k) => E('bell', k * 0.25, 1, n, 0.18)), E('shimmer', 0, 4, [64, 68, 71], 0.1)]) },
 ];
+// the antlion's chase over a section's bar: nothing, woken (1), or near (2)
+function chase(i) {
+  if (R.escape && Date.now() - R.escapeAt > 15000) R.escape = 0; // (let go: unheard for about fifteen real seconds)
+  if (!R.escape) return [];
+  const near = R.escape >= 2, out = [E('growl', 0, 4, 28, near ? 0.22 : 0.15, { rate: near ? 4 : 2 }), E('taiko', 0, 1, null, 0.5, { size: 1.3 }), E('taiko', 0.4, 1, null, 0.35, { size: 1.3 })];
+  if (near) out.push(E('taiko', 2, 1, null, 0.5, { size: 1.3 }), E('taiko', 2.4, 1, null, 0.35, { size: 1.3 }),
+    ...[...Array(8).keys()].map((k) => E('strings', k / 2, 0.4, [58, 64][k % 2], 0.05, { attack: 0.01, bright: 1400, spic: true })), ...(i % 2 === 0 ? [E('riser', 0, 8, null, 0.12)] : []));
+  return out;
+}
+for (const S of SECTIONS) if (S.id !== 'flag') { const bar = S.bar; S.bar = (i) => [...bar(i), ...chase(i)]; }
 const AT = Object.fromEntries(SECTIONS.map((s, k) => [s.id, k]));
 
 function jump(section, bar) {
@@ -61,7 +74,10 @@ export function hearRace(game) {
   on('race.go', () => { R.state = 'run'; R.lap = 1; });
   on('race.lap', (e) => { R.lap = (e.lap || R.lap) + 1; });
   on('race.finish', () => { R.state = 'idle'; R.flag = true; });
-  on('race.end', () => { R.state = 'idle'; });
+  on('race.end', () => { R.state = 'idle'; R.escape = 0; });
+  on('race.escape.wake', () => { R.escape = Math.max(R.escape, 1); R.escapeAt = Date.now(); });
+  on('race.escape.near', () => { R.escape = 2; R.escapeAt = Date.now(); });
+  on('race.escape.caught', () => { R.escape = 0; });
 }
 
 /** The sound test's tour: the paddock, the grid, a lap, the final lap and the flag. */

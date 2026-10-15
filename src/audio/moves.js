@@ -11,13 +11,13 @@ export class MoveSounds {
     const src = ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.7;
     const ng = ctx.createGain(); ng.gain.value = 0;
-    src.connect(bp).connect(ng).connect(this.master);
+    src.connect(bp).connect(ng).connect(this.loopBus || this.master);
     const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 90;
     const of = ctx.createBiquadFilter(); of.type = 'lowpass'; of.frequency.value = 500;
     const og = ctx.createGain(); og.gain.value = 0;
-    o.connect(of).connect(og).connect(this.master);
+    o.connect(of).connect(og).connect(this.loopBus || this.master);
     src.start(); o.start();
-    let G = null, gliding = false, lastK = 0;
+    let G = null, gliding = false, lastK = 0; const sfx = this;
     const glide = (on) => {
       const t = ctx.currentTime;
       if (on && !G) { // (built on the first glide: the wind's body, its gusts, the cloth)
@@ -29,7 +29,7 @@ export class MoveSounds {
         const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 1500; bp2.Q.value = 1.6;
         const cg = ctx.createGain(); cg.gain.value = 0;
         const flap = ctx.createOscillator(), fd = ctx.createGain(); flap.type = 'square'; flap.frequency.value = 13; fd.gain.value = 0; flap.connect(fd).connect(cg.gain);
-        w.connect(lp).connect(wg).connect(this.master); cl.connect(bp2).connect(cg).connect(this.master);
+        w.connect(lp).connect(wg).connect(this.loopBus || this.master); cl.connect(bp2).connect(cg).connect(this.loopBus || this.master);
         w.start(); cl.start(); gust.start(); flap.start();
         G = { wg, gd, cg, fd, lp, gust, nodes: [w, cl, gust, flap] };
       }
@@ -43,13 +43,13 @@ export class MoveSounds {
     return {
       glide,
       set(k, boost = 0, air = 0, glideOn) {
-        const t = ctx.currentTime; lastK = k;
+        const t = ctx.currentTime; lastK = k; sfx._skiffK = air ? 0 : k; // (the board's speed on the ground: the wet sand's hiss reads it, audio/raceway.js)
         if (glideOn !== undefined) glide(!!glideOn); else if (!air && gliding) glide(false); // (no word from the caller: the landing ends it)
         if (G && gliding) { G.gust.frequency.setTargetAtTime(1.2 + Math.random() * 1.4, t, 0.4); G.lp.frequency.setTargetAtTime(380 + k * 500, t, 0.2); } // (the gusts uneven: a wandering rate)
-        bp.frequency.setTargetAtTime(500 + k * 2600 + boost * 900, t, 0.08);
-        ng.gain.setTargetAtTime((0.04 + k * 0.32) * (air ? 0.55 : 1), t, 0.08);
-        o.frequency.setTargetAtTime(80 + k * 90 + boost * 90, t, 0.08);
-        og.gain.setTargetAtTime(0.05 + boost * 0.12, t, 0.08);
+        bp.frequency.setTargetAtTime(500 + k * 2200 + boost * 250, t, 0.08);
+        ng.gain.setTargetAtTime((0.03 + k * 0.2) * (air ? 0.55 : 1), t, 0.08);
+        o.frequency.setTargetAtTime(80 + k * 90 + boost * 40, t, 0.08);
+        og.gain.setTargetAtTime(0.04 + boost * 0.025, t, 0.15); // (the flare's layer: a lift, not a roar: the owner, v198, "soften the boost noise")
       },
       stop: () => { const t = ctx.currentTime; ng.gain.setTargetAtTime(0, t, 0.05); og.gain.setTargetAtTime(0, t, 0.05); src.stop(t + 0.3); o.stop(t + 0.3);
         if (G) { G.wg.gain.setTargetAtTime(0, t, 0.05); G.cg.gain.setTargetAtTime(0, t, 0.05); G.nodes.forEach((n) => n.stop(t + 0.3)); } if (this._skiff?.glide === glide) this._skiff = null; },
