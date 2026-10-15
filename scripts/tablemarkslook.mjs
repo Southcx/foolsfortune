@@ -3,14 +3,14 @@
 // fixed fake state (four seats, the acting one ringed, a hand of cards with legal / chosen / dim, dice and chips), the scene at 480
 // lines upscaled bilinearly as present.js does it, and the programs counted before and after the marks join. Dev server up (URL=...).
 //
-//   URL=http://127.0.0.1:5673/ OUT=/path/E-marks.png node scripts/tablemarkslook.mjs
+//   URL=http://127.0.0.1:5673/ OUT=/path/E2-marks.png node scripts/tablemarkslook.mjs
 //
 // Prior art: scripts/seachartlooktest.mjs (a blank page of the dev server's origin so /src/ modules import).
 // ---------------------------------------------------------------------------------------
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const base = process.env.URL || 'http://127.0.0.1:5673/', out = process.env.OUT || 'E-marks.png', exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const base = process.env.URL || 'http://127.0.0.1:5673/', out = process.env.OUT || 'E2-marks.png', exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const SRC = '../src/vfx/tablemarks.js'; // (the module under the look)
 const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage(), errors = [];

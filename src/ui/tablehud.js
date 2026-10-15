@@ -7,21 +7,27 @@
 //   const hud = new TableHud().mount(host)               // host: the canvas's parent (position: relative)
 //   hud.setSeats([{ seat, colour, name, stats:[{label,value,kind}], state }])   // kind: score | money | lives | count
 //   hud.setGoal({ label, line, target, tracks:[{seat,colour,value}], marks:[{at,label}] })
+//   hud.setTurn({ seat, colour, say, mine })               // the turn banner, top centre; null hides it. mine: "YOUR TURN" in Red, big
 //   hud.place('seat:<n>' | 'goal', x, y)                 // screen px in the host (null hides), the projected anchor, each frame
 //   hud.show() / hud.hide() / hud.unmount()
 // ---------------------------------------------------------------------------------------
 import { injectTableHudCss } from './tablehud.css.js';
 import { seatPlate } from './seatplate.js';
 import { goalBar } from './goalbar.js';
+import { SEAT_LOOK } from '../vfx/seatlook.js';
+import { cueSvg, seatInk } from './seatplate.js';
 
 export class TableHud {
-  constructor() { this.root = null; this.plates = new Map(); this.bar = null; this.anchors = new Map(); }
+  constructor() { this.root = null; this.plates = new Map(); this.bar = null; this.anchors = new Map(); this.names = new Map(); this.turn = null; }
 
   mount(host) {
     injectTableHudCss();
     this.root = document.createElement('div');
     this.root.className = 'th-root';
     this.root.hidden = true;
+    this.turn = document.createElement('div');
+    this.turn.className = 'th-turn'; this.turn.hidden = true;
+    this.root.appendChild(this.turn);
     host.appendChild(this.root);
     return this;
   }
@@ -36,6 +42,7 @@ export class TableHud {
   setSeats(seats) {
     const keep = new Set(seats.map((s) => s.seat));
     for (const s of seats) {
+      this.names.set(s.seat, s.name);
       const had = this.plates.get(s.seat);
       if (had) { had.plate.set({ stats: s.stats, state: s.state }); continue; }
       const el = seatPlate(s);
@@ -47,7 +54,22 @@ export class TableHud {
     }
   }
 
-  /** Create or update the goal bar. */
+  /** The turn banner: `mine` is "YOUR TURN" in Red (the player's seat colour) with the coach's `say` under it; a bot's turn is its
+   *  name in its colour, smaller. Null hides it. */
+  setTurn(t) {
+    const el = this.turn; if (!el) return;
+    if (!t) { el.hidden = true; return; }
+    const colour = t.mine ? 'Red' : t.colour, ink = t.mine ? SEAT_LOOK.Red.rim : seatInk(colour);
+    const who = t.mine ? 'YOUR TURN' : `${String(this.names.get(t.seat) ?? 'SOMEONE').toUpperCase()}'S TURN`;
+    el.classList.toggle('mine', !!t.mine);
+    el.style.setProperty('--tc', ink);
+    el.innerHTML = `<div class="th-turn-who">${cueSvg(colour)}<span></span></div><div class="th-turn-say"></div>`;
+    el.querySelector('.th-turn-who span').textContent = who;
+    el.querySelector('.th-turn-say').textContent = t.say || '';
+    el.hidden = false;
+  }
+
+  /** Create or update the goal bar (calling it again with the same target and marks keeps the lit marks). */
   setGoal(g) {
     if (!this.bar) { this.bar = goalBar(g); this._anchor('goal', this.bar); return; }
     this.bar.bar.setGoal(g); this.bar.bar.set(g.tracks || []);
@@ -62,5 +84,5 @@ export class TableHud {
 
   show() { if (this.root) this.root.hidden = false; }
   hide() { if (this.root) this.root.hidden = true; }
-  unmount() { this.root?.remove(); this.root = null; this.plates.clear(); this.anchors.clear(); this.bar = null; }
+  unmount() { this.root?.remove(); this.root = null; this.plates.clear(); this.anchors.clear(); this.names.clear(); this.turn = null; this.bar = null; }
 }
