@@ -54,7 +54,7 @@ export function raceRules({ on, L, log }) {
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });
   on('race.takedown', (e) => { if (e.by !== 'courier') return; L.inc('race.takedown'); log.say('skiff', `Takedown: ${e.who || 'the rival'} spins out, and the push is yours.`, { key: 'race.takedown', throttle: 2 }); });
   on('race.bump', (e) => { if (e.by === 'courier') L.inc('race.bump'); });
-  on('skiff.grind.trick', (e) => { if (e.by !== 'courier') return; L.inc('skiff.grind.trick'); L.inc(`skiff.grind.trick.${e.trick}`); });
+  on('skiff.grind.trick', (e) => { if (e.by !== 'courier') return; if (e.trick === 'fiftyfifty') { L.inc('skiff.grind.fiftyfifty'); return; } L.inc('skiff.grind.trick'); L.inc(`skiff.grind.trick.${e.trick}`); }); // (a 50-50 is the plain grind, not a trick)
   on('race.respawn', () => L.inc('race.raceway.respawn'));
   // the skiff's racing verbs
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });

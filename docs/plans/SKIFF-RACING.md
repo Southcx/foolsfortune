@@ -377,7 +377,7 @@ with 76 m to spare. The Clay Cup run whole: three races, three flyovers, 9 laps,
 | --- | --- | --- |
 | time to scorch the sail is way too short | `SCORCH.build` 0.4 to 0.14 a real second of flare (2.5 real s to scorch, now about 7), `cool` 0.5 to 0.35 | Dovina |
 | balancing on a grind changes the board's rotation, so you leave the rail at a bad angle and bail | the cause: A / D still held from the balance spun the board in the air (8 rad/s) the moment it left the rail, so it landed broadside. Now A / D held off a rail spin nothing until let go (`spinLock`), and the steer is zeroed at the exit | Dovina |
-| a 50-50 as well as the noseslide and tailslide | both buttons double-clicked together (within 0.15 real s): a 50-50, flat on the rail (`skiff.grind.trick { trick: 'fiftyfifty' }`) | Dovina (the pose: Calissa) |
+| a 50-50 as well as the noseslide and tailslide; then (the owner) "landing on a rail horizontally puts you in a 50-50: steal more from Tony Hawk" | how the board lands on a rail sets the grind: along it, a 50-50 (the plain grind, counted apart, not a trick); turned across it (a quarter turn spun into it, 60 to 120 degrees), a BOARDSLIDE, drawn across the rail, a trick worth a grind trick's points; LMB / RMB double-clicked still change it to a nose grind or a tail slide (`skiff.grind.trick { trick, landed }`) | Dovina (the poses: Calissa) |
 | banked flares should spend as a whole charge, a mushroom | C spends one whole stock as a push at once (`MUSHROOM`: 12 m/s for 1.4 real s, a kick of 5); `skiff.flare.banked { rail, left }` | Dovina |
 | the UI reads too blue against Lachryma's labradorite | | Calissa |
 | the banked flares are too hard to see at a riding angle (big, but too far back) | | Calissa |

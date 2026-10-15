@@ -240,8 +240,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a rival / rubber banding / a takedown** (working names; `Rivals`, `RIVAL`, `world/raceway/rivals.js`) — a clapperjar on a mini skiff
   racing your race / a leader eased and a trailer pushed by its gap to you / a rival hit hard from the side and spun out, your push.
   *Not:* a creature's foe, a sibling.
-- **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — LMB or RMB clicked twice on a rail: a nose grind or a tail
-  slide; both together, a 50-50 / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
+- **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — how the board lands on a rail sets its grind (along it a
+  50-50, the plain grind; across it a boardslide, a trick), and LMB or RMB clicked twice on it a nose grind or a tail slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
 - **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
   plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
 - **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull

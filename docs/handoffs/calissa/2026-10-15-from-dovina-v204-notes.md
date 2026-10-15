@@ -14,8 +14,10 @@ The full table is in `docs/plans/SKIFF-RACING.md` section 13. These are the owne
 4. **"It can be really hard to keep track of your grind balance meter during loops and rollercoaster-like grind rails."** On a coaster
    rail the board turns upside down and the arc behind the stern goes with it. Maybe pin the needle to the screen's up, or hang it from
    the camera's view while `skiff.grind.R.coaster`.
-5. **The 50-50** is a new grind trick: `grindTrick === 'fifty'`, with `skiff.grind.trick { trick: 'fiftyfifty' }`. The board rides flat,
-   so it wants the rider's stance for it, beside the nose grind and tail slide.
+5. **The 50-50 and the boardslide** (Tony Hawk's: how the board lands on a rail sets the grind). Along the rail is a 50-50, now the plain
+   grind (`grindTrick` null). Spun a quarter turn across it is a boardslide (`grindTrick === 'board'`): skiff.js draws the board across
+   the rail (`slideYaw`, plus or minus pi/2). Each wants the rider's stance: the 50-50 square over the trucks, the boardslide straddling
+   the rail sideways.
 6. **The pot smash's pots, twice as large, with a satisfying plume when hit at speed.** `POTS.scale` is 2 in `world/raceway/pottrial.js`;
    please multiply your pots' heights (`C.pots.h`) by it. `race.pot { speed, at }` now carries the board's speed, so the plume can grow
    with it.

@@ -32,7 +32,8 @@
 //             the owner, v204); on a rail too, where W / S still work the sail and Shift still flares
 //   Q / E     in the air (not gliding): steer the flight a little, more while flaring (the owner, v198: "boosting in midair doesn't give
 //             you any course correction")
-//   LMB / RMB double-clicked on a rail: a GRIND TRICK (nose grind, tail slide; both together a 50-50): the board tweaked on the rail, its metres worth half
+//   landing on a rail: along it a 50-50 (the plain grind), across it (spun a quarter turn into it) a BOARDSLIDE, a trick (Tony Hawk's)
+//   LMB / RMB double-clicked on a rail: a GRIND TRICK (nose grind, tail slide): the board tweaked on the rail, its metres worth half
 //             again in the combo, the balance livelier (skiff.grind.trick { trick })
 //   Y         on foot: SUMMON the board (it rises out of the sand under them, the mast telescopes up, they hop on: 2.2 s);
 //             riding: RECALL it (they step down and it shrinks into the raised hand). The psygun is stowed while you ride.
@@ -92,7 +93,10 @@ const SLOPE = { keep: 0.8, max: 8, trick: 2 };
 const TURBO = { cap: 4 };
 // air control (not gliding): Q / E turn the flight (rad/s), more while flaring; a grind trick's double click (real s between presses)
 const AIR = { turn: 0.8, flare: 2.2, thrust: 6 }; // (v204: the owner, "boosting midair helps little to course correct": 0.45 / 1.3 and no thrust before)
-const GRIND_TRICK = { click: 0.3, points: 120, worth: 1.5, drift: 1.4, together: 0.15 }; // (together: real s between LMB's and RMB's double clicks that make a 50-50)
+const GRIND_TRICK = { click: 0.3, points: 120, worth: 1.5, drift: 1.4 };
+// how the board lands on a rail sets the grind (Tony Hawk's; the owner, v204): across it (the board turned between `slide` and pi - `slide`
+// rad off its travel along the rail), a BOARDSLIDE, a trick of its own; any nearer along it, a 50-50, the plain grind
+const GRIND_LAND = { slide: 1.05 };
 // a banked flare, spent whole (the owner, v204: "like a mushroom in Mario Kart"): C spends one full stock as a push at once
 const MUSHROOM = { add: 12, dur: 1.4, kick: 5 };
 // the rail: the sail's hoist and the flare work on it too (the owner, v204); the flare's and a banked flare's push along it (m/s^2, m/s)
@@ -491,7 +495,12 @@ export class Skiffing extends Tech {
     P.grounded = !this.air;
     P.bodyYaw = this.heading;
     if (this.safe && !P.embedded?.()) this.safe.copy(P.pos);
-    if (D.rails?.length && this.air && !this.grind.on && this.grind.tryLock(D.rails, P.pos, this.v, P.vel.y)) { this.air = false; this.gliding = false; this.autoGlide = false; this.carve = null; this.spin = 0; this.spinRest = 0; } // (the keel fin onto a rail: no button)
+    if (D.rails?.length && this.air && !this.grind.on && this.grind.tryLock(D.rails, P.pos, this.v, P.vel.y)) { // (the keel fin onto a rail: no button)
+      const yo = wrap(this.spin + this.spinRest), off = Math.abs(yo), across = off > GRIND_LAND.slide && off < Math.PI - GRIND_LAND.slide; // (the board's yaw off its travel, which runs along the rail)
+      this.air = false; this.gliding = false; this.autoGlide = false; this.carve = null; this.spin = 0; this.spinRest = 0;
+      this.grindTrick = across ? 'board' : null; this.grind.style = across ? GRIND_TRICK.drift : 1; this.slideSide = Math.sign(yo) || 1;
+      g.events?.emit('skiff.grind.trick', { trick: across ? 'boardslide' : 'fiftyfifty', landed: true, by: 'courier' }); if (across) this.combo.add('grindtrick', GRIND_TRICK.points);
+    }
 
     // ---- the camera swings round behind where the board goes, unless you are looking about
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
@@ -512,17 +521,16 @@ export class Skiffing extends Tech {
     const g = this.game, P = this.P, inp = P.input, D = this.dunes, W = D.wind, c = this.cfg;
     const steerIn = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0), sp = inp.isDown('Space');
     this.steer = damp(this.steer, steerIn, 10, dt);
-    // a grind trick: LMB or RMB clicked twice quick on the rail (nose grind, tail slide), both together a 50-50; the trick's metres count
-    // more, its balance livelier
+    // a grind trick: LMB or RMB clicked twice quick on the rail (nose grind, tail slide); the trick's metres count more, its balance livelier
+    // (the grind it began as is how it landed: a 50-50 along the rail, a boardslide across it)
     const tnow = this.rideT || 0;
     for (const [btn, kind] of [['Mouse0', 'nose'], ['Mouse2', 'tail']]) {
       const down = inp.isDown(btn), was = (this.btnWas ||= {})[btn]; this.btnWas[btn] = down;
       if (!down || was) continue;
       const last = (this.btnAt ||= {})[btn] ?? -9; this.btnAt[btn] = tnow;
       if (tnow - last >= GRIND_TRICK.click) continue;
-      (this.dblAt ||= {})[btn] = tnow; this.btnAt[btn] = -9;
-      const other = this.dblAt[btn === 'Mouse0' ? 'Mouse2' : 'Mouse0'] ?? -9, k = tnow - other < GRIND_TRICK.together ? 'fifty' : kind;
-      if (this.grindTrick !== k) { this.grindTrick = k; this.grind.style = GRIND_TRICK.drift; g.events?.emit('skiff.grind.trick', { trick: k === 'fifty' ? 'fiftyfifty' : k === 'nose' ? 'nosegrind' : 'tailslide', by: 'courier' }); this.combo.add('grindtrick', GRIND_TRICK.points); }
+      this.btnAt[btn] = -9;
+      if (this.grindTrick !== kind) { this.grindTrick = kind; this.grind.style = GRIND_TRICK.drift; g.events?.emit('skiff.grind.trick', { trick: kind === 'nose' ? 'nosegrind' : 'tailslide', by: 'courier' }); this.combo.add('grindtrick', GRIND_TRICK.points); }
     }
     // the sail and the flare on the rail (the owner, v204): W / S hoist and lower it; Shift flares from the pool, C spends a banked flare
     if (inp.isDown('KeyW')) this.L = Math.min(1, this.L + dt / c.hoistTime); else if (inp.isDown('KeyS')) this.L = Math.max(0, this.L - dt / c.furlTime);
@@ -640,7 +648,8 @@ export class Skiffing extends Tech {
     if (this.skiff.sailFade) this.skiff.sailFade.fade.value = damp(this.skiff.sailFade.fade.value, this.phase === 'ride' && this.speed > 4 ? SAIL_SEE : 1, 6, dt);
     // ---- one quaternion for the whole unit: heading, then the slope, then the lean and the pitch, with the spin about its own up
     // (heading, spin and roll change in the 60 Hz step; the skiff and the rider are drawn between steps, the way the camera and the wake are)
-    qA.setFromAxisAngle(UP, hv + sv);
+    this.slideYaw = damp(this.slideYaw || 0, this.grind.on && this.grindTrick === 'board' ? (this.slideSide || 1) * Math.PI / 2 : 0, 14, dt); // (a boardslide: the board across the rail)
+    qA.setFromAxisAngle(UP, hv + sv + this.slideYaw);
     qB.setFromUnitVectors(UP, this.nS);
     const unitQ = qB.multiply(qA);
     if (this.grind.on && this.railUp) { // (on a coaster rail: stood on the rail's up, along its tangent, through banks and loops: grind.js)
@@ -655,7 +664,7 @@ export class Skiffing extends Tech {
     // grind trick's too (nose grind: the nose down on the rail; tail slide: the tail)
     const tw = this.grab || (this.grind.on && this.grindTrick ? { kind: this.grindTrick } : null);
     this.tweak = damp(this.tweak || 0, tw && this.phase === 'ride' ? 1 : 0, 12, dt);
-    if (this.tweak > 0.01) { const kd = tw?.kind ?? this.tweakKind; this.tweakKind = kd; if (kd !== 'fifty') { qC.setFromAxisAngle(kd === 'double' ? Z : X, GRAB.tweak * this.tweak * (kd === 'tail' ? -1 : 1)); unitQ.multiply(qC); } } // (a 50-50 rides flat on both trucks)
+    if (this.tweak > 0.01) { const kd = tw?.kind ?? this.tweakKind; this.tweakKind = kd; if (kd !== 'board') { qC.setFromAxisAngle(kd === 'double' ? Z : X, GRAB.tweak * this.tweak * (kd === 'tail' ? -1 : 1)); unitQ.multiply(qC); } } // (a boardslide rides flat, turned across)
     // (no bob of the group's own: the board's clips bob the hull, and the rider's the body on it, together)
     const ph = this.phase, pt = this.phaseT, off = ph === 'dismount' || ph === 'bail' || ph === 'getup';
     const G = this.skiff.group;
