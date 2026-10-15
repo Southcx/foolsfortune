@@ -28,20 +28,20 @@ import { HOWTO, howtoSeen } from '../../progress/casino/howto.js';
 
 const seatRand = stream('casino'); // (a session's seed: the game's own stream is seeded from it, so a table is the session's seed's)
 
-/** The tables: their game, who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
+/** The tables: their game, its genre label (Espada's, 2026-10-15: what the UI calls it, CLARITY.md), who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
  *  and how it settles (`settle`): `pot` a buy-in, the winner takes the table's less Raku's tenth (Querent, Supernova Run); `purse` chips
  *  played out of, what is left comes back (Zodiac, Nebula Bluff); `ante` Event Horizon's ante a round, its net back. */
 const NEBULA_STYLES = [null, { bluff: 0.3, read: 0.6, doubt: 0.3, leak: 0.6, noise: 0.1 }, { bluff: 0.15, read: 0.4, doubt: 0.35, leak: 0.7, noise: 0.05 }]; // (Raku bluffs and reads; Celadon is honest and shows it)
 export const TABLES = [
-  { id: 'querent', game: QUERENT, seats: 4, names: ['you', 'Raku', 'Clink', 'Celadon'], bots: [null, [querentBot, { thief: 0.3 }], [querentBot, { thief: 0.6 }], [querentBot, { thief: 0.1 }]],
+  { id: 'querent', genre: "RUMMY", game: QUERENT, seats: 4, names: ['you', 'Raku', 'Clink', 'Celadon'], bots: [null, [querentBot, { thief: 0.3 }], [querentBot, { thief: 0.6 }], [querentBot, { thief: 0.1 }]],
     at: { x: -24, z: 4 }, r: 2.6, stake: 25, rake: 0.1, settle: 'pot', label: 'Querent', line: 'The tarot game: three melds of three; steal, declare your Fate Clause, flip the Major Arcana.' },
-  { id: 'zodiac', game: ZODIAC, seats: 2, names: ['you', 'Raku'], bots: [null, [zodiacBot, { greed: 0.4 }]],
+  { id: 'zodiac', genre: "SHUT THE BOX", game: ZODIAC, seats: 2, names: ['you', 'Raku'], bots: [null, [zodiacBot, { greed: 0.4 }]],
     at: { x: 24, z: 4 }, r: 2.2, stake: 40, settle: 'purse', opts: (first, T) => ({ chips: T.stake, first }), label: 'Zodiac', line: 'Shut the Box as a duel: shut your twelve tiles first; your attack die reopens Raku\'s.' },
-  { id: 'eventhorizon', game: EVENT_HORIZON, seats: 3, names: ['you', 'Crock', 'Celadon'], bots: [null, [horizonBot, { bold: 0.2 }], [horizonBot, { bold: 0.7 }]],
+  { id: 'eventhorizon', genre: "DICE BLACKJACK", game: EVENT_HORIZON, seats: 3, names: ['you', 'Crock', 'Celadon'], bots: [null, [horizonBot, { bold: 0.2 }], [horizonBot, { bold: 0.7 }]],
     at: { x: 0, z: 22 }, r: 2.4, stake: 10, settle: 'ante', opts: (first, T) => ({ ante: T.stake, first }), label: 'Event Horizon', line: 'Hit the dealer\'s total exactly with your dice; read the dealer\'s handful for 3x or 5x.' },
-  { id: 'supernova', game: SUPERNOVA, seats: 3, names: ['you', 'Clink', 'Crock'], bots: [null, [supernovaBot, { build: 0.4 }], [supernovaBot, { build: 0.7 }]],
+  { id: 'supernova', genre: "DICE BUILDER", game: SUPERNOVA, seats: 3, names: ['you', 'Clink', 'Crock'], bots: [null, [supernovaBot, { build: 0.4 }], [supernovaBot, { build: 0.7 }]],
     at: { x: -26, z: 28 }, r: 2.4, stake: 20, rake: 0.1, settle: 'pot', opts: (first) => ({ first }), label: 'Supernova Run', line: 'Roll your dice for points; a maximum makes another die. Fuse a d20: a natural 20 doubles your points and resets every hand. 500 wins.' },
-  { id: 'nebula', game: NEBULA, seats: 3, names: ['you', 'Raku', 'Celadon'], bots: [null, [nebulaBot, NEBULA_STYLES[1]], [nebulaBot, NEBULA_STYLES[2]]],
+  { id: 'nebula', genre: "LIAR'S DICE", game: NEBULA, seats: 3, names: ['you', 'Raku', 'Celadon'], bots: [null, [nebulaBot, NEBULA_STYLES[1]], [nebulaBot, NEBULA_STYLES[2]]],
     at: { x: 26, z: 28 }, r: 2.4, stake: 60, settle: 'purse', opts: (first, T) => ({ chips: T.stake, first, styles: NEBULA_STYLES }), label: 'Nebula Bluff', line: 'Claim what your hidden dice are worth; raise, call a bluff, or fold. Watch the folk for tells. The last with dice wins.' },
 ];
 /** Real seconds between a bot's moves (so its turn can be followed), by the table speed you choose (the bazaar's `prefs.speed`). */

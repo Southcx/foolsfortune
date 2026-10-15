@@ -108,7 +108,10 @@ The fallback page (`world/bazaar/views.js`) is drawn from the coach now; Calissa
   claim, tell), and the table view resolves it to its own pieces.
 - **The count-up's steps and scale:** `coach/ceremony.js`. Querent's two biggest bonuses come first and the rest are rolled into one.
   `SCALE` holds each game's median and 90th percentile.
-- **The suggestion is a knack**, Raku's Whisper (a working name). The design laws say an assist is earned and switchable: it opens after
+- **The labels** (Espada's, 2026-10-15; `TABLES[].genre`): Querent RUMMY, Zodiac SHUT THE BOX, Event Horizon DICE BLACKJACK, Supernova Run DICE
+  BUILDER, Nebula Bluff LIAR'S DICE. The keywords: Set, Run, Steal, Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. Zodiac's Shut and
+  Lock are two different moves: Shut is what your dice do to tiles, and Lock is the doubles prize that keeps one shut forever.
+- **The suggestion is a knack**, Inside Tip (Espada's name; the id is `houseWhisper`). The design laws say an assist is earned and switchable: it opens after
   three practice games finished or one game won, and practice tables always show the suggestion, since practice is for learning.
 
 ## 5. Each game: the two-minute version, and the size ladder

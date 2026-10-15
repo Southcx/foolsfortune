@@ -53,7 +53,7 @@ export const KNACKS = {
   ariadnesThread: { name: "Ariadne's Thread", does: 'Shows on the map the way back to the last Shrine you rested at',
     opens: (L) => G(L, 'map.room') >= 50 || G(L, 'cogitomap.firstrun') >= 1,
     switch: 'feedback/cartography.js (the map)', number: 'a thread from you to the Shrine' },
-  houseWhisper: { name: "Raku's Whisper", does: "Marks the move the house would make, at Raku's tables (always shown when you practise)", // (working name: Espada's)
+  houseWhisper: { name: 'Inside Tip', does: "Raku's whisper: marks the move the house would make at his tables (always shown when you practise)", // (Espada's name, 2026-10-15)
     opens: (L) => G(L, 'casino.practised') >= 3 || G(L, 'casino.won') >= 1, // (three practice games finished, or one game won for chips)
     switch: 'world/bazaar/session.js coach() ({ suggest }: the house bot\'s choice, coach/index.js hint)', number: 'a gold mark on one choice' },
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
