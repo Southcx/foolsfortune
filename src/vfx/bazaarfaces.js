@@ -13,7 +13,10 @@
 //   - THE ZODIAC'S TILES: twelve, a numeral and its sign; open, locked (gold) and the back.
 //   - RAKU'S CHIPS: three values by colour (1 ivory, 5 cinnabar, 25 lapis) and the gold token, each a top and an edge's stripes.
 //   - THE CLOTHS: felt, a gold border, the game's sigil: Querent the querent's spread (the Celtic Cross), Zodiac the wheel of the twelve
-//     signs round a sun, Event Horizon a black hole in its accretion ring.
+//     signs round a sun, Event Horizon a black hole in its accretion ring, Supernova Run a star bursting in shock rings, Nebula Bluff a
+//     nebula's cloud round six pale stars (the six dice of a set).
+//   - THE SPENT DIE: one cell of grey, crazed clay with no numeral (`die('ash')`, every face), worn by a die decaying or lost in Supernova
+//     Run's reaction (vfx/bazaarlayoutastroll.js).
 //
 // Prior art: the Rider-Waite-Smith deck (Pamela Colman Smith, 1909: the pictures' readings), the Tarot de Marseille's numerals and pip
 // layouts, playing cards' corner indices, Chessex's and Crystal Caste's dice (opposite faces summing to one more than the sides, the
@@ -25,7 +28,7 @@
 import * as THREE from 'three';
 import { schillerInk } from './oxidation.js';
 
-const W = 1024, H = 1024;
+const W = 1024, H = 1280; // (the two Astroll cloths in a second row under the first three)
 /** Where each kind of face lies in the atlas (pixels). */
 const AT = { card: { x: 0, y: 0, w: 64, h: 104, cols: 16 }, die: { x: 0, y: 520, s: 32, cols: 32 }, tile: { x: 0, y: 648, w: 32, h: 48 },
   chip: { x: 0, y: 700, s: 32 }, cloth: { x: 0, y: 736, s: 256 } };
@@ -42,6 +45,8 @@ export const DIE_SKINS = {
   10: { body: '#7a3e18', ink: '#f4e3c0' }, 12: { body: '#a8322a', ink: '#f2d27a' }, 20: { body: '#2a1a3a', ink: null },
   atk: { body: '#d9a441', ink: '#3a1a12' }, cup: { body: '#3b2418', ink: '#d9a441' },
 };
+/** The cloths in the atlas, in their order (an unknown table's id falls back to the first). */
+const CLOTHS = ['querent', 'zodiac', 'eventhorizon', 'supernova', 'nebula'];
 const SKIN_ORDER = ['4', '6', '8', '10', '12', '20', 'atk4', 'atk6', 'atk8', 'atk10', 'atk12', 'atk20'];
 
 let ATLAS = null;
@@ -57,10 +62,11 @@ export function bazaarAtlas() {
   let k = 0; const dieAt = {};
   for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); dieAt[key] = k; for (let f = 0; f < sides; f++, k++) dieCell(g, k, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
+  dieAt.ash = k; ashCell(g, k++);
   for (let n = 1; n <= 12; n++) for (const [j, st] of ['open', 'locked'].entries()) tileCell(g, (n - 1) * 2 + j, n, st);
   tileCell(g, 24, 0, 'back');
   [['1', '#efe6d2', '#5a1e2a'], ['5', '#b8322a', '#f4e3c0'], ['25', '#2f5aa8', '#e8c35a'], ['gold', '#e8c35a', '#7a4a12']].forEach(([, body, ink], j) => chipCells(g, j, body, ink));
-  ['querent', 'zodiac', 'eventhorizon'].forEach((id, j) => clothCell(g, j, id));
+  CLOTHS.forEach((id, j) => clothCell(g, j, id));
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
   const chipIx = { 1: 0, 5: 1, 25: 2, gold: 3 };
@@ -68,11 +74,11 @@ export function bazaarAtlas() {
     tex, canvas: cv,
     card: (i) => rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
     edge: () => ATLAS.card(CARD_EDGE),
-    die: (skin, f) => { const c = dieAt[skin] + f; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 1); },
+    die: (skin, f) => { const c = dieAt[skin] + (skin === 'ash' ? 0 : f); return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 1); },
     cup: () => { const c = dieAt.cup; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 4); },
     tile: (n, st) => { const c = st === 'back' ? 24 : (n - 1) * 2 + (st === 'locked' ? 1 : 0); return rect(AT.tile.x + c * AT.tile.w, AT.tile.y, AT.tile.w, AT.tile.h); },
     chip: (kind, part) => rect(AT.chip.x + (chipIx[kind] * 2 + (part === 'edge' ? 1 : 0)) * AT.chip.s, AT.chip.y, AT.chip.s, AT.chip.s, 1),
-    cloth: (id) => rect(AT.cloth.x + ['querent', 'zodiac', 'eventhorizon'].indexOf(id) * AT.cloth.s, AT.cloth.y, AT.cloth.s, AT.cloth.s, 1),
+    cloth: (id) => { const j = Math.max(0, CLOTHS.indexOf(id)); return rect(AT.cloth.x + (j % 4) * AT.cloth.s, AT.cloth.y + Math.floor(j / 4) * AT.cloth.s, AT.cloth.s, AT.cloth.s, 1); },
   };
   return ATLAS;
 }
@@ -180,6 +186,13 @@ function dieCell(g, c, sides, f, skin) {
   } else { const n = String(f + 1); text(g, n, 16, 16, n.length > 1 ? 13 : 16, ink); if ((n === '6' || n === '9') && sides > 6) box(g, 11, 25, 10, 2, ink); }
   g.restore();
 }
+/** The spent die: grey clay crazed, a dark crack across, no numeral (every face of it the same cell). */
+function ashCell(g, c) {
+  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * S, y0 = AT.die.y + Math.floor(c / AT.die.cols) * S;
+  g.save(); g.translate(x0, y0); box(g, 0, 0, S, S, '#8a8580'); box(g, 2, 2, 28, 28, '#9c968f');
+  for (const [a, b, e, f] of [[3, 9, 14, 15], [14, 15, 29, 7], [14, 15, 18, 29], [18, 29, 26, 24], [6, 27, 18, 29]]) line(g, a, b, e, f, 1, '#3a3430');
+  g.restore();
+}
 const D6_PIPS = { 1: [[0.5, 0.5]], 2: [[0, 0], [1, 1]], 3: [[0, 0], [0.5, 0.5], [1, 1]], 4: [[0, 0], [1, 0], [0, 1], [1, 1]], 5: [[0, 0], [1, 0], [0.5, 0.5], [0, 1], [1, 1]], 6: [[0, 0], [1, 0], [0, 0.5], [1, 0.5], [0, 1], [1, 1]] };
 /** The d4: face f is opposite vertex f; its corners hold the other three vertices, in this order (bazaarpieces.js keeps the same). */
 export const D4_FACES = [[1, 2, 3], [0, 3, 2], [0, 1, 3], [0, 2, 1]];
@@ -208,9 +221,9 @@ function chipCells(g, j, body, ink) {
   g.restore();
 }
 function clothCell(g, j, id) {
-  const S = 256, x0 = AT.cloth.x + j * S, y0 = AT.cloth.y, c = 128;
+  const S = 256, x0 = AT.cloth.x + (j % 4) * S, y0 = AT.cloth.y + Math.floor(j / 4) * S, c = 128;
   g.save(); g.translate(x0, y0); g.beginPath(); g.rect(0, 0, S, S); g.clip();
-  const felt = { querent: '#1f6b4a', zodiac: '#1b4f5e', eventhorizon: '#2a1a3e' }[id];
+  const felt = { querent: '#1f6b4a', zodiac: '#1b4f5e', eventhorizon: '#2a1a3e', supernova: '#3e1a1c', nebula: '#16243e' }[id];
   box(g, 0, 0, S, S, felt);
   let seed = j * 977 + 13; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (let k = 0; k < 2600; k++) { g.fillStyle = rnd() < 0.5 ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.05)'; g.fillRect(Math.floor(rnd() * S), Math.floor(rnd() * S), 1, 1); } // (the felt's nap)
@@ -228,6 +241,16 @@ function clothCell(g, j, id) {
     for (let k = 0; k < 12; k++) { const a = (k * Math.PI) / 6 - Math.PI / 2, b = a + Math.PI / 12; line(g, c + Math.cos(a) * 52, c + Math.sin(a) * 52, c + Math.cos(a) * 78, c + Math.sin(a) * 78, 1, K.gold); text(g, SIGNS[k] + '︎', c + Math.cos(b) * 65, c + Math.sin(b) * 65, 13, k % 2 ? K.cream : K.gold); }
     for (let k = 0; k < 12; k++) { const a = (k * Math.PI) / 6; line(g, c + Math.cos(a) * 20, c + Math.sin(a) * 20, c + Math.cos(a) * 34, c + Math.sin(a) * 34, 2, K.gold); }
     circ(g, c, c, 18, K.gold); circ(g, c, c, 12, '#f2d27a');
+  } else if (id === 'supernova') { // a star bursting: its rays, the shock rings running out in the schiller, the spent dice's sparks
+    for (let k = 0; k < 3; k++) ring(g, c, c, 44 + k * 24, 2 - k * 0.4, sch(0.2 + k * 0.25));
+    for (let k = 0; k < 16; k++) { const a = (k * Math.PI) / 8, r = k % 2 ? 34 : 58; line(g, c + Math.cos(a) * 14, c + Math.sin(a) * 14, c + Math.cos(a) * r, c + Math.sin(a) * r, k % 2 ? 1 : 2, K.gold); }
+    circ(g, c, c, 16, K.gold); circ(g, c, c, 10, '#fff2c8');
+    for (let k = 0; k < 20; k++) { const a = k * 2.4, r = 70 + ((k * 37) % 30); star(g, c + Math.cos(a) * r, c + Math.sin(a) * r, 2.5, 1, 4, k % 3 ? K.cream : K.gold, a); }
+  } else if (id === 'nebula') { // a nebula's cloud, lit from within, round six pale stars (a set's six dice)
+    for (let k = 0; k < 26; k++) { const a = k * 2.1, r = 20 + ((k * 29) % 54); g.globalAlpha = 0.18; circ(g, c + Math.cos(a) * r, c + Math.sin(a) * r * 0.7, 18 + (k % 4) * 6, k % 3 ? '#6a3a8a' : '#2f5aa8'); }
+    g.globalAlpha = 1;
+    for (let k = 0; k < 6; k++) { const a = (k * Math.PI) / 3 - Math.PI / 2; star(g, c + Math.cos(a) * 62, c + Math.sin(a) * 62, 5, 2, 4, K.cream, 0); ring(g, c + Math.cos(a) * 62, c + Math.sin(a) * 62, 9, 1, sch(k / 6)); }
+    ring(g, c, c, 62, 1, K.gold); star(g, c, c, 8, 3, 8, K.gold);
   } else { // a black hole in its accretion ring, the light bent round it
     for (let k = 0; k < 40; k++) { g.save(); g.translate(c, c); g.rotate(k * 0.157); g.scale(1, 0.34); ring(g, 0, 0, 56 + (k % 5) * 4, 2, sch(k / 40)); g.restore(); }
     g.save(); g.translate(c, c); g.scale(1, 1); ring(g, 0, 0, 34, 3, sch(0.3)); g.restore();

@@ -40,9 +40,9 @@ export const TABLES = [
   { id: 'eventhorizon', game: EVENT_HORIZON, seats: 3, names: ['you', 'Crock', 'Celadon'], bots: [null, [horizonBot, { bold: 0.2 }], [horizonBot, { bold: 0.7 }]],
     at: { x: 0, z: 22 }, r: 2.4, stake: 10, settle: 'ante', opts: (first, T) => ({ ante: T.stake, first }), label: 'Event Horizon', line: 'Hit the dealer\'s total exactly with your dice; read the dealer\'s handful for 3x or 5x.' },
   { id: 'supernova', game: SUPERNOVA, seats: 3, names: ['you', 'Clink', 'Crock'], bots: [null, [supernovaBot, { build: 0.4 }], [supernovaBot, { build: 0.7 }]],
-    at: { x: -26, z: 28 }, r: 2.4, stake: 20, rake: 0.1, settle: 'pot', cloth: false, opts: (first) => ({ first }), label: 'Supernova Run', line: 'Roll your dice for points; a maximum makes another die. Fuse a d20: a natural 20 doubles your points and resets every hand. 500 wins.' },
+    at: { x: -26, z: 28 }, r: 2.4, stake: 20, rake: 0.1, settle: 'pot', opts: (first) => ({ first }), label: 'Supernova Run', line: 'Roll your dice for points; a maximum makes another die. Fuse a d20: a natural 20 doubles your points and resets every hand. 500 wins.' },
   { id: 'nebula', game: NEBULA, seats: 3, names: ['you', 'Raku', 'Celadon'], bots: [null, [nebulaBot, NEBULA_STYLES[1]], [nebulaBot, NEBULA_STYLES[2]]],
-    at: { x: 26, z: 28 }, r: 2.4, stake: 60, settle: 'purse', cloth: false, opts: (first, T) => ({ chips: T.stake, first, styles: NEBULA_STYLES }), label: 'Nebula Bluff', line: 'Claim what your hidden dice are worth; raise, call a bluff, or fold. Watch the folk for tells. The last with dice wins.' },
+    at: { x: 26, z: 28 }, r: 2.4, stake: 60, settle: 'purse', opts: (first, T) => ({ chips: T.stake, first, styles: NEBULA_STYLES }), label: 'Nebula Bluff', line: 'Claim what your hidden dice are worth; raise, call a bluff, or fold. Watch the folk for tells. The last with dice wins.' },
 ];
 /** Real seconds between a bot's moves (so its turn can be followed). */
 export const BEAT = 0.6;

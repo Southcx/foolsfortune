@@ -24,6 +24,7 @@ import { BAZAAR } from '../world/bazaar/bazaar.js';
 import { TABLES } from '../world/bazaar/session.js';
 import { bazaarMaterials, clothTpl, PieceBatch } from './bazaarpieces.js';
 import { layoutTable } from './bazaarlayout.js';
+import './bazaarlayoutastroll.js'; // (registers Supernova Run's and Nebula Bluff's layouts)
 import { schillerInk } from './oxidation.js';
 
 /** The numbers: the cloth's height over the hall's floor (just over Dovina's plinth cloth, 0.95), the shot (metres over the cloth, and
@@ -84,16 +85,16 @@ export class BazaarTable {
 
   /** The session's state as pieces: kept by id, so a card that moves slides there; a new one comes from where it would. */
   layout() {
-    const s = this.s, list = layoutTable(s, { zsel: this.zsel }), keep = new Set();
+    const s = this.s, list = layoutTable(s, { zsel: this.zsel, t: this.t }), keep = new Set();
     const rolls = this.newRolls();
     for (const L of list) {
       keep.add(L.id);
       let e = this.pieces.get(L.id);
       const p = new THREE.Vector3(...L.p);
       if (!e) { e = { cur: new THREE.Vector3(...(L.from || L.p)), q: L.q.clone(), m: new THREE.Matrix4(), lift: 0 }; this.pieces.set(L.id, e); }
-      const was = e.die?.value;
-      Object.assign(e, { id: L.id, tpl: L.tpl, to: p, toQ: L.q, act: L.act || null, sel: !!L.sel, glaze: !!L.glaze, die: L.die || null });
-      if (L.die && (rolls.has(L.id) || (was != null && was !== L.die.value && L.id.startsWith('zd:')))) this.tumble(e);
+      const was = e.die?.value, rolled = L.rollKey != null && !L.still && e.rollKey !== L.rollKey; // (a layout's own throw: its key changed)
+      Object.assign(e, { id: L.id, tpl: L.tpl, to: p, toQ: L.q, act: L.act || null, sel: !!L.sel, glaze: !!L.glaze, glow: !!L.glow, die: L.die || null, rollKey: L.rollKey });
+      if (L.die && (rolled || rolls.has(L.id) || (was != null && was !== L.die.value && L.id.startsWith('zd:')))) this.tumble(e);
     }
     for (const id of [...this.pieces.keys()]) if (!keep.has(id)) this.pieces.delete(id);
   }
@@ -142,7 +143,7 @@ export class BazaarTable {
       } else { e.cur.lerp(e.to, k); e.q.slerp(e.toQ, k); }
       _v.copy(e.cur); _v.y += e.lift;
       e.m.compose(_v, e.q, _one);
-      B.add(e.tpl, e.m, e.act || e.sel ? 2 : e.glaze ? 1 : 0, e.id);
+      B.add(e.tpl, e.m, e.act || e.sel || e.glow ? 2 : e.glaze ? 1 : 0, e.id);
     }
   }
 
