@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// EVERWELL, THE TAROT GAME (working name: the owner's original title for it, Espada's to rule; docs/plans/CASINO.md section 3): two to four
+// QUERENT, THE TAROT GAME (Espada's name, the owner's yes, 2026-10-15; docs/plans/CASINO.md section 3): two to four
 // players, each with a Tarot deck of their own split into its Minor Arcana (the draw pile, 56) and its Major Arcana (a pile of 22 trumps
 // flipped as boons). Four rounds; the highest score wins. A round deals eight; on your turn you take a ninth (a DRAW from your pile, or a
 // STEAL of the top of an opponent's discards: twice a round at most, once a turn, and the robbed player flips a Major Arcana), then win
@@ -15,15 +15,15 @@
 // Prior art: Riichi Mahjong (the draw and discard, calling a discard, riichi, the seat wind, the exhaustive draw, the kong's
 // replacement draw), gin rummy's melds, the Tarot's two arcana.
 //
-//   EVERWELL (the game: table.js's interface)   EVERWELL_RULES (the numbers)   tenpai(hand, quads)
+//   QUERENT (the game: table.js's interface)   QUERENT_RULES (the numbers)   tenpai(hand, quads)
 // ---------------------------------------------------------------------------------------
 import { shuffle } from '../table.js';
 import { isWin, best } from './score.js';
 import { flip, answer } from './arcana.js';
 
 /** The numbers: rounds, the deal, steals a round, turns a round before it is void, opening flips at a short table, after Death. */
-export const EVERWELL_RULES = { rounds: 4, deal: 8, steals: 2, cap: 40, shortTable: 1, afterDeath: 2 };
-const E = EVERWELL_RULES;
+export const QUERENT_RULES = { rounds: 4, deal: 8, steals: 2, cap: 40, shortTable: 1, afterDeath: 2 };
+const E = QUERENT_RULES;
 
 const deck = (owner) => { const d = []; for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) d.push({ r, s, from: owner }); return d; };
 const face = (c) => `${c.r}.${c.s}`;
@@ -120,8 +120,8 @@ function drain(S) {
   const D = S.queue[0]; if (D?.lazy) { D.moves = D.lazy(S, D.seat); delete D.lazy; } // (a choice built as it is asked)
 }
 
-export const EVERWELL = {
-  id: 'everwell', seats: [2, 4],
+export const QUERENT = {
+  id: 'querent', seats: [2, 4],
   setup({ seats, r, opts = {} }) {
     const S = { n: seats, round: 0, start: 0, turn: 0, players: [...Array(seats)].map(() => ({ stolenFrom: {} })), queue: [], log: [], rng: r, scores: Array(seats).fill(0), wins: [], over: false, played: false };
     S.restart = (why) => { S.restarting = true; S.log.push({ death: S.round }); startRound(S, why); };
@@ -160,6 +160,7 @@ export const EVERWELL = {
     const P = S.players[seat];
     return { seat, n: S.n, round: S.round, hand: P.hand, quads: P.quads, arcana: P.arcana, seatSuit: P.seatSuit, fate: P.fate, stole: P.stole,
       tops: S.players.map((Q) => { const t = Q.discards[Q.discards.length - 1]; return t ? (t.hidden ? { hidden: true } : t.card) : null; }),
-      players: S.players.map((Q, q) => ({ arcana: Q.arcana.length, stole: Q.stole, handSize: Q.hand.length, hand: P.sees === q ? Q.hand : null })), scores: S.scores };
+      players: S.players.map((Q, q) => ({ arcana: Q.arcana.length, stole: Q.stole, handSize: Q.hand.length, hand: P.sees === q ? Q.hand : null })), scores: S.scores,
+      peek: S.queue[0]?.kind === 'hermit' && S.queue[0].seat === seat ? P.deck.slice(0, 9) : null, mine: P.arcana }; // (the Hermit's nine are seen by the one who flipped it)
   },
 };

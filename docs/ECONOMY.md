@@ -152,6 +152,17 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
   (DESIGN.md section 22). Retiring, restarting or leaving loses the stake. At the cap a win to win at even odds against the field pays
   5 x 8 x 3.5 = 140 cubes, about 17 minutes of play, so the most a wager can be is a spice on a race.
 
+## Raku's bazaar: chips, and a cap on winnings (CASINO.md 10)
+
+- **Chips** (`progress/casino/chips.js`): one cube buys one chip at Raku's cage, and one chip cashes back for one cube. A chip moves no
+  value; it only fences the tables off from the cube.
+- **Winnings cash at most 10 minutes of play (80 cubes) a game day.** Winnings are what you cash past what you bought. The rest waits
+  as chips for the next game day. A skill game against bots you have learned to beat would otherwise be an endless faucet; the cap
+  makes it a small one a game day, worth an evening's play and never a living.
+- **The house's drains:** Raku takes a tenth of Querent's table (4 x 25 chips in, the winner takes 90). Event Horizon's edge is about 11%
+  for one seat against the house (measured, CASINO.md 5). Zodiac is even: you play Raku for a purse.
+- First wins pay once, ever, as the Raceway's tests do: to be set when the medals are, with the cloth.
+
 ## Measuring it
 
 - **F3**'s `econ` line (and F4's report): cubes an hour in and out, the aim, the top three faucets and top two drains. It reads only

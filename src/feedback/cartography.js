@@ -37,6 +37,7 @@ const LAYERS = [
   // places at the Dunes' height but not of the Dunes, told apart by their render zone (render/zonemap.js), never by y
   { id: 'raceway', name: 'THE RACEWAY', zone: 'raceway', cell: 8, sight: 40 }, // (the Solar Skiff's test circuit: world/raceway/)
   { id: 'margarite', name: "MARGARITE'S DOCK", zone: 'margarite', cell: 2, sight: 7 }, // (the King's island's quay: world/emocean/margarite.js)
+  { id: 'bazaar', name: "RAKU'S BAZAAR", zone: 'bazaar', cell: 2, sight: 7 }, // (Raku's casino under its dome: world/bazaar/bazaar.js)
 ];
 const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l]));

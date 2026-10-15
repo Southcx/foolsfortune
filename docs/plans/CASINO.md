@@ -18,7 +18,7 @@ into rules a program can play, says where a rule was open and what was decided, 
 
 | game | what it is | phase | state |
 | --- | --- | --- | --- |
-| Everwell (working name, the tarot game; section 3) | Riichi Mahjong's bones, the owner's scoring, 22 Major Arcana | 1 | rules, bot, simulator built |
+| Querent, the tarot game (the owner's pick, 2026-10-15; section 3) | Riichi Mahjong's bones, the owner's scoring, 22 Major Arcana | 1 | rules, bot, simulator built |
 | Astroll: Zodiac (section 4) | Shut the Box as a duel for a pot | 1 | rules, bot, simulator built |
 | Astroll: Event Horizon (section 5) | blackjack against a hidden house total | 1 | rules, bot, simulator built |
 | Astroll: Supernova Run | push-your-luck dice fission and fusion | 2 | the doc's rules; one pass needed on the reaction loop |
@@ -40,10 +40,10 @@ subset of tiles or dice adding to a total (`subsetsSumming`).
 
 Prior art: boardgame.io (a game as pure reducers), OpenSpiel's legal-actions interface, the house's economy simulator.
 
-## 3. Everwell, the tarot game (working name; `src/progress/casino/everwell/`)
+## 3. Querent, the tarot game (`src/progress/casino/querent/`)
 
 The owner's original card game, older than the game it shares a name with (Fool's Fortune was once called Project Everwell). Its name
-in the world is Espada's to rule (suggestions in section 11).
+is **Querent** (Espada's pick, the owner's yes, 2026-10-15): from Latin quaerere, to ask; in a reading, the one who asks the cards.
 
 **3.1 The table.** Two to four players, each with a Tarot deck of their own split into the Minor Arcana (the draw pile, 56: four suits of
 Ace to 10, Page, Knight, Queen, King) and the Major Arcana (22, a pile of its own). Four rounds; the highest score wins. The first seat
@@ -71,7 +71,7 @@ to the player it was stolen from, who throws one back as if it had been drawn, w
 "+2 per stolen card" is read as +2 additive.
 
 **3.6 The score** (`score.js`). The owner's formula: **value = tier x (the multipliers) x (1 + the additive bonuses)**.
-Tier 1 (1,000): any three melds. Tier 2 (4,000): all runs, all sets, or nine of a suit in any order. Tier 3 (8,000): three sets of three
+Tier 1 (1,000): any three melds. Tier 2 (2,000; it was 4,000, the owner took the change, 2026-10-15): all runs, all sets, or nine of a suit in any order. Tier 3 (8,000): three sets of three
 ranks in a row, or nine of a suit in three runs. The bonuses are the doc's: a half flush (+1; +2 pure), nine in a row (+1), all royals or
 no royals (+1), no steals (+1), +1 an arcana in play, +1 a seat-suit run, the perfect straight flush (x5, in place of the seat-suit
 bonus), a first-turn Fate Clause (+1), fortune favours (won on the turn after declaring: +2 by steal, x4 by draw), the fated one (won on
@@ -79,7 +79,7 @@ the first draw of the round: +20), and the arcana that score (the Magician's ace
 Chariot's knights, the Hierophant's rank, Strength's x2, Temperance, the Devil, the Tower's +4, Judgement, the World). The Lovers pool
 two players' arcana; duplicates never stack.
 
-**3.7 Measured** (`node scripts/casino.mjs --game everwell`, 300 bot games a table size):
+**3.7 Measured** (`node scripts/casino.mjs --game querent`, 300 bot games a table size):
 
 | table | seat wins | rounds reset by Death | tier 1 / 2 / 3 | hand value: median, 90th, top | turns a won round |
 | --- | --- | --- | --- | --- | --- |
@@ -110,7 +110,8 @@ tiles add to exactly the value. A double made with the attack die locks from its
 
 **Measured** (2,000 games a size): 2 players 53.6 / 46.4% (the first seat's edge: 3.6 points), 31 turns; 3 players 35.8 / 31.8 / 32.4%;
 4 players 27.5 / 24.4 / 23.6 / 24.1%. Almost never stalls (8 of 2,000 at four, past 400 turns). The first seat's edge wants the
-starting seat to turn each game, as Everwell's does.
+starting seat to turn each game, as Querent's does: done (`opts.first`; the bazaar's table passes the first turn round a seat a game, so
+two games at a two-seat table are even).
 
 ## 5. Astroll: Event Horizon (`eventhorizon.js`)
 
@@ -127,7 +128,9 @@ another's dice) waits for phase 2, as abilities.
 **Measured** (20,000 rounds, the bot): alone, a player gets back -0.114 antes a round (an 11% house edge, a slot machine's; a sharper
 reader than the bot does better). At two seats the first seat makes +0.150 and the second -0.463; at four, +0.572 for the first. Going
 first and the free reroll together are worth a great deal: the seat order must turn every round (the table does it), and the free reroll
-may belong to the last seat instead (the owner's call).
+may belong to the last seat instead (the owner's call). *Decided* (the owner, 2026-10-15, "go with your recommendations"): the free
+reroll is the **last seat's** (`S.rerollSeat`), and the first seat turns each game (`opts.first`). Measured at four seats: -0.083,
+-0.161, -0.279, +0.165 antes a round (was +0.572 for the first seat).
 
 ## 6. Phase 2 and 3 games: what each needs first
 
@@ -143,7 +146,7 @@ may belong to the last seat instead (the owner's call).
 
 ## 7. The opponents
 
-Every game ships a bot (`zodiacBot`, `horizonBot`, `everwellBot`) good enough to measure with, and a `style` to lean it: a thief that
+Every game ships a bot (`zodiacBot`, `horizonBot`, `querentBot`) good enough to measure with, and a `style` to lean it: a thief that
 steals for less, a bold roller, a greedy payer. At Raku's tables the seats are the folk and the siblings, each with a style that suits
 them (Petra folds tight, Calissa bluffs pretty, Espada counts cards), so a table reads as people. Guests (co-op players) take seats later
 through the same interface.
@@ -162,6 +165,17 @@ something in its room); a table is a camera's frame on the cloth (the house's ca
 everything said in the log. The room and its placeholders: Dovina, as the Raceway was; the look: Calissa; the music: Wanda; Raku's lines
 and every name: Espada; the Treasury's move off the Weir and the room's place: Petra.
 
+**Built (round 2)** (`src/world/bazaar/`): the hall, a zone of its own (`bazaar`, render/zonemap.js; its map layer RAKU'S BAZAAR) at
+Petra's place, out of every sky (x 0, y 200, z -3000): a round floor 58 m across with a gold ring, sixteen wall panels, a dome, four
+neon bands cycling, six lamps of the light budget, its own violet air (`AIR`: fog 0.009, so the far wall is still seen). Ways in: the
+Index's row (G, THE OPEN) and a gate on the Weir's north beach beside the Treasury; out: the gate in the south wall. On the floor:
+Raku's cage (chips for cubes, and back), three tables (session.js `TABLES`: Querent at four seats with Raku, Clink and Glaze, a 25-chip
+buy-in, the winner takes the table less Raku's tenth; Zodiac against Raku with a 40-chip purse; Event Horizon at three seats with Crock
+and Glaze, a 10-chip ante a round), and the Treasury's slot on the north side (`BAZAAR.treasury`: flat floor, 34 m by 8 m, for
+Petra's move). F at a table sits you down (`TableSession`): the stake comes out of your chips, the bots take their turns 0.6 real s
+apart, your choices are clicked on a page set aside (`views.js`, a placeholder until the cloth, cards and dice are real objects),
+and the table's moments and the result go to the log (`feedback/tracking/casino.js`). Rising mid-game forfeits the stake.
+
 ## 10. The money
 
 **Chips, not cubes** at the tables: bought from Raku with cubes and cashed back at the same rate, the cash-out capped a game day (a
@@ -169,8 +183,11 @@ first draft: 10 minutes of play, 80 cubes, until measured). A skill game against
 faucet; the house games' edge is a slow drain; the cap keeps the bazaar a place to play, not a living. Medals and firsts (a first win at
 each game, a perfect straight flush) pay once, ever, as the Raceway's tests do. The numbers go into docs/ECONOMY.md once measured.
 
+**Built (round 2)** (`src/progress/casino/chips.js`, save section `casinoChips`): `CHIPS = { rate: 1, stacks: [50, 100, 250], cap: 10 }`.
+A chip is a cube at the cage both ways; what is cashed beyond what you bought counts as winnings, and winnings cash at most `cap`
+minutes of play (80 cubes) a game day; the rest stays as chips for tomorrow. Events `casino.chips { what: buy | cash, n, cubes }`.
+
 ## 11. Names (Espada's to rule)
 
-The tarot game shares the game's own title, so it wants its own. Working name **Everwell**, the owner's original title for the project.
-Other candidates: **Querent** (the one who asks the cards), **the Nine Spread** (three melds of three, as a reading lays out a spread).
-Also: the bazaar, the chips, the Fate Clause, the seat suit, Heaven's blessing, the ladder of sets, fortune favours, the fated one.
+The tarot game is **Querent** (Espada's pick, the owner's yes, 2026-10-15; Everwell, the owner's original title, read as a Well). Still
+Espada's to name: the bazaar, the chips, the Fate Clause, the seat suit, Heaven's blessing, the ladder of sets, fortune favours, the fated one.

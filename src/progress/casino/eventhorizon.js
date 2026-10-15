@@ -4,8 +4,9 @@
 // into the pot, then in turn rolls dice of their own set (any of the dice not yet rolled this round, at least one) and adds them to a
 // running total: exactly the round total wins at once; over it busts; under it, the next player goes. A player out of dice, or who
 // stands, waits. The first to hit the round total takes the pot, and the house adds a bonus by how well they read the dealer: with the
-// same number of dice as par, three times the ante; with the very same dice, five times. Nobody hits: the house keeps the pot. The first
-// player has one free reroll of a roll, once a round (the owner's "benefits people who risk it on the guess").
+// same number of dice as par, three times the ante; with the very same dice, five times. Nobody hits: the house keeps the pot. The LAST
+// seat has one free reroll of a roll, once a round (the owner's "benefits people who risk it on the guess"; it was the first's, which
+// stacked it on going first: measured, +0.57 antes a round at four seats). The first seat turns round by round.
 // Decided here where the doc was open (CASINO.md 5): each die of your set rolls once a round (the choice of which dice is the skill); the
 // interference the doc names (swap, steal, reroll others' dice) waits for phase 2, as abilities.
 //
@@ -42,7 +43,8 @@ export const EVENT_HORIZON = {
   id: 'eventhorizon', seats: [1, 4],
   setup({ seats, r, opts = {} }) {
     const D = dealerHand(r), ante = opts.ante ?? EH.ante;
-    const S = { n: seats, dealer: D, total: D.total, par: D.dice.length, ante, pot: ante * seats, net: Array(seats).fill(-ante), houseNet: 0, sums: Array(seats).fill(0), used: [...Array(seats)].map(() => []), left: [...Array(seats)].map(() => DND_SET.slice()), out: Array(seats).fill(false), reroll: true, turn: 0, pending: [], log: [], done: false };
+    const S = { n: seats, dealer: D, total: D.total, par: D.dice.length, ante, pot: ante * seats, net: Array(seats).fill(-ante), houseNet: 0, sums: Array(seats).fill(0), used: [...Array(seats)].map(() => []), left: [...Array(seats)].map(() => DND_SET.slice()), out: Array(seats).fill(false), reroll: true, turn: (opts.first ?? 0) % seats, pending: [], log: [], done: false };
+    S.rerollSeat = (S.turn + seats - 1) % seats; // (the free reroll is the last seat's: going first was worth +0.57 antes a round with it too)
     queue(S);
     return S;
   },
@@ -55,7 +57,7 @@ export const EVENT_HORIZON = {
     for (const s of m.dice) S.left[p].splice(S.left[p].indexOf(s), 1);
     S.used[p].push(...m.dice); S.sums[p] += sum; S.last = { dice: m.dice, sum };
     S.log.push({ seat: p, roll: m.dice, sum, total: S.sums[p] });
-    if (p === 0 && S.reroll && S.sums[p] !== S.total) { S.pending.push({ seat: p, kind: 'reroll', moves: [{ reroll: true }, { reroll: false }] }); return; }
+    if (p === S.rerollSeat && S.reroll && S.sums[p] !== S.total) { S.pending.push({ seat: p, kind: 'reroll', moves: [{ reroll: true }, { reroll: false }] }); return; }
     this.resolve(S, p);
   },
   resolve(S, p) {

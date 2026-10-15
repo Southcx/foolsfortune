@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
-// EVERWELL'S HANDS AND SCORE (working name: the owner's original title for the tarot game, Espada's to rule; docs/plans/CASINO.md
+// QUERENT'S HANDS AND SCORE (docs/plans/CASINO.md
 // section 3): what makes a winning hand of nine and what it is worth. A hand is three MELDS of three: a SET (three of one rank, any suits)
 // or a RUN (three ranks in a row, any suits: the owner, 2026-10-15). Ranks run Ace 1 .. 10, Page 11, Knight 12, Queen 13, King 14; an Ace
 // is low and never royal. A declared four of a kind is one set. Nine of one suit is a win in any order (an imperfect flush).
 // The value is the owner's own formula, designed years before any deckbuilder made it famous:
 //   value = TIER x (the multipliers) x (1 + the additive bonuses)
-// TIERS: 1 (1,000) any three melds; 2 (4,000) all runs, all sets, or nine of a suit in any order; 3 (8,000) three sets of three
+// TIERS: 1 (1,000) any three melds; 2 (2,000) all runs, all sets, or nine of a suit in any order; 3 (8,000) three sets of three
 // ranks in a row (6 6 6, 7 7 7, 8 8 8), or nine of a suit in three runs. The bonuses (CASINO.md 3.6) read the hand, the round's history
 // (steals, the Fate Clause) and the Major Arcana in play.
 //
@@ -17,7 +17,7 @@
 
 export const SUITS = ['cups', 'swords', 'pentacles', 'wands']; // (the seat suits' order round the table: the owner's Cups, Swords, Pentacles, Wands)
 export const RANK = { ace: 1, page: 11, knight: 12, queen: 13, king: 14 };
-export const TIERS = [0, 1000, 4000, 8000];
+export const TIERS = [0, 1000, 2000, 8000]; // (tier 2 was 4,000: with mixed-suit runs it came as often as tier 1, 49% to 50% (scripts/casino.mjs); the owner took 2,000, 2026-10-15)
 export const cardName = (c) => `${[, 'A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Pg', 'Kn', 'Q', 'K'][c.r]}${'cspw'[c.s]}`;
 
 /** Every way to split `cards` into melds of three (each meld { kind: 'set' | 'run', cards }). */

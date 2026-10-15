@@ -84,6 +84,7 @@ export const ZODIAC = {
     const S = { n: seats, tiles: [], locked: [], tokens: [], attack: [], chips: [], paid: [], pot: 0, turn: 0, turns: 0, pending: [], log: [], winner: null, rng: r };
     for (let p = 0; p < seats; p++) { S.tiles.push(Array(R.tiles).fill(false)); S.locked.push(Array(R.tiles).fill(null)); S.tokens.push(R.tokens); S.attack.push(opts.attack ?? R.attack); S.chips.push(opts.chips ?? R.chips); S.paid.push(0); }
     for (let p = 0; p < seats; p++) pay(S, p, opts.ante ?? R.ante);
+    S.turn = (opts.first ?? 0) % seats; // (the first seat turns game by game at a table: the first roller wins 53.6% of duels)
     rollTurn(S, r);
     return S;
   },

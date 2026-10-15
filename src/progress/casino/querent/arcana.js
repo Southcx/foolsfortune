@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// EVERWELL'S MAJOR ARCANA (working name, Espada's to rule; docs/plans/CASINO.md section 3.5): the 22 trumps each player keeps in a pile of
+// QUERENT'S MAJOR ARCANA (docs/plans/CASINO.md section 3.5): the 22 trumps each player keeps in a pile of
 // their own. A flip turns the top of your own pile; it is yours and in play for the round (a boon: the owner, 2026-10-15, "flipping is
 // meant to be a boon most of the time, which is why stealing gives your opponent a flipped Major Arcana"), save where the card says
 // otherwise (Death resets the round for everyone; the Lovers pool your arcana with another's). An arcana's effect resolves before

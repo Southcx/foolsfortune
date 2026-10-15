@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -42,6 +42,8 @@ export const ZONE_TESTS = [
   { id: 'garden', test: (p) => Math.abs(p.x) < 250 && p.z > 2750 && p.z < 3250 && p.y > 1000 && p.y < 1500 },
   // the Raceway (world/raceway/track.js RW: x 6000, at the dunes' layer): the Solar Skiff's test circuit, under the dunes' sky
   { id: 'raceway', test: (p) => p.x > 4300 && p.x < 7700 && p.z > -1800 && p.z < 1800 && p.y < -150 && p.y > -600 }, // (the park, 2.6 km across at x 6000: Dovina, 2026-10-14)
+  // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
+  { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
   // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer
   { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];

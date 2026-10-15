@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
-// EVERWELL'S BOTS (working name; docs/plans/CASINO.md section 7): an opponent good enough to measure the game with, and the seed of the
+// QUERENT'S BOTS (docs/plans/CASINO.md section 7): an opponent good enough to measure the game with, and the seed of the
 // folk's seats at Raku's tables. Its hand sense is Mahjong's tile efficiency in miniature: a card is worth what it connects to (its pairs,
 // its neighbours a rank or two off), and the least connected is thrown. It steals what finishes a meld, declares the Fate Clause the moment
 // it can (by draw), and answers the arcana simply. `style` leans it: `thief` (0..1) steals for less than a finished meld.
 //
 // Prior art: Mahjong AI's shanten and tile efficiency (the ukeire count, simplified), the house's other bots (zodiacBot, horizonBot).
 //
-//   everwellBot(view, pending, r, style?)   linkOf(card, hand)
+//   querentBot(view, pending, r, style?)   linkOf(card, hand)
 // ---------------------------------------------------------------------------------------
 import { isWin } from './score.js';
 
@@ -17,7 +17,7 @@ export function linkOf(c, hand) {
 }
 const melded = (hand) => { let n = 0; for (const c of hand) if (hand.filter((o) => o.r === c.r).length >= 3 || (hand.some((o) => o.r === c.r + 1) && hand.some((o) => o.r === c.r + 2))) n++; return n; };
 
-export function everwellBot(V, P, r, style = {}) {
+export function querentBot(V, P, r, style = {}) {
   const pick = (score) => { let b = P.moves[0], bs = -Infinity; for (const m of P.moves) { const s = score(m) + r() * 1e-3; if (s > bs) { bs = s; b = m; } } return b; };
   switch (P.kind) {
     case 'fate': return pick((m) => (m.fate === 'draw' ? 2 : m.fate === 'steal' ? 1 : 0));
