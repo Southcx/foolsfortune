@@ -32,7 +32,7 @@ import * as THREE from 'three';
  *  (a real second). */
 export const HULL = { bump: 0.9, wall: 1.4, wallFree: 4, land: 0.6, bail: 12, wreck: 3, refill: 40, empty: 0.5 };
 /** The scorch: built a real second of flare, cooled a real second without; the luff's length (real s) and its pace. */
-export const SCORCH = { build: 0.4, cool: 0.5, luff: 2, pace: 0.6 };
+export const SCORCH = { build: 0.14, cool: 0.35, luff: 2, pace: 0.6 }; // (v204, the owner: "time to scorch way too short": 0.4 scorched in 2.5 real s of flare; now about 7)
 /** The manual: its drift, A / D's answer, points a real second (counted when it ends). */
 export const MANUAL = { drift: 0.45, answer: 1.6, points: 30 };
 /** Snaking: real seconds after a carve's release the next (the other way) chains; each link's rate, the most. */

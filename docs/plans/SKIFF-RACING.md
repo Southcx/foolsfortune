@@ -371,6 +371,23 @@ autopilot keeps to the line, so never takes the lane). After the easing: a City 
 with 76 m to spare. The Clay Cup run whole: three races, three flyovers, 9 laps, 72 gates, 21 hull hits, 15 bumps, a takedown, 4 gaps,
 39 buoys; the autopilot 4th each time (6 points), Clink its nemesis throughout; no errors. The stress test: 24 runs, 0 violations.
 
+## 13. The owner's first round-six session (v204, 2026-10-15)
+
+| the owner's note | what was done | whose |
+| --- | --- | --- |
+| time to scorch the sail is way too short | `SCORCH.build` 0.4 to 0.14 a real second of flare (2.5 real s to scorch, now about 7), `cool` 0.5 to 0.35 | Dovina |
+| balancing on a grind changes the board's rotation, so you leave the rail at a bad angle and bail | the cause: A / D still held from the balance spun the board in the air (8 rad/s) the moment it left the rail, so it landed broadside. Now A / D held off a rail spin nothing until let go (`spinLock`), and the steer is zeroed at the exit | Dovina |
+| a 50-50 as well as the noseslide and tailslide | both buttons double-clicked together (within 0.15 real s): a 50-50, flat on the rail (`skiff.grind.trick { trick: 'fiftyfifty' }`) | Dovina (the pose: Calissa) |
+| banked flares should spend as a whole charge, a mushroom | C spends one whole stock as a push at once (`MUSHROOM`: 12 m/s for 1.4 real s, a kick of 5); `skiff.flare.banked { rail, left }` | Dovina |
+| the UI reads too blue against Lachryma's labradorite | | Calissa |
+| the banked flares are too hard to see at a riding angle (big, but too far back) | | Calissa |
+| bumping and crashing the clapperjars needs much more feedback; sideswipes seldom work | contact from 2.7 m (was 2.3); a takedown from 4 m/s of closing at a third of a side-on (was 7 at half); a bump shoves the rival across the track by the closing speed and shakes the camera; a takedown throws it 5 m off its line; `race.bump { at }` for the look | Dovina (the look: Calissa) |
+| the glide: S stalls the speed away too fast; a boost in the air barely course-corrects | S's flare pitch 0.35 to 0.22 (it levels off rather than climbs); a flare or a push in the glide drives it on (7 m/s^2) and banks it 1.7 times harder; in plain air Q / E turn 0.8 rad/s (1.3 to 2.2 while flaring), and a flare pushes the way you face | Dovina |
+| the grind's balance mark is hard to follow on loops and coaster rails | | Calissa |
+| no boost or sail on a grind | on a rail W / S hoist and lower the sail, Shift flares from the pool (9 m/s^2 along it), C spends a banked flare (8 m/s at once) | Dovina |
+| pots 2x larger and more visible, a satisfying plume at speed | `POTS.scale` 2 (the hitbox's reach 1.7 to 2.6 m); `race.pot { speed, at }` for the plume | Dovina (the look and plume: Calissa) |
+| no sound when a pot smashes | Wanda's `racePot` is on the default branch since her round-six merge: the build tested predates it | Wanda (done) |
+
 ## 6. Who does what
 
 - **Dovina**: this plan; the skiff's rules (the carve, the pop, the plates, the glide, the bails, the trick combo, the grabs, the conditions); the track, the

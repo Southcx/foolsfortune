@@ -13,7 +13,7 @@
 // keeps its lane. THE NEMESIS: the rival that beat you last remembers it (the save's `raceNemesis`): next race it is a little quicker and
 // claps at you as it passes (a glyph, no words); beat it and it is forgotten. THE SIBLINGS: the five divisions on skiffs, the hard tier,
 // each with its own personality (opened by winning a race, or lent in DEBUG).
-// Events: race.place { place, of }, race.bump { rival, impact }, race.takedown { rival, how }, race.rival.finish { rival, seconds },
+// Events: race.place { place, of }, race.bump { rival, impact, at }, race.takedown { rival, how }, race.rival.finish { rival, seconds },
 // race.nemesis { rival, beaten }, race.taunt { rival } (with `by`).
 // Placeholders: a clapperjar (the creatures' own model, held still) on a board of a box and a sail, dressed by Calissa's look as a mini
 // Solar Skiff with a clapperjar riding it (vfx/racewayrivals.js, ticked at the end of update); a sibling's rider is a capsule.
@@ -45,7 +45,7 @@ export const RIVAL = {
   block: 25, nemesis: 0.03, railRide: 0.55, railPace: 1.08, inside: 3,
   band: { ahead: 60, behind: 140, slow: 0.8, fast: 1.18 }, // (a leader eases to 0.8 by 60 m ahead: the pack stays near; measured: they beat the autopilot by 12 to 33 s over three laps at 90 m and 0.86)
   hover: 0.6, sink: 5,
-  bump: { r: 2.3, share: 0.5, takedown: 7, out: 2.4, flare: 0.35, push: [6, 0.8, 2] },
+  bump: { r: 2.7, share: 0.5, takedown: 4, side: 0.3, shove: 0.9, throw: 5, out: 2.8, shake: 0.35, flare: 0.35, push: [6, 0.8, 2] }, // (v204, the owner: "they feel like they have no collision, sideswiping seldom works": r 2.3, a takedown from 7 m/s at side 0.5, a rival barely moved)
 };
 
 const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3();
@@ -180,10 +180,11 @@ export class Rivals {
       const side = Math.abs(nx * -rf.z + nz * rf.x); // (how square to the rival's side the hit is: 1 broadside, 0 nose to tail)
       const mass = S.rules?.mult('mass') ?? 1;
       S.v.x += (nx * closing * Bp.share) / mass; S.v.z += (nz * closing * Bp.share) / mass; P.pos.x += nx * (Bp.r - d); P.pos.z += nz * (Bp.r - d);
-      r.lat -= (nx * -rf.z + nz * rf.x) * closing * Bp.share * 0.3 * mass; r.v = Math.max(0, r.v - closing * Bp.share * (1 - side) * mass); r.cool = 0.4;
+      const lat = nx * -rf.z + nz * rf.x; r.lat -= lat * closing * Bp.shove * mass; r.v = Math.max(0, r.v - closing * Bp.share * (1 - side) * mass); r.cool = 0.4; // (shoved across the track by the hit, visibly: v204)
+      P.shake = Math.max(P.shake || 0, Math.min(Bp.shake, closing * 0.05));
       if (S.rules?.hit('bump', closing / mass)) return; // (the hull: a bump drains the pool; empty, it wrecks you)
-      if (closing * mass > Bp.takedown && side > 0.5) this.takedown(r, 'side');
-      else g.events?.emit('race.bump', { rival: r.i, impact: +closing.toFixed(1), by: 'courier' });
+      if (closing * mass > Bp.takedown && side > Bp.side) { r.lat -= lat * Bp.throw; this.takedown(r, 'side'); } // (thrown off its line as it spins out)
+      else g.events?.emit('race.bump', { rival: r.i, impact: +closing.toFixed(1), at: { x: +r.group.position.x.toFixed(1), y: +r.group.position.y.toFixed(1), z: +r.group.position.z.toFixed(1) }, by: 'courier' });
     }
   }
 }

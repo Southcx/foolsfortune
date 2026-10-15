@@ -3,7 +3,7 @@
 // smashed and takes a real second off the lap's time, so the fastest lap is not the fastest line but the one that bends to the pots
 // (Crash Team Racing's Relic Race: the time crates freeze the clock; Burnout's road rage, the lap as a hunt). The pots stand where the
 // track's own seed puts them, the same every run, so a route can be learned. The look is a placeholder (Calissa's: the pottery props).
-// Events (with `by`): race.pot { smashed, left }; the race's finish carries pots { smashed, of } and the seconds already taken off.
+// Events (with `by`): race.pot { smashed, left, speed, at }; the race's finish carries pots { smashed, of } and the seconds already taken off.
 //
 // Prior art: Crash Team Racing's Relic Races (time crates, 1 s each, a route learned), Burnout 3's Road Rage, Trackmania's fixed seeds.
 //
@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import { RW } from './track.js';
 
 /** How many pots a lap, metres kept clear after the line and before it, the seconds one takes off, metres a pot is smashed from. */
-export const POTS = { n: 30, clear: 70, off: 1, reach: 1.7, seed: 7 };
+export const POTS = { n: 30, clear: 70, off: 1, reach: 2.6, seed: 7, scale: 2 }; // (v204, the owner: "pots need to be 2x larger and more visible": scale, the look's own heights times it; reach 1.7 for a 1 m pot)
 
 const rng = (seed) => () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
@@ -22,7 +22,7 @@ export class PotTrial {
   begin(race) {
     const g = this.game, T = race.T, R = race.R, L = T.length, r = rng(POTS.seed + T.id.length * 131);
     this.stop(); this.smashed = 0;
-    if (!this.geo) { this.geo = new THREE.CylinderGeometry(0.42, 0.3, 0.9, 10); this.geo.translate(0, 0.45, 0); this.mat = new THREE.MeshStandardMaterial({ color: 0xc9744a, roughness: 0.85, flatShading: true }); }
+    if (!this.geo) { this.geo = new THREE.CylinderGeometry(0.42 * POTS.scale, 0.3 * POTS.scale, 0.9 * POTS.scale, 10); this.geo.translate(0, 0.45 * POTS.scale, 0); this.mat = new THREE.MeshStandardMaterial({ color: 0xc9744a, roughness: 0.85, flatShading: true }); }
     this.mesh = new THREE.InstancedMesh(this.geo, this.mat, POTS.n); this.mesh.userData.zone = 'raceway'; this.mesh.frustumCulled = false;
     const m = new THREE.Matrix4();
     for (let k = 0; k < POTS.n; k++) {
@@ -35,11 +35,11 @@ export class PotTrial {
   update(race) {
     const g = this.game, P = g.player.pos; if (!this.mesh) return;
     for (let k = 0; k < this.pots.length; k++) {
-      const p = this.pots[k]; if (!p.up || Math.abs(P.y - p.y) > 2.5 || Math.hypot(P.x - p.x, P.z - p.z) > POTS.reach) continue;
+      const p = this.pots[k]; if (!p.up || Math.abs(P.y - p.y) > 2.5 * POTS.scale || Math.hypot(P.x - p.x, P.z - p.z) > POTS.reach) continue;
       p.up = false; this.smashed++; this.mesh.setMatrixAt(k, new THREE.Matrix4().makeScale(0, 0, 0)); this.mesh.instanceMatrix.needsUpdate = true;
-      const at = new THREE.Vector3(p.x, p.y + 0.5, p.z);
+      const at = new THREE.Vector3(p.x, p.y + 0.5 * POTS.scale, p.z), S = g.techs?.active?.id === 'skiff' ? g.techs.active : null;
       g.fx?.impact?.(at, new THREE.Vector3(0, 1, 0), { sparks: 0, dust: 14 }); g.glyphs?.pop('star', at, { color: 0xffb37a, size: 0.6, burst: true });
-      g.events?.emit('race.pot', { smashed: this.smashed, left: this.pots.length - this.smashed, by: 'courier' });
+      g.events?.emit('race.pot', { smashed: this.smashed, left: this.pots.length - this.smashed, speed: +(S?.speed || 0).toFixed(1), at: { x: +p.x.toFixed(1), y: +p.y.toFixed(1), z: +p.z.toFixed(1) }, by: 'courier' }); // (speed: the plume's size, Calissa's)
     }
   }
   /** The lap's time less a second a pot. */

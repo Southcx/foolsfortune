@@ -222,8 +222,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the cavern** (working name, Espada's to rule; `BRANCH`, `T.branch`, `world/raceway/cavern.js`) — the Raceway's alternate course: a branch
   off the line into a gorge under a roof of stone and back, its pads crystal veins (fed by Lachryma, not the sun). *Not:* a Well, the canyon.
 - **the trick combo / a banked flare** (`SkiffCombo`, `skiff.combo`, `courier/skiff/combo.js`) — the skiff's tricks chained, each kind
-  raising the multiplier, banked when the chain's link runs out on the sand, lost on a bail / a flare's worth of push it banks, spent by
-  Shift before the pool. *Not:* the club's combo, a rhythm combo, a ledger chain.
+  raising the multiplier, banked when the chain's link runs out on the sand, lost on a bail / a flare's worth of push it banks, spent
+  whole by C (one stock, a push at once: a mushroom). *Not:* the club's combo, a rhythm combo, a ledger chain.
 - **a grab / a perfect pop / a slope landing** (`skiff.grab`, `skiff.pop { perfect }`, `skiff.land.slope`) — LMB (the nose) or RMB (the
   tail) held in the air, let go before landing / a late pop let go in its first moment / landing square down a slope, the fall kept as speed.
 - **the park / the hub** (`park()`, `PARK`, `world/raceway/park.js`) — the Raceway since round 4: one ground of several tracks, 2.6 km
@@ -241,7 +241,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   racing your race / a leader eased and a trailer pushed by its gap to you / a rival hit hard from the side and spun out, your push.
   *Not:* a creature's foe, a sibling.
 - **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — LMB or RMB clicked twice on a rail: a nose grind or a tail
-  slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
+  slide; both together, a 50-50 / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
 - **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
   plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
 - **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull

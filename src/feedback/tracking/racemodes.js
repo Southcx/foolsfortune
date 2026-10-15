@@ -64,6 +64,7 @@ export function raceModeRules({ on, L, log }) {
   on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'The vein lane fills your pool.', 'refill', 10); });
   on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Your sail scorches and luffs: ease off the flare.', 'scorch', 4); });
   on('skiff.manual', (e) => { if (e.by !== 'courier') return; L.inc('skiff.manual'); L.hi('skiff.manual.best', e.seconds); if (e.fell) say('warn', 'You lose the manual.', 'manual', 3); else if (e.seconds >= 2) say('skiff', `A ${e.seconds.toFixed(1)} s manual.`, 'manual', 2); });
+  on('skiff.flare.banked', (e) => { if (e.by === 'courier') L.inc('skiff.flare.banked'); });
   on('skiff.shoulder', (e) => { if (e.by === 'courier') L.inc('skiff.shoulder'); });
   on('skiff.nearmiss', (e) => { if (e.by !== 'courier') return; L.inc('skiff.nearmiss'); L.inc(`skiff.nearmiss.${e.what}`); say('skiff', 'Near miss.', 'nearmiss', 3); });
   on('skiff.gap', (e) => { if (e.by !== 'courier') return; L.inc('skiff.gap'); L.inc(`skiff.gap.${e.gap}`); const n = L.get(`skiff.gap.${e.gap}`); say('skiff', `Gap: ${e.label}, ${e.points}.${n === 1 ? ' Your first time.' : ''}`, `gap.${e.gap}`, 1); });
