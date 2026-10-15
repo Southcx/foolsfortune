@@ -108,7 +108,13 @@ The fallback page (`world/bazaar/views.js`) is drawn from the coach now; Calissa
   claim, tell), and the table view resolves it to its own pieces.
 - **The count-up's steps and scale:** `coach/ceremony.js`. Querent's two biggest bonuses come first and the rest are rolled into one.
   `SCALE` holds each game's median and 90th percentile.
-- **The suggestion is a knack**, Raku's Whisper (a working name). The design laws say an assist is earned and switchable: it opens after
+- **No genre labels** (the owner, 2026-10-15: "It cheapens the idea that we're positioning to have very unique game modules (that are going to
+  expand with the tarot major arcana archetypes) and also breaks in-universe immersion"). A table is called only by its own name (Querent,
+  Zodiac, Event Horizon, Supernova Run, Nebula Bluff), never "rummy" or "liar's dice": here the casino overrides CLARITY.md's genre-word
+  label. The how-to teaches what the game is. The keywords stay, as in-game verbs: Set, Run, Steal, Shut, Lock, Attack, Bust, Fuse, Split,
+  Claim, Call. Zodiac's Shut and Lock are two different moves: Shut is what your dice do to tiles, and Lock is the doubles prize that keeps
+  one shut forever.
+- **The suggestion is a knack**, Inside Tip (Espada's name; the id is `houseWhisper`). The design laws say an assist is earned and switchable: it opens after
   three practice games finished or one game won, and practice tables always show the suggestion, since practice is for learning.
 
 ## 5. Each game: the two-minute version, and the size ladder
@@ -177,6 +183,9 @@ decoration.
   4. the others' dice counts
   5. the pot
   6. the tell: the claimant's top chip wiggles. Calissa's riffle; later, on the folk's bodies, if they come to sit.
+- **The claims offered** (Calissa's ask, 2026-10-15: a bar of nine wrapped over your dice): the five nearest your hand's worth, the
+  smallest bluff, and the house's suggestion (`CLAIMS_SHOWN`, coach/nebula.js); Call and Fold always. Measured over 40 games: at most 8
+  choices on the bar, and the suggestion always among them. The pot is shown small, and only once it holds chips.
 - **The moment:** a call flips the claimant's dice face up one by one, totting up against the claim like a slot reel, and stops on
   CAUGHT or TRUE.
 

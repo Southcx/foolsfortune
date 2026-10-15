@@ -28,7 +28,7 @@ import { HOWTO, howtoSeen } from '../../progress/casino/howto.js';
 
 const seatRand = stream('casino'); // (a session's seed: the game's own stream is seeded from it, so a table is the session's seed's)
 
-/** The tables: their game, who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
+/** The tables: their game (named only by its own name: no genre label, the owner, 2026-10-15), who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
  *  and how it settles (`settle`): `pot` a buy-in, the winner takes the table's less Raku's tenth (Querent, Supernova Run); `purse` chips
  *  played out of, what is left comes back (Zodiac, Nebula Bluff); `ante` Event Horizon's ante a round, its net back. */
 const NEBULA_STYLES = [null, { bluff: 0.3, read: 0.6, doubt: 0.3, leak: 0.6, noise: 0.1 }, { bluff: 0.15, read: 0.4, doubt: 0.35, leak: 0.7, noise: 0.05 }]; // (Raku bluffs and reads; Celadon is honest and shows it)
