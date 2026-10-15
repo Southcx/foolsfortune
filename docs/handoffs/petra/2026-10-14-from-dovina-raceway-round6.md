@@ -9,7 +9,7 @@ Hub edits:
 Shared code touched: the skiff (`courier/skiff/boardrules.js`; hooks in skiff.js and grind.js). The board drains and refills the
 Courier's own pool and never touches its regen (the owner: "the literal same pool"). The stress test was run.
 
-New rule for the casebook: NEW:service-made-later. `/race` and `/retire` never registered, because the Race is built before the chat
+New rule for the casebook: 231. `/race` and `/retire` never registered, because the Race is built before the chat
 line exists.
 
 Asks:
