@@ -79,7 +79,9 @@ const RULES = {
   'bazaar.enter': (s) => s.bazaarEnter?.(), // (Raku's bazaar: audio/casino.js; its cue music/casino.js)
   'casino.chips': (s, e) => s.casinoChips?.(!!e.cash),
   'casino.sit': (s) => s.casinoSit?.(),
-  'casino.play': (s, e) => s.casinoPlay?.(e.what),
+  'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? s.casinoCount?.(e.steps, e.tier ?? 1) : e.what === 'nova' ? s.casinoNova?.()
+    : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
+  'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),
   'race.escape.wake': (s) => s.escapeWake?.(),
   'race.escape.caught': (s) => s.escapeCaught?.(),
