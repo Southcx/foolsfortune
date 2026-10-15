@@ -263,6 +263,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **Raku's bazaar / a table** (working names, Espada's; `docs/plans/CASINO.md`; `src/progress/casino/table.js`) — Raku's casino split off
   the Weir's Treasury, in the Gold Saucer's look / one game's place in it, and its engine: a rules module played by seats, bots and the
   simulator (`scripts/casino.mjs`); the room `game.bazaar` (`src/world/bazaar/`), a seat `TableSession`. *Not:* the Treasury, the Tithe, a chest.
+- **the Treasury** (`TREASURY`, `buildTreasury`, `stockTreasury`, `src/world/treasury.js`) — five plinths (a chest of each tier), the Tithe's
+  console and its dais, Raku beside it; a piece placed by an origin, in Raku's bazaar since 2026-10-15 (it stood on the Weir's north beach).
+  *Not:* the bazaar, the shop's RAKU'S TREASURY page.
 - **a chip** (working name, Espada's; `game.chips`, `src/progress/casino/chips.js`) — the bazaar's stake, bought from Raku for a cube each
   and cashed back, winnings capped a game day. *Not:* a cube, the clay knock's chips.
 - **Querent / Astroll** (Querent: Espada's and the owner's, 2026-10-15; Astroll: the owner's; `casino/querent/`, `casino/zodiac.js`, `casino/eventhorizon.js`) — the owner's tarot game
