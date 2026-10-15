@@ -715,3 +715,13 @@ All six working names stand; each is already the sport's own word or a clean pun
   pop** (skating's: an ollie popped late off the lip); **a sun plate** (a boost pad, in the UI and the log "boost pad" where a label is
   wanted); **the glide lip**; **the solar start** (Mario Kart's rocket start, taken by Solar Skiffing: you leave with the sun behind you).
 - The log's placeholders in `tracking/race.js` and `BAIL_SAYS` stand as written: verb first, short, the right clock.
+
+### The Raceway, round six *(Dovina's SKIFF-RACING.md section 12; Espada's ruling, 2026-10-14)*
+The working names stand as genre words (the board's rules, the modes, the cups, the gaps, the skiff's parts, the rivals, the City
+Trial and the Stadium, achievements rw24 to rw43 and their titles "Licensed" and "Favourite", the log's lines in `racemodes.js`), with
+one change:
+- **the licence Rails → Grind**: "the rail" is the Emocean's crossing, and the glossary already says it is not a rail you grind. The
+  licence is named for what you do on it.
+- **The antlion of the Gorge's crater** *(proposed)*: the crater's own, the eldest. An antlion's pit is its trap and its home, and a
+  crater is the largest pit there is; the pits' maws in the Dunes are its younger kin. One family, so the Gorge's chase is the big one
+  the small ones grow toward.
