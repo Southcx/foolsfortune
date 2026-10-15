@@ -9,9 +9,11 @@
 //     (the board's plate a lane): the glow quickens and flares, Lachryma drawn up out of the sand into the hull (raceway.lane.drink), and
 //     on coming on (skiff.refill) a cold ring and the gateposts' frets run foot to point. The sun plates' dress leaves them out (`vein`).
 //   - THE POT SMASH'S POTS (pottrial.js; her InstancedMesh of cylinders hidden): the workshop's own pottery (world/props/pottery.js: its
-//     lathe profiles, clay bodies and painted bands), thirty pots of six profiles about a metre tall, in the kit's clays with one in four
-//     glazed lapis, each turned its own way; one merged draw. Smashed: that pot's triangles folded away, the house's own pot burst
-//     (fx.shatterBurst, its body's numbers) and sherds of its colour thrown on the way the board goes (raceway.pot.smash).
+//     lathe profiles, clay bodies and painted bands), thirty pots of six profiles about a metre tall times POTS.scale (pottrial.js:
+//     2 since v204, the owner: "2x larger and more visible"), in the kit's clays with one in four glazed lapis, each turned its own
+//     way; one merged draw. Smashed: that pot's triangles folded away, the house's own pot burst (fx.shatterBurst, its body's numbers)
+//     and sherds of its colour thrown on the way the board goes (raceway.pot.smash); and on race.pot { speed, at } the plume
+//     (vfx/racewayknockeffects.js raceway.pot.plume: sherds, clay dust, a puff), its `power` grown with the board's speed (PLUME).
 //   - THE ANTLION CHASER (escape.js; her dark cone hidden in her `body`): the pits' maw come up out of the road (vfx/racewaypark.js: the
 //     same throat in its ring of broken stone and the same tenmoku mandibles), in a berm of sand it ploughs up as it comes, the jaws
 //     leaning on toward you and snapping, quicker as it closes; sand thrown up behind it in a rooster tail (raceway.antlion.spray), grit
@@ -38,6 +40,7 @@ import { RACEWAY_CAVERN, spireGeometry, pulseTexture } from './racewaycavern.js'
 import { antlionThroat, antlionMandible } from './racewaypark.js';
 import { PROFILES, prepProfile, buildPotGeometry } from '../world/props/pottery.js';
 import { PATCHES } from '../world/raceway/citytrial.js';
+import { POTS } from '../world/raceway/pottrial.js';
 import { ESCAPE } from '../world/raceway/escape.js';
 import { sideOf } from '../world/raceway/kit.js';
 
@@ -54,6 +57,8 @@ export const RACEWAY_PROPS = {
   chaser: { scale: 1.15, berm: { crest: 0xd8a070, shade: 0xc98a52, inner: 0x6a4028 }, lean: 0.55, open: 0.62, shut: 0.06, period: [1.2, 0.55], spray: 3.2 },
   patch: { h: 1.5, turn: 1.1, bob: [0.12, 0.6], glow: 0.4 },
 };
+/** The pot's plume: its power at a standstill, at `top` m/s of the board's speed and more, and how high on the pot (of its height). */
+const PLUME = { low: 0.5, high: 2.6, top: 30, up: 0.45 };
 const C = RACEWAY_PROPS, X = RACEWAY_CAVERN.crystal, UP = new THREE.Vector3(0, 1, 0);
 const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -74,6 +79,7 @@ export class RacewayProps {
     this.t = 0; this.R = null; this.lanes = null; this.pots = null; this.ant = null; this.gems = null;
     const E = o.events || game.events;
     E?.on('skiff.refill', () => this.laneEnter());
+    E?.on('race.pot', (e) => this.potPlume(e));
   }
   parentOf() { return this.parent || this.game.scene; }
   add(o) { o.userData.zone = 'raceway'; this.parentOf().add(o); return o; }
@@ -177,7 +183,7 @@ export class RacewayProps {
     const K = C.pots, pots = PT.pots || [], parts = [], ranges = []; let at = 0;
     pots.forEach((p, k) => {
       const kind = K.kinds[Math.floor(hash(k * 3.7 + 1) * K.kinds.length)], def = PROFILES[kind], top = def.pts[def.pts.length - 1][1];
-      const P = prepProfile(kind, lerp(K.h[0], K.h[1], hash(k * 5.3)) / top), colour = (k % K.glazed === 2) ? K.glaze : K.clays[Math.floor(hash(k * 9.1) * K.clays.length)];
+      const P = prepProfile(kind, lerp(K.h[0], K.h[1], hash(k * 5.3)) * POTS.scale / top), colour = (k % K.glazed === 2) ? K.glaze : K.clays[Math.floor(hash(k * 9.1) * K.clays.length)];
       const geo = buildPotGeometry(P, colour); geo.applyMatrix4(_m.compose(_v.set(p.x, p.y, p.z), _q.setFromAxisAngle(UP, hash(k * 2.9) * Math.PI * 2), _s.set(1, 1, 1)));
       for (const n of Object.keys(geo.attributes)) if (!['position', 'normal', 'color'].includes(n)) geo.deleteAttribute(n);
       const count = geo.attributes.position.count; parts.push(geo); ranges.push({ start: at, count, colour, M: P.M, h: P.height, up: true }); at += count;
@@ -200,6 +206,19 @@ export class RacewayProps {
       this.vfxOf()?.play('raceway.pot.smash', { pos: c, dir, tint: r.colour });
     }
     if (dirty) A.needsUpdate = true;
+  }
+  /** race.pot { speed, at }: the plume, grown with the board's speed, thrown on the way it goes. */
+  potPlume(e) {
+    if (!e?.at) return;
+    const k = Math.min(1, Math.max(0, (e.speed || 0) / PLUME.top)), h = lerp(C.pots.h[0], C.pots.h[1], 0.5) * POTS.scale, S = this.skiff();
+    const dir = S?.v?.lengthSq?.() > 0.01 ? _v.copy(S.v).normalize().addScaledVector(UP, 1.2).normalize() : UP.clone();
+    this.vfxOf()?.play('raceway.pot.plume', { pos: new THREE.Vector3(e.at.x, e.at.y + h * PLUME.up, e.at.z), dir: dir.clone(), tint: this.potColour(e.at) ?? C.pots.clays[0], power: lerp(PLUME.low, PLUME.high, k * k), floor: e.at.y });
+  }
+  /** The colour of the dressed pot stood at `at` (the event's rounded place), if one is. */
+  potColour(at) {
+    const Q = this.pots; if (!Q) return null;
+    const k = Q.trial.pots.findIndex((p) => Math.abs(p.x - at.x) < 0.2 && Math.abs(p.z - at.z) < 0.2);
+    return k >= 0 ? Q.ranges[k]?.colour ?? null : null;
   }
   clearPots() {
     const Q = this.pots; if (!Q) return;
