@@ -12,7 +12,9 @@
 // Prior art: Riichi Mahjong's yaku (the hand's shapes each worth a share, read from the finished hand) and han (doubling), rummy's sets
 // and runs.
 //
-//   SUITS   RANK   TIERS   melds(cards, need) -> [[meld]]   isWin(cards, quads)   best(winHand, ctx) -> { value, tier, ab, x, notes }
+//   SUITS   RANK   TIERS   melds(cards, need) -> [[meld]]   isWin(cards, quads)   best(winHand, ctx) -> { value, tier, ab, x, notes, steps }
+//   (steps: the score in the order it is counted, for the table's count-up: { op: 'base' | '+' | 'x', n, why }; the value is
+//   base x (1 + every '+') x every 'x': Balatro's chips and mult in two boxes)
 // ---------------------------------------------------------------------------------------
 
 export const SUITS = ['cups', 'swords', 'pentacles', 'wands']; // (the seat suits' order round the table: the owner's Cups, Swords, Pentacles, Wands)
@@ -63,8 +65,8 @@ export function best(win, ctx) {
   if (!splits.length) splits.push([]); // (nine of a suit in no order: no melds to read)
   let top = null;
   for (const sp of splits) {
-    const R = read(sp, all), notes = [R.name]; let ab = 0, x = 1;
-    const A = (n, why) => { if (n) { ab += n; notes.push(`+${n} ${why}`); } }, X = (n, why) => { x *= n; notes.push(`x${n} ${why}`); };
+    const R = read(sp, all), notes = [R.name], steps = [{ op: 'base', n: TIERS[R.tier], why: R.name, tier: R.tier }]; let ab = 0, x = 1;
+    const A = (n, why) => { if (n) { ab += n; notes.push(`+${n} ${why}`); steps.push({ op: '+', n, why }); } }, X = (n, why) => { x *= n; notes.push(`x${n} ${why}`); steps.push({ op: 'x', n, why }); };
     // the hand's own shapes
     const bySuit = {}; for (const m of R.runs) if (sameSuit(m.cards)) (bySuit[m.cards[0].s] ||= []).push(Math.min(...m.cards.map((c) => c.r)));
     for (const lows of Object.values(bySuit)) if (lows.length >= 2) { lows.sort((a, b) => a - b); A(lows.some((l, i) => i && l === lows[i - 1] + 3) ? 2 : 1, lows.some((l, i) => i && l === lows[i - 1] + 3) ? 'half flush, pure' : 'half flush'); }
@@ -92,7 +94,7 @@ export function best(win, ctx) {
     if (has(20)) A(2 * (ctx.judged || 0), 'Judgement');
     if (has(21)) A(new Set(ctx.board).size, 'the World (unique arcana)');
     const value = Math.round(TIERS[R.tier] * x * (1 + ab));
-    if (!top || value > top.value) top = { value, tier: R.tier, ab, x, notes, split: sp };
+    if (!top || value > top.value) top = { value, tier: R.tier, ab, x, notes, steps, split: sp };
   }
   return top;
 }

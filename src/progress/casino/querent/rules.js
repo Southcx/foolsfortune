@@ -15,7 +15,7 @@
 // Prior art: Riichi Mahjong (the draw and discard, calling a discard, riichi, the seat wind, the exhaustive draw, the kong's
 // replacement draw), gin rummy's melds, the Tarot's two arcana.
 //
-//   QUERENT (the game: table.js's interface)   QUERENT_RULES (the numbers)   tenpai(hand, quads)
+//   QUERENT (the game: table.js's interface)   QUERENT_RULES (the numbers)   tenpai(hand, quads)   scoreIfWon(S, p, via, cards?)
 // ---------------------------------------------------------------------------------------
 import { shuffle } from '../table.js';
 import { isWin, best } from './score.js';
@@ -102,15 +102,20 @@ export function discardMoves(S, p) {
 }
 function endTurn(S) { S.turn = (S.turn + 1) % S.n; S.queue.push({ internal: beginTurn }); }
 
-function win(S, p, via) {
+/** The round's facts a winning hand is scored against (score.js `best`). */
+function ctxOf(S, p, via) {
   const P = S.players[p], L = P.lover != null ? S.players[P.lover] : null;
   const arcana = [...new Set([...P.arcana, ...(L ? L.arcana : [])])], board = S.players.flatMap((Q) => Q.arcana);
-  const ctx = { seatSuit: P.seatSuit, stole: P.stole, steals: S.steals, stealsLeft: S.players.reduce((a, Q) => a + Math.max(0, Q.stealsMax - Q.stole), 0),
+  return { seatSuit: P.seatSuit, stole: P.stole, steals: S.steals, stealsLeft: S.players.reduce((a, Q) => a + Math.max(0, Q.stealsMax - Q.stole), 0),
     fate: P.fate ? { ...P.fate, by: via } : null, nextTurn: !!P.fate && P.turns === P.fate.turn + 1, firstDraw: P.turns === 1 && !P.fate, arcana, board,
     hierophant: P.hierophant, judged: P.judgedTarget != null ? S.players[P.judgedTarget].stole : 0, tower: P.tower };
-  const sc = best({ cards: P.hand, quads: P.quads }, ctx);
-  S.scores[p] += sc.value; S.winner = p; S.log.push({ win: p, via, value: sc.value, tier: sc.tier, notes: sc.notes });
-  S.wins.push({ round: S.round, seat: p, value: sc.value, tier: sc.tier, notes: sc.notes, arcana: arcana.length, turns: S.turnCount });
+}
+/** What a hand would score if it won now (the coach's preview: coach/querent.js); null if it is no win. */
+export function scoreIfWon(S, p, via, cards = S.players[p].hand) { const P = S.players[p]; return isWin(cards, P.quads) ? best({ cards, quads: P.quads }, ctxOf(S, p, via)) : null; }
+function win(S, p, via) {
+  const P = S.players[p], sc = best({ cards: P.hand, quads: P.quads }, ctxOf(S, p, via));
+  S.scores[p] += sc.value; S.winner = p; S.log.push({ win: p, via, value: sc.value, tier: sc.tier, notes: sc.notes, steps: sc.steps });
+  S.wins.push({ round: S.round, seat: p, value: sc.value, tier: sc.tier, notes: sc.notes, arcana: P.arcana.length, turns: S.turnCount });
   startRound(S);
 }
 

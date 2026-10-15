@@ -11,7 +11,7 @@
 // Prior art: boardgame.io's moves-and-phases (a game as pure reducers over a state), OpenSpiel's legal-actions interface for game AI,
 // the house's own economy simulator (scripts/economy.mjs: measure before believing).
 //
-//   rngOf(seed) -> () => [0,1)   die(r, sides)   shuffle(r, a)   DIE_STEPS   play(game, { seats, bots, seed, opts, steps }) -> { result,
+//   rngOf(seed) -> () => [0,1)   die(r, sides)   shuffle(r, a)   DIE_STEPS   SEAT_COLOURS   SUIT_COLOURS   play(game, { seats, bots, seed, opts, steps }) -> { result,
 //   state, moves }   A game: { id, seats: [min, max], setup({ seats, r, opts }), pending(state) -> { seat, kind, moves } | null,
 //   apply(state, move, r) -> events, result(state) -> null | { ... }, view(state, seat) }
 // ---------------------------------------------------------------------------------------
@@ -28,6 +28,18 @@ export function shuffle(r, a) { for (let i = a.length - 1; i > 0; i--) { const j
 /** The standard set's dice in order, the steps a die is upgraded or downgraded along. */
 export const DIE_STEPS = [4, 6, 8, 10, 12, 20];
 export const stepDie = (sides, by) => DIE_STEPS[Math.max(0, Math.min(DIE_STEPS.length - 1, DIE_STEPS.indexOf(sides) + by))];
+/** The seats' colours (the owner, 2026-10-15: the board-game convention, Red, Yellow, Green, Blue, Purple, Pink, Black, White), each with a
+ *  shape of its own so a colour is never the only cue (the colour-blind, and the suits' colours, which share four of these: CASINO-CLARITY.md
+ *  3). Seat 0 is always you. A colour sits on a seat's rim, tokens and plate, never on a card's face (that is the suit's). */
+export const SEAT_COLOURS = [
+  { id: 'red', label: 'Red', hex: '#e5484d', shape: 'circle' }, { id: 'yellow', label: 'Yellow', hex: '#f5c542', shape: 'triangle' },
+  { id: 'green', label: 'Green', hex: '#3fb950', shape: 'square' }, { id: 'blue', label: 'Blue', hex: '#3b82f6', shape: 'diamond' },
+  { id: 'purple', label: 'Purple', hex: '#a371f7', shape: 'star' }, { id: 'pink', label: 'Pink', hex: '#f472b6', shape: 'heart' },
+  { id: 'black', label: 'Black', hex: '#2b2b33', shape: 'hexagon' }, { id: 'white', label: 'White', hex: '#f2f2f2', shape: 'ring' },
+];
+/** The suits' colours (the owner, 2026-10-15: Wands red, Cups blue, Swords green, Pentacles yellow), in SUITS' order (cups, swords,
+ *  pentacles, wands), with the playing-card suit each stands for. */
+export const SUIT_COLOURS = [{ suit: 'cups', hex: '#3b82f6', pip: '♥' }, { suit: 'swords', hex: '#3fb950', pip: '♠' }, { suit: 'pentacles', hex: '#f5c542', pip: '♦' }, { suit: 'wands', hex: '#e5484d', pip: '♣' }];
 /** A standard set of polyhedral dice: d4, d6, d8, two d10, d12, d20 (the owner's "full set of standard DnD dice"). */
 export const DND_SET = [4, 6, 8, 10, 10, 12, 20];
 

@@ -71,6 +71,9 @@ export class Bazaar {
     L.box([wx, OY + 5.9, wz], [5.5, 0.6, 0.7], C.gate);
     this.weirGate = new THREE.Vector3(wx, OY, wz);
     this.sessions = new Map(); // (one game a table at a time)
+    // the tables' own preference (the bots' pace: session.js SPEEDS), kept with the settings, not the progress
+    this.prefs = { speed: 'normal' };
+    game.save?.section('casinoPrefs', { scope: 'settings', version: 1, dump: () => ({ ...this.prefs }), load: (d) => Object.assign(this.prefs, d || {}), reset: () => { this.prefs.speed = 'normal'; } });
   }
 
   /** Is the Courier in the hall (its zone)? */
@@ -128,7 +131,16 @@ export class Bazaar {
    *  folk take their turns under it (CASEBOOK, NEW:modal-pauses-the-table). */
   tickModal(dt) { if (this.session?.open) this.session.update(dt); }
 
+  /** `/howto`: the how-to of the table you sit at (the chat line exists only after boot: asked here, the first frame it does). */
+  commands() {
+    const g = this.game; if (this.cmds || !g.chat?.add) return; this.cmds = true;
+    g.chat.add('howto', { help: "how to play the game at the table you're sitting at (Raku's Bazaar)", run: () => {
+      if (this.session?.open) this.session.showHowto(); else g.log?.say('info', "Sit at one of Raku's tables first: F at a table.", { key: 'howto', throttle: 1 });
+    } });
+  }
+
   update(dt) {
+    this.commands();
     this.wire();
     const g = this.game, it = g.interact?.cur, P = g.player;
     const t = (this.t = (this.t || 0) + dt); this.neon.forEach((n, k) => { n.material.color.setHSL(((t * 0.05 + k * 0.25) % 1), 0.9, 0.6); }); // (the neon cycles: a placeholder's flicker of the Gold Saucer)
