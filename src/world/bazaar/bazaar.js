@@ -123,6 +123,10 @@ export class Bazaar {
     F.color.setHex(AIR.fog); F.density = AIR.density;
   }
 
+  /** While a window holds the world (the table's own page is one: main.js returns before update), the seat's clock still runs, so the
+   *  folk take their turns under it (CASEBOOK, NEW:modal-pauses-the-table). */
+  tickModal(dt) { if (this.session?.open) this.session.update(dt); }
+
   update(dt) {
     this.wire();
     const g = this.game, it = g.interact?.cur, P = g.player;
