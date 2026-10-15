@@ -32,7 +32,7 @@
 //   (no exports for the game: importing this registers 'supernova' and 'nebula')   ASTROLL_LOOK   assignFaces(hand, faces)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { dieTpl, dieRest, chipTpl, cupTpl, PIECE } from './bazaarpieces.js';
+import { dieTpl, dieRest, chipTpl, cupTpl, PIECE, tierScale } from './bazaarpieces.js';
 import { registerLayout, qOf, seatAt, chips, die, splitSum } from './bazaarlayout.js';
 import { SUPERNOVA_RULES } from '../progress/casino/supernova.js';
 
@@ -42,7 +42,7 @@ export const ASTROLL_LOOK = {
   pop: 0.55, fade: 1.5, nova: 1.8, burst: 16,
   riffle: { every: 2.3, dur: 0.34, lift: 0.024, tilt: 0.32 },
   sn: { rows: [1.32, 1.12], gap: 0.15, perRow: 6, rail: 0.78, railW: 0.56, ties: 10, cup: [1.05, 1.22], options: 0.5 },
-  nb: { row: 1.12, gap: 0.17, cupGap: 0.12, back: 0.22, purse: [1.58, 0.72], cup: [-0.95, 1.18], claimZ: 0.14, raiseZ: -0.42, pot: [-0.55, -0.12], token: 0.84 },
+  nb: { row: 1.3, gap: 0.21, cupGap: 0.12, back: 0.22, purse: [1.58, 0.72], cup: [-0.95, 1.18], claimZ: 0.14, raiseZ: -0.42, pot: [-0.55, -0.12], token: 0.84 },
 };
 const L = ASTROLL_LOOK, SIZES = SUPERNOVA_RULES.sizes;
 const decay = (s) => SIZES[Math.max(0, SIZES.indexOf(s) - 2)];
@@ -50,7 +50,7 @@ const decay = (s) => SIZES[Math.max(0, SIZES.indexOf(s) - 2)];
 function mark(out, from, tier, role, dim = false) {
   for (let i = from; i < out.length; i++) {
     const e = out[i]; e.tier ??= tier; e.role ??= role;
-    if (dim) { e.dim = true; if (e.die) e.tpl = dieTpl(e.die.sides, e.die.skin, 1, true); }
+    if (dim) { e.dim = true; if (e.die) e.tpl = dieTpl(e.die.sides, e.die.skin, tierScale(e.tier), true); }
   }
 }
 /** Anchors: a point in the table's frame for the HUD and the how-to; each role's anchor is the middle of its pieces. */
@@ -201,7 +201,7 @@ function nebula(out, S, V, P, R, ctx) {
     const a = (q * Math.PI * 2) / n, inRound = !!V.inRound?.[q], rho = N.row + (inRound ? 0 : N.back), from0 = out.length;
     if (q === 0) {
       const ords = ordinals(V.mine);
-      V.mine.forEach((s, i) => { const [x, z] = seatAt(0, n, rho, (i - (V.mine.length - 1) / 2) * N.gap); die(out, `ed:0:${s}:${ords[i]}`, s, V.faces?.[i] ?? s, x, z, String(s), { rollKey: V.round, from: [N.cup[0], 0.2, N.cup[1]] }); });
+      V.mine.forEach((s, i) => { const [x, z] = seatAt(0, n, rho, (i - (V.mine.length - 1) / 2) * N.gap); die(out, `ed:0:${s}:${ords[i]}`, s, V.faces?.[i] ?? s, x, z, String(s), { tier: 'XL', rollKey: V.round, from: [N.cup[0], 0.2, N.cup[1]] }); });
       mark(out, from0, 'XL', 'hand', folded); // (a hand you folded sits back, dim)
     } else {
       const k = V.counts[q];
