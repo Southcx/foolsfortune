@@ -131,9 +131,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   grows, and a full-grown one gives up a blotling (an aberrant Figment, of the weather's feeling where it rises). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
   jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
-- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
+- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `schillerInk`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
   — how Lachryma left in the open turns (the bauble's and a slick's one clock and oil film) / the film's hue shift every feat of the
-  Courier's power wears / the Lachryma's faint flash under a slip body's clay. → detail
+  Courier's power wears (`schillerInk`: a mark's ink with the film flashing through it) / the Lachryma's faint flash under a slip body's clay. → detail
 - **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`) — an aquarium-glass bottle worn at the upper back; a reserve that feeds the
   pool below half and is what paint spends and mop fills. *Not:* "tank", ever.
 - **paint motif** (`PAINT_MOTIF`, `src/vfx/paintmotifs.js`) — the pattern a feeling's paint carries on the ground beside its colour (Wonder
@@ -214,7 +214,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   rail, run with A / D's balance, no tool but the skiff / a ruin's lintel on the Raceway the keel locks to / the Gnomon's ring hung in the
   Raceway's air, flown through for a push. *Not:* the rail (the Emocean's crossing), a Solar Skiffing ring (the Gnomon's trial).
 - **the grab's reach** (`GrabReach`, `GRIPS`, `src/courier/skiff/grabreach.js`) — a grab's hand on the skiff's gunwale while held: the front
-  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch; a grind trick's too (the tail slide's hand to the stern, the nose grind's lean over the bow). *Not:* the
+  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch; a grind trick's too (the tail slide's hand to the stern, the nose grind's lean over the bow, the 50-50's arms out). *Not:* the
   grab's trick (skiff.js), the board's tweak, the carry's hold.
 
 ## 4. Creatures and folk
@@ -509,18 +509,20 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the rivals' look** (`RacewayRivals`, `src/vfx/racewayrivals.js`) — the race's three rivals dressed: a mini Solar Skiff, its sail in
   the rival's glaze, a clapperjar riding it that leans into bends, claps as it passes you and tumbles when taken down. *Not:* the rivals
   (Dovina's racers, `world/raceway/rivals.js`).
+- **a clay knock / a big break / the pot plume** (`RACEWAY_KNOCK_EFFECTS`, `src/vfx/racewayknockeffects.js`) — a rival bumped (chips, dust, its
+  jolt) / taken down (sparks, sherds, a hit-stop) / a pot smashed, grown with the board's speed. *Not:* a takedown (Dovina's rule), a pot burst.
 - **the sibling riders** (`RacewaySiblingRiders`, `src/vfx/racewaysiblingriders.js`) — the Sibling roster's rivals in their own rigs on the
   Solar Skiff, riding the Courier's rider clips, their boards in their divisions' glazes. *Not:* the party's siblings, the rivals' look.
 - **a hull glaze** (`glazeHull`, `src/vfx/hullglaze.js`; Dovina's `skiffGlaze`) — a glaze fired on the Solar Skiff's hull at the kiln (its
   HULL tab), at a firing's price, tinting the hull's painting. *Not:* a glaze on the vessel, a room glaze.
 - **the edge strings** (`RacewayEdgeStrings`, `src/vfx/racewayedgestrings.js`) — beads of light on a thread along both edges of the Raceway's
   running surface, a bright run flowing the race's way just ahead of the board. *Not:* the sun plates' chevrons, the wire compass.
-- **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in Lachryma's colour: the link
-  ring closing as its clock runs out, the step pips (a stack of chevrons aft of the stern, bigger and warmer a step), the banked flares as three little suns behind them. No words. *Not:* the Lachryma ring.
+- **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in the labradorite's play: the link
+  ring closing as its clock runs out, the step pips (a stack of chevrons aft of the stern, bigger and warmer a step), the banked flares as three little suns standing over the stern, one popping out as C spends it. No words. *Not:* the Lachryma ring.
 - **the skiff on water** (`SkiffWaterLook`, `game.waterFx.skiff`, `src/vfx/skiffwaterlook.js`) — the Solar Skiff skimming water: the splash on and off
   (in Lachryma's colour on Lachryma), the spray off the keel, its V in the ripple tank. *Not:* the wake (on sand, `world/ground/wake.js`).
 - **the grind's balance mark** (`GrindBalanceMark`, `src/vfx/grindbalancemark.js`) — the grind's lean as a needle on an arc standing behind the
-  Solar Skiff's stern while the keel grinds (and the manual's lean), warming to an ember toward the ends (Tony Hawk's arrow). No words. *Not:* the balance (a core move).
+  Solar Skiff's stern while the keel grinds (and the manual's lean), warming to an ember toward the ends (Tony Hawk's arrow); on a coaster rail hung square to the view, screen-up. No words. *Not:* the balance (a core move).
 - **the board's stakes look** (`SkiffBoardLooks`, `src/vfx/skiffboardlooks.js`; `skiff.stakes`, boat.js) — the board's rules worn on the Solar Skiff: the
   sail heating to an ember and luffing with smoke, the hull flashed and chipped by a hit and dulled and cracked as the pool falls, a wreck in
   shards that fly home gold, the manual's tail-up tilt. No words. *Not:* the board's rules (`boardrules.js`), a sibling's shatter.

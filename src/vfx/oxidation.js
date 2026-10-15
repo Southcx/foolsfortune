@@ -23,9 +23,15 @@
 // Appearance Code (the five looks of spilled oil from thick to thin: continuous true colour, discontinuous true colour, metallic,
 // rainbow, sheen), which is the slick's ramp read from the top: black, then the rainbow, then the sheen, then nothing.
 //
+//   SCHILLER     a mark worn on the Solar Skiff (the board's gauges, the Raceway's strings and lanes) in the labradorite's own play,
+//                not a cyan glow (the owner, v204: "the UI elements all read as too blue versus Lachryma labradorite"): a dark body with
+//                the film's colours flashing up through it in broad bands at a constant rate, labInk's CPU twin on the film's palette
+//                (vfx/labradorite.js). `schillerInk(ph, out?, { sheen, floor })`, walked by SCHILLER.rate a real second.
+//
 //   OXIDATION   oxidationAt(age, out?) -> { k, step, sink, gone }   oxidationColour(k, out)   oxidationGlow(k, out) -> intensity
 //   oxidationFilm(k) -> the film's strength   oxidationMaterial(k) (the bauble's)   OXIDATION_GLSL (oxFilm, slickColour)
 //   FILM (the film's four colours, linear)   filmColour(t, out)   featTint(t, out?, { feeling, k, bright })
+//   SCHILLER (the ink, the walk's rate)   schillerInk(ph, out?, { sheen, floor })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { PALETTE } from '../core/config.js';
@@ -112,4 +118,18 @@ export function featTint(t, out = new THREE.Color(), { feeling = null, k = 0.5, 
   filmColour(t, _f).lerp(_w, 0.1).multiplyScalar(bright);
   if (feeling && COLOR[feeling] !== undefined) return out.setHex(COLOR[feeling]).lerp(_f, k);
   return out.copy(_f);
+}
+
+/** The marks' schiller (labInk's numbers on the film's palette): the dark body (sRGB, the labradorite's ink lifted a little so a mark
+ *  still has a shape on night sand), the walk (film loops a real second: once round in about 14 real s, a band's flash every 3.5),
+ *  and how far along a mark's length (film loops a metre) the hue moves on. */
+export const SCHILLER = { ink: 0x17111f, rate: 0.07, along: 0.035 };
+const _ink = new THREE.Color(SCHILLER.ink);
+/** A mark's colour at phase ph (walk it by SCHILLER.rate x real seconds, plus SCHILLER.along x metres along the mark): the ink, with
+ *  the film's colour coming up through it in broad bands (labInk's: a band a quarter of the loop), never below `floor` of the film nor
+ *  past `sheen`, so a mark reads on noon sand (the ink) and at night (the flash). */
+export function schillerInk(ph, out = new THREE.Color(), { sheen = 0.9, floor = 0.35, bright = 1.25 } = {}) {
+  const band = Math.min(1, Math.max(0, (0.5 + 0.5 * Math.sin(ph * Math.PI * 4) - 0.18) / 0.64)), b = band * band * (3 - 2 * band);
+  featTint(ph, _f, { bright });
+  return out.copy(_ink).lerp(_f, floor + (sheen - floor) * b);
 }
