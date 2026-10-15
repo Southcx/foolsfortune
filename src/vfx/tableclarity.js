@@ -53,11 +53,20 @@ const CSS = `
 body.bztable-seated #hud, body.bztable-seated #lachryma, body.bztable-seated #compass, body.bztable-seated #cubes { opacity: 0 !important; visibility: hidden !important; }
 .tc-br { position: absolute; left: 0; top: 0; height: 0; transform-origin: 0 50%; border-bottom: calc(5 * var(--u)) solid var(--bc); filter: drop-shadow(0 0 calc(5 * var(--u)) var(--bg)); }
 .tc-br::before, .tc-br::after { content: ''; position: absolute; bottom: calc(-5 * var(--u)); width: calc(5 * var(--u)); height: calc(18 * var(--u)); background: var(--bc); }
+/* (a group the coach found: a thick gold bar, tall end posts, a dark keyline round it and a gold glow, so it reads over the pale cards at 480 lines) */
+.tc-br.gold { border-bottom-width: calc(10 * var(--u)); filter: drop-shadow(0 0 calc(2 * var(--u)) #1a1420) drop-shadow(0 0 calc(2 * var(--u)) #1a1420) drop-shadow(0 0 calc(9 * var(--u)) #f2c14e); }
+.tc-br.gold::before, .tc-br.gold::after { bottom: calc(-10 * var(--u)); width: calc(10 * var(--u)); height: calc(34 * var(--u)); }
 .tc-br::before { left: 0; } .tc-br::after { right: 0; }
 .tc-br.rim { border-bottom-width: calc(2 * var(--u)); } .tc-br.rim::before, .tc-br.rim::after { width: calc(2 * var(--u)); height: calc(10 * var(--u)); bottom: calc(-2 * var(--u)); }
 .tc-end { position: absolute; left: 50%; top: calc(28 * var(--u)); transform: translateX(-50%); font-size: calc(44 * var(--u)); font-weight: 900; text-align: center; padding: calc(12 * var(--u)) calc(28 * var(--u)); border-radius: calc(14 * var(--u)); max-width: calc(1100 * var(--u));
   background: linear-gradient(180deg, #2a1f38ee, #12163aee); border: calc(3 * var(--u)) solid ${GOLD}; text-shadow: 0 calc(3 * var(--u)) 0 #000b; }
 .tc-end[hidden] { display: none; }
+/* (the turn banner pops by scale only: the hud's own pop fades from opacity 0 and, run while a shot is taken, drew the banner translucent; the banner is solid at every moment) */
+@keyframes tc-pop { from { transform: translateX(-50%) scale(.86); } }
+.tc-layer .th-turn, .tc-layer .th-turn.mine { opacity: 1; }
+.tc-layer .th-turn.mine { animation: tc-pop .35s cubic-bezier(.34,1.56,.64,1); }
+.tc-layer .th-turn.still { animation: none; }
+.tb-bar { flex-wrap: wrap; justify-content: center; width: max-content; } /* (more moves than a row holds, Nebula's claims: a second row above, never off the screen) */
 .tc-corner { position: absolute; left: calc(14 * var(--u)); top: calc(250 * var(--u)); font-size: calc(17 * var(--u)); font-weight: 700; text-align: left; text-shadow: 0 calc(2 * var(--u)) 0 #000c; color: #cfc6dc; }
 .tc-corner b { color: ${GOLD}; }
 `;
@@ -101,7 +110,7 @@ export class TableClarity {
     this.quiet(false); this.stopHowto(); this.ceremony?.close(); this.ceremony = null; hideTableTip();
     this.bar?.dispose?.(); this.bar?.remove(); this.bar = null; this.help?.remove(); this.help = null;
     this.hud?.unmount(); this.hud = null; this.layer.remove(); this.layer = null; this.labels.clear();
-    this.sess = null; this.coach = null; this.S = null; this.barKey = ''; this.seenAt = -1;
+    this.sess = null; this.coach = null; this.S = null; this.barKey = ''; this.seenAt = -1; this.turnKey = null;
     document.getElementById('tc-style')?.remove();
   }
 
@@ -139,6 +148,7 @@ export class TableClarity {
     if (over) { this.hud.setTurn(null); this.end.textContent = turn.say || ''; this.end.hidden = false; } else {
       this.end.hidden = true;
       this.hud.setTurn(turn.seat == null ? null : { seat: turn.seat, colour: label(turn.seat), say: turn.say, mine: !!turn.yours });
+      const tk = `${turn.seat}|${!!turn.yours}`; this.hud.turn?.classList.toggle('still', tk === this.turnKey); this.turnKey = tk; // (the pop plays when the turn changes hands, not at every re-read)
     }
     // the corner: the stake
     const bal = this.game.chips?.balance ?? 0;
@@ -210,18 +220,22 @@ export class TableClarity {
 
   /** The seat plates, each kept whole inside the screen and out of the turn banner's and the action bar's boxes (the smallest push that clears). */
   settlePlates(plates, W, H, u) {
-    const m = 8 * u, hit = [this.hud.turn, this.bar?.style.display !== 'none' ? this.bar : null].filter((e) => e && !e.hidden).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
+    // (out of the banner's, the bar's and the centre's anchored words' way: the target, what you need, the equation, the odds)
+    const goal = this.hud.anchors.get('goal'), words = [...this.labels].filter(([k, v]) => /^(centre|need|equation|odds)$/.test(k) && v.el.style.display !== 'none').map(([, v]) => v.el);
+    const m = 8 * u, hit = [this.hud.turn, this.bar?.style.display !== 'none' ? this.bar : null, goal?.style.display !== 'none' ? goal : null, ...words].filter((e) => e && !e.hidden).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
     for (const [key, x0, y0] of plates) {
       const el = this.hud.plates.get(+key.slice(5)), w = ((el?.offsetWidth || 220 * u) * 1.12) / 2, h = ((el?.offsetHeight || 120 * u) * 1.12) / 2; // (the acting plate swells a tenth)
       const inside = (x, y) => [Math.max(w + m, Math.min(W - w - m, x)), Math.max(h + m, Math.min(H - h - m, y))];
       let [x, y] = inside(x0, y0);
-      for (let pass = 0; pass < 2; pass++) for (const r of hit) {
+      for (let pass = 0; pass < 3; pass++) for (const r of hit) {
         const over = (X, Y) => X + w > r.left - m && X - w < r.right + m && Y + h > r.top - m && Y - h < r.bottom + m;
         if (!over(x, y)) continue;
-        const cands = [[r.left - m - w, y], [r.right + m + w, y], [x, r.top - m - h], [x, r.bottom + m + h]].map(([X, Y]) => inside(X, Y)).filter(([X, Y]) => !over(X, Y));
+        const free = (X, Y) => !hit.some((q) => X + w > q.left - m && X - w < q.right + m && Y + h > q.top - m && Y - h < q.bottom + m);
+        let cands = [[r.left - m - w, y], [r.right + m + w, y], [x, r.top - m - h], [x, r.bottom + m + h]].map(([X, Y]) => inside(X, Y)).filter(([X, Y]) => !over(X, Y));
+        if (cands.some(([X, Y]) => free(X, Y))) cands = cands.filter(([X, Y]) => free(X, Y)); // (a push that lands on another box is the last resort)
         if (cands.length) { cands.sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y)); [x, y] = cands[0]; }
       }
-      this.hud.place(key, x, y);
+      this.hud.place(key, x, y); hit.push({ left: x - w, right: x + w, top: y - h, bottom: y + h }); // (a placed plate is a box the next keeps clear of)
     }
   }
 
@@ -238,8 +252,17 @@ export class TableClarity {
     const pool = chosen?.size && pick ? pick.moves : c.moves, hand = (m) => m.dice || m.tiles || m.cards;
     const on = pool.filter((m) => !m.pieceIds?.length || !m.pieceIds.every((id) => actable?.has(id)) || hand(m));
     const best = chosen?.size && pick?.complete ? pick.complete : null;
-    if (on.length > 9) return [];
-    return on.map((m) => ({ id: m.id, label: m.label, line: m.line, amount: m.amount, preview: m.preview, tone: m.tone, best: best ? m === best : m.best, size: m.size, pieceIds: m.pieceIds }));
+    if (on.length > 9 && on.some((m) => m.pieceIds?.length)) return []; // (a pick made on the pieces: the pieces are the choice)
+    const shown = on.length > 9 ? this.fitBar(on) : on, cost = (m) => (typeof m.amount === 'number' && m.amount > 0 && /^Costs/.test(m.line || '') ? -m.amount : m.amount); // (a price is shown as a cost: "−3")
+    return shown.map((m) => ({ id: m.id, label: m.label, line: m.line, amount: cost(m), preview: m.preview, tone: m.tone, best: best ? m === best : m.best, size: m.size, pieceIds: m.pieceIds }));
+  }
+
+  /** Moves with no piece, more than the bar's nine keys (Nebula Bluff's claims): Call and Fold stay, and the claims nearest your hand's worth, the highest honest one and the bluffs just above it first. */
+  fitBar(on) {
+    const claims = on.filter((m) => m.claim != null), rest = on.filter((m) => m.claim == null), room = Math.max(1, 9 - rest.length);
+    let p = -1; claims.forEach((m, i) => { if (!m.bluff) p = i; }); p = Math.max(0, p);
+    const keep = new Set(claims.map((m, i) => [m, i]).sort((a, b) => (a[1] >= p ? a[1] - p : (p - a[1]) * 1.5 - 0.1) - (b[1] >= p ? b[1] - p : (p - b[1]) * 1.5 - 0.1)).slice(0, room).map(([m]) => m));
+    return on.filter((m) => keep.has(m) || m.claim == null);
   }
 
   /** One word or mark on the cloth, at a projected point (made, written when it changes, moved). */
@@ -251,7 +274,7 @@ export class TableClarity {
     if (kind === 'bracket') {
       if (!to || p.off || to.off) { e.style.display = 'none'; return; }
       const dx = to.x - p.x, dy = to.y - p.y, gold = a.tone === 'gold';
-      e.style.display = ''; e.className = `tc-br${gold ? '' : ' rim'}`; e.style.setProperty('--bc', gold ? GOLD : '#cfc6dc'); e.style.setProperty('--bg', gold ? '#f2c14e88' : '#0000');
+      e.style.display = ''; e.className = `tc-br${gold ? ' gold' : ' rim'}`; e.style.setProperty('--bc', gold ? '#ffd95e' : '#cfc6dc'); e.style.setProperty('--bg', gold ? '#f2c14e88' : '#0000');
       e.style.width = `${Math.hypot(dx, dy)}px`; e.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${Math.atan2(dy, dx)}rad)`; return;
     }
     const sig = kind === 'centre' ? JSON.stringify(a) : `${a.text}|${a.sub || ''}|${a.tone || ''}`;

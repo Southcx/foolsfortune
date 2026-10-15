@@ -110,17 +110,22 @@ export class BazaarTable {
     this.from = { p: g.camera.position.clone(), q: g.camera.quaternion.clone() };
     this.marks = new TableMarks(g.scene, { frame: m, clothY: 0, seatLook: MARK_LOOK });
     this.clarity.open(s);
+    this.handLook(T.id === 'querent'); // (Querent's cards are read for their faces: see handLook)
     s0.menu?.root?.classList.add('bztable');
     this.style = document.createElement('style'); this.style.textContent = CSS; document.head.appendChild(this.style);
     const el = (this.canvas = g.renderer?.domElement); el?.addEventListener('pointermove', this.onMove); el?.addEventListener('pointerdown', this.onDown);
   }
   leave() {
     const s0 = this.src; this.s = null; this.src = null; this.batch.mesh.visible = false; this.pieces.clear(); this.batch.clear(); this.hover = null; this.hoverIds = null; this.ndc = null;
-    this.marks?.dispose(); this.marks = null; this.clarity.close(); this.coach = null;
+    this.marks?.dispose(); this.marks = null; this.clarity.close(); this.coach = null; this.handLook(false);
     s0?.menu?.root?.classList.remove('bztable'); this.game.bazaar?.session?.menu?.root?.classList.remove('bztable');
     this.canvas?.removeEventListener('pointermove', this.onMove); this.canvas?.removeEventListener('pointerdown', this.onDown); this.canvas = null;
     this.style?.remove(); this.style = null;
   }
+  /** Querent's face contrast at 480 lines: the paper is lit down and made matt (the sun's glare and the exposure washed the ink out; no emissive, no new program, the same material's
+   *  uniforms), and the other tables get theirs back on leaving. */
+  handLook(on) { const p = this.mats.paper; p.color.setScalar(on ? 0.5 : 1); p.roughness = on ? 1 : 0.72; p.envMapIntensity = on ? 0.4 : 1;
+    const tex = p.map; if (on && tex && tex.anisotropy < 16) { tex.anisotropy = 16; tex.needsUpdate = true; } } // (the oblique hand keeps its ink through the minifying: the atlas's anisotropy 4 to 16)
   clearPicks() { this.zsel.clear(); this.s.dsel = []; this.s.sel = new Set(); }
 
   /** The coach, worked out again only when the game moves (or half a real second on, for a knack switched meanwhile). */
