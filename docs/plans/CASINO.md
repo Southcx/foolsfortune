@@ -76,7 +76,7 @@ ranks in a row, or nine of a suit in three runs. The bonuses are the doc's: a ha
 no royals (+1), no steals (+1), +1 an arcana in play, +1 a seat-suit run, the perfect straight flush (x5, in place of the seat-suit
 bonus), a first-turn Fate Clause (+1), fortune favours (won on the turn after declaring: +2 by steal, x4 by draw), the fated one (won on
 the first draw of the round: +20), and the arcana that score (the Magician's aces, the Empress's queens, the Emperor's kings, the
-Chariot's knights, the Hierophant's rank, Strength's x2, Temperance, the Devil, the Tower's +4, Judgment, the World). The Lovers pool
+Chariot's knights, the Hierophant's rank, Strength's x2, Temperance, the Devil, the Tower's +4, Judgement, the World). The Lovers pool
 two players' arcana; duplicates never stack.
 
 **3.7 Measured** (`node scripts/casino.mjs --game everwell`, 300 bot games a table size):

@@ -31,10 +31,10 @@ export const ARCANA = [
   { id: 14, name: 'Temperance', does: '+1 for each steal no one used this round.' },
   { id: 15, name: 'The Devil', does: '+1 for each steal made this round, and one more steal for you.' },
   { id: 16, name: 'The Tower', does: 'Your hand goes back into your deck; draw eight new. +4 if you win this round.' },
-  { id: 17, name: 'The Stars', does: 'Your discards shuffle back into your deck.' },
+  { id: 17, name: 'The Star', does: 'Your discards shuffle back into your deck.' },
   { id: 18, name: 'The Moon', does: 'Your discards are face down from now on.' },
   { id: 19, name: 'The Sun', does: 'Choose a player: their hand is shown to you.' },
-  { id: 20, name: 'Judgment', does: 'Choose a player: they cannot steal; +2 for each card they stole.' },
+  { id: 20, name: 'Judgement', does: 'Choose a player: they cannot steal; +2 for each card they stole.' },
   { id: 21, name: 'The World', does: '+1 for each different arcana on the table.' },
 ];
 

@@ -89,7 +89,7 @@ export function best(win, ctx) {
     if (has(14)) A(ctx.stealsLeft, 'Temperance (steals unused)');
     if (has(15)) A(ctx.steals, 'the Devil (steals made)');
     if (has(16) && ctx.tower) A(4, 'the Tower');
-    if (has(20)) A(2 * (ctx.judged || 0), 'Judgment');
+    if (has(20)) A(2 * (ctx.judged || 0), 'Judgement');
     if (has(21)) A(new Set(ctx.board).size, 'the World (unique arcana)');
     const value = Math.round(TIERS[R.tier] * x * (1 + ab));
     if (!top || value > top.value) top = { value, tier: R.tier, ab, x, notes, split: sp };
