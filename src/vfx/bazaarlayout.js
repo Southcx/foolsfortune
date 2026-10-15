@@ -13,25 +13,29 @@
 //     dice to shut (or reopen) them.
 //   - EVENT HORIZON: each seat's set, the dice still to roll in a row and those rolled in a cluster showing what they made, the dealer's
 //     hidden handful under cups (lifted at the end), the pot as chips. Click your dice to choose them, then your cup to roll.
+//   - SUPERNOVA RUN and NEBULA BLUFF: vfx/bazaarlayoutastroll.js, registered here (`registerLayout`). A game with no layout lays out
+//     nothing (its page still plays it), so a new table opens safely.
 // Dice values are the rules': a die shows what the table rolled; where the rules keep only a sum (Event Horizon), the faces are a split of
 // that sum, each in its die's range.
 //
 // Prior art: the riichi table's seats and ponds (Mahjong Soul), a Shut the Box board's row, Hearthstone's hand fanned at the bottom and
 // its lit playable cards, the craps table's chip stacks.
 //
-//   layoutTable(session, { zsel }) -> [{ id, tpl, p: [x, y, z], q, glaze?, act?, sel?, die?: { sides, value, skin }, from? }]
-//   splitSum(sum, sides[]) -> values   chipsOf(amount) -> [kinds]
+//   layoutTable(session, { zsel, t }) -> [{ id, tpl, p: [x, y, z], q, glaze?, act?, sel?, glow?, die?: { sides, value, skin }, from?,
+//     rollKey?, still? }]   (a die whose rollKey changes tumbles onto its value; `still` holds it; `glow` lights it a beat)
+//   registerLayout(id, fn(out, S, V, P, R, ctx))   splitSum(sum, sides[]) -> values   chipsOf(amount) -> [kinds]
+//   helpers for the other layouts: qOf, seatAt, chips, die
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { cardTpl, dieTpl, dieRest, chipTpl, tileTpl, cupTpl, PIECE } from './bazaarpieces.js';
 import { cardIndex, CARD_BACK } from './bazaarfaces.js';
 
 const _e = new THREE.Euler();
-const qOf = (x, y, z, order = 'YXZ') => new THREE.Quaternion().setFromEuler(_e.set(x, y, z, order));
+export const qOf = (x, y, z, order = 'YXZ') => new THREE.Quaternion().setFromEuler(_e.set(x, y, z, order));
 /** A card lying face up (its top away from you), face down, and turned by `yaw` about the vertical. */
 const UP = (yaw = 0) => qOf(-Math.PI / 2, yaw, 0), DOWN = (yaw = 0) => qOf(Math.PI / 2, yaw, 0);
 /** A point at a seat: `rho` metres out from the middle toward seat q of n, `x` along that seat's edge (to its right). */
-function seatAt(q, n, rho, x = 0) { const a = (q * Math.PI * 2) / n, c = Math.cos(a), s = Math.sin(a); return [x * c + rho * s, -x * s + rho * c]; }
+export function seatAt(q, n, rho, x = 0) { const a = (q * Math.PI * 2) / n, c = Math.cos(a), s = Math.sin(a); return [x * c + rho * s, -x * s + rho * c]; }
 
 /** A sum split over dice (each between 1 and its sides), as even as it goes: the faces shown where the rules keep only the total. */
 export function splitSum(sum, sides) {
@@ -43,12 +47,12 @@ export function splitSum(sum, sides) {
 export function chipsOf(amount) { const out = []; let a = Math.max(0, Math.floor(amount)); for (const [k, v] of [['25', 25], ['5', 5], ['1', 1]]) while (a >= v && out.length < 40) { out.push(k); a -= v; } return out; }
 
 /** Stacks of chips at (x, z): a stack a value, ten at most a stack. */
-function chips(out, id, amount, x, z, kinds = chipsOf(amount)) {
+export function chips(out, id, amount, x, z, kinds = chipsOf(amount)) {
   const stacks = []; for (const k of kinds) { let s = stacks.find((t) => t.k === k && t.n < 10); if (!s) stacks.push((s = { k, n: 0 })); s.n++; }
   let c = 0; stacks.forEach((s, j) => { for (let i = 0; i < s.n; i++, c++) out.push({ id: `${id}:${c}`, tpl: chipTpl(s.k), p: [x + (j % 4) * 0.092 - 0.14, i * PIECE.chip.h, z + Math.floor(j / 4) * 0.092], q: qOf(0, i * 0.7, 0), glaze: true }); });
 }
 /** A die resting at (x, z) with `value` up. */
-function die(out, id, sides, value, x, z, skin = String(sides), extra = {}) {
+export function die(out, id, sides, value, x, z, skin = String(sides), extra = {}) {
   const q = new THREE.Quaternion(), yaw = (hash(id) % 628) / 100, lift = dieRest(sides, value, yaw, q);
   out.push({ id, tpl: dieTpl(sides, skin), p: [x, lift, z], q, glaze: true, die: { sides, value, skin }, ...extra });
 }
@@ -56,15 +60,16 @@ const hash = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 
 
 export function layoutTable(S, ctx = {}) {
   const T = S.T, St = S.S, V = T.game.view(St, 0), R = T.game.result(St), P0 = R ? null : T.game.pending(St), P = P0 && P0.seat === 0 ? P0 : null;
-  const out = [];
-  if (T.id === 'querent') querent(out, S, V, P, R, T);
-  else if (T.id === 'zodiac') zodiac(out, S, V, P, R, ctx);
-  else horizon(out, S, V, P, R);
+  const out = [], fn = LAYOUTS.get(T.id);
+  if (fn) fn(out, S, V, P, R, ctx, T); // (a game with no layout: nothing on the cloth, its page plays it)
   return out;
 }
+const LAYOUTS = new Map();
+/** A game's layout: `fn(out, session, view, pending (yours), result, ctx, table)` pushes its pieces into `out`. */
+export function registerLayout(id, fn) { LAYOUTS.set(id, fn); }
 
 // ---------------------------------------------------------------- Querent
-function querent(out, S, V, P, R, T) {
+function querent(out, S, V, P, R, ctx, T) {
   const n = V.n, move = (m) => () => { S.sel = new Set(); S.move(m); }, find = (f) => P?.moves.find(f);
   const targetOf = (q) => { const m = P && /^(lovers|sun|judgment|ability\.downgrade)$/.test(P.kind) && find((x) => x.target === q); return m ? move(m) : null; };
   // your hand, fanned toward you
@@ -163,3 +168,7 @@ function horizon(out, S, V, P, R) {
   else { const f = splitSum(D.total, D.dice); D.dice.forEach((s, i) => die(out, `dealer:die:${i}`, s, f[i], (i - (D.dice.length - 1) / 2) * 0.2, -0.1, String(s))); }
   if (!R && St.pot > 0) chips(out, 'pot', St.pot, -0.05, 0.22);
 }
+
+registerLayout('querent', querent);
+registerLayout('zodiac', zodiac);
+registerLayout('eventhorizon', horizon);

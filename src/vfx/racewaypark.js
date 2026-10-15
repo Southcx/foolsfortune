@@ -336,6 +336,11 @@ export class RacewayPark {
     }
   }
 
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() { this.undress(); }
+  /** Per frame (main.js): dressed again when the Courier is back by any way (the Index's says raceway.enter). */
+  update() { const R = this.game.raceway; this.hookRelease(R); if (R?.built && R.active && this.R !== R) this.dress(R); }
   undress() {
     for (const o of this.objects) { o.parent?.remove(o); o.geometry?.dispose(); if (o.material && o.material !== this.game.water?.mats?.water && o.material !== this.game.water?.mats?.lachryma) o.material.dispose?.(); }
     for (const m of this.hidden) m.visible = true;

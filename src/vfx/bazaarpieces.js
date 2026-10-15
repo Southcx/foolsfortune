@@ -15,7 +15,7 @@
 // Prior art: three.js's PolyhedronGeometry (the solids' vertices), the d10's trapezohedron worked from its planarity (apex height =
 // ring height x (1 + cos 36°) / (1 - cos 36°)), Chessex's numbering, Tabletop Simulator's and Hearthstone's pieces drawn as one batch.
 //
-//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h)   dieTpl(sides, skin)   dieRest(sides, value, yaw, out) -> lift
+//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h)   dieTpl(sides, skin: '6', 'atk6', 'ash')   dieRest(sides, value, yaw, out) -> lift
 //   chipTpl(kind)   tileTpl(n, state)   cupTpl(r, h)   clothTpl(id, r)   new PieceBatch(materials)  .clear()  .add(tpl, matrix, slot, id)
 //   .write()  .pick(raycaster) -> id   .mesh
 // ---------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ function dieFaces(sides) {
 }
 /** A die of `sides` in a skin ('4', 'atk6', ...: bazaarfaces.js DIE_SKINS), radius PIECE.die. */
 export function dieTpl(sides, skin = String(sides)) {
-  return memo(`die:${skin}`, () => {
+  return memo(`die:${skin}:${sides}`, () => { // (the spent skin is one cell for every size: keyed by both)
     const A = bazaarAtlas(), b = builder(), R = PIECE.die, F = dieFaces(sides);
     for (const f of F) {
       const [u0, v0, u1, v1] = A.die(skin, f.value - 1), cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = (u1 - u0) / 2, hv = (v1 - v0) / 2;

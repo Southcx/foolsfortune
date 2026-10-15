@@ -276,6 +276,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   mark). *Not:* a chain reaction elsewhere, the Supernova as a star.
 - **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
 - **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
+- **a tell's riffle** (`riffle`, `src/vfx/bazaarlayoutastroll.js`) — Nebula Bluff's tell at Raku's tables (`view.tell`) worn as a world mark: the claimant's top chip lifting and turning on its purse a beat, every couple of real seconds; no words. *Not:* the tell itself (Dovina's rule), a lit choice.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.

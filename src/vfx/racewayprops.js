@@ -87,7 +87,8 @@ export class RacewayProps {
 
   update(dt) {
     const g = this.game, R = g.raceway;
-    if (R?.built && R.plates?.length && this.R !== R) { this.undressLanes(); this.R = R; this.dressLanes(R); }
+    this.hookRelease(R);
+    if (R?.built && R.active && R.plates?.length && this.R !== R) { this.undressLanes(); this.R = R; this.dressLanes(R); }
     if (!this.R || R?.active === false) return;
     this.t += dt;
     const Rs = g.race?.rulesets, P = Rs?.pots, E = Rs?.escape, Ct = g.cityTrial;
@@ -96,6 +97,10 @@ export class RacewayProps {
     if (Ct?.mesh !== (this.gems?.src ?? null)) { this.clearGems(); if (Ct?.mesh) this.dressGems(Ct); }
     this.stepLanes(dt); this.stepPots(); this.stepAnt(dt, E); this.stepGems();
   }
+
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() { this.undressLanes(); this.clearPots(); this.clearAnt(); this.clearGems(); this.R = null; }
 
   // ---------------------------------------------------------------- the vein lanes
   dressLanes(R) {
