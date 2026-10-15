@@ -27,7 +27,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
-import { shapeOutline, SEAT_LOOK } from './seatlook.js';
+import { shapeOutline, seatCue } from './seatlook.js';
 
 /** The sizes (metres: a table's pieces read from a seat's camera, so bigger than life by about three). */
 export const PIECE = { card: { w: 0.2, h: 0.325, gap: 0.003 }, die: 0.072, chip: { r: 0.042, h: 0.011, segs: 14 }, tile: { w: 0.11, h: 0.165, d: 0.03 } };
@@ -177,7 +177,7 @@ export function tokenTpl(colour, k = 1) {
   return memo(`token:${colour}:${k}`, () => {
     const A = bazaarAtlas(), b = builder(), [u0, v0, u1, v1] = A.seat(colour, 'token'), [r0, rv0, r1, rv1] = A.seat(colour, 'rim');
     const R = 0.05 * k, foot = 0.026 * k, t = 0.012 * k, cy = foot + R * 1.02, cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = ((u1 - u0) / 2) * 0.8, hv = ((v1 - v0) / 2) * 0.8;
-    let P = shapeOutline(SEAT_LOOK[colour]?.shape ?? 'circle'); if (P.reduce((acc, [x, y], i) => { const [x2, y2] = P[(i + 1) % P.length]; return acc + x * y2 - x2 * y; }, 0) < 0) P = P.slice().reverse(); // (counter-clockwise, y up)
+    let P = shapeOutline(seatCue(colour).shape); if (P.reduce((acc, [x, y], i) => { const [x2, y2] = P[(i + 1) % P.length]; return acc + x * y2 - x2 * y; }, 0) < 0) P = P.slice().reverse(); // (counter-clockwise, y up)
     const V2 = P.map(([x, y]) => new THREE.Vector2(x, y)), idx = THREE.ShapeUtils.triangulateShape(V2, []), rc = [(r0 + r1) / 2, (rv0 + rv1) / 2];
     for (const [a, c, d] of idx) { // (a face each way; triangulateShape may wind either, so each is made counter-clockwise by its own normal)
       const tri = [a, c, d].map((i) => P[i]), area = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0]) * (tri[1][1] - tri[0][1]), o = area < 0 ? [0, 2, 1] : [0, 1, 2];

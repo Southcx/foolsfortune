@@ -9,7 +9,9 @@
 //     stars in plum and cream, repainted here with the labradorite's schiller in the great moon). The 22 Major Arcana on a plum field,
 //     each its numeral (0 to XXI) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
 //     pool); the 56 Minor on cream, pips of their suit (cups, swords, pentacles, wands) in the playing-card layouts, the courts a figure
-//     under its headgear, an index in two corners.
+//     under its headgear, an index in two corners: big, the suit's symbol under it and its playing-card pip (hearts for cups, spades for
+//     swords, diamonds for pentacles, clubs for wands) beside the symbol; each suit in its own colour (cups blue, swords green, pentacles
+//     yellow, wands red), on the card's face only.
 //   - THE DICE: a cell a face (32 x 32), each die of the standard set its own glaze (d4 celadon, d6 shino, d8 lapis, d10 tenmoku, d12
 //     copper red, d20 plum with the schiller in its numerals), Raku's attack die in gold; 6 and 9 underlined; the d4's three corner
 //     numbers a face, the one read is the one on top.
@@ -31,6 +33,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { schillerInk } from './oxidation.js';
+import { SUIT_COLOURS } from '../progress/casino/table.js';
 import { SEAT_NAMES, SEAT_KINDS, drawSeatCell, seatCellIndex } from './seatlook.js';
 
 const W = 2048, H = 2048;
@@ -43,8 +46,10 @@ export const CARD_BACK = 78;
 const CARD_EDGE = 79;
 /** A Querent card ({ r: 1..14, s: 0..3 }) as its index in the deck: the 22 Major Arcana first, then the suits in the seat suits' order. */
 export const cardIndex = (c) => 22 + c.s * 14 + (c.r - 1);
-/** The suits' inks (cups, swords, pentacles, wands: views.js's colours, kept so the page and the cloth agree). */
-export const SUIT_INK = ['#2f8f86', '#5c6a80', '#b8892a', '#b8452e'];
+/** The suits' inks (cups blue, swords green, pentacles yellow, wands red: SUIT_COLOURS, Dovina's data; cups, swords, pentacles, wands).
+ *  A suit's colour is only ever on a card's face, with its symbol and its playing-card pip; a seat's colour never is. */
+export const SUIT_INK = SUIT_COLOURS.map((c) => c.hex);
+const OUTLINE = '#1c1220';
 const K = { cream: '#efe2c4', paper: '#f4ead2', gold: '#e8c35a', goldDeep: '#a87a22', plum: '#3a2148', deep: '#24132e', ink: '#2a1a24', felt: '#1f6b4a' };
 /** The dice's glazes: body, numeral, and whether the numeral carries the schiller. */
 export const DIE_SKINS = {
@@ -161,10 +166,25 @@ const PICTURES = [
 // ------------------------------------------------------------------ the Minor Arcana
 /** A suit's mark at (x, y), `s` its size in pixels. */
 function suit(g, s, x, y, z, c = SUIT_INK[s]) {
+  if (c === SUIT_INK[s]) suitMark(g, s, x, y, z * 1.22, OUTLINE); // (a dark keyline under a suit's own colour: yellow and green must read on cream)
+  suitMark(g, s, x, y, z, c);
+}
+function suitMark(g, s, x, y, z, c) {
   if (s === 0) { g.beginPath(); g.arc(x, y - z * 0.15, z * 0.42, 0, Math.PI); fill(g, c); box(g, x - z * 0.42, y - z * 0.2, z * 0.84, z * 0.12, c); box(g, x - 0.6, y + z * 0.2, 1.4, z * 0.22, c); box(g, x - z * 0.25, y + z * 0.38, z * 0.5, z * 0.1, c); }
   else if (s === 1) { poly(g, [[x, y - z * 0.5], [x + z * 0.1, y + z * 0.2], [x - z * 0.1, y + z * 0.2]], c); box(g, x - z * 0.28, y + z * 0.18, z * 0.56, z * 0.1, c); box(g, x - 0.6, y + z * 0.26, 1.4, z * 0.22, c); }
   else if (s === 2) { ring(g, x, y, z * 0.42, Math.max(1, z * 0.1), c); star(g, x, y, z * 0.34, z * 0.14, 5, c); }
   else { line(g, x - z * 0.3, y + z * 0.45, x + z * 0.3, y - z * 0.45, Math.max(1.2, z * 0.14), c); circ(g, x + z * 0.12, y - z * 0.1, z * 0.1, '#6a9a4a'); circ(g, x - z * 0.12, y + z * 0.12, z * 0.1, '#6a9a4a'); }
+}
+/** A playing-card pip (hearts for cups, spades for swords, diamonds for pentacles, clubs for wands: SUIT_COLOURS' pip), drawn as a path so no font is needed. */
+function pip(g, s, x, y, z, c = SUIT_INK[s]) {
+  const one = (k, col) => {
+    g.fillStyle = col; g.beginPath();
+    if (s === 0) { g.moveTo(x, y + k * 0.5); g.bezierCurveTo(x - k * 0.75, y, x - k * 0.5, y - k * 0.55, x, y - k * 0.2); g.bezierCurveTo(x + k * 0.5, y - k * 0.55, x + k * 0.75, y, x, y + k * 0.5); g.fill(); }
+    else if (s === 1) { g.moveTo(x, y - k * 0.5); g.bezierCurveTo(x + k * 0.75, y, x + k * 0.5, y + k * 0.4, x + k * 0.1, y + k * 0.2); g.lineTo(x + k * 0.2, y + k * 0.5); g.lineTo(x - k * 0.2, y + k * 0.5); g.lineTo(x - k * 0.1, y + k * 0.2); g.bezierCurveTo(x - k * 0.5, y + k * 0.4, x - k * 0.75, y, x, y - k * 0.5); g.fill(); }
+    else if (s === 2) { g.moveTo(x, y - k * 0.55); g.lineTo(x + k * 0.4, y); g.lineTo(x, y + k * 0.55); g.lineTo(x - k * 0.4, y); g.closePath(); g.fill(); }
+    else { for (const [u, v] of [[0, -0.28], [-0.28, 0.12], [0.28, 0.12]]) { g.beginPath(); g.arc(x + u * k, y + v * k, k * 0.24, 0, Math.PI * 2); g.fill(); } g.fillRect(x - k * 0.06, y, k * 0.12, k * 0.5); }
+  };
+  one(z * 1.2, OUTLINE); one(z, c);
 }
 /** Pip places on a 1 x 1 field (the playing card's layouts, the Tarot de Marseille's for 7 to 10). */
 const PIPS = { 2: [[0.5, 0.15], [0.5, 0.85]], 3: [[0.5, 0.15], [0.5, 0.5], [0.5, 0.85]], 4: [[0.28, 0.15], [0.72, 0.15], [0.28, 0.85], [0.72, 0.85]],
@@ -176,10 +196,12 @@ const INDEX = [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'P', 'Kn
 function minor(g, r, s) {
   const ink = SUIT_INK[s];
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, ink); box(g, 3, 3, 58, 98, K.paper);
-  const corner = () => { text(g, INDEX[r], 10, 11, r === 10 || r === 12 ? 10 : 14, ink); suit(g, s, 10, 24, 9); }; // (the index big enough to read seated)
+  const corner = () => { // (the index big, the tarot suit's symbol under it, the playing-card pip beside the symbol)
+    text(g, INDEX[r], 11, 11, r === 10 || r === 12 ? 13 : 17, ink); suit(g, s, 8, 28, 8); pip(g, s, 18, 28, 8);
+  };
   corner(); g.save(); g.translate(64, 104); g.rotate(Math.PI); corner(); g.restore();
   if (r === 1) { ring(g, 32, 52, 15, 1, K.gold); suit(g, s, 32, 52, 22); return; }
-  if (r <= 10) { for (const [u, v] of PIPS[r]) suit(g, s, 18 + u * 28, 20 + v * 64, 10); return; }
+  if (r <= 10) { for (const [u, v] of PIPS[r]) suit(g, s, 32 + (u - 0.5) * 26, 20 + v * 64, 9); return; }
   // the courts: a figure, what it wears says which (a page's cap, a knight's plume, a queen's crown, a king's crown and cross)
   box(g, 14, 22, 36, 60, '#e6d6b4'); figure(g, 32, 56, 13, ink, K.cream);
   if (r === 11) box(g, 27, 32, 10, 3, K.goldDeep);
