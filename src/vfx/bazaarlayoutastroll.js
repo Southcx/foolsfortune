@@ -76,14 +76,14 @@ export function assignFaces(hand, faces) {
 
 // ---------------------------------------------------------------- Supernova Run
 /** What the layout remembers of a session between frames: the hands of the last frame (a reaction's "before") and its moment. */
-function memo(S, St, last, t) {
+function memo(S, St, V, last, t) {
   let M = S.astroll;
-  if (!M || M.S !== St) M = S.astroll = { S: St, seen: last ?? null, ix: 0, hands: St.hands.map((h) => h.slice()), moment: null };
+  if (!M || M.S !== St) M = S.astroll = { S: St, seen: last ?? null, ix: 0, hands: V.hands.map((h) => h.slice()), moment: null };
   if (last && last !== M.seen) {
     M.seen = last; M.ix++;
     if (last.react != null || last.nova != null) M.moment = { at: t, x: last, ix: M.ix, nova: last.nova != null, before: M.hands };
   }
-  M.hands = St.hands.map((h) => h.slice());
+  M.hands = V.hands.map((h) => h.slice());
   return M;
 }
 /** A seat's last reaction (its log index and faces on its hand), if its hand is still the one that reaction left. */
@@ -106,7 +106,7 @@ function handSlot(q, n, i, k) {
 function spent(out, id, sides, x, z, dy) { die(out, id, sides, 1, x, z, 'ash', { still: true }); out[out.length - 1].p[1] += dy; }
 
 function supernova(out, S, V, P, R, ctx) {
-  const St = S.S, n = V.n, t = ctx.t ?? 0, M = memo(S, St, ctx.coach?.extra?.last ?? V.last, t), mo = M.moment, age = mo ? t - mo.at : 1e9;
+  const St = S.S, n = V.n, t = ctx.t ?? 0, M = memo(S, St, V, ctx.coach?.extra?.last ?? V.last, t), mo = M.moment, age = mo ? t - mo.at : 1e9;
   const nova = mo?.nova && age < L.nova, sel = (S.ssel ||= new Set()), mine = new Map();
   if (!P) sel.clear();
   const picked = (id) => sel.has(id) || !!ctx.chosen?.has(id), picking = sel.size > 0 || !!ctx.chosen?.size;
@@ -172,7 +172,7 @@ function supernova(out, S, V, P, R, ctx) {
     if (m) die(out, `snfuse:${m.into}`, m.into, m.into, 0, L.sn.options, String(m.into), { act: go(m), from: [0, 0.2, 1.1] });
   }
   mark(out, m0, 'L', 'moves');
-  for (let i = m0; i < out.length; i++) if (out[i].id.startsWith('sn') && out[i].id !== 'sncup') out[i].tier = 'XL'; // (the results of a choice are the choice)
+  for (let i = m0; i < out.length; i++) if (out[i].id.startsWith('sn') && out[i].id !== 'sncup') out[i].tier = 'M'; // (the results of a choice sit third on the ladder, below your dice (XL) and your points (L))
   const mv = out.slice(m0); if (mv.length) { const c = mv.reduce((a, e) => [a[0] + e.p[0] / mv.length, a[1] + e.p[2] / mv.length], [0, 0]); anchor(out, 'role:moves', c[0], c[1]); }
 }
 /** The Supernova: the d20 risen lit on its 20, a ring of gold bursting from it, the old hands blown outward as spent clay. */
@@ -210,7 +210,7 @@ function nebula(out, S, V, P, R, ctx) {
     }
     const [px, pz] = seatAt(q, n, N.purse[0], N.purse[1]), p0 = out.length;
     chips(out, `nbp:${q}`, V.chips[q], px, pz);
-    mark(out, p0, 'L', 'seats'); // (a stack keeps its chips' own height: the HUD's plate carries the count)
+    mark(out, p0, q === 0 ? 'L' : 'S', 'seats'); // (your purse L, the others' S: a stack keeps its chips' own height, the HUD's plate carries the count)
     const [ax, az] = seatAt(q, n, 1.95, 0); anchor(out, `seat:${q}`, ax, az);
   }
   // your cup: fold
@@ -241,7 +241,7 @@ function nebula(out, S, V, P, R, ctx) {
 function riffle(out, prefix, t, q) {
   const all = out.filter((e) => e.id.startsWith(prefix)); if (!all.length) return null;
   const f = all[0], top = all.filter((e) => e.p[0] === f.p[0] && e.p[2] === f.p[2]).reduce((a, e) => (e.p[1] > a.p[1] ? e : a), f);
-  top.role = 'tell'; // (the how-to's tell: the claimant's top chip, riffling or not)
+  top.role = 'tell'; top.tier = 'S'; // (the how-to's tell: the claimant's top chip, riffling or not)
   const { every, dur, lift, tilt } = L.riffle, ph = (t + q * 0.77) % every; if (ph > dur) return top;
   const s = Math.sin((ph / dur) * Math.PI);
   top.p = [top.p[0], top.p[1] + lift * s, top.p[2]]; top.q = qOf(tilt * s, (ph / dur) * 1.4, tilt * 0.4 * s);
