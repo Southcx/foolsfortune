@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE TABLE TIP: the side box that opens when the pointer rests on any piece at Raku's tables, inert ones included (the brief's section 2f).
-// Its parts, in order: the genre word (the label), one line of effect (its keywords bold and its numbers in colour, ui/keywords.js),
+// Its parts, in order: the label (a table's own name or a piece's: no genre labels at Raku's tables, the owner, 2026-10-15), one line of effect (its keywords bold and its numbers in colour, ui/keywords.js),
 // the stat chips (a label and a value, the value in the fixed meaning colour: score ivory, money gold, loss ash), and the keywords the piece
 // is, each with its icon and what it means. A keyword in the line is bold on its own; a keyword listed in `keywords` is explained below
 // the line, so a new player learns it where it is used. The words are the table view's (the owner's exception: 2026-10-15). The info is the
@@ -67,7 +67,7 @@ function keywordRow(k) {
   return row;
 }
 
-/** A visible box for one piece's info: the genre word, the line, the stat chips, the keywords explained. The caller places it. */
+/** A visible box for one piece's info: the label, the line, the stat chips, the keywords explained. The caller places it. */
 export function tableTip({ label = '', line = '', stats = [], keywords = [] } = {}) {
   install();
   const el = document.createElement('div');
@@ -112,7 +112,7 @@ export function hideTableTip() { tip?.classList.remove('on'); }
 
 /** A sample for the stub: Nebula Bluff's words, with two keywords explained (a game's own, in the coach's words; no Parry, no Seal). */
 export const DEMO_TIP = {
-  label: "LIAR'S DICE",
+  label: 'Nebula Bluff',
   line: 'Claim what your hand is worth. Others can Call your bluff, or back down.',
   stats: [{ label: 'YOUR HAND', value: 49 }, { label: 'DICE', value: 4, kind: 'count' }, { label: 'POT', value: 18, kind: 'money' }],
   keywords: [
