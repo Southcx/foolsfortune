@@ -28,9 +28,6 @@ const seatRand = stream('casino'); // (a session's seed: the game's own stream i
 /** The tables: their game, who sits at them (you first), each seat's bot and style, where they stand (the hall's local metres), the stake
  *  and how it settles (`settle`): `pot` a buy-in, the winner takes the table's less Raku's tenth (Querent, Supernova Run); `purse` chips
  *  played out of, what is left comes back (Zodiac, Nebula Bluff); `ante` Event Horizon's ante a round, its net back. */
-/** A table whose cloth the table view does not lay out yet (`cloth: false`) opens its page under its own name, which the view leaves be
- *  (vfx/bazaartable.js keys on 'bazaar.table'; it threw on a game it did not know). */
-const pageOf = (T) => (T.cloth === false ? 'bazaar.table.plain' : 'bazaar.table');
 const NEBULA_STYLES = [null, { bluff: 0.3, read: 0.6, doubt: 0.3, leak: 0.6, noise: 0.1 }, { bluff: 0.15, read: 0.4, doubt: 0.35, leak: 0.7, noise: 0.05 }]; // (Raku bluffs and reads; Celadon is honest and shows it)
 export const TABLES = [
   { id: 'querent', game: QUERENT, seats: 4, names: ['you', 'Raku', 'Clink', 'Celadon'], bots: [null, [querentBot, { thief: 0.3 }], [querentBot, { thief: 0.6 }], [querentBot, { thief: 0.1 }]],
@@ -101,18 +98,18 @@ export class TableSession {
   close() {
     if (this.open && !this.done) this.game.events?.emit('casino.result', { game: this.T.id, won: false, net: -this.paid, forfeit: true, by: 'courier' }); // (risen mid-game: the stake stays on the table)
     this.done = true; this.open = false;
-    if (this.menu?.page?.name === pageOf(this.T)) this.menu.close();
+    if (this.menu?.page?.name === 'bazaar.table') this.menu.close();
   }
   render() {
     const menu = this.menu, T = this.T; if (!menu?.showPage) return;
     const R = T.game.result(this.S), P = R ? null : T.game.pending(this.S), mine = P && P.seat === 0;
-    menu.showPage(pageOf(T), (im, el) => renderTable(this, { im, el, P: mine ? P : null, R, V: T.game.view(this.S, 0), waiting: P && !mine ? T.names[P.seat] : null }),
+    menu.showPage('bazaar.table', (im, el) => renderTable(this, { im, el, P: mine ? P : null, R, V: T.game.view(this.S, 0), waiting: P && !mine ? T.names[P.seat] : null }),
       { title: T.label.toUpperCase(), sub: `${this.game.chips?.balance ?? 0} chips · F closes (a game in play is forfeit)`, aside: 'left' });
   }
   update(dt) {
     if (!this.open) return;
     const f = this.game.clock?.frame; if (f != null && f === this.frame) return; this.frame = f; // (one step a frame, however many call it: the bazaar's modal tick and the table view's both do)
-    const menu = this.menu; if (!menu?.open || menu.page?.name !== pageOf(this.T)) { this.close(); return; } // (the page closed: risen from the table)
+    const menu = this.menu; if (!menu?.open || menu.page?.name !== 'bazaar.table') { this.close(); return; } // (the page closed: risen from the table)
     if (this.done) return;
     const T = this.T, P = T.game.pending(this.S); if (!P) return;
     if (P.seat === 0) { if (P.moves.length === 1 && P.kind === 'end') this.move(P.moves[0]); return; }
