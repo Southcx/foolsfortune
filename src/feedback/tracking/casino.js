@@ -14,7 +14,7 @@ const RANKS = [null, 'aces', 'twos', 'threes', 'fours', 'fives', 'sixes', 'seven
 
 export function casinoRules({ on, L, log }) {
   const say = (kind, text, key, throttle = 1) => log.say(kind, text, { key, throttle });
-  on('bazaar.enter', () => { L.inc('bazaar.visit'); say('info', "Raku's bazaar. Chips at the cage; F at a table to sit.", 'bazaar', 20); });
+  on('bazaar.enter', () => { L.inc('bazaar.visit'); say('info', "Raku's Bazaar. Raku chips at the cage; F at a table to sit.", 'bazaar', 20); });
   on('casino.chips', (e) => { if (e.buy) { L.inc('casino.chips.bought', e.n); say('info', `You buy ${e.n} chips. You hold ${e.balance}.`, 'chips'); } else { L.inc('casino.chips.cashed', e.n); if (e.win > 0) L.inc('casino.chips.won', e.win); say('record', `You cash ${e.n} chips${e.held ? `; ${e.held} stay chips (today's winnings are cashed)` : ''}.`, 'chips'); } });
   on('casino.sit', (e) => { L.inc('casino.sit'); L.inc(`casino.${e.game}.played`); say('info', `You sit down at ${NAMES[e.game]} for ${e.stake} chips.`, 'sit'); });
   on('casino.play', (e) => {

@@ -5,7 +5,7 @@ The owner's call for the look is "Gold Saucer all the way": Final Fantasy VII's 
 
 It wants a casino cue, and the sounds of play. These events fire now, all with `by: 'courier'`:
 - `bazaar.enter`
-- `casino.chips { what: buy | cash, n, cubes }`
+- `casino.chips { buy: true, n, balance }` or `{ cash: true, n, win, held }`
 - `casino.sit { game, stake }`
 - `casino.play { game, what, who, ... }`, where `what` is one of: `flip` (a Major Arcana; `arcana` is its name), `steal`, `fate` (the
   Fate Clause), `four`, `death` (the round reset), `hand` (a Querent hand won), `lock`, `upgrade` (Zodiac).

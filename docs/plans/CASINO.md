@@ -169,9 +169,9 @@ and every name: Espada; the Treasury's move off the Weir and the room's place: P
 Petra's place, out of every sky (x 0, y 200, z -3000): a round floor 58 m across with a gold ring, sixteen wall panels, a dome, four
 neon bands cycling, six lamps of the light budget, its own violet air (`AIR`: fog 0.009, so the far wall is still seen). Ways in: the
 Index's row (G, THE OPEN) and a gate on the Weir's north beach beside the Treasury; out: the gate in the south wall. On the floor:
-Raku's cage (chips for cubes, and back), three tables (session.js `TABLES`: Querent at four seats with Raku, Clink and Glaze, a 25-chip
+Raku's cage (chips for cubes, and back), three tables (session.js `TABLES`: Querent at four seats with Raku, Clink and Celadon, a 25-chip
 buy-in, the winner takes the table less Raku's tenth; Zodiac against Raku with a 40-chip purse; Event Horizon at three seats with Crock
-and Glaze, a 10-chip ante a round), and the Treasury's slot on the north side (`BAZAAR.treasury`: flat floor, 34 m by 8 m, for
+and Celadon, a 10-chip ante a round), and the Treasury's slot on the north side (`BAZAAR.treasury`: flat floor, 34 m by 8 m, for
 Petra's move). F at a table sits you down (`TableSession`): the stake comes out of your chips, the bots take their turns 0.6 real s
 apart, your choices are clicked on a page set aside (`views.js`, a placeholder until the cloth, cards and dice are real objects),
 and the table's moments and the result go to the log (`feedback/tracking/casino.js`). Rising mid-game forfeits the stake.
@@ -185,9 +185,12 @@ each game, a perfect straight flush) pay once, ever, as the Raceway's tests do. 
 
 **Built (round 2)** (`src/progress/casino/chips.js`, save section `casinoChips`): `CHIPS = { rate: 1, stacks: [50, 100, 250], cap: 10 }`.
 A chip is a cube at the cage both ways; what is cashed beyond what you bought counts as winnings, and winnings cash at most `cap`
-minutes of play (80 cubes) a game day; the rest stays as chips for tomorrow. Events `casino.chips { what: buy | cash, n, cubes }`.
+minutes of play (80 cubes) a game day; the rest stays as chips for tomorrow. Events `casino.chips { buy | cash: true, n, balance | held, win }`.
 
 ## 11. Names (Espada's to rule)
 
-The tarot game is **Querent** (Espada's pick, the owner's yes, 2026-10-15; Everwell, the owner's original title, read as a Well). Still
-Espada's to name: the bazaar, the chips, the Fate Clause, the seat suit, Heaven's blessing, the ladder of sets, fortune favours, the fated one.
+The tarot game is **Querent** (Espada's pick, the owner's yes, 2026-10-15; Everwell, the owner's original title, read as a Well).
+Espada's ruling, 2026-10-15: **Raku's Bazaar** and **Raku chips** (raku firing pulls a pot red-hot from the kiln, its outcome unknown:
+the name is already a gamble); the Fate Clause, the seat suit, Heaven's blessing, the ladder of sets, fortune favours and the fated one
+stay as they are; the folk at the tables are Clink, Crock and **Celadon** (not "Glaze", the Courier's word). Raku's croupier lines go
+in `npc/talks.js` (Espada's, once Raku's npc id stands in the bazaar).

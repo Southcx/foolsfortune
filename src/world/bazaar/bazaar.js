@@ -109,7 +109,7 @@ export class Bazaar {
     menu.showPage('bazaar.cage', (im, el) => {
       const rows = el('div', 'rooms'), row = (t, s, go) => { const d = el('div', 'room', `<span><b>${t}</b><s>${s}</s></span>`); d.onclick = () => { go(); this.openCage(); }; rows.appendChild(d); };
       im.appendChild(el('div', 'grp', `YOUR CHIPS: ${C2.balance} · CUBES: ${g.cubes?.balance ?? 0} · CASHABLE NOW: ${Math.min(C2.balance, C2.room)}`));
-      for (const n of [50, 100, 250]) row(`Buy ${n} chips`, `${n} cubes`, () => C2.buy(n));
+      for (const n of [50, 100, 250]) row(`Buy ${n} Raku chips`, `${n} cubes`, () => C2.buy(n));
       row('Cash out', 'chips back to cubes, your winnings up to the day\'s cap', () => C2.cash());
       im.appendChild(rows);
     }, { title: "RAKU'S CAGE", sub: 'one cube a chip · F closes', aside: 'right' });
