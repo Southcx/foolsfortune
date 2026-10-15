@@ -9,6 +9,10 @@
 // Dunes (active, heightAt, rideHeight, normalAt, wind), so courier/skiff/skiff.js rides it unchanged; rideHeight adds the water it skims
 // and the bridge deck it is on. The wind is the course's own: it follows the track the Courier is on (Wind Waker HD's Swift Sail), swung
 // off it where the track says. Built the first time it is entered. Raced from each track's start pillar (world/raceway/race.js).
+// THE GROUND IS LENT (Petra's measure, v209: the park kept 160 MB after one visit, the gate's heap over budget): its terrain and the
+// physics height field (108 MB and 5 of it, measured) are released once the Courier has been gone RELEASE.after real seconds, and built
+// again from the kept field (4.5 MB) on the next arrival, under the travel's cover (about 0.8 s in the dev build). The kit, the rails and
+// the dressing stay.
 // The looks are Calissa's: the sandfalls (vfx/racewaysandfall.js), the plates' glyphs, lamps and gates' marks (vfx/racewaylooks.js),
 // the cavern (vfx/racewaycavern.js), the fog.
 //
@@ -24,6 +28,7 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
+//   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -44,6 +49,7 @@ import { Siphons } from './siphons.js';
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
 const PREFETCH_AFTER = 12; // (real seconds after the Raceway is made (at boot) before its field is worked out in a worker)
+const RELEASE = { after: 10 }; // (real seconds away before the ground is given back: a respawn or a short trip out never rebuilds it)
 const KEEP = 12; // (metres nearer another track's line must be before the Courier is counted on it: no flicker where two run close)
 
 export class Raceway {
@@ -54,7 +60,7 @@ export class Raceway {
     this.s = this.T.line; this.d = 0; this.lat = 0; this.offT = 0; this.line = 'main'; this.sb = 0; this.branchIn = false;
     this.sun = 1; this.condition = null; this.condT = 0; this.pitT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
-    this.built = false;
+    this.built = false; this.releasers = [];
     this.gaps = new Gaps(this); this.buoys = new Buoys(this); this.siphons = new Siphons(this); // (the named jumps, the buoy runs, the siphons: gaps.js, buoys.js, siphons.js)
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
@@ -96,19 +102,9 @@ export class Raceway {
     if (this.built) return; this.built = true;
     const g = this.game, P = this.P, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
     let t = performance.now();
-    // the field: the park's heights on the terrain's grid, worked out in idle time after boot (prefetch: parkfield.js), or here
-    const field = this.field || fieldOf(P); this.field = field; t = lap(this.fieldFrom ? 'field (ready, worked out in idle time)' : 'field', t);
-    const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
-    // the ground: the Dunes' own sand material on a field of this place's heights, and its height field to stand on
-    const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
-    const TR = (this.chunks = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
-    this.grid = { n: TR.n, heights: TR.heights };
-    const mesh = (this.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
-    t = lap('terrain', t);
-    const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
-    g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), body);
+    this.buildGround(); t = lap('terrain', t);
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
-    t = lap('collider', t);
+    t = lap('barrier', t);
     this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
     buildKit(this); buildMarks(this); t = lap('kit', t); // (every track's furniture: kit.js)
     this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
@@ -116,6 +112,33 @@ export class Raceway {
     this.buoys.build(); this.siphons.build(); t = lap('buoys', t); // (the buoy runs' poles and floats, the siphons' arches: buoys.js, siphons.js)
     g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
   }
+  /** The ground: the terrain on the field's heights (the field worked out in idle time after boot, prefetch: parkfield.js, or here) and
+   *  its physics height field. Built at the first visit and again after each release. */
+  buildGround() {
+    if (this.chunks) return;
+    const g = this.game, P = this.P, t0 = performance.now();
+    const field = this.field || fieldOf(P); this.field = field;
+    const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
+    // the Dunes' own sand material on a field of this place's heights, and its height field to stand on
+    const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
+    const TR = (this.chunks = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
+    this.grid = { n: TR.n, heights: TR.heights };
+    const mesh = (this.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
+    this.groundBody = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
+    g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), this.groundBody);
+    this.groundMs = Math.round(performance.now() - t0); this.awayT = 0;
+  }
+  /** The ground given back: the terrain's arrays and GPU buffers and the height field's body; the field is kept, for the next arrival. */
+  releaseGround() {
+    if (!this.chunks) return;
+    const g = this.game;
+    g.scene.remove(this.terrain); this.chunks.geometry.dispose();
+    if (this.groundBody) g.physics.world.removeRigidBody(this.groundBody);
+    this.chunks = null; this.terrain = null; this.grid = null; this.groundBody = null;
+    for (const f of this.releasers) f(this); // (what dressed the park gives back its own: built again on its next active frame)
+  }
+  /** Ask to be told when the park's ground is given back (a look that dresses the park releases its own then). */
+  onRelease(f) { this.releasers.push(f); }
   /** Work the field out in the idle time between frames, once the game has booted (it is the same function: parkfield.js), so the first
    *  trip here finds it ready (Petra's v198 measure: 4.5 s inside the travel). A few rows a slice, never past the frame's idle time. */
   prefetch() {
@@ -167,7 +190,7 @@ export class Raceway {
 
   /** Into the Raceway from the Index: set down on foot at the hub, among the tracks' starts. */
   arrive() {
-    const g = this.game; this.build();
+    const g = this.game; this.build(); this.buildGround();
     g.player.killY = RW.y - 120;
     const H = this.P.hub, to = this.local(H.x - 8, H.z - 8);
     to.y += 0.05;
@@ -194,7 +217,9 @@ export class Raceway {
   update(dt) {
     if (!this.built) return;
     const g = this.game, cam = g.camera, here = this.active;
-    this.chunks.update(cam.position.x - RW.x, cam.position.z - RW.z);
+    if (here) { this.awayT = 0; this.buildGround(); } // (back by any way but the Index's: built here, a hitch, but never a fall through)
+    else if (this.chunks && (this.awayT = (this.awayT || 0) + (g.rawDt ?? dt)) > RELEASE.after) this.releaseGround();
+    this.chunks?.update(cam.position.x - RW.x, cam.position.z - RW.z);
     if (!here) return;
     for (const F of this.sandfalls) F.look?.update(dt);
     flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
