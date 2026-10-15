@@ -13,7 +13,7 @@
 // Everything is one PieceBatch (vfx/bazaarpieces.js) of its own, so three draw calls however many marks. 0 new programs: its three
 // materials are the stock MeshStandardMaterial with a map (the bazaar pieces' own parameters), told apart only by uniforms; the
 // map is a 64 px atlas of flat cells (the eight seat colours, the film's base, white-gold), one per seat look. The lit
-// material's emissive walks the film by `schillerInk` (vfx/oxidation.js), as the table's own lit pieces do: never a second iridescence.
+// material reads a strip of the atlas whose film cells walk the whole schiller (`schillerInk`, vfx/oxidation.js) at a phase along each rim, blue, green, gold, violet: never one hue (it read as a seat's pink), never a second iridescence.
 //
 // Prior art: Mahjong Soul's and Hearthstone's lit playable pieces, a poker client's acting-seat halo and fold-dim, Slay the Spire's
 // glowing playable cards, Okabe-Ito's colour-blind palette plus a shape cue (the brief's hexes), Overcooked's turn rings.
@@ -47,16 +47,30 @@ export const MARKS = { turn: { r: 0.07, outer: 0.009, inner: 0.007, arcs: 10, sp
 
 // ------------------------------------------------------------------ the atlas: 8 columns of flat cells; a cell's colour read at its centre
 const CELLS = 8, PX = 8;
-const CELL = { film: 8, gold: 9, dark: 11 }; // (seat colours are 0..7 in NAMES' order)
+const CELL = { film: 8, gold: 9, dark: 11 };
+const PH = 12, PH0 = 16; // (the film's phases: PH cells from PH0 on, dark in the colour map, lit by the emissive strip `_strip`, which walks the whole schiller) // (seat colours are 0..7 in NAMES' order)
 const ATLASES = new WeakMap(); // (a look -> its atlas; the cells' places are the same in every one, so the templates below hold for all)
+const phUv = (f) => cellUv(PH0 + (Math.floor(f * PH) % PH + PH) % PH); // (a phase 0..1 round a mark -> its film cell)
 const cellUv = (i) => [((i % CELLS) + 0.5) / CELLS, 1 - (Math.floor(i / CELLS) + 0.5) / CELLS];
 function atlas(look) {
   if (ATLASES.has(look)) return ATLASES.get(look);
   const cv = document.createElement('canvas'); cv.width = cv.height = CELLS * PX; const g = cv.getContext('2d');
   const fill = (i, hex) => { g.fillStyle = `#${hex.toString(16).padStart(6, '0')}`; g.fillRect((i % CELLS) * PX, Math.floor(i / CELLS) * PX, PX, PX); };
-  NAMES.forEach((n, i) => fill(i, look[n].hex)); fill(CELL.film, 0x2a2038); fill(CELL.gold, 0xfff0b8); fill(CELL.dark, 0x120d18);
+  NAMES.forEach((n, i) => fill(i, look[n].hex)); fill(CELL.film, 0x2a2038); fill(CELL.gold, 0xfff0b8); fill(CELL.dark, 0x120d18); for (let i = 0; i < PH; i++) fill(PH0 + i, 0x2a2038);
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.anisotropy = 4; // (as bazaarfaces.js's)
-  const a = { tex, uv: cellUv }; ATLASES.set(look, a); return a;
+  const a = { tex, cv, uv: cellUv }; ATLASES.set(look, a); return a;
+}
+
+/** The film's strip: a copy of the atlas whose phase cells are the schiller at their own phase (blue, green, gold, violet round the rim),
+ *  bright, the whole walking with time; a canvas texture on the lit slot's map, so no new shader program (not an emissive map). */
+function strip(base) {
+  const cv = document.createElement('canvas'); cv.width = cv.height = CELLS * PX; const g = cv.getContext('2d'), tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = tex.minFilter = THREE.NearestFilter;
+  const c = new THREE.Color();
+  return { tex, walk(t) {
+    g.drawImage(base, 0, 0);
+    for (let i = 0; i < PH; i++) { schillerInk(t * MARKS.glint + i / PH, c, { floor: 0.7, sheen: 1, bright: 1.6 }); g.fillStyle = c.getStyle(); const n = PH0 + i; g.fillRect((n % CELLS) * PX, Math.floor(n / CELLS) * PX, PX, PX); }
+    tex.needsUpdate = true;
+  } };
 }
 
 // ------------------------------------------------------------------ templates: flat shapes in the xz plane facing up, y 0
@@ -72,7 +86,7 @@ function flat() {
       const n = pts.length, edge = (i) => { const a = pts[i], b = pts[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1; return [dz / l, -dx / l]; };
       const off = pts.map((p, i) => { const e0 = edge((i + n - 1) % n), e1 = edge(i); let nx = e0[0] + e1[0], nz = e0[1] + e1[1]; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
         const k = w / Math.max(0.5, nx * e1[0] + nz * e1[1]); return [p[0] + nx * k, p[1] + nz * k]; });
-      for (let i = 0; i < n; i++) { const j = (i + 1) % n; this.tri(pts[i], pts[j], off[j], y, u); this.tri(pts[i], off[j], off[i], y, u); }
+      for (let i = 0; i < n; i++) { const j = (i + 1) % n; const uu = typeof u === 'function' ? u(i / n) : u; this.tri(pts[i], pts[j], off[j], y, uu); this.tri(pts[i], off[j], off[i], y, uu); }
     },
     fan(pts, y, u) { const n = pts.length; for (let i = 0; i < n; i++) this.tri([0, 0], pts[i], pts[(i + 1) % n], y, u); },
     done() { return { pos: new Float32Array(pos), nrm: new Float32Array(nrm), uv: new Float32Array(uv), tris: pos.length / 9 }; },
@@ -100,8 +114,8 @@ function markerTpl(shape, r, cell, keyCell) {
 /** The turn ring: the seat's colour outside; inside, arcs of film-lit band (which turn, being their own template per slot). */
 const turnOuterTpl = (cell) => memo(`turn:o:${cell}`, () => { const b = flat(), { r, outer } = MARKS.turn; b.band(ngon(64, r), outer, 0, cellUv(cell)); return b.done(); });
 const turnArcsTpl = () => memo('turn:arcs', () => {
-  const b = flat(), { r, inner, arcs } = MARKS.turn, u = cellUv(CELL.film);
-  for (let k = 0; k < arcs; k++) { const a0 = (k / arcs) * Math.PI * 2, span = (Math.PI * 2 / arcs) * 0.62, pts = [], seg = 5;
+  const b = flat(), { r, inner, arcs } = MARKS.turn;
+  for (let k = 0; k < arcs; k++) { const u = phUv(k / arcs); const a0 = (k / arcs) * Math.PI * 2, span = (Math.PI * 2 / arcs) * 0.62, pts = [], seg = 5;
     for (let s = 0; s <= seg; s++) { const a = a0 + (s / seg) * span; pts.push([r * Math.cos(a), r * Math.sin(a)]); }
     for (let s = 0; s < seg; s++) { const p = pts[s], q = pts[s + 1], pi = [p[0] * (1 - inner / r), p[1] * (1 - inner / r)], qi = [q[0] * (1 - inner / r), q[1] * (1 - inner / r)]; b.tri(p, q, qi, 0.0012, u); b.tri(p, qi, pi, 0.0012, u); } }
   return b.done();
@@ -113,7 +127,7 @@ function rimTpl(w, d, round, m, width, cell, y = 0) {
     const b = flat(); let pts;
     if (round) pts = ngon(28, Math.max(w, d) / 2 + m);
     else pts = rectCorners(w / 2 + m, d / 2 + m, Math.min(0.012, Math.min(w, d) / 2 * 0.4));
-    b.band(pts, width, y, cellUv(cell));
+    b.band(pts, width, y, cell === CELL.film ? phUv : cellUv(cell)); // (the film's rim walks the schiller along its length)
     return b.done();
   });
 }
@@ -133,14 +147,15 @@ export class TableMarks {
     const A = atlas(this.look), mk = (o) => new THREE.MeshStandardMaterial({ map: A.tex, ...o });
     // (the stock map material's parameters, as bazaarMaterials(): one program with the pieces)
     this.mats = { paper: mk({ name: 'marks-paper', roughness: 0.72, metalness: 0 }), glaze: mk({ name: 'marks-glaze', roughness: 0.22, metalness: 0.08 }),
-      lit: mk({ name: 'marks-lit', roughness: 0.4, metalness: 0.05, emissive: 0x6a4a10, emissiveIntensity: 1 }) };
+      lit: mk({ name: 'marks-lit', roughness: 0.4, metalness: 0.05, emissive: 0x000000 }) };
+    this._strip = strip(A.cv);
     this.batch = new PieceBatch(this.mats);
     const mesh = this.batch.mesh; mesh.name = 'bazaar-marks'; mesh.userData.zone = 'bazaar'; mesh.raycast = () => {}; mesh.renderOrder = 1; mesh.receiveShadow = false;
     parent.add(mesh); this.parent = parent; this.mesh = mesh;
     this.t = 0; this.state = { turnSeat: null, seats: [], legal: [], chosen: [], dim: [] }; this.pieceAt = () => null;
     this.k = new Map(); // id -> { legal, chosen, dim } eased 0..1
     this.turn = { seat: null, k: 0 };
-    this.mats.lit.emissive.set(0x000000); this.mats.paper.map = this.mats.glaze.map = this.mats.lit.map = A.tex;
+    this.mats.paper.map = this.mats.glaze.map = A.tex; this.mats.lit.map = this._strip.tex; // (the lit slot reads the strip: an atlas copy whose film cells walk; no emissive map, so no new program)
     this._mp = Array.from({ length: 64 }, () => new THREE.Matrix4()); this._mi = 0; // (a pool of matrices for the batch: no allocation a frame)
   }
 
@@ -202,10 +217,11 @@ export class TableMarks {
       }
     }
     B.write(); this.mesh.visible = B.list.length > 0;
-    schillerInk(this.t * MARKS.glint, _c); this.mats.lit.emissive.copy(_c).multiplyScalar(0.75);
+    this._strip.walk(this.t);
   }
 
   dispose() {
+    this._strip.tex.dispose();
     this.parent?.remove(this.mesh); this.batch.geo.dispose(); for (const m of Object.values(this.mats)) m.dispose();
     this.k.clear(); this.batch.clear();
   }
