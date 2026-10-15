@@ -462,7 +462,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
-- **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only text feedback; **the chat line** is its typing.
+- **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only narration (what happened); **the chat line** is its typing.
 - **the domains** (`src/progress/domains.js`, `game.psyche`) — the seven skills of the Courier's psyche: Ouranurgy, Manifestation, Divination,
   Psychokinesis, Possession, Alteration, Spellscription. No new domains, ever. *Retired:* Spellcasting. → detail
 - **widening** (`RAMP.tools`, `widenOf`, `game.psyche.widen(key)`) — what a domain's level does to a tool in play: a multiplier of its range or a
@@ -490,6 +490,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
+- **the overlay** (working name, Espada's and the owner's; `docs/plans/OVERLAY.md`) — the System's sight laid over the world: the ring, tags,
+  System windows, the Book, the title toast; words and numbers in the System's type, saying what is, never what happened. *Not:* the log.
+- **a tag / a System window / the title toast** (working names; OVERLAY.md 8) — a readout pinned to its thing in the world / a sheet
+  summoned into the air before the Courier (the isekai status window) / the one pop-up, for an achievement that awards a title. *Not:* a
+  world mark (no words), the dialogue box (the folk's).
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the

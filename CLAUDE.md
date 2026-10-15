@@ -8,7 +8,7 @@ The owner's rules for every change. Each line is a rule; the reasons are kept sh
 - **The glossary stays short** (the owner, 2026-10-08: "I can barely read it"): one line a term in `docs/GLOSSARY.md`. Sub-parts, looks and
   history go in `docs/GLOSSARY-DETAIL.md` (not loaded), or in the system's spec.
 - **What the player reads follows `docs/plans/CLARITY.md`** (the owner, 2026-10-08): a genre-word label, one line of effect, numbers as
-  stats, shown before it is said. Lore names stay in the world and the Codex.
+  stats, shown before it is said. Lore names stay in the world and the Codex. Raku's tables take no genre label (the owner, 2026-10-15).
 - **The glossary is always in context** (the owner, 2026-10-07): it is imported below, so every session and every agent it starts
   reads it before anything else. A prompt for a subagent says "read CLAUDE.md and docs/GLOSSARY.md first" all the same.
 - **Names say which thing, whole** (the owner: "be more verbose when naming your scripts so that they're not ambiguous"): a file,
@@ -57,16 +57,24 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   Petra numbers it at the gate (`scripts/casebook-number.mjs`); `npm run check` fails on a number used twice.
 
 ## Feedback
-- **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed (the basement's course timer and
-  lap circuit panel too: the owner, 2026-10-07). A
+- **The log (`src/feedback/gamelog.js`) is the only narration**: what happened is said there. No banners, floating damage numbers or
+  kill-feed (the basement's course timer and lap circuit panel too: the owner, 2026-10-07). A
   feature emits an event (`game.events.emit`) and gets a rule in `tracking.js` (or `feedback/tracking/*.js`); a refusal at the point of
   use may `log.say` with a `throttle`. Payloads never use `name` or `t` (the bus writes its own).
-- **Raku's tables are the exception** (the owner, 2026-10-15): at a seat in Raku's Bazaar, words and numbers may show on screen (the rules,
-  the how-tos, the goal and turn lines, rolling numbers and slot reels: `docs/plans/CASINO-CLARITY.md`). What happens there still goes to
-  the log too.
-- **Marks in the world are not text**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
-  portrait. They sit on the thing, carry no words or numbers, and are diegetic where they can be.
-- **The dialogue box is the one window of words in the world**, opened by the player (F at one of the folk); every line also goes to the
+- **The overlay reads what is** (the owner, 2026-10-15: Dennō Coil, Log Horizon's spatial menus, the isekai status window, Greed
+  Island's "Book!", Watch Dogs, .hack, Persona 5; `docs/plans/OVERLAY.md`): the System's sight laid over the world, diegetic and spatial,
+  maximal with a strict hierarchy. It may carry words and numbers in the System's own type (a tag on a thing, a window summoned before
+  the Courier, a rolling count); it never narrates. **The UI is never stock**: no default panel, font or button.
+- **One toast: a title** (the owner, 2026-10-15): an achievement that awards a title opens the one pop-up; the log says it too.
+- **Every number that matters has two avenues or more** (the owner, 2026-10-15: the Lachrymato Bottles drain as well as the Lachrimeter):
+  the body or the world, the overlay, a sound, and the log when it changes.
+- **Ambition first, cost after** (the owner, 2026-10-15): a look is built to its target and measured at the gate (`npm run perf`); a
+  cut comes from a measurement, never before one. Each art pass adds a layer, judged against the style bible, not against what exists.
+- **Raku's tables** (the owner, 2026-10-15) were the overlay's first case: the rules, the how-tos, rolling numbers and slot reels at a
+  seat (`docs/plans/CASINO-CLARITY.md`). What happens there still goes to the log too.
+- **World marks carry no words**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
+  portrait. They sit on the thing and are diegetic where they can be; a word beside one is the overlay's tag.
+- **The dialogue box is the folk's one window of words**, opened by the player (F at one of the folk); every line also goes to the
   log. The folk show feeling with bodies, particles and glyphs. Their lines are data (`src/npc/talks.js`).
 - **The log takes typing**: a command is added with `game.chat.add`; what it does is still reported by an event and a rule.
 - Outcome events say who caused it (`by`: `courier` | `clapperjar` | `creature` | `environment`); only the Courier's count toward records.

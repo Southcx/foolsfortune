@@ -5,6 +5,9 @@ The owner's brief, 2026-10-15: *"I can't reliably tell how I'm supposed to play 
 - **The bar:** if a nine-year-old couldn't work a game out within two minutes, it is too complex an explanation and too obtuse a UI.
 - **The look:** the Lachryma labradorite, all-out.
 - **Size and colour:** every element readily identifiable, colour-coded, and sized by its importance.
+- **Clear is not plain** (Dovina, 2026-10-15, after the owner's "still too reserved"): the hierarchy comes from size, motion and colour,
+  never from leaving things out. The tables follow `docs/plans/OVERLAY.md` (the hero, the readout, the texture; nothing stock): the
+  coach's lines are the readout, in the System's type; the cloth gets the texture layer; the outcome is the hero.
 - **Seat colours:** the board-game convention, Red, Yellow, Green, Blue, Purple, Pink, Black, White.
 - **Suit colours:** Wands red, Cups blue, Swords green, Pentacles yellow.
 - **Text:** an exception to "no text on screen" at the tables, for rules, tutorials and moving numbers. Rolling numbers and slot reels:
