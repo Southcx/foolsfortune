@@ -27,8 +27,9 @@ export const BAZAAR = {
   treasury: { x: 0, z: -3042, yaw: 0 }, // (world x, z: Petra's slot; the plinths face south, into the hall)
   weirGate: { x: 14, z: TREASURY.z }, // (the twin on the Weir's north beach, east of where the Treasury stands: metres from the oasis's origin)
 };
-/** The hall's air: the fog's colour (the dome's violet) and density (exp2: the far wall at 110 m still a third seen). */
-export const AIR = { fog: 0x1a0d2e, density: 0.009 };
+/** The hall's air (Calissa's, 2026-10-15: a warm night carnival): the fog's colour (the dome's violet warmed by the lanterns) and density
+ *  (exp2: the far wall at 110 m still half seen). */
+export const AIR = { fog: 0x2a1530, density: 0.0072 };
 const C = { floor: 0x3a2030, inlay: 0xd9a441, wall: 0x2a1426, trim: 0xf2c14e, cloth: 0x1f6b4a, cage: 0x6b2a2a, gate: 0xd9a441, neon: [0xff4fa3, 0x4fe0ff, 0xffd84f, 0x9b6bff] };
 
 export class Bazaar {
