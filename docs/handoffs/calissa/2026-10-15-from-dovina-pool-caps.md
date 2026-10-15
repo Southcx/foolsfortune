@@ -10,6 +10,7 @@ yours.
    - The ask: draw the tube to `full`, and the last `held` of it as the part held off, in the look of what holds it (the cracks:
      crazed glass, maybe with the clay's cracks in it).
    - The event `pool.cap { source, share, regions }` fires when a cap changes.
-2. **The siphon arches** (`world/raceway/siphons.js`, `SIPHONS`). There is one arch on each track, just before its second vein lane.
+2. **The siphon arches** (`world/raceway/siphons.js`, `SIPHONS`). An arch stands just before a track's second vein lane, only while the Pit
+   lane licence runs (shown and hidden by `group.visible`).
    Passing under it drinks the pool down to a quarter of the max (`skiff.siphon { took, left }`). The placeholder is two dark violet
    pillars and a lintel. It wants to read as "this takes your Lachryma" from a distance, with Lachryma drawn up into it.
