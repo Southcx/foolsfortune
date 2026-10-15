@@ -1,143 +1,167 @@
 // ---------------------------------------------------------------------------------------
-// THE TABLES' PAGES (docs/plans/CASINO.md section 9): what a seat at Raku's tables shows while the cloth, the cards and the dice are still
-// placeholders: a page set aside (feedback/indexmenu.js), the world beside it in view, with the table's state (your hand or tiles, the
-// others', the dice, the pot) and your choices to click. Words are placeholders for Espada's; the look is Calissa's to replace with the
-// table itself (the Gold Saucer's cloth and lamps, real cards and dice under a camera's frame). A choice shows only when it is yours.
+// THE TABLES' PAGES (docs/plans/CASINO-CLARITY.md sections 4 to 6; the owner's clarity pass, 2026-10-15): a seat at Raku's tables as a page
+// set aside (feedback/indexmenu.js): the LOBBY (play for chips, practise for free, how to play, the bots' speed), the HOW-TO (a game's steps
+// one at a time, skippable), and the TABLE, drawn from the coach (progress/casino/coach/): the goal and how near you are, whose turn it is
+// and what to do in one line, the shared numbers big, your hand or dice or tiles, every choice with what it does and what it would bring
+// (the house's suggestion marked), each seat in its colour and shape with its key numbers, and the speed and the rules a click away. The
+// owner's exception (2026-10-15): words and numbers may show at these tables. The cloth's look is Calissa's (vfx/bazaartable.js reads
+// the same coach); this page is what every game can always be played from.
 //
-// Prior art: the house's race board (world/raceway/raceboard.js) and the index's rows; Mahjong Soul's and Hearthstone's clarity (your
-// hand along the bottom, the choices lit, the others' counts at the edges).
+// Prior art: the poker clients' action buttons with the price on them and the seats with their stacks, Monster Train's preview, Balatro's
+// hand name shown as cards are chosen, Slay the Spire's opponents' intents, a board game's quick-start card.
 //
-//   renderTable(session, { im, el, P, R, V, waiting })   (session.js calls it)
+//   renderLobby(session, { im, el })   renderHowto(session, { im, el })   renderTable(session, { im, el })
 // ---------------------------------------------------------------------------------------
-import { cardName, SUITS } from '../../progress/casino/querent/score.js';
-import { ARCANA } from '../../progress/casino/querent/arcana.js';
-import { stepDie } from '../../progress/casino/table.js';
+import { HOWTO } from '../../progress/casino/howto.js';
+import { SEAT_COLOURS, SUIT_COLOURS } from '../../progress/casino/table.js';
+import { SPEEDS } from './session.js';
 
-const SUIT_COLOUR = ['#5fd0c4', '#b8c4d6', '#e8c35a', '#e0705a']; // (cups, swords, pentacles, wands)
+const SHAPE = { circle: '●', triangle: '▲', square: '■', diamond: '◆', star: '★', heart: '♥', hexagon: '⬢', ring: '○' };
+const TONE = { good: ['#7ee0a1', '✔'], risk: ['#f2c14e', '⚠'], bad: ['#ff8a80', '✖'] };
 const RANKS = [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Pg', 'Kn', 'Q', 'K'];
-const card = (c) => (c ? `<b style="color:${SUIT_COLOUR[c.s] ?? '#ccc'}">${RANKS[c.r]}${'♥♠◆♣'[c.s] ?? ''}</b>` : '·');
+const YOU = SEAT_COLOURS[0];
+const css = (o) => Object.entries(o).map(([k, v]) => `${k}:${v}`).join(';');
+const card = (c, big) => (c ? `<b style="${css({ color: SUIT_COLOURS[c.s]?.hex || '#ccc', 'font-size': big ? '1.35em' : '1em' })}">${RANKS[c.r]}${SUIT_COLOURS[c.s]?.pip || ''}</b>` : '·');
 
-export function renderTable(S, { im, el, P, R, V, waiting }) {
-  const T = S.T, names = T.names;
-  const grp = (t) => { im.appendChild(el('div', 'grp', t)); const rows = el('div', 'rooms'); im.appendChild(rows); return rows; };
-  const btn = (rows, title, sub, go) => { const d = el('div', 'room', `<span><b>${title}</b><s>${sub || ''}</s></span>`); d.onclick = go; rows.appendChild(d); return d; };
-  const line = (html) => im.appendChild(el('div', 'grp', html));
-  if (T.id === 'querent') querent(S, { V, P, names, grp, btn, line, el, im });
-  else if (T.id === 'zodiac') zodiac(S, { V, P, names, grp, btn, line });
-  else if (T.id === 'supernova') supernova(S, { V, P, names, grp, btn, line });
-  else if (T.id === 'nebula') nebula(S, { V, P, names, grp, btn, line });
-  else horizon(S, { V, P, names, grp, btn, line });
-  if (waiting) line(`${waiting.toUpperCase()} IS THINKING…`);
-  if (R) {
-    const rows = grp('THE GAME IS OVER');
-    btn(rows, 'Again', `${T.stake} chips`, () => S.again());
-    btn(rows, 'Rise from the table', '', () => S.close());
+/** The page's few shapes: a heading, a row of buttons, a button, a line, a block. */
+function kit(im, el) {
+  const add = (node) => { im.appendChild(node); return node; };
+  const block = (style = {}) => { const d = el('div', ''); d.style.cssText = css({ margin: '6px 0', padding: '8px 10px', 'border-radius': '6px', background: 'rgba(255,255,255,0.05)', ...style }); return add(d); };
+  const line = (html, style = {}) => { const d = el('div', '', html); d.style.cssText = css(style); return d; };
+  const head = (t) => add(el('div', 'grp', t));
+  const rows = () => add(el('div', 'rooms'));
+  const button = (into, title, sub, go, style = {}) => { const d = el('div', 'room', `<span><b>${title}</b><s>${sub || ''}</s></span>`); d.style.cssText = css(style); d.onclick = go; into.appendChild(d); return d; };
+  return { add, block, line, head, rows, button };
+}
+const speedRow = (S, K) => { const r = K.rows(); for (const sp of SPEEDS) K.button(r, sp.label + (S.game.bazaar?.prefs?.speed === sp.id || (!S.game.bazaar?.prefs?.speed && sp.id === 'normal') ? ' ◂' : ''), sp.id === 'normal' ? 'the folk take their time' : sp.id === 'fast' ? 'quicker turns' : 'no waiting', () => S.setSpeed(sp.id)); };
+
+// ---------------------------------------------------------------- the lobby
+export function renderLobby(S, { im, el }) {
+  const K = kit(im, el), T = S.T, H = HOWTO[T.id];
+  const b = K.block({ 'font-size': '1.05em' }); b.appendChild(K.line(`<b>${T.label}</b>: ${T.line}`));
+  if (H) { const c = K.block(); c.appendChild(K.line('<b>THE RULES ON ONE CARD</b>', { opacity: 0.8 })); for (const l of H.card) c.appendChild(K.line(`• ${l}`)); }
+  K.head('SIT DOWN');
+  const r = K.rows(), chips = S.game.chips?.balance ?? 0;
+  K.button(r, `Play for ${T.stake} chips`, chips >= T.stake ? `you hold ${chips}` : `you hold ${chips}: Raku's cage sells chips`, () => S.play(false), { 'font-size': '1.15em' });
+  K.button(r, 'Practise (free)', 'no chips in, none out, nothing counted', () => S.play(true));
+  K.button(r, 'How to play', `${H?.steps.length || 0} short steps`, () => S.showHowto());
+  K.head('TABLE SPEED'); speedRow(S, K);
+}
+
+// ---------------------------------------------------------------- the how-to
+const LOOK = { goal: 'the goal at the top', hand: 'your hand', moves: 'your choices', seats: 'the players', centre: 'the middle of the table', dice: 'the dice', tiles: 'the tiles', claim: 'the claim', tell: "the claimant's chips" };
+export function renderHowto(S, { im, el }) {
+  const K = kit(im, el), H = S.howto, step = H.steps[H.step], last = H.step === H.steps.length - 1;
+  K.head(`HOW TO PLAY ${S.T.label.toUpperCase()} · ${H.step + 1} OF ${H.steps.length}`);
+  const b = K.block({ 'font-size': '1.3em', 'line-height': '1.45', padding: '14px 14px', 'border-left': `4px solid ${YOU.hex}` });
+  b.appendChild(K.line(step?.say || ''));
+  if (step?.show && LOOK[step.show]) K.add(K.line(`Look at ${LOOK[step.show]}.`, { opacity: 0.7, margin: '2px 4px' }));
+  const r = K.rows();
+  if (last && !S.S) { K.button(r, `Play for ${S.T.stake} chips`, '', () => { S.howtoStep(+1); S.play(false); }, { 'font-size': '1.15em' }); K.button(r, 'Practise first (free)', '', () => { S.howtoStep(+1); S.play(true); }); }
+  else K.button(r, last ? 'Back to the game' : 'Next ▸', '', () => S.howtoStep(+1), { 'font-size': '1.15em' });
+  if (H.step > 0) K.button(r, '◂ Back', '', () => S.howtoStep(-1));
+  if (!last) K.button(r, 'Skip', 'you can see this again from the table', () => S.howtoStep('skip'));
+}
+
+// ---------------------------------------------------------------- the table
+export function renderTable(S, { im, el }) {
+  const K = kit(im, el), C = S.coach(); if (!C) return;
+  const G = C.goal, T = S.T, over = S.done;
+  // the goal, and how near you are
+  const g = K.block({ 'border-left': '4px solid #c9a24a' });
+  g.appendChild(K.line(`<b>GOAL</b> ${G.text}`));
+  const best = G.best && G.best.seat !== 0 ? ` · leader ${T.names[G.best.seat]}: ${G.best.value}` : '';
+  g.appendChild(K.line(`<span style="font-size:1.4em;font-weight:700;color:${YOU.hex}">You: ${G.you.value}${G.you.of ? ` / ${G.you.of}` : ''}</span> <span style="opacity:.75">${G.you.label}${best}</span>${G.round ? ` · round ${G.round.value} of ${G.round.of}` : ''}`));
+  // whose turn, and what to do
+  const yours = C.turn.yours && !over;
+  const t = K.block({ background: yours ? `${YOU.hex}33` : 'rgba(255,255,255,0.04)', 'border-left': `4px solid ${yours ? YOU.hex : '#666'}`, 'font-size': yours ? '1.2em' : '1em' });
+  t.appendChild(K.line(`<b>${over ? 'GAME OVER' : yours ? 'YOUR TURN' : 'WAIT'}</b> ${C.turn.say || ''}`));
+  // the game's own pieces (your hand, dice or tiles), then the choices: what to do comes before what is on the table
+  (MINE[T.id] || (() => {}))(S, C, K);
+  if (yours && C.moves.length && !SELF[T.id]?.(C)) moves(S, C, K);
+  // the shared numbers, big
+  if (C.centre?.length) { const c = K.block({ display: 'flex', 'flex-wrap': 'wrap', gap: '14px' }); for (const x of C.centre) c.appendChild(K.line(`<div style="opacity:.7;font-size:.8em">${x.label}</div><div style="font-size:${x.big ? '1.5em' : '1.05em'};font-weight:700">${x.value}</div>`)); }
+  // the seats
+  K.head('THE PLAYERS');
+  for (const q of C.seats) {
+    const d = K.block({ 'border-left': `6px solid ${q.colour}`, opacity: C.turn.seat === q.seat || over ? 1 : 0.85 });
+    const stats = q.stats.map((s) => `<span style="margin-right:12px">${s.label} <b style="font-size:${s.big ? '1.25em' : '1em'}">${s.value}</b></span>`).join('');
+    d.appendChild(K.line(`<span style="color:${q.colour};font-size:1.2em">${SHAPE[q.shape] || '●'}</span> <b>${q.name}</b> <span style="opacity:.6">(${q.colourName})</span>${C.turn.seat === q.seat && !over ? ' ◂ <i>their turn</i>' : ''}${q.badge ? ` · <b>${q.badge}</b>` : ''}`));
+    d.appendChild(K.line(stats, { 'margin-top': '3px' }));
+    if (q.top) d.appendChild(K.line(`threw away: ${q.top}`, { opacity: 0.75 }));
+    if (q.tell) d.appendChild(K.line('<b>◆ a tell</b>: their top chip wiggled', { color: '#f2c14e' }));
+  }
+  // the end, or the footer
+  if (over) { K.head('AGAIN?'); const r = K.rows(); K.button(r, `Again for ${T.stake} chips`, '', () => S.again(false)); K.button(r, 'Practise', 'free', () => S.again(true)); K.button(r, 'Rise from the table', '', () => S.close()); }
+  K.head('TABLE'); const f = K.rows();
+  K.button(f, 'How to play', 'the steps again', () => S.showHowto());
+  speedRow(S, K);
+}
+
+/** The choices as buttons: label, what it does, what it would bring (in its tone's colour and mark), the house's suggestion marked. */
+function moves(S, C, K, list = C.moves) {
+  K.head('YOUR CHOICES');
+  const r = K.rows();
+  for (const m of list) {
+    const [col, mark] = TONE[m.tone] || ['#ddd', ''];
+    const sub = `${m.what || ''}${m.preview ? `${m.what ? ' · ' : ''}<span style="color:${col}">${mark} ${m.preview}</span>` : ''}${m.best ? ' · <b style="color:#c9a24a">Suggested</b>' : ''}`;
+    K.button(r, m.label, sub, () => S.move(m.move), { 'font-size': m.size === 'big' ? '1.15em' : '1em', 'border-left': m.best ? '4px solid #c9a24a' : '' });
   }
 }
 
-// ---------------------------------------------------------------- Querent
-function querent(S, { V, P, names, grp, btn, line, el, im }) {
-  line(`ROUND ${V.round + 1} OF 4 · YOUR SEAT SUIT ${SUITS[V.seatSuit].toUpperCase()} · SCORES ${V.scores.map((s, i) => `${names[i]} ${s}`).join(' · ')}`);
-  const others = grp('THE TABLE');
-  V.players.forEach((Q, q) => { if (q === 0) return; btn(others, names[q], `discard top ${V.tops[q]?.hidden ? 'face down' : card(V.tops[q])} · ${Q.arcana} arcana · ${Q.stole} stolen${Q.hand ? ` · hand ${Q.hand.map(card).join(' ')}` : ''}`, () => {}); });
-  if (V.mine?.length) line(`YOUR ARCANA: ${V.mine.map((id) => ARCANA[id].name).join(', ')}`);
-  const hand = grp(`YOUR HAND${V.quads.length ? ` · FOURS SET ASIDE: ${V.quads.map((r) => RANKS[r]).join(', ')}` : ''}${V.fate ? ` · FATE CLAUSE: BY ${V.fate.by.toUpperCase()}` : ''}`);
-  const order = V.hand.map((c, i) => i).sort((a, b) => V.hand[a].r - V.hand[b].r || V.hand[a].s - V.hand[b].s);
-  const discard = P?.kind === 'discard', wheel = P?.kind === 'wheel', sel = (S.sel ||= new Set());
-  for (const i of order) {
-    const c = V.hand[i], legal = discard && P.moves.some((m) => m.discard === i);
-    const d = btn(hand, card(c), c.stolen ? 'stolen' : legal ? 'throw this' : wheel ? (sel.has(i) ? 'throw back' : '') : '', () => {
-      if (legal) S.move({ discard: i }); else if (wheel) { if (sel.has(i)) sel.delete(i); else sel.add(i); S.render(); }
-    });
-    if (!legal && !wheel) d.style.opacity = '0.85';
-  }
-  if (!P) return;
-  const rows = grp(P.kind === 'discard' ? 'THROW ONE BACK' : 'YOUR CHOICE');
-  const pick = (m, title, sub) => btn(rows, title, sub, () => { S.sel = new Set(); S.move(m); });
-  for (const m of P.moves) {
-    switch (P.kind) {
-      case 'acquire': pick(m, m.draw ? 'Draw' : `Steal ${card(V.tops[m.steal])} from ${names[m.steal]}`, m.steal != null ? `${names[m.steal]} flips a Major Arcana` : 'from your own pile'); break;
-      case 'fate': pick(m, m.fate ? `Declare the Fate Clause: win by ${m.fate}` : 'Not yet', m.fate ? 'flip an arcana; your turn ends; your hand is locked' : ''); break;
-      case 'win': pick(m, m.win ? 'Win the round!' : 'Not yet', ''); break;
-      case 'fool': pick(m, ARCANA[m.arcana].name, ARCANA[m.arcana].does); break;
-      case 'hierophant': pick(m, `Name ${RANKS[m.rank]}`, ''); break;
-      case 'lovers': case 'sun': case 'judgment': case 'ability.downgrade': pick(m, names[m.target], ''); break;
-      case 'hermit': if (m.top.length <= 1) pick(m, m.top.length ? `${card(V.peek?.[m.top[0]])} on top` : 'Keep the order', `your next nine: ${(V.peek || []).map(card).join(' ')}`); break;
-      default: break;
-    }
-  }
-  if (wheel) btn(rows, `Throw back ${sel.size} and draw as many`, 'click cards in your hand to choose', () => { const ix = [...sel].sort((a, b) => a - b); S.sel = new Set(); S.move(P.moves.find((m) => m.throw.length === ix.length && m.throw.every((v, k) => v === ix[k])) || { throw: [] }); });
-}
-
-// ---------------------------------------------------------------- Zodiac
-function zodiac(S, { V, P, names, grp, btn, line }) {
-  const d = V.dice;
-  line(`POT ${V.pot} · DICE ${d.a} AND ${d.b} (SUM ${d.a + d.b}, PRODUCT ${d.a * d.b}) · ATTACK d${V.attack[S.S.turn]}: ${d.atk}`);
-  const board = grp('THE TILES (■ SHUT, ◆ LOCKED)');
-  for (let q = 0; q < V.n; q++) btn(board, `${names[q]} · d${V.attack[q]} · ${V.tokens[q]} tokens · ${V.chips[q]} chips`, V.tiles[q].map((t, i) => (V.locked[q][i] ? `◆${i + 1}` : t ? `■${i + 1}` : `${i + 1}`)).join(' '), () => {});
-  if (!P) return;
-  const rows = grp('YOUR CHOICE');
-  for (const m of P.moves) {
-    let t = '', s = '';
-    if (P.kind === 'seal') { t = m.none ? 'No seal possible' : `Shut ${m.tiles.join(' + ')}`; s = m.none ? '' : `by the ${m.by}`; }
-    else if (P.kind === 'attack') { t = m.pay != null ? `${names[m.target]} pays ${m.pay}` : `Reopen ${names[m.target]}'s ${m.tiles.join(' + ')}`; }
-    else if (m.lock) { t = `Lock ${m.lock}`; s = `its ability: ${m.ability}`; }
-    else if (m.upgrade) { t = `Upgrade your attack die to d${stepDie(V.attack[0], 1)}`; }
-    else if (m.pay != null) { t = `Make ${names[m.pay]} pay`; s = 'your attack die again'; }
-    else if (m.reroll != null) { t = m.reroll ? 'Reroll the sealing dice' : 'Keep them'; }
-    else if (m.target != null) { t = names[m.target]; s = P.kind.replace('ability.', ''); }
-    else if (m.end) t = 'Done';
-    btn(rows, t, s, () => S.move(m));
-  }
-}
-
-// ---------------------------------------------------------------- Event Horizon
-function horizon(S, { V, P, names, grp, btn, line }) {
-  line(`THE ROUND TOTAL ${V.total} · PAR ${V.par} ${V.par === 1 ? 'DIE' : 'DICE'} · ANTE ${S.T.stake}`);
-  const seats = grp('THE PLAYERS');
-  for (let q = 0; q < V.n; q++) btn(seats, `${names[q]}: ${V.sums[q]}`, `rolled ${V.used[q].map((s) => `d${s}`).join(' ') || 'nothing'} · left ${V.left[q].map((s) => `d${s}`).join(' ')}`, () => {});
-  if (!P) return;
-  const rows = grp('YOUR ROLL');
-  if (P.kind === 'reroll') { for (const m of P.moves) btn(rows, m.reroll ? 'Reroll it (free, once a round)' : 'Keep it', `you rolled ${V.last?.sum}`, () => S.move(m)); return; }
-  const sel = (S.dsel ||= []);
-  V.mine.forEach((sides, i) => btn(rows, `${sel.includes(i) ? '◆' : '◇'} d${sides}`, sel.includes(i) ? 'chosen' : '', () => { const k = sel.indexOf(i); if (k >= 0) sel.splice(k, 1); else sel.push(i); S.render(); }));
-  btn(rows, `Roll ${sel.length ? sel.map((i) => `d${V.mine[i]}`).join(' + ') : '(choose dice)'}`, `you need ${V.need}`, () => {
-    if (!sel.length) return; const dice = sel.map((i) => V.mine[i]).sort((a, b) => a - b);
-    const m = P.moves.find((x) => x.dice && x.dice.slice().sort((a, b) => a - b).join() === dice.join()); S.dsel = []; if (m) S.move(m);
-  });
-  btn(rows, 'Stand', 'roll no more this round', () => S.move({ stand: true }));
-}
-
-// ---------------------------------------------------------------- Supernova Run
-const dice = (h) => h.map((x) => `d${x}`).join(' ') || 'none';
-function supernova(S, { V, P, names, grp, btn, line }) {
-  line(`ROUND ${V.round} · ${V.threshold} WINS · A NATURAL 20 ON A d20: SUPERNOVA (POINTS x2, EVERY HAND BACK TO 4d6)`);
-  const seats = grp('THE PLAYERS');
-  for (let q = 0; q < V.n; q++) btn(seats, `${names[q]}: ${V.points[q]} points`, `hand ${dice(V.hands[q])}`, () => {});
-  const L = V.last; if (L?.react != null) line(`${names[L.seat].toUpperCase()} RAN A REACTION: ${L.faces.join(' + ') || 'nothing'} = ${L.react}${L.born ? ` · ${L.born} DICE BORN` : ''}${L.decayed ? ` · ${L.decayed} DECAYED` : ''}${L.lost ? ` · ${L.lost} LOST` : ''}`);
-  if (!P) return;
-  const rows = grp('YOUR TURN');
-  for (const m of P.moves) {
-    if (m.react) btn(rows, 'Run a reaction', `roll ${dice(V.mine)}: maximums make dice, 1s decay`, () => S.move(m));
-    else if (m.fuse) btn(rows, `Fuse ${dice(m.fuse)} into a d${m.into}`, m.into === 20 ? 'a d20: a Supernova waits on its 20' : '', () => S.move(m));
-    else btn(rows, `Split a d${m.split} into ${dice(m.into)}`, '', () => S.move(m));
-  }
-}
-
-// ---------------------------------------------------------------- Nebula Bluff
-function nebula(S, { V, P, names, grp, btn, line }) {
-  line(`ROUND ${V.round} · POT ${V.pot} · ${V.claim != null ? `CLAIM ${V.claim} BY ${names[V.claimant].toUpperCase()}` : 'NO CLAIM YET'} · RAISES ${V.raises} OF ${V.limit}`);
-  const seats = grp('THE TABLE');
-  for (let q = 0; q < V.n; q++) {
-    const tell = q === V.claimant && V.tell ? ' · ◆ a tell' : '';
-    btn(seats, `${names[q]}: ${V.counts[q]} ${V.counts[q] === 1 ? 'die' : 'dice'} · ${V.chips[q]} chips`, `${V.inRound?.[q] ? `in, paid ${V.paid[q]}` : 'out of the round'}${tell}`, () => {});
-  }
-  if (V.faces) line(`YOUR HAND ${V.mine.map((s, i) => `d${s}:${V.faces[i]}${V.faces[i] === s ? '★' : ''}`).join(' ')} · WORTH ${V.worth}`);
-  if (!P) return;
-  const rows = grp(P.kind === 'open' ? 'OPEN THE BIDDING' : 'YOUR BID');
-  for (const m of P.moves) {
-    if (m.claim != null) btn(rows, `Claim ${m.claim}`, `${Math.max(1, Math.ceil(m.claim / 10))} chips${m.claim > V.worth ? ' · a bluff' : ''}`, () => S.move(m));
-    else if (m.callout) btn(rows, `Call ${names[V.claimant]}'s bluff`, `${Math.max(1, Math.ceil(V.claim / 10))} chips; wrong costs you two dice`, () => S.move(m));
-    else if (m.fold) btn(rows, 'Fold', 'lose a die; what you paid stays', () => S.move(m));
-  }
-}
+// ---------------------------------------------------------------- each game's own pieces
+const MINE = {
+  querent(S, C, K) {
+    const V = S.T.game.view(S.S, 0), sh = C.extra.shape, P = S.T.game.pending(S.S), discard = C.turn.yours && P?.kind === 'discard', wheel = C.extra.select?.kind === 'cards';
+    const sel = (S.sel ||= new Set());
+    const b = K.block(); b.appendChild(K.line(`<b>YOUR HAND</b> · seat suit <b style="color:${SUIT_COLOURS[V.seatSuit].hex}">${C.extra.seatSuit}</b>${V.quads.length ? ` · fours set aside: ${V.quads.map((r) => RANKS[r]).join(', ')}` : ''}${V.fate ? ` · <b>Fate Clause (${V.fate.by})</b>` : ''}`));
+    const part = (title, idxs, colour) => {
+      if (!idxs.length) return;
+      const row = K.line(`<span style="opacity:.7">${title}</span> `, { margin: '4px 0' });
+      for (const i of idxs) {
+        const m = discard ? C.moves.find((x) => x.card === i) : null, c = V.hand[i];
+        const s = K.line(`${card(c, true)}${m?.preview ? `<span style="font-size:.75em;opacity:.8"> ${m.waits}</span>` : ''}`, { display: 'inline-block', padding: '4px 8px', margin: '2px', border: `2px solid ${wheel && sel.has(i) ? '#fff' : colour}`, 'border-radius': '5px', cursor: m || wheel ? 'pointer' : 'default', background: m?.best ? 'rgba(201,162,74,.25)' : 'transparent' });
+        if (m) { s.title = `${m.label}: ${m.what}${m.preview ? `. ${m.preview}` : ''}`; s.onclick = () => S.move(m.move); }
+        else if (wheel) s.onclick = () => { if (sel.has(i)) sel.delete(i); else sel.add(i); S.render(); };
+        row.appendChild(s);
+      }
+      b.appendChild(row);
+    };
+    sh.groups.forEach((g, k) => part(`group ${k + 1}`, g, '#c9a24a'));
+    part('pairs (want a third)', sh.pairs.flat(), '#888');
+    part('loose', sh.loose, '#444');
+    if (discard) b.appendChild(K.line('Click a card to throw it back. The small number is how many different cards would then win for you.', { opacity: 0.75, 'margin-top': '4px' }));
+    if (C.extra.arcana.length) { const a = K.block(); a.appendChild(K.line('<b>YOUR MAJOR ARCANA</b>')); for (const x of C.extra.arcana) a.appendChild(K.line(`<b>${x.name}</b>: ${x.does}`)); }
+    if (wheel) { const r = K.rows(); const ix = [...sel].sort((a, b2) => a - b2); K.button(r, `Swap ${ix.length} card${ix.length === 1 ? '' : 's'}`, 'click cards above to choose', () => { S.sel = new Set(); S.move(P.moves.find((m) => m.throw.length === ix.length && m.throw.every((v, k) => v === ix[k])) || { throw: [] }); }); }
+  },
+  zodiac(S, C, K) {
+    const me = C.seats[0], b = K.block(); b.appendChild(K.line('<b>YOUR TILES</b> (dark = shut, gold rim = locked forever)'));
+    const row = K.line('', { margin: '4px 0' });
+    for (const t of me.tiles) row.appendChild(K.line(`${t.n}`, { display: 'inline-block', width: '2em', 'text-align': 'center', padding: '4px 0', margin: '2px', 'font-size': '1.15em', 'font-weight': 700, 'border-radius': '4px', border: `2px solid ${t.locked ? '#c9a24a' : '#555'}`, background: t.shut ? '#222' : 'rgba(255,255,255,0.12)', color: t.shut ? '#666' : '#fff' }));
+    b.appendChild(row);
+  },
+  eventhorizon(S, C, K) {
+    const sel = C.extra.select; if (!sel || !C.turn.yours) return;
+    const dsel = (S.dsel ||= []), b = K.block(); b.appendChild(K.line('<b>YOUR DICE</b> · click to choose which to throw'));
+    const row = K.line('', { margin: '4px 0' });
+    sel.from.forEach((sides, i) => { const on = dsel.includes(i), d = K.line(`d${sides}`, { display: 'inline-block', padding: '6px 10px', margin: '2px', 'font-size': '1.15em', 'font-weight': 700, 'border-radius': '6px', cursor: 'pointer', border: `2px solid ${on ? YOU.hex : '#555'}`, background: on ? `${YOU.hex}44` : 'transparent' }); d.onclick = () => { const k = dsel.indexOf(i); if (k >= 0) dsel.splice(k, 1); else dsel.push(i); S.render(); }; row.appendChild(d); });
+    b.appendChild(row);
+    const want = dsel.map((i) => sel.from[i]).sort((a, c) => a - c).join(), m = C.moves.find((x) => x.dice && x.dice.slice().sort((a, c) => a - c).join() === want);
+    const r = K.rows();
+    if (m) { const [col, mark] = TONE[m.tone] || ['#ddd', '']; K.button(r, `Throw ${m.label}`, `<span style="color:${col}">${mark} ${m.preview}</span>${m.what ? ` · ${m.what}` : ''}`, () => { S.dsel = []; S.move(m.move); }, { 'font-size': '1.15em' }); }
+    else K.button(r, 'Choose dice to throw', `you need ${C.extra.need}`, () => {});
+    const bestM = C.moves.find((x) => x.best && x.dice); if (bestM) K.button(r, `Suggested: ${bestM.label}`, bestM.preview, () => { S.dsel = []; S.move(bestM.move); });
+    const stand = C.moves.find((x) => x.move.stand); if (stand) K.button(r, stand.label, stand.what, () => S.move(stand.move));
+  },
+  supernova(S, C, K) {
+    const me = C.seats[0], b = K.block(); b.appendChild(K.line(`<b>YOUR DICE</b> <span style="font-size:1.3em;font-weight:700">${me.hand.map((s) => `d${s}`).join('  ') || 'none'}</span>`));
+    const L = C.extra.last; if (L?.react != null) b.appendChild(K.line(`${L.seat === 0 ? 'Your' : `${S.T.names[L.seat]}'s`} last roll: ${L.faces.join(' + ') || 'nothing'} = <b>${L.react}</b>${L.born ? ` · ${L.born} new ${L.born === 1 ? 'die' : 'dice'}` : ''}${L.decayed ? ` · ${L.decayed} shrank` : ''}${L.lost ? ` · ${L.lost} lost` : ''}`, { opacity: 0.85 }));
+  },
+  nebula(S, C, K) {
+    const x = C.extra; if (!x.faces) return;
+    const b = K.block(); b.appendChild(K.line('<b>YOUR SECRET HAND</b> (★ = top number: +10)'));
+    b.appendChild(K.line(x.mine.map((s, i) => `<span style="display:inline-block;margin:2px 6px 2px 0"><span style="opacity:.6;font-size:.8em">d${s}</span> <b style="font-size:1.3em">${x.faces[i]}</b>${x.faces[i] === s ? '★' : ''}</span>`).join(''), { margin: '4px 0' }));
+  },
+};
+/** A game whose choices are made on its pieces above (the buttons would repeat them): true to skip the list. */
+const SELF = { eventhorizon: (C) => !!C.extra.select, querent: (C) => C.turn.kind === 'discard' || C.turn.kind === 'wheel' };

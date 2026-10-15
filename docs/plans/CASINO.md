@@ -244,6 +244,9 @@ Petra's move). F at a table sits you down (`TableSession`): the stake comes out 
 apart, your choices are clicked on a page set aside (`views.js`, a placeholder until the cloth, cards and dice are real objects),
 and the table's moments and the result go to the log (`feedback/tracking/casino.js`). Rising mid-game forfeits the stake.
 
+**Made clear (2026-10-15):** the owner could not tell how to play any table. The clarity pass, with the coach, the how-tos, practice and
+speed, the seat and suit colours, and the count-up, is `docs/plans/CASINO-CLARITY.md`.
+
 ## 10. The money
 
 **Chips, not cubes** at the tables: bought from Raku with cubes and cashed back at the same rate, the cash-out capped a game day (a

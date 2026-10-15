@@ -17,7 +17,7 @@
 // Prior art: the owner's design doc; Button Men and Dice Masters (dice that change size), Machi Koro's dice as an engine, a fission chain
 // (each neutron splitting another) as the reaction's shape: it converges because a die doubles only on its maximum.
 //
-//   SUPERNOVA (the game: table.js's interface)   SUPERNOVA_RULES   splitsOf(sides)   fusesOf(hand)   supernovaBot(view, pending, r, style?)
+//   SUPERNOVA (the game: table.js's interface)   SUPERNOVA_RULES   splitsOf(sides)   fusesOf(hand)   reactHand(hand, r)   supernovaBot(view, pending, r, style?)
 // ---------------------------------------------------------------------------------------
 import { die } from './table.js';
 
@@ -59,12 +59,11 @@ function end(S) {
   S.winner = w; S.log.push({ win: w, points: S.points[w] });
 }
 
-/** One reaction: the hand rolled until nothing shows a maximum or a 1. Returns { points, nova, faces, born, lost }. */
-function react(S, p, r) {
-  const hand = S.hands[p], work = hand.map((s, i) => ({ s, i })), faces = [];
+/** One reaction on a hand of dice (sides), rolled until nothing shows a maximum or a 1: { points, nova, faces, born, lost, decayed, hand }.
+ *  Pure, so the coach can run it a few hundred times for its odds (coach/supernova.js). */
+export function reactHand(start, r) {
+  const work = start.map((s) => ({ s })), faces = [], settled = [];
   let born = 0, lost = 0, decayed = 0, steps = 0, nova = false;
-  // the hand is rebuilt from what settles (a die that decays or is lost changes it; a duplicate joins it)
-  const settled = [];
   while (work.length && steps++ < R.guard) {
     const d = work.pop(), v = die(r, d.s);
     if (d.s === 20 && v === 20) { nova = true; faces.push(20); settled.push(20); break; }
@@ -76,10 +75,9 @@ function react(S, p, r) {
     faces.push(v); settled.push(d.s);
   }
   for (const d of work) settled.push(d.s); // (a Supernova stops the reaction: the dice still rolling stay as they are)
-  S.hands[p] = settled.sort((a, b) => a - b);
-  const points = faces.reduce((a, b) => a + b, 0);
-  return { points, nova, faces, born, lost, decayed };
+  return { points: faces.reduce((a, b) => a + b, 0), nova, faces, born, lost, decayed, hand: settled.sort((a, b) => a - b) };
 }
+function react(S, p, r) { const x = reactHand(S.hands[p], r); S.hands[p] = x.hand; return x; }
 
 export const SUPERNOVA = {
   id: 'supernova', seats: [1, 6],

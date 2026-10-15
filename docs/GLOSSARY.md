@@ -276,6 +276,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   mark). *Not:* a chain reaction elsewhere, the Supernova as a star.
 - **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
 - **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
+- **the coach / a how-to / practice / the count-up** (`coach()`, `src/progress/casino/coach/`; `HOWTO`, `progress/casino/howto.js`;
+  `session.play(true)`; `docs/plans/CASINO-CLARITY.md`) — a table's every moment said plainly for a view (the goal, the turn's one line,
+  each choice with what it brings, the house's suggestion) / a game taught in a few steps, on first sitting and on asking / a game for no
+  chips that counts nothing / a big number counted up in its parts (Querent's base, its bonuses, its multipliers). *Not:* a QAIS test,
+  the System's teaching.
 - **a tell's riffle** (`riffle`, `src/vfx/bazaarlayoutastroll.js`) — Nebula Bluff's tell at Raku's tables (`view.tell`) worn as a world mark: the claimant's top chip lifting and turning on its purse a beat, every couple of real seconds; no words. *Not:* the tell itself (Dovina's rule), a lit choice.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.

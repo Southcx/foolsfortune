@@ -61,6 +61,9 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   lap circuit panel too: the owner, 2026-10-07). A
   feature emits an event (`game.events.emit`) and gets a rule in `tracking.js` (or `feedback/tracking/*.js`); a refusal at the point of
   use may `log.say` with a `throttle`. Payloads never use `name` or `t` (the bus writes its own).
+- **Raku's tables are the exception** (the owner, 2026-10-15): at a seat in Raku's Bazaar, words and numbers may show on screen (the rules,
+  the how-tos, the goal and turn lines, rolling numbers and slot reels: `docs/plans/CASINO-CLARITY.md`). What happens there still goes to
+  the log too.
 - **Marks in the world are not text**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
   portrait. They sit on the thing, carry no words or numbers, and are diegetic where they can be.
 - **The dialogue box is the one window of words in the world**, opened by the player (F at one of the folk); every line also goes to the
