@@ -4,9 +4,10 @@
 //
 //   EACH DIGIT   its own column of 0-9, rolled by a CSS transition of 0.4 s on cubic-bezier(.34,1.56,.64,1) (an overshoot that settles),
 //                the columns staggered 50 ms left to right. A new length rebuilds the columns (rolling up from 0).
+//   THE GAP      the digits sit 0.3em apart in the strip, so a column never shows a sliver of its neighbour (a stray dash under a number).
 //   THOUSANDS    thin spaces. A minus sign stands as its own glyph.
 //   THE POP      once every digit has settled the whole number jumps 1.12x and back (0.18 s), the cue that it is final.
-//   TIERS        XXL 128px (the ceremony's total), BOX 72px (its two boxes), XL 56px, L 34px, M 20px, S 14px at 1080 lines, scaled by the
+//   TIERS        XXL 168px (the ceremony's total), BOX 72px (its two boxes), XL 56px, L 34px, M 20px, S 14px at 1080 lines, scaled by the
 //                viewport height (--rn-scale). A caller may fit one to its box with `n.fit(maxWidthPx)`.
 //   NO FILM      a number never wears the film itself (background-clip:text does not paint through the columns' transforms): a caller lays
 //                the film on a plain overlay once the number has settled (scoreceremony.js).
@@ -16,7 +17,7 @@
 //
 //   const n = new RollingNumber(el, { tier: 'L', colour: '#f4ecd8', speed: 1 })   n.set(v)   n.to(v, { dur, stagger }) -> Promise   n.value   n.destroy()
 // ---------------------------------------------------------------------------------------
-export const TIERS = { XXL: 128, BOX: 72, XL: 56, L: 34, M: 20, S: 14 }; // (CSS px at 1080 lines; XXL is the ceremony's total, BOX its BASE and MULT)
+export const TIERS = { XXL: 168, BOX: 72, XL: 56, L: 34, M: 20, S: 14 }; // (CSS px at 1080 lines; XXL is the ceremony's total, the biggest thing on screen, BOX its BASE and MULT)
 export const ROLL = { dur: 0.4, stagger: 0.05, ease: 'cubic-bezier(.34,1.56,.64,1)', pop: 0.18 };
 
 const CSS = `
@@ -25,7 +26,7 @@ const CSS = `
   font-size:calc(var(--rn-size,34px)*var(--rn-scale,1));text-shadow:0 .06em 0 rgba(0,0,0,.55)}
 .rn-col{display:inline-block;height:1em;overflow:hidden;position:relative;width:.62em;text-align:center}
 .rn-strip{display:block;transition-property:transform;will-change:transform}
-.rn-strip>i{display:block;height:1em;font-style:normal;line-height:1}
+.rn-strip>i{display:block;height:1em;margin-bottom:.3em;font-style:normal;line-height:1}
 .rn-sep{display:inline-block;width:.28em}
 .rn-pop{animation:rn-pop var(--rn-pop,.18s) ease-out}
 @keyframes rn-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -91,7 +92,7 @@ export class RollingNumber {
       s.transitionDuration = dur + 's';
       s.transitionDelay = i * stagger + 's';
       s.transitionTimingFunction = ROLL.ease;
-      s.transform = `translateY(${-d}em)`;
+      s.transform = `translateY(${-d * 1.3}em)`;
     });
     return digits.length;
   }

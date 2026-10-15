@@ -80,14 +80,14 @@ const CSS = `
 .sc-chip.loss{color:#d4d4da;background:${TONES.loss};text-decoration:line-through}
 .sc-totalwrap{display:none;flex-direction:column;align-items:center;gap:2px}
 .sc-totalwrap.on{display:flex}
-.sc-totalwrap>b{font-size:calc(22px*var(--rn-scale));letter-spacing:.3em;color:#c9d2f5}
+.sc-totalwrap>b{font-size:calc(30px*var(--rn-scale));letter-spacing:.4em;color:#c9d2f5}
 .sc-totalbox{display:grid;place-items:center}
 .sc-totalbox>*{grid-area:1/1}
 .sc-film,.sc-filmback{display:none;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;white-space:pre;letter-spacing:.01em;
   font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif}
 .sc-filmback{color:#000;transform:translate(0,.05em);opacity:.7}
 .sc-film{background:linear-gradient(100deg,var(--f0),var(--f1),var(--f2),var(--f3),var(--f0));background-size:200% 100%;background-position:var(--sc-shift,0%) 0;
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:brightness(1.2) saturate(1.5)}
 .sc-totalbox.film .sc-film,.sc-totalbox.film .sc-filmback{display:block}
 .sc-totalbox.film .rn{visibility:hidden}
 `;
@@ -179,7 +179,7 @@ export class ScoreCeremony {
     name.textContent = title || R.title; name.style.fontSize = 40 * scl + 'px';
     for (let i = 0; i < 24 && name.offsetWidth > banner.clientWidth; i++) name.style.fontSize = parseFloat(name.style.fontSize) * 0.92 + 'px';
     name.style.visibility = 'hidden';
-    const sizeNum = Math.min(128 * scl, (stageW * 0.92) / widthEm(c.total));
+    const sizeNum = Math.min(168 * scl, (stageW * 0.92) / widthEm(c.total));
     film.style.fontSize = back.style.fontSize = sizeNum + 'px';
     film.textContent = back.textContent = formatNumber(c.total);
 
@@ -189,8 +189,8 @@ export class ScoreCeremony {
     const pop = (box) => box.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 160 / speed, easing: 'ease-out' });
     const fly = (chip, to) => {
       if (this.skipped || !chip.animate) return chip.remove();
-      const a = chip.getBoundingClientRect(), b = to.getBoundingClientRect();
-      const an = chip.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${b.left + b.width / 2 - a.left - a.width / 2}px,${b.top + b.height / 2 - a.top - a.height / 2}px) scale(.35)`, opacity: 0.2 }],
+      const a = chip.getBoundingClientRect(), b = to.getBoundingClientRect(), ty = b.bottom - a.top - a.height / 2 + 6;
+      const an = chip.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${b.left + b.width / 2 - a.left - a.width / 2}px,${ty}px) scale(.5)`, opacity: 0 }],
         { duration: TIMING.fly * 1000 / speed, easing: 'cubic-bezier(.5,0,.9,.6)', fill: 'forwards' });
       an.onfinish = () => chip.remove();
     };
@@ -237,6 +237,8 @@ export class ScoreCeremony {
       await this.sleep(TIMING.slam);
     } else await this.sleep(TIMING.slam * 0.5);
     this.skipped = skippedNow;
+    stage.style.minHeight = stage.offsetHeight + 'px'; stage.style.justifyContent = 'center'; // (the stage holds its height: the total fills it, nothing jumps)
+    name.style.fontSize = parseFloat(name.style.fontSize) * 0.62 + 'px'; // (the banner steps back: the total is the biggest thing)
     boxes.style.display = 'none'; chips.style.display = 'none'; reelRow.classList.remove('on'); tw.classList.add('on');
     if (!skippedNow) { slam(tw); await tnum.to(c.total, { dur: TIMING.roll, stagger: 0.05 }).catch(() => {}); } else tnum.set(c.total);
     if (run !== this.run) return false;
