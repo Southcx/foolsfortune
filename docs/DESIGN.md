@@ -380,6 +380,13 @@ Punishment.
    the domain of the rules of the space around you.
 5. **Every system teaches something real, unannounced** (section 9's pillar, from the tools to every system): the mechanic itself is
    the lesson (pitch from tuning crystals, the painter's eye from the press), never a tutorial or a factoid.
+6. **Base change bad, modifiers good** (the owner, 2026-10-15: "removing elements or having them behave differently depending on game
+   mode doesn't feel right"). The game's modules draw from one substrate: the pool is the same pool on foot, on the skiff and in a race;
+   the vessel is the same vessel. So no mode and no module changes a base rule (round 6 held the pool's regen during a race; it was
+   undone). A change comes as a MODIFIER with a SOURCE in the world: a hazard (a siphon, a miasma that stops the regen while you are
+   in it), a weather, the vessel's cracks (a cracked region caps 5% of the pool's max until it mends: `progress/poolcaps.js`), a part
+   you chose. You can see it coming, know what does it, and leave it or mend it. The UI shows where it bites: a capped pool shows the
+   part held off, and by what. Setting up a test (a drill starting full) is not a rule; the DEBUG lend panel is exempt (a test tool).
 
 The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. Soul Alchemy as the first system built to all four:
 `docs/plans/SOUL-ALCHEMY.md`.

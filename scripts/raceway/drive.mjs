@@ -26,10 +26,10 @@ const r = await p.evaluate(async (cfg) => {
   g.input.isDown = (c) => keys.has(c);
   const watch = ['race.start', 'race.go', 'race.gate', 'race.lap', 'race.finish', 'race.end', 'race.respawn', 'skiff.bail', 'skiff.glide', 'skiff.landhard', 'skiff.plate', 'skiff.carve', 'skiff.wobble', 'skiff.trick',
     'skiff.grind', 'skiff.grind.end', 'skiff.ring', 'skiff.combo.bank', 'skiff.combo.drop', 'raceway.branch', 'raceway.pit', 'skiff.land.slope', 'geyser.launch', 'race.place', 'race.bump', 'race.takedown', 'race.rival.finish', 'skiff.water', 'skiff.grind.trick',
-    'race.pot', 'race.escape.caught', 'licence.fail', 'cup.race', 'cup.finish', 'cup.end', 'citytrial.patch', 'citytrial.stadium', 'citytrial.end', 'skiff.gap', 'skiff.buoy', 'skiff.nearmiss', 'skiff.hull', 'skiff.wreck', 'skiff.refill', 'skiff.scorch', 'race.flyover', 'race.nemesis', 'wager.settle'];
+    'race.pot', 'race.escape.caught', 'licence.fail', 'cup.race', 'cup.finish', 'cup.end', 'citytrial.patch', 'citytrial.stadium', 'citytrial.end', 'skiff.gap', 'skiff.buoy', 'skiff.nearmiss', 'skiff.hull', 'skiff.wreck', 'skiff.refill', 'skiff.siphon', 'skiff.scorch', 'race.flyover', 'race.nemesis', 'wager.settle'];
   for (const n of watch) g.events.on(n, (e) => {
     ev[n] = (ev[n] || 0) + 1; const R = g.raceway, at = { x: +(P.pos.x - 6000).toFixed(1), z: +P.pos.z.toFixed(1), y: +(P.pos.y + 420).toFixed(1), s: Math.round(R.s), track: R.track?.id, line: R.line };
-    if (/bail|respawn|pit|grind.end|branch|lap|finish|takedown|fail|caught|stadium|gap|wreck|cup|citytrial.end|nemesis/.test(n)) { marks.push({ kind: n.replace('skiff.', '').replace('race.', ''), ...at, ...Object.fromEntries(Object.entries(e).filter(([k]) => !['name', 't', 'by'].includes(k))) }); }
+    if (/bail|respawn|pit|grind.end|branch|lap|finish|takedown|fail|caught|stadium|gap|wreck|cup|citytrial.end|nemesis|siphon/.test(n)) { marks.push({ kind: n.replace('skiff.', '').replace('race.', ''), ...at, ...Object.fromEntries(Object.entries(e).filter(([k]) => !['name', 't', 'by'].includes(k))) }); }
   });
   const t0 = performance.now(); g.course.goRoom('raceway'); const build = performance.now() - t0;
   for (let i = 0; i < 30; i++) G.tick(1 / 60);

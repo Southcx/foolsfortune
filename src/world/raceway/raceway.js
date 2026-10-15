@@ -39,6 +39,7 @@ import { conditionAt } from './conditions.js';
 import { fieldOf, fieldJob } from './parkfield.js';
 import { Gaps } from './gaps.js';
 import { Buoys } from './buoys.js';
+import { Siphons } from './siphons.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
@@ -54,7 +55,7 @@ export class Raceway {
     this.sun = 1; this.condition = null; this.condT = 0; this.pitT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false;
-    this.gaps = new Gaps(this); this.buoys = new Buoys(this); // (the named jumps and the buoy runs: gaps.js, buoys.js)
+    this.gaps = new Gaps(this); this.buoys = new Buoys(this); this.siphons = new Siphons(this); // (the named jumps, the buoy runs, the siphons: gaps.js, buoys.js, siphons.js)
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
     this.startPillar = this.local(F.x + F.fz * (F.w + 7), F.z - F.fx * (F.w + 7)); // (the Sun Circuit's: left of its line, beyond the berm)
@@ -112,7 +113,7 @@ export class Raceway {
     buildKit(this); buildMarks(this); t = lap('kit', t); // (every track's furniture: kit.js)
     this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
     this.cavern = buildCavern(this); t = lap('cavern', t); // (its roof, stalactites and crystals: world/raceway/cavern.js)
-    this.buoys.build(); t = lap('buoys', t); // (the buoy runs' poles and floats: buoys.js)
+    this.buoys.build(); this.siphons.build(); t = lap('buoys', t); // (the buoy runs' poles and floats, the siphons' arches: buoys.js, siphons.js)
     g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
   }
   /** Work the field out in the idle time between frames, once the game has booted (it is the same function: parkfield.js), so the first
@@ -199,7 +200,7 @@ export class Raceway {
     flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
     this.barrier.update(dt);
     stepPits(this, dt);
-    this.gaps.update(dt); this.buoys.update(dt);
+    this.gaps.update(dt); this.buoys.update(dt); this.siphons.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
     // the hour and the weather (conditions.js), read a few times a real second
     if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g); this.sun = this.condition.sun; }

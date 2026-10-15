@@ -69,6 +69,8 @@ export function raceModeRules({ on, L, log }) {
   on('skiff.gap', (e) => { if (e.by !== 'courier') return; L.inc('skiff.gap'); L.inc(`skiff.gap.${e.gap}`); const n = L.get(`skiff.gap.${e.gap}`); say('skiff', `Gap: ${e.label}, ${e.points}.${n === 1 ? ' Your first time.' : ''}`, `gap.${e.gap}`, 1); });
   on('skiff.buoy', (e) => { if (e.by !== 'courier') return; L.inc(e.hit ? 'skiff.buoy.hit' : 'skiff.buoy.miss'); L.hi('skiff.buoy.power', e.power); if (!e.hit) say('warn', 'You miss a buoy: your power is gone.', 'buoy', 3); else if (e.power === 5) say('skiff', 'Full power.', 'buoy.full', 6); });
   on('skiff.part', (e) => say('skiff', `You fit the ${e.part.split('.').reverse().join(' ')}.`, 'part', 0.5));
+  on('skiff.siphon', (e) => { L.inc('skiff.siphon'); if (e.took > 0) say('warn', `The siphon drinks ${e.took} of your Lachryma.`, 'siphon', 3); });
+  on('pool.cap', (e) => { if (e.source === 'cracks' && e.share > 0) say('warn', `Your cracks hold ${Math.round(e.share * 100)}% of your Lachryma back until they mend.`, 'pool.cap', 6); });
   on('skiff.glaze', (e) => { if (e.by !== 'courier') return; L.inc('skiff.glaze'); say('skiff', e.glaze ? 'Your hull comes out of the kiln glazed.' : 'Your hull is bare again.', 'skiff.glaze', 0.5); });
   on('skiff.setting', (e) => say('info', e.on ? 'The balance is turned round: A pushes the lean left.' : 'The balance is as it was: A pushes the lean right.', 'skiff.set', 0.5));
   // ---- the rivals' grudges and takedowns (world/raceway/rivals.js)

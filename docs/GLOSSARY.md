@@ -255,6 +255,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   roamed for patches that build the board, then one drawn event. *Not:* a chest tier, the Solar Skiffing trial.
 - **the wager / the garage / a skiff part** (`progress/econ/wager.js`; `PARTS`, `progress/skiffparts.js`) — cubes staked on your own
   race at the house's odds / the race board's tab where a sail, keel and hull are chosen, each a trade. *Not:* the shell runner's parts.
+- **a cap on the pool / a siphon** (`capOf`, `PoolCaps`, `progress/poolcaps.js` / working name, Espada's; `SIPHONS`,
+  `world/raceway/siphons.js`) — a modifier lowering the pool's max from a source you can see (each cracked region of the vessel: 5%
+  until mended) / an arch across a Raceway track that drinks the pool to a quarter as you pass under it. *Not:* the shield, the regen.
 - **the flyover / the restart / the rewind / the nemesis** (`flyover.js`, `rewind.js`, `rivals.js`) — the camera's cuts along the line
   before a race / Backspace tapped / Backspace held in practice / the rival that beat you last, quicker and clapping. *Not:* a camera shot's name.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls

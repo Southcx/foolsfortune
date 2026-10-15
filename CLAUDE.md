@@ -31,6 +31,9 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   earned, optional, switched on or off, never gating the skill.
 - **Every system teaches something real without saying so** (pitch from crystals, the painter's eye from the press): the mechanic is
   the lesson, never a tutorial.
+- **Base change bad, modifiers good** (the owner, 2026-10-15). Every module draws from one substrate (the pool, the vessel, the clock):
+  a mode or a module never changes a base rule. A change comes as a modifier with a source you can see in the world (a hazard, a
+  weather, a crack, a part you chose), and the UI shows where it bites (a capped pool shows what is held off, and by what).
 
 ## Animation
 - An existing clip (UAL Standard, CMU, CC0) for every movement wherever practicable, blended into the tree; author one only when none fits.
