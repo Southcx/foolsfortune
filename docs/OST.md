@@ -79,7 +79,8 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **Raku's bazaar** (`music/casino.js`, `audio/casino.js`; CASINO.md): a circus march in F on the floor (the Gold Saucer's welcome), a
   lounge at a table, a win's two bars of brass; the chips, the chair, each play (flip, steal, fate, four, death, hand, lock, upgrade), the result.
   The count-up (CASINO-CLARITY.md 8): a tick up F major a `+`, a slam a `x`, the reel and its stop, the tier's flourish (chime, triad,
-  the room's), the Supernova's boom, a bluff caught or a claim true, the how-to's page (`COUNT_PACE`, matched to Calissa's).
+  the room's), the Supernova's boom, a bluff caught or a claim true, the how-to's page; paced by Calissa's score ceremony (`table.ceremony.beat`), or
+  by `COUNT_PACE` before one has begun.
 - **The Raceway** (`music/raceway.js`, `audio/raceway.js`; SKIFF-RACING.md): one score following the time trial (paddock, grid,
   race, the last lap with the Answer on brass, the flag), on the bar line from race.* events; the countdown, solar start, carve, plate,
   pop, gate (ahead a fourth up, behind a step down), lap, hard landing and the medal's bells, all in E.

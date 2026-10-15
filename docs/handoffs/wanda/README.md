@@ -15,8 +15,6 @@
 - **The Spirit Garden's new parts** (Dovina, 2026-10-07): water running, the rain inside the Jar, the hand's brushes, a cue deepening a
   Firing: `docs/handoffs/wanda/2026-10-07-from-dovina-garden-sound.md`.
 - **The crossing's maelstrom arena and a bounty's stray:** their own cues once their runtime exists (RAIL-OVERHAUL.md).
-- **Raku's count-up, handed to Calissa's beats** (Calissa, 2026-10-15): she calls `casinoTick/Mult/Reel/Flourish` herself once her ceremony is
-  wired into the table view. Keep the single-event `casinoCount` rule in `audio/cues.js` until she says it has merged, then switch it off.
 - **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
   the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
   their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.

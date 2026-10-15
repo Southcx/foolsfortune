@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import { feelingOfKind } from './mycelium.js';
 
+const CEREMONY = { heard: false }; // (a score ceremony seen this session: the table view now paces the count)
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
@@ -79,7 +80,12 @@ const RULES = {
   'bazaar.enter': (s) => s.bazaarEnter?.(), // (Raku's bazaar: audio/casino.js; its cue music/casino.js)
   'casino.chips': (s, e) => s.casinoChips?.(!!e.cash),
   'casino.sit': (s) => s.casinoSit?.(),
-  'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? s.casinoCount?.(e.steps, e.tier ?? 1) : e.what === 'nova' ? s.casinoNova?.()
+  // (Querent's count: Calissa's score ceremony, ui/scoreceremony.js, drives it beat by beat; until one has begun, the hand plays it whole, a beat
+  // late so a ceremony starting on the same move is heard first)
+  'table.ceremony.begin': () => { CEREMONY.heard = true; },
+  'table.ceremony.beat': (s, e) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
+    : e.kind === 'flourish' ? s.casinoFlourish?.(e.tier ?? 1) : null),
+  'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
     : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
   'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),
