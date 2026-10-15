@@ -6,7 +6,7 @@
 // and inside it a vortex, Lachryma's light wound into the dark, turning. Lachryma is drawn up off the sand under the arch in streams
 // into the mouth, motes from all round it pulled in, a dark breath with them. When it drinks (skiff.siphon { took, left }) a pull of
 // Lachryma off the board up into the mouth, a ring on the sand collapsing in under it, and the mouth gulps (a flash, its vortex spun up).
-// No words, no numbers. Her pillars are hidden (`siphons.group`); the drink itself is hers.
+// No words, no numbers. Her pillars are hidden (`siphons.groups`, one a track; ours shown only for `siphons.on`, the track a licence test raises it on); the drink itself is hers.
 //
 // No program added: the stone is the kit's vertex-coloured flat standard (world/raceway/kit.js, the park's `vc`: its parameters), the
 // vortex a mapped basic (the Raceway's glows' kind, its own canvas). Draw calls: 2 for every arch on every track (the stone, merged; the
@@ -95,15 +95,18 @@ function archParts(w, H, dl, dr) {
 export class RacewaySiphons {
   constructor(game, o = {}) {
     this.game = game; this.parent = o.parent || null; this.vfxOf = () => o.vfx || game.vfx;
-    this.t = 0; this.src = null; this.arches = []; this.gulp = 0; this.angle = 0;
+    this.t = 0; this.src = null; this.dressed = {}; this.arches = []; this.gulp = 0; this.angle = 0;
     (o.events || game.events)?.on('skiff.siphon', (e) => this.drink(e));
   }
   parentOf() { return this.parent || this.game.scene; }
 
   update(dt) {
     const R = this.game.raceway, S = R?.siphons;
-    if (S?.group && S.group !== this.src) { this.undress(); this.dress(R, S); }
+    if (S?.groups && S.groups !== this.src && Object.keys(S.groups).length) { this.undress(); this.dress(R, S); }
     if (!this.src) return;
+    // (the siphons stand only for a licence test that asks for one, on its track: siphons.js shows her group then, S.on; ours instead)
+    for (const G of Object.values(this.src)) G.visible = false;
+    for (const [id, D] of Object.entries(this.dressed)) D.visible = id === S.on;
     this.t += dt; this.gulp = Math.max(0, this.gulp - dt / 0.9);
     this.angle += dt * (C.spin[0] + (C.spin[1] - C.spin[0]) * this.gulp * this.gulp);
     this.vortex.material.map.rotation = this.angle; // (the map's own turn: its uv transform, no program)
@@ -111,7 +114,7 @@ export class RacewaySiphons {
     // the streams, held at each arch near the camera while the Raceway is here
     const cam = this.game.camera?.position, here = R.active !== false;
     for (const A of this.arches) {
-      const on = here && (!cam || cam.distanceTo(A.mouth) < C.near);
+      const on = here && A.track === S.on && (!cam || cam.distanceTo(A.mouth) < C.near);
       A.on = on;
       if (on && !A.h?.alive) A.h = this.vfxOf()?.play('raceway.siphon.draw', { pos: A.mouth.clone(), dir: A.fwd, normal: UP, follow: () => !!this.src && A.on });
       if (!on && A.h) { A.h.stop?.(); A.h = null; }
@@ -119,9 +122,12 @@ export class RacewaySiphons {
   }
 
   dress(R, S) {
-    const stone = [], disc = [];
-    for (const [id, list] of Object.entries(SIPHONS)) {
-      const T = R.trackOf(id); if (!T) continue;
+    this.dressed = {};
+    const mat = (this.stoneMat ||= new THREE.MeshStandardMaterial({ name: 'raceway-siphon-stone', color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true })); // (the kit's parameters: its program)
+    const vm = (this.vortexMat ||= new THREE.MeshBasicMaterial({ name: 'raceway-siphon-vortex', map: vortexTexture() }));
+    for (const id of Object.keys(S.groups)) {
+      const T = R.trackOf(id), list = SIPHONS[id]; if (!T || !list?.length) continue;
+      const stone = [], disc = [];
       for (const s of list) {
         const F = T.frame(s), yaw = Math.atan2(F.fx, F.fz), w = F.w + 1.5, H = SIPHON.height;
         const cx = RW.x + F.x, cz = RW.z + F.z, gy = R.heightAt(cx, cz);
@@ -130,16 +136,15 @@ export class RacewaySiphons {
         for (const g of P.stone) stone.push(g.applyMatrix4(M)); for (const g of P.disc) disc.push(g.applyMatrix4(M));
         this.arches.push({ track: id, s, mouth: new THREE.Vector3(cx, gy + P.mouthY, cz), fwd: new THREE.Vector3(F.fx, 0, F.fz), ground: gy, h: null, on: false });
       }
+      const D = (this.dressed[id] = new THREE.Group()); D.name = `raceway-siphon-${id}`; D.userData.zone = 'raceway'; D.visible = false;
+      const sg = mergeGeometries(stone); stone.forEach((g) => g.dispose());
+      const m = new THREE.Mesh(sg, mat); m.name = 'raceway-siphon-stone'; m.castShadow = m.receiveShadow = true;
+      const dg = mergeGeometries(disc); disc.forEach((g) => g.dispose());
+      const v = new THREE.Mesh(dg, vm); v.name = 'raceway-siphon-vortex';
+      D.add(m, v); this.parentOf().add(D);
     }
-    if (!stone.length) return;
-    const sg = mergeGeometries(stone); stone.forEach((g) => g.dispose());
-    const mat = (this.stoneMat ||= new THREE.MeshStandardMaterial({ name: 'raceway-siphon-stone', color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true })); // (the kit's parameters: its program)
-    const m = (this.stone = new THREE.Mesh(sg, mat)); m.name = 'raceway-siphon-stone'; m.castShadow = m.receiveShadow = true;
-    const dg = mergeGeometries(disc); disc.forEach((g) => g.dispose());
-    const vm = (this.vortexMat ||= new THREE.MeshBasicMaterial({ name: 'raceway-siphon-vortex', map: vortexTexture() }));
-    const v = (this.vortex = new THREE.Mesh(dg, vm)); v.name = 'raceway-siphon-vortex';
-    for (const o of [m, v]) { o.userData.zone = 'raceway'; this.parentOf().add(o); }
-    S.group.visible = false; this.src = S.group; // (her pillars and lintel)
+    this.vortex = { material: vm }; // (one material for every track's mouths: the turn and the gulp are shared)
+    this.src = S.groups; // (her pillars and lintels, one group a track: kept hidden while ours stand)
   }
 
   /** The pool drunk (skiff.siphon): Lachryma pulled off the board up into the nearest mouth, a ring collapsing in on the sand, the gulp. */
@@ -158,8 +163,7 @@ export class RacewaySiphons {
   undress() {
     for (const A of this.arches) A.h?.stop?.();
     this.arches = [];
-    for (const o of [this.stone, this.vortex]) { o?.removeFromParent(); o?.geometry?.dispose(); }
-    if (this.src) this.src.visible = true;
-    this.stone = this.vortex = null; this.src = null;
+    for (const D of Object.values(this.dressed || {})) { D.removeFromParent(); D.traverse((o) => o.geometry?.dispose()); }
+    this.dressed = {}; this.vortex = null; this.src = null; // (her groups' visibility is hers again: siphons.js shows the wanted track's)
   }
 }
