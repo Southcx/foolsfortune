@@ -322,9 +322,10 @@ The owner took the whole list from the last round's answer. What each is, where 
 | a gap | a named jump, off one stretch and onto another: said by name, points to the combo, kept on the ledger (seven to find) | `GAPS`, `world/raceway/gaps.js` | Tony Hawk's gaps |
 | a buoy run | buoys passed on their sides (red: go right of it; yellow: left) raise the POWER a step to five (2% top speed each); one missed, it drops to nothing | `BUOYS`, `world/raceway/buoys.js` | Wave Race 64 |
 
-**The siphons** (round 6, after the owner's "a gate of sorts", 2026-10-15; `world/raceway/siphons.js`): an arch across each track just
-before its second vein lane drinks the pool to a quarter of its max as you pass under it; the two make a pit stretch. The Pit lane
-licence runs through the Sun Circuit's (it no longer sets the pool itself: the law that a mode never changes a base rule, DESIGN.md 22.6).
+**The siphons** (round 6, after the owner's "a gate of sorts", 2026-10-15; `world/raceway/siphons.js`): an arch across a track just
+before its second vein lane that drinks the pool to a quarter of its max as you pass under it. A prop of the Pit lane licence only, as
+the pots are the pot smash's (the owner: "only active when taking the specific license test"): it stands while that test runs and is
+gone otherwise. The test no longer sets the pool itself (DESIGN.md 22.6: a test adds a thing you can see; it changes no rule).
 
 **The garage** (`progress/skiffparts.js`): a sail, a keel and a hull, each a trade, never an upgrade (MK8's parts), opened by achievements:
 the Racing Sail (top 1.07, acceleration 0.88: rw21), the Storm Sail (0.95 / 1.15: rw5), the Grind Keel (a steadier rail, a looser carve:
