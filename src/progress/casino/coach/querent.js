@@ -37,6 +37,8 @@ export function shapeOf(hand) {
   if (hand.length <= 10) go(idx, [], [], []);
   return { groups: best.groups, pairs: best.pairs, loose: best.loose };
 }
+/** The table view's id for each card of a hand (vfx/bazaarlayout.js `h:<rank>.<suit>#<nth>`: the nth of that face, counted in hand order). */
+export function handIds(hand) { const seen = {}; return hand.map((c) => { const k = `${c.r}.${c.s}`; seen[k] = (seen[k] ?? -1) + 1; return `h:${k}#${seen[k]}`; }); }
 /** How many different cards would finish the hand once `drop` (an index) is thrown back: the more, the better the throw. */
 export function waitsAfter(hand, quads, drop) {
   const rest = hand.filter((_, i) => i !== drop); let n = 0;
@@ -47,8 +49,10 @@ export function waitsAfter(hand, quads, drop) {
 export function querentCoach({ T, S, seat, P, mine, R, V }) {
   const me = S.players[seat], hand = V.hand, quads = V.quads || [];
   const lead = V.scores.reduce((b, v, q) => (v > V.scores[b] ? q : b), 0);
-  const goal = { text: 'Make 3 groups of 3 cards: 3 of the same number (7 7 7) or 3 in a row (4 5 6). Colours don\'t matter.', you: { value: V.scores[seat], label: 'points' }, best: { seat: lead, value: V.scores[lead] }, round: { value: Math.min(V.round + 1, QUERENT_RULES.rounds), of: QUERENT_RULES.rounds } };
-  const shape = shapeOf(hand);
+  const goal = { text: 'Make 3 groups of 3 cards: 3 of the same number (7 7 7) or 3 in a row (4 5 6). Colours don\'t matter.', you: { value: V.scores[seat], label: 'points' }, best: { seat: lead, value: V.scores[lead] }, round: { value: Math.min(V.round + 1, QUERENT_RULES.rounds), of: QUERENT_RULES.rounds },
+    label: 'Points', unit: 'points', perSeat: V.scores.map((v, q) => ({ seat: q, value: v })), groups: { value: 0, of: 3 } };
+  const shape = shapeOf(hand); goal.groups.value = shape.groups.length;
+  const hid = handIds(hand); // (the table view's ids for the hand's cards: `h:<rank>.<suit>#<nth>`, nth in hand order)
   const extra = { shape, seatSuit: SUITS[V.seatSuit], fate: V.fate, arcana: (V.mine || []).map((id) => ({ id, name: ARCANA[id].name, does: ARCANA[id].does })) };
   const centre = [{ label: 'Round', value: `${goal.round.value} of ${goal.round.of}`, big: true }, { label: 'Your seat suit', value: SUIT_NAME[V.seatSuit] }];
   const moves = [];
@@ -58,10 +62,10 @@ export function querentCoach({ T, S, seat, P, mine, R, V }) {
       case 'acquire': {
         say = 'Take a card: draw from your pile, or steal the card someone just threw away (a steal gives them a Major Arcana).';
         for (const m of mine.moves) {
-          if (m.draw) { moves.push({ move: m, label: 'Draw a card', what: 'The top of your own pile: a surprise', tone: null, size: 'big' }); continue; }
+          if (m.draw) { moves.push({ move: m, label: 'Draw a card', what: 'The top of your own pile: a surprise', tone: null, size: 'big', pieceIds: ['deck'] }); continue; }
           const top = V.tops[m.steal], won = top && !top.hidden ? scoreIfWon(S, seat, 'steal', [...hand, top]) : null;
           moves.push({ move: m, label: `Steal the ${cardLabel(top)} from ${T.names[m.steal]}`, what: `${T.names[m.steal]} flips a Major Arcana: a power-up for them`,
-            preview: won ? `Wins the round for ${fmt(won.value)}!` : null, tone: won ? 'good' : 'risk', size: won ? 'big' : 'small' });
+            preview: won ? `Wins the round for ${fmt(won.value)}!` : null, tone: won ? 'good' : 'risk', size: won ? 'big' : 'small', pieceIds: [`top:${m.steal}`] });
         }
         break;
       }
@@ -70,7 +74,7 @@ export function querentCoach({ T, S, seat, P, mine, R, V }) {
         for (const m of mine.moves) {
           const c = hand[m.discard], w = waitsAfter(hand, quads, m.discard), inGroup = shape.groups.some((g) => g.includes(m.discard));
           moves.push({ move: m, label: `Throw back the ${cardLabel(c)}`, what: inGroup ? 'Breaks one of your groups' : 'Not in a group',
-            preview: w ? `Then ${w} different card${w === 1 ? '' : 's'} would win` : null, tone: inGroup ? 'bad' : w ? 'good' : null, size: 'small', card: m.discard, waits: w });
+            preview: w ? `Then ${w} different card${w === 1 ? '' : 's'} would win` : null, tone: inGroup ? 'bad' : w ? 'good' : null, size: 'small', card: m.discard, waits: w, pieceIds: [hid[m.discard]] });
         }
         break;
       }
@@ -87,10 +91,10 @@ export function querentCoach({ T, S, seat, P, mine, R, V }) {
         for (const m of mine.moves) moves.push(m.fate ? { move: m, label: `Fate Clause: I'll win by ${m.fate === 'draw' ? 'drawing' : 'stealing'}`, what: 'You flip a Major Arcana now; your turn ends; your hand locks',
           preview: m.fate === 'draw' ? 'Win next turn by drawing: score x4' : 'Win next turn by stealing: +2', tone: 'risk', size: 'big' } : { move: m, label: 'Not now', what: 'Play your turn as usual', tone: null, size: 'small' });
         break;
-      case 'fool': say = 'The Fool: pick which Major Arcana it becomes.'; for (const m of mine.moves) moves.push({ move: m, label: ARCANA[m.arcana].name, what: ARCANA[m.arcana].does, tone: null, size: 'small' }); break;
-      case 'hierophant': say = 'The Hierophant: name a number. Each card of it in your winning hand scores +1.'; for (const m of mine.moves) moves.push({ move: m, label: RANK_NAME[m.rank], what: `${hand.filter((c) => c.r === m.rank).length} in your hand now`, tone: null, size: 'small' }); break;
-      case 'hermit': say = 'The Hermit: look at your next nine cards and choose which goes on top.'; for (const m of mine.moves) if (m.top.length <= 1) moves.push({ move: m, label: m.top.length ? `${cardLabel(V.peek?.[m.top[0]])} on top` : 'Keep the order', what: '', tone: null, size: 'small' }); break;
-      case 'wheel': say = 'The Wheel of Fortune: pick cards to throw back, and draw as many new ones.'; extra.select = { kind: 'cards', max: 8 }; for (const m of mine.moves) moves.push({ move: m, label: m.throw.length ? `Swap ${m.throw.length}: ${m.throw.map((i) => cardLabel(hand[i])).join(', ')}` : 'Swap none', what: '', tone: null, size: 'small', cards: m.throw }); break;
+      case 'fool': say = 'The Fool: pick which Major Arcana it becomes.'; for (const m of mine.moves) moves.push({ move: m, label: ARCANA[m.arcana].name, what: ARCANA[m.arcana].does, tone: null, size: 'small', pieceIds: [`fool:${m.arcana}`] }); break;
+      case 'hierophant': say = 'The Hierophant: name a number. Each card of it in your winning hand scores +1.'; for (const m of mine.moves) moves.push({ move: m, label: RANK_NAME[m.rank], what: `${hand.filter((c) => c.r === m.rank).length} in your hand now`, tone: null, size: 'small', pieceIds: [`rank:${m.rank}`] }); break;
+      case 'hermit': say = 'The Hermit: look at your next 9 cards and choose which goes on top.'; for (const m of mine.moves) if (m.top.length <= 1) moves.push({ move: m, label: m.top.length ? `${cardLabel(V.peek?.[m.top[0]])} on top` : 'Keep the order', what: '', tone: null, size: 'small' }); break;
+      case 'wheel': say = 'The Wheel of Fortune: pick cards to throw back, and draw as many new ones.'; extra.select = { kind: 'cards', max: 8 }; for (const m of mine.moves) moves.push({ move: m, label: m.throw.length ? `Swap ${m.throw.length}: ${m.throw.map((i) => cardLabel(hand[i])).join(', ')}` : 'Swap none', what: '', tone: null, size: 'small', cards: m.throw, pieceIds: m.throw.map((i) => hid[i]) }); break;
       default: { // (the arcana that choose a player: the Lovers, the Sun, Judgement)
         const A = { lovers: ARCANA[6], sun: ARCANA[19], judgment: ARCANA[20] }[mine.kind];
         say = A ? `${A.name}: choose a player. ${A.does}` : 'Choose.';
@@ -100,7 +104,7 @@ export function querentCoach({ T, S, seat, P, mine, R, V }) {
   }
   const seats = seatsOf(T, S, (q) => {
     const Q = V.players[q], Pq = S.players[q];
-    return { stats: [{ label: 'Points', value: fmt(V.scores[q]), big: true }, { label: 'Arcana', value: Q.arcana }, { label: 'Steals left', value: Math.max(0, (Pq.stealsMax ?? 2) - Q.stole) }],
+    return { stats: [{ label: 'Points', value: fmt(V.scores[q]), kind: 'score', big: true }, { label: 'Arcana', value: Q.arcana, kind: 'count' }, { label: 'Steals left', value: Math.max(0, (Pq.stealsMax ?? 2) - Q.stole), kind: 'count' }], flipped: (Q.flipped || []).map((id) => ({ id, name: ARCANA[id].name, does: ARCANA[id].does })),
       badge: Pq.fate ? `Fate Clause (${Pq.fate.by})` : null, top: V.tops[q] ? (V.tops[q].hidden ? 'face down' : cardLabel(V.tops[q])) : null };
   }, P?.seat);
   if (R) { const w = R.winner; say = w === seat ? `You win the table with ${fmt(R.scores[seat])}!` : `${T.names[w]} wins the table with ${fmt(R.scores[w])}.`; }
