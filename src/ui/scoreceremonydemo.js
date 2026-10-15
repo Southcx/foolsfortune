@@ -1,33 +1,26 @@
 // ---------------------------------------------------------------------------------------
-// THE CEREMONY'S DEMO: a Querent-shaped top-tier step list and a mount, so the score ceremony, the rolling number and the reel can be
-// shown alone (the coach, Dovina's, does not exist yet: this is the brief's section 2g shape as plain data). Not wired into the game.
-//   demoSteps(kind = 'top' | 'plain' | 'loss')   mountDemo(root, { speed, events }) -> { ceremony, reels, play(kind) }
+// THE CEREMONY'S DEMO: the coach's own ceremony steps for a few outcomes, made with the rules modules, and a mount, so the score ceremony,
+// the rolling number and the reel can be shown alone. Not wired into the game.
+//   demoCeremony(kind = 'top' | 'plain' | 'dice' | 'reveal')   mountDemo(root, { speed, onBeat, events }) -> { ceremony, play(kind) }
 // ---------------------------------------------------------------------------------------
 import { ScoreCeremony } from './scoreceremony.js';
-import { Reel } from './reel.js';
+import { best } from '../progress/casino/querent/score.js';
+import { ceremonyOf } from '../progress/casino/coach/ceremony.js';
 
-export function demoSteps(kind = 'top') {
-  if (kind === 'loss') return [
-    { kind: 'name', label: 'Bust' }, { kind: 'base', label: 'Hand', value: 24 },
-    { kind: 'piece', label: 'Over by', value: -9, colour: 'loss' }, { kind: 'total', label: 'Total', value: 15, colour: 'loss' }];
-  if (kind === 'plain') return [
-    { kind: 'name', label: 'Pair of Cups' }, { kind: 'base', label: 'Pair', value: 40 },
-    { kind: 'piece', label: 'Cups 7', value: 7 }, { kind: 'piece', label: 'Cups 7', value: 7 },
-    { kind: 'mult', label: 'Suit', value: 2 }, { kind: 'total', label: 'Total', value: 108 }];
-  return [
-    { kind: 'name', label: 'Tier 3: All Runs' }, { kind: 'base', label: 'Melds', value: 120 },
-    { kind: 'piece', label: 'The Fool', value: 22 }, { kind: 'piece', label: 'Wands 4', value: 30 }, { kind: 'piece', label: 'Cups 5', value: 38 },
-    { kind: 'piece', label: 'Swords 6', value: 46 }, { kind: 'bonus', label: 'Fate Clause', value: 150, colour: 'money' },
-    { kind: 'mult', label: 'Major Arcana', value: 3 }, { kind: 'mult', label: 'Full house', value: 2 }, { kind: 'total', label: 'Total', value: 4224 }];
+const c = (r, s) => ({ r, s });
+const run = (lo, s) => [lo, lo + 1, lo + 2].map((r) => c(r, s));
+const CTX = { seatSuit: 0, stole: false, arcana: [1, 8, 21], board: [1, 8, 21], firstDraw: true, fate: { first: true }, nextTurn: false, stealsLeft: 0, steals: 0 };
+
+/** A ceremony in the coach's shape: { steps, total, scale, tier, at }. */
+export function demoCeremony(kind = 'top') {
+  if (kind === 'dice') return { ...ceremonyOf('supernova', { react: 21, faces: [6, 3, 5, 4, 3], born: 2, decayed: 1, lost: 0 }), at: 0 };
+  if (kind === 'reveal') return { ...ceremonyOf('nebula', { callout: 1, bluff: true, claim: 30, worth: 41, shown: [{ face: 6, sides: 6 }, { face: 20, sides: 20 }, { face: 9, sides: 12 }, { face: 4, sides: 8 }] }), at: 0 };
+  const top = kind === 'top', cards = top ? [...run(1, 0), ...run(4, 0), ...run(7, 0)] : [...run(1, 0), ...run(4, 1), ...run(7, 2)];
+  const b = best({ cards, quads: [] }, top ? CTX : { ...CTX, arcana: [], fate: null, firstDraw: false, stole: true });
+  return { ...ceremonyOf('querent', b), at: 0 };
 }
 
-export function mountDemo(root, { speed = 1, events = null } = {}) {
-  const ceremony = new ScoreCeremony({ root, events, speed, median: 150 });
-  const strip = document.createElement('div'); strip.style.cssText = 'position:fixed;left:16px;top:16px;display:flex;gap:8px;z-index:70';
-  root.appendChild(strip);
-  const reels = ['The Fool', 'Death', 'The Star'].map((_, i) => {
-    const e = document.createElement('div'); strip.appendChild(e);
-    return new Reel(e, ['I', 'II', 'III', 'IV', 'V', 'VI'].map((t, k) => ({ text: t, colour: k % 2 ? '#e8b923' : '#f4ecd8' })), { speed });
-  });
-  return { ceremony, reels, play: (kind) => ceremony.play(demoSteps(kind), { speed }) };
+export function mountDemo(root, { speed = 1, onBeat = null, events = null } = {}) {
+  const ceremony = new ScoreCeremony({ root, events, speed, onBeat });
+  return { ceremony, play: (kind) => ceremony.play(demoCeremony(kind), { speed }) };
 }

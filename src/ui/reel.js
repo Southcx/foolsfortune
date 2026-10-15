@@ -3,7 +3,7 @@
 // where a hidden thing is revealed (a die face, an arcanum, a tier's name). The table view's words-and-numbers exception (the owner,
 // 2026-10-15; docs/handoffs/dovina/casino-clarity-art-brief.md section 2g). DOM and CSS only, 0 shader programs.
 //
-//   THE SPIN     the strip runs `laps` times round the symbols (default 3) in `dur` (0.6 s) on cubic-bezier(.2,.9,.3,1.25): fast, then a
+//   THE SPIN     the strip runs `laps` times round the symbols (default 3) in `dur` (0.6 s) on cubic-bezier(.2,.9,.3,1.04): fast, then a
 //                single overshoot past the stop that settles back (the one-frame kick of a real reel).
 //   THE STAGGER  `Reel.spinAll(reels, stops, { stagger })` starts a row of reels 150 ms apart, left to right.
 //   A SYMBOL     a string, or { text, colour } (a die face, a tier name in its colour).
@@ -14,12 +14,12 @@
 // ---------------------------------------------------------------------------------------
 import { TIERS } from './rollnum.js';
 
-export const REEL = { dur: 0.6, stagger: 0.15, laps: 3, ease: 'cubic-bezier(.2,.9,.3,1.25)' };
+export const REEL = { dur: 0.6, stagger: 0.15, laps: 3, ease: 'cubic-bezier(.2,.9,.3,1.04)' };
 
 const CSS = `
 .rl{display:inline-block;overflow:hidden;height:1.3em;line-height:1.3em;vertical-align:middle;font-weight:800;text-align:center;
   font-size:calc(var(--rl-size,34px)*var(--rn-scale,1));font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;color:#f4ecd8;
-  min-width:1.6em;padding:0 .2em;border-radius:.2em;background:#17111f;box-shadow:inset 0 .12em .3em rgba(0,0,0,.7)}
+  min-width:1.6em;padding:0 .35em;border-radius:.2em;background:#17111f;border:2px solid #6f8be0;box-shadow:inset 0 .12em .3em rgba(0,0,0,.7)}
 .rl-strip{display:block;transition-property:transform;will-change:transform}
 .rl-strip>i{display:block;height:1.3em;font-style:normal;white-space:nowrap}
 `;

@@ -1,5 +1,5 @@
-// The score ceremony shown alone: a Querent-shaped top-tier step list played on a bare page (src/ui/scoreceremonydemo.js), a frame at
-// each of 0, 0.4, 1.2 and 2.0 real seconds after the play. One run, one look.   node scripts/ceremonyshot.mjs [port] [outDir]
+// The score ceremony shown alone: a tier 3 Querent hand from the coach's own steps played on a bare page (src/ui/scoreceremonydemo.js), a frame at
+// each of 0, 0.6, 1.4 and 2.4 real seconds after the play. One run, one look.   node scripts/ceremonyshot.mjs [port] [outDir]
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,12 +27,11 @@ try {
   await pg.waitForFunction(() => window.ready);
   await pg.evaluate(() => {
     window.t0 = performance.now(); window.p = window.d.play('top');
-    window.d.reels[0].spin(3); window.d.reels[1].spin(1, { stagger: 0.15 }); window.d.reels[2].spin(4, { stagger: 0.3 });
   });
-  for (const t of [0, 0.4, 1.2, 2.0]) {
+  for (const t of [0, 0.6, 1.4, 2.4]) {
     const wait = t * 1000 - (await pg.evaluate(() => performance.now() - window.t0));
     if (wait > 0) await pg.waitForTimeout(wait);
-    await pg.screenshot({ path: path.join(out, `C-ceremony-${t.toFixed(1)}s.png`) });
+    await pg.screenshot({ path: path.join(out, `C2-ceremony-${t.toFixed(1)}s.png`) });
     console.log('frame', t, 'at', Math.round(await pg.evaluate(() => performance.now() - window.t0)), 'ms');
   }
 } finally {
