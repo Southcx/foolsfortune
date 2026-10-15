@@ -64,7 +64,7 @@ import { Hologram } from './caster/hologram.js';
 import { RacewayEdgeStrings, EDGE_STRINGS } from './racewayedgestrings.js';
 import { ensureSmoothNormals } from '../render/outline.js';
 import { lightAt } from '../progress/weather.js';
-import { SkiffComboMarks, COMBO_MARKS } from './skiffcombomarks.js';
+import { SkiffComboMarks, COMBO_MARKS, sunAt } from './skiffcombomarks.js';
 import { GrindBalanceMark } from './grindbalancemark.js';
 import { SkiffBoardLooks } from './skiffboardlooks.js';
 import { RacewayBuoys } from './racewaybuoys.js';
@@ -227,6 +227,7 @@ export class RacewayLooks {
       E.on('skiff.combo', (e) => this.comboLink(e));
       E.on('skiff.combo.bank', () => this.comboBank());
       E.on('skiff.combo.drop', () => this.comboDrop());
+      E.on('skiff.flare.banked', (e) => this.flareSpent(e)); // (C: a banked flare spent whole, its sun popped: the owner, v204)
       for (const n of ['skiff.bail', 'skiff.end', 'skiff.recall']) E.on(n, () => this.stopBoost());
     }
     this.boostH = null; this.combo = null; this.sunK = 1;
@@ -471,6 +472,13 @@ export class RacewayLooks {
     this.comboMarks(B).bank(); B.boat?.pulse?.(0.7);
     V?.play('skiff.combo.bank', { pos: B.group.getWorldPosition(new THREE.Vector3()), phase: this.t * 0.3 });
   }
+  /** A banked flare spent whole (skiff.flare.banked { left }): its sun pops and goes out, the rest stay. */
+  flareSpent(e) {
+    const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
+    const M = this.comboMarks(B), i = M.spend(B.combo?.stocks ?? e?.left ?? 0), at = sunAt(i);
+    B.group.updateWorldMatrix(true, false);
+    V?.play('skiff.flare.spend', { pos: new THREE.Vector3(at[0], at[1], at[2]).applyMatrix4(B.group.matrixWorld), phase: this.t * 0.3 });
+  }
   comboDrop() {
     const B = this.boardOf(), V = this.vfxOf(); if (!B) return;
     this.comboMarks(B).drop();
@@ -509,7 +517,7 @@ export class RacewayLooks {
       this.combo?.update(dt, B?.combo || null, this.t, power);
       const bal = B?.grind?.on ? B.grind : B?.manual ? { on: true, lean: B.manualLean } : null; // (the manual's lean on the grind's mark: round 6)
       if (bal && !this.balance) this.balance = new GrindBalanceMark({ map: materials().map }); // (the grind's balance mark: made the first time a board grinds)
-      if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, bal); } }
+      if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, bal, { t: this.t, camera: this.game.camera }); } }
     this.stakes?.update(dt);
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
     if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)

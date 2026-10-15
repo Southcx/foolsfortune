@@ -36,7 +36,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { crystalFretMaterial, CrystalFrets } from './crystalfrets.js';
 import { RACEWAY_CAVERN, spireGeometry, pulseTexture } from './racewaycavern.js';
 import { antlionThroat, antlionMandible } from './racewaypark.js';
-import { LACHRYMA_TINT } from './racewayeffects.js';
 import { PROFILES, prepProfile, buildPotGeometry } from '../world/props/pottery.js';
 import { PATCHES } from '../world/raceway/citytrial.js';
 import { ESCAPE } from '../world/raceway/escape.js';
@@ -46,9 +45,10 @@ import { sideOf } from '../world/raceway/kit.js';
  *  pulses a real second (idle, ridden); the bollards (m apart, out past the edge, heights, widths); the gateposts (the stave's height and
  *  width, lesser spires). The pots: their profiles, heights (m), clays and glaze, one glazed in `glazed`. The chaser: its size, the
  *  berm's colours, the jaws' lean, open and closed, a snap's period far and near (real s), the spray's place behind it. The patches:
- *  each kind's gem height (m), their turn (rad a real second), bob (m, Hz), glow. */
+ *  each kind's gem height (m), their turn (rad a real second), bob (m, Hz), glow. (The lanes' glow: the labradorite's violet, not a cyan
+ *  glow: the owner, v204.) */
 export const RACEWAY_PROPS = {
-  lane: { step: 2.5, core: 2.0, edge: 0.8, colour: LACHRYMA_TINT, k: 1.1, ridden: 1.8, flash: 1.4, pulse: [0.45, 1.6],
+  lane: { step: 2.5, core: 2.0, edge: 0.8, colour: 0x6a3fd6, k: 1.1, ridden: 1.8, flash: 1.4, pulse: [0.45, 1.6],
     bollard: { every: 3.5, out: 0.3, h: [0.5, 1.1], w: [0.2, 0.3] }, gate: { h: [2.0, 2.7], w: 0.62, lesser: 3 } },
   pots: { kinds: ['amphora', 'urn', 'tsubo', 'jar', 'pitcher', 'ember'], h: [0.85, 1.15], clays: [0xc9744a, 0xd9906a, 0xb8692e, 0xa8643a], glaze: 0x2c3f8f, glazed: 4 },
   chaser: { scale: 1.15, berm: { crest: 0xd8a070, shade: 0xc98a52, inner: 0x6a4028 }, lean: 0.55, open: 0.62, shut: 0.06, period: [1.2, 0.55], spray: 3.2 },

@@ -1,32 +1,39 @@
 // ---------------------------------------------------------------------------------------
 // THE GRIND'S BALANCE MARK (docs/plans/SKIFF-RACING.md section 10; the owner by name, via Dovina's handoff of 2026-10-14): the grind's
 // balance (courier/skiff/grind.js `lean`, -1..1, past 1 the board drops off that side, + the right) read at a glance off the board itself,
-// with no words and no numbers. Worn by the Solar Skiff just aft of its stern, standing up on the board's up (on a coaster rail, the
-// rail's), facing the chase camera; shown only while the keel grinds, faded in and out.
-//   - THE ARC: a gauge over the top like a protractor's, 140 degrees across: its middle Lachryma's colour, its two ends a warm ember
+// with no words and no numbers. Worn by the Solar Skiff just aft of its stern, standing up on the board's up over the banked flares'
+// suns (vfx/skiffcombomarks.js), facing the chase camera; shown only while the keel grinds, faded in and out.
+//   - THE ARC: a gauge over the top like a protractor's, 140 degrees across: its middle the labradorite's play (ink, the oil film's
+//     colours flashing up through it: vfx/oxidation.js schillerInk; the owner, v204, "too blue"), its two ends a warm ember
 //     brightening toward each tip (the side it falls off), so the danger sits where the needle would go.
-//   - THE NEEDLE: a slim diamond from the arc's hub, tilted by the lean (+ to the board's right); it warms from Lachryma to the ember
-//     as it nears an end, and the ends brighten as it does. A coaster rail's drift never grows (grind.js), so there it is the same mark.
+//   - THE NEEDLE: a slim diamond from the arc's hub, tilted by the lean (+ to the board's right); it warms toward the ember as it nears
+//     an end, and the ends brighten as it does. A coaster rail's drift never grows (grind.js), so there it is the same mark.
+//   - ON A COASTER RAIL (grind.R.coaster: the board banked and round loops, upside down at the top; the owner, v204, "hard to keep
+//     track of"): the mark is hung from the camera's view instead, its hub above the stern by the screen's up and its face square to
+//     the lens, so it never flips or turns away; it eases over in PIN real seconds' damping. The lean is still the board's (A / D
+//     answer it the same way), so the needle never reverses. On a plain rail it rides the board as before.
 // Two meshes, two draw calls: the calm (the arc's middle, the top tick, the hub, the needle) and the ends, each one colour and its
 // brightness read off the glow atlas's gradient by u (vfx/racewaylooks.js glowAtlas), so their material is the combo's marks' own
 // (vfx/skiffcombomarks.js: the mapped basic, blended over, depth not written): no program added. Only the needle's six vertices are
 // written each frame.
 //
-// Prior art: Tony Hawk's Pro Skater's balance meter (an arrow swinging over the skater, the ends the fall), the spirit level and the
+// Prior art: Tony Hawk's Pro Skater's balance meter (an arrow swinging over the skater, the ends the fall; it stays screen-up through
+// a loop, which the coaster pin takes), the spirit level and the
 // aircraft's turn-and-slip ball (a needle off its middle), Splatoon's ink tank and Dead Space's spine (a gauge worn on the body, not the
 // screen); the combo's marks (vfx/skiffcombomarks.js) for the way a mark is drawn on the board.
 //
-//   const M = new GrindBalanceMark({ map })   M.attach(group)   M.update(dt, grind)   M.dispose()   GRIND_BALANCE (the numbers)
+//   const M = new GrindBalanceMark({ map })   M.attach(group)   M.update(dt, grind, { t, camera })   M.dispose()   GRIND_BALANCE (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { LACHRYMA_DEEP } from './racewayeffects.js';
+import { schillerInk, SCHILLER } from './oxidation.js';
 
 /** The numbers, in the board's own frame (+Z the bow, Y up, +X the board's left; m and rad): where the arc's hub stands (z aft, y up),
  *  its radius and band, its half-sweep (rad from the top), its segments, where the ends begin (share of the half-sweep); the needle's
  *  length (share of the radius) and width; the top tick; brightness of the calm and the ends (low, high); the lean shown at most; the
- *  ember's colour and where the warming starts and is whole (|lean|); how fast it fades in and out. */
+ *  ember's colour and where the warming starts and is whole (|lean|); how fast it fades in and out; the schiller's least and most; the
+ *  coaster pin's damping (a real second). */
 export const GRIND_BALANCE = {
-  at: { z: -2.15, y: 0.2 },
+  at: { z: -2.15, y: 0.75 }, // (its hub over the banked flares' middle sun)
   arc: { r: 1.05, w: 0.11, sweep: 1.22, segs: 28, ends: 0.62 },
   needle: { len: 0.96, w: 0.07 },
   tick: 0.16,
@@ -34,6 +41,8 @@ export const GRIND_BALANCE = {
   showMax: 1.12,
   ember: 0xff5a2a, warm: [0.45, 0.95],
   fade: { in: 14, out: 6 },
+  schiller: { floor: 0.42, sheen: 0.95 },
+  pin: 8,
 };
 
 // the glow atlas's gradient (its left half, alpha by u): the u that gives a brightness (as vfx/skiffcombomarks.js)
@@ -48,7 +57,9 @@ function uOf(b) {
 }
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const LACH = new THREE.Color(LACHRYMA_DEEP), EMBER = new THREE.Color(GRIND_BALANCE.ember);
+const EMBER = new THREE.Color(GRIND_BALANCE.ember);
+const _q = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qc = new THREE.Quaternion(), _qi = new THREE.Quaternion(), _qp = new THREE.Quaternion(), _p = new THREE.Vector3(), _u = new THREE.Vector3(), _h = new THREE.Vector3();
+const FLIP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // (the mark faces -Z: turned to face the lens)
 
 /** A point on the gauge at angle a from the top (+ toward the board's right, which is -X) and radius r, in the board's frame. */
 const onArc = (a, r) => [-Math.sin(a) * r, GRIND_BALANCE.at.y + Math.cos(a) * r];
@@ -97,18 +108,19 @@ export class GrindBalanceMark {
     band(ends, edge, A.sweep, n, endK); band(ends, -A.sweep, -edge, n, endK);
     for (const sg of [-1, 1]) { const a = sg * A.sweep, [ix, iy] = onArc(a, A.r - A.w), [ox, oy] = onArc(a, A.r + A.w), [tx, ty] = onArc(a + sg * 0.12, A.r);
       ends.push([[ix, iy, L.endHi], [ox, oy, L.endHi], [tx, ty, L.endHi * 0.6]]); }
-    const mat = (name) => new THREE.MeshBasicMaterial({ name, map, color: LACHRYMA_DEEP, transparent: true, depthWrite: false });
+    const mat = (name) => new THREE.MeshBasicMaterial({ name, map, color: SCHILLER.ink, transparent: true, depthWrite: false });
     this.calmMat = mat('grind-balance-calm'); this.endMat = mat('grind-balance-ends'); this.endMat.color.copy(EMBER);
     this.calm = new THREE.Mesh(geometry(calm, true), this.calmMat); this.ends = new THREE.Mesh(geometry(ends, false), this.endMat);
     this.calm.name = 'grind-balance-calm'; this.ends.name = 'grind-balance-ends';
     for (const m of [this.calm, this.ends]) { m.frustumCulled = false; m.renderOrder = 5; m.visible = false; }
-    this.show = 0; this.lean = 0;
+    this.show = 0; this.lean = 0; this.pinK = 0;
   }
   /** Worn by a board (its group: the mark rides it, in its frame). */
   attach(group) { for (const m of [this.calm, this.ends]) if (m.parent !== group) { m.parent?.remove(m); group?.add(m); } }
 
-  /** Each frame: `grind` the skiff's Grind (grind.js: on, lean) or null. */
-  update(dt, grind) {
+  /** Each frame: `grind` the skiff's Grind (grind.js: on, lean, R) or null; `t` real seconds (the schiller's walk); `camera` the view
+   *  (on a coaster rail the mark hangs from it). */
+  update(dt, grind, { t = 0, camera = null } = {}) {
     const G = GRIND_BALANCE, on = !!grind?.on;
     this.show = damp(this.show, on ? 1 : 0, on ? G.fade.in : G.fade.out, dt);
     const vis = this.show > 0.01 && !!this.calm.parent;
@@ -127,10 +139,29 @@ export class GrindBalanceMark {
     for (const t of [0, 3]) { const i = o + t, ax = P.getX(i), ay = P.getY(i), bx = P.getX(i + 1), by = P.getY(i + 1), qx = P.getX(i + 2), qy = P.getY(i + 2);
       if ((bx - ax) * (qy - ay) - (by - ay) * (qx - ax) > 0) { P.setXYZ(i + 1, qx, qy, z); P.setXYZ(i + 2, bx, by, z); } }
     P.needsUpdate = true;
-    // the colour: the calm warms toward the ember as the needle nears an end; the ends brighten with it
-    this.calmMat.color.copy(LACH).lerp(EMBER, k * 0.85);
+    // the colour: the calm is the labradorite's play, warming toward the ember as the needle nears an end; the ends brighten with it
+    schillerInk(t * SCHILLER.rate, this.calmMat.color, G.schiller).lerp(EMBER, k * 0.85);
     this.calmMat.opacity = this.show;
     this.endMat.opacity = this.show * (0.55 + 0.45 * k);
+    this.pin(dt, on && !!grind.R?.coaster, camera);
+  }
+  /** On a coaster rail: both meshes turned (in the board's frame) so the mark faces the lens with the screen's up, its hub held over
+   *  the stern by that up; eased in and out by pinK. Off one, back to the board's own frame. */
+  pin(dt, coaster, camera) {
+    this.pinK = damp(this.pinK, coaster && camera ? 1 : 0, GRIND_BALANCE.pin, dt);
+    const group = this.calm.parent;
+    if (this.pinK < 0.002 || !group || !camera) { if (this.pinned) { for (const m of [this.calm, this.ends]) { m.position.set(0, 0, 0); m.quaternion.identity(); } this.pinned = false; } return; }
+    this.pinned = true;
+    const A = GRIND_BALANCE.at;
+    group.updateWorldMatrix(true, false);
+    const inv = group.getWorldQuaternion(_qb).invert(), cam = camera.getWorldQuaternion(_qc);
+    _qp.copy(inv).multiply(cam).multiply(FLIP).normalize(); // (the lens's turn, in the board's frame)
+    _q.slerpQuaternions(_qi, _qp, this.pinK);
+    // the hub: on a plain rail at (0, at.y, at.z); pinned, at (0, 0, at.z) plus the screen's up by at.y (into the board's frame)
+    _u.set(0, 1, 0).applyQuaternion(cam).applyQuaternion(inv);
+    _h.set(0, A.y, A.z).lerp(_p.set(_u.x * A.y, _u.y * A.y, A.z + _u.z * A.y), this.pinK);
+    _p.set(0, A.y, A.z).applyQuaternion(_q); // (the mesh turned about the board's origin: its hub put back where it belongs)
+    for (const m of [this.calm, this.ends]) { m.quaternion.copy(_q); m.position.copy(_h).sub(_p); }
   }
   dispose() { for (const m of [this.calm, this.ends]) { m.parent?.remove(m); m.geometry.dispose(); } this.calmMat.dispose(); this.endMat.dispose(); }
 }

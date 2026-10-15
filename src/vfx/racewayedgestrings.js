@@ -7,7 +7,10 @@
 //   - THE RUN: small bright motes flowing along both strings the race's way, only round the board: they grow in from nothing a few
 //     metres ahead, run brightest and twice as dense 20 to 30 m ahead (where the eye should be at speed), and shrink away before
 //     the window's end, so none pops (one instanced mesh of about 150 motes, rewritten each frame).
-// The gold is the sun plates'; at night the strings cool toward a moonlit white-blue. Every material is stock and matches a program the
+// Their colour is the labradorite's play (the owner, v204: "the UI elements all read as too blue versus Lachryma labradorite"; it was
+// the sun plates' gold): the beads a dark rim with the oil film's colours (violet, teal, gold, magenta) walking through their middles
+// at a constant rate; the thread and the run the film's hue moving on along the string's length (vfx/oxidation.js featTint, SCHILLER),
+// the run's motes walking it as they flow; at night all of it pales toward the stone's ultraviolet. Every material is stock and matches a program the
 // boot already builds (measured on a primed boot: the additive mapped points of the title's and the garden's motes, the vertex-coloured
 // lines of the debug overlays, the instanced unlit basic of the props; no program added).
 //
@@ -24,26 +27,30 @@
 //   (built by vfx/racewaylooks.js dress(): s the board's place on its line, d its distance off it, night 0..1, group its track's id)   EDGE_LINE.lit
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { featTint, SCHILLER } from './oxidation.js';
+import { LACHRYMA_SCHILLER } from './racewayeffects.js';
 
 /** The numbers: metres between beads (what edgeLines is asked for); the beads' size (m, the dot's width up close) and brightness; the
  *  thread's brightness far off, right ahead and right behind, and how far (m) the window runs back and on; the run: motes' spacing (m),
  *  the window ahead (m from the board, where they grow in and shrink away), the bright band (m ahead), their speed along the string
  *  (m a real second), their radius (m) and brightness at ordinary and in the band; how far off the line (m) the run still shows; the
- *  night's colour and how far toward it. */
+ *  night's colour and how far toward it (the film's colours themselves: vfx/oxidation.js). */
 export const EDGE_STRINGS = {
   step: 1.75,
-  bead: { size: 0.7, k: 1.5 },
+  bead: { size: 0.7, k: 1.15 },
   thread: { far: 0.28, ahead: 0.9, behind: 0.04, back: 30, fore: 60 },
-  run: { spacing: 0.9, from: 2, to: 44, band: [20, 30], ramp: 8, speed: 2.4, r: 0.06, rBand: 0.13, k: 1.3, kBand: 3.4 },
+  run: { spacing: 0.9, from: 2, to: 44, band: [20, 30], ramp: 8, speed: 2.4, r: 0.06, rBand: 0.13, k: 1.3, kBand: 3.4, film: 0.8 },
   near: 60,
-  colour: 0xffc45a, night: { colour: 0xcfe0ff, mix: 0.55 },
+  night: { colour: LACHRYMA_SCHILLER, mix: 0.45 },
 };
 
 /** Which line's run is lit: raceway.line ('main' | 'cavern'), set each frame by the cavern's look (vfx/racewaycavern.js). */
 export const EDGE_LINE = { lit: 'main' };
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const _c = new THREE.Color(), _t = new THREE.Color(), _night = new THREE.Color(EDGE_STRINGS.night.colour), _gold = new THREE.Color(EDGE_STRINGS.colour);
+const _c = new THREE.Color(), _night = new THREE.Color(EDGE_STRINGS.night.colour);
+/** The film's colour at phase ph, paled toward the night's by n (0..1): into out. */
+const filmAt = (ph, n, out) => featTint(ph, out, { bright: 1 }).lerp(_night, n);
 
 let DOT = null; // (the bead's soft dot, one for the game)
 function dotTexture() {
@@ -115,11 +122,10 @@ export class RacewayEdgeStrings {
     if (!this.run) return;
     const E = EDGE_STRINGS, on = s != null && d < E.near && this.line === EDGE_LINE.lit;
     this.t += dt;
-    // the colour of the hour (redone only as it changes)
-    if (Math.abs(night - this.night) > 0.01) {
-      this.night = night; _t.copy(_gold).lerp(_night, night * E.night.mix);
-      this.beadMat.color.copy(_t).multiplyScalar(E.bead.k); this.lastI = -2; this.lastG = undefined; // (the thread recoloured below)
-    }
+    // the colour of the hour (the thread redone only as it changes); the beads' middles walk the film at its constant rate
+    const nk = night * E.night.mix;
+    if (Math.abs(night - this.night) > 0.01) { this.night = night; this.lastI = -2; this.lastG = undefined; } // (the thread recoloured below)
+    filmAt(this.t * SCHILLER.rate, nk, this.beadMat.color).multiplyScalar(E.bead.k);
     // the thread: dim behind the board, brighter ahead (the window rewritten as the board's place moves on a bead); the other groups'
     // strings written at the far glow only when the group changes
     const iNow = on ? Math.floor(s / this.step) : -1;
@@ -135,7 +141,7 @@ export class RacewayEdgeStrings {
             if (dd >= 0) k = T.far + (T.ahead - T.far) * (1 - smooth(T.fore * 0.5, T.fore, dd));
             else k = T.behind + (T.far - T.behind) * smooth(0, T.back, -dd); // (darkest right behind, back to the far glow by T.back)
           }
-          _c.copy(_t).multiplyScalar(k).toArray(col, (S.o + i) * 3);
+          filmAt(i * this.step * SCHILLER.along, nk, _c).multiplyScalar(k).toArray(col, (S.o + i) * 3); // (the film's hue moving on along the string)
         }
       }
       this.thread.geometry.attributes.color.needsUpdate = true;
@@ -158,7 +164,7 @@ export class RacewayEdgeStrings {
           const r = shown ? (ln.band ? R.rBand : R.r + (R.rBand - R.r) * band) * env * end : 0;
           M[o] = M[o + 5] = M[o + 10] = r; M[o + 1] = M[o + 2] = M[o + 4] = M[o + 6] = M[o + 8] = M[o + 9] = 0; M[o + 15] = 1;
           M[o + 12] = _p.x; M[o + 13] = _p.y; M[o + 14] = _p.z;
-          _c.copy(_t).multiplyScalar(R.k + (R.kBand - R.k) * band).toArray(C, c);
+          filmAt((s + ahead) * SCHILLER.along - this.t * SCHILLER.rate, nk, _c).multiplyScalar((R.k + (R.kBand - R.k) * band) * R.film).toArray(C, c); // (the film along the string, walking as the motes flow)
         }
       }
     }
