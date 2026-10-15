@@ -737,3 +737,7 @@ one change:
 - **The folk at the tables** *(proposed)*: Clink and Crock stay; **Glaze** becomes **Celadon**, since a glaze is the Courier's in the
   glossary. Celadon is the shepherd of *L'Astrée* who dressed in grey-green ribbons, and the jade glaze was named after his coat.
 - **Raku's croupier lines** go in `npc/talks.js`, like every line the folk speak; the log rules only report what happens at the table.
+- **At Raku's tables, each game goes by its own name only** (the owner, 2026-10-15: genre labels "cheapen the idea that we're
+  positioning to have very unique game modules ... and also break in-universe immersion"). Querent, Zodiac, Event Horizon, Supernova
+  Run and Nebula Bluff carry no genre label; this overrides CLARITY.md's label rule there. The in-game verbs stand: Set, Run, Steal,
+  Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
