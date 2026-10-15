@@ -88,6 +88,7 @@ export class RacewayFog {
   }
 
   update(dt) {
+    this.hookRelease(this.rOf());
     const R = this.rOf(), want = R?.built !== false && R?.T && R.active !== false ? this.fogOf(R) : 0;
     this.k += (want - this.k) * Math.min(1, dt * RACEWAY_FOG.rate);
     if (this.k < 0.005) { if (this.mesh) this.mesh.visible = false; return; }
@@ -98,5 +99,8 @@ export class RacewayFog {
     this.mat.map.offset.x -= dt * RACEWAY_FOG.creep; // (the cloud creeps the race's way)
   }
 
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() { this.dispose(); }
   dispose() { if (!this.mesh) return; this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mat.dispose(); this.mesh = null; this.R = null; }
 }

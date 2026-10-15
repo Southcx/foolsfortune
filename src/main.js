@@ -1338,7 +1338,7 @@ async function main() {
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.racewayLooks.update(game.rawDt || dt);
-    game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewaySiphons.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
+    game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)

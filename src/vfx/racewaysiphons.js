@@ -102,7 +102,8 @@ export class RacewaySiphons {
 
   update(dt) {
     const R = this.game.raceway, S = R?.siphons;
-    if (S?.groups && S.groups !== this.src && Object.keys(S.groups).length) { this.undress(); this.dress(R, S); }
+    this.hookRelease(R);
+    if (S?.groups && R.active && S.groups !== this.src && Object.keys(S.groups).length) { this.undress(); this.dress(R, S); }
     if (!this.src) return;
     // (the siphons stand only for a licence test that asks for one, on its track: siphons.js shows her group then, S.on; ours instead)
     for (const G of Object.values(this.src)) G.visible = false;
@@ -160,6 +161,9 @@ export class RacewaySiphons {
     this.gulp = Math.min(1.4, 0.6 + power * 0.5);
   }
 
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() { this.undress(); }
   undress() {
     for (const A of this.arches) A.h?.stop?.();
     this.arches = [];

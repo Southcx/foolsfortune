@@ -433,7 +433,8 @@ export class RacewayCavern {
   // ---------------------------------------------------------------- per frame
   update(dt) {
     const R = this.rOf();
-    if (R?.cavern && this.R !== R && this.tried !== R) { this.tried = R; this.dress(R); }
+    this.hookRelease(R);
+    if (R?.cavern && R.active !== false && this.R !== R && this.tried !== R) { this.tried = R; this.dress(R); }
     if (!this.R) return;
     if (this.R.active === false) return;
     this.t += dt;
@@ -453,6 +454,9 @@ export class RacewayCavern {
     for (const [k, l] of this.lamps.entries()) l.intensity = C.crystal.lamp.k * (0.9 + 0.1 * Math.sin(this.t * 0.5 + k * 1.7)) * (1 + this.flash * 0.5);
   }
 
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() { this.undress(); this.R = null; this.tried = null; }
   undress() {
     if (this.cover) OVERHEAD_COVERS.delete(this.cover); this.cover = null;
     this.strings?.dispose(); this.strings = null; EDGE_LINE.lit = 'main';

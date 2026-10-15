@@ -381,6 +381,12 @@ export class RacewayLooks {
       V.play('raceway.ring.draw', { pos: rim, dir: out.clone().sub(rim).normalize() });
     }
   }
+  /** Told when the park's ground is given back (raceway.onRelease): the dressing goes with it, dressed again on its next active frame. */
+  hookRelease(R) { if (R?.onRelease && this.hooked !== R) { this.hooked = R; R.onRelease(() => this.releaseDress()); } }
+  releaseDress() {
+    this.undress(); this.buoys.dispose(); if (this.R?.buoys?.group) this.R.buoys.group.userData.dressed = false;
+    this.markList = []; this.plateAt = []; this.released = true;
+  }
   undress() {
     this.strings?.dispose(); this.strings = null; this.stopGrind(); this.stopBoost();
     for (const m of [this.plates?.glyph, this.plates?.glow, this.marks]) if (m) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
@@ -510,6 +516,7 @@ export class RacewayLooks {
   // ---------------------------------------------------------------- per frame
   update(dt) {
     this.t += dt;
+    { const Rw = this.game.raceway; this.hookRelease(Rw); if (this.released && Rw?.built && Rw.active) { this.released = false; this.dress(Rw); } }
     { const B = this.boardOf(); // (round 3: the boost's look and the combo's gauge, wherever the skiff is ridden)
       this.boost(B);
       const power = B && this.game.raceway?.active ? this.game.raceway.buoys?.power || 0 : 0; // (the buoys' power: round 6)
