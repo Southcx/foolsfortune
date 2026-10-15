@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, RAKU'S BAZAAR (docs/plans/CASINO.md): the casino's moments said in the log (the only text feedback) and kept on the ledger:
 // the chips bought and cashed, a seat taken, a table's big moments (a Major Arcana flipped, a steal, a Fate Clause, a four, Death, a lock,
-// an upgrade), and each game's end with what it won or cost. The words are placeholders for Espada's.
+// an upgrade, a d20 fused, a Supernova, a bluff called, a reveal), and each game's end with what it won or cost. The words are placeholders for Espada's.
 //
 //   bazaar.enter   casino.chips { buy | cash, n }   casino.sit { game }   casino.play { game, what, who, ... }   casino.result { game, won,
 //   net, forfeit }   (each with `by`)
@@ -9,7 +9,7 @@
 //   casinoRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 
-const NAMES = { querent: 'Querent', zodiac: 'Zodiac', eventhorizon: 'Event Horizon' };
+const NAMES = { querent: 'Querent', zodiac: 'Zodiac', eventhorizon: 'Event Horizon', supernova: 'Supernova Run', nebula: 'Nebula Bluff' };
 const RANKS = [null, 'aces', 'twos', 'threes', 'fours', 'fives', 'sixes', 'sevens', 'eights', 'nines', 'tens', 'Pages', 'Knights', 'Queens', 'Kings'];
 
 export function casinoRules({ on, L, log }) {
@@ -27,6 +27,10 @@ export function casinoRules({ on, L, log }) {
     else if (e.what === 'hand') { if (e.who === 'you') { L.inc('casino.querent.hands'); L.hi('casino.querent.best', e.value); } say('record', `${w} ${e.who === 'you' ? 'win' : 'wins'} the round for ${e.value}: ${(e.notes || []).join(', ')}.`, 'hand', 0.3); }
     else if (e.what === 'lock') say('info', `${w} ${e.who === 'you' ? 'lock' : 'locks'} tile ${e.tile} (${e.ability}).`, 'lock', 0.3);
     else if (e.what === 'upgrade') say('info', `${w} ${e.who === 'you' ? 'raise' : 'raises'} the attack die to a d${e.sides}.`, 'upgrade', 0.3);
+    else if (e.what === 'fuse20') say('info', `${w} ${e.who === 'you' ? 'fuse' : 'fuses'} a d20.`, 'fuse20', 0.3);
+    else if (e.what === 'nova') { if (e.who === 'you') L.inc('casino.supernova.novas'); say('record', `Supernova! ${w} ${e.who === 'you' ? 'double your' : 'doubles their'} points to ${e.points}; every hand goes back to four d6.`, 'nova', 0.3); }
+    else if (e.what === 'callout') { if (e.who === 'you' && e.bluff) L.inc('casino.nebula.caught'); say(e.bluff ? 'record' : 'warn', `${w} ${e.who === 'you' ? 'call' : 'calls'} ${e.on === 'you' ? 'your' : `${e.on}'s`} claim of ${e.claim}: ${e.bluff ? `a bluff (${e.worth})` : `it holds (${e.worth})`}.`, 'callout', 0.3); }
+    else if (e.what === 'reveal') say('info', `The raises run out; every hand is shown: ${e.shown.join(', ')}.`, 'reveal', 0.3);
   });
   on('casino.result', (e) => {
     if (e.won) { L.inc('casino.won'); L.inc(`casino.${e.game}.won`); }
