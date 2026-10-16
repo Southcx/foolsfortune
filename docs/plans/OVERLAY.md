@@ -232,9 +232,9 @@ rare moment skips ahead; fighting closes the gap (the design laws). A predicate 
 - **The agent sees what the player sees**: `game.agent.observe` gives a creature's readouts at the same familiarity, never the truth.
 - **Two avenues for the level itself**: the tag's frame grows a pip a level; the log says a level reached once a kind ("You know this
   kind better: OBSERVED"); the Veritome's bestiary page shows it.
-- **Asked of Petra** (creatures.js): `creature.struck { kind, dmg, hp, maxHp, kill, type, k, because?, by }` emitted by `strike` after
-  the blow lands (`k` the type's multiplier, `because` its reason: "weak to Ego"). `feedback/tracking/familiarity.js` counts from it;
-  until it lands, familiarity comes from photographs alone.
+- **The event** (Petra's, 2026-10-16): `creature.struck { kind, dmg, hp, maxHp, kill, type, k, because?, by }` from `strike` after the
+  blow lands (`because`: "weak to <Type>" or "annihilation"), and once for every clapperjar down (main.js `onClapper`). `creatures.add`
+  gives every creature a `maxHp`. `feedback/tracking/familiarity.js` counts from it; `game.agent.observe` reads at the same level.
 - **Asked of Calissa**: the tag and the blow's readout at each level, in the bible's type.
 
 ## 14. The log as the System's terminal (the owner, 2026-10-16: "Full send on the reskin")

@@ -282,6 +282,7 @@ import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
+import { typeOf } from './progress/combat/types.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -383,7 +384,10 @@ async function main() {
     },
     onClapper(c, cause = 'shot') {
       stats.clappers = (stats.clappers || 0) + 1;
-      events.emit('clapper.down', { cause, ally: !!c.ally, raider: !!(c.raider || c.wasRaider), by: cause === 'dismiss' ? 'environment' : 'courier' });
+      const by = cause === 'dismiss' ? 'environment' : 'courier';
+      events.emit('clapper.down', { cause, ally: !!c.ally, raider: !!(c.raider || c.wasRaider), by });
+      // (a clapperjar dies outside creatures.strike, in one blow: the same event, for familiarity's count of downs)
+      events.emit('creature.struck', { kind: 'clapper', dmg: 1, hp: 0, maxHp: 1, kill: true, type: typeOf(cause), k: 1, by });
     },
     onRepaired() {
       stats.total++;
