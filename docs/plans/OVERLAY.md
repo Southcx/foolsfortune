@@ -289,6 +289,10 @@ The overlay has three layers, by register:
   Emocean: the sea's own (rope, tar, Lachryma spray). Espada names each island's; Calissa dresses it; the dress changes when you land.
 - **The player's window colour**: the colour of the dress (15.3).
 So the mock-ups' clay is Anagami's dress, not the overlay's; a window on Margarite is the same window in nacre.
+**Ruled** (the owner, 2026-10-16): the window colour is the colour, the island the material. "Very very resonant with the idea that
+you're in a foreign environment that changes you. (Very Kingdom Hearts 2!)" Prior art: Kingdom Hearts II's command menu, skinned by
+the world you are in (Halloween Town's, Port Royal's, Space Paranoids'), as Sora's own form changes with it. The dress changes under a
+seam when you land, so the moment of arrival is the moment the interface changes: one of the overlay's hero moments.
 
 ### 15.5 Neuralese: our own script, alive
 **What it is now:** Espada's conlang, 22 words (STIL, HUSA, LUNO, HEMA ...: `npc/neuralese.js` LEXICON), written in Latin capitals in
