@@ -240,18 +240,24 @@ precept N"). Precepts 1 to 3 are three materials of meaning, each with one langu
    palette; built surfaces are one modest tiling texture times a palette colour (`vfx/surfaces.js`), a room glaze over it where a potter would
    put one (section 5, "The room glazes"). Clay squashes, wobbles, settles,
    breaks into shards; it never glows except where it holds Lachryma or a kiln's heat.
-2. **Lachryma is matter, never line** (its colours: section 3). How much is shown by **volume, fill and brightness**, never a digit
-   (the tube, the beads, the rim, the filigree lit with its load).
+2. **Lachryma is matter, never line** (its colours: section 3). How much is shown first by **volume, fill and brightness** (the tube,
+   the beads, the rim, the filigree lit with its load, the bottles draining). A number may stand beside it, never in it: the System's
+   readout is labradorite line in the System's type (OVERLAY.md rule 4, two avenues), and the matter is never replaced by its digit.
 3. **The Mind is black labradorite, drawn in lines** (`vfx/labradorite.js`): lines are the schiller, softly rainbow toward pale
    ultraviolet, additive, a pixel wide at 480 lines; surfaces are ink with the schiller rising at the turn. A wireframe bursts in once,
    then holds or turns at a constant rate; nothing blinks at a variable rate; low-poly on purpose (under ~40 segments). Prior art:
    Vagrant Story's sphere, Parasite Eve's dome, Gearbolt's closing frames, Rez's lock squares, ZoE's ring radar.
 4. **Gold is yours:** a reward, an achievement, a rarity, kintsugi. Kept off passive marks (and off the overlay: gold means won).
 5. **Reach is a volume on the body; state is a frame on the target** (a dome round the Courier, a closing frame or glyph on the thing).
-6. **Magnitude is hue, size and closure:** a ring's radius, a frame closing, an arc's fill, cool (far, safe) to hot (near, now). No
-   numerals.
-7. **Words live in windows** (the log, the dialogue box, menus); the world gets punctuation: a glyph, a chevron, a frame, a bar. Key
-   help belongs in the Codex or is said once by the log.
+6. **Magnitude is hue, size and closure first:** a ring's radius, a frame closing, an arc's fill, cool (far, safe) to hot (near, now).
+   A **world mark** (a ring, a bead, a bracket, a glyph pop) still carries no numeral; the number goes on its **tag** or in a **System
+   window** (OVERLAY.md section 8), in the System's type, and it rolls when it changes (rule 6).
+7. **Words live in the System's surfaces:** a tag pinned to its thing, a System window summoned in the air, the Book, the title toast,
+   Raku's tables (OVERLAY.md section 8), and the log and the dialogue box. They are never stock (OVERLAY.md rule 5: the house's frame,
+   the System's type, an entrance). A world mark stays punctuation: a glyph, a chevron, a frame, a bar. The overlay reads what is; a
+   sentence about what happened is the log's. Key help belongs in the Codex or is said once by the log. (Reworded 2026-10-16 on the
+   owner's direction of 2026-10-15; the old "never a digit / no numerals / words only in windows" held for the ring and the world marks,
+   and still does.)
 8. **Comfort:** large wire volumes are low alpha, depth-tested, shown only while choosing; nothing large changes brightness at a
    variable rate; motion is things actually moving.
 9. **Motion is exaggerated, whimsical, grounded** (the owner: Monster Hunter's way):
