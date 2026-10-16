@@ -497,8 +497,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   world mark (no words), the dialogue box (the folk's).
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
-- **the neuralese script** (working name; OVERLAY.md 15.5, a plan) — neuralese written in our own featural glyphs on a hex lattice,
-  decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
+- **the neuralese script** (Espada's, ruled 2026-10-16; `docs/LORE.md`; OVERLAY.md 15.5) — neuralese in our own featural glyphs, a syllable a
+  hex cell, decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
+- **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
+  (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
