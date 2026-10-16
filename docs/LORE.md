@@ -743,7 +743,8 @@ one change:
   Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
 
 ### The neuralese script *(OVERLAY.md 15.5; Espada's orthography, proposed, 2026-10-16)*
-Neuralese is written in **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
+Neuralese is written in **the Comb** *(the script's name, proposed)*: a honeycomb's cells hold it, the ancients wrote on wax
+tablets (honeycomb wax), and a comb's teeth are its strokes. It is **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
 who studies can read it. Prior art: **Hangul** (King Sejong's letters draw the tongue and lips that make the sound, and syllables pack
 into blocks); **Tunic** (one rune a syllable, consonants outside, vowels inside, solved by players with no key); **Fez**; **Arrival**'s
 logograms for the way a word condenses. Each glyph is built from the strokes of one cell, so a hex automaton can settle into it.
