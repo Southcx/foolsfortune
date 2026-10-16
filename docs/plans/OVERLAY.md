@@ -200,18 +200,22 @@ the terminal; https://claude.ai/artifact/WM69qe38CSnLAJsjLJ5NCo, private to the 
 | Persona 5 | kinetic type, diagonals, a splash for the big moment; labels tilt 3 to 12°, **numbers never tilt**; three colours a screen | red-black-white as a house palette: ours is clay, ink, schiller, gold |
 | TWEWY, Digimon World | the psychic layer marks the real street; pins and glyphs belong to the thing | |
 
-### 10.2 The System's type (three slots; OFL, bundled)
+### 10.2 The System's type: a name is carved, a count is computed, a line is read (the owner, 15.1)
 | slot | face | size at the 480-line present (whole dots, upscaled ×k) | use |
 |---|---|---|---|
-| **display** (`--f-display`) | **Jersey 15** | hero 36 to 72 px (4 to 8 dots), header 14 px | the hero, window headers, the title, the maul |
-| **reading** (`--f-read`) | **DotGothic16** (already the System's) | 14 px, never 12, 16 or 18 | tags, rows, the log, every readout; kana for the glyph margins |
-| **numerals** (`--f-num`) | the slot's face with `tnum` | as its slot | every number that can change rolls: an odometer per digit (0.4 s, 50 ms stagger, overshoot), a slot reel for a word |
-Text sits on whole pixels, unsmoothed (`-webkit-font-smoothing: none`), an ink outline one dot wide where it crosses the world. Labels may
-tilt; numbers stand square. `--f-title` and `--f-lore` stay the clay world's (the title, the lore pages), never the System's.
+| **names** (`--f-name`) | **Cinzel** (bundled), small caps for a heading | 14 to 36 px; the title toast's title up to 72 | a window's heading, a place, a title, a lore name, a Major Arcana: the fantasy |
+| **counts** (`--f-count`) | **Jersey 15** with `tnum` | hero 36 to 72 px, a row's label or number 14 px | every number, a rank letter, a blow's readout, a label in a row: the cyber |
+| **reading** (`--f-read`) | **DotGothic16** (already the System's) | 14 px, never 12, 16 or 18 | every line of words: a tag's line, a row's line, the log |
+Every count that can change rolls: an odometer per digit (0.4 s, 50 ms stagger, overshoot), a slot reel for a word. Text sits on whole
+pixels, unsmoothed; an ink outline one dot wide where it crosses the world. Labels may tilt; numbers stand square. No other face.
 
 ### 10.3 The frame (a System window)
-- **Matter: tenmoku.** The window's body is clay-ink, an iron-black glaze (warm near-black, `#17111f` to `#2a1a14`, 92% or more,
-  pooling lighter at its edges), never a see-through navy slab.
+- **Matter: the player's window colour, fired as the island's dress** (15.3, 15.4). The window's body is opaque (92% or more), the
+  window colour (`ui/theme.js` THEMES: kiln, oxblood, midnight, verdigris, umber, and tenmoku, celadon, shino, lapis added) as the
+  glaze, pooling lighter at its edges; on Anagami it is glazed clay with kiln marks and kintsugi, on Margarite nacre and lamp brass, on
+  Entropolis etched glass and amethyst, at sea rope, tar and spray (Espada names each). Never a see-through navy slab.
+- **In three dimensions where it earns it** (15.2): the frame may be a real extruded mesh with cast corner bosses, turning a few degrees
+  in the overlay's own scene; the Lachrimeter a glass reservoir holding the pool. Petra's layer, my meshes.
 - **Line: labradorite.** A 1-dot outer keyline and a 1-dot inner one 2 dots in, walking the schiller (10.4), chamfered at 45° on two
   opposite corners, one corner folded (Dennō's), a corner glyph in each of the others.
 - **The header:** a tab standing off the top edge, cut on a diagonal, its name in the display face (`SYSTEM // STATUS`) and its kana
@@ -232,17 +236,19 @@ tilt; numbers stand square. `--f-title` and `--f-lore` stay the clay world's (th
 | a feeling | its own colour, only where that feeling is meant | `progress/weather.js` |
 | unreadable | flat black with a hairline schiller edge and `NO DATA` | |
 | damage | the clay's crack, on matter only | |
-A screen holds three colours at once at most, besides the clay behind it.
+**Three registers** (15.4): the System's (the line, the type, the readout grammar: the same everywhere), the island's dress (the
+frame's material, ornament and margin motif), the player's window colour (the dress's glaze). A screen holds three colours at once at
+most, besides the world behind it.
 
 ### 10.5 The texture layer (meaningless, alive, cut first)
 | motif | where | density | speed |
 |---|---|---|---|
-| neuralese glyph rain | a window's margins, the screen's edges, the log's gutter | 8 to 12% of cells lit, head bright, tail of 8 | 0.15 to 0.3 screen heights a real second, columns ±40% |
+| **the neuralese script, alive** (15.5) | a window's margins, the screen's edges, the log's gutter | a cellular automaton on the hex lattice (a hexagonal Life, B2/S34, or Lenia): 8 to 12% of cells alive, gliders for idle chatter | a generation every 0.15 to 0.3 real s, each cell easing in and out over 0.15 s (never a strobe); a word **condenses** into a still life; a **flow field** (curl noise) combs motes into a glyph for a big moment |
 | hex mesh | behind rows | 5% alpha, 12 px cells | still; one slow drift of brightness |
 | ruler ticks | window edges, round a focused tag | a tick every 4 px, a major every 5th | moves only when its thing moves |
 | barcode strip, hex ids (`0x5LJ-0217`) | a window's foot, a tag's foot | one | redrawn on a change of state |
 | scanlines, a phosphor bloom | the log, the scan band of an entrance | 1 line in 3 at 6% | the band once, on entrance |
-Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
+The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
 
 ### 10.6 The hierarchy (sizes at the 480-line present)
 | layer | size | rule |
