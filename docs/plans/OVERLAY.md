@@ -181,18 +181,88 @@ What each number that matters already has, and what it lacks. A cell marked "?" 
 | a creature's state | its body (temper), its aura | the bracket at its eyes, the capture circle | its barks | its down | a tag with its name, EmO and statuses |
 | a ship's hits on the rail | the hull's damage | ? | ? | the failure | to check on the rail |
 
-## 10. The style bible (Calissa's to write; what Dovina asks of it)
+## 10. The style bible (Calissa's; a target, never an inventory; first drawn 2026-10-16)
 
-A target, never an inventory of what exists. It names:
-- **The references board**: Dennō Coil first, then section 0's list; a still from each, with what is taken from it.
-- **The System's type**: a display face and a reading face (pixel-born at 480 lines, upscaled whole), and how numbers roll.
-- **The frame**: a System window's border, corners, header and glyphs, in labradorite line on clay matter; how it unfolds and closes.
-- **The palette of the overlay**: the labradorite's schiller as its light, Lachryma's colours as its matter, gold for won; the feelings'
-  colours where a feeling is meant.
-- **The texture layer**: what fills the margins (data rain, hex, neuralese glyphs, scanlines), its density and speed.
-- **The hierarchy's sizes**: the hero, the readout, the texture, in pixels at the 480-line present.
-- **The banned list** (rule 5), with a picture of each so a builder knows it on sight.
-- **Mock-ups before code**: a board for each first case (a tag, the Codex as a System window, the title toast) for the owner to judge.
+**The look in one line: the System's sight is black labradorite light laid over a world of clay; it writes in dots, it is summoned,
+and one thing at a time is huge.** Dennō Coil's glasses over Persona 5's nerve: the city stays warm and solid, the overlay is cold
+line and moving type, and the two never trade materials. The mock-up board (the three first cases, then the familiarity ladder and
+the terminal) is the picture of this section; the owner judges it before anything is built (section 11, step 1).
+
+### 10.1 The references board (what each gives; stills on the board, never shipped)
+| reference | taken | left behind |
+|---|---|---|
+| **Dennō Coil** (first) | the cyber layer belongs to the place; two inks (pale line = known, flat black + `NO DATA` = unreadable); a window unfolds at the hands; mosaic blocks mean illegal | its daylight pastel: our light is the schiller on ink |
+| Watch Dogs' profiler | detail by gaze: a dot far, a name mid, the full tag on focus; a leader line from the thing to its tag; the scan glitches in | the corporate grey and the sans |
+| the isekai status window | `LABEL ······ value` rows, rank letters in bracket squares, sections split by a hairline and a glyph, never by boxes | the blue glass slab |
+| Log Horizon's menus | windows stand in the air at chest height, angled to the eye, stacked with a clear order; a hex lattice at 5% behind rows | the frosted white (kept only for the Book's reading pages) |
+| Greed Island's "Book!" | the binder summoned with a word; tabs on its edge; a slot shows its card or a ghost number when empty | |
+| .hack//IMOQ | the UI is the fiction (the System is the game's code); one glitch means the data drain | the desktop chrome |
+| Persona 5 | kinetic type, diagonals, a splash for the big moment; labels tilt 3 to 12°, **numbers never tilt**; three colours a screen | red-black-white as a house palette: ours is clay, ink, schiller, gold |
+| TWEWY, Digimon World | the psychic layer marks the real street; pins and glyphs belong to the thing | |
+
+### 10.2 The System's type (three slots; OFL, bundled)
+| slot | face | size at the 480-line present (whole dots, upscaled ×k) | use |
+|---|---|---|---|
+| **display** (`--f-display`) | **Jersey 15** | hero 36 to 72 px (4 to 8 dots), header 14 px | the hero, window headers, the title, the maul |
+| **reading** (`--f-read`) | **DotGothic16** (already the System's) | 14 px, never 12, 16 or 18 | tags, rows, the log, every readout; kana for the glyph margins |
+| **numerals** (`--f-num`) | the slot's face with `tnum` | as its slot | every number that can change rolls: an odometer per digit (0.4 s, 50 ms stagger, overshoot), a slot reel for a word |
+Text sits on whole pixels, unsmoothed (`-webkit-font-smoothing: none`), an ink outline one dot wide where it crosses the world. Labels may
+tilt; numbers stand square. `--f-title` and `--f-lore` stay the clay world's (the title, the lore pages), never the System's.
+
+### 10.3 The frame (a System window)
+- **Matter: tenmoku.** The window's body is clay-ink, an iron-black glaze (warm near-black, `#17111f` to `#2a1a14`, 92% or more,
+  pooling lighter at its edges), never a see-through navy slab.
+- **Line: labradorite.** A 1-dot outer keyline and a 1-dot inner one 2 dots in, walking the schiller (10.4), chamfered at 45° on two
+  opposite corners, one corner folded (Dennō's), a corner glyph in each of the others.
+- **The header:** a tab standing off the top edge, cut on a diagonal, its name in the display face (`SYSTEM // STATUS`) and its kana
+  beside it in the reading face; a strip under it with the path (`VESSOUL ▸ THE COURIER`), the game hour and the close key.
+- **Sections** split by a hairline and a glyph, rows as `LABEL ······ value`, tabs as binder tabs of clay on the window's side.
+- **Entrance (0.15 to 0.35 real s):** a point → a line at the summoning hand → the frame unfolds → the body scans in top to bottom (a
+  bright band) → the header lands last. **Exit:** the reverse in two thirds the time. Threads of the schiller run from the bracelet to
+  the window's corners while it is open (it is the bracelet's sight).
+- **A tag** is a small window: no tab; a bracket at its thing's eyes, a leader line (one bend) to a plate with the name in the display
+  face, the readouts in the reading face, a pip a familiarity level on its frame (section 13), a barcode of its id at its foot.
+
+### 10.4 The palette
+| role | colour | data |
+|---|---|---|
+| line, type, the System's light | the schiller walking violet → teal → gold → magenta along the line and over time (never stuck on one hue) | `FILM` stops `#4c0fb3`, `#0a8cbf`, `#f2b82e`, `#d91a80`; ink `#17111f`; `schillerInk`, `vfx/oxidation.js` |
+| matter you hold | Lachryma's own | tint `#7fdcff`, schiller `#a48cf2`, deep `#2e1a52` |
+| won | gold, only for a reward, a title, a rank won | the kintsugi gold |
+| a feeling | its own colour, only where that feeling is meant | `progress/weather.js` |
+| unreadable | flat black with a hairline schiller edge and `NO DATA` | |
+| damage | the clay's crack, on matter only | |
+A screen holds three colours at once at most, besides the clay behind it.
+
+### 10.5 The texture layer (meaningless, alive, cut first)
+| motif | where | density | speed |
+|---|---|---|---|
+| neuralese glyph rain | a window's margins, the screen's edges, the log's gutter | 8 to 12% of cells lit, head bright, tail of 8 | 0.15 to 0.3 screen heights a real second, columns ±40% |
+| hex mesh | behind rows | 5% alpha, 12 px cells | still; one slow drift of brightness |
+| ruler ticks | window edges, round a focused tag | a tick every 4 px, a major every 5th | moves only when its thing moves |
+| barcode strip, hex ids (`0x5LJ-0217`) | a window's foot, a tag's foot | one | redrawn on a change of state |
+| scanlines, a phosphor bloom | the log, the scan band of an entrance | 1 line in 3 at 6% | the band once, on entrance |
+Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
+
+### 10.6 The hierarchy (sizes at the 480-line present)
+| layer | size | rule |
+|---|---|---|
+| **hero** | 36 to 72 px, display face | one at a time on screen (a title, a maul, the claim, a window's total) |
+| **readout** | 14 px reading face, 14 to 27 px for its key number | beside its thing, on its tag or row |
+| **texture** | 8 to 14 px, 20 to 45% opacity | never over a word, never in the hero's box |
+Detail by gaze: a creature far off shows a dot, mid-range its name, on focus its full tag; a tag holds its screen size whatever the
+distance and fades past 30 m.
+
+### 10.7 The banned list (rule 5), with what replaces each
+| banned | how to know it | instead |
+|---|---|---|
+| the dark see-through rounded rectangle | `border-radius` + `rgba(0,0,0,.5)`-like fill (13 windows today root in `ui/theme.js`'s `W()`) | tenmoku matter, chamfered and folded corners, the keylines |
+| a browser's font | Trebuchet, Segoe, Georgia, `monospace`, `serif` | the three slots (10.2) |
+| a plain table | ruled cells, a header row | `LABEL ······ value` rows, hairline + glyph sections |
+| a drop-shadowed card | `box-shadow: 0 6px 14px` | the keyline and the glaze pooling at the edge |
+| a web page's button | a pill, a bevel, a hover tint | a slot in the frame: its key in a bracket square, the schiller lit when chosen |
+| appearing | `display` or opacity snapping on | an entrance (10.3) |
+The board shows a picture of each beside its replacement.
 
 ## 11. The worklist (in order)
 
