@@ -20,6 +20,7 @@
 //   post.screen = { on, render(post, src) -> target, compile(renderer, post) }   a screen pass on the light-linear frame, before the glow (vfx/glitch.js)
 //   post.volumes = [{ on, render(post, src, camera) -> target, compile(renderer, post) }]   screen volumes, each its own pass before the screen
 //                                      pass, drawn only while `on` (CROSSING, Calissa's: the caster shaders' lensing and time grade, vfx/caster/)
+//   post.overlay = { render(renderer) }  drawn last, into the canvas, after the tone curve and the grade (render/overlayscene.js)
 //   post.target                        the buffer to compile shaders against (it renders without the tone curve)
 //   post.compile()                     its own passes compiled (the warm-up: they are not in the scene, so compileAsync(scene) never sees them)
 // ---------------------------------------------------------------------------------------
@@ -156,7 +157,7 @@ export class Glow {
 
   render(scene, camera) {
     const r = this.r;
-    if (!this.on) { r.render(scene, camera); return; }
+    if (!this.on) { r.render(scene, camera); this.overlay?.render(r); return; }
     this.resize();
     const prev = r.getRenderTarget(), auto = r.autoClear;
     r.setRenderTarget(this.scene); r.autoClear = true;
@@ -180,5 +181,6 @@ export class Glow {
     u.uGlow.value = T.visual.glow ?? 0; u.uGrade.value = T.visual.grade ?? 0;
     this.pass(this.comp, prev);
     r.autoClear = auto;
+    this.overlay?.render(r); // (the overlay's own 3D layer, over the finished frame: the glow and the grade never take it)
   }
 }

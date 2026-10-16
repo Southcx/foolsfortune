@@ -283,6 +283,7 @@ import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { typeOf } from './progress/combat/types.js';
+import { OverlayScene } from './render/overlayscene.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -414,6 +415,7 @@ async function main() {
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.post = new Glow(renderer);
+  game.overlayScene = game.post.overlay = new OverlayScene(game, renderer); // (the overlay's own 3D layer: frames, the reservoir, render/overlayscene.js)
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
   game.stormWarp = new StormWarp(game); game.umbral = new Umbral(game); // (the crossing's psychic storm and the world under the Emocean's surface: vfx/stormwarp.js, vfx/umbral.js; their screen share rides the glitch's pass)
   game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
@@ -1020,6 +1022,7 @@ async function main() {
   for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
