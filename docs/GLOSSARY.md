@@ -638,6 +638,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seed** (`?seed=N`, `game.seed`) — the number the session's chance is drawn from; a stream is one module's own draw. *Not:* a Well's
   `wellSeed`.
 - **the agent** (`game.agent`, `src/agent/agent.js`) — the game as an AI player sees and drives it. *Not:* a creature's mind.
+- **the System's interface** (working name; `docs/plans/AGENT-INTERFACE.md`, a plan) — the game as any agent reaches it: readouts as data (what
+  the overlay draws), intents, time, resources; a protocol (MCP today) is a skin over it. *Not:* the agent (its first client).
 - **playtest** (`npm run playtest`) — a scenario an agent plays to its goals. The stress test fuzzes; a playtest plays.
 - **a sweep** (`scripts/sweeps/<room>.mjs`) — one room entered, worked and left headless, a PASS/FAIL line a check. *Not:* the stress test, a
   playtest, the Soul Brush's mop, the kick's leg sweep.

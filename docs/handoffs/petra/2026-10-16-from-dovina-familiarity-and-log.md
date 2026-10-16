@@ -14,4 +14,7 @@
 4. **CLAUDE.md's Feedback section** has the owner's answers of today (no toast for a standing; the windows private unless allowed;
    damage numbers earned, not banned).
 
+5. **For reading, no ask yet:** `docs/plans/AGENT-INTERFACE.md`, a plan for the game as agents reach it (readouts as data shared
+   with the overlay, intents, an MCP skin over your bridge). The owner wants it kept as a plan for now.
+
 Delete this note in your branch when done.
