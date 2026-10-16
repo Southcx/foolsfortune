@@ -57,15 +57,16 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   Petra numbers it at the gate (`scripts/casebook-number.mjs`); `npm run check` fails on a number used twice.
 
 ## Feedback
-- **The log (`src/feedback/gamelog.js`) is the only narration**: what happened is said there. No banners, floating damage numbers or
-  kill-feed (the basement's course timer and lap circuit panel too: the owner, 2026-10-07). A
+- **The log (`src/feedback/gamelog.js`) is the only narration**: what happened is said there. No banners or kill-feed (the basement's
+  course timer and lap circuit panel too: the owner, 2026-10-07); a blow's number is a readout earned by familiarity (OVERLAY.md 13). A
   feature emits an event (`game.events.emit`) and gets a rule in `tracking.js` (or `feedback/tracking/*.js`); a refusal at the point of
   use may `log.say` with a `throttle`. Payloads never use `name` or `t` (the bus writes its own).
 - **The overlay reads what is** (the owner, 2026-10-15: Dennō Coil, Log Horizon's spatial menus, the isekai status window, Greed
   Island's "Book!", Watch Dogs, .hack, Persona 5; `docs/plans/OVERLAY.md`): the System's sight laid over the world, diegetic and spatial,
   maximal with a strict hierarchy. It may carry words and numbers in the System's own type (a tag on a thing, a window summoned before
   the Courier, a rolling count); it never narrates. **The UI is never stock**: no default panel, font or button.
-- **One toast: a title** (the owner, 2026-10-15): an achievement that awards a title opens the one pop-up; the log says it too.
+- **One toast: a title** (the owner, 2026-10-15): an achievement that awards a title opens the one pop-up; the log says it too (a standing gets none). The windows are
+  the player's own, seen by no one else unless allowed (the owner, 2026-10-16).
 - **Every number that matters has two avenues or more** (the owner, 2026-10-15: the Lachrymato Bottles drain as well as the Lachrimeter):
   the body or the world, the overlay, a sound, and the log when it changes.
 - **Ambition first, cost after** (the owner, 2026-10-15): a look is built to its target and measured at the gate (`npm run perf`); a
