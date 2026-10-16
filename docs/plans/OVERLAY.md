@@ -286,7 +286,7 @@ The overlay has three layers, by register:
 - **The System's** (the same on every island and at sea): the labradorite line, the three faces, the readout grammar, the hierarchy.
 - **The island's dress** (island-local): the frame's material and ornament, the texture layer's motif, the toast's flourish. Anagami:
   glazed clay, kiln marks, kintsugi. Margarite: nacre and lamp brass, the King's marque. Entropolis: etched glass and amethyst. The
-  Emocean: the sea's own (rope, tar, Lachryma spray). Espada's names (proposed): **Clay** (Anagami), **Nacre** (Margarite: mother-of-pearl, lamp brass, the marque as a hallmark),
+  Emocean: the sea's own (rope, tar, Lachryma spray). Espada's names (ruled by the owner, 2026-10-16): **Clay** (Anagami), **Nacre** (Margarite: mother-of-pearl, lamp brass, the marque as a hallmark),
   **Glass** (Entropolis: etched glass, amethyst, frost geometry), **Brine** (the Emocean: rope, tar, salt crust, knots, Lachryma spray).
   Calissa dresses each; the dress changes when you land.
 - **The player's window colour**: the colour of the dress (15.3).
@@ -310,11 +310,12 @@ Matrix's rain: not ours, and to go.
   glyph is a still life. Idle chatter in the margins is gliders. **A flow field** (curl noise, Tyler Hobbs' flow fields) carries motes
   that comb into a glyph's strokes, for big moments (a title, an awakening's line, reprogramming a mind). Prior art: Arrival's
   logograms (ink condensing into a ring), Conway, Bert Chan's Lenia, the demoscene.
-- **Espada's orthography** (proposed, 2026-10-16; `docs/LORE.md`, "The neuralese script", on `claude/espada-lore`): a syllable is one
+- **Espada's orthography** (ruled by the owner, 2026-10-16: "I'm on board"; `docs/LORE.md`, "The neuralese script", on `claude/espada-lore`): a syllable is one
   flat-topped hex cell; consonants are strokes inside its border (top half the onset, bottom the coda; the edge the place, the stroke the
   manner, a dot for voiced); vowels are spokes from the centre (*a* the dot alone); a word is a chain of cells, a modifier half a row
   below, an empty cell a break, a six-spoke star a sentence's end. Every stroke lies on the hex sub-lattice, so the automaton can settle
-  into it.
+  into it. **It must read at the overlay's reading size** at the 480-line present, not only in a close-up: Calissa proves a sentence
+  at real size before the script is built into a surface.
 - **Owners:** Espada, the orthography (which sounds, which strokes, how a word is built); Calissa, the glyphs' drawing and the
   automaton's and flow field's look; Dovina, the decipherment's progression (the Crib Sheet's ladder, what reading the script earns).
 
