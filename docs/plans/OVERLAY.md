@@ -248,7 +248,9 @@ most, besides the world behind it.
 | ruler ticks | window edges, round a focused tag | a tick every 4 px, a major every 5th | moves only when its thing moves |
 | barcode strip, hex ids (`0x5LJ-0217`) | a window's foot, a tag's foot | one | redrawn on a change of state |
 | scanlines, a phosphor bloom | the log, the scan band of an entrance | 1 line in 3 at 6% | the band once, on entrance |
-The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
+**The Comb's reading size, measured (2026-10-16):** a neuralese word written to be read sets its cell at 28 dots (two reading
+lines tall) at the 480-line present: every feature stands clear there; at 14 dots six features still touch, so at one line's height the
+Comb is texture, never a sentence to read. The board's section 04 counts the merges size by size. The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
 
 ### 10.6 The hierarchy (sizes at the 480-line present)
 | layer | size | rule |
