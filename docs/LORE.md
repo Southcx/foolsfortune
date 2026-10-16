@@ -741,3 +741,51 @@ one change:
   positioning to have very unique game modules ... and also break in-universe immersion"). Querent, Zodiac, Event Horizon, Supernova
   Run and Nebula Bluff carry no genre label; this overrides CLARITY.md's label rule there. The in-game verbs stand: Set, Run, Steal,
   Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
+
+### The neuralese script *(OVERLAY.md 15.5; Espada's orthography, proposed, 2026-10-16)*
+Neuralese is written in **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
+who studies can read it. Prior art: **Hangul** (King Sejong's letters draw the tongue and lips that make the sound, and syllables pack
+into blocks); **Tunic** (one rune a syllable, consonants outside, vowels inside, solved by players with no key); **Fez**; **Arrival**'s
+logograms for the way a word condenses. Each glyph is built from the strokes of one cell, so a hex automaton can settle into it.
+
+**The cell.** One flat-topped hexagon is one **syllable**. Its border belongs to the lattice (the System's line). The strokes sit just
+inside the border, so cells can share walls and the strokes are never lost.
+- **The top half is the onset** (the consonant before the vowel), **the bottom half the coda** (the consonant after). Each half has three
+  edges: left, middle and right.
+- **The edge says where in the mouth** (read like a face in profile looking left: front to back, left to right):
+  - **lips** on the left edge (p, f, v, m);
+  - **tongue tip** on the middle edge (t, d, s, z, sh, th, n, l, r);
+  - **the back of the mouth** on the right edge (k, g, h).
+- **The stroke says how:**
+  - a **stop** is a plain line (p, t, k, d, g);
+  - a **fricative** is a line with a **tick** across its middle (f, v, s, z, h); **sh** has **two ticks**, **th** a full **cross**;
+  - a **nasal** is a **doubled line** (m, n);
+  - a **liquid** is a **curve**: **l** bows inward, **r** bows outward.
+  - **Voiced** sounds (d, g, v, z) carry a **dot** at the stroke's middle, inside the cell. Voice is a dot because voice is a hum.
+- **The vowel lives at the centre**, as a spoke from the centre to a corner:
+  - **i** to the upper-left corner, **u** to the upper-right;
+  - **e** to the left corner, **o** to the right;
+  - **a**, the open mouth, is the **centre dot** alone.
+  - High vowels point up, front vowels left and back vowels right, as the tongue does. A **diphthong** is two spokes in order: SHAI
+    has the a-dot and the i-spoke; VOYD has the o-spoke and the i-spoke.
+- **A cluster** (ST in STIL, GR in GRAV) puts its first consonant on the edge and its second as a **shorter parallel stroke just
+  inside** its own edge. Read outer, then inner.
+- **X** (PEXA) is written as a k that ends one syllable and an s that begins the next: PEK·SA.
+
+**The word.** A word is its syllables in order, cells joined in a short honeycomb chain, read left to right (STIL is one cell; DIPSA
+two, DIP·SA). **A modifier** (LON, DEO: the lexicon's `mod`) hangs half a cell below the word it changes, in the next row of the
+lattice, so grammar is a place on the honeycomb. **A word break** is one empty cell. **The end of a sentence** is a cell with all six
+spokes, the star.
+
+**Why it teaches without a tutorial.** The Crib Sheet and the ostraca already pair a word with its English. With this script they pair
+the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
+and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
+
+**The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each:
+- **Clay**, Anagami: glazed clay, kiln marks, kintsugi gold in the joins (the given).
+- **Nacre**, Margarite: mother-of-pearl and lamp brass, the King's marque stamped like a hallmark. *Margarite* is the pearl (Greek
+  *margaritēs*), and the lamps burn aqua regia, so the frame is lustre and brass.
+- **Glass**, Entropolis: etched glass and amethyst, frost geometry. Entra Polearis is entropy and the pole: a clear, cold, faceted
+  register, and amethyst (Greek *a-methystos*, "not drunk") is the island's charm for a clear head.
+- **Brine**, the Emocean: rope, tar and salt crust, sailors' knots, Lachryma spray beading on the frame. The sea's own, worn by every
+  ship.
