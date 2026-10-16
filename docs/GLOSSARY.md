@@ -497,6 +497,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   world mark (no words), the dialogue box (the folk's).
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
+- **the neuralese script** (working name; OVERLAY.md 15.5, a plan) — neuralese written in our own featural glyphs on a hex lattice,
+  decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
@@ -638,6 +640,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seed** (`?seed=N`, `game.seed`) — the number the session's chance is drawn from; a stream is one module's own draw. *Not:* a Well's
   `wellSeed`.
 - **the agent** (`game.agent`, `src/agent/agent.js`) — the game as an AI player sees and drives it. *Not:* a creature's mind.
+- **the System's interface** (working name; `docs/plans/AGENT-INTERFACE.md`, a plan) — the game as any agent reaches it: readouts as data (what
+  the overlay draws), intents, time, resources; a protocol (MCP today) is a skin over it. *Not:* the agent (its first client).
 - **playtest** (`npm run playtest`) — a scenario an agent plays to its goals. The stress test fuzzes; a playtest plays.
 - **a sweep** (`scripts/sweeps/<room>.mjs`) — one room entered, worked and left headless, a PASS/FAIL line a check. *Not:* the stress test, a
   playtest, the Soul Brush's mop, the kick's leg sweep.

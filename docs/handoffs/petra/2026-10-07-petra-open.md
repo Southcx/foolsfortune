@@ -21,3 +21,7 @@ still open, one line each, with its source. The owner's calls are marked.)
 - **Co-op, still to build**: the tools in the siblings' hands, the guests'
   shared errand (the Dunemaw run, host-owned), siblings a guest can see, the room's lag with two real people (T114).
 - **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).
+- **The log as the System's terminal** (Dovina's relay of the owner's "full send", 2026-10-16; OVERLAY.md 14): `feedback/gamelog.js`
+  is mine, the look Calissa's. Mine: lines typed in (about 0.15 real s a line), a channel's prompt glyph at its head, a game-hour stamp,
+  the hero line's hook for the glitch, a command echoed before its reply; rules and events unchanged. Built once Calissa's type and
+  colours are in, so the module is reskinned once, not twice.

@@ -302,9 +302,9 @@ rare moment skips ahead; fighting closes the gap (the design laws). A predicate 
 - **The agent sees what the player sees**: `game.agent.observe` gives a creature's readouts at the same familiarity, never the truth.
 - **Two avenues for the level itself**: the tag's frame grows a pip a level; the log says a level reached once a kind ("You know this
   kind better: OBSERVED"); the Veritome's bestiary page shows it.
-- **Asked of Petra** (creatures.js): `creature.struck { kind, dmg, hp, maxHp, kill, type, k, because?, by }` emitted by `strike` after
-  the blow lands (`k` the type's multiplier, `because` its reason: "weak to Ego"). `feedback/tracking/familiarity.js` counts from it;
-  until it lands, familiarity comes from photographs alone.
+- **The event** (Petra's, 2026-10-16): `creature.struck { kind, dmg, hp, maxHp, kill, type, k, because?, by }` from `strike` after the
+  blow lands (`because`: "weak to <Type>" or "annihilation"), and once for every clapperjar down (main.js `onClapper`). `creatures.add`
+  gives every creature a `maxHp`. `feedback/tracking/familiarity.js` counts from it; `game.agent.observe` reads at the same level.
 - **Asked of Calissa**: the tag and the blow's readout at each level, in the bible's type.
 
 ## 14. The log as the System's terminal (the owner, 2026-10-16: "Full send on the reskin")
@@ -319,6 +319,63 @@ ALTIMIT desktop is The World's. Petra's module (`feedback/gamelog.js`), Calissa'
 - **The texture layer lives in its margins**: neuralese glyphs running down the gutter, a line of hex under a record; never over a word.
 - **The hero line**: an achievement, an art learned, a title: its line is printed bigger and glitches in (the glitch's own pass, short).
 - **Commands answer as a terminal does**: `/howto` and its kind echo the typed command, then the System's reply.
+
+## 15. The owner's second round (2026-10-16): fantasy beside cyber, 3D, the window colour, the islands, a script of our own
+
+> "We're aiming for a mixture of cyber and fantasy; I don't see a problem with some Cinzel too. Also, what about using a combo of 3D
+> elements for things like window bordering or a lachrimeter reservoir? Also I liked being able to choose the window color, verdigris and
+> oxblood were my favorites but more options was really nice! Calissa's mockups are directionally correct but there's also the baked in
+> supposition that all the islands of ego have the same color palette as Anagami Island. Also the neuralese is in katakana but is it
+> Espada's conlang? I think we can do something more novel with the presentation, like flow field distribution or conways game of life
+> type shi. Our own glyphs too, let's get ambitious." (the owner, 2026-10-16)
+
+### 15.1 Three faces: Cinzel names, Jersey counts, DotGothic reads
+Cyber and fantasy, each with its own job, so neither is decoration:
+- **Cinzel** (the fantasy, engraved Roman capitals): **names of the world**: a title, a place, a lore name, a Major Arcana, the title
+  toast's title, a System window's heading.
+- **Jersey 15** (the cyber, pixel display): **the System's counts**: numbers, rolling numerals, a blow's readout, a rank letter, a label
+  in a row.
+- **DotGothic16** (reading): every line of words: tags' lines, rows, the log.
+Calissa sets the split in the bible; the principle is the owner's mix and stays: a name is carved, a number is computed.
+
+### 15.2 3D in the overlay
+Frames and gauges may be **real meshes**, lit and turning: a System window's border as an extruded frame with corner ornaments; the
+Lachrimeter as **a glass reservoir** with the pool's liquid in it (the Lachryma shader, its level the pool, its slosh the Courier's
+motion); a Possibilikey or a tool's icon as a small turning model. Prior art: Dead Space's RIG (holograms projected from the body),
+Metroid Prime's visor (the glass you look through), Ratchet & Clank's quick-select (3D models in the ring), Persona 5's menus. It is
+drawn in the overlay's own scene after the world, at the 480-line present, so it pixelates as the world does. Petra's layer (render),
+Calissa's meshes. Ambition first: built to the target, measured at the gate.
+
+### 15.3 The window colour stays the player's, with more of them
+The setting already exists (`ui/theme.js` THEMES: kiln, oxblood, midnight, verdigris, umber; the owner's favourites verdigris and
+oxblood). The bible's frame is built **on** it: the window colour is the glaze of the frame's matter, never a fixed tenmoku. Tenmoku
+becomes one window colour among them, and more are added (celadon, shino, lapis, ash, ...). Every window, tag and toast honours it.
+
+### 15.4 Every island its own dress (REGISTERS.md)
+The overlay has three layers, by register:
+- **The System's** (the same on every island and at sea): the labradorite line, the three faces, the readout grammar, the hierarchy.
+- **The island's dress** (island-local): the frame's material and ornament, the texture layer's motif, the toast's flourish. Anagami:
+  glazed clay, kiln marks, kintsugi. Margarite: nacre and lamp brass, the King's marque. Entropolis: etched glass and amethyst. The
+  Emocean: the sea's own (rope, tar, Lachryma spray). Espada names each island's; Calissa dresses it; the dress changes when you land.
+- **The player's window colour**: the colour of the dress (15.3).
+So the mock-ups' clay is Anagami's dress, not the overlay's; a window on Margarite is the same window in nacre.
+
+### 15.5 Neuralese: our own script, alive
+**What it is now:** Espada's conlang, 22 words (STIL, HUSA, LUNO, HEMA ...: `npc/neuralese.js` LEXICON), written in Latin capitals in
+code; LORE.md says "drawn as runes", but no script exists yet. **The katakana in the mock-ups is a placeholder** borrowed from the
+Matrix's rain: not ours, and to go.
+**What it becomes** (working name: **the neuralese script**):
+- **Our own glyphs, decipherable.** A featural script on one frame (a hexagonal lattice: the labradorite's hex net), each glyph built
+  from strokes that stand for sounds, so a player who studies can read it (Tunic's runes, Fez's alphabet, Hangul's featural design).
+  The Crib Sheet and the ostraca (`progress/ostraca.js`) become the Rosetta: a glossed word shows its English beside the glyphs. The
+  design law holds: the mechanic teaches a real thing, decipherment, without a tutorial.
+- **Alive on screen, by rules, never by animation.** The texture layer runs **a cellular automaton** (Conway's Life, or a continuous one,
+  Lenia) on the hex lattice: neuralese is what settles out of it. A word being written **condenses**: cells live and die until the
+  glyph is a still life. Idle chatter in the margins is gliders. **A flow field** (curl noise, Tyler Hobbs' flow fields) carries motes
+  that comb into a glyph's strokes, for big moments (a title, an awakening's line, reprogramming a mind). Prior art: Arrival's
+  logograms (ink condensing into a ring), Conway, Bert Chan's Lenia, the demoscene.
+- **Owners:** Espada, the orthography (which sounds, which strokes, how a word is built); Calissa, the glyphs' drawing and the
+  automaton's and flow field's look; Dovina, the decipherment's progression (the Crib Sheet's ladder, what reading the script earns).
 
 ## Note on the merge
 

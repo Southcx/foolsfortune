@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
+import { familiarityOf, readBlow, readHealth } from '../progress/familiarity.js';
 
 const r2 = (v) => +v.toFixed(2);
 const vec = (v) => [r2(v.x), r2(v.y), r2(v.z)];
@@ -47,10 +48,19 @@ export class Agent {
   observe({ places = false } = {}) {
     const g = this.game, P = g.player;
     const since = (list, last) => list.slice(last ? list.lastIndexOf(last) + 1 : 0);
-    const evs = g.events.log || [], fresh = since(evs, this.lastEv).map((e) => ({ name: e.name, t: r2(e.t), ...pick(e) })); this.lastEv = evs[evs.length - 1] || null;
+    // (the agent sees what the player sees: a creature's health and a blow's number only at the Courier's familiarity with its kind,
+    // never the truth: progress/familiarity.js, OVERLAY.md 13)
+    const known = (kind) => familiarityOf(g.ledger, kind).level;
+    const health = (c) => (c.hp != null && c.maxHp ? readHealth(known(c.kind), c.hp, c.maxHp) : null) || undefined;
+    const blind = (e) => {
+      if (e.name !== 'creature.struck') return pick(e);
+      const { dmg, hp, maxHp, k, because, ...rest } = pick(e), lv = known(e.kind);
+      return { ...rest, familiarity: lv, blow: readBlow(lv, dmg, maxHp, { k, because }) || undefined, health: readHealth(lv, hp, maxHp) || undefined };
+    };
+    const evs = g.events.log || [], fresh = since(evs, this.lastEv).map((e) => ({ name: e.name, t: r2(e.t), ...blind(e) })); this.lastEv = evs[evs.length - 1] || null;
     const ls = g.log?.lines || [], lines = since(ls, this.lastLine).map((l) => l.text); this.lastLine = ls[ls.length - 1] || null;
     const near = [];
-    for (const c of g.creatures?.list || []) { if (c.pos.distanceTo(P.pos) > NEAR) continue; near.push({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), alive: c.alive !== false, hp: c.hp != null ? r2(c.hp) : undefined, state: c.state, ally: !!c.ally, foe: !!c.cls, d: r2(c.pos.distanceTo(P.pos)) }); }
+    for (const c of g.creatures?.list || []) { if (c.pos.distanceTo(P.pos) > NEAR) continue; near.push({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), alive: c.alive !== false, familiarity: known(c.kind), health: health(c), state: c.state, ally: !!c.ally, foe: !!c.cls, d: r2(c.pos.distanceTo(P.pos)) }); }
     for (const e of g.ground?.list || []) if (e.pos.distanceTo(P.pos) < NEAR) near.push({ kind: 'item', item: e.id, pos: vec(e.pos), d: r2(e.pos.distanceTo(P.pos)) });
     for (const n of g.folk?.list || []) if (n.pos.distanceTo(P.pos) < NEAR) near.push({ kind: 'folk', id: n.id, name: n.name, pos: vec(n.pos), d: r2(n.pos.distanceTo(P.pos)) });
     near.sort((a, b) => a.d - b.d);
@@ -61,7 +71,7 @@ export class Agent {
         cubes: g.cubes?.balance ?? null, lachryma: g.lachryma ? r2(g.lachryma.value ?? g.lachryma.pool ?? 0) : null, inHand: g.belt?.inHand?.id || null },
       interact: it ? I(it) : null, reach: (g.interact?.offers || []).map(I), // (the chevron's one, and everything F could be meant for)
       well: g.well?.active ? { floor: g.well.floor, mobs: g.well.mobs.filter((c) => c.alive).length, up: g.well.cur?.up ? vec(g.well.cur.up.pos) : null, down: g.well.cur?.down ? vec(g.well.cur.down.pos) : null,
-        cavern: g.well.cur?.isCavern ? { phase: g.well.cur.foe?.phase, state: g.well.cur.foe?.state, stage: g.well.cur.foe?.stage, hp: g.well.cur.foe ? +g.well.cur.foe.c.hp.toFixed(1) : null, clutches: g.well.cur.nursery.whole } : null, // (the great cavern: world/well/cavern.js)
+        cavern: g.well.cur?.isCavern ? { phase: g.well.cur.foe?.phase, state: g.well.cur.foe?.state, stage: g.well.cur.foe?.stage, health: g.well.cur.foe ? health(g.well.cur.foe.c) : null, clutches: g.well.cur.nursery.whole } : null, // (the great cavern: world/well/cavern.js)
         foes: g.well.mobs.filter((c) => c.alive).map((c) => ({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), cls: c.cls || 0 })) } : null, // (the whole floor's: a room is out of sight, not out of mind)
       dialogue: g.dialogue?.open ? { with: g.dialogue.npc?.id, line: g.dialogue.plain, done: !!g.dialogue.typed,
         choices: g.dialogue.opts ? g.dialogue.opts.map((c) => String(g.dialogue.say(c)).replace(/<[^>]*>/g, '')) : null } : null, // (next: press F; a choice: choose)
