@@ -186,7 +186,7 @@ What each number that matters already has, and what it lacks. A cell marked "?" 
 **The look in one line: the System's sight is black labradorite light laid over a world of clay; it writes in dots, it is summoned,
 and one thing at a time is huge.** Dennō Coil's glasses over Persona 5's nerve: the city stays warm and solid, the overlay is cold
 line and moving type, and the two never trade materials. The mock-up board (the three first cases, then the familiarity ladder and
-the terminal) is the picture of this section; the owner judges it before anything is built (section 11, step 1).
+the terminal; https://claude.ai/artifact/WM69qe38CSnLAJsjLJ5NCo, private to the owner) is the picture of this section; the owner judges it before anything is built (section 11, step 1).
 
 ### 10.1 The references board (what each gives; stills on the board, never shipped)
 | reference | taken | left behind |
