@@ -380,6 +380,13 @@ Punishment.
    the domain of the rules of the space around you.
 5. **Every system teaches something real, unannounced** (section 9's pillar, from the tools to every system): the mechanic itself is
    the lesson (pitch from tuning crystals, the painter's eye from the press), never a tutorial or a factoid.
+6. **Base change bad, modifiers good** (the owner, 2026-10-15: "removing elements or having them behave differently depending on game
+   mode doesn't feel right"). The game's modules draw from one substrate: the pool is the same pool on foot, on the skiff and in a race;
+   the vessel is the same vessel. So no mode and no module changes a base rule (round 6 held the pool's regen during a race; it was
+   undone). A change comes as a MODIFIER with a SOURCE in the world: a hazard (a siphon, a miasma that stops the regen while you are
+   in it), a weather, the vessel's cracks (a cracked region caps 5% of the pool's max until it mends: `progress/poolcaps.js`), a part
+   you chose. You can see it coming, know what does it, and leave it or mend it. The UI shows where it bites: a capped pool shows the
+   part held off, and by what. Setting up a test (a drill starting full) is not a rule; the DEBUG lend panel is exempt (a test tool).
 
 The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. Soul Alchemy as the first system built to all four:
 `docs/plans/SOUL-ALCHEMY.md`.
@@ -399,3 +406,39 @@ The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. S
 - Taken from FFXIV (the shapes, head markers that carry the answer), WildStar (the fill as the clock), WoW 11.1 (a crisp edge, a tinted
   inside), Monster Hunter (the body is the tell, and the answer is the opening), and the accessibility guidelines (never colour alone).
   Seeing Figment attack telegraphs as a levelled sense is ours.
+
+## 24. Solar Skiffing as a racer (the owner, 2026-10-13; docs/plans/SKIFF-RACING.md)
+
+The skiff took from the racers what fits a sail. From MK8: the carve (a drift loading in three tiers), glider lips, the rocket start
+(here the solar start, a pump timed to GO), and time trials with a ghost. From Sonic Riders: tricks refill the boost (a spin landed square
+gives Lachryma). From SSX: the late pop. From MK8 and F-Zero: boost pads (here sun plates). The glide flies as a hang glider: W dives,
+S flares, Q and E bank, A and D spin. A bail now has one rule: something stopped you head-on, or the board landed pointing away from its
+travel. The Raceway is the test circuit, built of the Dunes' kit, with the sandfall drop the owner asked for. Grind rails come next, on
+the skiff alone (no other tool: the owner); rivals and slipstream are skipped for now; items and rubber banding are left out on purpose.
+
+Round three (SKIFF-RACING.md 9) made the lap a set of choices and the tricks a currency of speed. From SSX Tricky and Tony Hawk's: the
+trick combo (tricks chained, a variety multiplier, banked into free flares, lost on a bail), which replaces the Lachryma a trick gave: the
+pool stays the shield's, tricks pay in speed. From SSX: grabs (the mouse buttons, free on the board) and side ramps. From Crash Team
+Racing: reserves (pushes stack their time). From Kirby Air Ride: the slope landing (the fall kept as speed down a slope, a real lesson in
+transitions). The hour and the weather change the race (the sun plates are solar and die at night; rain wets the sand, which is fast and
+slick, as land sailors race the wet beach), and each condition keeps its own best. The cavern is a branch through a roofed gorge whose
+pads run on Lachryma: the night's line. Every source still pays for doing it at all (a plain lap finishes; a trick of one kind banks) and
+pays more for doing it well (the multiplier, the perfect pop) (section 22's law).
+
+Round four (SKIFF-RACING.md 10) made the Raceway a park, the one place every racing mechanic is tested, in layers: the Sun Circuit
+(learn the board), the Gorge Run (read lines and hazards: a blind crest, cliffs, a slot canyon, a spiral down a crater round an antlion
+pit, a crossover, a ford), the Coaster (grind as a line: a 3D rail with drops, a banked turn, a loop and a helix), and free ground (a
+half-pipe, a pit). What a height field cannot do is done another way: bridges for crossovers, coaster rails for loops. The lessons under
+it are real: the antlion's pit stands at the sand's angle of repose; a banked turn takes g tan(bank) of its own pull; a coaster's lift
+is the price of its fall. The tools that let the design be seen headless (a map from above, an autopilot with a trace) are part of it.
+
+Round six (SKIFF-RACING.md 12) gave the board stakes and the park its modes. The keystone is F-Zero's: the pool is the hull. A bump, a
+wall, a hard landing and a bail each drain it, the flare spends it; it is the Courier's own pool with its own regen, untouched (the owner: "the
+literal same pool": the elegance is that every module draws from the one substrate; a mode never gives the pool rules of its own), and a vein lane beside the line refills it ten times faster, so a lap is a budget of Lachryma spent on speed or
+kept as health, the same choice the ARPG asks of the shield (the owner's "chef's kiss").
+Around it, each skill verb from the genre that made it: Excitebike's overheat (the scorch), Tony Hawk's manual and gaps, Mario Kart Wii's
+snaking, F-Zero GX's side attack, Burnout's near misses and aftertouch, Wave Race 64's buoys (power raised by keeping the line, lost by
+missing one). The rivals got minds of their own (a blocker, a rail hog, a gambler, a clean racer) and a grudge (the nemesis), and the
+siblings race as the hard field. One race engine runs every mode (a race, a hot lap, practice with a rewind, a pot smash, the escape, the
+licences), and above it the cups, Kirby Air Ride's City Trial and a wager whose odds are the ledger's read of you, so getting better beats
+the house until it learns (section 22's law, as an economy). The garage's parts are trades opened by achievements, never upgrades.

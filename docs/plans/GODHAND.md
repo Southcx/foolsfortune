@@ -163,8 +163,8 @@ So the god hand trains the same psyche the Courier does, and a Courier strong in
 
 | domain | what it is (the owner's) | the powers (existing in bold) | its epic | its level widens | quality (what pays more) |
 |---|---|---|---|---|---|
-| **Ouranurgy** | the rules of the space around you: displacement, and time slowed or stopped | **Rift** pair (pour into one, it falls out of the other: an aqueduct through space); **Fold** (two patches of ground trade places, what stands on them included); **Hasten / Stay** (the matter's time over a patch runs 4x, or stops: a river frozen mid-flow, a flood settled in seconds) | Stopped Hour | a rift's span, a fold's size, Hasten's rate | what crossed or was changed in the slowed time |
-| **Manifestation** | solidifying thought into structures | **Manifest** (the wall); **Sculpt** (a voxel creation: a ramp, an arch, a bridge, a pillar, drawn as a shape and raised; section 7); **Fire** (a creation fired hard: it stands until the mending, not a few minutes); **Totem** (a standing stone that holds a miracle's weather on its spot for a game hour) | Volcano | a creation's size, a totem's reach | how much of a creation is used (walked, stood behind) |
+| **Ouranurgy** | the rules of the space around you: displacement, and time slowed or stopped | **Portal** pair (pour into one, it falls out of the other: an aqueduct through space); **Fold** (two patches of ground trade places, what stands on them included); **Hasten / Stay** (the matter's time over a patch runs 4x, or stops: a river frozen mid-flow, a flood settled in seconds) | Stopped Hour | a rift's span, a fold's size, Hasten's rate | what crossed or was changed in the slowed time |
+| **Manifestation** | solidifying thought into structures | **Manifest** (the wall); **Sculpt** (a voxel creation: a ramp, an arch, a bridge, a pillar, drawn as a shape and raised; section 7); **Set** (a creation set fast: it stands until the mending, not a few minutes; on Anagami it looks fired); **Totem** (a standing stone that holds a miracle's weather on its spot for a game hour) | Volcano | a creation's size, a totem's reach | how much of a creation is used (walked, stood behind) |
 | **Divination** | perceiving the hidden: signatures, habits, the true pitch | **Strata** (see the matter's layers under the hand: crude under sand, a spring under clay); **Course** (a pour or a miracle shown before it falls: where the water will run, the From Dust prediction line); **Read** (from above, a creature's next intent drawn over it: the Figment telegraph from the sky) | Prophecy | how deep Strata sees, how far ahead Course runs | a hidden thing found and then used (a buried spring tapped) |
 | **Psychokinesis** | moving things by will | **Telekinesis** (lift and throw, by the flick); **Scoop / Pour** (section 3); **Gust** (a stroke of wind: drifts sand, pushes liquids, knocks creatures down); **Slab** (lift a whole slab of ground, what stands on it with it, and set it down elsewhere) | Maelstrom | weight lifted, Scoop's capacity (20 m³ at level 1), Gust's reach | speed and distance moved |
 | **Possession** | exerting will over other minds | **Herd** (draw a line: creatures near it walk it, a sheepdog's work); **Take** (the hand goes into one creature and you play it from above, Dungeon Keeper's possession; it costs Lachryma a second); **Muster** (hatched clapperjars carry matter where the hand points: the folk's labour, Godus's) | Stampede | how many Herd moves, how long Take holds, how much a Muster carries | creatures moved where they would not have gone |
@@ -186,13 +186,17 @@ security level** (a mind's cognition noticing an intruder and sending stronger S
 there is, an ego defending itself. Assassin's Creed's notoriety (fed by acts, eased by deeds). Noita's Stevari (strike in the holy
 place and the place itself comes for you).
 
-- **What feeds it: harm to the island's self-image, never use of the hand.** It is the mending read backward:
+**The words** (the owner, 2026-10-13: "Dissonance Level", as in cognitive dissonance). **Dissonance** is how far the island knows
+it is being warped from outside, a running amount that climbs with each act and ebbs in quiet (GTA's heat). **The Dissonance Level**
+is its step, 0 to 5 (GTA's stars). **Rejection** is the island's answer at a level: the Figments it sends.
+
+- **What feeds the dissonance: harm to the island's self-image, never use of the hand.** It is the mending read backward:
   - how far the ground stands from its authored shape (the matter's delta, section 3), weighted by how fast it was made (a flood in
     a second weighs more than a valley carved over an hour);
   - acts against the folk (a clapperjar thrown, one of the folk struck, the hand's slap on them);
   - epic miracles (each a big push).
   Building gently (a bridge, a ford, a channel) weighs little. The player who sculpts is left alone; the one who scars is not.
-- **Five steps of rejection**, each calling a stronger answer, spawned at the edge of the hand's view and coming for the jar:
+- **Five Dissonance Levels**, each calling a stronger answer (rejection), spawned at the edge of the hand's view and coming for the jar:
   1. strays: Figments of class 1 drift in;
   2. a pack, and the Figments wear the island's feeling;
   3. aberrants, and blotlings well up from the crude in the ZoI;
@@ -203,10 +207,10 @@ place and the place itself comes for you).
   stack, Rez's layers). No stars drawn on the screen.
 - **How it cools:** stop scarring and it falls a step a real minute while the mending runs. A Shrine is sanctuary: no Figment of the
   rejection follows you into one, and resting there clears it. Leaving the god hand does not clear it; the Courier walks out into it.
-- **The gamble** (the house's taste): a Figment of the rejection pays its yield at the rejection's step, ×1 to ×3, and its EmO starts
+- **The gamble** (the house's taste): a Figment of the rejection pays its yield at the Dissonance Level, ×1 to ×3, and its EmO starts
   high. So scarring the island on purpose to farm what it throws at you is a real strategy, and it can shatter you.
 - Working name **rejection** (Espada's to name). The ledger: `god.rejection.<step>` firsts and the highest step reached; an achievement
-  for beating the step-5 answer, and one for a day of terraforming that never passed step 1.
+  for beating the level-5 answer, and one for a day of terraforming that never passed Dissonance Level 1.
 
 ## 9. Order
 
@@ -216,11 +220,84 @@ place and the place itself comes for you).
    miracles, their effects on matter.
 3. **The hand's body** (Petra): the flick, the swing, the slap, the shadow.
 4. **The domains' powers** (section 8), a domain at a time, the ones that reuse built parts first: Herd and Take (the minds exist),
-   Strata and Course (the matter's own data), Rift (the caster shells' portal), Ward (the gesture reader).
+   Strata and Course (the matter's own data), Portal (the caster shells' portal), Ward (the gesture reader).
 5. **Epic miracles**, then **voxel creations** (after the perf measure).
 6. **Rejection** (section 10): it needs the matter's delta (1) and the epics (5) to have something to read.
 
 Names (miracle, the seven, the epics) are working words for Espada's.
+
+## 11. The endgame first, then the ramp (the owner, 2026-10-13)
+
+> "We should plan for 'What does endgame look like, maxed out powers, the whole nine yards', and then work backwards to determine the power
+> scaling ramp. Like if max power is full on Minecraft Creative mode, then that's an interesting premise to design limitations around."
+
+**The top: all seven domains at 99 ("The World") is Creative mode.** Matter made from nothing is free. Scoop carries 400 m³ and Sculpt
+raises arches three times the size. Carve cuts 64 m channels 6 m deep. A Portal stands for twenty real minutes, four pairs at once, and Fold
+swaps 24 m squares. Hasten runs matter at sixteen times. Set stands a creation for good, kept in the save. Six wards and five totems
+stand at once. Miracles cost a fifth and fall twice as wide. The island feels a tenth of the dissonance.
+
+**What never loosens: the walls Creative mode is designed around.**
+1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
+2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a set creation at 99. A
+   master leaves what they meant to leave; everything else heals.
+3. **One epic a game hour, paid as a release:** pressure on the vessel through the stones' aperture (SPINE.md 4).
+4. **The island notices.** Dissonance never reaches zero. A tenth of it, in a long session of large works, still calls the
+   answer, so the top stays a game.
+5. **No new domains, and no new verbs at 99.** The top is the same verbs, unbounded, never a new button.
+
+**The ramp, worked back from the top.** Every number a power has is a row in `RAMP` (`progress/godpowers.js`): its value when the power
+opens (at its `at` level) and at 99. In between it follows `t^1.6` of the way from `at` to 99 (`RAMP_CURVE`), so most of the gain comes
+in the last third, as in OSRS. Level 70 feels like a strong hand; 99 feels like a different game. The open values are set so the power
+already does its job on the slice's ground: a 4 m fold, a 6 m herd, one rift. The 99 values are set to the island's own scale. A power opens by achievement, its level OR a feat (SPINE.md 2; the GOD ARTS shelf). Values
+below the open level are the open values. A lend (DEBUG's arts) opens a power but leaves its numbers where your level puts them.
+`/psyche 99` (DEBUG) raises the domains to try the top.
+
+| power | the number | open | 99 |
+| --- | --- | --- | --- |
+| Scoop | carry m³ / made Lachryma a m³ | 20 / 0.5 | 400 / 0 |
+| Shape | radius m / made (its rate is Visualization's: 2 m/s, 4 at rank 10) | 1.6 / 0.5 | 6 / 0 |
+| Carve | width / depth / length m | 1.4 / 1.2 / 18 | 5 / 6 / 64 |
+| Sculpt | stroke m / size x / made | 16 / 1 / 0.6 | 64 / 3 / 0 |
+| Miracles | cost x / size x | 1 / 1 | 0.2 / 2 |
+| Portal | pairs / real s / radius m | 1 / 60 / 1.5 | 4 / 1200 / 4 |
+| Fold | side m | 4 | 24 |
+| Hasten | radius m / speed x / real s | 4 / 4 / 20 | 20 / 16 / 300 |
+| Set | real s / radius m | 150 / 3 | for good / 12 |
+| Totem | count / real s / radius | 1 / 150 / 6 | 5 / 3600 / 16 |
+| Strata / Course / Read | length m / steps / reach m | 12 / 80 / 20 | 60 / 600 / 80 |
+| Gust | length m / power | 10 / 6 | 40 / 24 |
+| Slab | side m | 3 | 16 |
+| Herd / Take / Muster | radius, count, real s / real s / workers, rate | 6, 4, 20 / 20 / 2, 0.5 | 24, 30, 120 / 600 / 12, 6 |
+| Transmute | radius m | 2 | 10 |
+| Ward | count / radius / real s | 1 / 6 / 60 | 6 / 18 / 1200 |
+| Stamp | side m / made | 4 / 0.5 | 24 / 0 |
+| dissonance | x, by the acting domain's level from 1 | 1 | 0.1 |
+
+Since SPINE.md 1.1 the table also holds the tools' widening (`RAMP.tools`, the old WIDEN rows): each opens at level 1 and follows the
+same curve to its 99 value.
+
+**Charms are trades, never upgrades (SPINE.md 1.4).** A charm that raises a magnitude pays for it: WIDE (x1.5 size) costs x1.5 Lachryma,
+LINGER (x2 time) x1.3, THRIFT (x0.5 made) slows the rate to x0.8, QUIET (x0.5 dissonance) shrinks the size to x0.8. A new charm with no
+cost is refused.
+
+**Every number's top, all tracks stacked (SPINE.md 1.5).** The most a number can be with every domain at 99, the charm that raises it
+socketed, and every attribute at rank 10:
+
+| number | 99 alone | + best charm | + attribute | the top |
+| --- | --- | --- | --- | --- |
+| a size (Scoop's carry, Fold's side, a radius) | the table's 99 | x1.5 (WIDE) | none | 99 x 1.5 (Scoop 600 m³) |
+| a time (Portal, Totem, Ward, Set) | the table's 99 | x2 (LINGER) | none | 99 x 2 (Set: for good already) |
+| made matter's cost | 0 | (THRIFT halves 0) | none | 0 |
+| Shape's rate (m/s) | 2 (not a domain's) | x0.8 (THRIFT: a cost) | x2 (Visualization) | 4 |
+| Manifest's rise (real s) | 0.55 | none | /2 (Visualization) | 0.275 |
+| a miracle's cost | x0.2 | x1.5 (WIDE: a cost) | none | x0.2 |
+| dissonance | x0.1 | x0.5 (QUIET) | none | x0.05 |
+| the shield (Lachryma) | the stones' pool | none | x1.5 (Willpower) | pool x 1.5 (Thick Walls is a mark now: SPINE.md 1.3) |
+| a release's pressure | 1 unit a 40 Lachryma | none | none | / aperture 1.5 (amethyst) |
+
+**The selector.** The hand's 25 arts are grouped by their seven domains. Keys 1 to 7 pick a domain, and pressing the same key again steps
+through its arts. The bar shows that domain's arts under a strip of the seven domains. This is a placeholder until Calissa rules on the
+look (her handoff). Miracles stay on MMB.
 
 ## As built (Dovina, 2026-10-13)
 
@@ -233,17 +310,31 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   cells and the water's rows; the collider (a Rapier heightfield over that box) is rebuilt at 3 Hz while the hand works and every 5 real
   seconds while it only mends. Measured headless: 0.6 ms a step at 144 squared.
 - **The verbs** (`godhand/matterarts.js`): Scoop (keys 6), Shape (7, Shift levels), Carve (8). Made matter costs Lachryma
-  (`GOD_POWERS[id].made` a cubic metre). Scoop's carry is widened by Psychokinesis (`WIDEN 'psychokinesis.carry'`, x2 at 99).
+  (`GOD_POWERS[id].made` a cubic metre). Scoop's carry follows the ramp (`RAMP.scoop.carry`, 20 to 400 m³; section 11).
 - **Miracles** (`godhand/miracles.js`): MMB held draws the sign (the Soul Brush's gesture reader); a sign's size on screen sets the
   miracle's size and cost. Needs the feeling awakened and the ground in the Zone of Influence. Shift turns the sign into its epic (one a
   game hour, paid in the jar). All seven of each run; their looks are placeholder rings and the existing weather/status looks.
-- **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): heat from matter moved (0.5 a m³, made 1),
-  a miracle 8, an epic 60, a throw 2; steps at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real
-  seconds, at most 8 alive; the fifth step's answer is a size-2.2 class-2 slip jelly, and putting it down clears the heat
+- **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): dissonance from matter moved (0.5 a m³, made 1),
+  a miracle 8, an epic 60, a throw 2; Dissonance Levels at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real
+  seconds, at most 8 alive; the fifth level's answer is a size-2.2 class-2 slip jelly, and putting it down clears the dissonance
   (`god.rejection.beaten`). A Shrine's rest clears it. The answer carries cubes (`REJECTION.stash`) and arrives at EmO 0.8.
 - **Experience** (`progress/domains.js`): scoop and pour Psychokinesis, shape and carve Alteration, a miracle Spellscription (quality:
   the sign's score, more for a bigger one), an epic its own domain.
-- **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.rejection.step`,
+- **The ledger and achievements**: `god.moved`, `god.made`, `god.miracle.<feeling>`, `god.epic.<id>`, `god.dissonance.level`,
   `god.rejection.beaten`; the hand's new subs Matter, Miracles and Rejection (`gx1..3`, `gq1..3`, `gja`, `gjb`).
-- **Not built yet** (`GOD_POWERS[id].built` false): the domains' other seventeen powers (section 8). Voxel creations wait on a perf
-  measure of the matter in a full scene. The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.
+- **Creations** (`godhand/voxels.js`, pure; `godhand/creations.js`, `game.creations`): Sculpt (key 9, Manifestation 15) drags a line:
+  a pillar for a short stroke, an arch (a bridge when long) for a long one, a ramp with Shift. Sparse 16-cube chunks of 0.25 m voxels,
+  stamped from a signed distance with a 2 m ramp and meshed by naive surface nets; one mesh and one trimesh collider a chunk, remeshed
+  only when touched, inside 1.5 ms a frame. Paid from the carried matter first, then 0.6 Lachryma a cubic metre. The mending ebbs
+  every voxel evenly every 30 real seconds, so a creation goes from the outside in (a 1 m wall in about a game day); what it loses goes
+  back into the island's matter as clay. Measured headless in the Dunes (v178 + this): a 10 m arch stamped in 8.8 ms, 11.6 m³, 19
+  chunks, 5,532 triangles with a pillar and a ramp beside it; ticks 6.0 ms before, 5.9 ms with them standing; frames 7 to 24 ms
+  while its chunks remeshed (about 17 frames), at the old 2.5 ms budget.
+- **The domains' other sixteen powers** (`godhand/powers.js`, the runner; a module a domain in `godhand/powers/`: space, make, sight,
+  force, will, alter, script). All of them are built and tried headless (2026-10-13), with no page errors. Each act is `god.<id>` with `act` (dissonance
+  scaled by the domain's level; seeing is not an act). EXP for each act goes to its domain (`domains.js`), and its count to `god.power.<id>`. Fold
+  and Stamp are `MatterField.patch`. Set marks voxel chunks (`creations.setFast`); for good is a `creations` save section (world scope),
+  its chunks kept as runs. Herd and Take set a creature's mind aside while it walks (`P.walk`). Looks are rings and lines in the
+  domain's colour (`DOMAIN_COLOUR`). The island's own antibody Figment (rejection's answer) is the ordinary Figments for now.
+- **The Codex's STATUS shelf** (`feedback/codex/status.js`): two radars, the domains' levels and Soul Alchemy's ranks, with the next
+  step as a faint ring and the numbers beneath.

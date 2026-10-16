@@ -12,7 +12,7 @@
 // shell runner (shellrunner.js) from their rows.
 // ---------------------------------------------------------------------------
 import { PSYGUNS, DEFAULT_PSYGUN, capacityOf } from './kinds.js';
-import { shellById, shellByNo, typeLabel, fireCost, tollShatters } from '../../progress/combat/castershells.js';
+import { shellById, shellByNo, typeLabel, fireCost } from '../../progress/combat/castershells.js';
 import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
 import { foesNear } from './shellpayloads.js';
 import * as THREE from 'three';
@@ -160,7 +160,7 @@ export class Shells {
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
     if (t.runner) this.runner.fire(buffRow(t.row), { ...ctx, ray, muzzle, fwd });
     else this[t.id]({ ...ctx, ray, muzzle, fwd });
-    if (crack) g.vesselDamage?.toll({ by: 'courier', shatters: tollShatters }); // (the Caster's toll: a tier IV is paid in the clay)
+    if (crack) g.vesselDamage?.toll({ by: 'courier', family: t.row?.family }); // (the Caster's toll: a tier IV is paid in the clay)
     // every shell kicks hard and needs racking
     const k = T.shells.kick * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase);
     player.addRecoil(T.recoil.kickPitch * k, (simRand() * 2 - 1) * T.recoil.kickYaw * k);

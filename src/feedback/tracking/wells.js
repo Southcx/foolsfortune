@@ -12,7 +12,7 @@ const NAME = (id) => itemOf(id)?.name || id;
 const AN = (s) => (/^[AEIOU]/i.test(s) ? 'an' : 'a');
 
 export function wellRules({ on, L, log }) {
-  let cracked = false; // (a crack taken in this run: Thick Walls' feat, a run without one: knacks.js)
+  let cracked = false; // (a crack taken in this run: Last Straw's feat, a run without one: knacks.js)
   on('vessel.crack', () => { if (enteredAt != null) cracked = true; });
   let enteredAt = null; // (seconds of play when the run began: what a player's run takes, measured, for the pay table: Dovina)
   on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; cracked = false; log.say('explore', 'You go down into the Great Dunemaw.'); });

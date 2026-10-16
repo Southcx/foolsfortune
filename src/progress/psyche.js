@@ -11,7 +11,8 @@
 //   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key) }
 // ---------------------------------------------------------------------------------------
 import { isTraining } from './combat/testroom.js';
-import { DOMAINS, SOURCES, WIDEN, expFor, levelOf, widenAt } from './domains.js';
+import { DOMAINS, SOURCES, expFor, levelOf } from './domains.js';
+import { RAMP, widenOf } from './godpowers.js';
 
 const EVENTS = new Set(SOURCES.map((s) => s.event));
 
@@ -22,8 +23,8 @@ export function installPsyche(game) {
     exp,
     level: (d) => levelOf(exp(d)),
     total: () => Object.keys(DOMAINS).reduce((a, d) => a + levelOf(exp(d)), 0),
-    /** What the Courier's level widens this knob to (domains.js WIDEN): a multiplier of the tool's own number, or a bonus to a count. */
-    widen: (key) => widenAt(key, WIDEN[key] ? levelOf(exp(WIDEN[key].domain)) : 1),
+    /** What the Courier's level widens this knob to (godpowers.js RAMP.tools, on the ramp's curve: SPINE.md 1.1): a multiplier of the tool's own number, or a bonus to a count. */
+    widen: (key) => widenOf(key, RAMP.tools[key] ? levelOf(exp(RAMP.tools[key].domain)) : 1),
   };
   game.events.on('*', (e) => {
     if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/testroom.js)

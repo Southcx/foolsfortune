@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 import { ABILITIES, GOD_ARTS, BY_ID } from '../../progress/skills.js';
 import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledger.js';
+import { renderStatus } from './status.js';
 import { renderVeritome } from '../../tools/veritome/ui.js';
 import { renderTools } from '../../tools/codexpage.js';
 import { renderLoadoutShelf } from '../../tools/sondelass/loadouteditor.js';
@@ -154,7 +155,7 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['sondelass', 'SONDELASS'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
+    for (const [id, name] of [['status', 'STATUS'], ['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['sondelass', 'SONDELASS'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
@@ -166,6 +167,7 @@ export class Codex {
       this.shelf = 'move';
     }
     if (this.shelf === 'records') cx.appendChild(el('div', 'shelf', saveName(this.game).toUpperCase())); // (which save these are: DEBUG-MODE.md section 2)
+    if (this.shelf === 'status') { renderStatus(this, cx); this.rows = {}; this.cardHost = null; return; } // (the domains and the attributes as radars: codex/status.js)
     if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire' || this.shelf === 'sondelass') {
       (this.shelf === 'grimoire' ? (c, host) => this.game.codexPages?.grimoire?.(c, host) : this.shelf === 'sondelass' ? renderLoadoutShelf : this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;

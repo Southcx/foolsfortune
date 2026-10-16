@@ -4,7 +4,7 @@
 // sign was drawn, as wide as the sign was drawn large (a fifth of the view's height small, three fifths great). It needs the feeling
 // known (its awakening) and is paid in Lachryma. Each one does something to the creatures under it AND to the island's matter
 // (godhand/matter.js), so two together make a third thing: Rain then Storm strikes the whole flood; Rain then Aurora freezes a lake to
-// walk on. With Shift held the sign calls its domain's EPIC miracle instead (progress/godpowers.js EPICS), paid in the jar, one a game
+// walk on. With Shift held the sign calls its domain's EPIC miracle instead (progress/godpowers.js EPICS), paid as a release from the vessel (SPINE.md 4.3), one a game
 // hour. Said by events with `by`: god.miracle { feeling, size, score }, god.epic { epic, domain }.
 // The looks here are stand-ins (a ring on the ground in the feeling's colour, a flash for a bolt): Calissa's to dress, the weathers'
 // heavy looks to borrow (vfx/weather.js).
@@ -16,11 +16,10 @@
 //   const M = new Miracles(god)   M.update(dt) (every frame the hand is up)   M.fixed(dt)   M.live   M.clear()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { COLOR } from '../progress/weather.js';
 import { recognize } from '../tools/soulbrush/gesture.js';
-import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen } from '../progress/godpowers.js';
+import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen, rampOf } from '../progress/godpowers.js';
 import { stream } from '../core/rng.js';
 const simRand = stream('godhand/miracles'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -82,20 +81,20 @@ export class Miracles {
     if (!at || g.cartography.tierAt(at.x, at.y, at.z).tier < 1) { g.log.say('warn', 'A miracle falls only on ground you know.', { key: 'miracle.zoi', throttle: 2 }); sfx.dryFire(); return; }
     if (epic) return this.castEpic(EPIC_BY_SIGN[feeling], at);
     const M = MIRACLES[feeling], u = THREE.MathUtils.clamp((Math.max(x1 - x0, y1 - y0) / innerHeight - 0.2) / 0.4, 0, 1);
-    const cost = lerp(M.cost[0], M.cost[1], u);
-    if (!g.lachryma.spend(cost, 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
-    const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u), dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
-    this.begin(m);
-    g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), by: 'courier' });
+    const cost = lerp(M.cost[0], M.cost[1], u) * (rampOf('miracle', 'cost', g) ?? 1), big = rampOf('miracle', 'size', g) ?? 1; // (GODHAND.md 11)
+    if (!g.lachryma.spend(cost * (g.bracelet?.costOf?.('spellscription') ?? 1), 'god')) { sfx.dryFire(); g.log.say('warn', 'Not enough Lachryma for that miracle.', { key: 'miracle.pay', throttle: 2 }); return; }
+    const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u) * big, dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
+    this.begin(m); this.last = feeling; // (the last miracle's feeling: a Totem holds it, godhand/powers/make.js)
+    g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), level: g.rejection?.level ?? 0, by: 'courier' });
   }
 
   castEpic(id, at) {
     const g = this.game, E = EPICS[id];
     if (!E) return;
-    if (!powerOpen(id, g)) { g.log.say('warn', `${E.label} opens at ${E.at} in its domain.`, { key: 'epic.locked', throttle: 2 }); sfx.dryFire(); return; }
+    if (!powerOpen(id, g)) { g.log.say('warn', `You have not learned ${E.label}.`, { key: 'epic.locked', throttle: 2 }); sfx.dryFire(); return; }
     if (this.epicReady > 0) { g.log.say('warn', 'An epic miracle once a game hour.', { key: 'epic.wait', throttle: 2 }); sfx.dryFire(); return; }
     this.epicReady = EPIC_EVERY;
-    this.god.hitJar(T.god.jarHp * E.jar, UP.clone(), 'epic'); // (the toll: paid in the god hand's body)
+    g.vesselDamage?.release({ amount: E.release, why: 'epic', domain: E.domain, by: 'courier' }); // (a release from the one body: SPINE.md 4.3; the jar's strength is the raids')
     this.god.cam.shake = Math.max(this.god.cam.shake, 1.2);
     const m = { epic: id, kind: 'epic', feeling: E.sign, x: at.x, y: at.y, z: at.z, r: E.r, dur: E.dur, t: 0, tick: 0, every: 0 };
     this.begin(m);
@@ -146,17 +145,17 @@ export class Miracles {
     }
   }
 
-  /** A bolt from the Storm: the most agitated creature under it, else the highest ground; fuses sand where it lands, and strikes everything
+  /** A bolt from the Storm: the most agitated creature under it, else the highest ground; fuses the loose layer where it lands, and strikes everything
    *  standing in the Lachryma it falls into. */
   bolt(m, power) {
     const g = this.game, C = g.creatures, F = g.matter?.field;
     const list = (C?.near?.({ x: m.x, y: m.y, z: m.z }, m.r) || []).filter((c) => !c.friend && c.alive);
     let at;
-    if (list.length) { const c = list.reduce((a, b) => ((b.emo || 0) > (a.emo || 0) ? b : a)); at = c.pos.clone(); C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); }
+    if (list.length) { const c = list.reduce((a, b) => ((b.emo || 0) > (a.emo || 0) ? b : a)); at = c.pos.clone(); if (g.bracelet?.gentle?.('spellscription')) c.knock?.(UP.clone().multiplyScalar(6)); else C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); } // (GENTLE: a push, no harm)
     else { const a = simRand() * Math.PI * 2, d = Math.sqrt(simRand()) * m.r; at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); if (F) { const y = F.groundAt(at.x, at.z); if (Number.isFinite(y)) at.y = y; } }
     if (F) {
       F.fuse(at.x, at.z, 1.5);
-      if (F.depthAt(at.x, at.z) > 0.05) for (const c of list) if (c.alive && F.depthAt(c.pos.x, c.pos.z) > 0.05) C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); // (the whole pool is struck)
+      if (F.depthAt(at.x, at.z) > 0.05 && !g.bracelet?.gentle?.('spellscription')) for (const c of list) if (c.alive && F.depthAt(c.pos.x, c.pos.z) > 0.05) C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); // (the whole pool is struck)
     }
     const flash = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 30, 5), new THREE.MeshBasicMaterial({ color: 0xfff6e0 }));
     flash.position.set(at.x, at.y + 15, at.z);
@@ -170,9 +169,9 @@ export class Miracles {
     const g = this.game, E = EPICS[m.epic], F = g.matter?.field, C = g.creatures;
     if (m.epic === 'stoppedHour') { if (pulse) { ap('halt', 1.5); F?.hold(m.x, m.z, m.r, 1.6); } this.bodies(m, (b) => { b.setLinvel({ x: 0, y: 0, z: 0 }, true); b.setAngvel({ x: 0, y: 0, z: 0 }, true); }); }
     else if (m.epic === 'volcano') {
-      if (m.t < 6) F?.pour(m.x, m.z, E.cone, (Math.PI * E.cone * E.cone * E.cone / 3) * dt / 6, { kind: 'clay' }); // (the cone rises)
+      if (m.t < 6) F?.pour(m.x, m.z, E.cone, (Math.PI * E.cone * E.cone * E.cone / 3) * dt / 6, { kind: 'firm' }); // (the cone rises)
       else { F?.pour(m.x, m.z, 1.5, E.lava * dt * 3, { kind: 'water', feeling: 'fury' }); F?.heat(m.x, m.z, E.r, 2); }
-      if (m.every <= 0 && m.t > 2) { m.every = 1.5; const a = simRand() * 6.28, d = 3 + simRand() * (E.r - 3), at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); g.fx?.explosion?.(at, 1.6); for (const c of C?.near?.(at, 2.5) || []) if (!c.friend) C.strike(c, c.pos, UP, 4, 'miracle', 'courier', null, 'impact'); }
+      if (m.every <= 0 && m.t > 2) { m.every = 1.5; const a = simRand() * 6.28, d = 3 + simRand() * (E.r - 3), at = new THREE.Vector3(m.x + Math.cos(a) * d, m.y, m.z + Math.sin(a) * d); g.fx?.explosion?.(at, 1.6); for (const c of C?.near?.(at, 2.5) || []) if (!c.friend) { if (g.bracelet?.gentle?.('manifestation')) c.knock?.(UP.clone().multiplyScalar(6)); else C.strike(c, c.pos, UP, 4, 'miracle', 'courier', null, 'impact'); } }
     }
     else if (m.epic === 'maelstrom') {
       this.bodies(m, (b, d, dx, dz) => { const s = E.swirl * (1 - d / m.r) + 2; b.setLinvel({ x: -dz / d * s - dx / d * 3, y: E.lift * (1 - d / m.r), z: dx / d * s - dz / d * 3 }, true); });

@@ -4,7 +4,7 @@
 // collider so the Courier, the creatures and the props stand on what the hand built. The field is laid (its authored ground sampled by
 // rays, once) when the hand first works a place; a hand working somewhere more than FIELD.relay metres away lays a new one there. It
 // keeps stepping after the god hand is put away (the water still runs, the mending still heals), and is dropped once it has healed.
-// The looks are stand-ins: clay and sand by vertex colour, Lachryma tinted by its leading feeling (Calissa's to dress: GODHAND.md 9).
+// The looks are stand-ins: firm and loose by vertex colour, Lachryma tinted by its leading feeling (Calissa's to dress: GODHAND.md 9).
 // What the ray did not find (a hole, a drop off the island) is void: matter poured there falls away.
 //
 // Prior art: From Dust's layered terrain mesh and its liquids drawn as a second skin; Rapier's height field (one collider, rebuilt a few
@@ -15,7 +15,7 @@
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { COLOR } from '../progress/weather.js';
-import { MatterField, FEELINGS } from './matter.js';
+import { MatterField, FEELINGS, groundOf } from './matter.js';
 
 /** `relay`: how far from the field's centre the hand may work before a new field is laid; `lookHz` and `colliderHz`: how often the
  *  meshes and the collider follow the simulation (a few times a real second is enough for ground that flows at walking pace);
@@ -23,7 +23,8 @@ import { MatterField, FEELINGS } from './matter.js';
  *  cutaway skips it). */
 export const FIELD = { relay: 22, lookHz: 12, colliderHz: 3, mendColliderEvery: 5, sampleUp: 6, sampleDown: 18, show: 0.02, hide: 0.12 };
 
-const CLAY = new THREE.Color(0x9a5a3a), SAND = new THREE.Color(0xd8b878), FAIR = new THREE.Color(0x9fd8e0), ICE = new THREE.Color(0xe6f6ff);
+const FIRM = new THREE.Color(groundOf().firm.colour), LOOSE = new THREE.Color(groundOf().loose.colour), // (the island's own layers: matter.js GROUND)
+   FAIR = new THREE.Color(0x9fd8e0), ICE = new THREE.Color(0xe6f6ff);
 const FEEL = FEELINGS.map((f) => new THREE.Color(COLOR[f]));
 const _c = new THREE.Color();
 
@@ -114,8 +115,8 @@ export class IslandMatter {
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const k = j * n + i, a = F.amount(k), shown = a > FIELD.show && !F.void[k];
         P[k * 3 + 1] = shown ? F.base[k] + a : F.base[k] - FIELD.hide;
-        const s = a > 0 ? F.sand[k] / a : 0;
-        _c.copy(CLAY).lerp(SAND, s);
+        const s = a > 0 ? F.loose[k] / a : 0;
+        _c.copy(FIRM).lerp(LOOSE, s);
         C[k * 4] = _c.r; C[k * 4 + 1] = _c.g; C[k * 4 + 2] = _c.b; C[k * 4 + 3] = shown ? 1 : 0;
       }
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {

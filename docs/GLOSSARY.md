@@ -21,13 +21,16 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   text.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`) — the Courier's store of Lachryma; it pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
-- **vessel** (`game.vessel`, `src/courier/vessel/`) — the Courier's clay body and what is done to it: glazes, cracks, shattering, reforming.
-  *Not:* the god hand's jar.
-- **crack** — damage to the vessel, per region (mask, torso, arms, legs); it mends slowly or at once at the kiln (MEND). *Not:* a pot's cracks.
+- **vessel** (`game.vessel`, `src/courier/vessel/`) — the Courier's body, of its base material, and what is done to it: glazes, cracks, shattering,
+  reforming. Its words hold for any material (`docs/plans/REGISTERS.md`). *Not:* the god hand's jar.
+- **base material** (working name, Espada's and the owner's to name) — what the vessel is made of: clay first (Kaolin Anagami's format), others
+  earned where other islands adapted it (a Glass Courier); your look, carried everywhere. *Not:* a material (Soul Alchemy's), a glaze.
+- **crack** — damage to the vessel, per region (mask, torso, arms, legs), in the base material's way (clay cracks, glass crazes); it mends
+  slowly or at once at a finishing station (on Anagami, the kiln: MEND). *Not:* a pot's cracks.
 - **shatter / made whole** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`) — the Courier's death, and being made whole again
   in the workshop. Player text says "made whole" or "re-formed", never "reform".
-- **glaze** (`src/courier/vessel/glazes.js`) — a colour fired onto a region at the kiln: FIRE keeps a look, MEND refires the cracks; a rare one
-  also has a kiln pattern. *Not:* a material, nor a Firing. → detail
+- **glaze** (`src/courier/vessel/glazes.js`) — the vessel's coat, a colour fired onto a region at a finishing station (on Anagami, the kiln):
+  FIRE keeps a look, MEND refires the cracks; a rare one also has a kiln pattern. Holds for any base material. *Not:* a material, nor a Firing. → detail
 - **sibling** (`game.party`, `src/coop/sibling.js`) — one of the five divisions as a Courier in the owner's world, with its own mind and tool; met
   once, then called or dismissed at a Shrine. *Not:* a spirit, nor a guest. → detail
 - **a sibling's shatter** (`game.siblingShatter`, `src/vfx/siblingshatter.js`; `sibling.reform`) — a sibling emptied by your blows breaking into
@@ -41,9 +44,19 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
-  drawing its sign / one of seven great ones, one a domain, paid in the jar / the ZoI's layered ground (clay, sand, Lachryma, crude) the hand moves. *Not:* a God Art.
-- **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response to the hand scarring it: five steps, each
-  calling stronger Figments, cooled by the mending and a Shrine. *Not:* the mending, a raid.
+  drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the ZoI's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
+- **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel matter of the island's firm layer the hand raises
+  with Sculpt (a pillar, an arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day, unless Set. *Not:* Manifest's wall, the island's matter.
+- **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
+  each a domain's, opened by its level / each power's numbers from where it opens to 99, Creative mode at the top (GODHAND.md 11). *Not:* a widening.
+- **the bracelet / a charm** (working names, Espada's and the owner's; `docs/plans/BRACELET.md`) — the one ring the Vessoul wears in every form
+  (the hand's wrist, the Pneuka Jar's choker, the Courier's wrist), its glow the hand's state / what sits in one of its seven domain
+  sockets and bends that domain's powers. *Not:* a Possibilikey, a tool, the Lachryma ring.
+- **dissonance / the Dissonance Level** (`game.rejection.dissonance`, `.level`; event `god.dissonance`; the owner's words, 2026-10-13) — how far an
+  island knows it is being warped by the hand, climbing with each act and ebbing in quiet (as in cognitive dissonance) / its step, 0 to 5.
+  *Not:* "heat", nor the mending.
+- **rejection** (working name; `docs/plans/GODHAND.md` section 10) — the island's immune response at a Dissonance Level: the stronger
+  Figments it sends; cooled by the mending and a Shrine. *Not:* the mending, a raid.
 - **the jar** (`jar`, `jar.hit`) — the Pneuka Jar, the Courier's true form; Courier, god hand and jar are one entity. Player text says "your
   Pneuka Jar", never "the jar". *Not:* the vessel. → detail
 - **the bracelet** (working name; `Bracelet`, `src/vfx/bracelet.js`; `docs/plans/BRACELET.md`) — one ring worn by the Vessoul in every form
@@ -84,7 +97,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the day's phases** (`phaseAt`, `lightAt`) — night, dawn, daytime and dusk on the game clock. *Not:* a game day.
 - **faucet / drain** — where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute`) — what ordinary play should earn in a real hour (480 cubes); a source is judged as a multiple of it.
-- **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden). *Not:* any drain (the Tithe is a drain, not a sink).
+- **sink** — a drain the player chooses and that never fills (the glazes, the Spirit Garden, base materials). *Not:* any drain (the Tithe is a drain, not a sink).
 - **crude** (`ECON.crude`) — liquid Lachryma as a cargo, carrying no feeling, named for its **field** (`ECON.crude.fields`: Margarite, Dunemaw,
   Entropolis) as oil is Brent; refined, it takes a feeling again (wonder Lachryma); volatile, so it can spill. *Not:* a bauble, nor graded by feeling (the owner, 2026-10-11).
 - **cask** (`cask.<field>`) — the unit of crude, carried in the Pneuka Box; a ship's hold is how many may cross (a sloop holds 8).
@@ -118,9 +131,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   grows, and a full-grown one gives up a blotling (an aberrant Figment, of the weather's feeling where it rises). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
   jelly, a gusher's spill): it oxidises and fades. *Not:* a blot (which stays and grows). → detail
-- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
+- **the oxidation ramp / featTint / the slip schiller** (`OXIDATION`, `featTint`, `schillerInk`, `src/vfx/oxidation.js`; `SLIP_SCHILLER`, `vfx/labradorite.js`)
   — how Lachryma left in the open turns (the bauble's and a slick's one clock and oil film) / the film's hue shift every feat of the
-  Courier's power wears / the Lachryma's faint flash under a slip body's clay. → detail
+  Courier's power wears (`schillerInk`: a mark's ink with the film flashing through it) / the Lachryma's faint flash under a slip body's clay. → detail
 - **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`) — an aquarium-glass bottle worn at the upper back; a reserve that feeds the
   pool below half and is what paint spends and mop fills. *Not:* "tank", ever.
 - **paint motif** (`PAINT_MOTIF`, `src/vfx/paintmotifs.js`) — the pattern a feeling's paint carries on the ground beside its colour (Wonder
@@ -189,13 +202,102 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   once, looped, or as a triple. *Not:* a gesture, nor a creature's emote clips. → detail
 - **the skiff / Solar Skiffing** (`src/courier/skiff/skiff.js`) — the sand boat, and sailing it in the Dunes. *Retired:* "surfer". *Not:* the
   sloop (the Emocean's ship). → detail
+- **the carve / a late pop / a sun plate / the glide lip** (Espada's, 2026-10-13; a sun plate's UI label: Boost pad; `CARVE`, `POP`, `PLATE`, skiff.js; `docs/plans/SKIFF-RACING.md`)
+  — Q or E held on the sand at speed (its side): the board slides and loads in three tiers, let go it runs out with a push (MK8's drift) / a hop
+  let go just after leaving a crest, higher / a glyph on the Raceway's sand that gives a flare's push for free / the Raceway's lip whose
+  air opens the glide by itself. *Not:* the club's combo, the hop, the flare, the Gnomon's rings.
+- **the Raceway / a race / the solar start** (Espada's, 2026-10-13; `game.raceway`, `game.race`, `src/world/raceway/`) — the Solar Skiff's
+  test circuit, of the Dunes' kit in a place of its own (x 5200), its line laid in `track.js` / three laps through eight gates against
+  the clock, begun at the start's pillar / the sail run up full just after GO, a push off the line. *Not:* the Solar Skiffing trial
+  (the Gnomon's rings), the course (the basement's).
+- **a grind / a rail / a sun ring** (working names, Espada's; `Grind`, `courier/skiff/grind.js`; `railsrings.js`) — the skiff's keel fin locked to a
+  rail, run with A / D's balance, no tool but the skiff / a ruin's lintel on the Raceway the keel locks to / the Gnomon's ring hung in the
+  Raceway's air, flown through for a push. *Not:* the rail (the Emocean's crossing), a Solar Skiffing ring (the Gnomon's trial).
+- **the grab's reach** (`GrabReach`, `GRIPS`, `src/courier/skiff/grabreach.js`) — a grab's hand on the skiff's gunwale while held: the front
+  hand ahead of the front foot (nose), the back on the stern's lip (tail), both between the feet (double), over the ollie's crouch; a grind trick's too (the tail slide's hand to the stern, the nose grind's lean over the bow, the 50-50's arms out). *Not:* the
+  grab's trick (skiff.js), the board's tweak, the carry's hold.
 
 ## 4. Creatures and folk
 
+- **the cavern** (working name, Espada's to rule; `BRANCH`, `T.branch`, `world/raceway/cavern.js`) — the Raceway's alternate course: a branch
+  off the line into a gorge under a roof of stone and back, its pads crystal veins (fed by Lachryma, not the sun). *Not:* a Well, the canyon.
+- **the trick combo / a banked flare** (`SkiffCombo`, `skiff.combo`, `courier/skiff/combo.js`) — the skiff's tricks chained, each kind
+  raising the multiplier, banked when the chain's link runs out on the sand, lost on a bail / a flare's worth of push it banks, spent
+  whole by C (one stock, a push at once: a mushroom). *Not:* the club's combo, a rhythm combo, a ledger chain.
+- **a grab / a perfect pop / a slope landing** (`skiff.grab`, `skiff.pop { perfect }`, `skiff.land.slope`) — LMB (the nose) or RMB (the
+  tail) held in the air, let go before landing / a late pop let go in its first moment / landing square down a slope, the fall kept as speed.
+- **the park / the hub** (`park()`, `PARK`, `world/raceway/park.js`) — the Raceway since round 4: one ground of several tracks, 2.6 km
+  across / its middle, where the Index sets you down among the tracks' starts. *Not:* the basement's hub (the Index's).
+- **the Gorge Run / the Coaster** (working names, Espada's; `tracks/gorge.js`, `tracks/coaster.js`) — the park's second and third tracks:
+  canyons, cliffs and a crater's spiral / a lift to a mesa and a coaster rail down. *Not:* the canyon (the Sun Circuit's stretch).
+- **a cut / a bridge / a bowl / a ford** (`cut`, `features.bridges`, `.bowls`, `.fords`) — a stretch of line laid between steep walls to
+  the sand / a stretch built as a deck that another line passes under (`world/raceway/features.js`) / a stretch banked steeper than its
+  bend / a stretch under water, skimmed. *Not:* the paid cut, the cutlass.
+- **a coaster rail** (`coasterPath`, `world/raceway/coasterrail.js`) — a grind rail laid in three dimensions, with a loop and a helix, each
+  point its up and push. *Not:* a rail (a ruin's lintel), the Emocean's rail.
+- **an antlion pit / the antlion** (working names; `PARK.pits`, `raceway.pit`) — a cone at the sand's angle of repose whose sand flows to
+  its middle / the maw at its bottom that takes a board. *Not:* a Well, a crater (no maw).
+- **a rival / rubber banding / a takedown** (working names; `Rivals`, `RIVAL`, `world/raceway/rivals.js`) — a clapperjar on a mini skiff
+  racing your race / a leader eased and a trailer pushed by its gap to you / a rival hit hard from the side and spun out, your push.
+  *Not:* a creature's foe, a sibling.
+- **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — how the board lands on a rail sets its grind (along it a
+  50-50, the plain grind; across it a boardslide, a trick), and LMB or RMB clicked twice on it a nose grind or a tail slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
+- **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
+  plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
+- **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull
+  (empty, a hard knock **wrecks** it), **the scorch** (a flare held too long luffs the sail), **the manual** (W and S), **snaking**, **the
+  shoulder** (Q / E twice), **aftertouch** (a bail steered), **a near miss**. *Not:* the sailing (skiff.js).
+- **a vein lane / a gap / a buoy run** (`lanes`; `GAPS`, `world/raceway/gaps.js`; `BUOYS`, `buoys.js`) — a strip of Lachrymite beside a
+  Raceway line that refills the pool / a named jump / buoys passed on their sides for **power**. *Not:* a crystal vein (the cavern's push).
+- **a mode / its ruleset** (`MODES`, `world/raceway/modes.js`; `race.ruleset`) — what a run at the Raceway is: a race, a **hot lap**,
+  **practice**, a **pot smash**, **the escape**, a **licence test** / the module adding its rules. *Not:* the board's rules, a trial.
+- **a cup / the City Trial / a patch / the Stadium** (`cups.js`, `citytrial.js`) — three races for points / Kirby Air Ride's: the park
+  roamed for patches that build the board, then one drawn event. *Not:* a chest tier, the Solar Skiffing trial.
+- **the wager / the garage / a skiff part** (`progress/econ/wager.js`; `PARTS`, `progress/skiffparts.js`) — cubes staked on your own
+  race at the house's odds / the race board's tab where a sail, keel and hull are chosen, each a trade. *Not:* the shell runner's parts.
+- **a cap on the pool / a siphon** (`capOf`, `PoolCaps`, `progress/poolcaps.js` / working name, Espada's; `SIPHONS`,
+  `world/raceway/siphons.js`) — a modifier lowering the pool's max from a source you can see (each cracked region of the vessel: 5%
+  until mended) / an arch across a Raceway track that drinks the pool to a quarter as you pass under it, standing only in the Pit lane licence. *Not:* the shield, the regen.
+- **the flyover / the restart / the rewind / the nemesis** (`flyover.js`, `rewind.js`, `rivals.js`) — the camera's cuts along the line
+  before a race / Backspace tapped / Backspace held in practice / the rival that beat you last, quicker and clapping. *Not:* a camera shot's name.
+- **Raku's Bazaar / a table** (Espada's, 2026-10-15; `docs/plans/CASINO.md`; `src/progress/casino/table.js`) — Raku's casino split off
+  the Weir's Treasury, in the Gold Saucer's look / one game's place in it, and its engine: a rules module played by seats, bots and the
+  simulator (`scripts/casino.mjs`); the room `game.bazaar` (`src/world/bazaar/`), a seat `TableSession`. *Not:* the Treasury, the Tithe, a chest.
+- **the Treasury** (`TREASURY`, `buildTreasury`, `stockTreasury`, `src/world/treasury.js`) — five plinths (a chest of each tier), the Tithe's
+  console and its dais, Raku beside it; a piece placed by an origin, in Raku's Bazaar since 2026-10-15 (it stood on the Weir's north beach).
+  *Not:* the bazaar, the shop's RAKU'S TREASURY page.
+- **Raku chips / a chip** (Espada's, 2026-10-15; `game.chips`, `src/progress/casino/chips.js`) — the bazaar's stake, bought from Raku for a cube each
+  and cashed back, winnings capped a game day. *Not:* a cube, the clay knock's chips.
+- **Querent / Astroll** (Querent: Espada's and the owner's, 2026-10-15; Astroll: the owner's; `casino/querent/`, `casino/zodiac.js`, `casino/eventhorizon.js`) — the owner's tarot game
+  (melds, steals, the Fate Clause, Major Arcana flipped as boons) / the owner's dice games with a standard set (Zodiac, Event Horizon,
+  Supernova Run, Nebula Bluff, ...). *Not:* the game's own title (Fool's Fortune), the Veritome's Major Arcana page.
+- **a reaction / a Supernova / a tell** (`supernova.js`, `nebula.js`) — Supernova Run's turn of rolling every die until none shows a
+  maximum or a 1 / its natural 20 on a d20: points doubled, every hand reset / a Nebula Bluff player's body giving away a bluff (a world
+  mark). *Not:* a chain reaction elsewhere, the Supernova as a star.
+- **the house deck / the dice set / Raku's chips** (`bazaarAtlas`, `src/vfx/bazaarfaces.js`; bodies and `PieceBatch`, `src/vfx/bazaarpieces.js`) — the bazaar's 78-card Tarot (a house card), the standard set glazed die by die (the attack die gold), the chips by colour (1 ivory, 5 cinnabar, 25 lapis): one atlas, one batch. *Not:* the title's cards, a Veritome card, a cube.
+- **the table view** (`BazaarTable`, `game.bazaarTable`, `src/vfx/bazaartable.js`; `vfx/bazaarlayout.js`) — a seat at Raku's tables as its cloth under a camera's frame, the state laid out as house pieces, your choices clicked on them (the page set aside the fallback). *Not:* a table (the engine), the race board.
+- **the table HUD / a seat plate / the goal bar / the turn banner** (`TableHud`, `src/ui/tablehud.js`; `seatPlate`, `ui/seatplate.js`;
+  `goalBar`, `ui/goalbar.js`; wired by `TableClarity`, `vfx/tableclarity.js`) — the table view's words over its cloth: a seat's name and numbers in its seat
+  colour and shape (the acting one in the film) / one bar toward the goal, a track a seat / YOUR TURN and the coach's line. Always "seat plate" in
+  full. *Not:* a plate (the Veritome's photograph), the game's own HUD (hidden while seated).
+- **a seat colour / the table marks** (`SEAT_LOOK`, `src/vfx/seatlook.js`, from `SEAT_COLOURS`; `TableMarks`, `src/vfx/tablemarks.js`) — one of the
+  eight board-game colours with its shape (you Red, Raku Black), only on rims, tokens and seat plates / on the cloth: the turn ring at the acting
+  seat, seat rims, the film rim on legal pieces, the chosen piece lifted. *Not:* a suit's colour (card faces only).
+- **the action bar / a table tip** (`actionBar`, `src/ui/tablebuttons.js`; `tableTip`, `ui/tabletip.js`) — the choices with no piece on the cloth
+  as buttons (amount, preview in its tone ✔ ⚠ ✖, the suggestion in gold, keys 1 to 9) / a piece's hover card. *Not:* a choice card, the slot row.
+- **the score ceremony** (`ScoreCeremony`, `src/ui/scoreceremony.js`; `RollingNumber`, `ui/rollnum.js`; `Reel`, `ui/reel.js`) — the count-up drawn:
+  the hand's name, BASE × MULT rolling, the reasons flying in, the total slammed down, the film on a top tier (Balatro's). *Not:* the count-up (the
+  coach's steps it plays).
+- **the coach / a how-to / practice / the count-up** (`coach()`, `src/progress/casino/coach/`; `HOWTO`, `progress/casino/howto.js`;
+  `session.play(true)`; `docs/plans/CASINO-CLARITY.md`) — a table's every moment said plainly for a view (the goal, the turn's one line,
+  each choice with what it brings, the house's suggestion) / a game taught in a few steps, on first sitting and on asking / a game for no
+  chips that counts nothing / a big number counted up in its parts (Querent's base, its bonuses, its multipliers). *Not:* a QAIS test,
+  the System's teaching.
+- **a tell's riffle** (`riffle`, `src/vfx/bazaarlayoutastroll.js`) — Nebula Bluff's tell at Raku's tables (`view.tell`) worn as a world mark: the claimant's top chip lifting and turning on its purse a beat, every couple of real seconds; no words. *Not:* the tell itself (Dovina's rule), a lit choice.
 - **creature** (`game.creatures`, `src/creatures/creatures.js`) — a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **mind** (`Brain`, `src/creatures/ai/`) — what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms.
-- **clapperjar** (`clapper`, `src/creatures/clappers.js`) — the clapping pots, the folk's lowest tier (earthenware). The code's shorter word is
+- **clapperjar** (`clapper`, `src/creatures/clappers.js`) — the clapping pots, the clay folk's lowest tier (earthenware). The code's shorter word is
   accepted.
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
 - **the Lantern Wisp** (`game.wisps`, `src/creatures/wisp/`) — the Dunes' second creature, on the owner's model and its clip suite: it
@@ -214,8 +316,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   sparring circle's lectern. *Not:* a tool's string (the moveset). → detail
 - **the Pithos** — what the folk call the Great Slip Jelly, the Great Dunemaw's FOE, crowned with the broken urn it grew in; the log says "the
   Great Slip Jelly". → detail
-- **the folk** (`npc`, `src/npc/`) — the clay people, fragments of Kaolin Anagami: earthenware (clapperjars) < stoneware < porcelain < the Court.
-  In the game "the folk" are the ones who speak. → detail
+- **the folk** (`npc`, `src/npc/`) — any island's people who speak. Anagami's are **the clay folk**, fragments of Kaolin Anagami, in their tiers:
+  earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
@@ -233,7 +335,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the Emocean** — the collective unconscious, a sea of pure Lachryma outside every island.
 - **an Island of Ego** — an island precipitated out of the Emocean where an identity is strong enough; **Anagami Island** is this one, and
   **Kaolin Anagami** the ego it is.
-- **layer** (`LAYERS`, `src/feedback/cartography.js`) — one level of the map: the upper floor, the ground floor, the basement, the Dunes.
+- **layer** (`LAYERS`, `src/feedback/cartography.js`) — one level of the map: the upper floor, the ground floor, the basement, the Dunes, the Great
+  Dunemaw; and places at the Dunes' height told apart by their render zone, not their height (the Raceway, Margarite's dock).
 - **room** — a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **place** (`game.places`, `src/world/places.js`) — a named spot anything can be sent to by id (`well.mouth`, `kiln`). A point, *not* a room.
 - **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the Zone of Influence, nor a crystal's fret. →
@@ -349,6 +452,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
 - **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+  Its **STATUS shelf** (`codex/status.js`): the domains' levels and Soul Alchemy's ranks as two radar charts.
 - **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
@@ -358,11 +462,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
-- **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only text feedback; **the chat line** is its typing.
+- **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only narration (what happened); **the chat line** is its typing.
 - **the domains** (`src/progress/domains.js`, `game.psyche`) — the seven skills of the Courier's psyche: Ouranurgy, Manifestation, Divination,
   Psychokinesis, Possession, Alteration, Spellscription. No new domains, ever. *Retired:* Spellcasting. → detail
-- **widening** (`WIDEN`, `game.psyche.widen(key)`) — what a domain's level does in play: a multiplier of a tool's range or a bonus to a count,
-  never accuracy; at level 1 the tool is as it is without.
+- **widening** (`RAMP.tools`, `widenOf`, `game.psyche.widen(key)`) — what a domain's level does to a tool in play: a multiplier of its range or a
+  bonus to a count, on the ramp's curve; never accuracy, nor tempo (an attribute's); at level 1 the tool is as it is without.
 - **knack** (`game.knacks`, `src/progress/knacks.js`, `/knack`) — a passive Art, a toggle, opened by an achievement, where an assist lives; on
   until switched off. *Not:* a widening, nor a Movement Art. → detail
 - **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
@@ -386,6 +490,17 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
+- **the overlay** (working name, Espada's and the owner's; `docs/plans/OVERLAY.md`) — the System's sight laid over the world: the ring, tags,
+  System windows, the Book, the title toast; words and numbers in the System's type, saying what is, never what happened. *Not:* the log.
+- **a tag / a System window / the title toast** (working names; OVERLAY.md 8) — a readout pinned to its thing in the world / a sheet
+  summoned into the air before the Courier (the isekai status window) / the one pop-up, for an achievement that awards a title. *Not:* a
+  world mark (no words), the dialogue box (the folk's).
+- **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
+  pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
+- **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
+  Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
+- **the neuralese script** (working name; OVERLAY.md 15.5, a plan) — neuralese written in our own featural glyphs on a hex lattice,
+  decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
@@ -398,7 +513,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Guard break (placeholders for Espada's word). *Not:* a label. → detail
 - **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
-- **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's kiln glaze, tile and icon; never a feeling's colour.
+- **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's colour, sign and icon; never a feeling's colour. Anagami dresses it as a
+  kiln-glaze tile; the identity is the colour and the sign.
 - **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`) — the Crucibelle's beat for the eye, on the wire compass. *Not:* the metronome
   (the fob on the bell), nor in the rhythm mode. → detail
 - **the lens's frame** (`VeritomeFrame`, `src/vfx/veritomeframe.js`) — four corners round what a plate would hold, in the third person while the
@@ -423,7 +539,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a grown skin** (`FrostBisque`, `vfx/caster/frostbisque.js`) — a skin grown over a body from a hit: fired to bisque, frosted, or crazed
   dry. *Not:* a glaze, the vessel's cracks.
 - **a portal / a rift** (`Portal`, `vfx/caster/portal.js`) — a linked pair of crude-rimmed eyes, each a window on the other's view / one
-  alone on the ground, the Emocean turning below it. *Not:* a seam, a Well's mouth.
+  alone on the ground, the Emocean turning below it. The god power Portal (Ouranurgy) opens a portal. *Not:* a seam, a Well's mouth.
 - **damage look / aura / temper** (`damage.<type>`, `aura.<status>`, `game.temper`) — a damage type's colour and motif on a hit; a status shown
   round its creature; a creature's body showing its mental state (never text).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`) — how the weather and hour are drawn: streaks, motes, halo, aurora, rainbow,
@@ -431,6 +547,48 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a room glaze / the room glaze atlas** (`ROOM_GLAZES`, `ROOM_SURFACES`, `src/vfx/roomglazes.js` / `glazeAtlas()`, `src/vfx/surfaces.js`) — a
   real glaze fired onto a room's built surface or its ware (the kilns' natural ash, the hub's salt-glazed brick, the gallery's majolica
   plinths) / the one texture they are drawn from. *Not:* a glaze (the Courier's, `GLAZES`), a material, a surface pattern (`SURFACE`). → detail
+- **the Raceway's sandfall** (`RacewaySandfall`, `src/vfx/racewaysandfall.js`) — the sand pouring over the Raceway's lip and down its face: one curved
+  scrolling sheet, a fainter one behind, dust at its foot. *Not:* a Great Dunemaw sandfall (a floor's door, `vfx/dunemaw.js`).
+- **the Raceway's looks** (`RacewayLooks`, `game.racewayLooks`, `src/vfx/racewaylooks.js`) — the sun plates' glyphs, the start arch's
+  countdown lamps, the gates' marks, the carve's sparks by tier and the ghost's hologram. *Not:* the Raceway (the track, Dovina's).
+- **the rivals' look** (`RacewayRivals`, `src/vfx/racewayrivals.js`) — the race's three rivals dressed: a mini Solar Skiff, its sail in
+  the rival's glaze, a clapperjar riding it that leans into bends, claps as it passes you and tumbles when taken down. *Not:* the rivals
+  (Dovina's racers, `world/raceway/rivals.js`).
+- **a clay knock / a big break / the pot plume** (`RACEWAY_KNOCK_EFFECTS`, `src/vfx/racewayknockeffects.js`) — a rival bumped (chips, dust, its
+  jolt) / taken down (sparks, sherds, a hit-stop) / a pot smashed, grown with the board's speed. *Not:* a takedown (Dovina's rule), a pot burst.
+- **the sibling riders** (`RacewaySiblingRiders`, `src/vfx/racewaysiblingriders.js`) — the Sibling roster's rivals in their own rigs on the
+  Solar Skiff, riding the Courier's rider clips, their boards in their divisions' glazes. *Not:* the party's siblings, the rivals' look.
+- **a hull glaze** (`glazeHull`, `src/vfx/hullglaze.js`; Dovina's `skiffGlaze`) — a glaze fired on the Solar Skiff's hull at the kiln (its
+  HULL tab), at a firing's price, tinting the hull's painting. *Not:* a glaze on the vessel, a room glaze.
+- **the edge strings** (`RacewayEdgeStrings`, `src/vfx/racewayedgestrings.js`) — beads of light on a thread along both edges of the Raceway's
+  running surface, a bright run flowing the race's way just ahead of the board. *Not:* the sun plates' chevrons, the wire compass.
+- **the combo's marks** (`SkiffComboMarks`, `src/vfx/skiffcombomarks.js`) — the trick combo worn on the Solar Skiff in the labradorite's play: the link
+  ring closing as its clock runs out, the step pips (a stack of chevrons aft of the stern, bigger and warmer a step), the banked flares as three little suns standing over the stern, one popping out as C spends it. No words. *Not:* the Lachryma ring.
+- **the skiff on water** (`SkiffWaterLook`, `game.waterFx.skiff`, `src/vfx/skiffwaterlook.js`) — the Solar Skiff skimming water: the splash on and off
+  (in Lachryma's colour on Lachryma), the spray off the keel, its V in the ripple tank. *Not:* the wake (on sand, `world/ground/wake.js`).
+- **the grind's balance mark** (`GrindBalanceMark`, `src/vfx/grindbalancemark.js`) — the grind's lean as a needle on an arc standing behind the
+  Solar Skiff's stern while the keel grinds (and the manual's lean), warming to an ember toward the ends (Tony Hawk's arrow); on a coaster rail hung square to the view, screen-up. No words. *Not:* the balance (a core move).
+- **the board's stakes look** (`SkiffBoardLooks`, `src/vfx/skiffboardlooks.js`; `skiff.stakes`, boat.js) — the board's rules worn on the Solar Skiff: the
+  sail heating to an ember and luffing with smoke, the hull flashed and chipped by a hit and dulled and cracked as the pool falls, a wreck in
+  shards that fly home gold, the manual's tail-up tilt. No words. *Not:* the board's rules (`boardrules.js`), a sibling's shatter.
+- **the buoys' dress** (`RacewayBuoys`, `src/vfx/racewaybuoys.js`) — a buoy as Raceway kit: a glazed stone post, a red or yellow glazed float,
+  chevrons and a gold vane pointing the side to pass; their power a row of chevrons aft on the board. *Not:* the buoys (Dovina's, `buoys.js`).
+- **the cavern's look / a crystal vein** (`RacewayCavern`, `game.racewayCavern`, `src/vfx/racewaycavern.js`) — the Raceway's cavern dressed: its
+  stone and ruin-slab roof with the dark baked in, Lachrymite clusters with their lamps, its edge strings; and a vein of Lachrymite in its
+  floor, the cavern's push (`raceway.plates` with `vein`). *Not:* the cavern (Dovina's course), a sun plate, a Dunes crystal.
+- **the park's dress** (`RacewayPark`, `game.racewayPark`, `src/vfx/racewaypark.js`) — the Raceway park's water (the pond's and the Well's own
+  liquids), bridge decks, coaster rail (a lajvardina-glazed lintel) and its helix tower, and the antlion's maw, dressed over Dovina's
+  placeholders. *Not:* the park (Dovina's ground and tracks, `world/raceway/park.js`), the cavern's look.
+- **the Raceway's props** (`RacewayProps`, `game.racewayProps`, `src/vfx/racewayprops.js`) — Dovina's round six placeholders dressed: the vein
+  lanes as Lachrymite in the sand (a pulsing glow, spires at the edges, a fretted stave at each end), the pot smash's pots as the workshop's
+  pottery, the antlion chaser as the pits' maw ploughing up the road, the City Trial's patches as gems shaped by kind. *Not:* the modes (Dovina's).
+- **the siphons' look** (`RacewaySiphons`, `game.racewaySiphons`, `src/vfx/racewaysiphons.js`) — a siphon dressed: a tarnished ruin arch, a
+  mouth in its keystone with a vortex turning in it, Lachryma drawn up into it; at a drink, the pull off the board. *Not:* the siphons (Dovina's).
+- **the bazaar hall's dress** (`BazaarHall`, `game.bazaarHall`, `src/vfx/bazaarhall.js`) — Raku's bazaar dressed as the Gold Saucer on clay: the dome, the mosaic, the stalls, the neon bands, the lanterns, the gate, the wheel of fortune, the carousel. *Not:* the bazaar (Dovina's room), a table's cloth.
+- **the held stretch** (`drawHeld`, `src/ui/lachrimeter.js`) — the end of the Lachrimeter's tube a cap on the pool holds off, in its source's
+  look (the cracks: dull crazed glass, the clay's cracks in it). *Not:* the reserve (a charge's, paler).
+- **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
+  laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
@@ -484,6 +642,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seed** (`?seed=N`, `game.seed`) — the number the session's chance is drawn from; a stream is one module's own draw. *Not:* a Well's
   `wellSeed`.
 - **the agent** (`game.agent`, `src/agent/agent.js`) — the game as an AI player sees and drives it. *Not:* a creature's mind.
+- **the System's interface** (working name; `docs/plans/AGENT-INTERFACE.md`, a plan) — the game as any agent reaches it: readouts as data (what
+  the overlay draws), intents, time, resources; a protocol (MCP today) is a skin over it. *Not:* the agent (its first client).
 - **playtest** (`npm run playtest`) — a scenario an agent plays to its goals. The stress test fuzzes; a playtest plays.
 - **a sweep** (`scripts/sweeps/<room>.mjs`) — one room entered, worked and left headless, a PASS/FAIL line a check. *Not:* the stress test, a
   playtest, the Soul Brush's mop, the kick's leg sweep.
@@ -515,13 +675,13 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | key | a keyboard key; a Possibilikey | "Possibilikey", in full |
 | station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
-| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`) | "card" is the Veritome's; the title's are scenery; "a choice card" in full |
+| card | a Veritome card; the tarot cards falling on the title; a choice card (the UI's: `ChoiceCard`); a card of the house deck (Raku's tables: `cardTpl`) | "card" is the Veritome's; the title's are scenery; "a choice card", "a house card" in full |
 | shard | a broken pot's piece; the crystal shard (item) | "crystal shard" in full |
-| tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
+| tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the clay folk's (earthenware .. the Court); a Querent hand's (1 .. 3) | "chest tier", "achievement tier", "fish tier", "the clay folk's tiers", "a hand's tier" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
 | chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail | "a chain of ...", "a feeling chain" |
-| combo | the club's chain of blows; the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
+| combo | the club's chain of blows; the rhythm mode's run of notes; the skiff's chain of tricks (`SkiffCombo`) | "the club's combo", "a rhythm combo", "the trick combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (`today()`); the bright part of it (`phaseAt` 'day') | "game day"; "daytime" |
@@ -531,7 +691,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | hop | a crossing of the Emocean (`hop()`); the Pneuka Jar's bounce in the garden (`JarHop`, clip `hop`) | "a hop" is the Emocean's; "the Jar's hop". A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (air, ground); the Great Slip Jelly's; the god hand's clip | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry; a mount on the rail; the Pneuka Jar's clip | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
-| kiln | the workshop's (the kiln station, `kilnUI`); the Heavenly Kiln (`Tribulation`, `world/garden/tribulation.js`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
+| kiln | the workshop's (the kiln station, `kilnUI`: Anagami's finishing station); the Heavenly Kiln (`Tribulation`, `world/garden/tribulation.js`: dressed by your base material, REGISTERS.md 11) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's garden strokes (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden `realm.jarBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code `jarBody` for the garden's body |
 | emote | the Courier's (`EMOTES`); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
@@ -544,7 +704,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | lattice | reprogramming's lattice of Functions; the ambient geometry's folding lattice (`G.lattice`) | "the macro lattice"; "a folding lattice" |
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
-| glaze | the Courier's (`GLAZES`, fired at the kiln); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware) | "a glaze" is the Courier's; "a room glaze" in full |
+| glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware); a hull glaze (the Solar Skiff's, `glazeHull`) | "a glaze" is the Courier's; "a room glaze", "a hull glaze" in full |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words

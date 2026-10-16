@@ -19,11 +19,13 @@
 // Ariadne's Thread (a knack, progress/knacks.js): the way walked since the last Shrine rested at, a point every 3 m, a loop cut off
 // where the way crosses itself (so it is the way back, not the way wandered), drawn on the map from you to that Shrine; switched off,
 // nothing is drawn. Prior art: the thread itself, and Hansel's pebbles; kept for the session only (after a reload, a straight line).
+// The Raceway's layer draws its tracks as roads with their names at their starts (`drawTracks`), as a racing game's course map does.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { FONT, THEMES, theme } from '../ui/theme.js';
+import { zoneOf } from '../render/zonemap.js';
 
 export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
 const LAYERS = [
@@ -32,7 +34,12 @@ const LAYERS = [
   { id: 'basement', name: 'THE BASEMENT', below: -3, cell: 2, sight: 7 },
   { id: 'ground', name: 'GROUND FLOOR', below: 2.6, cell: 2, sight: 7 },
   { id: 'upper', name: 'UPPER FLOOR', below: 1e9, cell: 2, sight: 7 },
+  // places at the Dunes' height but not of the Dunes, told apart by their render zone (render/zonemap.js), never by y
+  { id: 'raceway', name: 'THE RACEWAY', zone: 'raceway', cell: 8, sight: 40 }, // (the Solar Skiff's test circuit: world/raceway/)
+  { id: 'margarite', name: "MARGARITE'S DOCK", zone: 'margarite', cell: 2, sight: 7 }, // (the King's island's quay: world/emocean/margarite.js)
+  { id: 'bazaar', name: "RAKU'S BAZAAR", zone: 'bazaar', cell: 2, sight: 7 }, // (Raku's casino under its dome: world/bazaar/bazaar.js)
 ];
+const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l]));
 const KEY = 'foolsfortune.map.v1';
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
@@ -87,7 +94,14 @@ export class Cartography {
   }
 
   // ------------------------------------------------------------------ layers, cells
-  layerOf(y) { for (const l of LAYERS) if (y < l.below) return l; return LAYERS[LAYERS.length - 1]; }
+  /** The layer of a point: its render zone's own layer if it has one (the Raceway, Margarite's dock), else by height. Takes a position,
+   *  or (y, x, z); a bare y is told by height alone. */
+  layerOf(y, x, z) {
+    if (y && typeof y === 'object') ({ x, y, z } = y);
+    if (x != null) { const zl = BY_ZONE[zoneOf({ x, y, z })]; if (zl) return zl; }
+    for (const l of LAYERS) if (l.below != null && y < l.below) return l;
+    return LAYER_BY_ID.upper;
+  }
   layer(id) { return LAYER_BY_ID[id]; }
   key(ix, iz) { return `${ix},${iz}`; }
   cellIndex(l, x, z) { return [Math.floor(x / l.cell), Math.floor(z / l.cell)]; }
@@ -101,7 +115,7 @@ export class Cartography {
 
   /** What the courier knows about the ground at a point: { tier, k, base } (the god hand's jar charts its own zone). */
   tierAt(x, y, z) {
-    const l = this.layerOf(y);
+    const l = this.layerOf(y, x, z);
     const [ix, iz] = this.cellIndex(l, x, z);
     const c = this.cell(l, ix, iz);
     let tier = c ? Cartography.tierOfK(c.k) : 0;
@@ -133,19 +147,19 @@ export class Cartography {
 
   /** A point seen in a photograph (the Veritome): its cell, and those round it, are charted. */
   chartAt(p) {
-    const l = this.layerOf(p.y), [ix, iz] = this.cellIndex(l, p.x, p.z);
+    const l = this.layerOf(p), [ix, iz] = this.cellIndex(l, p.x, p.z);
     for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) this.learn(l, ix + dx, iz + dz, dx || dz ? 0.3 : 0.5, false, p.y);
   }
 
   // ------------------------------------------------------------------ anchors (named places)
   addAnchor(name, tag, pos, layerId = null) {
-    const l = layerId ? LAYER_BY_ID[layerId] : this.layerOf(pos.y);
+    const l = layerId ? LAYER_BY_ID[layerId] : this.layerOf(pos);
     this.anchors.push({ name, tag, x: pos.x, y: pos.y, z: pos.z, layer: l.id, cov: 0, done: false });
   }
 
   /** The nearest named place on this layer within `max` metres. */
   roomAt(x, y, z, max = 30) {
-    const l = this.layerOf(y);
+    const l = this.layerOf(y, x, z);
     let best = null, bd = max;
     for (const a of this.anchors) {
       if (a.layer !== l.id) continue;
@@ -200,7 +214,7 @@ export class Cartography {
     if (!this.thread.length) c.setLineDash([4, 5]); // (after a reload: only the way it lies)
     c.beginPath(); let pen = false, prev = null;
     for (const q of pts) {
-      if (this.layerOf(q.y).id !== l.id) { pen = false; prev = q; continue; }
+      if (this.layerOf(q).id !== l.id) { pen = false; prev = q; continue; }
       if (prev && this.thread.length && q !== pts[1] && Math.hypot(q.x - prev.x, q.z - prev.z) > 30) pen = false; // (a seam or a fall: no line across it)
       const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale;
       if (pen) c.lineTo(sx, sy); else c.moveTo(sx, sy); pen = true; prev = q;
@@ -208,12 +222,26 @@ export class Cartography {
     c.stroke(); c.restore();
   }
 
+  /** The Raceway's tracks on its layer (Dovina's round-six ask): each line as a road at its width, its name at its start. The points are
+   *  taken once (a frame every 10 m, `raceway.local` to the world), since a track never moves. */
+  drawTracks(c, l, V) {
+    const R = this.game.raceway; if (l.id !== 'raceway' || !R?.tracks?.length) return;
+    this.trackPts ||= R.tracks.map((T) => { const pts = []; for (let s = 0; s < T.length; s += 10) { const F = T.frame(s), p = R.local(F.x, F.z); pts.push({ x: p.x, z: p.z, w: F.w }); } const F0 = T.frame(T.line), p0 = R.local(F0.x, F0.z); return { name: T.name || T.id, pts, start: { x: p0.x, z: p0.z } }; });
+    c.save(); c.lineJoin = c.lineCap = 'round'; c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
+    for (const [pass, style] of [[0, 'rgba(20,8,4,.7)'], [1, 'rgba(231,196,106,.55)']]) for (const K of this.trackPts) {
+      c.strokeStyle = style; c.lineWidth = Math.max(2, 2 * K.pts[0].w * V.scale) + (pass ? 0 : 3);
+      c.beginPath(); K.pts.forEach((q, i) => { const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale; if (i) c.lineTo(sx, sy); else c.moveTo(sx, sy); }); c.closePath(); c.stroke();
+    }
+    for (const K of this.trackPts) { const sx = (K.start.x - V.x) * V.scale, sy = (K.start.z - V.z) * V.scale; c.fillStyle = '#ffe0a0'; c.fillRect(sx - 4, sy - 4, 8, 8); c.fillStyle = 'rgba(251,227,207,.9)'; c.fillText(K.name, sx, sy - 9); }
+    c.restore();
+  }
+
   /** Walking about: what is near and in sight is slowly sensed, and charted with a little time (never past .5). */
   passive(dt) {
     const g = this.game, P = g.player, Z = T.zoi;
     if (g.god?.controlling && g.god.state !== 'on') return;
     if (g.realm?.active) return; // (the Spirit Garden is not ground you explore: never charted, GARDEN-SWEEP #8)
-    const l = this.layerOf(P.pos.y), cs = l.cell, R = l.sight;
+    const l = this.layerOf(P.pos), cs = l.cell, R = l.sight;
     const eye = _v2.set(P.pos.x, P.pos.y + 1.3, P.pos.z).clone();
     const cx = Math.floor(P.pos.x / cs), cz = Math.floor(P.pos.z / cs), n = Math.ceil(R / cs);
     const budget = l.id === 'dunes' ? 120 : 64;
@@ -252,7 +280,7 @@ export class Cartography {
   survey(byGod = false) {
     const g = this.game, P = g.player, Z = T.zoi;
     if (this.pulseCool > 0) return false;
-    const l = this.layerOf(P.pos.y);
+    const l = this.layerOf(P.pos);
     if (!g.lachryma.spend(Z.pulseCost, 'survey')) return false;
     this.pulseCool = Z.pulseCooldown;
     const R = l.id === 'dunes' ? Z.pulseRadius * 3.2 : byGod ? Z.godPulseRadius : Z.pulseRadius;
@@ -400,7 +428,7 @@ export class Cartography {
     else this.headYaw = P.yaw;
     const brg = Cartography.bearing(this.headYaw);
     const room = this.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
-    const l = this.layerOf(P.pos.y);
+    const l = this.layerOf(P.pos);
     const card = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(brg / 45) % 8];
     this.dEl.brg.textContent = `${card} ${String(Math.round(brg)).padStart(3, '0')}°`;
     this.dEl.rm.textContent = `${l.name}${room && room.name !== l.name ? ` · ${room.name}` : ''}`;
@@ -532,7 +560,7 @@ export class Cartography {
   toggle() { this.open ? this.hide() : this.show(); }
 
   show() {
-    const P = this.game.player, l = this.layerOf(P.pos.y);
+    const P = this.game.player, l = this.layerOf(P.pos);
     this.open = true;
     this.root.classList.add('open');
     document.exitPointerLock?.();
@@ -582,6 +610,7 @@ export class Cartography {
     c.save();
     c.translate(W / 2, H / 2);
     this.paint(c, l, V.x, V.z, V.scale, W, { halfW: W / 2, halfH: H / 2 });
+    this.drawTracks(c, l, V);
     // named places
     c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
     for (const a of this.anchors) {
@@ -597,7 +626,7 @@ export class Cartography {
     }
     // the photographs (the Veritome's): a small brass frame where each was taken, turned the way the lens looked, brighter for more stars
     for (const p of this.game.veritome?.book.pins || []) {
-      if (this.layerOf(p.y).id !== l.id) continue;
+      if (this.layerOf(p).id !== l.id) continue;
       const sx = (p.x - V.x) * V.scale, sy = (p.z - V.z) * V.scale;
       c.save(); c.translate(sx, sy); c.rotate(Math.PI - p.yaw);
       c.globalAlpha = 0.45 + 0.15 * (p.stars || 0);
@@ -614,7 +643,7 @@ export class Cartography {
     }
     this.drawThread(c, l, V, P);
     // you (and the jar's tether)
-    if (this.layerOf(P.pos.y).id === l.id) {
+    if (this.layerOf(P.pos).id === l.id) {
       const sx = (P.pos.x - V.x) * V.scale, sy = (P.pos.z - V.z) * V.scale;
       c.save(); c.translate(sx, sy); c.rotate(Math.PI - (this.headYaw ?? P.yaw));
       c.fillStyle = '#fff1dc'; c.beginPath(); c.moveTo(0, -11); c.lineTo(8, 9); c.lineTo(0, 4); c.lineTo(-8, 9); c.closePath(); c.fill();
@@ -625,7 +654,7 @@ export class Cartography {
     c.restore();
     for (const [id, b] of Object.entries(this.layerBtns)) b.classList.toggle('on', id === l.id);
     // the side panel: what you know
-    const here = this.layerOf(P.pos.y);
+    const here = this.layerOf(P.pos);
     const rows = this.anchors.filter((a) => a.layer === l.id).sort((a, b) => b.cov - a.cov).slice(0, 9).map((a) => `${a.done ? '◆' : '◇'} <b>${a.name}</b><span class="bar2"><i style="width:${Math.round(a.cov * 100)}%"></i></span>${Math.round(a.cov * 100)}%`).join('<br>');
     this.side.innerHTML = `<b>${l.name}</b>${here.id === l.id ? ' · you are here' : ''}<br>${rows || '<span style="opacity:.6">nothing charted here yet</span>'}<br><span style="opacity:.6">${this.stats.charted} cells charted · ${this.stats.understood} understood</span>`;
   }
@@ -680,7 +709,7 @@ export class ZoiVeil {
     const moved = Math.hypot(focus.x - this.last.x, focus.z - this.last.z);
     if (!force && this.last.t > 0 && moved < 1.5) return;
     this.last.x = focus.x; this.last.z = focus.z; this.last.t = 0.5;
-    const l = this.carto.layerOf(focus.y);
+    const l = this.carto.layerOf(focus);
     if (l.id === 'dunes') { for (const m of this.veils) if (m) m.count = 0; return; }
     const cs = l.cell, R = 24, n = Math.ceil(R / cs);
     const cx = Math.floor(focus.x / cs), cz = Math.floor(focus.z / cs);

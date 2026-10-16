@@ -13,7 +13,7 @@
 //   THE TALLY     a stone board on the north beach of every kind you have landed (a silhouette until you have), how many, the biggest.
 //   THE PERGOLA   timber beams over the water on posts, hook rings hanging from them (what the grapnel is for), and the tide lamp:
 //                 it shows the tide (low, rising, high, falling: 80 s each); which of the entities are about depends on it (species.js).
-//   THE TREASURY  five plinths on the north beach (a chest of each tier), the Tithe's console and its dais.
+//   THE NORTH BEACH  the gate to Raku's bazaar (world/bazaar/), where the Treasury stood until 2026-10-15 (now world/treasury.js).
 //   and palms round the flat, reeds at the water's edge.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -53,8 +53,8 @@ export function inWeir(p, pad = 0) {
   return Math.hypot(p.x - OX, p.z - OZ) < OASIS.flat + pad && p.y > OY - 16 && p.y < OY + 30;
 }
 
-/** The treasury on the north beach: five plinths (one chest of each tier, common to prismatic), the Tithe's console and the dais its sealed chests land on. */
-export const TREASURY = { z: 40, plinths: [-6.8, -3.4, 0, 3.4, 6.8], top: 0.55, tithe: { x: -11, z: 40.3 }, dais: { x: -15.5, z: 38 } };
+/** The north beach, where the Treasury stood (it moved to Raku's bazaar: world/treasury.js); the bazaar's gate stands on it. */
+export const NORTH_BEACH = { z: 40 };
 export const WEIR_FLOOR = B;
 
 const pondD = (x, z) => Math.max(0, pondDepth(x - DUNE.x, z - DUNE.z));
@@ -108,10 +108,6 @@ export function buildWeir(L, env) {
   for (let i = 0; i < 6; i++) blk(YARD - 2, YARD, 0, 0.8, -7 + i * 4, -5 + i * 4, C.mid);
   blk(YARD + 4.5, YARD + 7, 0, 6, 19, 21.5, STONE);
   blk(YARD + 4.5, YARD + 9, 5.6, 6, 19, 23.5, C.dark);
-  // ---- the treasury: five plinths, the Tithe's console and its dais
-  for (const x of TREASURY.plinths) { blk(x - 0.75, x + 0.75, 0, TREASURY.top, TREASURY.z - 0.55, TREASURY.z + 0.55, C.mid); blk(x - 0.85, x + 0.85, TREASURY.top, TREASURY.top + 0.06, TREASURY.z - 0.65, TREASURY.z + 0.65, C.dark); }
-  { const { x, z } = TREASURY.tithe; blk(x - 0.55, x + 0.55, 0, 1.06, z - 0.32, z + 0.32, STONE); blk(x - 0.62, x + 0.62, 1.06, 1.12, z - 0.4, z + 0.4, C.dark); }
-  { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, -0.2, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
   // ---- the tally's stone (the board itself is drawn on it: Weir.buildBoard)
   blk(9.4, 22.6, -0.5, 6.1, TALLY_AT[2] - OZ + 0.1, TALLY_AT[2] - OZ + 0.7, STONE);
   // words: the places' names cut in the stone; what the keys do is the log's (tracking.js, room.help 'weir': marks in the world carry
@@ -121,17 +117,7 @@ export function buildWeir(L, env) {
   T('PIER', 0, pz0 + 0.8, { width: 1.1, y: -0.02 });
   T('THE YARD', YARD + 4, -10, { width: 2.2 });
   T('THE WELL', (WELL.x0 + WELL.x1) / 2, RIM.z0 - 2.2, { width: 2, sub: 'deep things · the top of the tide', y: 0.06 });
-  ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
-  T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3 });
-  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2 });
   T('HOOK', -12, pz0 - 1, { width: 1.1 });
-}
-
-/** Chests on the plinths (they close again after a while), and the Tithe's console brought alive. */
-export function stockTreasury(game) {
-  const V = (x, y, z) => new THREE.Vector3(OX + x, B + y, OZ + z);
-  TREASURY.plinths.forEach((x, tier) => game.chests.spawn(tier, V(x, TREASURY.top + 0.06, TREASURY.z), { yaw: Math.PI, id: `weir.${tier}`, respawn: () => (game.mode === 'debug' ? ECON.treasury.debug : ECON.treasury.respawn[tier]), floor: B }));
-  game.chests.setTithe({ pos: V(TREASURY.tithe.x, 0, TREASURY.tithe.z), yaw: Math.PI, dais: V(TREASURY.dais.x, 0.16, TREASURY.dais.z) });
 }
 
 export function spawnWeir(Bk, level) {

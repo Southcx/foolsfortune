@@ -6,7 +6,8 @@
 // Prior art: Superman 64's rings and Pilotwings' hoops (the course drawn in the air), Sonic's rings as a line to follow, Mario Kart's
 // boost hoops (light that says "through here"), and a sundial's own gold.
 //
-//   const R = new SolarRing({ radius })   scene.add(R.group)   R.set({ lit, next })   R.pass()   R.update(rawDt)
+//   const R = new SolarRing({ radius })   scene.add(R.group)   R.set({ lit, next })   R.pass()   R.pulse()   R.update(rawDt)
+//   (pulse: a ring taken again and again, the Raceway's sun rings: the flare, and its size swells once and comes back)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -31,10 +32,12 @@ void main() {
   set({ lit = this.lit, next = false } = {}) { this.lit = lit ? 1 : 0; this.u.uNext.value = next ? 1 : 0; }
   /** Passed through: a flare, then it dims to a gold outline and is done. */
   pass() { this.pT = 1; }
+  /** Flown through, and it stays a ring to fly through (the Raceway's): the same flare, its size swelling once and back. */
+  pulse() { this.pT = 1; this.pulsing = true; }
   update(raw = 1 / 60) {
     this.u.uT.value += raw;
     this.k += (this.lit - this.k) * (1 - Math.exp(-raw * 6)); this.u.uLit.value = this.k; // (a ring the shade crosses dims over a moment)
-    if (this.pT > 0) { this.pT = Math.max(0, this.pT - raw * 1.5); this.u.uPass.value = this.pT; this.mesh.scale.setScalar(1 + 0.25 * (1 - this.pT)); }
+    if (this.pT > 0) { this.pT = Math.max(0, this.pT - raw * 1.5); this.u.uPass.value = this.pT; this.mesh.scale.setScalar(this.pulsing ? 1 + 0.3 * Math.sin(Math.PI * (1 - this.pT)) : 1 + 0.25 * (1 - this.pT)); if (this.pT === 0) this.pulsing = false; }
   }
   dispose() { this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }

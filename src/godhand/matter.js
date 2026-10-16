@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // THE ISLAND'S MATTER (docs/plans/GODHAND.md section 3): the ground the god hand moves, a layered height field laid over the authored
-// island round the jar. Each cell keeps the authored ground under it (bedrock, sampled once and never moved), and on top of it CLAY and
-// SAND the hand has put there, and LACHRYMA standing on all of it with the shares of the seven feelings it carries. Water runs by
-// virtual pipes (each cell's four neighbours, a flux sped by the height difference and limited by the cell's own water), sand and clay
-// slump past their angle of repose (real sand's 34 degrees; clay holds to 50), and everything relaxes back toward the authored shape
+// island round the jar. Each cell keeps the authored ground under it (bedrock, sampled once and never moved), and on top of it the two
+// ground layers the hand has put there, FIRM and LOOSE (each island names its own: GROUND; on Anagami, clay and sand), and LACHRYMA standing on all of it with the shares of the seven feelings it carries. Water runs by
+// virtual pipes (each cell's four neighbours, a flux sped by the height difference and limited by the cell's own water), loose and firm
+// slump past their angle of repose (the loose layer at 34 degrees, as sand does; the firm to 50, as clay), and everything relaxes back toward the authored shape
 // over a game day (the MENDING: an Island of Ego keeps its self-image). Matter is moved, never made: every op says how much it took and
 // gave, and what had to come from nothing (the caller charges Lachryma for that).
 // Pure data and arithmetic on typed arrays: nothing here touches three.js or the physics; godhand/islandmatter.js owns one, its look
@@ -14,7 +14,7 @@
 // on a sphere: here the same on a flat grid); Musgrave's thermal erosion (the talus angle); Populous (raise and lower, conserved).
 //
 //   const M = new MatterField({ n, cell, ox, oz })   M.sampleBase((x, z) => y | NaN)   M.step(dt)   M.groundAt(x, z)   M.depthAt(x, z)
-//   M.pour(x, z, r, vol, { kind: 'water' | 'clay' | 'sand', feeling })   M.take(x, z, r, vol) -> { clay, sand, water, feeling }
+//   M.pour(x, z, r, vol, { kind: 'water' | 'firm' | 'loose', feeling })   M.take(x, z, r, vol) -> { firm, loose, water, feeling }
 //   M.raise(x, z, r, dh) -> { moved, made }   M.smooth(x, z, r, toY, k) -> { moved, made }   M.carve(ax, az, bx, bz, w, depth) -> { moved }
 //   M.freeze(x, z, r, sec)   M.hold(x, z, r, sec)   M.pull(x, z, r, sec)   M.corrode(x, z, r, amount)   M.fuse(x, z, r)   M.heat(x, z, r, sec)
 //   M.delta() -> m³ off the authored shape   M.version (bumps when the ground changes)   M.wversion (when the water does)
@@ -25,17 +25,24 @@ export const FEELINGS = DISPLAY_ORDER; // (the seven, in the shown order)
 const NF = FEELINGS.length;
 export const FEELING_INDEX = Object.fromEntries(FEELINGS.map((f, i) => [f, i]));
 
-/** The numbers (GODHAND.md section 3). Talus as rise over run: tan 34° for sand, tan 50° for clay. `mendTau`: real seconds for the
+/** The numbers (GODHAND.md section 3). Talus as rise over run: tan 34° for the loose layer, tan 50° for the firm. `mendTau`: real seconds for the
  *  mending to take two thirds of a change back (1,200: most of it gone within the game day's real hour). `dry`: metres a real second
  *  off still Lachryma. `g`: the island's gravity for the pipes (core/config.js's). */
 export const MATTER = {
   n: 144, cell: 0.5,
   g: 9.8, damp: 0.992, minDepth: 1e-4, film: 0.002, dry: 0.0003, pipe: 1,
-  talus: { sand: 0.67, clay: 1.19 }, slumpK: 0.35, slumpEvery: 0.1,
+  talus: { loose: 0.67, firm: 1.19 }, slumpK: 0.35, slumpEvery: 0.1,
   mendTau: 1200, mendEvery: 0.5,
-  erodeK: 0.004, // (metres of sand a real second a metre-a-second of current wears away, carried and laid down where it slows)
-  lavaCool: 0.06, // (metres of molten matter a real second turned to clay where it lies: the Volcano's)
+  erodeK: 0.004, // (metres of loose a real second a metre-a-second of current wears away, carried and laid down where it slows)
+  lavaCool: 0.06, // (metres of molten matter a real second turned to firm where it lies: the Volcano's)
 };
+
+/** Each island's two ground layers (docs/plans/REGISTERS.md, the owner's ruling of 2026-10-13: the layers' names are the island's, the
+ *  mechanic's are FIRM and LOOSE): their names in the world and their stand-in colours (Calissa's to dress). A new island adds its row. */
+export const GROUND = {
+  anagami: { firm: { name: 'clay', colour: 0x9a5a3a }, loose: { name: 'sand', colour: 0xd8b878 } },
+};
+export const groundOf = (island = 'anagami') => GROUND[island] || GROUND.anagami;
 
 export class MatterField {
   constructor({ n = MATTER.n, cell = MATTER.cell, ox = 0, oz = 0 } = {}) {
@@ -44,7 +51,7 @@ export class MatterField {
     this.cx = ox; this.cz = oz;
     const N = n * n;
     this.base = new Float32Array(N); this.void = new Uint8Array(N); // (the authored ground, and cells with none under them)
-    this.clay = new Float32Array(N); this.sand = new Float32Array(N); this.w = new Float32Array(N);
+    this.firm = new Float32Array(N); this.loose = new Float32Array(N); this.w = new Float32Array(N);
     this.mix = new Float32Array(N * NF); this.mixNext = new Float32Array(N * NF); this.wNext = new Float32Array(N);
     this.fl = new Float32Array(N); this.fr = new Float32Array(N); this.ft = new Float32Array(N); this.fb = new Float32Array(N);
     this.ice = new Float32Array(N); this.still = new Float32Array(N); this.bias = new Float32Array(N); this.hot = new Float32Array(N);
@@ -67,9 +74,9 @@ export class MatterField {
     this.version++;
   }
   /** The ground's top over a cell: the authored ground and the matter on it (frozen Lachryma is ground too). */
-  top(k) { return this.base[k] + this.clay[k] + this.sand[k] + (this.ice[k] > 0 ? this.w[k] : 0); }
+  top(k) { return this.base[k] + this.firm[k] + this.loose[k] + (this.ice[k] > 0 ? this.w[k] : 0); }
   /** Matter heaped on the authored ground at a cell (metres). */
-  amount(k) { return this.clay[k] + this.sand[k]; }
+  amount(k) { return this.firm[k] + this.loose[k]; }
   groundAt(x, z) { const k = this.cellAt(x, z); return k < 0 || this.void[k] ? NaN : this.top(k); }
   depthAt(x, z) { const k = this.cellAt(x, z); return k < 0 ? 0 : this.w[k]; }
   /** The leading feeling of the Lachryma at a cell, or null for none or fair (no share over a fifth). */
@@ -101,15 +108,15 @@ export class MatterField {
   }
 
   // ---- the hand's verbs (each conserves matter; `made` is what came from nothing)
-  /** Lay `vol` cubic metres of a kind over r (clay, sand, or Lachryma of a feeling). */
+  /** Lay `vol` cubic metres of a kind over r (firm, loose, or Lachryma of a feeling). */
   pour(x, z, r, vol, { kind = 'water', feeling = null } = {}) {
     let wsum = 0; this.each(x, z, r, (k, w) => { wsum += w; });
     if (!wsum || vol <= 0) return 0;
     const a = this.cell * this.cell, fi = feeling != null ? FEELING_INDEX[feeling] : -1;
     this.each(x, z, r, (k, w) => {
       const dh = (vol * w) / wsum / a;
-      if (kind === 'clay') this.clay[k] += dh;
-      else if (kind === 'sand') this.sand[k] += dh;
+      if (kind === 'firm') this.firm[k] += dh;
+      else if (kind === 'loose') this.loose[k] += dh;
       else this.addWater(k, dh, fi);
     });
     if (kind === 'water') { this.wversion++; } else this.version++;
@@ -122,14 +129,14 @@ export class MatterField {
     for (let f = 0; f < NF; f++) this.mix[o + f] = (this.mix[o + f] * w0 + (f === fi ? dh : 0)) / w1;
     this.w[k] = w1; this.water += dh * this.cell * this.cell;
   }
-  /** Take up to `vol` cubic metres from the top of r: Lachryma first, then sand, then clay. What it got, by kind (and the water's leading
+  /** Take up to `vol` cubic metres from the top of r: Lachryma first, then loose, then firm. What it got, by kind (and the water's leading
    *  feeling). The authored ground is never taken. */
-  take(x, z, r, vol) {
-    const a = this.cell * this.cell, got = { water: 0, sand: 0, clay: 0, feeling: null }, mixSum = new Float32Array(NF);
+  take(x, z, r, vol, layers = ['w', 'loose', 'firm']) {
+    const a = this.cell * this.cell, got = { water: 0, loose: 0, firm: 0, feeling: null }, mixSum = new Float32Array(NF);
     let wsum = 0; this.each(x, z, r, (k, w) => { wsum += w; });
     if (!wsum) return got;
-    for (const layer of ['w', 'sand', 'clay']) {
-      const want = vol - got.water - got.sand - got.clay;
+    for (const layer of layers) {
+      const want = vol - got.water - got.loose - got.firm;
       if (want <= 1e-6) break;
       this.each(x, z, r, (k, w) => {
         const L = this[layer], dh = Math.min(L[k], (want * w) / wsum / a);
@@ -140,10 +147,33 @@ export class MatterField {
       });
     }
     if (got.water > 0) { let best = -1, bv = 0; for (let f = 0; f < NF; f++) if (mixSum[f] > bv) { bv = mixSum[f]; best = f; } got.feeling = best >= 0 && bv / (got.water / a) > 0.2 ? FEELINGS[best] : null; this.wversion++; }
-    if (got.sand || got.clay) this.version++;
+    if (got.loose || got.firm) this.version++;
     return got;
   }
-  /** Raise the ground at r by dh (negative lowers it): the matter comes from (or goes to) the ring r..2r round it, as clay. What had no
+  /** Two square patches (half side h) trade their matter (Fold), or the first is pressed over the second (Stamp: `copy`). What a copy
+   *  lays over less is `made` (m³). Cells off the field or over no ground are left. */
+  patch(ax, az, bx, bz, h, { copy = false } = {}) {
+    const c = this.cell, n = this.n, m = Math.max(1, Math.round(h / c)), a = c * c;
+    const ia = Math.floor((ax - this.ox) / c), ja = Math.floor((az - this.oz) / c), ib = Math.floor((bx - this.ox) / c), jb = Math.floor((bz - this.oz) / c);
+    const ok = (i, j) => i >= 0 && j >= 0 && i < n && j < n && !this.void[j * n + i];
+    let made = 0, moved = 0;
+    for (let dj = -m; dj < m; dj++) for (let di = -m; di < m; di++) {
+      const iA = ia + di, jA = ja + dj, iB = ib + di, jB = jb + dj;
+      if (!ok(iA, jA) || !ok(iB, jB)) continue;
+      const A = jA * n + iA, B = jB * n + iB;
+      const was = this.firm[B] + this.loose[B] + this.w[B], now = this.firm[A] + this.loose[A] + this.w[A];
+      for (const L of [this.firm, this.loose, this.w]) { const t = L[A]; if (!copy) L[A] = L[B]; L[B] = t; }
+      for (let f = 0; f < NF; f++) { const t = this.mix[A * NF + f]; if (!copy) this.mix[A * NF + f] = this.mix[B * NF + f]; this.mix[B * NF + f] = t; }
+      if (copy) made += Math.max(0, now - was) * a; else moved += (now + was) * a;
+    }
+    this.grow(ia - m, ia + m, ja - m, ja + m); this.grow(ib - m, ib + m, jb - m, jb + m);
+    this.j0 = Math.max(0, Math.min(this.j0, ja - m, jb - m)); this.j1 = Math.min(n - 1, Math.max(this.j1, ja + m, jb + m));
+    this.water = 0; for (let k = 0; k < n * n; k++) this.water += this.w[k]; this.water *= a;
+    this.version++; this.wversion++;
+    return { moved, made };
+  }
+
+  /** Raise the ground at r by dh (negative lowers it): the matter comes from (or goes to) the ring r..2r round it, as firm. What had no
    *  matter to come from is `made` (the caller pays Lachryma for it); lowering never digs below the authored ground. */
   raise(x, z, r, dh) {
     const a = this.cell * this.cell;
@@ -153,16 +183,16 @@ export class MatterField {
     if (dh > 0) {
       let fromRing = Math.min(want * 0.85, ringSum * a * 0.25);
       const share = ringSum > 0 ? fromRing / (ringSum * a) : 0;
-      if (share > 0) this.each(x, z, r * 2, (k, w, d) => { if (d >= r) { const f = 1 - share; this.clay[k] *= f; this.sand[k] *= f; } });
+      if (share > 0) this.each(x, z, r * 2, (k, w, d) => { if (d >= r) { const f = 1 - share; this.firm[k] *= f; this.loose[k] *= f; } });
       else fromRing = 0;
-      this.each(x, z, r, (k, w) => { this.clay[k] += dh * w; });
+      this.each(x, z, r, (k, w) => { this.firm[k] += dh * w; });
       this.version++;
       return { moved: want, made: Math.max(0, want - fromRing) };
     }
     let moved = 0, ring = 0;
     this.each(x, z, r * 2, (k, w, d) => { if (d >= r) ring++; });
-    this.each(x, z, r, (k, w) => { const t = Math.min(this.amount(k), -dh * w); if (t <= 0) return; const fs = Math.min(this.sand[k], t); this.sand[k] -= fs; this.clay[k] -= t - fs; moved += t * a; });
-    if (ring) this.each(x, z, r * 2, (k, w, d) => { if (d >= r) this.clay[k] += moved / ring / a; });
+    this.each(x, z, r, (k, w) => { const t = Math.min(this.amount(k), -dh * w); if (t <= 0) return; const fs = Math.min(this.loose[k], t); this.loose[k] -= fs; this.firm[k] -= t - fs; moved += t * a; });
+    if (ring) this.each(x, z, r * 2, (k, w, d) => { if (d >= r) this.firm[k] += moved / ring / a; });
     this.version++;
     return { moved, made: 0 };
   }
@@ -172,8 +202,8 @@ export class MatterField {
     const a = this.cell * this.cell; let cut = 0, fill = 0;
     this.each(x, z, r, (c, w) => {
       const d = (toY - this.top(c)) * k * w;
-      if (d < 0) { const t = Math.min(this.amount(c), -d); const fs = Math.min(this.sand[c], t); this.sand[c] -= fs; this.clay[c] -= t - fs; cut += t * a; }
-      else if (d > 0) { this.clay[c] += d; fill += d * a; }
+      if (d < 0) { const t = Math.min(this.amount(c), -d); const fs = Math.min(this.loose[c], t); this.loose[c] -= fs; this.firm[c] -= t - fs; cut += t * a; }
+      else if (d > 0) { this.firm[c] += d; fill += d * a; }
     });
     this.version++;
     return { moved: Math.max(cut, fill), made: Math.max(0, fill - cut) };
@@ -185,10 +215,10 @@ export class MatterField {
     this.each((ax + bx) / 2, (az + bz) / 2, L / 2 + w * 1.5, (k) => {
       const px = this.xOf(k) - ax, pz = this.zOf(k) - az, along = px * ux + pz * uz, side = Math.abs(px * -uz + pz * ux);
       if (along < -w / 2 || along > L + w / 2) return;
-      if (side <= w / 2) { const t = Math.min(this.amount(k), depth * (1 - side / (w / 2)) ** 0.5); const fs = Math.min(this.sand[k], t); this.sand[k] -= fs; this.clay[k] -= t - fs; spoil += t * a; }
+      if (side <= w / 2) { const t = Math.min(this.amount(k), depth * (1 - side / (w / 2)) ** 0.5); const fs = Math.min(this.loose[k], t); this.loose[k] -= fs; this.firm[k] -= t - fs; spoil += t * a; }
       else if (side <= w * 1.5) banks.push(k);
     });
-    if (banks.length && spoil) for (const k of banks) this.clay[k] += spoil / banks.length / a;
+    if (banks.length && spoil) for (const k of banks) this.firm[k] += spoil / banks.length / a;
     this.version++;
     return { moved: spoil };
   }
@@ -203,17 +233,17 @@ export class MatterField {
     for (const p of this.pulls) this.each(p.x, p.z, p.r, (k, w) => { this.bias[k] -= p.s * w; });
   }
   /** Eat matter away (Gall's Blight): up to `amount` metres off the matter at the centre; what is eaten is gone (a drain). */
-  corrode(x, z, r, amount) { this.each(x, z, r, (k, w) => { const t = Math.min(this.amount(k), amount * w); const fs = Math.min(this.sand[k], t); this.sand[k] -= fs; this.clay[k] -= t - fs; }); this.version++; }
-  /** Sand fused to glass (Fury's bolts in the sand): kept as clay, which stands where sand would slump. */
-  fuse(x, z, r) { this.each(x, z, r, (k, w) => { const t = this.sand[k] * w; this.sand[k] -= t; this.clay[k] += t; }); this.version++; }
-  /** Molten matter (the Volcano's lava): Lachryma marked hot runs, then cools to clay where it lies. */
+  corrode(x, z, r, amount) { this.each(x, z, r, (k, w) => { const t = Math.min(this.amount(k), amount * w); const fs = Math.min(this.loose[k], t); this.loose[k] -= fs; this.firm[k] -= t - fs; }); this.version++; }
+  /** The loose layer fused hard (Fury's bolts: on Anagami, sand to glass): kept as firm, which stands where loose would slump. */
+  fuse(x, z, r) { this.each(x, z, r, (k, w) => { const t = this.loose[k] * w; this.loose[k] -= t; this.firm[k] += t; }); this.version++; }
+  /** Molten matter (the Volcano's lava): Lachryma marked hot runs, then cools to firm where it lies. */
   heat(x, z, r, sec) { this.each(x, z, r, (k) => { this.hot[k] = Math.max(this.hot[k], sec); }); }
-  /** A feeling's Lachryma turned to another's within r (Transmute), or sand to clay and back. */
+  /** A feeling's Lachryma turned to another's within r (Transmute), or loose to firm and back. */
   transmute(x, z, r, { feeling = null, swap = false } = {}) {
     const fi = feeling != null ? FEELING_INDEX[feeling] : -1;
     this.each(x, z, r, (k, w) => {
       if (fi >= 0 && this.w[k] > 0) { const o = k * NF; for (let f = 0; f < NF; f++) this.mix[o + f] = this.mix[o + f] * (1 - w) + (f === fi ? w : 0); }
-      if (swap) { const s = this.sand[k] * w, c = this.clay[k] * w; this.sand[k] += c - s; this.clay[k] += s - c; }
+      if (swap) { const s = this.loose[k] * w, c = this.firm[k] * w; this.loose[k] += c - s; this.firm[k] += s - c; }
     });
     this.version++; this.wversion++;
   }
@@ -236,7 +266,7 @@ export class MatterField {
   flow(dt) {
     const n = this.n, W = this.w, B = this.bias, c = this.cell, A = c * c, K = dt * MATTER.pipe * MATTER.g / c, damp = MATTER.damp;
     const FL = this.fl, FR = this.fr, FT = this.ft, FB = this.fb;
-    const surf = (k) => this.base[k] + this.clay[k] + this.sand[k] + W[k] + B[k];
+    const surf = (k) => this.base[k] + this.firm[k] + this.loose[k] + W[k] + B[k];
     let any = false, hot = false;
     const ja = Math.max(0, this.j0 - 1), jb = Math.min(n - 1, this.j1 + 1); // (only the rows with water, and one either side)
     for (let j = ja; j <= jb; j++) for (let i = 0; i < n; i++) {
@@ -273,11 +303,11 @@ export class MatterField {
     }
     let total = 0;
     for (let k = k0; k < k1; k++) {
-      // the current wears sand away where it runs fast and lays it down where it slows (a channel through a dune becomes a gully)
+      // the current wears the loose layer away where it runs fast and lays it down where it slows (a channel through a dune becomes a gully)
       const v = (FL[k] + FR[k] + FT[k] + FB[k]) / Math.max(0.05, WN[k]) * 0.25;
-      if (v > 0.2 && this.sand[k] > 0) { const t = Math.min(this.sand[k], MATTER.erodeK * v * dt); this.sand[k] -= t; this.carry = (this.carry || 0) + t; }
-      else if (this.carry > 0 && v < 0.05 && WN[k] > 0.02) { const t = Math.min(this.carry, MATTER.erodeK * dt); this.sand[k] += t; this.carry -= t; }
-      if (this.hot[k] > 0) { hot = true; this.hot[k] -= dt; const t = Math.min(WN[k], MATTER.lavaCool * dt); WN[k] -= t; this.clay[k] += t; }
+      if (v > 0.2 && this.loose[k] > 0) { const t = Math.min(this.loose[k], MATTER.erodeK * v * dt); this.loose[k] -= t; this.carry = (this.carry || 0) + t; }
+      else if (this.carry > 0 && v < 0.05 && WN[k] > 0.02) { const t = Math.min(this.carry, MATTER.erodeK * dt); this.loose[k] += t; this.carry -= t; }
+      if (this.hot[k] > 0) { hot = true; this.hot[k] -= dt; const t = Math.min(WN[k], MATTER.lavaCool * dt); WN[k] -= t; this.firm[k] += t; }
       if (WN[k] < MATTER.film) WN[k] = 0; // (a film thinner than this soaks in: the field's wet rows stay few)
       total += WN[k];
       if (WN[k] > MATTER.minDepth) { const j = (k / n) | 0; if (j < nj0) nj0 = j; if (j > nj1) nj1 = j; }
@@ -294,12 +324,12 @@ export class MatterField {
     return 1;
   }
 
-  /** Thermal erosion: a slope of sand or clay steeper than its talus sends the excess downhill, half the difference a pass (Musgrave). */
+  /** Thermal erosion: a slope of loose or firm steeper than its talus sends the excess downhill, half the difference a pass (Musgrave). */
   slump(dt) {
     const n = this.n, c = this.cell, k1 = Math.min(1, MATTER.slumpK * dt * 10);
     let moved = 0;
     const b = this.bb; if (!b) return;
-    for (const layer of ['sand', 'clay']) {
+    for (const layer of ['loose', 'firm']) {
       const L = this[layer], tal = MATTER.talus[layer] * c;
       for (let j = b[2]; j <= b[3]; j++) for (let i = b[0]; i <= b[1]; i++) {
         const k = j * n + i; if (L[k] <= 1e-4 || this.void[k] || this.ice[k] > 0) continue;
@@ -320,7 +350,7 @@ export class MatterField {
     let changed = false, wet = false, iced = false, left = false;
     const b = this.bb;
     if (b) for (let j = b[2]; j <= b[3]; j++) for (let k = j * n + b[0], ke = j * n + b[1]; k <= ke; k++) {
-      if (this.clay[k] > 1e-4 || this.sand[k] > 1e-4) { this.clay[k] *= f; this.sand[k] *= f; changed = true; if (this.clay[k] < 1e-3) this.clay[k] = 0; if (this.sand[k] < 1e-3) this.sand[k] = 0; if (this.clay[k] || this.sand[k]) left = true; }
+      if (this.firm[k] > 1e-4 || this.loose[k] > 1e-4) { this.firm[k] *= f; this.loose[k] *= f; changed = true; if (this.firm[k] < 1e-3) this.firm[k] = 0; if (this.loose[k] < 1e-3) this.loose[k] = 0; if (this.firm[k] || this.loose[k]) left = true; }
       if (this.ice[k] > 0) { left = true; if ((this.ice[k] -= dt) <= 0) { this.ice[k] = 0; iced = true; } }
       if (this.still[k] > 0) this.still[k] = Math.max(0, this.still[k] - dt);
     }
@@ -334,7 +364,7 @@ export class MatterField {
   /** How far the ground stands from the authored island: the matter laid on it, in cubic metres (rejection reads it). */
   delta() {
     const b = this.bb, n = this.n; if (!b) return 0;
-    let v = 0; for (let j = b[2]; j <= b[3]; j++) for (let k = j * n + b[0], ke = j * n + b[1]; k <= ke; k++) v += this.clay[k] + this.sand[k];
+    let v = 0; for (let j = b[2]; j <= b[3]; j++) for (let k = j * n + b[0], ke = j * n + b[1]; k <= ke; k++) v += this.firm[k] + this.loose[k];
     return v * this.cell * this.cell;
   }
 }

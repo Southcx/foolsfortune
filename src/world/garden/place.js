@@ -55,6 +55,7 @@ export class GardenSite {
       lake: new THREE.MeshStandardMaterial({ color: 0x9fe0ff, emissive: 0x4fb6ff, emissiveIntensity: 0.5, roughness: 0.2, name: 'garden-lake' }),
       soil: new THREE.MeshStandardMaterial({ color: 0x5a3e2a, roughness: 1, name: 'garden-soil' }),
       roof: new THREE.MeshStandardMaterial({ color: 0xb5513c, roughness: 0.7, name: 'garden-roof' }),
+      torii: new THREE.MeshStandardMaterial({ color: 0xa9a59c, roughness: 0.95, name: 'garden-torii' }), // (an ishi-torii's granite grey, so the orange Pneuka Jar stands apart from it: Calissa, 2026-10-07)
     };
     this.build();
     game.scene.add(g);
@@ -128,8 +129,8 @@ export class GardenSite {
     const g = this.group, D = this.by.dantian, F = [];
     // the Dantian: the gate out (a torii), the shed (the Pneuka Box), the lake of your own Lachryma on its crown
     { const m = this.stand(D, dirOf(62, 0), 0);
-      for (const sx of [-1.3, 1.3]) add(this.mats.roof, new THREE.CylinderGeometry(0.16, 0.18, 3, 8).translate(sx, 1.5, 0), m.clone());
-      add(this.mats.roof, new THREE.BoxGeometry(3.6, 0.3, 0.4).translate(0, 3.05, 0), m.clone()); add(this.mats.wood, new THREE.BoxGeometry(3, 0.18, 0.3).translate(0, 2.55, 0), m.clone());
+      for (const sx of [-1.3, 1.3]) add(this.mats.torii, new THREE.CylinderGeometry(0.16, 0.18, 3, 8).translate(sx, 1.5, 0), m.clone());
+      add(this.mats.torii, new THREE.BoxGeometry(3.6, 0.3, 0.4).translate(0, 3.05, 0), m.clone()); add(this.mats.torii, new THREE.BoxGeometry(3, 0.18, 0.3).translate(0, 2.55, 0), m.clone());
       F.push({ kind: 'gate', planet: D, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
     { const d = new THREE.Vector3(0.5, 0.75, 0.42).normalize(); F.push({ kind: 'shed', planet: D, pos: D.c.clone().addScaledVector(d, D.radiusAt(d)) }); } // (Calissa's shed, her lake on the crown)
     // the Herb Terraces: the beds, a ring round its shoulder (shown as many as the garden has)

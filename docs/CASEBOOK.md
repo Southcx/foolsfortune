@@ -658,6 +658,31 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     a vertical ray along a grid line through, and a body set down on whole metres stood on one.
 225. **A double-sided material sets its `shadowSide`** to a side whose depth program is already warm (the
     bodies it rides on cast back-faced): left alone, its sun-shadow depth variant is one nothing at boot uses, and it compiles mid-fight.
+226. **A gate's result is its exit code, never its last line through a pipe**: `npm run check | tail` and
+    `npm run build | tail` return tail's success, so a failing gate let a broken commit through. Chain a gate bare, or with `set -o pipefail`.
+227. **A goal over the ledger reads a record with `best`, never `get`**: `L.hi` keeps a best apart from the counters,
+    so `L.get('parry.run.best')` is always 0. Read a goal's key through `ledOf` (progress/skills.js), which takes either.
+228. **A shader patch is applied to a material once.** `withFade` and its kin add uniforms by string replacement; run
+    twice on one material (a helper that already wraps, wrapped again) it declares them twice, the program fails to link, and the mesh
+    draws nothing with no error in play. Pass the patch's options to the helper that applies it; check a new material's link status.
+229. **What lets a body go does not take it again at once.** A lock that is tested every frame (a grind, a grab, a
+    ledge) and releases at the place it would lock is retaken the next frame, forever: the place just left is barred for a beat, and a
+    lock never takes a point past its own ends.
+230. **A side has one sign, written once.** Where a value means a side (a lean, a steer, a lateral offset), every use of
+    it (the roll it draws, the mark it shows, the push it gives) takes its sign from one named vector, never a re-derived perpendicular.
+231. **A module that asks a service at construction asks it again once that service exists.** Boot order is not a
+    contract: a `game.chat?.add` (or any `game.x?.`) in a constructor that runs before `game.x` is made silently does nothing. Register on
+    first use (a lazy `commands()` from `update`), or construct after the service, and check the command exists headless.
+232. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
+    grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
+    while a menu is over the game.
+NEW:modal-pauses-the-table. **What runs under its own window keeps its clock there.** A page that counts as a modal window (the index's,
+   the Codex's) stops the world's tick; a game played on that page (a table's bots, a timer) is ticked from main.js's modal line
+   (`tickModal`), never only from the module's `update`. A headless probe that calls `update` itself does not prove it.
+NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place whose ground or geometry runs to tens of MB builds it on
+   arrival and gives it back a few real seconds after the Courier has left (keeping only what is slow to work out again, like a
+   field of heights); the heap after a visit is measured, not only the heap inside.
+
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3660,3 +3685,85 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 - **Fix:** `shadowSide: THREE.BackSide` on the corrupted material, so its shadow uses the depth program the slip jelly already warms.
   The shadow looks the same. Measured: Corrupt, Meteor, Thunderhead, Hailstorm and Volcano fired twice, 0 compiled late.
 - **Rule:** 225.
+
+### 2026-10-13 · A broken god hand was committed past a failing check and build (Dovina, the bracelet's sync)
+- **Seen:** commit 375c381 pushed `godhand/powers.js` with a syntax error. `npm run check` printed FAILED and the build errored, but the
+  commit and the push ran anyway.
+- **Cause:** two causes. An inline `// (...)` comment, added by a find-and-replace into a one-line `if (...) { emit(...); continue; }`,
+  commented out the `continue; }` that closed the block. And the gates ran as `npm run check 2>&1 | tail -1 && ...`: a pipe's status is
+  its last command's, so tail's success let the `&&` chain go on.
+- **Fix:** the comment removed (cd 2026-10-13); the TWIN repeat retried headless (one repeat, `bracelet.charm:TWIN`).
+- **Rule:** 226.
+
+### 2026-10-13 · Knacks' and arts' feat ways on a record never opened (Dovina, headless)
+- **Seen:** a probe set `grapple.swing.peak` to 15 (Portal's feat way, 14) and Portal stayed locked; Sculpt's goal bar read 0 with
+  `god.manifest.len` at 5 of 10.
+- **Cause:** a record (`L.hi`) lives in the ledger's `rec`, and `L.get` reads only the counters. `goalFracOf` (progress/skills.js) and the
+  knacks' `G` (progress/knacks.js) read `get`, so every goal on a record was 0: Perfect Pitch's `crystal.sweet.run`, Held Breath's
+  `parry.run.best`, Guide Tone's and Wet Ink's bests among them.
+- **Fix:** `ledOf(L, key)` reads the greater of the counter and the record; goals, the System's goal values and the knacks read through
+  it. Measured: Portal opens by the feat, Sculpt's bar reads 0.5.
+- **Rule:** 227.
+
+### 2026-10-14 · The skiff's sail drew nothing (the owner, v195)
+- **Seen:** the Solar Skiff's sail was wholly transparent, from v194 on.
+- **Cause:** v194 gave the sail its own screen-door fade by wrapping it in `withFade`, but `vessoulPainted` already wraps every painted
+  material in `withFade`. Two wraps declared `uFade`, `uDissolve` and `uDisBase` twice, and the sail's program failed to link.
+  Measured headless: `LINK_STATUS` false before, true after.
+- **Fix:** the sail's own fade uniforms are passed to `vessoulPainted` (its third argument) instead of a second wrap (`courier/skiff/boat.js`).
+- **Rule:** 228.
+
+### 2026-10-14 · The skiff hung at a rail's end (the owner, v195)
+- **Seen:** a grind let run to the end of its rail left the board stuck there.
+- **Cause:** the grind let go at the rail's last point with no upward speed, and the next frame `tryLock` found that same point, 0 m away
+  and inside the heading's cone, and locked again: an end and a lock every frame. A fall off the side set the board 1.3 m out, inside
+  the 1.4 m reach, so it was retaken the same way.
+- **Fix:** the rail just left cannot lock for 0.6 real s (`GRIND.relock`); no lock past a rail's ends; a fall lands outside the reach
+  (`courier/skiff/grind.js`). Measured headless: one lock, one end, and the board 20.8 m past the end 4 real s later.
+- **Rule:** 229.
+
+### 2026-10-14 · A grind's fall threw the board off the wrong side (Calissa, building the balance mark)
+- **Seen:** the board rolled to its right as the balance leaned right, then fell off to its left.
+- **Cause:** the fall's offset took the perpendicular (-vz, 0, vx), which is the board's right (as skiff.js's), and multiplied it by
+  minus the lean's sign: the roll and the fall read the same sign through two different vectors, one negated.
+- **Fix:** the fall moves along the right by the lean's own sign (`courier/skiff/grind.js`).
+- **Rule:** 230.
+
+### 2026-10-14 · /race and /retire did nothing (Dovina, building the race modes)
+- **Seen:** the chat line's `/race` and `/retire`, added in round five, answered as unknown commands.
+- **Cause:** the Race is made with the Raceway, before `game.chat` (main.js makes the chat line later in the boot), and its constructor
+  called `game.chat?.add(...)`: the optional chain met `undefined` and added nothing, with no error. Measured headless: `game.chat` was
+  undefined in the Race's constructor, and the two commands were missing from the chat line's list.
+- **Fix:** the commands are added by `commands()`, called from the Race's first `update` once `game.chat` exists
+  (`world/raceway/race.js`). The skiff's own settings are made after the chat line (`main.js`).
+- **Rule:** 231.
+
+### 2026-10-14 · The skiff's boost kept roaring under the pause menu (the owner, v198: "soften the boost noise")
+- **Seen:** opening the pause menu mid-ride left the skiff's hiss and the flare's hum sounding at full, for as long as the menu stayed open.
+- **Cause:** the skiff's loop (`sfx.skiffLoop`) is set by skiff.js each frame of play; paused, nothing sets it, so it held its last level, and
+  it went straight to the world's bus, which no menu touches. The flare's layer also rose to 0.17 of a hum and 0.36 of noise: loud.
+- **Fix:** a loop bus (`sfx.loopBus`, `quietLoops`: audio/core.js) silenced by the ambience while `menusUp()`; the skiff's loop, the grind,
+  wet sand and a shell's field go through it. The flare's layer cut to a lift (hum +0.025, noise to 0.23 at full speed), and the Raceway's
+  boost whooshes (the carve's release, a sun plate, the solar start, a slope landing) to a third of their gain.
+- **Rule:** 232.
+
+### 2026-10-15 · The folk at Raku's tables never took their turns (Calissa, dressing the bazaar, v208)
+- **Seen:** seated at a table, after your own move the page waited on "RAKU IS THINKING…" for ever.
+- **Cause:** a table's page is an index page, so `modalOpen()` is true and main.js's tick returns before `game.bazaar.update`, which was
+  the only caller of `TableSession.update` (the bots' beat). The headless probe drove `update` by hand, so it passed.
+- **Fix:** `Bazaar.tickModal(dt)` runs the seat's clock from main.js's modal line while a session is open (`world/bazaar/bazaar.js`).
+  Calissa's table view (`vfx/bazaartable.js`) ticks it too; both stay, and `TableSession.update` steps once a frame however many call
+  it (`game.clock.frame`, main.js), so neither caller has to know of the other.
+- **Rule:** NEW:modal-pauses-the-table.
+
+### 2026-10-15 · The Raceway park kept 160 MB after one visit (Petra, the gate: `npm run perf` over budget, 466 MB against 445)
+- **Seen:** the built game, after gc: 290 MB at boot, 452 after one visit to the Raceway, still 452 in the bazaar afterwards.
+- **Cause, measured** (dev heap, gc'd): the park's chunked terrain is 108 MB on its 1,057 x 1,057 grid (positions and normals 29, the
+  chunks' index lists 42, the index buffer 31, heights 4.5); its physics height field 5; the field of heights 4.5; my rails, kit and
+  features 12; Calissa's dressing 17 at arrival and 36 more in the first seconds there. All of it was kept for the session.
+- **Fix:** the ground is lent (`world/raceway/raceway.js`): `releaseGround()` after 10 real seconds away gives back the terrain and its
+  height field's body; `buildGround()` makes them again from the kept field on the next arrival (0.64 s dev, 0.74 s built, under the
+  travel's cover). Built: 295 at boot, 467 inside, **364 after leaving** (was 452). The dressing can follow by `onRelease`
+  (Calissa's); the terrain's own arrays could shrink (lists built on demand, the index buffer sized to what is drawn: Petra's
+  `render/terrain.js`).
+- **Rule:** NEW:lend-the-big-ground.

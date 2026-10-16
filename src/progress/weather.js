@@ -68,7 +68,7 @@ export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', desire:
 /** Each zone's place and exposure (Petra's table: render/zonemap.js). */
 const ZONE_PLACE = {
   dunes: ['anagami', 'open'], beach: ['anagami', 'open'], workshop: ['anagami', 'roofed'], basement: ['anagami', 'roofed'], circuits: ['anagami', 'roofed'],
-  well: ['well:dunemaw', 'deep'],
+  well: ['well:dunemaw', 'deep'], raceway: ['anagami', 'open'], // (the Raceway: Anagami's sky over it, its weather and hour: world/raceway/conditions.js)
 };
 /** Where a place sits on the line: an island by its law, a Well by its own leaning (a mind ruminating leans to grief). */
 const lawOf = (place) => ECON.islands[place]?.law ?? W.wells[place?.slice(5)] ?? 0;

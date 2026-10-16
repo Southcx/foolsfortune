@@ -12,11 +12,18 @@
 // is not fired; LEAVE without keeping puts back what was kept). The idles and their words are Calissa's and Espada's (anim/idlebreak.js
 // IDLES); the choice is the save's `courierIdle` section (main.js).
 //
+// The HULL tab (Dovina's handoff of 2026-10-14, item 12): the Solar Skiff's hull fired with a glaze, from the glazes they have, at a
+// firing's price (the vessel's `cost`, paid as a firing is). AS MADE is the maker's painting. A click tries it on the hull (seen when the
+// board is out; vfx/hullglaze.js); FIRE keeps it in Dovina's `skiffGlaze` (progress/skiffparts.js: `glaze()`, `setGlaze(id)`, which
+// emits skiff.glaze); until that is there, FIRE is greyed. LEAVE without firing puts back the fired one.
+//
 //   const ui = new KilnUI(game)   ui.show()   ui.hide()   ui.render()   ui.open   ui.look (the preview)   ui.spin (turn, -1..1)
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../../progress/econ/table.js';
 import { REGIONS } from './glazes.js';
 import { IDLES } from '../anim/idlebreak.js';
+import { glazeHull } from '../../vfx/hullglaze.js';
+import { sfx } from '../../audio/sfx.js';
 
 const CSS = `
 #kiln { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 9; display: none; width: 330px; user-select: none; }
@@ -70,11 +77,12 @@ export class KilnUI {
     const V = this.game.vessel;
     this.look = { ...V.look }; this.region = 'body'; this.open = true; this.keys.clear();
     this.stand = this.kept = this.game.character?.idles?.stand ?? IDLES.default; // (the idle tried on, and the one kept)
+    this.hull = this.hullFired; // (the hull's glaze tried on: the HULL tab)
     this.root.classList.add('open'); this.dragEl.classList.add('open');
     document.exitPointerLock?.();
     this.render();
   }
-  hide() { if (this.open && this.stand !== this.kept) this.game.character?.idles?.choose(this.kept); this.open = false; // (left without keeping: the kept idle back)
+  hide() { if (this.open && this.stand !== this.kept) this.game.character?.idles?.choose(this.kept); if (this.open && this.hull !== this.hullFired) this.previewHull(this.hullFired); this.open = false; // (left without keeping: the kept idle back, the fired hull glaze back)
     this.root.classList.remove('open'); this.dragEl.classList.remove('open'); this.keys.clear(); }
 
   render() {
@@ -94,8 +102,13 @@ export class KilnUI {
     const st = el('div', `tab${this.region === 'stance' ? ' on' : ''}`, 'STANCE<i style="background:transparent;border-color:transparent"></i>');
     st.onclick = () => { this.region = 'stance'; this.render(); };
     tabs.appendChild(st);
+    const hg = this.hull ? V.glaze(this.hull) : null;
+    const ht = el('div', `tab${this.region === 'hull' ? ' on' : ''}`, `HULL<i style="background:${hg ? hex(hg.color) : 'transparent'}"></i>`);
+    ht.onclick = () => { this.region = 'hull'; this.render(); };
+    tabs.appendChild(ht);
     px.appendChild(tabs);
     if (this.region === 'stance') { this.renderStance(px); this.root.appendChild(px); return; }
+    if (this.region === 'hull') { this.renderHull(px); this.root.appendChild(px); return; }
     const what = el('div', 'what');
     const sayGlaze = (gz) => { what.innerHTML = gz ? `<b>${gz.name}</b><br>${gz.blurb}` : `${REGIONS[this.region].blurb}`; };
     const sw = el('div', 'sw');
@@ -132,6 +145,45 @@ export class KilnUI {
     px.appendChild(row);
     px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn the vessel · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));
     this.root.appendChild(px);
+  }
+
+  // ---------------------------------------------------------------- the HULL tab
+  /** The glaze fired on the Solar Skiff's hull (Dovina's store), or null: as the maker painted it. */
+  get hullFired() { return this.game.skiffParts?.glaze?.() ?? null; }
+  /** Try a glaze on the Courier's board's hull (when its model is in). */
+  previewHull(id) { const sk = this.game.techs?.get?.('skiff')?.skiff; glazeHull(sk?.hullMat, id ? this.game.vessel?.glaze(id) : null); }
+
+  /** The HULL tab: AS MADE and the glazes they have, tried on the hull with a click; FIRE keeps one, at a firing's price. */
+  renderHull(px) {
+    const g = this.game, V = g.vessel, S = g.skiffParts, fired = this.hullFired;
+    const what = el('div', 'what'), say = (gz) => { what.innerHTML = gz ? `<b>${gz.name}</b><br>${gz.blurb}` : '<b>AS MADE</b><br>The Solar Skiff\'s hull as the maker painted it.'; };
+    const sw = el('div', 'sw');
+    const swatch = (gz) => {
+      const s = el('div', `s${(gz?.id ?? null) === this.hull ? ' on' : ''}${gz && gz.metal > 0.3 ? ' metal' : ''}`);
+      s.style.background = gz ? hex(gz.color) : 'repeating-linear-gradient(45deg, #b4603f 0 4px, #f3c9a8 4px 8px)';
+      s.title = gz?.name ?? 'AS MADE';
+      s.onmouseenter = () => say(gz); s.onmouseleave = () => say(this.hull ? V.glaze(this.hull) : null);
+      s.onclick = () => { this.hull = gz?.id ?? null; this.previewHull(this.hull); this.render(); };
+      sw.appendChild(s);
+    };
+    swatch(null);
+    for (const gz of V.owned().filter((x) => (x.kind || 'glaze') === 'glaze')) swatch(gz);
+    px.appendChild(sw); say(this.hull ? V.glaze(this.hull) : null); px.appendChild(what);
+    const row = el('div', 'row');
+    const fire = el('button', '', `FIRE · ${V.cost} CUBES`); fire.disabled = this.hull === fired || !S?.setGlaze;
+    fire.onclick = () => { if (this.fireHull()) this.render(); };
+    const leave = el('button', '', 'LEAVE (Esc)'); leave.onclick = () => this.onLeave?.();
+    row.appendChild(fire); row.appendChild(leave); px.appendChild(row);
+    px.appendChild(el('div', 'hint', `the Solar Skiff's hull · purse ${g.cubes?.balance ?? 0} cubes · a hull glaze shows on the board when it is out`));
+  }
+  /** Fire the hull's glaze: a firing's price, kept by Dovina's store (which says so on the bus: skiff.glaze). */
+  fireHull() {
+    const g = this.game, V = g.vessel, S = g.skiffParts, id = this.hull;
+    if (!S?.setGlaze || id === this.hullFired || (id && !V.has(id))) return false;
+    if (!g.cubes?.spend(V.cost, 'kiln')) { g.log?.say('warn', `The firing costs ${V.cost} cubes.`, { key: 'kiln.poor', throttle: 2 }); return false; }
+    S.setGlaze(id);
+    sfx.kilnFire?.();
+    return true;
   }
 
   /** The STANCE tab: the eight idles, tried on with a click; KEEP keeps one (free), LEAVE without keeping puts back the kept one. */

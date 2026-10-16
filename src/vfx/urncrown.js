@@ -119,7 +119,7 @@ void main() {
 }` }));
     this.core.name = 'urn-core'; this.core.scale.set(1, 0.7, 1); this.core.position.y = radius * 0.1; this.core.visible = false;
     // the shards: the urn in pieces, flying off at the burst
-    this.shards = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(radius * 0.22, 0), new THREE.MeshStandardMaterial({ name: 'urn-shard', color: 0x5f939c, roughness: 0.3, flatShading: true }), 18);
+    this.shards = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(radius * 0.22, 0), new THREE.MeshStandardMaterial({ name: 'urn-shard', color: 0x5f939c, roughness: 0.3 }), 18); // (no flatShading: a detail-0 tetrahedron is non-indexed with its faces' normals already, so it is flat as it is, and shares the instanced standard program: 193 -> 192)
     this.shards.visible = false; this.shards.frustumCulled = false;
     this.group = new THREE.Group(); this.group.name = 'urn-crown'; this.group.add(this.urn, this.flesh, this.core, this.shards);
     this.radius = radius; this.stage = 0; this.shake = 0; this.flying = null; this.t = 0;

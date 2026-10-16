@@ -42,7 +42,7 @@ const smooth = (k) => k * k * (3 - 2 * k);
 
 /** The two halves of a shard: the glazed face, and the clay under it with the broken edge round it. Made once. */
 let GEO = null;
-function shardGeometry() {
+export function shardGeometry() {
   if (GEO) return GEO;
   const { rim, curve, thick } = SHARD, n = rim.length;
   const ring = (k, y0, shrink) => rim.map((r, i) => { const a = (i / n) * Math.PI * 2 + (i % 2 ? 0.16 : -0.08), rr = 0.5 * r * k * shrink; return new THREE.Vector3(Math.cos(a) * rr, y0 - curve * (rr / 0.5) ** 2, Math.sin(a) * rr); });

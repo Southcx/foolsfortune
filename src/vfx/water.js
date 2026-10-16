@@ -9,7 +9,9 @@
 // clear and sandy, the deeps teal to marine). Over it: the painted sky by Fresnel (Schlick, 2% head-on), short of a mirror; a broad,
 // soft sun highlight on the surface's slopes (two layers of the marbling, crossing), its size and strength varied by a slow field of
 // GLOSS (rougher and smoother patches, so the sheen is never one even coat: the owner, 2026-10-08, found the old tight highlight and
-// sharp rings "a little too plastic-y"), and GLINTS where the fine bubbles cross it (the water's sparkle: welcome, the owner's, R58);
+// sharp rings "a little too plastic-y"), and GLINTS where the fine bubbles cross it (the water's sparkle: welcome, the owner's, R58;
+// on v198 the owner found the glare "very distracting" at a low angle: the sun's highlight halved, the glints a third, all of it faded
+// as the eye skims the surface and capped short of the glow's bright pass);
 // the rings of the ripple tank bend the light and the floor softly (their slopes filtered, vfx/ripples.js) and never whiten; the
 // CAUSTICS on the floor are the shared Voronoi net in two layers (vfx/liquid.js), with a faint web of it on the surface over the
 // shallows; the CREST GLOW, light through the thin top of a wave toward the sun (Sea of Thieves); FOAM made of
@@ -108,6 +110,7 @@ void main() {
   vec3 sky = texture2D(uSky, skyUv(normalize(R))).rgb;
   vec3 L = normalize(uSun), H = normalize(L + V);
   float sp = max(dot(N, H), 0.0);
+  float graze = smoothstep(0.05, 0.4, abs(V.y));                                  // (how steeply the eye looks down on the surface: 0 skimming across it, where the sun's whole path smears into a glare)
   vec3 col; float alpha;
   if (uLachryma > 0.5) {
   // LIQUID LACHRYMA: ink, a glossy oil reflection, and the thin film's colours in the marbling's cells and veins
@@ -115,7 +118,7 @@ void main() {
   float film = cells * 0.9 + fres * 0.7 + dot(N.xz, vec2(0.5, 0.35)) + t * 0.01;
   float sheen = 0.025 + 0.3 * fres + 0.5 * pow(veins, 1.5);                     // (ink between, the film in the veins and at the grazing angle)
   col = vec3(0.006, 0.005, 0.011) + liqFilm(film) * sheen * 0.42 + sky * (0.02 + 0.35 * fres);
-  col += vec3(1.0, 0.93, 0.84) * (pow(sp, 420.0) * 2.2 + pow(sp, 60.0) * 0.12);   // (oil is glossy: a tight bright highlight)
+  col += vec3(1.0, 0.93, 0.84) * (pow(sp, 420.0) * 2.2 + pow(sp, 60.0) * 0.12) * mix(0.3, 1.0, graze); // (oil is glossy: a tight bright highlight, dimmed at a low look as the water's is)
   col += liqFilm(film + 0.6) * pow(liqGlow(vW.xz, 0.07, t), 3.0) * 0.08 * (1.0 - fres); // (light pooled inside it, deep down, between the cells)
   float rim = 1.0 - smoothstep(0.0, 0.35, vDepth);                               // (the meniscus, iridescent, where it meets the stone)
   col += liqFilm(film + 0.3) * rim * 0.5;
@@ -148,9 +151,12 @@ void main() {
   float gloss = vGloss;
   col = mix(col, sky * 0.85, clamp(fres * mix(0.75, 1.0, gloss), 0.0, 0.5));    // (the sky in it, short of a mirror: the water stays water)
   col += caus * 0.035 * (1.0 - far) * T.g;                                        // (a faint web of the floor's light on the surface itself, over the shallows)
-  // the sun: a broad, soft highlight on the perturbed surface (its size by the gloss), and glints where the fine bubbles cross it
-  float glint = smoothstep(0.88, 0.95, liqTap(vW.xz * 0.9 + vec2(t * 0.05, -t * 0.03)).g) * pow(sp, 30.0);
-  col += vec3(1.0, 0.97, 0.88) * (pow(sp, mix(70.0, 220.0, gloss)) * mix(0.45, 1.1, gloss) + pow(sp, 16.0) * 0.045 + glint * 0.5 * (1.0 - far));
+  // the sun: a broad, soft highlight on the perturbed surface (its size by the gloss), and glints where the fine bubbles cross it; toned
+  // down (the owner on v198: "needs to be toned down significantly; at a low angle it's very distracting"): half as bright, the glints a
+  // third, all of it faded as the eye looks lower across the water (graze), and capped short of the glow's bright pass (render/glow.js)
+  float glint = smoothstep(0.9, 0.96, liqTap(vW.xz * 0.9 + vec2(t * 0.05, -t * 0.03)).g) * pow(sp, 30.0);
+  vec3 sunC = vec3(1.0, 0.97, 0.88) * (pow(sp, mix(70.0, 220.0, gloss)) * mix(0.22, 0.55, gloss) + pow(sp, 16.0) * 0.03 + glint * 0.16 * (1.0 - far) * graze);
+  col += min(sunC * mix(0.12, 1.0, graze), vec3(0.7));
   // foam made of bubbles: thick at the shore, breathing with the swell, a little on the crests
   float shore = 1.0 - smoothstep(0.0, 0.45, vDepth);
   float foam = liqFoam(vW.xz, 0.3, t, shore * shore * (0.62 + 0.1 * sin(uTime * 0.8 + vW.x * 0.4)) + smoothstep(0.85, 1.0, vH) * 0.12);

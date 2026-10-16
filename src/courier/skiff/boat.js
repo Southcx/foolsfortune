@@ -22,17 +22,23 @@
 // them; until it is parsed and its materials compiled the boat is not drawn, and nothing else waits on it.
 //   const skiff = new Skiff(scene);   skiff.load(game)  (a promise; again: the same one)   skiff.ready
 //   skiff.set({ sail, side, fill, boom, glow, t, speed, wings })   // per frame: what the sail is doing (wings 0..1: the glide)
+//   skiff.pulse(k)                                           // a short flash of the boost's Lachryma glow (a perfect pop, a bank)
 //   skiff.placePennant(windDir, strength, t)                 // per frame, once the group is placed
 //   skiff.pose(rider, s) or skiff.posePhase(clip, t)         // after the rider is posed (skiff.js animate)
 //   skiff.group.position / .quaternion                       // where it is
+//   skiff.stakes({ heat, luff, wear, tilt, roll })            // the board's rules worn on it (vfx/skiffboardlooks.js, each frame)
+//   skiff.flash(k, colour?, dur?)   skiff.broken = bool   skiff.setHullMap(tex | null)   skiff.cleanHull (the hull's unworn material)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, rigUniforms } from '../../render/outline.js';
 import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
 import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
+import { featTint } from '../../vfx/oxidation.js';
+import { LACHRYMA_TINT } from '../../vfx/racewayeffects.js';
+import { glazeHull } from '../../vfx/hullglaze.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
 // rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
@@ -51,6 +57,19 @@ const FURLED = { yard: 0.055, sail: 0.06 };
 // the belly at full fill: each sail bone out to the side of the one below (m), from Skiff_RideCruise; Skiff_RideIdle is a third of it
 const BELLY = [0.27, 0.22, -0.14];
 const C = { rope: 0xe9d4a4, energy: 0xffc65c };
+// THE BOOST'S GLOW (round 3, the owner: the push is Lachryma's, so it glows in Lachryma's colour): the flare and every turbo (`glow`,
+// skiff.boosting 0..1) turn the energy parts' warm light to Lachryma's and tint the cloth's own glow with it, the oil film walking
+// through it (`film` of it, at `filmRate` loops a real second: vfx/oxidation.js featTint); `pulse()` a short flash of it (a perfect pop,
+// a bank: real seconds `pulseDur`). Uniforms only: the hull's, the cloth's and the energy's programs are as they were.
+export const SKIFF_BOOST_GLOW = { energy: 1.6, cloth: 0.9, tintCloth: 0.85, film: 0.25, filmRate: 0.3, pulse: { energy: 2.2, cloth: 1.2 }, pulseDur: 0.45 };
+const WARM = new THREE.Color(PALETTE.glow ?? C.energy), LACH = new THREE.Color(LACHRYMA_TINT), WHITE = new THREE.Color(1, 1, 1), _lc = new THREE.Color(), _fc = new THREE.Color();
+// THE BOARD'S STAKES (round 6, boardrules.js; their look is vfx/skiffboardlooks.js, which sets them): the scorch heats the cloth toward an
+// ember (`heat`, its glow warmed and the cloth a little browned) and the luff flutters it (`luff`: the belly emptied, the bones shaking);
+// a low pool wears the hull (`wear`: its glaze duller and rougher, its glow lower); a hit flashes it (`flash`); the manual stands the
+// board on its tail (`tilt`, rad nose up, about the rider's feet, `roll` by the lean). On the body, never the group: the rider, the
+// marks and the physics are as they were, and the model itself is never moved (a rival's or the ghost's clone of it stays whole).
+export const SKIFF_STAKES = { ember: 0xff6a2a, scorched: 0x7a4a30, browned: 0.3, emberTint: 0.8, emberGlow: 1.1, dull: 0x7c7068, dulled: 0.45, rough: 0.25, dim: 0.4, flash: 2.4, flutter: { amp: 0.2, rate: 17 }, emptied: 0.6 };
+const EMBER = new THREE.Color(SKIFF_STAKES.ember), SCORCHED = new THREE.Color(SKIFF_STAKES.scorched), DULL = new THREE.Color(SKIFF_STAKES.dull), _hc = new THREE.Color(), _bv = new THREE.Vector3();
 const Zax = new THREE.Vector3(0, 0, 1), Xax = new THREE.Vector3(1, 0, 0);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3();
 // SKIFF_GLIDE: the glide's pose of the boat (Space held in the air; the owner's R8: "a Skiff_Glide pose, oars out as wings"). The oars
@@ -72,7 +91,7 @@ const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a),
 
 // the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do): the Vessoul's painted material,
 // so the hull and the parts share the god hand's and the Pneuka Jar's shader program (vfx/vessoulpaint.js)
-const painted = (map, o = {}) => vessoulPainted(map, o);
+const painted = (map, o = {}, U) => vessoulPainted(map, o, U);
 /** A texture the glTF brought, filtered so it never crawls: mipmapped down, and `near` (Blender's Closest) kept only up close. */
 function filtered(tex, near) {
   if (!tex) return null;
@@ -92,10 +111,11 @@ export class Skiff {
     this.group.visible = false;
     this.group.userData.zoneFree = true; // (shown and hidden by the tech, in the Dunes only: the zones placed it, waiting at the origin, in the workshop, and hid the first summon a quarter second: CASEBOOK, 2026-10-08)
     scene.add(this.group);
-    this.side = 1; this.boomAngle = 0.5; this.L = 0; this.fill = 0; this.glow = 0; this.t = 0; this.folded = 1;
+    this.side = 1; this.boomAngle = 0.5; this.L = 0; this.fill = 0; this.glow = 0; this.t = 0; this.folded = 1; this.pulseK = 0;
     this.wind = { yaw: 0, str: 0.6, t: 0 };
     this.ground = -0.6; // (the sand's height in the group's frame: skiff.js says, each frame)
     this.tip = new THREE.Vector3(); // the boom's end, in world space (for the sheet)
+    this.st = { heat: 0, luff: 0, wear: 0, tilt: 0, roll: 0 }; this.flashK = 0; this.flashDur = 0.3; this.flashC = new THREE.Color(1, 1, 1);
     this.buildRope();
   }
 
@@ -107,6 +127,7 @@ export class Skiff {
       .then(({ default: b64 }) => new GLTFLoader().parseAsync(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, ''))
       .then(async (gltf) => {
         this.build(gltf);
+        this.hullGlaze(game); // (the glaze fired on the hull at the kiln: hullGlaze below)
         // (its programs built off the main thread before its first frame, as the warm-up builds the rest, and for the buffer the frame is
         // drawn into, as it does: nothing compiles in play. compileAsync compiles at the call and only waits after, so the target is put back
         // at once. An empty frame first, as main.js's warm-up does: compile reads the clipping state the last render left, and the trail
@@ -148,11 +169,12 @@ export class Skiff {
     // the materials, by name (each painted, Emission in the .blend: here lit by the game and glowing back a share of itself)
     for (const m of meshes) {
       const src = m.material, tex = src.emissiveMap || src.map;
-      if (src.name === 'Skiff_Hull') m.material = painted(filtered(tex, true));
+      if (src.name === 'Skiff_Hull') { this.hullTex = filtered(tex, true); this.cleanHull = painted(this.hullTex); m.material = this.hullMat = painted(this.hullTex); } // (the board's own hull, worn and flashed by its stakes; `cleanHull` the same program unworn, for the rivals' boards: vfx/racewayrivals.js)
       else if (src.name === 'Skiff_Parts') m.material = painted(filtered(tex, false));
-      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }); }
+      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }, this.sailFade = rigUniforms()); } // (the screen-door fade, its own uniforms: the ride sees through the sail, skiff.js; painted is already withFade's, a second wrap declared uFade twice and the sail's program failed: nothing drawn)
       else if (src.name === 'CourierEnergy') m.material = this.energyMat = new THREE.MeshStandardMaterial({ color: src.color.clone(), roughness: 0.35, metalness: 0.2, emissive: PALETTE.glow ?? C.energy, emissiveIntensity: 0.3 });
       m.material.name = src.name;
+      if (src.name === 'Skiff_Hull') this.cleanHull.name = src.name;
       src.dispose?.();
       m.castShadow = true;
       m.receiveShadow = src.name === 'Skiff_Hull';
@@ -162,12 +184,7 @@ export class Skiff {
       // open a thousandfold too (CASEBOOK, 2026-10-08)
       if (src.name === 'Skiff_Hull' || src.name === 'Skiff_Parts') addOutline(m);
     }
-    // the hover glow under the hull, riding the hull bone (it bobs, pitches and rises out of the sand with it): steady, warm, no flicker
-    const emitMat = new THREE.MeshBasicMaterial({ color: C.energy, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-    this.emit = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), emitMat);
-    this.emit.rotation.x = -Math.PI / 2; this.emit.position.y = -0.36; this.emit.scale.set(0.9, 3.4, 1);
-    this.emit.frustumCulled = false;
-    this.bone.hull.add(this.emit);
+    // (no hover glow under the hull: the owner, 2026-10-13, it clipped into the sand; the glow lives on the cloth and the energy parts)
     this.P = new BoatPose(gltf.animations, bones);
     this.rest = (b) => this.P.rest.q.subarray(this.P.index[b] * 4, this.P.index[b] * 4 + 4);
     // the glide's wings: Skiff_Glide's oars, each its rest turned by the pose (SKIFF_GLIDE), held while gliding (skiff.js `wings`). The
@@ -176,8 +193,18 @@ export class Skiff {
     this.glideQ = Object.fromEntries(['oar_shoulderL', 'oar_shoulderR'].filter((n) => this.P.index[n] != null).map((n) => [n, glideOar(_q.fromArray(this.rest(n)), n.endsWith('L') ? 1 : -1)]));
     this.rom = new JointLimits();
     for (const [name, spec] of Object.entries(SKIFF_ROM)) { const b = this.bone[name]; if (b) this.rom.add(b, _q.fromArray(this.rest(name)), spec); }
-    this.group.add(model);
+    this.body = new THREE.Group(); this.body.name = 'SolarSkiffBody'; // (the stakes' tilt and a wreck's hiding are the body's: the model is never moved)
+    this.body.add(model); this.group.add(this.body);
     this.P.write(this.P.rest);
+  }
+
+  // ------------------------------------------------------------------ the hull's glaze (Calissa's: fired at the kiln, vfx/hullglaze.js)
+  /** The hull in the glaze fired on it (Dovina's `game.skiffParts.glaze()`; none until it is there), and again whenever one is fired. */
+  hullGlaze(game) {
+    this.model?.traverse((o) => { if (!this.hullMat && o.isMesh && !o.userData.isOutline && o.material?.name === 'Skiff_Hull') this.hullMat = o.material; });
+    const apply = (id) => glazeHull(this.hullMat, id ? (game?.vessel?.glaze?.(id) ?? id) : null);
+    apply(game?.skiffParts?.glaze?.() ?? null);
+    if (!this.hullGlazeOn) { this.hullGlazeOn = true; game?.events?.on?.('skiff.glaze', (e) => apply(e?.glaze ?? null)); }
   }
 
   // ------------------------------------------------------------------ the sheet (a rope to the rider's hands)
@@ -221,12 +248,52 @@ export class Skiff {
   /** sail 0..1 hoisted; side +-1; fill 0..1; boom = the boom's angle from dead aft (radians, + to the boat's right); glow 0..1 (a flare); t seconds. */
   set({ sail, side, fill, boom, glow, t, speed, wings = 0 }) {
     this.wings = wings;
+    const dt = Math.min(0.1, Math.max(0, t - this.t)), G = SKIFF_BOOST_GLOW;
     this.L = sail; this.side = side; this.fill = fill; this.boomAngle = boom; this.glow = glow; this.t = t;
+    this.pulseK = Math.max(0, this.pulseK - dt / G.pulseDur);
     if (!this.P) return;
-    this.clothMat.emissiveIntensity = PAINT_LIGHT + 0.7 * glow;
-    this.energyMat.emissiveIntensity = 0.3 + 1.4 * glow;
-    this.emit.material.opacity = 0.38 + 0.22 * Math.min(1, (speed || 0) / 24) + 0.3 * glow;
+    // the boost's glow: Lachryma's colour (the film walking through it) over the energy's warm light and the cloth's own, by the push
+    const k = THREE.MathUtils.clamp(glow, 0, 1), p = this.pulseK * this.pulseK, tint = smooth(0, 0.4, Math.max(k, p));
+    _lc.copy(LACH).lerp(featTint(t * G.filmRate, _fc, { bright: 1.1 }), G.film).lerp(WHITE, 0.35 * p);
+    this.energyMat.emissive.copy(WARM).lerp(_lc, tint);
+    this.clothMat.emissive.copy(WHITE).lerp(_lc, G.tintCloth * tint);
+    this.clothMat.emissiveIntensity = PAINT_LIGHT + G.cloth * k + G.pulse.cloth * p;
+    this.energyMat.emissiveIntensity = 0.3 + G.energy * k + G.pulse.energy * p;
+    this.applyStakes(dt);
   }
+  /** The board's stakes as they look (vfx/skiffboardlooks.js sets them each frame; SKIFF_STAKES): heat, luff, wear 0..1, tilt and roll rad. */
+  stakes(o) { Object.assign(this.st, o); }
+  /** A flash through the hull: a hit (white-hot), a mend (gold); fading in `dur` real seconds. */
+  flash(k = 1, colour = 0xffffff, dur = 0.3) { if (k >= this.flashK) { this.flashK = Math.min(1.5, k); this.flashC.set(colour); this.flashDur = dur; } }
+  /** Wrecked: the board's body hidden while its shards are out (vfx/skiffboardlooks.js), shown again as they fly home. */
+  set broken(v) { if (this.body) this.body.visible = !v; }
+  get broken() { return !!this.body && !this.body.visible; }
+  /** The hull's painting: a worn one (cracked, vfx/skiffboardlooks.js), or null for its own. */
+  setHullMap(tex) { const m = this.hullMat; if (!m) return; const t = tex || this.hullTex; if (m.map !== t) { m.map = m.emissiveMap = t; } }
+  /** The stakes applied (set: each frame, after the boost's glow). */
+  applyStakes(dt) {
+    const S = this.st, K = SKIFF_STAKES, h = THREE.MathUtils.clamp(S.heat, 0, 1), w = THREE.MathUtils.clamp(S.wear, 0, 1);
+    this.flashK = Math.max(0, this.flashK - dt / Math.max(0.05, this.flashDur));
+    if (h > 0.001) { // (the cloth toward an ember: its own glow warmed, the cloth browned a little, flickering as it luffs)
+      this.clothMat.emissive.lerp(EMBER, K.emberTint * h);
+      this.clothMat.emissiveIntensity += K.emberGlow * h * h * (1 + 0.25 * S.luff * Math.sin(this.t * 23));
+    }
+    this.clothMat.color.setRGB(1, 1, 1).lerp(SCORCHED, K.browned * h * h);
+    const H = this.hullMat; if (!H) return;
+    H.color.setRGB(1, 1, 1).lerp(DULL, K.dulled * w);
+    H.roughness = 0.7 + K.rough * w;
+    const f = Math.min(1, this.flashK);
+    H.emissive.copy(WHITE).lerp(_hc.copy(this.flashC), f);
+    H.emissiveIntensity = PAINT_LIGHT * (1 - K.dim * w) + K.flash * f * f;
+    // the tilt (the manual): about the rider's feet, so they stay on the deck and the tail drops to the sand
+    const B = this.body; if (!B) return;
+    if (Math.abs(S.tilt) + Math.abs(S.roll) < 1e-4) { if (B.position.lengthSq() || B.quaternion.w < 1) { B.position.set(0, 0, 0); B.quaternion.identity(); } return; }
+    B.quaternion.setFromAxisAngle(Xax, -S.tilt).multiply(_q2.setFromAxisAngle(Zax, S.roll));
+    _v.set(0, SKIFF.deck, SKIFF.rider.z);
+    B.position.copy(_v).sub(_bv.copy(_v).applyQuaternion(B.quaternion));
+  }
+  /** A short flash of Lachryma's light through the boat (a perfect pop, a bank: vfx/racewaylooks.js), fading in SKIFF_BOOST_GLOW.pulseDur. */
+  pulse(k = 1) { this.pulseK = Math.max(this.pulseK, Math.min(1, k)); }
 
   /** The ride: the boat's clips with the rider's weights (R: the Rider, after it posed the body; s: { t, speed, steer, L }), then the code's. */
   pose(R, s) {
@@ -261,9 +328,10 @@ export class Skiff {
       _q.fromArray(this.rest('boom')).multiply(_q2.setFromAxisAngle(Zax, this.boomAngle));
       B.boom.quaternion.slerp(_q, w);
       // the belly: each sail bone out to the side it fills to, and a small flap when it luffs
-      const flap = (1 - this.fill) * 0.05 * L;
+      const flap = (1 - this.fill) * 0.05 * L, lf = this.st.luff * L, FL = SKIFF_STAKES.flutter; // (luffing from a scorch: the belly emptied, the cloth shaking)
       ['sail_1', 'sail_2', 'sail_3'].forEach((n, i) => {
-        const x = this.side * this.fill * BELLY[i] + flap * Math.sin(t * 3.2 + i * 1.7) * (i + 1) / 3;
+        const x = this.side * this.fill * (1 - SKIFF_STAKES.emptied * lf) * BELLY[i] + flap * Math.sin(t * 3.2 + i * 1.7) * (i + 1) / 3
+          + lf * FL.amp * (Math.sin(t * FL.rate + i * 2.3) * 0.7 + Math.sin(t * FL.rate * 1.9 + i) * 0.3) * (i + 1) / 3;
         B[n].position.x += (x - B[n].position.x) * w;
       });
       // the pennant: its root turned about the mast to where the wind goes; the five links ripple down it, quick and tight in a strong

@@ -13,15 +13,20 @@
 //             the deck: the hop's physics carries the body, casebook rule 19)
 //   THE GLIDE Space held in the air: the suite's Air_Glide over the upper body (arms out as wings), by `glide` (0..1, skiff.js's
 //             wings); the boat's half of Skiff_Glide is the oars swung out (boat.js SKIFF_GLIDE)
+//   THE GRAB  LMB / RMB held in the air (skiff.js `grab`): a hand to the board's rail, over Skiff_Ollie's crouch and UAL's kneel
+//             (courier/skiff/grabreach.js: the under-pose here by the grab's weight, the reach in the skiff's hands())
+//   GRIND TRICK on a rail (skiff.js `grindTrick`): the tail slide a hand back to the stern's lip, the nose grind a crouch leant over
+//             the bow (grabreach.js, by the same weights as a grab)
 //   PHASES    Skiff_Summon, Skiff_Mount, Skiff_Dismount, Skiff_Recall, Skiff_Bail (then the UAL get-up from the sand): the whole body
 //
 // Prior art: SSX's and Jet Set Radio's board stances (a carve as a held lean, a grab as a held air pose), Tony Hawk's ollie cut into
 // crouch, pop, air and land, and Wind Waker's sail hoisted hand over hand.
 //
-//   const R = new Rider(ch)   R.ride(base, w, s, dt)   (s: { t, speed, steer, L, hoistDir, furling, flaring, charge, air, popT, landT, glide })
+//   const R = new Rider(ch)   R.ride(base, w, s, dt)   (s: { t, speed, steer, L, hoistDir, furling, flaring, charge, air, popT, landT, glide, grab, grindTrick })
 //   R.phase(base, clip, t, w)   R.lift(clip, t)  the clip's feet above their first frame's (m)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { GrabReach } from './grabreach.js';
 
 const damp = THREE.MathUtils.damp, smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const OLLIE = { crouch: 0.23, pop: 0.27, peak: 0.45, land: 0.73 }; // (Skiff_Ollie's moments, clip seconds: frames 8, 9, 14, 23)
@@ -34,6 +39,7 @@ export class Rider {
     this.A = C.pose(); this.B = C.pose();
     this.turnW = 0; this.furlW = 0; this.unfurlW = 0; this.boostW = 0; this.ollieW = 0;
     this.boost = 'none'; this.boostT = 0; this.lastFlare = false;
+    this.grabs = new GrabReach(ch); // (the grab's hands on the rail: grabreach.js)
   }
 
   /** How far the clip's lower foot is above where it was at the first frame, at time t (m): measured once, by posing the clip. */
@@ -100,6 +106,8 @@ export class Rider {
       C.sample(GLIDE.clip, s.t, B, true);
       C.blend(A, B, s.glide * GLIDE.w, this.ch.MASK_UPPER, 0);
     }
+    // the grab: crouched over the board, bent to it (grabreach.js: its weights eased here, its hands put on the rail in the skiff's hands())
+    this.grabs.pose(this, A, s, dt);
     C.blend(base, A, w);
   }
 

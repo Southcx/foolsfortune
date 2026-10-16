@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import { feelingOfKind } from './mycelium.js';
 
+const CEREMONY = { heard: false }; // (a score ceremony seen this session: the table view now paces the count)
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
@@ -30,6 +31,74 @@ const RULES = {
   'skiff.glide': (s) => s.skiffGlide?.(), // (the wings' wind: audio/moves.js skiffLoop)
   'skiff.tumble': (s, e) => s.tumbleThump?.(e.speed), // (the bail's ragdoll on the sand, a thump a contact)
   'sibling.hit': (s, e) => s.siblingHit?.(e.down), // (a sibling's clay struck: audio/vessel.js)
+  'race.count': (s, e) => s.raceCount?.(e.n), // (the Raceway: audio/raceway.js; its cue is music/raceway.js)
+  'race.go': (s) => s.raceGo?.(),
+  'race.solarstart': (s) => s.raceSolarStart?.(),
+  'race.gate': (s, e) => s.raceGate?.(e.split),
+  'race.lap': (s, e) => s.raceLap?.(e.best === true), // (best: true when this lap is the new best)
+  'race.finish': (s, e) => { s.raceFinish?.(e.medal); s.raceWet?.(false); },
+  'skiff.carve.charge': (s, e) => s.carveCharge?.(e.tier),
+  'skiff.carve': (s, e) => s.carveRelease?.(e.tier),
+  'skiff.plate': (s, e) => s.skiffPlate?.(e.power ?? 1),
+  'skiff.pop': (s, e) => s.skiffPop?.(e.perfect),
+  'skiff.pop.miss': (s) => s.skiffPopMiss?.(),
+  'skiff.grab': (s, e) => s.skiffGrab?.(e.grab, e.seconds),
+  'skiff.grab.late': (s) => s.skiffGrabLate?.(),
+  'skiff.land.slope': (s, e) => s.skiffLandSlope?.(e.gain),
+  'skiff.combo': (s, e) => s.skiffCombo?.(e.n),
+  'skiff.combo.bank': (s, e) => s.skiffComboBank?.(e.mult),
+  'skiff.combo.drop': (s) => s.skiffComboDrop?.(),
+  'raceway.branch': (s) => s.racewayBranch?.(),
+  'skiff.water': (s, e) => s.skiffWater?.(e.on !== false, e.speed),
+  'skiff.grind.trick': (s) => s.skiffGrindTrick?.(),
+  'race.bump': (s, e) => s.raceBump?.(e.impact),
+  'race.takedown': (s) => s.raceTakedown?.(),
+  'race.place': (s, e) => s.racePlace?.(e.place),
+  'skiff.hull': (s, e) => s.skiffHull?.(e.damage, e.left), // (the Raceway's round six: audio/racewaystunts.js, audio/racewaymodes.js)
+  'skiff.wreck': (s) => s.skiffWreck?.(),
+  'skiff.refill': (s) => s.skiffRefill?.(),
+  'skiff.scorch': (s) => s.skiffScorch?.(),
+  'skiff.manual': (s, e) => s.skiffManual?.(e.seconds, e.fell),
+  'skiff.shoulder': (s) => s.skiffShoulder?.(),
+  'skiff.nearmiss': (s) => s.skiffNearMiss?.(),
+  'skiff.gap': (s, e) => s.skiffGap?.(e.points),
+  'skiff.buoy': (s, e) => s.skiffBuoy?.(e.hit !== false, e.power),
+  'race.pot': (s) => s.racePot?.(),
+  'race.taunt': (s) => s.raceTaunt?.(),
+  'race.flyover': (s) => s.raceFlyover?.(),
+  'race.restart': (s) => s.raceRestart?.(),
+  'race.rewind': (s, e) => s.raceRewind?.(e.seconds),
+  'licence.fail': (s) => s.licenceFail?.(),
+  'cup.race': (s) => s.cupRace?.(),
+  'cup.finish': (s, e) => s.cupFinish?.(e.place),
+  'citytrial.start': (s) => s.cityTrialStart?.(),
+  'citytrial.clock': (s, e) => s.cityTrialClock?.(e.left),
+  'citytrial.patch': (s) => s.cityTrialPatch?.(),
+  'citytrial.stadium': (s) => s.cityTrialStadium?.(),
+  'wager.place': (s) => s.wagerPlace?.(),
+  'wager.settle': (s, e) => s.wagerSettle?.(!!e.won),
+  'bazaar.enter': (s) => s.bazaarEnter?.(), // (Raku's bazaar: audio/casino.js; its cue music/casino.js)
+  'casino.chips': (s, e) => s.casinoChips?.(!!e.cash),
+  'casino.sit': (s) => s.casinoSit?.(),
+  // (Querent's count: Calissa's score ceremony, ui/scoreceremony.js, drives it beat by beat; until one has begun, the hand plays it whole, a beat
+  // late so a ceremony starting on the same move is heard first)
+  'table.ceremony.begin': () => { CEREMONY.heard = true; },
+  'table.ceremony.beat': (s, e) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
+    : e.kind === 'flourish' ? s.casinoFlourish?.(e.tier ?? 1) : null),
+  'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
+    : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
+  'casino.howto': (s) => s.casinoPage?.(),
+  'casino.result': (s, e) => s.casinoResult?.(!!e.won),
+  'race.escape.wake': (s) => s.escapeWake?.(),
+  'race.escape.caught': (s) => s.escapeCaught?.(),
+  'race.start': (s, e) => { s._place = null; s.raceWet?.(e.aspect === 'grief' || e.aspect === 'mirth'); }, // (rain: wet sand under the board)
+  'race.end': (s) => s.raceWet?.(false),
+  'skiff.landhard': (s) => s.skiffLandHard?.(),
+  'skiff.grind': (s) => s.skiffGrind?.(),
+  'skiff.grind.end': (s, e) => s.skiffGrindEnd?.(e.why || 'end', e.metres),
+  'skiff.ring': (s, e) => s.skiffRing?.(e.ring),
+  'race.back': (s) => { s.skiffGrindEnd?.(null); s.raceBack?.(); },
+  'skiff.bail': (s) => s.skiffGrindEnd?.(null), // (a bail mid-grind: the scrape stops; the bail's own sounds are the skiff's)
   'wisp.notice': (s) => s.wispNotice?.(), // (the Lantern Wisp: audio/wisp.js)
   'wisp.cast': (s) => s.wispCast?.(),
   'wisp.hit': (s) => s.wispHit?.(),

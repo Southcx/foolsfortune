@@ -62,11 +62,17 @@ import { lekythos } from '../vfx/garden/lekythos.js';
 import { animStage } from './animstage.js';
 import { casterShaderStage2, CASTER_SHADER_STAGE2_IDS } from './castershaderstage2.js';
 import { braceletStage } from './braceletstage.js';
+import { sandfallStage } from './sandfallstage.js';
+import { racewayLooksStage } from './racewaylooksstage.js';
+import { racewayCavernStage } from './racewaycavernstage.js';
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 
 export function buildStage(id, game) {
   let obj = null;
   if (id === 'anim:lab') return animStage(game); // (the Anim Lab: the Courier's animation stack, played, stepped and scrubbed: workbench/animstage.js)
+  if (id === 'raceway:looks') return racewayLooksStage(game); // (the sun plates, the arch's countdown, the gates, the carve's sparks and the ghost on a stand-in track: workbench/racewaylooksstage.js)
+  if (id === 'raceway:cavern') return racewayCavernStage(game); // (the cavern's stone, crystals, veins, edge strings and Dread's fog on the real branch: workbench/racewaycavernstage.js)
+  if (id === 'raceway:sandfall') return sandfallStage(game); // (the Raceway's sandfall down a stand-in of its face, with its sliders: workbench/sandfallstage.js)
   if (id === 'godhand:bracelet') return braceletStage(game); // (the bracelet on the hand, the Pneuka Jar and the Courier, with its sliders: workbench/braceletstage.js)
   if (CASTER_SHADER_STAGE2_IDS.includes(id)) return casterShaderStage2(game); // (the caster shaders S6 to S10, each with its sliders: workbench/castershaderstage2.js)
   if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)

@@ -204,7 +204,7 @@ export class WireCompass {
     this.placeT -= dt;
     if (C && this.placeT <= 0 && !g.realm?.active) { // (the Spirit Garden is no floor of the workshop: never charted, never announced)
       this.placeT = 0.25;
-      const l = C.layerOf(P.pos.y), room = C.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
+      const l = C.layerOf(P.pos), room = C.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
       const name = room?.name || l?.name || null;
       if (name && name !== this.place) { this.place = name; if (!g.circuits?.active) g.events?.emit('place.enter', { room: name, layer: l?.name }); }
     }
@@ -224,7 +224,7 @@ export class WireCompass {
     this.ink = this.alpha < 0.05 ? +this.inked : this.ink + (+this.inked - this.ink) * (1 - Math.exp(-dt * 6));
     COMPASS_U.uInk.value = this.ink;
     // the waypoint, if it is on their layer
-    const wp = C?.waypoint, same = wp && C.layerOf(P.pos.y)?.id === wp.layer;
+    const wp = C?.waypoint, same = wp && C.layerOf(P.pos)?.id === wp.layer;
     this.wpA += ((same ? 1 : 0) - this.wpA) * (1 - Math.exp(-dt * 5));
     this.wpTape.visible = this.wpWorld.visible = this.wpA > 0.01;
     if (!this.wpTape.visible) return;

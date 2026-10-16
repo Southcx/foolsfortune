@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { CRIB } from './ostraca.js';
 
-const G = (L, k) => L.get(k) || 0;
+const G = (L, k) => Math.max(L.get(k) || 0, L.best?.(k) || 0); // (a counter or a record: `parry.run.best` and the like are records, CASEBOOK)
 const under = (L, prefix) => (L.under ? L.under(prefix).filter(([, v]) => v > 0).length : 0);
 /** Each knack: what it does, and the ledger's ways to open it (the patient's count, the skilled feat; any one). `switch` is where the
  *  game reads it (Petra wires each: `game.knacks.on(id)`); `number` what it changes. The names are Espada's, approved by the owner. */
@@ -26,9 +26,9 @@ export const KNACKS = {
   wideBore: { name: 'Wide Bore', does: "Makes the psygun's shots a third wider",
     opens: (L) => G(L, 'drill.hits') >= 5000 || G(L, 'chain.max') >= 25,
     switch: "tools/psygun/weapon.js (a shot's radius)", number: 'x 4/3' },
-  thickWalls: { name: 'Thick Walls', does: 'Lets the shield take a tenth more before the clay',
+  thickWalls: { name: 'Last Straw', does: 'Marks on the Lachryma ring when the shield could not take one more full blow', // (an assist, no longer +10% shield: SPINE.md 1.3, the owner 2026-10-13; named Last Straw by Espada)
     opens: (L) => G(L, 'vessel.mends') >= 200 || G(L, 'well.run.whole') >= 1,
-    switch: "courier/vessel/damage.js (the shield's cost)", number: 'a full blow costs 35 / 1.1 Lachryma' },
+    switch: "the Lachryma ring (Calissa's: lit while game.knacks.on('thickWalls') and the pool holds under SHIELD, courier/vessel/damage.js)", number: 'the last 35 Lachryma of the pool marked' },
   perfectPitch: { name: 'Perfect Pitch', does: "Sounds a crystal's target note once more before you strike",
     opens: (L) => G(L, 'crystal.strike') >= 300 || G(L, 'crystal.sweet.run') >= 10,
     switch: 'world/dunes/crystals.js (the reference note)', number: 'one more reference, a beat before the strike' },
@@ -53,6 +53,9 @@ export const KNACKS = {
   ariadnesThread: { name: "Ariadne's Thread", does: 'Shows on the map the way back to the last Shrine you rested at',
     opens: (L) => G(L, 'map.room') >= 50 || G(L, 'cogitomap.firstrun') >= 1,
     switch: 'feedback/cartography.js (the map)', number: 'a thread from you to the Shrine' },
+  houseWhisper: { name: 'Inside Tip', does: "Raku's whisper: marks the move the house would make at his tables (always shown when you practise)", // (Espada's name, 2026-10-15)
+    opens: (L) => G(L, 'casino.practised') >= 3 || G(L, 'casino.won') >= 1, // (three practice games finished, or one game won for chips)
+    switch: 'world/bazaar/session.js coach() ({ suggest }: the house bot\'s choice, coach/index.js hint)', number: 'a gold mark on one choice' },
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
 };
 

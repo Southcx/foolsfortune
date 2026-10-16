@@ -12,7 +12,7 @@
 // browsers as a short code (export / import in the Codex).
 // ---------------------------------------------------------------------------
 import { T } from '../core/config.js';
-import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
+import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf, goalsFracOf, ledOf } from './skills.js';
 
 
 const VERSION = 2;
@@ -77,8 +77,8 @@ export class System {
   // ---- progress (read from the ledger) ----
   /** [0..1] for one goal, or for a skill (the mean over its goals). */
   goalFrac(skillId, i, g) { return goalFracOf(this.game.ledger, g); }
-  skillFrac(id, goals) { return goals.length ? goals.reduce((s, g, i) => s + this.goalFrac(id, i, g), 0) / goals.length : 1; }
-  goalValue(skillId, i) { const sk = this.skill(skillId); const g = sk?.goals[i]; return g ? (this.game.ledger?.get(g.key) || 0) : 0; }
+  skillFrac(id, goals) { return goalsFracOf(this.game.ledger, goals, !id.includes('.') && !!BY_ID[id]?.any); } // (an `any` art: its furthest way)
+  goalValue(skillId, i) { const sk = this.skill(skillId); const g = sk?.goals[i]; return g ? ledOf(this.game.ledger, g.key) : 0; }
   /** An art or a variant by id ('blink', 'blink.rush'), with its goals. */
   skill(id) {
     const [aid, vid] = id.split('.'), a = BY_ID[aid];

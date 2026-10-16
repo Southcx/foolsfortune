@@ -1,0 +1,209 @@
+// ---------------------------------------------------------------------------------------
+// THE TRICK COMBO'S MARKS (docs/plans/SKIFF-RACING.md section 9; Dovina's handoff, 2026-10-14, item 5): the Solar Skiff's trick combo
+// (courier/skiff/combo.js) read off the board itself, in Lachryma's colour, with no words and no numbers. Three marks, one mesh:
+//   - THE LINK RING: a ring of light round the hull, a little under the deck. While the chain is live (in the air, on a rail, in a
+//     carve) it is whole; on the sand it closes in from the stern up both sides as the link's clock (`combo.t` of COMBO.link) runs out,
+//     and is gone at the bow when the chain banks. A trick linked fills it again with a flash.
+//   - THE STEP PIPS: a stack of six chevrons on the centreline aft of the stern, pointing to the bow, each bigger than the one before it;
+//     lit from the stern back, one a step of the multiplier (`combo.mult`, a step of COMBO.kinds: x1.5, x2 ... x4), so a higher
+//     multiplier is a longer, bigger stack (the owner asked what the old diamonds were: more must read as more at a glance, with no
+//     numbers); the unlit ones a faint socket, so the ladder's top shows; a step taken flashes its chevron, and the whole gauge warms
+//     from Lachryma's blue toward gold as the stack climbs.
+//   - THE BANKED FLARES: three little suns standing up in a row just aft of the stern, over the deck, leaned back to face the chase
+//     camera (the owner, v204: "large, but also too far back": flat on the sand 5 m aft they fell under the frame; the balance mark's
+//     arc stands over them), filled left to right as seen from behind, each a pie by its share of `combo.stocks` (0..3). C spends one
+//     whole (skiff.flare.banked { rail, left }): that sun pops (a flash, then out over `spent` real seconds, the library's
+//     skiff.flare.spend at it) and the rest stay. A bank flashes them; a drop dulls the ring a moment as it breaks (the effects'
+//     moments are the library's: skiff.combo.bank / .drop, played by vfx/racewaylooks.js).
+//   - THE BUOYS' POWER (round 6, Dovina's handoff item 9: world/raceway/buoys.js `power`, 0..5): a row of five small chevrons across the
+//     board just aft of the stern, the step pips' kin, lit from the left as seen from behind, one a step; a step flashes its chevron,
+//     and a buoy missed (the power to nothing) dims the row out dull. Shown only while there is power (or as it is lost).
+// One merged mesh, one draw call, on the plates' glow material's program (a mapped basic: the strength of each vertex is read off the
+// glow atlas's gradient by its u, so no vertex colours and no new program). Blended over, not added: unlit, so its dark body reads on
+// noon sand and its flash at night, where an added glow washed to white (measured headless); its geometry is built once and only its
+// u is written each frame. Its colour is the labradorite's play, not a cyan glow (the owner, v204): the material's colour walked by
+// `schillerInk` (vfx/oxidation.js), ink with the oil film's violet, teal, gold and magenta flashing up through it.
+//
+// Prior art: SSX Tricky's boost meter and Tony Hawk's combo multiplier (the chain and its step), Mario Kart's item roulette ring and
+// Splatoon's ink tank worn on the body (a gauge on the thing, not the screen), Dead Space's diegetic spine meter, Crash Team Racing's
+// reserve pips (banked boost counted, never numbered), a rank's stacked chevrons and Mario Kart's mini-turbo going blue to orange (the
+// step pips: more stripes, bigger, warmer, is more), Sonic Riders' air tank; the sun's glyph (vfx/racewaylooks.js) for the stocks.
+//
+//   const M = new SkiffComboMarks({ map })   M.attach(group)   M.update(dt, combo, t, power?)   M.link(mult)   M.bank()   M.drop()   M.dispose()
+//   COMBO_MARKS (the numbers)
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { COMBO } from '../courier/skiff/combo.js';
+import { schillerInk, SCHILLER } from './oxidation.js';
+
+/** The numbers, in the board's own frame (+Z the bow, Y up; m and rad): the marks' height under the deck; the link ring (radius, band
+ *  width, segments); the step pips (how many; the first chevron's distance aft and the gap between them; the first's half width and
+ *  how much each next one grows; its depth by its width; an arm's thickness and its growth a step); the warmth the gauge climbs to; the
+ *  banked flares (the middle sun's place, z aft and y up; m apart across; the lean back toward the chase camera, rad; a sun's radius,
+ *  its segments; a spent sun's pop, real seconds, and its flash); brightness lit and as an empty socket; the flashes' real seconds;
+ *  the drop's dull colour; how fast the whole fades in and out; the schiller's least and most. */
+export const COMBO_MARKS = {
+  y: -0.3,
+  ring: { r: 2.4, w: 0.28, segs: 56 },
+  pips: { n: 6, r: 2.8, gap: 0.22, w: 0.28, grow: 1.16, depth: 0.5, thick: 0.1, thickGrow: 0.012 },
+  stocks: { z: -2.3, y: 0.3, apart: 0.85, tilt: 0.45, size: 0.27, segs: 18, spent: 0.5, pop: 1.9 },
+  warm: 0xe8901c, warmMax: 0.6,
+  schiller: { floor: 0.38, sheen: 0.92 },
+  lit: 0.95, socket: 0.14, flash: { link: 0.35, step: 0.5, bank: 0.7, drop: 0.55 },
+  dull: 0x6a6478, fade: { in: 12, out: 3 },
+  power: { n: 5, z: 2.08, apart: 0.3, w: 0.11, depth: 0.55, thick: 0.06, flash: 0.45, lost: 0.6 }, // (the buoys' power: z aft of the middle, x apart, a chevron's half width)
+};
+
+// the glow atlas's gradient (vfx/racewaylooks.js glowAtlas: its left half, alpha by u), and its inverse: the u that gives a brightness
+const GRAD = [[0, 0.95], [0.145, 0.5], [0.3145, 0.15], [0.484, 0]];
+function uOf(b) {
+  const a = Math.max(0, Math.min(1, b)) * 0.95;
+  for (let i = 1; i < GRAD.length; i++) {
+    const [u0, a0] = GRAD[i - 1], [u1, a1] = GRAD[i];
+    if (a >= a1) return u0 + (u1 - u0) * ((a0 - a) / Math.max(1e-6, a0 - a1));
+  }
+  return GRAD[GRAD.length - 1][0];
+}
+const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
+const _c = new THREE.Color(), DULL = new THREE.Color(COMBO_MARKS.dull), WARM = new THREE.Color(COMBO_MARKS.warm);
+
+/** The marks' geometry: triangles, each vertex with a cell (which mark and part it belongs to) and a weight (its share of the cell's
+ *  brightness: a band's edges soft, its middle whole). Position, uv; the cells and weights kept on the side. */
+function build() {
+  const C = COMBO_MARKS, pos = [], cell = [], wt = [];
+  const v = (x, z, c, w, y = C.y) => { pos.push(x, y, z); cell.push(c); wt.push(w); };
+  const at = (a, r) => [Math.sin(a) * r, Math.cos(a) * r]; // (a from the bow, round to the left)
+  // the link ring: segment j its own cell, a band in two strips (inner edge, middle, outer edge)
+  const R = C.ring, r0 = R.r - R.w / 2, r1 = R.r + R.w / 2;
+  for (let j = 0; j < R.segs; j++) {
+    const a0 = (j / R.segs) * Math.PI * 2, a1 = ((j + 1) / R.segs) * Math.PI * 2, c = j;
+    for (const [ra, rb, wa, wb] of [[r0, R.r, 0, 1], [R.r, r1, 1, 0]]) {
+      const [p0x, p0z] = at(a0, ra), [p1x, p1z] = at(a1, ra), [q0x, q0z] = at(a0, rb), [q1x, q1z] = at(a1, rb);
+      v(p0x, p0z, c, wa); v(p1x, p1z, c, wa); v(q1x, q1z, c, wb);
+      v(p0x, p0z, c, wa); v(q1x, q1z, c, wb); v(q0x, q0z, c, wb);
+    }
+  }
+  // the step pips: a stack of chevrons on the centreline aft of the stern, pointing to the bow, each bigger than the last (a bright
+  // front edge, its back edge softer), cells after the ring's
+  const P = C.pips, pip0 = R.segs;
+  for (let i = 0; i < P.n; i++) {
+    const w = P.w * Math.pow(P.grow, i), h = w * P.depth, th = P.thick + P.thickGrow * i, z = -(P.r + P.gap * i); // (z: aft is -Z)
+    const A = [0, z + h / 2], Lf = [-w, z - h / 2], Rt = [w, z - h / 2], A2 = [0, z + h / 2 - th], L2 = [-w, z - h / 2 - th], R2 = [w, z - h / 2 - th];
+    for (const [o, e, o2, e2] of [[A, Lf, A2, L2], [A, Rt, A2, R2]]) { // (each arm a quad: the front edge whole, the back edge soft, its tip softer)
+      v(o[0], o[1], pip0 + i, 1); v(e[0], e[1], pip0 + i, 0.7); v(e2[0], e2[1], pip0 + i, 0.45);
+      v(o[0], o[1], pip0 + i, 1); v(e2[0], e2[1], pip0 + i, 0.45); v(o2[0], o2[1], pip0 + i, 0.6);
+    }
+  }
+  // the banked flares: little suns standing in a row aft of the stern (the first on the left as the chase camera sees it), each a fan
+  // of wedges (a wedge its own cell, for the pie, filled clockwise from the top) and eight short rays, leaned back to face the camera
+  const S = C.stocks, sun0 = pip0 + P.n, cT = Math.cos(S.tilt), sT = Math.sin(S.tilt);
+  for (let i = 0; i < 3; i++) {
+    const [cx, cy, cz] = sunAt(i);
+    const sv = (a, r, c, w) => { const ux = -Math.sin(a) * r, uy = Math.cos(a) * r; v(cx + ux, cz + uy * sT, c, w, cy + uy * cT); }; // (a from the top, clockwise as seen from behind)
+    for (let k = 0; k < S.segs; k++) {
+      const b0 = (k / S.segs) * Math.PI * 2, b1 = ((k + 1) / S.segs) * Math.PI * 2, c = sun0 + i * (S.segs + 1) + k;
+      sv(0, 0, c, 1); sv(b1, S.size, c, 0.85); sv(b0, S.size, c, 0.85);
+    }
+    const rc = sun0 + i * (S.segs + 1) + S.segs; // (the rays: one cell, lit when the sun is whole)
+    for (let k = 0; k < 8; k++) {
+      const b = (k / 8) * Math.PI * 2, w = 0.16, ra = S.size * 1.12, rb = S.size * (k % 2 ? 1.5 : 1.8);
+      sv(b - w, ra, rc, 0.8); sv(b + w, ra, rc, 0.8); sv(b, rb, rc, 0);
+    }
+  }
+  // the buoys' power: a row of small chevrons across, aft of the stern, pointing to the bow (cells after the suns')
+  const W = C.power, pow0 = sun0 + 3 * (S.segs + 1);
+  for (let i = 0; i < W.n; i++) {
+    const cx = ((W.n - 1) / 2 - i) * W.apart, z = -W.z, w = W.w, h = w * W.depth, th = W.thick, c = pow0 + i; // (i 0 at +X: the left as seen from behind)
+    const A = [cx, z + h / 2], Lf = [cx - w, z - h / 2], Rt = [cx + w, z - h / 2], A2 = [cx, z + h / 2 - th], L2 = [cx - w, z - h / 2 - th], R2 = [cx + w, z - h / 2 - th];
+    for (const [o, e, o2, e2] of [[A, Lf, A2, L2], [A, Rt, A2, R2]]) { v(o[0], o[1], c, 1); v(e[0], e[1], c, 0.7); v(e2[0], e2[1], c, 0.45); v(o[0], o[1], c, 1); v(e2[0], e2[1], c, 0.45); v(o2[0], o2[1], c, 0.6); }
+  }
+  // (each triangle wound to face up, the suns up and aft: one side drawn, as the plates' glow is, so the program is theirs; upside
+  // down in a flip it is unseen)
+  for (let i = 0; i < cell.length; i += 3) {
+    const A = i * 3, Bq = A + 3, Cq = A + 6, ny = (pos[Bq + 2] - pos[A + 2]) * (pos[Cq] - pos[A]) - (pos[Bq] - pos[A]) * (pos[Cq + 2] - pos[A + 2]);
+    if (ny < 0) { for (let k = 0; k < 3; k++) [pos[Bq + k], pos[Cq + k]] = [pos[Cq + k], pos[Bq + k]]; [cell[i + 1], cell[i + 2]] = [cell[i + 2], cell[i + 1]]; [wt[i + 1], wt[i + 2]] = [wt[i + 2], wt[i + 1]]; }
+  }
+  const n = cell.length, g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(n * 2).fill(0.49), 2).setUsage(THREE.DynamicDrawUsage));
+  return { g, cell: Int16Array.from(cell), wt: Float32Array.from(wt), cells: pow0 + W.n, pip0, sun0, pow0 };
+}
+
+/** Sun i's middle in the board's frame (i 0 at +X: the board's left, the left as seen from behind). */
+export function sunAt(i, out = [0, 0, 0]) { const S = COMBO_MARKS.stocks; out[0] = (1 - i) * S.apart; out[1] = S.y; out[2] = S.z; return out; }
+
+export class SkiffComboMarks {
+  /** `map`: the plates' glow atlas (vfx/racewaylooks.js), so the material is the plates' glow's program. */
+  constructor({ map }) {
+    const B = (this.B = build());
+    this.mat = new THREE.MeshBasicMaterial({ name: 'skiff-combo-marks', map, color: SCHILLER.ink, transparent: true, depthWrite: false });
+    this.mesh = new THREE.Mesh(B.g, this.mat);
+    this.mesh.name = 'skiff-combo-marks'; this.mesh.frustumCulled = false; this.mesh.renderOrder = 4; this.mesh.visible = false;
+    this.b = new Float32Array(B.cells);
+    this.show = 0; this.linkT = 0; this.stepT = 0; this.stepPip = -1; this.bankT = 0; this.dropT = 0; this.steps = 0; this.lastRing = 0;
+    this.spentT = 0; this.spentI = -1;
+  }
+  /** Worn by a board (its group: the marks ride it, in its frame). */
+  attach(group) { if (this.mesh.parent !== group) { this.mesh.parent?.remove(this.mesh); group?.add(this.mesh); } }
+  /** A trick linked (skiff.combo): the ring fills with a flash; a step of the multiplier lights its pip. */
+  link(mult) {
+    this.linkT = 1;
+    const steps = Math.min(COMBO_MARKS.pips.n, Math.round((Math.max(1, mult ?? 1) - 1) / COMBO.kinds));
+    if (steps > this.steps) { this.stepT = 1; this.stepPip = steps - 1; }
+    this.steps = steps;
+  }
+  bank() { this.bankT = 1; this.dropT = 0; this.steps = 0; }
+  drop() { this.dropT = 1; this.steps = 0; }
+  /** A banked flare spent whole by C (skiff.flare.banked): `stocks` what is left. The sun that went pops and goes out; returns its
+   *  index (for the pop's effect, vfx/racewaylooks.js). */
+  spend(stocks) { this.spentI = Math.max(0, Math.min(2, Math.ceil((stocks || 0) + 1 - 1e-3) - 1)); this.spentT = 1; return this.spentI; }
+
+  /** Each frame: `combo` the skiff's live combo (n, t, mult, stocks) or null; `t` real seconds (the film's walk); `power` the buoys' (0..5). */
+  update(dt, combo, t, power = 0) {
+    const C = COMBO_MARKS, B = this.B, b = this.b, W = C.power;
+    const n = combo?.n || 0, stocks = combo?.stocks || 0, live = n > 0;
+    for (const k of ['linkT', 'stepT', 'bankT', 'dropT']) this[k] = Math.max(0, this[k] - dt / C.flash[k.slice(0, -1)]);
+    const pw = Math.max(0, Math.min(W.n, Math.round(power || 0)));
+    if (pw > (this.power || 0)) { this.powT = 1; this.powPip = pw - 1; } else if (pw < (this.power || 0) && pw === 0) { this.lostT = 1; this.lostN = this.power; }
+    this.power = pw; this.powT = Math.max(0, (this.powT || 0) - dt / W.flash); this.lostT = Math.max(0, (this.lostT || 0) - dt / W.lost);
+    this.spentT = Math.max(0, this.spentT - dt / C.stocks.spent);
+    const want = live || stocks > 0.01 || this.spentT > 0 || this.dropT > 0 || this.bankT > 0 || pw > 0 || this.lostT > 0 ? 1 : 0;
+    this.show = damp(this.show, want, want ? C.fade.in : C.fade.out, dt);
+    this.mesh.visible = this.show > 0.01 && !!this.mesh.parent;
+    if (!this.mesh.visible) return;
+    if (live) this.steps = Math.min(C.pips.n, Math.round((Math.max(1, combo.mult ?? 1) - 1) / COMBO.kinds));
+    // the link ring: lit where it is within the clock's share of the half-turn either side of the bow (a stern-first close)
+    const f = live ? Math.max(0, Math.min(1, (combo.t ?? COMBO.link) / COMBO.link)) : 0, R = C.ring.segs;
+    const ringK = live ? C.lit * (1 + 0.6 * this.linkT) : C.lit * 0.8 * this.dropT; // (dropped: what was lit dims out, dull)
+    if (live) this.lastRing = f; else if (!this.dropT) this.lastRing = 0;
+    const shown = live ? f : this.lastRing;
+    for (let j = 0; j < R; j++) {
+      const mid = ((j + 0.5) / R) * Math.PI * 2, off = Math.min(mid, Math.PI * 2 - mid) / Math.PI; // (0 at the bow, 1 at the stern)
+      const fill = Math.max(0, Math.min(1, (shown - off) * R / 2 + 0.5));
+      b[j] = live || this.dropT ? Math.max(live ? C.socket : 0, ringK * fill) : 0;
+    }
+    // the pips: the stack lit from the stern back, the newest flashing
+    const P = C.pips;
+    for (let i = 0; i < P.n; i++) { const on = i < this.steps; b[B.pip0 + i] = live ? (on ? C.lit * (1 + (i === this.stepPip ? 1.2 * this.stepT : 0)) : C.socket) : 0; }
+    // the banked flares: each sun filled as a pie by its share, its rays out when whole; a bank flashes them
+    // (a spent sun: whole and flashing at once, then out to what it holds now)
+    const S = C.stocks, any = live || stocks > 0.01 || this.spentT > 0;
+    for (let i = 0; i < 3; i++) {
+      const share = Math.max(0, Math.min(1, stocks - i)), base = B.sun0 + i * (S.segs + 1), k = C.lit * (1 + 0.8 * this.bankT);
+      const pop = i === this.spentI ? this.spentT : 0, popK = C.lit * S.pop * pop * pop;
+      for (let s = 0; s < S.segs; s++) b[base + s] = any ? Math.max(s + 0.5 < share * S.segs ? k : C.socket, popK) : 0;
+      b[base + S.segs] = Math.max(share >= 0.999 ? k * (0.75 + 0.25 * Math.sin(t * 4 + i)) : 0, popK * Math.min(1, pop * 1.6));
+    }
+    // the buoys' power: lit from the left one a step, the newest flashing; lost, the row dims out
+    for (let i = 0; i < W.n; i++) b[B.pow0 + i] = pw > 0 ? (i < pw ? C.lit * (1 + (i === this.powPip ? 1.2 * this.powT : 0)) : C.socket) : (i < (this.lostN || 0) ? C.lit * 0.7 * this.lostT : 0);
+    // into the uv: each vertex its cell's brightness by its weight, the whole by how shown
+    const uv = B.g.attributes.uv, a = uv.array, sh = this.show;
+    for (let i = 0, m = B.cell.length; i < m; i++) a[i * 2] = uOf(b[B.cell[i]] * B.wt[i] * sh);
+    uv.needsUpdate = true;
+    // the colour: the labradorite's play (ink, the film's colours flashing up through it at a constant rate), warming toward gold as
+    // the stack climbs (one material: the whole gauge warms, so the step pips' heat reads at a glance); a drop turns it dull a moment
+    this.warmK = damp(this.warmK || 0, live ? this.steps / P.n : 0, 6, dt);
+    schillerInk(t * SCHILLER.rate, this.mat.color, C.schiller).lerp(WARM, this.warmK * C.warmMax).lerp(_c.copy(DULL), Math.max(this.dropT * (live ? 0 : 0.85), pw || live ? 0 : this.lostT * 0.85));
+  }
+  dispose() { this.mesh.parent?.remove(this.mesh); this.B.g.dispose(); this.mat.dispose(); }
+}

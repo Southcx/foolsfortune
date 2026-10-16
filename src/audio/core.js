@@ -38,6 +38,15 @@ export class Sfx {
     this.verbMain = this.ctx.createConvolver(); this.verbMain.buffer = this.verb.buffer;
     this.verbSendMain = this.ctx.createGain(); this.verbSendMain.gain.value = 0.22; this.verbSendMain.connect(this.verbMain).connect(this.main);
     this.noiseBuf = this.makeNoise(2);
+    // the held loops (the skiff's run, its grind, wet sand, a shell's field): one bus, silenced while a menu is over the game
+    this.loopBus = this.ctx.createGain(); this.loopBus.connect(this.master);
+  }
+
+  /** A menu is over the game (the ambience asks, audio/ambience.js menusUp): every held loop falls silent until it is gone. A loop that is
+   *  only set while play steps would otherwise hold its last level under the pause menu. */
+  quietLoops(on) {
+    if (!this.loopBus || !!on === !!this._loopsQuiet) return; this._loopsQuiet = !!on;
+    this.loopBus.gain.setTargetAtTime(on ? 0 : 1, this.ctx.currentTime, 0.05);
   }
 
   /** Time has slowed to `s` (1 = normal): muffle the world in proportion. */

@@ -72,7 +72,8 @@ export class Creatures {
   /** A friend: struck by the Courier's blows (`strike`, friendly fire), never one of the creatures. */
   addFriend(c) { c.status ||= new Map(); c.mind ??= 0; c.emo ??= 0; c.build ||= {}; c.friend = true; c.ally = true; this.friends.push(c); return c; }
   removeFriend(c) { const i = this.friends.indexOf(c); if (i >= 0) this.friends.splice(i, 1); }
-  add(c) { c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; this.list.push(c); return c; }
+  /** A creature joins: its statuses, mind and build-up made ready; its full health is what it came with unless it says (`maxHp`: the readouts, progress/familiarity.js). */
+  add(c) { c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; if (c.maxHp == null && c.hp > 0) c.maxHp = c.hp; this.list.push(c); return c; }
   remove(c) { const i = this.list.indexOf(c); if (i >= 0) this.list.splice(i, 1); }
   /** The living creatures within r of p (horizontal and vertical both), nearest first. */
   near(p, r) {
@@ -103,6 +104,9 @@ export class Creatures {
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
     if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });
+    // (what the blow did, for familiarity's readouts: progress/familiarity.js, OVERLAY.md 13; `because` the multiplier's reason in words)
+    const because = annihilates ? 'annihilation' : m.dmg > 1 ? `weak to ${TYPES[type]?.name || type}` : undefined;
+    g.events?.emit('creature.struck', { kind: c.kind, dmg, hp: c.hp, maxHp: c.maxHp, kill: !c.alive, type, k: m.dmg, ...(because ? { because } : {}), by });
     // the blow moves its mind and stirs it up, and builds its type's status
     c.mind = pushed(c.mind, MIND.perBlow * power); this.mindMoved(c, by);
     c.emo = rise(c.emo, power);

@@ -470,8 +470,10 @@ export class Course {
       { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
-      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the gate to Raku\'s bazaar', group: 'THE OPEN', spawn: 'dunes' },
       { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
+      { id: 'raceway', code: 'KeyR', tag: 'R', name: 'THE RACEWAY', blurb: 'the Solar Skiff\'s test circuit: three laps against the clock, F at the start\'s pillar · the sandfall drop', group: 'THE OPEN', spawn: 'raceway' },
+      { id: 'bazaar', code: 'KeyG', tag: 'G', name: "RAKU'S BAZAAR", blurb: 'the casino under the dome: Querent, Zodiac, Event Horizon · chips at Raku\'s cage', group: 'THE OPEN', spawn: 'bazaar' },
       { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => (!id.startsWith('debug.') && this.game.gateRing?.depart(() => this.goRoom(id))) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js; the DEBUG rows go at once)
@@ -513,6 +515,8 @@ export class Course {
     else if (r.spawn === 'weir') this.toWeir();
     else if (r.spawn === 'dunemaw') this.toDunemaw();
     else if (r.spawn === 'shore') this.toShore();
+    else if (r.spawn === 'bazaar') { this.game.bazaar?.arrive(); this.running = false; this.current = -1; this.lapT = null; }
+    else if (r.spawn === 'raceway') { this.game.raceway?.arrive(); this.running = false; this.current = -1; this.lapT = null; sfx.geyser(); }
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -655,7 +659,7 @@ export class Course {
   /** Back to the last checkpoint (or the start of a circuit, the dunes, the siege): the Tab panel's action (it was R). */
   respawnHere() {
     const g = this.game, p = g.player;
-    if (g.circuits?.active) g.circuits.restart(); else if (g.well?.active) g.well.toArrival(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
+    if (g.circuits?.active) g.circuits.restart(); else if (g.well?.active) g.well.toArrival(); else if (g.dunes.active) this.toDunes(); else if (g.raceway?.active) g.raceway.respawn(); else if (g.bazaar?.here) g.bazaar.arrive(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
   }
 
   update(dt) {
