@@ -742,7 +742,7 @@ one change:
   Run and Nebula Bluff carry no genre label; this overrides CLARITY.md's label rule there. The in-game verbs stand: Set, Run, Steal,
   Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
 
-### The neuralese script *(OVERLAY.md 15.5; Espada's orthography, proposed, 2026-10-16)*
+### The neuralese script *(OVERLAY.md 15.5; Espada's orthography; ruled by the owner, 2026-10-16)*
 Neuralese is written in **the Comb** *(the script's name, proposed)*: a honeycomb's cells hold it, the ancients wrote on wax
 tablets (honeycomb wax), and a comb's teeth are its strokes. It is **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
 who studies can read it. Prior art: **Hangul** (King Sejong's letters draw the tongue and lips that make the sound, and syllables pack
@@ -782,7 +782,7 @@ spokes, the star.
 the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
 and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
 
-**The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each:
+**The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each *(ruled by the owner, 2026-10-16)*:
 - **Clay**, Anagami: glazed clay, kiln marks, kintsugi gold in the joins (the given).
 - **Nacre**, Margarite: mother-of-pearl and lamp brass, the King's marque stamped like a hallmark. *Margarite* is the pearl (Greek
   *margaritēs*), and the lamps burn aqua regia, so the frame is lustre and brass.
