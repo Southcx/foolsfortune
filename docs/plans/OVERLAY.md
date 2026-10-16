@@ -203,13 +203,52 @@ A target, never an inventory of what exists. It names:
 5. **Section 9's gaps**, one a round, each with its owner.
 6. **Raku's tables again**, against the bible: the cloth as a window, the coach's lines in the System's type, the texture layer on.
 
-## 12. Open (for the owner)
+## 12. The owner's answers (2026-10-16)
 
-- **Floating damage numbers**: still banned with the kill-feed? A JRPG's damage pop is a readout of an event, not of a state: by rule 1
-  it is the log's. Say if you want them.
-- **A standing** (`rank.up`: "You are now known as a Sweeper"): a title, so a toast too?
-- **Who sees the windows**: only the Courier (Dennō Coil's glasses), or the folk too (they could react to a window opened at them)?
-- **The log itself**: restyled as the System's terminal (.hack's desktop), or left as it is?
+- **Damage numbers are not banned; they are earned** ("if you've never encountered a creature before, how would you know how much
+  you've damaged it? The granularity of information you have on something is directly proportional to your experience with said
+  thing"). Section 13.
+- **A standing gets no toast.** The title toast stays for an achievement that awards a title.
+- **The windows are private**: only the player sees their own System windows and tags, unless they let someone see them (a guest, a
+  sibling: for multiplayer, later; `docs/plans/COOP.md` takes it up).
+- **The log is reskinned as the System's terminal: full send.** Section 14.
+
+## 13. Familiarity: what you know of a kind decides what the overlay reads (`src/progress/familiarity.js`)
+
+How well the Courier knows a kind of creature, 0 to 4, is the better of two avenues: the Veritome's understanding of it (photographs of
+it doing things: `bestiary.u.<kind>`) and fighting it (`creature.<kind>.down`: 1, 5, 20, 60 downs for levels 1 to 4). A photograph of a
+rare moment skips ahead; fighting closes the gap (the design laws). A predicate over the ledger, reset by every build.
+
+| level | name | a tag | health | a blow | more |
+|---|---|---|---|---|---|
+| 0 | UNKNOWN | none | none: the body shows it | none: the hit's flash and its cracks | |
+| 1 | GLIMPSED | its name | a bar in quarters | a mark of its size: graze (under a tenth of its health), wound, maul (over a third) | |
+| 2 | OBSERVED | its name | a bar in eighths | the number to its leading figure (~10, ~200) | |
+| 3 | STUDIED | its name | the bar | the number | its statuses' build-up named |
+| 4 | UNDERSTOOD | its name | numbers (34 / 60) | the number and its multiplier's reason (13 ×2 weak to Ego) | its EmO band, its grain |
+
+- **A blow's readout is a readout, not narration**: it rises off the thing struck in the System's type, sized by the mark (a maul is
+  the hero for a beat), and is gone in under a real second. The log never lists blows.
+- **The agent sees what the player sees**: `game.agent.observe` gives a creature's readouts at the same familiarity, never the truth.
+- **Two avenues for the level itself**: the tag's frame grows a pip a level; the log says a level reached once a kind ("You know this
+  kind better: OBSERVED"); the Veritome's bestiary page shows it.
+- **Asked of Petra** (creatures.js): `creature.struck { kind, dmg, hp, maxHp, kill, type, k, because?, by }` emitted by `strike` after
+  the blow lands (`k` the type's multiplier, `because` its reason: "weak to Ego"). `feedback/tracking/familiarity.js` counts from it;
+  until it lands, familiarity comes from photographs alone.
+- **Asked of Calissa**: the tag and the blow's readout at each level, in the bible's type.
+
+## 14. The log as the System's terminal (the owner, 2026-10-16: "Full send on the reskin")
+
+The log stays the only narration and keeps every rule (events, `by`, throttles); its look becomes the System's own console, as .hack's
+ALTIMIT desktop is The World's. Petra's module (`feedback/gamelog.js`), Calissa's look.
+- **A terminal, not a chat box**: the System's reading type, monospaced; each line typed in a character at a time (fast: the whole
+  line in about 0.15 real s), a block cursor at the chat line's prompt (`>`), scanlines and a faint phosphor bloom on the glass.
+- **A channel is a prompt glyph and a colour** (battle, loot, record, art, ach, system, other): the glyph at the line's head, so a
+  line's kind reads before its words.
+- **A stamp on each line in game hours** (the System's clock), dim.
+- **The texture layer lives in its margins**: neuralese glyphs running down the gutter, a line of hex under a record; never over a word.
+- **The hero line**: an achievement, an art learned, a title: its line is printed bigger and glitches in (the glitch's own pass, short).
+- **Commands answer as a terminal does**: `/howto` and its kind echo the typed command, then the System's reply.
 
 ## Note on the merge
 
