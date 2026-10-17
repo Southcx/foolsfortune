@@ -20,7 +20,7 @@
 //
 //   game.cradles = new Cradles(game)
 //   .add({ id, kind, pos, yaw?, reach?, hold?, drain?, onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
-//   .seal(c, by?) -> bool   .unseal(why?, by?) -> bool   .sealed (the cradle you are in, or null)   .near() (the one F would seal)
+//   .seal(c, by?) -> bool   .unseal(why?, by?, { now }?) -> bool   .sealed (the cradle you are in, or null)   .near() (the one F would seal)
 //   .mine -> { name, outline, carving } | null   .choose({ name, outline, carving }) -> bool (once, ever)
 //   .struck(blow) (vessel/damage.js asks it first while sealed)    events: seal.set / seal.unset { cradle, kind, by, why? }, seal.carve
 // ---------------------------------------------------------------------------------------
@@ -85,23 +85,26 @@ export class Cradles {
     return true;
   }
 
-  unseal(why = 'f', by = 'courier') {
+  /** `now`: out at once, with no beat and no step in front of the cradle, for a cradle whose act moves you elsewhere (a Shrine's
+   *  threshold travelling, its arch opening the Spirit Garden): the move that follows sets the Courier down. */
+  unseal(why = 'f', by = 'courier', { now = false } = {}) {
     const g = this.game, c = this.sealed, J = this.jar;
     if (!c || this.phase === 'out') return false;
     this.phase = 'out'; this.t = 0;
-    if (J?.alive) J.clips?.R.play('dismiss');
+    if (J?.alive && !now) J.clips?.R.play('dismiss');
     c.onUnseal?.(c, why);
     g.events?.emit('seal.unset', { cradle: c.id, kind: c.kind, by, why });
+    if (now) this.stepOut(false);
     return true;
   }
 
-  /** The Courier back on their feet in front of the cradle, the Jar put away. */
-  stepOut() {
+  /** The Courier back on their feet (in front of the cradle, unless `place` is false), the Jar put away. */
+  stepOut(place = true) {
     const g = this.game, c = this.sealed, P = g.player, J = this.jar;
     const at = c.pos.clone().add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(STEP));
     if (J) J.group.visible = false;
     P.freeze = false; g.character.setHidden(false);
-    g.course?.teleport ? g.course.teleport(at, c.yaw, { keepPool: true }) : P.pos.copy(at);
+    if (place) g.course?.teleport ? g.course.teleport(at, c.yaw, { keepPool: true }) : P.pos.copy(at);
     this.sealed = null; this.phase = null;
     if (this.wrecked) { this.wrecked = false; g.vesselDamage?.hit({ dir: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)), k: 0.6, why: 'wreck', by: 'environment' }); } // (a body that failed throws the Jar clear, cracked)
   }
