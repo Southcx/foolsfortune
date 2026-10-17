@@ -501,7 +501,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
 - **the neuralese script** (Espada's rules; OVERLAY.md 15.5 and 15.6) — neuralese in our own glyphs, decipherable: since 2026-10-17 a hand
   like Thai and Tamil (an abugida) with Goetic-sigil and chip-trace motifs; the hex Comb kept as a barcode and the hanko. *Not:* Unicode Thai or Tamil, the katakana placeholder.
-- **a cradle / sealing / an imprint / the Seal Book** (Espada's, proposed; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
+- **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
   the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
   imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
