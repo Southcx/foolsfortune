@@ -268,6 +268,17 @@ Comb is texture, never a sentence to read. The board's section 04 counts the mer
 - **The eye tag is the heart of a creature's readout:** more of what it knows is said through the eyes (gaze, attention, pupil,
   shimmer, intent), subtly.
 
+### 10.5c The owner on board v6 (2026-10-17), and round 6's plan
+- **Eye tag:** back to v4's density. Keep: the bracket at the eyes, the sigil-eye for familiarity, statuses as motes, the tag's shimmer
+  when aberrant. Drop: the gaze line, the pupil ring and the turning corners on the creature (a strike's intent stays the Figment
+  telegraph's job).
+- **The globe moves top-right** as the Sight instrument (compass, Log Pose, barometer, clock): the zone's conditions in one object.
+- **The Lachrimeter becomes a thermometer:** a glass column whose bulb is the pool, graduated, the held stretch crazed above the cap,
+  brimming into the expansion chamber at the top, the Bottles feeding the bulb.
+- **The placard:** the title is written in the running hand, then a flow field recombs it into English; the carved face to be retried.
+- **The cradle sits on the gate's threshold**, between the pillars, and the gate wakes upward from the ground.
+- **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
+
 ### 10.6 The hierarchy (sizes at the 480-line present)
 | layer | size | rule |
 |---|---|---|
