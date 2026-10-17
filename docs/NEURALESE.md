@@ -1,6 +1,6 @@
 # Neuralese, the language
 
-Espada's, 2026-10-17, for the owner to rule. The owner: "we can expand neuralese as an actual language, -- Toki Pona comes to mind for
+Espada's, 2026-10-17; **ruled by the owner, 2026-10-17** (the roots, the particles, the compounds and the grammar). The owner: "we can expand neuralese as an actual language, -- Toki Pona comes to mind for
 reference." The words the game already speaks stay as they are (`src/npc/neuralese.js`). This document grows them into a language.
 
 - **The roots** are kept in `src/npc/neuraleseroots.js`: 124 roots and 7 particles, each with its senses and where it comes from. That
@@ -101,7 +101,7 @@ The full list, with senses and sources, is `neuraleseroots.js`.
 
 ### How the world says itself
 
-These are worked compounds. All of them are proposals.
+These are worked compounds, ruled with the rest.
 
 | neuralese | English | read |
 |---|---|---|
@@ -142,8 +142,8 @@ These are worked compounds. All of them are proposals.
 
 ## 5. Open (for the owner)
 
-1. **The roots as a whole:** keep, cut or swap any of them. Toki Pona's own list changed over years.
-2. **The copula:** a gap (as here), or a word (like Toki Pona's *li*).
-3. **Whether the folk speak it:** the ancients wrote it on pots. Do any folk today say a line of it in the dialogue box, glossed by the
+The roots and the gap for "is" were ruled with the rest (2026-10-17). Still open:
+
+1. **Whether the folk speak it:** the ancients wrote it on pots. Do any folk today say a line of it in the dialogue box, glossed by the
    Crib Sheet?
-4. **How a player writes it:** with `/realmname` only, or anywhere a player can name a thing?
+2. **How a player writes it:** with `/realmname` only, or anywhere a player can name a thing?

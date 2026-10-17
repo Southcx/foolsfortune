@@ -786,7 +786,7 @@ spokes, the star.
 the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
 and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
 
-**The language** is `docs/NEURALESE.md` (the owner, 2026-10-17: "expand neuralese as an actual language, Toki Pona comes to mind"):
+**The language** is `docs/NEURALESE.md`, ruled by the owner 2026-10-17 (the owner, 2026-10-17: "expand neuralese as an actual language, Toki Pona comes to mind"):
 124 roots and 7 particles (`npc/neuraleseroots.js`), every word cut into its cells by `npc/neuralesespelling.js`. **Neuralese meant to
 be read is drawn at 2x** (its cell two reading lines tall at the 480-line present; the owner, 2026-10-17); at 1x it is texture.
 

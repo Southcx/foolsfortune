@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// NEURALESE, THE ROOTS: the whole root lexicon of neuralese as a language (docs/NEURALESE.md; Espada's, 2026-10-17, for the owner to
-// rule). About a hundred and thirty roots and a handful of particles; meaning is built by putting roots together, head first, the
+// NEURALESE, THE ROOTS: the whole root lexicon of neuralese as a language (docs/NEURALESE.md; Espada's, ruled by the owner
+// 2026-10-17). About a hundred and thirty roots and a handful of particles; meaning is built by putting roots together, head first, the
 // modifiers after it (STIL-LON, a long stillness). The twenty-two words the game already speaks (npc/neuralese.js: the Functions, the
 // ostraca, the stelae, the realms' names) are roots here with their glosses kept, and their senses widened.
 //
@@ -174,7 +174,7 @@ export const PARTICLES = {
 // the seven feelings, most positive to most negative (progress/weather.js's DISPLAY_ORDER)
 export const FEELINGS = { wonder: 'MIRA', mirth: 'HILA', desire: 'POTHA', fury: 'FURA', gall: 'FELA', grief: 'MOR', dread: 'PAVA' };
 
-// worked compounds: how the world's things are said with roots alone (proposals, like the rest)
+// worked compounds: how the world's things are said with roots alone (ruled with the rest)
 export const COMPOUNDS = {
   'LOGA-NUSA': 'neuralese, as it calls itself: mind-speech',
   'MARI-EMO': 'the Emocean: the sea of feeling',
