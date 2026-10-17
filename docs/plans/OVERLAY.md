@@ -283,6 +283,24 @@ Comb is texture, never a sentence to read. The board's section 04 counts the mer
 - **The Lachrimeter stands bottom-right** (the log owns the left): the right edge holds the instruments, the globe above, the thermometer below.
 - **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
 
+### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
+**The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
+what cannot be a made object stays a line. Two influences a surface, never five; **ma** (間), a beat of stillness before every hero moment.
+| influence | what is taken | where |
+|---|---|---|
+| the wadokei (Japanese temporal-hour clock) | sliding hour plates: unequal hours, the game day's phases as moving weights | the Sight's clock ring |
+| the brass astrolabe (Islamic) | the rete: a pierced star-plate that is sigil, circuit and compass at once | the Sight's face |
+| the Antikythera mechanism; the Polynesian stick chart | gear trains; a lashed lattice of sticks and shells read by touch | the Sight's works; the Emocean's sea chart (Brine) |
+| VFD and Nixie tubes (Shōwa electronics) | the System's big counts lit in glass tubes, cyan-green, warm valve glow; rolling numbers as a Nixie stack | counts, the odometer, the score ceremony |
+| Serial Experiments Lain; Ghost in the Shell (1995); Paprika's parade | the network's quiet dread; circuitry as calligraphy; objects marching with a mind | the System's mood; the running hand on dies; Egregores surfacing |
+| ofuda talismans (Dennō Coil's meta-tags) | a creature's tag as a paper slip on the leader line, its edge burnt in the window colour | tags |
+| omikuji fortune slips | a drawn fortune unrolling beside a tarot card (the game's own title) | chest pulls, Raku's payouts |
+| seal script (zhuànshū) | the Comb's ancestry | the hanko, the seal book |
+| haniwa and dogū | the System's emissaries: a dogū hands you a title | the title placard's bearer |
+| Bizen and Shigaraki ash; Raku ware | unglazed fire-flashed clay; crazed smoky ware | the Clay dress's rough end; Raku's Bazaar |
+| Ōkami; Skies of Arcadia; Outer Wilds; Dark Cloud; Wind Waker | brush strokes as the mechanic; the voyage between sky-islands; instruments read, not menus; island-hopping warmth | the Soul Brush; the open Emocean; the Dreamvane; the islands |
+| the tansu chest; Greed Island's binder in 3D | stepped drawers and iron fittings sliding out; clay covers, the seal book inside, pages turning in space | the Pneuka Box (P); the Codex (B) |
+
 ### 10.6 The hierarchy (sizes at the 480-line present)
 | layer | size | rule |
 |---|---|---|
