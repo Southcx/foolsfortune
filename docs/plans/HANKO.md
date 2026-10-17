@@ -1,4 +1,4 @@
-# The Pneuka Jar as a seal: sealing into a cradle (working names, Espada's and the owner's to rule)
+# The Pneuka Jar as a seal: sealing into a cradle (names Espada's, proposed: `docs/LORE.md`, "The Pneuka Jar as hanko")
 
 Kept by Dovina (the rules, the ledger, the progression). Names and lore are Espada's; the Jar's seal face and each cradle's look are
 Calissa's; the form change and a body's controller are Petra's; the stamp's sound is Wanda's. **A proposal for the owner to rule on.**
@@ -37,11 +37,11 @@ leave it.
 ## 3. The act
 
 1. **F at a cradle.** The Courier's body folds into the Pneuka Jar (the god hand's form change, the same clip family), the Jar drops
-   into the cradle and turns a quarter, and the seal **stamps**: your Comb print burns into the cradle's face in your window colour.
+   into the cradle and turns a quarter, and the seal **stamps**: your Comb imprint burns into the cradle's face in your window colour.
    One beat, always the same: a ceremony you learn to love, never a load screen (the stamp is a hero moment: OVERLAY.md 1, rule 3).
 2. **The thing wakes as you.** It wears your seal while you are in it. The overlay shows what it is (a tag: its name, its draw on
    your pool, its own hull if it has one).
-3. **F again unseals.** The Jar lifts out and unfolds into the Courier beside it. The seal's print stays on the cradle, dim: you have
+3. **F again unseals.** The Jar lifts out and unfolds into the Courier beside it. The seal's imprint stays on the cradle, dim: you have
    been here.
 
 ## 4. Three kinds of cradle
@@ -60,15 +60,25 @@ leave it.
 
 ## 5. What it is worth (progression and the ledger)
 
-- **Seals are a record of where you have been.** `seal.<cradle>` is a first in the ledger; the Codex shows a **seal book** (every print
+- **Seals are a record of where you have been.** `seal.<cradle>` is a first in the ledger; the Codex shows a **Seal Book** (every imprint
   you have pressed, by island, in its dress). Achievements read it (count ways: thresholds sealed per island; feat ways: a body driven
   through a set piece unbroken).
-- **The Shrines' network becomes the seal book's spine**: a Shrine you have sealed is one you can travel to. No other unlock gate.
+- **The Shrines' network becomes the Seal Book's spine**: a Shrine you have sealed is one you can travel to. No other unlock gate.
 - **Bodies are found, never bought**: a golem in a ruin, a diving bell at the Weir. The law holds (arts by achievement); a body is a
   place's thing, not an art.
 - **No cubes.** Sealing costs the pool or nothing. The economy is untouched; the pool is the substrate (base change bad).
-- **Your seal's face** is carved once, at the start, from your name in neuralese (the realm's naming, `name(seed)`), so every print is
+- **Your seal's face** is carved once, at the start, from your name in neuralese (the realm's naming, `name(seed)`), so every imprint is
   yours alone. Whether it can be recarved (a sink) is open.
+
+### Espada's names and lore (2026-10-17, proposed)
+- **a cradle** (neutral to every island; not "saggar", which would say Anagami), **sealing / to seal in / to unseal** (not "press": the
+  Athanor's), **your seal** (the Jar's base; beside **an attribute's seal**, the potter's chop on the press's kerb: always qualified),
+  **an imprint** (what a seal leaves; not "print": the trail map's), **the Seal Book** (the Codex shelf).
+- **The Seal Book works both ways, as a pilgrim's goshuinchō**: your seal presses an imprint into the cradle, and the cradle stamps
+  its own seal back into your book. So the book is a collection of the places' seals, each in its island's dress (Dovina takes it: the
+  ledger's `seal.<cradle>` first records both).
+- **Why a Jar fits**: the jar is the oldest vessel people made, and every island precipitates out of the one Emocean, so every island's
+  machines carry a jar-sized hollow left for a will to fill. Who built the first cradle is left blank.
 
 ## 6. Open (for the owner)
 
@@ -76,7 +86,7 @@ leave it.
    the bigger hulls?
 2. **The god hand:** is the god hand a sealing too (the Jar sealed into the island itself, at a Shrine), or does it stay its own key (~)?
 3. **Who may strike a sealed Jar:** only through its cradle (an engine defended), or never?
-4. **Names** (Espada's): the cradle, sealing, the seal book, the print.
+4. **Names** (Espada's): the cradle, sealing, the Seal Book, the imprint.
 
 ## 7. Order of work (once ruled)
 

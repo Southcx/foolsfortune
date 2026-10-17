@@ -501,8 +501,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
 - **the neuralese script** (Espada's rules; OVERLAY.md 15.5 and 15.6) — neuralese in our own glyphs, decipherable: since 2026-10-17 a hand
   like Thai and Tamil (an abugida) with Goetic-sigil and chip-trace motifs; the hex Comb kept as a barcode and the hanko. *Not:* Unicode Thai or Tamil, the katakana placeholder.
-- **a cradle / sealing** (working names, Espada's and the owner's; `docs/plans/HANKO.md`, a proposal) — a receptacle in a machine, gate or
-  ship / the Courier folding into the Pneuka Jar and pressing its seal into one, so the thing runs as you. *Not:* a slot, a socket (the bracelet's).
+- **a cradle / sealing / an imprint / the Seal Book** (Espada's, proposed; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
+  the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
+  imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
@@ -709,6 +710,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | telegraph | a Figment attack telegraph (on foot: Divination's mark over a windup); the rail's telegraph mark (`vfx/telegraph.js`) | "a Figment attack telegraph" or "Figment telegraph"; "the rail's telegraph mark"; never "telegraph" bare |
 | cancel | opposites cancel (two feelings: no agate); the blink cancel (a move let go at a blink, `Moveset.blinkCancel`) | "opposites cancel"; "the blink cancel" in full |
 | glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware); a hull glaze (the Solar Skiff's, `glazeHull`) | "a glaze" is the Courier's; "a room glaze", "a hull glaze" in full |
+| seal | your seal (the Pneuka Jar's base, HANKO.md); an attribute's seal (the potter's chop on the press's kerb); a sealed room (the stele's) | "your seal"; "an attribute's seal"; "a sealed room" |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
