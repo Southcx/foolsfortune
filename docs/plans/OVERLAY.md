@@ -250,7 +250,7 @@ most, besides the world behind it.
 | scanlines, a phosphor bloom | the log, the scan band of an entrance | 1 line in 3 at 6% | the band once, on entrance |
 **The Comb's reading size, measured (2026-10-16):** a neuralese word written to be read sets its cell at 28 dots (two reading
 lines tall) at the 480-line present: every feature stands clear there; at 14 dots six features still touch, so at one line's height the
-Comb is texture, never a sentence to read. The board's section 04 counts the merges size by size. The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
+Comb is texture, never a sentence to read. **Ruled by the owner (2026-10-17): neuralese meant to be read is drawn at 2x** (the running hand's cell two reading lines tall, as measured); at 1x it is only ever texture. The board's section 04 counts the merges size by size. The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
 
 ### 10.5b The owner's notes of 2026-10-17 (they override 10.5's script line)
 - **Neuralese is not the hex Comb.** Its reading hand is Thai and Tamil (the owner: "a combo of the two"), its strokes built like
