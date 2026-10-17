@@ -808,8 +808,26 @@ part sits changes, so a player who learned the Comb can read the hand.
 **The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
 like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
 face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is
-the West's word for a thing that makes a machine itself. Open: what the slot is called, what is pressed when the Pneuka Jar is set in,
-and whether a thing remembers the seals it has taken.
+the West's word for a thing that makes a machine itself. Dovina's rules are `docs/plans/HANKO.md` (claude/dovina-design).
+
+*Names (Espada's, proposed, 2026-10-17):*
+- **a cradle** (Dovina's working name, kept): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
+  and a telephone's handset, which is the retrofuture in one word; and *crib* is its old twin, so the Crib Sheet and the cradle are
+  cousins. Not of any one island's make, so not "saggar" (the potter's box a pot is fired in), which would say Anagami.
+- **sealing / to seal in / to unseal**: the act. Japanese says a seal is *pressed* (*natsuin*, 捺印), but "press" is the Athanor's.
+- **your seal**: the Jar's base, your name in the Comb, carved once. The Japanese *jitsuin* is the one registered seal for what
+  matters. Qualify it beside **an attribute's seal** (the press at the Athanor's kerb: the potter's chop).
+- **an imprint**: what a seal leaves on a cradle, dim after you go. Not "a print", which is a foot's in the sand (the trail map). The
+  Japanese for it is *in'ei* (印影), a seal's shadow: the imprint is the shadow you leave on a place.
+- **the Seal Book** (the Codex's shelf): every imprint you have pressed, by island, in its dress. Prior art: the *goshuinchō*, the book
+  a pilgrim carries from shrine to shrine to collect each one's red seal. Proposed for Dovina: make it two ways. You press your seal
+  on the cradle, and the cradle presses its own back into your book, so the shelf is the places' seals, as a pilgrim's is.
+
+*Lore (proposed):* **why a Jar fits.** No island made the cradles alone. The jar is the oldest vessel people made, older than writing,
+and the Emocean is everyone's mind at once, so every Island of Ego that precipitates out of it carries the same shape somewhere in its
+machines: a hollow the size of a jar, left for a will to fill. An island's thought can be built but cannot run itself; a cradle is
+the space it leaves for someone to mean it. The Pneuka Jar (*pneuma*, breath) fits because it is that shape with a breath in it.
+**Who first built one** is left blank.
 
 **The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each *(ruled by the owner, 2026-10-16)*:
 - **Clay**, Anagami: glazed clay, kiln marks, kintsugi gold in the joins (the given).
