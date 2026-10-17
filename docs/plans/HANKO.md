@@ -96,7 +96,13 @@ leave it.
 6. **A Shrine gate has two cradles**: the arch's opens the Spirit Garden, the threshold's travels between gates.
 Still Espada's: the names (proposed in section "Espada's names and lore").
 
-## 7. Order of work (once ruled)
+## 7. Order of work
+
+**Built (2026-10-17):** step 1's core (Petra's `world/cradles.js`: `game.cradles`, `seal()` / `unseal()`, the `seal` save section,
+`choose()` once) and the Seal Book's ledger (Dovina's `feedback/tracking/seals.js`: `seal.at.<cradle>`, `seal.kind.<kind>`, the
+`seal.book.<cradle>` firsts; `progress/sealachievements.js`: First Imprint, Pilgrim, Every Kind, Long Haul). No cradle stands in the
+world yet.
+
 
 1. The cradle as a thing (a tag `cradle`, its kind, `seal()` / `unseal()`), the form change, the ledger's firsts (Petra's core; the
    rules and ledger mine), and the seal picker at character creation (Calissa's look, section 5's three choices).

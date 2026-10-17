@@ -30,6 +30,7 @@ import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
+import { sealAchievements } from './sealachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -46,7 +47,7 @@ export const CATS = [
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
@@ -531,6 +532,7 @@ export function buildAchievements(game) {
   C('su4', 'skiff', 'The Sundial', 4, 'mechanic', 'Golden Hour', 'Take gold in the Solar Skiffing trial.', 'trial.solar.gold', 1);
   C('su5', 'skiff', 'The Sundial', 4, 'mechanic', 'Long Shadows', 'Take every lit ring at dawn or dusk.', 'trial.solar.allLitLong', 1);
   racewayAchievements({ C, H, F }); // (the Raceway's own: progress/raceachievements.js)
+  sealAchievements({ C, H, F }); // (the Seal Book's: progress/sealachievements.js)
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
