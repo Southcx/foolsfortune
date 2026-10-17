@@ -285,6 +285,7 @@ import { trimShadows } from './render/shadowtrim.js';
 import { typeOf } from './progress/combat/types.js';
 import { OverlayScene } from './render/overlayscene.js';
 import { Cradles } from './world/cradles.js';
+import { Sight, sightCommands } from './progress/sight.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -616,6 +617,7 @@ async function main() {
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
   game.cradles = new Cradles(game); // (the Pneuka Jar as a seal: F at a cradle seals you in, world/cradles.js, docs/plans/HANKO.md)
+  game.sight = new Sight(game); // (the Sight's waypoint: Jack Sparrow's compass, progress/sight.js; the needle is Calissa's; /sight is added with the chat line)
   {
     const carry = techs.get('carry'), push = techs.get('push');
     const spot = (e) => { const t = e.body.translation(); return new THREE.Vector3(t.x, t.y + (carry.size(e) * 0.5 + 0.5), t.z).setX(t.x); };
@@ -780,6 +782,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.skiffParts = new SkiffParts(game); game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); watchPoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
   // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
   const makeRig = async () => { // (another Courier's rig: a sibling's or a guest's, its model parsed when it comes, never at boot)

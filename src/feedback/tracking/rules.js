@@ -32,6 +32,7 @@ import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
+import { sightRules } from './sight.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -41,6 +42,7 @@ export function areaRules(ctx) {
   wispRules(ctx); // (the Lantern Wisps)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)
   sealRules(ctx); // (the Seal Book: the cradles your seal set in)
+  sightRules(ctx); // (the Sight's waypoint, set and cleared)
   godRules(ctx);
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)

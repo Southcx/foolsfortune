@@ -463,6 +463,26 @@ Matrix's rain: not ours, and to go.
 - **New, Dovina's and Espada's:** the Pneuka Jar as a hanko and a cartridge, sealed into vessels, machines, Shrine gates and ships:
   `docs/plans/HANKO.md`.
 
+## 16. Round 6's rulings (Dovina, 2026-10-17, on Calissa's three questions)
+
+1. **The tag at UNKNOWN shows ???** (the board's mock wins over section 13's "no tag"): a known unknown is information, and it is the
+   Veritome's prompt (photograph it, or fight it, to learn more). It carries no health and no numbers. **EmO is shown as a band (low,
+   optimal, hot) from OBSERVED (2), and as its value at UNDERSTOOD (4)**: the yield's sweet spot is a loop worth learning early, and the
+   exact number stays the expert's. `READS` in `progress/familiarity.js` says so.
+2. **The Sight's waypoint** (the owner: "Jack Sparrow's compass": it points to what you want, and only to what you know). Built:
+   `progress/sight.js`, `game.sight`.
+   - Calibrate it to **a place you know of** (a room you have charted, or a cradle whose seal is in your Seal Book), **a kind of
+     creature you know** (familiarity 1 or more: it hunts the nearest living one), or **home** (the last Shrine whose seal you received).
+   - Uncalibrated, or set to something it cannot find, **the needle spins slowly**: the compass when you do not know what you want.
+     There is no silent default to the last Shrine; home is a choice.
+   - One waypoint at a time, not kept by the save. For now, `/sight <place or kind>`, `/sight home` and `/sight off` on the chat line.
+     The Sight's own way to calibrate (showing it a plate from the Veritome, picking a page of the Seal Book or a room on the map) is
+     Calissa's surface to draw, calling `game.sight.calibrate`.
+   - `game.sight.waypoint` is `{ name, pos, from, id } | null` (null: spin). The event `sight.calibrate` gets a log line.
+3. **A Shrine gate's two cradles are one page of the Seal Book**: both carry `book: 'shrine.<id>'`, and the page is the Shrine, not the
+   slot. The threshold's is onward (travel between gates), the arch's inward (the Spirit Garden). Wiring them in `world/shrines.js` with
+   Calissa's `S.cradleSpots()` is Petra's.
+
 ## Note on the merge
 
 Where the two files differed, the later wording is kept. Rule 6 once put the Flash's readiness "in the viewfinder's margin"; the Flash

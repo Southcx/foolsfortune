@@ -497,6 +497,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   world mark (no words), the dialogue box (the folk's).
 - **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
+- **the Sight / its waypoint** (`game.sight`, `src/progress/sight.js`; the instrument Calissa's; OVERLAY.md 16) — the instrument top-right: compass,
+  barometer and clock in one / what its needle points to, calibrated to a place or creature you know, or home; it spins when uncalibrated (Jack Sparrow's compass). *Not:* the wire compass, the map.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a

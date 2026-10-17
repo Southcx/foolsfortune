@@ -16,7 +16,8 @@ export function sealRules({ on, L, log }) {
     if (e.by !== 'courier' || !e.cradle) return;
     L.inc('seal.set'); if (SEAL_KINDS.includes(e.kind)) L.inc(`seal.kind.${e.kind}`);
     L.inc(`seal.at.${e.cradle}`);
-    if (L.first(`seal.book.${e.cradle}`)) log.say('record', 'Your seal sets its imprint, and the cradle stamps its seal into your Seal Book.', { key: 'sealbook' });
+    const page = e.book || e.cradle; // (a place's cradles share one page: a Shrine gate's two are one Shrine, `book: 'shrine.<id>'`)
+    if (L.first(`seal.book.${page}`)) log.say('record', 'Your seal sets its imprint, and the cradle stamps its seal into your Seal Book.', { key: 'sealbook' });
   });
   on('seal.unset', (e) => {
     if (e.by !== 'courier') return;
