@@ -12,7 +12,8 @@
 // Box open (rummage); in the Spirit Garden, the hop and the landing (vfx/garden/jarhop.js routes them here: the hop without the
 // root's rise, which the body makes itself, started at take-off and held at the top of a long flight; the landing at touchdown, as
 // hard as it came down), a spirit let go (spit), still a long while (sleep, then wake). Entering the garden always starts at idle, so
-// a dismiss held at its last frame (the root at nothing) never carries over.
+// a dismiss held at its last frame (the root at nothing) never carries over. Sealed into a cradle (world/cradles.js): summon, then idle, and
+// dismiss as it lifts out.
 //
 // Prior art: the clapperjar's crossfaded clips (creatures/clappers.js), the squash and stretch of the Disney animators' bouncing ball
 // that the owner keyed into these actions, and Super Mario Galaxy's hop on a small world (take-off and landing as two beats).
@@ -85,6 +86,7 @@ export class PneukaJarClips {
     if (this.wait > 0) { this.wait -= dt; R.update(0); return; } // (summon held at its first frame, tiny)
     if (this.game.realm?.active) this.garden(dt);
     else if (G.state === 'in' || G.state === 'on') this.world();
+    else if (this.game.cradles?.sealed && this.game.cradles.phase !== 'out') this.choose('idle'); // (sealed in a cradle: summoned, then still; world/cradles.js)
     this.hit = null;
     this.lastHp = J.hp;
     R.update(dt);
