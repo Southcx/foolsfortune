@@ -252,6 +252,22 @@ most, besides the world behind it.
 lines tall) at the 480-line present: every feature stands clear there; at 14 dots six features still touch, so at one line's height the
 Comb is texture, never a sentence to read. The board's section 04 counts the merges size by size. The katakana is gone: no borrowed script appears anywhere (the neuralese script is Espada's orthography, my drawing). Nothing in the texture flickers or changes brightness at a variable rate (comfort). If the hero is unclear, the texture goes first.
 
+### 10.5b The owner's notes of 2026-10-17 (they override 10.5's script line)
+- **Neuralese is not the hex Comb.** Its reading hand is Thai and Tamil (the owner: "a combo of the two"), its strokes built like
+  Goetic seals and chip layouts: "East Meets West retrofuture". Calissa's advice, on the board beside the owner's own option: our own
+  glyphs drawn in that hand (loops, bowls, a hanging baseline, marks above and below), since real Thai or Tamil characters read to
+  their native readers as broken words. Espada's sounds and syllable rules carry over.
+- **The Comb lives on** as the etched barcode on things and the hanko: a seal face stamped in cinnabar.
+- **The Pneuka Jar is a hanko and a cartridge** (the owner's idea; its rules Espada's and Dovina's): its base is a seal face carrying
+  your name in the Comb, and it slots into things to make them work: larger vessels, machines, the Shrine gates, the ships.
+- **3D is the warm direction:** the frames and gauges as meshes, more of them.
+- **The Lachrimeter is a globe and a battery:** a glass globe tilted on its axis between thick inscribed clay discs, the anode and
+  the cathode, holding the pool.
+- **The title toast is a Jōmon placard from the System:** a heavy fired-clay plaque, flame-rimmed and cord-marked, baroque, the title
+  carved and gilded, descending from the light and sealed; never cartoonish.
+- **The eye tag is the heart of a creature's readout:** more of what it knows is said through the eyes (gaze, attention, pupil,
+  shimmer, intent), subtly.
+
 ### 10.6 The hierarchy (sizes at the 480-line present)
 | layer | size | rule |
 |---|---|---|
