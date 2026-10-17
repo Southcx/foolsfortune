@@ -495,6 +495,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a tag / a System window / the title toast** (working names; OVERLAY.md 8) — a readout pinned to its thing in the world / a sheet
   summoned into the air before the Courier (the isekai status window) / the one pop-up, for an achievement that awards a title. *Not:* a
   world mark (no words), the dialogue box (the folk's).
+- **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
+  pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
 - **the neuralese script** (Espada's, ruled 2026-10-16; `docs/LORE.md`; OVERLAY.md 15.5) — neuralese in our own featural glyphs, a syllable a
