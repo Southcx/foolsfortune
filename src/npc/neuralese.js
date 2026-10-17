@@ -13,9 +13,9 @@
 //   LEXICON[WORD] = { gloss, place }   (place: the gloss said as a place would be, for a realm's name)
 //   OSTRACON_PICTURES[WORD] -> what its ostracon shows    STELE_TEXT[stele id] -> its sentence   STELE_GLOSS[stele id] -> its English   glossOf(word)
 //   The language these words belong to (docs/NEURALESE.md) is re-exported here, so one import reaches it: ROOTS, PARTICLES, FEELINGS,
-//   COMPOUNDS (npc/neuraleseroots.js) and syllables, cellsOf (npc/neuralesespelling.js, what a glyph must draw).
+//   COMPOUNDS, TITLES (npc/neuraleseroots.js) and syllables, cellsOf (npc/neuralesespelling.js, what a glyph must draw).
 // ---------------------------------------------------------------------------------------
-export { ROOTS, PARTICLES, FEELINGS, COMPOUNDS, isRoot, isParticle } from './neuraleseroots.js';
+export { ROOTS, PARTICLES, FEELINGS, COMPOUNDS, TITLES, isRoot, isParticle } from './neuraleseroots.js';
 export { syllables, cellsOf } from './neuralesespelling.js';
 
 export const LEXICON = {
