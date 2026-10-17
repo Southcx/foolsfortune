@@ -502,7 +502,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
   Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
   the Pneuka Jar's seal face. *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
-- **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
+- **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `game.cradles`, tag `cradle`, `src/world/cradles.js`; your seal: save section `seal`, `cradles.mine`; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
   the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
   imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre

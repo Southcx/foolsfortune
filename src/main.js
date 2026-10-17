@@ -284,6 +284,7 @@ import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { typeOf } from './progress/combat/types.js';
 import { OverlayScene } from './render/overlayscene.js';
+import { Cradles } from './world/cradles.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -614,6 +615,7 @@ async function main() {
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
+  game.cradles = new Cradles(game); // (the Pneuka Jar as a seal: F at a cradle seals you in, world/cradles.js, docs/plans/HANKO.md)
   {
     const carry = techs.get('carry'), push = techs.get('push');
     const spot = (e) => { const t = e.body.translation(); return new THREE.Vector3(t.x, t.y + (carry.size(e) * 0.5 + 0.5), t.z).setX(t.x); };
@@ -1224,6 +1226,7 @@ async function main() {
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
+    game.cradles.update(dt); // (sealing and unsealing; an engine's draw; a body's hull)
     game.seam.update(game.rawDt); // (a cover over a change of place: render/seam.js)
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
     game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
