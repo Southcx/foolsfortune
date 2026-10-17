@@ -499,8 +499,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
-- **the neuralese script** (Espada's rules; OVERLAY.md 15.5 and 15.6) — neuralese in our own glyphs, decipherable: since 2026-10-17 a hand
-  like Thai and Tamil (an abugida) with Goetic-sigil and chip-trace motifs; the hex Comb kept as a barcode and the hanko. *Not:* Unicode Thai or Tamil, the katakana placeholder.
+- **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
+  Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
+  the Pneuka Jar's seal face. *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
 - **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
   the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
   imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).

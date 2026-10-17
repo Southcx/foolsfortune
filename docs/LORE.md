@@ -741,3 +741,99 @@ one change:
   positioning to have very unique game modules ... and also break in-universe immersion"). Querent, Zodiac, Event Horizon, Supernova
   Run and Nebula Bluff carry no genre label; this overrides CLARITY.md's label rule there. The in-game verbs stand: Set, Run, Steal,
   Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
+
+### The neuralese script *(OVERLAY.md 15.5; Espada's orthography; ruled by the owner, 2026-10-16; the hand redirected, 2026-10-17)*
+**What changed on 2026-10-17** (the owner, in Calissa's session: "I don't think the hexascript is the right vibe for neuralese"). The
+sounds and the syllable rules below stand. The **letterforms** move to a new hand for running text (see *The running hand*); the hex
+cells stay as **the Comb**, neuralese's **stamp script**: a barcode etched onto things, and the signature stamp, as a hanko is.
+
+**The Comb** *(the name proposed)*: a honeycomb's cells hold it, the ancients wrote on wax tablets (honeycomb wax), and a comb's teeth
+are its strokes. It is **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
+who studies can read it. Prior art: **Hangul** (King Sejong's letters draw the tongue and lips that make the sound, and syllables pack
+into blocks); **Tunic** (one rune a syllable, consonants outside, vowels inside, solved by players with no key); **Fez**; **Arrival**'s
+logograms for the way a word condenses. Each glyph is built from the strokes of one cell, so a hex automaton can settle into it.
+
+**The cell.** One flat-topped hexagon is one **syllable**. Its border belongs to the lattice (the System's line). The strokes sit just
+inside the border, so cells can share walls and the strokes are never lost.
+- **The top half is the onset** (the consonant before the vowel), **the bottom half the coda** (the consonant after). Each half has three
+  edges: left, middle and right.
+- **The edge says where in the mouth** (read like a face in profile looking left: front to back, left to right):
+  - **lips** on the left edge (p, f, v, m);
+  - **tongue tip** on the middle edge (t, d, s, z, sh, th, n, l, r);
+  - **the back of the mouth** on the right edge (k, g, h).
+- **The stroke says how:**
+  - a **stop** is a plain line (p, t, k, d, g);
+  - a **fricative** is a line with a **tick** across its middle (f, v, s, z, h); **sh** has **two ticks**, **th** a full **cross**;
+  - a **nasal** is a **doubled line** (m, n);
+  - a **liquid** is a **curve**: **l** bows inward, **r** bows outward.
+  - **Voiced** sounds (d, g, v, z) carry a **dot** at the stroke's middle, inside the cell. Voice is a dot because voice is a hum.
+- **The vowel lives at the centre**, as a spoke from the centre to a corner:
+  - **i** to the upper-left corner, **u** to the upper-right;
+  - **e** to the left corner, **o** to the right;
+  - **a**, the open mouth, is the **centre dot** alone.
+  - High vowels point up, front vowels left and back vowels right, as the tongue does. A **diphthong** is two spokes in order: SHAI
+    has the a-dot and the i-spoke; VOYD has the o-spoke and the i-spoke.
+- **A cluster** (ST in STIL, GR in GRAV) puts its first consonant on the edge and its second as a **shorter parallel stroke just
+  inside** its own edge. Read outer, then inner.
+- **X** (PEXA) is written as a k that ends one syllable and an s that begins the next: PEK·SA.
+
+**The word.** A word is its syllables in order, cells joined in a short honeycomb chain, read left to right (STIL is one cell; DIPSA
+two, DIP·SA). **A modifier** (LON, DEO: the lexicon's `mod`) hangs half a cell below the word it changes, in the next row of the
+lattice, so grammar is a place on the honeycomb. **A word break** is one empty cell. **The end of a sentence** is a cell with all six
+spokes, the star.
+
+**Why it teaches without a tutorial.** The Crib Sheet and the ostraca already pair a word with its English. With this script they pair
+the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
+and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
+
+**The running hand** *(proposed, 2026-10-17; the look is Calissa's, the owner rules)*. The owner's brief: Thai and Tamil "a combo of the
+two", Goetic seals and semiconductor chip design as motifs, East meets West retrofuture. We draw our own glyphs in that hand, never real
+Thai or Tamil letters, which would read as broken words to the people who write them. The orthography carries over whole; only where a
+part sits changes, so a player who learned the Comb can read the hand.
+- **It is an abugida, as both its parents are** (Thai and Tamil descend from Brahmi): one consonant letter a syllable, its vowel a mark
+  placed round it. **a** is the inherent vowel and is not written, which is the Comb's centre dot by another road.
+- **Every letter starts at a pad**: the head loop a Thai letter begins with, the small circle a Goetic seal's line ends in, the pad a
+  chip's trace lands on. One shape, three ancestries. **Voiced is a filled pad** (a via), voiceless an open one: the Comb's hum-dot.
+- **Place is where the pad sits**: lips at the left foot, tongue tip at the top, the back of the mouth at the right foot (the Comb's
+  three edges).
+- **Manner is the body**: a stop a straight stem; a fricative a stem with a notch, as a trace jogs (sh two, th a crossing); a nasal a
+  doubled stem, as traces run in pairs; a liquid a Tamil bowl (l opens in, r opens out).
+- **Vowels sit round the letter** where the Comb's spokes pointed: **i** above, **u** below, **e** before it (Thai's own *sara e* is
+  written before its consonant), **o** after. A diphthong is two marks.
+- **A coda** is a consonant with Tamil's **pulli** (the dot that silences the vowel) drawn as a bar across the pad: the letter is there,
+  its breath is shut. **A cluster** stacks its second consonant under the first, small, as sak yant stacks a line.
+- **The line** is a bus: words hang from one baseline as a chip's parts hang from a rail; **a modifier** hangs half a row below, as
+  in the Comb; **a word break** is a gap in the bus; **a sentence ends** on the Comb's star, the stamp's script closing the hand's.
+
+**The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
+like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
+face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is
+the West's word for a thing that makes a machine itself. Dovina's rules are `docs/plans/HANKO.md` (claude/dovina-design).
+
+*Names (Espada's, proposed, 2026-10-17):*
+- **a cradle** (Dovina's working name, kept): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
+  and a telephone's handset, which is the retrofuture in one word; and *crib* is its old twin, so the Crib Sheet and the cradle are
+  cousins. Not of any one island's make, so not "saggar" (the potter's box a pot is fired in), which would say Anagami.
+- **sealing / to seal in / to unseal**: the act. Japanese says a seal is *pressed* (*natsuin*, 捺印), but "press" is the Athanor's.
+- **your seal**: the Jar's base, your name in the Comb, carved once. The Japanese *jitsuin* is the one registered seal for what
+  matters. Qualify it beside **an attribute's seal** (the press at the Athanor's kerb: the potter's chop).
+- **an imprint**: what a seal leaves on a cradle, dim after you go. Not "a print", which is a foot's in the sand (the trail map). The
+  Japanese for it is *in'ei* (印影), a seal's shadow: the imprint is the shadow you leave on a place.
+- **the Seal Book** (the Codex's shelf): every imprint you have pressed, by island, in its dress. Prior art: the *goshuinchō*, the book
+  a pilgrim carries from shrine to shrine to collect each one's red seal. Proposed for Dovina: make it two ways. You press your seal
+  on the cradle, and the cradle presses its own back into your book, so the shelf is the places' seals, as a pilgrim's is.
+
+*Lore (proposed):* **why a Jar fits.** No island made the cradles alone. The jar is the oldest vessel people made, older than writing,
+and the Emocean is everyone's mind at once, so every Island of Ego that precipitates out of it carries the same shape somewhere in its
+machines: a hollow the size of a jar, left for a will to fill. An island's thought can be built but cannot run itself; a cradle is
+the space it leaves for someone to mean it. The Pneuka Jar (*pneuma*, breath) fits because it is that shape with a breath in it.
+**Who first built one** is left blank.
+
+**The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each *(ruled by the owner, 2026-10-16)*:
+- **Clay**, Anagami: glazed clay, kiln marks, kintsugi gold in the joins (the given).
+- **Nacre**, Margarite: mother-of-pearl and lamp brass, the King's marque stamped like a hallmark. *Margarite* is the pearl (Greek
+  *margaritēs*), and the lamps burn aqua regia, so the frame is lustre and brass.
+- **Glass**, Entropolis: etched glass and amethyst, frost geometry. Entra Polearis is entropy and the pole: a clear, cold, faceted
+  register, and amethyst (Greek *a-methystos*, "not drunk") is the island's charm for a clear head.
+- **Brine**, the Emocean: rope, tar and salt crust, sailors' knots, Lachryma spray beading on the frame. The sea's own, worn by every
+  ship.
