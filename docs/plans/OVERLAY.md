@@ -277,6 +277,10 @@ Comb is texture, never a sentence to read. The board's section 04 counts the mer
   brimming into the expansion chamber at the top, the Bottles feeding the bulb.
 - **The placard:** the title is written in the running hand, then a flow field recombs it into English; the carved face to be retried.
 - **The cradle sits on the gate's threshold**, between the pillars, and the gate wakes upward from the ground.
+- **The Sight's needle** points to the waypoint you calibrate to or know of (the owner: Jack Sparrow's compass): set it and it swings there.
+- **A Shrine gate has two cradles** (the owner): the arch's opens your Spirit Garden (inward); the threshold's travels between Shrine
+  gates (onward). For Dovina's HANKO.md.
+- **The Lachrimeter stands bottom-right** (the log owns the left): the right edge holds the instruments, the globe above, the thermometer below.
 - **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
 
 ### 10.6 The hierarchy (sizes at the 480-line present)
