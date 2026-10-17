@@ -9,6 +9,7 @@
 // senses, head-first phrases, a handful of particles, numbers by sums. Ours differs where the world asks: the copula is a gap (no li),
 // a phrase is hyphenated (as a macro is spoken), and a root's sources are East and West both, as the running hand is.
 //
+//   TITLES[English title] = { neuralese, read }   (each achievement title said in neuralese)
 //   ROOTS[WORD] = { gloss, sense, from }   (gloss: its first sense; sense: all it covers; from: where the word comes from)
 //   PARTICLES[WORD] = { role, gloss }      FEELINGS[aspect] -> its root      COMPOUNDS[phrase] -> its English (worked examples)
 // ---------------------------------------------------------------------------------------
@@ -193,6 +194,47 @@ export const COMPOUNDS = {
   'KLUZA-KORA': 'the Lockheart: the shut heart',
   'AMI-OMO': 'a sibling: kin alike',
   'EMO-PENTA-DUO': 'the seven feelings',
+};
+
+// each achievement title's neuralese (progress/achievements.js, the `title:` fields; Espada's, 2026-10-17), keyed by its English: the
+// title placard writes it in the running hand first, then combs it into English. A person is HOMA and what they do (HOMA-PEXA, the
+// one who fishes); a bane is MOR-SU (the death of ...).
+export const TITLES = {
+  'Adept': { neuralese: 'HOMA-SHIRA-MEGA', read: 'one of great knowing' },
+  'Alchemist': { neuralese: 'HOMA-META', read: 'one who changes' },
+  'Angler': { neuralese: 'HOMA-PEXA', read: 'one who fishes' },
+  'Annihilator': { neuralese: 'HOMA-KRAKA-OMNI', read: 'one who breaks all' },
+  'Cartographer': { neuralese: 'HOMA-GRAFA-TERA', read: 'one who draws the land' },
+  'Clapperjar Bane': { neuralese: 'MOR-SU-KERA-HOMA', read: 'death of the pot-folk' },
+  'Completionist': { neuralese: 'HOMA-OMNI', read: 'one of everything' },
+  'Curator': { neuralese: 'HOMA-TENA-RESA', read: 'keeper of things' },
+  'Demiurge': { neuralese: 'HOMA-TEKNA-MEGA', read: 'the great maker' },
+  'Devout': { neuralese: 'HOMA-DONA-MULTA', read: 'one who gives much' },
+  'Drowned King': { neuralese: 'KAPA-UDA-DEO', read: 'the chief deep in the water' },
+  'Epigrapher': { neuralese: 'HOMA-SHIRA-SEMA', read: 'knower of signs' },
+  'Hierophant of Spores': { neuralese: 'KAPA-SU-FLORA-SKOTA', read: 'chief of the plants of the dark' },
+  'Hoarder': { neuralese: 'HOMA-TENA-MONA', read: 'keeper of cubes' },
+  'Jellybane': { neuralese: 'MOR-SU-THERA-MELU', read: 'death of the melting beasts (slip jellies)' },
+  'Lamplighter': { neuralese: 'HOMA-HIKA', read: 'one of light' },
+  'Landslide': { neuralese: 'TERA-REA', read: 'the ground flowing' },
+  'Lifer': { neuralese: 'HOMA-KRONA-LON', read: 'one of the long time' },
+  'Mycologist': { neuralese: 'HOMA-SHIRA-SU-FLORA-SKOTA', read: 'knower of the plants of the dark' },
+  'Naturalist': { neuralese: 'HOMA-SHIRA-PEXA', read: 'knower of fish' },
+  'Refired': { neuralese: 'SOMA-PIRO-PENTA-UNA', read: 'a body fired six times' },
+  'Ringrunner': { neuralese: 'HOMA-VADA-TAKA', read: 'one who goes fast' },
+  'Sandsailor': { neuralese: 'HOMA-NAVA-SUNA', read: 'one who sails the sand' },
+  'Shatterer': { neuralese: 'HOMA-KRAKA', read: 'one who breaks' },
+  'Siege Breaker': { neuralese: 'HOMA-KRAKA-MURA', read: 'breaker of walls' },
+  'Silo Warden': { neuralese: 'HOMA-TENA-PORTA', read: 'keeper of the gate' },
+  'Slipmonger': { neuralese: 'HOMA-THERA-MELU', read: 'one of the melting beasts' },
+  'Spring Cleaner': { neuralese: 'HOMA-HEMA-NEA', read: 'one who makes the home new' },
+  'Stormrider': { neuralese: 'HOMA-VENTA-MEGA', read: 'one of the great wind' },
+  'The World': { neuralese: 'NUSA-OMNI', read: 'every island; the whole mind' },
+  'Wayfarer': { neuralese: 'HOMA-HODA-LON', read: 'one of the long road' },
+  'Wonderworker': { neuralese: 'HOMA-TEKNA-MIRA', read: 'maker of wonder' },
+  'the Fool Who Read the World': { neuralese: 'PAIDA-SHIRA-SU-NUSA-OMNI', read: 'the knowing child of the whole world' },
+  'the Naturalist': { neuralese: 'HOMA-SHIRA-ZOE', read: 'knower of life' },
+  'the Unrejected': { neuralese: 'HOMA-AMI-SU-NUSA', read: 'one kin to the island' },
 };
 
 export const isRoot = (word) => Object.hasOwn(ROOTS, String(word).toUpperCase());
