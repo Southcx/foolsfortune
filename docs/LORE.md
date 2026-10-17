@@ -742,9 +742,13 @@ one change:
   Run and Nebula Bluff carry no genre label; this overrides CLARITY.md's label rule there. The in-game verbs stand: Set, Run, Steal,
   Shut, Lock, Attack, Bust, Fuse, Split, Claim, Call. The knack is **Inside Tip** (id `houseWhisper`).
 
-### The neuralese script *(OVERLAY.md 15.5; Espada's orthography; ruled by the owner, 2026-10-16)*
-Neuralese is written in **the Comb** *(the script's name, proposed)*: a honeycomb's cells hold it, the ancients wrote on wax
-tablets (honeycomb wax), and a comb's teeth are its strokes. It is **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
+### The neuralese script *(OVERLAY.md 15.5; Espada's orthography; ruled by the owner, 2026-10-16; the hand redirected, 2026-10-17)*
+**What changed on 2026-10-17** (the owner, in Calissa's session: "I don't think the hexascript is the right vibe for neuralese"). The
+sounds and the syllable rules below stand. The **letterforms** move to a new hand for running text (see *The running hand*); the hex
+cells stay as **the Comb**, neuralese's **stamp script**: a barcode etched onto things, and the signature stamp, as a hanko is.
+
+**The Comb** *(the name proposed)*: a honeycomb's cells hold it, the ancients wrote on wax tablets (honeycomb wax), and a comb's teeth
+are its strokes. It is **a featural script on the hex lattice**: a glyph's strokes are a mouth drawn in a honeycomb cell, so a player
 who studies can read it. Prior art: **Hangul** (King Sejong's letters draw the tongue and lips that make the sound, and syllables pack
 into blocks); **Tunic** (one rune a syllable, consonants outside, vowels inside, solved by players with no key); **Fez**; **Arrival**'s
 logograms for the way a word condenses. Each glyph is built from the strokes of one cell, so a hex automaton can settle into it.
@@ -781,6 +785,31 @@ spokes, the star.
 **Why it teaches without a tutorial.** The Crib Sheet and the ostraca already pair a word with its English. With this script they pair
 the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
 and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
+
+**The running hand** *(proposed, 2026-10-17; the look is Calissa's, the owner rules)*. The owner's brief: Thai and Tamil "a combo of the
+two", Goetic seals and semiconductor chip design as motifs, East meets West retrofuture. We draw our own glyphs in that hand, never real
+Thai or Tamil letters, which would read as broken words to the people who write them. The orthography carries over whole; only where a
+part sits changes, so a player who learned the Comb can read the hand.
+- **It is an abugida, as both its parents are** (Thai and Tamil descend from Brahmi): one consonant letter a syllable, its vowel a mark
+  placed round it. **a** is the inherent vowel and is not written, which is the Comb's centre dot by another road.
+- **Every letter starts at a pad**: the head loop a Thai letter begins with, the small circle a Goetic seal's line ends in, the pad a
+  chip's trace lands on. One shape, three ancestries. **Voiced is a filled pad** (a via), voiceless an open one: the Comb's hum-dot.
+- **Place is where the pad sits**: lips at the left foot, tongue tip at the top, the back of the mouth at the right foot (the Comb's
+  three edges).
+- **Manner is the body**: a stop a straight stem; a fricative a stem with a notch, as a trace jogs (sh two, th a crossing); a nasal a
+  doubled stem, as traces run in pairs; a liquid a Tamil bowl (l opens in, r opens out).
+- **Vowels sit round the letter** where the Comb's spokes pointed: **i** above, **u** below, **e** before it (Thai's own *sara e* is
+  written before its consonant), **o** after. A diphthong is two marks.
+- **A coda** is a consonant with Tamil's **pulli** (the dot that silences the vowel) drawn as a bar across the pad: the letter is there,
+  its breath is shut. **A cluster** stacks its second consonant under the first, small, as sak yant stacks a line.
+- **The line** is a bus: words hang from one baseline as a chip's parts hang from a rail; **a modifier** hangs half a row below, as
+  in the Comb; **a word break** is a gap in the bus; **a sentence ends** on the Comb's star, the stamp's script closing the hand's.
+
+**The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
+like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
+face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is
+the West's word for a thing that makes a machine itself. Open: what the slot is called, what is pressed when the Pneuka Jar is set in,
+and whether a thing remembers the seals it has taken.
 
 **The four dresses** (OVERLAY.md 15.4: each island's register for the overlay's frame), one word each *(ruled by the owner, 2026-10-16)*:
 - **Clay**, Anagami: glazed clay, kiln marks, kintsugi gold in the joins (the given).

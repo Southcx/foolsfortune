@@ -499,8 +499,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
-- **the neuralese script** (working name; OVERLAY.md 15.5, a plan) — neuralese written in our own featural glyphs on a hex lattice,
-  decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
+- **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
+  Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
+  the Pneuka Jar's seal face. *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
