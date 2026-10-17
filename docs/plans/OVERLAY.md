@@ -283,6 +283,14 @@ Comb is texture, never a sentence to read. **Ruled by the owner (2026-10-17): ne
 - **The Lachrimeter stands bottom-right** (the log owns the left): the right edge holds the instruments, the globe above, the thermometer below.
 - **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
 
+### 10.5c+ Round 6 on the board (v7, 2026-10-17)
+Built as mocks to 10.5c and shown on the board: the thermometer Lachrimeter (a lit column, a tenmoku scale plate, a VFD count; the held
+stretch crazed above a clay seal; the expansion chamber; the Bottles' valve), the Sight (the needle to a waypoint, the weather's liquid,
+a wadokei ring, the Dissonance arc, the place plate), the tag as an ofuda slip at v4's density, the Shrine gate as a torii with its two
+cradles (threshold onward, arch inward), the running hand streaming and turned in the gutters (real roots, 2x), and the placard's title
+written as SOMA-MENDA-PIRO and combed into KILN-TOUCHED (faces: Cinzel cut rough, or Uncial Antiqua: the owner's call).
+Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2), Dovina's to rule.
+
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
 what cannot be a made object stays a line. Two influences a surface, never five; **ma** (間), a beat of stillness before every hero moment.
