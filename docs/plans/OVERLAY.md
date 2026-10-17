@@ -319,6 +319,23 @@ Matrix's rain: not ours, and to go.
 - **Owners:** Espada, the orthography (which sounds, which strokes, how a word is built); Calissa, the glyphs' drawing and the
   automaton's and flow field's look; Dovina, the decipherment's progression (the Crib Sheet's ladder, what reading the script earns).
 
+### 15.6 The owner on the board (2026-10-17, relayed by Calissa)
+- **The reading script changes.** The hex Comb is out as the script you read: "Thai and Tamil script come closest... a combo of the
+  two... Goetic demon summoning sigils and semiconductor chip design as motifs... East Meets West retrofuture." Calissa mocks our
+  own glyphs in that hand (no real Unicode Thai or Tamil: native readers would see broken words). Thai and Tamil are both abugidas
+  (a consonant's base glyph, its vowel as a mark around it), so Espada's syllable rules carry over: a syllable is a consonant glyph
+  with its vowel set round it, not a hex cell.
+- **The Comb is kept** as an etched barcode and as **the hanko**: your seal's stamp (`docs/plans/HANKO.md`).
+- **3D: "much much warmer: keep going with 3D elements for the frame dressing."**
+- **Tags:** the creature tag with the focus on the eyes is right: "keep working in that direction and think about what else can be
+  subtly communicated."
+- **The Lachrimeter** is a globe tilted on its axis between thick inscribed clay discs, a cathode and an anode: a globe and an
+  esoteric battery at once.
+- **The title toast** (rule 7) is rejected as childish: it is "an ancient Jōmon clay baroque placard of achievement straight from God
+  (the System)".
+- **New, Dovina's and Espada's:** the Pneuka Jar as a hanko and a cartridge, sealed into vessels, machines, Shrine gates and ships:
+  `docs/plans/HANKO.md`.
+
 ## Note on the merge
 
 Where the two files differed, the later wording is kept. Rule 6 once put the Flash's readiness "in the viewfinder's margin"; the Flash

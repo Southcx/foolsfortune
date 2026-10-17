@@ -499,8 +499,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
-- **the neuralese script** (Espada's, ruled 2026-10-16; `docs/LORE.md`; OVERLAY.md 15.5) — neuralese in our own featural glyphs, a syllable a
-  hex cell, decipherable, condensing out of a cellular automaton on screen. *Not:* the katakana placeholder, the Latin capitals in code.
+- **the neuralese script** (Espada's rules; OVERLAY.md 15.5 and 15.6) — neuralese in our own glyphs, decipherable: since 2026-10-17 a hand
+  like Thai and Tamil (an abugida) with Goetic-sigil and chip-trace motifs; the hex Comb kept as a barcode and the hanko. *Not:* Unicode Thai or Tamil, the katakana placeholder.
+- **a cradle / sealing** (working names, Espada's and the owner's; `docs/plans/HANKO.md`, a proposal) — a receptacle in a machine, gate or
+  ship / the Courier folding into the Pneuka Jar and pressing its seal into one, so the thing runs as you. *Not:* a slot, a socket (the bracelet's).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
