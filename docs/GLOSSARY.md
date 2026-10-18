@@ -491,9 +491,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.
 - **the overlay** (working name, Espada's and the owner's; `docs/plans/OVERLAY.md`) — the System's sight laid over the world: the ring, tags,
-  System windows, the Book, the title toast; words and numbers in the System's type, saying what is, never what happened. *Not:* the log.
-- **a tag / a System window / the title toast** (working names; OVERLAY.md 8) — a readout pinned to its thing in the world / a sheet
-  summoned into the air before the Courier (the isekai status window) / the one pop-up, for an achievement that awards a title. *Not:* a
+  System windows, the Book, the title placard; words and numbers in the System's type, saying what is, never what happened. *Not:* the log.
+- **a tag / a System window / the title placard** (working names; OVERLAY.md 8; a creature's tag: an ofuda slip, `CreatureTags`, `src/vfx/creaturetags.js`;
+  the placard: `TitlePlacard`, `src/vfx/titleplacard.js`) — a readout pinned to its thing in the world / a sheet summoned into the air before
+  the Courier (the isekai status window) / the one pop-up, a Jōmon clay placard handed down for an achievement that awards a title. *Not:* a
   world mark (no words), the dialogue box (the folk's).
 - **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
@@ -507,10 +508,17 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   told in, Toki Pona's way (LOGA-NUSA, mind-speech) / one of its 124 words, meaning built by joining them head first. *Not:* a Function (a macro's step).
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
   Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
-  the Pneuka Jar's seal face. *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
+  the Pneuka Jar's seal face. Drawn: the running hand (`runningHand`, `src/ui/runninghand.js`, from `cellsOf`), the seal face (`drawSealFace`, `src/vfx/sealface.js`). *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
 - **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `game.cradles`, tag `cradle`, `src/world/cradles.js`; your seal: save section `seal`, `cradles.mine`; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
   the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
   imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).
+- **the seal picker / the imprint's look** (`SealPicker`, `src/ui/sealpicker.js`; `SealImprints`, `src/vfx/sealimprint.js`) — your seal chosen once at
+  the title, as a ceremony, shown on a cradle and in the Seal Book before you confirm / the imprint burned into a cradle at `seal.set`, dim after.
+  *Not:* the cradles (`world/cradles.js`).
+- **the Sight / the Lachrimeter's tube** (working name, Espada's to rule; the look `game.sightLook`, `src/vfx/sight.js`, the waypoint Dovina's `game.sight`, `progress/sight.js` / `LachrimeterTube`, `src/vfx/lachrimetertube.js`)
+  — the instrument top-right (a needle to the waypoint you know of, the weather's liquid, a wadokei hour ring, the Dissonance arc, the place
+  plate) / the Lachrimeter as a thermometer bottom-right (the bulb and column the pool, the held stretch, the expansion chamber, the Bottles'
+  valve). *Not:* the overlay (the System's sight at large), the wire compass, the Dreamvane's vane.
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
@@ -729,4 +737,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | polarity (the ship's feeling on the rail) | the Astral and Umbral forms | `src/courier/ship/`, `world/emocean/` (29 uses; the check's list is Petra's) |
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
+| title toast | the title placard (the owner, 2026-10-17) | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
