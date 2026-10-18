@@ -100,21 +100,51 @@ const look = () => LOOK || (LOOK = {
 
 // ---- the lit traces: every lit piece of a circuit in one mesh, each vertex carrying the distance along the circuit where it lights
 // (aD) and its colour; uD is how far the light has come, so a segment grows along its length and a node lights when the light reaches it
-const LIT_V = /* glsl */`attribute float aD; attribute vec3 aCol; varying float vD; varying vec3 vC;
+//
+// THE GATE'S ONE SHADER: the lit traces, the door onto the Spirit Garden and your imprint in a cradle (vfx/sealimprint.js) are kinds of
+// one program (uKind), transparent and fogged alike (the door adds its light unfogged), so a gate costs one program of its own, and
+// `prewarmShrineLooks` compiles it (and the gate's shadow) in the warm-up: world/shrines.js builds the gates on the first frame.
+const LOOK_V = /* glsl */`attribute float aD; attribute vec3 aCol; varying float vD; varying vec3 vC; varying vec2 vU;
 #include <fog_pars_vertex>
-void main() { vD = aD; vC = aCol; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
+void main() { vD = aD; vC = aCol; vU = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
 #include <fog_vertex>
 }`;
-const LIT_F = /* glsl */`uniform float uD, uOn; varying float vD; varying vec3 vC;
+const LOOK_F = /* glsl */`uniform float uKind, uD, uOn, uR, uOpen, uLit, uFlash, uPad; uniform sampler2D uMap; uniform vec3 uInk, uHot; varying float vD; varying vec3 vC; varying vec2 vU;
 #include <fog_pars_fragment>
+float h(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5); }
 void main() {
-  if (vD > uD || uOn <= 0.0) discard;
-  float front = smoothstep(0.45, 0.0, uD - vD);                                  // (the sparks at the front of the light)
-  gl_FragColor = vec4(mix(vC * 2.6, vec3(3.2, 3.0, 2.7), front * 0.7) * uOn, 1.0);
+  if (uKind < 0.5) { // the traces
+    if (vD > uD || uOn <= 0.0) discard;
+    float front = smoothstep(0.45, 0.0, uD - vD);                                // (the sparks at the front of the light)
+    gl_FragColor = vec4(mix(vC * 2.6, vec3(3.2, 3.0, 2.7), front * 0.7) * uOn, 1.0);
+  } else if (uKind < 1.5) { // the door: your Spirit Garden, from its centre outward (added light: never fogged)
+    vec4 c = texture2D(uMap, vU); float d = length(vU - vec2(0.5, 0.4)), r = 0.62 * uR;
+    float m = 1.0 - smoothstep(r * 0.7, r + 0.004, d); gl_FragColor = vec4(c.rgb * 1.2, c.a * m * uOpen); return;
+  } else { // an imprint: the masks (red the face, green its glow, blue the pad ring) in the window colour
+    vec3 m = texture2D(uMap, vU).rgb; float r = length(vU - 0.5) * 2.0;
+    float soot = smoothstep(1.0, 0.75, r) * smoothstep(0.0, 0.5, r) * 0.42 + smoothstep(0.85, 0.2, r) * 0.18; // (the scorch round it)
+    float bite = step(0.86, h(floor(vU * 22.0))) * (1.0 - uLit) * 0.8;                                    // (dots of it gone out, cold)
+    float face = m.r * (1.0 - bite);
+    vec3 c = uInk * face * mix(0.62, 1.0, uLit) + uInk * m.g * (0.5 + 1.6 * uLit) * mix(0.35, 1.0, uLit); // (the burn, and its glow)
+    c = mix(c, uHot * 2.4, face * uLit * 0.55) + uHot * (face + m.g) * uFlash * 3.0;                       // (the hot core, the flash)
+    c += uInk * m.b * uPad * 2.2;                                                                           // (the pad ring lit)
+    float a = clamp(max(max(face, m.g * (0.45 + 0.55 * uLit)), max(m.b * uPad, soot)), 0.0, 1.0);
+    gl_FragColor = vec4(c, a);
+  }
 #include <fog_fragment>
 }`;
-const litMaterial = () => new THREE.ShaderMaterial({ name: 'shrine-trace', vertexShader: LIT_V, fragmentShader: LIT_F, fog: true, toneMapped: false,
-  uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uD: { value: -1 }, uOn: { value: 0 } }]) });
+export const SHRINE_LOOK = { trace: 0, door: 1, imprint: 2 };
+/** A material of the gate's one shader (`kind` one of SHRINE_LOOK; `o` its blend and depth): every one transparent, fogged, front faces. */
+export function shrineLook(kind, uniforms = {}, o = {}) {
+  const m = new THREE.ShaderMaterial({ vertexShader: LOOK_V, fragmentShader: LOOK_F, fog: true, toneMapped: false, ...o, transparent: true, side: THREE.FrontSide,
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uKind: { value: kind }, uD: { value: -1 }, uOn: { value: 0 }, uR: { value: 0 }, uOpen: { value: 0 }, uLit: { value: 1 }, uFlash: { value: 0 }, uPad: { value: 0 }, uMap: { value: null }, uInk: { value: new THREE.Color() }, uHot: { value: new THREE.Color() } }]) });
+  Object.assign(m.uniforms, uniforms); // (given by reference, after the merge: a merge clones a texture, and a clone is uploaded again)
+  return m;
+}
+// (the gate's casters draw their shadow with one plain depth material, flipped as the sun's pass flips a front-sided one, so it is the
+// program every plain caster already uses: given their own maps, three's pass made a variant no other caster in the world has)
+const CASTER = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, side: THREE.BackSide });
+const litMaterial = () => shrineLook(SHRINE_LOOK.trace, {}, { name: 'shrine-trace' }); // (written to depth: drawn as the opaque lit part it is)
 
 /** A circuit: carved dead grooves (static, merged with the gate) and their lit twins (one mesh, `mesh()`). Round six's makeCircuit. */
 function circuit(gate, dead, w, colourOf) {
@@ -140,8 +170,8 @@ function circuit(gate, dead, w, colourOf) {
   const _o = new THREE.Object3D();
   function via(p, d, r, normal, col) {
     _o.position.copy(p); _o.rotation.set(0, 0, 0); if (normal) _o.lookAt(p.clone().add(normal)); _o.updateMatrix();
-    groove(new THREE.TorusGeometry(r, w * 0.4, 6, 24), _o.matrix.clone());
-    bake(new THREE.TorusGeometry(r, w * 0.5, 6, 24), _o.matrix, () => d, col); bake(new THREE.SphereGeometry(r * 0.4, 10, 8), _o.matrix, () => d, col);
+    groove(new THREE.TorusGeometry(r, w * 0.4, 4, 16), _o.matrix.clone()); // (a via is a few pixels across at the 480-line present)
+    bake(new THREE.TorusGeometry(r, w * 0.5, 4, 16), _o.matrix, () => d, col); bake(new THREE.SphereGeometry(r * 0.4, 8, 4), _o.matrix, () => d, col);
     dmax = Math.max(dmax, d);
   }
   /** A lit piece of its own (a chevron's bar, a pad): lit when the light reaches d. */
@@ -172,7 +202,7 @@ export class ShrineModel {
     const SD = 3.6, zF = SD / 2 + 0.012, yS = 0.304;
     add(new THREE.BoxGeometry(6.1, 0.3, SD), [0, 0.15, 0], sill);
     // kintsugi: the Clay dress's mends (up a pillar, across the sill, along the kasagi)
-    const mend = (pts, r = 0.024) => add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, r, 5, false), [0, 0, 0], gold, false);
+    const mend = (pts, r = 0.024) => add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4, false), [0, 0, 0], gold, false);
     { const R = rng(4), pts = []; let a = 0.5; for (let y = 0.5; y < 3.4; y += 0.15) { a += (R() - 0.5) * 0.25; const r = pr(y) + 0.006; pts.push(P(-PX + Math.sin(a) * r, y, Math.cos(a) * r)); } mend(pts); }
     { const R = rng(6), pts = []; let a = -0.6; for (let y = 2.2; y < 4.6; y += 0.15) { a += (R() - 0.5) * 0.25; const r = pr(y) + 0.006; pts.push(P(PX + Math.sin(a) * r, y, Math.cos(a) * r)); } mend(pts); }
     { const R = rng(8), pts = []; let x = -2.05; for (let z = 0.55; z < 1.75; z += 0.1) { x += (R() - 0.5) * 0.12; pts.push(P(x, 0.304, z)); } mend(pts, 0.018); }
@@ -184,12 +214,12 @@ export class ShrineModel {
     const { R, h, rs, dep } = CR, fl = h - dep, v2 = (a) => a.map(([x, y]) => new THREE.Vector2(x, y));
     const pin = v2([[0, fl], [rs, fl], [rs, h - 0.005], [rs + 0.05, h + 0.035], [rs + 0.1, h + 0.036]]);
     const pout = v2([[rs + 0.075, h + 0.03], [R - 0.06, h + 0.03], [R - 0.01, h - 0.02], [R, h - 0.08], [R * 0.97, 0.12], [R * 1.02, 0.04], [R * 1.03, 0]]);
-    for (const [pp, seg, ph] of [[pin, 48, 0], [pout, 8, Math.PI / 8]]) { const m = new THREE.Mesh(new THREE.LatheGeometry(pp, seg, ph), cm); m.castShadow = m.receiveShadow = true; cr.add(m); }
+    for (const [pp, seg, ph] of [[pin, 32, 0], [pout, 8, Math.PI / 8]]) { const m = new THREE.Mesh(new THREE.LatheGeometry(pp, seg, ph), cm); m.receiveShadow = true; cr.add(m); } // (sunk in the sill: no shadow of its own)
     for (const [a0, seed] of [[0.5, 3], [2.5, 9], [4.3, 5]]) { // (kintsugi on the octagon's top: radial mends from the lip to the edge)
       const Rn = rng(seed), pts = []; let a = a0; for (let r = rs + 0.11; r < R * 0.88; r += 0.04) { a += (Rn() - 0.5) * 0.22; pts.push(P(Math.cos(a) * r, h + 0.036, Math.sin(a) * r)); }
-      cr.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.011, 5, false), gold));
+      cr.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.011, 4, false), gold));
     }
-    { const c = new THREE.Mesh(new THREE.TorusGeometry(rs + 0.035, 0.03, 8, 48), gold); c.rotation.x = Math.PI / 2; c.position.y = h + 0.03; c.castShadow = true; cr.add(c); } // (the collar)
+    { const c = new THREE.Mesh(new THREE.TorusGeometry(rs + 0.035, 0.03, 8, 48), gold); c.rotation.x = Math.PI / 2; c.position.y = h + 0.03; cr.add(c); } // (the collar)
     const padGeo = [];
     for (let i = 0; i < 32; i++) { // (the pad ring on its top face: carved dark, and their lit twins)
       const a = i / 32 * Math.PI * 2, r = (rs + R) / 2 + 0.03, d = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.012, 0.075), dead);
@@ -204,7 +234,7 @@ export class ShrineModel {
     this.halo.name = 'shrine-halo'; this.halo.position.y = fl + dep / 2; cr.add(this.halo);
     // the four bronze tines round the well, leaning in over it while it is empty, closing on the Jar's foot when it is sealed
     { const b = new THREE.BoxGeometry(0.035, 0.26, 0.07), tip = new THREE.SphereGeometry(0.03, 8, 6).translate(-0.04, 0.13, 0), tg = mergeGeometries([b.toNonIndexed(), tip.toNonIndexed()], false);
-      this.tines = new THREE.InstancedMesh(tg, gold, 4); this.tines.name = 'shrine-tines'; this.tines.castShadow = true; cr.add(this.tines); b.dispose(); tip.dispose(); }
+      this.tines = new THREE.InstancedMesh(tg, gold, 4); this.tines.name = 'shrine-tines'; cr.add(this.tines); b.dispose(); tip.dispose(); }
     this.tineAt = []; for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; this.tineAt.push({ p: P(Math.cos(a) * (rs + 0.07), h + 0.03 + 0.12, Math.sin(a) * (rs + 0.07)), a }); }
 
     // ---- the threshold's circuit: out of the sill both ways, up the pillars past their chevrons, over the nuki, the kasagi last
@@ -238,8 +268,8 @@ export class ShrineModel {
     this.sc = sc; this.scDmax = sc.dmax;
 
     // ---- the arch's cradle (inward): round, upright in the tablet, three leaf springs; Lachryma's light runs in to it
-    const hole = add(new THREE.CircleGeometry(0.47, 32), [0, TY, TZ + 0.002], new THREE.MeshBasicMaterial({ name: 'shrine-socket', color: 0x050203 }), false); hole.receiveShadow = false;
-    add(new THREE.TorusGeometry(0.5, 0.065, 10, 48), [0, TY, TZ + 0.02], bronze);
+    add(new THREE.CircleGeometry(0.47, 32), [0, TY, TZ + 0.002], dead, false); // (the socket's dark: the grooves' clay, merged with them)
+    add(new THREE.TorusGeometry(0.5, 0.065, 8, 40), [0, TY, TZ + 0.02], bronze, false);
     for (let k = 0; k < 3; k++) { const a = Math.PI / 2 + k * Math.PI * 2 / 3; _c.position.set(Math.cos(a) * 0.5, TY + Math.sin(a) * 0.5, TZ + 0.06); _c.rotation.set(0, 0, a); _c.updateMatrix(); const m = placed(new THREE.BoxGeometry(0.05, 0.07, 0.42), bronze, _c.position, _c.rotation); m.position.add(P(0, 0, 0.2)); }
     const ac = circuit(gate, dead, 0.055, null), zT = TZ + 0.01, zS = 0.26; let dA = 0;
     for (const s of [-1, 1]) { // from the shimaki's ends inward: the sigil at each end is where it starts
@@ -267,7 +297,7 @@ export class ShrineModel {
 
     // ---- the shimenawa and its shide
     { const curve = new THREE.CatmullRomCurve3([P(-2.4, 4.68, 0.42), P(-1.2, 4.42, 0.46), P(0, 4.36, 0.48), P(1.2, 4.42, 0.46), P(2.4, 4.68, 0.42)]);
-      add(new THREE.TubeGeometry(curve, 48, 0.085, 8, false), [0, 0, 0], new THREE.MeshStandardMaterial({ name: 'shrine-rope', map: L.rope, roughness: 1 }));
+      add(new THREE.TubeGeometry(curve, 32, 0.085, 6, false), [0, 0, 0], new THREE.MeshStandardMaterial({ name: 'shrine-rope', map: L.rope, roughness: 1 }), false);
       const zz = new THREE.Shape(), zw = 0.11; zz.moveTo(0, 0);
       [[zw, 0], [zw, -0.12], [0, -0.12], [0, -0.24], [zw, -0.24], [zw, -0.36], [0, -0.36], [0, -0.48], [-zw * 0.3, -0.48], [-zw * 0.3, -0.39], [zw * 0.7, -0.39], [zw * 0.7, -0.27], [-zw * 0.3, -0.27], [-zw * 0.3, -0.15], [zw * 0.7, -0.15], [zw * 0.7, -0.03], [0, -0.03]].forEach((p) => zz.lineTo(...p));
       const paper = new THREE.MeshStandardMaterial({ name: 'shrine-shide', color: 0xf2ece0, roughness: 0.9, side: THREE.DoubleSide });
@@ -278,15 +308,12 @@ export class ShrineModel {
     const loose = []; gate.traverse((o) => { if (o.isMesh && o.parent !== gate && !o.name) loose.push(o); });
     for (const o of loose) gate.attach(o);
     mergeStatic(gate);
+    gate.traverse((o) => { if (o.isMesh && o.castShadow) o.customDepthMaterial = CASTER; }); // (no map in the shadow: the world's plain caster program)
     this.scMesh = sc.mesh(); this.acMesh = ac.mesh(); gate.add(this.scMesh, this.acMesh);
 
     // ---- what the opening shows: the onward veil (the film) and the door onto your Spirit Garden (from its centre outward)
-    this.du = { uMap: { value: L.garden }, uR: { value: 0 }, uOpen: { value: 0 } };
-    this.door = new THREE.Mesh(new THREE.PlaneGeometry(4.7, 4.5), new THREE.ShaderMaterial({ name: 'shrine-door', uniforms: this.du, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
-      vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: `uniform sampler2D uMap; uniform float uR, uOpen; varying vec2 vU;
-        void main() { vec4 c = texture2D(uMap, vU); float d = length((vU - vec2(0.5, 0.4)) * vec2(1.0, 1.0)), r = 0.62 * uR;
-          float m = 1.0 - smoothstep(r * 0.7, r + 0.004, d); gl_FragColor = vec4(c.rgb * 1.2, c.a * m * uOpen); }` }));
+    const doorM = shrineLook(SHRINE_LOOK.door, { uMap: { value: L.garden } }, { name: 'shrine-door', depthWrite: false, blending: THREE.AdditiveBlending });
+    this.du = doorM.uniforms; this.door = new THREE.Mesh(new THREE.PlaneGeometry(4.7, 4.5), doorM);
     this.door.name = 'shrine-door'; this.door.position.set(0, 2.55, -0.05); this.door.visible = false; gate.add(this.door);
     this.veil = new THREE.Mesh(new THREE.PlaneGeometry(4.7, 4.5), new THREE.MeshBasicMaterial({ name: 'shrine-veil', map: L.veil, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
     this.veil.name = 'shrine-veil'; this.veil.position.set(0, 2.55, -0.08); this.veil.visible = false; gate.add(this.veil);
@@ -333,6 +360,7 @@ export class ShrineModel {
     K.on = ease(K.on, this.awake ? 1 : 0, this.awake ? 20 : 2.5);
     const su = this.scMesh.material.uniforms;
     su.uOn.value = K.on; su.uD.value = this.awake ? Math.max(-1, (this.wakeT - 0.3) / CLIMB * this.scDmax) : K.on > 0.01 ? su.uD.value : -1;
+    this.scMesh.visible = su.uOn.value > 0 && su.uD.value >= 0; // (dark, nothing of it is drawn: no draw)
     const pads = Math.max(K.lit, 0.35 * K.rest * breath);
     this.pads.visible = pads > 0.01; this.pads.material.color.copy(this.inkSel).multiplyScalar(0.5 + 1.8 * pads); this.pads.material.opacity = Math.min(1, pads * 1.4);
     this.seam.visible = this.halo.visible = K.lit > 0.01 || K.rest > 0.05; this.halo.material.opacity = 0.75 * Math.max(K.lit, 0.3 * K.rest * breath);
@@ -345,8 +373,18 @@ export class ShrineModel {
     const au = this.acMesh.material.uniforms;
     au.uD.value = K.run > 0 ? K.run * (this.acDmax + 0.2) : K.found > 0.05 ? 0 : -1;
     au.uOn.value = K.run > 0 ? 1 : 0.35 * K.found * breath; // (closing, the light draws back out to the sigils)
+    this.acMesh.visible = au.uOn.value > 0 && au.uD.value >= 0;
     this.du.uR.value = K.door; this.du.uOpen.value = Math.min(1, K.door * 3); this.door.visible = K.door > 0.001;
   }
 
   doorWorld(out = new THREE.Vector3()) { return this.door.getWorldPosition(out); }
+}
+
+/** The warm-up's gate (world/shrines.js builds the real ones on the first frame, after it): one gate, hidden, in `scene` for the prime
+ *  draw (main.js draws every hidden thing once, its shadow too), so the gate's one shader and its shadow are compiled there, not at the
+ *  first gate seen. Taken out after; its look's materials are kept (their programs stay), its geometry freed. */
+export function prewarmShrineLooks(scene) {
+  const M = new ShrineModel(), g = M.group; g.position.set(0, -60, 0); g.visible = false; g.userData.zoneFree = true; scene.add(g);
+  setTimeout(() => { g.removeFromParent(); g.traverse((o) => { if (o.geometry && o !== M.scMesh && o !== M.acMesh) o.geometry.dispose(); }); }, 0); // (after the prime draw: it runs in the same task)
+  return M.scMesh.material; // (kept: the one shader's program is held while one material of it lives)
 }

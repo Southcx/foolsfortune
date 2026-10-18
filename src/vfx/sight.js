@@ -33,6 +33,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { COLOR, phaseAt } from '../progress/weather.js';
 import { FONT, THEMES, theme } from '../ui/theme.js';
+import { overlayKind, overlayShader, overlayFlat, overlayStd, overlayEnv } from './lachrimetertube.js'; // (the overlay's one shader and its lit parts' set-ups)
 
 const GAME_HOUR = DAY_MS / 24, LIN = THREE.LinearSRGBColorSpace;
 const raw = (hex) => new THREE.Color().setHex(hex, LIN); // (the mock's r128 colours: taken as they were written)
@@ -226,27 +227,24 @@ function glazeTubeTex(c, seed, seams, L) {
 function envOf(renderer) {
   const c = cv(512, 256), x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, '#3a2c24'); g.addColorStop(0.5, '#22201c'); g.addColorStop(1, '#100c0a'); x.fillStyle = g; x.fillRect(0, 0, 512, 256);
   x.filter = 'blur(6px)'; x.fillStyle = '#fff1d6'; x.fillRect(130, 60, 46, 56); x.fillStyle = '#ff9a4a'; x.beginPath(); x.arc(370, 150, 26, 0, 7); x.fill(); x.fillStyle = '#7fdcff'; x.globalAlpha = 0.35; x.fillRect(250, 70, 60, 30);
-  const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace;
-  const pm = new THREE.PMREMGenerator(renderer), e = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return e;
+  return overlayEnv(renderer, c);
 }
 
-// ---- the shaders (the mock's, with Calissa's notes: the churn read from level 1, the vortex centred, the film only at the eddies' edges)
-const VERT = `varying vec3 vP;varying vec3 vN;varying vec3 vV;
-void main(){vP=position;vec4 mv=modelViewMatrix*vec4(position,1.0);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`;
-const GLASS = `uniform float uTime,uBack;varying vec3 vP;varying vec3 vN;varying vec3 vV;${GLSL_FILM}
-void main(){vec3 N=normalize(vN);if(uBack>.5)N=-N;vec3 V=normalize(vV);float fr=pow(1.0-clamp(abs(dot(N,V)),0.0,1.0),2.2);
+// ---- the shaders (the mock's, with Calissa's notes: the churn read from level 1, the vortex centred, the film only at the eddies' edges),
+// as kinds of the overlay's one shader (vfx/lachrimetertube.js `overlayKind`: one program for every instrument's look)
+const SGLASS = overlayKind('sight.glass', { fdecl: `uniform float uTime,uBack;${GLSL_FILM}`, fbody: `vec3 N=normalize(vN);if(uBack>.5)N=-N;vec3 V=normalize(vV);float fr=pow(1.0-clamp(abs(dot(N,V)),0.0,1.0),2.2);
   vec3 col=mix(vec3(.55,.74,.80),vec3(.93,1.0,1.0),fr);float a=.03+.6*fr;col=mix(col,film(vP.y*.3+uTime*.05+N.x*.25),fr*.45);
   if(uBack<.5){float sh=smoothstep(.2,.0,length(vec2(N.x+.36,N.y-.48)))*.95;float s2=smoothstep(.05,.0,abs(length(vec2(N.x+.1,N.y-.1))-.82))*smoothstep(.0,.4,N.y+.2)*.45;
     float s3=smoothstep(.06,.0,length(vec2(N.x-.62,N.y+.5)))*.4;float hl=sh+s2+s3;col+=vec3(1.0,.98,.94)*hl;a+=hl*.8;}else{a*=.55;col*=.8;}
-  gl_FragColor=vec4(col,clamp(a,0.0,1.0));}`;
-const LIQUID = `uniform float uLevel,uTx,uTz,uTime,uAmp,uSpin,uAlpha,uStr,uRip,uEddy,uVort,uBoil,uBruise,uFunnel;uniform vec3 uCol;varying vec3 vP;varying vec3 vN;varying vec3 vV;${GLSL_FILM}
+  gl_FragColor=vec4(col,clamp(a,0.0,1.0));` });
+const LIQUID = overlayKind('sight.liquid', { fdecl: `uniform float uLevel,uTx,uTz,uAmp,uSpin,uAlpha,uStr,uRip,uEddy,uVort,uBoil,uBruise,uFunnel;uniform vec3 uCol;
 float hsh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hsh(i),hsh(i+vec2(1,0)),f.x),mix(hsh(i+vec2(0,1)),hsh(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){return vn(p)*.55+vn(p*2.03+7.1)*.3+vn(p*4.1+3.3)*.15;}
 vec2 swirl(vec2 q){float r=length(q),a=atan(q.y,q.x);a+=uVort*(2.2/(r+.18))+uTime*(.4+1.6*uVort)*smoothstep(1.2,.0,r);return vec2(cos(a),sin(a))*r;}
 float churn(vec2 q){vec2 w=swirl(q);return fbm(w*3.2+vec2(uTime*.3,-uTime*.2)*(1.0+uBoil));}
 float ring(vec2 xz){return sin(length(xz-vec2(-.35,.2))*26.0+uTime*8.0);}
-void main(){float h=uLevel+uTx*vP.x+uTz*vP.z+uAmp*(sin(vP.x*7.0+uTime*3.1)*.6+sin(vP.z*9.0-uTime*2.3)*.4+sin(vP.x*17.0-vP.z*13.0+uTime*5.0)*.35*uStr);
+`, fbody: `float h=uLevel+uTx*vP.x+uTz*vP.z+uAmp*(sin(vP.x*7.0+uTime*3.1)*.6+sin(vP.z*9.0-uTime*2.3)*.4+sin(vP.x*17.0-vP.z*13.0+uTime*5.0)*.35*uStr);
   h+=uRip*(ring(vP.xz)*.7+sin(length(vP.xz-vec2(.4,-.3))*19.0+uTime*6.3)*.5);
   h+=uBoil*.035*(vn(vP.xz*9.0+uTime*3.0)-.5)*2.0;h-=uFunnel*exp(-vP.x*vP.x*7.0)*(.6+.4*sin(uTime*1.7));h+=uFunnel*.25*smoothstep(.3,.9,abs(vP.x));
   if(vP.y>h)discard;vec3 deep=uCol*.28+vec3(.05,.03,.1);float fe=uBoil>0.0?.08:.05;
@@ -265,16 +263,14 @@ void main(){float h=uLevel+uTx*vP.x+uTz*vP.z+uAmp*(sin(vP.x*7.0+uTime*3.1)*.6+si
     if(uEddy>0.0){float e=churn(vP.xz*.9);col=mix(col,col*(.55+.9*e),uEddy);float edge=1.0-smoothstep(.0,fe,abs(fract(e*3.0)-.5));col=mix(col,film(e*1.7+uTime*.1),edge*min(uBoil,1.0)*.7);}
     col=mix(col,uCol*.16+vec3(.05,.0,.08),uBruise*exp(-rr*rr*6.0)*.9);
     col=mix(col,vec3(.95,1.0,1.0),smoothstep(.6,.98,rr/max(sqrt(max(.965*.965-h*h,.0001)),.01))*(.35+.4*uStr));
-    gl_FragColor=vec4(col,min(1.0,uAlpha+.15));}}`;
-const MOTES_V = `attribute float speed,idx;uniform float uLevel,uTime,uStr,uPx,uBoil,uVort;varying float vA;
-void main(){float y0=-.85;float span=uLevel-y0;float y=y0+mod(position.y*3.0+uTime*speed*(1.0+2.5*uBoil),1.0)*max(span,.01);float rad=sqrt(max(.80-y*y,0.0))*.85;
+    gl_FragColor=vec4(col,min(1.0,uAlpha+.15));}` });
+const MOTES = overlayKind('sight.motes', { vdecl: `attribute float speed,idx;uniform float uLevel,uTime,uStr,uPx,uBoil,uVort;
+`, vbody: `float y0=-.85;float span=uLevel-y0;float y=y0+mod(position.y*3.0+uTime*speed*(1.0+2.5*uBoil),1.0)*max(span,.01);float rad=sqrt(max(.80-y*y,0.0))*.85;
   vA=(idx<min(1.0,uStr+.6*uBoil))&&span>.05?smoothstep(uLevel,uLevel-.15,y)*.8:0.0;float sa=uVort*uTime*speed*6.0;vec2 pxz=mat2(cos(sa),-sin(sa),sin(sa),cos(sa))*position.xz;
-  vec4 mv=modelViewMatrix*vec4(pxz.x*rad,y,pxz.y*rad,1.0);gl_PointSize=(speed>.2?3.0:2.0)*uPx;gl_Position=projectionMatrix*mv;}`;
-const FLAT_V = 'varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}';
-const RETE_F = `uniform sampler2D uTex;uniform float uTime,uOp;varying vec2 vU;${GLSL_FILM}void main(){float a=texture2D(uTex,vU).r;vec2 d=vU-.5;
-  vec3 brass=vec3(.85,.66,.32);vec3 c=mix(brass,film(atan(d.y,d.x)*.16+length(d)*1.3+uTime*.04),.55);gl_FragColor=vec4(c*a*uOp,1.0);}`;
-const ARC_V = 'attribute float u;varying float vU;void main(){vU=u;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}';
-const ARC_F = `uniform float uTime,uA,uW;varying float vU;${GLSL_FILM}void main(){vec3 c=film(vU*1.5+uTime*.8);gl_FragColor=vec4(mix(c,vec3(1.0),uW)*uA,1.0);}`;
+  vec4 mv=modelViewMatrix*vec4(pxz.x*rad,y,pxz.y*rad,1.0);gl_PointSize=(speed>.2?3.0:2.0)*uPx;gl_Position=projectionMatrix*mv;`, fbody: 'vec2 d=gl_PointCoord-.5;if(dot(d,d)>.25)discard;gl_FragColor=vec4(vec3(.9,.97,1.0)*vA,vA);' });
+const RETE = overlayKind('sight.rete', { fdecl: 'uniform sampler2D uTex;uniform float uOp;', fbody: `float a=texture2D(uTex,vUv).r;vec2 d=vUv-.5;
+  vec3 brass=vec3(.85,.66,.32);vec3 c=mix(brass,film(atan(d.y,d.x)*.16+length(d)*1.3+uTime*.04),.55);gl_FragColor=vec4(c*a*uOp,1.0);` });
+const ARC = overlayKind('sight.arc', { vdecl: 'attribute float u;', vbody: 'vA=u;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);', fdecl: 'uniform float uA,uW;', fbody: `vec3 c=film(vA*1.5+uTime*.8);gl_FragColor=vec4(mix(c,vec3(1.0),uW)*uA,1.0);` });
 // the roil a Dissonance Level gives the liquid: rings from 1 (bigger than the mock's, with their crest lit), eddies a little from 1
 const ROIL = { rip: [0, 0.02, 0.03, 0.02, 0.012, 0.008], eddy: [0, 0.12, 0.3, 0.6, 0.8, 1], vort: [0, 0.08, 0.18, 0.4, 0.65, 1], boil: [0, 0, 0, 0, 1, 1.15], bruise: [0, 0, 0, 0, 0.15, 1], funnel: [0, 0, 0.02, 0.06, 0.1, 0.2] };
 const REACH = [0, 0.155, 0.345, 0.535, 0.725, 1], SU = [0.12, 0.31, 0.5, 0.69, 0.88], SEAMS = [0.21, 0.5, 0.79], YS = 200, MAXQ = 96;
@@ -300,7 +296,7 @@ export class SightLook {
   }
 
   /** The materials a lit part wears: the mock's raw colours, the env map for the metal, never tone-mapped. */
-  std(o, phys = false) { const m = new (phys ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial)({ toneMapped: false, envMap: this.env, ...o }); return m; }
+  std(o, phys = false) { return overlayStd(this.env, o, phys); } // (one set-up each for every instrument: vfx/lachrimetertube.js)
 
   build() {
     const frame = this.frame = new THREE.Group(), view = this.view = new THREE.Group(), root = this.root = new THREE.Group();
@@ -308,42 +304,51 @@ export class SightLook {
     const tilt = this.tilt = new THREE.Group(); tilt.rotation.z = -TILT; root.add(tilt);
     const metal = []; // (every static metal part, baked into one mesh at the end: one draw call)
     const bronze = raw(0x9a7440), copper = raw(0xc06a3a), dark = raw(0x3a2616), gold = raw(0xe8b84a);
-    const keep = (m, col) => { m.userData.bake = col; return m; };
+    const keep = (m, col, rough = 0.32, metal = 0.85, glow = null) => { m.userData.bake = { c: col, r: rough, m: metal, e: glow }; return m; }; // (baked: see bake below)
     // the glass
-    const glassGeo = new THREE.SphereGeometry(RG, 48, 32);
-    const glass = (back) => new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: GLASS, transparent: true, depthWrite: false, side: back ? THREE.BackSide : THREE.FrontSide, uniforms: { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 } } });
+    const glassGeo = new THREE.SphereGeometry(RG, 40, 28);
+    const glass = (back) => overlayShader(SGLASS, { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 } }, { cull: back ? 2 : 1, depthWrite: false });
     this.gBack = new THREE.Mesh(glassGeo, glass(1)); this.gBack.renderOrder = 1; this.gFront = new THREE.Mesh(glassGeo, glass(0)); this.gFront.renderOrder = 5; root.add(this.gBack, this.gFront);
     // the rete, faint, turning once a game day
     const reteMap = new THREE.CanvasTexture(reteTex());
-    this.reteMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTex: { value: reteMap }, uTime: { value: 0 }, uOp: { value: 0.3 } }, vertexShader: FLAT_V, fragmentShader: RETE_F });
+    this.reteMat = overlayShader(RETE, { uTex: { value: reteMap }, uTime: { value: 0 }, uOp: { value: 0.3 } }, { cull: 1, depthWrite: false, blending: THREE.AdditiveBlending });
     this.rete = new THREE.Mesh(new THREE.CircleGeometry(0.93, 64), this.reteMat); this.rete.position.z = -0.18; this.rete.renderOrder = 2;
     const reteHold = new THREE.Group(); reteHold.rotation.x = -EL; reteHold.add(this.rete); root.add(reteHold);
     // the liquid and its motes
     const U = (v) => ({ value: v });
-    this.liqMat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: LIQUID, side: THREE.DoubleSide, transparent: true, depthWrite: false,
-      uniforms: { uLevel: U(0), uTx: U(0), uTz: U(0), uTime: U(0), uAmp: U(0.002), uSpin: U(0), uAlpha: U(0.2), uStr: U(0), uRip: U(0), uEddy: U(0), uVort: U(0), uBoil: U(0), uBruise: U(0), uFunnel: U(0), uCol: U(new THREE.Color()) } });
-    const liq = new THREE.Mesh(new THREE.SphereGeometry(RL, 48, 36), this.liqMat); liq.renderOrder = 3; root.add(liq);
+    // (drawn as three.js draws a double-sided transparent: its back faces, then its front; two meshes, one set of uniforms)
+    const LU = { uLevel: U(0), uTx: U(0), uTz: U(0), uTime: U(0), uAmp: U(0.002), uSpin: U(0), uAlpha: U(0.2), uStr: U(0), uRip: U(0), uEddy: U(0), uVort: U(0), uBoil: U(0), uBruise: U(0), uFunnel: U(0), uCol: U(new THREE.Color()) };
+    this.liqMat = overlayShader(LIQUID, LU, { cull: 2, depthWrite: false });
+    const liqG = new THREE.SphereGeometry(RL, 48, 36), liq = new THREE.Mesh(liqG, this.liqMat), liqF = new THREE.Mesh(liqG, overlayShader(LIQUID, LU, { cull: 1, depthWrite: false }));
+    liq.renderOrder = 3; liqF.renderOrder = 3.01; root.add(liq, liqF);
     { const bp = [], bs = [], bi = [], RB = rng(5); for (let i = 0; i < 90; i++) { const a = RB() * 6.28, rr = Math.sqrt(RB()); bp.push(Math.cos(a) * rr, RB(), Math.sin(a) * rr); bs.push(0.08 + RB() * 0.18); bi.push(i / 90); }
       const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.Float32BufferAttribute(bp, 3)); bg.setAttribute('speed', new THREE.Float32BufferAttribute(bs, 1)); bg.setAttribute('idx', new THREE.Float32BufferAttribute(bi, 1));
-      this.moteMat = new THREE.ShaderMaterial({ transparent: true, depthTest: false, blending: THREE.AdditiveBlending, uniforms: { uLevel: U(0), uTime: U(0), uStr: U(0), uPx: U(1), uBoil: U(0), uVort: U(0) }, vertexShader: MOTES_V,
-        fragmentShader: 'varying float vA;void main(){vec2 d=gl_PointCoord-.5;if(dot(d,d)>.25)discard;gl_FragColor=vec4(vec3(.9,.97,1.0)*vA,vA);}' });
+      this.moteMat = overlayShader(MOTES, { uLevel: U(0), uTime: U(0), uStr: U(0), uPx: U(1), uBoil: U(0), uVort: U(0) }, { depthTest: false, blending: THREE.AdditiveBlending });
       const motes = new THREE.Points(bg, this.moteMat); motes.renderOrder = 4; motes.frustumCulled = false; root.add(motes); }
     // the discs: the anode above, the cathode below
     const tex = (c, rep) => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (rep) { t.wrapS = THREE.RepeatWrapping; t.repeat.set(rep, 1); } return t; };
-    const lips = [];
-    for (const kind of ['anode', 'cathode']) {
-      const F = discFace(kind), an = kind === 'anode', g = new THREE.Group(); g.position.y = an ? DY : -DY; tilt.add(g);
-      const face = this.std({ map: tex(F.c), bumpMap: new THREE.CanvasTexture(F.b), bumpScale: 0.018, roughness: 0.55, clearcoat: 0.35, clearcoatRoughness: 0.4 }, true);
-      const rim = this.std({ map: tex(rimTex(kind), 3), roughness: 0.6, clearcoat: 0.3, clearcoatRoughness: 0.4 }, true);
-      const under = this.std({ color: raw(an ? 0x5a2a16 : 0x1a1210), roughness: 0.8 });
-      g.add(new THREE.Mesh(new THREE.CylinderGeometry(DR, DR, DT, 64, 1), an ? [rim, face, under] : [rim, under, face]));
-      for (const yy of [DT / 2, -DT / 2]) { const lip = keep(new THREE.Mesh(new THREE.TorusGeometry(DR, 0.022, 8, 64)), raw(an ? 0xb06a3c : 0x3a2b26)); lip.rotation.x = Math.PI / 2; lip.position.y = yy; g.add(lip); lips.push(lip); }
-      const boss = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.06, 24)), bronze); boss.position.y = (an ? 1 : -1) * (DT / 2 + 0.02); g.add(boss); metal.push(boss);
-    }
+    // the two discs, one mesh on one atlas (their faces, their rims thrice round, their undersides; the faces' bumps beside): one draw
+    const AW = 1024, AH = 656, atlas = cv(AW, AH), bumps = cv(AW, AH), ax = atlas.getContext('2d'), bx = bumps.getContext('2d'); bx.fillStyle = '#808080'; bx.fillRect(0, 0, AW, AH);
+    const region = (g, [x0, y0, w, h], grp) => { const uv = g.attributes.uv, { start, count } = g.groups[grp], seen = new Set();
+      for (let i = start; i < start + count; i++) { const v = g.index.getX(i); if (seen.has(v)) continue; seen.add(v); uv.setXY(v, (x0 + uv.getX(v) * w) / AW, 1 - (y0 + h) / AH + uv.getY(v) * h / AH); } };
+    const discs = ['anode', 'cathode'].map((kind, k) => {
+      const F = discFace(kind), an = kind === 'anode', rimC = rimTex(kind), g = new THREE.CylinderGeometry(DR, DR, DT, 48, 1), ry = 512 + 64 * k;
+      ax.drawImage(F.c, 512 * k, 0, 512, 512); bx.drawImage(F.b, 512 * k, 0, 512, 512);
+      for (let r = 0; r < 3; r++) ax.drawImage(rimC, AW / 3 * r, ry, AW / 3, 64);
+      ax.fillStyle = `#${raw(an ? 0x5a2a16 : 0x1a1210).getHexString()}`; ax.fillRect(512 * k, 640, 512, 16);
+      region(g, [0, ry, AW, 64], 0); region(g, an ? [0, 0, 512, 512] : [512 * k, 640, 512, 16], 1); region(g, an ? [512 * k, 640, 512, 16] : [512, 0, 512, 512], 2);
+      g.clearGroups(); g.translate(0, an ? DY : -DY, 0);
+      const holder = new THREE.Group(); holder.position.y = an ? DY : -DY; tilt.add(holder);
+      for (const yy of [DT / 2, -DT / 2]) { const lip = keep(new THREE.Mesh(new THREE.TorusGeometry(DR, 0.022, 8, 48)), raw(an ? 0xb06a3c : 0x3a2b26), 0.7, 0); lip.rotation.x = Math.PI / 2; lip.position.y = yy; holder.add(lip); metal.push(lip); }
+      const boss = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.06, 24)), bronze); boss.position.y = (an ? 1 : -1) * (DT / 2 + 0.02); holder.add(boss); metal.push(boss);
+      return g;
+    });
+    tilt.add(new THREE.Mesh(mergeGeometries(discs), this.std({ map: tex(atlas), bumpMap: new THREE.CanvasTexture(bumps), bumpScale: 0.018, roughness: 0.6, clearcoat: 0.33, clearcoatRoughness: 0.4 }, true)));
+    discs.forEach((g) => g.dispose());
     // the axis rod (only from each disc to the glass), the copper coils and the collars
     { const L = DY - 0.97; for (const sg of [1, -1]) { const rod = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.017, L, 10)), dark); rod.position.y = sg * (0.97 + L / 2); tilt.add(rod); metal.push(rod); } }
     for (const sg of [1, -1]) {
-      for (let i = 0; i < 7; i++) { const t = keep(new THREE.Mesh(new THREE.TorusGeometry(0.085 + 0.012 * Math.sin(i / 6 * Math.PI), 0.019, 6, 20)), copper); t.rotation.x = Math.PI / 2; t.position.y = sg * (1.02 + i * 0.03); tilt.add(t); metal.push(t); }
+      for (let i = 0; i < 7; i++) { const t = keep(new THREE.Mesh(new THREE.TorusGeometry(0.085 + 0.012 * Math.sin(i / 6 * Math.PI), 0.019, 4, 16)), copper); t.rotation.x = Math.PI / 2; t.position.y = sg * (1.02 + i * 0.03); tilt.add(t); metal.push(t); }
       const col = keep(new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.026, 8, 32)), bronze); col.rotation.x = Math.PI / 2; col.position.y = sg * 0.985; tilt.add(col); metal.push(col);
     }
     // the yoke: a verdigris clay C-meridian behind the globe's right side, gold at its joins; its studs; its arc
@@ -351,14 +356,15 @@ export class SightLook {
     const Y = new THREE.CatmullRomCurve3([[0.48, DY - 0.02, -0.44], [1.02, 1.64, -0.64], [1.6, 1.02, -0.72], [1.86, 0, -0.74], [1.6, -1.02, -0.72], [1.02, -1.64, -0.64], [0.48, -DY + 0.02, -0.44]].map((p) => T3(...p)), false, 'centripetal');
     this.ys = new Float32Array((YS + 1) * 3); for (let i = 0; i <= YS; i++) { const p = Y.getPointAt(i / YS); this.ys.set([p.x, p.y, p.z], i * 3); }
     this.yokeC = cv(512, 64); this.yokeMap = tex(this.yokeC); this.yokeMap.wrapS = THREE.RepeatWrapping;
-    tilt.add(new THREE.Mesh(new THREE.TubeGeometry(Y, 120, 0.085, 12, false), this.std({ map: this.yokeMap, roughness: 0.4, clearcoat: 0.75, clearcoatRoughness: 0.2 }, true)));
+    tilt.add(new THREE.Mesh(new THREE.TubeGeometry(Y, 96, 0.085, 8, false), this.std({ map: this.yokeMap, roughness: 0.4, clearcoat: 0.75, clearcoatRoughness: 0.2 }, true)));
     for (const u of SEAMS) { const m = keep(new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.012, 8, 24)), gold); m.position.copy(Y.getPointAt(u)); m.quaternion.setFromUnitVectors(T3(0, 0, 1), Y.getTangentAt(u)); tilt.add(m); metal.push(m); }
     for (const u of [0, 1]) { const m = keep(new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10)), bronze); m.position.copy(Y.getPointAt(u)); tilt.add(m); metal.push(m); }
-    const studGeo = new THREE.SphereGeometry(0.042, 12, 8);
-    this.studOff = new THREE.InstancedMesh(studGeo, this.std({ color: raw(0x3a2a1a), metalness: 0.7, roughness: 0.5 }), 5);
-    this.studOnMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }); this.studOn = new THREE.InstancedMesh(studGeo, this.studOnMat, 5);
-    this.studM = SU.map((u) => { const p = Y.getPointAt(u), n = T3(p.x, p.y, 0).normalize(); return new THREE.Matrix4().makeTranslation(p.x + n.x * 0.05, p.y + n.y * 0.05, p.z + 0.07); });
-    this.studOff.frustumCulled = this.studOn.frustumCulled = false; tilt.add(this.studOff, this.studOn);
+    // the five studs in one geometry, the first lit; two meshes over it, each drawing its stretch (no instancing: one program fewer)
+    const studAt = SU.map((u) => { const p = Y.getPointAt(u), n = T3(p.x, p.y, 0).normalize(); return T3(p.x + n.x * 0.05, p.y + n.y * 0.05, p.z + 0.07); });
+    const studG = mergeGeometries(studAt.map((p) => new THREE.SphereGeometry(0.042, 12, 8).translate(p.x, p.y, p.z)));
+    this.studN = studG.index.count / 5;
+    this.studOnMat = overlayFlat({ cull: 1 }); this.studOn = new THREE.Mesh(studG, this.studOnMat); this.studOn.frustumCulled = false; tilt.add(this.studOn);
+    const studsOff = studAt.slice().reverse().map((p) => { const m = keep(new THREE.Mesh(new THREE.SphereGeometry(0.042, 12, 8)), raw(0x3a2a1a), 0.5, 0.7); m.position.copy(p); tilt.add(m); return m; }); // (baked last, reversed: the lit are the first k)
     this.arcCore = this.arcStrip(1, 0.35); this.arcGlow = this.arcStrip(0.28, 0.2); tilt.add(this.arcGlow.mesh, this.arcCore.mesh);
     // the needle: level on its pivot, drawn last with its dark outline (an inverted hull), so the churn never crosses it
     const needle = this.needle = new THREE.Group(); root.add(needle);
@@ -366,30 +372,31 @@ export class SightLook {
       const g = new THREE.ExtrudeGeometry(s, { depth: 0.025, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 }); g.translate(0, 0, -0.0125); g.rotateX(-Math.PI / 2); return g; };
     const NF = lozenge(0.9, 0.13, true), NT = lozenge(0.66, 0.12, false), last = { transparent: true, depthWrite: true };
     this.needleGold = this.std({ color: raw(0xffd56a), metalness: 1, roughness: 0.16, emissive: 0x000000, ...last });
-    needle.add(new THREE.Mesh(NF, this.needleGold), new THREE.Mesh(NT, this.std({ color: raw(0x2d4fb8), metalness: 0.75, roughness: 0.22, emissive: raw(0x0c1650), ...last })));
+    needle.add(new THREE.Mesh(NF, this.needleGold)); const needleParts = [keep(new THREE.Mesh(NT.clone()), raw(0x2d4fb8), 0.22, 0.75, raw(0x0c1650))]; needleParts.forEach((m) => needle.add(m));
     const hull = (G, sx, sz, oz) => { const g = G.clone(); g.applyMatrix4(new THREE.Matrix4().compose(T3(0, 0, oz), new THREE.Quaternion(), T3(sx, 2.2, sz))); return g; };
-    const line = new THREE.Mesh(mergeGeometries([hull(NF, 1.32, 1.06, -0.012), hull(NT, 1.32, 1.07, 0.012)]), new THREE.MeshBasicMaterial({ color: 0x0a0610, side: THREE.BackSide, transparent: true, opacity: 0.92, depthWrite: false, toneMapped: false }));
+    const line = new THREE.Mesh(mergeGeometries([hull(NF, 1.32, 1.06, -0.012), hull(NT, 1.32, 1.07, 0.012)]), overlayFlat({ color: 0x0a0610, cull: 2, opacity: 0.92, depthWrite: false }));
     line.renderOrder = 5.9; needle.add(line);
     { const capG = new THREE.SphereGeometry(0.07, 14, 10); capG.translate(0, 0.03, 0); const ringG = new THREE.TorusGeometry(0.11, 0.014, 6, 28); ringG.rotateX(Math.PI / 2);
-      needle.add(new THREE.Mesh(mergeGeometries([capG, ringG]), this.std({ color: bronze, metalness: 0.85, roughness: 0.32, ...last })));
-      const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), this.std({ color: raw(0xd91a80), metalness: 0.2, roughness: 0.1, emissive: raw(0x400820), ...last })); jewel.position.y = 0.075; needle.add(jewel);
-      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 10, 8), new THREE.MeshBasicMaterial({ color: raw(0xfff2c0), transparent: true, toneMapped: false })); tip.position.set(0, 0.01, -0.86); needle.add(tip);
+      const capM = keep(new THREE.Mesh(mergeGeometries([capG, ringG])), bronze); needle.add(capM); needleParts.push(capM);
+      const jewel = keep(new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8)), raw(0xd91a80), 0.1, 0.2, raw(0x400820)); jewel.position.y = 0.075; needle.add(jewel); needleParts.push(jewel);
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 10, 8), overlayFlat({ color: raw(0xfff2c0), cull: 1 })); tip.position.set(0, 0.01, -0.86); needle.add(tip);
       const gc = cv(64, 64), gx = gc.getContext('2d'), gg = gx.createRadialGradient(32, 32, 0, 32, 32, 32); gg.addColorStop(0, 'rgba(255,248,220,1)'); gg.addColorStop(0.18, 'rgba(255,226,150,.55)'); gg.addColorStop(1, 'rgba(255,200,90,0)'); gx.fillStyle = gg; gx.fillRect(0, 0, 64, 64);
       gx.fillStyle = 'rgba(255,250,230,.95)'; gx.beginPath(); gx.moveTo(32, 0); gx.lineTo(34.5, 29.5); gx.lineTo(64, 32); gx.lineTo(34.5, 34.5); gx.lineTo(32, 64); gx.lineTo(29.5, 34.5); gx.lineTo(0, 32); gx.lineTo(29.5, 29.5); gx.closePath(); gx.fill();
-      const glint = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gc), transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+      const gt = new THREE.CanvasTexture(gc); gt.colorSpace = THREE.SRGBColorSpace; // (a quad turned to the eye each frame, as a sprite would be)
+      const glint = this.glint = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), overlayFlat({ map: gt, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
       glint.scale.setScalar(0.34); glint.position.set(0, 0.03, -0.86); glint.renderOrder = 7; needle.add(glint); }
-    needle.traverse((o) => { if ((o.isMesh) && o !== line) o.renderOrder = 6; });
+    this.needleParts = needleParts;
     // the set pulse: a ring flaring round the pivot when a waypoint is calibrated
-    this.pulseMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+    this.pulseMat = overlayFlat({ opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
     this.pulse = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.24, 48), this.pulseMat); this.pulse.rotation.x = -Math.PI / 2; this.pulse.renderOrder = 4; this.pulse.visible = false; root.add(this.pulse);
     // the clock ring: a wadokei dial face to the eye, its four phase plates and the hand
     const ringGrp = this.ringGrp = new THREE.Group(); ringGrp.rotation.x = -EL; root.add(ringGrp);
     const planarUV = (g) => { const p = g.attributes.position, uv = new Float32Array(p.count * 2); for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / (2 * TEXR) + 0.5; uv[i * 2 + 1] = p.getY(i) / (2 * TEXR) + 0.5; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g; };
     { const s = new THREE.Shape(); s.absarc(0, 0, RO, 0, Math.PI * 2, false); const hole = new THREE.Path(); hole.absarc(0, 0, RI, 0, Math.PI * 2, true); s.holes.push(hole);
-      const g = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 2, curveSegments: 96 }); g.translate(0, 0, -0.04);
+      const g = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 1, curveSegments: 72 }); g.translate(0, 0, -0.04);
       this.dialC = cv(TN * Q, TN * Q); this.dialMap = tex(this.dialC); this.dialMat = this.std({ map: this.dialMap, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.2 }, true);
       ringGrp.add(new THREE.Mesh(planarUV(g), this.dialMat)); }
-    for (const rr of [RO + 0.012, RI - 0.012]) { const t = keep(new THREE.Mesh(new THREE.TorusGeometry(rr, 0.02, 6, 120)), bronze); ringGrp.add(t); metal.push(t); }
+    for (const rr of [RO + 0.012, RI - 0.012]) { const t = keep(new THREE.Mesh(new THREE.TorusGeometry(rr, 0.02, 5, 80)), bronze); ringGrp.add(t); metal.push(t); }
     this.plateC = cv(TN * Q, TN * Q); this.plateMap = tex(this.plateC);
     this.plateMat = this.std({ map: this.plateMap, emissiveMap: this.plateMap, emissive: 0xffffff, emissiveIntensity: 0.12, roughness: 0.35, clearcoat: 0.85, clearcoatRoughness: 0.15 }, true);
     { const GAP = 0.06, sector = (h0, h1) => { const s = new THREE.Shape(), n = Math.max(8, Math.ceil((h1 - h0) * 6)); for (let i = 0; i <= n; i++) { const [x, y] = P(h0 + (h1 - h0) * i / n, PO); i ? s.lineTo(x, y) : s.moveTo(x, y); } for (let i = n; i >= 0; i--) { const [x, y] = P(h0 + (h1 - h0) * i / n, PI0); s.lineTo(x, y); } s.closePath(); return s; };
@@ -400,17 +407,28 @@ export class SightLook {
     const hand = this.hand = new THREE.Group(); ringGrp.add(hand);
     { const cl = new THREE.BoxGeometry(0.13, 0.12, 0.16); cl.translate(0, RO + 0.04, 0); const pt = new THREE.ConeGeometry(0.055, 0.2, 4); pt.rotateZ(Math.PI); pt.scale(1, 1, 0.35); pt.translate(0, PO + 0.03, 0.1);
       cl.deleteAttribute('uv'); pt.deleteAttribute('uv'); hand.add(new THREE.Mesh(mergeGeometries([cl.toNonIndexed(), pt.toNonIndexed()]), this.std({ color: bronze, metalness: 0.85, roughness: 0.32 }))); }
-    this.beadMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }); const bead = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), this.beadMat); bead.position.set(0, RO + 0.14, 0.02); hand.add(bead);
-    this.halo = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); this.halo.position.set(0, RO + 0.14, 0.03); hand.add(this.halo);
+    this.beadMat = overlayFlat({ cull: 1 }); const bead = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), this.beadMat); bead.position.set(0, RO + 0.14, 0.02); hand.add(bead);
+    this.halo = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), overlayFlat({ opacity: 0.25, cull: 1, depthWrite: false, blending: THREE.AdditiveBlending })); this.halo.position.set(0, RO + 0.14, 0.03); hand.add(this.halo);
     // bake the static metal into one mesh (root space: the tilt and the ring are fixed turns of it), and the discs' lips into another
-    const bake = (list, mat) => {
-      root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), M = new THREE.Matrix4();
-      const gs = list.map((m) => { const g = m.geometry.clone(); g.deleteAttribute('uv'); g.applyMatrix4(M.multiplyMatrices(inv, m.matrixWorld)); const c = m.userData.bake, n = g.attributes.position.count, a = new Float32Array(n * 3);
-        for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); m.parent.remove(m); m.geometry.dispose(); return g; });
-      const mesh = new THREE.Mesh(mergeGeometries(gs), mat); root.add(mesh); return mesh;
+    // bake parts into one mesh in `into`'s space: each part's colour, roughness and metalness, and glow, a texel of three little palettes
+    // its uvs all point at (maps, not vertex colours or a material a part: the lit parts' one program, and one draw)
+    const bake = (list, into) => {
+      into.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(into.matrixWorld).invert(), M = new THREE.Matrix4();
+      const key = (b) => `${b.c.getHex(LIN)}|${b.r}|${b.m}|${b.e ? b.e.getHex(LIN) : 0}`, keys = [...new Set(list.map((m) => key(m.userData.bake)))], W = keys.length;
+      // (one image of three rows, colour, roughness and metalness, glow; three textures over it, each its row: one upload)
+      const px = new Uint8Array(W * 12), b8 = (v) => Math.round(Math.min(1, Math.max(0, v)) * 255);
+      for (const m of list) { const b = m.userData.bake, i = keys.indexOf(key(b)) * 4, e = b.e || { r: 0, g: 0, b: 0 };
+        px.set([b8(b.c.r), b8(b.c.g), b8(b.c.b), 255], i); px.set([255, b8(b.r), b8(b.m), 255], W * 4 + i); px.set([b8(e.r), b8(e.g), b8(e.b), 255], W * 8 + i); }
+      const col = new THREE.DataTexture(px, W, 3); col.magFilter = col.minFilter = THREE.NearestFilter; col.needsUpdate = true;
+      const row = (t, k) => { t.repeat.set(1, 1 / 3); t.offset.set(0, k / 3); return t; }, orm = row(col.clone(), 1), glow = row(col.clone(), 2); row(col, 0);
+      const gs = list.map((m) => { const g = m.geometry.clone(); g.applyMatrix4(M.multiplyMatrices(inv, m.matrixWorld)); const u = (keys.indexOf(key(m.userData.bake)) + 0.5) / W, n = g.attributes.position.count, a = new Float32Array(n * 2);
+        for (let i = 0; i < n; i++) { a[i * 2] = u; a[i * 2 + 1] = 0.5; } g.setAttribute('uv', new THREE.BufferAttribute(a, 2)); m.parent.remove(m); m.geometry.dispose(); return g; });
+      const flat = gs.some((g) => !g.index), all = flat ? gs.map((g) => (g.index ? g.toNonIndexed() : g)) : gs; // (merged all indexed, or none)
+      const mesh = new THREE.Mesh(mergeGeometries(all), this.std({ map: col, roughnessMap: orm, metalnessMap: orm, emissiveMap: glow, emissive: 0xffffff, roughness: 1, metalness: 1 }));
+      into.add(mesh); return mesh;
     };
-    bake(metal, this.std({ vertexColors: true, metalness: 0.85, roughness: 0.32 }));
-    bake(lips, this.std({ vertexColors: true, roughness: 0.7 }));
+    this.metalM = bake([...metal, ...studsOff], root); this.metalN = this.metalM.geometry.index.count; // (the static metal, the discs' lips, the unlit studs last)
+    const nb = bake(this.needleParts, needle); nb.renderOrder = 6; needle.children.forEach((o) => { if (o.isMesh && o !== line && o !== this.glint) o.renderOrder = 6; });
     // the plates' words: two canvases drawn at the present's dots, on quads in front of everything
     this.wpQuad = this.textQuad(); this.placeQuad = this.textQuad(); frame.add(this.wpQuad.mesh, this.placeQuad.mesh);
   }
@@ -420,7 +438,7 @@ export class SightLook {
     const pos = new Float32Array(MAXQ * 12), u = new Float32Array(MAXQ * 4), idx = new Uint16Array(MAXQ * 6);
     for (let q = 0; q < MAXQ; q++) idx.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], q * 6);
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('u', new THREE.BufferAttribute(u, 1)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.setDrawRange(0, 0);
-    const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, uniforms: { uTime: { value: 0 }, uA: { value: a }, uW: { value: w } }, vertexShader: ARC_V, fragmentShader: ARC_F });
+    const mat = overlayShader(ARC, { uTime: { value: 0 }, uA: { value: a }, uW: { value: w } }, { depthWrite: false, blending: THREE.AdditiveBlending }); // (additive: one pass, both sides)
     const mesh = new THREE.Mesh(g, mat); mesh.frustumCulled = false; mesh.renderOrder = 4.5;
     return { mesh, mat, pos, u, n: 0, quad(ax, ay, az, bx, by, bz, wa, ua, ub) {
       if (this.n >= MAXQ) return; let nx = -(by - ay), ny = bx - ax; const l = Math.hypot(nx, ny) || 1; nx *= wa / l; ny *= wa / l; const o = this.n * 12;
@@ -431,7 +449,7 @@ export class SightLook {
   }
 
   textQuad() {
-    const mat = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false });
+    const mat = overlayFlat({ cull: 1, depthTest: false, depthWrite: false });
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat); mesh.renderOrder = 10; mesh.position.z = 400; mesh.visible = false;
     return { mesh, mat, c: null, tex: null };
   }
@@ -440,13 +458,13 @@ export class SightLook {
   quadCanvas(Qd, W, H) {
     if (Qd.c && Qd.c.width === W * this.k) return Qd.c.getContext('2d');
     Qd.tex?.dispose(); Qd.c = cv(W * this.k, H * this.k); Qd.tex = new THREE.CanvasTexture(Qd.c); Qd.tex.colorSpace = THREE.SRGBColorSpace;
-    Qd.tex.magFilter = Qd.tex.minFilter = THREE.NearestFilter; Qd.tex.generateMipmaps = false; Qd.mat.map = Qd.tex; Qd.mat.needsUpdate = true;
+    Qd.tex.magFilter = Qd.tex.minFilter = THREE.NearestFilter; Qd.tex.generateMipmaps = false; Qd.mat.uniforms.uMap.value = Qd.tex;
     return Qd.c.getContext('2d');
   }
   /** Show a drawn region [x0, y0, x1, y1] (canvas px) of a quad's canvas with its anchor point at (ax, ay) CSS px of the frame. */
   showQuad(Qd, [x0, y0, x1, y1], ax, ay, ox, oy) {
     const c = Qd.c, pr = this.pr, w = x1 - x0, h = y1 - y0, snap = (v) => Math.round(v * pr) / pr;
-    Qd.tex.repeat.set(w / c.width, h / c.height); Qd.tex.offset.set(0, 1 - h / c.height); Qd.tex.needsUpdate = true;
+    Qd.mat.uniforms.uUvT.value.set(0, 1 - h / c.height, w / c.width, h / c.height); Qd.tex.needsUpdate = true; // (the drawn region: the one shader's uv offset and repeat)
     Qd.mesh.scale.set(w / pr, h / pr, 1);
     Qd.mesh.position.x = snap(ax + (x0 - ox) / pr) + w / pr / 2; Qd.mesh.position.y = -(snap(ay + (y0 - oy) / pr) + h / pr / 2);
     Qd.mesh.visible = true;
@@ -509,8 +527,7 @@ export class SightLook {
     const k = Math.max(0, Math.min(5, this.game.rejection?.level | 0));
     if (k !== this.level) {
       this.level = k; this.arcT = 0;
-      for (let i = 0; i < 5; i++) { (i < k ? this.studOn : this.studOff).setMatrixAt(i < k ? i : i - k, this.studM[i]); }
-      this.studOn.count = k; this.studOff.count = 5 - k; this.studOn.instanceMatrix.needsUpdate = this.studOff.instanceMatrix.needsUpdate = true;
+      const n = this.studN; this.studOn.geometry.setDrawRange(0, k * n); this.studOn.visible = k > 0; this.metalM.geometry.setDrawRange(0, this.metalN - k * n); // (the unlit studs: the metal's last stretch)
       this.arcGlow.mat.uniforms.uA.value = 0.12 + 0.07 * k; this.arcCore.mat.uniforms.uW.value = 0.35 + 0.07 * k;
       if (!k) { this.arcCore.n = this.arcGlow.n = 0; this.arcCore.done(); this.arcGlow.done(); }
     }
@@ -560,7 +577,7 @@ export class SightLook {
       if (well) target += Math.sin(t * 0.7) * 0.6 + Math.sin(t * 1.9 + 1) * 0.25; // (a Well bends the Sight: the needle wanders round the truth)
       const err = Math.atan2(Math.sin(target - N.a), Math.cos(target - N.a)); N.v += (err * 30 - N.v * 6) * dt; N.a += N.v * dt;
     } else { N.v += (0.55 - N.v) * Math.min(1, dt * 2); N.a += N.v * dt; } // (no waypoint: it spins slowly, the compass when you do not know what you want)
-    this.needle.rotation.set(0, -N.a, 0);
+    this.needle.rotation.set(0, -N.a, 0); this.needle.updateWorldMatrix(true, false); this.needle.getWorldQuaternion(this.glint.quaternion).invert();
     const c = filmArr(t * 0.07 + 0.3, this.c3); this.needleGold.emissive.setRGB(0.42 + c[0] / 255 * 0.18, 0.30 + c[1] / 255 * 0.18, 0.08 + c[2] / 255 * 0.18, LIN);
     if (N.pulse > 0) { N.pulse = Math.max(0, N.pulse - dt / 0.6); this.pulse.visible = N.pulse > 0; this.pulseMat.opacity = N.pulse; this.pulse.scale.setScalar(1 + (1 - N.pulse) * 2.5); }
     if (N.reel) { N.reel.p = Math.min(1, N.reel.p + dt / 0.45); this.platesDirty = true; if (N.reel.p >= 1) N.reel = null; }
