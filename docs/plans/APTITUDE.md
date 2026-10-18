@@ -135,7 +135,8 @@ The design waits for the owner's talk; this section only marks where it would pl
   decrypts to its absolute number after five readings, and shows its curve after twenty.
 - **Where**: the Codex's STATUS shelf, beside the domains and the attributes, and as a System window summoned before the Courier (the
   isekai status sheet). The look is Calissa's.
-- **What it is called**: Espada's and the owner's. "Aptitude" is a working name. It is neither an attribute (Soul Alchemy's seven) nor
+- **What it is called** (Espada, 2026-10-18, proposed): **an aptitude** is one measured ability; the window is **the Assay**,
+  and a standard trial is **an assay** (an assay tests a metal's true content; it is the same word as *essay*, a trial). It is neither an attribute (Soul Alchemy's seven) nor
   a domain (the seven skills of the psyche): those count what you practised, and this measures how you did it.
 
 ## 8. How we would know a reading means something

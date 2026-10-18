@@ -29,6 +29,15 @@ Calissa's; the names are Espada's to rule (working names here).
 | **the Augur's Veritome** | a mind's wiring: what a creature is about to do (its Brain's next action and what drives it), and what the Soul Brush has written on things | reprogramming; reading a windup early | Figment attack telegraphs; the bestiary's facts |
 | **the Skeptic's Veritome** | what is not so: an Illusion's decoys and mirages, a false wall, a sealed room's seam | puzzles and ambushes | sound (a false wall rings hollow), the map, a photograph (a plate already undoes what was written) |
 
+### Espada's lore (2026-10-18, proposed: LORE.md, "Three plans named")
+Each book is from a different island and wears that island's dress (OVERLAY.md 15.4). The sights' UI labels are Thermal, Mood, Intent
+and Reveal.
+- The Dowser's is from Margarite (Nacre): a crude prospector's book.
+- The Empath's is from Anagami (Clay): a kiln mender's book.
+- The Augur's is from Entropolis (Glass).
+- The Skeptic's is from the Emocean (Brine): a Contractor's book, made by sailors who learned from the False Light.
+- Who made the Plain one is left blank.
+
 ## 3. How they are found
 
 Found, never bought: each one in the world, or earned by an achievement. A book you find is a place's thing, as a body is (HANKO.md 5).

@@ -27,6 +27,9 @@ Reprogramming already holds the creature down once it has begun (`stun.hold`). W
 
 ## 2. The rule: three depths
 
+The names stand (Espada, 2026-10-18, proposed). For the Codex: a Figment is a thought an island is thinking. Dazed, it slips;
+stunned, it loses its thread; out cold, no one is thinking it, so there is no one in it to refuse a rewriting (section 3).
+
 A first stun is **dazed**. Stunning a creature that is already down pushes it **deeper**: its poise meter keeps filling from your
 blows while it is down, it does not drain, and a full meter takes it one depth further, to **out cold** at most.
 
