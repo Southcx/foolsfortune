@@ -886,3 +886,9 @@ mixed with the weather, the creatures, the hour and the luck of the draw. The To
 the streak is only yours. That is the fixed conditions of a standard trial, said as the System would say it. The Index lists it with
 the basement's rooms (Dovina's to place).
 
+
+**The psygun's variants** *(the owner's names, 2026-10-18, by chamber count; spelling Espada's)*: **the Bombardier** (1), **the
+Carbine** (3), **the Pentagun** (5), **the Pepperbox** (7). Spelled *Bombardier*, as the trade is spelled: a bombardier worked a
+bombard, the old one-shot cannon, from Latin *bombus*, a boom. A carbine is the short gun a horseman carried; the Pentagun is coined
+plainly, Greek *pente*, five; the pepperbox is the real nineteenth-century gun of many barrels turning in a block, named because it
+looked like a pepper mill and scattered its shot like one. Odd counts only, one to seven: the psygun climbs as the feelings do.
