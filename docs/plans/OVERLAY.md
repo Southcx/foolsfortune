@@ -646,6 +646,11 @@ it costs shows on the Lachrimeter.** A tool's UI draws on the Courier, and the s
 5. **Out of the heart, back to the six.** When the heart's last shell goes, the cylinder turns to the ring chamber that was under the
    hammer before the heart, or to the next loaded one; with none loaded, it hangs open. **The auto-turn never goes into the heart by
    itself**: the heart is chosen.
+- **(a) A tie in the toll goes to the mask first**, because `release()` takes the first least cracked region in `REGIONS` order (mask,
+  torso, left arm, right arm, left leg, right leg). The glint follows the code, never its own order. A peek, `vessel.tollRegion()`,
+  is asked of Petra so the look and the toll can never disagree.
+- **(b) The heart loaded and every corner empty**: the cylinder rests on the hollow corner, grey, and does not hang open; the heart is
+  still yours to choose (the auto-turn never goes into it).
 - **The pool the board draws is 100** (`T.lachryma.max`, `core/config.js`), moved by the stones (-15 to +30) and Willpower's widening.
   A common shell is 4 of it, the sounding 5. The 600 was a stand-in.
 
