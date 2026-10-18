@@ -685,6 +685,10 @@ NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place wh
 NEW:retire-what-is-replaced. **A replaced UI is deleted in the same change, never hidden.** When a new piece takes an old one's job,
    the old element, its builder, its CSS, its update code and every line that shows, hides, polls or measures it go in that commit;
    no body class or `display: none` is left keeping it alive underneath.
+NEW:sync-before-timing-the-draw. **A draw is timed to a sync, or it times the queue.** WebGL returns before the GPU has drawn; a
+   frame's draw timed by `performance.now()` alone reads ~5 ms while the queue still has room and the whole backlog when something
+   syncs (a program's first use, a full command buffer). Time each measured draw to a 1-pixel `readPixels`, and judge a draw that
+   jumped by its synced number before bisecting anything.
 
 ## Cases
 
@@ -3784,5 +3788,28 @@ NEW:retire-what-is-replaced. **A replaced UI is deleted in the same change, neve
   (`ui/cutlassstringrow.js`), the flat Lachrimeter and its panel frame (`ui/lachrimeter.js`, `stepAside`), the old compass dial
   (#compass); every show, hide, poll and class went with them. **Measured after (this commit's `npm run perf`): well draw 1259 ms,
   calls 85, programs 196: unchanged.** So the DOM row was not what cost the Well its draw; the bisect's 6 ms is not reproduced by
-  deleting it. The Well's draw is still open (Petra's: the gate, `render/`).
+  deleting it. **The real cause (measured after, the next case): nothing in the frame got dearer.** The Well's frame costs ~1.2 real s
+  of software GL at 744bc30 (perf: 6 ms) and at this commit (perf: 1259 ms) alike; perf's number is how much of the GPU's queue its
+  60 draws happen to wait on, and the bisect's 6 / 110 / 1274 ms and the body class's 6 / 1230 ms were that coin landing either side.
 - **Rule:** NEW:retire-what-is-replaced.
+
+### 2026-10-18 · The Well's 6x draw was the GPU's queue, not the frame (Calissa's builder, measured for Petra's gate)
+- **Seen:** `npm run perf`, the Great Dunemaw's floor 3 in a hall: draw 1259 ms against 212.7, calls 85 and triangles the same; bisected to
+  ce11b20 (the psygun's cylinder), and to the `cylinder-standing` body class before that was retired; the workshop, Dunes and garden fine.
+- **Cause, measured** (headless, SwiftShader, `scripts/sweeps/harness.mjs`; probes in the session's scratchpad): perf times `G.draw()`
+  with `performance.now()` and no sync, so it times only the JS that queues the frame while the GPU process has room. Timed per frame
+  with nothing else: frames 1 to 72 after arriving 3 to 6 ms, one frame near 35 **41 s** (a post pass's program used for the first time:
+  `getProgramInfoLog`, a sync, waiting on the ~35 frames queued before it), then from about frame 73 **~1.2 s every frame** (the
+  command buffer full: the profile's time is in `getProgramInfoLog` and `uniformMatrix4fv`, waiting). Timed to a 1-pixel `readPixels`
+  after each draw, the Well's frame is **1.1 to 1.3 s from the first frame, at 744bc30 and at 5cb9b3f alike**; the workshop 1050 ms,
+  the Dunes 2040 (the baseline's 932 and 2059: those two were already measured blocked). At 744bc30 unsynced, the same run waits in
+  bursts (7 s every ~6 frames) and the median lands on a cheap frame (5 ms); at 5cb9b3f it waits on most frames and the median lands on
+  1.2 s. With the cylinder taken out of the overlay's scene, 25 of the 60 measured frames wait and the median is 5 ms again: the
+  cylinder's few draws moved the median across the line, not the cost. Toggled, synced: the overlay's scene off 1150 -> ~950 ms (its
+  36 draws, 43k triangles, the tube's physical glass, ~200 ms of software GL); `well-floor-3` hidden 1197 -> 225 ms (the floor is
+  ~80% of the frame); the post pass off 1727 (dearer, not looked into).
+- **Fix:** none in the frame; the cylinder, the link and the tube stay as approved. The measure is the bug: perf's draw should be timed
+  to a sync (a 1-pixel `readPixels` after each `G.draw()` in `scripts/perf.mjs`'s `place()`) and the baseline recorded again from it;
+  the Well then reads ~1.2 s against a synced baseline of the same, and a real regression shows as one. Petra's file and gate: handed
+  to Petra, not edited here.
+- **Rule:** NEW:sync-before-timing-the-draw.
