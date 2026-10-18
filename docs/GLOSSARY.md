@@ -494,7 +494,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   System windows, the Book, the title placard; words and numbers in the System's type, saying what is, never what happened. *Not:* the log.
 - **a tag / a System window / the title placard** (working names; OVERLAY.md 8; a creature's tag: an ofuda slip, `CreatureTags`, `src/vfx/creaturetags.js`;
   the placard: `TitlePlacard`, `src/vfx/titleplacard.js`) — a readout pinned to its thing in the world / a sheet summoned into the air before
-  the Courier (the isekai status window) / the one pop-up, a Jōmon clay placard handed down for an achievement that awards a title. *Not:* a
+  the Courier (the isekai status window) / the one pop-up, a Jōmon clay placard handed down for an achievement that awards a title. A creature's
+  tag shows only at the lock-on and in the Veritome's raised lens (`visual.creatureTags`: scan, lockon, off; `visual.creatureTagsMinimal`). *Not:* a
   world mark (no words), the dialogue box (the folk's).
 - **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.

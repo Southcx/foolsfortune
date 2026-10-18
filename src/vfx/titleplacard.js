@@ -628,7 +628,7 @@ export class TitlePlacard {
     game.events?.on?.('achievement.unlock', (e) => { if (e?.title) this.show(e); });
     if (typeof addEventListener === 'function') addEventListener('keydown', () => this.dismiss(), true);
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
-    this.r = S.r; this.buildStage(); this.slot = S.add(this.frame, { anchor: 'c', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) });
+    this.r = S.r; this.S = S; this.frame = new THREE.Group(); this.slot = S.add(this.frame, { anchor: 'c', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) }); // (empty until the first title: its layers' programs are made then, not at boot)
     this.frame.userData.overlayHidden = true;
   }
 
@@ -636,9 +636,10 @@ export class TitlePlacard {
   show(e) { if (!e?.title) return; this.queue.push({ title: String(e.title), tier: e.tier || 1, id: e.id || null, ach: e.ach || null, tierName: e.tierName || null, points: e.points || null }); }
   dismiss() { if (this.active && this.t >= T_SETTLE && this.t < T_EXIT) { this.t = T_EXIT; this.beat = BEATS.findIndex((b) => b[0] === 'exit'); } }
 
-  /** The overlay's layers (made once): the hush, the shaft behind, the placard's quad, the shaft in front and its motes, the letterbox. */
+  /** The overlay's layers (made at the first title): the hush, the shaft behind, the placard's quad, the shaft in front, motes, letterbox. */
   buildStage() {
-    const F = this.frame = new THREE.Group(), plane = new THREE.PlaneGeometry(1, 1);
+    if (this.staged) return; this.staged = true;
+    const F = this.frame, plane = new THREE.PlaneGeometry(1, 1);
     const flat = (o, order) => { const m = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, depthTest: false, toneMapped: false, ...o })); m.renderOrder = order; F.add(m); return m; };
     this.hush = flat({ color: 0x000000, opacity: 0 }, 900);
     const beam = (front, order) => { const m = new THREE.Mesh(plane, new THREE.ShaderMaterial({ vertexShader: BEAM_VS, fragmentShader: BEAM_FS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, toneMapped: false,
@@ -691,7 +692,7 @@ export class TitlePlacard {
 
   /** The next title's placard, built a slice a frame (its canvases are the cost: about 6 ms a frame until done). */
   begin(e) {
-    const info = this.infoOf(e), S = specOf(e.tier, this.dressHere());
+    this.buildStage(); const info = this.infoOf(e), S = specOf(e.tier, this.dressHere());
     this.building = { e, it: null, ready: false };
     const fonts = [CINZEL(30), READ(44), COUNT(46)].map((f) => document.fonts?.load?.(f).catch(() => null));
     Promise.race([Promise.all(fonts), new Promise((r) => setTimeout(r, 1500))]).then(() => { if (this.building) this.building.it = buildVariant(S, info, this.envOf()); });
@@ -709,7 +710,8 @@ export class TitlePlacard {
       const V = r.value; V.tier = b.e.tier; this.scene.environment = V.env; this.scene.add(V.root); this.targets(slot); this.building = null; this.pending = V;
       const rr = this.r, was = rr.getRenderTarget(); rr.setRenderTarget(this.rt);
       const go = () => { if (this.pending !== V) return; this.pending = null; this.active = V; this.t = 0; this.age = 0; this.beat = 0; };
-      try { const p = rr.compileAsync ? rr.compileAsync(this.scene, this.cam) : (rr.compile(this.scene, this.cam), null); if (p?.then) p.then(go, go); else go(); } catch { go(); }
+      const asy = (sc, cam, into) => (rr.compileAsync ? rr.compileAsync(sc, cam, into) : (rr.compile(sc, cam, into), null)); // (and the stage's layers, against the canvas)
+      try { const p = asy(this.scene, this.cam); rr.setRenderTarget(null); Promise.all([p, asy(this.frame, this.S.camera, this.S.scene)]).then(go, go); } catch { go(); }
       rr.setRenderTarget(was);
     }
     if (this.pending) { this.frame.userData.overlayHidden = true; return; }

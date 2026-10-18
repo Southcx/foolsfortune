@@ -17,16 +17,19 @@
 // row's whole width after its label, words dropped rather than shrunk past reading); latent holds still in the window colour with a
 // plate's corner marks; scrambled or latent turned plain plays its decrypt (0.6 real s, a wipe behind a VFD cursor). No event.
 //
-// Which creatures (the hostility rule): the one locked on (game.lock); and, up to two more nearest in view within 14 m, a creature
-// hostile to the Courier: its mind hunting them (`c.brain.action.hunt` with `c.foe === game.player`, the minds' own field), or engaged
-// within the last 20 real seconds (it was struck: its hp fell; or it struck: a windup listed with game.creatures). A clapperjar is
-// never hostile, so it wears a tag only when locked on or struck. Each is anchored to its eyes projected each frame; tags are kept off
-// each other, off every tagged creature's bracket and leader, the screen's edges, the Sight's corner and the Lachrimeter.
+// Which creatures (the owner, 2026-10-18: "only when using a scan mode with the Veritome, or if you're locked-on to them"): the one
+// locked on (game.lock); and, while the Veritome is out with its lens raised (game.veritome.lens), every creature in the viewfinder's
+// aperture (viewfinder.js) within the capture's reach, at most MAX, nearest the aperture's centre first. Nothing else ever wears one.
+// The settings: `visual.creatureTags` 'scan' (the lens and the lock-on) | 'lockon' (the lock-on only) | 'off'; `visual.creatureTagsMinimal`
+// true keeps the lozenge, its sprite, the name and the health line (Dovina's reads kept: a scrambled line stays scrambled). Each is
+// anchored to its eyes projected each frame; tags are kept off each other, off every tagged creature's bracket and leader, the screen's
+// edges (with the lens up, the aperture's), the Sight's corner and the Lachrimeter.
 //
-// Cost: one draw call a tag (its canvas, redrawn only when its lines change, its scramble churns or a decrypt plays) and one for every
-// bracket, leader and mote together (a dynamic buffer of quads). A kind's silhouette is rendered once at 128 x 128 and read back; a
-// plate is decoded once a thumb. Hidden with the HUD (the overlay scene's rule), on the title, in the god hand, on the rail's crossing
-// and in a cinematic.
+// Cost: nothing at boot (no mesh, no canvas, no program until the first tag is wanted). Then one mesh, one material, one program and one
+// draw call for every tag together: the brackets, leaders and motes as quads in a dynamic buffer, each tag's plate a quad on one atlas
+// canvas (a white strip at its foot for the strokes), a tag's region redrawn and uploaded only when its lines change, its scramble
+// churns or a decrypt plays. A kind's silhouette is rendered once at 128 x 128 and read back; a plate is decoded once a thumb. Hidden
+// with the HUD (but kept through the lens's own want: hideui.js), on the title, in the god hand, on the rail's crossing and in a cinematic.
 //
 // Prior art: Digimon World's and the Pokédex's scan (the creature as a sprite on a small screen; the unseen one as a shadow), Watch
 // Dogs' profiler (a glance reads a line; the leader line), Dennō Coil's glasses (the data over the world, legible or broken), Mass
@@ -45,8 +48,10 @@ import { poles } from '../progress/combat/temperament.js';
 import { FONT, THEMES, theme } from '../ui/theme.js';
 import { runningHand } from '../ui/runninghand.js';
 import { cellsOf } from '../npc/neuralesespelling.js';
+import { T as TUNE } from '../core/config.js';
 
-const MAX = 3, NEAR = 14, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17, ENGAGED = 20;
+const MAX = 3, REACH = 18, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17; // (REACH: the lens's capture, veritome.js CAPTURE.range)
+const MINIMAL = new Set(['name', 'health']); // (visual.creatureTagsMinimal: the lines kept)
 const W = 228, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168, RISE = 30;
 // the readout's grid, in dots: a label column, values right-aligned at the row's end, rows at least 1.5x the cap height apart
 const LBL = 40, GAP = 5, ROW = 17, NAME_H = 20, HID_H = 20, FN_H = 24;
@@ -78,7 +83,7 @@ const hexA = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >>
 function schill(g, x0, x1) { const gr = g.createLinearGradient(x0, 0, x1, 0), n = FILM_LIT.length * 2; for (let i = 0; i <= n; i++) gr.addColorStop(i / n, FILM_LIT[i % 4]); return gr; }
 function film(g, x0, y0, x1, y1) { const gr = g.createLinearGradient(x0, y0, x1, y1); FILM_HI.forEach((c, i) => gr.addColorStop(i / 3, c)); return gr; }
 const _c = new THREE.Color(); const lin = (hex, a) => { _c.set(hex); return [_c.r, _c.g, _c.b, a]; };
-const C_INK = lin(INK, 0.85), C_VFD = lin(VFD, 1), C_TRAIL = {};
+const C_INK = lin(INK, 0.85), C_VFD = lin(VFD, 1), C_WHITE = [1, 1, 1, 1], C_TRAIL = {};
 const windowColour = () => (THEMES[theme.id] || THEMES.kiln).mid;
 const lum = (d, k) => Math.sqrt((0.3 * d[k] + 0.59 * d[k + 1] + 0.11 * d[k + 2]) / 255);
 
@@ -126,18 +131,33 @@ function gridOf(base, gw, gh) {
   return out;
 }
 
-/** The quads of every bracket, leader and mote: one dynamic buffer, one draw call. Coordinates in dots, written as CSS px. */
-class Strokes {
+/** Every tag in one mesh: the quads of every bracket, leader and mote (vertex colours over the atlas's white strip), then each shown
+ *  tag's plate as a quad on its region of the atlas canvas. One dynamic buffer, one material, one program, one draw call. Coordinates
+ *  in dots for the strokes (written as CSS px), CSS px for the plates. */
+class Sheet {
   constructor(cap = 12000) {
-    this.cap = cap; this.p = new Float32Array(cap * 3); this.c = new Float32Array(cap * 4); this.n = 0; this.s = 1; this.col = C_VFD;
+    this.cap = cap; const n = cap + 6 * MAX; this.p = new Float32Array(n * 3); this.c = new Float32Array(n * 4); this.u = new Float32Array(n * 2);
+    this.n = 0; this.s = 1; this.col = C_VFD; this.plates = []; this.k = 0; this.pw = 1; this.ph = 1; this.wv = 0.5;
     const g = this.geo = new THREE.BufferGeometry();
-    this.pa = new THREE.BufferAttribute(this.p, 3).setUsage(THREE.DynamicDrawUsage); this.ca = new THREE.BufferAttribute(this.c, 4).setUsage(THREE.DynamicDrawUsage);
-    g.setAttribute('position', this.pa); g.setAttribute('color', this.ca); g.setDrawRange(0, 0);
-    this.mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
-    this.mesh.frustumCulled = false; this.mesh.renderOrder = 1; this.mesh.name = 'creaturetags-strokes';
+    this.pa = new THREE.BufferAttribute(this.p, 3).setUsage(THREE.DynamicDrawUsage); this.ca = new THREE.BufferAttribute(this.c, 4).setUsage(THREE.DynamicDrawUsage); this.ua = new THREE.BufferAttribute(this.u, 2).setUsage(THREE.DynamicDrawUsage);
+    g.setAttribute('position', this.pa); g.setAttribute('color', this.ca); g.setAttribute('uv', this.ua); g.setDrawRange(0, 0);
+    this.cv = canvasOf(1, 1); this.tex = new THREE.CanvasTexture(this.cv);
+    Object.assign(this.tex, { colorSpace: THREE.SRGBColorSpace, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false });
+    this.mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: this.tex, vertexColors: true, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+    this.mesh.frustumCulled = false; this.mesh.renderOrder = 1; this.mesh.name = 'creaturetags';
   }
-  begin(s) { this.n = 0; this.s = s; }
-  v(x, y) { const i = this.n++, s = this.s; this.p[i * 3] = Math.round(x * s); this.p[i * 3 + 1] = -Math.round(y * s); this.p[i * 3 + 2] = 0; this.c.set(this.col, i * 4); }
+  /** The atlas at k device pixels a dot: MAX plates stacked, a white strip of 4 rows at the foot (what the strokes sample). */
+  size(k) {
+    if (k === this.k) return; this.k = k; this.pw = (W + 2 * M) * k; this.ph = (HMAX + 2 * M) * k;
+    this.cv.width = this.pw; this.cv.height = MAX * this.ph + 4; this.tex.dispose();
+    const g = this.cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, MAX * this.ph, this.pw, 4);
+    this.wv = 1 - (MAX * this.ph + 2) / this.cv.height; this.tex.needsUpdate = true;
+  }
+  /** A plate drawn: copied into its region (i) and the atlas uploaded. */
+  put(i, src) { const g = this.cv.getContext('2d'); g.clearRect(0, i * this.ph, this.pw, this.ph); g.drawImage(src, 0, i * this.ph); this.tex.needsUpdate = true; }
+  begin(s) { this.n = 0; this.s = s; this.plates.length = 0; }
+  w(x, y, u, v, col) { const i = this.n++; this.p[i * 3] = x; this.p[i * 3 + 1] = -y; this.p[i * 3 + 2] = 0; this.c.set(col, i * 4); this.u[i * 2] = u; this.u[i * 2 + 1] = v; }
+  v(x, y) { const s = this.s; this.w(Math.round(x * s), Math.round(y * s), 0.5, this.wv, this.col); }
   quad(ax, ay, bx, by, cx, cy, dx, dy) { if (this.n + 6 > this.cap) return; this.v(ax, ay); this.v(bx, by); this.v(cx, cy); this.v(ax, ay); this.v(cx, cy); this.v(dx, dy); }
   rect(x, y, w, h) { this.quad(x, y, x + w, y, x + w, y + h, x, y + h); }
   seg(ax, ay, bx, by, w) { // (a square-capped stroke: its ends pushed out half a width, so a bracket's corner closes)
@@ -157,21 +177,26 @@ class Strokes {
     }
   }
   arc(cx, cy, r, a0, a1, w, segs = 14) { for (let i = 0; i < segs; i++) { const u = a0 + (a1 - a0) * i / segs, v = a0 + (a1 - a0) * (i + 1) / segs; this.seg(cx + Math.cos(u) * r, cy + Math.sin(u) * r, cx + Math.cos(v) * r, cy + Math.sin(v) * r, w); } }
-  end() { this.geo.setDrawRange(0, this.n); this.pa.needsUpdate = true; this.ca.needsUpdate = true; }
+  /** A plate to lay over the strokes this frame: region i of the atlas over (x, y, w, h) in CSS px. */
+  plate(i, x, y, w, h) { this.plates.push(i, x, y, w, h); }
+  end() {
+    const H = this.cv.height;
+    for (let q = 0; q < this.plates.length; q += 5) {
+      const [i, x, y, w, h] = this.plates.slice(q, q + 5), v0 = 1 - i * this.ph / H, v1 = 1 - (i + 1) * this.ph / H;
+      this.w(x, y, 0, v0, C_WHITE); this.w(x + w, y, 1, v0, C_WHITE); this.w(x + w, y + h, 1, v1, C_WHITE);
+      this.w(x, y, 0, v0, C_WHITE); this.w(x + w, y + h, 1, v1, C_WHITE); this.w(x, y + h, 0, v1, C_WHITE);
+    }
+    this.geo.setDrawRange(0, this.n); this.pa.needsUpdate = true; this.ca.needsUpdate = true; this.ua.needsUpdate = true;
+  }
 }
 
-/** One tag's screen: a canvas (its texture) on a plane, drawn at k device pixels a dot, and the scratch canvases its hand and tear use. */
+/** One tag's screen: a canvas drawn at k device pixels a dot (copied into its region i of the atlas), and the scratch canvases its
+ *  hand and tear use. */
 class Panel {
-  constructor() {
-    this.cv = canvasOf(1, 1); this.tex = new THREE.CanvasTexture(this.cv);
-    Object.assign(this.tex, { colorSpace: THREE.SRGBColorSpace, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false });
-    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this.tex, transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
-    this.mesh.frustumCulled = false; this.mesh.renderOrder = 2; this.mesh.name = 'creaturetags-panel'; // (visible at boot, so the warm-up compiles it)
-    this.k = 0; this.hand = canvasOf(1, 1); this.tA = canvasOf(1, 1); this.work = null; this.tint = null; this.owner = null;
-  }
+  constructor(i) { this.i = i; this.cv = canvasOf(1, 1); this.k = 0; this.hand = canvasOf(1, 1); this.tA = canvasOf(1, 1); this.work = null; this.tint = null; this.owner = null; }
   size(k) {
     if (k === this.k) return; this.k = k;
-    this.cv.width = (W + 2 * M) * k; this.cv.height = (HMAX + 2 * M) * k; this.tex.dispose();
+    this.cv.width = (W + 2 * M) * k; this.cv.height = (HMAX + 2 * M) * k;
     for (const c of [this.hand, this.tA]) { c.width = 200 * k; c.height = 40 * k; }
     if (this.work) { this.work.width = this.tint.width = this.cv.width; this.work.height = this.tint.height = this.cv.height; }
   }
@@ -249,27 +274,35 @@ function rowPlain(g, r, fam, x, y, w) {
 // ---------------------------------------------------------------------------------------------------------------- the tags
 export class CreatureTags {
   constructor(game) {
-    this.game = game; this.tags = new Map(); this.sprites = new Map(); this.plates = new Map(); this.eng = new WeakMap(); this.shown = [];
+    this.game = game; this.tags = new Map(); this.sprites = new Map(); this.plates = new Map(); this.shown = []; this.sheet = null; this.panels = [];
     this.pollT = 0; this.churnT = 0; this.t = 0; this.k = 0; this.dot = 1; this.themeId = null;
     this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16);
     this.rects = Array.from({ length: 40 }, () => ({ x0: 0, y0: 0, x1: 0, y1: 0 })); this.nR = 0;
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
-    this.root = new THREE.Group(); this.root.name = 'creaturetags';
-    this.strokes = new Strokes(); this.root.add(this.strokes.mesh);
-    this.panels = Array.from({ length: MAX }, () => { const p = new Panel(); this.root.add(p.mesh); return p; });
-    this.slot = S.add(this.root, { anchor: 'tl', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) });
+    this.root = new THREE.Group(); this.root.name = 'creaturetags'; this.root.userData.overlayHidden = true;
+    this.bounds = { x0: 0, y0: 0, x1: 1, y1: 480 };
+    // (hud: false, so the lens's own want for the HUD out of the way does not take the tags with it: update() applies the HUD's rule)
+    this.slot = S.add(this.root, { anchor: 'tl', x: 0, y: 0, z: 0, hud: false, update: (dt, slot) => this.update(dt, slot) });
     const fonts = [`700 ${PX.name}px ${FONT.title}`, `${PX.word}px ${FONT.sys}`, `${PX.num}px 'Jersey 15'`];
     Promise.all(fonts.map((f) => document.fonts?.load?.(f).catch(() => null))).then(() => { for (const T of this.tags.values()) T.dirty = true; });
   }
 
   /** May this thing wear a tag at all? */
   ok(c) { return !!c && c.alive !== false && c.kind && !c.ally && !c.friend && !c.spirit && c.pos && c.root?.visible !== false; }
-  /** Hostile to the Courier (the rule in the header): hunting them, or struck or striking within ENGAGED real seconds. */
-  hostile(c) {
-    const g = this.game; let e = this.eng.get(c); if (!e) this.eng.set(c, (e = { hp: c.hp, at: -1e9 }));
-    if (Number.isFinite(c.hp) && Number.isFinite(e.hp) && c.hp < e.hp) e.at = this.t; e.hp = c.hp;
-    if (c.windup && (c.windup.t ?? 1) > 0) e.at = this.t;
-    return (!!c.brain?.action?.hunt && c.foe === g.player) || this.t - e.at < ENGAGED;
+  /** The mesh, its material and the plates' canvases, made when the first tag is wanted (so nothing compiles at boot). */
+  ensure() {
+    if (this.sheet) return; this.sheet = new Sheet(); this.root.add(this.sheet.mesh);
+    this.panels = Array.from({ length: MAX }, (_, i) => new Panel(i));
+  }
+  /** The Veritome out with its lens raised: the scan. */
+  get scanning() { const V = this.game.veritome; return !!(V?.lens && V.toolOut); }
+  /** The HUD's rule (overlayscene.js hidden()), but the lens's own want is not the player hiding it. */
+  hudOff() {
+    const B = document.body.classList, ui = this.game.ui; if (B.contains('ui2')) return true;
+    if (!B.contains('ui1') || B.contains('uilog')) return false;
+    if (!this.scanning || (ui?.level ?? 0) > 0) return true;
+    for (const id of ui?.wants || []) if (id !== 'lens') return true;
+    return false;
   }
 
   /** Where its eyes are (a clapperjar's eyes bone; else two thirds up its body, the head's offset polled with its lines). */
@@ -284,15 +317,17 @@ export class CreatureTags {
     out.x = (this.v2.x + 1) / 2 * this.Wd; out.y = (1 - this.v2.y) / 2 * 480; out.inView = Math.abs(this.v2.x) < 1 && Math.abs(this.v2.y) < 1; return true;
   }
 
-  /** Who wears a tag now: the one locked on, and up to two hostile others nearest in view within NEAR. */
+  /** Who wears a tag now (the settings and the rule in the header): the one locked on; with the lens up, the others in its aperture. */
   choose() {
-    const g = this.game, P = g.player?.pos, lockRef = g.lock?.target?.ref, out = [], near = [], tmp = {};
-    if (this.ok(lockRef)) out.push(lockRef);
-    if (P) for (const list of [g.creatures?.list, g.clappers?.list]) for (const c of list || []) {
-      if (c === lockRef || !this.ok(c)) continue; const hot = this.hostile(c); // (polled for every one in the lists, so a blow is never missed)
-      const d = c.pos.distanceTo(P); if (!hot || d > NEAR) continue;
-      if (!this.project(this.v.set(c.pos.x, c.pos.y + 0.6, c.pos.z), tmp) || !tmp.inView) continue;
-      near.push([d, c]);
+    const g = this.game, mode = TUNE.visual?.creatureTags ?? 'scan', out = []; if (mode === 'off') return out;
+    const lockRef = g.lock?.target?.ref; if (this.ok(lockRef)) out.push(lockRef);
+    if (mode !== 'scan' || !this.scanning || !g.camera) return out;
+    const eye = g.camera.getWorldPosition(this.v), B = this.bounds, cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2, near = [], tmp = {}, p = new THREE.Vector3();
+    for (const list of [g.creatures?.list, g.clappers?.list]) for (const c of list || []) {
+      if (c === lockRef || !this.ok(c)) continue;
+      p.set(c.pos.x, c.pos.y + 0.6, c.pos.z); if (p.distanceTo(eye) > REACH) continue;
+      if (!this.project(p, tmp) || tmp.x < B.x0 || tmp.x > B.x1 || tmp.y < B.y0 || tmp.y > B.y1) continue;
+      near.push([Math.hypot(tmp.x - cx, tmp.y - cy), c]);
     }
     near.sort((a, b) => a[0] - b[0]); for (const [, c] of near) { if (out.length >= MAX) break; out.push(c); }
     return out;
@@ -356,10 +391,11 @@ export class CreatureTags {
   // ------------------------------------------------------------------------------------------------------------ the lines, polled
   /** Read its tag and its plate; note what changed (a decrypt for a line now plain that was not); make its scramble's words. */
   read(T) {
-    const c = T.c, tag = readTag(this.game, c); if (!tag) return;
+    const c = T.c; let tag = readTag(this.game, c); if (!tag) return;
     if (c.head && !c.bones?.eyes) { const h = c.head(); T.eyeDy = 0.68 * Math.max(0.2, h.y - 0.35 - c.pos.y); }
-    T.plate = plateOf(this.game, c.kind);
-    const sig = tag.level + '|' + (T.plate?.read || '-') + (T.plate?.thumb?.length || 0) + '|' + JSON.stringify(tag.lines);
+    T.plate = plateOf(this.game, c.kind); const min = !!TUNE.visual?.creatureTagsMinimal;
+    if (min) tag = { ...tag, lines: tag.lines.filter((l) => MINIMAL.has(l.key)) };
+    const sig = (min ? 'm' : '') + tag.level + '|' + (T.plate?.read || '-') + (T.plate?.thumb?.length || 0) + '|' + JSON.stringify(tag.lines);
     if (sig === T.sig) return; T.sig = sig; T.tag = tag; T.dirty = true;
     for (const L of tag.lines) {
       let R = T.rs.get(L.key);
@@ -370,7 +406,7 @@ export class CreatureTags {
     T.aberrant = !!((c.aberrant || c.stray) && !c.dataBugMended);
     const on = tag.lines.find((l) => l.key === 'statuses' && l.read === 'plain')?.value;
     T.motes.length = 0;
-    if (on) {
+    if (on && !min) {
       for (const n of on.on || []) T.motes.push([n, 100]);
       for (const [t, k] of Object.entries(on.build || {})) { const n = TYPES[t]?.builds || t; if (!T.motes.some((m) => m[0] === n)) T.motes.push([n, Math.round(k * 100)]); }
     }
@@ -389,30 +425,35 @@ export class CreatureTags {
   update(dt, slot) {
     const g = this.game, S = g.overlayScene, B = document.body.classList;
     this.t += dt;
-    const hide = !!(g.title?.active || g.god?.controlling || g.emocean?.stage?.active || B.contains('cine') || !g.camera);
+    const hide = !!(g.title?.active || g.god?.controlling || g.emocean?.stage?.active || B.contains('cine') || !g.camera || this.hudOff());
     if (hide) { this.root.userData.overlayHidden = true; return; }
     const view = slot.view, pr = S.r.getPixelRatio(); this.dot = view.h / 480; this.Wd = view.w / this.dot;
     const k = Math.max(1, Math.round(pr * this.dot)); if (k !== this.k) { this.k = k; for (const T of this.tags.values()) T.dirty = true; }
     if (theme.id !== this.themeId) { this.themeId = theme.id; for (const T of this.tags.values()) T.dirty = true; }
+    // where a tag may sit: the screen, or with the lens up the viewfinder's aperture (its pages' margins are drawn over the canvas)
+    const scan = this.scanning, A = scan ? g.veritome.vf?.aperture?.(view.w, view.h) : null, Bd = this.bounds;
+    if (A) { Bd.x0 = A.x / this.dot; Bd.y0 = A.y / this.dot; Bd.x1 = (A.x + A.w) / this.dot; Bd.y1 = (A.y + A.h) / this.dot; } else { Bd.x0 = 0; Bd.y0 = 0; Bd.x1 = this.Wd; Bd.y1 = 480; }
     // who, and their lines (a few times a real second)
     if ((this.pollT -= dt) <= 0) {
-      this.pollT = POLL; const want = this.choose();
+      this.pollT = POLL; const want = this.choose(); if (want.length) this.ensure();
       for (const c of want) if (!this.tags.has(c)) {
         const panel = this.panels.find((p) => !p.owner); if (!panel) break; panel.owner = c;
         this.tags.set(c, { c, panel, vis: 0, x: 0, y: 0, placed: false, sig: '', tag: null, rows: [], rs: new Map(), dirty: true, motes: [], h: 60, seed: 7 + (c.id ?? this.tags.size) * 13, eyeDy: 0.6, want: true, aberrant: false, plate: null });
       }
       for (const [c, T] of this.tags) { T.want = want.includes(c) && this.ok(c); if (T.want) this.read(T); }
     }
+    if (!this.sheet) { this.root.userData.overlayHidden = true; return; }
+    this.sheet.size(this.k);
     // the churn: a scrambled line swaps a word a quarter of a real second (never a strobe: the ghosts move with it)
     const churn = (this.churnT -= dt) <= 0; if (churn) this.churnT = CHURN;
     // retire; then every bracket first, so no tag is laid over another creature's bracket; then the tags in turn, each adding its leader
-    this.strokes.begin(this.dot); this.nR = 0;
-    this.rect(this.Wd - 182, 0, this.Wd, 178); this.rect(this.Wd - 118, 250, this.Wd, 480); // (the Sight, the Lachrimeter)
+    this.sheet.begin(this.dot); this.nR = 0;
+    if (!scan) { this.rect(this.Wd - 182, 0, this.Wd, 178); this.rect(this.Wd - 118, 250, this.Wd, 480); } // (the Sight, the Lachrimeter: stepped out under the lens)
     this.shown.length = 0; const live = [];
     for (const [c, T] of this.tags) {
       T.vis = T.want ? Math.min(1, T.vis + dt / T_IN) : Math.max(0, T.vis - dt / T_OUT);
-      if (!T.want && T.vis <= 0) { T.panel.owner = null; T.panel.mesh.visible = false; this.tags.delete(c); continue; }
-      if (!T.tag || !this.bracket(T)) { T.panel.mesh.visible = false; continue; }
+      if (!T.want && T.vis <= 0) { T.panel.owner = null; this.tags.delete(c); continue; }
+      if (!T.tag || !this.bracket(T)) continue;
       const b = T.b; this.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
     }
     for (const T of live) {
@@ -422,7 +463,7 @@ export class CreatureTags {
       if (T.dirty || decrypting) { T.panel.size(this.k); this.draw(T); T.dirty = decrypting; }
       this.marks(T); this.show(T); this.shown.push(T.c);
     }
-    this.strokes.end();
+    this.sheet.end();
     this.root.userData.overlayHidden = this.tags.size === 0;
   }
 
@@ -444,8 +485,8 @@ export class CreatureTags {
   }
   /** Lay its tag out in dots, above its bracket, kept off the obstacles (tags, brackets, leaders laid so far, the instruments, the edges). */
   place(T, dt) {
-    const h = Math.max(SH + 4, T.h), Wd = this.Wd, b = T.b, Q = this.PTS;
-    const clamp = (x, y) => [Math.max(20, Math.min(Wd - W - 6, x)), Math.max(6, Math.min(480 - h - 6, y))];
+    const h = Math.max(SH + 4, T.h), b = T.b, Q = this.PTS;
+    const Bd = this.bounds, clamp = (x, y) => [Math.max(Bd.x0 + 20, Math.min(Bd.x1 - W - 6, x)), Math.max(Bd.y0 + 6, Math.min(Bd.y1 - h - 6, y))];
     const over = (x0, y0, x1, y1, skip) => { for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (R === skip) continue; if (x0 < R.x1 && x1 > R.x0 && y0 < R.y1 && y1 > R.y0) return R; } return null; };
     const own = this.ownRect(T);
     const hit = (x, y) => { // (the tag's box, and its leader's straight run, which must not cross another's things)
@@ -473,13 +514,12 @@ export class CreatureTags {
   show(T) {
     const P = T.panel, d = this.dot, x = Math.round(T.x), y = Math.round(T.y), sy = Math.max(0.02, Math.min(1, (T.vis - 0.35) / 0.65));
     const w = (W + 2 * M) * d, hh = (HMAX + 2 * M) * d;
-    P.mesh.visible = T.vis > 0.35; P.mesh.scale.set(w, hh * sy, 1);
-    P.mesh.position.set(Math.round((x - M) * d + w / 2), -Math.round((y - M) * d + hh * sy / 2), 0);
+    if (T.vis > 0.35) this.sheet.plate(P.i, Math.round((x - M) * d), Math.round((y - M) * d), w, hh * sy);
   }
 
   /** The bracket at its eyes, the leader to the lozenge, and its status motes: quads in the shared buffer. */
   marks(T) {
-    const S = this.strokes, b = T.b, x = Math.round(T.x), y = Math.round(T.y), P = this.PTS;
+    const S = this.sheet, b = T.b, x = Math.round(T.x), y = Math.round(T.y), P = this.PTS;
     const lead = Math.min(1, T.vis * 2.2);
     // the bracket (the mock's, with both eyes inside it): four corners, ink under the VFD line
     const Lx = Math.max(4, (b.x1 - b.x0) * 0.24), Ly = Math.max(3, (b.y1 - b.y0) * 0.3);
@@ -564,7 +604,7 @@ export class CreatureTags {
       y += r.h; g.fillStyle = hexA(VFD, 0.22); g.fillRect(GX, y - 0.6, ww, 0.6);
     }
     if (ab) this.compose(P, h);
-    P.tex.needsUpdate = true;
+    this.sheet.put(P.i, P.cv);
   }
 
   row(g, T, r, fam, x, y, w) {
