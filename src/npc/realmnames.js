@@ -35,11 +35,11 @@ const KIND = ['HEMA', 'LUNO', 'KITH', 'ROMI', 'SIVA', 'STIL', 'EZA', 'HUSA', 'AM
 const WORDS = Object.fromEntries(KIND.map((w) => [w, LEXICON[w].place]));
 const MODS = { LON: LEXICON.LON.place, DEO: LEXICON.DEO.place };
 
-// the ten offered first (LORE.md), each read as a place
+// the ten offered first (LORE.md), each read as a place, head first (docs/NEURALESE.md: the root first, what it is like after)
 const GLOSSES = {
-  'HEMA-LUNO': 'home, rest', 'KITH-HEMA': 'the home of kin', 'LUNO-DEO': 'deep rest', 'STIL-DEO': 'deep stillness',
-  'EZA-LON': 'long ease', 'ROMI-LON': 'long play', 'SIVA-LUNO': 'drink, and rest: an oasis', 'HUSA-HEMA': 'the hushed home',
-  'AMI-HEMA': 'where you are kin', 'MOR-LUNO': 'where grief rests',
+  'HEMA-LUNO': 'home, rest', 'KITH-HEMA': 'a huddle at home', 'LUNO-DEO': 'deep rest', 'STIL-DEO': 'deep stillness',
+  'EZA-LON': 'long ease', 'ROMI-LON': 'long play', 'SIVA-LUNO': 'drink, and rest: an oasis', 'HUSA-HEMA': 'the hush of home',
+  'AMI-HEMA': 'kin at home', 'MOR-LUNO': 'grief at rest',
 };
 export const OFFERED = Object.keys(GLOSSES);
 

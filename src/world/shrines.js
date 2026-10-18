@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // SHRINES: where the Courier is made whole, rests, travels, and goes into the Spirit Garden (the owner, 2026-10-06; docs/plans/SHRINES.md,
-// Dovina's). F at a Shrine finds it (once), rests there (the pool full, the mind settled to Balanced) and opens its page: travel to any
-// Shrine found, free, the Spirit Garden's door (the garden's page: its slots, its beds), and the party: the siblings met, called or
-// dismissed here (coop/party.js). A shatter makes you whole at the last Shrine
+// Dovina's). Its gate has two cradles (docs/plans/HANKO.md 6.6; world/cradles.js): seal into the threshold's and it is found (once),
+// you rest (the pool full) and its page opens while you stay sealed: travel to any Shrine found, free, and the party: the siblings met,
+// called or dismissed here (coop/party.js); F unseals. Seal into the arch's and the Spirit Garden opens. A shatter makes you whole at the last Shrine
 // rested at (courier/vessel/death.js asks `reformAt`). None in the Wells: a Well is a run, and its risk is losing it.
 // It is NOT a save point: the game keeps everything the moment it happens (core/save.js), and the log never says "saved".
 //
@@ -11,7 +11,7 @@
 // Evil's save rooms (the item box beside the typewriter: the Pneuka Box is the garden's shed, reachable anywhere on P).
 //
 //   game.shrines = new Shrines(game)   .update(dt)   .list (SHRINES with their places)   .found (Set of ids)   .last (id)
-//   .near(pos) -> shrine within reach | null   .rest(id)   .travel(id)   .reformAt() -> { pos, yaw }   .garden()
+//   .near(pos) -> shrine within reach | null   .find(s)   .rest(id)   .travel(id)   .reformAt() -> { pos, yaw }   .garden()   s.threshold, s.arch (its cradles)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
@@ -47,12 +47,25 @@ export class Shrines {
       load: (d) => { this.found = new Set([...SHRINES.filter((s) => s.start).map((s) => s.id), ...(d.found || []).filter((id) => SHRINES.some((s) => s.id === id))]); this.last = this.found.has(d.last) ? d.last : 'bisque'; },
       reset: () => { this.found = new Set(SHRINES.filter((s) => s.start).map((s) => s.id)); this.last = 'bisque'; },
     });
-    game.interact?.add('shrine', () => {
-      if (game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
-      const s = this.near(game.player.pos); if (!s) return null;
-      return { pos: s.pos.clone().setY(s.pos.y + 1.6), d: Math.hypot(s.pos.x - game.player.pos.x, s.pos.z - game.player.pos.z), ref: s.id };
-    });
   }
+
+  /** A gate's two cradles (docs/plans/HANKO.md 6.6, the owner, 2026-10-17): the threshold's finds the Shrine, rests you and opens its page
+   *  (travel, the party) while you stay sealed; the arch's opens the Spirit Garden. Where they stand is the model's (`cradleSpots`, Calissa's
+   *  torii); until it says, in front of the gate and under the arch. */
+  cradles(s) {
+    const g = this.game, C = g.cradles; if (!C) return;
+    const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
+    const at = s.model.cradleSpots?.() || { threshold: s.pos.clone().addScaledVector(f, 1.2), arch: s.pos.clone() };
+    const reach = 0.9; // (the two stand 1.2 m apart: each reaches only its own)
+    s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', pos: at.threshold, yaw: s.yaw, reach, hold: true,
+      onSeal: () => { this.find(s); this.rest(s.id); this.open(s); },
+      onUnseal: () => { if (this.menu?.open && this.page === s.id) this.menu.close(); } });
+    s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', pos: at.arch, yaw: s.yaw, reach, hold: true,
+      onSeal: () => { this.find(s); C.unseal('garden', 'courier', { now: true }); this.garden(s); } });
+  }
+
+  /** Found once: the first seal set in either of its cradles. */
+  find(s) { if (!this.found.has(s.id)) { this.found.add(s.id); this.game.save?.dirty('shrines'); this.game.events?.emit('shrine.find', { shrine: s.id, by: 'courier' }); } }
 
   /** The Shrines, placed once their places stand (the Dunes and the shore are built after the workshop): Calissa's cradle for the jar
    *  (vfx/shrine.js), its front toward +z, on the ground its place is made of. */
@@ -69,7 +82,8 @@ export class Shrines {
         const x = at.pos.x + Math.cos(at.yaw) * sx * 0.94, z = at.pos.z - Math.sin(at.yaw) * sx * 0.94;
         W.createCollider(RAPIER.ColliderDesc.cuboid(0.19, 1.15, 0.19).setTranslation(x, at.pos.y + 1.15, z).setCollisionGroups(GROUPS.static), body);
       }
-      this.list.push({ ...S, pos: at.pos.clone(), yaw: at.yaw, model });
+      const s = { ...S, pos: at.pos.clone(), yaw: at.yaw, model }; this.list.push(s);
+      this.cradles(s);
     }
     this.built = true;
   }
@@ -89,13 +103,6 @@ export class Shrines {
     if (!this.built && g.dunes?.beach && g.well) this.build();
     const open = this.menu?.open && this.page;
     for (const s of this.list) { s.model.set({ found: this.found.has(s.id), resting: this.last === s.id && s.model.group.position.distanceTo(P.pos) < 3, open: open === s.id || open === `garden.${s.id}` }); s.model.update(g.rawDt ?? 1 / 60); }
-    const it = g.interact?.cur;
-    if (it?.id !== 'shrine' || !P.peekLatch?.('KeyF') || g.god?.controlling) return;
-    P.latch('KeyF');
-    const s = this.get(it.ref); if (!s) return;
-    if (!this.found.has(s.id)) { this.found.add(s.id); g.events?.emit('shrine.find', { shrine: s.id, by: 'courier' }); }
-    this.rest(s.id);
-    this.open(s);
   }
 
   /** A rest: the pool full, the mind settled; this Shrine is where a shatter makes them whole. Nothing else (the world is not reset). */
@@ -113,6 +120,7 @@ export class Shrines {
     if (!s || !this.found.has(id)) return false;
     const go = () => { const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw)); const to = s.pos.clone().addScaledVector(f, 1.4).setY(s.pos.y + 0.05); if (!g.places?.stand(to, s.yaw + Math.PI)) g.course.teleport(to, s.yaw + Math.PI); }; // (into its zone first: world/places.js)
     this.menu?.close();
+    g.cradles?.unseal('travel', 'courier', { now: true }); // (out of the threshold at once: the travel sets the Courier down, world/cradles.js)
     if (g.seam) g.seam.cross(go, { kind: 'shrine' }); else go(); // (under a cover: render/seam.js)
     this.last = id; g.save?.dirty('shrines');
     g.events?.emit('shrine.travel', { from, to: id, by: 'courier' });
@@ -133,7 +141,6 @@ export class Shrines {
     this.menu?.showPage(s.id, (im, el) => {
       const box = el('div', 'rooms');
       const btn = (title, sub, run) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${title}</b><s>${sub}</s></span>`); d.onclick = run; box.appendChild(d); };
-      btn('The Spirit Garden', 'go in, as your Pneuka Jar', () => this.garden(s));
       for (const t of this.list) if (t.id !== s.id && this.found.has(t.id)) btn(t.name, 'travel there', () => this.travel(t.id));
       const unfound = SHRINES.filter((t) => !this.found.has(t.id)).length;
       for (const e of [el('div', 'grp', 'YOU REST HERE'), box, el('div', 'grp', unfound ? `${unfound} NOT YET FOUND` : 'EVERY SHRINE FOUND')]) im.appendChild(e);

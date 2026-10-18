@@ -243,7 +243,7 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   **the Mulberry Grove** (the cocoon tree is a mulberry, as silk's is), **the Chimney** (where the Heavenly Kiln draws; the Prince's
   chimney-crown). Bought later: the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed (a layer of old bones: the fossils).
 - **The Inner Realm**: your garden by its name, offered in neuralese words the Veritome teaches, drawn as runes: HEMA-LUNO (home,
-  rest), KITH-HEMA, LUNO-DEO, STIL-DEO, EZA-LON, ROMI-LON, SIVA-LUNO (an oasis), HUSA-HEMA, AMI-HEMA, MOR-LUNO (where grief rests).
+  rest), KITH-HEMA, LUNO-DEO, STIL-DEO, EZA-LON, ROMI-LON, SIVA-LUNO (an oasis), HUSA-HEMA, AMI-HEMA, MOR-LUNO (grief at rest).
 - **The Firings**: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
   **Sinter** (grains fuse into one body), **Lustre** (the third firing), **Salt** (thrown in at the hottest: it stings, and it glazes),
   **Reduction** (starved of air, the colours change from inside), **Anagama** (the days-long wood firing; the island's own name). After
@@ -786,6 +786,10 @@ spokes, the star.
 the glyph with the sound as well. A player who has read SIVA and SHAI sees that the first cell of both has a tick on the middle edge,
 and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
 
+**The language** is `docs/NEURALESE.md`, ruled by the owner 2026-10-17 (the owner, 2026-10-17: "expand neuralese as an actual language, Toki Pona comes to mind"):
+124 roots and 7 particles (`npc/neuraleseroots.js`), every word cut into its cells by `npc/neuralesespelling.js`. **Neuralese meant to
+be read is drawn at 2x** (its cell two reading lines tall at the 480-line present; the owner, 2026-10-17); at 1x it is texture.
+
 **The running hand** *(proposed, 2026-10-17; the look is Calissa's, the owner rules)*. The owner's brief: Thai and Tamil "a combo of the
 two", Goetic seals and semiconductor chip design as motifs, East meets West retrofuture. We draw our own glyphs in that hand, never real
 Thai or Tamil letters, which would read as broken words to the people who write them. The orthography carries over whole; only where a
@@ -815,7 +819,8 @@ the West's word for a thing that makes a machine itself. Dovina's rules are `doc
   and a telephone's handset, which is the retrofuture in one word; and *crib* is its old twin, so the Crib Sheet and the cradle are
   cousins. Not of any one island's make, so not "saggar" (the potter's box a pot is fired in), which would say Anagami.
 - **sealing / to seal in / to unseal**: the act. Japanese says a seal is *pressed* (*natsuin*, 捺印), but "press" is the Athanor's.
-- **your seal**: the Jar's base, your name in the Comb, carved once. The Japanese *jitsuin* is the one registered seal for what
+- **your seal**: the Jar's base, your name in the Comb, chosen at character creation and never recarved (the owner, 2026-10-17: "like
+  making a new account"). The Japanese *jitsuin* is the one registered seal for what
   matters. Qualify it beside **an attribute's seal** (the press at the Athanor's kerb: the potter's chop).
 - **an imprint**: what a seal leaves on a cradle, dim after you go. Not "a print", which is a foot's in the sand (the trail map). The
   Japanese for it is *in'ei* (印影), a seal's shadow: the imprint is the shadow you leave on a place.
