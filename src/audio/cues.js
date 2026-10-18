@@ -87,6 +87,7 @@ const RULES = {
     : e.kind === 'flourish' ? s.casinoFlourish?.(e.tier ?? 1) : null),
   'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
     : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
+  'creature.stun': (s, e) => s.stunSting?.(e.depth ?? 1, { near: e.by === 'courier' }), // (a stun's depth, rising: audio/damage.js; STUN-DEPTH.md)
   'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),
   'race.escape.wake': (s) => s.escapeWake?.(),

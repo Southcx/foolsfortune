@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio/sfx.js): the psygun and the guns: shots, reloads, the charge, lock-on and the seekers, casings, hits, explosions.
+// A sound bank of the one mixer (audio/sfx.js): the psygun and the guns: shots, reloads, the charge, lock-on and the seekers, casings, hits, explosions; the cylinder (its turn, pawl, settle, empty, reload: Calissa's beats).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class WeaponSounds {
   gunshot() {
@@ -170,5 +170,41 @@ export class WeaponSounds {
     this.noise(t, 0.05, { type: 'bandpass', f0: 2200, f1: 3200, q: 3, gain: 0.4, dest: d });
     this.noise(t + 0.06, 0.015, { type: 'bandpass', f0: 4200, q: 8, gain: 0.8, dest: d });
     this.tone(t + 0.06, 0.04, { f0: 900, f1: 600, type: 'triangle', gain: 0.1, dest: d });
+  }
+
+  // THE CYLINDER (the psygun's shells as a revolver's cylinder of 1, 3, 5 or 7 chambers: Calissa's board, its beats hers to call). Prior
+  // art: a Colt's hand and pawl (a clean tick a chamber, the bolt dropping home), Bloodborne's and Hunt: Showdown's cylinder foley.
+  /** The cylinder set turning: a short swish of steel, brighter for a smaller cylinder (fewer, bigger chambers). */
+  cylinderTurn(slots = 5) {
+    if (!this.ok() || !this.allow('cylinderTurn', 8)) return;
+    const t = this.ctx.currentTime, d = this.out(0.25, 0.15), k = 1 - Math.min(1, (slots - 1) / 6);
+    this.noise(t, 0.09, { type: 'bandpass', f0: 2600 + 1400 * k, f1: 1800, q: 2.5, gain: 0.25, dest: d });
+  }
+  /** The pawl's click at each chamber passed (i its count along the turn: a hair higher each). */
+  cylinderClick(i = 0) {
+    if (!this.ok() || !this.allow('cylinderClick', 30)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.12), f = 3800 + 120 * Math.min(6, i);
+    this.noise(t, 0.012, { type: 'bandpass', f0: f, q: 10, gain: 0.7, dest: d });
+    this.tone(t, 0.03, { f0: 1500 + 40 * i, f1: 1100, type: 'triangle', gain: 0.07, dest: d });
+  }
+  /** The bolt dropping home on the overshoot's way back, and the flare's ring as the shell lines up with the barrel (loaded: a shell there). */
+  cylinderSettle(loaded = true) {
+    if (!this.ok() || !this.allow('cylinderSettle', 10)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.3);
+    this.noise(t, 0.02, { type: 'bandpass', f0: 1800, q: 4, gain: 0.6, dest: d }); this.tone(t, 0.06, { f0: 420, f1: 300, type: 'triangle', gain: 0.14, dest: d });
+    if (loaded) [1, 2.76].forEach((r, j) => this.tone(t + 0.02, 0.35, { f0: 1760 * r, gain: j ? 0.008 : 0.025, dest: d }));
+  }
+  /** An empty chamber come round: hollow, dry, no ring. */
+  cylinderEmpty() {
+    if (!this.ok() || !this.allow('cylinderEmpty', 10)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.1);
+    this.noise(t, 0.025, { type: 'bandpass', f0: 900, q: 3, gain: 0.5, dest: d }); this.tone(t, 0.05, { f0: 260, f1: 200, type: 'triangle', gain: 0.1, dest: d });
+  }
+  /** A chamber loaded on the cylinder: the shell's slide and its seat (chamberClick), and the gate snapping shut after the last (last). */
+  cylinderReload(last = false) {
+    this.chamberClick();
+    if (!last || !this.ok()) return;
+    const t = this.ctx.currentTime + 0.12, d = this.out(0.35, 0.2);
+    this.noise(t, 0.03, { type: 'bandpass', f0: 2600, q: 3, gain: 0.7, dest: d }); this.tone(t, 0.08, { f0: 520, f1: 360, type: 'square', gain: 0.06, dest: d });
   }
 }
