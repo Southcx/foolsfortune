@@ -57,11 +57,12 @@ export class Shrines {
     const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
     const at = s.model.cradleSpots?.() || { threshold: s.pos.clone().addScaledVector(f, 1.2), arch: s.pos.clone() };
     const reach = 0.9; // (the two stand 1.2 m apart: each reaches only its own)
-    s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.threshold, yaw: s.yaw, reach, hold: true,
+    const ground = (p) => p.clone().setY(s.pos.y); // (F is reached from the ground under a seat: the arch's sits high in the gate, Calissa's torii)
+    s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.threshold, at: ground(at.threshold), yaw: s.yaw, reach, hold: true,
       onSeal: () => { this.find(s); this.rest(s.id); s.model.wake?.(); this.open(s); }, // (the gate wakes: Calissa's torii, vfx/shrine.js)
       onUnseal: () => { s.model.wake?.(false); if (this.menu?.open && this.page === s.id) this.menu.close(); } });
-    s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.arch, yaw: s.yaw, reach, hold: true,
-      onSeal: () => { this.find(s); C.unseal('garden', 'courier', { now: true }); this.garden(s); } });
+    s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.arch, at: ground(at.arch), yaw: s.yaw, reach, hold: true,
+      onSeal: () => { this.find(s); s.archOpen = 1.5; C.unseal('garden', 'courier', { now: true }); this.garden(s); } }); // (the gate opens as the arch seals: model.set({ open })
   }
 
   /** Found once: the first seal set in either of its cradles. */
@@ -102,7 +103,7 @@ export class Shrines {
     const g = this.game, P = g.player;
     if (!this.built && g.dunes?.beach && g.well) this.build();
     const open = this.menu?.open && this.page;
-    for (const s of this.list) { s.model.set({ found: this.found.has(s.id), resting: this.last === s.id && s.model.group.position.distanceTo(P.pos) < 3, open: open === s.id || open === `garden.${s.id}` }); s.model.update(g.rawDt ?? 1 / 60); }
+    for (const s of this.list) { s.model.set({ found: this.found.has(s.id), resting: this.last === s.id && s.model.group.position.distanceTo(P.pos) < 3, open: open === s.id || open === `garden.${s.id}` || s.archOpen > 0 }); s.archOpen = Math.max(0, (s.archOpen || 0) - (g.rawDt ?? 1 / 60)); s.model.update(g.rawDt ?? 1 / 60); }
   }
 
   /** A rest: the pool full, the mind settled; this Shrine is where a shatter makes them whole. Nothing else (the world is not reset). */

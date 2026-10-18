@@ -19,7 +19,7 @@
 // sockets, Kirby Planet Robobot's armour and Mario Odyssey's capture (a bigger body with its own moves), the Japanese registered seal.
 //
 //   game.cradles = new Cradles(game)
-//   .add({ id, kind, pos, yaw?, reach?, hold?, drain?, book? (the Seal Book's page, when a place's cradles share one), onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
+//   .add({ id, kind, pos (the seat: where the Jar sits), at? (where F reaches it from, on the ground; the seat when not given), yaw?, reach?, hold?, drain?, book? (the Seal Book's page, when a place's cradles share one), onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
 //   .seal(c, by?) -> bool   .unseal(why?, by?, { now }?) -> bool   .sealed (the cradle you are in, or null)   .near() (the one F would seal)
 //   .mine -> { name, outline, carving } | null   .choose({ name, outline, carving }) -> bool (once, ever)
 //   .struck(blow) (vessel/damage.js asks it first while sealed)    events: seal.set { cradle, kind, book?, by, first, seal } / seal.unset { cradle, kind, by, why }, seal.carve
@@ -41,12 +41,12 @@ export class Cradles {
     this.sealed = null; this.phase = null; this.t = 0;
     this.mine = null;
     game.save?.section('seal', { scope: 'settings', version: 1, dump: () => this.mine, load: (d) => { this.mine = valid(d) ? { ...d } : null; }, reset: () => { this.mine = null; } });
-    game.interact?.add('cradle', () => { const c = this.near(); return c ? { pos: c.pos.clone().setY(c.pos.y + 0.6), d: c.d, ref: `cradle.${c.id}` } : null; });
+    game.interact?.add('cradle', () => { const c = this.near(); return c ? { pos: c.at.clone().setY(c.at.y + 0.6), d: c.d, ref: `cradle.${c.id}` } : null; });
   }
 
-  add({ id, kind = 'threshold', pos, yaw = 0, reach = REACH, hold, drain = 0, book = null, onSeal = null, onUnseal = null, hurt = null, update = null }) {
+  add({ id, kind = 'threshold', pos, at = null, yaw = 0, reach = REACH, hold, drain = 0, book = null, onSeal = null, onUnseal = null, hurt = null, update = null }) {
     if (!CRADLE_KINDS.includes(kind)) throw new Error(`cradle ${id}: no kind ${kind}`);
-    const c = { id, kind, book, pos: pos.clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
+    const c = { id, kind, book, pos: pos.clone(), at: (at || pos).clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
     tag(c, 'cradle'); this.list.push(c);
     return c;
   }
@@ -57,7 +57,7 @@ export class Cradles {
     const g = this.game, P = g.player;
     if (this.sealed || g.god?.controlling || g.techs?.active || !P.grounded) return null;
     let best = null;
-    for (const c of this.list) { const d = c.pos.distanceTo(P.pos); if (d < c.reach && (!best || d < best.d)) { c.d = d; best = c; } }
+    for (const c of this.list) { const d = c.at.distanceTo(P.pos); if (d < c.reach && (!best || d < best.d)) { c.d = d; best = c; } }
     return best;
   }
 
@@ -101,7 +101,7 @@ export class Cradles {
   /** The Courier back on their feet (in front of the cradle, unless `place` is false), the Jar put away. */
   stepOut(place = true) {
     const g = this.game, c = this.sealed, P = g.player, J = this.jar;
-    const at = c.pos.clone().add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(STEP));
+    const at = c.at.clone().add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(STEP)); // (from the ground point, not the seat: a seat may stand high)
     if (J) J.group.visible = false;
     P.freeze = false; g.character.setHidden(false);
     if (place) g.course?.teleport ? g.course.teleport(at, c.yaw, { keepPool: true }) : P.pos.copy(at);
