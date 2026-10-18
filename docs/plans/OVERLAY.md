@@ -301,6 +301,9 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
   proposal, round 7: the tag as raw sight in hard light, familiarity as decryption (scrambled running hand resolving into English through
   the placard's flow field), against two other directions (a profiler slab; a scan sprite).
 - The thermometer Lachrimeter passed without a note.
+- **The owner, later the same day:** the Sight takes **the yoke plus the liquid roiling**: the discs joined by a clay yoke the arc rides
+  along, and the globe's liquid churning and changing with the Dissonance Level. The placard's tiers and dresses as proposed. In-depth
+  scans and tagging are worked out with Dovina against the Veritome (handoff 2026-10-18).
 
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
