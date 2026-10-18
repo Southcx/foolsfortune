@@ -112,10 +112,6 @@ export class HeldTool extends Tech {
     const ch2 = g.character;
     this.model.group.visible = this.enabled && this.worn && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active;
     this.rest.update(raw, this.drawT === 0 && !this.busy, this.restSig?.() ?? '');
-    const shells = document.getElementById('shells'); // (the Psygun's shells are not this tool's)
-    if (shells && this.drawT > 0.02) shells.style.display = 'none';
-    else if (shells && this.wasShellsHidden) shells.style.display = '';
-    this.wasShellsHidden = this.drawT > 0.02;
   }
 
   // ---------------------------------------------------------------- animation: the upper body's clip layer

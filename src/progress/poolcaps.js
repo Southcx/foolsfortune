@@ -3,8 +3,8 @@
 // the pool's base never changes; what lowers its max is a CAP, a modifier with a source you can see in the world. The first is the
 // vessel's own: each region of the vessel cracked (the mask, the torso, an arm, a leg: courier/vessel/damage.js) takes 5% off the max until
 // it mends, so a battered Courier carries less Lachryma, the ARPG's cost of being hit. A cap is a modifier on the pool
-// (`game.lachryma.addModifier`) that carries `source` (what in the world caps it) and `caps: true`; the Lachrimeter asks `capOf(pool)`
-// for how much of the tube is held off, and by what, and shows it (Calissa's: ui/lachrimeter.js).
+// (`game.lachryma.addModifier`) that carries `source` (what in the world caps it) and `caps: true`; the Lachrimeter's tube asks `capOf(pool)`
+// for how much of the tube is held off, and by what, and shows it (Calissa's: vfx/lachrimetertube.js, its held stretch).
 // Events: pool.cap { source, share } when a cap changes (with `by`).
 //
 // Prior art: Monster Hunter's red health (the bar's lost part shown, and won back), Diablo's curses that cap a resource, Zelda's and Hades' gauges that show a capped part as a different colour; the house's own modifier stack

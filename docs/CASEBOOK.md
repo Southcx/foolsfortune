@@ -682,6 +682,9 @@ NEW:modal-pauses-the-table. **What runs under its own window keeps its clock the
 NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place whose ground or geometry runs to tens of MB builds it on
    arrival and gives it back a few real seconds after the Courier has left (keeping only what is slow to work out again, like a
    field of heights); the heap after a visit is measured, not only the heap inside.
+NEW:retire-what-is-replaced. **A replaced UI is deleted in the same change, never hidden.** When a new piece takes an old one's job,
+   the old element, its builder, its CSS, its update code and every line that shows, hides, polls or measures it go in that commit;
+   no body class or `display: none` is left keeping it alive underneath.
 
 ## Cases
 
@@ -3767,3 +3770,19 @@ NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place wh
   (Calissa's); the terrain's own arrays could shrink (lists built on demand, the index buffer sized to what is drawn: Petra's
   `render/terrain.js`).
 - **Rule:** NEW:lend-the-big-ground.
+
+### 2026-10-18 · The Well's draw at 6x its baseline after the overlay's tool UIs went in (Petra, the gate: `npm run perf`)
+- **Seen:** `npm run perf` at the Great Dunemaw's bottom floor: well draw ~1250 ms against a baseline of 213 ms; the other three places
+  within tolerance.
+- **Cause, as measured (in part):** the new pieces (the psygun's cylinder, the Sondelass's guard, the thermometer Lachrimeter, the Sight)
+  only hid the old DOM UI with body classes (`cylinder-standing`, `sondelass-guard`, `tube-standing`) and inline styles, while the tools,
+  the HUD and the tube still built, showed, hid, polled and measured it (the tube read `#shells`' rect and computed style twice a real
+  second). Calissa's bisect: with `cylinder-standing` on, the Well's draw 6 ms; off, ~1230 ms. Why the DOM row cost that was not
+  root-caused: it was retired instead.
+- **Fix:** the old UI retired, not hidden (the owner: "why is it not being fully retired now that we have updated UI elements?"): the
+  shells row (#shells, `hud.buildShells`), the Sondelass's tool strip (#toolstrip, `angling/ui.js`) and the string row
+  (`ui/cutlassstringrow.js`), the flat Lachrimeter and its panel frame (`ui/lachrimeter.js`, `stepAside`), the old compass dial
+  (#compass); every show, hide, poll and class went with them. **Measured after (this commit's `npm run perf`): well draw 1259 ms,
+  calls 85, programs 196: unchanged.** So the DOM row was not what cost the Well its draw; the bisect's 6 ms is not reproduced by
+  deleting it. The Well's draw is still open (Petra's: the gate, `render/`).
+- **Rule:** NEW:retire-what-is-replaced.

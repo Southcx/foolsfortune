@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE PSYGUN'S CYLINDER (board v9, signed off by the owner 2026-10-18: "Flex on satisfying animation when it comes to cycling the
-// chambers"; OVERLAY.md 10.5g, the mechanics 18): the psygun's own UI, replacing its shells row. A case-hardened steel cylinder in the
-// overlay's own scene (render/overlayscene.js), bottom-right beside the Lachrimeter's tube, whose shape is its chamber count, each
+// chambers"; OVERLAY.md 10.5g, the mechanics 18): the psygun's only UI (its DOM shells row retired, 2026-10-18). A case-hardened steel
+// cylinder in the overlay's own scene (render/overlayscene.js), bottom-right beside the Lachrimeter's tube, whose shape is its chamber count, each
 // loaded chamber a glazed cap in its shell's colour, its depth a ring of pips, the chosen one ringed in labradorite under a brass pawl;
 // tied to the tube's bulb by the spiritual link (vfx/spirituallink.js), a bead along it for every shot. The model and its plate are
 // vfx/psyguncylindermodel.js; this is its life: every beat the mock times, a pure function of its time since the event that began it.
@@ -27,7 +27,7 @@
 //   game.overlayScene and listens on the bus: psygun.turn, psygun.change, psygun.chamber, shell.fire, shell.dry, shot.fire)
 //   C.state { shown, size, beat, gun, open }   (a probe's)   C.root (its slot's object)
 //   It emits `psygun.cylinder` { kind: 'open' | 'home' } when it swings out hung open and when a reload swings it home (Wanda's beats
-//   with no event of their own). While it stands, the HUD's shells row is hidden (body.cylinder-standing).
+//   with no event of their own).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
@@ -71,9 +71,6 @@ export class PsygunCylinder {
     this.plate = quad(PLATE.w, PLATE.h); this.inset = quad(36, 52); this.inset.m.visible = false; this.plateKey = '';
     this.slot = this.S.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
     this.rebuild();
-    // the shells row this replaces is hidden while the cylinder stands (as the tube hides the old LACHRYMA panel); the tube then stands at the foot
-    if (!document.getElementById('cylinderstanding')) { const st = document.createElement('style'); st.id = 'cylinderstanding'; st.textContent = 'body.cylinder-standing #shells { display: none !important; }'; document.head.appendChild(st); }
-    document.body.classList.add('cylinder-standing');
     const on = (n, f) => game.events?.on(n, f);
     on('psygun.change', () => this.rebuild());
     on('psygun.chamber', () => this.rebuild());

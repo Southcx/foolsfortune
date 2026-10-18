@@ -1,17 +1,14 @@
 // ---------------------------------------------------------------------------------------
-// THE HUD: the few things drawn over the world that are not the log: the psygun's crosshair (only while it is drawn) and its spread, the hitmarker, the Lachryma gauge's
-// pulse, the psygun's shells, the speed, and the pixelation the present asks for. No words or numbers in the world (CLAUDE.md,
-// Feedback): what deserves a sentence goes to the log.
+// THE HUD: the few things drawn over the world that are not the log: the psygun's crosshair (only while it is drawn) and its spread, the hitmarker, the charge arc,
+// the LACHRYMA panel (the Blink's beads and the cubes, unframed, beside the thermometer Lachrimeter: vfx/lachrimetertube.js), the speed
+// (F3). The pool, the shells and the Sondelass's forms are the overlay's made objects (vfx/lachrimetertube.js, vfx/psyguncylinder.js,
+// vfx/sondelassguard.js); the old DOM gauge, shells row and tool strip were retired (the owner, 2026-10-18). No words or numbers in the
+// world (CLAUDE.md, Feedback): what deserves a sentence goes to the log.
 //
 // Prior art: the PS2 shooters' minimal HUDs (Ratchet & Clank's reticle and ammo, Metroid Prime's visor kept to the edges).
 //
-//   const H = new Hud()   H.update(dt, { spreadDeg, fov, fp, ads, charge, pool, shells, speed, move, gunOut, blink, combat })   H.hitmarker(kill)
+//   const H = new Hud()   H.pixelate(px)   H.update(dt, { spreadDeg, fov, fp, ads, charge, pool, speed, move, gunOut, blink, combat })   H.hitmarker(kill)
 // ---------------------------------------------------------------------------------------
-import { restartClass } from '../core/restart.js';
-import { T } from '../core/config.js';
-
-import { SHELL_KEYS } from '../tools/psygun/shells.js';
-import { Lachrimeter } from '../ui/lachrimeter.js';
 import { ChargeBeads } from '../ui/beads.js';
 
 export class Hud {
@@ -21,10 +18,6 @@ export class Hud {
       lines: [...document.querySelectorAll('#crosshair .l')],
       hit: document.getElementById('hitmarker'),
       lach: document.getElementById('lachryma'),
-      lachFill: document.querySelector('#lachryma .fill'),
-      lachRes: document.querySelector('#lachryma .res'),
-      lachNum: document.querySelector('#lachryma .num'),
-      shells: document.getElementById('shells'),
       reload: document.getElementById('reloadbar'),
       reloadFill: document.querySelector('#reloadbar i'),
       charge: document.getElementById('charge'),
@@ -41,49 +34,21 @@ export class Hud {
     this.el.hit.classList.toggle('kill', !!kill);
   }
 
-  /** The maker's pixel Lachrimeter (ui/lachrimeter.js) in place of the drawn bar, and the count in the maker's font. */
+  /** The panel's pixel pieces (ui/pixel.js): the Blink's charges as beads of Lachryma (ui/beads.js), shown while they have it, and the
+   *  cubes (cubes.js's readout) under them; one step smaller than the windows' buttons, a HUD and not a menu. */
   pixelate(px) {
     this.px = px;
-    const bar = this.el.lach.querySelector('.bar');
-    bar.classList.add('pxbar'); bar.innerHTML = '';
-    // (the gauge one step smaller than the windows' buttons, a HUD and not a menu; as long as the panel is wide, in whole art pixels)
-    const build = () => {
-      const s = px.scale(), k = Math.max(1, s - 1) / s, dpr = window.devicePixelRatio || 1;
-      const inner = Math.max(120, (this.el.lach.clientWidth || 284) - 40);
-      const W = Math.floor((inner * dpr) / Math.max(1, Math.round(s * k)));
-      if (this.meter?.W === W && this.meter.el.__k === k) return;
-      const old = this.meter;
-      this.meter = new Lachrimeter(px, { width: W, k });
-      if (old) old.el.replaceWith(this.meter.el); else bar.appendChild(this.meter.el);
-    };
-    build();
-    addEventListener('resize', build);
-    this.el.lachNum.textContent = ''; // (no count beside the tube: the tube is the count, docs/ART.md precept 2)
-    // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while they have it
-    this.beads = new ChargeBeads(px, { k: this.meter.el.__k, max: 3 });
-    this.el.lachNum.before(this.beads.el);
-    // the cubes (cubes.js's readout) live in the panel, under the tube, and not over its frame
+    const s = px.scale(), k = Math.max(1, s - 1) / s;
+    this.beads = new ChargeBeads(px, { k, max: 3 });
+    this.el.lach.appendChild(this.beads.el);
     const cubes = document.getElementById('cubes');
     if (cubes) this.el.lach.appendChild(cubes);
   }
 
-  lachrymaPulse(ok) {
-    if (ok) this.meter?.bead();
-    this.quietT = 0;
-    restartClass(this.el.lach, ok ? 'gain' : 'deny', ['gain', 'deny']); // (no forced layout: restart.js)
-  }
+  /** Lachryma came in or was refused: the panel comes forward (the tube flares and shakes on its own: vfx/lachrimetertube.js). */
+  lachrymaPulse() { this.quietT = 0; }
 
-  buildShells(types) {
-    this.el.shells.innerHTML = types.map((t, i) => `<div class="slot" data-i="${i}"><u>${SHELL_KEYS[i] || ''}</u><i>${t.glyph}</i><span>${t.name}</span><b></b></div>`).join('');
-    this.slots = [...this.el.shells.querySelectorAll('.slot')];
-    // the glove over the chosen shell, pointing down at it (as a JRPG's command palette points at its choice)
-    this.hand = document.createElement('div'); this.hand.className = 'hand'; // (its picture is the theme's turned glove: --jglove-down)
-    this.el.shells.appendChild(this.hand); this.handAt = -1;
-  }
-
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null, debug = false, combat = true }) {
-    // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
-    if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, speed = 0, move = '', gunOut = true, blink = null, debug = false, combat = true }) {
     // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
     // not the HUD's to show (CLAUDE.md, Feedback; docs/ART.md precept 6)
     if (debug !== this.debugShown) { this.debugShown = debug; this.el.speed.style.display = debug ? '' : 'none'; }
@@ -113,31 +78,13 @@ export class Hud {
       if (on !== this.beadsOn) { this.beadsOn = on; this.beads.el.style.display = on ? '' : 'none'; }
       if (on) { this.beads.set(blink.n, blink.max, blink.fill); this.beads.update(dt); }
     }
-    if (pool && this.meter) {
-      this.meter.set(pool.available, pool.reserved, pool.max); this.meter.update(dt);
-      this.el.lach.classList.toggle('low', pool.available < 12);
+    if (pool) {
       // the panel is there when the Lachryma is doing something (not full, held for a charge, just moved) and steps back when it is
-      // full and still: the ring at their feet (vfx/hudring.js) is the always-on gauge
+      // full and still, as the tube does: the ring at their feet (vfx/hudring.js) is the always-on gauge
       if (Math.abs(pool.available - (this.lastAvail ?? -1)) > 0.01 || pool.reserved > 0) { this.lastAvail = pool.available; this.quietT = 0; }
       this.quietT = (this.quietT || 0) + dt;
-      const show = pool.available < pool.max - 0.5 || this.quietT < 4 || this.lach?.forced;
+      const show = pool.available < pool.max - 0.5 || this.quietT < 4;
       if (show !== this.lachShown) { this.lachShown = show; this.el.lach.style.transition = 'opacity .6s'; this.el.lach.style.opacity = show ? '' : '0'; }
-    } else if (pool) {
-      this.el.lachFill.style.width = `${(pool.available / pool.max) * 100}%`;
-      this.el.lachRes.style.width = `${(pool.reserved / pool.max) * 100}%`;
-      this.el.lachRes.style.left = `${(pool.available / pool.max) * 100}%`;
-      this.el.lachNum.textContent = Math.floor(pool.available);
-      this.el.lach.classList.toggle('low', pool.available < 12);
-    }
-    if (shells && this.slots) {
-      this.slots.forEach((el, i) => {
-        const t = shells.types[i];
-        el.classList.toggle('sel', i === shells.selected);
-        el.classList.toggle('empty', shells.counts[t.id] <= 0);
-        el.querySelector('b').textContent = shells.counts[t.id];
-      });
-      const sel = this.slots[shells.selected];
-      if (sel && this.handAt !== shells.selected) { this.handAt = shells.selected; this.hand.style.transform = `translateX(${sel.offsetLeft + sel.offsetWidth / 2 - 26}px)`; } // (the turned glove's tip is at 26 of 32)
     }
     this.el.reload.style.opacity = reloadT >= 0 ? 1 : 0;
     this.el.reloadFill.style.width = `${Math.max(0, reloadT) * 100}%`;

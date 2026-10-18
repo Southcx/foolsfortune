@@ -100,7 +100,7 @@ export class Cubes {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const el = (this.el = document.createElement('div')); el.id = 'cubes';
     el.innerHTML = '<i></i><b>0</b>';
-    (document.getElementById('lachryma') || document.getElementById('hud') || document.body).appendChild(el); // (in the Lachryma panel, under the tube)
+    (document.getElementById('lachryma') || document.getElementById('hud') || document.body).appendChild(el); // (in the Lachryma panel, beside the tube)
     this.num = el.querySelector('b');
   }
 

@@ -34,7 +34,6 @@ import { Lure } from './lure.js';
 import { FishingLine } from './line.js';
 import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
-import { aspectStrip } from './ui.js';
 import { lureList, attraction, tasteOf, BARE } from './lures.js';
 import { ASPECTS, SHOWN, BY_SPECIES, TIDES, aspectKnown, knownAspects } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
@@ -126,7 +125,6 @@ export class Angler {
   emit(name, data) { this.game.events?.emit(name, data); }
   bend() { return this.bendX; }
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
-  stripHtml() { return aspectStrip(this.aspect, this.lureDef(), knownAspects(this.game)); }
   /** The lure on the line is what the Pneuka Box says is worn there (pneuka/box.js). */
   get lureId() { return this.game.pneuka?.lure ?? this.ownLure; }
   set lureId(id) { if (this.game.pneuka) this.game.pneuka.tie(id); else this.ownLure = id; }
@@ -138,7 +136,7 @@ export class Angler {
     const L = lureList(this.game.ledger, this.game.pneuka), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
     if (!L.length) return;
     this.lureId = L[(i + d + L.length) % L.length].id;
-    this.tool.renderStrip(); sfx.plink(3);
+    sfx.plink(3);
     this.emit('angle.lure', { lure: this.lureId });
   }
   castPose(C, out) {
@@ -158,7 +156,7 @@ export class Angler {
     }
     this.aspect = a;
     if (this.lure?.active) this.lure.setAspect(a);
-    this.tool.renderStrip(); sfx.plink(a * 2);
+    sfx.plink(a * 2);
   }
 
   /** The wheel steps through the aspects in the order shown, past the locked ones. */
@@ -167,13 +165,12 @@ export class Angler {
     let k = SHOWN.indexOf(this.aspect);
     for (let s = 0; s < n; s++) { k = (k + d + n) % n; if (aspectKnown(this.game, SHOWN[k])) { this.setAspect(SHOWN[k]); return; } }
   }
-  /** A feeling known (or a lend switched) since the strip was drawn: draw it again; an aspect no longer known gives way to Wonder. */
+  /** A feeling known (or a lend switched): an aspect no longer known gives way to Wonder. */
   checkKnown() {
     const K = knownAspects(this.game, this._known || (this._known = [])), sig = K.map((k) => (k ? 1 : 0)).join('');
     if (sig === this.knownSig) return;
     this.knownSig = sig;
     if (!K[this.aspect]) { this.aspect = SHOWN[0]; if (this.lure?.active) this.lure.setAspect(this.aspect); }
-    this.tool.renderStrip();
   }
 
   // ---------------------------------------------------------------- landing point of a cast
@@ -337,7 +334,7 @@ export class Angler {
       this.castDist = _t.distanceTo(to);
       this.emit('angle.cast', { power: this.finalPower, dist: this.castDist, aspect: ASPECTS[this.aspect].id, water: a.water, lure: this.lureId });
     }
-    if (this.castT >= 0.78) { this.state = 'wait'; this.castPhase = 'recover'; this.waitT = 0; this.tool.renderStrip(); }
+    if (this.castT >= 0.78) { this.state = 'wait'; this.castPhase = 'recover'; this.waitT = 0; }
   }
 
   updateWait(dt, inp, held, down, press, rdown) {
@@ -414,7 +411,6 @@ export class Angler {
     this.settle('refund');
     this.state = 'idle'; this.bite = null; this.biteGlyph?.close(); this.biteGlyph = null;
     this.emit('angle.retrieve', {});
-    this.tool.renderStrip();
   }
 
   // ---------------------------------------------------------------- what the fish do to the lure
@@ -488,7 +484,6 @@ export class Angler {
     g.portrait.show(f, this.aspectColor);
     this.frameFight(0, true);
     this.emit('angle.hookset', { quality, kind: b.kind, species: f.sp.id });
-    this.tool.renderStrip();
   }
 
   onFight(kind, d) {
@@ -619,7 +614,6 @@ export class Angler {
     this.line.hide();
     this.hooked = null; this.fight = null; this.state = 'idle'; this.reeling = false;
     this.release();
-    this.tool.renderStrip();
   }
 
   // ---------------------------------------------------------------- the landing
@@ -650,7 +644,6 @@ export class Angler {
     g.cinema.strain = 0;
     this.reticle.hide();
     this.hooked = null; this.fight = null;
-    this.tool.renderStrip();
   }
 
   updateCatch(dt) {

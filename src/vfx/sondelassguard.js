@@ -21,10 +21,10 @@
 // Every spend sends a bead down the spiritual link (vfx/spirituallink.js), which this claims while it stands, its end at the lit
 // window (in the rod form, the pawl): a paid cut, a sounding, a hook's throw, the reeling. The sounding's cost is held on the tube as
 // its reserve by the angler itself (angler.js: tube.reserve('sounding', 5)), so the column's top shows it while MMB is down.
-// While it stands it REPLACES the Sondelass's old HUD: the tool strip (the forms' keys 1 2 3, the lure, the aspects' keys 4 to 0:
-// tools/sondelass/sondelass.js #toolstrip, angling/ui.js) and the string row (ui/cutlassstringrow.js #cutlassstring) are hidden by a
-// body class (`sondelass-guard`), the same frame. Keys stay bound and unmarked (OVERLAY.md 18). It reads, never drives: the belt, the
-// form, the moveset's string and place and paid cut, the angler, the hookshot.
+// It is the Sondelass's only UI: the old tool strip (the forms, the lure, the aspects) and the cutlass's string row were retired, not
+// hidden (the owner, 2026-10-18). Keys stay bound and unmarked (OVERLAY.md 18): the forms' 1 2 3 (sondelass.js), the lure's - = and the
+// aspects' 4 to 0 (angling/angler.js). It reads, never drives: the belt, the form, the moveset's string and place and paid cut, the
+// angler, the hookshot.
 //
 // Prior art, as on a museum label: the mock (Calissa's board v9, r9-sondelass); the tsuba and its sukashi windows; the cutlass and
 // the naval sabre's broad curved blade and knuckle bow; the tenkara rod; a ship's grapnel and capstan; Monster Hunter's switch axe and
@@ -34,7 +34,7 @@
 //
 //   game.sondelassGuard = new SondelassGuard(game)   (main.js, after the tube and the link; it updates itself in the overlay's scene)
 //   .state -> { shown, form, morph, string: { n, lit, next, cutOpen, branch }, ring: { sel, open, cool, echoes }, hook: { d, kind, out } }
-//   .standing (the old HUD is hidden while true)
+//   .standing (a Sondelass form is in the hands)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SHOWN, aspectKnown } from '../tools/sondelass/angling/species.js';
@@ -57,10 +57,9 @@ const C01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const sm = (t) => { t = C01(t); return t * t * (3 - 2 * t); };
 const oB = (t, s = 1.70158) => { t = C01(t) - 1; return 1 + t * t * ((s + 1) * t + s); };
 const lerp = (a, b, t) => a + (b - a) * t;
-/** What a blow does to a body, for its notch's shape: its catalogue row's effect, else a knock if it throws (push 6 m/s or more), as the string row reads it. */
+/** What a blow does to a body, for its notch's shape: its catalogue row's effect, else a knock if it throws (push 6 m/s or more), as the melee loadout's catalogue says it. */
 const effOf = (M, id) => { const row = M.catalogueRow(id); return row?.effect || ((M.def(id)?.hit?.push ?? 0) >= 6 ? 'knock' : 'stagger'); };
 const LURE_SHAPE = { bob: 'ball', eye: 'ball', bell: 'ball', fly: 'star', spoon: 'spoon', tear: 'tear' };
-const CSS = 'body.sondelass-guard #toolstrip, body.sondelass-guard #cutlassstring { display: none !important; }';
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _fw = new THREE.Vector3(), _film = [0, 0, 0];
 
 export class SondelassGuard {
@@ -78,7 +77,6 @@ export class SondelassGuard {
     this.state = { shown: false, form: null, morph: false, string: null, ring: null, hook: null };
     this.endFn = (out) => this.linkEnd(out);
     if (!this.S0) return;
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     this.build();
     this.slot = this.S0.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
     const ev = game.events;
@@ -125,8 +123,7 @@ export class SondelassGuard {
   // ---------------------------------------------------------------- each frame it may be drawn
   update(dt, slot) {
     const g = this.game, root = this.root, B = document.body.classList, tool = this.tool();
-    const standing = !!tool;
-    if (standing !== this.standing) { this.standing = standing; B.toggle('sondelass-guard', standing); } // (the old strip and string row give way, the same frame)
+    const standing = (this.standing = !!tool);
     const allowed = standing && !g.title?.active && !g.emocean?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();

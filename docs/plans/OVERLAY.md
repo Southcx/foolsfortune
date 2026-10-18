@@ -323,9 +323,13 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
   with the other divisions.
 - **Signed off on board v9 (the owner, 2026-10-18: "You guys totally smashed the brief"), built in game:** the spiritual link
   (`SpiritualLink`, vfx/spirituallink.js: one thread from the tube's bulb to whichever tool UI claims it; the tube stands while one
-  does), the cylinder (`PsygunCylinder`, vfx/psyguncylinder.js; it hides the shells row), the Sondelass's guard (`SondelassGuard`,
-  vfx/sondelassguard.js; it hides the tool strip and the string row), and the variants' models (`PsygunModels`, vfx/psygunmodels.js:
-  the Bombardier a flare gun, the Carbine a rifle, the Pepperbox a shotgun, from the owner's Pentagun, scripts/export_psyguns.py).
+  does), the cylinder (`PsygunCylinder`, vfx/psyguncylinder.js), the Sondelass's guard (`SondelassGuard`, vfx/sondelassguard.js),
+  and the variants' models (`PsygunModels`, vfx/psygunmodels.js: the Bombardier a flare gun, the Carbine a rifle, the Pepperbox a
+  shotgun, from the owner's Pentagun, scripts/export_psyguns.py). **The old DOM pieces they replace are retired, not hidden** (the
+  owner, 2026-10-18: "why is it not being fully retired now that we have updated UI elements?"): the shells row (#shells), the
+  Sondelass's tool strip (#toolstrip) and the cutlass's string row (#cutlassstring), the flat Lachrimeter in the LACHRYMA panel (its
+  frame and word too: the panel keeps the Blink's beads and the cubes, unframed), and the old compass dial (#compass, the Sight's).
+  Their elements, builders, CSS and update code are deleted; the keys stay bound (section 18).
 - **The blade is a sabre, not a katana** (the owner, 2026-10-18: "a little wider and curved like a sabre or cutlass, rather than too
   katana-coded").
 - **The UI has a left hand and a right hand** (the owner, 2026-10-18: "I split it into a 'Left hand' and 'Right hand' side"). A tool

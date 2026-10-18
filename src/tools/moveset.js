@@ -115,7 +115,7 @@
 //   M.idle(dt) (once a frame the tool is not read: the Sondelass's rod or hook form; the string's window still runs out)
 //   M.stringPlace() -> { next, struck, len, branch } (the string's place, a pause string's too, read)   M.paidCutOpen(also) -> bool (a press now would be the paid cut, read)
 //   M.catalogueRow(id) (a slot's move as data)
-//     (both read, never driven: the cutlass's string row, ui/cutlassstringrow.js, asks the engine so it never says other than it does)
+//     (both read, never driven: the Sondelass's guard, vfx/sondelassguard.js, asks the engine so it never says other than it does)
 //   spec.ghosts: an Afterimages the tool ticks itself (the engine keeps its own otherwise)
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
 //   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)

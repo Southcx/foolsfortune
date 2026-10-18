@@ -117,7 +117,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   special round in a chamber. → detail
 - **a psygun's variant / the cylinder** (the owner's names, 2026-10-18; `PSYGUNS`, `tools/psygun/kinds.js`; OVERLAY.md 18) — by chamber count: THE PSYGUN (6), the Bombardier (1), the Carbine (3), the Pentagun (5), the Pepperbox (7: six round a heart) / the chambers drawn as a revolver's cylinder, its shape its count, turned by the wheel (`PsygunCylinder`, `game.psygunCylinder`, `src/vfx/psyguncylinder.js`; a variant's model: `PsygunModels`, `src/vfx/psygunmodels.js`, `scripts/export_psyguns.py`). *Not:* a caster shell, a mount.
 - **the spiritual link** (the owner's words, 2026-10-18; `SpiritualLink`, `game.spiritualLink`, `src/vfx/spirituallink.js`) — the thread of the film from the Lachrimeter's bulb to the tool UI in hand: a spend runs down it as a bead, a dry click slackens it. *Not:* the link ring (the trick combo's), the tube's feed.
-- **the Sondelass's guard / the lure ring** (working names, Espada's to rule; `SondelassGuard`, `game.sondelassGuard`, `src/vfx/sondelassguard.js`) — the Sondelass's own UI: its guard with three windows, the form in hand growing out of it (the cutlass's string on its edge) / the seven feelings round the lure in the rod form, turned by the wheel or MMB held. Always "the Sondelass's guard" in full. *Not:* the guard (the held block), the string row (which it hides).
+- **the Sondelass's guard / the lure ring** (working names, Espada's to rule; `SondelassGuard`, `game.sondelassGuard`, `src/vfx/sondelassguard.js`) — the Sondelass's own UI: its guard with three windows, the form in hand growing out of it (the cutlass's string on its edge) / the seven feelings round the lure in the rod form, turned by the wheel or MMB held. Always "the Sondelass's guard" in full. *Not:* the guard (the held block).
 - **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
   field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
 - **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
@@ -161,9 +161,6 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   its strike past, that pays Lachryma for the next move at once. *Not:* a cancel, nor the free recovery cut. → detail
 - **the melee loadout** (working name, Espada's and the owner's to rule; `SONDELASS_LOADOUT`, `SONDELASS_MOVES`, `sondelass/sondelassloadout.js`) —
   the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
-- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`) — the melee loadout's string as pips at the bottom middle while the
-  cutlass is drawn: the next LMB's lit gold, the pause string's row over it, the oil film's glint while the paid cut is open. *Not:* the slot
-  row, Strawman's attack strings; its pause string's row is never "the fork" (the Dreamvane's). → detail
 - **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`) — the ring on the point the hook would bite, within its reach, while the hook form is
   in hand; brackets close on it for a catch. *Not:* the chevron, the lock-on reticle. → detail
 - **a guard break** (`hit.guardBreak`, `breakGuard()`, `tools/moveset.js`) — a blow that opens a guard (Strawman's) for a beat and lands
@@ -614,8 +611,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the siphons' look** (`RacewaySiphons`, `game.racewaySiphons`, `src/vfx/racewaysiphons.js`) — a siphon dressed: a tarnished ruin arch, a
   mouth in its keystone with a vortex turning in it, Lachryma drawn up into it; at a drink, the pull off the board. *Not:* the siphons (Dovina's).
 - **the bazaar hall's dress** (`BazaarHall`, `game.bazaarHall`, `src/vfx/bazaarhall.js`) — Raku's bazaar dressed as the Gold Saucer on clay: the dome, the mosaic, the stalls, the neon bands, the lanterns, the gate, the wheel of fortune, the carousel. *Not:* the bazaar (Dovina's room), a table's cloth.
-- **the held stretch** (`drawHeld`, `src/ui/lachrimeter.js`) — the end of the Lachrimeter's tube a cap on the pool holds off, in its source's
-  look (the cracks: dull crazed glass, the clay's cracks in it). *Not:* the reserve (a charge's, paler).
+- **the held stretch** (`LachrimeterTube`, `src/vfx/lachrimetertube.js`) — the top of the Lachrimeter's tube's bore a cap on the pool holds off,
+  in its source's look (the cracks: crazed glass, the clay's cracks in it, a cracked clay seal at the cap line). *Not:* the pale stretch (a charge's).
 - **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
   laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
@@ -749,3 +746,4 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | title toast | the title placard (the owner, 2026-10-17) | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
+| the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |

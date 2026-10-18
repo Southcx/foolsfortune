@@ -17,8 +17,10 @@
 //   the LACHRYMATO BOTTLES behind and left (worn at the back: progress/brushload.js): below half the valve opens and the bottle drips
 //                   down the feed tube into the bulb; a bottle drains as it feeds (two avenues for the pool: OVERLAY.md 9)
 // The plinth is clay glazed in the window colour (ui/theme.js: 15.3, the window colour is the glaze of the frame's matter), with
-// patinated brass. It stands while the DOM Lachrimeter would (feedback/hud.js's rule: not full, held for a charge, or moved in the last
-// four real seconds) and sinks into the corner when it would not; while it stands the DOM tube steps aside (ui/lachrimeter.js).
+// patinated brass. It stands at the corner's foot while the pool is doing something (not full, held for a charge, or moved in the last
+// four real seconds; the LACHRYMA panel's rule, feedback/hud.js) and sinks into the corner when it is not. It is the only Lachrimeter:
+// the old flat DOM tube was retired (the owner, 2026-10-18). It publishes its width as --lachrimeter-tube-w (the panel and the
+// psygun's cylinder stand left of it: index.html, vfx/psyguncylinder.js `pubW`).
 //
 // Prior art: the mercury-in-glass thermometer (Fahrenheit, 1714; the clinical and laboratory forms: the bulb as reservoir, the
 // capillary bore, the convex meniscus, the expansion chamber, acid-etched ticks; the Victorian wall thermometer's board and brass);
@@ -34,7 +36,6 @@ import { capOf } from '../progress/poolcaps.js';
 import { BOTTLES } from '../progress/brushload.js';
 import { T } from '../core/config.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
-import { stepAside } from '../ui/lachrimeter.js';
 
 // the instrument's own units (the mock's): the bulb at the origin, the scale from Y0 (empty) to Y1 (full), the plate behind
 const Y0 = 0.55, Y1 = 3.55, yOf = (p) => Y0 + (Y1 - Y0) * p;
@@ -368,14 +369,9 @@ export class LachrimeterTube {
   update(dt, slot) {
     const g = this.game, pool = g.lachryma, root = this.root;
     const allowed = !!pool && !g.title?.active && !g.god?.controlling && !document.body.classList.contains('bztable-seated');
-    stepAside(allowed);
-    if (this.standing !== this.bodyStanding) { // (while the tube stands, the HUD's old LACHRYMA panel gives up its frame and its word: only the beads it holds remain)
-      this.bodyStanding = this.standing; document.body.classList.toggle('tube-standing', this.standing);
-      if (!document.getElementById('tubestanding')) { const st = document.createElement('style'); st.id = 'tubestanding'; st.textContent = 'body.tube-standing #lachryma { border-image: none !important; border-color: transparent !important; background: none !important; } body.tube-standing #lachryma .lab, body.tube-standing #lachryma .bar:not(.pxbar) { display: none !important; }'; document.head.appendChild(st); }
-    }
     if (!allowed) { this.shown = 0; root.userData.overlayHidden = true; return; }
     this.t += dt;
-    // shown as the DOM Lachrimeter is (hud.js): not full, held for a charge, or moved in the last few real seconds
+    // shown while the pool is doing something: not full, held for a charge, or moved in the last few real seconds
     let held = 0; for (const v of this.holds.values()) held += v; // (what the tool in hand would cost, shown before it is spent: reserve())
     const avail = pool.available, reserved = pool.reserved, max = pool.max, shownHeld = Math.min(held, avail); // (a hold is still in the pool: it pales the column's top, it does not lengthen it)
     if (Math.abs(avail - this.lastAvail) > 0.01 || reserved > 0 || held > 0) { this.lastAvail = avail; this.quiet = 0; }
@@ -389,13 +385,9 @@ export class LachrimeterTube {
 
     // where it stands (CSS px), and how big: 32 lines a unit at the 480-line present
     const H = slot.view.h || innerHeight, lineP = H / 480, s = LINES * lineP, e = this.shown * this.shown * (3 - 2 * this.shown);
-    if ((this.shellsT = (this.shellsT || 0) - dt) <= 0) { // (the psygun's shells hold the corner's foot: the tube stands on top of them while they show)
-      this.shellsT = 0.5; const el = document.getElementById('shells'), r = el?.getBoundingClientRect();
-      this.lift = r && r.height > 0 && getComputedStyle(el).opacity !== '0' ? innerHeight - r.top + 6 : 0;
-      const w = Math.round(WIDE * s + 12); if (w !== this.pubW) { this.pubW = w; document.documentElement.style.setProperty('--lachrimeter-tube-w', `${w}px`); }
-    }
+    { const w = Math.round(WIDE * s + 12); if (w !== this.pubW) { this.pubW = w; document.documentElement.style.setProperty('--lachrimeter-tube-w', `${w}px`); } } // (its width, for what stands left of it)
     slot.x = -(CLEAR + RIGHT * s);
-    slot.y = -(this.lift + GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP + this.lift); // (it sinks into the corner as it steps back)
+    slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it stands at the corner's foot, and sinks into the corner as it steps back)
     this.inst.scale.setScalar(s);
 
     // the numbers: the tube is the pool's uncapped size, the column the pool, the pale stretch what a charge holds

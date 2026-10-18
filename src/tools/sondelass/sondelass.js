@@ -54,18 +54,6 @@ export const FORMS = [
   { id: 'hook', name: 'HOOK', glyph: '⚓', ext: 0.32, blade: 0 },
 ];
 
-const CSS = `
-#toolstrip { position: absolute; right: 24px; bottom: calc(20px + var(--cine, 0vh)); display: none; gap: 6px; align-items: flex-end; }
-#toolstrip.on { display: flex; }
-#toolstrip .slot { width: 46px; height: 46px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.3); background: rgba(28,13,8,.45); border-radius: 4px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .7; }
-#toolstrip .slot i { font-style: normal; font-size: 16px; line-height: 1; }
-#toolstrip .slot span { font-size: 8px; letter-spacing: .08em; margin-top: 3px; }
-#toolstrip .slot b { position: absolute; top: 2px; right: 4px; font-size: 9px; color: var(--accent); font-weight: normal; }
-#toolstrip .slot.sel { opacity: 1; border-color: var(--accent); background: rgba(196,106,69,.35); transform: translateY(-4px); }
-#toolstrip .gap { width: 14px; }
-#toolstrip .slot.asp { width: 36px; height: 36px; }
-`;
 
 export class Sondelass extends Tech {
   constructor(mgr) {
@@ -90,9 +78,6 @@ export class Sondelass extends Tech {
     this.hookshot = new Hookshot(this);
     this.angler = new Angler(this);
     this.toolIn = null;
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-    const el = (this.strip = document.createElement('div')); el.id = 'toolstrip';
-    document.getElementById('hud')?.appendChild(el);
   }
 
   // ---------------------------------------------------------------- what the rest of the game asks
@@ -116,7 +101,6 @@ export class Sondelass extends Tech {
     this.form = id;
     sfx.telescope(id === 'rod');
     this.game.events?.emit('sondelass.form', { form: id });
-    this.renderStrip();
   }
 
   /** Every tech reset (course.teleport, a fall out of the world: courier/moves/techs.js reset()): the Courier set down by no move of their
@@ -164,10 +148,10 @@ export class Sondelass extends Tech {
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
     if (this.drawTarget === 0 && this.hookshot.att) this.hookshot.release('stow'); // (put away with a line out: it comes away)
     if (this.drawTarget === 0 && this.cutlass.moves.cur) this.cutlass.cancel(); // (put away mid-stroke: the stroke ends now, not frozen until the holster)
-    if (this.drawT > 0.02 && !this.wasOut) { sfx.toolDraw(); this.wasOut = true; this.game.events?.emit('sondelass.draw', {}); this.renderStrip(); }
+    if (this.drawT > 0.02 && !this.wasOut) { sfx.toolDraw(); this.wasOut = true; this.game.events?.emit('sondelass.draw', {}); }
     if (this.drawT <= 0.02 && this.wasOut) {
       this.wasOut = false; sfx.holster?.(); this.cutlass.cancel(); this.hookshot.cancel(); this.angler?.stow();
-      this.game.events?.emit('sondelass.stow', {}); this.renderStrip();
+      this.game.events?.emit('sondelass.stow', {});
     }
     const held = this.held;
     // the forms: the sections slide, the blade comes out
@@ -189,9 +173,6 @@ export class Sondelass extends Tech {
     if (held && this.form === 'hook') this.hookshot.update(dt, inp);
     this.hookshot.tickFlight?.(dt);
     if (this.form === 'rod' || this.angler?.lure) this.angler?.update(dt, inp, held && this.form === 'rod');
-    this.strip.classList.toggle('on', this.drawT > 0.02);
-    const shells = document.getElementById('shells');
-    if (shells) shells.style.display = this.drawT > 0.02 ? 'none' : '';
     // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
     const ch2 = this.game.character;
     this.model.group.visible = g.belt?.isWorn('sondelass') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible()); // (in the box: not on them)
@@ -200,14 +181,6 @@ export class Sondelass extends Tech {
 
   /** The tool is always on the back unless it is in the hand. */
   stowedVisible() { return this.enabled && !this.game.god?.active; }
-
-  // ---------------------------------------------------------------- HUD
-  renderStrip() {
-    const s = this.strip;
-    if (!s) return;
-    const forms = FORMS.map((f, i) => `<div class="slot${f.id === this.form ? ' sel' : ''}"><i>${f.glyph}</i><span>${f.name}</span><b>${i + 1}</b></div>`).join('');
-    s.innerHTML = forms + (this.angler ? this.angler.stripHtml(this.form === 'rod') : '');
-  }
 
   // ---------------------------------------------------------------- animation: the right arm's clip layer
   animate(ch, base, dt) {

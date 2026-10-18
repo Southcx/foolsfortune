@@ -108,7 +108,7 @@ import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
 import { RacewayFog } from './vfx/racewayfog.js';
 import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
-import { RacewaySiphons } from './vfx/racewaysiphons.js'; import { watchPoolCaps } from './ui/lachrimeter.js'; // (the siphon arches' look; the Lachrimeter's capped stretch)
+import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
@@ -178,7 +178,6 @@ import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
-import { CutlassStringRow } from './ui/cutlassstringrow.js';
 import { HookMark } from './vfx/hookmark.js';
 import { VeritomeFrame } from './vfx/veritomeframe.js';
 import { TollReach } from './vfx/tollreach.js';
@@ -593,7 +592,7 @@ async function main() {
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
-  game.cutlassStringRow = new CutlassStringRow(game, px); game.hookMark = new HookMark(game); // (the Sondelass's own UI: the cutlass's string row, the hook's mark)
+  game.hookMark = new HookMark(game); // (the hook's mark: vfx/hookmark.js)
   game.lockheartMarks = new LockheartMarks(game); game.carryThrowMark = new CarryThrowMark(game); // (the Lockheart's gauge and its hoover's reach; where a carried thing would land: vfx/lockheartmarks.js, vfx/carrythrowmark.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
@@ -601,7 +600,6 @@ async function main() {
   game.baubles = baubles;
   const shells = new Shells(game);
   game.shells = shells;
-  hud.buildShells(shells.types); // (the chambers of the psygun they carry: tools/psygun/kinds.js)
   game.psygunModels = new PsygunModels(game); // (the psygun carried drawn as its variant: the Bombardier, the Carbine, the Pepperbox; vfx/psygunmodels.js)
   game.input = input;
   input.onSpend = (code) => { if (player.latches[code] > 0) player.latches[code] = 0; if (code === 'ShiftLeft' || code === 'ShiftRight') player.latches.Dodge = 0; }; // (a spent press is spent for the body too: core/input.js spend)
@@ -786,7 +784,7 @@ async function main() {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
-  game.skiffParts = new SkiffParts(game); game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); watchPoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
+  game.skiffParts = new SkiffParts(game); game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
   // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
   const makeRig = async () => { // (another Courier's rig: a sibling's or a guest's, its model parsed when it comes, never at boot)
     const [cG, gG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
@@ -1347,7 +1345,7 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: shells.types, selected: shells.selected, counts: shells.counts },
+      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma,
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
@@ -1367,7 +1365,7 @@ async function main() {
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
     (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
-    game.cutlassStringRow.update(game.rawDt ?? dt); game.hookMark.update(game.rawDt ?? dt); // (the Sondelass's own UI, while its form is in the hands)
+    game.hookMark.update(game.rawDt ?? dt); // (the hook's mark, while the hook form is in the hands)
     (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
     (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
     game.bracelets.update(game.rawDt ?? dt); // (the bracelet's glow: vfx/braceletwear.js)

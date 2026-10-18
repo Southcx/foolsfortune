@@ -14,7 +14,7 @@
 // zone. The more of a place you have walked and surveyed, the more you can do in it, and the
 // higher its tier, the deeper the arts that work there.
 //
-// Also here: the compass (top right: a dial with the local map, heading, room, waypoint) and the
+// Also here: the
 // map screen (M; drag to pan, wheel to zoom, click to set a waypoint, right click to clear it).
 // Ariadne's Thread (a knack, progress/knacks.js): the way walked since the last Shrine rested at, a point every 3 m, a loop cut off
 // where the way crosses itself (so it is the way back, not the way wandered), drawn on the map from you to that Shrine; switched off,
@@ -24,7 +24,7 @@
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
-import { FONT, THEMES, theme } from '../ui/theme.js';
+import { FONT } from '../ui/theme.js';
 import { zoneOf } from '../render/zonemap.js';
 
 export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
@@ -46,13 +46,6 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const staticOnly = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 
 const CSS = `
-#compass { position: absolute; right: 24px; top: 18px; width: 150px; text-align: center; pointer-events: none; font-size: 10px; letter-spacing: .12em; }
-#compass canvas { width: 150px; height: 150px; display: block; }
-#compass { text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
-#compass .brg { font: 16px var(--f-sys); color: #fff1dc; letter-spacing: .04em; margin-top: 0; }
-#compass .rm { opacity: .9; margin-top: 2px; text-transform: uppercase; font: 600 10px var(--f-title); letter-spacing: .14em; }
-#compass .wp { color: var(--accent); margin-top: 2px; min-height: 12px; }
-#compass .hint { opacity: .5; margin-top: 3px; }
 #mapui { position: fixed; inset: 0; z-index: 9; display: none; background: rgba(20,9,6,.9); cursor: grab; user-select: none; font-size: 12px; letter-spacing: .08em; }
 #mapui.open { display: block; }
 #mapui canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -88,7 +81,6 @@ export class Cartography {
     this.view = { layer: 'ground', x: 0, z: 0, scale: 6, follow: true };
     this.stats = { charted: 0, understood: 0 };
     this.load();
-    this.buildHud();
     this.buildMap();
     this.buildPulseFx();
   }
@@ -130,13 +122,12 @@ export class Cartography {
   /** Raise a cell's knowledge (never lowers it). Returns true if it crossed into a new tier. */
   learn(l, ix, iz, k, wall, h) {
     const c = this.cell(l, ix, iz, true);
-    const before = Cartography.tierOfK(c.k), hadWall = c.w, wasShown = c.k >= 0.05;
+    const before = Cartography.tierOfK(c.k);
     if (k > c.k) c.k = Math.min(1, k);
     if (wall) c.w = 1;
     if (h !== undefined && !c.h) c.h = h;
     if (c.k > 0.02) this.dirty = true;
     const after = Cartography.tierOfK(c.k);
-    if (after !== before || c.w !== hadWall || (c.k >= 0.05) !== wasShown) this.known = (this.known || 0) + 1; // (what the dial draws changed: its key, below)
     if (after > before) {
       if (after >= 2 && before < 2) this.stats.charted++;
       if (after >= 3 && before < 3) this.stats.understood++;
@@ -192,7 +183,7 @@ export class Cartography {
     this.tickT -= dt;
     if (this.tickT <= 0) { this.tickT = 0.16; this.passive(0.16); this.spool(P.pos); }
     if (this.dirty && (this.saveT -= dt) <= 0) { this.saveT = 6; this.save(); }
-    this.updateHud(dt);
+    this.headYaw = g.god?.controlling ? g.god.cam.yaw + Math.PI : P.yaw; // (the view's own facing: the map's arrow)
     if (this.open) this.drawMap();
   }
 
@@ -379,7 +370,7 @@ export class Cartography {
   }
 
   /** Forget one layer's cells (a Well's floors are laid out afresh each day: world/well/dunemaw.js clears its layer on every run). */
-  clear(layerId) { this.cells[layerId]?.clear(); this.known = (this.known || 0) + 1; }
+  clear(layerId) { this.cells[layerId]?.clear(); }
   /** How much of the ground inside `rects` ([{ x0, z0, x1, z1 }], world metres) on a layer is CHARTED or better, 0..1. */
   share(layerId, rects) {
     const l = LAYER_BY_ID[layerId], t = T.zoi.tiers[1];
@@ -402,86 +393,6 @@ export class Cartography {
 
   /** After the anchors are in: the ones already mapped in an earlier session. */
   restoreAnchors() { if (this.doneTags) for (const a of this.anchors) if (this.doneTags.has(a.tag)) { a.done = true; a.cov = 1; } }
-
-  // ------------------------------------------------------------------ the compass
-  buildHud() {
-    const st = document.createElement('style');
-    st.textContent = CSS;
-    document.head.appendChild(st);
-    const box = el('div');
-    box.id = 'compass';
-    this.dial = document.createElement('canvas');
-    this.dial.width = this.dial.height = 300;
-    this.dialCtx = this.dial.getContext('2d');
-    this.dEl = { brg: el('div', 'brg'), rm: el('div', 'rm'), wp: el('div', 'wp'), hint: el('div', 'hint', '') }; // (no key help on the HUD: the Codex and the log say it)
-    box.append(this.dial, this.dEl.brg, this.dEl.rm, this.dEl.wp, this.dEl.hint);
-    document.getElementById('hud').appendChild(box);
-    this.compassEl = box;
-  }
-
-  /** North is -Z (the workshop's long axis runs that way): bearing 0 = facing -Z, clockwise. */
-  static bearing(yaw) { return ((((Math.PI - yaw) * 180 / Math.PI) % 360) + 360) % 360; }
-
-  updateHud() {
-    const g = this.game, P = g.player;
-    if (g.god?.controlling) { this.headYaw = g.god.cam.yaw + Math.PI; } // (the view's own facing)
-    else this.headYaw = P.yaw;
-    const brg = Cartography.bearing(this.headYaw);
-    const room = this.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
-    const l = this.layerOf(P.pos);
-    const card = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(brg / 45) % 8];
-    this.dEl.brg.textContent = `${card} ${String(Math.round(brg)).padStart(3, '0')}°`;
-    this.dEl.rm.textContent = `${l.name}${room && room.name !== l.name ? ` · ${room.name}` : ''}`;
-    if (this.waypoint && this.waypoint.layer === l.id) {
-      const d = Math.hypot(this.waypoint.x - P.pos.x, this.waypoint.z - P.pos.z);
-      this.dEl.wp.textContent = `◆ ${d < 1000 ? Math.round(d) : (d / 1000).toFixed(1) + 'k'} m`;
-    } else this.dEl.wp.textContent = this.waypoint ? `◆ on another layer (${LAYER_BY_ID[this.waypoint.layer].name.toLowerCase()})` : '';
-    // (the wire compass (vfx/wirecompass.js) is the compass while it is up: the dial steps aside for it; the map is still M. The Sight
-    //  (vfx/sight.js) replaces the dial while it stands: needle, place plate, the hour)
-    this.compassEl.style.display = g.god?.controlling || g.wireCompass?.visible || g.sightLook?.standing ? 'none' : '';
-    if (this.compassEl.style.display !== 'none') {
-      // (drawn again only when what it shows has moved: half a degree of turn, a quarter metre of ground, another waypoint or window
-      //  colour, or more of the ground known. A canvas redrawn every frame for nothing waits on the GPU in some browsers (R41))
-      const q = (v, k) => Math.round(v / k);
-      const key = `${q(this.headYaw ?? 0, 0.009)}|${q(brg, 0.5)}|${q(P.pos.x, 0.25)}|${q(P.pos.z, 0.25)}|${l.id}|${this.waypoint ? `${this.waypoint.x},${this.waypoint.z},${this.waypoint.layer}` : ''}|${theme.id}|${this.known ?? ''}`;
-      if (key !== this.dialKey) { this.dialKey = key; this.drawDial(P, l, brg); }
-    }
-  }
-
-  drawDial(P, l, brg) {
-    const c = this.dialCtx, S = 300, r = 138, cx = S / 2, cy = S / 2;
-    c.clearRect(0, 0, S, S);
-    c.save();
-    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.clip();
-    c.fillStyle = 'rgba(28,13,8,.62)'; c.fillRect(0, 0, S, S);
-    // the local map, turned so that the way you face is up
-    const scale = l.id === 'dunes' ? 1.5 : 7; // px per metre
-    c.translate(cx, cy);
-    c.rotate((this.headYaw ?? 0) - Math.PI); // (the way you face is up)
-    this.paint(c, l, P.pos.x, P.pos.z, scale, S, { cellsOnly: true });
-    c.restore();
-    // the ring (the windows' bevel, ui/theme.js: dark, light to mid, dark), the cardinals, the you
-    const TH = THEMES[theme.id], ring = (w, st, rr = r) => { c.strokeStyle = st; c.lineWidth = w; c.beginPath(); c.arc(cx, cy, rr, 0, Math.PI * 2); c.stroke(); };
-    const bev = c.createLinearGradient(cx - r, cy - r, cx + r, cy + r); bev.addColorStop(0, TH.hi); bev.addColorStop(1, TH.mid);
-    ring(10, TH.lo, r + 2); ring(5, bev, r + 2); ring(1.5, TH.lo, r - 1.5);
-    c.font = `600 22px ${FONT.title}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    for (const [ch, ang] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
-      const a = (ang - brg) * Math.PI / 180;
-      c.fillStyle = ch === 'N' ? '#ff9a6a' : 'rgba(251,227,207,.8)';
-      c.fillText(ch, cx + Math.sin(a) * (r - 16), cy - Math.cos(a) * (r - 16));
-    }
-    // waypoint
-    if (this.waypoint && this.waypoint.layer === l.id) {
-      const dx = this.waypoint.x - P.pos.x, dz = this.waypoint.z - P.pos.z;
-      const worldAng = Math.atan2(dx, -dz) * 180 / Math.PI; // bearing of the waypoint
-      const a = (worldAng - brg) * Math.PI / 180;
-      const dd = Math.min(r - 30, Math.hypot(dx, dz) * scale);
-      c.fillStyle = '#ffe0a0';
-      c.save(); c.translate(cx + Math.sin(a) * dd, cy - Math.cos(a) * dd); c.rotate(Math.PI / 4); c.fillRect(-6, -6, 12, 12); c.restore();
-    }
-    c.fillStyle = '#fff1dc';
-    c.beginPath(); c.moveTo(cx, cy - 12); c.lineTo(cx + 8, cy + 9); c.lineTo(cx, cy + 4); c.lineTo(cx - 8, cy + 9); c.closePath(); c.fill();
-  }
 
   /** Paint the known cells of a layer around (x0, z0) into a context whose origin is the view's centre. */
   paint(c, l, x0, z0, scale, S, { cellsOnly = false, halfW = S / 2, halfH = S / 2, rotated = true } = {}) {

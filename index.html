@@ -26,43 +26,13 @@
     #charge .arc { stroke: var(--accent); stroke-dasharray: 100; stroke-dashoffset: 100; }
     #charge.full .arc { stroke: #fff1dc; animation: pulse .25s infinite alternate; }
     @keyframes pulse { to { stroke-width: 4; } }
-    /* the HUD wears the windows' frame (src/ui/theme.js): a status plate, a palette of shells, the System's numerals */
-    /* (while the Lachrimeter's tube stands in the corner (vfx/lachrimetertube.js), the panel's count, beads and cubes step left by the width
-       it publishes as --lachrimeter-tube-w: 0 until it does) */
-    #lachryma.tubeaside { right: calc(18px + var(--lachrimeter-tube-w, 0px)) !important; }
-    #lachryma { position: absolute; right: 18px; bottom: calc(94px + var(--cine, 0vh)); width: 284px; box-sizing: border-box; padding: 2px 6px 4px; border: 12px solid transparent;
-      border-image: var(--jframe) 14 / 12px / 0 stretch; border-radius: 8px; background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .84)) border-box;
-      text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
-    #lachryma .lab { font: 600 12px var(--f-title); letter-spacing: .2em; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; color: var(--accent); }
-    #lachryma .num { font: 16px var(--f-sys); letter-spacing: 0; color: #fff1dc; }
-    #lachryma .bar { position: relative; height: 9px; background: linear-gradient(180deg, #0c0503, #2a140d); border: 1px solid rgba(0,0,0,.7); border-radius: 2px; overflow: hidden;
-      box-shadow: 0 1px 0 rgba(255,241,220,.18), inset 0 1px 2px rgba(0,0,0,.8); }
-    #lachryma .fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(180deg, #fffaf0 0 38%, #f3cfa9 40%, #d9986a); box-shadow: 0 0 8px rgba(255,178,122,.8); transition: width .12s; }
-    #lachryma .fill::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, #9ff7ea, #b48cff, #ff9ad5, #ffd27a); opacity: .9; }
-    #lachryma .res { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #ffb27a 0 4px, #c46a45 4px 8px); opacity: .9; }
-    #lachryma.low .fill { background: #c46a45; box-shadow: none; }
-    #lachryma .bar.pxbar { height: auto; background: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; display: flex; justify-content: center; }
-    #lachryma .num canvas { display: inline-block; vertical-align: middle; }
-    #lachryma .lab .beads { margin-left: auto; margin-right: 10px; align-self: center; }
-    #lachryma.gain .bar { animation: lgain .35s ease-out; }
-    #lachryma.deny .bar { animation: ldeny .3s; border-color: #ff7a4a; }
-    @keyframes lgain { 0% { box-shadow: 0 0 0 #fff1dc; } 30% { box-shadow: 0 0 16px #fff1dc; transform: scaleY(1.4); } 100% { box-shadow: 0 0 0 #fff1dc; } }
-    @keyframes ldeny { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
-    #shells { position: absolute; right: 18px; bottom: calc(18px + var(--cine, 0vh)); display: flex; gap: 5px; transition: opacity .35s, transform .35s; }
-    #shells.stowed { opacity: 0; transform: translateY(10px); }
-    #shells .slot { width: 48px; height: 50px; box-sizing: border-box; border: 1px solid var(--jmid); background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .85)); border-radius: 5px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 2px 4px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .78;
-      text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
-    #shells .slot i { font-style: normal; font-size: 17px; line-height: 1; margin-top: 4px; }
-    #shells .slot span { font: 700 7.5px var(--f-ui); letter-spacing: .04em; margin-top: 4px; white-space: nowrap; max-width: 44px; overflow: hidden; }
-    #shells .slot u { position: absolute; top: 1px; left: 4px; font: 12px var(--f-sys); text-decoration: none; opacity: .7; }
-    #shells .slot b { position: absolute; top: 1px; right: 4px; font: 12px var(--f-sys); color: var(--accent); font-weight: normal; }
-    #shells .slot.sel { opacity: 1; border-color: var(--jhi); background: linear-gradient(180deg, rgba(var(--jsel), .75), rgba(var(--jbot), .9)); transform: translateY(-4px);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 0 10px rgba(255,210,150,.35); }
-    #shells .hand { position: absolute; top: -32px; left: 0; width: 32px; height: 32px; background: var(--jglove-down) 0 0 / 32px 32px no-repeat; image-rendering: pixelated; pointer-events: none;
-      filter: drop-shadow(1px 2px 0 rgba(8,3,1,.6)); transition: transform .06s steps(2); animation: jbob .5s steps(1) infinite; }
+    /* the turned glove's bob (the dialogue's "more": npc/dialogue.js) */
     @keyframes jbob { 50% { translate: 0 2px; } }
-    #shells .slot.empty { opacity: .3; }
+    /* the LACHRYMA panel: the Blink's beads and the cubes, unframed, left of the thermometer Lachrimeter (vfx/lachrimetertube.js), which
+       publishes its width as --lachrimeter-tube-w (0 until it does) */
+    #lachryma { position: absolute; right: calc(18px + var(--lachrimeter-tube-w, 0px)); bottom: calc(94px + var(--cine, 0vh)); display: flex; flex-direction: column;
+      align-items: flex-end; gap: 4px; text-shadow: 1px 1px 0 rgba(8,3,1,.8); pointer-events: none; }
+    #lachryma .beads { margin-right: 10px; }
     #reloadbar { position: absolute; left: 50%; top: calc(50% + 40px); width: 80px; height: 3px; transform: translateX(-50%); background: rgba(28,13,8,.6); opacity: 0; }
     #reloadbar i { display: block; height: 100%; width: 0; background: var(--accent); }
     #speed { position: absolute; right: 22px; bottom: calc(210px + var(--cine, 0vh)); text-align: right; font: 500 11px var(--f-ui); letter-spacing: .08em; opacity: .8; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
@@ -129,8 +99,7 @@
     <div id="trialbig"></div>
     <div id="trialarrow"></div>
     <div id="speed"></div>
-    <div id="lachryma"><div class="lab">LACHRYMA <span class="num"></span></div><div class="bar"><div class="fill"></div><div class="res"></div></div></div>
-    <div id="shells"></div>
+    <div id="lachryma"></div>
   </div>
   <div id="overlay">
     <div class="logo"><small>a sixth-generation sandbox</small><b>Fool's Fortune</b><span>The Clay Workshop</span></div>

@@ -292,7 +292,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   0.5 real s, blade mode; let go before, **the draw cut**, one fast rising cut) and **the blink cancel** (`Moveset.blinkCancel`, on
   `move.blink`): a move let go at any frame of a blink, no recovery owed, the string's place kept (Bayonetta's dodge offset). *Not:*
   "cancel" bare, which is the opposites' (an agate).
-- **the string row** (`CutlassStringRow`, `src/ui/cutlassstringrow.js`, Calissa's; the cutlass's own UI, MELEE-LOADOUT.md section 4):
+- **the string row** (RETIRED 2026-10-18 with the old HUD: the Sondelass's guard's notches show the string now; kept as history. Was `CutlassStringRow`, `src/ui/cutlassstringrow.js`, the cutlass's own UI, MELEE-LOADOUT.md section 4):
   while the cutlass is drawn (the belt says), the melee loadout's string at the bottom middle of the screen, one **pip** a slot (4 to 8)
   threaded on a line, in the maker's pixel kit (1x, the icons' hand, palette-swapped, whole-number scaled). **The lit pip** is the slot
   the next LMB plays (gold, raised two art pixels); the slots this run has **struck** stand before it in clay, those still ahead at half

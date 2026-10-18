@@ -103,7 +103,6 @@ export class Shells {
     for (const t of SHELL_TYPES) this.counts[t.id] = Math.min(this.counts[t.id] ?? 0, this.max(t.id));
     this.selected = Math.min(this.selected, this.chambers.length - 1);
     this.saveGun();
-    this.game.hud?.buildShells?.(this.types);
     if (!quiet) this.game.events?.emit('psygun.change', { gun: id, chambers: [...this.chambers] });
     return true;
   }
@@ -114,7 +113,6 @@ export class Shells {
     if (at >= 0) this.chambers[at] = this.chambers[i];
     this.chambers[i] = typeId;
     this.saveGun();
-    this.game.hud?.buildShells?.(this.types);
     this.game.events?.emit('psygun.chamber', { chamber: i, shell: typeId });
     return true;
   }

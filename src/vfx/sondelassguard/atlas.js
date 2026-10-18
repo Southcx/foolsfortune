@@ -8,7 +8,7 @@
 //   the beads       each feeling's paint motif's SILHOUETTE (vfx/paintmotifs.js read as shapes, the mock's featPath): Wonder a frost
 //                   star, Mirth three dots, Desire a ripple fan, Fury a crack bolt, Gall a curd, Grief a tear, Dread a crescent; and an
 //                   outline of each for the chosen one's film; the dark seat, a plain socket with a brass lip (a known unknown)
-//   the notches     what a blow does to a body (the string row's pips, ui/cutlassstringrow.js): stagger a diamond, knock a big diamond
+//   the notches     what a blow does to a body (as the retired string row's pips drew it): stagger a diamond, knock a big diamond
 //                   with a dark core, launch a double chevron, guard break a cracked square; and each filled plain, for its glow
 //   the windows     the guard's three openwork windows: a blade slit (the cutlass), a ring of beads (the rod), a hook claw (the hook),
 //                   pale and keylined; and each filled plain, for the film when its form is in hand

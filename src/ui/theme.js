@@ -221,7 +221,7 @@ class Theme {
 /** The maker's pixel gloves (ui/pixel.js), at their NATIVE size (one art pixel to one pixel of the page: a cursor is a cursor, and is
  *  not scaled with the rest of the art), in place of the 48 px ones: the mouse's pointer and fist over the windows, the menu's
  *  pointing glove beside the chosen option (the maker's left-pointing glove, turned round to point right, at the option), and the
- *  same turned to point down (the dialogue's "more", the shells' hand). */
+ *  same turned to point down (the dialogue's "more"). */
 Theme.prototype.pixelGloves = function (px) {
   const root = document.documentElement.style;
   root.setProperty('--jcur', px.cursor('glove_point', 'clay', 6, 1, 'default', 1));
