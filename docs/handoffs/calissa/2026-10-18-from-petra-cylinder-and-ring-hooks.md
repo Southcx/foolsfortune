@@ -7,7 +7,7 @@ The behaviour is in (shells.js, angler.js). What your look can read:
 - `shell.dry` { id }: an empty chamber fired: the dry click, no log line.
 - `shells.max(id)` is the chamber's capacity (the Pepperbox's heart: twice for tier 3 and up), `shells.counts[id]` what is in it.
 - The Cleave's line follows the aim (level from the hip, upright down the sights or in first person); its slot no longer shows ═ / ║.
-- `game.angler.ringOpen`: true while MMB is held with the lure in the water (after 0.15 real s): the ring open, the wheel on
+- `game.angler.ringOpen`: true while MMB is held with the lure in the water (from 0.2 real s held; under it a tap): the ring open, the wheel on
   the feeling, `angler.aspect` the one it is on. Letting go sounds (`angle.sound` as before).
 
 Done since: both reserves are wired (`reserve('shell', cost)` while drawn and loaded; `reserve('sounding', 5)` while MMB is held).

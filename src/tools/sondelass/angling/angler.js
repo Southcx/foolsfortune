@@ -241,7 +241,7 @@ export class Angler {
       ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(SHOWN[i]); }); // (the keys follow the order shown: species.js SHOWN)
       LURE_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.cycleLure(i ? 1 : -1); });
       if (inp.wheel) {
-        if (this.lure.inWater && this.ringHeld == null) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
+        if (this.lure.inWater && !this.ringOpen) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
         else this.wheelAspect(inp.wheel > 0 ? 1 : -1);
       }
     }
@@ -373,7 +373,7 @@ export class Angler {
   }
 
   /** The ring of the seven held open round the lure (MMB held in the water): what the ring's look shows open. */
-  get ringOpen() { return this.ringHeld != null && this.ringHeld > 0.15; }
+  get ringOpen() { return this.ringHeld != null && this.ringHeld >= 0.2; } // (under 0.2 real s it is a tap: OVERLAY.md 18)
 
   /** The sounding: a pulse of the Courier's mind from the lure (wherever it is, on the surface or ten metres down), out to PING_R. */
   sound() {

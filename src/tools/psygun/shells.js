@@ -124,16 +124,20 @@ export class Shells {
   // `psygun.turn` { chamber, shell, loaded, auto } is the cylinder's beat for its look and its sound (Calissa's, Wanda's).
   select(i, auto = false) {
     if (i < 0 || i >= this.types.length || i === this.selected) return;
+    if (i === this.gun.heart && this.selected !== this.gun.heart) this.ringBefore = this.selected; // (the ring chamber the heart was turned to from)
     this.selected = i;
     if (!auto) sfx.click();
     const t = this.types[i];
     this.game.events?.emit('psygun.turn', { chamber: i, shell: t.id, loaded: this.counts[t.id] > 0, auto });
   }
   cycle(d) { const n = this.types.length; this.select((this.selected + d + n) % n); }
-  /** After a chamber's last shell the cylinder turns on by itself to the next loaded one (the revolver's action); none loaded, it stays. */
+  /** After a chamber's last shell the cylinder turns on by itself to the next loaded one (the revolver's action); none loaded, it stays.
+   *  It never turns INTO the Pepperbox's heart by itself; out of the heart it goes back to the ring chamber it left, or the next loaded. */
   turnOn() {
-    const n = this.types.length;
-    for (let k = 1; k < n; k++) { const i = (this.selected + k) % n; if (this.counts[this.types[i].id] > 0) return this.select(i, true); }
+    const n = this.types.length, heart = this.gun.heart, inHeart = this.selected === heart;
+    const loaded = (i) => i !== heart && this.counts[this.types[i].id] > 0, from = inHeart ? (this.ringBefore ?? 0) : this.selected;
+    if (inHeart && loaded(from)) return this.select(from, true);
+    for (let k = 1; k < n; k++) { const i = (from + k) % n; if (loaded(i)) return this.select(i, true); }
   }
   refill(n = T.shells.refill) {
     let got = 0;

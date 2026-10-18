@@ -15,7 +15,7 @@
 //
 //   REGIONS (names, in order)   regionOfBone(name)   new Hitboxes(character)  .nearest(point) .raycast(origin, dir) -> { region, t }
 //   new VesselDamage(game, vessel)   .hit({ point?, from?, dir?, k, why, by })   .update(dt)   .crack (Float32Array per region)
-//   .toll({ by, family? }) -> 'crack' | 'shatter'   the Caster's toll (a tier IV caster shell: docs/plans/CASTER-SHELLS.md section 2): paid in the
+//   .tollRegion() -> { region, shatter } (what the next toll would do, by release()'s own loop)   .toll({ by, family? }) -> 'crack' | 'shatter'   the Caster's toll (a tier IV caster shell: docs/plans/CASTER-SHELLS.md section 2): paid in the
 //   clay, never the pool; one of the four parts (mask, torso, arms, legs) cracked, and fired with three already cracked, it shatters
 //   .mend (Float32Array per region, 0..1: how far a mending region's cracks have turned to gold; the owner, 2026-10-04: gold where a
 //   crack mends, gone when the mend is done)
@@ -165,17 +165,33 @@ export class VesselDamage {
    *  and the way out: a region pushed past 1, or all the cracks past BREAK_AT. Returns 'crack' or 'shatter'. */
   release({ amount = PRESSURE.unit, why = 'release', by = 'courier', ...source } = {}) { // (`source`: what let it out, for the look: a toll's `family`, an epic's `domain`)
     if (this.game.death?.active) return 'shatter';
-    const n = pressureOf(amount, this.game.vessel?.look?.stones);
-    for (let u = 0; u < n; u++) {
-      let i = 0; for (let r = 1; r < REGIONS.length; r++) if (this.crack[r] < this.crack[i]) i = r;
-      const sum = this.crack.reduce((a, c) => a + c, 0) + PRESSURE.crack;
-      if (this.crack[i] + PRESSURE.crack > 1 || sum >= BREAK_AT) { this.game.death?.begin({ why, by, region: REGIONS[i] }); return 'shatter'; }
+    const n = pressureOf(amount, this.game.vessel?.look?.stones), P = this.plan(n);
+    for (const i of P.steps) {
       this.crack[i] += PRESSURE.crack; this.quiet[i] = 0; this.peak[i] = Math.max(this.peak[i], this.crack[i]);
       sfx.vesselCrack?.(this.crack[i], REGIONS[i]);
       this.game.events?.emit('vessel.crack', { region: REGIONS[i], k: +this.crack[i].toFixed(2), why, by });
     }
+    if (P.shatter != null) { this.game.death?.begin({ why, by, region: REGIONS[P.shatter] }); return 'shatter'; }
     this.game.events?.emit('vessel.release', { amount, units: n, why, ...source, by });
     return 'crack';
+  }
+  /** What `n` units of release would do, worked on a copy of the cracks: the regions cracked in turn, and the one it would shatter at.
+   *  The one loop release() and tollRegion() share, so the toll's glint never disagrees with the toll (OVERLAY.md 18). */
+  plan(n) {
+    const c = Array.from(this.crack), steps = [];
+    for (let u = 0; u < n; u++) {
+      let i = 0; for (let r = 1; r < REGIONS.length; r++) if (c[r] < c[i]) i = r;
+      const sum = c.reduce((a, x) => a + x, 0) + PRESSURE.crack;
+      if (c[i] + PRESSURE.crack > 1 || sum >= BREAK_AT) return { steps, shatter: i };
+      c[i] += PRESSURE.crack; steps.push(i);
+    }
+    return { steps, shatter: null };
+  }
+  /** The region the next toll would crack, and whether it would shatter the vessel (the toll's glint reads it; nothing changes). */
+  tollRegion() {
+    if (this.game.death?.active) return { region: null, shatter: true };
+    const P = this.plan(pressureOf(PRESSURE.unit, this.game.vessel?.look?.stones)), i = P.shatter ?? P.steps[0];
+    return { region: i == null ? null : REGIONS[i], shatter: P.shatter != null };
   }
   /** The Caster's toll: a tier IV caster shell is a release of one unit (castershells.js). Kept as a name for its callers. */
   toll({ by = 'courier', family } = {}) { return this.release({ amount: PRESSURE.unit, why: 'toll', by, ...(family ? { family } : {}) }); }
