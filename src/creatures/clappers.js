@@ -20,6 +20,7 @@ import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { stream, randDir } from '../core/rng.js';
 import { actPose, startAct } from './idleacts.js';
 import { greyTexture, greyTint, cloneTinted } from '../vfx/greytint.js';
+import { starGeometry } from '../vfx/dizzy.js';
 import clapperjarBaseB64 from '../assets/clapperjar_base.png?b64';
 const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -103,7 +104,7 @@ export class Clappers {
     // dizzy stars (hidden until stunned)
     const stars = new THREE.Group();
     for (let i = 0; i < 3; i++) {
-      const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.04, 0), this.starMat);
+      const st = new THREE.Mesh(starGeometry(0.04), this.starMat); // (the stun's own star, shared: vfx/dizzy.js)
       st.userData.a = (i / 3) * Math.PI * 2;
       stars.add(st);
     }
