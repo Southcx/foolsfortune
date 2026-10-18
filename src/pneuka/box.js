@@ -21,7 +21,7 @@
 //
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
 //   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
-//   box.wear(slot) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn, a small bottle worn half full)
+//   box.wear(slot) (a tool onto the belt; a psygun's variant into the hands: carryPsygun) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn, a small bottle worn half full)
 //   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
@@ -214,10 +214,21 @@ export class PneukaBox {
   /** Put a tool from the box on: into its place on their body (tools/belt.js); whatever was in that place comes off into this slot. */
   wear(slot) {
     const s = this.slots[slot], it = s && itemOf(s.id), belt = this.game.belt;
+    if (it?.kind === 'psygun') return this.carryPsygun(slot, it);
     if (!it || it.kind !== 'tool' || !belt) return false;
     const off = belt.wear(it.tool, { stash: false }); // (what comes off goes into this slot, below)
     if (off === false) { this.refuse(`There is no place to wear ${it.name.toLowerCase().replace('the ', 'the ')}.`, 'noplace'); return false; }
     this.slots[slot] = off ? { id: `tool.${off}` } : null;
+    this.save();
+    return true;
+  }
+  /** A psygun's variant from the box becomes the psygun you carry (its own chambers, tools/psygun/shells.js setGun); the one you carried
+   *  comes off into this slot. */
+  carryPsygun(slot, it) {
+    const S = this.game.shells, was = S?.gun?.id;
+    if (!S || was === it.id) return false;
+    if (!S.setGun(it.id)) return false;
+    this.slots[slot] = was ? { id: was } : null;
     this.save();
     return true;
   }
@@ -292,6 +303,7 @@ export class PneukaBox {
   debugKit() {
     const want = { 'heart.gambler': 1, 'heart.shepherd': 1, 'heart.summoning': 1, 'bottle.small': 1, 'bottle.medium': 1, 'bottle.large': 1 }; // (Dovina's: the Warden's, the catch; a bottle of each size)
     for (const id of Object.keys(ITEMS)) if (ITEMS[id].kind === 'key') want[id] = 3;
+    for (const id of Object.keys(ITEMS)) if (ITEMS[id].kind === 'psygun' && id !== this.game.shells?.gun?.id) want[id] = 1; // (each psygun's variant not carried)
     for (const [id, n] of Object.entries(want)) for (let k = this.held(id); k < n; k++) { if (!this.room(id)) return; this.add(id, 'debug'); } // (never onto the floor)
   }
 }

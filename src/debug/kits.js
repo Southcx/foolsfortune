@@ -29,7 +29,7 @@ export const DEBUG_KITS = {
   paintrange: { at: 'testroom.paintrange', for: 'painting at range: the reticle, the spread, the splats (LACHRYMA-LOOP.md 3)', by: 'petra', tests: ['T178'],
     items: [['tool.soulbrush', 1], ['bottle.small', 1]] }, // (the brush, and a bottle to paint from and to mop into)
   throwing: { at: 'testroom.index', for: 'the drills (Steady Hand and Wide Bore open by drill hits)', by: 'dovina', tests: [],
-    items: [['tool.psygun', 1]] },
+    items: [['tool.psygun', 1], ['psygun.bombardier', 1], ['psygun.carbine', 1], ['psygun.pentagun', 1], ['psygun.pepperbox', 1], ['psygun.first', 1]] }, // (each psygun's variant: Wear one from the box; the owner, 2026-10-18)
   // the combat wing's stations (docs/plans/COMBAT-LAB.md section 7): every tool, since each answers and strikes its own way; the QAIS
   // tests that will name them are not written yet (each station's mechanic first), so these are the first drafts, Calissa's
   sparring: { at: 'sparring.circle', for: "Strawman's strings: the parry in the window's glint, a combo answered", by: 'calissa', tests: [], items: TOOLS() },

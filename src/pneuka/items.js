@@ -7,7 +7,7 @@
 // keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
@@ -18,6 +18,7 @@ import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
 import { ECON } from '../progress/econ/table.js';
 import { BOTTLES } from '../progress/brushload.js';
+import { PSYGUNS } from '../tools/psygun/kinds.js';
 
 export const ITEMS = {};
 /** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
@@ -45,6 +46,9 @@ export const TOOL_ITEMS = [
 for (const T of TOOL_ITEMS) {
   ITEMS[`tool.${T.tool}`] = { id: `tool.${T.tool}`, kind: 'tool', key: T.tool, tool: T.tool, place: T.place, name: T.name, glyph: '⚒', color: 0xffb27a, tier: 0, examine: T.examine, card: null, lure: false, stack: false };
 }
+// a psygun's variants (tools/psygun/kinds.js; the owner's names): carried as a thing until worn, when it is the psygun you carry and the
+// one you carried comes off into its slot (box.wear). The ids are the kinds' own. Found or earned in STORY is the economy's next pass.
+for (const G of Object.values(PSYGUNS)) ITEMS[G.id] = { id: G.id, kind: 'psygun', key: G.id.slice(7), name: G.name, glyph: '⚙', color: 0xd9b048, tier: G.id === 'psygun.first' ? 0 : 2, examine: G.blurb, card: null, lure: false, stack: false };
 // the Crucibelle's instruments (one fitted to the bell: tools/crucibelle/songs.js), the Lockheart's coffins (one on the chain) and the
 // Possibilikeys that open them (up to four on the ring, used up: tools/lockheart/table.js), and the shard a ringing crystal gives
 for (const [id, I] of Object.entries(INSTRUMENTS)) if (id !== 'bell') ITEMS[id] = { id, kind: 'instrument', key: id.slice(5), name: I.name, glyph: '♪', color: I.color, tier: 1, examine: I.does, card: null, lure: false, stack: false };

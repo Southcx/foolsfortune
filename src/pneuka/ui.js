@@ -103,7 +103,7 @@ export class PneukaUI {
     const box = this.box, s = box.slots[slot], it = s && itemOf(s.id);
     if (!it) return [];
     const out = [];
-    if (it.kind === 'tool') out.push({ label: 'Wear', run: () => box.wear(slot) });
+    if (it.kind === 'tool' || it.kind === 'psygun') out.push({ label: 'Wear', run: () => box.wear(slot) });
     if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
