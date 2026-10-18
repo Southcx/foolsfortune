@@ -51,16 +51,16 @@ export class Shrines {
 
   /** A gate's two cradles (docs/plans/HANKO.md 6.6, the owner, 2026-10-17): the threshold's finds the Shrine, rests you and opens its page
    *  (travel, the party) while you stay sealed; the arch's opens the Spirit Garden. Where they stand is the model's (`cradleSpots`, Calissa's
-   *  torii); until it says, in front of the gate and under the arch. */
+   *  torii); until it says, in front of the gate and under the arch. Both are one page of the Seal Book (`book`: Dovina's rule). */
   cradles(s) {
     const g = this.game, C = g.cradles; if (!C) return;
     const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
     const at = s.model.cradleSpots?.() || { threshold: s.pos.clone().addScaledVector(f, 1.2), arch: s.pos.clone() };
     const reach = 0.9; // (the two stand 1.2 m apart: each reaches only its own)
-    s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', pos: at.threshold, yaw: s.yaw, reach, hold: true,
+    s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.threshold, yaw: s.yaw, reach, hold: true,
       onSeal: () => { this.find(s); this.rest(s.id); this.open(s); },
       onUnseal: () => { if (this.menu?.open && this.page === s.id) this.menu.close(); } });
-    s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', pos: at.arch, yaw: s.yaw, reach, hold: true,
+    s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.arch, yaw: s.yaw, reach, hold: true,
       onSeal: () => { this.find(s); C.unseal('garden', 'courier', { now: true }); this.garden(s); } });
   }
 

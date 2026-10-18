@@ -19,10 +19,10 @@
 // sockets, Kirby Planet Robobot's armour and Mario Odyssey's capture (a bigger body with its own moves), the Japanese registered seal.
 //
 //   game.cradles = new Cradles(game)
-//   .add({ id, kind, pos, yaw?, reach?, hold?, drain?, onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
+//   .add({ id, kind, pos, yaw?, reach?, hold?, drain?, book? (the Seal Book's page, when a place's cradles share one), onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
 //   .seal(c, by?) -> bool   .unseal(why?, by?, { now }?) -> bool   .sealed (the cradle you are in, or null)   .near() (the one F would seal)
 //   .mine -> { name, outline, carving } | null   .choose({ name, outline, carving }) -> bool (once, ever)
-//   .struck(blow) (vessel/damage.js asks it first while sealed)    events: seal.set / seal.unset { cradle, kind, by, why? }, seal.carve
+//   .struck(blow) (vessel/damage.js asks it first while sealed)    events: seal.set { cradle, kind, book?, by, first, seal } / seal.unset { cradle, kind, by, why }, seal.carve
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { tag } from '../core/tags.js';
@@ -44,9 +44,9 @@ export class Cradles {
     game.interact?.add('cradle', () => { const c = this.near(); return c ? { pos: c.pos.clone().setY(c.pos.y + 0.6), d: c.d, ref: `cradle.${c.id}` } : null; });
   }
 
-  add({ id, kind = 'threshold', pos, yaw = 0, reach = REACH, hold, drain = 0, onSeal = null, onUnseal = null, hurt = null, update = null }) {
+  add({ id, kind = 'threshold', pos, yaw = 0, reach = REACH, hold, drain = 0, book = null, onSeal = null, onUnseal = null, hurt = null, update = null }) {
     if (!CRADLE_KINDS.includes(kind)) throw new Error(`cradle ${id}: no kind ${kind}`);
-    const c = { id, kind, pos: pos.clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
+    const c = { id, kind, book, pos: pos.clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
     tag(c, 'cradle'); this.list.push(c);
     return c;
   }
@@ -123,7 +123,7 @@ export class Cradles {
     if (this.phase === 'in' && this.t >= STAMP) {
       this.phase = 'on'; this.t = 0;
       const first = !c.imprint; c.imprint = true;
-      g.events?.emit('seal.set', { cradle: c.id, kind: c.kind, by: 'courier', first, seal: this.mine ? { ...this.mine } : null });
+      g.events?.emit('seal.set', { cradle: c.id, kind: c.kind, ...(c.book ? { book: c.book } : {}), by: 'courier', first, seal: this.mine ? { ...this.mine } : null });
       c.onSeal?.(c);
       if (!c.hold) this.unseal('stamped');
       return;
