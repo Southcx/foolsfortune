@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE SIGHT (stub; built in round 6's game pass, OVERLAY.md 10.5c): the instrument top-right.
-//   game.sight = new Sight(game)   .waypoint = { name, pos } | null
+// THE SIGHT'S LOOK (stub; built once the owner signs off round 6, OVERLAY.md 10.5c): the instrument top-right. The waypoint and its
+// calibrating are Dovina's (progress/sight.js, game.sight: OVERLAY.md 16); this draws them.
+//   game.sightLook = new SightLook(game)
 // ---------------------------------------------------------------------------------------
-export class Sight {
-  constructor(game) { this.game = game; this.waypoint = null; }
+export class SightLook {
+  constructor(game) { this.game = game; }
 }
