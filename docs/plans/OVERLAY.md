@@ -491,6 +491,57 @@ Matrix's rain: not ours, and to go.
    slot. The threshold's is onward (travel between gates), the arch's inward (the Spirit Garden). Wiring them in `world/shrines.js` with
    Calissa's `S.cradleSpots()` is Petra's.
 
+## 17. The tag and the Veritome (Dovina, 2026-10-18, on Calissa's four questions; the owner: "work with Dovina to assess how it has synergy with the existing Veritome module")
+
+Built: `tools/veritome/creaturetag.js`, `readTag(game, c)` for the tag and `readKind(game, kind)` for the bestiary page. The tag on a
+creature and its bestiary page read from this one module, so they cannot disagree. `game.agent.observe` hands the same tag to an agent
+(the System's interface, AGENT-INTERFACE.md: one layer for the player's eye and the agent's).
+
+1. **The tag is the glance and the Veritome is the study.** The deep scan is the Veritome's act. There is no new button: the lens
+   raised on a creature (the viewfinder) shows the bestiary page's facts in its margin, and the bestiary page is the full read.
+   - The tag is always on and shallow: only what familiarity allows.
+   - Two avenues to the same knowledge: the tag in the world, the page in the book.
+2. **A plate decrypts in two beats.** The darkroom stays as it is (Pokémon Snap's report: the shutter is quick, and the appraisal is
+   where a photograph turns out to have been worth something).
+   - **At the shutter**, a line the plate would teach turns **latent**: its glyphs stop churning and hold still in the window colour,
+     with a plate's corner mark. The player sees what the plate bought at once.
+   - **At the darkroom's appraisal** (Codex: VERITOME, MEMORY), the latent lines decrypt: the hero moment, on the bestiary page.
+   - **A down that reaches a level** decrypts the readout lines it opens on the spot, mid-fight. The log already says the level once.
+   - No event is needed. A surface remembers what it last drew, and a line that was scrambled or latent and is now plain plays its decrypt.
+3. **One table: the lines, and what opens each.**
+
+| line | opened by | UNKNOWN 0 | GLIMPSED 1 | OBSERVED 2 | STUDIED 3 | UNDERSTOOD 4 |
+|---|---|---|---|---|---|---|
+| name | familiarity | ??? (scrambled) | the name | the name | the name | the name |
+| habit (what it is doing now) | **that fact alone** (photographs) | scrambled, or latent | as known | as known | as known | as known |
+| health | familiarity | scrambled | a bar in quarters | eighths | the bar | numbers (34 / 60) |
+| EmO | familiarity | scrambled | scrambled | a band (low, optimal, hot) | a band | the band and its value |
+| statuses | familiarity | scrambled | scrambled | scrambled | the statuses and each build-up | the same |
+| weakness | familiarity | scrambled | scrambled | scrambled | scrambled | weak to <Type>, or none |
+| grain | familiarity | (absent) | (absent) | (absent) | (absent) | its five traits |
+| neuralese | UNDERSTOOD, **while it is stunned** | (absent) | (absent) | (absent) | (absent) | the Functions you know that it takes, and a blank for each you do not |
+
+   - **Fighting teaches the numbers; only watching teaches the habits.** The readouts open by familiarity, from photographs or downs,
+     whichever is further (the design laws: skill skips grind, grind closes the gap). The habit line opens only when that fact is in the
+     bestiary, so a photograph always buys something a sword cannot.
+   - **The bestiary page shows the same level and readouts, and every fact**: plain (its sentence), latent (held in the memory), or
+     scrambled (`len` says how long, so the scramble is the right size).
+   - **A scrambled line is still a line**: the tag's shape is the same at every level (a known unknown). Only grain and the neuralese
+     appear when they open.
+4. **At UNDERSTOOD, the tag shows the neuralese, and only while the creature is stunned** (the one moment reprogramming can take it).
+   - It lists the words you know that the creature's mind has the parts for (an action its Brain owns; a status, relation or memory
+     every mind has; a drive if it has drives).
+   - A blank stands for each word it would take that you have not learned. The blank never shows the word: a count of what is left to
+     learn, which sends you back to the lens.
+   - Drawn in the neuralese script (15.5).
+
+**For Calissa to draw.** The three reads: plain, latent and scrambled (scrambled being the running hand churning in hard light). The
+decrypt between them. The latent hold with its plate's corner mark. The viewfinder's margin of facts. The neuralese row with its blanks.
+
+**Not built:**
+- The Lantern Wisp has no bestiary facts yet (Dovina's next), so it has no habit line.
+- Clapperjars are not in `game.creatures`, so their tag goes through their own list (Petra's, when the tag is drawn).
+
 ## Note on the merge
 
 Where the two files differed, the later wording is kept. Rule 6 once put the Flash's readiness "in the viewfinder's margin"; the Flash

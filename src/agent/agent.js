@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { familiarityOf, readBlow, readHealth } from '../progress/familiarity.js';
+import { readTag } from '../tools/veritome/creaturetag.js';
 
 const r2 = (v) => +v.toFixed(2);
 const vec = (v) => [r2(v.x), r2(v.y), r2(v.z)];
@@ -60,7 +61,7 @@ export class Agent {
     const evs = g.events.log || [], fresh = since(evs, this.lastEv).map((e) => ({ name: e.name, t: r2(e.t), ...blind(e) })); this.lastEv = evs[evs.length - 1] || null;
     const ls = g.log?.lines || [], lines = since(ls, this.lastLine).map((l) => l.text); this.lastLine = ls[ls.length - 1] || null;
     const near = [];
-    for (const c of g.creatures?.list || []) { if (c.pos.distanceTo(P.pos) > NEAR) continue; near.push({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), alive: c.alive !== false, familiarity: known(c.kind), health: health(c), state: c.state, ally: !!c.ally, foe: !!c.cls, d: r2(c.pos.distanceTo(P.pos)) }); }
+    for (const c of g.creatures?.list || []) { if (c.pos.distanceTo(P.pos) > NEAR) continue; near.push({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), alive: c.alive !== false, familiarity: known(c.kind), health: health(c), tag: readTag(g, c) || undefined, state: c.state, ally: !!c.ally, foe: !!c.cls, d: r2(c.pos.distanceTo(P.pos)) }); }
     for (const e of g.ground?.list || []) if (e.pos.distanceTo(P.pos) < NEAR) near.push({ kind: 'item', item: e.id, pos: vec(e.pos), d: r2(e.pos.distanceTo(P.pos)) });
     for (const n of g.folk?.list || []) if (n.pos.distanceTo(P.pos) < NEAR) near.push({ kind: 'folk', id: n.id, name: n.name, pos: vec(n.pos), d: r2(n.pos.distanceTo(P.pos)) });
     near.sort((a, b) => a.d - b.d);

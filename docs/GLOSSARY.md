@@ -501,6 +501,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   barometer and clock in one / what its needle points to, calibrated to a place or creature you know, or home; it spins when uncalibrated (Jack Sparrow's compass). *Not:* the wire compass, the map.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
+- **a line's read: plain / latent / scrambled** (`readTag`, `readKind`, `src/tools/veritome/creaturetag.js`; OVERLAY.md 17) — how a tag's line or a
+  bestiary fact reads: known / held by a plate in the Veritome's memory, not yet appraised / not known (its running hand churning); a tag's **habit** is its line naming what the creature is doing now. *Not:* a status.
 - **neuralese / a root** (`docs/NEURALESE.md`; `ROOTS`, `src/npc/neuraleseroots.js`; `cellsOf`, `npc/neuralesespelling.js`) — the language minds are
   told in, Toki Pona's way (LOGA-NUSA, mind-speech) / one of its 124 words, meaning built by joining them head first. *Not:* a Function (a macro's step).
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
