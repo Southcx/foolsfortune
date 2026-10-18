@@ -662,14 +662,14 @@ it costs shows on the Lachrimeter.** A tool's UI draws on the Courier, and the s
    hammer before the heart, or to the next loaded one; with none loaded, it hangs open. **The auto-turn never goes into the heart by
    itself**: the heart is chosen.
 - **(a) A tie in the toll goes to the mask first**, because `release()` takes the first least cracked region in `REGIONS` order (mask,
-  torso, left arm, right arm, left leg, right leg). The glint follows the code, never its own order. A peek, `vessel.tollRegion()`,
-  is asked of Petra so the look and the toll can never disagree.
+  torso, left arm, right arm, left leg, right leg). The glint follows the code, never its own order. The peek is built (Petra):
+  `game.vesselDamage.tollRegion() -> { region, shatter }`, one loop with the toll's, so the look and the toll can never disagree.
 - **(b) The heart loaded and every corner empty**: the cylinder rests on the hollow corner, grey, and does not hang open; the heart is
   still yours to choose (the auto-turn never goes into it).
 - **The pool the board draws is 100** (`T.lachryma.max`, `core/config.js`), moved by the stones (-15 to +30) and Willpower's widening.
   A common shell is 4 of it, the sounding 5. The 600 was a stand-in.
 
-**Built (Petra, 2026-10-18):** the heart (4 against 2), the auto-turn, the free dry click, the press mid-turn, the Cleave by the aim,
+**Built (Petra, 2026-10-18):** the 0.2 s tap, the auto-turn skipping the heart and returning to the chamber it came from, the heart (4 against 2), the auto-turn, the free dry click, the press mid-turn, the Cleave by the aim,
 the lure's held ring. Open: the Lachrimeter's reserve for a shell's cost and the sounding's (18.3, 18.5), waiting on Calissa's tube.
 
 The Sondelass's forms and its combo chains need no new rule: the forms are the belt's (the cutlass, the rod, the hook), and the string row
