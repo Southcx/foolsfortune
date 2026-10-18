@@ -305,6 +305,14 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
   along, and the globe's liquid churning and changing with the Dissonance Level. The placard's tiers and dresses as proposed. In-depth
   scans and tagging are worked out with Dovina against the Veritome (handoff 2026-10-18).
 
+### 10.5f The owner on board v8 (2026-10-18): go into the game
+- **The creature tag is C, the scan** (the owner: "I know you like A, but I'm drawn more towards C"): the creature's silhouette sampled
+  into a pixel sprite in a CRT lozenge, its readout lines beside it, the sigil-eye as the lens; built on Dovina's reader
+  (`tools/veritome/creaturetag.js`, OVERLAY.md 17), integrated with the Veritome with Dovina.
+- **The Sight is the yoke plus the roiling liquid**, as drawn (the ring current was liked too; kept in the board's notes).
+- **The placard's tiers and dresses** as drawn. **Go on the in-game build** of everything approved: the Lachrimeter's tube, the Sight,
+  the tag (C), the placard with its tiers and the running hand, the Shrine gate with its two cradles and the imprints, the seal picker.
+
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
 what cannot be a made object stays a line. Two influences a surface, never five; **ma** (間), a beat of stillness before every hero moment.
