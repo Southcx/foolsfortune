@@ -307,7 +307,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   steps, a beat of its wire, then a pop of motes in its feeling's colour, into the air and the ground. *Not:* a sibling's shatter, the dissolve.
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
-- **stun depth: dazed / stunned / out cold** (working names, Espada's; `docs/plans/STUN-DEPTH.md`, a plan) — how far down a stunned thing is, deepened by stunning it again while down, one star a depth. *Not:* a status of its own.
+- **stun depth: dazed / stunned / out cold** (working names, Espada's; `stun.depth(t)` 1..3, `T.stun`, `src/creatures/stun.js`; `docs/plans/STUN-DEPTH.md`) — how far down a stunned thing is, deepened by stunning it again while down, one star a depth. *Not:* a status of its own.
 - **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
 - **grain** (`src/progress/combat/temperament.js`) — who a creature's mind is: five traits, each between two poles; it weights the mind and shows
   in movement. *Not:* temper, "personality" or "stats". → detail
