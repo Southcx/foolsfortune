@@ -31,6 +31,9 @@ import { TR } from './testroom/layout.js';
 import { buildTestRoom } from './testroom/room.js';
 const simRand = stream('world/level'); // (the simulation's chance: core/rng.js, the same twice)
 
+/** Flat panes of one look (windows, skylights) as one mesh: their geometry already placed, merged and disposed. */
+function paneMesh(geos, mat) { const m = new THREE.Mesh(mergeGeometries(geos, false), mat); for (const g of geos) g.dispose(); return m; }
+
 // Greybox terracotta workshop. Everything static is merged per colour into a
 // handful of meshes; colliders are simple cuboids/cylinders/balls.
 
@@ -188,28 +191,21 @@ export class Level {
     this.box([0, 5.95, 0], [0.3, 0.3, D * 2], C.dark, { collide: false });
     this.buildSlab();
     // windows (emissive, no collision) on both storeys
-    const winMat = new THREE.MeshBasicMaterial({ color: C.cream });
+    const winMat = new THREE.MeshBasicMaterial({ color: C.cream }), panes = [];
     for (const [wy, skipMezz] of [[4.6, true], [10.3, false]]) {
       for (const z of [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5]) {
         for (const side of [-1, 1]) {
           if (skipMezz && side < 0 && z > -3) continue; // mezzanine side: fewer windows
-          const w = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), winMat);
-          w.position.set(side * (W - 0.01), wy, z);
-          w.rotation.y = -side * Math.PI / 2;
-          this.scene.add(w);
+          panes.push(new THREE.PlaneGeometry(1.6, 1.6).rotateY(-side * Math.PI / 2).translate(side * (W - 0.01), wy, z));
           this.box([side * (W - 0.05), wy - 0.85, z], [0.14, 0.12, 1.9], C.deep, { collide: false, shadow: false });
           this.box([side * (W - 0.05), wy, z], [0.12, 1.6, 0.08], C.deep, { collide: false, outline: false, shadow: false });
         }
       }
     }
+    this.scene.add(paneMesh(panes, winMat)); // (one draw for the twenty panes, not twenty: 2026-10-18, the gate's workshop calls)
     // skylights
     const skyMat = new THREE.MeshBasicMaterial({ color: 0xfff1dc });
-    for (const z of [-7.5, -2.5, 2.5, 7.5]) {
-      const sk = new THREE.Mesh(new THREE.PlaneGeometry(3, 2.2), skyMat);
-      sk.position.set(0, H - 0.01, z);
-      sk.rotation.x = Math.PI / 2;
-      this.scene.add(sk);
-    }
+    this.scene.add(paneMesh([-7.5, -2.5, 2.5, 7.5].map((z) => new THREE.PlaneGeometry(3, 2.2).rotateX(Math.PI / 2).translate(0, H - 0.01, z)), skyMat));
 
     this.buildMezzanine();
     this.buildPlatform();
