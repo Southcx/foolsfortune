@@ -16,7 +16,7 @@ import { FONT } from '../../ui/theme.js';
 
 const COUNT_FONT = `'Jersey 15', ${FONT.sys}`;
 export const PLATE_W = 0.92, PLATE_H = 0.44; // (the plate's window in the tube's units)
-const W = 368, H = 176, GLYPH = 104, CELLS = 4, ROLL = 0.28, JUMP = 0.42; // (canvas px; the glyph's share; the least cells; real seconds)
+const W = 368, H = 176, GLYPH = 84, PAD_L = 34, PAD_R = 36, CELLS = 4, ROLL = 0.28, JUMP = 0.42; // (canvas px; the glyph's share; the glass end caps' overlap at each side, kept clear; the least cells; real seconds)
 const FILM = ['#4c0fb3', '#0a8cbf', '#f2b82e', '#d91a80']; // (the labradorite film: vfx/oxidation.js)
 
 /** A digit lit in its cell (the neon and its hot core); a blank cell stays dark. */
@@ -57,7 +57,7 @@ export class CubePlate {
     x.stroke();
     this.cube(x);
     // the digits, each in its cell, rolling
-    const x0 = GLYPH, cw = (W - x0 - 8) / cells;
+    const x0 = PAD_L + GLYPH, cw = (W - x0 - PAD_R) / cells;
     if (!this.fs) { let fs = 100; x.font = `${fs}px ${COUNT_FONT}`; const asc = x.measureText('0').actualBoundingBoxAscent || fs * 0.62; fs = Math.round((fs * H * 0.66) / asc); x.font = `${fs}px ${COUNT_FONT}`;
       const dw = x.measureText('0').width; if (dw > cw * 0.92) fs = Math.floor((fs * cw * 0.92) / dw); this.fs = fs; }
     x.font = `${this.fs}px ${COUNT_FONT}`; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
@@ -76,8 +76,8 @@ export class CubePlate {
    *  each step as the crystal's spiral is; it jumps (squash and stretch) on a gain. */
   cube(x) {
     const j = this.jump < JUMP ? this.jump / JUMP : 1, ov = j < 1 ? Math.sin(j * Math.PI) : 0;
-    const sx = 1 + 0.18 * ov * Math.cos(j * Math.PI * 2), sy = 1 - 0.14 * ov * Math.cos(j * Math.PI * 2), cx = GLYPH / 2 + 6, cy = H / 2 - ov * 10;
-    x.save(); x.translate(cx, cy); x.rotate(Math.PI / 4); x.scale(sx * 0.92, sy * 0.92);
+    const sx = 1 + 0.18 * ov * Math.cos(j * Math.PI * 2), sy = 1 - 0.14 * ov * Math.cos(j * Math.PI * 2), cx = PAD_L + GLYPH / 2, cy = H / 2 - ov * 10;
+    x.save(); x.translate(cx, cy); x.rotate(Math.PI / 4); x.scale(sx * 0.74, sy * 0.74);
     let s = 78;
     x.shadowColor = 'rgba(160,120,255,.6)'; x.shadowBlur = 10;
     for (let k = 0; k < 5; k++) {
