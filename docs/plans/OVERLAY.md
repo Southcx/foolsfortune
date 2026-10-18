@@ -321,6 +321,17 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
 - **The Sondelass's UI reworked** in the established themes: show its transforming nature (cutlass, rod, hook), a more elegant way to
   switch the lure's feeling and to send pings, and the combo chains in blade mode. "Surprise me." Cohesive with the psygun's, worked out
   with the other divisions.
+- **Signed off on board v9 (the owner, 2026-10-18: "You guys totally smashed the brief"), built in game:** the spiritual link
+  (`SpiritualLink`, vfx/spirituallink.js: one thread from the tube's bulb to whichever tool UI claims it; the tube stands while one
+  does), the cylinder (`PsygunCylinder`, vfx/psyguncylinder.js; it hides the shells row), the Sondelass's guard (`SondelassGuard`,
+  vfx/sondelassguard.js; it hides the tool strip and the string row), and the variants' models (`PsygunModels`, vfx/psygunmodels.js:
+  the Bombardier a flare gun, the Carbine a rifle, the Pepperbox a shotgun, from the owner's Pentagun, scripts/export_psyguns.py).
+- **The blade is a sabre, not a katana** (the owner, 2026-10-18: "a little wider and curved like a sabre or cutlass, rather than too
+  katana-coded").
+- **The UI has a left hand and a right hand** (the owner, 2026-10-18: "I split it into a 'Left hand' and 'Right hand' side"). A tool
+  shown on the right of the view is in the right hand and is drawn as held there: an edge faces inboard, toward the middle of the view,
+  because a right hand slashes from the outside in (the cutlass's edge; the rod and the hook already point right). A tool's UI on the
+  left is mirrored the same way.
 
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;

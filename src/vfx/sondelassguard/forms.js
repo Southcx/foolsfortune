@@ -5,7 +5,8 @@
 //                   colour (ui/theme.js), a gold crack mended across it (kintsugi); 30 dots across
 //   the CUTLASS     the owner's note on board v9 (2026-10-18): "make the blade a little wider and curved like a sabre or cutlass, rather
 //                   than too katana-coded". A broad sabre, 90 dots from the guard's heart: its back curving away, the edge on the
-//                   convex side, widening from 7 dots at the guard to 12 near the tip, a swelling belly sweeping up into a clipped point;
+//                   convex side, turned INBOARD (the owner, 2026-10-18: the UI's right side is the right hand, so it slashes outside in; the
+//                   lines below are drawn with the back on +, and EDGE_IN mirrors them onto the screen's inner side), widening from 7 dots at the guard to 12 near the tip, a swelling belly sweeping up into a clipped point;
 //                   a brass knuckle bow out of the guard on the edge's side (the cutlass's own hilt). No habaki, no straight hamon.
 //   the ROD         four sections of black-red urushi lacquer that telescope, a brass ferrule at each joint and a guide ring
 //   the HOOK        two forged iron sections, and the grapnel: a ring, the shank, its spike and two flukes that open and close
@@ -41,6 +42,7 @@ export function metal(hex, met, map = null) {
 
 const BRASS = 0xc39a4a, STEEL = 0xc4ccd2, URUSHI = 0x6e2618, IRON = 0x6a717c;
 export const BLADE = { u0: 21, L: 90 }; // (the blade from 21 dots out of the guard's heart, 90 long)
+export const EDGE_IN = -1; // (the blade's lines are mirrored across its axis so the edge faces inboard: every v along the blade is times this)
 const C = 15; // (the blade's curve: its back 15 dots off the axis at the tip)
 const sm = (a, b, t) => { const x = Math.min(1, Math.max(0, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
 /** The sabre's lines along s (0 at the guard, 1 at the point), in dots off its axis (+ the back's side). */
@@ -57,8 +59,8 @@ export const SABRE = {
 const v2 = (x, y) => new THREE.Vector2(x, y);
 function sabreGeometry() {
   const S = new THREE.Shape(), N = 36;
-  for (let i = 0; i <= N; i++) { const s = i / N, p = v2(SABRE.U(s), SABRE.edge(s)); i ? S.lineTo(p.x, p.y) : S.moveTo(p.x, p.y); }
-  for (let i = N; i >= 0; i--) { const s = i / N; S.lineTo(SABRE.U(s), SABRE.back(s)); }
+  for (let i = 0; i <= N; i++) { const s = i / N, p = v2(SABRE.U(s), EDGE_IN * SABRE.edge(s)); i ? S.lineTo(p.x, p.y) : S.moveTo(p.x, p.y); }
+  for (let i = N; i >= 0; i--) { const s = i / N; S.lineTo(SABRE.U(s), EDGE_IN * SABRE.back(s)); }
   S.closePath();
   const g = new THREE.ExtrudeGeometry(S, { depth: 0.6, bevelEnabled: true, bevelThickness: 0.7, bevelSize: 0.9, bevelSegments: 2, curveSegments: 4 });
   g.translate(0, 0, -0.3); return g;
@@ -91,7 +93,7 @@ export function buildForms(themeColours) {
   const axis = new THREE.Group(); axis.position.z = -2.4; root.add(axis);
   const steel = metal(STEEL, 0.85);
   const blade = add(axis, sabreGeometry(), steel);
-  const bow = add(axis, tube([[1, -14.6, 1.6], [-5, -18.4, 1.2], [-13, -17.2, 0.8], [-19, -11, 0.6], [-21, -5, 0.6]], 1.05, 20), brass, 6); bow.position.z = 2.4;
+  const bow = add(axis, tube([[1, -14.6, 1.6], [-5, -18.4, 1.2], [-13, -17.2, 0.8], [-19, -11, 0.6], [-21, -5, 0.6]].map(([x, y, z]) => [x, EDGE_IN * y, z]), 1.05, 20), brass, 6); bow.position.z = 2.4;
   const urushi = metal(URUSHI, 0.25), W = [4.2, 3.4, 2.6, 1.9];
   const rod = W.map((w) => add(axis, rodSeg(w / 2), urushi));
   const ferrule = W.map((w) => add(axis, rodSeg(w / 2 + 0.4), brass));

@@ -24,7 +24,7 @@
 //   drawGuard(X)  drawRing(X)  drawRod(X)  drawBlade(X)  drawHook(X)   X: { b: { under, marks, over }, C (the atlas's cells), t, anchor,
 //   ang, S, R, B, H, F }   film(s, out) -> out (the labradorite film's colour at s, sRGB 0..1)   rgbOf(hex, out)   shade(c, f, out)
 // ---------------------------------------------------------------------------------------
-import { SABRE } from './forms.js';
+import { SABRE, EDGE_IN } from './forms.js';
 
 const TAU = Math.PI * 2;
 const C01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -166,7 +166,7 @@ function bladeV(X, mode, s) {
   const sb = X.sb, mid = (SABRE.hamon(s) + SABRE.back(s) - 1.4) / 2 + 0.3 * Math.sin(s * 40);
   return lerp(SABRE.hamon(sb), mid, sm((s - sb) / 0.1));
 }
-const bladeP = (X, s, v, out) => ax(X, SABRE.U(s) - X.shf, v, out);
+const bladeP = (X, s, v, out) => ax(X, SABRE.U(s) - X.shf, EDGE_IN * v, out); // (mirrored with the blade: its edge inboard)
 const shown = (X, s) => SABRE.U(s) - X.shf >= 17; // (inside the guard it is hidden, as the blade is)
 function bladePath(X, s0, s1, mode, w, col, a, batch, n = 24) {
   let on = false;

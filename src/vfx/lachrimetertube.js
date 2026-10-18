@@ -380,7 +380,7 @@ export class LachrimeterTube {
     const avail = pool.available, reserved = pool.reserved, max = pool.max, shownHeld = Math.min(held, avail); // (a hold is still in the pool: it pales the column's top, it does not lengthen it)
     if (Math.abs(avail - this.lastAvail) > 0.01 || reserved > 0 || held > 0) { this.lastAvail = avail; this.quiet = 0; }
     this.quiet += dt;
-    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 ? 1 : 0;
+    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 || g.spiritualLink?.state?.owner ? 1 : 0; // (a tool UI on the link holds it up: the tool draws from the pool it is tied to)
     this.shown += (want - this.shown) * Math.min(1, dt * (want ? 7 : 3));
     if (!want && this.shown < 0.01) this.shown = 0;
     root.userData.overlayHidden = this.shown <= 0;
