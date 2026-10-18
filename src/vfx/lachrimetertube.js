@@ -43,7 +43,7 @@ const BORE = 0.124; // (the bore's Lachryma)
 // how it stands on the 480-line frame: 32 lines a unit (192 lines tall at most), the mock's eye (a three-quarter turn, a little above)
 const SKIN = { w: 544, h: 1024, plate: [0, 0, 288, 1024], glaze: [288, 0, 256, 256], brass: [288, 256, 128, 128] }; // (the still body's atlas: tex px)
 const LINES = 32, YAW = 0.42, PITCH = 0.08, GAP = 6; // (lines to the frame's bottom edge)
-const CLEAR = 312; // (CSS px from the right edge: clear of the DOM panel (#lachryma, 284 wide at 18) and the psygun's shells under it)
+const CLEAR = 18, WIDE = 2.9; // (CSS px from the right edge: the corner, as the HUD's own margin; the tube's width in its units, the Bottles' rack included: the #lachryma panel steps left by it, index.html)
 const RIGHT = 1.1, FOOT = 1.3, HEIGHT = 5.9; // (units: the plinth's right corner as turned, the plinth's foot below the bulb, the whole height)
 const K = 2; // (texture pixels a line, for the words drawn on canvases)
 const COUNT_FONT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
@@ -377,8 +377,13 @@ export class LachrimeterTube {
 
     // where it stands (CSS px), and how big: 32 lines a unit at the 480-line present
     const H = slot.view.h || innerHeight, lineP = H / 480, s = LINES * lineP, e = this.shown * this.shown * (3 - 2 * this.shown);
+    if ((this.shellsT = (this.shellsT || 0) - dt) <= 0) { // (the psygun's shells hold the corner's foot: the tube stands on top of them while they show)
+      this.shellsT = 0.5; const el = document.getElementById('shells'), r = el?.getBoundingClientRect();
+      this.lift = r && r.height > 0 && getComputedStyle(el).opacity !== '0' ? innerHeight - r.top + 6 : 0;
+      const w = Math.round(WIDE * s + 12); if (w !== this.pubW) { this.pubW = w; document.documentElement.style.setProperty('--lachrimeter-tube-w', `${w}px`); }
+    }
     slot.x = -(CLEAR + RIGHT * s);
-    slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it sinks into the corner as it steps back)
+    slot.y = -(this.lift + GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP + this.lift); // (it sinks into the corner as it steps back)
     this.inst.scale.setScalar(s);
 
     // the numbers: the tube is the pool's uncapped size, the column the pool, the pale stretch what a charge holds
