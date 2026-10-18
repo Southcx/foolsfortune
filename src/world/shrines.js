@@ -58,8 +58,8 @@ export class Shrines {
     const at = s.model.cradleSpots?.() || { threshold: s.pos.clone().addScaledVector(f, 1.2), arch: s.pos.clone() };
     const reach = 0.9; // (the two stand 1.2 m apart: each reaches only its own)
     s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.threshold, yaw: s.yaw, reach, hold: true,
-      onSeal: () => { this.find(s); this.rest(s.id); this.open(s); },
-      onUnseal: () => { if (this.menu?.open && this.page === s.id) this.menu.close(); } });
+      onSeal: () => { this.find(s); this.rest(s.id); s.model.wake?.(); this.open(s); }, // (the gate wakes: Calissa's torii, vfx/shrine.js)
+      onUnseal: () => { s.model.wake?.(false); if (this.menu?.open && this.page === s.id) this.menu.close(); } });
     s.arch = C.add({ id: `shrine.${s.id}.arch`, kind: 'threshold', book: `shrine.${s.id}`, pos: at.arch, yaw: s.yaw, reach, hold: true,
       onSeal: () => { this.find(s); C.unseal('garden', 'courier', { now: true }); this.garden(s); } });
   }
