@@ -115,7 +115,6 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   tool never has an inventory of its own.
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`) — the gun. A shot is one round; a charge winds up a piercing beam; a shell is a
   special round in a chamber. → detail
-- **the psygun's variants** (the owner's names, 2026-10-18) — by chamber count: the Bombardier (1), the Carbine (3), the Pentagun (5), the Pepperbox (7). *Not:* a caster shell, a mount.
 - **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
   field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
 - **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
