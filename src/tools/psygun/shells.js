@@ -119,14 +119,13 @@ export class Shells {
 
   // THE CYLINDER (docs/plans/OVERLAY.md 18): the wheel turns it a chamber a notch, the digits are a shortcut; the turn is at once, so a
   // press while the look still turns fires the chamber it is turning to. An empty chamber stays on it, hollow: turning stops there.
-  // `psygun.turn` { chamber, shell, loaded, auto } is the cylinder's beat for its look and its sound (Calissa's, Wanda's).
-  select(i, auto = false) {
+  // `psygun.turn` { chamber, shell, loaded, auto, passed?, tier? } (the last two on an auto-turn) is the cylinder's beat for its look and its sound (Calissa's, Wanda's).
+  select(i, auto = false, passed = 0) {
     if (i < 0 || i >= this.types.length || i === this.selected) return;
     if (i === this.gun.heart && this.selected !== this.gun.heart) this.ringBefore = this.selected; // (the ring chamber the heart was turned to from)
-    this.selected = i;
-    if (!auto) sfx.click();
+    this.selected = i; // (no click here: the pawl's is Wanda's, on psygun.turn: audio/cues.js)
     const t = this.types[i];
-    this.game.events?.emit('psygun.turn', { chamber: i, shell: t.id, loaded: this.counts[t.id] > 0, auto });
+    this.game.events?.emit('psygun.turn', { chamber: i, shell: t.id, loaded: this.counts[t.id] > 0, auto, ...(auto ? { passed, tier: shellById(t.id)?.tier || 1 } : {}) });
   }
   cycle(d) { const n = this.types.length; this.select((this.selected + d + n) % n); }
   /** After a chamber's last shell the cylinder turns on by itself to the next loaded one (the revolver's action); none loaded, it stays.
@@ -134,8 +133,9 @@ export class Shells {
   turnOn() {
     const n = this.types.length, heart = this.gun.heart, inHeart = this.selected === heart;
     const loaded = (i) => i !== heart && this.counts[this.types[i].id] > 0, from = inHeart ? (this.ringBefore ?? 0) : this.selected;
-    if (inHeart && loaded(from)) return this.select(from, true);
-    for (let k = 1; k < n; k++) { const i = (from + k) % n; if (loaded(i)) return this.select(i, true); }
+    if (inHeart && loaded(from)) return this.select(from, true, 0);
+    let passed = 0; // (the hollow chambers turned past on the way: a dry tick each, Wanda's)
+    for (let k = 1; k < n; k++) { const i = (from + k) % n; if (loaded(i)) return this.select(i, true, passed); if (i !== heart) passed++; }
   }
   refill(n = T.shells.refill) {
     let got = 0;
