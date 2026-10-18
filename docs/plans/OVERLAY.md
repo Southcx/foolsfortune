@@ -635,6 +635,9 @@ it costs shows on the Lachrimeter.** A tool's UI draws on the Courier, and the s
 
    Two avenues each, and no number on screen.
 
+**Built (Petra, 2026-10-18):** the heart (4 against 2), the auto-turn, the free dry click, the press mid-turn, the Cleave by the aim,
+the lure's held ring. Open: the Lachrimeter's reserve for a shell's cost and the sounding's (18.3, 18.5), waiting on Calissa's tube.
+
 The Sondelass's forms and its combo chains need no new rule: the forms are the belt's (the cutlass, the rod, the hook), and the string row
 already carries the chains (the glossary's "the string row").
 
