@@ -521,6 +521,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   valve). *Not:* the overlay (the System's sight at large), the wire compass, the Dreamvane's vane.
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
+- **an aptitude / the Assay** (working names, Espada's, proposed; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
+  absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the

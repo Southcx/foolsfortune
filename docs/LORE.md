@@ -843,3 +843,34 @@ the space it leaves for someone to mean it. The Pneuka Jar (*pneuma*, breath) fi
   register, and amethyst (Greek *a-methystos*, "not drunk") is the island's charm for a clear head.
 - **Brine**, the Emocean: rope, tar and salt crust, sailors' knots, Lachryma spray beading on the frame. The sea's own, worn by every
   ship.
+
+### Three plans named *(Espada's, proposed, 2026-10-18; Dovina's STUN-DEPTH.md, VERITOMES.md, APTITUDE.md)*
+
+**Stun depth: dazed, stunned, out cold.** The working names stand as the labels. They are the genre's own words, and a player reads
+them before any lore (CLARITY.md). The stars are one, two and three. Lore, for the Codex and the bestiary: a Figment is a thought an
+island is thinking. **Dazed**, the thought slips; **stunned**, it loses its thread; **out cold**, no one is thinking it for a moment,
+and it holds its shape only by habit. That is why a mind out cold cannot refuse its rewriting: there is no one in it to say no. An
+Egregore out cold is the same, except that the one not thinking it is everyone. The log says "The slip jelly is out cold."
+
+**The Veritomes.** Dovina's names stand, because they match the Lockhearts' (THE PLAIN LOCKHEART, THE GAMBLER'S LOCKHEART: a role in
+the possessive, then the tool). Each book is from a different island, so each can wear its island's dress (OVERLAY.md 15.4). None is
+of Anagami's making alone.
+- **the Plain Veritome**: the one you carry from the start. Who made the first is left blank.
+- **the Dowser's Veritome** (Margarite, Nacre): a prospector's book from the King's island, where crude is a trade. It sees what
+  Lachryma's prospectors were paid to find: its heat. A dowser walks with a forked stick until it dips; this book dips for them.
+- **the Empath's Veritome** (Anagami, Clay): a mender's book. The kiln's menders learned to read what a pot felt when it broke, so it
+  could be mended to hold that. It sees what a thing feels. *Empathy* is Greek *em-patheia*, "feeling in".
+- **the Augur's Veritome** (Entropolis, Glass): from the Queen's island of cold clear heads. An augur read the flight of birds for what
+  was coming; this book reads a mind's wiring for what it will do next. Entropy is the arrow of time, and an augur reads that arrow.
+- **the Skeptic's Veritome** (the Emocean, Brine): a Contractor's book, made by sailors who learned from the False Light that the sea
+  lies. It sees what is not so. *Skeptic* is Greek *skeptikos*, "one who looks carefully" (*skeptesthai*, to look about): the doubter
+  was always the one with the best eyes, which is the right root for a camera.
+- **Their sights' labels** (the UI's genre word, CLARITY.md): **Thermal**, **Mood**, **Intent**, **Reveal**.
+
+**Aptitude, and the Assay.** "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
+"Magic aptitude: S") and free in the glossary. It is neither an attribute nor a domain. What the System reads of you, the whole window,
+is **the Assay**. An assay is a test of a metal's true content, which suits a game of Lachryma, alchemy and kilns. It is also the same
+word as *essay*: Old French *essai*, a trial, an attempt. The System does not ask what you are; it assays what you do. A standard
+trial is **an assay** run under fixed conditions; a passive reading is what the Assay gleans from ordinary play. In neuralese the
+Assay is **VIDA-HOMA**, the seeing of a person. The owner's kernel, "If I was isekai'd into a world of cognition made magic, how would
+I fare?", is the question the Assay answers, a line at a time.
