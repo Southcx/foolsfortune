@@ -116,7 +116,7 @@ crude flow (`godhand/matter.js`, `creations.js`). That is a physics sandbox. A p
   - which kinds of solution you found across the levels (flexibility).
 - **Prior art:** *From Dust* (routing water and lava by moving the ground), *Physics Playground*, *The Incredible Machine*, *Poly
   Bridge*.
-- **Its room** is the owner's to place (every trial is begun in its own room; raids keep the siege).
+- **Its room** is the Assay's new trial room (section 10; raids keep the siege).
 
 ## 6. The puzzle fights (the owner's next module, to be discussed)
 
@@ -157,14 +157,15 @@ The design waits for the owner's talk; this section only marks where it would pl
 3. **The window**: names (Espada), look (Calissa).
 4. **The standard trials, one at a time.** First the rail's Go/No-Go (d′), then the crystal's pitch threshold (cents), the press's colour
    threshold (ΔE), and the rhythm mode's asynchrony (ms).
-5. **The god hand's puzzles** (section 5), once the owner places the room.
+5. **The trial room**, then the god hand's puzzles in it (section 5).
 6. **The puzzle fights** (section 6), with the owner's module.
 
-## 10. Open, for the owner
+## 10. Ruled (the owner, 2026-10-18)
 
-1. **Does the record survive a new build?** It measures you, not the save, so I lean towards the settings scope, as your seal does.
-   Progress still resets around it.
-2. **An agent's play never counts towards it** (rule 7). Confirm. It also answers half of AGENT-INTERFACE.md's open question.
-3. **The god hand puzzles' room**: where?
-4. **Is a standard trial announced as one?** I lean yes: you choose to begin it, as every trial is begun. The passive readings stay
-   silent, and the window is where you find out what the System saw.
+1. **The record does not survive a new build.** It resets with the rest of the progress ("too much is changing every week"). It is a
+   save section of scope `player`.
+2. **An agent's play never counts** (rule 7).
+3. **The Assay has a room of its own: a new trial room.** The standard trials and the god hand's puzzles are begun there. Its place
+   (the Index's list) and its name are next (Espada names, Calissa dresses).
+4. **A standard trial is announced as one** ("sometimes it's good to know you're being tested"). The passive readings stay silent,
+   and the window shows what the System saw.

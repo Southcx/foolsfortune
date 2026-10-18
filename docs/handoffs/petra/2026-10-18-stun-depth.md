@@ -23,3 +23,10 @@ coffin is, never a fitting (the owner).
 They exist for Calissa's scan sprite (OVERLAY.md 17). Say if you would rather own them back.
 
 Delete this note when it is built.
+
+**Added (the owner, 2026-10-18):** the Veritome reads beings and the Dreamvane reads the world (VERITOMES.md, "Split with the
+Dreamvane"). Two conveniences go on modes the Dreamvane already has, both plans with nothing asked yet:
+- Thermal on the dowse: what it is attuned to glows through sand and walls.
+- Reveal on the survey: false walls and sealed seams show for a beat.
+
+The Dowser's Veritome is cut.
