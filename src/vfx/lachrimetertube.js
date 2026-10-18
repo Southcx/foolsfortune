@@ -296,6 +296,10 @@ export class LachrimeterTube {
     const g = this.game, pool = g.lachryma, root = this.root;
     const allowed = !!pool && !g.title?.active && !g.god?.controlling && !document.body.classList.contains('bztable-seated');
     stepAside(allowed);
+    if (this.standing !== this.bodyStanding) { // (while the tube stands, the HUD's old LACHRYMA panel gives up its frame and its word: only the beads it holds remain)
+      this.bodyStanding = this.standing; document.body.classList.toggle('tube-standing', this.standing);
+      if (!document.getElementById('tubestanding')) { const st = document.createElement('style'); st.id = 'tubestanding'; st.textContent = 'body.tube-standing #lachryma { border-image: none !important; border-color: transparent !important; background: none !important; } body.tube-standing #lachryma .lab, body.tube-standing #lachryma .bar:not(.pxbar) { display: none !important; }'; document.head.appendChild(st); }
+    }
     if (!allowed) { this.shown = 0; root.userData.overlayHidden = true; return; }
     this.t += dt;
     // shown as the DOM Lachrimeter is (hud.js): not full, held for a charge, or moved in the last few real seconds

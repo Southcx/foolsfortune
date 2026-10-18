@@ -437,7 +437,7 @@ export class Cartography {
       this.dEl.wp.textContent = `◆ ${d < 1000 ? Math.round(d) : (d / 1000).toFixed(1) + 'k'} m`;
     } else this.dEl.wp.textContent = this.waypoint ? `◆ on another layer (${LAYER_BY_ID[this.waypoint.layer].name.toLowerCase()})` : '';
     // (the wire compass (vfx/wirecompass.js) is the compass while it is up: the dial steps aside for it; the map is still M)
-    this.compassEl.style.display = g.god?.controlling || g.wireCompass?.visible ? 'none' : '';
+    this.compassEl.style.display = g.god?.controlling || g.wireCompass?.visible || g.sightLook?.standing ? 'none' : ''; // (the Sight replaces the dial while it stands: vfx/sight.js)
     if (this.compassEl.style.display !== 'none') {
       // (drawn again only when what it shows has moved: half a degree of turn, a quarter metre of ground, another waypoint or window
       //  colour, or more of the ground known. A canvas redrawn every frame for nothing waits on the GPU in some browsers (R41))
