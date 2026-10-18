@@ -689,6 +689,9 @@ NEW:sync-before-timing-the-draw. **A draw is timed to a sync, or it times the qu
    frame's draw timed by `performance.now()` alone reads ~5 ms while the queue still has room and the whole backlog when something
    syncs (a program's first use, a full command buffer). Time each measured draw to a 1-pixel `readPixels`, and judge a draw that
    jumped by its synced number before bisecting anything.
+NEW:sound-name-is-searched. **A new sound's name is searched across the banks first.** Every bank is mixed onto the one Sfx, so a name
+    used twice is one sound overwriting the other (audio/sfx.js logs it at boot); grep `src/audio/` for the name, and name a tool's sound
+    for its thing in full (`lureNotch`, not `notch`).
 
 ## Cases
 
@@ -3813,3 +3816,12 @@ NEW:sync-before-timing-the-draw. **A draw is timed to a sync, or it times the qu
   the Well then reads ~1.2 s against a synced baseline of the same, and a real regression shows as one. Petra's file and gate: handed
   to Petra, not edited here.
 - **Rule:** NEW:sync-before-timing-the-draw.
+
+### 2026-10-18 · Boot logged "two banks define sfx.sounding" (Calissa, a headless look on v218)
+- **Seen:** at boot, `audio: two banks define sfx.sounding (SondelassSounds, AnglingSounds)`.
+- **Cause:** sketching the Sondelass's UI to Calissa's mock round 9, Wanda added `sounding()` to audio/sondelass.js; the rod's sounding
+  already had it in audio/angling.js. The banks are mixed onto one Sfx in order, so angling's (the later) won and the game sounded as
+  before, but the sketch was dead and the name ambiguous. `npm run check` does not run the boot, so only a look caught it.
+- **Fix:** the Sondelass's `sounding` removed; the sounding stays angling's, the one wired to `angle.sound`.
+- **Rule:** NEW:sound-name-is-searched.
+

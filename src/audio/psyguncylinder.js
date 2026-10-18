@@ -1,7 +1,8 @@
 // A sound bank of the one mixer (audio/sfx.js): the psygun's cylinder (its shells drawn as a revolver's cylinder of 1, 3, 5 or 7
 // chambers: Calissa's tools' UI, mock round 9, not yet built nor signed off), each sound laid to her board's times in real seconds from
-// the press, so the sound and the motion are one thing. A SKETCH: nothing calls these yet; once her board's beats are events, a line in
-// audio/cues.js each.
+// the press, so the sound and the motion are one thing. Heard through audio/cues.js from the cylinder's events (tools/psygun/shells.js,
+// vfx/psyguncylinder.js): psygun.turn { loaded, auto } (a hand turn, a hollow stop, or the auto-turn), shell.fire (the shot's
+// mechanism), psygun.cylinder { kind: open | home }. The draw, stow, dry and Pepperbox are still a sketch, uncalled.
 //   DRAW       rising air as it grows whole, a soft tick as the ring lights (0.14)          STOW   falling air (0.4)
 //   TURN       a breath (the hair back), the pawl's bright clean click (0.092), a faint brass ring-down
 //   AUTO-TURN  a chamber's last shell (the moment to feel): the hammer's hard strike, the spent case tinkling away (and its second ting),
@@ -104,6 +105,16 @@ export class PsygunCylinderSounds {
     const passes = Math.max(1, slots) * 2; // (the whirr twice round)
     for (let j = 0; j < passes; j++) this.cylinderClick(j % 7, { at: t + 0.46 + 0.9 * Math.sqrt(j / passes) });
     this.cylinderClick(0, { at: t + 1.36, heavy: true });
+  }
+  /** Swung home after a reload (`psygun.cylinder` home): the swing and its latch, the whirr past the chambers, the landing click. */
+  cylinderHome(slots = 7) {
+    if (!this.ok() || !this.allow('cylinderHome', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.32, 0.2), passes = Math.max(1, slots) * 2;
+    this.noise(t, 0.16, { type: 'bandpass', f0: 900, f1: 1800, q: 1.5, gain: 0.08, dest: d });
+    this.noise(t + 0.16, 0.03, { type: 'bandpass', f0: 2600, q: 3, gain: 0.7, dest: d }); this.tone(t + 0.16, 0.08, { f0: 520, f1: 360, type: 'square', gain: 0.05, dest: d });
+    this.noise(t + 0.04, 0.9, { type: 'bandpass', f0: 2200, f1: 1400, q: 3, gain: 0.04, dest: d });
+    for (let j = 0; j < passes; j++) this.cylinderClick(j % 7, { at: t + 0.04 + 0.9 * Math.sqrt(j / passes) });
+    this.cylinderClick(0, { at: t + 0.94, heavy: true });
   }
   /** The heart (the Pepperbox's). */
   pepperbox() {
