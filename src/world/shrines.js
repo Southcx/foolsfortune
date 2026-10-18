@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
-import { ShrineModel } from '../vfx/shrine.js';
+import { ShrineModel, SHRINE_PILLAR_X } from '../vfx/shrine.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { GROUPS } from '../core/physics.js';
 import { WEIR_SPAWN } from '../tools/sondelass/angling/weir.js';
@@ -77,10 +77,10 @@ export class Shrines {
       const model = new ShrineModel({ ground: S.ground || 'sand' });
       model.group.position.copy(at.pos); model.group.rotation.y = at.yaw;
       g.scene.add(model.group);
-      // (the arch's two pillars are solid: its opening is the garden's door, seen, not walked through: vfx/shrine.js W 1.5, H 2.3, T 0.38)
+      // (the gate's two pillars are solid, at the model's own spacing (SHRINE_PILLAR_X): its opening is seen, not walked through)
       const W = g.physics?.world, body = W?.createRigidBody(RAPIER.RigidBodyDesc.fixed());
       if (body) for (const sx of [-1, 1]) {
-        const x = at.pos.x + Math.cos(at.yaw) * sx * 0.94, z = at.pos.z - Math.sin(at.yaw) * sx * 0.94;
+        const x = at.pos.x + Math.cos(at.yaw) * sx * SHRINE_PILLAR_X, z = at.pos.z - Math.sin(at.yaw) * sx * SHRINE_PILLAR_X; // (the pillars and their colliders move together: vfx/shrine.js)
         W.createCollider(RAPIER.ColliderDesc.cuboid(0.19, 1.15, 0.19).setTranslation(x, at.pos.y + 1.15, z).setCollisionGroups(GROUPS.static), body);
       }
       const s = { ...S, pos: at.pos.clone(), yaw: at.yaw, model }; this.list.push(s);

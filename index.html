@@ -27,6 +27,9 @@
     #charge.full .arc { stroke: #fff1dc; animation: pulse .25s infinite alternate; }
     @keyframes pulse { to { stroke-width: 4; } }
     /* the HUD wears the windows' frame (src/ui/theme.js): a status plate, a palette of shells, the System's numerals */
+    /* (while the Lachrimeter's tube stands in the corner (vfx/lachrimetertube.js), the panel's count, beads and cubes step left by the width
+       it publishes as --lachrimeter-tube-w: 0 until it does) */
+    #lachryma.tubeaside { right: calc(18px + var(--lachrimeter-tube-w, 0px)) !important; }
     #lachryma { position: absolute; right: 18px; bottom: calc(94px + var(--cine, 0vh)); width: 284px; box-sizing: border-box; padding: 2px 6px 4px; border: 12px solid transparent;
       border-image: var(--jframe) 14 / 12px / 0 stretch; border-radius: 8px; background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .84)) border-box;
       text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
