@@ -291,6 +291,17 @@ cradles (threshold onward, arch inward), the running hand streaming and turned i
 written as SOMA-MENDA-PIRO and combed into KILN-TOUCHED (faces: Cinzel cut rough, or Uncial Antiqua: the owner's call).
 Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2), Dovina's to rule.
 
+### 10.5e The owner on board v7 (2026-10-18)
+- **The running hand is final:** "Don't change a thing about it, it's perfect." No refire, ever, without the owner asking.
+- **The Shrine gate:** "chef's kiss"; polish only as it goes into the game.
+- **The Sight:** the Dissonance arc must not eclipse the instrument. The discs join, and the arc runs through the joint; radical
+  variants are welcome (round 7: the yoke, the Jacob's ladder, the ring current, kintsugi crazing).
+- **The placard:** the core is final; tiers or styles for variety (round 7: the ware climbing with the achievement tier, and the islands' dresses).
+- **The creature tag is the one miss:** no barcodes (taken literally), and not paper. Of all the UI it leans the most digital. Calissa's
+  proposal, round 7: the tag as raw sight in hard light, familiarity as decryption (scrambled running hand resolving into English through
+  the placard's flow field), against two other directions (a profiler slab; a scan sprite).
+- The thermometer Lachrimeter passed without a note.
+
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
 what cannot be a made object stays a line. Two influences a surface, never five; **ma** (間), a beat of stillness before every hero moment.
