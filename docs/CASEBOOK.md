@@ -676,6 +676,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 232. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
     grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
     while a menu is over the game.
+NEW:sound-name-is-searched. **A new sound's name is searched across the banks first.** Every bank is mixed onto the one Sfx, so a name
+    used twice is one sound overwriting the other (audio/sfx.js logs it at boot); grep `src/audio/` for the name, and name a tool's sound
+    for its thing in full (`lureNotch`, not `notch`).
 ## Cases
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
@@ -3739,3 +3742,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
   wet sand and a shell's field go through it. The flare's layer cut to a lift (hum +0.025, noise to 0.23 at full speed), and the Raceway's
   boost whooshes (the carve's release, a sun plate, the solar start, a slope landing) to a third of their gain.
 - **Rule:** 232.
+
+### 2026-10-18 · Boot logged "two banks define sfx.sounding" (Calissa, a headless look on v218)
+- **Seen:** at boot, `audio: two banks define sfx.sounding (SondelassSounds, AnglingSounds)`.
+- **Cause:** sketching the Sondelass's UI to Calissa's mock round 9, Wanda added `sounding()` to audio/sondelass.js; the rod's sounding
+  already had it in audio/angling.js. The banks are mixed onto one Sfx in order, so angling's (the later) won and the game sounded as
+  before, but the sketch was dead and the name ambiguous. `npm run check` does not run the boot, so only a look caught it.
+- **Fix:** the Sondelass's `sounding` removed; the sounding stays angling's, the one wired to `angle.sound`.
+- **Rule:** NEW:sound-name-is-searched.

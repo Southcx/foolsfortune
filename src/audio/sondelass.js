@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio/sfx.js): the Sondelass (sondelass/): the cutlass, blade mode and zandatsu, the grapnel and its line; the tool's UI (its form change, the lure ring, the sounding: a sketch to Calissa's board).
+// A sound bank of the one mixer (audio/sfx.js): the Sondelass (sondelass/): the cutlass, blade mode and zandatsu, the grapnel and its line; the tool's UI (its form change, the lure ring: a sketch to Calissa's board).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class SondelassSounds {
   /** Steel drawn from the back: a short rasp and a ring. */
@@ -141,13 +141,5 @@ export class SondelassSounds {
     if (!this.ok() || !this.allow('lureOpen', 4)) return;
     const t = this.ctx.currentTime, d = this.out(0.22, 0.2);
     this.noise(t, 0.12, { type: 'bandpass', f0: 1200, f1: 2600, q: 1.5, gain: 0.08, dest: d });
-  }
-  /** The sounding from its release: the ring and its second front, the flare at the pawl (0.10), the echoes at 1.00 and 1.25. */
-  sounding() {
-    if (!this.ok() || !this.allow('sounding', 1)) return;
-    const t = this.ctx.currentTime, d = this.out(0.35, 0.7);
-    [[0, 0.06], [0.08, 0.035]].forEach(([x, g]) => this.tone(t + x, 0.9, { f0: 330, f1: 300, gain: g, dest: d }));
-    [1, 2.76].forEach((r, j) => this.tone(t + 0.1, 0.5, { f0: 1320 * r, gain: j ? 0.01 : 0.03, dest: d }));
-    [[1, 0.025], [1.25, 0.012]].forEach(([x, g]) => this.tone(t + x, 0.6, { f0: 330, f1: 310, gain: g, dest: d }));
   }
 }

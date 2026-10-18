@@ -10,11 +10,16 @@
 // ---------------------------------------------------------------------------------------
 import { feelingOfKind } from './mycelium.js';
 
+const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
 const CEREMONY = { heard: false }; // (a score ceremony seen this session: the table view now paces the count)
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
   'psygun.chamber': (s) => s.chamberClick?.(),
+  // (the cylinder, Calissa's look: audio/psyguncylinder.js. A last shell turns it on by itself before shell.fire, so that shot's mechanism is the auto-turn's)
+  'psygun.turn': (s, e) => (e.auto ? ((CYL.autoAt = Date.now()), s.cylinderAutoTurn?.({ bead: e.chamber ?? 0 })) : e.loaded ? s.cylinderTurn?.() : s.cylinderHollow?.()),
+  'shell.fire': (s) => (Date.now() - CYL.autoAt < 100 ? null : s.cylinderShot?.()),
+  'psygun.cylinder': (s, e) => (e.kind === 'open' ? s.cylinderOpen?.() : e.kind === 'home' ? s.cylinderHome?.() : null),
   // the vessel's moments (courier/vessel/: audio/vessel.js), over the cracks and the burst already played where they happen
   'vessel.shield': (s, e) => s.vesselShield?.(e.left),
   'vessel.shieldbreak': (s) => s.vesselShieldBreak?.(),
