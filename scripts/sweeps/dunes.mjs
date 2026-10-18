@@ -453,36 +453,36 @@ await run('shrines', async () => {
   await goFoot('dunes'); await S.ticks(4);
   const built = await S.ev(() => __game.game.shrines.list.map((s) => s.id));
   S.check('shrines: the Lamp Shrine and the Float Shrine are built', built.includes('lamp') && built.includes('float'), built);
-  const before = (id) => S.ev((id) => { const g = __game.game, s = g.shrines.get(id), f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; g.places.stand(new __game.THREE.Vector3(s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4), s.yaw + Math.PI); g.player.yaw = s.yaw + Math.PI; return true; }, id);
+  const before = (id) => S.ev((id) => { const g = __game.game, s = g.shrines.get(id), f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)], c = s.threshold?.pos || s.pos; g.places.stand(new __game.THREE.Vector3(c.x + f[0] * 0.5, c.y + 0.05, c.z + f[2] * 0.5), s.yaw + Math.PI); g.player.yaw = s.yaw + Math.PI; return true; }, id); // (the gate's threshold cradle, within its 0.9 m reach: HANKO.md 6.6)
   for (const [id, label] of [['lamp', 'the Lamp Shrine'], ['float', 'the Float Shrine']]) {
     await before(id); await S.ticks(30);
     const ch = await ds('chevron()');
-    S.check(`shrines ${label}: the chevron is on it`, ch.cur === 'shrine' && ch.ref === id && ch.off < 0.6, ch);
+    S.check(`shrines ${label}: the chevron is on its threshold cradle`, ch.cur === 'cradle' && (ch.ref || '').includes(`shrine.${id}.threshold`) && ch.off < 0.6, ch);
     const m = await ds('mark()');
-    await F(8);
+    await F(8); await S.ticks(45); // (the seal's beat: the fold, the drop, the stamp, world/cradles.js STAMP)
     const w = await ds('win()');
     const ev = await ds(`eventsSince(${JSON.stringify(m)})`);
     S.check(`shrines ${label}: F finds it, rests and opens its page`, w.index && w.page === id && ev.some((e) => e.name === 'shrine.rest'), { page: w.page, ev: ev.map((e) => `${e.name}:${e.by}`) });
-    await S.common(`shrine-${id}-page`);
+    await S.common(`shrine-${id}-page`, { courier: false }); // (sealed: the Courier is the Pneuka Jar in the cradle)
     const text = await S.ev(() => document.getElementById('indexmenu')?.innerText || '');
     S.check(`shrines ${label}: its page carries no movement calibration`, !/CALIBRATION/.test(text), /CALIBRATION/.test(text) ? 'feedback/indexmenu.js render(): the calibration is appended under every page, a Shrine\'s too' : 'none');
     S.check(`shrines ${label}: its page shows no code id`, !/\b(dunemaw|pier|workshop|margarite)\b/.test(text.split('\n').slice(0, 12).join(' ')), text.split('\n').slice(0, 6));
     // F closes it, and does not reopen it (indexmenu.js closes on keydown; the same F is still latched for shrines.update)
     const r0 = await S.ev(() => __game.game.events.counts['shrine.rest'] || 0);
-    await F(8);
+    await F(8); await S.ticks(40); // (F unseals: the page closes with it)
     const w2 = await ds('win()');
     const r1 = await S.ev(() => __game.game.events.counts['shrine.rest'] || 0);
     S.check(`shrines ${label}: F closes its page (and does not rest again)`, !w2.index && r1 === r0, { index: w2.index, restsByThatF: r1 - r0, cause: w2.index ? 'feedback/indexmenu.js:58 closes the page on keydown F; P.latch(KeyF) is still set, and world/shrines.js update() (interact offers again once the menu is shut) rests and opens it again' : null });
     await closeAll();
     // Esc closes it, and the Courier walks after
-    await F(8); await S.press('Escape', 6); await S.resume(); await S.ticks(4);
+    await F(8); await S.ticks(45); await S.press('Escape', 6); await S.resume(); await S.ticks(4);
     const w3 = await ds('win()');
     S.check(`shrines ${label}: Esc closes its page`, !w3.index, { index: w3.index });
-    await closeAll();
+    await closeAll(); await S.ev(() => __game.game.cradles?.unseal?.('f', 'courier', { now: true })); await S.ticks(10); // (Esc closes the page, not the seal)
     S.check(`shrines ${label}: after the page the Courier walks`, (await moveTest()) > 1, 'W held 40 ticks');
   }
   // fast travel: from the Float Shrine's page to the Lamp Shrine (a click on the row, as a person would)
-  await before('float'); await S.ticks(20); await F(8);
+  await before('float'); await S.ticks(20); await F(8); await S.ticks(45);
   const m = await ds('mark()');
   const clicked = await S.ev(() => { const row = [...document.querySelectorAll('#indexmenu .room')].find((r) => /the Lamp Shrine/.test(r.textContent)); if (!row) return false; row.click(); return true; });
   await S.ticks(4); await S.settle(); await S.ticks(20);

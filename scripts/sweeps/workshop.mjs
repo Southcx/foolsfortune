@@ -306,24 +306,24 @@ if (part('tithe')) {
 if (part('shrine')) {
   S.phase = 'shrine';
   await closeAll(); await S.go('workshop'); await S.ticks(10);
-  const at = await S.ev(() => { const s = __game.game.shrines.get('bisque'); if (!s) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; return { p: [s.pos.x + f[0] * 1.4, s.pos.y + 0.05, s.pos.z + f[2] * 1.4], yaw: s.yaw + Math.PI, built: __game.game.shrines.built }; });
+  const at = await S.ev(() => { const s = __game.game.shrines.get('bisque'); if (!s) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)], c = s.threshold?.pos || s.pos; return { p: [c.x + f[0] * 0.5, c.y + 0.05, c.z + f[2] * 0.5], yaw: s.yaw + Math.PI, built: __game.game.shrines.built }; }); // (the gate's threshold cradle, within its 0.9 m reach: docs/plans/HANKO.md 6.6)
   S.check('shrine: the Bisque Shrine is built', !!at, at);
   if (at) {
     await ws(`stand(${JSON.stringify(at.p)}, ${at.yaw})`); await S.settle(); await settleCourier();
     const ch = await ws('chevron()');
-    S.check('shrine: the chevron is on the Bisque Shrine', ch.cur === 'shrine' && ch.off < 0.6, ch);
+    S.check('shrine: the chevron is on the Bisque Shrine\'s threshold cradle', ch.cur === 'cradle' && /shrine\.bisque\.threshold/.test(ch.ref || '') && ch.off < 0.6, ch);
     const m = await ws('mark()');
     await S.ev(() => { __game.game.lachryma.value = 5; });
-    await F(6);
+    await F(6); await S.ticks(45); // (the seal's beat, world/cradles.js STAMP)
     let w = await ws('win()');
     const pool = await S.ev(() => { const L = __game.game.lachryma; return { value: L.value, max: L.max }; });
     S.check('shrine: F rests (the pool full) and opens its page', w.index && w.page === 'bisque' && pool.value >= pool.max - 0.5, { ...w, pool });
-    const shrineShot = await shotCommon('shrine-page');
+    const shrineShot = await shotCommon('shrine-page', { courier: false }); // (sealed: the Courier is the Pneuka Jar in the cradle)
     const text = await S.ev(() => document.querySelector('#indexmenu .im')?.innerText || '');
     S.check('shrine: its page carries no movement calibration', !/CALIBRATION/.test(text), /CALIBRATION/.test(text) ? `the page under THE BISQUE SHRINE lists ${text.split('\n').filter((t) => /CALIBRATION/.test(t)).join(' | ')} (feedback/indexmenu.js render(): calibration drawn under every page)` : 'none');
     S.check('shrine: its page shows no code id', !/\b(workshop|dunemaw|pier|margarite)\b/.test(text.split('\n').slice(0, 4).join(' ')), text.split('\n').slice(0, 4));
     // F closes it, and the same F does not open it again
-    await F(10);
+    await F(10); await S.ticks(40); // (F unseals: the page closes with it)
     w = await ws('win()');
     S.check('shrine: F closes its page (and does not reopen it)', !w.index, { index: w.index, page: w.page });
     // F spammed at the Shrine: it ends in one state and the rests are counted once a press, not twice
@@ -334,8 +334,12 @@ if (part('shrine')) {
     S.check('shrine: F spammed rests at most once a press', r1 - r0 <= k, { presses: k, rests: r1 - r0, endsOpen: w.index });
     await closeAll(); await S.ticks(6);
     // the door to the Spirit Garden, and out again
-    await F(6);
-    const g1 = await S.ev(() => { const r = [...document.querySelectorAll('#indexmenu .room')].find((e) => /Spirit Garden/.test(e.textContent)); r?.click(); return !!r; });
+    // (the arch's cradle opens the Spirit Garden: stand at it and F)
+    const arch = await S.ev(() => { const s = __game.game.shrines.get('bisque'), c = s?.arch?.pos; if (!c) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; return { p: [c.x - f[0] * 0.5, c.y + 0.05, c.z - f[2] * 0.5], yaw: s.yaw }; }); // (behind the arch, out of the threshold's reach)
+    if (arch) { await ws(`stand(${JSON.stringify(arch.p)}, ${arch.yaw})`); await S.settle(); await settleCourier(); }
+    const chA = await ws('chevron()');
+    await F(6); await S.ticks(45);
+    const g1 = !!arch && chA.cur === 'cradle' && /shrine\.bisque\.arch/.test(chA.ref || '');
     await S.ticks(10); await S.settle(); await S.ticks(30);
     w = await ws('win()');
     S.check('shrine: the Spirit Garden\'s door takes you in', g1 && w.realm, w);

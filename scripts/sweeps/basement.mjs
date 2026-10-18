@@ -198,20 +198,21 @@ S.check('page the Throwing Room: no calibration under it', d.calibration === 0, 
 await S.press('KeyF', 4);
 S.check('page the Throwing Room: F closes it and it stays closed', !(await S.sw('dom()')).index, 'open after F and 4 ticks (world/testroom/room.js update() peeks the same F latch while interact.cur is testroom.index and calls showPage again)');
 await S.closeAll();
-const shrine = await S.ev(() => { const s = __game.game.shrines?.list?.[0]; return s ? { id: s.id, name: s.name, pos: __bs.v(s.pos), yaw: s.yaw } : null; });
+const shrine = await S.ev(() => { const s = __game.game.shrines?.list?.[0]; return s ? { id: s.id, name: s.name, pos: __bs.v(s.threshold?.pos || s.pos), yaw: s.yaw } : null; });
 if (shrine) {
   await S.go('workshop'); await S.ticks(4);
   let it = null;
-  for (const [dx, dz] of [[0, 1.3], [1.3, 0], [0, -1.3], [-1.3, 0], [0.9, 0.9]]) {
+  for (const [dx, dz] of [[0, 0.5], [0.5, 0], [0, -0.5], [-0.5, 0], [0.4, 0.4]]) { // (within the threshold cradle's 0.9 m reach)
     await S.ev(([p, dx, dz]) => __bs.tp(p[0] + dx, p[1] + 0.05, p[2] + dz, Math.atan2(-dx, -dz)), [shrine.pos, dx, dz]); await S.ticks(8);
-    it = await S.ev(() => __game.game.interact?.cur?.id || null); if (it === 'shrine') break;
+    it = await S.ev(() => __game.game.interact?.cur?.id || null); if (it === 'cradle') break; // (the gate's threshold cradle: HANKO.md 6.6)
   }
-  await S.press('KeyF', 3); await S.ticks(10);
+  await S.press('KeyF', 3); await S.ticks(50); // (the seal's beat: world/cradles.js STAMP)
   d = await S.sw('dom()'); const fSh = await S.shot('page-shrine');
   S.check(`page ${shrine.name}: opens on F`, d.index && !!d.page, `interact ${it}; index=${d.index} page='${d.page}'`);
   S.check(`page ${shrine.name}: no calibration under it`, d.calibration === 0, `${d.calibration} CALIBRATION blocks under the page '${d.page}'; ${shotName(fSh)}`);
   await S.press('Escape', 4);
   S.check(`page ${shrine.name}: Esc closes it`, !(await S.sw('dom()')).index, '');
+  await S.ev(() => __game.game.cradles?.unseal?.('f', 'courier', { now: true })); // (out of the threshold cradle, so the next parts walk)
   await S.closeAll();
 } else S.note('page a Shrine', 'no Shrine built');
 
