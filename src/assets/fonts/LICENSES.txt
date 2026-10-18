@@ -1,5 +1,8 @@
 The fonts in this folder are Latin subsets (from Google Fonts) of the following families, each under the SIL Open Font License 1.1.
 
+==================== jersey 15 ====================
+Copyright 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jersey), SIL Open Font License 1.1 (the System's counts: OVERLAY.md 10.2)
+
 ==================== cinzel ====================
 Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
 
