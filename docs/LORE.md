@@ -892,5 +892,5 @@ Carbine** (3), **the Pentagun** (5), **the Pepperbox** (7). Spelled *Bombardier*
 bombard, the old one-shot cannon, from Latin *bombus*, a boom. A carbine is the short gun a horseman carried; the Pentagun is coined
 plainly, Greek *pente*, five; the pepperbox is the real nineteenth-century gun of many barrels turning in a block, named because it
 looked like a pepper mill and scattered its shot like one. Odd counts only, one to seven: the psygun climbs as the feelings do.
-*Open:* `tools/psygun/kinds.js` already has THE PSYGUN (6 chambers), THE PEPPERBOX (11) and THE LONG TUBE (3); the counts and the
-set are Dovina's and Petra's to square with the owner's.
+*Settled* (Dovina, OVERLAY.md 18, `tools/psygun/kinds.js`): THE PSYGUN stays at 6 as the first gun, the four beside it; the Carbine
+replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11.
