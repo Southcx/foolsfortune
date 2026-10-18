@@ -281,6 +281,8 @@ export class Veritome extends Tech {
         c.getContext('2d').drawImage(canvas, A.x, sy, sw, sh, 0, 0, PLATE.w, PLATE.h);
         drawStamp(c.getContext('2d'), stampText(), PLATE.w - 6, PLATE.h - 16, 11); // (burnt into the print's corner, as the 90s date-backs did: ui/datestamp.js)
         thumb = c.toDataURL('image/jpeg', 0.72);
+        // (where each subject sits in the plate, 0..1 of its width and height: the tag's sprite is cut from the Compendium's plate, OVERLAY.md 17)
+        for (const s of q.shot.subjects) if (s.ndc) s.box = { x: +((((s.ndc.x + 1) / 2) * canvas.width - A.x) / sw).toFixed(3), y: +((((1 - s.ndc.y) / 2) * canvas.height - sy) / sh).toFixed(3), h: +((s.frac * canvas.height) / sh).toFixed(3) };
         q.swatch = swatchOf(c); // (its strongest colour: a good plate teaches the kiln a glaze, courier/vessel/vessel.js)
       } catch { thumb = null; }
     }

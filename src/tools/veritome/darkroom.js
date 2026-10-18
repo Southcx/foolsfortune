@@ -34,7 +34,7 @@ export function appraise(game, book, plates) {
     // the Compendium
     if (kind) {
       const prev = book.photos[kind], score = shot.subjects[0]?.score ?? 200;
-      if (!prev || score > prev.score) { book.photos[kind] = { score, stars: shot.stars, thumb: plate.thumb || prev?.thumb || null, at: plate.t }; r.entry = !prev; if (!prev) out.entries++; }
+      if (!prev || score > prev.score) { book.photos[kind] = { score, stars: shot.stars, thumb: plate.thumb || prev?.thumb || null, box: (plate.thumb && shot.subjects[0]?.box) || (plate.thumb ? null : prev?.box) || null, at: plate.t }; r.entry = !prev; if (!prev) out.entries++; }
     }
     // the bestiary
     for (const s of shot.subjects) {

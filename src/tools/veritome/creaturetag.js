@@ -23,8 +23,10 @@
 // Dennō Coil's glasses (the data over the world, legible or broken), Mass Effect's and Uplink's decrypt (characters churning, then
 // settling one by one), Persona's Analyze (a weakness known only once found).
 //
-//   readTag(game, c) -> { kind, level, levelName, lines: [{ key, read, text?, len?, value? }] } | null
-//   readKind(game, kind) -> { kind, level, levelName, name, reads, facts: [{ id, read, text?, len, battle }] }   (the bestiary page)
+//   readTag(game, c) -> { kind, level, levelName, plate: 'plain'|'latent'|null, lines: [{ key, read, text?, len?, value? }] } | null
+//   readKind(game, kind) -> { kind, level, levelName, name, reads, facts: [{ id, read, text?, len, battle }], plate }   (the bestiary page)
+//   plateOf(game, kind) -> { read: 'plain', thumb, box, stars } | { read: 'latent' } | null   (the sprite: the Compendium's best plate of the kind,
+//     `box` where the creature sits in it, 0..1; latent while a plate of it waits in the memory; null: never photographed, a shadow)
 // ---------------------------------------------------------------------------------------
 import { familiarityOf, readHealth, READS } from '../../progress/familiarity.js';
 import { EMO } from '../../progress/combat/emo.js';
@@ -47,6 +49,18 @@ function latentFacts(game, kind) {
   }
   return out;
 }
+
+/** The sprite's source: the Compendium's best plate of the kind once one is appraised, or latent while one waits in the memory. Only a
+ *  photograph fills it in (fighting sharpens it: the sprite's resolution is familiarity's level, Calissa's look). */
+export function plateOf(game, kind) {
+  const book = game.veritome?.book; if (!book) return null;
+  const ph = book.photos?.[kind];
+  if (ph?.thumb) return { read: 'plain', thumb: ph.thumb, box: ph.box || null, stars: ph.stars };
+  const held = (book.memory?.plates || []).some((p) => p.shot?.subjects?.[0]?.kind === kind);
+  return held ? { read: 'latent' } : null;
+}
+/** The plate's read without its picture (`plain` | `latent` | null): what the tag and the agent carry; the sprite asks plateOf for the image. */
+const plateRead = (game, kind) => plateOf(game, kind)?.read ?? null;
 
 /** How a fact of a kind reads now: plain (in the bestiary), latent (in the memory) or scrambled. */
 function factRead(game, kind, f, latent) {
@@ -103,7 +117,7 @@ export function readTag(game, c) {
     const words = fit.filter(([id]) => known(id, L)).map(([, f]) => f.word), blanks = fit.length - words.length;
     lines.push(plain('functions', words.join(' '), { words, blanks }));
   }
-  return { kind: c.kind, level: F.level, levelName: F.name, lines };
+  return { kind: c.kind, level: F.level, levelName: F.name, plate: plateRead(game, c.kind), lines };
 }
 
 /** The bestiary page for a kind: the same level and readouts, and every fact as it reads now. */
@@ -113,5 +127,5 @@ export function readKind(game, kind) {
     const read = factRead(game, kind, f, latent);
     return { id: f.id, read, battle: !!f.battle, len: f.text.length, ...(read === 'plain' ? { text: f.text } : {}) };
   });
-  return { kind, level: F.level, levelName: F.name, name: READS[F.level].name ? (C?.name || kind) : null, reads: READS[F.level], facts };
+  return { kind, level: F.level, levelName: F.name, name: READS[F.level].name ? (C?.name || kind) : null, reads: READS[F.level], facts, plate: plateRead(game, kind) };
 }
