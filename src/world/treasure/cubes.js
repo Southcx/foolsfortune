@@ -3,7 +3,8 @@
 // jagged, metallic, and iridescent: a thin film on the surface turns whatever it reflects (the painted sky, here) through the
 // colours at a glancing angle, so a cube in the hand is never one colour and never the same twice. They are the currency: chests are
 // full of them, a zandatsu takes them out of a clapperjar, the Tithe is paid in them. The balance is the ledger's (`cube.earned` minus
-// `cube.spent`): nothing here keeps a number of its own but the readout.
+// `cube.spent`): nothing here keeps a number of its own. The balance is shown on the Lachrimeter's base (its cube plate:
+// vfx/lachrimeter/cubeplate.js, read from `balance`); the old DOM readout was retired (the owner, 2026-10-18).
 //
 // They are physical: they fountain out of a chest, clack on the floor (a glass tick that rises with each you pick up in a row), bounce and
 // settle; after a moment those within reach are drawn to the Courier and taken. Drawn as ONE instanced mesh (a hundred and fifty cubes
@@ -16,7 +17,6 @@
 //   game.cubes.burst(pos, worth, { count, spread, up, stagger })     a fountain of cubes worth `worth` in all
 //   game.cubes.balance   game.cubes.earn(n, why)   game.cubes.spend(n, why) -> true | false
 // ---------------------------------------------------------------------------------------
-import { restartClass } from '../../core/restart.js';
 import * as THREE from 'three';
 import { hopperGeometry, bismuthMaterial } from '../../vfx/bismuth.js';
 import { RAPIER, G, groups } from '../../core/physics.js';
@@ -28,17 +28,6 @@ const PICKUP = 32;
 const CUBE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | PICKUP); // (they pile against each other, and nothing else that is loose)
 const MAX = 320, SIZE = 0.14;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Vector3();
-
-const CSS = `
-#cubes { position: absolute; right: 30px; bottom: calc(166px + var(--cine, 0vh)); display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none; }
-#lachryma #cubes { position: static; justify-content: flex-end; margin: 4px 2px 0 0; transform: none; height: 18px; }
-#cubes.on { opacity: 1; transform: none; }
-#cubes i { display: block; width: 15px; height: 15px; background: linear-gradient(135deg, #100b18 0%, #2a1a3a 42%, #0c0812 100%); border: 1px solid transparent; border-radius: 3px;
-  background-clip: padding-box; box-shadow: 0 0 0 1px rgba(160,120,255,.55), 0 0 8px rgba(120,220,255,.35), inset 0 0 6px rgba(255,120,220,.35); transform: rotate(45deg) scale(.82); }
-#cubes b { font: 16px var(--f-sys); color: #fff1dc; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
-#cubes.pop i { animation: cubepop .42s cubic-bezier(.2, 1.6, .4, 1); }
-@keyframes cubepop { 0% { transform: rotate(45deg) scale(.82); } 22% { transform: rotate(45deg) scale(.6, 1.15); } 55% { transform: rotate(45deg) scale(1.3, .8); } 100% { transform: rotate(45deg) scale(.82); } }
-`;
 
 /**
  * The oil-slick stuff: black glass with a film on it. A near-black body, a clear coat, a dim reflection of the painted sky, and (in the
@@ -82,7 +71,7 @@ export class Cubes {
     this.game = game;
     this.list = [];
     this.queue = [];
-    this.combo = 0; this.comboT = 0; this.shown = -1; this.popT = 0;
+    this.combo = 0; this.comboT = 0;
     // (a cube left lying is a bright thing to anything that eats Lachryma: it may be swallowed, and carried until it bursts: creatures/ai/ecology.js)
     game.ai?.eco.provide('shiny', (pos, range) => this.list.filter((c) => c.state === 'loose' && c.age > 1.5 && c.pos.distanceTo(pos) < range).slice(0, 6)
       .map((c) => ({ pos: c.pos, ref: c, what: 'cube', alive: () => this.list.includes(c) && c.state === 'loose', take: (who) => { const w = this.steal(c); if (!w) return false; if (who) who.stash = (who.stash || 0) + w; return true; } })));
@@ -96,12 +85,6 @@ export class Cubes {
     this.mesh.count = 0; this.mesh.frustumCulled = false; this.mesh.castShadow = true;
     game.scene.add(this.mesh);
     game.physics.collisionHandlers.push((h1, h2) => this.onCollision(h1, h2));
-    // the readout
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-    const el = (this.el = document.createElement('div')); el.id = 'cubes';
-    el.innerHTML = '<i></i><b>0</b>';
-    (document.getElementById('lachryma') || document.getElementById('hud') || document.body).appendChild(el); // (in the Lachryma panel, beside the tube)
-    this.num = el.querySelector('b');
   }
 
   // ---------------------------------------------------------------- the currency (the ledger's numbers)
@@ -194,14 +177,6 @@ export class Cubes {
     this.mesh.count = n;
     this.mesh.instanceMatrix.needsUpdate = true;
     this.geo.attributes.aSeed.needsUpdate = true;
-    // the readout
-    const b = this.balance;
-    if (b !== this.shown) {
-      const up = this.shown >= 0 && b > this.shown;
-      this.shown = b; this.num.textContent = `${b}`;
-      this.el.classList.toggle('on', b > 0);
-      if (up) restartClass(this.el, 'pop'); // (no forced layout: restart.js)
-    }
   }
 
   take(i) {

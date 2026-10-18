@@ -314,7 +314,7 @@ export class PsygunCylinder {
     // the size rule: whole while a beat that shows it runs and 1.2 real s after, settled to the corner over 350 ms
     this.size = this.clock < this.hold ? Math.min(1, this.size + dt / RISE) : Math.max(0, this.size - dt / SETTLE); this.state.size = this.size;
     const e = sm(this.size), H = slot.view.h || innerHeight, W = slot.view.w || innerWidth, lp = H / 480;
-    const R0 = (this.game.lachrimeterTube?.pubW || TUBE_W * lp + 12) + CLEAR; // (the tube's published width: --lachrimeter-tube-w)
+    const R0 = (this.game.lachrimeterTube?.pubW || TUBE_W * lp + 12) + CLEAR; // (the tube's published width, CSS px)
     const cx = R0 + lerp(AT.corner[0], AT.whole[0], e) * lp, cy = lerp(AT.corner[1], AT.whole[1], e) * lp;
     slot.x = 0; slot.y = 0; root.position.set(W, -H, 0);
     this.holder.position.set(-cx, cy, 0); this.holder.scale.setScalar(lerp(PPU.corner, PPU.whole, e) * lp);

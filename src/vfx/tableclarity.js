@@ -49,7 +49,7 @@ const CSS = `
 .tc-lab.centre .big b { font-size: calc(76 * var(--u)); } .tc-lab.centre .big i { font-size: calc(20 * var(--u)); color: ${GOLD}; }
 .tc-lab.centre .small b { font-size: calc(20 * var(--u)); } .tc-lab.centre .small i { font-size: calc(13 * var(--u)); }
 /* (while seated: the game's own HUD, the compass and the Lachryma meter, steps out; the table's words are the only ones) */
-body.bztable-seated #hud, body.bztable-seated #lachryma, body.bztable-seated #cubes { opacity: 0 !important; visibility: hidden !important; }
+body.bztable-seated #hud { opacity: 0 !important; visibility: hidden !important; }
 .tc-br { position: absolute; left: 0; top: 0; height: 0; transform-origin: 0 50%; border-bottom: calc(5 * var(--u)) solid var(--bc); filter: drop-shadow(0 0 calc(5 * var(--u)) var(--bg)); }
 .tc-br::before, .tc-br::after { content: ''; position: absolute; bottom: calc(-5 * var(--u)); width: calc(5 * var(--u)); height: calc(18 * var(--u)); background: var(--bc); }
 /* (a group the coach found: a thick gold bar, tall end posts, a dark keyline round it and a gold glow, so it reads over the pale cards at 480 lines) */

@@ -150,7 +150,7 @@ export class SoulBrush extends Tech {
           else if (this.rmbT >= TAP) {
             this.rmbT = -1;
             if (this.celestial.canEnter()) this.celestial.enter();
-            else { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); g.log?.say('info', 'Your mind is too dry to paint.', { key: 'brushdry', throttle: 3 }); }
+            else { sfx.fizzle?.(); g.lachrimeterTube?.pulse?.(); g.log?.say('info', 'Your mind is too dry to paint.', { key: 'brushdry', throttle: 3 }); }
           }
         }
         ['Digit1', 'Digit2'].forEach((k, i) => { if (inp.wasPressed(k)) this.load.setMode(LOAD_MODES[i]); }); // (the modes, as the Sondelass's forms)

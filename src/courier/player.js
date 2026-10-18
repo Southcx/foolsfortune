@@ -565,7 +565,7 @@ export class Player {
         this.dashFx(d);
       } else {
         this.sfx.fizzle();
-        this.game?.hud?.lachrymaPulse(false);
+        this.game?.lachrimeterTube?.pulse();
       }
     }
     hv.clampLength(0, M.maxSpeed);

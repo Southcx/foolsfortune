@@ -522,7 +522,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the Sight / the Lachrimeter's tube** (working name, Espada's to rule; the look `game.sightLook`, `src/vfx/sight.js`, the waypoint Dovina's `game.sight`, `progress/sight.js` / `LachrimeterTube`, `src/vfx/lachrimetertube.js`)
   — the instrument top-right (a needle to the waypoint you know of, the weather's liquid, a wadokei hour ring, the Dissonance arc, the place
   plate) / the Lachrimeter as a thermometer bottom-right (the bulb and column the pool, the held stretch, the expansion chamber, the Bottles'
-  valve). *Not:* the overlay (the System's sight at large), the wire compass, the Dreamvane's vane.
+  valve; **the Blink's pearls**, a glass pearl a charge on a brass rail beside the column, in combat only, `vfx/lachrimeter/blinkpearls.js`;
+  **the cube plate**, the cubes' balance in a Nixie window on the plinth, `vfx/lachrimeter/cubeplate.js`). *Not:* the overlay (the System's
+  sight at large), the wire compass, the Dreamvane's vane, the LACHRYMA panel (retired 2026-10-18).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **an aptitude / the Assay** (working names, Espada's, proposed; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an

@@ -368,7 +368,6 @@ async function main() {
   { const st = document.createElement('style'); st.textContent = PX_CSS; document.head.appendChild(st); }
   await px.load();
   theme.pixelGloves(px);
-  hud.pixelate(px);
 
   const stats = { broken: 0, total: 0 };
   const events = new Events();
@@ -1139,7 +1138,8 @@ async function main() {
   let lastWall = null;
   let lastLedge = null;
 
-  // the Blink's charges for the HUD's beads (ui/beads.js): how many, of how many, and how far the next has come back
+  // the Blink's charges for the battle ring (vfx/hudring.js): how many, of how many, and how far the next has come back (the tube's
+  // pearls read the same: vfx/lachrimetertube.js blinkOf)
   const blinkState = () => {
     const b = techs.get('blink');
     if (!b?.enabled) return null;
@@ -1345,12 +1345,12 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma,
+      spreadDeg: weapon.spreadDeg(player), fov: camera.fov,
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
-      , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
+      , debug: diag.mode > 0,
     });
     game.auras.update();
     game.temper.update();

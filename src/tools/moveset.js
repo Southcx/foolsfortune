@@ -286,7 +286,7 @@ export class Moveset {
   pay(c, also = 0) {
     const row = RULES[this.S.rules || this.id]?.paidCut, g = this.game, L = g.lachryma;
     if (!row || !this.recovering(c)) return false;
-    if (!L || L.available < L.cost(row.cost, 'cut') + L.cost(also, 'cut') - 1e-6 || !L.spend(row.cost, 'cut')) { if (!c.denied) { c.denied = true; g.hud?.lachrymaPulse?.(false); } return false; } // (the free grammar goes on: no words, the pool's pulse once a move)
+    if (!L || L.available < L.cost(row.cost, 'cut') + L.cost(also, 'cut') - 1e-6 || !L.spend(row.cost, 'cut')) { if (!c.denied) { c.denied = true; g.lachrimeterTube?.pulse?.(); } return false; } // (the free grammar goes on: no words, the pool's pulse once a move)
     const P = this.P, back = _b.set(-Math.sin(c.yaw ?? P.bodyYaw), 0, -Math.cos(c.yaw ?? P.bodyYaw)).multiplyScalar(0.6);
     (this.ghosts ||= new Afterimages(g, { opacity: 0.45, life: 0.45 })).leave({ ph: fxRand(), drift: back }); // (the pose on show left behind: Blink Dash's afterimage)
     g.events?.emit('move.cut', { tool: this.S.rules || this.id, move: c.id, paid: true, cost: row.cost, by: 'courier' });
@@ -472,7 +472,7 @@ export class Moveset {
     const def = this.def(id), g = this.game, P = this.P, ch = g.character;
     if (!def || !ch?.clips.clips[def.clip]) return false;
     const R = this.rule(def), cost = R?.cost ?? def.cost;
-    if (cost && !g.lachryma.spend(cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); return false; }
+    if (cost && !g.lachryma.spend(cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.lachrimeterTube?.pulse?.(); return false; }
     const prev = this.cur;
     if (prev) this.closeBlow(prev); // (cut short by the next, or its strike already past)
     if (prev && this.last) { (this.from ||= this.last.constructor ? new this.last.constructor(this.last.q.length / 4) : null)?.copy(this.last); this.fadeT = 0; } // (what was showing, held and faded out over the new move: no pop at a join)

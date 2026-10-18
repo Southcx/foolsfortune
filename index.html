@@ -28,11 +28,6 @@
     @keyframes pulse { to { stroke-width: 4; } }
     /* the turned glove's bob (the dialogue's "more": npc/dialogue.js) */
     @keyframes jbob { 50% { translate: 0 2px; } }
-    /* the LACHRYMA panel: the Blink's beads and the cubes, unframed, left of the thermometer Lachrimeter (vfx/lachrimetertube.js), which
-       publishes its width as --lachrimeter-tube-w (0 until it does) */
-    #lachryma { position: absolute; right: calc(18px + var(--lachrimeter-tube-w, 0px)); bottom: calc(94px + var(--cine, 0vh)); display: flex; flex-direction: column;
-      align-items: flex-end; gap: 4px; text-shadow: 1px 1px 0 rgba(8,3,1,.8); pointer-events: none; }
-    #lachryma .beads { margin-right: 10px; }
     #reloadbar { position: absolute; left: 50%; top: calc(50% + 40px); width: 80px; height: 3px; transform: translateX(-50%); background: rgba(28,13,8,.6); opacity: 0; }
     #reloadbar i { display: block; height: 100%; width: 0; background: var(--accent); }
     #speed { position: absolute; right: 22px; bottom: calc(210px + var(--cine, 0vh)); text-align: right; font: 500 11px var(--f-ui); letter-spacing: .08em; opacity: .8; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
@@ -99,7 +94,6 @@
     <div id="trialbig"></div>
     <div id="trialarrow"></div>
     <div id="speed"></div>
-    <div id="lachryma"></div>
   </div>
   <div id="overlay">
     <div class="logo"><small>a sixth-generation sandbox</small><b>Fool's Fortune</b><span>The Clay Workshop</span></div>

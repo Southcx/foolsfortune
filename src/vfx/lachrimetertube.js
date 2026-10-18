@@ -16,11 +16,16 @@
 //   the EXPANSION CHAMBER brimming (game.courierMind.brimming): the bore full through the neck and the little glass bulb turning
 //   the LACHRYMATO BOTTLES behind and left (worn at the back: progress/brushload.js): below half the valve opens and the bottle drips
 //                   down the feed tube into the bulb; a bottle drains as it feeds (two avenues for the pool: OVERLAY.md 9)
+//   the BLINK'S PEARLS a brass rail beside the column, a glass pearl a Blink charge filling with Lachryma as it comes back; in combat
+//                   only (vfx/lachrimeter/blinkpearls.js; the owner, 2026-10-18)
+//   the CUBE PLATE  a Nixie window in a brass plate on the plinth's face, left of the pool's count: a bismuth cube and the balance,
+//                   rolling digit by digit in fixed cells (vfx/lachrimeter/cubeplate.js; the owner, 2026-10-18)
 // The plinth is clay glazed in the window colour (ui/theme.js: 15.3, the window colour is the glaze of the frame's matter), with
 // patinated brass. It stands at the corner's foot while the pool is doing something (not full, held for a charge, or moved in the last
-// four real seconds; the LACHRYMA panel's rule, feedback/hud.js) and sinks into the corner when it is not. It is the only Lachrimeter:
-// the old flat DOM tube was retired (the owner, 2026-10-18). It publishes its width as --lachrimeter-tube-w (the panel and the
-// psygun's cylinder stand left of it: index.html, vfx/psyguncylinder.js `pubW`).
+// four real seconds), while a Blink charge is coming back in a fight, a few real seconds after the cubes change, or after a pulse(), and
+// sinks into the corner when none is so. It is the only Lachrimeter: the old flat DOM tube and then the LACHRYMA panel (its beads and
+// the cubes' readout) were retired (the owner, 2026-10-18). Its width in CSS px is `pubW` (the psygun's cylinder stands left of it:
+// vfx/psyguncylinder.js).
 //
 // Prior art: the mercury-in-glass thermometer (Fahrenheit, 1714; the clinical and laboratory forms: the bulb as reservoir, the
 // capillary bore, the convex meniscus, the expansion chamber, acid-etched ticks; the Victorian wall thermometer's board and brass);
@@ -28,6 +33,7 @@
 // crackle glaze (Ge ware, guan) read onto glass; Dead Space's RIG and Metroid Prime's visor for the interface as a lit object.
 //
 //   const L = new LachrimeterTube(game)   game.lachrimeterTube   (it registers itself with game.overlayScene; nothing else to call)
+//   L.pulse()  the pool was touched or refused (a gain, a dry click): the tube comes up and stands its quiet seconds
 //   L.bulbAt(out) -> { x, y, z, r } the bulb in the overlay scene (null while hidden)   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -36,15 +42,18 @@ import { capOf } from '../progress/poolcaps.js';
 import { BOTTLES } from '../progress/brushload.js';
 import { T } from '../core/config.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
+import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
+import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
 
 // the instrument's own units (the mock's): the bulb at the origin, the scale from Y0 (empty) to Y1 (full), the plate behind
 const Y0 = 0.55, Y1 = 3.55, yOf = (p) => Y0 + (Y1 - Y0) * p;
 const PL = { x0: -0.32, x1: 0.74, y0: 0.3, y1: 4.0 };
+const CP = { x: -1.6, len: 0.98 }; // (the cube plate's window on the plinth's face: its centre, its glass's length)
 const BORE = 0.124; // (the bore's Lachryma)
 // how it stands on the 480-line frame: 32 lines a unit (192 lines tall at most), the mock's eye (a three-quarter turn, a little above)
 const SKIN = { w: 544, h: 1024, plate: [0, 0, 288, 1024], glaze: [288, 0, 256, 256], brass: [288, 256, 128, 128] }; // (the still body's atlas: tex px)
 const LINES = 32, YAW = 0.42, PITCH = 0.08, GAP = 6; // (lines to the frame's bottom edge)
-const CLEAR = 18, WIDE = 2.9; // (CSS px from the right edge: the corner, as the HUD's own margin; the tube's width in its units, the Bottles' rack included: the #lachryma panel steps left by it, index.html)
+const CLEAR = 18, WIDE = 3.5; // (CSS px from the right edge: the corner, as the HUD's own margin; the tube's width in its units, the cube plate and the Bottles' rack included: the psygun's cylinder steps left by it)
 const RIGHT = 1.1, FOOT = 1.3, HEIGHT = 5.9; // (units: the plinth's right corner as turned, the plinth's foot below the bulb, the whole height)
 const K = 2; // (texture pixels a line, for the words drawn on canvases)
 const COUNT_FONT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
@@ -195,6 +204,7 @@ gl_FragColor=vec4(c*a+vec3(1.)*(s+s2),clamp(a+s+s2,0.,1.));` });
 // the etched ticks, one mesh: a tick above the cap dims (aP its fraction, aMaj a long one)
 const TICK = overlayKind('tube.tick', { vdecl: 'attribute float aP,aMaj;uniform float uCap;', vbody: 'vA=aP>uCap+1e-4?.22:(aMaj>.5?.85:.55);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);',
   fbody: 'gl_FragColor=vec4(.886,.933,.957,vA);' });
+const PEARL = overlayKind('tube.pearl', PEARL_KIND); // (the Blink's pearls' Lachryma: vfx/lachrimeter/blinkpearls.js)
 
 /** An arc of a ring round the bore at height y (a tick, a cost), facing the eye. */
 function arcTube(r, y, arc, th, phi0 = 0) {
@@ -231,13 +241,25 @@ export class LachrimeterTube {
     this.game = game;
     this.S = game.overlayScene;
     this.state = { level: 0, full: 0, held: 0, charge: 0, cost: 0, brim: 0, feeding: false, shown: 0 };
-    this.lvl = -1; this.ch = 0; this.brim = 0; this.shown = 0; this.quiet = 0; this.lastAvail = -1; this.pulse = 0; this.valve = 0; this.t = 0; this.feedT = 0;
+    this.lvl = -1; this.ch = 0; this.brim = 0; this.shown = 0; this.quiet = 0; this.lastAvail = -1; this.flare = 0; this.valve = 0; this.t = 0; this.feedT = 0; this.lastCubes = -1;
+    this.blink = { n: 0, max: 0, fill: 0 }; // (the Blink's charges, read each frame: blinkOf)
     this.keys = { count: '', tag: '', cost: '', theme: '', cap: -1 };
     this.uInst = { value: new THREE.Matrix4() }; this.turnBack = new THREE.Quaternion();
     if (!this.S) return;
     this.build();
     this.slot = this.S.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
-    document.fonts?.addEventListener?.('loadingdone', () => { this.keys.count = this.keys.tag = this.keys.cost = ''; drawPlate(this.plateC); this.skin(); });
+    document.fonts?.addEventListener?.('loadingdone', () => { this.keys.count = this.keys.tag = this.keys.cost = ''; this.cubePlate.dirty = true; this.cubePlate.fs = 0; drawPlate(this.plateC); this.skin(); });
+  }
+
+  /** The pool was touched or refused (a bauble drunk, a dry click: the seven callers that once pulsed the LACHRYMA panel): the tube
+   *  comes up and stands its quiet seconds (the meniscus flares on a gain by itself: the pool's 'gain'). */
+  pulse() { this.quiet = 0; }
+
+  /** The Blink's charges as the old beads read them (main.js's blinkState): how many, of how many, how far the next has come back; null
+   *  without the Blink. Into one object, no allocation. */
+  blinkOf() {
+    const b = this.game.techs?.get?.('blink'); if (!b?.enabled || !b.cfg) return null;
+    const o = this.blink, max = b.cfg.charges; o.n = b.charges; o.max = max; o.fill = b.charges < max ? Math.max(0, Math.min(1, b.recharge / b.cfg.recharge)) : 0; return o;
   }
 
   // ---------- the instrument, built once ----------
@@ -289,8 +311,8 @@ export class LachrimeterTube {
     // the finial, the Bottles' rack and manifold
     const P = [];
     P.push(at(new THREE.LatheGeometry([[0, -0.36], [0.3, -0.36], [0.34, -0.3], [0.37, -0.12], [0.35, -0.11], [0.31, -0.28], [0, -0.3]].map((p) => new THREE.Vector2(p[0], p[1])), 32)));
-    P.push(at(new THREE.BoxGeometry(1.92, 0.72, 0.04), [0, -0.88, 0.47]));
-    for (const x of [-0.9, 0.9]) P.push(at(new THREE.CylinderGeometry(0.22, 0.22, 0.1, 20), [x, -0.88, 0.6], [0, 0, Math.PI / 2]));
+    P.push(at(new THREE.BoxGeometry(1.92, 0.72, 0.04), [0, -0.88, 0.47]), at(new THREE.BoxGeometry(CP.len + 0.12, 0.66, 0.04), [CP.x, -0.88, 0.47])); // (the count's plate; the cube plate's)
+    for (const x of [-0.9, 0.9, CP.x - CP.len / 2 - 0.04, CP.x + CP.len / 2 + 0.04]) P.push(at(new THREE.CylinderGeometry(x < -0.95 ? 0.19 : 0.22, x < -0.95 ? 0.19 : 0.22, 0.08, 20), [x, -0.88, 0.6], [0, 0, Math.PI / 2])); // (the end caps of the two windows)
     { const pw = PL.x1 - PL.x0, ph = PL.y1 - PL.y0, cx = (PL.x0 + PL.x1) / 2, cy = (PL.y0 + PL.y1) / 2, z = -0.29;
       P.push(at(new THREE.BoxGeometry(pw + 0.06, 0.05, 0.05), [cx, PL.y0, z]), at(new THREE.BoxGeometry(pw + 0.06, 0.05, 0.05), [cx, PL.y1, z]));
       P.push(at(new THREE.BoxGeometry(0.05, ph, 0.05), [PL.x0, cy, z]), at(new THREE.BoxGeometry(0.05, ph, 0.05), [PL.x1, cy, z]));
@@ -307,12 +329,16 @@ export class LachrimeterTube {
     { const w = [at(new THREE.TorusGeometry(0.07, 0.014, 6, 20)), at(new THREE.BoxGeometry(0.14, 0.014, 0.014))];
       this.valveM = add(onto(mergeGeometries(w), 'brass'), body); this.valveM.position.set(-0.98, 0.88, -0.12); }
     // the plinth: clay glazed in the window colour, and its step
-    still.push(onto(at(roundBox(2.0, 0.8, 0.9, 0.07), [0, -0.88, 0]), 'glaze', true), onto(at(roundBox(1.2, 0.14, 0.7, 0.04), [0, -0.42, 0]), 'glaze', true));
+    still.push(onto(at(roundBox(3.24, 0.8, 0.9, 0.07), [-0.62, -0.88, 0]), 'glaze', true), onto(at(roundBox(1.2, 0.14, 0.7, 0.04), [0, -0.42, 0]), 'glaze', true)); // (widened left for the cube plate)
     add(mergeGeometries(still), body); still.forEach((g) => g.dispose()); this.skin();
     // the count: the VFD's face and its glass
     this.vfdC = cv(512, 160); this.vfdT = tex(this.vfdC);
     add(new THREE.PlaneGeometry(1.66, 0.52), basic(0xffffff, { map: this.vfdT })).position.set(0, -0.88, 0.6);
     glasses.push(glassOf(at(new THREE.CylinderGeometry(0.31, 0.31, 1.72, 28, 1, true), [0, -0.88, 0.6], [0, 0, Math.PI / 2], [1, 1, 0.62]), 0.03, 0.45));
+    // the cube plate: its Nixie window (the cube and the balance: vfx/lachrimeter/cubeplate.js) and its glass
+    this.cubePlate = new CubePlate(); this.cubeT = tex(this.cubePlate.canvas);
+    add(new THREE.PlaneGeometry(PLATE_W, PLATE_H), basic(0xffffff, { map: this.cubeT })).position.set(CP.x, -0.88, 0.6);
+    glasses.push(glassOf(at(new THREE.CylinderGeometry(0.27, 0.27, CP.len, 24, 1, true), [CP.x, -0.88, 0.6], [0, 0, Math.PI / 2], [1, 1, 0.62]), 0.03, 0.45));
     // the bulb: the pool's base, and its glass
     this.bulb = add(new THREE.SphereGeometry(0.37, 36, 24), B(labo({ gain: 1.15, t: 1.3 })));
     glasses.push(glassOf(at(new THREE.SphereGeometry(0.42, 36, 24))));
@@ -357,6 +383,9 @@ export class LachrimeterTube {
     { const d = new THREE.SphereGeometry(0.03, 8, 6).toNonIndexed(); this.dropN = d.attributes.position.count; this.dropAt = d.attributes.position.array.slice(); // (three drops, one mesh: placed each frame)
       this.drops = add(mergeGeometries([d, d.clone(), d.clone()]), basic(0xcff0ff), 3); this.drops.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage); d.dispose(); }
     this.entry = add(new THREE.TorusGeometry(0.06, 0.01, 6, 20), basic(0xbfe8ff)); this.entry.position.set(-0.37, 0.04, 0.05); this.entry.rotation.y = -1.2;
+    // the Blink's pearls on their rail beside the column (vfx/lachrimeter/blinkpearls.js)
+    this.pearls = new BlinkPearls({ inst, uInst: U, body, onto, at, glassOf, glassB, glassF,
+      kind: (u) => overlayShader(PEARL, u, { cull: 0 }), flat: () => basic(0xffffff, { transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }) });
 
     // the words beside it, in root space (CSS px, never turned): the held stretch's tag, a cost's count
     const plane = (map, o) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), basic(0xffffff, { map, depthTest: false, depthWrite: false })); m.renderOrder = 20 + o; m.frustumCulled = false; m.visible = false; root.add(m); return m; };
@@ -376,7 +405,9 @@ export class LachrimeterTube {
     const avail = pool.available, reserved = pool.reserved, max = pool.max, shownHeld = Math.min(held, avail); // (a hold is still in the pool: it pales the column's top, it does not lengthen it)
     if (Math.abs(avail - this.lastAvail) > 0.01 || reserved > 0 || held > 0) { this.lastAvail = avail; this.quiet = 0; }
     this.quiet += dt;
-    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 || g.spiritualLink?.state?.owner ? 1 : 0; // (a tool UI on the link holds it up: the tool draws from the pool it is tied to)
+    const cubes = g.cubes?.balance ?? 0; if (cubes !== this.lastCubes) { if (this.lastCubes >= 0) this.quiet = 0; this.lastCubes = cubes; } // (the cubes changed: it stands a few real seconds, as a gain does)
+    const blink = this.blinkOf(), combat = g.combat ? !!g.combat.engaged : true, blinkBack = !!blink && combat && blink.n < blink.max; // (a charge coming back in a fight)
+    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 || blinkBack || g.spiritualLink?.state?.owner ? 1 : 0; // (a tool UI on the link holds it up: the tool draws from the pool it is tied to)
     this.shown += (want - this.shown) * Math.min(1, dt * (want ? 7 : 3));
     if (!want && this.shown < 0.01) this.shown = 0;
     root.userData.overlayHidden = this.shown <= 0;
@@ -385,7 +416,7 @@ export class LachrimeterTube {
 
     // where it stands (CSS px), and how big: 32 lines a unit at the 480-line present
     const H = slot.view.h || innerHeight, lineP = H / 480, s = LINES * lineP, e = this.shown * this.shown * (3 - 2 * this.shown);
-    { const w = Math.round(WIDE * s + 12); if (w !== this.pubW) { this.pubW = w; document.documentElement.style.setProperty('--lachrimeter-tube-w', `${w}px`); } } // (its width, for what stands left of it)
+    this.pubW = Math.round(WIDE * s + 12); // (its width, for what stands left of it: the psygun's cylinder)
     slot.x = -(CLEAR + RIGHT * s);
     slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it stands at the corner's foot, and sinks into the corner as it steps back)
     this.inst.scale.setScalar(s);
@@ -397,8 +428,8 @@ export class LachrimeterTube {
     this.ch += (charge - this.ch) * Math.min(1, dt * 12);
     const brimming = !!g.courierMind?.brimming;
     this.brim += ((brimming ? 0.9 : 0) - this.brim) * Math.min(1, dt * (brimming ? 6 : 2));
-    if (this.heard !== pool) { this.heard = pool; pool.on?.('gain', () => { this.pulse = 1; }); } // (Lachryma came in: the meniscus flares)
-    this.pulse = Math.max(0, this.pulse - dt * 3);
+    if (this.heard !== pool) { this.heard = pool; pool.on?.('gain', () => { this.flare = 1; }); } // (Lachryma came in: the meniscus flares)
+    this.flare = Math.max(0, this.flare - dt * 3);
     Object.assign(this.state, { level, full, held: C.held, charge, brim: this.brim });
 
     // the column, its pale stretch and the meniscus
@@ -411,7 +442,7 @@ export class LachrimeterTube {
     this.men.visible = this.menLine.visible = this.glow.visible = menOn;
     this.men.position.y = this.menLine.position.y = top; this.glow.position.y = top + 0.02;
     this.men.material.uniforms.uPale.value = ch > 0 ? 0.72 : 0;
-    this.glow.scale.set(0.9 * (1 + this.pulse * 0.6), 0.5 * (1 + this.pulse * 0.6), 1); this.glow.quaternion.copy(this.turnBack); // (to the eye, as a sprite)
+    this.glow.scale.set(0.9 * (1 + this.flare * 0.6), 0.5 * (1 + this.flare * 0.6), 1); this.glow.quaternion.copy(this.turnBack); // (to the eye, as a sprite)
     // the held stretch, above the cap
     if (cap < 0.999) { const y = yOf(cap), h = Y1 - y + 0.12; this.sleeve.visible = this.seal.visible = true; this.sleeve.position.y = y; this.sleeve.scale.y = h; this.seal.position.y = y; this.A.held.set(-0.21, y + h / 2, 0); } else this.sleeve.visible = this.seal.visible = false;
     if (Math.abs(cap - this.keys.cap) > 1e-4) { this.keys.cap = cap; this.tickU.value = cap; }
@@ -454,12 +485,14 @@ export class LachrimeterTube {
     // the count, redrawn only when it changes
     const count = `${Math.floor(avail)} / ${Math.round(full)}`;
     if (count !== this.keys.count) { this.keys.count = count; drawVfd(this.vfdC, count); this.vfdT.needsUpdate = true; }
+    if (this.cubePlate.update(dt, cubes)) this.cubeT.needsUpdate = true; // (the cubes' count, rolling: redrawn only while it moves)
 
     // placed for this frame (the overlay places the root after this; done here too, so the shaders' instrument space is this frame's)
     root.position.set(slot.view.w + slot.x, -(slot.view.h + slot.y), slot.z);
     root.updateMatrixWorld(true); this.inst.updateMatrix(); this.pitch.updateMatrix();
     this.uInst.value.copy(this.inst.matrixWorld).invert();
     this.inst.getWorldQuaternion(this.turnBack).invert();
+    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state;
     this.words(C, full, cap, cost > 0 ? costN : 0, short, lineP);
   }
 

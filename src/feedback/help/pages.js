@@ -58,7 +58,7 @@ export const PAGES = [
     id: 'techs', title: 'TECHS AND ARTS', src: 'courier/moves/',
     lead: 'The Movement Arts are learned by doing (the Codex, B: each art and its variants; set ALL ARTS to ON to use all of them). They add to the core; they never change it.',
     rows: [
-      ['E', 'blink: a dodge along the move keys (two charges, the beads)'],
+      ['E', 'blink: a dodge along the move keys (two charges, the pearls by the Lachrimeter)'],
       ['C in the air, looking down', 'ground slam; then Space for the slam jump, or hold C for the slam slide'],
       ['Shift while crouched', 'roll: a dodge with a beat of invulnerability (on its own out of a fall of 20 m or more)'],
       ['land on a pot or clapperjar', 'stomp bounce'],

@@ -263,7 +263,7 @@ export class Baubles {
     this.combo = (this.comboT > 0 ? this.combo + 1 : 0);
     this.comboT = 0.5;
     sfx.absorb(this.combo);
-    g.hud?.lachrymaPulse(gained > 0);
+    g.lachrimeterTube?.pulse(); // (the tube comes up; it flares on the gain itself)
     g.scene.remove(b.root);
     this.list.splice(i, 1);
   }

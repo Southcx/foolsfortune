@@ -316,7 +316,7 @@ export class Weapon {
           const was = this.charge;
           this.charge = Math.min(1, this.charge + dt / C.time);
           if (was < 1 && this.charge >= 1) this.game.events?.emit('weapon.charged', {});
-        } else if (this.charge === 0 && this.holdT - dt <= startAt) { sfx.fizzle(); this.game.hud.lachrymaPulse(false); }
+        } else if (this.charge === 0 && this.holdT - dt <= startAt) { sfx.fizzle(); this.game.lachrimeterTube?.pulse(); }
       }
     } else if (this.holding) {
       this.holding = false;
@@ -370,7 +370,7 @@ export class Weapon {
     if (!this.game.lachryma.spend(T.lachryma.shotCost, 'shot')) {
       this.cooldown = 0.2;
       sfx.fizzle();
-      this.game.hud.lachrymaPulse(false);
+      this.game.lachrimeterTube?.pulse();
       this.game.fx.impact(character.gunPoint('muzzle', new THREE.Vector3()), new THREE.Vector3(0, 1, 0), { sparks: 3, dust: 2 });
       return;
     }

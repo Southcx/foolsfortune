@@ -226,7 +226,7 @@ export class Cutlass {
     if (I.t >= IAIDO.charge && !I.full) {
       I.full = true;
       if (this.blade.canEnter()) { this.iai = null; this.blade.enter(); }
-      else { sfx.fizzle?.(); this.game.hud?.lachrymaPulse?.(false); } // (the pool cannot hold the world still: the pose is held; let go, it is the draw cut)
+      else { sfx.fizzle?.(); this.game.lachrimeterTube?.pulse?.(); } // (the pool cannot hold the world still: the pose is held; let go, it is the draw cut)
     }
   }
 

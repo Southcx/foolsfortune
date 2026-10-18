@@ -282,6 +282,11 @@ Comb is texture, never a sentence to read. **Ruled by the owner (2026-10-17): ne
   gates (onward). For Dovina's HANKO.md.
 - **The Lachrimeter stands bottom-right** (the log owns the left): the right edge holds the instruments, the globe above, the thermometer below.
 - **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
+- **The Blink's pearls and the cube plate** (the owner, 2026-10-18: "Find a way to incorporate the blink beads into the new 3d lachrimeter
+  and then fully remove the old lachrimeter system"; "put the cube counter on the thermometer's base"): the Blink's charges as glass pearls
+  on a brass rail beside the column, each filling with the column's Lachryma as it comes back and draining with a pop of the film when
+  spent, in combat only; the cubes' balance in a Nixie window on a brass plate on the plinth, left of the pool's VFD count, a bismuth cube
+  beside digits that roll in their cells. The LACHRYMA panel (#lachryma, the beads, the #cubes readout) was deleted with them.
 
 ### 10.5c+ Round 6 on the board (v7, 2026-10-17)
 Built as mocks to 10.5c and shown on the board: the thermometer Lachrimeter (a lit column, a tenmoku scale plate, a VFD count; the held
@@ -328,7 +333,7 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
   shotgun, from the owner's Pentagun, scripts/export_psyguns.py). **The old DOM pieces they replace are retired, not hidden** (the
   owner, 2026-10-18: "why is it not being fully retired now that we have updated UI elements?"): the shells row (#shells), the
   Sondelass's tool strip (#toolstrip) and the cutlass's string row (#cutlassstring), the flat Lachrimeter in the LACHRYMA panel (its
-  frame and word too: the panel keeps the Blink's beads and the cubes, unframed), and the old compass dial (#compass, the Sight's).
+  frame and word too: the panel kept the Blink's beads and the cubes, unframed, until they went onto the tube, 10.5c), and the old compass dial (#compass, the Sight's).
   Their elements, builders, CSS and update code are deleted; the keys stay bound (section 18).
 - **The blade is a sabre, not a katana** (the owner, 2026-10-18: "a little wider and curved like a sabre or cutlass, rather than too
   katana-coded").

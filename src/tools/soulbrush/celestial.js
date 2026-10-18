@@ -116,7 +116,7 @@ export class Celestial {
   dry() {
     const g = this.game;
     sfx.fizzle?.();
-    g.hud?.lachrymaPulse?.(false);
+    g.lachrimeterTube?.pulse?.();
     g.log?.say('info', 'Your brush runs dry.', { key: 'brushdry', throttle: 3 });
   }
 }
