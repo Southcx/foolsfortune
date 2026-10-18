@@ -313,6 +313,15 @@ Open: the tag at UNKNOWN and EmO's level (13 says none and 4; the mock ??? and 2
 - **The placard's tiers and dresses** as drawn. **Go on the in-game build** of everything approved: the Lachrimeter's tube, the Sight,
   the tag (C), the placard with its tiers and the running hand, the Shrine gate with its two cradles and the imprints, the seal picker.
 
+### 10.5g The tools' own UI (the owner, 2026-10-18): replacing the hotkeys
+- **The psygun as a revolver cylinder**, its shape its slot count: the seven-slot one a hexagon with six round one at the heart (a
+  "quincunx" of seven); the variants **the Bombardier** (one shot), **the Carbine** (three), **the Pentagun** (five), **the Pepperbox**
+  (seven). The cylinder is tied to the Lachrimeter by a spiritual link: every tool's UI is linked to it, showing they draw on the Courier.
+  "Flex on satisfying animation when it comes to cycling the chambers." Mechanics with Dovina.
+- **The Sondelass's UI reworked** in the established themes: show its transforming nature (cutlass, rod, hook), a more elegant way to
+  switch the lure's feeling and to send pings, and the combo chains in blade mode. "Surprise me." Cohesive with the psygun's, worked out
+  with the other divisions.
+
 ### 10.5d The influences, adopted whole (the owner, 2026-10-17: "all of it")
 **The spine:** every overlay piece is a *made object* (clay, brass, glass, paper, lacquer) with the System's labradorite light inside it;
 what cannot be a made object stays a line. Two influences a surface, never five; **ma** (間), a beat of stillness before every hero moment.
