@@ -554,7 +554,8 @@ decrypt between them. The latent hold with its plate's corner mark. The viewfind
 
 **Not built:**
 - The Lantern Wisp has no bestiary facts yet (Dovina's next), so it has no habit line.
-- Clapperjars are not in `game.creatures`, so their tag goes through their own list (Petra's, when the tag is drawn).
+- Clapperjars are read directly (Petra, 2026-10-18): each has `kind: 'clapper'` and one point of health, `observe()` lists them with
+  their tags, and no entry carries a raw `state`. They are still outside `game.creatures`, so `creatures.strike` does not reach them.
 
 ## Note on the merge
 
