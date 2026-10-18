@@ -46,7 +46,7 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'Out Cold', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
@@ -471,6 +471,11 @@ export function buildAchievements(game) {
   C('jl3', 'battle', 'Slip Jellies', 4, 'endure', 'Slipmonger', 'Burst 150 slip jellies.', 'jelly.burst', 150, { title: 'Slipmonger' });
   C('jl4', 'battle', 'Slip Jellies', 2, 'mechanic', 'Not Today', 'Break a slip jelly\'s wind-up with a heavy blow.', 'jelly.cancelled.staggered', 1);
   F('jl5', 'battle', 'Slip Jellies', 2, 'collect', 'Every Way There Is', 'Burst slip jellies three different ways (a shot, a blade, a club...).', (L) => L.under('jelly.burst.').filter(([, v]) => v > 0).length, 3);
+  // stun depth (docs/plans/STUN-DEPTH.md): a stunned thing taken deeper while it is down, to out cold (the finishers at their best)
+  C('od1', 'battle', 'Out Cold', 1, 'mechanic', 'Seeing Stars', 'Take a stunned creature deeper while it is down.', 'stun.depth.2', 1);
+  C('od2', 'battle', 'Out Cold', 2, 'mechanic', 'Lights Off, Nobody Home', 'Take a creature out cold.', 'stun.depth.3', 1);
+  F('od3', 'battle', 'Out Cold', 3, 'collect', 'Every Kind of Quiet', 'Take three kinds of creature out cold.', (L) => L.under('creature.').filter(([k, v]) => k.endsWith('.outcold') && v > 0).length, 3);
+  C('od4', 'battle', 'Out Cold', 4, 'endure', 'Knockout Artist', 'Take creatures out cold 100 times.', 'stun.depth.3', 100);
   C('fl1', 'battle', 'Reprogramming', 1, 'count', 'Lights Out', 'Stun a creature with the Veritome\'s flash.', 'stun.cause.flash', 1);
   C('fl2', 'battle', 'Reprogramming', 1, 'count', 'Open Mind', 'Open a stunned creature\'s mind with the middle button.', 'reprogram.open', 1);
   C('fl3', 'battle', 'Reprogramming', 2, 'count', 'Root Access', 'Rewrite 15 minds.', 'reprogram.run', 15);

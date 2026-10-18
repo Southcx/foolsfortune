@@ -16,33 +16,15 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { drawSealFace } from './sealface.js';
+import { shrineLook, SHRINE_LOOK, prewarmShrineLooks } from './shrine.js';
 import { THEMES, theme } from '../ui/theme.js';
 
 const TEX = 256, FACE = 0.82; // (the texture's px; how much of the disc the face fills: the pad ring is round it)
 const COOL = 2.0, FLASH = 0.35; // (real seconds: the burn cooling to dim; the flash at the stamp)
-const RADIUS = 0.27;
+const RADIUS = 0.27, ARCH = 0.47 * 0.94 / 2.6; // (m: a cradle's floor; the arch's socket, vfx/shrine.js's 0.47 in the gate's units)
 const now = () => performance.now(); // (m: the imprint's radius on a cradle's floor; a Shrine's threshold well is 0.28)
 
-const V = /* glsl */`varying vec2 vU;
-#include <fog_pars_vertex>
-void main() { vU = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
-#include <fog_vertex>
-}`;
-const F = /* glsl */`uniform sampler2D uMask; uniform vec3 uInk, uHot; uniform float uLit, uFlash, uPad; varying vec2 vU;
-#include <fog_pars_fragment>
-float h(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5); }
-void main() {
-  vec3 m = texture2D(uMask, vU).rgb; float r = length(vU - 0.5) * 2.0;
-  float soot = smoothstep(1.0, 0.75, r) * smoothstep(0.0, 0.5, r) * 0.42 + smoothstep(0.85, 0.2, r) * 0.18;   // (the scorch round it)
-  float bite = step(0.86, h(floor(vU * 22.0))) * (1.0 - uLit) * 0.8;                                     // (dots of it gone out, cold)
-  float face = m.r * (1.0 - bite);
-  vec3 c = uInk * face * mix(0.62, 1.0, uLit) + uInk * m.g * (0.5 + 1.6 * uLit) * mix(0.35, 1.0, uLit);  // (the burn, and its glow)
-  c = mix(c, uHot * 2.4, face * uLit * 0.55) + uHot * (face + m.g) * uFlash * 3.0;                        // (the hot core, the flash)
-  c += uInk * m.b * uPad * 2.2;                                                                            // (the pad ring lit)
-  float a = clamp(max(max(face, m.g * (0.45 + 0.55 * uLit)), max(m.b * uPad, soot)), 0.0, 1.0);
-  gl_FragColor = vec4(c, a);
-#include <fog_fragment>
-}`;
+// (the imprint's look is a kind of the gate's one shader: vfx/shrine.js `shrineLook`, its fragment there)
 
 export class SealImprints {
   constructor(game) {
@@ -52,6 +34,9 @@ export class SealImprints {
     this.ink = new THREE.Color(); this.hot = new THREE.Color(); this.theme = null;
     this.geo = new THREE.PlaneGeometry(1, 1);
     game.events?.on?.('seal.set', (e) => this.burn(e));
+    // (made after the warm-up's compile and before its prime draw: the gate's one shader, which the imprint wears too, and the gate's
+    // shadow are compiled there, not at the first gate or the first imprint; main.js could call it itself: a note to Petra)
+    if (game.scene) this.kept = prewarmShrineLooks(game.scene);
     game.events?.on?.('seal.unset', (e) => { const I = this.list.get(e.cradle); if (I) I.t0 = Math.min(I.t0, now() - COOL * 600); }); // (out early: it cools the faster, and stays dim)
   }
 
@@ -90,11 +75,7 @@ export class SealImprints {
     let I = this.list.get(c.id);
     const map = this.texOf(e.seal);
     if (!I) {
-      const mat = new THREE.ShaderMaterial({
-        name: 'seal-imprint', vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, fog: true,
-        polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, toneMapped: false,
-        uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uMask: { value: null }, uInk: { value: new THREE.Color() }, uHot: { value: new THREE.Color() }, uLit: { value: 1 }, uFlash: { value: 1 }, uPad: { value: 1 } }]),
-      });
+      const mat = shrineLook(SHRINE_LOOK.imprint, { uFlash: { value: 1 }, uPad: { value: 1 } }, { name: 'seal-imprint', depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
       const mesh = new THREE.Mesh(this.geo, mat); mesh.name = `imprint.${c.id}`; mesh.renderOrder = 2; mesh.frustumCulled = true;
       const upright = /\.arch$/.test(c.id); // (a Shrine's arch cradle stands in the tablet, facing out: vfx/shrine.js)
       const r = (c.imprintRadius ?? (upright ? ARCH : RADIUS)) / FACE * 2;
@@ -107,7 +88,7 @@ export class SealImprints {
       mesh.onBeforeRender = () => this.tick(I); // (it cools on the wall clock, ticked only while it is drawn: nothing to call each frame)
       mat.uniforms.uInk.value.copy(this.ink); mat.uniforms.uHot.value.copy(this.hot);
     }
-    I.mesh.material.uniforms.uMask.value = map; I.t0 = now(); I.done = false;
+    I.mesh.material.uniforms.uMap.value = map; I.t0 = now(); I.done = false;
   }
 
   /** The burn's clock: the flash, then the lit face and pad ring cooling to dim (real seconds since the stamp). */

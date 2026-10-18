@@ -24,15 +24,24 @@ Calissa's; the names are Espada's to rule (working names here).
 | book | its sight, the lens raised | what it speeds up | the avenue without it |
 |---|---|---|---|
 | **the Plain Veritome** (as today) | none beyond the scan | | |
-| **the Dowser's Veritome** | Lachryma's signatures as heat: buried cubes, Lachrymite in walls, a creature's EmO glowing hotter as it rises | finding Lachryma; keeping a creature in its yield band | the Dreamvane's dowse; the creature's body (its temper) |
-| **the Empath's Veritome** | what a thing feels: a creature's mental state, the folk's mood, a feeling's paint on the surfaces | reading a fight; choosing a damage type | the body's temper; the paint motif on the ground |
-| **the Augur's Veritome** | a mind's wiring: what a creature is about to do (its Brain's next action and what drives it), and what the Soul Brush has written on things | reprogramming; reading a windup early | Figment attack telegraphs; the bestiary's facts |
-| **the Skeptic's Veritome** | what is not so: an Illusion's decoys and mirages, a false wall, a sealed room's seam | puzzles and ambushes | sound (a false wall rings hollow), the map, a photograph (a plate already undoes what was written) |
+| **the Empath's Veritome** (Mood) | what a being feels: a creature's mental state and its EmO glowing hotter as it rises, the folk's mood | reading a fight; keeping a creature in its yield band; choosing a damage type | the body's temper |
+| **the Augur's Veritome** (Intent) | a mind's wiring: what a creature is about to do (its Brain's next action and what drives it), and what the Soul Brush has written on things | reprogramming; reading a windup early | Figment attack telegraphs; the bestiary's facts |
+| **the Skeptic's Veritome** (Reveal) | which beings are not so: an Illusion's decoys and mirages, a Figment wearing another's shape | ambushes; picking the real one out | sound and the body (a mirage casts no shadow), a photograph (a plate already undoes what was written) |
+
+### Split with the Dreamvane (the owner, 2026-10-18: "we shouldn't overload individual tools")
+The Veritome reads **beings**: creatures, the folk and their minds. The Dreamvane reads **the world**: the ground, the air, and the
+Lachryma in them. A sight about the world goes to the Dreamvane, as a convenience on a mode it already has, and never as a variant:
+- **Thermal, on the dowse.** While the dowse is held, what it is attuned to glows through sand and walls as heat (buried cubes,
+  Lachrymite, chests). Today the dowse points; with this it also shows. The avenue without it is the dowse's pointing.
+- **Reveal, on the survey.** The survey's ring shows a false wall and a sealed room's seam for a beat. The avenue without it: a false
+  wall rings hollow to the pick.
+- So the Dowser's Veritome is cut. Its Margarite prospector's lore is free for a Dreamvane of Margarite's one day, if the owner wants
+  the Dreamvane to have variants too.
 
 ### Espada's lore (2026-10-18, proposed: LORE.md, "Three plans named")
 Each book is from a different island and wears that island's dress (OVERLAY.md 15.4). The sights' UI labels are Thermal, Mood, Intent
 and Reveal.
-- The Dowser's is from Margarite (Nacre): a crude prospector's book.
+- The Dowser's (Margarite, Nacre: a crude prospector's book) was cut; see the split above.
 - The Empath's is from Anagami (Clay): a kiln mender's book.
 - The Augur's is from Entropolis (Glass).
 - The Skeptic's is from the Emocean (Brine): a Contractor's book, made by sailors who learned from the False Light.
@@ -47,8 +56,9 @@ Which place and which achievement are next (with Espada for the places).
 
 - **Petra:**
   - the Veritome as a variant, a book id worn on the belt (as the Lockheart's coffins are);
-  - each sight a module behind the raised lens, reading what already exists: `core/signatures.js`, a creature's mental state, a
-    Brain's current action, `core/tags.js` for what is false.
+  - each sight a module behind the raised lens, reading what already exists: a creature's mental state and EmO, a Brain's current
+    action, `core/tags.js` for what is false;
+  - the Dreamvane's two: Thermal on the dowse (`core/signatures.js`, the attunement), Reveal on the survey (`core/tags.js`).
 - **Calissa:** each sight's look. A sight is the overlay's (the System's sight, in the island's dress). It is drawn over the
   viewfinder, never as a full-screen filter that hides the world: the lesson of Batman's detective mode, which players never turned off.
 - **Espada:** the books' names and their lore (who made each, why it sees what it sees).

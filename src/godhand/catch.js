@@ -41,7 +41,7 @@ export class HandCatch {
 
   /** Grabbed: it is the hand's now, struggling. */
   begin(c) {
-    const d = this.game.stun?.depth?.(c) || 1, need = ((c.cls || 0) + 1) * [1, 2 / 3, 1 / 2][Math.min(3, d) - 1]; // (the struggle by stun depth: a third shorter stunned, half out cold, STUN-DEPTH.md 3)
+    const d = this.game.stun?.finisher?.(c) || 1, need = ((c.cls || 0) + 1) * [1, 2 / 3, 1 / 2][Math.min(3, d) - 1]; // (the struggle by stun depth: a third shorter stunned, half out cold, STUN-DEPTH.md 3)
     this.held = { c, t: 0, need, tug: new THREE.Vector3(), next: 0.3, at: c.pos.clone() };
     c.held = c.pos.clone();
     const V = this.god.jar; this.game.catchLook?.begin(c.root, () => V.clips?.mouth() ?? V.pos.clone().setY(V.pos.y + 1.2)); // (the Jar's mouth, as its clips hold it: godhand/pneukajarclips.js)

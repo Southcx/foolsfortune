@@ -274,7 +274,7 @@ export const DEFAULTS = {
   },
   // stun depth (docs/plans/STUN-DEPTH.md, the owner, 2026-10-18; creatures/stun.js): a first stun is dazed; blows while it is down fill
   // its meter faster and it does not drain; full, it goes a depth deeper. Each depth's length (from reaching it; a creature's own
-  // `stunFor` scales them against 4.5 s), the blows' bonus, and the immunity after it. In flux: the owner's play settles them.
+  // `stunFor` scales them up against 4.5 s, never down; 0 never stuns), the blows' bonus, and the immunity after it. In flux: the owner's play settles them.
   stun: {
     depths: [{ name: 'dazed', len: 7, bonus: 1.5, immune: 6 }, { name: 'stunned', len: 8, bonus: 1.5, immune: 8 }, { name: 'out cold', len: 10, bonus: 2, immune: 10 }],
     downFill: 1.5,    // (the meter fills this much faster while it is down)
@@ -361,6 +361,8 @@ export const DEFAULTS = {
     warp: 1, // the crossing's psychic storm (vfx/stormwarp.js): how far the world bends and the veil hazes, 0 (off) to 1 (a setting: Calissa)
     pendulumSize: 1, // the Crucibelle's pendulum on the compass (vfx/crucibellehud.js): its size, 0.5 to 2.5 (a setting: Calissa)
     compassContrast: 1, // the wire compass's tape and the marks hung on it, fainter below 1 and brighter above; the pendulum's black keyline grows with it (a setting)
+    creatureTags: 'scan', // a creature's tag (vfx/creaturetags.js): 'scan' (the Veritome's lens raised, and the lock-on) | 'lockon' (the lock-on only) | 'off' (a setting: Calissa)
+    creatureTagsMinimal: false, // a creature's tag with the least on it: its sprite, name and health line only (a setting)
   },
   audio: {
     volume: 0.7,

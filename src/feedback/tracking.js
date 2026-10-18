@@ -420,12 +420,7 @@ export class Tracking {
     const KIND = (k) => (k === 'slipjelly' ? 'slip jelly' : k === 'clapperjar' ? 'clapperjar' : 'creature');
     on('flash.fire', (e) => { L.inc('flash.fire'); L.inc('flash.hits', e.hits); if (e.lens) L.inc('flash.lens'); });
     on('stun.build', (e) => { if (e.by === 'courier') L.inc(`stun.build.${e.cause}`); });
-    on('creature.stun', (e) => {
-      if (e.by !== 'courier') return;
-      L.inc('stun'); L.inc(`stun.${e.kind}`); L.inc(`stun.cause.${e.cause}`); L.inc('status.applied'); L.inc('status.stun'); // (the stun is Impact's status: the five forces' achievements read it with the others)
-      log.say('battle', `The ${KIND(e.kind)} is stunned.`, { key: 'stun', throttle: 1 });
-      first('stun', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass.');
-    });
+    // (creature.stun, the stun and its depth: feedback/tracking/stun.js)
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)

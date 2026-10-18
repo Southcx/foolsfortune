@@ -65,7 +65,7 @@ export class MacroBook {
 export function runMacro(g, c, m, { by = 'courier' } = {}) {
   const q = m.q, refused = [];
   const deep = m.effects.reduce((a, e) => Math.max(a, e.pow), 1);
-  const d = g.stun?.depth?.(c) || 0, base = Math.min(0.98, 0.45 + 0.55 * q + (deep - 1) * 0.15);
+  const d = g.stun?.finisher?.(c) || 0, base = Math.min(0.98, 0.45 + 0.55 * q + (deep - 1) * 0.15);
   const chance = d >= 3 ? 1 : d === 2 ? 1 - (1 - base) * (2 / 3) : base; // (out cold cannot refuse; stunned, a third less likely to: STUN-DEPTH.md 3)
   if (simRand() > chance) return { ok: false, refused, q, chance };
   const brain = c.brain;

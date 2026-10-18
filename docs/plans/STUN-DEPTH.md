@@ -60,6 +60,18 @@ behind out cold. Each one works from dazed and is at its best out cold:
 The Lockheart's `clean` today is the stun's time left over its length (`lockheart.js`). With depths it becomes that share
 × (0.5 + depth / 6), so 0.67, 0.83 and 1 at the start of each depth.
 
+### Built (2026-10-18), and two rulings
+- **Built:**
+  - Petra: `T.stun` in `core/config.js`, `stun.depth(t)` and `stun.share(t)`, `depth` on `creature.stun`, `stun.build` and
+    `creature.zandatsu`, the four finishers, and the clapperjars.
+  - Dovina: the log line by depth (out cold once a fight), `stun.depth.<n>` and `creature.<kind>.outcold` in the ledger
+    (`feedback/tracking/stun.js`), and the Out Cold achievements (Battle).
+- **A kind's `stunFor` scales the depths up, never down.** The time budget in section 1 is the Courier's, not the creature's. A
+  slippery kind (the Lantern Wisp, `stunFor` 2) is made hard by its poise, so it is harder to stun, and never by a window shorter than
+  the table's. The slip jelly (5) keeps its longer lengths.
+- **Asleep, held or melted with no stun reads as stunned (depth 2)** for the finishers. Each took work to bring about, though not a
+  burst: better than dazed, short of out cold.
+
 ## 4. Two avenues for the depth (CLAUDE.md: every number that matters)
 
 - **The body and the world:** the stars wheeling over its head, one per depth: 3D star meshes (the owner, 2026-10-18; Calissa's,
