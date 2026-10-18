@@ -130,7 +130,8 @@ export class Clappers {
     const col = w.createCollider(RAPIER.ColliderDesc.capsule(HALF * s, RADIUS * s).setCollisionGroups(CLAPPER_GROUPS), body);
     const f = this.floors[floor];
     const c = {
-      type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars, mat, cool: fromKiln ? 1 : 0,
+      // (kind and health as a creature's, for the tag and the agent: one blow breaks it, tools/veritome/creaturetag.js)
+      type: 'clapper', kind: 'clapper', hp: 1, maxHp: 1, root, model, mixer, actions, body, col, alive: true, bones, stars, mat, cool: fromKiln ? 1 : 0,
       headInv: restInv(bones.head), bodyInv: restInv(bones.body),
       armInv: { L: restInv(bones.armL), R: restInv(bones.armR), fL: restInv(bones.foreL), fR: restInv(bones.foreR) }, idleT: 0, twirl: 0,
       floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : simRand() * Math.PI * 2,
