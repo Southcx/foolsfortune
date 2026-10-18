@@ -790,7 +790,8 @@ and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). 
 124 roots and 7 particles (`npc/neuraleseroots.js`), every word cut into its cells by `npc/neuralesespelling.js`. **Neuralese meant to
 be read is drawn at 2x** (its cell two reading lines tall at the 480-line present; the owner, 2026-10-17); at 1x it is texture.
 
-**The running hand** *(proposed, 2026-10-17; the look is Calissa's, the owner rules)*. The owner's brief: Thai and Tamil "a combo of the
+**The running hand** *(ruled final by the owner, 2026-10-18, on Calissa's board v7: "Don't change a thing about it it's perfect"; the look is
+Calissa's, the orthography Espada's)*. The owner's brief: Thai and Tamil "a combo of the
 two", Goetic seals and semiconductor chip design as motifs, East meets West retrofuture. We draw our own glyphs in that hand, never real
 Thai or Tamil letters, which would read as broken words to the people who write them. The orthography carries over whole; only where a
 part sits changes, so a player who learned the Comb can read the hand.
