@@ -843,3 +843,54 @@ the space it leaves for someone to mean it. The Pneuka Jar (*pneuma*, breath) fi
   register, and amethyst (Greek *a-methystos*, "not drunk") is the island's charm for a clear head.
 - **Brine**, the Emocean: rope, tar and salt crust, sailors' knots, Lachryma spray beading on the frame. The sea's own, worn by every
   ship.
+
+### Three plans named *(Espada's, proposed, 2026-10-18; Dovina's STUN-DEPTH.md, VERITOMES.md, APTITUDE.md)*
+
+**Stun depth: dazed, stunned, out cold.** The working names stand as the labels. They are the genre's own words, and a player reads
+them before any lore (CLARITY.md). The stars are one, two and three. Lore, for the Codex and the bestiary: a Figment is a thought an
+island is thinking. **Dazed**, the thought slips; **stunned**, it loses its thread; **out cold**, no one is thinking it for a moment,
+and it holds its shape only by habit. That is why a mind out cold cannot refuse its rewriting: there is no one in it to say no. An
+Egregore out cold is the same, except that the one not thinking it is everyone. The log says "The slip jelly is out cold."
+
+**The Veritomes.** Dovina's names stand, because they match the Lockhearts' (THE PLAIN LOCKHEART, THE GAMBLER'S LOCKHEART: a role in
+the possessive, then the tool). Each book is from a different island, so each can wear its island's dress (OVERLAY.md 15.4). None is
+of Anagami's making alone.
+- **the Plain Veritome**: the one you carry from the start. Who made the first is left blank.
+- *Cut (the owner, 2026-10-18: the Dreamvane takes the world's sights; VERITOMES.md). Its lore is kept here, free for later:* **the Dowser's Veritome** (Margarite, Nacre): a prospector's book from the King's island, where crude is a trade. It sees what
+  Lachryma's prospectors were paid to find: its heat. A dowser walks with a forked stick until it dips; this book dips for them.
+- **the Empath's Veritome** (Anagami, Clay): a mender's book. The kiln's menders learned to read what a pot felt when it broke, so it
+  could be mended to hold that. It sees what a thing feels. *Empathy* is Greek *em-patheia*, "feeling in".
+- **the Augur's Veritome** (Entropolis, Glass): from the Queen's island of cold clear heads. An augur read the flight of birds for what
+  was coming; this book reads a mind's wiring for what it will do next. Entropy is the arrow of time, and an augur reads that arrow.
+- **the Skeptic's Veritome** (the Emocean, Brine): a Contractor's book, made by sailors who learned from the False Light that the sea
+  lies. It sees what is not so. *Skeptic* is Greek *skeptikos*, "one who looks carefully" (*skeptesthai*, to look about): the doubter
+  was always the one with the best eyes, which is the right root for a camera.
+- **Their sights' labels** (the UI's genre word, CLARITY.md): **Mood**, **Intent**, **Reveal** (Thermal went with the Dowser's).
+
+**Aptitude, and the Assay.** "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
+"Magic aptitude: S") and free in the glossary. It is neither an attribute nor a domain. What the System reads of you, the whole window,
+is **the Assay**. An assay is a test of a metal's true content, which suits a game of Lachryma, alchemy and kilns. It is also the same
+word as *essay*: Old French *essai*, a trial, an attempt. The System does not ask what you are; it assays what you do. A standard
+trial is **an assay** run under fixed conditions; a passive reading is what the Assay gleans from ordinary play. In neuralese the
+Assay is **VIDA-HOMA**, the seeing of a person. The owner's kernel, "If I was isekai'd into a world of cognition made magic, how would
+I fare?", is the question the Assay answers, a line at a time.
+
+**The Assay's room: the Touchstone** *(Espada's, proposed, 2026-10-18; the room ruled by the owner, APTITUDE.md 10)*. A touchstone
+is the black stone a goldsmith streaks gold across: the colour of the streak tells how pure the gold is, and the stone is never fooled
+by the shine. The Greeks called it the Lydian stone, after the kingdom where coins were first struck, and the English word has meant
+"the test of a thing's worth" ever since. So the room is dark stone underfoot (Calissa's to dress), and what you do in it leaves a
+streak. Its assays and the god hand's physics puzzles are begun there; a standard trial is announced as one.
+
+*Why the System keeps a room where it weighs you:* the System cannot see you, only what you do, and everywhere else what you do is
+mixed with the weather, the creatures, the hour and the luck of the draw. The Touchstone is the one room with nothing else in it, so
+the streak is only yours. That is the fixed conditions of a standard trial, said as the System would say it. The Index lists it with
+the basement's rooms (Dovina's to place).
+
+
+**The psygun's variants** *(the owner's names, 2026-10-18, by chamber count; spelling Espada's)*: **the Bombardier** (1), **the
+Carbine** (3), **the Pentagun** (5), **the Pepperbox** (7). Spelled *Bombardier*, as the trade is spelled: a bombardier worked a
+bombard, the old one-shot cannon, from Latin *bombus*, a boom. A carbine is the short gun a horseman carried; the Pentagun is coined
+plainly, Greek *pente*, five; the pepperbox is the real nineteenth-century gun of many barrels turning in a block, named because it
+looked like a pepper mill and scattered its shot like one. Odd counts only, one to seven: the psygun climbs as the feelings do.
+*Open:* `tools/psygun/kinds.js` already has THE PSYGUN (6 chambers), THE PEPPERBOX (11) and THE LONG TUBE (3); the counts and the
+set are Dovina's and Petra's to square with the owner's.

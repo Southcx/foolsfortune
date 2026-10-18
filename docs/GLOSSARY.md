@@ -115,7 +115,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   tool never has an inventory of its own.
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`) — the gun. A shot is one round; a charge winds up a piercing beam; a shell is a
   special round in a chamber. → detail
-- **a psygun's kind / the cylinder** (`PSYGUNS`, `tools/psygun/kinds.js`; OVERLAY.md 18) — THE PSYGUN (six), the Bombardier (one), the Carbine (three), the Pentagun (five), the Pepperbox (seven, six round a heart) / the chambers drawn as a revolver's cylinder, its shape its count, turned by the wheel. *Not:* a shell, a mount.
+- **a psygun's variant / the cylinder** (the owner's names, 2026-10-18; `PSYGUNS`, `tools/psygun/kinds.js`; OVERLAY.md 18) — by chamber count: THE PSYGUN (6), the Bombardier (1), the Carbine (3), the Pentagun (5), the Pepperbox (7: six round a heart) / the chambers drawn as a revolver's cylinder, its shape its count, turned by the wheel. *Not:* a caster shell, a mount.
 - **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
   field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
 - **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
@@ -526,6 +526,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   valve). *Not:* the overlay (the System's sight at large), the wire compass, the Dreamvane's vane.
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
+- **an aptitude / the Assay** (working names, Espada's, proposed; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
+  absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
