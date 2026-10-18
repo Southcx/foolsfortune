@@ -10,5 +10,4 @@ The behaviour is in (shells.js, angler.js). What your look can read:
 - `game.angler.ringOpen`: true while MMB is held with the lure in the water (after 0.15 real s): the ring open, the wheel on
   the feeling, `angler.aspect` the one it is on. Letting go sounds (`angle.sound` as before).
 
-Not done here: a shell's `fireCost` as the reserve on the Lachrimeter while its chamber is under the hammer (OVERLAY.md 18.3), and the
-sounding's cost while held (18.5). Both read the tube's reserve; say which call it takes and I wire it.
+Done since: both reserves are wired (`reserve('shell', cost)` while drawn and loaded; `reserve('sounding', 5)` while MMB is held).

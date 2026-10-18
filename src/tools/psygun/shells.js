@@ -631,6 +631,10 @@ export class Shells {
 
   update(dt) {
     const g = this.game;
+    // the shell under the hammer's cost, shown before it is spent as the reserve on the Lachrimeter while the psygun is drawn (OVERLAY.md
+    // 18.3): nothing for an empty chamber (its dry click is free) or under DEBUG's shells lend
+    const t = this.type, hammer = g.weapon?.drawn && t && this.counts[t.id] > 0 && !g.lend?.has?.('shells') ? fireCost(t.id).lachryma || 0 : 0;
+    if (hammer !== this.hammerCost) { this.hammerCost = hammer; g.lachrimeterTube?.reserve('shell', hammer); }
     const now = performance.now() * 0.001;
     for (const w of this.wells) {
       const k = Math.min(1, w.t / 0.3) * (w.t > w.dur - 0.25 ? Math.max(0.05, (w.dur - w.t) / 0.25) : 1);

@@ -214,8 +214,12 @@ function at(geo, p = [0, 0, 0], r = [0, 0, 0], s = [1, 1, 1]) {
 
 export class LachrimeterTube {
   /** True while this instrument stands in place of the old HUD piece (feedback/ gives way to it); false if switched off. */
+  /** A cost shown on the tube before it is spent (OVERLAY.md 18): the shell under the hammer, the sounding while held. One amount per
+   *  source, kept until it is set again; 0 clears it. The pale stretch shows the sum, beside a psygun charge's. */
+  reserve(source, amount) { if (amount > 0) this.holds.set(source, amount); else this.holds.delete(source); }
   get standing() { return !this.off; }
   constructor(game) {
+    this.holds = new Map(); // (source -> Lachryma shown reserved: reserve())
     this.game = game;
     this.S = game.overlayScene;
     this.state = { level: 0, full: 0, held: 0, charge: 0, cost: 0, brim: 0, feeding: false, shown: 0 };
@@ -365,10 +369,11 @@ export class LachrimeterTube {
     if (!allowed) { this.shown = 0; root.userData.overlayHidden = true; return; }
     this.t += dt;
     // shown as the DOM Lachrimeter is (hud.js): not full, held for a charge, or moved in the last few real seconds
-    const avail = pool.available, reserved = pool.reserved, max = pool.max;
-    if (Math.abs(avail - this.lastAvail) > 0.01 || reserved > 0) { this.lastAvail = avail; this.quiet = 0; }
+    let held = 0; for (const v of this.holds.values()) held += v; // (what the tool in hand would cost, shown before it is spent: reserve())
+    const avail = pool.available, reserved = pool.reserved, max = pool.max, shownHeld = Math.min(held, avail); // (a hold is still in the pool: it pales the column's top, it does not lengthen it)
+    if (Math.abs(avail - this.lastAvail) > 0.01 || reserved > 0 || held > 0) { this.lastAvail = avail; this.quiet = 0; }
     this.quiet += dt;
-    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 ? 1 : 0;
+    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 ? 1 : 0;
     this.shown += (want - this.shown) * Math.min(1, dt * (want ? 7 : 3));
     if (!want && this.shown < 0.01) this.shown = 0;
     root.userData.overlayHidden = this.shown <= 0;
@@ -388,7 +393,7 @@ export class LachrimeterTube {
 
     // the numbers: the tube is the pool's uncapped size, the column the pool, the pale stretch what a charge holds
     const C = capOf(pool), full = Math.max(1, C.held > 0 ? C.full : max), cap = Math.min(1, max / full);
-    const level = Math.min((avail + reserved) / full, cap), charge = Math.min(level, reserved / full);
+    const level = Math.min((avail + reserved) / full, cap), charge = Math.min(level, (reserved + shownHeld) / full);
     this.lvl = this.lvl < 0 ? level : this.lvl + (level - this.lvl) * Math.min(1, dt * 12);
     this.ch += (charge - this.ch) * Math.min(1, dt * 12);
     const brimming = !!g.courierMind?.brimming;
