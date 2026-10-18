@@ -8,6 +8,9 @@
 //   INFLUENCE  neutral, social: a warm third that swells and spreads (a ripple's tremolo, left to right), no edge
 //   ILLUSION   chaotic, perceptual: a shimmer that bends up and down at once, glints at random, the whole thing heard twice
 //   DELIRIUM   chaotic, entropic: a resonant smear sliding drunkenly down, a wobble, bubbles bursting
+//   STUN       creature.stun { depth } (docs/plans/STUN-DEPTH.md): a sting a depth, rising, the ear's second avenue beside the stars:
+//              DAZED (1) a crack on the hit-stop and two stars chirping round the head; STUNNED (2) the crack, a bell and three stars
+//              climbing; OUT COLD (3) a heavy thud, a bell an octave up, four stars climbing and the ear's ring left fading after
 // (Called as sfx.damage(type, k) where the blow is struck, beside vfx.hit's `type`, once creatures.strike carries one: SYSTEMS.md B1.)
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
@@ -16,7 +19,22 @@
 // and the owner's Law-Chaos line (docs/DESIGN.md, section 10).
 const LIFT = { influence: 2, illusion: 1.4, delirium: 1.4 }; // (the soft ones brought up to sit as loud as the struck ones)
 
+const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const STUN_ROOT = [0, 79, 83, 86]; // (G5, B5, D6: each depth's stars a third higher than the last)
+
 export class DamageSounds {
+  /** A stun's sting by its depth (1 dazed, 2 stunned, 3 out cold); `near` false for one the Courier did not cause (quieter). */
+  stunSting(depth = 1, { near = true } = {}) {
+    if (!this.ok() || !this.allow('stunSting', 6)) return;
+    const n = Math.max(1, Math.min(3, depth | 0)), t = this.ctx.currentTime, d = this.out((near ? 0.4 : 0.22) * (0.8 + 0.1 * n), 0.4 + 0.1 * n);
+    if (n < 3) { this.noise(t, 0.03, { type: 'bandpass', f0: 3500, q: 1.2, gain: 0.35, dest: d }); this.tone(t, 0.08, { f0: 260, f1: 140, gain: 0.25, dest: d }); }
+    else { this.tone(t, 0.45, { f0: 120, f1: 45, gain: 0.5, dest: d }); this.noise(t, 0.15, { type: 'lowpass', f0: 1200, f1: 300, gain: 0.35, dest: d }); }
+    if (n >= 2) [1, 2.76, 5.4].forEach((r, i) => this.tone(t + 0.04, 1 + 0.4 * n, { f0: hz(n === 3 ? 96 : 84) * r, gain: [0.08, 0.03, 0.015][i], dest: d }));
+    const root = STUN_ROOT[n], steps = [0, 4, 7, 12].slice(0, n + 1);
+    steps.forEach((x, k) => { const at = t + 0.09 + k * 0.08; this.tone(at, 0.07, { f0: hz(root + x), f1: hz(root + x + 2), type: 'triangle', gain: 0.09, dest: d }); this.tone(at + 0.035, 0.06, { f0: hz(root + x + 2), f1: hz(root + x), type: 'triangle', gain: 0.06, dest: d }); });
+    if (n === 3) this.tone(t + 0.3, 2.2, { f0: 3800, f1: 3700, gain: 0.02, dest: d }); // (the ear's ring)
+  }
+
   /** A blow's type, over its hit: type is impact, ego, influence, illusion or delirium; k (0..1) how hard. */
   damage(type = 'impact', k = 1, { pan = 0 } = {}) {
     if (!this.ok() || !this.allow(`damage.${type}`, 12)) return;

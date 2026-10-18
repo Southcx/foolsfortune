@@ -76,6 +76,8 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   an agate plays both, a torn sky neither. Fury's mode is a tritone minor [0 3 6 7 10], gall's a Hijaz [0 1 4 7 8] that borrows no note
   (it has no opposite; docs/plans/GALL-AND-FURY.md). Their beds (`audio/ambience.js`): fury's hail on clay and glaze over a hot low
   pressure (never thunder), gall's flies, sour hum and drip.
+- **A stun's depth** (`audio/damage.js` `stunSting`; STUN-DEPTH.md): dazed, stunned, out cold, each a sting a third higher than the
+  last: a crack and two stars chirping; the crack, a bell and three stars; a thud, a high bell, four stars and the ear's ring.
 - **Raku's bazaar** (`music/casino.js`, `audio/casino.js`; CASINO.md): a circus march in F on the floor (the Gold Saucer's welcome), a
   lounge at a table, a win's two bars of brass; the chips, the chair, each play (flip, steal, fate, four, death, hand, lock, upgrade), the result.
   The count-up (CASINO-CLARITY.md 8): a tick up F major a `+`, a slam a `x`, the reel and its stop, the tier's flourish (chime, triad,
