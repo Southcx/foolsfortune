@@ -11,7 +11,7 @@
 // Every shell is a row of progress/combat/castershells.js (its number, tier and cost); those after the founding eleven are flown by the
 // shell runner (shellrunner.js) from their rows.
 // ---------------------------------------------------------------------------
-import { PSYGUNS, DEFAULT_PSYGUN, capacityOf } from './kinds.js';
+import { PSYGUNS, DEFAULT_PSYGUN, capacityOf, chamberCapacity } from './kinds.js';
 import { shellById, shellByNo, typeLabel, fireCost } from '../../progress/combat/castershells.js';
 import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
 import { foesNear } from './shellpayloads.js';
@@ -83,8 +83,8 @@ export class Shells {
   /** The shell types in the chambers, in order (what 1, 2, 3... pick; the HUD's slots). */
   get types() { return this.chambers.map((id) => SHELL_TYPES.find((t) => t.id === id)).filter(Boolean); }
   get type() { return this.types[this.selected] || this.types[0]; }
-  /** How many of a type this psygun holds. */
-  max(id) { return capacityOf(this.gun, id); }
+  /** How many of a type this psygun holds: in its chamber (the Pepperbox's heart holds twice of a rare or the Caster's own), or its share. */
+  max(id) { const i = this.chambers?.indexOf(id) ?? -1; return i >= 0 ? chamberCapacity(this.gun, i, id) : capacityOf(this.gun, id); }
 
   // ---------------------------------------------------------------- the psygun and its chambers (tools/psygun/kinds.js)
   loadGun() {
@@ -119,19 +119,22 @@ export class Shells {
     return true;
   }
 
-  select(i) {
-    if (i < 0 || i >= this.types.length) return;
-    if (i === this.selected) {
-      // the Cleave's key again turns its line (level / upright), as the plasma cutter's alt-fire turns its three beams
-      if (this.types[i].id === 'slicer') { this.cleaveUpright = !this.cleaveUpright; sfx.click(); this.cleaveGlyph(); }
-      return;
-    }
+  // THE CYLINDER (docs/plans/OVERLAY.md 18): the wheel turns it a chamber a notch, the digits are a shortcut; the turn is at once, so a
+  // press while the look still turns fires the chamber it is turning to. An empty chamber stays on it, hollow: turning stops there.
+  // `psygun.turn` { chamber, shell, loaded, auto } is the cylinder's beat for its look and its sound (Calissa's, Wanda's).
+  select(i, auto = false) {
+    if (i < 0 || i >= this.types.length || i === this.selected) return;
     this.selected = i;
-    sfx.click();
+    if (!auto) sfx.click();
+    const t = this.types[i];
+    this.game.events?.emit('psygun.turn', { chamber: i, shell: t.id, loaded: this.counts[t.id] > 0, auto });
   }
-  /** The Cleave's slot shows which way its line lies. */
-  cleaveGlyph() { const el = this.game.hud?.slots?.[this.types.findIndex((t) => t.id === 'slicer')]?.querySelector('i'); if (el) el.textContent = this.cleaveUpright ? '║' : '═'; }
   cycle(d) { const n = this.types.length; this.select((this.selected + d + n) % n); }
+  /** After a chamber's last shell the cylinder turns on by itself to the next loaded one (the revolver's action); none loaded, it stays. */
+  turnOn() {
+    const n = this.types.length;
+    for (let k = 1; k < n; k++) { const i = (this.selected + k) % n; if (this.counts[this.types[i].id] > 0) return this.select(i, true); }
+  }
   refill(n = T.shells.refill) {
     let got = 0;
     for (const t of SHELL_TYPES) {
@@ -146,12 +149,12 @@ export class Shells {
   fire(ctx) {
     const t = this.type, g = this.game, f = t.row.n.feeling;
     const lent = g.lend?.has?.('shells'); // (DEBUG's lend: every shell never runs out and costs no Lachryma: the owner's v170)
-    if (!lent && this.counts[t.id] <= 0) { sfx.dryFire(); g.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); g.events?.emit('shell.dry', { id: t.id }); return false; }
+    if (!lent && this.counts[t.id] <= 0) { sfx.dryFire(); g.events?.emit('shell.dry', { id: t.id }); return false; } // (an empty chamber turned to: one dry click, free, no line: OVERLAY.md 18)
     // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
     if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
     const { lachryma: cost, crack } = fireCost(t.id);
     if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
-    if (!lent) this.counts[t.id]--;
+    if (!lent && --this.counts[t.id] <= 0) this.turnOn();
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
     this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });
     const { camera, player, character, weapon } = ctx;
@@ -197,10 +200,11 @@ export class Shells {
   // dunes' ruined columns). It is stopped by what is not. The plane of the cut is the plane the line sweeps.
   // Prior art: Dead Space's plasma cutter (a line of three beams, turned from level to upright by its alt-fire, made for cutting
   // limbs: aim the line across the thing), and the thrown sword-beams of Zelda (a cut that travels).
-  slicer({ camera, ray, muzzle }) {
+  slicer({ camera, ray, muzzle, player, weapon }) {
     const g = this.game, C = T.shells.slicer;
     const fwd = ray.dir.clone().normalize();
-    const along = new THREE.Vector3(this.cleaveUpright ? 0 : 1, this.cleaveUpright ? 1 : 0, 0).applyQuaternion(camera.quaternion);
+    const upright = !!player?.fp || (weapon?.adsEase ?? 0) > 0.5; // (the line follows the aim: level from the hip, upright down the sights; OVERLAY.md 18)
+    const along = new THREE.Vector3(upright ? 0 : 1, upright ? 1 : 0, 0).applyQuaternion(camera.quaternion);
     along.addScaledVector(fwd, -along.dot(fwd)).normalize();
     const n = new THREE.Vector3().crossVectors(fwd, along).normalize();
     // how far it can go: to the first thing in its path that it cannot cut

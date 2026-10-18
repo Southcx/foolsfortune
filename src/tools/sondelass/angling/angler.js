@@ -3,7 +3,8 @@
 // LMB to charge a cast (the arc it will fly shows in the air) and release to throw the lure; it lands where the crosshair points,
 // out as far as the charge allows. The lure floats and the entities of the water come to it, or don't. While waiting: tap LMB to
 // twitch it (a jig that fish notice), hold RMB to sink it, the wheel to set its depth (it HOLDS the depth it is left at), hold LMB
-// to reel it home, middle click to sound: a psychic ping, a sphere of light that leaves the lure and lights what it passes.
+// to reel it home, middle click to sound: a psychic ping, a sphere of light that leaves the lure and lights what it passes (held in
+// the water, the ring of the seven opens: the wheel turns it and letting go sounds with that feeling).
 // What is tied on is a LURE (lures.js; - and = change it while no line is out): each has a taste of its own that the fish come to
 // or don't, and any curio the Courier holds can be tied on. The aspect (4 to 0, the seven in display order: Wonder, Mirth, Desire,
 // Fury, Gall, Grief, Dread) is what a sounding pushes into the lure, and every sounding stirs every fish in that water, the nearer the
@@ -73,7 +74,7 @@ export class Angler {
     this.ownLure = 'lure.bob'; // (without a Pneuka Box: the lure is the angler's own)
     this.state = 'idle'; // idle | charge | swing | wait | fight | catch
     this.power = 0; this.castT = 0; this.castPhase = 'none'; this.castW = 0; this.launched = false;
-    this.pressT = -1; this.reeling = false; this.sinking = false; this.twitchCool = 0; this.soundCool = 0; this.soundT = 0;
+    this.pressT = -1; this.reeling = false; this.sinking = false; this.twitchCool = 0; this.soundCool = 0; this.soundT = 0; this.ringHeld = null;
     this.reserved = 0; this.bite = null; this.fight = null; this.hooked = null; this.tremble = 0; this.trembleT = 0; this.bendV = 0; this.bendX = 0;
     this.lastLog = {};
     this.line = new FishingLine(g.scene);
@@ -240,7 +241,7 @@ export class Angler {
       ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(SHOWN[i]); }); // (the keys follow the order shown: species.js SHOWN)
       LURE_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.cycleLure(i ? 1 : -1); });
       if (inp.wheel) {
-        if (this.lure.inWater) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
+        if (this.lure.inWater && this.ringHeld == null) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
         else this.wheelAspect(inp.wheel > 0 ? 1 : -1);
       }
     }
@@ -355,12 +356,22 @@ export class Angler {
       }
     }
     if (rdown && lure.state !== 'air') this.sinking = true;
-    if (inp.wasPressed('Mouse1') && this.soundCool <= 0) this.sound();
+    // the sounding (MMB): in the water, held it opens the ring of the seven (the wheel turns it, not the depth) and letting go sounds with
+    // the feeling it is left on; a tap sounds as set. Out of the water a press sounds at once (OVERLAY.md 18; the ring is Calissa's look)
+    if (inp.wasPressed('Mouse1') && held && lure.inWater) this.ringHeld = 0;
+    else if (inp.wasPressed('Mouse1') && this.soundCool <= 0) this.sound();
+    if (this.ringHeld != null) {
+      if (held && inp.isDown('Mouse1')) this.ringHeld += dt;
+      else { this.ringHeld = null; if (held && this.soundCool <= 0) this.sound(); }
+    }
     if (lure.state === 'reel' && lure.pos.distanceTo(P.pos) < 3) this.tremble = 0.2;
     // (a bite that has run out is cleared by the fish)
     if (this.bite) { this.bite.t += dt; if (this.bite.t > this.bite.window + 0.05) { this.bite = null; this.biteGlyph?.close(); this.biteGlyph = null; } }
     if (this.reeling) sfx.reelTick(1);
   }
+
+  /** The ring of the seven held open round the lure (MMB held in the water): what the ring's look shows open. */
+  get ringOpen() { return this.ringHeld != null && this.ringHeld > 0.15; }
 
   /** The sounding: a pulse of the Courier's mind from the lure (wherever it is, on the surface or ten metres down), out to PING_R. */
   sound() {
