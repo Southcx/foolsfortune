@@ -856,7 +856,7 @@ Egregore out cold is the same, except that the one not thinking it is everyone. 
 the possessive, then the tool). Each book is from a different island, so each can wear its island's dress (OVERLAY.md 15.4). None is
 of Anagami's making alone.
 - **the Plain Veritome**: the one you carry from the start. Who made the first is left blank.
-- **the Dowser's Veritome** (Margarite, Nacre): a prospector's book from the King's island, where crude is a trade. It sees what
+- *Cut (the owner, 2026-10-18: the Dreamvane takes the world's sights; VERITOMES.md). Its lore is kept here, free for later:* **the Dowser's Veritome** (Margarite, Nacre): a prospector's book from the King's island, where crude is a trade. It sees what
   Lachryma's prospectors were paid to find: its heat. A dowser walks with a forked stick until it dips; this book dips for them.
 - **the Empath's Veritome** (Anagami, Clay): a mender's book. The kiln's menders learned to read what a pot felt when it broke, so it
   could be mended to hold that. It sees what a thing feels. *Empathy* is Greek *em-patheia*, "feeling in".
@@ -865,7 +865,7 @@ of Anagami's making alone.
 - **the Skeptic's Veritome** (the Emocean, Brine): a Contractor's book, made by sailors who learned from the False Light that the sea
   lies. It sees what is not so. *Skeptic* is Greek *skeptikos*, "one who looks carefully" (*skeptesthai*, to look about): the doubter
   was always the one with the best eyes, which is the right root for a camera.
-- **Their sights' labels** (the UI's genre word, CLARITY.md): **Thermal**, **Mood**, **Intent**, **Reveal**.
+- **Their sights' labels** (the UI's genre word, CLARITY.md): **Mood**, **Intent**, **Reveal** (Thermal went with the Dowser's).
 
 **Aptitude, and the Assay.** "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
 "Magic aptitude: S") and free in the glossary. It is neither an attribute nor a domain. What the System reads of you, the whole window,
@@ -874,3 +874,15 @@ word as *essay*: Old French *essai*, a trial, an attempt. The System does not as
 trial is **an assay** run under fixed conditions; a passive reading is what the Assay gleans from ordinary play. In neuralese the
 Assay is **VIDA-HOMA**, the seeing of a person. The owner's kernel, "If I was isekai'd into a world of cognition made magic, how would
 I fare?", is the question the Assay answers, a line at a time.
+
+**The Assay's room: the Touchstone** *(Espada's, proposed, 2026-10-18; the room ruled by the owner, APTITUDE.md 10)*. A touchstone
+is the black stone a goldsmith streaks gold across: the colour of the streak tells how pure the gold is, and the stone is never fooled
+by the shine. The Greeks called it the Lydian stone, after the kingdom where coins were first struck, and the English word has meant
+"the test of a thing's worth" ever since. So the room is dark stone underfoot (Calissa's to dress), and what you do in it leaves a
+streak. Its assays and the god hand's physics puzzles are begun there; a standard trial is announced as one.
+
+*Why the System keeps a room where it weighs you:* the System cannot see you, only what you do, and everywhere else what you do is
+mixed with the weather, the creatures, the hour and the luck of the draw. The Touchstone is the one room with nothing else in it, so
+the streak is only yours. That is the fixed conditions of a standard trial, said as the System would say it. The Index lists it with
+the basement's rooms (Dovina's to place).
+
