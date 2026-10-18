@@ -143,6 +143,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   just cleaned; the bottle's fill beside the paint reticle (`game.paintReticle`). No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
 - **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
   Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
+- **a Veritome / its sight** (working names; `docs/plans/VERITOMES.md`, a plan) — one variant of the book, worn as a whole (as a Lockheart's coffin) / what it sees with the lens raised, a convenience never a key. *Not:* a fitting, a lens item.
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
   MIND shelf) and spoken in neuralese.
 - **the Dreamvane** (`src/tools/dreamvane/dreamvane.js`) — dowse, the pick, the fork, the survey, the vane (the weather meter) and reading the
@@ -306,6 +307,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   steps, a beat of its wire, then a pop of motes in its feeling's colour, into the air and the ground. *Not:* a sibling's shatter, the dissolve.
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
+- **stun depth: dazed / stunned / out cold** (working names, Espada's; `stun.depth(t)` 1..3, `T.stun`, `src/creatures/stun.js`; `docs/plans/STUN-DEPTH.md`) — how far down a stunned thing is, deepened by stunning it again while down, one star a depth. *Not:* a status of its own.
 - **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
 - **grain** (`src/progress/combat/temperament.js`) — who a creature's mind is: five traits, each between two poles; it weights the mind and shows
   in movement. *Not:* temper, "personality" or "stats". → detail
@@ -469,6 +471,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   bonus to a count, on the ramp's curve; never accuracy, nor tempo (an attribute's); at level 1 the tool is as it is without.
 - **knack** (`game.knacks`, `src/progress/knacks.js`, `/knack`) — a passive Art, a toggle, opened by an achievement, where an assist lives; on
   until switched off. *Not:* a widening, nor a Movement Art. → detail
+- **an aptitude** (working name, Espada's and the owner's; `docs/plans/APTITUDE.md`, a plan) — an ability the System measures from how you play, in its own unit and against yourself. *Not:* an attribute (Soul Alchemy's), a domain.
 - **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
 - **day** (`today()`, `src/core/calendar.js`) — one game day, an hour of real time; always written **game day**, no bare "day". *Not:* a calendar
   day.

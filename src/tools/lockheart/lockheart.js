@@ -231,7 +231,7 @@ export class Lockheart extends HeldTool {
     if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is no stunned Figment to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
     const used = [...keys];
     for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) box.useUp('keys', i);
-    const s = c.status?.get('stun'), clean = s ? Math.min(1, s.t / Math.max(0.1, c.stunFor ?? 4.5)) : 0.6; // (asleep, held or melted: a fair hold)
+    const d = g.stun?.depth?.(c) || 0, clean = d ? g.stun.share(c) * (0.5 + d / 6) : 0.6; // (its clock left, by depth: up to 0.67 dazed, 0.83 stunned, 1 out cold, STUN-DEPTH.md 3; asleep, held or melted: a fair hold)
     const p = catchOdds({ cls: c.cls || 0, clean, emoFactor: catchFactor(c.emo), keys: used });
     const caught = p > 0 && deckDraw(g.ledger, `catch.${c.kind}`, Math.max(1, Math.round(1 / p)), simRand());
     this.charge = 0; this.save();

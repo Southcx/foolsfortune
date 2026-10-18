@@ -250,6 +250,7 @@ export class BladeMode {
     const g = this.game;
     this.zan++;
     const at = c.center(new THREE.Vector3());
+    const d = g.stun?.depth?.(c) || 0, k = d ? [0.5, 0.75, 1][d - 1] : 1; // (its yield by stun depth: STUN-DEPTH.md 3; asleep or held, as before)
     g.time.pulse('zandatsu', 0.008, 0.5, { release: 0.7 });
     this.hold = 1.3;
     g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8, ttl: 1.1 });
@@ -261,12 +262,12 @@ export class BladeMode {
     planes.forEach((pl, i) => this.queue.push({ t: 0.07 * i, fn: () => { const l = _u.copy(line).applyAxisAngle(view, [0, Math.PI / 3, -Math.PI / 3][i]).clone(); g.fx.slash?.(at.clone().addScaledVector(l, -1), at.clone().addScaledVector(l, 1), l); } }));
     this.queue.push({ t: 0.16, fn: () => {
       c.vanish?.('courier', 'zandatsu'); // (gone from the world without a burst: its body is the pieces now)
-      g.dissolve?.cut(geo, planes, { centre: at, color: 0xd9b48a, worth: 8 + (c.stash || 0), mp: 10 });
+      g.dissolve?.cut(geo, planes, { centre: at, color: 0xd9b48a, worth: Math.round((8 + (c.stash || 0)) * k), mp: Math.round(10 * k) });
       c.stash = 0;
-      g.lachryma.gain?.(18);
+      g.lachryma.gain?.(18 * k);
       g.glyphs.pop('star', at.clone().setY(at.y + 0.6), { color: 0xd9c8ff, size: 1.0, burst: true, ring: true, life: 1.6 });
     } });
-    g.events?.emit('creature.zandatsu', { kind: c.kind, by: 'courier' });
+    g.events?.emit('creature.zandatsu', { kind: c.kind, depth: d, by: 'courier' });
     return 6;
   }
 
