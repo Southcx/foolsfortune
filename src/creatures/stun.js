@@ -14,7 +14,7 @@
 //
 //   game.stun.add(target, amount, { by, cause })   (amount 1 = a full meter for an ordinary thing: its `poise` divides it)
 //   game.stun.stunned(target)   game.stun.vulnerable(target)   game.stun.hold(target, seconds)  (keep it down: being reprogrammed)
-//   game.stun.meter(target) -> 0..1   game.stun.depth(target) -> 0 (not stunned) | 1 dazed | 2 stunned | 3 out cold   .share(target) -> its clock left, 0..1
+//   game.stun.meter(target) -> 0..1   game.stun.depth(target) -> 0 (not stunned) | 1 dazed | 2 stunned | 3 out cold   .share(target) -> its clock left, 0..1   .finisher(target) -> the depth a finisher reads (asleep, held, melted: 2)
 //   a target may carry: poise (default 1: higher is harder to stun), stunFor (scales the depths' lengths against 4.5 s; 0: never), head(out)
 //
 // Prior art: the stun and stagger of the action game: Monster Hunter's KO (blows to the head fill a hidden meter; a knocked-out
@@ -54,7 +54,7 @@ export class Stun {
   /** Down to `depth` (1 dazed .. 3 out cold): its clock reset to that depth's length (a kind's own `stunFor` scales it), never shorter. */
   knock(t, depth, by, cause) {
     const g = this.game, s = this.state(t), D = K().depths[Math.min(depth, K().depths.length) - 1];
-    const dur = D.len * ((t.stunFor ?? 4.5) / 4.5);
+    const dur = t.stunFor === 0 ? 0 : D.len * Math.max(1, (t.stunFor ?? 4.5) / 4.5); // (a long-stunned kind is down longer; a short one never under the depth's length; 0: never stunned, Dovina's ruling)
     if (!(dur > 0)) return;
     if (this.stunned(t)) this.hold(t, dur); // (deeper: the clock reset, the status kept)
     else if (t.type === 'creature') g.creatures.apply(t, 'stun', dur, 1, by);
@@ -75,6 +75,8 @@ export class Stun {
   bonus(t) { return this.stunned(t) ? (K().depths[this.depth(t) - 1]?.bonus ?? K().depths[0].bonus) : 1; }
   /** How deep it is down: 0 not stunned, 1 dazed, 2 stunned, 3 out cold (a stun from elsewhere, a macro or a trap, counts as dazed). */
   depth(t) { return this.stunned(t) ? Math.max(1, this.m.get(t)?.depth || 0) : 0; }
+  /** The depth the finishers read: asleep, held or melted with no stun counts as stunned (2; Dovina's ruling, STUN-DEPTH.md 3). */
+  finisher(t) { return this.depth(t) || (this.vulnerable(t) ? 2 : 0); }
   /** Its clock left over its depth's length, 0..1 (the Lockheart's clean hold reads it). */
   share(t) {
     if (!this.stunned(t)) return 0;

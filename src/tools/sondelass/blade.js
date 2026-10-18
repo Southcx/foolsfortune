@@ -250,7 +250,7 @@ export class BladeMode {
     const g = this.game;
     this.zan++;
     const at = c.center(new THREE.Vector3());
-    const d = g.stun?.depth?.(c) || 0, k = d ? [0.5, 0.75, 1][d - 1] : 1; // (its yield by stun depth: STUN-DEPTH.md 3; asleep or held, as before)
+    const d = g.stun?.finisher?.(c) || 0, k = d ? [0.5, 0.75, 1][d - 1] : 1; // (its yield by stun depth: STUN-DEPTH.md 3; asleep, held or melted reads as stunned)
     g.time.pulse('zandatsu', 0.008, 0.5, { release: 0.7 });
     this.hold = 1.3;
     g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8, ttl: 1.1 });
