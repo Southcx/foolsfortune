@@ -635,6 +635,20 @@ it costs shows on the Lachrimeter.** A tool's UI draws on the Courier, and the s
 
    Two avenues each, and no number on screen.
 
+### Board v9's five (Dovina, 2026-10-18, on Calissa's questions)
+1. **A tap is under 0.2 real s.** The ring opens only once MMB has been held past 0.2 s, so a tap never flashes it.
+2. **The echo's bearing is a readout.** A pointer on the lure's ring at each lit fish's bearing, the top straight ahead, lasting as long
+   as the sounding's light (2 s). Direction only: never a distance or a species. The lit fish in the water is its second avenue.
+3. **A floor of 3 dots with a brass bracket is fine.** The bracket says "at least this", so the floor never lies. Above 3 dots it is
+   drawn to scale.
+4. **The Caster's own shows no reserve.** The chamber's ring wears the crackle, and the region the toll would crack glints: the least
+   cracked one, as `courier/vessel/damage.js` chooses it. If the toll would shatter the vessel (the third crack), every region glints.
+5. **Out of the heart, back to the six.** When the heart's last shell goes, the cylinder turns to the ring chamber that was under the
+   hammer before the heart, or to the next loaded one; with none loaded, it hangs open. **The auto-turn never goes into the heart by
+   itself**: the heart is chosen.
+- **The pool the board draws is 100** (`T.lachryma.max`, `core/config.js`), moved by the stones (-15 to +30) and Willpower's widening.
+  A common shell is 4 of it, the sounding 5. The 600 was a stand-in.
+
 **Built (Petra, 2026-10-18):** the heart (4 against 2), the auto-turn, the free dry click, the press mid-turn, the Cleave by the aim,
 the lure's held ring. Open: the Lachrimeter's reserve for a shell's cost and the sounding's (18.3, 18.5), waiting on Calissa's tube.
 
