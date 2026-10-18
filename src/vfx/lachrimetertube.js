@@ -26,7 +26,7 @@
 // crackle glaze (Ge ware, guan) read onto glass; Dead Space's RIG and Metroid Prime's visor for the interface as a lit object.
 //
 //   const L = new LachrimeterTube(game)   game.lachrimeterTube   (it registers itself with game.overlayScene; nothing else to call)
-//   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
+//   L.bulbAt(out) -> { x, y, z, r } the bulb in the overlay scene (null while hidden)   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -218,6 +218,13 @@ export class LachrimeterTube {
    *  source, kept until it is set again; 0 clears it. The pale stretch shows the sum, beside a psygun charge's. */
   reserve(source, amount) { if (amount > 0) this.holds.set(source, amount); else this.holds.delete(source); }
   get standing() { return !this.off; }
+  /** The bulb's centre in the overlay scene's coordinates (its world: x right, y up, CSS px) and its glass's radius, into `out` as
+   *  { x, y, z, r }; null while the tube is not shown (the spiritual link's near end, vfx/spirituallink.js). This frame's once the
+   *  tube's own slot has updated. */
+  bulbAt(out = {}) {
+    if (!this.root || this.shown <= 0 || this.root.userData.overlayHidden) return null;
+    const e = this.inst.matrixWorld.elements; out.x = e[12]; out.y = e[13]; out.z = e[14]; out.r = 0.42 * this.inst.scale.x; return out;
+  }
   constructor(game) {
     this.holds = new Map(); // (source -> Lachryma shown reserved: reserve())
     this.game = game;
