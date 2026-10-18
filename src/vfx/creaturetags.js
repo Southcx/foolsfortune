@@ -1,36 +1,43 @@
 // ---------------------------------------------------------------------------------------
 // CREATURE TAGS: a creature's tag as THE SCAN (docs/plans/OVERLAY.md 10.5f: the owner's pick, direction C of board v8). One bracket
-// framing the creature's eyes, a dashed leader line, a small CRT lozenge (a hex-cornered screen) holding the creature's own silhouette
-// sampled into a 22 x 18 pixel sprite, its readout beside it as bare lines (no plate, no barcode, no id), the sigil-eye as the lens on
-// the lozenge's side, and the status motes orbiting its head. Familiarity shows twice: in the lines (Dovina's one reader,
-// tools/veritome/creaturetag.js, OVERLAY.md 17) and in the sprite (a shadow at UNKNOWN, a solid shape at GLIMPSED, two tones at
-// OBSERVED, full tones from STUDIED). An aberrant's sprite has rows slid and a magenta cast and its readout is torn, held still.
+// framing the creature's eyes, a dashed leader line, a small CRT lozenge (a hex-cornered screen) holding the creature as a pixel sprite,
+// its readout beside it as bare lines (no plate, no barcode, no id), the sigil-eye as the lens on the lozenge's side, and the status
+// motes orbiting its head. Familiarity shows twice: in the lines (Dovina's one reader, tools/veritome/creaturetag.js, OVERLAY.md 17) and
+// in the sprite's sharpness (its pixel grid a step finer a level, 11 x 9 at UNKNOWN to 44 x 36 at UNDERSTOOD; never the picture).
 //
-// The three reads (OVERLAY.md 17): a plain line is drawn as the mock drew it; a scrambled line churns in the running hand (its
-// neuralese, real roots, swapping a word every quarter of a real second, sized by the reader's `len`); a latent line holds still in
-// the window colour (ui/theme.js) with a plate's corner marks; a line that was scrambled or latent and is now plain plays its decrypt
-// (0.6 real s: the plain line wiping in left to right behind a VFD cursor). No event: the tag remembers what it last drew.
+// The sprite's picture (plateOf, OVERLAY.md 17): the Compendium's best plate of the kind, cut out by the creature's box in it (a plate
+// taken before the box was kept: its centre) and pixelated in the screen's four tones; a plate waiting undeveloped in the memory: the
+// shadow held still with a plate's corner marks; never photographed: the model's shadow silhouette (its meshes rendered alone once a
+// kind, with their own materials so a shader's shape counts, transparent ones included, framed by what was drawn, its aspect kept).
+// An aberrant's sprite has rows slid and a magenta cast and its readout is torn, held still.
 //
-// Which creatures: the one locked on (game.lock), and up to two others nearest in view within 14 m while any of them is awake (not
-// asleep); none when none. Clapperjars come from their own list (creatures/clappers.js). Each is anchored to its eyes projected each
-// frame, the tags kept off each other, the screen's edges and the Sight's corner; a tag's canvas is redrawn only when its lines change
-// (or its scramble churns, or a decrypt plays).
+// The readout (laid out for the 480-line present): a label column, the bar or track in the middle, every value right-aligned in one
+// column; a row's pitch at least 1.5x its text's cap height; statuses at most two rows. Lines read three ways (OVERLAY.md 17): plain as
+// the mock drew it; scrambled churns in the running hand (ui/runninghand.js, final: measured first, placed by its bounds, given the
+// row's whole width after its label, words dropped rather than shrunk past reading); latent holds still in the window colour with a
+// plate's corner marks; scrambled or latent turned plain plays its decrypt (0.6 real s, a wipe behind a VFD cursor). No event.
 //
-// Cost: one draw call a tag (its canvas, drawn once and redrawn on a change) and one for every bracket, leader and mote together
-// (a dynamic buffer of quads, no allocation a frame). The sprite is sampled once a kind: its meshes rendered alone at 96 x 96 off
-// screen and read back. Hook: `game.veritome.plateOf(kind)`, when it exists and gives an image, is pixelated instead (Dovina is asked).
-// Hidden with the HUD (the overlay scene's rule), on the title, in the god hand, on the rail's crossing and in a cinematic.
+// Which creatures (the hostility rule): the one locked on (game.lock); and, up to two more nearest in view within 14 m, a creature
+// hostile to the Courier: its mind hunting them (`c.brain.action.hunt` with `c.foe === game.player`, the minds' own field), or engaged
+// within the last 20 real seconds (it was struck: its hp fell; or it struck: a windup listed with game.creatures). A clapperjar is
+// never hostile, so it wears a tag only when locked on or struck. Each is anchored to its eyes projected each frame; tags are kept off
+// each other, off every tagged creature's bracket and leader, the screen's edges, the Sight's corner and the Lachrimeter.
+//
+// Cost: one draw call a tag (its canvas, redrawn only when its lines change, its scramble churns or a decrypt plays) and one for every
+// bracket, leader and mote together (a dynamic buffer of quads). A kind's silhouette is rendered once at 128 x 128 and read back; a
+// plate is decoded once a thumb. Hidden with the HUD (the overlay scene's rule), on the title, in the god hand, on the rail's crossing
+// and in a cinematic.
 //
 // Prior art: Digimon World's and the Pokédex's scan (the creature as a sprite on a small screen; the unseen one as a shadow), Watch
 // Dogs' profiler (a glance reads a line; the leader line), Dennō Coil's glasses (the data over the world, legible or broken), Mass
-// Effect's and Uplink's decrypt (characters churning, then settling), Pokémon Snap's report (the latent line), the game's own data bug
-// (vfx/databug.js: one still error, a magenta cast) for the tear; VFD tubes for the counts (10.5d). Ported from Calissa's round-7 mock
+// Effect's and Uplink's decrypt, Pokémon Snap's report (the latent line), the game's own data bug (vfx/databug.js) for the tear; VFD
+// tubes for the counts (10.5d); a print's grain coarse to fine (the sharpness by familiarity). Ported from Calissa's round-7 mock
 // (r7-tags.src.html, figure 3, plateC / tagC) to r170, at the 480-line present (one canvas pixel a dot, times the device's k).
 //
 //   game.creatureTags = new CreatureTags(game)   (added to game.overlayScene; it updates itself there)   .shown -> [creature]
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { readTag } from '../tools/veritome/creaturetag.js';
+import { readTag, plateOf } from '../tools/veritome/creaturetag.js';
 import { st } from '../creatures/creatures.js';
 import { EMO } from '../progress/combat/emo.js';
 import { TYPES, BONUS } from '../progress/combat/types.js';
@@ -39,12 +46,18 @@ import { FONT, THEMES, theme } from '../ui/theme.js';
 import { runningHand } from '../ui/runninghand.js';
 import { cellsOf } from '../npc/neuralesespelling.js';
 
-const MAX = 3, NEAR = 14, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17;
-const W = 196, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168, GW = 22, GH = 18, RISE = 30;
+const MAX = 3, NEAR = 14, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17, ENGAGED = 20;
+const W = 228, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168, RISE = 30;
+// the readout's grid, in dots: a label column, values right-aligned at the row's end, rows at least 1.5x the cap height apart
+const LBL = 40, GAP = 5, ROW = 17, NAME_H = 20, HID_H = 20, FN_H = 24;
+const PX = { label: 11, word: 12, num: 14, small: 11, name: 14 };
+const HAND_S = 0.8, HAND_FN = 0.95; // (the running hand's scale: a letter about 10 dots tall, 15 px at 720 lines)
+// the sprite: a base of 44 x 36 cells, shown on a grid a step finer a familiarity level, over the same area of the screen
+const BW = 44, BH = 36, AW = 50.6, AH = 41.4, GRIDS = [[11, 9], [15, 12], [22, 18], [29, 24], [44, 36]];
 const INK = '#0d0a12', LIGHT = '#e6deff', VFD = '#7dffd2', VFD_GLOW = 'rgba(60,255,190,.85)', MAG = '#ff2a9a', CYAN = '#22e6ff';
 const FILM_HI = ['#8a5cff', '#3fc4f0', '#f6cd5a', '#ff5aa8'], FILM_LIT = ['#b49cff', '#7fe3ff', '#ffd56b', '#ff86c8'];
 const PAL = { lab: '#8fd8b0', dim: '#8fd8b0', val: VFD, glow: VFD_GLOW, word: '#e2fff0', wordGlow: 'rgba(60,255,190,.35)' };
-const TONES = ['#0b3d2a', '#2a9e6e', '#7dffd2', '#e9fff7'];
+const TONES = ['#0b3d2a', '#2a9e6e', '#7dffd2', '#e9fff7'], SHADOW = '#020a06';
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
 const LABEL = { habit: 'NOW', health: 'HP', emo: 'EMO', statuses: 'STATUS', weak: 'WEAK', grain: 'GRAIN' };
 // the statuses' motes: doubt and charm are the mock's; the others are placeholders (a colour and a 7 x 7 glyph each) until the auras' table
@@ -67,54 +80,51 @@ function film(g, x0, y0, x1, y1) { const gr = g.createLinearGradient(x0, y0, x1,
 const _c = new THREE.Color(); const lin = (hex, a) => { _c.set(hex); return [_c.r, _c.g, _c.b, a]; };
 const C_INK = lin(INK, 0.85), C_VFD = lin(VFD, 1), C_TRAIL = {};
 const windowColour = () => (THEMES[theme.id] || THEMES.kiln).mid;
+const lum = (d, k) => Math.sqrt((0.3 * d[k] + 0.59 * d[k + 1] + 0.11 * d[k + 2]) / 255);
 
-/** The fallback hand (only while ui/runninghand.js draws nothing): each syllable's consonant as a pad and a stem, placed and shaped by
- *  the orthography (cellsOf), its vowel marks round it, the words hung from one bus. Spelt, but not the final hand's drawing. */
-function fallbackHand(x, words, { x: ox = 0, y: oy = 0, scale: s = 1, ink = '#fff' } = {}) {
-  x.save(); x.strokeStyle = ink; x.fillStyle = ink; x.lineWidth = Math.max(0.7, s * 0.85); x.lineCap = 'round';
-  let cx = ox; const top = oy + 2.5 * s, base = oy + 8.5 * s;
-  for (const w of words) {
-    const x0 = cx;
-    for (const c of w.cells) {
-      if (c.vowels.includes('e')) { x.beginPath(); x.arc(cx + 1.2 * s, base - 2 * s, 1.2 * s, Math.PI * 0.4, Math.PI * 1.7); x.stroke(); cx += 3 * s; }
-      const L = c.onset[0], l = cx, r = cx + 5 * s, mid = cx + 2.5 * s;
-      const px = !L ? mid : L.place === 'lips' ? l : L.place === 'back' ? r : mid, py = L?.place === 'tip' ? top : base;
-      x.beginPath();
-      if (!L) x.arc(mid, base - 2 * s, 1.6 * s, 0, Math.PI * 2);
-      else if (L.manner === 'liquid') { x.moveTo(l, top); x.quadraticCurveTo(L.mark === 'in' ? r + 2 * s : l - 1 * s, base + 1 * s, r, top); }
-      else { x.moveTo(px, top); x.lineTo(px, base); if (L.manner === 'nasal') { x.moveTo(px + (px === r ? -1.6 : 1.6) * s, top + s); x.lineTo(px + (px === r ? -1.6 : 1.6) * s, base); } }
-      if (L?.manner === 'fricative') { const my = (top + base) / 2; x.moveTo(px - 1.4 * s, my - 0.8 * s); x.lineTo(px + 1.4 * s, my + 0.8 * s); if (L.mark !== 'tick') { x.moveTo(px - 1.4 * s, my + 1.2 * s); x.lineTo(px + 1.4 * s, my + 2.8 * s); } }
-      x.stroke();
-      if (L) { x.beginPath(); x.arc(px, py, 1.1 * s, 0, Math.PI * 2); L.voiced ? x.fill() : x.stroke(); }
-      if (c.onset[1]) { x.beginPath(); x.moveTo(mid - s, base + 1.6 * s); x.lineTo(mid + 1.6 * s, base + 1.6 * s); x.stroke(); }
-      if (c.vowels.includes('i')) { x.beginPath(); x.moveTo(mid - 1.2 * s, top - 1.8 * s); x.lineTo(mid + 1.8 * s, top - 2.4 * s); x.stroke(); }
-      if (c.vowels.includes('u')) { x.beginPath(); x.arc(mid, base + 2.4 * s, 0.8 * s, 0, Math.PI * 2); x.fill(); }
-      cx = r + 1.5 * s;
-      if (c.vowels.includes('o')) { x.beginPath(); x.arc(cx, base - 3 * s, 1.3 * s, -Math.PI / 2, Math.PI / 2); x.stroke(); cx += 2.5 * s; }
-      if (c.coda) { x.beginPath(); x.moveTo(cx - 0.5 * s, top + s); x.lineTo(cx - 0.5 * s, base); x.moveTo(cx - 2 * s, top + s); x.lineTo(cx + s, top + s); x.stroke(); cx += 2 * s; }
-    }
-    x.beginPath(); x.moveTo(x0, base + 0.4 * s); x.lineTo(cx, base + 0.4 * s); x.stroke(); cx += 3.5 * s;
-  }
-  x.restore(); return { width: cx - ox - 3.5 * s, height: 11 * s, x0: ox, y0: oy };
-}
-
-/** The sprite from pixels: the mock's sampler (the silhouette's bounds fitted into GW x GH, a cell's luminance or null). */
-function sampleGrid(d, S, alphaOk, flip) {
-  let x0 = S, y0 = S, x1 = 0, y1 = 0;
-  const at = (i, j) => ((flip ? S - 1 - j : j) * S + i) * 4;
-  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) if (!alphaOk || d[at(i, j) + 3] > 150) { x0 = Math.min(x0, i); y0 = Math.min(y0, j); x1 = Math.max(x1, i); y1 = Math.max(y1, j); }
+/** A base sprite (BW x BH: a luminance and a coverage a cell) from pixels: the drawn shape's own bounds fitted in, its aspect kept;
+ *  a pixel counts when it is opaque or lit (so a transparent or additive flame is part of the shape). */
+function baseFromPixels(d, S, flip) {
+  const at = (i, j) => ((flip ? S - 1 - j : j) * S + i) * 4, on = (k) => d[k + 3] > 24 || Math.max(d[k], d[k + 1], d[k + 2]) > 24;
+  let x0 = S, y0 = S, x1 = -1, y1 = -1;
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) if (on(at(i, j))) { x0 = Math.min(x0, i); y0 = Math.min(y0, j); x1 = Math.max(x1, i); y1 = Math.max(y1, j); }
   if (x1 < x0) return null;
-  const cs = Math.max((x1 - x0 + 1) / GW, (y1 - y0 + 1) / GH), ox = (x0 + x1) / 2 - cs * GW / 2, oy = (y0 + y1) / 2 - cs * GH / 2, out = new Array(GW * GH).fill(null);
-  let lo = 1, hi = 0;
-  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-    const px = Math.floor(ox + (i + 0.5) * cs), py = Math.floor(oy + (j + 0.5) * cs); if (px < 0 || py < 0 || px >= S || py >= S) continue;
-    const k = at(px, py); if (alphaOk && d[k + 3] <= 150) continue;
-    const l = Math.sqrt((0.3 * d[k] + 0.59 * d[k + 1] + 0.11 * d[k + 2]) / 255); out[j * GW + i] = l; lo = Math.min(lo, l); hi = Math.max(hi, l);
+  const cs = Math.max((x1 - x0 + 1) / BW, (y1 - y0 + 1) / BH), ox = (x0 + x1 + 1) / 2 - cs * BW / 2, oy = (y0 + y1 + 1) / 2 - cs * BH / 2;
+  const L = new Float32Array(BW * BH), A = new Float32Array(BW * BH), n = 3;
+  for (let j = 0; j < BH; j++) for (let i = 0; i < BW; i++) {
+    let hit = 0, l = 0;
+    for (let v = 0; v < n; v++) for (let u = 0; u < n; u++) {
+      const px = Math.floor(ox + (i + (u + 0.5) / n) * cs), py = Math.floor(oy + (j + (v + 0.5) / n) * cs);
+      if (px < 0 || py < 0 || px >= S || py >= S) continue; const k = at(px, py); if (on(k)) { hit++; l += lum(d, k); }
+    }
+    A[j * BW + i] = hit / (n * n); L[j * BW + i] = hit ? l / hit : 0;
   }
-  const span = Math.max(0.05, hi - lo); for (let i = 0; i < out.length; i++) if (out[i] != null) out[i] = (out[i] - lo) / span; // (tones spread over the shape)
+  return { L, A };
+}
+/** A plate cut to the creature: its box (centre x, y and height h, 0..1 of the plate), or the plate's middle when the plate kept none. */
+function baseFromPlate(img, box) {
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height; if (!iw || !ih) return null;
+  const b = box && Number.isFinite(box.x) ? box : { x: 0.5, y: 0.5, h: 0.45 };
+  let ch = Math.min(ih, Math.max(0.18, (b.h || 0.45) * 2.2) * ih), cw = ch * BW / BH; if (cw > iw) { cw = iw; ch = cw * BH / BW; }
+  const cx = Math.max(0, Math.min(iw - cw, b.x * iw - cw / 2)), cy = Math.max(0, Math.min(ih - ch, b.y * ih - ch / 2));
+  const cv = canvasOf(BW, BH), x = cv.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+  x.drawImage(img, cx, cy, cw, ch, 0, 0, BW, BH);
+  const d = x.getImageData(0, 0, BW, BH).data, L = new Float32Array(BW * BH), A = new Float32Array(BW * BH).fill(1);
+  for (let i = 0; i < BW * BH; i++) L[i] = lum(d, i * 4);
+  return { L, A };
+}
+function ellipseBase() { const L = new Float32Array(BW * BH), A = new Float32Array(BW * BH); for (let j = 0; j < BH; j++) for (let i = 0; i < BW; i++) { const u = (i + 0.5) / BW * 2 - 1, v = (j + 0.5) / BH * 2 - 1; A[j * BW + i] = u * u + v * v < 0.9 ? 1 : 0; L[j * BW + i] = 0.5; } return { L, A }; }
+/** The base shown on a coarser grid: each cell the mean of the base cells it covers (filled past half), luminance spread over the shape. */
+function gridOf(base, gw, gh) {
+  const out = new Array(gw * gh).fill(null); let lo = 1, hi = 0;
+  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+    const a0 = Math.floor(i * BW / gw), a1 = Math.max(a0 + 1, Math.floor((i + 1) * BW / gw)), b0 = Math.floor(j * BH / gh), b1 = Math.max(b0 + 1, Math.floor((j + 1) * BH / gh));
+    let a = 0, l = 0, n = 0; for (let y = b0; y < b1; y++) for (let x = a0; x < a1; x++) { const q = y * BW + x; a += base.A[q]; l += base.L[q] * base.A[q]; n++; }
+    if (a / n < 0.45) continue; const v = l / a; out[j * gw + i] = v; lo = Math.min(lo, v); hi = Math.max(hi, v);
+  }
+  const span = Math.max(0.05, hi - lo); for (let i = 0; i < out.length; i++) if (out[i] != null) out[i] = (out[i] - lo) / span;
   return out;
 }
-function ellipseGrid() { const out = []; for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { const u = (i + 0.5) / GW * 2 - 1, v = (j + 0.5) / GH * 2 - 1; out.push(u * u + v * v < 0.9 ? 1 - (u + v + 2) / 4 : null); } return out; }
 
 /** The quads of every bracket, leader and mote: one dynamic buffer, one draw call. Coordinates in dots, written as CSS px. */
 class Strokes {
@@ -162,26 +172,28 @@ class Panel {
   size(k) {
     if (k === this.k) return; this.k = k;
     this.cv.width = (W + 2 * M) * k; this.cv.height = (HMAX + 2 * M) * k; this.tex.dispose();
-    for (const c of [this.hand, this.tA]) { c.width = 300 * k; c.height = 40 * k; }
+    for (const c of [this.hand, this.tA]) { c.width = 200 * k; c.height = 40 * k; }
     if (this.work) { this.work.width = this.tint.width = this.cv.width; this.work.height = this.tint.height = this.cv.height; }
   }
   tear() { if (!this.work) { this.work = canvasOf(this.cv.width, this.cv.height); this.tint = canvasOf(this.cv.width, this.cv.height); } return this.work; }
 }
 
 // ---------------------------------------------------------------------------------------------------------------- the readout's drawing
-// (the mock's T, label, words, num, bar, emoTrack and rowPlain, in the game's faces; KK is the plate's k, for glows in device pixels)
+// (the mock's T, label, words, num, bar and emoTrack, in the game's faces, on the grid above; KK is the plate's k, for glows in device px)
 let KK = 1;
+const base = (y, h, px) => Math.round(y + h / 2 + px * 0.36); // (a row's baseline: its caps centred in it)
 function T(g, s, x, y, font, col, align, glow) {
   g.save(); g.font = font; g.textAlign = align || 'left'; g.textBaseline = 'alphabetic';
-  g.lineJoin = 'round'; g.strokeStyle = 'rgba(13,10,18,.92)'; g.lineWidth = 2.4; g.strokeText(s, x, y);
-  if (glow) { g.shadowColor = glow; g.shadowBlur = 3.5 * KK; } g.fillStyle = col; g.fillText(s, x, y); const w = g.measureText(s).width; g.restore(); return w;
+  g.lineJoin = 'round'; g.strokeStyle = 'rgba(13,10,18,.92)'; g.lineWidth = 2; g.strokeText(s, x, y);
+  if (glow) { g.shadowColor = glow; g.shadowBlur = 3 * KK; } g.fillStyle = col; g.fillText(s, x, y); const w = g.measureText(s).width; g.restore(); return w;
 }
-const label = (g, s, x, y) => T(g, s, x, y, `14px ${COUNT}`, PAL.lab);
-const words = (g, s, x, y, col, al) => T(g, s, x, y, `14px ${FONT.sys}`, col || PAL.word, al, PAL.wordGlow);
-const num = (g, s, x, y, px, col, al) => T(g, s, x, y, `${px}px ${COUNT}`, col || PAL.val, al, PAL.glow);
-function fitFont(g, str, maxW, size, face, weight = '') { let s = size; const f = () => `${weight}${s}px ${face}`; g.font = f(); while (g.measureText(str).width > maxW && s > 9) { s -= 0.5; g.font = f(); } return g.font; }
-function bar(g, x, y, w, h, f, fam) {
-  const lit = (xx, ww) => { g.save(); g.shadowColor = PAL.glow; g.shadowBlur = 3 * KK; g.fillStyle = PAL.val; g.fillRect(xx, y, ww, h); g.restore(); };
+function fitFont(g, str, maxW, size, face, weight = '') { let s = size; const f = () => `${weight}${s}px ${face}`; g.font = f(); while (g.measureText(str).width > maxW && s > 8) { s -= 0.5; g.font = f(); } return g.font; }
+const label = (g, s, x, y, h) => { const f = fitFont(g, s, LBL - 3, PX.label, COUNT); return T(g, s, x, base(y, h, PX.label), f, PAL.lab); };
+/** A value at the row's end (right-aligned in the one column); its width back, so the middle stops short of it. */
+const words = (g, s, XR, y, h, maxW = 200) => T(g, s, XR, base(y, h, PX.word), fitFont(g, s, maxW, PX.word, FONT.sys), PAL.word, 'right', PAL.wordGlow);
+const num = (g, s, XR, y, h, px = PX.num, col = PAL.val) => T(g, s, XR, base(y, h, px), `${px}px ${COUNT}`, col, 'right', PAL.glow);
+function bar(g, x, yc, w, f, fam) {
+  const h = 5, y = Math.round(yc - h / 2), lit = (xx, ww) => { g.save(); g.shadowColor = PAL.glow; g.shadowBlur = 3 * KK; g.fillStyle = PAL.val; g.fillRect(xx, y, ww, h); g.restore(); };
   g.fillStyle = 'rgba(13,10,18,.7)'; g.fillRect(x - 0.8, y - 0.8, w + 1.6, h + 1.6);
   if (fam <= 2) {
     const n = fam === 1 ? 4 : 8, on = Math.round(f * n), gw = (w - (n - 1) * 1.6) / n;
@@ -190,68 +202,75 @@ function bar(g, x, y, w, h, f, fam) {
   }
   g.strokeStyle = hexA(PAL.dim, 0.55); g.lineWidth = 0.7; g.strokeRect(x + 0.35, y + 0.35, w - 0.7, h - 0.7); lit(x, w * f);
 }
-function emoTrack(g, x, y, w, cur, needle) {
-  const [b0, b1] = EMO.optimal, z = [[0, b0], [b0, b1], [b1, 1]];
+function emoTrack(g, x, yc, w, cur, needle) {
+  const [b0, b1] = EMO.optimal, z = [[0, b0], [b0, b1], [b1, 1]], y = Math.round(yc + 2);
   g.fillStyle = 'rgba(13,10,18,.7)'; g.fillRect(x - 0.8, y - 3.8, w + 1.6, 5.6);
   z.forEach(([a, b], i) => {
     const xa = x + w * a + (i ? 0.8 : 0), xb = x + w * b - (i < 2 ? 0.8 : 0);
     if (i === cur) { g.save(); g.shadowColor = PAL.glow; g.shadowBlur = 3 * KK; g.fillStyle = PAL.val; g.fillRect(xa, y - 3, xb - xa, 4); g.restore(); }
     else { g.strokeStyle = hexA(PAL.dim, 0.6); g.lineWidth = 0.7; g.strokeRect(xa + 0.35, y - 2.65, xb - xa - 0.7, 3.3); }
   });
-  if (needle != null) { const nx = x + w * needle; g.fillStyle = PAL.word; g.strokeStyle = INK; g.lineWidth = 1; g.beginPath(); g.moveTo(nx, y - 3.6); g.lineTo(nx - 2.6, y - 8); g.lineTo(nx + 2.6, y - 8); g.closePath(); g.stroke(); g.fill(); }
+  if (needle != null) { const nx = x + w * needle; g.fillStyle = PAL.word; g.strokeStyle = INK; g.lineWidth = 1; g.beginPath(); g.moveTo(nx, y - 3.6); g.lineTo(nx - 2.4, y - 7.4); g.lineTo(nx + 2.4, y - 7.4); g.closePath(); g.stroke(); g.fill(); }
 }
 function glyphPx(g, id, x, y, d, col) {
   const gl = GLYPH[id] || GLYPH.other;
   g.fillStyle = 'rgba(13,10,18,.85)'; gl.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') g.fillRect(x + (i - 3.5) * d - d * 0.6, y + (j - 3.5) * d - d * 0.6, d * 2.2, d * 2.2); }));
   g.fillStyle = col; gl.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') g.fillRect(x + (i - 3.5) * d, y + (j - 3.5) * d, d, d); }));
 }
-/** A plain row, as the mock's rowPlain (row r: { key, h, line, s? }; fam the tag's level). */
+/** A plain row (row r: { key, h, line, s? }; fam the tag's level): its label, its value at the end, the bar between them. */
 function rowPlain(g, r, fam, x, y, w) {
-  const b = y + r.h - 4, XR = x + w, L = r.line;
-  if (r.key === 'name') { const s = String(L.text || '').toUpperCase(); g.font = fitFont(g, s, w, 15, FONT.title, '700 '); T(g, s, x, y + r.h - 5, g.font, PAL.word, 'left', PAL.wordGlow); return; }
-  if (r.key === 'habit') { label(g, 'NOW', x, b); words(g, L.text, XR, b, null, 'right'); return; }
+  const h = r.h, XR = x + w, L = r.line, MX = x + LBL, mid = y + h / 2, room = (vw) => XR - vw - GAP - MX;
+  if (r.key === 'name') { const s = String(L.text || '').toUpperCase(); T(g, s, x, base(y, h, PX.name), fitFont(g, s, w, PX.name, FONT.title, '700 '), PAL.word, 'left', PAL.wordGlow); return; }
+  if (r.key === 'habit') { label(g, 'NOW', x, y, h); words(g, L.text, XR, y, h, w - LBL); return; }
   if (r.key === 'health') {
-    label(g, 'HP', x, b); const bx = x + 18, bw = (fam >= 4 ? XR - 36 : XR) - bx; bar(g, bx, y + r.h / 2 - 2.5, bw, 5, L.value ?? 0, fam);
-    if (fam >= 4 && L.text) { const [hp, max] = L.text.split('/').map((s) => s.trim()); num(g, hp, XR - 14, b + 1, 16, PAL.val, 'right'); num(g, '/' + max, XR, b + 1, 12, PAL.lab, 'right'); }
-    return;
+    label(g, 'HP', x, y, h); let vw = 0;
+    if (fam >= 4 && L.text) { const [hp, max] = L.text.split('/').map((s) => s.trim()); vw = num(g, '/' + max, XR, y, h, PX.small, PAL.lab); vw += num(g, hp, XR - vw, y, h); }
+    bar(g, MX, mid, vw ? room(vw) : XR - MX, L.value ?? 0, fam); return;
   }
   if (r.key === 'emo') {
-    label(g, 'EMO', x, b); const exact = typeof L.value === 'number', band = exact ? (L.value < EMO.optimal[0] ? 0 : L.value > EMO.optimal[1] ? 2 : 1) : ['low', 'optimal', 'hot'].indexOf(L.value);
-    const right = exact ? 20 : 36, bx = x + 24; emoTrack(g, bx, y + r.h / 2 + 2, XR - right - bx, band, exact ? L.value : null);
-    if (exact) num(g, L.value.toFixed(2).replace(/^0/, ''), XR, b + 1, 16, PAL.val, 'right'); else num(g, String(L.value).toUpperCase(), XR, b, 13, PAL.val, 'right');
-    return;
+    label(g, 'EMO', x, y, h); const exact = typeof L.value === 'number', band = exact ? (L.value < EMO.optimal[0] ? 0 : L.value > EMO.optimal[1] ? 2 : 1) : ['low', 'optimal', 'hot'].indexOf(L.value);
+    const vw = exact ? num(g, L.value.toFixed(2).replace(/^0/, ''), XR, y, h) : num(g, String(L.value).toUpperCase(), XR, y, h, PX.small);
+    emoTrack(g, MX, mid, Math.max(16, room(vw)), band, exact ? L.value : null); return;
   }
   if (r.key === 'statuses') {
-    if (!r.s) { label(g, 'STATUS', x, b); words(g, 'NONE', XR, b, null, 'right'); return; }
-    const [id, v] = r.s, col = ST[id] || LIGHT; glyphPx(g, id, x + 4, y + r.h / 2, 1, col); words(g, id.toUpperCase(), x + 11, b, PAL.word);
-    const bx = x + 60, bw = XR - 17 - bx; g.fillStyle = 'rgba(13,10,18,.7)'; g.fillRect(bx - 0.5, y + r.h / 2 - 1, bw + 1, 3); g.fillStyle = hexA(col, 0.35); g.fillRect(bx, y + r.h / 2 - 0.5, bw, 2);
-    g.fillStyle = col; g.fillRect(bx, y + r.h / 2 - 0.5, bw * v / 100, 2); num(g, String(v), XR, b + 1, 14, col, 'right'); return;
+    if (!r.s) { label(g, 'STATUS', x, y, h); words(g, 'NONE', XR, y, h); return; }
+    const [id, v] = r.s, col = ST[id] || LIGHT; glyphPx(g, id, x + 4, mid, 1, col);
+    const s = id.toUpperCase(); T(g, s, x + 10, base(y, h, PX.label), fitFont(g, s, LBL - 12, PX.label, COUNT), col);
+    const vw = num(g, String(v), XR, y, h, PX.num, col), bw = room(vw);
+    g.fillStyle = 'rgba(13,10,18,.7)'; g.fillRect(MX - 0.5, mid - 1.5, bw + 1, 3); g.fillStyle = hexA(col, 0.35); g.fillRect(MX, mid - 1, bw, 2); g.fillStyle = col; g.fillRect(MX, mid - 1, bw * v / 100, 2); return;
   }
   if (r.key === 'weak') {
-    label(g, 'WEAK', x, b); if (!L.value) { words(g, 'NONE', XR, b, null, 'right'); return; }
-    const w2 = num(g, `×${(1 + BONUS.trump).toFixed(2).replace(/0$/, '')}`, XR, b + 1, 14, PAL.val, 'right'); words(g, (TYPES[L.value]?.name || L.value).toUpperCase(), XR - w2 - 3, b, null, 'right'); return;
+    label(g, 'WEAK', x, y, h); if (!L.value) { words(g, 'NONE', XR, y, h); return; }
+    const w2 = num(g, `×${(1 + BONUS.trump).toFixed(2).replace(/0$/, '')}`, XR, y, h); words(g, (TYPES[L.value]?.name || L.value).toUpperCase(), XR - w2 - 4, y, h, w - LBL - w2 - 4); return;
   }
-  if (r.key === 'grain') { label(g, 'GRAIN', x, b); const s = poles(L.value || {}).slice(0, 2).map((p) => p.toUpperCase()).join('·') || 'EVEN'; g.font = fitFont(g, s, w - 44, 14, FONT.sys); T(g, s, XR, b, g.font, PAL.word, 'right', PAL.wordGlow); }
+  if (r.key === 'grain') { label(g, 'GRAIN', x, y, h); words(g, poles(L.value || {}).slice(0, 2).map((p) => p.toUpperCase()).join('·') || 'EVEN', XR, y, h, w - LBL); }
 }
 
 // ---------------------------------------------------------------------------------------------------------------- the tags
 export class CreatureTags {
   constructor(game) {
-    this.game = game; this.tags = new Map(); this.sprites = new Map(); this.shown = [];
-    this.pollT = 0; this.churnT = 0; this.t = 0; this.k = 0; this.dot = 1; this.handScale = 0; this.cellW = 7; this.fallback = false; this.themeId = null;
-    this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16); this.rects = Array.from({ length: MAX + 2 }, () => ({ x0: 0, y0: 0, x1: 0, y1: 0 })); this.nR = 0;
+    this.game = game; this.tags = new Map(); this.sprites = new Map(); this.plates = new Map(); this.eng = new WeakMap(); this.shown = [];
+    this.pollT = 0; this.churnT = 0; this.t = 0; this.k = 0; this.dot = 1; this.themeId = null;
+    this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16);
+    this.rects = Array.from({ length: 40 }, () => ({ x0: 0, y0: 0, x1: 0, y1: 0 })); this.nR = 0;
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
     this.root = new THREE.Group(); this.root.name = 'creaturetags';
     this.strokes = new Strokes(); this.root.add(this.strokes.mesh);
     this.panels = Array.from({ length: MAX }, () => { const p = new Panel(); this.root.add(p.mesh); return p; });
     this.slot = S.add(this.root, { anchor: 'tl', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) });
-    const fonts = [`700 15px ${FONT.title}`, `14px ${FONT.sys}`, "14px 'Jersey 15'"];
+    const fonts = [`700 ${PX.name}px ${FONT.title}`, `${PX.word}px ${FONT.sys}`, `${PX.num}px 'Jersey 15'`];
     Promise.all(fonts.map((f) => document.fonts?.load?.(f).catch(() => null))).then(() => { for (const T of this.tags.values()) T.dirty = true; });
   }
 
   /** May this thing wear a tag at all? */
   ok(c) { return !!c && c.alive !== false && c.kind && !c.ally && !c.friend && !c.spirit && c.pos && c.root?.visible !== false; }
-  awake(c) { return !(st(c, 'sleep') > 0) && !(st(c, 'melt') > 0) && c.brain?.lod !== 'far' && c.state !== 'sleep'; }
+  /** Hostile to the Courier (the rule in the header): hunting them, or struck or striking within ENGAGED real seconds. */
+  hostile(c) {
+    const g = this.game; let e = this.eng.get(c); if (!e) this.eng.set(c, (e = { hp: c.hp, at: -1e9 }));
+    if (Number.isFinite(c.hp) && Number.isFinite(e.hp) && c.hp < e.hp) e.at = this.t; e.hp = c.hp;
+    if (c.windup && (c.windup.t ?? 1) > 0) e.at = this.t;
+    return (!!c.brain?.action?.hunt && c.foe === g.player) || this.t - e.at < ENGAGED;
+  }
 
   /** Where its eyes are (a clapperjar's eyes bone; else two thirds up its body, the head's offset polled with its lines). */
   eye(c, T, out) {
@@ -265,50 +284,63 @@ export class CreatureTags {
     out.x = (this.v2.x + 1) / 2 * this.Wd; out.y = (1 - this.v2.y) / 2 * 480; out.inView = Math.abs(this.v2.x) < 1 && Math.abs(this.v2.y) < 1; return true;
   }
 
-  /** Who wears a tag now: the one locked on, and up to two others nearest in view within NEAR while any is awake. */
+  /** Who wears a tag now: the one locked on, and up to two hostile others nearest in view within NEAR. */
   choose() {
     const g = this.game, P = g.player?.pos, lockRef = g.lock?.target?.ref, out = [], near = [], tmp = {};
-    let awake = false;
-    if (this.ok(lockRef)) { out.push(lockRef); if (this.awake(lockRef)) awake = true; }
+    if (this.ok(lockRef)) out.push(lockRef);
     if (P) for (const list of [g.creatures?.list, g.clappers?.list]) for (const c of list || []) {
-      if (c === lockRef || !this.ok(c)) continue; const d = c.pos.distanceTo(P); if (d > NEAR) continue;
+      if (c === lockRef || !this.ok(c)) continue; const hot = this.hostile(c); // (polled for every one in the lists, so a blow is never missed)
+      const d = c.pos.distanceTo(P); if (!hot || d > NEAR) continue;
       if (!this.project(this.v.set(c.pos.x, c.pos.y + 0.6, c.pos.z), tmp) || !tmp.inView) continue;
-      near.push([d, c]); if (this.awake(c)) awake = true;
+      near.push([d, c]);
     }
-    if (!awake) return out; // (the locked one keeps its tag; the others wait for something awake)
     near.sort((a, b) => a[0] - b[0]); for (const [, c] of near) { if (out.length >= MAX) break; out.push(c); }
     return out;
   }
 
-  // ------------------------------------------------------------------------------------------------------------ the sprite, once a kind
-  sprite(c) {
-    const plate = this.game.veritome?.plateOf?.(c.kind), have = this.sprites.get(c.kind);
-    if (plate && have?.from !== 'plate') { // (the Veritome's best plate of the kind, pixelated instead: the hook Dovina is asked for)
-      try { const S = 120, cv = canvasOf(S, S), x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(plate, 0, 0, S, S); const grid = sampleGrid(x.getImageData(0, 0, S, S).data, S, false, false); if (grid) { this.sprites.set(c.kind, { grid, from: 'plate' }); return grid; } } catch { /* the mesh's, below */ }
+  // ------------------------------------------------------------------------------------------------------------ the sprite's picture
+  /** What the sprite shows now: { mode: 'plate' | 'latent' | 'shadow', base }. The plate's image is decoded once a thumb. */
+  spriteOf(T) {
+    const c = T.c, pl = T.plate;
+    if (pl?.read === 'plain' && pl.thumb) {
+      let P = this.plates.get(c.kind);
+      if (!P || P.thumb !== pl.thumb) {
+        P = { thumb: pl.thumb, base: null }; this.plates.set(c.kind, P);
+        const img = new Image(), kind = c.kind;
+        img.onload = () => { try { P.base = baseFromPlate(img, pl.box); } catch (e) { console.warn('creature tag plate', e); } for (const o of this.tags.values()) if (o.c.kind === kind) o.dirty = true; };
+        img.src = pl.thumb;
+      }
+      if (P.base) return { mode: 'plate', base: P.base };
     }
-    if (have) return have.grid;
-    let grid = null; try { grid = this.sampleMesh(c); } catch (e) { console.warn('creature tag sprite', e); }
-    this.sprites.set(c.kind, { grid: grid || ellipseGrid(), from: grid ? 'mesh' : 'none' });
-    return this.sprites.get(c.kind).grid;
+    return { mode: pl?.read === 'latent' ? 'latent' : 'shadow', base: this.silhouette(c) };
   }
-  /** Its meshes rendered alone, lit from the upper left, from the side the camera sees, at 96 x 96, and read back once. */
+  silhouette(c) {
+    let s = this.sprites.get(c.kind); if (s) return s;
+    try { s = this.sampleMesh(c); } catch (e) { console.warn('creature tag sprite', e); s = null; }
+    s ||= ellipseBase(); this.sprites.set(c.kind, s); return s;
+  }
+  /** Its meshes rendered alone, with their own materials (a shader's shape, a transparent flame), from the side the camera sees, at
+   *  128 x 128, read back once; the frame is generous and the shape is cut to what was drawn. */
   sampleMesh(c) {
-    const r = this.game.overlayScene.r, root = c.root, S = 96; if (!root || !r) return null;
+    const r = this.game.overlayScene.r, root = c.root, S = 128; if (!root || !r) return null;
     root.updateMatrixWorld(true);
     if (!this.sScene) {
-      this.sScene = new THREE.Scene(); this.sSun = new THREE.DirectionalLight(0xffffff, 2.4); this.sScene.add(new THREE.AmbientLight(0xffffff, 0.7), this.sSun, this.sSun.target);
+      this.sScene = new THREE.Scene(); this.sSun = new THREE.DirectionalLight(0xffffff, 2.4); this.sScene.add(new THREE.AmbientLight(0xffffff, 0.8), this.sSun, this.sSun.target);
       this.sCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100); this.sRT = new THREE.WebGLRenderTarget(S, S); this.sBuf = new Uint8Array(S * S * 4);
     }
     const box = new THREE.Box3(), bb = new THREE.Box3(), proxies = [];
     root.traverseVisible((o) => {
-      if (!o.isMesh || o.isPoints || o.isSprite || /databug|glint|aura|shadow/i.test(o.name || '')) return;
-      const m = Array.isArray(o.material) ? o.material[0] : o.material; if (!m || (m.transparent && (m.opacity ?? 1) < 0.35) || m.blending === THREE.AdditiveBlending) return;
-      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-      const p = new THREE.Mesh(o.geometry, new THREE.MeshLambertMaterial({ color: m.color ? m.color.clone() : 0xffffff, map: m.map || null }));
-      p.matrixAutoUpdate = false; p.matrix.copy(o.matrixWorld); this.sScene.add(p); proxies.push(p); box.union(bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld));
+      if (!o.isMesh || o.isPoints || o.isSprite || !o.material || /databug|glint|aura|shadow|tag/i.test(o.name || '')) return;
+      let p;
+      if (o.isSkinnedMesh && o.skeleton) { p = new THREE.SkinnedMesh(o.geometry, o.material); p.bind(o.skeleton, o.bindMatrix); p.bindMode = o.bindMode; }
+      else p = new THREE.Mesh(o.geometry, o.material);
+      p.matrixAutoUpdate = false; p.matrix.copy(o.matrixWorld); p.frustumCulled = false; this.sScene.add(p); proxies.push(p);
+      if (o.isSkinnedMesh && o.computeBoundingBox) { try { o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } catch { bb.makeEmpty(); } }
+      else { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); }
+      box.union(bb);
     });
-    if (!proxies.length || box.isEmpty()) return null;
-    const ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()), half = Math.max(size.x, size.y, size.z) * 0.6 + 0.01;
+    if (!proxies.length || box.isEmpty()) { for (const p of proxies) this.sScene.remove(p); return null; }
+    const ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()), half = Math.max(size.x, size.y, size.z) * 0.9 + 0.05;
     const cam = this.sCam, to = this.game.camera ? new THREE.Vector3().subVectors(this.game.camera.position, ctr).setY(0) : new THREE.Vector3(0, 0, 1);
     if (to.lengthSq() < 1e-6) to.set(0, 0, 1); to.normalize();
     cam.left = cam.bottom = -half; cam.right = cam.top = half; cam.position.copy(ctr).addScaledVector(to, half * 4 + 2); cam.lookAt(ctr); cam.near = 0.01; cam.far = half * 8 + 4; cam.updateProjectionMatrix();
@@ -317,16 +349,17 @@ export class CreatureTags {
     try {
       r.setRenderTarget(this.sRT); r.setClearColor(0x000000, 0); r.autoClear = true; r.clear(); r.render(this.sScene, cam);
       r.readRenderTargetPixels(this.sRT, 0, 0, S, S, this.sBuf);
-    } finally { r.setRenderTarget(was); r.setClearColor(cc, ca); r.autoClear = auto; for (const p of proxies) { this.sScene.remove(p); p.material.dispose(); } }
-    return sampleGrid(this.sBuf, S, true, true);
+    } finally { r.setRenderTarget(was); r.setClearColor(cc, ca); r.autoClear = auto; for (const p of proxies) this.sScene.remove(p); }
+    return baseFromPixels(this.sBuf, S, true);
   }
 
   // ------------------------------------------------------------------------------------------------------------ the lines, polled
-  /** Read its tag; note what changed (a decrypt for a line now plain that was not); make its scramble's words. */
+  /** Read its tag and its plate; note what changed (a decrypt for a line now plain that was not); make its scramble's words. */
   read(T) {
     const c = T.c, tag = readTag(this.game, c); if (!tag) return;
     if (c.head && !c.bones?.eyes) { const h = c.head(); T.eyeDy = 0.68 * Math.max(0.2, h.y - 0.35 - c.pos.y); }
-    const sig = tag.level + '|' + JSON.stringify(tag.lines);
+    T.plate = plateOf(this.game, c.kind);
+    const sig = tag.level + '|' + (T.plate?.read || '-') + (T.plate?.thumb?.length || 0) + '|' + JSON.stringify(tag.lines);
     if (sig === T.sig) return; T.sig = sig; T.tag = tag; T.dirty = true;
     for (const L of tag.lines) {
       let R = T.rs.get(L.key);
@@ -341,11 +374,12 @@ export class CreatureTags {
       for (const n of on.on || []) T.motes.push([n, 100]);
       for (const [t, k] of Object.entries(on.build || {})) { const n = TYPES[t]?.builds || t; if (!T.motes.some((m) => m[0] === n)) T.motes.push([n, Math.round(k * 100)]); }
     }
+    T.rows = this.rows(T); T.h = Math.min(HMAX, Math.max(SH + 4, T.rows.reduce((a, r) => a + r.h, 0) + 2));
   }
   /** A scrambled line's words: its phrase, then roots from the pool until it is about as long as the hidden text (`len`). */
   tokensFor(key, len, seed) {
-    const base = (PHR[key] || PHR.statuses).split(' '), R = rng(seed + key.length * 31), want = Math.max(2, Math.min(9, Math.round(len / 2.2)));
-    const toks = base.slice(); let n = toks.reduce((a, t) => a + cells(t).length, 0);
+    const head = (PHR[key] || PHR.statuses).split(' '), R = rng(seed + key.length * 31), want = Math.max(2, Math.min(9, Math.round(len / 2.2)));
+    const toks = head.slice(); let n = toks.reduce((a, t) => a + cells(t).length, 0);
     while (n < want) { const t = POOL[Math.floor(R() * POOL.length)]; toks.push(t); n += cells(t).length; }
     while (n > want + 1 && toks.length > 1) n -= cells(toks.pop()).length;
     return toks;
@@ -365,54 +399,75 @@ export class CreatureTags {
       this.pollT = POLL; const want = this.choose();
       for (const c of want) if (!this.tags.has(c)) {
         const panel = this.panels.find((p) => !p.owner); if (!panel) break; panel.owner = c;
-        const T = { c, panel, vis: 0, x: 0, y: 0, placed: false, sig: '', tag: null, rs: new Map(), dirty: true, motes: [], h: 60, seed: 7 + (c.id ?? this.tags.size) * 13, eyeDy: 0.6, want: true, aberrant: false };
-        T.grid = this.sprite(c); this.tags.set(c, T);
+        this.tags.set(c, { c, panel, vis: 0, x: 0, y: 0, placed: false, sig: '', tag: null, rows: [], rs: new Map(), dirty: true, motes: [], h: 60, seed: 7 + (c.id ?? this.tags.size) * 13, eyeDy: 0.6, want: true, aberrant: false, plate: null });
       }
       for (const [c, T] of this.tags) { T.want = want.includes(c) && this.ok(c); if (T.want) this.read(T); }
     }
     // the churn: a scrambled line swaps a word a quarter of a real second (never a strobe: the ghosts move with it)
     const churn = (this.churnT -= dt) <= 0; if (churn) this.churnT = CHURN;
-    // place, draw, retire
+    // retire; then every bracket first, so no tag is laid over another creature's bracket; then the tags in turn, each adding its leader
     this.strokes.begin(this.dot); this.nR = 0;
     this.rect(this.Wd - 182, 0, this.Wd, 178); this.rect(this.Wd - 118, 250, this.Wd, 480); // (the Sight, the Lachrimeter)
-    this.shown.length = 0;
+    this.shown.length = 0; const live = [];
     for (const [c, T] of this.tags) {
       T.vis = T.want ? Math.min(1, T.vis + dt / T_IN) : Math.max(0, T.vis - dt / T_OUT);
       if (!T.want && T.vis <= 0) { T.panel.owner = null; T.panel.mesh.visible = false; this.tags.delete(c); continue; }
-      if (!T.tag) { T.panel.mesh.visible = false; continue; }
-      if (!this.place(T, dt)) { T.panel.mesh.visible = false; continue; }
+      if (!T.tag || !this.bracket(T)) { T.panel.mesh.visible = false; continue; }
+      const b = T.b; this.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
+    }
+    for (const T of live) {
+      this.place(T, dt);
       let decrypting = false; for (const R of T.rs.values()) if (R.dec >= 0) { if (this.t - R.dec < DECRYPT) decrypting = true; else R.dec = -1; }
       if (churn) for (const R of T.rs.values()) if (R.read === 'scrambled' && R.tokens) { const i = Math.floor(Math.random() * R.tokens.length); R.tokens[i] = POOL[Math.floor(Math.random() * POOL.length)]; T.dirty = true; T.ghost = Math.random() * 1e5; }
       if (T.dirty || decrypting) { T.panel.size(this.k); this.draw(T); T.dirty = decrypting; }
-      this.marks(T); this.show(T); this.shown.push(c);
+      this.marks(T); this.show(T); this.shown.push(T.c);
     }
     this.strokes.end();
     this.root.userData.overlayHidden = this.tags.size === 0;
   }
 
-  /** Lay its tag out in dots: the bracket at its eyes, the tag above it, kept off the others and the edges; false when off screen. */
-  place(T, dt) {
+  /** Its bracket in dots, round its eyes projected; false when off screen. */
+  bracket(T) {
     const c = T.c, e = (T.pe ||= {}); this.eye(c, T, this.v);
     if (!this.project(this.v, e)) return false;
     const cam = this.game.camera; this.right.setFromMatrixColumn(cam.matrixWorld, 0);
     const r = (T.pr ||= {}); this.project(this.v2.copy(this.v).addScaledVector(this.right, (c.radius || 0.4) * 0.45), r);
     const sp = Math.max(3, Math.min(42, Math.abs(r.x - e.x) || 6)), pad = Math.max(5, Math.min(12, sp * 0.5)), vy = pad * 1.1 + sp * 0.12;
     const bb = (T.b ||= {}); bb.x0 = e.x - sp - pad; bb.x1 = e.x + sp + pad; bb.y0 = e.y - vy; bb.y1 = e.y + vy; bb.ex = e.x; bb.ey = e.y; bb.sp = sp;
-    const h = Math.max(SH + 4, T.h), Wd = this.Wd;
-    let tx = e.x - 45 - 29, ty = T.b.y0 - RISE - SH - 64;
-    const clamp = (x, y) => [Math.max(20, Math.min(Wd - W - 6, x)), Math.max(6, Math.min(480 - h - 6, y))];
-    const hit = (x, y) => { for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (x - 16 < R.x1 && x + W > R.x0 && y < R.y1 && y + h > R.y0) return R; } return null; };
-    [tx, ty] = clamp(tx, ty);
-    for (let n = 0; n < 4; n++) {
-      const R = hit(tx, ty); if (!R) break;
-      const opts = [[R.x0 - W - 4, ty], [R.x1 + 20, ty], [tx, R.y1 + 4], [tx, R.y0 - h - 4]].map(([x, y]) => clamp(x, y)).filter(([x, y]) => !hit(x, y));
-      if (!opts.length) break; opts.sort((a, b) => Math.hypot(a[0] - tx, a[1] - ty) - Math.hypot(b[0] - tx, b[1] - ty)); [tx, ty] = opts[0];
-    }
-    if (!T.placed) { T.x = tx; T.y = ty; T.placed = true; } else { const a = 1 - Math.exp(-14 * dt); T.x += (tx - T.x) * a; T.y += (ty - T.y) * a; }
-    this.rect(Math.round(T.x) - 16, Math.round(T.y), Math.round(T.x) + W, Math.round(T.y) + h);
     return true;
   }
-  rect(x0, y0, x1, y1) { const R = this.rects[this.nR++]; R.x0 = x0; R.y0 = y0; R.x1 = x1; R.y1 = y1; }
+  /** Its leader for a tag at (x, y): from the bracket's corner nearest the lozenge, a diagonal, then straight to the lozenge. */
+  leader(T, x, y, P) {
+    const b = T.b, ax = x + 29, below = y + SH / 2 > b.ey, fx = ax < b.ex ? b.x0 : b.x1, fy = below ? b.y1 : b.y0;
+    const end = below ? y - 3 : y + SH + 3, room = Math.abs(end - fy), rise = Math.min(RISE, Math.max(0, room - 4));
+    P[0] = fx; P[1] = fy; P[2] = ax; P[3] = below ? fy + rise : fy - rise; P[4] = ax; P[5] = end; return P;
+  }
+  /** Lay its tag out in dots, above its bracket, kept off the obstacles (tags, brackets, leaders laid so far, the instruments, the edges). */
+  place(T, dt) {
+    const h = Math.max(SH + 4, T.h), Wd = this.Wd, b = T.b, Q = this.PTS;
+    const clamp = (x, y) => [Math.max(20, Math.min(Wd - W - 6, x)), Math.max(6, Math.min(480 - h - 6, y))];
+    const over = (x0, y0, x1, y1, skip) => { for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (R === skip) continue; if (x0 < R.x1 && x1 > R.x0 && y0 < R.y1 && y1 > R.y0) return R; } return null; };
+    const own = this.ownRect(T);
+    const hit = (x, y) => { // (the tag's box, and its leader's straight run, which must not cross another's things)
+      const R = over(x - 16, y, x + W, y + h); if (R) return R;
+      this.leader(T, x, y, Q); return over(Q[2] - 1.5, Math.min(Q[3], Q[5]), Q[2] + 1.5, Math.max(Q[3], Q[5]), own);
+    };
+    let [tx, ty] = clamp(b.ex - 74, b.y0 - RISE - SH - 64);
+    for (let n = 0; n < 6; n++) {
+      const R = hit(tx, ty); if (!R) break;
+      const opts = [[R.x0 - W - 4, ty], [R.x1 + 20, ty], [tx, R.y1 + 4], [tx, R.y0 - h - 4], [b.x1 + 24, b.ey - h / 2], [b.x0 - W - 8, b.ey - h / 2]].map(([x, y]) => clamp(x, y)).filter(([x, y]) => !hit(x, y));
+      if (!opts.length) break; opts.sort((a, c) => Math.hypot(a[0] - tx, a[1] - ty) - Math.hypot(c[0] - tx, c[1] - ty)); [tx, ty] = opts[0];
+    }
+    if (!T.placed) { T.x = tx; T.y = ty; T.placed = true; } else { const a = 1 - Math.exp(-14 * dt); T.x += (tx - T.x) * a; T.y += (ty - T.y) * a; }
+    // what it now takes up: its box, and its leader (the straight run, and the diagonal in three steps)
+    const x = Math.round(T.x), y = Math.round(T.y); this.rect(x - 16, y, x + W, y + h); this.leader(T, x, y, Q);
+    this.rect(Q[2] - 2, Math.min(Q[3], Q[5]), Q[2] + 2, Math.max(Q[3], Q[5]));
+    for (let i = 1; i <= 3; i++) { const u = i / 4, px = Q[0] + (Q[2] - Q[0]) * u, py = Q[1] + (Q[3] - Q[1]) * u; this.rect(px - 3, py - 3, px + 3, py + 3); }
+    return true;
+  }
+  /** The obstacle that is this tag's own bracket (its leader starts there, so the leader may touch it). */
+  ownRect(T) { const b = T.b; for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (R.x0 === b.x0 - 3 && R.y0 === b.y0 - 3) return R; } return null; }
+  rect(x0, y0, x1, y1) { if (this.nR >= this.rects.length) return; const R = this.rects[this.nR++]; R.x0 = x0; R.y0 = y0; R.x1 = x1; R.y1 = y1; }
 
   /** The plane: its canvas over the tag's place, unfolding from a line as it comes (and folding as it goes). */
   show(T) {
@@ -432,11 +487,7 @@ export class CreatureTags {
       S.col = pass ? C_VFD : C_INK; const w = pass ? 1.3 : 3.1;
       for (let q = 0; q < 4; q++) { const sx = q === 0 || q === 3 ? 1 : -1, sy = q < 2 ? 1 : -1, cx = sx > 0 ? b.x0 : b.x1, cy = sy > 0 ? b.y0 : b.y1; S.seg(cx + sx * Lx * lead, cy, cx, cy, w); S.seg(cx, cy, cx, cy + sy * Ly * lead, w); }
     }
-    // the leader: from the bracket's corner nearest the lozenge, a diagonal, then straight to the lozenge (dashed, the mock's)
-    const ax = x + 29, below = y + SH / 2 > b.ey, fx = ax < b.ex ? b.x0 : b.x1, fy = below ? b.y1 : b.y0;
-    const end = below ? y - 3 : y + SH + 3, room = Math.abs(end - fy), rise = Math.min(RISE, Math.max(0, room - 4));
-    P[0] = fx; P[1] = fy; P[2] = ax; P[3] = below ? fy + rise : fy - rise; P[4] = ax; P[5] = end;
-    S.col = C_INK; S.path(P, 3, 3, true, lead); S.col = C_VFD; S.path(P, 3, 1.2, true, lead);
+    this.leader(T, x, y, P); S.col = C_INK; S.path(P, 3, 3, true, lead); S.col = C_VFD; S.path(P, 3, 1.2, true, lead);
     // the status motes, orbiting the head, a trail behind each, a ring of its build-up from STUDIED
     if (!T.motes.length || T.vis < 1) return;
     const hx = b.ex, hy = b.y0 - 6, rx = Math.max(18, b.sp * 2.4 + 10), ry = rx * 0.24, ph = this.t * 0.9;
@@ -451,12 +502,12 @@ export class CreatureTags {
   }
 
   // ------------------------------------------------------------------------------------------------------------ the tag's canvas
-  /** Its rows from Dovina's lines (a row per status when they read plain). */
+  /** Its rows from Dovina's lines: a hidden line a taller row (the hand), statuses at most two rows when they read plain. */
   rows(T) {
     const out = [];
     for (const L of T.tag.lines) {
-      if (L.key === 'statuses' && L.read === 'plain' && T.motes.length) { for (const s of T.motes.slice(0, 3)) out.push({ key: 'statuses', h: 15, line: L, s }); continue; }
-      out.push({ key: L.key, h: L.key === 'name' ? 20 : L.key === 'functions' ? 30 : 15, line: L });
+      if (L.key === 'statuses' && L.read === 'plain' && T.motes.length) { for (const s of T.motes.slice(0, 2)) out.push({ key: 'statuses', h: ROW, line: L, s }); continue; }
+      out.push({ key: L.key, h: L.key === 'name' ? NAME_H : L.key === 'functions' ? FN_H : L.read === 'plain' ? ROW : HID_H, line: L });
     }
     return out;
   }
@@ -465,20 +516,29 @@ export class CreatureTags {
   draw(T) {
     const P = T.panel, k = P.k, ab = T.aberrant, tgt = ab ? P.tear() : P.cv, g = tgt.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, tgt.width, tgt.height); g.setTransform(k, 0, 0, k, M * k, M * k); KK = k;
-    const rows = this.rows(T), fam = T.tag.level, h = Math.min(HMAX, Math.max(SH + 4, rows.reduce((a, r) => a + r.h, 0) + 4)); T.h = h;
+    const rows = T.rows, fam = Math.max(0, Math.min(4, T.tag.level | 0)), h = T.h, spr = this.spriteOf(T), lit = spr.mode !== 'plate';
+    { // the readout's scrim: a dark screen-glass behind the lines, so they read over bright sand and sky (no plate: it fades out at its far edge)
+      const sg = g.createLinearGradient(GX - 8, 0, W, 0); sg.addColorStop(0, 'rgba(4,8,6,.5)'); sg.addColorStop(0.75, 'rgba(4,8,6,.38)'); sg.addColorStop(1, 'rgba(4,8,6,0)');
+      g.fillStyle = sg; g.fillRect(GX - 8, 0, W - GX + 8, h); g.fillStyle = 'rgba(0,0,0,.18)'; for (let yy = 1; yy < h; yy += 2) g.fillRect(GX - 8, yy, W - GX + 8, 0.7);
+    }
     const ch = 12, loz = () => { g.beginPath(); g.moveTo(ch, 0); g.lineTo(SW - ch, 0); g.lineTo(SW, SH / 2); g.lineTo(SW - ch, SH); g.lineTo(ch, SH); g.lineTo(0, SH / 2); g.closePath(); };
-    // the bezel and the glass
+    // the bezel and the glass (lit behind a shadow; dark behind a plate's picture)
     loz(); g.strokeStyle = '#05030a'; g.lineWidth = 6; g.stroke(); loz(); g.strokeStyle = film(g, 0, 0, SW, SH); g.lineWidth = 1; g.stroke();
-    loz(); const gl = g.createRadialGradient(SW / 2, SH / 2, 4, SW / 2, SH / 2, SW * 0.62); gl.addColorStop(0, fam ? '#0b2a1d' : '#1a7a55'); gl.addColorStop(1, '#020a06'); g.fillStyle = gl; g.fill();
+    loz(); const gl = g.createRadialGradient(SW / 2, SH / 2, 4, SW / 2, SH / 2, SW * 0.62); gl.addColorStop(0, lit ? '#1a7a55' : '#0b2a1d'); gl.addColorStop(1, '#020a06'); g.fillStyle = gl; g.fill();
     g.save(); loz(); g.clip();
-    // the sprite: its own silhouette, sampled; familiarity is how many tones it gets
-    const p = 2.3, sx0 = (SW - GW * p) / 2, sy0 = (SH - GH * p) / 2 + 1, spr = T.grid;
-    for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-      const l = spr[j * GW + i]; if (l == null) continue; let ii = i, col;
-      if (ab && j >= 5 && j <= 8) ii = i + 2; // (a slid band of rows)
-      if (fam === 0) col = '#020a06'; else if (fam === 1) col = TONES[1]; else if (fam === 2) col = l < 0.5 ? TONES[0] : TONES[2]; else col = l < 0.3 ? TONES[0] : l < 0.6 ? TONES[1] : l < 0.85 ? TONES[2] : TONES[3];
+    // the sprite: its picture on a grid a step finer a familiarity level
+    const [gw, gh] = GRIDS[fam], cw = AW / gw, chh = AH / gh, sx0 = (SW - AW) / 2, sy0 = (SH - AH) / 2 + 1, grid = gridOf(spr.base, gw, gh), gap = Math.min(0.35, cw * 0.15);
+    const slid0 = Math.round(gh * 0.28), slid1 = Math.round(gh * 0.45), slide = Math.max(1, Math.round(gw / 11));
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+      const l = grid[j * gw + i]; if (l == null) continue; let ii = i, col;
+      if (ab && j >= slid0 && j <= slid1) ii = i + slide; // (a slid band of rows)
+      col = lit ? SHADOW : l < 0.3 ? TONES[0] : l < 0.55 ? TONES[1] : l < 0.8 ? TONES[2] : TONES[3];
       if (ab && (i * 7 + j * 3) % 11 === 0) col = MAG;
-      g.fillStyle = col; g.fillRect(sx0 + ii * p, sy0 + j * p, p - 0.35, p - 0.35);
+      g.fillStyle = col; g.fillRect(sx0 + ii * cw, sy0 + j * chh, cw - gap, chh - gap);
+    }
+    if (spr.mode === 'latent') { // (a plate of it waits undeveloped: the shadow held still in a plate's corner marks, in the window colour)
+      const col = windowColour(), a = sx0 + 3, b2 = sx0 + AW - 3, c0 = sy0 + 1, c1 = sy0 + AH - 1, L = 6; g.strokeStyle = col; g.lineWidth = 1.2;
+      for (const [cx, cy, sx, sy] of [[a, c0, 1, 1], [b2, c0, -1, 1], [b2, c1, -1, -1], [a, c1, 1, -1]]) { g.beginPath(); g.moveTo(cx + sx * L, cy); g.lineTo(cx, cy); g.lineTo(cx, cy + sy * L); g.stroke(); }
     }
     if (ab) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(217,26,128,.22)'; g.fillRect(0, SH * 0.45, SW, SH); } g.globalCompositeOperation = 'source-over';
     for (let yy = 0; yy < SH; yy += 2) { g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, yy, SW, 0.8); }
@@ -489,7 +549,7 @@ export class CreatureTags {
     g.strokeStyle = '#05030a'; g.lineWidth = 3; g.beginPath(); g.arc(-3, SH / 2, 12.5, 0, 7); g.stroke(); g.strokeStyle = film(g, -15, 0, 9, 0); g.lineWidth = 1; g.beginPath(); g.arc(-3, SH / 2, 12.5, 0, 7); g.stroke();
     this.sigil(g, -3, SH / 2, 8.5, fam, k);
     // the readout beside it: bare lines, a hairline under each, joined to the screen by a short bus
-    g.strokeStyle = hexA(VFD, 0.5); g.lineWidth = 0.7; g.beginPath(); g.moveTo(SW + 1, SH / 2); g.lineTo(GX - 5, SH / 2); g.moveTo(GX - 5, 4); g.lineTo(GX - 5, h - 4); g.stroke();
+    g.strokeStyle = hexA(VFD, 0.5); g.lineWidth = 0.7; g.beginPath(); g.moveTo(SW + 1, SH / 2); g.lineTo(GX - 5, SH / 2); g.moveTo(GX - 5, 3); g.lineTo(GX - 5, h - 3); g.stroke();
     let y = 0; const ww = W - GX;
     for (const r of rows) {
       const R = T.rs.get(r.key), dec = R && R.dec >= 0 ? Math.min(1, (this.t - R.dec) / DECRYPT) : 1;
@@ -497,11 +557,11 @@ export class CreatureTags {
         if (dec < 1) { // the decrypt: the plain line wiped in behind a VFD cursor, the scramble it was still to the right of it
           const fx = GX + ww * dec;
           g.save(); g.beginPath(); g.rect(GX - 4, y, fx - GX + 4, r.h); g.clip(); this.row(g, T, r, fam, GX, y, ww); g.restore();
-          if (R.tokens) { g.save(); g.beginPath(); g.rect(fx, y, GX + ww - fx + 2, r.h); g.clip(); this.hidden(g, T, r, { ...r, line: { ...r.line, read: 'scrambled' } }, GX, y, ww); g.restore(); }
+          if (R.tokens) { g.save(); g.beginPath(); g.rect(fx, y, GX + ww - fx + 2, r.h); g.clip(); this.hidden(g, T, { ...r, line: { ...r.line, read: 'scrambled' } }, GX, y, ww); g.restore(); }
           g.save(); g.shadowColor = VFD_GLOW; g.shadowBlur = 3 * k; g.fillStyle = VFD; g.fillRect(fx, y + 2, 1.4, r.h - 4); g.restore();
         } else this.row(g, T, r, fam, GX, y, ww);
-      } else this.hidden(g, T, r, r, GX, y, ww);
-      g.fillStyle = hexA(VFD, 0.22); g.fillRect(GX, y + r.h - 0.6, ww, 0.6); y += r.h;
+      } else this.hidden(g, T, r, GX, y, ww);
+      y += r.h; g.fillStyle = hexA(VFD, 0.22); g.fillRect(GX, y - 0.6, ww, 0.6);
     }
     if (ab) this.compose(P, h);
     P.tex.needsUpdate = true;
@@ -509,46 +569,44 @@ export class CreatureTags {
 
   row(g, T, r, fam, x, y, w) {
     if (r.key !== 'functions') { rowPlain(g, r, fam, x, y, w); return; }
-    // the neuralese its mind would take (UNDERSTOOD, while stunned): the words you know in the hand at 2x, a dashed cell a blank
+    // the neuralese its mind would take (UNDERSTOOD, while stunned): the words you know in the hand, a dashed cell a blank
     const { words: ws = [], blanks = 0 } = r.line.value || {}; let cx = x;
-    if (ws.length) cx += this.hand(g, T.panel, ws.map((s) => s.toUpperCase()), x, y, r.h, w, 'functions', 'left') + 4;
+    if (ws.length) cx += this.hand(g, T.panel, ws.map((s) => s.toUpperCase()), x, y, r.h, w - 16 * Math.min(blanks, 3), 'functions', 'left') + 4;
     g.save(); g.setLineDash([1.5, 1.5]); g.strokeStyle = hexA(VFD, 0.6); g.lineWidth = 0.8;
-    for (let i = 0; i < blanks && cx + 12 <= x + w; i++, cx += 14) g.strokeRect(cx + 0.5, y + 6.5, 11, r.h - 12);
+    for (let i = 0; i < blanks && cx + 12 <= x + w; i++, cx += 14) g.strokeRect(cx + 0.5, y + 5.5, 11, r.h - 11);
     g.restore();
   }
-  /** A scrambled or latent row: its label (the tag keeps its shape at every level), then the hand, right-aligned at the hidden length. */
-  hidden(g, T, r, rr, x, y, w) {
-    if (r.key === 'name') { T_(g, '???', x, y + r.h - 5); return; }
-    const lw = LABEL[r.key] ? label(g, LABEL[r.key], x, y + r.h - 4) : 0, R = T.rs.get(r.key);
+  /** A scrambled or latent row: its label (the tag keeps its shape at every level), then the hand across the rest of the row. */
+  hidden(g, T, r, x, y, w) {
+    if (r.key === 'name') { T_(g, '???', x, base(y, r.h, PX.name)); return; }
+    const lw = LABEL[r.key] ? LBL : 0, R = T.rs.get(r.key);
+    if (lw) label(g, LABEL[r.key], x, y, r.h);
     if (!R?.tokens) return;
-    this.hand(g, T.panel, R.tokens, x + lw + 6, y, r.h, w - lw - 6, rr.line.read === 'latent' ? 'latent' : 'scrambled', 'right', T.ghost || T.seed);
+    this.hand(g, T.panel, R.tokens, x + lw, y, r.h, w - lw, r.line.read === 'latent' ? 'latent' : 'scrambled', 'right', T.ghost || T.seed);
   }
 
-  /** Neuralese in the running hand (ui/runninghand.js: final, drawn as it is; the fallback only while it draws nothing), tinted:
+  /** Neuralese in the running hand (ui/runninghand.js, final, drawn as it is): measured first (a scale that reads as script, smaller
+   *  only to fit the row's height; words dropped to fit its width), drawn white into a scratch canvas by its bounds, then tinted:
    *  scrambled is the schiller with three cells caught mid-change; latent the window colour, still, with a plate's corner marks. */
   hand(g, P, tokens, x, y, rowH, maxW, mode, align, seed = 7) {
-    const k = P.k, H = P.hand, hx = H.getContext('2d'), big = mode === 'functions', glyphH = big ? rowH - 6 : rowH - 4;
+    const k = P.k, H = P.hand, hx = H.getContext('2d'), pad = 2;
+    let toks = tokens.slice(), s = mode === 'functions' ? HAND_FN : HAND_S, m = null;
+    const measure = () => { m = runningHand(null, toks.map((t) => ({ cells: cells(t) })), { x: 0, y: 0, scale: s }); };
+    measure();
+    if (m.height + m.lw > rowH - 3) { s *= (rowH - 3) / (m.height + m.lw); measure(); }
+    while (m.width + m.lw > maxW && toks.length > 1) { toks = toks.slice(0, -1); measure(); }
+    if (m.width + m.lw > maxW) { s *= maxW / (m.width + m.lw); measure(); }
+    const wd = m.width + m.lw, hd = m.height + m.lw, sw = Math.ceil((wd + 2 * pad) * k), sh = Math.ceil((hd + 2 * pad) * k);
     hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, H.width, H.height); hx.setTransform(k, 0, 0, k, 0, 0);
-    const ws = tokens.map((t) => ({ cells: cells(t) }));
-    if (!this.handScale) { // (the hand's own size, measured once: a glyph row scaled to a reading line's height)
-      let m = null; try { m = runningHand(hx, [{ cells: cells('SOMA') }], { x: 2, y: 2, scale: 1, ink: '#fff', joined: true }); } catch { m = null; }
-      this.fallback = !(m?.width > 0 && m?.height > 0); this.handBase = this.fallback ? 11 : m.height; this.handScale = 1;
-      hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, H.width, H.height); hx.setTransform(k, 0, 0, k, 0, 0);
-    }
-    const s = glyphH / this.handBase, o = { x: 4, y: 24, scale: s, ink: '#fff', joined: true }; // (the hand's y is its bus; it says its bounds)
-    let res = null; hx.save();
-    if (!this.fallback) { try { res = runningHand(hx, ws, o); } catch { res = null; } if (!(res?.width > 0)) { this.fallback = true; hx.restore(); hx.save(); hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, H.width, H.height); hx.setTransform(k, 0, 0, k, 0, 0); } }
-    if (this.fallback) res = fallbackHand(hx, ws, o);
-    hx.restore();
-    const bx = Math.max(0, (res.x0 ?? o.x) - 2), by = Math.max(0, (res.y0 ?? o.y) - 2);
-    const wd = Math.min(res.width, maxW, 290), hd = Math.min(res.height, 36), x0 = align === 'right' ? x + maxW - wd : x, y0 = y + (rowH - hd) / 2;
-    const tA = P.tA, ta = tA.getContext('2d'), sw = Math.ceil((wd + 4) * k), sh = Math.ceil((hd + 4) * k);
-    const tint = (fill) => { ta.setTransform(1, 0, 0, 1, 0, 0); ta.globalCompositeOperation = 'copy'; ta.drawImage(H, 0, 0); ta.globalCompositeOperation = 'source-in'; ta.setTransform(k, 0, 0, k, 0, 0); ta.fillStyle = fill; ta.fillRect(0, 0, 300, 40); ta.globalCompositeOperation = 'source-over'; };
-    const put = (dx = 0, dy = 0) => g.drawImage(tA, Math.round(bx * k), Math.round(by * k), sw, sh, x0 - 2 + dx, y0 - 2 + dy, wd + 4, hd + 4);
+    runningHand(hx, toks.map((t) => ({ cells: cells(t) })), { x: pad + m.lw / 2 - m.x0, y: pad + m.lw / 2 - m.y0, scale: s, ink: '#fff' });
+    const x0 = align === 'right' ? x + maxW - wd : x, y0 = y + (rowH - hd) / 2;
+    const tA = P.tA, ta = tA.getContext('2d');
+    const tint = (fill) => { ta.setTransform(1, 0, 0, 1, 0, 0); ta.globalCompositeOperation = 'copy'; ta.drawImage(H, 0, 0); ta.globalCompositeOperation = 'source-in'; ta.setTransform(k, 0, 0, k, 0, 0); ta.fillStyle = fill; ta.fillRect(0, 0, 200, 40); ta.globalCompositeOperation = 'source-over'; };
+    const put = (dx = 0, dy = 0) => g.drawImage(tA, 0, 0, sw, sh, x0 - pad + dx, y0 - pad + dy, sw / k, sh / k);
     tint('rgba(13,10,18,.85)'); for (const [dx, dy] of [[-0.9, 0], [0.9, 0], [0, -0.9], [0, 0.9]]) put(dx, dy);
     if (mode === 'latent') { // (still, in the window colour, a plate's corner marks at its ends: Dovina's latent read)
       const col = windowColour(); tint(col); g.save(); g.shadowColor = hexA(col, 0.9); g.shadowBlur = 3 * k; put(); g.restore();
-      const a = x0 - 2.5, b = x0 + wd + 2.5, c0 = y + 1, c1 = y + rowH - 1; g.fillStyle = col;
+      const a = x0 - 3, b = x0 + wd + 3, c0 = y + 1.5, c1 = y + rowH - 2; g.fillStyle = col;
       for (const [cx, cy, sx, sy] of [[a, c0, 1, 1], [b, c0, -1, 1], [b, c1, -1, -1], [a, c1, 1, -1]]) { g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + sx * 4, cy); g.lineTo(cx, cy + sy * 4); g.closePath(); g.fill(); }
       return wd;
     }
@@ -557,10 +615,10 @@ export class CreatureTags {
     // the churn, caught: three cells mid-change, ghosted magenta and cyan; a VFD cursor where it would resolve from
     const R = rng(Math.floor(seed) * 7 + 3); g.save(); g.globalCompositeOperation = 'lighter';
     for (let q = 0; q < 3; q++) {
-      const cx = x0 + R() * Math.max(1, wd - 8), cw = 5 + R() * 6; g.save(); g.beginPath(); g.rect(cx, y, cw, rowH); g.clip();
-      tint('rgba(255,42,154,.6)'); put(0, -1.4); tint('rgba(34,230,255,.5)'); put(0.7, 1.3); g.restore();
+      const cx = x0 + R() * Math.max(1, wd - 8), cw = 5 + R() * 6; g.save(); g.beginPath(); g.rect(cx, y + 1, cw, rowH - 2); g.clip();
+      tint('rgba(255,42,154,.6)'); put(0, -1.2); tint('rgba(34,230,255,.5)'); put(0.7, 1.1); g.restore();
     }
-    g.restore(); g.save(); g.fillStyle = VFD; g.shadowColor = VFD_GLOW; g.shadowBlur = 3 * k; g.fillRect(x0 - 2.8, y + 3, 1.2, rowH - 6); g.restore();
+    g.restore(); g.save(); g.fillStyle = VFD; g.shadowColor = VFD_GLOW; g.shadowBlur = 3 * k; g.fillRect(x0 - 3.5, y0, 1.2, hd); g.restore();
     return wd;
   }
 
@@ -594,7 +652,7 @@ export class CreatureTags {
   compose(P, h) {
     const K = P.k, src = P.work, out = P.cv, g = out.getContext('2d'), Wc = src.width, Hc = src.height, tc = P.tint, tx = tc.getContext('2d');
     const tint = (col, from = src) => { tx.globalCompositeOperation = 'copy'; tx.drawImage(from, 0, 0); tx.globalCompositeOperation = 'source-in'; tx.fillStyle = col; tx.fillRect(0, 0, Wc, Hc); tx.globalCompositeOperation = 'source-over'; return tc; };
-    const by0 = Math.round((M + h * 0.3) * K), bh = Math.round(h * 0.2 * K), bx0 = Math.round((M + W * 0.36) * K), bw = Wc - bx0, sh = Math.round(7 * K), sp = Math.round(2.8 * K);
+    const by0 = Math.round((M + h * 0.3) * K), bh = Math.round(h * 0.2 * K), bx0 = Math.round((M + GX + LBL) * K), bw = Wc - bx0, sh = Math.round(7 * K), sp = Math.round(2.8 * K);
     g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, Wc, Hc);
     // the split (the block cut out of the copies, as the mock's)
     g.save(); g.beginPath(); g.rect(0, 0, Wc, by0); g.rect(0, by0 + bh, Wc, Hc - by0 - bh); g.rect(0, by0, bx0, bh); g.clip();
@@ -611,4 +669,4 @@ export class CreatureTags {
   }
 }
 /** The name unknown: ??? carved in the name face (OVERLAY.md 16). */
-function T_(g, s, x, y) { T(g, s, x, y, `700 15px ${FONT.title}`, PAL.word); }
+function T_(g, s, x, y) { T(g, s, x, y, `700 ${PX.name}px ${FONT.title}`, PAL.word); }
