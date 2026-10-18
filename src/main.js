@@ -235,6 +235,7 @@ import { Signatures, standardSignatures } from './core/signatures.js';
 import { Spirits } from './creatures/spirits.js';
 import { Bound } from './creatures/bound.js';
 import { CatchLook } from './vfx/catch.js';
+import { PsygunModels } from './vfx/psygunmodels.js';
 import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
@@ -601,6 +602,7 @@ async function main() {
   const shells = new Shells(game);
   game.shells = shells;
   hud.buildShells(shells.types); // (the chambers of the psygun they carry: tools/psygun/kinds.js)
+  game.psygunModels = new PsygunModels(game); // (the psygun carried drawn as its variant: the Bombardier, the Carbine, the Pepperbox; vfx/psygunmodels.js)
   game.input = input;
   input.onSpend = (code) => { if (player.latches[code] > 0) player.latches[code] = 0; if (code === 'ShiftLeft' || code === 'ShiftRight') player.latches.Dodge = 0; }; // (a spent press is spent for the body too: core/input.js spend)
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
