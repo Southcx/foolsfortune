@@ -28,6 +28,7 @@ import fTitle from '../assets/fonts/cinzel.woff2?b64';
 import fDeco from '../assets/fonts/cinzeldeco.woff2?b64';
 import fLore from '../assets/fonts/fellitalic.woff2?b64';
 import fSys from '../assets/fonts/dotgothic16.woff2?b64';
+import fCount from '../assets/fonts/jersey15.woff2?b64';
 import gPoint from '../assets/ui/glove_point.png?b64';
 import gCursor from '../assets/ui/glove_cursor.png?b64';
 import gGrab from '../assets/ui/glove_grab.png?b64';
@@ -88,6 +89,7 @@ const CSS = () => `
 @font-face { font-family: 'IM Fell English'; font-style: italic; src: url(data:font/woff2;base64,${fLore}) format('woff2'); }
 @font-face { font-family: 'IM Fell English'; font-style: normal; src: url(data:font/woff2;base64,${fLore}) format('woff2'); }
 @font-face { font-family: 'DotGothic16'; src: url(data:font/woff2;base64,${fSys}) format('woff2'); }
+@font-face { font-family: 'Jersey 15'; src: url(data:font/woff2;base64,${fCount}) format('woff2'); }
 :root { --f-ui: ${FONT.ui}; --f-title: ${FONT.title}; --f-deco: ${FONT.deco}; --f-lore: ${FONT.lore}; --f-sys: ${FONT.sys}; }
 html body { font-family: var(--f-ui); font-weight: 500; }
 html body button, html body textarea, html body input { font-family: inherit; }

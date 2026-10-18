@@ -18,6 +18,7 @@
 //
 //   const m = new Lachrimeter(px, { width: 220 })   el.appendChild(m.el)   m.set(available, reserved, max)   m.bead()   m.update(dt)
 //   watchPoolCaps(game)   (main.js, once: the gauges then ask capOf(game.lachryma) for the uncapped max and its held stretches)
+//   stepAside(on)         (vfx/lachrimetertube.js, each frame: while the thermometer stands, the tube here is hidden and not drawn)
 // ---------------------------------------------------------------------------------------
 import { capOf } from '../progress/poolcaps.js';
 
@@ -36,9 +37,23 @@ const GOLD = ['#fff6d0', '#f2cc5a', '#c9962c', '#7f5816']; // (the mend's steps,
 const MOMENT = { close: 0.5, open: 0.8 }; // (real seconds a stretch takes to close (the cracks spread in) and to open (the gold goes))
 const hash = (a, b) => { const x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return x - Math.floor(x); };
 
-let WATCH = null;
+let WATCH = null, ASIDE = false;
 /** Lets every Lachrimeter ask the Courier's pool for its caps (progress/poolcaps.js capOf). */
 export function watchPoolCaps(game) { WATCH = game; }
+/** The Lachrimeter's tube (vfx/lachrimetertube.js) stands in the overlay: this flat tube steps aside (hidden, not drawn) while it does. */
+export function stepAside(on) { ASIDE = !!on; }
+
+/** While the tube stands, the HUD's panel round this tube gives up its frame and its word (the cubes and the Blink's beads it also
+ *  holds still show, unframed). */
+function asidePanel(el, on) {
+  const panel = el.closest?.('#lachryma'); if (!panel) return;
+  if (on && !document.getElementById('lachrimeteraside')) {
+    const st = document.createElement('style'); st.id = 'lachrimeteraside';
+    st.textContent = '#lachryma.tubeaside { border-image: none !important; border-color: transparent !important; background: none !important; } #lachryma.tubeaside .lab { color: transparent; }';
+    document.head.appendChild(st);
+  }
+  panel.classList.toggle('tubeaside', on);
+}
 
 /** A stretch's crack: the pixels (u from its right end, row) its clay crack runs through, a random walk with a branch every so often,
  *  stable as the stretch grows (seeded by the source and the column). */
@@ -83,6 +98,8 @@ export class Lachrimeter {
   bead() { this.beadT = 0; this.dirty = true; }
 
   update(dt) {
+    if (ASIDE !== this.aside) { this.aside = ASIDE; this.el.style.display = ASIDE ? 'none' : ''; this.dirty = true; asidePanel(this.el, ASIDE); }
+    if (ASIDE) return;
     if (this.beadT >= 0) { this.beadT += dt; if (this.beadT > 7 / 14) this.beadT = -1; this.dirty = true; }
     for (const [src, m] of this.moments) { m.t += dt; this.dirty = true; if (m.t > (m.to > m.from ? MOMENT.close : MOMENT.open)) { this.moments.delete(src); if (!m.to) this.held = this.held.filter((h) => h.source !== src || h.px > 0); } }
     if (!this.dirty) return;
