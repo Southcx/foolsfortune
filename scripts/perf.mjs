@@ -77,13 +77,17 @@ try {
       }
       return out;
     };
+    // (a draw is timed up to a 1-pixel readPixels: without the sync the timer read the GPU's queue, a cheap frame or a blocked one by
+    // chance, not the frame; CASEBOOK NEW:sync-before-timing-the-draw, measured by Calissa 2026-10-18)
+    const gl = R.getContext(), px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     const place = () => {
       for (let i = 0; i < 40; i++) { G.tick(1 / 60); G.draw(); }
+      sync();
       const tk = [], dr = [];
       let fc = 0, ft = 0;
       for (let i = 0; i < 60; i++) {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
-        calls = 0; tris = 0; t = performance.now(); G.draw(); dr.push(performance.now() - t); fc = calls; ft = tris;
+        calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
       return { tick: +med(tk).toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
