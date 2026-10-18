@@ -9,11 +9,11 @@
 // `creature.<kind>.down`, counted by tracking/familiarity.js from `creature.struck`) closes the gap. The level is the better of the two.
 // It is a predicate over the ledger, never a flag: a new build forgets every creature, as it forgets everything else.
 //
-//   level 0 UNKNOWN    no tag; a blow shows only on the body (its flash, its cracks, its temper). No number at all.
+//   level 0 UNKNOWN    a tag of ??? (a known unknown: the Veritome's prompt); a blow shows only on the body. No number at all.
 //   level 1 GLIMPSED   a tag with its name; health as a bar in quarters; a blow as a mark of its size (a graze, a wound, a maul)
-//   level 2 OBSERVED   a blow's number rounded to its leading figure (~10, ~200); health in eighths
+//   level 2 OBSERVED   a blow's number rounded to its leading figure (~10, ~200); health in eighths; its EmO as a band (low, optimal, hot)
 //   level 3 STUDIED    a blow's number exact; health as a bar; its statuses' build-up named
-//   level 4 UNDERSTOOD health as numbers (34 / 60); a blow's multiplier and why (×2: weak to Ego); its EmO band and its grain
+//   level 4 UNDERSTOOD health as numbers (34 / 60); a blow's multiplier and why (×2: weak to Ego); its EmO's value and its grain
 //
 // Prior art: Darkest Dungeon (a foe's stats and resistances revealed as you fight that kind), Monster Hunter's Hunter's Notes (weakness
 // stars filled in by hunting and by capturing), Final Fantasy's Scan and Libra, Shin Megami Tensei's Analyze (a demon's affinities known
@@ -33,11 +33,11 @@ export const FAMILIARITY = {
 
 /** What each level lets the overlay read out (a tag's lines, a blow's readout). */
 export const READS = [
-  { tag: false, name: false, health: null, blow: null, statuses: false, multiplier: false, emo: false, grain: false },
+  { tag: true, name: false, health: null, blow: null, statuses: false, multiplier: false, emo: false, grain: false }, // (the tag says ???)
   { tag: true, name: true, health: 'quarters', blow: 'mark', statuses: false, multiplier: false, emo: false, grain: false },
-  { tag: true, name: true, health: 'eighths', blow: 'rounded', statuses: false, multiplier: false, emo: false, grain: false },
-  { tag: true, name: true, health: 'bar', blow: 'exact', statuses: true, multiplier: false, emo: false, grain: false },
-  { tag: true, name: true, health: 'numbers', blow: 'exact', statuses: true, multiplier: true, emo: true, grain: true },
+  { tag: true, name: true, health: 'eighths', blow: 'rounded', statuses: false, multiplier: false, emo: 'band', grain: false },
+  { tag: true, name: true, health: 'bar', blow: 'exact', statuses: true, multiplier: false, emo: 'band', grain: false },
+  { tag: true, name: true, health: 'numbers', blow: 'exact', statuses: true, multiplier: true, emo: 'value', grain: true },
 ];
 
 const get = (L, k) => (L?.get?.(k) || 0);
