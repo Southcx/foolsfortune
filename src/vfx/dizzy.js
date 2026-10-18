@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// DIZZY: the stars that circle a head. Two uses, one look (the clapperjars' own little octahedral stars, clappers.js):
+// DIZZY: the stars that circle a head. Two uses, one look; each star a puffy five-pointed 3D star (the owner, 2026-10-18: "swap out the
+// diamonds ... with 3d star meshes"), its geometry shared as `starGeometry` so the clapperjars' own stars (clappers.js) can wear it too:
 //   the BUILD     while a stun meter fills (stun.js), a ring of small pale stars gathers over the head, one more for each quarter of
 //                 the way, turning slowly and brightening: you can see how near a thing is to going down without a number
 //   the STUN      once it is down, five gold stars wheel fast round its head until it comes to
@@ -9,18 +10,39 @@
 // stunned Monster Hunter monster's head, of Zelda's Deku-nut-stunned enemies), and the stagger and poise meters of the action games,
 // shown on the body (Sekiro's posture breaks with a flash; here it is gathered stars).
 //
+// The star: a five-pointed outline extruded thin with a round bevel (Super Mario's Power Star, Kirby's Warp Star), lit just enough
+// that its facets read as it turns.
+//
+//   starGeometry(r = 0.05) -> a shared BufferGeometry (r: tip radius, metres)
 //   const d = new Dizzy(scene)   d.set(key, headPos, { build: 0..1, stunned: bool, size })   (each frame it is shown)   d.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const N = 5;
+const STARS = new Map(); // r -> geometry (shared; never disposed)
+
+/** A puffy five-pointed star, tip radius `r` metres, centred, facing +z. One geometry per size, shared. */
+export function starGeometry(r = 0.05) {
+  let g = STARS.get(r);
+  if (g) return g;
+  const sh = new THREE.Shape(), inner = r * 0.48;
+  for (let i = 0; i < 10; i++) {
+    const a = Math.PI / 2 + (i * Math.PI) / 5, k = i % 2 ? inner : r;
+    i ? sh.lineTo(Math.cos(a) * k, Math.sin(a) * k) : sh.moveTo(Math.cos(a) * k, Math.sin(a) * k);
+  }
+  sh.closePath();
+  g = new THREE.ExtrudeGeometry(sh, { depth: r * 0.28, bevelEnabled: true, bevelThickness: r * 0.22, bevelSize: r * 0.16, bevelSegments: 2, curveSegments: 1 });
+  g.center(); g.computeVertexNormals();
+  STARS.set(r, g);
+  return g;
+}
 
 export class Dizzy {
   constructor(scene) {
     this.scene = scene;
-    this.geo = new THREE.OctahedronGeometry(0.05, 0);
-    this.pale = new THREE.MeshBasicMaterial({ color: 0xfff1dc, transparent: true, opacity: 0.8, toneMapped: false, depthWrite: false });
-    this.gold = new THREE.MeshBasicMaterial({ color: 0xffd76a, toneMapped: false });
+    this.geo = starGeometry(0.05);
+    this.pale = new THREE.MeshLambertMaterial({ color: 0x8a7f70, emissive: 0xd8cbb6, transparent: true, opacity: 0.8, toneMapped: false, depthWrite: false });
+    this.gold = new THREE.MeshLambertMaterial({ color: 0x8a5a0c, emissive: 0xd99a22, toneMapped: false }); // (lit facets over a glow, so the star reads as it turns)
     this.rings = new Map(); // key -> { g, stars, seen, t, k }
   }
 
