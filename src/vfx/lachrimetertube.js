@@ -168,6 +168,8 @@ function at(geo, p = [0, 0, 0], r = [0, 0, 0], s = [1, 1, 1]) {
 }
 
 export class LachrimeterTube {
+  /** True while this instrument stands in place of the old HUD piece (feedback/ gives way to it); false if switched off. */
+  get standing() { return !this.off; }
   constructor(game) {
     this.game = game;
     this.S = game.overlayScene;

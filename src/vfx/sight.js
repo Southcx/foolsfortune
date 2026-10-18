@@ -280,6 +280,8 @@ const ROIL = { rip: [0, 0.02, 0.03, 0.02, 0.012, 0.008], eddy: [0, 0.12, 0.3, 0.
 const REACH = [0, 0.155, 0.345, 0.535, 0.725, 1], SU = [0.12, 0.31, 0.5, 0.69, 0.88], SEAMS = [0.21, 0.5, 0.79], YS = 200, MAXQ = 96;
 
 export class SightLook {
+  /** True while this instrument stands in place of the old HUD piece (feedback/ gives way to it); false if switched off. */
+  get standing() { return !this.off; }
   constructor(game) {
     this.game = game; this.t = 0; this.level = -1; this.hidden = true;
     this.k = 0; this.vh = 0; this.pr = 0; this.dot = 1;

@@ -32,7 +32,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStatic } from '../render/merge.js';
 import { THEMES, theme } from '../ui/theme.js';
 
-const GATE = 0.94 / 2.6; // (round six's gate, its pillars at 2.6, brought to the colliders' 0.94 m)
+/** Where a gate's pillars stand, metres either side of its middle: world/shrines.js puts its colliders here (read it, don't copy it). */
+export const SHRINE_PILLAR_X = 0.94;
+const GATE = SHRINE_PILLAR_X / 2.6; // (round six's gate, its pillars at 2.6, brought to where the pillars stand)
 const CRADLE = 0.28 / 0.37; // (round six's cradle, its well 0.37, brought to the Pneuka Jar's foot)
 const CR = { R: 0.78, h: 0.5, rs: 0.37, dep: 0.13 }; // (the cradle in its own units: radius, height, the well's radius and depth)
 const CS = CRADLE / GATE; // (the cradle in the gate's units)
