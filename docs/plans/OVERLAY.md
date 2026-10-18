@@ -549,6 +549,18 @@ creature and its bestiary page read from this one module, so they cannot disagre
      learn, which sends you back to the lens.
    - Drawn in the neuralese script (15.5).
 
+**The scan's sprite (the owner picked board v8's C, 2026-10-18: the creature sampled into a pixel sprite on a small CRT screen, its lines
+beside it, the sigil-eye as its lens).** Its picture and its sharpness come from the two avenues, one each:
+- **The picture is the Veritome's**, from `plateOf(game, kind)`:
+  - before any plate of the kind, a shadow silhouette sampled from the model;
+  - while a plate of it waits in the memory, the shadow holds still with the plate's corner mark (latent);
+  - once appraised, the Compendium's best plate of the kind, cut out by its `box` and pixelated into the screen. A better plate replaces it.
+- **The sharpness is familiarity's level**: the sprite's pixel grid grows a step a level, so fighting sharpens it too. A plate fills it in;
+  a sword never paints it.
+- The plate keeps where each subject sits: `box { x, y, h }`, 0..1 of the plate. It is set at the shutter (`veritome.js`) and kept in the
+  Compendium (`darkroom.js`).
+- `readTag(...).plate` carries only the read (`plain`, `latent` or null), never the picture, so the agent's look stays small.
+
 **For Calissa to draw.** The three reads: plain, latent and scrambled (scrambled being the running hand churning in hard light). The
 decrypt between them. The latent hold with its plate's corner mark. The viewfinder's margin of facts. The neuralese row with its blanks.
 

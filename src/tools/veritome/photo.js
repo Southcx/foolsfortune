@@ -92,7 +92,7 @@ const has = (states, st) => (states.has ? states.has(st) : states.includes(st));
 /** A photograph as the memory keeps it: what was in it, as it was, and nothing live. */
 export function serial(r) {
   return {
-    subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), aware: !!s.aware, engaged: !!s.engaged })),
+    subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), ndc: s.ndc ? { x: +s.ndc.x.toFixed(3), y: +s.ndc.y.toFixed(3) } : null, aware: !!s.aware, engaged: !!s.engaged })),
     stars: r.stars, kinds: r.kinds, sky: !!r.sky, sun: !!r.sun,
   };
 }
