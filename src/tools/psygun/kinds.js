@@ -10,28 +10,43 @@
 // Prior art: the revolver cylinder (a chamber per round, and choosing what goes in each), Monster Hunter's bowguns (each gun loads
 // only some ammo types, each to its own clip size), Destiny's ammo types per weapon frame, and Caster's own shell set.
 //
-//   PSYGUNS[id] = { id, name, chambers, cap, capacity: { typeId: n }, loadout: [typeId], blurb }   typeNo(i) -> 'TYPE-00'
+//   PSYGUNS[id] = { id, name, chambers, shape, cap, capacity: { typeId: n }, loadout: [typeId], heart?, blurb }   typeNo(i) -> 'TYPE-00'
+//   capacityOf(gun, typeId)   chamberCapacity(gun, i, typeId)   (the heart's double: shells.js asks it once Petra wires it)
 // ---------------------------------------------------------------------------------------
-import { chamberHolds } from '../../progress/combat/castershells.js';
+import { chamberHolds, shellById } from '../../progress/combat/castershells.js';
 export const typeNo = (i) => `TYPE-${String(i).padStart(2, '0')}`;
 
 export const PSYGUNS = {
+  // (the cylinder's shape is its chamber count: docs/plans/OVERLAY.md 18; the owner's four variants, 2026-10-18, beside the first)
   'psygun.first': {
-    id: 'psygun.first', name: 'THE PSYGUN', chambers: 6, cap: 8, capacity: { bomb: 4, well: 4, anchor: 4 },
+    id: 'psygun.first', name: 'THE PSYGUN', chambers: 6, shape: 'hexagon', cap: 8, capacity: { bomb: 4, well: 4, anchor: 4 },
     loadout: ['slicer', 'push', 'well', 'mark', 'bomb', 'paint'],
     blurb: 'The hand-cannon you woke with: six chambers, eight of a shell in each (four of the heavy ones).',
   },
-  'psygun.pepperbox': {
-    id: 'psygun.pepperbox', name: 'THE PEPPERBOX', chambers: 11, cap: 3, capacity: {},
-    loadout: ['slicer', 'push', 'well', 'mark', 'bomb', 'ricochet', 'homing', 'paint', 'groove', 'anchor', 'hatch'],
-    blurb: 'A barrel for every shell there is, and only three of each.',
+  'psygun.bombardier': {
+    id: 'psygun.bombardier', name: 'THE BOMBARDIER', chambers: 1, shape: 'one', cap: 32, capacity: { bomb: 16, well: 16, anchor: 16 },
+    loadout: ['bomb'],
+    blurb: 'One chamber, and it never seems to empty: thirty-two of a shell, sixteen of the heavy ones.',
   },
-  'psygun.longtube': {
-    id: 'psygun.longtube', name: 'THE LONG TUBE', chambers: 3, cap: 16, capacity: { bomb: 8 },
+  'psygun.carbine': {
+    id: 'psygun.carbine', name: 'THE CARBINE', chambers: 3, shape: 'triangle', cap: 16, capacity: { bomb: 8, well: 8, anchor: 8 },
     loadout: ['slicer', 'push', 'bomb'],
-    blurb: 'Three deep magazines: sixteen of a shell, eight of the bombs.',
+    blurb: 'Three deep chambers: sixteen of a shell, eight of the heavy ones.',
+  },
+  'psygun.pentagun': {
+    id: 'psygun.pentagun', name: 'THE PENTAGUN', chambers: 5, shape: 'pentagon', cap: 10, capacity: { bomb: 5, well: 5, anchor: 5 },
+    loadout: ['slicer', 'push', 'well', 'mark', 'bomb'],
+    blurb: 'Five chambers, ten of a shell in each (five of the heavy ones).',
+  },
+  // the Pepperbox's seventh chamber is its HEART (the middle of the hexagon): any shell, and a rare or the Caster's own in it holds twice
+  'psygun.pepperbox': {
+    id: 'psygun.pepperbox', name: 'THE PEPPERBOX', chambers: 7, shape: 'hexagon+heart', cap: 5, capacity: { bomb: 3, well: 3, anchor: 3 }, heart: 6,
+    loadout: ['slicer', 'push', 'well', 'mark', 'bomb', 'ricochet', 'homing'],
+    blurb: 'Six round a heart: five of a shell in each (three of the heavy ones), and the heart holds twice its share of the rarest.',
   },
 };
 export const DEFAULT_PSYGUN = 'psygun.first';
 /** How many of a shell type a psygun holds: its own exception, else the shell's tier's share of the cap. */
 export const capacityOf = (gun, typeId) => gun.capacity[typeId] ?? chamberHolds(typeId, gun.cap);
+/** What the chamber at `i` holds of a type: its capacity, twice for a rare or the Caster's own in the Pepperbox's heart. */
+export const chamberCapacity = (gun, i, typeId) => capacityOf(gun, typeId) * (gun.heart === i && (shellById(typeId)?.tier || 1) >= 3 ? 2 : 1);

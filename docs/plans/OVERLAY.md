@@ -577,6 +577,58 @@ decrypt between them. The latent hold with its plate's corner mark. The viewfind
 - Clapperjars are read directly (Petra, 2026-10-18): each has `kind: 'clapper'` and one point of health, `observe()` lists them with
   their tags, and no entry carries a raw `state`. They are still outside `game.creatures`, so `creatures.strike` does not reach them.
 
+## 18. The tools' own UI: the mechanics (Dovina, 2026-10-18, on Calissa's five questions; the look is 10.5g, on Calissa's branch)
+
+The owner: the tools' own UI replaces the key strips. The rule under every answer below: **the wheel turns what the tool holds; what
+it costs shows on the Lachrimeter.** A tool's UI draws on the Courier, and the spiritual link to the Lachrimeter is where that cost is read.
+
+### The psygun's cylinder
+1. **Choosing a chamber.**
+   - **The wheel turns the cylinder**, one notch a chamber (it already cycles the shells: `shells.cycle`).
+   - **The whole cylinder shows on every turn** and on the draw, then settles small after about 1.2 real seconds. You see it whole by
+     using it, so no key is spent on a hold to look.
+   - **A press while it turns fires the chamber it is turning to.** A turn never swallows a shot.
+   - **The digit keys stay bound and unmarked**, a shortcut for whoever knows them. No strip draws them.
+   - **The Cleave's line follows the aim, not a second press:** level from the hip, upright down the sights. Its key no longer toggles it.
+2. **Each psygun, its chambers and their depth** (`tools/psygun/kinds.js`; narrow and deep, or wide and shallow):
+
+| psygun | chambers (shape) | a common holds | the heavy ones (bomb, well, anchor) | rounds of commons in all |
+|---|---|---|---|---|
+| the Bombardier | 1 (one) | 32 | 16 bombs | 32 |
+| the Carbine (was the Long Tube) | 3 (a triangle) | 16 | 8 | 48 |
+| the Pentagun | 5 (a pentagon) | 10 | 5 | 50 |
+| THE PSYGUN (the first) | 6 (a hexagon: the plain revolver) | 8 | 4 | 48 |
+| the Pepperbox | 7 (a hexagon round a heart) | 5 | 3 | 35 |
+
+   - **The Pepperbox's heart:** the middle chamber takes any shell, and a rare or the Caster's own in it holds twice its tier's count
+     (4 and 2). Breadth is paid for in depth, and the heart is what the widest gun gets back.
+   - THE PSYGUN stays at six as the first gun. The owner's four are its variants, found or earned (which ones, and where, is the
+     economy's next pass).
+3. **An empty chamber.**
+   - **It stays on the cylinder, hollow.** Turning stops on it, because what is out is information.
+   - **Firing the last shell of a chamber turns the cylinder by itself to the next loaded one**, the revolver's action: the satisfying
+     cycle, and no dead press.
+   - **Firing an empty chamber you turned to** gives one dry click, free, with no log line. (Today's "You have no ... shells" warning
+     goes.)
+   - **With every chamber empty**, the cylinder hangs open (the look) and plain shots go on as always.
+   - **A shell's cost** (`fireCost`, by tier) shows as the reserve on the Lachrimeter while its chamber is under the hammer.
+
+### The Sondelass's lure
+4. **Choosing a feeling: the ring of the seven round the lure** (Calissa's ring; the order shown, most positive to most negative).
+   - **With the lure out of the water, the wheel turns the ring.** This is today's behaviour, now drawn.
+   - **In the water, the wheel sets the depth** (as today). To change the feeling there, **hold the sounding (MMB): the ring opens, the
+     wheel turns it, and letting go sounds with that feeling.** A tap sounds with the feeling already set.
+   - **A feeling not yet awakened** is a dark seat on the ring, passed over: a known unknown.
+   - Keys 4 to 0 stay bound and unmarked, as the psygun's digits do.
+5. **The sounding's cost and cooldown are shown, in the world:**
+   - **the cooldown** (3 real seconds) as the ring re-inking round the lure, with a tick when it is whole (Wanda's);
+   - **the cost** (5 of the pool) as the reserve on the Lachrimeter while the sounding is held.
+
+   Two avenues each, and no number on screen.
+
+The Sondelass's forms and its combo chains need no new rule: the forms are the belt's (the cutlass, the rod, the hook), and the string row
+already carries the chains (the glossary's "the string row").
+
 ## Note on the merge
 
 Where the two files differed, the later wording is kept. Rule 6 once put the Flash's readiness "in the viewfinder's margin"; the Flash
