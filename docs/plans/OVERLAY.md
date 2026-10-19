@@ -689,8 +689,11 @@ The rule is still section 18's: **the wheel turns what the tool holds, and what 
    - the feeling it will lay, or CLEAN;
    - PAINT or MOP;
    - the bristles' saturation (filling over the hold);
-   - **what will actually be laid.** This was missing from the list. It is the Bottle's grade (the crude it last drank), else the
-     weather's feeling. When that differs from the feeling chosen, the brush shows both: the chosen one dimmed, what will land lit.
+   - **where the paint comes from** (corrected 2026-10-19, on Calissa's question; the earlier line misread the code). The pick wins: it
+     is the feeling the paint is *refined into* (`load.js` `aspect`: the pick, else the Bottle's grade while it holds over half, else the
+     weather's feeling here). The ring always holds a pick, so what lands is the pick, or nothing on CLEAN. The brush shows the
+     **source** under the pick, so the refining reads: FROM GRIEF (the Bottle's grade) or FROM FAIR WEATHER. The grade or the weather
+     lands as itself only with no feeling awakened yet. No code change.
    - the club's string (as the string row does for the cutlass).
 
    The flick needs nothing: it is instant and free. **World-only:** the paint reticle, the jet ring, the shine and the Bottle's arc
