@@ -74,8 +74,6 @@ export const GLOVES = {
   cursor: `data:image/png;base64,${gCursor}`,
   grab: `data:image/png;base64,${gGrab}`,
 };
-/** The pointing glove as a data URL; (down) turned a quarter to point at the thing below it (needs the image decoded: see install). */
-export function gloveURL(down = false) { return down ? (theme.gloveDown || GLOVES.point) : GLOVES.point; }
 
 // the windows the kit dresses (the menus build their own boxes; these selectors find them): [panel, its root]
 export const WINDOWS = ['#codex .cx', '#indexmenu .im', '#pneuka .px', '#shop .px', '#pneuka .menu', '#overlay .card', '#mapui .side', '#mapui .legend', '#chatlog', '#dialogue .dw', '#workbench .wb', '#bugmarkup .bm', '#qais .qw'];

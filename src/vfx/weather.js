@@ -39,7 +39,7 @@
 // and lower (marbling). FURY's bolts close and many: the hailstorm's own lightning, white-hot ribbons forked, 55 to 170 metres off,
 // one every second or so, a red glow in the cloud behind each (cracks). GALL's miasma rises: the fog lenses more and to the chest,
 // the flies in swarms, the bruise deeper (curds). None of it is a flash on the screen: a bolt is a thing in the world, held a beat.
-// The awakening (vfx/awakening.js) borrows these looks round the Courier, and raises this one (`surge`) where the place is open.
+// The awakening (vfx/awakeninglook.js) borrows these looks round the Courier, and raises this one (`surge`) where the place is open.
 //
 // THE HOUR: three paintings (vfx/sky.js `grade`): the maker's is DUSK, untouched at its hour; the owner's DAY (clouds and floating
 // soap bubbles) and NIGHT (violet and green swirls over a dark crown) are blended in by the hour; dawn is the dusk painting turned rose. The light ON the scene (the

@@ -17,7 +17,7 @@
 //
 //   wheelColour(h, s, out?) -> THREE.Color (linear, as materials want)   wheelSRGB(h, s) -> [r, g, b] 0..1 sRGB (a canvas, the Box)
 //   wheelOklab(h, s) -> [L, a, b] (unclipped)   oklabColour(L, a, b, out?, max?) -> THREE.Color, chroma clipped into the gamut (or under max)
-//   GREY_L (the grey centre's lightness)   CHROMA (at the lip)   oklabDistance(c1, c2) (a THREE.Color pair: how far apart they look)
+//   GREY_L (the grey centre's lightness)   CHROMA (at the lip)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -58,5 +58,3 @@ export function wheelColour(h, s, out = new THREE.Color()) { const [L, a, b] = w
 const enc = (v) => (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055);
 /** The same, sRGB-encoded 0..1 (a 2D canvas, a CSS colour). */
 export function wheelSRGB(h, s) { const [L, a, b] = wheelOklab(h, s); return clipped(L, a, b).map(enc); }
-/** How far apart two colours look (Oklab distance; about 0.02 to 0.05 reads as the same at the press's sizes). */
-export function oklabDistance(c1, c2) { const p = toOklab(c1.r, c1.g, c1.b), q = toOklab(c2.r, c2.g, c2.b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]); }

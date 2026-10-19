@@ -18,7 +18,7 @@
 //   buildCylinder(V, ids, env) -> B   V = layoutOf(gun): { n, shape, round, d, rc, heart: { rc } | null, solo }   ids: shell id a chamber
 //     B.mount (the posed root: crane > tilt > spin), B.ch[i] { g, ring, cap, fl, depth, mouth, rc, p }, B.sel, B.pawl, B.hammer, B.eye,
 //     B.heartG, B.puff, B.case, B.glint, B.band (the glaze), B.dispose()
-//   CYL_T (the shared time uniform)   SHELL_GLYPH (who has a drawn glyph)   drawPlate(canvas, P, time)   drawInset(canvas, lit, cracks, time)
+//   CYL_T (the shared time uniform)   drawPlate(canvas, P, time)   drawInset(canvas, lit, cracks, time)
 //   buildPentacle(B) -> B.pent (the Pentagun's five points, its star and circle)   posePentacle(pent, lit, star, circ, a)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -79,7 +79,6 @@ const DRAWN = {
   paint: (x, s) => { for (const y of [-0.24, 0, 0.24]) { x.beginPath(); for (let i = 0; i <= 20; i++) { const u = i / 20, px = (-0.4 + 0.8 * u) * s, py = (y + Math.sin(u * TAU) * 0.07) * s; if (i) x.lineTo(px, py); else x.moveTo(px, py); } x.stroke(); } },
   plain: (x, s, L, F) => { x.beginPath(); x.arc(0, 0, 0.2 * s, 0, TAU); F(); },
 };
-export const SHELL_GLYPH = DRAWN;
 function glyph(x, id, s, mode) {
   x.save(); const key = mode === 'key'; x.strokeStyle = x.fillStyle = key ? '#120c18' : '#fff4e2'; x.lineCap = 'round'; x.lineJoin = 'round';
   const w = s * 0.15, kw = s * 0.085; x.lineWidth = key ? w + kw * 2 : w;

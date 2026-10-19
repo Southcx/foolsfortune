@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE WELL'S DRESSING: the look laid on the floor Petra builds (src/world/well/: the plan, the sand, the sandfalls' colliders and their
-// cycle; her note, docs/handoffs/calissa/2026-10-06-from-petra-the-dunemaw-built.md). It watches the floor standing (`game.well.cur`)
+// cycle). It watches the floor standing (`game.well.cur`)
 // and, when a new one stands, dresses it; when it is taken down, undresses it:
 //
 //   SANDFALLS   each of the floor's sandfalls (`cur.sandfalls`: pos, yaw, state) gets a curtain of falling sand (vfx/dunemaw.js

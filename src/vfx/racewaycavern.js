@@ -74,7 +74,7 @@ const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Mat
 const hash2 = (a, b) => hash(a * 0.731 + b * 1.913 + 0.37);
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const col = (hex) => new THREE.Color(hex);
-const _c = new THREE.Color(), _d = new THREE.Color(), _e = new THREE.Color(), _f = new THREE.Color(), _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _s = new THREE.Vector3();
+const _c = new THREE.Color(), _d = new THREE.Color(), _e = new THREE.Color(), _f = new THREE.Color(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _s = new THREE.Vector3();
 
 /** A geometry with only position and a colour a vertex (non-indexed), coloured by `paint(x, y, z) -> Color` in its own frame. */
 function painted(geo, paint) {

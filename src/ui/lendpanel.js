@@ -17,7 +17,7 @@
 // place first, its fill second), a breaker panel's labelled rows, and the hollow vs filled marks of a checklist (ticked for done, an
 // outline for "given, not done": Steam's achievement greyed vs lit, here as shape rather than shade).
 //
-//   import { lendPanel, lentMark, saveName } from '../../ui/lendpanel.js'
+//   import { lendPanel, lentMark, saveName } from 'ui/lendpanel.js'  (relative to src/)
 //   host.append(lendPanel(game, { onChange }))   (an element; null outside DEBUG: STORY has no panel)
 //   `${lentMark(lent ? 'lent' : 'earned')}`      (an inline mark, HTML)
 // ---------------------------------------------------------------------------------------

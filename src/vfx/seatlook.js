@@ -12,13 +12,12 @@
 // coding (shape plus colour: Brewer's ColorBrewer notes; Mario Party, Catan and Ticket to Ride's player pieces differ in shape as well as
 // hue). The film tint is oxidation.js's own (schillerInk / featTint): no second iridescence is invented here.
 //
-//   SEAT_NAMES (the labels)   SEAT_COLOURS { label: hex }   SEAT_LOOK { label: { id, label, hex, rim, shape, pattern, ink, outline } }
-//   seatColour(idOrLabel) -> hex   seatCue(idOrLabel) -> { shape, pattern }   seatRimTint(idOrLabel, phase, out) -> THREE.Color (linear, film-lit)
+//   SEAT_NAMES (the labels)   SEAT_LOOK { label: { id, label, hex, rim, shape, pattern, ink, outline } }
+//   seatColour(idOrLabel) -> hex
 //   shapeOutline(shape) -> [[x, y]...] (y up, radius 1; 'ring' is the circle, hollow: SHAPE_HOLLOW)   seatCellIndex(colour, kind)
 //   drawSeatCell(g, colour, kind, s)   SEAT_KINDS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { schillerInk } from './oxidation.js';
 import { SEAT_COLOURS as TABLE_SEATS } from '../progress/casino/table.js';
 
 const PATTERNS = { red: 'solid', yellow: 'hstripes', green: 'dots', blue: 'vstripes', purple: 'checks', pink: 'dstripes', black: 'solid', white: 'none' };
@@ -31,7 +30,6 @@ export const SEAT_LOOK = Object.fromEntries(TABLE_SEATS.map((c) => [c.label, {
   id: c.id, label: c.label, hex: c.hex, shape: c.shape, pattern: PATTERNS[c.id] || 'solid', outline: OUTLINES[c.id] || null,
   rim: mix(c.hex, '#ffffff', 0.4), ink: mix(c.hex, c.id === 'black' ? '#ffffff' : '#000000', c.id === 'black' ? 0.12 : 0.48),
 }]));
-export const SEAT_COLOURS = Object.fromEntries(SEAT_NAMES.map((n) => [n, SEAT_LOOK[n].hex]));
 export const SEAT_KINDS = ['rim', 'token', 'plate'];
 /** Shapes drawn hollow (a hole through the glyph). */
 export const SHAPE_HOLLOW = new Set(['ring']);
@@ -40,16 +38,6 @@ const BY_ID = Object.fromEntries(Object.values(SEAT_LOOK).map((l) => [l.id, l]))
 const look = (name) => SEAT_LOOK[name] || BY_ID[String(name).toLowerCase()] || SEAT_LOOK.White;
 /** A seat colour's hex (an unknown name falls back to White). */
 export const seatColour = (name) => look(name).hex;
-/** The second cue: the shape a token takes and the pattern a rim or plate carries. */
-export const seatCue = (name) => ({ shape: look(name).shape, pattern: look(name).pattern });
-
-const _f = new THREE.Color(), _s = new THREE.Color();
-/** A seat's film-rim tint at phase `phase` (walk it by SCHILLER.rate x real seconds): the seat's colour with oxidation.js's schiller
- *  coming up through it, so a lit rim is both whose (the hue's body) and now (the film). Linear colour, for an emissive or a rim. */
-export function seatRimTint(name, phase = 0, out = new THREE.Color()) {
-  schillerInk(phase, _f, { sheen: 1, floor: 0.5 });
-  return out.set(look(name).hex).lerp(_s.copy(_f), 0.45);
-}
 
 // ------------------------------------------------------------------ shapes (one outline for the atlas' glyph and the token's body)
 const ngon = (n, rot = -Math.PI / 2, r = 1) => Array.from({ length: n }, (_, i) => [Math.cos(rot + (i * 2 * Math.PI) / n) * r, -Math.sin(rot + (i * 2 * Math.PI) / n) * r]);

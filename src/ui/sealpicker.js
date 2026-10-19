@@ -38,7 +38,7 @@ const COOL = 2.0; // (real seconds an imprint burns down to dim: vfx/sealimprint
 const WALK = 0.05; // (the schiller's walk along the keylines, loops a real second)
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
 const NAME_F = (px, w = 600) => `${w} ${px}px ${FONT.title}`, READ_F = `14px ${FONT.sys}`, COUNT_F = (px) => `${px}px ${COUNT}`;
-const FILM = ['#4c0fb3', '#0a8cbf', '#f2b82e', '#d91a80'], INK = '#17111f'; // (OVERLAY.md 10.4)
+const FILM = ['#4c0fb3', '#0a8cbf', '#f2b82e', '#d91a80']; // (OVERLAY.md 10.4)
 const CLAY = { top: '#7d4129', front: '#4a2416', rim: '#b8714a', sill: '#5a2c1c', sillFront: '#33170e', groove: '#2a120a', well: '#120a09' };
 const COPPER = '#c27a3e';
 const OUTLINE_WORDS = { round: ['ROUND', 'maru-in'], square: ['SQUARE', 'kaku-in'], oval: ['OVAL', 'daen-in'], gourd: ['GOURD', 'hyotan-in'] };

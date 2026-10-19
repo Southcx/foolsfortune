@@ -85,7 +85,7 @@ void main() {
 }`;
 
 const PASSES = new WeakMap(); // (one pass a post: every hole in the world draws through it, the strongest one at a time)
-const _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
+const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 /** The pass in the glow's chain: `on` while a hole is alive; `render(post, src, camera)` the bent frame out. */
 class LensingPass {

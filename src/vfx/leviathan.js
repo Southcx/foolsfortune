@@ -40,7 +40,7 @@
 //   (the crossing's runtime as it stands: world/emocean/leviathan.js)
 //   L.set({ swim 0..1, bend rad, t, quicken })   L.gill(i 0..3, { side 1|-1, open 0..1, gone })   L.breathe(k)   L.maw(k)   L.tooth(i, gone)
 //   L.throat(k)   L.fin(side, k -1..1)   L.shadow(pos, yaw, k 0..1, sea)   L.wake(k 0..1)   L.update(rawDt, sea)
-//   L.gillWorld(i, side, out) (the slit's upper end, at the flank)   L.toothWorld(i, out)   L.throatWorld(out)   L.eyeWorld(out)
+//   L.gillWorld(i, side, out) (the slit's upper end, at the flank)   L.toothWorld(i, out)   L.throatWorld(out)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { oilMaterial } from '../world/treasure/cubes.js';
@@ -239,7 +239,6 @@ export class LeviathanLook {
   gillWorld(i, side = 1, out = new THREE.Vector3()) { return this.gills[side][i].upper.getWorldPosition(out); }
   toothWorld(i, out = new THREE.Vector3()) { return this.teeth[i].part.world(out); }
   throatWorld(out = new THREE.Vector3()) { return this.throatM.getWorldPosition(out); }
-  eyeWorld(out = new THREE.Vector3()) { return this.eye.getWorldPosition(out); }
 
   update(raw = 1 / 60, sea = null) {
     this.t += raw; const t = this.t, Lh = LEVIATHAN.length, ease = (a, b, r) => a + (b - a) * (1 - Math.exp(-raw * r));

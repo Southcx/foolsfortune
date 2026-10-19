@@ -8,8 +8,8 @@
 //   Emote_Shudder  Gall's emote (the intense ring's onset): Hit's flinch, small (a third of it) and three times over, each fainter, with
 //                  a fast tremble through the chest and the head; over Idle, so it begins and ends where the idle is.
 //
-// Fury needs nothing new: its mood loop is the suite's Mood_Angry (WHEEL.md, GALL-AND-FURY.md 10). Nothing in the game plays the
-// Wisp's suite yet (WHEEL.md: creatures/anim/suite.js is not built); the workbench (/lab, models, lantern_wisp) plays every clip.
+// Fury needs nothing new: its mood loop is the suite's Mood_Angry (WHEEL.md, GALL-AND-FURY.md 10). The game plays the
+// Wisp's suite from src/creatures/wisp/lanternwisp.js; the workbench (/lab, models, lantern_wisp) plays every clip.
 //
 // Prior art: additive layering of a clip's change from its own first frame (Unreal's and Unity's additive animation; the Courier's own
 // recoils, courier/anim/layers.js `additive`); a mood made by offsetting a base loop (Spore's and The Sims' procedural mood layers);

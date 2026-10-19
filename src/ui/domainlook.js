@@ -20,7 +20,6 @@
 //     palette is ramped from (ui/icons/icons.js paintRamp), `glint` the highlights' colours where they are not the body's lit
 //   glazeTile(id, { w = 48, h = 12 }) -> canvas (1x, cached): the glaze's character (the tenmoku's spots, the flambe's run, the shino's
 //     flash, the cobalt brushed on white); show it scaled by whole numbers, `image-rendering: pixelated`, behind a domain's power row
-//   glazeTileUrl(id, opts) -> a data URL, for a CSS background (`background: url(...) 0 0 / 300% 300%; image-rendering: pixelated`)
 //   THE_WORLD_GOLD   kintsugi gold (CSS hex), for the radar's highlights
 //   BISQUE           unglazed fired clay (CSS hex), for the radar's ground
 // ---------------------------------------------------------------------------------------
@@ -153,5 +152,3 @@ export function glazeTile(id, { w = 48, h = 12 } = {}) {
   TILES.set(key, c);
   return c;
 }
-/** A domain's glaze tile as a data URL, for a CSS background. */
-export const glazeTileUrl = (id, opts) => glazeTile(id, opts).toDataURL();

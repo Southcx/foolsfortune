@@ -173,5 +173,4 @@ export const SHOWROOM_WARE = {
 export const wareFor = (place, i) => { const l = SHOWROOM_WARE[place], k = Array.isArray(l) ? l[i % l.length] : l; return k ? { color: ROOM_GLAZES[k].ware } : {}; };
 
 const GLOSSY_WARE = new Set(Object.values(ROOM_GLAZES).filter((r) => r.wareGlossy).map((r) => r.ware));
-export const wareColour = (key) => ROOM_GLAZES[key].ware;
 export const wareGlossy = (color) => GLOSSY_WARE.has(color);

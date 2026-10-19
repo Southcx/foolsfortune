@@ -35,7 +35,7 @@
 //
 //   const M = new WorldMushroom({ radius: 26, surface: (dir) => metres })   M.group (at the planetoid's heart, the tree up its +Y)
 //   M.update(rawDt, state)   (state: game.myggdrasil, read defensively: caps 0..10, branches { id: true } | Set | [ids], tincture { h, s }
-//   | null, crown [fruit]; missing, caps 3 and nothing hung)   M.threadsTo(points)   M.mouthWorld(out)   M.capWorld(i, out)
+//   | null, crown [fruit]; missing, caps 3 and nothing hung)   M.threadsTo(points)   M.mouthWorld(out)
 //   M.snap()   M.dispose()   CAP_SITES   BRANCH_PATHS   MYGG
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -326,8 +326,6 @@ export class WorldMushroom {
   snap() { this.ready = false; }
   /** Where the hand feeds it: the mouth's middle, in the world. */
   mouthWorld(out = new THREE.Vector3()) { return this.group.localToWorld(out.copy(this.mouthAt)); }
-  /** Cap i's heart, in the world (its fruit hangs under it). */
-  capWorld(i, out = new THREE.Vector3()) { const C = this.cap[i]; return C ? this.group.localToWorld(out.setFromMatrixPosition(C.matrix)) : null; }
 
   dispose() {
     this.group.parent?.remove(this.group);
