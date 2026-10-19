@@ -7,9 +7,9 @@
 //                    and the light leaves the sill both ways along carved traces in the oil film, climbs both pillars past their
 //                    chevrons (the Stargate's), crosses the nuki and lights the kasagi last; then the film's veil rises in the opening.
 //                    Unsealed (`wake(false)`), the traces go dark.
-//   THE ARCH'S       a round bronze collar upright in the tablet under the shimaki, three leaf springs: inward, the Spirit Garden.
-//                    Its light runs in from the sigils at the shimaki's ends, in Lachryma's blue, to the tablet's chevrons and the
-//                    socket, and falls through: the door fills from its centre with your Spirit Garden. The two circuits never meet.
+//   THE ARCH'S       a round bronze collar upright in the tablet under the shimaki holding a kagami, a polished bronze mirror (no
+//                    cradle: a gate has one, the threshold's, the owner 2026-10-19): inward, the Spirit Garden. Its light runs in from
+//                    the sigils at the shimaki's ends, in Lachryma's blue, to the tablet's chevrons and the mirror, and falls through: the door fills from its centre with your Spirit Garden. The two circuits never meet.
 //   UNFOUND          the clay dull, every trace carved and dead      FOUND   the shimaki's two sigils glow, a slow breath
 //   RESTING          the threshold's pad ring breathes               OPEN    the arch's run, then the door onto the Spirit Garden
 // Your imprint in either cradle is the imprint's look's (vfx/sealimprint.js, on seal.set), not this model's.
@@ -24,7 +24,7 @@
 // Majora's Mask's owl statues, the Stargate's chevrons locking); a die's Manhattan routing, carved dead and lit along its length.
 //
 //   const S = new ShrineModel({ ground })   S.group (stands on its origin, its front toward +z)   S.set({ found, resting, open })
-//   S.update(rawDt)   S.wake(on = true) (the threshold sealed / unsealed)   S.cradleSpots() -> { threshold, arch } (world: the well's
+//   S.update(rawDt)   S.wake(on = true) (the threshold sealed / unsealed)   S.cradleSpots() -> { threshold } (world: the well's
 //   floor, the socket's face; correct whenever it is asked, the group placed or not)   S.doorWorld(out) (the opening's middle)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -267,10 +267,10 @@ export class ShrineModel {
     }
     this.sc = sc; this.scDmax = sc.dmax;
 
-    // ---- the arch's cradle (inward): round, upright in the tablet, three leaf springs; Lachryma's light runs in to it
-    add(new THREE.CircleGeometry(0.47, 32), [0, TY, TZ + 0.002], dead, false); // (the socket's dark: the grooves' clay, merged with them)
+    // ---- the arch's mirror (inward): since the owner's one-cradle gate (2026-10-19) the arch seals nothing, so its socket is closed as a
+    // shrine's kagami, a polished bronze disc in its collar; Lachryma's light still runs in to it while the Spirit Garden opens
+    add(new THREE.CircleGeometry(0.47, 32), [0, TY, TZ + 0.012], new THREE.MeshStandardMaterial({ name: 'shrine-kagami', color: 0xd8b77a, metalness: 0.95, roughness: 0.18 }), false);
     add(new THREE.TorusGeometry(0.5, 0.065, 8, 40), [0, TY, TZ + 0.02], bronze, false);
-    for (let k = 0; k < 3; k++) { const a = Math.PI / 2 + k * Math.PI * 2 / 3; _c.position.set(Math.cos(a) * 0.5, TY + Math.sin(a) * 0.5, TZ + 0.06); _c.rotation.set(0, 0, a); _c.updateMatrix(); const m = placed(new THREE.BoxGeometry(0.05, 0.07, 0.42), bronze, _c.position, _c.rotation); m.position.add(P(0, 0, 0.2)); }
     const ac = circuit(gate, dead, 0.055, null), zT = TZ + 0.01, zS = 0.26; let dA = 0;
     for (const s of [-1, 1]) { // from the shimaki's ends inward: the sigil at each end is where it starts
       ac.via(P(s * 3.35, 7.12, zS + 0.01), 0, 0.13, null, LACH);
@@ -328,12 +328,12 @@ export class ShrineModel {
   /** The threshold sealed: the gate wakes from the sill up (world/shrines.js calls it at seal.set). false: unsealed, it goes dark. */
   wake(on = true) { if (on && !this.awake) this.wakeT = 0; this.awake = !!on; }
 
-  /** The cradles where the Jar seals: the threshold's well floor, the arch's socket face. World space, from the group as it now stands. */
+  /** The cradle where the Jar seals: the threshold's well floor (the one cradle a gate has: the owner, 2026-10-19). World space, from the group as it now stands. */
   cradleSpots() {
-    this.group.updateWorldMatrix(true, true);
-    const th = P(0, (CR.h - CR.dep) * CS, 0), arch = P(0, TY, TZ + 0.004);
-    return { threshold: this.gate.localToWorld(th), arch: this.gate.localToWorld(arch) };
+    const P = (x, y, z) => new THREE.Vector3(x, y, z);
+    return { threshold: this.gate.localToWorld(P(0, (CR.h - CR.dep) * CS, 0)) };
   }
+
 
   /** The window colour on the threshold's lit parts (its seam, its pads, the well's halo), set again when it changes. */
   colours() {
