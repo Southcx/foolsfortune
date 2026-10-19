@@ -4,13 +4,14 @@
 // of its own so a gem reads without its colour (the colour-blind, the 480-line present): Wonder a hexagon (frost is hexagonal), Mirth
 // a round (its drops), Desire a heart, Fury a diamond (its cracks' points), Gall a trefoil (its curds), Grief a tear, Dread an eye (its
 // pupil a hole through to the slab: marbling's dark centre). Everything else is clay: junk a grog tile, stone a basalt block, the bomb a
-// raku pot with its neck; a teardrop is a drop of Lachryma. The two bodies are figurines on a clay ledge (a body never falls: it stands
+// raku pot with its neck; an ember (Dread's junk, burning down) a coal of glazed clay, its count glowing pips; a
+// teardrop is a drop of Lachryma. The two bodies are figurines on a clay ledge (a body never falls: it stands
 // on the face of its cell, PUZZLE-DUELS.md 13.7): the Courier's in white clay, the foe's its feeling's idol.
 //
 // Prior art: Super Puzzle Fighter II Turbo's gems (cut stones, a family a colour), Bejeweled's shapes-per-colour (the colour-blind mode
 // that became the default), the haniwa and dogū (clay figurines standing for a person), a Japanese raku tea bowl's crackle.
 //
-//   gemGeometry(aspect) -> BufferGeometry   junkGeometry() stoneGeometry() bombGeometry() teardropGeometry() cubeGeometry()
+//   gemGeometry(aspect) -> BufferGeometry   emberGeometry() pipGeometry()   junkGeometry() stoneGeometry() bombGeometry() teardropGeometry() cubeGeometry()
 //   courierFigurine() -> BufferGeometry (vertex colours)   foeIdol() -> BufferGeometry   ledgeGeometry() (vertex colours)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -54,6 +55,10 @@ export function gemGeometry(aspect) {
   GEMS.set(aspect, g); return g;
 }
 
+/** An ember: a coal of glazed clay, a lump flattened toward the face. */
+export function emberGeometry() { const g = new THREE.IcosahedronGeometry(0.38, 1); g.scale(1, 0.88, 0.6); g.computeVertexNormals(); return g; }
+/** An ember's pip: one turn left to burn. */
+export const pipGeometry = () => new THREE.IcosahedronGeometry(0.075, 0);
 export const junkGeometry = () => new RoundedBoxGeometry(0.82, 0.82, 0.2, 1, 0.08);
 export const stoneGeometry = () => new THREE.BoxGeometry(0.95, 0.95, 0.26);
 export const cubeGeometry = () => new THREE.BoxGeometry(1, 1, 1);

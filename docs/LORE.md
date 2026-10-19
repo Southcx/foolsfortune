@@ -936,3 +936,19 @@ replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11
   - Kept: **a shot** (the psygun's; label **Shoot**), **the hook** (the Sondelass's; label **Grab**), **paint** (the Soul Brush's;
     label **Paint**), **the toll** (the Crucibelle's; label **Delay**), **the hoover** (the Lockheart's; label **Hold**, Tetris's
     word), **the flail** (the Lockheart's; label **Send**, the genre's word for junk thrown across).
+- **a wriggle** (label **Flee**; `wriggle`; Dovina's flee, PUZZLE-DUELS.md 15). The saving throw that gets you out of a duel: a d20
+  against 15. Middle Low German *wriggeln*, to twist about, the same twisting family as *wring* and *wrangle*. A wrangle wrings you,
+  and a wriggle twists you free of it. Not "slip": that word is retired as a mechanic.
+  - Log on a success: "You wriggle free of the wrangle."
+  - Log on a fail: "You fail to wriggle free."
+  - Log on a natural 20: "You wriggle free at once."
+  - The angling plan's fish has a wriggle clip. That is a clip name, not a game word, so the two do not meet in player text.
+- **The duel's log** (`feedback/tracking/duel.js`, written 2026-10-19):
+  - begun: "An aberrant Figment seizes your mind. The wrangle begins."
+  - a buckle: "The Figment buckles."
+  - the coup: "You drain the Figment."
+  - won on the March: "You win the wrangle. The Figment is mended."
+  - lost: "You lose the wrangle. The Figment pushes your mind out."
+  - yielded: "You yield the wrangle."
+  - The test foe keeps its plain name, **Aberrant Lantern Wisp**, the glossary's two words joined. A given name would be the
+    Egregores' privilege: they are human myth, while a Figment is a thought of the island's.

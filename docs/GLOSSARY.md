@@ -134,6 +134,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
   held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
+- **the Soul Brush's desk** (working name, Espada's to rule; `SoulBrushDesk`, `game.soulBrushDesk`, `src/vfx/soulbrushdesk.js`) — the Soul Brush's own UI by the Lachrimeter: a brush rest of seven glazed peaks and a trough (CLEAN), the brush lying in the pick's saddle, the hanging scroll of the club's string, Celestial mode's handscroll, the plate. *Not:* the Soul Brush, the paint reticle, the Bottle's arc.
 - **blot** (`stain`, `STAINS`, `src/world/ground/stains.js`) — spilled crude on the ground, of its field, in crude's oil film; left alone it
   grows, and a full-grown one gives up a blotling (an aberrant Figment, of the weather's feeling where it rises). *Not:* "stain" in player text. → detail
 - **a slick** (`slick`, `game.slicks`, `src/vfx/slicks.js`) — crude thrown or welled up in a fight (a cast's puddle, a spit glob, a burst
@@ -326,6 +327,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
+<<<<<<< HEAD
 - **a puzzle duel / the Line / junk / a duel ruleset** (the genre's words, the owner, 2026-10-19: no lore names; `newDuel`, `src/progress/duel/`;
   `RULESETS`, `rulesetOf`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the
   column boundary between the sides, your zone of control and the score, pushed a column a 3 junk landed (9 at most at once) / what a clear
@@ -335,6 +337,19 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   **the drip** (the pieces each side is given at the start of its turn), **Flee** (`flee.js`, `fleeOdds`: a saving throw out, a d20 against
   15, 3 AP a failed try), the tools' moves **Shoot, Grab, Drill, Paint, Delay, Hold, Send**; Dread's **fog** and **embers** (`dread.js`: a
   half hidden but for its lantern / junk that burns 3 of your turns, then cools into a gem). *Not:* a table (Raku's), the rail, a trial.
+=======
+- **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
+  `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
+  between the sides, your zone of control and the score, pushed one column a 3 junk landed / what a clear sends across (the genre's
+  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. **A buckle / a teardrop / the coup / a glean**
+  (Espada's, proposed; labels Break, Orb, Finish, Gather; `buckle.js`, `couriertools.js`): a side's EmO broken by a big push, its stun a depth
+  deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
+  Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
+  given at the start of its turn (not rain). **Fog / an ember** (Dread's rules, `dread.js`; the aberrant Lantern Wisp's): a half hidden
+  but for its lantern's light / its junk landed burning, unbreakable for 3 of your turns, then a gem. *Not:* a table (Raku's), the kick, a
+  trial, a guard break, a mote (the scatter's), a run (three in a line), the scene fog, Dread's fog on the Raceway. **Flee** (`flee.js`,
+  `fleeOdds`; the standard word, the owner, 2026-10-19): a saving throw out of a duel, a d20 against 15 with the board's modifiers, 3 AP a failed try.
+>>>>>>> origin/claude/fps-third-person-demo-8zp2kx
 - **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: opened by the first blow on it, the seam (kind `aberrant`), the board between you, your turns and its bot's, its end / which Figments go wrong and open one (any aberrant; a Lantern Wisp that drinks a blot at night, `wisp.drink`; the test one by the Weir). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the duel's view / the tsuitate** (working names; `DuelView`, `game.duelView`, `src/vfx/duelview.js`, its parts `src/vfx/duelview/`) — a puzzle duel's board stood in the world as a standing screen of Lachrymite 20 x 20 in Anagami's clay frame, broadside between the Courier and the foe, playing the kernel's events; its pieces instanced, its figurines the bodies. *Not:* the duel (Dovina's rules), its session (Petra's), a table (Raku's).
 - **the domains' clash** (working name, Espada's to rule; `DomainClash`, `src/vfx/duelview/domains.js`) — a puzzle duel's backdrop: each side's ground unfolding round the arena (the Courier's the film over Lachryma's deep, the foe's its feeling's heavy look), meeting in a seam on the Line's plane that slides with it. Always in full. *Not:* the domains (the psyche's seven), the weather.
@@ -555,7 +570,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
   Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive; and the melee loadout's four effects, Stagger, Knockback, Launch,
   Guard break (placeholders for Espada's word). *Not:* a label. → detail
-- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the Soul Brush's radial's pixel art, a picture of what each
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's colour, sign and icon; never a feeling's colour. Anagami dresses it as a
   kiln-glaze tile; the identity is the colour and the sign.
@@ -638,6 +653,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
   bursting (about 0.3 real s) just before the data drain takes it (.hack's Protect Break). *Not:* the bubble, a guard break, the vessel's cracks.
+- **the aberrant encounter's wipe** (`AberrantWipe`, `game.aberrantWipe`, `src/vfx/aberrantwipe.js`) — the battle transition into a puzzle duel with an aberrant: the frame caught and drawn toward it, its data bug showing, the held frame crazing, then shattering along the Line. *Not:* the maw wipe, the glitch, the crackle break.
 - **a data bug** (working name; `DataBugs`, `game.dataBugs`, `src/vfx/databug.js`) — an aberrant or stray Figment or a blotling drawn wrong on
   purpose: one still error (a limb off its socket, its skin slid, a magenta cast) and a dark aura; a drain mends it. Always "a data bug" in
   full. *Not:* a bug in the code, the corrupted body.
@@ -772,3 +788,4 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
 | the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
+| the Soul Brush's radial (the wheel on 1 held, `paintradial`; its icons `paint.<pick>`, `ui/icons/paintart.js`) | the Soul Brush's desk; the quick pick (1 held) (the owner, 2026-10-19: retired with board v11) | `tools/soulbrush/radial.js` (`PaintRadial`, the ring's mechanics: Petra's name) |

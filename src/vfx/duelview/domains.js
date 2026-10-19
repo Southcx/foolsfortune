@@ -22,6 +22,7 @@
 // The noise is Dave Hoskins' "Hash without Sine" (Shadertoy 4djSRW, MIT), as vfx/paintmotifs.js; the voronoi edge is Inigo Quilez's.
 //
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
+//   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
 //   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse()   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
@@ -42,7 +43,7 @@ const F = /* glsl */`
 uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade;
 uniform vec3 uPlaneP, uPlaneN, uCentre, uOriginC, uOriginF, uFoe, uFoeDeep, uHaze;
 uniform vec2 uOpen, uFlash, uGrid;
-uniform sampler2D uGrav;
+uniform sampler2D uGrav, uFog;
 varying vec3 vW; varying vec3 vView; varying vec2 vUv;
 ${LAB_GLSL}
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -107,8 +108,16 @@ void main() {
     col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), grid * 0.06);
     vec2 g = texture2D(uGrav, (floor(c) + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; // (the cell's gravity: the grain of the slab)
     if (dot(g, g) > 0.25) { g = normalize(g); float b = dot(f, g), a = dot(f, vec2(-g.y, g.x));
-      float ch = (1.0 - smoothstep(0.035, 0.035 + fw * 1.5, abs(b + abs(a) * 0.9 - 0.06))) * step(abs(a), 0.22);
-      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.08); } // (the grain: faint, so it never reads as a pattern of its own)
+      float ch = (1.0 - smoothstep(0.018, 0.018 + fw, abs(b - 0.12 + abs(a) * 0.8))) * step(abs(a), 0.12); // (one short chevron low in the cell, pointing the way things go: a V and the grid above it read as a heart)
+      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.1); } // (the grain: faint, so it never reads as a pattern of its own)
+    // Dread's fog (dread.js visibleTo): the hidden ground under ink marbling (suminagashi, the pall's colours), the lantern's pool warm
+    vec4 fg = texture2D(uFog, vec2(vUv.x, 1.0 - vUv.y)); float fog = fg.r, lamp = fg.g;
+    if (fog + lamp > 0.001) {
+      float mf = fbm(c * 0.32 + vec2(t * 0.03, -t * 0.02)), ml = 1.0 - smoothstep(0.0, 0.08, abs(fract(mf * 8.0) - 0.5));
+      vec3 fc = mix(srgb(vec3(0.078, 0.11, 0.094)), srgb(vec3(0.141, 0.19, 0.165)), fbm(c * 0.18 - vec2(0.0, t * 0.05))) + srgb(vec3(0.42, 0.52, 0.45)) * ml * 0.22;
+      col = mix(col, fc, fog);
+      col += srgb(vec3(1.0, 0.62, 0.26)) * (lamp * 0.32 * (1.0 - fog) + fog * (1.0 - fog) * 0.5);
+    }
     float d = abs(c.x - uLine), core = 1.0 - smoothstep(0.04, 0.04 + fwx * 1.5, d);
     float ridge = 1.0 - abs(fbm(vec2(c.y * 0.9 - t * 1.4, t * 0.3)) * 2.0 - 1.0);
     col += labSoft(ph + c.y * 0.05) * (core * 1.6 + exp(-d * 5.0) * (0.25 + 0.5 * pow(ridge, 4.0)) * (1.0 + uPush));
@@ -160,13 +169,14 @@ function clashMaterial(mode, shared) {
 export class DomainClash {
   constructor() {
     const grav = new THREE.DataTexture(new Uint8Array(4 * 4).fill(127), 2, 2); grav.needsUpdate = true;
+    const clear = new THREE.DataTexture(new Uint8Array(4 * 4), 2, 2); clear.needsUpdate = true; // (no fog)
     this.U = {
       uT: { value: 0 }, uMindT: mindTime, uRadius: { value: DUEL_VIEW.radius }, uPush: { value: 0 }, uPushSide: { value: 1 }, uWon: { value: 0 },
       uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 },
       uPlaneP: { value: new THREE.Vector3() }, uPlaneN: { value: new THREE.Vector3(1, 0, 0) }, uCentre: { value: new THREE.Vector3() },
       uOriginC: { value: new THREE.Vector3() }, uOriginF: { value: new THREE.Vector3() },
       uFoe: { value: new THREE.Color() }, uFoeDeep: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
-      uOpen: { value: new THREE.Vector2() }, uFlash: { value: new THREE.Vector2() }, uGrid: { value: new THREE.Vector2(20, 20) }, uGrav: { value: grav },
+      uOpen: { value: new THREE.Vector2() }, uFlash: { value: new THREE.Vector2() }, uGrid: { value: new THREE.Vector2(20, 20) }, uGrav: { value: grav }, uFog: { value: clear },
     };
     const dome = (this.dome = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), clashMaterial(0, this.U)));
     dome.name = 'duel-clash'; dome.frustumCulled = false; dome.renderOrder = -10; dome.scale.setScalar(DUEL_VIEW.radius); dome.visible = false;
@@ -175,8 +185,8 @@ export class DomainClash {
   }
 
   /** The slab's material: the same program in its other mode, the board's gravity map its grain. */
-  slabMaterial(grav, w, h) {
-    this.U.uGrav.value = grav; this.U.uGrid.value.set(w, h);
+  slabMaterial(grav, w, h, fog = null) {
+    this.U.uGrav.value = grav; if (fog) this.U.uFog.value = fog; this.U.uGrid.value.set(w, h);
     return (this.slab ||= clashMaterial(1, this.U));
   }
 

@@ -22,6 +22,8 @@
 //                             getEnd(out) -> a THREE.Vector3 in the overlay scene's coordinates (its world: x right, y UP, CSS px:
 //                             obj.localToWorld of the eye, after obj.updateMatrixWorld()), or null to hide. It is asked each frame,
 //                             after the owner's own slot has been placed (attach moves the link's slot to the end of the scene's).
+//                             getFoot() (optional) -> 0..1: the near end's slide from the bulb down the feed pipe to the Bottles' valve
+//                             (tube.valveAt), while the tool spends or fills the Bottles (the Soul Brush's desk: vfx/soulbrushdesk.js)
 //   L.detach(owner)
 //   L.bead({ amount, colour, dur, rev })   a spend: amount in Lachryma (a bigger one, a fuller bead), colour an optional tint for its
 //                               head; dur its run in real s (default 0.1: the Lockheart's drink is pulled slower, 0.35); rev true runs it
@@ -95,8 +97,8 @@ export class SpiritualLink {
   }
   slotOpts() { return { anchor: 'tl', x: 0, y: 0, z: -400, hud: true, update: (dt) => this.update(dt) }; }
 
-  attach(owner, getEnd) {
-    this.detach(owner); this.owners.push([owner, getEnd]);
+  attach(owner, getEnd, getFoot = null) {
+    this.detach(owner); this.owners.push([owner, getEnd, getFoot]);
     if (this.S) { this.S.remove(this.mesh); this.slot = this.S.add(this.mesh, this.slotOpts()); } // (after the owner's slot: its end is this frame's)
   }
   detach(owner) { const i = this.owners.findIndex((o) => o[0] === owner); if (i >= 0) this.owners.splice(i, 1); }
@@ -123,6 +125,8 @@ export class SpiritualLink {
     // the curve, in the scene's coordinates (y up): out of the bulb's glass at its left and low, into the eye from the right and above
     const P = this.P, r = B.r, sag = slack * SAG * dot;
     P[0][0] = B.x - r * 0.92; P[0][1] = B.y - r * 0.25;
+    const fk = top[2]?.() || 0, V = fk > 0 && tube.valveAt ? tube.valveAt(this.valve || (this.valve = {})) : null; // (the foot at the Bottles' valve)
+    if (V) { P[0][0] += (V.x - P[0][0]) * fk; P[0][1] += (V.y - P[0][1]) * fk; }
     P[3][0] = end.x; P[3][1] = end.y;
     P[1][0] = P[0][0] - 30 * dot; P[1][1] = P[0][1] - 26 * dot - sag;
     P[2][0] = P[3][0] + 48 * dot; P[2][1] = P[3][1] + 30 * dot - sag;

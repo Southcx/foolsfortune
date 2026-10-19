@@ -1,9 +1,11 @@
 // ---------------------------------------------------------------------------------------
 // A PUZZLE DUEL IN THE WORLD (docs/plans/PUZZLE-DUELS.md section 8, Petra's half): the session that plays the kernel (progress/duel/,
-// Dovina's) against an aberrant Figment where it was met. F at it, a seam (kind 'duel'), and the board stands between you, the camera
+// Dovina's) against an aberrant Figment where it was met. The first blow on it (world/duel/duelfoes.js), the aberrant wipe (the seam's kind
+// 'aberrant', vfx/aberrantwipe.js), and the board stands between you, the camera
 // framing it; your turns are your input, its turns its bot's (a beat apart, so you can follow them); every action's events are played
 // by the view (game.duelView, Calissa's: the board, the pieces, the domains' clash) before the next is taken. The duel ends on the Line,
-// a full side, the coup or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it.
+// a full side, the coup or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
+// that gets away (flee.js, section 15) leaves you both whole.
 //
 // The controls (the forms: PUZZLE-DUELS.md 4 and 11; the god hand is the cursor, the owner on board v11):
 //   the god hand      LMB on a piece and onto a neighbour: SWAP; held across three or more cells: DRAG; R: ROTATE the 2x2 under the
@@ -11,7 +13,8 @@
 //   the Courier       LMB on a cell up to four away: GLEAN there; W A S D: PUSH that way, with Shift: PUNT; each worn tool on its own
 //                     key: X shoot (the psygun), Q hook (the Sondelass), K drill the way last faced (the Dreamvane), G paint in the Soul
 //                     Brush's feeling (its pick), U toll (the Crucibelle), I hoover, Shift+I flail (the Lockheart)
-//   both              ~ switches form (1 point), Space ends the turn, Backspace held 1.5 real s yields (a loss: the shatter)
+//   both              ~ switches form (1 point), E flees (a d20 against 15, 3 points a failed try), Space ends the turn, Backspace
+//                     held 1.5 real s yields (a loss: the shatter)
 // While it runs the Courier is held as the crossing holds them (main.js `aboard`), and every key it reads is spent so no tool sees it.
 //
 // Prior art: the RPG battle transition (the encounter dips to its own stage, Persona and Final Fantasy), Puyo Puyo Tetris's versus
@@ -19,10 +22,12 @@
 // intent drawn while you plan).
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
-//   Events (with `by`): duel.open { kind, feeling }, duel.buckle { kind, depth }, duel.end { kind, won, how, turns } (tracking.js says each)
+//   Events (with `by`): duel.open { kind, feeling }, duel.buckle { kind, depth }, duel.flee { roll, need, ok }, duel.end { kind, won, how,
+//   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
+import { luckOf } from '../../progress/luck.js';
 import { plan as botPlan, play as botPlay } from '../../progress/duel/bot.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -58,7 +63,8 @@ export class DuelSession {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
-    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []] });
+    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
+      luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0] }); // (Luck's sway on a flee, 0..2: a tenth of its level, Petra's placeholder until Dovina rules)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
@@ -108,6 +114,7 @@ export class DuelSession {
     const s = this.state, S = s.sides[0], cell = this.hover;
     if (input.wasPressed('Backquote')) return this.take({ kind: 'form', to: S.form === 'hand' ? 'courier' : 'hand' });
     if (input.wasPressed('Space')) return this.endMine();
+    if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.view?.select?.(this.path); }
@@ -154,7 +161,10 @@ export class DuelSession {
   run(events) {
     this.busy = true;
     if (events.some((e) => e.type === 'duel.coup')) this.drainCamera(); // (the coup is the data drain: its own camera, cine/sequences.js)
-    for (const e of events) if (e.type === 'buckle') this.game.events?.emit('duel.buckle', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
+    for (const e of events) {
+      if (e.type === 'buckle') this.game.events?.emit('duel.buckle', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
+      if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
+    }
     const done = () => { this.busy = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
@@ -192,7 +202,7 @@ export class DuelSession {
   yield() { this.state.winner = 1; this.how = 'yield'; this.finish(); }
   finish() {
     const s = this.state, won = s.winner === 0, log = s.log, last = [...log].reverse().find((e) => /^duel\.(line|full|cap|coup)$/.test(e.type));
-    const how = this.how || (last ? last.type.slice(5) : won ? 'line' : 'line');
+    const how = this.how || (s.fled != null ? 'fled' : last ? last.type.slice(5) : 'line');
     this.close({ won, how });
   }
   /** Down with the board, back to the world: the pool as it stands, the Figment drained (you won) or calmed (it did); a loss shatters. */
@@ -205,8 +215,9 @@ export class DuelSession {
     const pool = g.lachryma, d = Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
     this.unpin(c);
-    g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, by: won ? 'courier' : 'creature' });
+    g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, by: won || how === 'fled' ? 'courier' : 'creature' });
     if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
+    else if (how === 'fled') { if (c) c.emo = 0; } // (away: both whole, no reward; it keeps its aberrance, calm, and drifts off)
     else if (!won) { if (c) c.emo = 0; g.death?.begin?.({ why: 'duel', by: 'creature' }); }
     this.state = null; this.foe = null;
   }
