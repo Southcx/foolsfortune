@@ -7,8 +7,8 @@
 //                   chevron (the board's own map, board.grav), the Line a seam of the film's light
 //   THE LINE'S BEADS a brass bead at the Line's head and foot on the frame, sliding with it
 //   THE AP BEADS    five Lachrymite beads a side in the frame's foot (DUEL.ap): the Courier's in the film, the foe's in its feeling, dark
-//                   when spent, cracked black when a stun or a toll took them (the `turn` event's `lost`)
-//   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a buckle
+//                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`)
+//   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a break
 //   THE KINTSUGI    the frame's gold seam, lit when the Courier wins
 //   THE FLOOR LIPS  a darker clay ledge on the edge each half's gravity points to (the aberrant Lantern Wisp's half, burning upward:
 //                   at its top), sliding with the Line

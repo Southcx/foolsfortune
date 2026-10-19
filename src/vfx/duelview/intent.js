@@ -4,8 +4,8 @@
 // foe's feeling colour over an ink keyline, on the cells it would touch, with its number on a badge (the count face); the FIRST step
 // full strength with a frame round its badge, the rest at 42% (they are drawn on a board the first one changes). The cells each step
 // would clear are rimmed in dashes, and the junk the plan would send waits faint on the Line's head, an arrow toward you.
-//   swap  a two-headed arrow       rotate  a ring round the 2 x 2 with its head      drag, glean  the path, its head at the end
-//   drop  a chevron down its lane  form, toll, hoover, flail, coup  a ring at its body      push, punt, drill, shoot, hook  an arrow
+//   swap  a two-headed arrow       rotate  a ring round the 2 x 2 with its head      drag, run  the path, its head at the end
+//   drop  a chevron down its lane  form, delay, hold, hold's send, finisher  a ring at its body      push, kick, drill, shoot, hook  an arrow
 //   paint a square round the 3 x 3
 // What a step would clear is found by playing the plan on a quiet copy of the duel (the kernel's `act`, never its stream: the copy has
 // a stream of its own, so drawing a forecast never changes the duel's chances).
@@ -71,12 +71,12 @@ export class DuelIntent {
       const path = (P) => draw((S, ww, dz) => { for (let k = 1; k < P.length; k++) { at(P[k - 1][0], P[k - 1][1], _a).z += dz; at(P[k][0], P[k][1], _b).z += dz; S.seg(_a.clone(), _b.clone(), ww); } if (P.length > 1) S.head(_a, _b, ww); });
       if (a.kind === 'swap') { const d = DIRS[a.dir]; arrow(a.at[0], a.at[1], a.at[0] + d[0], a.at[1] + d[1], true); cells.push(a.at); }
       else if (a.kind === 'rotate') { draw((S, ww, dz) => { at(a.at[0] + 0.5, a.at[1] + 0.5, _a).z += dz; const C = _a.clone(); S.ring(C, cs * 0.78, ww, 0.3, Math.PI * 1.8); _b.set(C.x + Math.cos(Math.PI * 1.8) * cs * 0.78, C.y + Math.sin(Math.PI * 1.8) * cs * 0.78, C.z); _a.set(C.x + Math.cos(Math.PI * 1.7) * cs * 0.78, C.y + Math.sin(Math.PI * 1.7) * cs * 0.78, C.z); S.head(_a, _b, ww); }); cells.push(a.at); }
-      else if (a.kind === 'drag' || a.kind === 'glean') { path(a.path); cells.push(a.path[0]); }
+      else if (a.kind === 'drag' || a.kind === 'run') { path(a.path); cells.push(a.path[0]); }
       else if (a.kind === 'drop') { const [gx, gy] = B.grav(a.at[0], a.at[1]); arrow(a.at[0] - gx * 0.45, a.at[1] - gy * 0.45, a.at[0] + gx * 0.35, a.at[1] + gy * 0.35); cells.push(a.at); }
-      else if (['push', 'punt', 'drill'].includes(a.kind) && body) { const d = DIRS[a.dir], n = a.kind === 'push' ? 1 : a.kind === 'punt' ? 2 : 3; arrow(body[0] + d[0] * 0.5, body[1] + d[1] * 0.5, body[0] + d[0] * (n + 0.2), body[1] + d[1] * (n + 0.2)); cells.push(body); }
-      else if ((a.kind === 'shoot' || a.kind === 'hook') && body) { const toward = side === 0 ? 1 : -1, x1 = side === 0 ? B.line + 0.5 : B.line - 1.5; arrow(body[0] + toward * 0.5, body[1], x1, body[1]); cells.push(body); }
+      else if (['push', 'kick', 'drill'].includes(a.kind) && body) { const d = DIRS[a.dir], n = a.kind === 'push' ? 1 : a.kind === 'kick' ? 2 : 3; arrow(body[0] + d[0] * 0.5, body[1] + d[1] * 0.5, body[0] + d[0] * (n + 0.2), body[1] + d[1] * (n + 0.2)); cells.push(body); }
+      else if ((a.kind === 'shoot' || a.kind === 'grab') && body) { const toward = side === 0 ? 1 : -1, x1 = side === 0 ? B.line + 0.5 : B.line - 1.5; arrow(body[0] + toward * 0.5, body[1], x1, body[1]); cells.push(body); }
       else if (a.kind === 'paint' && body) { draw((S, ww, dz) => { const P = [[-1.5, -1.5], [1.5, -1.5], [1.5, 1.5], [-1.5, 1.5]].map(([dx, dy]) => at(body[0] + dx, body[1] + dy, new THREE.Vector3()).setZ(z + dz)); for (let k = 0; k < 4; k++) S.seg(P[k], P[(k + 1) % 4], ww); }); cells.push(body); }
-      else if (body) { ring(body[0], body[1], a.kind === 'coup' ? 0.85 : 0.6); cells.push(body); }
+      else if (body) { ring(body[0], body[1], a.kind === 'finisher' ? 0.85 : 0.6); cells.push(body); }
       const ev = act(c, a) || [];
       for (const e of ev) {
         if (e.type === 'chain' && e.side === side) junk += junkOf(e.cleared, e.step);

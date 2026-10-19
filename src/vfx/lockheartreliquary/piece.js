@@ -4,8 +4,8 @@
 // its string, the coffin on it, the pour (the coffin's Lachryma rising out of its open lid into the wheel), the keyring hung from the
 // foot ring (the first to turn on the left, the rest following round it in ring order, as the tags read; a Possibilikey flying to the hasp, turned, then held, melted
 // (brass) or snapped at the Opening; the ring's turn arcing the last over the ring into the first), the tags, the count plate, and the
-// wheel of odds with its rates or its outcome plate. The B orientation (the owner, 2026-10-19): the coffin hangs from the hand as a right
-// hand would hold it, its chain out to the screen's edge, its back to the view's middle; so the link meets it on its right, the tube's side.
+// wheel of odds with its rates or its outcome plate. The coffin hangs from the hand straight down, parallel to the Lachrimeter (the owner,
+// 2026-10-19; it was B's tilt to the screen's edge), its window on its right, the tube's side, where the link meets it.
 //
 // Prior art: the mock (board v10, r10-lockheart: piece()), ported; the thurible swung on its chain (the swing's weight out on the
 // chain), Luigi's Mansion's Poltergust for the motes drawn in.

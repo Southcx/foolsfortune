@@ -26,8 +26,14 @@
 //                                      `face` (world): stand the camera on that side to read the Courier's half on the left
 //   play(events) -> Promise            the kernel's events, in order (act's, endTurn's, bot.play's), resolved once shown; queued
 //   intent(plan | null)                the foe's live forecast (bot.plan(state, 1)), its first step bold; null clears it
-//   cellAt(ray) -> { x, y } | null     the cell a THREE.Ray meets on the slab's face (the god hand's pick)
+//   cellAt(ray) -> { x, y } | null     the cell a ray meets on the slab's face (the god hand's pick): a THREE.Ray, or { origin, dir }
+//   frameShot() -> { pos, look }       the camera that reads the board (from the `face` side, a cell at least 12 dots of the 480 lines,
+//                                      both halves and both bodies in view): for game.cinema.shot
+//   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
+//   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   hover(cell | null)   select(cells)   close()   update(rawDt) (main.js)   .isOpen .busy .face .root .state
+// THE FLEE (Dovina's, PUZZLE-DUELS.md 15; drawn by duelview/flee.js): the odds plate on the frame while you may flee, the 'flee' event's
+// d20 and its reasons, and 'duel.fled': the clash folding with no winner and the tsuitate folded away.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
@@ -43,6 +49,7 @@ import { DuelMarks } from './duelview/marks.js';
 import { DuelIntent } from './duelview/intent.js';
 import { DuelBursts } from './duelview/bursts.js';
 import { DuelBeats } from './duelview/beats.js';
+import { DuelFlee } from './duelview/flee.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -55,6 +62,7 @@ export class DuelView {
     this.clash = new DomainClash(); root.add(this.clash.dome);
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
+    this.flee = new DuelFlee(this); this.folded = false;
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
     this.linkEnd = (out) => this.linkAt(out);
@@ -68,7 +76,7 @@ export class DuelView {
   open({ state, foe = null, at, facing = null } = {}) {
     if (!state) return;
     this.close(true);
-    this.state = state; this.foe = foe; this.isOpen = true; this.closing = false; this.coupDone = false;
+    this.state = state; this.foe = foe; this.isOpen = true; this.closing = false; this.finisherDone = false;
     const asp = (KIND_RULESETS[foe?.kind] && rulesetOf(foe).feeling) || foe?.grade || foe?.feeling || state.rs?.feeling; // (a kind's own ruleset first: the aberrant Lantern Wisp's is Dread's)
     this.aspect = asp && COLOR[asp] !== undefined ? asp : 'fury';
     // where it stands: +X of its frame from the Courier's end to the foe's, its face along u x up
@@ -76,9 +84,10 @@ export class DuelView {
     if (toward.lengthSq() < 1e-6) toward.set(-1, 0, 0);
     this.u.copy(toward).normalize().negate(); this.face.crossVectors(this.u, UP).normalize();
     this.root.position.copy(at); this.root.rotation.set(0, Math.atan2(-this.u.z, this.u.x), 0); this.root.visible = true;
+    this.frame.rotation.set(0, 0, 0); this.frame.position.set(0, 0, 0); this.frame.scale.setScalar(1); this.folded = false; // (a fled duel's fold undone)
     this.root.updateMatrixWorld(true); this.centre.copy(at);
     const B = state.board;
-    this.board.build(B, this.aspect); this.pieces.build(B, this.aspect); this.marks.layout(B); this.clash.setFoe(this.aspect);
+    this.board.build(B, this.aspect); this.pieces.build(B, this.aspect); this.marks.layout(B); this.clash.setFoe(this.aspect); this.flee.clear(); this.flee.layout(B);
     this.forms = state.sides.map((S) => S.form);
     this.gravLine = B.line; this.setLine(B.line); this.fogCur = null; this.stepFog(0); // (the fog as it stands at once: nothing hidden shows for a frame)
     this.board.won(0); this.readCounts(); this.readPoints(); this.readFight();
@@ -92,6 +101,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
+    this.flee.clear(); this.marks.refuse(null);
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
 
@@ -104,8 +114,8 @@ export class DuelView {
 
   /** The cell a ray (world) meets on the slab's face, or null. */
   cellAt(ray) {
-    if (!this.isOpen || !ray) return null;
-    _r.copy(ray).applyMatrix4(_inv.copy(this.frame.matrixWorld).invert());
+    if (!this.isOpen || !ray?.origin) return null;
+    _r.origin.copy(ray.origin); _r.direction.copy(ray.direction || ray.dir); _r.applyMatrix4(_inv.copy(this.frame.matrixWorld).invert());
     const dz = _r.direction.z; if (Math.abs(dz) < 1e-6) return null;
     const t = -_r.origin.z / dz; if (t < 0) return null;
     _r.at(t, _v);
@@ -113,6 +123,33 @@ export class DuelView {
     return x >= 0 && y >= 0 && x < B.w && y < B.h ? { x, y } : null;
   }
   hover(cell) { this.marks.hover(this.isOpen ? cell : null); }
+
+  /** The camera that reads the board: square to its face on the `face` side (the Courier's half on the left), a little above its middle
+   *  and looking a hair down, as near as a cell of about 14 dots of the 480 lines (never under 12), far enough for the frame, the odds
+   *  plate and both bodies in the world. */
+  frameShot() {
+    if (!this.isOpen) return null;
+    const cam = this.game.camera, B = this.state.board, { cs, base, border } = DUEL_VIEW, top = base + B.h * cs + border + 0.45;
+    const tan = Math.tan(((cam?.fov ?? 70) * Math.PI) / 360), asp = cam?.aspect || 16 / 9, lines = 480;
+    const far = (cs * lines) / (2 * 12 * tan), want = (cs * lines) / (2 * 14 * tan); // (a cell 12 dots at most this far; 14 here)
+    const reach = this.foe?.pos ? _w.copy(this.foe.pos).sub(this.centre).setY(0).length() : 0, halfW = Math.max((B.w * cs) / 2 + border + 0.2, reach + 0.5);
+    const near = Math.max((top / 2 + 0.15) / tan, halfW / (tan * asp));
+    const d = Math.min(far, Math.max(want, near)), look = this.centre.clone().setY(this.centre.y + top / 2);
+    return { pos: look.clone().addScaledVector(this.face, d).setY(look.y + 0.35), look };
+  }
+  /** A cell's centre on the slab's face, in the world. */
+  pointOf(cell) {
+    if (!this.isOpen || !cell) return null;
+    const x = cell.x ?? cell[0], y = cell.y ?? cell[1]; return this.frame.localToWorld(cellLocal(x, y, this.board3, new THREE.Vector3()).setZ(0));
+  }
+  /** An illegal action's look: its cell's rim (the action's cell, the Courier's figurine's for its moves, else the hovered one) shaken
+   *  in the dry ink, and the spiritual link slack. No words. */
+  refuse(a = {}) {
+    if (!this.isOpen) return;
+    const body = this.pieces.bodyAt(0), c = a.at || a.path?.[0] || (body && !a.at && ['push', 'kick', 'run', 'shoot', 'grab', 'drill', 'paint', 'delay', 'hold', 'send', 'flee'].includes(a.kind) ? [body.cx, body.cy] : null) || this.marks.hovered;
+    if (c) this.marks.refuse({ x: c.x ?? c[0], y: c.y ?? c[1] });
+    this.game.spiritualLink?.slack?.();
+  }
   select(cells) { this.marks.select(this.isOpen ? cells : []); }
 
   // ---- what the beats ask of the view
@@ -145,9 +182,9 @@ export class DuelView {
   drink(e) { if (e.side === 0) this.game.spiritualLink?.bead({ amount: 8, colour: TEAR, rev: true, dur: 0.45 }); }
   form(side, to) { this.forms[side] = to; }
   headOf(side, out) { const v = this.pieces.bodyAt(side); return v ? cellLocal(v.x, v.y - 0.55, this.board3, out).setZ(DUEL_VIEW.front + 0.05) : out.set(0, -99, 0); }
-  /** Where the god hand stands over a side's half (the board's frame): the coup's cubes go up into it. */
+  /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
-  /** The coup's drain on the foe in the world (the crackle break, the beats, its data bug mended: vfx/datadrain.js). */
+  /** The finisher's drain on the foe in the world (the crackle break, the beats, its data bug mended: vfx/datadrain.js). */
   drainFoe() { const f = this.foe; if (f?.pos && this.game.dataDrain) { this.frame.localToWorld(this.handPoint(1, _w)); this.game.dataDrain.play(f, _w.clone()); } this.depth[1] = 0; }
 
   readCounts() { const S = this.state.sides; this.sent = [S[0].sent || 0, S[1].sent || 0]; this.pending = [S[0].pending || 0, S[1].pending || 0]; this.showCounts(); }
@@ -161,10 +198,11 @@ export class DuelView {
     this.pieces.build(s.board, this.aspect); this.gravLine = s.board.line; this.board.setGravity(s.board);
     for (const v of this.pieces.list) if (v.kind === 'ember' && was.has(v.id) && v.count < was.get(v.id)) { // (an ember burnt down a turn: a puff, its glaze a step dimmer)
       v.cool = 1; cellLocal(v.x, v.y, this.board3, _w); this.bursts.burst(_w, 0x2e1810, 4, { speed: 0.4, life: 0.4, fall: -1, size: 0.018 }); }
-    if (this.coupDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
+    if (this.finisherDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
     else this.setLine(s.board.line);
     this.forms = s.sides.map((S) => S.form); this.readCounts(); this.readPoints(); this.readFight();
     if (s.winner === 0) this.board.won(1);
+    this.flee.odds(s);
   }
 
   /** The far end of the spiritual link while open: the board's Courier in its form, or the god hand over its half (overlay px, y up). */
@@ -180,12 +218,14 @@ export class DuelView {
     dt = Math.min(dt || 0, 0.1);
     this.beats.update(dt); this.stepFog(dt);
     const shown = this.clash.update(dt);
-    this.board.update(dt); this.pieces.update(dt); this.marks.update(dt); this.bursts.update(dt);
+    this.board.update(dt); this.pieces.update(dt); this.marks.update(dt); this.bursts.update(dt); this.flee.update(dt);
+    if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
     const f = this.foe; if (this.isOpen && this.depth[1] > 0 && f?.alive !== false && f?.pos) this.game.stun?.dizzy?.set(f, f.head?.() || _w.copy(f.pos).setY(f.pos.y + 2), { stunned: true }); // (the same gold stars on the Figment in the world)
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }
+    else if (this.folded) this.frame.scale.setScalar(0.001); // (a fled duel: the tsuitate folded away, flee.js)
     else if (this.closing) { const k = Math.max(this.clash.open[0], this.clash.open[1]); this.frame.scale.setScalar(Math.max(0.001, k)); }
-    else this.frame.scale.setScalar(1);
+    else if (!this.flee.folding) this.frame.scale.setScalar(1);
   }
 
   /** Dread's fog, cell by cell (0 seen .. 1 hidden), and the lantern's light, eased toward what visibleTo says now. */
@@ -214,8 +254,9 @@ export class DuelView {
     this.marks.numeral('3', new THREE.Vector3(0, 1, 0.1), '#ffffff'); this.marks.hover({ x: 2, y: 18 }); this.marks.stars(1, 2, new THREE.Vector3(0, 1, 0));
     this.bursts.burst(new THREE.Vector3(0, 1, 0), 0xffffff, 4);
     this.intentDraw.show(state, [{ kind: 'swap', at: [12, 18], dir: 'E' }, { kind: 'rotate', at: [12, 16] }], 1, this.aspect);
-    for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('teardrop', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
-    this.update(0.016);
+    for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('orb', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
+    const coal = this.pieces.add('ember', { count: 2 }, 6, 3); coal.craze = 0.8; this.marks.refuse({ x: 7, y: 3 }); // (the crazing's quads, the dry rim)
+    this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
     return () => { this.close(true); this.frame.scale.setScalar(1); };
   }
 }

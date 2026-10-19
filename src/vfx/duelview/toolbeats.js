@@ -18,7 +18,7 @@
 import * as THREE from 'three';
 import { DUEL_VIEW, cellLocal, feelColour, sm, lerp } from './layout.js';
 
-export const TOOL_EVENTS = new Set(['shot', 'hook', 'drill', 'paint', 'toll', 'hoover', 'flail']);
+export const TOOL_EVENTS = new Set(['shot', 'grab', 'drill', 'paint', 'delay', 'hold', 'hold.send']);
 const CLAY = 0x93552f;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -31,7 +31,7 @@ export function toolBeat(T, it) {
       if (k !== last) { last = k; cellLocal(x, by, B, _a); X.burst(_a, V.filmHex(f * 0.3), 2, { speed: 0.15, life: 0.25, fall: 0, spread: 0.1, size: 0.025 }); }
       if (f >= 1 && !popped) { popped = true; pop(v); } }, end: () => { if (!popped) pop(v); } };
   }
-  if (e.type === 'hook') {
+  if (e.type === 'grab') {
     const v = P.byId(e.id) || P.at(e.from[0], e.from[1]); if (v) P.move(v, e.to[0], e.to[1]);
     return { events: it, dur: 0.55 + ma, step: (u, age) => {
       const out = Math.min(1, age / 0.19), back = Math.max(0, (age - 0.19) / 0.28), tip = back > 0 ? lerp(e.from[0], e.to[0], sm(back)) : lerp(bx, e.from[0], out);
@@ -51,16 +51,16 @@ export function toolBeat(T, it) {
       const f = Math.max(0, (age - 0.3) / 0.2); for (const q of vs) { q.v.flash = f < 0.5 ? f * 2 : 2 - f * 2; if (f >= 0.5) { q.v.kind = 'gem'; q.v.colour = q.d.colour; } } },
       end: () => { for (const q of vs) { q.v.kind = 'gem'; q.v.colour = q.d.colour; q.v.flash = 0; } } };
   }
-  if (e.type === 'toll') {
+  if (e.type === 'delay') {
     let rang = 0;
     return { events: it, dur: 0.6 + ma, step: (u, age) => { while (rang < 3 && age >= rang * 0.07) { const r = rang++; cellLocal(bx, by, B, _a); X.burst(_a, V.filmHex(r * 0.25), 20, { speed: 2.2 + r * 0.4, life: 0.45, fall: 0, spread: 0 }); } } };
   }
-  if (e.type === 'hoover') {
+  if (e.type === 'hold') {
     const vs = it.map((d) => { const v = P.byId(d.id) || P.at(d.at[0], d.at[1]); if (v) P.move(v, -1, -1); return { v, from: d.at }; }).filter((q) => q.v);
     return { events: it, dur: 0.5 + ma, step: (u) => { const s = sm(u); for (const q of vs) { const a = s * 6; q.v.x = lerp(q.from[0], bx + 0.6, s) + Math.cos(a) * 0.3 * (1 - s); q.v.y = lerp(q.from[1], by, s) + Math.sin(a) * 0.3 * (1 - s); q.v.s = 1 - 0.85 * s; q.v.spin = a; } },
       end: () => { for (const q of vs) P.remove(q.v); } };
   }
-  if (e.type === 'flail') {
+  if (e.type === 'hold.send') {
     V.sent[e.side] += e.n || 0; V.showCounts(); let thrown = false;
     return { events: it, dur: 0.55 + ma, step: (u, age) => { if (!thrown && age >= 0.15) { thrown = true; cellLocal(bx, by, B, _a); cellLocal(V.lineCol ?? B.line, -1, B, _b);
       for (let i = 0; i < Math.min(12, e.n || 4); i++) { V.bursts.spiral(_a, _b.clone(), CLAY, i * 0.025, 0.4); } } } };
