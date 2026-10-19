@@ -3,7 +3,7 @@
 One word, one meaning: in code, docs, commits, messages and requests. A request that misuses a word is clarified first. Full definitions: `docs/GLOSSARY-DETAIL.md` (not imported).
 
 1. **The code says what the game says.** Identifiers use the game's word, or the code name given here.
-2. **A new thing is named here first,** in the same commit, by its owning division (player words: Espada and the owner; code names: Petra at the gate).
+2. **A new thing is named here first,** in the same commit, by its owning division (player words: Espada and the owner; code names: Petra at the gate). Until the owner calls it finalized, its name is the genre's or plain English (CLAUDE.md, "Plain names until settled").
 3. **A homonym kept on purpose is always qualified** (table below).
 4. **Retired words are refused** by `npm run check` and at review (table at the end).
 
@@ -530,7 +530,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
   Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
   the Pneuka Jar's seal face. Drawn: the running hand (`runningHand`, `src/ui/runninghand.js`, from `cellsOf`), the seal face (`drawSealFace`, `src/vfx/sealface.js`). *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.
-- **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; names Espada's, proposed; `game.cradles`, tag `cradle`, `src/world/cradles.js`; your seal: save section `seal`, `cradles.mine`; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
+- **a cradle / sealing / an imprint / the Seal Book** (ruled 2026-10-17; "cradle" ruled by the owner 2026-10-19, the other names Espada's, parked; `game.cradles`, tag `cradle`, `src/world/cradles.js`; your seal: save section `seal`, `cradles.mine`; `docs/plans/HANKO.md`) — a receptacle in a machine, gate or ship /
   the Courier folding into the Pneuka Jar and setting its seal in one, so the thing runs as you / what a seal leaves / the Codex shelf of
   imprints given and cradles' seals received (a goshuinchō). *Not:* a slot, a socket (the bracelet's), a print (the trail map's).
 - **the seal picker / the imprint's look** (`SealPicker`, `src/ui/sealpicker.js`; `SealImprints`, `src/vfx/sealimprint.js`) — your seal chosen once at
@@ -544,7 +544,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   sight at large), the wire compass, the Dreamvane's vane, the LACHRYMA panel (retired 2026-10-18).
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
-- **an aptitude / the Assay** (working names, Espada's, proposed; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
+- **an aptitude / the Assay** ("the Assay" ruled by the owner, 2026-10-19; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
   absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.

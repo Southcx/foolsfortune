@@ -7,6 +7,11 @@ The owner's rules for every change. Each line is a rule; the reasons are kept sh
   commit; a request that uses a word against the glossary is clarified before anything is built.
 - **The glossary stays short** (the owner, 2026-10-08: "I can barely read it"): one line a term in `docs/GLOSSARY.md`. Sub-parts, looks and
   history go in `docs/GLOSSARY-DETAIL.md` (not loaded), or in the system's spec.
+- **Plain names until settled** (the owner, 2026-10-19: "We should be as plain as possible in these early stages of development, and
+  only when a mechanic or module is finalized should we go back and pepper in all the lore-specific terms"). A new mechanic, module or
+  thing is named with the genre's standard word or plain English, in the UI, the log, the code and the docs alike. No coined or lore
+  word goes in until the owner calls the thing finalized; then Espada proposes the lore names and the owner rules. A lore name already
+  ruled stays. A plain word that clashes with the glossary is qualified ("a duel's break"), never swapped for a coined one.
 - **What the player reads follows `docs/plans/CLARITY.md`** (the owner, 2026-10-08): a genre-word label, one line of effect, numbers as
   stats, shown before it is said. Lore names stay in the world and the Codex. Raku's tables take no genre label (the owner, 2026-10-15).
 - **The glossary is always in context** (the owner, 2026-10-07): it is imported below, so every session and every agent it starts

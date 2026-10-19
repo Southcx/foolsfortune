@@ -815,8 +815,8 @@ like a cartridge to make them work: larger vessels and machines, the Shrine gate
 face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is
 the West's word for a thing that makes a machine itself. Dovina's rules are `docs/plans/HANKO.md` (claude/dovina-design).
 
-*Names (Espada's, proposed, 2026-10-17):*
-- **a cradle** (Dovina's working name, kept): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
+*Names (Espada's, proposed, 2026-10-17; **cradle ruled by the owner, 2026-10-19**; the rest parked by "Plain names until settled"):*
+- **a cradle** (Dovina's working name; ruled): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
   and a telephone's handset, which is the retrofuture in one word; and *crib* is its old twin, so the Crib Sheet and the cradle are
   cousins. Not of any one island's make, so not "saggar" (the potter's box a pot is fired in), which would say Anagami.
 - **sealing / to seal in / to unseal**: the act. Japanese says a seal is *pressed* (*natsuin*, 捺印), but "press" is the Athanor's.
@@ -867,7 +867,7 @@ of Anagami's making alone.
   was always the one with the best eyes, which is the right root for a camera.
 - **Their sights' labels** (the UI's genre word, CLARITY.md): **Mood**, **Intent**, **Reveal** (Thermal went with the Dowser's).
 
-**Aptitude, and the Assay.** "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
+**Aptitude, and the Assay** *(the Assay ruled by the owner, 2026-10-19)*. "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
 "Magic aptitude: S") and free in the glossary. It is neither an attribute nor a domain. What the System reads of you, the whole window,
 is **the Assay**. An assay is a test of a metal's true content, which suits a game of Lachryma, alchemy and kilns. It is also the same
 word as *essay*: Old French *essai*, a trial, an attempt. The System does not ask what you are; it assays what you do. A standard
@@ -895,20 +895,29 @@ looked like a pepper mill and scattered its shot like one. Odd counts only, one 
 *Settled* (Dovina, OVERLAY.md 18, `tools/psygun/kinds.js`): THE PSYGUN stays at 6 as the first gun, the four beside it; the Carbine
 replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11.
 
-### The puzzle duel's words *(Espada's, proposed, 2026-10-19; Dovina's PUZZLE-DUELS.md)*
+### The puzzle duel's words *(ruled by the owner, 2026-10-19: the genre's standard names; Dovina's PUZZLE-DUELS.md)*
 
-- **The duel.** UI label **Puzzle Duel**, the genre's own words. Its lore name is **a wrangle**: from Middle English *wranglen*, kin to
-  *wring*, two minds wrung against each other until one gives. The log reads "You win the wrangle." A wrangler also herds, and the board
-  is a herd of pieces.
-- **The line.** UI label **the Line**. Its lore name is **the March**: a march is a border country (the Welsh Marches, a margrave's
-  march), and to march is to advance. The March is your ground, and it marches as you send junk. One word for the border and for moving
-  it.
-- **The rule words.** Keep the genre's: **run** (three or more in a line), **cluster** (four or more touching), **pincer** (Terra Battle's
-  word), **drag**, **drop**, **push**, **swap**, **rotate**. Two changes:
-  - **kick → punt.** "The kick" is the Courier's unarmed moveset (glossary). A piece sent sliding until it stops is **a punt**, a kick for
-    distance.
-  - **garbage / junk → junk.** UI label **Junk**, the kinder word. Lore name: **grog**, the potter's word for fired clay crushed and
-    worked back into new clay. Junk is the other mind's broken ware worked into your ground.
+The owner: "use standard genre names for the rest too, please. I don't know what any of those mean out of context" (after Flee:
+"Just use standard game nomenclature"). The duel has no lore names. Every word is the genre's, in the UI, the log and the code alike.
+Withdrawn: a wrangle, the March, grog, punt, a buckle, a teardrop, the coup, a glean, the pick, a wriggle.
+
+| what | the word | the genre's source |
+|---|---|---|
+| the fight | **a puzzle duel** ("the duel" in the log) | versus puzzle games |
+| the border between the sides | **the Line** | |
+| what a clear sends across | **junk** | the genre's garbage, in the kinder word |
+| three or more in a line | **a match** (was "run") | match-3 |
+| four or more touching | **a cluster** | Puyo Puyo |
+| a piece between two of yours turned | **a pincer** | Terra Battle, Othello |
+| a piece slid until blocked | **a kick** (always "a piece's kick" beside the Courier's kick) | Bomberman's bomb kick |
+| the other moves | **drag, drop, push, swap, rotate** | |
+| a side broken by a big push or full EmO | **a break** (always "a duel's break" beside a guard break) | a stagger break (Final Fantasy XIII) |
+| the Lachryma a broken side sheds | **an orb** | Devil May Cry's orbs, Sonic's rings |
+| the god hand's finish on a broken foe | **the finisher** (always "the duel's finisher" beside a string's finisher) | the genre's finisher |
+| the Courier's walk over the board | **run** | |
+| the tools' moves | **Shoot** (psygun), **Grab** (Sondelass), **Drill** (Dreamvane), **Paint** (Soul Brush), **Delay** (Crucibelle), **Hold** and **Send** (Lockheart) | Meteos, Magical Drop, Mr. Driller, Columns, Tetris 99, Tetris |
+| the saving throw out | **Flee** | |
+
 - **A Figment's rule tiles** (the first three rulesets, neuralese by NEURALESE.md's grammar; pushing a tile breaks or rewrites its
   rule):
   - **Fury:** LITHA-PIRO KRAKA ("the fire-stone breaks": bombs); LITHA VADA-LON ("stones go far": punts).
@@ -917,38 +926,12 @@ replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11
   - **Mirth:** SORA META DEO ("up becomes down": mirrored gravity); KRAKA KRESA ("breaking grows": easy chains).
   - Pushing SORA out of SORA META DEO leaves META DEO, "become down", and the board's gravity comes home. Breaking a rule is a sentence
     losing a word, so the player learns the grammar by vandalism.
-- **The break, the motes and the coup** (Dovina's PUZZLE-DUELS.md 11). Each has a genre label for the UI and a lore name for the world,
-  the log and the code:
-  - **a buckle** (label **Break**; `buckle`). A side buckles when a critical push or full EmO drops it a stun depth. Old French
-    *boucler*, to bulge, from *boucle*, a shield's boss: the shield gives way. Not "a break": the guard break, the crackle break and
-    the big break already hold that word. The log reads "The Figment buckles."
-  - **a teardrop** (label **Orb**; `teardrop`). The Lachryma a buckled side sheds onto your board for one turn. Lachryma is Latin
-    *lacrima*, a tear, so the word was waiting. Not "a mote": the Figment's scatter and the weather's look already have motes.
-  - **the coup** (label **Finish**; `coup`). The god hand's finish on a buckled foe, paid from the pool. Short for *coup de grâce*,
-    the stroke of grace, and the hand is the one that grants grace. Not "a finisher": the code's `stun.finisher` and a string's
-    finisher already hold that word. The log reads "You drain the Figment."
-- **The Courier's moves on the board.** Where the tool already has the move, the board keeps its name, since it is the same move
-  played on a grid. Only two need new words:
-  - **a glean** (label **Gather**; `glean`). Up to four cells walked, drinking the teardrops crossed. To glean is to gather what the
-    harvest left behind (Old French *glener*), which is what the Courier does after the hand has broken the foe. Not "run": a run is
-    already three in a line.
-  - **the pick** (label **Drill**). The Dreamvane's pick, struck through up to three pieces in a line. Mr. Driller's verb stays the label.
-  - Kept: **a shot** (the psygun's; label **Shoot**), **the hook** (the Sondelass's; label **Grab**), **paint** (the Soul Brush's;
-    label **Paint**), **the toll** (the Crucibelle's; label **Delay**), **the hoover** (the Lockheart's; label **Hold**, Tetris's
-    word), **the flail** (the Lockheart's; label **Send**, the genre's word for junk thrown across).
-- **a wriggle** (label **Flee**; `wriggle`; Dovina's flee, PUZZLE-DUELS.md 15). The saving throw that gets you out of a duel: a d20
-  against 15. Middle Low German *wriggeln*, to twist about, the same twisting family as *wring* and *wrangle*. A wrangle wrings you,
-  and a wriggle twists you free of it. Not "slip": that word is retired as a mechanic.
-  - Log on a success: "You wriggle free of the wrangle."
-  - Log on a fail: "You fail to wriggle free."
-  - Log on a natural 20: "You wriggle free at once."
-  - The angling plan's fish has a wriggle clip. That is a clip name, not a game word, so the two do not meet in player text.
-- **The duel's log** (`feedback/tracking/duel.js`, written 2026-10-19):
-  - begun: "An aberrant Figment seizes your mind. The wrangle begins."
-  - a buckle: "The Figment buckles."
-  - the coup: "You drain the Figment."
-  - won on the March: "You win the wrangle. The Figment is mended."
-  - lost: "You lose the wrangle. The Figment pushes your mind out."
-  - yielded: "You yield the wrangle."
-  - The test foe keeps its plain name, **Aberrant Lantern Wisp**, the glossary's two words joined. A given name would be the
-    Egregores' privilege: they are human myth, while a Figment is a thought of the island's.
+- **The duel's log** (`feedback/tracking/duel.js`):
+  - begun: "An aberrant Figment seizes your mind. The duel begins."
+  - a break: "You break the Figment."
+  - the finisher: "You drain the Figment."
+  - won on the Line: "You win the duel. The Figment is mended."
+  - lost: "You lose the duel. The Figment pushes your mind out."
+  - yielded: "You yield the duel."
+  - fled (Dovina's): "You flee the duel." / "You fail to flee." / "You flee at once."
+  - The test foe's name stays **Aberrant Lantern Wisp**.
