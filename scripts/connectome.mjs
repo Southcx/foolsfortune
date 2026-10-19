@@ -205,7 +205,7 @@ for (const m of mods.values()) {
   }
   const exportedLocals = new Set([...m.exports.values()].map((x) => x.local).filter(Boolean));
   for (const d of m.topDecls) if (!exportedLocals.has(d.name) && (m.refs.get(d.name) || 0) <= 1) F.deadLocals.push({ file: m.rel, owner: m.owner, name: d.name, kind: d.kind, line: d.line, size: d.size });
-  for (const i of m.importLocals) if ((m.refs.get(i.local) || 0) <= 1) F.unusedImports.push({ file: m.rel, owner: m.owner, name: i.local, from: i.from, line: i.line });
+  for (const i of m.importLocals) if ((m.refs.get(i.local) || 0) <= 1 && !exportedLocals.has(i.local)) F.unusedImports.push({ file: m.rel, owner: m.owner, name: i.local, from: i.from, line: i.line });
 }
 // methods nothing reads by name anywhere (src/ and scripts/); the names an engine calls itself are kept
 const CALLED_BY_ENGINES = new Set(['onBeforeCompile', 'onBeforeRender', 'onAfterRender', 'onBeforeShadow', 'onAfterShadow', 'customProgramCacheKey', 'raycast', 'dispose', 'handleEvent', 'toJSON', 'toString', 'valueOf', 'then', 'connectedCallback', 'disconnectedCallback', 'copy', 'clone']);

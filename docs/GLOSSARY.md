@@ -479,7 +479,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
   category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
   arts row. Drawn by `src/ui/lendpanel.js` (the Codex's LENDS, QAIS's Lends); a lent art wears the hollow mark. *Not:* "Lab mode".
-- **a preset** (`PRESETS`, `src/debug/presets.js`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
+- **a preset** (a plan, not built; `docs/plans/DEBUG-MODE.md`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
