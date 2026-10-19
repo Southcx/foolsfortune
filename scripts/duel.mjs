@@ -4,7 +4,8 @@
 // chain, and every settle that hit its cap or looped (a ruleset's bug). The action points and the line's rate are tuned against this.
 //
 //   node scripts/duel.mjs [--rules fury|grief|mirth|all] [--n duels] [--ap points | --ap0 a --ap1 b] [--pool p] [--seed first] [--sample tries]
-//                         [--forms hand,courier]   (--ap0 10 --ap1 5: a side of two players against one Figment, section 12)
+//                         [--forms hand,courier] [--coup both|courier]   (--ap0 10 --ap1 5: a side of two players against one Figment,
+//                         section 12; --coup both by default, so each chair is measured alike: in play only the Courier's side has it)
 // ---------------------------------------------------------------------------------------
 import { newDuel, DUEL } from '../src/progress/duel/duel.js';
 import { play } from '../src/progress/duel/bot.js';
@@ -14,13 +15,13 @@ const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--
 const which = opt('rules', 'all'), n = +opt('n', 10), seed0 = +opt('seed', 1), sample = +opt('sample', 40);
 const forms = opt('forms', 'hand,courier').split(',');
 DUEL.ap = +opt('ap', DUEL.ap);
-const ap = [+opt('ap0', DUEL.ap), +opt('ap1', DUEL.ap)], pool = +opt('pool', DUEL.pool);
+const ap = [+opt('ap0', DUEL.ap), +opt('ap1', DUEL.ap)], pool = +opt('pool', DUEL.pool), coup = opt('coup', 'both') === 'both' ? [true, true] : [true, false];
 
 for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
   const ends = {}, wins = [0, 0, 0]; let plies = 0, sent = 0, caps = 0, chain = 0, kinds = {}, buckles = 0, drunk = 0;
   const t0 = Date.now();
   for (let seed = seed0; seed < seed0 + n; seed++) {
-    const s = newDuel({ ruleset: RULESETS[key], seed, forms, ap, pool });
+    const s = newDuel({ ruleset: RULESETS[key], seed, forms, ap, pool, coup });
     for (let guard = 0; s.winner === null && guard < DUEL.turnCap * 2 + 2; guard++) {
       for (const e of play(s, { sample })) {
         if (e.type === 'chain') chain = Math.max(chain, e.step);

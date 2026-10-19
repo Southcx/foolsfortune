@@ -30,6 +30,7 @@ import { lockheartRules } from './lockheart.js';
 import { raceRules } from './race.js';
 import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
+import { duelRules } from './duel.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
 import { stunRules } from './stun.js';
@@ -49,6 +50,7 @@ export function areaRules(ctx) {
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
+  duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(ctx);
   gardenRules(ctx);

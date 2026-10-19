@@ -894,3 +894,45 @@ plainly, Greek *pente*, five; the pepperbox is the real nineteenth-century gun o
 looked like a pepper mill and scattered its shot like one. Odd counts only, one to seven: the psygun climbs as the feelings do.
 *Settled* (Dovina, OVERLAY.md 18, `tools/psygun/kinds.js`): THE PSYGUN stays at 6 as the first gun, the four beside it; the Carbine
 replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11.
+
+### The puzzle duel's words *(Espada's, proposed, 2026-10-19; Dovina's PUZZLE-DUELS.md)*
+
+- **The duel.** UI label **Puzzle Duel**, the genre's own words. Its lore name is **a wrangle**: from Middle English *wranglen*, kin to
+  *wring*, two minds wrung against each other until one gives. The log reads "You win the wrangle." A wrangler also herds, and the board
+  is a herd of pieces.
+- **The line.** UI label **the Line**. Its lore name is **the March**: a march is a border country (the Welsh Marches, a margrave's
+  march), and to march is to advance. The March is your ground, and it marches as you send junk. One word for the border and for moving
+  it.
+- **The rule words.** Keep the genre's: **run** (three or more in a line), **cluster** (four or more touching), **pincer** (Terra Battle's
+  word), **drag**, **drop**, **push**, **swap**, **rotate**. Two changes:
+  - **kick → punt.** "The kick" is the Courier's unarmed moveset (glossary). A piece sent sliding until it stops is **a punt**, a kick for
+    distance.
+  - **garbage / junk → junk.** UI label **Junk**, the kinder word. Lore name: **grog**, the potter's word for fired clay crushed and
+    worked back into new clay. Junk is the other mind's broken ware worked into your ground.
+- **A Figment's rule tiles** (the first three rulesets, neuralese by NEURALESE.md's grammar; pushing a tile breaks or rewrites its
+  rule):
+  - **Fury:** LITHA-PIRO KRAKA ("the fire-stone breaks": bombs); LITHA VADA-LON ("stones go far": punts).
+  - **Grief:** LITHA DEO VADA-MURA ("stones sink toward the wall": gravity toward the March); LITHA-MULTA KITH TE, ONO MOR ("many stones
+    together: they die": clusters); LITHA-ALI TOPA-DUO META AMI ("the other stone between two becomes kin": the pincer).
+  - **Mirth:** SORA META DEO ("up becomes down": mirrored gravity); KRAKA KRESA ("breaking grows": easy chains).
+  - Pushing SORA out of SORA META DEO leaves META DEO, "become down", and the board's gravity comes home. Breaking a rule is a sentence
+    losing a word, so the player learns the grammar by vandalism.
+- **The break, the motes and the coup** (Dovina's PUZZLE-DUELS.md 11). Each has a genre label for the UI and a lore name for the world,
+  the log and the code:
+  - **a buckle** (label **Break**; `buckle`). A side buckles when a critical push or full EmO drops it a stun depth. Old French
+    *boucler*, to bulge, from *boucle*, a shield's boss: the shield gives way. Not "a break": the guard break, the crackle break and
+    the big break already hold that word. The log reads "The Figment buckles."
+  - **a teardrop** (label **Orb**; `teardrop`). The Lachryma a buckled side sheds onto your board for one turn. Lachryma is Latin
+    *lacrima*, a tear, so the word was waiting. Not "a mote": the Figment's scatter and the weather's look already have motes.
+  - **the coup** (label **Finish**; `coup`). The god hand's finish on a buckled foe, paid from the pool. Short for *coup de grâce*,
+    the stroke of grace, and the hand is the one that grants grace. Not "a finisher": the code's `stun.finisher` and a string's
+    finisher already hold that word. The log reads "You drain the Figment."
+- **The Courier's moves on the board.** Where the tool already has the move, the board keeps its name, since it is the same move
+  played on a grid. Only two need new words:
+  - **a glean** (label **Gather**; `glean`). Up to four cells walked, drinking the teardrops crossed. To glean is to gather what the
+    harvest left behind (Old French *glener*), which is what the Courier does after the hand has broken the foe. Not "run": a run is
+    already three in a line.
+  - **the pick** (label **Drill**). The Dreamvane's pick, struck through up to three pieces in a line. Mr. Driller's verb stays the label.
+  - Kept: **a shot** (the psygun's; label **Shoot**), **the hook** (the Sondelass's; label **Grab**), **paint** (the Soul Brush's;
+    label **Paint**), **the toll** (the Crucibelle's; label **Delay**), **the hoover** (the Lockheart's; label **Hold**, Tetris's
+    word), **the flail** (the Lockheart's; label **Send**, the genre's word for junk thrown across).
