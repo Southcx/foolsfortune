@@ -19,6 +19,9 @@
 //   TOOLS   the Courier's moves on the board, each its tool's own sound in small: glean (quick steps), shot (the psygun), hook (the
 //           Sondelass's grapnel: thrown, bitten, drawn), drill (the Dreamvane's pick), paint (the Soul Brush), toll (the Crucibelle),
 //           hoover and flail (the Lockheart)
+//   FLEE    'flee' { roll, ok } (a saving throw to escape, flee.js): a d20 thrown, rattling, landing; then what it says: a 20 a crit's
+//           bright run and a crown of bells, a 1 a dull clunk sagging down a tritone, a pass a light lift, a miss a soft drop;
+//           'duel.fled' the escape: a rush away
 // No view or room yet (PUZZLE-DUELS.md 8): nothing calls these until one exists.
 // Prior art: Puyo Puyo's chain voices (each step a higher call: the step is heard before it is counted), Tetris Effect's notes on the
 // key, Puzzle Fighter's gem shatter and counter-gem thud, Meteos's launch.
@@ -49,6 +52,8 @@ export class PuzzleDuelSounds {
       case 'teardrop': return this.duelTeardrop();
       case 'teardrop.drink': return this.duelTeardropDrink();
       case 'teardrop.fade': return this.duelTeardropFade();
+      case 'flee': return this.duelFlee(e.roll, e.ok);
+      case 'duel.fled': return this.duelFled();
       case 'duel.coup': return this.duelCoup(e.depth);
       case 'glean': case 'shot': case 'hook': case 'drill': case 'paint': case 'toll': case 'hoover': case 'flail': return this.duelTool(e.type, e);
       case 'blast': return this.duelBlast();
@@ -191,5 +196,26 @@ export class PuzzleDuelSounds {
       case 'flail': this.noise(t, 0.12, { type: 'bandpass', f0: 600, f1: 1800, q: 1.5, gain: 0.2, dest: d }); this.tone(t + 0.12, 0.2, { f0: 110, f1: 55, gain: 0.35, dest: d }); break;
       default: break;
     }
+  }
+
+  /** The saving throw: the d20 rolled (its face 1..20) and whether it got away. */
+  duelFlee(roll = 10, ok = false) {
+    if (!this.ok() || !this.allow('duelFlee', 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.35, 0.3, sidePan(0));
+    let x = 0; for (let i = 0, gap = 0.05; i < 9; i++, x += gap, gap *= 1.12) this.noise(t + x, 0.015, { type: 'bandpass', f0: 2200 + Math.random() * 1600, q: 5, gain: 0.35 - i * 0.025, dest: d }); // (the rattle)
+    const land = t + x + 0.04;
+    this.noise(land, 0.03, { type: 'bandpass', f0: 1400, q: 3, gain: 0.5, dest: d }); this.tone(land, 0.08, { f0: 330, f1: 260, type: 'triangle', gain: 0.12, dest: d });
+    const at = land + 0.12;
+    if (roll === 20) { [72, 76, 79, 84, 88].forEach((m, k) => this.tone(at + k * 0.06, 0.6, { f0: hz(m), type: 'triangle', gain: 0.08, dest: d }));
+      [1, 2.76, 5.4].forEach((r, j) => this.tone(at + 0.3, 1.4, { f0: hz(96) * r, gain: [0.05, 0.02, 0.01][j], dest: d })); }
+    else if (roll === 1) { this.tone(at, 0.3, { f0: 110, f1: 70, gain: 0.35, dest: d }); [60, 54].forEach((m, k) => this.tone(at + 0.1 + k * 0.25, 0.5, { f0: hz(m), f1: hz(m - 1), type: 'sawtooth', gain: 0.04, dest: d })); }
+    else if (ok) [72, 79].forEach((m, k) => this.tone(at + k * 0.08, 0.35, { f0: hz(m), type: 'triangle', gain: 0.07, dest: d }));
+    else [67, 62].forEach((m, k) => this.tone(at + k * 0.12, 0.35, { f0: hz(m), type: 'triangle', gain: 0.05, dest: d }));
+  }
+  /** Away: the duel left behind in a rush. */
+  duelFled() {
+    if (!this.ok() || !this.allow('duelFled', 1)) return;
+    const t = this.ctx.currentTime + 0.9, d = this.duelOut(0.3, 0.3); // (after the roll's verdict)
+    this.noise(t, 0.5, { type: 'bandpass', f0: 600, f1: 3000, q: 1.2, gain: 0.18, attack: 0.15, dest: d });
   }
 }
