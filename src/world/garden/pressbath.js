@@ -14,14 +14,12 @@
 //   B.look (set by Calissa's vfx/alchemy/presslook.js: a firing's hold on the tile it fires, and each seal's light, ember and gold)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { wheelColour } from '../../vfx/wheelcolour.js';
 import { Marks } from '../../vfx/alchemy/marks.js';
 import { Basin, NORTH_HUE, wheelPoint } from '../../vfx/alchemy/basin.js';
 import { Bath } from '../../vfx/alchemy/bath.js';
 import { Paths } from '../../vfx/alchemy/paths.js';
 
 export { NORTH_HUE };
-export const colourOf = (h, s, out) => wheelColour(h, s, out); // (the stand-in's name, kept for its callers: wheelColour itself)
 const _inv = new THREE.Matrix4();
 
 export class PressBath {

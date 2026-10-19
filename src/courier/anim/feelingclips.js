@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE FEELINGS' CLIPS: the Courier's body answering a feeling the moment it is learned (the awakening, vfx/awakening.js;
+// THE FEELINGS' CLIPS: the Courier's body answering a feeling the moment it is learned (the awakening, feedback/awakening.js;
 // docs/plans/FEELINGS-AWAKENING.md section 3, step 3). One clip of the Courier's own suite each (the social pack, courier/anim/suite.js),
 // played by the emote tech as an emote is (courier/moves/emote.js: a one-shot, or a chain in then a one-shot; moving fades it out), but
 // never asked for on the chat line, never logged, never counted as an emote. Nothing authored: each is the suite's clip that already is

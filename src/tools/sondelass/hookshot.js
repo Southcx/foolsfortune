@@ -31,7 +31,7 @@ import { FishingLine } from './angling/line.js';
 const RANGE = 40, SPEED = 90, COST = 2, GRAP = 2.4, HEAVY = 60, CHEST = 0.9;
 const AMBER = 0xffb27a, LOAD = 0xff8a4a; // (the grapnel's glow, and the colour its rope takes on under load)
 const UP = new THREE.Vector3(0, 1, 0);
-const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _t = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
+const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _t = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 export class Hookshot {
   constructor(tool) {

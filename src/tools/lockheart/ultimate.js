@@ -36,7 +36,7 @@ import { clearShot } from '../../core/shotclear.js';
 const INVOKE = 1.4, KEY_DT = 0.32, ASCEND = 1.4, LAND_HOLD = 1.6, BACK = 1.0; // (beats, real seconds)
 const SLOW = 0.2; // (how fast the world runs meanwhile: nearly held)
 const HOLD = { d: 0.5, h: 1.5 }; // (where the coffin floats while the keys go in: just before the joined hands of Lock_Channel, metres out and up)
-const LACH = new THREE.Color(0xb49be6), GOLD = new THREE.Color(0xffd76a), BLUE = new THREE.Color(0x7fb2ff), WHITE = new THREE.Color(0xffffff);
+const LACH = new THREE.Color(0xb49be6), GOLD = new THREE.Color(0xffd76a), WHITE = new THREE.Color(0xffffff);
 const _v = new THREE.Vector3(), _l = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Vector3();
 
 /** The circle drawn on the ground: rings, a seven-pointed star (seven for luck), and ticks round it, gold on black, added light. */

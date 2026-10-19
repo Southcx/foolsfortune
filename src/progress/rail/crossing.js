@@ -125,8 +125,6 @@ export function setPiecesOf({ route = '', day = 0, casks = 0, danger = 0, leviat
   if (leviathan) out[legs - 1] = 'leviathan';
   return out;
 }
-/** The first set piece alone (the crossing of one leg): kept for callers that ask for one. */
-export const setPieceOf = (o = {}) => setPiecesOf({ ...o, legs: 1 })[0];
 
 /** The acts of a crossing of these set pieces, with absolute bars, and its beats placed in their legs. */
 export function timeline(pieces = ['shoal']) {

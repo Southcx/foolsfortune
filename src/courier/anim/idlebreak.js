@@ -26,7 +26,7 @@
 //   idles.idle(dt, s, still, out) -> out   the idle layer: the plain or alert idle, a break over it; still: the idle's share of the gait
 //   idles.playing                           the B playing (a break's clip, or `<clip>:B`), or null
 //   idles.choose(key) -> bool               stand in another of IDLES (crossfaded over IDLE.swap): the one call a chooser makes (the
-//                                           kiln's, Petra's: docs/handoffs/petra/2026-10-10-from-calissa-idle-choice.md); idles.stand:
+//                                           kiln's, Petra's); idles.stand:
 //                                           the key standing in (what the save keeps)
 //   idleClip(key = IDLES.default)           the clip a key of IDLES plays (for anything else that stands the Courier idle)
 // ---------------------------------------------------------------------------------------

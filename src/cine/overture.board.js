@@ -17,7 +17,6 @@ import * as THREE from 'three';
 import { oddsOf, rates as wheelRates, spin as wheelSpin } from '../tools/lockheart/table.js';
 
 export const OVERTURE_TITLE = 'Fortune Favours the Fool';
-export const BAR = 1.6;
 export const HANDOVER = 70.4;  // ASCEND: the title's own scene from here (the precipice)
 export const ROAR = 79.2;      // the title's kiln intro (the roar rising): the logo comes up in raw clay
 export const STRIKE = 81.6;    // THE STRIKE: gold in one frame
@@ -36,7 +35,6 @@ export const PLACES = {
   pip: near(folk('pip'), 1.8, -0.7),
   wallrun: room(4), slide: room(1), mantle: room(2), zigzag: room(5),
   hub: (g) => ({ pos: g.course.hubSpawn.v.clone(), yaw: g.course.hubSpawn.yaw }),
-  hubFar: (g) => ({ pos: g.course.hubSpawn.v.clone().add(V(0, 0, 14)), yaw: Math.PI }),
   crystals: (g) => { const c = g.crystals?.list?.[0]; if (!c) return null; const d = g.dunes.spawnPoint(); const yaw = Math.atan2(c.ground.x - d.x, c.ground.z - d.z); const p = c.ground.clone().addScaledVector(V(Math.sin(yaw), 0, Math.cos(yaw)), -(c.r + 3)); p.y = g.dunes.heightAt(p.x, p.z); return { pos: p, yaw }; },
   shore: (g) => ({ pos: g.dunes.spawnPoint(), yaw: 0 }),
   pier: (g) => ({ pos: g.course.weirSpawn.v.clone().add(V(3, 0, 6)), yaw: 0 }),

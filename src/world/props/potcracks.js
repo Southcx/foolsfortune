@@ -16,7 +16,7 @@ export const crackMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline, si
 export const goldMat = new THREE.MeshStandardMaterial({ color: 0xffc65c, metalness: 0.15, roughness: 0.3, emissive: 0xc27414, emissiveIntensity: 0.9,
   side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
 
-const _p = new THREE.Vector3(), _n = new THREE.Vector3();
+const _n = new THREE.Vector3();
 
 function gridOf(P) { return P._grid || (P._grid = surfaceGrid(P)); }
 

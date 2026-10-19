@@ -45,7 +45,6 @@ export const SHELL_TYPES = [
   // (the runner's: a glyph a family until Calissa's icons)
   ...RUNNER_SHELLS.map(shellByNo).map((r) => ({ id: r.id, name: r.label.toUpperCase(), glyph: { edge: '✦', ember: '♨', storm: 'ϟ', pull: '◎', clock: '⧗', will: '☍', company: '⚑', feelings: '❀', caster: '✶' }[r.family] || '•', runner: true })),
 ];
-export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 SHELL_TYPES.forEach((t) => { t.row = shellById(t.id); t.no = typeLabel(t.row.no); });
 
 /** A runner shell's numbers with the buff on them (T.shells.buff, the owner's v170): its blows, its reach, how long it lasts and how many

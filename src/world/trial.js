@@ -176,12 +176,6 @@ export class Trial {
     this.el.arrow.style.display = 'none';
   }
 
-  showBig(html, dur = 0.9) {
-    this.el.big.innerHTML = html;
-    this.el.big.style.display = 'block';
-    this.bigT = dur;
-  }
-
   update(dt) {
     const g = this.game, P = g.player;
     // the gong: struck with F (when it is the thing the chevron is on), it swings and starts the trial

@@ -38,7 +38,7 @@ function placeholderTone(midi, beat, dur, gain) {
   if (beat > 0.05) sfx.tone(t, dur, { f0: f + beat, gain: gain * 0.9, dest, type: 'triangle' });
 }
 const REGROW = 180, GROW = 6, OPEN = 0.5, OPEN_SWEET = 0.85; // (the stave stands whole a moment as it gives: its last fret's light, or the sweet run)
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
+const _m = new THREE.Matrix4(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
 const BASE = new THREE.Color(0xcdb8f2), RING = new THREE.Color(0xfff1d6), SPENT = new THREE.Color(0x5d4a7a);
 
 export class Crystals {

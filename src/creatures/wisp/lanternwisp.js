@@ -31,7 +31,7 @@ export const WISP = { hp: 5, poise: 2.5, stunFor: 2, sight: 18, scale: 0.9, hove
   cast: { wind: 0.75, speed: 11, life: 4, k: 0.45, reach: 0.75, power: 2 } };
 
 const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 let NEXT = 1;
 /** Each pose the mind asks for, as the suite's clip (the mood loops for how it feels). */
 const POSE_CLIP = { idle: 'Idle', rest: 'Mood_Sad', watch: 'Mood_Curious', drift: 'Float_Forward', fight: 'Mood_Angry', flee: 'Mood_Scared', stun: 'Emote_Surprised', sleep: 'Mood_Sad', melt: 'Mood_Gall' };

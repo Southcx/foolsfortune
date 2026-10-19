@@ -21,7 +21,7 @@
 //
 //   LURES   lureList(ledger, box) -> the lures to hand now (the made ones, the curio on the line, the curios in the Pneuka Box)   tasteOf(lure, boost, out, known) -> [7]   attraction(taste, sp) -> 0..~1.3
 // ---------------------------------------------------------------------------------------
-import { CURIOS, CURIO_BY_ID } from '../../../world/treasure/treasure.js';
+import { CURIOS } from '../../../world/treasure/treasure.js';
 import { ASPECTS } from './species.js';
 
 const N = ASPECTS.length;
@@ -56,8 +56,6 @@ export function lureList(ledger, box = null) {
   for (const c of CURIOS) if (box ? box.lure === `curio.${c.id}` || box.count(`curio.${c.id}`) > 0 : ledger?.get(`curio.${c.id}`) > 0) out.push({ id: `curio.${c.id}`, name: c.name.toUpperCase(), glyph: c.glyph, taste: CURIO_TASTE[c.id] || [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4], pull: TIER_PULL[c.tier], curio: c.id, blurb: c.blurb });
   return out;
 }
-export const lureById = (id, ledger, box) => (id ? lureList(ledger, box).find((l) => l.id === id) || LURES.find((l) => l.id === id) : null) || BARE;
-export const isCurio = (id) => id?.startsWith('curio.') && !!CURIO_BY_ID[id.slice(6)];
 
 /** A lure's taste now: its own, and what the soundings have pushed into it (boost: [7], fading). `known` (species.js knownAspects): a
  *  made lure is bait, matter rather than feeling, so its own taste always counts; only a sounding's push of a feeling not yet known is

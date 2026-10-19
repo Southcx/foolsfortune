@@ -60,7 +60,7 @@ export function handsFrame(ch, out = new THREE.Matrix4()) {
   return out.makeBasis(_x, _y, _z).setPosition(_c);
 }
 
-const _e = new THREE.Vector3(), _in = new THREE.Vector3(), _palm = new THREE.Vector3(), _fing = new THREE.Vector3(), _q = new THREE.Quaternion(), _m3 = new THREE.Matrix3();
+const _e = new THREE.Vector3(), _in = new THREE.Vector3(), _palm = new THREE.Vector3(), _fing = new THREE.Vector3(), _m3 = new THREE.Matrix3();
 
 /** Both hands closed on the open book's outer edges (weight w), the fingers curled round behind it. */
 export function holdBook(ch, model, w, { fp = false } = {}) {

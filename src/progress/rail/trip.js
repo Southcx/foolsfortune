@@ -30,7 +30,7 @@
 // ---------------------------------------------------------------------------------------
 import { SHIPS } from './ships.js';
 import { LEG } from '../econ/emocean.js';
-import { STORM, next, lanes, classOf } from '../econ/passage.js';
+import { STORM, next, lanes } from '../econ/passage.js';
 import { TYPE_OF } from '../weather.js';
 import { TRUMPS } from '../combat/types.js';
 
@@ -130,5 +130,3 @@ export const boardKey = (chart) => `${chart.route}:${chart.day}`;
 export const better = (best, chart, score) => !best || best.key !== boardKey(chart) || score > best.score;
 /** A leg's score, a storm cleared counted up. */
 export const legScore = (score, w) => Math.round(score * (w?.storm ? STORM.pays : 1));
-/** Whether a waypoint is a haven (where the hull mends and fuel is sold). */
-export const isHaven = (w) => classOf(w.type) === 'haven';

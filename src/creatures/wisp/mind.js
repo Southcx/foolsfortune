@@ -26,7 +26,7 @@ import { AWARE, REL, kindOf, curve, norm, steer } from '../ai/index.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('creatures/wisp/mind'); // (the simulation's chance: core/rng.js, the same twice)
 
-const _w = new THREE.Vector3(), _s = new THREE.Vector3(), _o = new THREE.Vector3(), _k = new THREE.Vector3(), _t = new THREE.Vector3();
+const _w = new THREE.Vector3(), _s = new THREE.Vector3(), _o = new THREE.Vector3(), _k = new THREE.Vector3();
 const rnd = (a, b) => a + simRand() * (b - a);
 const hd = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 

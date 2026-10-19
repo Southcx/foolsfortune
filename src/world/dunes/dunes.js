@@ -18,7 +18,6 @@ import { openSea } from '../../render/zonemap.js';
 import { TrailMap, TRAIL_GLSL } from '../ground/trailmap.js';
 import { SandMarks, SAND } from '../ground/groundmarks.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
-import { T, PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { ChunkTerrain } from '../../render/terrain.js';
 import { triplanar, surfaceTexture } from '../../render/triplanar.js';

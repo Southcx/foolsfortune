@@ -22,7 +22,7 @@
 //   layoutFloor(seed, floor) (welllayout.js)
 //   buildFloor(game, layout, origin, floor) -> { group, cells (each with its design `tpl` and `spots`: [{ kind, pos }]), path, arrive: { pos, yaw }, up, down, moveDown(cell), sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
 //     ground(x, z, top?), update(dt), dispose() }       (origin: the grid's centre, at the upper tier's floor)
-//   gridOf(floor) (cells a side), CELL (metres a cell), WALL_H
+//   CELL (metres a cell), WALL_H
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { triplanar, surfaceTexture } from '../../render/triplanar.js';
@@ -32,14 +32,14 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { addOutline } from '../../render/outline.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
-import { layoutFloor, swirl, gridOf, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
+import { layoutFloor, swirl, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
 import { roomSand, BASE } from './wellsand.js';
 import { Sandfalls } from './wellshift.js';
 import { roughen, segments } from './rock.js';
 import { chooseRooms, roomPieces, TALL } from './prefabs.js';
 import { seeded } from '../../core/rng.js';
 
-export { layoutFloor, gridOf, CELL, WALL_H };
+export { layoutFloor, CELL, WALL_H };
 const WT = 0.5, SLAB = 0.5, PIECE = 3.5;
 /** How much taller a floor's walls stand than WALL_H, for the sand banked against them (wellsand.js: drifts to 1.2, 1.8 and 2.2 m, dunes
  *  on top): the wall above the highest sand stays out of a hang's reach (core/config.js hang.maxTop 2.95), as it was on bare floors. */

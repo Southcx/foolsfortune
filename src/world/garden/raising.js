@@ -17,7 +17,6 @@
 //   const R = new Raising(game, realm)   R.ready(entry)   R.pet(s)   R.flick(s)   R.feed(s, slot)   R.drill(s, id)   R.rest(gameHours)
 //   R.page(s)   R.work(spirits, plots)   R.out (the entry out with you) | null   R.lookOf(s)   (s: the realm's spirit { e, mesh, hop })
 // ---------------------------------------------------------------------------------------
-import * as THREE from 'three';
 import { fresh, feed as feedSheet, formOf, ALIGN, STATS } from '../../progress/spirits.js';
 import { DRILLS, FATIGUE, drillGain, SPAR } from '../../progress/realm.js';
 import { itemOf } from '../../pneuka/items.js';

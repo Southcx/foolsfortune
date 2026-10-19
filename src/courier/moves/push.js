@@ -8,7 +8,6 @@ import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
-const _v = new THREE.Vector3();
 
 export class Push extends Tech {
   constructor(mgr) {

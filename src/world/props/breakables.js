@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
-import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
+import { RAPIER, GROUPS, groups } from '../../core/physics.js';
 import { T, PALETTE } from '../../core/config.js';
 import { addOutline, ensureSmoothNormals } from '../../render/outline.js';
 import { ShardBatch } from '../../render/shardbatch.js';

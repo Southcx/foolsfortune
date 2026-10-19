@@ -20,7 +20,7 @@ import { T } from '../../core/config.js';
 import { foesNear } from './shellpayloads.js';
 import { centerOf, isBoss, graze, moveCourier, fightFor } from './shellkit.js';
 
-const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3(), _w = new THREE.Vector3();
+const UP = new THREE.Vector3(0, 1, 0);
 /** How long the recording keeps (real s) and how often it samples (real s). */
 const KEEP = 3.2, SAMPLE = 0.1;
 

@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER } from '../../core/physics.js';
-import { T, PALETTE } from '../../core/config.js';
+import { T } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';

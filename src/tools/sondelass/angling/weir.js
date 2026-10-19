@@ -21,15 +21,13 @@ import { PALETTE } from '../../../core/config.js';
 import { label } from '../../../world/basement/basement.js';
 import { Fish } from './fish.js';
 import { setHaloTexture } from './fishmesh.js';
-import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
+import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN } from './species.js';
 import { Ripples } from './lure.js';
 import { sfx } from '../../../audio/sfx.js';
 import { FONT } from '../../../ui/theme.js';
 import { mergeStatic } from '../../../render/merge.js';
 import { RAPIER, GROUPS } from '../../../core/physics.js';
 import { addOutline } from '../../../render/outline.js';
-import { TITHE } from '../../../world/treasure/treasure.js';
-import { ECON } from '../../../progress/econ/table.js';
 
 import { DUNE, OASIS, POND, WELL, pondDepth } from '../../../world/dunes/dunes.js';
 import { stream } from '../../../core/rng.js';
@@ -55,7 +53,6 @@ export function inWeir(p, pad = 0) {
 
 /** The north beach, where the Treasury stood (it moved to Raku's bazaar: world/treasury.js); the bazaar's gate stands on it. */
 export const NORTH_BEACH = { z: 40 };
-export const WEIR_FLOOR = B;
 
 const pondD = (x, z) => Math.max(0, pondDepth(x - DUNE.x, z - DUNE.z));
 export const POOLS = [
@@ -199,7 +196,6 @@ export class Weir {
 
   get near() { const p = this.game.player.pos; return inWeir(p, 8) || !!this.hooks?.lure()?.active; }
   poolAt(x, z) { for (const p of this.pools) if (x > p.x0 && x < p.x1 && z > p.z0 && z < p.z1) return p; return null; }
-  get tideDef() { return TIDES[this.tide]; }
 
   // ---- the tally board (on its stone on the north beach)
   buildBoard() {

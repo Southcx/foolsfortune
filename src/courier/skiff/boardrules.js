@@ -44,7 +44,7 @@ export const AFTER = { push: 9, dur: 1.4, reach: 2.6 };
 /** The near miss: within `r` metres of a thing's side, from `speed` m/s, its points, real seconds before the same thing counts again. */
 export const NEAR = { r: 1.3, speed: 18, points: 40, again: 2 };
 
-const UP = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3();
+const _v = new THREE.Vector3();
 
 export class BoardRules {
   constructor(S) { this.S = S; this.scorch = 0; this.luffT = 0; this.manualOn = false; this.mLean = 0; this.mT = 0; this.snake = 0; this.last = { dir: 0, t: -9 }; this.taps = {}; this.shoulderT = 0; this.near = new Map(); }

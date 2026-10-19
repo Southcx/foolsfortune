@@ -9,7 +9,7 @@
 // phase transition that remakes the arena, the hard enrage), Monster Hunter's tells read from the body, Dark Souls' boss phases, and
 // Thunder Force's boss as a musical event (Wanda's cue turns on the casts).
 //
-//   NAMES[cast]   STATES   SUSTAINED   HEALTH   clearAt(uptime)   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
+//   NAMES[cast]   STATES   SUSTAINED   HEALTH   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
 //   castMark(id, level, lent?) -> the Figment attack telegraph to draw | null   phaseOf(share) -> phase   timeline(phase, t0, until) -> [{ t, cast }]   DROPS   dropsFor(run) -> [cosmetic ids]
 // ---------------------------------------------------------------------------------------
 import { figmentMarkOf } from './figmenttelegraphs.js';
@@ -27,8 +27,6 @@ export const SUSTAINED = { perSecond: 2.6, uptime: { good: 0.6, expert: 0.8 }, u
  *  Re-measure from the ledger once players have fought Strawman (`strawman.bout`'s perSecond) and the Great Slip Jelly (`foe.end`'s
  *  seconds): it is a model until then. */
 export const HEALTH = 900;
-/** What the model says each player meets: the seconds to clear, or null for the enrage. */
-export const clearAt = (uptime, perSecond = SUSTAINED.perSecond) => { const t = HEALTH / (perSecond * uptime) + SUSTAINED.untouchable; return t <= ENRAGE ? Math.round(t) : null; };
 /** The hard enrage: at this many real seconds from the pull, The Dunemaw Swallows the bowl and the attempt ends. */
 export const ENRAGE = 570;
 

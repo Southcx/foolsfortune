@@ -60,5 +60,4 @@ export class CrucibelleModel {
     for (const v of this.vents) { v.k = Math.max(0, v.k - dt * 2.2); v.m.color.setRGB(0.1, 0.06, 0.04).lerp(v.color, v.k); }
   }
   mouthWorld(out = new THREE.Vector3()) { return out.set(0.3, 0, 0).applyMatrix4(this.group.matrixWorld); }
-  ventWorld(i, out = new THREE.Vector3()) { const a = (i / 5) * Math.PI * 2; return out.set(0.22, Math.cos(a) * 0.07, Math.sin(a) * 0.07).applyMatrix4(this.group.matrixWorld); }
 }

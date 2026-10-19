@@ -20,8 +20,6 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-export const STIM = ['noise', 'light', 'alarm', 'pain', 'death', 'food', 'shiny', 'scent'];
-
 export class Stimuli {
   constructor(game) {
     this.game = game;

@@ -13,7 +13,7 @@
 // Prior art: Final Fantasy XI's chat line (/sit, /wave, /em, /say, auto-translate aside) and its macros, MMOs' /help, and the
 // shells of the computer the Veritome is meant to be (the typing it invites: a line, a prompt, a command, an answer).
 // ---------------------------------------------------------------------------------------
-import { EMOTES, EMOTE_OF, FAMILIES, inFamily } from '../courier/emotes.js';
+import { EMOTES, FAMILIES, inFamily } from '../courier/emotes.js';
 import { THEMES } from '../ui/theme.js';
 import { TRACKS, TRACK } from '../music/soundtest.js';
 
@@ -90,4 +90,3 @@ export class Chat {
     g.log.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 });
   }
 }
-export { EMOTE_OF };

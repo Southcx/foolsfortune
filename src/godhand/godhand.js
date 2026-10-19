@@ -22,7 +22,7 @@ import { T, PALETTE } from '../core/config.js';
 import { RAPIER } from '../core/physics.js';
 import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
-import { GodArts, ART_BY_ID, ARTS } from './arts.js';
+import { GodArts, ART_BY_ID } from './arts.js';
 import { Miracles } from './miracles.js';
 import { ZoiVeil } from '../feedback/cartography.js';
 import { Raids } from '../world/basement/raids.js';

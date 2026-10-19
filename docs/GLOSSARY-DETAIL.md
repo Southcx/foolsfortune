@@ -902,7 +902,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   `courier/ship/shots.js` (the ship's own gun and lances, kept).
 - **a lighthouse lamp** (`LighthouseLamp`, `src/vfx/lighthouselamp.js`): a caged Fresnel lamp and the beam it sweeps, first a **warning
   line** (thin and pale, harmless) then **hot** (white-gold over a dark rim); the figurehead's lamp (with iron **shutters**) and the
-  Drowned Light's. *Not:* a room (the log's word), a PointLight (`render/lights.js`).
+  Drowned Light's. *Not:* a room (the log's word), a PointLight (lent by `render/lightbudget.js`).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
   **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
 - **Margarite's dock** (`world/emocean/margarite.js`, zone `margarite`): the King's island's quay and pier on the crude, its lamp

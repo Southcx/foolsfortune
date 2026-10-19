@@ -33,7 +33,6 @@ import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
 
 const _f = new THREE.Vector3(), _t = new THREE.Vector3(), _to = new THREE.Vector3(), _p = new THREE.Vector3(), _v = new THREE.Vector3();
-export const PARRY_HOWS = ['return', 'turn', 'soak', 'gulp', 'shatter', 'stagger', 'shutter'];
 
 /** A projectile's place and velocity, whichever kind it is. */
 const posOf = (pr, out) => (pr.body ? out.copy(pr.body.translation()) : out.copy(pr.pos));

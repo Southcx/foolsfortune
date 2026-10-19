@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RAPIER, G, groups } from '../core/physics.js';
-import { T, PALETTE, DEG } from '../core/config.js';
+import { T, PALETTE } from '../core/config.js';
 import { addOutline } from '../render/outline.js';
 import { prepProfile } from '../world/props/pottery.js';
 import { sfx } from '../audio/sfx.js';

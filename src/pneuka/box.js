@@ -276,7 +276,6 @@ export class PneukaBox {
     for (const id of owed) if (itemOf(id)) this.add(id, 'migrate');
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
-  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] }; this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; this.seeded = false; this.seed(); }
   /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools they are not wearing. */
   seed() {
     if (this.seeded) return;

@@ -15,7 +15,7 @@
 //
 //   DRILLS[id] = { name, what, targets?, window?, shots?, seconds?, range, medals, unit, better: 'lo' | 'hi' }   score(id, run) -> number
 //   medalOf(id, score) -> 'gold' | 'silver' | 'bronze' | null   group(points, aim) -> { radius, drift } (the spray wall's read, in cm)
-//   recordable(tunedKnobs) -> bool   POTS   WALL   INDEX
+//   POTS   WALL   INDEX
 // ---------------------------------------------------------------------------------------
 
 /** The drills, each begun at the Index in the room (a trial is begun in its own room) and ended by its own clock. */
@@ -62,9 +62,6 @@ export function group(points = [], aim = { x: 0, y: 0 }) {
   return { radius: +(radius * 100).toFixed(1), drift: +(Math.hypot(cx - aim.x, cy - aim.y) * 100).toFixed(1) };
 }
 
-/** A run is recorded only on the stock game: any tuned knob (debug/tuned.js) and it is said, marked tuned, and kept out of the ledger.
- *  The player's own settings (sensitivity, resolution, volume) never count against it. */
-export const recordable = (tunedKnobs = []) => tunedKnobs.length === 0;
 /** Was this event's target a training body (Strawman, the status bench's roly-polies, anything marked `training`)? The Throwing Room
  *  measures and never pays (COMBAT-LAB.md): the ledger's rules (tracking.js), the domains' exp (psyche.js) and Soul Alchemy's
  *  seasoning (alchemy.js) all skip what this says yes to. */

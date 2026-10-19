@@ -61,10 +61,8 @@ export const ARCANA = [
   { id: 'world', name: 'The World', rank: 'SS', limit: 1, sitting: { kinds: 5 }, hint: 'five kinds of thing in a single frame',
     lore: 'Completion: the whole of it, held still at once. The last page of the first section, and the first proof the Book can hold a world.' },
 ].map((a, i) => ({ ...a, num: i, roman: ROMAN[i] }));
-export const ARCANA_BY_ID = Object.fromEntries(ARCANA.map((a) => [a.id, a]));
 
 // ---- the emblems: drawn in a unit square (0..1 across), gold line on the card's field ------------------
-function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 const L = (g, ...p) => { g.beginPath(); g.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1]); g.stroke(); };
 const C = (g, x, y, r, fill = false, a0 = 0, a1 = Math.PI * 2) => { g.beginPath(); g.arc(x, y, r, a0, a1); fill ? g.fill() : g.stroke(); };
 const star = (g, x, y, r, n = 8, k = 0.4) => { g.beginPath(); for (let i = 0; i < n * 2; i++) { const a = (i / (n * 2)) * Math.PI * 2 - Math.PI / 2, rr = i % 2 ? r * k : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); };

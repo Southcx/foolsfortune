@@ -23,7 +23,7 @@
 import * as THREE from 'three';
 import { LEARNED } from './romdata.js';
 
-const _d = new THREE.Quaternion(), _t = new THREE.Quaternion(), _s = new THREE.Quaternion(), _h = new THREE.Vector3(), _v = new THREE.Vector3();
+const _d = new THREE.Quaternion(), _t = new THREE.Quaternion(), _s = new THREE.Quaternion(), _v = new THREE.Vector3();
 const ID = new THREE.Quaternion();
 
 export class JointLimits {

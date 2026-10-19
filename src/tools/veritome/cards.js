@@ -14,14 +14,13 @@
 // New sections go on the end of the numbering (the .hack-style "offline MMO" layers to come will add theirs), so a page's number is
 // stable once given.
 //
-//   CARDS (in page order)   CARD[id]   SECTIONS   RANKS   WORTH[rank]   cardArt(id, w, h, { back }) -> canvas (drawn once, cached)
+//   CARDS (in page order)   CARD[id]   SECTIONS   WORTH[rank]   cardArt(id, w, h, { back }) -> canvas (drawn once, cached)
 // ---------------------------------------------------------------------------------------
 import { ARCANA, EMBLEM } from './arcana.js';
 import { ECON } from '../../progress/econ/table.js';
 import { CURIOS, TIERS as CHEST_TIERS } from '../../world/treasure/treasure.js';
 import { CREATURES } from './bestiary.js';
 
-export const RANKS = ['SS', 'S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 export const WORTH = ECON.condense; // (progress/econ/table.js: the rebalance of R38 cut it to about a quarter at the top)
 export const FREE_SLOTS = 20;
 
@@ -44,7 +43,6 @@ for (const [id, C] of Object.entries(CREATURES)) {
     hint: fish ? 'a fish, photographed well, in the water or clear of it' : 'a clapperjar, the main subject of a good photograph', lore: C.blurb });
 }
 export const CARD = Object.fromEntries(CARDS.map((c) => [c.id, c]));
-export const cardsOf = (section) => CARDS.filter((c) => c.section === section);
 
 // ---- the art ------------------------------------------------------------------------------------
 const FIELD = { arcana: ['#2b2050', '#14102a'], curio: ['#3a2216', '#1c0f09'], creature: ['#163028', '#0b1813'] };
