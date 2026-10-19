@@ -20,8 +20,6 @@
   paid cut's glint, the hook's brackets and reel beads, the link's bead and count roll, the link's hum (the dry click's drop-out).
 - **A puzzle duel** (Dovina, 2026-10-19): `sfx.duelEvent(e)` is built (`audio/puzzleduel.js`); when Calissa's view exists, it calls it
   for each event as it animates it (or the events go on the bus and a rule in `audio/cues.js` calls it). A duel cue then, too.
-- **The puzzle duel's names** (Espada, 2026-10-19: the genre's words, by the owner's ruling): `audio/puzzleduel.js` answers both
-  (break/buckle, orb/teardrop, run/glean); once Dovina's rename lands, drop the lore ones (and the depth check, if junk's break is renamed).
 - **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
   the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
   their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
