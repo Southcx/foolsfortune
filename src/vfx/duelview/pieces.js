@@ -6,7 +6,8 @@
 // done), so the beats (vfx/duelview/beats.js) can follow an event that names only a cell. The bodies are two figurines, not instances:
 // the Courier's in white clay with a ring of the film turning round it, the foe's idol in its feeling with its data bug's magenta cast
 // slid off it (vfx/databug.js's 'cast', drawn here as the mock drew it). An ember (Dread's junk) is a coal of glazed clay, its count in
-// glowing pips, its glaze dimming a step each turn it burns down; a teardrop is a drop in the film's own flash (never a gem's colour).
+// glowing pips, its glaze dimming a step each turn it burns down, crazing as it cools out (crazing.js) before it turns into its gem;
+// a teardrop is a drop in the film's own flash (never a gem's colour).
 // Dread's fog hides what stands on hidden ground (`fogAt`: the view's, from dread.js visibleTo); the bodies are never hidden.
 //
 // Materials: the gems and the beads are Lachrymite (vfx/crystalfrets.js crystalFretMaterial, the Dunes' crystals' and the City Trial's
@@ -24,6 +25,7 @@ import { crystalFretMaterial, CrystalFrets } from '../crystalfrets.js';
 import { mindLineMaterial } from '../labradorite.js';
 import { featTint } from '../oxidation.js';
 import { DUEL_VIEW, FEELING_ORDER, cellLocal, feelColour, hash } from './layout.js';
+import { drawCrazing } from './crazing.js';
 import { gemGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, bombGeometry, teardropGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
 const CLAY = { junk: 0x93552f, stone: 0x4c4856, bomb: 0x2c2224 };
@@ -57,6 +59,7 @@ export class DuelPieces {
     for (const a of FEELING_ORDER) fam(a, gemGeometry(a), M.gem);
     fam('junk', junkGeometry(), M.clay); fam('stone', stoneGeometry(), M.clay, 64); fam('bomb', bombGeometry(), M.clay, 64);
     fam('teardrop', teardropGeometry(), M.glow, 64); fam('ember', emberGeometry(), M.clay); fam('pip', pipGeometry(), M.glow, 3 * N);
+    fam('craze', new THREE.PlaneGeometry(1, 1), M.glow, N); // (a cooling coal's crazing: crazing.js)
     // the bodies: two figurines
     const cs = DUEL_VIEW.cs;
     this.courier = new THREE.Group(); this.courier.add(new THREE.Mesh(courierFigurine(), M.clayVc));
@@ -139,6 +142,7 @@ export class DuelPieces {
       if (v.cool) { v.cool = Math.max(0, v.cool - dt / 0.5); _c.lerp(_w, v.cool * 0.6); }
       if (v.flash) _c.lerp(_w, Math.min(1, v.flash));
       mesh.setColorAt(i, _c);
+      if (v.kind === 'ember' && v.craze > 0) n.craze = drawCrazing(this.fam.craze, n.craze, v, _p, _q, cs * v.s, this.t); // (before the pips: they take _q)
       if (v.kind === 'ember') { const pips = this.fam.pip, k = Math.max(0, Math.min(3, v.count ?? 3)); // (its count: pips across its face, glowing)
         for (let j = 0; j < k && n.pip < pips.instanceMatrix.count; j++) { const o = (j - (k - 1) / 2) * 0.24 * cs * v.s;
           _e.set(0, 0, v.spin); _q.setFromEuler(_e); const pp = _t.copy(_p).add(_o.set(o, -0.02 * cs, 0.24 * cs * v.s));

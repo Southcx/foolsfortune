@@ -17,7 +17,8 @@
 //   coup       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
 //   turn       a side's points: the beads it lost crack, one by one
-//   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal cracks open and turns, its gem inside (0.5)
+//   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
+//              inside (0.5)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
 // A play resolves once its last phase is shown; when nothing more is queued the view settles up with the duel as it stands.
 //
@@ -139,13 +140,20 @@ export class DuelBeats {
       end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; } } };
   }
 
-  /** Embers cooling: the coal cracks open (chips and a last spark) and turns like a disc, its gem inside. */
+  /** Embers cooling: the coal crazes (the iron wire, then the golden thread: crazing.js), cracks open (chips and a last spark) and
+   *  turns like a disc, its gem inside. */
   cool(it) {
-    const V = this.view, P = V.pieces, L = it.map((e) => ({ e, v: P.at(e.at[0], e.at[1]) || P.byId(e.id), turned: false })).filter((q) => q.v);
-    for (const q of L) { cellLocal(q.v.x, q.v.y, V.board3, _a); V.bursts.burst(_a, 0x2e1810, 5, { speed: 0.6, life: 0.45, fall: 5, size: 0.02 }); V.bursts.burst(_a, 0xff8a3a, 3, { speed: 0.3, life: 0.5, fall: -1.5, size: 0.015 }); q.v.count = 0; }
-    return { events: it, dur: 0.5 + DUEL_VIEW.ma, step: (u) => { const f = sm(Math.min(1, u * 1.1));
-      for (const q of L) { if (f >= 0.5 && !q.turned) { q.turned = true; q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flash = 1; } q.v.flip = f < 0.5 ? Math.PI * f : Math.PI * (f - 1); if (q.turned) q.v.flash = Math.max(0, 1 - (f - 0.5) * 2); } },
-      end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; q.v.flash = 0; } } };
+    const V = this.view, P = V.pieces, C = 0.3, L = it.map((e) => ({ e, v: P.at(e.at[0], e.at[1]) || P.byId(e.id), turned: false, open: false })).filter((q) => q.v);
+    for (const q of L) { q.v.count = 0; q.v.craze = 0.001; }
+    return { events: it, dur: C + 0.5 + DUEL_VIEW.ma, step: (u, age) => {
+      for (const q of L) {
+        if (age < C) { q.v.craze = sm(age / C); q.v.s = 1 + 0.04 * Math.sin(age * 60) * (age / C); continue; } // (the crackle running, a shiver in the coal)
+        if (!q.open) { q.open = true; q.v.craze = 1; q.v.s = 1; cellLocal(q.v.x, q.v.y, V.board3, _a); V.bursts.burst(_a, 0x2e1810, 5, { speed: 0.6, life: 0.45, fall: 5, size: 0.02 }); V.bursts.burst(_a, 0xff8a3a, 3, { speed: 0.3, life: 0.5, fall: -1.5, size: 0.015 }); }
+        const f = sm(Math.min(1, ((age - C) / 0.5) * 1.1));
+        if (f >= 0.5 && !q.turned) { q.turned = true; q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flash = 1; q.v.craze = 0; }
+        q.v.flip = f < 0.5 ? Math.PI * f : Math.PI * (f - 1); if (q.turned) q.v.flash = Math.max(0, 1 - (f - 0.5) * 2);
+      } },
+      end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; q.v.flash = 0; q.v.craze = 0; q.v.s = 1; } } };
   }
 
   /** The god hand's and the Courier's board actions (0.26 real s). */
