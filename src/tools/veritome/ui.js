@@ -6,7 +6,7 @@
 //    many copies of its limit the Book holds; TAKE OUT puts a card with an item form into the Pneuka Box as the thing itself (with
 //    the Veritome drawn), CONDENSE turns a spare into cubes. An empty page shows the Book's back and only its riddle. Above it: pages
 //    filled, free slots used, what is in the Pneuka Box, the memory.
-//  - THE FILM: the plates not yet appraised, with APPRAISE ALL (or a chosen few) and DISCARD. Appraising is a step of its own, done
+//  - THE MEMORY: the plates not yet appraised, with APPRAISE ALL (or a chosen few) and DISCARD. Appraising is a step of its own, done
 //    in a batch: the report lists each plate with its stars and what it gave (an entry, a fact, a card), Pokémon Snap's way.
 //  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD) and the facts known, the battle ones marked.
 //  - THE COMPENDIUM: the best photograph of every kind of thing, with its stars (the Hyrule Compendium).
@@ -137,7 +137,7 @@ function memory(codex, cx, g, B) {
     d.onclick = () => { if (pick.has(p.id)) pick.delete(p.id); else pick.add(p.id); codex.render(); };
     roll.appendChild(d);
   }
-  if (!F.plates.length) left.appendChild(el('p', 'hint', 'The roll is empty. Draw the Veritome (J), raise the lens (RMB) and take photographs (LMB): they wait here to be appraised.'));
+  if (!F.plates.length) left.appendChild(el('p', 'hint', 'The memory is empty. Draw the Veritome (J), raise the lens (RMB) and take photographs (LMB): they wait here to be appraised.'));
   left.appendChild(roll);
   wrap.appendChild(left);
   // the last report

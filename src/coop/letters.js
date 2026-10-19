@@ -6,7 +6,7 @@
 // and answers in its sibling's document (`siblings/<name>`, coop/channel.js) with `re` set to the letter's id; the page hears that at
 // once and says it in the log, out of the channel's five-minute cadence. An answer takes a few real minutes: a session wakes at the
 // minute and thinks in turns. Only the owner writes letters (a guest's page has no such connector), one to each division every three
-// real minutes (each costs that session a turn). The protocol for the divisions: docs/handoffs/everyone/2026-10-07-from-petra-letters.md.
+// real minutes (each costs that session a turn). The protocol for the divisions is in the prompt each letter carries (below).
 // The safeguards (each letter spends your connector and a session's turn): the hour's cap (coop/usage.js, `/usage`); one letter waiting
 // on each division until it answers or is `LATE` (said once in the log, then you may write again); the same words twice are not sent;
 // a wake not confirmed in `TIMEOUT` seconds is counted as sent (it may have gone) and said so, never sent again by itself.

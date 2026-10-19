@@ -1,4 +1,4 @@
-// THE PAINT DIVE (the owner's name, 2026-10-12; was the slip dive: Splatoon's ink swim). Hold C in wet paint or crude and the
+// THE PAINT DIVE (the owner's name, 2026-10-12: Splatoon's ink swim). Hold C in wet paint or crude and the
 // Courier melts into it: a fast, low blob that only moves quickly through slip,
 // climbs walls where they're slip-coated, and fits through gaps nothing else does.
 // Space launches you out (higher than a jump, keeping the speed); let go of C to

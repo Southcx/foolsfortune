@@ -37,7 +37,7 @@ for (const L of LURES) {
 export const TOOL_ITEMS = [
   { tool: 'psygun', name: 'THE PSYGUN', place: 'back', examine: 'A hand-cannon that fires what the mind can spare. Worn across the back.' },
   { tool: 'sondelass', name: 'THE SONDELASS', place: 'back', examine: 'A telescoping thing of brass and line: cutlass, rod or grapnel. Worn across the back.' },
-  { tool: 'soulbrush', name: 'THE SOUL BRUSH', place: 'hip', examine: 'A great brush for writing on the world in slip. Worn at the hip.' },
+  { tool: 'soulbrush', name: 'THE SOUL BRUSH', place: 'hip', examine: 'A great brush for writing on the world in paint. Worn at the hip.' },
   { tool: 'veritome', name: 'THE VERITOME', place: 'hip', examine: 'A book that sees what is true, with a lens in its spine. Worn at the hip.' },
   { tool: 'dreamvane', name: 'THE DREAMVANE', place: 'back', examine: 'A dowsing crook that leans toward Lachryma, with a tuning fork in its heel. Worn across the back.' },
   { tool: 'crucibelle', name: 'THE CRUCIBELLE', place: 'hip', examine: 'A smoking bell that takes what is played into it and makes it more. Worn at the hip.' },

@@ -321,7 +321,7 @@ export class Cutlass {
       c.center(_p);
       if (segDist(from, to, _p) > STING.radius + c.radius) continue;
       this.stHit.add(c); struck++;
-      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'creature', c);
+      g.creatures.strike(c, _p.clone(), dir.clone(), STING.power, 'sliced'); // (its row's 3.0 a strike, not 2.2x it: ruled in MELEE-LOADOUT-EARNING.md, the stinger is a gap-closer that should not out-damage the string) this.moves.markBlow(this.stBlow, 'creature', c);
       g.events?.emit('cut.hit', { what: c.kind, combo: 'stinger' });
     }
     // (a thrust goes THROUGH: one light check at its first contact, never a stop per thing pierced, which would stall the lunge)

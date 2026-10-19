@@ -67,7 +67,7 @@ const BRUSH_LINE = {
   light: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} light.` : 'Your brush lifts you.'),
   heavy: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} heavy.` : 'Your brush drives you down.'),
   solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'Your Pneuka Jar is soothed.'),
-  wash: () => 'You lay slip across the world.',
+  wash: () => 'You lay paint across the world.',
 };
 const BRUSH_NAME = { still: 'Still', bounce: 'Bounce', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', light: 'Light', heavy: 'Heavy', solace: 'Solace', wash: 'wash' };
 const MEDAL = { GOLD: 'gold', SILVER: 'silver', BRONZE: 'bronze' };
@@ -560,7 +560,7 @@ export class Tracking {
       if (e.phase !== 'end') return;
       L.inc('brush.slide'); L.inc('brush.slide.dist', e.dist); L.hi('brush.slide.best', e.dist, { at: this.where() });
       first('brush.slide', 'Logged: your first brush slide.');
-      if (e.dist >= 8) log.say('move', `You paint ${Math.round(e.dist)} m of slip behind you.`, { key: 'bslide', throttle: 2 });
+      if (e.dist >= 8) log.say('move', `You paint ${Math.round(e.dist)} m of paint behind you.`, { key: 'bslide', throttle: 2 });
     });
     on('brush.canvas', (e) => {
       if (!e.open) { L.hi('brush.drawings.best', e.drawings); return; }

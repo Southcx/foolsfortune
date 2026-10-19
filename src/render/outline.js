@@ -92,7 +92,7 @@ export const fadeUniform = { value: 1 };
 // is eating; run backwards, the body is built up from the feet. uDisBase = (the feet's world height, the body's height).
 export const dissolveUniform = { value: 0 };
 export const dissolveBaseUniform = { value: new THREE.Vector2(0, 1.8) };
-/** A rig's own fade and dissolve (a sibling's: coop/sibling.js), so one Courier's slip dive does not melt the others. Same program. */
+/** A rig's own fade and dissolve (a sibling's: coop/sibling.js), so one Courier's Paint Dive does not melt the others. Same program. */
 export const rigUniforms = () => ({ fade: { value: 1 }, dissolve: { value: 0 }, base: { value: new THREE.Vector2(0, 1.8) } });
 export const COURIER_RIG = { fade: fadeUniform, dissolve: dissolveUniform, base: dissolveBaseUniform };
 export function withFade(material, key, own = null) {

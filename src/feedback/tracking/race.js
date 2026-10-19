@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE RACEWAY AND THE SKIFF'S RACING VERBS (docs/plans/SKIFF-RACING.md): the race's countdown, gates, laps and medal said in
 // the log (the only text feedback: no timer on the screen), its counts and bests kept for the ledger; and the skiff's carve, late pop,
-// sun plates and hard landings counted. The words are placeholders for Espada's.
+// sun plates and hard landings counted. The log says "boost pad" (Espada's ruling, 2026-10-13: LORE.md); the other words are placeholders for Espada's.
 //
 //   race.start  race.count { n }  race.go  race.solarstart  race.gate { gate, lap, split }  race.lap { lap, seconds, best }
 //   race.finish { seconds, medal, laps }  race.end { why }  race.respawn   skiff.carve { tier }  skiff.pop { late }  skiff.plate
@@ -19,7 +19,7 @@ const MEDAL = { gold: 'gold', silver: 'silver', bronze: 'bronze' };
 const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const TRACK_NAMES = { sun: 'The Sun Circuit', gorge: 'The Gorge Run', coaster: 'The Coaster' }; // (working names: Espada's to rule)
 // what a condition does, said at a race's start (placeholders for Espada's words)
-const LIGHT_SAYS = { night: 'Night: the sun plates are dark, and the cavern\'s crystal veins still burn.', twilight: 'A low sun: the sun plates are weak.' };
+const LIGHT_SAYS = { night: 'Night: the boost pads are dark, and the cavern\'s crystal veins still burn.', twilight: 'A low sun: the boost pads are weak.' };
 const WEATHER_SAYS = {
   mirth: 'A sunshower: the sand is wet, fast and slick, and the plates still drink the sun.', wonder: 'The aurora: the sun rings drink it, and push harder.',
   desire: 'The wanting wind: it blows harder down the course.', fury: 'The hail: squalls shove you across the wind.',
@@ -60,7 +60,7 @@ export function raceRules({ on, L, log }) {
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });
   on('skiff.pop', (e) => { if (e.by !== 'courier') return; L.inc('skiff.pop'); if (e.perfect) { L.inc('skiff.pop.perfect'); log.say('skiff', 'A perfect pop.', { key: 'pop.perfect', throttle: 1.5 }); } });
   on('skiff.pop.miss', (e) => { if (e.by === 'courier') log.say('info', 'Too late to pop: let go of Space as the board leaves the crest.', { key: 'pop.miss', throttle: 12 }); });
-  on('skiff.plate', (e) => { if (e.by !== 'courier') return; if (e.power > 0.05) L.inc('skiff.plate'); else log.say('info', 'The sun plate is dark: no sun to feed it.', { key: 'plate.dark', throttle: 30 }); });
+  on('skiff.plate', (e) => { if (e.by !== 'courier') return; if (e.power > 0.05) L.inc('skiff.plate'); else log.say('info', 'The boost pad is dark: no sun to feed it.', { key: 'plate.dark', throttle: 30 }); });
   // the trick combo (courier/skiff/combo.js): what it banks and loses, said; its gauge is Calissa's
   on('skiff.combo.bank', (e) => {
     if (e.by !== 'courier') return; L.inc('skiff.combo.bank'); L.hi('skiff.combo.best', e.points); L.hi('skiff.combo.longest', e.n);

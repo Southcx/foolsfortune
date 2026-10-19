@@ -35,6 +35,7 @@ const RETIRED = [
   { re: /\bpause card\b/gi, say: "'pause card' (the pause menu)" },
   { re: /\bmat\.film\b|\bloadFilm\b|\bfilm\.load\b|\bfilm\.rolls\b/g, say: "the Veritome's film (it has a memory of 24 plates since 2026-10-06: memory.js)" },
   { re: /\bLockheartMarks\b|\blockheartMarks\b|\bthe Lockheart's gauge\b/g, say: "'the Lockheart's gauge' (the Lockheart's reliquary: vfx/lockheartreliquary.js, 2026-10-19)" },
+  { re: /\b[Ss]lip [Dd]ive\b|\bSLIP DIVE\b/g, say: "'slip dive' (the Paint Dive: docs/plans/PAINT.md; 'slip' as clay, the jellies' body, stays)" }, // (2026-10-19, the deep clean: it had leaked into the help and the arts)
   { re: /\bpolarity\b/gi, say: "'polarity' (the Astral and Umbral forms)", rule: 'word.retired.polarity' }, // (its own rule, adopted the day it was retired: 2026-10-08)
 ];
 
