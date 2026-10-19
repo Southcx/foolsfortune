@@ -3,7 +3,7 @@
 One word, one meaning: in code, docs, commits, messages and requests. A request that misuses a word is clarified first. Full definitions: `docs/GLOSSARY-DETAIL.md` (not imported).
 
 1. **The code says what the game says.** Identifiers use the game's word, or the code name given here.
-2. **A new thing is named here first,** in the same commit, by its owning division (player words: Espada and the owner; code names: Petra at the gate).
+2. **A new thing is named here first,** in the same commit, by its owning division (player words: Espada and the owner; code names: Petra at the gate). Until the owner calls it finalized, its name is the genre's or plain English (CLAUDE.md, "Plain names until settled").
 3. **A homonym kept on purpose is always qualified** (table below).
 4. **Retired words are refused** by `npm run check` and at review (table at the end).
 
