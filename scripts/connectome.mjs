@@ -131,7 +131,7 @@ function parseModule(file) {
     const read = (k) => k && m.propReads.set(k, (m.propReads.get(k) || 0) + 1);
     if (node.type === 'MemberExpression') read(nameOf(node.property, node.computed));
     if (node.type === 'Property' && parent?.type === 'ObjectPattern') read(nameOf(node.key, node.computed));
-    if (node.type === 'Literal' && typeof node.value === 'string' && node.value.length < 60) for (const w of node.value.split(/[^A-Za-z0-9_$]+/)) read(w);
+    if (node.type === 'Literal' && typeof node.value === 'string' && node.value.length < 60) { read(node.value); for (const w of node.value.split(/[^A-Za-z0-9_$]+/)) read(w); } // (the whole string too: an event-keyed table, 'well.floor')
     if (node.type === 'TemplateElement') for (const w of (node.value.cooked || '').split(/[^A-Za-z0-9_$]+/)) read(w);
     if (node.type === 'ImportExpression' && node.source?.type === 'Literal' && typeof node.source.value === 'string') addEdge(node.source.value, dynamicNames(node, parents), 'dynamic');
     if (node.type === 'ImportExpression' && node.source?.type === 'TemplateLiteral' && !node.source.expressions.length) addEdge(node.source.quasis[0].value.cooked, dynamicNames(node, parents), 'dynamic');
@@ -215,7 +215,7 @@ F.deadMethods = [];
 for (const m of mods.values()) if (m.file.startsWith(SRC)) for (const d of m.methods) if (!allReads.has(d.name) && !CALLED_BY_ENGINES.has(d.name)) F.deadMethods.push({ file: m.rel, owner: m.owner, name: d.name, kind: d.kind, line: d.line, size: d.size });
 // stale references: a file path named in a comment or a doc that no file in the tree ends with (a module moved or deleted)
 const ALL_FILES = [];
-(function walkAll(d) { for (const f of fs.readdirSync(d)) { if (f === 'node_modules' || f === '.git' || f === 'dist') continue; const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walkAll(p); else ALL_FILES.push(rel(p)); } })(ROOT);
+(function walkAll(d) { for (const f of fs.readdirSync(d)) { if (['node_modules', '.git', 'dist', '.claude', 'worktrees'].includes(f)) continue; const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walkAll(p); else ALL_FILES.push(rel(p)); } })(ROOT);
 const exists = (ref) => { const r = ref.replace(/^\.?\//, ''); return ALL_FILES.some((f) => f === r || f.endsWith('/' + r)); };
 const PATH_RE = /(?<![A-Za-z0-9_.@-])((?:[a-z0-9_.-]+\/)+[A-Za-z0-9_.-]+\.(?:js|mjs|md|glb|py))(?![A-Za-z0-9_])/g;
 F.staleRefs = [];
