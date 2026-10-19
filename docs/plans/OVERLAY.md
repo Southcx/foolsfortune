@@ -742,6 +742,22 @@ working names for Espada.
 | the Pentagun (5) | **the pentacle:** five different chambers fired within 4 real seconds, and the fifth draws a pentacle where it lands. Its burst strikes once with **each of the five damage types** (five points, five forces), so it can set off an annihilation | radius 4 m; each type's status built by a fifth; turn 0.12 s |
 | the Pepperbox (7) | **a shotgun:** the plain shot is seven pellets, short and heavy. Shells fire as a spread of three at half strength each; the heart fires one **slug**. **Both barrels:** hold the shell key 0.5 s and every loaded ring chamber fires at once, one shell and its Lachryma each | pellets: 7, 12° spread, 12 m, a quarter each, knockback ×2; slug ×2; both barrels' cooldown 6 s; turn 0.15 s |
 
+**Ruled on Petra's five open numbers** (Dovina, 2026-10-19, on `variantplay.js` at v223):
+- **(a) The pellet's push:** 1.5 m/s a pellet, ×2 the Pepperbox's knock: kept. A volley's push on one creature is **capped at 6 m/s**
+  (two pellets' worth), so a point-blank volley shoves a creature out of reach of a blow without throwing it out of the pellets' 12 m.
+  **The scope's drift** (0.35 degrees, 0.04 with the breath held, 0.7 once spent; the breath back in 3 s): kept. The spent drift lasts
+  until the breath is full again: the cost of holding too long is the next shot, not the one after.
+- **(b) The Pepperbox's three** fan flat across the view over 12 degrees, the pellets' own spread, so the variant reads as one shape.
+  Both barrels as built: each ring chamber its three at half, each kicking half. Kept; the 6 s cooldown is the brake.
+- **(c) The pentacle** bursts at the aim ray's hit: kept. It is drawn where you meant it, which you can read before the fifth shot; a lob
+  landing somewhere else would make the pentacle a guess. All five types at power 1 on each creature within 4 m, each status built by a
+  fifth: kept.
+- **(d) What a reveal does** (8 s, `c.revealed`): **its tag shows as it does at the lock-on** (familiarity still decides what it reads),
+  and **it is outlined through walls** (the look Calissa's). That is all: a flare is scouting, not damage. A creature that was hiding is
+  no longer hidden for those 8 s.
+- **(e) "The quick taps"** is the code's and the glossary's word for THE PSYGUN's play; fanning the hammer stays R's (`gunmoves.js`). Espada
+  may name the play.
+
 - **Every variant keeps the core rules:** the cylinder and its wheel, the cost on the Lachrimeter, the toll for the Caster's own.
 - **The UI shows each variant's play where it happens** (Calissa's): the scope's lens ring, the Bombardier's arc on the ground, the
   Pepperbox's cone, the pentacle's points lighting on the Pentagun's cylinder.
