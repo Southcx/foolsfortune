@@ -6,6 +6,7 @@
 //   node scripts/duel.mjs [--rules fury|grief|mirth|all] [--n duels] [--ap points | --ap0 a --ap1 b] [--pool p] [--seed first] [--sample tries]
 //                         [--forms hand,courier] [--coup both|courier]   (--ap0 10 --ap1 5: a side of two players against one Figment,
 //                         section 12; --coup both by default, so each chair is measured alike: in play only the Courier's side has it)
+//                         [--flee courier|both|none]   (the first side may flee, as in play; section 15)
 // ---------------------------------------------------------------------------------------
 import { newDuel, DUEL } from '../src/progress/duel/duel.js';
 import { play } from '../src/progress/duel/bot.js';
@@ -15,16 +16,17 @@ const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--
 const which = opt('rules', 'all'), n = +opt('n', 10), seed0 = +opt('seed', 1), sample = +opt('sample', 40);
 const forms = opt('forms', 'hand,courier').split(',');
 DUEL.ap = +opt('ap', DUEL.ap);
-const ap = [+opt('ap0', DUEL.ap), +opt('ap1', DUEL.ap)], pool = +opt('pool', DUEL.pool), coup = opt('coup', 'both') === 'both' ? [true, true] : [true, false];
+const ap = [+opt('ap0', DUEL.ap), +opt('ap1', DUEL.ap)], pool = +opt('pool', DUEL.pool), coup = opt('coup', 'both') === 'both' ? [true, true] : [true, false], flee = opt('flee', 'courier') === 'both' ? [true, true] : opt('flee') === 'none' ? [false, false] : [true, false];
 
 for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
-  const ends = {}, wins = [0, 0, 0]; let plies = 0, sent = 0, caps = 0, chain = 0, kinds = {}, buckles = 0, drunk = 0;
+  const ends = {}, wins = [0, 0, 0]; let plies = 0, sent = 0, caps = 0, chain = 0, kinds = {}, buckles = 0, drunk = 0, rolls = 0, fails = 0;
   const t0 = Date.now();
   for (let seed = seed0; seed < seed0 + n; seed++) {
-    const s = newDuel({ ruleset: RULESETS[key], seed, forms, ap, pool, coup });
+    const s = newDuel({ ruleset: RULESETS[key], seed, forms, ap, pool, coup, flee });
     for (let guard = 0; s.winner === null && guard < DUEL.turnCap * 2 + 2; guard++) {
       for (const e of play(s, { sample })) {
         if (e.type === 'chain') chain = Math.max(chain, e.step);
+        if (e.type === 'flee') { rolls++; if (!e.ok) fails++; }
         if (e.type.startsWith('duel.')) ends[e.type] = (ends[e.type] || 0) + 1;
         if (['glean', 'push', 'punt', 'swap', 'drag', 'rotate', 'drop', 'form', 'shot', 'hook', 'drill', 'toll', 'flail', 'coup'].includes(e.type)) kinds[e.type] = (kinds[e.type] || 0) + 1;
       }
@@ -32,6 +34,6 @@ for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
     plies += s.ply; buckles += s.sides[0].buckles + s.sides[1].buckles; drunk += s.sides[0].drunk + s.sides[1].drunk; sent += s.sides[0].total + s.sides[1].total; caps += s.capHits;
     wins[s.winner === -1 ? 2 : s.winner]++;
   }
-  console.log(`${key.toUpperCase()} x${n} at ${ap.join('/')} AP: turns a side ${(plies / n / 2).toFixed(1)}; ends ${JSON.stringify(ends)}; wins first ${wins[0]} second ${wins[1]} drawn ${wins[2]};`
+  console.log(`${key.toUpperCase()} x${n} at ${ap.join('/')} AP: turns a side ${(plies / n / 2).toFixed(1)}; ends ${JSON.stringify(ends)}; wins first ${wins[0]} second ${wins[1]} drawn or fled ${wins[2]}; flee rolls ${rolls} (${fails} failed);`
     + ` junk a turn ${(sent / Math.max(1, plies)).toFixed(2)}; longest chain ${chain}; buckles a duel ${(buckles / n).toFixed(1)}; teardrops gleaned a duel ${(drunk / n).toFixed(1)}; settles capped ${caps}; actions ${JSON.stringify(kinds)}; ${((Date.now() - t0) / n / 1000).toFixed(1)} real s a duel`);
 }
