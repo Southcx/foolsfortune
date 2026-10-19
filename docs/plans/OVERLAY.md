@@ -278,8 +278,8 @@ Comb is texture, never a sentence to read. **Ruled by the owner (2026-10-17): ne
 - **The placard:** the title is written in the running hand, then a flow field recombs it into English; the carved face to be retried.
 - **The cradle sits on the gate's threshold**, between the pillars, and the gate wakes upward from the ground.
 - **The Sight's needle** points to the waypoint you calibrate to or know of (the owner: Jack Sparrow's compass): set it and it swings there.
-- **A Shrine gate has two cradles** (the owner): the arch's opens your Spirit Garden (inward); the threshold's travels between Shrine
-  gates (onward). For Dovina's HANKO.md.
+- **A Shrine gate has one cradle, the threshold's** (the owner, 2026-10-19; it was two, arch and threshold, from 2026-10-17): its page
+  lists the Spirit Garden first (through the arch) and travel. HANKO.md 6.6.
 - **The Lachrimeter stands bottom-right** (the log owns the left): the right edge holds the instruments, the globe above, the thermometer below.
 - **The running hand streams horizontally**, its letters joined along the bus; in a margin gutter it runs rotated 90 degrees.
 - **The Blink's pearls and the cube plate** (the owner, 2026-10-18: "Find a way to incorporate the blink beads into the new 3d lachrimeter
@@ -679,6 +679,74 @@ the lure's held ring. Open: the Lachrimeter's reserve for a shell's cost and the
 
 The Sondelass's forms and its combo chains need no new rule: the forms are the belt's (the cutlass, the rod, the hook), and the string row
 already carries the chains (the glossary's "the string row").
+
+## 19. The Soul Brush's and the Lockheart's own UI, and how the psygun's variants fight (Dovina, 2026-10-19, on Calissa's board v10)
+
+The rule is still section 18's: **the wheel turns what the tool holds, and what it costs shows on the Lachrimeter.**
+
+### The Soul Brush
+1. **Read at a glance, on the brush's UI:**
+   - the feeling it will lay, or CLEAN;
+   - PAINT or MOP;
+   - the bristles' saturation (filling over the hold);
+   - **where the paint comes from** (corrected 2026-10-19, on Calissa's question; the earlier line misread the code). The pick wins: it
+     is the feeling the paint is *refined into* (`load.js` `aspect`: the pick, else the Bottle's grade while it holds over half, else the
+     weather's feeling here). The ring always holds a pick, so what lands is the pick, or nothing on CLEAN. The brush shows the
+     **source** under the pick, so the refining reads: FROM GRIEF (the Bottle's grade) or FROM FAIR WEATHER. The grade or the weather
+     lands as itself only with no feeling awakened yet. No code change.
+   - the club's string (as the string row does for the cutlass).
+
+   The flick needs nothing: it is instant and free. **World-only:** the paint reticle, the jet ring, the shine and the Bottle's arc
+   stay world marks.
+2. **Yes: the radial becomes a ring of the seven feelings and CLEAN, turned by the wheel.** The brush has no other use for the wheel.
+   1 held stays as the quick pick, and a feeling not yet awakened is a dark seat. The same grammar as the lure's ring.
+3. **Celestial mode's ink is the pool, not a meter of its own.** Today it already drains the pool by the length laid (`INK_PER_PX`,
+   widened by Visualization), and the technique read from the shape pays its own cost on release. So:
+   - the length laid shows as the pool going down live;
+   - the recognised technique's cost shows as the reserve the moment the shape reads, before RMB is let go.
+
+   The brush's wetness on the model (`model.ink`) is the world's avenue.
+4. **The Bottles stay on the back.** Their fill is the body's avenue (the Bottle's glass, its arc). On the tube they are the Lachrimeter's
+   valve: the reserve that feeds the pool below half. They do not come onto the brush's UI. Two avenues, no third.
+
+### The Lockheart
+5. **The coffin's UI carries Calissa's list:**
+   - the fill toward its measure, **past it too** (twice full is twice as hard: show the second measure);
+   - which coffin is worn;
+   - the four Possibilikeys in ring order, brass or breaking, each **with its break chance as a number** (a published rate: the
+     gacha's law, as Raku's tables show their odds);
+   - can it open now (the shackle);
+   - the hoover's draw;
+   - the flail's string;
+   - the catch's odds when a Figment is laid low.
+6. **The wheel turns the keyring.** Every key is turned at each Opening, and their changes stack in ring order (LOADED then EVEN is
+   not EVEN then LOADED). So the order is a real choice, as Balatro's jokers are. The ring **rotates**: four orders of four keys, not
+   twenty-four. A turn costs nothing; it is set before the Opening.
+7. **The overflow runs down the spiritual link into the coffin, the way a spend does** (Calissa's split, 2026-10-19): Lachryma really does
+   go from the Courier into it. Three slow beads from the brim, the pool's count unmoved, only while the coffin is worn and the pool is full;
+   it says nothing is wasted. **The link's one true reverse, coffin to bulb, is the gulp** (the Lockheart's parry swallowing a shot into
+   the pool).
+8. **The wheel of odds stays the Opening's own show** (a hero moment, with ma before it). **The Opening becomes a hold of 0.5 real s on
+   RMB** (a knob): from the press, the table with the keys applied shows as the wheel's sectors, still; let go short and it folds away,
+   spending nothing; held through, it opens. The rates are always readable before you commit.
+
+### How the psygun's variants fight (the owner, 2026-10-19: "functional variety outside of just # of shell slots"; Ratchet & Clank)
+Calissa's draft is adopted. The numbers are in `tools/psygun/kinds.js` (`play`); the behaviour is Petra's and the looks Calissa's. Names are
+working names for Espada.
+
+| psygun | its play | the numbers |
+|---|---|---|
+| THE PSYGUN (6) | the all-rounder. **Fan the hammer:** plain shots tapped fast fire faster, and the quickest cylinder | taps within 0.25 s fire 1.4× as fast; turn 0.08 s |
+| the Bombardier (1) | **every caster shell's area ×6** (the owner's +500%), so radius ×√6 = 2.45. Bolt and bounce carriers **lob** on a mortar arc, previewed on the ground. Its plain shot is a **flare** that lights and reveals where it lands | flare reveals 6 m for 8 s; kick ×2; plain shots at half rate; turn 0.2 s |
+| the Carbine (3) | **the scope** on ADS (a breath held steadies the sway). The charge becomes a **full draw**: longer, much harder, no falloff down its line. Status shells are **darts**: a scoped hit lands its status deeper, and a weak point hit through the scope counts double | zoom 2.5×, breath 3 s; full draw 1.6× the time, 2.5× the damage; status ×1.5; scoped weak point ×2; turn 0.25 s |
+| the Pentagun (5) | **the pentacle:** five different chambers fired within 4 real seconds, and the fifth draws a pentacle where it lands. Its burst strikes once with **each of the five damage types** (five points, five forces), so it can set off an annihilation | radius 4 m; each type's status built by a fifth; turn 0.12 s |
+| the Pepperbox (7) | **a shotgun:** the plain shot is seven pellets, short and heavy. Shells fire as a spread of three at half strength each; the heart fires one **slug**. **Both barrels:** hold the shell key 0.5 s and every loaded ring chamber fires at once, one shell and its Lachryma each | pellets: 7, 12° spread, 12 m, a quarter each, knockback ×2; slug ×2; both barrels' cooldown 6 s; turn 0.15 s |
+
+- **Every variant keeps the core rules:** the cylinder and its wheel, the cost on the Lachrimeter, the toll for the Caster's own.
+- **The UI shows each variant's play where it happens** (Calissa's): the scope's lens ring, the Bombardier's arc on the ground, the
+  Pepperbox's cone, the pentacle's points lighting on the Pentagun's cylinder.
+- **Open, for the owner (from Ratchet & Clank):** should a variant grow with use, as R&C's weapons level to a V2 with a new mod? If yes,
+  it comes by achievement (the design laws: a count way and a feat way), never by grinding a bar alone.
 
 ## Note on the merge
 

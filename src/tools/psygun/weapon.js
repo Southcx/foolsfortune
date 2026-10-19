@@ -1,14 +1,16 @@
 // ---------------------------------------------------------------------------------------
 // THE PSYGUN: the Courier's first tool, on the belt (tools/belt.js). Drawn and holstered, raised to aim (ADS), racked, fired on the
 // trigger with its spread, and charged (held) into its shells' heavier forms; the shot's ray from the camera through the aim point,
-// first person or over the shoulder. The shells themselves are tools/psygun/shells.js; their kinds and chambers kinds.js. Its moves
+// first person or over the shoulder. The shells themselves are tools/psygun/shells.js; their kinds and chambers kinds.js; how the variant
+// carried fights (the Bombardier's flare, the Carbine's scope and full draw, the Pepperbox's pellets...) variantplay.js. Its moves
 // (the pistol whip on LMB with something close, fanning the hammer on R, the flourish before it is put away after a fight) and the
 // suite's Gun_* over the aim are tools/psygun/gunmoves.js; while a move plays the aim gives way to it (`combatBlend` reads less).
 //
 // Prior art: Halo's reticle bloom and its charged plasma pistol, Ratchet & Clank's weapon wheel feel, Metroid Prime's charge beam.
 //
 //   const W = new Weapon(game)   W.update(dt, input, player)   W.raised(player)   W.computeAimPoint(camera, player)   W.tryFire(...)
-//   W.moves (GunMoves)   W.shoot(camera, player, character, { spread, recoil }) (one round, paid for already)
+//   W.moves (GunMoves)   W.play (VariantPlay)   W.shoot(camera, player, character, { spread, recoil, dir, range, power, knock, quiet, pellets })
+//   (one round, paid for already; returns where it ended)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
@@ -18,6 +20,7 @@ import { GUN_POINTS } from '../../courier/character.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream, randDir } from '../../core/rng.js';
 import { GunMoves } from './gunmoves.js';
+import { VariantPlay } from './variantplay.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -88,6 +91,7 @@ export class Weapon {
     this.fpPos = new THREE.Vector3();
     this.fpQ = new THREE.Quaternion();
     this.moves = new GunMoves(this);
+    this.play = new VariantPlay(this);
   }
 
   /** How much the arms are the aim's: the aim's weight, given up to a move of the gun's own while it plays (gunmoves.js). */
@@ -164,6 +168,7 @@ export class Weapon {
 
     this.updateTrigger(dt, input);
     this.updateCharge(dt, input);
+    this.play.update(dt, input, player);
     const shells = this.game.shells;
     ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus'].forEach((k, i) => { if (input.wasPressed(k)) shells.select(i); });
     if (input.wheel) shells.cycle(Math.sign(input.wheel));
@@ -173,7 +178,7 @@ export class Weapon {
       const sp = shells.specials;
       if (shellPress && !sp.painting) sp.startPaint();
       if (sp.painting && !input.isDown('Mouse1')) this.wantShell = true;
-    } else if (shellPress) this.wantShell = true;
+    } else if (shellPress && !this.play.holdShell()) this.wantShell = true; // (the Pepperbox keeps the press to see if it is held: both barrels)
 
     if (this.reloading) {
       const prev = this.reloadT;
@@ -308,13 +313,14 @@ export class Weapon {
     if (this.holding && held) {
       this.holdT += dt;
       if (this.holdT > startAt && !this.reloading && this.charge < 1 && this.drawn) {
-        const want = (dt / C.time) * C.cost;
+        const time = C.time * this.play.chargeTime(); // (the Carbine's full draw is longer: variantplay.js)
+        const want = (dt / time) * C.cost;
         const got = pool.reserve(pool.cost(want, 'charge'));
         this.chargeReserved += got;
         if (got > 0) {
           if (!this.chargeSound) this.chargeSound = sfx.chargeLoop();
           const was = this.charge;
-          this.charge = Math.min(1, this.charge + dt / C.time);
+          this.charge = Math.min(1, this.charge + dt / time);
           if (was < 1 && this.charge >= 1) this.game.events?.emit('weapon.charged', {});
         } else if (this.charge === 0 && this.holdT - dt <= startAt) { sfx.fizzle(); this.game.lachrimeterTube?.pulse(); }
       }
@@ -355,8 +361,14 @@ export class Weapon {
     this.moves.afterHands(character, player);
     // the fan's rounds, on the slaps (paid for when it began: gunmoves.js)
     for (; this.moves.fanDue > 0; this.moves.fanDue--) this.shoot(camera, player, character, { spread: 3, recoil: 0.45 });
+    if (this.play.wantsBarrels && this.raised(player)) { // (the Pepperbox's both barrels: every loaded ring chamber at once)
+      this.play.wantsBarrels = false;
+      this.game.shells.bothBarrels({ camera, player, character, weapon: this });
+      this.cooldown = T.weapon.fireInterval * 1.5;
+      return;
+    }
     if (this.wantShell) {
-      if (this.cooldown > 0 || !this.raised(player)) return; // held until the gun is out and up
+      if (this.cooldown > 0 || this.game.shells.turnT > 0 || !this.raised(player)) return; // held until the gun is out and up, and the cylinder has turned
       this.wantShell = false;
       this.game.shells.fire({ camera, player, character, weapon: this });
       this.cooldown = T.weapon.fireInterval * 1.5;
@@ -374,14 +386,13 @@ export class Weapon {
       this.game.fx.impact(character.gunPoint('muzzle', new THREE.Vector3()), new THREE.Vector3(0, 1, 0), { sparks: 3, dust: 2 });
       return;
     }
-    this.cooldown = T.weapon.fireInterval;
-    this.shoot(camera, player, character);
+    this.cooldown = T.weapon.fireInterval * this.play.interval();
+    this.play.plain(camera, player, character); // (one round, or the variant's own: a flare, seven pellets)
   }
 
   /** One round out of the muzzle, already paid for: its spread (x `spread`), its ray, what it hits, and its kick (x `recoil`). */
-  shoot(camera, player, character, { spread: spreadMul = 1, recoil = 1 } = {}) {
-    this.shots++;
-    this.moves.shot();
+  shoot(camera, player, character, { spread: spreadMul = 1, recoil = 1, dir: given = null, range = T.weapon.range, power = 1, knock = 0, quiet = false, pellets = 0 } = {}) {
+    if (!quiet) { this.shots++; this.moves.shot(); }
     const game = this.game;
 
     // spread cone around the crosshair
@@ -390,9 +401,8 @@ export class Weapon {
     const rr = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const uu = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
     const a = Math.sqrt(simRand()) * spread, phi = simRand() * Math.PI * 2;
-    const dir = fwd.clone().multiplyScalar(Math.cos(a)).addScaledVector(rr, Math.sin(a) * Math.cos(phi)).addScaledVector(uu, Math.sin(a) * Math.sin(phi)).normalize();
+    const dir = given ? given.clone() : fwd.clone().multiplyScalar(Math.cos(a)).addScaledVector(rr, Math.sin(a) * Math.cos(phi)).addScaledVector(uu, Math.sin(a) * Math.sin(phi)).normalize();
 
-    const range = T.weapon.range;
     const ray = this.shotRay(camera, player, character, dir);
     dir.copy(ray.dir);
     let hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
@@ -402,13 +412,16 @@ export class Weapon {
     const gunFwd = new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion);
     const end = hit ? hit.point : camera.position.clone().addScaledVector(dir, range);
     game.fx.tracer(muzzle, end);
-    game.fx.muzzleFlash(muzzle, gunFwd);
-    sfx.gunshot();
-    game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone() }); // (what it hit and where: the Throwing Room's drills count by it)
-    game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: creatures/ai/stimuli.js)
+    if (!quiet) {
+      game.fx.muzzleFlash(muzzle, gunFwd);
+      sfx.gunshot();
+      game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone(), ...(pellets ? { pellets } : {}) }); // (what it hit and where: the Throwing Room's drills count by it; a volley of pellets once)
+      game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: creatures/ai/stimuli.js)
+    }
 
-    if (hit) this.applyHit(hit, dir);
+    if (hit) this.applyHit(hit, dir, power, knock);
     game.clappers?.spook(end);
+    if (!recoil) return end;
 
     // recoil
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * recoil;
@@ -416,11 +429,12 @@ export class Weapon {
     this.kickV += recoil * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = Math.min(T.weapon.bloomMax, this.bloom + T.weapon.bloomPerShot);
     this.vent(character);
+    return end;
   }
 
   fireCharged(camera, player, character) {
     const C = T.charge, game = this.game;
-    const p = 0.4 + 0.6 * this.charge;
+    const p = 0.4 + 0.6 * this.charge, full = this.play.chargePower(); // (the Carbine's full draw: harder)
     this.game.lachryma.commit(this.chargeReserved, 'charge');
     this.chargeReserved = 0;
     this.cancelCharge();
@@ -446,10 +460,10 @@ export class Weapon {
       const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper' && !hasTag(ent, 'hurtable'));
       if (ent?.type === 'mover' && ent.mover.target) ent.mover.hit({ cause: 'shot' });
       if (solid || i === C.pierce) { game.fx.impact(hit.point, hit.normal, { sparks: 14, dust: 12, decal: true }); break; }
-      if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p, hit.point, dir, 1.3 + 0.5 * p); }
+      if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p * full, hit.point, dir, 1.3 + 0.5 * p); }
       else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
       else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6, 'charged'); }
-      else if (hasTag(ent, 'hurtable')) { hits++; game.creatures.strike(ent, hit.point, dir, 1.6 + 1.4 * p, 'charged'); }
+      else if (hasTag(ent, 'hurtable')) { hits++; game.creatures.strike(ent, hit.point, dir, (1.6 + 1.4 * p) * full * this.play.weak(ent, hit.point), 'charged'); }
       else if (ent.type === 'slice') { hits++; game.breakables.crumble(ent, hit.point, dir); }
       else game.physics.kick(body, dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point);
     }
@@ -504,7 +518,7 @@ export class Weapon {
     return best;
   }
 
-  applyHit(hit, dir) {
+  applyHit(hit, dir, power = 1, knock = 0) {
     const game = this.game;
     const ent = hit.entity;
     if (ent?.type === 'rope') {
@@ -514,14 +528,15 @@ export class Weapon {
     }
     if (hasTag(ent, 'hurtable')) { // (a creature: it decides what a shot means: creatures.js)
       this.hits++;
-      game.creatures.strike(ent, hit.point, dir, 1, 'shot');
+      game.creatures.strike(ent, hit.point, dir, power * this.play.weak(ent, hit.point), 'shot');
+      if (knock) ent.knock?.(dir.clone().setY(0.15).normalize().multiplyScalar(knock)); // (the Pepperbox's pellets push)
       game.hud.hitmarker(!ent.alive);
       sfx.hitmarker();
       return;
     }
     if (ent?.type === 'clapper') {
       this.hits++;
-      game.clappers.hit(ent, hit.point, dir, 1);
+      game.clappers.hit(ent, hit.point, dir, power);
       game.hud.hitmarker(true);
       sfx.hitmarker();
       return;
@@ -536,14 +551,14 @@ export class Weapon {
     if (ent?.type === 'bauble') { ent.body.applyImpulse(dir.clone().multiplyScalar(0.3 * ent.body.mass() * 10), true); return; }
     if (ent?.type === 'breakable') {
       this.hits++;
-      const broke = game.breakables.damage(ent, T.weapon.damage * (ent.marked ? T.shells.mark.damageMult : 1), hit.point, dir);
+      const broke = game.breakables.damage(ent, T.weapon.damage * power * (ent.marked ? T.shells.mark.damageMult : 1), hit.point, dir);
       game.hud.hitmarker(broke);
       sfx.hitmarker();
       return;
     }
     const body = hit.collider.parent();
     if (body && body.isDynamic()) {
-      const imp = Math.min(T.weapon.impulse, body.mass() * 14);
+      const imp = Math.min(T.weapon.impulse * power * (knock ? 2 : 1), body.mass() * 14);
       game.physics.kick(body, dir.clone().multiplyScalar(imp), hit.point);
       game.fx.impact(hit.point, hit.normal, { color: PALETTE.pale, sparks: 4, dust: 3 });
       if (ent?.type === 'prop') game.hud.hitmarker(false);

@@ -4,12 +4,13 @@
 // Calissa's: never colour alone): the seven feelings in display order (most positive
 // first: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread) and CLEAN (its lore name Fair: sprays clear, washing paint and crude off where
 // it lands, at range, and gains nothing). Every feeling shows locked until it is drunk once (the owner, 2026-10-11; GALL-AND-FURY.md section 5). Flick toward one,
-// let go: picked. A tap of 1 is the paint mode, as before; 2 the mop.
+// let go: picked. A tap of 1 is the paint mode, as before; 2 the mop. THE WHEEL TURNS THE RING (OVERLAY.md 19.2): a notch a turn, the
+// seven and CLEAN in that order round, a feeling not yet awakened a dark seat it passes over; 1 held stays the quick pick.
 //
 // Prior art: the weapon wheels of Grand Theft Auto V and Red Dead Redemption 2 (held, flicked, let go), Splatoon's special and sub
 // picker, FLUDD's nozzle swap (one held tool, its behaviour picked).
 //
-//   const R = new PaintRadial(tool)   R.update(raw, inp) (while the brush is in the hand)   PICKS (the slots)
+//   const R = new PaintRadial(tool)   R.update(raw, inp) (while the brush is in the hand)   R.turn(d) (the wheel)   PICKS (the slots)
 // ---------------------------------------------------------------------------------------
 import { RadialWheel } from '../../feedback/wheel.js';
 import { COLOR } from '../../progress/weather.js';
@@ -62,6 +63,13 @@ export class PaintRadial {
     if (!this.wheel?.isOpen) return;
     const i = this.wheel.close(); P.lookScale.wheel = 1; this.wheel.el.remove(); this.wheel = null;
     if (i >= 0) this.tool.load.setPick(PICKS[i].id);
+  }
+
+  /** The ring turned a notch by the wheel (`d` +1 or -1): the next seat round that is awakened (Clean always is). */
+  turn(d) {
+    const n = PICKS.length, at = Math.max(0, PICKS.findIndex((p) => p.id === (this.tool.load.pick ?? 'clean')));
+    for (let k = 1; k < n; k++) { const p = PICKS[(at + d * k + n * k) % n]; if (this.learned(p)) { this.tool.load.setPick(p.id); return true; } }
+    return false;
   }
 
   /** Put away with the brush: the wheel closes unpicked. */

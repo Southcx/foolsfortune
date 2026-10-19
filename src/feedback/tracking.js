@@ -674,6 +674,10 @@ export class Tracking {
     });
     on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
     // the psygun's kind and its chambers (tools/psygun/kinds.js)
+    // a variant's own play (tools/psygun/variantplay.js): the Bombardier's flare, the Pentagun's pentacle, the Pepperbox's both barrels
+    on('psygun.flare', (e) => { L.inc('psygun.flare'); if (e.n) log.say('battle', `Your flare shows ${e.n === 1 ? 'one of them' : `${e.n} of them`}.`, { key: 'psy.flare', throttle: 6 }); });
+    on('psygun.pentacle', (e) => { L.inc('psygun.pentacle'); log.say('battle', e.n ? `Your pentacle closes: five forces strike ${e.n === 1 ? 'it' : `${e.n} of them`}.` : 'Your pentacle closes on nothing.'); });
+    on('psygun.barrels', (e) => { L.inc('psygun.barrels'); log.say('battle', `Both barrels: ${e.n} chamber${e.n === 1 ? '' : 's'} at once.`); });
     on('psygun.change', (e) => { L.inc('psygun.change'); log.say('system', `You carry ${PSYGUNS[e.gun]?.name || 'another psygun'}: ${PSYGUNS[e.gun]?.chambers ?? '?'} chambers.`); });
     on('psygun.chamber', (e) => { L.inc('psygun.chamber'); const i = SHELL_TYPES.findIndex((t) => t.id === e.shell); log.say('info', `Chamber ${e.chamber + 1} takes ${SHELL_TYPES[i]?.no || ''} ${SHELL_TYPES[i]?.name || ''}.`, { key: 'chamber', win: 1.2, fmt: (n) => `${n} chambers loaded.` }); });
     // the vessel's damage (courier/vessel/damage.js): a blow cracks them where it lands; the cracks mend

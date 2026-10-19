@@ -11,6 +11,7 @@
 // Every shell is a row of progress/combat/castershells.js (its number, tier and cost); those after the founding eleven are flown by the
 // shell runner (shellrunner.js) from their rows.
 // ---------------------------------------------------------------------------
+import { scaleShell } from './variantplay.js';
 import { PSYGUNS, DEFAULT_PSYGUN, capacityOf, chamberCapacity } from './kinds.js';
 import { shellById, shellByNo, typeLabel, fireCost } from '../../progress/combat/castershells.js';
 import { ShellRunner, RUNNER_SHELLS } from './shellrunner.js';
@@ -123,6 +124,7 @@ export class Shells {
   select(i, auto = false, passed = 0) {
     if (i < 0 || i >= this.types.length || i === this.selected) return;
     if (i === this.gun.heart && this.selected !== this.gun.heart) this.ringBefore = this.selected; // (the ring chamber the heart was turned to from)
+    this.turnT = this.gun.play?.turn ?? 0; // (a shell waits for the cylinder to turn: each variant's own time, kinds.js; variantplay.js counts it down)
     this.selected = i; // (no click here: the pawl's is Wanda's, on psygun.turn: audio/cues.js)
     const t = this.types[i];
     this.game.events?.emit('psygun.turn', { chamber: i, shell: t.id, loaded: this.counts[t.id] > 0, auto, ...(auto ? { passed, tier: shellById(t.id)?.tier || 1 } : {}) });
@@ -149,25 +151,27 @@ export class Shells {
 
   /** Fire the selected shell. Returns false if the tube is empty. */
   fire(ctx) {
-    const t = this.type, g = this.game, f = t.row.n.feeling;
+    const t = this.type, g = this.game, f = t.row.n.feeling, i = this.selected, V = ctx.weapon.play;
     const lent = g.lend?.has?.('shells'); // (DEBUG's lend: every shell never runs out and costs no Lachryma: the owner's v170)
     if (!lent && this.counts[t.id] <= 0) { sfx.dryFire(); g.events?.emit('shell.dry', { id: t.id }); return false; } // (an empty chamber turned to: one dry click, free, no line: OVERLAY.md 18)
     // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
     if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
     const { lachryma: cost, crack } = fireCost(t.id);
     if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
-    if (!lent && --this.counts[t.id] <= 0) this.turnOn();
+    if (!lent && --this.counts[t.id] <= 0 && !ctx.barrels) this.turnOn(); // (both barrels turn once, after: bothBarrels)
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
     this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });
     const { camera, player, character, weapon } = ctx;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const ray = weapon.shotRay(camera, player, character, fwd);
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
-    if (t.runner) this.runner.fire(buffRow(t.row), { ...ctx, ray, muzzle, fwd });
-    else this[t.id]({ ...ctx, ray, muzzle, fwd });
+    // the variant's way with it (variantplay.js): the Bombardier's area and lob, the Carbine's darts, the Pepperbox's three or its slug
+    if (t.runner) for (const s of V.rows(buffRow(t.row), i, ray, camera)) this.runner.fire(s.row, { ...ctx, ray: s.ray, muzzle, fwd });
+    else { for (const s of V.legacy(i, ray, camera)) { this.k = s.k; this[t.id]({ ...ctx, ray: s.ray, muzzle, fwd }); } this.k = null; }
+    V.onShell(i, ray); // (the Pentagun's points toward its pentacle)
     if (crack) g.vesselDamage?.toll({ by: 'courier', family: t.row?.family }); // (the Caster's toll: a tier IV is paid in the clay)
     // every shell kicks hard and needs racking
-    const k = T.shells.kick * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase);
+    const k = T.shells.kick * (this.gun.play?.kick ?? 1) * (ctx.barrels ? 0.5 : 1) * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase); // (the Bombardier's twice as hard; each of both barrels half)
     player.addRecoil(T.recoil.kickPitch * k, (simRand() * 2 - 1) * T.recoil.kickYaw * k);
     player.fovPunch = 4;
     weapon.kickV += 1.5 * T.recoil.gunRecoverSpeed * Math.E;
@@ -175,6 +179,23 @@ export class Shells {
     weapon.ejectShell(character, player);
     weapon.moves?.shot(); // (the arms' recoil, over the aim: gunmoves.js)
     weapon.startRack();
+    return true;
+  }
+
+  /** BOTH BARRELS (the Pepperbox's: variantplay.js): every loaded ring chamber fires at once, each its own shell and its Lachryma; then
+   *  the cylinder turns once, if the chamber it was on is empty. */
+  bothBarrels(ctx) {
+    const from = this.selected, heart = this.gun.heart, lent = this.game.lend?.has?.('shells');
+    let n = 0;
+    for (let i = 0; i < this.types.length; i++) {
+      if (i === heart || (!lent && this.counts[this.types[i].id] <= 0)) continue;
+      this.selected = i;
+      if (this.fire({ ...ctx, barrels: true })) n++;
+    }
+    this.selected = from;
+    if (!n) return false;
+    ctx.weapon.play.barrels(n);
+    if (!lent && this.counts[this.type.id] <= 0) this.turnOn();
     return true;
   }
 
@@ -204,7 +225,7 @@ export class Shells {
   // limbs: aim the line across the thing), and the thrown sword-beams of Zelda (a cut that travels).
   slicer({ camera, ray, muzzle, player, weapon }) {
     const g = this.game, C = T.shells.slicer;
-    const fwd = ray.dir.clone().normalize();
+    const fwd = ray.dir.clone().normalize(), power = this.k?.p ?? 1; // (a variant's share of it: variantplay.js)
     const upright = !!player?.fp || (weapon?.adsEase ?? 0) > 0.5; // (the line follows the aim: level from the hip, upright down the sights; OVERLAY.md 18)
     const along = new THREE.Vector3(upright ? 0 : 1, upright ? 1 : 0, 0).applyQuaternion(camera.quaternion);
     along.addScaledVector(fwd, -along.dot(fwd)).normalize();
@@ -216,7 +237,7 @@ export class Shells {
     });
     const range = hit ? hit.distance : C.range;
     const mesh = this.cleaveMesh();
-    const cl = { o: ray.origin.clone(), fwd, along, n, plane: planeFrom(n, ray.origin), d: 0, range, done: new Set(), cuts: 0, mesh, from: muzzle.clone() };
+    const cl = { o: ray.origin.clone(), fwd, along, n, plane: planeFrom(n, ray.origin), d: 0, range, done: new Set(), cuts: 0, mesh, from: muzzle.clone(), power };
     this.cleaves ||= [];
     this.cleaves.push(cl);
     sfx.slice();
@@ -283,7 +304,7 @@ export class Shells {
       for (const c of foesNear(g, cl.o.clone().addScaledVector(cl.fwd, (d0 + d1) / 2), (d1 - d0) / 2 + C.width / 2 + 1)) {
         if (cl.done.has(c)) continue;
         const mid = c.pos.clone().setY(c.pos.y + c.height * 0.5);
-        if (test(c, mid, c.radius + c.height * 0.3)) { cl.done.add(c); g.creatures.strike(c, mid, cl.fwd, C.creaturePower, 'shot', 'courier', null, 'impact'); cl.cuts++; }
+        if (test(c, mid, c.radius + c.height * 0.3)) { cl.done.add(c); g.creatures.strike(c, mid, cl.fwd, C.creaturePower * (cl.power ?? 1), 'shot', 'courier', null, 'impact'); cl.cuts++; }
       }
       // the line, where it has got to
       const at = cl.o.clone().addScaledVector(cl.fwd, d1);
@@ -333,7 +354,7 @@ export class Shells {
 
   // ---- PUSH ----------------------------------------------------------------
   push({ ray, muzzle, player }) {
-    const g = this.game, P = T.shells.push;
+    const g = this.game, P = scaleShell(T.shells.push, this.k);
     const origin = ray.origin, axis = ray.dir;
     const cosA = Math.cos(P.angle * DEG);
     const shove = (body, strength = 1) => {
@@ -384,7 +405,7 @@ export class Shells {
     mesh.position.copy(from);
     g.scene.add(mesh);
     const vel = dir.clone().multiplyScalar(speed).addScaledVector(UP, lift);
-    this.projectiles.push({ kind, mesh, pos: from.clone(), prev: from.clone(), vel, age: 0, bounces: 0 });
+    this.projectiles.push({ kind, mesh, pos: from.clone(), prev: from.clone(), vel, age: 0, bounces: 0, k: this.k }); // (`k`: a variant's scale, variantplay.js)
   }
 
   well({ ray, muzzle }) {
@@ -449,17 +470,17 @@ export class Shells {
       if (detonate) {
         g.scene.remove(p.mesh);
         this.projectiles.splice(i, 1);
-        if (p.kind === 'well') this.openWell(p.pos.clone().addScaledVector(p.normal || UP, 0.5));
+        if (p.kind === 'well') this.openWell(p.pos.clone().addScaledVector(p.normal || UP, 0.5), p.k);
         else if (p.kind === 'paint') this.burstPaint(p.pos.clone(), p.normal || UP);
         else if (p.kind === 'groove') this.casters.openGroove(p.pos.clone().addScaledVector(p.normal || UP, 1.0));
-        else this.explodeBomb(p.pos.clone(), p.normal);
+        else this.explodeBomb(p.pos.clone(), p.normal, p.k);
       }
     }
   }
 
   // ---- GRAVITY WELL --------------------------------------------------------
-  openWell(pos) {
-    const g = this.game, W = T.shells.well;
+  openWell(pos, k = null) {
+    const g = this.game, W = scaleShell(T.shells.well, k);
     const group = new THREE.Group();
     const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.32, 2), new THREE.MeshBasicMaterial({ color: 0x120804 }));
     const rimMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
@@ -474,14 +495,14 @@ export class Shells {
     group.add(core, halo);
     group.position.copy(pos);
     g.scene.add(group);
-    this.wells.push({ pos, t: 0, dur: W.duration, group, core, rings, halo, sound: sfx.wellLoop() });
+    this.wells.push({ pos, t: 0, dur: W.duration, group, core, rings, halo, sound: sfx.wellLoop(), W });
     sfx.thump();
   }
 
   stepWells(dt) {
-    const g = this.game, W = T.shells.well;
+    const g = this.game;
     for (let i = this.wells.length - 1; i >= 0; i--) {
-      const w = this.wells[i];
+      const w = this.wells[i], W = w.W;
       w.t += dt;
       const ramp = Math.min(1, w.t / 0.35);
       const eat = [], swirled = [];
@@ -542,8 +563,7 @@ export class Shells {
   }
 
   collapseWell(i) {
-    const g = this.game, W = T.shells.well;
-    const w = this.wells[i];
+    const g = this.game, w = this.wells[i], W = w.W;
     this.wells.splice(i, 1);
     g.scene.remove(w.group);
     w.sound?.stop();
@@ -558,7 +578,7 @@ export class Shells {
 
   // ---- MARK / STUN ---------------------------------------------------------
   mark({ ray, muzzle }) {
-    const g = this.game, M = T.shells.mark;
+    const g = this.game, M = scaleShell(T.shells.mark, this.k);
     const hit = g.physics.raycast(ray.origin, ray.dir, T.weapon.range, g.player.collider, undefined, (c) => !c.isSensor());
     const end = hit ? hit.point : ray.origin.clone().addScaledVector(ray.dir, T.weapon.range);
     g.fx.tracer(muzzle, end);
@@ -590,8 +610,8 @@ export class Shells {
   }
 
   // ---- BOMBSHELL -----------------------------------------------------------
-  explodeBomb(pos, normal = UP) {
-    const g = this.game, B = T.shells.bomb;
+  explodeBomb(pos, normal = UP, k = null) {
+    const g = this.game, B = scaleShell(T.shells.bomb, k);
     g.fx.explosion(pos, B.radius * 0.7);
     sfx.explosion(g.listenerDistance(pos));
     sfx.sizzle(g.listenerDistance(pos));

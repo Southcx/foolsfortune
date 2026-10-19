@@ -93,7 +93,9 @@ leave it.
 3. **The god hand**: both. `~` stays the quick way in; at a Shrine, sealing into the island is the ceremonial way.
 4. **A sealed Jar is struck only through its cradle** (an engine defended).
 5. **No recarving** (section 5).
-6. **A Shrine gate has two cradles**: the arch's opens the Spirit Garden, the threshold's travels between gates.
+6. **A Shrine gate has one cradle, the threshold's** (the owner, 2026-10-19: the two stood too close, and the garden came too quick to see
+   the gate work). Sealed into it, its page lists the Spirit Garden first (through the arch, a 3.2 real s walk-in) and travel. It was two
+   cradles (arch and threshold) from 2026-10-17.
 Still Espada's: the names (proposed in section "Espada's names and lore").
 
 ## 7. Order of work

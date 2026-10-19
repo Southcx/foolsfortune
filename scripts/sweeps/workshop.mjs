@@ -333,16 +333,16 @@ if (part('shrine')) {
     w = await ws('win()');
     S.check('shrine: F spammed rests at most once a press', r1 - r0 <= k, { presses: k, rests: r1 - r0, endsOpen: w.index });
     await closeAll(); await S.ticks(6);
-    // the door to the Spirit Garden, and out again
-    // (the arch's cradle opens the Spirit Garden: stand at it and F)
-    const arch = await S.ev(() => { const s = __game.game.shrines.get('bisque'), c = s?.arch?.pos; if (!c) return null; const f = [Math.sin(s.yaw), 0, Math.cos(s.yaw)]; return { p: [c.x - f[0] * 0.5, c.y + 0.05, c.z - f[2] * 0.5], yaw: s.yaw }; }); // (behind the arch, out of the threshold's reach)
-    if (arch) { await ws(`stand(${JSON.stringify(arch.p)}, ${arch.yaw})`); await S.settle(); await settleCourier(); }
-    const chA = await ws('chevron()');
-    await F(6); await S.ticks(45);
-    const g1 = !!arch && chA.cur === 'cradle' && /shrine\.bisque\.arch/.test(chA.ref || '');
-    await S.ticks(10); await S.settle(); await S.ticks(30);
+    // the door to the Spirit Garden, and out again: one cradle at the gate since the owner's 2026-10-19 (HANKO.md 6.6); the garden is the
+    // first room on the threshold's page ("through the arch"), and the arch's light runs in for 3.2 real s (world/shrines.js INWARD) before you go in
+    await S.ev(() => __game.game.cradles?.unseal?.('sweep', 'courier', { now: true })); await S.ticks(10); // (the spam above may end sealed)
+    await ws(`stand(${JSON.stringify(at.p)}, ${at.yaw})`); await S.settle(); await settleCourier();
+    await F(6); await S.ticks(45); // (sealed again: the page is up)
+    const pg = await ws('win()');
+    await S.ev(() => document.querySelector('#indexmenu .room')?.click()); // (the page's first room: the Spirit Garden)
+    await S.ticks(240); await S.settle(); await S.ticks(30);
     w = await ws('win()');
-    S.check('shrine: the Spirit Garden\'s door takes you in', g1 && w.realm, w);
+    S.check('shrine: the garden, chosen on the gate\'s page, takes you in through the arch', pg.index && pg.page === 'bisque' && w.realm, { page: pg.page, realm: w.realm });
     await S.shot('shrine-garden');
     await S.ev(() => { const im = document.querySelector('#indexmenu .room'); im?.click(); }); await S.ticks(10); // (named: its first offer)
     await closeAll(); await S.ticks(10); await S.settle(); await S.ticks(30); // (the seam waits while the naming page is up: it pauses the game)

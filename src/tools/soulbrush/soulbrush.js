@@ -13,7 +13,7 @@
 //    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
 //
 //   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
-//   1 held the radial: the paint's feeling, or Clean (tools/soulbrush/radial.js)
+//   1 held the radial: the paint's feeling, or Clean (tools/soulbrush/radial.js); the wheel turns it a seat
 //   LMB    the club: three blows (a pause after the second: the spin; sprinting: the dive); held on the ground, the bristles SATURATE
 //          and the mode works (tools/soulbrush/load.js: 1 PAINT, 2 MOP); held in the air, the charge and the slam   RMB tap  FLICK
 //   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
@@ -155,6 +155,7 @@ export class SoulBrush extends Tech {
         }
         ['Digit1', 'Digit2'].forEach((k, i) => { if (inp.wasPressed(k)) this.load.setMode(LOAD_MODES[i]); }); // (the modes, as the Sondelass's forms)
         this.radial.update(raw, inp); // (1 held: the radial, what the paint is: radial.js)
+        if (inp.wheel && !this.radial.wheel?.isOpen) { this.radial.turn(Math.sign(inp.wheel)); inp.wheel = 0; } // (the wheel turns the ring: the brush's only use of it, OVERLAY.md 19.2)
         if (this.load.busy) this.load.update(raw, inp);
         else if (!this.sliding) this.club.update(dt, inp);
       }
