@@ -11,7 +11,7 @@
 // only some ammo types, each to its own clip size), Destiny's ammo types per weapon frame, and Caster's own shell set.
 //
 //   PSYGUNS[id] = { id, name, chambers, shape, cap, capacity: { typeId: n }, loadout: [typeId], heart?, blurb }   typeNo(i) -> 'TYPE-00'
-//   play: how each variant fights (OVERLAY.md 19; Ratchet & Clank's weapons, the owner's model): numbers here, behaviour Petra's
+//   play: how each variant fights (OVERLAY.md 19; Ratchet & Clank's weapons, the owner's model): numbers here, behaviour variantplay.js
 //   capacityOf(gun, typeId)   chamberCapacity(gun, i, typeId)   (the heart's double: shells.js asks it once Petra wires it)
 // ---------------------------------------------------------------------------------------
 import { chamberHolds, shellById } from '../../progress/combat/castershells.js';
