@@ -327,7 +327,6 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
-<<<<<<< HEAD
 - **a puzzle duel / the Line / junk / a duel ruleset** (the genre's words, the owner, 2026-10-19: no lore names; `newDuel`, `src/progress/duel/`;
   `RULESETS`, `rulesetOf`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the
   column boundary between the sides, your zone of control and the score, pushed a column a 3 junk landed (9 at most at once) / what a clear
@@ -335,21 +334,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (up to four cells), a **break** (`duelBreak`, `duelbreak.js`: a side's EmO broken by a big push, its stun a depth deeper), an **orb**
   (Lachryma a break sheds for the Courier to run up), the **finisher** (`FINISHER`: the god hand's end on a broken foe, paid from the pool),
   **the drip** (the pieces each side is given at the start of its turn), **Flee** (`flee.js`, `fleeOdds`: a saving throw out, a d20 against
-  15, 3 AP a failed try), the tools' moves **Shoot, Grab, Drill, Paint, Delay, Hold, Send**; Dread's **fog** and **embers** (`dread.js`: a
-  half hidden but for its lantern / junk that burns 3 of your turns, then cools into a gem). *Not:* a table (Raku's), the rail, a trial.
-=======
-- **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
-  `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
-  between the sides, your zone of control and the score, pushed one column a 3 junk landed / what a clear sends across (the genre's
-  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. **A buckle / a teardrop / the coup / a glean**
-  (Espada's, proposed; labels Break, Orb, Finish, Gather; `buckle.js`, `couriertools.js`): a side's EmO broken by a big push, its stun a depth
-  deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
-  Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
-  given at the start of its turn (not rain). **Fog / an ember** (Dread's rules, `dread.js`; the aberrant Lantern Wisp's): a half hidden
-  but for its lantern's light / its junk landed burning, unbreakable for 3 of your turns, then a gem. *Not:* a table (Raku's), the kick, a
-  trial, a guard break, a mote (the scatter's), a run (three in a line), the scene fog, Dread's fog on the Raceway. **Flee** (`flee.js`,
-  `fleeOdds`; the standard word, the owner, 2026-10-19): a saving throw out of a duel, a d20 against 15 with the board's modifiers, 3 AP a failed try.
->>>>>>> origin/claude/fps-third-person-demo-8zp2kx
+  15, 3 AP, kept only by a failed try), the tools' moves **Shoot, Grab, Drill, Paint, Delay, Hold, Send**; Dread's **fog** and **embers** (`dread.js`: a
+  half hidden but for its lantern / junk that burns 3 of your turns, then cools into a gem). *Not:* a table (Raku's), the rail, a trial, a mote (the scatter's), the scene fog, Dread's fog on the Raceway.
 - **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: opened by the first blow on it, the seam (kind `aberrant`), the board between you, your turns and its bot's, its end / which Figments go wrong and open one (any aberrant; a Lantern Wisp that drinks a blot at night, `wisp.drink`; the test one by the Weir). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the duel's view / the tsuitate** (working names; `DuelView`, `game.duelView`, `src/vfx/duelview.js`, its parts `src/vfx/duelview/`) — a puzzle duel's board stood in the world as a standing screen of Lachrymite 20 x 20 in Anagami's clay frame, broadside between the Courier and the foe, playing the kernel's events; its pieces instanced, its figurines the bodies. *Not:* the duel (Dovina's rules), its session (Petra's), a table (Raku's).
 - **the domains' clash** (working name, Espada's to rule; `DomainClash`, `src/vfx/duelview/domains.js`) — a puzzle duel's backdrop: each side's ground unfolding round the arena (the Courier's the film over Lachryma's deep, the foe's its feeling's heavy look), meeting in a seam on the Line's plane that slides with it. Always in full. *Not:* the domains (the psyche's seven), the weather.
