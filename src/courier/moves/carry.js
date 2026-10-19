@@ -8,7 +8,8 @@
 // the hold is Walk_Carry_Loop's arms over the walk (in step with the legs, its hips left to them), the throw is
 // OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
 // swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT_T), which are the
-// game's feel and do not change. IK only closes the palms on the pot's sides.
+// game's feel and do not change. IK only closes the palms on the pot's sides, each hand the clip's turned the least way to face
+// it (Final IK's hand effector: full position weight, the clip's rotation kept but for that swing; CASEBOOK NEW:ik-hand-from-clip).
 // The carry's hold rides the hands (CASEBOOK rules 43 and 212): the carrying clip lays its arms and spine over the
 // walk and leaves the hips to it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never
 // at a height fixed to the capsule with the body bobbing under it. A held prop follows the hand that holds it, as an engine attaches
@@ -484,8 +485,9 @@ export class Carry extends Tech {
   }
 
   /**
-   * Both hands on it, open, palms flat against its sides and fingers up: the carrying clip has the arms there, and this is the light
-   * IK correction CLAUDE.md allows (a hand closed on a surface) that sets the palms to its width.
+   * Both hands on it, open, palms flat against its sides, the fingers where the clip points them (each hand the clip's, swung the
+   * least way to face the pot): the carrying clip has the arms there, and this is the light IK correction CLAUDE.md allows (a hand
+   * closed on a surface) that sets the palms to its width.
    * Where they go is worked out for each thing from its own shape (begin: the widest place low on it, and its width there), so a
    * squat jar and a tall amphora are each cupped where they swell.
    */
@@ -517,9 +519,12 @@ export class Carry extends Tech {
     for (const s of ['L', 'R']) {
       const sg = s === 'L' ? 1 : -1;
       const inward = left.clone().multiplyScalar(-sg);
-      // palm against its side, fingers up and a little forward over its shoulder
-      const fingers = UP.clone().multiplyScalar(0.8).addScaledVector(fwd, 0.25).addScaledVector(inward, 0.3).normalize(); // (curving in with the pot)
-      const q = ch.handQuat(ch.arm[s], fingers, inward);
+      // the palm against its side: the clip's own hand turned the least way that faces its palm inward (a swing, its fingers kept where
+      // the clip points them), never a turn set whole in the world. Set whole (fingers up), the wrists bent 108 to 123 degrees toward the
+      // thumb and back against ranges of 20 and 70 for the whole hold, and no swing of the elbow could take that up (NEW:ik-hand-from-clip)
+      const hq = ch.arm[s].hand.getWorldQuaternion(_q2);
+      const palm = _v3.copy(ch.arm[s].palmLocal).applyQuaternion(hq).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(palm, inward).multiply(hq);
       const at = base.clone().addScaledVector(left, sg * (gw + 0.015)).addScaledVector(fwd, -0.02);
       at.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
       ch.reachHand(s, at, q, w);
