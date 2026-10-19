@@ -9,7 +9,7 @@
 // Pokémon's Run (a failed one gives the foe its turn, and each try in a battle raises the odds of the next); the gacha law the
 // Lockheart's published break chances follow: the odds are a number you can read before you commit.
 //
-//   FLEE   fleeOdds(state, side) -> { need, bonus, chance, mods }   FLEE_ACTION (the action: cost 3, any form, the sides that may)
+//   FLEE   fleeOdds(state, side) -> { need, bonus, chance, mods }   FLEE_ACTION (the action: 3 points held for the roll, kept only by a failure; any form; the sides that may)
 // ---------------------------------------------------------------------------------------
 export const FLEE = {
   dc: 15,          // what a d20 plus its modifiers must reach
@@ -41,8 +41,9 @@ export const FLEE_ACTION = { form: null, cost: FLEE.cost,
   apply: (s, side) => {
     const S = s.sides[side], odds = fleeOdds(s, side), roll = 1 + s.r.int(20);
     const ok = roll === 20 || (roll !== 1 && roll + odds.bonus >= FLEE.dc);
-    const ev = { type: 'flee', side, roll, bonus: odds.bonus, need: odds.need, mods: odds.mods, ok };
+    const ev = { type: 'flee', side, roll, bonus: odds.bonus, need: odds.need, mods: odds.mods, ok, ap: ok ? 0 : FLEE.cost };
     if (!ok) { S.fleeFails = (S.fleeFails || 0) + 1; return [ev]; }
+    s.apLeft += FLEE.cost; // (only a failed roll costs: away, the points are handed back; `ap` on the event is what the roll took)
     s.fled = side; s.winner = -1; // (no winner: the duel ends with both whole; a view reads `fled`)
     return [ev, { type: 'duel.fled', side, winner: -1 }];
   } };
