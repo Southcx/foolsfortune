@@ -333,7 +333,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (Espada's, proposed; labels Break, Orb, Finish, Gather; `buckle.js`, `couriertools.js`): a side's EmO broken by a big push, its stun a depth
   deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
   Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
-  given at the start of its turn (not rain). *Not:* a table (Raku's), the kick, a trial, a guard break, a mote (the scatter's), a run (three in a line).
+  given at the start of its turn (not rain). **Fog / an ember** (Dread's rules, `dread.js`; the aberrant Lantern Wisp's): a half hidden
+  but for its lantern's light / its junk landed burning, unbreakable for 3 of your turns, then a gem. *Not:* a table (Raku's), the kick, a
+  trial, a guard break, a mote (the scatter's), a run (three in a line), the scene fog, Dread's fog on the Raceway.
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).

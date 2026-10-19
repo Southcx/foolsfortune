@@ -16,6 +16,7 @@ import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
 import { COURIER_ACTIONS, gleanPaths } from './couriertools.js';
 import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './buckle.js';
+import { emberKind, tickEmbers } from './dread.js';
 import { seeded } from '../../core/rng.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js). */
@@ -118,7 +119,7 @@ export function act(s, a) {
  *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its drip). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
-  events.push(...endOwnTurn(s, side)); // (its motes fade, its EmO settles, its stun counts down: before what lands on it can break it again)
+  events.push(...tickEmbers(s, side), ...endOwnTurn(s, side)); // (its embers burn down; its teardrops fade, its EmO settles, its stun counts down: before what lands on it can break it again)
   const off = Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off;
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
@@ -138,9 +139,9 @@ export function endTurn(s) {
 /** Junk landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
  *  DUEL.perColumn landed. A side that cannot take it all has lost (Noon). */
 function land(s, side, n) {
-  const b = s.board, at = [], events = [{ type: 'land', side, n, at }], cells = b.empty(side);
+  const b = s.board, at = [], kind = emberKind(s, 1 - side), events = [{ type: 'land', side, n, at, kind }], cells = b.empty(side);
   let placed = 0;
-  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece('junk')); at.push([x, y]); }
+  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece(kind, kind === 'ember' ? { count: s.rs.embers.count } : {})); at.push([x, y]); }
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
