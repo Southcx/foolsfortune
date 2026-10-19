@@ -4,15 +4,15 @@
 // 'aberrant', vfx/aberrantwipe.js), and the board stands between you, the camera
 // framing it; your turns are your input, its turns its bot's (a beat apart, so you can follow them); every action's events are played
 // by the view (game.duelView, Calissa's: the board, the pieces, the domains' clash) before the next is taken. The duel ends on the Line,
-// a full side, the coup or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
+// a full side, the finisher or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
 // that gets away (flee.js, section 15) leaves you both whole.
 //
 // The controls (the forms: PUZZLE-DUELS.md 4 and 11; the god hand is the cursor, the owner on board v11):
 //   the god hand      LMB on a piece and onto a neighbour: SWAP; held across three or more cells: DRAG; R: ROTATE the 2x2 under the
-//                     hand (its top-left); RMB on an empty cell: DROP the next queued piece; F: the COUP on a buckled foe
-//   the Courier       LMB on a cell up to four away: GLEAN there; W A S D: PUSH that way, with Shift: PUNT; each worn tool on its own
-//                     key: X shoot (the psygun), Q hook (the Sondelass), K drill the way last faced (the Dreamvane), G paint in the Soul
-//                     Brush's feeling (its pick), U toll (the Crucibelle), I hoover, Shift+I flail (the Lockheart)
+//                     hand (its top-left); RMB on an empty cell: DROP the next queued piece; F: the FINISHER on a broken foe
+//   the Courier       LMB on a cell up to four away: RUN there; W A S D: PUSH that way, with Shift: KICK; each worn tool on its own
+//                     key: X Shoot (the psygun), Q Grab (the Sondelass), K Drill the way last faced (the Dreamvane), G Paint in the Soul
+//                     Brush's feeling (its pick), U Delay (the Crucibelle), I Hold, Shift+I Send (the Lockheart)
 //   both              ~ switches form (1 point), E flees (a d20 against 15, 3 points a failed try), Space ends the turn, Backspace
 //                     held 1.5 real s yields (a loss: the shatter)
 // While it runs the Courier is held as the crossing holds them (main.js `aboard`), and every key it reads is spent so no tool sees it.
@@ -22,7 +22,7 @@
 // intent drawn while you plan).
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
-//   Events (with `by`): duel.open { kind, feeling }, duel.buckle { kind, depth }, duel.flee { roll, need, ok }, duel.end { kind, won, how,
+//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -35,9 +35,9 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 5, standOff: 5 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m; the camera off the board's face, m)
+export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 6, standOff: 5 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m; the camera off the board's face, m)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
-const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'hook', KeyK: 'drill', KeyG: 'paint', KeyU: 'toll', KeyI: 'hoover' };
+const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
 const _v = new THREE.Vector3(), _ndc = new THREE.Vector3();
 
@@ -79,7 +79,8 @@ export class DuelSession {
     // the camera on the board's face (the view's `face`: your half on the left), at its middle's height, far enough to hold both ends
     const face = this.view?.face || new THREE.Vector3().crossVectors(facing.clone().negate(), _v.set(0, 1, 0)).normalize();
     const mid = DUEL_VIEW.base + (this.state.board.h * DUEL_VIEW.cs) / 2;
-    g.cinema?.shot('duel', { pos: at.clone().addScaledVector(face, DUEL_ROOM.standOff).setY(at.y + mid + 0.4), look: at.clone().setY(at.y + mid), bars: 0, ease: 4 });
+    const shot = this.view?.frameShot?.() || { pos: at.clone().addScaledVector(face, DUEL_ROOM.standOff).setY(at.y + mid + 0.4), look: at.clone().setY(at.y + mid) }; // (the view's own framing, a cell 12 dots or more)
+    g.cinema?.shot('duel', { pos: shot.pos, look: shot.look, bars: 0, ease: 4 });
     document.exitPointerLock?.(); document.body.classList.add('duel'); // (the cursor is the hand: index.html hides the pointer over the canvas)
     this.intent();
     g.events?.emit('duel.open', { kind: c.kind, feeling, by: 'courier' });
@@ -129,23 +130,23 @@ export class DuelSession {
       }
       if (input.wasPressed('KeyR') && cell) return this.take({ kind: 'rotate', at: [cell.x, cell.y] });
       if (input.wasPressed('Mouse2') && cell) return this.take({ kind: 'drop', at: [cell.x, cell.y] });
-      if (input.wasPressed('KeyF')) return this.take({ kind: 'coup' });
+      if (input.wasPressed('KeyF')) return this.take({ kind: 'finisher' });
       return;
     }
     // the Courier
     const shift = input.isDown('ShiftLeft') || input.isDown('ShiftRight');
-    for (const [k, dir] of Object.entries(WALK)) if (input.wasPressed(k)) { this.face = dir; return this.take({ kind: shift ? 'punt' : 'push', dir }); }
-    if (input.wasPressed('Mouse0') && cell) { const path = this.gleanTo(cell); if (path) return this.take({ kind: 'glean', path }); }
+    for (const [k, dir] of Object.entries(WALK)) if (input.wasPressed(k)) { this.face = dir; return this.take({ kind: shift ? 'kick' : 'push', dir }); }
+    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) return this.take({ kind: 'run', path }); }
     for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) {
       if (kind === 'drill') return this.take({ kind, dir: this.face });
       if (kind === 'paint') return this.take({ kind, colour: this.game.player?.techs?.get?.('soulbrush')?.load?.aspect || 'wonder' });
-      if (kind === 'hoover' && shift) return this.take({ kind: 'flail' });
+      if (kind === 'hold' && shift) return this.take({ kind: 'send' });
       return this.take({ kind });
     }
   }
-  /** A glean's path to `cell` (the kernel's own: up to four cells from where you stand). */
-  gleanTo(cell) {
-    const paths = legalActions(this.state, 0).filter((a) => a.kind === 'glean');
+  /** A run's path to `cell` (the kernel's own: up to four cells from where you stand). */
+  runTo(cell) {
+    const paths = legalActions(this.state, 0).filter((a) => a.kind === 'run');
     const hit = paths.filter((a) => { const e = a.path[a.path.length - 1]; return e[0] === cell.x && e[1] === cell.y; }).sort((a, b) => a.path.length - b.path.length)[0];
     return hit?.path || null;
   }
@@ -160,9 +161,10 @@ export class DuelSession {
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
   run(events) {
     this.busy = true;
-    if (events.some((e) => e.type === 'duel.coup')) this.drainCamera(); // (the coup is the data drain: its own camera, cine/sequences.js)
+    if (events.some((e) => e.type === 'duel.finisher')) this.drainCamera(); // (the finisher is the data drain: its own camera, cine/sequences.js)
     for (const e of events) {
-      if (e.type === 'buckle') this.game.events?.emit('duel.buckle', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
+      if (e.type === 'duelBreak') this.game.events?.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
+      if (e.type === 'flee' && e.ok && e.roll === 20) this.atOnce = true; // (a natural 20: the log says "You flee at once." instead)
       if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
     const done = () => { this.busy = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
@@ -184,7 +186,9 @@ export class DuelSession {
   }
   /** A cell's centre on the board's face, in the world (the view's own layout: vfx/duelview/layout.js). */
   pointOf(cell) {
-    const V = this.view; if (!V?.frame || !V.isOpen) return null;
+    const V = this.view; if (!V?.isOpen) return null;
+    if (V.pointOf) return V.pointOf(cell);
+    if (!V.frame) return null;
     return V.frame.localToWorld(cellLocal(cell.x, cell.y, V.board3, new THREE.Vector3()));
   }
   /** The foe held for the duel: its casts called off, a halt on it, its mind not to act (the creature decides what a halt means). */
@@ -201,7 +205,7 @@ export class DuelSession {
   // ---------------------------------------------------------------- the end
   yield() { this.state.winner = 1; this.how = 'yield'; this.finish(); }
   finish() {
-    const s = this.state, won = s.winner === 0, log = s.log, last = [...log].reverse().find((e) => /^duel\.(line|full|cap|coup)$/.test(e.type));
+    const s = this.state, won = s.winner === 0, log = s.log, last = [...log].reverse().find((e) => /^duel\.(line|full|cap|finisher)$/.test(e.type));
     const how = this.how || (s.fled != null ? 'fled' : last ? last.type.slice(5) : 'line');
     this.close({ won, how });
   }
@@ -215,7 +219,8 @@ export class DuelSession {
     const pool = g.lachryma, d = Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
     this.unpin(c);
-    g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, by: won || how === 'fled' ? 'courier' : 'creature' });
+    const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
+    g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
     if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
     else if (how === 'fled') { if (c) c.emo = 0; } // (away: both whole, no reward; it keeps its aberrance, calm, and drifts off)
     else if (!won) { if (c) c.emo = 0; g.death?.begin?.({ why: 'duel', by: 'creature' }); }
