@@ -149,17 +149,17 @@ function shot(game, { tool, how, at, radius, paint }) {
   const hits = incoming(game, at, radius, 2, true);
   if (!hits.length) return null;
   const hit = hits[0], { pr } = hit;
-  let did = how;
+  let did = how, amount = 0; // (`amount`: the Lachryma a soak or a gulp took in)
   if (how === 'return') send(game, hit, { paint });
   else if (how === 'soak' || how === 'gulp') {
-    if (pr.lachryma > 0) { gone(game, pr); drink(game, how, pr.lachryma); } else { turn(game, hit); did = 'turn'; } // (not Lachryma: turned)
+    if (pr.lachryma > 0) { amount = pr.lachryma; gone(game, pr); drink(game, how, pr.lachryma); } else { turn(game, hit); did = 'turn'; } // (not Lachryma: turned)
   } else if (how === 'shatter') { for (const h of hits) { gone(game, h.pr); game.fx?.impact?.(h.t.clone(), new THREE.Vector3(0, 1, 0), { sparks: 10, dust: 4 }); } }
   else if (how === 'stagger') {
     gone(game, pr); game.fx?.impact?.(hit.t.clone(), new THREE.Vector3(0, 1, 0), { sparks: 12, dust: 0 });
     if (pr.from?.alive) game.stun?.add(pr.from, 1, { by: 'courier', cause: 'parry' });
   } else turn(game, hit);
   breath(game, hit.t);
-  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, by: 'courier' });
+  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, ...(amount ? { amount: +amount.toFixed(2) } : {}), by: 'courier' });
   return 'shot';
 }
 

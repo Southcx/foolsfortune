@@ -326,6 +326,14 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
+- **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
+  `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
+  between the sides, your zone of control and the score, pushed one column a 3 junk landed / what a clear sends across (the genre's
+  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. **A buckle / a teardrop / the coup / a glean**
+  (Espada's, proposed; labels Break, Orb, Finish, Gather; `buckle.js`, `couriertools.js`): a side's EmO broken by a big push, its stun a depth
+  deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
+  Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
+  given at the start of its turn (not rain). *Not:* a table (Raku's), the kick, a trial, a guard break, a mote (the scatter's), a run (three in a line).
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
@@ -713,7 +721,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the clay folk's (earthenware .. the Court); a Querent hand's (1 .. 3) | "chest tier", "achievement tier", "fish tier", "the clay folk's tiers", "a hand's tier" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
-| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail | "a chain of ...", "a feeling chain" |
+| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail; a puzzle duel's settle passes that clear (`chain` event, its `step`) | "a chain of ...", "a feeling chain", "a duel's chain" |
 | combo | the club's chain of blows; the rhythm mode's run of notes; the skiff's chain of tricks (`SkiffCombo`) | "the club's combo", "a rhythm combo", "the trick combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |

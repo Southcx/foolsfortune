@@ -46,6 +46,7 @@ import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './t
 import { catchFactor } from '../../progress/combat/emo.js';
 import { deckDraw } from '../../progress/econ/deck.js';
 import { OUTCOME_FX } from './outcomes.js';
+import { weatherAt, placeOf } from '../../progress/weather.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
@@ -54,7 +55,7 @@ const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance
 
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
 const CAP = 100, ECHO_DELAY = 1.4, CATCH_REACH = 8;
-export const HOOVER = { range: 7, cone: 0.7, pull: 9, drain: 3.6 }; // (its reach: loose Lachryma, a mind laid low; drawn by vfx/lockheartmarks.js)
+export const HOOVER = { range: 7, cone: 0.7, pull: 9, drain: 3.6 }; // (its reach: loose Lachryma, a mind laid low; drawn by vfx/lockheartreach.js)
 // The flail, a table for the combo engine (tools/moveset.js): the coffin in the LEFT hand, its chain let out to CHAIN.out while it is
 // swung, so a blow's reach is the forearm's line out to the coffin (melee.js measures the left hand, `tip` past it). `strike`: the blow's
 // own window in the clip (the windup's backswing is not a blow). Numbers proposed to Dovina (docs/handoffs/dovina/): a coffin is heavier
@@ -231,8 +232,8 @@ export class Lockheart extends HeldTool {
     if (!keys.length) { sfx.fizzle?.(); g.log?.say('warn', 'There is no Possibilikey on the ring (the Pneuka Box).', { key: 'lh.nokey', throttle: 3 }); return; }
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
     // each key turned once more; brass is spent, any other breaks by its uses (table.js keyBreaks: the owner's ruling, 2026-10-04)
-    const used = [...keys], broke = [];
-    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
+    const used = [...keys], broke = [], results = used.map(() => 'kept'); // (`results`: each key's turn by its ring index, kept | spent (brass) | broke)
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); results[i] = used[i] === 'key.brass' ? 'spent' : 'broke'; if (used[i] !== 'key.brass') broke.unshift(used[i]); }
     const { table, mods } = oddsOf(this.heart, used);
     const power = Math.min(2, this.charge / this.fill);
     this.charge = 0; this.save();
@@ -240,7 +241,7 @@ export class Lockheart extends HeldTool {
     for (let s = 0; s < mods.spins; s++) draws.push(spin(table, simRand()));
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins });
     if (g.ultimate) g.ultimate.begin(this); else { this.gesture('Lock_Open'); this.next(); } // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
   /** A clip of the coffin's own over the stance (the lid opened): cut off by the next. */
@@ -263,14 +264,14 @@ export class Lockheart extends HeldTool {
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
     const c = this.quarry();
     if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is no stunned Figment to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
-    const used = [...keys];
-    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) box.useUp('keys', i);
+    const used = [...keys], results = used.map(() => 'kept');
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); results[i] = used[i] === 'key.brass' ? 'spent' : 'broke'; }
     const p = catchOdds({ cls: c.cls || 0, clean: this.clean(c), emoFactor: catchFactor(c.emo), keys: used });
     const caught = p > 0 && deckDraw(g.ledger, `catch.${c.kind}`, Math.max(1, Math.round(1 / p)), simRand());
     this.charge = 0; this.save();
     g.stun?.hold(c, 4); // (kept down while the wheel turns)
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: [], power: 1, spins: 1 });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: used.filter((_, i) => results[i] === 'broke'), results, power: 1, spins: 1 });
     const R = [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }];
     const { pos, face } = this.catchSpot(c);
     this.queue = [{ id: 'catch' }];
@@ -374,7 +375,8 @@ export class Lockheart extends HeldTool {
         if (c.ally || !g.stun?.vulnerable(c)) continue;
         const d = c.pos.clone().sub(P.pos).setY(0); if (d.lengthSq() > 0.2 && d.normalize().angleTo(f) > HOOVER.cone) continue;
         g.baubles?.spawn(c.center(new THREE.Vector3()), 1, { spread: 0.3, up: 1.5, ox: 0.8 });
-        g.events?.emit('lockheart.drain', { kind: c.kind });
+        const own = c.feeling ?? c.aspect, pl = own ? null : placeOf(c.pos); // (what it was full of: its own feeling, else the weather's where it lies)
+        g.events?.emit('lockheart.drain', { kind: c.kind, feeling: own ?? (pl ? weatherAt(pl.place).aspect : null) ?? null, by: 'courier' });
       }
     }
     // what it draws, seen going in: a cone of fine motes toward the coffin
