@@ -10,7 +10,7 @@
 // Final Fantasy XIII's stagger (a gauge that, filled, opens the foe to a finish), Sekiro's posture and its deathblow, Sonic's rings
 // burst from a hit and gathered back in a hurry, .hack's data drain (the coup is its board form).
 //
-//   BUCKLE, COUP   onLanding(s, side, n) -> events   startTurn(s, side) -> apLeft   endOwnTurn(s, side) -> events   COUP_ACTION
+//   BUCKLE, COUP   onLanding(s, side, n) -> events   startTurn(s, side) -> { ap, event }   endOwnTurn(s, side) -> events   COUP_ACTION
 // ---------------------------------------------------------------------------------------
 import { piece } from './board.js';
 
@@ -36,7 +36,7 @@ export function onLanding(s, side, n) {
   if (!critical && !full) return events;
   if (full) S.emo = 0.5;
   S.depth = Math.min(3, (S.depth || 0) + 1); S.stunLeft = BUCKLE.turns;
-  events.push({ type: 'buckle', side, depth: S.depth, by: critical ? 'push' : 'emo', n });
+  events.push({ type: 'buckle', side, depth: S.depth, cause: critical ? 'push' : 'emo', n }); // (`cause`, not `by`: the bus's `by` is who)
   events.push(...shower(s, 1 - side, Math.max(3, Math.min(12, Math.ceil(n / BUCKLE.teardropsPer)))));
   return events;
 }
@@ -53,11 +53,12 @@ function shower(s, side, n) {
   return events;
 }
 
-/** A side's points at the start of its turn: its own, less its stun depth's loss and any stagger the other side's toll left on it. */
+/** A side's points at the start of its turn: its own, less its stun depth's loss and any stagger the other side's toll left on it.
+ *  Its `turn` event says what was lost and why, so the loss is never silent. */
 export function startTurn(s, side) {
-  const S = s.sides[side], lost = BUCKLE.apLost[S.depth || 0] + (S.stagger || 0);
+  const S = s.sides[side], stun = BUCKLE.apLost[S.depth || 0], stagger = S.stagger || 0, ap = Math.max(0, S.ap - stun - stagger);
   S.stagger = 0;
-  return Math.max(0, S.ap - lost);
+  return { ap, event: { type: 'turn', side, ap, lost: S.ap - ap, depth: S.depth || 0, stagger } };
 }
 
 /** The end of a side's own turn: teardrops left on its side fade (one turn to glean them), its EmO settles, and its stun counts down. */
@@ -70,7 +71,9 @@ export function endOwnTurn(s, side) {
 }
 
 /** The coup de grâce (the god hand's): ends the duel on a buckled foe, for the pool its depth asks. */
+/** Only a side that may (`coup`) has it: the data drain is the Courier's, and never touches the Courier (the owner), so a Figment's side
+ *  has no coup in play; a buckled Courier only loses points. (The simulator gives both sides one, to measure it from either chair.) */
 export const COUP_ACTION = { form: 'hand', cost: COUP.ap,
-  legal: (s, side) => { const d = s.sides[1 - side].depth || 0; return d > 0 && s.sides[side].pool >= COUP.pool[d - 1]; },
+  legal: (s, side) => { const d = s.sides[1 - side].depth || 0; return !!s.sides[side].coup && d > 0 && s.sides[side].pool >= COUP.pool[d - 1]; },
   apply: (s, side) => { const d = s.sides[1 - side].depth; s.sides[side].pool -= COUP.pool[d - 1]; s.winner = side;
     return [{ type: 'duel.coup', side, depth: d, winner: side }]; } };
