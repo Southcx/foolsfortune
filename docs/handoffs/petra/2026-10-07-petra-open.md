@@ -25,3 +25,11 @@ still open, one line each, with its source. The owner's calls are marked.)
   is mine, the look Calissa's. Mine: lines typed in (about 0.15 real s a line), a channel's prompt glyph at its head, a game-hour stamp,
   the hero line's hook for the glitch, a command echoed before its reply; rules and events unchanged. Built once Calissa's type and
   colours are in, so the module is reskinned once, not twice.
+
+## The heap, for the deep clean (measured 2026-10-19, built game after perf's route: 327 MB, of it 171 MB typed arrays reachable from the game)
+- The level's merged static meshes keep their CPU arrays (~2.4 MB a batch, about 20 batches): not freeable as is, since their materials
+  are flatShading and `visual.smooth` rewrites their normals from positions in play (render/present.js creaseNormals). A cut: bake both
+  normal sets once, or drop the toggle's live rewrite, then free the arrays on upload (bounds computed first).
+- The paint map's walls: ~15 MB in five per-cell arrays (k and hData Float32). Live state (k fades by dt); the owner allowed its heap.
+- The chests (7.3 MB), the Shrines (4.6 MB), the Dunes' chunks and batches (~9 MB), the Spirit Garden's brush and planetoids (~7 MB,
+  held before the garden is entered: a case for NEW:lend-the-big-ground).
