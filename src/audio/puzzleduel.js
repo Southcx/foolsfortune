@@ -46,16 +46,17 @@ export class PuzzleDuelSounds {
       case 'line': return this.duelLine(e.line, e.w);
       case 'clear': return this.duelClear(e.colour);
       case 'fall': return this.duelFall();
-      case 'break': return this.duelBreak();
+      // (the genre's names, the owner's 2026-10-19 ruling, beside the lore names until Dovina's rename lands: then the lore ones go)
+      case 'break': return e.depth ? this.duelBuckle(e.depth) : this.duelBreak(); // (a Figment's break carries its depth; junk's does not)
       case 'buckle': return this.duelBuckle(e.depth);
-      case 'buckle.end': return this.duelBuckleEnd();
-      case 'teardrop': return this.duelTeardrop();
-      case 'teardrop.drink': return this.duelTeardropDrink();
-      case 'teardrop.fade': return this.duelTeardropFade();
+      case 'buckle.end': case 'break.end': return this.duelBuckleEnd();
+      case 'teardrop': case 'orb': return this.duelTeardrop();
+      case 'teardrop.drink': case 'orb.drink': return this.duelTeardropDrink();
+      case 'teardrop.fade': case 'orb.fade': return this.duelTeardropFade();
       case 'flee': return this.duelFlee(e.roll, e.ok);
       case 'duel.fled': return this.duelFled();
       case 'duel.coup': return this.duelCoup(e.depth);
-      case 'glean': case 'shot': case 'hook': case 'drill': case 'paint': case 'toll': case 'hoover': case 'flail': return this.duelTool(e.type, e);
+      case 'glean': case 'run': case 'shot': case 'hook': case 'drill': case 'paint': case 'toll': case 'hoover': case 'flail': return this.duelTool(e.type, e);
       case 'blast': return this.duelBlast();
       case 'pinch': return this.duelPinch(e.colour);
       case 'land': return this.duelLand(e.n, e.side);
@@ -185,7 +186,7 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow(`duelTool.${kind}`, 8)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.3, 0.25, sidePan(e.side ?? 0));
     switch (kind) {
-      case 'glean': for (let i = 0; i < Math.min(4, (e.path?.length ?? 2) - 1); i++) this.noise(t + i * 0.07, 0.03, { type: 'bandpass', f0: 900, q: 2, gain: 0.15, dest: d }); break;
+      case 'glean': case 'run': for (let i = 0; i < Math.min(4, (e.path?.length ?? 2) - 1); i++) this.noise(t + i * 0.07, 0.03, { type: 'bandpass', f0: 900, q: 2, gain: 0.15, dest: d }); break;
       case 'shot': this.noise(t, 0.03, { type: 'highpass', f0: 3000, gain: 0.35, dest: d }); this.tone(t, 0.12, { f0: 160, f1: 50, gain: 0.35, dest: d }); break;
       case 'hook': this.noise(t, 0.15, { type: 'bandpass', f0: 1500, f1: 3500, q: 2, gain: 0.15, dest: d }); this.noise(t + 0.15, 0.015, { type: 'bandpass', f0: 4000, q: 8, gain: 0.5, dest: d });
         this.tone(t + 0.18, 0.2, { f0: 400, f1: 700, type: 'sawtooth', gain: 0.03, dest: d }); break;
