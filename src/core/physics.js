@@ -32,9 +32,6 @@ export const GROUPS = {
   controllerQuery: groups(0xffff, G.STATIC | G.PROP),
 };
 
-const _v = new THREE.Vector3();
-const _q = new THREE.Quaternion();
-
 // Rapier is Rust: a NaN or an infinity handed to it (an impulse, a ray) is a panic inside the wasm ("unreachable"), and after a panic
 // every call into the world fails ("recursive use of an object"). Every way in from the game is checked here, and a bad value is
 // dropped and reported once, rather than taking the world down.
@@ -131,7 +128,4 @@ export class Physics {
       entity: this.entityOf(hit.collider),
     };
   }
-
-  static toVec(v) { return _v.set(v.x, v.y, v.z); }
-  static toQuat(r) { return _q.set(r.x, r.y, r.z, r.w); }
 }

@@ -127,9 +127,4 @@ export class Book {
       }
     } catch { /* nothing kept */ }
   }
-  erase() {
-    for (const k of ['cards', 'seen', 'photos', 'facts', 'migrated']) for (const id in this[k]) delete this[k][id];
-    this.legacyItems = null; this.legacyLoose = null; this.pins.length = 0; this.plates.length = 0;
-    this.save();
-  }
 }

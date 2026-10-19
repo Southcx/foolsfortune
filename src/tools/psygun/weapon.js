@@ -78,8 +78,6 @@ export class Weapon {
     this.holding = false;
     this.holdT = 0;
     this.releaseCharged = false;
-    this.casingGeo = new THREE.CylinderGeometry(0.009, 0.009, 0.032, 6);
-    this.casingMat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.3, metalness: 0.4, flatShading: true });
     this.shellGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.07, 7);
     this.shellMat = new THREE.MeshStandardMaterial({ color: PALETTE.potLight, roughness: 0.7, flatShading: true });
     this.chargeReserved = 0;
@@ -567,17 +565,6 @@ export class Weapon {
       game.fx.impact(hit.point, hit.normal, { color: PALETTE.pale, sparks: 7, dust: 7, decal: true });
     }
     sfx.impact(game.listenerDistance(hit.point));
-  }
-
-  ejectCasing(character, player) {
-    const g = this.game;
-    const p = character.gunPoint('eject', new THREE.Vector3());
-    const q = character.gun.quaternion;
-    const right = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
-    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
-    const back = new THREE.Vector3(-1, 0, 0).applyQuaternion(q);
-    const v = right.multiplyScalar(2.2 + simRand()).addScaledVector(up, 2 + simRand()).addScaledVector(back, 0.4).add(player.vel);
-    this.spawnDebris(p, q, v, this.casingGeo, this.casingMat, RAPIER.ColliderDesc.cylinder(0.016, 0.009), 'casing');
   }
 
   // spent clay shell tumbles out of the port

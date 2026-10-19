@@ -46,7 +46,6 @@ export const TABLES = [
 ];
 /** Real seconds between a bot's moves (so its turn can be followed), by the table speed you choose (the bazaar's `prefs.speed`). */
 export const SPEEDS = [{ id: 'normal', label: 'Normal', beat: 0.6 }, { id: 'fast', label: 'Fast', beat: 0.25 }, { id: 'fastest', label: 'Fastest', beat: 0.08 }];
-export const BEAT = SPEEDS[0].beat;
 /** A seat's pages: the lobby (play for chips, practise free, how to play), the how-to, and the game. Only the game's is the table view's
  *  (vfx/bazaartable.js keys on it); the bots wait on the other two. */
 export const PAGES = { table: 'bazaar.table', lobby: 'bazaar.lobby', howto: 'bazaar.howto' };

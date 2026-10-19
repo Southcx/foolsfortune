@@ -27,7 +27,6 @@ import { sfx } from '../audio/sfx.js';
 import { FONT } from '../ui/theme.js';
 import { zoneOf } from '../render/zonemap.js';
 
-export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
 const LAYERS = [
   { id: 'well', name: 'THE GREAT DUNEMAW', below: -700, cell: 2, sight: 7 }, // (a Well's floor, far below the Dunes: world/well/dunemaw.js)
   { id: 'dunes', name: 'THE DUNES', below: -150, cell: 8, sight: 40 },
@@ -383,14 +382,6 @@ export class Cartography {
     }
     return n ? known / n : 0;
   }
-  /** Forget everything (a new game). */
-  erase() {
-    for (const l of LAYERS) this.cells[l.id].clear();
-    for (const a of this.anchors) { a.done = false; a.cov = 0; }
-    this.stats = { charted: 0, understood: 0 };
-    this.save();
-  }
-
   /** After the anchors are in: the ones already mapped in an earlier session. */
   restoreAnchors() { if (this.doneTags) for (const a of this.anchors) if (this.doneTags.has(a.tag)) { a.done = true; a.cov = 1; } }
 

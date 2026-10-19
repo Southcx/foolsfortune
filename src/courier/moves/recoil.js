@@ -2,7 +2,6 @@
 // you're pushed up, and back the way the barrel points. Three shots' worth a jump (a charged
 // shot is worth two), and it comes back when you land. What it costs is what a shot costs:
 // Lachryma. Air jumps and dashes still work on top of it.
-import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 

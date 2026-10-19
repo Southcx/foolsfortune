@@ -165,8 +165,6 @@ export class Rigging {
     return grate;
   }
 
-  isGrate(collider) { return this.grates.has(collider.handle); }
-
   // ---- balance beams ----
   /** A horizontal beam from a to b (same height), `width` wide. */
   addBeam(L, a, b, { width = 0.3, thick = 0.16, color = PALETTE.wood } = {}) {

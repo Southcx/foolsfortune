@@ -51,7 +51,6 @@ export class LachrymaPool {
   get fraction() { return this.value / this.max; }
 
   cost(base, tag = '*') { return base * this.product((m) => m.costMult?.[tag] ?? m.costMult?.['*']); }
-  canAfford(base, tag) { return this.available >= this.cost(base, tag) - 1e-6; }
 
   // ---- spending ------------------------------------------------------------
   /** All-or-nothing. Returns true if paid. */
@@ -108,7 +107,6 @@ export class LachrymaPool {
   }
 
   reset(value = this.max) { this.value = value; this.reserved = 0; this.sinceSpend = Infinity; this.emit('change', { value }); }
-  serialize() { return { value: this.value, baseMax: this.baseMax, modifiers: [...this.modifiers.keys()] }; }
 }
 
 // ---------------------------------------------------------------------------

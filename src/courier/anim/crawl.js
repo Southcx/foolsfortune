@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE CRAWL: on all fours under what the crouch cannot pass (the owner, 2026-10-10: "a proper full-prone crawling animation or two to
 // use for situations where crawling is warranted (like under a wall, tight spaces)"). The look only, built ahead of its body: the low
-// capsule that lets the Courier under is player.js's (Petra's: docs/handoffs/petra/2026-10-10-from-calissa-crawl.md). Until it sets the
+// capsule that lets the Courier under is player.js's (Petra's). Until it sets the
 // state below, nothing here plays.
 //   THE STATE    s.crawl (truthy: down on all fours) and s.prone (0..1: flat on the belly instead of the hands and knees), on the
 //                animation state as s.crouch is; the speed is the capsule's.

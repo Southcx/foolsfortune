@@ -16,7 +16,7 @@ const simRand = stream('tools/psygun/specials'); // (the simulation's chance: co
 
 
 const UP = new THREE.Vector3(0, 1, 0);
-const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _ndc = new THREE.Vector3();
+const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const HOT = new THREE.Color(PALETTE.hot), GLOW = new THREE.Color(PALETTE.glow);
 const ease = (x) => 1 - Math.pow(1 - x, 3);
 

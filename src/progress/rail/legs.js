@@ -140,8 +140,6 @@ export const LEGS = {
     { phase: 'release', at: 0, every: 4, targets: 6 },
   ] },
 };
-/** The encounter is no leg (its sequence and choice: encounters.js); the turn of the rail between legs is the stage's (4 bars). */
-export const NOT_A_LEG = ['encounter'];
 
 /** A shot's kind: a fixed one, the waypoint's feeling's share of astral (`feel`), or the ship's own form (`gift`, resolved at the
  *  shot: 'gift' passes through). */

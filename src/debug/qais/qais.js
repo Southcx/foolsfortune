@@ -137,8 +137,6 @@ export class Qais {
   }
 
   // ---------------------------------------------------------------- the owner's acts
-  latest(t) { return this.store.docs('tests').find((x) => x.id === t.id) || t; }
-
   /** A verdict ('open' undoes it: the card's stamped button pressed again). A Fail also files a report (the card calls file(test)). */
   /** A question answered from its options (null takes it back), and its note: written on the press, never a stream. */
   answer(x, option) { this.store.update('questions', x.id, { answer: option, where: option ? `QAIS, ${this.round?.build || this.build}` : null, answeredAt: Date.now() }); }

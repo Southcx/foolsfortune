@@ -18,7 +18,6 @@ const simRand = stream('world/ground/groundmarks'); // (the simulation's chance:
 
 export const SAND = { spray: new THREE.Color(0xf0c890), dust: new THREE.Color(0xe7b98a), footRadius: 0.11, stride: 0.72 };
 
-const UP = new THREE.Vector3(0, 1, 0);
 const _p = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Vector3(), _v = new THREE.Vector3();
 
 export class SandMarks {

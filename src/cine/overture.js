@@ -24,7 +24,7 @@ import * as THREE from 'three';
 import { Stills } from '../ui/stills.js';
 import { sfx } from '../audio/sfx.js';
 import { LogoFire } from '../vfx/logofire.js';
-import { BOARD, PLACES, BAR, HANDOVER, ROAR, STRIKE, END, OVERTURE_TITLE } from './overture.board.js';
+import { BOARD, PLACES, HANDOVER, ROAR, STRIKE, END, OVERTURE_TITLE } from './overture.board.js';
 
 export class Overture {
   constructor(game) {
@@ -224,5 +224,3 @@ export class Overture {
     } else if (lg) lg.style.opacity = '0';
   }
 }
-
-export { BAR };

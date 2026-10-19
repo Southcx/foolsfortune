@@ -14,7 +14,7 @@
 //   P.lotuses [{ i, planet, to, pos, land, toPlanet }]   P.features [{ kind, i, planet, pos, mesh? }]   P.show(on)   P.sync(counts)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLANETOIDS as NAMES } from '../../npc/realmnames.js';
 import { Planetoid } from '../../vfx/garden/planetoid.js';
 import { GardenSky } from '../../vfx/garden/gardensky.js';

@@ -10,7 +10,7 @@ import { KINDS } from '../../progress/econ/materials.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
-import { STRAINS, CAPS, STRAIN_NAMES } from '../../progress/mycelium.js';
+import { CAPS, STRAIN_NAMES } from '../../progress/mycelium.js';
 
 export function gardenRules({ on, L, log }) {
   // the mycelium (progress/sporebeds.js, progress/myggdrasil.js, progress/keepsakes.js: MYCELIUM.md); names Espada's (LORE.md "The

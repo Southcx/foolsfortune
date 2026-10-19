@@ -11,7 +11,7 @@
 //
 //   TIERS[1..4] = { name, worth, share, lachryma, toll }   CASTER_SHELLS = [{ no, id, label, tier, family, carrier, payloads, field,
 //   needs, n, from, was?, backfire? }]   FAMILIES   shellByNo(n)   shellById(id)   worthOfShell(id)   fireCost(id) -> { lachryma, crack }
-//   tollShatters(cracked) -> bool   chamberHolds(id, cap) -> n   typeLabel(no) -> 'TYPE-07'
+//   chamberHolds(id, cap) -> n   typeLabel(no) -> 'TYPE-07'
 // ---------------------------------------------------------------------------------------
 
 /** The four tiers (CASTER-SHELLS.md section 2). `worth` in cubes (`worthOf`; a tier IV is never sold, its worth is for the Codex);
@@ -173,8 +173,6 @@ export function fireCost(id) {
   const t = TIERS[shellById(id)?.tier || 1];
   return { lachryma: t.lachryma, crack: !!t.toll };
 }
-/** The toll's limit: a tier IV fired with three regions already cracked shatters the Courier (of four: mask, torso, arms, legs). */
-export const tollShatters = (cracked) => cracked >= 3;
 /** How many of a shell a chamber holds, given the psygun's `cap` (kinds.js): commons the cap, uncommons half, rares 2, the Caster's 1. */
 export function chamberHolds(id, cap) {
   const t = TIERS[shellById(id)?.tier || 1];

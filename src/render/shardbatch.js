@@ -18,8 +18,6 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-const _m = new THREE.Matrix4();
-
 export class ShardBatch {
   constructor(scene, material, { slots = 650, verts = 192 } = {}) {
     this.slots = slots; this.verts = verts;

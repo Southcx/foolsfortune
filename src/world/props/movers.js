@@ -29,7 +29,6 @@ export const BRASS = 0xb98a3f;
 export const STONE = 0xc9b8a4;
 
 const _p = new THREE.Vector3();
-const _q = new THREE.Quaternion();
 const ONE = new THREE.Vector3(1, 1, 1);
 const YAXIS = new THREE.Vector3(0, 1, 0);
 const WHITE = new THREE.Color(0xffffff);
@@ -197,10 +196,6 @@ export class Mover {
     out.copy(point).applyMatrix4(this.curInv).applyMatrix4(this.nextM).sub(point);
     if (this.surface && this.dt) out.addScaledVector(this.surface, this.dt);
     return out;
-  }
-
-  velocityAt(point, out = new THREE.Vector3()) {
-    return this.displacement(point, out).divideScalar(this.dt || 1 / 60);
   }
 
   /** A point given in the mover's local space, in world space now. */

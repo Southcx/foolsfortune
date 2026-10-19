@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
-import { T, PALETTE } from '../../core/config.js';
+import { T } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/swim'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -203,5 +203,3 @@ export class Swim extends Tech {
 
   label() { return 'SWIM'; }
 }
-
-export const WATER_TINT = PALETTE.deep;

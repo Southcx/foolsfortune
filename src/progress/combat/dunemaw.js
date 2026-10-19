@@ -11,7 +11,7 @@
 // training mode (infinite health, a readout per bout, switchable behaviour).
 //
 //   FOE  crackOf(type, cause) -> crack points   phase(foe) -> 'crown' | 'reel' | 'bare'   hitMult(phase, part, type) -> damage x
-//   broodAt(hpShare, lastShare, clutchesLeft) -> brood to call   pay(end) -> { floors, items }
+//   broodAt(hpShare, lastShare, clutchesLeft) -> brood to call
 //   ARENA (the bowl's measures)   NURSERY   FINDS   findWorth(kind, floor, warped?) -> minutes of play   SOLAR  medalOf(seconds) -> 'gold' | 'silver' | 'bronze' | null
 //   litRing(sunUp, shaded, weather) -> bool   STRAWMAN  bout(hits) -> { blows, seconds, damage, perSecond, byType, statuses }
 // ---------------------------------------------------------------------------------------
@@ -73,7 +73,6 @@ export function broodAt(hpShare, lastShare, clutchesLeft) {
   for (const at of FOE.brood.at) if (lastShare > at && hpShare <= at) n += FOE.brood.each;
   return Math.min(n, clutchesLeft * NURSERY.clutch.brood);
 }
-export const pay = (end) => FOE.pay[end] || null;
 
 /** THE ARENA (docs/plans/DUNEMAW-ARENA.md, Petra's to build): the bowl's measures in metres, bearings from north clockwise. */
 export const ARENA = { // (the owner, 2026-10-09: "yes I want it BIG ... a good opportunity for me to test movement in a large arena": every

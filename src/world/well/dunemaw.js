@@ -391,19 +391,3 @@ export class Dunemaw {
     else if (this.run && !g.death?.active && zoneOf(P.pos) !== 'well') this.end('shatter');
   }
 }
-
-/** (The greybox pool's spiral, kept for reference; the pool is vfx/dunemaw.js now.) */
-export function spiralTexture() {
-  const S = 128, c = document.createElement('canvas'); c.width = c.height = S;
-  const x = c.getContext('2d'), grd = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-  grd.addColorStop(0, '#05020a'); grd.addColorStop(0.7, '#1a0f2a'); grd.addColorStop(1, '#3a2350');
-  x.fillStyle = grd; x.fillRect(0, 0, S, S);
-  x.strokeStyle = 'rgba(154,107,255,0.35)'; x.lineWidth = 3;
-  for (let arm = 0; arm < 3; arm++) {
-    x.beginPath();
-    for (let i = 0; i <= 60; i++) { const t = i / 60, a = arm * (Math.PI * 2 / 3) + t * Math.PI * 2.2, r = t * S * 0.48; x.lineTo(S / 2 + Math.cos(a) * r, S / 2 + Math.sin(a) * r); }
-    x.stroke();
-  }
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}

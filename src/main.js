@@ -43,7 +43,7 @@ import cmuB64 from './assets/anims_cmu.bin?b64';
 import { loadClips } from './courier/anim/suite.js';
 import { Clappers } from './creatures/clappers.js';
 import { LachrymaPool, Baubles } from './courier/lachryma.js';
-import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
+import { Shells } from './tools/psygun/shells.js';
 import { Trial } from './world/trial.js';
 import { TestRoom } from './world/testroom/room.js';
 import { TestRoomDress } from './vfx/testroomkit.js';

@@ -73,6 +73,3 @@ export function blendRig(a, b, k, Q, ship, out) {
   out.fov = _a.fov + (_b.fov - _a.fov) * e;
   return out;
 }
-
-/** Where the gun fires in a scroll view (above, side): along the crossing, from the ship. */
-export const scrollAim = (out) => out.copy(F);

@@ -19,8 +19,6 @@ export const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const lerp = THREE.MathUtils.lerp;
 export const clamp = THREE.MathUtils.clamp;
 export const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-/** Ease in and out through a triangle wave: 0 at u=0, 1 at u=.5, back to 0 at 1. */
-export const tri = (u) => 1 - Math.abs(((u % 1) + 1) % 1 * 2 - 1);
 const DEG = Math.PI / 180;
 
 export class Author {
@@ -152,6 +150,4 @@ export class Author {
     }
     ch.root.updateMatrixWorld(true);
   }
-
-  worldOf(bone) { return (typeof bone === 'string' ? this.B[bone] : bone).getWorldPosition(new THREE.Vector3()); }
 }

@@ -10,12 +10,11 @@
 // Prior art: the revolver cylinder (a chamber per round, and choosing what goes in each), Monster Hunter's bowguns (each gun loads
 // only some ammo types, each to its own clip size), Destiny's ammo types per weapon frame, and Caster's own shell set.
 //
-//   PSYGUNS[id] = { id, name, chambers, shape, cap, capacity: { typeId: n }, loadout: [typeId], heart?, blurb }   typeNo(i) -> 'TYPE-00'
+//   PSYGUNS[id] = { id, name, chambers, shape, cap, capacity: { typeId: n }, loadout: [typeId], heart?, blurb }
 //   play: how each variant fights (OVERLAY.md 19; Ratchet & Clank's weapons, the owner's model): numbers here, behaviour variantplay.js
 //   capacityOf(gun, typeId)   chamberCapacity(gun, i, typeId)   (the heart's double: shells.js asks it once Petra wires it)
 // ---------------------------------------------------------------------------------------
 import { chamberHolds, shellById } from '../../progress/combat/castershells.js';
-export const typeNo = (i) => `TYPE-${String(i).padStart(2, '0')}`;
 
 export const PSYGUNS = {
   // (the cylinder's shape is its chamber count: docs/plans/OVERLAY.md 18; the owner's four variants, 2026-10-18, beside the first)

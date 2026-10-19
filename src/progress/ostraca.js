@@ -9,7 +9,7 @@
 // Rosetta Stone (a bilingual), Spelunky's hidden rooms, and comprehensible input (Krashen): a word met in context sticks.
 //
 //   OSTRACA = { total, places: { where: { n, how } } }   STELAE = [{ id, where, words }]   WORD_SPLIT(FUNCTIONS) -> { ostraca, stelae }
-//   DUNEMAW_DECK = { size, chance, certainWithin }   glossed(ledger, FUNCTIONS) -> [word ids]   CRIB
+//   DUNEMAW_DECK = { size, chance, certainWithin }   CRIB
 // ---------------------------------------------------------------------------------------
 
 /** How many lie where, and how each is found (a find is once and for good: the island's paper does not grow back). */
@@ -39,13 +39,6 @@ export function WORD_SPLIT(functions = {}) {
 /** The Great Dunemaw's share: a run's floors each give a chance of the next ostracon in its deck, and a run of `certainWithin` floors
  *  without one makes the next certain (a deck: the 1-in-N made certain within N; the glossary's word). */
 export const DUNEMAW_DECK = { size: 6, chance: 0.25, certainWithin: 8 };
-
-/** The words glossed so far, from the ledger: an ostracon found counts `ostracon.<word>`, a stele read `stele.<id>` (its words). */
-export function glossed(L, functions = {}) {
-  const out = WORD_SPLIT(functions).ostraca.filter((w) => (L?.get(`ostracon.${w}`) || 0) > 0);
-  STELAE.forEach((s) => { if ((L?.get(s.id) || 0) > 0) out.push(...s.words); });
-  return out;
-}
 
 /** THE CRIB SHEET (the knack, Espada's name, the owner's): it shows the English gloss beside each word that is glossed; opened by an
  *  achievement like every Art, three ways (any one): 100 macros spoken (the patient), a five-Function macro held at the first try (the

@@ -4,12 +4,9 @@
 // only has to place the body relative to the thing it holds.
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
-import { Author, V3, lerp, smooth, tri } from './authoring.js';
+import { Author, V3, lerp, smooth } from './authoring.js';
 import { authorSkiff } from '../skiff/clips.js';
 import { authorBrush } from '../../tools/soulbrush/clips.js';
-
-
-const DEG = Math.PI / 180;
 
 /** Where the ladder's rungs sit relative to the body: the rung centres are this far in front of the feet. */
 export const LADDER = { standoff: 0.42, handX: 0.2, footX: 0.12, handTop: 1.86 };

@@ -121,7 +121,6 @@ function expire(game, q) {
 export const inscribed = (ent) => live.filter((q) => q.ent === ent).map((q) => q.prop);
 /** Undo every writing on a thing at once (the Veritome's truth). */
 export function unwrite(game, ent) { let n = 0; for (const q of live.filter((x) => x.ent === ent)) { expire(game, q); n++; } return n; }
-export function inscriptions() { return live; }
 
 /** Every frame: the seals ride their things and fade with the writing; the expired are undone. */
 export function tickInscriptions(game, dt) {

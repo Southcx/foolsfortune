@@ -33,7 +33,6 @@
 //
 //   repairHinges(q, n, bones, rest, limbs, loop, fps)   q: a clip's Float32Array (n frames x bones x 4, local), in place; rest: the
 //                                     bones' rest quaternions (the pack's); loop: its seam kept; returns the limb frames turned over 1 degree
-//   offHinge(q, n, bones, rest)        per limb frame: the lower bone's sideways swing off its hinge and its flexion, degrees
 //   HINGED(name)                       whether a clip of that name is repaired
 //   const lh = new LimbHinges(bones, restOf)   lh.apply(dt, legs = 1, arms = 1)   the posed bones squared, each pair by that weight
 // ---------------------------------------------------------------------------------------
@@ -204,25 +203,4 @@ export class LimbHinges {
       l.U.quaternion.fromArray(r[0]); l.Lo.quaternion.fromArray(r[1]); l.E.quaternion.fromArray(r[2]);
     }
   }
-}
-
-/** Per limb frame, the lower bone against its rest: its swing off the hinge (about its rest Z) and its flexion (about its rest X), degrees,
- *  twist (about its length) taken out first. */
-export function offHinge(q, n, bones, rest, limbs = LIMBS) {
-  const nb = bones.length, out = [];
-  for (const [, ln] of limbs) {
-    const il = bones.indexOf(ln);
-    if (il < 0) continue;
-    const ri = inv(rest[il]);
-    for (let f = 0; f < n; f++) {
-      let d = mul(ri, get(q, (f * nb + il) * 4));
-      if (d[3] < 0) d = d.map((x) => -x);
-      const t = nq([0, d[1], 0, d[3]]);
-      let s = mul(d, inv(t));
-      if (s[3] < 0) s = s.map((x) => -x);
-      const sl = Math.hypot(s[0], s[1], s[2]), sa = 2 * Math.atan2(sl, s[3]);
-      out.push({ limb: ln, f, side: sl > 1e-9 ? (s[2] / sl) * sa / DEG : 0, flex: sl > 1e-9 ? (s[0] / sl) * sa / DEG : 0 });
-    }
-  }
-  return out;
 }

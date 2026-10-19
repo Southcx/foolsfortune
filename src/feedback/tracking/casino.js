@@ -10,7 +10,6 @@
 // ---------------------------------------------------------------------------------------
 
 const NAMES = { querent: 'Querent', zodiac: 'Zodiac', eventhorizon: 'Event Horizon', supernova: 'Supernova Run', nebula: 'Nebula Bluff' };
-const RANKS = [null, 'aces', 'twos', 'threes', 'fours', 'fives', 'sixes', 'sevens', 'eights', 'nines', 'tens', 'Pages', 'Knights', 'Queens', 'Kings'];
 
 export function casinoRules({ on, L, log }) {
   const say = (kind, text, key, throttle = 1) => log.say(kind, text, { key, throttle });

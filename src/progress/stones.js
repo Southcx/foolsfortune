@@ -20,9 +20,9 @@
 //
 //   STONES[id] = { pool: { maxBonus?, regenMult?, costMult?, regenDelayMult? }, reach, heady, tint, gulp?, overflow, cubes?, night?, luck? }
 //   stoneOf(id) -> the row (the Maker's when unknown)   modifier(id, { night }) -> a LachrymaPool modifier (courier/lachryma.js addModifier)
-//   intake(id, amount, { full, night, luckRoll? }) -> { take, flushed, cubes, heady }   draughtOf(id, aspect, strength, second?) -> { aspect: share }
+//   draughtOf(id, aspect, strength, second?) -> { aspect: share }
 //   COURIER_MIND = { perDrink, perOverflow, settlePerSec }   COURIER_MIND_EFFECT[state] = { power, fragility }   courierMindEffect(mind)
-//   DRAUGHT = { build, fadePerSec }   reachOf(id, { night }) -> magnet radius x
+//   DRAUGHT = { build, fadePerSec }
 //   PRESSURE = { unit, crack }   apertureOf(id) -> x   pressureOf(amount, id) -> whole units (docs/plans/SPINE.md 4: the way OUT)
 // ---------------------------------------------------------------------------------------
 import { stateOf } from './combat/mind.js';
@@ -95,23 +95,6 @@ export function modifier(id, { night = false } = {}) {
   const s = stoneOf(id), m = { ...s.pool }, phase = night ? s.night : s.day;
   if (phase?.regenMult) m.regenMult = (m.regenMult ?? 1) * phase.regenMult;
   return m;
-}
-/** The bauble magnet's radius multiplier for a stone, by day or by night. */
-export function reachOf(id, { night = false } = {}) {
-  const s = stoneOf(id), phase = night ? s.night : s.day;
-  return s.reach * (phase?.reach ?? 1);
-}
-
-/** One drink of `amount` through the stones: how much is taken in now (`take`; the gulp-capped rest waits), how much the mind is pushed
- *  (`heady`, in mind units: more past full), and the cubes kept (citrine). `luckRoll` is a number in [0, 1) from the simulation's
- *  stream (opal): below `none` the drink is lost, above 1 - `double` it is doubled. `dt` (seconds) bounds the gulp. */
-export function intake(id, amount, { full = false, luckRoll = null, dt = 1 } = {}) {
-  const s = stoneOf(id);
-  let take = amount;
-  if (s.luck && luckRoll != null) { if (luckRoll < s.luck.none) take = 0; else if (luckRoll >= 1 - s.luck.double) take = amount * 2; }
-  const cap = s.gulp ? s.gulp * dt : Infinity, now = Math.min(take, cap);
-  const heady = s.heady * (full ? COURIER_MIND.perOverflow : COURIER_MIND.perDrink) * now;
-  return { take: now, waiting: take - now, heady, cubes: (s.cubes || 0) * now };
 }
 
 /** The draught a drink leaves: the place's feeling, by the stone's tint and the weather's strength (diamond takes an agate's two). */

@@ -35,7 +35,7 @@ import { FishingLine } from './line.js';
 import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
 import { lureList, attraction, tasteOf, BARE } from './lures.js';
-import { ASPECTS, SHOWN, BY_SPECIES, TIDES, aspectKnown, knownAspects } from './species.js';
+import { ASPECTS, SHOWN, TIDES, aspectKnown, knownAspects } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
 import { sfx } from '../../../audio/sfx.js';
 import { stream } from '../../../core/rng.js';

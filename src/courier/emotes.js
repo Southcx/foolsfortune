@@ -15,7 +15,7 @@
 //   EMOTES[id] = { family, once? | loop? | enter?, exit? (a clip or a chain of clips), from?, to? (a once's window, s), hold?,
 //                  floor? (a floor pose: the legs are the clip's, lifted out of the floor), bare? (lying down: the worn tools are put out of
 //                  sight while the body is down, as MMOs put weapons away for an emote: a tool on the back would stand up through them), line, aliases? }
-//   FAMILIES[family] = what it holds (for /emotes)        EMOTE_OF[word] = id (aliases too)        inFamily(family) = [id ...]
+//   FAMILIES[family] = what it holds (for /emotes)        inFamily(family) = [id ...]
 // ---------------------------------------------------------------------------------------
 
 // a triple of the suite's: Emote_<Name>Enter, Emote_<Name>Loop, Emote_<Name>Exit
@@ -184,8 +184,6 @@ export const EMOTES = {
   shakeit: { family: 'taunt', once: 'Taunt_ShakeIt', line: 'You shake it.' },
   cheeky: { family: 'taunt', once: 'Taunt_ButtSlap', line: 'You slap your own behind.' },
 };
-
-export const EMOTE_OF = Object.fromEntries(Object.entries(EMOTES).flatMap(([id, e]) => [[id, id], ...(e.aliases || []).map((a) => [a, id])]));
 
 /** The ids of a family, in the table's order. */
 export const inFamily = (family) => Object.keys(EMOTES).filter((id) => EMOTES[id].family === family);

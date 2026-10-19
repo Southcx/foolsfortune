@@ -37,8 +37,7 @@ import { LegRunner } from './legrunner.js';
 import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 
-const MUSIC_ID = { leviathan: 'nobody' };
-const BAR_S_GUESS = 2; // (a bar's real seconds near enough for the barge's rutter price: stage.js BAR_S) // (the cue's names for a leg where they differ from the waypoint's)
+const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
 const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Reckon the sea.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
 // each encounter's title and its choices' words (Espada's: docs/LORE.md, "The encounters at sea"); a choice not listed shows its `does`
 const ENCOUNTER_WORDS = {

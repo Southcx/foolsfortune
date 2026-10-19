@@ -14,7 +14,6 @@ import { T } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
 import { HANG } from '../anim/authored.js';
 
-const UP = new THREE.Vector3(0, 1, 0);
 const DROP = HANG.drop; // feet this far below the grip (the authored hang clips are built for it)
 const CAPSULE_WALL = 0.34; // the capsule hangs this far from the ledge's face; the body is drawn HANG.wall from it
 const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();

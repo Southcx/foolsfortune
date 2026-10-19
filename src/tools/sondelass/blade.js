@@ -33,7 +33,7 @@ const simRand = stream('tools/sondelass/blade'); // (the simulation's chance: co
 
 const SLOW = 0.05, DRAIN = 4, ENTER_MIN = 8, ZAN_TOL = 0.24, REACH = 1.6;
 const _r = new THREE.Vector3(), _u = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _p = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion();
+const _m = new THREE.Matrix4();
 const wrapPi = (a) => { a = a % Math.PI; return a < -Math.PI / 2 ? a + Math.PI : a > Math.PI / 2 ? a - Math.PI : a; }; // (a line has no direction: angles are mod pi)
 
 export class BladeMode {

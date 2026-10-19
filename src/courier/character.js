@@ -33,8 +33,6 @@ const SOLE_KNEEL = 0.14;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
 const NECK_TURN = 64 * DEG; // the most the head turns on the neck against the chest (a neck's own range is about 70 to 80: the pose audit holds it to 70)
 const UP = new THREE.Vector3(0, 1, 0);
-const X = new THREE.Vector3(1, 0, 0);
-const Zv = new THREE.Vector3(0, 0, 1);
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3();
 const _v5 = new THREE.Vector3(), _v6 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
@@ -685,7 +683,7 @@ export class Character {
       st.contact[f] = THREE.MathUtils.lerp(c, cc, cr);
     }
     st.gaitMove = THREE.MathUtils.lerp(wm, cwk, cr);
-    // (no skid stop and no half turn over the gait: the owner, 2026-10-11, "it's slow and breaks flow"; both were anim/stopturn.js)
+    // (no skid stop and no half turn over the gait: the owner, 2026-10-11, "it's slow and breaks flow")
     // (how much of the gait is running ground, and how much of that a sprint: a drawn tool's run of its own reads it, the cutlass's)
     st.run = (W[2] + W[3]) * (1 - cr) * (1 - crw) * (1 - this.airT) * (1 - sl) * (1 - mn) * (1 - da) * (1 - aw); st.sprint = W[2] + W[3] > 1e-6 ? W[3] / (W[2] + W[3]) : 0;
     // footsteps: the left heel lands at phase 0, the right at 0.5

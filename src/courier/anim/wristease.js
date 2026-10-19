@@ -32,7 +32,7 @@ export const WRIST = { flex: 71, ext: 66, radial: 17, ulnar: 31, turn: 86 };
  *  turn is never late to a pose, never a jump); how fast either lets go when nothing needs it (1/s). */
 const SWING = 75 * DEG, RATE = 720 * DEG, FOLLOW = 18;
 const BODY = ['chest', 'spine', 'pelvis', 'thighL', 'thighR'];
-const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qc = new THREE.Quaternion();
+const _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qc = new THREE.Quaternion();
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _f = new THREE.Vector3(), _h = new THREE.Vector3(), _n0 = new THREE.Vector3(), _F = new THREE.Vector3(), _pw = new THREE.Vector3();
 const _S = new THREE.Vector3(), _W = new THREE.Vector3(), _E = new THREE.Vector3(), _C = new THREE.Vector3(), _a = new THREE.Vector3(), _u0 = new THREE.Vector3(), _v0 = new THREE.Vector3(), _e = new THREE.Vector3(), _mid = new THREE.Vector3();
 const Y = new THREE.Vector3(0, 1, 0), _M1 = new THREE.Matrix4(), _M2 = new THREE.Matrix4(), _t3 = new THREE.Vector3();

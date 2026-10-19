@@ -16,8 +16,6 @@
 //   store.call(server, tool, input) -> payload   (a connector, as the viewer: Send to the brigade)
 // ---------------------------------------------------------------------------------------
 
-export const COLLECTIONS = ['brief', 'tests', 'bugs', 'questions', 'meta'];
-
 const use = (name) => {
   try { return window.claude?.use ? window.claude.use(name).catch(() => null) : Promise.resolve(null); } catch { return Promise.resolve(null); }
 };

@@ -1357,7 +1357,7 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
   (the same harness, the clearance patched off for before): straight at it, the mesh 0.2 cm through at worst (1 cm short at rest), along
   it, 2 cm short; turning, 0.6 cm short, 4 and 6 cm through for a tick or two at 540 and 1080 degrees a second; in the open, a slide
   of exactly 0; 0.09 ms a frame prone. What it cannot hold: a gap narrower than the body (0.7 m wide, two walls: 10 cm through each,
-  the same as before); handed to Petra with the numbers (`docs/handoffs/petra/2026-10-11-from-calissa-prone-reach.md`).
+  the same as before); handed to Petra with the numbers.
 - **Rule:** 194 (new; 193 as Calissa wrote it, renumbered at the gate: Dovina's 193 was first).
 
 ### 2026-10-11 · High Time chased what it struck (the owner: "the launcher is linked to chasing the target it hits, so the action breaks when attempting to use it on the Strawman")
@@ -1647,7 +1647,7 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
   `IDLE.under`: while a tool or the gun is in the hands, the aim is up or a passive tech lays its pose (a crate carried, the kick's blows), the idle
   under the layer is the pack's `idle` (Loco_IdleMasc, what every stance was made over), crossfaded over 0.4 s and held 1 s after. The six
   stances now read 0.06 to 1.13 degrees of lean and 0 to 0.04 of pelvis, the numbers of before v133. (c) the kiln's choice:
-  `idles.choose(key)`, the list and a save field handed to Petra (`docs/handoffs/petra/2026-10-10-from-calissa-idle-choice.md`).
+  `idles.choose(key)`, the list and a save field handed to Petra.
 - **Rule:** 173 (new).
 
 ### 2026-10-10 · The stillest idle twitched its hands once a loop (found measuring the idles for R21)
@@ -2795,7 +2795,7 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
   ground leads into the staff's string from its first sweep. The Dreamquake's reveal and ring use the row's radius (5 m), as its blow does.
 - **Rule:** 51 (its second half), and 35's note: a hook asks what the move became (where they are), not what it was meant to be.
 
-### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
+### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/sweeps/garden.mjs)
 - **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,
   calibration numbers under the garden's pages, and a chevron pointing world-down on a round world.
 - **Causes (measured, file:line in GARDEN-SWEEP.md):**

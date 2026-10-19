@@ -35,9 +35,7 @@ import * as THREE from 'three';
 import { stream } from '../../../core/rng.js';
 const simRand = stream('tools/sondelass/angling/fight'); // (the simulation's chance: core/rng.js, the same twice)
 
-const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const rnd = (a, b) => a + simRand() * (b - a);
-const pick = (a) => a[Math.floor(simRand() * a.length)];
 const cl = THREE.MathUtils.clamp;
 export const BAND = [0.34, 0.78];
 /** How far ahead of a change the reticle shows it (seconds). */

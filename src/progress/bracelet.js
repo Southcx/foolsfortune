@@ -11,7 +11,7 @@
 //
 //   CHARMS[id] = { label, does, mods: { family: x }, repeat?, delay?, cost }   SOCKET_AT   SOCKETS   FAMILY[key] -> family
 //   game.bracelet = new Bracelet(game)   .owned(id)   .open(socket)   .charmAt(socket)   .set(socket, id|null)   .mod(domain, key)
-//   .repeatOf(domain) -> [{ charm, delay }]   .costOf(domain) -> x   .gentle(domain) -> bool
+//   .costOf(domain) -> x   .gentle(domain) -> bool
 // ---------------------------------------------------------------------------------------
 import { DOMAIN_ORDER } from './godpowers.js';
 
@@ -76,5 +76,4 @@ export class Bracelet {
   dissonance(domain) { let k = 1; for (const [, C] of this.on(domain)) k *= C.dissonance ?? 1; return k; }
   costOf(domain) { let k = 1; for (const [, C] of this.on(domain)) k *= C.cost ?? 1; return k; }
   gentle(domain) { return this.on(domain).some(([, C]) => C.gentle); }
-  repeatOf(domain) { return this.on(domain).filter(([, C]) => C.repeat).map(([id, C]) => ({ charm: id, delay: C.delay })); }
 }

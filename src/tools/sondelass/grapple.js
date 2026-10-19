@@ -30,7 +30,6 @@ import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { inPlace } from '../../courier/anim/layers.js';
 
-const UP = new THREE.Vector3(0, 1, 0);
 const _c = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _w = new THREE.Vector3(), _p = new THREE.Vector3();
 const CHEST = 0.9;
 /** The suite's swing (measured on the clip): its hands hold still at `hands` (body frame, m) while its body swings +-52 degrees (`amp`,

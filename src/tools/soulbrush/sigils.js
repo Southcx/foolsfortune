@@ -96,13 +96,6 @@ export class Sigils {
     }
   }
 
-  /** Every queue near a point loses its front mark (Death, a card): an emptied one unwrites its jar. */
-  dropFront(at, r) {
-    let n = 0;
-    for (const [c, e] of [...this.on]) if (c.pos.distanceTo(at) < r && e.keys.length) { if (this.pop(e.keys[0], c).popped) n++; }
-    return n;
-  }
-
   /** Does any queue in view start with this mark? */
   heads(key, marked = null) { for (const [c, e] of this.on) if (e.k > 0.5 && e.keys[0] === key && (!marked || marked.has(c))) return true; return false; }
 

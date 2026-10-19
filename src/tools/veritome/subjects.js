@@ -75,4 +75,3 @@ export const SUBJECTS = {
   pond: { name: 'the oasis', find: (g) => (inDunes(g) ? [{ pos: V(DUNE.x + POND.x, DUNE.y + POND.surface, DUNE.z + POND.z), r: 9, ref: 'pond', states: new Set() }] : []) },
   water: { name: 'water', find: (g) => (g.water?.volumes || []).map((v, i) => ({ pos: V((v.x0 + v.x1) / 2, v.surface, (v.z0 + v.z1) / 2), r: Math.min(6, Math.max(v.x1 - v.x0, v.z1 - v.z0) / 2), ref: `water${i}`, states: new Set([v.kind || 'water']) })) },
 };
-export const SUBJECT_IDS = Object.keys(SUBJECTS);

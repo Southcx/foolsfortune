@@ -18,7 +18,7 @@
 //   const W = new PlanetWater(clay, { g })   W.step(dt) (60 a real second)   W.slump(dt) (a few a real second)   W.depthAt(dir)   W.pour(dir, volume, feeling)   W.drink(dir, volume)
 //   W.total   W.version   W.mix(k) -> [a share a feeling, FEELINGS' order]   W.dump() / W.load(d)   basinVolume(clay) -> cubic metres its basins would hold
 // ---------------------------------------------------------------------------------------
-import { NX, NY, CELL_DIRS, uvOf } from './clay.js';
+import { NX, NY, uvOf } from './clay.js';
 import { DISPLAY_ORDER } from '../../progress/weather.js';
 
 export const FEELINGS = DISPLAY_ORDER; // (the seven, in the shown order: progress/weather.js; Gall and Fury's channels with them, GALL-AND-FURY.md 15)
@@ -174,9 +174,6 @@ export class PlanetWater {
     this.awake = true; this.version++;
   }
 }
-
-/** Every cell's direction, for whatever reads the grid by cell. */
-export { CELL_DIRS };
 
 /** What the clay's basins would hold, filled to their spill points (a priority-flood: Barnes, Lehman and Mulla, 2014). A planetoid has no
  *  edge to drain over, so the outlet is its lowest cell: water there is the sea, everything held up behind a rim above it is a basin.
