@@ -3,7 +3,8 @@
 // orientation for the lockheart UI is the correct one, because then it feels like the lockheart is taking in Lachryma even before it
 // reaches your lachrimeter"). The Lockheart's own UI, in the overlay's own scene (render/overlayscene.js) at the 480-line present,
 // bottom-right beside the thermometer Lachrimeter where every tool's piece stands: the coffin as a reliquary hung on its chain from the
-// hand's point, the chain out toward the screen's edge, the coffin's back to the view's middle, its right side (the window) toward the tube.
+// hand's point, hanging straight down, parallel to the tube (the owner, 2026-10-19), its right side (the window) toward the tube; it
+// does not swing with the Lockheart's blows.
 //   WHAT IT SHOWS   which coffin is worn (its lacquer, trim and lid emblem); the fill against its measure and past it to twice full (the
 //                   window, and the count plate "42 /40"); the ghost of its odds on the lid; can it open now (the padlock, gold and its
 //                   shackle sprung only when every reason holds); the Possibilikeys on the ring below in ring order, each with its
@@ -39,28 +40,19 @@ import { C01, sm, lerp, heartLook, keyLook } from './lockheartreliquary/look.js'
 import { drawPiece } from './lockheartreliquary/piece.js';
 
 const K = 2;                   // (texture pixels a dot)
-const CW = 224, CH = 232;      // (the canvas in dots: room for the swing overhead, the wheel and its plates, the ring and its tags)
+const CW = 224, CH = 232;      // (the canvas in dots: room over the coffin, the wheel and its plates, the ring and its tags)
 const OX = 144, OY = 104;      // (the hand's point in the canvas, dots)
 const CLEAR = 18, HAND = [85, 152]; // (CSS px from the right edge as the tube's; then the hand's point in dots: left of the tube's bulb, and up from the bottom)
-const PHI0 = -0.5, SCALE = 1.3; // (B: the chain's rest angle, toward the screen's edge; dots a unit of the coffin)
+const PHI0 = 0, SCALE = 1.3; // (the chain's rest angle: straight down, parallel to the Lachrimeter, the owner 2026-10-19; dots a unit of the coffin)
 const KT = 0.18, DUR = 2.1, HOLD = 0.9; // (real s: a Possibilikey's turn at the Opening; the wheel's spin and its hold, tools/lockheart/wheel.js)
 const DRINK = { dur: 0.35, gap: 0.07, colour: 0x7f5cf0 }, GULP = { dur: 0.12, colour: 0xffe296, amount: 6 };
-const MOVE_I = { f1: 0, f2: 1, f3: 2 };
 const FRAME = 1 / 30;          // (real s between redraws of the canvas)
-
-/** The flail's swing on the chain, a blow's arc (the clips': f1 right to left, f2 over the top, f3 left to right) at a real s into it. */
-function arc(m, a) {
-  if (a < 0) return 0;
-  if (m === 0) return -0.95 * Math.sin(Math.min(a, 1.6) * 8) * Math.exp(-a * 3.4);
-  if (m === 1) return (a < 0.5 ? -2.3 * Math.sin((a / 0.5) * Math.PI) : 0) + (a >= 0.5 ? 0.3 * Math.sin((a - 0.5) * 9) * Math.exp(-(a - 0.5) * 4) : 0);
-  return 1.15 * Math.sin(Math.min(a, 1.8) * 7) * Math.exp(-a * 2.8);
-}
 
 export class LockheartReliquary {
   constructor(game) {
     this.game = game; this.S0 = game.overlayScene;
     this.t = 0; this.a = 0; this.shown = false; this.drawAcc = FRAME;
-    this.swings = []; this.snapT = 9; this.drainT = 9; this.echoT = 9; this.rippleT = 9; this.fullT = 9; this.wasOpen = false;
+    this.snapT = 9; this.drainT = 9; this.echoT = 9; this.rippleT = 9; this.fullT = 9; this.wasOpen = false;
     this.pend = 0; this.shownCharge = -1; this.lid = 0;
     this.F = { lit: 0, hitAge: 9, cooling: false, cool: 0 };
     this.rot = null; this.ghostA = null; this.ghostB = null; this.ghostT = 9; this.ghostSig = ''; this.oddsT = 0; this.odds = null;
@@ -76,7 +68,7 @@ export class LockheartReliquary {
     this.root = new THREE.Group(); this.root.name = 'lockheartReliquary'; this.root.userData.overlayHidden = true; this.root.add(this.plane);
     this.slot = this.S0.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
     const on = (n, f) => game.events?.on(n, f);
-    on('lockheart.swing', (e) => { if (this.shown) { this.swings.push({ t0: this.t, m: MOVE_I[e.move] ?? 0 }); if (this.swings.length > 4) this.swings.shift(); } });
+    // (the piece does not swing with the Lockheart's blows: the owner, 2026-10-19; the flail's string still lights its links)
     on('move.parry', (e) => { if (e.how === 'gulp' && e.what === 'shot' && this.shown) { this.snapT = 0; this.beadQ.push({ amount: e.amount ?? GULP.amount, colour: GULP.colour, dur: GULP.dur, rev: true, wait: 0.1, age: 0 }); } });
     on('lockheart.drain', (e) => { this.drainT = 0; const c = COLOR[e.feeling]; this.drainCol = c != null ? '#' + c.toString(16).padStart(6, '0') : '#b49be6'; }); // (the drained creature's feeling, else the weather's; plain Lachryma the Mind's violet)
     on('lockheart.echo', () => { this.echoT = 0; });
@@ -162,9 +154,6 @@ export class LockheartReliquary {
     if (st > F.lit || (st > 0 && F.cooling)) { F.lit = st; F.hitAge = 0; F.cooling = false; F.cool = 0; }
     else if (st < F.lit && !F.cooling) { F.cooling = true; F.cool = 0; }
     if (F.cooling) { F.cool = C01(F.cool + dt / 0.5); if (F.cool >= 1) { F.cooling = false; F.cool = 0; F.lit = st; } }
-    // the swing: the blows' arcs, a pure function of the time since each began
-    const swingAt = (back) => { let s = 0; for (const w of this.swings) s += arc(w.m, this.t - back - w.t0 - 0.15); return s; };
-    let trailA = 0; for (const w of this.swings) { const d = this.t - w.t0 - 0.15 + 0.12; if (d >= 0 && d < 0.45) trailA = Math.max(trailA, 1 - d / 0.45); }
     this.snapT += dt; this.drainT += dt; this.echoT += dt; this.rippleT += dt;
     // the wheel: the Lockheart's own, read (held still for its odds, or spinning)
     const wheel = this.wheelOf(L, look);
@@ -184,7 +173,7 @@ export class LockheartReliquary {
       canOpen: can, fullAge: this.fullT, shackleOpen: shackle, lid: this.lid, snap: this.snapT < 0.25 ? this.snapT : -1,
       hoover: L.hooverW || 0, hvCol: this.drainT < 0.8 ? (this.drainCol || '#b49be6') : null, ripple: this.rippleT < 0.3 ? 1 - this.rippleT / 0.3 : 0,
       flail: { st: F.lit, hitAge: F.hitAge, runP: C01(F.hitAge / 0.12), next: F.cooling ? -1 : place.next, cool: F.cooling ? F.cool : 0 },
-      swingT: swingAt(0), swingAt, trailA, lift: this.lift, chainA: lerp(1, 0.25, this.lift), pour, wheel,
+      swingT: 0, swingAt: null, trailA: 0, lift: this.lift, chainA: lerp(1, 0.25, this.lift), pour, wheel,
     };
     Object.assign(this.state, { shown: this.shown, heart, charge: +L.charge.toFixed(1), fill, canOpen: canNow, keys: keys.map((k) => ({ id: k.id, uses: k.uses, st: k.st })), wheel: wheel ? (wheel.peek ? 'peek' : 'spin') : null, flail: { st: F.lit, next: place.next } });
   }
