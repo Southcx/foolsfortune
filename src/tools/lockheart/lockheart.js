@@ -6,10 +6,13 @@
 //    and held out, LMB held HOOVERS: loose Lachryma in front of them is drawn in (baubles; liquid ones, turned dark, count double: what
 //    has been let go of is what it is for), and a mind laid low (stunned, asleep, melted: stun.js) has its Lachryma drawn out of it
 //    (Luigi's Mansion's Poltergust). A crystal shard fed to it from the Pneuka Box fills it nearly half.
-//  - IT OPENS: RMB, when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to four, in
+//  - IT OPENS: RMB HELD (T.tech.lockheart.openHold, 0.5 real s: OVERLAY.md 19.8), when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to four, in
 //    order). The keys are turned: brass is spent, any other breaks in time (keyBreaks: a chance rising with its uses); the coffin's table, changed by the keys (tools/lockheart/table.js), is put up as a wheel over
 //    it (tools/lockheart/wheel.js) and spun; what it lands on comes out (tools/lockheart/outcomes.js), as hard as the coffin was full (twice full:
 //    twice as hard). A TWIN key spins it twice, an ECHO key has it happen again, a WIDE key reaches twice as far.
+//    From the press the wheel is put up STILL, its sectors the table with the keys as they stand: let go short and it folds away,
+//    spending nothing; held through, it opens. THE WHEEL TURNS THE KEYRING (OVERLAY.md 19.6): their changes stack in ring order, so the
+//    order is a choice, and the ring rotates (four orders of four, a turn free): `lockheart.keyring` { keys }.
 //  - WHICH COFFIN is on the chain is which wheel: the plain one gives back what was put in, the gambler's almost never anything but
 //    a slip nuke one time in a hundred (and turned upside down by an inverted key, ninety-nine), the shepherd's what is for the flock.
 //    A SUMMONING coffin (its mode: table.js MODES) is the CATCH (docs/plans/SPIRIT-GARDEN.md, 5a): opened on a Figment laid low
@@ -23,7 +26,8 @@
 //    the flail (Lock_FlailCombo1-3), the coffin lifted and its lid opened (Lock_Open: an opening that is not the ultimate, and the catch);
 //    the ultimate's channel and its opening are tools/lockheart/ultimate.js's (Lock_Channel, Lock_Opening).
 //
-//   I      draw / stow          LMB (tap)  flail     LMB (hold)  hoover          RMB  open it (a key on the ring, and full)          (the box: P; the Codex: THE TOOLS)
+//   I      draw / stow          LMB (tap)  flail     LMB (hold)  hoover          RMB (hold)  the odds, then open it (a key on the ring, and full)
+//   wheel  turn the keyring                                                                                         (the box: P; the Codex: THE TOOLS)
 //
 // Prior art: the gacha (a table of rates, a pull, the spin before the reveal), Luigi's Mansion's Poltergust, Slay the Spire's and
 // Balatro's stacking modifiers, the reliquary and the mourning locket (a coffin on a chain that holds what is left of something),
@@ -89,7 +93,7 @@ export class Lockheart extends HeldTool {
     g.save?.section('lockheart', { scope: 'player', version: 1, dump: () => Math.round(this.charge), load: (d) => { this.charge = Math.min(CAP, Math.max(0, +d || 0)); }, reset: () => { this.charge = 0; } }); // (core/save.js)
     this.hoovering = false; this.hooverW = 0; this.drainT = 0; this.queue = []; this.lidK = 0; this.saveT = 0;
     this.wheel = new Wheel(g.scene);
-    this.lmbT = -1; this.flailK = 0; this.legSt = {}; this.hooverT = 0;
+    this.lmbT = -1; this.rmbT = -1; this.flailK = 0; this.legSt = {}; this.hooverT = 0;
     this.trail = g.vfx?.swing('swing', { tint: 0xffc65c, tip: 0xfff1d0 }) || null; // (the generic swing in the coffin's gold: a placeholder look, vfx/library.js)
     this.moves = new Moveset(this, {
       id: 'lockheart', moves: MOVES, strings: STRINGS, button: FLAIL, limb: 'L', tip: CHAIN.out, reach: 0.35, pot: 40, k: 1.2, cause: 'bashed',
@@ -151,7 +155,7 @@ export class Lockheart extends HeldTool {
     return took;
   }
 
-  onStow() { this.hoovering = false; this.moves.cancel(); this.lmbT = -1; }
+  onStow() { this.hoovering = false; this.moves.cancel(); this.lmbT = -1; if (this.rmbT >= 0) { this.rmbT = -1; this.wheel.fold(); } }
 
   // ---------------------------------------------------------------- input
   /** LMB: a tap (let go inside 0.16 s) is the flail, given to the combo engine as its own button; held past that, the hoover, as it was. */
@@ -165,7 +169,37 @@ export class Lockheart extends HeldTool {
     const I = this.flailInput ||= { inp: null, tap: false, wasPressed(c) { return c === FLAIL ? this.tap : this.inp.wasPressed(c); }, isDown(c) { return c === FLAIL ? false : this.inp.isDown(c); } };
     I.inp = inp; I.tap = tap;
     this.moves.update(dt, I, { allow: !this.hoovering && !this.wheel.busy && !this.queue.length && this.P.techs.active?.id !== 'swim' });
-    if (inp.wasPressed('Mouse2') && !this.busy) this.open();
+    // the Opening's hold: the odds put up still from the press; let go short, folded away and nothing spent; held through, opened
+    if (inp.wasPressed('Mouse2') && !this.busy) { this.rmbT = 0; this.preview(); }
+    if (this.rmbT >= 0) {
+      if (!inp.isDown('Mouse2')) { this.rmbT = -1; this.wheel.fold(); }
+      else if ((this.rmbT += raw) >= (T.tech.lockheart?.openHold ?? 0.5)) { this.rmbT = -1; this.open(); if (!this.wheel.busy) this.wheel.fold(); }
+    }
+    if (inp.wheel && !this.busy && this.rmbT < 0) { this.turnRing(Math.sign(inp.wheel)); inp.wheel = 0; } // (the wheel is the ring's, not the camera's, while it is drawn)
+  }
+  /** The keyring turned a notch (the wheel): the order the keys' changes stack in, set before the Opening; a turn is free. */
+  turnRing(d) {
+    const box = this.game.pneuka; if (!box?.rotate || box.fitted('keys').length < 2) return;
+    box.rotate('keys', d); sfx.click?.();
+    this.game.events?.emit('lockheart.keyring', { keys: [...box.fitted('keys')] });
+  }
+  /** What the wheel would hold if opened now (the keys applied, none turned): the coffin's rates, or the catch's two. Null: nothing to show. */
+  odds() {
+    const box = this.game.pneuka, keys = box?.fitted('keys') || [];
+    if (!this.heart) return null;
+    if (HEARTS[this.heart]?.mode === 'summoning') {
+      const c = this.quarry(); if (!c) return null;
+      const p = catchOdds({ cls: c.cls || 0, clean: this.clean(c), emoFactor: catchFactor(c.emo), keys });
+      return { R: [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }], c };
+    }
+    return { R: rates(oddsOf(this.heart, keys).table) };
+  }
+  /** The odds put up still, where the wheel would spin (over the catch's quarry for a summoning coffin). */
+  preview() {
+    const o = this.odds(); if (!o) return;
+    const s = o.c ? this.catchSpot(o.c) : this.spot();
+    this.wheel.show(o.R, s.pos, s.face);
+    this.game.events?.emit('lockheart.preview', { heart: this.heart, rates: o.R.map((r) => ({ id: r.id, p: +r.p.toFixed(3) })) });
   }
   /** The flail's blows, measured once on the left hand out along the chain (melee.js), each kept to its own strike window (MOVES). */
   prime() {
@@ -231,16 +265,14 @@ export class Lockheart extends HeldTool {
     if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is no stunned Figment to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
     const used = [...keys];
     for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) box.useUp('keys', i);
-    const d = g.stun?.finisher?.(c) || 0, clean = d ? (g.stun.stunned(c) ? g.stun.share(c) : 1) * (0.5 + d / 6) : 0.6; // (its clock left, by depth: up to 0.67 dazed, 0.83 stunned, 1 out cold, STUN-DEPTH.md 3; asleep, held or melted: stunned, a full share)
-    const p = catchOdds({ cls: c.cls || 0, clean, emoFactor: catchFactor(c.emo), keys: used });
+    const p = catchOdds({ cls: c.cls || 0, clean: this.clean(c), emoFactor: catchFactor(c.emo), keys: used });
     const caught = p > 0 && deckDraw(g.ledger, `catch.${c.kind}`, Math.max(1, Math.round(1 / p)), simRand());
     this.charge = 0; this.save();
     g.stun?.hold(c, 4); // (kept down while the wheel turns)
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: [], power: 1, spins: 1 });
     const R = [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }];
-    const pos = c.pos.clone().setY(c.pos.y + (c.height ?? 1.5) * (c.root?.scale.y ?? 1) + 1.2), cam = g.camera;
-    const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
+    const { pos, face } = this.catchSpot(c);
     this.queue = [{ id: 'catch' }];
     this.gesture('Lock_Open'); // (the coffin lifted and its lid opened on what it catches)
     // (Calissa's catch look runs with the wheel: the tether from the open coffin to it, tightening as the wheel slows)
@@ -258,17 +290,28 @@ export class Lockheart extends HeldTool {
     });
   }
 
+  /** How clean the catch is: the stun's clock left, by its depth (up to 0.67 dazed, 0.83 stunned, 1 out cold, STUN-DEPTH.md 3; asleep,
+   *  held or melted: stunned, a full share). */
+  clean(c) { const g = this.game, d = g.stun?.finisher?.(c) || 0; return d ? (g.stun.stunned(c) ? g.stun.share(c) : 1) * (0.5 + d / 6) : 0.6; }
+  /** Where the catch's wheel stands: over the quarry, facing the camera. */
+  catchSpot(c) {
+    const pos = c.pos.clone().setY(c.pos.y + (c.height ?? 1.5) * (c.root?.scale.y ?? 1) + 1.2);
+    return { pos, face: new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(this.game.camera.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0))) };
+  }
+  /** Where the coffin's wheel stands: above and to the side of their head, from behind them, facing the camera. */
+  spot() {
+    const P = this.P, f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw)), right = _a.set(Math.cos(P.yaw), 0, -Math.sin(P.yaw)).clone();
+    const pos = P.pos.clone().addScaledVector(f, 1.8).addScaledVector(right, -0.55).setY(P.pos.y + 2.25);
+    return { pos, face: new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(this.game.camera.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0))) };
+  }
+
   /** The next spin in the queue: the wheel put up over the coffin, facing them. */
   next(spec = null) {
     const q = this.queue[0];
     if (!q) return;
     if (spec) { const at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : this.P.pos.clone(); this.wheel.spin(q.R, q.id, spec.pos, spec.face, () => this.land(q, at), spec.size); return; }
-    const g = this.game, P = this.P, cam = g.camera;
-    const at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : P.pos.clone().setY(P.pos.y + 1.4);
-    const f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw));
-    const right = _a.set(Math.cos(P.yaw), 0, -Math.sin(P.yaw)).clone();
-    const pos = P.pos.clone().addScaledVector(f, 1.8).addScaledVector(right, -0.55).setY(P.pos.y + 2.25); // (above and to the side of their head, from behind them)
-    const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
+    const P = this.P, at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : P.pos.clone().setY(P.pos.y + 1.4);
+    const { pos, face } = this.spot();
     this.wheel.spin(q.R, q.id, pos, face, () => this.land(q, at));
   }
   land(q, at) {

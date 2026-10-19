@@ -22,7 +22,7 @@
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
 //   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
 //   box.wear(slot) (a tool onto the belt; a psygun's variant into the hands: carryPsygun) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn, a small bottle worn half full)
-//   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses     box.feed(slot) (a shard to the Lockheart)
+//   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses / box.rotate(socket, d) (the ring turned a notch)     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
 import { itemOf, ITEMS } from './items.js';
@@ -200,6 +200,13 @@ export class PneukaBox {
   /** A fitting spent (a key turned in the lock): gone. */
   useUp(socket, i = 0) { const cur = this.fit[socket]; if (!cur?.[i]) return null; const id = cur.splice(i, 1)[0]; this.uses[socket].splice(i, 1); this.save(); return id; }
   /** A fitting turned once more (a Possibilikey in the lock): how many times it has been, now. */
+  /** The fittings of a socket turned a notch round their ring (the Lockheart's keys by the wheel: OVERLAY.md 19.6), each with its uses. */
+  rotate(socket, d = 1) {
+    const F = this.fit[socket], U = this.uses[socket], n = F?.length || 0; if (n < 2) return false;
+    const k = ((d % n) + n) % n;
+    this.fit[socket] = [...F.slice(k), ...F.slice(0, k)]; this.uses[socket] = [...U.slice(k), ...U.slice(0, k)];
+    this.save(); return true;
+  }
   turn(socket, i = 0) { const U = this.uses[socket]; if (!this.fit[socket]?.[i]) return 0; U[i] = (U[i] || 0) + 1; this.save(); return U[i]; }
   /** A shard of crystal, fed to the Lockheart (it drinks it whole). */
   feed(slot) {
