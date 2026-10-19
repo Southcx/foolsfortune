@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // A PUZZLE DUEL'S RULES (docs/plans/PUZZLE-DUELS.md sections 3 to 5): the kernel's modules, each one rule over the board. SETTLE rules run
 // again and again after every action until nothing changes (PuzzleScript's loop): gravity, then the clears (runs, clusters, the pincer),
-// then what a clear sets off (junk broken beside it, bombs). ACTIONS are what a form does on its own side (the Courier's step, push and
+// then what a clear sets off (junk broken beside it, bombs). ACTIONS are what a form does on its own side (the Courier's push and
 // punt; the god hand's swap, drag, rotate and drop). A rule asks a piece's tags, never its kind. Each returns its events in order, so a
 // view can play the settle step by step.
 //
@@ -117,10 +117,7 @@ const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 /** The forms' actions (PUZZLE-DUELS.md section 4). legal(state, side, a) -> bool; apply(state, side, a) -> events. A Courier is a body
  *  piece on the board; the god hand acts on any cell of its side. */
 export const ACTIONS = {
-  // ---- the Courier: a body on a cell of its side
-  step: { form: 'courier', cost: 1,
-    legal: (s, side, a) => { const [x, y] = s.sides[side].at, d = DIR[a.dir], nx = x + d[0], ny = y + d[1]; return mineIn(s.board, side, nx, ny) && !s.board.at(nx, ny); },
-    apply: (s, side, a) => { const S = s.sides[side], [x, y] = S.at, d = DIR[a.dir]; s.board.move(x, y, x + d[0], y + d[1]); S.at = [x + d[0], y + d[1]]; return [{ type: 'step', side, to: S.at }]; } },
+  // ---- the Courier: a body on a cell of its side (its run and its tools: couriertools.js)
   push: { form: 'courier', cost: 1, // (Sokoban: the run of pushable pieces before the Courier moves one cell, if the cell after it is free)
     legal: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir]; let cx = x + d[0], cy = y + d[1], n = 0;
       while (mineIn(b, side, cx, cy) && b.at(cx, cy) && hasTag(b.at(cx, cy), 'pushable')) { cx += d[0]; cy += d[1]; n++; }
@@ -157,4 +154,3 @@ export const ACTIONS = {
   form: { form: null, cost: 1, legal: (s, side, a) => s.sides[side].forms.includes(a.to) && s.sides[side].form !== a.to,
     apply: (s, side, a) => { s.sides[side].form = a.to; return [{ type: 'form', side, to: a.to }]; } },
 };
-export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };

@@ -326,7 +326,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
   `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
   between the sides, your zone of control and the score, pushed one column a 4 junk landed / what a clear sends across (the genre's
-  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. *Not:* a table (Raku's), the kick, a trial.
+  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. **A break / a mote / the coup**
+  (working names, Espada's; `breaks.js`): a side's EmO broken by a big push, its stun a depth deeper / Lachryma it sheds onto the board for the
+  Courier to run up / the god hand's finish on a broken foe, paid from the pool. *Not:* a table (Raku's), the kick, a trial, a guard break.
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).

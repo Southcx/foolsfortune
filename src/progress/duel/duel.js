@@ -1,24 +1,32 @@
 // ---------------------------------------------------------------------------------------
-// A PUZZLE DUEL (docs/plans/PUZZLE-DUELS.md section 3): two sides, one board, a line between them. A side spends its action points (3 a
+// A PUZZLE DUEL (docs/plans/PUZZLE-DUELS.md section 3): two sides, one board, a line between them. A side spends its action points (5 a
 // turn, a knob), each action followed by the settle (gravity, clears, what a clear sets off, again and again until nothing changes); its
 // clears become junk, which cancels what is coming at it first and then waits to land on the other side at the end of that side's own
-// turn. Garbage landed pushes the line toward the receiver, one column for every 4. A side wins when the line reaches the other's back
-// wall, or when the other's side has no empty cell left after its junk lands.
+// turn. Junk landed pushes the line toward the receiver, one column for every 3. A side wins when the line reaches the other's back
+// wall, when the other's side has no empty cell left after its junk lands, or by the coup on a broken foe (breaks.js).
 //
 // Prior art: Puyo Puyo Tetris (chains, junk, offsetting, junk waiting a turn so it can be answered), Noon (the territories, a
 // side filled to death), PuzzleScript (the settle loop run to a fixed point), Into the Breach (the turn as a plan of a few actions).
 //
-//   newDuel({ ruleset, seed, forms }) -> state   act(state, action) -> events | null (illegal)   endTurn(state) -> events
+//   newDuel({ ruleset, seed, forms, ap, pool, tools }) -> state   act(state, action) -> events | null (illegal)   endTurn(state) -> events
+//   ACTIONS (the board's, the Courier's, the coup)   costOf(action)
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
-import { fall, clears, resolve, pinch, ACTIONS, costOf } from './rules.js';
+import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
+import { COURIER_ACTIONS, runPaths } from './couriertools.js';
+import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './breaks.js';
 import { seeded } from '../../core/rng.js';
 
+/** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's coup (breaks.js). */
+export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION };
+export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
+
 export const DUEL = {
-  ap: 3,           // action points a turn (PUZZLE-DUELS.md 9.1: a knob; the simulator reports duel lengths at each)
+  ap: 5,           // action points a turn (the owner, 2026-10-19: "let's start with 5AP"; each player on a side has their own)
+  pool: 30,        // the pool a side starts with, out of 100 (in play, the Courier's own pool as the duel opens)
   settleCap: 64,   // passes before a settle is stopped (and counted: a cascade that never ends is a bug in a ruleset)
-  perColumn: 4,    // junk landed that moves the line one column
+  perColumn: 3,    // junk landed that moves the line one column (4 at 3 AP; 3 since 5 AP made offsetting strong: the simulator)
   turnCap: 200,    // turns a side before the line's place decides it (a ply is one side's turn)
   fill: 0.4,       // each side's share of cells filled at the start
 };
@@ -26,20 +34,24 @@ export const DUEL = {
 /** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified). */
 export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
-/** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20 } = {}) {
+/** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
+ *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null } = {}) {
   const rs = { run: 3, cluster: 0, blast: 2, colours: 5, rain: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
   board.setGravity(rs.gravity || (() => [0, 1]));
-  const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: DUEL.ap, capHits: 0, log: [],
-    sides: [0, 1].map(() => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0 })) };
+  const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
+  const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
+    sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0 })) };
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);
     if (spot) { board.set(spot[0], spot[1], piece('body', { side })); s.sides[side].at = spot; }
     topQueue(s, side);
   }
+  s.apLeft = startTurn(s, 0);
   return s;
 }
 
@@ -71,7 +83,7 @@ function courierSpot(s, side) {
 const topQueue = (s, side) => { const Q = s.sides[side].queue; while (Q.length < s.rs.queue) Q.push(gemOf(s)); };
 
 /** The settle (PuzzleScript's loop): fall, then clear, again until nothing changes; each pass that clears is a chain step. Capped at
- *  DUEL.settleCap passes, and stopped if it sees one board twice. Garbage is credited to the side the clears were on. */
+ *  DUEL.settleCap passes, and stopped if it sees one board twice. Junk is credited to the side the clears were on. */
 export function settle(s) {
   const events = [], junk = [0, 0], steps = [0, 0], seen = new Set();
   for (let pass = 0; ; pass++) {
@@ -104,6 +116,7 @@ export function act(s, a) {
  *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its rain). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
+  events.push(...endOwnTurn(s, side)); // (its motes fade, its EmO settles, its stun counts down: before what lands on it can break it again)
   const off = Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off;
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
@@ -113,7 +126,7 @@ export function endTurn(s) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
-  s.toMove = foe; s.apLeft = DUEL.ap;
+  s.toMove = foe; s.apLeft = startTurn(s, foe);
   if (s.winner === null) events.push(...rain(s, foe));
   topQueue(s, foe);
   s.log.push(...events);
@@ -129,6 +142,7 @@ function land(s, side, n) {
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
+  const broke = onLanding(s, side, n); if (broke.length) { S.breaks += broke[0].type === 'break' ? 1 : 0; events.push(...broke); }
   while (S.landed >= DUEL.perColumn && s.winner === null) { S.landed -= DUEL.perColumn; events.push(...moveLine(s, side === 0 ? -1 : 1)); }
   return events;
 }
@@ -142,7 +156,7 @@ function moveLine(s, by) {
   for (const side of [0, 1]) {
     const S = s.sides[side]; if (!S.at || b.mine(side, S.at[0])) continue;
     const spot = courierSpot(s, side); const body = b.at(...S.at); b.set(S.at[0], S.at[1], null);
-    if (spot) { b.set(spot[0], spot[1], body); S.at = spot; events.push({ type: 'step', side, to: spot, forced: true }); } else S.at = null;
+    if (spot) { b.set(spot[0], spot[1], body); S.at = spot; events.push({ type: 'shift', side, to: spot }); } else S.at = null;
   }
   events.push(...settle(s).events);
   return events;
@@ -163,7 +177,13 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
   const b = s.board, S = s.sides[side], out = [], dirs = ['N', 'S', 'E', 'W'];
   const ok = (a) => { const A = ACTIONS[a.kind]; if (A.form && A.form !== S.form) return; if (costOf(a) <= s.apLeft && A.legal(s, side, a)) out.push(a); };
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
-  if (S.form === 'courier' && S.at) for (const dir of dirs) for (const kind of ['step', 'push', 'punt']) ok({ kind, dir });
+  if (S.form === 'courier' && S.at) {
+    for (const path of runPaths(s, side)) ok({ kind: 'run', path });
+    for (const dir of dirs) for (const kind of ['push', 'punt', 'drill']) ok({ kind, dir });
+    for (const kind of ['shoot', 'hook', 'toll', 'hoover', 'flail']) ok({ kind });
+    for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });
+  }
+  if (S.form === 'hand') ok({ kind: 'coup' });
   if (S.form === 'hand') {
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       if (!b.mine(side, x)) continue;
