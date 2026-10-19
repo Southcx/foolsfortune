@@ -815,8 +815,8 @@ like a cartridge to make them work: larger vessels and machines, the Shrine gate
 face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is
 the West's word for a thing that makes a machine itself. Dovina's rules are `docs/plans/HANKO.md` (claude/dovina-design).
 
-*Names (Espada's, proposed, 2026-10-17):*
-- **a cradle** (Dovina's working name, kept): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
+*Names (Espada's, proposed, 2026-10-17; **cradle ruled by the owner, 2026-10-19**; the rest parked by "Plain names until settled"):*
+- **a cradle** (Dovina's working name; ruled): what holds the Pneuka Jar in a machine, a gate or a helm. A cradle holds a jar, a child,
   and a telephone's handset, which is the retrofuture in one word; and *crib* is its old twin, so the Crib Sheet and the cradle are
   cousins. Not of any one island's make, so not "saggar" (the potter's box a pot is fired in), which would say Anagami.
 - **sealing / to seal in / to unseal**: the act. Japanese says a seal is *pressed* (*natsuin*, 捺印), but "press" is the Athanor's.
@@ -867,7 +867,7 @@ of Anagami's making alone.
   was always the one with the best eyes, which is the right root for a camera.
 - **Their sights' labels** (the UI's genre word, CLARITY.md): **Mood**, **Intent**, **Reveal** (Thermal went with the Dowser's).
 
-**Aptitude, and the Assay.** "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
+**Aptitude, and the Assay** *(the Assay ruled by the owner, 2026-10-19)*. "Aptitude" stays as the word for one measured ability: the genre's word (an isekai status window reads
 "Magic aptitude: S") and free in the glossary. It is neither an attribute nor a domain. What the System reads of you, the whole window,
 is **the Assay**. An assay is a test of a metal's true content, which suits a game of Lachryma, alchemy and kilns. It is also the same
 word as *essay*: Old French *essai*, a trial, an attempt. The System does not ask what you are; it assays what you do. A standard
