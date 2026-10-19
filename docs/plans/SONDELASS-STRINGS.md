@@ -379,7 +379,7 @@ A special does a bigger single thing for its Lachryma (all its power in one go a
 moves.js's own rule ("a special is a burst that costs Lachryma, not a free raise"), as the Tidecutter's 7 in 2.63 s (2.66 on its row).
 **The stinger is outside the band, and was before phase 3**: its lunge strikes a creature at 2.2 x its row's 3.0 (`cutlass.js`
 `stingStep`), 6.6 in 0.38 s, where its row says 3.0 in 0.7 s (4.29 a second, +57% on paper). Left as it is (the default plays as it
-did); Dovina's to rule (`docs/handoffs/dovina/2026-10-11-from-calissa-catalogue.md`).
+did); Dovina's to rule (Calissa's catalogue handoff of 2026-10-11, since deleted).
 
 The default plays today's string to the frame: phase 2's probe (`string.mjs`: free LMB every 6 frames, paid every 2, the held launcher's
 air string, the pause branch, the stinger), every blow's begin, hit and cut on the same frame as phase 2's `string-after.json`.

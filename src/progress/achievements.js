@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import { CASTER_SHELLS } from './combat/castershells.js';
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
-import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf, goalsFracOf, loggedTechs } from './skills.js';
+import { ABILITIES, GOD_ARTS, achOf, goalFracOf, goalsFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
 import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';

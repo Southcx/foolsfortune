@@ -5,7 +5,7 @@
 // can read it as the game does.
 //
 // The unit of value is the MINUTE OF PLAY: `perMinute` is what ordinary play (fighting, mining, fishing, photographing, some of each)
-// should earn, and a price is named in minutes (`minutes(15)` is fifteen minutes' play). The 2026-10-02 rebalance (R38): before it,
+// should earn, and a price is named in minutes (fifteen minutes' play is 15 x perMinute). The 2026-10-02 rebalance (R38): before it,
 // the Weir's five treasury chests shut again every half-minute (about 95,000 cubes an hour for standing at them), the one drain (the
 // Tithe) paid back more than twice what it took once its pity and dupes were counted, and one SS card condensed for 1,200.
 //
@@ -14,7 +14,7 @@
 // one sheet (EVE's, FFXIV's) so a designer can see the whole flow at once.
 // ---------------------------------------------------------------------------------------
 export const ECON = {
-  /** What ordinary play should earn, a minute (the anchor for every price: progress/econ/economy.js minutes()). */
+  /** What ordinary play should earn, a minute (the anchor for every price). */
   perMinute: 8,
 
   // ---- the faucets (cubes into the world)
@@ -227,14 +227,11 @@ export const ECON = {
     reach: { 'well:dunemaw': 4 }, // (how far toward Chaos a place's mood may run: +2 Dread when unsaid; +3 lets Gall fall, +4 Fury. Anagami stays at 2.
                            //  The Great Dunemaw's deep (Calissa's looks landed, R136): reach 4 with the lean at 2, measured over 400 game days
                            //  of 3-hour blocks: Gall 8%, Fury 1%, Dread 14%: Gall is met in the Well, Fury mostly at sea. GALL-AND-FURY.md 4.)
-    mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
     under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)
-    build: 0.5, fish: 1, supply: 0.25,
-    mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5, gall: 0.4,  fury: 0.6 },
+    build: 0.5, supply: 0.25,
     danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5, gall: 0.35, fury: 0.6 }, // (Fury the most dangerous water)
     lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6, gall: 0.6,  fury: 0.7 }, // (a miasma hides what comes)
     fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2,   gall: 2,    fury: 2 },
-    night: { signature: 1.5 },
   },
 };
 /** The field a cask's suffix names (`cask.dunemaw` -> 'dunemaw'), or null. */

@@ -92,7 +92,7 @@ export const FEELING_HUE = Object.fromEntries(Object.entries(COLOR).map(([k, hex
 }));
 
 const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false, stars: {} }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing; stars: each attribute's true firings, ten at most)
-const GAME_HOUR = DAY_MS / 24, wrapH = (h) => ((h % 360) + 360) % 360;
+const GAME_HOUR = DAY_MS / 24;
 export class SoulAlchemy {
   constructor(game) {
     this.game = game;

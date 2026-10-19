@@ -81,7 +81,7 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
 
 ## 6. The answers (2026-10-08)
 
-- **Wanda** (`docs/handoffs/dovina/2026-10-08-from-wanda-training.md` on her branch): folded in above. **Time (the beat) has no home**:
+- **Wanda** (her handoff of 2026-10-08, since deleted): folded in above. **Time (the beat) has no home**:
   it runs through the bell, the rhythm mode, the rail and the parry. Ruled for now: its EXP goes to Spellscription (a note chart is a
   script read), its seasoning to Focus (a rhythm combo of 25). **The owner's ruling (2026-10-08): no new domains, ever.** Time has two faces: **keeping it** (staying on tempo is transcribing actions to time) is Spellscription's; **bending it** (anything that slows or stops time: blade mode, zandatsu, reprogramming, Celestial mode) is Ouranurgy's, the domain of the rules of the space around you. A widening for it: `ouranurgy.still` (how long time stays slowed, x1.3 at 99).
 - **Espada** (`2026-10-08-from-espada-training-words.md`, 1d71f21 on her branch): the knacks' names, Crib and Two-Tone, the agate guess
@@ -106,7 +106,7 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
   - **Trained, no home:** light reading (Divination, with the forecast: once the light term exists); candid observation (the bestiary's
     tiers); a cast avoided (Perception's seasoning, once `foe.dodge` exists); Willpower rewards being hit, where a parry streak is
     composure (kept: Willpower is the shield, and a parry seasons Perception).
-- **Petra** (`docs/handoffs/dovina/2026-10-08-from-petra-training.md`): her rows are right; the events and their fields are confirmed
+- **Petra** (her handoff of 2026-10-08, since deleted): her rows are right; the events and their fields are confirmed
   (`drill.end`, `reprogram.run { q, misses, chars, secs, refused }`, `map.surveyed { gained }`), now in `domains.js`; `garden.sculpt`
   takes a `q` (the water held after the stroke against before, as a share; Petra's to emit); the parry's `lead` is hers to add. Her
   knack (the way back on the map) is in the table. **Patience** (angling) seasons Focus: a fish landed without the line breaking, once

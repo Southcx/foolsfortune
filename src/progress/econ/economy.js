@@ -8,15 +8,12 @@
 // Prior art: the faucet/drain telemetry MMOs keep (EVE's monthly economic report: production, destruction and the ISK faucets and
 // sinks by source; OSRS's GE tax tracker), boiled down to one line a developer can watch while playing.
 //
-//   minutes(n) -> cubes          rates(ledger) -> { hours, inPerH, outPerH, net, by: [[source, perH]], drains: [[why, perH]], granted }
+//   rates(ledger) -> { hours, inPerH, outPerH, net, by: [[source, perH]], drains: [[why, perH]], granted }
 //   econLine(ledger) -> a short text line for the F3 panel
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 import { PSYGUNS } from '../../tools/psygun/kinds.js';
 import { buskPay } from './livelihoods.js';
-
-/** A price named in minutes of ordinary play. */
-export const minutes = (n) => Math.round(n * ECON.perMinute);
 
 const SPILL = 'cube.spill.', USE = 'cube.use.';
 

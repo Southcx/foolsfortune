@@ -73,7 +73,7 @@ window.__em = (() => {
     /** The stage as the person meets it. */
     stage() {
       const r = E.run, sh = E.ship, V = g.voyage, cam = G.camera, st = E.stage;
-      const hud = Object.fromEntries(['compass', 'speed', 'crosshair', 'toolstrip'].map((id) => { const e = document.getElementById(id); return [id, e ? +getComputedStyle(e).opacity : null]; }));
+      const hud = Object.fromEntries(['speed', 'crosshair'].map((id) => { const e = document.getElementById(id); return [id, e ? +getComputedStyle(e).opacity : null]; }));
       return { active: st.active, boarding: !!E.boarding, offering: !!E.offering, ending: !!E.ending, t: +E.t.toFixed(2), bar: +E.bar.toFixed(2), seconds: st.seconds, setPieces: st.setPieces, piece: E.piece ? E.pieceId : null,
         run: r && { hits: r.hits, bears: r.bears, score: r.score, downed: r.downed, spawned: r.spawned, parried: r.parried, absorbed: r.absorbed, rolls: r.rolls, end: r.end },
         ship: { shown: !!sh.sloop?.group.visible, shownTree: sh.sloop ? shown(sh.sloop.group) : null, local: v(sh.local), aspect: sh.aspect, home: sh.home, charges: sh.charges, rollT: +sh.rollT.toFixed(2), parryT: +sh.parryT.toFixed(2), recover: +sh.recover.toFixed(2), mercy: +sh.mercy.toFixed(2), locks: sh.locks.length, reticles: !!(sh.near?.visible || sh.far?.visible), marks: sh.marks?.filter((m) => m.visible).length ?? 0, keel: sh.sloop?.keelMat ? '#' + sh.sloop.keelMat.color.getHexString() : null },

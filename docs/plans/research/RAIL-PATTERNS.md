@@ -40,7 +40,7 @@ by form (https://www.gamedeveloper.com/game-platforms/the-history-of-panzer-drag
 
 **BulletML** (Kenta Cho, https://allstar.jhuapl.edu/repo/p2/amd64/libbulletml-dev/doc/doc/bulletml_ref.html): bullet, action, fire,
 repeat, wait (frames), changeDirection, changeSpeed, accel, vanish, refs with $1/$rand. Direction types aim, absolute, relative,
-**sequence** (a running accumulator: the whole spiral and n-way mechanism). **Danmokou** (https://github.com/Bagoum/danmokou/blob/master/docs/articles/t06.md):
+**sequence** (a running accumulator: the whole spiral and n-way mechanism). **Danmokou** (github.com/Bagoum/danmokou, its docs' article t06):
 movement as functions (polar(2t, 80t), sine(period, amp, t)), composed as data. For us: each emitter is data plus a few verbs, driven
 by a timeline (CLAUDE.md: a scripted fight is a timeline).
 

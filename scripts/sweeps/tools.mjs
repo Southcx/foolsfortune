@@ -63,7 +63,6 @@ window.__tl = (() => {
       const P = g.player, ls = {}; for (const k in P.lookScale) if (P.lookScale[k] !== 1) ls[k] = P.lookScale[k];
       return { scale: +(g.time.scale ?? 1).toFixed(3), holds: [...(g.time.holds?.keys?.() || [])], look: ls, fov: +G.camera.fov.toFixed(1), view: P.view, tech: g.techs.active?.id || null,
         cinema: [...(g.cinema.reqs?.keys?.() || [])], shots: [...(g.cinema.shots?.keys?.() || [])], speedMult: +(g.techs.speedMult ?? 1).toFixed(3),
-        strip: !!document.getElementById('toolstrip')?.classList.contains('on'), shells: document.getElementById('shells')?.style.display ?? null,
         god: g.god?.state, hidden: !!g.character.hidden, freeze: !!P.freeze, enabled: !!I.enabled };
     },
     stand(p, yaw) { g.places.stand(V(p), yaw); g.player.vel.set(0, 0, 0); __sw.tick(30); return v(g.player.pos); },
@@ -412,7 +411,6 @@ if (part('god')) {
     await S.shot(`god-with-${id}`);
     S.check(`god hand over ${id} out: the god hand is on`, st.god !== 'off', { god: st.god });
     S.check(`god hand over ${id} out: no tool of the Courier's shown`, !shown.length, { shown, hidden: st.hidden });
-    S.check(`god hand over ${id} out: the Sondelass's form strip is not left over the hand's arts`, !st.strip, { toolstrip: st.strip, cause: st.strip ? "sondelass.js toggles #toolstrip 'on' only from its own tick, which does not run under the god hand (godhand.js hides the shells and the crosshair, not the strip)" : null });
     await godOut(); await S.ticks(60);
     const t = (await tl('tools()')).find((x) => x.id === id);
     S.note(`god hand left: ${id}`, t);

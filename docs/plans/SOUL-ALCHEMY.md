@@ -65,7 +65,7 @@ At **the Athanor**, the basin at the press's feet (section 4.2). **The press's f
 **sets the fuel, never the radius**: the map the eye is learning keeps its size however the garden is laid out. It shows in the Athanor's
 vent and the price in the log, never on the bath.
 
-## 4. The UX (Calissa's, 2026-10-08: `docs/handoffs/dovina/2026-10-08-from-calissa-soul-alchemy-ux.md` on her branch, 12d0f33)
+## 4. The UX (Calissa's, 2026-10-08: her handoff on her branch, 12d0f33, since deleted)
 
 **One look: test tiles in a glaze bath.** The colour wheel is a dished basin of still Lachryma at the press's feet. The press pours into it the way a bamboo spout pours into a garden basin (the tsukubai and its kakei). Seven glazed test tiles lie in the basin like stepping stones, one for each attribute. Each attribute's seal is carved into the stone kerb at its bearing. Your soul colour is one bead of glaze riding the surface. Everything that moves does something real glaze does: it pools, runs onto the shelf, breaks thin over an edge, crawls when refused, sets in the fire and shrinks with the clay. The ground is neutral so that every colour reads true. A match is seen, never told: at a tile's heart the bead melts into the tile's glaze, and only its glint is left.
 

@@ -73,7 +73,7 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
   nothing of theirs stays on the screen (Petra; `circuit.enter` now says the medal times and your best once it carries `par` and `best`).
 - **The log drifts from its newest line** once it holds 140 lines (a burst left it 4,320 px up; a merged line that grows, 72 px), and the
   ISO keyboard's `\` (`IntlBackslash`) does not minimise it: measured by the workshop sweep's part 8, the fix tested and handed to
-  Petra with its diff (`docs/handoffs/petra/2026-10-07-from-dovina-log.md`).
+  Petra with its diff (a handoff of 2026-10-07, since deleted).
 
 ### 7. The Great Dunemaw (Petra, Calissa, Dovina)
 - **The fight's cosmetics are counted but never given** (Dovina's to define, below): the five drops of `greatjelly.js` `DROPS` must
@@ -115,8 +115,8 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
   the Index; **`testroom`** → the Throwing Room's code name (`throwingRoom`). Petra.
 - **`game.emocean`** is the rail's conductor, not the sea → `game.rail`; **`foe`** has a third meaning on the rail (`waves.foes`,
   `shots.foe()`) → `hostile`. Petra.
-- **`SOLAR`** lives in `progress/combat/dunemaw.js` → its own `progress/trials/solar.js` (Dovina's, next round). The Weir, the treasury and
-  the Tithe are built in `tools/sondelass/angling/weir.js` (a place filed under a tool's form) → `world/dunes/weir.js`. Petra.
+- **`SOLAR`** lives in `progress/combat/dunemaw.js` → `world/dunes/solar.js` (done). The Weir, the treasury and
+  the Tithe are built in `tools/sondelass/angling/weir.js` (a place filed under a tool's form) → a module of the Dunes' own (Petra; not moved yet).
 - **The Veritome still says film** (`veritome.js:7,17,22,34`, `film.js`, `book.film`, `ROLL`): the memory. Petra and Calissa.
 - **The cast ids are the placeholders** (`crownBash`, `brineLine`, `slipNova`...: `greatjelly.js:44`, `raid.js:27`) → Espada's names
   (`lidfall`, `shoulderCharge`, `blowout`...). Dovina's table first, then `raid.js` and the sweep in one pass, as the garden's rename.

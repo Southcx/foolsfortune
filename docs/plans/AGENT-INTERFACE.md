@@ -58,7 +58,7 @@ agent sees is more than a player sees.
 4. **Resources** (read-only): the glossary, the plans, the ledger, the Codex's pages, every HOWTO card, the achievements as their
    predicates in words, the chat line's commands with their help.
 
-**The skins:** the HTTP bridge (exists); an MCP server, `scripts/agent-mcp.mjs` (the four layers as tools: look, act, step, until, and
+**The skins:** the HTTP bridge (exists); an MCP server script (not built; the four layers as tools: look, act, step, until, and
 as resources: read); the page's own runtime (a guest's or a sibling's agent in the published build). A later protocol is another skin;
 the core does not change.
 

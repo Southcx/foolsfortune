@@ -17,7 +17,7 @@ From QAIS's Questions tab, answered by the owner on v131 (2026-10-09). **Parked*
 |---|---|---|
 | **Commissions** (Seger's hunts by class) | Cut. A bounty (Letty Marque) is the one hunt that pays. | `ECON.commission` became `ECON.hunt` (a bounty's base); `commissionPay` gone |
 | **Throwing pots for pay** | "Not a needed feature right now." | `ECON.pot`, `potPay` gone |
-| **Sporelings** | "We're already going to have enough captured Figments running around; we don't need an adjacent class of creatures confusing things." | Myggdrasil no longer gives them; their four branches give fruit or a sharper sap. Calissa's model (`vfx/garden/sporeling.js`) is hers to delete |
+| **Sporelings** | "We're already going to have enough captured Figments running around; we don't need an adjacent class of creatures confusing things." | Myggdrasil no longer gives them; their four branches give fruit or a sharper sap. Calissa's model is deleted |
 | **Faith** (the eighth feeling) | "Keep it to seven emotions for colour coding. Faith and Wonder are close enough." | Gall and Fury are to be built (WHEEL.md) |
 
 ## Built next (the same answers)

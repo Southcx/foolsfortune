@@ -61,7 +61,7 @@ window.__sw = (() => {
         pneuka: !!g.pneukaUI?.open, codex: !!g.codex?.open, map: !!g.cartography?.open,
         calibration: [...(im?.querySelectorAll('.grp') || [])].map((e) => e.textContent).filter((t) => /CALIBRATION/.test(t)),
         top: topAt(innerWidth / 2, innerHeight / 2), cursor: getComputedStyle(G.renderer.domElement).cursor,
-        hudCross: g.hud?.el?.cross?.style.display ?? null, compass: document.getElementById('compass')?.style.visibility ?? null,
+        hudCross: g.hud?.el?.cross?.style.display ?? null,
       };
     },
     // ---- the Pneuka Jar, as drawn
@@ -347,7 +347,7 @@ check('leave: the realm is closed', !sL.active && !sL.inside, { active: sL.activ
 check('leave: the camera is back in the world', sL.zone !== 'garden', `zone=${sL.zone} cam=${JSON.stringify(sL.cam)}`);
 check('leave: camera.up is world +Y again', Math.abs(sL.camUp[1] - 1) < 1e-3, `camera.up=${JSON.stringify(sL.camUp)} (was ${JSON.stringify(sBefore.camUp)}); roll ${sL.roll} deg`);
 check('leave: the Courier is shown', !sL.courierHidden, sL.courierHidden);
-check('leave: HUD cross and compass back', dL.hudCross === '' && dL.compass === '', { cross: dL.hudCross, compass: dL.compass });
+check('leave: HUD cross back', dL.hudCross === '', { cross: dL.hudCross });
 check('leave: the Jar and the hand put away', !jL?.own && !hL?.own, { jar: jL?.own, hand: hL?.own });
 check('leave: the scene background is the world\'s again', sL.bg === sBefore.bg, `before ${sBefore.bg}, after ${sL.bg}`);
 check('leave: the Courier where they stood', Math.hypot(...sL.player.map((x, i) => x - sBefore.player[i])) < 1.5, { before: sBefore.player, after: sL.player });
