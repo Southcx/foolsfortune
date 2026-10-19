@@ -56,6 +56,7 @@ const NIGHT_LIGHT = { hemiSky: new THREE.Color(0x4c3a7a), hemiGnd: new THREE.Col
 const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it is set down by the gate: GARDEN-SWEEP #5)
 const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
+const _empty = new THREE.Scene(); // (an empty frame before the warm-up's compile: it reads the clipping state the last render left, as at boot)
 
 export class Realm {
   constructor(game, { god }) {
@@ -106,7 +107,9 @@ export class Realm {
     const looks = [...this.parked(), ...(game.gardenMycelium?.parked() || [])]; for (const o of looks) o.visible = true;
     this.site.show(true);
     const P = game.present, smooth = T.visual.smooth !== false; if (P) this.site.group.traverse((o) => P.shadeOne(o, false, smooth)); // (shaded as drawn before compiling: compiled flat then smooth, each program was built twice, as at boot)
-    try { game.renderer?.compile(this.site.group, game.camera, game.scene); } catch (e) { console.warn('garden warm-up', e); }
+    const R = game.renderer, was = R?.getRenderTarget(); // (compiled for the buffer the frame is drawn into, as at boot: main.js; against the canvas each was another program)
+    try { if (R) { R.setRenderTarget(game.post?.target ?? null); R.render(_empty, game.camera); R.compile(this.site.group, game.camera, game.scene); } } catch (e) { console.warn('garden warm-up', e); }
+    R?.setRenderTarget(was ?? null);
     this.site.show(false);
   }
   dumpAll() { return ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }); }
