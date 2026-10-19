@@ -29,10 +29,10 @@ export class Seam {
     if (this.job) return false;
     // a kind's own wipe when it is there (Calissa's: vfx/mawwipe.js, vfx/aberrantwipe.js: close(onCovered, opts), open()), else the plain dark cover
     const wipe = this.game[`${kind}Wipe`] || null;
-    if (wipe?.close) {
-      this.job = { fn, hold, phase: 'wipe', wipe };
-      wipe.close(() => { try { fn(); } finally { this.job.phase = 'hold'; this.job.n = hold; } }, opts);
-      return true;
+    if (wipe?.close && !wipe.active) {
+      const job = this.job = { fn, hold, phase: 'wipe', wipe };
+      if (wipe.close(() => { try { fn(); } finally { job.phase = 'hold'; job.n = hold; } }, opts) !== false) return true;
+      this.job = null; // (it would not close: the plain dark cover instead)
     }
     this.job = { fn, out, hold, back, t: 0, phase: 'out' };
     this.el.dataset.kind = kind;
