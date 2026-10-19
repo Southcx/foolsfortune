@@ -416,6 +416,7 @@ async function main() {
   game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
+  game.renderer = renderer; // (for a warm-up made later than boot: the Spirit Garden's, world/garden/realm.js build())
   game.post = new Glow(renderer);
   game.overlayScene = game.post.overlay = new OverlayScene(game, renderer); // (the overlay's own 3D layer: frames, the reservoir, render/overlayscene.js)
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)

@@ -168,6 +168,7 @@ export class GardenMycelium {
 
   /** The looks parked for the warm-up (main.js compiles them with the garden's; hidden on the first entry, never disposed: Calissa's). */
   parked() {
+    if (!this.R.site) return []; // (the garden is built on its first entry, and compiles these then: world/garden/realm.js build())
     const g = this.R.site.group, D = this.R.site.by.dantian, L = [strainsParked(), lekythosParked()];
     for (const o of L) { o.position.copy(D.c); g.add(o); }
     this.parkedLooks = L; return L;

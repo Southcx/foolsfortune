@@ -80,7 +80,7 @@ export class Cradles {
     P.vel.set(0, 0, 0); P.freeze = true;
     g.character.setHidden(true);
     if (!J.alive || J.hp <= 0) { J.hp = J.max * 0.6; J.alive = true; }
-    J.pos.copy(c.pos); J.group.position.copy(c.pos); J.group.rotation.y = c.yaw; J.group.visible = true;
+    J.pos.copy(c.pos); J.group.position.copy(c.pos); J.group.rotation.set(0, c.yaw, 0); J.group.visible = true;
     J.clips?.R.start('summon');
     return true;
   }

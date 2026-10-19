@@ -692,6 +692,9 @@ NEW:sync-before-timing-the-draw. **A draw is timed to a sync, or it times the qu
 NEW:sound-name-is-searched. **A new sound's name is searched across the banks first.** Every bank is mixed onto the one Sfx, so a name
     used twice is one sound overwriting the other (audio/sfx.js logs it at boot); grep `src/audio/` for the name, and name a tool's sound
     for its thing in full (`lureNotch`, not `notch`).
+NEW:a-place-gives-back-its-pose. **A place that turns a shared body gives the turn back when it is left.** The Pneuka Jar is one model in
+    the world, the god hand and the Spirit Garden; a place that sets more of its pose than the others read (the garden its whole
+    orientation, the world only its yaw) puts the rest back on leaving, or the next place inherits it.
 
 ## Cases
 
@@ -3824,4 +3827,12 @@ NEW:sound-name-is-searched. **A new sound's name is searched across the banks fi
   before, but the sketch was dead and the name ambiguous. `npm run check` does not run the boot, so only a look caught it.
 - **Fix:** the Sondelass's `sounding` removed; the sounding stays angling's, the one wired to `angle.sound`.
 - **Rule:** NEW:sound-name-is-searched.
+
+### 2026-10-19 · The Pneuka Jar idled leaning forward, about 45 degrees, in the god hand and in a Shrine's cradle (the owner, v221)
+- **Seen:** the Jar at rest stood crooked, leaning forward; sealed in a Shrine gate's cradle it leaned the same way.
+- **Cause:** measured headless: the Jar's group came out of the Spirit Garden at x 0.47, z -0.12 rad. In the garden it is stood square to
+  the planetoid under it (`placeJar`: the Dantian's ground there leans 28 degrees), which is right there; on leaving nothing put it back,
+  and the world's god hand (`godhand.js`) and the cradle (`cradles.js` seal) set only its yaw, so every later rest kept the garden's lean.
+- **Fix:** the garden's `leave()` stands the group upright again (its yaw kept); the cradle sets the whole rotation (0, yaw, 0).
+- **Rule:** NEW:a-place-gives-back-its-pose.
 

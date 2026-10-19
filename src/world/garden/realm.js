@@ -60,6 +60,21 @@ export class Realm {
   constructor(game, { god }) {
     this.game = game; this.god = god;
     this.active = false; this.name = null; this.spirits = [];
+    // (built on the first entry, not at boot: its planetoids, clay, water, plants and press are ~10 MB the heap carries for nobody until
+    // then; the owner, 2026-10-19. Until built, the save's section is held as it came and handed back as it was: build() loads it)
+    this.built = false; this.raw = null;
+    game.save?.section('realm', { scope: 'player', version: 3,
+      dump: () => (this.built ? this.dumpAll() : this.raw || this.name ? { ...(this.raw || {}), name: this.name } : null),
+      load: (d) => { this.raw = d || null; this.name = d?.name || null; if (this.built) this.loadAll(d); },
+      reset: () => { this.raw = null; this.name = null; if (this.built) this.resetAll(); } });
+  }
+
+  /** The garden made: its site, clay, plots, water, plants, press, hand and camera, the save's section loaded into them, and its looks
+   *  compiled while the seam's cover is down (enter()), so none is compiled in play. Once; it stays after leaving. */
+  build() {
+    if (this.built) return;
+    this.built = true;
+    const game = this.game;
     this.site = new GardenSite(game);
     // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
     this.clays = Object.fromEntries(this.site.planets.map((P) => [P.id, new Clay(P)]));
@@ -86,20 +101,25 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     this.waiting = { clay: {}, ground: {} }; // (saved clay of planetoids not yet here: adopt takes it)
-    game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }),
-      load: (d) => {
-        this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the bought planetoids first: their clay loads next)
-        for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
-        // a planetoid that comes later (Myggdrasil's, given on entering): its clay kept until it is adopted (adopt), never dropped
-        this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
-        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
-      },
-      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+    if (this.raw) this.loadAll(this.raw);
+    const looks = [...this.parked(), ...(game.gardenMycelium?.parked() || [])]; for (const o of looks) o.visible = true;
+    this.site.show(true);
+    try { game.renderer?.compile(this.site.group, game.camera, game.scene); } catch (e) { console.warn('garden warm-up', e); }
+    this.site.show(false);
   }
+  dumpAll() { return ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }); }
+  loadAll(d) {
+    this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the bought planetoids first: their clay loads next)
+    for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
+    // a planetoid that comes later (Myggdrasil's, given on entering): its clay kept until it is adopted (adopt), never dropped
+    this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
+    this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
+  }
+  resetAll() { this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
   parked() {
+    if (!this.built) return []; // (built on entry, and compiled there: build())
     const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.site.group.add(s); this.parkedSpirit = s;
     // (Calissa's features and forms, one of each, and the brush's ring: compiled with the rest, then put away)
     this.parkedLooks = [];
@@ -124,6 +144,7 @@ export class Realm {
     if (no) { if (no !== 'inside') g.events?.emit('garden.refuse', { why: no, by: 'courier' }); return false; } // (a refusal is said: GARDEN-SWEEP #14)
     this.back = { shrine: shrine?.id || null, pos: P.pos.clone(), yaw: P.yaw };
     const go = () => {
+      this.build(); // (under the seam's cover: the garden is made on the first entry)
       this.entering = false;
       this.lake = this.waterworks.feeling(); this.site.by.dantian?.look?.tint?.(FEELING_COLOR[this.lake]); // (the Dantian's lake is the draught you entered with: item 11)
       const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density };
@@ -174,7 +195,7 @@ export class Realm {
       this.raising.sparring = null; this.races.stop(); // (a spar or a race is left with the garden)
       if (this.hand.seed) { this.orbit.release(this.hand.seed.id, this.hand.seed.mesh.position); this.site.group.remove(this.hand.seed.mesh); this.hand.seed = null; } // (a seed paid for is never lost: it takes the nearest free slot)
       this.spirits = []; this.hand.held = null;
-      const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
+      const V = this.god?.jar; if (V?.group) { const yaw = V.group.rotation.y; V.group.rotation.set(0, yaw, 0); if (!this.god.active) V.group.visible = false; } // (stood upright again: the planetoid's lean stayed on it, and the world's god hand and cradles set only its yaw, the owner's 45 degree lean, 2026-10-19)
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
       g.character?.setHidden(false);
       const K = this.kept, sc = g.scene; if (K) { g.camera.up.copy(K.up); if (K.bg && sc.background?.isColor) sc.background.copy(K.bg); if (K.fog && sc.fog) { sc.fog.color.copy(K.fog); sc.fog.density = K.fogD; } const Lt = g.dunes?.lights; if (Lt && K.hemiSky) { Lt.hemi.color.copy(K.hemiSky); Lt.hemi.groundColor.copy(K.hemiGnd); Lt.hemi.intensity = K.hemiI; Lt.amb.intensity = K.ambI; Lt.sun.color.copy(K.sunC); } this.kept = null; }
