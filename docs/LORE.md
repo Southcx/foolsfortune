@@ -898,7 +898,7 @@ replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11
 ### The puzzle duel's words *(Espada's, proposed, 2026-10-19; Dovina's PUZZLE-DUELS.md)*
 
 - **The duel.** UI label **Puzzle Duel**, the genre's own words. Its lore name is **a wrangle**: from Middle English *wranglen*, kin to
-  *wring*, two minds wrung against each other until one gives. The log reads "You win the wrangle." A wrangler also herds, and the board
+  *wring*, two minds wrung against each other until one gives. The log says "duel" (see below). A wrangler also herds, and the board
   is a herd of pieces.
 - **The line.** UI label **the Line**. Its lore name is **the March**: a march is a border country (the Welsh Marches, a margrave's
   march), and to march is to advance. The March is your ground, and it marches as you send junk. One word for the border and for moving
@@ -936,19 +936,15 @@ replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11
   - Kept: **a shot** (the psygun's; label **Shoot**), **the hook** (the Sondelass's; label **Grab**), **paint** (the Soul Brush's;
     label **Paint**), **the toll** (the Crucibelle's; label **Delay**), **the hoover** (the Lockheart's; label **Hold**, Tetris's
     word), **the flail** (the Lockheart's; label **Send**, the genre's word for junk thrown across).
-- **a wriggle** (label **Flee**; `wriggle`; Dovina's flee, PUZZLE-DUELS.md 15). The saving throw that gets you out of a duel: a d20
-  against 15. Middle Low German *wriggeln*, to twist about, the same twisting family as *wring* and *wrangle*. A wrangle wrings you,
-  and a wriggle twists you free of it. Not "slip": that word is retired as a mechanic.
-  - Log on a success: "You wriggle free of the wrangle."
-  - Log on a fail: "You fail to wriggle free."
-  - Log on a natural 20: "You wriggle free at once."
-  - The angling plan's fish has a wriggle clip. That is a clip name, not a game word, so the two do not meet in player text.
-- **The duel's log** (`feedback/tracking/duel.js`, written 2026-10-19):
-  - begun: "An aberrant Figment seizes your mind. The wrangle begins."
+- **Flee** (ruled by the owner, 2026-10-19: "Just use standard game nomenclature. 'Flee' is more than appropriate."). It has no
+  lore name; the proposed "a wriggle" is withdrawn. Its log lines are Dovina's: "You flee the duel." / "You fail to flee." / "You flee at once."
+- **The duel's log** (`feedback/tracking/duel.js`, written 2026-10-19). After the owner's ruling on Flee, the log says "duel", as the
+  genre does; "the wrangle" waits for the Codex if it is ruled:
+  - begun: "An aberrant Figment seizes your mind. The duel begins."
   - a buckle: "The Figment buckles."
   - the coup: "You drain the Figment."
-  - won on the March: "You win the wrangle. The Figment is mended."
-  - lost: "You lose the wrangle. The Figment pushes your mind out."
-  - yielded: "You yield the wrangle."
+  - won on the March: "You win the duel. The Figment is mended."
+  - lost: "You lose the duel. The Figment pushes your mind out."
+  - yielded: "You yield the duel."
   - The test foe keeps its plain name, **Aberrant Lantern Wisp**, the glossary's two words joined. A given name would be the
     Egregores' privilege: they are human myth, while a Figment is a thought of the island's.
