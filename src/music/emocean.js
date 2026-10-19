@@ -23,7 +23,7 @@
 // choirs, Star Fox's on-rails pacing (a breather before the last push), future bass and trap (the shimmer, the hat rolls, the 808's
 // slides, the drop's held breath), and this game's own motifs (the Answer, the Five, the Tear).
 //
-//   import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN, SET_PIECE_CUES, STAGE_BARS, stageAt, stageCue, crossingCue } from './emocean.js'
+//   import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN, SET_PIECE_CUES, stageAt, stageCue, crossingCue } from './emocean.js'
 //   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
 //   stageCue(seconds, setPieces) -> the cue played in that many seconds with that set piece (progress/rail/crossing.js: 'shoal' |
 //   'pirates' | 'leviathan'), or a long crossing's list of up to three (crossingCue: 146 or 192 bars); its bars at the tempo that fills
@@ -34,7 +34,6 @@ import { MOTIF, quote } from './motifs.js';
 import { VERSE, CHORUS, JIG, JIG_CH } from './shanty.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
-export const STAGE_BARS = 100;
 const CH = ['Em', 'C', 'D', 'Bm'];
 const ROOT = { Em: 40, C: 36, D: 38, Bm: 47, E: 40, Am: 45, B: 47, G: 43, A: 45, F: 41 };
 const TRI = { Em: [64, 67, 71], C: [64, 67, 72], D: [62, 66, 69], Bm: [62, 66, 71], E: [64, 68, 71], B: [63, 66, 71], G: [62, 67, 71], A: [61, 64, 69], F: [65, 69, 72] };

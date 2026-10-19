@@ -699,6 +699,8 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
     its turn is the clip's hand swung the least way that lays the palm on the surface, never a turn built whole in the world (fingers
     up, palm in), which the wrist cannot make from where the clip has the forearm. Measured with the pose audit's wrist ranges.
 
+NEW:no-comment-mid-line. **A comment goes at a line's end or on its own line, never in the middle of code.** A `//` dropped into a line
+    of events silences everything after it with no error; the connectome's "never read" is the tell.
 ## Cases
 
 ### 2026-10-19 · A carried pot dragged the Courier's body (the owner, long open: "the feet clip the floor; the pot should ride the hands")
@@ -3864,3 +3866,10 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
 - **Fix:** the garden's `leave()` stands the group upright again (its yaw kept); the cradle sets the whole rotation (0, yaw, 0).
 - **Rule:** NEW:a-place-gives-back-its-pose.
 
+### 2026-10-19 · The overture's pre-chorus lost its bass and its lead (Petra's connectome, the deep clean)
+- **Seen:** the connectome listed `const CLIMB` in `src/music/overture.js` as never read; the pre-chorus played only its chugs, toms,
+  strings and snares, with no bass and no climbing lead (since 2026-10-04, the climb's accents for Calissa's board).
+- **Cause:** a comment, `// (a tool drawn each half bar: Calissa's board)`, was added in the middle of the climb's line, so the bass's
+  `E('pick', ...)` and the lead's `...line(CLIMB[i], 'shred', 0.4)` after it became comment text. The line still parsed, so nothing threw.
+- **Fix:** the comment ends its own line; the bass and the lead are code again (`npm run build` and the connectome see CLIMB read).
+- **Rule:** NEW:no-comment-mid-line.

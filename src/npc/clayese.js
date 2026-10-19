@@ -40,7 +40,6 @@ const MOOD = {
   sly: { st: -1, speed: 0.9, vib: 0, clay: 0.1, bell: 0, decay: 1.2, gain: 0.9, glide: 0.06 },
   whisper: { st: 0, speed: 0.85, vib: 0, clay: -0.2, bell: -0.8, decay: 0.8, gain: 0.45, glide: 0, breath: 1 },
 };
-export const MOODS = Object.keys(MOOD);
 export const moodOf = (m) => MOOD[m] || MOOD.calm;
 
 const VOWEL = { a: 2, e: 1, i: 3, o: 0, u: 4, y: 3 };

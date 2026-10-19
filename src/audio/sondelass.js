@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio/sfx.js): the Sondelass (sondelass/): the cutlass, blade mode and zandatsu, the grapnel and its line; the tool's UI (its form change, the lure ring: a sketch to Calissa's board).
+// A sound bank of the one mixer (audio/sfx.js): the Sondelass (sondelass/): the cutlass, blade mode and zandatsu, the grapnel and its line; the tool's UI (the lure ring: a sketch to Calissa's board).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class SondelassSounds {
   /** Steel drawn from the back: a short rasp and a ring. */
@@ -119,15 +119,6 @@ export class SondelassSounds {
   }
 
   // THE TOOL'S UI (Calissa's mock round 9, a SKETCH to her times in real seconds; nothing calls these yet).
-  /** A form changed (0.55 s): retracting, the guard's turn of a third (three ratchet teeth), the new form telescoping out, the rim's glint. */
-  sondelassFormChange() {
-    if (!this.ok() || !this.allow('sondelassForm', 3)) return;
-    const t = this.ctx.currentTime, d = this.out(0.3, 0.25);
-    for (let i = 0; i < 3; i++) this.tone(t + i * 0.05, 0.04, { f0: 1500 - i * 260, type: 'square', gain: 0.06, dest: d }); // (retract, 0..0.165)
-    for (let i = 0; i < 3; i++) this.noise(t + 0.165 + i * 0.037, 0.01, { type: 'bandpass', f0: 3200, q: 8, gain: 0.5, dest: d }); // (the guard's third)
-    for (let i = 0; i < 4; i++) this.tone(t + 0.275 + i * 0.065, 0.05, { f0: 900 + i * 220, type: 'square', gain: 0.07, dest: d }); // (out, 0.275..0.55)
-    [1, 2.76].forEach((r, j) => this.tone(t + 0.55, 0.25, { f0: 2093 * r, gain: j ? 0.008 : 0.025, dest: d })); // (the glint)
-  }
   /** The lure ring stepped a notch: onto a bead (a click with the overshoot's bump at 0.16) or over a dark seat (a shiver, 0.24). */
   lureNotch(dark = false) {
     if (!this.ok() || !this.allow('lureNotch', 16)) return;

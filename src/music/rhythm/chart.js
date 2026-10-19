@@ -16,9 +16,8 @@
 // from the music's onsets), and the Crucibelle's own pentatonic (on which nothing is wrong).
 //
 //   const C = noteChart(score, { level: 'steady' })   C.notes: [{ t, lane, midi, i, d, v, o, g }]   C.backing (a score to play)
-//   C.length (seconds)   C.countIn (seconds before the first bar)   LANES (10)   KEYS: lane -> key code
+//   C.length (seconds)   C.countIn (seconds before the first bar)   KEYS: lane -> key code (ten lanes)
 // ---------------------------------------------------------------------------------------
-export const LANES = 10;
 export const KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'];
 const SCALE = [0, 3, 5, 7, 10]; // (the Crucibelle's: tools/crucibelle/songs.js SCALE)
 const PERC = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape',

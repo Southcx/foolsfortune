@@ -1,5 +1,5 @@
 // A sound bank of the one mixer (audio/sfx.js): the shop. Cubes set down on the counter (one, a few, a heap), a purchase, a refusal, the
-// kiln firing a glaze, a shelf restocked.
+// kiln firing a glaze.
 // (shopBuy, shopSell: progress/shop/shops.js; kilnFire: courier/vessel/vessel.js)
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
@@ -70,17 +70,5 @@ export class ShopSounds {
       this.tone(tt, 0.12, { f0: f, f1: f * 0.995, gain: 0.09, dest: d });
       this.noise(tt, 0.01, { type: 'highpass', f0: 6000, gain: 0.15, dest: d });
     }
-  }
-
-  /** A shelf restocked: wood drawn out and pushed home, three pots set down on it, a brush of dust. */
-  shopRestock() {
-    if (!this.ok() || !this.allow('restock', 2)) return;
-    const t = this.ctx.currentTime, d = this.out(0.32, 0.35);
-    this.noise(t, 0.3, { type: 'bandpass', f0: 600, f1: 900, q: 2, gain: 0.35, attack: 0.05, dest: d });
-    for (const [dt, f] of [[0.35, 180], [0.5, 210], [0.62, 160]]) {
-      this.tone(t + dt, 0.12, { f0: f * 1.6, f1: f, type: 'triangle', gain: 0.3, dest: d });
-      this.noise(t + dt, 0.04, { type: 'bandpass', f0: 2600, q: 6, gain: 0.25, dest: d });
-    }
-    this.noise(t + 0.75, 0.25, { type: 'highpass', f0: 3000, gain: 0.08, attack: 0.05, dest: d });
   }
 }

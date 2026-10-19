@@ -160,12 +160,10 @@ function rules(word) {
 }
 
 const VOWELS = new Set(['AA', 'AE', 'AH', 'AO', 'AW', 'AY', 'EH', 'ER', 'EY', 'IH', 'IY', 'OW', 'OY', 'UH', 'UW']);
-const UNSTRESSED_PREFIX = /^(a|be|de|re|con|com|pro|ex|en|em|un|in|im|dis|mis|ob|per|pre|sub|sur|trans)/;
-/** Stress for a word that came from the rules: the first vowel, or the second after an unstressed prefix. */
+/** Stress for a word that came from the rules: the first vowel, or the second when the first is a reduced AH or IH. */
 function stress(ph) {
   const v = ph.map((p, i) => (VOWELS.has(p) ? i : -1)).filter((i) => i >= 0);
   if (!v.length) return ph;
   const k = v.length > 1 && /^(AH|IH)$/.test(ph[v[0]]) ? 1 : 0;
   return ph.map((p, i) => (VOWELS.has(p) ? `${p}${i === v[k] ? 1 : 0}` : p));
 }
-export { UNSTRESSED_PREFIX };

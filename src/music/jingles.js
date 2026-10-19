@@ -7,7 +7,7 @@
 //   REST     a rest, a save: the Five slowly on the piano in G major, the flute answering, a celesta at the end (the inn)
 // ---------------------------------------------------------------------------------------
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
-const G = [43, 50, 55, 59], C = [48, 52, 55, 60], D = [50, 54, 57, 62], Em = [52, 59, 64, 67];
+const G = [43, 50, 55, 59], C = [48, 52, 55, 60], D = [50, 54, 57, 62];
 
 export const FANFARE = {
   title: 'Fanfare of the Five', bpm: 125, arrange: true, loopFrom: null, tail: 3,
@@ -48,4 +48,3 @@ export const REST = {
   } }],
 };
 
-export { Em as _EM }; // (kept for the next cues: the minor jingles, the game over)
