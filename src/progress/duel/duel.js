@@ -17,10 +17,12 @@ import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.
 import { COURIER_ACTIONS, gleanPaths } from './couriertools.js';
 import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './buckle.js';
 import { emberKind, tickEmbers } from './dread.js';
+import { FLEE_ACTION } from './flee.js';
 import { seeded } from '../../core/rng.js';
 
-/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js). */
-export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION };
+/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js),
+ *  and the flee (flee.js). */
+export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION, flee: FLEE_ACTION };
 export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
 
 export const DUEL = {
@@ -37,7 +39,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false] } = {}) {
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false], flee = [true, false], luck = [0, 0] } = {}) {
   const rs = { run: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
@@ -45,7 +47,8 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line =
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i] })) };
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i], flee: !!flee[i], fleeFails: 0 })) };
+  s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);
@@ -187,6 +190,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
     for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });
   }
   if (S.form === 'hand') ok({ kind: 'coup' });
+  ok({ kind: 'flee' });
   if (S.form === 'hand') {
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       if (!b.mine(side, x)) continue;

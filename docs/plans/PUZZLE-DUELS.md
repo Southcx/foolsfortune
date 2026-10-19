@@ -151,6 +151,7 @@ do.
 - `rulesets.js`: the first three Figments' rulesets.
 - `buckle.js`: EmO, the buckle, the shower of teardrops, stun depth on the board, the coup (section 11).
 - `dread.js`: Dread's fog and embers (section 14).
+- `flee.js`: the flee, a saving throw out of the duel (section 15).
 - `couriertools.js`: the Courier's run and its tools on the board (section 11).
 - `scripts/duel.mjs`: duels between bots, headless, with lengths, junk rates, and every settle that hit the cap.
 
@@ -284,3 +285,22 @@ kind's ruleset whatever the weather; the weather's feeling where it drank is its
 **How a duel opens** (my recommendation; the room, seam and camera are Petra's): **the first blow that lands on an aberrant Figment
 opens it.** Two minds meet and the domains expand; a duel is never started by a key. Losing is a shatter (section 9); the coup mends it
 (the data drain), and a mended Lantern Wisp is an ordinary Wisp again, curious and skittish.
+
+## 15. Fleeing: a saving throw (the owner, 2026-10-19: "rolling like a saving throw to let you escape"; a failed one gentle at 3 AP)
+
+Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side only (`newDuel({ flee })`, `[true, false]`).
+- **The roll:** a d20, plus the board's modifiers, must reach **15**. A natural 20 always gets away; a natural 1 never does.
+- **The modifiers** (`fleeOdds(state, side)` gives the roll needed, the bonus, each part and the chance, for the overlay to show before
+  you commit: "FLEE 45%", the published odds the Lockheart's break chances keep):
+  - **the Line:** +1 a column held past the middle, -1 a column lost;
+  - **the buckle:** +3 a stun depth the Figment is down (running from a dazed foe is the smart run);
+  - **pity:** +3 for each failed try this duel (Pokémon's Run: each try raises the next);
+  - **Luck:** -2 to +2 (`newDuel({ luck })`, the room's from `luck.js`).
+- **A failed roll** costs its 3 AP and the duel goes on (2 AP left of a fresh turn). **Away:** both whole, no shatter and no reward;
+  the Figment keeps its aberrance, its EmO back to calm, and drifts off. The duel ends with `winner: -1` and `fled: side`, event
+  `duel.fled`; the ledger counts it through the session's `duel.end { how: 'fled' }`.
+- **Measured** (400 duels, fleeing from the first turn of an even fight): every one got away, in 2.3 tries on average, 5 at most (113,
+  116, 109, 48 and 14 on tries 1 to 5). Down 4 columns with the Figment stunned: 40%; an even fight after two misses: 60%.
+- **The bots** flee only when losing by 4 columns or more and the odds are 40% or better: once in 120 duels. A roll is judged by its
+  odds, never sampled with the rest (a clone's die would let the bot see it fall).
+- The sure way out stays the Wake Whistle's to give (an item that ends a duel whole, unrolled): the plan's, not built.

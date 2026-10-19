@@ -12,6 +12,7 @@
 import { hasTag } from './board.js';
 import { act, endTurn, legalActions, cloneState, DUEL } from './duel.js';
 import { COUP } from './buckle.js';
+import { fleeOdds } from './flee.js';
 
 /** Actions always tried, never left to the sample: few, and each can change the fight (a form switch, the coup). */
 const ALWAYS = new Set(['form', 'coup']);
@@ -38,10 +39,11 @@ export function score(s, side) {
 /** The side's best line of actions for its points now, found greedily on a copy (the duel itself is not changed). */
 export function plan(s, side = s.toMove, { sample = 60 } = {}) {
   let c = cloneState(s); if (c.toMove !== side) { c.toMove = side; c.apLeft = DUEL.ap; } // (an intent: its next turn's plan)
+  if (wantsToFlee(c, side)) return [{ kind: 'flee' }]; // (a roll is judged by its odds, never by a peek at its outcome)
   const out = [];
   while (c.apLeft > 0) {
     const lastForm = out.length && out[out.length - 1].kind === 'form'; // (never two switches in a row: a switch is for what it opens)
-    const all = legalActions(c, side).filter((a) => !(lastForm && a.kind === 'form')), sure = all.filter((a) => ALWAYS.has(a.kind)), rest = all.filter((a) => !ALWAYS.has(a.kind));
+    const all = legalActions(c, side).filter((a) => a.kind !== 'flee' && !(lastForm && a.kind === 'form')), sure = all.filter((a) => ALWAYS.has(a.kind)), rest = all.filter((a) => !ALWAYS.has(a.kind));
     const tries = [...sure]; while (tries.length < sample + sure.length && rest.length) tries.push(rest.splice(c.r.int(rest.length), 1)[0]);
     let best = null, bestScore = score(c, side), bestState = null; // (doing nothing is a choice)
     for (const a of tries) {
@@ -56,10 +58,18 @@ export function plan(s, side = s.toMove, { sample = 60 } = {}) {
   return out;
 }
 
+/** A bot runs when it is losing and the odds are fair: the Line 4 or more columns against it (or junk waiting that would push it so),
+ *  and the flee at 40% or better. (The flee is never sampled with the rest: a clone's roll would let the bot see the die before it fell.) */
+function wantsToFlee(c, side) {
+  const S = c.sides[side], b = c.board; if (!S.flee || c.apLeft < 3) return false;
+  const lost = (side === 0 ? b.w / 2 - b.line : b.line - b.w / 2) + S.pending / 3;
+  return lost >= 4 && fleeOdds(c, side).chance >= 0.4;
+}
+
 /** The best a side could reach with one more action from here (what a form switch is worth). */
 function lookPast(t, side, sample = 60) {
   let best = score(t, side); if (t.apLeft <= 0) return best;
-  const all = legalActions(t, side).filter((a) => a.kind !== 'form');
+  const all = legalActions(t, side).filter((a) => a.kind !== 'form' && a.kind !== 'flee');
   for (let i = 0; i < sample && all.length; i++) { const a = all.splice(t.r.int(all.length), 1)[0], u = cloneState(t); if (act(u, a)) best = Math.max(best, score(u, side)); }
   return best;
 }
