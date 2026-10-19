@@ -334,6 +334,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
   Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
   given at the start of its turn (not rain). *Not:* a table (Raku's), the kick, a trial, a guard break, a mote (the scatter's), a run (three in a line).
+- **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: F at it, the seam (kind `duel`), the board between you, your turns and its bot's, its end / which Figments offer one (any aberrant; the test enemy an aberrant Lantern Wisp). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
