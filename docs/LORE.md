@@ -894,3 +894,26 @@ plainly, Greek *pente*, five; the pepperbox is the real nineteenth-century gun o
 looked like a pepper mill and scattered its shot like one. Odd counts only, one to seven: the psygun climbs as the feelings do.
 *Settled* (Dovina, OVERLAY.md 18, `tools/psygun/kinds.js`): THE PSYGUN stays at 6 as the first gun, the four beside it; the Carbine
 replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11.
+
+### The puzzle duel's words *(Espada's, proposed, 2026-10-19; Dovina's PUZZLE-DUELS.md)*
+
+- **The duel.** UI label **Puzzle Duel**, the genre's own words. Its lore name is **a wrangle**: from Middle English *wranglen*, kin to
+  *wring*, two minds wrung against each other until one gives. The log reads "You win the wrangle." A wrangler also herds, and the board
+  is a herd of pieces.
+- **The line.** UI label **the Line**. Its lore name is **the March**: a march is a border country (the Welsh Marches, a margrave's
+  march), and to march is to advance. The March is your ground, and it marches as you send junk. One word for the border and for moving
+  it.
+- **The rule words.** Keep the genre's: **run** (three or more in a line), **cluster** (four or more touching), **pincer** (Terra Battle's
+  word), **drag**, **drop**, **push**, **swap**, **rotate**. Two changes:
+  - **kick → punt.** "The kick" is the Courier's unarmed moveset (glossary). A piece sent sliding until it stops is **a punt**, a kick for
+    distance.
+  - **garbage / junk → junk.** UI label **Junk**, the kinder word. Lore name: **grog**, the potter's word for fired clay crushed and
+    worked back into new clay. Junk is the other mind's broken ware worked into your ground.
+- **A Figment's rule tiles** (the first three rulesets, neuralese by NEURALESE.md's grammar; pushing a tile breaks or rewrites its
+  rule):
+  - **Fury:** LITHA-PIRO KRAKA ("the fire-stone breaks": bombs); LITHA VADA-LON ("stones go far": punts).
+  - **Grief:** LITHA DEO VADA-MURA ("stones sink toward the wall": gravity toward the March); LITHA-MULTA KITH TE, ONO MOR ("many stones
+    together: they die": clusters); LITHA-ALI TOPA-DUO META AMI ("the other stone between two becomes kin": the pincer).
+  - **Mirth:** SORA META DEO ("up becomes down": mirrored gravity); KRAKA KRESA ("breaking grows": easy chains).
+  - Pushing SORA out of SORA META DEO leaves META DEO, "become down", and the board's gravity comes home. Breaking a rule is a sentence
+    losing a word, so the player learns the grammar by vandalism.
