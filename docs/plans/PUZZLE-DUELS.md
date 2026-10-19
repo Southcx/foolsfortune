@@ -198,15 +198,16 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 | ruleset | turns a side | buckles a duel | teardrops gleaned a duel | how they end |
 |---|---|---|---|---|
-| fury | 20.4 | 1.3 | 1.0 | line 16, full 4 |
-| grief | 5.7 | 1.8 | 0.9 | line 14, coup 4, full 2 |
-| mirth | 10.0 | 1.1 | 1.1 | line 15, coup 5 |
+| fury | 25.9 | 1.6 | 2.5 | line 13, full 3, coup 3, cap 1 |
+| grief | 5.7 | 1.9 | 1.4 | line 17, coup 2, full 1 |
+| mirth | 16.3 | 1.2 | 1.9 | line 14, coup 5, full 1 |
 
 - **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
   since Calissa's mock).
 - **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it gleans; a player who plans the buckle
   should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
-- The greedy bot dithers between forms (about one switch a turn). A sim artefact, but it slows its duels.
+- The greedy bot dithered between forms (about one switch a turn). It now never switches twice in a row and a switch costs it a little:
+  switches fell by half or more, and it gleans twice as often.
 
 ## 12. Co-op on the board (planned for, the owner, 2026-10-19)
 
@@ -241,4 +242,14 @@ line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab,
    field from above). On the upright board it reads as standing on the face of its cell; the look is Calissa's.
 8. Words: a settle's chain is **a duel's chain** (the homonym table); what each side is given at the start of its turn is **the drip**
    (`rs.drip`, event `drip`), not rain, which is the weather's.
+
+**Ruled on Calissa's board v11** (Dovina, 2026-10-19):
+9. **The coup is the Courier's side's only.** The data drain never touches the Courier (the owner), so a Figment's side has no coup; a
+   buckled Courier loses its points and nothing more. (`newDuel({ coup })`, `[true, false]` by default; the simulator gives both chairs
+   one to measure alike, `--coup courier` to play it as the game does.)
+10. A spend says what it cost: the action's own event carries `spent` and `pool` (the pool after), the coup's and every tool's alike.
+11. A turn begins with a `turn` event: `{ side, ap, lost, depth, stagger }`, so a stun's or a toll's bite is never silent.
+12. The buckle's reason is `cause` (`push` or `emo`); `by` stays the bus's word for who.
+13. After a coup the board is the view's: draining the Figment's half and sending the March home is the ceremony, not a rule. A teardrop
+    goes with its ground: if the March passes over its cell, it is the other side's to glean (or lose).
 

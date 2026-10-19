@@ -36,7 +36,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null } = {}) {
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false] } = {}) {
   const rs = { run: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
@@ -44,14 +44,14 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line =
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0 })) };
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i] })) };
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);
     if (spot) { board.set(spot[0], spot[1], piece('body', { side })); s.sides[side].at = spot; }
     topQueue(s, side);
   }
-  s.apLeft = startTurn(s, 0);
+  const first = startTurn(s, 0); s.apLeft = first.ap; s.log.push(first.event);
   return s;
 }
 
@@ -106,7 +106,9 @@ export function act(s, a) {
   if (A.form && A.form !== s.sides[side].form) return null;
   const cost = costOf(a); if (cost > s.apLeft || !A.legal(s, side, a)) return null;
   s.apLeft -= cost;
-  const events = A.apply(s, side, a);
+  const before = s.sides[side].pool, events = A.apply(s, side, a);
+  if (!events.length) events.push({ type: a.kind, side });
+  if (s.sides[side].pool < before) Object.assign(events[0], { spent: before - s.sides[side].pool, pool: s.sides[side].pool }); // (what a spend cost, on its own event)
   if (s.rs.pincer) events.push(...pinch(s.board, side));
   events.push(...settle(s).events);
   return events;
@@ -126,7 +128,7 @@ export function endTurn(s) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
-  s.toMove = foe; s.apLeft = startTurn(s, foe);
+  s.toMove = foe; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
   if (s.winner === null) events.push(...drip(s, foe));
   topQueue(s, foe);
   s.log.push(...events);

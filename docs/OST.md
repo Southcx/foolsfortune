@@ -78,6 +78,10 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   pressure (never thunder), gall's flies, sour hum and drip.
 - **A stun's depth** (`audio/damage.js` `stunSting`; STUN-DEPTH.md): dazed, stunned, out cold, each a sting a third higher than the
   last: a crack and two stars chirping; the crack, a bell and three stars; a thud, a high bell, four stars and the ear's ring.
+- **A puzzle duel** (`audio/puzzleduel.js`, `duelEvent(e)`; PUZZLE-DUELS.md 8): a chain's step a note higher up C's pentatonic, fuller
+  as it climbs; the line's push a stone dragged and set down; a clear a glass pop by colour; and the fall, break, blast, pinch, land, offset,
+  send and the end. The fight under it (section 11): a buckle by depth rhymes with the stun's stings, the teardrops ring up like
+  Sonic's rings, the coup is the data drain, and each of the Courier's tool moves is its tool in small. Waiting for a view to call it.
 - **Raku's bazaar** (`music/casino.js`, `audio/casino.js`; CASINO.md): a circus march in F on the floor (the Gold Saucer's welcome), a
   lounge at a table, a win's two bars of brass; the chips, the chair, each play (flip, steal, fate, four, death, hand, lock, upgrade), the result.
   The count-up (CASINO-CLARITY.md 8): a tick up F major a `+`, a slam a `x`, the reel and its stop, the tier's flourish (chime, triad,
