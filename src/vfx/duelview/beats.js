@@ -19,6 +19,8 @@
 //   turn       a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
+//   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
+//              clash folds softly with no winner and the tsuitate folds away (1.4)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
 // A play resolves once its last phase is shown; when nothing more is queued the view settles up with the duel as it stands.
 //
@@ -33,6 +35,7 @@ import { sfx } from '../../audio/sfx.js';
 import { junkOf } from '../../progress/duel/duel.js';
 import { DUEL_VIEW, cellLocal, feelColour, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
+import { FLEE } from '../../progress/duel/flee.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'punt', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, punt: 2, form: 1, glean: 1, shot: 1, hook: 1, drill: 1, paint: 2, toll: 2, hoover: 1, flail: 1, 'duel.coup': 2 };
@@ -87,6 +90,8 @@ export class DuelBeats {
     if (e.type === 'teardrop.drink') { job.i++; return this.drinkAt(e); }
     if (e.type === 'duel.coup') { job.i++; V.spend(e.side, COST['duel.coup'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); return this.coup(e); }
     if (e.type === 'turn') { job.i++; return this.turn(e); }
+    if (e.type === 'flee') { job.i++; V.spend(e.side, FLEE.cost, e); return V.flee.roll(e); }
+    if (e.type === 'duel.fled') { job.i++; return V.flee.fled(e); }
     if (e.type === 'offset' || e.type === 'send') { job.i++; V.count(e); return { events: [e], dur: 0.38 }; }
     if (e.type === 'duel.full' || e.type === 'duel.line' || e.type === 'duel.cap') { job.i++; return { events: [e], dur: 0.4, step: (u) => { if (e.winner === 0) V.board.won(sm(u)); } }; }
     job.i++; return { events: [e], dur: 0 }; // (settle.cap, settle.loop, and anything newer than this view: shown as nothing)

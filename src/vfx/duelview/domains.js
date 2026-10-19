@@ -24,7 +24,7 @@
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
 //   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.flash(side)   D.won(k)
-//   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse()   D.update(dt) -> still showing?   D.open (0..1 each side)
+//   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from '../labradorite.js';
@@ -207,15 +207,16 @@ export class DomainClash {
   won(k) { this.U.uWon.value = k; }
 
   /** The duel opens: each half unfolds from its owner. */
-  unfold(originC, originF) { this.U.uOriginC.value.copy(originC); this.U.uOriginF.value.copy(originF); this.want = 1; this.dome.visible = true; this.U.uFade.value = 1; }
+  unfold(originC, originF) { this.slower = 1; this.U.uOriginC.value.copy(originC); this.U.uOriginF.value.copy(originF); this.want = 1; this.dome.visible = true; this.U.uFade.value = 1; }
   /** A `line`: the seam pushes into the half that gave ground (the receiver's). */
   push(receiver) { this.pushK = 1; this.U.uPushSide.value = receiver === 0 ? -1 : 1; }
-  collapse() { this.want = 0; }
+  /** The domains fold away (`slower`: times their closing, a fled duel's soft fold). */
+  collapse(slower = 1) { this.slower = this.want === 0 ? Math.max(this.slower || 1, slower) : Math.max(1, slower); this.want = 0; } // (a second call never hurries one already slow)
 
   /** Each frame (real seconds): the halves opening or closing, the push decaying. Returns whether anything still shows. */
   update(dt) {
     mindTick(); this.t += dt; const U = this.U; U.uT.value = this.t % 3600;
-    const rate = dt / (this.want ? DUEL_VIEW.unfold : DUEL_VIEW.collapse);
+    const rate = dt / (this.want ? DUEL_VIEW.unfold : DUEL_VIEW.collapse * (this.slower || 1));
     for (let i = 0; i < 2; i++) this.open[i] = clamp01(this.open[i] + (this.want ? rate * (i ? 0.92 : 1) : -rate)); // (the foe's a beat behind)
     U.uOpen.value.set(sm(this.open[0]), sm(this.open[1]));
     this.pushK = Math.max(0, this.pushK - dt / DUEL_VIEW.push); U.uPush.value = this.pushK * this.pushK;

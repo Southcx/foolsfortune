@@ -2,7 +2,8 @@
 // THE DUEL'S MARKS (the duel's view: vfx/duelview.js): what is laid over a puzzle duel's board that is not a piece. No words: the only
 // type is a number where one is read (CLAUDE.md: the overlay may carry numbers in the System's own type), in Jersey 15 (the count face,
 // src/ui/theme.js), drawn once into a glyph atlas (digits, the arrows, x and +) and set as quads.
-//   A CELL RIM      the god hand's hover and its selection: a square of the film's light round a cell (the Mind's line, vfx/labradorite.js)
+//   A CELL RIM      the god hand's hover and its selection: a square of the film's light round a cell (the Mind's line, vfx/labradorite.js);
+//                   a refused action's: the same rim in the dry ink (the dull of a brush gone dry), shaken side to side and fading (0.32)
 //   A DUEL'S CHAIN  its step's numeral popping from the middle of its clear and rising 0.7 of a cell, the Courier's in the film's colour,
 //                   the foe's in its feeling (Puyo's chain voice, Panel de Pon's counter on the panels)
 //   THE JUNK COUNTS on the Line's head: what waits to land on each side, an arrow toward the side it will land on, in the sender's colour
@@ -11,7 +12,7 @@
 // Prior art: Puyo Puyo's chain counter, Tetris 99's incoming-garbage meter (the waiting count by the well), Panel de Pon's chain number
 // over the panels that made it; the stunned stars of the cartoon, as vfx/dizzy.js.
 //
-//   const K = new DuelMarks(parent)   K.layout(board)   K.hover(cell | null)   K.select(cells)   K.numeral(text, local, hex)
+//   const K = new DuelMarks(parent)   K.layout(board)   K.hover(cell | null)   K.select(cells)   K.refuse(cell | null)   K.numeral(text, local, hex)
 //   K.counts(toCourier, toFoe, courierHex, foeHex, faint?)   K.stars(side, depth, local | null)   K.label(text, hex) -> a Label   K.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -62,6 +63,8 @@ export class DuelMarks {
     this.rimGeo = new THREE.ShapeGeometry(s); this.rimMat = mindLineMaterial({ opacity: 1, depthTest: true, bright: 1.6 }); this.selMat = mindLineMaterial({ opacity: 0.85, depthTest: true, bright: 1.1 });
     this.hoverRim = new THREE.Mesh(this.rimGeo, this.rimMat); this.hoverRim.visible = false; this.hoverRim.renderOrder = 5; this.group.add(this.hoverRim);
     this.selRims = [];
+    this.dryMat = new THREE.MeshBasicMaterial({ name: 'duel-dry', color: 0x2b211d, transparent: true, opacity: 0.9, depthWrite: false, fog: false, toneMapped: false }); // (the dry ink: the cast's program)
+    this.dryRim = new THREE.Mesh(this.rimGeo, this.dryMat); this.dryRim.visible = false; this.dryRim.renderOrder = 6; this.group.add(this.dryRim); this.dry = null; this.hovered = null;
     this.pops = []; this.free = [];
     this.countL = [this.label(), this.label()]; for (const L of this.countL) this.group.add(L.group);
     // the stars: gold, lit facets over a glow (vfx/dizzy.js's gold)
@@ -84,7 +87,7 @@ export class DuelMarks {
 
   /** The god hand's hover: a rim round one cell (null: none). */
   hover(cell) {
-    const r = this.hoverRim; r.visible = !!cell; if (!cell) return;
+    const r = this.hoverRim; r.visible = !!cell; this.hovered = cell || null; if (!cell) return;
     cellLocal(cell.x, cell.y, this.board, r.position); r.position.z += 0.012; r.scale.setScalar(DUEL_VIEW.cs);
   }
   /** The god hand's selection: a rim round each cell given. */
@@ -92,6 +95,12 @@ export class DuelMarks {
     cells = cells || [];
     while (this.selRims.length < cells.length) { const m = new THREE.Mesh(this.rimGeo, this.selMat); m.renderOrder = 5; this.group.add(m); this.selRims.push(m); }
     this.selRims.forEach((m, i) => { const c = cells[i]; m.visible = !!c; if (!c) return; cellLocal(c.x ?? c[0], c.y ?? c[1], this.board, m.position); m.position.z += 0.01; m.scale.setScalar(DUEL_VIEW.cs * 0.86); });
+  }
+
+  /** A refused action at a cell: the rim in the dry ink, shaken (four swings, narrowing) and fading over 0.32 real s. null: gone. */
+  refuse(cell) {
+    if (!cell) { this.dry = null; this.dryRim.visible = false; return; }
+    this.dry = { at: cellLocal(cell.x, cell.y, this.board, new THREE.Vector3()).setZ(DUEL_VIEW.front * 0.5 + 0.016), age: 0, dur: 0.32 };
   }
 
   /** A number popping from a point (the board's frame) and rising 0.7 of a cell over 0.9 real s: a duel's chain step. */
@@ -114,6 +123,10 @@ export class DuelMarks {
   stars(side, depth, local = null) { const S = this.starSets[side]; S.depth = depth; if (local) S.at.copy(local); }
 
   update(dt) {
+    const D = this.dry;
+    if (D) { D.age += dt; const u = D.age / D.dur, r = this.dryRim;
+      if (u >= 1) { this.dry = null; r.visible = false; }
+      else { r.visible = true; r.position.copy(D.at); r.position.x += Math.sin(u * Math.PI * 8) * (1 - u) * 0.22 * DUEL_VIEW.cs; r.scale.setScalar(DUEL_VIEW.cs * 1.04); this.dryMat.opacity = 0.9 * (u < 0.7 ? 1 : 1 - (u - 0.7) / 0.3); } }
     for (let i = this.pops.length - 1; i >= 0; i--) {
       const p = this.pops[i]; p.age += dt; const u = p.age / p.dur;
       if (u >= 1) { p.L.group.visible = false; this.free.push(p.L); this.pops.splice(i, 1); continue; }

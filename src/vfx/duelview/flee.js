@@ -6,8 +6,8 @@
 //                   for the number) as the Lockheart's reliquary publishes its break chances (lockheartreliquary/dial.js); faint while
 //                   the turn is not yours or the points will not pay for it
 //   THE ROLL        the 'flee' event { roll, bonus, need, mods, ok }: a d20 of Raku's dice set (vfx/bazaarpieces.js, the plum d20 with
-//                   the schiller in its numerals) thrown from the Courier's figurine before the board, tumbling, landing against the
-//                   frame's foot with `roll` turned to you; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
+//                   the schiller in its numerals) thrown from the Courier's figurine before the board, tumbling, coming to rest
+//                   before the Courier's half with `roll` turned to you, its window over it; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
 //                   ROLL, then each modifier that is not nought (LINE held or lost, BUCKLE +3 a stun depth, PITY +3 a failed try, LUCK)
 //                   lighting in and rolling the total up, against the 15 it must reach, and the verdict: a tick in the film, or a cross
 //                   in the ember (a natural 20 or 1 stamped so). The die and the window linger a beat, then fade.
@@ -26,7 +26,7 @@ import * as THREE from 'three';
 import { bazaarMaterials, dieTpl, dieRest } from '../bazaarpieces.js';
 import { fleeOdds, FLEE } from '../../progress/duel/flee.js';
 import { VERD, J15, CZ, film, rng } from '../lockheartreliquary/look.js';
-import { DUEL_VIEW, sm, ease, lerp, clamp01 } from './layout.js';
+import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
 
 const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
 const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9;
@@ -67,14 +67,16 @@ export class DuelFlee {
   layout(board) {
     this.board = { w: board.w, h: board.h }; const { cs, base, border } = DUEL_VIEW, W = board.w * cs, H = board.h * cs;
     this.oddsP.mesh.position.set(-W / 2 + 0.36, base + H + border + 0.16, DUEL_VIEW.lip + 0.03);
-    this.rest = new THREE.Vector3(-W / 4, base * 0.45, 0.42); // (where the die comes to lie: against the frame's foot, the Courier's half)
-    this.rollP.mesh.position.set(-W / 4 + 0.62, base + 0.38, 0.36);
+    // (where the die comes to lie and its window stands: before the Courier's half near the Line, mid-height, clear of the world's Courier
+    // beside the frame and of the log's corner of the screen)
+    this.rest = new THREE.Vector3(-W * 0.15, base + H * 0.36, 0.5);
+    this.rollP.mesh.position.set(-W * 0.15, base + H * 0.6, 0.42);
   }
 
   /** The odds plate, drawn again only when what it says changes. */
   odds(s) {
     const P = this.oddsP, S = s?.sides?.[0], may = !!S?.flee && s.winner === null && !s.fled;
-    if (!may || this.run) { P.mesh.visible = false; P.key = null; return; }
+    if (!may || this.run || this.folding || this.view.folded) { P.mesh.visible = false; P.key = null; return; }
     const o = fleeOdds(s, 0), pct = Math.round(o.chance * 100), live = s.toMove === 0 && s.apLeft >= FLEE.cost, key = `${pct}|${live}`;
     P.mesh.visible = true; P.mat.opacity = live ? 1 : 0.55; if (key === P.key) return; P.key = key;
     const x = P.x; x.setTransform(K, 0, 0, K, 0, 0); x.clearRect(0, 0, P.w, P.h); windowBox(x, P.w, P.h, this.t);
@@ -87,7 +89,7 @@ export class DuelFlee {
     const V = this.view, reasons = REASONS.filter(([k]) => (e.mods?.[k] || 0) !== 0).map(([k, l]) => ({ k, l, n: e.mods[k] }));
     const from = V.pieces.bodyAt(e.side) ? V.headOf(e.side, new THREE.Vector3()).setZ(0.25) : this.rest.clone().add(_v.set(-0.4, 1.2, 0));
     const restQ = new THREE.Quaternion(); dieRest(20, e.roll, 0.35, restQ, DIE_K);
-    restQ.premultiply(_t.setFromUnitVectors(_up, _v.set(0, 0.42, 1).normalize())); // (leaning back on the frame's foot: its face to you)
+    restQ.premultiply(_t.setFromUnitVectors(_up, _v.set(0, 0.42, 1).normalize())); // (tipped back, its face to you: it hangs before the board, as a summoned thing of the System's)
     const R = rng(e.roll * 31 + reasons.length + 7), axis = new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(), turns = 9 + R() * 5;
     const count = THROW + 0.25, dur = count + reasons.length * PER + VERDICT + HOLD;
     this.run = { e, reasons, from, restQ, axis, turns, count, dur, age: 0 }; this.linger = 0;
@@ -133,8 +135,9 @@ export class DuelFlee {
   /** 'duel.fled': the clash folding softly with no winner, the tsuitate folding back on its feet and sinking away. */
   fled(e) {
     const V = this.view, F = V.frame; V.board.won(0); V.clash.collapse(2.2); V.marks.stars(0, 0); V.marks.stars(1, 0); V.intentDraw.clear();
+    this.folding = true; this.oddsP.mesh.visible = false;
     return { events: [e], dur: 1.4, step: (u) => { const s = sm(u); F.rotation.x = -1.35 * s; F.position.y = -0.4 * s * s; F.scale.setScalar(Math.max(0.001, 1 - 0.85 * s * s)); },
-      end: () => { F.scale.setScalar(0.001); V.folded = true; } };
+      end: () => { F.scale.setScalar(0.001); V.folded = true; this.folding = false; } };
   }
 
   update(dt) {
@@ -144,10 +147,9 @@ export class DuelFlee {
       if (this.linger <= 0) this.clear();
     }
   }
-  clear() { this.run = null; this.linger = 0; this.die.visible = false; this.rollP.mesh.visible = false; this.oddsP.key = null; }
+  clear() { this.run = null; this.linger = 0; this.folding = false; this.die.visible = false; this.rollP.mesh.visible = false; this.oddsP.mesh.visible = false; this.oddsP.key = null; }
 
   /** For the boot's warm-up: the plates and the die shown once. */
   prewarm() { this.die.visible = true; this.rollP.mesh.visible = true; this.oddsP.mesh.visible = true; }
 }
 
-export { lerp };
