@@ -171,19 +171,19 @@ do.
 ## 11. The Courier is the fight; the god hand is the puzzle (built 2026-10-19)
 
 **The loop.** The hand makes junk. Junk landed raises the foe's **EmO**; a **critical push** (8 or more landed at once) or EmO full
-**breaks** it. A break:
+**buckles** it (label Break; Espada's lore word, proposed: "The Figment buckles."). A buckle:
 - deepens its **stun depth** (dazed, stunned, out cold: STUN-DEPTH.md's three), which costs it action points: 1, 2, then its whole turn.
-  The stun holds 2 of its own turns, and a new break while it is down refreshes it a depth deeper.
-- sheds a **shower of motes** (Lachryma, one for every 2 junk, 3 to 12) onto your side within 6 cells of your Courier. They last
-  **one turn**: switch to the Courier, **run** over them (a path of up to four cells for one point), and each fills the pool by 8.
-- opens the **coup**: switch back to the hand and finish it (2 AP), paid from the pool by depth: **60 dazed, 40 stunned, 20 out cold**.
+  The stun holds 2 of its own turns, and a new buckle while it is down refreshes it a depth deeper.
+- sheds a shower of **teardrops** (label Orb; Lachryma is Latin *lacrima*, a tear: one for every 2 junk, 3 to 12) onto your side within 6 cells of your Courier. They last
+  **one turn**: switch to the Courier, **glean** them (a path of up to four cells for one point), and each fills the pool by 8.
+- opens **the coup** (label Finish; the log: "You drain the Figment."): switch back to the hand and finish it (2 AP), paid from the pool by depth: **60 dazed, 40 stunned, 20 out cold**.
   The deeper it is down, the cheaper the finish; the coup is the data drain in the board's form.
 
 **The Courier's tools on the board**, each a special attack that goes round the puzzle, paid in points and the pool:
 
 | tool | its move | AP | pool | the genre's mechanic |
 |---|---|---|---|---|
-| (none) | **run** up to four cells, drinking the motes it crosses | 1 | 0 | Sonic's rings gathered back |
+| (none) | **glean** up to four cells, drinking the teardrops it crosses | 1 | 0 | Sonic's rings gathered back |
 | the psygun | **shoot** the first piece past the Line in your row (their chain may set off and come back at you) | 1 | 5 | Meteos' launch |
 | the Sondelass | **hook** that piece back across to your side | 1 | 5 | Magical Drop's grab |
 | the Dreamvane | **drill** up to three pieces in a line from you | 1 | 3 | Mr. Driller |
@@ -196,7 +196,7 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 **What the simulator says** (20 duels a ruleset, 5 AP, the Line a column for every 3 junk; the bot always tries a form switch and the coup):
 
-| ruleset | turns a side | breaks a duel | motes drunk a duel | how they end |
+| ruleset | turns a side | buckles a duel | teardrops gleaned a duel | how they end |
 |---|---|---|---|---|
 | fury | 20.4 | 1.3 | 1.0 | line 16, full 4 |
 | grief | 5.7 | 1.8 | 0.9 | line 14, coup 4, full 2 |
@@ -204,7 +204,7 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 - **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
   since Calissa's mock).
-- **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it walks for motes; a player who plans the break
+- **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it gleans; a player who plans the buckle
   should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
 - The greedy bot dithers between forms (about one switch a turn). A sim artefact, but it slows its duels.
 
@@ -212,7 +212,7 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 - **A side holds the party**: the Courier and up to three more (siblings or guests: the party's four at most). Each has **their own form,
   their own 5 AP and their own pool**, and acts in any order inside the side's turn; the side's turn ends when all have ended.
-  Shared: the side's ground, the junk it sends and takes, the motes (whoever runs over one drinks it).
+  Shared: the side's ground, the junk it sends and takes, the teardrops (whoever gleans one drinks it).
 - **The coup can be paid together**: each hand on the side puts in from its own pool (a Spirit Bomb).
 - **A sibling plays with the bot**, weighted by its division (Petra builds walls of room, Calissa paints, Wanda chains, Espada hooks,
   Dovina gambles on the coup): its intent is shown like the Figment's, so you plan round your sibling too.
@@ -222,6 +222,10 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 - **Built:** a side's own AP (`newDuel({ ap: [10, 5] })`, `--ap0 --ap1`). **Not built:** more than one Courier body on a side.
 
 ## 13. Ruled for the view (Calissa's mock, round 11; Dovina, 2026-10-19)
+
+Espada's words since (LORE.md, proposed): **the buckle** (was "break": the guard break, the crackle break and junk's own `break` event had it),
+**a teardrop** (was "mote": the Figment's scatter and the weather's look have motes), **glean** (was "run": the rule word for three in a
+line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab, Paint, Delay, Hold, Send.
 
 1. `line` carries `w` and `side` (whose junk pushed it). The engine knows sides, not who; the room maps a side to the bus's `by`
    (`courier`, `creature`) when it emits.

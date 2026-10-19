@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE COURIER ON A PUZZLE DUEL'S BOARD (docs/plans/PUZZLE-DUELS.md section 11): the god hand is the puzzle, the Courier is the fight.
-// The Courier RUNS (a path of up to four cells for one point, over motes to drink them) and fights with the TOOLS it wears, each a
+// The Courier GLEANS (Espada's word: a path of up to four cells for one point, over teardrops to drink them) and fights with the TOOLS it wears, each a
 // special attack that goes round the puzzle, paid in action points and the pool. Each tool is one of the genre's mechanics, so the
 // Courier's belt is the rule catalogue's second half:
 //   the psygun     SHOOT   the first piece past the Line in the Courier's row is shot out (Meteos' launch, the foe's own chain risked)
@@ -11,14 +11,14 @@
 //   the Lockheart  HOOVER  junk beside the Courier drawn into the coffin; FLAIL throws all it holds at the foe as junk (Tetris's hold)
 // The Veritome (reading the foe's rules) is the plan's, not the kernel's.
 //
-//   COURIER_ACTIONS[kind] = { form: 'courier', tool, cost, pool, legal(s, side, a), apply(s, side, a) }   runPaths(s, side) -> paths
+//   COURIER_ACTIONS[kind] = { form: 'courier', tool, cost, pool, legal(s, side, a), apply(s, side, a) }   gleanPaths(s, side) -> paths
 // ---------------------------------------------------------------------------------------
 import { DIRS, KINDS, hasTag } from './board.js';
-import { BREAK } from './breaks.js';
+import { BUCKLE } from './buckle.js';
 
 const DIR = { N: DIRS.N, S: DIRS.S, E: DIRS.E, W: DIRS.W };
 const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
-const open = (p) => !p || p.kind === 'mote';
+const open = (p) => !p || p.kind === 'teardrop';
 const wears = (s, side, tool) => !tool || !s.sides[side].tools || s.sides[side].tools.includes(tool);
 const paid = (s, side, n) => s.sides[side].pool >= n;
 const spend = (s, side, n) => { s.sides[side].pool -= n; };
@@ -26,7 +26,7 @@ const spend = (s, side, n) => { s.sides[side].pool -= n; };
 /** The first piece past the Line in a row, scanning away from it toward the foe's back wall. */
 function firstAcross(b, side, y) {
   const step = side === 0 ? 1 : -1;
-  for (let x = side === 0 ? b.line : b.line - 1; b.in(x, y); x += step) { const p = b.at(x, y); if (p && p.kind !== 'mote') return [x, y]; }
+  for (let x = side === 0 ? b.line : b.line - 1; b.in(x, y); x += step) { const p = b.at(x, y); if (p && p.kind !== 'teardrop') return [x, y]; }
   return null;
 }
 /** The empty cell of a side's own row nearest the Line (where a hooked piece lands). */
@@ -36,8 +36,8 @@ function nearLine(b, side, y) {
   return null;
 }
 
-/** Every cell the Courier could run to (up to four steps over empty cells and motes), with the shortest path there. */
-export function runPaths(s, side, reach = 4) {
+/** Every cell the Courier could glean to (up to four steps over empty cells and teardrops), with the shortest path there. */
+export function gleanPaths(s, side, reach = 4) {
   const b = s.board, at = s.sides[side].at, out = []; if (!at) return out;
   const seen = new Set([at.join()]), queue = [[at]];
   while (queue.length) {
@@ -52,13 +52,13 @@ export function runPaths(s, side, reach = 4) {
 }
 
 export const COURIER_ACTIONS = {
-  run: { form: 'courier', tool: null, cost: 1, pool: 0,
+  glean: { form: 'courier', tool: null, cost: 1, pool: 0,
     legal: (s, side, a) => { const b = s.board, P = a.path, at = s.sides[side].at; if (!at || !P || P.length < 2 || P.length > 5 || P[0][0] !== at[0] || P[0][1] !== at[1]) return false;
       for (let i = 1; i < P.length; i++) { const [x, y] = P[i]; if (!mineIn(b, side, x, y) || !open(b.at(x, y)) || Math.abs(x - P[i - 1][0]) + Math.abs(y - P[i - 1][1]) !== 1) return false; }
       return true; },
     apply: (s, side, a) => { const b = s.board, S = s.sides[side], events = [], body = b.at(...S.at); b.set(S.at[0], S.at[1], null);
-      for (const [x, y] of a.path.slice(1)) { const p = b.at(x, y); if (p?.kind === 'mote') { b.set(x, y, null); S.pool = Math.min(BREAK.poolMax, S.pool + BREAK.mote); S.drunk = (S.drunk || 0) + 1; events.push({ type: 'mote.drink', side, at: [x, y], pool: S.pool }); } }
-      const to = a.path[a.path.length - 1]; b.set(to[0], to[1], body); S.at = [...to]; events.unshift({ type: 'run', side, path: a.path }); return events; } },
+      for (const [x, y] of a.path.slice(1)) { const p = b.at(x, y); if (p?.kind === 'teardrop') { b.set(x, y, null); S.pool = Math.min(BUCKLE.poolMax, S.pool + BUCKLE.teardrop); S.drunk = (S.drunk || 0) + 1; events.push({ type: 'teardrop.drink', side, at: [x, y], pool: S.pool }); } }
+      const to = a.path[a.path.length - 1]; b.set(to[0], to[1], body); S.at = [...to]; events.unshift({ type: 'glean', side, path: a.path }); return events; } },
   shoot: { form: 'courier', tool: 'psygun', cost: 1, pool: 5,
     legal: (s, side) => { const at = s.sides[side].at, t = at && firstAcross(s.board, side, at[1]); return !!t && !hasTag(s.board.at(...t), 'heavy') && !hasTag(s.board.at(...t), 'body'); },
     apply: (s, side) => { const b = s.board, t = firstAcross(b, side, s.sides[side].at[1]), p = b.at(...t); b.set(t[0], t[1], null); spend(s, side, 5); return [{ type: 'shot', side, id: p.id, at: t }]; } },
@@ -68,9 +68,9 @@ export const COURIER_ACTIONS = {
       b.move(t[0], t[1], to[0], to[1]); spend(s, side, 5); return [{ type: 'hook', side, id: p.id, from: t, to }]; } },
   drill: { form: 'courier', tool: 'dreamvane', cost: 1, pool: 3,
     legal: (s, side, a) => { const b = s.board, at = s.sides[side].at, d = DIR[a.dir]; if (!at || !d) return false; const p = b.at(at[0] + d[0], at[1] + d[1]);
-      return mineIn(b, side, at[0] + d[0], at[1] + d[1]) && !!p && p.kind !== 'mote' && !hasTag(p, 'heavy'); },
+      return mineIn(b, side, at[0] + d[0], at[1] + d[1]) && !!p && p.kind !== 'teardrop' && !hasTag(p, 'heavy'); },
     apply: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir], events = [];
-      for (let i = 1; i <= 3; i++) { const tx = x + d[0] * i, ty = y + d[1] * i, p = b.at(tx, ty); if (!mineIn(b, side, tx, ty) || !p || p.kind === 'mote' || hasTag(p, 'heavy') || hasTag(p, 'body')) break;
+      for (let i = 1; i <= 3; i++) { const tx = x + d[0] * i, ty = y + d[1] * i, p = b.at(tx, ty); if (!mineIn(b, side, tx, ty) || !p || p.kind === 'teardrop' || hasTag(p, 'heavy') || hasTag(p, 'body')) break;
         b.set(tx, ty, null); events.push({ type: 'drill', side, id: p.id, at: [tx, ty] }); }
       spend(s, side, 3); return events; } },
   paint: { form: 'courier', tool: 'soulbrush', cost: 2, pool: 10,

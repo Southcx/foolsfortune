@@ -3,7 +3,7 @@
 // turn, a knob), each action followed by the settle (gravity, clears, what a clear sets off, again and again until nothing changes); its
 // clears become junk, which cancels what is coming at it first and then waits to land on the other side at the end of that side's own
 // turn. Junk landed pushes the line toward the receiver, one column for every 3. A side wins when the line reaches the other's back
-// wall, when the other's side has no empty cell left after its junk lands, or by the coup on a broken foe (breaks.js).
+// wall, when the other's side has no empty cell left after its junk lands, or by the coup on a buckled foe (buckle.js).
 //
 // Prior art: Puyo Puyo Tetris (chains, junk, offsetting, junk waiting a turn so it can be answered), Noon (the territories, a
 // side filled to death), PuzzleScript (the settle loop run to a fixed point), Into the Breach (the turn as a plan of a few actions).
@@ -14,11 +14,11 @@
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
-import { COURIER_ACTIONS, runPaths } from './couriertools.js';
-import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './breaks.js';
+import { COURIER_ACTIONS, gleanPaths } from './couriertools.js';
+import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './buckle.js';
 import { seeded } from '../../core/rng.js';
 
-/** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's coup (breaks.js). */
+/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js). */
 export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION };
 export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
 
@@ -44,7 +44,7 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line =
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0 })) };
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0 })) };
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);
@@ -142,7 +142,7 @@ function land(s, side, n) {
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
-  const broke = onLanding(s, side, n); if (broke.length) { S.breaks += broke[0].type === 'break' ? 1 : 0; events.push(...broke); }
+  const broke = onLanding(s, side, n); if (broke.length) { S.buckles += broke[0].type === 'buckle' ? 1 : 0; events.push(...broke); }
   while (S.landed >= DUEL.perColumn && s.winner === null) { S.landed -= DUEL.perColumn; events.push(...moveLine(s, side === 0 ? -1 : 1)); }
   return events;
 }
@@ -178,7 +178,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
   const ok = (a) => { const A = ACTIONS[a.kind]; if (A.form && A.form !== S.form) return; if (costOf(a) <= s.apLeft && A.legal(s, side, a)) out.push(a); };
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
   if (S.form === 'courier' && S.at) {
-    for (const path of runPaths(s, side)) ok({ kind: 'run', path });
+    for (const path of gleanPaths(s, side)) ok({ kind: 'glean', path });
     for (const dir of dirs) for (const kind of ['push', 'punt', 'drill']) ok({ kind, dir });
     for (const kind of ['shoot', 'hook', 'toll', 'hoover', 'flail']) ok({ kind });
     for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });

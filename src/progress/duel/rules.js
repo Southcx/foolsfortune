@@ -118,7 +118,7 @@ const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 /** The forms' actions (PUZZLE-DUELS.md section 4). legal(state, side, a) -> bool; apply(state, side, a) -> events. A Courier is a body
  *  piece on the board; the god hand acts on any cell of its side. */
 export const ACTIONS = {
-  // ---- the Courier: a body on a cell of its side (its run and its tools: couriertools.js)
+  // ---- the Courier: a body on a cell of its side (its glean and its tools: couriertools.js)
   push: { form: 'courier', cost: 1, // (Sokoban: the run of pushable pieces before the Courier moves one cell, if the cell after it is free)
     legal: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir]; let cx = x + d[0], cy = y + d[1], n = 0;
       while (mineIn(b, side, cx, cy) && b.at(cx, cy) && hasTag(b.at(cx, cy), 'pushable')) { cx += d[0]; cy += d[1]; n++; }

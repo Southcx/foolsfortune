@@ -11,28 +11,28 @@
 // ---------------------------------------------------------------------------------------
 import { hasTag } from './board.js';
 import { act, endTurn, legalActions, cloneState, DUEL } from './duel.js';
-import { COUP } from './breaks.js';
+import { COUP } from './buckle.js';
 
 /** Actions always tried, never left to the sample: few, and each can change the fight (a form switch, the coup). */
 const ALWAYS = new Set(['form', 'coup']);
-const W = { junk: 10, pairs: 0.5, room: 6, pending: 4, pool: 1.2, coup: 60, stun: 25, stagger: 6, coffin: 3, motes: 0 };
+const W = { junk: 10, pairs: 0.5, room: 6, pending: 4, pool: 1.2, coup: 60, stun: 25, stagger: 6, coffin: 3, teardrops: 0 };
 
 /** How good the board is for a side: junk it has made this turn, same-colour neighbours (chains to come), its room, less what waits
- *  to land on it; and the fight under it (breaks.js): its pool (and a coup in reach), the foe's stun and stagger, junk held in the coffin, motes in reach. */
+ *  to land on it; and the fight under it (buckle.js): its pool (and a coup in reach), the foe's stun and stagger, junk held in the coffin, teardrops in reach. */
 export function score(s, side) {
   const b = s.board, S = s.sides[side], F = s.sides[1 - side], w = { ...W, ...(s.rs.bot || {}) };
   if (s.winner === side) return 1e6;
-  let pairs = 0, cells = 0, full = 0, motes = 0;
+  let pairs = 0, cells = 0, full = 0, teardrops = 0;
   for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
     if (!b.mine(side, x)) continue;
     cells++; const p = b.at(x, y); if (!p) continue;
-    if (p.kind === 'mote') { motes++; continue; } full++;
+    if (p.kind === 'teardrop') { teardrops++; continue; } full++;
     if (!hasTag(p, 'matches')) continue;
     for (const [dx, dy] of [[1, 0], [0, 1]]) { const q = b.at(x + dx, y + dy); if (q && b.mine(side, x + dx) && hasTag(q, 'matches') && q.colour === p.colour) pairs++; }
   }
   return S.sent * w.junk + pairs * w.pairs + (1 - full / Math.max(1, cells)) * w.room * 10 - Math.max(0, S.pending - S.sent) * w.pending
     + S.pool * w.pool + (F.depth && S.pool >= COUP.pool[F.depth - 1] ? w.coup : 0) + (F.depth || 0) * w.stun + (F.stagger || 0) * w.stagger + (S.coffin || 0) * w.coffin
-    + (S.forms.includes('courier') ? motes * w.motes : 0);
+    + (S.forms.includes('courier') ? teardrops * w.teardrops : 0);
 }
 
 /** The side's best line of actions for its points now, found greedily on a copy (the duel itself is not changed). */

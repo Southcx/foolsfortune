@@ -20,7 +20,7 @@ export const KINDS = {
   stone: ['heavy'],
   bomb: ['falls', 'pushable', 'explosive', 'swappable'],
   body: ['body'],
-  mote: ['mote'], // (Lachryma shed by a break: it floats, and the Courier runs it up; breaks.js)
+  teardrop: ['teardrop'], // (Lachryma shed by a break: it floats, and the Courier runs it up; buckle.js)
 };
 export const COLOURS = ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'];
 

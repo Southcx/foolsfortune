@@ -17,7 +17,7 @@ DUEL.ap = +opt('ap', DUEL.ap);
 const ap = [+opt('ap0', DUEL.ap), +opt('ap1', DUEL.ap)], pool = +opt('pool', DUEL.pool);
 
 for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
-  const ends = {}, wins = [0, 0, 0]; let plies = 0, sent = 0, caps = 0, chain = 0, kinds = {}, breaks = 0, drunk = 0;
+  const ends = {}, wins = [0, 0, 0]; let plies = 0, sent = 0, caps = 0, chain = 0, kinds = {}, buckles = 0, drunk = 0;
   const t0 = Date.now();
   for (let seed = seed0; seed < seed0 + n; seed++) {
     const s = newDuel({ ruleset: RULESETS[key], seed, forms, ap, pool });
@@ -25,12 +25,12 @@ for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
       for (const e of play(s, { sample })) {
         if (e.type === 'chain') chain = Math.max(chain, e.step);
         if (e.type.startsWith('duel.')) ends[e.type] = (ends[e.type] || 0) + 1;
-        if (['run', 'push', 'punt', 'swap', 'drag', 'rotate', 'drop', 'form', 'shot', 'hook', 'drill', 'toll', 'flail', 'coup'].includes(e.type)) kinds[e.type] = (kinds[e.type] || 0) + 1;
+        if (['glean', 'push', 'punt', 'swap', 'drag', 'rotate', 'drop', 'form', 'shot', 'hook', 'drill', 'toll', 'flail', 'coup'].includes(e.type)) kinds[e.type] = (kinds[e.type] || 0) + 1;
       }
     }
-    plies += s.ply; breaks += s.sides[0].breaks + s.sides[1].breaks; drunk += s.sides[0].drunk + s.sides[1].drunk; sent += s.sides[0].total + s.sides[1].total; caps += s.capHits;
+    plies += s.ply; buckles += s.sides[0].buckles + s.sides[1].buckles; drunk += s.sides[0].drunk + s.sides[1].drunk; sent += s.sides[0].total + s.sides[1].total; caps += s.capHits;
     wins[s.winner === -1 ? 2 : s.winner]++;
   }
   console.log(`${key.toUpperCase()} x${n} at ${ap.join('/')} AP: turns a side ${(plies / n / 2).toFixed(1)}; ends ${JSON.stringify(ends)}; wins first ${wins[0]} second ${wins[1]} drawn ${wins[2]};`
-    + ` junk a turn ${(sent / Math.max(1, plies)).toFixed(2)}; longest chain ${chain}; breaks a duel ${(breaks / n).toFixed(1)}; motes drunk a duel ${(drunk / n).toFixed(1)}; settles capped ${caps}; actions ${JSON.stringify(kinds)}; ${((Date.now() - t0) / n / 1000).toFixed(1)} real s a duel`);
+    + ` junk a turn ${(sent / Math.max(1, plies)).toFixed(2)}; longest chain ${chain}; buckles a duel ${(buckles / n).toFixed(1)}; teardrops gleaned a duel ${(drunk / n).toFixed(1)}; settles capped ${caps}; actions ${JSON.stringify(kinds)}; ${((Date.now() - t0) / n / 1000).toFixed(1)} real s a duel`);
 }
