@@ -77,7 +77,7 @@ hoops (glazed).
 **Music, sound and look (whoever owns the cue).** score, cue, the arranger, the band, the stack, mood layer, the rhythm mode, note
 chart, grade / rating, busking, the overture, the ambience, the Lockheart's cue, effect, the caster shaders, heat haze, the bubble, a
 lightning arc, lensing, the time grade, molten, damage look / aura / temper, the weather's look, the wire compass, the pendulum, the
-lens's frame, the toll's reach, the Lockheart's gauge, the carry throw's mark, the hook's mark, the string row, the paint reticle,
+lens's frame, the toll's reach, the Lockheart's reliquary, the carry throw's mark, the hook's mark, the Sondelass's guard, the paint reticle,
 gesture.
 
 **Dev.** event, rescue, the hinge repair, tag, module / division / round / the gate, seam, the save, the seed, the agent, playtest, a

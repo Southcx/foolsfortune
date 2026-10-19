@@ -17,16 +17,19 @@ import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.
 import { COURIER_ACTIONS, gleanPaths } from './couriertools.js';
 import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './buckle.js';
 import { emberKind, tickEmbers } from './dread.js';
+import { FLEE_ACTION } from './flee.js';
 import { seeded } from '../../core/rng.js';
 
-/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js). */
-export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION };
+/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js),
+ *  and the flee (flee.js). */
+export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION, flee: FLEE_ACTION };
 export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
 
 export const DUEL = {
   ap: 5,           // action points a turn (the owner, 2026-10-19: "let's start with 5AP"; each player on a side has their own)
   pool: 30,        // the pool a side starts with, out of 100 (in play, the Courier's own pool as the duel opens)
   settleCap: 64,   // passes before a settle is stopped (and counted: a cascade that never ends is a bug in a ruleset)
+  landCap: 9,      // junk that lands at once at most (3 columns of the Line); the rest waits a turn and can still be offset (Puyo Puyo's 30 at a time)
   perColumn: 3,    // junk landed that moves the line one column (4 at 3 AP; 3 since 5 AP made offsetting strong: the simulator)
   turnCap: 200,    // turns a side before the line's place decides it (a ply is one side's turn)
   fill: 0.4,       // each side's share of cells filled at the start
@@ -37,7 +40,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false] } = {}) {
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false], flee = [true, false], luck = [0, 0] } = {}) {
   const rs = { run: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
@@ -45,7 +48,8 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line =
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i] })) };
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i], flee: !!flee[i], fleeFails: 0 })) };
+  s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);
@@ -123,8 +127,7 @@ export function endTurn(s) {
   const off = Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off;
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
-  if (S.pending) events.push(...land(s, side, S.pending));
-  S.pending = 0;
+  if (S.pending) { const n = Math.min(S.pending, DUEL.landCap); events.push(...land(s, side, n)); S.pending -= n; } // (the rest waits: it can still be offset)
   if (s.winner === null) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
@@ -187,6 +190,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
     for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });
   }
   if (S.form === 'hand') ok({ kind: 'coup' });
+  ok({ kind: 'flee' });
   if (S.form === 'hand') {
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       if (!b.mine(side, x)) continue;

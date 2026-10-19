@@ -17,7 +17,10 @@
 //   coup       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
 //   turn       a side's points: the beads it lost crack, one by one
-//   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal cracks open and turns, its gem inside (0.5)
+//   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
+//              inside (0.5)
+//   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
+//              clash folds softly with no winner and the tsuitate folds away (1.4)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
 // A play resolves once its last phase is shown; when nothing more is queued the view settles up with the duel as it stands.
 //
@@ -32,6 +35,7 @@ import { sfx } from '../../audio/sfx.js';
 import { junkOf } from '../../progress/duel/duel.js';
 import { DUEL_VIEW, cellLocal, feelColour, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
+import { FLEE } from '../../progress/duel/flee.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'punt', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, punt: 2, form: 1, glean: 1, shot: 1, hook: 1, drill: 1, paint: 2, toll: 2, hoover: 1, flail: 1, 'duel.coup': 2 };
@@ -86,6 +90,8 @@ export class DuelBeats {
     if (e.type === 'teardrop.drink') { job.i++; return this.drinkAt(e); }
     if (e.type === 'duel.coup') { job.i++; V.spend(e.side, COST['duel.coup'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); return this.coup(e); }
     if (e.type === 'turn') { job.i++; return this.turn(e); }
+    if (e.type === 'flee') { job.i++; V.spend(e.side, FLEE.cost, e); return V.flee.roll(e); }
+    if (e.type === 'duel.fled') { job.i++; return V.flee.fled(e); }
     if (e.type === 'offset' || e.type === 'send') { job.i++; V.count(e); return { events: [e], dur: 0.38 }; }
     if (e.type === 'duel.full' || e.type === 'duel.line' || e.type === 'duel.cap') { job.i++; return { events: [e], dur: 0.4, step: (u) => { if (e.winner === 0) V.board.won(sm(u)); } }; }
     job.i++; return { events: [e], dur: 0 }; // (settle.cap, settle.loop, and anything newer than this view: shown as nothing)
@@ -139,13 +145,20 @@ export class DuelBeats {
       end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; } } };
   }
 
-  /** Embers cooling: the coal cracks open (chips and a last spark) and turns like a disc, its gem inside. */
+  /** Embers cooling: the coal crazes (the iron wire, then the golden thread: crazing.js), cracks open (chips and a last spark) and
+   *  turns like a disc, its gem inside. */
   cool(it) {
-    const V = this.view, P = V.pieces, L = it.map((e) => ({ e, v: P.at(e.at[0], e.at[1]) || P.byId(e.id), turned: false })).filter((q) => q.v);
-    for (const q of L) { cellLocal(q.v.x, q.v.y, V.board3, _a); V.bursts.burst(_a, 0x2e1810, 5, { speed: 0.6, life: 0.45, fall: 5, size: 0.02 }); V.bursts.burst(_a, 0xff8a3a, 3, { speed: 0.3, life: 0.5, fall: -1.5, size: 0.015 }); q.v.count = 0; }
-    return { events: it, dur: 0.5 + DUEL_VIEW.ma, step: (u) => { const f = sm(Math.min(1, u * 1.1));
-      for (const q of L) { if (f >= 0.5 && !q.turned) { q.turned = true; q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flash = 1; } q.v.flip = f < 0.5 ? Math.PI * f : Math.PI * (f - 1); if (q.turned) q.v.flash = Math.max(0, 1 - (f - 0.5) * 2); } },
-      end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; q.v.flash = 0; } } };
+    const V = this.view, P = V.pieces, C = 0.3, L = it.map((e) => ({ e, v: P.at(e.at[0], e.at[1]) || P.byId(e.id), turned: false, open: false })).filter((q) => q.v);
+    for (const q of L) { q.v.count = 0; q.v.craze = 0.001; }
+    return { events: it, dur: C + 0.5 + DUEL_VIEW.ma, step: (u, age) => {
+      for (const q of L) {
+        if (age < C) { q.v.craze = sm(age / C); q.v.s = 1 + 0.04 * Math.sin(age * 60) * (age / C); continue; } // (the crackle running, a shiver in the coal)
+        if (!q.open) { q.open = true; q.v.craze = 1; q.v.s = 1; cellLocal(q.v.x, q.v.y, V.board3, _a); V.bursts.burst(_a, 0x2e1810, 5, { speed: 0.6, life: 0.45, fall: 5, size: 0.02 }); V.bursts.burst(_a, 0xff8a3a, 3, { speed: 0.3, life: 0.5, fall: -1.5, size: 0.015 }); }
+        const f = sm(Math.min(1, ((age - C) / 0.5) * 1.1));
+        if (f >= 0.5 && !q.turned) { q.turned = true; q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flash = 1; q.v.craze = 0; }
+        q.v.flip = f < 0.5 ? Math.PI * f : Math.PI * (f - 1); if (q.turned) q.v.flash = Math.max(0, 1 - (f - 0.5) * 2);
+      } },
+      end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; q.v.flash = 0; q.v.craze = 0; q.v.s = 1; } } };
   }
 
   /** The god hand's and the Courier's board actions (0.26 real s). */

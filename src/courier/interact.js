@@ -36,7 +36,7 @@ export class Interact {
       let best = null, keep = null, pin = null;
       this.offers = [];
       if (this.pinned && (this.pinned.t -= 0.08) <= 0) this.pinned = null;
-      const riding = g.techs?.active?.id === 'skiff', hidden = g.god?.controlling || g.cradles?.sealed || g.techs?.active?.id === 'swim' || g.codex?.open || g.cinema?.active; // (a shot that is framed has no markers in it)
+      const riding = g.techs?.active?.id === 'skiff', hidden = g.god?.controlling || g.cradles?.sealed || g.duel?.active || g.techs?.active?.id === 'swim' || g.codex?.open || g.cinema?.active; // (a shot that is framed has no markers in it)
       if (!hidden) for (const s of this.sources) {
         if (riding && !RIDDEN.has(s.id)) continue; // (on the skiff only what is begun from the skiff: the Solar Skiffing trial)
         let r = null;

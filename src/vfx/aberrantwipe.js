@@ -18,6 +18,8 @@
 //                own), turning, tipping to catch the light on their glaze, and falling away; through the gaps the duel's view is
 //                already there (game.duelView when it is up; else the dark #07030d with the film's sheen).
 // Nothing flickers: every amount eases; the only stepping is the glitch pulse's, which keeps the glitch's own limits.
+// The HUD steps out while it runs, as for a cinematic (the log, the Sight, the Lachrimeter, the overlay's HUD slots: a want of the HUD's,
+// feedback/hideui.js 'aberrantWipe'), and comes back as the player had it when the last shard has fallen.
 //
 // How it is drawn: a screen volume (render/glow.js `post.volumes`), in the 480 lines and the light-linear frame, before the glitch
 // pass and the bloom, so the tear and the glow take it too. ONE program (`aberrant-wipe`), four modes by a uniform: the accumulation
@@ -192,6 +194,7 @@ export class AberrantWipe {
     this.run = { t: 0, cb: onCovered || null, held: false, opened: false, plain, asp, F, lineX, you, feel: new THREE.Color(feel), seeds, shards: null, ts: -1, fresh: true, snap: false, pulsed: false };
     const V = g.post?.volumes; if (V) { const i = V.indexOf(this); if (i >= 0 && i !== V.length - 1) { V.splice(i, 1); V.push(this); } } // (last of the volumes: it holds what they drew)
     if (plain) this.cover(0);
+    g.ui?.want?.('aberrantWipe', true); // (the HUD steps out of the picture: hideui.js; back at the end, in update)
     return true;
   }
 
@@ -222,7 +225,7 @@ export class AberrantWipe {
     if (R.ts < 0 && R.opened && R.t >= CLOSED) { R.ts = 0; R.snap = true; this.cut(R); }
     else if (R.ts >= 0) R.ts += raw;
     if (R.plain) this.cover(R.ts >= 0 ? 1 - R.ts / SHATTER : Math.min(1, R.t / CATCH));
-    if (R.ts >= SHATTER) { this.run = null; if (R.plain) this.cover(-1); }
+    if (R.ts >= SHATTER) { this.run = null; if (R.plain) this.cover(-1); this.game.ui?.want?.('aberrantWipe', false); }
   }
 
   /** The stand-in with the glow off: a dark cover (0..1; -1 gone). */

@@ -10,6 +10,7 @@
       font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; user-select: none; }
     canvas { display: block; }
     #hud { position: fixed; inset: 0; pointer-events: none; }
+    body.duel canvas { cursor: none; } /* (a puzzle duel: the god hand is the cursor, world/duel/duelsession.js) */
     #hitmarker { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; transform: translate(-50%,-50%) rotate(45deg); opacity: 0; }
     #hitmarker::before, #hitmarker::after { content: ''; position: absolute; background: var(--ink); left: 50%; top: 50%; transform: translate(-50%,-50%); }
     #hitmarker::before { width: 22px; height: 2px; } #hitmarker::after { width: 2px; height: 22px; }
