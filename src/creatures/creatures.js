@@ -90,6 +90,7 @@ export class Creatures {
   strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause), buildK = 1) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && !c.friend && by === 'courier') return false; // (their own: a spirit they called up is not struck by them; a friend, another Courier, is: friendly fire)
+    if (by === 'courier' && c.aberrant && this.game.duelFoes?.provoke(c)) return true; // (the first blow on an aberrant opens its puzzle duel, and does no harm: world/duel/duelfoes.js)
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in

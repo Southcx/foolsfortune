@@ -88,11 +88,11 @@ export class Stains {
   /** Lachryma a cell-full of a blot's crude holds: its stage's crude spread over its disc. */
   perCell(s) { const R = RADIUS[this.stageOf(s)]; return STAINS.crude[this.stageOf(s)] / Math.max(1, (Math.PI * R * R) / CELL_M2); }
 
-  wash(s) {
+  wash(s, by = 'courier') {
     const stage = this.stageOf(s), pm = this.game.paintmap;
     this.list.splice(this.list.indexOf(s), 1);
     pm?.wipe(s.x, s.z, s.x, s.z, s.y, 2 * RADIUS[stage] + 1, 1e9, true, s); // (what little is left of it, gone with it)
-    this.game.events?.emit('stain.wash', { field: s.field, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by: 'courier' }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js)
+    this.game.events?.emit('stain.wash', { field: s.field, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js; by: the mop's 'courier', a Lantern Wisp's drink 'creature')
   }
 
   /** The game day's layout: the Shore's stains, a few a game day, seeded by the day (the same for everyone on it). */
