@@ -246,7 +246,7 @@ export class MarkBuffer {
 
 const _e = new THREE.Vector3(), _ww = [];
 /** A strip of world points `pts` (n of them) as wire segments into `B` from its count on (a mount's preview, the Lockheart's and the carry
- *  throw's marks: vfx/mountpreview.js, vfx/lockheartmarks.js, vfx/carrythrowmark.js). `look`: { m: half-width in metres, held between `lo`
+ *  throw's marks: vfx/mountpreview.js, vfx/lockheartreach.js, vfx/carrythrowmark.js). `look`: { m: half-width in metres, held between `lo`
  *  and `hi` pixels; `wire`: the Mind's schiller in its heart }; `a`: an alpha, or one a point (a function of its index); `rgb`: its colour
  *  (linear); `pxk`: pixels a metre at a metre's depth (the camera's projection times half the lines drawn). */
 export function wireStrip(B, pts, n, { look, a = 1, rgb, camera, pxk, closed = false }) {

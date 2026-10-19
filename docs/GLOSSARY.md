@@ -550,9 +550,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Veritome is drawn and its lens down, set where the aim meets the world. *Not:* the viewfinder (the lens raised), the Snapshot's preview. → detail
 - **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`) — the next toll's reach and cone on the ground round the Courier
   while the Crucibelle is in the hands, lit on the beat, a ring under each thing it would stagger. No words. *Not:* the toll's smoke ring. → detail
-- **the Lockheart's gauge / the hoover's reach** (`LockheartMarks`, `src/vfx/lockheartmarks.js`) — while the Lockheart is drawn, a padlock beside
-  the coffin filling with its load, a socket for each Possibilikey, its shackle up when it would open / the hoover's cone on the ground while it
-  draws. *Not:* the wheel of odds, the Lachryma ring. → detail
+- **the Lockheart's reliquary / the hoover's reach** (working name, Espada's to rule; `LockheartReliquary`, `game.lockheartReliquary`, `src/vfx/lockheartreliquary.js` /
+  `LockheartReach`, `game.lockheartReach`, `src/vfx/lockheartreach.js`) — the Lockheart's own UI by the Lachrimeter: the coffin on its chain (its fill
+  to twice its measure, the padlock, the Possibilikeys and their break chances, the flail's string, the wheel of odds held and spun) / the hoover's
+  cone on the ground while it draws. *Not:* the wheel of odds in the world (`tools/lockheart/wheel.js`), the Lachryma ring. → detail
 - **the carry throw's mark** (`CarryThrowMark`, `src/vfx/carrythrowmark.js`) — where a carried thing thrown now would land, and its flight dashed;
   only while the carry holds it and nothing is drawn. *Not:* the crosshair (the psygun's), the god hand's throw. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -749,4 +750,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | title toast | the title placard (the owner, 2026-10-17) | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
+| the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
