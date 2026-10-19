@@ -568,6 +568,24 @@ export class GodMode {
     H.mat.emissiveIntensity = PAINT_LIGHT * (1 + 0.15 * Math.sin(this.t * 3)) + H.point * 0.45; // (its painting's glow, breathing; brighter as it cuts)
   }
 
+  /** The hand as a cursor over a surface, outside its own mode (a puzzle duel's board: world/duel/duelsession.js; the owner, board v11:
+   *  "the hand will function as our cursor"): shown at `at`, its palm to the surface whose front faces `normal`, its fingers up it, a
+   *  little out from it and in toward it as `press` rises; its clips run. hideCursor() puts it away. */
+  cursorAt(at, normal, dt, { press = 0 } = {}) {
+    const H = this.hand; if (!H?.root) return;
+    if (this.controlling) return; // (the hand's own mode has it)
+    this.t += dt;
+    const z = _v.copy(normal).setY(0).normalize(); // (the model's +Z, its back, toward the viewer: the palm to the board)
+    const fingers = UP.clone().addScaledVector(z, -UP.dot(z)).normalize();
+    const x = new THREE.Vector3().crossVectors(fingers, z).normalize();
+    _m.makeBasis(x, fingers, z.clone()); H.root.quaternion.setFromRotationMatrix(_m);
+    const tip = at.clone().addScaledVector(z, 0.3 - 0.2 * press).addScaledVector(UP, Math.sin(this.t * 2.4) * 0.03);
+    H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length());
+    H.root.visible = true; H.root.updateMatrixWorld(true);
+    try { this.handClips.update(dt); } catch { /* the clips not ready: the hand still stands */ }
+  }
+  hideCursor() { if (!this.controlling && this.hand?.root) this.hand.root.visible = false; }
+
   placeReticle() {
     const K = this.cursor, V = this.jar, A = this.arts;
     let r = this.grab ? 0.5 : A.art.id === 'manifest' ? 0.9 : 0.6;
