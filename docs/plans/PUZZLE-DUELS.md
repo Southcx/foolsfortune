@@ -149,7 +149,8 @@ do.
 - `duel.js`: the turn, AP, the settle loop, junk and the wins.
 - `bot.js`: a greedy planner that also gives the shown intent.
 - `rulesets.js`: the first three Figments' rulesets.
-- `breaks.js`: EmO, the break, the shower of motes, stun depth on the board, the coup (section 11).
+- `buckle.js`: EmO, the buckle, the shower of teardrops, stun depth on the board, the coup (section 11).
+- `dread.js`: Dread's fog and embers (section 14).
 - `couriertools.js`: the Courier's run and its tools on the board (section 11).
 - `scripts/duel.mjs`: duels between bots, headless, with lengths, junk rates, and every settle that hit the cap.
 
@@ -198,15 +199,16 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 | ruleset | turns a side | buckles a duel | teardrops gleaned a duel | how they end |
 |---|---|---|---|---|
-| fury | 20.4 | 1.3 | 1.0 | line 16, full 4 |
-| grief | 5.7 | 1.8 | 0.9 | line 14, coup 4, full 2 |
-| mirth | 10.0 | 1.1 | 1.1 | line 15, coup 5 |
+| fury | 25.9 | 1.6 | 2.5 | line 13, full 3, coup 3, cap 1 |
+| grief | 5.7 | 1.9 | 1.4 | line 17, coup 2, full 1 |
+| mirth | 16.3 | 1.2 | 1.9 | line 14, coup 5, full 1 |
 
 - **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
   since Calissa's mock).
 - **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it gleans; a player who plans the buckle
   should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
-- The greedy bot dithers between forms (about one switch a turn). A sim artefact, but it slows its duels.
+- The greedy bot dithered between forms (about one switch a turn). It now never switches twice in a row and a switch costs it a little:
+  switches fell by half or more, and it gleans twice as often.
 
 ## 12. Co-op on the board (planned for, the owner, 2026-10-19)
 
@@ -242,3 +244,43 @@ line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab,
 8. Words: a settle's chain is **a duel's chain** (the homonym table); what each side is given at the start of its turn is **the drip**
    (`rs.drip`, event `drip`), not rain, which is the weather's.
 
+**Ruled on Calissa's board v11** (Dovina, 2026-10-19):
+9. **The coup is the Courier's side's only.** The data drain never touches the Courier (the owner), so a Figment's side has no coup; a
+   buckled Courier loses its points and nothing more. (`newDuel({ coup })`, `[true, false]` by default; the simulator gives both chairs
+   one to measure alike, `--coup courier` to play it as the game does.)
+10. A spend says what it cost: the action's own event carries `spent` and `pool` (the pool after), the coup's and every tool's alike.
+11. A turn begins with a `turn` event: `{ side, ap, lost, depth, stagger }`, so a stun's or a toll's bite is never silent.
+12. The buckle's reason is `cause` (`push` or `emo`); `by` stays the bus's word for who.
+13. After a coup the board is the view's: draining the Figment's half and sending the March home is the ceremony, not a rule. A teardrop
+    goes with its ground: if the March passes over its cell, it is the other side's to glean (or lose).
+
+
+## 14. The first in game: the aberrant Lantern Wisp (the owner, 2026-10-19, on board v11)
+
+The owner: "an incredible first pass", and into the game, with an aberrant Lantern Wisp as the test enemy; the upright tsuitate the
+default; the god hand in its current mode the cursor; the backdrop two minds clashing (Jujutsu Kaisen's Domain Expansions meeting).
+
+**Its feeling is Dread.** A will-o'-the-wisp is the light that leads you off the path: it shows you only what it wants you to see. So its
+half of the board is Dread's (`dread.js`, the first rule family past the kernel):
+- **Fog:** its half is hidden but for the light of its lantern, 3 cells round its body on the board. The engine keeps the whole board;
+  `visibleTo(state, viewer, x, y)` says what you may be shown. Its forecast is still drawn (Divination sees what it means to do, not the
+  ground it does it on): you see its hand move into the dark.
+- **Embers:** the junk it sends lands as embers that burn down 3 of your turns. While burning they cannot be broken by a clear beside
+  them, pinched or hoovered; cooled, each is a gem of a random colour. Dread is the wait. (Super Puzzle Fighter II Turbo's counter gems.)
+- **Its half burns upward:** a flame's updraft, its pieces rise while yours fall, two domains meeting at the Line.
+- Runs of three; 4 colours; a drip of 4. `RULESETS.lanternwisp`; `rulesetOf(creature)` gives it to any Lantern Wisp (`KIND_RULESETS`).
+
+**The simulator** (20 duels, 5 AP, the coup the Courier's only): 22.8 turns a side, the Line ends every one, wins 10 to 10, 0.9 buckles
+and 1.1 teardrops gleaned a duel. Bots see through the fog, so the fog's cost to a player is not in these numbers; a player will be
+slower to read the Wisp's half and better at the buckle. Plain Dread (`RULESETS.dread`, gravity down both halves): 32.2 turns a side.
+
+**How a Lantern Wisp goes aberrant** (a rule for the world; the Wisp and the blots are Petra's to build): **its lantern burns crude.** A
+Lantern Wisp that drifts over a blot at night drinks it, as a lamp drinks oil, and its flame goes wrong: it is aberrant (`c.aberrant`,
+dressed as a data bug), and the blot is spent. One a blot, and only at night (the Wisps are the Dunes' night Figments). It keeps its
+kind's ruleset whatever the weather; the weather's feeling where it drank is its `grade`, for its look and a bounty.
+- **For the test:** one placed at night near the oasis, with its debug chest (the Soul Brush and a few Lachrymato Bottles' worth, so the
+  pool can pay a coup). The placement and the chest are Petra's.
+
+**How a duel opens** (my recommendation; the room, seam and camera are Petra's): **the first blow that lands on an aberrant Figment
+opens it.** Two minds meet and the domains expand; a duel is never started by a key. Losing is a shatter (section 9); the coup mends it
+(the data drain), and a mended Lantern Wisp is an ordinary Wisp again, curious and skittish.

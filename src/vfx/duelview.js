@@ -17,6 +17,9 @@
 // motion), Into the Breach (the foe's next move on the board), Noon (the shared field and its territories), and the tsuitate (衝立).
 //
 //   game.duelView = new DuelView(game)   (main.js; prewarmed at boot: DuelView.prewarm() -> park)
+// DREAD'S FOG (dread.js, the aberrant Lantern Wisp's): the fogged side's half hidden but within its lantern's light, asked per cell of
+// `visibleTo(state, 0, x, y)` against the board as the view shows it (the Line and the body where they are drawn), eased cell by cell.
+//
 //   open({ state, foe, at, facing })   state: a kernel duel (newDuel); foe: the creature (its feeling: foe.grade, else the ruleset's,
 //                                      else Fury); at: a Vector3 on the ground; facing: a Vector3 from the board toward the Courier,
 //                                      or a yaw whose forward (sin yaw, 0, cos yaw) points at the Courier. The board's face looks along
@@ -29,7 +32,8 @@
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
 import { newDuel } from '../progress/duel/duel.js';
-import { RULESETS } from '../progress/duel/rulesets.js';
+import { RULESETS, KIND_RULESETS, rulesetOf } from '../progress/duel/rulesets.js';
+import { visibleTo } from '../progress/duel/dread.js';
 import { filmColour } from './oxidation.js';
 import { DUEL_VIEW, cellLocal } from './duelview/layout.js';
 import { DomainClash } from './duelview/domains.js';
@@ -65,7 +69,7 @@ export class DuelView {
     if (!state) return;
     this.close(true);
     this.state = state; this.foe = foe; this.isOpen = true; this.closing = false; this.coupDone = false;
-    const asp = foe?.grade || foe?.feeling || state.rs?.feeling;
+    const asp = (KIND_RULESETS[foe?.kind] && rulesetOf(foe).feeling) || foe?.grade || foe?.feeling || state.rs?.feeling; // (a kind's own ruleset first: the aberrant Lantern Wisp's is Dread's)
     this.aspect = asp && COLOR[asp] !== undefined ? asp : 'fury';
     // where it stands: +X of its frame from the Courier's end to the foe's, its face along u x up
     const toward = typeof facing === 'number' ? _v.set(Math.sin(facing), 0, Math.cos(facing)) : facing?.isVector3 ? _v.copy(facing).setY(0) : foe?.pos ? _v.copy(at).sub(foe.pos).setY(0) : _v.set(-1, 0, 0);
@@ -76,7 +80,7 @@ export class DuelView {
     const B = state.board;
     this.board.build(B, this.aspect); this.pieces.build(B, this.aspect); this.marks.layout(B); this.clash.setFoe(this.aspect);
     this.forms = state.sides.map((S) => S.form);
-    this.setLine(B.line);
+    this.gravLine = B.line; this.setLine(B.line); this.fogCur = null; this.stepFog(0); // (the fog as it stands at once: nothing hidden shows for a frame)
     this.board.won(0); this.readCounts(); this.readPoints(); this.readFight();
     const half = (B.w * DUEL_VIEW.cs) / 2 + 2, oc = _w.copy(at).addScaledVector(this.u, -half), of = foe?.pos ? foe.pos.clone() : at.clone().addScaledVector(this.u, half);
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
@@ -114,6 +118,11 @@ export class DuelView {
   // ---- what the beats ask of the view
   setLine(col) {
     this.lineCol = col; this.board.setLine(col); this.marks.setLine(col);
+    const rs = this.state?.rs, L = Math.round(col);
+    if (rs?.gravity && L !== this.gravLine && this.state) { // (a map that follows the sides, as the kernel's moveLine sets it)
+      this.gravLine = L; const b = this.state.board, px = { w: b.w, h: b.h, line: L, sideOf: (x) => (x < L ? 0 : 1) }; px.grav = (x, y) => rs.gravity(x, y, px) || [0, 0];
+      this.board.setGravity(px);
+    }
     const B = this.state?.board; if (!B) return;
     this.frame.localToWorld(_w.set((col - B.w / 2) * DUEL_VIEW.cs, 0, 0));
     this.clash.setPlane(_w, this.u, this.centre); this.showCounts();
@@ -148,7 +157,10 @@ export class DuelView {
   /** The play queue ran dry: the view is made to agree with the duel as it stands (anything the beats did not follow is put right). */
   settleUp() {
     const s = this.state; if (!s || !this.isOpen) return;
-    this.pieces.build(s.board, this.aspect); this.board.setGravity(s.board);
+    const was = new Map(this.pieces.list.filter((v) => v.kind === 'ember').map((v) => [v.id, v.count]));
+    this.pieces.build(s.board, this.aspect); this.gravLine = s.board.line; this.board.setGravity(s.board);
+    for (const v of this.pieces.list) if (v.kind === 'ember' && was.has(v.id) && v.count < was.get(v.id)) { // (an ember burnt down a turn: a puff, its glaze a step dimmer)
+      v.cool = 1; cellLocal(v.x, v.y, this.board3, _w); this.bursts.burst(_w, 0x2e1810, 4, { speed: 0.4, life: 0.4, fall: -1, size: 0.018 }); }
     if (this.coupDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
     else this.setLine(s.board.line);
     this.forms = s.sides.map((S) => S.form); this.readCounts(); this.readPoints(); this.readFight();
@@ -166,7 +178,7 @@ export class DuelView {
   update(dt) {
     if (!this.isOpen && !this.closing) return;
     dt = Math.min(dt || 0, 0.1);
-    this.beats.update(dt);
+    this.beats.update(dt); this.stepFog(dt);
     const shown = this.clash.update(dt);
     this.board.update(dt); this.pieces.update(dt); this.marks.update(dt); this.bursts.update(dt);
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
@@ -174,6 +186,24 @@ export class DuelView {
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }
     else if (this.closing) { const k = Math.max(this.clash.open[0], this.clash.open[1]); this.frame.scale.setScalar(Math.max(0.001, k)); }
     else this.frame.scale.setScalar(1);
+  }
+
+  /** Dread's fog, cell by cell (0 seen .. 1 hidden), and the lantern's light, eased toward what visibleTo says now. */
+  stepFog(dt) {
+    const s = this.state, F = s?.rs?.fog, B = s?.board; if (!B) return;
+    const n = B.w * B.h; if (this.fogCur?.length !== n) { this.fogCur = new Float32Array(n); this.lampCur = new Float32Array(n); this.fogDirty = true; }
+    if (!F) { if (this.fogDirty) { this.fogCur.fill(0); this.lampCur.fill(0); this.board.setFog(this.fogCur, this.lampCur); this.fogDirty = false; } this.pieces.fogAt = null; return; }
+    const body = this.pieces.bodyAt(F.side), at = body ? [Math.round(body.x), Math.round(body.y)] : s.sides[F.side].at, L = this.lineCol;
+    const px = { rs: s.rs, board: { sideOf: (x) => (x < L ? 0 : 1) }, sides: s.sides.map((S, i) => (i === F.side ? { at } : S)) }, light = F.light ?? 3;
+    let moved = false; const k = Math.min(1, dt * 6);
+    for (let y = 0; y < B.h; y++) for (let x = 0; x < B.w; x++) {
+      const i = y * B.w + x, want = visibleTo(px, 0, x, y) ? 0 : 1, d = at ? Math.abs(x - at[0]) + Math.abs(y - at[1]) : 99;
+      const lamp = x >= L && d <= light + 1 ? Math.max(0, 1 - d / (light + 1.5)) : 0;
+      const f = this.fogCur[i] + (want - this.fogCur[i]) * (dt ? k : 1), l = this.lampCur[i] + (lamp - this.lampCur[i]) * (dt ? k : 1);
+      if (Math.abs(f - this.fogCur[i]) > 1e-3 || Math.abs(l - this.lampCur[i]) > 1e-3) moved = true; this.fogCur[i] = f; this.lampCur[i] = l;
+    }
+    if (moved || this.fogDirty) { this.board.setFog(this.fogCur, this.lampCur); this.fogDirty = false; }
+    this.pieces.fogAt = (x, y) => (x >= 0 && y >= 0 && x < B.w && y < B.h ? this.fogCur[y * B.w + x] : 0);
   }
 
   /** For the boot's warm-up (main.js): a duel stood 50 m under the world with every part shown, so its programs compile with the rest. */

@@ -10,13 +10,16 @@
 //                   when spent, cracked black when a stun or a toll took them (the `turn` event's `lost`)
 //   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a buckle
 //   THE KINTSUGI    the frame's gold seam, lit when the Courier wins
+//   THE FLOOR LIPS  a darker clay ledge on the edge each half's gravity points to (the aberrant Lantern Wisp's half, burning upward:
+//                   at its top), sliding with the Line
+//   THE FOG         Dread's (dread.js visibleTo): a texture of the cells the slab reads, hidden ground and the lantern's light
 //
 // Prior art: the tsuitate (衝立) on its feet, Puzzle Fighter's well frames, the go-ban's legs; kintsugi (a mend in gold that shows the
 // break); the sukiya joinery of a shōji frame (the bosses where the members meet).
 //
 //   const B = new DuelBoard(parent, clash)   B.build(kernelBoard, foeAspect)   B.setGravity(kernelBoard)   B.setLine(column)
 //   B.setAP(side, left, max, lost)   B.crack(side) -> the local point of the bead that cracked   B.setEmo(side, emo)   B.whiteEmo(side)
-//   B.won(k)   B.update(dt)   B.slab (its mesh: the god hand's ray hits it)   B.apAt(side, k, out)
+//   B.setFog(fog, lamp) (Float32Arrays a cell, 0..1)   B.won(k)   B.update(dt)   B.slab (its mesh: the god hand's ray hits it)   B.apAt(side, k, out)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -76,7 +79,9 @@ export class DuelBoard {
     const kin = new THREE.Mesh(mergeGeometries(seam), this.gold);
     // the slab (the clash's program, its slab mode) and its gravity map
     this.grav = new THREE.DataTexture(new Uint8Array(w * h * 4), w, h); this.grav.magFilter = this.grav.minFilter = THREE.NearestFilter;
-    this.slab = new THREE.Mesh(new THREE.PlaneGeometry(W, H), this.clash.slabMaterial(this.grav, w, h));
+    this.fog = new THREE.DataTexture(new Uint8Array(w * h * 4), w, h); this.fog.magFilter = this.fog.minFilter = THREE.LinearFilter; this.fog.needsUpdate = true;
+    this.slab = new THREE.Mesh(new THREE.PlaneGeometry(W, H), this.clash.slabMaterial(this.grav, w, h, this.fog));
+    this.lips = [0, 1].map(() => { const m = new THREE.Mesh(box(1, 1, 1, 0, 0, 0, 0x2e1810), M.clayVc); m.name = 'duel-floorlip'; return m; });
     this.slab.position.set(0, base + H / 2, 0); this.slab.name = 'duel-slab'; this.slab.receiveShadow = false;
     // the action point beads (Lachrymite: the gems' program), five a side by default (room for eight)
     const beadGeo = new THREE.IcosahedronGeometry(0.05, 1);
@@ -85,7 +90,7 @@ export class DuelBoard {
     // the EmO columns, up the frame's outer members
     const bar = new THREE.PlaneGeometry(0.045, 1); bar.translate(0, 0.5, 0);
     this.emoBars = [0, 1].map((side) => { const m = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', fog: false, toneMapped: false })); m.position.set((side ? 1 : -1) * (W / 2 + b / 2), base, lip + 0.003); m.scale.y = 0.001; return m; });
-    this.meshes = [frame, boss, this.head, this.foot, kin, this.slab, this.beads, ...this.emoBars];
+    this.meshes = [frame, boss, this.head, this.foot, kin, this.slab, this.beads, ...this.emoBars, ...this.lips];
     this.group.add(...this.meshes);
     this.built = `${w}x${h}`; this.W = W; this.H = H;
   }
@@ -95,13 +100,33 @@ export class DuelBoard {
     const a = this.grav.image.data;
     for (let y = 0; y < board.h; y++) for (let x = 0; x < board.w; x++) { const [dx, dy] = board.grav(x, y), i = (y * board.w + x) * 4; a[i] = (dx + 1) * 127; a[i + 1] = (dy + 1) * 127; a[i + 2] = 0; a[i + 3] = 255; }
     this.grav.needsUpdate = true;
+    this.lipDir = [board.grav(0, board.h >> 1), board.grav(board.w - 1, board.h >> 1)]; this.placeLips();
+  }
+
+  /** The floor lips: on the edge each half's gravity points to, across that half's columns (or down the Line, for a fall toward it). */
+  placeLips() {
+    if (!this.lips || !this.lipDir) return;
+    const { cs, base, border: b, lip } = DUEL_VIEW, W = this.W, H = this.H, lx = ((this.line ?? this.w / 2) - this.w / 2) * cs, t = b * 0.42;
+    for (const side of [0, 1]) {
+      const m = this.lips[side], [dx, dy] = this.lipDir[side], x0 = side ? lx : -W / 2, x1 = side ? W / 2 : lx;
+      m.visible = !!(dx || dy);
+      if (dy) m.position.set((x0 + x1) / 2, dy > 0 ? base - t / 2 + 0.01 : base + H + t / 2 - 0.01, lip + 0.012), m.scale.set(Math.max(0.01, x1 - x0), t, 0.03);
+      else m.position.set(dx > 0 === (side === 0) ? lx : side ? W / 2 + t / 2 : -W / 2 - t / 2, base + H / 2, lip + 0.012), m.scale.set(t * 0.5, H, 0.03);
+    }
+  }
+
+  /** Dread's fog on the slab: a cell's hidden share, and the lantern's light on it (0..1 each). */
+  setFog(fog, lamp) {
+    if (!this.fog) return; const a = this.fog.image.data;
+    for (let i = 0; i < fog.length; i++) { a[i * 4] = Math.round(255 * fog[i]); a[i * 4 + 1] = Math.round(255 * (lamp?.[i] || 0)); a[i * 4 + 3] = 255; }
+    this.fog.needsUpdate = true;
   }
 
   /** The Line at a (fractional) column: its beads and the slab's seam. */
   setLine(col) {
     const { cs, base, border: b, lip } = DUEL_VIEW, x = (col - this.w / 2) * cs;
     this.head.position.set(x, base + this.H + b / 2, lip + 0.01); this.foot.position.set(x, base - b / 2, lip + 0.01);
-    this.clash.setLine(col); this.line = col;
+    this.clash.setLine(col); this.line = col; this.placeLips();
   }
 
   /** A side's beads: `left` lit of `max`, the last `lost` cracked. */

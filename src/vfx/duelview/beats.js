@@ -17,6 +17,7 @@
 //   coup       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
 //   turn       a side's points: the beads it lost crack, one by one
+//   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal cracks open and turns, its gem inside (0.5)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
 // A play resolves once its last phase is shown; when nothing more is queued the view settles up with the duel as it stands.
 //
@@ -70,6 +71,7 @@ export class DuelBeats {
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
     if (e.type === 'pinch') return this.pinch(run((x) => x.type === 'pinch'));
+    if (e.type === 'ember.cool') return this.cool(run((x) => x.type === 'ember.cool'));
     if (ACTS.has(e.type)) { job.i++; V.spend(e.side, e.type === 'drag' ? Math.max(1, Math.ceil((e.path.length - 1) / 3)) : COST[e.type], e); return this.action(e); }
     if (e.type === 'glean') { job.i++; V.spend(e.side, 1, e); return this.glean(e, run((x) => x.type === 'teardrop.drink')); }
     if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); V.spend(e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
@@ -137,6 +139,15 @@ export class DuelBeats {
       end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; } } };
   }
 
+  /** Embers cooling: the coal cracks open (chips and a last spark) and turns like a disc, its gem inside. */
+  cool(it) {
+    const V = this.view, P = V.pieces, L = it.map((e) => ({ e, v: P.at(e.at[0], e.at[1]) || P.byId(e.id), turned: false })).filter((q) => q.v);
+    for (const q of L) { cellLocal(q.v.x, q.v.y, V.board3, _a); V.bursts.burst(_a, 0x2e1810, 5, { speed: 0.6, life: 0.45, fall: 5, size: 0.02 }); V.bursts.burst(_a, 0xff8a3a, 3, { speed: 0.3, life: 0.5, fall: -1.5, size: 0.015 }); q.v.count = 0; }
+    return { events: it, dur: 0.5 + DUEL_VIEW.ma, step: (u) => { const f = sm(Math.min(1, u * 1.1));
+      for (const q of L) { if (f >= 0.5 && !q.turned) { q.turned = true; q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flash = 1; } q.v.flip = f < 0.5 ? Math.PI * f : Math.PI * (f - 1); if (q.turned) q.v.flash = Math.max(0, 1 - (f - 0.5) * 2); } },
+      end: () => { for (const q of L) { q.v.kind = 'gem'; q.v.colour = q.e.colour; q.v.flip = 0; q.v.flash = 0; } } };
+  }
+
   /** The god hand's and the Courier's board actions (0.26 real s). */
   action(e) {
     const V = this.view, P = V.pieces, mv = [];
@@ -185,13 +196,14 @@ export class DuelBeats {
   /** Junk landing on a side: grog thrown from the other side over the Line's head into its cells. */
   land(e) {
     const V = this.view, P = V.pieces, B = V.board3, cells = e.at || [], top = -2.5;
-    const it = cells.map(([x, y], k) => { const id = V.state?.board?.at(x, y)?.kind === 'junk' ? V.state.board.at(x, y).id : null; const v = P.add('junk', { id }, x, y); v.hidden = true; return { v, x, y, d: k * 0.035 }; });
+    const kind = e.kind === 'ember' ? 'ember' : 'junk', count = kind === 'ember' ? V.state?.rs?.embers?.count ?? 3 : null;
+    const it = cells.map(([x, y], k) => { const id = V.state?.board?.at(x, y)?.kind === kind ? V.state.board.at(x, y).id : null; const v = P.add(kind, { id, count }, x, y); v.hidden = true; return { v, x, y, d: k * 0.035 }; });
     V.pending[e.side] = Math.max(0, V.pending[e.side] - (e.n || cells.length)); V.showCounts();
     const fromX = V.lineCol ?? B.line;
     return { events: [e], dur: 0.48 + it.length * 0.035 + DUEL_VIEW.ma, step: (u, age) => { for (const q of it) {
       const f = Math.max(0, Math.min(1, (age - q.d) / 0.45)); q.v.hidden = age < q.d; const s = sm(f);
       q.v.x = lerp(fromX - 0.5, q.x, s); q.v.y = lerp(top, q.y, s) - Math.sin(Math.PI * s) * 1.5; q.v.spin = (1 - s) * 6 * (hash(q.x, q.y) - 0.5); q.v.lift = Math.sin(Math.PI * s) * 1.2;
-      if (f >= 1 && !q.knocked) { q.knocked = true; cellLocal(q.x, q.y, B, _a); V.bursts.burst(_a, CLAY, 3, { speed: 0.4, life: 0.3, fall: 5, size: 0.02 }); } } },
+      if (f >= 1 && !q.knocked) { q.knocked = true; cellLocal(q.x, q.y, B, _a); V.bursts.burst(_a, kind === 'ember' ? 0xff7a2a : CLAY, 3, { speed: 0.4, life: 0.3, fall: kind === 'ember' ? -1 : 5, size: 0.02 }); } } },
       end: () => { for (const q of it) { q.v.hidden = false; q.v.x = q.x; q.v.y = q.y; q.v.spin = 0; q.v.lift = 0; } } };
   }
 

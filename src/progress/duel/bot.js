@@ -15,7 +15,7 @@ import { COUP } from './buckle.js';
 
 /** Actions always tried, never left to the sample: few, and each can change the fight (a form switch, the coup). */
 const ALWAYS = new Set(['form', 'coup']);
-const W = { junk: 10, pairs: 0.5, room: 6, pending: 4, pool: 1.2, coup: 60, stun: 25, stagger: 6, coffin: 3, teardrops: 0 };
+const W = { junk: 10, pairs: 0.5, room: 6, pending: 4, pool: 1.2, coup: 60, stun: 25, stagger: 6, coffin: 3, teardrops: 0, form: 3 };
 
 /** How good the board is for a side: junk it has made this turn, same-colour neighbours (chains to come), its room, less what waits
  *  to land on it; and the fight under it (buckle.js): its pool (and a coup in reach), the foe's stun and stagger, junk held in the coffin, teardrops in reach. */
@@ -40,13 +40,14 @@ export function plan(s, side = s.toMove, { sample = 60 } = {}) {
   let c = cloneState(s); if (c.toMove !== side) { c.toMove = side; c.apLeft = DUEL.ap; } // (an intent: its next turn's plan)
   const out = [];
   while (c.apLeft > 0) {
-    const all = legalActions(c, side), sure = all.filter((a) => ALWAYS.has(a.kind)), rest = all.filter((a) => !ALWAYS.has(a.kind));
+    const lastForm = out.length && out[out.length - 1].kind === 'form'; // (never two switches in a row: a switch is for what it opens)
+    const all = legalActions(c, side).filter((a) => !(lastForm && a.kind === 'form')), sure = all.filter((a) => ALWAYS.has(a.kind)), rest = all.filter((a) => !ALWAYS.has(a.kind));
     const tries = [...sure]; while (tries.length < sample + sure.length && rest.length) tries.push(rest.splice(c.r.int(rest.length), 1)[0]);
     let best = null, bestScore = score(c, side), bestState = null; // (doing nothing is a choice)
     for (const a of tries) {
       const t = cloneState(c);
       if (!act(t, a)) continue;
-      const v = a.kind === 'form' ? lookPast(t, side) : score(t, side); // (a form switch is worth what it opens)
+      const v = a.kind === 'form' ? lookPast(t, side) - (s.rs.bot?.form ?? W.form) : score(t, side); // (a form switch is worth what it opens, less a little)
       if (v > bestScore) { best = a; bestScore = v; bestState = t; }
     }
     if (!best) break;
