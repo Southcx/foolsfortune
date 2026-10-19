@@ -297,8 +297,12 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
   - **the Line:** +1 a column held past the middle, -1 a column lost;
   - **the break:** +3 a stun depth the Figment is down (running from a dazed foe is the smart run);
   - **pity:** +3 for each failed try this duel (Pokémon's Run: each try raises the next);
-  - **Luck:** -2 to +2 (`newDuel({ luck })`, the room's from `luck.js`).
-- **A failed roll** costs its 3 AP and the duel goes on (2 AP left of a fresh turn). **Away:** both whole, no shatter and no reward;
+  - **Luck:** 0 to +2 (`newDuel({ luck })`; ruled 2026-10-19 on Petra's placeholder): `floor(luckOf(ledger).level / 10)`, so +1 at
+    Luck level 10 (100 bits, about fifteen prismatic chests' surprise) and +2 at 20. Never negative: Luck only rises, since bad luck lived
+    through counts too (`luck.js`). The Figment's side is 0 (it keeps no ledger).
+- **Only a failed roll costs** (ruled 2026-10-19, Calissa's question): 3 AP are needed to roll and are held for it; a failure keeps
+  them and the duel goes on (2 AP left of a fresh turn); a success hands them back (the `flee` event's `ap`: 3 on a failure, 0 away),
+  so a view spends the points only on a miss. **Away:** both whole, no shatter and no reward;
   the Figment keeps its aberrance, its EmO back to calm, and drifts off. The duel ends with `winner: -1` and `fled: side`, event
   `duel.fled`; the ledger counts it through the session's `duel.end { how: 'fled' }`.
 - **Measured** (400 duels, fleeing from the first turn of an even fight): every one got away, in 2.3 tries on average, 5 at most (113,
