@@ -24,12 +24,13 @@
 import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
 import { plan as botPlan, play as botPlay } from '../../progress/duel/bot.js';
-import { RULESETS } from '../../progress/duel/rulesets.js';
+import { rulesetOf } from '../../progress/duel/rulesets.js';
+import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, reach: 3.5, standOff: 9, rise: 3.2 }; // (the bot's beat, real s; the yield's hold; F's reach, m; the camera's fallback)
+export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 5, standOff: 5 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m; the camera off the board's face, m)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'hook', KeyK: 'drill', KeyG: 'paint', KeyU: 'toll', KeyI: 'hoover' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
@@ -44,12 +45,13 @@ export class DuelSession {
   /** Your side's mover (side 0) while it is your turn. */
   get mine() { return this.state && this.state.toMove === 0 && this.state.winner === null; }
 
-  /** F at an aberrant: the seam, then the board between you. */
+  /** The first blow on an aberrant (world/duel/duelfoes.js): the seam (Calissa's aberrant wipe), then the board between you. */
   begin(c) {
-    const g = this.game; if (this.active || !c?.alive) return false;
-    const feeling = c.feeling ?? c.aspect ?? 'fury', ruleset = RULESETS[feeling] || RULESETS.fury;
-    const go = () => this.open(c, feeling, ruleset);
-    if (!g.seam?.cross(go, { kind: 'duel' })) go();
+    const g = this.game; if (this.active || this.pending || !c?.alive) return false;
+    const ruleset = rulesetOf(c), feeling = c.grade ?? ruleset.feeling ?? 'fury';
+    this.pending = true;
+    const go = () => { this.pending = false; this.open(c, feeling, ruleset); };
+    if (!g.seam?.cross(go, { kind: 'aberrant', foe: c })) go();
     return true;
   }
   open(c, feeling, ruleset) {
@@ -61,14 +63,17 @@ export class DuelSession {
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
-    g.creatures?.apply?.(c, 'halt', 600, 1); // (it is in the duel, not the world, until it ends)
-    // the board stands between you, broadside: its middle halfway, your half facing you
-    const at = P.pos.clone().lerp(c.pos, 0.5).setY(Math.min(P.pos.y, c.pos.y));
+    this.pin(c); // (it is in the duel, not the world, until it ends: its casts stopped, its mind held)
+    // under the seam the two are set apart along the line between them, and the board stands broadside between, your half nearest you
     const facing = P.pos.clone().sub(c.pos).setY(0); if (facing.lengthSq() < 1e-4) facing.set(0, 0, 1); facing.normalize();
+    c.pos.copy(P.pos).addScaledVector(facing, -DUEL_ROOM.apart).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos);
+    const at = P.pos.clone().lerp(c.pos, 0.5).setY(P.pos.y);
     this.at = at; this.facing = facing;
     this.view?.open?.({ state: this.state, foe: c, at, facing });
-    const shot = this.view?.frameShot?.() || { pos: at.clone().addScaledVector(facing, DUEL_ROOM.standOff).setY(at.y + DUEL_ROOM.rise + 1.5), look: at.clone().setY(at.y + DUEL_ROOM.rise) };
-    g.cinema?.shot('duel', { pos: shot.pos, look: shot.look, bars: 0, ease: 4 });
+    // the camera on the board's face (the view's `face`: your half on the left), at its middle's height, far enough to hold both ends
+    const face = this.view?.face || new THREE.Vector3().crossVectors(facing.clone().negate(), _v.set(0, 1, 0)).normalize();
+    const mid = DUEL_VIEW.base + (this.state.board.h * DUEL_VIEW.cs) / 2;
+    g.cinema?.shot('duel', { pos: at.clone().addScaledVector(face, DUEL_ROOM.standOff).setY(at.y + mid + 0.4), look: at.clone().setY(at.y + mid), bars: 0, ease: 4 });
     document.exitPointerLock?.(); document.body.classList.add('duel'); // (the cursor is the hand: index.html hides the pointer over the canvas)
     this.intent();
     g.events?.emit('duel.open', { kind: c.kind, feeling, by: 'courier' });
@@ -93,8 +98,7 @@ export class DuelSession {
   pointer(input) {
     const cam = this.game.camera; if (!cam || input.mx < 0) { this.hover = null; return; }
     _ndc.set((input.mx / innerWidth) * 2 - 1, -(input.my / innerHeight) * 2 + 1, 0.5).unproject(cam);
-    const ray = { origin: cam.position.clone(), dir: _ndc.sub(cam.position).normalize() };
-    this.ray = ray;
+    const ray = (this.ray ||= new THREE.Ray()); ray.origin.copy(cam.position); ray.direction.copy(_ndc.sub(cam.position).normalize());
     const cell = this.view?.cellAt?.(ray) || null;
     if (!sameCell(cell, this.hover)) { this.hover = cell; this.view?.hover?.(cell); }
   }
@@ -149,10 +153,15 @@ export class DuelSession {
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
   run(events) {
     this.busy = true;
+    if (events.some((e) => e.type === 'duel.coup')) this.drainCamera(); // (the coup is the data drain: its own camera, cine/sequences.js)
     for (const e of events) if (e.type === 'buckle') this.game.events?.emit('duel.buckle', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
     const done = () => { this.busy = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
+  }
+  drainCamera() {
+    const g = this.game, c = this.foe, P = g.player; if (!g.cine || !c) return;
+    g.cine.play('reprogram.drain', { id: 'duel.drain', yaw: Math.atan2(c.pos.x - P.pos.x, c.pos.z - P.pos.z), anchors: { courier: () => P.pos, veritome: () => P.pos.clone().setY(P.pos.y + 1.2), creature: () => c.pos } });
   }
   intent() { if (this.state.toMove === 0 && this.state.winner === null) this.view?.intent?.(botPlan(this.state, 1)); }
 
@@ -160,8 +169,23 @@ export class DuelSession {
   cursorHand(raw) {
     const g = this.game, H = g.god, s = this.state, hand = s && s.sides[0].form === 'hand' && s.toMove === 0;
     if (!H?.cursorAt) return;
-    const at = hand && this.hover && this.view?.pointOf?.(this.hover);
-    if (at) H.cursorAt(at, this.facing, raw, { press: this.press ? 1 : 0 }); else H.hideCursor?.();
+    const at = hand && this.hover && this.pointOf(this.hover);
+    if (at) H.cursorAt(at, this.view.face, raw, { press: this.press ? 1 : 0 }); else H.hideCursor?.();
+  }
+  /** A cell's centre on the board's face, in the world (the view's own layout: vfx/duelview/layout.js). */
+  pointOf(cell) {
+    const V = this.view; if (!V?.frame || !V.isOpen) return null;
+    return V.frame.localToWorld(cellLocal(cell.x, cell.y, V.board3, new THREE.Vector3()));
+  }
+  /** The foe held for the duel: its casts called off, a halt on it, its mind not to act (the creature decides what a halt means). */
+  pin(c) {
+    const g = this.game;
+    g.creatures?.apply?.(c, 'halt', 600, 1);
+    c.attack = null; c.windup = null; c.dueling = true;
+  }
+  unpin(c) {
+    const g = this.game; if (!c) return;
+    c.dueling = false; g.creatures?.clearStatus?.(c, 'halt');
   }
 
   // ---------------------------------------------------------------- the end
@@ -180,7 +204,7 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
-    if (c) g.creatures?.clearStatus?.(c, 'halt');
+    this.unpin(c);
     g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, by: won ? 'courier' : 'creature' });
     if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
     else if (!won) { if (c) c.emo = 0; g.death?.begin?.({ why: 'duel', by: 'creature' }); }

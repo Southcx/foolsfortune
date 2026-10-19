@@ -8,7 +8,8 @@
 // world behind a fade, the RPG battle wipe), timed on the game's own clock so a playtest and a replay step through it the same.
 //
 //   game.seam = new Seam(game)   game.seam.cross(fn, { kind, out, hold, back }) -> false if one is already under way
-//   game.seam.update(rawDt) (main.js, each tick)   game.seam.busy   (kind 'maw' with game.mawWipe: its close(onCovered) and open())
+//   game.seam.update(rawDt) (main.js, each tick)   game.seam.busy   (a kind with a wipe of its own, game[kind + 'Wipe'], crosses under
+//   it: its close(onCovered, opts) and open(); 'maw' a Well's, game.mawWipe; 'aberrant' a puzzle duel's, game.aberrantWipe with { foe })
 // ---------------------------------------------------------------------------------------
 
 export class Seam {
@@ -24,13 +25,13 @@ export class Seam {
   get busy() { return !!this.job; }
 
   /** Dip to the dark over `out` seconds, run `fn` there, hold `hold` drawn frames, come back over `back` seconds. */
-  cross(fn, { kind = 'plain', out = 0.22, hold = 2, back = 0.35 } = {}) {
+  cross(fn, { kind = 'plain', out = 0.22, hold = 2, back = 0.35, ...opts } = {}) {
     if (this.job) return false;
-    // a Well's crossing under Calissa's wipe when it is there (vfx/mawwipe.js: close(onCovered), open()), else the plain dark cover
-    const wipe = kind === 'maw' ? this.game.mawWipe : null;
-    if (wipe) {
+    // a kind's own wipe when it is there (Calissa's: vfx/mawwipe.js, vfx/aberrantwipe.js: close(onCovered, opts), open()), else the plain dark cover
+    const wipe = this.game[`${kind}Wipe`] || null;
+    if (wipe?.close) {
       this.job = { fn, hold, phase: 'wipe', wipe };
-      wipe.close(() => { try { fn(); } finally { this.job.phase = 'hold'; this.job.n = hold; } });
+      wipe.close(() => { try { fn(); } finally { this.job.phase = 'hold'; this.job.n = hold; } }, opts);
       return true;
     }
     this.job = { fn, out, hold, back, t: 0, phase: 'out' };

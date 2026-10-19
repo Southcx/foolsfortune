@@ -197,7 +197,7 @@ export class LanternWisps {
       if (c.taking || c.stashed) continue;
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;
       if (far) { c.brain.update(dt); continue; }
-      const k = (st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k;
+      const k = (c.dueling || st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k;
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { if (c.driven) c.driven(dtk); else c.brain.update(dtk); }
       if (c.attack && (c.attack.t -= dtk) <= 0) this.release(c);
