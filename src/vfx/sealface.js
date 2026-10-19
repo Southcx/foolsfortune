@@ -21,7 +21,7 @@
 import { cellsOf } from '../npc/neuralesespelling.js';
 import { FONT } from '../ui/theme.js';
 
-// ---- the Comb (overlay/r4-comb-core.js, ported to cellsOf's cells): a cell's radius is N steps of the triangular sub-lattice
+// ---- the Comb (OVERLAY.md 15.5, ported to cellsOf's cells): a cell's radius is N steps of the triangular sub-lattice
 const S3 = Math.sqrt(3), ROW = S3 / 2, N = 8;
 const ROT = { on: { L: -60, M: 0, B: 60 }, co: { L: -120, M: 180, B: 120 } }; // (the edge's turn from the onset's middle edge, degrees)
 const SPOKE = { I: [-0.5, -ROW], U: [0.5, -ROW], E: [-1, 0], O: [1, 0] };

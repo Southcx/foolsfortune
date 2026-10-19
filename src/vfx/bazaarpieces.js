@@ -21,13 +21,12 @@
 // on a foot, never a flat round disk, so it is never read as one of Raku's chips) and a seat rim (a thin flat band in the seat colour
 // under what a seat owns). The seat looks are vfx/seatlook.js's.
 //   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h, dim)   dieTpl(sides, skin: '6', 'atk6', 'ash', k, dim)   dieRest(sides, value, yaw, out, k) -> lift
-//   chipTpl(kind, k)   tileTpl(n, state, k, dim)   cupTpl(r, h)   clothTpl(id, r)   tokenTpl(colour, k)   seatRimTpl(colour, w, d, band)
+//   chipTpl(kind, k)   tileTpl(n, state, k, dim)   cupTpl(r, h)   clothTpl(id, r)
 //   TIER   tierScale(tier) -> k   new PieceBatch(materials)  .clear()  .add(tpl, matrix, slot, id)
 //   .write()  .pick(raycaster) -> id   .mesh
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
-import { shapeOutline, seatCue } from './seatlook.js';
 
 /** The sizes (metres: a table's pieces read from a seat's camera, so bigger than life by about three). */
 export const PIECE = { card: { w: 0.2, h: 0.325, gap: 0.003 }, die: 0.072, chip: { r: 0.042, h: 0.011, segs: 14 }, tile: { w: 0.11, h: 0.165, d: 0.03 } };
@@ -167,46 +166,6 @@ export function cupTpl(r = 0.075, h = 0.11, open = false) {
       if (!open) b.tri([0, h, 0], [rt * Math.cos(a1), h, rt * Math.sin(a1)], [rt * Math.cos(a0), h, rt * Math.sin(a0)], [0, 1, 0], [cu, cv], [cu, v1], [cu, v1]);
       else { const ri = rb * 0.92; b.quad([rb * Math.cos(a0), 0.006, rb * Math.sin(a0)], [ri * Math.cos(a0), 0.006, ri * Math.sin(a0)], [ri * Math.cos(a1), 0.006, ri * Math.sin(a1)], [rb * Math.cos(a1), 0.006, rb * Math.sin(a1)], [0, 1, 0], [u0, v0, u0, v0]); }
     }
-    return b.done();
-  });
-}
-
-/** A seat token: its colour's shape (vfx/seatlook.js `shapeOutline`) stood upright on a small foot, glyph and pattern on both faces,
- *  radius 0.05 m x `k`, its foot at y 0, facing +z. Never a flat disk (a chip is), whatever the shape, so the circle's too reads as a token. */
-export function tokenTpl(colour, k = 1) {
-  return memo(`token:${colour}:${k}`, () => {
-    const A = bazaarAtlas(), b = builder(), [u0, v0, u1, v1] = A.seat(colour, 'token'), [r0, rv0, r1, rv1] = A.seat(colour, 'rim');
-    const R = 0.05 * k, foot = 0.026 * k, t = 0.012 * k, cy = foot + R * 1.02, cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = ((u1 - u0) / 2) * 0.8, hv = ((v1 - v0) / 2) * 0.8;
-    let P = shapeOutline(seatCue(colour).shape); if (P.reduce((acc, [x, y], i) => { const [x2, y2] = P[(i + 1) % P.length]; return acc + x * y2 - x2 * y; }, 0) < 0) P = P.slice().reverse(); // (counter-clockwise, y up)
-    const V2 = P.map(([x, y]) => new THREE.Vector2(x, y)), idx = THREE.ShapeUtils.triangulateShape(V2, []), rc = [(r0 + r1) / 2, (rv0 + rv1) / 2];
-    for (const [a, c, d] of idx) { // (a face each way; triangulateShape may wind either, so each is made counter-clockwise by its own normal)
-      const tri = [a, c, d].map((i) => P[i]), area = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0]) * (tri[1][1] - tri[0][1]), o = area < 0 ? [0, 2, 1] : [0, 1, 2];
-      const at = (i, z) => [tri[i][0] * R, cy + tri[i][1] * R, z], uv = (i) => [cu + tri[i][0] * hu, cv + tri[i][1] * hv];
-      b.tri(at(o[0], t / 2), at(o[1], t / 2), at(o[2], t / 2), [0, 0, 1], uv(o[0]), uv(o[1]), uv(o[2]));
-      b.tri(at(o[0], -t / 2), at(o[2], -t / 2), at(o[1], -t / 2), [0, 0, -1], uv(o[0]), uv(o[2]), uv(o[1]));
-    }
-    const n = P.length; // (the edge, on the rim cell's centre)
-    for (let i = 0; i < n; i++) {
-      const [ax, ay] = P[i], [bx, by] = P[(i + 1) % n], len = Math.hypot(bx - ax, by - ay) || 1, nx = (by - ay) / len, ny = -(bx - ax) / len;
-      b.quad([ax * R, cy + ay * R, -t / 2], [bx * R, cy + by * R, -t / 2], [bx * R, cy + by * R, t / 2], [ax * R, cy + ay * R, t / 2], [nx, ny, 0], [rc[0], rc[1], rc[0], rc[1]]);
-    }
-    const fw = R * 0.6, ft = t * 1.8; // (the foot: a small block under the glyph)
-    b.quad([-fw, 0, ft], [fw, 0, ft], [fw, foot + 0.004, ft], [-fw, foot + 0.004, ft], [0, 0, 1], [rc[0], rc[1], rc[0], rc[1]]);
-    b.quad([fw, 0, -ft], [-fw, 0, -ft], [-fw, foot + 0.004, -ft], [fw, foot + 0.004, -ft], [0, 0, -1], [rc[0], rc[1], rc[0], rc[1]]);
-    b.quad([-fw, foot + 0.004, ft], [fw, foot + 0.004, ft], [fw, foot + 0.004, -ft], [-fw, foot + 0.004, -ft], [0, 1, 0], [rc[0], rc[1], rc[0], rc[1]]);
-    b.quad([fw, 0, ft], [fw, 0, -ft], [fw, foot + 0.004, -ft], [fw, foot + 0.004, ft], [1, 0, 0], [rc[0], rc[1], rc[0], rc[1]]);
-    b.quad([-fw, 0, -ft], [-fw, 0, ft], [-fw, foot + 0.004, ft], [-fw, foot + 0.004, -ft], [-1, 0, 0], [rc[0], rc[1], rc[0], rc[1]]);
-    return b.done();
-  });
-}
-/** A seat rim: a thin flat frame of the seat colour (and its pattern) round a w x d footprint on the cloth, `band` wide, 2 mm proud
- *  (slot 1, the glaze); put it under what a seat owns. Centred on the origin, lying in x and z. */
-export function seatRimTpl(colour, w, d, band = 0.012) {
-  return memo(`seatrim:${colour}:${w}:${d}:${band}`, () => {
-    const A = bazaarAtlas(), b = builder(), r = A.seat(colour, 'rim'), x = w / 2 + band, z = d / 2 + band, xi = w / 2, zi = d / 2, y = 0.002;
-    const q = (a, bb, c, dd) => b.quad(a, bb, c, dd, [0, 1, 0], r);
-    q([-x, y, z], [x, y, z], [x, y, zi], [-x, y, zi]); q([-x, y, -zi], [x, y, -zi], [x, y, -z], [-x, y, -z]);
-    q([-x, y, zi], [-xi, y, zi], [-xi, y, -zi], [-x, y, -zi]); q([xi, y, zi], [x, y, zi], [x, y, -zi], [xi, y, -zi]);
     return b.done();
   });
 }

@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-const _t = new THREE.Vector3(), _n = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _q = new THREE.Vector3(), _ax = new THREE.Vector3(), _u = new THREE.Vector3(), _w = new THREE.Vector3();
+const _t = new THREE.Vector3(), _n = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _ax = new THREE.Vector3(), _u = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Rope {
   constructor(scene, { n = 28, sides = 5, radius = 0.014, color = 0xf3e6d2, glowColor = null } = {}) {

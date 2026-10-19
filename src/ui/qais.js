@@ -20,7 +20,7 @@
 // paper test sheet a QA lead stamps PASS or FAIL at the bench, Jira's status lozenges (a status is a small rounded word, its colour its
 // family), the index tabs of a card file, and the house window's frame (sixth-generation JRPG menus, ui/theme.js).
 //
-//   import { QaisLook } from '../../ui/qais.js'   const look = new QaisLook()   (its CSS is put in once)
+//   import { QaisLook } from 'ui/qais.js'   const look = new QaisLook()   (its CSS is put in once)
 //   look.window()                                  -> { root, tabs, body }   (#qais .qw: append root to the page; fill tabs and body)
 //   look.tabs(el, [{ id, label, count?, dot? }], active, onPick(id))
 //   look.testCard(test, { onStatus(status), onNote(text), onGo(), onFail() })  -> element (element.update(test) redraws it in place)

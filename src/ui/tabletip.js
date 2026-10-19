@@ -17,7 +17,6 @@
 //                                                         keywords: ['stun', ...] (ids of ui/keywords.js) or [{ label, means }]
 //   showTableTip(info, x, y)                             the one tip (made once, in the body); x, y in client pixels
 //   hideTableTip()
-//   DEMO_TIP                                             a sample (Nebula Bluff's words) with two keywords, for the stub
 // ---------------------------------------------------------------------------------------
 import { keyworded, installKeywords, KEYWORDS } from './keywords.js';
 import { iconEl } from './icons/icons.js';
@@ -110,13 +109,3 @@ export function showTableTip(info, x, y) {
 /** The tip goes away (a piece left, the seat left, a view drawn again). */
 export function hideTableTip() { tip?.classList.remove('on'); }
 
-/** A sample for the stub: Nebula Bluff's words, with two keywords explained (a game's own, in the coach's words; no Parry, no Seal). */
-export const DEMO_TIP = {
-  label: 'Nebula Bluff',
-  line: 'Claim what your hand is worth. Others can Call your bluff, or back down.',
-  stats: [{ label: 'YOUR HAND', value: 49 }, { label: 'DICE', value: 4, kind: 'count' }, { label: 'POT', value: 18, kind: 'money' }],
-  keywords: [
-    { label: 'Claim', means: 'Say what your dice are worth. A claim you cannot make good costs you dice.' },
-    { label: 'Call', means: 'Say the claimant is lying. Their cups lift and the dice are counted.' },
-  ],
-};

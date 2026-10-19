@@ -5,7 +5,7 @@
 //
 //   THE RAMP     a clapperjar's dropped bauble is Lachryma just out of clay, pale cream and glowing; from OXIDATION.start real seconds
 //                it darkens through amber to crude (near-black, the oil film on it) by OXIDATION.full, and from OXIDATION.melt it runs
-//                into the ground, gone at OXIDATION.gone. `oxidationAt(age)` says where on it a thing is; `oxidationMaterial(k)` is the
+//                into the ground, gone at OXIDATION.gone. `oxidationMaterial(k)` is the
 //                bauble's look at a step of it (one program, 'bauble-ox', for every step).
 //   THE FILM     the oil film over crude: thin-film interference's colours walked round a loop (violet, teal, gold, magenta), brightest
 //                at a grazing look. `oxFilm(t)` in OXIDATION_GLSL, `filmColour(t)` on the CPU: the same colours.
@@ -28,7 +28,7 @@
 //                the film's colours flashing up through it in broad bands at a constant rate, labInk's CPU twin on the film's palette
 //                (vfx/labradorite.js). `schillerInk(ph, out?, { sheen, floor })`, walked by SCHILLER.rate a real second.
 //
-//   OXIDATION   oxidationAt(age, out?) -> { k, step, sink, gone }   oxidationColour(k, out)   oxidationGlow(k, out) -> intensity
+//   OXIDATION   oxidationColour(k, out)   oxidationGlow(k, out) -> intensity
 //   oxidationFilm(k) -> the film's strength   oxidationMaterial(k) (the bauble's)   OXIDATION_GLSL (oxFilm, slickColour)
 //   FILM (the film's four colours, linear)   filmColour(t, out)   featTint(t, out?, { feeling, k, bright })
 //   SCHILLER (the ink, the walk's rate)   schillerInk(ph, out?, { sheen, floor })
@@ -40,17 +40,6 @@ import { COLOR } from '../progress/weather.js';
 /** The ramp, in real seconds for a bauble (`steps`: shared looks, one program; at 8 the colour visibly stepped), and a slick's shares
  *  of its own life: thinned (the film's bands up through it) and sheen (pale, soaking away; gone at 1). */
 export const OXIDATION = { start: 7, full: 22, melt: 38, gone: 40.5, steps: 64, slick: { thinned: 0.3, sheen: 0.72 } };
-
-/** Where a thing of Lachryma `age` real seconds in the open is: k (0 fresh .. 1 crude), its step (0 .. steps - 1), sink (1 standing ..
- *  0 run into the ground), and whether it is gone. */
-export function oxidationAt(age, out = {}) {
-  const O = OXIDATION;
-  out.k = age <= O.start ? 0 : Math.min(1, (age - O.start) / (O.full - O.start));
-  out.step = Math.round(out.k * (O.steps - 1));
-  out.sink = age > O.melt ? Math.max(0, 1 - (age - O.melt) / (O.gone - O.melt)) : 1;
-  out.gone = age > O.gone;
-  return out;
-}
 
 const CREAM = new THREE.Color(PALETTE.cream), CRUDE = new THREE.Color(0x05040a), GLOW = new THREE.Color(PALETTE.glow), GLOW_CRUDE = new THREE.Color(0x2a1450);
 /** The body's colour at oxidation k: cream to the black of crude. */

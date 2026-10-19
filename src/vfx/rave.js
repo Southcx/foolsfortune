@@ -33,7 +33,7 @@ const BPM = 124, SPB = 60 / BPM, BEATS = 14, DUR = BEATS * SPB;
 const NEON = [0xff2fb0, 0x22e8ff, 0xb6ff2a, 0xff8a1f, 0x9a5cff, 0xffe600, 0xff3a3a, 0x3a7bff];
 const N_BEAMS = 8, N_SPECKS = 40, N_DECALS = 8;
 const D = THREE.MathUtils.damp, lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _q = new THREE.Quaternion(), _col = new THREE.Color(), _m = new THREE.Matrix4();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _col = new THREE.Color();
 const DOWN = new THREE.Vector3(0, -1, 0), Z = new THREE.Vector3(0, 0, 1);
 
 // (the beams' cones are the chests' beam's own program: vfx/beam.js's beamMaterial, hung from the fixture, `flip`)

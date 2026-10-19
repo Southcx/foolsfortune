@@ -5,12 +5,11 @@
 //
 //   THE SPIN     the strip runs `laps` times round the symbols (default 3) in `dur` (0.6 s) on cubic-bezier(.2,.9,.3,1.04): fast, then a
 //                single overshoot past the stop that settles back (the one-frame kick of a real reel).
-//   THE STAGGER  `Reel.spinAll(reels, stops, { stagger })` starts a row of reels 150 ms apart, left to right.
 //   A SYMBOL     a string, or { text, colour } (a die face, a tier name in its colour).
 //
 // Prior art: the fruit machine's reels (Bally, Fey's Liberty Bell) stopping one by one left to right, and Balatro's card-flip reveals.
 //
-//   const r = new Reel(el, symbols, { tier: 'L' })   r.spin(stopAt, { dur, stagger }) -> Promise   r.show(i)   Reel.spinAll(reels, stops, opts)
+//   const r = new Reel(el, symbols, { tier: 'L' })   r.spin(stopAt, { dur, stagger }) -> Promise   r.show(i)
 // ---------------------------------------------------------------------------------------
 import { TIERS } from './rollnum.js';
 
@@ -64,11 +63,6 @@ export class Reel {
     return new Promise((res) => {
       this.timer = setTimeout(() => res(tok === this.token), (dur + stagger) * 1000 * k + 30);
     });
-  }
-
-  /** A row of reels started `stagger` apart, left to right; resolves when the last has landed. */
-  static spinAll(reels, stops, { dur = REEL.dur, stagger = REEL.stagger, laps = REEL.laps } = {}) {
-    return Promise.all(reels.map((r, i) => r.spin(stops[i], { dur, stagger: stagger * i, laps })));
   }
 
   destroy() { this.token++; clearTimeout(this.timer); this.el.textContent = ''; this.el.classList.remove('rl'); }

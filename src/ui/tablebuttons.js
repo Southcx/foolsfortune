@@ -21,7 +21,6 @@
 //       el.dispose()                                  remove the 1..9 keyboard listener (call when the seat is left)
 //   formatAmount(amount) -> string                    a number as "+3" / "−6" (U+2212), a string as given
 //   installTableButtons()                             its CSS, once (actionBar does it)
-//   DEMO_MOVES                                        a four-move sample in the coach's shape, for the stub
 // ---------------------------------------------------------------------------------------
 import { keyworded, installKeywords } from './keywords.js';
 
@@ -156,10 +155,3 @@ export function actionBar(moves = [], onPick = () => {}, { onHover = null } = {}
   return bar;
 }
 
-/** A four-move sample in the coach's shape, for the stub: the house's pick (gold), a risk with a preview, a bad one, and a small plate. */
-export const DEMO_MOVES = [
-  { id: 0, label: 'STAND', line: 'Keep what you have. Your turn ends here.', amount: null, preview: 'you keep 46', tone: 'good', best: false, size: 'small' },
-  { id: 1, label: 'CLAIM 46', line: 'Say your dice are worth 46 or more.', amount: -5, preview: 'chance true 62%', tone: 'risk', best: true, size: 'big' },
-  { id: 2, label: 'CALL', line: 'Say they claimed too much. Their cups lift.', amount: -5, preview: 'they are lying 38%', tone: 'bad', best: false, size: 'big' },
-  { id: 3, label: 'FOLD', line: 'Give up one die. Sit out this round.', amount: -1, preview: 'you keep 3 dice', tone: 'bad', best: false, size: 'small' },
-];

@@ -15,7 +15,7 @@
 // crafts), the world tree and the Bodhi tree (the old tree as the place of becoming), and Okami's guardian sapling.
 //
 //   const T = new CocoonTree({ slots: 3 })   T.group (stands on its origin, +Y up; ~9 m)   T.cocoon(i, { feeling, k })   T.merge(i, j, k)
-//   T.open(i)   T.slotWorld(i, out)   T.update(rawDt)
+//   T.open(i)   T.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../weather.js';
@@ -63,8 +63,6 @@ export class CocoonTree {
   merge(i, j, k) { const A = this.slots[i], B = this.slots[j]; if (!A || !B) return; this.merging = { i, j, k: THREE.MathUtils.clamp(k, 0, 1) }; A.mixing = B.mixing = true; A.u.uB.value.copy(B.u.uA.value); B.u.uB.value.copy(A.u.uA.value); }
   /** The pod splits and its silk falls away (the spirit is out). */
   open(i) { const S = this.slots[i]; if (S) { S.open = 0; } }
-  /** Where slot i's pod hangs (world). */
-  slotWorld(i, out = new THREE.Vector3()) { return this.slots[i].pod.getWorldPosition(out); }
 
   update(raw = 1 / 60) {
     this.t += raw; const t = this.t, M = this.merging;

@@ -326,7 +326,6 @@ function silhouetteRows(cls) {
     return y - h < -2 ? 2 : 1; // (the inside: dark, a step lighter toward the top)
   };
 }
-export const SILHOUETTE_SIZE = { threat: SIL.threat.size, haven: SIL.haven.size, boss: SIL.boss.size };
 
 // ---- the pieces
 /** A class's silhouette alone (its inside dark). */

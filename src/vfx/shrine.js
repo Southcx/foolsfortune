@@ -25,7 +25,7 @@
 //
 //   const S = new ShrineModel({ ground })   S.group (stands on its origin, its front toward +z)   S.set({ found, resting, open })
 //   S.update(rawDt)   S.wake(on = true) (the threshold sealed / unsealed)   S.cradleSpots() -> { threshold } (world: the well's
-//   floor, the socket's face; correct whenever it is asked, the group placed or not)   S.doorWorld(out) (the opening's middle)
+//   floor, the socket's face; correct whenever it is asked, the group placed or not)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -377,7 +377,6 @@ export class ShrineModel {
     this.du.uR.value = K.door; this.du.uOpen.value = Math.min(1, K.door * 3); this.door.visible = K.door > 0.001;
   }
 
-  doorWorld(out = new THREE.Vector3()) { return this.door.getWorldPosition(out); }
 }
 
 /** The warm-up's gate (world/shrines.js builds the real ones on the first frame, after it): one gate, hidden, in `scene` for the prime

@@ -41,7 +41,6 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { readTag, plateOf } from '../tools/veritome/creaturetag.js';
-import { st } from '../creatures/creatures.js';
 import { EMO } from '../progress/combat/emo.js';
 import { TYPES, BONUS } from '../progress/combat/types.js';
 import { poles } from '../progress/combat/temperament.js';

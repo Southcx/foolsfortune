@@ -6,7 +6,7 @@
 // Prior art: the small "task" verbs every ability shares in Unreal's GAS, as the shell runner's own kit (tools/psygun/shellkit.js).
 //
 //   L(layer)   DUR(row)   centre(c, out)   bodyMesh(c)   onCreature(g, name, c, t, ctx, over, until)   atPlace(g, name, pos, t, ctx)
-//   aimAt(g, ray, range)   toGround(g, pos, reach)   courierAt(g, out)   leaveGhost(g, opts) (the Courier's afterimage, vfx/afterimage.js, ticked here)
+//   aimAt(g, ray, range)   toGround(g, pos, reach)   leaveGhost(g, opts) (the Courier's afterimage, vfx/afterimage.js, ticked here)
 //   the ludicrous layers (the owner, 2026-10-13: "borderline ludicrous"; Ratchet & Clank's rule, the weapon too big for the screen):
 //   groundRing(o) a shockwave's front out along the ground   scorch(o) the ground burnt under a blow   debris(o) chips that land and lie
 // ---------------------------------------------------------------------------------------
@@ -68,8 +68,6 @@ export function toGround(g, pos, reach = 4) {
   if (hit) pos.copy(hit.point);
   return pos;
 }
-/** The Courier's feet, or the origin. */
-export const courierAt = (g, out = new THREE.Vector3()) => (g.player ? out.copy(g.player.pos) : out.set(0, 0, 0));
 
 // the shells' own afterimages (Swap's silhouette left behind, Echo's ghost): one set, ticked by a held effect while any is showing
 let GHOSTS = null, tick = null;

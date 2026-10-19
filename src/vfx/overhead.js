@@ -11,7 +11,7 @@
 //
 //   const O = new Overhead(game, { n, cell, from })   O.update(cameraPos, raysPerFrame)   O.u (uniforms: uOcc, uOccK)   OVERHEAD_GLSL
 //   `from`: how far over the given point each ray starts (40 m: the roof over a room; the awakening's flood starts just over the
-//   Courier's head, so a room's floor is what it finds and the flood falls indoors: vfx/awakening.js)   O.fill(pos) every cell at once
+//   Courier's head, so a room's floor is what it finds and the flood falls indoors: vfx/awakeninglook.js)   O.fill(pos) every cell at once
 //   OVERHEAD_COVERS: a cover with no collider (the Raceway's cavern roof: vfx/racewaycavern.js) is a function (x, z) -> its underside's
 //   height there, or null; a cell takes the higher of the ray's hit and every cover over it
 // ---------------------------------------------------------------------------------------

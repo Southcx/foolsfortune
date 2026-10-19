@@ -29,7 +29,7 @@
 // Accessibility Guidelines (101 text size and contrast, 103 never colour alone, 107 input: every action by keyboard too).
 //
 //   new ChoiceCard(row, { onPick, base }) -> .el   .set(row)   .compareTo(base | null)
-//   choiceCard(row, opts) -> element                 cardList(cards, { cols }) -> element (the arrows move between them)
+//   new ChoiceCard(row, opts).el                      cardList(cards, { cols }) -> element (the arrows move between them)
 //   slotRow({ slots, filled: [row | null], always: row?, onPick(i), keys: [cap], closed: [{ opens }], sel: i, pickEmpty }) -> element
 //     (keys: each slot's cap, its number by default; closed: slots past `slots` not yet open, a padlock and what opens each; sel: the slot
 //     picked, lit; pickEmpty: an empty slot can be picked, to fill it; id: the row's name, where a window has two)
@@ -228,9 +228,6 @@ export class ChoiceCard {
   /** Compare against what it would replace (a row), or stop comparing (null). */
   compareTo(base) { this.base = base; return this.set(this.row); }
 }
-
-/** One card as an element. */
-export const choiceCard = (row, opts) => new ChoiceCard(row, opts).el;
 
 /** A list of cards in the window's grid; the arrow keys move between them (up and down by the row; the first arrow comes in from nothing:
  *  installChoiceCards). Drawn again after a keyboard pick, the card that was picked is given its focus back. */

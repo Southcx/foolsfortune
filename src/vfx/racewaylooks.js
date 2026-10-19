@@ -46,7 +46,7 @@
 // sparks and mini-turbo tiers (blue, orange, purple: ours sand, gold, white), Mario Kart's start lights on Lakitu's rod (a lamp a count,
 // then all at once), Wave Race's buoys and Pilotwings' rings (the next one lit), Jet Moto's and Wave Race's rooster tails (the sand off
 // the edge), Mario Kart's time-trial ghost (the best lap, see-through); the sun's glyph after the Gnomon's own disc and the Solar Skiff's
-// summoning sigil (vfx/solar.js and courier/skiff/boat.js: the Raceway's power is the skiff's own).
+// summoning sigil (world/dunes/solar.js and courier/skiff/boat.js: the Raceway's power is the skiff's own).
 //
 //   game.racewayLooks = new RacewayLooks(game, opts?)   .update(dt)   (main.js; opts for the Workbench: parent, vfx, events, race, board,
 //     skiffModel, player)

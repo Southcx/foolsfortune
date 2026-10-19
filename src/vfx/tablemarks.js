@@ -24,7 +24,7 @@
 //   marks.set({ turnSeat, seats: [{ seat, colour, at: Vector3, owns?: [pieceId] }], legal: [id], chosen: [id], dim: [id] },
 //             pieceAt)   pieceAt(id) -> { pos: Vector3 (its place on the cloth; only x and z are read), size: number | { w, d }, yaw?, round? } | null
 //   marks.update(dt)   marks.lift(id) -> metres to add to the piece (chosen 0.06, legal 0.008)   marks.sink(id) -> metres (negative) to add   marks.shade(id) -> 1..0.35
-//   marks.dispose()    marks.mesh    SEAT_MARK_LOOK    markSeatShape(colour)
+//   marks.dispose()    marks.mesh    SEAT_MARK_LOOK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { PieceBatch } from './bazaarpieces.js';
@@ -37,8 +37,6 @@ export const SEAT_MARK_LOOK = {
   Black: { hex: 0x1a1a1a, shape: 'cross', keyline: 0xd8d4dc }, White: { hex: 0xf2f2f2, shape: 'ring', keyline: 0x1a1420 },
 };
 const NAMES = Object.keys(SEAT_MARK_LOOK);
-/** The shape a seat colour wears (a name 'Red', or a hex number). */
-export const markSeatShape = (colour, look = SEAT_MARK_LOOK) => (typeof colour === 'number' ? Object.values(look).find((l) => l.hex === colour)?.shape : look[colour]?.shape) || 'circle';
 
 /** The numbers (metres, real seconds): the turn ring's radius and band widths, the rims' reach and widths, the seat marker's radius,
  *  the chosen lift, the dim sink, how fast a mark comes or goes (per second) and the film's walk. */
@@ -137,7 +135,7 @@ function rectCorners(x, z, c) { // (a rounded rectangle, counter-clockwise: four
   return out;
 }
 // ------------------------------------------------------------------ the marks
-const _m = new THREE.Matrix4(), _inv = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _c = new THREE.Color();
+const _m = new THREE.Matrix4(), _inv = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0);
 const ease = (cur, to, k) => cur + (to - cur) * k;
 const footprint = (info) => { const s = info.size; return typeof s === 'number' ? { w: s, d: s, round: !!info.round } : { w: s.w, d: s.d ?? s.w, round: !!info.round }; };
 

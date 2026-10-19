@@ -4,7 +4,6 @@ import { T, PALETTE } from '../core/config.js';
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _m = new THREE.Matrix4();
-const UP = new THREE.Vector3(0, 1, 0);
 const Z = new THREE.Vector3(0, 0, 1);
 const BASE_FLOOR = -14; // the basement floor (basement.js BASE_Y)
 

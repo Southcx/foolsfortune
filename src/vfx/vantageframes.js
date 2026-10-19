@@ -39,8 +39,7 @@ import { DUNE, OASIS } from '../world/dunes/dunes.js';
  *  colours (dunes.js: its trilithons' clay and dark lintels). */
 export const VANTAGE_FRAMES = { every: 0.5, ringLit: 1.0, ringKept: 0.32, ruinClay: 0xd9906a, ruinDark: 0x8a4a3a };
 const G = (k) => ROOM_GLAZES[k].body; // (a room glaze's colour id: Level.mat dresses it)
-const UP = new THREE.Vector3(0, 1, 0);
-const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler();
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 /** A frame's kit: parts placed in the frame's own space (origin on the spot's floor, +z the way the view looks), drawn and collided. */
 class Kit {

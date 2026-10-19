@@ -32,7 +32,7 @@ const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
 const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9;
 const REASONS = [['line', 'LINE'], ['duelBreak', 'BUCKLE'], ['pity', 'PITY'], ['luck', 'LUCK']];
 const OK = '#ffe7a0', NO = '#ff8a5a', FAINT = 'rgba(226,243,230,.45)';
-const _q = new THREE.Quaternion(), _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 
 /** A canvas on a quad (w, h in dots; the quad in metres). */
 function plate(w, h, mw) {

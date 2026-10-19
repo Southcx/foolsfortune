@@ -14,7 +14,7 @@
 // R-Type and Gradius debris corridors (wreckage as a route), and Phantom Storm's chase back past the Pirate Ship's place.
 //
 //   const W = new WreckField({ length, width, count, seed })   W.group (its own frame: +Z along the field from z 0 to `length`, the
-//   waterline at y 0)   W.spill(k)   W.update(rawDt, sea)   W.count   W.pieceWorld(i, out)   W.way(z) (the way through's x at z)   W.dispose()
+//   waterline at y 0)   W.spill(k)   W.update(rawDt, sea)   W.count   W.way(z) (the way through's x at z)   W.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { haloTexture } from './lighthouselamp.js';
@@ -77,7 +77,6 @@ export class WreckField {
   way(z) { return Math.sin((z / this.length) * Math.PI * 2.5) * this.width * 0.18; }
   /** How much of her is in the water (0 .. 1): the pieces surface along the field in order. */
   spill(k) { this.k = THREE.MathUtils.clamp(k, 0, 1); }
-  pieceWorld(i, out = new THREE.Vector3()) { const p = this.pieces[i]; return this.group.localToWorld(out.set(p.x, p.y, p.z)); }
 
   update(raw = 1 / 60, sea = null) {
     this.t += raw; const t = this.t, G = this.group; G.updateMatrixWorld(true);

@@ -4,8 +4,7 @@
 // only where a stroke changed it.
 //
 //   THE SPHERE    one indexed icosphere per detail, built once and shared by every planetoid at that detail: its unit directions, its
-//                 triangles, and (asked for: sphereTangents) an east and a north tangent a vertex (the clay's longitude and latitude:
-//                 what the water's flow is laid along). Built straight as an indexed mesh (the 12 corners, the 30 edges' points, each face's inside), never as
+//                 triangles. Built straight as an indexed mesh (the 12 corners, the 30 edges' points, each face's inside), never as
 //                 IcosahedronGeometry and mergeVertices (56 ms at detail 24, measured). Detail 24 (6,252 vertices, 12,500 triangles) for
 //                 every planetoid whatever its radius: an icosphere edge is about 1.1R/(d+1) and a clay cell 2 pi R/128, so the two
 //                 match at d 22 to 24 for any R (Calissa's survey, 2026-10-08: the drawn ground within 0.3 m of the clay's, sculpted)
@@ -25,7 +24,7 @@
 // vertices), the dirty-region refresh of every terrain editor (a brush rebuilds the chunks it touched: Unity's and Unreal's landscape
 // tools, From Dust's sculpted sphere), and compressed sparse rows for the adjacency (any mesh library's vertex-face table).
 //
-//   const S = unitSphere(24)   S.n   S.dir (Float32Array, xyz a vertex)   S.index   sphereTangents(S) -> { east, north }   sphereMaps(S)
+//   const S = unitSphere(24)   S.n   S.dir (Float32Array, xyz a vertex)   S.index   sphereMaps(S)
 //   const geo = sphereGeometry(S)   (position, normal, color, aGroundA, aGroundB; its own index over the shared triangles)
 //   vertexNormals(geo, S)   refreshFromClay(look, clay) -> { cells, moved, normals, painted }   (look: { R, h, base, geo, sphere, colourOf(i, C) })
 //   tracked(attr) (sent up whole until its first upload, then by runs)   sendRuns(attr, list, count, n)   sendWhole(attr)
@@ -77,19 +76,6 @@ export function unitSphere(detail = DETAIL) {
   const S = { detail, n, faces: index.length / 3, dir, index, maps: null, tangents: null };
   SPHERES.set(detail, S); sphereMaps(S); // (the maps with it, at boot: the first stroke never pays for them, 11 to 24 ms)
   return S;
-}
-
-/** The clay's east (along its longitude) and north (along its latitude) at each vertex (shared, worked out the first time asked). */
-export function sphereTangents(S) {
-  if (S.tangents) return S.tangents;
-  const n = S.n, dir = S.dir, east = new Float32Array(n * 3), north = new Float32Array(n * 3);
-  for (let v = 0; v < n; v++) {
-    const x = dir[v * 3], y = dir[v * 3 + 1], z = dir[v * 3 + 2]; let ex = z, ez = -x, l = Math.hypot(ex, ez);
-    if (l < 1e-6) { ex = 1; ez = 0; l = 1; } // (at a pole east is any way: one is chosen)
-    ex /= l; ez /= l; east[v * 3] = ex; east[v * 3 + 2] = ez;
-    north[v * 3] = y * ez; north[v * 3 + 1] = z * ex - x * ez; north[v * 3 + 2] = -y * ex; // (dir x east)
-  }
-  return (S.tangents = { east, north });
 }
 
 /** The sphere's maps onto the clay's grid and its own adjacency (shared, built once with the sphere: 11 to 24 ms at detail 24). */
