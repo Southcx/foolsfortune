@@ -1111,7 +1111,7 @@ export class Player {
     // speed widens the view a little (sprint, slides, wallruns, big hops)
     const speedFov = THREE.MathUtils.clamp((hs - M.walkSpeed) / (M.maxSpeed - M.walkSpeed), 0, 1) * C.speedFov;
     this.sprintFov = THREE.MathUtils.damp(this.sprintFov || 0, speedFov, 6, dt);
-    cam.fov = baseFov + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0) + cf.fov;
+    cam.fov = baseFov / (this.scopeZoom || 1) + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0) + cf.fov; // (a scope narrows it: the Carbine's, tools/psygun/variantplay.js)
     // a scripted shot (a ceremony's camera): blended over the one above
     const cs = this.camShot;
     if (cs && cs.k > 0.001) {

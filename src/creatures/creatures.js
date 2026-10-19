@@ -30,7 +30,7 @@
 // each a timer on the target rather than a change to its code, and the "damageable" interface of most engines (Unreal's TakeDamage,
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
-//   game.creatures.add(c)   .addFriend(c) (a sibling)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
+//   game.creatures.add(c)   .addFriend(c) (a sibling)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?, buildK?)   .apply(c, status, dur, k)   st(c, status)
 //   c.hurt(...) may return 'blocked': the blow was turned aside, and nothing builds
 //   c.friend: another Courier, an ally the Courier's blows still reach (friendly fire: a fifth of the damage, statuses under tolerance)
 //   .windup(c, { at, radius, eta, kind, parry, part, area, type, status, answer, read })   .figmentTelegraph(c, kind, spec)   .unwind(c)   .windups(pos, r)   .parried(c)
@@ -87,7 +87,7 @@ export class Creatures {
     return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
   }
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
-  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause)) {
+  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause), buildK = 1) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && !c.friend && by === 'courier') return false; // (their own: a spirit they called up is not struck by them; a friend, another Courier, is: friendly fire)
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
@@ -110,7 +110,7 @@ export class Creatures {
     // the blow moves its mind and stirs it up, and builds its type's status
     c.mind = pushed(c.mind, MIND.perBlow * power); this.mindMoved(c, by);
     c.emo = rise(c.emo, power);
-    this.build(c, type, power * m.build, by, cause);
+    this.build(c, type, power * m.build * buildK, by, cause); // (`buildK`: a share of the build-up, as the Pentagun's pentacle's fifth)
     g.temper?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
     return true;
   }

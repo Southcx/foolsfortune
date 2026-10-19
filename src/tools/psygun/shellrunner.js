@@ -83,7 +83,7 @@ export class ShellRunner {
     shellLook(this.game, 'fire', row, ctx);
     const own = FIRES[row.id];
     if (own) return own(this, row, ctx);
-    this.launch(['lob', 'deploy', 'call'].includes(row.carrier) ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir);
+    this.launch(['lob', 'deploy', 'call'].includes(row.carrier) || row.lob ? 'lob' : 'bolt', row, ctx.muzzle, ctx.ray.dir); // (`row.lob`: the Bombardier's mortar, variantplay.js)
   }
 
   /** A landing's weight (hit-stop, shake, punch) by its row in T.shells.weight: shellkit.js weigh. */
