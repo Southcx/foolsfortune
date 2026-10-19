@@ -407,6 +407,7 @@ export class Cartography {
 
   // ------------------------------------------------------------------ the map screen
   buildMap() {
+    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); // (the map's own rules, with the map: the compass's builder carried them until it was retired, CASEBOOK 2026-10-19)
     const root = el('div');
     root.id = 'mapui';
     this.canvas = document.createElement('canvas');

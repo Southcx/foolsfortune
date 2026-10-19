@@ -701,6 +701,10 @@ NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but
 
 NEW:no-comment-mid-line. **A comment goes at a line's end or on its own line, never in the middle of code.** A `//` dropped into a line
     of events silences everything after it with no error; the connectome's "never read" is the tell.
+
+NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.** Retire the
+    neighbour and the rules go with it, silently; the connectome's "never read" on a `CSS` const is the tell.
+
 ## Cases
 
 ### 2026-10-19 · A carried pot dragged the Courier's body (the owner, long open: "the feet clip the floor; the pot should ride the hands")
@@ -3873,3 +3877,13 @@ NEW:no-comment-mid-line. **A comment goes at a line's end or on its own line, ne
   `E('pick', ...)` and the lead's `...line(CLIMB[i], 'shred', 0.4)` after it became comment text. The line still parsed, so nothing threw.
 - **Fix:** the comment ends its own line; the bass and the lead are code again (`npm run build` and the connectome see CLIMB read).
 - **Rule:** NEW:no-comment-mid-line.
+
+### 2026-10-19 · The map screen (M) had no styles since the old HUD was retired (Petra's connectome, the deep clean)
+- **Seen:** the connectome listed `const CSS` in `src/feedback/cartography.js` as never read: the map screen's sixteen rules (`#mapui`,
+  its bar, buttons, side panel and legend) were in the file but never in the page, so `#mapui` stood unstyled at the foot of the body
+  and its `.open` toggle did nothing (read from the code; not seen in play, which is how it reached v228).
+- **Cause:** one `<style>` held the compass's rules and the map's, injected by the compass's builder (`buildHud`). Retiring the old HUD
+  (5cb9b3f, 2026-10-18) deleted the compass's rules and its builder, and the injection with them; the map's rules stayed, unread.
+- **Fix:** `buildMap()` injects the map's own rules.
+- **Rule:** NEW:style-lives-with-its-thing. A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.
+
