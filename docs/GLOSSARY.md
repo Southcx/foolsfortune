@@ -334,6 +334,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
   Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
   given at the start of its turn (not rain). *Not:* a table (Raku's), the kick, a trial, a guard break, a mote (the scatter's), a run (three in a line).
+- **the duel's view / the tsuitate** (working names; `DuelView`, `game.duelView`, `src/vfx/duelview.js`, its parts `src/vfx/duelview/`) — a puzzle duel's board stood in the world as a standing screen of Lachrymite 20 x 20 in Anagami's clay frame, broadside between the Courier and the foe, playing the kernel's events; its pieces instanced, its figurines the bodies. *Not:* the duel (Dovina's rules), its session (Petra's), a table (Raku's).
+- **the domains' clash** (working name, Espada's to rule; `DomainClash`, `src/vfx/duelview/domains.js`) — a puzzle duel's backdrop: each side's ground unfolding round the arena (the Courier's the film over Lachryma's deep, the foe's its feeling's heavy look), meeting in a seam on the Line's plane that slides with it. Always in full. *Not:* the domains (the psyche's seven), the weather.
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
