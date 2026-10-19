@@ -149,7 +149,8 @@ do.
 - `duel.js`: the turn, AP, the settle loop, junk and the wins.
 - `bot.js`: a greedy planner that also gives the shown intent.
 - `rulesets.js`: the first three Figments' rulesets.
-- `breaks.js`: EmO, the break, the shower of motes, stun depth on the board, the coup (section 11).
+- `buckle.js`: EmO, the buckle, the shower of teardrops, stun depth on the board, the coup (section 11).
+- `dread.js`: Dread's fog and embers (section 14).
 - `couriertools.js`: the Courier's run and its tools on the board (section 11).
 - `scripts/duel.mjs`: duels between bots, headless, with lengths, junk rates, and every settle that hit the cap.
 
@@ -253,3 +254,33 @@ line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab,
 13. After a coup the board is the view's: draining the Figment's half and sending the March home is the ceremony, not a rule. A teardrop
     goes with its ground: if the March passes over its cell, it is the other side's to glean (or lose).
 
+
+## 14. The first in game: the aberrant Lantern Wisp (the owner, 2026-10-19, on board v11)
+
+The owner: "an incredible first pass", and into the game, with an aberrant Lantern Wisp as the test enemy; the upright tsuitate the
+default; the god hand in its current mode the cursor; the backdrop two minds clashing (Jujutsu Kaisen's Domain Expansions meeting).
+
+**Its feeling is Dread.** A will-o'-the-wisp is the light that leads you off the path: it shows you only what it wants you to see. So its
+half of the board is Dread's (`dread.js`, the first rule family past the kernel):
+- **Fog:** its half is hidden but for the light of its lantern, 3 cells round its body on the board. The engine keeps the whole board;
+  `visibleTo(state, viewer, x, y)` says what you may be shown. Its forecast is still drawn (Divination sees what it means to do, not the
+  ground it does it on): you see its hand move into the dark.
+- **Embers:** the junk it sends lands as embers that burn down 3 of your turns. While burning they cannot be broken by a clear beside
+  them, pinched or hoovered; cooled, each is a gem of a random colour. Dread is the wait. (Super Puzzle Fighter II Turbo's counter gems.)
+- **Its half burns upward:** a flame's updraft, its pieces rise while yours fall, two domains meeting at the Line.
+- Runs of three; 4 colours; a drip of 4. `RULESETS.lanternwisp`; `rulesetOf(creature)` gives it to any Lantern Wisp (`KIND_RULESETS`).
+
+**The simulator** (20 duels, 5 AP, the coup the Courier's only): 22.8 turns a side, the Line ends every one, wins 10 to 10, 0.9 buckles
+and 1.1 teardrops gleaned a duel. Bots see through the fog, so the fog's cost to a player is not in these numbers; a player will be
+slower to read the Wisp's half and better at the buckle. Plain Dread (`RULESETS.dread`, gravity down both halves): 32.2 turns a side.
+
+**How a Lantern Wisp goes aberrant** (a rule for the world; the Wisp and the blots are Petra's to build): **its lantern burns crude.** A
+Lantern Wisp that drifts over a blot at night drinks it, as a lamp drinks oil, and its flame goes wrong: it is aberrant (`c.aberrant`,
+dressed as a data bug), and the blot is spent. One a blot, and only at night (the Wisps are the Dunes' night Figments). It keeps its
+kind's ruleset whatever the weather; the weather's feeling where it drank is its `grade`, for its look and a bounty.
+- **For the test:** one placed at night near the oasis, with its debug chest (the Soul Brush and a few Lachrymato Bottles' worth, so the
+  pool can pay a coup). The placement and the chest are Petra's.
+
+**How a duel opens** (my recommendation; the room, seam and camera are Petra's): **the first blow that lands on an aberrant Figment
+opens it.** Two minds meet and the domains expand; a duel is never started by a key. Losing is a shatter (section 9); the coup mends it
+(the data drain), and a mended Lantern Wisp is an ordinary Wisp again, curious and skittish.

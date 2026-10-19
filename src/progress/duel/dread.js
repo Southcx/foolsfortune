@@ -1,0 +1,38 @@
+// ---------------------------------------------------------------------------------------
+// DREAD'S RULES ON A PUZZLE DUEL'S BOARD (docs/plans/PUZZLE-DUELS.md sections 6 and 14): the family a Figment of Dread brings, first worn
+// by the aberrant Lantern Wisp. Two rules:
+//   FOG      a side's half is hidden from the other side except within the light of its body (its lantern); the engine keeps the whole
+//            board, and `visibleTo` says what a side may be shown. The forecast is still drawn (Divination sees intent, not ground).
+//   EMBERS   junk a Dread side sends lands as embers: they cannot be broken, pinched or hoovered while they burn down, and after their
+//            count of the receiver's own turns they cool into gems. Dread is the wait.
+//
+// Prior art: Super Puzzle Fighter II Turbo's counter gems (garbage with a countdown that turns to ordinary gems); the fog of war of
+// Advance Wars and Into the Breach's smoke; the will-o'-the-wisp of the fens, a light that shows you only what it wants you to see.
+//
+//   visibleTo(state, viewer, x, y) -> bool   emberKind(state, sender) -> 'ember' | 'junk'   tickEmbers(state, side) -> events
+//   rs.fog = { side, light }   rs.embers = { from, count }
+// ---------------------------------------------------------------------------------------
+import { COLOURS, KINDS } from './board.js';
+
+/** May a side be shown this cell? Its own half always; the fogged side's half only within `light` cells of that side's body. */
+export function visibleTo(s, viewer, x, y) {
+  const F = s.rs.fog, b = s.board; if (!F || b.sideOf(x) !== F.side || viewer === F.side) return true;
+  const at = s.sides[F.side].at; if (!at) return false;
+  return Math.abs(x - at[0]) + Math.abs(y - at[1]) <= (F.light ?? 3);
+}
+
+/** What a side's junk lands as: embers if the ruleset says this side sends them. */
+export const emberKind = (s, sender) => (s.rs.embers && s.rs.embers.from === sender ? 'ember' : 'junk');
+
+/** The end of a side's own turn: each ember on its half burns down a turn; one at zero cools into a gem of a random colour. */
+export function tickEmbers(s, side) {
+  const b = s.board, events = []; if (!s.rs.embers) return events;
+  b.each((p, x, y) => {
+    if (p.kind !== 'ember' || !b.mine(side, x)) return;
+    p.count = (p.count ?? s.rs.embers.count) - 1;
+    if (p.count > 0) return;
+    Object.assign(p, { kind: 'gem', tags: KINDS.gem, colour: COLOURS[s.r.int(Math.min(COLOURS.length, s.rs.colours))] });
+    events.push({ type: 'ember.cool', side, id: p.id, at: [x, y], colour: p.colour });
+  });
+  return events;
+}
