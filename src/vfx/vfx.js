@@ -18,7 +18,7 @@
 //   decal     a picture laid on the ground (or stood to the camera), turning: the spell circles (src/assets/vfx/tex/), and two drawn
 //             here ('shockring', a shockwave's front; 'scorch', burnt ground with `blend: 'darken'`)
 //   flash     the screen washes to a colour and back (capped: a flash, never a flicker)
-//   light     a lamp that blooms and fades (one of a few, the light budget lends them as it lends any lamp)
+//   light     a lamp that blooms and fades (one of a few, the light budget lends them as it lends any lamp); `hold` keeps it whole to that share of its life
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
 //   glyph     a mark (vfx/glyphs.js)   sound  an sfx method by name (audio: Wanda's)   fx  another effect, by name
 //   caster    a caster shader by its module's name (`shader: 'lensing'`: vfx/caster/<name>.js). S1 to S5 (heat haze, the bubble,
@@ -56,7 +56,8 @@ const CASTER = Object.fromEntries(Object.entries(import.meta.glob('./caster/*.js
 const TEX_SRC = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/tex/*.png', { query: '?b64', import: 'default', eager: true }))
   .map(([f, b64]) => [f.split('/').pop().replace(/\.png$/, ''), b64]));
 const TEX = {};
-// (and two drawn here, for the ground under a big blow: a shockwave's front, and a scorch with its splash of rays)
+// (and some drawn here: for the ground under a big blow, a shockwave's front and a scorch with its splash of rays; the Pentagun's
+// pentacle; the MARK's sign a flare's reveal holds)
 const DRAWN = {
   shockring: (g, R) => {
     const gr = g.createRadialGradient(R, R, 0, R, R, R);
@@ -76,6 +77,20 @@ const DRAWN = {
     }
     for (let k = 0; k < 40; k++) { const a = r() * Math.PI * 2, d = R * (0.4 + r() * 0.5), rr = R * (0.015 + r() * 0.04); g.globalAlpha = 0.3 + r() * 0.5; g.beginPath(); g.arc(R + Math.cos(a) * d, R + Math.sin(a) * d, rr, 0, Math.PI * 2); g.fill(); }
     g.globalAlpha = 1;
+  },
+  // the Pentagun's pentacle (vfx/psygunvarianteffects.js): a five-point star drawn through its points in one stroke, in its circle
+  pentacle: (g, R) => {
+    g.strokeStyle = '#fff'; g.lineJoin = 'round'; g.lineCap = 'round'; g.lineWidth = R * 0.035;
+    const P = []; for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k * Math.PI * 2) / 5; P.push([R + Math.cos(a) * R * 0.86, R + Math.sin(a) * R * 0.86]); }
+    g.beginPath(); [0, 2, 4, 1, 3, 0].forEach((i, j) => (j ? g.lineTo(...P[i]) : g.moveTo(...P[i]))); g.stroke();
+    g.beginPath(); g.arc(R, R, R * 0.9, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = R * 0.012; g.beginPath(); g.arc(R, R, R * 0.96, 0, Math.PI * 2); g.stroke();
+  },
+  // the MARK shell's sign (six rays round a point, psyguncylindermodel.js): what a flare's reveal holds over a creature it found
+  markstar: (g, R) => {
+    g.strokeStyle = '#fff'; g.lineCap = 'round'; g.lineWidth = R * 0.14;
+    for (let k = 0; k < 6; k++) { const a = (k * Math.PI) / 3; g.beginPath(); g.moveTo(R + Math.cos(a) * R * 0.2, R + Math.sin(a) * R * 0.2); g.lineTo(R + Math.cos(a) * R * 0.82, R + Math.sin(a) * R * 0.82); g.stroke(); }
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(R, R, R * 0.12, 0, Math.PI * 2); g.fill();
   },
 };
 export function vfxTexture(name) {
@@ -276,7 +291,7 @@ export class Vfx {
     for (const L of this.lights) {
       if (L.t >= L.dur) { L.l.intensity = 0; continue; }
       L.t += raw; const u = Math.min(1, L.t / L.dur);
-      L.l.intensity = L.k * (u < 0.1 ? u / 0.1 : (1 - u) * (1 - u) / 0.81);
+      L.l.intensity = L.hold ? L.k * Math.min(1, L.t / 0.1) * (u < L.hold ? 1 : (1 - u) / (1 - L.hold)) : L.k * (u < 0.1 ? u / 0.1 : (1 - u) * (1 - u) / 0.81); // (`hold`: whole until that share of its life, then out: a flare's burn)
     }
     if (this.smearT > 0) { this.smearT -= raw; const A = this.game.post?.accum; if (A && !this.game.death?.active) A.amt = Math.max(0, this.smearAmt * this.smearT / this.smearDur); }
     this.flashK = Math.max(0, this.flashK - raw * this.flashDecay);
@@ -347,7 +362,7 @@ export class Vfx {
       case 'flash': { const k = (L.k ?? 0.5) * Math.min(1.4, P), f = this.spend('flash', k, ctx); if (f < 0.1) break; _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, k * f); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
       case 'light': {
         const S = this.lights.reduce((m, x) => ((x.dur - x.t) < (m.dur - m.t) ? x : m));
-        S.l.color.set(color(L.color ?? 'tint', ctx)); S.l.distance = L.range ?? 10; S.k = (L.k ?? 30) * P; S.t = 0; S.dur = L.dur ?? 0.5;
+        S.l.color.set(color(L.color ?? 'tint', ctx)); S.l.distance = L.range ?? 10; S.k = (L.k ?? 30) * P; S.t = 0; S.dur = L.dur ?? 0.5; S.hold = L.hold ?? 0;
         S.l.position.copy(h.pos).addScaledVector(UP, L.up ?? 0.5);
         break;
       }

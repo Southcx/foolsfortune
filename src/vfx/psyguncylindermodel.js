@@ -19,6 +19,7 @@
 //     B.mount (the posed root: crane > tilt > spin), B.ch[i] { g, ring, cap, fl, depth, mouth, rc, p }, B.sel, B.pawl, B.hammer, B.eye,
 //     B.heartG, B.puff, B.case, B.glint, B.band (the glaze), B.dispose()
 //   CYL_T (the shared time uniform)   SHELL_GLYPH (who has a drawn glyph)   drawPlate(canvas, P, time)   drawInset(canvas, lit, cracks, time)
+//   buildPentacle(B) -> B.pent (the Pentagun's five points, its star and circle)   posePentacle(pent, lit, star, circ, a)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayKind, overlayShader, overlayStd } from './lachrimetertube.js';
@@ -188,6 +189,46 @@ export function buildCylinder(V, ids, tiers, env, bandHex) {
   B.glint = mesh(new THREE.PlaneGeometry(1, 1), M(glowMat(0xffe7a8)), B.mount); B.glint.renderOrder = 3;
   B.dispose = () => { for (const g of B.geos) g.dispose(); for (const m of B.mats) m.dispose(); };
   return B;
+}
+
+// ---------- the pentacle's points (the Pentagun's: OVERLAY.md 19, board v10 figure 04): a gem at each corner of the pentagon outside its
+// chamber, glazed in its damage type's colour (types.js's order from the top, clockwise: Impact bone gold, Ego lapis, Influence rose,
+// Illusion the labradorite's blue, Delirium violet), lit as its chamber fires; the star drawn through them in one stroke (0, 2, 4, 1, 3)
+// and its circle, on the fifth. On the spin, so they turn with their chambers. ----------
+export const PENT_COLS = [0xe9c46a, 0x7f9cff, 0xf2a0b8, 0x9ad8f0, 0xc458d0];
+/** The Pentagun's points on a built cylinder `B` (5 chambers): B.pent { gems[k] { base, glow }, strokes[j], circle }. */
+export function buildPentacle(B) {
+  const V = B.V, G = (g) => (B.geos.push(g), g), M = (m) => (B.mats.push(m), m), r = 0.86, P = [];
+  for (let k = 0; k < 5; k++) { const a = Math.PI / 2 - (k * TAU) / 5; P.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  const pent = { gems: [], strokes: [], circle: null, P };
+  const gemG = G(new THREE.CircleGeometry(0.062, 16)), glowG = G(new THREE.PlaneGeometry(1, 1));
+  P.forEach(([x, y], k) => {
+    const base = new THREE.Mesh(gemG, M(cylMat(4, { uCyCol: v3(PENT_COLS[k]), uCyA: 1 }))); base.position.set(x, y, F + 0.012); base.frustumCulled = false; B.spin.add(base);
+    const glow = new THREE.Mesh(glowG, M(glowMat(PENT_COLS[k]))); glow.position.set(x, y, F + 0.05); glow.scale.setScalar(0.42); glow.renderOrder = 2; glow.frustumCulled = false; B.spin.add(glow);
+    pent.gems.push({ base, glow });
+  });
+  const ord = [0, 2, 4, 1, 3, 0], segG = G(new THREE.PlaneGeometry(1, 0.022));
+  for (let j = 0; j < 5; j++) {
+    const a = P[ord[j]], b = P[ord[j + 1]], m = new THREE.Mesh(segG, M(cylMat(4, { uCyCol: v3(0xf4ecff), uCyA: 0 }, { blending: THREE.AdditiveBlending, depthWrite: false })));
+    m.userData.a = a; m.userData.b = b; m.position.set(0, 0, F + 0.04); m.frustumCulled = false; m.renderOrder = 2; B.spin.add(m); pent.strokes.push(m);
+  }
+  pent.circle = new THREE.Mesh(G(new THREE.RingGeometry(r - 0.012, r + 0.012, 64)), M(cylMat(4, { uCyCol: v3(0xf4ecff), uCyA: 0 }, { blending: THREE.AdditiveBlending, depthWrite: false })));
+  pent.circle.position.set(0, 0, F + 0.04); pent.circle.frustumCulled = false; pent.circle.renderOrder = 2; B.spin.add(pent.circle);
+  B.pent = pent; void V;
+  return pent;
+}
+/** The points posed: `lit[k]` 0..1 a gem's light (and its flash over 1), `star` 0..1 the stroke drawn, `circ` 0..1 the circle closed, `a` the whole's fade. */
+export function posePentacle(pent, lit, star, circ, a) {
+  pent.gems.forEach((G, k) => {
+    const l = lit[k] || 0; G.base.material.uniforms.uCyA.value = 1; G.base.material.uniforms.uCyCol.value.copy(v3(PENT_COLS[k])).multiplyScalar(0.35 + 0.65 * Math.min(1, l));
+    G.glow.material.uniforms.uCyA.value = Math.min(1.6, l * 0.9); G.glow.scale.setScalar(0.32 + 0.22 * Math.min(2, l));
+  });
+  pent.strokes.forEach((m, j) => {
+    const u = Math.max(0, Math.min(1, star * 5 - j)), [ax, ay] = m.userData.a, [bx, by] = m.userData.b, ex = ax + (bx - ax) * u, ey = ay + (by - ay) * u, len = Math.hypot(ex - ax, ey - ay);
+    m.visible = u > 0 && a > 0.01; if (!m.visible) return;
+    m.position.set((ax + ex) / 2, (ay + ey) / 2, F + 0.04); m.rotation.z = Math.atan2(by - ay, bx - ax); m.scale.set(Math.max(1e-3, len), 1, 1); m.material.uniforms.uCyA.value = a;
+  });
+  pent.circle.visible = circ > 0 && a > 0.01; pent.circle.material.uniforms.uCyA.value = a * Math.min(1, circ * 1.5);
 }
 
 // ---------- the plate: tenmoku with the System's keyline; the shell's glyph (keylined) on its colour, its label reeling, its count
