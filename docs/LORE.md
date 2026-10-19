@@ -917,3 +917,22 @@ replaces THE LONG TUBE, and the Pepperbox is 7 (six round a heart), no longer 11
   - **Mirth:** SORA META DEO ("up becomes down": mirrored gravity); KRAKA KRESA ("breaking grows": easy chains).
   - Pushing SORA out of SORA META DEO leaves META DEO, "become down", and the board's gravity comes home. Breaking a rule is a sentence
     losing a word, so the player learns the grammar by vandalism.
+- **The break, the motes and the coup** (Dovina's PUZZLE-DUELS.md 11). Each has a genre label for the UI and a lore name for the world,
+  the log and the code:
+  - **a buckle** (label **Break**; `buckle`). A side buckles when a critical push or full EmO drops it a stun depth. Old French
+    *boucler*, to bulge, from *boucle*, a shield's boss: the shield gives way. Not "a break": the guard break, the crackle break and
+    the big break already hold that word. The log reads "The Figment buckles."
+  - **a teardrop** (label **Orb**; `teardrop`). The Lachryma a buckled side sheds onto your board for one turn. Lachryma is Latin
+    *lacrima*, a tear, so the word was waiting. Not "a mote": the Figment's scatter and the weather's look already have motes.
+  - **the coup** (label **Finish**; `coup`). The god hand's finish on a buckled foe, paid from the pool. Short for *coup de grâce*,
+    the stroke of grace, and the hand is the one that grants grace. Not "a finisher": the code's `stun.finisher` and a string's
+    finisher already hold that word. The log reads "You drain the Figment."
+- **The Courier's moves on the board.** Where the tool already has the move, the board keeps its name, since it is the same move
+  played on a grid. Only two need new words:
+  - **a glean** (label **Gather**; `glean`). Up to four cells walked, drinking the teardrops crossed. To glean is to gather what the
+    harvest left behind (Old French *glener*), which is what the Courier does after the hand has broken the foe. Not "run": a run is
+    already three in a line.
+  - **the pick** (label **Drill**). The Dreamvane's pick, struck through up to three pieces in a line. Mr. Driller's verb stays the label.
+  - Kept: **a shot** (the psygun's; label **Shoot**), **the hook** (the Sondelass's; label **Grab**), **paint** (the Soul Brush's;
+    label **Paint**), **the toll** (the Crucibelle's; label **Delay**), **the hoover** (the Lockheart's; label **Hold**, Tetris's
+    word), **the flail** (the Lockheart's; label **Send**, the genre's word for junk thrown across).
