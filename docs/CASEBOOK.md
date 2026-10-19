@@ -695,8 +695,36 @@ NEW:sound-name-is-searched. **A new sound's name is searched across the banks fi
 NEW:a-place-gives-back-its-pose. **A place that turns a shared body gives the turn back when it is left.** The Pneuka Jar is one model in
     the world, the god hand and the Spirit Garden; a place that sets more of its pose than the others read (the garden its whole
     orientation, the world only its yaw) puts the rest back on leaving, or the next place inherits it.
+NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but for the least swing.** The hand's place is the IK's;
+    its turn is the clip's hand swung the least way that lays the palm on the surface, never a turn built whole in the world (fingers
+    up, palm in), which the wrist cannot make from where the clip has the forearm. Measured with the pose audit's wrist ranges.
 
 ## Cases
+
+### 2026-10-19 · A carried pot dragged the Courier's body (the owner, long open: "the feet clip the floor; the pot should ride the hands")
+
+- **Seen:** the owner, carrying a pot. Measured headless on c1c1493 (a jar, a bowl and an amphora lifted with F on the basement hub's
+  floor, the Throwing Room's and the workshop's; still, walking at the carry's 3.02 m/s, turning, stopping, backing, strafing; at 60
+  and 144 Hz frames), against the same runs empty-handed: the lowest sole vertex no lower with the pot than without (still 0.00 cm;
+  walking -0.53 against -0.61, turning -0.77 against -2.11, stopping -0.26 against -0.37; 0 frames more than 1 cm under), the hips
+  the walk's own (59 to 75 cm walking; still 72.2 on the braced idle a passive tech stands on, against 74.8), the IK's pull on the
+  palms 2.5 cm still and 3.3 to 4.9 walking, the pot's grip 2.0 cm ahead of the palms' midpoint every frame. The feet and the hold
+  were as the 2026-10-11 case left them. The pose audit (`carry.liftWalkPut`, and a new `carry.holdTurn`: held still, then walked in
+  a turn) found the hands broken instead, every frame of the hold: wrists bent 107 to 123 degrees toward the thumb (radial deviation,
+  range 20) and 107 to 111 back (extension, range 70), the forearms turned 95 to 98 (range 90). That is the hands not riding the pot.
+- **Cause (measured):** `closeOn` built each hand's turn whole in the world (`handQuat`: fingers up and a little forward, palm in)
+  wherever the carrying clip had the forearm, pointing forward and down; the wrist cannot make that turn from there, and the wrist
+  ease (`anim/wristease.js`) keeps a bound hand's turn and can only swing the elbow (75 degrees at most), so the bend stayed.
+- **Fix:** `carry.js` `closeOn`: the hand's turn is the clip's own hand swung the least way that faces its palm inward (the palm's
+  normal onto the pot's side, `setFromUnitVectors`), its place as before. After, the pose audit: `carry.holdTurn` radial deviation
+  113.6 / 116.8 (L / R) to 13.3 / 49.3, the 49.3 only in the lift's hand-off (6 frames); extension 111.1 / 107.1 and supination 94.7 /
+  97.7 to within range. `carry.liftWalkPut` radial 123 / 120.5 to 22.6 / 64.1, now only in the lift's stoop (frames 85 to 108, the
+  mirrored arm) and 2 frames of the set-down. The feet, the hips, the IK's pull and the pot against the palms unchanged (the same probe,
+  frame for frame within 0.3 cm). Left: the lift's stoop (Chest_Open's mirrored right arm, 64 degrees toward the thumb for about 20
+  frames); the pot through the head in the throw's wind-up and the throw clip's elbows off their hinge (no IK there, as before).
+  Not reproduced headless: the feet in the floor with a pot (on these floors, at these paces); if the owner still sees it, the place
+  and the pace are wanted.
+- **Rule:** NEW:ik-hand-from-clip; 212 and 215 hold.
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
 - **Seen:** two of the Dunes' three slip jellies by the Weir never moved and never animated, held in whatever frame they were made in;

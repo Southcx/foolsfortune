@@ -17,7 +17,7 @@
 //                   pulled beads, the window rising as they land; the GULP (its parry swallowing a shot into the pool) is the link's one
 //                   true reverse, one bright bead coffin to bulb, the lid snapping like a mouth
 // It reads, never drives (game.lockheart, the Pneuka Box's keyring and its uses, the moveset's string, the Lockheart's wheel). It replaces
-// the Lockheart's gauge (the padlock and sockets beside the 3D coffin, vfx/lockheartmarks.js), retired, not hidden (the owner,
+// the old padlock and sockets that stood beside the 3D coffin, retired, not hidden (the owner,
 // 2026-10-19; casebook rule NEW:retire-what-is-replaced). The hoover's reach on the ground stays a world mark (vfx/lockheartreach.js).
 // One canvas (two texture pixels a dot) on one plane of the overlay's flat kind: no program of its own.
 //
@@ -33,6 +33,7 @@
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
 import { T } from '../core/config.js';
+import { COLOR } from '../progress/weather.js';
 import { HEARTS, oddsOf, rates } from '../tools/lockheart/table.js';
 import { C01, sm, lerp, heartLook, keyLook } from './lockheartreliquary/look.js';
 import { drawPiece } from './lockheartreliquary/piece.js';
@@ -76,8 +77,8 @@ export class LockheartReliquary {
     this.slot = this.S0.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
     const on = (n, f) => game.events?.on(n, f);
     on('lockheart.swing', (e) => { if (this.shown) { this.swings.push({ t0: this.t, m: MOVE_I[e.move] ?? 0 }); if (this.swings.length > 4) this.swings.shift(); } });
-    on('move.parry', (e) => { if (e.how === 'gulp' && e.what === 'shot' && this.shown) { this.snapT = 0; this.beadQ.push({ amount: GULP.amount, colour: GULP.colour, dur: GULP.dur, rev: true, wait: 0.1, age: 0 }); } });
-    on('lockheart.drain', () => { this.drainT = 0; });
+    on('move.parry', (e) => { if (e.how === 'gulp' && e.what === 'shot' && this.shown) { this.snapT = 0; this.beadQ.push({ amount: e.amount ?? GULP.amount, colour: GULP.colour, dur: GULP.dur, rev: true, wait: 0.1, age: 0 }); } });
+    on('lockheart.drain', (e) => { this.drainT = 0; const c = COLOR[e.feeling]; this.drainCol = c != null ? '#' + c.toString(16).padStart(6, '0') : '#b49be6'; }); // (the drained creature's feeling, else the weather's; plain Lachryma the Mind's violet)
     on('lockheart.echo', () => { this.echoT = 0; });
     on('lockheart.outcome', (e) => { this.prevOut = e.outcome; });
     on('lockheart.keyring', (e) => this.turned(e.keys || []));
@@ -181,7 +182,7 @@ export class LockheartReliquary {
     this.S = {
       look, heart, fill, charge: this.shownCharge, shownCharge: this.shownCharge, keys, ghost: gh,
       canOpen: can, fullAge: this.fullT, shackleOpen: shackle, lid: this.lid, snap: this.snapT < 0.25 ? this.snapT : -1,
-      hoover: L.hooverW || 0, hvCol: this.drainT < 0.8 ? '#b49be6' : null, ripple: this.rippleT < 0.3 ? 1 - this.rippleT / 0.3 : 0,
+      hoover: L.hooverW || 0, hvCol: this.drainT < 0.8 ? (this.drainCol || '#b49be6') : null, ripple: this.rippleT < 0.3 ? 1 - this.rippleT / 0.3 : 0,
       flail: { st: F.lit, hitAge: F.hitAge, runP: C01(F.hitAge / 0.12), next: F.cooling ? -1 : place.next, cool: F.cooling ? F.cool : 0 },
       swingT: swingAt(0), swingAt, trailA, lift: this.lift, chainA: lerp(1, 0.25, this.lift), pour, wheel,
     };
@@ -247,8 +248,8 @@ export class LockheartReliquary {
   opened(e) {
     if (!this.shown) return;
     const used = e.keys || [], left = this.game.pneuka?.fitted('keys') || [], uses = this.game.pneuka?.uses?.keys || [];
-    let j = 0;
-    const keys = used.map((id) => { const L = keyLook(id), k = { id, s: L.s, c: L.c, uses: 0 }; if (left[j] === id) { k.res = 'keep'; k.after = uses[j] | 0; k.uses = Math.max(0, k.after - 1); k.to = j; j++; } else { k.res = id === 'key.brass' ? 'spent' : 'break'; k.uses = 9; } return k; });
+    let j = 0; const R = e.results; // (each key's result by ring index, 'kept' | 'spent' | 'broke': lockheart.open; else inferred from the ring after)
+    const keys = used.map((id, i) => { const L = keyLook(id), k = { id, s: L.s, c: L.c, uses: 0 }; if (R ? R[i] === 'kept' && left[j] === id : left[j] === id) { k.res = 'keep'; k.after = uses[j] | 0; k.uses = Math.max(0, k.after - 1); k.to = j; j++; } else { k.res = R?.[i] === 'spent' || (!R && id === 'key.brass') ? 'spent' : 'break'; k.uses = 9; } return k; });
     this.opening = { t0: this.t, keys }; this.prevOut = null;
   }
   /** The Opening over: the survivors close up on the ring. */

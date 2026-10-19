@@ -87,6 +87,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its
   weather floods round you, one line in its own voice, the body's answer once free (`feeling.embody`) / a hand-placed lookout whose view
   awakens Wonder; player text says "vantage point". *Not:* a notice from the System.
+- **a vantage's frame** (`VantageFrames`, `game.vantageFrames`, `src/vfx/vantageframes.js`) — a vantage built as a lookout: its stand (a stone let into the spot, Wonder's ring inlaid, lit until reached) and the gate the view is seen through. *Not:* the vantage (the spot, `world/vantages.js`), the lens's frame.
 - **a heavy look / the flood / a feeling's clip** (`LOOK[aspect].heavy`, `heavyOf`, `vfx/weather.js` / `game.awakeningLook`, `vfx/awakeninglook.js` /
   `FEELING_CLIPS`, `courier/anim/feelingclips.js`) — a weather's look at strength 1, its feeling's big gesture / that look breaking out round the
   Courier for about four real seconds at an awakening, indoors too / the Courier's body answering it (on `feeling.embody`). *Not:* a spell, an emote. → detail
