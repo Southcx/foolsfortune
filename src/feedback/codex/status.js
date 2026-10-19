@@ -15,7 +15,9 @@
 import { DOMAINS, MAX_LEVEL, expAt, toNext } from '../../progress/domains.js';
 import { ATTRIBUTES } from '../../progress/alchemy.js';
 import { ECON } from '../../progress/econ/table.js';
-import { DOMAIN_ORDER, DOMAIN_GLAZE } from '../../progress/godpowers.js';
+import { DOMAIN_ORDER, DOMAIN_COLOUR } from '../../progress/godpowers.js';
+import { DOMAIN_LOOK } from '../../ui/domainlook.js';
+import { iconEl } from '../../ui/icons/icons.js';
 import { wheelSRGB } from '../../vfx/wheelcolour.js';
 import { CHARMS, SOCKETS, SOCKET_AT } from '../../progress/bracelet.js';
 
@@ -33,7 +35,7 @@ const CSS = `
 #codex .st-label { font: 600 9px var(--f-title); letter-spacing: .12em; fill: #fbe3cf; }
 #codex .st-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 #codex .st-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 3px 8px; border: 1px solid rgba(255,178,122,.25); border-radius: 3px; font-size: 11px; letter-spacing: .06em; background: rgba(28,13,8,.4); }
-#codex .st-chip i { font-style: normal; display: inline-block; width: 8px; height: 8px; border-radius: 2px; align-self: center; }
+#codex .st-chip i { font-style: normal; display: inline-flex; align-self: center; }
 #codex .st-chip b { font-weight: normal; color: #fff1dc; font-size: 13px; }
 #codex .st-chip small { opacity: .55; font-size: 10px; }
 #codex .st-bracelet { grid-column: 1 / -1; }
@@ -68,9 +70,10 @@ function bracelet(codex) {
   c.innerHTML = `<h3>THE BRACELET</h3><div class="st-sum">a charm in a domain's socket bends that domain's powers · click a socket to change it</div>`;
   const row = document.createElement('div'); row.className = 'st-chips';
   for (const s of SOCKETS) {
-    const open = B.open(s), id = B.charmAt(s), G = DOMAIN_GLAZE[s], chip = document.createElement('span');
+    const open = B.open(s), id = B.charmAt(s), L = DOMAIN_LOOK[s], chip = document.createElement('span');
     chip.className = `st-chip st-socket${open ? '' : ' shut'}`;
-    chip.innerHTML = `<i style="background:${G.b}"></i>${DOMAINS[s].name}<b>${open ? (id ? CHARMS[id].label : '·') : '—'}</b><small>${open ? '' : `opens at ${SOCKET_AT}`}</small>`;
+    chip.innerHTML = `<i></i>${DOMAINS[s].name}<b>${open ? (id ? CHARMS[id].label : '·') : '—'}</b><small>${open ? '' : `opens at ${SOCKET_AT}`}</small>`;
+    chip.querySelector('i').appendChild(iconEl(L.icon, { pal: open ? L.pal : 'grey', px: 1 }));
     if (open) chip.onclick = () => { const mine = Object.keys(CHARMS).filter((k) => B.owned(k)), order = [null, ...mine], i = order.indexOf(id); B.set(s, order[(i + 1) % order.length]); codex.render(); };
     row.appendChild(chip);
   }
@@ -92,7 +95,7 @@ export function renderStatus(codex, host) {
   // the domains: a level a domain (1..99), the way to the next level as the faint ring
   const doms = DOMAIN_ORDER.map((id) => {
     const lv = P?.level?.(id) ?? 1, exp = P?.exp?.(id) ?? 0, into = lv >= MAX_LEVEL ? 1 : (exp - expAt(lv)) / toNext(lv);
-    return { id, name: DOMAINS[id].name, lv, value: lv / MAX_LEVEL, next: Math.min(1, (lv + Math.max(0, Math.min(1, into))) / MAX_LEVEL), colour: DOMAIN_GLAZE[id].b === '#f2efe6' ? DOMAIN_GLAZE[id].b : hex(DOMAIN_GLAZE[id].mark), into };
+    return { id, name: DOMAINS[id].name, lv, value: lv / MAX_LEVEL, next: Math.min(1, (lv + Math.max(0, Math.min(1, into))) / MAX_LEVEL), colour: hex(DOMAIN_COLOUR[id]), into };
   });
   const total = doms.reduce((n, d) => n + d.lv, 0), world = doms.every((d) => d.lv >= MAX_LEVEL);
   const a = document.createElement('div'); a.className = 'st-card';

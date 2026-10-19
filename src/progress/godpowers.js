@@ -52,16 +52,16 @@ export const GOD_POWERS = {
 /** The domains' other powers (GODHAND.md 8), each an event `god.<id>` (godhand/powers.js; counted in feedback/tracking/god.js). */
 export const POWER_EVENTS = ['portal', 'fold', 'hasten', 'setfast', 'totem', 'strata', 'course', 'read', 'gust', 'slab', 'herd', 'take', 'muster', 'transmute', 'ward', 'stamp'];
 
-/** Each domain's kiln glaze (Calissa, 2026-10-13: glazes, not hues, since the seven feelings own the wheel's hues): its tile's two colours
- *  (`a` to `b`), the mark colour on the ground and the radar's tip (`mark`), and its glyph (unicode until her pixel icons). */
+/** What the game's own code needs of a domain's look: the mark colour on the ground and the radar's tip (`mark`), and a unicode glyph
+ *  for text-only lists (the Codex's arts). Its glaze, tile, colours and pixel icon are Calissa's: `DOMAIN_LOOK`, ui/domainlook.js. */
 export const DOMAIN_GLAZE = {
-  ouranurgy: { glaze: 'Ru celadon', a: '#9cc3b8', b: '#9cc3b8', mark: 0x9cc3b8, glyph: '☁' }, // (a cloud with a spiral)
-  manifestation: { glaze: 'fire-flashed shino', a: '#e8d6c0', b: '#d9814a', mark: 0xd9814a, glyph: '✍' }, // (a hand drawing a shape from a dot)
-  divination: { glaze: 'yohen tenmoku', a: '#1a1418', b: '#b9b4e8', mark: 0xb9b4e8, glyph: '◉' }, // (an eye in a ring; violet-silver spots, off Wonder's colour)
-  psychokinesis: { glaze: 'oxblood', a: '#8e1f1f', b: '#8e1f1f', mark: 0x8e1f1f, glyph: '⟫' }, // (three arcs pushing out)
-  possession: { glaze: 'Jun ware', a: '#7d93c4', b: '#8a4f9e', mark: 0x7d93c4, glyph: '◐' }, // (a mask)
-  alteration: { glaze: 'flambé', a: '#a8324a', b: '#4a5fa8', mark: 0xa8324a, glyph: '↻' }, // (a looped arrow)
-  spellscription: { glaze: 'cobalt on porcelain', a: '#f2efe6', b: '#2a4fa0', mark: 0x2a4fa0, glyph: '✎' }, // (a brush stroke)
+  ouranurgy: { mark: 0x9cc3b8, glyph: '☁' },       // (Ru celadon)
+  manifestation: { mark: 0xd9814a, glyph: '✍' },   // (fire-flashed shino: its flash)
+  divination: { mark: 0xb9b4e8, glyph: '◉' },      // (yohen tenmoku: its violet-silver spots)
+  psychokinesis: { mark: 0x8e1f1f, glyph: '⟫' },   // (oxblood)
+  possession: { mark: 0x7d93c4, glyph: '◐' },      // (Jun ware)
+  alteration: { mark: 0xa8324a, glyph: '↻' },      // (flambe)
+  spellscription: { mark: 0x2a4fa0, glyph: '✎' },  // (cobalt on porcelain)
 };
 export const DOMAIN_COLOUR = Object.fromEntries(Object.entries(DOMAIN_GLAZE).map(([d, g]) => [d, g.mark]));
 
