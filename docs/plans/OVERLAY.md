@@ -722,10 +722,13 @@ The rule is still section 18's: **the wheel turns what the tool holds, and what 
 6. **The wheel turns the keyring.** Every key is turned at each Opening, and their changes stack in ring order (LOADED then EVEN is
    not EVEN then LOADED). So the order is a real choice, as Balatro's jokers are. The ring **rotates**: four orders of four keys, not
    twenty-four. A turn costs nothing; it is set before the Opening.
-7. **Yes: overflow runs backwards up the spiritual link.** It shows as a bead from the tube into the coffin, and is the link's one reverse
-   flow. It shows only while the coffin is worn and the pool is full, and it says nothing is wasted.
-8. **The wheel of odds stays the Opening's own show** (a hero moment, with ma before it). Its rates are readable before you open, from
-   the coffin's UI: hold RMB short of the open and the table with the keys applied shows as the wheel's sectors, still.
+7. **The overflow runs down the spiritual link into the coffin, the way a spend does** (Calissa's split, 2026-10-19): Lachryma really does
+   go from the Courier into it. Three slow beads from the brim, the pool's count unmoved, only while the coffin is worn and the pool is full;
+   it says nothing is wasted. **The link's one true reverse, coffin to bulb, is the gulp** (the Lockheart's parry swallowing a shot into
+   the pool).
+8. **The wheel of odds stays the Opening's own show** (a hero moment, with ma before it). **The Opening becomes a hold of 0.5 real s on
+   RMB** (a knob): from the press, the table with the keys applied shows as the wheel's sectors, still; let go short and it folds away,
+   spending nothing; held through, it opens. The rates are always readable before you commit.
 
 ### How the psygun's variants fight (the owner, 2026-10-19: "functional variety outside of just # of shell slots"; Ratchet & Clank)
 Calissa's draft is adopted. The numbers are in `tools/psygun/kinds.js` (`play`); the behaviour is Petra's and the looks Calissa's. Names are
