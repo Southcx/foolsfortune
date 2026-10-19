@@ -10,13 +10,13 @@
 //   up into glass), land (garbage arriving: a heavy fall, by count), offset (incoming garbage cancelled: two tones meeting and cancelling),
 //   send (garbage thrown: a whoosh), and the duel's end (duel.line, duel.full, duel.cap)
 // THE FIGHT UNDER THE PUZZLE (PUZZLE-DUELS.md 11):
-//   BREAK   'break' { depth } (the Figment broken: by a critical push or its EmO full): the stun's own sting at that depth (damage.js
-//           stunSting: the same three, the same rise) over a glaze shell bursting. (A 'break' with no depth is junk broken, above.)
-//   MOTES   'mote' a shower: glints falling; 'mote.drink' as the Courier runs them up: Sonic's ring, a step higher each one drunk in a
-//           run (back to the bottom after a beat's quiet); 'mote.fade' a missed one: a soft falling breath
+//   BUCKLE  'buckle' { depth } (the Figment broken: by a critical push or its EmO full): the stun's own sting at that depth (damage.js
+//           stunSting: the same three, the same rise) over a glaze shell bursting; 'buckle.end', it comes to: a shake and a lift
+//   TEARS   'teardrop' a shower: glints falling; 'teardrop.drink' as the Courier gleans them: Sonic's ring, a step higher each one drunk
+//           in a run (back to the bottom after a beat's quiet); 'teardrop.fade' a missed one: a soft falling breath
 //   COUP    'duel.coup' { depth }: the god hand's finish, the data drain: a suction swell, the foe's data chirping down into it, a
 //           closing chord
-//   TOOLS   the Courier's moves on the board, each its tool's own sound in small: run (quick steps), shot (the psygun), hook (the
+//   TOOLS   the Courier's moves on the board, each its tool's own sound in small: glean (quick steps), shot (the psygun), hook (the
 //           Sondelass's grapnel: thrown, bitten, drawn), drill (the Dreamvane's pick), paint (the Soul Brush), toll (the Crucibelle),
 //           hoover and flail (the Lockheart)
 // No view or room yet (PUZZLE-DUELS.md 8): nothing calls these until one exists.
@@ -43,12 +43,14 @@ export class PuzzleDuelSounds {
       case 'line': return this.duelLine(e.line, e.w);
       case 'clear': return this.duelClear(e.colour);
       case 'fall': return this.duelFall();
-      case 'break': return e.depth ? this.duelFigmentBreak(e.depth) : this.duelBreak();
-      case 'mote': return this.duelMote();
-      case 'mote.drink': return this.duelMoteDrink();
-      case 'mote.fade': return this.duelMoteFade();
+      case 'break': return this.duelBreak();
+      case 'buckle': return this.duelBuckle(e.depth);
+      case 'buckle.end': return this.duelBuckleEnd();
+      case 'teardrop': return this.duelTeardrop();
+      case 'teardrop.drink': return this.duelTeardropDrink();
+      case 'teardrop.fade': return this.duelTeardropFade();
       case 'duel.coup': return this.duelCoup(e.depth);
-      case 'run': case 'shot': case 'hook': case 'drill': case 'paint': case 'toll': case 'hoover': case 'flail': return this.duelTool(e.type, e);
+      case 'glean': case 'shot': case 'hook': case 'drill': case 'paint': case 'toll': case 'hoover': case 'flail': return this.duelTool(e.type, e);
       case 'blast': return this.duelBlast();
       case 'pinch': return this.duelPinch(e.colour);
       case 'land': return this.duelLand(e.n, e.side);
@@ -130,30 +132,37 @@ export class PuzzleDuelSounds {
     notes.forEach((m, k) => this.tone(t + k * 0.1, 0.5, { f0: hz(m), type: 'triangle', gain: 0.08, dest: d }));
   }
 
-  /** The Figment broken a depth deeper: the stun's sting (one ear for one thing) and its glaze shell bursting. */
-  duelFigmentBreak(depth = 1) {
-    if (!this.ok() || !this.allow('duelFigmentBreak', 3)) return;
+  /** The Figment buckled a depth deeper: the stun's sting (one ear for one thing) and its glaze shell bursting. */
+  duelBuckle(depth = 1) {
+    if (!this.ok() || !this.allow('duelBuckle', 3)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.32, 0.3, sidePan(1));
     for (let i = 0; i < 6; i++) this.tone(t + i * 0.012, 0.08, { f0: 2800 + Math.random() * 2400, gain: 0.03, dest: d });
     this.noise(t, 0.08, { type: 'highpass', f0: 3000, gain: 0.2, dest: d });
     this.stunSting?.(depth);
   }
-  duelMote() {
-    if (!this.ok() || !this.allow('duelMote', 6)) return;
+  /** The buckle's end: the Figment comes to (a shake, a lift). */
+  duelBuckleEnd() {
+    if (!this.ok() || !this.allow('duelBuckleEnd', 3)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.25, 0.25, sidePan(1));
+    this.noise(t, 0.15, { type: 'bandpass', f0: 600, q: 3, gain: 0.12, dest: d });
+    this.tone(t + 0.1, 0.25, { f0: hz(55), f1: hz(62), type: 'square', gain: 0.03, dest: d });
+  }
+  duelTeardrop() {
+    if (!this.ok() || !this.allow('duelTeardrop', 6)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.18, 0.5, sidePan(0));
     for (let i = 0; i < 6; i++) this.tone(t + i * 0.04 + Math.random() * 0.02, 0.2, { f0: hz(96 + PENTA[i % 4] - 12 * (i % 2)), gain: 0.02, dest: d });
   }
-  /** A mote drunk: Sonic's ring, a step higher each in a run. */
-  duelMoteDrink() {
-    if (!this.ok() || !this.allow('duelMoteDrink', 20)) return;
+  /** A teardrop drunk: Sonic's ring, a step higher each in a run. */
+  duelTeardropDrink() {
+    if (!this.ok() || !this.allow('duelTeardropDrink', 20)) return;
     const now = this.ctx.currentTime, d = this.duelOut(0.28, 0.3, sidePan(0));
     const wall = performance.now(); // (a run is measured in real time: the audio clock can run ahead of it)
-    this._moteRun = wall - (this._moteAt ?? -1e9) < 600 ? (this._moteRun || 0) + 1 : 0; this._moteAt = wall;
-    const m = chainNote(1 + Math.min(11, this._moteRun)) + 12;
+    this._teardropRun = wall - (this._teardropAt ?? -1e9) < 600 ? (this._teardropRun || 0) + 1 : 0; this._teardropAt = wall;
+    const m = chainNote(1 + Math.min(11, this._teardropRun)) + 12;
     this.tone(now, 0.08, { f0: hz(m), type: 'square', gain: 0.025, dest: d }); this.tone(now + 0.06, 0.25, { f0: hz(m + 4), type: 'square', gain: 0.025, dest: d });
   }
-  duelMoteFade() {
-    if (!this.ok() || !this.allow('duelMoteFade', 6)) return;
+  duelTeardropFade() {
+    if (!this.ok() || !this.allow('duelTeardropFade', 6)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.15, 0.4, sidePan(0));
     this.tone(t, 0.4, { f0: hz(88), f1: hz(76), gain: 0.02, dest: d }); this.noise(t, 0.3, { type: 'bandpass', f0: 3000, f1: 1200, q: 2, gain: 0.03, dest: d });
   }
@@ -171,7 +180,7 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow(`duelTool.${kind}`, 8)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.3, 0.25, sidePan(e.side ?? 0));
     switch (kind) {
-      case 'run': for (let i = 0; i < Math.min(4, (e.path?.length ?? 2) - 1); i++) this.noise(t + i * 0.07, 0.03, { type: 'bandpass', f0: 900, q: 2, gain: 0.15, dest: d }); break;
+      case 'glean': for (let i = 0; i < Math.min(4, (e.path?.length ?? 2) - 1); i++) this.noise(t + i * 0.07, 0.03, { type: 'bandpass', f0: 900, q: 2, gain: 0.15, dest: d }); break;
       case 'shot': this.noise(t, 0.03, { type: 'highpass', f0: 3000, gain: 0.35, dest: d }); this.tone(t, 0.12, { f0: 160, f1: 50, gain: 0.35, dest: d }); break;
       case 'hook': this.noise(t, 0.15, { type: 'bandpass', f0: 1500, f1: 3500, q: 2, gain: 0.15, dest: d }); this.noise(t + 0.15, 0.015, { type: 'bandpass', f0: 4000, q: 8, gain: 0.5, dest: d });
         this.tone(t + 0.18, 0.2, { f0: 400, f1: 700, type: 'sawtooth', gain: 0.03, dest: d }); break;
