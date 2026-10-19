@@ -1,26 +1,29 @@
-"""Build the owner's three psygun variants on the owner's own psygun: src/assets/psygun.glb (THE PSYGUN, the Pentagun's model) ->
-src/assets/psygun_bombardier.glb (a flare gun), psygun_carbine.glb (a rifle), psygun_pepperbox.glb (a shotgun). The owner, 2026-10-18:
-"make 3d models for the Bombardier, Carbine, and Pepperbox-type Psyguns, using my Pentagun Psygun as reference ... a flare gun, rifle, and
-shotgun respectively."
+"""Build the psygun's variants on the owner's own psygun: src/assets/psygun.glb (the owner's "Pentagun Psygun", the Pentagun's model,
+kept as it is) -> src/assets/psygun_first.glb (THE PSYGUN: a six-shot revolver), psygun_bombardier.glb (a flare gun), psygun_carbine.glb
+(a rifle), psygun_pepperbox.glb (a shotgun). The owner, 2026-10-18: "make 3d models for the Bombardier, Carbine, and Pepperbox-type
+Psyguns, using my Pentagun Psygun as reference ... a flare gun, rifle, and shotgun respectively."; THE PSYGUN's own after it, 2026-10-19.
 
 Usage (from the repo root; -I so a file in the cwd named like a stdlib module cannot break `import bpy`):
-    python3 -I scripts/export_psyguns.py
+    python3 -I scripts/export_psyguns.py            (all four)
+    python3 -I scripts/export_psyguns.py first      (only those named)
 
-What it does, all in memory (nothing is saved but the three glbs):
+What it does, all in memory (nothing is saved but the glbs):
   - imports the reference and splits its one mesh into its six loose parts (measured, glTF units, +X barrel, +Y up, +Z right):
     the barrel block (x 0.112..0.343), the yoke (-0.064..0.113), the rear sight and its energy diamond (-0.157..-0.032), the hammer
     block (-0.262..-0.161), the frame and grip (-0.361..-0.055, down to y -0.179), and the cylinder, a sphere of CourierEnergyShell
     (centre x 0.056, r 0.068). Every variant keeps the reference's frame, grip, hammer block, rear sight and yoke as they are, so the
     hands (character.js GUN_POINTS gripR, gripL) fit as they do, and replaces the barrel and the cylinder with its own;
   - each variant's cylinder is its chamber count's shape, the shape the overlay's cylinder draws (docs/plans/OVERLAY.md 18, board v9):
-    the Bombardier a round drum (no corners, one bore, eight studs), the Carbine a triangle (a chamber at each corner, the barrel at the
-    top corner), the Pepperbox a hexagon round a heart (six barrels round a seventh, a pepperbox). Where a chamber is, the energy glows:
-    the triangle's and the hexagon's corner chamfers, each bore's mouth, the drum's band;
+    THE PSYGUN a hexagon (a chamber at each corner, the top one lined up with the barrel), the Bombardier a round drum (no corners, one
+    bore, eight studs), the Carbine a triangle (a chamber at each corner, the barrel at the top corner), the Pepperbox a hexagon round
+    a heart (six barrels round a seventh, a pepperbox). Where a chamber is, the energy glows: the triangle's and the hexagons' corner
+    chamfers, each bore's mouth, the drum's band;
   - in the reference's own hand: low facets, every block chamfered, the dark CourierEnergy body with lines and bores of the glowing
     CourierEnergyShell. The two materials keep their names, so courier/character.js's gun materials (the fade, the charge's glow) take
     them as they take the reference's; flat shaded, no custom normals, no UVs needed (the game's gun materials are untextured).
 
-Prior art: export_clapperjar.py and export_chess.py (the export call); the flare gun after the break-open signal pistol (the Webley
+Prior art: export_clapperjar.py and export_chess.py (the export call); THE PSYGUN after the classic six-shot revolver (the Colt Python's
+ribbed barrel and full ejector shroud, the S&W K-frame's under-lug); the flare gun after the break-open signal pistol (the Webley
 No. 1 and the Orion's fat bore and short tube), the rifle after the carbine's skeleton stock and handguard (the M1 carbine's line, the
 skeleton stocks of the Mosin's obrez kits), the shotgun after the pepperbox revolver (Allen's, 1837: the chambers are the barrels) and
 the revolving shotgun's drum.
@@ -122,7 +125,7 @@ def radial(P, cx, ang, cy, cz):
     return P
 
 
-# ---------------------------------------------------------------- the three variants
+# ---------------------------------------------------------------- the four variants
 def bombardier():
     """A FLARE GUN: one fat bore. A round drum, its single chamber, ringed by a glowing band and eight studs; a short fat tube with a
     flared mouth glowing whole; the break-open hinge under the breech and a top latch."""
@@ -224,7 +227,37 @@ def pepperbox():
     return P, {"muzzle": (0.376, cy, 0), "front": (0.340, top + 0.014 + 0.018)}
 
 
-VARIANTS = {"bombardier": bombardier, "carbine": carbine, "pepperbox": pepperbox}
+def first():
+    """THE PSYGUN: the plain six-shot revolver, the first gun the Courier wakes with. A hexagonal cylinder, a corner up, its six corner
+    chamfers glowing (a chamber at each corner, its mouth glowing on the front face), the top chamber lined up with the barrel; a classic
+    revolver barrel: octagonal, a top rib with the energy line along it (the reference's barrel line, carried), the ejector rod's shroud
+    under it, a blade front sight and the bore's mouth glowing at the muzzle."""
+    P = Piece(); cy = -0.016; rr = 0.046; by = cy + rr  # the cylinder's axis, the chambers' ring, the barrel's axis (the top chamber)
+    hexa = chamfered(ngon(6, 0.088, cy, 0, 0.0), 0.018)
+    P.add(prism(hexa, -0.035, 0.118, 0.010, side_mat=lambda i: GLOW if i % 2 == 0 else DARK))
+    for k in range(6):  # each chamber's mouth on the front face, at its corner
+        a = 2 * math.pi * k / 6
+        y, z = cy + rr * math.cos(a), rr * math.sin(a)
+        P.add(prism(ngon(8, 0.014, y, z, math.pi / 8), 0.115, 0.124, 0.002, cap1=GLOW, side_mat=lambda i: GLOW))
+    P.add(prism(ngon(6, 0.014, cy, 0, 0.0), 0.115, 0.122, 0.002))  # the cylinder's pin boss, dark
+    # the barrel: octagonal, from the frame's front to the muzzle, a band at the forcing cone
+    P.add(tube(8, 0.026, by, 0, 0.112, 0.360, 0.005, mouth=0.011))
+    P.add(prism(ngon(8, 0.029, by, 0, math.pi / 8), 0.118, 0.140, 0.004))
+    # the top rib and its energy line
+    P.add(prism(rect(by + 0.020, by + 0.032, -0.010, 0.010, 0.003), 0.126, 0.352, 0.004))
+    P.add(prism(rect(by + 0.031, by + 0.035, -0.0035, 0.0035, 0.001), 0.150, 0.300, 0.002, side_mat=lambda i: GLOW, cap0=GLOW, cap1=GLOW))
+    # the ejector rod's shroud under the barrel, its rod's head at the front, and the energy line down each flank of the barrel
+    P.add(prism(rect(by - 0.050, by - 0.016, -0.013, 0.013, 0.007), 0.124, 0.330, 0.006))
+    P.add(tube(8, 0.006, by - 0.034, 0, 0.330, 0.342, 0.002))
+    for zs in (-1, 1):
+        z0, z1 = (0.0255, 0.0285) if zs > 0 else (-0.0285, -0.0255)
+        P.add(prism(rect(by - 0.004, by + 0.004, z0, z1, 0.0008), 0.160, 0.320, 0.003, side_mat=lambda i: GLOW, cap0=GLOW, cap1=GLOW))
+    # the blade front sight on the rib, near the muzzle
+    P.add(prism(rect(by + 0.030, by + 0.050, -0.004, 0.004, 0.002), 0.318, 0.340, 0.003))
+    return P, {"muzzle": (0.365, by, 0), "front": (0.330, by + 0.032 + 0.018)}
+
+
+VARIANTS = {"first": first, "bombardier": bombardier, "carbine": carbine, "pepperbox": pepperbox}
 
 
 # ---------------------------------------------------------------- the reference, split; a variant built on it; the export
@@ -293,5 +326,7 @@ def build(name, fn):
     print("exported", out, os.path.getsize(out), "bytes,", len(me.polygons), "faces; points", pts)
 
 
+import sys
+only = [a for a in sys.argv[1:] if a in VARIANTS]  # (name variants to build only those: python3 -I scripts/export_psyguns.py first)
 for k, fn in VARIANTS.items():
-    build(k, fn)
+    if not only or k in only: build(k, fn)

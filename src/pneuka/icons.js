@@ -16,6 +16,7 @@ import { buildThing } from './thingmodels.js';
 import { itemOf } from './items.js';
 import { SPECIES } from '../tools/sondelass/angling/species.js';
 import { buildFish } from '../tools/sondelass/angling/fishmesh.js';
+import { psygunIconModel, psygunModelFor } from '../vfx/psygunmodels.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
 
@@ -77,6 +78,11 @@ function modelOf(game, it) {
     g.add(c);
     if (TOOL_TURN[it.tool]) c.rotation.set(...TOOL_TURN[it.tool]);
     return { group: g, dispose() {} };
+  }
+  if (it.kind === 'psygun') { // (a psygun's variant: its own model, vfx/psygunmodels.js; until it loads the glyph, then redrawn)
+    const m = psygunIconModel(game, it.id);
+    if (!m) psygunModelFor(it.id).then(() => { CACHE.delete(it.id); if (game.pneukaUI?.open) game.pneukaUI.render(); }, () => {});
+    return m;
   }
   if (['instrument', 'heart', 'key', 'material', 'shell', 'rutter'].includes(it.kind) || it.id.startsWith('ostracon.')) return buildThing(it.id);
   if (it.kind === 'fish') {
