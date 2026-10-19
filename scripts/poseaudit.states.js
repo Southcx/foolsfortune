@@ -115,6 +115,8 @@ window.__paStates = (() => {
     return carry;
   }
   add('carry.liftWalkPut', 'locomotion', 'a pot lifted (F), carried walking, set down (F)', (c) => { lab(c); const k = lift(c); c.run(40).hold('KeyW').run(80).free('KeyW').run(20).press('KeyF').run(40); c.note('item', k.item ? 'still held' : 'set down'); });
+  // (the owner's report: the carry's hold standing, walking and turning, the hands on the pot's sides within a wrist's range)
+  add('carry.holdTurn', 'locomotion', 'a pot held standing, then walked in a turn (W, the view turning)', (c) => { lab(c); lift(c); c.warm(30).run(60).hold('KeyW').after((k) => { k.P.yaw += 0.03; }).run(90).after(null).free('KeyW').run(20); });
   add('carry.liftThrow', 'locomotion', 'a pot lifted and thrown (LMB)', (c) => { lab(c); lift(c); c.run(40).press('Mouse0').run(50); });
   add('hurt.small', 'locomotion', 'a light blow taken, standing (the flinch)', (c) => { lab(c); c.ch.flinch(0.3); c.run(50); });
   add('hurt.big', 'locomotion', 'a big blow from the front (the recoil)', (c) => { lab(c); const y = c.P.bodyYaw; c.ch.flinch(0.9, [-Math.sin(y), 0, -Math.cos(y)]); c.run(60); });

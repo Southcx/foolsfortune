@@ -25,7 +25,7 @@
 //   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
 //   pop('status.<id>', ...)            a status's glyph (STATUS_ART: stun, halt, slow, sleep, doubt, charm, blind, confusion, soaked)
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
-//   nearer                             the bias as a sprite's own onBeforeRender (userData.bias): the Lockheart's gauge borrows it (vfx/lockheartmarks.js)
+//   nearer                             the bias as a sprite's own onBeforeRender (userData.bias): a sprite that must stand in front of the Courier borrows it
 //   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';

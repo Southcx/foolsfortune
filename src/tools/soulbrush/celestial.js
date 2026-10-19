@@ -2,7 +2,8 @@
 // THE CELESTIAL BRUSH: hold RMB with the Soul Brush out and the world all but stops (a twenty-fifth of its speed), the screen turns to
 // paper, and the mouse is the brush: LMB draws. A drawing is read when the hand rests (a short pause after the last stroke) and may
 // be made of several strokes in any order ($P, gesture.js); what it means is planned at once against the view it was drawn over and
-// paid for from the mind (Lachryma is the ink), and the ink takes, or runs. Several drawings can be made in one hold. When RMB is let
+// its cost held from the mind at once (Lachryma is the ink: the held cost is the Lachrimeter's pale stretch, OVERLAY.md 19.3), paid as
+// it takes when RMB is let go; the ink takes, or runs. Several drawings can be made in one hold. When RMB is let
 // go, time comes back and every drawing that took is done, one after another, in the order drawn (techniques.js).
 //
 // The mind pays a little for every second the paper is open and for the length of ink laid, and each technique has its cost; with too
@@ -57,6 +58,7 @@ export class Celestial {
     sfx.brushOut?.();
     // the painting takes: each drawing, in the order drawn
     const n = this.queue.length;
+    for (const plan of this.queue) g.lachryma.commit(plan.held ?? 0, `brush.${plan.id}`); // (what each held, paid now: read() reserved it)
     this.queue.forEach((plan, i) => g.fx.after(0.05 + i * 0.16, () => plan.run()));
     g.events?.emit('brush.canvas', { open: false, drawings: this.queue.length, why });
     this.queue = [];
@@ -106,7 +108,10 @@ export class Celestial {
     const plan = this.tool.techniques.plan(rec, viewOf(g, cv.size.w, cv.size.h));
     if (!plan) { cv.run(); sfx.inkRun?.(); g.events?.emit('brush.miss', { strokes: strokes.length }); return; }
     if (plan.empty) { cv.fade(); g.events?.emit('brush.miss', { strokes: strokes.length, shape: rec?.name }); return; }
-    if (!g.lachryma.spend(plan.cost, `brush.${plan.id}`)) { cv.run(); this.dry(); return; }
+    // its cost held from the moment it reads (the pale stretch on the Lachrimeter, OVERLAY.md 19.3), paid as the brush lifts and it takes
+    const held = g.lachryma.reserve(plan.cost);
+    if (held < plan.cost) { g.lachryma.refund(held); cv.run(); this.dry(); return; }
+    plan.held = held;
     cv.take(TINT[plan.id] || '#f2c35a');
     sfx.glyphTake?.(plan.id);
     this.queue.push(plan);

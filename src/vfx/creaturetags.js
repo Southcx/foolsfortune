@@ -317,14 +317,15 @@ export class CreatureTags {
     out.x = (this.v2.x + 1) / 2 * this.Wd; out.y = (1 - this.v2.y) / 2 * 480; out.inView = Math.abs(this.v2.x) < 1 && Math.abs(this.v2.y) < 1; return true;
   }
 
-  /** Who wears a tag now (the settings and the rule in the header): the one locked on; with the lens up, the others in its aperture. */
+  /** Who wears a tag now (the settings and the rule in the header): the one locked on; any a flare revealed (as at the lock-on); with the lens up, the others in its aperture. */
   choose() {
     const g = this.game, mode = TUNE.visual?.creatureTags ?? 'scan', out = []; if (mode === 'off') return out;
     const lockRef = g.lock?.target?.ref; if (this.ok(lockRef)) out.push(lockRef);
+    for (const c of g.weapon?.play?.revealed?.keys?.() || []) if (out.length < MAX && c !== lockRef && c.revealed && this.ok(c)) out.push(c); // (a flare's finds wear their tag as at the lock-on: OVERLAY.md 19)
     if (mode !== 'scan' || !this.scanning || !g.camera) return out;
     const eye = g.camera.getWorldPosition(this.v), B = this.bounds, cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2, near = [], tmp = {}, p = new THREE.Vector3();
     for (const list of [g.creatures?.list, g.clappers?.list]) for (const c of list || []) {
-      if (c === lockRef || !this.ok(c)) continue;
+      if (c === lockRef || out.includes(c) || !this.ok(c)) continue;
       p.set(c.pos.x, c.pos.y + 0.6, c.pos.z); if (p.distanceTo(eye) > REACH) continue;
       if (!this.project(p, tmp) || tmp.x < B.x0 || tmp.x > B.x1 || tmp.y < B.y0 || tmp.y > B.y1) continue;
       near.push([Math.hypot(tmp.x - cx, tmp.y - cy), c]);

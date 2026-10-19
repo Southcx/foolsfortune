@@ -13,8 +13,6 @@
 export class Hud {
   constructor() {
     this.el = {
-      cross: document.getElementById('crosshair'),
-      lines: [...document.querySelectorAll('#crosshair .l')],
       hit: document.getElementById('hitmarker'),
       reload: document.getElementById('reloadbar'),
       reloadFill: document.querySelector('#reloadbar i'),
@@ -41,15 +39,7 @@ export class Hud {
       if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
       this.el.speed.innerHTML = `<b>${speed.toFixed(1)}</b> m/s · peak ${this.peak.toFixed(1)} ${move ? `<i>${move}</i>` : ''}`;
     }
-    const h = window.innerHeight;
-    const px = Math.tan((spreadDeg * Math.PI) / 180) / Math.tan((fov * Math.PI) / 360) * (h / 2);
-    const gap = 4 + px;
-    const [t, r, b, l] = this.el.lines;
-    t.style.transform = `translate(-50%, calc(-100% - ${gap}px))`;
-    b.style.transform = `translate(-50%, ${gap}px)`;
-    l.style.transform = `translate(calc(-100% - ${gap}px), -50%)`;
-    r.style.transform = `translate(${gap}px, -50%)`;
-    this.el.cross.style.opacity = !gunOut || (fp && ads > 0.5) ? 0 : 1 - ads * 0.3; // (the crosshair is the psygun's: shown only while it is drawn, the owner 2026-10-11; every other tool shows its own marks)
+    // (the crosshair is each psygun's own, in the overlay scene: vfx/psygunreticle.js; the DOM one retired, 2026-10-19)
 
     this.el.charge.style.opacity = charge > 0 ? 1 : 0;
     this.el.chargeArc.style.strokeDashoffset = `${(1 - charge) * 100}`;

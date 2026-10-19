@@ -7,11 +7,12 @@
 //   THE PSYGUN      the quick taps: a plain shot tapped within 0.25 s of the last comes 1.4x as fast. (Not the fan on R, gunmoves.js.)
 //   the Bombardier  every shell's area x6 (its radius x sqrt 6); bolt and bounce carriers lob; plain shots at half the rate, each a flare
 //                   that lights where it lands and reveals what is within 6 m for 8 s (`c.revealed`); a shell kicks twice as hard
-//   the Carbine     the scope on ADS (2.5x, its sway steadied by a held breath on Shift, 3 s of it); the charge is a full draw (1.6x the
+//   the Carbine     the scope on ADS (2.5x, its sway steadied by a held breath on Shift, 3 s of it, then worse until it is full again); the charge is a full draw (1.6x the
 //                   time, 2.5x the damage); scoped, a status shell is a dart (its status 1.5x as long) and a weak point hit counts double
 //   the Pentagun    the pentacle: five different chambers fired within 4 real s, and where the fifth is aimed a burst strikes once with
 //                   each of the five damage types (each type's status built at a fifth), 4 m round
-//   the Pepperbox   seven pellets a plain shot (12 degrees, 12 m, a quarter each, twice the knock); a ring shell fires as three at half;
+//   the Pepperbox   seven pellets a plain shot (12 degrees, 12 m, a quarter each, twice the knock, a volley's push on one creature at most
+//                   6 m/s: Dovina's ruling, so point-blank does not throw it out of the pellets' reach); a ring shell fires as three at half;
 //                   the heart's is one slug at double; both barrels: the shell key held 0.5 s fires every loaded ring chamber at once
 //                   (each its own shell and Lachryma), then 6 s before the next
 //   every variant   the cylinder's turn (kinds.js `turn`): a shell waits that long after the cylinder turns
@@ -78,11 +79,12 @@ export class VariantPlay {
     // until let go and drawn again (as long again to fill)
     const ease = P.scope ? this.W.adsEase ?? 0 : 0;
     player.scopeZoom = 1 + ((P.scope?.zoom ?? 1) - 1) * ease;
-    const hold = this.scoped && (input.isDown('ShiftLeft') || input.isDown('ShiftRight'));
+    const hold = this.scoped && (input.isDown('ShiftLeft') || input.isDown('ShiftRight')) && !this.spent;
     const most = P.scope?.breath ?? 3;
     if (hold) this.breath = Math.max(0, this.breath - dt / most); else this.breath = Math.min(1, this.breath + dt / most);
+    if (this.breath <= 1e-6) this.spent = true; else if (this.breath >= 1 - 1e-6) this.spent = false; // (spent: it shakes worse until the breath is full again, held or not: Dovina's ruling)
     this.swayT += dt;
-    const deg = !this.scoped ? 0 : !hold ? SWAY.deg : this.breath > 0 ? SWAY.held : SWAY.spent;
+    const deg = !this.scoped ? 0 : this.spent ? SWAY.spent : hold ? SWAY.held : SWAY.deg;
     const tx = Math.sin(this.swayT * SWAY.fx * Math.PI * 2) * deg * DEG * ease, ty = Math.sin(this.swayT * SWAY.fy * Math.PI * 2 + 1.3) * deg * DEG * 0.7 * ease;
     player.yaw += tx - this.sway.x; player.pitch += ty - this.sway.y; // (only the drift's change: let go, the aim is the player's again)
     this.sway.x = tx; this.sway.y = ty;
@@ -111,11 +113,19 @@ export class VariantPlay {
     const W = this.W, P = this.P;
     if (P.pellets) {
       const L = P.pellets, fwd = _a.set(0, 0, -1).applyQuaternion(camera.quaternion).clone();
+      this.volley = new Map(); // (each creature's push this volley, up to L.pushCap: push())
       for (let i = 0; i < L.n; i++) W.shoot(camera, player, character, { dir: spreadDir(fwd, L.spread), range: L.range, power: L.each, knock: PELLET_KNOCK * L.knock, quiet: i > 0, recoil: i === 0 ? 1.6 : 0, pellets: i === 0 ? L.n : 0 });
+      this.volley = null;
       return;
     }
     const end = W.shoot(camera, player, character);
     if (P.flare && end) this.flare(end, P.flare);
+  }
+  /** How much of a pellet's push `ent` may still take this volley (the Pepperbox's cap); outside a volley, all of it. */
+  push(ent, knock) {
+    const cap = this.P.pellets?.pushCap; if (!this.volley || !cap) return knock;
+    const used = this.volley.get(ent) || 0, k = Math.max(0, Math.min(knock, cap - used));
+    this.volley.set(ent, used + k); return k;
   }
   /** The Bombardier's flare: a light where the shot landed, and what is within its reach revealed for its life. */
   flare(at, F) {

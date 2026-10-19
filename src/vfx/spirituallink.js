@@ -23,7 +23,9 @@
 //                             obj.localToWorld of the eye, after obj.updateMatrixWorld()), or null to hide. It is asked each frame,
 //                             after the owner's own slot has been placed (attach moves the link's slot to the end of the scene's).
 //   L.detach(owner)
-//   L.bead({ amount, colour })   a spend: amount in Lachryma (a bigger one, a fuller bead), colour an optional tint for its head
+//   L.bead({ amount, colour, dur, rev })   a spend: amount in Lachryma (a bigger one, a fuller bead), colour an optional tint for its
+//                               head; dur its run in real s (default 0.1: the Lockheart's drink is pulled slower, 0.35); rev true runs it
+//                               the other way, the tool's end to the bulb (the Lockheart's gulp, the link's one true reverse: OVERLAY.md 19.7)
 //   L.slack()                    a dry click
 //   L.update(dt)                 the overlay scene calls it (its slot's update); nothing else to call
 //   L.state                      { shown, owner, beads, slack } for a probe
@@ -43,18 +45,18 @@ const MAX_BEADS = 3;
 const LINK = overlayKind('link', {
   vdecl: 'attribute float aPart;',
   vbody: 'vUv=uv;vA=aPart;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);',
-  fdecl: `uniform float uLinkT,uLen,uDim,uBulb,uFlare,uBeadA,uRing;uniform vec3 uBeads,uBeadC;
+  fdecl: `uniform float uLinkT,uLen,uDim,uBulb,uFlare,uBeadA,uRing;uniform vec3 uBeads,uBeadC,uBeadRev;
 vec3 lkFilm(float t){vec3 a=vec3(.30,.06,.70),b=vec3(.04,.55,.75),c=vec3(.95,.72,.18),d=vec3(.85,.10,.50);t=fract(t)*4.;
 if(t<1.)return mix(a,b,smoothstep(0.,1.,t));if(t<2.)return mix(b,c,smoothstep(1.,2.,t));if(t<3.)return mix(c,d,smoothstep(2.,3.,t));return mix(d,a,smoothstep(3.,4.,t));}
 float lkHash(float n){return fract(sin(n*12.9898)*43758.5453);}
-float lkBead(float u,float s,float d){if(u<0.)return 0.;float ds=s-u*uLen;
+float lkBead(float u,float s,float d,float rv){if(u<0.)return 0.;float ds=(s-u*uLen)*(rv>.5?-1.:1.);
   float head=exp(-(ds*ds+d*d)/(3.2*uBeadA));float tail=ds<0.&&ds>-10.*uBeadA?(1.+ds/(10.*uBeadA))*exp(-d*d/1.2):0.;return head+tail*.8;}`,
   fbody: `vec3 col;float a;
 if(vA<.5){float s=vUv.x*uLen,d=vUv.y*${HALF.toFixed(1)},ad=abs(d);
   vec3 f=lkFilm(vUv.x*.7-uLinkT*.25)*1.25;
   float core=1.-smoothstep(.35,.75,ad),halo=1.-smoothstep(1.,1.75,ad);
   float m=(s-uLinkT*14.)/22.,cell=floor(m),fm=fract(m)-.5;float mote=lkHash(cell)>.45?exp(-(fm*fm*22.*22.+d*d)/1.4)*(.35+.4*lkHash(cell+7.)):0.;
-  float b=lkBead(uBeads.x,s,d)+lkBead(uBeads.y,s,d)+lkBead(uBeads.z,s,d);
+  float b=lkBead(uBeads.x,s,d,uBeadRev.x)+lkBead(uBeads.y,s,d,uBeadRev.y)+lkBead(uBeads.z,s,d,uBeadRev.z);
   col=f*(core*.85+halo*.22+mote*.6)*uDim+mix(vec3(1.),uBeadC,.35)*b+f*b*.5;
   float fade=smoothstep(0.,.02,vUv.x)*smoothstep(1.,.98,vUv.x);col*=fade;a=1.;}
 else if(vA<1.5){float r=length(vUv)*(uRing+9.),R=uRing+(1.-uBulb)*7.;
@@ -85,7 +87,7 @@ export class SpiritualLink {
     for (let q = 0; q < 2; q++) { const a = (N + 1) * 2 + q * 4; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     g.setAttribute('position', this.pos); g.setAttribute('uv', this.uv); g.setAttribute('aPart', new THREE.BufferAttribute(part, 1)); g.setIndex(idx);
     this.U = { uLinkT: { value: 0 }, uLen: { value: 1 }, uDim: { value: 1 }, uBulb: { value: 0 }, uFlare: { value: 0 }, uBeadA: { value: 1 }, uRing: { value: 10 },
-      uBeads: { value: new THREE.Vector3(-1, -1, -1) }, uBeadC: { value: new THREE.Color(1, 1, 1) } };
+      uBeads: { value: new THREE.Vector3(-1, -1, -1) }, uBeadRev: { value: new THREE.Vector3(0, 0, 0) }, uBeadC: { value: new THREE.Color(1, 1, 1) } };
     this.mesh = new THREE.Mesh(g, overlayShader(LINK, this.U, { blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
     this.mesh.name = 'spiritualLink'; this.mesh.frustumCulled = false; this.mesh.renderOrder = -1; // (under the tube and the tool: it leaves the bulb's glass and enters the eye)
     this.mesh.userData.overlayHidden = true;
@@ -99,10 +101,10 @@ export class SpiritualLink {
   }
   detach(owner) { const i = this.owners.findIndex((o) => o[0] === owner); if (i >= 0) this.owners.splice(i, 1); }
 
-  bead({ amount = 4, colour = null } = {}) {
+  bead({ amount = 4, colour = null, dur = BEAD_T, rev = false } = {}) {
     if (!this.state.shown) return;
     if (this.beads.length >= MAX_BEADS) this.beads.shift();
-    this.beads.push(0); this.bulbAge = 0; this.amount = amount;
+    this.beads.push({ age: 0, dur, rev }); if (rev) this.flareAge = 0; else this.bulbAge = 0; this.amount = amount; // (it leaves its end: the bulb rings, or the tool's end flares)
     if (colour != null) this.U.uBeadC.value.set(colour); else this.U.uBeadC.value.setRGB(1, 1, 1);
   }
   slack() { if (this.state.shown) this.slackAge = 0; }
@@ -114,7 +116,7 @@ export class SpiritualLink {
     if (!end || !B) { m.userData.overlayHidden = true; this.state.shown = false; this.beads.length = 0; return; }
     m.userData.overlayHidden = false; this.state.shown = true;
     this.t += dt; this.bulbAge += dt; this.slackAge += dt;
-    for (let i = this.beads.length - 1; i >= 0; i--) { this.beads[i] += dt; if (this.beads[i] >= BEAD_T) { this.beads.splice(i, 1); this.flareAge = 0; } }
+    for (let i = this.beads.length - 1; i >= 0; i--) { const b = this.beads[i]; b.age += dt; if (b.age >= b.dur) { this.beads.splice(i, 1); if (b.rev) this.bulbAge = 0; else this.flareAge = 0; } } // (it lands: the far end answers)
     this.flareAge += dt;
     const dot = (this.S.h || innerHeight) / 480; // (CSS px a line of the present)
     const slack = this.slackAge < 2 ? Math.exp(-this.slackAge / SLACK_T) : 0;
@@ -149,8 +151,8 @@ export class SpiritualLink {
     const bulb = this.bulbAge < BULB_T ? Math.pow(1 - this.bulbAge / BULB_T, 1.5) : 0;
     U.uBulb.value = bulb; U.uFlare.value = this.flareAge < FLARE_T ? Math.pow(1 - this.flareAge / FLARE_T, 2) : 0;
     U.uBeadA.value = 1 + Math.min(1, this.amount / 25) * 0.6;
-    const bv = U.uBeads.value; bv.set(this.beads[0] ?? -1, this.beads[1] ?? -1, this.beads[2] ?? -1);
-    if (bv.x >= 0) bv.x /= BEAD_T; if (bv.y >= 0) bv.y /= BEAD_T; if (bv.z >= 0) bv.z /= BEAD_T;
+    const bv = U.uBeads.value, br = U.uBeadRev.value, B3 = this.beads, u = (b) => (b ? (b.rev ? 1 - b.age / b.dur : b.age / b.dur) : -1); // (the head's place, bulb 0 to the tool 1)
+    bv.set(u(B3[0]), u(B3[1]), u(B3[2])); br.set(B3[0]?.rev ? 1 : 0, B3[1]?.rev ? 1 : 0, B3[2]?.rev ? 1 : 0);
     this.state.beads = this.beads.length; this.state.slack = slack;
   }
 }

@@ -36,8 +36,8 @@ function render(game, it) {
   const m = modelOf(game, it);
   if (!m) return null;
   const scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight(0xfff1dc, 0x3a2216, 1.8));
-  const key = new THREE.DirectionalLight(0xffe6c8, 2.4); key.position.set(1.2, 2, 1.6); scene.add(key);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x40444c, 1.8)); // (neutral: warm light on dark materials read every icon brown, Calissa's 2026-10-19)
+  const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(1.2, 2, 1.6); scene.add(key);
   const rim = new THREE.DirectionalLight(0xffb27a, 1.2); rim.position.set(-1.5, 0.6, -1.2); scene.add(rim);
   scene.add(m.group);
   m.group.updateMatrixWorld(true);

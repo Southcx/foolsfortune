@@ -181,8 +181,9 @@ import { CrucibelleHud } from './vfx/crucibellehud.js';
 import { HookMark } from './vfx/hookmark.js';
 import { VeritomeFrame } from './vfx/veritomeframe.js';
 import { TollReach } from './vfx/tollreach.js';
-import { LockheartMarks } from './vfx/lockheartmarks.js';
+import { LockheartReach } from './vfx/lockheartreach.js'; import { LockheartReliquary } from './vfx/lockheartreliquary.js';
 import { CarryThrowMark } from './vfx/carrythrowmark.js';
+import { LobArcMark } from './vfx/lobarcmark.js'; import { FlareReveal } from './vfx/flarereveal.js'; import { PsygunReticle } from './vfx/psygunreticle.js'; import { PsygunScope } from './vfx/psygunscope.js'; // (the psygun variants' looks: OVERLAY.md 19)
 import { Cubes } from './world/treasure/cubes.js';
 import { Mood } from './core/mood.js';
 import { Chests, ChestTech } from './world/treasure/chests.js';
@@ -267,6 +268,8 @@ import { SoulAlchemy } from './progress/alchemy.js';
 import { Knacks } from './progress/knacks.js';
 import { Feelings } from './progress/feelings.js';
 import { Vantages } from './world/vantages.js';
+import { DuelSession } from './world/duel/duelsession.js'; import { DuelFoes } from './world/duel/duelfoes.js';
+import { VantageFrames } from './vfx/vantageframes.js';
 import { Awakening } from './feedback/awakening.js';
 import { Lend } from './progress/lend.js';
 import { DebugChests } from './debug/debugchest.js';
@@ -447,6 +450,7 @@ async function main() {
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   game.margarite = new Margarite(game); // (Margarite's dock: the far end of the crossing, built with the level's static geometry; world/emocean/margarite.js)
+  game.duel = new DuelSession(game); game.duelFoes = new DuelFoes(game); // (a puzzle duel with an aberrant Figment where it was met: world/duel/, docs/plans/PUZZLE-DUELS.md 8)
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
@@ -593,7 +597,7 @@ async function main() {
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
   game.hookMark = new HookMark(game); // (the hook's mark: vfx/hookmark.js)
-  game.lockheartMarks = new LockheartMarks(game); game.carryThrowMark = new CarryThrowMark(game); // (the Lockheart's gauge and its hoover's reach; where a carried thing would land: vfx/lockheartmarks.js, vfx/carrythrowmark.js)
+  game.lockheartReach = new LockheartReach(game); game.carryThrowMark = new CarryThrowMark(game); game.lobArcMark = new LobArcMark(game); game.flareReveal = new FlareReveal(game); // (the hoover's reach on the ground; where a carried thing would land; the Bombardier's lob previewed, a flare's finds marked: vfx/lockheartreach.js, vfx/carrythrowmark.js, vfx/lobarcmark.js, vfx/flarereveal.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   const baubles = new Baubles(game);
@@ -612,7 +616,7 @@ async function main() {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
-  const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
+  const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
@@ -814,7 +818,7 @@ async function main() {
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
   game.feelings = new Feelings(game); // (the seven feelings' awakenings: progress/feelings.js, FEELINGS-AWAKENING.md)
-  game.vantages = new Vantages(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
+  game.vantages = new Vantages(game); game.vantageFrames = new VantageFrames(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
   game.lend = new Lend(game); // (the lend panel: what DEBUG unlocks without the ledger, a category at a time: progress/lend.js, DEBUG-MODE.md)
   game.ostraca = new Ostraca(game); // (the inscribed sherds and the stelae: world/ostraca.js)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
@@ -1029,8 +1033,9 @@ async function main() {
   for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
-  game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
+  game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9: it hides the tool strip and the string row while it stands)
+  game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
@@ -1163,13 +1168,14 @@ async function main() {
       else { gui.hide(); if (input.enabled && !cursorFree()) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled && (game.codex.open || !windowOpen())) game.codex.toggle();
-    if (input.wasPressed('KeyP') && input.enabled && (game.pneukaUI.open || (!windowOpen() && !god.controlling))) game.pneukaUI.toggle();
+    if (input.wasPressed('KeyP') && input.enabled && !game.duel.active && (game.pneukaUI.open || (!windowOpen() && !god.controlling))) game.pneukaUI.toggle();
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
-    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
+    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active && !game.duel.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
     game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, its clock is the bazaar's own tickModal: vfx/bazaartable.js)
     if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1)
     if (started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
+    game.duel.update(game.rawDt ?? dt, input); // (a puzzle duel takes the keys it reads, before anything below sees them: world/duel/duelsession.js)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     game.courierSquash.lift(); // (and the Courier's true shape, before anything reads the body: courier/anim/squash.js)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
@@ -1180,7 +1186,7 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
-    const aboard = !!game.emocean?.stage.active || !!game.realm?.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
     game.god?.arts?.powers?.update(dt); // (what the hand's powers leave lasting: rifts, wards, totems, workers: godhand/powers.js)
@@ -1320,7 +1326,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1370,7 +1376,7 @@ async function main() {
     (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
     (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
     game.bracelets.update(game.rawDt ?? dt); // (the bracelet's glow: vfx/braceletwear.js)
-    game.lockheartMarks.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); // (each tool its own marks: the Lockheart's, and empty hands' throw)
+    game.lockheartReach.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); game.lobArcMark.update(game.rawDt ?? dt); game.flareReveal.update(); // (each tool its own marks: the Lockheart's, and empty hands' throw)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

@@ -87,6 +87,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   is the Wake Whistle's, a ship's and a creature's), by an act that is that feeling (or drinking it in its weather on 5 occasions): its
   weather floods round you, one line in its own voice, the body's answer once free (`feeling.embody`) / a hand-placed lookout whose view
   awakens Wonder; player text says "vantage point". *Not:* a notice from the System.
+- **a vantage's frame** (`VantageFrames`, `game.vantageFrames`, `src/vfx/vantageframes.js`) — a vantage built as a lookout: its stand (a stone let into the spot, Wonder's ring inlaid, lit until reached) and the gate the view is seen through. *Not:* the vantage (the spot, `world/vantages.js`), the lens's frame.
 - **a heavy look / the flood / a feeling's clip** (`LOOK[aspect].heavy`, `heavyOf`, `vfx/weather.js` / `game.awakeningLook`, `vfx/awakeninglook.js` /
   `FEELING_CLIPS`, `courier/anim/feelingclips.js`) — a weather's look at strength 1, its feeling's big gesture / that look breaking out round the
   Courier for about four real seconds at an awakening, indoors too / the Courier's body answering it (on `feeling.embody`). *Not:* a spell, an emote. → detail
@@ -117,6 +118,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   special round in a chamber. → detail
 - **a psygun's variant / the cylinder** (the owner's names, 2026-10-18; `PSYGUNS`, `tools/psygun/kinds.js`; OVERLAY.md 18) — by chamber count: THE PSYGUN (6), the Bombardier (1), the Carbine (3), the Pentagun (5), the Pepperbox (7: six round a heart) / the chambers drawn as a revolver's cylinder, its shape its count, turned by the wheel (`PsygunCylinder`, `game.psygunCylinder`, `src/vfx/psyguncylinder.js`; a variant's model: `PsygunModels`, `src/vfx/psygunmodels.js`, `scripts/export_psyguns.py`; as a thing in the Pneuka Box, kind `psygun`, its id the kind's, worn by `box.carryPsygun`). *Not:* a caster shell, a mount.
 - **a variant's play** (working names, Espada's: the quick taps, the flare, the scope, the full draw, a dart, the pentacle, the slug, both barrels; `VariantPlay`, `weapon.play`, `src/tools/psygun/variantplay.js`; numbers kinds.js `play`; OVERLAY.md 19) — how a psygun's variant fights beyond its chamber count. *Not:* a shell, a widening, fanning the hammer (R, `gunmoves.js`: the table's "fan the hammer" is the quick taps).
+- **the psygun's reticle / the scope's lens ring** (working names, Espada's to rule; `PsygunReticle`, `game.psygunReticle`, `src/vfx/psygunreticle.js` / `PsygunScope`, `game.psygunScope`, `src/vfx/psygunscope.js`; OVERLAY.md 19) — the crosshair, one a variant (THE PSYGUN's ticks and six pips, the Bombardier's ring and chevron, the Carbine's T, the Pentagun's five points, the Pepperbox's spread ring) / the Carbine's raised scope: its brass housing, glass, reticle, the breath's arc and the full draw's ring. *Not:* the lock-on reticle, the paint reticle, the lens's frame.
+- **the lob's arc mark / a flare's reveal outline** (working names; `LobArcMark`, `src/vfx/lobarcmark.js` / `FlareReveal`, `src/vfx/flarereveal.js`) — the Bombardier's lobbed shell previewed: its dotted arc and its landing ring at the shell's area there / the outline in the flare's ember round a creature it revealed (`c.revealed`), seen through walls while it holds (its tag shows as at the lock-on). World marks: no words. *Not:* the carry throw's mark, the MARK shell's rim, a tag.
 - **the spiritual link** (the owner's words, 2026-10-18; `SpiritualLink`, `game.spiritualLink`, `src/vfx/spirituallink.js`) — the thread of the film from the Lachrimeter's bulb to the tool UI in hand: a spend runs down it as a bead, a dry click slackens it. *Not:* the link ring (the trick combo's), the tube's feed.
 - **the Sondelass's guard / the lure ring** (working names, Espada's to rule; `SondelassGuard`, `game.sondelassGuard`, `src/vfx/sondelassguard.js`) — the Sondelass's own UI: its guard with three windows, the form in hand growing out of it (the cutlass's string on its edge) / the seven feelings round the lure in the rod form, turned by the wheel or MMB held. Always "the Sondelass's guard" in full. *Not:* the guard (the held block).
 - **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
@@ -323,6 +326,15 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
+- **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
+  `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
+  between the sides, your zone of control and the score, pushed one column a 3 junk landed / what a clear sends across (the genre's
+  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. **A buckle / a teardrop / the coup / a glean**
+  (Espada's, proposed; labels Break, Orb, Finish, Gather; `buckle.js`, `couriertools.js`): a side's EmO broken by a big push, its stun a depth
+  deeper / Lachryma it sheds onto the board for the Courier to drink / the god hand's finish on a buckled foe, paid from the pool / the
+  Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
+  given at the start of its turn (not rain). *Not:* a table (Raku's), the kick, a trial, a guard break, a mote (the scatter's), a run (three in a line).
+- **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: F at it, the seam (kind `duel`), the board between you, your turns and its bot's, its end / which Figments offer one (any aberrant; the test enemy an aberrant Lantern Wisp). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).
@@ -550,9 +562,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Veritome is drawn and its lens down, set where the aim meets the world. *Not:* the viewfinder (the lens raised), the Snapshot's preview. → detail
 - **the toll's reach** (`TollReach`, `game.tollReach`, `src/vfx/tollreach.js`) — the next toll's reach and cone on the ground round the Courier
   while the Crucibelle is in the hands, lit on the beat, a ring under each thing it would stagger. No words. *Not:* the toll's smoke ring. → detail
-- **the Lockheart's gauge / the hoover's reach** (`LockheartMarks`, `src/vfx/lockheartmarks.js`) — while the Lockheart is drawn, a padlock beside
-  the coffin filling with its load, a socket for each Possibilikey, its shackle up when it would open / the hoover's cone on the ground while it
-  draws. *Not:* the wheel of odds, the Lachryma ring. → detail
+- **the Lockheart's reliquary / the hoover's reach** (working name, Espada's to rule; `LockheartReliquary`, `game.lockheartReliquary`, `src/vfx/lockheartreliquary.js` /
+  `LockheartReach`, `game.lockheartReach`, `src/vfx/lockheartreach.js`) — the Lockheart's own UI by the Lachrimeter: the coffin on its chain (its fill
+  to twice its measure, the padlock, the Possibilikeys and their break chances, the flail's string, the wheel of odds held and spun) / the hoover's
+  cone on the ground while it draws. *Not:* the wheel of odds in the world (`tools/lockheart/wheel.js`), the Lachryma ring. → detail
 - **the carry throw's mark** (`CarryThrowMark`, `src/vfx/carrythrowmark.js`) — where a carried thing thrown now would land, and its flight dashed;
   only while the carry holds it and nothing is drawn. *Not:* the crosshair (the psygun's), the god hand's throw. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
@@ -709,7 +722,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | tier | a chest's; an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the clay folk's (earthenware .. the Court); a Querent hand's (1 .. 3) | "chest tier", "achievement tier", "fish tier", "the clay folk's tiers", "a hand's tier" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..); an attribute's step (Soul Alchemy); a crossing's letter (S to D) | "card rank", "outcome rank", "standing", "an attribute's rank", "the crossing's rank" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
-| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail | "a chain of ...", "a feeling chain" |
+| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail; a puzzle duel's settle passes that clear (`chain` event, its `step`) | "a chain of ...", "a feeling chain", "a duel's chain" |
 | combo | the club's chain of blows; the rhythm mode's run of notes; the skiff's chain of tricks (`SkiffCombo`) | "the club's combo", "a rhythm combo", "the trick combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island or `well:<id>`) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
@@ -749,4 +762,5 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | title toast | the title placard (the owner, 2026-10-17) | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
+| the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
