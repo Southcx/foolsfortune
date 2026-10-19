@@ -150,6 +150,7 @@ import { WeatherLook } from './vfx/weather.js';
 import { AwakeningLook } from './vfx/awakeninglook.js';
 import { FEELING_CLIPS } from './courier/anim/feelingclips.js';
 import { MawWipe } from './vfx/mawwipe.js';
+import { AberrantWipe } from './vfx/aberrantwipe.js';
 import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
 import { StormWarp } from './vfx/stormwarp.js';
 import { Umbral } from './vfx/umbral.js';
@@ -181,7 +182,7 @@ import { CrucibelleHud } from './vfx/crucibellehud.js';
 import { HookMark } from './vfx/hookmark.js';
 import { VeritomeFrame } from './vfx/veritomeframe.js';
 import { TollReach } from './vfx/tollreach.js';
-import { LockheartReach } from './vfx/lockheartreach.js'; import { LockheartReliquary } from './vfx/lockheartreliquary.js';
+import { LockheartReach } from './vfx/lockheartreach.js'; import { LockheartReliquary } from './vfx/lockheartreliquary.js'; import { SoulBrushDesk } from './vfx/soulbrushdesk.js';
 import { CarryThrowMark } from './vfx/carrythrowmark.js';
 import { LobArcMark } from './vfx/lobarcmark.js'; import { FlareReveal } from './vfx/flarereveal.js'; import { PsygunReticle } from './vfx/psygunreticle.js'; import { PsygunScope } from './vfx/psygunscope.js'; // (the psygun variants' looks: OVERLAY.md 19)
 import { Cubes } from './world/treasure/cubes.js';
@@ -461,6 +462,7 @@ async function main() {
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
+  game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
   game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors, the aurora over the sea at the Shore; vfx/nightsky.js)
@@ -588,7 +590,7 @@ async function main() {
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open);
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
-  const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
+  const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
   // an Esc pressed while a window is open is that window's (it closes it): marked before any window's own handler runs (capture), so the
   // pointer's unlock it may bring is not read as you leaving (onLockChange: casebook 125)
   input.escSpends = () => modalOpen() || !!game.kilnUI?.open || !!game.dialogue?.open; // (marked by core/input.js's listener, the first registered)
@@ -872,6 +874,7 @@ async function main() {
     T.tech[id].enabled = !T.tech[id].enabled; game.save?.dirty('optarts');
     game.events.emit('art.toggle', { art: id, on: T.tech[id].enabled, by: 'courier' });
   } });
+  game.chat.add('aberrantwipe', { debug: true, help: 'the aberrant encounter\'s wipe, shown here on the nearest creature (the shatter follows at once)', run: () => { const P = player.pos; let foe = null, best = 1e9; for (const c of game.creatures?.list || []) { const d = c.pos?.distanceToSquared?.(P) ?? 1e9; if (d < best) { best = d; foe = c; } } game.aberrantWipe.close(() => game.aberrantWipe.open(), { foe }); } });
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
   game.chat.add('awaken', { debug: true, help: `a feeling's awakening as it looks, nothing learned: /awaken ${Object.keys(FEELING_CLIPS).join(' | ')} (its flood, then its clip)`, run: ([f]) => { if (game.awakeningLook.flood(f)) setTimeout(() => game.awakeningLook.embody(f), 600); } });
@@ -1039,6 +1042,7 @@ async function main() {
   game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9: it hides the tool strip and the string row while it stands)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
+  game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
@@ -1348,7 +1352,7 @@ async function main() {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

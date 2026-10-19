@@ -7,8 +7,7 @@
 //
 // The ids: 'kw.<keyword>' (ui/icons/keywordart.js, the twelve of CLARITY.md section 5 and the melee loadout's four effects), 'mount.<tool>'
 // (ui/icons/mountart.js, the seven at sea), 'chip.<stat>' (ui/icons/chipart.js: range, angle, energy, charges, cooldown, duration, power,
-// speed; and lock, check, up, down, upHollow, downHollow), 'paint.<pick>' (ui/icons/paintart.js: the Soul Brush's radial, the seven feelings and Clean, each in its own palette
-// 'paint.<pick>', the feeling's colour at the body's middle tone: `paintRamp`), and the Figment attack telegraphs' glyphs: 'answer.<id>',
+// speed; and lock, check, up, down, upHollow, downHollow), and the Figment attack telegraphs' glyphs: 'answer.<id>',
 // 'status.<id>', 'figmentMark.<id>' (ui/icons/figmenttelegraphart.js, which the world draws from its own atlas:
 // vfx/figmenttelegraph/figmenttelegraphatlas.js), and 'domain.<id>' (ui/icons/domainart.js: the seven domains, each in its own palette
 // 'domain.<id>', ramped from its kiln glaze: ui/domainlook.js, never a feeling's colour).
@@ -28,13 +27,11 @@ import { KEYWORD_ART } from './keywordart.js';
 import { MOUNT_ART } from './mountart.js';
 import { CHIP_ART } from './chipart.js';
 import { ANSWER_ART, STATUS_ART, FIGMENT_MARK_ART } from './figmenttelegraphart.js';
-import { PAINT_ART } from './paintart.js';
 import { DOMAIN_ART } from './domainart.js';
 import { DOMAIN_LOOK } from '../domainlook.js';
-import { COLOR } from '../../progress/weather.js';
 
 const ART = {};
-for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['figmentMark', FIGMENT_MARK_ART], ['paint', PAINT_ART], ['domain', DOMAIN_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
+for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['figmentMark', FIGMENT_MARK_ART], ['domain', DOMAIN_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
 export const ICON_IDS = Object.keys(ART);
 export const hasIcon = (id) => id in ART;
 
@@ -52,7 +49,6 @@ export function paintRamp(hex) {
 export const ICON_PALS = {
   ...Object.fromEntries(Object.entries(PAL).map(([k, v]) => [k, v.map(css2rgb)])),
   better: ramp(0x62d36e), worse: ramp(0xe0584e), line: ramp(0xb6a8d8),
-  ...Object.fromEntries(Object.keys(PAINT_ART).map((k) => [`paint.${k}`, paintRamp(COLOR[k] ?? 0xbfe9f2)])), // (Clean: a pale water)
   ...Object.fromEntries(Object.values(DOMAIN_LOOK).map((d) => [d.pal, glazeRamp(d)])),
 };
 /** A domain's palette: its glaze's ramp, its two highlights the glaze's glint where it has one (the tenmoku's stars). */

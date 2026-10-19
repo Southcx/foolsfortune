@@ -1306,8 +1306,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the UI icons** (`uiIcon`, `iconEl`, `ICON_IDS`, `src/ui/icons/`; Calissa's): the pixel art of the choice card and the keywords, 16 px
   (8 for a chip's), each a picture of what its thing DOES (a mount's at sea, never the tool ashore): the twelve keywords
   (`icons/keywordart.js`), the seven mounts (`icons/mountart.js`), the chips and the card's marks (`icons/chipart.js`: lock, check, the
-  compare arrows), and the Soul Brush's radial (`icons/paintart.js`, `paint.<pick>`: Wonder's snowflake, Mirth's sun, Desire's heart,
-  Fury's flame, Gall's fly, Grief's tear, Dread's bolt, Clean's sparkle, each in its feeling's own palette, `paintRamp`). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
+  compare arrows); the Soul Brush's radial's (`icons/paintart.js`) were retired with it (board v11: the Soul Brush's desk). Drawn in **the icons' hand** (`icons/hand.js`): only the light shape is authored, on the pixel kit's twelve greys,
   bevelled from the top left, and the hand adds **the keyline** (a pixel of the darkest grey round it, so every icon has a light part and
   a dark part: casebook rule 105); recoloured by a palette (**gold** its own, **grey** a locked card, **better** and **worse** a compared
   arrow, **line** the sea chart's) and scaled by whole numbers. *Not:* the sea chart's icons (`ui/seachart/icons.js`), a glyph (the
