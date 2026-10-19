@@ -240,7 +240,8 @@ console.log('connectome:', JSON.stringify(totals));
 const byOwner = {};
 for (const [k, list] of Object.entries(F)) for (const x of list) { (byOwner[x.owner] ||= {}); (byOwner[x.owner][k] ||= 0); byOwner[x.owner][k]++; }
 console.log('by division:', JSON.stringify(byOwner));
-if (args.json) fs.writeFileSync(args.json, JSON.stringify({ totals, byOwner, findings: F, cycles, shape }, null, 1));
+const edges = []; for (const m of mods.values()) if (m.file.startsWith(SRC)) for (const e of m.imports) if (e.file?.startsWith(SRC)) edges.push([m.rel, rel(e.file), e.kind]);
+if (args.json) fs.writeFileSync(args.json, JSON.stringify({ totals, byOwner, findings: F, cycles, shape, edges }, null, 1));
 if (args.md) {
   const L = [`# The connectome: findings by division (${new Date().toISOString().slice(0, 10)})`, '', '`node scripts/connectome.mjs --md=<path>`. Leads to read, not deletions to run: a name reached by a string looks dead here.', '', '```', JSON.stringify(totals), '```', ''];
   const sec = (title, list, fmt) => { if (!list.length) return; L.push(`### ${title} (${list.length})`, '', ...list.map((x) => `- ${fmt(x)}`), ''); };
