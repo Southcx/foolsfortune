@@ -529,7 +529,8 @@ export class Weapon {
     if (hasTag(ent, 'hurtable')) { // (a creature: it decides what a shot means: creatures.js)
       this.hits++;
       game.creatures.strike(ent, hit.point, dir, power * this.play.weak(ent, hit.point), 'shot');
-      if (knock) ent.knock?.(dir.clone().setY(0.15).normalize().multiplyScalar(knock)); // (the Pepperbox's pellets push)
+      const k = knock ? this.play.push(ent, knock) : 0;
+      if (k > 0) ent.knock?.(dir.clone().setY(0.15).normalize().multiplyScalar(k)); // (the Pepperbox's pellets push, a volley's capped: variantplay.js)
       game.hud.hitmarker(!ent.alive);
       sfx.hitmarker();
       return;

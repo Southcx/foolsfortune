@@ -47,7 +47,7 @@ export const PSYGUNS = {
   'psygun.pepperbox': {
     id: 'psygun.pepperbox', name: 'THE PEPPERBOX', chambers: 7, shape: 'hexagon+heart', cap: 5, capacity: { bomb: 3, well: 3, anchor: 3 }, heart: 6,
     loadout: ['slicer', 'push', 'well', 'mark', 'bomb', 'ricochet', 'homing'],
-    play: { pellets: { n: 7, spread: 12, range: 12, each: 0.25, knock: 2 }, shellSpread: { n: 3, each: 0.5 }, slug: 2, bothBarrels: { hold: 0.5, cooldown: 6 }, turn: 0.15 }, // (a shotgun: seven pellets; shells in threes; the heart a slug; both barrels)
+    play: { pellets: { n: 7, spread: 12, range: 12, each: 0.25, knock: 2, pushCap: 6 }, shellSpread: { n: 3, each: 0.5 }, slug: 2, bothBarrels: { hold: 0.5, cooldown: 6 }, turn: 0.15 }, // (a shotgun: seven pellets; shells in threes; the heart a slug; both barrels)
     blurb: 'Six round a heart: five of a shell in each (three of the heavy ones), and the heart holds twice its share of the rarest.',
   },
 };
