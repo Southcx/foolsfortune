@@ -15,6 +15,10 @@
 //   the dry click         the hammer on a hollow chamber: a shiver, a dull puff, the link slack; no bead
 //   hung open / home      every chamber empty: the crane swings out and it hangs open while plain shots go on; a reload swings it home and spins it
 //   the size rule         whole on every turn and on the draw, settling to its corner 1.2 real s after a beat ends (in 350 ms)
+// The variants' own (OVERLAY.md 19, board v10): every turn at its psygun's pace (kinds.js `play.turn`: the click at 80 ms on THE PSYGUN,
+// 92 the base, 250 the Carbine's; the same overshoot and spring, its time scaled); the Pentagun's points (`play.pentacleLit`) lit at their
+// corners in their damage types' colours and the pentacle drawn through them on the fifth; the Pepperbox's both barrels (`psygun.barrels`):
+// every loaded ring chamber flares, the blast throws the cylinder one whole turn (40 to 520 ms), each flaring as it passes the barrel.
 // A tier IV under the hammer (the Caster's own) holds no reserve (shells.js holds the reserve, by fireCost): its ring is crazed, and a
 // small vessel inset beside the plate glints the region `vesselDamage.tollRegion()` names (every region when it would shatter).
 // It narrates nothing: the plate's words are labels in the System's type, the count its count.
@@ -31,7 +35,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
-import { buildCylinder, layoutOf, drawPlate, drawInset, colourOf, CYL_T, F, K } from './psyguncylindermodel.js';
+import { buildCylinder, buildPentacle, posePentacle, layoutOf, drawPlate, drawInset, colourOf, CYL_T, F, K } from './psyguncylindermodel.js';
 import { capacityOf } from '../tools/psygun/kinds.js';
 import { fireCost, shellById } from '../progress/combat/castershells.js';
 import { REGIONS } from '../courier/vessel/damage.js';
@@ -49,7 +53,9 @@ const stepCurve = (t) => { const a = 0.05; if (t < a) return -0.07 * Math.sin((M
 const dryCurve = (t) => { const a = 0.04; if (t < a) return -0.04 * Math.sin((Math.PI / 2) * (t / a)); return 1 - 1.04 * Math.exp(-(t - a) / 0.032); };
 function pawlCurve(t, tc, dead) { if (t < tc) return Math.sqrt(cl((t - 0.03) / (tc - 0.03))); const u = t - tc; if (u < 0.012) return 1 - u / 0.012; return dead ? 0 : 0.3 * Math.exp(-(u - 0.012) / 0.04) * Math.abs(Math.sin((TAU * (u - 0.012)) / 0.07)); }
 const hamCurve = (t, back = 0.08, dur = 0.08) => (t < 0.012 ? t / 0.012 : t < back ? 1 : 1 - eob(cl((t - back) / dur)));
-const DUR = { draw: 0.5, stow: 0.4, turn: 0.42, shot: 0.56, autoshot: 0.9, plain: 0.45, dry: 0.5, reload: 1.25, reloadOpen: 1.6, heartIn: 0.6, heartOut: 0.6 };
+const BASE_CLICK = 0.0925; // (the turn's click on board v9: a variant's `play.turn` scales the turn's beats to its own)
+const PACED = new Set(['turn', 'flick', 'heartIn', 'heartOut']);
+const DUR = { barrels: 0.85, draw: 0.5, stow: 0.4, turn: 0.42, shot: 0.56, autoshot: 0.9, plain: 0.45, dry: 0.5, reload: 1.25, reloadOpen: 1.6, heartIn: 0.6, heartOut: 0.6 };
 const SHOW = new Set(['draw', 'turn', 'flick', 'autoshot', 'reload', 'reloadOpen', 'heartIn', 'heartOut']); // (the whole cylinder shows on these)
 const HOLD = 1.2, RISE = 0.12, SETTLE = 0.35; // (the size rule: real s)
 // where it stands, in lines of the 480-line present from the bottom-right corner, left of the tube (its published width): corner and whole
@@ -76,6 +82,8 @@ export class PsygunCylinder {
     on('psygun.chamber', () => this.rebuild());
     on('psygun.turn', (e) => this.onTurn(e));
     on('shell.fire', (e) => this.onShell(e));
+    on('psygun.barrels', () => { if (this.vis && this.B) { this.begin('barrels', null, { ...this.known, counts: this.prevCounts || this.known.counts }, this.read()); this.hold = this.clock + this.beat.dur + HOLD; } }); // (the counts before the volley: every barrel fires in one frame)
+    on('psygun.pentacle', () => { this.starT = 0; });
     on('shell.dry', () => { if (this.vis) { this.begin('dry', null, this.known); this.game.spiritualLink?.slack(); } });
     on('shot.fire', () => { if (!this.vis) return; this.bead(T.lachryma?.shotCost ?? 4, null); if (!this.beat || !['autoshot', 'reloadOpen'].includes(this.beat.type) || this.beat.t > 0.4) this.begin('plain', null, this.known); });
   }
@@ -100,6 +108,8 @@ export class PsygunCylinder {
     const env = this.game.lachrimeterTube?.env; this.themeId = theme.id;
     this.B = buildCylinder(this.V, ids, ids.map((id) => shellById(id)?.tier || 1), env, this.bandHex());
     this.holder.add(this.B.mount);
+    if (gun.play?.pentacle && this.V.n === 5) buildPentacle(this.B);
+    this.turnPace = BASE_CLICK / (gun.play?.turn ?? BASE_CLICK); this.starT = 9;
     this.known = this.read(); this.beat = null; this.state.gun = gun.id;
   }
   bandHex() { const t = THEMES[theme.id] || THEMES.verdigris; return parseInt(t.mid.slice(1), 16); }
@@ -213,6 +223,14 @@ export class PsygunCylinder {
         P.ring.grey = !(S.counts[n] > 0) ? sm((t - 0.3) / 0.05) : !(S.counts[k] > 0) ? 1 - sm(t / 0.2) : 0; P.pawl = 0.6 * Math.sin(Math.PI * cl(t / 0.3)); P.dbl = t > 0.2 && this.dbl;
         P.label = { from: lab(k), to: lab(n), u: sm((t - 0.05) / 0.25) }; P.count = { from: S.counts[k], to: S.counts[n], u: cl((t - 0.05) / 0.4) }; return P; }
       case 'heartOut': return this.heartOut(S, t, b.arg.to, b.arg.to);
+      case 'barrels': { // both barrels: every loaded ring chamber flares at the press; the blast throws the cylinder one whole turn, a tick a chamber
+        const P = this.base(this.known), k0 = S.sel, E = t < 0.04 ? 0 : t < 0.52 ? 1 - Math.pow(1 - (t - 0.04) / 0.48, 3) : 1;
+        P.theta = (k0 + n * E) * Dl + (t > 0.52 ? 0.16 * Dl * Math.exp(-(t - 0.52) / 0.06) * Math.sin((TAU * (t - 0.52)) / 0.14) : 0);
+        P.pawl = t < 0.52 ? Math.pow(Math.abs(Math.sin(Math.PI * n * E)), 0.7) : pawlCurve(t - 0.52 + 0.0425, 0.0425, false);
+        P.hammer = hamCurve(t, 0.04, 0.06); P.jolt = 0.09 * (t < 0.02 ? t / 0.02 : Math.exp(-(t - 0.02) / 0.1));
+        for (let i = 0; i < n; i++) { if (!(S.counts[i] > 0)) continue; const C = P.ch[i], pass = 0.04 + 0.48 * (1 - Math.cbrt(1 - ((((i - k0) % n) + n) % n || n) / n));
+          C.flash = Math.max(1.4 * Math.exp(-t / 0.1), t > pass ? 0.9 * Math.exp(-(t - pass) / 0.1) : 0); C.glow = Math.max(C.glow, 1 + 2 * Math.exp(-t / 0.12)); C.kick = -0.14 * Math.exp(-t / 0.08); }
+        return P; }
       default: return this.base(this.known);
     }
   }
@@ -301,16 +319,17 @@ export class PsygunCylinder {
     if (!this.vis) { root.userData.overlayHidden = true; this.state.shown = false; if (this.B) this.known = { ...this.read(), drawn: false }; this.size = 0; return; }
     root.userData.overlayHidden = false; this.state.shown = true;
     // a reload: counts risen (the level's refill); hung open, it swings home with a spin
-    const now = this.read(), was = this.known;
+    const now = this.read(), was = this.known; this.prevCounts = now.counts; // (as they stand before this frame's shots: both barrels' flares)
     if (now.counts.some((c, i) => c > (was.counts[i] ?? 0)) && this.beat?.type !== 'draw') {
       if (was.open) g.events?.emit('psygun.cylinder', { kind: 'home' });
       this.begin(was.open ? 'reloadOpen' : 'reload', null, was, { ...now, heart: was.open ? !!this.V.solo : now.heart });
     } else if (now.counts.some((c, i) => c < (was.counts[i] ?? 0)) && !(this.beat && this.beat.t < this.beat.dur)) this.known = now; // (spent elsewhere: kept as it is)
     if (theme.id !== this.themeId) { this.themeId = theme.id; this.B.band.color.setHex(this.bandHex()); }
     // the beat and its pose
-    const b = this.beat; if (b) { b.t += dt; if (b.t >= b.dur && b.type !== 'stow') this.beat = null; }
+    const b = this.beat; if (b) { b.t += dt * (PACED.has(b.type) ? this.turnPace || 1 : 1); if (b.t >= b.dur && b.type !== 'stow') this.beat = null; } // (a turn at its psygun's pace)
     const P = this.beat ? this.pose(this.beat) : this.base(this.known);
     this.apply(P); this.state.beat = this.beat?.type || 'idle'; this.state.open = !!this.known.open;
+    if (this.B.pent) this.pentacle(dt);
     // the size rule: whole while a beat that shows it runs and 1.2 real s after, settled to the corner over 350 ms
     this.size = this.clock < this.hold ? Math.min(1, this.size + dt / RISE) : Math.max(0, this.size - dt / SETTLE); this.state.size = this.size;
     const e = sm(this.size), H = slot.view.h || innerHeight, W = slot.view.w || innerWidth, lp = H / 480;
@@ -338,6 +357,16 @@ export class PsygunCylinder {
     const tr = g.vesselDamage.tollRegion?.() || { region: null, shatter: false }, lit = tr.shatter ? REGIONS.map((_, k) => k) : tr.region ? [REGIONS.indexOf(tr.region)] : [];
     drawInset(ins.c, lit, Array.from(g.vesselDamage.crack || []), 1, this.clock); ins.t.needsUpdate = true;
     ins.m.position.set(-(px + (PLATE.w - 18) * lp), (PLATE.foot + PLATE.h + PLATE.gap + 26) * lp, 200); ins.m.scale.set(36 * lp, 52 * lp, 1);
+  }
+  /** The Pentagun's points: a chamber fired in the window lights its corner (60 ms up); the fifth draws the star (five strokes, 70 ms
+   *  each), the circle closes (150 ms), all five flare, held 1.2 s and gone in 0.4. */
+  pentacle(dt) {
+    const lit = this.game.weapon?.play?.pentacleLit || [], st = (this.starT += dt), L = (this.pentGlow ||= [0, 0, 0, 0, 0]);
+    for (let k = 0; k < 5; k++) { const want = lit.includes(k) ? 1 : 0; L[k] = want > L[k] ? Math.min(1, L[k] + dt / 0.06) : Math.max(0, L[k] - dt / 0.3); }
+    const drawn = st < 2, fade = 1 - sm((st - 1.6) / 0.4);
+    const show = L.map((l) => (drawn ? Math.max(l, (1 + 1.2 * Math.exp(-Math.max(0, st - 0.35) / 0.2)) * fade) : l));
+    posePentacle(this.B.pent, show, drawn ? cl(st / 0.35) : 0, drawn ? cl((st - 0.35) / 0.15) : 0, drawn ? fade : 0);
+    if (st < 0.6) this.hold = Math.max(this.hold, this.clock + HOLD); // (the cylinder grows whole for it)
   }
   /** The strap's brass eye in the overlay scene's coordinates (the link's far end), or null while hidden. */
   eyeAt(out) { if (!this.vis || !this.B) return null; this.B.eye.getWorldPosition(_v); return out.copy(_v); }

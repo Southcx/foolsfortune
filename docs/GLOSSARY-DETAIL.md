@@ -1226,16 +1226,23 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   *Also, the music copy in "Music":* **the overture** (`OVERTURE`, `src/music/overture.js`): the title's opening cue, a hair-metal JRPG opening that hands on, on the bar line,
   into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
 - **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
-- **the Lockheart's gauge** and **the hoover's reach** (`LockheartMarks`, `game.lockheartMarks`, `src/vfx/lockheartmarks.js`; docs/plans/MELEE-LOADOUT.md
-  section 4): the Lockheart's own marks while it is in the hands, gone on its stow or another tool's draw, and while it opens. **The gauge**:
-  a padlock in the icons' hand (13 by 18 art pixels, two of the 480 lines' pixels each, on their grid) standing beside the coffin on the
-  side away from the body: its body fills with Lachryma's violet from the foot as the coffin fills to its own measure (`fill`, seven
-  steps), a **socket** under it for each place on the keyring (four), gold where a Possibilikey hangs and grey where none does; when the
-  coffin would open (a coffin, full, a Possibilikey, and for the Warden's a Figment laid low before it) the shackle springs up, the
-  iron turns gold and the keyhole is lit. **The reach**: the hoover's cone laid on the ground before the coffin, 7 m and 0.7 rad either
+- **the Lockheart's reliquary** (`LockheartReliquary`, `game.lockheartReliquary`, `src/vfx/lockheartreliquary.js` and its parts in
+  `src/vfx/lockheartreliquary/`; OVERLAY.md 19.5 to 19.8; board v10, signed off 2026-10-19 in its B orientation): the Lockheart's own UI in the
+  overlay's scene, bottom-right by the Lachrimeter while the Lockheart is in the hands. The coffin hangs on its chain from the hand's point
+  as a right hand would hold it (the chain out to the screen's edge, its back to the view's middle, its window toward the tube): lacquered
+  in its kind's colour with a brass keyline, the lid's emblem in a ghost of its odds; a lancet **window** graduated empty to twice full, the
+  brass **measure** line at half; the **padlock** on the hasp, gold and its shackle sprung only when every reason to open holds; the
+  **keyring** below in ring order, each Possibilikey's cracks and its **tag** (its break chance at the next Opening, a published rate); the
+  **count plate** ("42 /40"); the hoover's vortex in the window; the flail's string as three links of the chain; RMB held, the **wheel of
+  odds** risen out of the lid still, each sector's rate beside it and a gold arc filling to the open; held through, the keys turned and the
+  wheel turning in lock step with the tool's own, its outcome plate. It holds the spiritual link: the drink runs down it into the coffin
+  (three slow beads), the gulp back up it (the link's one true reverse). It replaced **the Lockheart's gauge** (`LockheartMarks`: a padlock
+  and four sockets beside the 3D coffin), retired 2026-10-19.
+- **the hoover's reach** (`LockheartReach`, `game.lockheartReach`, `src/vfx/lockheartreach.js`; docs/plans/MELEE-LOADOUT.md section 4): the
+  Lockheart's one world mark while it is in the hands and draws, gone while it opens. **The reach**: the hoover's cone laid on the ground before the coffin, 7 m and 0.7 rad either
   side of the aim (`HOOVER`), the nearer arc where a mind laid low is drained (3.6 m), three arcs running in, in the Vacuum's violet (the
-  mount preview's own shape). A sprite on the glyphs' program and a wire on the rail mark's: no program of their own. *Not:* the wheel of
-  odds (`tools/lockheart/wheel.js`), the lid's glow (the coffin's load on the model), the Lachryma ring at the feet (the pool).
+  mount preview's own shape). A wire on the rail mark's program: no program of its own. *Not:* the wheel of odds (`tools/lockheart/wheel.js`),
+  the lid's glow (the coffin's load on the model), the Lachryma ring at the feet (the pool).
 - **the carry throw's mark** (`CarryThrowMark`, `game.carryThrowMark`, `src/vfx/carrythrowmark.js`): while a carried thing can be thrown (the
   carry holds it and nothing is drawn from the belt), where it would land: the paint reticle's look (a point, a ring of 0.8 m, what a
   throw hits round where it stops, four ticks, the far one down the throw) in the crosshair's cream on what the flight meets first, and
