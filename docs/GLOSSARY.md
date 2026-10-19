@@ -323,9 +323,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   earthenware (clapperjars) < stoneware < porcelain < the Court. Other islands' folk are their own (Espada's). → detail
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
-- **a puzzle duel / the duel's line / a duel ruleset** (working names, Espada's; `newDuel`, `src/progress/duel/`; `RULESETS`; `docs/plans/PUZZLE-DUELS.md`)
-  — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board, garbage sent by clears / the column boundary between the
-  sides, your zone of control and the score, pushed one column a 4 garbage landed / the rules one Figment brings, chosen by its feeling. *Not:* a table (Raku's), the rail, a trial.
+- **a puzzle duel / the Line / junk / a duel ruleset** (Espada's, proposed: lore names a wrangle, the March, grog; `newDuel`, `src/progress/duel/`;
+  `RULESETS`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a 20 × 20 board / the column boundary
+  between the sides, your zone of control and the score, pushed one column a 4 junk landed / what a clear sends across (the genre's
+  garbage) / the rules one Figment brings, chosen by its feeling. The Courier's slide there is **punt**. *Not:* a table (Raku's), the kick, a trial.
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
 - **Contractor / Tulpa** — one who survives the open Emocean is a Contractor, with a Tulpa (a thought-form authored with care).

@@ -1,4 +1,9 @@
-# Puzzle duels: the aberrant Figments' fights on a board (working names, Espada's to rule)
+# Puzzle duels: the aberrant Figments' fights on a board
+
+**Names** (Espada's, proposed 2026-10-19; LORE.md "The puzzle duel's words"): the UI says **Puzzle Duel**, the world **a wrangle**
+("You win the wrangle."); the line is **the Line** in the UI, **the March** in the world; what a clear sends is **junk** (lore: **grog**,
+fired clay crushed back into new clay). The Courier's slide is **punt** (the kick is the unarmed moveset). The genre's own word,
+garbage, stays only in the prior art below.
 
 Kept by Dovina (the rules, the engine, the numbers). The look is Calissa's, the sounds Wanda's, the names and each Figment's lore
 Espada's; the controls of the forms and the room's wiring are Petra's. **The engine's kernel is built** (section 10); the rest is a plan.
@@ -43,7 +48,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 ## 2. The board
 
 - **20 × 20 cells.** Each cell has a **floor** (plain, ice, a conveyor, a hole, a pit) and holds at most one **piece**.
-- **A piece** is a gem of a feeling's colour (the seven), a junk block (garbage), a stone, a bomb, a timer junk, a rainbow, a virus, a
+- **A piece** is a gem of a feeling's colour (the seven), a junk block, a stone, a bomb, a timer junk, a rainbow, a virus, a
   rule tile, or a body (the Courier). What a rule may do to a piece is **its tags** (`falls`, `pushable`, `matches`, `heavy`, `breakable`,
   `explosive`), as `core/tags.js` does for the world: a rule asks the tag, never the kind.
 - **The line**: a column boundary between the two sides, at 10 to start. Your side is your zone of control: **the hand acts only on your
@@ -56,7 +61,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 
 ## 3. The turn
 
-- **3 action points a turn** (a knob). Then the board **settles**, garbage crosses, and the other side plays.
+- **3 action points a turn** (a knob). Then the board **settles**, junk crosses, and the other side plays.
 - **Settling** is the PuzzleScript loop: every settle rule runs (gravity, sliding on ice, matching, exploding, timers), again and again
   until nothing changes. Each pass that clears something is a **chain step**.
   - The loop is capped at 64 passes, and a board seen twice in one settle ends it. That is the guard against a cascade that never ends.
@@ -68,7 +73,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 
 | form | where | its actions (AP) | from |
 |---|---|---|---|
-| **the Courier** | a body on a cell of your side | step 1, **push** a run of pieces one cell 1, **kick** one piece to slide until blocked 2 | Noon, Bomberman, Sokoban, Mr. Driller |
+| **the Courier** | a body on a cell of your side | step 1, **push** a run of pieces one cell 1, **punt** one piece to slide until blocked 2 | Noon, Bomberman, Sokoban, Mr. Driller |
 | **the god hand** | over your side | **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
 | (switching form) | | 1 | |
 
@@ -77,15 +82,15 @@ The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) i
 ## 5. The rule catalogue (the engine's modules)
 
 Built in the kernel: **gravity** (the map), **run** (three or more in a line), **cluster** (four or more touching, Puyo), **push**,
-**kick**, **swap**, **drag** (Terra Battle), **rotate**, **drop**, **pincer** (Terra Battle and Othello: an opponent's piece sandwiched
-in a line between two of yours becomes yours), **bomb** (Bomberman's cross, set off by a clear beside it), **garbage** with offsetting,
+**punt**, **swap**, **drag** (Terra Battle), **rotate**, **drop**, **pincer** (Terra Battle and Othello: an opponent's piece sandwiched
+in a line between two of yours becomes yours), **bomb** (Bomberman's cross, set off by a clear beside it), **junk** with offsetting,
 **the line**.
 
 To come, each a module of its own:
 - **matching:** diagonal runs (Columns), the crash gem (SPF2T), the rainbow (Noon);
 - **clearing:** line clears (Tetris), Lumines' sweep, Qix claims, drilling (Mr. Driller);
 - **movement:** ice and conveyors, grab and throw (Magical Drop), launching across the line (Meteos);
-- **garbage:** timer junk (SPF2T), hard junk (two hits), garbage in patterns (Puzzle Pirates), viruses (Dr. Mario);
+- **junk:** timer junk (SPF2T), hard junk (two hits), junk in patterns (Puzzle Pirates), viruses (Dr. Mario);
 - **rules as tiles** (section 6).
 
 ## 6. A Figment is its ruleset ("Bingo, baby")
@@ -98,19 +103,22 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 | Wonder | rules as tiles (the Baba layer), the rainbow |
 | Mirth | chains, bounces, ice |
 | Desire | pull and magnets, the pincer |
-| Fury | bombs, kicks |
+| Fury | bombs, punts |
 | Gall | sticky and hard junk, corrosion |
 | Grief | gravity toward the line, clusters that sink |
 | Dread | fog (cells hidden), timer junk |
 
 - **The rules are spelled on its side as neuralese tiles** (a sentence a rule: GEM FALL TOWARD LINE). Pushing one breaks or rewrites
   that rule: **reprogramming made physical**, the Veritome's Functions turned into a board.
+  Espada's first tiles (LORE.md, proposed): fury LITHA-PIRO KRAKA (bombs), LITHA VADA-LON (punts); grief LITHA DEO VADA-MURA (sink
+  toward the wall), LITHA-MULTA KITH TE, ONO MOR (clusters), LITHA-ALI TOPA-DUO META AMI (pincer); mirth SORA META DEO (mirrored
+  gravity), KRAKA KRESA (easy chains). A word pushed out leaves a smaller sentence that still parses (META DEO: gravity comes home).
 - **Familiarity reads its rules**: the tag's lines over its board, decrypted as you learn the kind (OVERLAY.md 17).
 - **Beating it mends it**: an aberrant Figment is a data bug drawn wrong; its duel won, it is drained and mended (the data drain).
 
 ## 7. What it is worth
 
-- **The Assay reads it for free** (APTITUDE.md): planning (your turn's garbage against the most the bot could find with the same AP),
+- **The Assay reads it for free** (APTITUDE.md): planning (your turn's junk against the most the bot could find with the same AP),
   mental rotation (the rotate and drop actions), visual search.
 - **Rewards** are the economy's next pass: the mended Figment's haul, a bounty where Letty posts one.
 
@@ -127,8 +135,8 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 1. Is 3 AP right? It is a knob; the simulator will say how long a duel runs at each.
 2. When you lose a duel, what happens: a crack, being thrown out of the board, or the Figment escaping?
 3. Can a sibling or a guest join your side of the board (two Couriers, one side)?
-4. What does the Courier do that the hand cannot? A first answer: it stands on the board (garbage cannot land on its cell, its body
-   stops a blast), and kicks cross distance the hand's swaps cannot. To be decided in play.
+4. What does the Courier do that the hand cannot? A first answer: it stands on the board (junk cannot land on its cell, its body
+   stops a blast), and punts cross distance the hand's swaps cannot. To be decided in play.
 
 ## 10. Built (2026-10-19): the kernel
 
@@ -136,14 +144,14 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 do.
 - `board.js`: the grid, the floor, the gravity map, the line, tags.
 - `rules.js`: the kernel's rules.
-- `duel.js`: the turn, AP, the settle loop, garbage and the wins.
+- `duel.js`: the turn, AP, the settle loop, junk and the wins.
 - `bot.js`: a greedy planner that also gives the shown intent.
 - `rulesets.js`: the first three Figments' rulesets.
-- `scripts/duel.mjs`: duels between bots, headless, with lengths, garbage rates, and every settle that hit the cap.
+- `scripts/duel.mjs`: duels between bots, headless, with lengths, junk rates, and every settle that hit the cap.
 
 ### What the simulator says (bots against bots, 10 duels a ruleset, 3 AP, `node scripts/duel.mjs`)
 
-| ruleset | turns a side | garbage a turn | longest chain | how they end | settles capped |
+| ruleset | turns a side | junk a turn | longest chain | how they end | settles capped |
 |---|---|---|---|---|---|
 | fury (4 colours, rain 4, bombs 6%) | 13.4 | 3.8 | 6 | full 6, line 4 | 0 |
 | grief (6 colours, toward the line, clusters, pincer) | 7.5 | 4.5 | 3 | line 9, full 1 | 0 |
@@ -153,5 +161,5 @@ do.
 - **At 2 AP** duels barely shorten (grief 4.4, mirth 6.7), and fury at rain 2 ran 126 turns: the AP sets how deep a turn's plan is,
   rain sets the pace.
 - **The greedy bot never switches form** (a point spent for nothing at once). With the Courier first (`--forms courier,hand`) it walks,
-  pushes and kicks, and makes a third of the garbage the hand does. The Courier needs a reason the hand lacks (section 9.4).
+  pushes and punts, and makes a third of the junk the hand does. The Courier needs a reason the hand lacks (section 9.4).
 - No settle has hit the cap or looped in any run so far.

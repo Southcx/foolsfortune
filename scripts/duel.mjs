@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE PUZZLE DUELS' SIMULATOR (docs/plans/PUZZLE-DUELS.md section 10): duels between bots, headless, under each Figment's ruleset, and
-// what they say: how long a duel runs (turns a side), how it ends (the line, a full side, the cap), garbage sent a turn, the longest
+// what they say: how long a duel runs (turns a side), how it ends (the line, a full side, the cap), junk sent a turn, the longest
 // chain, and every settle that hit its cap or looped (a ruleset's bug). The action points and the line's rate are tuned against this.
 //
 //   node scripts/duel.mjs [--rules fury|grief|mirth|all] [--n duels] [--ap points] [--seed first] [--sample tries] [--forms hand,courier]
@@ -23,12 +23,12 @@ for (const key of which === 'all' ? Object.keys(RULESETS) : [which]) {
       for (const e of play(s, { sample })) {
         if (e.type === 'chain') chain = Math.max(chain, e.step);
         if (e.type === 'duel.line' || e.type === 'duel.full' || e.type === 'duel.cap') ends[e.type] = (ends[e.type] || 0) + 1;
-        if (['step', 'push', 'kick', 'swap', 'drag', 'rotate', 'drop', 'form'].includes(e.type) && !e.forced) kinds[e.type] = (kinds[e.type] || 0) + 1;
+        if (['step', 'push', 'punt', 'swap', 'drag', 'rotate', 'drop', 'form'].includes(e.type) && !e.forced) kinds[e.type] = (kinds[e.type] || 0) + 1;
       }
     }
     plies += s.ply; sent += s.sides[0].total + s.sides[1].total; caps += s.capHits;
     wins[s.winner === -1 ? 2 : s.winner]++;
   }
   console.log(`${key.toUpperCase()} x${n} at ${DUEL.ap} AP: turns a side ${(plies / n / 2).toFixed(1)}; ends ${JSON.stringify(ends)}; wins first ${wins[0]} second ${wins[1]} drawn ${wins[2]};`
-    + ` garbage a turn ${(sent / Math.max(1, plies)).toFixed(2)}; longest chain ${chain}; settles capped ${caps}; actions ${JSON.stringify(kinds)}; ${((Date.now() - t0) / n / 1000).toFixed(1)} real s a duel`);
+    + ` junk a turn ${(sent / Math.max(1, plies)).toFixed(2)}; longest chain ${chain}; settles capped ${caps}; actions ${JSON.stringify(kinds)}; ${((Date.now() - t0) / n / 1000).toFixed(1)} real s a duel`);
 }

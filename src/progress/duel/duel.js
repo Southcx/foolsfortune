@@ -1,15 +1,15 @@
 // ---------------------------------------------------------------------------------------
 // A PUZZLE DUEL (docs/plans/PUZZLE-DUELS.md section 3): two sides, one board, a line between them. A side spends its action points (3 a
 // turn, a knob), each action followed by the settle (gravity, clears, what a clear sets off, again and again until nothing changes); its
-// clears become garbage, which cancels what is coming at it first and then waits to land on the other side at the end of that side's own
+// clears become junk, which cancels what is coming at it first and then waits to land on the other side at the end of that side's own
 // turn. Garbage landed pushes the line toward the receiver, one column for every 4. A side wins when the line reaches the other's back
-// wall, or when the other's side has no empty cell left after its garbage lands.
+// wall, or when the other's side has no empty cell left after its junk lands.
 //
-// Prior art: Puyo Puyo Tetris (chains, garbage, offsetting, garbage waiting a turn so it can be answered), Noon (the territories, a
+// Prior art: Puyo Puyo Tetris (chains, junk, offsetting, junk waiting a turn so it can be answered), Noon (the territories, a
 // side filled to death), PuzzleScript (the settle loop run to a fixed point), Into the Breach (the turn as a plan of a few actions).
 //
 //   newDuel({ ruleset, seed, forms }) -> state   act(state, action) -> events | null (illegal)   endTurn(state) -> events
-//   settle(state, side) -> { steps, garbage, events }   legalActions(state, side) -> actions   cloneState(state)   apsLeft(state)
+//   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS, costOf } from './rules.js';
@@ -18,13 +18,13 @@ import { seeded } from '../../core/rng.js';
 export const DUEL = {
   ap: 3,           // action points a turn (PUZZLE-DUELS.md 9.1: a knob; the simulator reports duel lengths at each)
   settleCap: 64,   // passes before a settle is stopped (and counted: a cascade that never ends is a bug in a ruleset)
-  perColumn: 4,    // garbage landed that moves the line one column
+  perColumn: 4,    // junk landed that moves the line one column
   turnCap: 200,    // turns a side before the line's place decides it (a ply is one side's turn)
   fill: 0.4,       // each side's share of cells filled at the start
 };
 
-/** A garbage count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified). */
-export const garbageOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
+/** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified). */
+export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19). */
 export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20 } = {}) {
@@ -73,18 +73,18 @@ const topQueue = (s, side) => { const Q = s.sides[side].queue; while (Q.length <
 /** The settle (PuzzleScript's loop): fall, then clear, again until nothing changes; each pass that clears is a chain step. Capped at
  *  DUEL.settleCap passes, and stopped if it sees one board twice. Garbage is credited to the side the clears were on. */
 export function settle(s) {
-  const events = [], garbage = [0, 0], steps = [0, 0], seen = new Set();
+  const events = [], junk = [0, 0], steps = [0, 0], seen = new Set();
   for (let pass = 0; ; pass++) {
     if (pass >= DUEL.settleCap) { s.capHits++; events.push({ type: 'settle.cap' }); break; }
     events.push(...fall(s.board));
     const hot = clears(s.board, s.rs); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
     events.push(...ev);
-    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; garbage[side] += garbageOf(cleared[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side] }); }
+    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(cleared[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side] }); }
     const h = s.board.hash(); if (seen.has(h)) { s.capHits++; events.push({ type: 'settle.loop' }); break; } seen.add(h);
   }
-  for (const side of [0, 1]) s.sides[side].sent += garbage[side];
-  return { steps, garbage, events };
+  for (const side of [0, 1]) s.sides[side].sent += junk[side];
+  return { steps, junk, events };
 }
 
 /** One action by the side to move: refused (null) if it is not legal, not its form's, or costs more than the points left. */
@@ -100,7 +100,7 @@ export function act(s, a) {
   return events;
 }
 
-/** The turn's end: the mover's garbage cancels what waits for it, the rest waits for the other side; what still waits for the mover
+/** The turn's end: the mover's junk cancels what waits for it, the rest waits for the other side; what still waits for the mover
  *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its rain). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
@@ -120,7 +120,7 @@ export function endTurn(s) {
   return events;
 }
 
-/** Garbage landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
+/** Junk landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
  *  DUEL.perColumn landed. A side that cannot take it all has lost (Noon). */
 function land(s, side, n) {
   const b = s.board, events = [{ type: 'land', side, n }], cells = b.empty(side);
@@ -163,7 +163,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
   const b = s.board, S = s.sides[side], out = [], dirs = ['N', 'S', 'E', 'W'];
   const ok = (a) => { const A = ACTIONS[a.kind]; if (A.form && A.form !== S.form) return; if (costOf(a) <= s.apLeft && A.legal(s, side, a)) out.push(a); };
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
-  if (S.form === 'courier' && S.at) for (const dir of dirs) for (const kind of ['step', 'push', 'kick']) ok({ kind, dir });
+  if (S.form === 'courier' && S.at) for (const dir of dirs) for (const kind of ['step', 'push', 'punt']) ok({ kind, dir });
   if (S.form === 'hand') {
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       if (!b.mine(side, x)) continue;

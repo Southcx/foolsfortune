@@ -10,8 +10,8 @@
 import { DIRS } from './board.js';
 
 export const RULESETS = {
-  // Fury: bombs and kicks. Plain gravity, runs of three, a bomb in every 16 pieces that come.
-  fury: { feeling: 'fury', run: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, blast: 2, colours: 4, rain: 4, bot: { garbage: 12 } },
+  // Fury: bombs and punts. Plain gravity, runs of three, a bomb in every 16 pieces that come.
+  fury: { feeling: 'fury', run: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, blast: 2, colours: 4, rain: 4, bot: { junk: 12 } },
   // Grief: everything sinks toward the line (each side's pile leans on it), clusters of four, the pincer turns junk to gems.
   grief: { feeling: 'grief', run: 0, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.E : DIRS.W), pincer: true, colours: 6,
     bot: { pairs: 1 } },
