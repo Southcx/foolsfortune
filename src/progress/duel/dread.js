@@ -3,7 +3,7 @@
 // by the aberrant Lantern Wisp. Two rules:
 //   FOG      a side's half is hidden from the other side except within the light of its body (its lantern); the engine keeps the whole
 //            board, and `visibleTo` says what a side may be shown. The forecast is still drawn (Divination sees intent, not ground).
-//   EMBERS   junk a Dread side sends lands as embers: they cannot be broken, pinched or hoovered while they burn down, and after their
+//   EMBERS   junk a Dread side sends lands as embers: they cannot be broken, pinched or held while they burn down, and after their
 //            count of the receiver's own turns they cool into gems. Dread is the wait.
 //
 // Prior art: Super Puzzle Fighter II Turbo's counter gems (garbage with a countdown that turns to ordinary gems); the fog of war of

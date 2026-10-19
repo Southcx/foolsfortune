@@ -2,12 +2,12 @@
 // A PUZZLE DUEL'S RULES (docs/plans/PUZZLE-DUELS.md sections 3 to 5): the kernel's modules, each one rule over the board. SETTLE rules run
 // again and again after every action until nothing changes (PuzzleScript's loop): gravity, then the clears (runs, clusters, the pincer),
 // then what a clear sets off (junk broken beside it, bombs). ACTIONS are what a form does on its own side (the Courier's push and
-// punt; the god hand's swap, drag, rotate and drop). A rule asks a piece's tags, never its kind. Each returns its events in order, so a
+// kick; the god hand's swap, drag, rotate and drop). A rule asks a piece's tags, never its kind. Each returns its events in order, so a
 // view can play the settle step by step.
 //
 // Prior art, rule by rule: gravity in any direction (Puyo, Tetris, and a map of directions: the owner, 2026-10-19), the run of three
 // (Bejeweled, Columns), the cluster of four (Puyo Puyo), junk broken beside a clear (Puyo's nuisance, Noon's rainbow), the bomb's cross
-// (Bomberman), the pincer (Terra Battle's sandwich, Othello's conversion), the push and the punt (Sokoban, Noon, Bomberman), the drag
+// (Bomberman), the pincer (Terra Battle's sandwich, Othello's conversion), the push and the kick (Sokoban, Noon, Bomberman), the drag
 // (Terra Battle's slide), the 2x2 rotation (Hexic), the drop (Tetris).
 //
 //   fall(board) -> events   clears(board, rs) -> { cells: Set, events }   pinch(board, side) -> events   ACTIONS[kind] = { cost, legal, apply }
@@ -37,16 +37,16 @@ export function fall(b) {
 
 const same = (a, c) => a && hasTag(a, 'matches') && c && hasTag(c, 'matches') && a.colour === c.colour;
 
-/** The clears of one settle pass: runs of `rs.run` or more in a line, clusters of `rs.cluster` or more touching (each within one side:
+/** The clears of one settle pass: runs of `rs.match` or more in a line, clusters of `rs.cluster` or more touching (each within one side:
  *  the line breaks them). Returns the cells to clear, credited to the side they are on. */
 export function clears(b, rs) {
   const out = new Set();
-  if (rs.run) for (const [dx, dy] of [[1, 0], [0, 1]]) for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+  if (rs.match) for (const [dx, dy] of [[1, 0], [0, 1]]) for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
     const p = b.at(x, y); if (!p || !hasTag(p, 'matches')) continue;
     const px = x - dx, py = y - dy; if (b.in(px, py) && same(b.at(px, py), p) && b.sideOf(px) === b.sideOf(x)) continue; // (not a run's start)
     const run = [[x, y]]; let cx = x + dx, cy = y + dy;
     while (b.in(cx, cy) && same(b.at(cx, cy), p) && b.sideOf(cx) === b.sideOf(x)) { run.push([cx, cy]); cx += dx; cy += dy; }
-    if (run.length >= rs.run) for (const [rx, ry] of run) out.add(key(rx, ry));
+    if (run.length >= rs.match) for (const [rx, ry] of run) out.add(key(rx, ry));
   }
   if (rs.cluster) {
     const seen = new Set();
@@ -118,7 +118,7 @@ const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 /** The forms' actions (PUZZLE-DUELS.md section 4). legal(state, side, a) -> bool; apply(state, side, a) -> events. A Courier is a body
  *  piece on the board; the god hand acts on any cell of its side. */
 export const ACTIONS = {
-  // ---- the Courier: a body on a cell of its side (its glean and its tools: couriertools.js)
+  // ---- the Courier: a body on a cell of its side (its run and its tools: couriertools.js)
   push: { form: 'courier', cost: 1, // (Sokoban: the run of pushable pieces before the Courier moves one cell, if the cell after it is free)
     legal: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir]; let cx = x + d[0], cy = y + d[1], n = 0;
       while (mineIn(b, side, cx, cy) && b.at(cx, cy) && hasTag(b.at(cx, cy), 'pushable')) { cx += d[0]; cy += d[1]; n++; }
@@ -127,12 +127,12 @@ export const ACTIONS = {
       while (b.at(cx, cy)) { cx += d[0]; cy += d[1]; }
       for (let tx = cx, ty = cy; tx !== x || ty !== y; tx -= d[0], ty -= d[1]) b.move(tx - d[0], ty - d[1], tx, ty);
       S.at = [x + d[0], y + d[1]]; return [{ type: 'push', side, dir: a.dir, to: S.at }]; } },
-  punt: { form: 'courier', cost: 2, // (Noon, Bomberman: the piece beside slides until something stops it)
+  kick: { form: 'courier', cost: 2, // (Noon, Bomberman: the piece beside slides until something stops it)
     legal: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir], p = b.at(x + d[0], y + d[1]);
       return !!p && hasTag(p, 'pushable') && mineIn(b, side, x + 2 * d[0], y + 2 * d[1]) && !b.at(x + 2 * d[0], y + 2 * d[1]); },
     apply: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir]; let px = x + d[0], py = y + d[1]; const p = b.at(px, py);
       while (mineIn(b, side, px + d[0], py + d[1]) && !b.at(px + d[0], py + d[1])) { b.move(px, py, px + d[0], py + d[1]); px += d[0]; py += d[1]; }
-      return [{ type: 'punt', side, id: p.id, to: [px, py] }]; } },
+      return [{ type: 'kick', side, id: p.id, to: [px, py] }]; } },
   // ---- the god hand: over its side
   swap: { form: 'hand', cost: 1, // (Bejeweled)
     legal: (s, side, a) => { const b = s.board, [x, y] = a.at, d = DIR[a.dir], p = b.at(x, y), q = b.at(x + d[0], y + d[1]);
