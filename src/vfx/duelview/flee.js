@@ -8,7 +8,7 @@
 //   THE ROLL        the 'flee' event { roll, bonus, need, mods, ok }: a d20 of Raku's dice set (vfx/bazaarpieces.js, the plum d20 with
 //                   the schiller in its numerals) thrown from the Courier's figurine before the board, tumbling, coming to rest
 //                   before the Courier's half with `roll` turned to you, its window over it; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
-//                   ROLL, then each modifier that is not nought (LINE held or lost, BUCKLE +3 a stun depth, PITY +3 a failed try, LUCK)
+//                   ROLL, then each modifier that is not nought (LINE held or lost, BREAK +3 a stun depth, PITY +3 a failed try, LUCK)
 //                   lighting in and rolling the total up, against the 15 it must reach, and the verdict: a tick in the film, or a cross
 //                   in the ember (a natural 20 or 1 stamped so). The die and the window linger a beat, then fade.
 //   THE FLED        'duel.fled': the domains' clash collapses softly with no winner (no kintsugi gold), and the tsuitate folds back
@@ -30,7 +30,7 @@ import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
 
 const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
 const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9;
-const REASONS = [['line', 'LINE'], ['duelBreak', 'BUCKLE'], ['pity', 'PITY'], ['luck', 'LUCK']];
+const REASONS = [['line', 'LINE'], ['duelBreak', 'BREAK'], ['pity', 'PITY'], ['luck', 'LUCK']];
 const OK = '#ffe7a0', NO = '#ff8a5a', FAINT = 'rgba(226,243,230,.45)';
 const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 

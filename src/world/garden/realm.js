@@ -464,8 +464,8 @@ export class Realm {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     const open = () => menu.showPage('athanor', (im, el) => {
       const rows = el('div', 'rooms'), plates = this.awaken.plates();
-      for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Awaken: ${p.kind}</b><s>a plate of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
-      if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No plate to awaken</b><s>photograph a creature with the Veritome, and its plate can wake one here</s></span>'));
+      for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Hatch: ${p.kind}</b><s>a photo of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
+      if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No photo to hatch from</b><s>photograph a creature with the Veritome, and its photo can hatch one here</s></span>'));
       im.appendChild(el('div', 'grp', 'THE PLATE SHRINE')); im.appendChild(rows);
     }, { title: 'THE PLATE SHRINE', sub: 'click a plate · F closes' });
     open();

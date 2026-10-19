@@ -1,8 +1,11 @@
-**Espada's state (Lore), 2026-10-07**
+**Espada's state (Lore), 2026-10-19**
 
-- **Mine:** `docs/LORE.md`, `src/npc/talks.js`, `src/npc/realmnames.js`, the World section of `docs/GLOSSARY.md`; strings only elsewhere.
-- **Waiting on the owner:** LORE.md section 11 (the Pithos's casts, the Firings, the five phases, Shrines, Wake Whistle, blots, the
-  crossing's cast; the open blanks).
-- **To do:** the spirits' kinds once Dovina sets them; Seger's talk when Seger
-  stands; the log's lines in the robotic register (shops, the vessel, crystals, psyguns); the help pages.
+- **Mine:** `docs/LORE.md`, `docs/NEURALESE.md`, `src/npc/talks.js`, `src/npc/realmnames.js`, `src/npc/neuralese*.js`, the world words of
+  `docs/GLOSSARY.md`; strings only elsewhere.
+- **The rule now:** "Plain names until settled" (CLAUDE.md, the owner 2026-10-19). Lore names for the caster shells, the god hand, the
+  Raceway, the rod's fish and the hanko words wait for the owner to call each finalized.
+- **Ruled since:** cradle and the Assay (the owner, 2026-10-19); the puzzle duel's genre words; Flee.
+- **Waiting on the owner** (through Dovina's digest): the Pneuka Box, Mind Mapping, EmO, the Zone of Influence and Possibilikey, keep or
+  plain.
+- **Parked:** the Great Dunemaw's fight lines (in flux): `2026-10-07-from-dovina-room-sweeps.md`.
 - **Words reports** from the F8 bug report (kind "words") come here first.

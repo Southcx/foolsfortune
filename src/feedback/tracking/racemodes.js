@@ -15,7 +15,7 @@ const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m
 const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster' }; // (working names: Espada's)
 const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const CUP_NAMES = { clay: 'the Clay Cup', sibling: 'the Sibling Cup' };
-const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the vein lane.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
+const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the recharge strip.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
 const STADIUM = { race: 'a race against the rivals', hotlap: 'a hot lap', pots: 'a pot smash', escape: 'the escape' };
 
 export function raceModeRules({ on, L, log }) {
@@ -59,10 +59,10 @@ export function raceModeRules({ on, L, log }) {
   on('wager.place', (e) => { L.inc('wager.place'); say('skiff', `${e.stake} cubes on you to ${e.on === 'win' ? 'win' : 'make the podium'}, at ${e.odds} to 1.`, 'wager'); });
   on('wager.settle', (e) => { if (e.won) { L.inc('wager.won'); L.inc('wager.paid', e.paid); say('record', `The wager pays ${e.paid} cubes.`, 'wager.s'); } else { L.inc('wager.lost'); say('info', e.why === 'finish' ? 'The wager is lost.' : 'The stake is forfeit.', 'wager.s'); } });
   // ---- the board's rules (courier/skiff/boardrules.js)
-  on('skiff.hull', (e) => { if (e.by !== 'courier') return; L.inc('skiff.hull'); L.inc('skiff.hull.damage', Math.round(e.damage)); if (e.left < 20) say('warn', 'Your pool runs low: one more hard knock wrecks the board. Find a vein lane.', 'hull.low', 8); });
+  on('skiff.hull', (e) => { if (e.by !== 'courier') return; L.inc('skiff.hull'); L.inc('skiff.hull.damage', Math.round(e.damage)); if (e.left < 20) say('warn', 'Your pool runs low: one more hard knock wrecks the board. Find a recharge strip.', 'hull.low', 8); });
   on('skiff.wreck', (e) => { if (e.by !== 'courier') return; L.inc('skiff.wreck'); say('warn', 'The board is wrecked: your pool was empty.', 'wreck', 2); });
-  on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'The vein lane fills your pool.', 'refill', 10); });
-  on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Your sail scorches and luffs: ease off the flare.', 'scorch', 4); });
+  on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'The recharge strip fills your pool.', 'refill', 10); });
+  on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Your sail overheats and luffs: ease off the flare.', 'scorch', 4); });
   on('skiff.manual', (e) => { if (e.by !== 'courier') return; L.inc('skiff.manual'); L.hi('skiff.manual.best', e.seconds); if (e.fell) say('warn', 'You lose the manual.', 'manual', 3); else if (e.seconds >= 2) say('skiff', `A ${e.seconds.toFixed(1)} s manual.`, 'manual', 2); });
   on('skiff.flare.banked', (e) => { if (e.by === 'courier') L.inc('skiff.flare.banked'); });
   on('skiff.shoulder', (e) => { if (e.by === 'courier') L.inc('skiff.shoulder'); });
@@ -70,7 +70,7 @@ export function raceModeRules({ on, L, log }) {
   on('skiff.gap', (e) => { if (e.by !== 'courier') return; L.inc('skiff.gap'); L.inc(`skiff.gap.${e.gap}`); const n = L.get(`skiff.gap.${e.gap}`); say('skiff', `Gap: ${e.label}, ${e.points}.${n === 1 ? ' Your first time.' : ''}`, `gap.${e.gap}`, 1); });
   on('skiff.buoy', (e) => { if (e.by !== 'courier') return; L.inc(e.hit ? 'skiff.buoy.hit' : 'skiff.buoy.miss'); L.hi('skiff.buoy.power', e.power); if (!e.hit) say('warn', 'You miss a buoy: your power is gone.', 'buoy', 3); else if (e.power === 5) say('skiff', 'Full power.', 'buoy.full', 6); });
   on('skiff.part', (e) => say('skiff', `You fit the ${e.part.split('.').reverse().join(' ')}.`, 'part', 0.5));
-  on('skiff.siphon', (e) => { L.inc('skiff.siphon'); if (e.took > 0) say('warn', `The siphon drinks ${e.took} of your Lachryma.`, 'siphon', 3); });
+  on('skiff.siphon', (e) => { L.inc('skiff.siphon'); if (e.took > 0) say('warn', `The drain gate drinks ${e.took} of your Lachryma.`, 'siphon', 3); });
   on('pool.cap', (e) => { if (e.source === 'cracks' && e.share > 0) say('warn', `Your cracks hold ${Math.round(e.share * 100)}% of your Lachryma back until they mend.`, 'pool.cap', 6); });
   on('skiff.glaze', (e) => { if (e.by !== 'courier') return; L.inc('skiff.glaze'); say('skiff', e.glaze ? 'Your hull comes out of the kiln glazed.' : 'Your hull is bare again.', 'skiff.glaze', 0.5); });
   on('skiff.setting', (e) => say('info', e.on ? 'The balance is turned round: A pushes the lean left.' : 'The balance is as it was: A pushes the lean right.', 'skiff.set', 0.5));

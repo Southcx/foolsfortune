@@ -207,7 +207,7 @@ if (part('pier')) {
 
 // ---------------------------------------------------------------- a crossing to Margarite's dock (the shoal)
 /** Board from the pier's page as a person does: the sea chart opened from its row, a lane drafted by clicking its waypoints (a sailable
- *  one through a waypoint of the set piece asked for, else the first sailable), CAST OFF clicked: the trip (world/emocean/triprun.js).
+ *  one through a waypoint of the set piece asked for, else the first sailable), SET SAIL clicked: the trip (world/emocean/triprun.js).
  *  `direct` sails the old hop by the pier's handle instead (the stage's script acts, which the set piece checks below read; the page's
  *  direct row is to be retired: Petra, v120). */
 const LEG_OF = { shoal: 'shoal', pirates: 'wreckers', leviathan: 'leviathan' };
@@ -231,7 +231,7 @@ const board = async (island, to, setPieces, { direct = false } = {}) => {
   }, { want: LEG_OF[setPieces] || setPieces });
   if (!lane) return { ok: false, why: 'no sailable lane on the sea chart' };
   for (const id of lane.ids) { await S.page.click(`#indexmenu [data-wp="${id}"]`); await S.ticks(1); }
-  await S.page.click('#indexmenu .room >> text=CAST OFF');
+  await S.page.click('#indexmenu .room >> text=SET SAIL');
   await S.ticks(2); await S.settle(); await S.ticks(4);
   return { ok: true, types: lane.types };
 };

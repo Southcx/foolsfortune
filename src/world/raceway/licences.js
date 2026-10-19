@@ -20,7 +20,7 @@ export const LICENCES = [
   { id: 'snake', label: 'Snake', track: 'sun', from: 0, to: 1, rule: 'snakes', n: 3, line: 'To gate 1 with three snaking carves: each the other way, soon after the last.' },
   { id: 'grind', label: 'Grind', track: 'sun', from: 0, to: 3, rule: 'grind', n: 40, line: 'To gate 3, grinding 40 metres of rail on the way.' },
   { id: 'hull', label: 'Hull', track: 'gorge', from: 0, to: 3, rule: 'hull', n: 0.6, line: 'Through the canyon to gate 3 with your pool still over 60%.' },
-  { id: 'pit', label: 'Pit lane', track: 'sun', from: 5, to: 6, rule: 'refill', n: 0.75, siphon: true, pace: 0.85, line: 'Under the siphon, it drinks your pool to a quarter: ride the vein lane, and reach gate 6 with it over 75%.' },
+  { id: 'pit', label: 'Pit lane', track: 'sun', from: 5, to: 6, rule: 'refill', n: 0.75, siphon: true, pace: 0.85, line: 'Under the drain gate, it drinks your pool to a quarter: ride the recharge strip, and reach gate 6 with it over 75%.' },
   { id: 'air', label: 'Big air', track: 'sun', from: 6, to: 7, rule: 'trick', n: 1, line: 'Off the lip, land a spin square, and on to gate 7.' },
   { id: 'clean', label: 'Clean lap', track: 'coaster', from: 0, to: 8, rule: 'clean', line: 'To gate 8 of the Coaster without a bump, a wall or a bail.' },
 ];

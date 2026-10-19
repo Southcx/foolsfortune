@@ -66,7 +66,7 @@ export function renderTools(codex, cx) {
   const heart = box?.fitted('heart')[0], keys = box?.fitted('keys') || [];
   lh.appendChild(el('h3', '', 'THE LOCKHEART'));
   lh.appendChild(el('div', 'k', `I · ${heart ? HEARTS[heart].name : 'no coffin on the chain'} · ${L ? `${Math.round(L.charge)} / ${heart ? HEARTS[heart].fill : '·'} Lachryma in it` : ''}`));
-  lh.appendChild(el('p', '', 'Worn, it drinks the Lachryma you cannot hold. Drawn, <b>hold LMB</b> to hoover up what lies loose (liquid Lachryma counts double) and to draw it out of a mind laid low. <b>RMB</b>, when it is full and a Possibilikey is on its ring, opens it: the keys are used up, and its wheel is spun.'));
+  lh.appendChild(el('p', '', 'Worn, it drinks the Lachryma you cannot hold. Drawn, <b>hold LMB</b> to vacuum up what lies loose (liquid Lachryma counts double) and to draw it out of a mind laid low. <b>RMB</b>, when it is full and a Possibilikey is on its ring, opens it: the keys are used up, and its wheel is spun.'));
   for (const [id, H] of Object.entries(HEARTS)) {
     const { table } = oddsOf(id, id === heart ? keys : []), R = rates(table);
     const d = el('div', 'lrow');

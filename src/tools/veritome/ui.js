@@ -106,7 +106,7 @@ function binder(codex, cx, g, B) {
   det.appendChild(el('h3', '', n || seen ? A.name.toUpperCase() : '· · ·'));
   if (n || seen) det.appendChild(el('p', '', A.lore));
   det.appendChild(el('p', 'hint', A.section === 'arcana' ? `Sitting: ${A.hint}.` : `Comes from: ${A.hint}.`));
-  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise its plate.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the film.'));
+  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise the photo.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the photo.'));
   const carried = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
   if (carried) det.appendChild(el('p', '', `<span style="color:#9be36a">CARRIED</span> · ${carried} in the Pneuka Box${g.pneuka.lure === A.id ? ', on the line' : ''} (P)`));
   const btns = el('div', 'btns');
@@ -130,10 +130,10 @@ function memory(codex, cx, g, B) {
   btns.appendChild(button(`APPRAISE CHOSEN (${pick.size})`, () => { codex.vtReport = g.veritome.appraise([...pick]); pick.clear(); codex.render(); }, !pick.size));
   btns.appendChild(button(`DISCARD CHOSEN (${pick.size})`, () => { F.remove([...pick]); B.save(); g.events?.emit('photo.discard', { n: pick.size }); pick.clear(); codex.render(); }, !pick.size));
   left.appendChild(btns);
-  left.appendChild(el('div', 'sec', `MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a plate to choose it`));
+  left.appendChild(el('div', 'sec', `MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a photo to choose it`));
   const roll = el('div', 'roll');
   for (const p of F.plates) {
-    const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PLATE ${p.id}<em>undeveloped</em>`);
+    const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PHOTO ${p.id}<em>unappraised</em>`);
     d.onclick = () => { if (pick.has(p.id)) pick.delete(p.id); else pick.add(p.id); codex.render(); };
     roll.appendChild(d);
   }
@@ -145,7 +145,7 @@ function memory(codex, cx, g, B) {
   rep.appendChild(el('div', 'in', 'THE LAST APPRAISAL'));
   if (!R) rep.appendChild(el('p', 'hint', 'Appraising is where a photograph turns out to have been worth something: the Compendium keeps the best of each kind, the bestiary learns what each creature was doing, and a photograph of the right thing is a card.'));
   else {
-    rep.appendChild(el('p', '', `${R.results.length} plates · ${R.entries} new entr${R.entries === 1 ? 'y' : 'ies'} · ${R.facts} fact${R.facts === 1 ? '' : 's'} · ${R.cards} card${R.cards === 1 ? '' : 's'}`));
+    rep.appendChild(el('p', '', `${R.results.length} photos · ${R.entries} new entr${R.entries === 1 ? 'y' : 'ies'} · ${R.facts} fact${R.facts === 1 ? '' : 's'} · ${R.cards} card${R.cards === 1 ? '' : 's'}`));
     for (const r of R.results.slice(0, 24)) {
       const what = [r.entry && 'new entry', ...r.facts.map((f) => `${CREATURES[f.creature].name}: a fact`), ...r.cards.map((c) => CARD[c].name)].filter(Boolean).join(' · ');
       rep.appendChild(el('div', 'ph', `<i${r.plate.thumb ? ` style="background-image:url(${r.plate.thumb})"` : ''}></i>${(SUBJECTS[r.kind]?.name || r.kind || 'nothing').toUpperCase()} <span>${stars(r.stars)}</span><em>${what || '—'}</em>`));
@@ -175,7 +175,7 @@ function bestiary(codex, cx, g, B) {
     const k = Bs.knows(id, f.id);
     card.appendChild(el('p', `fact${f.battle && k ? ' battle' : ''}${k ? '' : ' unk'}`, k ? f.text : '· · · (not yet photographed doing it)'));
   }
-  card.appendChild(el('p', 'hint', 'Facts are learned from photographs of a creature doing something, appraised in the darkroom. A creature that is understood is one the Soul Brush may one day paint a likeness of.'));
+  card.appendChild(el('p', 'hint', 'Facts are learned from photographs of a creature doing something, appraised in the Book. A creature that is understood is one the Soul Brush may one day paint a likeness of.'));
   wrap.appendChild(card);
   cx.appendChild(wrap);
 }
