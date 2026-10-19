@@ -114,7 +114,7 @@ void main() {
   // THE GROUND BEHIND: the duel's view, or the dark with the film's sheen; the Line a seam of the feeling's light
   vec3 col = uDark > 0.5 ? vec3(0.0021, 0.0009, 0.004) + labSoft(vUv.x * 0.5 + vUv.y * 0.3 + uLineK * 0.2) * 0.025 * (0.5 + 0.5 * sin(vUv.y * 7.0 + vUv.x * 3.0))
                          : texture2D(tSrc, vUv).rgb;
-  col += uFeel * exp(-pow((p.x - uLineX) / 0.006, 2.0)) * uLineK * 1.6;
+  col += uFeel * exp(-pow((p.x - uLineX) / 0.0025, 2.0)) * uLineK * 1.1;
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -255,7 +255,7 @@ export class AberrantWipe {
     u.uTwist.value = tw * (R.you < 0 ? 1 : -1); u.uPinch.value = 0.32 * ease(x); u.uBleed.value = 0.25 + 0.75 * ease(x);
     const bugK = T.visual.glitch === false ? 0.33 : 1, b = t < CATCH ? 0 : t < CATCH + BUG * 0.4 ? bump(t, CATCH, CATCH + BUG * 0.4) : 1 - 0.85 * bump(t, CATCH + BUG * 0.4, CATCH + BUG);
     u.uBug.value = b * bugK; u.uCrack.value = t < CATCH + BUG ? 0 : Math.min(1, (t - CATCH - BUG) / CRACK);
-    u.tHeld.value = this.held.texture; u.uLineK.value = 0;
+    u.tHeld.value = u.tHist.value = this.held.texture; u.uLineK.value = 0; // (no sampler left on a target drawn into below: a feedback loop drops the draw)
     if (R.ts < 0) { this.pass(post, 1, this.hist[2]); return this.hist[2]; }
     // the shatter: the presented frame kept once (into the pair's spare: the catch is over), the ground drawn, the shards over it
     const snap = this.hist[this.flip]; // (the held frame is [1 - flip])
