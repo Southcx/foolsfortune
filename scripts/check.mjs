@@ -34,6 +34,7 @@ const RETIRED = [
   { re: /\blab mode\b|\bLab mode\b|\bsystem\.lab\b|\bsetLab\b/g, say: "'Lab mode' (the all-arts switch: `allArts`)" },
   { re: /\bpause card\b/gi, say: "'pause card' (the pause menu)" },
   { re: /\bmat\.film\b|\bloadFilm\b|\bfilm\.load\b|\bfilm\.rolls\b/g, say: "the Veritome's film (it has a memory of 24 plates since 2026-10-06: memory.js)" },
+  { re: /\bLockheartMarks\b|\blockheartMarks\b|\bthe Lockheart's gauge\b/g, say: "'the Lockheart's gauge' (the Lockheart's reliquary: vfx/lockheartreliquary.js, 2026-10-19)" },
   { re: /\bpolarity\b/gi, say: "'polarity' (the Astral and Umbral forms)", rule: 'word.retired.polarity' }, // (its own rule, adopted the day it was retired: 2026-10-08)
 ];
 
