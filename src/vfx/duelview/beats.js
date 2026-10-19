@@ -90,7 +90,8 @@ export class DuelBeats {
     if (e.type === 'orb.drink') { job.i++; return this.drinkAt(e); }
     if (e.type === 'duel.finisher') { job.i++; V.spend(e.side, COST['duel.finisher'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); return this.finisher(e); }
     if (e.type === 'turn') { job.i++; return this.turn(e); }
-    if (e.type === 'flee') { job.i++; V.spend(e.side, FLEE.cost, e); return V.flee.roll(e); }
+    if (e.type === 'flee') { job.i++; V.spend(e.side, e.ap ?? (e.ok ? 0 : FLEE.cost), e); // (only a failed roll costs: the owner, via Dovina's e3e13b4)
+    return V.flee.roll(e); }
     if (e.type === 'duel.fled') { job.i++; return V.flee.fled(e); }
     if (e.type === 'offset' || e.type === 'send') { job.i++; V.count(e); return { events: [e], dur: 0.38 }; }
     if (e.type === 'duel.full' || e.type === 'duel.line' || e.type === 'duel.cap') { job.i++; return { events: [e], dur: 0.4, step: (u) => { if (e.winner === 0) V.board.won(sm(u)); } }; }
