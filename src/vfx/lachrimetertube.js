@@ -34,7 +34,7 @@
 //
 //   const L = new LachrimeterTube(game)   game.lachrimeterTube   (it registers itself with game.overlayScene; nothing else to call)
 //   L.pulse()  the pool was touched or refused (a gain, a dry click): the tube comes up and stands its quiet seconds
-//   L.bulbAt(out) -> { x, y, z, r } the bulb in the overlay scene (null while hidden)   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
+//   L.bulbAt(out) -> { x, y, z, r } the bulb in the overlay scene (null while hidden)   L.valveAt(out) -> { x, y, z } the Bottles' valve   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -235,6 +235,12 @@ export class LachrimeterTube {
   bulbAt(out = {}) {
     if (!this.root || this.shown <= 0 || this.root.userData.overlayHidden) return null;
     const e = this.inst.matrixWorld.elements; out.x = e[12]; out.y = e[13]; out.z = e[14]; out.r = 0.42 * this.inst.scale.x; return out;
+  }
+  /** The Bottles' valve wheel in the overlay scene's coordinates, into `out` as { x, y, z }; null while the tube is not shown (the
+   *  spiritual link's foot slides there while a tool spends or fills the Bottles). */
+  valveAt(out = {}) {
+    if (!this.root || !this.valveM || this.shown <= 0 || this.root.userData.overlayHidden) return null;
+    this.valveM.updateWorldMatrix(true, false); const e = this.valveM.matrixWorld.elements; out.x = e[12]; out.y = e[13]; out.z = e[14]; return out;
   }
   constructor(game) {
     this.holds = new Map(); // (source -> Lachryma shown reserved: reserve())
