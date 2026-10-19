@@ -18,6 +18,8 @@
 - **The tools' own UI** (Calissa's mock round 9, 2026-10-18, not signed off): the cylinder's turn, auto-turn, shot, open and home are
   wired (`audio/cues.js`); the draw, stow, Pepperbox and the Sondelass's form change and lure ring wait for their events. Still unsketched: the string's notch pop, the
   paid cut's glint, the hook's brackets and reel beads, the link's bead and count roll, the link's hum (the dry click's drop-out).
+- **A puzzle duel** (Dovina, 2026-10-19): `sfx.duelEvent(e)` is built (`audio/puzzleduel.js`); when Calissa's view exists, it calls it
+  for each event as it animates it (or the events go on the bus and a rule in `audio/cues.js` calls it). A duel cue then, too.
 - **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
   the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
   their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
