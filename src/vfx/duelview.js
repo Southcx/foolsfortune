@@ -76,7 +76,7 @@ export class DuelView {
   open({ state, foe = null, at, facing = null } = {}) {
     if (!state) return;
     this.close(true);
-    this.state = state; this.foe = foe; this.isOpen = true; this.closing = false; this.coupDone = false;
+    this.state = state; this.foe = foe; this.isOpen = true; this.closing = false; this.finisherDone = false;
     const asp = (KIND_RULESETS[foe?.kind] && rulesetOf(foe).feeling) || foe?.grade || foe?.feeling || state.rs?.feeling; // (a kind's own ruleset first: the aberrant Lantern Wisp's is Dread's)
     this.aspect = asp && COLOR[asp] !== undefined ? asp : 'fury';
     // where it stands: +X of its frame from the Courier's end to the foe's, its face along u x up
@@ -146,7 +146,7 @@ export class DuelView {
    *  in the dry ink, and the spiritual link slack. No words. */
   refuse(a = {}) {
     if (!this.isOpen) return;
-    const body = this.pieces.bodyAt(0), c = a.at || a.path?.[0] || (body && !a.at && ['push', 'punt', 'glean', 'shoot', 'hook', 'drill', 'paint', 'toll', 'hoover', 'flail', 'flee'].includes(a.kind) ? [body.cx, body.cy] : null) || this.marks.hovered;
+    const body = this.pieces.bodyAt(0), c = a.at || a.path?.[0] || (body && !a.at && ['push', 'kick', 'run', 'shoot', 'grab', 'drill', 'paint', 'delay', 'hold', 'send', 'flee'].includes(a.kind) ? [body.cx, body.cy] : null) || this.marks.hovered;
     if (c) this.marks.refuse({ x: c.x ?? c[0], y: c.y ?? c[1] });
     this.game.spiritualLink?.slack?.();
   }
@@ -182,9 +182,9 @@ export class DuelView {
   drink(e) { if (e.side === 0) this.game.spiritualLink?.bead({ amount: 8, colour: TEAR, rev: true, dur: 0.45 }); }
   form(side, to) { this.forms[side] = to; }
   headOf(side, out) { const v = this.pieces.bodyAt(side); return v ? cellLocal(v.x, v.y - 0.55, this.board3, out).setZ(DUEL_VIEW.front + 0.05) : out.set(0, -99, 0); }
-  /** Where the god hand stands over a side's half (the board's frame): the coup's cubes go up into it. */
+  /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
-  /** The coup's drain on the foe in the world (the crackle break, the beats, its data bug mended: vfx/datadrain.js). */
+  /** The finisher's drain on the foe in the world (the crackle break, the beats, its data bug mended: vfx/datadrain.js). */
   drainFoe() { const f = this.foe; if (f?.pos && this.game.dataDrain) { this.frame.localToWorld(this.handPoint(1, _w)); this.game.dataDrain.play(f, _w.clone()); } this.depth[1] = 0; }
 
   readCounts() { const S = this.state.sides; this.sent = [S[0].sent || 0, S[1].sent || 0]; this.pending = [S[0].pending || 0, S[1].pending || 0]; this.showCounts(); }
@@ -198,7 +198,7 @@ export class DuelView {
     this.pieces.build(s.board, this.aspect); this.gravLine = s.board.line; this.board.setGravity(s.board);
     for (const v of this.pieces.list) if (v.kind === 'ember' && was.has(v.id) && v.count < was.get(v.id)) { // (an ember burnt down a turn: a puff, its glaze a step dimmer)
       v.cool = 1; cellLocal(v.x, v.y, this.board3, _w); this.bursts.burst(_w, 0x2e1810, 4, { speed: 0.4, life: 0.4, fall: -1, size: 0.018 }); }
-    if (this.coupDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
+    if (this.finisherDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
     else this.setLine(s.board.line);
     this.forms = s.sides.map((S) => S.form); this.readCounts(); this.readPoints(); this.readFight();
     if (s.winner === 0) this.board.won(1);
@@ -254,7 +254,7 @@ export class DuelView {
     this.marks.numeral('3', new THREE.Vector3(0, 1, 0.1), '#ffffff'); this.marks.hover({ x: 2, y: 18 }); this.marks.stars(1, 2, new THREE.Vector3(0, 1, 0));
     this.bursts.burst(new THREE.Vector3(0, 1, 0), 0xffffff, 4);
     this.intentDraw.show(state, [{ kind: 'swap', at: [12, 18], dir: 'E' }, { kind: 'rotate', at: [12, 16] }], 1, this.aspect);
-    for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('teardrop', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
+    for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('orb', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
     const coal = this.pieces.add('ember', { count: 2 }, 6, 3); coal.craze = 0.8; this.marks.refuse({ x: 7, y: 3 }); // (the crazing's quads, the dry rim)
     this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
     return () => { this.close(true); this.frame.scale.setScalar(1); };

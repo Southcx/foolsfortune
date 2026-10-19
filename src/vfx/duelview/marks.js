@@ -7,7 +7,7 @@
 //   A DUEL'S CHAIN  its step's numeral popping from the middle of its clear and rising 0.7 of a cell, the Courier's in the film's colour,
 //                   the foe's in its feeling (Puyo's chain voice, Panel de Pon's counter on the panels)
 //   THE JUNK COUNTS on the Line's head: what waits to land on each side, an arrow toward the side it will land on, in the sender's colour
-//   THE STARS       a buckled side's gold stars wheeling round its figurine, one a stun depth (vfx/dizzy.js's star and gold)
+//   THE STARS       a broken side's gold stars wheeling round its figurine, one a stun depth (vfx/dizzy.js's star and gold)
 //
 // Prior art: Puyo Puyo's chain counter, Tetris 99's incoming-garbage meter (the waiting count by the well), Panel de Pon's chain number
 // over the panels that made it; the stunned stars of the cartoon, as vfx/dizzy.js.

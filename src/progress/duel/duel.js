@@ -3,26 +3,28 @@
 // turn, a knob), each action followed by the settle (gravity, clears, what a clear sets off, again and again until nothing changes); its
 // clears become junk, which cancels what is coming at it first and then waits to land on the other side at the end of that side's own
 // turn. Junk landed pushes the line toward the receiver, one column for every 3. A side wins when the line reaches the other's back
-// wall, when the other's side has no empty cell left after its junk lands, or by the coup on a buckled foe (buckle.js).
+// wall, when the other's side has no empty cell left after its junk lands, or by the finisher on a broken foe (duelbreak.js).
 //
 // Prior art: Puyo Puyo Tetris (chains, junk, offsetting, junk waiting a turn so it can be answered), Noon (the territories, a
 // side filled to death), PuzzleScript (the settle loop run to a fixed point), Into the Breach (the turn as a plan of a few actions).
 //
 //   newDuel({ ruleset, seed, forms, ap, pool, tools }) -> state   act(state, action) -> events | null (illegal)   endTurn(state) -> events
-//   ACTIONS (the board's, the Courier's, the coup)   costOf(action)
+//   ACTIONS (the board's, the Courier's, the finisher)   costOf(action)
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
-import { COURIER_ACTIONS, gleanPaths } from './couriertools.js';
-import { onLanding, startTurn, endOwnTurn, COUP_ACTION } from './buckle.js';
+import { COURIER_ACTIONS, runPaths } from './couriertools.js';
+import { onLanding, startTurn, endOwnTurn, FINISHER_ACTION } from './duelbreak.js';
 import { emberKind, tickEmbers } from './dread.js';
 import { FLEE_ACTION } from './flee.js';
 import { seeded } from '../../core/rng.js';
 
-/** Every action a side may take: the board's (rules.js), the Courier's glean and tools (couriertools.js), the god hand's coup (buckle.js),
+/** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
-export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, coup: COUP_ACTION, flee: FLEE_ACTION };
+export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, finisher: FINISHER_ACTION, flee: FLEE_ACTION };
+/** The kinds' first names, still taken while the room and the view move to the genre's words (the owner, 2026-10-19); to go once they have. */
+const LEGACY = { glean: 'run', punt: 'kick', coup: 'finisher', hook: 'grab', toll: 'delay', hoover: 'hold', flail: 'send' };
 export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
 
 export const DUEL = {
@@ -40,15 +42,15 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, coup = [true, false], flee = [true, false], luck = [0, 0] } = {}) {
-  const rs = { run: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0] } = {}) {
+  const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
   board.setGravity(rs.gravity || (() => [0, 1]));
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, buckles: 0, coup: !!coup[i], flee: !!flee[i], fleeFails: 0 })) };
+      ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
   s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   for (const side of [0, 1]) {
     fillSide(s, side);
@@ -107,6 +109,7 @@ export function settle(s) {
 /** One action by the side to move: refused (null) if it is not legal, not its form's, or costs more than the points left. */
 export function act(s, a) {
   if (s.winner !== null) return null;
+  if (LEGACY[a.kind]) a = { ...a, kind: LEGACY[a.kind] };
   const side = s.toMove, A = ACTIONS[a.kind]; if (!A) return null;
   if (A.form && A.form !== s.sides[side].form) return null;
   const cost = costOf(a); if (cost > s.apLeft || !A.legal(s, side, a)) return null;
@@ -123,7 +126,7 @@ export function act(s, a) {
  *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its drip). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
-  events.push(...tickEmbers(s, side), ...endOwnTurn(s, side)); // (its embers burn down; its teardrops fade, its EmO settles, its stun counts down: before what lands on it can break it again)
+  events.push(...tickEmbers(s, side), ...endOwnTurn(s, side)); // (its embers burn down; its orbs fade, its EmO settles, its stun counts down: before what lands on it can break it again)
   const off = Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off;
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
@@ -148,7 +151,7 @@ function land(s, side, n) {
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
-  const broke = onLanding(s, side, n); if (broke.length) { S.buckles += broke[0].type === 'buckle' ? 1 : 0; events.push(...broke); }
+  const broke = onLanding(s, side, n); if (broke.length) { S.breaks += broke[0].type === 'duelBreak' ? 1 : 0; events.push(...broke); }
   while (S.landed >= DUEL.perColumn && s.winner === null) { S.landed -= DUEL.perColumn; events.push(...moveLine(s, side === 0 ? -1 : 1)); }
   return events;
 }
@@ -184,12 +187,12 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
   const ok = (a) => { const A = ACTIONS[a.kind]; if (A.form && A.form !== S.form) return; if (costOf(a) <= s.apLeft && A.legal(s, side, a)) out.push(a); };
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
   if (S.form === 'courier' && S.at) {
-    for (const path of gleanPaths(s, side)) ok({ kind: 'glean', path });
-    for (const dir of dirs) for (const kind of ['push', 'punt', 'drill']) ok({ kind, dir });
-    for (const kind of ['shoot', 'hook', 'toll', 'hoover', 'flail']) ok({ kind });
+    for (const path of runPaths(s, side)) ok({ kind: 'run', path });
+    for (const dir of dirs) for (const kind of ['push', 'kick', 'drill']) ok({ kind, dir });
+    for (const kind of ['shoot', 'grab', 'delay', 'hold', 'send']) ok({ kind });
     for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });
   }
-  if (S.form === 'hand') ok({ kind: 'coup' });
+  if (S.form === 'hand') ok({ kind: 'finisher' });
   ok({ kind: 'flee' });
   if (S.form === 'hand') {
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {

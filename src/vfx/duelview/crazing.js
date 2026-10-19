@@ -4,7 +4,7 @@
 // ware's two nets: the IRON WIRE (a few bold dark cracks running from one point out to the rim and joined into cells) and the GOLDEN
 // THREAD (the fine net between them, here the heat still showing through, ember-gold). The cracks grow along their length from where
 // they start, the wire first and the thread after, then the coal turns (beats.js) and the net goes with its face.
-// Drawn as instances of one unit quad in the pieces' unlit glow (the teardrops' and the pips' program: no program of its own); the nets
+// Drawn as instances of one unit quad in the pieces' unlit glow (the orbs' and the pips' program: no program of its own); the nets
 // are made once each, three of them, a coal picking its own by its seed.
 //
 // Prior art: guan and ge ware's jinsi tiexian, "gold thread and iron wire" (the Song kilns: the crackle opens as the glaze cools and

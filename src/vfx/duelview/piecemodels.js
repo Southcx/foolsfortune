@@ -5,13 +5,13 @@
 // a round (its drops), Desire a heart, Fury a diamond (its cracks' points), Gall a trefoil (its curds), Grief a tear, Dread an eye (its
 // pupil a hole through to the slab: marbling's dark centre). Everything else is clay: junk a grog tile, stone a basalt block, the bomb a
 // raku pot with its neck; an ember (Dread's junk, burning down) a coal of glazed clay, its count glowing pips; a
-// teardrop is a drop of Lachryma. The two bodies are figurines on a clay ledge (a body never falls: it stands
+// orb is a drop of Lachryma. The two bodies are figurines on a clay ledge (a body never falls: it stands
 // on the face of its cell, PUZZLE-DUELS.md 13.7): the Courier's in white clay, the foe's its feeling's idol.
 //
 // Prior art: Super Puzzle Fighter II Turbo's gems (cut stones, a family a colour), Bejeweled's shapes-per-colour (the colour-blind mode
 // that became the default), the haniwa and dogū (clay figurines standing for a person), a Japanese raku tea bowl's crackle.
 //
-//   gemGeometry(aspect) -> BufferGeometry   emberGeometry() pipGeometry()   junkGeometry() stoneGeometry() bombGeometry() teardropGeometry() cubeGeometry()
+//   gemGeometry(aspect) -> BufferGeometry   emberGeometry() pipGeometry()   junkGeometry() stoneGeometry() bombGeometry() orbGeometry() cubeGeometry()
 //   courierFigurine() -> BufferGeometry (vertex colours)   foeIdol() -> BufferGeometry   ledgeGeometry() (vertex colours)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -68,7 +68,7 @@ export function bombGeometry() {
   const ni = (x) => (x.index ? x.toNonIndexed() : x), g = mergeGeometries([ni(body), ni(neck)]); g.computeVertexNormals(); return g;
 }
 /** A drop of Lachryma, its point up (a lathe). */
-export function teardropGeometry() {
+export function orbGeometry() {
   const pts = []; for (let i = 0; i <= 10; i++) { const t = i / 10, y = -0.3 + t * 0.66, r = t < 0.42 ? Math.sin((t / 0.42) * Math.PI / 2) * 0.27 : 0.27 * Math.pow(Math.max(0, 1 - (t - 0.42) / 0.58), 1.35); pts.push(new THREE.Vector2(Math.max(0.002, r), y)); }
   pts[0].x = 0.002; return new THREE.LatheGeometry(pts, 10);
 }

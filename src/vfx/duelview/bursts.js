@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE DUEL'S BURSTS (the duel's view: vfx/duelview.js): the small things thrown off a puzzle duel's board as its beats play: a cleared
-// gem's shards in its colour, junk's grog chips falling, a blast's sparks, a teardrop's four sparks as it fades, the film's dots a glean
-// leaves, and the coup's cubes spiralling up off the foe's half into the god hand (the data drain's STRIP, vfx/datadrain.js, laid on the
+// gem's shards in its colour, junk's grog chips falling, a blast's sparks, a orb's four sparks as it fades, the film's dots a run
+// leaves, and the finisher's cubes spiralling up off the foe's half into the god hand (the data drain's STRIP, vfx/datadrain.js, laid on the
 // board). One instanced mesh of little cubes, unlit (the data drain's cubes' program), in the board's own frame so they stand with it.
 //
 // Prior art: Puyo Puyo's pop (the bean bursting into bits of its colour), Tetris Effect's particles, .hack's data drain (a body
@@ -36,7 +36,7 @@ export class DuelBursts {
     }
   }
 
-  /** A cube of `colour` lifting off `from` and spiralling into `to` (the coup's strip), after `delay` real s. */
+  /** A cube of `colour` lifting off `from` and spiralling into `to` (the finisher's strip), after `delay` real s. */
   spiral(from, to, colour, delay = 0, life = 0.35) {
     if (this.parts.length >= N) return;
     const k = this.k++;

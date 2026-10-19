@@ -7,11 +7,11 @@
 // the Courier's in white clay with a ring of the film turning round it, the foe's idol in its feeling with its data bug's magenta cast
 // slid off it (vfx/databug.js's 'cast', drawn here as the mock drew it). An ember (Dread's junk) is a coal of glazed clay, its count in
 // glowing pips, its glaze dimming a step each turn it burns down, crazing as it cools out (crazing.js) before it turns into its gem;
-// a teardrop is a drop in the film's own flash (never a gem's colour).
+// a orb is a drop in the film's own flash (never a gem's colour).
 // Dread's fog hides what stands on hidden ground (`fogAt`: the view's, from dread.js visibleTo); the bodies are never hidden.
 //
 // Materials: the gems and the beads are Lachrymite (vfx/crystalfrets.js crystalFretMaterial, the Dunes' crystals' and the City Trial's
-// gems' program, its frets left undrawn); junk, stone and the bomb are clay (one lit standard program, instanced); the teardrops are
+// gems' program, its frets left undrawn); junk, stone and the bomb are clay (one lit standard program, instanced); the orbs are
 // unlit (the data drain's cubes' program); the film ring is the Mind's line (vfx/labradorite.js).
 //
 // Prior art: three.js's InstancedMesh (one draw a family), Puyo Puyo's squash on landing, Panel de Pon's flicker as a panel converts
@@ -26,7 +26,7 @@ import { mindLineMaterial } from '../labradorite.js';
 import { featTint } from '../oxidation.js';
 import { DUEL_VIEW, FEELING_ORDER, cellLocal, feelColour, hash } from './layout.js';
 import { drawCrazing } from './crazing.js';
-import { gemGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, bombGeometry, teardropGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
+import { gemGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
 const CLAY = { junk: 0x93552f, stone: 0x4c4856, bomb: 0x2c2224 };
 const EMBER = [0x3a2a24, 0x6a3020, 0xb0401c, 0xff5a1e], PIP = 0xffb24a; // (an ember's glaze by its count, cooling to its last: 0 cold .. 3 fresh)
@@ -58,7 +58,7 @@ export class DuelPieces {
     };
     for (const a of FEELING_ORDER) fam(a, gemGeometry(a), M.gem);
     fam('junk', junkGeometry(), M.clay); fam('stone', stoneGeometry(), M.clay, 64); fam('bomb', bombGeometry(), M.clay, 64);
-    fam('teardrop', teardropGeometry(), M.glow, 64); fam('ember', emberGeometry(), M.clay); fam('pip', pipGeometry(), M.glow, 3 * N);
+    fam('orb', orbGeometry(), M.glow, 64); fam('ember', emberGeometry(), M.clay); fam('pip', pipGeometry(), M.glow, 3 * N);
     fam('craze', new THREE.PlaneGeometry(1, 1), M.glow, N); // (a cooling coal's crazing: crazing.js)
     // the bodies: two figurines
     const cs = DUEL_VIEW.cs;
@@ -130,13 +130,13 @@ export class DuelPieces {
       if (this.fogAt && this.fogAt(Math.round(v.x + v.dx), Math.round(v.y + v.dy)) > 0.5) continue; // (on hidden ground: Dread's fog)
       let key = v.kind;
       if (v.kind === 'gem') key = this.fam[v.colour] ? v.colour : 'fury';
-      if (v.kind === 'teardrop') { _p.y += Math.sin(this.t * 2.4 + v.seed * 6.28) * 0.1 * cs; _p.z += 0.03; }
+      if (v.kind === 'orb') { _p.y += Math.sin(this.t * 2.4 + v.seed * 6.28) * 0.1 * cs; _p.z += 0.03; }
       const mesh = this.fam[key]; if (!mesh || n[key] >= mesh.instanceMatrix.count) continue;
       const i = n[key]++;
-      _e.set(0, v.flip, v.spin + (v.kind === 'teardrop' ? Math.sin(this.t * 1.7 + v.seed * 9) * 0.15 : 0)); _q.setFromEuler(_e);
-      const big = v.kind === 'teardrop' ? 1.2 : 1; _s.set(cs * v.s * v.sx * big, cs * v.s * v.sy * big, cs * v.s * big);
+      _e.set(0, v.flip, v.spin + (v.kind === 'orb' ? Math.sin(this.t * 1.7 + v.seed * 9) * 0.15 : 0)); _q.setFromEuler(_e);
+      const big = v.kind === 'orb' ? 1.2 : 1; _s.set(cs * v.s * v.sx * big, cs * v.s * v.sy * big, cs * v.s * big);
       mesh.setMatrixAt(i, _m.compose(_p, _q, _s));
-      if (v.kind === 'gem') feelColour(v.colour, _c); else if (v.kind === 'teardrop') featTint(this.t * 0.3 + v.seed, _c, { bright: 1.9 }); // (the film's flash, walking)
+      if (v.kind === 'gem') feelColour(v.colour, _c); else if (v.kind === 'orb') featTint(this.t * 0.3 + v.seed, _c, { bright: 1.9 }); // (the film's flash, walking)
       else if (v.kind === 'ember') { const k = Math.max(0, Math.min(3, v.count ?? 3)); _c.setHex(EMBER[k]).multiplyScalar(1 + 0.15 * Math.sin(this.t * 3 + v.seed * 9) * (k / 3)); }
       else _c.setHex(CLAY[v.kind] ?? CLAY.junk);
       if (v.cool) { v.cool = Math.max(0, v.cool - dt / 0.5); _c.lerp(_w, v.cool * 0.6); }

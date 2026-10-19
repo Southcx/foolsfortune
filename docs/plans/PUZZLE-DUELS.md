@@ -1,9 +1,10 @@
 # Puzzle duels: the aberrant Figments' fights on a board
 
-**Names** (Espada's, proposed 2026-10-19; LORE.md "The puzzle duel's words"): the UI says **Puzzle Duel**, the world **a wrangle**
-("You win the wrangle."); the line is **the Line** in the UI, **the March** in the world; what a clear sends is **junk** (lore: **grog**,
-fired clay crushed back into new clay). The Courier's slide is **punt** (the kick is the unarmed moveset). The genre's own word,
-garbage, stays only in the prior art below.
+**Names: the genre's words, everywhere** (the owner, 2026-10-19: "use standard genre names for the rest too, please. I don't know what
+any of those mean out of context"). No lore names: the UI, the log and the code say the same. A **duel**; **the Line**; **junk**; a piece's
+**kick** (Bomberman's); a **match** (three in a line); the Courier's **run**; a **break** (code `duelBreak`, `duelbreak.js`); an **orb**;
+the **finisher** (code `FINISHER`, a duel's; not `stun.finisher`); **Flee**; the tools' moves **Shoot, Grab, Drill, Paint, Delay, Hold,
+Send**. The log: "You break the Figment." Retired from this plan: wrangle, the March, grog, punt, glean, buckle, teardrop, coup, wriggle.
 
 Kept by Dovina (the rules, the engine, the numbers). The look is Calissa's, the sounds Wanda's, the names and each Figment's lore
 Espada's; the controls of the forms and the room's wiring are Petra's. **The engine's kernel is built** (section 10); the rest is a plan.
@@ -35,7 +36,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 | **Bomberman** | **bombs** and their cross of blast, kicking a bomb so it slides |
 | **Qix** | **claiming area** by closing a line round it: territory you draw, not just hold |
 | **Puzzle Pirates** | garbage that arrives in **patterns** chosen by the sender (the swordfight's breakers) |
-| **Bejeweled, Columns, Hexic** | the **swap** of two neighbours, the run of three, the **2×2 rotation** |
+| **Bejeweled, Columns, Hexic** | the **swap** of two neighbours, the match of three, the **2×2 rotation** |
 | **Tetris, Dr. Mario, Meteos** | **dropping** a piece, line clears; **viruses** that must be cleared; **launching** blocks across to the other side |
 | **Terra Battle** | the **drag slide**: a piece dragged along a path swaps with every piece it passes; the **pincer**: an enemy sandwiched between two of yours is taken, and pieces in line with the pincer join it |
 | **Othello** | the pincer's **conversion**: what is sandwiched becomes yours |
@@ -73,16 +74,16 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 
 | form | where | its actions (AP) | from |
 |---|---|---|---|
-| **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **punt** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
-| **the god hand** | over your side | **the coup** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
+| **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **kick** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
+| **the god hand** | over your side | **the finisher** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
 | (switching form) | | 1 | |
 
 The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) is a later module.
 
 ## 5. The rule catalogue (the engine's modules)
 
-Built in the kernel: **gravity** (the map), **run** (three or more in a line), **cluster** (four or more touching, Puyo), **push**,
-**punt**, **swap**, **drag** (Terra Battle), **rotate**, **drop**, **pincer** (Terra Battle and Othello: an opponent's piece sandwiched
+Built in the kernel: **gravity** (the map), **match** (three or more in a line), **cluster** (four or more touching, Puyo), **push**,
+**kick**, **swap**, **drag** (Terra Battle), **rotate**, **drop**, **pincer** (Terra Battle and Othello: an opponent's piece sandwiched
 in a line between two of yours becomes yours), **bomb** (Bomberman's cross, set off by a clear beside it), **junk** with offsetting,
 **the line**.
 
@@ -103,14 +104,14 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 | Wonder | rules as tiles (the Baba layer), the rainbow |
 | Mirth | chains, bounces, ice |
 | Desire | pull and magnets, the pincer |
-| Fury | bombs, punts |
+| Fury | bombs, kicks |
 | Gall | sticky and hard junk, corrosion |
 | Grief | gravity toward the line, clusters that sink |
 | Dread | fog (cells hidden), timer junk |
 
 - **The rules are spelled on its side as neuralese tiles** (a sentence a rule: GEM FALL TOWARD LINE). Pushing one breaks or rewrites
   that rule: **reprogramming made physical**, the Veritome's Functions turned into a board.
-  Espada's first tiles (LORE.md, proposed): fury LITHA-PIRO KRAKA (bombs), LITHA VADA-LON (punts); grief LITHA DEO VADA-MURA (sink
+  Espada's first tiles (LORE.md, proposed): fury LITHA-PIRO KRAKA (bombs), LITHA VADA-LON (kicks); grief LITHA DEO VADA-MURA (sink
   toward the wall), LITHA-MULTA KITH TE, ONO MOR (clusters), LITHA-ALI TOPA-DUO META AMI (pincer); mirth SORA META DEO (mirrored
   gravity), KRAKA KRESA (easy chains). A word pushed out leaves a smaller sentence that still parses (META DEO: gravity comes home).
 - **Familiarity reads its rules**: the tag's lines over its board, decrypted as you learn the kind (OVERLAY.md 17).
@@ -138,7 +139,7 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 3. **Co-op is planned for** (section 12).
 4. **The Courier is the fight; the god hand is the puzzle** (section 11). The owner's words: "direct special attacks that circumvent the
    board, maybe a critical garbage push causes the enemy figment's EmO to spike in a shower of lachryma that you can quickly run around
-   and absorb before swapping to Godhand mode to coup de grace them."
+   and absorb before swapping to Godhand mode to finisher de grace them."
 
 ## 10. Built (2026-10-19): the kernel
 
@@ -149,7 +150,7 @@ do.
 - `duel.js`: the turn, AP, the settle loop, junk and the wins.
 - `bot.js`: a greedy planner that also gives the shown intent.
 - `rulesets.js`: the first three Figments' rulesets.
-- `buckle.js`: EmO, the buckle, the shower of teardrops, stun depth on the board, the coup (section 11).
+- `duelbreak.js`: EmO, the break, the shower of orbs, stun depth on the board, the finisher (section 11).
 - `dread.js`: Dread's fog and embers (section 14).
 - `flee.js`: the flee, a saving throw out of the duel (section 15).
 - `couriertools.js`: the Courier's run and its tools on the board (section 11).
@@ -167,58 +168,58 @@ do.
 - **At 2 AP** duels barely shorten (grief 4.4, mirth 6.7), and fury at rain 2 ran 126 turns: the AP sets how deep a turn's plan is,
   rain sets the pace.
 - **The greedy bot never switches form** (a point spent for nothing at once). With the Courier first (`--forms courier,hand`) it walks,
-  pushes and punts, and makes a third of the junk the hand does. The Courier needed a reason the hand lacks: section 11 is it.
+  pushes and kicks, and makes a third of the junk the hand does. The Courier needed a reason the hand lacks: section 11 is it.
 - No settle has hit the cap or looped in any run so far.
 
 ## 11. The Courier is the fight; the god hand is the puzzle (built 2026-10-19)
 
 **The loop.** The hand makes junk. Junk landed raises the foe's **EmO**; a **critical push** (8 or more landed at once) or EmO full
-**buckles** it (label Break; Espada's lore word, proposed: "The Figment buckles."). A buckle:
+**breaks** it (label Break; Espada's lore word, proposed: "The Figment breaks."). A break:
 - deepens its **stun depth** (dazed, stunned, out cold: STUN-DEPTH.md's three), which costs it action points: 1, 2, then its whole turn.
-  The stun holds 2 of its own turns, and a new buckle while it is down refreshes it a depth deeper.
-- sheds a shower of **teardrops** (label Orb; Lachryma is Latin *lacrima*, a tear: one for every 2 junk, 3 to 12) onto your side within 6 cells of your Courier. They last
-  **one turn**: switch to the Courier, **glean** them (a path of up to four cells for one point), and each fills the pool by 8.
-- opens **the coup** (label Finish; the log: "You drain the Figment."): switch back to the hand and finish it (2 AP), paid from the pool by depth: **60 dazed, 40 stunned, 20 out cold**.
-  The deeper it is down, the cheaper the finish; the coup is the data drain in the board's form.
+  The stun holds 2 of its own turns, and a new break while it is down refreshes it a depth deeper.
+- sheds a shower of **orbs** (label Orb; Lachryma is Latin *lacrima*, a tear: one for every 2 junk, 3 to 12) onto your side within 6 cells of your Courier. They last
+  **one turn**: switch to the Courier, **run** them (a path of up to four cells for one point), and each fills the pool by 8.
+- opens **the finisher** (label Finish; the log: "You drain the Figment."): switch back to the hand and finish it (2 AP), paid from the pool by depth: **60 dazed, 40 stunned, 20 out cold**.
+  The deeper it is down, the cheaper the finish; the finisher is the data drain in the board's form.
 
 **The Courier's tools on the board**, each a special attack that goes round the puzzle, paid in points and the pool:
 
 | tool | its move | AP | pool | the genre's mechanic |
 |---|---|---|---|---|
-| (none) | **glean** up to four cells, drinking the teardrops it crosses | 1 | 0 | Sonic's rings gathered back |
+| (none) | **run** up to four cells, drinking the orbs it crosses | 1 | 0 | Sonic's rings gathered back |
 | the psygun | **shoot** the first piece past the Line in your row (their chain may set off and come back at you) | 1 | 5 | Meteos' launch |
-| the Sondelass | **hook** that piece back across to your side | 1 | 5 | Magical Drop's grab |
+| the Sondelass | **grab** that piece back across to your side | 1 | 5 | Magical Drop's grab |
 | the Dreamvane | **drill** up to three pieces in a line from you | 1 | 3 | Mr. Driller |
 | the Soul Brush | **paint** the 3 × 3 round you one feeling, junk and all | 2 | 10 | Columns' magic jewel |
-| the Crucibelle | **toll**: the foe loses a point next turn (two at most) | 2 | 15 | Tetris 99's attack badges |
-| the Lockheart | **hoover** the junk beside you into the coffin (12 at most); **flail** it all at the foe as junk | 1 / 1 | 0 / 5 | Tetris's hold |
+| the Crucibelle | **delay** (the toll): the foe loses a point next turn (two at most) | 2 | 15 | Tetris 99's attack badges |
+| the Lockheart | **hold** the junk beside you into the coffin (12 at most); **send** it all at the foe as junk | 1 / 1 | 0 / 5 | Tetris's hold |
 | the Veritome | (to come) a plate of the foe's side reads its rules as familiarity | | | |
 
-Only the tools the Courier wears come to the board. The push and the punt stay.
+Only the tools the Courier wears come to the board. The push and the kick stay.
 
-**What the simulator says** (20 duels a ruleset, 5 AP, the Line a column for every 3 junk; the bot always tries a form switch and the coup):
+**What the simulator says** (20 duels a ruleset, 5 AP, the Line a column for every 3 junk; the bot always tries a form switch and the finisher):
 
-| ruleset | turns a side | buckles a duel | teardrops gleaned a duel | how they end |
+| ruleset | turns a side | breaks a duel | orbs run up a duel | how they end |
 |---|---|---|---|---|
-| fury | 25.9 | 1.6 | 2.5 | line 13, full 3, coup 3, cap 1 |
-| grief | 5.7 | 1.9 | 1.4 | line 17, coup 2, full 1 |
-| mirth | 16.3 | 1.2 | 1.9 | line 14, coup 5, full 1 |
+| fury | 25.9 | 1.6 | 2.5 | line 13, full 3, finisher 3, cap 1 |
+| grief | 5.7 | 1.9 | 1.4 | line 17, finisher 2, full 1 |
+| mirth | 16.3 | 1.2 | 1.9 | line 14, finisher 5, full 1 |
 
 - **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
   since Calissa's mock).
-- **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it gleans; a player who plans the buckle
-  should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
+- **The finisher ends about one duel in six.** A greedy bot spends its points on swaps before it runs; a player who plans the break
+  should finish more. The finisher's price (60 / 40 / 20) is the knob if it needs to come sooner.
 - The greedy bot dithered between forms (about one switch a turn). It now never switches twice in a row and a switch costs it a little:
-  switches fell by half or more, and it gleans twice as often.
+  switches fell by half or more, and it runs twice as often.
 
 ## 12. Co-op on the board (planned for, the owner, 2026-10-19)
 
 - **A side holds the party**: the Courier and up to three more (siblings or guests: the party's four at most). Each has **their own form,
   their own 5 AP and their own pool**, and acts in any order inside the side's turn; the side's turn ends when all have ended.
-  Shared: the side's ground, the junk it sends and takes, the teardrops (whoever gleans one drinks it).
-- **The coup can be paid together**: each hand on the side puts in from its own pool (a Spirit Bomb).
+  Shared: the side's ground, the junk it sends and takes, the orbs (whoever runs one drinks it).
+- **The finisher can be paid together**: each hand on the side puts in from its own pool (a Spirit Bomb).
 - **A sibling plays with the bot**, weighted by its division (Petra builds walls of room, Calissa paints, Wanda chains, Espada hooks,
-  Dovina gambles on the coup): its intent is shown like the Figment's, so you plan round your sibling too.
+  Dovina gambles on the finisher): its intent is shown like the Figment's, so you plan round your sibling too.
 - **The Figment answers a bigger side** with more points and rain. The simulator cannot set it yet: the greedy bot does not get much
   stronger with more points (10 AP against 5 won 5, 8 and 4 duels in 10 across fury, grief and mirth), so the price is set in play.
   First guess: +3 AP and +1 rain for each player past the first.
@@ -226,9 +227,7 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 ## 13. Ruled for the view (Calissa's mock, round 11; Dovina, 2026-10-19)
 
-Espada's words since (LORE.md, proposed): **the buckle** (was "break": the guard break, the crackle break and junk's own `break` event had it),
-**a teardrop** (was "mote": the Figment's scatter and the weather's look have motes), **glean** (was "run": the rule word for three in a
-line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab, Paint, Delay, Hold, Send.
+Names since: the genre's (see the top), ruled by the owner the same day.
 
 1. `line` carries `w` and `side` (whose junk pushed it). The engine knows sides, not who; the room maps a side to the bus's `by`
    (`courier`, `creature`) when it emits.
@@ -246,14 +245,14 @@ line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab,
    (`rs.drip`, event `drip`), not rain, which is the weather's.
 
 **Ruled on Calissa's board v11** (Dovina, 2026-10-19):
-9. **The coup is the Courier's side's only.** The data drain never touches the Courier (the owner), so a Figment's side has no coup; a
-   buckled Courier loses its points and nothing more. (`newDuel({ coup })`, `[true, false]` by default; the simulator gives both chairs
-   one to measure alike, `--coup courier` to play it as the game does.)
-10. A spend says what it cost: the action's own event carries `spent` and `pool` (the pool after), the coup's and every tool's alike.
+9. **The finisher is the Courier's side's only.** The data drain never touches the Courier (the owner), so a Figment's side has no finisher; a
+   broken Courier loses its points and nothing more. (`newDuel({ finisher })`, `[true, false]` by default; the simulator gives both chairs
+   one to measure alike, `--finisher courier` to play it as the game does.)
+10. A spend says what it cost: the action's own event carries `spent` and `pool` (the pool after), the finisher's and every tool's alike.
 11. A turn begins with a `turn` event: `{ side, ap, lost, depth, stagger }`, so a stun's or a toll's bite is never silent.
-12. The buckle's reason is `cause` (`push` or `emo`); `by` stays the bus's word for who.
-13. After a coup the board is the view's: draining the Figment's half and sending the March home is the ceremony, not a rule. A teardrop
-    goes with its ground: if the March passes over its cell, it is the other side's to glean (or lose).
+12. The break's reason is `cause` (`push` or `emo`); `by` stays the bus's word for who.
+13. After a finisher the board is the view's: draining the Figment's half and sending the Line home is the ceremony, not a rule. An orb
+    goes with its ground: if the Line passes over its cell, it is the other side's to run (or lose).
 
 
 ## 14. The first in game: the aberrant Lantern Wisp (the owner, 2026-10-19, on board v11)
@@ -269,21 +268,21 @@ half of the board is Dread's (`dread.js`, the first rule family past the kernel)
 - **Embers:** the junk it sends lands as embers that burn down 3 of your turns. While burning they cannot be broken by a clear beside
   them, pinched or hoovered; cooled, each is a gem of a random colour. Dread is the wait. (Super Puzzle Fighter II Turbo's counter gems.)
 - **Its half burns upward:** a flame's updraft, its pieces rise while yours fall, two domains meeting at the Line.
-- Runs of three; 4 colours; a drip of 4. `RULESETS.lanternwisp`; `rulesetOf(creature)` gives it to any Lantern Wisp (`KIND_RULESETS`).
+- Matches of three; 4 colours; a drip of 4. `RULESETS.lanternwisp`; `rulesetOf(creature)` gives it to any Lantern Wisp (`KIND_RULESETS`).
 
-**The simulator** (20 duels, 5 AP, the coup the Courier's only): 22.8 turns a side, the Line ends every one, wins 10 to 10, 0.9 buckles
-and 1.1 teardrops gleaned a duel. Bots see through the fog, so the fog's cost to a player is not in these numbers; a player will be
-slower to read the Wisp's half and better at the buckle. Plain Dread (`RULESETS.dread`, gravity down both halves): 32.2 turns a side.
+**The simulator** (20 duels, 5 AP, the finisher the Courier's only): 22.8 turns a side, the Line ends every one, wins 10 to 10, 0.9 breaks
+and 1.1 orbs run up a duel. Bots see through the fog, so the fog's cost to a player is not in these numbers; a player will be
+slower to read the Wisp's half and better at the break. Plain Dread (`RULESETS.dread`, gravity down both halves): 32.2 turns a side.
 
 **How a Lantern Wisp goes aberrant** (a rule for the world; the Wisp and the blots are Petra's to build): **its lantern burns crude.** A
 Lantern Wisp that drifts over a blot at night drinks it, as a lamp drinks oil, and its flame goes wrong: it is aberrant (`c.aberrant`,
 dressed as a data bug), and the blot is spent. One a blot, and only at night (the Wisps are the Dunes' night Figments). It keeps its
 kind's ruleset whatever the weather; the weather's feeling where it drank is its `grade`, for its look and a bounty.
 - **For the test:** one placed at night near the oasis, with its debug chest (the Soul Brush and a few Lachrymato Bottles' worth, so the
-  pool can pay a coup). The placement and the chest are Petra's.
+  pool can pay a finisher). The placement and the chest are Petra's.
 
 **How a duel opens** (my recommendation; the room, seam and camera are Petra's): **the first blow that lands on an aberrant Figment
-opens it.** Two minds meet and the domains expand; a duel is never started by a key. Losing is a shatter (section 9); the coup mends it
+opens it.** Two minds meet and the domains expand; a duel is never started by a key. Losing is a shatter (section 9); the finisher mends it
 (the data drain), and a mended Lantern Wisp is an ordinary Wisp again, curious and skittish.
 
 ## 15. Fleeing: a saving throw (the owner, 2026-10-19: "rolling like a saving throw to let you escape"; a failed one gentle at 3 AP)
@@ -296,7 +295,7 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
 - **The modifiers** (`fleeOdds(state, side)` gives the roll needed, the bonus, each part and the chance, for the overlay to show before
   you commit: "FLEE 45%", the published odds the Lockheart's break chances keep):
   - **the Line:** +1 a column held past the middle, -1 a column lost;
-  - **the buckle:** +3 a stun depth the Figment is down (running from a dazed foe is the smart run);
+  - **the break:** +3 a stun depth the Figment is down (running from a dazed foe is the smart run);
   - **pity:** +3 for each failed try this duel (Pokémon's Run: each try raises the next);
   - **Luck:** -2 to +2 (`newDuel({ luck })`, the room's from `luck.js`).
 - **A failed roll** costs its 3 AP and the duel goes on (2 AP left of a fresh turn). **Away:** both whole, no shatter and no reward;
@@ -314,6 +313,6 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
 17. Your pool starts at the Courier's own and the difference comes home; the Figment's at 30: as built.
 18. **One landing moved the Line 10 columns** (about 30 junk at once, a chain's doubling). Now **at most 9 junk land at once**
     (`DUEL.landCap`: 3 columns of the Line); the rest waits a turn and can still be offset (Puyo Puyo's 30 at a time). Measured, 20 duels
-    each: fury 33.0 turns a side, grief 6.2, mirth 16.6, the Lantern Wisp 22.6; coups up from 1 in 6 to about 1 in 3 (36 of 100: a capped
-    landing of 9 still buckles, so a big send buckles the foe turn after turn).
+    each: fury 33.0 turns a side, grief 6.2, mirth 16.6, the Lantern Wisp 22.6; finishers up from 1 in 6 to about 1 in 3 (36 of 100: a capped
+    landing of 9 still breaks, so a big send breaks the foe turn after turn).
 

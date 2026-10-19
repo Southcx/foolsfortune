@@ -20,8 +20,8 @@ export const KINDS = {
   stone: ['heavy'],
   bomb: ['falls', 'pushable', 'explosive', 'swappable'],
   body: ['body'],
-  teardrop: ['teardrop'],
-  ember: ['falls', 'pushable', 'swappable', 'timer'], // (Dread's junk, burning down: not 'junk', so nothing breaks it until it cools; dread.js) // (Lachryma shed by a break: it floats, and the Courier runs it up; buckle.js)
+  orb: ['orb'],
+  ember: ['falls', 'pushable', 'swappable', 'timer'], // (Dread's junk, burning down: not 'junk', so nothing breaks it until it cools; dread.js) // (Lachryma shed by a break: it floats, and the Courier runs it up; duelbreak.js)
 };
 export const COLOURS = ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'];
 

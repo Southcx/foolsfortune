@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // FLEEING A PUZZLE DUEL (docs/plans/PUZZLE-DUELS.md section 15; the owner, 2026-10-19: "rolling like a saving throw to let you escape",
 // a failed one gentle at 3 AP): a d20 against 15, its odds earned on the board and shown before you roll. The Line held past the middle
-// helps and the Line lost hurts; a buckled foe is easier to slip (its stun depth); every failed try this duel adds to the next (pity);
+// helps and the Line lost hurts; a broken foe is easier to slip (its stun depth); every failed try this duel adds to the next (pity);
 // Luck sways it a little, never more than 2. A natural 20 always gets away, a natural 1 never does. Away, you are whole: no shatter, no
 // reward; the Figment keeps its aberrance and drifts off. A failed roll costs 3 points and the duel goes on.
 //
@@ -15,7 +15,7 @@ export const FLEE = {
   dc: 15,          // what a d20 plus its modifiers must reach
   cost: 3,         // points a failed roll costs (the owner: gentle)
   perColumn: 1,    // a modifier a column of the Line held past the middle (or lost)
-  perDepth: 3,     // a modifier a stun depth the foe is buckled
+  perDepth: 3,     // a modifier a stun depth the foe is broken
   perFail: 3,      // a modifier each failed try this duel (pity)
   luckMax: 2,      // Luck's sway at most, either way
 };
@@ -27,11 +27,11 @@ export function fleeOdds(s, side) {
   const held = side === 0 ? b.line - b.w / 2 : b.w / 2 - b.line;
   const mods = {
     line: Math.round(held * FLEE.perColumn),
-    buckle: (F.depth || 0) * FLEE.perDepth,
+    break: (F.depth || 0) * FLEE.perDepth,
     pity: (S.fleeFails || 0) * FLEE.perFail,
     luck: Math.max(-FLEE.luckMax, Math.min(FLEE.luckMax, Math.round(s.luck?.[side] ?? 0))),
   };
-  const bonus = mods.line + mods.buckle + mods.pity + mods.luck, need = Math.max(2, Math.min(20, FLEE.dc - bonus));
+  const bonus = mods.line + mods.break + mods.pity + mods.luck, need = Math.max(2, Math.min(20, FLEE.dc - bonus));
   return { need, bonus, mods, chance: (21 - need) / 20 };
 }
 

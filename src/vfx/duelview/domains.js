@@ -202,7 +202,7 @@ export class DomainClash {
   /** The Line's plane in the world (a point on it and its normal toward the foe), and the arena's centre (the board's foot). */
   setPlane(p, n, centre) { this.U.uPlaneP.value.copy(p); this.U.uPlaneN.value.copy(n); if (centre) this.U.uCentre.value.copy(centre); } // (the sphere stands at its parent's origin: the board's foot)
   setLine(col) { this.U.uLine.value = col; }
-  /** A half's flash (a buckle): white, fading over a third of a real second. */
+  /** A half's flash (a break): white, fading over a third of a real second. */
   flash(side) { this.flashK[side] = 1; }
   won(k) { this.U.uWon.value = k; }
 
