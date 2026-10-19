@@ -112,7 +112,7 @@ PRESETS.dunemawBowl = {
 ```
 
 - **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "Preset: {label}" beside its records.
-- **They live in `src/debug/presets.js`** (data, Dovina's), each naming what it is for, like a debug chest's kit. A QAIS test may name a
+- **They will live in a presets module under `src/debug/`** (not built; data, Dovina's), each naming what it is for, like a debug chest's kit. A QAIS test may name a
   preset (`preset: 'gardenFiring2'`); its "take me there" applies it.
 - **The first five:**
 
@@ -134,7 +134,7 @@ Presets wait on the save split (section 2). Until then, the debug chests carry t
 3. **Petra and each owner:** one `|| game.lend?.has(id)` clause at each gate in section 4's table (the survey lists every file and line;
    I'll hand each owner its lines).
 4. **Calissa:** the lend panel in the Codex and QAIS (a switch a row, the hollow "lent" mark). **Espada:** its words.
-5. **Dovina, then Petra:** `src/debug/presets.js` and its loader, the first five presets, the QAIS test's `preset` field.
+5. **Dovina, then Petra:** a presets module and its loader, the first five presets, the QAIS test's `preset` field.
 
 ## 7. Open
 
@@ -149,14 +149,14 @@ Presets wait on the save split (section 2). Until then, the debug chests carry t
 | `godArts` | `godhand/arts.js:83` `owns()`; the Zone of Influence tier at `arts.js:169,215`, `godhand.js:590` |
 | `knacks` | `progress/knacks.js:41` `open()` (`on()` and `set()` follow it) |
 | `moves` | `tools/moveset.js:84` `open()`; `tools/crucibelle/crucibelle.js:163` (fever peak) |
-| `functions` | `tools/veritome/functions.js:79` `known()`; `progress/ostraca.js:230-238` (glossed) |
+| `functions` | `tools/veritome/mind/functions.js` `known()`; `progress/ostraca.js:230-238` (glossed) |
 | `shrines` | `world/shrines.js:111-113,137` (`found`) |
 | `garden` | `world/garden/orbit.js:62-63`, `world/garden/hand.js:226-228`, `world/garden/mycelium.js:83-84`, `world/garden/tribulation.js:39`, `world/garden/realm.js:429` (each reads the Firing: lent, the highest) |
 | `sea` | `progress/econ/emocean.js:50`, `progress/voyage.js:95-104,206` (Entropolis); `progress/rail/ships.js:32`, `world/emocean/pier.js:79` (the rutter) |
 | `siblings` | `coop/party.js:65` `may()`, `world/shrines.js:141` (replace `game.mode === 'debug'`) |
 | `feelings` | the radial's locked slot (not built: it reads `feeling.known.<id>` or the lend) |
 | `glazes` | `courier/vessel/vessel.js:53-60` `has()` |
-| `codex` | `feedback/codex/ledger.js:116,225,246,273`, `feedback/codex/grimoire.js:43,60,67`, `tools/veritome/ui.js:86,101,163-175`, `tools/veritome/book.js:49`, `feedback/codex/codexpage.js:60` |
+| `codex` | `feedback/codex/ledger.js:116,225,246,273`, `feedback/codex/grimoire.js:43,60,67`, `tools/veritome/ui.js:86,101,163-175`, `tools/veritome/book.js:49`, `tools/codexpage.js` |
 
 **DEBUG only (refused in STORY):** `/goto`, `/garden`, `/cavern`, `/opening`, `/spore bed`, `/tree dawn`, `/art` (`main.js:759-803`),
 `/crossing`, `/figure` (`world/emocean/stage.js:173-174`), `/grant`, `/psygun` (already), the debug chests (`debug/debugchest.js`), the

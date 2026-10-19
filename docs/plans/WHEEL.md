@@ -57,7 +57,7 @@ load on the player:
    `weatherAt` reports `second`, `secondStrength`, `agate`). On a body (Calissa): the clip shows the strongest feeling, the flame's
    height how strong, the flame's colour the second. In sound (Wanda): the stronger mood's scale with one note borrowed from the other,
    both beds by their shares; opposites at once play the beds only, the bell on root and fifth. **The mind's part is not yet built**
-   (Petra): `creatures/ai/mood.js`, an intensity per feeling, each with its own decay, `shown() -> { a, b?, k }`; the old Stoic-to-Prismatic
+   (Petra): a creature's mood module (not built; not `core/mood.js`, the room's lighting), an intensity per feeling, each with its own decay, `shown() -> { a, b?, k }`; the old Stoic-to-Prismatic
    axis becomes a projection of it, so every caller keeps working.
 4. **The five take Plutchik's hues.** Built (`COLOR`): mirth gold `0xf2c84a`, wonder cyan-lapis `0x5ec8e0`, desire orange `0xff7a4a`,
    grief blue `0x8fb0ff`, dread ink-green `0x3f6a4a` (violet only in its status), each matching its damage type. Soul Alchemy's wheel
@@ -98,6 +98,6 @@ ring's onset.
 | Prismatic (the centre) | Dance_FlameWaltz, slowed and smeared, or Scared and Happy blended | |
 
 The grain rides all of it (speed, size, regularity, how often an emote fires, which idle variant). Every mood loop reads at thumbnail
-size and the flame carries most of it (`LW_Flame` is emissive, one uniform). **Not yet built:** `creatures/anim/suite.js` (floats
+size and the flame carries most of it (`LW_Flame` is emissive, one uniform). **Not yet built:** a creature's clip suite (the Courier's is `courier/anim/suite.js`) (floats
 blended by velocity, the mood loop from `shown().a`, an emote at an onset, the grain's dials on playback), the rig specced in `rom.js`.
 ("Wisp" means only the creature; the spirit press's ring is "lights".)

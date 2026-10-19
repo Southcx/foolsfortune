@@ -28,7 +28,7 @@
 //   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   clockAt(ms?) -> { day, weekday, hour, minute }   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
 //   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .read(by?) (the Dreamvane)  .update(dt)
-//     effects where a thing stands: .buildMult(type, pos)  .mindDrift(pos) (per second)  .fishPull(aspect, pos)  .signatureMult(pos)
+//     effects where a thing stands: .buildMult(type, pos)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
@@ -167,12 +167,6 @@ export class Weather {
   // ---------------------------------------------------------------- what the weather where a thing stands does
   /** A damage type's build-up, faster in the weather that feeds it (creatures.build, after the mind's take). */
   buildMult(type, pos) { const w = this.here(pos); return w.aspect && TYPE_OF[w.aspect] === type ? 1 + W.build * w.strength : 1; }
-  /** How fast a creature's mental state drifts (per second; + toward Prismatic, - toward Stoic): a rate, never a jump. */
-  mindDrift(pos) { const w = this.here(pos); return w.aspect ? W.mind[w.aspect] * w.strength * W.mindRate : 0; }
-  /** How much more the fish drawn to this aspect bite (a multiplier on the bite chance). */
-  fishPull(aspect, pos) { const w = this.here(pos); return w.aspect === aspect ? 1 + W.fish * w.strength : 1; }
-  /** At night Lachryma glows: how much further its signatures read (the Dreamvane's range); a Well's dark is always night. */
-  signatureMult(pos) { const p = placeOf(pos); return p?.exposure === 'deep' || phaseAt() === 'night' ? W.night.signature : 1; }
 
   /** Twice a second: say when the weather where the Courier stands, or the day's phase, has turned (for tracking.js, the sound, the sky). */
   update(dt) {

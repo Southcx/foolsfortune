@@ -288,7 +288,7 @@ Measured, one presented frame with every pass counted (as `scripts/perf.mjs` cou
 The last is over the 450 budget, and the cause was there before the wing: the room draws the whole Workshop zone whenever the
 Workshop's door is in the frustum within 40 m (`render/zones.js seesDoor`), and the room facing its door was already 465 to 468. From
 the wing's far end the door is in view through the arcade's west bay (a real sliver, at a grazing angle). Handed to Petra
-(docs/handoffs/petra/2026-10-10-from-calissa-combat-wing.md) with the fixes: an occlusion test through the doorway, or a portal backdrop.
+(Calissa's handoff to Petra, 2026-10-10, since deleted) with the fixes: an occlusion test through the doorway, or a portal backdrop.
 `npm run perf` (its four places), base then branch: the workshop 406 to 410 calls, 133,996 to 135,334 triangles, 162 to 162 programs
 (geometries 2,097 to 2,113, textures 175 to 176); the dunes, the Dunemaw's hall and the garden within 1% on calls and triangles, no
 program compiled after the warm-up. perf: OK.

@@ -29,7 +29,10 @@ The owner's ask (2026-10-05): a day and night, and **emotional weather**, five c
 
 ## Open
 
-- Readers not yet wired (Petra's): `buildMult` and `mindDrift` in the creatures, `fishPull` in the bite (and the Fish Guide's weather
-  column), `signatureMult` at night.
+- Readers not yet wired (Petra's): `buildMult` in the creatures. Three more were designed and never read, so they were cut in the deep
+  clean (2026-10-19); rebuild them from these numbers when a reader comes: a creature's mental state drifting in the weather (0.05 states
+  a real second at full strength, by feeling: mirth -0.5, wonder -0.2, desire 0, grief 0.25, dread 0.5, gall 0.4, fury 0.6; + toward
+  Prismatic), the fish of the weather's feeling biting 1 + strength times as often, and signatures reading 1.5 times as far at night and
+  in a Well's dark.
 - A rare weather (a dread fog over Margarite, hidden achievement sk4) counting toward Luck.
 - Later, not now: the player's acts sway an island's mood. Wanda: each weather's sound; Espada: whose mood it is, the names.

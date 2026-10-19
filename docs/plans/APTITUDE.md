@@ -94,7 +94,7 @@ Most of the evidence is already on the bus. The first work is reading it, not bu
 
 - A mechanic's owner emits its moment as it does today (a parry, a shot at sea, a crystal tuned). Dovina's tracking rules turn the
   events into **samples**: `{ aptitude, value, unit, conditions, at }`.
-- **`progress/aptitude.js`** keeps the samples: a short history per aptitude, and per standard trial its own. It derives:
+- **An aptitude module** (not built) keeps the samples: a short history per aptitude, and per standard trial its own. It derives:
   - the first reading, the best, and the recent median;
   - the spread (consistency);
   - the learning rate (a power-law fit over the attempts).
@@ -151,7 +151,7 @@ The design waits for the owner's talk; this section only marks where it would pl
 ## 9. Order of work
 
 1. **The passive readings from events that already exist**: reaction time, inhibition, pitch, timing, colour, tracking, risk.
-   - Built: `progress/aptitude.js` and its tracking rules (Dovina).
+   - To build: the aptitude module and its tracking rules (Dovina).
    - The save section is Petra's to approve.
 2. **The bot check** (section 8) for each reading in step 1 (Dovina, on the agent).
 3. **The window**: names (Espada), look (Calissa).

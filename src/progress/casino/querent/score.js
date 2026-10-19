@@ -12,15 +12,13 @@
 // Prior art: Riichi Mahjong's yaku (the hand's shapes each worth a share, read from the finished hand) and han (doubling), rummy's sets
 // and runs.
 //
-//   SUITS   RANK   TIERS   melds(cards, need) -> [[meld]]   isWin(cards, quads)   best(winHand, ctx) -> { value, tier, ab, x, notes, steps }
+//   SUITS   TIERS   melds(cards, need) -> [[meld]]   isWin(cards, quads)   best(winHand, ctx) -> { value, tier, ab, x, notes, steps }
 //   (steps: the score in the order it is counted, for the table's count-up: { op: 'base' | '+' | 'x', n, why }; the value is
 //   base x (1 + every '+') x every 'x': Balatro's chips and mult in two boxes)
 // ---------------------------------------------------------------------------------------
 
 export const SUITS = ['cups', 'swords', 'pentacles', 'wands']; // (the seat suits' order round the table: the owner's Cups, Swords, Pentacles, Wands)
-export const RANK = { ace: 1, page: 11, knight: 12, queen: 13, king: 14 };
 export const TIERS = [0, 1000, 2000, 8000]; // (tier 2 was 4,000: with mixed-suit runs it came as often as tier 1, 49% to 50% (scripts/casino.mjs); the owner took 2,000, 2026-10-15)
-export const cardName = (c) => `${[, 'A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Pg', 'Kn', 'Q', 'K'][c.r]}${'cspw'[c.s]}`;
 
 /** Every way to split `cards` into melds of three (each meld { kind: 'set' | 'run', cards }). */
 export function melds(cards) {

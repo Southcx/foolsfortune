@@ -4,7 +4,7 @@
 // and off THE BREAK, a cliff with a sandfall down its face, into a SLOT CANYON that winds south between walls to the sand (Antelope
 // Canyon's, wide enough for a board), down THE STEP, a second fall, and out onto the rim of THE CRATER: a road spirals down its wall
 // round the antlion's pit at the bottom (lean in too far and the sand takes you down), then climbs out west through a cut that passes
-// UNDER the spiral's first turn (a bridge: Suzuka's crossover, world/raceway/decks.js), fords THE
+// UNDER the spiral's first turn (a bridge: Suzuka's crossover, world/raceway/features.js), fords THE
 // MIRROR (a lake: the board skims it), dips and flicks up an Eau Rouge to the plateau, and round a banked hairpin home.
 // Data only, in the park's frame (world/raceway/park.js): control points [x, z, y, halfWidth, wind, cut], features as track.js reads them.
 //

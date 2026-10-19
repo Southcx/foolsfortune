@@ -11,7 +11,7 @@
 //
 //   const P = park()   P.tracks [T]   P.track(id)   P.heightAt(lx, lz)   P.waterAt(lx, lz) -> surface | null   P.pits   P.pipes   P.lakes   PARK
 // ---------------------------------------------------------------------------------------
-import { RW, sandAt, track, SUN, CONTROL, FEATURES, BRANCH } from './track.js';
+import { sandAt, track, SUN, CONTROL, FEATURES, BRANCH } from './track.js';
 import { GORGE } from './tracks/gorge.js';
 import { COASTER } from './tracks/coaster.js';
 
@@ -82,4 +82,3 @@ export function park() {
   }
   return { tracks, track: (id) => tracks.find((T) => T.id === id), heightAt, waterAt, groundAt, pits: PARK.pits, pipes: PARK.pipes, lakes, craters: PARK.craters, hub: H };
 }
-export { RW };

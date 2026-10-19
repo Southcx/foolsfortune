@@ -58,7 +58,7 @@ state's swing.
 - **The voice (Wanda): one trait, one independent dimension.** Openness the contour; Conscientiousness the rhythm; Extraversion the
   reach (loud, often, first); Agreeableness timbre and interval (consonant thirds and fifths against tritones: Morton's rules);
   Neuroticism the stability (jitter, cracks under stress). The mental state loosens the hold; a pack is heard; the weather sets the
-  mode (the Crucibelle's five). Built once: `src/audio/creaturevoice.js` (traits, mental state, mode, the call's kind).
+  mode (the Crucibelle's five). To be built once, a creature voice module in `src/audio/` (not built: traits, mental state, mode, the call's kind).
 - **Event contract:** the minds emit `creature.call { kind, by }` with its stimulus and decide who answers.
 - **Elsewhere:** a caught Figment keeps its grain (a conscientious one works a garden slot better, an extravert worse); the ledger and
   achievements (every trait read; a mind cracked by its weakness); a board-game Well could be all reading grains.

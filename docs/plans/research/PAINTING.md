@@ -68,7 +68,7 @@ Confidence marks: [V] read on a page this session; [M] from memory or the repo's
 
 ## 4. Our code: why it is inaccurate and why stains do not merge
 
-Files: `/home/user/foolsfortune/src/tools/soulbrush/load.js`, `src/world/ground/paintmap.js`, `src/world/ground/stains.js`, `src/progress/brushload.js`, `src/courier/moves/jets.js`.
+Files: `src/tools/soulbrush/load.js`, `src/world/ground/paintmap.js`, `src/world/ground/stains.js`, `src/progress/brushload.js`, `src/courier/moves/jets.js`.
 
 **Why painting is inaccurate**
 1. **Pitch is thrown away.** `club.aimDir()` ends in `.setY(0).normalize()`, so the spray goes along the look direction on the ground plane. Each drop gets a fixed random upward tilt (`up = 0.32 + rand*0.18`), whatever the camera looks at. You cannot aim at a point.

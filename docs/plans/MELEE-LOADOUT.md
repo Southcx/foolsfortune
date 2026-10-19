@@ -186,7 +186,7 @@ grammar (kept: the launcher, the air string, the pause string); Bayonetta's dodg
 - **Its two events (built 2026-10-11, Calissa; the rules are Petra's):** `move.blow { tool, move, slot, hit, finish, by }` once a blow,
   and `move.string.end { tool, run, why, by }` when a string run stops (the LMB blows landed in a row: a special's blow is apart from
   it, neither adding nor ending; `tools/moveset.js`; what fires when, as measured:
-  `docs/handoffs/petra/2026-10-11-from-calissa-blow-events.md`). The run's edges (Dovina's rulings, 2026-10-11, built): a cut over a
+  Calissa's handoff to Petra of 2026-10-11, since deleted). The run's edges (Dovina's rulings, 2026-10-11, built): a cut over a
   whiff is judged by the blow's strike window (past it with nothing struck, `miss`; before it is past, nothing ends); a held charge
   (the LMB hold, the iaido's) keeps the window still for 2 real s of the hold at most, then `pause`; the Courier's own moves (a dash, a
   Movement Art, the blink, the hook's pull) carry the run inside the window, and a seam, a guard's rescue, a fall out of the world or
@@ -215,7 +215,7 @@ its marks live on the wire compass and in the world, and each says what the tool
 | **nothing in the hands** (the kick, carrying) | nothing (the crosshair went with the psygun) | the lock-on reticle (any tool) | the **carry throw's mark** (`vfx/carrythrowmark.js`): where a carried thing would land (the paint reticle's look in the crosshair's cream) and its flight dashed, only while it is held |
 
 
-**Phase 6, the Sondelass, built (2026-10-11, Calissa):** the cutlass's **string row** (`ui/cutlassstringrow.js`, God Hand's combo tree):
+**Phase 6, the Sondelass, built (2026-10-11, Calissa):** the cutlass's **string row** (God Hand's combo tree; retired 2026-10-18 for the Sondelass's guard, the file gone):
 a pip a slot of the loadout's string at the bottom middle, the next LMB's lit gold and raised, the struck ones before it, the rest dim;
 while the paid cut is open (`Moveset.paidCutOpen`, the engine's own test, its cost affordable) the lit pip wears the oil film and a pale
 glint runs over it; a blink cancel keeps the lit pip, the string's reset resets it; out of a fight and idle 3 real s it fades, the first

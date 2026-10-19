@@ -203,7 +203,7 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   if (F.whoops) { const [s0, s1] = span(F.whoops.from, F.whoops.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += F.whoops.h * e * (1 - Math.cos((2 * Math.PI * u) / F.whoops.wave)) / 2; } }
   for (const K of F.kickers) { const s0 = sOf(K.cp, K.at); for (let u = 0; u < K.len + 3; u += ds) Y[idx(s0 + u)] += u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; }
   // the bridges: a stretch of the line laid as a deck over whatever runs under it (the ground there is left to the sand and the other
-  // tracks: a deck is built and collided in world/raceway/decks.js, and the board rides it: raceway.rideHeight)
+  // tracks: a deck is built and collided in world/raceway/features.js, and the board rides it: raceway.rideHeight)
   const DECK = new Uint8Array(N), decks = (F.bridges || []).map((Bd) => { const [s0, s1] = span(Bd.from, Bd.to); for (let s = s0; s <= s1; s += ds) DECK[idx(s)] = 1; return { s0, s1 }; });
   if (F.canyon) { const [s0, s1] = span(F.canyon.from, F.canyon.to); for (let s = s0; s < s1; s += ds) BH[idx(s)] = Math.max(BH[idx(s)], BERM.h + (F.canyon.berm - BERM.h) * sstep(0, 30, s - s0) * sstep(0, 30, s1 - s)); }
   // dips: the line pressed down under a flat water's surface over a stretch (a ford: the board skims it, water.js), eased in and out

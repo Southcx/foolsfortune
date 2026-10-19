@@ -2,10 +2,8 @@
 
 The owner, 2026-10-08: the docs are bloated and hard to read. *"We should basically be building a wiki for all the game systems."*
 
-The full reviews are kept as working notes in `docs/plans/research/`:
-- `DOCS-REVIEW-TOP.md`: the README, CLAUDE.md and every file in docs/;
-- `DOCS-REVIEW-PLANS.md`: the plans;
-- `UI-AUDIT.md`: the in-game text.
+The full reviews of the README, CLAUDE.md, docs/ and the plans were acted on and deleted in the deep clean (2026-10-19; in git history).
+The in-game text's audit is kept in `docs/plans/research/UI-AUDIT.md`.
 
 This file is the plan that comes out of them.
 

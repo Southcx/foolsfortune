@@ -48,7 +48,6 @@ export class Board {
   sideOf(x) { return x < this.line ? 0 : 1; }
   mine(side, x) { return this.sideOf(x) === side; }
   /** A side's back wall (the column the line must reach for the other side to win). */
-  backWall(side) { return side === 0 ? 0 : this.w; }
   grav(x, y) { return this.gravity[this.idx(x, y)] || DIRS.NONE; }
   /** Set every cell's gravity from fn(x, y, board) -> [dx, dy] (a ruleset's map, or a Figment's tilt). */
   setGravity(fn) { for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++) this.gravity[this.idx(x, y)] = fn(x, y, this) || DIRS.NONE; }
