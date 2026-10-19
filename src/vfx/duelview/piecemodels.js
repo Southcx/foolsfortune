@@ -3,7 +3,7 @@
 // (the slab's face), centred, for the duel's view to instance (vfx/duelview/pieces.js). Gems are Lachrymite, cut: each feeling a shape
 // of its own so a gem reads without its colour (the colour-blind, the 480-line present): Wonder a hexagon (frost is hexagonal), Mirth
 // a round (its drops), Desire a heart, Fury a diamond (its cracks' points), Gall a trefoil (its curds), Grief a tear, Dread an eye (its
-// pupil a hole through to the slab: marbling's dark centre). Everything else is clay: junk a grog tile, stone a basalt block, the bomb a
+// pupil a hole through to the slab: marbling's dark centre). Everything else is clay: junk a clay tile, stone a basalt block, the bomb a
 // raku pot with its neck; an ember (Dread's junk, burning down) a coal of glazed clay, its count glowing pips; a
 // orb is a drop of Lachryma. The two bodies are figurines on a clay ledge (a body never falls: it stands
 // on the face of its cell, PUZZLE-DUELS.md 13.7): the Courier's in white clay, the foe's its feeling's idol.
