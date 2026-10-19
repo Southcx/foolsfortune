@@ -288,9 +288,8 @@ opens it.** Two minds meet and the domains expand; a duel is never started by a 
 
 ## 15. Fleeing: a saving throw (the owner, 2026-10-19: "rolling like a saving throw to let you escape"; a failed one gentle at 3 AP)
 
-Names (Espada's, proposed; LORE.md): label **Flee**, lore name **a wriggle** (Middle Low German *wriggeln*, to twist about: the wrangle
-wrings you, a wriggle twists you free). The log (the session's rule): "You wriggle free of the wrangle." / "You fail to wriggle free." / on a
-natural 20, "You wriggle free at once." The code keeps the label's word, `flee`.
+Name: **Flee**, the standard game word (the owner, 2026-10-19: "Flee is more than appropriate"; no lore name). The log (the session's
+rule): "You flee the duel." / "You fail to flee." / on a natural 20, "You flee at once."
 
 Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side only (`newDuel({ flee })`, `[true, false]`).
 - **The roll:** a d20, plus the board's modifiers, must reach **15**. A natural 20 always gets away; a natural 1 never does.
@@ -308,3 +307,13 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
 - **The bots** flee only when losing by 4 columns or more and the odds are 40% or better: once in 120 duels. A roll is judged by its
   odds, never sampled with the rest (a clone's die would let the bot see it fall).
 - The sure way out stays the Wake Whistle's to give (an item that ends a duel whole, unrolled): the plan's, not built.
+
+**Ruled on Petra's room** (630dccc; Dovina, 2026-10-19):
+16. **A Figment's ruleset comes from `rulesetOf(c)`** (rulesets.js), not a feeling looked up in the room: it gives an aberrant Lantern
+    Wisp its own (Dread's, section 14), a blotling its grade's, and Fury's otherwise. `DUEL_FOES.wispFeeling` goes.
+17. Your pool starts at the Courier's own and the difference comes home; the Figment's at 30: as built.
+18. **One landing moved the Line 10 columns** (about 30 junk at once, a chain's doubling). Now **at most 9 junk land at once**
+    (`DUEL.landCap`: 3 columns of the Line); the rest waits a turn and can still be offset (Puyo Puyo's 30 at a time). Measured, 20 duels
+    each: fury 33.0 turns a side, grief 6.2, mirth 16.6, the Lantern Wisp 22.6; coups up from 1 in 6 to about 1 in 3 (36 of 100: a capped
+    landing of 9 still buckles, so a big send buckles the foe turn after turn).
+

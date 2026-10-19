@@ -29,6 +29,7 @@ export const DUEL = {
   ap: 5,           // action points a turn (the owner, 2026-10-19: "let's start with 5AP"; each player on a side has their own)
   pool: 30,        // the pool a side starts with, out of 100 (in play, the Courier's own pool as the duel opens)
   settleCap: 64,   // passes before a settle is stopped (and counted: a cascade that never ends is a bug in a ruleset)
+  landCap: 9,      // junk that lands at once at most (3 columns of the Line); the rest waits a turn and can still be offset (Puyo Puyo's 30 at a time)
   perColumn: 3,    // junk landed that moves the line one column (4 at 3 AP; 3 since 5 AP made offsetting strong: the simulator)
   turnCap: 200,    // turns a side before the line's place decides it (a ply is one side's turn)
   fill: 0.4,       // each side's share of cells filled at the start
@@ -126,8 +127,7 @@ export function endTurn(s) {
   const off = Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off;
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
-  if (S.pending) events.push(...land(s, side, S.pending));
-  S.pending = 0;
+  if (S.pending) { const n = Math.min(S.pending, DUEL.landCap); events.push(...land(s, side, n)); S.pending -= n; } // (the rest waits: it can still be offset)
   if (s.winner === null) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }

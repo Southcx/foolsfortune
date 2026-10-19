@@ -335,8 +335,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Courier's move of up to four cells. **The drip** (`rs.drip`): the pieces each side is
   given at the start of its turn (not rain). **Fog / an ember** (Dread's rules, `dread.js`; the aberrant Lantern Wisp's): a half hidden
   but for its lantern's light / its junk landed burning, unbreakable for 3 of your turns, then a gem. *Not:* a table (Raku's), the kick, a
-  trial, a guard break, a mote (the scatter's), a run (three in a line), the scene fog, Dread's fog on the Raceway. **A flee / a wriggle** (`flee.js`,
-  `fleeOdds`; label Flee, lore name a wriggle, Espada's, proposed): a saving throw out of a duel, a d20 against 15 with the board's modifiers, 3 AP a failed try.
+  trial, a guard break, a mote (the scatter's), a run (three in a line), the scene fog, Dread's fog on the Raceway. **Flee** (`flee.js`,
+  `fleeOdds`; the standard word, the owner, 2026-10-19): a saving throw out of a duel, a d20 against 15 with the board's modifiers, 3 AP a failed try.
 - **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: F at it, the seam (kind `duel`), the board between you, your turns and its bot's, its end / which Figments offer one (any aberrant; the test enemy an aberrant Lantern Wisp). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the Prince of Clay** — Kaolin Anagami's main avatar, the most powerful of the folk. "He".
 - **the King / the Queen** — Magnus Ibrahim Manus (his island Margarite) and Entra Polearis (hers Entropolis), the Prince of Clay's parents.
