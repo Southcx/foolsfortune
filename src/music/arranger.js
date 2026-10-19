@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE ARRANGER: plays a score written as events (music/fortune.js) on the band (music/band.js), a bar at a time ahead of the audio
-// clock, as the Dunes' player does (music/player.js) but for music that builds and drops: each section can sweep a low-pass over
+// THE ARRANGER: plays a score written as events (music/fortune.js) on the band (music/band.js), a bar laid out ahead of the audio clock
+// and its notes made a beat ahead (a bar's nodes made at once cost ~9 ms in one call under the overture: a dropped frame a bar on a weak
+// laptop; queued, each 50 ms run makes only what sounds in the next quarter second), as the Dunes' player does (music/player.js) but for music that builds and drops: each section can sweep a low-pass over
 // everything (a build opening up), pump the synths and the bass against the kick (the sidechain of every drop since the 2000s), and
 // fall silent for a beat before the drop. The score is data: per bar it says what plays; the arranger says when.
 //
@@ -11,6 +12,7 @@
 //   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
 //   arranger.setUnder(on) (the rail's Umbral form: the music heard through the crude, and the lift of the breach)
 //   arranger.swap(score): a score of the same `family` relaid mid-play carries on from the bar playing (follow does it by itself)
+//   arranger.step() lays out one bar into the queue; arranger.drain(until) makes the notes due before `until` (an offline render: Infinity)
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
 // build), sidechain compression as a rhythmic device (French house, then every EDM drop), and the arrangement of a melodic bass
@@ -21,6 +23,7 @@ import { Band } from './band.js';
 
 const UNDER_HZ = 650; // (the music heard from under the crude)
 const BASS = new Set(['upright', 'moog', 'sub', 'growl', 'pick', 'pizz', 'eight']); // (what the night's thinning takes down with the drums)
+const LEAD = 0.25, LEAD_MAX = 0.6; // (real seconds of notes made ahead of the audio clock: more when the timer runs late, a throttled tab)
 const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle', 'tick', 'ohat', 'snap']);
 
 export class Arranger {
@@ -68,6 +71,7 @@ export class Arranger {
     const ctx = this.ctx;
     this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, score.fadeIn ?? 0.8);
     this.alive = true; this.next = this.started = ctx.currentTime + (score.lead ?? 0.15); this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
+    this.queue = []; this.lastRun = 0;
     this.spb = 60 / (score.sections[0].bpm || score.bpm);
     this.timer = setInterval(() => this.run(), 50);
     this.run();
@@ -75,7 +79,7 @@ export class Arranger {
   }
   stop(fade = 2) {
     if (!this.alive) return;
-    this.alive = false; clearInterval(this.timer);
+    this.alive = false; clearInterval(this.timer); this.queue = [];
     const ctx = this.ctx, bus = this.bus;
     bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
     setTimeout(() => { try { bus.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800);
@@ -118,8 +122,17 @@ export class Arranger {
     if (!this.alive) return;
     const ctx = this.ctx;
     if (this.ended && ctx.currentTime > this.endAt) { this.finished = this.score; this.stop(0.3); this.onEnd?.(this.score); return; }
-    if (this.next < ctx.currentTime - 0.2) this.next = ctx.currentTime + 0.1;
-    while (this.next < ctx.currentTime + 0.6) this.step();
+    if (this.next < ctx.currentTime - 0.2) { this.next = ctx.currentTime + 0.1; this.queue = []; } // (fallen behind: start afresh, never a pile of stale notes)
+    while (this.next < ctx.currentTime + LEAD_MAX) this.step();
+    const now = performance.now(), gap = this.lastRun ? (now - this.lastRun) / 1000 : 0; this.lastRun = now;
+    this.drain(ctx.currentTime + Math.min(LEAD_MAX, Math.max(LEAD, gap * 1.5)));
+  }
+  /** Make the queued notes due before `until` (audio-clock seconds), in time order. */
+  drain(until) {
+    const q = this.queue; if (!q?.length) return;
+    let k = 0;
+    for (; k < q.length && q[k].t < until; k++) { const x = q[k]; this.pumpOn = x.pump; this.make(x); }
+    if (k) q.splice(0, k);
   }
   /** Lay out one bar at `this.next` (also used to render offline, bar after bar). */
   step() {
@@ -129,16 +142,18 @@ export class Arranger {
     // (a section may have its own tempo and its own bar: a movement at 75 bpm, another in 5/4)
     const spb = this.spb = 60 / (sec.bpm || S.bpm), beats = sec.beats || S.beats || 4;
     if (this.bar === 0) {
-      this.pumpOn = !!sec.pump;
+      this.secPump = !!sec.pump; // (the section's; pumpOn is the note's being made, set by drain)
       const f = this.sweep.frequency;
       f.cancelScheduledValues(t0);
       if (sec.sweep) { f.setValueAtTime(sec.sweep[0], t0); f.exponentialRampToValueAtTime(sec.sweep[1], t0 + sec.bars * beats * spb - 0.05); }
       else f.setValueAtTime(18000, t0);
       if (!sec.pump) { this.pumpG.gain.cancelScheduledValues(t0); this.pumpG.gain.setValueAtTime(1, t0); }
     }
+    const n0 = (this.queue ||= []).length;
     for (const e of sec.bar(this.bar)) this.play1(e, t0, sec.gain ?? 1);
     // the weather's colour over a cue that loops (music/mood.js), and the scale this bar is in, from when it sounds (player.scale())
     if (this.layer && !S.moodless && S.loopFrom !== null) for (const e of this.layer(S, sec, this.bar) || []) this.play1(e, t0, 1);
+    if (this.queue.length > n0) this.queue.sort((a, b) => a.t - b.t);
     this.scaleAt = { t: t0, scale: sec.scale || S.scale || null };
     this.next += spb * beats;
     // a score that follows the game (iMUSE's horizontal resequencing): asked after every bar which section plays next; a number moves
@@ -158,10 +173,15 @@ export class Arranger {
       }
     }
   }
-  // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
+  // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten). Queued with its time,
+  // length and level worked out now (the bar's tempo, the night as it is), and its section's pump, so the notes made later sound as laid
   play1(e, t0, gain = 1) {
     const B = e.deep ? this.deepBand || this.band : this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
     const th = this.score?.moodless ? null : this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
+    (this.queue ||= []).push({ e, B, t, d, gain, pump: !!this.secPump });
+  }
+  /** One queued note made on its band. */
+  make({ e, B, t, d, gain }) {
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
       else if (e.i === 'riser' || e.i === 'breath' || e.i === 'reverse' || e.i === 'whoosh') B[e.i](t, d, (e.v ?? 0.3) * gain, e.o);

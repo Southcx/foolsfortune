@@ -39,6 +39,7 @@ const r = await p.evaluate(async ({ mod, name, loop }) => {
     if (A.bar === 0 && (!loop || (guard >= total && guard < total * 2))) marks.push([S.sections[A.section].id, A.next]);
     A.step(); guard++;
   }
+  A.drain(Infinity); // (the queued notes made: the arranger makes them a beat ahead in play, all at once offline)
   const loopEnd = loop ? cut2 : A.next;
   const buf = await ctx.startRendering();
   let L = buf.getChannelData(0), R = buf.getChannelData(1), seam = null;
