@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // A PUZZLE DUEL'S RULES (docs/plans/PUZZLE-DUELS.md sections 3 to 5): the kernel's modules, each one rule over the board. SETTLE rules run
 // again and again after every action until nothing changes (PuzzleScript's loop): gravity, then the clears (runs, clusters, the pincer),
-// then what a clear sets off (junk broken beside it, bombs). ACTIONS are what a form does on its own side (the Courier's step, push and
+// then what a clear sets off (junk broken beside it, bombs). ACTIONS are what a form does on its own side (the Courier's push and
 // punt; the god hand's swap, drag, rotate and drop). A rule asks a piece's tags, never its kind. Each returns its events in order, so a
 // view can play the settle step by step.
 //
@@ -12,7 +12,7 @@
 //
 //   fall(board) -> events   clears(board, rs) -> { cells: Set, events }   pinch(board, side) -> events   ACTIONS[kind] = { cost, legal, apply }
 // ---------------------------------------------------------------------------------------
-import { DIRS, hasTag, piece } from './board.js';
+import { DIRS, KINDS, hasTag } from './board.js';
 
 const key = (x, y) => x + ',' + y;
 const unkey = (k) => k.split(',').map(Number);
@@ -20,7 +20,7 @@ const unkey = (k) => k.split(',').map(Number);
 /** Gravity: every falling piece moves along its cell's gravity while the next cell is empty, on its own side (the line is a wall to a
  *  fall). Moves until nothing moves, so a whole stack drops in one call. */
 export function fall(b) {
-  const events = [];
+  const way = new Map(); // (id -> { from, to }: one event a piece, its whole way, so a view animates each piece once)
   for (let pass = 0, moved = true; moved && pass < b.w + b.h; pass++) {
     moved = false;
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
@@ -28,10 +28,11 @@ export function fall(b) {
       const [dx, dy] = b.grav(x, y); if (!dx && !dy) continue;
       const nx = x + dx, ny = y + dy;
       if (!b.in(nx, ny) || b.at(nx, ny) || b.sideOf(nx) !== b.sideOf(x) || b.floor[b.idx(nx, ny)] === 'wall') continue;
-      b.move(x, y, nx, ny); moved = true; events.push({ type: 'fall', id: p.id, from: [x, y], to: [nx, ny] });
+      b.move(x, y, nx, ny); moved = true;
+      const w = way.get(p.id); if (w) w.to = [nx, ny]; else way.set(p.id, { from: [x, y], to: [nx, ny] });
     }
   }
-  return events;
+  return [...way].map(([id, w]) => ({ type: 'fall', id, side: b.sideOf(w.to[0]), from: w.from, to: w.to }));
 }
 
 const same = (a, c) => a && hasTag(a, 'matches') && c && hasTag(c, 'matches') && a.colour === c.colour;
@@ -74,7 +75,7 @@ export function resolve(b, cells, rs) {
     for (const [dx, dy] of [DIRS.N, DIRS.S, DIRS.E, DIRS.W]) {
       const n = b.at(x + dx, y + dy);
       if (n && hasTag(n, 'junk') && b.sideOf(x + dx) === b.sideOf(x)) gone.add(key(x + dx, y + dy));
-      if (n && hasTag(n, 'explosive')) fuse.push([x + dx, y + dy]);
+      if (n && hasTag(n, 'explosive') && b.sideOf(x + dx) === b.sideOf(x)) fuse.push([x + dx, y + dy]);
     }
   }
   for (const [bx, by] of fuse) {
@@ -82,14 +83,14 @@ export function resolve(b, cells, rs) {
     gone.add(key(bx, by)); events.push({ type: 'blast', at: [bx, by] });
     for (const [dx, dy] of [DIRS.N, DIRS.S, DIRS.E, DIRS.W]) for (let r = 1; r <= (rs.blast || 2); r++) {
       const tx = bx + dx * r, ty = by + dy * r, t = b.at(tx, ty);
-      if (!b.in(tx, ty) || (t && (hasTag(t, 'heavy') || hasTag(t, 'body')))) break;
+      if (!b.in(tx, ty) || b.sideOf(tx) !== b.sideOf(bx) || (t && (hasTag(t, 'heavy') || hasTag(t, 'body')))) break; // (the Line stops a blast)
       if (t) gone.add(key(tx, ty));
     }
   }
   for (const k of gone) {
     const [x, y] = unkey(k), p = b.at(x, y); if (!p) continue;
     if (hasTag(p, 'matches')) cleared[b.sideOf(x)]++;
-    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, at: [x, y], colour: p.colour });
+    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, side: b.sideOf(x), at: [x, y], colour: p.colour });
     b.set(x, y, null);
   }
   return { cleared, events };
@@ -105,7 +106,7 @@ export function pinch(b, side) {
     while (b.in(cx, cy) && b.mine(side, cx) && hasTag(b.at(cx, cy), 'junk')) { mid.push([cx, cy]); cx += dx; cy += dy; }
     const end = b.at(cx, cy);
     if (mid.length && end && b.mine(side, cx) && same(end, a)) for (const [mx, my] of mid) {
-      const was = b.at(mx, my); b.set(mx, my, piece('gem', { colour: a.colour })); events.push({ type: 'pinch', id: was.id, at: [mx, my], colour: a.colour });
+      const was = b.at(mx, my); Object.assign(was, { kind: 'gem', tags: KINDS.gem, colour: a.colour }); events.push({ type: 'pinch', id: was.id, side, at: [mx, my], colour: a.colour });
     }
   }
   return events;
@@ -117,10 +118,7 @@ const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 /** The forms' actions (PUZZLE-DUELS.md section 4). legal(state, side, a) -> bool; apply(state, side, a) -> events. A Courier is a body
  *  piece on the board; the god hand acts on any cell of its side. */
 export const ACTIONS = {
-  // ---- the Courier: a body on a cell of its side
-  step: { form: 'courier', cost: 1,
-    legal: (s, side, a) => { const [x, y] = s.sides[side].at, d = DIR[a.dir], nx = x + d[0], ny = y + d[1]; return mineIn(s.board, side, nx, ny) && !s.board.at(nx, ny); },
-    apply: (s, side, a) => { const S = s.sides[side], [x, y] = S.at, d = DIR[a.dir]; s.board.move(x, y, x + d[0], y + d[1]); S.at = [x + d[0], y + d[1]]; return [{ type: 'step', side, to: S.at }]; } },
+  // ---- the Courier: a body on a cell of its side (its glean and its tools: couriertools.js)
   push: { form: 'courier', cost: 1, // (Sokoban: the run of pushable pieces before the Courier moves one cell, if the cell after it is free)
     legal: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, d = DIR[a.dir]; let cx = x + d[0], cy = y + d[1], n = 0;
       while (mineIn(b, side, cx, cy) && b.at(cx, cy) && hasTag(b.at(cx, cy), 'pushable')) { cx += d[0]; cy += d[1]; n++; }
@@ -157,4 +155,3 @@ export const ACTIONS = {
   form: { form: null, cost: 1, legal: (s, side, a) => s.sides[side].forms.includes(a.to) && s.sides[side].form !== a.to,
     apply: (s, side, a) => { s.sides[side].form = a.to; return [{ type: 'form', side, to: a.to }]; } },
 };
-export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };

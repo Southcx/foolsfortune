@@ -5,16 +5,16 @@
 //
 // Prior art: Puzzle Fighter's and Puyo's characters (one drop pattern each), Noon's arenas, Dr. Mario's viruses per level.
 //
-//   RULESETS[feeling] -> { run, cluster, gravity(x, y, board), bombs, blast, pincer, colours, rain, queue, bot }
+//   RULESETS[feeling] -> { run, cluster, gravity(x, y, board), bombs, blast, pincer, colours, drip, queue, bot }
 // ---------------------------------------------------------------------------------------
 import { DIRS } from './board.js';
 
 export const RULESETS = {
   // Fury: bombs and punts. Plain gravity, runs of three, a bomb in every 16 pieces that come.
-  fury: { feeling: 'fury', run: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, blast: 2, colours: 4, rain: 4, bot: { junk: 12 } },
+  fury: { feeling: 'fury', run: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, blast: 2, colours: 4, drip: 4, bot: { junk: 12 } },
   // Grief: everything sinks toward the line (each side's pile leans on it), clusters of four, the pincer turns junk to gems.
   grief: { feeling: 'grief', run: 0, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.E : DIRS.W), pincer: true, colours: 6,
     bot: { pairs: 1 } },
   // Mirth: gravity mirrored (down on the left, up on the right), runs and clusters both, so chains come easily.
-  mirth: { feeling: 'mirth', run: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, rain: 3 },
+  mirth: { feeling: 'mirth', run: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 3 },
 };

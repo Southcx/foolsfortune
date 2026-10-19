@@ -53,7 +53,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
   `explosive`), as `core/tags.js` does for the world: a rule asks the tag, never the kind.
 - **The line**: a column boundary between the two sides, at 10 to start. Your side is your zone of control: **the hand acts only on your
   side, and the Courier walks only on your side.**
-  - Garbage you land pushes the line toward them, one column for every 4 sent.
+  - Garbage you land pushes the line toward them, one column for every 3 landed (4 at 3 AP; section 11).
   - **You win when the line reaches their back wall**, or (Noon's win) when their side has no empty cell left at the end of a turn.
   - A ruleset may make the line **jagged**, one boundary a row (Qix's claiming); straight is the default.
 - **Gravity is a map**: every cell has its own direction (down, up, toward the line, away from it, toward a point, or none). A ruleset
@@ -61,7 +61,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 
 ## 3. The turn
 
-- **3 action points a turn** (a knob). Then the board **settles**, junk crosses, and the other side plays.
+- **5 action points a turn** (the owner's; a knob). Then the board **settles**, junk crosses, and the other side plays.
 - **Settling** is the PuzzleScript loop: every settle rule runs (gravity, sliding on ice, matching, exploding, timers), again and again
   until nothing changes. Each pass that clears something is a **chain step**.
   - The loop is capped at 64 passes, and a board seen twice in one settle ends it. That is the guard against a cascade that never ends.
@@ -73,8 +73,8 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 
 | form | where | its actions (AP) | from |
 |---|---|---|---|
-| **the Courier** | a body on a cell of your side | step 1, **push** a run of pieces one cell 1, **punt** one piece to slide until blocked 2 | Noon, Bomberman, Sokoban, Mr. Driller |
-| **the god hand** | over your side | **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
+| **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **punt** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
+| **the god hand** | over your side | **the coup** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
 | (switching form) | | 1 | |
 
 The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) is a later module.
@@ -130,13 +130,15 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
 - **Wanda:** a chain's rising notes, the line's push, the clear.
 - **Espada:** the names (the duel, the line, each rule's words), and each aberrant's rules as neuralese sentences.
 
-## 9. Open, for the owner
+## 9. Ruled by the owner (2026-10-19)
 
-1. Is 3 AP right? It is a knob; the simulator will say how long a duel runs at each.
-2. When you lose a duel, what happens: a crack, being thrown out of the board, or the Figment escaping?
-3. Can a sibling or a guest join your side of the board (two Couriers, one side)?
-4. What does the Courier do that the hand cannot? A first answer: it stands on the board (junk cannot land on its cell, its body
-   stops a blast), and punts cross distance the hand's swaps cannot. To be decided in play.
+1. **5 AP a turn** ("let's start with 5AP"). Each player on a side has their own (section 12).
+2. **Losing a duel is a shatter**, as being beaten in any fight: the Courier shatters and is made whole as usual; the aberrant Figment
+   stays where it was, its EmO back to calm.
+3. **Co-op is planned for** (section 12).
+4. **The Courier is the fight; the god hand is the puzzle** (section 11). The owner's words: "direct special attacks that circumvent the
+   board, maybe a critical garbage push causes the enemy figment's EmO to spike in a shower of lachryma that you can quickly run around
+   and absorb before swapping to Godhand mode to coup de grace them."
 
 ## 10. Built (2026-10-19): the kernel
 
@@ -147,9 +149,11 @@ do.
 - `duel.js`: the turn, AP, the settle loop, junk and the wins.
 - `bot.js`: a greedy planner that also gives the shown intent.
 - `rulesets.js`: the first three Figments' rulesets.
+- `breaks.js`: EmO, the break, the shower of motes, stun depth on the board, the coup (section 11).
+- `couriertools.js`: the Courier's run and its tools on the board (section 11).
 - `scripts/duel.mjs`: duels between bots, headless, with lengths, junk rates, and every settle that hit the cap.
 
-### What the simulator says (bots against bots, 10 duels a ruleset, 3 AP, `node scripts/duel.mjs`)
+### What the simulator said first (the kernel alone, 10 duels a ruleset, 3 AP)
 
 | ruleset | turns a side | junk a turn | longest chain | how they end | settles capped |
 |---|---|---|---|---|---|
@@ -161,5 +165,80 @@ do.
 - **At 2 AP** duels barely shorten (grief 4.4, mirth 6.7), and fury at rain 2 ran 126 turns: the AP sets how deep a turn's plan is,
   rain sets the pace.
 - **The greedy bot never switches form** (a point spent for nothing at once). With the Courier first (`--forms courier,hand`) it walks,
-  pushes and punts, and makes a third of the junk the hand does. The Courier needs a reason the hand lacks (section 9.4).
+  pushes and punts, and makes a third of the junk the hand does. The Courier needed a reason the hand lacks: section 11 is it.
 - No settle has hit the cap or looped in any run so far.
+
+## 11. The Courier is the fight; the god hand is the puzzle (built 2026-10-19)
+
+**The loop.** The hand makes junk. Junk landed raises the foe's **EmO**; a **critical push** (8 or more landed at once) or EmO full
+**buckles** it (label Break; Espada's lore word, proposed: "The Figment buckles."). A buckle:
+- deepens its **stun depth** (dazed, stunned, out cold: STUN-DEPTH.md's three), which costs it action points: 1, 2, then its whole turn.
+  The stun holds 2 of its own turns, and a new buckle while it is down refreshes it a depth deeper.
+- sheds a shower of **teardrops** (label Orb; Lachryma is Latin *lacrima*, a tear: one for every 2 junk, 3 to 12) onto your side within 6 cells of your Courier. They last
+  **one turn**: switch to the Courier, **glean** them (a path of up to four cells for one point), and each fills the pool by 8.
+- opens **the coup** (label Finish; the log: "You drain the Figment."): switch back to the hand and finish it (2 AP), paid from the pool by depth: **60 dazed, 40 stunned, 20 out cold**.
+  The deeper it is down, the cheaper the finish; the coup is the data drain in the board's form.
+
+**The Courier's tools on the board**, each a special attack that goes round the puzzle, paid in points and the pool:
+
+| tool | its move | AP | pool | the genre's mechanic |
+|---|---|---|---|---|
+| (none) | **glean** up to four cells, drinking the teardrops it crosses | 1 | 0 | Sonic's rings gathered back |
+| the psygun | **shoot** the first piece past the Line in your row (their chain may set off and come back at you) | 1 | 5 | Meteos' launch |
+| the Sondelass | **hook** that piece back across to your side | 1 | 5 | Magical Drop's grab |
+| the Dreamvane | **drill** up to three pieces in a line from you | 1 | 3 | Mr. Driller |
+| the Soul Brush | **paint** the 3 × 3 round you one feeling, junk and all | 2 | 10 | Columns' magic jewel |
+| the Crucibelle | **toll**: the foe loses a point next turn (two at most) | 2 | 15 | Tetris 99's attack badges |
+| the Lockheart | **hoover** the junk beside you into the coffin (12 at most); **flail** it all at the foe as junk | 1 / 1 | 0 / 5 | Tetris's hold |
+| the Veritome | (to come) a plate of the foe's side reads its rules as familiarity | | | |
+
+Only the tools the Courier wears come to the board. The push and the punt stay.
+
+**What the simulator says** (20 duels a ruleset, 5 AP, the Line a column for every 3 junk; the bot always tries a form switch and the coup):
+
+| ruleset | turns a side | buckles a duel | teardrops gleaned a duel | how they end |
+|---|---|---|---|---|
+| fury | 20.4 | 1.3 | 1.0 | line 16, full 4 |
+| grief | 5.7 | 1.8 | 0.9 | line 14, coup 4, full 2 |
+| mirth | 10.0 | 1.1 | 1.1 | line 15, coup 5 |
+
+- **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
+  since Calissa's mock).
+- **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it gleans; a player who plans the buckle
+  should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
+- The greedy bot dithers between forms (about one switch a turn). A sim artefact, but it slows its duels.
+
+## 12. Co-op on the board (planned for, the owner, 2026-10-19)
+
+- **A side holds the party**: the Courier and up to three more (siblings or guests: the party's four at most). Each has **their own form,
+  their own 5 AP and their own pool**, and acts in any order inside the side's turn; the side's turn ends when all have ended.
+  Shared: the side's ground, the junk it sends and takes, the teardrops (whoever gleans one drinks it).
+- **The coup can be paid together**: each hand on the side puts in from its own pool (a Spirit Bomb).
+- **A sibling plays with the bot**, weighted by its division (Petra builds walls of room, Calissa paints, Wanda chains, Espada hooks,
+  Dovina gambles on the coup): its intent is shown like the Figment's, so you plan round your sibling too.
+- **The Figment answers a bigger side** with more points and rain. The simulator cannot set it yet: the greedy bot does not get much
+  stronger with more points (10 AP against 5 won 5, 8 and 4 duels in 10 across fury, grief and mirth), so the price is set in play.
+  First guess: +3 AP and +1 rain for each player past the first.
+- **Built:** a side's own AP (`newDuel({ ap: [10, 5] })`, `--ap0 --ap1`). **Not built:** more than one Courier body on a side.
+
+## 13. Ruled for the view (Calissa's mock, round 11; Dovina, 2026-10-19)
+
+Espada's words since (LORE.md, proposed): **the buckle** (was "break": the guard break, the crackle break and junk's own `break` event had it),
+**a teardrop** (was "mote": the Figment's scatter and the weather's look have motes), **glean** (was "run": the rule word for three in a
+line), the coup kept. UI labels: Break, Orb, Finish, Gather, Drill, Shoot, Grab, Paint, Delay, Hold, Send.
+
+1. `line` carries `w` and `side` (whose junk pushed it). The engine knows sides, not who; the room maps a side to the bus's `by`
+   (`courier`, `creature`) when it emits.
+2. `land` carries its cells (`at`).
+3. **A blast stops at the Line** (it was a bug: a bomb on the Figment's half cleared the Courier's gem and counted it as the Courier's
+   chain). A clear sets off only bombs on its own side, and a blast's cross stops at the Line, as a fall does.
+4. `fall` is one event a piece with its whole way (`from`, `to`); `clear`, `break` and `pinch` carry their `side`.
+5. A pinch turns the piece, keeping its id (as the Soul Brush's paint does).
+6. **The intent is a live forecast, not a promise.** It is what the Figment would do if you stopped now: redrawn after each of your
+   actions, its first step bold and the rest fainter (they are drawn on a board the first one changes). Into the Breach's promise does
+   not fit a board that settles under every action; the forecast keeps its use, which is planning round it.
+7. **The Courier does not fall: intended.** The Courier is a body on the board's face, not a piece in its well (Noon's bodies walk the
+   field from above). On the upright board it reads as standing on the face of its cell; the look is Calissa's.
+8. Words: a settle's chain is **a duel's chain** (the homonym table); what each side is given at the start of its turn is **the drip**
+   (`rs.drip`, event `drip`), not rain, which is the weather's.
+
