@@ -198,11 +198,12 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
 
 | ruleset | turns a side | breaks a duel | motes drunk a duel | how they end |
 |---|---|---|---|---|
-| fury | 23.9 | 1.3 | 1.1 | line 14, full 4, coup 1, cap 1 |
+| fury | 20.4 | 1.3 | 1.0 | line 16, full 4 |
 | grief | 5.7 | 1.8 | 0.9 | line 14, coup 4, full 2 |
 | mirth | 10.0 | 1.1 | 1.1 | line 15, coup 5 |
 
-- **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 24.
+- **5 AP made offsetting strong**: at 4 junk a column, fury ran 60 to 85 turns a side. At 3 it runs 20 (a blast kept to its own side,
+  since Calissa's mock).
 - **The coup ends about one duel in six.** A greedy bot spends its points on swaps before it walks for motes; a player who plans the break
   should finish more. The coup's price (60 / 40 / 20) is the knob if it needs to come sooner.
 - The greedy bot dithers between forms (about one switch a turn). A sim artefact, but it slows its duels.
@@ -219,4 +220,21 @@ Only the tools the Courier wears come to the board. The push and the punt stay.
   stronger with more points (10 AP against 5 won 5, 8 and 4 duels in 10 across fury, grief and mirth), so the price is set in play.
   First guess: +3 AP and +1 rain for each player past the first.
 - **Built:** a side's own AP (`newDuel({ ap: [10, 5] })`, `--ap0 --ap1`). **Not built:** more than one Courier body on a side.
+
+## 13. Ruled for the view (Calissa's mock, round 11; Dovina, 2026-10-19)
+
+1. `line` carries `w` and `side` (whose junk pushed it). The engine knows sides, not who; the room maps a side to the bus's `by`
+   (`courier`, `creature`) when it emits.
+2. `land` carries its cells (`at`).
+3. **A blast stops at the Line** (it was a bug: a bomb on the Figment's half cleared the Courier's gem and counted it as the Courier's
+   chain). A clear sets off only bombs on its own side, and a blast's cross stops at the Line, as a fall does.
+4. `fall` is one event a piece with its whole way (`from`, `to`); `clear`, `break` and `pinch` carry their `side`.
+5. A pinch turns the piece, keeping its id (as the Soul Brush's paint does).
+6. **The intent is a live forecast, not a promise.** It is what the Figment would do if you stopped now: redrawn after each of your
+   actions, its first step bold and the rest fainter (they are drawn on a board the first one changes). Into the Breach's promise does
+   not fit a board that settles under every action; the forecast keeps its use, which is planning round it.
+7. **The Courier does not fall: intended.** The Courier is a body on the board's face, not a piece in its well (Noon's bodies walk the
+   field from above). On the upright board it reads as standing on the face of its cell; the look is Calissa's.
+8. Words: a settle's chain is **a duel's chain** (the homonym table); what each side is given at the start of its turn is **the drip**
+   (`rs.drip`, event `drip`), not rain, which is the weather's.
 

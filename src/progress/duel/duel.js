@@ -37,7 +37,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
 export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null } = {}) {
-  const rs = { run: 3, cluster: 0, blast: 2, colours: 5, rain: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
+  const rs = { run: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
   board.setGravity(rs.gravity || (() => [0, 1]));
@@ -113,7 +113,7 @@ export function act(s, a) {
 }
 
 /** The turn's end: the mover's junk cancels what waits for it, the rest waits for the other side; what still waits for the mover
- *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its rain). */
+ *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its drip). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
   events.push(...endOwnTurn(s, side)); // (its motes fade, its EmO settles, its stun counts down: before what lands on it can break it again)
@@ -127,7 +127,7 @@ export function endTurn(s) {
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
   s.toMove = foe; s.apLeft = startTurn(s, foe);
-  if (s.winner === null) events.push(...rain(s, foe));
+  if (s.winner === null) events.push(...drip(s, foe));
   topQueue(s, foe);
   s.log.push(...events);
   return events;
@@ -136,9 +136,9 @@ export function endTurn(s) {
 /** Junk landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
  *  DUEL.perColumn landed. A side that cannot take it all has lost (Noon). */
 function land(s, side, n) {
-  const b = s.board, events = [{ type: 'land', side, n }], cells = b.empty(side);
+  const b = s.board, at = [], events = [{ type: 'land', side, n, at }], cells = b.empty(side);
   let placed = 0;
-  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece('junk')); }
+  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece('junk')); at.push([x, y]); }
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
@@ -150,7 +150,7 @@ function land(s, side, n) {
 /** The line moves a column; a Courier left on the other side steps to the nearest empty cell of its own; gravity follows the sides. */
 function moveLine(s, by) {
   const b = s.board; b.line += by;
-  const events = [{ type: 'line', line: b.line }];
+  const events = [{ type: 'line', line: b.line, w: b.w, side: by < 0 ? 1 : 0 }]; // (side: whose junk pushed it; the room maps it to `by`)
   if (b.line <= 0 || b.line >= b.w) { s.winner = b.line <= 0 ? 1 : 0; events.push({ type: 'duel.line', winner: s.winner }); return events; }
   if (s.rs.gravity) b.setGravity(s.rs.gravity);
   for (const side of [0, 1]) {
@@ -162,11 +162,11 @@ function moveLine(s, by) {
   return events;
 }
 
-/** A side's rain at the start of its turn: rs.rain new pieces at random empty cells of it (the well never runs dry). */
-function rain(s, side) {
+/** A side's drip at the start of its turn: rs.drip new pieces at random empty cells of it (the well never runs dry). */
+function drip(s, side) {
   const b = s.board, cells = b.empty(side), events = [];
-  for (let i = 0; i < s.rs.rain && cells.length; i++) {
-    const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = gemOf(s); b.set(x, y, p); events.push({ type: 'rain', side, id: p.id, at: [x, y] });
+  for (let i = 0; i < s.rs.drip && cells.length; i++) {
+    const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = gemOf(s); b.set(x, y, p); events.push({ type: 'drip', side, id: p.id, at: [x, y] });
   }
   events.push(...settle(s).events);
   return events;

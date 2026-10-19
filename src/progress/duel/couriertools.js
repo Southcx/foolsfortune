@@ -13,7 +13,7 @@
 //
 //   COURIER_ACTIONS[kind] = { form: 'courier', tool, cost, pool, legal(s, side, a), apply(s, side, a) }   runPaths(s, side) -> paths
 // ---------------------------------------------------------------------------------------
-import { DIRS, hasTag } from './board.js';
+import { DIRS, KINDS, hasTag } from './board.js';
 import { BREAK } from './breaks.js';
 
 const DIR = { N: DIRS.N, S: DIRS.S, E: DIRS.E, W: DIRS.W };
@@ -78,7 +78,7 @@ export const COURIER_ACTIONS = {
     apply: (s, side, a) => { const b = s.board, [x, y] = s.sides[side].at, events = [];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const tx = x + dx, ty = y + dy, p = b.at(tx, ty);
         if (!mineIn(b, side, tx, ty) || !p || !(hasTag(p, 'matches') || hasTag(p, 'junk'))) continue;
-        if (hasTag(p, 'junk')) { p.kind = 'gem'; p.tags = ['falls', 'pushable', 'matches', 'swappable']; }
+        if (hasTag(p, 'junk')) { p.kind = 'gem'; p.tags = KINDS.gem; }
         p.colour = a.colour; events.push({ type: 'paint', side, id: p.id, at: [tx, ty], colour: a.colour }); }
       spend(s, side, 10); return events; } },
   toll: { form: 'courier', tool: 'crucibelle', cost: 2, pool: 15,
