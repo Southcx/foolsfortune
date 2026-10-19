@@ -634,6 +634,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
   bursting (about 0.3 real s) just before the data drain takes it (.hack's Protect Break). *Not:* the bubble, a guard break, the vessel's cracks.
+- **the aberrant encounter's wipe** (`AberrantWipe`, `game.aberrantWipe`, `src/vfx/aberrantwipe.js`) — the battle transition into a puzzle duel with an aberrant: the frame caught and drawn toward it, its data bug showing, the held frame crazing, then shattering along the Line. *Not:* the maw wipe, the glitch, the crackle break.
 - **a data bug** (working name; `DataBugs`, `game.dataBugs`, `src/vfx/databug.js`) — an aberrant or stray Figment or a blotling drawn wrong on
   purpose: one still error (a limb off its socket, its skin slid, a magenta cast) and a dark aura; a drain mends it. Always "a data bug" in
   full. *Not:* a bug in the code, the corrupted body.
