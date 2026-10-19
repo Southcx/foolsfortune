@@ -288,6 +288,10 @@ opens it.** Two minds meet and the domains expand; a duel is never started by a 
 
 ## 15. Fleeing: a saving throw (the owner, 2026-10-19: "rolling like a saving throw to let you escape"; a failed one gentle at 3 AP)
 
+Names (Espada's, proposed; LORE.md): label **Flee**, lore name **a wriggle** (Middle Low German *wriggeln*, to twist about: the wrangle
+wrings you, a wriggle twists you free). The log (the session's rule): "You wriggle free of the wrangle." / "You fail to wriggle free." / on a
+natural 20, "You wriggle free at once." The code keeps the label's word, `flee`.
+
 Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side only (`newDuel({ flee })`, `[true, false]`).
 - **The roll:** a d20, plus the board's modifiers, must reach **15**. A natural 20 always gets away; a natural 1 never does.
 - **The modifiers** (`fleeOdds(state, side)` gives the roll needed, the bonus, each part and the chance, for the overlay to show before
