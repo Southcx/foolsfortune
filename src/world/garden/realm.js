@@ -45,6 +45,7 @@ import { phaseAt } from '../../progress/weather.js';
 import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
 const _pm = new THREE.Matrix4(), _p = new THREE.Vector3(); // (the keepsake pots read for their song)
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
@@ -104,6 +105,7 @@ export class Realm {
     if (this.raw) this.loadAll(this.raw);
     const looks = [...this.parked(), ...(game.gardenMycelium?.parked() || [])]; for (const o of looks) o.visible = true;
     this.site.show(true);
+    const P = game.present, smooth = T.visual.smooth !== false; if (P) this.site.group.traverse((o) => P.shadeOne(o, false, smooth)); // (shaded as drawn before compiling: compiled flat then smooth, each program was built twice, as at boot)
     try { game.renderer?.compile(this.site.group, game.camera, game.scene); } catch (e) { console.warn('garden warm-up', e); }
     this.site.show(false);
   }
