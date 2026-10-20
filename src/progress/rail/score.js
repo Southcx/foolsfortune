@@ -9,12 +9,15 @@
 //   - A VOLLEY (the lock-on: RayStorm, RayCrisis) pays 50, doubling for every lock past the first, but only when every locked target
 //     is downed: eight locks, eight downs, 6,400. Greed checked by precision.
 //   - ABSORBING a shot of your own feeling (the ship's polarity: Ikaruga) pays 10 and fills the pool that the lances spend.
+//   - A DOWN IN ITS WINDUP pays x1.5 and cancels its volley (reading rewarded: RAIL-MODULES.md 1, rule 3; Calissa's research rule 10).
+//   - A HIT BREAKS THE CHAIN to nothing (`chainHit`): a hit costs something you can see fall, not just hull (the research's rule 22, the
+//     Gummi's medal level; our chain is that meter, so the word "medal" stays Star Fox's).
 //   - The tally (Star Fox 64): what the ship still bears is worth 1,000 a hit; the set piece's end pays its own (a brig sunk, a
 //     Leviathan driven off or felled).
 // The RANK is the score against PAR, the median of an expert's run measured by scripts/rail.mjs (S at par, then halving: A at half, B a
 // quarter, C an eighth); the MEDAL is Star Fox's: the stage passed with four in five of what came downed.
 //
-//   SCORE   chain() -> state   chainDown(state, aspect) -> bonus   volleyBonus(locked, downed)   downScore({ cls, pointBlank, returned })
+//   SCORE   chain() -> state   chainDown(state, aspect) -> bonus   chainHit(state)   volleyBonus(locked, downed)   downScore({ cls, pointBlank, returned, windup })
 //   PAR[setPiece]   rankOf(score, setPiece) -> 'S'|'A'|'B'|'C'|'D'   medalOf({ passed, downed, spawned }) -> bool
 // ---------------------------------------------------------------------------------------
 
@@ -22,6 +25,7 @@ export const SCORE = {
   cls: [100, 300, 1000, 3000, 10000], // (Guppy .. Leviathan: about three times a class, as their hit points are)
   pointBlank: { within: 4, mult: 2 }, // (metres from the ship's nose: inside a bait ball, every fish is point blank, and that is the joy)
   returned: 3, // (a down by a parried shot)
+  windup: 1.5, // (a down while its windup was showing: its volley never came)
   chain: { of: 3, base: 100, cap: 25600 },
   volley: { base: 50, max: 8 },
   absorb: 10,
@@ -42,14 +46,16 @@ export function chainDown(s, aspect) {
   s.of = 0; s.links++;
   return Math.min(SCORE.chain.cap, SCORE.chain.base * 2 ** (s.links - 1));
 }
+/** A hit on the ship: the chain falls to nothing (state changed in place). */
+export function chainHit(s) { s.aspect = null; s.of = 0; s.links = 0; return s; }
 /** A volley's bonus: every target locked must be downed by it. */
 export const volleyBonus = (locked, downed) => (locked > 0 && downed >= locked ? SCORE.volley.base * 2 ** (Math.min(locked, SCORE.volley.max) - 1) : 0);
-/** One down: its class's worth, doubled at point blank, tripled when its own shot did it. */
-export const downScore = ({ cls = 0, pointBlank = false, returned = false }) => SCORE.cls[Math.max(0, Math.min(4, cls))] * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1);
+/** One down: its class's worth, doubled at point blank, tripled when its own shot did it, half again in its windup. */
+export const downScore = ({ cls = 0, pointBlank = false, returned = false, windup = false }) => SCORE.cls[Math.max(0, Math.min(4, cls))] * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1) * (windup ? SCORE.windup : 1);
 
 /** Par by setPiece: an expert's median score (scripts/rail.mjs, the 'expert' profile, 2000 runs each, the Margarite run). Re-measured
  *  whenever a number in progress/rail/ moves: `node scripts/rail.mjs --par`. */
-export const PAR = { shoal: 102000, pirates: 37000, leviathan: 60500 }; // (measured 2026-10-07, 3000 runs each)
+export const PAR = { shoal: 103400, pirates: 37100, leviathan: 60200 }; // (measured 2026-10-20 with the windup's x1.5 and a hit breaking the chain, 3000 runs each)
 export function rankOf(score, setPiece = 'shoal') {
   const p = PAR[setPiece] || PAR.shoal;
   for (const [r, share] of SCORE.rank) if (score >= p * share) return r;

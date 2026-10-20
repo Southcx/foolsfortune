@@ -38,6 +38,8 @@ export class Charybdis {
 
   /** Whether Charybdis is held in the arena now (the ship's aim turns abeam, the cursor free: stage.js). */
   get holding() { return this.active && !!this.foe?.alive; }
+  /** What the maelstrom's patterns fire from ('object': legs.js): Charybdis while it holds. */
+  emitter() { return this.holding ? this.foe : null; }
 
   update(dt, bar) {
     if (!this.active) return;
@@ -75,8 +77,9 @@ export class Charybdis {
   /** Felled before the peak ends: its class's down pay (the waves'), and CHARYBDIS.pay.felled crystal shards. */
   felled() {
     if (this.done) return; this.done = true;
-    for (let i = 0; i < (CHARYBDIS.pay?.felled ?? 0); i++) this.game.pneuka?.add('mat.shard', 'loot');
-    this.game.events?.emit('charybdis.felled', { feel: this.w?.feel || null, shards: CHARYBDIS.pay?.felled ?? 0, by: 'courier' });
+    const shards = this.game.emocean?.showcase ? 0 : CHARYBDIS.pay?.felled ?? 0; // (the test crossing pays nothing: world/emocean/stage.js)
+    for (let i = 0; i < shards; i++) this.game.pneuka?.add('mat.shard', 'loot');
+    this.game.events?.emit('charybdis.felled', { feel: this.w?.feel || null, shards, by: 'courier' });
   }
 
   end() {

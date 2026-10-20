@@ -46,6 +46,8 @@ export class LeviathanPiece {
 
   /** Alongside: the side view's gun fires abeam, at its flank (courier/ship/ship.js). */
   abeam(rel) { return rel >= 8 && rel < 18 && !this.ended; }
+  /** What the leg's patterns fire from ('object': legs.js): Old Nobody's throat, else his body (the leg runner asks it is on the screen). */
+  emitter() { return this.ended ? null : this.throat?.alive ? this.throat : this.body?.alive ? this.body : null; }
 
   begin(leg) {
     const st = this.stage, W = st.waves, L = this.look;

@@ -36,6 +36,9 @@ import { PatternPlayer } from './patternplayer.js';
 import { LegRunner } from './legrunner.js';
 import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
+import * as THREE from 'three';
+import { T } from '../../core/config.js';
+import { slotsOf } from '../../progress/rail/mounts.js';
 
 const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
 const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Scout the route.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
@@ -57,7 +60,7 @@ export class TripRun {
     const S = this.st;
     this.field = new ShotField({ rail: S.rail }); this.field.build(scene);
     this.player = new PatternPlayer(this.field, { rng: stream('rail/patterns') });
-    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
+    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || S.charybdis?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
   }
   parked() { return this.field?.meshes || []; }
   show(on) { this.field?.show(on); }
@@ -66,6 +69,7 @@ export class TripRun {
   begin(V) {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
     const P = V.passage;
+    this.showcase = !!P.showcase; // (the test crossing, progress/rail/showcase.js: no pressures, a hull and its mounts a leg)
     this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
     this.legs = this.wps.map((w) => this.legOf(w));
@@ -83,7 +87,8 @@ export class TripRun {
   legOf(w) {
     const plan = w.type === 'encounter' ? null : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm });
     const enc = w.type === 'encounter' ? pickEncounter(this.seen, this.rng, { ghost: this.ghost }) : null; if (enc) this.seen[enc] = (this.seen[enc] || 0) + 1;
-    const phases = plan ? Object.fromEntries(['open', 'build', 'peak', 'release'].map((id) => [id, (plan.phases.find((p) => p.id === id)?.to ?? 0) - (plan.phases.find((p) => p.id === id)?.from ?? 0)])) : null;
+    const own = plan && !plan.phases.some((p) => ['open', 'build', 'peak', 'release'].includes(p.id)); // (a leg of one phase of its own, the test crossing's: the cue hears it as four bars of open, the rest build)
+    const phases = own ? { open: Math.min(4, plan.bars), build: Math.max(0, plan.bars - 4), peak: 0, release: 0 } : plan ? Object.fromEntries(['open', 'build', 'peak', 'release'].map((id) => [id, (plan.phases.find((p) => p.id === id)?.to ?? 0) - (plan.phases.find((p) => p.id === id)?.from ?? 0)])) : null;
     return { id: MUSIC_ID[w.type] || w.type, type: w.type, aspect: w.feel || null, feeling: w.feel || null, storm: !!w.storm, encounter: enc, phases, plan };
   }
 
@@ -142,11 +147,21 @@ export class TripRun {
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
-    // a swing of view begins: what is still in the air is let go (no shot lives across one: the owner's R17, Dovina's pacing law in
-    // legs.js keeps new ones out of the bars round it)
-    const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.field.clear(); this.swung = sw;
+    // a swing of view begins: what is still in the air is cancelled into Lachryma (no shot lives across one: the owner's R17 and his
+    // ruling of 2026-10-20; Dovina's pacing law in legs.js keeps new ones out of the bars round it)
+    const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.cancel(); this.swung = sw;
     this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
+  }
+
+  /** A swing's start: every live shot cancelled into Lachryma the ship drinks (the owner's ruling, 2026-10-20; RAIL-MODULES.md 1.10), as
+   *  absorbing one pays (T.ship.absorb a shot), none left on the screen through the swing; `rail.cancel` carries where they were for the
+   *  motes' look (Calissa's) and the sound (Wanda's). Prior art: Ikaruga's and every Cave shmup's bullet cancel into score items. */
+  cancel() {
+    const S = this.st, g = this.game, live = this.field.shots.filter((x) => x.on), w = new THREE.Vector3(), points = [];
+    for (const x of live.slice(0, 64)) { S.rail.toWorld(x.p, w); points.push(+w.x.toFixed(2), +w.y.toFixed(2), +w.z.toFixed(2)); }
+    if (live.length) { g.lachryma?.gain(T.ship.absorb * live.length, 'cancel'); g.events?.emit('rail.cancel', { n: live.length, points, by: 'environment' }); }
+    this.field.clear();
   }
 
   enter(k) {
@@ -162,6 +177,7 @@ export class TripRun {
   leave(k) {
     const S = this.st, w = this.wps[k];
     if (S.piece) S.close();
+    if (this.showcase) { S.run.hits = 0; if (this.wps[k + 1]) this.refit(k + 1); return; } // (the test crossing: mended, and the next row's hull and mounts through the turn)
     const hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), scored = Math.max(0, S.run.score - (this.scoreAt ?? S.run.score));
     this.state = arrive(this.state, this.chart, w.id, { hits, cleared: true });
     // what the leg's score is worth besides: a squall's pay (trip.js legScore), the whale's dive, a bounty, a ghost raced
@@ -176,9 +192,23 @@ export class TripRun {
     this.driftOn(k);
   }
 
+  /** The test crossing's turn: row k's hull sailed from here (ship.rehull), what it bears with it, and its mounts (the first ones, as
+   *  many as the hull has slots). */
+  refit(k) {
+    const S = this.st, ship = S.ship, w = this.wps[k], id = w.hull || this.state.ship;
+    if (id !== this.state.ship) {
+      this.state = { ...this.state, ship: id };
+      ship.rehull(id); S.aspectWas = null; // (the new hull takes the ship's feeling at the stage's next look: stage.js look)
+      S.run.ship = id; S.run.bears = (SHIPS[id]?.bears ?? S.run.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0);
+    }
+    const mounts = (w.mounts || []).slice(0, slotsOf(id)); S.mounts.begin(mounts);
+    this.game.events?.emit('showcase.hull', { hull: id, k, mounts, note: w.note || '', by: 'environment' });
+  }
+
   /** A calm's campfire or an encounter's choice, offered in the Index's window (the game holds; the cue holds: Wanda's). */
   offer(k) {
     const S = this.st, M = this.game.indexMenu, leg = this.legs[k], w = this.wps[k]; if (!M || S.offering) return;
+    if (this.showcase) { this.chosen.add(k); return; } // (the test crossing heaves to for nothing)
     this.chosen.add(k); S.offering = true;
     const enc = leg.encounter && ENCOUNTERS[leg.encounter], st = S.stage;
     const opts = enc ? offered(leg.encounter, this.state.ship, { rutter: this.rutterWorth(), fuel: this.state.fuel }).map((c) => ({ id: c.id, word: ENCOUNTER_WORDS[leg.encounter]?.[c.id] || c.does }))

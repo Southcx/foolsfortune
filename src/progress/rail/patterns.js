@@ -15,29 +15,51 @@
 // Astral and Umbral forms), whether it is `outlined` (only the roll answers it), and its `motion`: straight, accel, wave, curve,
 // decel (then a burst), split, homing, laser (a line that warns then burns), snake (a laser following a head).
 //
-//   PATTERNS[name] = { does, defaults, fire(p, ctx) -> volleys }   emit(name, params, ctx) -> [shot]   positionAt(shot, t) -> [x, y, z]
-//   children(shot) -> [shot] (a burst or a split, at its time)   fair(shots, ship) -> { ok, worst: { gap, reaction, spawn, turn } }
-//   ctx = { origin: [x,y,z], aim: [x,y,z] unit toward the ship, up?: [x,y,z], mode?: 'plane' | 'cone', rng?: () => 0..1 (a seeded stream), kind?, outlined? }
+// THE OWNER'S CROSSING BUGS (2026-10-20; measured by Calissa, docs/plans/research/RAIL-BUGS-MEASURED.md; the rules: docs/plans/RAIL-MODULES.md):
+//   a cone pattern's angle is an angle off the aim, as in the plane (the cone of old tilted every aimed shot 20 degrees to the screen's
+//   left); only a RING row (`ring: true`) spreads round the aim in a cone. A plane pattern lies in the VIEW's plane: `up` is the plane's
+//   normal (above: local +y; side: local +x), and `orient` turns a laid-out pattern onto the aim NOW keeping that up, never by the
+//   shortest arc. Every volley and every shot's time is on the cue's sixteenth (`GRID`), so a pattern fires on the beat.
+//
+//   PATTERNS[name] = { does, defaults, ring?, lead?, fire(p, ctx) -> volleys }   emit(name, params, ctx) -> [shot]   positionAt(shot, t)
+//   children(shot) -> [shot] (a burst or a split, at its time)   fair(shots, ship, params, box, mode, up) -> { ok, worst, blind, aimed, inPlane, grid }
+//   frameOf(aim, up) -> { f, u, v }   orient(shot, from, to) -> shot   GRID (s)   leadOf(name) -> s (the windup before its first volley)
+//   ctx = { origin: [x,y,z], aim: [x,y,z] unit toward the ship, up?: [x,y,z], mode?: 'plane' | 'cone', rng?: () => 0..1 (a seeded stream), kind?, outlined?, range? }
 // ---------------------------------------------------------------------------------------
 
+import { BAR_S } from './crossing.js';
+
 const D = Math.PI / 180;
+/** The cue's sixteenth (real s): every volley's time is a whole number of these (RAIL-MODULES.md 1, rule 3). */
+export const GRID = BAR_S / 16;
+const snap = (x) => Math.max(1, Math.round(x / GRID)) * GRID;
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], scale = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], len = (a) => Math.hypot(a[0], a[1], a[2]);
 const norm = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
 
-/** The basis an emitter fires in: f toward the ship, u across it, v up it (u and v span the plane a planar pattern turns in). */
-function basis(ctx) {
-  const f = norm(ctx.aim || [0, 0, -1]), up = ctx.up || [0, 1, 0];
-  let u = cross(up, f); if (len(u) < 1e-6) u = [1, 0, 0]; u = norm(u);
+/** The frame an emitter fires in: f toward the ship, u across it in the view's plane, v the plane's normal side (a planar pattern turns
+ *  in (u, f), its `up` the plane's normal: above +y, side +x). */
+export function frameOf(aim = [0, 0, -1], up = [0, 1, 0]) {
+  const f = norm(aim);
+  let u = cross(up, f); if (len(u) < 1e-6) u = len(cross([0, 1, 0], f)) > 1e-6 ? cross([0, 1, 0], f) : [1, 0, 0]; u = norm(u);
   return { f, u, v: norm(cross(f, u)) };
 }
-/** A direction from an angle (degrees, 0 = straight at the ship): in the plane (u, f) it turns the aim by the angle; in a cone it tilts
- *  the aim by `cone` radians toward the angle's direction round it. */
-function dirOf(B, deg, ctx, cone = 0.35) {
+const basis = (ctx) => frameOf(ctx.aim, ctx.up);
+/** A shot laid out in one frame, turned into another (its offset and heading keep their place in the frame: up stays up). */
+export function orient(s, A, B) {
+  const t = (x) => { const a = dot(x, A.u), b = dot(x, A.v), c = dot(x, A.f); return [B.u[0] * a + B.v[0] * b + B.f[0] * c, B.u[1] * a + B.v[1] * b + B.f[1] * c, B.u[2] * a + B.v[2] * b + B.f[2] * c]; };
+  const o = { ...s, pos: t(s.pos), dir: t(s.dir) };
+  if (s.motion?.at) o.motion = { ...s.motion, at: t(s.motion.at), to: t(s.motion.to) }; // (a cage's ring point and the ship's)
+  if (s.up) o.up = t(s.up);
+  return o;
+}
+/** A direction from an angle (degrees, 0 = straight at the ship): it turns the aim by the angle in the plane (u, f). A ring row in a
+ *  cone instead tilts the aim by `cone` radians toward the angle's direction round it (a ring seen from behind the ship). */
+function dirOf(B, deg, ctx, cone = 0.35, ring = false) {
   const a = deg * D;
-  if ((ctx.mode || 'plane') === 'cone') {
+  if ((ctx.mode || 'plane') === 'cone' && ring) {
     const side = add(scale(B.u, Math.cos(a)), scale(B.v, Math.sin(a)));
     return norm(add(scale(B.f, Math.cos(cone)), scale(side, Math.sin(cone))));
   }
@@ -47,9 +69,9 @@ function dirOf(B, deg, ctx, cone = 0.35) {
 /** The library: 28 emitters. Speeds in m/s (shots 10 to 28: slow enough to read, the Cave lesson); counts small enough to stay under the
  *  leg's budget; every angle in degrees off the aim. `fire(p, ctx)` returns volleys: [{ at, shots: [{ dir, speed, motion?, from? }] }]. */
 export const PATTERNS = {
-  ring:        { does: 'a ring, all at once', defaults: { n: 16, speed: 14, seed: 0, every: 1.5, volleys: 4 },
+  ring:        { ring: true, does: 'a ring, all at once', defaults: { n: 16, speed: 14, seed: 0, every: 1.5, volleys: 4 },
     fire: (p) => vol(p, (k) => range(p.n).map((i) => ({ deg: p.seed + 360 * i / p.n }))) },
-  rotatingRing:{ does: 'rings whose seed drifts by a delta that never divides the step (no blind spots)', defaults: { n: 18, speed: 13, delta: 7, every: 0.75, volleys: 8 },
+  rotatingRing:{ ring: true, does: 'rings whose seed drifts by a delta that never divides the step (no blind spots)', defaults: { n: 18, speed: 13, delta: 7, every: 0.75, volleys: 8 },
     fire: (p) => vol(p, (k) => range(p.n).map((i) => ({ deg: k * p.delta + 360 * i / p.n }))) },
   evenFan:     { does: 'an even fan: it constrains, nothing on the aim line', defaults: { n: 6, arc: 60, speed: 16, every: 1, volleys: 4 },
     fire: (p) => vol(p, () => fan(p.n, p.arc)) },
@@ -61,15 +83,15 @@ export const PATTERNS = {
     fire: (p) => vol(p, () => [{ deg: -p.offset }, { deg: p.offset }]) },
   stackFan:    { does: 'a fan at a stack of speeds: gaps that open further out', defaults: { n: 5, arc: 70, m: 3, vmin: 10, vmax: 20, every: 1.5, volleys: 3 },
     fire: (p) => vol(p, () => fan(p.n, p.arc).flatMap((s) => range(p.m).map((j) => ({ ...s, speed: p.vmin + j * (p.vmax - p.vmin) / Math.max(1, p.m - 1) })))) },
-  spiral:      { does: 'one arm turning', defaults: { w: 160, speed: 14, every: 0.08, volleys: 50 },
+  spiral:      { ring: true, does: 'one arm turning', defaults: { w: 160, speed: 14, every: 0.08, volleys: 50 },
     fire: (p) => vol(p, (k) => [{ deg: p.w * k * p.every }]) },
-  multiSpiral: { does: 'arms turning together', defaults: { arms: 4, w: 120, speed: 13, every: 0.1, volleys: 40 },
+  multiSpiral: { ring: true, does: 'arms turning together', defaults: { arms: 4, w: 120, speed: 13, every: 0.1, volleys: 40 },
     fire: (p) => vol(p, (k) => range(p.arms).map((a) => ({ deg: p.w * k * p.every + 360 * a / p.arms }))) },
-  doubleHelix: { does: 'arms that reverse their turn each half period', defaults: { arms: 3, w: 140, T: 2, speed: 13, every: 0.1, volleys: 40 },
+  doubleHelix: { ring: true, does: 'arms that reverse their turn each half period', defaults: { arms: 3, w: 140, T: 2, speed: 13, every: 0.1, volleys: 40 },
     fire: (p) => { let ang = 0; return vol(p, (k) => { ang += p.w * p.every * Math.sign(Math.sin(2 * Math.PI * (k * p.every) / p.T) || 1); return range(p.arms).map((a) => ({ deg: ang + 360 * a / p.arms })); }); } },
-  accelSpiral: { does: 'a spiral winding faster, to a cap', defaults: { arms: 2, w0: 60, alpha: 80, wmax: 260, speed: 13, every: 0.08, volleys: 50 },
+  accelSpiral: { ring: true, does: 'a spiral winding faster, to a cap', defaults: { arms: 2, w0: 60, alpha: 80, wmax: 260, speed: 13, every: 0.08, volleys: 50 },
     fire: (p) => { let ang = 0; return vol(p, (k) => { ang += Math.min(p.wmax, p.w0 + p.alpha * k * p.every) * p.every; return range(p.arms).map((a) => ({ deg: ang + 360 * a / p.arms })); }); } },
-  rose:        { does: 'a flower: a ring whose speed follows a rose curve r = cos(k theta)', defaults: { n: 36, k: 3, speed: 9, swell: 9, every: 2, volleys: 3 },
+  rose:        { ring: true, does: 'a flower: a ring whose speed follows a rose curve r = cos(k theta)', defaults: { n: 36, k: 3, speed: 9, swell: 9, every: 2, volleys: 3 },
     fire: (p) => vol(p, () => range(p.n).map((i) => { const th = 360 * i / p.n; return { deg: th, speed: p.speed + p.swell * Math.abs(Math.cos(p.k * th * D)) }; })) },
   gapWall:     { does: 'a wall across the plane with a gap that snakes row by row (at least three ship widths)', defaults: { cols: 12, width: 24, gap: 3, step: 2, speed: 12, every: 1, volleys: 6 },
     fire: (p) => vol(p, (k) => { const g = Math.abs(((k * p.step) % (2 * (p.cols - p.gap))) - (p.cols - p.gap)); return range(p.cols).filter((i) => i < g || i >= g + p.gap).map((i) => ({ deg: 0, lateral: -p.width / 2 + (i + 0.5) * p.width / p.cols })); }) },
@@ -83,27 +105,31 @@ export const PATTERNS = {
     fire: (p) => vol(p, (k) => fan(p.n, p.arc).map((s) => ({ ...s, motion: { type: 'curve', omega: (k % 2 ? -1 : 1) * p.omega * D, delay: p.delay } }))) },
   splitShell:  { does: 'a heavy shell that splits into a fan of children', defaults: { speed: 15, T: 0.9, m: 5, spread: 40, childSpeed: 13, every: 1, volleys: 4 },
     fire: (p) => vol(p, () => [{ deg: 0, motion: { type: 'split', T: p.T, m: p.m, spread: p.spread, childSpeed: p.childSpeed } }]) },
-  fragmentRing:{ does: 'a ring whose every shot splits once (capped: a ring of 8 into 24)', defaults: { n: 8, speed: 12, T: 0.8, m: 3, spread: 30, childSpeed: 9, every: 2, volleys: 3 },
+  fragmentRing:{ ring: true, does: 'a ring whose every shot splits once (capped: a ring of 8 into 24)', defaults: { n: 8, speed: 12, T: 0.8, m: 3, spread: 30, childSpeed: 9, every: 2, volleys: 3 },
     fire: (p) => vol(p, () => range(p.n).map((i) => ({ deg: 360 * i / p.n, motion: { type: 'split', T: p.T, m: p.m, spread: p.spread, childSpeed: p.childSpeed } }))) },
   crossGate:   { does: 'two streams from either side whose lines cross at you', defaults: { offset: 9, speed: 18, every: 0.15, volleys: 20, side: 10 },
     fire: (p) => vol(p, () => [{ deg: p.offset, lateral: -p.side }, { deg: -p.offset, lateral: p.side }]) },
   stratRain:   { does: 'a scatter on a jittered grid: random to the eye, fair to the hand', defaults: { n: 8, width: 28, speed: 13, every: 0.5, volleys: 8 },
     fire: (p, ctx) => vol(p, () => stratified(p.n, ctx.rng).map((x) => ({ deg: 0, lateral: (x - 0.5) * p.width }))) },
-  sweepBeam:   { does: 'a beam that warns, then burns, sweeping slower than the ship can run', defaults: { warn: 0.75, burn: 2, from: -50, to: 50, reach: 60, every: 4, volleys: 2 },
+  sweepBeam:   { lead: 4, does: 'a beam that warns, then burns, sweeping slower than the ship can run', defaults: { warn: 0.75, burn: 2, from: -50, to: 50, reach: 60, every: 4, volleys: 2 },
     fire: (p) => vol(p, () => [{ deg: p.from, speed: 0, motion: { type: 'laser', warn: p.warn, burn: p.burn, from: p.from * D, to: p.to * D, reach: p.reach } }]) },
-  snakeLaser:  { does: 'a laser that follows a weaving head (a ribbon over its trail)', defaults: { speed: 16, A: 5, f: 0.8, length: 14, every: 2.5, volleys: 3 },
+  snakeLaser:  { lead: 4, does: 'a laser that follows a weaving head (a ribbon over its trail)', defaults: { speed: 16, A: 5, f: 0.8, length: 14, every: 2.5, volleys: 3 },
     fire: (p) => vol(p, () => [{ deg: 0, motion: { type: 'snake', A: p.A, f: p.f, length: p.length } }]) },
   homingSalvo: { does: 'missiles that home, turning no faster than a cap, for a lifetime, then fly dumb', defaults: { n: 4, arc: 120, speed: 12, turn: 80, life: 2.2, N: 3.5, every: 2, volleys: 3 },
     fire: (p) => vol(p, () => fan(p.n, p.arc).map((s) => ({ ...s, motion: { type: 'homing', turn: p.turn * D, life: p.life, N: p.N } }))) },
   itano:       { does: 'the Itano circus: a fanned launch, an overshoot, three behaviours (straight, leading, weaving) homing at once', defaults: { n: 9, arc: 160, speed: 14, turn: 90, life: 2.5, wobble: 2.5, every: 3, volleys: 2 },
-    fire: (p) => vol(p, () => fan(p.n, p.arc).map((s, i) => ({ ...s, motion: { type: 'homing', turn: p.turn * D, life: p.life, N: [3, 4.5, 2.5][i % 3], lead: i % 3 === 1, wobble: i % 3 === 2 ? p.wobble : 0, stagger: (i % 4) * 0.1 } }))) },
-  cageRing:    { does: 'a ring closing in round you with one sector open (the bait ball as a pattern)', defaults: { n: 20, radius: 14, open: 50, speed: 7, every: 3, volleys: 2 },
+    fire: (p) => vol(p, () => fan(p.n, p.arc).map((s, i) => ({ ...s, motion: { type: 'homing', turn: p.turn * D, life: p.life, N: [3, 4.5, 2.5][i % 3], lead: i % 3 === 1, wobble: i % 3 === 2 ? p.wobble : 0, stagger: (i % 4) * GRID } }))) },
+  cageRing:    { does: 'a ring thrown out round you from its thrower, then closing in with one sector open (the bait ball as a pattern)', defaults: { n: 20, radius: 14, coneRadius: 6, out: 1, open: 50, speed: 7, every: 3, volleys: 2 },
     fire: (p, ctx) => vol(p, (k) => { const o = (k * 137) % 360; return range(p.n).map((i) => 360 * i / p.n).filter((a) => Math.abs(((a - o + 540) % 360) - 180) > p.open / 2).map((a) => ({ deg: 0, cage: { radius: p.radius, angle: a } })); }) },
   frenzyDash:  { does: 'glints peel off one by one, glint a warning, then dash straight at where you are', defaults: { n: 6, warn: 0.25, speed: 24, every: 0.35, volleys: 6 },
     fire: (p) => vol(p, () => [{ deg: 0, warn: p.warn }]) },
-  mixed:       { does: 'any pattern with a share of its shots outlined (only the roll answers them)', defaults: { of: 'oddFan', share: 0.25 },
-    fire: (p, ctx) => { const P = PATTERNS[p.of]; return P.fire({ ...P.defaults, ...p.params }, ctx).map((v) => ({ ...v, shots: v.shots.map((s, i) => ({ ...s, outlined: ((i * 7 + Math.floor(v.at * 13)) % 100) / 100 < p.share })) })); } },
+  mixed:       { lead: 2, does: 'any pattern with a share of its shots outlined (only the roll answers them)', defaults: { of: 'oddFan', share: 0.25 },
+    fire: (p, ctx) => { const P = PATTERNS[p.of], q = { ...P.defaults, ...p.params }; for (const k of ['every', 'gap']) if (q[k] != null) q[k] = snap(q[k]); return P.fire(q, ctx).map((v) => ({ ...v, shots: v.shots.map((s, i) => ({ ...s, outlined: ((i * 7 + Math.floor(v.at * 13)) % 100) / 100 < p.share })) })); } },
 };
+
+/** The windup before a pattern's first volley (real s): a beat for plain shots, half a bar for outlined ones, a bar for a beam's warning
+ *  line (RAIL-MODULES.md 1, rule 3; the research's rule 9). A row's `lead` is in beats. */
+export const leadOf = (name) => (PATTERNS[name]?.lead ?? 1) * BAR_S / 4;
 
 /** A fixed generator when none is given (the runtime passes the day's seeded stream: core/rng.js `stream(name)`). */
 function fixedRng(seed = 7) { let a = seed; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; }
@@ -117,12 +143,23 @@ function stratified(n, rng = fixedRng()) { return range(n).map((i) => (i + 0.15 
 export function emit(name, params = {}, ctx = {}) {
   const P = PATTERNS[name]; if (!P) return [];
   const p = { ...P.defaults, ...params }, B = basis(ctx), o = ctx.origin || [0, 0, 0], out = [];
+  for (const k of ['every', 'gap']) if (p[k] != null) p[k] = snap(p[k]); // (on the cue's sixteenth: the volleys fall on the beat)
+  const ring = !!(P.ring || (name === 'mixed' && PATTERNS[p.of]?.ring));
   for (const v of P.fire(p, { ...ctx, rng: ctx.rng || fixedRng() })) for (const s of v.shots) {
-    let from = o, dir = dirOf(B, s.deg || 0, ctx, ctx.cone);
+    let from = o, dir = dirOf(B, s.deg || 0, ctx, ctx.cone, ring);
     if (s.lateral) from = add(from, scale(B.u, s.lateral));
-    if (s.cage) { const a = s.cage.angle * D, ship = add(o, scale(B.f, ctx.range || 30)); from = add(ship, add(scale(B.u, Math.cos(a) * s.cage.radius), scale(B.v, Math.sin(a) * s.cage.radius))); dir = norm(add(ship, scale(from, -1))); }
-    out.push({ at: +(v.at + (s.motion?.stagger || 0)).toFixed(3), pos: from, dir, speed: s.speed ?? p.speed ?? 14, kind: s.kind || ctx.kind || 'astral',
-      outlined: s.outlined ?? !!ctx.outlined, motion: s.motion || { type: 'straight' }, warn: s.warn || 0, pattern: name });
+    let motion = s.motion;
+    if (s.cage) { // (thrown from the thrower out to its place on the ring round the ship, then closing on it: every shot leaves a muzzle you
+      // can see (RAIL-MODULES 1.2); the ring at the true range, in a plane view in the plane, in a cone round the aim and small enough to
+      // stay in the frame at the ship's depth (`coneRadius`))
+      const cone = (ctx.mode || 'plane') === 'cone', a = s.cage.angle * D, R = cone ? p.coneRadius : s.cage.radius;
+      const ship = add(o, scale(B.f, ctx.range || 30)), w = cone ? B.v : B.f;
+      const at = add(ship, add(scale(B.u, Math.cos(a) * R), scale(w, Math.sin(a) * R))), leg = add(at, scale(o, -1));
+      dir = norm(leg); motion = { type: 'cage', T: p.out, at, to: ship, speed: p.speed };
+      s.speed = len(leg) / p.out;
+    }
+    out.push({ at: +(Math.round((v.at + (s.motion?.stagger || 0)) / GRID) * GRID).toFixed(4), pos: from, dir, speed: s.speed ?? p.speed ?? 14, kind: s.kind || ctx.kind || 'astral',
+      outlined: s.outlined ?? !!ctx.outlined, motion: motion || { type: 'straight' }, warn: s.warn || 0, pattern: name, ...(ctx.up ? { up: ctx.up } : {}) });
   }
   return out.sort((a, b) => a.at - b.at);
 }
@@ -138,6 +175,7 @@ export function positionAt(s, t) {
   if (m.type === 'wave' || m.type === 'snake') { const side = norm(cross([0, 1, 0], d)); return add(add(s.pos, scale(d, v * t)), scale(len(side) ? side : [1, 0, 0], m.A * Math.sin(2 * Math.PI * m.f * t + (m.phase || 0)))); }
   if (m.type === 'curve') { if (t <= m.delay) return add(s.pos, scale(d, v * t)); const p0 = add(s.pos, scale(d, v * m.delay)), tt = t - m.delay, w = m.omega, side = norm(cross([0, 1, 0], d)); return add(p0, add(scale(d, (v / w) * Math.sin(w * tt)), scale(side, (v / w) * (1 - Math.cos(w * tt))))); }
   if (m.type === 'laser') return s.pos;
+  if (m.type === 'cage') { if (t <= m.T) return add(s.pos, scale(d, v * t)); return add(m.at, scale(norm(add(m.to, scale(m.at, -1))), m.speed * (t - m.T))); }
   return add(s.pos, scale(d, v * t));
 }
 
@@ -146,11 +184,11 @@ export function children(s) {
   const m = s.motion || {};
   if (m.type !== 'decel' && m.type !== 'split') return [];
   const at = s.at + (s.warn || 0) + m.T, pos = positionAt(s, (s.warn || 0) + m.T), f = s.dir;
-  let u = cross([0, 1, 0], f); if (len(u) < 1e-6) u = [1, 0, 0]; u = norm(u);
+  let u = cross(s.up || [0, 1, 0], f); if (len(u) < 1e-6) u = [1, 0, 0]; u = norm(u); // (about the view's plane: a side view's split stays in the wall)
   const n = m.type === 'decel' ? m.burst : m.m, out = [];
   for (let i = 0; i < n; i++) {
     const deg = m.type === 'decel' ? 360 * i / n : (n > 1 ? -m.spread / 2 + m.spread * i / (n - 1) : 0), a = deg * D;
-    out.push({ at, pos, dir: norm(add(scale(f, Math.cos(a)), scale(u, Math.sin(a)))), speed: m.childSpeed, kind: s.kind, outlined: s.outlined, motion: { type: 'straight' }, warn: 0, pattern: s.pattern });
+    out.push({ at, pos, dir: norm(add(scale(f, Math.cos(a)), scale(u, Math.sin(a)))), speed: m.childSpeed, kind: s.kind, outlined: s.outlined, motion: { type: 'straight' }, warn: 0, pattern: s.pattern, ...(s.up ? { up: s.up } : {}) });
   }
   return out;
 }
@@ -159,9 +197,24 @@ export function children(s) {
  *  `ship.pos` with a hurtbox of `ship.width`: every volley leaves a gap of at least three ship widths where it crosses the ship's
  *  distance; every shot gives at least `reaction` seconds from its spawn (and its warning) to reach the ship; none spawns within
  *  `spawn` metres; homers turn no faster than 90 degrees a second and live at most 2.5 real seconds; rotating seeds leave no blind spot. */
-export const FAIR = { gapWidths: 3, reaction: 0.5, spawn: 4, turn: 90 * D, life: 2.5 };
-export function fair(shots, ship = { pos: [0, 0, 30], width: 1.2 }, params = {}, box = 12, mode = 'plane') {
-  let gap = Infinity, reaction = Infinity, spawn = Infinity, turn = 0, life = 0;
+export const FAIR = { gapWidths: 3, reaction: 0.5, spawn: 4, turn: 90 * D, life: 2.5, aim: 6 * D, plane: 0.02 };
+/** Also, since the owner's crossing bugs (2026-10-20): every volley of an AIMED pattern (not a ring, a cage or a beam) heads at the ship
+ *  on the mean, within `aim` (the cone's 20-degree lean, Calissa's report 4); in a plane view no shot leaves the plane whose normal is
+ *  `up` (the side view's fans spread into depth, report 2); and every shot leaves on the sixteenth (report 3). */
+export function fair(shots, ship = { pos: [0, 0, 30], width: 1.2 }, params = {}, box = 12, mode = 'plane', up = [0, 1, 0], origin = null) {
+  // a cage is judged as it closes: from its place on the ring, toward the ship, once it has been thrown out (its threat is the ring)
+  shots = shots.map((s) => (s.motion?.type === 'cage' ? { ...s, pos: s.motion.at, dir: norm(add(s.motion.to, scale(s.motion.at, -1))), speed: s.motion.speed, warn: (s.warn || 0) + s.motion.T, motion: { type: 'straight' } } : s));
+  let gap = Infinity, reaction = Infinity, spawn = Infinity, turn = 0, life = 0, aimed = 0, inPlane = 0, grid = 0;
+  const vols = new Map();
+  if (mode === 'plane') for (const s of shots.flatMap((x) => [x, ...children(x)])) inPlane = Math.max(inPlane, Math.abs(dot(s.dir, up)));
+  for (const s of shots) {
+    grid = Math.max(grid, Math.abs(s.at / GRID - Math.round(s.at / GRID)) * GRID);
+    const P = PATTERNS[s.pattern], of = s.pattern === 'mixed' ? PATTERNS[params.of] : null;
+    if (P?.ring || of?.ring || s.pattern === 'cageRing' || s.motion?.type === 'laser' || s.motion?.type === 'homing') continue; // (a homer steers)
+    const k = s.at.toFixed(3), V = vols.get(k) || vols.set(k, { d: [0, 0, 0], o: [0, 0, 0], n: 0 }).get(k);
+    V.d = add(V.d, s.dir); V.o = add(V.o, s.pos); V.n++;
+  }
+  for (const V of vols.values()) { if (len(V.d) < 0.3 * V.n) continue; const to = norm(add(ship.pos, scale(origin || scale(V.o, 1 / V.n), -1))); aimed = Math.max(aimed, Math.acos(Math.max(-1, Math.min(1, dot(norm(V.d), to))))); } // (judged from the thrower: a wall's shots fly parallel to its aim)
   const all = shots.flatMap((s) => [s, ...children(s)]), byAt = new Map();
   for (const s of all) {
     const toShip = add(ship.pos, scale(s.pos, -1)), dist = len(toShip);
@@ -175,7 +228,7 @@ export function fair(shots, ship = { pos: [0, 0, 30], width: 1.2 }, params = {},
   // a volley's widest gap where it crosses the plane through the ship facing the emitter, within the ship's reach (`box` either side):
   // only shots heading for that plane count (a ring's back half flies away); a path must exist through every volley
   for (const vol of byAt.values()) {
-    const o = vol[0].pos, nrm = norm(add(ship.pos, scale(o, -1))); let ax = cross([0, 1, 0], nrm); if (len(ax) < 1e-6) ax = [1, 0, 0]; ax = norm(ax);
+    const o = vol[0].pos, nrm = norm(add(ship.pos, scale(o, -1))); let ax = cross(up, nrm); if (len(ax) < 1e-6) ax = [1, 0, 0]; ax = norm(ax);
     const ay = norm(cross(nrm, ax)), pts = [];
     for (const s of vol) {
       const den = dot(s.dir, nrm); if (den <= 0.05 || s.motion?.type === 'laser') continue;
@@ -201,7 +254,8 @@ export function fair(shots, ship = { pos: [0, 0, 30], width: 1.2 }, params = {},
     }
   }
   const blind = params.delta != null && params.n ? gcd(Math.round(params.delta), Math.round(360 / params.n)) > 3 : false;
-  const worst = { gap: +gap.toFixed(2), reaction: +reaction.toFixed(2), spawn: +spawn.toFixed(2), turn: +(turn / D).toFixed(0), life };
-  const ok = gap >= FAIR.gapWidths * ship.width && reaction >= FAIR.reaction && spawn >= FAIR.spawn && turn <= FAIR.turn + 1e-9 && life <= FAIR.life && !blind;
+  const worst = { gap: +gap.toFixed(2), reaction: +reaction.toFixed(2), spawn: +spawn.toFixed(2), turn: +(turn / D).toFixed(0), life, aimed: +(aimed / D).toFixed(1), inPlane: +inPlane.toFixed(3), grid: +grid.toFixed(4) };
+  const ok = gap >= FAIR.gapWidths * ship.width && reaction >= FAIR.reaction && spawn >= FAIR.spawn && turn <= FAIR.turn + 1e-9 && life <= FAIR.life && !blind
+    && aimed <= FAIR.aim && inPlane <= FAIR.plane && grid < 1e-3;
   return { ok, worst, blind };
 }

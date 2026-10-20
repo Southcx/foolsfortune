@@ -1290,6 +1290,7 @@ async function main() {
     env.lobbers.update(dt);
     if (!godOn && !game.realm?.active) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
+      game.emocean?.reaim?.(); // (the crossing's reticle through this frame's camera, now placed: world/emocean/stage.js)
       character.setFirstPerson(player.fpWeight > 0.5);
       // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
