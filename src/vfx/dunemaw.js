@@ -19,7 +19,6 @@
 //   const f = new Sandfall({ width, height })   group.add(f.group)   f.update(t, 'open' | 'warn' | 'falling', rawDt)   f.dispose()   (a floor's shifting door)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { litMaterial } from './matte.js';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
 
@@ -222,7 +221,7 @@ export class PrinceCrown {
   /** The crown's band rings the pit, tilted and half sunk (one side rises out of the sand, the other is under it), its chimney points
    *  along the band: the pit is the inside of the crown, the Prince's own head under it. */
   constructor({ radius = 22, points = 7, tilt = 0.24 } = {}) { // (just outside the pit's lip, 19.3 m)
-    const clay = litMaterial({ name: 'prince-crown', color: 0xc77f5a, roughness: 0.85, flatShading: true, side: THREE.DoubleSide }); // (matte: Lambert, vfx/matte.js)
+    const clay = new THREE.MeshStandardMaterial({ name: 'prince-crown', color: 0xc77f5a, roughness: 0.85, flatShading: true, side: THREE.DoubleSide });
     const glaze = new THREE.MeshStandardMaterial({ name: 'prince-crown-glaze', color: 0x3b2a5a, roughness: 0.18, metalness: 0.1, emissive: 0x150a24 });
     this.group = new THREE.Group(); this.group.name = 'prince-crown';
     const tilted = new THREE.Group(); tilted.rotation.x = tilt; tilted.position.y = -1.2; this.group.add(tilted);

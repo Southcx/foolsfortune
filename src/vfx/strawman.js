@@ -29,7 +29,6 @@
 //   thrown wide and the guard down for t real s)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { litMaterial } from './matte.js';
 import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
 export { SLEEVES };
 
@@ -93,7 +92,7 @@ const wrap = (a) => a - Math.PI * 2 * Math.round(a / (Math.PI * 2));
 
 export class StrawmanModel {
   constructor() {
-    const std = (color, o = {}) => litMaterial({ color, roughness: 0.85, ...o }); // (the matte ones Lambert: vfx/matte.js)
+    const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...o });
     this.mats = [];
     const M = (m) => { this.mats.push(m); return m; };
     const root = this.group = new THREE.Group(); root.name = 'strawman';

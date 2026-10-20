@@ -21,7 +21,6 @@
 //   P.move(v, x, y) (the model only)   P.remove(v)   P.hideBody(side, hidden)   P.bodyAt(side) -> v   P.update(dt)   P.list
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { litMaterial } from '../matte.js';
 import { crystalFretMaterial, CrystalFrets } from '../crystalfrets.js';
 import { mindLineMaterial } from '../labradorite.js';
 import { featTint } from '../oxidation.js';
@@ -39,7 +38,7 @@ export function duelMaterials() {
   if (MATS) return MATS;
   MATS = {
     gem: crystalFretMaterial({ color: 0xffffff, emissive: 0x2a1a48, emissiveIntensity: 0.45, roughness: 0.22, metalness: 0.15, flatShading: true }, 0xffffff),
-    clay: litMaterial({ name: 'duel-clay', color: 0xffffff, roughness: 0.86, metalness: 0, flatShading: true }), // (matte: Lambert, vfx/matte.js)
+    clay: new THREE.MeshStandardMaterial({ name: 'duel-clay', color: 0xffffff, roughness: 0.86, metalness: 0, flatShading: true }),
     clayVc: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true }), // (racewayprops' clay: the frame and the figurines)
     glow: new THREE.MeshBasicMaterial({ name: 'duel-glow', toneMapped: false }),
   };
