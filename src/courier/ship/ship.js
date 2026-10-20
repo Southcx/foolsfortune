@@ -97,13 +97,13 @@ export class Ship {
   begin(aspect = 'mirth', ship = 'sloop') {
     this.home = this.aspect = aspect; this.qSaid = false; this.form = 'astral'; this.surge = 0;
     this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15; this.boxSet = false;
-    this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
+    this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0; this.drag = 1;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
     this.rehull(ship);
   }
   /** The hull sailed (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether
-   *  it dives, and its look dressed. At cast-off, and in the test crossing's turns (world/emocean/triprun.js); a hull that cannot
+   *  it dives, and its look dressed. At cast-off, and in the showcase crossing's turns (world/emocean/triprun.js); a hull that cannot
    *  dive comes up into the Astral form. */
   rehull(ship = 'sloop') {
     const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
@@ -132,7 +132,7 @@ export class Ship {
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
     const want = _a.set(0, 0, 0);
-    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace, box: (this.hull?.box ?? 1) * F.box };
+    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace * (this.drag ?? 1), box: (this.hull?.box ?? 1) * F.box }; // (drag: a grappler holding on, world/emocean/foemechanics.js)
     want[ax.k] += h * ax.s * S.top * hull.pace; want[ay.k] += v * ay.s * S.top * hull.pace;
     const pl = planeOf(plane);
     // boost and brake: the place along the rail (in the screen plane, where z is otherwise pinned)
@@ -149,7 +149,7 @@ export class Ship {
     const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0, cam = this.game.camera, dz = pl === 'screen' ? Math.round(this.boostZ * 2) / 2 : 0, Rv = reachOf(view, cam?.aspect || 16 / 9, T.camera.tpFov, 0.84, [dz, dz]); // (at the boost's depth, to half a metre)
     const want2 = this.boxWant ||= { x: [0, 0], y: [0, 0], z: [0, 0] }, box = this.box ||= { x: [0, 0], y: [0, 0], z: [0, 0] };
     want2.x[0] = (Rv.x ? Rv.x[0] : -B.x) * k; want2.x[1] = (Rv.x ? Rv.x[1] : B.x) * k;
-    want2.y[0] = B.yLo + F.cruise * 0.5; want2.y[1] = B.yLo + ((Rv.y ? Rv.y[1] : B.yHi) - B.yLo) * k + F.cruise;
+    want2.y[0] = Math.max(B.yLo + F.cruise * 0.5, Rv.y ? Rv.y[0] : -Infinity); want2.y[1] = B.yLo + ((Rv.y ? Rv.y[1] : B.yHi) - B.yLo) * k + F.cruise;
     want2.z[0] = Rv.z ? Rv.z[0] * k : zc - B.z * k; want2.z[1] = Rv.z ? Rv.z[1] * k : zc + B.z * k;
     for (const a of ['x', 'y', 'z']) for (const i of [0, 1]) box[a][i] = this.boxSet ? damp(box[a][i], want2[a][i], 4, raw) : want2[a][i];
     this.boxSet = true;
@@ -296,7 +296,7 @@ export class Ship {
     const g = this.look.group, t = this.game.dunes?.t ?? 0;
     this.rail.toWorld(this.local, g.position);
     g.rotation.set(-this.pitch, 0, this.bank + this.spin, 'YXZ'); if (this.rail.q) g.quaternion.premultiply(this.rail.q); // (the rail's turn: railpath.js)
-    this.look.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t });
+    this.look.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t, form: this.form, roll: this.rollT > 0 ? 1 - this.rollT / T.ship.roll.time : 0 }); // (form and roll: the mast's fold, vfx/shipkit/rig.js)
     const cam = this.game.camera, scroll = !RET[view];
     this.rail.toWorld(this.retNear, this.near.position); this.rail.toWorld(this.retFar, this.far.position);
     this.near.visible = this.far.visible = this.look.group.visible;

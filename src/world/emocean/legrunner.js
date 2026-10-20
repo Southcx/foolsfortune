@@ -11,7 +11,7 @@
 // THE THROWER (the owner's "no clear source", 2026-10-20: Calissa's measurements, RAIL-BUGS-MEASURED.md report 3; RAIL-MODULES.md 1): a
 // pattern is thrown by a body you can see. A role's thrower is a live foe of that role IN FRAME for the view (the nearest the view's
 // middle, never the newest wherever it is); 'object' is the director's part. Where there is none (and for 'ahead'), a CARRIER comes in
-// from the view's far edge, holds while it fires, and leaves (fire only while holding): a placeholder body, shootable, its volleys
+// from the view's far edge, holds while it fires, and leaves (fire only while holding): Calissa's carrier body, shootable, its volleys
 // cancelled if it is downed. Every play has a WINDUP before its first volley (patterns.js `leadOf`: a beat, half a bar for outlined
 // shots, a bar for a beam), the rail's telegraph mark on the thrower; and nothing it fires lands in the bar before a swing. The pattern
 // player is told the view's plane (`up`) and reads the leg's bar as its clock. Each windup emits `rail.tell { bar, beat, outlined, by }`,
@@ -28,8 +28,9 @@ import { schedule, CARRIER_AT } from '../../progress/rail/legs.js';
 import { leadOf } from '../../progress/rail/patterns.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { PatternPlayer } from './patternplayer.js';
+import { railFoeBody } from '../../vfx/railfoes.js';
 
-const CARRIER = { hp: 6, pay: 20, radius: 1.2, lanes: [-8, 0, 8], exit: 1.2 };
+const CARRIER = { hp: 6, pay: 20, radius: 1.5, scale: 1.8, lanes: [-8, 0, 8], exit: 1.2 }; // (scale and radius as waves.js draws a roster body: SIZE 1.8, its length 1.9 x 0.45 x SIZE)
 const upOf = (view) => (view === 'side' ? [1, 0, 0] : [0, 1, 0]);
 const LIGHT = { speed: 9, pay: 40 }; // (a light drifting by: lock it for its pay; it never fires)
 
@@ -93,29 +94,26 @@ export class LegRunner {
     }
     return best;
   }
-  /** A carrier: comes in from the view's far edge over the windup, holds while it fires, then leaves the way it came. A placeholder
-   *  body (Calissa's to dress), shootable: downed, its unfired volleys go with it. */
+  /** A carrier: comes in from the view's far edge over the windup, holds while it fires, then leaves the way it came. Its body is
+   *  Calissa's (vfx/railfoes.js), shootable: downed, its unfired volleys go with it. */
   carrier(view, H) {
     const lane = CARRIER.lanes[this.carriers++ % CARRIER.lanes.length], side = view === 'side';
     const hold = new THREE.Vector3(...H.at), from = new THREE.Vector3(...H.from);
     if (side) hold.y += lane * 0.4; else hold.x += lane;
-    const start = hold.clone().add(from), lead = BAR_S / 4;
+    const start = hold.clone().add(from), lead = BAR_S / 4, body = railFoeBody('carrier', this.feel || 'mirth');
+    body.object.scale.setScalar(CARRIER.scale);
     return this.waves.add({
       kind: 'rail.carrier', name: 'a carrier', role: 'carrier', cls: 1, aspect: this.feel, radius: CARRIER.radius, hp: CARRIER.hp, pay: CARRIER.pay, chain: false,
-      local: start.clone(), mesh: this.carrierMesh(), hold: 99,
+      local: start.clone(), mesh: body.object, body, hold: 99,
       tick: (dt, f) => {
         const t = f.t, inT = Math.max(lead, 0.25), outT = f.hold + CARRIER.exit;
+        body.tell(t < inT ? t / inT : 0); body.update(dt); // (its tell over the windup; a downed one reads its death in waves.js `dying`)
         if (t < inT) { const k = t / inT, e = k * k * (3 - 2 * k); f.local.lerpVectors(start, hold, e); }
         else if (t < f.hold) f.local.copy(hold).y += Math.sin(t * 2) * 0.15;
         else { const k = Math.min(1, (t - f.hold) / CARRIER.exit); f.local.lerpVectors(hold, start, k * k); }
         return t < outT;
       },
     });
-  }
-  carrierMesh() { // (a placeholder: Calissa's carrier, the body every 'ahead' pattern now comes from)
-    this.carrierGeo ||= new THREE.OctahedronGeometry(1.2, 0);
-    this.carrierMat ||= new THREE.MeshLambertMaterial({ color: 0x2a2433, emissive: 0x6a4a8a, emissiveIntensity: 0.6, flatShading: true });
-    return new THREE.Mesh(this.carrierGeo, this.carrierMat);
   }
 
   /** Lights to lock, set adrift across the frame (Rez's scanning orbs: the calm's score, the release's flotsam). */

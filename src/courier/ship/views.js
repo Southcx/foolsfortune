@@ -31,7 +31,7 @@ export const CRUISE = 3;
 /** Each view's camera, as offsets in the rail frame from the ship's rest (Q, CRUISE up), plus how much of the ship's own offset it
  *  follows. The side camera stands on the ship's right (+x), so the scroll runs toward the screen's right (Einhander, R-Type). */
 export const VIEW_RIGS = {
-  chase:  { cam: [0, 2.2, -7.5], look: [0, 1.0, 20], follow: 0.35, fov: 0 },
+  chase:  { cam: [0, 3, -5], look: [0, 0, 12], follow: 0.62, fov: 0 }, // (the mock's v3.1, the owner's ruling 2026-10-20: RAIL-MODULES.md rulings 5)
   above:  { cam: [0, 30, -9], look: [0, 0, 7], follow: 0.12, fov: -4 },
   side:   { cam: [24, 1.5, 3], look: [0, 0.5, 3], follow: 0.1, fov: -6 },
   free:   { cam: [0, 1.6, -10], look: [0, 1.2, 30], follow: 0.25, fov: 8 },
@@ -77,7 +77,9 @@ export function blendRig(a, b, k, Q, ship, out) {
 
 /** How far the ship may go in a view's plane and stay inside `reach` of the screen (1 is its edge; 0.84 is the frame less an 8% margin,
  *  RAIL-MODULES.md 1.1), with that view's camera at rest following its share of the ship: { x, y, z } as [lo, hi] in the rail frame for
- *  the axes the plane moves (y: only its top; the sea's surface is its floor), null for the axis it pins. Searched rather than solved,
+ *  the axes the plane moves, null for the axis it pins. y's floor is the lowest point on the screen at that depth (the ship takes the
+ *  higher of it and the sea's surface: braked in the chase view, the waterline stays in frame, the owner's ruling 5, Calissa's measure
+ *  3.1 m); where the cruise height itself is off the screen, the search starts from that floor. Searched rather than solved,
  *  since the camera follows the ship: each way stepped out by halving (20 steps), once a view, aspect, fov and depth (cached); in the
  *  screen plane at the depth the boost or the brake holds it (`span`: braked nearer the camera the box is tighter; Calissa's mock found
  *  the chase corners at 1.08 when braked at the rest depth's box). The old box was
@@ -97,6 +99,14 @@ export function reachOf(id, aspect, fov = 70, reach = 0.84, span = [0, 0]) {
     return _p.z < 1 && Math.abs(_p.x) <= reach && Math.abs(_p.y) <= reach;
   };
   const moves = MOVES[planeOf(id)] || MOVES.screen, depths = planeOf(id) === 'screen' ? [...new Set(span)] : [rest.z]; // (the screen plane is held at the boost's depth: the box is found at the depths given)
+  let floor = null;
+  if (moves.some(([k]) => k === 'y')) { // (the lowest y on the screen at the plane's centre, every depth given)
+    const ok = (y) => depths.every((z) => inside({ ...rest, z, y }));
+    const up = !ok(rest.y), step = up ? 0.25 : -0.25; // (the cruise height off the screen: up to where it comes on; else down to where it goes off)
+    let a = rest.y, b = null;
+    for (let i = 1; i <= 160; i++) { const y = rest.y + step * i; if (ok(y) === up) { b = y; break; } a = y; } // (stepped, not halved: the camera follows the ship, so far off the plane the screen comes round again)
+    if (b != null) { let lo = up ? a : b, hi = up ? b : a; for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; if (ok(m)) hi = m; else lo = m; } floor = hi; if (up) rest.y = hi; }
+  }
   for (let pass = 0; pass < 2; pass++) for (const [k, sgn] of moves) { // (the second pass at the other axis's ends: a corner stays inside too)
     const other = moves.find(([j]) => j !== k)[0], ends = pass && out[other] ? out[other] : [rest[other]];
     const ok = (m) => ends.every((e) => depths.every((z) => inside({ ...rest, z, [other]: e, [k]: rest[k] + sgn * m })));
@@ -106,6 +116,7 @@ export function reachOf(id, aspect, fov = 70, reach = 0.84, span = [0, 0]) {
     if (pass && hi > 0 && ok(hi)) lo = hi;
     const r = (out[k] ||= [rest[k], rest[k]]); r[sgn < 0 ? 0 : 1] = rest[k] + sgn * lo;
   }
+  if (out.y && floor != null) out.y[0] = floor;
   REACHES.set(key, out);
   return out;
 }
