@@ -21,10 +21,12 @@
 // always bodies; the Gummi ship's fly-in, hold, fire, fly-out.
 //
 //   const L = new LegRunner({ waves, player, object, onDirector, scene })   L.begin(waypoint, { feel, storm, strength })   L.update(bar)
+//   (a waypoint of type 'showcase' plays the test crossing, progress/rail/showcase.js; its `refit` cues emit rail.refit { hull, by })
 //   L.plan   L.done   L.phaseAt(bar) -> { id, view }   (bar: from the leg's first, in the cue's bars)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { schedule, CARRIER_AT } from '../../progress/rail/legs.js';
+import { showcase } from '../../progress/rail/showcase.js';
 import { leadOf } from '../../progress/rail/patterns.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { PatternPlayer } from './patternplayer.js';
@@ -41,7 +43,7 @@ export class LegRunner {
 
   /** A waypoint's leg begins: { type, strength, feel, storm } (the sea chart's waypoint). */
   begin(w, extra = {}) {
-    this.plan = schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm, ...extra });
+    this.plan = w.type === 'showcase' ? showcase() : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm, ...extra }); // (the test crossing: progress/rail/showcase.js)
     this.next = 0; this.idx = 0; this.done = !this.plan; this.feel = w.feel ?? null;
     return this.plan;
   }
@@ -58,6 +60,7 @@ export class LegRunner {
       else if (e.pattern) this.pattern(e.pattern, e.bar);
       else if (e.targets) this.lights(e.targets);
       else if (e.director) this.onDirector?.(e.director);
+      else if (e.refit) this.waves.game?.events?.emit('rail.refit', { hull: e.refit, by: 'environment' }); // (the test crossing's breather: the stage changes the hull)
     }
     if (bar >= this.plan.bars) this.done = true;
   }
