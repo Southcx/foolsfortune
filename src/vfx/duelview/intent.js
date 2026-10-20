@@ -45,7 +45,7 @@ class Strokes {
 export class DuelIntent {
   constructor(parent, marks) {
     this.group = new THREE.Group(); this.group.name = 'duel-intent'; parent.add(this.group); this.marks = marks;
-    const mat = (color, opacity) => new THREE.MeshBasicMaterial({ name: 'duel-intent', color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false });
+    const mat = (color, opacity) => new THREE.MeshBasicMaterial({ name: 'duel-intent', color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, fog: false, toneMapped: false });
     this.mats = { inkB: mat(INK, 0.9), colB: mat(0xffffff, 1), inkF: mat(INK, 0.9 * FAINT), colF: mat(0xffffff, FAINT) };
     this.meshes = {}; this.badges = []; this.frame = null; this.junkL = marks.label(); this.group.add(this.junkL.group); this.junkL.group.visible = false;
   }

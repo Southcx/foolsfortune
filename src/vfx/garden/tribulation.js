@@ -53,7 +53,7 @@ export class HeavenlyKiln {
     const B = { to: to.clone(), eta, t: 0, mesh: new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xfff4e0, transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending })), done: false, seed: Math.random() * 100 };
     B.mesh.name = 'kiln-bolt'; B.mesh.frustumCulled = false; this.group.add(B.mesh); this.bolts.push(B); this.shape(B);
     // the ring on the mat where it will land, lying on the ground's own up there
-    B.r = r; B.flick = flick; B.ringMat = new THREE.MeshBasicMaterial({ color: 0xff7a2a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    B.r = r; B.flick = flick; B.ringMat = new THREE.MeshBasicMaterial({ color: 0xff7a2a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });
     B.ring = new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 40).rotateX(-Math.PI / 2), B.ringMat); B.ring.name = 'kiln-ring'; B.ring.frustumCulled = false;
     this.group.worldToLocal(B.ring.position.copy(to)); if (up) B.ring.quaternion.setFromUnitVectors(_y, _c.copy(up).transformDirection(_m.copy(this.group.matrixWorld).invert()).normalize());
     B.ring.position.addScaledVector(B.ring.up.clone().applyQuaternion(B.ring.quaternion), 0.04); this.group.add(B.ring);

@@ -102,7 +102,7 @@ export function furlRoll(a, b, { r0 = 0.15, r1 = 0.1, bunt = 0, squash = 1, ties
 /** A sail: a grid between its corners (luff along the mast, foot along the boom), with a belly the vertex shader fills. */
 export function sailMaterial(lotus) {
   const u = { uFill: { value: 0.6 }, uSide: { value: 1 }, uLotus: { value: lotus }, uT: { value: 0 } };
-  const m = new THREE.MeshStandardMaterial({ color: C.sail, roughness: 0.9, side: THREE.DoubleSide });
+  const m = new THREE.MeshStandardMaterial({ color: C.sail, roughness: 0.9, side: THREE.DoubleSide, forceSinglePass: true });
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader
@@ -141,7 +141,7 @@ export class Sloop {
     // the jar's lip at the stern: a rim, and inside it the Lachryma that drives it, glowing
     const lipZ = -S.length * 0.5;
     const rim = new THREE.TorusGeometry(S.beam * 0.3, 0.07, 6, 24); add(this.body, rim, std(C.clay), 0, 0.25, lipZ + 0.05);
-    this.mouth = new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    this.mouth = new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     add(this.body, new THREE.CircleGeometry(S.beam * 0.28, 24), track(this.mouth), 0, 0.25, lipZ + 0.06, false).rotation.y = Math.PI;
     // a gold band round the shoulder (the jar's), the figurehead: a little jar at the foot, its own lid gold
     const band = new THREE.TorusGeometry(1, 0.035, 5, 32); const b = add(this.body, band, std(C.gold, { metalness: 0.6, roughness: 0.35, envMap: env }), 0, 0.4, -S.length * 0.24, false); b.scale.set(S.beam * 0.47, 1, 1); b.rotation.x = Math.PI / 2;

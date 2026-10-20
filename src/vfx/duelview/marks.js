@@ -80,7 +80,7 @@ export class DuelMarks {
     const key = ch + '|' + hex; let m = this.mats.get(key); if (m) return m;
     this.atlas ||= makeAtlas();
     const i = Math.max(0, GLYPHS.indexOf(ch)), map = this.atlas.clone(); map.repeat.set(1 / GLYPHS.length, 1); map.offset.set(i / GLYPHS.length, 0); map.needsUpdate = true;
-    m = new THREE.MeshBasicMaterial({ name: 'duel-glyph', map, color: hex, transparent: true, depthWrite: false, fog: false, toneMapped: false });
+    m = new THREE.MeshBasicMaterial({ name: 'duel-glyph', map, color: hex, transparent: true, depthWrite: false, toneMapped: false });
     this.mats.set(key, m); return m;
   }
   label() { return new Label(this); }

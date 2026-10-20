@@ -541,7 +541,7 @@ export class WeatherLook {
     this.bow2 = ringMesh(1, tanD(50), tanD(53.5), tanD(53.5), tanD(50)); // (the secondary bow: its radii swapped, so its colours run the other way)
     this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
     this.aurora = makeAurora();
-    const boltMat = new THREE.MeshBasicMaterial({ name: 'weather-bolt', color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const boltMat = new THREE.MeshBasicMaterial({ name: 'weather-bolt', color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });
     this.bolts = Array.from({ length: BOLTS }, (_, i) => { // (each its own material and glow, the same programs)
       const mesh = new THREE.Mesh(boltGeo(rng(7 + i)), i ? boltMat.clone() : boltMat); mesh.frustumCulled = false; mesh.visible = false;
       return { mesh, glow: ringMesh(3, 0, 90), t: -9, glowA: 0.35, boltA: 0.85 };

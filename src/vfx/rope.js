@@ -48,7 +48,7 @@ export class Rope {
     this.geoG = new THREE.BufferGeometry();
     this.geoG.setAttribute('position', new THREE.BufferAttribute(this.posG, 3).setUsage(THREE.DynamicDrawUsage));
     this.geoG.setIndex(idx);
-    this.glow = new THREE.Mesh(this.geoG, new THREE.MeshBasicMaterial({ color: glowColor ?? 0xffb27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.glow = new THREE.Mesh(this.geoG, new THREE.MeshBasicMaterial({ color: glowColor ?? 0xffb27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     this.glow.frustumCulled = false; this.glow.renderOrder = 6; this.glow.visible = false;
     this.glow.scale.setScalar(1);
     scene.add(this.glow);

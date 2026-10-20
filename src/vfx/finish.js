@@ -63,8 +63,6 @@ ${EYE_GLSL}`;
 //             (kairagi, as on a Korean Ido bowl's foot), a few runs below it; under it the jelly's wet slip (uFinB). Nothing in it glows:
 //             a lit crackle on the vessel reads as its cracks (courier/vessel/kintsugi.js)
 const PATTERN = `
-  float finPatM = 0.0, finPatR = 0.0, finPatS = 0.0, finPatH = 0.0, finPatRo = 0.0; vec3 finPatE = vec3(0.0); // (S, H: a sheen for the light stage, and its hue; Ro: a matte patch)
-  vec3 finEmC = uFinA; // (the colour the part is, unshaded: an ownLight pattern's painted light takes it)
   if (uFinOn > 0.5 && uFinP.z > 0.5) {
     vec3 q = vFinObj * uFinP.w; int pat = int(uFinP.z + 0.5);
     // (each fades as its cells shrink below a pixel or two, so a far body never shimmers with them: the house rule against flicker)
@@ -131,7 +129,7 @@ const PATTERN = `
 // per kind: what goes into the colour, and what into the light (uFinP: four numbers whose meaning is the kind's, below)
 const COLOR = {
   // P.x: how much of the painting's light and shade to keep; P.y: its midpoint
-  glaze: `float finL = finLuma(diffuseColor.rgb), finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
+  glaze: `finL = finLuma(diffuseColor.rgb); finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
     if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
   // A: the stone's colour; B: its second colour (opal's play, moonstone's glow); P.x: facets per unit; P.y: fire; P.z: play of colour; P.w: adularescence
   gem: `if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
@@ -188,9 +186,20 @@ const LIGHT = {
 /** Does this kiln pattern paint the part in colours of its own (so its painted light should be in them, not the glaze's)? */
 export const ownLight = (pattern) => pattern >= 6;
 
+// ONE PROGRAM FOR EVERY KIND (the low-spec round, 2026-10-20: RENDER-INVENTORY 2.4, move 4): each kind's code sits in the one shader
+// behind a branch on `uFinKind` (a uniform, the same for a whole draw, so the branch costs next to nothing), and the key is the same
+// for every kind, so the vessel's parts share a program wherever the rest of their chain (the first-person hide, the fade, the
+// kintsugi, the filigree, a map) agrees. The pattern's outputs are declared once before the branches, for the later stages to read.
+export const FIN_KIND = { glaze: 0, gem: 1, hair: 2, skin: 3 };
+const branch = (parts) => Object.keys(FIN_KIND).filter((k) => parts[k]).map((k) => `if (uFinKind == ${FIN_KIND[k]}) {\n${parts[k]}\n}`).join(' else ');
+const FIN_DECL = `
+  float finPatM = 0.0, finPatR = 0.0, finPatS = 0.0, finPatH = 0.0, finPatRo = 0.0; vec3 finPatE = vec3(0.0); // (S, H: a sheen for the light stage, and its hue; Ro: a matte patch)
+  vec3 finEmC = uFinA; // (the colour the part is, unshaded: an ownLight pattern's painted light takes it)
+  float finL = 0.0, finShade = 1.0;`;
+
 export function dressFinish(m, kind) {
   if (m.userData.finish) return m.userData.finish;
-  const u = { uFinOn: { value: 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) }, uFinPart: { value: 0 } };
+  const u = { uFinOn: { value: 0 }, uFinKind: { value: FIN_KIND[kind] ?? 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) }, uFinPart: { value: 0 } };
   const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey?.bind(m);
   m.onBeforeCompile = (sh, r) => {
     prev?.call(m, sh, r);
@@ -199,12 +208,12 @@ export function dressFinish(m, kind) {
       .replace('#include <common>', '#include <common>\nvarying vec3 vFinObj; varying vec3 vFinN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFinObj = position; vFinN = normal;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\n${HEAD}`)
-      .replace('#include <color_fragment>', `#include <color_fragment>\n${COLOR[kind] || ''}`)
-      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${SURFACE[kind] || ''}`)
-      .replace('#include <emissivemap_fragment>', `${LIGHT_BEFORE[kind] || ''}\n#include <emissivemap_fragment>\n${LIGHT[kind] || ''}`);
+      .replace('#include <common>', `#include <common>\n${HEAD}\nuniform int uFinKind;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>\n${FIN_DECL}\n${branch(COLOR)}`)
+      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${branch(SURFACE)}`)
+      .replace('#include <emissivemap_fragment>', `${branch(LIGHT_BEFORE)}\n#include <emissivemap_fragment>\n${branch(LIGHT)}`);
   };
-  m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fin-${kind}`;
+  m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fin`;
   m.needsUpdate = true;
   return (m.userData.finish = u);
 }
