@@ -18,13 +18,16 @@
 // Use:
 //   const trail = new TrailMap(renderer, { size: 96, res: 512, life: 24 });
 //   trail.stamp(ax, az, bx, bz, radius, strength)    // any time before update: a capsule
-//   trail.update(dt, focusX, focusZ)                 // once a frame
+//   trail.update(dt, focusX, focusZ)                 // once a frame (it draws at most 30 times a real second, and not at all when empty)
 //   trail.uniforms                                   // { uTrail, uTrailCenter, uTrailSize, uTrailTexel } for a material
 //   TRAIL_GLSL                                       // the GLSL that reads it (see below)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const MAX = 24; // segments per frame
+// (the low-spec round, 2026-10-20: a pass at most 30 times a real second, the decay taking the time since the last; none at all once
+// every mark has sunk to nothing, which the shader's decay and sink reach 1.11 lives after the last stamp: 1.2 here, then one last pass)
+const STEP = 1 / 30, EMPTY_AFTER = 1.2;
 
 const vs = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
 const fs = `
@@ -100,7 +103,7 @@ export class TrailMap {
     for (const t of this.rt) { r.setRenderTarget(t); r.clear(true, false, false); }
     r.setRenderTarget(prev); r.setClearColor(col, a);
     this.origin.set(1e9, 1e9);
-    this.segs.length = 0;
+    this.segs.length = 0; this.slept = false; this.idle = 0;
   }
 
   /** A capsule from a to b (world x, z) of the given radius, at strength 0..1. */
@@ -109,6 +112,11 @@ export class TrailMap {
   }
 
   update(dt, fx, fz) {
+    this.acc = (this.acc || 0) + dt;
+    if (this.segs.length) { this.idle = 0; this.slept = false; } else this.idle = (this.idle || 0) + dt;
+    if (this.slept || this.acc < STEP) return;
+    if (this.idle > this.life * EMPTY_AFTER) this.slept = true; // (this pass is the last until something is stamped)
+    dt = this.acc; this.acc = 0;
     const T = this.size, tex = this.texel;
     // the window, snapped to whole texels so nothing swims
     const ox = Math.round((fx - T / 2) / tex) * tex, oz = Math.round((fz - T / 2) / tex) * tex;

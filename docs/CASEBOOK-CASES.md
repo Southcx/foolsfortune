@@ -3196,3 +3196,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** each comment on its own line, the code under it running again. `npm run check` now fails on code after a comment's closing
   parenthesis ending in `;` or `}` (`comment.swallows`); it caught a planted case, and finds no other in `src/`.
 - **Rule:** 240.
+
+### 2026-10-20 · Every prop's outline went transparent once a ship was built (Petra, the low-spec round's program probe)
+- **Seen:** a probe listing which shader programs differ by one flag, and which materials sit on each side, found the outline hulls on
+  six programs, three of them twins of the other three by the opaque bit, and every outline material in the game marked transparent.
+- **Cause:** `courier/ship/ship.js` `overShots()` turns every material under a ship's look transparent, so the hull draws after the
+  foes' shots. The look's parts carry outline hulls on the shared `OUTLINE_MAT` (and the character outlines on theirs), so the first
+  ship built turned the outline of every prop in the game transparent: all of them moved into the sorted pass (sorted again each
+  frame) and three programs more were compiled.
+- **Fix:** `overShots()` skips a material marked `userData.shared`. The ship's outline rim stays opaque, under its hull, which still
+  draws after the shots.
+- **Rule:** 242.

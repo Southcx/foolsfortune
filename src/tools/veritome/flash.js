@@ -25,7 +25,7 @@ export class Flash {
     this.cool = 0;
     // the light itself: a cone of brightness from the lens that fades in a fifth of a second (one burst: no flicker)
     const geo = new THREE.ConeGeometry(1, 1, 24, 1, true); geo.translate(0, -0.5, 0); geo.rotateX(-Math.PI / 2);
-    this.cone = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfff4e6, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+    this.cone = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xfff4e6, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
     this.cone.visible = false; this.cone.renderOrder = 9; this.cone.frustumCulled = false;
     game.scene.add(this.cone);
     this.k = 0;

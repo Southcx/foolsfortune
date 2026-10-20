@@ -109,9 +109,9 @@ export class GodMode {
     const scene = this.game.scene;
     // the reticle on the ground under the cursor
     const ringGeo = new THREE.RingGeometry(0.92, 1, 56);
-    this.ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.glow, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.ring.renderOrder = 8;
-    this.disc = new THREE.Mesh(new THREE.CircleGeometry(1, 40), new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.disc = new THREE.Mesh(new THREE.CircleGeometry(1, 40), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.glow, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.disc.renderOrder = 7;
     this.ring.visible = this.disc.visible = false;
     scene.add(this.ring, this.disc);

@@ -437,7 +437,7 @@ export class Workbench {
     this.clearHolder();
     const map = id === 'atlas' ? atlas() : vfxTexture(id.slice(4));
     if (!map) return;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ map, transparent: true, color: 0xfff0dc, side: THREE.DoubleSide }));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ forceSinglePass: true, map, transparent: true, color: 0xfff0dc, side: THREE.DoubleSide }));
     m.position.y = 1.6; this.holder.add(m); this.texPlane = m;
     this.controls.target.set(0, 1.6, 0); this.camera.position.set(0, 1.6, 4.2); this.controls.update();
   }

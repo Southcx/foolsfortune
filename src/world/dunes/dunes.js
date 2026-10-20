@@ -357,7 +357,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     spire.castShadow = true;
     addOutline(spire);
     this.group.add(spire);
-    const beam = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 6, 700, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xffe3b0, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 6, 700, 16, 1, true), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffe3b0, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
     beam.position.set(sp.x, sp.y + 400, sp.z);
     this.group.add(beam);
     this.beam = beam;

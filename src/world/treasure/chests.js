@@ -221,7 +221,7 @@ export class Chests {
 
   // ---------------------------------------------------------------- rings of light
   ringBurst(pos, color, radius, life, flat) {
-    const m = new THREE.Mesh(this.ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+    const m = new THREE.Mesh(this.ringGeo, new THREE.MeshBasicMaterial({ forceSinglePass: true, color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
     m.position.copy(pos); m.renderOrder = 6;
     if (flat) m.rotation.x = -Math.PI / 2;
     this.game.scene.add(m);

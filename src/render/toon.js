@@ -12,7 +12,9 @@
 // Prior art: Dark Cloud 2 / Rogue Galaxy (Level-5's "cel" look: two-tone ramps with soft edges, a rim on characters), Wind Waker's
 // two-tone light with its soft step, the trope compendium's art tab ("a soft toon ramp like Dark Cloud 2", "a thin Lachryma rim").
 //
-//   installToon(k)                once, before anything compiles (k: 0 = the plain cosine, 1 = the full ramp; T.visual.toon)
+//   installToon(k, sheen)         once, before anything compiles (k: 0 = the plain cosine, 1 = the full ramp; T.visual.toon. sheen false:
+//                                 a matte Standard surface, roughness 0.85 and over, skips the GGX specular per light; T.visual.matteSheen,
+//                                 off on the Low and Minimum graphics tiers: Lambert's saving without swapping a material, render/graphics.js)
 //   setToon(k, scene)             change it later (every lit material recompiles once)
 //   addRim(material, k = 1)       a thin Lachryma rim on this material
 // ---------------------------------------------------------------------------------------
@@ -24,7 +26,8 @@ const ORIG = {
   emissive: THREE.ShaderChunk.emissivemap_fragment,
 };
 const LINE = 'vec3 irradiance = dotNL * directLight.color;';
-let K = 1;
+const SPEC = 'reflectedLight.directSpecular += irradiance * BRDF_GGX( directLight.direction, geometryViewDir, geometryNormal, material );';
+let K = 1, SHEEN = true;
 
 // the ramp: a little light as soon as a face turns toward the light (the middle band), all of it past the terminator
 const ramp = (k) => `
@@ -39,7 +42,12 @@ function patch(k) {
   for (const [key, name] of [['physical', 'lights_physical_pars_fragment'], ['lambert', 'lights_lambert_pars_fragment']]) {
     const src = ORIG[key];
     if (!src.includes(LINE)) { console.warn('toon: three.js lighting chunk changed; the ramp is off'); return; }
-    THREE.ShaderChunk[name] = k > 0 ? ramp(k) + src.replace(LINE, 'vec3 irradiance = toonRamp( dotNL ) * directLight.color;') : src;
+    let out = k > 0 ? ramp(k) + src.replace(LINE, 'vec3 irradiance = toonRamp( dotNL ) * directLight.color;') : src;
+    if (!SHEEN && key === 'physical') { // (what Standard adds at roughness 0.85 and over is a faint broad sheen; one branch a draw, the same for a whole material)
+      if (out.includes(SPEC)) out = out.replace(SPEC, `if ( material.roughness < 0.85 ) ${SPEC}`);
+      else console.warn('toon: three.js physical chunk changed; the matte sheen stays');
+    }
+    THREE.ShaderChunk[name] = out;
   }
   // the rim: at the silhouette, thin, in the thin-film colours of Lachryma (they turn with the angle), added as emitted light
   THREE.ShaderChunk.emissivemap_fragment = `${ORIG.emissive}
@@ -54,7 +62,7 @@ function patch(k) {
 `;
 }
 
-export function installToon(k = 1) { patch(k); }
+export function installToon(k = 1, sheen = true) { SHEEN = sheen; patch(k); }
 
 export function setToon(k, scene) {
   if (Math.abs(k - K) < 1e-3) return;

@@ -260,7 +260,7 @@ export class Cartography {
   // ------------------------------------------------------------------ the survey pulse
   buildPulseFx() {
     const g = this.game;
-    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 72), new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 72), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.hot, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.ring.rotation.x = -Math.PI / 2;
     this.ring.visible = false;
     g.scene.add(this.ring);

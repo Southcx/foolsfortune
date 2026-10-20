@@ -30,14 +30,16 @@ const MAX = 320, SIZE = 0.14;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Vector3();
 
 /**
- * The oil-slick stuff: black glass with a film on it. A near-black body, a clear coat, a dim reflection of the painted sky, and (in the
+ * The oil-slick stuff: black glass with a film on it. A near-black body, glossy, a dim reflection of the painted sky, and (in the
  * shader) a film whose colour follows the angle you look at it from and a per-instance offset (`aSeed`), so that no two cubes catch the
- * light the same way. One program serves everything made of it (the cubes, the prismatic chest, the orb).
+ * light the same way. One program serves everything made of it (the cubes, the prismatic chest, the orb). Standard at roughness 0.05,
+ * not Physical's clear coat over 0.2 (the low-spec round, 2026-10-20, Calissa's call: on a near-black body the coat's sharp highlight
+ * is the whole look, and Physical with clearcoat and an environment costs about 4.5 times Standard a pixel).
  */
 export function oilMaterial({ env = null, envIntensity = 0.22, color = 0x020203, uni = null } = {}) {
   uni = uni || { uOil: { value: 1.3 }, uOilPow: { value: 2.2 }, uHue: { value: 0 } };
-  const mat = new THREE.MeshPhysicalMaterial({
-    color, metalness: 0.0, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04,
+  const mat = new THREE.MeshStandardMaterial({
+    color, metalness: 0.0, roughness: 0.05,
     envMap: env, envMapIntensity: envIntensity, emissive: 0x2a1450, emissiveIntensity: 0.0,
   });
   mat.onBeforeCompile = (sh) => {

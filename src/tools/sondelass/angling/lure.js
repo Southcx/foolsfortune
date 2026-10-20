@@ -58,7 +58,7 @@ export class Ripples {
     this.geo.rotateX(-Math.PI / 2);
     this.list = [];
     for (let i = 0; i < n; i++) {
-      const m = new THREE.Mesh(this.geo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(this.geo, new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
       m.visible = false; m.renderOrder = 4;
       scene.add(m);
       this.list.push({ m, t: 1, life: 1, r: 1 });
@@ -115,7 +115,7 @@ export class Lure {
     this.plumb = new THREE.Line(this.plumbGeo, new THREE.LineBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.plumb.frustumCulled = false; this.plumb.visible = false; this.plumb.renderOrder = 4;
     game.scene.add(this.plumb);
-    this.plumbRing = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.plumbRing = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffb27a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.plumbRing.visible = false; this.plumbRing.renderOrder = 4;
     game.scene.add(this.plumbRing);
     this.moteT = 0;

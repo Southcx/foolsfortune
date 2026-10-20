@@ -103,7 +103,7 @@ export class Miracles {
 
   begin(m) {
     const g = this.game, F = g.matter?.ensure(this.god.jar.pos);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, m.r - 0.35), m.r, 64), new THREE.MeshBasicMaterial({ color: COLOR[m.feeling], transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, m.r - 0.35), m.r, 64), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: COLOR[m.feeling], transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
     ring.rotation.x = -Math.PI / 2; ring.position.set(m.x, m.y + 0.06, m.z);
     g.scene.add(ring);
     m.ring = ring;

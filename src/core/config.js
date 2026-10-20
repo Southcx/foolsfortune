@@ -360,6 +360,7 @@ export const DEFAULTS = {
     msaa: 4, // the scene buffer's samples (render/glow.js; boot only)
     antialias: true, // the canvas's own (boot only)
     outlineReach: 0, // props' outline hulls drawn within this many metres; 0 draws them all (render/graphics.js)
+    matteSheen: true, // a matte Standard surface (roughness 0.85 and over) keeps its faint specular sheen; off skips it per light per pixel (render/toon.js; at the next start)
     lightSlots: 8, // point lights lit at once (render/lightbudget.js)
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off

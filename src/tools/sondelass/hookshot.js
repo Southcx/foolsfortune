@@ -45,7 +45,7 @@ export class Hookshot {
     this.grap = tool.model.hook.clone(true);
     this.grap.visible = false;
     this.grap.scale.setScalar(GRAP);
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx.haloTexture, color: AMBER, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx.haloTexture, color: AMBER, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })); // (fogged like the rest: one sprite program, not a fog-off twin)
     glow.scale.setScalar(0.2); glow.position.x = 0.05;
     this.grap.add(glow); this.glow = glow;
     g.scene.add(this.grap);

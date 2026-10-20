@@ -705,3 +705,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 241. **A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.** Retire the
     neighbour and the rules go with it, silently; the connectome's "never read" on a `CSS` const is the tell.
+
+242. **A shared material is never changed by one of its users.** A module that restyles what it holds
+    (transparent for an order, a colour for a mark) skips anything marked `userData.shared`, or gives its part a material of its own.

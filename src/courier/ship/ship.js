@@ -60,7 +60,9 @@ const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Ve
 /** The hull drawn after the foes' shots (their marks are drawn without depth, over what came before: renderOrder 43, vfx/railshots.js),
  *  so the ship is never lost under them; its own gun and hurtbox draw over it again (shots.js, 60). The owner's R17, v133. */
 const OVER_SHOTS = 50;
-function overShots(group) { group.traverse((o) => { if (!o.isMesh) return; o.renderOrder = OVER_SHOTS; for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && !m.transparent) { m.transparent = true; m.depthWrite = true; } }); }
+// (a shared material, the outline hulls' above all, is never flipped: it is every prop's in the game, and turning it transparent moved
+// them all into the sorted pass and compiled three programs more; the rim stays opaque, under the hull drawn after the shots)
+function overShots(group) { group.traverse((o) => { if (!o.isMesh) return; o.renderOrder = OVER_SHOTS; for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && !m.transparent && !m.userData.shared) { m.transparent = true; m.depthWrite = true; } }); }
 
 export class Ship {
   constructor(game, rail) {
