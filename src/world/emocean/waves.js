@@ -41,7 +41,7 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
 import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
 import { FOE_MECHANICS } from './foemechanics.js';
-import { foeMove, FOE_SCROLL } from './foemoves.js';
+import { foeMove, scrollOf } from './foemoves.js';
 import { ROSTER } from '../../progress/rail/showcase.js';
 
 /** Shots to down a foe by class (Guppy, Barracuda, Marlin, Whale, Leviathan: about three times a class, as their pay is). */
@@ -178,11 +178,13 @@ export class Waves {
     this.onSpawn?.(w.count, w);
   }
 
-  /** One foe of a role set down at a point (rail frame), scrolling with the world from there: a mine dropped (foemechanics.js). */
-  spawnAt(role, local, { aspect = this.aspect, cls = 0, hp = 1, pay, count = true } = {}) {
+  /** One foe of a role set down at a point (rail frame), scrolling with the world from there (as a turret does: `onScreen` bars in the
+   *  frame): a mine dropped (foemechanics.js). */
+  spawnAt(role, local, { aspect = this.aspect, cls = 0, hp = 1, pay, count = true, onScreen = ROSTER.turret?.moves?.onScreen ?? 3 } = {}) {
+    const scroll = scrollOf(this.view, onScreen);
     const body = railFoeBody(role, aspect), mesh = body.object, start = local.clone(); mesh.userData.zoneFree = true; mesh.scale.setScalar(SIZE); this.scene.add(mesh);
     const f = this.make({ kind: `rail.${role}`, name: `a ${role}`, role, cls, aspect, radius: SIZE * 0.45 * (RAIL_FOE_SIZE[role] || 1), hp: HP[Math.max(0, Math.min(4, cls))] * hp, mesh, ...(pay != null ? { pay } : {}), ...(count ? {} : { count: false }) });
-    Object.assign(f, { i: 0, n: 1, lane: 0, off: 0, R: ROLES.school, body, mech: FOE_MECHANICS[role] || null, path: (t, i, n, L, out) => { out.copy(start); out.z -= t * FOE_SCROLL; return t < 20; } });
+    Object.assign(f, { i: 0, n: 1, lane: 0, off: 0, R: ROLES.school, body, mech: FOE_MECHANICS[role] || null, path: (t, i, n, L, out) => { out.copy(start); out.z -= t * scroll; return t < 20; } });
     f.local.copy(start); this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
     this.game.creatures?.add(f); this.foes.push(f); if (count) this.onSpawn?.(1, null);
     f.mech?.spawn?.(this, f, null);

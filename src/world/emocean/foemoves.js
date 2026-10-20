@@ -6,11 +6,11 @@
 // Each move is a path of its own: (t real s since it entered, out) -> false once it has gone, as the formations are.
 //   arc       in from an edge on an arc through an apex near the ship and out the other side; never holds (swooper)
 //   dash      dashes to a hold on a flank, holds, dashes out (darter)
-//   charge    comes to range, holds, glows `glow` beats (its windup: `glowing`), then charges the point the ship was at and passes
-//             through; touching the ship it is a blow the roll can dodge (rammer)
+//   charge    comes to range (never nearer the ship than `from` m), holds, glows `glow` beats (its windup: `glowing`), then charges
+//             the point the ship was at, at `speed` m/s, and passes through; touching the ship it is a blow the roll can dodge (rammer)
 //   hold      comes to its anchor (farEdge, edge, middle, broadside), holds `hold` bars (a sweep's three), leaves the way it came
 //   overtake  waits `mark` beats unseen at an edge behind (the edge mark shown there), then crosses the frame and leaves ahead (ambusher)
-//   fixed     scrolls with the world, from the far edge to the near (turret; a mine)
+//   fixed     scrolls with the world from the far edge to the near, `onScreen` bars in the frame (turret; a mine the same)
 //   cross     crosses the frame once, side to side (mine-layer)
 //   tether    flies `length` m off its charge, circling it (escort)
 //   drift     drifts into a third of the frame and holds it (blocker)
@@ -20,16 +20,18 @@
 // Prior art: the shmup's enemy scripts (Cave's, Treasure's: an entry, a hold, an exit), Galaga's swoops, R-Type's overtakers from behind
 // with their warning, Gradius's turrets on the scrolling ground, Ikaruga's and Radiant Silvergun's blocking walls.
 //
-//   foeMove(moves, { view, i, n, lane, W, f }) -> path(t, i, n, L, out) -> bool   FOE_SCROLL (m/s: the world's scroll, a foe's frame)
+//   foeMove(moves, { view, i, n, lane, W, f }) -> path(t, i, n, L, out) -> bool   scrollOf(view, onScreen) -> m/s (the world's scroll
+//   in a view's frame: its span over onScreen bars)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CARRIER_AT } from '../../progress/rail/legs.js';
 import { CRUISE } from '../../courier/ship/views.js';
 
-/** How fast the world scrolls past in a foe's frame (m/s): a turret on its wreckage, a mine (a placeholder: Dovina's to tune). */
-export const FOE_SCROLL = 6;
-const BEAT = BAR_S / 4, CHARGE = 34, RAM_R = 2.2; // (a charge's speed, m/s; how near a charge is a ram)
+const BEAT = BAR_S / 4, RAM_R = 2.2; // (how near a charge is a ram, m)
+/** How fast the world scrolls past in a view's frame (m/s): its span along the scroll (z in every frame) over `onScreen` bars, so a
+ *  turret or a mine is in frame that long whatever the view (Dovina's `onScreen`, 2026-10-20). */
+export const scrollOf = (view, onScreen = 3) => { const z = (CARRIER_AT[view] || CARRIER_AT.chase).box.z; return (z[1] - z[0]) / (onScreen * BAR_S); };
 const AXES = { above: { h: 'x', v: 'z', d: 'y' }, side: { h: 'z', v: 'y', d: 'x' } }; // (else chase's: across x, up y, along z)
 const ease = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
@@ -74,17 +76,18 @@ const MOVES = {
       lerp3(A, O, ease((b - 0.5 - H) * 2), out); return b < 1 + H; };
   },
   charge(m, { P, side, W, f }) {
-    const A = P(side * 0.3, 0.5, 0.75), F = P(side * 0.3, 0.5, 1.35), glow = (m.glow ?? 1) * BEAT, aim = new THREE.Vector3(), dir = new THREE.Vector3();
+    const A = P(side * 0.3, 0.5, 0.75), F = P(side * 0.3, 0.5, 1.35), glow = (m.glow ?? 1) * BEAT, speed = m.speed ?? 34, aim = new THREE.Vector3(), dir = new THREE.Vector3();
+    const keepOff = () => { const s = W.ship?.local; if (!s) return; const d = A.distanceTo(s), from = m.from ?? 5; if (d < from) A.sub(s).setLength(from).add(s); }; // (never nearer the ship than `from` m: the flight is the dodge's time)
     let hit = false, t0 = null;
     return (t, out) => { const b = t / BAR_S;
       if (b < 1) return !!lerp3(F, A, ease(b), out);
-      if (b < 2) { out.copy(A); return true; }
+      if (b < 2) { keepOff(); out.copy(A); return true; }
       if (t < 2 * BAR_S + glow) { // (its glow: the windup the leg's shots do not have; downed in it, it pays the windup's share)
         if (!f.glowing) { f.glowing = true; aim.copy(W.ship?.local || out); dir.copy(aim).sub(A).normalize(); }
         out.copy(A); f.glow = (t - 2 * BAR_S) / glow; return true;
       }
       f.glowing = false; f.glow = 0; t0 ??= t;
-      out.copy(A).addScaledVector(dir, (t - t0) * CHARGE);
+      out.copy(A).addScaledVector(dir, (t - t0) * speed);
       if (!hit && W.ship && out.distanceTo(W.ship.local) < RAM_R + f.radius * 0.5) { hit = true; W.game.emocean?.blow?.(1, { by: 'creature', what: 'ram', rollable: true }); }
       return out.distanceTo(A) < 120; };
   },
@@ -103,9 +106,10 @@ const MOVES = {
       const u = (t - wait) / (3 * BAR_S); lerp3(E, X, ease(u), out); return u < 1; };
   },
   fixed(m, { P, side, view }) {
+    const scroll = scrollOf(view, m.onScreen ?? 3);
     const S = view === 'side' ? P(1.15, 0.3) : view === 'above' ? P(side * 0.45, 1.1) : P(side * 0.5, 0.25, 1.05); // (z is the scroll in every frame: across in side, up in overhead, along in chase)
     const end = (view === 'side' ? P(-1.3, 0.3) : view === 'above' ? P(0, -0.2) : P(0, 0, -0.2)).z;
-    return (t, out) => { out.copy(S); out.z -= t * FOE_SCROLL; return out.z > end; };
+    return (t, out) => { out.copy(S); out.z -= t * scroll; return out.z > end; };
   },
   cross(m, { P, side }) {
     const S = P(-side * 1.25, 0.62, 0.6), E = P(side * 1.25, 0.62, 0.6);
