@@ -11,7 +11,8 @@
 //    angle, the way a modelling tool's "auto smooth" does it). Flat shading is still one switch away.
 //  - SHADOWS. One sun shadow map at a modest size (1024), filtered but not softened: a console's single shadow, not a PC's.
 //
-//   T.visual.resolution: 'ps2' (480 lines) | '540' | '720' | 'native'      T.visual.upscale: 'bilinear' | 'pixel'
+//   T.visual.resolution: 'ps2' (480 lines) | '440' .. '270' (the low tiers) | '540' | '720' | 'native'      T.visual.upscale: 'bilinear' | 'pixel'
+//   p.dynLines: dynamic resolution's lines under the setting's (render/graphics.js), null for none
 //   T.visual.smooth: true | false        T.visual.shadowRes: 512 | 1024 | 2048
 //   const p = new Presentation(game, { renderer, sun });   p.apply()   (on start, on resize, when a setting changes)   p.update(dt)
 // ---------------------------------------------------------------------------------------
@@ -19,7 +20,7 @@ import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { weld } from './weld.js';
 
-export const RESOLUTIONS = { ps2: 480, 540: 540, 720: 720, native: 0 };
+export const RESOLUTIONS = { ps2: 480, 440: 440, 400: 400, 360: 360, 320: 320, 270: 270, 540: 540, 720: 720, native: 0 }; // (below 480: the low graphics tiers' and dynamic resolution's steps, render/graphics.js)
 const CREASE = Math.cos(THREE.MathUtils.degToRad(50));
 const WALK = 600; // (objects shaded a frame by the once-a-second pass: about ten frames for the whole scene)
 
@@ -54,6 +55,7 @@ export class Presentation {
   constructor(game, { renderer, sun }) {
     this.game = game; this.renderer = renderer; this.sun = sun;
     this.mats = new WeakSet(); this.geos = new WeakMap();
+    this.dynLines = null; // (dynamic resolution's lines, under the setting's: render/graphics.js)
     this.scanT = 0;
     addEventListener('resize', () => this.apply());
   }
@@ -61,7 +63,7 @@ export class Presentation {
   /** The render size, the upscale filter, the shadow map, and the shading of everything in the scene. */
   apply() {
     const r = this.renderer, V = T.visual;
-    const lines = RESOLUTIONS[V.resolution] ?? 480;
+    const set = RESOLUTIONS[V.resolution] ?? 480, lines = this.dynLines ? (set ? Math.min(set, this.dynLines) : this.dynLines) : set;
     const dpr = Math.min(devicePixelRatio, 2);
     const ratio = lines ? Math.min(dpr, lines / innerHeight) : dpr;
     r.setPixelRatio(ratio);

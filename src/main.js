@@ -223,6 +223,7 @@ import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
 import { Presentation } from './render/present.js';
+import { Graphics, detectMachine, applyBootTier, shadowTypeOf, TIER_KEYS } from './render/graphics.js';
 import { installTheme, fontsReady, theme } from './ui/theme.js';
 import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
@@ -331,14 +332,16 @@ async function main() {
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
   const freshBuild = save.boot(BUILD, save.unstash('mode') || save.lastMode()); // (a new build starts its progress afresh: the player's and the world's; and the save is the mode's chosen on the title, DEBUG or STORY: DEBUG-MODE.md section 2)
   loadTuning();
+  const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ antialias: T.visual.antialias !== false, powerPreference: 'high-performance' });
+  renderer.debug.checkShaderErrors = !import.meta.env.PROD; // (the published build does not wait on each program's link log: a stall per program on a slow driver; the dev server still checks)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = T.visual.shadows;
-  renderer.shadowMap.type = THREE.PCFShadowMap; // (filtered, not softened: a console's one shadow; see render/present.js)
+  renderer.shadowMap.type = shadowTypeOf(T.visual.shadowFilter); // (filtered, not softened: a console's one shadow, see render/present.js; the low tiers' unfiltered, render/graphics.js)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = T.visual.exposure;
   document.body.prepend(renderer.domElement);
@@ -707,6 +710,9 @@ async function main() {
     if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
     if (key === 'shadows' || group === '*') { sun.castShadow = T.visual.shadows; }
     if (['resolution', 'upscale', 'smooth', 'shadowRes'].includes(key) || group === '*') game.present?.apply();
+    if (key === 'shadowEvery') game.graphics?.applyShadowRate();
+    if (key === 'graphics') { if (game.graphics?.setTier(T.visual.graphics)) game.events.emit('graphics.restart', { tier: T.visual.graphics, by: 'courier' }); } // (what changes now changes; the rest at the next start)
+    else if (group === 'visual' && TIER_KEYS.includes(key) && T.visual.graphics !== 'custom') T.visual.graphics = 'custom'; // (a knob the tier owns moved by hand: the preset is Custom, as on any PC)
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
@@ -759,6 +765,7 @@ async function main() {
   mark('weir+treasure+ach');
   game.lights = new LightBudget(game, { slots: T.visual.lightSlots ?? 8 }); // (every lamp in the world, lit eight at a time: render/lightbudget.js)
   game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
+  game.graphics = new Graphics(game, { renderer, camera, tier: graphicsTier, machine }); // (the tier's shadow rate, dynamic resolution, the outline hulls' reach: render/graphics.js)
   game.present.apply();
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
@@ -1027,6 +1034,7 @@ async function main() {
   const parkCaster = Object.values(CASTER_SHADERS).filter((m) => m.layer).map((m) => m.prewarm?.(game)).filter(Boolean); // (S6 to S10, the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
+  game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.gardenMycelium?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
@@ -1086,7 +1094,7 @@ async function main() {
   function frame(now) {
     requestAnimationFrame(frame);
     // (the first rAF timestamp can be earlier than the performance.now() taken at startup)
-    const dt = THREE.MathUtils.clamp((now - last) / 1000, 0, 0.05);
+    const rawFrame = (now - last) / 1000, dt = THREE.MathUtils.clamp(rawFrame, 0, 0.05); // (the raw interval for dynamic resolution: render/graphics.js)
     last = now;
     if (window.__game?.manual) return;
     try {
@@ -1104,11 +1112,12 @@ async function main() {
         game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
         O?.update(dt); O?.titleFrame(game.title.scene); // (the overture's last bars: the crane and the logo fired)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
-        game.title.scene.render(); input.endFrame(); diag.frameEnd();
+        game.title.scene.render(); game.graphics.observe(rawFrame); input.endFrame(); diag.frameEnd(); // (the title's cheap frames: the display's refresh, render/graphics.js)
         return;
       }
       if (O?.active) O.update(dt); // (`/overture` in the world: its trailer on a clock of its own)
       diag.begin('sim'); tick(dt); diag.end('sim');
+      game.graphics.update(rawFrame); game.graphics.beforeDraw();
       diag.begin('draw'); game.post.render(scene, window.__debugCam || camera); diag.end('draw'); // (the PS2 glow and the grade over the frame: render/glow.js)
       if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
@@ -1348,7 +1357,7 @@ async function main() {
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
-    renderer.shadowMap.autoUpdate = under < 1;
+    game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
@@ -1396,7 +1405,7 @@ async function main() {
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
   if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
