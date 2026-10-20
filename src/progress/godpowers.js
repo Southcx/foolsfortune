@@ -71,7 +71,7 @@ export const DOMAIN_ORDER = ['ouranurgy', 'manifestation', 'divination', 'psycho
 /** THE RAMP (GODHAND.md section 11): the endgame first. At 99 in a domain its powers are Creative mode (Minecraft's): matter made from
  *  nothing is free, the reach and the sizes are the island's, a set creation stands for good. Each row is a number's value where its
  *  power opens and at 99, `[open, at99]`; between them it follows the level on RAMP_CURVE, so most of the gain comes late (OSRS's
- *  curve: the last levels are the ones that change what you can do). What never loosens: the Zone of Influence (only ground you know),
+ *  curve: the last levels are the ones that change what you can do). What never loosens: the explored area (only ground you know),
  *  the island's mending (but a set creation), one epic a game hour and its toll in the jar, and the island noticing (its
  *  dissonance, at a tenth). */
 export const RAMP = {

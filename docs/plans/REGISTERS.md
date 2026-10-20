@@ -97,7 +97,7 @@ Section 4 is the list to rule on.
    kiln; others to name. "At the kiln" becomes "at a finishing station (on Anagami, the kiln)".
 3. **crack / MEND at the kiln.** Same as 2: the mend happens at any island's station, and the crack pattern follows the base material
    (clay cracks, glass crazes, nacre chips). That is Calissa's to draw.
-4. **the island's matter: "clay, sand, Lachryma, crude".** → "the ZoI's layered ground: **the island's own materials** (on Anagami,
+4. **the island's matter: "clay, sand, Lachryma, crude".** → "the explored area's layered ground: **the island's own materials** (on Anagami,
    clay and sand), Lachryma and crude". Code: `clay` and `sand` stay as Anagami's two layers for now. A new island brings its own pair
    (the field's layer names become data). Mine.
 5. **a creation: "voxel clay".** → "voxel matter of the island's ground material". Its look follows the island it is raised on. Mine
