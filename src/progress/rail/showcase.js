@@ -59,14 +59,15 @@ export const ROSTER = {
   escort:     { cls: 1, hp: 2, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'hold', count: 2, views: 'COS', with: 'gunship', show: 10, moves: { kind: 'tether', length: 4 } }, // (shown with its gunship: the shield, the escort down, then both guns and the core: 10 bars)
   carrier:    { cls: 1, hp: 2, fires: [], formation: 'hold', count: 1, views: 'COS' }, // (seen in every other foe's stretch: it brings what has no thrower)
   sweeper:    { cls: 2, hp: 1, fires: [{ name: 'sweepBeam', params: { volleys: 1 } }], formation: 'hold', count: 1, views: 'COS', moves: { kind: 'hold', at: 'edge', hold: 'sweep' } },
-  heavy:      { cls: 2, hp: 1, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OCS', moves: { kind: 'hold', at: 'middle', hold: 8 } },
+  heavy:      { cls: 2, hp: 1, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OCS', moves: { kind: 'hold', at: 'middle', hold: 8 }, show: 8 },
   gunship:    { cls: 2, hp: 1, fires: [{ name: 'stackFan', params: { volleys: 2 } }, { name: 'splitShell', params: { volleys: 2 } }], formation: 'hold', count: 1, views: 'COS', shown: 'escort', moves: { kind: 'hold', at: 'broadside', hold: 8 } }, // (its stretch is its escort's)
   blocker:    { cls: 2, hp: 2, fires: [], formation: 'hold', count: 1, views: 'OS', moves: { kind: 'drift', closes: 1 / 3, hold: 4 } }, // (24 hp, full blows while held open: 24 hits, 2.25 real s of the gun's 10.7 a second, so a sharp opening kills it and two always do)
-  spawner:    { cls: 1, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', spawns: { role: 'school', count: 4, every: 2 }, moves: { kind: 'hold', at: 'edge', hold: 8 } }, // (a hatch: its schools until it is downed)
+  spawner:    { cls: 1, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', spawns: { role: 'school', count: 4, every: 2 }, moves: { kind: 'hold', at: 'edge', hold: 8 }, show: 8 }, // (a hatch: its schools until it is downed)
   grappler:   { cls: 1, hp: 1, fires: [], formation: 'dash', count: 1, views: 'CS', latch: { pace: 0.8 }, moves: { kind: 'swing', from: 'edge' } }, // (latches and drags until the roll, the Grapple mount or a shot shakes it)
 };
 
-/** The showcase crossing's measures (bars): each foe's stretch, the bar before the first, the forms' leg. */
+/** The showcase crossing's measures (bars): each foe's stretch (a row's `show` where its hold is longer: heavy and spawner 8, the escort
+ *  and its gunship 10, so no foe lingers into the next one's; Calissa counted 4 to 6 in frame at v245), the bar before the first, the forms' leg. */
 export const SHOW = { foeBars: 4, lead: 5, forms: 16 }; // (lead: each foe leg opens with an outlined volley for E and a block of each form for Q, Calissa's must-see 1 and 2)
 /** The order the pier's SHOWCASE row boards (Petra's plumbing reads it): a leg and the hull it is sailed in. */
 export const SHOWCASE = [
