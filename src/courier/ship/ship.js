@@ -103,7 +103,7 @@ export class Ship {
     this.rehull(ship);
   }
   /** The hull sailed (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether
-   *  it dives, and its look dressed. At cast-off, and in the showcase crossing's turns (world/emocean/triprun.js); a hull that cannot
+   *  it dives, and its look dressed. At cast-off, and in the test crossing's turns (world/emocean/triprun.js); a hull that cannot
    *  dive comes up into the Astral form. */
   rehull(ship = 'sloop') {
     const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;

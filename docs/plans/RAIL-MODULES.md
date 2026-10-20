@@ -227,6 +227,62 @@ This came before the mock because these were the owner's bugs, not the new desig
    - each gets its edge mark a bar before, as the side module's skimmers from behind do.
 4. **The carrier** (`legrunner.js`) goes in with its look, where a pattern has no thrower.
 
+## 6. The enemy roster (2026-10-20; the owner, through Calissa: "a feature-complete set of enemy ship types")
+
+**Prior art:**
+- the genre's canon roles, from Calissa's research;
+- Cave's and Toaplan's wave tables;
+- the Gummi ship's foes;
+- the rule that one foe is one shape and one behaviour (rule 7).
+
+**What each foe is for:** 16 foes, each teaching one answer, so the roster is "complete" when every verb has a foe that asks for it: the gun,
+the lock-on, the roll, the forms, the Bomb, a mount, and moving.
+
+**How each column reads:**
+- **Class** is an offset on the waypoint's base class (`ROLE_CLASS`, econ/emocean.js: Guppy 0, Barracuda 1, Marlin 2, Whale 3, Leviathan 4).
+- **HP** is `WAVES.hp` at that class, `[1, 3, 12, 40, 150]`, times the row's factor.
+- **Pay** is score only, `SCORE.cls` at that class (100, 300, 1,000, 3,000, 10,000), plus its parts. A crossing pays no cubes.
+- **Fires** names patterns of the library (patterns.js), at the windups of rule 3.
+- **Path** is in the play plane's keys (entry, hold, exit, in bars, rule 7). Every foe fires only while holding.
+- **Views:** C chase, O overhead, S side.
+
+| foe (plain name) | class | HP | fires (while holding) | path | views | teaches |
+|---|---|---|---|---|---|---|
+| **school** (popcorn; built) | +0 | x1 | now and then an aimed single; the pincer's flank a fan of 3 | a line, vee or pincer of 6 to 8, in and out in 4 bars | C O S | the gun, and the lock-on's sweep |
+| **swooper** | +0 | x1 | one oddFan of 3 at its arc's apex | in from an edge on an arc through the frame, out the far side; it never holds, so it fires once, at the apex (its hold is that instant) | O S | moving |
+| **darter** (built) | +1 | x1 | aimedBurst of outlined shots | dashes to a hold on a flank, holds 2 bars, dashes out | C S | the roll |
+| **rammer** | +1 | x2 | nothing: it is the shot. A beat's glow aft, then it charges where you were (frenzyDash's motion) and passes through | holds at range, charges, leaves past you | C O S | timing: downed in its windup, it pays x1.5 |
+| **sniper** | +1 | x1 | one aimed beam: its warning line a bar (sweepBeam with from = to = 0), then it burns | holds at the frame's far edge, 4 bars | C O S | stepping off the line |
+| **ambusher** | +1 | x1 | an oddFan of 5 as it passes | from behind (side: the left edge; overhead: the bottom edge; chase: a flank), always announced by its edge mark a bar before (rule 7); overtakes and leaves ahead | C O S | reading the edge marks |
+| **turret** | +1 | x2 | rotatingRing or aimedBurst | none of its own: it sits on wreckage or a rock and scrolls with the world | O S | a fixed emitter: where to stand |
+| **mine-layer** | +1 | x1 | none itself. It drops a mine each beat it crosses: a shot that is a foe (HP 1, worth 50), which bursts into a ring of 8 after 2 bars or when you pass within 3 m | crosses the frame once, side to side | O S | clearing a lane before you need it |
+| **escort** (the shield escort) | +1 | x2 | a slow aimed single | flies a tether's length off the gunship or heavy it guards; while it lives its charge takes no harm (armour 0) | C O S | target priority |
+| **carrier** (built) | +1 | x2 | any pattern with no thrower of its role in frame (legs.js `from`) | from the view's far edge over the windup, holds while it fires, leaves (CARRIER_AT) | C O S | that every shot has a body |
+| **sweeper** (the laser sweeper) | +2 | x1 | sweepBeam: a warned line that sweeps slower than the ship can run | holds at an edge for the sweep's length | C O S | reading a beam |
+| **heavy** (built) | +2 | x1 | the rings and spirals (rotatingRing, multiSpiral, rose, doubleHelix) | holds mid-frame 8 to 10 bars | O (C S as a mid-boss) | the forms: drinking a ring of your colour |
+| **gunship** | +2 | x1 core + parts | its parts: two guns (stackFan, splitShell), a core opened by their loss. Parts as `SCORE.part` (port 500 a gun) | holds broadside or ahead 8 bars, the Phantom Storm's model | C O S | parts and the lock-on on them |
+| **blocker** | +2 | x3, armour 0.25 | nothing | drifts into the lane and closes a third of the frame for 4 bars; its weak point shows only to the Flash mount (the Veritome), or to a Bomb | O S | a mount: what the Flash and the Bomb are for |
+| **spawner** | +1 | x3 | nothing itself: a hatch that lets out a school of 4 every 2 bars while it holds | holds at an edge 8 bars; its schools fly the school's paths | O S | the source over the swarm: kill the hatch and the popcorn stops |
+| **grappler** (the boarder, anywhere) | +1 | x1 | nothing: it latches onto the hull and drags (the ship's pace x0.8, a modifier you can see on the hull) until the roll (E) throws it off, the Grapple mount yanks it off, or it is shot | swings in on a line from an edge, latches, holds till shaken | C S | the roll and the Grapple mount as cures |
+
+**Composition caps** (Calissa's research, its own inference, so caps to test, not laws yet):
+- at most 3 foe types alive at once (5 at a peak);
+- 1 heavy (or gunship) at a time;
+- 1 aimed foe at a time (sniper, sweeper);
+- at most 8 of the popcorn (the lock-on's eight);
+- no foe holds at the frame's edge (rule 4).
+
+A 16-bar practice leg splits as: open bars 1 to 4, build 5 to 9, peak 10 to 14, release 15 and 16 with no fire (the swing).
+
+**The bosses stay the set pieces'**: the brig, Old Nobody, the shoal's Conductor, Charybdis.
+
+**In which legs** (legs.js, to be laid once the owner has played the mock):
+- the open teaches one foe at a time;
+- the build pairs a foe with its answer's opposite (a turret with a sweeper: stand still, then move);
+- the peak is the set piece.
+
+**Every number above is a first guess.** The simulator (`scripts/rail.mjs`) re-measures par once the roster is laid into the legs.
+
 **The research** (Calissa's, `docs/plans/research/RAIL-MODULES-SHMUP.md` on her branch, 565d7e8) is the source of rules 2, 3, 4, 7, 9
 and 10's detail; its §5 lists 23 rules, and the ones not taken here are runtime detail for Petra (pooling, inherit-by-declaration,
 shared axes in a swing).
