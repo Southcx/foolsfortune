@@ -17,18 +17,21 @@
 // Prior art: a shmup's stage select and its practice mode (Ikaruga's, DoDonPachi's), the fighting game's training dummy that shows each
 // move alone; Cave's wave tables.
 //
-//   ROSTER[foe] = { cls, hp, fires: [{ name, params? }], formation, count, views: 'COS', moves?, with?, spawns?, latch?, mine?, armour?,
+//   ROSTER[foe] = { cls, hp, fires: [{ name, params? }], formation, count, views: 'COS', moves?, with?, spawns?, latch?, mine?,
 //                   show? (bars), shown? }
 //   moves: what it does beyond its formation's path (RAIL-MODULES.md 6's path column; bars unless said):
 //     arc       in from an edge on an arc, never holds; fires once at the apex (swooper)
 //     dash      dashes to a hold on a flank, holds `hold`, dashes out (darter)
-//     charge    holds at range; glows aft `glow` beats, then charges the point you were at its glow's start and passes through;
-//               downed in its glow it pays `windupPay` times (rammer)
+//     charge    holds at range (at least `from` m off); glows aft `glow` beats, then charges at `speed` m/s the point you were at its
+//               glow's start and passes through; downed in its glow it pays `windupPay` times (rammer). 34 m/s from 5 m or more: the
+//               glow (0.375 real s) and the flight together give at least 0.5 real s to step off, the fairness rule's reaction
+//               (patterns.js `fair`), and it still reads as a lunge
 //     hold      holds at `at` (farEdge, edge, middle, broadside) for `hold` bars, or for its sweep's length (sniper, sweeper, heavy,
 //               gunship, spawner)
 //     overtake  comes from behind (side: the left edge; overhead: the bottom; chase: a flank), its edge mark `mark` beats before, and
 //               leaves ahead (ambusher)
-//     fixed     no motion of its own: it sits on wreckage and scrolls with the world (turret)
+//     fixed     no motion of its own: it sits on wreckage and scrolls with the world, crossing the frame in `onScreen` bars, so its
+//               windup and four volleys (3 real s) fit with a bar to shoot it (turret; a mine scrolls the same)
 //     cross     crosses the frame once, side to side (mine-layer)
 //     tether    flies `length` m off its charge (escort)
 //     drift     drifts into the lane and closes `closes` of the frame for `hold` bars (blocker)
@@ -48,22 +51,23 @@ export const ROSTER = {
   school:     { cls: 0, hp: 1, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'line', count: 8, views: 'COS' },
   swooper:    { cls: 0, hp: 1, fires: [{ name: 'oddFan', params: { n: 3, volleys: 1 } }], formation: 'pincer', count: 2, views: 'OS', moves: { kind: 'arc', fireAt: 'apex' } },
   darter:     { cls: 1, hp: 1, fires: [{ name: 'mixed', params: { of: 'aimedBurst', share: 1 } }], formation: 'dash', count: 2, views: 'CS', moves: { kind: 'dash', hold: 2, side: 'flank' } },
-  rammer:     { cls: 1, hp: 2, fires: [{ name: 'frenzyDash', params: { n: 1, volleys: 2 } }], formation: 'dash', count: 1, views: 'COS', moves: { kind: 'charge', glow: 1, at: 'last', through: true, windupPay: 1.5 } },
+  rammer:     { cls: 1, hp: 2, fires: [{ name: 'frenzyDash', params: { n: 1, volleys: 2 } }], formation: 'dash', count: 1, views: 'COS', moves: { kind: 'charge', glow: 1, speed: 34, from: 5, at: 'last', through: true, windupPay: 1.5 } },
   sniper:     { cls: 1, hp: 1, fires: [{ name: 'sweepBeam', params: { from: 0, to: 0, warn: 1.5, burn: 0.5, volleys: 1 } }], formation: 'hold', count: 1, views: 'COS', moves: { kind: 'hold', at: 'farEdge', hold: 4 } },
   ambusher:   { cls: 1, hp: 1, fires: [{ name: 'oddFan', params: { n: 5, volleys: 1 } }], formation: 'dash', count: 2, views: 'COS', moves: { kind: 'overtake', from: 'behind', mark: 4 } },
-  turret:     { cls: 1, hp: 2, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OS', moves: { kind: 'fixed' } },
-  'mine-layer': { cls: 1, hp: 1, fires: [{ name: 'decelBurst', params: { volleys: 2, m: 8 } }], formation: 'line', count: 1, views: 'OS', moves: { kind: 'cross' }, mine: { every: 1, hp: 1, pay: 50, fuse: 2, near: 8, burst: { name: 'rotatingRing', params: { n: 8, speed: 9, volleys: 1 } } } }, // (its mines: shells that stop and burst, until the mine is a foe of its own)
+  turret:     { cls: 1, hp: 2, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OS', moves: { kind: 'fixed', onScreen: 3 } },
+  'mine-layer': { cls: 1, hp: 1, fires: [], formation: 'line', count: 1, views: 'OS', moves: { kind: 'cross' }, mine: { every: 1, hp: 1, pay: 50, fuse: 2, near: 8, burst: { name: 'rotatingRing', params: { n: 8, speed: 9, volleys: 1 } } } }, // (its mines: shells that stop and burst, until the mine is a foe of its own)
   escort:     { cls: 1, hp: 2, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'hold', count: 2, views: 'COS', with: 'gunship', show: 10, moves: { kind: 'tether', length: 4 } }, // (shown with its gunship: the shield, the escort down, then both guns and the core: 10 bars)
   carrier:    { cls: 1, hp: 2, fires: [], formation: 'hold', count: 1, views: 'COS' }, // (seen in every other foe's stretch: it brings what has no thrower)
   sweeper:    { cls: 2, hp: 1, fires: [{ name: 'sweepBeam', params: { volleys: 1 } }], formation: 'hold', count: 1, views: 'COS', moves: { kind: 'hold', at: 'edge', hold: 'sweep' } },
-  heavy:      { cls: 2, hp: 1, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OCS', moves: { kind: 'hold', at: 'middle', hold: 8 } },
+  heavy:      { cls: 2, hp: 1, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OCS', moves: { kind: 'hold', at: 'middle', hold: 8 }, show: 8 },
   gunship:    { cls: 2, hp: 1, fires: [{ name: 'stackFan', params: { volleys: 2 } }, { name: 'splitShell', params: { volleys: 2 } }], formation: 'hold', count: 1, views: 'COS', shown: 'escort', moves: { kind: 'hold', at: 'broadside', hold: 8 } }, // (its stretch is its escort's)
-  blocker:    { cls: 2, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', moves: { kind: 'drift', closes: 1 / 3, hold: 4 }, armour: 0.25 },
-  spawner:    { cls: 1, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', spawns: { role: 'school', count: 4, every: 2 }, moves: { kind: 'hold', at: 'edge', hold: 8 } }, // (a hatch: its schools until it is downed)
+  blocker:    { cls: 2, hp: 2, fires: [], formation: 'hold', count: 1, views: 'OS', moves: { kind: 'drift', closes: 1 / 3, hold: 4 } }, // (24 hp, full blows while held open: 24 hits, 2.25 real s of the gun's 10.7 a second, so a sharp opening kills it and two always do)
+  spawner:    { cls: 1, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', spawns: { role: 'school', count: 4, every: 2 }, moves: { kind: 'hold', at: 'edge', hold: 8 }, show: 8 }, // (a hatch: its schools until it is downed)
   grappler:   { cls: 1, hp: 1, fires: [], formation: 'dash', count: 1, views: 'CS', latch: { pace: 0.8 }, moves: { kind: 'swing', from: 'edge' } }, // (latches and drags until the roll, the Grapple mount or a shot shakes it)
 };
 
-/** The showcase crossing's measures (bars): each foe's stretch, the bar before the first, the forms' leg. */
+/** The showcase crossing's measures (bars): each foe's stretch (a row's `show` where its hold is longer: heavy and spawner 8, the escort
+ *  and its gunship 10, so no foe lingers into the next one's; Calissa counted 4 to 6 in frame at v245), the bar before the first, the forms' leg. */
 export const SHOW = { foeBars: 4, lead: 5, forms: 16 }; // (lead: each foe leg opens with an outlined volley for E and a block of each form for Q, Calissa's must-see 1 and 2)
 /** The order the pier's SHOWCASE row boards (Petra's plumbing reads it): a leg and the hull it is sailed in. */
 export const SHOWCASE = [
