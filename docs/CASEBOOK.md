@@ -734,3 +734,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 249. **Find an edge by stepping to it, then halve the last step.** Halving a range assumes one edge in it; a
     camera that follows the thing it frames brings the screen round again, and the halving found the far edge.
+
+250. **What a stretch needs is set as the stretch begins, not only on the way out of the one before.** A leg's kit fitted
+    only in the turn before it was missing whenever the leg was reached another way.

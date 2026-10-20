@@ -165,6 +165,7 @@ export class TripRun {
 
   enter(k) {
     const leg = this.legs[k], w = this.wps[k];
+    if (this.showcase) this.refit(k); // (its own kit, however the leg was reached)
     if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }); // (the Wreckers drawn by a loot)
     else this.runner.done = true;
     if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
@@ -192,15 +193,18 @@ export class TripRun {
   }
 
   /** The showcase crossing's turn: row k's hull sailed from here (ship.rehull), what it bears with it, and its mounts (the first ones,
-   *  as many as the hull has slots; a row naming none keeps those aboard). */
+   *  as many as the hull has slots; a row naming none keeps those aboard). Asked again as the leg begins, so a leg reached by any way
+   *  (a jump of the clock included) sails in its own kit; nothing is done or said when it already is. */
   refit(k) {
     const S = this.st, ship = S.ship, w = this.wps[k], id = w.hull || this.state.ship;
+    const want = (w.mounts || S.mounts.list || []).slice(0, slotsOf(id));
+    if (id === this.state.ship && want.join() === (S.mounts.list || []).join()) return;
     if (id !== this.state.ship) {
       this.state = { ...this.state, ship: id };
       ship.rehull(id); S.aspectWas = null; // (the new hull takes the ship's feeling at the stage's next look: stage.js look)
       S.run.ship = id; S.run.bears = (SHIPS[id]?.bears ?? S.run.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0);
     }
-    const mounts = (w.mounts || S.mounts.list || []).slice(0, slotsOf(id)); S.mounts.begin(mounts);
+    const mounts = want; S.mounts.begin(mounts);
     this.game.events?.emit('showcase.hull', { hull: id, k, mounts, note: w.note || '', by: 'environment' });
   }
 

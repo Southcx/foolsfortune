@@ -3326,3 +3326,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after** (16:9, every view, depths -4, -2, 0, 3 and 6): every corner at 0.840 or inside. Chase braked: floor 3.08 m
   (the owner's ruling says 3.1), x ±8.8 m. In the game, braked, the ship sits at -0.84 on the screen, 0 errors.
 - **Rule:** 249.
+
+### 2026-10-20 · Flash and Bomb opened no blocker in the showcase crossing's overhead leg (Calissa, in her look)
+- **Seen:** Digit1 and Digit2 at the overhead and side blockers; no seam opened. Probed: the ship sailed the overhead leg in the first
+  leg's kit (Bomb and Vacuum), so Digit1 was a Bomb out of its reach and Digit2 the Vacuum; nothing could open it.
+- **Cause:** a leg's hull and mounts were fitted only in the turn before it (`triprun.js` leave). A leg reached any other way (a look's
+  or a probe's jump of the clock) kept the kit of the last leg left.
+- **Fix:** `refit(k)` is asked again as the leg begins (enter), and does nothing, says nothing, when the kit is already its own.
+- **Measured after:** jumped from the launch to the overhead blocker: the destroyer with Flash and Bomb; Flash opened it (2.92 real s
+  held). Sailed through a turn in order: one log line for the new hull, not two. 0 errors.
+- **Rule:** 250.
