@@ -303,8 +303,10 @@ shared axes in a swing).
    z -5.4 to 20.5 (Petra's measure), half the old room. The overhead carrier holds at z 15 (`CARRIER_AT.above`), and the calm's gift
    rose was slowed to speed 7 to keep the half second to react from the nearer thrower.
 7. The side camera comes about a quarter closer (Calissa's ask, the owner's yes to Dovina's "closer, but modestly": the side view is
-   where beams and rams are dodged, so it keeps more room than overhead). Petra measures its box; the side carrier and patterns are
-   judged again then.
+   where beams and rams are dodged, so it keeps more room than overhead). Built: cam [18, 1.5, 3], the ship 7.5% of the frame's
+   height. `CARRIER_AT.side` takes Petra's measured frame (y -2 to 12.5, z -14 to 19.5), the carrier holding at z 15; from the nearer
+   thrower the brig's split shell splits at 0.5 real s (not 0.9: it split 1.6 m off the ship) and the leviathan's rose is slowed to 7
+   with 30 petals (its gap and its half second).
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.

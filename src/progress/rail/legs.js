@@ -70,7 +70,7 @@ export const LEGS = {
     { phase: 'build', at: 3, every: 5, pattern: { name: 'homingSalvo', from: 'darter', kind: 'umbral' } },
     { phase: 'peak', at: 0, director: 'pirates' },
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'stackFan', from: 'object', kind: 'feel' } },
-    { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral' } },
+    { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral', params: { T: 0.5 } } }, // (splits sooner since the side camera came closer, 2026-10-20: from 15 m a 0.9 s flight split 1.6 m off the ship)
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
   leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: V('chase', 'above', 'side', 'astern'), cues: [
@@ -81,7 +81,7 @@ export const LEGS = {
     { phase: 'build', at: 3, every: 4, until: 32, pattern: { name: 'multiSpiral', from: 'heavy', kind: 'feel' } },
     { phase: 'build', at: 32, every: 3, pattern: { name: 'doubleHelix', from: 'ahead', kind: 'feel' } },
     { phase: 'peak', at: 0, director: 'leviathan' },
-    { phase: 'peak', at: 2, every: 5, pattern: { name: 'rose', from: 'object', kind: 'feel' } },
+    { phase: 'peak', at: 2, every: 5, pattern: { name: 'rose', from: 'object', kind: 'feel', params: { n: 30, speed: 7, swell: 7 } } }, // (for the nearer frames, 2026-10-20: slowed from 9, 0.42 real s to react from 15 m, the rule's 0.5; 30 petals not 36, its gap 3.26 m under three ship widths)
     { phase: 'peak', at: 4, every: 7, pattern: { name: 'sweepBeam', from: 'object', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
@@ -188,7 +188,7 @@ export const CARRIER_AT = {
   chase:  { at: [0, 5, 55], from: [0, 2, 50], box: { x: 24, y: [0, 14], z: [12, 70] } },
   free:   { at: [0, 5, 55], from: [0, 2, 50], box: { x: 26, y: [0, 15], z: [12, 70] } },
   above:  { at: [0, 4, 15], from: [0, 0, 12], box: { x: 14, y: [-5, 20], z: [-5, 20] } }, // (the mock's overhead rig, ruled 2026-10-20: the ship's box x ±14.5, z -5.4 to 20.5; the carrier holds 5 m inside the far edge and comes from just beyond it)
-  side:   { at: [0, 5, 22], from: [0, 0, 26], box: { x: 6, y: [-2, 17], z: [-20, 27] } },
+  side:   { at: [0, 5, 15], from: [0, 0, 12], box: { x: 6, y: [-2, 12.5], z: [-14, 19.5] } }, // (the side camera a quarter closer, ruled 2026-10-20: the frame less 8% on the wall plane, Petra's measure; the carrier holds 4.5 m inside the far edge and comes from just beyond it)
   astern: { at: [0, 5, -30], from: [0, 2, -40], box: { x: 24, y: [0, 14], z: [-60, -10] } },
 };
 /** A view's way of firing: in its plane (above, side, astern: a ring reads as a ring), or in a cone at the ship (chase, free). */
