@@ -362,7 +362,7 @@ export class Angler {
       else { this.ringHeld = null; if (held && this.soundCool <= 0) this.sound(); }
     }
     const sounding = this.ringHeld != null ? SOUND_COST : 0; // (the sounding's cost as the Lachrimeter's reserve while it is held: OVERLAY.md 18.5)
-    if (sounding !== this.soundReserve) { this.soundReserve = sounding; g.lachrimeterTube?.reserve('sounding', sounding); }
+    if (sounding !== this.soundReserve) { this.soundReserve = sounding; this.game.lachrimeterTube?.reserve('sounding', sounding); } // (this.game: a bare `g` here threw each time the reserve changed, Dovina's tools sweep, 2026-10-19)
     if (lure.state === 'reel' && lure.pos.distanceTo(P.pos) < 3) this.tremble = 0.2;
     // (a bite that has run out is cleared by the fish)
     if (this.bite) { this.bite.t += dt; if (this.bite.t > this.bite.window + 0.05) { this.bite = null; this.biteGlyph?.close(); this.biteGlyph = null; } }

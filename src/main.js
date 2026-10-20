@@ -1027,7 +1027,8 @@ async function main() {
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   // (a Lachrymato Bottle and the jets' ring, made now and parked hidden, never disposed: their programs live while one exists; the casebook's
   // rules 17 and 18. The stain that stood beside them is gone: the paint map draws the blots, the ribbons' program the slicks, docs/CASEBOOK.md 2026-10-10)
-  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js)
+  const finLook = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: true })); // (a Weir fish's fin, its one-pass program: the fish are made only near the Weir, tools/sondelass/angling/fishmesh.js)
+  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh, finLook]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js)
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
   const parkCasterS1toS5 = prewarmCasterShadersS1toS5(scene); // (the caster shells' shaders S1 to S5, one copy each 50 m down: their six programs, vfx/caster/)
