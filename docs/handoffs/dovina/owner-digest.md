@@ -13,3 +13,8 @@ The same call as the chase camera, for the overhead view. Measured at 16:9:
 
 A bigger ship and bigger foes, against half the room. If the mock's: the overhead patterns, their fairness and the carriers' box
 are judged again at the new box (Dovina's, a round).
+
+## 2. The side camera (Calissa, 2026-10-20)
+The same trade for the side view: the ship at 24 m is 5.5% of the frame's height (Petra's measure on v246), so the refit hull and a
+latched grappler barely read. Closer, at the cost of a narrower box? Calissa would take it closer; the foes now hold inside the frame
+(the sniper furthest, at ndc 0.77), so nothing would be cropped. Petra measures the box once a distance is picked.
