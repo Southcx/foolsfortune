@@ -25,7 +25,7 @@ export class Places {
 
   add(id, { name = id, at, yaw = null, note = '', near = 1.6, stand = null, deck = false, via = null }) { this.map.set(id, { id, name, at, yaw, note, near, stand, deck, via }); return this; } // (stand: the exact spot to be set down, facing `at`; deck: set down at its own height, not on the sand under it)
   /** Not while a crossing is sailed: the Courier is the ship's (SWEEPS group 3: /goto mid-crossing left a full-size Courier on the sloop). */
-  refuses() { return !!this.game.emocean?.stage.active; }
+  refuses() { return !!this.game.emocean?.stage.active || !!this.game.opensea?.sailing; }
   get(id) { return this.map.get(id) || null; }
   pos(id) { const p = this.get(id); try { return p ? p.at() : null; } catch { return null; } }
 
@@ -101,6 +101,7 @@ export function installPlaces(game) {
     P.add('jetty', { name: 'the jetty\'s end', at: () => b.jetty.end.clone(), yaw: -Math.PI / 2, deck: true, note: 'over the crude; the sloop moors here' });
   }
   if (game.bazaar) P.add('bazaar', { name: "Raku's bazaar", at: () => game.bazaar.spot('arrive').pos, via: () => { game.bazaar.arrive(); return true; }, note: 'the casino: Querent, Zodiac, Event Horizon; chips at the cage' });
+  if (game.opensea) P.add('opensea', { name: 'the open sea', at: () => game.opensea.props?.quays.anagami.pos.clone() ?? null, via: () => { game.opensea.arrive(); return true; }, note: "Anagami's quay on the open sea; F at the ship: board" });
   if (game.raceway) P.add('raceway', { name: 'the Raceway', at: () => game.raceway.startPillar.clone(), via: () => { game.raceway.arrive(); return true; }, note: 'the Solar Skiff\'s test circuit; F at the start\'s pillar: a race' });
   if (game.margarite) P.add('margarite', { name: "Margarite's dock", at: () => game.margarite.spot('landing').pos.clone().setX(game.margarite.spot('landing').pos.x - 6), yaw: -Math.PI / 2, note: 'the far end of the crossing: the Pearl Shrine, the Purser, Letty, the pier home' });
   if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), near: 1, note: 'F: down into the Well' }); // (its reach is 2.4 m, and the sand round it slips)

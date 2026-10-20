@@ -191,3 +191,41 @@ the sea as a place, the islets as rooms, the serpent's mind and every look, soun
    - the dock's report page (a choice card a find);
    - the bounty board, if the owner wants the safari to keep paying;
    - the sweep for the open sea once it is a room.
+
+## 11. Built: the room, first pass (2026-10-20; the owner: "let's start building the open Emocean")
+
+Dovina's room, as the Raceway is (`src/world/opensea/`; reached from the Index, O, THE OPEN SEA; the place `opensea`):
+- **The water and the sky** are the Emocean's: the zone `opensea` (x 7900 to 11700, z ±1600, at the Emocean's height) is one of
+  `openSea()`'s, so the crude sea is shown and followed there and the dunes' sky and far plane hold.
+- **The helm** (`helm.js`, `Helm`):
+  - W and S step the throttle: stop, slow, cruise (10 m a real second), full sail (x1.5, burning x1.5).
+  - A and D are the rudder, which turns harder at speed.
+  - The ship rides the drawn sea, pitching and rolling, and leaves the rail's wake.
+  - The chase camera swings with the mouse and the arrow keys (the owner's screenshots).
+  - The Courier is hidden and held at the helm (main.js `aboard`).
+- **The grid's features** (`seaprops.js`) are placeholders:
+  - an islet: a mound with a flat, walkable top, a collider, and its secret on it;
+  - a monument: three stones out of the water;
+  - a wreck: a hull on its side;
+  - a phenomenon: a pale column, shown only at its hour;
+  - a seep: a dark slick;
+  - three stone quays on the lanes. Entropolis's is shut, as its node is locked.
+- **The rules are the voyage's** (`seatrip.js`):
+  - Each square sailed into burns fuel and is charted, and its finds are found.
+  - When you are lost, the current is a slow push off your line, as strong as your doubt, not a teleport.
+  - R reads the sky.
+  - A dry tank is towed to the lane for its fee.
+- **F does what is near:**
+  - at sea, by an islet: moor and step off onto it;
+  - at sea, by a quay: dock (the reports paid in cubes, the tank filled as far as your cubes go), and step ashore;
+  - on an islet, by its secret: take it (a chest pays 3 minutes of play; a fuel cache 3 measures; the rest say so in the log until their systems are wired);
+  - on land, by the ship: board;
+  - at a quay's post: go home to the workshop.
+- **A placeholder readout** (`seahud.js`): the fuel, the square and your doubt, the throttle, and the finds to report. Calissa's to replace.
+- **The log rules** are in `feedback/tracking/opensea.js`: plain placeholder lines for Espada.
+- **The save:** the voyage is kept (`openSea`, player scope); the sea's seed is the world's (`openSeaSeed`).
+- **The sweep** (`scripts/sweeps/opensea.mjs`) passes 14 of 14: enter, board, a square sailed at cruise (charted, fuel burnt), an islet
+  moored at and stood on, re-boarding, a dock.
+
+**Not yet:** the safari (Egregores on the water, plates), the sea serpent, the fronts on the water, the islets' secrets beyond the chest
+and the fuel, a sandbar's tide, the pier's open-sea choice (Petra's), and every look.
