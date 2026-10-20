@@ -128,6 +128,21 @@ export const ECON = {
   /** THE EMOCEAN: a hop between islands burns `fuelMin` minutes of play in cubes a unit of distance (a drain: the travel layer spends
    *  what the others earn); a stage failed loses `lose` of the cargo. */
   emocean: { fuelMin: 1.5, lose: 0.25 },
+  /** THE OPEN SEA (docs/plans/OPEN-SEA.md): the Emocean off the lanes, sailed at a free helm. A grid of `cols` x `rows` squares, the lanes
+   *  along row `lane`, an island's port at its column on the lane. A square at cruise takes `squareS` real seconds and burns `burn`
+   *  measures (x the ship's burn: a sloop's 7.5 sails 30 squares), `full` times that at full sail; a measure costs `measureMin` minutes
+   *  of play (a sloop's tank about 48 cubes, the price of the Margarite hop's fuel). A dry tank is towed to the nearest lane for `towMin`.
+   *  DISCOVERIES pay once, by tier, in minutes of play, at a dock, halving every `halfLife` game days unreported (Skies of Arcadia's
+   *  guild; Sunless Sea's port reports). A PLATE of an Egregore pays `plate[stars - 1]` x its class's hunt (ECON.hunt) for a species'
+   *  best plate, an improvement paying the difference (Pokemon Snap's professor). The sea's total is set so charting it all pays
+   *  about two hours of the aim, front-loaded: exploration is a bounded faucet, the safari and the hunts what stays. */
+  openSea: {
+    grid: { cols: 9, rows: 7, lane: 3 },
+    squareS: 40, burn: 0.25, full: 1.5, measureMin: 0.8, towMin: 6,
+    discovery: { common: 0.75, uncommon: 1.5, rare: 3.5, legend: 12, halfLife: 6 },
+    plate: [0.05, 0.1, 0.2, 0.35],
+    fix: { drift: 0.35, max: 2 },  // (squares of doubt a square sailed with no fix, at most `max`: dead reckoning; a fix clears it)
+  },
   /** CRUDE LACHRYMA (docs/LORE.md, "Lachryma as crude"; the owner, 2026-10-11): feeling gone flat, so it carries none. It is named for
    *  its FIELD, where it comes up, as crude oil is named Brent or West Texas: Margarite's light sweet, the Great Dunemaw's (Anagami's),
    *  Entropolis's heavy sour. Each field has a worth a unit (minutes of play: a tanker's hold of 60 Dunemaw crude is about an hour's

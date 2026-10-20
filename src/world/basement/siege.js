@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // THE SIEGE: the one room where raids happen. In god-hand mode the jar is only ever attacked
-// here (src/world/basement/raids.js); everywhere else the hand is left in peace to build up its Zone of Influence
+// here (src/world/basement/raids.js); everywhere else the hand is left in peace to build up its explored area
 // and practise its arts. A plain walled arena south of the lab, with cover to hide behind, things to
 // throw and a raised dais to stand the jar on. Teleport only: it is listed in the hub's index.
 //

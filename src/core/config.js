@@ -147,8 +147,8 @@ export const DEFAULTS = {
     clapperDrop: 6, // baubles inside every clapperjar
     markedDrop: 2, // baubles from a marked pot
   },
-  // Mind Mapping and the Zone of Influence: see cartography.js
-  zoi: {
+  // Mind Mapping and the explored area: see cartography.js
+  explored: {
     tiers: [0.08, 0.45, 0.85], // knowledge that makes a cell sensed / charted / understood
     baseRadius: 6, baseTier: 2, // around the vessel, always charted
     passiveCap: 0.5, passiveRate: 0.5, // walking about charts (never past .5)

@@ -126,7 +126,7 @@ export const ABILITIES = [
 
 // ---------------------------------------------------------------------------
 // The God Arts: what the hand can do (godhand/arts.js). Same shape as the Movement Arts, learned the
-// same way; they run on Lachryma and work only where the courier's Zone of Influence reaches
+// same way; they run on Lachryma and work only where the Courier's explored area reaches
 // (cartography.js). `basic` arts are known from the start. Events: god.grab / god.throw /
 // god.sunder / god.swell / god.wring / god.manifest, and map.pulse / map.room from the cartography.
 // ---------------------------------------------------------------------------

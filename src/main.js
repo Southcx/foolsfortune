@@ -614,7 +614,7 @@ async function main() {
   game.psygunModels = new PsygunModels(game); // (the psygun carried drawn as its variant: the Bombardier, the Carbine, the Pepperbox; vfx/psygunmodels.js)
   game.input = input;
   input.onSpend = (code) => { if (player.latches[code] > 0) player.latches[code] = 0; if (code === 'ShiftLeft' || code === 'ShiftRight') player.latches.Dodge = 0; }; // (a spent press is spent for the body too: core/input.js spend)
-  game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
+  game.cartography = new Cartography(game); // (before the hand: it reads the explored area)
   mark('techs+ui');
   const god = new GodMode(game, renderer, handG, jarG);
   mark('god');
