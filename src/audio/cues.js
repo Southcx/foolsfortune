@@ -117,7 +117,8 @@ const RULES = {
   'feeling.wake': (s, e, g) => { if (e.by === 'courier') g.music?.awaken?.(e.feeling); }, // (the awakening's phrase: music/awaken.js)
   'feeling.drink': (s, e) => { if (e.by === 'courier') s.feelingDrink?.(e.aspect); }, // (the drunk feeling changed: audio/vessel.js)
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
-  'rail.tell': (s, e, g) => s.railTell?.(g.music?.clock?.(), e.bar, e.beat, !!e.outlined), // (a foe's tell, landing on its shot's beat as heard: audio/rail.js)
+  'rail.tell': (s, e, g) => s.railTell?.(g.music?.clock?.(), e.bar, e.beat, !!e.outlined, e.kind, e.form), // (a foe's tell, landing on its shot's beat as heard: audio/rail.js)
+  'rail.form': (s) => s.mastFold?.(0.6), // (the mast folding and standing again on a form flip: audio/rail.js)
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
   // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap

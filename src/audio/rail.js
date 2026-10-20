@@ -13,6 +13,17 @@ const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const SCALE = [76, 78, 79, 81, 83, 84, 86, 88]; // (E minor from E5: a degree a lock, eight to the octave)
 const DOWN = { 0: [88, 0.08, 0.5], 1: [83, 0.12, 0.6], 2: [79, 0.2, 0.8], 3: [76, 0.35, 1], 4: [64, 0.9, 1.4] }; // (class: the ping, its length, its weight)
 
+// a foe kind's tell (RAIL-MODULES.md 3; the kinds of Calissa's crossing mock), each from `now` to the shot at `land`, ending on it
+const TELL_VOICE = {
+  plain: (s, now, land, len, d) => { s.noise(now, len, { type: 'bandpass', f0: 400, f1: 1800, q: 2, gain: 0.08, attack: len * 0.9, dest: d }); s.noise(land - 0.015, 0.015, { type: 'bandpass', f0: 3000, q: 6, gain: 0.3, dest: d }); },
+  fish: (s, now, land, len, d) => { for (let k = 0; k < 4; k++) s.tone(now + (k / 4) * len, 0.05, { f0: 300 + k * 120, f1: 500 + k * 160, gain: 0.05, dest: d }); s.tone(land - 0.02, 0.05, { f0: 700, f1: 1100, gain: 0.08, dest: d }); }, // (bubbles gathering in the mouth, a plip)
+  darter: (s, now, land, len, d) => { s.tone(now, len, { f0: 900, f1: 2400, type: 'triangle', gain: 0.04, dest: d }); s.noise(land - 0.01, 0.012, { type: 'highpass', f0: 4000, gain: 0.25, dest: d }); }, // (a thin whistle drawn up)
+  skimmer: (s, now, land, len, d, form) => { const hi = form !== 'umbral'; s.riser(now, len, { f0: hi ? 880 : 140, f1: hi ? 1760 : 280, type: hi ? 'sine' : 'sawtooth', gain: hi ? 0.04 : 0.05, q: hi ? 0 : 6, dest: d }); }, // (its form heard: bright astral, dark umbral)
+  heavy: (s, now, land, len, d) => { s.noise(now, len * 0.6, { type: 'lowpass', f0: 300, f1: 900, gain: 0.25, attack: len * 0.5, dest: d }); s.noise(now + len * 0.6, 0.03, { type: 'bandpass', f0: 1200, q: 5, gain: 0.3, dest: d }); s.tone(now + len * 0.62, 0.1, { f0: 220, f1: 160, type: 'triangle', gain: 0.12, dest: d }); }, // (a deep breath drawn, the breech clanked shut)
+  turret: (s, now, land, len, d) => { for (let k = 0, n = 8; k < n; k++) s.noise(now + (k / n) * len, 0.03, { type: 'bandpass', f0: 160 + k * 25, q: 3, gain: 0.08 + k * 0.02, dest: d }); }, // (a drum roll building)
+  brig: (s, now, land, len, d) => { s.noise(now, 0.05, { type: 'lowpass', f0: 600, gain: 0.3, dest: d }); s.tone(now, 0.08, { f0: 120, f1: 90, gain: 0.2, dest: d }); s.noise(now + 0.06, Math.max(0.05, len - 0.06), { type: 'highpass', f0: 3500, gain: 0.05, dest: d }); }, // (the gunport lid thrown open, the fuse hissing)
+};
+
 export class RailSounds {
   /** The next sixteenth note of the music (`grid`: game.music.grid()), or now when nothing plays: Rez's quantise. */
   onSixteenth(grid) {
@@ -52,13 +63,24 @@ export class RailSounds {
     }
   }
   /** A foe's tell before its shot (RAIL-MODULES.md 3): heard from now until the shot's beat, landing on it as heard (music/clock.js
-   *  `C`, the shot at `bar`/`beat`): a plain shot's a muzzle drawing breath (a beat), an outlined one's a bell rising to it (half a
-   *  bar: answer it with the parry). With no clock it lasts a beat at 160 bpm. */
-  railTell(C, bar, beat = 0, outlined = false) {
+   *  `C`, the shot at `bar`/`beat`), in its kind's own voice (TELL_VOICE); an outlined shot always a bell rising to it (half a bar:
+   *  answer it with the parry). With no clock it lasts a beat at 160 bpm. */
+  railTell(C, bar, beat = 0, outlined = false, kind = null, form = null) {
     if (!this.ok() || !this.allow('railTell', 16)) return;
     const c = this.ctx, now = c.currentTime, u = C?.untilHeard ? C.untilHeard(bar, beat) : 0.375, land = now + Math.max(0.05, u - (C?.latency || 0));
     const len = land - now, d = this.out(outlined ? 0.26 : 0.2, 0.3);
-    if (outlined) { this.riser(now, len, { f0: 660, f1: 1320, type: 'triangle', gain: 0.05, dest: d }); [1, 2.76].forEach((r, j) => this.tone(land - 0.02, 0.3, { f0: 1320 * r, gain: j ? 0.01 : 0.03, dest: d })); }
-    else { this.noise(now, len, { type: 'bandpass', f0: 400, f1: 1800, q: 2, gain: 0.08, attack: len * 0.9, dest: d }); this.noise(land - 0.015, 0.015, { type: 'bandpass', f0: 3000, q: 6, gain: 0.3, dest: d }); }
+    if (outlined) { this.riser(now, len, { f0: 660, f1: 1320, type: 'triangle', gain: 0.05, dest: d }); [1, 2.76].forEach((r, j) => this.tone(land - 0.02, 0.3, { f0: 1320 * r, gain: j ? 0.01 : 0.03, dest: d })); return; }
+    (TELL_VOICE[kind] || TELL_VOICE.plain)(this, now, land, len, d, form);
   }
+  /** The mast folding into the hull and standing again (Calissa's: on a form flip and a barrel roll): a ratchet of telescoping sections
+   *  down, the canvas furled with a whump, then the snap of it set again; `dur` real s from fold to stand. */
+  mastFold(dur = 0.6) {
+    if (!this.ok() || !this.allow('mastFold', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.28, 0.2), half = Math.max(0.12, dur / 2);
+    for (let i = 0; i < 4; i++) this.tone(t + i * (half / 5), 0.04, { f0: 1500 - i * 220, type: 'square', gain: 0.05, dest: d });
+    this.noise(t + half * 0.7, 0.12, { type: 'lowpass', f0: 900, f1: 300, gain: 0.25, dest: d }); // (the canvas furled)
+    for (let i = 0; i < 3; i++) this.tone(t + half + i * (half / 4), 0.04, { f0: 900 + i * 260, type: 'square', gain: 0.05, dest: d });
+    this.noise(t + dur, 0.06, { type: 'bandpass', f0: 1800, q: 1.2, gain: 0.3, dest: d }); // (the snap of the sail set again)
+  }
+
 }
