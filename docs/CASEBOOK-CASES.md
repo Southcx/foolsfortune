@@ -3184,3 +3184,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (5cb9b3f, 2026-10-18) deleted the compass's rules and its builder, and the injection with them; the map's rules stayed, unread.
 - **Fix:** `buildMap()` injects the map's own rules.
 - **Rule:** 241. A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.
+
+### 2026-10-20 · A stinger's blow never counted, and a wall was never wiped (Petra, writing the deep clean's report)
+- **Seen:** reading back the stinger's line in `src/tools/sondelass/cutlass.js` for the report: `strike(...); // (its row's 3.0 ...)
+  this.moves.markBlow(this.stBlow, 'creature', c);`. The comment, added at the deep clean (b021382), swallowed the `markBlow`, so a
+  stinger that landed on a creature closed its blow as a miss and ended the string's run. A scan of `src/` for code after a comment's
+  closing parenthesis found one more: `src/world/ground/paintwalls.js` `wipe()`, where `this.k[m] -= t; got += t; ...` had sat after
+  a comment since 713bc35 (2026-10-12), so the mop and Clean took nothing off a wall for 8 days. Neither threw; neither was seen in play.
+- **Cause:** a comment added to the middle of a line of statements (rule 240's case, twice more). The connectome's "never read" could
+  not see either: `markBlow` and the cell arrays are read elsewhere.
+- **Fix:** each comment on its own line, the code under it running again. `npm run check` now fails on code after a comment's closing
+  parenthesis ending in `;` or `}` (`comment.swallows`); it caught a planted case, and finds no other in `src/`.
+- **Rule:** 240.

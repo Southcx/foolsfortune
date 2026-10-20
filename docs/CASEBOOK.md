@@ -701,7 +701,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     up, palm in), which the wrist cannot make from where the clip has the forearm. Measured with the pose audit's wrist ranges.
 
 240. **A comment goes at a line's end or on its own line, never in the middle of code.** A `//` dropped into a line
-    of events silences everything after it with no error; the connectome's "never read" is the tell.
+    of events silences everything after it with no error; `npm run check` refuses it (`comment.swallows`, 2026-10-20).
 
 241. **A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.** Retire the
     neighbour and the rules go with it, silently; the connectome's "never read" on a `CSS` const is the tell.
