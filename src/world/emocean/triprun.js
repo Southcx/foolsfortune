@@ -57,7 +57,7 @@ export class TripRun {
     const S = this.st;
     this.field = new ShotField({ rail: S.rail }); this.field.build(scene);
     this.player = new PatternPlayer(this.field, { rng: stream('rail/patterns') });
-    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
+    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || S.charybdis?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
   }
   parked() { return this.field?.meshes || []; }
   show(on) { this.field?.show(on); }

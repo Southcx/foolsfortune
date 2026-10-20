@@ -3232,3 +3232,34 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   range), whichever is nearer. The spray's cuts and the gulp's refill read MOUNTS' keys; the cone reads the table's angle with no
   fallback. `pirates.nearestCask` went with the old fallback.
 - **Rule:** 244.
+
+### 2026-10-20 · The ship reached a fifth of the screen in the above view (the owner, in play; Calissa's measure)
+- **Seen:** the owner: "an unusual limitation to the range of motion of the ship". Measured (docs/plans/research/RAIL-BUGS-MEASURED.md
+  1): the share of the screen the ship could reach was 49% x 36% in chase (the top 43% never), 19% x 31% in above (all of it in the
+  lower half), 23% x 17% in side.
+- **Cause:** one box, `T.ship.box` (7 m across, 1.2 to 7 m up), clamped in every view (`Ship.update`), while the cameras stand 7.5 m
+  (chase) to 30 m (above) away and follow a share of the ship.
+- **Fix:** `views.reachOf(view, aspect, fov)`: each view's reach found by projecting the ship through that view's camera rig at rest,
+  stepped out by halving until it leaves the frame less an 8% margin (RAIL-MODULES.md 1.1), its corners checked in a second pass,
+  cached a view and aspect; `Ship.update` clamps the plane's two axes to it, the pinned axis as before, the edges easing when a swing
+  turns the plane. At 16:9: chase x ±11.8 m and up to 12.5 m, above x ±29 m and z -10.5 to 41.6 m, side z -21 to 27.7 m and up to 17.3 m.
+- **Measured after** (a drafted trip, shoal then graveyard then the Wreckers, the ship steered to its corners): the ship reaches ±0.84
+  of the screen in chase, free, above and side, up to 0.84 above; its floor is the sea's (chase -0.57, side -0.14).
+- **Rule:** NEW:bound-from-its-camera.
+
+### 2026-10-20 · The reticle snapped, flew off the screen and came back locked at a swing (the owner, in play; Calissa's measure)
+- **Seen:** the owner: "the targeting reticle breaks/becomes locked when changing perspectives". Measured: at the chase>above swing's
+  midpoint the reticle jumped to the scroll line; after a scroll view it reappeared pinned at the screen's edge (the hidden cursor at
+  its clamp in 3,128 of 3,147 samples); out of the side view it flew to NDC 3.4; a fallback put it at (0, 1.33); and it ran a frame
+  behind in every swing.
+- **Cause:** `Ship.aimAt` added the mouse to the cursor in every view, shown or not; the aim flipped views at the swing's midpoint while
+  the camera was mid-turn; a ray meeting the reticle's plane behind the eye fell back to a point off the screen; the stage re-aimed
+  before main.js placed the camera.
+- **Fix:** the mouse is counted only while the view shows the cursor; across a swing both views' far reticles are found and eased by the
+  camera's own smoothstep; a ray that meets the plane behind the eye takes the cursor's ray 36 m out; the stage's `reaim` runs from
+  main.js after `player.updateCamera`; in a scroll view the far reticle is drawn in along the scroll to stay inside 0.95 of the
+  screen (with the bigger reach, 36 m ahead of a ship riding high was past the top).
+- **Measured after** (the same trip, the mouse moving every frame): 12,000 reticle samples, 360 in swings, none off the screen (1,151
+  before the scroll reticle was held in); the hidden cursor moved in no frame of a scroll view; in the free views the reticle sits
+  under the cursor (median error 0).
+- **Rule:** NEW:reticle-from-this-camera.

@@ -18,6 +18,7 @@
 // free reticle, Panzer Dragoon's look back; the swing eased as Squirrel Eiserloh's "Juicing Your Cameras With Math" (GDC 2016) asks.
 //
 //   VIEW_RIGS[id]   rig(id, Q | rail, ship, out) -> { pos, look }   blendRig(a, b, k, Q, ship, out)   planeOf(id)   axes(id) -> input mapping
+//   reachOf(id, aspect, fov) -> { x, y, z } (the ship's reach in a view, sized from its camera)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { VIEWS } from '../../progress/rail/crossing.js';
@@ -71,5 +72,38 @@ export function blendRig(a, b, k, Q, ship, out) {
   out.pos.lerpVectors(_a.pos, _b.pos, e);
   out.look.lerpVectors(_a.look, _b.look, e);
   out.fov = _a.fov + (_b.fov - _a.fov) * e;
+  return out;
+}
+
+/** How far the ship may go in a view's plane and stay inside `reach` of the screen (1 is its edge; 0.84 is the frame less an 8% margin,
+ *  RAIL-MODULES.md 1.1), with that view's camera at rest following its share of the ship: { x, y, z } as [lo, hi] in the rail frame for
+ *  the axes the plane moves (y: only its top; the sea's surface is its floor), null for the axis it pins. Searched rather than solved,
+ *  since the camera follows the ship: each way stepped out by halving (20 steps), once a view, aspect and fov (cached). The old box was
+ *  one box for every view, 7 m whatever the camera's distance: the ship reached a fifth of the screen in the above view (the owner's
+ *  "limited range of motion"; Calissa's measure, docs/plans/research/RAIL-BUGS-MEASURED.md). Prior art: Ikaruga's and every vertical
+ *  shmup's playfield, the screen itself; Star Fox 64's box the camera only half follows. */
+const REACHES = new Map(), _cam = new THREE.PerspectiveCamera(), _o0 = new THREE.Vector3(), _p = new THREE.Vector3(), _rg = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0 };
+const MOVES = { screen: [['x', -1], ['x', 1], ['y', 1]], sea: [['x', -1], ['x', 1], ['z', -1], ['z', 1]], wall: [['z', -1], ['z', 1], ['y', 1]] };
+export function reachOf(id, aspect, fov = 70, reach = 0.84) {
+  const key = `${id}|${aspect.toFixed(3)}|${fov}|${reach}`;
+  if (REACHES.has(key)) return REACHES.get(key);
+  const V = VIEW_RIGS[id] || VIEW_RIGS.chase, rest = { x: 0, y: CRUISE, z: 0 }, out = { x: null, y: null, z: null };
+  _cam.fov = fov + V.fov; _cam.aspect = aspect; _cam.near = 0.1; _cam.far = 2000; _cam.updateProjectionMatrix();
+  const inside = (s) => { // (the ship at s, the camera rigged for it: is it on the screen within reach?)
+    rig(id, _o0, s, _rg); _cam.position.copy(_rg.pos); _cam.up.copy(U); _cam.lookAt(_rg.look); _cam.updateMatrixWorld();
+    local(_o0, s.x, s.y, s.z, _p).project(_cam);
+    return _p.z < 1 && Math.abs(_p.x) <= reach && Math.abs(_p.y) <= reach;
+  };
+  const moves = MOVES[planeOf(id)] || MOVES.screen;
+  for (let pass = 0; pass < 2; pass++) for (const [k, sgn] of moves) { // (the second pass at the other axis's ends: a corner stays inside too)
+    const other = moves.find(([j]) => j !== k)[0], ends = pass && out[other] ? out[other] : [rest[other]];
+    const ok = (m) => ends.every((e) => inside({ ...rest, [other]: e, [k]: rest[k] + sgn * m }));
+    let lo = 0, hi = pass ? Math.abs((out[k]?.[sgn < 0 ? 0 : 1] ?? rest[k]) - rest[k]) : 160;
+    if (!ok(0)) hi = 0;
+    for (let i = 0; i < 20 && hi > 0; i++) { const m = (lo + hi) / 2; if (ok(m)) lo = m; else hi = m; }
+    if (pass && hi > 0 && ok(hi)) lo = hi;
+    const r = (out[k] ||= [rest[k], rest[k]]); r[sgn < 0 ? 0 : 1] = rest[k] + sgn * lo;
+  }
+  REACHES.set(key, out);
   return out;
 }

@@ -716,3 +716,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 244. **What only one action may answer is left out by name in every other's loop.** An outlined
     shot is the parry's alone, so a bomb's or a vacuum's sweep walks the plain shots only; a sweep over "all shots" breaks the rule
     without a word.
+
+NEW:bound-from-its-camera. **A limit on what moves on the screen is sized from the camera that shows it.** One box in metres for
+    every view, whatever its camera's distance, left the ship a fifth of the screen in one view and most of it in another; a view's
+    bounds are found by projecting through that view's own camera (the frame less its margin), and ease when the view changes.
+
+NEW:reticle-from-this-camera. **A reticle is aimed through this frame's camera, after it is placed, and eased across a change of
+    view; input is counted only while what it moves is shown.** A hidden cursor that keeps counting comes back pinned at the edge; a
+    reticle aimed before the camera moves lags it a frame; one that flips at a swing's midpoint snaps.
