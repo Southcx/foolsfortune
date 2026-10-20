@@ -23,13 +23,14 @@ export const slotsOf = (ship = 'sloop') => SHIPS[ship]?.mounts ?? SLOTS;
 /** Each tool at sea. Keys 1 to 3 fire those mounted (as many as the hull's slots), in the order chosen at the pier. */
 export const MOUNTS = {
   // name: the label the player sees (a genre word: docs/plans/CLARITY.md section 9; Espada's to settle); does: the card's one line, verb
+  // cuts: small fish a spray cuts; refill: energy each thing gulped gives; angle: a cone or fan's full width (the hook's: its aim's, 60 wide); a ship's locks are SHIPS[ship].locks.
   // first, at most 8 words; lore: the world's name (the Codex, the folk); detail: the whole of it, for a hover or the wiki.
   psygun:     { name: 'Blaster', lore: 'the gun', verb: 'fire', does: 'Fire with LMB; hold RMB to lock on', detail: 'Full auto on LMB. Hold RMB to lock on to up to 8 targets; release fires a lance at each.', cost: 3, always: true },
-  soulbrush:  { name: 'Absorb', lore: 'the wake brush', verb: 'spray', does: 'Eats enemy shots of your colour', detail: 'A fan of spray ahead. Enemy shots of your colour inside it are drunk, and it cuts up to three small fish.', cost: 4, range: 9, angle: 50 },
+  soulbrush:  { name: 'Absorb', lore: 'the wake brush', verb: 'spray', does: 'Eats enemy shots of your colour', detail: 'A fan of spray ahead. Enemy shots of your colour inside it are drunk, and it cuts up to three small fish.', cost: 4, range: 9, angle: 50, cuts: 3 },
   crucibelle: { name: 'Bomb', lore: 'the toll', verb: 'toll', does: 'Clears every shot around you', detail: 'A ring that clears every shot around you, wider on the beat. It scatters fish and staggers boarders.', charges: 3, range: 10 },
-  lockheart:  { name: 'Vacuum', lore: 'the gulp', verb: 'gulp', does: 'Sucks in shots and small fish; refills energy', detail: 'Swallows a cone ahead for a second: enemy shots and the smallest fish. Each one refills 2 energy.', cooldown: 4, duration: 1, range: 8, angle: 35 },
+  lockheart:  { name: 'Vacuum', lore: 'the gulp', verb: 'gulp', does: 'Sucks in shots and small fish; refills energy', detail: 'Swallows a cone ahead for a second: enemy shots and the smallest fish. Each one refills 2 energy.', cooldown: 4, duration: 1, range: 8, angle: 35, refill: 2 },
   veritome:   { name: 'Flash', lore: 'the plate', verb: 'snap', does: 'Opens weak points for a few seconds', detail: 'Takes a photo of what is in view and holds a weak point open. A boss photographed goes in your Compendium.', cost: 6, cooldown: 4, duration: 3 },
-  sondelass:  { name: 'Grapple', lore: 'the hook', verb: 'hook', does: 'Pulls loot in; yanks boarders off', detail: 'Hooks what you aim at: loot and casks are reeled aboard, and a boarder is yanked into the sea.', cooldown: 1, range: 16 },
+  sondelass:  { name: 'Grapple', lore: 'the hook', verb: 'hook', does: 'Pulls loot in; yanks boarders off', detail: 'Hooks what you aim at: loot and casks are reeled aboard, and a boarder is yanked into the sea.', cooldown: 1, range: 16, angle: 60 },
   dreamvane:  { name: 'Radar', lore: 'the vane', verb: null, does: 'Warns you of attacks earlier (passive)', detail: 'Always on. Attack warnings come half again as early, and it marks the school\'s leader and a big creature about to surface.' },
 };
 
