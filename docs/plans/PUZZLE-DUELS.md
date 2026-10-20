@@ -141,6 +141,10 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
    board, maybe a critical garbage push causes the enemy figment's EmO to spike in a shower of lachryma that you can quickly run around
    and absorb before swapping to Godhand mode to finisher de grace them."
 
+**The Zone of Influence** (the owner, 2026-10-20): your side of the Line is your Zone of Influence, the same as a zone of control but
+"influence", because effects can happen on your side outside your control, and on the foe's from yours (junk landing, a Grab, Delay,
+Dread's fog). The explored ground is "explored area" on the map now. The name goes on screen when duels are called final.
+
 ## 10. Built (2026-10-19): the kernel
 
 `src/progress/duel/`: the engine, pure (no three.js), so a board plays in the room, by bots and in the simulator alike, as Raku's tables
@@ -320,3 +324,31 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
     each: fury 33.0 turns a side, grief 6.2, mirth 16.6, the Lantern Wisp 22.6; finishers up from 1 in 6 to about 1 in 3 (36 of 100: a capped
     landing of 9 still breaks, so a big send breaks the foe turn after turn).
 
+
+## 16. The duel is a pocket, one on one (the owner, 2026-10-20)
+
+The owner, from play: "When entering the Puzzle Duel, other enemies in the area are still active and will continue shooting projectiles at
+the Courier and attacking them. The Puzzle Duel is supposed to be like a special pocket dimension very similar to one-enemy sized Well."
+Ruled, with the numbers:
+
+1. **Nothing outside enters.** While a duel is pending or active (`game.duel.active || game.duel.pending`):
+   - every other creature is held (the duel's own `pin`, applied to all of them, released at the end);
+   - every enemy projectile in flight is cleared;
+   - `creatures.strike` with the Courier as the target is refused.
+   
+   A Well's floor is the model: a sealed room for two. **Assists are parked** (the owner: "put a pin in that ... future mechanics to mine
+   from that concept of enemy assists"): one on one, for now.
+2. **Aberrants cannot be shot.** A blow or shot on an aberrant Figment does no harm and opens nothing: it passes through, and the hit
+   shows the resist mark (`stun.vulnerable`'s mark). The first blow no longer opens the duel; nearness does (3).
+3. **Nearness pulls you in, over a beat you can escape.**
+   - Inside **4 m** of an aberrant, a pull fills from 0 to 1 over **1.5 real s**.
+   - Outside **6 m** it drains back at twice that rate (0.75 s from full). The gap between 4 and 6 m is so the edge does not flicker.
+   - At 1 the wipe plays and the duel opens.
+   - The pull is shown as a growing chromatic aberration at the edge of the view (Calissa's look), and a sound (Wanda's).
+   - No pull in the god hand, the Spirit Garden, on a vehicle, or while shattered.
+   - `game.duelFoes.pull` (0..1) is what the look and the sound read.
+4. **An aberrant looks wrong at a glance.** It wears an inverted colour (1 minus each channel) over its materials, beside its data bug, as
+   a placeholder until its own look (Calissa's).
+
+The events: `duel.pull { foe, by: 'creature' }` when a pull starts from nothing, `duel.slip { by: 'courier' }` when one drains away before
+it filled (the log's line: "You pull away from the aberrant."). These are plain placeholders for Espada.

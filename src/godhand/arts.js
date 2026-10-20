@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // GOD ARTS. What the hand can do. They are nothing to do with the psygun's shells: shells are
 // prepackaged one-shot rounds that cost nothing but the shell; a god art is a power of the hand
-// itself, and it runs on Lachryma. And each works only inside the ZONE OF INFLUENCE: the ground
+// itself, and it runs on Lachryma. And each works only inside the EXPLORED AREA: the ground
 // you have explored (cartography.js). For now that is all there is to it: explored or not.
 //
 //   1 TELEKINESIS               hold LMB: lift anything loose and throw it. Costs Lachryma

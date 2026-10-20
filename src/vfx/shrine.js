@@ -2,7 +2,8 @@
 // A SHRINE GATE (docs/plans/SHRINES.md, Dovina's; docs/plans/HANKO.md 6.6; OVERLAY.md 10.5c, the owner on round six's mock: "chef's
 // kiss"). A torii of glazed clay in the Clay dress (Anagami: kintsugi gold in its mends) with TWO CRADLES for the Pneuka Jar (the
 // owner: "one ... which opens up access to your Spirit Garden, and the other ... the teleportation option between shrine gates"):
-//   THE THRESHOLD'S  an octagonal clay socket sunk in a glazed sill between the pillars, four bronze tines round its well: onward,
+//   THE THRESHOLD'S  an octagonal clay socket sunk in a glazed sill between the pillars, four bronze tines round its well (the cradle's
+//                    look, vfx/cradlelook.js, shared with every ship's helm): onward,
 //                    travel. Sealed (`wake()`), its seam and pad ring light in the window colour, the tines close on the Jar's foot,
 //                    and the light leaves the sill both ways along carved traces in the oil film, climbs both pillars past their
 //                    chevrons (the Stargate's), crosses the nuki and lights the kasagi last; then the film's veil rises in the opening.
@@ -30,14 +31,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStatic } from '../render/merge.js';
-import { THEMES, theme } from '../ui/theme.js';
+import { CradleLook, CRADLE_FORM as CR, CRADLE_JAR as CRADLE, clayGlaze, rng } from './cradlelook.js';
 
 /** Where a gate's pillars stand, metres either side of its middle: world/shrines.js puts its colliders here (read it, don't copy it). */
 export const SHRINE_PILLAR_X = 0.94;
 const GATE = SHRINE_PILLAR_X / 2.6; // (round six's gate, its pillars at 2.6, brought to where the pillars stand)
-const CRADLE = 0.28 / 0.37; // (round six's cradle, its well 0.37, brought to the Pneuka Jar's foot)
-const CR = { R: 0.78, h: 0.5, rs: 0.37, dep: 0.13 }; // (the cradle in its own units: radius, height, the well's radius and depth)
-const CS = CRADLE / GATE; // (the cradle in the gate's units)
+const CS = CRADLE / GATE; // (the cradle (vfx/cradlelook.js, its well the Pneuka Jar's) in the gate's units)
 const PX = 2.6, TZ = 0.655, TY = 6.1; // (the gate's units: a pillar's x; the tablet's face and its socket's height)
 const CLIMB = 2.6, RUN = 1.6, DOOR = 1.2; // (real seconds: the threshold's light up the gate; the arch's run in; the door opening)
 const LACH = new THREE.Color(0x7fdcff);
@@ -45,26 +44,15 @@ const V3 = THREE.Vector3, P = (x, y, z) => new V3(x, y, z);
 const kas = (x) => Math.pow(Math.abs(x) / 4.1, 3) * 0.55; // (the kasagi's lift toward its ends)
 const pr = (y) => 0.34 - 0.05 * y / 7.3; // (a pillar's radius at y: it tapers)
 
-// ---- the look's shared bits: the oil film, a seeded draw, the clay glazes (drawn once for every gate)
+// ---- the look's shared bits: the oil film, the clay glazes (drawn once for every gate; the glaze and the draw are the cradle's)
 const FILM = [[76, 15, 179], [10, 140, 191], [242, 184, 46], [217, 26, 128]];
 function filmCol(s, out = new THREE.Color()) {
   s = ((s % 1) + 1) % 1 * 4; const i = Math.floor(s), f = s - i, A = FILM[i], B = FILM[(i + 1) % 4], m = f * f * (3 - 2 * f);
   return out.setRGB(...A.map((v, k) => (v + (B[k] - v) * m) / 255), THREE.SRGBColorSpace);
 }
 const filmRGB = (s, a) => { const c = filmCol(s).getRGB({}, THREE.SRGBColorSpace); return `rgba(${(c.r * 255) | 0},${(c.g * 255) | 0},${(c.b * 255) | 0},${a})`; };
-function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 100000) / 100000; }; }
 const canvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 const colour = (c, wrap) => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (wrap) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
-function clayGlaze(base, pool, brk, speck, seed) {
-  const c = canvas(512, 512), x = c.getContext('2d'), R = rng(seed);
-  x.fillStyle = base; x.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 70; i++) {
-    const px = R() * 512, py = R() * 512, r = 20 + R() * 90, g = x.createRadialGradient(px, py, 0, px, py, r);
-    g.addColorStop(0, R() < 0.5 ? pool : brk); g.addColorStop(1, 'rgba(0,0,0,0)'); x.globalAlpha = 0.25 + R() * 0.35; x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r);
-  }
-  x.globalAlpha = 1; for (let i = 0; i < 900; i++) { x.fillStyle = R() < 0.7 ? speck : 'rgba(240,235,220,.5)'; x.fillRect(R() * 512, R() * 512, 1 + R() * 1.5, 1 + R() * 1.5); }
-  return colour(c, true);
-}
 function ropeTex() {
   const c = canvas(256, 32), x = c.getContext('2d'); x.fillStyle = '#b8a070'; x.fillRect(0, 0, 256, 32); x.strokeStyle = '#6e5a34'; x.lineWidth = 3;
   for (let i = -32; i < 256; i += 10) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 32, 32); x.stroke(); }
@@ -95,7 +83,7 @@ function veilTex() {
 let LOOK = null; // (the textures, drawn at the first gate built and shared by every gate)
 const look = () => LOOK || (LOOK = {
   clay: clayGlaze('#6e3220', '#4e1e12', '#9a5434', '#22100a', 17), sill: clayGlaze('#5a2818', '#3a160c', '#8a4a2c', '#1a0a06', 53),
-  cradle: clayGlaze('#7a3a22', '#5a2414', '#b06a3e', '#22100a', 37), rope: ropeTex(), garden: gardenTex(), veil: veilTex(),
+  rope: ropeTex(), garden: gardenTex(), veil: veilTex(),
 });
 
 // ---- the lit traces: every lit piece of a circuit in one mesh, each vertex carrying the distance along the circuit where it lights
@@ -208,34 +196,9 @@ export class ShrineModel {
     { const R = rng(8), pts = []; let x = -2.05; for (let z = 0.55; z < 1.75; z += 0.1) { x += (R() - 0.5) * 0.12; pts.push(P(x, 0.304, z)); } mend(pts, 0.018); }
     { const R = rng(10), pts = []; let y = 7.6; for (let x = 1.0; x < 3.6; x += 0.12) { y += (R() - 0.5) * 0.06; pts.push(P(x, y + kas(x) - 0.02, 0.385)); } mend(pts, 0.018); }
 
-    // ---- the threshold's cradle (onward): a round well in an octagonal body, lying in the sill, four tines; built at the Jar's scale
-    const cr = new THREE.Group(); cr.scale.setScalar(CS); gate.add(cr);
-    const cm = new THREE.MeshStandardMaterial({ name: 'shrine-cradle', map: L.cradle, roughness: 0.55, side: THREE.DoubleSide });
-    const { R, h, rs, dep } = CR, fl = h - dep, v2 = (a) => a.map(([x, y]) => new THREE.Vector2(x, y));
-    const pin = v2([[0, fl], [rs, fl], [rs, h - 0.005], [rs + 0.05, h + 0.035], [rs + 0.1, h + 0.036]]);
-    const pout = v2([[rs + 0.075, h + 0.03], [R - 0.06, h + 0.03], [R - 0.01, h - 0.02], [R, h - 0.08], [R * 0.97, 0.12], [R * 1.02, 0.04], [R * 1.03, 0]]);
-    for (const [pp, seg, ph] of [[pin, 32, 0], [pout, 8, Math.PI / 8]]) { const m = new THREE.Mesh(new THREE.LatheGeometry(pp, seg, ph), cm); m.receiveShadow = true; cr.add(m); } // (sunk in the sill: no shadow of its own)
-    for (const [a0, seed] of [[0.5, 3], [2.5, 9], [4.3, 5]]) { // (kintsugi on the octagon's top: radial mends from the lip to the edge)
-      const Rn = rng(seed), pts = []; let a = a0; for (let r = rs + 0.11; r < R * 0.88; r += 0.04) { a += (Rn() - 0.5) * 0.22; pts.push(P(Math.cos(a) * r, h + 0.036, Math.sin(a) * r)); }
-      cr.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.011, 4, false), gold));
-    }
-    { const c = new THREE.Mesh(new THREE.TorusGeometry(rs + 0.035, 0.03, 8, 48), gold); c.rotation.x = Math.PI / 2; c.position.y = h + 0.03; cr.add(c); } // (the collar)
-    const padGeo = [];
-    for (let i = 0; i < 32; i++) { // (the pad ring on its top face: carved dark, and their lit twins)
-      const a = i / 32 * Math.PI * 2, r = (rs + R) / 2 + 0.03, d = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.012, 0.075), dead);
-      d.position.set(Math.cos(a) * r, h + 0.036, Math.sin(a) * r); d.rotation.y = -a + Math.PI / 2; cr.add(d);
-      d.updateMatrix(); padGeo.push(new THREE.BoxGeometry(0.035, 0.016, 0.083).applyMatrix4(d.matrix));
-    }
-    this.pads = new THREE.Mesh(mergeGeometries(padGeo, false), new THREE.MeshBasicMaterial({ name: 'shrine-pads', color: 0xffffff, toneMapped: false, transparent: true, depthWrite: false }));
-    this.pads.name = 'shrine-pads'; cr.add(this.pads); padGeo.forEach((g) => g.dispose());
-    this.seam = new THREE.Mesh(new THREE.TorusGeometry(rs - 0.01, 0.022, 6, 48), new THREE.MeshBasicMaterial({ name: 'shrine-seam', color: 0xffffff, toneMapped: false }));
-    this.seam.name = 'shrine-seam'; this.seam.rotation.x = -Math.PI / 2; this.seam.position.y = h + 0.005; cr.add(this.seam);
-    this.halo = new THREE.Mesh(new THREE.CylinderGeometry(rs - 0.005, rs - 0.005, dep + 0.01, 48, 1, true), new THREE.MeshBasicMaterial({ name: 'shrine-halo', color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide, forceSinglePass: true, toneMapped: false, depthWrite: false }));
-    this.halo.name = 'shrine-halo'; this.halo.position.y = fl + dep / 2; cr.add(this.halo);
-    // the four bronze tines round the well, leaning in over it while it is empty, closing on the Jar's foot when it is sealed
-    { const b = new THREE.BoxGeometry(0.035, 0.26, 0.07), tip = new THREE.SphereGeometry(0.03, 8, 6).translate(-0.04, 0.13, 0), tg = mergeGeometries([b.toNonIndexed(), tip.toNonIndexed()], false);
-      this.tines = new THREE.InstancedMesh(tg, gold, 4); this.tines.name = 'shrine-tines'; cr.add(this.tines); b.dispose(); tip.dispose(); }
-    this.tineAt = []; for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; this.tineAt.push({ p: P(Math.cos(a) * (rs + 0.07), h + 0.03 + 0.12, Math.sin(a) * (rs + 0.07)), a }); }
+    // ---- the threshold's cradle (onward): the cradle's look (vfx/cradlelook.js), lying in the sill at the Jar's scale
+    this.cradle = new CradleLook({ scale: CS }); gate.add(this.cradle.group);
+    const { R } = CR;
 
     // ---- the threshold's circuit: out of the sill both ways, up the pillars past their chevrons, over the nuki, the kasagi last
     const sc = circuit(gate, dead, 0.06, null), film = (k) => (d) => filmCol(d * 0.09 + k), F = new THREE.Color();
@@ -319,52 +282,29 @@ export class ShrineModel {
     this.veil.name = 'shrine-veil'; this.veil.position.set(0, 2.55, -0.08); this.veil.visible = false; gate.add(this.veil);
 
     this.state = { found: false, resting: false, open: false };
-    this.k = { found: 0, rest: 0, lit: 0, tine: 0, run: 0, door: 0, on: 0 }; this.awake = false; this.t = 0; this.wakeT = 0; this.ink = null;
-    this.tinePose(0); this.colours();
+    this.k = { found: 0, run: 0, door: 0, on: 0 }; this.awake = false; this.t = 0; this.wakeT = 0;
   }
 
   set(s) { Object.assign(this.state, s); }
 
   /** The threshold sealed: the gate wakes from the sill up (world/shrines.js calls it at seal.set). false: unsealed, it goes dark. */
-  wake(on = true) { if (on && !this.awake) this.wakeT = 0; this.awake = !!on; }
+  wake(on = true) { if (on && !this.awake) this.wakeT = 0; this.awake = !!on; this.cradle.wake(on); }
 
   /** The cradle where the Jar seals: the threshold's well floor (the one cradle a gate has: the owner, 2026-10-19). World space, from the group as it now stands. */
-  cradleSpots() {
-    const P = (x, y, z) => new THREE.Vector3(x, y, z);
-    return { threshold: this.gate.localToWorld(P(0, (CR.h - CR.dep) * CS, 0)) };
-  }
-
-
-  /** The window colour on the threshold's lit parts (its seam, its pads, the well's halo), set again when it changes. */
-  colours() {
-    if (this.ink === theme.id) return; this.ink = theme.id;
-    const T = THEMES[theme.id] || THEMES.kiln;
-    this.inkSel = new THREE.Color(`rgb(${T.sel})`); this.inkHi = new THREE.Color(T.hi); this.seam.material.color.copy(this.inkHi).multiplyScalar(2.2); this.halo.material.color.copy(this.inkSel);
-  }
-
-  tinePose(k) { // k: 0 open (leaning in over the empty well), 1 closed on the Jar's foot
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), one = new V3(1, 1, 1);
-    this.tineAt.forEach(({ p, a }, i) => { e.set(0, -a, 0.85 + (0.32 - 0.85) * k, 'YXZ'); q.setFromEuler(e); this.tines.setMatrixAt(i, m.compose(p, q, one)); });
-    this.tines.instanceMatrix.needsUpdate = true;
-  }
+  cradleSpots() { return { threshold: this.cradle.seat() }; }
 
   update(raw = 1 / 60) {
-    this.t += raw; this.colours();
+    this.t += raw;
     const S = this.state, K = this.k, ease = (k, to, r) => k + (to - k) * (1 - Math.exp(-raw * r)), breath = 0.75 + 0.25 * Math.sin(this.t * 1.3);
-    K.found = ease(K.found, S.found ? 1 : 0, 1.5); K.rest = ease(K.rest, S.resting ? 1 : 0, 2);
+    K.found = ease(K.found, S.found ? 1 : 0, 1.5);
     this.clay.color.setScalar(0.55 + 0.45 * K.found); // (unfound: the clay dull, a ruin you might walk past)
     // the threshold: sealed, its cradle lights at once, then the light climbs; unsealed, it all goes dark
     if (this.awake) this.wakeT += raw;
-    K.lit = ease(K.lit, this.awake ? 1 : 0, this.awake ? 9 : 3); const tine = ease(K.tine, this.awake ? 1 : 0, 6);
-    if (Math.abs(tine - K.tine) > 1e-4) { K.tine = tine; this.tinePose(tine); }
+    this.cradle.rest(S.resting); this.cradle.update(raw); // (its seam, pads, halo and tines: vfx/cradlelook.js)
     K.on = ease(K.on, this.awake ? 1 : 0, this.awake ? 20 : 2.5);
     const su = this.scMesh.material.uniforms;
     su.uOn.value = K.on; su.uD.value = this.awake ? Math.max(-1, (this.wakeT - 0.3) / CLIMB * this.scDmax) : K.on > 0.01 ? su.uD.value : -1;
     this.scMesh.visible = su.uOn.value > 0 && su.uD.value >= 0; // (dark, nothing of it is drawn: no draw)
-    const pads = Math.max(K.lit, 0.35 * K.rest * breath);
-    this.pads.visible = pads > 0.01; this.pads.material.color.copy(this.inkSel).multiplyScalar(0.5 + 1.8 * pads); this.pads.material.opacity = Math.min(1, pads * 1.4);
-    this.seam.visible = this.halo.visible = K.lit > 0.01 || K.rest > 0.05; this.halo.material.opacity = 0.75 * Math.max(K.lit, 0.3 * K.rest * breath);
-    this.seam.material.color.copy(this.inkHi).multiplyScalar(0.4 + 1.8 * Math.max(K.lit, 0.3 * K.rest * breath));
     const veil = this.awake ? Math.min(1, Math.max(0, (this.wakeT - 0.3 - CLIMB) / 1.0)) : 0; // (once the kasagi is lit: the film's veil in the opening)
     this.veil.material.opacity = ease(this.veil.material.opacity, veil * 0.85, 3); this.veil.visible = this.veil.material.opacity > 0.01;
     // the arch: found, its two sigils breathe; open, its light runs in, then the door fills with your Spirit Garden

@@ -318,7 +318,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   is what you strike.
 - **The crossing's cast** *(parked by the owner, 2026-10-11)*: **glints** (Guppies that flash as they turn) and **the Conductor** (it drives the shoal on the
   beat: down it and the music stops); **the Wreckers** (the coast's thieves who hung false lights: the lighthouse inside out;
-  Contractors under no letter) and their brig the ***False Light*** (their origin *open*); **Old Nobody**, a rogue Leviathan
+  Contractors under no letter) and their brig the ***False Light***. **Their mark** (the owner, 2026-10-20): every Wrecker hull runs on a **forged seal** in its cradle; a ship that should answer to no one answers to a counterfeit name. Who first forged them is *open*; **Old Nobody**, a rogue Leviathan
   (authored by no one, and what Odysseus told the Cyclops): it comes back, and Letty posts WANTED: NOBODY.
 - **The fish**: five aspects; the Emocean is the ultimate fishing hole.
 
@@ -495,7 +495,7 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
 On the sea chart an encounter not yet met is **a sighting** ("encounter" is the Spirit Garden's word); each has its page's title in
 capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOURSE, THE GLASS, A DRIFT BOTTLE; `world/emocean/triprun.js`).
 - **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
-  own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
+  own word), so following them shows the way ahead. **Why they sail on** (the owner, 2026-10-20): the crews are dead and do not know it, still working the run they died on, an echo of obsession; the reckoning is the last thing they hold. "Ghost ships in the fog: the Dead Reckoners." ·
   *Follow them.* "You follow the Dead Reckoners. The next 2 waypoints are clear." · *Board the last ship.* "You take 2 casks from the
   last ship. The Wreckers will hear of it."
 - **lettysCutter: the Last Word.** A cutter (the revenue cutters chased smugglers; it also cuts), named for what Letty always has and

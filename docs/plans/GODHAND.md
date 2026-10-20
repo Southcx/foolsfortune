@@ -20,7 +20,7 @@ and the matter simulation, which grows out of the Spirit Garden's), the looks Ca
   change the ecology's offers, not only damage.
 - **Dungeon Keeper**: the hand's slap and its weight; dropping things where they will matter. Taken: the hand's feel (section 6).
 - What exists: the hand and its five God Arts (`godhand/arts.js`: lift, cut, grow, twist, raise clay), already paid in Lachryma and
-  already held to the Zone of Influence; the Spirit Garden's shallow-water and clay simulation (`world/garden/water.js`, `clay.js`:
+  already held to the explored area; the Spirit Garden's shallow-water and clay simulation (`world/garden/water.js`, `clay.js`:
   virtual pipes, erosion, slumping, water that keeps its feeling); the Soul Brush's gesture reader (`soulbrush/gesture.js`).
 
 ## 1. What makes a god game (the mechanical elements)
@@ -33,7 +33,7 @@ and the matter simulation, which grows out of the Spirit Garden's), the looks Ca
    and the biggest crack the jar. This one rule makes every act a choice.
 4. **Verbs that combine.** Each miracle does something to creatures *and* to matter, so two used together make a third thing (section
    4's interactions). Seven feelings by five kinds of matter is the system's depth.
-5. **A reach with a border.** The hand acts only inside the Zone of Influence, the ground explored on foot (section 2). Walking the
+5. **A reach with a border.** The hand acts only inside the explored area, the ground explored on foot (section 2). Walking the
    island as the Courier is how the god's reach grows: the two modes feed each other.
 6. **Escalation.** Small acts are cheap and many; epic acts are rare, slow to call, and change a place for a while (section 5).
 7. **Consequences that last, then heal.** What you do stays long enough to matter (a game day), then the island's own ego mends it
@@ -43,17 +43,17 @@ and the matter simulation, which grows out of the Spirit Garden's), the looks Ca
 9. **Readable at a glance.** From above, the player reads matter by colour and texture, a miracle by its weather and a creature by its
    body. No numbers on screen, as the house rule says.
 
-## 2. The reach: the Zone of Influence
+## 2. The reach: the explored area
 
-- **The hand acts only over explored ground** (as now, `arts.js`). The ZoI's edge is drawn (`ZoiVeil`); past it the hand passes through
+- **The hand acts only over explored ground** (as now, `arts.js`). The explored area's edge is drawn (`ExploredVeil`); past it the hand passes through
   and does nothing.
-- **Matter and miracles stop at the edge.** Water does not flow out of the ZoI, and a miracle's area is clipped to it. The unexplored
+- **Matter and miracles stop at the edge.** Water does not flow out of the explored area, and a miracle's area is clipped to it. The unexplored
   island stays as authored until the Courier walks it.
-- **The jar's tether** stays the camera's leash: the hand ranges within its reach of the jar *and* inside the ZoI.
+- **The jar's tether** stays the camera's leash: the hand ranges within its reach of the jar *and* inside the explored area.
 
 ## 3. Matter: terraforming
 
-**The island's matter** is a layered height field over the ZoI, the Spirit Garden's simulation laid flat. Each cell holds a column:
+**The island's matter** is a layered height field over the explored area, the Spirit Garden's simulation laid flat. Each cell holds a column:
 
 | layer | what | how it moves |
 |---|---|---|
@@ -82,7 +82,7 @@ and the matter simulation, which grows out of the Spirit Garden's), the looks Ca
 - Lachryma standing still for a game hour over clay soaks in: the clay there takes its feeling's ground (the garden's grounds).
 - A creature on ground that floods swims or drowns by its body; a slip jelly in Lachryma swells (it is its food).
 
-**The mending:** the island is an Island of Ego and keeps its self-image. Every edit to the ZoI relaxes back toward the authored shape
+**The mending:** the island is an Island of Ego and keeps its self-image. Every edit to the explored area relaxes back toward the authored shape
 over one game day: clay and sand drift home, liquids dry. Only the deltas are kept in the save, a chunk at a time (16 m), and a chunk
 that has healed is dropped. The world remembers you for a game day and then forgives you.
 
@@ -199,7 +199,7 @@ is its step, 0 to 5 (GTA's stars). **Rejection** is the island's answer at a lev
 - **Five Dissonance Levels**, each calling a stronger answer (rejection), spawned at the edge of the hand's view and coming for the jar:
   1. strays: Figments of class 1 drift in;
   2. a pack, and the Figments wear the island's feeling;
-  3. aberrants, and blotlings well up from the crude in the ZoI;
+  3. aberrants, and blotlings well up from the crude in the explored area;
   4. a class 2, a FOE out of its Well;
   5. the island's own answer, a class 3 made of the ground you scarred (its body your clay and sand, Espada's to name, Calissa's to
      shape): beat it and the rejection resets to nothing.
@@ -214,7 +214,7 @@ is its step, 0 to 5 (GTA's stars). **Rejection** is the island's answer at a lev
 
 ## 9. Order
 
-1. **Matter** (Petra): the garden's simulation made shared and flat, over the ZoI's chunks; Scoop, Pour, Raise and Lower; the mending.
+1. **Matter** (Petra): the garden's simulation made shared and flat, over the explored area's chunks; Scoop, Pour, Raise and Lower; the mending.
    Calissa: the layers' looks from above.
 2. **Miracles** (Petra; Calissa's weathers at strength, the heavy looks exist): the seven signs on the gesture reader, the seven
    miracles, their effects on matter.
@@ -237,7 +237,7 @@ swaps 24 m squares. Hasten runs matter at sixteen times. Set stands a creation f
 stand at once. Miracles cost a fifth and fall twice as wide. The island feels a tenth of the dissonance.
 
 **What never loosens: the walls Creative mode is designed around.**
-1. **The Zone of Influence.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
+1. **The explored area.** The hand touches only ground you have explored. Creative mode on the whole island is earned by walking it.
 2. **The mending.** Everything the hand does goes back to the authored shape over about a game day, except a set creation at 99. A
    master leaves what they meant to leave; everything else heals.
 3. **One epic a game hour, paid as a release:** pressure on the vessel through the stones' aperture (SPINE.md 4).
@@ -312,7 +312,7 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
 - **The verbs** (`godhand/matterarts.js`): Scoop (keys 6), Shape (7, Shift levels), Carve (8). Made matter costs Lachryma
   (`GOD_POWERS[id].made` a cubic metre). Scoop's carry follows the ramp (`RAMP.scoop.carry`, 20 to 400 m³; section 11).
 - **Miracles** (`godhand/miracles.js`): MMB held draws the sign (the Soul Brush's gesture reader); a sign's size on screen sets the
-  miracle's size and cost. Needs the feeling awakened and the ground in the Zone of Influence. Shift turns the sign into its epic (one a
+  miracle's size and cost. Needs the feeling awakened and the ground in the explored area. Shift turns the sign into its epic (one a
   game hour, paid in the jar). All seven of each run; their looks are placeholder rings and the existing weather/status looks.
 - **Rejection** (`progress/rejection.js`, numbers; `godhand/rejection.js`, `game.rejection`): dissonance from matter moved (0.5 a m³, made 1),
   a miracle 8, an epic 60, a throw 2; Dissonance Levels at 25, 60, 110, 170, 240; ebbs 2 a real second after 12 quiet; an answer every 20 real

@@ -31,6 +31,7 @@
 //   when the cue is not playing (music/choose.js plays it while game.emocean.stage.active; the rail and the waves follow this)
 // ---------------------------------------------------------------------------------------
 import { MOTIF, quote } from './motifs.js';
+import { musicClock } from './clock.js';
 import { VERSE, CHORUS, JIG, JIG_CH } from './shanty.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
@@ -117,6 +118,8 @@ export function stageAt(music) {
   const A = music?.arr;
   if (!A?.alive || !(CROSSINGS.has(A.score) || CROSSINGS.has(A.score?.of))) return null;
   if (A.ended) return 1;
+  const total0 = A.score.sections.reduce((n, x) => n + x.bars, 0), C = musicClock(music); // (as heard, latency taken off: music/clock.js)
+  if (C) return Math.max(0, Math.min(1, (C.bar - 1) / total0));
   let bars = A.bar; for (let k = 0; k < A.section; k++) bars += A.score.sections[k].bars; // (the next bar to be laid out, at A.next)
   const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4), total = A.score.sections.reduce((n, x) => n + x.bars, 0); // (100, 146 or 192 bars)
   return Math.max(0, Math.min(1, (bars - ahead) / total));

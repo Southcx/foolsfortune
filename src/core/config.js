@@ -147,8 +147,8 @@ export const DEFAULTS = {
     clapperDrop: 6, // baubles inside every clapperjar
     markedDrop: 2, // baubles from a marked pot
   },
-  // Mind Mapping and the Zone of Influence: see cartography.js
-  zoi: {
+  // Mind Mapping and the explored area: see cartography.js
+  explored: {
     tiers: [0.08, 0.45, 0.85], // knowledge that makes a cell sensed / charted / understood
     baseRadius: 6, baseTier: 2, // around the vessel, always charted
     passiveCap: 0.5, passiveRate: 0.5, // walking about charts (never past .5)
@@ -383,6 +383,7 @@ export const DEFAULTS = {
     bank: 3.5, bankMax: 50, pitch: 2.5, pitchMax: 25, // degrees per m/s of sideways (vertical) speed, and the most
     cam: { up: 2.2, back: 7.5, follow: 0.35, lag: 6 }, // the chase camera: above and behind the rail, following a share of the ship's offset
     reticles: [12, 36], // the two reticles' depths along the aim (Star Fox 64)
+    graze: { pay: 1, cap: 8 }, // a foe's shot passing close without a hit (the shot field measures it: Dovina's): Lachryma to the pool, at most `cap` a bar (the owner's ruling, 2026-10-20; placeholders until Dovina's numbers)
     shot: { speed: 70, life: 0.9, radius: 0.35 }, // the gun: a shot each sixteenth note while LMB is held
     lock: { max: 8, reach: 0.14, cost: 3, lance: 4 }, // the sweep: up to 8 painted, within this much of the screen of the reticle; Lachryma a lance; shots a lance is worth
     roll: { time: 0.35, turns: 0.25, charges: 2, recharge: 3 }, // the barrel roll: its length, how long it turns plain shots, its charges and their refill (s)

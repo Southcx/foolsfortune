@@ -29,7 +29,7 @@ carries to the hand.
    - Echo: a power used 200 times, or a power that hits five things at once.
    - Charms are knacks in form: switched on or off in their socket, never gating the skill.
    - The ramp (GODHAND.md section 11) still sets the numbers. A charm multiplies the ramp's value, and no charm loosens the walls (the
-     ZoI, the mending, the epic's toll, rejection's notice).
+     the explored area, the mending, the epic's toll, rejection's notice).
 3. **The charms: the Possibilikeys' verbs, and a few of the hand's own.** Numbers are drafts.
 
    | charm | does | costs |

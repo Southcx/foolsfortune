@@ -36,6 +36,8 @@ import { PatternPlayer } from './patternplayer.js';
 import { LegRunner } from './legrunner.js';
 import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
+import * as THREE from 'three';
+import { T } from '../../core/config.js';
 
 const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
 const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Scout the route.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
@@ -57,7 +59,7 @@ export class TripRun {
     const S = this.st;
     this.field = new ShotField({ rail: S.rail }); this.field.build(scene);
     this.player = new PatternPlayer(this.field, { rng: stream('rail/patterns') });
-    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
+    this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || S.charybdis?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
   }
   parked() { return this.field?.meshes || []; }
   show(on) { this.field?.show(on); }
@@ -142,11 +144,21 @@ export class TripRun {
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
-    // a swing of view begins: what is still in the air is let go (no shot lives across one: the owner's R17, Dovina's pacing law in
-    // legs.js keeps new ones out of the bars round it)
-    const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.field.clear(); this.swung = sw;
+    // a swing of view begins: what is still in the air is cancelled into Lachryma (no shot lives across one: the owner's R17 and his
+    // ruling of 2026-10-20; Dovina's pacing law in legs.js keeps new ones out of the bars round it)
+    const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.cancel(); this.swung = sw;
     this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
+  }
+
+  /** A swing's start: every live shot cancelled into Lachryma the ship drinks (the owner's ruling, 2026-10-20; RAIL-MODULES.md 1.10), as
+   *  absorbing one pays (T.ship.absorb a shot), none left on the screen through the swing; `rail.cancel` carries where they were for the
+   *  motes' look (Calissa's) and the sound (Wanda's). Prior art: Ikaruga's and every Cave shmup's bullet cancel into score items. */
+  cancel() {
+    const S = this.st, g = this.game, live = this.field.shots.filter((x) => x.on), w = new THREE.Vector3(), points = [];
+    for (const x of live.slice(0, 64)) { S.rail.toWorld(x.p, w); points.push(+w.x.toFixed(2), +w.y.toFixed(2), +w.z.toFixed(2)); }
+    if (live.length) { g.lachryma?.gain(T.ship.absorb * live.length, 'cancel'); g.events?.emit('rail.cancel', { n: live.length, points, by: 'environment' }); }
+    this.field.clear();
   }
 
   enter(k) {

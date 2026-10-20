@@ -7,7 +7,7 @@
 //   - the shots in flight at once stay under the budget (400 at a heavy peak, 60 in a calm), stormed included.
 // `node scripts/legs.mjs`
 // ---------------------------------------------------------------------------------------
-import { LEGS, schedule, idle, STRETCH, SWING_CLEAR, SWING_BREATH } from '../src/progress/rail/legs.js';
+import { LEGS, schedule, idle, STRETCH, SWING_CLEAR, SWING_BREATH, CARRIER_AT } from '../src/progress/rail/legs.js';
 import { CHARYBDIS, charybdisHurt, WAVES } from '../src/progress/rail/setpieces.js';
 import { PATTERNS, emit, fair, children } from '../src/progress/rail/patterns.js';
 
@@ -15,7 +15,14 @@ let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; consol
 const BAR = 1.5, WANDA0 = { shoal: [8, 18, 18, 4], wreckers: [8, 20, 24, 4], leviathan: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], graveyard: [8, 18, 18, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] };
 const WANDA = Object.fromEntries(Object.entries(WANDA0).map(([k, v]) => [k, v.map((n) => n * STRETCH)])); // (doubled: the owner, R17; Wanda's cues to follow)
 const lasting = (name, params) => { const s = emit(name, params, { origin: [0, 0, 0], aim: [0, 0, -1] }); return (s.length ? s[s.length - 1].at : 0) + 1; };
-const ctxOf = (mode) => ({ origin: [0, 4, 60], aim: [0, -0.06, -1], mode });
+// each pattern judged as the leg runner throws it (progress/rail/legs.js CARRIER_AT): from its view's hold at a ship resting at (0, 3, 0),
+// in a plane view with the aim on the plane (up: the side view's +x, else +y), the owner's crossing bugs of 2026-10-20
+const SHIP = [0, 3, 0], upOf = (view) => (view === 'side' ? [1, 0, 0] : [0, 1, 0]);
+const ctxOf = (mode, view) => {
+  const origin = CARRIER_AT[view]?.at || CARRIER_AT.chase.at, up = upOf(view); let aim = SHIP.map((x, i) => x - origin[i]);
+  if (mode === 'plane') { const d = aim[0] * up[0] + aim[1] * up[1] + aim[2] * up[2]; aim = aim.map((x, i) => x - up[i] * d); }
+  return { origin, aim, mode, up, range: Math.hypot(...aim) };
+};
 
 for (const [type, L] of Object.entries(LEGS)) {
   const ph = ['open', 'build', 'peak', 'release'].map((k) => L.phases[k]);
@@ -31,8 +38,8 @@ for (const [type, L] of Object.entries(LEGS)) {
     const live = new Float32Array(Math.ceil(plan.bars * BAR * 10) + 200);
     for (const e of plan.events) {
       if (!e.pattern) continue;
-      const shots = emit(e.pattern.name, e.pattern.params, ctxOf(e.pattern.mode));
-      if (!storm && strength === 1) { const F = fair(shots, { pos: [0, 0, 0], width: 1.2 }, { ...PATTERNS[e.pattern.name].defaults, ...e.pattern.params }, 12, e.pattern.mode); if (!F.ok) unfair.push(`${e.pattern.name}@${e.bar} ${JSON.stringify(F.worst)}`); }
+      const view = plan.phases.find((q) => q.id === e.phase)?.view, ctx = ctxOf(e.pattern.mode, view), shots = emit(e.pattern.name, e.pattern.params, ctx);
+      if (!storm && strength === 1) { const F = fair(shots, { pos: ctx.origin.map((x, i) => x + ctx.aim[i]), width: 1.2 }, { ...PATTERNS[e.pattern.name].defaults, ...e.pattern.params }, 12, e.pattern.mode, ctx.up, ctx.origin); if (!F.ok) unfair.push(`${e.pattern.name}@${e.bar} ${view} ${JSON.stringify(F.worst)}`); }
       for (const s of shots.flatMap((x) => [x, ...children(x)])) {
         const t0 = e.bar * BAR + s.at, life = s.motion?.type === 'laser' ? (s.motion.warn + s.motion.burn) : Math.min(9, 85 / Math.max(4, s.speed)); // (the field keeps a shot until 25 m past the ship: 60 up the rail to 25 behind)
         for (let k = Math.floor(t0 * 10); k < Math.min(live.length, (t0 + life) * 10); k++) live[k]++;

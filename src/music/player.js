@@ -19,6 +19,7 @@
 //   m.setMood(aspect | null, strength, second?, secondStrength?, cancelled?) (the weather's colour: music/mood.js)   m.setNight(on) (the night thins every cue)   m.scale() -> five semitones
 //   from the root: the scale of what is playing, changed on a bar line, or the weather's mode when nothing plays (the Crucibelle plays it)
 // ---------------------------------------------------------------------------------------
+import { musicClock } from './clock.js';
 import { Arranger } from './arranger.js';
 import { Band } from './band.js';
 import { moodLayer, moodScale, DEFAULT_SCALE } from './mood.js';
@@ -86,6 +87,8 @@ export class MusicPlayer {
     for (const e of ev) Arranger.prototype.play1.call(this.wakeBand, e, t0, 1);
     this.duck(8 * spb, 0.55);
   }
+  /** The cue as heard, in bars and beats (music/clock.js): what the rail's patterns read. */
+  clock() { return musicClock(this); }
   grid() {
     const A = this.arr;
     if (A.alive && !A.ended && A.score) { const sec = A.score.sections[A.section]; return { t0: A.next, spb: A.spb, beats: sec?.beats || A.score.beats || 4, root: sec?.root ?? A.score.root ?? 63, swing: 0.5 }; } // (a section may be in its own key: a crossing's legs, music/legs.js)

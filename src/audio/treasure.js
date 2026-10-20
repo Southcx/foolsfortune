@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio/sfx.js): treasure: cubes, chests by tier, the colour roulette, the Tithe, the prismatic chest's rave.
+// A sound bank of the one mixer (audio/sfx.js): treasure: cubes, chests by tier, the colour roulette, the Tithe, the prismatic chest's rave; a cache dug up on an islet.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class TreasureSounds {
   /** A cube taken: a glassy tick that climbs a pentatonic scale with each one taken in a row (Mario's coins, Zelda's rupees). */
@@ -168,5 +168,15 @@ export class TreasureSounds {
         setTimeout(() => { try { bus.disconnect(); send.disconnect(); duck.disconnect(); } catch { /* already gone */ } }, fade * 1000 + 400);
       },
     };
+  }
+  /** A cache dug up on an islet (sea.dig): two scoops of sand, the shovel striking the box, the lid prised, and cubes by its tier. */
+  seaDig(tier = 1, cubes = 0) {
+    if (!this.ok() || !this.allow('seaDig', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.3);
+    [0, 0.28].forEach((x) => this.noise(t + x, 0.18, { type: 'bandpass', f0: 1800, f1: 900, q: 0.8, gain: 0.3, attack: 0.03, dest: d }));
+    this.tone(t + 0.55, 0.12, { f0: 180, f1: 120, type: 'triangle', gain: 0.3, dest: d }); this.noise(t + 0.55, 0.04, { type: 'bandpass', f0: 1200, q: 2, gain: 0.3, dest: d });
+    this.noise(t + 0.75, 0.3, { type: 'bandpass', f0: 500, f1: 900, q: 6, gain: 0.12, dest: d }); // (the lid's creak)
+    const n = Math.min(10, 3 + Math.max(0, tier | 0) * 2);
+    for (let i = 0; i < n; i++) this.tone(t + 1.05 + i * 0.05, 0.12, { f0: 1800 + i * 90 + Math.random() * 200, gain: 0.04, dest: d });
   }
 }

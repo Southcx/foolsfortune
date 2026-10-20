@@ -44,7 +44,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
-  drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the ZoI's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
+  drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the explored area's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
 - **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel matter of the island's firm layer the hand raises
   with Sculpt (a pillar, an arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day, unless Set. *Not:* Manifest's wall, the island's matter.
 - **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
@@ -336,7 +336,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   **the drip** (the pieces each side is given at the start of its turn), **Flee** (`flee.js`, `fleeOdds`: a saving throw out, a d20 against
   15, 3 AP, kept only by a failed try), the tools' moves **Shoot, Grab, Drill, Paint, Delay, Hold, Send**; Dread's **fog** and **embers** (`dread.js`: a
   half hidden but for its lantern / junk that burns 3 of your turns, then cools into a gem). *Not:* a table (Raku's), the rail, a trial, a mote (the scatter's), the scene fog, Dread's fog on the Raceway.
-- **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: opened by the first blow on it, the seam (kind `aberrant`), the board between you, your turns and its bot's, its end / which Figments go wrong and open one (any aberrant; a Lantern Wisp that drinks a blot at night, `wisp.drink`; the test one by the Weir). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
+- **a duel's session / the duel's foes** (`DuelSession`, `game.duel`, `src/world/duel/duelsession.js` / `DuelFoes`, `game.duelFoes`, `world/duel/duelfoes.js`) — a puzzle duel played where its aberrant was met: a pocket nothing outside enters (`pocket`: every other creature held, shots in flight gone, no outside blow lands), the seam (kind `aberrant`), the board between you, your turns and its bot's, its end / which Figments go wrong, and **the pull** (`pull`, 0..1: filled by nearness to an aberrant, 4 m and 1.5 real s, drained beyond 6 m) that opens one; an aberrant takes no blow in the world (any aberrant; a Lantern Wisp that drinks a blot at night, `wisp.drink`; the test one by the Weir). *Not:* the kernel (`progress/duel/`), the view (`game.duelView`, Calissa's).
 - **the duel's view / the tsuitate** (working names; `DuelView`, `game.duelView`, `src/vfx/duelview.js`, its parts `src/vfx/duelview/`) — a puzzle duel's board stood in the world as a standing screen of Lachrymite 20 x 20 in Anagami's clay frame, broadside between the Courier and the foe, playing the kernel's events; its pieces instanced, its figurines the bodies. *Not:* the duel (Dovina's rules), its session (Petra's), a table (Raku's).
 - **the domains' clash** (working name, Espada's to rule; `DomainClash`, `src/vfx/duelview/domains.js`) — a puzzle duel's backdrop: each side's ground unfolding round the arena (the Courier's the film over Lachryma's deep, the foe's its feeling's heavy look), meeting in a seam on the Line's plane that slides with it. Always in full. *Not:* the domains (the psyche's seven), the weather.
 - **the flee's look** (working name; `DuelFlee`, `src/vfx/duelview/flee.js`) — a puzzle duel's flee on the tsuitate: the odds plate on its frame (FLEE 30%, published as the reliquary's break chances), the d20 of Raku's dice set thrown before the board with its reasons counted in against 15, and on fleeing the clash folding with no winner and the tsuitate folded away. *Not:* the flee (Dovina's rule, `progress/duel/flee.js`), the score ceremony.
@@ -360,9 +360,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Dunemaw; and places at the Dunes' height told apart by their render zone, not their height (the Raceway, Margarite's dock).
 - **room** — a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **place** (`game.places`, `src/world/places.js`) — a named spot anything can be sent to by id (`well.mouth`, `kiln`). A point, *not* a room.
-- **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the Zone of Influence, nor a crystal's fret. →
+- **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the explored area, the Zone of Influence, nor a crystal's fret. →
   detail
-- **the Zone of Influence** — the ground the player has explored. Nothing more, for now. Always named in full (or ZoI).
+- **the explored area / the Zone of Influence** (the owner, 2026-10-20) — the ground the player has explored, as the map shows it ("explored area" on screen) / a puzzle duel's side of the Line: your zone of control, where effects can reach from either side ("influence", not control); the duel's word once duels are called final. Always named in full (or ZoI).
 - **the workshop** — the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement** — below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
 - **the hub** — the basement's centre, where the Index stands. **The Index** (`src/feedback/indexmenu.js`): the console there; F, and pick a room.
@@ -441,6 +441,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the flock** (`creatures/ai/flock.js`) — many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a school (a
   wave's role).
 - **the lock-on** (RMB held on the rail) — the reticle marks up to eight targets; release fires a lance at each. *Not:* the lock-on on foot. → detail
+- **a carrier** (plain name; `rail.carrier`, `CARRIER_AT`, `progress/rail/legs.js`, `world/emocean/legrunner.js`; RAIL-MODULES.md 1) — a placeholder body that brings a crossing's pattern where no foe of its role is in frame: it flies in from the view's far edge over the windup, holds while it fires, and leaves; shot down, its volleys go with it. *Not:* a thrower of its own kind (a school, a darter), a ship.
 - **the hurtbox** (`T.ship.hurt`, drawn by `vfx/railshots.js`) — the sphere a foe's shot must touch to hit the ship, drawn in the hull as a pale
   core and a dark ring. *Not:* a hit region (the vessel's six).
 - **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`) — the crossing caught in a psychic storm: the world bent, never the danger;
@@ -467,6 +468,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Lagan and Bob, the Bourse, the Glass, a drift bottle. One not yet met is a **Sighting**. *Not:* an encounter of the Spirit Garden. → detail
 - **the Umbral** (`game.umbral`, `src/vfx/umbral.js`) — the world below the Emocean's surface, where the ship's Umbral form fights. *Not:* the
   crossing. → detail
+- **the open sea / a square / an islet (Islet of Ego)** (plain names, the owner's "Islets of Ego", 2026-10-20; rules `src/progress/opensea/`, the room `game.opensea`, `src/world/opensea/`, the free helm `Helm`, `helm.js`; `docs/plans/OPEN-SEA.md`) — the Emocean off the lanes, sailed at a free helm, a safari / one cell of its 9 x 7 grid (`seaGrid`), its column the law, its row how far off the lanes / a small island off the lanes the Courier can moor beside and walk, one secret each (`isletOf`). *Not:* a planetoid (the Spirit Garden's), an Island of Ego, the crossing.
+- **a discovery / doubt / a fix** (`discoveries.js`, `seatrip.js`) — a thing found off the lanes, reported once at a dock for its tier's fee / how many squares you may be off your reckoning (dead reckoning) / clearing it, by a charted landmark in sight or the sky read with the Dreamvane. *Not:* a Sighting (an encounter not yet met), a rutter.
+- **an islet puzzle: a pair / a line-up / an echo / a buried cache** (plain names; `isletpuzzles.js`, the world's `PuzzlePieces`, `world/opensea/puzzlepieces.js`; OPEN-SEA.md 12) — two islets carved alike (seen both: a find) / arcs over the water that close into one ring from a spot (a fix and the squares round charted) / a stone that sings a phrase and its twin that listens for it on the Crucibelle / treasure in an islet's sand that only the Dreamvane's dowse finds, dug once. *Not:* a chest (in plain sight), a Cogitomap, a puzzle duel.
+- **a disposition / the sea serpent** (`EGREGORES`, `safari.js`; `SEA_SERPENT`, `seaserpent.js`) — what an Egregore does when the ship comes near: passive, wary, territorial or hostile (Monster Hunter's) / the open sea's first hostile one, Marlin class, the vertical slice's test. *Not:* grain (a mind's traits), mental state.
 
 ## 8. Records and progression
 
@@ -538,6 +543,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seal picker / the imprint's look** (`SealPicker`, `src/ui/sealpicker.js`; `SealImprints`, `src/vfx/sealimprint.js`) — your seal chosen once at
   the title, as a ceremony, shown on a cradle and in the Seal Book before you confirm / the imprint burned into a cradle at `seal.set`, dim after.
   *Not:* the cradles (`world/cradles.js`).
+- **the cradle's look / a helm cradle** (`CradleLook`, `src/vfx/cradlelook.js`; `helmCradles`, `vfx/sloop.js`, `vfx/shipclasses.js`) — a cradle's body as built (the octagonal clay well, its gold collar and four tines, lit in the window colour while sealed), shared by the Shrine's threshold and every ship / the one (the galleon's two) at a ship's helm, where a crossing is sealed into. *Not:* the cradles (`world/cradles.js`), the imprint's look.
 - **the Sight / the Lachrimeter's tube** (working name, Espada's to rule; the look `game.sightLook`, `src/vfx/sight.js`, the waypoint Dovina's `game.sight`, `progress/sight.js` / `LachrimeterTube`, `src/vfx/lachrimetertube.js`)
   — the instrument top-right (a needle to the waypoint you know of, the weather's liquid, a wadokei hour ring, the Dissonance arc, the place
   plate) / the Lachrimeter as a thermometer bottom-right (the bulb and column the pool, the held stretch, the expansion chamber, the Bottles'
@@ -637,12 +643,16 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   in its source's look (the cracks: crazed glass, the clay's cracks in it, a cracked clay seal at the cap line). *Not:* the pale stretch (a charge's).
 - **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
   laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
+- **vertex painting** (a trial, off by default; `VertexPaint`, `game.vertexPaint`, `src/vfx/vertexpaint.js`; `/vertexpaint`) — a zone's mood lamps baked into its static geometry's vertices (light, shadow and AO), the lamps then off the light budget. *Not:* the paint map, a feeling's paint, a glaze.
 - **graphics / a graphics tier / dynamic resolution** (`T.visual.graphics`, `GRAPHICS_TIERS`, `game.graphics`, `src/render/graphics.js`) — the one quality setting: auto (read from the machine at boot), High, Low, Minimum, or Custom once a knob it owns is moved by hand / one row of those knobs (lines, MSAA, light slots, the shadow's size, filter and rate, the glow, the outline hulls' reach) / the lines stepped down while the frame keeps missing the display's refresh, and back up, never below the tier's floor. *Not:* the resolution setting alone, the light budget.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
   bursting (about 0.3 real s) just before the data drain takes it (.hack's Protect Break). *Not:* the bubble, a guard break, the vessel's cracks.
 - **the aberrant encounter's wipe** (`AberrantWipe`, `game.aberrantWipe`, `src/vfx/aberrantwipe.js`) — the battle transition into a puzzle duel with an aberrant: the frame caught and drawn toward it, its data bug showing, the held frame crazing, then shattering along the Line. *Not:* the maw wipe, the glitch, the crackle break.
+- **the pull's edge** (`AberrantWipe.edgeK`, `src/vfx/aberrantwipe.js`; `/pull`) — the pull toward an aberrant (`game.duelFoes.pull`) worn as a chromatic aberration creeping in from the view's edges, the middle always clean, before its wipe. *Not:* the wipe, the glitch, the pull itself (Petra's).
+- **the aberrant inversion** (`AberrantInversion`, `src/vfx/aberrantinvert.js`) — an aberrant Figment drawn in its colours inverted while it lives, on copies of its materials, a placeholder for its own look. *Not:* a data bug, the cast.
+- **the blob shadow** (`BlobShadow`, `game.blobShadow`, `src/vfx/blobshadow.js`) — the soft dark disc straight down under the Courier on whatever is below, smaller and fainter with height, beside the sun's shadow. *Not:* the sun's shadow, the aura's stain.
 - **a data bug** (working name; `DataBugs`, `game.dataBugs`, `src/vfx/databug.js`) — an aberrant or stray Figment or a blotling drawn wrong on
   purpose: one still error (a limb off its socket, its skin slid, a magenta cast) and a dark aura; a drain mends it. Always "a data bug" in
   full. *Not:* a bug in the code, the corrupted body.

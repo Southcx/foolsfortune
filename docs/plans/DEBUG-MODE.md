@@ -28,7 +28,7 @@ look Calissa's; its words Espada's.
   (`system.has`). It **defaults to on** for an empty or old save (`system.js:150`), and the Codex switch flips it in any mode.
 - **Everything else is gated with no bypass:** the knacks, the moveset's unlocks (launcher, air string, dash, special), reprogramming's
   Functions, the Shrines found, the Spirit Garden's Firings (planetoids, features, Myggdrasil, the Heavenly Kiln), the Entropolis node,
-  the galleon's and tanker's rutters, the kiln glazes, the God Arts' Zone of Influence tier.
+  the galleon's and tanker's rutters, the kiln glazes, the God Arts' explored-area tier.
 - **Siblings** are all met in DEBUG (`party.may`); `/grant` and `/psygun` refuse outside DEBUG; the Weir's treasury refills in 30 s
   in DEBUG.
 - **Ungated commands:** `/goto`, `/garden`, `/cavern`, `/opening`, `/spore bed`, `/tree dawn`, `/art`, `/crossing`, `/figure` work in any
@@ -72,7 +72,7 @@ tested** (switch Feelings off, go and drink Gall, watch the slot open).
 | category | `lend` id | what lending it opens (the gates, from the survey) |
 |---|---|---|
 | Movement Arts | `arts` | every art and variant (`system.has`: today's all-arts switch) |
-| God Arts | `godArts` | God Arts 2 to 5, and the Zone of Influence tier they need (`arts.js` `owns`, `cartography.tierAt`) |
+| God Arts | `godArts` | God Arts 2 to 5, and the explored-area tier they need (`arts.js` `owns`, `cartography.tierAt`) |
 | Knacks | `knacks` | every knack opened (each still switched on or off by `/knack`: lending opens, it never forces one on) |
 | Tool moves | `moves` | every moveset unlock (`moveset.js` `open`: launcher, air string, dash attack, pause branches, special) and the Crucibelle's fever peak |
 | Functions | `functions` | every reprogramming Function known, and every neuralese word glossed (`functions.js` `known`, `ostraca.js`) |
@@ -146,7 +146,7 @@ Presets wait on the save split (section 2). Until then, the debug chests carry t
 | `lend` id | where the clause goes |
 |---|---|
 | `arts` | `progress/system.js:34` `has()` (replaces `lendAll`); `feedback/tracking.js:724` and `audio/voice/voice.js:117` read `lend.has('arts')` |
-| `godArts` | `godhand/arts.js:83` `owns()`; the Zone of Influence tier at `arts.js:169,215`, `godhand.js:590` |
+| `godArts` | `godhand/arts.js:83` `owns()`; the explored-area tier at `arts.js:169,215`, `godhand.js:590` |
 | `knacks` | `progress/knacks.js:41` `open()` (`on()` and `set()` follow it) |
 | `moves` | `tools/moveset.js:84` `open()`; `tools/crucibelle/crucibelle.js:163` (fever peak) |
 | `functions` | `tools/veritome/mind/functions.js` `known()`; `progress/ostraca.js:230-238` (glossed) |

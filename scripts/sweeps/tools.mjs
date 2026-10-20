@@ -126,6 +126,8 @@ const settledChecks = async (label, { expectOut = undefined, world = true } = {}
   if (world && !out.length) { const bad = leftBehind(w); S.check(`${label}: nothing left behind (time, look, FOV, cinema, view)`, !Object.keys(bad).length, Object.keys(bad).length ? bad : 'as before'); }
   return { out, w };
 };
+/** Wait (up to 4 real s of ticks) until the Courier is done getting up or down and the prone holster holds nothing to draw again. */
+const upright = async () => { for (let i = 0; i < 40; i++) { const u = await S.ev(() => { const g = __game.game; return !(g.player.postureT > 0) && !g.proneHolster?.memo; }); if (u) break; await S.ticks(6); } };
 const stowAll = async () => { for (let i = 0; i < 3; i++) { const out = await tl('out()'); if (!out.length) break; await key(KEYS[out[0]], 4); await S.ticks(60); } };
 
 // ================================================================== 0. the places the tools are used in
@@ -426,7 +428,7 @@ if (part('god')) {
     { entered: gIn, god: gb.god, godT: gt, after: '2 real s', bladeMode: gs.bladeMode, holds: gb.holds, scale: gb.scale, cause: gs.bladeMode ? "godhand.js canEnter() does not ask for Blade Mode; the tools' ticks stop under the god hand, so blade.update (RMB let go, the drain) never runs and the hold 'blade' (0.05) stays: the god hand's 1.2 s entry takes 24 real s" : null });
   for (let i = 0; i < 120; i++) { const w = await tl('world()'); if (w.god === 'off' && !w.holds.length) break; if (w.god === 'on') await key('Backquote', 2); await S.ticks(60); } // (wound down: up to 2 real minutes of ticks)
   await key('KeyC', 2); await S.ticks(20); await key('KeyC', 2); await S.ticks(20); // (stand again: C cycles stand, crouch, prone)
-  await stowAll();
+  await upright(); await stowAll(); // (only once up: the prone holster draws again what it put away as the Courier gets up, by design)
   await settledChecks('god hand mid-Blade-Mode (wound down)', { expectOut: null });
   await S.common('god hand left');
   const c = await core();

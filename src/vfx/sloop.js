@@ -16,6 +16,12 @@
 //   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   (the crossing: docs/plans/RAIL.md)
 //   s.scars({ open, gilt })   the hull's cracks carried leg to leg, and the gold they turn to when caulked (PASSAGE.md 14.1)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; about 7 m long)
+//   s.helmCradles (the cradle's look at its helm, vfx/cradlelook.js: an array, the sloop's of one)   s.helmCradle (the first)
+//   s.helmCradleSpots() -> [world point] (each well's floor, where the Pneuka Jar sits)   s.helmWake(on, i = 0) (sealed / unsealed)
+// THE HELM (HANKO.md 3, 4, 9.2: "every crossing begins by sealing into the helm, the sloop too"): a raised clay plinth on the hull's top
+// skin aft, behind the kiln deckhouse and before the mouth, a helm cradle sat in it at the Pneuka Jar's scale (`seatHelms`, shared with
+// the ship classes). The cradle's materials are the cradle's look's, shared, so they are never in `mats` (`hurt` leaves them be:
+// casebook rule 242) and never disposed with the ship.
 // FURLED (a sail at FURL or under: the mooring's, vfx/mooring.js): the canvas taken in as a real crew stows it, never a sail squashed
 // flat (a squash kept the main's whole 4 m foot as a cream board 1.2 m tall at the jetty walker's eye: casebook rule 137): the main
 // flaked on the boom and tied with its ties, the boom amidships, the jib rolled on its stay (a roller furler); the planes hidden. Any
@@ -32,8 +38,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../render/outline.js';
 import { keepTrue } from './stormwarp.js';
 import { causticsOn } from './umbral.js';
+import { CradleLook, cradleFoot } from './cradlelook.js';
 
-export const SLOOP = { length: 7, beam: 2.4, draft: 0.9, mast: { z: 1.1, h: 7.6 }, boom: { y: 1.7, len: 4.2 }, bowsprit: 1.4 };
+export const SLOOP = { length: 7, beam: 2.4, draft: 0.9, mast: { z: 1.1, h: 7.6 }, boom: { y: 1.7, len: 4.2 }, bowsprit: 1.4, helm: [[0, -2.8]] }; // (helm: its cradles' [x, z], aft of the kiln)
 const C = { clay: 0xb5532d, bisque: 0xf1d9b6, gold: 0xf2c14e, mast: 0x3f7a58, sail: 0xf6e6c8, dark: 0x4a2a1e, lach: 0xffc65c };
 /** The sail (0 furled .. 1 full) at or under which a ship's canvas is furled (`set`; the mooring passes 0, the workbench's moored
  *  hulls 0.15); every sail over it is drawn as it always was (the rail's 1, an encounter's 0.7). */
@@ -75,6 +82,33 @@ export function jarDeck(profile = JAR, { length: L, beam } = SLOOP, y = 0.42) {
   const g = new THREE.ShapeGeometry(s, 6);
   g.rotateX(Math.PI / 2); g.translate(0, y, 0);
   return g;
+}
+
+/** The hull's top skin at (x, z) of its frame (jarHull's mapping: the lathe's ring at z, its upper half squashed to the sheer, the
+ *  throwing rings left out); null off the hull. What stands on the hull's top stands here. */
+export function jarTop(profile = JAR, { length: L, beam, sheer: sh = [0.55, 0.4, 0.18] } = SLOOP, x = 0, z = 0) {
+  const R = beam / 2, u = THREE.MathUtils.clamp(0.5 - z / L, 0, 1);
+  let r = R * profile[profile.length - 1][1];
+  for (let i = 0; i < profile.length - 1; i++) if (u <= profile[i + 1][0]) { const [u0, r0] = profile[i], [u1, r1] = profile[i + 1]; r = R * THREE.MathUtils.lerp(r0, r1, (u - u0) / Math.max(1e-6, u1 - u0)); break; }
+  if (Math.abs(x) >= r) return null;
+  const t = z / (L * 0.5), sheer = sh[0] + sh[1] * Math.max(0, t) ** 2 + sh[2] * Math.max(0, -t) ** 2;
+  return sheer * Math.pow(Math.min(1, Math.sqrt(r * r - x * x) / R), 0.55);
+}
+
+/** The helm (HANKO.md 4: a ship is a body, sealed into at its helm): at each spot [x, z] of the ship's frame, a raised plinth of `mat`
+ *  (the ship's own flat clay: no new program) standing on the hull's top skin (its top over the highest skin under it, its foot tapering
+ *  down into the hull, so it never floats), and the cradle's look sat on it at the Pneuka Jar's scale. `add` is the ship's own (it
+ *  tracks the plinth's geometry and outlines it). Returns the cradles. */
+export function seatHelms(add, parent, spots, mat, profile, dims) {
+  const foot = cradleFoot(), cradles = [];
+  for (const [x, z] of spots) {
+    let top = -Infinity;
+    for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) { const dx = (i / 4) * foot, dz = (j / 4) * foot; if (dx * dx + dz * dz <= foot * foot) top = Math.max(top, jarTop(profile, dims, x + dx, z + dz) ?? -Infinity); }
+    top += 0.04; const h = 0.5;
+    add(parent, new THREE.CylinderGeometry(foot * 1.06, foot * 0.7, h, 8, 1, false, Math.PI / 8).translate(0, top - h / 2, 0), mat, x, 0, z); // (the octagon turned as the cradle's)
+    const c = new CradleLook(); c.group.position.set(x, top, z); parent.add(c.group); cradles.push(c);
+  }
+  return cradles;
 }
 
 /** A sail furled: a roll of canvas from `a` to `b` (the ship's frame), lumpy with its folds, round at its ends and pinched where a tie
@@ -149,7 +183,10 @@ export class Sloop {
     add(this.body, jar, std(C.clay), 0, 0.85, S.length * 0.5 - 0.05).rotation.x = -0.5;
     add(this.body, new THREE.IcosahedronGeometry(0.1, 0), std(C.gold, { emissive: 0x4a3200, emissiveIntensity: 0.4 }), 0, 1.3, S.length * 0.5 + 0.18);
     // the deckhouse: a little kiln (the Courier's maker's), its mouth lit
-    const dome = new THREE.SphereGeometry(0.62, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2); add(this.body, dome, std(C.clay, { roughness: 0.7 }), 0, 0.42, -1.6);
+    const kilnClay = std(C.clay, { roughness: 0.7 });
+    const dome = new THREE.SphereGeometry(0.62, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2); add(this.body, dome, kilnClay, 0, 0.42, -1.6);
+    // the helm: aft of the kiln, before the mouth, a plinth of the kiln's clay and the cradle sealed into at the pier (seatHelms)
+    this.helmCradles = seatHelms(add, this.body, S.helm, kilnClay, JAR, S); this.helmCradle = this.helmCradles[0];
     this.kiln = track(new THREE.MeshBasicMaterial({ color: 0xffa860 }));
     add(this.body, new THREE.CircleGeometry(0.2, 12, 0, Math.PI), this.kiln, 0, 0.44, -1.0, false);
     // the gun mount at the bow (the psygun is its gun: Petra's to fit)
@@ -191,9 +228,10 @@ export class Sloop {
     this.keelMat = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
     const keel = add(this.group, new THREE.CircleGeometry(1, 24), this.keelMat, 0, -S.draft - 0.05, 0, false); keel.rotation.x = -Math.PI / 2; keel.scale.set(S.beam * 0.6, S.length * 0.45, 1);
     // what never moves on its own is one mesh a material (the boom and the sails swing; the pennant streams)
-    mergeStatic(this.body, { keep: new Set([this.boom, this.jibMesh, this.pennant, this.gunAt]) });
+    mergeStatic(this.body, { keep: new Set([this.boom, this.jibMesh, this.pennant, this.gunAt, ...this.helmCradles.map((c) => c.group)]) });
     causticsOn(this.body); // (the Umbral's caustics over the hull and the deck while it is under the surface: vfx/umbral.js)
     for (const m of this.mats) keepTrue(m); // (the storm's veil leaves the ship's glows where they are drawn: vfx/stormwarp.js; its opaque body sits in the veil's quiet middle)
+    for (const c of this.helmCradles) for (const m of c.lit) keepTrue(m); // (the cradle's lit parts are its own: the shared ones are opaque, left be)
     this.set({});
   }
 
@@ -211,8 +249,19 @@ export class Sloop {
     this.pennant.rotation.y = Math.PI / 2 + side * 0.6 + Math.sin(t * 6) * 0.08;
     this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
     this.kiln.color.setRGB(1, 0.55 + 0.2 * Math.sin(t * 3), 0.3).multiplyScalar(0.6 + 0.4 * glow);
+    this.helmTick(t);
     void S;
   }
+
+  /** The helm's cradles eased on by the time `set` is given (a raw dt from its step; none when it stands still or goes back). */
+  helmTick(t) {
+    const raw = this.helmT == null ? 0 : THREE.MathUtils.clamp(t - this.helmT, 0, 0.1); this.helmT = t;
+    for (const c of this.helmCradles) c.update(raw);
+  }
+  /** Each helm cradle's well floor, world space (where the Pneuka Jar sits: world/emocean/ registers it with game.cradles). */
+  helmCradleSpots() { return this.helmCradles.map((c) => c.seat()); }
+  /** The helm's cradle `i` sealed (the tines close, it lights in the window colour) or unsealed (false). */
+  helmWake(on = true, i = 0) { this.helmCradles[i]?.wake(on); }
 
   /** The ship's polarity (the crossing, docs/plans/RAIL.md: your draught or its opposite): the Lachryma that drives it, in the stern's
    *  mouth and under the keel, takes the feeling's colour; the pennant's edge too. `hex`: the feeling's colour. */
@@ -245,6 +294,6 @@ export class Sloop {
     this.pennant.scale.setScalar(medal && medal !== 'none' ? 1.6 : 1);
   }
 
-  dispose() { this.group.parent?.remove(this.group); for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.(); }
+  dispose() { this.group.parent?.remove(this.group); for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.(); for (const c of this.helmCradles) c.dispose(); } // (the cradles' shared materials stay)
 }
 const _pc = new THREE.Color();

@@ -93,6 +93,11 @@ const RULES = {
   'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
     : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
   'creature.stun': (s, e) => s.stunSting?.(e.depth ?? 1, { near: e.by === 'courier' }), // (a stun's depth, rising: audio/damage.js; STUN-DEPTH.md)
+  'duel.pull': (s, e, g) => s.duelPullStart?.(() => g.duelFoes?.pull ?? 0), // (nearness opening a puzzle duel: audio/puzzleduel.js)
+  'duel.slip': (s) => s.duelPullEnd?.(false),
+  'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
+  'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
+  'sea.dig': (s, e) => s.seaDig?.(e.tier, e.cubes), // (a cache dug up on an islet: audio/treasure.js)
   'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),
   'race.escape.wake': (s) => s.escapeWake?.(),

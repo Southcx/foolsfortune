@@ -68,7 +68,7 @@ const RANGES = {
 const SECTIONS = [
   ['Feel', ['movement', 'camera', 'physics', 'anim', 'arts', 'tech']],
   ['Combat', ['weapon', 'recoil', 'charge', 'shells', 'tracer', 'explosion', 'shatter']],
-  ['World', ['lachryma', 'zoi', 'clappers', 'trial', 'god']],
+  ['World', ['lachryma', 'explored', 'clappers', 'trial', 'god']],
   ['Look', ['visual']],
   ['Sound', ['audio']],
 ];

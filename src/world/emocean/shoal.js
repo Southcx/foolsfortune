@@ -51,6 +51,9 @@ export class ShoalPiece {
   }
   show(on) { if (this.look) { this.look.group.visible = on; if (!on) { this.look.count = 0; this.look.boil(_p.set(0, 0, 0), 1, 0); this.look.conductor(_p, _q, false); } } }
 
+  /** What the leg's patterns fire from ('object': legs.js): the Conductor while it calls (the leg runner asks it is on the screen). */
+  emitter() { return this.caller?.alive ? this.caller : null; }
+
   /** The set piece's first bar: the class read at the leg's danger, the ball's ring, the Conductor. */
   begin(leg) {
     const st = this.stage;

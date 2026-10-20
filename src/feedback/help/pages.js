@@ -187,7 +187,7 @@ export const PAGES = [
   },
   {
     id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godhand/',
-    lead: 'You change into your Pneuka Jar, and you control a hand over the world. The hand uses God Arts, not tools. God Arts work only in the Zone of Influence: the ground you explored.',
+    lead: 'You change into your Pneuka Jar, and you control a hand over the world. The hand uses God Arts, not tools. God Arts work only in the explored area: the ground you have explored.',
     rows: () => [
       ['~', 'go into the god hand; press again to go out'],
       ['LMB · hold RMB · 1 – 5', 'use the art · the art wheel · pick an art'],
@@ -237,7 +237,7 @@ export const PAGES = [
     rows: [
       ['P', 'the Pneuka Box: what you carry and wear (left click uses, right click lists the rest); tools are worn to the belt from here'],
       ['B', 'the Codex: the arts, the ledger and records, the tools, the Veritome\'s binder'],
-      ['M', 'the map; what is mapped is the Zone of Influence'],
+      ['M', 'the map; what is mapped is the explored area'],
       ['Enter', 'the chat line: words are said aloud, /commands are done (/help lists them)'],
     ],
     notes: ['Everything that happens is written in the log, at the foot of the screen.'],

@@ -9,7 +9,7 @@
 //   3    UNDERSTOOD k >= .85             only a SURVEY does this: a psychic pulse (the Dreamvane's MMB; N in the hand) that sees
 //                                        everything in line of sight, out to 14 m (20 from the jar)
 //
-// The ZONE OF INFLUENCE is where the god arts may be used: each art needs a tier of knowledge of
+// The EXPLORED AREA is where the god arts may be used: each art needs a tier of knowledge of
 // the ground it is used on (see godhand/arts.js). Around the jar there is always a small charted
 // zone. The more of a place you have walked and surveyed, the more you can do in it, and the
 // higher its tier, the deeper the arts that work there.
@@ -35,6 +35,7 @@ const LAYERS = [
   { id: 'upper', name: 'UPPER FLOOR', below: 1e9, cell: 2, sight: 7 },
   // places at the Dunes' height but not of the Dunes, told apart by their render zone (render/zonemap.js), never by y
   { id: 'raceway', name: 'THE RACEWAY', zone: 'raceway', cell: 8, sight: 40 }, // (the Solar Skiff's test circuit: world/raceway/)
+  { id: 'opensea', name: 'THE OPEN SEA', zone: 'opensea', cell: 16, sight: 120 }, // (the Emocean off the lanes: world/opensea/)
   { id: 'margarite', name: "MARGARITE'S DOCK", zone: 'margarite', cell: 2, sight: 7 }, // (the King's island's quay: world/emocean/margarite.js)
   { id: 'bazaar', name: "RAKU'S BAZAAR", zone: 'bazaar', cell: 2, sight: 7 }, // (Raku's casino under its dome: world/bazaar/bazaar.js)
 ];
@@ -102,7 +103,7 @@ export class Cartography {
     if (!c && make) { c = { ix, iz, k: 0, w: 0, h: 0 }; m.set(k, c); }
     return c;
   }
-  static tierOfK(k) { const t = T.zoi.tiers; return k >= t[2] ? 3 : k >= t[1] ? 2 : k >= t[0] ? 1 : 0; }
+  static tierOfK(k) { const t = T.explored.tiers; return k >= t[2] ? 3 : k >= t[1] ? 2 : k >= t[0] ? 1 : 0; }
 
   /** What the courier knows about the ground at a point: { tier, k, base } (the god hand's jar charts its own zone). */
   tierAt(x, y, z) {
@@ -113,7 +114,7 @@ export class Cartography {
     const g = this.game.god;
     if (g?.active && g.jar.alive) {
       const d = Math.hypot(x - g.jar.pos.x, z - g.jar.pos.z);
-      if (d < T.zoi.baseRadius && Math.abs(y - g.jar.pos.y) < 6) tier = Math.max(tier, T.zoi.baseTier);
+      if (d < T.explored.baseRadius && Math.abs(y - g.jar.pos.y) < 6) tier = Math.max(tier, T.explored.baseTier);
     }
     return { tier, k: c?.k || 0 };
   }
@@ -228,7 +229,7 @@ export class Cartography {
 
   /** Walking about: what is near and in sight is slowly sensed, and charted with a little time (never past .5). */
   passive(dt) {
-    const g = this.game, P = g.player, Z = T.zoi;
+    const g = this.game, P = g.player, Z = T.explored;
     if (g.god?.controlling && g.god.state !== 'on') return;
     if (g.realm?.active) return; // (the Spirit Garden is not ground you explore: never charted, GARDEN-SWEEP #8)
     const l = this.layerOf(P.pos), cs = l.cell, R = l.sight;
@@ -268,7 +269,7 @@ export class Cartography {
 
   /** A psychic pulse from the courier (or the god hand's jar): everything in line of sight is understood. */
   survey(byGod = false) {
-    const g = this.game, P = g.player, Z = T.zoi;
+    const g = this.game, P = g.player, Z = T.explored;
     if (this.pulseCool > 0) return false;
     const l = this.layerOf(P.pos);
     if (!g.lachryma.spend(Z.pulseCost, 'survey')) return false;
@@ -317,7 +318,7 @@ export class Cartography {
 
   /** Named places whose surroundings are known well enough are understood (once). */
   checkRooms() {
-    const Z = T.zoi;
+    const Z = T.explored;
     for (const a of this.anchors) {
       if (a.done) continue;
       const l = LAYER_BY_ID[a.layer], cs = l.cell, n = Math.ceil(Z.roomRadius / cs);
@@ -372,7 +373,7 @@ export class Cartography {
   clear(layerId) { this.cells[layerId]?.clear(); }
   /** How much of the ground inside `rects` ([{ x0, z0, x1, z1 }], world metres) on a layer is CHARTED or better, 0..1. */
   share(layerId, rects) {
-    const l = LAYER_BY_ID[layerId], t = T.zoi.tiers[1];
+    const l = LAYER_BY_ID[layerId], t = T.explored.tiers[1];
     if (!l) return 0;
     let n = 0, known = 0;
     for (const r of rects) {
@@ -552,7 +553,7 @@ export class Cartography {
       c.save(); c.translate(sx, sy); c.rotate(Math.PI - (this.headYaw ?? P.yaw));
       c.fillStyle = '#fff1dc'; c.beginPath(); c.moveTo(0, -11); c.lineTo(8, 9); c.lineTo(0, 4); c.lineTo(-8, 9); c.closePath(); c.fill();
       c.restore();
-      const zr = T.zoi.baseRadius * V.scale;
+      const zr = T.explored.baseRadius * V.scale;
       if (this.game.god?.active) { c.strokeStyle = 'rgba(255,214,150,.6)'; c.setLineDash([6, 6]); c.beginPath(); c.arc(sx, sy, zr, 0, Math.PI * 2); c.stroke(); c.setLineDash([]); }
     }
     c.restore();
@@ -566,10 +567,10 @@ export class Cartography {
 
 
 // ---------------------------------------------------------------------------------------
-// The Zone of Influence, drawn on the ground while you are the hand: what is unknown lies under
+// The explored area, drawn on the ground while you are the hand: what is unknown lies under
 // a dark veil, what is only sensed under a thin one, and what is understood glows faintly.
 // ---------------------------------------------------------------------------------------
-export class ZoiVeil {
+export class ExploredVeil {
   constructor(game, carto) {
     this.game = game;
     this.carto = carto;
