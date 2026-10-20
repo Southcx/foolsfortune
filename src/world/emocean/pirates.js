@@ -3,11 +3,13 @@
 // Dovina's; its look vfx/brig.js, Calissa's; the names Espada's). A ship as a boss with parts, over a set piece's 34 bars:
 //
 //   SAILS      (bars 0 to 8, looking astern) she closes from behind; her bow chasers lob an OUTLINED shot every two bars: parried
-//              back, it holes her bow (6 off her hull)
+//              back, it holes her bow (6 off her hull). In the side view she comes in from ahead and her STERN chasers fire aft
 //   BROADSIDE  (8 to 22, abeam) she runs alongside; her six ports open a bar before each volley (the lid up, the gun out: the
 //              telegraph is her body) and fire round shot in a WALL WITH GAPS (three a port, too heavy to parry: move to a gap, or
 //              roll); every port shot away widens the gaps. Her four rigging points (the slings of her yards) are a lance each.
 //              Boarders swing across every four bars, two at a time; one that stands a bar on your deck takes a cask.
+//              In the side view she keeps AHEAD instead (18 m on in the ship's plane, 5.5 m behind it): a side view cannot show abeam,
+//              where she stood behind the ship on the screen and threw from 1.4 m off it (Dovina's ruling, RAIL-MODULES.md 1.8)
 //   THE RAM    (22 to 30, behind the ship) she comes about ahead and bears down on the ship's line: a bar and a half to see it; two
 //              of what the ship bears unless you are off her line, or her hull is holed (under a third: she founders first)
 //   COLOURS    (from 30) holed, she SINKS and her hold floats astern (two casks to fly through); dismasted or holed past two thirds,
@@ -26,11 +28,14 @@ import * as THREE from 'three';
 import { PIRATES } from '../../progress/rail/setpieces.js';
 import { SCORE } from '../../progress/rail/score.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
+import { CARRIER_AT } from '../../progress/rail/legs.js';
 import { BrigLook, BoarderLook } from '../../vfx/brig.js';
 import { sfx } from '../../audio/sfx.js';
 
 const B = PIRATES.brig, SIDE = -1; // (her ports toward the ship: she runs on the ship's far side, her -X flank to it)
 const ABEAM = -17, ASTERN = -30;   // (rail frame: her place alongside, and astern)
+const AHEAD = { x: -5.5, z: 18, sway: 1, from: 26 }; // (the side view: her place ahead, inside its box (legs.js CARRIER_AT.side: x 6, z to 19.5) and 17 m or more off the ship at rest in plane (THROW_MIN 15), her stern 8 m or more (half a real second at the chasers' 16 m/s); she comes in from 26 m beyond it)
+const REACT_S = 0.5; // (half a real second to react to a shot from where it is fired: scripts/patterns.mjs's rule)
 const _w = new THREE.Vector3(), _l = new THREE.Vector3(), _v = new THREE.Vector3();
 const lerp = THREE.MathUtils.lerp, smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
@@ -52,8 +57,6 @@ export class PiratesPiece {
     if (!on) { for (const b of this.boarders) { b.group.visible = false; b.rope.visible = false; } for (const c of this.casks) c.visible = false; }
   }
 
-  /** Alongside (the broadside): the side view's gun fires abeam, at her (courier/ship/ship.js). */
-  abeam(rel) { return rel >= 8 && rel < 22 && !this.ended; }
   /** What the leg's patterns fire from ('object': legs.js): the brig's hull while she sails (the leg runner asks it is on the screen). */
   emitter() { return !this.ended && this.hull?.alive ? this.hull : null; }
 
@@ -97,11 +100,13 @@ export class PiratesPiece {
 
   update(dt, rel, ctx) {
     const st = this.stage, S = st.ship, bar = Math.floor(rel), raw = this.game.rawDt ?? dt, L = this.look;
-    // where she sails
+    const side = (this.view = ctx?.view) === 'side';
+    // where she sails (ahead in the side view, else astern then abeam)
     if (this.ended === 'sunk') { this.sinkT += dt / BAR_S; L.sink(Math.min(1, this.sinkT / 2)); this.at.z = lerp(this.at.z, -60, dt * 0.2); }
     else if (this.ended) { this.at.z -= dt * 6; this.at.x = lerp(this.at.x, ABEAM - 12, dt * 0.4); this.heading = lerp(this.heading, -0.3, dt); } // (she limps off, or lies to, astern)
+    else if (rel < 8 && side) { this.at.set(AHEAD.x, 0, lerp(AHEAD.z + AHEAD.from, AHEAD.z, smooth(rel / 3)) + Math.sin(rel * 0.8) * AHEAD.sway); this.heading = 0; }
     else if (rel < 8) { this.at.set(lerp(-6, ABEAM, smooth((rel - 6) / 2)), 0, lerp(ASTERN - 30, ASTERN, smooth(rel / 3)) + Math.sin(rel * 0.8) * 2); this.heading = 0; }
-    else if (rel < 22) { this.at.set(ABEAM, 0, lerp(this.at.z, 2 + Math.sin(rel * 0.5) * 3, dt * 0.8)); this.heading = 0; }
+    else if (rel < 22) { const k = Math.min(1, dt * 0.8); this.at.set(lerp(this.at.x, side ? AHEAD.x : ABEAM, k), 0, lerp(this.at.z, side ? AHEAD.z + Math.sin(rel * 0.5) * AHEAD.sway : 2 + Math.sin(rel * 0.5) * 3, k)); this.heading = 0; }
     else this.ramming(rel, dt);
     this.place();
     L.set({ heel: Math.sin(st.t * 0.7) * 0.05 + (rel >= 8 && rel < 22 ? 0.04 : 0), pitch: Math.sin(st.t * 0.9) * 0.03 });
@@ -118,10 +123,12 @@ export class PiratesPiece {
 
   onBar(bar, rel) {
     const st = this.stage, S = st.ship;
-    if (rel < 8 && bar % PIRATES.chaser.every === 0) { // (the bow chasers: an outlined shot, slow, to be sent home)
-      const bow = _l.copy(this.at).add(_v.set(0, 2.4, 9));
-      st.shots.foe(bow, _v.copy(S.local).sub(bow).normalize().multiplyScalar(PIRATES.chaser.speed), { outlined: true, from: this.hull });
-      sfx.explosion?.(9);
+    if (rel < 8 && bar % PIRATES.chaser.every === 0) { // (the bow chasers, or in the side view the stern chasers: an outlined shot, slow, to be sent home)
+      const aft = this.view === 'side', gun = _l.copy(this.at).add(_v.set(0, 2.4, aft ? -9 : 9));
+      if (!aft || (gun.z <= CARRIER_AT.side.box.z[1] && Math.hypot(gun.y - S.local.y, gun.z - S.local.z) >= PIRATES.chaser.speed * REACT_S)) { // (in frame, and half a real second off in the ship's plane)
+        st.shots.foe(gun, _v.copy(S.local).sub(gun).normalize().multiplyScalar(PIRATES.chaser.speed), { outlined: true, from: this.hull });
+        sfx.explosion?.(9);
+      }
     }
     if (rel >= 8 && rel < 22 && (bar - 8) % PIRATES.broadside.every === 0) this.broadside();
     if (rel >= 8 && rel < 21 && (bar - 8) % PIRATES.broadside.every === PIRATES.broadside.every - 1) for (const [i, p] of this.ports.entries()) if (p.alive) st.shots.telegraphs?.mark((o) => this.look.portWorld(i, SIDE, o), BAR_S, { radius: 0.85, from: 2.2, alive: () => p.alive && !this.ended }); // (each port that will fire wears the telegraph mark over the bar before the volley, none for a volley that will not come (rel < 21), and it goes with the port: vfx/telegraph.js)
@@ -174,9 +181,9 @@ export class PiratesPiece {
   /** The ram: she pulls ahead, comes about, and bears down on the line the ship held a bar and a half before. */
   ramming(rel, dt) {
     const st = this.stage, S = st.ship, R = PIRATES.ram;
-    if (!this.ram) { this.ram = { line: S.local.x, hit: false, t0: rel }; this.game.events?.emit('rail.ram', { eta: R.eta, by: 'creature' }); }
+    if (!this.ram) { this.ram = { line: S.local.x, x0: this.at.x, hit: false, t0: rel }; this.game.events?.emit('rail.ram', { eta: R.eta, by: 'creature' }); }
     const k = rel - this.ram.t0;
-    if (k < 1) { this.at.set(lerp(ABEAM, this.ram.line, smooth(k)), 0, lerp(this.at.z, 46, Math.min(1, dt * 2))); this.heading = lerp(0, Math.PI, smooth(k)); this.ram.line = S.local.x; }
+    if (k < 1) { this.at.set(lerp(this.ram.x0, this.ram.line, smooth(k)), 0, lerp(this.at.z, 46, Math.min(1, dt * 2))); this.heading = lerp(0, Math.PI, smooth(k)); this.ram.line = S.local.x; }
     else { this.heading = Math.PI; this.at.x = this.ram.line; this.at.z = lerp(46, -40, smooth((k - 1) / (R.eta + 0.5))); }
     if (!this.ram.hit && k > 1 && Math.abs(this.at.z - S.local.z) < 6) {
       this.ram.hit = true;

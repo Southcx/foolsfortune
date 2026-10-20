@@ -3336,3 +3336,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after:** jumped from the launch to the overhead blocker: the destroyer with Flash and Bomb; Flash opened it (2.92 real s
   held). Sailed through a turn in order: one log line for the new hull, not two. 0 errors.
 - **Rule:** 250.
+
+### 2026-10-20 · In the side view the False Light's volleys began 1.4 to 5.2 m from the ship (Petra, measured for Dovina)
+- **Seen:** measuring the side view's throwers after the side camera came closer: the brig's hull stood 17.1 to 17.8 m from the ship,
+  but its stackFan and split shell began 1.4 to 5.2 m off it, against the 15 m every pattern is judged from (`scripts/legs.mjs`).
+- **Cause:** in a plane view the pattern player moves the thrower onto the ship's plane before it fires (`patternplayer.js`): in the
+  side view the depth (x) is dropped. The brig ran abeam on the ship's far side, 17 m deep and level with the ship along the scroll,
+  so on the plane she stood beside it. The leg runner took any set piece's body as its thrower, wherever it stood.
+- **Fix:** Dovina's rule (RAIL-MODULES.md 1.8): a set piece's body throws only from inside its view's box and at least `THROW_MIN`
+  (15 m) from the ship where the pattern player lays it, else a carrier throws (`legrunner.js` `throws`). In the side view the brig
+  keeps ahead, 18 m on and 5.5 m deep, and her stern chasers fire aft only from half a real second off (`pirates.js`).
+- **Measured after** (the Wreckers' peak, sailed headless in the side view): the brig at z 17 to 19, 17.1 to 19.0 m off in plane; 9
+  of 10 of its volleys thrown by its body, the first by a carrier (she stood at z 25.7, past the frame). Old Nobody: every volley by a
+  carrier (its throat at x -24, outside the side box's depth of 6). 0 errors.
+- **Rule:** 251.

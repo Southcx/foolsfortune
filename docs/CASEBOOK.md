@@ -737,3 +737,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 250. **What a stretch needs is set as the stretch begins, not only on the way out of the one before.** A leg's kit fitted
     only in the turn before it was missing whenever the leg was reached another way.
+
+251. **Measure a distance where the thing is laid, not where it stands.** A plane view moves a thrower onto the
+    ship's plane before it fires: the brig 17 m off in the world stood 1.4 m off where her shots began.
