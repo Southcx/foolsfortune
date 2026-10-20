@@ -3303,3 +3303,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   - **Plane:** none leaves the above plane.
   - **Not verified:** the side view in play (the trip did not reach it); the check covers it in the math only.
 - **Rule:** 247.
+
+### 2026-10-20 · The check called 32 tracking files dead after a doc comment was added to their hub (Petra, at the gate)
+- **Seen:** `npm run check` failed with `module.orphan` on every `feedback/tracking/*.js` file, after one `/** ... */` comment was
+  added to `feedback/tracking/rules.js`, the file that imports them all. Nothing was wrong with the imports.
+- **Cause:** the check's comment stripper (`code()`, `scripts/check.mjs`) blanked block comments first and line comments second. The
+  hub's header, a line comment, says ``every `feedback/tracking/*.js` ``: its `/*` opened a "block comment" that ran to the next `*/`.
+  Before the new doc comment there was none, so nothing was blanked; with it, every import between the two was blanked.
+- **Fix:** one pass, left to right, over both kinds (`/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g`), so a `/*` inside a line comment opens nothing.
+- **Measured after:** the same 82 findings as before the change on the tree without it (83 with the new data file unimported: its
+  orphan, as it should be); no file's imports lost.
+- **Rule:** 248.

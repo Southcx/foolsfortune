@@ -728,3 +728,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 247. **A check judges a thing as the runtime turns and throws it, in every view it is thrown in.** A pattern laid out in
     one frame and checked there passed while the player turned it 20 degrees off the ship and out of the side view's plane; the check
     builds the same frame the player builds.
+
+248. **Code is read past its comments in one pass, left to right.** Blanking one kind of comment and then the
+    other let a `/*` written inside a line comment open a block that ran to the next doc comment, and the check lost 32 imports.
