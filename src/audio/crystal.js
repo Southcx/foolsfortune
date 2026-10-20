@@ -1,6 +1,9 @@
 // A sound bank of the one mixer (audio/sfx.js): the crystals of Lachryma, tuned by ear (world/dunes/crystaltuning.js, world/dunes/crystals.js).
 // The ear does the work here, so the notes must be true: a clear fundamental at the note asked, the glass's partials above it, and
 // the beating made the honest way (two tones `beat` Hz apart, as two strings a little out of tune waver).
+// THE SINGING STONE (the open sea's echo puzzle, Dovina's world/opensea/puzzlepieces.js): `stoneSing(midi)` sings a phrase's note in
+// stone and wind, a ringing rock (a lithophone) with breath over its mouth: the fundamental strong and true so the Crucibelle's bell can
+// match it by ear, an octave and a soft twelfth over it, the strike short and the breath long.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
 // Prior art: a guitarist tuning by beats; struck glass (bright, long) and stone (fewer partials, duller, sooner gone);
@@ -51,5 +54,20 @@ export class CrystalSounds {
     });
     [0, 2, 4, 7, 9, 12, 14, 16].forEach((st, i) => this.tone(t + 0.25 + i * 0.07, 0.5, { f0: hz(midi + 24 + st), f1: hz(midi + 24 + st), gain: 0.06, dest: d }));
     this.tone(t, 0.6, { f0: 70, f1: 50, gain: 0.25, dest: d }); // (the formation letting go, felt more than heard)
+  }
+  /** A singing stone's note (midi, as the Crucibelle's voice is asked: it sounds an octave up, where the bell does). */
+  stoneSing(midi = 63, v = 0.5) {
+    if (!this.ok() || !this.allow('stoneSing', 12)) return;
+    const t = this.ctx.currentTime + 0.005, f = hz(midi + 12), d = this.out(0.5 * v + 0.1, 0.6);
+    this.noise(t, 0.03, { type: 'bandpass', f0: f * 4, q: 3, gain: 0.25, dest: d }); // (the strike)
+    this.tone(t, 1.3, { f0: f, gain: 0.32, dest: d }); this.tone(t, 0.7, { f0: f * 2, gain: 0.07, dest: d }); this.tone(t, 0.4, { f0: f * 3, gain: 0.025, dest: d });
+    this.noise(t + 0.02, 1.1, { type: 'bandpass', f0: f, q: 18, gain: 0.5, attack: 0.25, dest: d }); // (the wind across it, at its pitch)
+  }
+  /** A phrase answered (sea.echo): the stone sings a rising triad back, the last note held with the wind. */
+  stoneAnswered(root = 63) {
+    if (!this.ok() || !this.allow('stoneAnswered', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.7);
+    [0, 4, 7, 12].forEach((x, k) => { const f = hz(root + 12 + x), at = t + k * 0.14; this.tone(at, k === 3 ? 2 : 0.9, { f0: f, gain: 0.22, dest: d }); this.tone(at, 0.5, { f0: f * 2, gain: 0.05, dest: d }); });
+    this.noise(t + 0.42, 1.8, { type: 'bandpass', f0: hz(root + 24), q: 18, gain: 0.5, attack: 0.3, dest: d });
   }
 }

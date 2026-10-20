@@ -38,9 +38,10 @@ export class ToolSounds {
   /** The dowsing ping: a short rising blip, higher and brighter the nearer (k 0..1); the Dreamvane sets the rate. */
   dowse(k = 0) {
     if (!this.ok()) return;
-    const t = this.ctx.currentTime, d = this.out(0.16 + 0.12 * k, 0.35), f = 560 * Math.pow(2, k * 1.3);
+    const t = this.ctx.currentTime, d = this.out(0.2 + 0.16 * k, 0.35), f = 560 * Math.pow(2, k * 1.3);
     this.tone(t, 0.12, { f0: f * 0.94, f1: f, type: 'sine', gain: 0.45, dest: d });
     this.tone(t, 0.08, { f0: f * 2, f1: f * 2.02, type: 'sine', gain: 0.08 + 0.14 * k, dest: d });
+    this.tone(t, 0.05, { f0: f / 2, type: 'triangle', gain: 0.12 + 0.1 * k, dest: d }); // (a body under the ping, so it carries over the sea's wash: the treasure hunt off the lanes leans on it)
   }
 
   /** The Lockheart drinking Lachryma: liquid drawn up a narrow throat (a gurgle, two bubbles, a thin whistle rising with k). */

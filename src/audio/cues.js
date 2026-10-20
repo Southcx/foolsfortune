@@ -96,6 +96,8 @@ const RULES = {
   'duel.pull': (s, e, g) => s.duelPullStart?.(() => g.duelFoes?.pull ?? 0), // (nearness opening a puzzle duel: audio/puzzleduel.js)
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
+  'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
+  'sea.dig': (s, e) => s.seaDig?.(e.tier, e.cubes), // (a cache dug up on an islet: audio/treasure.js)
   'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),
   'race.escape.wake': (s) => s.escapeWake?.(),

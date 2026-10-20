@@ -80,7 +80,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   last: a crack and two stars chirping; the crack, a bell and three stars; a thud, a high bell, four stars and the ear's ring.
 - **A puzzle duel** (`audio/puzzleduel.js`, `duelEvent(e)`; PUZZLE-DUELS.md 8): a chain's step a note higher up C's pentatonic, fuller
   as it climbs; the line's push a stone dragged and set down; a clear a glass pop by colour; and the fall, break, blast, pinch, land, offset,
-  send and the end; the pull (nearness: a heartbeat quickening, two tones closing in, snapped shut as the duel opens); the flee's d20 (a 20 and a 1 heard as what they are). The fight under it (section 11): a break by depth rhymes with the stun's stings, the orbs ring up like
+  send and the end; the open sea's singing stone (`stoneSing`: a ringing rock with wind over it, the bell's pitch) and its answer, a cache dug up; the pull (nearness: a heartbeat quickening, two tones closing in, snapped shut as the duel opens); the flee's d20 (a 20 and a 1 heard as what they are). The fight under it (section 11): a break by depth rhymes with the stun's stings, the orbs ring up like
   Sonic's rings, the finisher is the data drain, and each of the Courier's tool moves is its tool in small. Waiting for a view to call it.
 - **Raku's bazaar** (`music/casino.js`, `audio/casino.js`; CASINO.md): a circus march in F on the floor (the Gold Saucer's welcome), a
   lounge at a table, a win's two bars of brass; the chips, the chair, each play (flip, steal, fate, four, death, hand, lock, upgrade), the result.
