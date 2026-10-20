@@ -20,7 +20,8 @@
 // Data in: a row with Dovina's fields (`id`, `name`, `does`, `lore`, `detail`, `cost`, `charges`, `cooldown` in real seconds, `duration` in
 // real seconds, `range` m, `angle` degrees, `always`; a blow's `power`, `reach` m and `speed`, real seconds a blow) and the card's own
 // (`icon` an icon id, `key` a string or a list of them or 'passive', `state` 'equipped' | 'ready' | 'locked', `opens` the locked card's
-// line, `keywords` [ids], `lent` true | false in the DEBUG save: the lend panel's hollow or solid mark, ui/lendpanel.js). A table in
+// line, `keywords` [ids], `lent` true | false in the DEBUG save: the lend panel's hollow or solid mark, ui/lendpanel.js; `media` a function
+// (row) -> element drawn under the chips across the card, a picture of the thing in use: a mount's views, ui/mountviews.js). A table in
 // bars is turned to seconds before it comes here (ui/mountcards.js). The words on the card are the row's: the state's words are
 // placeholders for Espada's.
 //
@@ -213,6 +214,8 @@ export class ChoiceCard {
     st.append(r.always ? STATE_WORDS.always : STATE_WORDS[state] || state.toUpperCase());
     side.append(st);
     el.append(ic, name, side, does, chips);
+    const media = typeof r.media === 'function' ? r.media(r) : null; // (a picture of the thing in use, the card's width: a mount's views, ui/mountviews.js)
+    if (media) { media.classList.add('cc-media'); el.append(media); }
     if (locked && r.opens) el.append(make('div', 'cc-opens', r.opens));
     // the detail: only on hover, focus or a held press
     if (r.lore || r.detail) {

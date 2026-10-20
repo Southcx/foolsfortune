@@ -452,7 +452,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a mount's preview** (`MountPreview`, `game.mooring.preview(tool)`, `src/vfx/mountpreview.js`) — the mount hovered or chosen at the pier
   drawn on the crude round the moored hull at its size at sea (a fan, a cone, a blast ring, a grapnel line, a viewfinder, a radar's scan,
   a line of fire); no words.
-  *Not:* the card's demo loop, the lock-on. → detail
+  *Not:* a mount's views, the lock-on. → detail
+- **a mount's views** (plain names; `mountViews`, `src/ui/mountviews.js`, its loops and drawing `ui/mountviews/`) — on a mount's choice card at the pier, what it does shown three ways in one loop of four real seconds, in sync: TOP (its reach on the water), SIDE (a side-on shmup box, the card's own), CHASE (behind and above the ship, down the lane); a timeline of the loop's events with its playhead, and a live count. *Not:* a mount's preview (the one on the water at the pier), the crossing's side act.
 - **par / rank / medal / the tally** (`progress/rail/score.js`) — par an expert's median for a set piece; the crossing's rank its score against
   par (S to D); the medal; the tally, the last log line.
 - **reckoning** (`RECKON`, `reckonLead`) — how much of a crossing the Courier has divined (Divination), 0..1 for that day. *Not:* "course" (the
