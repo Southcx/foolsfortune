@@ -274,6 +274,7 @@ import { Feelings } from './progress/feelings.js';
 import { Vantages } from './world/vantages.js';
 import { DuelSession } from './world/duel/duelsession.js'; import { DuelFoes } from './world/duel/duelfoes.js';
 import { VantageFrames } from './vfx/vantageframes.js';
+import { VertexPaint } from './vfx/vertexpaint.js';
 import { Awakening } from './feedback/awakening.js';
 import { Lend } from './progress/lend.js';
 import { DebugChests } from './debug/debugchest.js';
@@ -850,6 +851,12 @@ async function main() {
   game.chat.add('time', { help: 'the game day and game hour (the Veritome tells it)', run: () => {
     if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'You have no Veritome to tell the time.', { key: 'notime', throttle: 2 }); return; }
     game.events.emit('clock.read', { by: 'courier' }); // (the time is read where it is said: the calendar's, which a replay pins)
+  } });
+  game.vertexPaint = new VertexPaint(game); // (a trial, off by default: a zone's mood lamps baked into its statics per vertex, vfx/vertexpaint.js)
+  game.chat.add('vertexpaint', { debug: true, help: "bake a zone's mood lamps into its walls and switch the lamps off: /vertexpaint [zone] (basement), /vertexpaint off", run: ([a]) => {
+    if (a === 'off') { game.log.say('info', game.vertexPaint.unbake('basement') ? 'Vertex painting off: the lamps are lit again.' : 'Nothing is vertex painted.', { key: 'vertexpaint', throttle: 0.5 }); return; }
+    const s = game.vertexPaint.bake(a || 'basement');
+    game.log.say('info', `Vertex painted ${s.zone}: ${s.lamps} lamps baked into ${s.meshes} meshes (${Math.round(s.trisBefore)} -> ${Math.round(s.trisAfter)} triangles, ${s.rays} rays, ${s.ms} ms).`, { key: 'vertexpaint', throttle: 0.5 });
   } });
   game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
     const P = game.player;
