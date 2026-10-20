@@ -100,7 +100,7 @@ export class SpawnLook {
     if (this.made) return; this.made = true;
     const g = new THREE.Group(); g.name = 'spawnlook'; g.userData.zoneFree = true;
     // the drain's cubes' parameters (vfx/datadrain.js): one instanced, unlit, coloured program, warm at boot
-    this.cubes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'spawnlook-blocks', fog: false, toneMapped: false }), BLOCKS);
+    this.cubes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'spawnlook-blocks', toneMapped: false }), BLOCKS);
     this.cubes.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(BLOCKS * 3), 3);
     this.cubes.frustumCulled = false;
     for (let i = 0; i < BLOCKS; i++) this.cubes.setMatrixAt(i, _m.makeScale(0, 0, 0));
@@ -117,7 +117,7 @@ export class SpawnLook {
   takeSlit() {
     let S = this.slits.find((x) => !x.busy);
     if (!S) {
-      const plain = (color, blending) => new THREE.MeshBasicMaterial({ name: 'spawnlook-slit', color, transparent: true, opacity: 1, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide, blending });
+      const plain = (color, blending) => new THREE.MeshBasicMaterial({ name: 'spawnlook-slit', color, transparent: true, opacity: 1, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true, blending });
       const o = new THREE.Group(), glow = new THREE.Mesh(this.slitGeo, plain(MAGENTA, THREE.AdditiveBlending)), edge = new THREE.Mesh(this.slitGeo, plain(WHITE, THREE.AdditiveBlending)), core = new THREE.Mesh(this.slitGeo, plain(CRUDE, THREE.NormalBlending));
       glow.renderOrder = 6; edge.renderOrder = 7; core.renderOrder = 8;
       for (const m of [glow, edge, core]) m.frustumCulled = false;
