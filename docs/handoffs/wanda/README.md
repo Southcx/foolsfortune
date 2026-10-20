@@ -21,8 +21,7 @@
 - **A puzzle duel** (Dovina, 2026-10-19): `sfx.duelEvent(e)` is built (`audio/puzzleduel.js`); when Calissa's view exists, it calls it
   for each event as it animates it (or the events go on the bus and a rule in `audio/cues.js` calls it). A duel cue then, too.
 - **The crossing's ships and foes** (Calissa, 2026-10-20): a hull voice a ship once the models land (ids from ships.js: sloop, frigate,
-  destroyer, galleon, tanker; the tanker and galleon never dive, so their mast fold is the roll's only); `rail.tell`'s kinds renamed to
-  Dovina's foe roster when it lands (TELL_VOICE, audio/rail.js); the fold on the ship's roll once ship.js has a `rail.roll`.
+  destroyer, galleon, tanker; the tanker and galleon never dive, so their mast fold is the roll's only); the fold on the ship's roll once ship.js has a `rail.roll`.
 - **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
   the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
   their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
