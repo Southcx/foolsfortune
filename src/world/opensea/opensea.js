@@ -14,7 +14,8 @@
 // moored at its shore); Sunless Sea (fuel and the dark, port reports); Sea of Thieves (the sloop moored, the crew stepping off).
 //
 //   game.opensea = new OpenSea(game)   .active   .sailing   .arrive()   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
-//   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low
+//   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
+//   sea.stele { islet, words, line }; the islets' puzzles and caches: puzzlepieces.js (`.pieces`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
@@ -29,16 +30,21 @@ import { stream } from '../../core/rng.js';
 import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
 import { SeaHud } from './seahud.js';
+import { PuzzlePieces } from './puzzlepieces.js';
+import { steleWords } from '../../progress/opensea/isletpuzzles.js';
+import { WORD_SPLIT } from '../../progress/ostraca.js';
+import { FUNCTIONS } from '../../tools/veritome/mind/functions.js';
 
 const G = ECON.openSea.grid, seedRand = stream('opensea/seed');
 /** reach: how near (m) to the ship's side F boards it; moor: how near an islet's shore the ship may moor; quay: how near a quay F docks;
  *  secret: how near an islet's secret F takes it; current: m a real s the current pushes a square of doubt; edge: m past the grid the sea pushes back. */
 export const ROOM = { reach: 8, moor: 22, quay: 40, secret: 2.6, current: 0.5, edge: 120, lowFuel: 3 };
 const _v = new THREE.Vector3();
+const freshPuzzle = (d = {}) => ({ seen: new Set(d.seen || []), solved: new Set(d.solved || []), heard: new Set(d.heard || []), dug: new Set(d.dug || []) });
 
 export class OpenSea {
   constructor(game) {
-    this.game = game; this.built = false; this.sailing = false; this.moored = null; this.claimed = new Set(); this.lowSaid = false;
+    this.game = game; this.built = false; this.sailing = false; this.moored = null; this.claimed = new Set(); this.lowSaid = false; this.puzzle = freshPuzzle();
     this.seed = 1 + Math.floor(seedRand() * 1e9);
     game.save?.section('openSeaSeed', { scope: 'world', version: 1, dump: () => ({ seed: this.seed }), load: (d) => { if (d?.seed) this.seed = d.seed; }, reset: () => {} });
     this.grid = seaGrid(this.seed);
@@ -49,11 +55,12 @@ export class OpenSea {
 
   dump() {
     const v = this.voyage;
-    return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed] };
+    return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed],
+      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])) };
   }
   load(d) {
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
-    this.claimed = new Set(d?.claimed || []);
+    this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync();
     if (!d) return;
     const v = this.voyage; v.at = d.at || v.at; v.fuel = d.fuel ?? v.fuel; v.doubt = d.doubt ?? 0;
     v.charted = new Set(d.charted || [v.at]); v.found = new Map(d.found || []); v.reported = new Set(d.reported || []);
@@ -65,6 +72,7 @@ export class OpenSea {
     this.props = buildSeaProps(this);
     this.helm = new Helm(this, 'sloop');
     this.hud = new SeaHud(this);
+    this.pieces = new PuzzlePieces(this); // (the islets' puzzles and the buried caches: puzzlepieces.js)
     const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2);
   }
 
@@ -106,6 +114,7 @@ export class OpenSea {
     this.hud.show(true);
     if (this.sailing) this.sail(dt, I, P); else this.walk(I, P);
     this.phenomena(dt);
+    this.pieces.update(dt);
     this.hud.update(dt);
   }
 
@@ -132,6 +141,7 @@ export class OpenSea {
     const g = this.game, H = this.helm;
     H.pose(0);
     if (!P.latch?.('KeyF') && !I.wasPressed('KeyF')) return;
+    if (this.pieces.interact(P)) return; // (the Dreamvane in hand, on a buried cache: dig)
     if (P.pos.distanceTo(_v.copy(H.pos).setY(P.pos.y)) < ROOM.reach + (H.look.length ?? 7) / 2) return this.board();
     const isl = this.props.islets.find((i) => i.secret.pos.distanceTo(_v.copy(P.pos).setY(i.top)) < ROOM.secret);
     if (isl) return this.claim(isl);
@@ -166,11 +176,20 @@ export class OpenSea {
     this.stepOff({ quay: island }, q.pos.clone().add(_v.set(0, 0.05, 5)), 0);
   }
   claim(isl) {
-    const g = this.game, id = isl.feature.id; if (this.claimed.has(id)) return g.log?.say?.('info', 'Already taken.', { key: 'sea.secret', throttle: 2 });
+    const g = this.game, id = isl.feature.id;
+    if (isl.secret.kind === 'stele') return this.readStele(isl);
+    if (this.claimed.has(id)) return g.log?.say?.('info', 'Already taken.', { key: 'sea.secret', throttle: 2 });
     this.claimed.add(id); isl.secret.mesh.visible = false;
     if (isl.secret.kind === 'chest') g.cubes?.earn(3 * ECON.perMinute, 'chest');
     if (isl.secret.kind === 'fuel') this.voyage.fuel = Math.min(SHIPS[this.helm.ship].tank, this.voyage.fuel + 3);
     g.events?.emit('sea.secret', { kind: isl.secret.kind, islet: id, by: 'courier' }); this.dirty();
+  }
+
+  /** A sea stele: three of the ostraca's words in a line, glossed as far as you know them (read again as often as you like). */
+  readStele(isl) {
+    const g = this.game, id = isl.feature.id, words = steleWords(id, this.seed, WORD_SPLIT(FUNCTIONS).ostraca);
+    if (!this.claimed.has(id)) { this.claimed.add(id); g.events?.emit('sea.secret', { kind: 'stele', islet: id, by: 'courier' }); this.dirty(); }
+    g.events?.emit('sea.stele', { islet: id, words, line: g.ostraca?.glossLine?.(words) ?? words.join(' ').toUpperCase(), by: 'courier' });
   }
 
   // ---------------------------------------------------------------- the sea's own rules
