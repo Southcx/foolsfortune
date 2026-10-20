@@ -18,7 +18,7 @@
 //   THE CONTINUE   the ship's last hit opens the arcade's coin (voyage.continueCost / continueRun): paid, it is mended whole and flies
 //                  on; declined, it breaks up and you are made whole at your last Shrine (the voyage moves you to its island).
 //   THE COURIER    is aboard: held at the ship's place, not drawn; main.js does not run their own machinery while `stage.active`.
-//   THE TEST CROSSING (DEBUG only: progress/rail/showcase.js, Dovina's rows) a fixed passage from a pier back to it, held here, never by the voyage (no
+//   THE SHOWCASE CROSSING (DEBUG only: progress/rail/showcase.js, Dovina's rows) a fixed passage from a pier back to it, held here, never by the voyage (no
 //                  fuel, casks, rutter, day's best or tally), the pool kept from running dry, the ship mended when it can bear no more, and the
 //                  crossing's rules counting nothing while it sails (feedback/tracking/rules.js).
 //
@@ -26,7 +26,7 @@
 // as a line the camera rides and looks round from), the arcade's CONTINUE? screen, Squirrel Eiserloh's "Juicing Your Cameras With Math".
 //
 //   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
-//   .sailShowcase(island) (the pier's SHOWCASE row)   .showcase (the test crossing's sailing while it sails, else null)   showcasePassage(rows?)
+//   .sailShowcase(island, mounts) (the pier's SHOWCASE row)   .showcase (the showcase crossing's sailing while it sails, else null)
 //   .stage { active, seconds, setPieces, foe: { id, under } | null }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }
 //   .blow(n, { by, what, rollable })   .endPay(end)   (the set pieces')
 //   /crossing shoal,pirates,leviathan   (the chat line: the next crossing's set pieces, for testing them on demand; the dice and the deck otherwise)
@@ -53,8 +53,7 @@ import { Shots } from '../../courier/ship/shots.js';
 import { Mounts } from '../../courier/ship/mounts.js';
 import { Waves } from './waves.js';
 import { TripRun } from './triprun.js';
-import { SHOWCASE } from '../../progress/rail/showcase.js';
-import { schedule } from '../../progress/rail/legs.js';
+import { showcasePassage } from '../../progress/rail/showcase.js';
 import { slotsOf } from '../../progress/rail/mounts.js';
 import { today } from '../../core/calendar.js';
 import { ShoalPiece } from './shoal.js';
@@ -62,17 +61,9 @@ import { PiratesPiece } from './pirates.js';
 import { LeviathanPiece } from './leviathan.js';
 import { openSea } from '../../render/zonemap.js';
 
-/** Where the crossing is sailed: the rail's first point (render/zonemap.js 'emocean' holds it), at the dunes' layer. */
-/** The test crossing's rows as a passage with no sea chart (the trip runtime's waypoints): a row whose leg does not schedule or whose
- *  hull is unknown is left out. */
-/** The share of the pool the test crossing never lets it fall below. */
+/** The share of the pool the showcase crossing never lets it fall below. */
 const SHOWCASE_FLOOR = 0.75;
-export function showcasePassage(rows = SHOWCASE) {
-  const waypoints = rows.filter((r) => schedule(r.leg) && SHIPS[r.hull])
-    .map((r, i) => ({ id: `showcase.${i}`, type: r.leg, strength: 1, feel: r.feel ?? null, storm: false, hull: r.hull, mounts: r.mounts || [], note: r.note || '' }));
-  return { showcase: true, ids: waypoints.map((w) => w.id), legs: waypoints.map((w) => w.type), waypoints, chart: null, route: 'showcase', read: 0, pieces: null };
-}
-
+/** Where the crossing is sailed: the rail's first point (render/zonemap.js 'emocean' holds it), at the dunes' layer. */
 export const SEA_AT = { x: -3000, y: -420, z: -2000 };
 const _sh = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0 };
 const _up = new THREE.Vector3(), _bx = new THREE.Vector3(), _by = new THREE.Vector3(), _bz = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0), _m4 = new THREE.Matrix4();
@@ -146,19 +137,20 @@ export class Emocean {
   }
 
   // ---------------------------------------------------------------- the crossing
-  /** The test crossing (DEBUG only; progress/rail/showcase.js): from this pier back to it, its legs in their order, the first row's
-   *  hull and mounts. Held as `this.showcase`, never as the voyage's sailing, so nothing of the voyage moves. */
-  sailShowcase(island) {
+  /** The showcase crossing (DEBUG only; progress/rail/showcase.js): from this pier back to it, its legs in their order, the first row's
+   *  hull and mounts (the pier's chosen where a row names none). Held as `this.showcase`, never as the voyage's sailing, so nothing
+   *  of the voyage moves. */
+  sailShowcase(island, mounts = []) {
     const g = this.game; if (g.mode !== 'debug' || this.stage.active || this.boarding || g.voyage?.sailing) return false;
     const passage = showcasePassage(), w = passage.waypoints[0]; if (!w) return false;
-    this.showcase = { from: island, to: island, ship: w.hull, day: today(), casks: 0, mounts: w.mounts.slice(0, slotsOf(w.hull)), passage };
+    this.showcase = { from: island, to: island, ship: w.hull, day: today(), casks: 0, mounts: (w.mounts || mounts).slice(0, slotsOf(w.hull)), passage };
     return this.begin();
   }
 
   /** Cast off (the voyage has boarded): the plan read, the Courier taken aboard under a cover. */
   begin() {
     const g = this.game, V = this.showcase || g.voyage?.sailing;
-    const plan = this.showcase ? { setPiece: 'shoal', setPieces: ['shoal'], legs: V.passage.legs, acts: [], beats: [], waves: [], swings: [] } // (the test crossing: its legs are the plan)
+    const plan = this.showcase ? { setPiece: 'shoal', setPieces: ['shoal'], legs: V.passage.legs, acts: [], beats: [], waves: [], swings: [] } // (the showcase crossing: its legs are the plan)
       : this.force && V ? script(V.from, V.to, V.day, { casks: V.casks, wx: V.wx, open: (id) => g.voyage.isOpen(id), pieces: this.force }) : g.voyage?.crossing();
     if (this.force && V && plan && !this.showcase) { V.setPieces = plan.setPieces; V.setPiece = plan.setPiece; this.force = null; } // (a tester's choice: the voyage ranks and pays the set pieces sailed)
     if (!V || !plan || this.stage.active) { this.showcase = null; return false; }
@@ -205,7 +197,7 @@ export class Emocean {
     if (!this.stage.active) { this.unfinished(); this.ashore(raw); return; }
     if (this.offering) { if (!g.indexMenu?.open) this.decline(); return; } // (the coin's page closed unanswered: the ship breaks up)
     this.clock(raw);
-    if (this.showcase && g.lachryma && g.lachryma.value < SHOWCASE_FLOOR * g.lachryma.max) g.lachryma.value = SHOWCASE_FLOOR * g.lachryma.max; // (the test crossing: the pool never runs dry; held below full, so an absorb overflows only when it truly fills)
+    if (this.showcase && g.lachryma && g.lachryma.value < SHOWCASE_FLOOR * g.lachryma.max) g.lachryma.value = SHOWCASE_FLOOR * g.lachryma.max; // (the showcase crossing: the pool never runs dry; held below full, so an absorb overflows only when it truly fills)
     const bar = this.bar, sw = this.swingAt(bar), view = sw ? (sw.k < 0.5 ? sw.from : sw.to) : this.viewNow(bar);
     this.rail.seat(this.t);
     if (!this.trip.active) this.legs(bar);
@@ -409,7 +401,7 @@ export class Emocean {
   /** The ship can bear no more: the CONTINUE (an arcade's coin), on the index's window; no window, it breaks up. */
   broken() {
     const g = this.game, V = g.voyage, M = g.indexMenu;
-    if (this.showcase) { this.run.hits = 0; this.ship.mercy = 2 * T.ship.mercy; g.events?.emit('showcase.mend', { by: 'environment' }); return; } // (the test crossing sails on, mended: nothing is at stake)
+    if (this.showcase) { this.run.hits = 0; this.ship.mercy = 2 * T.ship.mercy; g.events?.emit('showcase.mend', { by: 'environment' }); return; } // (the showcase crossing sails on, mended: nothing is at stake)
     if (!M || !V?.continueCost) { this.finish(false); return; }
     const share = Math.min(1, this.t / this.stage.seconds), cost = V.continueCost(share);
     this.offering = true;
@@ -440,7 +432,7 @@ export class Emocean {
     if (r.passed) r.score += (r.bears - r.hits) * SCORE.bears; // (Star Fox 64's tally: what the ship could still bear)
     const run = { ...r }; delete run.chain;
     const show = this.showcase; this.showcase = null;
-    if (show) { passed = true; g.events?.emit('showcase.end', { legs: show.passage.legs.length, score: r.score, by: 'courier' }); } // (the test crossing: back to its pier, the voyage untouched)
+    if (show) { passed = true; g.events?.emit('showcase.end', { legs: show.passage.legs.length, score: r.score, by: 'courier' }); } // (the showcase crossing: back to its pier, the voyage untouched)
     else g.voyage?.stageResult(run);
     const to = this.to;
     const go = () => {

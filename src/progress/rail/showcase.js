@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE CROSSING'S ROSTER AND ITS TEST CROSSING (docs/plans/RAIL-MODULES.md section 6; the owner, 2026-10-20, through Calissa: "a
+// THE CROSSING'S ROSTER AND THE SHOWCASE CROSSING'S LEGS (docs/plans/RAIL-MODULES.md section 6; the owner, 2026-10-20, through Calissa: "a
 // feature-complete set of enemy ship types", then "a bespoke test crossing with every new element in one streamlined run"). ROSTER is
 // section 6's table as data: each foe's class offset on the waypoint's base (econ/emocean.js ROLE_CLASS's way), its HP factor on
 // WAVES.hp, what it fires (patterns.js names), its formation (world/emocean/waves.js PATHS) and the views it appears in. `showcase()`
@@ -78,5 +78,13 @@ export function showLeg(type) {
     R.fires.forEach((f, i) => events.push({ bar: b + 1 + i, phase: 'show', pattern: { name: f.name, params: { ...(f.params || {}) }, from: foe, kind: i % 2 ? 'umbral' : 'astral', mode: modeOf(view) } }));
     b += R.show || SHOW.foeBars;
   }
-  return plan(type, b, view, events);
+  return plan(type, [SHOW.lead - 1, peak ?? b, b], view, events);
+}
+
+/** The rows as a passage (the trip runtime's waypoints, with no sea chart): a row whose leg or hull is unknown is left out (Petra's). */
+export function showcasePassage(rows = SHOWCASE) {
+  const known = (leg) => LEGS[leg] || (String(leg).startsWith('show.') && showLeg(leg));
+  const waypoints = rows.filter((r) => known(r.leg) && SHIPS[r.hull])
+    .map((r, i) => ({ id: `showcase.${i}`, type: r.leg, strength: 1, feel: r.feel ?? null, storm: false, hull: r.hull, mounts: r.mounts || null, note: r.note || '' }));
+  return { showcase: true, ids: waypoints.map((w) => w.id), legs: waypoints.map((w) => w.type), waypoints, chart: null, route: 'showcase', read: 0, pieces: null };
 }
