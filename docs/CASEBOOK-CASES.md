@@ -3207,3 +3207,28 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `overShots()` skips a material marked `userData.shared`. The ship's outline rim stays opaque, under its hull, which still
   draws after the shots.
 - **Rule:** 242.
+
+### 2026-10-20 · Other foes kept shooting the Courier through a puzzle duel (the owner, in play; Dovina's rulings, PUZZLE-DUELS.md 16)
+- **Seen:** the owner: "When entering the Puzzle Duel, other enemies in the area are still active and will continue shooting
+  projectiles at the Courier and attacking them." A shot at an aberrant also opened its duel, which the owner ruled against.
+- **Cause:** the duel pinned its own foe only (`duelsession.js` `pin`); every other creature kept its mind and its casts, its shots
+  in flight kept flying, and `vesselDamage.hit` took any blow. `creatures.strike` opened the duel through `duelFoes.provoke`.
+- **Fix:** the pocket (`DuelSession.pocket`, from `begin` and every frame while pending or active): every other creature halted and its
+  blow called off, released at the end; every projectile in `game.projectiles` vanished; `vesselDamage.hit` refuses any blow not the
+  Courier's own while a duel is pending or active. A Courier's blow on an unmended aberrant does no harm and rings off with the resist
+  mark. Nearness opens the duel: `DuelFoes.updatePull`, 4 m and 1.5 real s to fill, beyond 6 m drained in 0.75 s, `duel.pull` and
+  `duel.slip`. Measured headless (the test Wisp, DEBUG): a strike leaves its hp at 5; the pull reads 0.33 after 0.5 s and drains to
+  0 with `duel.slip`; a full pull opens the duel through the seam; no projectile survives; an outside blow returns -1 with the pool
+  unchanged (94.1); every hold released at the end. Ten roly-polys in the basement, 2 km off, had their halt cleared by their own code:
+  nothing of theirs can reach the duel past the vessel's door.
+- **Rule:** 243.
+
+### 2026-10-20 · The bomb and the vacuum ended outlined shots at sea (Calissa's mount card; Dovina's ruling)
+- **Seen:** reading `courier/ship/mounts.js` for the mount card: `toll()` and `gulp()` swept `[...shots.plains, ...shots.outlines]`, so
+  the Crucibelle's bomb and the Lockheart's vacuum ended outlined shots, which only the parry may answer (the glossary, "plain shot /
+  outlined shot"). The hook took casks only when no boarder was on the aim, and from any side within its range.
+- **Cause:** both sweeps were written over every pool of shots; the hook kept the cask as a fallback after boarders.
+- **Fix:** both sweep `shots.plains` only. The hook takes the nearest boarder or cask within its table cone (MOUNTS.sondelass.angle and
+  range), whichever is nearer. The spray's cuts and the gulp's refill read MOUNTS' keys; the cone reads the table's angle with no
+  fallback. `pirates.nearestCask` went with the old fallback.
+- **Rule:** 244.
