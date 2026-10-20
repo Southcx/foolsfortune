@@ -123,9 +123,9 @@ void main() {
   }
   if (uMode > 3.5) { // THE PULL'S EDGE: the live frame, its channels split outward from the middle, only toward the edges
     vec2 c = vUv - 0.5; float r = length(c) * 1.4142; // (0 the middle, 1 a corner)
-    float w = smoothstep(mix(1.0, 0.45, uEdge), 1.05, r) * uEdge; vec2 off = c * w * 0.05 * uBug;
+    float w = smoothstep(mix(1.0, 0.4, uEdge), 1.05, r) * uEdge; vec2 off = c * w * 0.12 * uBug; // (0.12: at 480 lines 0.05 barely read at 0.9, measured)
     vec3 col = vec3(texture2D(tSrc, vUv + off).r, texture2D(tSrc, vUv).g, texture2D(tSrc, vUv - off).b);
-    gl_FragColor = vec4(col * (1.0 - w * 0.22 * uDark), 1.0); return; // (and the corners a shade darker: the room closing in)
+    gl_FragColor = vec4(col * (1.0 - w * 0.32 * uDark), 1.0); return; // (and the corners a shade darker: the room closing in)
   }
   // THE GROUND BEHIND: the duel's view, or the dark with the film's sheen; the Line a seam of the feeling's light
   vec3 col = uDark > 0.5 ? vec3(0.0021, 0.0009, 0.004) + labSoft(vUv.x * 0.5 + vUv.y * 0.3 + uLineK * 0.2) * 0.025 * (0.5 + 0.5 * sin(vUv.y * 7.0 + vUv.x * 3.0))

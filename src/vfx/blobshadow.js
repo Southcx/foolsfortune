@@ -20,7 +20,7 @@ import * as THREE from 'three';
 
 export const BLOB = {
   r: 0.42,       // its radius on the ground, metres (about the Courier's shoulders)
-  alpha: 0.5,    // its darkness on the ground
+  alpha: 0.62,   // its darkness on the ground (0.5 was lost under the sun's shadow mid-jump)
   shrink: 0.55,  // how much of its size it loses by `far` metres up
   far: 6,        // the height at which it is smallest and faintest
   reach: 12,     // the furthest down it is looked for, metres (beyond: no shadow)
@@ -77,6 +77,6 @@ export class BlobShadow {
     m.position.set(feet.x, at.y, feet.z).addScaledVector(at.n, BLOB.lift);
     m.quaternion.setFromUnitVectors(Z, at.n);
     m.scale.setScalar(BLOB.r * (1 - BLOB.shrink * k));
-    this.mat.opacity = BLOB.alpha * (1 - 0.8 * k);
+    this.mat.opacity = BLOB.alpha * (1 - 0.6 * k);
   }
 }
