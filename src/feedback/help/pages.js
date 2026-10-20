@@ -34,7 +34,7 @@ export const PAGES = [
       ['K · U · I', 'the Dreamvane · the Crucibelle · the Lockheart'],
       ['Y (the Dunes)', 'Solar Skiffing'],
       ['~', 'the god hand'],
-      ['B · P · M', 'the Codex · the Pneuka Box · Mind Mapping (the map)'],
+      ['B · P · M', 'the Codex · the Pneuka Box · the map'],
       ['Enter · /', 'the chat line (a slash for commands: /help)'],
       ['Tab', 'the tuning panel; the last checkpoint, the hub, the room set again'],
       ['F2 · F3 · F4', 'the interface off · the performance panel · copy a report'],
@@ -237,7 +237,7 @@ export const PAGES = [
     rows: [
       ['P', 'the Pneuka Box: what you carry and wear (left click uses, right click lists the rest); tools are worn to the belt from here'],
       ['B', 'the Codex: the arts, the ledger and records, the tools, the Veritome\'s binder'],
-      ['M', 'Mind Mapping: the map; what is mapped is the Zone of Influence'],
+      ['M', 'the map; what is mapped is the Zone of Influence'],
       ['Enter', 'the chat line: words are said aloud, /commands are done (/help lists them)'],
     ],
     notes: ['Everything that happens is written in the log, at the foot of the screen.'],
