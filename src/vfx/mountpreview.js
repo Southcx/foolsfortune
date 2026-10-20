@@ -49,7 +49,7 @@ export const MOUNT_LOOK = {
   crucibelle: { shape: 'blastRing', color: 0xff9a6a, beat: 1.4 }, // (a blast's coral, apart from the gold a calm sea gives your feeling; 14 m on the beat, ship/mounts.js toll)
   lockheart: { shape: 'drawCone', color: 0xb98cff },
   veritome: { shape: 'viewfinder', color: 0xfff0d8, at: 5, w: 5.6, h: 3.15 }, // (the Flash's warm white; the frame 5 m ahead, 16 by 9)
-  sondelass: { shape: 'grapnel', color: 0x7fe6d2, angle: 60 }, // (the hook takes the nearest within 30 degrees of the aim: ship/mounts.js hook)
+  sondelass: { shape: 'grapnel', color: 0x7fe6d2 }, // (its aim's width is MOUNTS.sondelass.angle: the hook takes the nearest inside it)
   dreamvane: { shape: 'radarScan', color: 0x9be36a, range: 8, turn: 4 }, // (the vane's green, its mark at sea; passive: its circles are a look, 8 m)
 };
 
@@ -143,9 +143,9 @@ const SHAPES = {
   },
 
   /** Absorb Spray: the fan ahead, arcs spraying out across it. */
-  sprayFan(P, M, L, t) { cone(P, M.range * K, ((M.angle || 50) / 2) * D2R, t, 1); },
+  sprayFan(P, M, L, t) { cone(P, M.range * K, (M.angle / 2) * D2R, t, 1); },
   /** Vacuum: the cone ahead, arcs drawn in to the nose. */
-  drawCone(P, M, L, t) { cone(P, M.range * K, ((M.angle || 35) / 2) * D2R, t, -1); },
+  drawCone(P, M, L, t) { cone(P, M.range * K, (M.angle / 2) * D2R, t, -1); },
 
   /** Bomb: the blast ring at its range round the ship's middle, the beat's larger one faint and broken, a shockwave going out to it. */
   blastRing(P, M, L, t, ctx) {
@@ -173,7 +173,7 @@ const SHAPES = {
 
   /** Grapple: the grapnel line to its range, two flukes at its end, the aim's arc faint; the hook thrown out and reeled back in. */
   grapnel(P, M, L, t) {
-    const R = (M.range || 16) * K, half = ((L.angle || 60) / 2) * D2R, z0 = NOSE * K, tip = z0 + R, c = 1.3 * K; // (the claw's size)
+    const R = (M.range || 16) * K, half = (M.angle / 2) * D2R, z0 = NOSE * K, tip = z0 + R, c = 1.3 * K; // (the claw's size)
     P.strip(run(0, z0, 0, tip, 3), MAIN, 0.75);
     for (const s of [-1, 1]) P.strip([[0, tip, null], [s * c * 0.35, tip - c * 0.1, null], [s * c * 0.62, tip - c * 0.38, null], [s * c * 0.6, tip - c * 0.7, null], [s * c * 0.42, tip - c * 0.9, null]], MAIN, 1); // (a grapnel's two flukes, curving back to the ship)
     P.strip(arc(0, z0, R, -half, half, 24), THIN, 0.3);

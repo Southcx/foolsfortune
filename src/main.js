@@ -180,6 +180,7 @@ import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
 import { HookMark } from './vfx/hookmark.js';
+import { BlobShadow } from './vfx/blobshadow.js';
 import { VeritomeFrame } from './vfx/veritomeframe.js';
 import { TollReach } from './vfx/tollreach.js';
 import { LockheartReach } from './vfx/lockheartreach.js'; import { LockheartReliquary } from './vfx/lockheartreliquary.js'; import { SoulBrushDesk } from './vfx/soulbrushdesk.js';
@@ -263,6 +264,7 @@ import { Letters } from './coop/letters.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
+import { OpenSea } from './world/opensea/opensea.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -273,6 +275,7 @@ import { Feelings } from './progress/feelings.js';
 import { Vantages } from './world/vantages.js';
 import { DuelSession } from './world/duel/duelsession.js'; import { DuelFoes } from './world/duel/duelfoes.js';
 import { VantageFrames } from './vfx/vantageframes.js';
+import { VertexPaint } from './vfx/vertexpaint.js';
 import { Awakening } from './feedback/awakening.js';
 import { Lend } from './progress/lend.js';
 import { DebugChests } from './debug/debugchest.js';
@@ -604,6 +607,7 @@ async function main() {
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
   game.hookMark = new HookMark(game); // (the hook's mark: vfx/hookmark.js)
+  game.blobShadow = new BlobShadow(game); // (the Courier's blob shadow straight down, beside the sun's: vfx/blobshadow.js)
   game.lockheartReach = new LockheartReach(game); game.carryThrowMark = new CarryThrowMark(game); game.lobArcMark = new LobArcMark(game); game.flareReveal = new FlareReveal(game); // (the hoover's reach on the ground; where a carried thing would land; the Bombardier's lob previewed, a flare's finds marked: vfx/lockheartreach.js, vfx/carrythrowmark.js, vfx/lobarcmark.js, vfx/flarereveal.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
@@ -654,6 +658,7 @@ async function main() {
     game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
+    game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
@@ -849,6 +854,12 @@ async function main() {
     if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'You have no Veritome to tell the time.', { key: 'notime', throttle: 2 }); return; }
     game.events.emit('clock.read', { by: 'courier' }); // (the time is read where it is said: the calendar's, which a replay pins)
   } });
+  game.vertexPaint = new VertexPaint(game); // (a trial, off by default: a zone's mood lamps baked into its statics per vertex, vfx/vertexpaint.js)
+  game.chat.add('vertexpaint', { debug: true, help: "bake a zone's mood lamps into its walls and switch the lamps off: /vertexpaint [zone] (basement), /vertexpaint off", run: ([a]) => {
+    if (a === 'off') { game.log.say('info', game.vertexPaint.unbake('basement') ? 'Vertex painting off: the lamps are lit again.' : 'Nothing is vertex painted.', { key: 'vertexpaint', throttle: 0.5 }); return; }
+    const s = game.vertexPaint.bake(a || 'basement');
+    game.log.say('info', `Vertex painted ${s.zone}: ${s.lamps} lamps baked into ${s.meshes} meshes (${Math.round(s.trisBefore)} -> ${Math.round(s.trisAfter)} triangles, ${s.rays} rays, ${s.ms} ms).`, { key: 'vertexpaint', throttle: 0.5 });
+  } });
   game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
     const P = game.player;
     if (!name) { game.events.emit('vfx.list', { names: game.vfx.names() }); return; }
@@ -882,6 +893,7 @@ async function main() {
     game.events.emit('art.toggle', { art: id, on: T.tech[id].enabled, by: 'courier' });
   } });
   game.chat.add('aberrantwipe', { debug: true, help: 'the aberrant encounter\'s wipe, shown here on the nearest creature (the shatter follows at once)', run: () => { const P = player.pos; let foe = null, best = 1e9; for (const c of game.creatures?.list || []) { const d = c.pos?.distanceToSquared?.(P) ?? 1e9; if (d < best) { best = d; foe = c; } } game.aberrantWipe.close(() => game.aberrantWipe.open(), { foe }); } });
+  game.chat.add('pull', { debug: true, help: "the pull's edge held at a value: /pull 0.5 (0 to 1); /pull alone gives it back to the aberrants' nearness", run: ([v]) => { const k = parseFloat(v); game.aberrantWipe.pullOverride = Number.isFinite(k) ? Math.min(1, Math.max(0, k)) : null; } });
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
   game.chat.add('awaken', { debug: true, help: `a feeling's awakening as it looks, nothing learned: /awaken ${Object.keys(FEELING_CLIPS).join(' | ')} (its flood, then its clip)`, run: ([f]) => { if (game.awakeningLook.flood(f)) setTimeout(() => game.awakeningLook.embody(f), 600); } });
@@ -1203,7 +1215,7 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
-    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active || !!game.opensea?.sailing; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     const worldAsleep = !!game.realm?.active; // (in the Spirit Garden the island's own bodies hold still: its jellies, wisps, pots, clapperjars, fish and chests, 1.8 of the garden's 4.2 ms a tick, the deep clean's profile; the minds and statuses run on, the garden's spirits are among them)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
@@ -1270,6 +1282,7 @@ async function main() {
 
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
+    game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
@@ -1353,7 +1366,7 @@ async function main() {
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
-    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
+    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active || game.opensea?.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
@@ -1362,7 +1375,7 @@ async function main() {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

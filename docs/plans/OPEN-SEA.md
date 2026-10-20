@@ -191,3 +191,101 @@ the sea as a place, the islets as rooms, the serpent's mind and every look, soun
    - the dock's report page (a choice card a find);
    - the bounty board, if the owner wants the safari to keep paying;
    - the sweep for the open sea once it is a room.
+
+## 11. Built: the room, first pass (2026-10-20; the owner: "let's start building the open Emocean")
+
+Dovina's room, as the Raceway is (`src/world/opensea/`; reached from the Index, O, THE OPEN SEA; the place `opensea`):
+- **The water and the sky** are the Emocean's: the zone `opensea` (x 7900 to 11700, z ±1600, at the Emocean's height) is one of
+  `openSea()`'s, so the crude sea is shown and followed there and the dunes' sky and far plane hold.
+- **The helm** (`helm.js`, `Helm`):
+  - W and S step the throttle: stop, slow, cruise (10 m a real second), full sail (x1.5, burning x1.5).
+  - A and D are the rudder, which turns harder at speed.
+  - The ship rides the drawn sea, pitching and rolling, and leaves the rail's wake.
+  - The chase camera swings with the mouse and the arrow keys (the owner's screenshots).
+  - The Courier is hidden and held at the helm (main.js `aboard`).
+- **The grid's features** (`seaprops.js`) are placeholders:
+  - an islet: a mound with a flat, walkable top, a collider, and its secret on it;
+  - a monument: three stones out of the water;
+  - a wreck: a hull on its side;
+  - a phenomenon: a pale column, shown only at its hour;
+  - a seep: a dark slick;
+  - three stone quays on the lanes. Entropolis's is shut, as its node is locked.
+- **The rules are the voyage's** (`seatrip.js`):
+  - Each square sailed into burns fuel and is charted, and its finds are found.
+  - When you are lost, the current is a slow push off your line, as strong as your doubt, not a teleport.
+  - R reads the sky.
+  - A dry tank is towed to the lane for its fee.
+- **F does what is near:**
+  - at sea, by an islet: moor and step off onto it;
+  - at sea, by a quay: dock (the reports paid in cubes, the tank filled as far as your cubes go), and step ashore;
+  - on an islet, by its secret: take it (a chest pays 3 minutes of play; a fuel cache 3 measures; the rest say so in the log until their systems are wired);
+  - on land, by the ship: board;
+  - at a quay's post: go home to the workshop.
+- **A placeholder readout** (`seahud.js`): the fuel, the square and your doubt, the throttle, and the finds to report. Calissa's to replace.
+- **The log rules** are in `feedback/tracking/opensea.js`: plain placeholder lines for Espada.
+- **The save:** the voyage is kept (`openSea`, player scope); the sea's seed is the world's (`openSeaSeed`).
+- **The sweep** (`scripts/sweeps/opensea.mjs`) passes 14 of 14: enter, board, a square sailed at cruise (charted, fuel burnt), an islet
+  moored at and stood on, re-boarding, a dock.
+
+**Not yet:** the safari (Egregores on the water, plates), the sea serpent, the fronts on the water, the islets' secrets beyond the chest
+and the fuel, a sandbar's tide, the pier's open-sea choice (Petra's), and every look.
+
+## 12. The islets' puzzles and the Dreamvane's treasure hunt (2026-10-20; the owner: "please write them into the plan and implement them! Oh and of course we need a metal-detecting treasure hunt for the dreamvane")
+
+**Why:** an islet's one secret is a reason to stop once. Puzzles make the sea a box to open, and they pay in knowledge rather than
+cubes: a fix, charted squares, a find to report. Only the caches pay cubes, and they pay for finding, which is the Dreamvane's job.
+The design laws hold:
+- Skill skips grind: the dowse finds a cache in seconds where a blind search takes minutes.
+- Each puzzle teaches something real without saying so: noticing, perspective, pitch memory, reading a language in context.
+
+**Prior art:**
+- Islands of Insight's matchboxes, sightseers and hidden pieces: a world of small puzzles that pay knowledge.
+- The Witness's anamorphic lines.
+- Ocarina of Time's songs.
+- Heaven's Vault's inscriptions, read in context.
+- Ratchet & Clank's metal detector (beep faster, then dig).
+- Pokémon's Dowsing Machine.
+- Animal Crossing's fossils (one dig a spot, once).
+
+**Dealt once from the sea's seed** (`dealPuzzles`, `progress/opensea/isletpuzzles.js`). Each islet carries one piece at most,
+beside its secret. A sea of about 20 islets gets 3 pairs, 3 line-ups and 2 echoes, which use 13 islets; the rest keep their secret alone.
+
+- **The pair.** Two islets hold the same carving (a shape in a colour).
+  - Come within 6 m of both, in either order, and it is a rare find, reported at a dock as any find is (3.5 minutes of the aim).
+  - The first one seen says it looks like one of a pair.
+- **The line-up.** A flat stone on an islet's shore, and four arcs hung over the water at 60, 100, 150 and 220 m, each scaled to its distance.
+  - From the stone's eye, looking about 7° up, they close into one ring 0.1 rad across. From anywhere else they are four broken pieces.
+  - Stand on the stone and look along the line (within 4° of it): you get a fix, and the islet's square and the eight round it are charted.
+  - A charted square with a landmark fixes you again when you sail in, so a line-up also makes the squares round it safe to cross.
+  - The arcs are far off so that the chase camera, a few metres behind the eye, sees nearly the same ring.
+- **The echo.** A singing stone sings a phrase of four of the Crucibelle's five notes (never the same note twice running), in the
+  bell's own voice, a note glyph a note in its degree's colour, whenever you come within 7 m (again after 8 real seconds).
+  - Its twin, the nearest islet left, has a listening stone with a socket a note.
+  - Play the Crucibelle within 8 m of it: the sockets light as your last notes match the phrase from its start.
+  - The whole phrase raises its cache. The cache is never less than rare, and it pays at once.
+- **The stele.** An islet whose secret is a stele carries three of the ostraca's words in one line (`steleWords`). F reads it as often as
+  you like. Read beside the words you have glossed (the Crib Sheet), it teaches the language in context.
+- **The caches: the treasure hunt.**
+  - Every atoll and sandbar, and a third of the rocks, has a cache buried in the sand.
+  - Nothing marks it but a signature of kind `chest` (`core/signatures.js`). The Dreamvane's dowse, attuned to chests (the wheel),
+    is the metal detector: it ticks faster as you face it and as you near it, and on the spot the sand shivers (the dowse's own mark).
+  - Dig with F, the Dreamvane in hand; the pick's ground strike digs too, once Petra's hook is in (below).
+  - Each cache pays once, for good: `ECON.openSea.cache` minutes of the aim by its islet's tier (common 2, uncommon 4, rare 8, legend 12).
+  - A dug cache leaves its opened box.
+
+**The numbers.** On seeds 1, 7 and 12345, a sea deals 5 to 11 caches, worth 290 to 450 cubes (36 to 56 minutes of the aim), plus about
+10 minutes from the pairs' finds. On top of charting's 2.4 real hours this is still a bounded faucet. It pays the sea out about an
+hour sooner for whoever stops at every islet with the Dreamvane drawn.
+
+**Built** (`world/opensea/puzzlepieces.js`, `PuzzlePieces`): every piece as a placeholder (Calissa's to dress). The state (seen, solved,
+heard, dug) is kept in the room's save section `openSea`.
+- Log rules: `sea.pair.half`, `sea.pair`, `sea.lineup`, `sea.echo.hear`, `sea.echo`, `sea.dig`, `sea.stele`.
+- Ledger counters: `sea.pair`, `sea.lineup`, `sea.echo`, `sea.dig`, `sea.dig.<tier>`, `sea.stele.read`.
+- The sweep (`scripts/sweeps/opensea.mjs`, 19 of 19): a pair seen, the line-up's arcs on one ring from the eye, an echo played, a cache
+  dug (its signature there first and gone after).
+
+**Asked:**
+- **Petra:** the pick's ground strike and the Dreamquake emit `dreamvane.strike { at: [x, y, z], r, by }`, so anything buried, here or
+  later, can listen instead of being called by name (`puzzlepieces.js` already listens).
+- **Calissa:** the looks (the carvings, the line-up's stone and arcs, the two echo stones and their sockets, an opened cache).
+- **Wanda:** the singing stone's voice (it borrows the Crucibelle's for now) and a dig's sound.

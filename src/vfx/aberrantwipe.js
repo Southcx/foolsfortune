@@ -27,6 +27,13 @@
 // the ground behind them. It registers on the glow when made, so the boot's `post.compile()` warms it (as the caster volumes are).
 // With the glow and the grade both off there is no frame to hold: a plain dark cover stands in.
 //
+// THE PULL'S EDGE (the owner, 2026-10-20: "progressive onloading chromatic aberration ... just enough time to get away"; PUZZLE-DUELS.md
+// 16.3). Before any wipe: nearness to an aberrant fills `game.duelFoes.pull` (0..1, Petra's), and the frame's edges split into red,
+// green and blue as it rises: nothing at 0, a vignette-shaped split creeping in from the edges, strongest at the corners, the middle
+// always clean (at 1 the inner 45 % of the view is untouched), so you can see the way out. It drains back as the pull falls; at 1 the
+// wipe takes over (called by Petra's session, as before). The same program as the wipe (its fifth mode, `uEdge`), drawn only while
+// the pull is up, never in a duel. `visual.glitch` off: the split at half, and no darkening. `/pull <0..1>` (DEBUG) holds a value.
+//
 // Prior art (a museum label): Final Fantasy VII, VIII and IX's pre-battle swirl (Square, 1997-2000: the frame buffer copied, turned and
 // laid back over itself, a PS1 frame-buffer effect) for the catch; Final Fantasy X's random-encounter shatter (Square, 2001: the screen
 // breaks and the pieces fly off) and Kingdom Hearts' (2002) for the break; Tales of Symphonia's shatter (Namco, 2003); EarthBound's
@@ -39,6 +46,7 @@
 //   game.aberrantWipe = new AberrantWipe(game)
 //   .close(onCovered, { foe })   catch, bug, crackle; `onCovered` once the frame is held (0.28 s in); false, and nothing, while one runs
 //   .open()                      the shatter, as soon as the crackle is done (at once if it already is)
+//   .pullOverride = 0..1 | null   /pull's held value (the pull's edge)
 //   .update(rawDt, camera)       each frame (main.js)   .active   .covered   .on / .render(post, src) / .compile(r, post)  (the glow's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -54,7 +62,7 @@ const bump = (x, a, b) => ease((x - a) / (b - a)); // (0 before a, 1 after b, ea
 
 const VERT = 'attribute vec3 aE; varying vec2 vUv; varying vec3 vE; void main() { vUv = uv; vE = aE; gl_Position = vec4(position.xy, 0.0, 1.0); }';
 const FRAG = /* glsl */`
-uniform sampler2D tSrc, tHist, tHeld; uniform float uMode, uAsp, uLive, uPull, uSpin, uTwist, uPinch, uBleed, uBug, uCrack, uDark, uLineX, uLineK;
+uniform sampler2D tSrc, tHist, tHeld; uniform float uEdge, uMode, uAsp, uLive, uPull, uSpin, uTwist, uPinch, uBleed, uBug, uCrack, uDark, uLineX, uLineK;
 uniform vec2 uFoe, uRes; uniform vec3 uFeel; uniform vec2 uSeeds[${N}];
 varying vec2 vUv; varying vec3 vE;
 ${LAB_GLSL}
@@ -113,6 +121,12 @@ void main() {
     col += labSoft(vE.z) * max(0.0, 1.0 - vE.y) * 0.35; // (the film's flash as it tips)
     gl_FragColor = vec4(max(col, 0.0), 1.0); return;
   }
+  if (uMode > 3.5) { // THE PULL'S EDGE: the live frame, its channels split outward from the middle, only toward the edges
+    vec2 c = vUv - 0.5; float r = length(c) * 1.4142; // (0 the middle, 1 a corner)
+    float w = smoothstep(mix(1.0, 0.4, uEdge), 1.05, r) * uEdge; vec2 off = c * w * 0.12 * uBug; // (0.12: at 480 lines 0.05 barely read at 0.9, measured)
+    vec3 col = vec3(texture2D(tSrc, vUv + off).r, texture2D(tSrc, vUv).g, texture2D(tSrc, vUv - off).b);
+    gl_FragColor = vec4(col * (1.0 - w * 0.32 * uDark), 1.0); return; // (and the corners a shade darker: the room closing in)
+  }
   // THE GROUND BEHIND: the duel's view, or the dark with the film's sheen; the Line a seam of the feeling's light
   vec3 col = uDark > 0.5 ? vec3(0.0021, 0.0009, 0.004) + labSoft(vUv.x * 0.5 + vUv.y * 0.3 + uLineK * 0.2) * 0.025 * (0.5 + 0.5 * sin(vUv.y * 7.0 + vUv.x * 3.0))
                          : texture2D(tSrc, vUv).rgb;
@@ -145,6 +159,7 @@ export class AberrantWipe {
   constructor(game) {
     this.game = game; this.run = null; this.mat = null; this.hist = null; this.w = 0; this.h = 0; this.flip = 0; this.t = 0;
     this.seeds = Array.from({ length: N }, () => new THREE.Vector2());
+    this.edgeK = 0; this.pullOverride = null; // (the pull's edge, 0..1 as drawn; /pull's held value, null for the real one)
     if (game.post) (game.post.volumes ||= []).push(this); // (a screen volume: the glow draws it, and its compile() warms it at boot)
   }
 
@@ -152,7 +167,7 @@ export class AberrantWipe {
     if (this.mat) return;
     const u = { tSrc: { value: null }, tHist: { value: null }, tHeld: { value: null }, uMindT: { value: 0 }, uFoe: { value: new THREE.Vector2() }, uRes: { value: new THREE.Vector2(1, 1) },
       uFeel: { value: new THREE.Color() }, uSeeds: { value: this.seeds } };
-    for (const k of ['uMode', 'uAsp', 'uLive', 'uPull', 'uSpin', 'uTwist', 'uPinch', 'uBleed', 'uBug', 'uCrack', 'uDark', 'uLineX', 'uLineK']) u[k] = { value: 0 };
+    for (const k of ['uEdge', 'uMode', 'uAsp', 'uLive', 'uPull', 'uSpin', 'uTwist', 'uPinch', 'uBleed', 'uBug', 'uCrack', 'uDark', 'uLineX', 'uLineK']) u[k] = { value: 0 };
     this.mat = new THREE.ShaderMaterial({ name: 'aberrant-wipe', vertexShader: VERT, fragmentShader: FRAG, uniforms: u, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
     // the shards: one buffer, a fan a shard (its middle, then up to RIM corners), moved on the CPU each frame
     const V = N * (RIM + 1), geo = new THREE.BufferGeometry(), idx = [];
@@ -167,7 +182,7 @@ export class AberrantWipe {
 
   get active() { return !!this.run; }
   get covered() { return !!this.run?.held; }
-  get on() { return !!this.run && !this.run.plain; }
+  get on() { return (!!this.run && !this.run.plain) || (this.edgeK > 0.002 && !!this.game.post?.on); }
 
   /** Catch, bug, crackle; `onCovered` once the frame is held. `foe` the aberrant (its pos, height, and grade or aspect for its feeling). */
   close(onCovered, { foe = null } = {}) {
@@ -213,7 +228,15 @@ export class AberrantWipe {
     });
   }
 
+  /** The pull's edge as drawn: the pull (or /pull's value), none while a wipe runs or a duel is on, eased a little so it never pops. */
+  edgeOf(raw) {
+    const g = this.game, p = this.pullOverride ?? g.duelFoes?.pull ?? 0, to = this.run || g.duel?.active || g.duel?.pending ? 0 : Math.min(1, Math.max(0, Number(p) || 0));
+    this.edgeK = THREE.MathUtils.damp(this.edgeK, to, 14, Math.min(raw || 0, 0.1));
+    if (to === 0 && this.edgeK < 0.002) this.edgeK = 0;
+  }
+
   update(raw, camera) {
+    this.edgeOf(raw);
     const R = this.run; if (!R) return;
     raw = Math.min(raw || 0, 0.1); // (a stalled frame does not jump a beat)
     this.t += raw; R.t += raw; this.dtK = raw * 60; // (the catch's per-frame amounts, as at 60 frames a real second)
@@ -245,6 +268,11 @@ export class AberrantWipe {
   render(post, src) {
     const R = this.run; this.make();
     this.targets(src.width, src.height);
+    if (!R) { // the pull's edge alone
+      const u = this.mat.uniforms, soft = T.visual.glitch === false;
+      u.tSrc.value = src.texture; u.uEdge.value = this.edgeK; u.uBug.value = soft ? 0.5 : 1; u.uDark.value = soft ? 0 : 1;
+      this.pass(post, 4, this.hist[2]); return this.hist[2];
+    }
     const u = this.mat.uniforms, t = R.t, x = Math.min(1, t / CATCH), r60 = 1 / 60;
     u.uAsp.value = R.asp; u.uFoe.value.copy(R.F); u.uRes.value.set(src.width, src.height); u.uFeel.value.copy(R.feel); u.uMindT.value = this.t; u.uLineX.value = R.lineX;
     // the catch, while it lasts: into the pair, the newest kept as the held frame

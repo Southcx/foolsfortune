@@ -44,6 +44,8 @@ export const ZONE_TESTS = [
   { id: 'raceway', test: (p) => p.x > 4300 && p.x < 7700 && p.z > -1800 && p.z < 1800 && p.y < -150 && p.y > -600 }, // (the park, 2.6 km across at x 6000: Dovina, 2026-10-14)
   // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
+  // the open sea (world/opensea/seaprops.js SEA: x 9800 at the Emocean's height): the Emocean off the lanes, 3.6 by 2.8 km, under the dunes' sky (Dovina's room)
+  { id: 'opensea', test: (p) => p.x > 7900 && p.x < 11700 && p.z > -1600 && p.z < 1600 && p.y > -480 && p.y < -300 },
   // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer
   { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];
@@ -57,4 +59,4 @@ export function zoneOf(p) {
 /** The zone a point is in, or the one that zone is part of (the beach is part of the dunes). */
 export function wholeOf(p) { const z = zoneOf(p); return z === null ? null : BY_ID[z].partOf ?? z; }
 /** Under the open sky of the dunes' layer, but not the dunes: the crossing, the far islands' docks and the Raceway (their sky is the dunes'). */
-export const openSea = (p) => { const z = zoneOf(p); return z === 'emocean' || z === 'margarite' || z === 'raceway'; };
+export const openSea = (p) => { const z = zoneOf(p); return z === 'emocean' || z === 'margarite' || z === 'raceway' || z === 'opensea'; };

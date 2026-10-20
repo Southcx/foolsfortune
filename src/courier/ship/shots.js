@@ -31,9 +31,9 @@ import { TelegraphMarks } from '../../vfx/telegraph.js';
 import { stream } from '../../core/rng.js';
 
 const CAP = { gun: 128, lance: 48, plain: 192, outlined: 24 }; // (lances: a volley's eight and the surge's swarm, a lance at everything on the screen)
-const FOE_R = 0.3, OUT_R = 0.36;
+export const FOE_R = 0.3; const OUT_R = 0.36; // (a foe's plain shot's radius, m: the mount cards draw it too, ui/)
 const _w = new THREE.Vector3(), _d = new THREE.Vector3(), _c3 = new THREE.Vector3();
-const LANCE_COLOR = 0x9ff3ff; // (the lances' ribbons: the lock marks' colour, courier/ship/ship.js)
+export const LANCE_COLOR = 0x9ff3ff; // (the lances' ribbons: the lock marks' colour, courier/ship/ship.js)
 const rand = stream('ship/lances'); // (the simulation's chance: core/rng.js)
 // the lances fly by PROPORTIONAL NAVIGATION, Itano's way (docs/plans/research/RAIL-PATTERNS.md 3): fanned out at launch, each its own
 // navigation constant, the turn capped, pure pursuit at the last metres (where the sight line's rate blows up)
