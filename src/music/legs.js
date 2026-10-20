@@ -69,6 +69,12 @@ export const LEGS = {
   maelstrom: { tr: 0, prog: null, groove: 'break', arp: 'twinkle', lead: null, boss: true },
   calm: { tr: 3, prog: [[0, M], [9, m], [5, M], [7, M]], groove: 'none', arp: 'harp', lead: 'celesta', boss: false },
   encounter: { tr: 0, prog: [[0, m], [8, M], [3, M], [10, M]], groove: 'none', arp: 'harp', lead: null, boss: false },
+  // the test crossing's legs (DEBUG, THE TEST CROSSING: Dovina's show.*), one a view, on the practice cues' turn (Em C D B: music/railpractice.js)
+  // in each view's own character, so a view sounds the same played alone and in the run
+  'show.chase': { tr: 0, prog: [[0, m], [8, M], [10, M], [7, M]], groove: 'four', arp: 'koto', lead: 'shred', boss: false },
+  'show.above': { tr: 0, prog: [[0, m], [8, M], [10, M], [7, M]], groove: 'two', arp: 'celesta', lead: null, boss: false },
+  'show.side': { tr: 0, prog: [[0, m], [8, M], [10, M], [7, M]], groove: 'jig', arp: 'harp', lead: 'brass', boss: false },
+  'show.forms': { tr: 0, prog: [[0, m], [8, M], [10, M], [7, M]], groove: 'half', arp: 'twinkle', lead: 'sax', boss: false },
   bounty: { tr: 7, prog: [[0, m], [8, M], [3, M], [10, M]], groove: 'four', arp: 'koto', lead: 'brass', boss: true },
 };
 const VOICE = { wonder: 'theremin', mirth: 'steelpan', desire: 'sax', grief: 'fiddle', dread: 'voice' }; // (the maelstrom's Figment sings in its feeling)
