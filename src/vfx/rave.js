@@ -93,7 +93,7 @@ export class Rave {
     const sg = new THREE.PlaneGeometry(0.24, 0.24);
     for (let i = 0; i < N_SPECKS; i++) {
       const d = new THREE.Vector3().randomDirection(); if (d.y > 0.25) d.y *= -0.6; d.normalize(); this.dirs.push(d);
-      const m = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: NEON[i % NEON.length], transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+      const m = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: NEON[i % NEON.length], transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, toneMapped: false }));
       m.renderOrder = 4; m.visible = false; this.root.add(m); this.specks.push(m);
     }
     // ---- the black light's paint: sheets on the walls around

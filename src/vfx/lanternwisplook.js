@@ -23,6 +23,7 @@
 // warm-up below), every other piece is the VFX library's sprites (vfx/library.js) or a uniform on the model's own materials.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { matteFrom } from './matte.js';
 
 /** Its numbers. light: colour, intensity, reach (m), decay; flicker: amounts of three slow sines; flash: how fast a blow's fades (/s);
  *  mood: per pose, the flame's tint and brightness, and how quick its flicker; ember: radius (m), colour. */
@@ -59,7 +60,7 @@ export class LanternWispLook {
     const L = WISP_LOOK.light, mats = { body: [], flame: [], glow: [] };
     c.model.traverse((o) => {
       if (!o.isMesh) return;
-      o.material = o.material.clone(); // (its own, so one wisp's flash is not every wisp's; the same program)
+      o.material = matteFrom(o.material); // (its own, so one wisp's flash is not every wisp's; the same program. Lambert: the model's Physical has specular 0 and roughness 1, so it showed no gloss to pay for: vfx/matte.js)
       const n = o.material.name || '';
       const into = /Flame/i.test(n) ? mats.flame : /Glow/i.test(n) ? mats.glow : mats.body;
       into.push({ m: o.material, base: o.material.emissiveIntensity ?? 1, col: o.material.emissive.clone() });

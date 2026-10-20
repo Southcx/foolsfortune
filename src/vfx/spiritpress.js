@@ -207,7 +207,7 @@ export class SpiritPress {
     part(eye, new THREE.SphereGeometry(0.06, 14, 10), this.lensMat, 0, 0, 0.03, false);
     part(eye, new THREE.ConeGeometry(0.045, 0.14, 10), bronze, 0, -0.13, 0.01).rotation.x = Math.PI; // (the drop under the eye)
     // the burning glass: a faint cone of light from the lens to the bead, laid at a firing (its point on the bath is the bath's to draw)
-    this.beamMat = new THREE.MeshBasicMaterial({ color: 0xfff0d8, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    this.beamMat = new THREE.MeshBasicMaterial({ color: 0xfff0d8, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     const bg = new THREE.ConeGeometry(0.07, 1, 12, 1, true); bg.translate(0, -0.5, 0); bg.rotateX(-Math.PI / 2); // (a unit long along +Z from the lens, its point at the far end)
     P.beam = new THREE.Mesh(bg, this.beamMat); P.beam.visible = false; P.beam.position.copy(eye.position).add(new THREE.Vector3(0, 0, 0.06)); group.add(P.beam);
     const lever = P.lever = new THREE.Group(); lever.position.set(0.8, 1.86, 0.05); group.add(lever);

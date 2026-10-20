@@ -23,7 +23,7 @@ const lathe = (pts, seg = 20) => new THREE.LatheGeometry(pts.map(([r, y]) => new
 
 /** A glint: two crossed quads that flash for a moment every few seconds, at the artifact's brightest point. */
 function glint() {
-  const m = new THREE.MeshBasicMaterial({ name: 'find-glint', color: 0xfff2c8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const m = new THREE.MeshBasicMaterial({ name: 'find-glint', color: 0xfff2c8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });
   const g = new THREE.PlaneGeometry(0.02, 0.36), a = new THREE.Mesh(g, m), b = new THREE.Mesh(g, m); b.rotation.z = Math.PI / 2;
   const s = new THREE.Group(); s.add(a, b); s.name = 'find-glint';
   return { s, m };
@@ -80,7 +80,7 @@ export class WarpPocket {
     this.sand.frustumCulled = false; target.add(this.sand);
     // a ring on the ground, turning: the place is not still here
     const rg = new THREE.RingGeometry(radius * 0.9, radius, 48, 1, 0, Math.PI * 1.6); rg.rotateX(-Math.PI / 2);
-    this.ring = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ name: 'warp-ring', color: 0xb58cff, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    this.ring = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ name: 'warp-ring', color: 0xb58cff, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true }));
     this.ring.position.y = 0.02; target.add(this.ring);
     this.step = -1;
   }

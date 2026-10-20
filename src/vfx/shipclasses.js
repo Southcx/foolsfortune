@@ -96,7 +96,7 @@ export class ShipClassLook {
     // the mouth at the stern: a rim, and the Lachryma inside it
     const lip = F.profile[F.profile.length - 1][1] * R, lipZ = -L * 0.5;
     add(this.body, new THREE.TorusGeometry(lip * 0.92, 0.07, 6, 24), plain, 0, 0.22, lipZ + 0.05);
-    this.mouth = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.mouth = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     add(this.body, new THREE.CircleGeometry(lip * 0.86, 24), this.mouth, 0, 0.22, lipZ + 0.06, false).rotation.y = Math.PI;
     // the figurehead: the little Pneuka Jar at the foot, its lid gold
     add(this.body, new THREE.LatheGeometry(JAR.map(([u, r]) => new THREE.Vector2(Math.max(0.001, r * 0.18), u * 0.5)), 12), plain, 0, (F.sheer[0] + F.sheer[1]) * 0.8, L * 0.5 - 0.05).rotation.x = -0.5;

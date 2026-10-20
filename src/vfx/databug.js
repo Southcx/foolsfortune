@@ -127,7 +127,7 @@ function castMarks(mesh, seed) {
 }
 
 // (the drain's page material's parameters, vfx/datadrain.js: the same program, warm at boot; blending is the GPU's state, not the program's)
-const plain = (color, blending = THREE.NormalBlending) => new THREE.MeshBasicMaterial({ name: 'databug-mark', color, transparent: true, opacity: 1, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide, blending });
+const plain = (color, blending = THREE.NormalBlending) => new THREE.MeshBasicMaterial({ name: 'databug-mark', color, transparent: true, opacity: 1, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true, blending });
 let GLINT_GEO = null;
 const _q = new THREE.Quaternion();
 
