@@ -182,6 +182,39 @@ Each of these is a separate push, after the mock.
 
 This came before the mock because these were the owner's bugs, not the new design. The waves and the module split still wait for it.
 
+## 5. Calissa's mock v1, checked against these rules (2026-10-20; https://claude.ai/artifact/FHfYKA9ktYJYtFRjb5bNb1)
+
+**Kept as the rules say:**
+- every release on the sixteenth, inside its foe's hold, none in bar 15 (the mock checks its own data);
+- the bounds are the frame less 8% (0.92);
+- no lock-on in overhead; locks fired off into it;
+- windups of a beat, half a bar for outlined shots and parts, a bar for the brig's ports;
+- the budgets 40, 120, 60;
+- collision in the plane in overhead and side;
+- the old plane's shots become motes on a swing (pending the owner);
+- shots in rose and violet, never yellow, orange or the ship's colours.
+
+**The side's broadside is umbral, and stays so:** above the water the astral ship is hurt by it, so the dive is the answer.
+
+**To change for v2:**
+1. **Keys are the game's** (RAIL-OVERHAUL.md 3; `courier/ship/ship.js`): E the roll, Q the forms, Shift boost and C brake, R the surge,
+   and the mounts on 1 and 2. The Bomb is the Crucibelle's mount, on its slot's key; Space is unbound. The mock should test the binds
+   the game ships.
+2. **Score is the game's** (`progress/rail/score.js`):
+   - a down by class (fish 100, darters class 1: 300, the heavy class 2: 1,000, its parts as `SCORE.part`);
+   - the chain of three of one feeling;
+   - the volley.
+   The mock's 0 to 30 "medal" meter is our chain:
+   - a hit breaks it (`chainHit`, new);
+   - "medal" stays Star Fox's, a stage passed with four in five downed (`medalOf`).
+
+   A down in its windup pays `SCORE.windup` (x1.5, new).
+3. **Announce every side but the scroll's far edge:**
+   - the overhead pincer (from both flanks);
+   - the chase darters (from the left);
+   - each gets its edge mark a bar before, as the side module's skimmers from behind do.
+4. **The carrier** (`legrunner.js`) goes in with its look, where a pattern has no thrower.
+
 **The research** (Calissa's, `docs/plans/research/RAIL-MODULES-SHMUP.md` on her branch, 565d7e8) is the source of rules 2, 3, 4, 7, 9
 and 10's detail; its §5 lists 23 rules, and the ones not taken here are runtime detail for Petra (pooling, inherit-by-declaration,
 shared axes in a swing).
