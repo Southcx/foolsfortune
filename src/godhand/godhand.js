@@ -24,7 +24,7 @@ import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
 import { GodArts, ART_BY_ID } from './arts.js';
 import { Miracles } from './miracles.js';
-import { ZoiVeil } from '../feedback/cartography.js';
+import { ExploredVeil } from '../feedback/cartography.js';
 import { Raids } from '../world/basement/raids.js';
 import { stream } from '../core/rng.js';
 import { HandCatch } from './catch.js';
@@ -78,7 +78,7 @@ export class GodMode {
     this.miracles = new Miracles(this); // (a feeling's sign drawn with the middle button: godhand/miracles.js)
     this.catch = new HandCatch(this); // (a stunned Figment grabbed and held over the Jar's mouth: godhand/catch.js)
     this.raids = new Raids(game, this); // (raids happen in the Siege room only: raids.js)
-    this.veil = new ZoiVeil(game, game.cartography);
+    this.veil = new ExploredVeil(game, game.cartography);
     this.veil.visible = false;
   }
 
@@ -374,7 +374,7 @@ export class GodMode {
     const V = this.jar;
     K.far = Math.hypot(K.point.x - V.pos.x, K.point.z - V.pos.z) > T.god.range;
     K.ok = !K.far;
-    K.tier = this.game.cartography.tierAt(K.point.x, K.point.y, K.point.z).tier; // (the Zone of Influence under the hand)
+    K.tier = this.game.cartography.tierAt(K.point.x, K.point.y, K.point.z).tier; // (the explored area under the hand)
   }
 
   updateHand(dt) {
@@ -426,7 +426,7 @@ export class GodMode {
     this.placeTether(dt);
   }
 
-  /** Where the hovered thing is (for the Zone of Influence check). */
+  /** Where the hovered thing is (for the explored area's check). */
   hoverPoint() {
     const h = this.hover;
     if (h?.clapper) return h.clapper.pos.clone();
