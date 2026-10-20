@@ -716,3 +716,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 244. **What only one action may answer is left out by name in every other's loop.** An outlined
     shot is the parry's alone, so a bomb's or a vacuum's sweep walks the plain shots only; a sweep over "all shots" breaks the rule
     without a word.
+NEW:sound-loops-counted. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
+    beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.

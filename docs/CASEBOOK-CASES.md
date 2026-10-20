@@ -3232,3 +3232,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   range), whichever is nearer. The spray's cuts and the gulp's refill read MOUNTS' keys; the cone reads the table's angle with no
   fallback. `pirates.nearestCask` went with the old fallback.
 - **Rule:** 244.
+
+### 2026-10-20 · A mine's tell hung the page (Wanda, testing the rail's foe roster)
+- **Seen:** the headless page closed ("Target page, context or browser has been closed") on `sfx.railTell(..., 'mine')`.
+- **Cause:** the mine's beeps (audio/rail.js TELL_VOICE.mine) stepped `x += gap, gap *= 0.6` until `x >= len - 0.02`; the gaps sum to
+  2.5 times the first (len / 3), 0.83 of len, so `x` never got there and the loop never ended. On Wanda's branch only, never on main.
+- **Fix:** the gap floors at 40 ms and the loop stops at 12 beeps; the gunship's spin-up got a count of 64 the same way.
+- **Rule:** NEW:sound-loops-counted.
