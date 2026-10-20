@@ -9,6 +9,8 @@
 - `untilHeard(bar, beat)`: real seconds until that moment is heard (negative once past). A pattern fires at 0 and shows its tell at
   `spb` before (RAIL-MODULES.md 3). Read it every frame; nothing else needs the audio clock.
 - The crossing's `stageAt` (music/emocean.js) now reads it too, so the stage's bar has the latency taken off.
+- A foe's tell: emit `rail.tell { bar, beat, outlined, by }` when the tell begins (a beat before a plain shot, half a bar before an
+  outlined one); its sound lands on the shot's beat as heard (audio/rail.js `railTell`).
 - Practice: `railPractice({ view: 'overhead' | 'side' | 'chase', bpm })` (src/music/railpractice.js), a 16-bar loop a view with a tick
   every beat and a crash every phrase; `RAIL_PRACTICE[view]` at 160 bpm, also in the sound test. Play it with `game.music.pick(score)`.
 

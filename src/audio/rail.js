@@ -51,4 +51,14 @@ export class RailSounds {
       this.tone(t, 0.18, { f0: 90, f1: 160, type: 'sine', gain: 0.35, dest: d });
     }
   }
+  /** A foe's tell before its shot (RAIL-MODULES.md 3): heard from now until the shot's beat, landing on it as heard (music/clock.js
+   *  `C`, the shot at `bar`/`beat`): a plain shot's a muzzle drawing breath (a beat), an outlined one's a bell rising to it (half a
+   *  bar: answer it with the parry). With no clock it lasts a beat at 160 bpm. */
+  railTell(C, bar, beat = 0, outlined = false) {
+    if (!this.ok() || !this.allow('railTell', 16)) return;
+    const c = this.ctx, now = c.currentTime, u = C?.untilHeard ? C.untilHeard(bar, beat) : 0.375, land = now + Math.max(0.05, u - (C?.latency || 0));
+    const len = land - now, d = this.out(outlined ? 0.26 : 0.2, 0.3);
+    if (outlined) { this.riser(now, len, { f0: 660, f1: 1320, type: 'triangle', gain: 0.05, dest: d }); [1, 2.76].forEach((r, j) => this.tone(land - 0.02, 0.3, { f0: 1320 * r, gain: j ? 0.01 : 0.03, dest: d })); }
+    else { this.noise(now, len, { type: 'bandpass', f0: 400, f1: 1800, q: 2, gain: 0.08, attack: len * 0.9, dest: d }); this.noise(land - 0.015, 0.015, { type: 'bandpass', f0: 3000, q: 6, gain: 0.3, dest: d }); }
+  }
 }
