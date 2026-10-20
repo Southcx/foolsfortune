@@ -41,6 +41,8 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
 import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
 import { FOE_MECHANICS } from './foemechanics.js';
+import { foeMove, FOE_SCROLL } from './foemoves.js';
+import { ROSTER } from '../../progress/rail/showcase.js';
 
 /** Shots to down a foe by class (Guppy, Barracuda, Marlin, Whale, Leviathan: about three times a class, as their pay is). */
 export const HP = [1, 3, 12, 40, 150];
@@ -95,7 +97,7 @@ export class Waves {
 
   // ---------------------------------------------------------------- the frame
   update(dt, ctx) {
-    const { bar, ship, shots } = ctx;
+    const { bar, ship, shots } = ctx; this.ship = ship; this.view = ctx.view || this.view; // (the view a new foe's move is laid in: foemoves.js)
     // waves enter on their bars (one more than a bar late: let go)
     while (this.waves && this.next < this.waves.length && this.waves[this.next].bar <= bar) {
       const w = this.waves[this.next++];
@@ -114,13 +116,13 @@ export class Waves {
       }
       _p.copy(f.local);
       if (!f.pinned) { if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; } if (f.shift) f.local.add(f.shift); }
-      if (f.mech?.tick && f.mech.tick(this, f, dt, ctx) === false) { this.leave(f); this.foes.splice(i, 1); continue; }
+      if (f.mech?.tick && f.mech.tick(this, f, dt, ctx) === false) { this.foes.splice(i, 1); if (f.burst) this.gone(f, true); else this.leave(f); continue; } // (a burst: its death read, unpaid)
       this.rail.toWorld(f.local, f.pos);
       // face the way it moves against the rail (what the eye, riding the rail, reads)
       _d.copy(f.local).sub(_p); this.rail.dirWorld(_d, _w);
       if (_w.lengthSq() > 1e-8) f.mesh.lookAt(_w.add(f.pos));
       f.mesh.position.copy(f.pos);
-      if (f.body) { f.body.tell(Math.max(this.tellOf?.(f) ?? 0, f.hatch || 0)); f.body.update(dt); }
+      if (f.body) { f.body.tell(Math.max(this.tellOf?.(f) ?? 0, f.hatch || 0, f.glow || 0)); f.body.update(dt); }
       this.fire(f, bar, sixteenth, ship, shots);
     }
     // the downed, their death read where they fell in the rail's frame, then put away
@@ -163,16 +165,28 @@ export class Waves {
       this.scene.add(mesh);
       const f = this.make({
         kind: `rail.${look}`, name: look === 'school' ? 'a fish of the school' : `a ${look.replace('-', ' ')}`,
-        role: look, cls: w.cls, aspect, radius, hp: HP[Math.max(0, Math.min(4, w.cls))], mesh,
+        role: look, cls: w.cls, aspect, radius, hp: HP[Math.max(0, Math.min(4, w.cls))] * (ROSTER[look]?.hp ?? 1), mesh,
       });
       Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null });
-      path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
+      if (ROSTER[look]?.moves) f.path = foeMove(ROSTER[look].moves, { view: this.view, i, lane: f.lane, W: this, f }) || path; // (its row's move, laid in the view it entered in)
+      f.path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
       this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
       this.game.creatures?.add(f);
       this.foes.push(f);
       f.mech?.spawn?.(this, f, w);
     }
     this.onSpawn?.(w.count, w);
+  }
+
+  /** One foe of a role set down at a point (rail frame), scrolling with the world from there: a mine dropped (foemechanics.js). */
+  spawnAt(role, local, { aspect = this.aspect, cls = 0, hp = 1, pay, count = true } = {}) {
+    const body = railFoeBody(role, aspect), mesh = body.object, start = local.clone(); mesh.userData.zoneFree = true; mesh.scale.setScalar(SIZE); this.scene.add(mesh);
+    const f = this.make({ kind: `rail.${role}`, name: `a ${role}`, role, cls, aspect, radius: SIZE * 0.45 * (RAIL_FOE_SIZE[role] || 1), hp: HP[Math.max(0, Math.min(4, cls))] * hp, mesh, ...(pay != null ? { pay } : {}), ...(count ? {} : { count: false }) });
+    Object.assign(f, { i: 0, n: 1, lane: 0, off: 0, R: ROLES.school, body, mech: FOE_MECHANICS[role] || null, path: (t, i, n, L, out) => { out.copy(start); out.z -= t * FOE_SCROLL; return t < 20; } });
+    f.local.copy(start); this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
+    this.game.creatures?.add(f); this.foes.push(f); if (count) this.onSpawn?.(1, null);
+    f.mech?.spawn?.(this, f, null);
+    return f;
   }
 
   /** A foe as a creature (creatures/creatures.js's contract: hurtable, struck only through `creatures.strike`). */

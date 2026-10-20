@@ -205,7 +205,7 @@ export class Emocean {
     const rel = this.piece ? bar - this.piece.leg.from : 0;
     this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) || !!this.charybdis?.holding, arena: !!this.charybdis?.holding, swing: sw }); // (the arena: Charybdis abeam, the cursor free in the side view; the swing: the reticle eased across it)
     if (!this.stage.active || this.offering) return;
-    const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves };
+    const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves, view };
     this.piece?.update(dt, rel, ctx);
     this.waves.update(dt, ctx);
     if (this.trip.active) this.trip.update(dt, bar); // (after the waves: Dovina's order)
@@ -365,7 +365,7 @@ export class Emocean {
    *  medal's count, the volley's count, the weight of it. */
   down(f, returned, volley) {
     const r = this.run; if (!r || this.ending) return;
-    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within, windup = this.windupShowing(f);
+    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within, windup = this.windupShowing(f) || !!f.glowing; // (glowing: a rammer's glow, world/emocean/foemoves.js)
     const pay = f.pay != null ? f.pay * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1) * (windup ? SCORE.windup : 1) : downScore({ cls: f.cls, pointBlank, returned, windup });
     const link = f.chain === false ? 0 : chainDown(r.chain, f.aspect);
     r.score += pay + link; if (f.count !== false) r.downed++; if (pointBlank) r.pointBlank++; if (link) r.chainBest = Math.max(r.chainBest, link);

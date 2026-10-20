@@ -8,6 +8,9 @@
 //   spawner   a hatch: a wave laid `from: 'spawner'` comes out of it, its lid opening; downed, its schools never come
 //   grappler  latches on beside the ship and drags it (the ship's pace times latch.pace: Dovina, 2026-10-20) until the roll, the
 //             Grapple mount or a shot shakes it off; then it is flung away
+//   mine-layer drops a mine each `mine.every` beats it crosses (ROSTER['mine-layer'].mine)
+//   mine      a foe of its own (pays `pay`, counts for no medal): bursts into its ring after `fuse` bars or when the ship comes within
+//             `near` m, and is gone; shot first, it never bursts
 // A blow that a mechanic turns aside reads as a glance (waves.js `glance`: the resist mark and `rail.glance`), never as nothing.
 //
 // Prior art: R-Type's and Ikaruga's shield escorts (the escort first), Gradius's core behind its barriers (the guns first, then the
@@ -18,6 +21,8 @@
 import * as THREE from 'three';
 import { ROSTER } from '../../progress/rail/showcase.js';
 import { MOUNTS } from '../../progress/rail/mounts.js';
+import { BAR_S } from '../../progress/rail/crossing.js';
+import { modeOf } from '../../progress/rail/legs.js';
 
 /** How long a Flash or a Bomb holds a blocker's weak point open (real s): the Flash's own duration. */
 export const HOLD_OPEN = MOUNTS.veritome.duration ?? 3;
@@ -51,12 +56,30 @@ export const FOE_MECHANICS = {
     spawn(W, f) {
       f.open = 0; f.flashT = 0; // (`open` in it: the Flash's plate holds it, courier/ship/mounts.js plate)
       f.onToll = () => { f.flashT = Math.max(f.flashT, HOLD_OPEN); }; // (the Bomb's toll holds it too)
-      f.armour = () => (f.flashT > 0 ? 1 : 0);
+      f.armour = () => (f.flashT > 0 ? ROSTER.blocker?.armour ?? 1 : 0); // (held open, it takes its row's share of a blow)
     },
     tick(W, f, dt) { f.flashT = Math.max(0, f.flashT - dt); f.open = f.flashT > 0 ? 1 : 0; f.body?.weak?.reveal(f.open > 0); },
   },
   spawner: {
     tick(W, f, dt) { f.hatch = Math.max(0, (f.hatch || 0) - dt * 2); }, // (the lid falls shut after a school is out)
+  },
+  'mine-layer': {
+    tick(W, f, dt) {
+      const M = ROSTER['mine-layer']?.mine; if (!M) return;
+      f.dropT = (f.dropT ?? 0) + dt; const every = (M.every ?? 1) * BAR_S / 4;
+      if (f.dropT < every) return; f.dropT -= every;
+      if (Math.abs(f.local.x) < 30 && f.t > BAR_S / 2) W.spawnAt('mine', f.local, { aspect: f.aspect, cls: f.cls, hp: M.hp ?? 1, pay: M.pay, count: false });
+    },
+  },
+  mine: {
+    tick(W, f, dt, ctx) {
+      const M = ROSTER['mine-layer']?.mine || {}, ship = ctx.ship;
+      if (!(f.t >= (M.fuse ?? 2) * BAR_S || (ship && f.local.distanceTo(ship.local) < (M.near ?? 8)))) return;
+      const P = W.game.emocean?.trip?.player, view = W.view || 'chase';
+      if (M.burst && P) P.play(M.burst.name, M.burst.params || {}, { at: f.local, mode: modeOf(view), kind: 'feel', up: view === 'side' ? [1, 0, 0] : [0, 1, 0] });
+      W.game.events?.emit('rail.mine', { by: 'creature' });
+      f.burst = true; return false; // (burst: gone unpaid, its body breaking up where it was: waves.js)
+    },
   },
   grappler: {
     spawn(W, f) { f.latch = { pace: ROSTER.grappler?.latch?.pace ?? 0.8 }; f.onGone = () => FOE_MECHANICS.grappler.release(W, f); f.onHurt = () => { f.shaken = true; }; },

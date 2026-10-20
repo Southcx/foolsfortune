@@ -39,7 +39,7 @@ for (const [type, L] of Object.entries(LEGS)) {
     for (const e of plan.events) {
       if (!e.pattern) continue;
       const view = plan.phases.find((q) => q.id === e.phase)?.view, ctx = ctxOf(e.pattern.mode, view), shots = emit(e.pattern.name, e.pattern.params, ctx);
-      if (!storm && strength === 1) { const F = fair(shots, { pos: ctx.origin.map((x, i) => x + ctx.aim[i]), width: 1.2 }, { ...PATTERNS[e.pattern.name].defaults, ...e.pattern.params }, e.pattern.mode === 'cone' ? 7.5 : 12, e.pattern.mode, ctx.up, ctx.origin); if (!F.ok) unfair.push(`${e.pattern.name}@${e.bar} ${view} ${JSON.stringify(F.worst)}`); }
+      if (!storm && strength === 1) { const F = fair(shots, { pos: ctx.origin.map((x, i) => x + ctx.aim[i]), width: 1.2 }, { ...PATTERNS[e.pattern.name].defaults, ...e.pattern.params }, e.pattern.mode === 'cone' ? 8.8 : 12, e.pattern.mode, ctx.up, ctx.origin); if (!F.ok) unfair.push(`${e.pattern.name}@${e.bar} ${view} ${JSON.stringify(F.worst)}`); }
       for (const s of shots.flatMap((x) => [x, ...children(x)])) {
         const t0 = e.bar * BAR + s.at, life = s.motion?.type === 'laser' ? (s.motion.warn + s.motion.burn) : Math.min(9, 85 / Math.max(4, s.speed)); // (the field keeps a shot until 25 m past the ship: 60 up the rail to 25 behind)
         for (let k = Math.floor(t0 * 10); k < Math.min(live.length, (t0 + life) * 10); k++) live[k]++;
