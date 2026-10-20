@@ -439,6 +439,9 @@ if (part('dock')) {
   S.check('dock: F closes the Shrine\'s page and it stays closed (F unseals you from its gate)', !w.index, w);
   await S.closeAll(); await S.ticks(4);
   for (let i = 0; i < 30 && (await S.ev(() => !!__game.game.cradles?.phase)); i++) await S.ticks(6); // (the unseal plays out and stands you at the gate: wait for it)
+  S.note('dock: before the pier', await S.ev(() => ({ sealed: __game.game.cradles?.sealed?.id || null, phase: __game.game.cradles?.phase || null, menu: !!__game.game.indexMenu?.open })));
+  await S.ev(() => { const C = __game.game.cradles; if (C?.sealed) C.unseal('test', 'courier', { now: true }); }); // (still sealed in the gate: every offer is held back while sealed, courier/interact.js)
+  await S.closeAll(); await S.press('Escape', 2); await S.closeAll(); await S.resume(); await S.ticks(6); // (an open page holds back every offer, the pier's too: Petra, 2026-10-20)
   // the dock's pier: its page, from Margarite
   await em("standPier('margarite')"); await S.ticks(20);
   ch = await em('chevron()');
