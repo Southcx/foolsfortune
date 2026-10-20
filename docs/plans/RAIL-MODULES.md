@@ -36,9 +36,14 @@ beats re-mapped onto the three (§4).
 1. **One plane a module, and the bounds are the frame.** The ship moves in that module's plane over the whole visible frame, less an
    8% margin. Every point a shot can hit, the ship can reach, and every point the ship can reach, a shot can reach. This fixes the owner's
    "movement range is limited".
+   The HUD folds to the frame's edges for the crossing (the Sight, the Lachrimeter, the log), so the whole frame is play: one rule, no
+   cut-outs measured off the DOM (Petra's proposal, taken 2026-10-20). The folded HUD's look is Calissa's.
 2. **Every shot leaves a muzzle you can see.** A shot spawns at a named muzzle point on its enemy's model, in that enemy's frame, as the
    enemy is posed on that frame. It is aimed within the module's plane at a point the ship can occupy: no shot aimed off the plane,
    none from off-screen. This fixes "no clear source" and "emitters offset, aiming left where they can't hit".
+   The muzzles are named on the models (Calissa's). Until a model has one, the runtime fires from the body's centre, and the sweep's
+   check "every shot spawned on a muzzle on screen" fails for that kind by name, so the gap is a list (Petra, 2026-10-20). Shot pools
+   today: plain 192, outlined 24 (`shots.js` CAP); the budgets in rule 6 fit under them.
 3. **On the beat, told a beat before.** A pattern fires on the cue's grid (a sixteenth at most). Its tell, a muzzle flash and the
    enemy's firing pose, comes one beat before, plus a sound (Wanda). This fixes "out of sync". With the Radar mount the tell comes two beats before.
 4. **Nothing fires** in an enemy's first half real second in view, during a swing, or in the last bar before one.
