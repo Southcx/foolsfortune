@@ -23,12 +23,12 @@ const ENDS = {
 const n = (x) => Math.round(x).toLocaleString('en-US');
 
 export function railRules({ on, L, log }) {
-  // the test crossing (DEBUG only: progress/rail/showcase.js): said, never counted (placeholder words for Espada's)
-  on('showcase.start', (e) => log.say('system', `The test crossing: ${e.legs.length} legs, a hull each. Nothing is counted.`));
+  // the showcase crossing (DEBUG only: progress/rail/showcase.js): said, never counted (placeholder words for Espada's)
+  on('showcase.start', (e) => log.say('system', `The showcase crossing: ${e.legs.length} legs, a hull each. Nothing is counted.`));
   on('showcase.hull', (e) => { const m = (e.mounts || []).map((id, i) => `${i + 1} ${MOUNTS[id]?.name || id}`).join(', ');
     log.say('info', `Your ship is a ${e.hull} for the next leg${m ? ` (mounts: ${m})` : ''}${e.note ? `: ${e.note}` : ''}.`); });
-  on('showcase.mend', () => log.say('info', 'The test crossing mends your ship.', { key: 'showcase.mend', throttle: 4 }));
-  on('showcase.end', (e) => log.say('system', `The test crossing is over: ${n(e.score)} points, nothing counted.`));
+  on('showcase.mend', () => log.say('info', 'The showcase crossing mends your ship.', { key: 'showcase.mend', throttle: 4 }));
+  on('showcase.end', (e) => log.say('system', `The showcase crossing is over: ${n(e.score)} points, nothing counted.`));
   on('rail.beat', (e) => { if (OPENS[e.beat]) log.say('combat', OPENS[e.beat], { key: 'railbeat', throttle: 2 }); });
   on('rail.end', (e) => { if (ENDS[e.end]) log.say(e.end === 'limped' ? 'info' : 'gain', ENDS[e.end], { key: 'railend', throttle: 2 }); });
   on('emocean.continue', (e) => { if (e.by !== 'courier') return; L.inc('rail.continue'); L.inc('rail.continue.cubes', e.cost || 0); log.say('info', `Continue: ${e.cost} cubes. The ship is mended.`); });
