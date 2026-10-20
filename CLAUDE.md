@@ -111,7 +111,7 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 
 ## Scope
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
-  goes away when you leave. The Zone of Influence is the ground explored. The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
+  goes away when you leave. The explored area is the ground explored (the Zone of Influence is a puzzle duel's side of the Line: the owner, 2026-10-20). The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
   (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check).
 - **Test lean** (the owner, 2026-10-08: "you play the game very differently from how I do"). The owner's play is the test of feel; the
   machines guard only what breaks the game. **Every push:** `npm run check` and `npm run build`. **The stress test:** only when the change

@@ -44,7 +44,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
-  drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the ZoI's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
+  drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the explored area's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
 - **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel matter of the island's firm layer the hand raises
   with Sculpt (a pillar, an arch, a ramp), meshed smooth; it crumbles back into the island's matter over about a game day, unless Set. *Not:* Manifest's wall, the island's matter.
 - **a god power / the ramp** (`GOD_POWERS`, `POWER_EVENTS`, `godhand/powers.js` / `RAMP`, `rampOf`, `progress/godpowers.js`) — one of the hand's arts,
@@ -360,9 +360,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Dunemaw; and places at the Dunes' height told apart by their render zone, not their height (the Raceway, Margarite's dock).
 - **room** — a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **place** (`game.places`, `src/world/places.js`) — a named spot anything can be sent to by id (`well.mouth`, `kiln`). A point, *not* a room.
-- **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the Zone of Influence, nor a crystal's fret. →
+- **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the explored area, the Zone of Influence, nor a crystal's fret. →
   detail
-- **the Zone of Influence** — the ground the player has explored. Nothing more, for now. Always named in full (or ZoI).
+- **the explored area / the Zone of Influence** (the owner, 2026-10-20) — the ground the player has explored, as the map shows it ("explored area" on screen) / a puzzle duel's side of the Line: your zone of control, where effects can reach from either side ("influence", not control); the duel's word once duels are called final. Always named in full (or ZoI).
 - **the workshop** — the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement** — below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
 - **the hub** — the basement's centre, where the Index stands. **The Index** (`src/feedback/indexmenu.js`): the console there; F, and pick a room.
@@ -467,6 +467,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Lagan and Bob, the Bourse, the Glass, a drift bottle. One not yet met is a **Sighting**. *Not:* an encounter of the Spirit Garden. → detail
 - **the Umbral** (`game.umbral`, `src/vfx/umbral.js`) — the world below the Emocean's surface, where the ship's Umbral form fights. *Not:* the
   crossing. → detail
+- **the open sea / a square / an islet (Islet of Ego)** (plain names, the owner's "Islets of Ego", 2026-10-20; `src/progress/opensea/`; `docs/plans/OPEN-SEA.md`) — the Emocean off the lanes, sailed at a free helm, a safari / one cell of its 9 x 7 grid (`seaGrid`), its column the law, its row how far off the lanes / a small island off the lanes the Courier can moor beside and walk, one secret each (`isletOf`). *Not:* a planetoid (the Spirit Garden's), an Island of Ego, the crossing.
+- **a discovery / doubt / a fix** (`discoveries.js`, `seatrip.js`) — a thing found off the lanes, reported once at a dock for its tier's fee / how many squares you may be off your reckoning (dead reckoning) / clearing it, by a charted landmark in sight or the sky read with the Dreamvane. *Not:* a Sighting (an encounter not yet met), a rutter.
+- **a disposition / the sea serpent** (`EGREGORES`, `safari.js`; `SEA_SERPENT`, `seaserpent.js`) — what an Egregore does when the ship comes near: passive, wary, territorial or hostile (Monster Hunter's) / the open sea's first hostile one, Marlin class, the vertical slice's test. *Not:* grain (a mind's traits), mental state.
 
 ## 8. Records and progression
 

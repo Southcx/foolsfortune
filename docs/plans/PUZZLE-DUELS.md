@@ -141,6 +141,10 @@ fight loads the base and two or three families**, so 400 cells stay readable. It
    board, maybe a critical garbage push causes the enemy figment's EmO to spike in a shower of lachryma that you can quickly run around
    and absorb before swapping to Godhand mode to finisher de grace them."
 
+**The Zone of Influence** (the owner, 2026-10-20): your side of the Line is your Zone of Influence, the same as a zone of control but
+"influence", because effects can happen on your side outside your control, and on the foe's from yours (junk landing, a Grab, Delay,
+Dread's fog). The explored ground is "explored area" on the map now. The name goes on screen when duels are called final.
+
 ## 10. Built (2026-10-19): the kernel
 
 `src/progress/duel/`: the engine, pure (no three.js), so a board plays in the room, by bots and in the simulator alike, as Raku's tables
