@@ -301,6 +301,7 @@ export class SpawnLook {
   blocksUpdate(raw) {
     if (!this.cubes) return;
     const B = this.blocks;
+    if (!B.length && this.clean) return; // (nothing spawning and every instance already scaled to nothing: no rewrite, no upload)
     for (let i = B.length - 1; i >= 0; i--) { const b = B[i]; b.t += raw; if (b.t >= b.life) B.splice(i, 1); }
     for (let i = 0; i < BLOCKS; i++) {
       const b = B[i];
@@ -313,6 +314,7 @@ export class SpawnLook {
     }
     this.cubes.count = BLOCKS;
     this.cubes.instanceMatrix.needsUpdate = true; this.cubes.instanceColor.needsUpdate = true;
+    this.clean = !B.length; // (this pass wrote every instance as nothing)
   }
 
   /** For the boot's warm-up (main.js): a slit, a ring of plates and the blocks shown 50 m down, so their programs compile with the rest. */
