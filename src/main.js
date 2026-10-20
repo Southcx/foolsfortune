@@ -1026,7 +1026,7 @@ async function main() {
   const parkCracks = crackPrewarm(scene, god.jar.jarBody); // (the Pneuka Jar's skinned crack and gold seam: vfx/crackskin.js)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   // (a Lachrymato Bottle and the jets' ring, made now and parked hidden, never disposed: their programs live while one exists; the casebook's
-  // rules 17 and 18. The stain that stood beside them is gone: the paint map draws the blots, the ribbons' program the slicks, docs/CASEBOOK.md 2026-10-10)
+  // rules 17 and 18. The stain that stood beside them is gone: the paint map draws the blots, the ribbons' program the slicks, docs/CASEBOOK-CASES.md 2026-10-10)
   const finLook = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: true })); // (a Weir fish's fin, its one-pass program: the fish are made only near the Weir, tools/sondelass/angling/fishmesh.js)
   const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh, finLook]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js)
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; scene.add(o); }
@@ -1040,7 +1040,7 @@ async function main() {
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.gardenMycelium?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
-  const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
+  const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK-CASES.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
   // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after

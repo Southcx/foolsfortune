@@ -1372,7 +1372,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
   events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its
   attachments).
-- **the casebook** (`docs/CASEBOOK.md`): every bug fixed, with its cause and the rule it left; read its rules before building in the same
+- **the casebook** (`docs/CASEBOOK.md`, the rules; `docs/CASEBOOK-CASES.md`, the cases): every bug fixed, with its cause and the rule it left; read its rules before building in the same
   area. *Not:* the log (the game's text), a report (QAIS's, the owner's), the ledger (the stats).
 - **the checklist** (retired 2026-10-05, the page deleted): the QAIS tests' first home (`C12`); say "QAIS tests".
 - **debug chest** (`DebugChest`, `DEBUG_KITS` in `src/debug/kits.js`; `docs/plans/DEBUG-CHESTS.md`): a crate in the magenta-and-black

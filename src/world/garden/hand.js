@@ -31,7 +31,6 @@ export const ARTS = ['grab', 'pull', 'press', 'smooth', 'flatten', 'carve', 'rou
 const KEY = (k) => `Digit${(k + 1) % 10}`;
 const RESET = { within: 3 }; // (real seconds between the two presses that put a planetoid back)
 const STROKE = { pull: 0.12, press: 0.12, carve: 0.12, smooth: 0.5, flatten: 0.5, roughen: 0.25, size: [1, 12], undo: 10 }; // (metres a stroke tick, or the share eased; the size's range; strokes kept to undo)
-const FEATURE_NAME = { terrace: 'herb terrace', pavilion: 'echo pavilion', spiritHouse: 'spirit house', pond: 'Lachryma pond', lantern: 'stone lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's words)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4(), _UP = new THREE.Vector3(0, 1, 0);
 
@@ -226,7 +225,7 @@ export class GardenHand {
       const fired = g.ledger ? firingOf(ranksOf(g.ledger)) : Infinity, shut = Object.values(FEATURES).filter((F) => (F.firing || 1) > fired).length;
       for (const [id, F] of Object.entries(FEATURES)) {
         if ((F.firing || 1) > fired) continue;
-        const c0 = costOf(id, 'wonder'), d = el('div', 'room', `<span class="n">◇</span><span><b>${FEATURE_NAME[id] || id}</b><s>${F.does} · ${c0.cubes} cubes and a material of its feeling</s></span>`);
+        const c0 = costOf(id, 'wonder'), d = el('div', 'room', `<span class="n">◇</span><span><b>${F.name}</b><s>${F.does} · ${c0.cubes} cubes and a material of its feeling</s></span>`);
         const pick = el('span', 'feel');
         for (const f of Object.keys(STATS)) {
           const c = costOf(id, f), ok = cubes >= c.cubes && has(c.material), b = el('span', '', `◆ ${f}`);
