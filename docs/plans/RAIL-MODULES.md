@@ -41,25 +41,54 @@ beats re-mapped onto the three (§4).
 2. **Every shot leaves a muzzle you can see.** A shot spawns at a named muzzle point on its enemy's model, in that enemy's frame, as the
    enemy is posed on that frame. It is aimed within the module's plane at a point the ship can occupy: no shot aimed off the plane,
    none from off-screen. This fixes "no clear source" and "emitters offset, aiming left where they can't hit".
-   The muzzles are named on the models (Calissa's). Until a model has one, the runtime fires from the body's centre, and the sweep's
-   check "every shot spawned on a muzzle on screen" fails for that kind by name, so the gap is a list (Petra, 2026-10-20). Shot pools
-   today: plain 192, outlined 24 (`shots.js` CAP); the budgets in rule 6 fit under them.
-3. **On the beat, told a beat before.** A pattern fires on the cue's grid (a sixteenth at most). Its tell, a muzzle flash and the
-   enemy's firing pose, comes one beat before, plus a sound (Wanda). This fixes "out of sync". With the Radar mount the tell comes two beats before.
-4. **Nothing fires** in an enemy's first half real second in view, during a swing, or in the last bar before one.
+   The muzzles are named on the models (Calissa's). Until a model has one, the runtime fires from the body's centre, and a headless probe
+   lists that kind by name, so the gap is a list (Petra, 2026-10-20). It is a probe and not a sweep check: the crossing is in flux
+   (CLAUDE.md, "Test lean"). Shot pools today: plain 192, outlined 24 (`shots.js` CAP); the budgets in rule 6 fit under them.
+   **Aim** is the ship now minus the muzzle now, flattened onto the plane, resolved at each release (BulletML's `aim`; research §1.3).
+   A pattern is laid with up = the plane's normal, never turned by the shortest arc.
+3. **On the beat, told before.** A pattern fires on the cue's grid (a sixteenth at most). Its windup, a muzzle flash and the enemy's
+   firing pose, comes before it, plus a sound (Wanda), emitted as `creatures.windup`:
+   - a beat before a plain shot;
+   - half a bar before an outlined shot or a boss part's volley;
+   - a bar before a beam (its warning line).
+
+   With the Radar mount every windup starts a beat earlier. Everything scheduled reads the bar in closed form; nothing scheduled adds up
+   `dt` (the cause of "out of sync" the research names: `PatternPlayer`'s `r.t += dt`). A foe downed in its windup cancels its volley
+   and pays a little more: reading is rewarded.
+4. **Foes fire only while holding.** Never on entry or exit, never during a swing or in the bar before one. A big foe never drifts onto
+   the ship, and no foe holds at the frame's edge.
 5. **Each module owns its reticle.**
    - Chase: a free cursor.
    - Side: a fixed point ahead of the ship along the scroll.
    - Overhead: none (no lock-on there, §2).
 
-   A swing hands the lock-on over by clearing it: locks are released as lances before the swing's bar, never carried across. This fixes
-   "the reticle locks or breaks when the view changes".
+   The reticle is derived every frame from the cursor or the ship's facing, never stored as a world point. A lock is a foe, re-projected
+   every frame, and dropped with a sound when its foe leaves the frame or the plane. These two fix "the reticle locks or breaks when the
+   view changes". Across a swing (Calissa's research and this plan, reconciled 2026-10-20):
+   - Locks are kept into a module that has a lock-on (chase, side).
+   - Locks are fired off as lances before the swing's bar into overhead, which has none.
 6. **A shot budget a module**, so performance is a rule and not a hope: 40 hostile shots on screen in chase, 120 in overhead, 60 in
    side. Shots are instanced (one draw a kind).
-7. **Every enemy flies a path you can read.** It enters along a curve, holds, fires, and leaves. Its class shows in its silhouette.
-   Formations fly as one (the flock).
-8. **Each module plays alone first**, as a practice leg of 16 bars: one module, its waves, no swings. That gives a QAIS test a module and
-   a sweep check a module (no NaN, nothing out of bounds, every shot spawned on a muzzle on screen). Swings are added only once all three pass.
+7. **Every enemy flies a path you can read.** A wave is `{ bar, path, formation offsets, role, muzzle patterns by phase }`:
+   - The path is a few keys in the play plane's own coordinates (entry, hold, exit), timed in bars and sampled by arc length.
+   - Formation offsets are added in the plane after the path, so a formation turns with its leader.
+   - The waves come in 5 to 7 lanes, alternating sides, none at the edges.
+
+   One foe has one shape and one behaviour, readable as a silhouette from all three cameras at 480 lines. Colour variants are rewards.
+   - **Some shots are foes:** a slow heavy shell (the Gummi's cannonball) can be shot down before it bursts.
+   - **A heavy is a table of parts with HP:** the Phantom Storm's Pirate Ship is the model.
+   - **The next side is announced before it arrives**, by a mark at the frame's edge and a sound (the Gummi's alert): never a threat from
+     a side not announced.
+   - **Shots:**
+     - point the way they fly, with a bright core and a dark rim, drawn over everything;
+     - are never yellow, never orange, never the player's colours.
+8. **Each module plays alone first**, as a practice leg of 16 bars: one module, its waves, no swings. Each module gets a QAIS test.
+   Automated checks wait until the owner calls the crossing settled (it is on CLAUDE.md's in-flux line); until then a headless probe
+   reports the list. Swings are added only once all three pass the owner's play.
+9. **Collision is in the plane** (distance in the plane's two axes) in overhead and side, so it matches what the camera shows. In chase
+   it is 3D, with a generous band in depth.
+10. **On a swing, the old plane's shots are cancelled into Lachryma**: fewer live shots, and a bullet cancel that pays. This is pending
+    the owner (the digest), with Calissa's and Dovina's lean.
 
 ## 2. The three modules
 
@@ -140,6 +169,16 @@ beats re-mapped onto the three (§4).
 - The waves a module, from Calissa's research's breakdown.
 
 Each of these is a separate push, after the mock.
+
+**The research** (Calissa's, `docs/plans/research/RAIL-MODULES-SHMUP.md` on her branch, 565d7e8) is the source of rules 2, 3, 4, 7, 9
+and 10's detail; its §5 lists 23 rules, and the ones not taken here are runtime detail for Petra (pooling, inherit-by-declaration,
+shared axes in a swing).
+
+**For the owner** (in the digest, with Calissa's and Dovina's lean):
+1. Overhead aim: twin-stick, or fire along the scroll? Lean: along the scroll.
+2. On a swing, are the old plane's shots cancelled into Lachryma, or left as scenery? Lean: cancelled.
+3. Does grazing a shot pay? Lean: a little energy, capped a bar, so overhead is never farmed.
+4. Camera turns as a verb (Gummi Mission 3)? Lean: in one late leg only.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: gun, Bomb and forms only.
