@@ -149,7 +149,7 @@ export class Ship {
     const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0, cam = this.game.camera, dz = pl === 'screen' ? Math.round(this.boostZ * 2) / 2 : 0, Rv = reachOf(view, cam?.aspect || 16 / 9, T.camera.tpFov, 0.84, [dz, dz]); // (at the boost's depth, to half a metre)
     const want2 = this.boxWant ||= { x: [0, 0], y: [0, 0], z: [0, 0] }, box = this.box ||= { x: [0, 0], y: [0, 0], z: [0, 0] };
     want2.x[0] = (Rv.x ? Rv.x[0] : -B.x) * k; want2.x[1] = (Rv.x ? Rv.x[1] : B.x) * k;
-    want2.y[0] = B.yLo + F.cruise * 0.5; want2.y[1] = B.yLo + ((Rv.y ? Rv.y[1] : B.yHi) - B.yLo) * k + F.cruise;
+    want2.y[0] = Math.max(B.yLo + F.cruise * 0.5, Rv.y ? Rv.y[0] : -Infinity); want2.y[1] = B.yLo + ((Rv.y ? Rv.y[1] : B.yHi) - B.yLo) * k + F.cruise;
     want2.z[0] = Rv.z ? Rv.z[0] * k : zc - B.z * k; want2.z[1] = Rv.z ? Rv.z[1] * k : zc + B.z * k;
     for (const a of ['x', 'y', 'z']) for (const i of [0, 1]) box[a][i] = this.boxSet ? damp(box[a][i], want2[a][i], 4, raw) : want2[a][i];
     this.boxSet = true;

@@ -3314,3 +3314,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after:** the same 82 findings as before the change on the tree without it (83 with the new data file unimported: its
   orphan, as it should be); no file's imports lost.
 - **Rule:** 248.
+
+### 2026-10-20 · With the mock's chase camera, the ship's box shut to nothing at a full brake (Petra, before it shipped)
+- **Seen:** `reachOf('chase', 16/9, 70, 0.84, [-4, -4])` gave x 0 to 0, then, once a floor was searched by halving, a floor of 43 m.
+- **Cause:** the camera follows 62% of the ship (the owner's ruling 5). Braked, the cruise height itself sat just past the screen's
+  margin, so the search began outside and stepped nowhere; and halving between 3 m and 43 m assumed one edge in the range, but a
+  camera that follows the ship brings the screen round again far above the plane, so the halving settled on the wrong edge.
+- **Fix:** the floor is found by stepping from the cruise height (0.25 m a step) to the first change, then halving that one step;
+  where the cruise height is off the screen, the search starts from the floor it finds. The ship takes the higher of the floor and
+  the sea's surface (`ship.js`).
+- **Measured after** (16:9, every view, depths -4, -2, 0, 3 and 6): every corner at 0.840 or inside. Chase braked: floor 3.08 m
+  (the owner's ruling says 3.1), x ±8.8 m. In the game, braked, the ship sits at -0.84 on the screen, 0 errors.
+- **Rule:** 249.
