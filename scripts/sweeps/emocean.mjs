@@ -325,16 +325,8 @@ if (part('crossing')) {
     await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.emocean.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
     const y = await st(), he = (await events(mh)).filter((e) => e.name === 'rail.hit');
     S.check('verbs: a shot of another feeling is a hit, the mercy holds the next', x.run.hits === h0 + 1 && y.run.hits === h0 + 1 && he.length === 1 && he[0].by === 'creature', { hits: [x.run.hits - h0, y.run.hits - h0], mercy: x.ship.mercy, events: he.map((e) => e.by) });
-    // the parry: a whiff costs a breath (V spammed does not parry through it); an outlined shot is sent home
-    await S.ticks(80);
-    await S.press('KeyV', 2); const v1 = await st();
-    await S.ticks(16); const v2 = await st(); await S.press('KeyV', 1); const v3 = await st();
-    S.check('verbs: a parry into nothing costs a breath', v1.ship.parryT > 0 && v2.ship.recover > 0 && v3.ship.parryT <= 0, { parryT: v1.ship.parryT, recover: v2.ship.recover, mashed: v3.ship.parryT });
-    await S.ticks(40);
-    const mp = await em('mark()'), p0 = (await st()).run.parried, hp = (await st()).run.hits;
-    await S.ev(() => __em.shoot({ outlined: true, ahead: 1.6 })); await S.ticks(1); await S.press('KeyV', 20);
-    const pz = await st(), pev = (await events(mp)).filter((e) => e.name === 'move.parry');
-    S.check('verbs: V sends an outlined shot home', pz.run.parried === p0 + 1 && pz.run.hits === hp && pev.length === 1 && pev[0].by === 'courier', { parried: pz.run.parried - p0, hits: pz.run.hits - hp, events: pev.map((e) => e.by) });
+    // (the parry on V at sea was retired into the roll, E: RAIL-OVERHAUL.md 3. Its two checks were deleted, not fixed around: the
+    // crossing is in flux, CLAUDE.md "Test lean"; the roll's own check waits until the owner calls the crossing settled)
   }
   // careless aboard: the windows' keys, F, Esc to the pause and back, a resize, the chat line's /goto
   s = await st();
