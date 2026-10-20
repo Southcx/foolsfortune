@@ -56,12 +56,12 @@ This file is the plan that comes out of them.
   - The superseded files go to `docs/archive/`, with every path that cites them updated in the same commit.
 
 ### Petra
-- **The casebook:** keep the rules on top. Move the dated cases to `docs/archive/casebook/`, one file a month, about 25,000 words out of
+- **The casebook** (still stands, 2026-10-19: 3,889 lines, read before building in an area): keep the rules on top. Move the dated cases to `docs/archive/casebook/`, one file a month, about 25,000 words out of
   what is read first. Code cites cases by date, so the archive keeps the dates as headings.
-- **Merges:**
-  - `HANDOFFS.md` into `CLAUDE.md`'s "Talking directly";
-  - `ARCHITECTURE.md`'s budgets with `CLAUDE.md`'s "Performance and the look" (one home, one pointer);
-  - `CIRCUITS.md` into the basement's wiki page.
+- **Merges: dropped** (Dovina, 2026-10-19): `HANDOFFS.md` (13 lines) and `CIRCUITS.md` (20) are small and pointed to, and
+  `ARCHITECTURE.md` is binding with CLAUDE.md pointing at it; merging them buys nothing now.
+- **The garden's place page** (`world/garden/hand.js`): show `FEATURES[id].name` (the labels in `progress/realm.js`: Planter, Trophy
+  Hall, ...) and drop `FEATURE_NAME`, which still says the old lore names (herb terrace, echo pavilion). Still stands.
 - **Built plans to archive:** SLICE, BUILD, SHRINES, TESTROOM, STRAWMAN, DUNES, the DUNEMAW family (into one spec first), PARRY
   (with PARRY-CLIPS, into a wiki page).
 - **The menu template** (`indexmenu.js`): the card in place of the row (CLARITY.md sections 1a and 4).
