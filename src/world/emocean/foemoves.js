@@ -96,7 +96,7 @@ const MOVES = {
     return (t, out) => {
       if (t < wait) { // (unseen at the edge behind, its mark shown where it will come in)
         f.solid = false; if (f.mesh) f.mesh.visible = false; out.copy(E);
-        if (!marked) { marked = true; W.rail.toWorld(mark, w); W.game.glyphs?.pop?.('bang1', w.clone(), { color: 0xffd36a, size: 1.6, life: wait, float: 0, burst: true }); }
+        if (!marked) { marked = true; if (!W.game.ambushMark?.show(mark, wait)) { W.rail.toWorld(mark, w); W.game.glyphs?.pop?.('bang1', w.clone(), { color: 0xffd36a, size: 1.6, life: wait, float: 0, burst: true }); } } // (Calissa's mark, carried in the frame: vfx/railfoemarks.js)
         return true;
       }
       f.solid = true; if (f.mesh) f.mesh.visible = true;

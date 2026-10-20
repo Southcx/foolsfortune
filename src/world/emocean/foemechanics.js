@@ -77,7 +77,7 @@ export const FOE_MECHANICS = {
       if (!(f.t >= (M.fuse ?? 2) * BAR_S || (ship && f.local.distanceTo(ship.local) < (M.near ?? 8)))) return;
       const P = W.game.emocean?.trip?.player, view = W.view || 'chase';
       if (M.burst && P) P.play(M.burst.name, M.burst.params || {}, { at: f.local, mode: modeOf(view), kind: 'feel', up: view === 'side' ? [1, 0, 0] : [0, 1, 0] });
-      W.game.events?.emit('rail.mine', { by: 'creature' });
+      W.game.events?.emit('rail.mine', { at: f.local.clone(), up: view === 'side' ? [1, 0, 0] : [0, 1, 0], by: 'creature' }); // (its flash and shock ring: vfx/railfoemarks.js)
       f.burst = true; return false; // (burst: gone unpaid, its body breaking up where it was: waves.js)
     },
   },
