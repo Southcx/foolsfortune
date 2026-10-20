@@ -30,6 +30,10 @@ import { sfx } from '../../audio/sfx.js';
  *  card, the mooring's preview and play are one number. */
 const CONE = Object.fromEntries(['soulbrush', 'lockheart', 'sondelass'].map((t) => [t, { half: MOUNTS[t].angle / 2, range: MOUNTS[t].range }]));
 
+/** The toll on the beat: within `window` of a bar or a quarter bar, its ring is `boost` times the table's. The vane's warning mark's
+ *  colour. Both exported for the mount cards (ui/), so the card and play are one number. */
+export const TOLL_BEAT = { window: 0.08, boost: 1.4 }, VANE_WARN_COLOR = 0xff7a4a;
+
 const KEYS = ['Digit1', 'Digit2', 'Digit3']; // (a frigate carries three: mounts by hull, rail/mounts.js slotsOf)
 const _d = new THREE.Vector3(), _a = new THREE.Vector3();
 /** Is a point within a cone from `from` along unit `dir` (half-angle in degrees, reach in m)? */
@@ -83,7 +87,7 @@ export class Mounts {
 
   /** The toll: the bomb (the table's range, 1.4 times it on the beat). */
   toll({ ship, waves, shots, bar }) {
-    const onBeat = Math.abs(bar - Math.round(bar)) < 0.08 || Math.abs(bar * 4 - Math.round(bar * 4)) < 0.08, r = (MOUNTS.crucibelle.range ?? 10) * (onBeat ? 1.4 : 1); // (the table's ring; on the beat 1.4 times it)
+    const W = TOLL_BEAT.window, onBeat = Math.abs(bar - Math.round(bar)) < W || Math.abs(bar * 4 - Math.round(bar * 4)) < W, r = (MOUNTS.crucibelle.range ?? 10) * (onBeat ? TOLL_BEAT.boost : 1); // (the table's ring; on the beat, boost times it)
     for (const s of shots.plains) if (s.on && !s.back && s.p.distanceTo(ship.local) < r) s.on = false; // (plain shots only: an outlined one is the parry's alone)
     for (const f of waves.within(ship.local, r)) if (f.role === 'boarder') waves.strike(f, 99, { cause: 'impact' });
     this.stage.piece?.scatter?.();
@@ -134,5 +138,5 @@ export class Mounts {
     if (c) this.game.glyphs?.pop('ask', c.pos.clone().setY(c.pos.y + 2), { color: 0x9be36a, size: 0.8, follow: () => c.pos.clone().setY(c.pos.y + 2) });
   }
   /** A blow's warning (rail.warn): the vane marks it over the ship, a bar ahead. */
-  warn() { if (this.list.includes('dreamvane')) { const P = this.game.player.pos; this.game.glyphs?.pop('bang1', P.clone().setY(P.y + 2.5), { color: 0xff7a4a, size: 0.8 }); } }
+  warn() { if (this.list.includes('dreamvane')) { const P = this.game.player.pos; this.game.glyphs?.pop('bang1', P.clone().setY(P.y + 2.5), { color: VANE_WARN_COLOR, size: 0.8 }); } }
 }
