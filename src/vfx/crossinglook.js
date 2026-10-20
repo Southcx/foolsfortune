@@ -82,7 +82,7 @@ export class CrossingLook {
     this.rings = []; this.slabs = []; this.plan = { rings: [], slabs: [] }; this.prevShip = new THREE.Vector3(); this.hasPrev = false;
     this.streaks = Array.from({ length: C.drift.n }, (_, i) => ({ x: (hash(i) - 0.5) * 22, y: 0.3 + hash(i + 7) * 1.8, z: -20 + hash(i + 13) * 100 }));
     this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0, sense: 1 };
-    this.refit = new RefitSweep(this.game); // (the test crossing's hull swap covered: vfx/refitsweep.js)
+    this.refit = new RefitSweep(this.game); // (the showcase crossing's hull swap covered: vfx/refitsweep.js)
     this.game.events?.on?.('rail.surge', () => { this.shellT = C.shell.time; this.shellForm = this.st.ship?.form || 'astral'; });
   }
 

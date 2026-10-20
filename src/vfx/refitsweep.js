@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE REFIT SWEEP: the test crossing's hull swap covered (Petra's showcase.hull { hull, k }, world/emocean/triprun.js: the new hull's look
+// THE REFIT SWEEP: the showcase crossing's hull swap covered (Petra's showcase.hull { hull, k }, world/emocean/triprun.js: the new hull's look
 // swaps visibility with the old one in the turn between legs, no cover of its own). A hoop of light the hull's girth passes from bow to
 // stern over the new hull in 0.7 real s, a bright plane inside it, so the change reads as a refit made, never a pop. Drawn with the
 // rail's plain additive look (MeshBasicMaterial, additive: a program the lights to lock already compile), kept true under the storm's veil.
