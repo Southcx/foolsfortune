@@ -22,6 +22,10 @@
 //   FLEE    'flee' { roll, ok } (a saving throw to escape, flee.js): a d20 thrown, rattling, landing; then what it says: a 20 a crit's
 //           bright run and a crown of bells, a 1 a dull clunk sagging down a tritone, a pass a light lift, a miss a soft drop;
 //           'duel.fled' the escape: a rush away
+//   PULL    nearness opening a duel (PUZZLE-DUELS.md 16.3; world/duel/duelfoes.js `pull` 0..1, read each 50 ms): a held throb under the
+//           Courier, a heartbeat quickening as the pull fills, and a pair of detuned tones closing in on each other a fifth higher (the
+//           aberrant's data bug heard: two notes almost one); on the loop bus, so a menu hushes it. duel.slip lets it go with a falling
+//           breath; duel.open (the pull full, the duel begun) snaps it shut on a caught-frame crack and a low boom
 // No view or room yet (PUZZLE-DUELS.md 8): nothing calls these until one exists.
 // Prior art: Puyo Puyo's chain voices (each step a higher call: the step is heard before it is counted), Tetris Effect's notes on the
 // key, Puzzle Fighter's gem shatter and counter-gem thud, Meteos's launch.
@@ -218,5 +222,43 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow('duelFled', 1)) return;
     const t = this.ctx.currentTime + 0.9, d = this.duelOut(0.3, 0.3); // (after the roll's verdict)
     this.noise(t, 0.5, { type: 'bandpass', f0: 600, f1: 3000, q: 1.2, gain: 0.18, attack: 0.15, dest: d });
+  }
+
+  /** The pull begun: a held throb read from `read()` (0..1) every 50 ms until it ends (duelPullEnd) or reads 0 for a beat. */
+  duelPullStart(read = () => 0) {
+    if (this._pull || !this.ok()) return;
+    const c = this.ctx, g = c.createGain(); g.gain.value = 0.0001; g.connect(this.loopBus || this.out(1, 0.2));
+    const sub = c.createOscillator(); sub.frequency.value = 55; const subG = c.createGain(); subG.gain.value = 0; sub.connect(subG).connect(g);
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 6; bp.frequency.value = 330; bp.connect(g);
+    const a = c.createOscillator(), b = c.createOscillator(); a.type = b.type = 'sawtooth'; const ab = c.createGain(); ab.gain.value = 0; a.connect(ab); b.connect(ab); ab.connect(bp);
+    sub.start(); a.start(); b.start();
+    const P = this._pull = { g, sub, a, b, ab, subG, bp, next: c.currentTime, zero: 0 };
+    P.timer = setInterval(() => {
+      const k = Math.max(0, Math.min(1, read() || 0)), t = c.currentTime;
+      P.zero = k > 0 ? 0 : P.zero + 1; if (P.zero > 6) { this.duelPullEnd(false); return; }
+      g.gain.setTargetAtTime(0.35, t, 0.1);
+      const f = 220 * Math.pow(2, k * 7 / 12); // (a fifth up over the fill)
+      a.frequency.setTargetAtTime(f, t, 0.08); b.frequency.setTargetAtTime(f * Math.pow(2, (60 - 55 * k) / 1200), t, 0.08); // (the two close in: 60 cents apart to 5)
+      bp.frequency.setTargetAtTime(f * 1.5, t, 0.1); ab.gain.setTargetAtTime(0.02 + 0.08 * k, t, 0.1);
+      if (P.next < t) P.next = t; // (the heartbeat: lub-dub, faster as the pull fills, 0.9 s to 0.35 s a beat)
+      while (P.next < t + 0.12) { const at = P.next; [0, 0.13].forEach((x, j) => { subG.gain.setValueAtTime(0, at + x); subG.gain.linearRampToValueAtTime(j ? 0.18 + 0.2 * k : 0.25 + 0.25 * k, at + x + 0.015); subG.gain.setTargetAtTime(0, at + x + 0.02, 0.05); }); P.next += 0.9 - 0.55 * k; }
+    }, 50);
+  }
+  /** The pull ended: slipped away (a falling breath), or full and the duel open (snapped shut; duelOpen says the rest). */
+  duelPullEnd(opened = false) {
+    const P = this._pull; if (!P) return; this._pull = null; clearInterval(P.timer);
+    const c = this.ctx, t = c.currentTime;
+    P.g.gain.cancelScheduledValues(t); P.g.gain.setValueAtTime(P.g.gain.value, t); P.g.gain.setTargetAtTime(0.0001, t, opened ? 0.02 : 0.25);
+    if (!opened) { P.a.frequency.setTargetAtTime(P.a.frequency.value * 0.7, t, 0.3); P.b.frequency.setTargetAtTime(P.b.frequency.value * 0.68, t, 0.3);
+      if (this.ok()) { const d = this.duelOut(0.2, 0.3); this.noise(t, 0.6, { type: 'bandpass', f0: 1400, f1: 400, q: 1, gain: 0.08, attack: 0.1, dest: d }); } }
+    setTimeout(() => { for (const o of [P.sub, P.a, P.b]) try { o.stop(); } catch { /* gone */ } P.g.disconnect(); }, 1600);
+  }
+  /** The duel open: the frame caught (a glitched crack) and the board set down (a low boom). */
+  duelOpen() {
+    if (!this.ok() || !this.allow('duelOpen', 1)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.42, 0.45);
+    for (let i = 0; i < 5; i++) this.tone(t + i * 0.025, 0.02, { f0: 3000 - i * 400, type: 'square', gain: 0.04, dest: d });
+    this.noise(t + 0.12, 0.25, { type: 'highpass', f0: 2500, gain: 0.25, dest: d });
+    this.tone(t + 0.12, 1.2, { f0: 80, f1: 38, gain: 0.45, dest: d });
   }
 }

@@ -12,6 +12,7 @@
 //   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
 //   arranger.setUnder(on) (the rail's Umbral form: the music heard through the crude, and the lift of the breach)
 //   arranger.swap(score): a score of the same `family` relaid mid-play carries on from the bar playing (follow does it by itself)
+//   arranger.barLog: the last bars laid out { n (1 = the score's first), t (audio-clock start), spb, beats, section } (music/clock.js)
 //   arranger.step() lays out one bar into the queue; arranger.drain(until) makes the notes due before `until` (an offline render: Infinity)
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
@@ -71,7 +72,7 @@ export class Arranger {
     const ctx = this.ctx;
     this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, score.fadeIn ?? 0.8);
     this.alive = true; this.next = this.started = ctx.currentTime + (score.lead ?? 0.15); this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
-    this.queue = []; this.lastRun = 0;
+    this.queue = []; this.lastRun = 0; this.barN = 0; this.barLog = []; // (the bars laid out, numbered from the score's start: music/clock.js reads them)
     this.spb = 60 / (score.sections[0].bpm || score.bpm);
     this.timer = setInterval(() => this.run(), 50);
     this.run();
@@ -155,6 +156,7 @@ export class Arranger {
     if (this.layer && !S.moodless && S.loopFrom !== null) for (const e of this.layer(S, sec, this.bar) || []) this.play1(e, t0, 1);
     if (this.queue.length > n0) this.queue.sort((a, b) => a.t - b.t);
     this.scaleAt = { t: t0, scale: sec.scale || S.scale || null };
+    (this.barLog ||= []).push({ n: this.barN = (this.barN ?? 0) + 1, t: t0, spb, beats, section: sec.id }); if (this.barLog.length > 24) this.barLog.shift(); // (bar n starts at t, audio clock)
     this.next += spb * beats;
     // a score that follows the game (iMUSE's horizontal resequencing): asked after every bar which section plays next; a number moves
     // there on the next bar line (its own index on its last bar loops it), -1 ends the score, null carries on as written
