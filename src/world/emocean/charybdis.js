@@ -65,12 +65,8 @@ export class Charybdis {
     whirlHeart(S.rail.path, this.arena, S.sea?.y ?? 0, _h, CRUISE);
     f.tick = (dt, foe) => { S.rail.toLocal(_c.copy(_h).setY(_h.y + this.y), foe.local); return true; };
     // hurt only from the world it is in, twice over as it crosses the surface (setpieces.js charybdisHurt); a shot from the other world
-    // glances off with the resist mark (the ward), once a fifth of a real second at most
-    f.armour = (foe) => {
-      const k = charybdisHurt(this.st.ship.form, this.y), now = performance.now();
-      if (k <= 0 && now - (this.wardAt ?? -1e9) > 200) { this.wardAt = now; this.game.glyphs?.pop?.('ward', foe.pos.clone(), { color: 0xffffff, size: 1.4, life: 0.6, float: 0.3, burst: true, ring: true }); }
-      return k;
-    };
+    // glances off (waves.js glance: the resist mark, once a fifth of a real second at most)
+    f.armour = () => charybdisHurt(this.st.ship.form, this.y);
     const down = f.onDown; f.onDown = (foe) => { down?.(foe); this.felled(); };
   }
 

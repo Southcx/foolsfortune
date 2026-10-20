@@ -9,7 +9,10 @@
 //
 // THE ROSTER (progress/rail/showcase.js ROSTER, Dovina's; RAIL-MODULES.md 6): a wave of any of its roles keeps its role, so a pattern
 // thrown `from` that role finds it; it is drawn by its own body (vfx/railfoes.js railFoeBody, Calissa's: a hit's flash, the windup's
-// tell, its death read in 0.55 real s), and it moves and fires by its role's row below, or the school's where it has none yet.
+// tell, its death read in 0.55 real s), and it moves and fires by its role's row below, or the school's where it has none yet; what
+// it does beyond that is its mechanic (world/emocean/foemechanics.js: the escort's shield, the gunship's guns, the blocker's weak point,
+// the spawner's hatch, the grappler's latch). A wave laid `from` a role comes out of that foe, or not at all once it is down. A blow a
+// mechanic turns aside reads as a glance (`glance`: the resist mark, `rail.glance`).
 //
 // Each foe is a creature (creatures/creatures.js: tagged hurtable, registered, struck only through `creatures.strike`), so the gun
 // is a weapon like any other and the creatures' services (the windup, the statuses) are there when the set pieces want them. Each
@@ -37,6 +40,7 @@ import { OPPOSITE } from '../../progress/weather.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
 import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
+import { FOE_MECHANICS } from './foemechanics.js';
 
 /** Shots to down a foe by class (Guppy, Barracuda, Marlin, Whale, Leviathan: about three times a class, as their pay is). */
 export const HP = [1, 3, 12, 40, 150];
@@ -109,13 +113,14 @@ export class Waves {
         continue;
       }
       _p.copy(f.local);
-      if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; }
+      if (!f.pinned) { if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; } if (f.shift) f.local.add(f.shift); }
+      if (f.mech?.tick && f.mech.tick(this, f, dt, ctx) === false) { this.leave(f); this.foes.splice(i, 1); continue; }
       this.rail.toWorld(f.local, f.pos);
       // face the way it moves against the rail (what the eye, riding the rail, reads)
       _d.copy(f.local).sub(_p); this.rail.dirWorld(_d, _w);
       if (_w.lengthSq() > 1e-8) f.mesh.lookAt(_w.add(f.pos));
       f.mesh.position.copy(f.pos);
-      if (f.body) { f.body.tell(this.tellOf?.(f) ?? 0); f.body.update(dt); }
+      if (f.body) { f.body.tell(Math.max(this.tellOf?.(f) ?? 0, f.hatch || 0)); f.body.update(dt); }
       this.fire(f, bar, sixteenth, ship, shots);
     }
     // the downed, their death read where they fell in the rail's frame, then put away
@@ -146,6 +151,8 @@ export class Waves {
 
   // ---------------------------------------------------------------- the foes
   spawn(w, wi) {
+    let src = null, at = null; // (a wave laid `from` a role: out of the nearest live one of it, its hatch opening; none alive, it never comes)
+    if (w.from) { for (const f of this.foes) if (f.alive && f.role === w.from && (!src || f.local.z < src.local.z)) src = f; if (!src) return; src.hatch = 1; at = src.local; }
     const look = RAIL_FOE_ROLES.includes(w.role) ? w.role : 'school', moves = ROLES[look] ? look : 'school', R = ROLES[moves], path = PATHS[w.formation] || PATHS.line;
     const A = this.aspect, B = OPPOSITE[A] || A, k = look === 'school' ? 1 + 0.25 * w.cls : 1;
     const radius = ROLES[look] ? SIZE * R.radius * k : SIZE * 0.45 * (RAIL_FOE_SIZE[look] || 2); // (a roster body's own length where its role has no row)
@@ -158,10 +165,12 @@ export class Waves {
         kind: `rail.${look}`, name: look === 'school' ? 'a fish of the school' : `a ${look.replace('-', ' ')}`,
         role: look, cls: w.cls, aspect, radius, hp: HP[Math.max(0, Math.min(4, w.cls))], mesh,
       });
-      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body });
-      path(0, i, w.count, f.lane, f.local); this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
+      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null });
+      path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
+      this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
       this.game.creatures?.add(f);
       this.foes.push(f);
+      f.mech?.spawn?.(this, f, w);
     }
     this.onSpawn?.(w.count, w);
   }
@@ -174,7 +183,7 @@ export class Waves {
       local: new THREE.Vector3(), pos: new THREE.Vector3(), alive: true, tags: new Set(['hurtable']), poise: 1e6, mesh: null, last: null,
       hurt(point, dir, power) {
         if (!this.alive) return;
-        const k = this.armour ? this.armour(this) : 1; if (k <= 0) return; // (a shut gill, a closed port: the blow glances off)
+        const k = this.armour ? this.armour(this) : 1; if (k <= 0) { waves.glance(this); return; } // (a shut gill, a closed port, a shield: the blow glances off)
         this.hp -= power * k; this.hitT = 0.08; this.body?.hit(); this.onHurt?.(this, power * k);
         if (this.hp <= 0) { this.alive = false; waves.down(this); }
       },
@@ -214,9 +223,15 @@ export class Waves {
     this.gone(f, true);
   }
   leave(f) { f.alive = false; this.onLeave?.(f); this.gone(f); }
+  /** A blow turned aside (armour 0): the resist mark where it struck and `rail.glance` for its sound, a fifth of a real second apart. */
+  glance(f) {
+    const now = performance.now(); if (now - (f.glanceAt ?? -1e9) < 200) return; f.glanceAt = now;
+    this.game.glyphs?.pop?.('ward', f.pos.clone(), { color: 0xffffff, size: 1.4, life: 0.6, float: 0.3, burst: true, ring: true });
+    this.game.events?.emit('rail.glance', { role: f.role, by: f.last?.by || 'courier' });
+  }
   /** Off the roll: a body downed reads its death first (`dying`, put away by update), anything else at once. */
   gone(f, died = false) {
-    f.alive = false; this.game.creatures?.remove(f);
+    f.alive = false; this.game.creatures?.remove(f); f.onGone?.(f);
     if (died && f.body && this.plan) { f.body.down(); this.dying.push(f); return; }
     this.bury(f);
   }
