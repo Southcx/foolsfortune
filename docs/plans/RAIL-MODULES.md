@@ -235,7 +235,7 @@ This came before the mock because these were the owner's bugs, not the new desig
 - the Gummi ship's foes;
 - the rule that one foe is one shape and one behaviour (rule 7).
 
-**What each foe is for:** each one teaches one answer, so the roster is "complete" when every verb has a foe that asks for it: the gun,
+**What each foe is for:** 16 foes, each teaching one answer, so the roster is "complete" when every verb has a foe that asks for it: the gun,
 the lock-on, the roll, the forms, the Bomb, a mount, and moving.
 
 **How each column reads:**
@@ -262,6 +262,17 @@ the lock-on, the roll, the forms, the Bomb, a mount, and moving.
 | **heavy** (built) | +2 | x1 | the rings and spirals (rotatingRing, multiSpiral, rose, doubleHelix) | holds mid-frame 8 to 10 bars | O (C S as a mid-boss) | the forms: drinking a ring of your colour |
 | **gunship** | +2 | x1 core + parts | its parts: two guns (stackFan, splitShell), a core opened by their loss. Parts as `SCORE.part` (port 500 a gun) | holds broadside or ahead 8 bars, the Phantom Storm's model | C O S | parts and the lock-on on them |
 | **blocker** | +2 | x3, armour 0.25 | nothing | drifts into the lane and closes a third of the frame for 4 bars; its weak point shows only to the Flash mount (the Veritome), or to a Bomb | O S | a mount: what the Flash and the Bomb are for |
+| **spawner** | +1 | x3 | nothing itself: a hatch that lets out a school of 4 every 2 bars while it holds | holds at an edge 8 bars; its schools fly the school's paths | O S | the source over the swarm: kill the hatch and the popcorn stops |
+| **grappler** (the boarder, anywhere) | +1 | x1 | nothing: it latches onto the hull and drags (the ship's pace x0.8, a modifier you can see on the hull) until the roll (E) throws it off, the Grapple mount yanks it off, or it is shot | swings in on a line from an edge, latches, holds till shaken | C S | the roll and the Grapple mount as cures |
+
+**Composition caps** (Calissa's research, its own inference, so caps to test, not laws yet):
+- at most 3 foe types alive at once (5 at a peak);
+- 1 heavy (or gunship) at a time;
+- 1 aimed foe at a time (sniper, sweeper);
+- at most 8 of the popcorn (the lock-on's eight);
+- no foe holds at the frame's edge (rule 4).
+
+A 16-bar practice leg splits as: open bars 1 to 4, build 5 to 9, peak 10 to 14, release 15 and 16 with no fire (the swing).
 
 **The bosses stay the set pieces'**: the brig, Old Nobody, the shoal's Conductor, Charybdis.
 
