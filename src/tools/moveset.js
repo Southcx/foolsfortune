@@ -83,7 +83,7 @@
 //     a cut        a press that ends an LMB blow early (R, RMB's specials, the paid cut, the blink, the guard) is judged by the blow's
 //                  strike window (recovering(c)): past it with nothing struck, its move.blow says hit: false and the run ends 'miss'
 //                  (a cancel never launders a miss); cut before the window is past (no contact yet, the blade still able to strike),
-//                  nothing ends: the outcome was never decided (casebook rule NEW:outcome-after-window)
+//                  nothing ends: the outcome was never decided (casebook rule 196)
 //     a held charge   the window stands still (the engine's hold, the iaido's charge: holding(t)) for at most HOLD_MAX, 2 real s of
 //                  the hold; past it the run ends 'pause'. The release is a blow like any other (the charged slash adds or misses; the
 //                  iaido's draw cut is a special, apart)

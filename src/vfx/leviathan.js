@@ -165,10 +165,10 @@ export class LeviathanLook {
     this.vantages.above.position.set(0, 16, 0); this.vantages.below.position.set(0, -14, -4); this.vantages.flank.position.set(-24, 0, -6); this.vantages.ahead.position.set(0, 2, 28);
     for (const s of Object.values(this.vantages)) this.head.add(s);
     // the shadow on the sea when it sounds, and its wake: one program, two marks draped on the swells
-    this.shadowMat = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: 0x050308, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+    this.shadowMat = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: 0x050308, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     this.shadowM = new THREE.Mesh(track(new THREE.PlaneGeometry(2, 2, 12, 24).rotateX(-Math.PI / 2)), this.shadowMat);
     this.slick = slickTexture().clone(); this.slick.needsUpdate = true; // (its own offset, so it streams with this beast)
-    this.wakeMat = track(new THREE.MeshBasicMaterial({ map: this.slick, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide }));
+    this.wakeMat = track(new THREE.MeshBasicMaterial({ map: this.slick, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     const wg = track(new THREE.BufferGeometry()), wp = new Float32Array(WAKE_N * 2 * 3), wuv = new Float32Array(WAKE_N * 4), wi = [];
     for (let i = 0; i < WAKE_N; i++) { wuv.set([0, i / (WAKE_N - 1) * 3, 1, i / (WAKE_N - 1) * 3], i * 4); if (i < WAKE_N - 1) { const a = i * 2; wi.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
     wg.setAttribute('position', new THREE.BufferAttribute(wp, 3).setUsage(THREE.DynamicDrawUsage)); wg.setAttribute('uv', new THREE.BufferAttribute(wuv, 2)); wg.setIndex(wi);

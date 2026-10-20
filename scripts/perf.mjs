@@ -79,7 +79,7 @@ try {
       return out;
     };
     // (a draw is timed up to a 1-pixel readPixels: without the sync the timer read the GPU's queue, a cheap frame or a blocked one by
-    // chance, not the frame; CASEBOOK NEW:sync-before-timing-the-draw, measured by Calissa 2026-10-18)
+    // chance, not the frame; CASEBOOK rule 236, measured by Calissa 2026-10-18)
     const gl = R.getContext(), px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     const place = () => {
       for (let i = 0; i < 40; i++) { G.tick(1 / 60); G.draw(); }

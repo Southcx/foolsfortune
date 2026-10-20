@@ -105,9 +105,9 @@ export class DrownedLight {
     const hullG = track(brigHullGeometry()), wreckMat = std(0x7d8c94, { vertexColors: true, roughness: 0.7, side: THREE.DoubleSide, envMap: env, envMapIntensity: 0.15 });
     const mast = std(0x2b211b), barnSlots = [];
     this.hulls = []; this.ghosts = [];
-    const ghostFill = (this.ghostFill = track(new THREE.MeshBasicMaterial({ color: C.ghost, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }))), // (pale glass: a program the game already warms)
+    const ghostFill = (this.ghostFill = track(new THREE.MeshBasicMaterial({ color: C.ghost, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }))), // (pale glass: a program the game already warms)
       ghostLine = (this.ghostLine = track(mindLineMaterial({ opacity: 0.85, depthTest: true, bright: 1.1 })));
-    const ghostSail = (this.ghostSail = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: C.ghost, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }))); // (the beam's program: a soft glow in the shape of a rag of sail)
+    const ghostSail = (this.ghostSail = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: C.ghost, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }))); // (the beam's program: a soft glow in the shape of a rag of sail)
     const hullEdges = track(new THREE.EdgesGeometry(hullG, 32));
     const WRECKS = [[0.4, 24, -9, 1.3, 0.9], [2.1, 30, -14, -1.1, 1.15], [3.7, 22, -7, 0.4, 0.8], [5.0, 34, -16, 1.6, 1.3]]; // (bearing, distance, depth, heel, scale)
     for (const [k, [a, d, y, heel, s]] of WRECKS.entries()) {

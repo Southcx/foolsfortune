@@ -57,7 +57,7 @@ function circleTexture() {
 export class Ultimate {
   constructor(game) {
     this.game = game; this.active = false; this.want = false; this.t = 0;
-    const mat = new THREE.MeshBasicMaterial({ map: circleTexture(), color: GOLD, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const mat = new THREE.MeshBasicMaterial({ forceSinglePass: true, map: circleTexture(), color: GOLD, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
     this.circle = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
     this.circle.rotation.x = -Math.PI / 2; this.circle.renderOrder = 4; this.circle.visible = false; this.circle.userData.moodExempt = true;
     this.circle2 = new THREE.Mesh(this.circle.geometry, mat.clone()); this.circle2.material.color.copy(LACH); this.circle2.rotation.x = -Math.PI / 2; this.circle2.renderOrder = 4; this.circle2.visible = false;

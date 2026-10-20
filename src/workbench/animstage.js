@@ -47,7 +47,7 @@ function makeFloor() {
 /** The midline: the body's centre plane (x = 0 in the body's frame), faint, its edges and its line on the floor brighter. */
 function makeMidline() {
   const g = new THREE.Group(); g.name = 'animlab.midline';
-  const fill = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.3), new THREE.MeshBasicMaterial({ color: 0x9fd7ff, transparent: true, opacity: 0.012, depthWrite: false, side: THREE.DoubleSide }));
+  const fill = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.3), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0x9fd7ff, transparent: true, opacity: 0.012, depthWrite: false, side: THREE.DoubleSide }));
   fill.rotation.y = Math.PI / 2; fill.position.y = 1.15; g.add(fill);
   const P = [[0, 0, -1.3], [0, 0, 1.3], [0, 2.3, -1.3], [0, 2.3, 1.3], [0, 0, -1.3], [0, 2.3, -1.3], [0, 0, 1.3], [0, 2.3, 1.3]].flat();
   const edge = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(P, 3)), new THREE.LineBasicMaterial({ color: 0x9fd7ff, transparent: true, opacity: 0.15, depthWrite: false }));
@@ -130,7 +130,7 @@ export class AnimLab {
     if (!far) return;
     const line = (pts, color, opacity) => new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
     this.ghost.add(line(hips, 0xffd76a, 0.85), line(floor, 0xffd76a, 0.4));
-    const end = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 24), new THREE.MeshBasicMaterial({ color: 0xffd76a, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
+    const end = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 24), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffd76a, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
     end.rotation.x = -Math.PI / 2; end.position.copy(floor[floor.length - 1]); this.ghost.add(end);
   }
 

@@ -50,14 +50,14 @@ export class PsychicPulse {
     });
     const shell = new THREE.Mesh(this.shellGeo, mat);
     shell.renderOrder = 8; shell.frustumCulled = false;
-    const ring = new THREE.Mesh(this.ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+    const ring = new THREE.Mesh(this.ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true, fog: false }));
     ring.renderOrder = 9; ring.frustumCulled = false;
     shell.position.copy(pos); ring.position.copy(pos);
     this.game.scene.add(shell, ring);
     // where the shell meets a water surface: a flat ring, so that a pulse from deep down still reads on the water above it
     let cut = null;
     if (surfaceY != null) {
-      cut = new THREE.Mesh(this.cutGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+      cut = new THREE.Mesh(this.cutGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true, fog: false }));
       cut.renderOrder = 8; cut.frustumCulled = false; cut.position.set(pos.x, surfaceY + 0.04, pos.z); cut.visible = false;
       this.game.scene.add(cut);
     }

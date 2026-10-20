@@ -353,9 +353,10 @@ export class PsygunCylinder {
   drawInset(P, px, lp) {
     const g = this.game, S = this.known, i = this.selIdx(S), id = this.ids[i], ins = this.inset;
     const armed = !S.open && S.counts[i] > 0 && (shellById(id)?.tier || 1) >= 4 && !!g.vesselDamage;
-    ins.m.visible = armed; if (!armed) return;
+    ins.m.visible = armed; if (!armed) { this.insetKey = ''; return; }
     const tr = g.vesselDamage.tollRegion?.() || { region: null, shatter: false }, lit = tr.shatter ? REGIONS.map((_, k) => k) : tr.region ? [REGIONS.indexOf(tr.region)] : [];
-    drawInset(ins.c, lit, Array.from(g.vesselDamage.crack || []), 1, this.clock); ins.t.needsUpdate = true;
+    const crack = Array.from(g.vesselDamage.crack || []), key = `${lit.join('')}|${crack.join('')}|${Math.floor(this.clock * (lit.length ? 30 : 4))}`; // (the glint pulses at 30 a real s; unlit, only the frame's slow film turns)
+    if (key !== this.insetKey) { this.insetKey = key; drawInset(ins.c, lit, crack, 1, this.clock); ins.t.needsUpdate = true; }
     ins.m.position.set(-(px + (PLATE.w - 18) * lp), (PLATE.foot + PLATE.h + PLATE.gap + 26) * lp, 200); ins.m.scale.set(36 * lp, 52 * lp, 1);
   }
   /** The Pentagun's points: a chamber fired in the window lights its corner (60 ms up); the fifth draws the star (five strokes, 70 ms

@@ -50,7 +50,7 @@ export class Specials {
     this.preview = new THREE.Line(g, new THREE.LineDashedMaterial({ color: PALETTE.hot, dashSize: 0.12, gapSize: 0.08, transparent: true, opacity: 0, depthWrite: false }));
     this.preview.frustumCulled = false;
     this.preview.renderOrder = 6;
-    this.previewDot = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.075, 16), new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+    this.previewDot = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.075, 16), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.hot, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
     this.previewDot.renderOrder = 6;
     this.game.scene.add(this.preview, this.previewDot);
 

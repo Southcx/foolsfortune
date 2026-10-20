@@ -124,9 +124,9 @@ export class Character {
       if (!byMat.has(key)) {
         const m = (MATS[name] || MATS.CourierEnergy)();
         m.onBeforeCompile = applyFpHide;
-        m.customProgramCacheKey = () => `fphide-${key}`;
+        m.customProgramCacheKey = () => 'fphide-rig'; // (one key for every region: the code is the same, so they share a program; a patch on top adds its own: -fin, -kin, filigree)
         if (!m.transparent) addRim(m); // (the thin Lachryma rim: render/toon.js)
-        byMat.set(key, withFade(m, key, this.U));
+        byMat.set(key, withFade(m, 'rig', this.U));
         if (region) this.regionMats[region] = m;
         if (name === 'Courier_Armor' && !this.filigree) this.filigree = dressFiligree(byMat.get(key)); // (the maker's line masks: vfx/filigree.js)
       }
@@ -189,13 +189,13 @@ export class Character {
         ? new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.5, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0 })
         : new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.55, metalness: 0.1, flatShading: true });
       if (shell) this.gunGlowMats.push(o.material);
-      withFade(o.material, `gun${gunMeshes.indexOf(o)}`, this.U);
+      withFade(o.material, 'rig', this.U);
       o.castShadow = true;
       addOutline(o, OL.char);
     }
     // greybox iron sights so ADS has something to line up
-    const sightMat = withFade(new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true }), 'sight', this.U);
-    const dotMat = withFade(new THREE.MeshBasicMaterial({ color: PALETTE.hot }), 'dot', this.U);
+    const sightMat = withFade(new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true }), 'rig', this.U);
+    const dotMat = withFade(new THREE.MeshBasicMaterial({ color: PALETTE.hot }), 'rig', this.U);
     const y = GUN_POINTS.sightY;
     for (const z of [-0.016, 0.016]) {
       const r = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.036, 0.012), sightMat);

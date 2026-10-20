@@ -701,7 +701,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   a held tool or a limb through the body (cm), a joint past its range (degrees); a contact sheet of the worst frames. *Not:* a sweep, rom.js.
 - **replay** (`game.replay`, `src/core/replay.js`) — a session kept so it plays again the same: a header and the frames. *Not:* a chat command. →
   detail
-- **the casebook** (`docs/CASEBOOK.md`) — every bug fixed, with its cause and the rule it left. *Not:* the log, a report, the ledger.
+- **the casebook** (`docs/CASEBOOK.md`, its cases `docs/CASEBOOK-CASES.md`) — every bug fixed, with its cause and the rule it left. *Not:* the log, a report, the ledger.
 - **QAIS** (F8, `game.qais`, `src/debug/qais/`) — the development window where the owner tests a build: the Brief, QAIS tests, reports, questions.
   Always "QAIS". *Not:* the System, the F3 panel. → detail
 - **QAIS test** (`tests/T<n>`) — one thing for the owner to try in a test session. Always "QAIS test" in full. *Not:* a playtest, the stress test,

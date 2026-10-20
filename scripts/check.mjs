@@ -213,10 +213,10 @@ for (const [f, raw] of text) {
 // took the next number three times in a day, and the merge kept both. A division writes a new rule as `NEW:<slug>` (in the short list
 // and in its case's **Rule:** line); the gate numbers it (scripts/casebook-number.mjs). Two rules with one number, or a case citing a
 // rule the list does not have, is a hard error; a `NEW:` waiting is only counted.
-const CASEBOOK = path.join(ROOT, 'docs', 'CASEBOOK.md');
+const CASEBOOK = path.join(ROOT, 'docs', 'CASEBOOK.md'), CASES = path.join(ROOT, 'docs', 'CASEBOOK-CASES.md'); // (the rules; their cases)
 let newRules = 0;
 try {
-  const cb = fs.readFileSync(CASEBOOK, 'utf8'), lines = cb.split('\n'), start = lines.findIndex((l) => /^## The rules, short/.test(l)), end = lines.findIndex((l, i) => i > start && /^## /.test(l));
+  const cb = fs.readFileSync(CASEBOOK, 'utf8'), lines = cb.split('\n'), start = lines.findIndex((l) => /^## The rules, short/.test(l)), end = ((e) => e < 0 ? lines.length : e)(lines.findIndex((l, i) => i > start && /^## /.test(l)));
   const seen = new Map();
   for (let i = start + 1; i < end; i++) {
     const m = lines[i].match(/^(\d+|NEW:[\w-]+)\. \*\*/); if (!m) continue;
@@ -224,11 +224,23 @@ try {
     if (seen.has(m[1])) add('casebook.rule.twice', CASEBOOK, i + 1, `rule ${m[1]} is numbered twice (also line ${seen.get(m[1])}): renumber the later one at the gate`, true);
     else seen.set(m[1], i + 1);
   }
-  lines.forEach((l, i) => {
-    const m = l.match(/^- \*\*Rule:\*\* (\d+|NEW:[\w-]+)/); if (!m || i < end) return;
-    if (!seen.has(m[1])) add('casebook.rule.missing', CASEBOOK, i + 1, `the case cites rule ${m[1]}, which the short list does not have`, true);
+  fs.readFileSync(CASES, 'utf8').split('\n').forEach((l, i) => {
+    const m = l.match(/^- \*\*Rule:\*\* (\d+|NEW:[\w-]+)/); if (!m) return;
+    if (!seen.has(m[1])) add('casebook.rule.missing', CASES, i + 1, `the case cites rule ${m[1]}, which the short list does not have`, true);
   });
+  for (const [f, src] of text) for (const m of src.matchAll(/\bNEW:([a-z][\w-]*)/g)) { // (a code comment citing a rule never written, or one numbered since)
+    if (!seen.has(`NEW:${m[1]}`)) add('casebook.rule.missing', f, lineOf(src, m.index), `cites casebook rule NEW:${m[1]}, which the short list does not have (numbered since? say its number)`, true);
+  }
 } catch { /* no casebook */ }
+
+// ---- 14. a comment that swallows code (casebook rule 240): `x(); // (why) y();` reads as one statement and silences y() with no error.
+// Found twice at once on 2026-10-20 (a stinger's blow never marked; a wall never wiped for 8 days): code after a comment's closing
+// parenthesis, ending in ; or }, is a hard error. A comment goes at the line's end or on its own line.
+const SWALLOWED = /\)\s+(?:const |let |if \(|return |this\.|[A-Za-z_$][\w$]*(?:\.[\w$]+)+\()[^\n]*[;}]\s*$/;
+for (const [f, src] of text) src.split('\n').forEach((l, i) => {
+  const s = l.trimStart(); if (s.startsWith('//') || s.startsWith('*') || s.startsWith('/*')) return;
+  const j = l.indexOf(' // '); if (j >= 0 && SWALLOWED.test(l.slice(j + 4))) add('comment.swallows', f, i + 1, 'code after a comment on the same line never runs: move the comment to its own line (casebook rule 240)', true);
+});
 
 // ---- tally against the baseline
 const counts = {};

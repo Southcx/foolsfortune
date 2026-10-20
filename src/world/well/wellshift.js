@@ -28,7 +28,7 @@ export class Sandfalls {
       const col = W.createCollider(RAPIER.ColliderDesc.cuboid(width / 2, height / 2, depth / 2)
         .setTranslation(s.pos.x, s.pos.y + height / 2, s.pos.z).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9), body);
       col.setEnabled(false);
-      const sheet = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ color: 0xd8b07a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, name: 'well-sandfall-standin' })); // (each its own opacity)
+      const sheet = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xd8b07a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, name: 'well-sandfall-standin' })); // (each its own opacity)
       sheet.position.set(s.pos.x, s.pos.y + height / 2, s.pos.z); sheet.quaternion.copy(q); sheet.name = `sandfall-${i}`; sheet.visible = false;
       group.add(sheet);
       return { i, pos: s.pos.clone(), yaw: s.yaw, phase: s.phase * CYCLE, col, sheet, state: 'open', k: 0, held: false };

@@ -30,7 +30,7 @@ import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
 
 const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
 const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9;
-const REASONS = [['line', 'LINE'], ['duelBreak', 'BREAK'], ['pity', 'PITY'], ['luck', 'LUCK']];
+const REASONS = [['line', 'LINE'], ['break', 'BREAK'], ['pity', 'PITY'], ['luck', 'LUCK']];
 const OK = '#ffe7a0', NO = '#ff8a5a', FAINT = 'rgba(226,243,230,.45)';
 const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 
@@ -38,7 +38,7 @@ const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.V
 function plate(w, h, mw) {
   const c = document.createElement('canvas'); c.width = w * K; c.height = h * K;
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
-  const mat = new THREE.MeshBasicMaterial({ name: 'duel-flee-plate', map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false });
+  const mat = new THREE.MeshBasicMaterial({ name: 'duel-flee-plate', map: tex, transparent: true, depthWrite: false, toneMapped: false });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(mw, (mw * h) / w), mat); mesh.renderOrder = 6; mesh.visible = false;
   return { c, x: c.getContext('2d'), tex, mat, mesh, w, h, key: null };
 }

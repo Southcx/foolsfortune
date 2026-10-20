@@ -67,7 +67,7 @@ export class Circuits {
 
   // ---- the beacons: a column of light on every gate of the next stage, faint on the rest
   buildBeacons() {
-    const mat = (o) => new THREE.MeshBasicMaterial({ color: 0xffc65c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const mat = (o) => new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffc65c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
     for (const def of this.defs.values()) {
       def.stages.forEach((stage) => stage.forEach((gate) => {
         const [x0, x1, y0, y1, z0, z1] = gate.zone;

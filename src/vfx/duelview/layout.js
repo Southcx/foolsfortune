@@ -35,7 +35,7 @@ export const FEELING_ORDER = ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grie
 
 export const clamp01 = (v) => Math.max(0, Math.min(1, v));
 export const sm = (t) => { t = clamp01(t); return t * t * (3 - 2 * t); };
-/** An ease out with an overshoot (the mock's oB: the March's step, a numeral's pop). */
+/** An ease out with an overshoot (the mock's oB: the Line's step, a numeral's pop). */
 export const ease = (t, s = 1.70158) => { t = clamp01(t) - 1; return 1 + t * t * ((s + 1) * t + s); };
 export const lerp = (a, b, t) => a + (b - a) * t;
 /** A stable hash of two numbers into 0..1 (a piece's own wobble, a shard's own way: never the sim's stream). */

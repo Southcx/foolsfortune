@@ -142,7 +142,7 @@ class Sheet {
     g.setAttribute('position', this.pa); g.setAttribute('color', this.ca); g.setAttribute('uv', this.ua); g.setDrawRange(0, 0);
     this.cv = canvasOf(1, 1); this.tex = new THREE.CanvasTexture(this.cv);
     Object.assign(this.tex, { colorSpace: THREE.SRGBColorSpace, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false });
-    this.mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: this.tex, vertexColors: true, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+    this.mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: this.tex, vertexColors: true, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true }));
     this.mesh.frustumCulled = false; this.mesh.renderOrder = 1; this.mesh.name = 'creaturetags';
   }
   /** The atlas at k device pixels a dot: MAX plates stacked, a white strip of 4 rows at the foot (what the strokes sample). */

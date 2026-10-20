@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------------------------------
 // THE CASEBOOK'S NUMBERS, GIVEN AT THE GATE (CLAUDE.md, The casebook; the owner, 2026-10-11). A division writes a new rule as
-// `NEW:<slug>` (a short slug of its own: `NEW:prone-reach`) in the casebook's short list, in its case's **Rule:** line, and anywhere it
-// cites it (a plan, a comment: "casebook rule NEW:prone-reach"). Petra runs this after the merge: each `NEW:<slug>` in the short list,
-// in its order there, takes the next free number, and every mention of it in docs/ and src/ is rewritten. `npm run check` fails on a
-// number used twice, so a rule numbered in a branch and merged beside another is caught too.
+// `NEW:<slug>` (a short slug of its own: `NEW:prone-reach`) in the casebook's short list, in its case's **Rule:** line
+// (docs/CASEBOOK-CASES.md), and anywhere it cites it (a plan, a comment: "casebook rule NEW:prone-reach"). Petra runs this after the
+// merge: each `NEW:<slug>` in the short list, in its order there, takes the next free number, and every mention of it in docs/, src/
+// and scripts/ is rewritten. `npm run check` fails on a number used twice, so a rule numbered in a branch and merged beside another is
+// caught too.
 //
 // Prior art: the RFC Editor's numbers (a draft is named by its author, the number is given only on publication) and IANA's registries
 // (one registrar hands out the numbers; nobody picks their own).
@@ -19,7 +20,7 @@ const CASEBOOK = path.join(ROOT, 'docs', 'CASEBOOK.md');
 const dry = process.argv.includes('--dry');
 
 const cb = fs.readFileSync(CASEBOOK, 'utf8'), lines = cb.split('\n');
-const start = lines.findIndex((l) => /^## The rules, short/.test(l)), end = lines.findIndex((l, i) => i > start && /^## /.test(l));
+const start = lines.findIndex((l) => /^## The rules, short/.test(l)), end = ((e) => e < 0 ? lines.length : e)(lines.findIndex((l, i) => i > start && /^## /.test(l)));
 let max = 0;
 const fresh = [];
 for (let i = start + 1; i < end; i++) {
@@ -35,7 +36,7 @@ if (dry) process.exit(0);
 const walk = (d, out = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) { if (e.name !== 'node_modules') walk(p, out); } else if (/\.(md|js|mjs)$/.test(e.name)) out.push(p); } return out; };
 const slugs = [...map.keys()].sort((a, b) => b.length - a.length);
 let files = 0;
-for (const f of [...walk(path.join(ROOT, 'docs')), ...walk(path.join(ROOT, 'src'))]) {
+for (const f of [...walk(path.join(ROOT, 'docs')), ...walk(path.join(ROOT, 'src')), ...walk(path.join(ROOT, 'scripts'))]) {
   const raw = fs.readFileSync(f, 'utf8');
   let s = raw;
   for (const slug of slugs) s = s.split(slug).join(String(map.get(slug)));

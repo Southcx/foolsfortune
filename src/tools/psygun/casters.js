@@ -97,7 +97,7 @@ export class Casters {
     halo.scale.setScalar(2.6);
     group.add(halo);
     // a floor ring of colour (the dance floor)
-    const ring = new THREE.Mesh(new THREE.RingGeometry(S.radius * 0.94, S.radius, 48), new THREE.MeshBasicMaterial({ color: 0xff70d0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(S.radius * 0.94, S.radius, 48), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xff70d0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     ring.rotation.x = -Math.PI / 2;
     const down = g.physics.raycast(pos.clone().addScaledVector(UP, 0.4), new THREE.Vector3(0, -1, 0), 6, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     ring.position.set(pos.x, (down ? down.point.y : pos.y - 1.2) + 0.05, pos.z);

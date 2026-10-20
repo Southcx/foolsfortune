@@ -122,7 +122,7 @@ export class GodPowers {
 
   // ---- marks (placeholders: a ring on the ground, a line; flash marks go after `life` real seconds)
   ring(at, r, colour, life = 0) {
-    const m = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.05, r - 0.25), r, 48), new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+    const m = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.05, r - 0.25), r, 48), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: colour, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
     m.rotation.x = -Math.PI / 2; m.position.set(at.x, at.y + 0.07, at.z); m.renderOrder = 7;
     this.game.scene.add(m);
     if (life) this.marks.push({ obj: m, life });

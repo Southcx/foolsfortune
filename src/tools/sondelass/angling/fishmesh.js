@@ -190,7 +190,7 @@ export function buildFish(sp, cm) {
     geo2.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nV * 3), 3));
     geo2.setIndex(idx);
     const hot = col.clone().lerp(new THREE.Color(0xffd2a0), 0.6);
-    const cm = new THREE.MeshBasicMaterial({ color: hot, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+    const cm = new THREE.MeshBasicMaterial({ forceSinglePass: true, color: hot, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
     const mesh = new THREE.Mesh(geo2, cm);
     mesh.frustumCulled = false; mesh.renderOrder = 1;
     const _p = new THREE.Vector3(), _c = new THREE.Vector3();

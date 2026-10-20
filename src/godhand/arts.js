@@ -266,7 +266,7 @@ export class GodArts {
   // ------------------------------------------------------------------ fx
   buildFx() {
     const g = this.game;
-    const mat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const mat = (c, o) => new THREE.MeshBasicMaterial({ forceSinglePass: true, color: c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
     this.blade = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat(0xffd696, 0.32));
     this.blade.renderOrder = 8; this.blade.visible = false; this.blade.frustumCulled = false;
     this.bladeLine = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat(0xfff1dc, 0.9));

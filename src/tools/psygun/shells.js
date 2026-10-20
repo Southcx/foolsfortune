@@ -247,9 +247,9 @@ export class Shells {
   cleaveMesh() {
     const g = new THREE.Group();
     const W = T.shells.slicer.width;
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+    const mat = new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xffb27a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
     const bar = new THREE.Mesh(new THREE.PlaneGeometry(W, 0.07), mat); g.add(bar);
-    const core = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.98, 0.022), new THREE.MeshBasicMaterial({ color: 0xfff4e6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    const core = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.98, 0.022), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: 0xfff4e6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
     core.position.z = 0.001; g.add(core);
     for (const x of [-W / 2, 0, W / 2]) { const d = new THREE.Mesh(new THREE.CircleGeometry(0.09, 10), mat); d.position.x = x; g.add(d); }
     for (const m of g.children) m.renderOrder = 8;
@@ -482,7 +482,7 @@ export class Shells {
     const g = this.game, W = scaleShell(T.shells.well, k);
     const group = new THREE.Group();
     const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.32, 2), new THREE.MeshBasicMaterial({ color: 0x120804 }));
-    const rimMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const rimMat = new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.glow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
     const rings = [0, 1, 2].map((k) => {
       const r = new THREE.Mesh(new THREE.TorusGeometry(0.55 + k * 0.28, 0.018, 4, 40), rimMat.clone());
       r.rotation.set(simRand() * 3, simRand() * 3, 0);

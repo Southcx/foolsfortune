@@ -200,7 +200,7 @@ function ribbonGeometry(r, w, segs, turns = 1) {
   return g;
 }
 
-const glowMat = (map) => new THREE.MeshBasicMaterial({ map, color: 0x000000, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false, fog: false });
+const glowMat = (map) => new THREE.MeshBasicMaterial({ map, color: 0x000000, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, toneMapped: false });
 
 export class Bracelet {
   constructor(game, { form = 'hand', aura = form === 'jar' } = {}) {

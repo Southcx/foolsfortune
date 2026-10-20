@@ -103,7 +103,7 @@ export class DataDrain {
   make() {
     if (this.made) return; this.made = true;
     const g = new THREE.Group(); g.name = 'datadrain'; g.userData.zoneFree = true; g.visible = false;
-    this.cubes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'datadrain-cubes', fog: false, toneMapped: false }), N); // (solid, unlit: it reads on white sand as on a dark Well)
+    this.cubes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'datadrain-cubes', toneMapped: false }), N); // (solid, unlit: it reads on white sand as on a dark Well)
     this.cubes.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
     this.cubes.frustumCulled = false;
     // the beam: a flat ribbon along +z, its stripes scrolling inward
@@ -113,7 +113,7 @@ export class DataDrain {
     this.beam.frustumCulled = false;
     // the Veritome's pages: leaves hinged at the lens, fanning open round the beam's axis like a riffled book stood on its spine, and
     // cupped toward the creature (so the fan reads from behind the Courier and from the side); the lens at the hinge, two rings closing to focus
-    const plain = (color, opacity = 1) => new THREE.MeshBasicMaterial({ name: 'datadrain-page', color, transparent: true, opacity, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide });
+    const plain = (color, opacity = 1) => new THREE.MeshBasicMaterial({ name: 'datadrain-page', color, transparent: true, opacity, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true });
     const leaf = new THREE.PlaneGeometry(0.3, 0.42); leaf.translate(0, 0.25, 0);
     const edge = new THREE.PlaneGeometry(0.3, 0.03); edge.translate(0, 0.455, 0.001);
     this.book = new THREE.Group(); this.pages = [];

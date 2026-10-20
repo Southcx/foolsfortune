@@ -71,7 +71,7 @@ export class LighthouseLamp {
     this.cage.push(mesh(new THREE.ConeGeometry(r * 1.18, h * 0.32, 16, 1), iron, 0, h * 0.16, 0, this.roof));
     mesh(new THREE.SphereGeometry(r * 0.14, 8, 6), iron, 0, h * 0.36, 0, this.roof);
     // the glazing: eight panes, faintly gold with the lamp behind them (the beam's program: a basic map, both sides, added)
-    this.glassMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: GOLD, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.glassMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: GOLD, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     this.glass = mesh(new THREE.CylinderGeometry(r * 0.99, r * 0.99, glassH * 0.98, 8, 1, true), this.glassMat, 0, h * 0.12 + glassH / 2, 0); this.glass.name = 'lantern-glass';
     // the crazing of a damaged pane (dark lines over two panes)
     const cr = [], rnd = mulberry(Math.round(r * 100));
@@ -105,8 +105,8 @@ export class LighthouseLamp {
     const L = beam.length ?? 60, W = beam.width ?? r * 2.4;
     this.beam = new THREE.Group(); this.beam.position.copy(this.lens.position); this.group.add(this.beam);
     const bg = track(new THREE.PlaneGeometry(1, 1)); bg.rotateX(-Math.PI / 2); bg.translate(0, 0, 0.5); // (u across, v along: the plane lies along +Z from the lens)
-        this.coreMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: HOT, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    this.rimMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: RIM, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+        this.coreMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: HOT, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
+    this.rimMat = track(new THREE.MeshBasicMaterial({ map: beamTexture(), color: RIM, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     this.beamParts = [];
     for (const [mat, wk, order] of [[this.rimMat, 1.7, 4], [this.coreMat, 1, 5]]) for (const roll of [0, Math.PI / 2]) {
       const m = new THREE.Mesh(bg, mat); m.rotation.z = roll; m.renderOrder = order; m.frustumCulled = false; m.userData.wk = wk; this.beam.add(m); this.beamParts.push(m);
