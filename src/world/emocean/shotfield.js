@@ -33,6 +33,10 @@ import { RailShots } from '../../vfx/railshots.js';
 
 export const CAP = 400;
 const LASERS = 16, TRAIL = 18, SHOT_R = 0.3, BEAM_R = 0.45;
+/** The graze (the owner's ruling, 2026-10-20: a close pass pays Lachryma to the pool; its pay and its cap a bar are T.ship.graze, the
+ *  stage's): a shot that could hurt passing within `k` hurtboxes of the ship and never touching it, once a shot. Three hurtboxes is the
+ *  genre's ring (Touhou's graze, Psyvariar's buzz): close enough to mean it, wide enough to aim for. */
+export const GRAZE = { k: 3 };
 /** A shot's tether: for its first `s` real seconds a thin line back to the foe that threw it, fading (at most `n` at once, the newest), so
  *  what fired what is read at a glance (the owner's R17, v133; Ikaruga's and Radiant Silvergun's muzzle lines). */
 const TETHER = { s: 0.35, n: 48, alpha: 0.7 };
@@ -75,7 +79,7 @@ export class ShotField {
     x.on = true; x.i = i; v3(s.pos, x.p); v3(s.dir, x.dir).normalize(); x.base.copy(x.p); x.speed = s.speed ?? 14; x.s0 = x.speed;
     x.kind = s.kind === 'gift' ? (ship?.form || 'astral') : s.kind || 'astral'; x.outlined = !!s.outlined; x.m = m; x.warn = s.warn || 0;
     x.t = 0; x.from = from; x.back = false; x.turned = false; x.life = m.type === 'homing' ? m.life : 0; x.los.set(0, 0, 0);
-    x.trailN = 0; x.trailK = 0; x.trailT = 0; x.caged = false;
+    x.trailN = 0; x.trailK = 0; x.trailT = 0; x.caged = false; x.grazed = false; x.plane = !!s.plane;
     (x.up ||= new THREE.Vector3()).copy(s.up ? v3(s.up, _e) : UP); // (the view's plane's normal: a split or a burst spreads in it)
     this.live++; this.peak = Math.max(this.peak, this.live);
     return x;
@@ -118,8 +122,12 @@ export class ShotField {
     if (x.t > 9 || x.p.z < -25 || x.p.z > 220 || Math.abs(x.p.x) > 90 || Math.abs(x.p.y) > 60) return this.kill(x);
     if (x.back) { const f = waves?.hitAt?.(x.p, SHOT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: x.p, dir: x.dir, returned: true }); this.kill(x); } return; }
     if (!ship || x.turned) return;
-    const R = (ship.hurtR ?? T.ship.hurt) + SHOT_R;
-    let near = x.p.distanceToSquared(ship.local) < R * R;
+    const hr = ship.hurtR ?? T.ship.hurt, R = hr + SHOT_R;
+    // in a plane view the distance is in the plane (RAIL-MODULES 1, rule 9: what the camera shows); in chase, in three dimensions
+    _e.subVectors(x.p, ship.local); if (x.plane) _e.addScaledVector(x.up, -_e.dot(x.up));
+    const d2 = _e.lengthSq();
+    let near = d2 < R * R;
+    if (!near && !x.grazed && d2 < (GRAZE.k * hr + SHOT_R) ** 2 && (x.outlined || x.kind !== (ship.form || 'astral'))) { x.grazed = true; ship.graze?.(x); } // (only a shot that could hurt)
     if (!near && m.type === 'snake') near = this.trailHits(x, ship.local, R);
     if (near) this.meet(x, ship);
   }
@@ -164,7 +172,7 @@ export class ShotField {
     for (let i = 0; i < n; i++) {
       const deg = ring ? 360 * i / n : (n > 1 ? -arc / 2 + arc * i / (n - 1) : 0), r = deg * Math.PI / 180;
       _w.copy(x.dir).multiplyScalar(Math.cos(r)).addScaledVector(_a, Math.sin(r));
-      this.fire({ pos: x.p, dir: _w, speed, kind: x.kind, outlined: x.outlined, motion: { type: 'straight' }, up: x.up }, { from: x.from });
+      this.fire({ pos: x.p, dir: _w, speed, kind: x.kind, outlined: x.outlined, motion: { type: 'straight' }, up: x.up, plane: x.plane }, { from: x.from });
     }
   }
 

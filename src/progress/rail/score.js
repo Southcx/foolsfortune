@@ -55,7 +55,7 @@ export const downScore = ({ cls = 0, pointBlank = false, returned = false, windu
 
 /** Par by setPiece: an expert's median score (scripts/rail.mjs, the 'expert' profile, 2000 runs each, the Margarite run). Re-measured
  *  whenever a number in progress/rail/ moves: `node scripts/rail.mjs --par`. */
-export const PAR = { shoal: 102000, pirates: 37000, leviathan: 60500 }; // (measured 2026-10-07, 3000 runs each)
+export const PAR = { shoal: 103400, pirates: 37100, leviathan: 60200 }; // (measured 2026-10-20 with the windup's x1.5 and a hit breaking the chain, 3000 runs each)
 export function rankOf(score, setPiece = 'shoal') {
   const p = PAR[setPiece] || PAR.shoal;
   for (const [r, share] of SCORE.rank) if (score >= p * share) return r;

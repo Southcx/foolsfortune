@@ -59,8 +59,12 @@ beats re-mapped onto the three (§4).
    the ship, and no foe holds at the frame's edge.
 5. **Each module owns its reticle.**
    - Chase: a free cursor.
-   - Side: a fixed point ahead of the ship along the scroll.
+   - Side: the cursor on the side plane, the gun firing toward it, the lock-on kept.
    - Overhead: the cursor on the sea plane, the gun firing toward it (twin-stick: the owner, 2026-10-20); no lock-on there (§2).
+
+   **The cursor is always the aim, in every view** (the owner's reason, 2026-10-20: "it feels really bad when you switch from chase to
+   top down to have your aiming capability handicapped by a camera switch"; Calissa carried it to side). Only the lock-on differs by
+   view: chase yes, side yes, overhead no.
 
    The reticle is derived every frame from the cursor or the ship's facing, never stored as a world point. A lock is a foe, re-projected
    every frame, and dropped with a sound when its foe leaves the frame or the plane. These two fix "the reticle locks or breaks when the
@@ -92,7 +96,12 @@ beats re-mapped onto the three (§4).
     swing ends. Motes are pickups, not projectiles; the research's other option (shots flying on as scenery) broke R17 and is gone.
 11. **The camera is never the player's at sea** (the owner, 2026-10-20): every swing is authored on its bar; no leg hands the turns to
     the player (the Gummi's Mission 3 is not taken).
-12. **A graze pays Lachryma to the pool** (the owner, 2026-10-20), capped a bar so a pattern can't be farmed.
+12. **A graze pays Lachryma to the pool** (the owner, 2026-10-20), capped a bar so a pattern can't be farmed:
+    - it counts a shot that could hurt (not one of your form, unless outlined) passing within three hurtboxes of the ship without touching it;
+    - once a shot;
+    - it pays 1 to the pool, at most 8 a bar (`GRAZE`, shotfield.js; `T.ship.graze`, the stage's).
+
+    Absorbing a shot of your form pays 2, so a graze is worth half of one.
 
 ## 2. The three modules
 
@@ -140,7 +149,7 @@ beats re-mapped onto the three (§4).
 - **The player:**
   - moves up, down and along in the wall plane;
   - fires along the scroll;
-  - paints with the fixed reticle ahead;
+  - aims with the cursor on the side plane (the cursor is always the aim) and paints with the lock-on;
   - presses Q to cross the surface: above it is Astral, below it Umbral. The waterline is the floor, and the one line that changes the world.
 - **What threatens:**
   - enemies from ahead, and now and then from behind, told by a mark at the frame's edge a bar before;

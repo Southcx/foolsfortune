@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import { BARS, BAR_S, SWING, ACTS, SET_PIECES, LEG, legStart, script, swings, continueCost, CONTINUE } from '../src/progress/rail/crossing.js';
 import { WAVES, SHOAL, PIRATES, LEVIATHAN, LANCE, leviathanDeck } from '../src/progress/rail/setpieces.js';
-import { SCORE, chain, chainDown, volleyBonus, downScore, rankOf, medalOf, PAR } from '../src/progress/rail/score.js';
+import { SCORE, chain, chainDown, chainHit, volleyBonus, downScore, rankOf, medalOf, PAR } from '../src/progress/rail/score.js';
 import { STAGE } from '../src/progress/econ/emocean.js';
 
 const args = process.argv.slice(2);
@@ -30,9 +30,9 @@ const binom = (n, p) => { let k = 0; for (let i = 0; i < n; i++) if (rnd() < p) 
 // flip: how well polarity is kept on the feeling coming in (absorbs); lock: share of bars a volley is released when the pool allows;
 // engage: how many targets a bar can be aimed at (the rest pass by unshot); order: chance the next down keeps a chain; pb: share of downs at point blank; roll: share of telegraphed blows avoided.
 const PROFILES = {
-  novice: { engage: 2, acc: 0.35, dodge: 0.86, parry: 0.1, flip: 0.0, lock: 0.25, order: 0.4, pb: 0.05, roll: 0.55 },
-  good:   { engage: 4, acc: 0.6,  dodge: 0.93, parry: 0.4, flip: 0.5, lock: 0.6,  order: 0.65, pb: 0.15, roll: 0.75 },
-  expert: { engage: 7, acc: 0.85, dodge: 0.97, parry: 0.75, flip: 0.9, lock: 0.9, order: 0.92, pb: 0.3, roll: 0.92 },
+  novice: { engage: 2, acc: 0.35, dodge: 0.86, parry: 0.1, flip: 0.0, lock: 0.25, order: 0.4, pb: 0.05, roll: 0.55, wind: 0.05 },
+  good:   { engage: 4, acc: 0.6,  dodge: 0.93, parry: 0.4, flip: 0.5, lock: 0.6,  order: 0.65, pb: 0.15, roll: 0.75, wind: 0.15 },
+  expert: { engage: 7, acc: 0.85, dodge: 0.97, parry: 0.75, flip: 0.9, lock: 0.9, order: 0.92, pb: 0.3, roll: 0.92, wind: 0.3 }, // (wind: the share of downs made in a foe's windup, x1.5)
 };
 // a blow with a bar or more of warning (a breach, a broadside, a ram, a fin) is avoided more often than a plain roll
 const big = (P) => P.roll + (1 - P.roll) * 0.5;
@@ -64,9 +64,9 @@ function run(pieces, P, danger = -0.5, { from = 'anagami', to = 'margarite', coi
   const st = { continues: 0, coinCost: 0, hits: 0, bites: 0, downed: 0, spawned: 0, score: 0, pool: POOL.start, ch: chain(), chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, failed: false, end: null, casks: 0, threat: new Array(TOTAL).fill(0) };
   const live = []; // { role, cls, hp, until, aspect }
   const enter = (role, cls, n, bar) => { for (let i = 0; i < n; i++) live.push({ role, cls, hp: HP[cls], until: bar + STAY[role], aspect: ASPECTS[Math.floor(rnd() * ASPECTS.length)] }); st.spawned += n; };
-  const down = (t, opts = {}) => { if (!opts.fish) st.downed++; st.fishDown = (st.fishDown || 0) + (opts.fish ? 1 : 0); st.score += downScore({ cls: t.cls, pointBlank: rnd() < P.pb, returned: !!opts.returned }); if (opts.fish) return; const keep = rnd() < P.order; const bonus = chainDown(st.ch, keep && st.ch.aspect ? st.ch.aspect : t.aspect); st.score += bonus; st.chainBest = Math.max(st.chainBest, bonus); };
+  const down = (t, opts = {}) => { if (!opts.fish) st.downed++; st.fishDown = (st.fishDown || 0) + (opts.fish ? 1 : 0); st.score += downScore({ cls: t.cls, pointBlank: rnd() < P.pb, returned: !!opts.returned, windup: rnd() < (P.wind || 0) }); if (opts.fish) return; const keep = rnd() < P.order; const bonus = chainDown(st.ch, keep && st.ch.aspect ? st.ch.aspect : t.aspect); st.score += bonus; st.chainBest = Math.max(st.chainBest, bonus); };
   const hurt = (n = 1) => {
-    if (st.failed) return; st.hits += n;
+    if (st.failed) return; st.hits += n; chainHit(st.ch); // (a hit breaks the chain: score.js)
     if (st.hits < STAGE.bears) return;
     if (coins) { st.coinCost += continueCost(from, to, curBar / TOTAL, 'pier', st.continues); st.continues++; st.hits = 0; return; } // (an arcade's coin: mended whole)
     st.failed = true;

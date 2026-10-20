@@ -67,7 +67,7 @@ export class PatternPlayer {
           if (s.motion?.type === 'laser') _d.fromArray(to.f); else _d.fromArray(o.dir); // (a beam sweeps about the aim: its angles are its own)
           let m = s.motion;
           if (o.motion?.at) m = { ...o.motion, at: new THREE.Vector3().fromArray(o.motion.at).add(_o), to: new THREE.Vector3().fromArray(o.motion.to).add(_o) }; // (a cage's ring point and the ship's, where this volley is thrown)
-          Object.assign(shot, { speed: s.speed, kind: r.kinds.get(vk), outlined: s.outlined, motion: m, warn: s.warn, up: r.up });
+          Object.assign(shot, { speed: s.speed, kind: r.kinds.get(vk), outlined: s.outlined, motion: m, warn: s.warn, up: r.up, plane: r.mode === 'plane' });
           this.field.fire(shot, { from: r.from, ship });
         }
       }
