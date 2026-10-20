@@ -11,7 +11,7 @@
 //     from its start; the whole phrase and its cache rises and pays (`sea.echo.hear`, `sea.echo`, `sea.dig`);
 //   a CACHE buried in an islet's sand, nothing on it but a signature of kind `chest` (core/signatures.js), so the Dreamvane's dowse is
 //     the metal detector: attuned to chests it sings faster as you face it, and on the spot the sand shivers (the dowse's own mark).
-//     Dug with the pick (`unearth`, once the Dreamvane's ground strike calls it) or F with the Dreamvane in hand: it pays its tier once
+//     Dug with the pick or the Dreamquake (`dreamvane.strike` calls `unearth`) or F with the Dreamvane in hand: it pays its tier once
 //     (`sea.dig`). A dug cache leaves its opened box.
 // The state (seen, solved, heard, dug) is the room's (`room.puzzle`, kept in its save section).
 //
@@ -78,7 +78,7 @@ export class PuzzlePieces {
       return C;
     });
     this.sync();
-    // the Dreamvane's ground strike, once it says where (Petra's hook: dreamvane.js; until then F digs)
+    // the Dreamvane's ground strike or Dreamquake (dreamvane.js emits it; F digs too, and never misses)
     this.game.events?.on?.('dreamvane.strike', (e) => { if (room.active && e?.at) this.unearth(_b.fromArray(e.at), e.r ?? 3.2, 'pick'); });
     this.game.events?.on?.('crucibelle.note', (e) => this.note(e));
   }
