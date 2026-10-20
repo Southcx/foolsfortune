@@ -18,3 +18,9 @@ Still yours, when the owner sets it:
    the arrows.
 
 Delete this note in your branch when done.
+
+## Added 2026-10-20: the Dreamvane's dig event (OPEN-SEA.md 12)
+The open sea buries caches that the dowse finds (signature kind `chest`). Today they are dug with F while the Dreamvane is in hand.
+The ask: in `tools/dreamvane/dreamvane.js`, `strikeGround()` and `quake()` also emit `dreamvane.strike { at: [x, y, z], r, by: 'courier' }`
+(at = `down.point` with r 3.2, or the Courier's position with the quake's R). Then anything buried can listen instead of being named
+in the tool. `world/opensea/puzzlepieces.js` already listens for it. Crystals and ostraca could move to it later; that is your call.
