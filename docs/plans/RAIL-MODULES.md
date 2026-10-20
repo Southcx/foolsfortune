@@ -299,6 +299,12 @@ shared axes in a swing).
    brake, the ship's floor lifts from 1.2 m to 3.1 m to keep the waterline on screen (Calissa's measure, mock v3.2). Petra's
    (`courier/ship/views.js` VIEW_RIGS.chase); the chase screen box shrinks with it, so `scripts/patterns.mjs` and `scripts/legs.mjs`
    take the new box once Petra measures it.
+6. The overhead camera is the mock's (v4): cam [0, 15, -4.5], look [0, 0, 3.4]; the ship 2.5% of the frame's height, its box x ±14.5,
+   z -5.4 to 20.5 (Petra's measure), half the old room. The overhead carrier holds at z 15 (`CARRIER_AT.above`), and the calm's gift
+   rose was slowed to speed 7 to keep the half second to react from the nearer thrower.
+7. The side camera comes about a quarter closer (Calissa's ask, the owner's yes to Dovina's "closer, but modestly": the side view is
+   where beams and rams are dodged, so it keeps more room than overhead). Petra measures its box; the side carrier and patterns are
+   judged again then.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.

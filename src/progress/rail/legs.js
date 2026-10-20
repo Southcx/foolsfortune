@@ -138,7 +138,7 @@ export const LEGS = {
     { phase: 'open', at: 0, every: 3, targets: 6 },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'ring', from: 'ahead', kind: 'gift', params: { volleys: 1, speed: 9 } } },
     { phase: 'build', at: 0, every: 3, targets: 6 },
-    { phase: 'build', at: 2, every: 4, pattern: { name: 'rose', from: 'ahead', kind: 'gift', params: { volleys: 1, n: 18 } } },
+    { phase: 'build', at: 2, every: 4, pattern: { name: 'rose', from: 'ahead', kind: 'gift', params: { volleys: 1, n: 18, speed: 7, swell: 7 } } }, // (slowed from 9 when the overhead frame halved, 2026-10-20: from 15 m it gave 0.42 real s to react, the rule's 0.5)
     { phase: 'release', at: 0, every: 4, targets: 6 },
   ] },
 };
@@ -187,7 +187,7 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
 export const CARRIER_AT = {
   chase:  { at: [0, 5, 55], from: [0, 2, 50], box: { x: 24, y: [0, 14], z: [12, 70] } },
   free:   { at: [0, 5, 55], from: [0, 2, 50], box: { x: 26, y: [0, 15], z: [12, 70] } },
-  above:  { at: [0, 4, 26], from: [0, 0, 26], box: { x: 28, y: [-5, 20], z: [-6, 40] } },
+  above:  { at: [0, 4, 15], from: [0, 0, 12], box: { x: 14, y: [-5, 20], z: [-5, 20] } }, // (the mock's overhead rig, ruled 2026-10-20: the ship's box x ±14.5, z -5.4 to 20.5; the carrier holds 5 m inside the far edge and comes from just beyond it)
   side:   { at: [0, 5, 22], from: [0, 0, 26], box: { x: 6, y: [-2, 17], z: [-20, 27] } },
   astern: { at: [0, 5, -30], from: [0, 2, -40], box: { x: 24, y: [0, 14], z: [-60, -10] } },
 };
