@@ -170,6 +170,18 @@ beats re-mapped onto the three (§4).
 
 Each of these is a separate push, after the mock.
 
+**Fixed now in Dovina's files** (2026-10-20; the owner's bugs, Calissa's measurements; CASEBOOK, "The crossing's patterns leaned left"):
+- **Aim:** a cone's angle is off the aim, rings only spread in the cone.
+- **Plane:** patterns are turned into the view's plane (`orient`, `up`).
+- **Grid:** the volleys are on the sixteenth, and the player reads the leg's bar.
+- **Throwers:** in frame, or a **carrier** (a placeholder body, `CARRIER_AT`) that comes in, holds, fires and leaves.
+- **Windup and swings:** each play has a windup on the telegraph mark, and nothing fires into the bar before a swing.
+- **Cage and roles:** the cage closes at the true range; the shoal's glints throw.
+- **Old Nobody's peak:** in the side view.
+- **The fairness check:** judges as thrown, in all three views.
+
+This came before the mock because these were the owner's bugs, not the new design. The waves and the module split still wait for it.
+
 **The research** (Calissa's, `docs/plans/research/RAIL-MODULES-SHMUP.md` on her branch, 565d7e8) is the source of rules 2, 3, 4, 7, 9
 and 10's detail; its §5 lists 23 rules, and the ones not taken here are runtime detail for Petra (pooling, inherit-by-declaration,
 shared axes in a swing).

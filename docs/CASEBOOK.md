@@ -716,3 +716,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 244. **What only one action may answer is left out by name in every other's loop.** An outlined
     shot is the parry's alone, so a bomb's or a vacuum's sweep walks the plain shots only; a sweep over "all shots" breaks the rule
     without a word.
+
+NEW:judge-as-thrown. **A check judges a thing as the runtime turns and throws it, in every view it is thrown in.** A pattern laid out in
+    one frame and checked there passed while the player turned it 20 degrees off the ship and out of the side view's plane; the check
+    builds the same frame the player builds.

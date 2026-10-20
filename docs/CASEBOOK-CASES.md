@@ -3232,3 +3232,41 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   range), whichever is nearer. The spray's cuts and the gulp's refill read MOUNTS' keys; the cone reads the table's angle with no
   fallback. `pirates.nearestCask` went with the old fallback.
 - **Rule:** 244.
+
+### 2026-10-20 · The crossing's patterns leaned left, fanned into depth, fired off the beat and from no one (the owner, in play; Calissa's measurements)
+- **Seen:** the owner: emitters "aiming at the left region of the screen where they will never hit the ship"; patterns "desynchronized
+  and often appearing from no clear source". Calissa measured it headless (`docs/plans/research/RAIL-BUGS-MEASURED.md`, her branch):
+  - every aimed and fan shot in the chase and free views tilted 20 degrees left (median 20.1);
+  - in the side view, 1,064 of 1,191 shots never reached the ship;
+  - 40 to 67% of many patterns' emissions were more than a quarter of a sixteenth off the grid;
+  - 77% of plays had no thrower (a bare point 60 m up the rail);
+  - the cage ring closed 30 m short of the ship;
+  - the shoal's peak asked for a role its fish do not carry;
+  - the fairness check passed it all.
+- **Cause:**
+  - `dirOf`'s cone mode always tilted the aim by 0.35 rad toward the frame's -x.
+  - The player laid every pattern out with up +y and turned it by the shortest arc, so a side view's plane pattern lay across the
+    camera's axis.
+  - `every` was in plain seconds and the runs added up frame time.
+  - The runner threw from `AHEAD`, or from the newest foe of a role wherever it was.
+  - The cage closed on `ctx.range || 30` and no one passed the range.
+  - The fairness check judged in the layout frame, not as the player turns a pattern.
+- **Fix:**
+  - **Aim:** a cone pattern's angle is off the aim, as in the plane; only ring rows (`ring: true`) spread in a cone.
+  - **Plane:** `frameOf`/`orient` turn a laid-out pattern onto the aim keeping the view's plane (`up`: side +x). In a plane view the
+    thrower and the aim are put on the ship's plane, and a cage lies in the plane.
+  - **Grid:** `every`, `gap` and every shot's time snap to the cue's sixteenth (`GRID`), and the player reads the leg's bar, never frame time.
+  - **Thrower:** a role's thrower is a live foe in the view's frame, or else a **carrier** (`CARRIER_AT`): a placeholder body that comes
+    in, holds and leaves.
+  - **Windup and swings:** each play has a windup (`leadOf`, the rail's telegraph mark), and nothing is fired into the bar before a swing.
+  - **Other data:** the shoal's peak patterns come from its `glint`s, and Old Nobody's peak is in the side view his flank was written for.
+  - **The check:** the fairness check now holds aimed volleys to 6 degrees, plane views to their plane and every shot to the sixteenth,
+    in all three views as the player turns them (`scripts/patterns.mjs`, `scripts/legs.mjs`). On the old code both passed everything.
+- **Measured after:**
+  - **Probe:** a drafted trip sailed headless (shoal, then graveyard), 1,391 shots.
+  - **Throwers:** every shot from a body; none fired during a swing.
+  - **Grid:** none is off the sixteenth by more than a quarter of one.
+  - **Aim:** aimed shots in the free view sit at 0 degrees to the ship (were 20). The chase view's twins sit at their designed 8 degrees.
+  - **Plane:** none leaves the above plane.
+  - **Not verified:** the side view in play (the trip did not reach it); the check covers it in the math only.
+- **Rule:** NEW:judge-as-thrown.
