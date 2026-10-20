@@ -42,6 +42,7 @@ import { MarkBuffer, STYLE } from './railmark.js';
 import { RailGeometry } from './railgeometry.js';
 import { warpMaterial, deepMaterial, keepTrue, warpObject } from './stormwarp.js';
 import { LachrymatoBottle } from './bottle.js';
+import { RefitSweep } from './refitsweep.js';
 import { CharybdisLook, CHARYBDIS_LOOK } from './charybdis.js';
 import { whirlHeart, WHIRL } from './whirlpool.js';
 import { COLOR } from '../progress/weather.js';
@@ -81,6 +82,7 @@ export class CrossingLook {
     this.rings = []; this.slabs = []; this.plan = { rings: [], slabs: [] }; this.prevShip = new THREE.Vector3(); this.hasPrev = false;
     this.streaks = Array.from({ length: C.drift.n }, (_, i) => ({ x: (hash(i) - 0.5) * 22, y: 0.3 + hash(i + 7) * 1.8, z: -20 + hash(i + 13) * 100 }));
     this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0, sense: 1 };
+    this.refit = new RefitSweep(this.game); // (the test crossing's hull swap covered: vfx/refitsweep.js)
     this.game.events?.on?.('rail.surge', () => { this.shellT = C.shell.time; this.shellForm = this.st.ship?.form || 'astral'; });
   }
 
@@ -93,6 +95,7 @@ export class CrossingLook {
     if (st.trip?.field?.look) st.trip.field.look.camera ||= this.game.camera; // (its sort's eye and its beams' near limit before its first draw)
     this.geo = new RailGeometry({ env: this.game.sky?.env || null, seaY: st.sea?.y ?? 0, warp: warpMaterial, keepTrue: (m) => keepTrue(deepMaterial(m)), maxRings: 32, maxMonoliths: 16 });
     this.geo.group.visible = false; scene.add(this.geo.group);
+    this.refit.build(scene);
     // one of each, parked for the warm-up's compile (casebook 17: a program first drawn in play is a hitch); put down at the first cast-off
     this.parkedRing = this.geo.ring(new THREE.Vector3(0, -1e4, 0), new THREE.Quaternion(), 1);
     this.parkedSlab = this.geo.monolith(new THREE.Vector3(0, -1e4, 0), { height: 4, rise: 1 });
@@ -108,7 +111,7 @@ export class CrossingLook {
     this.beast = new CharybdisLook({ env: this.game.sky?.env || null, fx: this.game.vfx || null });
     this.beast.group.visible = false; this.beast.group.traverse((o) => { o.userData.zoneFree = true; }); warpObject(this.beast.group); scene.add(this.beast.group);
   }
-  parked() { return [this.marks.mesh, this.geo.group, this.beast.group, ...(this.whirl ? [this.whirl.mesh] : [])]; }
+  parked() { return [this.marks.mesh, this.geo.group, this.beast.group, ...this.refit.parked(), ...(this.whirl ? [this.whirl.mesh] : [])]; }
   show(on) {
     this.marks.mesh.visible = on; this.geo.group.visible = on;
     if (!on) this.stillMaelstrom();
@@ -150,6 +153,7 @@ export class CrossingLook {
     if (!this.st.stage.active || !this.st.run) return;
     const s = this.st.rail.speed * this.st.t, turning = this.st.rail.path.turning(s);
     this.storm(bar, turning);
+    this.refit.update(raw, this.st.ship?.look);
     this.umbral(raw);
     this.geometry(raw, s);
     this.pressures(raw);
