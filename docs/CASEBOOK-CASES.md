@@ -3258,7 +3258,9 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the mouse is counted only while the view shows the cursor; across a swing both views' far reticles are found and eased by the
   camera's own smoothstep; a ray that meets the plane behind the eye takes the cursor's ray 36 m out; the stage's `reaim` runs from
   main.js after `player.updateCamera`; in a scroll view the far reticle is drawn in along the scroll to stay inside 0.95 of the
-  screen (with the bigger reach, 36 m ahead of a ship riding high was past the top).
+  screen (with the bigger reach, 36 m ahead of a ship riding high was past the top). (The same game day the owner ruled the above view
+  twin-stick and Dovina's RAIL-MODULES.md 1.5 the side view the same: every view now aims by the cursor on its plane, so the scroll
+  reticle and its hold went; a braked ship's box is sized at its depth, after Calissa's mock found the chase corners at 1.08.)
 - **Measured after** (the same trip, the mouse moving every frame): 12,000 reticle samples, 360 in swings, none off the screen (1,151
   before the scroll reticle was held in); the hidden cursor moved in no frame of a scroll view; in the free views the reticle sits
   under the cursor (median error 0).
