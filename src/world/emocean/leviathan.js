@@ -8,7 +8,8 @@
 //             glob every bar.
 //   ABREAST   (8 to 18, abeam) it runs alongside: four gills on its near flank, open two bars in four as it breathes (only an open gill
 //             takes a shot; 34 each); a fin rises a bar before it sweeps (too heavy to parry: roll); a spit parried back flies into
-//             the nearest open gill (5).
+//             the nearest open gill (5). In the side view it runs AHEAD instead, its spine 22 to 25 m on, its bulk the frame's far
+//             side (R-Type's boss), so its throat is seen 15 m or more off (Dovina's ruling, RAIL-MODULES.md 1.8: legrunner.js throws)
 //   SOUND     (18 to 26, from above) it sounds; its shadow grows under where the ship was for two bars; then it breaches from under:
 //             be out of the 8 m ring.
 //   MAW       (26 to 34, the free view) face to face, the jaw down: six teeth, a lance each; the throat's light swells before each spit,
@@ -30,6 +31,7 @@ import { sfx } from '../../audio/sfx.js';
 
 const FLANK = -1;           // (the flank it shows the ship: it runs on the ship's far side)
 const ABEAM = -24;          // (rail frame: its spine's place alongside)
+const AHEAD = { z: 23.5, sway: 1.5 }; // (the side view: its spine's place ahead, 22 to 25 m on: its throat 15.7 m further, seen from the side camera at rest on the ship's plane at z 17.9 to 19.2, inside the box (z to 19.5) and 17.9 m or more off the ship)
 const _w = new THREE.Vector3(), _l = new THREE.Vector3(), _v = new THREE.Vector3();
 const lerp = THREE.MathUtils.lerp, smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
@@ -91,7 +93,7 @@ export class LeviathanPiece {
 
   update(dt, rel, ctx) {
     const st = this.stage, S = st.ship, raw = this.game.rawDt ?? dt, L = this.look, bar = Math.floor(rel);
-    this.rel = rel;
+    this.rel = rel; this.view = ctx?.view;
     if (this.ended) this.leave(dt);
     else if (rel < 8) this.heave(rel, dt);
     else if (rel < 18) this.abreast(rel, dt);
@@ -123,10 +125,10 @@ export class LeviathanPiece {
     } else { this.at.set(b.x, -14, S.local.z + 4); this.rot.set(0, 0, 0); }
   }
 
-  /** Alongside: it keeps pace on the far flank; its gills breathe; a fin rises a bar, then sweeps. */
+  /** Alongside: it keeps pace on the far flank (ahead of the ship in the side view); its gills breathe; a fin rises a bar, then sweeps. */
   abreast(rel, dt) {
-    const L = this.look, S = this.stage.ship;
-    this.at.set(ABEAM, lerp(this.at.y, -1.2, Math.min(1, dt * 1.5)), lerp(this.at.z, 2 + Math.sin(rel * 0.4) * 4, Math.min(1, dt)));
+    const L = this.look, S = this.stage.ship, z = this.view === 'side' ? AHEAD.z + Math.sin(rel * 0.4) * AHEAD.sway : 2 + Math.sin(rel * 0.4) * 4;
+    this.at.set(ABEAM, lerp(this.at.y, -1.2, Math.min(1, dt * 1.5)), lerp(this.at.z, z, Math.min(1, dt)));
     this.rot.set(0, 0, 0); L.set({ swim: 0.6, bend: Math.sin(rel * 0.3) * 0.08 });
     const open = ((rel - 8) % N.gills.of) < N.gills.open ? 1 : 0;
     for (const [i, g] of this.gills.entries()) if (g.alive) { g.flashT = Math.max(0, (g.flashT || 0) - dt); g.open = lerp(g.open, g.flashT > 0 ? 1 : open, Math.min(1, dt * 5)); L.gill(i, { side: FLANK, open: g.open }); } // (the plate's Flash holds a gill open)

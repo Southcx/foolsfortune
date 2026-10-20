@@ -3350,5 +3350,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   deep, and her stern chasers fire aft only from inside the frame and half a real second off (`pirates.js`).
 - **Measured after** (the Wreckers' and Old Nobody's peaks, sailed headless in the side view, the eye at (18, 4.5, 3)): the brig laid
   at 16.0 to 17.5 m; 9 of 10 of its volleys thrown by its body, the first by a carrier (laid at z 22.7, past the frame); two stern
-  chasers. Old Nobody's throat laid at 7.7 to 10.4 m: every volley by a carrier. 0 errors.
+  chasers. Old Nobody's throat laid at 7.7 to 10.4 m: every volley by a carrier; then, on Dovina's ruling, its spine run 22 to 25 m
+  ahead in the side view (`leviathan.js` AHEAD): its throat laid at 17.9 to 19.0 m, all 4 of its abreast volleys by its body, the
+  heave's and the sounding's by carriers. 0 errors.
 - **Rule:** 251.
