@@ -4,14 +4,16 @@
 // No ship parts and no second inventory: the same tools in every layer (SLICE.md). Each acts on the waves' roll and the shots' pools
 // through their own small doors (`waves.within`, `shots.plains`), so a mount never asks what a thing is beyond its role.
 //
-//   the wake brush (the Soul Brush)   held: a fan of your feeling ahead (50 degrees, 9 m) drinks shots of the ship's feeling and cuts
-//                                     glints three to a stroke; 4 Lachryma a real second
-//   the toll (the Crucibelle)         the bomb: every foe's shot within 10 m (14 on the beat) broken, the shoal scattered, a boarder
-//                                     knocked off; three a crossing
-//   the gulp (the Lockheart)          a cone ahead swallowed for MOUNTS' duration (its angle and range, the table's): shots and Guppy-class glints, 2 Lachryma each
+//   the wake brush (the Soul Brush)   held: a fan of your feeling ahead (the table's angle and range) drinks shots of the ship's feeling
+//                                     and cuts the table's `cuts` glints a stroke; its cost a real second
+//   the toll (the Crucibelle)         the bomb: every foe's plain shot within its range (1.4 times on the beat) broken, the shoal
+//                                     scattered, a boarder knocked off; three a crossing. An outlined shot is the parry's alone (shots.js)
+//   the gulp (the Lockheart)          a cone ahead swallowed for MOUNTS' duration (its angle and range, the table's): plain shots and
+//                                     Guppy-class glints, the table's `refill` of Lachryma each; never an outlined shot
 //   the plate (the Veritome)          a photograph of what is in frame (a set piece in the Compendium), and its Flash holds every weak
 //                                     point in frame open two bars (a gill, a gunport); 6 Lachryma
-//   the hook (the Sondelass)          the nearest thing on the aim within 16 m: a boarder yanked into the sea, a cask reeled aboard
+//   the hook (the Sondelass)          the nearest thing on the aim (the table's angle and range): a boarder yanked into the sea, or a
+//                                     cask (the loot afloat) reeled aboard, whichever is nearer
 //   the vane (the Dreamvane)          passive: the Conductor is marked, every big blow's warning a bar ahead is marked over the ship
 //
 // Prior art: Kingdom Hearts' Gummi Ship (its weapon blocks), Einhander's gunpods (one at a time, its own ammunition), every shmup's
@@ -24,9 +26,9 @@ import { MOUNTS } from '../../progress/rail/mounts.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { sfx } from '../../audio/sfx.js';
 
-/** Each mount's cone as the table gives it (Dovina's MOUNTS: `angle` is the cone's full width, so the half-angle is half of it; the hook
- *  has no table angle and keeps 60 degrees across), so the card, the mooring's preview and play are one number. */
-const CONE = Object.fromEntries(['soulbrush', 'lockheart', 'sondelass'].map((t) => [t, { half: (MOUNTS[t]?.angle ?? 60) / 2, range: MOUNTS[t]?.range ?? 8 }]));
+/** Each mount's cone as the table gives it (Dovina's MOUNTS: `angle` is the cone's full width, so the half-angle is half of it), so the
+ *  card, the mooring's preview and play are one number. */
+const CONE = Object.fromEntries(['soulbrush', 'lockheart', 'sondelass'].map((t) => [t, { half: MOUNTS[t].angle / 2, range: MOUNTS[t].range }]));
 
 const KEYS = ['Digit1', 'Digit2', 'Digit3']; // (a frigate carries three: mounts by hull, rail/mounts.js slotsOf)
 const _d = new THREE.Vector3(), _a = new THREE.Vector3();
@@ -74,7 +76,7 @@ export class Mounts {
     for (const s of shots.plains) if (s.on && s.aspect === ship.aspect && inCone(s.p, ship.nose, ship.aim, CONE.soulbrush.half, CONE.soulbrush.range)) { s.on = false; ship.absorb(s); }
     this.stroke = (this.stroke || 0) + dt;
     if (this.stroke >= 0.25) { // (a stroke: three glints cut)
-      this.stroke = 0; let n = 3;
+      this.stroke = 0; let n = MOUNTS.soulbrush.cuts;
       for (const f of waves.foes) if (n > 0 && f.alive && f.role === 'glint' && f.solid !== false && inCone(f.local, ship.nose, ship.aim, CONE.soulbrush.half, CONE.soulbrush.range)) { waves.strike(f, 1, { cause: 'slash' }); n--; }
     }
   }
@@ -82,7 +84,7 @@ export class Mounts {
   /** The toll: the bomb (the table's range, 1.4 times it on the beat). */
   toll({ ship, waves, shots, bar }) {
     const onBeat = Math.abs(bar - Math.round(bar)) < 0.08 || Math.abs(bar * 4 - Math.round(bar * 4)) < 0.08, r = (MOUNTS.crucibelle.range ?? 10) * (onBeat ? 1.4 : 1); // (the table's ring; on the beat 1.4 times it)
-    for (const s of [...shots.plains, ...shots.outlines]) if (s.on && !s.back && s.p.distanceTo(ship.local) < r) { if (s.mesh) shots.endOutlined(s); else s.on = false; }
+    for (const s of shots.plains) if (s.on && !s.back && s.p.distanceTo(ship.local) < r) s.on = false; // (plain shots only: an outlined one is the parry's alone)
     for (const f of waves.within(ship.local, r)) if (f.role === 'boarder') waves.strike(f, 99, { cause: 'impact' });
     this.stage.piece?.scatter?.();
     this.game.vfx?.play?.('hit.blunt.crystal.kill', { pos: this.stage.rail.toWorld(ship.local, new THREE.Vector3()), power: 2.5 });
@@ -91,12 +93,12 @@ export class Mounts {
     return true;
   }
 
-  /** The gulp: a cone ahead for a second; shots and Guppy glints swallowed, 2 Lachryma each. */
+  /** The gulp: a cone ahead for a second; plain shots and Guppy glints swallowed, the table's refill each (an outlined shot is the parry's). */
   gulp({ ship, waves, shots }) {
     let n = 0;
-    for (const s of [...shots.plains, ...shots.outlines]) if (s.on && !s.back && inCone(s.p, ship.nose, ship.aim, CONE.lockheart.half, CONE.lockheart.range)) { if (s.mesh) shots.endOutlined(s); else s.on = false; n++; }
+    for (const s of shots.plains) if (s.on && !s.back && inCone(s.p, ship.nose, ship.aim, CONE.lockheart.half, CONE.lockheart.range)) { s.on = false; n++; }
     for (const f of waves.foes) if (f.alive && f.role === 'glint' && f.cls === 0 && inCone(f.local, ship.nose, ship.aim, CONE.lockheart.half, CONE.lockheart.range)) { waves.strike(f, 99, { cause: 'gulp' }); n++; }
-    if (n) { this.game.lachryma?.gain(2 * n, 'gulp'); sfx.gulp?.(0); }
+    if (n) { this.game.lachryma?.gain(MOUNTS.lockheart.refill * n, 'gulp'); sfx.gulp?.(0); }
   }
 
   /** The plate: a photograph of the set piece in frame, and its Flash holds the weak points in frame open two bars. */
@@ -113,14 +115,16 @@ export class Mounts {
     return true;
   }
 
-  /** The hook: the nearest on the aim within the table's range: a boarder into the sea, a cask aboard. */
+  /** The hook: the nearest thing on the aim, within the table's cone: a boarder into the sea, or a cask afloat (the loot) aboard. */
   hook({ ship, waves }) {
-    let best = null, bd = CONE.sondelass.range;
-    for (const f of waves.foes) if (f.alive && f.role === 'boarder' && inCone(f.local, ship.nose, ship.aim, CONE.sondelass.half, CONE.sondelass.range)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; } }
-    if (best) { waves.strike(best, 99, { cause: 'hook' }); sfx.ropeSnap?.(); return true; }
-    const cask = this.stage.piece?.nearestCask?.(ship.local, CONE.sondelass.range);
-    if (cask) { this.stage.piece.gather(cask); sfx.ropeSnap?.(); return true; }
-    return false;
+    const C = CONE.sondelass, piece = this.stage.piece;
+    let best = null, bd = C.range, isCask = false;
+    const on = (p) => inCone(p, ship.nose, ship.aim, C.half, C.range);
+    for (const f of waves.foes) if (f.alive && f.role === 'boarder' && on(f.local)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; isCask = false; } }
+    for (const c of piece?.floating || []) if (on(c.local)) { const d = c.local.distanceTo(ship.local); if (d < bd) { bd = d; best = c; isCask = true; } }
+    if (!best) return false;
+    if (isCask) piece.gather(best); else waves.strike(best, 99, { cause: 'hook' });
+    sfx.ropeSnap?.(); return true;
   }
 
   /** The vane: the Conductor marked, every warned blow marked over the ship. */

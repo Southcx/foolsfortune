@@ -264,6 +264,7 @@ import { Letters } from './coop/letters.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
+import { OpenSea } from './world/opensea/opensea.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -657,6 +658,7 @@ async function main() {
     game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
+    game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
@@ -1213,7 +1215,7 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
-    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active || !!game.opensea?.sailing; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     const worldAsleep = !!game.realm?.active; // (in the Spirit Garden the island's own bodies hold still: its jellies, wisps, pots, clapperjars, fish and chests, 1.8 of the garden's 4.2 ms a tick, the deep clean's profile; the minds and statuses run on, the garden's spirits are among them)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
@@ -1280,6 +1282,7 @@ async function main() {
 
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
+    game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
@@ -1363,7 +1366,7 @@ async function main() {
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
-    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
+    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active || game.opensea?.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }

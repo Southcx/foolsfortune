@@ -209,6 +209,7 @@ export class Dreamvane extends HeldTool {
     P.shake = Math.max(P.shake || 0, 0.15);
     const n = (g.crystals?.reveal(down.point, 3.2, 'courier', 'pick') || 0) + (g.ostraca?.reveal(down.point, 3.2) || 0); // (and a buried ostracon: world/ostraca.js)
     g.ai?.stimuli.emit('noise', down.point, { radius: 12, strength: 0.4, by: 'courier' });
+    g.events?.emit('dreamvane.strike', { at: down.point.toArray(), r: 3.2, by: 'courier' }); // (a buried cache listens: world/opensea/puzzlepieces.js)
     if (n) g.events?.emit('dreamvane.unearth', { n, by: 'courier' });
   }
   /** The Dreamquake comes down: the ground rings round them (the engine's ring strikes what is in it), and what is veiled rises. */
@@ -218,6 +219,7 @@ export class Dreamvane extends HeldTool {
     g.ai?.stimuli.emit('noise', P.pos.clone(), { radius: 24, strength: 0.8, by: 'courier' });
     g.techs?.get('slam')?.ring?.(P.pos.clone(), R);
     P.fovPunch = Math.max(P.fovPunch || 0, 8);
+    g.events?.emit('dreamvane.strike', { at: P.pos.toArray(), r: R, by: 'courier' });
     if (n) g.events?.emit('dreamvane.unearth', { n, by: 'courier' });
   }
 

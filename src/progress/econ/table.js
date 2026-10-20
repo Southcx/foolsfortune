@@ -142,6 +142,7 @@ export const ECON = {
     discovery: { common: 0.75, uncommon: 1.5, rare: 3.5, legend: 12, halfLife: 6 },
     plate: [0.05, 0.1, 0.2, 0.35],
     fix: { drift: 0.35, max: 2 },  // (squares of doubt a square sailed with no fix, at most `max`: dead reckoning; a fix clears it)
+    cache: { common: 2, uncommon: 4, rare: 8, legend: 12 },  // (minutes of the aim a buried cache pays, dug once: the Dreamvane's treasure hunt, OPEN-SEA.md 12)
   },
   /** CRUDE LACHRYMA (docs/LORE.md, "Lachryma as crude"; the owner, 2026-10-11): feeling gone flat, so it carries none. It is named for
    *  its FIELD, where it comes up, as crude oil is named Brent or West Texas: Margarite's light sweet, the Great Dunemaw's (Anagami's),

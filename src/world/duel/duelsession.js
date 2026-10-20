@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // A PUZZLE DUEL IN THE WORLD (docs/plans/PUZZLE-DUELS.md section 8, Petra's half): the session that plays the kernel (progress/duel/,
-// Dovina's) against an aberrant Figment where it was met. The first blow on it (world/duel/duelfoes.js), the aberrant wipe (the seam's kind
+// Dovina's) against an aberrant Figment where it was met. Its pull filled (world/duel/duelfoes.js), the pocket closed (nothing outside
+// enters: `pocket`, PUZZLE-DUELS.md 16.1), the aberrant wipe (the seam's kind
 // 'aberrant', vfx/aberrantwipe.js), and the board stands between you, the camera
 // framing it; your turns are your input, its turns its bot's (a beat apart, so you can follow them); every action's events are played
 // by the view (game.duelView, Calissa's: the board, the pieces, the domains' clash) before the next is taken. The duel ends on the Line,
@@ -50,12 +51,13 @@ export class DuelSession {
   /** Your side's mover (side 0) while it is your turn. */
   get mine() { return this.state && this.state.toMove === 0 && this.state.winner === null; }
 
-  /** The first blow on an aberrant (world/duel/duelfoes.js): the seam (Calissa's aberrant wipe), then the board between you. */
+  /** The pull filled (world/duel/duelfoes.js): the pocket closes round the two of you, the seam (Calissa's aberrant wipe), then the
+   *  board between you. */
   begin(c) {
     const g = this.game; if (this.active || this.pending || !c?.alive) return false;
     const ruleset = rulesetOf(c), feeling = c.grade ?? ruleset.feeling ?? 'fury';
-    this.pending = true;
-    const go = () => { this.pending = false; this.open(c, feeling, ruleset); };
+    this.pending = true; this.pendingFoe = c; this.pocket(c);
+    const go = () => { this.pending = false; this.pendingFoe = null; this.open(c, feeling, ruleset); };
     if (!g.seam?.cross(go, { kind: 'aberrant', foe: c })) go();
     return true;
   }
@@ -86,8 +88,24 @@ export class DuelSession {
     g.events?.emit('duel.open', { kind: c.kind, feeling, by: 'courier' });
   }
 
+  /** The pocket (the owner, 2026-10-20; PUZZLE-DUELS.md 16.1: "a special pocket dimension, a one-enemy Well"): nothing outside enters.
+   *  Every other creature is held (a halt, its blow called off) until the end, any that comes later too; every foe's projectile in flight
+   *  is gone (its own `vanish`); and a blow on the Courier from outside is refused at the vessel (courier/vessel/damage.js). */
+  pocket(foe) {
+    const g = this.game, C = g.creatures; this.held ||= new Set();
+    for (const c of C?.list || []) if (c !== foe && c.alive && !c.ally && !this.held.has(c)) { C.apply(c, 'halt', 600, 1, 'environment'); c.attack = null; c.windup = null; this.held.add(c); }
+    for (const pr of g.projectiles || []) if (pr.vanish) pr.vanish(); else g.projectiles.delete(pr);
+  }
+  /** The pocket opened again: the held let go. */
+  release() {
+    const C = this.game.creatures;
+    for (const c of this.held || []) if (c !== this.foe) C?.clearStatus?.(c, 'halt');
+    this.held?.clear();
+  }
+
   // ---------------------------------------------------------------- each frame
   update(raw, input) {
+    if (this.active || this.pending) this.pocket(this.foe || this.pendingFoe);
     if (!this.active) return;
     const s = this.state, g = this.game;
     this.pointer(input);
@@ -218,7 +236,7 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
-    this.unpin(c);
+    this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
     g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
     if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }

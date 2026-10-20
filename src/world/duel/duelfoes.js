@@ -4,16 +4,21 @@
 //   - how a Wisp goes aberrant: its lantern burns crude. At night (phaseAt, progress/weather.js) a Lantern Wisp drifting over a blot
 //     (world/ground/stains.js) drinks it as a lamp drinks oil: it is aberrant (c.aberrant, dressed as a data bug, vfx/databug.js), the
 //     weather's feeling where it drank is its grade, and the blot is spent (washed, by 'creature'). One Wisp a blot.
-//   - how a duel opens: the first blow that lands on an aberrant Figment (creatures.strike asks `provoke`), never a key. The blow does
-//     no harm: two minds meet and the domains expand (world/duel/duelsession.js). Any aberrant, the blotlings too.
+//   - how a duel opens: nearness, never a key or a blow (the owner, 2026-10-20; PUZZLE-DUELS.md 16.3). Inside `pull.near` m of an
+//     aberrant a pull fills over `pull.fill` real s; outside `pull.far` it drains at twice that (the gap between keeps the edge from
+//     flickering); at 1 the duel opens (world/duel/duelsession.js). A blow on an aberrant does no harm and opens nothing (creatures.js:
+//     the resist mark). No pull in the god hand, the Spirit Garden, on the skiff or a ship, or while shattered. Any aberrant, the
+//     blotlings too. `pull` (0..1) and `pullFoe` are what the pull's look and sound read (Calissa's, Wanda's).
 //   - the test: one more Wisp kept by the Weir (DUEL_FOES.test, from the dunes' spawn), aberrant from the start and again each time it
 //     forms after a mending, so the duel can be tried more than once; its debug chest (debug/kits.js 'duel') a few metres off. DEBUG only.
 // Nothing opens until the view exists (game.duelView), so a build without it shows no half of a duel.
 //
-// Prior art: the symbol encounter of the RPGs (the foe met on the field, struck first to fight: Chrono Trigger, Persona's ambush), the
-// will-o'-the-wisp's lamp (the light that leads you off the path), a lamp burning oil.
+// Prior art: the symbol encounter of the RPGs (the foe met on the field; EarthBound's and Pokemon's step into its sight and the battle
+// takes you), Metal Gear's alert meter (a fill you can still walk out of), the will-o'-the-wisp's lamp (the light that leads you off the
+// path), a lamp burning oil.
 //
-//   game.duelFoes = new DuelFoes(game)   .update()   .provoke(c) -> true when the blow opened (or is in) a duel   .chestSpot()   DUEL_FOES
+//   game.duelFoes = new DuelFoes(game)   .update()   .pull (0..1)   .pullFoe   .chestSpot()   DUEL_FOES
+//   events: duel.pull { foe, by: 'creature' } (a pull begins)   duel.slip { by: 'courier' } (it drained away unfilled)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { phaseAt } from '../../progress/weather.js';
@@ -21,18 +26,28 @@ import { WEIR_SPAWN } from '../../tools/sondelass/angling/weir.js';
 
 /** drinkY: how far above a blot (m) a Wisp drinks it; scan: real s between looks; test: the test Wisp's home and its chest, m from the
  *  dunes' spawn (south of the pond, short of the Dunes' own Wisps at 60 to 86 m). */
-export const DUEL_FOES = { drinkY: 2.5, scan: 0.5, test: { dx: 18, dz: -24, chest: [12, -19] } };
+export const DUEL_FOES = { drinkY: 2.5, scan: 0.5, test: { dx: 18, dz: -24, chest: [12, -19] },
+  pull: { near: 4, far: 6, fill: 1.5, drain: 0.75 } }; // (the pull: m, m, real s from 0 to 1 inside near, real s from 1 to 0 outside far: PUZZLE-DUELS.md 16.3)
 
 export class DuelFoes {
-  constructor(game) { this.game = game; this.scanT = 0; this.test = null; }
+  constructor(game) { this.game = game; this.scanT = 0; this.test = null; this.pull = 0; this.pullFoe = null; }
 
-  /** A blow that lands on an aberrant Figment opens its duel, and does no harm (creatures.strike asks this first). */
-  provoke(c) {
-    const g = this.game;
-    if (c.dueling) return true; // (the board stands: no blow reaches it in the world)
-    if (!c.aberrant || c.dataBugMended || c.ally || c.spirit || !g.duelView || !g.duel || g.duel.active || g.duel.pending) return false;
-    if (g.god?.controlling || g.realm?.active) return false;
-    g.duel.begin(c); return true;
+  /** The pull: nearness to an aberrant fills it, distance drains it, and at 1 its duel opens. */
+  updatePull(raw) {
+    const g = this.game, P = g.player, D = DUEL_FOES.pull;
+    const barred = !P || !g.duelView || !g.duel || g.duel.active || g.duel.pending || g.god?.controlling || g.realm?.active || g.skiff?.active || g.emocean?.stage?.active || g.death?.active;
+    if (barred) { this.pull = 0; this.pullFoe = null; return; }
+    const open = (c) => c?.alive && c.aberrant && !c.dataBugMended && !c.ally && !c.spirit;
+    let foe = open(this.pullFoe) ? this.pullFoe : null, d = foe ? foe.pos.distanceTo(P.pos) : Infinity;
+    if (!foe) for (const c of g.creatures?.list || []) if (open(c)) { const k = c.pos.distanceTo(P.pos); if (k < d) { d = k; foe = c; } }
+    if (d < D.near) {
+      if (this.pull === 0) g.events?.emit('duel.pull', { foe: foe.kind, by: 'creature' });
+      this.pullFoe = foe; this.pull = Math.min(1, this.pull + raw / D.fill);
+      if (this.pull >= 1) { this.pull = 0; this.pullFoe = null; g.duel.begin(foe); }
+    } else if (d > D.far && this.pull > 0) {
+      this.pull = Math.max(0, this.pull - raw / D.drain);
+      if (this.pull === 0) { this.pullFoe = null; g.events?.emit('duel.slip', { by: 'courier' }); }
+    }
   }
 
   /** The test Wisp's debug chest: a few metres from its home, facing it (debug/debugchest.js 'oasis.duel'). */
@@ -45,6 +60,7 @@ export class DuelFoes {
 
   update() {
     const g = this.game, W = g.wisps;
+    this.updatePull(g.rawDt ?? 1 / 60);
     if (!W) return;
     // the test Wisp, by the Weir (DEBUG): stood once, kept aberrant each time it forms again
     if (!this.test && g.mode === 'debug' && g.dunes) {
