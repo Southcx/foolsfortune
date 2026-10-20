@@ -23,7 +23,7 @@ export const DEBUG_KITS = {
     items: [['tool.crucibelle', 1]] },
   dunemaw: { at: 'well.mouth', for: 'a run of the Great Dunemaw to the great cavern and the fight', by: 'dovina', tests: [],
     items: [['whistle.wake', 1], ['bottle.small', 2]], cubes: 500 },
-  jetty: { at: 'jetty', for: 'a drafted passage: the sea chart, a long crossing, the encounters, the turns of the rail; the showcase crossing', by: 'petra', tests: ['T172', 'T173', 'T174', 'T179'],
+  jetty: { at: 'jetty', for: 'a drafted passage: the sea chart, a long crossing, the encounters, the turns of the rail; the test crossing', by: 'petra', tests: ['T172', 'T173', 'T174', 'T179'],
     items: [['cask.dunemaw', 4], // (Anagami's own field's crude, to sell at Margarite: crude by field, the owner, 2026-10-11)
             ['rutter', 1, { from: 'anagami', to: 'margarite', route: 'anagami>margarite', day: 0, passage: [], legs: [], rank: 'C', read: 0, minutes: 5, worth: 40 }]], cubes: 3000 }, // (cubes for the fuel of a long passage, casks for the Wreckers to take, a rutter for Letty to buy)
   duel: { at: 'oasis.duel', for: "a puzzle duel: the test aberrant Lantern Wisp by the Weir, opened by the first blow (PUZZLE-DUELS.md 14)", by: 'petra', tests: [],

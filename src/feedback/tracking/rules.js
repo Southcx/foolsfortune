@@ -4,7 +4,7 @@
 // rules only. Each takes what it needs from one context: `on` (the bus), `L` (the ledger), `log`, `g` (the game), `where()`.
 //
 //   areaRules(ctx)   (tracking.js listen() calls it once)
-// The crossing's rules (rail, voyage, passage) see the ledger through `atSea`: held still while the showcase crossing sails (DEBUG only,
+// The crossing's rules (rail, voyage, passage) see the ledger through `atSea`: held still while the test crossing sails (DEBUG only,
 // world/emocean/stage.js `showcase`: nothing counted), the ledger itself otherwise; what they say is said either way.
 // ---------------------------------------------------------------------------------------
 import { anglingRules } from './angling.js';
@@ -40,7 +40,7 @@ import { sealRules } from './seals.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 
-/** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase sails. */
+/** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the test crossing sails. */
 function atSea(ctx) {
   const L = ctx.L, still = () => !!ctx.g?.emocean?.showcase, sea = Object.create(L);
   for (const k of ['inc', 'hi', 'lo', 'first']) sea[k] = (...a) => (still() ? false : L[k](...a));
