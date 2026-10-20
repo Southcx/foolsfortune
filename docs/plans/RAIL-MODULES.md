@@ -26,7 +26,7 @@ working is cheaper than five, and every act maps onto one of them:
 | free | chase | it was chase with a looser camera; its darters spit from ahead instead of at the camera |
 | above | **overhead** | the pincer, the shoal's boil |
 | side | **side** | the broadside, the serpent abreast |
-| astern | parked | the brig's bow chasers move to chase (the brig ahead, coming about) or to side. Astern comes back only once the three work and a mock earns it |
+| astern | parked | the brig's bow chasers move to chase (the brig ahead, coming about) or to side. If astern ever returns, it is a camera move inside chase, never a fourth view (Calissa and Dovina, 2026-10-20) |
 
 The acts become: launch, schools, darters, the breather and the arrival in **chase**; the pincer in **overhead**; each set piece's
 beats re-mapped onto the three (§4).
@@ -44,7 +44,8 @@ beats re-mapped onto the three (§4).
 4. **Nothing fires** in an enemy's first half real second in view, during a swing, or in the last bar before one.
 5. **Each module owns its reticle.**
    - Chase: a free cursor.
-   - Overhead and side: a fixed point ahead of the ship along the scroll.
+   - Side: a fixed point ahead of the ship along the scroll.
+   - Overhead: none (no lock-on there, §2).
 
    A swing hands the lock-on over by clearing it: locks are released as lances before the swing's bar, never carried across. This fixes
    "the reticle locks or breaks when the view changes".
@@ -81,8 +82,10 @@ beats re-mapped onto the three (§4).
 - **The player:**
   - moves over the water seen from above;
   - fires forward up the scroll while LMB is held;
-  - paints with the fixed reticle ahead (RMB);
   - flips Astral and Umbral with Q.
+
+  No lock-on here (Calissa and Dovina, 2026-10-20, under the owner's "most performant" rule): the eye belongs on the hurtbox and the
+  patterns, and the lock-on stays chase's own.
 
   The forms matter most here: Ikaruga's polarity was made for this view.
 - **What threatens:**
@@ -133,7 +136,8 @@ beats re-mapped onto the three (§4).
 
 Each of these is a separate push, after the mock.
 
-**Still open:**
-- Whether astern ever returns.
-- Whether overhead's lock-on is worth its keys, or overhead is gun, Bomb and forms only (cheaper, closer to Ikaruga).
-- The shot budgets, which are guesses until `npm run perf` measures them.
+**Agreed between the divisions** (2026-10-20; the owner may overrule):
+- Overhead has no lock-on: gun, Bomb and forms only.
+- Astern stays parked; if it returns, it is a camera move inside chase.
+
+**Still open:** the shot budgets, which are guesses until `npm run perf` measures them.
