@@ -4,7 +4,7 @@
 // set piece's first beat, how it ended, and the tally (Star Fox 64's: the score, the rank, the downs, the medal). The words are
 // Espada's (2026-10-07: the glints and their Conductor, the Wreckers and the False Light, Old Nobody). Registered before the voyage's rules, so the tally is said before "You make port". tracking.js calls it.
 //
-//   railRules({ on, L, log })
+//   railRules({ on, L, log })   showcase.start { legs, hulls }   showcase.hull { hull, k, note }   showcase.mend   showcase.end { legs, score }
 // ---------------------------------------------------------------------------------------
 import { SCORE } from '../../progress/rail/score.js';
 
@@ -22,6 +22,11 @@ const ENDS = {
 const n = (x) => Math.round(x).toLocaleString('en-US');
 
 export function railRules({ on, L, log }) {
+  // the showcase crossing (DEBUG only: progress/rail/showcase.js): said, never counted (placeholder words for Espada's)
+  on('showcase.start', (e) => log.say('system', `The showcase crossing: ${e.legs.length} legs, a hull each. Nothing is counted.`));
+  on('showcase.hull', (e) => log.say('info', `Your ship is a ${e.hull} for the next leg${e.note ? `: ${e.note}` : ''}.`));
+  on('showcase.mend', () => log.say('info', 'The showcase mends your ship.', { key: 'showcase.mend', throttle: 4 }));
+  on('showcase.end', (e) => log.say('system', `The showcase crossing is over: ${n(e.score)} points, nothing counted.`));
   on('rail.beat', (e) => { if (OPENS[e.beat]) log.say('combat', OPENS[e.beat], { key: 'railbeat', throttle: 2 }); });
   on('rail.end', (e) => { if (ENDS[e.end]) log.say(e.end === 'limped' ? 'info' : 'gain', ENDS[e.end], { key: 'railend', throttle: 2 }); });
   on('emocean.continue', (e) => { if (e.by !== 'courier') return; L.inc('rail.continue'); L.inc('rail.continue.cubes', e.cost || 0); log.say('info', `Continue: ${e.cost} cubes. The ship is mended.`); });

@@ -68,6 +68,7 @@ export class TripRun {
   begin(V) {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
     const P = V.passage;
+    this.showcase = !!P.showcase; // (progress/rail/showcase.js: no pressures, a hull a leg)
     this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
     this.legs = this.wps.map((w) => this.legOf(w));
@@ -174,6 +175,7 @@ export class TripRun {
   leave(k) {
     const S = this.st, w = this.wps[k];
     if (S.piece) S.close();
+    if (this.showcase) { S.run.hits = 0; const nx = this.wps[k + 1]; if (nx?.hull && nx.hull !== this.state.ship) this.rehull(nx.hull, k + 1); return; } // (the showcase: mended, and the next row's hull through the turn)
     const hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), scored = Math.max(0, S.run.score - (this.scoreAt ?? S.run.score));
     this.state = arrive(this.state, this.chart, w.id, { hits, cleared: true });
     // what the leg's score is worth besides: a squall's pay (trip.js legScore), the whale's dive, a bounty, a ghost raced
@@ -188,9 +190,19 @@ export class TripRun {
     this.driftOn(k);
   }
 
+  /** The showcase's turn: the next row's hull sailed from here (ship.rehull), what it bears with it. */
+  rehull(id, k) {
+    const S = this.st, ship = S.ship;
+    this.state = { ...this.state, ship: id };
+    ship.rehull(id); S.aspectWas = null; // (the new hull takes the ship's feeling at the stage's next look: stage.js look)
+    S.run.ship = id; S.run.bears = (SHIPS[id]?.bears ?? S.run.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0);
+    this.game.events?.emit('showcase.hull', { hull: id, k, note: this.wps[k]?.note || '', by: 'environment' });
+  }
+
   /** A calm's campfire or an encounter's choice, offered in the Index's window (the game holds; the cue holds: Wanda's). */
   offer(k) {
     const S = this.st, M = this.game.indexMenu, leg = this.legs[k], w = this.wps[k]; if (!M || S.offering) return;
+    if (this.showcase) { this.chosen.add(k); return; } // (the showcase heaves to for nothing)
     this.chosen.add(k); S.offering = true;
     const enc = leg.encounter && ENCOUNTERS[leg.encounter], st = S.stage;
     const opts = enc ? offered(leg.encounter, this.state.ship, { rutter: this.rutterWorth(), fuel: this.state.fuel }).map((c) => ({ id: c.id, word: ENCOUNTER_WORDS[leg.encounter]?.[c.id] || c.does }))

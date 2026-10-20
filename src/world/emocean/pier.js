@@ -11,6 +11,7 @@
 // chosen before you go).
 //
 //   game.pier = new Pier(game)   .add(island, () => ({ end, top, yaw }))   .update()   .open(island)   .landing(island) -> { pos, yaw }
+//   (in the DEBUG save its page also offers THE SHOWCASE CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
@@ -20,6 +21,7 @@ import { mountRow, mountRows } from '../../ui/mountcards.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
+import { showcasePassage } from '../../progress/rail/showcase.js';
 import { sfx } from '../../audio/sfx.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
@@ -84,6 +86,9 @@ export class Pier {
         if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
+      // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
+      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
+      if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen.slice(0, slotsOf(SC[0].hull))); };
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
       for (const [id, H] of Object.entries(SHIPS)) {
@@ -100,7 +105,7 @@ export class Pier {
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';
       g.mooring?.preview(chosen.at(-1) ?? null);
-      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
     if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
