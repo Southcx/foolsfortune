@@ -222,7 +222,7 @@ shared axes in a swing).
 **For the owner** (in the digest, with Calissa's and Dovina's lean):
 1. Overhead aim: twin-stick, or fire along the scroll? Lean: along the scroll.
 2. On a swing, are the old plane's shots cancelled into Lachryma, or left as scenery? Lean: cancelled.
-3. Does grazing a shot pay? Lean: a little energy, capped a bar, so overhead is never farmed.
+3. ~~Does grazing a shot pay?~~ **Ruled (the owner, 2026-10-20): grazing a shot pays Lachryma to the pool.** Capped a bar (Dovina's number to set), so overhead is never farmed.
 4. Camera turns as a verb (Gummi Mission 3)? Lean: in one late leg only.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):

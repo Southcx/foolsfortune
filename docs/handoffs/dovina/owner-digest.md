@@ -13,5 +13,5 @@ Four calls, each with Calissa's and Dovina's lean under the owner's "most perfor
 1. **Overhead aim:** twin-stick toward the cursor, or the gun firing along the scroll? Lean: along the scroll (Ikaruga).
 2. **On a swing, the old plane's live shots:** cancelled into Lachryma you can absorb, or left flying as harmless scenery? Lean:
    cancelled (fewer live shots, and the cancel pays).
-3. **Grazing:** does passing close to a shot pay? Lean: a little energy, capped a bar, so overhead can't be farmed.
+3. ~~**Grazing:**~~ ruled 2026-10-20: a graze pays Lachryma to the pool (capped a bar). Recorded in RAIL-MODULES.md.
 4. **Camera turns as a verb** (the Gummi's Mission 3: you turn the view toward an alert): in any leg? Lean: one late leg only.
