@@ -37,7 +37,7 @@ import { CrossingLook } from '../../vfx/crossinglook.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
 import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
-import { SCORE, chain, chainDown, volleyBonus, downScore } from '../../progress/rail/score.js';
+import { SCORE, chain, chainDown, chainHit, volleyBonus, downScore } from '../../progress/rail/score.js';
 import { STAGE } from '../../progress/econ/emocean.js';
 import { blendRig, rig, CRUISE } from '../../courier/ship/views.js';
 import { RailPath, figureFor, FIGURES, arenaLaps } from './railpath.js';
@@ -336,12 +336,13 @@ export class Emocean {
     }
   }
 
-  /** A foe downed: its pay (its own, a part's; else its class), twice at point blank, three times by its own shot sent back; the chain
-   *  (unless it stands outside it: a glint, a part), the medal's count, the volley's count, the weight of it. */
+  /** A foe downed: its pay (its own, a part's; else its class), twice at point blank, three times by its own shot sent back, half again
+   *  while its windup showed (its volley never came: RAIL-MODULES.md 5); the chain (unless it stands outside it: a glint, a part), the
+   *  medal's count, the volley's count, the weight of it. */
   down(f, returned, volley) {
     const r = this.run; if (!r || this.ending) return;
-    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within;
-    const pay = f.pay != null ? f.pay * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1) : downScore({ cls: f.cls, pointBlank, returned });
+    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within, windup = this.windupShowing(f);
+    const pay = f.pay != null ? f.pay * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1) * (windup ? SCORE.windup : 1) : downScore({ cls: f.cls, pointBlank, returned, windup });
     const link = f.chain === false ? 0 : chainDown(r.chain, f.aspect);
     r.score += pay + link; if (f.count !== false) r.downed++; if (pointBlank) r.pointBlank++; if (link) r.chainBest = Math.max(r.chainBest, link);
     if (volley) volley.downs++;
@@ -368,8 +369,11 @@ export class Emocean {
     const r = this.run; if (!r || this.ending || this.offering) return;
     r.hits = Math.min(r.bears, r.hits + n); this.trauma = Math.min(1, this.trauma + T.ship.trauma.hit);
     this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, by });
+    chainHit(r.chain); // (a hit breaks the chain to nothing: something seen to fall, not only hull, RAIL-MODULES.md 5)
     if (r.hits >= r.bears) this.broken();
   }
+  /** Is a foe's windup showing: a pattern of its own played and not yet at its first volley (the pattern player's runs)? */
+  windupShowing(f) { return !!this.trip?.player?.runs?.some((r) => r.from === f && r.k === 0 && r.t < 0); }
 
   /** The ship can bear no more: the CONTINUE (an arcade's coin), on the index's window; no window, it breaks up. */
   broken() {
