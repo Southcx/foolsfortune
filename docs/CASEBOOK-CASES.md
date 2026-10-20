@@ -3245,7 +3245,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   turns the plane. At 16:9: chase x ±11.8 m and up to 12.5 m, above x ±29 m and z -10.5 to 41.6 m, side z -21 to 27.7 m and up to 17.3 m.
 - **Measured after** (a drafted trip, shoal then graveyard then the Wreckers, the ship steered to its corners): the ship reaches ±0.84
   of the screen in chase, free, above and side, up to 0.84 above; its floor is the sea's (chase -0.57, side -0.14).
-- **Rule:** NEW:bound-from-its-camera.
+- **Rule:** 245.
 
 ### 2026-10-20 · The reticle snapped, flew off the screen and came back locked at a swing (the owner, in play; Calissa's measure)
 - **Seen:** the owner: "the targeting reticle breaks/becomes locked when changing perspectives". Measured: at the chase>above swing's
@@ -3262,7 +3262,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after** (the same trip, the mouse moving every frame): 12,000 reticle samples, 360 in swings, none off the screen (1,151
   before the scroll reticle was held in); the hidden cursor moved in no frame of a scroll view; in the free views the reticle sits
   under the cursor (median error 0).
-- **Rule:** NEW:reticle-from-this-camera.
+- **Rule:** 246.
 
 ### 2026-10-20 · The crossing's patterns leaned left, fanned into depth, fired off the beat and from no one (the owner, in play; Calissa's measurements)
 - **Seen:** the owner: emitters "aiming at the left region of the screen where they will never hit the ship"; patterns "desynchronized
@@ -3300,4 +3300,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   - **Aim:** aimed shots in the free view sit at 0 degrees to the ship (were 20). The chase view's twins sit at their designed 8 degrees.
   - **Plane:** none leaves the above plane.
   - **Not verified:** the side view in play (the trip did not reach it); the check covers it in the math only.
-- **Rule:** NEW:judge-as-thrown.
+- **Rule:** 247.
