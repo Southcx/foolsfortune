@@ -4,10 +4,10 @@
 // together; a pass's clears burst together), with a beat of stillness (ma) between. The timings are the mock's (board v11, figure 09):
 //   the action 0.26 (swap on a shallow arc, rotate a quarter round its corner, drag along its path, drop down its lane, push and kick)
 //   fall       free fall from rest (the first cell in 0.08), then a squash along the gravity's axis (0.07)
-//   clear      a flash (0.09: white, swelling 12%), then five shards of its colour; break: grog chips that fall; blast: its cross of
+//   clear      a flash (0.09: white, swelling 12%), then five shards of its colour; break: clay chips that fall; blast: its cross of
 //              sparks first, the clears it makes 0.14 later; a duel's chain: its numeral from the clear's middle (rising, 0.9)
 //   pinch      the junk flips like an Othello disc, its back the new colour (0.34)
-//   land       grog thrown over the Line's head into its cells (0.035 apart); line: the Line steps a column (0.40, overshoot 1.4),
+//   land       junk thrown over the Line's head into its cells (0.035 apart); line: the Line steps a column (0.40, overshoot 1.4),
 //              the domains' seam pushed; shift: the figurine steps clear; drip: a drop falling a cell into its gem (0.06 apart)
 //   break     its half flashes white, a gold ring out of its body, its stars (one a depth); the EmO column whites out
 //   orb   thrown from the broken body over the Line in arcs (0.05 apart, 0.5 each); fade: it lifts, swells and breaks (0.8)
@@ -207,7 +207,7 @@ export class DuelBeats {
     V.drink(e); return { events: [e], dur: 0.2 };
   }
 
-  /** Junk landing on a side: grog thrown from the other side over the Line's head into its cells. */
+  /** Junk landing on a side: thrown from the other side over the Line's head into its cells. */
   land(e) {
     const V = this.view, P = V.pieces, B = V.board3, cells = e.at || [], top = -2.5;
     const kind = e.kind === 'ember' ? 'ember' : 'junk', count = kind === 'ember' ? V.state?.rs?.embers?.count ?? 3 : null;
