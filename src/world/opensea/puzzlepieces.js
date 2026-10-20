@@ -29,6 +29,7 @@ import { takeFix } from '../../progress/opensea/seatrip.js';
 import { today } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
 import { SCALE, DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
+import { sfx } from '../../audio/sfx.js';
 
 const EYE = 1.6, SING_AGAIN = 8; // (the Courier's eye over the spot, m; real s before the singing stone sings again to one still near)
 const mat = (c, extra = {}) => new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...extra });
@@ -123,7 +124,7 @@ export class PuzzlePieces {
     const s = this.singing; if ((s.t -= dt) > 0) return;
     const d = s.E.phrase[s.k], top = s.E.hearAt.mesh.position.clone().setY(s.E.hearAt.mesh.position.y + 1.5);
     this.game.glyphs?.pop?.('note', top, { color: DEGREE_COLOR[d - 1], size: 0.5, life: 0.9 });
-    const C = this.game.crucibelle; try { C?.voice?.((C.grid?.().root ?? 63) + SCALE[d - 1], 0.5); } catch { /* the stone is silent where the bell has no voice */ }
+    const C = this.game.crucibelle, midi = (C?.grid?.().root ?? 63) + SCALE[d - 1]; try { if (sfx.stoneSing) sfx.stoneSing(midi, 0.5); else C?.voice?.(midi, 0.5); } catch { /* the stone is silent where it has no voice */ } // (Wanda's stone voice, the bell's pitches; the bell's own until hers reaches main)
     s.t = ECHO.gap; if (++s.k >= s.E.phrase.length) this.singing = null;
   }
   note(e) {
