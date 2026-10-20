@@ -732,5 +732,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 248. **Code is read past its comments in one pass, left to right.** Blanking one kind of comment and then the
     other let a `/*` written inside a line comment open a block that ran to the next doc comment, and the check lost 32 imports.
 
+249. **Find an edge by stepping to it, then halve the last step.** Halving a range assumes one edge in it; a
+    camera that follows the thing it frames brings the screen round again, and the halving found the far edge.
+
 NEW:sound-loops-counted. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
     beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.

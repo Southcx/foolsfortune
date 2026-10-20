@@ -7,6 +7,13 @@
 //   darter   one class up: dashes across the lanes and spits OUTLINED shots at the camera (the parry lesson: V sends them home)
 //   heavy    two classes up: comes ahead and holds, soaking blows, a fan of shots of its feeling each bar and an outlined one each other
 //
+// THE ROSTER (progress/rail/showcase.js ROSTER, Dovina's; RAIL-MODULES.md 6): a wave of any of its roles keeps its role, so a pattern
+// thrown `from` that role finds it; it is drawn by its own body (vfx/railfoes.js railFoeBody, Calissa's: a hit's flash, the windup's
+// tell, its death read in 0.55 real s), and it moves and fires by its role's row below, or the school's where it has none yet; what
+// it does beyond that is its mechanic (world/emocean/foemechanics.js: the escort's shield, the gunship's guns, the blocker's weak point,
+// the spawner's hatch, the grappler's latch). A wave laid `from` a role comes out of that foe, or not at all once it is down. A blow a
+// mechanic turns aside reads as a glance (`glance`: the resist mark, `rail.glance`).
+//
 // Each foe is a creature (creatures/creatures.js: tagged hurtable, registered, struck only through `creatures.strike`), so the gun
 // is a weapon like any other and the creatures' services (the windup, the statuses) are there when the set pieces want them. Each
 // keeps its place in the rail's frame (`local`) and its world place (`pos`) for the services. Its feeling is its wave's (alternating,
@@ -26,17 +33,19 @@
 //   W.foes (alive)   W.hitAt(local, r) -> foe | null   W.strike(foe, power, { cause, at, dir, returned, volley })
 //   W.add({ kind, name, cls, aspect, local, radius, hp, tick(dt, f, ctx) -> false when gone, mesh?, pay?, chain?, count?, lock?, armour?(f),
 //          onHurt?(f, power), onDown?(f) })   (a set piece's part, on the roll)
-//   W.onDown(foe, { returned, volley, by })   (the stage's: the score)   W.onSpawn(n)   W.HP
+//   W.onDown(foe, { returned, volley, by })   (the stage's: the score)   W.onSpawn(n)   W.HP   W.tellOf(foe) -> 0..1 (the stage's: its windup)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { COLOR, OPPOSITE } from '../../progress/weather.js';
+import { OPPOSITE } from '../../progress/weather.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
+import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
+import { FOE_MECHANICS } from './foemechanics.js';
 
 /** Shots to down a foe by class (Guppy, Barracuda, Marlin, Whale, Leviathan: about three times a class, as their pay is). */
 export const HP = [1, 3, 12, 40, 150];
 const SIZE = 1.8; // (the bodies drawn larger than life: at 480 lines and 60 m a fish must still read as one)
+/** How each role moves and fires on its own (a roster role with no row moves as a school and fires only what its leg schedules). */
 const ROLES = {
   school: { radius: 0.8, speed: 16, fire: 0.18, shot: 18 },
   darter: { radius: 0.9, speed: 24, fire: 0.5, shot: 20 },
@@ -55,30 +64,21 @@ const PATHS = {
   hold: (t, i, n, L, out) => { const arrive = smooth(t / 3), leave = Math.max(0, t - 14 * BAR_S); out.set(L * 4 + Math.sin(t * 0.6) * 3, 4.2 + Math.sin(t * 0.9) * 0.8, 120 - 92 * arrive + leave * leave * 5); return out.z < 160; },
 };
 
-/** The placeholder bodies (Calissa's to dress): a fish, a dart, a heavy. Built once; a new foe takes a mesh and its feeling's material. */
-function bodies() {
-  const fish = mergeGeometries([new THREE.SphereGeometry(0.42, 10, 8).scale(0.7, 0.8, 1.5), new THREE.ConeGeometry(0.35, 0.6, 4).rotateX(-Math.PI / 2).translate(0, 0, -0.8)]);
-  const dart = mergeGeometries([new THREE.ConeGeometry(0.45, 1.8, 5).rotateX(Math.PI / 2), new THREE.BoxGeometry(1.8, 0.08, 0.5).translate(0, 0, -0.4)]);
-  const heavy = mergeGeometries([new THREE.SphereGeometry(2.0, 16, 12).scale(1.1, 0.8, 1.3), new THREE.BoxGeometry(5.6, 0.25, 1.2).translate(0, 0, -0.6), new THREE.ConeGeometry(0.9, 1.6, 6).rotateX(-Math.PI / 2).translate(0, 0, -2.9)]);
-  return { school: fish, darter: dart, heavy };
-}
-
 export class Waves {
   constructor(game, rail) {
     this.game = game; this.rail = rail;
     this.foes = []; this.plan = null; this.next = 0; this.idx = 0;
-    this.onDown = null; this.onSpawn = null; this.onLeave = null;
-    this.mats = new Map();
+    this.onDown = null; this.onSpawn = null; this.onLeave = null; this.tellOf = null;
+    this.dying = [];
   }
 
   build(scene) {
-    this.scene = scene; this.geo = bodies();
-    // (one of each parked hidden, so the program is compiled with the warm-up and never on a wave's first bar)
-    this.parked = new THREE.Mesh(this.geo.school, this.mat('mirth')); this.parked.visible = false; this.parked.userData.zoneFree = true; scene.add(this.parked);
-  }
-  mat(aspect) {
-    if (!this.mats.has(aspect)) { const c = new THREE.Color(COLOR[aspect] ?? 0xd0c0a0); this.mats.set(aspect, new THREE.MeshStandardMaterial({ color: c, roughness: 0.45, metalness: 0.1, emissive: c.clone().multiplyScalar(0.25) })); }
-    return this.mats.get(aspect);
+    this.scene = scene;
+    // (one body parked hidden, its tether and bubble with it, so the bodies' two programs are compiled with the warm-up and never on a
+    // wave's first bar: the stage's parked(), main.js; Calissa's prewarmRailFoes does the same)
+    const b = this.parkedBody = railFoeBody('escort', 'mirth'); b.link.target = b.object; b.update(0);
+    this.parked = new THREE.Group(); this.parked.add(b.object, b.link.object); this.parked.visible = false; this.parked.userData.zoneFree = true;
+    this.parked.traverse((o) => { o.frustumCulled = false; }); scene.add(this.parked);
   }
 
   /** A crossing begins: its waves, and the ship's feeling (the waves alternate it and its opposite). */
@@ -89,7 +89,8 @@ export class Waves {
   }
   end() {
     for (const f of this.foes) this.gone(f);
-    this.foes.length = 0; this.waves = []; this.plan = null;
+    for (const f of this.dying) this.bury(f);
+    this.foes.length = 0; this.dying.length = 0; this.waves = []; this.plan = null;
   }
 
   // ---------------------------------------------------------------- the frame
@@ -112,14 +113,20 @@ export class Waves {
         continue;
       }
       _p.copy(f.local);
-      if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; }
+      if (!f.pinned) { if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; } if (f.shift) f.local.add(f.shift); }
+      if (f.mech?.tick && f.mech.tick(this, f, dt, ctx) === false) { this.leave(f); this.foes.splice(i, 1); continue; }
       this.rail.toWorld(f.local, f.pos);
       // face the way it moves against the rail (what the eye, riding the rail, reads)
       _d.copy(f.local).sub(_p); this.rail.dirWorld(_d, _w);
       if (_w.lengthSq() > 1e-8) f.mesh.lookAt(_w.add(f.pos));
       f.mesh.position.copy(f.pos);
-      f.mesh.material.emissiveIntensity = 1 + f.hitT * 12;
+      if (f.body) { f.body.tell(Math.max(this.tellOf?.(f) ?? 0, f.hatch || 0)); f.body.update(dt); }
       this.fire(f, bar, sixteenth, ship, shots);
+    }
+    // the downed, their death read where they fell in the rail's frame, then put away
+    for (let i = this.dying.length - 1; i >= 0; i--) {
+      const f = this.dying[i]; this.rail.toWorld(f.local, f.pos); f.mesh.position.copy(f.pos);
+      if (f.body.update(dt) === false) { this.bury(f); this.dying.splice(i, 1); }
     }
     this.lastSixteenth = sixteenth;
   }
@@ -130,7 +137,7 @@ export class Waves {
     const b = Math.floor(bar), onBar = sixteenth % 16 === (f.off % 16);
     if (!onBar || b === f.lastBar || f.t < 1.2 || f.local.z < 6 || f.local.z > 70) return;
     f.lastBar = b;
-    const R = ROLES[f.role], at = () => _d.copy(ship.local).sub(f.local).normalize().multiplyScalar(R.shot);
+    const R = f.R, at = () => _d.copy(ship.local).sub(f.local).normalize().multiplyScalar(R.shot);
     if (f.role === 'school') { if (this.rand() < R.fire * (f.form === 'pincer' ? 3 : 1)) shots.foe(f.local, at(), { aspect: f.aspect, from: f }); }
     else if (f.role === 'darter') { if ((b + f.i) % 2 === 0) shots.foe(f.local, at(), { outlined: true, from: f }); }
     else if (f.role === 'heavy') {
@@ -144,21 +151,26 @@ export class Waves {
 
   // ---------------------------------------------------------------- the foes
   spawn(w, wi) {
-    const role = ROLES[w.role] ? w.role : 'school', R = ROLES[role], path = PATHS[w.formation] || PATHS.line;
-    const A = this.aspect, B = OPPOSITE[A] || A;
+    let src = null, at = null; // (a wave laid `from` a role: out of the nearest live one of it, its hatch opening; none alive, it never comes)
+    if (w.from) { for (const f of this.foes) if (f.alive && f.role === w.from && (!src || f.local.z < src.local.z)) src = f; if (!src) return; src.hatch = 1; at = src.local; }
+    const look = RAIL_FOE_ROLES.includes(w.role) ? w.role : 'school', moves = ROLES[look] ? look : 'school', R = ROLES[moves], path = PATHS[w.formation] || PATHS.line;
+    const A = this.aspect, B = OPPOSITE[A] || A, k = look === 'school' ? 1 + 0.25 * w.cls : 1;
+    const radius = ROLES[look] ? SIZE * R.radius * k : SIZE * 0.45 * (RAIL_FOE_SIZE[look] || 2); // (a roster body's own length where its role has no row)
     for (let i = 0; i < w.count; i++) {
       const aspect = w.formation === 'pincer' ? (i % 2 ? B : A) : (wi % 2 ? B : A);
-      const mesh = new THREE.Mesh(this.geo[role], this.mat(aspect)); mesh.userData.zoneFree = true;
-      mesh.scale.setScalar(SIZE * (role === 'school' ? 1 + 0.25 * w.cls : 1));
+      const body = railFoeBody(look, aspect), mesh = body.object; mesh.userData.zoneFree = true;
+      mesh.scale.setScalar(SIZE * k);
       this.scene.add(mesh);
       const f = this.make({
-        kind: `rail.${role}`, name: role === 'school' ? 'a fish of the school' : role === 'darter' ? 'a darter' : 'a heavy',
-        role, cls: w.cls, aspect, radius: SIZE * R.radius * (role === 'school' ? 1 + 0.25 * w.cls : 1), hp: HP[Math.max(0, Math.min(4, w.cls))], mesh,
+        kind: `rail.${look}`, name: look === 'school' ? 'a fish of the school' : `a ${look.replace('-', ' ')}`,
+        role: look, cls: w.cls, aspect, radius, hp: HP[Math.max(0, Math.min(4, w.cls))], mesh,
       });
-      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path });
-      path(0, i, w.count, f.lane, f.local); this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
+      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null });
+      path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
+      this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
       this.game.creatures?.add(f);
       this.foes.push(f);
+      f.mech?.spawn?.(this, f, w);
     }
     this.onSpawn?.(w.count, w);
   }
@@ -171,8 +183,8 @@ export class Waves {
       local: new THREE.Vector3(), pos: new THREE.Vector3(), alive: true, tags: new Set(['hurtable']), poise: 1e6, mesh: null, last: null,
       hurt(point, dir, power) {
         if (!this.alive) return;
-        const k = this.armour ? this.armour(this) : 1; if (k <= 0) return; // (a shut gill, a closed port: the blow glances off)
-        this.hp -= power * k; this.hitT = 0.08; this.onHurt?.(this, power * k);
+        const k = this.armour ? this.armour(this) : 1; if (k <= 0) { waves.glance(this); return; } // (a shut gill, a closed port, a shield: the blow glances off)
+        this.hp -= power * k; this.hitT = 0.08; this.body?.hit(); this.onHurt?.(this, power * k);
         if (this.hp <= 0) { this.alive = false; waves.down(this); }
       },
       center(out = new THREE.Vector3()) { return out.copy(this.pos); },
@@ -208,10 +220,22 @@ export class Waves {
     const i = this.foes.indexOf(f); if (i >= 0) this.foes.splice(i, 1);
     f.onDown?.(f);
     this.onDown?.(f, { returned: !!f.last?.returned, volley: f.last?.volley || null, by: f.last?.by || 'courier' });
-    this.gone(f);
+    this.gone(f, true);
   }
   leave(f) { f.alive = false; this.onLeave?.(f); this.gone(f); }
-  gone(f) { f.alive = false; this.game.creatures?.remove(f); if (!f.keepMesh) f.mesh?.parent?.remove(f.mesh); }
+  /** A blow turned aside (armour 0): the resist mark where it struck and `rail.glance` for its sound, a fifth of a real second apart. */
+  glance(f) {
+    const now = performance.now(); if (now - (f.glanceAt ?? -1e9) < 200) return; f.glanceAt = now;
+    this.game.glyphs?.pop?.('ward', f.pos.clone(), { color: 0xffffff, size: 1.4, life: 0.6, float: 0.3, burst: true, ring: true });
+    this.game.events?.emit('rail.glance', { role: f.role, by: f.last?.by || 'courier' });
+  }
+  /** Off the roll: a body downed reads its death first (`dying`, put away by update), anything else at once. */
+  gone(f, died = false) {
+    f.alive = false; this.game.creatures?.remove(f); f.onGone?.(f);
+    if (died && f.body && this.plan) { f.body.down(); this.dying.push(f); return; }
+    this.bury(f);
+  }
+  bury(f) { if (f.body) { f.body.dispose(); f.body = null; } else if (!f.keepMesh) f.mesh?.parent?.remove(f.mesh); }
 
   /** The first foe whose body a point (rail frame) is inside, with a margin r (a part that is `solid: false` lets shots through). */
   hitAt(p, r = 0.3) {

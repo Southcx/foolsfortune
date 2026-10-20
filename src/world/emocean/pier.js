@@ -11,7 +11,7 @@
 // chosen before you go).
 //
 //   game.pier = new Pier(game)   .add(island, () => ({ end, top, yaw }))   .update()   .open(island)   .landing(island) -> { pos, yaw }
-//   (in the DEBUG save its page also offers THE TEST CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
+//   (in the DEBUG save its page also offers THE SHOWCASE CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
@@ -21,7 +21,7 @@ import { mountRow, mountRows } from '../../ui/mountcards.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
-import { showcasePassage } from './stage.js';
+import { showcasePassage } from '../../progress/rail/showcase.js';
 import { sfx } from '../../audio/sfx.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
@@ -86,9 +86,9 @@ export class Pier {
         if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
-      // the test crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
-      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE TEST CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
-      if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at); };
+      // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
+      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
+      if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen); };
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
       for (const [id, H] of Object.entries(SHIPS)) {
@@ -100,7 +100,7 @@ export class Pier {
       const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
       const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
       const back = () => g.mooring?.preview(this.chosen?.at(-1) ?? null); // (the one last taken aboard, until another is hovered or focused)
-      const cards = mountRows(can, chosen).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
+      const cards = mountRows(can, chosen, { ship: this.ship, feel: g.mooring?.feel }).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
       for (const c of cards) { const show = () => g.mooring?.preview(c.row.id); c.el.addEventListener('mouseenter', show); c.el.addEventListener('focus', show); c.el.addEventListener('mouseleave', back); c.el.addEventListener('blur', back); } // (a mount's preview on the moored hull: vfx/mountpreview.js)
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';

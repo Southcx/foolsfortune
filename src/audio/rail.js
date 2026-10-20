@@ -91,4 +91,28 @@ export class RailSounds {
     this.noise(t + dur, 0.06, { type: 'bandpass', f0: 1800, q: 1.2, gain: 0.3, dest: d }); // (the snap of the sail set again)
   }
 
+  /** A blow turned aside (rail.glance: a shield, a shut core, a closed port, the wrong world): a dull ricochet off something hard, no
+   *  ring of a hit, so the ear tells it from a landed blow (Dovina: a glance heard as well as seen). Throttled a fifth of a real second. */
+  railGlance() {
+    if (!this.ok() || !this.allow('railGlance', 5)) return;
+    const t = this.ctx.currentTime, d = this.out(0.26, 0.15);
+    this.noise(t, 0.02, { type: 'bandpass', f0: 2200, q: 4, gain: 0.4, dest: d });
+    this.tone(t, 0.12, { f0: 1400 + Math.random() * 300, f1: 2600, type: 'triangle', gain: 0.04, dest: d }); // (the whine of it skipping off)
+    this.tone(t, 0.05, { f0: 180, f1: 140, type: 'square', gain: 0.05, dest: d });
+  }
+  /** A grappler taking hold (rail.latch): claws biting the hull and the line drawn taut, a creak under it for the drag. */
+  railLatch() {
+    if (!this.ok() || !this.allow('railLatch', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.32, 0.2);
+    [0, 0.05].forEach((x) => this.noise(t + x, 0.02, { type: 'bandpass', f0: 3000, q: 5, gain: 0.45, dest: d }));
+    this.tone(t + 0.08, 0.35, { f0: 220, f1: 330, type: 'sawtooth', gain: 0.04, dest: d });
+    this.noise(t + 0.1, 0.5, { type: 'bandpass', f0: 500, f1: 380, q: 6, gain: 0.08, dest: d });
+  }
+  /** A grappler shaken off (rail.unlatch): the line twanging loose and the claws torn free, the drag gone. */
+  railUnlatch() {
+    if (!this.ok() || !this.allow('railUnlatch', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.25);
+    this.tone(t, 0.3, { f0: 330, f1: 120, type: 'sawtooth', gain: 0.05, dest: d });
+    this.noise(t, 0.08, { type: 'bandpass', f0: 1800, f1: 4000, q: 1.5, gain: 0.25, dest: d });
+  }
 }

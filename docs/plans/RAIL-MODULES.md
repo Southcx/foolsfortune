@@ -292,6 +292,10 @@ shared axes in a swing).
 2. On a swing, live shots are cancelled into Lachryma; no projectile is on screen during one (R17).
 3. A graze pays Lachryma to the pool, capped a bar.
 4. No camera turns for the player: every swing is authored.
+5. The chase camera is the mock's (v3.1): cam [0, 3, -5], look [0, 0, 12], follow 0.62, the ship bigger in frame; and so, at a full
+   brake, the ship's floor lifts from 1.2 m to 3.1 m to keep the waterline on screen (Calissa's measure, mock v3.2). Petra's
+   (`courier/ship/views.js` VIEW_RIGS.chase); the chase screen box shrinks with it, so `scripts/patterns.mjs` and `scripts/legs.mjs`
+   take the new box once Petra measures it.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.

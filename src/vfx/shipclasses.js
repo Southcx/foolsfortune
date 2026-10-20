@@ -1,259 +1,265 @@
 // ---------------------------------------------------------------------------------------
-// THE SHIP CLASSES: the frigate, the destroyer, the galleon and the tanker as the Vessoul's ships (docs/GLOSSARY.md: the Vessoul,
-// ship; progress/rail/ships.js: each hull's size, role and verbs). One being with the sloop (vfx/sloop.js, the keeper: the owner's
-// flying submarine), so they are made by its rules, THE HULL CLASS'S SILHOUETTE RULES:
-//   1  the hull is a pot thrown on the wheel and laid on its side: the foot is the bow, the open mouth the stern, glowing with the
-//      Lachryma that drives it (in the ship's feeling's colour: `polarity`); its throwing rings wrap the hull
-//   2  each class is a different pot, and climbs the folk's clay ladder with its worth (earthenware < stoneware < porcelain):
-//        frigate    the MEIPING (the plum vase: a slim foot, a broad high shoulder, a small neck), in grey-green ash-glazed stoneware
-//        destroyer  the KINUTA MALLET VASE (Longquan celadon: a straight body, a sharp shoulder, a long neck with phoenix ears): the
-//                   long neck is a submarine's tail, the phoenix ears its tail fins, and a raked fin amidships its sail; no canvas
-//        galleon    the GINGER JAR in blue-and-white porcelain with its domed LID as the stern castle; three masts, square-rigged
-//        tanker     the ONGGI (the Korean storage jar for what must keep: broad, heavy, iron-brown), riding low; on its deck a row
-//                   of little lidded onggi, the hold's domes (an LNG carrier's spheres, and the casks themselves); it never dives
-//   3  fired and mended: the chest's kintsugi gold in the body (vfx/chestglaze.js), at a ship's scale
-//   4  the figurehead is a little Pneuka Jar at the foot, its lid gold; the deckhouse the maker's kiln, its mouth lit
-//   5  the Solar Skiff's green spars and red swallowtail pennant (the skiff is the Vessoul's limb)
-//   6  the Mind's labradorite line along the gunwale (vfx/labradorite.js: the line every Mind thing is drawn in), so a hull reads as
-//      the Vessoul's at a glance on a sea of other ships; the sloop keeps the look the owner approved
-// THE HELM, as the sloop's (vfx/sloop.js seatHelms, HANKO.md 4): a plinth of the hull's plain clay on its top skin and a cradle sat in
-// it at the Pneuka Jar's scale (`helm`: each cradle's [x, z]): the frigate's between its mizzen and main, the destroyer's at its fin's
-// foot (a submarine's after-deck), the galleon's twin helms either side of its mizzen before the stern castle (a co-op cradle, HANKO.md
-// 4: two seals), the tanker's behind its kiln, before the mouth.
-// Size from ships.js's hurtbox (the sloop's 7 m times it); role in the silhouette: the frigate's third mount a gun ring each side,
-// the destroyer low and long, the galleon tall, the tanker long and low.
+// THE SHIP CLASSES: the frigate, the destroyer, the galleon and the tanker as the Vessoul's ships (docs/GLOSSARY.md: the Vessoul, ship;
+// progress/rail/ships.js: each hull's size, role and verbs), with the sloop (vfx/sloop.js) the five. One look named for all five, SEA-GOING
+// STARSHIPS OF THE AGE OF SAIL (Calissa's; the owner, 2026-10-20: "match the forms and silhouettes of their IRL counterparts more
+// closely ... lean into the sci-fi ship designs of Outlaw Star, Tenchi Muyo's jurai ships, Skies of Arcadia, and Rogue Galaxy"). The
+// pots are gone; the hulls are ships. RAIL-SHIPS-SCIFI.md 1 (the real silhouettes) and 3 (the fusion brief), followed, a class each:
+//   frigate    ESCORT. A sail-age frigate: three masts, the middle tallest, yards crossing each, a jib on a bowsprit raised 20 degrees, a
+//              spanker on a boom over the stern; a long low hull (4:1) with a modest sheer and tumblehome, a deep-teal gun-deck band
+//              with its row of lit ports, cream above, gold trim; Skies of Arcadia's Delphinus fins aft, one pod under the stern
+//              gallery. Green-gold glow (Jurai's wood). Its masts strike in a ripple, aft to fore, the yards turning fore and aft first.
+//   destroyer  HUNTS EGREGORES. An Arleigh Burke's blade: a long thin dart widest 60% aft (about 5:1 with its sponsons), a high flared
+//              forecastle sweeping to a raked stem, a gun turret low forward, a block of VLS cells, one slab-sided superstructure with
+//              angled planes and a pair of stacks, a flat-blade mast that hinges flat back onto its roof (a tabernacle), two big square
+//              engine pods aft. Grey-blue, a navy deck, a red-orange accent, blue-white glow.
+//   galleon    TREASURE (refined cubes). The Dorgenark (Rogue Galaxy's space galleon) on a real galleon's lines: a tall stepped stern
+//              castle, a lower forecastle, a long beak, a strong sheer and tumblehome (3.7:1), square vanes fore and main, a lateen on the
+//              mizzen, a keel blade, the engine ring on the castle's back with a gold star; its topgallants strike for a roll, the
+//              lower masts stay. Deep brown-red, gold, white vanes, violet-gold glow. Two helms side by side under one canopy (co-op).
+//   tanker     CRUDE, double-hulled. A tanker's slab: a long flat deck (6:1), all the height in the house aft (stepped decks, bridge
+//              wings, a raked funnel), a row of glowing tank domes, a pipe manifold midships, a catwalk, a glowing bulb under a blunt
+//              bow; the double hull a second rail inboard. Oxide red, a dark grey deck, yellow warning stripes, amber glow. Its short mast
+//              drops into the deck on a roll.
+// Built on the ship kit (shipkit/: one hull mesh and one rig mesh in one material a ship, the vanes in the sail's program, the core and
+// cradle), so a class is a table and its static parts; sizes from ships.js's hurtbox (the sloop's 7 m times it), the frame +Z the bow,
+// Y up, the origin at the waterline amidships.
+// Prior art: the real classes (USS Constitution's and the Endymion class's proportions, the Arleigh Burke class, the late galleon, a
+// VLCC with its house aft and bulbous bow), and the four references as each line above says.
 //
-// Prior art: the four pots (the Song meiping, Longquan's kinuta celadon, Kangxi blue-and-white ginger jars, Korean onggi), the real
-// classes' silhouettes (a frigate's three square-rigged masts, a destroyer's low long hull, a galleon's high stern castle, a tanker's
-// long low deck and its LNG cousins' domes), Wind Waker's ships (few big shapes), and the sloop's own build (primitives and lathes,
-// merged: no file loaded). Every material is one of the sloop's (flat standard, the chest glaze, the sail's, the additive mouth) or the
-// Mind's line, so a class sailed adds no shader program (measured: docs in the report).
-//
-//   shipLook(id, { env }) -> a Sloop or a ShipClassLook (the same API: group, set, polarity, hurt, hoist, keelMat, mouth, gunAt,
-//   length, beam, helmCradles, helmCradle, helmCradleSpots, helmWake, dispose)   SHIP_FORMS[id] (the numbers)   new ShipClassLook(id, { env })
-//   (its own frame: +Z the bow, Y up, origin at the waterline amidships)
+//   shipLook(id, { env }) -> a Sloop or a ShipClassLook (the same API: group, body, set, fold, polarity, hurt, hoist, scars, keelMat,
+//   mouth, gunAt, length, beam, helmCradles, helmCradle, helmCradleSpots, helmWake, dispose; shipkit/shiplook.js)
+//   SHIP_FORMS[id] (each class's numbers: length, beam, draft, helm, dives, hull, rig)   new ShipClassLook(id, { env })
 // ---------------------------------------------------------------------------------------
-import * as THREE from 'three';
-import { Sloop, SLOOP, JAR, jarHull, jarDeck, sailMaterial, furlRoll, FURL, seatHelms } from './sloop.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { dressChestGlaze, chestGlazeUniforms } from './chestglaze.js';
-import { vfxTexture } from './vfx.js';
-import { mindLineMaterial } from './labradorite.js';
-import { mergeStatic } from '../render/merge.js';
-import { addOutline } from '../render/outline.js';
-import { keepTrue } from './stormwarp.js';
-import { causticsOn } from './umbral.js';
+import { Sloop, SLOOP } from './sloop.js';
+import { ShipLook } from './shipkit/shiplook.js';
+import { deckAt, deckHalf } from './shipkit/hullkit.js';
+import { rail, pod, fin, ports, slot, wing, stripe } from './shipkit/parts.js';
+import { writeCore } from './shipkit/core.js';
+import { cradleFoot } from './cradlelook.js';
+import { SHIPS } from '../progress/rail/ships.js';
 
-const C = { gold: 0xf2c14e, mast: 0x3f7a58, dark: 0x4a2a1e, lach: 0xffc65c, cobalt: 0x23408e, bisque: 0xf1d9b6, sail: 0xf6e6c8 };
+const len = (id) => 7 * SHIPS[id].hurtbox; // (the sloop's 7 m times the hull's hurtbox: the rail's sizes never change)
 
-/** Each class: its pot's profile (foot to lip: fraction of the length, fraction of the belly's radius), size, sheer, clay, rig. */
-export const SHIP_FORMS = {
-  frigate: {
-    pot: 'meiping', length: 7.7, beam: 2.3, draft: 0.9, sheer: [0.62, 0.4, 0.34], body: 0x8f9a86, deck: 0xd9cdb4, net: 0.24,
-    profile: [[0, 0], [0.03, 0.3], [0.14, 0.52], [0.32, 0.7], [0.5, 0.87], [0.66, 1], [0.78, 0.97], [0.86, 0.66], [0.91, 0.4], [0.95, 0.38], [1, 0.46]],
-    masts: [{ z: 2.0, h: 6.4, sails: 2 }, { z: -0.2, h: 7.4, sails: 2 }, { z: -2.2, h: 5.6, sails: 1 }], jib: true, guns: 3, kiln: -2.9, helm: [[0, -1.2]],
-  },
-  destroyer: {
-    pot: 'kinuta', length: 7.6, beam: 1.6, draft: 0.75, sheer: [0.42, 0.22, 0.05], body: 0x8fbfa6, deck: 0xcfe0d2, net: 0.26,
-    profile: [[0, 0], [0.02, 0.4], [0.07, 0.72], [0.14, 0.9], [0.3, 0.97], [0.5, 1], [0.6, 0.98], [0.66, 0.6], [0.7, 0.34], [0.86, 0.3], [0.95, 0.33], [1, 0.42]],
-    masts: [], fin: { z: 0.2, h: 1.7, len: 1.9 }, ears: true, kiln: null, helm: [[0, -1.0]],
-  },
-  galleon: {
-    pot: 'ginger jar', length: 10.2, beam: 3.4, draft: 1.1, sheer: [0.7, 0.45, 0.2], body: 0xf2f0ea, deck: 0xe6dcc6, net: 0.2,
-    profile: [[0, 0], [0.03, 0.42], [0.1, 0.7], [0.24, 0.94], [0.44, 1], [0.62, 0.95], [0.76, 0.8], [0.86, 0.58], [0.91, 0.44], [0.96, 0.44], [1, 0.48]],
-    masts: [{ z: 3.0, h: 7.6, sails: 2 }, { z: 0.6, h: 9.0, sails: 3 }, { z: -1.8, h: 6.6, sails: 2 }], jib: true, lid: true, bands: true, kiln: null, helm: [[-0.74, -1.55], [0.74, -1.55]],
-  },
-  tanker: {
-    pot: 'onggi', length: 11.2, beam: 3.6, draft: 1.2, sheer: [0.38, 0.22, 0.12], body: 0x4a2c1c, deck: 0x8a6a4c, net: 0.18,
-    profile: [[0, 0], [0.03, 0.46], [0.1, 0.76], [0.22, 0.95], [0.4, 1], [0.62, 1], [0.78, 0.95], [0.88, 0.82], [0.94, 0.74], [1, 0.78]],
-    masts: [{ z: -3.6, h: 3.4, sails: 0 }], domes: 5, kiln: -4.0, helm: [[0, -4.97]],
+/** A mast of `n` telescoping segments of `seg` metres (each nests in the one below; the lowest sinks to its stub). */
+const scope = (n, seg, r0, r1, col) => Array.from({ length: n }, (_, i) => { const k = i / Math.max(1, n - 1), kn = (i + 1) / n; return { len: seg * (1 - 0.02 * i), r0: r0 + (r1 - r0) * k, r1: r0 + (r1 - r0) * kn * 0.98, col }; });
+/** Height on a mast at segment i, share `at` along it (the rig's rest bases: shipkit/rig.js restOf, overlap 0.12). */
+const at = (segs, i, a) => { let b = 0; for (let k = 0; k < i; k++) b += segs[k].len * 0.88; return b + a * segs[i].len; };
+
+// ------------------------------------------------------------------ the frigate
+const F = { cream: 0xeee3c8, teal: 0x1d5a5a, dark: 0x153a3b, gold: 0xd9b04a, deck: 0xcdb995, glow: 0xc8e87a, joint: 0x2a3434, seam: 0xd8f0a0 };
+const FRIGATE_HULL = {
+  shape: [[0, -1], [0.45, -0.95], [0.9, -0.45], [1, 0.1], [0.97, 0.62], [0.86, 1]],
+  stations: [[-3.85, 0.74, 0.35, 0.66], [-3.3, 0.88, 0.48, 0.6], [-2.0, 0.95, 0.55, 0.56], [0, 0.96, 0.55, 0.54], [1.8, 0.9, 0.52, 0.56], [2.9, 0.62, 0.4, 0.62], [3.55, 0.25, 0.25, 0.68, 0.15], [3.85, 0.02, 0.1, 0.72, 0.32]],
+  strip: (i) => [[F.dark, 0.1], [F.dark, 0.1], [F.cream, 0.1], [F.teal, 0], [F.cream, 0.1]][i], deck: [F.deck, 0.1], transom: [F.cream, 0.1],
+};
+const FM = { fore: { z: 2.2, n: 5 }, main: { z: 0.15, n: 6 }, mizzen: { z: -2.05, n: 4 } };
+const frigateMasts = () => Object.values(FM).map(({ z, n }, i) => {
+  const segs = scope(n, 1.45, 0.11, 0.035, F.cream), yardSegs = n === 6 ? [1, 3, 5] : n === 5 ? [1, 3, 4] : [1, 3];
+  const widths = n === 6 ? [2.2, 1.8, 1.3] : n === 5 ? [2.0, 1.6, 1.1] : [1.6, 1.1];
+  return { x: 0, z, y0: deckAt(FRIGATE_HULL, z) - 0.04, stub: 0.3, delay: [0.2, 0.1, 0][i], collar: F.joint, cap: F.glow, segs,
+    yards: yardSegs.map((s, j) => ({ seg: s, at: 0.55, w: widths[j], r: 0.035, col: F.gold, pivot: true })) };
+});
+const FRIGATE = {
+  id: 'frigate', length: len('frigate'), beam: 1.92, draft: 0.55, panel: 0.8, dives: true, hull: FRIGATE_HULL,
+  engineGlow: F.glow, vane: { fill: 0xf4f0dc, edge: 0xe8ffb0, fillA: 0.32 },
+  core: { crystal: 0xffffff, collar: F.joint, frame: F.gold, plate: 0.12, apex: 0.95 },
+  helm: [[0, deckAt(FRIGATE_HULL, -1.0) - 0.14, -1.0]], gun: [0, deckAt(FRIGATE_HULL, 3.0) + 0.3, 3.0], pennant: { mast: 1 },
+  write(M) {
+    const H = FRIGATE_HULL; M.loft(H);
+    rail(M, H, { z0: -3.7, z1: 3.6, col: F.gold });
+    ports(M, H, { zs: [-2.6, -1.7, -0.8, 0.1, 1.0, 1.9, 2.7], y: 0.2, w: 0.2, h: 0.08, col: F.glow, frame: F.joint });
+    fin(M, { t: 0.08, pts: [[2.2, -0.5], [-2.6, -0.5], [-2.9, -0.78], [1.8, -0.72]], col: F.dark, edge: 0xffffff, edgeCode: 0.85 });
+    wing(M, { y: 0.32, t: 0.05, pts: [[0.9, -1.9], [0.9, -3.1], [1.6, -3.45], [1.55, -2.9]], col: F.cream, edge: F.gold, edgeCode: 0 }); // (the Delphinus fins)
+    const engines = [pod(M, { x: 0, y: -0.2, z0: -4.1, z1: -2.9, r0: 0.3, r1: 0.22, body: F.cream, band: F.teal, nozzle: F.glow, pylon: [0, -0.4] })];
+    for (const x of [-0.45, -0.15, 0.15, 0.45]) M.quad([x - 0.1, 0.32, -3.86], [x + 0.1, 0.32, -3.86], [x + 0.1, 0.48, -3.86], [x - 0.1, 0.48, -3.86], F.glow, 0.42, [x, 0.4, -3]); // (the stern gallery's windows)
+    M.box([0, 0.63, -3.86], [1.3, 0.04, 0.04], F.gold, 0);
+    const by = deckAt(H, 3.5) - 0.06; M.cyl([0, by, 3.3], [0, by + Math.sin(0.35) * 1.8, 3.5 + Math.cos(0.35) * 1.8], 0.06, 0.025, 6, F.cream, 0); // (the bowsprit, raised 20 degrees)
+    const gy = deckAt(H, 3.0); M.cyl([0, gy - 0.05, 3.0], [0, gy + 0.14, 3.0], 0.2, 0.17, 8, F.joint, 0); M.cyl([0, gy + 0.14, 3.0], [0, gy + 0.18, 3.0], 0.17, 0.1, 8, F.gold, 0);
+    for (const { z } of Object.values(FM)) slot(M, { y: deckAt(H, z) - 0.04, z, w: 0.45, d: 0.45 });
+    M.box([0, deckAt(H, -3.25) + 0.08, -3.25], [1.1, 0.16, 0.7], F.cream, 0.1, { top: [0.9, 0.85] }); // (the quarterdeck's step)
+    return { engines };
   },
 };
-
-/** A square sail: a grid hung from its yard (u across, v down from the head), its belly the sail material's (a sloop's). */
-function squareGeometry(w, h) {
-  const g = new THREE.PlaneGeometry(1, 1, 8, 8); g.translate(0.5, 0.5, 0);
-  const p = g.attributes.position;
-  for (let i = 0; i < p.count; i++) { const u = p.getX(i), v = p.getY(i); p.setXYZ(i, 0, -v * h, (u - 0.5) * w * (1 + 0.12 * v)); } // (the foot a little wider than the head: a course's cut)
-  g.computeVertexNormals();
-  return g;
+FRIGATE.rig = { masts: frigateMasts(), booms: [{ mast: 2, h: 0.85, len: 1.9, r: 0.04, col: F.gold }], hatches: [0, 1, 2].map((m) => ({ mast: m, w: 0.45, d: 0.45, col: F.cream, seam: F.seam })) };
+{
+  const R = FRIGATE.rig, V = [];
+  R.masts.forEach((M, mi) => M.yards.forEach((Y, j) => {
+    const h = at(M.segs, Y.seg, Y.at), below = j ? at(M.segs, M.yards[j - 1].seg, M.yards[j - 1].at) + 0.06 : 0.45;
+    V.push({ kind: 'square', mast: mi, yard: j, drop: h - below, foot: j ? 1.15 : 1.05 });
+  }));
+  const by = deckAt(FRIGATE_HULL, 3.5) - 0.06, k = 0.9 * 1.8;
+  V.push({ kind: 'jib', mast: 0, head: 0.8, tack: [0, by + Math.sin(0.35) * k, 3.5 + Math.cos(0.35) * k], clew: [0, deckAt(FRIGATE_HULL, 2.8) + 0.3, 2.75], clewX: 0.25 });
+  V.push({ kind: 'main', mast: 2, boom: 0, head: 0.92 }); // (the spanker)
+  R.vanes = V;
 }
 
-export class ShipClassLook {
-  constructor(id, { env = null } = {}) {
-    const F = SHIP_FORMS[id]; if (!F) throw new Error(`no ship form ${id}`);
-    this.id = id; this.form = F; this.length = F.length; this.beam = F.beam;
-    const dims = { length: F.length, beam: F.beam, draft: F.draft, sheer: F.sheer }, L = F.length, R = F.beam / 2;
-    this.group = new THREE.Group(); this.body = new THREE.Group(); this.group.add(this.body);
-    this.mats = []; this.geos = []; this.sails = [];
-    const track = (o) => { (o.isMaterial ? this.mats : this.geos).push(o); return o; };
-    const std = (color, o = {}) => track(new THREE.MeshStandardMaterial({ color, roughness: 0.6, flatShading: true, ...o }));
-    const add = (parent, geo, mat, x = 0, y = 0, z = 0, outline = true) => { track(geo); const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); if (outline) addOutline(m); return m; };
-    const gold = std(C.gold, { metalness: 0.6, roughness: 0.35, envMap: env }), plain = std(F.body), spar = std(C.mast), dark = std(C.dark);
-    // the hull: the pot's clay, mended with gold (the sloop's own glaze, its program)
-    const clay = std(F.body, { roughness: id === 'galleon' || id === 'destroyer' ? 0.35 : 0.6, side: THREE.DoubleSide, envMap: env, envMapIntensity: id === 'galleon' || id === 'destroyer' ? 0.6 : 0.25 });
-    this.glaze = chestGlazeUniforms(F.net); this.glaze.uGlaze.value = 3.45;
-    dressChestGlaze(clay, this.glaze, { goldOnly: true }); clay.userData.causticSafe = true;
-    add(this.body, jarHull(F.profile, dims), clay);
-    const deckY = Math.min(0.42, F.sheer[0] * 0.75);
-    add(this.body, jarDeck(F.profile, dims, deckY), std(F.deck, { roughness: 0.85 }), 0, 0, 0, false);
-    // the mouth at the stern: a rim, and the Lachryma inside it
-    const lip = F.profile[F.profile.length - 1][1] * R, lipZ = -L * 0.5;
-    add(this.body, new THREE.TorusGeometry(lip * 0.92, 0.07, 6, 24), plain, 0, 0.22, lipZ + 0.05);
-    this.mouth = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
-    add(this.body, new THREE.CircleGeometry(lip * 0.86, 24), this.mouth, 0, 0.22, lipZ + 0.06, false).rotation.y = Math.PI;
-    // the figurehead: the little Pneuka Jar at the foot, its lid gold
-    add(this.body, new THREE.LatheGeometry(JAR.map(([u, r]) => new THREE.Vector2(Math.max(0.001, r * 0.18), u * 0.5)), 12), plain, 0, (F.sheer[0] + F.sheer[1]) * 0.8, L * 0.5 - 0.05).rotation.x = -0.5;
-    add(this.body, new THREE.IcosahedronGeometry(0.1, 0), std(C.gold, { emissive: 0x4a3200, emissiveIntensity: 0.4 }), 0, (F.sheer[0] + F.sheer[1]) * 0.8 + 0.45, L * 0.5 + 0.18);
-    // the kiln deckhouse, its mouth lit
-    this.kiln = track(new THREE.MeshBasicMaterial({ color: 0xffa860 }));
-    if (F.kiln != null) {
-      add(this.body, new THREE.SphereGeometry(0.62, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), plain, 0, deckY, F.kiln);
-      add(this.body, new THREE.CircleGeometry(0.2, 12, 0, Math.PI), this.kiln, 0, deckY + 0.02, F.kiln + 0.6, false);
-    }
-    // the helm: a plinth of the hull's plain clay, the cradle (the galleon's two) sealed into at the pier (vfx/sloop.js seatHelms)
-    this.helmCradles = seatHelms(add, this.body, F.helm, plain, F.profile, dims); this.helmCradle = this.helmCradles[0];
-    // the gun at the bow (Petra's to fit), and the frigate's guns in rings down each side (its third mount)
-    add(this.body, new THREE.CylinderGeometry(0.22, 0.28, 0.2, 8), dark, 0, deckY + 0.12, L * 0.3);
-    this.gunAt = new THREE.Object3D(); this.gunAt.position.set(0, deckY + 0.32, L * 0.3); this.body.add(this.gunAt);
-    for (let i = 0; i < (F.guns || 0); i++) for (const s of [-1, 1]) {
-      const z = L * (0.18 - i * 0.16), p = this.surfaceAt(z, 0.5, 1.01), x = s * p.x;
-      const ring = add(this.body, new THREE.TorusGeometry(0.15, 0.04, 5, 12), gold, x, p.y, z, false); ring.rotation.y = Math.PI / 2;
-      add(this.body, new THREE.CircleGeometry(0.12, 10), dark, x + s * 0.01, p.y, z, false).rotation.y = s * Math.PI / 2;
-    }
-    // the galleon: cobalt bands round the girth (blue-and-white), and the lid as its stern castle
-    if (F.bands) for (const u of [0.2, 0.5, 0.8]) {
-      const z = L * 0.5 - u * L, curve = new THREE.CatmullRomCurve3(Array.from({ length: 13 }, (_, i) => this.surfaceAt(z, (i / 12) * Math.PI, 1.012)));
-      add(this.body, new THREE.TubeGeometry(curve, 24, 0.07, 4), std(C.cobalt), 0, 0, 0, false);
-    }
-    if (F.lid) { // (the jar's neck a collar, the lid on it: the stern castle, its windows lit astern)
-      const lz = -L * 0.3, lr = this.radiusAt(lz) * 0.78, top = this.sheerAt(lz) + 0.15, ch = 0.75;
-      add(this.body, new THREE.CylinderGeometry(lr * 0.86, lr * 0.92, ch + top - deckY, 18), clay, 0, (deckY + top + ch) / 2, lz);
-      add(this.body, new THREE.TorusGeometry(lr * 0.9, 0.06, 5, 24), std(C.cobalt), 0, top + ch * 0.5, lz, false).rotation.x = Math.PI / 2;
-      const lid = add(this.body, new THREE.SphereGeometry(lr, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2), clay, 0, top + ch, lz); lid.scale.y = 0.7;
-      add(this.body, new THREE.TorusGeometry(lr * 0.99, 0.07, 5, 24), std(C.cobalt), 0, top + ch + 0.04, lz, false).rotation.x = Math.PI / 2;
-      add(this.body, new THREE.SphereGeometry(0.24, 10, 6), gold, 0, top + ch + lr * 0.7 + 0.14, lz);
-      for (const x of [-0.45, 0, 0.45]) add(this.body, new THREE.CircleGeometry(0.16, 10), this.kiln, x * lr, top + ch * 0.45, lz - lr * 0.865, false).rotation.y = Math.PI;
-    }
-    // the tanker's hold: a row of little lidded onggi down the deck, each banded in the Mind's line below
-    this.domes = [];
-    for (let i = 0; i < (F.domes || 0); i++) {
-      const z = L * (0.3 - i * 0.14), r = Math.min(0.7, this.radiusAt(z) * 0.55);
-      const pot = add(this.body, new THREE.LatheGeometry(F.profile.map(([u, rr]) => new THREE.Vector2(Math.max(0.001, rr * r), u * r * 1.5)), 14), clay, 0, deckY, z);
-      pot.rotation.x = Math.PI; pot.position.y = deckY + r * 1.5; // (stood on its mouth, the foot up: a lid)
-      add(this.body, new THREE.SphereGeometry(r * 0.32, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), gold, 0, deckY + r * 1.5, z);
-      this.domes.push({ z, r, y: deckY });
-    }
-    // the destroyer: a raked fin amidships (the sail of a submarine), the phoenix ears on its neck as tail fins
-    if (F.fin) {
-      const s = new THREE.Shape(); const { len, h } = F.fin;
-      s.moveTo(-len * 0.5, 0); s.lineTo(len * 0.5, 0); s.lineTo(len * 0.18, h); s.lineTo(-len * 0.32, h * 0.92); s.lineTo(-len * 0.5, 0);
-      const fg = new THREE.ExtrudeGeometry(s, { depth: 0.22, bevelEnabled: false }); fg.translate(0, 0, -0.11); fg.rotateY(-Math.PI / 2);
-      add(this.body, fg, clay, 0, deckY - 0.02, F.fin.z);
-      add(this.body, new THREE.CylinderGeometry(0.03, 0.03, 0.9, 5), spar, 0, deckY + h + 0.4, F.fin.z - 0.1);
-    }
-    if (F.ears) for (let k = 0; k < 4; k++) {
-      const s = new THREE.Shape(); s.moveTo(0, 0); s.quadraticCurveTo(0.35, 0.15, 0.62, 0.5); s.lineTo(0.75, 0.15); s.quadraticCurveTo(0.5, -0.05, 0.2, -0.12); s.lineTo(0, 0); // (a phoenix's ear: a crest swept back)
-      const eg = new THREE.ExtrudeGeometry(s, { depth: 0.06, bevelEnabled: false }); eg.translate(0, 0, -0.03);
-      const z = -L * 0.32, ear = new THREE.Group(); ear.position.set(0, 0.05, z); ear.rotation.z = (k * Math.PI) / 2 + Math.PI / 4; this.body.add(ear);
-      const m = add(ear, eg, gold, 0, this.radiusAt(z) * 0.9, 0); m.rotation.y = Math.PI / 2;
-    }
-    // the rig: the skiff's green masts and gold yards, the sails cream (the lotus on the biggest), a jib to the bowsprit
-    const lotus = vfxTexture('circle_lotus'), blank = new THREE.DataTexture(new Uint8Array(4), 1, 1);
-    let top = 0; const rolls = [], ties = [], V = THREE.Vector3; // (the canvas furled: each course on its yard, the jib on its stay)
-    for (const M of F.masts) {
-      add(this.body, new THREE.CylinderGeometry(0.06, 0.1, M.h, 6), spar, 0, deckY + M.h / 2, M.z);
-      top = Math.max(top, M.h);
-      for (let k = 0; k < M.sails; k++) {
-        const y1 = deckY + M.h * (0.95 - k * 0.3), y0 = y1 - M.h * 0.27, w = F.beam * (1.25 - k * 0.22);
-        add(this.body, new THREE.CylinderGeometry(0.035, 0.035, w + 0.3, 5), gold, 0, y1, M.z).rotation.z = Math.PI / 2;
-        const mat = track(sailMaterial(M.h === Math.max(...F.masts.map((x) => x.h)) && k === M.sails - 1 ? lotus : blank));
-        const sail = add(this.body, squareGeometry(w, y1 - y0), mat, 0, y1 - 0.04, M.z + 0.05, false); sail.rotation.y = Math.PI / 2;
-        this.sails.push({ mesh: sail, mat });
-        const r = 0.06 + 0.035 * (y1 - y0), f = furlRoll(new V(-w * 0.5, y1 + r * 0.6, M.z + 0.05), new V(w * 0.5, y1 + r * 0.6, M.z + 0.05), { r0: r, r1: r, bunt: 0.45, ties: [0.2, 0.4, 0.6, 0.8], lumps: 9 });
-        rolls.push(f.roll); ties.push(f.ties);
-      }
-    }
-    if (F.jib && F.masts.length) {
-      const M = F.masts[0], tack = L * 0.5 + 1.1, jib = new THREE.PlaneGeometry(1, 1, 6, 8); jib.translate(0.5, 0.5, 0);
-      const jp = jib.attributes.position, head = deckY + M.h * 0.8;
-      for (let i = 0; i < jp.count; i++) { const u = jp.getX(i), v = jp.getY(i); jp.setXYZ(i, 0, deckY + 0.4 + v * (head - deckY - 0.4), (tack - M.z) * (1 - v) - u * (1 - v) * 1.4); }
-      jib.computeVertexNormals();
-      const mat = track(sailMaterial(blank)); this.sails.push({ mesh: add(this.body, jib, mat, 0, 0, M.z, false), mat, jib: true });
-      add(this.body, new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6), gold, 0, F.sheer[0] + F.sheer[1] * 0.7, L * 0.5 + 0.6).rotation.x = Math.PI / 2 - 0.15;
-      const tackAt = new V(0, F.sheer[0] + F.sheer[1] * 0.7, L * 0.5 + 0.6).addScaledVector(new V(0, Math.sin(0.15), Math.cos(0.15)), 0.56); // (the jib furled: rolled on its stay from the bowsprit's end)
-      rolls.push(furlRoll(tackAt, new V(0, head - 0.15, M.z + 0.1), { r0: 0.08, r1: 0.025, lumps: 4 }).roll);
-    }
-    if (rolls.length) { // (one bundle and one set of ties for the whole rig: the yards never turn, and furled the sails are hidden)
-      this.furled = new THREE.Group(); this.body.add(this.furled);
-      add(this.furled, mergeGeometries(rolls, false), std(C.sail, { roughness: 0.9 }));
-      if (ties.length) add(this.furled, mergeGeometries(ties, false), dark, 0, 0, 0, false);
-      for (const g of [...rolls, ...ties]) g.dispose();
-    }
-    // the pennant: the skiff's red swallowtail at the highest masthead (or the fin's staff)
-    const penY = F.fin ? deckY + F.fin.h + 0.8 : deckY + top - 0.1, penZ = F.fin ? F.fin.z - 0.1 : (F.masts.find((m) => m.h === top)?.z ?? 0);
-    const pen = new THREE.PlaneGeometry(1.4, 0.24, 12, 1); pen.translate(-0.7, 0, 0);
-    this.pennant = add(this.body, pen, std(0xc2432b, { emissive: 0x6a1a10, emissiveIntensity: 0.25, side: THREE.DoubleSide, flatShading: false }), 0, penY, penZ, false);
-    this.pennant.rotation.y = Math.PI / 2;
-    // the Mind's line along the gunwale, both sides and round the stern: the Vessoul's mark (rule 6)
-    const pts = [];
-    for (let i = 1; i <= 40; i++) { const z = L * 0.5 - (i / 40) * L; pts.push(this.surfaceAt(z, 0.62, 1.01)); }
-    const line = [...pts, ...pts.slice().reverse().map((p) => new THREE.Vector3(-p.x, p.y, p.z))];
-    this.lineMat = track(mindLineMaterial({ opacity: 0.95, depthTest: true, bright: 1.1 }));
-    const lg = track(new THREE.BufferGeometry().setFromPoints(line)); this.line = new THREE.LineLoop(lg, this.lineMat); this.body.add(this.line);
-    // the Lachryma it rides on
-    this.keelMat = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
-    const keel = add(this.group, new THREE.CircleGeometry(1, 24), this.keelMat, 0, -F.draft - 0.05, 0, false); keel.rotation.x = -Math.PI / 2; keel.scale.set(F.beam * 0.6, L * 0.45, 1);
-    mergeStatic(this.body, { keep: new Set([this.pennant, this.gunAt, this.line, ...this.sails.map((s) => s.mesh), ...this.helmCradles.map((c) => c.group)]) });
-    causticsOn(this.body);
-    for (const m of this.mats) keepTrue(m);
-    for (const c of this.helmCradles) for (const m of c.lit) keepTrue(m);
-    this.set({});
-  }
+// ------------------------------------------------------------------ the destroyer
+const D = { hull: 0x7d8fa3, light: 0x8d9fb4, dark: 0x2a3242, deck: 0x22304a, accent: 0xe8572a, glow: 0xbfe0ff, joint: 0x1b2230, glass: 0x9fd0ff };
+const DESTROYER_HULL = {
+  shape: [[0, -1], [0.5, -0.85], [0.95, -0.3], [1, 0.2], [1.04, 0.7], [1.0, 1]],
+  stations: [[-3.15, 0.5, 0.22, 0.3], [-2.4, 0.56, 0.3, 0.3], [-0.6, 0.6, 0.34, 0.32], [0.8, 0.56, 0.34, 0.36], [1.9, 0.44, 0.3, 0.46], [2.6, 0.28, 0.24, 0.56, 0.08], [3.15, 0.02, 0.08, 0.64, 0.42]],
+  strip: (i) => [[D.dark, 0.1], [D.dark, 0.1], [D.hull, 0.1], [D.hull, 0.1], [D.light, 0.1]][i], deck: [D.deck, 0.1], transom: [D.hull, 0.1],
+};
+const DB = { z0: -0.5, z1: 0.9, w: 0.92, h: 0.55 }; // (the superstructure block)
+const DESTROYER = {
+  id: 'destroyer', length: len('destroyer'), beam: 1.2, draft: 0.34, panel: 0.6, dives: true, hull: DESTROYER_HULL,
+  engineGlow: D.glow, core: { crystal: 0xffffff, collar: D.joint, frame: D.joint, plate: 0.06, apex: 0.85 },
+  helm: [[0, deckAt(DESTROYER_HULL, -1.55) + 0.02, -1.55]], gun: [0, deckAt(DESTROYER_HULL, 1.75) + 0.3, 1.75], pennant: { mast: 0 },
+  write(M) {
+    const H = DESTROYER_HULL; M.loft(H);
+    rail(M, H, { z0: -3.0, z1: 3.0, r: 0.018, col: D.accent, n: 20 });
+    stripe(M, H, { z0: 1.5, z1: 2.7, y: 0.36, h: 0.05, col: D.accent, n: 8 }); // (the hunter's red-orange flash on the bow)
+    fin(M, { t: 0.06, pts: [[1.6, -0.3], [-2.0, -0.3], [-2.2, -0.46], [1.2, -0.44]], col: D.dark, edge: 0xffffff, edgeCode: 0.85 });
+    // the superstructure: one slab block, angled planes, the bridge on it, its windows a lit band, two stacks aft on its roof
+    const y0 = deckAt(H, 0.2), zc = (DB.z0 + DB.z1) / 2;
+    M.box([0, y0 + DB.h / 2 - 0.02, zc], [DB.w, DB.h, DB.z1 - DB.z0], D.light, 0.1, { top: [0.72, 0.88], shift: [0, -0.06] });
+    const top = y0 + DB.h - 0.02;
+    M.box([0, top + 0.1, 0.62], [0.56, 0.2, 0.42], D.light, 0.1, { top: [0.8, 0.7], shift: [0, -0.05] });
+    M.quad([-0.26, top + 0.1, 0.84], [0.26, top + 0.1, 0.84], [0.22, top + 0.16, 0.8], [-0.22, top + 0.16, 0.8], D.glass, 0.4, [0, top, 0.5]);
+    for (const s of [1, -1]) { M.box([s * 0.2, top + 0.17, -0.12], [0.16, 0.34, 0.26], D.hull, 0.1, { top: [0.8, 0.8], shift: [0, -0.1] }); M.box([s * 0.2, top + 0.35, -0.17], [0.14, 0.02, 0.2], D.joint, 0); }
+    // the gun forward: a low wedge turret and its barrel
+    const gy = deckAt(H, 1.75); M.box([0, gy + 0.08, 1.75], [0.36, 0.18, 0.42], D.light, 0.1, { top: [0.7, 0.6], shift: [0, -0.06] }); M.cyl([0, gy + 0.1, 1.9], [0, gy + 0.13, 2.45], 0.035, 0.025, 6, D.joint, 0);
+    // the VLS cells: a block forward of the bridge and one on the core's housing, their seams lit in the ship's feeling
+    const cells = (z0, cols, rows) => { const y = deckAt(H, z0) + 0.02; for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) { const x = (i - (cols - 1) / 2) * 0.14, z = z0 + j * 0.14; M.box([x, y, z], [0.12, 0.03, 0.12], D.deck, 0); M.quad([x - 0.05, y + 0.017, z - 0.05], [x + 0.05, y + 0.017, z - 0.05], [x + 0.05, y + 0.017, z + 0.05], [x - 0.05, y + 0.017, z + 0.05], 0xffffff, 0.66, [x, y - 1, z]); } };
+    cells(1.08, 4, 2); cells(-0.82, 4, 1);
+    // the core's housing: a sponsoned deck a little wider than the hull (the hangar's place), the helipad's ring astern of it
+    const hy = deckAt(H, -1.55); M.box([0, hy - 0.02, -1.55], [1.34, 0.08, 1.5], D.light, 0.1, { top: [0.98, 0.98] });
+    for (let i = 0; i < 16; i++) { const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2, y = deckAt(H, -2.75) + 0.012; M.quad([Math.cos(a0) * 0.32, y, -2.75 + Math.sin(a0) * 0.32], [Math.cos(a1) * 0.32, y, -2.75 + Math.sin(a1) * 0.32], [Math.cos(a1) * 0.38, y, -2.75 + Math.sin(a1) * 0.38], [Math.cos(a0) * 0.38, y, -2.75 + Math.sin(a0) * 0.38], D.glow, 0.3, [0, y - 1, -2.75]); }
+    // the engines: two big square pods on the stern quarters
+    const engines = [1, -1].map((s) => pod(M, { x: s * 0.5, y: 0.14, z0: -3.4, z1: -2.3, r0: 0.2, r1: 0.2, body: D.hull, band: D.accent, nozzle: D.glow, square: true, pylon: [s * 0.36, 0.14], pylonCol: D.joint }));
+    return { engines };
+  },
+};
+{ const top = deckAt(DESTROYER_HULL, 0.2) + DB.h - 0.02; DESTROYER.rig = { masts: [{ x: 0, z: 0.42, y0: top + 0.18, mode: 'hinge', hinge: 1.48, rake: 0.12, collar: D.joint, cap: D.accent, blade: { w: 0.34, t: 0.06 },
+  segs: [{ len: 1.25, r0: 0.05, r1: 0.03, col: D.light, code: 0.1 }], yards: [{ seg: 0, at: 0.72, w: 0.62, r: 0.025, col: D.joint }] }] }; }
 
-  /** The hull's half-beam at z (its frame), from the pot's profile. */
-  radiusAt(z) {
-    const F = this.form, u = THREE.MathUtils.clamp(0.5 - z / F.length, 0, 1), P = F.profile;
-    for (let i = 0; i < P.length - 1; i++) if (u <= P[i + 1][0]) return (F.beam / 2) * THREE.MathUtils.lerp(P[i][1], P[i + 1][1], (u - P[i][0]) / Math.max(1e-6, P[i + 1][0] - P[i][0]));
-    return (F.beam / 2) * P[P.length - 1][1];
-  }
-  /** A point on the hull's skin at z, `a` radians up from the beam's line (0 the side at the waterline, pi/2 the top), pushed out by
-   *  `out` (jarHull's mapping: the lathe's ring, its upper half squashed to the sheer). */
-  surfaceAt(z, a, out = 1) {
-    const r = this.radiusAt(z) * out, R = this.form.beam / 2, y = r * Math.sin(a);
-    return new THREE.Vector3(r * Math.cos(a), y > 0 ? this.sheerAt(z) * Math.pow(Math.min(1, y / R), 0.55) * out : (y / R) * this.form.draft, z);
-  }
-  /** The gunwale's height at z (the hull's sheer line). */
-  sheerAt(z) { const s = this.form.sheer, t = z / (this.form.length * 0.5); return s[0] + s[1] * Math.max(0, t) ** 2 + s[2] * Math.max(0, -t) ** 2; }
-
-  /** Per frame, as the sloop's: sail hoisted, heel, the wind's side, the drive's glow, time. */
-  set({ sail = 1, heel = 0, side = 1, glow = 0.6, t = 0 } = {}) {
-    this.body.rotation.z = heel;
-    const furled = sail <= FURL; // (the canvas stowed: the bundles on the yards shown, the sails hidden: vfx/sloop.js FURL)
-    if (this.furled) this.furled.visible = furled;
-    for (const s of this.sails) {
-      s.mesh.visible = !furled;
-      const u = s.mat.userData.u; u.uFill.value = sail; u.uSide.value = s.jib ? side : -1; u.uT.value = t;
-      s.mesh.scale.y = 0.08 + 0.92 * sail;
-      if (!s.jib) s.mesh.rotation.y = Math.PI / 2 + side * 0.22 * sail; // (the yards braced round to the wind)
-    }
-    this.pennant.rotation.y = Math.PI / 2 + side * 0.6 + Math.sin(t * 6) * 0.08;
-    this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
-    this.kiln.color.setRGB(1, 0.55 + 0.2 * Math.sin(t * 3), 0.3).multiplyScalar(0.6 + 0.4 * glow);
-    this.helmTick(t);
-  }
-  helmTick(t) { Sloop.prototype.helmTick.call(this, t); }
-  helmCradleSpots() { return Sloop.prototype.helmCradleSpots.call(this); }
-  helmWake(on = true, i = 0) { Sloop.prototype.helmWake.call(this, on, i); }
-  polarity(hex) { _pc.setHex(hex); this.mouth.color.copy(_pc); this.keelMat.color.copy(_pc); }
-  hurt(k) { Sloop.prototype.hurt.call(this, k); }
-  hoist(medal) { Sloop.prototype.hoist.call(this, medal); }
-  dispose() { Sloop.prototype.dispose.call(this); }
+// ------------------------------------------------------------------ the galleon
+const G = { hull: 0x6a2a20, wale: 0x3a1d16, dark: 0x2a1a14, gold: 0xe0b040, deck: 0x8a5a3a, glow: 0xe0b0ff, lamp: 0xffd27a, white: 0xf6f2ea };
+const GALLEON_HULL = {
+  shape: [[0, -1], [0.5, -0.9], [0.92, -0.4], [1, 0.15], [0.95, 0.6], [0.85, 1]],
+  stations: [[-5.25, 1.0, 0.55, 1.15], [-4.4, 1.25, 0.68, 0.98], [-2.6, 1.4, 0.75, 0.8], [-0.5, 1.42, 0.75, 0.7], [1.6, 1.36, 0.72, 0.72], [3.3, 1.08, 0.62, 0.85], [4.5, 0.62, 0.46, 1.0, 0.1], [5.25, 0.04, 0.24, 1.12, 0.45]],
+  strip: (i) => [[G.dark, 0.1], [G.dark, 0.1], [G.hull, 0.1], [G.wale, 0], [G.hull, 0.1]][i], deck: [G.deck, 0.1], transom: [G.hull, 0.1],
+};
+const GM = [{ z: 2.7, segs: [3.2, 2.4, 1.7], yards: [[0, 0.88, 2.6], [1, 0.85, 2.0], [2, 0.85, 1.3]] }, { z: 0.4, segs: [3.9, 2.8, 2.0], yards: [[0, 0.88, 3.0], [1, 0.85, 2.3], [2, 0.85, 1.5]] }, { z: -3.25, segs: [2.6, 1.6], lateen: true }];
+const CASTLE = { z0: -5.25, z1: -2.75, h1: 0.7, z2: -4.0, h2: 0.55 };
+const castleTop = () => deckAt(GALLEON_HULL, -4.0) + CASTLE.h1;
+const GALLEON = {
+  id: 'galleon', length: len('galleon'), beam: 2.84, draft: 0.75, panel: 1.0, dives: false, hull: GALLEON_HULL, pennantScale: 1.3,
+  engineGlow: G.glow, vane: { lotus: true, fill: 0xfffaf0, edge: 0xffe0a0, fillA: 0.42 },
+  core: { crystal: 0xffffff, collar: G.wale, frame: G.gold, canopy: false, plate: 0.0, ring: false },
+  helm: [-0.64, 0.64].map((x) => [x, deckAt(GALLEON_HULL, -1.45) - 0.18, -1.45]), gun: [0, deckAt(GALLEON_HULL, 4.0) + 0.5, 4.0], pennant: { mast: 1 },
+  write(M) {
+    const H = GALLEON_HULL; M.loft(H);
+    rail(M, H, { z0: -5.1, z1: 5.0, col: G.gold, r: 0.035, n: 24 });
+    stripe(M, H, { z0: -4.8, z1: 4.6, y: 0.55, h: 0.05, col: G.gold, n: 24 });
+    ports(M, H, { zs: [-3.6, -2.6, -1.6, -0.6, 0.4, 1.4, 2.4, 3.3], y: 0.38, w: 0.18, h: 0.12, col: G.lamp, code: 0.4, frame: G.gold });
+    fin(M, { t: 0.1, pts: [[2.8, -0.7], [-2.6, -0.7], [-2.2, -1.2], [2.2, -1.16]], col: G.dark, edge: 0xffffff, edgeCode: 0.85 }); // (the keel blade)
+    // the stern castle, stepped in two, its windows lit gold, the engine ring and the star on its back
+    const c = CASTLE, y1 = deckAt(H, -4.0) - 0.04, hw = deckHalf(H, -3.6);
+    M.box([0, y1 + c.h1 / 2, (c.z0 + 0.05 + c.z1) / 2], [hw * 2, c.h1, c.z1 - c.z0 - 0.05], G.hull, 0.1, { top: [0.94, 1], cols: { top: G.deck } });
+    const y2 = y1 + c.h1; M.box([0, y2 + c.h2 / 2, (c.z0 + 0.1 + c.z2) / 2], [hw * 1.6, c.h2, c.z2 - c.z0 - 0.1], G.hull, 0.1, { top: [0.92, 0.95], cols: { top: G.deck } });
+    for (const s of [1, -1]) for (const z of [-4.9, -4.5, -4.1, -3.7, -3.3]) M.quad([s * (hw + 0.005), y1 + 0.3, z - 0.1], [s * (hw + 0.005), y1 + 0.3, z + 0.1], [s * (hw + 0.005), y1 + 0.48, z + 0.1], [s * (hw + 0.005), y1 + 0.48, z - 0.1], G.lamp, 0.45, [0, y1, z]);
+    rail(M, { ...H, stations: H.stations.map(([z, hb, d, sh, r]) => [z, hb, d, sh + c.h1 + c.h2 - 0.02, r]) }, { z0: -5.15, z1: -4.05, col: G.gold, r: 0.03, n: 4, inset: 0.2 }); // (the taffrail)
+    const ry = y1 + 0.75, rz = c.z0 + 0.02, R = 0.5;
+    for (let i = 0; i < 16; i++) { const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2; M.cyl([Math.cos(a0) * R, ry + Math.sin(a0) * R, rz - 0.04], [Math.cos(a1) * R, ry + Math.sin(a1) * R, rz - 0.04], 0.06, 0.06, 5, G.gold, 0, { caps: false, smooth: false }); }
+    const star = []; for (let i = 0; i < 10; i++) { const a = Math.PI / 2 + (i / 10) * Math.PI * 2, r = i % 2 ? 0.1 : 0.24; star.push([Math.cos(a) * r, ry + Math.sin(a) * r, rz - 0.1]); }
+    for (let i = 0; i < 10; i++) M.tri([0, ry, rz - 0.11], star[i], star[(i + 1) % 10], G.gold, 0.3, [0, ry, rz]);
+    M.cyl([0, ry, rz - 0.05], [0, ry, rz - 0.1], 0.04, 0.04, 6, G.gold, 0);
+    for (const s of [1, -1]) M.gem([s * hw * 0.85, y2 + c.h2 + 0.2, c.z0 + 0.25], 0.08, 0.16, 0.08, 6, G.lamp, 0.55); // (the stern lanterns)
+    // the forecastle, lower than the stern, and the beak: a gold prow-lance over a beak plate
+    const fy = deckAt(H, 3.6) - 0.04; M.box([0, fy + 0.25, 3.65], [deckHalf(H, 3.6) * 2, 0.5, 1.3], G.hull, 0.1, { top: [0.92, 0.9], cols: { top: G.deck } });
+    fin(M, { t: 0.14, pts: [[5.0, 0.9], [5.0, 0.35], [6.3, 0.62], [6.6, 0.7]], col: G.hull, edge: G.gold, edgeCode: 0 });
+    M.cyl([0, 0.95, 4.9], [0, 0.8, 6.9], 0.11, 0.02, 6, G.gold, 0);
+    // the engines: the ring's disc, and two small nozzles low on the transom
+    const engines = [{ at: [0, ry, rz - 0.06], r: R * 0.92 }, ...[1, -1].map((s) => pod(M, { x: s * 0.62, y: 0.1, z0: -5.45, z1: -4.75, r0: 0.18, r1: 0.16, body: G.wale, band: G.gold, nozzle: G.glow, pylon: [s * 0.5, 0.1] }))];
+    // the twin helms' one canopy over both cores (the crystals each, shipkit/core.js)
+    const hy = deckAt(H, -1.45) - 0.18; writeCore(M, { at: [0, hy, -1.45], r: 1.22, frame: G.gold, crystals: false, ring: false, plate: 0.05, ribs: 8, apex: 1.15 });
+    return { engines };
+  },
+};
+{
+  const masts = GM.map((g, i) => {
+    const segs = g.segs.map((L, k) => ({ len: L, r0: [0.16, 0.1, 0.065][k], r1: [0.12, 0.075, 0.04][k], col: G.dark }));
+    const y0 = i === 2 ? castleTop() - 0.04 : deckAt(GALLEON_HULL, g.z) - 0.04;
+    const yards = g.lateen ? [{ seg: 0, at: 0.78, w: 0, r: 0.04, col: G.gold, lateen: [1.4, 2.0, 0.55] }] : g.yards.map(([seg, a, w]) => ({ seg, at: a, w, r: 0.045, col: G.gold }));
+    return { x: 0, z: g.z, y0, strike: 'top', collar: G.gold, cap: G.lamp, segs, yards };
+  });
+  const V = [];
+  masts.forEach((M, mi) => M.yards.forEach((Y, j) => {
+    if (Y.lateen) { V.push({ kind: 'lateen', mast: mi, yard: j, clewH: 0.8, clewZ: 1.7 }); return; }
+    const h = at(M.segs, Y.seg, Y.at), below = j ? at(M.segs, M.yards[j - 1].seg, M.yards[j - 1].at) + 0.08 : 0.55;
+    V.push({ kind: 'square', mast: mi, yard: j, drop: h - below, foot: j ? 1.18 : 1.08, lotus: mi === 1 && j === 0 });
+  }));
+  V.push({ kind: 'jib', mast: 0, head: 0.62, tack: [0, 0.82, 6.6], clew: [0, deckAt(GALLEON_HULL, 4.3) + 0.6, 4.2], clewX: 0.3 }); // (the spritsail's place: from the beak's end)
+  GALLEON.rig = { masts, vanes: V };
 }
-const _pc = new THREE.Color();
+
+// ------------------------------------------------------------------ the tanker
+const K = { red: 0x8e3a24, below: 0x6e2a1a, deck: 0x3c3f44, house: 0xe6e0d0, grey: 0x5a5e66, yellow: 0xe8b923, glow: 0xffb347, dome: 0xb8b2a6, joint: 0x2a2c31 };
+const TANKER_HULL = {
+  shape: [[0, -1], [0.82, -1], [1, -0.78], [1, 0.3], [1, 1]],
+  stations: [[-5.6, 0.85, 0.55, 0.62], [-5.0, 0.93, 0.68, 0.55], [-3.5, 0.95, 0.7, 0.5], [3.4, 0.95, 0.7, 0.5], [4.6, 0.86, 0.66, 0.53], [5.25, 0.6, 0.55, 0.58, 0.05], [5.6, 0.28, 0.4, 0.62, 0.12]],
+  strip: (i) => [[K.below, 0.1], [K.below, 0.1], [K.red, 0.1], [K.red, 0.1]][i], deck: [K.deck, 0.1], transom: [K.red, 0.1],
+};
+const HOUSE = { z0: -5.5, z1: -3.7, w: 1.7, h1: 0.9, z2: -5.0, h2: 0.6, w3: 2.1, h3: 0.45 };
+const houseRoof = () => deckAt(TANKER_HULL, -4.6) - 0.04 + HOUSE.h1 + HOUSE.h2 + HOUSE.h3;
+const TANKER = {
+  id: 'tanker', length: len('tanker'), beam: 1.9, draft: 0.7, panel: 1.1, dives: false, hull: TANKER_HULL,
+  engineGlow: K.glow, vane: { fill: 0xfff0d8, edge: K.glow, fillA: 0.3 },
+  core: { crystal: 0xffffff, collar: K.joint, frame: K.grey, plate: 0.06, apex: 0.9 },
+  helm: [[0, houseRoof() - 0.1, -4.3]], gun: [0, deckAt(TANKER_HULL, 4.7) + 0.35, 4.7], pennant: { mast: 0 },
+  write(M) {
+    const H = TANKER_HULL; M.loft(H);
+    rail(M, H, { z0: -5.5, z1: 5.4, col: K.yellow, r: 0.03, n: 26 });
+    rail(M, H, { z0: -3.6, z1: 4.8, col: K.grey, r: 0.018, n: 20, inset: 0.16, dy: 0.05 }); // (the double hull: its inner skin's rail)
+    stripe(M, H, { z0: -5.4, z1: 5.3, y: 0.06, h: 0.05, col: K.yellow, n: 26 });
+    // the house: stepped decks, bridge wings, windows lit amber, a raked funnel on its after step
+    const y = deckAt(H, -4.6) - 0.04, H0 = HOUSE;
+    M.box([0, y + H0.h1 / 2, (H0.z0 + H0.z1) / 2], [H0.w, H0.h1, H0.z1 - H0.z0], K.house, 0.1);
+    M.box([0, y + H0.h1 + H0.h2 / 2, (H0.z2 + H0.z1) / 2], [H0.w * 0.88, H0.h2, H0.z1 - H0.z2], K.house, 0.1);
+    M.box([0, y + H0.h1 + H0.h2 + H0.h3 / 2, (H0.z2 + H0.z1 + 0.1) / 2], [H0.w3, H0.h3, H0.z1 - H0.z2 + 0.1], K.house, 0.1, { top: [1, 1], cols: { top: K.grey } });
+    for (const [yy, w, z0, z1] of [[y + 0.55, H0.w, H0.z0, H0.z1], [y + H0.h1 + 0.35, H0.w * 0.88, H0.z2, H0.z1]]) for (let z = z0 + 0.2; z < z1 - 0.1; z += 0.3) for (const s of [1, -1]) M.quad([s * (w / 2 + 0.005), yy - 0.05, z - 0.08], [s * (w / 2 + 0.005), yy - 0.05, z + 0.08], [s * (w / 2 + 0.005), yy + 0.05, z + 0.08], [s * (w / 2 + 0.005), yy + 0.05, z - 0.08], K.glow, 0.4, [0, yy, z]);
+    const by = y + H0.h1 + H0.h2 + H0.h3 * 0.55; M.quad([-H0.w3 / 2, by - 0.07, H0.z1 + 0.056], [H0.w3 / 2, by - 0.07, H0.z1 + 0.056], [H0.w3 / 2, by + 0.07, H0.z1 + 0.056], [-H0.w3 / 2, by + 0.07, H0.z1 + 0.056], 0x9fd0ff, 0.3, [0, by, -4]); // (the bridge's windows)
+    const fz = (H0.z0 + H0.z2) / 2, fy = y + H0.h1; M.box([0, fy + 0.62, fz - 0.05], [0.42, 1.24, 0.34], K.grey, 0.1, { top: [0.9, 0.9], shift: [0, -0.18] }); M.box([0, fy + 1.0, fz - 0.15], [0.44, 0.12, 0.36], K.yellow, 0, { shift: [0, -0.02] });
+    M.box([0, fy + 1.26, fz - 0.23], [0.36, 0.02, 0.28], K.glow, 0.5);
+    // the hold: tank domes down the deck, each banded in the crude's glow
+    for (const z of [3.9, 2.4, 0.9, -0.6, -2.1]) {
+      const dy = deckAt(H, z) - 0.02, r = 0.62;
+      for (let a = 0; a < 3; a++) { const y0 = Math.sin((a / 3) * Math.PI / 2) * r, y1 = Math.sin(((a + 1) / 3) * Math.PI / 2) * r, r0 = Math.cos((a / 3) * Math.PI / 2) * r, r1 = Math.cos(((a + 1) / 3) * Math.PI / 2) * r; M.cyl([0, dy + y0 * 0.75, z], [0, dy + y1 * 0.75, z], r0, Math.max(0.01, r1), 12, K.dome, 0.1, { caps: a === 2, phase: 0.13 }); }
+      M.cyl([0, dy, z], [0, dy + 0.06, z], r + 0.03, r + 0.02, 12, K.glow, 0.45, { caps: false });
+    }
+    // the manifold midships: a gantry across the deck, pipes along it, a catwalk to the house
+    const my = deckAt(H, 0.15);
+    for (const dz of [-0.12, 0, 0.12]) M.cyl([-0.85, my + 0.2, 0.15 + dz], [0.85, my + 0.2, 0.15 + dz], 0.03, 0.03, 5, K.yellow, 0, { caps: true });
+    for (const s of [1, -1]) M.box([s * 0.7, my + 0.15, 0.15], [0.05, 0.3, 0.4], K.grey, 0);
+    for (const x of [-0.72, -0.62]) M.cyl([x, my + 0.07, -3.6], [x, my + 0.07, 4.8], 0.03, 0.03, 5, K.grey, 0, { caps: false });
+    M.box([0.72, my + 0.36, 0.6], [0.12, 0.02, 8.4], K.grey, 0); for (let z = -3.4; z < 4.8; z += 1.0) M.box([0.72, my + 0.18, z], [0.03, 0.36, 0.03], K.grey, 0);
+    // the bulb under the bow: a glowing teardrop; the bow's small mast and its lamp
+    M.gem([0, -0.42, 5.5], 0.26, 0.6, 0.45, 8, K.glow, 0.5, { axis: [0, 0, 1] });
+    const bmy = deckAt(H, 5.0); M.cyl([0, bmy, 5.0], [0, bmy + 0.75, 5.0], 0.035, 0.025, 5, K.yellow, 0); M.gem([0, bmy + 0.8, 5.0], 0.05, 0.08, 0.04, 5, K.glow, 0.55);
+    slot(M, { y: deckAt(H, -3.45) - 0.04, z: -3.45, w: 0.3, d: 0.3 });
+    // the engines: two nozzles on the transom
+    const engines = [1, -1].map((s) => pod(M, { x: s * 0.42, y: -0.12, z0: -5.85, z1: -5.35, r0: 0.26, r1: 0.24, body: K.grey, band: K.yellow, nozzle: K.glow }));
+    return { engines };
+  },
+};
+TANKER.rig = {
+  masts: [{ x: 0, z: -3.45, y0: deckAt(TANKER_HULL, -3.45) - 0.04, stub: 0.05, collar: K.joint, cap: K.glow, segs: [{ len: 0.95, r0: 0.07, r1: 0.06, col: K.yellow }, { len: 0.9, r0: 0.05, r1: 0.03, col: K.yellow }],
+    yards: [{ seg: 1, at: 0.6, w: 0.6, r: 0.025, col: K.grey }] }],
+  vanes: [{ kind: 'square', mast: 0, yard: 0, drop: 0.32, foot: 0.9 }], // (the radar's vane)
+};
+
+/** Each class's numbers (with the sloop's, vfx/sloop.js SLOOP). */
+export const SHIP_FORMS = { frigate: FRIGATE, destroyer: DESTROYER, galleon: GALLEON, tanker: TANKER };
+for (const S of Object.values(SHIP_FORMS)) if (!(S.helm || []).every(([x, , z]) => Math.abs(x) + cradleFoot() * 0.6 <= deckHalf(S.hull, z) + 0.2)) console.warn(`ship ${S.id}: a helm stands off its deck`);
+
+export class ShipClassLook extends ShipLook {
+  constructor(id, { env = null } = {}) { const S = SHIP_FORMS[id]; if (!S) throw new Error(`no ship form ${id}`); super(S, { env }); this.form = S; }
+  polarity(hex) { return this.feeling(hex); } // (the ship's feeling, by the rail's name for it)
+}
 
 /** The look of a hull by its class: the sloop's own, or one of the four here. */
 export function shipLook(id, opts = {}) {
-  if (SHIP_FORMS[id]) { const s = new ShipClassLook(id, opts); return s; }
+  if (SHIP_FORMS[id]) return new ShipClassLook(id, opts);
   const s = new Sloop(opts); s.length = SLOOP.length; s.beam = SLOOP.beam; return s;
 }

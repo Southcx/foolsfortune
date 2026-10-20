@@ -119,6 +119,9 @@ const RULES = {
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
   'rail.tell': (s, e, g) => s.railTell?.(g.music?.clock?.(), e.bar, e.beat, !!e.outlined, e.kind, e.form), // (a foe's tell, landing on its shot's beat as heard: audio/rail.js)
   'rail.form': (s) => s.mastFold?.(0.6), // (the mast folding and standing again on a form flip: audio/rail.js)
+  'rail.glance': (s) => s.railGlance?.(), // (a blow turned aside; a grappler taking hold and shaken off: audio/rail.js)
+  'rail.latch': (s) => s.railLatch?.(),
+  'rail.unlatch': (s) => s.railUnlatch?.(),
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
   // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap
