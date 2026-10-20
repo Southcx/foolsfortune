@@ -307,6 +307,10 @@ shared axes in a swing).
    height. `CARRIER_AT.side` takes Petra's measured frame (y -2 to 12.5, z -14 to 19.5), the carrier holding at z 15; from the nearer
    thrower the brig's split shell splits at 0.5 real s (not 0.9: it split 1.6 m off the ship) and the leviathan's rose is slowed to 7
    with 30 petals (its gap and its half second).
+8. **A body throws from where it is seen, never from on top of you** (Dovina, 2026-10-20, from Petra's measure: the brig abeam in the
+   side view stood 1.4 to 5 m off the ship once moved onto its plane). A set piece's body fires only from inside its view's box and at
+   least `THROW_MIN` (15 m, what the checks judge from) off the ship in the plane; otherwise a carrier throws that volley. The brig
+   keeps ahead of the ship in the side view (its stern chasers firing aft), not abeam.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.
