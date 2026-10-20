@@ -26,7 +26,7 @@ export function mountRow(tool, { slot = 0, opens = null } = {}) {
   const M = MOUNTS[tool]; if (!M) return null;
   return {
     id: tool, name: M.name, does: M.does, lore: M.lore, detail: inSeconds(M.detail),
-    cost: M.cost, charges: M.charges, cooldown: M.cooldown != null ? M.cooldown * BAR_S : undefined, range: M.range, angle: M.angle,
+    cost: M.cost, charges: M.charges, cooldown: M.cooldown != null ? M.cooldown * BAR_S : undefined, range: M.range, angle: M.angle, duration: M.duration,
     always: !!M.always, icon: `mount.${tool}`,
     key: M.always ? ['LMB', 'RMB'] : !M.verb ? 'passive' : slot ? String(slot) : null,
     state: opens ? 'locked' : M.always || slot ? 'equipped' : 'ready', opens: opens || undefined,
