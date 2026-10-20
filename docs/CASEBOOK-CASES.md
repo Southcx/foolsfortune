@@ -3343,10 +3343,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause:** in a plane view the pattern player moves the thrower onto the ship's plane before it fires (`patternplayer.js`): in the
   side view the depth (x) is dropped. The brig ran abeam on the ship's far side, 17 m deep and level with the ship along the scroll,
   so on the plane she stood beside it. The leg runner took any set piece's body as its thrower, wherever it stood.
-- **Fix:** Dovina's rule (RAIL-MODULES.md 1.8): a set piece's body throws only from inside its view's box and at least `THROW_MIN`
-  (15 m) from the ship where the pattern player lays it, else a carrier throws (`legrunner.js` `throws`). In the side view the brig
-  keeps ahead, 18 m on and 5.5 m deep, and her stern chasers fire aft only from half a real second off (`pirates.js`).
-- **Measured after** (the Wreckers' peak, sailed headless in the side view): the brig at z 17 to 19, 17.1 to 19.0 m off in plane; 9
-  of 10 of its volleys thrown by its body, the first by a carrier (she stood at z 25.7, past the frame). Old Nobody: every volley by a
-  carrier (its throat at x -24, outside the side box's depth of 6). 0 errors.
+- **Fix:** Dovina's rule (RAIL-MODULES.md 1.8): a plane view lays a thrower on the ship's plane along the camera's ray through it,
+  where it is seen (`patternplayer.js` `layOnPlane`; dropped straight across, Old Nobody's throat 24 m deep was laid 6 m off its
+  image); a set piece's body throws only when that point is inside its view's box (its depth not asked) and at least `THROW_MIN`
+  (15 m) from the ship, else a carrier throws (`legrunner.js` `throws`). In the side view the brig keeps ahead, 21 m on and 5.5 m
+  deep, and her stern chasers fire aft only from inside the frame and half a real second off (`pirates.js`).
+- **Measured after** (the Wreckers' and Old Nobody's peaks, sailed headless in the side view, the eye at (18, 4.5, 3)): the brig laid
+  at 16.0 to 17.5 m; 9 of 10 of its volleys thrown by its body, the first by a carrier (laid at z 22.7, past the frame); two stern
+  chasers. Old Nobody's throat laid at 7.7 to 10.4 m: every volley by a carrier. 0 errors.
 - **Rule:** 251.

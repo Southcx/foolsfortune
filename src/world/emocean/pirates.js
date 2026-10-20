@@ -8,7 +8,7 @@
 //              telegraph is her body) and fire round shot in a WALL WITH GAPS (three a port, too heavy to parry: move to a gap, or
 //              roll); every port shot away widens the gaps. Her four rigging points (the slings of her yards) are a lance each.
 //              Boarders swing across every four bars, two at a time; one that stands a bar on your deck takes a cask.
-//              In the side view she keeps AHEAD instead (18 m on in the ship's plane, 5.5 m behind it): a side view cannot show abeam,
+//              In the side view she keeps AHEAD instead (21 m on, 5.5 m behind the ship's plane): a side view cannot show abeam,
 //              where she stood behind the ship on the screen and threw from 1.4 m off it (Dovina's ruling, RAIL-MODULES.md 1.8)
 //   THE RAM    (22 to 30, behind the ship) she comes about ahead and bears down on the ship's line: a bar and a half to see it; two
 //              of what the ship bears unless you are off her line, or her hull is holed (under a third: she founders first)
@@ -34,7 +34,7 @@ import { sfx } from '../../audio/sfx.js';
 
 const B = PIRATES.brig, SIDE = -1; // (her ports toward the ship: she runs on the ship's far side, her -X flank to it)
 const ABEAM = -17, ASTERN = -30;   // (rail frame: her place alongside, and astern)
-const AHEAD = { x: -5.5, z: 18, sway: 1, from: 26 }; // (the side view: her place ahead, inside its box (legs.js CARRIER_AT.side: x 6, z to 19.5) and 17 m or more off the ship at rest in plane (THROW_MIN 15), her stern 8 m or more (half a real second at the chasers' 16 m/s); she comes in from 26 m beyond it)
+const AHEAD = { x: -5.5, z: 21, sway: 1, from: 26 }; // (the side view: her place ahead; seen from the side camera at rest she is laid on the ship's plane at z 16.0 to 17.6, inside its box (legs.js CARRIER_AT.side, z to 19.5) and 16 m or more off the ship (THROW_MIN 15: legrunner.js throws); her stern 11 m or more off (half a real second at the chasers' 16 m/s is 8); she comes in from 26 m beyond it)
 const REACT_S = 0.5; // (half a real second to react to a shot from where it is fired: scripts/patterns.mjs's rule)
 const _w = new THREE.Vector3(), _l = new THREE.Vector3(), _v = new THREE.Vector3();
 const lerp = THREE.MathUtils.lerp, smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };

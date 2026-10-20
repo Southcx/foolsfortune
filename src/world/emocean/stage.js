@@ -319,6 +319,7 @@ export class Emocean {
     const g = this.game, sw = this.swingAt(this.bar), S = this.ship.local;
     if (sw) { blendRig(sw.from, sw.to, sw.k, this.rail, S, _sh); swingLook(g, sw.k, sw.from, sw.to); _sh.fov += 6 * Math.sin(Math.PI * sw.k); this.swinging = true; }
     else { rig(this.viewNow(this.bar), this.rail, S, _sh); if (this.swinging) { swingLook(g, 1); this.swinging = false; } }
+    this.eye = this.rail.toLocal(_sh.pos, this.eye || new THREE.Vector3()); // (the camera in the rail's frame, before its shake: where a plane view lays a thrower, patternplayer.js layOnPlane)
     this.trauma = Math.max(0, this.trauma - T.ship.trauma.decay * raw);
     const k = this.trauma * this.trauma, tt = this.t * 23;
     _sh.pos.x += k * 0.5 * Math.sin(tt * 1.7); _sh.pos.y += k * 0.5 * Math.sin(tt * 2.3 + 1);

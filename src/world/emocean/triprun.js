@@ -149,7 +149,7 @@ export class TripRun {
     // a swing of view begins: what is still in the air is cancelled into Lachryma (no shot lives across one: the owner's R17 and his
     // ruling of 2026-10-20; Dovina's pacing law in legs.js keeps new ones out of the bars round it)
     const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.cancel(); this.swung = sw;
-    this.player.update(dt, S.ship);
+    this.player.eye = S.eye || null; this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
   }
 

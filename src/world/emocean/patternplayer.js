@@ -14,7 +14,8 @@
 // (patterns carried by a moving body), and Ikaruga's cancelled volleys.
 //
 //   const P = new PatternPlayer(field, { rng })   P.play(name, params, { from, at, mode, kind, feel, up, range, bar0, lead, until })
-//   P.update(dt, ship)   P.stop(from?)   P.playing   P.bar (the leg's bar, the runner's)
+//   P.update(dt, ship)   P.stop(from?)   P.playing   P.bar (the leg's bar, the runner's)   P.eye (the camera in the rail's frame: stage.js)
+//   layOnPlane(o, ship, up, eye, out) (where a plane view lays a thrower: on the ship's plane, along the camera's ray through it)
 //   (from: a foe on the waves' roll, { local, alive }; at: a fixed point in the rail's frame instead; up: the view's plane's normal;
 //   lead: the windup before the first volley, real s; until: real s after the play past which nothing is fired)
 // ---------------------------------------------------------------------------------------
@@ -27,9 +28,22 @@ import { stream } from '../../core/rng.js';
 const LAYOUT = frameOf([0, 0, -1], [0, 1, 0]); // (every pattern is laid out aimed down -z, up +y, then turned onto the ship as it fires)
 const _o = new THREE.Vector3(), _aim = new THREE.Vector3(), _up = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3();
 const shot = { pos: _p, dir: _d, speed: 0, kind: 'astral', outlined: false, motion: null, warn: 0, up: null };
+const _e = new THREE.Vector3();
+
+/** Where a plane view lays a thrower (rail frame): on the ship's plane where the camera sees it, along the ray from the eye through it,
+ *  so its shots begin on its image (Dovina's rule, RAIL-MODULES.md 1.8: Old Nobody's throat 24 m deep was laid 6 m off where it is seen
+ *  when its depth was dropped straight across). Straight across where there is no eye or the ray never meets the plane ahead of it. */
+export function layOnPlane(o, ship, up, eye, out = new THREE.Vector3()) {
+  const dO = up.dot(_e.copy(o).sub(ship));
+  if (eye) {
+    const dE = up.dot(_e.copy(eye).sub(ship)), den = dE - dO, s = Math.abs(den) > 1e-6 ? dE / den : -1;
+    if (s > 0) return out.subVectors(o, eye).multiplyScalar(s).add(eye);
+  }
+  return out.copy(o).addScaledVector(up, -dO);
+}
 
 export class PatternPlayer {
-  constructor(field, { rng = stream('rail/patterns') } = {}) { this.field = field; this.rng = rng; this.runs = []; this.bar = null; }
+  constructor(field, { rng = stream('rail/patterns') } = {}) { this.field = field; this.rng = rng; this.runs = []; this.bar = null; this.eye = null; }
 
   /** Begin a pattern from a thrower (or a fixed point), in the view's mode and plane, its kind ('astral', 'umbral', 'feel', 'gift'). */
   play(name, params = {}, { from = null, at = null, mode = 'plane', kind = 'feel', feel = null, up = [0, 1, 0], range = 30, bar0 = null, lead = 0, until = Infinity } = {}) {
@@ -55,7 +69,7 @@ export class PatternPlayer {
         _up.fromArray(r.up);
         if (ship) _aim.copy(ship.local).sub(_o); else _aim.set(0, 0, -1);
         if (r.mode === 'plane') { // (a plane view: the thrower and the aim on the ship's plane, so every shot can reach it)
-          if (ship) _o.addScaledVector(_up, -_up.dot(_aim.copy(_o).sub(ship.local))), _aim.copy(ship.local).sub(_o);
+          if (ship) layOnPlane(_o, ship.local, _up, this.eye, _o), _aim.copy(ship.local).sub(_o);
           _aim.addScaledVector(_up, -_up.dot(_aim));
         }
         if (_aim.lengthSq() < 1e-6) _aim.set(0, 0, -1);
