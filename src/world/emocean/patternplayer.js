@@ -26,7 +26,7 @@ import { stream } from '../../core/rng.js';
 
 const LAYOUT = frameOf([0, 0, -1], [0, 1, 0]); // (every pattern is laid out aimed down -z, up +y, then turned onto the ship as it fires)
 const _o = new THREE.Vector3(), _aim = new THREE.Vector3(), _up = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3();
-const shot = { pos: _p, dir: _d, speed: 0, kind: 'astral', outlined: false, motion: null, warn: 0 };
+const shot = { pos: _p, dir: _d, speed: 0, kind: 'astral', outlined: false, motion: null, warn: 0, up: null };
 
 export class PatternPlayer {
   constructor(field, { rng = stream('rail/patterns') } = {}) { this.field = field; this.rng = rng; this.runs = []; this.bar = null; }
@@ -65,7 +65,9 @@ export class PatternPlayer {
           if (!r.kinds.has(vk)) r.kinds.set(vk, kindFor(r.kind, r.feel, this.rng)); // (one volley, one kind)
           _p.fromArray(o.pos).add(_o);
           if (s.motion?.type === 'laser') _d.fromArray(to.f); else _d.fromArray(o.dir); // (a beam sweeps about the aim: its angles are its own)
-          Object.assign(shot, { speed: s.speed, kind: r.kinds.get(vk), outlined: s.outlined, motion: s.motion, warn: s.warn });
+          let m = s.motion;
+          if (o.motion?.at) m = { ...o.motion, at: new THREE.Vector3().fromArray(o.motion.at).add(_o), to: new THREE.Vector3().fromArray(o.motion.to).add(_o) }; // (a cage's ring point and the ship's, where this volley is thrown)
+          Object.assign(shot, { speed: s.speed, kind: r.kinds.get(vk), outlined: s.outlined, motion: m, warn: s.warn, up: r.up });
           this.field.fire(shot, { from: r.from, ship });
         }
       }

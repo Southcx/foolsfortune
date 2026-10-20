@@ -88,7 +88,7 @@ window.__em = (() => {
     plan() { const p = E.plan; return p && { bars: p.bars, seconds: p.seconds, setPieces: p.setPieces, acts: p.acts.map((a) => ({ id: a.id, from: a.from, to: a.to, view: a.view, leg: a.leg })), swings: p.swings, beats: p.beats.map((b) => ({ bar: b.bar, beat: b.beat, view: b.view })), waveBars: p.waves.map((w) => w.bar) }; },
     /** Step the stage n ticks, keeping when each wave entered (and whether a swing was under way). */
     hull: false,
-    sail(n, dt) { for (let i = 0; i < n; i++) { if (D.hull && E.run && !E.offering) E.run.hits = 0; const was = E.run?.spawned ?? 0; G.tick(dt); if (E.stage.active && E.run && E.run.spawned > was) spawns.push({ bar: +E.bar.toFixed(3), n: E.run.spawned - was, swinging: !!E.swinging || !!E.swingAt(E.bar) }); } },
+    sail(n, dt) { for (let i = 0; i < n; i++) { if (D.hull && E.run && !E.offering) { E.run.hits = 0; if (!Object.hasOwn(E, 'wound')) E.wound = () => {}; } else if (Object.hasOwn(E, 'wound')) delete E.wound; /* (a tester's hull: a set piece's blow lands several hits in one tick, so the wound itself is held, as Calissa's probe did; Petra, 2026-10-20) */ const was = E.run?.spawned ?? 0; G.tick(dt); if (E.stage.active && E.run && E.run.spawned > was) spawns.push({ bar: +E.bar.toFixed(3), n: E.run.spawned - was, swinging: !!E.swinging || !!E.swingAt(E.bar) }); } },
     /** A foe's shot set at the ship (the rail frame): plain of a feeling, or outlined. */
     shoot({ aspect = null, outlined = false, ahead = 1.2 } = {}) {
       const sh = E.ship, p = sh.local.clone(); p.z += ahead; const vel = new THREE.Vector3(0, 0, -6);
@@ -318,13 +318,16 @@ if (part('crossing')) {
     await S.ev(() => __em.shoot({ aspect: __game.game.emocean.ship.aspect })); await S.ticks(30);
     let x = await st();
     S.check('verbs: a shot of the ship\'s feeling is absorbed, not a hit', x.run.absorbed === ab0 + 1 && x.run.hits === h0, { absorbed: x.run.absorbed - ab0, hits: x.run.hits - h0 });
-    // a hit: one of another feeling; then the mercy (a second shot inside it does not count)
+    // a hit: one of another feeling; then the mercy (a second shot inside it does not count). The tester's hull let go for it: it holds
+    // the wound itself now, so a hit would never land
+    await S.ev(() => { __em.hull = false; if (Object.hasOwn(__game.game.emocean, 'wound')) delete __game.game.emocean.wound; });
     const mh = await em('mark()');
     await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.emocean.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
     x = await st();
     await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.emocean.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
     const y = await st(), he = (await events(mh)).filter((e) => e.name === 'rail.hit');
     S.check('verbs: a shot of another feeling is a hit, the mercy holds the next', x.run.hits === h0 + 1 && y.run.hits === h0 + 1 && he.length === 1 && he[0].by === 'creature', { hits: [x.run.hits - h0, y.run.hits - h0], mercy: x.ship.mercy, events: he.map((e) => e.by) });
+    await S.ev(() => { __em.hull = true; }); // (held again for the rest of the acts)
     // (the parry on V at sea was retired into the roll, E: RAIL-OVERHAUL.md 3. Its two checks were deleted, not fixed around: the
     // crossing is in flux, CLAUDE.md "Test lean"; the roll's own check waits until the owner calls the crossing settled)
   }
@@ -425,14 +428,17 @@ if (part('dock')) {
   S.check('dock: what Letty says never calls the Courier she or he', !(await S.ev((l) => __em.gendered(l), said)).length, (await S.ev((l) => __em.gendered(l), said)));
   await S.closeAll(); await S.resume(); await S.ticks(4);
   // the Pearl Shrine: found and rested at with F, its page shut
-  await em("standSpot('shrine')"); await S.ticks(20);
+  await S.ev(() => { const g = __game.game, c = g.shrines.get('pearl')?.threshold; if (c) __em.stand(__sw.v(c.at.clone().setY(c.at.y + 0.1)), c.yaw + Math.PI); }); await S.ticks(20); // (at the gate's cradle: a Shrine is sealed into since HANKO.md 6.6, where Calissa's torii puts it)
   ch = await em('chevron()');
-  await S.press('KeyF', 6); w = await em('win()'); await S.shot('dock-shrine');
+  await S.press('KeyF', 6);
+  for (let i = 0; i < 30 && !(await S.ev(() => __game.game.shrines.last === 'pearl')); i++) await S.ticks(6); // (sealing takes a beat)
+  w = await em('win()'); await S.shot('dock-shrine');
   const sh = await S.ev(() => ({ last: __game.game.shrines.last, found: __game.game.shrines.found.has('pearl') }));
   S.check('dock: F at the Pearl Shrine rests there and opens its page', sh.last === 'pearl' && sh.found && w.index, { chevron: ch.cur, ...sh, page: w.page });
   await S.press('KeyF', 6); w = await em('win()');
-  S.check('dock: F closes the Shrine\'s page and it stays closed', !w.index, w);
+  S.check('dock: F closes the Shrine\'s page and it stays closed (F unseals you from its gate)', !w.index, w);
   await S.closeAll(); await S.ticks(4);
+  for (let i = 0; i < 30 && (await S.ev(() => !!__game.game.cradles?.phase)); i++) await S.ticks(6); // (the unseal plays out and stands you at the gate: wait for it)
   // the dock's pier: its page, from Margarite
   await em("standPier('margarite')"); await S.ticks(20);
   ch = await em('chevron()');
@@ -464,7 +470,7 @@ if (part('back')) {
     await S.common('back: the pirates', { courier: false });
     // the ship borne all it can: the continue
     const mc = await em('mark()');
-    await S.ev(() => { const E = __game.game.emocean; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
+    await S.ev(() => { const E = __game.game.emocean; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
     s = await st(); let w = await em('win()');
     const cost1 = await S.ev(() => { const E = __game.game.emocean; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
     const t1 = await em('menuText()'), fC = await S.shot('back-continue');
@@ -479,7 +485,7 @@ if (part('back')) {
     S.check('continue: taken, paid, mended, the page shut', cubesA - s.cubes === cost1 && s.run.hits === 0 && !s.offering && !w.index && s.active && ce.length === 1 && ce[0].by === 'courier', { paid: cubesA - s.cubes, cost: cost1, hits: s.run.hits, offering: s.offering, page: w.page, events: ce.map((e) => e.d) });
     // a second: dearer, and declined by Esc (the page closed unanswered: the ship breaks up)
     await sail(150);
-    await S.ev(() => { const E = __game.game.emocean; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
+    await S.ev(() => { const E = __game.game.emocean; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
     const cost2 = await S.ev(() => { const E = __game.game.emocean; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
     const base2 = await S.ev(() => { const E = __game.game.emocean, V = __game.game.voyage, c = V.s.sailing.continues; V.s.sailing.continues = 0; const b0 = V.continueCost(Math.min(1, E.t / E.stage.seconds)); V.s.sailing.continues = c; return b0; });
     S.check('continue: the second costs double', (await st()).offering && Math.abs(cost2 - 2 * base2) <= 1, { second: cost2, firstAtThisShare: base2 });

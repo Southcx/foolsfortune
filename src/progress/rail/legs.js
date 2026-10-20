@@ -185,8 +185,8 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
 export const CARRIER_AT = {
   chase:  { at: [0, 5, 55], from: [0, 2, 50], box: { x: 24, y: [0, 14], z: [12, 70] } },
   free:   { at: [0, 5, 55], from: [0, 2, 50], box: { x: 26, y: [0, 15], z: [12, 70] } },
-  above:  { at: [0, 4, 22], from: [0, 0, 26], box: { x: 28, y: [-5, 20], z: [-6, 26] } },
-  side:   { at: [0, 5, 22], from: [0, 0, 26], box: { x: 6, y: [-2, 16], z: [-14, 26] } },
+  above:  { at: [0, 4, 26], from: [0, 0, 26], box: { x: 28, y: [-5, 20], z: [-6, 40] } },
+  side:   { at: [0, 5, 22], from: [0, 0, 26], box: { x: 6, y: [-2, 17], z: [-20, 27] } },
   astern: { at: [0, 5, -30], from: [0, 2, -40], box: { x: 24, y: [0, 14], z: [-60, -10] } },
 };
 /** A view's way of firing: in its plane (above, side, astern: a ring reads as a ring), or in a cone at the ship (chase, free). */

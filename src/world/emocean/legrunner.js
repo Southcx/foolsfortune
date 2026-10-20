@@ -14,7 +14,8 @@
 // from the view's far edge, holds while it fires, and leaves (fire only while holding): a placeholder body, shootable, its volleys
 // cancelled if it is downed. Every play has a WINDUP before its first volley (patterns.js `leadOf`: a beat, half a bar for outlined
 // shots, a bar for a beam), the rail's telegraph mark on the thrower; and nothing it fires lands in the bar before a swing. The pattern
-// player is told the view's plane (`up`) and reads the leg's bar as its clock.
+// player is told the view's plane (`up`) and reads the leg's bar as its clock. Each windup emits `rail.tell { bar, beat, outlined, by }`,
+// when its first volley will be heard on the music's clock (Wanda's muzzle cue).
 //
 // Prior art: the shmup stage script on the beat (Rez's layers, Cave's wave tables), and the waves' own let-go rule; Rez's emitters,
 // always bodies; the Gummi ship's fly-in, hold, fire, fly-out.
@@ -74,7 +75,12 @@ export class LegRunner {
     const range = Math.hypot(from.local.x, from.local.y - 3, from.local.z);
     const run = this.player.play(p.name, p.params, { from, mode: p.mode, kind: p.kind, feel: this.feel, up: upOf(view), range, bar0: bar, lead, until });
     if (carried) from.hold = run ? lead + PatternPlayer.length(run) + 0.3 : 0; // (it leaves once its pattern is spent)
-    if (run) this.waves.game?.emocean?.stage?.shots?.telegraphs?.mark(from.mesh || from.pos, lead, { radius: 1.1, alive: () => from.alive }); // (the windup: the rail's telegraph mark)
+    if (run) {
+      const g = this.waves.game;
+      g?.emocean?.stage?.shots?.telegraphs?.mark(from.mesh || from.pos, lead, { radius: 1.1, alive: () => from.alive }); // (the windup: the rail's telegraph mark)
+      const C = g?.music?.clock?.(); // (Wanda's muzzle cue: when the first volley will be heard, on the music's own bars)
+      if (C) { const at = C.bar + (bar + lead / BAR_S - (this.player.bar ?? bar)), b = Math.floor(at); g.events?.emit('rail.tell', { bar: b, beat: +((at - b) * C.beats).toFixed(3), outlined: p.name === 'mixed', by: 'creature' }); }
+    }
     return run;
   }
   /** The live foe of a role in the view's frame nearest the frame's middle (the newest of old fired from wherever it was). */

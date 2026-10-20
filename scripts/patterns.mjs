@@ -22,7 +22,7 @@ for (const name of Object.keys(PATTERNS)) for (const [view, V] of Object.entries
   if (V.mode === 'plane') aim = sub(aim, V.up.map((x) => x * d)); // (flattened onto the plane: a plane view's aim never leaves it)
   const range = Math.hypot(...aim), to = frameOf(aim, V.up);
   const laid = emit(name, {}, { origin: [0, 0, 0], aim: [0, 0, -1], mode: V.mode, rng, range });
-  const shots = laid.map((s) => { const o = orient(s, LAYOUT, to); return { ...o, pos: plus(o.pos, V.from) }; });
+  const shots = laid.map((s) => { const o = orient(s, LAYOUT, to); if (o.motion?.at) o.motion = { ...o.motion, at: plus(o.motion.at, V.from), to: plus(o.motion.to, V.from) }; return { ...o, pos: plus(o.pos, V.from), up: V.up }; });
   const ship = { pos: plus(V.from, aim), width: 1.2 };
   const r = fair(shots, ship, PATTERNS[name].defaults, 12, V.mode, V.up, V.from);
   if (!r.ok) fails++;
