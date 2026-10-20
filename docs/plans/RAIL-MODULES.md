@@ -60,7 +60,7 @@ beats re-mapped onto the three (§4).
 5. **Each module owns its reticle.**
    - Chase: a free cursor.
    - Side: a fixed point ahead of the ship along the scroll.
-   - Overhead: none (no lock-on there, §2).
+   - Overhead: the cursor on the sea plane, the gun firing toward it (twin-stick: the owner, 2026-10-20); no lock-on there (§2).
 
    The reticle is derived every frame from the cursor or the ship's facing, never stored as a world point. A lock is a foe, re-projected
    every frame, and dropped with a sound when its foe leaves the frame or the plane. These two fix "the reticle locks or breaks when the
@@ -87,8 +87,12 @@ beats re-mapped onto the three (§4).
    reports the list. Swings are added only once all three pass the owner's play.
 9. **Collision is in the plane** (distance in the plane's two axes) in overhead and side, so it matches what the camera shows. In chase
    it is 3D, with a generous band in depth.
-10. **On a swing, the old plane's shots are cancelled into Lachryma**: fewer live shots, and a bullet cancel that pays. This is pending
-    the owner (the digest), with Calissa's and Dovina's lean.
+10. **No projectile is on screen during a swing** (the owner's R17, restated 2026-10-20). Every shot alive when a swing begins is
+    cancelled into Lachryma there and then, motes the ship absorbs into its pool (the owner, 2026-10-20), and nothing fires until the
+    swing ends. Motes are pickups, not projectiles; the research's other option (shots flying on as scenery) broke R17 and is gone.
+11. **The camera is never the player's at sea** (the owner, 2026-10-20): every swing is authored on its bar; no leg hands the turns to
+    the player (the Gummi's Mission 3 is not taken).
+12. **A graze pays Lachryma to the pool** (the owner, 2026-10-20), capped a bar so a pattern can't be farmed.
 
 ## 2. The three modules
 
@@ -115,11 +119,10 @@ beats re-mapped onto the three (§4).
 ### Overhead (Ikaruga, DoDonPachi)
 - **The player:**
   - moves over the water seen from above;
-  - fires forward up the scroll while LMB is held;
+  - aims twin-stick: the gun fires toward the cursor on the sea plane while LMB is held (the owner, 2026-10-20);
   - flips Astral and Umbral with Q.
 
-  No lock-on here (Calissa and Dovina, 2026-10-20, under the owner's "most performant" rule): the eye belongs on the hurtbox and the
-  patterns, and the lock-on stays chase's own.
+  No lock-on here (Calissa and Dovina, 2026-10-20, under the owner's "most performant" rule): the lock-on stays chase's own.
 
   The forms matter most here: Ikaruga's polarity was made for this view.
 - **What threatens:**
@@ -219,14 +222,14 @@ This came before the mock because these were the owner's bugs, not the new desig
 and 10's detail; its §5 lists 23 rules, and the ones not taken here are runtime detail for Petra (pooling, inherit-by-declaration,
 shared axes in a swing).
 
-**For the owner** (in the digest, with Calissa's and Dovina's lean):
-1. Overhead aim: twin-stick, or fire along the scroll? Lean: along the scroll.
-2. On a swing, are the old plane's shots cancelled into Lachryma, or left as scenery? Lean: cancelled.
-3. ~~Does grazing a shot pay?~~ **Ruled (the owner, 2026-10-20): grazing a shot pays Lachryma to the pool.** Capped a bar (Dovina's number to set), so overhead is never farmed.
-4. Camera turns as a verb (Gummi Mission 3)? Lean: in one late leg only.
+**Ruled by the owner** (2026-10-20):
+1. Overhead aim is twin-stick, toward the cursor on the sea plane.
+2. On a swing, live shots are cancelled into Lachryma; no projectile is on screen during one (R17).
+3. A graze pays Lachryma to the pool, capped a bar.
+4. No camera turns for the player: every swing is authored.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
-- Overhead has no lock-on: gun, Bomb and forms only.
+- Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.
 - Astern stays parked; if it returns, it is a camera move inside chase.
 
 **Still open:** the shot budgets, which are guesses until `npm run perf` measures them.
