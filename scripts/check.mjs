@@ -63,7 +63,7 @@ for (const [f, src] of text) {
 // ---- 1. the import graph: every relative import resolves; every module is imported by something (main.js is the root)
 const imported = new Set();
 const IMPORT = /(?:(?:import|export)\s[^'";]*?from\s*|import\s*\(\s*|^\s*import\s*)['"](\.{1,2}\/[^'"]+)['"]/gm;
-const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' ')).replace(/\/\/[^\n]*/g, (c) => ' '.repeat(c.length)); // (comments blanked, positions kept)
+const code = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (c) => c.replace(/[^\n]/g, ' ')); // (comments blanked, positions kept; one pass, left to right, so a `/*` inside a line comment opens nothing)
 for (const [f, raw] of text) {
   const src = code(raw);
   for (const m of src.matchAll(IMPORT)) {

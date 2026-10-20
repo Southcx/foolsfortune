@@ -4,9 +4,10 @@
 // set piece's first beat, how it ended, and the tally (Star Fox 64's: the score, the rank, the downs, the medal). The words are
 // Espada's (2026-10-07: the glints and their Conductor, the Wreckers and the False Light, Old Nobody). Registered before the voyage's rules, so the tally is said before "You make port". tracking.js calls it.
 //
-//   railRules({ on, L, log })
+//   railRules({ on, L, log })   showcase.start { legs, hulls }   showcase.hull { hull, k, mounts, note }   showcase.mend   showcase.end { legs, score }
 // ---------------------------------------------------------------------------------------
 import { SCORE } from '../../progress/rail/score.js';
+import { MOUNTS } from '../../progress/rail/mounts.js';
 
 // the first beat of each set piece, said once as it begins (rail.beat { beat, by: 'environment' }, Petra's rail at each beat's bar)
 const OPENS = {
@@ -22,6 +23,12 @@ const ENDS = {
 const n = (x) => Math.round(x).toLocaleString('en-US');
 
 export function railRules({ on, L, log }) {
+  // the test crossing (DEBUG only: progress/rail/showcase.js): said, never counted (placeholder words for Espada's)
+  on('showcase.start', (e) => log.say('system', `The test crossing: ${e.legs.length} legs, a hull each. Nothing is counted.`));
+  on('showcase.hull', (e) => { const m = (e.mounts || []).map((id, i) => `${i + 1} ${MOUNTS[id]?.name || id}`).join(', ');
+    log.say('info', `Your ship is a ${e.hull} for the next leg${m ? ` (mounts: ${m})` : ''}${e.note ? `: ${e.note}` : ''}.`); });
+  on('showcase.mend', () => log.say('info', 'The test crossing mends your ship.', { key: 'showcase.mend', throttle: 4 }));
+  on('showcase.end', (e) => log.say('system', `The test crossing is over: ${n(e.score)} points, nothing counted.`));
   on('rail.beat', (e) => { if (OPENS[e.beat]) log.say('combat', OPENS[e.beat], { key: 'railbeat', throttle: 2 }); });
   on('rail.end', (e) => { if (ENDS[e.end]) log.say(e.end === 'limped' ? 'info' : 'gain', ENDS[e.end], { key: 'railend', throttle: 2 }); });
   on('emocean.continue', (e) => { if (e.by !== 'courier') return; L.inc('rail.continue'); L.inc('rail.continue.cubes', e.cost || 0); log.say('info', `Continue: ${e.cost} cubes. The ship is mended.`); });

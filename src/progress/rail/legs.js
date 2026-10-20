@@ -28,6 +28,7 @@
 // ---------------------------------------------------------------------------------------
 import { STORM } from '../econ/passage.js';
 import { formSkew } from './trip.js';
+import { showLeg } from './showcase.js';
 
 /** How long a thing stays in reach once it enters (bars): a wave crosses the frame in about six; a pattern lasts its volleys and a bar
  *  of flight; lights to lock drift by for four; a director's peak is in reach throughout. */
@@ -153,6 +154,7 @@ export function kindFor(kind, feel, r = () => 0.5) { // (the runtime passes its 
  *  director's entrance) on its bar. A storm repeats patterns a share more often (STORM.density: their volleys, never their gaps, so a
  *  fair pattern stays fair) and a wave's class rises with the waypoint's strength. */
 export function schedule(type, { strength = 1, feel = null, storm = false } = {}) {
+  if (String(type).startsWith('show.')) return showLeg(type); // (the test crossing's legs: progress/rail/showcase.js)
   const L = LEGS[type]; if (!L) return null;
   const phases = [], at = {}; let b = 0;
   for (const id of ['open', 'build', 'peak', 'release']) { const n = L.phases[id]; if (!n) continue; at[id] = b; phases.push({ id, from: b, to: b + n, view: L.views[id] }); b += n; }

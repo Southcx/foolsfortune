@@ -96,14 +96,20 @@ export class Ship {
   /** A crossing begins: the ship at the rail point, its feeling yours (the stones' draught, else the island's mood). */
   begin(aspect = 'mirth', ship = 'sloop') {
     this.home = this.aspect = aspect; this.qSaid = false; this.form = 'astral'; this.surge = 0;
-    // the hull (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether it dives
-    const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
-    this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
     this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15; this.boxSet = false;
     this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
-    this.dress(this.hull.id); this.tint();
+    this.rehull(ship);
+  }
+  /** The hull sailed (progress/rail/ships.js, the owner's trade): its pace, box and hurtbox as shares of the sloop's, its locks, whether
+   *  it dives, and its look dressed. At cast-off, and in the test crossing's turns (world/emocean/triprun.js); a hull that cannot
+   *  dive comes up into the Astral form. */
+  rehull(ship = 'sloop') {
+    const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
+    this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
+    if (!H.dive && this.form === 'umbral') { this.form = 'astral'; this.aspect = this.home; this.game.events?.emit('rail.form', { form: this.form, by: 'environment' }); }
+    this.boxSet = false; this.dress(this.hull.id); this.tint();
   }
 
   get sloop() { return this.look; } // (the old name: vfx/crossinglook.js, vfx/encounters/film.js and the emocean sweep still read it; Calissa's and Dovina's to move)
