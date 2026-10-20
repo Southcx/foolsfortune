@@ -115,6 +115,7 @@ export class Emocean {
     S.onHit = () => this.wound(1, { by: 'creature', what: 'shot' });
     S.onSurge = () => { if (this.run) this.run.chain = chain(); }; // (the surge's price: the chain)
     S.onAbsorb = () => { const r = this.run; if (!r || this.ending) return; r.absorbed++; r.score += SCORE.absorb; this.game.lachryma?.gain(T.ship.absorb, 'absorb'); };
+    S.onGraze = () => { const r = this.run; if (!r || this.ending) return; const b = Math.floor(this.bar); if (r.grazeBar !== b) { r.grazeBar = b; r.grazeN = 0; } if (r.grazeN >= T.ship.graze.cap) return; r.grazeN++; r.grazed = (r.grazed || 0) + 1; this.game.lachryma?.gain(T.ship.graze.pay, 'graze'); }; // (capped a bar)
     S.onRoll = () => { if (this.run) this.run.rolls++; };
     S.onParry = (n) => {
       if (!this.run) return;

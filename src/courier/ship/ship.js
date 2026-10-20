@@ -8,8 +8,9 @@
 //   mouse     the reticle (chase, free, astern): a cursor over the whole screen (the mouse's pixels, kept through a swing: the owner's
 //             bug, RAIL-OVERHAUL.md 1.4), and a ray from the camera through it each frame: the gun aims where it meets the plane 36 m
 //             ahead, or at the first foe it crosses; two marks on the nose's line, at 12 m and there (Star Fox 64: depth read without
-//             stereo, Sin & Punishment's free cursor); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
-//             abeam (into the screen) in the side view while a set piece runs alongside (the brig's broadside, Old Nobody's flank)
+//             stereo, Sin & Punishment's free cursor); above, twin-stick: the gun toward the cursor on the sea plane, no lock-on (the
+//             owner, 2026-10-20); side fires along the scroll, and abeam (into the screen) while a set piece runs alongside (the brig's
+//             broadside, Old Nobody's flank)
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
@@ -49,7 +50,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
 const VIEW_FWD = { chase: [0, 0, 1], free: [0, 0, 1], astern: [0, 0, -1], above: [0, 0, 1], side: [0, 0, 1] };
 const VIEW_RIGHT = { chase: 1, free: 1, astern: -1, above: 1, side: 1 };
-const RET = { chase: 1, free: 1, astern: 1 }; // (the views with a free cursor; above and side fire along the scroll)
+const RET = { chase: 1, free: 1, astern: 1, above: 1 }; // (the views with a free cursor: above is twin-stick, the owner's ruling 2026-10-20; side fires along the scroll)
 /** The forms (RAIL-OVERHAUL.md 4): pace and box as shares, the gun, the lock-on's most; Umbral rides low (a stand-in until Calissa's
  *  surface from below: the dive's look). */
 const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
@@ -177,7 +178,7 @@ export class Ship {
     }
     // the surge (R): full, a lance at everything on the screen, untouchable half a bar; the chain is its price
     if (hit.has('KeyR') && this.surge >= SURGE.full) this.letGo(waves, shots);
-    const rmb = keys.has('Mouse2');
+    const rmb = keys.has('Mouse2') && view !== 'above' && swing?.to !== 'above'; // (no lock-on above: the locks held fly as lances before a swing into it, RAIL-MODULES.md 1.5)
     if (rmb && !this.painting) { this.painting = true; this.locks.length = 0; }
     if (!rmb && this.painting) {
       this.painting = false;
@@ -228,6 +229,10 @@ export class Ship {
     if (!cam || !R.toLocal) return out;
     cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(this.cursor.x, this.cursor.y), cam);
     R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
+    if (planeOf(view) === 'sea') { // (twin-stick above: the cursor where it meets the sea plane the ship sails in, the gun toward it)
+      const t = Math.abs(_d.y) > 1e-4 ? (this.local.y - _o.y) / _d.y : -1;
+      return out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);
+    }
     _fv.set(f[0], f[1], f[2]); const dn = _d.dot(_fv), t = Math.abs(dn) > 1e-4 ? _w.copy(out).sub(_o).dot(_fv) / dn : -1;
     out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);
     let best = t > 0 ? t : d2; const past = _w.copy(nose).sub(_o).dot(_d) + 2; // (only a foe the ray meets beyond the ship: one passing by the camera is not what the cursor means)
@@ -267,6 +272,9 @@ export class Ship {
     return true;
   }
   absorb(s) { this.surge = Math.min(SURGE.full, this.surge + SURGE.per); this.onAbsorb?.(s); sfx.absorb?.(0); }
+  /** A foe's shot passed close without a hit (the shot field's call, once a shot: Dovina's measure): Lachryma to the pool, capped a bar
+   *  (T.ship.graze; the owner's ruling, 2026-10-20). The stage pays it (onGraze). */
+  graze(s) { this.onGraze?.(s); }
   returned() { sfx.ricochet?.(); this.onReturned?.(); }
   /** The hurtbox the shot field reads (the hull's: ships.js). */
   get hurtR() { return this.hull?.hurt ?? T.ship.hurt; }
