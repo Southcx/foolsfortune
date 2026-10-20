@@ -121,6 +121,7 @@ export class Emocean {
     const S = this.ship, W = this.waves;
     W.onSpawn = (n) => { if (this.run) this.run.spawned += n; };
     W.onDown = (f, { returned, volley }) => this.down(f, returned, volley);
+    W.tellOf = (f) => this.tellOf(f); // (a body's tell: its windup's share gone, vfx/railfoes.js)
     S.onHit = () => this.wound(1, { by: 'creature', what: 'shot' });
     S.onSurge = () => { if (this.run) this.run.chain = chain(); }; // (the surge's price: the chain)
     S.onAbsorb = () => { const r = this.run; if (!r || this.ending) return; r.absorbed++; r.score += SCORE.absorb; this.game.lachryma?.gain(T.ship.absorb, 'absorb'); };
@@ -397,6 +398,8 @@ export class Emocean {
   }
   /** Is a foe's windup showing: a pattern of its own played and not yet at its first volley (the pattern player's runs)? */
   windupShowing(f) { return !!this.trip?.player?.runs?.some((r) => r.from === f && r.k === 0 && r.t < 0); }
+  /** How far into its windup a foe is, 0..1 (0 with none showing): the pattern player's run from it, before its first volley. */
+  tellOf(f) { const r = this.trip?.player?.runs?.find((x) => x.from === f && x.k === 0 && x.t < 0); return r && r.lead > 0 ? Math.max(0, 1 + r.t / r.lead) : 0; }
 
   /** The ship can bear no more: the CONTINUE (an arcade's coin), on the index's window; no window, it breaks up. */
   broken() {

@@ -8,12 +8,17 @@
 // Prior art: a view model (the table stays the designer's; the window reads a shaped copy), and the pier's own panel as CLARITY.md
 // section 9 draws it.
 //
-//   mountRow(tool, { slot = 0, opens = null }) -> row | null      slot: 1.. the key it fires on, 0 not aboard; opens: a locked card's line
+// A card at the pier also shows the mount's views (ui/mountviews.js: TOP, SIDE and CHASE playing one loop), asked through the row's
+// `media` when `views` names the moored ship (its locks) and its feeling (your colour).
+//
+//   mountRow(tool, { slot = 0, opens = null, views = null }) -> row | null   slot: 1.. the key it fires on, 0 not aboard; opens: a locked
+//                                                                            card's line; views: { ship, feel } for the card's views
 //   inSeconds(text) -> text                                        "two bars" told as "3 s"
-//   mountRows(tools, chosen) -> [row]                              each tool, its slot read from `chosen` (the loadout, in order)
+//   mountRows(tools, chosen, views = null) -> [row]                each tool, its slot read from `chosen` (the loadout, in order)
 // ---------------------------------------------------------------------------------------
 import { MOUNTS } from '../progress/rail/mounts.js';
 import { BAR_S } from '../progress/rail/crossing.js';
+import { mountViews } from './mountviews.js';
 
 const WORD = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, eight: 8 };
 const sec = (v) => String(+v.toFixed(1));
@@ -22,7 +27,7 @@ const sec = (v) => String(+v.toFixed(1));
 export const inSeconds = (text) => (text == null ? text : text.replace(/\b(an?|one|two|three|four|five|six|eight|\d+)\s+bars?\b/gi, (_, n) => `${sec((WORD[n.toLowerCase()] ?? +n) * BAR_S)} s`));
 
 /** One mount as a card's row. */
-export function mountRow(tool, { slot = 0, opens = null } = {}) {
+export function mountRow(tool, { slot = 0, opens = null, views = null } = {}) {
   const M = MOUNTS[tool]; if (!M) return null;
   return {
     id: tool, name: M.name, does: M.does, lore: M.lore, detail: inSeconds(M.detail),
@@ -30,8 +35,9 @@ export function mountRow(tool, { slot = 0, opens = null } = {}) {
     always: !!M.always, icon: `mount.${tool}`,
     key: M.always ? ['LMB', 'RMB'] : !M.verb ? 'passive' : slot ? String(slot) : null,
     state: opens ? 'locked' : M.always || slot ? 'equipped' : 'ready', opens: opens || undefined,
+    media: views ? (row) => mountViews(row, views) : undefined,
   };
 }
 
 /** Several mounts, each with its slot in the loadout `chosen` (1 the first). */
-export const mountRows = (tools, chosen = []) => tools.map((t) => mountRow(t, { slot: chosen.indexOf(t) + 1 })).filter(Boolean);
+export const mountRows = (tools, chosen = [], views = null) => tools.map((t) => mountRow(t, { slot: chosen.indexOf(t) + 1, views })).filter(Boolean);

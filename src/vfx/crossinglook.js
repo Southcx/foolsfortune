@@ -100,7 +100,7 @@ export class CrossingLook {
     const body = st.ship?.look?.body;
     if (body) {
       this.bottle = new LachrymatoBottle({ size: 'large' });
-      this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.38, 0.05); this.bottle.group.rotation.y = 0.5;
+      this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.47, 0.05); this.bottle.group.rotation.y = 0.5;
       this.bottle.group.visible = false; body.add(this.bottle.group);
     }
     // the maelstrom: the whirlpool's disc beside the sea, Charybdis parked hidden (both of programs already made: the sea's, Old Nobody's)
