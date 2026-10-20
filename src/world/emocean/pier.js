@@ -100,7 +100,7 @@ export class Pier {
       const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
       const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
       const back = () => g.mooring?.preview(this.chosen?.at(-1) ?? null); // (the one last taken aboard, until another is hovered or focused)
-      const cards = mountRows(can, chosen).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
+      const cards = mountRows(can, chosen, { ship: this.ship, feel: g.mooring?.feel }).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
       for (const c of cards) { const show = () => g.mooring?.preview(c.row.id); c.el.addEventListener('mouseenter', show); c.el.addEventListener('focus', show); c.el.addEventListener('mouseleave', back); c.el.addEventListener('blur', back); } // (a mount's preview on the moored hull: vfx/mountpreview.js)
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';

@@ -296,7 +296,7 @@ export class Ship {
     const g = this.look.group, t = this.game.dunes?.t ?? 0;
     this.rail.toWorld(this.local, g.position);
     g.rotation.set(-this.pitch, 0, this.bank + this.spin, 'YXZ'); if (this.rail.q) g.quaternion.premultiply(this.rail.q); // (the rail's turn: railpath.js)
-    this.look.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t });
+    this.look.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t, form: this.form, roll: this.rollT > 0 ? 1 - this.rollT / T.ship.roll.time : 0 }); // (form and roll: the mast's fold, vfx/shipkit/rig.js)
     const cam = this.game.camera, scroll = !RET[view];
     this.rail.toWorld(this.retNear, this.near.position); this.rail.toWorld(this.retFar, this.far.position);
     this.near.visible = this.far.visible = this.look.group.visible;
