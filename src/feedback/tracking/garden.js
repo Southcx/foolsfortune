@@ -62,7 +62,7 @@ export function gardenRules({ on, L, log }) {
   on('garden.harvest', (e) => { if (e.by === 'courier') { L.inc('garden.harvest', e.count); log.say('loot', `You harvest ${e.count} from the bed.`); } });
   // (a spirit's or a realm's own name rides as `spirit` / `realm`: the bus writes its own `name` over a payload's: core/events.js)
   // the spirits (SPIRIT-GARDEN.md 5): bound (caught by the Lockheart or the god hand, awakened, dug, settled, merged), fed, matured, released
-  const FROM = { lockheart: 'The Lockheart catches', hand: 'Your Pneuka Jar draws in', plate: 'A plate awakens', fossil: 'A fossil wakes:', visit: 'A visitor settles:', merge: 'From the cocoon:' };
+  const FROM = { lockheart: 'The Lockheart catches', hand: 'Your Pneuka Jar draws in', plate: 'From a photo:', fossil: 'A fossil wakes:', visit: 'A visitor settles:', merge: 'From the cocoon:' };
   on('spirit.bind', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spirit.bind'); L.inc(`spirit.bind.${e.from}`); L.hi('spirit.bind.cls', (e.cls || 0) + 1);

@@ -104,7 +104,7 @@ const rt = (o = {}) => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloat
 export class Glow {
   constructor(renderer) {
     this.r = renderer;
-    this.scene = rt({ depthBuffer: true, samples: 4 });
+    this.scene = rt({ depthBuffer: true, samples: T.visual.msaa ?? 4 }); // (the graphics tier's MSAA, read once: render/graphics.js)
     this.half = rt(); this.q = [rt(), rt()]; this.e = [rt(), rt()];
     this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
@@ -173,9 +173,11 @@ export class Glow {
     } else this.accFresh = true;
     if (this.volumes) for (const v of this.volumes) if (v.on) src = v.render(this, src, camera); // (CROSSING, Calissa's: the caster shaders' screen volumes, vfx/caster/lensing.js and timegrade.js: each the frame in, the bent or graded frame out)
     if (this.screen?.on) src = this.screen.render(this, src); // (a screen pass of the art's, when one is asked for: vfx/glitch.js, the frame in, the torn frame out)
-    this.downTo(src, this.half, true);
-    this.downTo(this.half, this.q[0]); this.blurIn(this.q);
-    this.downTo(this.q[0], this.e[0]); this.blurIn(this.e);
+    if ((T.visual.glow ?? 0) > 0.001) { // (no glow, no bloom chain: the composite still grades; the glow's terms are multiplied out by uGlow 0, render/graphics.js's Minimum)
+      this.downTo(src, this.half, true);
+      this.downTo(this.half, this.q[0]); this.blurIn(this.q);
+      this.downTo(this.q[0], this.e[0]); this.blurIn(this.e);
+    }
     const u = this.comp.uniforms;
     u.tScene.value = src.texture; u.tA.value = this.q[0].texture; u.tB.value = this.e[0].texture;
     u.uGlow.value = T.visual.glow ?? 0; u.uGrade.value = T.visual.grade ?? 0;

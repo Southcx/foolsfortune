@@ -56,6 +56,10 @@ export function ensureSmoothNormals(geometry) {
   return geometry;
 }
 
+/** The props' outline hulls (the shared OUTLINE_MAT; characters have their own materials and are never here): the graphics tier hides
+ *  the ones past its reach (render/graphics.js). */
+export const OUTLINES = new Set();
+
 /** Returns the outline mesh (added as a child of `mesh`). Works for Mesh and SkinnedMesh. */
 export function addOutline(mesh, material = OUTLINE_MAT) {
   ensureSmoothNormals(mesh.geometry);
@@ -76,6 +80,7 @@ export function addOutline(mesh, material = OUTLINE_MAT) {
   o.userData.isOutline = true;
   o.frustumCulled = mesh.frustumCulled;
   mesh.userData.outline = o;
+  if (material === OUTLINE_MAT) OUTLINES.add(o);
   return o;
 }
 

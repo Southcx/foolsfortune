@@ -155,7 +155,7 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['status', 'STATUS'], ['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['sondelass', 'SONDELASS'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
+    for (const [id, name] of [['status', 'STATUS'], ['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['sondelass', 'SONDELASS'], ['tools', 'TOOLS'], ['ledger', 'STATS'], ['records', 'PERSONAL BESTS'], ['grimoire', 'GARDEN LOG'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);

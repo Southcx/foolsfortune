@@ -14,9 +14,13 @@
 // over a few frames instead of popping.
 //
 //   game.lights = new LightBudget(game, { slots: 8 });   game.lights.update(rawDt)   (after everything has set its lights, before the draw)
+//   Scored ten times a real second; the scene walked for new lamps a slice a frame, once a second.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { wholeOf } from './zones.js';
+
+const SCORE_EVERY = 0.1; // (real s between scorings)
+const WALK = 800; // (objects the scan looks at a frame)
 
 const _p = new THREE.Vector3();
 
@@ -50,7 +54,14 @@ export class LightBudget {
   scan() {
     const scene = this.game.scene;
     scene.traverse((o) => { if (o.isPointLight || o.isSpotLight) this.adopt(o); });
-    this.proxies = this.proxies.filter((l) => { let p = l; while (p.parent) p = p.parent; return p === scene; });
+    this.forget();
+  }
+  forget() { const scene = this.game.scene; this.proxies = this.proxies.filter((l) => { let p = l; while (p.parent) p = p.parent; return p === scene; }); }
+  /** The scan walked a slice a frame, once a real second (the whole scene in one frame was a 4 ms hitch: the deep clean's profile). */
+  walkStep(dt) {
+    if (!this.walk) { this.scanT -= dt; if (this.scanT > 0) return; this.scanT = 1; this.walk = [this.game.scene]; }
+    for (let n = 0; n < WALK && this.walk.length; n++) { const o = this.walk.pop(); if (o.isPointLight || o.isSpotLight) this.adopt(o); for (const c of o.children) this.walk.push(c); }
+    if (!this.walk.length) { this.walk = null; this.forget(); }
   }
 
   /** Is the lamp itself, and everything it hangs from, meant to be shown? */
@@ -61,8 +72,22 @@ export class LightBudget {
   }
 
   update(dt) {
-    this.scanT -= dt;
-    if (this.scanT <= 0) { this.scanT = 1; this.scan(); }
+    this.walkStep(dt);
+    // the lamps scored ten times a real second; the lit ones follow their owners every frame (a moving lamp, a flicker)
+    if ((this.scoreT = (this.scoreT ?? 0) - dt) <= 0) { this.scoreT = SCORE_EVERY; this.score(); }
+    for (const s of this.slots) {
+      const l = s.l, p = s.proxy;
+      if (!p || p.intensity <= 0.001 || !this.shown(p)) { l.intensity = 0; continue; }
+      s.k = Math.min(1, s.k + dt * 8); // (a lamp coming into the budget fades up: about an eighth of a second)
+      p.getWorldPosition(l.position);
+      l.color.copy(p.color);
+      l.intensity = p.intensity * s.k;
+      l.distance = p.distance; l.decay = p.decay;
+    }
+  }
+
+  /** Which lamps get the slots: every lamp scored by its strength fallen off with distance to the camera. */
+  score() {
     const cam = this.game.camera.position, zones = this.game.zones;
     // score every lamp
     const cand = [];
@@ -77,7 +102,7 @@ export class LightBudget {
       const range = l.distance > 0 ? l.distance : 40, d = _p.distanceTo(cam);
       if (d > range + 30) continue;
       const f = Math.max(4, range * 0.45);
-      cand.push({ l, s: l.intensity / (1 + (d / f) * (d / f)), pos: _p.clone() });
+      cand.push({ l, s: l.intensity / (1 + (d / f) * (d / f)) });
     }
     cand.sort((a, b) => b.s - a.s);
     const best = cand.slice(0, this.slots.length);
@@ -90,16 +115,6 @@ export class LightBudget {
       const s = this.slots.find((x) => !x.proxy);
       if (!s) break;
       s.proxy = c.l; s.k = 0;
-    }
-    const byLight = new Map(best.map((c) => [c.l, c.pos]));
-    for (const s of this.slots) {
-      const l = s.l, p = s.proxy;
-      if (!p) { l.intensity = 0; continue; }
-      s.k = Math.min(1, s.k + dt * 8); // (a lamp coming into the budget fades up: about an eighth of a second)
-      l.position.copy(byLight.get(p));
-      l.color.copy(p.color);
-      l.intensity = p.intensity * s.k;
-      l.distance = p.distance; l.decay = p.decay;
     }
   }
 

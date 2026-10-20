@@ -676,33 +676,33 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 232. **A held sound goes through the loop bus.** A loop that only moves while play steps (the skiff's run, a
     grind, a field) keeps its last level when play stops; so every held loop sounds through `sfx.loopBus`, which the ambience silences
     while a menu is over the game.
-NEW:modal-pauses-the-table. **What runs under its own window keeps its clock there.** A page that counts as a modal window (the index's,
+233. **What runs under its own window keeps its clock there.** A page that counts as a modal window (the index's,
    the Codex's) stops the world's tick; a game played on that page (a table's bots, a timer) is ticked from main.js's modal line
    (`tickModal`), never only from the module's `update`. A headless probe that calls `update` itself does not prove it.
-NEW:lend-the-big-ground. **A place's big arrays are lent, not kept.** A place whose ground or geometry runs to tens of MB builds it on
+234. **A place's big arrays are lent, not kept.** A place whose ground or geometry runs to tens of MB builds it on
    arrival and gives it back a few real seconds after the Courier has left (keeping only what is slow to work out again, like a
    field of heights); the heap after a visit is measured, not only the heap inside.
-NEW:retire-what-is-replaced. **A replaced UI is deleted in the same change, never hidden.** When a new piece takes an old one's job,
+235. **A replaced UI is deleted in the same change, never hidden.** When a new piece takes an old one's job,
    the old element, its builder, its CSS, its update code and every line that shows, hides, polls or measures it go in that commit;
    no body class or `display: none` is left keeping it alive underneath.
-NEW:sync-before-timing-the-draw. **A draw is timed to a sync, or it times the queue.** WebGL returns before the GPU has drawn; a
+236. **A draw is timed to a sync, or it times the queue.** WebGL returns before the GPU has drawn; a
    frame's draw timed by `performance.now()` alone reads ~5 ms while the queue still has room and the whole backlog when something
    syncs (a program's first use, a full command buffer). Time each measured draw to a 1-pixel `readPixels`, and judge a draw that
    jumped by its synced number before bisecting anything.
-NEW:sound-name-is-searched. **A new sound's name is searched across the banks first.** Every bank is mixed onto the one Sfx, so a name
+237. **A new sound's name is searched across the banks first.** Every bank is mixed onto the one Sfx, so a name
     used twice is one sound overwriting the other (audio/sfx.js logs it at boot); grep `src/audio/` for the name, and name a tool's sound
     for its thing in full (`lureNotch`, not `notch`).
-NEW:a-place-gives-back-its-pose. **A place that turns a shared body gives the turn back when it is left.** The Pneuka Jar is one model in
+238. **A place that turns a shared body gives the turn back when it is left.** The Pneuka Jar is one model in
     the world, the god hand and the Spirit Garden; a place that sets more of its pose than the others read (the garden its whole
     orientation, the world only its yaw) puts the rest back on leaving, or the next place inherits it.
-NEW:ik-hand-from-clip. **A hand the IK sets on a thing keeps the clip's turn but for the least swing.** The hand's place is the IK's;
+239. **A hand the IK sets on a thing keeps the clip's turn but for the least swing.** The hand's place is the IK's;
     its turn is the clip's hand swung the least way that lays the palm on the surface, never a turn built whole in the world (fingers
     up, palm in), which the wrist cannot make from where the clip has the forearm. Measured with the pose audit's wrist ranges.
 
-NEW:no-comment-mid-line. **A comment goes at a line's end or on its own line, never in the middle of code.** A `//` dropped into a line
+240. **A comment goes at a line's end or on its own line, never in the middle of code.** A `//` dropped into a line
     of events silences everything after it with no error; the connectome's "never read" is the tell.
 
-NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.** Retire the
+241. **A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.** Retire the
     neighbour and the rules go with it, silently; the connectome's "never read" on a `CSS` const is the tell.
 
 ## Cases
@@ -730,7 +730,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   frames); the pot through the head in the throw's wind-up and the throw clip's elbows off their hinge (no IK there, as before).
   Not reproduced headless: the feet in the floor with a pot (on these floors, at these paces); if the owner still sees it, the place
   and the pace are wanted.
-- **Rule:** NEW:ik-hand-from-clip; 212 and 215 hold.
+- **Rule:** 239; 212 and 215 hold.
 
 ### 2026-10-12 · Two of the three Weir jellies stood frozen in an odd frame (the owner, v170)
 - **Seen:** two of the Dunes' three slip jellies by the Weir never moved and never animated, held in whatever frame they were made in;
@@ -3801,7 +3801,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
 - **Fix:** `Bazaar.tickModal(dt)` runs the seat's clock from main.js's modal line while a session is open (`world/bazaar/bazaar.js`).
   Calissa's table view (`vfx/bazaartable.js`) ticks it too; both stay, and `TableSession.update` steps once a frame however many call
   it (`game.clock.frame`, main.js), so neither caller has to know of the other.
-- **Rule:** NEW:modal-pauses-the-table.
+- **Rule:** 233.
 
 ### 2026-10-15 · The Raceway park kept 160 MB after one visit (Petra, the gate: `npm run perf` over budget, 466 MB against 445)
 - **Seen:** the built game, after gc: 290 MB at boot, 452 after one visit to the Raceway, still 452 in the bazaar afterwards.
@@ -3813,7 +3813,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   travel's cover). Built: 295 at boot, 467 inside, **364 after leaving** (was 452). The dressing can follow by `onRelease`
   (Calissa's); the terrain's own arrays could shrink (lists built on demand, the index buffer sized to what is drawn: Petra's
   `render/terrain.js`).
-- **Rule:** NEW:lend-the-big-ground.
+- **Rule:** 234.
 
 ### 2026-10-18 · The Well's draw at 6x its baseline after the overlay's tool UIs went in (Petra, the gate: `npm run perf`)
 - **Seen:** `npm run perf` at the Great Dunemaw's bottom floor: well draw ~1250 ms against a baseline of 213 ms; the other three places
@@ -3831,7 +3831,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   deleting it. **The real cause (measured after, the next case): nothing in the frame got dearer.** The Well's frame costs ~1.2 real s
   of software GL at 744bc30 (perf: 6 ms) and at this commit (perf: 1259 ms) alike; perf's number is how much of the GPU's queue its
   60 draws happen to wait on, and the bisect's 6 / 110 / 1274 ms and the body class's 6 / 1230 ms were that coin landing either side.
-- **Rule:** NEW:retire-what-is-replaced.
+- **Rule:** 235.
 
 ### 2026-10-18 · The Well's 6x draw was the GPU's queue, not the frame (Calissa's builder, measured for Petra's gate)
 - **Seen:** `npm run perf`, the Great Dunemaw's floor 3 in a hall: draw 1259 ms against 212.7, calls 85 and triangles the same; bisected to
@@ -3852,7 +3852,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   to a sync (a 1-pixel `readPixels` after each `G.draw()` in `scripts/perf.mjs`'s `place()`) and the baseline recorded again from it;
   the Well then reads ~1.2 s against a synced baseline of the same, and a real regression shows as one. Petra's file and gate: handed
   to Petra, not edited here.
-- **Rule:** NEW:sync-before-timing-the-draw.
+- **Rule:** 236.
 
 ### 2026-10-18 · Boot logged "two banks define sfx.sounding" (Calissa, a headless look on v218)
 - **Seen:** at boot, `audio: two banks define sfx.sounding (SondelassSounds, AnglingSounds)`.
@@ -3860,7 +3860,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   already had it in audio/angling.js. The banks are mixed onto one Sfx in order, so angling's (the later) won and the game sounded as
   before, but the sketch was dead and the name ambiguous. `npm run check` does not run the boot, so only a look caught it.
 - **Fix:** the Sondelass's `sounding` removed; the sounding stays angling's, the one wired to `angle.sound`.
-- **Rule:** NEW:sound-name-is-searched.
+- **Rule:** 237.
 
 ### 2026-10-19 · The Pneuka Jar idled leaning forward, about 45 degrees, in the god hand and in a Shrine's cradle (the owner, v221)
 - **Seen:** the Jar at rest stood crooked, leaning forward; sealed in a Shrine gate's cradle it leaned the same way.
@@ -3868,7 +3868,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
   the planetoid under it (`placeJar`: the Dantian's ground there leans 28 degrees), which is right there; on leaving nothing put it back,
   and the world's god hand (`godhand.js`) and the cradle (`cradles.js` seal) set only its yaw, so every later rest kept the garden's lean.
 - **Fix:** the garden's `leave()` stands the group upright again (its yaw kept); the cradle sets the whole rotation (0, yaw, 0).
-- **Rule:** NEW:a-place-gives-back-its-pose.
+- **Rule:** 238.
 
 ### 2026-10-19 · The overture's pre-chorus lost its bass and its lead (Petra's connectome, the deep clean)
 - **Seen:** the connectome listed `const CLIMB` in `src/music/overture.js` as never read; the pre-chorus played only its chugs, toms,
@@ -3876,7 +3876,7 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
 - **Cause:** a comment, `// (a tool drawn each half bar: Calissa's board)`, was added in the middle of the climb's line, so the bass's
   `E('pick', ...)` and the lead's `...line(CLIMB[i], 'shred', 0.4)` after it became comment text. The line still parsed, so nothing threw.
 - **Fix:** the comment ends its own line; the bass and the lead are code again (`npm run build` and the connectome see CLIMB read).
-- **Rule:** NEW:no-comment-mid-line.
+- **Rule:** 240.
 
 ### 2026-10-19 · The map screen (M) had no styles since the old HUD was retired (Petra's connectome, the deep clean)
 - **Seen:** the connectome listed `const CSS` in `src/feedback/cartography.js` as never read: the map screen's sixteen rules (`#mapui`,
@@ -3885,5 +3885,5 @@ NEW:style-lives-with-its-thing. **A sheet of rules is injected by the builder of
 - **Cause:** one `<style>` held the compass's rules and the map's, injected by the compass's builder (`buildHud`). Retiring the old HUD
   (5cb9b3f, 2026-10-18) deleted the compass's rules and its builder, and the injection with them; the map's rules stayed, unread.
 - **Fix:** `buildMap()` injects the map's own rules.
-- **Rule:** NEW:style-lives-with-its-thing. A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.
+- **Rule:** 241. A sheet of rules is injected by the builder of the thing it styles, never by a neighbour's.
 

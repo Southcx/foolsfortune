@@ -21,7 +21,7 @@ import { SETTINGS, tuned, differs } from './tuned.js';
 const DEVELOPER = ['visual.shadowRes', 'visual.lightSlots', 'visual.smooth'];
 
 // settings that are one of a few words
-const CHOICES = { mode: ['release', 'press'], resolution: ['ps2', '540', '720', 'native'], upscale: ['bilinear', 'pixel'] };
+const CHOICES = { mode: ['release', 'press'], graphics: ['auto', 'high', 'low', 'minimum', 'custom'], resolution: ['ps2', '440', '400', '360', '320', '270', '540', '720', 'native'], upscale: ['bilinear', 'pixel'], shadowFilter: ['pcf', 'basic'] };
 // slider ranges; anything not listed gets an automatic range around its default
 const RANGES = {
   'movement.maxSlope': [10, 70, 1],
@@ -54,6 +54,9 @@ const RANGES = {
   'visual.fog': [0, 0.06, 0.001],
   'visual.shadowRes': [256, 2048, 256],
   'visual.lightSlots': [2, 16, 1],
+  'visual.shadowEvery': [1, 4, 1],
+  'visual.msaa': [0, 8, 1],
+  'visual.outlineReach': [0, 120, 5],
   'visual.toon': [0, 1, 0.05],
   'visual.glow': [0, 1.5, 0.05],
   'visual.grade': [0, 1, 0.05],
@@ -71,7 +74,7 @@ const SECTIONS = [
 ];
 /** The settings' own words (the player's preferences: never a warning, debug/tuned.js). */
 const SETTING_LABEL = {
-  'camera.sensitivity': 'mouse sensitivity', 'camera.adsSensMult': 'aiming sensitivity', 'visual.resolution': 'resolution',
+  'camera.sensitivity': 'mouse sensitivity', 'camera.adsSensMult': 'aiming sensitivity', 'visual.graphics': 'graphics', 'visual.dynamicResolution': 'dynamic resolution', 'visual.resolution': 'resolution',
   'visual.upscale': 'upscale', 'visual.shadows': 'shadows', 'audio.volume': 'volume', 'charge.mode': 'a charge fires on',
   'visual.warp': 'storm warp', // (a placeholder for Espada's word)
 };

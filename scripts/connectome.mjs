@@ -6,7 +6,7 @@
 //   - exports    each export no other module imports: kept only for its own file (drop the `export`) or used by nothing (dead)
 //   - locals     top-level functions, classes and consts declared and never referenced (dead), and imports never used
 //   - methods    class and object methods whose name nothing reads anywhere (a.b, a['b'], { b } = a, or the string 'b')
-//   - stale      file paths named in comments and docs (not the handoffs) that no file in the tree ends with
+//   - stale      file paths named in comments and docs (not the handoffs, nor the dated research) that no file in the tree ends with
 //   - cycles     strongly connected groups over static imports (an init-order risk, and a sign two modules are one)
 //   - owners     every finding under its division (CLAUDE.md, "Threads"), so each cleans its own
 // It is a reader, never a gate: names reached by strings (a chat command's table, `game[kind + 'Wipe']`) look dead to it, so every
@@ -219,7 +219,7 @@ const ALL_FILES = [];
 const exists = (ref) => { const r = ref.replace(/^\.?\//, ''); return ALL_FILES.some((f) => f === r || f.endsWith('/' + r)); };
 const PATH_RE = /(?<![A-Za-z0-9_.@-])((?:[a-z0-9_.-]+\/)+[A-Za-z0-9_.-]+\.(?:js|mjs|md|glb|py))(?![A-Za-z0-9_])/g;
 F.staleRefs = [];
-const docFiles = ALL_FILES.filter((f) => /\.md$/.test(f) && !f.startsWith('docs/handoffs/'));
+const docFiles = ALL_FILES.filter((f) => /\.md$/.test(f) && !f.startsWith('docs/handoffs/') && !f.startsWith('docs/plans/research/')); // (research is a dated record: its paths are the day's)
 for (const m of mods.values()) {
   const src = fs.readFileSync(m.file, 'utf8'); let lineNo = 0;
   for (const line of src.split('\n')) { lineNo++; const c = line.indexOf('//'); const text = c >= 0 ? line.slice(c) : /^\s*\*/.test(line) ? line : ''; for (const [, ref] of text.matchAll(PATH_RE)) if (!ref.includes('*') && !ref.startsWith('node_modules') && !exists(ref)) F.staleRefs.push({ file: m.rel, owner: m.owner, line: lineNo, ref }); }

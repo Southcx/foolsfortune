@@ -63,7 +63,7 @@ const FILM_HI = ['#8a5cff', '#3fc4f0', '#f6cd5a', '#ff5aa8'], FILM_LIT = ['#b49c
 const PAL = { lab: '#8fd8b0', dim: '#8fd8b0', val: VFD, glow: VFD_GLOW, word: '#e2fff0', wordGlow: 'rgba(60,255,190,.35)' };
 const TONES = ['#0b3d2a', '#2a9e6e', '#7dffd2', '#e9fff7'], SHADOW = '#020a06';
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
-const LABEL = { habit: 'NOW', health: 'HP', emo: 'EMO', statuses: 'STATUS', weak: 'WEAK', grain: 'GRAIN' };
+const LABEL = { habit: 'NOW', health: 'HP', emo: 'EMO', statuses: 'STATUS', weak: 'WEAK', grain: 'NATURE' };
 // the statuses' motes: doubt and charm are the mock's; the others are placeholders (a colour and a 7 x 7 glyph each) until the auras' table
 const ST = { doubt: '#5fd0ff', charm: '#ff86b6', stun: '#ffd56b', blind: '#c9b8ff', confusion: '#9dff8a' };
 const GLYPH = {
@@ -267,7 +267,7 @@ function rowPlain(g, r, fam, x, y, w) {
     label(g, 'WEAK', x, y, h); if (!L.value) { words(g, 'NONE', XR, y, h); return; }
     const w2 = num(g, `×${(1 + BONUS.trump).toFixed(2).replace(/0$/, '')}`, XR, y, h); words(g, (TYPES[L.value]?.name || L.value).toUpperCase(), XR - w2 - 4, y, h, w - LBL - w2 - 4); return;
   }
-  if (r.key === 'grain') { label(g, 'GRAIN', x, y, h); words(g, poles(L.value || {}).slice(0, 2).map((p) => p.toUpperCase()).join('·') || 'EVEN', XR, y, h, w - LBL); }
+  if (r.key === 'grain') { label(g, 'NATURE', x, y, h); words(g, poles(L.value || {}).slice(0, 2).map((p) => p.toUpperCase()).join('·') || 'EVEN', XR, y, h, w - LBL); }
 }
 
 // ---------------------------------------------------------------------------------------------------------------- the tags

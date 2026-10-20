@@ -22,7 +22,9 @@
 import * as THREE from 'three';
 import { MatterArts, MATTER_ARTS } from './matterarts.js';
 import { GodPowers, POWER_IDS, withCost } from './powers.js';
-import { GOD_POWERS, powerOpen, DOMAIN_ORDER, DOMAIN_GLAZE } from '../progress/godpowers.js';
+import { GOD_POWERS, powerOpen, DOMAIN_ORDER } from '../progress/godpowers.js';
+import { DOMAIN_LOOK } from '../ui/domainlook.js';
+import { iconEl, uiIcon } from '../ui/icons/icons.js';
 import { mindLineMaterial } from '../vfx/labradorite.js';
 import { ReachDome } from '../vfx/wiremarks.js';
 import { T, PALETTE } from '../core/config.js';
@@ -78,7 +80,7 @@ const CSS = `
 #goddomains { position: absolute; left: 50%; bottom: calc(14px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 14px; white-space: nowrap; font: 600 10px var(--f-title); letter-spacing: .12em; color: rgba(251,227,207,.5); text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
 #goddomains b { color: var(--accent); font: 11px var(--f-sys); margin-right: 4px; }
 #goddomains span.on { color: #fbe3cf; border-bottom: 2px solid var(--accent); }
-#goddomains i { font-style: normal; font-size: 14px; margin-right: 4px; opacity: .5; } #goddomains span.on i { opacity: 1; }
+#goddomains i { font-style: normal; display: inline-flex; vertical-align: middle; margin-right: 4px; opacity: .5; } #goddomains span.on i { opacity: 1; }
 #godwheel .w.art { fill: rgba(28,13,8,.82); stroke: rgba(255,178,122,.45); stroke-width: 1.5; }
 #godwheel .w.dom.sel { stroke: #ffe0c0; stroke-width: 2; }
 #godarts { position: absolute; left: 50%; bottom: calc(40px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 8px; padding: 6px; border-radius: 7px; }
@@ -102,6 +104,10 @@ const CSS = `
 #godwheel text.s { font-size: 9px; opacity: .7; }
 #godwheel .hub { fill: rgba(28,13,8,.9); stroke: rgba(255,178,122,.6); stroke-width: 1.5; }
 `;
+
+/** A domain's pixel icon as a data URL for the wheel's SVG (Calissa's, ui/domainlook.js; drawn once a domain). */
+const ICON_URLS = new Map();
+const domainIconUrl = (d) => { if (!ICON_URLS.has(d)) { const L = DOMAIN_LOOK[d]; ICON_URLS.set(d, uiIcon(L.icon, L.pal).toDataURL()); } return ICON_URLS.get(d); };
 
 export class GodArts {
   constructor(god) {
@@ -149,7 +155,8 @@ export class GodArts {
     this.slots = [...bar.querySelectorAll('.slot')];
     // the seven domains over the bar, the chosen one lit (keys 1 to 7; a placeholder for Calissa's selector)
     this.domains = document.createElement('div'); this.domains.id = 'goddomains';
-    this.domains.innerHTML = DOMAIN_ORDER.map((d, i) => `<span data-d="${d}"><b>${i + 1}</b><i>${DOMAIN_GLAZE[d].glyph}</i>${d.toUpperCase()}</span>`).join('');
+    this.domains.innerHTML = DOMAIN_ORDER.map((d, i) => `<span data-d="${d}"><b>${i + 1}</b><i></i>${d.toUpperCase()}</span>`).join('');
+    this.domains.querySelectorAll('i').forEach((el, i) => { const L = DOMAIN_LOOK[DOMAIN_ORDER[i]]; el.appendChild(iconEl(L.icon, { pal: L.pal, px: 1 })); });
     document.getElementById('hud').appendChild(this.domains);
     this.domainTabs = [...this.domains.querySelectorAll('span')];
     this.tip = document.createElement('div');
@@ -170,8 +177,8 @@ export class GodArts {
     const arc = (r0, r1, a0, a1) => { const [x0, y0] = pt(r0, a0), [x1, y1] = pt(r1, a0), [x2, y2] = pt(r1, a1), [x3, y3] = pt(r0, a1), big = a1 - a0 > Math.PI ? 1 : 0; return `M${x0},${y0} L${x1},${y1} A${r1},${r1} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${r0},${r0} 0 ${big} 0 ${x0},${y0} Z`; };
     let svg = '<svg viewBox="-170 -170 340 340">';
     DOMAIN_ORDER.forEach((d, i) => {
-      const a0 = (i / n) * TAU + gap, a1 = ((i + 1) / n) * TAU - gap, G = DOMAIN_GLAZE[d], [tx, ty] = pt((R0 + R1) / 2, (a0 + a1) / 2);
-      svg += `<path class="w dom${i === dom ? ' sel' : ''}" d="${arc(R0, R1, a0, a1)}" style="fill:${G.a};fill-opacity:${i === dom ? 0.95 : 0.6}"/><text class="g" x="${tx}" y="${ty + 8}">${G.glyph}</text>`;
+      const a0 = (i / n) * TAU + gap, a1 = ((i + 1) / n) * TAU - gap, L = DOMAIN_LOOK[d], [tx, ty] = pt((R0 + R1) / 2, (a0 + a1) / 2);
+      svg += `<path class="w dom${i === dom ? ' sel' : ''}" d="${arc(R0, R1, a0, a1)}" style="fill:${L.colours.ground ?? L.colours.body};fill-opacity:${i === dom ? 0.95 : 0.6}"/><image href="${domainIconUrl(d)}" x="${tx - 12}" y="${ty - 12}" width="24" height="24" style="image-rendering:pixelated"/>`;
     });
     this.wheelArc = null;
     if (dom >= 0) { // (the hovered domain's arts, in an arc centred on it)
@@ -215,7 +222,7 @@ export class GodArts {
     this.wheelPaths.forEach((p) => { const i = +p.dataset.i; p.classList.toggle('sel', i === pick); p.classList.toggle('lock', !this.owns(ARTS[i].id)); });
     const A = pick >= 0 ? ARTS[pick] : null, D = dom >= 0 ? DOMAIN_ORDER[dom] : null;
     this.wName.textContent = A ? A.name : D ? D.toUpperCase() : this.art.name;
-    this.wSub.textContent = A ? (this.owns(A.id) ? A.blurb : 'not yet learned') : D ? DOMAIN_GLAZE[D].glaze : '';
+    this.wSub.textContent = A ? (this.owns(A.id) ? A.blurb : 'not yet learned') : D ? DOMAIN_LOOK[D].glaze : '';
   }
 
   closeWheel(commit) {
@@ -234,7 +241,7 @@ export class GodArts {
     const g = this.game, K = this.god.cursor, input = g.input;
     const tierHere = K.tier ?? 0;
     this.domainTabs?.forEach((t) => t.classList.toggle('on', t.dataset.d === this.art.domain));
-    const G = DOMAIN_GLAZE[this.art.domain]; if (G && this.barGlaze !== G) { this.barGlaze = G; this.bar.style.background = `linear-gradient(90deg, ${G.a}55, ${G.b}55)`; } // (the chosen domain's arts on its tile)
+    const G = DOMAIN_LOOK[this.art.domain]?.colours; if (G && this.barGlaze !== G) { this.barGlaze = G; this.bar.style.background = `linear-gradient(90deg, ${G.ground ?? G.body}55, ${G.accent ?? G.body}55)`; } // (the chosen domain's arts on its tile)
     this.slots.forEach((s, i) => {
       const a = ARTS[i];
       s.classList.toggle('sel', i === this.sel);

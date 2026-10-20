@@ -31,37 +31,37 @@ export const GOD_POWERS = {
   miracle: { domain: 'spellscription', label: 'Miracles', at: 1, built: true, does: 'draw a feeling\'s sign to call its weather down' },
   // the domains' other powers (GODHAND.md section 8): the order listed is the order they open
   portal: { domain: 'ouranurgy', label: 'Portal', at: 15, built: true, does: 'a linked pair of holes: what goes in one comes out the other' },
-  fold: { domain: 'ouranurgy', label: 'Fold', at: 35, built: true, does: 'two patches of ground trade places' },
+  fold: { domain: 'ouranurgy', label: 'Swap', at: 35, built: true, does: 'two patches of ground trade places' },
   hasten: { domain: 'ouranurgy', label: 'Hasten / Stay', at: 15, built: true, does: 'matter\'s time over a patch runs four times as fast, or stops' },
   sculpt: { domain: 'manifestation', label: 'Sculpt', at: 15, built: true, does: 'raise a pillar, an arch, a bridge or a ramp of clay', made: 0.6 },
-  setfast: { domain: 'manifestation', label: 'Set', at: 35, built: true, does: 'set a creation so the mending leaves it be' },
-  totem: { domain: 'manifestation', label: 'Totem', at: 60, built: true, does: 'hold a miracle\'s weather on one spot for a game hour' },
-  strata: { domain: 'divination', label: 'Strata', at: 15, built: true, does: 'see the layers under the hand' },
-  course: { domain: 'divination', label: 'Course', at: 35, built: true, does: 'see where a pour will run before it falls' },
-  read: { domain: 'divination', label: 'Read', at: 60, built: true, does: 'see a creature\'s next intent from above' },
+  setfast: { domain: 'manifestation', label: 'Lock', at: 35, built: true, does: 'set a creation so the mending leaves it be' },
+  totem: { domain: 'manifestation', label: 'Weather Anchor', at: 60, built: true, does: 'hold a miracle\'s weather on one spot for a game hour' },
+  strata: { domain: 'divination', label: 'Layer View', at: 15, built: true, does: 'see the layers under the hand' },
+  course: { domain: 'divination', label: 'Flow Preview', at: 35, built: true, does: 'see where a pour will run before it falls' },
+  read: { domain: 'divination', label: 'Scan Intent', at: 60, built: true, does: 'see a creature\'s next intent from above' },
   gust: { domain: 'psychokinesis', label: 'Gust', at: 15, built: true, does: 'a stroke of wind' },
-  slab: { domain: 'psychokinesis', label: 'Slab', at: 35, built: true, does: 'lift a slab of ground and set it down elsewhere' },
+  slab: { domain: 'psychokinesis', label: 'Lift Ground', at: 35, built: true, does: 'lift a slab of ground and set it down elsewhere' },
   herd: { domain: 'possession', label: 'Herd', at: 15, built: true, does: 'creatures near a drawn line walk it' },
-  take: { domain: 'possession', label: 'Take', at: 35, built: true, does: 'play a creature from above' },
-  muster: { domain: 'possession', label: 'Muster', at: 60, built: true, does: 'hatched clapperjars carry matter where the hand points' },
+  take: { domain: 'possession', label: 'Possess', at: 35, built: true, does: 'play a creature from above' },
+  muster: { domain: 'possession', label: 'Rally', at: 60, built: true, does: 'hatched clapperjars carry matter where the hand points' },
   transmute: { domain: 'alteration', label: 'Transmute', at: 15, built: true, does: 'sand to clay and back; a pool to your draught\'s feeling' },
-  ward: { domain: 'spellscription', label: 'Ward', at: 15, built: true, does: 'a circle creatures cannot cross' },
-  stamp: { domain: 'spellscription', label: 'Stamp', at: 35, built: true, does: 'copy a patch of terrain and press it down elsewhere' },
+  ward: { domain: 'spellscription', label: 'Barrier', at: 15, built: true, does: 'a circle creatures cannot cross' },
+  stamp: { domain: 'spellscription', label: 'Copy Terrain', at: 35, built: true, does: 'copy a patch of terrain and press it down elsewhere' },
 };
 
 /** The domains' other powers (GODHAND.md 8), each an event `god.<id>` (godhand/powers.js; counted in feedback/tracking/god.js). */
 export const POWER_EVENTS = ['portal', 'fold', 'hasten', 'setfast', 'totem', 'strata', 'course', 'read', 'gust', 'slab', 'herd', 'take', 'muster', 'transmute', 'ward', 'stamp'];
 
-/** Each domain's kiln glaze (Calissa, 2026-10-13: glazes, not hues, since the seven feelings own the wheel's hues): its tile's two colours
- *  (`a` to `b`), the mark colour on the ground and the radar's tip (`mark`), and its glyph (unicode until her pixel icons). */
+/** What the game's own code needs of a domain's look: the mark colour on the ground and the radar's tip (`mark`), and a unicode glyph
+ *  for text-only lists (the Codex's arts). Its glaze, tile, colours and pixel icon are Calissa's: `DOMAIN_LOOK`, ui/domainlook.js. */
 export const DOMAIN_GLAZE = {
-  ouranurgy: { glaze: 'Ru celadon', a: '#9cc3b8', b: '#9cc3b8', mark: 0x9cc3b8, glyph: '☁' }, // (a cloud with a spiral)
-  manifestation: { glaze: 'fire-flashed shino', a: '#e8d6c0', b: '#d9814a', mark: 0xd9814a, glyph: '✍' }, // (a hand drawing a shape from a dot)
-  divination: { glaze: 'yohen tenmoku', a: '#1a1418', b: '#b9b4e8', mark: 0xb9b4e8, glyph: '◉' }, // (an eye in a ring; violet-silver spots, off Wonder's colour)
-  psychokinesis: { glaze: 'oxblood', a: '#8e1f1f', b: '#8e1f1f', mark: 0x8e1f1f, glyph: '⟫' }, // (three arcs pushing out)
-  possession: { glaze: 'Jun ware', a: '#7d93c4', b: '#8a4f9e', mark: 0x7d93c4, glyph: '◐' }, // (a mask)
-  alteration: { glaze: 'flambé', a: '#a8324a', b: '#4a5fa8', mark: 0xa8324a, glyph: '↻' }, // (a looped arrow)
-  spellscription: { glaze: 'cobalt on porcelain', a: '#f2efe6', b: '#2a4fa0', mark: 0x2a4fa0, glyph: '✎' }, // (a brush stroke)
+  ouranurgy: { mark: 0x9cc3b8, glyph: '☁' },       // (Ru celadon)
+  manifestation: { mark: 0xd9814a, glyph: '✍' },   // (fire-flashed shino: its flash)
+  divination: { mark: 0xb9b4e8, glyph: '◉' },      // (yohen tenmoku: its violet-silver spots)
+  psychokinesis: { mark: 0x8e1f1f, glyph: '⟫' },   // (oxblood)
+  possession: { mark: 0x7d93c4, glyph: '◐' },      // (Jun ware)
+  alteration: { mark: 0xa8324a, glyph: '↻' },      // (flambe)
+  spellscription: { mark: 0x2a4fa0, glyph: '✎' },  // (cobalt on porcelain)
 };
 export const DOMAIN_COLOUR = Object.fromEntries(Object.entries(DOMAIN_GLAZE).map(([d, g]) => [d, g.mark]));
 

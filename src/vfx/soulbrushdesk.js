@@ -20,7 +20,7 @@
 //                  running up it. The Bottles' level never comes onto the desk (19.4)
 // It reads, never drives (the Soul Brush: its load, its ring's pick and quick pick, the club's moveset, Celestial mode's canvas and queue;
 // the pool's spends; the weather here). It replaces the Soul Brush's radial (the DOM wheel on 1 held and its paint icons, ui/icons/
-// paintart.js), retired, not hidden (casebook rule NEW:retire-what-is-replaced). The paint reticle, the jet ring, the shine and the
+// paintart.js), retired, not hidden (casebook rule 235). The paint reticle, the jet ring, the shine and the
 // Bottle's arc stay world marks. One canvas (two texture pixels a dot) on one plane of the overlay's flat kind: no program of its own.
 //
 // Prior art, as on a museum label: the mock (Calissa's board v11, r11-soulbrush), ported; the scholar's studio: the brush rest as a

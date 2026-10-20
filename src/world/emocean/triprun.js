@@ -38,14 +38,14 @@ import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 
 const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
-const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Reckon the sea.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
+const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Scout the route.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
 // each encounter's title and its choices' words (Espada's: docs/LORE.md, "The encounters at sea"); a choice not listed shows its `does`
 const ENCOUNTER_WORDS = {
   ghostConvoy: { title: 'THE DEAD RECKONERS', follow: 'Follow them.', loot: 'Board the last ship.' },
-  lettysCutter: { title: 'THE LAST WORD', bounty: 'Take her bounty.', sell: 'Sell her your rutter.' },
+  lettysCutter: { title: 'THE LAST WORD', bounty: 'Take her bounty.', sell: 'Sell her your route map.' },
   lightWhale: { title: 'THE CANTOR', listen: 'Listen.', follow: 'Follow it down.' },
   castaway: { title: 'A RAFT ADRIFT', rescue: 'Take them aboard.', leave: 'Sail on.' },
-  pursersBarge: { title: 'THE BOURSE', trade: 'Trade casks.', rutter: 'Buy today\'s rutter.' },
+  pursersBarge: { title: 'THE BOURSE', trade: 'Trade casks.', rutter: 'Buy today\'s route map.' },
   mirrorSea: { title: 'THE GLASS', race: 'Race your double.', pass: 'Let it pass.' },
   driftBottle: { title: 'A DRIFT BOTTLE', read: 'Read it.' },
 };

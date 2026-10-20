@@ -194,10 +194,10 @@ export function renderRecords(codex, cx) {
   cx.appendChild(grid);
 
   const foot = el('div', 'lg-filter');
-  const wipe = el('i', '', 'ERASE THE LEDGER');
+  const wipe = el('i', '', 'ERASE STATS');
   let armed = false;
   wipe.onclick = () => {
-    if (!armed) { armed = true; wipe.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; wipe.textContent = 'ERASE THE LEDGER'; }, 3000); } else { L.reset(); g.achievements.rank = 0; codex.render(); }
+    if (!armed) { armed = true; wipe.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; wipe.textContent = 'ERASE STATS'; }, 3000); } else { L.reset(); g.achievements.rank = 0; codex.render(); }
   };
   foot.appendChild(wipe);
   cx.appendChild(foot);
@@ -261,7 +261,7 @@ export function renderCurios(codex, cx) {
   const B = g.veritome?.book, box = g.pneuka, held = (c) => { const id = `curio.${c.id}`, k = box ? box.count(id) + (box.lure === id ? 1 : 0) : 0; return B ? `${B.count(id)} in the Book${k ? ` · ${k} carried` : ''}` : `${L.get(id)} held`; };
   const head = el('div', 'lg-head');
   head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
-    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.count'))}</b></div>`
+    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHE PULLS</small><b>${num(L.get('tithe.count'))}</b></div>`
     + `<div><small>BIGGEST CHEST</small><b>${L.best('chest.cubes.max') ? num(L.best('chest.cubes.max')) : '—'}</b></div>`;
   cx.appendChild(head);
   const body = el('div', 'body');

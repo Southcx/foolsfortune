@@ -18,7 +18,7 @@ export function anglingRules({ on, L, log, where }) {
   on('lure.land', (e) => L.inc(e.water ? 'lure.land.water' : 'lure.land.ground'));
   on('angle.retrieve', () => { L.inc('angle.retrieve'); log.say('angle', 'You reel in the lure.', { key: 'ret', throttle: 1 }); });
   on('angle.twitch', () => { L.inc('angle.twitch'); log.say('angle', 'You twitch the lure.', { key: 'twitch', win: 4, fmt: (n) => `You twitch the lure (×${n}).` }); });
-  on('angle.sound', (e) => { L.inc('angle.sound'); log.say('angle', e.stirred ? `You send a sounding into the water. ${e.stirred === 1 ? 'Something stirs.' : 'Things stir.'}` : 'You send a sounding into the water.', { key: 'sound', throttle: 2 }); });
+  on('angle.sound', (e) => { L.inc('angle.sound'); log.say('angle', e.stirred ? `You ping the water. ${e.stirred === 1 ? 'Something stirs.' : 'Things stir.'}` : 'You ping the water.', { key: 'sound', throttle: 2 }); });
   on('angle.lure', () => L.inc('angle.lure.change'));
   on('angle.nibble', (e) => { L.inc('angle.nibble'); log.say('angle', 'Something nibbles at the lure.', { key: 'nib', win: 5, fmt: () => 'Something nibbles at the lure.' }); });
   on('angle.bite', (e) => {

@@ -40,7 +40,7 @@ export const CATS = [
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial', 'The Raceway'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma'] },
-  { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
+  { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapple'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
@@ -48,7 +48,7 @@ export const CATS = [
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'Out Cold', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
-  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
+  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings'] },
@@ -249,10 +249,10 @@ export function buildAchievements(game) {
   H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
   C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have your Pneuka Jar break.', 'jar.shatter', 1, { hidden: true });
   C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have your Pneuka Jar reforged 5 times.', 'jar.reforge', 5);
-  F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 lachryma.', (L) => L.get('lach.spent'), 500);
-  F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 lachryma.', (L) => L.get('lach.spent'), 10000);
-  C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of lachryma.', 'lach.empty', 1);
-  C('gl4', 'hand', 'Lachryma', 2, 'count', 'Brimming', 'Fill the pool to the top 25 times.', 'lach.full', 25);
+  F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 Lachryma.', (L) => L.get('lach.spent'), 500);
+  F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 Lachryma.', (L) => L.get('lach.spent'), 10000);
+  C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of Lachryma.', 'lach.empty', 1);
+  C('gl4', 'hand', 'Lachryma', 2, 'count', 'Overflowing', 'Fill the pool to the top 25 times.', 'lach.full', 25);
 
   // ---------------------------------------------------------------- CIRCUITS
   for (const def of game.circuits?.defs?.values() || []) {
@@ -283,8 +283,8 @@ export function buildAchievements(game) {
   C('cu2', 'sond', 'Cutlass', 3, 'endure', 'Swordsmanship', 'Swing the cutlass 1,000 times.', 'cut.swing', 1000);
   C('cu3', 'sond', 'Cutlass', 1, 'count', 'Cut Down', 'Cut 25 things with the cutlass.', 'cut.hit', 25);
   C('cu4', 'sond', 'Cutlass', 3, 'endure', 'A Field of Stubble', 'Cut 500 things with the cutlass.', 'cut.hit', 500);
-  C('cu5', 'sond', 'Cutlass', 2, 'mechanic', 'Three-Stroke', 'Finish the three-stroke combination 25 times.', 'cut.combo', 25);
-  C('cu6', 'sond', 'Cutlass', 4, 'perfect', 'Unbroken String', 'Finish the three-stroke combination 200 times.', 'cut.combo', 200);
+  C('cu5', 'sond', 'Cutlass', 2, 'mechanic', 'Three-Hit', 'Finish the three-hit string 25 times.', 'cut.combo', 25);
+  C('cu6', 'sond', 'Cutlass', 4, 'perfect', 'Unbroken String', 'Finish the three-hit string 200 times.', 'cut.combo', 200);
   C('cu7', 'sond', 'Cutlass', 2, 'mechanic', 'Stinger', 'Drive the Stinger 25 times.', 'cut.stinger', 25);
   C('cu8', 'sond', 'Cutlass', 3, 'mechanic', 'Clapperjar Bane, Blade', 'Cut down 25 clapperjars with the cutlass.', 'cut.hit.clapper', 25);
   C('cu9', 'sond', 'Cutlass', 1, 'count', 'Time Slows', 'Enter Blade Mode 10 times.', 'blade.enter', 10);
@@ -295,19 +295,19 @@ export function buildAchievements(game) {
   C('cu14', 'sond', 'Cutlass', 2, 'mechanic', 'Turned Aside', 'Turn 10 shots aside on the blade.', 'guard.block', 10);
   C('cu15', 'sond', 'Cutlass', 3, 'perfect', 'Parry', 'Parry 10 shots.', 'move.parry', 10);
   H('cu16', 'sond', 'Cutlass', 3, 'mechanic', 'A Long Held Breath', 'Cut 8 times in a single breath of Blade Mode.', 'blade.cuts.best', 8);
-  C('hk1', 'sond', 'Grapnel', 1, 'count', 'Bite and Pull', 'Throw the grapnel 25 times.', 'hook.fire', 25);
-  C('hk2', 'sond', 'Grapnel', 2, 'count', 'Drawn In', 'Be drawn to an anchor 25 times.', 'zip.arrive', 25);
-  C('hk3', 'sond', 'Grapnel', 4, 'endure', 'Spider', 'Be drawn to an anchor 250 times.', 'zip.arrive', 250);
-  C('hk4', 'sond', 'Grapnel', 3, 'endure', 'A Long Line', 'Travel 1 km on the grapnel line.', 'zip.dist', 1000, { unit: 'm' });
-  H('hk5', 'sond', 'Grapnel', 3, 'mechanic', 'Across the Hall', 'Be drawn 30 m by a single throw.', 'zip.longest', 30, { unit: 'm' });
-  C('hk6', 'sond', 'Grapnel', 2, 'count', 'Fetch', 'Yank 25 loose things toward you.', 'hook.pull', 25);
-  C('hk7', 'sond', 'Grapnel', 2, 'mechanic', 'Cut Loose', 'Leap from the line 10 times.', 'zip.cancel', 10);
-  F('hk8', 'sond', 'Grapnel', 2, 'endure', 'Terracotta Tarzan', 'Spend a minute in all on the end of the line, swinging or hanging.', (L) => L.get('grapple.swing.time') / 60, 1, { unit: 'min' });
-  F('hk9', 'sond', 'Grapnel', 4, 'endure', 'Ninja Courier', 'Spend ten minutes in all on the end of the line.', (L) => L.get('grapple.swing.time') / 60, 10, { unit: 'min' });
-  H('hk10', 'sond', 'Grapnel', 3, 'mechanic', 'Slingshot', 'Let go of the line at 18 m/s.', 'grapple.fling.speed', 18, { unit: 'm/s' });
-  H('hk11', 'sond', 'Grapnel', 4, 'mechanic', 'Faster Than the Rope', 'Let go of the line at 26 m/s.', 'grapple.fling.speed', 26, { unit: 'm/s' });
-  C('hk12', 'sond', 'Grapnel', 2, 'count', 'Sling', 'Let go of a catch and send it flying 10 times.', 'hook.fling', 10);
-  C('hk13', 'sond', 'Grapnel', 1, 'count', 'Brought to Hand', 'Bring 25 loose things to you on the line.', 'hook.pull', 25);
+  C('hk1', 'sond', 'Grapple', 1, 'count', 'Bite and Pull', 'Throw the grappling hook 25 times.', 'hook.fire', 25);
+  C('hk2', 'sond', 'Grapple', 2, 'count', 'Drawn In', 'Be drawn to an anchor 25 times.', 'zip.arrive', 25);
+  C('hk3', 'sond', 'Grapple', 4, 'endure', 'Spider', 'Be drawn to an anchor 250 times.', 'zip.arrive', 250);
+  C('hk4', 'sond', 'Grapple', 3, 'endure', 'A Long Line', 'Travel 1 km on the grapple line.', 'zip.dist', 1000, { unit: 'm' });
+  H('hk5', 'sond', 'Grapple', 3, 'mechanic', 'Across the Hall', 'Be drawn 30 m by a single throw.', 'zip.longest', 30, { unit: 'm' });
+  C('hk6', 'sond', 'Grapple', 2, 'count', 'Fetch', 'Yank 25 loose things toward you.', 'hook.pull', 25);
+  C('hk7', 'sond', 'Grapple', 2, 'mechanic', 'Cut Loose', 'Leap from the line 10 times.', 'zip.cancel', 10);
+  F('hk8', 'sond', 'Grapple', 2, 'endure', 'Terracotta Tarzan', 'Spend a minute in all on the end of the line, swinging or hanging.', (L) => L.get('grapple.swing.time') / 60, 1, { unit: 'min' });
+  F('hk9', 'sond', 'Grapple', 4, 'endure', 'Ninja Courier', 'Spend ten minutes in all on the end of the line.', (L) => L.get('grapple.swing.time') / 60, 10, { unit: 'min' });
+  H('hk10', 'sond', 'Grapple', 3, 'mechanic', 'Slingshot', 'Let go of the line at 18 m/s.', 'grapple.fling.speed', 18, { unit: 'm/s' });
+  H('hk11', 'sond', 'Grapple', 4, 'mechanic', 'Faster Than the Rope', 'Let go of the line at 26 m/s.', 'grapple.fling.speed', 26, { unit: 'm/s' });
+  C('hk12', 'sond', 'Grapple', 2, 'count', 'Sling', 'Let go of a catch and send it flying 10 times.', 'hook.fling', 10);
+  C('hk13', 'sond', 'Grapple', 1, 'count', 'Brought to Hand', 'Bring 25 loose things to you on the line.', 'hook.pull', 25);
 
 
   // ---------------------------------------------------------------- THE SOUL BRUSH (tools/soulbrush/soulbrush.js, brush/)
@@ -316,19 +316,19 @@ export function buildAchievements(game) {
   C('bk3', 'brush', 'The Club', 2, 'mechanic', 'Bring It Down', 'Slam the brush down 10 times.', 'brush.slam', 10);
   C('bk4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
   C('bk5', 'brush', 'The Club', 3, 'endure', 'Seeing Stars', 'Leave 25 clapperjars reeling with the overhead blow.', 'brush.stun', 25);
-  C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Slip', 'Brush slide 25 times.', 'brush.slide', 25);
+  C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Paint', 'Brush slide 25 times.', 'brush.slide', 25);
   C('bs2', 'brush', 'The Slide', 3, 'endure', 'Paint the Town', 'Paint 1 km with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
-  H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m of slip in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
+  H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
   C('bc1', 'brush', 'The Canvas', 1, 'count', 'The World Is Paper', 'Open the Celestial Brush 10 times.', 'brush.canvas', 10);
   C('bc2', 'brush', 'The Canvas', 2, 'mechanic', 'Two Hands at Once', 'Have 10 drawings of more than one stroke read.', 'brush.read.multi', 10);
   F('bc3', 'brush', 'The Canvas', 3, 'collect', 'Every Stroke Known', 'Draw every technique the brush knows.', (L) => ['still', 'bounce', 'mend', 'ember', 'gale', 'bolt', 'light', 'heavy', 'solace'].filter((t) => L.get(`brush.tech.${t}`) > 0).length, 9);
   H('bc4', 'brush', 'The Canvas', 3, 'mechanic', 'A Full Page', 'Make four drawings in one breath of the Celestial Brush.', 'brush.drawings.best', 4);
   C('bc5', 'brush', 'The Canvas', 4, 'endure', 'Calligrapher', 'Have 250 drawings read.', 'brush.read', 250);
   C('bg1', 'brush', 'Sigils', 1, 'count', 'Lifted', 'Lift 50 sigils from clapperjars.', 'sigil.pop', 50);
-  C('bg2', 'brush', 'Sigils', 2, 'count', 'Unwritten', 'Unwrite 25 clapperjars.', 'sigil.cleared', 25);
+  C('bg2', 'brush', 'Sigils', 2, 'count', 'Erased', 'Erase 25 clapperjars.', 'sigil.cleared', 25);
   C('bi1', 'brush', 'The Canvas', 2, 'count', 'Rewritten', 'Write 50 properties onto things.', 'inscribe', 50);
   C('bi2', 'brush', 'The Canvas', 3, 'mechanic', 'A Step in the Air', 'Hold 10 things still with the brush.', 'inscribe.still', 10);
-  H('bg3', 'brush', 'Sigils', 4, 'mechanic', 'One Word for All', 'Unwrite 4 clapperjars with a single mark.', 'sigil.cleared.best', 4);
+  H('bg3', 'brush', 'Sigils', 4, 'mechanic', 'One Word for All', 'Erase 4 clapperjars with a single mark.', 'sigil.cleared.best', 4);
 
   // ---------------------------------------------------------------- THE VERITOME (tools/veritome/veritome.js, veritome/)
   C('vl1', 'veritome', 'The Lens', 1, 'count', 'Say Cheese', 'Take 25 photographs.', 'photo.take', 25);
@@ -406,14 +406,14 @@ export function buildAchievements(game) {
   H('an5', 'angle', 'Casting', 3, 'mechanic', 'The Far Bank', 'Cast 28 m.', 'angle.cast.dist', 28, { unit: 'm' });
   F('an6', 'angle', 'Casting', 2, 'collect', 'Every Mind', 'Cast the lure with every aspect.', (L) => ASPECTS.filter((a) => L.get(`angle.cast.${a.id}`) > 0).length, ASPECTS.length);
   C('an7', 'angle', 'Casting', 1, 'count', 'Jig', 'Twitch the lure 25 times.', 'angle.twitch', 25);
-  C('an8', 'angle', 'Casting', 1, 'count', 'A Sounding', 'Sound the water 10 times.', 'angle.sound', 10);
+  C('an8', 'angle', 'Casting', 1, 'count', 'Ping', 'Ping the water 10 times.', 'angle.sound', 10);
   C('an9', 'angle', 'Casting', 3, 'mechanic', 'Mooching', 'Cast with the echo of a landed fish 10 times.', 'angle.mooch', 10);
   C('ab1', 'angle', 'The Bite', 1, 'count', 'Something Bit', 'Have a fish take the lure.', 'angle.bite', 1);
   C('ab2', 'angle', 'The Bite', 2, 'endure', 'Patience', 'Feel 100 nibbles at the lure.', 'angle.nibble', 100);
   C('ab3', 'angle', 'The Bite', 2, 'mechanic', 'A Gulp', 'Answer a gulp: the heaviest bite.', 'angle.bite.gulp', 1);
   C('ab4', 'angle', 'The Bite', 3, 'perfect', 'Perfect Timing', 'Set the hook perfectly 10 times.', 'angle.hookset.perfect', 10);
   C('ab5', 'angle', 'The Bite', 4, 'perfect', 'A Steady Hand', 'Set the hook perfectly 100 times.', 'angle.hookset.perfect', 100);
-  C('ab7', 'angle', 'The Bite', 2, 'count', 'Sonar', 'Light up 50 fish with soundings.', 'angle.reveal', 50);
+  C('ab7', 'angle', 'The Bite', 2, 'count', 'Sonar', 'Light up 50 fish with pings.', 'angle.reveal', 50);
   C('ab8', 'angle', 'The Bite', 1, 'count', 'Noticed', 'Have 25 fish notice the lure.', 'angle.notice', 25);
   C('ab6', 'angle', 'The Bite', 1, 'count', 'Stripped Bare', 'Let a fish take the bait and get away.', 'angle.miss', 1, { hidden: true });
   F('af1', 'angle', 'The Fight', 2, 'endure', 'Fighting Fit', 'Spend 5 minutes fighting fish.', (L) => L.get('fish.fight.time') / 60, 5, { unit: 'min' });
@@ -438,7 +438,7 @@ export function buildAchievements(game) {
   H('ac9', 'angle', 'The Catch', 5, 'mechanic', 'Longer Than a Boat', 'Land something 250 cm long.', 'fish.cm.max', 250, { unit: 'cm' });
   F('ac10', 'angle', 'The Catch', 3, 'collect', 'Every Tide', 'Land a fish in every tide.', (L) => TIDES.filter((t) => L.get(`fish.tide.${t.id}`) > 0).length, TIDES.length);
   F('ac11', 'angle', 'The Catch', 3, 'collect', 'Every Aspect', 'Land a fish on every aspect.', (L) => ASPECTS.filter((a) => L.get(`fish.aspect.${a.id}`) > 0).length, ASPECTS.length);
-  C('ac12', 'angle', 'The Catch', 2, 'count', 'Given Back', 'Take 500 lachryma from what you have landed.', 'fish.lachryma', 500);
+  C('ac12', 'angle', 'The Catch', 2, 'count', 'Given Back', 'Take 500 Lachryma from what you have landed.', 'fish.lachryma', 500);
   H('ac13', 'angle', 'The Catch', 2, 'mechanic', 'The Deep End', 'Land a fish from 4 m down.', 'fish.depth.max', 4, { unit: 'm' });
   const nSp = SPECIES.length;
   F('be1', 'angle', 'Bestiary', 2, 'collect', 'Field Notes', 'Land 5 different kinds.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, 5);
@@ -499,7 +499,7 @@ export function buildAchievements(game) {
   C('lh1', 'battle', 'The Lockheart', 1, 'count', 'Pull', 'Open a Lockheart.', 'lockheart.open', 1);
   C('lh2', 'battle', 'The Lockheart', 3, 'perfect', 'Jackpot', 'Let an Overload out of a Lockheart.', 'lockheart.out.nuke', 1);
   C('lh3', 'battle', 'The Lockheart', 2, 'mechanic', 'House Rules', 'Open a Lockheart with three keys on its ring.', 'lockheart.three', 1);
-  C('lh4', 'battle', 'The Lockheart', 2, 'count', 'Hoover', 'Fill a Lockheart with five hundred Lachryma.', 'lockheart.fed', 500);
+  C('lh4', 'battle', 'The Lockheart', 2, 'count', 'Vacuum', 'Fill a Lockheart with five hundred Lachryma.', 'lockheart.fed', 500);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
   // the Wells (docs/plans/SLICE.md, E1: placeholders until the Well is built; every key is counted by a rule in tracking.js)
@@ -561,7 +561,7 @@ export function buildAchievements(game) {
   C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
   C('em2', 'emocean', 'Sailing', 2, 'count', 'Weathered It', 'Come through a stage of the Emocean.', 'emocean.stage.passed', 1);
   C('em3', 'emocean', 'Sailing', 4, 'perfect', 'Not a Scratch', 'Sail a stage without being hit once.', 'emocean.stage.clean', 1);
-  H('em5', 'emocean', 'Sailing', 3, 'perfect', 'Dead Reckoning', 'Reckon a crossing in full before sailing it.', 'emocean.reckon.best', 100, { unit: '%' });
+  H('em5', 'emocean', 'Sailing', 3, 'perfect', 'Dead Reckoning', 'Scout a route in full before sailing it.', 'emocean.reckon.best', 100, { unit: '%' });
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
   // the crossing (progress/rail/: the genre's own feats, each named for where it was learned)
   // the movesets (progress/combat/moves.js; Calissa's suite)
@@ -570,19 +570,19 @@ export function buildAchievements(game) {
   C('ms3', 'battle', 'The Five Forces', 3, 'collect', 'Showboat', 'Use a special a hundred times.', 'move.special', 100);
   C('ms4', 'move', 'Air', 1, 'count', 'Eat Sand', 'Bail off the Solar Skiff.', 'skiff.bail', 1, { hidden: true });
   C('ms5', 'move', 'Air', 3, 'mechanic', 'Old Faithful', 'Ollie off a geyser.', 'skiff.ollie.geyser', 1);
-  C('rl1', 'emocean', 'The Rail', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times on the rail.', 'rail.rolls', 50);
-  C('rl2', 'emocean', 'The Rail', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a crossing: four in five of what came at you downed.', 'rail.medal', 1);
-  C('rl3', 'emocean', 'The Rail', 4, 'perfect', 'Rank S', 'Score at par on a crossing.', 'rail.rank.S', 1);
-  C('rl4', 'emocean', 'The Rail', 4, 'mechanic', '25,600', 'Chain to the cap: three of one feeling, again and again.', 'rail.chain.capped', 1);
-  H('rl5', 'emocean', 'The Rail', 3, 'mechanic', 'Full Lock', 'Down every target of an eight-lock volley.', 'rail.volley.best', 8);
-  C('rl6', 'emocean', 'The Rail', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots on the rail.', 'rail.parried', 25);
-  C('rl7', 'emocean', 'The Rail', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);
-  C('rl8', 'emocean', 'The Rail', 2, 'mechanic', 'Point Blank', 'Down a hundred things at point blank.', 'rail.pointBlank', 100);
-  C('rl9', 'emocean', 'The Rail', 3, 'count', 'Sunk Cost', 'Sink the False Light.', 'rail.end.sunk', 1);
-  C('rl13', 'emocean', 'The Rail', 2, 'count', 'Strike Her Colours', 'Make the False Light strike her colours.', 'rail.end.struck', 1);
-  C('rl10', 'emocean', 'The Rail', 3, 'count', 'Here Be Leviathans', 'Drive off Old Nobody.', 'rail.end.driven', 1, { hidden: true });
-  C('rl11', 'emocean', 'The Rail', 5, 'perfect', 'Call Me Ishmael', 'Fell Old Nobody.', 'rail.end.felled', 1, { hidden: true });
-  C('rl12', 'emocean', 'The Rail', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
+  C('rl1', 'emocean', 'Sea Stages', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times in a sea stage.', 'rail.rolls', 50);
+  C('rl2', 'emocean', 'Sea Stages', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a sea stage: four in five of what came at you downed.', 'rail.medal', 1);
+  C('rl3', 'emocean', 'Sea Stages', 4, 'perfect', 'Rank S', 'Score at par on a sea stage.', 'rail.rank.S', 1);
+  C('rl4', 'emocean', 'Sea Stages', 4, 'mechanic', '25,600', 'Chain to the cap: three of one feeling, again and again.', 'rail.chain.capped', 1);
+  H('rl5', 'emocean', 'Sea Stages', 3, 'mechanic', 'Full Lock', 'Down every target of an eight-lock volley.', 'rail.volley.best', 8);
+  C('rl6', 'emocean', 'Sea Stages', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots in a sea stage.', 'rail.parried', 25);
+  C('rl7', 'emocean', 'Sea Stages', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);
+  C('rl8', 'emocean', 'Sea Stages', 2, 'mechanic', 'Point Blank', 'Down a hundred things at point blank.', 'rail.pointBlank', 100);
+  C('rl9', 'emocean', 'Sea Stages', 3, 'count', 'Sunk Cost', 'Sink the False Light.', 'rail.end.sunk', 1);
+  C('rl13', 'emocean', 'Sea Stages', 2, 'count', 'Strike Her Colours', 'Make the False Light strike her colours.', 'rail.end.struck', 1);
+  C('rl10', 'emocean', 'Sea Stages', 3, 'count', 'Here Be Leviathans', 'Drive off Old Nobody.', 'rail.end.driven', 1, { hidden: true });
+  C('rl11', 'emocean', 'Sea Stages', 5, 'perfect', 'Call Me Ishmael', 'Fell Old Nobody.', 'rail.end.felled', 1, { hidden: true });
+  C('rl12', 'emocean', 'Sea Stages', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
   C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });

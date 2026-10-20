@@ -146,7 +146,7 @@ export const TALKS = {
       buyfish: { lines: [
         { mood: 'calm', text: "I'll buy what you land, and pay fair. {p:0.4}{small}Fairer than the fez up the beach, anyway.{/}" },
         { when: (g) => L(g, 'fish.total') >= 20, mood: 'joy', text: '{bob}You keep me busy.{/} {p:0.4}The little ones I put back, mostly. {slow}Mm.{/} {small}Don\'t tell Raku.{/}' },
-        { mood: 'calm', text: 'And film for that book of yours, while you\'re here. {p:0.3}The pool likes having its picture taken. {small}Slowly.{/}' },
+        { mood: 'calm', text: 'And mind you keep that book of yours fed with pictures, while you\'re here. {p:0.3}The pool likes having its picture taken. {small}Slowly.{/}' },
       ], next: 'menu' },
       prince: { lines: [
         { mood: 'awe', text: 'The Prince? {p:0.5}{slow}Mm.{/} {p:0.4}I saw him throw a bowl once, before the sand. One pull of the wheel.' },

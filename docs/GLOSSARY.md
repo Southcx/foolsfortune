@@ -17,7 +17,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   and on the Emocean the ships. *Not:* "the player" in player text.
 - **the stones** (`src/progress/stones.js`) — where Lachryma enters the vessel: the pool's size, regen and costs, the magnet's reach, overflow;
   one set at a time. *Not:* a stone in the world. → detail
-- **brimming** — the push of overflow, a vessel full past its brim; the log says "You are brimming." *Not:* "drunk", which never appears in player
+- **overflow** (code `mind.brim`; "brimming" until 2026-10-19) — the pool pushed past full; the log says "Your pool overflows." *Not:* "drunk", which never appears in player
   text.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`) — the Courier's store of Lachryma; it pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
@@ -130,7 +130,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a shell's look** (`shellLook`, `SHELL_LOOKS`, `src/vfx/shelllooks.js`, a family's in `vfx/shelllooks/<family>.js`; effects
   `shell.<id>.<moment>`) — a caster shell's body, tail and marks at its moments (fly, touch, land, fire, set), asked by the shell runner
   by shell id. *Not:* the caster shaders (its parts).
-- **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grapnel). →
+- **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grappling hook in player text; its achievements, Grapple). →
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, the ensō
   held over a target a dot chose: `celestialMark`) and inscriptions; the tool of environmental Lachryma, in paint and mop modes. → detail
@@ -457,8 +457,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   par (S to D); the medal; the tally, the last log line.
 - **reckoning** (`RECKON`, `reckonLead`) — how much of a crossing the Courier has divined (Divination), 0..1 for that day. *Not:* "course" (the
   basement's).
-- **the sea chart / the passage / a waypoint / a portent / a rutter** (`src/progress/econ/passage.js`) — waypoints laid between two islands, the
-  path drafted through them, one leg, Divination's view of one, a passage's map. *Not:* a Cogitomap. → detail
+- **the sea chart / the route / a waypoint / a forecast / a route map** (code `passage`, `portent`, `rutter`; `src/progress/econ/passage.js`; plain since
+  2026-10-19: SCOUT ROUTE, RESET ROUTE, SET SAIL) — waypoints laid between two islands, the path planned through them, one leg, Divination's view of one, a route's map. *Not:* a Cogitomap. → detail
 - **the trip's pressures** (`src/progress/rail/trip.js`) — the hull, the bunker, burn, adrift, heaving to, high water, a waypoint's feeling, a
   following sea, a squall. *Not:* the vessel's cracks. → detail
 - **the plume / a front** — an island's weather running out to sea / where two plumes meet and a squall forms.
@@ -637,6 +637,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   in its source's look (the cracks: crazed glass, the clay's cracks in it, a cracked clay seal at the cap line). *Not:* the pale stretch (a charge's).
 - **Dread's fog on the Raceway** (`RacewayFog`, `game.racewayFog`, `src/vfx/racewayfog.js`) — three low sheets of cloud in Dread's colours
   laid along the course while `raceway.condition.fog` is up. *Not:* the scene fog (`render/daylight.js`), the miasma's lenses.
+- **graphics / a graphics tier / dynamic resolution** (`T.visual.graphics`, `GRAPHICS_TIERS`, `game.graphics`, `src/render/graphics.js`) — the one quality setting: auto (read from the machine at boot), High, Low, Minimum, or Custom once a knob it owns is moved by hand / one row of those knobs (lines, MSAA, light slots, the shadow's size, filter and rate, the glow, the outline hulls' reach) / the lines stepped down while the frame keeps missing the display's refresh, and back up, never below the tier's floor. *Not:* the resolution setting alone, the light budget.
 - **the glitch** (`game.glitch`, `src/vfx/glitch.js`) — the data showing through at a big moment: one screen pass; always set off by an event and
   short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker.
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and

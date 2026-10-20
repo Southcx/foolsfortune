@@ -349,10 +349,17 @@ export const DEFAULTS = {
     fog: 0.018,
     shadows: true,
     // the console look (render/present.js): the scene drawn at a fixed number of lines and scaled up to the window
-    resolution: 'ps2', // 'ps2' (480 lines) | '540' | '720' | 'native'
+    graphics: 'auto', // the quality tier (render/graphics.js): 'auto' (read from the machine at boot) | 'high' | 'low' | 'minimum' | 'custom' (a knob it owns moved by hand)
+    dynamicResolution: true, // lines stepped down when the frame keeps missing the display's refresh, and back up (render/graphics.js)
+    resolution: 'ps2', // 'ps2' (480 lines) | '440' | '400' | '360' | '320' | '270' | '540' | '720' | 'native'
     upscale: 'bilinear', // 'bilinear' | 'pixel'
     smooth: true, // smooth (Gouraud) shading; false: faceted
     shadowRes: 1024,
+    shadowFilter: 'pcf', // 'pcf' | 'basic' (boot only: it keys every lit program)
+    shadowEvery: 1, // the sun's shadow map redrawn every n frames
+    msaa: 4, // the scene buffer's samples (render/glow.js; boot only)
+    antialias: true, // the canvas's own (boot only)
+    outlineReach: 0, // props' outline hulls drawn within this many metres; 0 draws them all (render/graphics.js)
     lightSlots: 8, // point lights lit at once (render/lightbudget.js)
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
@@ -415,6 +422,8 @@ export function loadTuning() {
       const o = JSON.parse(raw);
       const v = o.retunedV ?? (o.retuned1 ? 1 : 0);
       for (const [rv, g, k] of RETUNED) if (v < rv && o[g]) delete o[g][k];
+      // (a tuning saved before the graphics tier existed, with one of its knobs moved by hand: 'custom', so the hand's choice stands)
+      if (o.visual && !('graphics' in o.visual) && ['resolution', 'shadows', 'shadowRes', 'lightSlots', 'glow', 'grade'].some((k) => k in o.visual && o.visual[k] !== DEFAULTS.visual[k])) o.visual.graphics = 'custom';
       deepMerge(T, o);
     }
     else {

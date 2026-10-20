@@ -53,7 +53,7 @@ export function racewayAchievements({ C, H, F }) {
   H('rw33', 'skiff', 'The Raceway', 2, 'mechanic', 'Full Power', 'Pass five buoys on their sides in a row.', 'skiff.buoy.power', 5);
   C('rw34', 'skiff', 'The Raceway', 2, 'count', 'Close Shave', 'Make 25 near misses: past a pillar, a column or a rival at speed, a hand\'s breadth off.', 'skiff.nearmiss', 25);
   H('rw35', 'skiff', 'The Raceway', 3, 'mechanic', 'Tail Spin', 'Hold a manual for 5 real seconds.', 'skiff.manual.best', 5, { unit: 's' });
-  C('rw36', 'skiff', 'The Raceway', 1, 'mechanic', 'Pit Stop', 'Fill your pool on a vein lane.', 'skiff.refill', 1);
+  C('rw36', 'skiff', 'The Raceway', 1, 'mechanic', 'Pit Stop', 'Fill your pool on a recharge strip.', 'skiff.refill', 1);
   C('rw37', 'skiff', 'The Raceway', 1, 'mechanic', 'Total Loss', 'Wreck the board: a hard knock with the pool empty.', 'skiff.wreck', 1, { hidden: true });
   C('rw38', 'skiff', 'The Raceway', 2, 'mechanic', 'Grudge Match', 'Beat the rival that beat you last.', 'race.nemesis.beaten', 1);
   C('rw39', 'skiff', 'The Raceway', 2, 'mechanic', 'High Roller', 'Win a wager on your own race.', 'wager.won', 1);

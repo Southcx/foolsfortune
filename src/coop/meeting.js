@@ -29,6 +29,8 @@ const SPOTS = {
   dovina: (g) => folkAt(g, 'raku', -2, 1.4),
 };
 
+const STILL = new THREE.Vector3(); // (a waiting sibling's velocity: none, one vector for all)
+
 export class Meetings {
   constructor(game, party, { makeRig }) {
     this.game = game; this.party = party; this.makeRig = makeRig; this.waiting = new Map(); this.making = new Set();
@@ -62,7 +64,10 @@ export class Meetings {
       }
       if (W) { // (idle, turned toward you)
         W.pos.copy(at); W.yaw = Math.atan2(P.x - at.x, P.z - at.z);
-        W.rig.animate(dt, { pos: W.pos, yaw: W.yaw, velocity: new THREE.Vector3(), vy: 0, turnRate: 0, airJump: false, ground: () => W.pos.y, grounded: true, groundN: null, groundVel: null, wall: 0, slide: 0, mantle: 0, mantleT: 1, dash: 0, crouch: 0, aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1, walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: 0, techs: null });
+        W.animT = (W.animT || 0) + dt; // (past 12 m an idle's pose is posed four times a real second, not every tick: 0.3 ms a rig, the deep clean's tick profile)
+        if (d > 12 && W.animT < 0.25) continue;
+        const adt = W.animT; W.animT = 0;
+        W.rig.animate(adt, { pos: W.pos, yaw: W.yaw, velocity: STILL, vy: 0, turnRate: 0, airJump: false, ground: () => W.pos.y, grounded: true, groundN: null, groundVel: null, wall: 0, slide: 0, mantle: 0, mantleT: 1, dash: 0, crouch: 0, aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1, walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: 0, techs: null });
       }
     }
   }

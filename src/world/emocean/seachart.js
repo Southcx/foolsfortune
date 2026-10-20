@@ -107,9 +107,9 @@ export class SeaChart {
       const rows = el('div', 'rooms');
       const act = (n, title, sub, fn, ok = true) => { const d = el('div', 'room', `<span class="n">${n}</span><span><b>${title}</b><s>${sub}</s></span>`); if (ok) d.onclick = fn; else d.style.opacity = '0.5'; rows.appendChild(d); };
       const vane = g.belt?.isWorn('dreamvane');
-      act('◎', 'RECKON THE SEA', vane ? `hold the needle on the mark for four beats (today ${Math.round(g.voyage.reckoning(from, to) * 100)}% reckoned)` : 'wear the Dreamvane to reckon the sea', () => this.beginRead(), vane && !this.reading);
-      act('↺', 'REDRAFT', 'clear the passage and draft it again', () => { this.path = []; this.draw(); }, this.path.length > 0);
-      act('⚓', 'CAST OFF', this.done() ? `sails as: ${this.legs().join(', ')}` : `draft one waypoint in each of the ${C.columns} columns first`, () => this.pier.castOff(from, to), this.done());
+      act('◎', 'SCOUT ROUTE', vane ? `hold the needle on the mark for four beats (today ${Math.round(g.voyage.reckoning(from, to) * 100)}% scouted)` : 'wear the Dreamvane to scout the route', () => this.beginRead(), vane && !this.reading);
+      act('↺', 'RESET ROUTE', 'clear the route and plan it again', () => { this.path = []; this.draw(); }, this.path.length > 0);
+      act('⚓', 'SET SAIL', this.done() ? `sails as: ${this.legs().join(', ')}` : `pick one waypoint in each of the ${C.columns} columns first`, () => this.pier.castOff(from, to), this.done());
       act('←', 'BACK', 'to the pier', () => this.pier.open(from));
       im.appendChild(rows);
     }, { title: 'THE SEA CHART', sub: `to ${NODES[to]?.name || to}` });

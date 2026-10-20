@@ -26,19 +26,19 @@ export const ENCOUNTERS = {
    *  worth of casks, and the Wreckers' share up for the rest of the passage). */
   ghostConvoy:  { weight: 1, mend: 3, choices: [{ id: 'follow', does: 'the next two waypoints shown exactly' }, { id: 'loot', does: 'casks of crude, the Wreckers drawn to you', gain: { casks: 2 }, risk: { wreckers: 0.15 } }] },
   /** Letty Marque's cutter alongside: take a posted bounty onto this passage, or sell her the rutter you carry at a premium. */
-  lettysCutter: { weight: 1, mend: 3, choices: [{ id: 'bounty', does: 'a bounty waypoint placed ahead' }, { id: 'sell', does: 'a rutter sold at 1.25 its worth', needs: 'rutter' }] },
+  lettysCutter: { weight: 1, mend: 3, choices: [{ id: 'bounty', does: 'a bounty waypoint placed ahead' }, { id: 'sell', does: 'a route map sold at 1.25 its worth', needs: 'rutter' }] },
   /** A whale of light singing under the crude: listen (the reckoning raised for the rest of the passage, a Divination act) or follow it
    *  down (a dive into a hidden Umbral leg: a sloop's dare, refused by a ship that cannot dive). */
-  lightWhale:   { weight: 1, mend: 3, choices: [{ id: 'listen', does: 'the reckoning of this passage raised by a quarter' }, { id: 'follow', does: 'a hidden Umbral leg, richer', risk: { leg: 'umbral' }, needs: 'dive' }] },
+  lightWhale:   { weight: 1, mend: 3, choices: [{ id: 'listen', does: 'this route scouted a quarter further' }, { id: 'follow', does: 'a hidden Umbral section, richer', risk: { leg: 'umbral' }, needs: 'dive' }] },
   /** A stranded Contractor on a raft: take them aboard (fuel spent, a hand for the next leg: they man a mount) or leave them (nothing). */
-  castaway:     { weight: 1, mend: 3, choices: [{ id: 'rescue', does: 'a crew hand for the next leg', cost: { fuel: 1 }, needs: 'fuel' }, { id: 'leave', does: 'nothing' }] },
+  castaway:     { weight: 1, mend: 3, choices: [{ id: 'rescue', does: 'a crew hand for the next section', cost: { fuel: 1 }, needs: 'fuel' }, { id: 'leave', does: 'nothing' }] },
   /** The Purser's barge at anchor: trade casks at mid-sea prices, buy fuel, or buy today's rutter of this route. */
-  pursersBarge: { weight: 1, mend: 3, choices: [{ id: 'trade', does: 'casks sold and bought at the barge' }, { id: 'rutter', does: 'today\'s rutter of this route, at list' }] },
+  pursersBarge: { weight: 1, mend: 3, choices: [{ id: 'trade', does: 'casks sold and bought at the barge' }, { id: 'rutter', does: 'today\'s route map of this route, at list' }] },
   /** A mirror-calm where your own best crossing of this route sails beside you as a ghost: race it through the next leg for a rank
    *  bonus, or let it pass. */
-  mirrorSea:    { weight: 0.7, mend: 3, needs: 'ghost', choices: [{ id: 'race', does: 'beat your ghost through the next leg: its rank a step up' }, { id: 'pass', does: 'nothing' }] },
+  mirrorSea:    { weight: 0.7, mend: 3, needs: 'ghost', choices: [{ id: 'race', does: 'beat your ghost through the next section: its rank a step up' }, { id: 'pass', does: 'nothing' }] },
   /** A bottle drifting with a paper in it: an ostracon's word, or a note of a waypoint ahead (its portent exact). */
-  driftBottle:  { weight: 0.7, mend: 3, choices: [{ id: 'read', does: 'a word glossed, or a portent made exact' }] },
+  driftBottle:  { weight: 0.7, mend: 3, choices: [{ id: 'read', does: 'a word glossed, or a waypoint shown exactly' }] },
 };
 
 /** Which encounter resolves on arrival: weighted, each one's weight doubled for every voyage it has not been met (`seen[id]` is the count of

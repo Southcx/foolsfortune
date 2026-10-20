@@ -382,7 +382,7 @@ export class Emocean {
         if (!r.ok) { g.log?.say('warn', r.why, { key: 'continue', throttle: 1 }); return; }
         this.offering = false; this.run.hits = 0; this.ship.mercy = 2 * T.ship.mercy; M.close();
       };
-      const no = el('div', 'room', '<span class="n">·</span><span><b>Let it break</b><s>Your Pneuka Jar is made whole at your last Shrine. You lose a quarter of the cargo.</s></span>');
+      const no = el('div', 'room', '<span class="n">·</span><span><b>Let it break</b><s>Your Pneuka Jar is reforged at your last Shrine. You lose a quarter of the cargo.</s></span>');
       no.onclick = () => this.decline();
       box.appendChild(yes); box.appendChild(no);
       for (const e of [el('div', 'grp', 'THE SHIP CAN TAKE NO MORE HITS'), box]) im.appendChild(e);

@@ -43,6 +43,10 @@ export class Physics {
   async init() {
     await RAPIER.init();
     this.world = new RAPIER.World({ x: 0, y: -T.physics.gravity, z: 0 });
+    // (after every step, Rapier-compat's World.step re-walks every body and collider through wasm-to-JS callbacks to wrap any the step
+    // made: none ever are here, every body comes from createRigidBody, which wraps it there, and a removal unwraps itself at once. It
+    // cost twice the step itself, 1.3 to 1.5 ms and 240 KB of garbage a tick, measured 2026-10-19: the deep clean's tick profile)
+    this.world.mapNewSoftBodies = () => {};
     this.dt = 1 / 60;
     this.events = new RAPIER.EventQueue(true);
     this.synced = new Set(); // { body, mesh }

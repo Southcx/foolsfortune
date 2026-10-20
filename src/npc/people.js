@@ -26,7 +26,7 @@ export const PEOPLE = [
     voice: { base: 58, scale: 'in', bell: 0.8, clay: 0.35, decay: 1.3 }, temper: 'sad',
   },
   {
-    id: 'raku', name: 'Raku', title: 'treasurer of the Weir',
+    id: 'raku', name: 'Raku', title: 'host of the bazaar',
     pos: (g) => { const t = g.chests?.tithe; if (!t) return [WEIR_SPAWN.pos[0] - 6, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + 30]; const s = { x: t.front.z, z: -t.front.x }; return [t.pos.x + s.x * 1.7 + t.front.x * 0.6, t.pos.y, t.pos.z + s.z * 1.7 + t.front.z * 0.6]; },
     yawTo: 'front', scale: 2.0,
     glaze: 0xeae3d6, rough: 0.2, metal: 0.4, hat: 'fez', hatColor: 0x9a2a2a, // (raku: crackled white, a copper lustre)

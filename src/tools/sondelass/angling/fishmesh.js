@@ -88,7 +88,7 @@ export function buildFish(sp, cm) {
   const eye = (side) => { const e = new THREE.Mesh(SEG, core); e.scale.setScalar(Math.max(0.012, L * 0.022)); e.position.set(L * 0.36, B.h[0] * L * 0.45, side * B.w[0] * L * 0.8); group.add(e); return e; };
   if (!B.streak && !B.wings) { eye(1); eye(-1); }
   // fins and the tail: flat and translucent
-  const fin = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+  const fin = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: true }); // (one pass: a flat fin shows one face at a time, and three drew a transparent double side twice, re-resolving its program twice, 55 calls a frame at the Weir: the deep clean's profile)
   const tail = new THREE.Group();
   const [tl, tw] = B.tail;
   if (tl > 0.03) {

@@ -25,7 +25,7 @@ import { sfx } from '../../audio/sfx.js';
 const REACH = 2.6; // (metres from a jetty's end)
 
 /** The refusal for a heavy hull with no rutter of the route (placeholder words for Espada's; `uncharted`, ships.js). */
-const UNCHARTED = (ship) => `Your ${ship} sails only a passage set down in a rutter.`;
+const UNCHARTED = (ship) => `Your ${ship} sails only a route from a route map.`;
 
 export class Pier {
   constructor(game) {
@@ -79,7 +79,7 @@ export class Pier {
         const N = NODES[id], b = V.canBoard(at, id, this.ship), s = canSail(this.ship, { route: `${at}>${id}`, day: today(), rutter: this.rutter(at, id) }), c = b.ok && !s.ok ? { ok: false, why: UNCHARTED(this.ship) } : b, open = V.isOpen(id), ok = c.ok;
         // one row an island: a way open goes by its sea chart (draft the passage, read the sea, then cast off: world/emocean/seachart.js);
         // the direct hop is retired (the owner's passage, PASSAGE.md 2): pier.sail(from, to) stays the handle for the scripted crossings
-        const d = ok ? el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>fuel: ${c.hop.fuel} cubes · draft your passage, and reckon the sea, before you sail</s></span>`)
+        const d = ok ? el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>fuel: ${c.hop.fuel} cubes · plan your route, and scout it, before you sail</s></span>`)
           : el('div', 'room', `<span class="n">·</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${c.why}</s></span>`);
         if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
@@ -87,7 +87,7 @@ export class Pier {
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
       for (const [id, H] of Object.entries(SHIPS)) {
-        const on = id === this.ship, d = el('div', 'room', `<span class="n">${on ? '⚓' : '·'}</span><span><b>${id.toUpperCase()}</b><s>bears ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · a charted passage only' : ''}${H.dive ? '' : ' · cannot dive'}</s></span>`);
+        const on = id === this.ship, d = el('div', 'room', `<span class="n">${on ? '⚓' : '·'}</span><span><b>${id.toUpperCase()}</b><s>hull ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · mapped routes only' : ''}${H.dive ? '' : ' · cannot dive'}</s></span>`);
         d.onclick = () => { this.ship = id; this.open(at); };
         sb.appendChild(d);
       }

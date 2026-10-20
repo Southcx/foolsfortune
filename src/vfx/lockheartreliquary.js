@@ -19,7 +19,7 @@
 //                   true reverse, one bright bead coffin to bulb, the lid snapping like a mouth
 // It reads, never drives (game.lockheart, the Pneuka Box's keyring and its uses, the moveset's string, the Lockheart's wheel). It replaces
 // the old padlock and sockets that stood beside the 3D coffin, retired, not hidden (the owner,
-// 2026-10-19; casebook rule NEW:retire-what-is-replaced). The hoover's reach on the ground stays a world mark (vfx/lockheartreach.js).
+// 2026-10-19; casebook rule 235). The hoover's reach on the ground stays a world mark (vfx/lockheartreach.js).
 // One canvas (two texture pixels a dot) on one plane of the overlay's flat kind: no program of its own.
 //
 // Prior art, as on a museum label: the mock (Calissa's board v10, r10-lockheart), ported; the reliquary and the monstrance, the mourning

@@ -53,7 +53,8 @@ try {
   page.on('pageerror', (e) => errs.push(e.message));
   await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
   const t0 = Date.now();
-  await page.goto(`${url}${CLOCK ? `?clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
+  const GRAPHICS = process.env.GRAPHICS || 'high'; // (a fixed graphics tier: under 'auto' a software GL reads as Minimum, and the baseline is High's: render/graphics.js)
+  await page.goto(`${url}?graphics=${GRAPHICS}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
   for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
   const bootS = (Date.now() - t0) / 1000;
   await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });

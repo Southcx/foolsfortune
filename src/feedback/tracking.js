@@ -53,9 +53,9 @@ const CLAP_LINE = {
   shot: 'The clapperjar is defeated.', sliced: 'The clapperjar is cleaved in two.', cooked: 'The clapperjar is baked to a crisp.',
   splat: 'The clapperjar splats.', well: 'The clapperjar is crushed.', explosion: 'The clapperjar is blown apart.',
   charged: 'The clapperjar is vaporised.', ricochet: 'The clapperjar is defeated by a banked shot.', homing: 'The clapperjar is hunted down.',
-  bashed: 'The clapperjar is bashed to pieces.', slam: 'The clapperjar is flattened.', brushed: 'The clapperjar is unwritten.', rend: 'The clapperjar is rent in two.',
+  bashed: 'The clapperjar is bashed to pieces.', slam: 'The clapperjar is flattened.', brushed: 'The clapperjar is erased.', rend: 'The clapperjar is rent in two.',
   bolt: 'The clapperjar is struck by lightning.', plunged: 'The clapperjar is driven into the ground.',
-  judged: 'The raider is judged, and unwritten.',
+  judged: 'The raider is judged, and erased.',
 };
 const BRUSH_LINE = {
   still: (n) => `Your brush holds ${n === 1 ? 'it' : plural(n, 'thing')} still.`,
@@ -168,7 +168,7 @@ export class Tracking {
         log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} Lachryma.` });
       });
       P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
-      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', 'Your lachryma is depleted.', { key: 'lemp', throttle: 8 }); });
+      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', 'Your Lachryma is used up.', { key: 'lemp', throttle: 8 }); });
       P.on('full', () => L.inc('lach.full'));
       P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
     }
@@ -297,7 +297,7 @@ export class Tracking {
       hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it. Hold Q or E at speed to carve left or right, and let go for a push. In a glide W dives, S pulls up, Q and E bank, A and D spin.',
-      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB sounds the water. With the hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
+      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
       dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; 1 to 7 pick a domain, again for its next art, or hold RMB for the wheel; MMB draws the sign of a miracle. N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
@@ -350,7 +350,7 @@ export class Tracking {
       first('photo', "Logged: your first photograph. It stays in the Veritome's memory until you appraise it (B).");
       if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
-      if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 plates.", { key: 'memorylast', throttle: 5 });
+      if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 photos.", { key: 'memorylast', throttle: 5 });
     });
     on('photo.discard', (e) => L.inc('photo.discard', e.n));
     on('photo.appraise', (e) => {
@@ -359,7 +359,7 @@ export class Tracking {
     });
     on('darkroom.develop', (e) => {
       L.inc('darkroom.batches'); L.hi('darkroom.batch.best', e.n);
-      first('darkroom', 'Logged: your first roll appraised.');
+      first('darkroom', 'Logged: your first photos appraised.');
       log.say('info', `You appraise ${plural(e.n, 'photograph')}: ${plural(e.entries, 'new entry').replace('entrys', 'entries')}, ${plural(e.facts, 'fact')}, ${plural(e.cards, 'card')}.`, {});
     });
     on('bestiary.fact', (e) => {
@@ -425,7 +425,7 @@ export class Tracking {
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
     on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${e.knack} off to switch it off.`));
-    on('rutter.get', (e) => log.say('gain', `You set down a rutter (rank ${e.rank}). Today it is worth about ${e.worth} cubes.`)); // (Espada's words; the ledger's counts are Dovina's)
+    on('rutter.get', (e) => log.say('gain', `You make a route map (rank ${e.rank}). Today it is worth about ${e.worth} cubes.`)); // (Espada's words; the ledger's counts are Dovina's)
     on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} cannot dive. It keeps to the surface.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; Espada's words)
     on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; Espada's words; nothing counted)
       if (e.first) log.say('system', `Debug chest (${e.kit}). Nothing it gives is counted.`);
@@ -513,7 +513,7 @@ export class Tracking {
     on('lockheart.drain', () => L.inc('lockheart.drain'));
     on('lockheart.open', (e) => {
       L.inc('lockheart.open'); L.inc(`lockheart.open.${e.heart}`); for (const k of e.keys) L.inc(`lockheart.key.${k}`); if (e.keys.length >= 3) L.inc('lockheart.three');
-      log.say('luck', `You turn ${e.keys.map((k) => an(ITEM(k).toLowerCase())).join(', then ')} in the Lockheart${e.power >= 1.9 ? ', brimming,' : ''} and it opens.`, {});
+      log.say('luck', `You turn ${e.keys.map((k) => an(ITEM(k).toLowerCase())).join(', then ')} in the Lockheart${e.power >= 1.9 ? ', overflowing,' : ''} and it opens.`, {});
       for (const k of e.broke || []) { L.inc('lockheart.key.broke'); L.inc(`lockheart.key.broke.${k}`); log.say('luck', `Your ${ITEM(k).toLowerCase()} snaps in the lock.`, {}); }
     });
     on('lockheart.outcome', (e) => {
@@ -579,8 +579,8 @@ export class Tracking {
     });
     on('sigil.pop', (e) => {
       L.inc('sigil.pop', e.popped); L.inc(`sigil.pop.${e.sigil}`, e.popped);
-      if (e.cleared) { L.inc('sigil.cleared', e.cleared); L.hi('sigil.cleared.best', e.cleared); first('sigil.cleared', 'Logged: your first clapperjar unwritten.'); }
-      log.say('battle', e.cleared ? `You unwrite ${plural(e.cleared, 'clapperjar')}.` : `Your mark lifts ${plural(e.popped, 'sigil')}.`, { key: 'sigil', win: 0.6 });
+      if (e.cleared) { L.inc('sigil.cleared', e.cleared); L.hi('sigil.cleared.best', e.cleared); first('sigil.cleared', 'Logged: your first clapperjar erased.'); }
+      log.say('battle', e.cleared ? `You erase ${plural(e.cleared, 'clapperjar')}.` : `Your mark lifts ${plural(e.popped, 'sigil')}.`, { key: 'sigil', win: 0.6 });
     });
 
     // ---- the Sondelass: the tool, the cutlass, the grapnel (src/tools/sondelass/sondelass.js)
@@ -588,10 +588,10 @@ export class Tracking {
     on('sondelass.stow', () => L.inc('sondelass.stow'));
     on('sondelass.form', (e) => {
       L.inc(`sondelass.form.${e.form}`);
-      log.say('info', e.form === 'rod' ? 'The Sondelass telescopes out into a rod.' : e.form === 'hook' ? 'The Sondelass shortens, and a grapnel seats at its tip.' : 'The Sondelass draws in, and a blade slides from its tip.', { key: 'sform', throttle: 0.6 });
-      first(`sondelass.${e.form}`, `Logged: your first time using the Sondelass as a ${e.form === 'hook' ? 'grapnel' : e.form}.`);
+      log.say('info', e.form === 'rod' ? 'The Sondelass telescopes out into a rod.' : e.form === 'hook' ? 'The Sondelass shortens, and a grappling hook seats at its tip.' : 'The Sondelass draws in, and a blade slides from its tip.', { key: 'sform', throttle: 0.6 });
+      first(`sondelass.${e.form}`, `Logged: your first time using the Sondelass as a ${e.form === 'hook' ? 'grappling hook' : e.form}.`);
     });
-    on('cut.swing', (e) => { L.inc('cut.swing'); if (e.n >= 2) { L.inc('cut.combo'); log.say('battle', 'You finish a three-stroke combination.', { key: 'combo', throttle: 1.5 }); } });
+    on('cut.swing', (e) => { L.inc('cut.swing'); if (e.n >= 2) { L.inc('cut.combo'); log.say('battle', 'You finish a three-hit string.', { key: 'combo', throttle: 1.5 }); } });
     on('cut.stinger', (e) => { L.inc('cut.stinger'); L.inc('cut.swing'); if (e.locked) L.inc('cut.stinger.locked'); first('cut.stinger', 'Logged: your first Stinger.'); log.say('battle', 'You drive the Stinger.', { key: 'sting', throttle: 1.5 }); });
     on('blade.enter', () => { L.inc('blade.enter'); first('blade', 'Logged: your first time in Blade Mode.'); log.say('battle', 'The world slows to the edge of your blade.', { key: 'blade', throttle: 4 }); });
     on('blade.cut', (e) => { L.inc('blade.cut'); if (e.pieces) L.inc('blade.pieces', e.pieces); });
@@ -606,14 +606,14 @@ export class Tracking {
       const w = e.what === 'clapper' ? 'clapperjar' : e.what === 'slipjelly' ? 'slip jelly' : e.what === 'pot' || e.what === 'breakable' ? 'pot' : 'creature'; // (a creature by its own word, never a pot: T51)
       log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
     });
-    on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });
+    on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grappling hook finds nothing.', { key: 'hmiss', throttle: 2 }); });
     const hooked = (w) => (w === 'clapper' ? 'clapperjar' : w === 'breakable' ? 'pot' : w === 'slipjelly' ? 'slip jelly' : 'prop');
     on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${hooked(e.what)} to you.`, { key: 'hpull', win: 1.2 }); });
     on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${hooked(e.what)} flies.`, { key: 'hfling', win: 1.2 }); });
-    on('hook.creature', (e) => { L.inc('hook.creature'); L.inc(`hook.creature.${e.kind}`); log.say('battle', `The grapnel bites into the ${hooked(e.kind)}. It reels.`, { key: 'hcre', win: 1.2 }); });
+    on('hook.creature', (e) => { L.inc('hook.creature'); L.inc(`hook.creature.${e.kind}`); log.say('battle', `The grappling hook bites into the ${hooked(e.kind)}. It reels.`, { key: 'hcre', win: 1.2 }); });
     on('grapple.attach', (e) => {
       L.inc('grapple.attach'); L.inc(`grapple.attach.${e.kind}`);
-      log.say('move', e.kind === 'anchor' ? 'The grapnel bites. The line goes taut.' : `The grapnel bites into ${e.what === 'clapper' ? 'a clapperjar' : e.what === 'breakable' ? 'a pot' : 'something loose'}.`, { key: 'gatt', throttle: 1.2 });
+      log.say('move', e.kind === 'anchor' ? 'The grappling hook bites. The line goes taut.' : `The grappling hook bites into ${e.what === 'clapper' ? 'a clapperjar' : e.what === 'breakable' ? 'a pot' : 'something loose'}.`, { key: 'gatt', throttle: 1.2 });
     });
     on('grapple.release', (e) => {
       L.inc(`grapple.release.${e.how}`);
@@ -676,7 +676,7 @@ export class Tracking {
     // the psygun's kind and its chambers (tools/psygun/kinds.js)
     // a variant's own play (tools/psygun/variantplay.js): the Bombardier's flare, the Pentagun's pentacle, the Pepperbox's both barrels
     on('psygun.flare', (e) => { L.inc('psygun.flare'); if (e.n) log.say('battle', `Your flare shows ${e.n === 1 ? 'one of them' : `${e.n} of them`}.`, { key: 'psy.flare', throttle: 6 }); });
-    on('psygun.pentacle', (e) => { L.inc('psygun.pentacle'); log.say('battle', e.n ? `Your pentacle closes: five forces strike ${e.n === 1 ? 'it' : `${e.n} of them`}.` : 'Your pentacle closes on nothing.'); });
+    on('psygun.pentacle', (e) => { L.inc('psygun.pentacle'); log.say('battle', e.n ? `Your five-type volley lands: five forces strike ${e.n === 1 ? 'it' : `${e.n} of them`}.` : 'Your five-type volley hits nothing.'); });
     on('psygun.barrels', (e) => { L.inc('psygun.barrels'); log.say('battle', `Both barrels: ${e.n} chamber${e.n === 1 ? '' : 's'} at once.`); });
     on('psygun.change', (e) => { L.inc('psygun.change'); log.say('system', `You carry ${PSYGUNS[e.gun]?.name || 'another psygun'}: ${PSYGUNS[e.gun]?.chambers ?? '?'} chambers.`); });
     on('psygun.chamber', (e) => { L.inc('psygun.chamber'); const i = SHELL_TYPES.findIndex((t) => t.id === e.shell); log.say('info', `Chamber ${e.chamber + 1} takes ${SHELL_TYPES[i]?.no || ''} ${SHELL_TYPES[i]?.name || ''}.`, { key: 'chamber', win: 1.2, fmt: (n) => `${n} chambers loaded.` }); });
@@ -686,10 +686,10 @@ export class Tracking {
     on('vessel.shield', () => L.inc('vessel.shield'));
     on('vessel.shieldbreak', () => { L.inc('vessel.shieldbreak'); log.say('battle', 'Your Lachryma is spent: the next blow reaches the clay.', { key: 'shieldbreak', throttle: 4 }); });
     on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'A creature shatters your Pneuka Jar.' : 'Your Pneuka Jar shatters.', {}); });
-    on('courier.reform', (e) => { L.inc('courier.reform'); if (e.where === 'lip') return; /* (foe.wipe says it: tracking/dunemaw.js) */ log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is made whole at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is made whole in the workshop.', {}); });
+    on('courier.reform', (e) => { L.inc('courier.reform'); if (e.where === 'lip') return; /* (foe.wipe says it: tracking/dunemaw.js) */ log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is reforged at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is reforged in the workshop.', {}); });
     // the Shrines (docs/plans/SHRINES.md; world/shrines.js): found, rested at, travelled between; the Spirit Garden's door. Never "saved".
     on('cavern.force', () => log.say('info', 'You drop through the Great Dunemaw into the great cavern.', { key: 'cavernforce', throttle: 0.5 })); // (/cavern: world/well/dunemaw.js)
-    on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next crossing sails into ${e.setPieces.join(', then ')}.` : 'The next crossing is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
+    on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next sea stage sails into ${e.setPieces.join(', then ')}.` : 'The next sea stage is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
     on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
