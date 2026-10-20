@@ -310,7 +310,9 @@ shared axes in a swing).
 8. **A body throws from where it is seen, never from on top of you** (Dovina, 2026-10-20, from Petra's measure: the brig abeam in the
    side view stood 1.4 to 5 m off the ship once moved onto its plane). A set piece's body fires only from inside its view's box and at
    least `THROW_MIN` (15 m, what the checks judge from) off the ship in the plane; otherwise a carrier throws that volley. The brig
-   keeps ahead of the ship in the side view (its stern chasers firing aft), not abeam.
+   keeps ahead of the ship in the side view (its stern chasers firing aft), not abeam. A body deeper than the plane (Old Nobody's
+   throat at x -24 in side) is moved onto the plane along the camera's ray through it, not straight across, so its shots start where
+   its throat is seen; the box and `THROW_MIN` are then asked of that point, the box's depth axis not at all.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.

@@ -182,12 +182,12 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   for (const e of clear) if (e.pattern && e.pattern.kind !== 'gift') e.pattern.kind = worldAt(e.bar);
   return { type, bars: L.bars, phases, events: clear, feel, storm: !!storm, strength, swings };
 }
-/** Where a pattern's carrier holds in each view (rail frame), where it comes in from (an offset), and the box a role's thrower must be
- *  in to throw (in frame: courier/ship/views.js VIEW_RIGS). The ship rests near (0, 3, 0). */
 /** The nearest a thrower may stand to the ship, in the view's plane (m), when it fires: what legs.mjs judges every pattern from (the
  *  carrier's hold, about 15 m). A set piece's body ('object') nearer than this, or outside its view's CARRIER_AT box, hands its volley to a
- *  carrier (legrunner.js), so no shot is ever thrown from on top of the ship (the brig abeam in the side view stood 1.4 m off in plane). */
+ *  carrier (legrunner.js `throws`), so no shot is ever thrown from on top of the ship (the brig abeam in the side view stood 1.4 m off in plane). */
 export const THROW_MIN = 15;
+/** Where a pattern's carrier holds in each view (rail frame), where it comes in from (an offset), and the box a role's thrower must be
+ *  in to throw (in frame: courier/ship/views.js VIEW_RIGS). The ship rests near (0, 3, 0). */
 export const CARRIER_AT = {
   chase:  { at: [0, 5, 55], from: [0, 2, 50], box: { x: 24, y: [0, 14], z: [12, 70] } },
   free:   { at: [0, 5, 55], from: [0, 2, 50], box: { x: 26, y: [0, 15], z: [12, 70] } },
