@@ -24,8 +24,10 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
+import { RedrawGate } from './redrawgate.js';
 
 const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const TQ = 0.25;                // (real s: the film's slow drift steps this often; 1/66 of its cycle, no step to see)
 const D = 160;                  // the canvas, in dots of the present (a square round the screen's middle)
 const INK = '#17111f', PALE = '#f4ecff';
 const FILM = [[76, 15, 179], [10, 140, 191], [242, 184, 46], [217, 26, 128]];
@@ -40,7 +42,7 @@ export class PsygunReticle {
   constructor(game) {
     this.game = game; this.S = game.overlayScene;
     this.state = { shown: false, kind: null };
-    this.clock = 0; this.fan = { run: 0, last: -9, lit: [] }; this.fireT = 9; this.flashT = 9; this.bothT = 9; this.starT = 9; this.slug = 0; this.hashKey = '';
+    this.clock = 0; this.fan = { run: 0, last: -9, lit: [] }; this.fireT = 9; this.flashT = 9; this.bothT = 9; this.starT = 9; this.slug = 0; this.hashKey = ''; this.gate = new RedrawGate(30);
     if (!this.S) return;
     this.c = document.createElement('canvas'); this.c.width = this.c.height = D; this.x = this.c.getContext('2d');
     this.tex = new THREE.CanvasTexture(this.c); this.tex.colorSpace = THREE.SRGBColorSpace; this.tex.generateMipmaps = false; this.tex.minFilter = this.tex.magFilter = THREE.NearestFilter;
@@ -78,22 +80,29 @@ export class PsygunReticle {
     this.clock += dt; this.fireT += dt; this.flashT += dt; this.bothT += dt; this.starT += dt;
     const show = this.wanted();
     this.state.shown = show; this.state.kind = show ? this.kind : null;
-    if (!show) { this.root.userData.overlayHidden = true; return; }
+    if (!show) { this.root.userData.overlayHidden = true; this.gate.reset(); return; }
     this.root.userData.overlayHidden = false;
     const g = this.game, W = g.weapon, H = slot.view.h || innerHeight, lp = H / 480;
     const ads = W.adsEase ?? 0; this.mesh.material.opacity = 1 - ads * 0.3;
     this.mesh.scale.set(D * lp, D * lp, 1); this.mesh.position.set(0, 0, 300);
     const S = g.shells, heart = S?.gun?.heart != null && S.selected === S.gun.heart;
     this.slug = cl(this.slug + (heart ? dt : -dt) / 0.3);
-    this.draw(this.kind, g.camera?.fov ?? 70, W.spreadDeg?.(g.player) ?? 0);
-    this.tex.needsUpdate = true;
+    const fov = g.camera?.fov ?? 70, spread = W.spreadDeg?.(g.player) ?? 0;
+    if (this.gate.sig(dt, this.signature(fov, spread))) { this.draw(this.kind, fov, spread); this.tex.needsUpdate = true; } // (only when the picture can differ: redrawgate.js)
+  }
+
+  /** What the draw reads, each number to what the eye can tell apart and each timer capped where its animation settles. */
+  signature(fov, spread) {
+    const q = (v, n) => Math.round(v * n), tq = (t, cap) => Math.floor(Math.min(t, cap) * 30), W = this.game.weapon, V = W.play, c = this.clock, F = this.fan;
+    const lit = F.lit.map((t) => (t == null ? '-' : tq(c - t, 3))).join(','), pent = V?.pentacleLit || [];
+    return `${this.kind}|${Math.floor(c / TQ)}|${q(fov, 10)}|${q(this.px(spread, fov), 4)}|${tq(this.fireT, 1)}|${tq(this.flashT, 0.8)}|${tq(this.bothT, 0.7)}|${tq(this.starT, 2.3)}|${q(this.slug, 100)}|${q(W.charge ?? 0, 100)}|${F.run}|${tq(c - F.last, 3)}|${lit}|${pent.join('')}|${pent.length ? q(V.clock ?? 0, 20) : 0}|${V?.points?.size || 0}`;
   }
 
   /** Dots across the screen's half-height for an angle off the aim (the 480-line present: 240 dots from the middle to the top). */
   px(deg, fov) { return (Math.tan(deg * DEG) / Math.tan((fov * DEG) / 2)) * 240; }
 
   draw(kind, fov, spread) {
-    const x = this.x, T = this.clock, col = film(T * 0.06), col2 = film(T * 0.06 + 0.3), c = D / 2 + 0.5;
+    const x = this.x, T = Math.floor(this.clock / TQ) * TQ, col = film(T * 0.06), col2 = film(T * 0.06 + 0.3), c = D / 2 + 0.5;
     x.clearRect(0, 0, D, D); x.save(); x.lineCap = 'square'; x.lineJoin = 'miter';
     const seg = (ax, ay, bx, by) => { x.beginPath(); x.moveTo(ax, ay); x.lineTo(bx, by); };
     const kstroke = (w, colr) => { x.lineWidth = w + 2; x.strokeStyle = INK; x.stroke(); x.lineWidth = w; x.strokeStyle = colr; x.stroke(); };

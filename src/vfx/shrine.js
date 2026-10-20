@@ -230,7 +230,7 @@ export class ShrineModel {
     this.pads.name = 'shrine-pads'; cr.add(this.pads); padGeo.forEach((g) => g.dispose());
     this.seam = new THREE.Mesh(new THREE.TorusGeometry(rs - 0.01, 0.022, 6, 48), new THREE.MeshBasicMaterial({ name: 'shrine-seam', color: 0xffffff, toneMapped: false }));
     this.seam.name = 'shrine-seam'; this.seam.rotation.x = -Math.PI / 2; this.seam.position.y = h + 0.005; cr.add(this.seam);
-    this.halo = new THREE.Mesh(new THREE.CylinderGeometry(rs - 0.005, rs - 0.005, dep + 0.01, 48, 1, true), new THREE.MeshBasicMaterial({ name: 'shrine-halo', color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide, toneMapped: false, depthWrite: false }));
+    this.halo = new THREE.Mesh(new THREE.CylinderGeometry(rs - 0.005, rs - 0.005, dep + 0.01, 48, 1, true), new THREE.MeshBasicMaterial({ name: 'shrine-halo', color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide, forceSinglePass: true, toneMapped: false, depthWrite: false }));
     this.halo.name = 'shrine-halo'; this.halo.position.y = fl + dep / 2; cr.add(this.halo);
     // the four bronze tines round the well, leaning in over it while it is empty, closing on the Jar's foot when it is sealed
     { const b = new THREE.BoxGeometry(0.035, 0.26, 0.07), tip = new THREE.SphereGeometry(0.03, 8, 6).translate(-0.04, 0.13, 0), tg = mergeGeometries([b.toNonIndexed(), tip.toNonIndexed()], false);

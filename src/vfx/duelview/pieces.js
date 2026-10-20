@@ -40,7 +40,7 @@ export function duelMaterials() {
     gem: crystalFretMaterial({ color: 0xffffff, emissive: 0x2a1a48, emissiveIntensity: 0.45, roughness: 0.22, metalness: 0.15, flatShading: true }, 0xffffff),
     clay: new THREE.MeshStandardMaterial({ name: 'duel-clay', color: 0xffffff, roughness: 0.86, metalness: 0, flatShading: true }),
     clayVc: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true }), // (racewayprops' clay: the frame and the figurines)
-    glow: new THREE.MeshBasicMaterial({ name: 'duel-glow', fog: false, toneMapped: false }),
+    glow: new THREE.MeshBasicMaterial({ name: 'duel-glow', toneMapped: false }),
   };
   return MATS;
 }

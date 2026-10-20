@@ -26,7 +26,7 @@ export class CrackleBreak {
     this.bubble = new Bubble({ shape: 'sphere', radius: 1, cell: 0.3, pattern: 'crackle', tint: 0xbfd2c6, rim: 0xf4ecd8, film: 0.25, k: 0 });
     this.bubble.object.visible = false;
     // (the shards: solid and unlit, as the drain's cubes are, so the same program draws both)
-    this.shards = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'crackbreak-shards', fog: false, toneMapped: false }), SHARDS);
+    this.shards = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ name: 'crackbreak-shards', toneMapped: false }), SHARDS);
     this.shards.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(SHARDS * 3), 3);
     this.shards.frustumCulled = false; this.shards.visible = false;
     for (let i = 0; i < SHARDS; i++) this.shards.setColorAt(i, GLAZE[i % GLAZE.length]);

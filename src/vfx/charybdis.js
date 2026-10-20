@@ -188,7 +188,7 @@ export class CharybdisLook {
     // the throat: the gullet's light at its bottom, and its glow up the maw (a boss part, seen from above)
     this.throatMat = track(new THREE.MeshBasicMaterial({ color: 0xffffff }));
     this.throatM = new THREE.Mesh(track(new THREE.CircleGeometry(1.45, 24).rotateX(-Math.PI / 2)), this.throatMat); this.throatM.position.y = -8.55; this.body.add(this.throatM);
-    this.haloMat = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+    this.haloMat = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, blending: THREE.AdditiveBlending }));
     this.halo = new THREE.Mesh(track(new THREE.PlaneGeometry(9, 9).rotateX(-Math.PI / 2)), this.haloMat); this.halo.position.y = -7.6; this.halo.renderOrder = 3; this.body.add(this.halo);
     const tp = this.parts.add(new BossPart({ name: 'throat', object: this.throatM, radius: 1.6, at: new THREE.Vector3(0, 0.4, 0), facing: new THREE.Vector3(0, 1, 0), look }));
     tp.wire(track(new THREE.CircleGeometry(1.6, 24).rotateX(-Math.PI / 2).translate(0, 0.05, 0)), { threshold: 10 });

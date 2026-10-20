@@ -38,6 +38,7 @@ import { SEATS, seatCol, C01, sm, oB, lerp, FAIR, D } from './soulbrushdesk/look
 import { rangeDraw, brushPose, brushDraw, streamDraw, tipFx, ptOn, BR } from './soulbrushdesk/range.js';
 import { scrollDraw, sheetDraw } from './soulbrushdesk/scroll.js';
 import { plateDraw, plateRemeasure } from './soulbrushdesk/plate.js';
+import { RedrawGate } from './redrawgate.js';
 
 const K = 2;                       // (texture pixels a dot)
 const CW = 232, CH = 184;          // (the canvas in dots: the plate and the handscroll to the left, the brush lifted in MOP to the right)
@@ -46,13 +47,14 @@ const CLEAR = 18, AT = [150, 14];  // (CSS px from the right edge, as the tube's
 const PLATE = [-38, -34];          // (the plate's right edge and its foot, dots from the range's foot: beside the hanging scroll)
 const MN = ['PAINT', 'MOP'];
 const SLAM_COST = 4;               // (the club's slam, tools/soulbrush/club.js SLAM.cost: shown held on the tube while the charge gathers)
-const FRAME = 1 / 30;              // (real s between redraws of the canvas)
+const FRAME = 1 / 30;              // (real s between redraws of the canvas while anything moves; at rest only its ambient shimmer does, redrawn at IDLE_HZ: redrawgate.js)
+const IDLE_HZ = 10;
 const BEAD = { pool: 1.5, valve: 1.5, mop: 2 }; // (Lachryma a bead: a spend from the pool or the Bottles; a mop's gulp up the link)
 
 export class SoulBrushDesk {
   constructor(game) {
     this.game = game; this.S0 = game.overlayScene;
-    this.t = 0; this.a = 0; this.shown = false; this.drawAcc = FRAME;
+    this.t = 0; this.a = 0; this.shown = false; this.gate = new RedrawGate(30); this.busy = true;
     this.sel = -1; this.hop = null; this.ghostF = null; this.openV = 0; this.wasOpen = false;
     this.md = 0; this.mFrom = 0; this.modeT = 9; this.satV = 0; this.dryFrom = 0; this.dryT = 9; this.workAge = -1;
     this.strokes = []; this.lastHit = -9; this.coolT = 0; this.burstT = 9; this.flickT = 9; this.charging = false;
@@ -96,7 +98,7 @@ export class SoulBrushDesk {
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
     this.t += dt;
-    if (!this.shown) { this.shown = true; this.root.userData.overlayHidden = false; this.drawAcc = FRAME; this.sel = -1; this.hookPool(); g.spiritualLink?.attach(this, this.endFn, this.footFn); }
+    if (!this.shown) { this.shown = true; this.root.userData.overlayHidden = false; this.gate.reset(); this.busy = true; this.sel = -1; this.hookPool(); g.spiritualLink?.attach(this, this.endFn, this.footFn); }
     // where it stands: the range's foot CLEAR px and AT dots in from the corner, on the dot grid
     const dot = (this.dot = (slot.view.h || innerHeight) / 480), W = slot.view.w || innerWidth, H = slot.view.h || innerHeight;
     const hx = Math.round((W - CLEAR - AT[0] * dot) / dot) * dot, hy = Math.round((H - AT[1] * dot) / dot) * dot;
@@ -105,8 +107,8 @@ export class SoulBrushDesk {
     this.plane.material.opacity = sm(this.a);
     if (B) this.read(dt, B);
     this.link(dt);
-    this.drawAcc += dt;
-    if (this.drawAcc >= FRAME && this.S) { this.drawAcc = 0; this.paint(); }
+    if (!B) this.busy = true; // (fading out)
+    if (this.gate.rate(dt, this.busy, IDLE_HZ) && this.S) this.paint();
   }
 
   hide() {
@@ -169,6 +171,9 @@ export class SoulBrushDesk {
     this.source(S, L, dt);
     this.bottles(L, work, md);
     S.pose = brushPose(S);
+    // busy: anything that moves by more than the ambient shimmer (the pot's shine, the chosen peak's film, the plate's rim); at rest the canvas redraws slowly
+    this.busy = !!(this.hop || open || this.openV > 0 || this.modeT < 0.6 || this.dryT < 0.4 || this.satV > 0 || work || this.strokes.length || S.flick >= 0 || S.burst >= 0 || S.charge >= 0
+      || S.cel > 0 || this.celT < 0.5 || this.cols.length || this.srcAge < 0.6 || S.shake || S.dot || S.str.next !== 'c1');
     this.S = S;
     Object.assign(this.state, { shown: this.shown, pick: lay, mode: L.mode, sat: +S.sat.toFixed(2), src: S.src ? (S.src.w ? `weather:${S.src.id || 'fair'}` : `bottles:${S.src.id}`) : null, string: S.str.strokes.map((s) => s.k), cel: +S.cel.toFixed(2), cols: S.cols.map((c) => `${c.st}${c.name ? ':' + c.name : ''}`) });
   }

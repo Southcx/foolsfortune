@@ -100,7 +100,7 @@ export class FX {
 
     // muzzle flash: 3 crossed quads with a soft star texture
     const flashTex = radialTexture('rgba(255,250,235,1)', 'rgba(255,160,90,0)');
-    const flashMat = new THREE.MeshBasicMaterial({ map: flashTex, color: 0xffd2a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const flashMat = new THREE.MeshBasicMaterial({ map: flashTex, color: 0xffd2a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     this.flash = new THREE.Group();
     for (let i = 0; i < 3; i++) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), flashMat);
@@ -285,7 +285,7 @@ export class FX {
   shockwave(center, radius, { phase = Math.random() } = {}) {
     if (this.vfx) { this.vfx.play('shock', { pos: center, scale: 0.2 + Math.max(0.1, radius), phase }); return; }
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 32), new THREE.MeshBasicMaterial({
-      color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     ring.position.copy(center);
     ring.lookAt(this.camPos || center.clone().add(Z));
     ring.renderOrder = 5;
@@ -308,7 +308,7 @@ export class FX {
     const geo = new THREE.ConeGeometry(Math.tan(angleDeg * Math.PI / 180), 1, 24, 1, true);
     geo.translate(0, -0.5, 0);
     geo.rotateX(-Math.PI / 2); // apex at origin, opening toward +Z
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.cream, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.cream, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     m.position.copy(from);
     m.quaternion.setFromUnitVectors(Z, axis);
     m.frustumCulled = false;
@@ -329,7 +329,7 @@ export class FX {
 
   // Mark shell: sigil ring on the surface + crackle
   markBurst(point, normal, radius) {
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 6), new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 6), new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));
     ring.position.copy(point).addScaledVector(normal, 0.02);
     ring.quaternion.setFromUnitVectors(Z, normal);
     ring.renderOrder = 5;

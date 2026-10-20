@@ -38,6 +38,7 @@ import { COLOR } from '../progress/weather.js';
 import { HEARTS, oddsOf, rates } from '../tools/lockheart/table.js';
 import { C01, sm, lerp, heartLook, keyLook } from './lockheartreliquary/look.js';
 import { drawPiece } from './lockheartreliquary/piece.js';
+import { RedrawGate } from './redrawgate.js';
 
 const K = 2;                   // (texture pixels a dot)
 const CW = 224, CH = 232;      // (the canvas in dots: room over the coffin, the wheel and its plates, the ring and its tags)
@@ -46,12 +47,12 @@ const CLEAR = 18, HAND = [85, 152]; // (CSS px from the right edge as the tube's
 const PHI0 = 0, SCALE = 1.3; // (the chain's rest angle: straight down, parallel to the Lachrimeter, the owner 2026-10-19; dots a unit of the coffin)
 const KT = 0.18, DUR = 2.1, HOLD = 0.9; // (real s: a Possibilikey's turn at the Opening; the wheel's spin and its hold, tools/lockheart/wheel.js)
 const DRINK = { dur: 0.35, gap: 0.07, colour: 0x7f5cf0 }, GULP = { dur: 0.12, colour: 0xffe296, amount: 6 };
-const FRAME = 1 / 30;          // (real s between redraws of the canvas)
+const IDLE_HZ = 10;            // (redraws a real second at rest, when only the ambient shimmer moves; 30 while anything else does: redrawgate.js)
 
 export class LockheartReliquary {
   constructor(game) {
     this.game = game; this.S0 = game.overlayScene;
-    this.t = 0; this.a = 0; this.shown = false; this.drawAcc = FRAME;
+    this.t = 0; this.a = 0; this.shown = false; this.gate = new RedrawGate(30); this.busy = true;
     this.snapT = 9; this.drainT = 9; this.echoT = 9; this.rippleT = 9; this.fullT = 9; this.wasOpen = false;
     this.pend = 0; this.shownCharge = -1; this.lid = 0;
     this.F = { lit: 0, hitAge: 9, cooling: false, cool: 0 };
@@ -99,7 +100,7 @@ export class LockheartReliquary {
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
     this.t += dt;
-    if (!this.shown) { this.shown = true; this.root.userData.overlayHidden = false; this.drawAcc = FRAME; this.shownCharge = -1; g.spiritualLink?.attach(this, this.endFn); this.hookDrink(); }
+    if (!this.shown) { this.shown = true; this.root.userData.overlayHidden = false; this.gate.reset(); this.busy = true; this.shownCharge = -1; g.spiritualLink?.attach(this, this.endFn); this.hookDrink(); }
     // where it stands: the hand's point CLEAR px and HAND dots in from the corner, on the dot grid
     const dot = (this.dot = (slot.view.h || innerHeight) / 480), W = slot.view.w || innerWidth, H = slot.view.h || innerHeight;
     const hx = Math.round((W - CLEAR - HAND[0] * dot) / dot) * dot, hy = Math.round((H - HAND[1] * dot) / dot) * dot;
@@ -109,8 +110,8 @@ export class LockheartReliquary {
     const lh = L || g.lockheart;
     if (lh) this.read(dt, lh);
     this.link(dt);
-    this.drawAcc += dt;
-    if (this.drawAcc >= FRAME && this.S) { this.drawAcc = 0; this.paint(); }
+    if (!lh) this.busy = true;
+    if (this.gate.rate(dt, this.busy, IDLE_HZ) && this.S) this.paint();
   }
 
   hide() {
@@ -166,8 +167,12 @@ export class LockheartReliquary {
       if (busy) { lidT = 1; const wt = L.wheel.t; pour = wt >= 0 && wt < 0.75 ? wt / 0.75 : -1; }
       if (!busy && u > nk * KT + 0.6) this.endOpening();
     }
+    const lift0 = this.lift ?? 0, lid0 = this.lid;
     this.lift = lerp(this.lift ?? 0, lift, Math.min(1, dt * (lift > (this.lift ?? 0) ? 12 : 4)));
     this.lid += (lidT - this.lid) * Math.min(1, dt * 14);
+    // busy: anything that moves past the ambient shimmer (the fill rolling, the lid and lift settling, a turn, the Opening, the wheel, a bead, a flash, the odds re-forming, the flail's light)
+    this.busy = !!(opening || this.rot || this.close || wheel || canNow || this.beadQ.length || this.landing.length || this.snapT < 0.3 || this.drainT < 0.9 || this.rippleT < 0.35 || this.echoT < 0.55 || this.ghostT < 0.5
+      || F.lit > 0 || F.cooling || F.hitAge < 0.6 || (L.hooverW || 0) > 0 || Math.abs(this.shownCharge - target) > 0.01 || Math.abs(this.lift - lift0) > 1e-3 || Math.abs(this.lid - lid0) > 1e-3 || Math.abs(this.lid - lidT) > 0.01);
     this.S = {
       look, heart, fill, charge: this.shownCharge, shownCharge: this.shownCharge, keys, ghost: gh,
       canOpen: can, fullAge: this.fullT, shackleOpen: shackle, lid: this.lid, snap: this.snapT < 0.25 ? this.snapT : -1,
