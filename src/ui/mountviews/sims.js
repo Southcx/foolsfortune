@@ -19,6 +19,8 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { T } from '../../core/config.js';
 import { RAIL_SHOT } from '../../vfx/railshots.js';
 import { MOUNT_LOOK, AT_SEA, NOSE } from '../../vfx/mountpreview.js';
+import { LANCE_COLOR as LANCE_HEX } from '../../courier/ship/shots.js';
+import { TOLL_BEAT as TOLL, VANE_WARN_COLOR } from '../../courier/ship/mounts.js';
 
 export const LOOP = 4;
 const TAU = Math.PI * 2, D2R = Math.PI / 180;
@@ -37,11 +39,10 @@ const easeOut = (x) => 1 - (1 - x) * (1 - x);
 export const frac = (x) => x - Math.floor(x);
 const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
-// what the rail's modules keep to themselves (not exported: courier/ship/shots.js LANCE_COLOR, courier/ship/mounts.js warn()'s colour).
-// Placeholders that must match those lines until they are exported (handoff to Petra: docs/handoffs/petra/).
-export const LANCE_COLOR = '#9ff3ff';
-export const WARN_COLOR = '#ff7a4a';
-const TOLL_BEAT = MOUNT_LOOK.crucibelle.beat; // (the toll's ring on the beat: courier/ship/mounts.js's 1.4, as the mount's preview keeps it)
+// the rail's own constants, read where play reads them (courier/ship/shots.js, courier/ship/mounts.js: Petra's exports, adf2ae0)
+export const LANCE_COLOR = hex(LANCE_HEX);
+export const WARN_COLOR = hex(VANE_WARN_COLOR);
+const TOLL_BEAT = TOLL.boost; // (the toll's ring on the beat)
 const FISH_CUT = MOUNTS.soulbrush.cuts, GULP_REFILL = MOUNTS.lockheart.refill;
 const LEAD_EARLIER = /half again/.test(MOUNTS.dreamvane.detail || '') ? 1.5 : 1; // (the vane's lead is still words in Dovina's line)
 /** Each mount's look, its colour as CSS (null: the ship's own feeling, `you`). */
