@@ -312,7 +312,10 @@ shared axes in a swing).
    least `THROW_MIN` (15 m, what the checks judge from) off the ship in the plane; otherwise a carrier throws that volley. The brig
    keeps ahead of the ship in the side view (its stern chasers firing aft), not abeam. A body deeper than the plane (Old Nobody's
    throat at x -24 in side) is moved onto the plane along the camera's ray through it, not straight across, so its shots start where
-   its throat is seen; the box and `THROW_MIN` are then asked of that point, the box's depth axis not at all.
+   its throat is seen; the box and `THROW_MIN` are then asked of that point, the box's depth axis not at all. Since the ray brings a
+   deep body toward the ship, the deep bodies stand ahead in the side view: the brig at z 21, Old Nobody's spine 22 to 26 m ahead so
+   its throat (z 38 to 41) is laid 15 m or more off and inside the frame: the genre's boss on the frame's far side, its bulk the
+   backdrop, never brought up to the plane where it would fill the screen.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.
