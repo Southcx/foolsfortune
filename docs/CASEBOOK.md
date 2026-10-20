@@ -724,3 +724,7 @@ NEW:bound-from-its-camera. **A limit on what moves on the screen is sized from t
 NEW:reticle-from-this-camera. **A reticle is aimed through this frame's camera, after it is placed, and eased across a change of
     view; input is counted only while what it moves is shown.** A hidden cursor that keeps counting comes back pinned at the edge; a
     reticle aimed before the camera moves lags it a frame; one that flips at a swing's midpoint snaps.
+
+NEW:judge-as-thrown. **A check judges a thing as the runtime turns and throws it, in every view it is thrown in.** A pattern laid out in
+    one frame and checked there passed while the player turned it 20 degrees off the ship and out of the side view's plane; the check
+    builds the same frame the player builds.

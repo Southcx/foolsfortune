@@ -42,8 +42,9 @@ const P = (open, build, peak, release) => ({ open: open * STRETCH, build: build 
 const V = (open, build, peak, release) => ({ open, build, peak, release }); // (a phase's view: a name, not stretched: P('chase', ...) made NaN of every view, Petra's catch)
 
 /** The legs. `at` is a bar within the cue's phase; `every` repeats it to the phase's end (or `until`). `from` names who fires a pattern:
- *  'ahead' (a point 60 m up the rail), or the newest live foe of a role ('school', 'darter', 'heavy'), or the leg's 'object' (its
- *  director's big thing); `kind` is 'astral', 'umbral', 'feel' (by the waypoint's feeling: trip.formSkew) or 'gift' (the ship's own
+ *  'ahead' (a carrier that comes in, holds and leaves: world/emocean/legrunner.js), or a live foe of a role in frame ('school',
+ *  'darter', 'heavy'; the shoal's peak fish are 'glint'), or the leg's 'object' (its director's big thing), a carrier where there is
+ *  none; `kind` is 'astral', 'umbral', 'feel' (by the waypoint's feeling: trip.formSkew) or 'gift' (the ship's own
  *  form: absorbed, it fills the surge). */
 export const LEGS = {
   shoal: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'above', 'free', 'chase'), cues: [
@@ -55,8 +56,8 @@ export const LEGS = {
     { phase: 'build', at: 5, every: 4, until: 34, pattern: { name: 'rotatingRing', from: 'heavy', kind: 'feel' } },
     { phase: 'build', at: 1, every: 6, pattern: { name: 'sineCurtain', from: 'ahead', kind: 'feel' } },
     { phase: 'peak', at: 0, director: 'shoal' },
-    { phase: 'peak', at: 2, every: 4, pattern: { name: 'cageRing', from: 'school', kind: 'feel' } },
-    { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'school', kind: 'feel' } },
+    { phase: 'peak', at: 2, every: 4, pattern: { name: 'cageRing', from: 'glint', kind: 'feel' } },
+    { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'glint', kind: 'feel' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
   wreckers: { bars: 112, phases: P(8, 20, 24, 4), views: V('chase', 'side', 'side', 'astern'), cues: [
@@ -71,7 +72,7 @@ export const LEGS = {
     { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 4, targets: 8 },
   ] },
-  leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: V('chase', 'above', 'free', 'astern'), cues: [
+  leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: V('chase', 'above', 'side', 'astern'), cues: [
     { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 8 } },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'accelRain', from: 'ahead', kind: 'feel', params: { volleys: 5 } } },
     { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 8 } },
@@ -179,6 +180,15 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   for (const e of clear) if (e.pattern && e.pattern.kind !== 'gift') e.pattern.kind = worldAt(e.bar);
   return { type, bars: L.bars, phases, events: clear, feel, storm: !!storm, strength, swings };
 }
+/** Where a pattern's carrier holds in each view (rail frame), where it comes in from (an offset), and the box a role's thrower must be
+ *  in to throw (in frame: courier/ship/views.js VIEW_RIGS). The ship rests near (0, 3, 0). */
+export const CARRIER_AT = {
+  chase:  { at: [0, 5, 55], from: [0, 2, 50], box: { x: 24, y: [0, 14], z: [12, 70] } },
+  free:   { at: [0, 5, 55], from: [0, 2, 50], box: { x: 26, y: [0, 15], z: [12, 70] } },
+  above:  { at: [0, 4, 22], from: [0, 0, 26], box: { x: 28, y: [-5, 20], z: [-6, 26] } },
+  side:   { at: [0, 5, 22], from: [0, 0, 26], box: { x: 6, y: [-2, 16], z: [-14, 26] } },
+  astern: { at: [0, 5, -30], from: [0, 2, -40], box: { x: 24, y: [0, 14], z: [-60, -10] } },
+};
 /** A view's way of firing: in its plane (above, side, astern: a ring reads as a ring), or in a cone at the ship (chase, free). */
 export const modeOf = (view) => (view === 'chase' || view === 'free' ? 'cone' : 'plane');
 
