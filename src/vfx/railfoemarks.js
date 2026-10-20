@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import { keepTrue } from './stormwarp.js';
 import { BAR_S } from '../progress/rail/crossing.js';
 
-const EDGE = { size: 1.7, gold: 0xffd36a, ember: 0xff8a3a, ringAlpha: 0.9, chevAlpha: 1, beat: BAR_S / 4, n: 4 };
+const EDGE = { size: 1.2, inX: 0.84, inY: [-0.5, 0.8], gold: 0xffd36a, ember: 0xff8a3a, ringAlpha: 0.9, chevAlpha: 1, beat: BAR_S / 4, n: 4 };
 const BURST = { time: 0.45, reach: 7, flash: 2.6, hot: 0xfff0c0, ring: 0xffb070, n: 6 };
 const _w = new THREE.Vector3(), _s = new THREE.Vector3(), _t = new THREE.Vector3(), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _z = new THREE.Vector3(0, 0, 1);
 
@@ -73,7 +73,10 @@ export class RailFoeMarks {
     for (const e of this.edges) {
       if (!e.on) { e.g.visible = false; continue; }
       e.t += raw; if (e.t >= e.wait) { e.on = false; e.g.visible = false; continue; }
-      R.toWorld(e.local, _w); e.g.visible = true; e.g.position.copy(_w); e.g.quaternion.copy(cam.quaternion);
+      R.toWorld(e.local, _w);
+      // kept inside the frame, clear of the log and the Lachrimeter along the bottom (v247's look: the chase's was half off the right edge, the overhead's on the log)
+      _s.copy(_w).project(cam); _s.x = Math.max(-EDGE.inX, Math.min(EDGE.inX, _s.x)); _s.y = Math.max(EDGE.inY[0], Math.min(EDGE.inY[1], _s.y)); _w.copy(_s).unproject(cam);
+      e.g.visible = true; e.g.position.copy(_w); e.g.quaternion.copy(cam.quaternion);
       // pointing in: toward the ship as the camera sees it (any view: the chevrons turn in the screen's plane)
       let ang = 0;
       if (ship) { _s.copy(_w).project(cam); _t.setFromMatrixPosition(ship.matrixWorld).project(cam); ang = Math.atan2(_t.y - _s.y, (_t.x - _s.x) * (cam.aspect || 1)); }
