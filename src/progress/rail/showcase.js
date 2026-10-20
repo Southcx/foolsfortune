@@ -16,7 +16,8 @@
 // Prior art: a shmup's stage select and its practice mode (Ikaruga's, DoDonPachi's), the fighting game's training dummy that shows each
 // move alone; Cave's wave tables.
 //
-//   ROSTER[foe] = { cls, hp, fires: [{ name, params? }], formation, count, views: 'COS', with?, spawns?, latch? }   SHOWCASE = [{ leg, hull, note }]
+//   ROSTER[foe] = { cls, hp, fires: [{ name, params? }], formation, count, views: 'COS', with?, spawns?, latch?, show? (bars), shown? }
+//   SHOWCASE = [{ leg, hull, mounts, note }] (mounts: the kit for that leg: Flash and Bomb where the blocker comes, Grapple for the grappler)
 //   showLeg('show.<id>') -> plan (schedule's shape)   SHOW = { foeBars, lead, forms }
 // ---------------------------------------------------------------------------------------
 /** Section 6's roster: class offset, HP factor, what it fires, its formation and count, its views (C chase, O overhead, S side). */
@@ -28,26 +29,26 @@ export const ROSTER = {
   sniper:     { cls: 1, hp: 1, fires: [{ name: 'sweepBeam', params: { from: 0, to: 0, warn: 1.5, burn: 0.5, volleys: 1 } }], formation: 'hold', count: 1, views: 'COS' },
   ambusher:   { cls: 1, hp: 1, fires: [{ name: 'oddFan', params: { n: 5, volleys: 1 } }], formation: 'dash', count: 2, views: 'COS' },
   turret:     { cls: 1, hp: 2, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OS' },
-  'mine-layer': { cls: 1, hp: 1, fires: [{ name: 'decelBurst', params: { volleys: 2 } }], formation: 'line', count: 1, views: 'OS' }, // (its mines: shells that stop and burst, until the mine is a foe of its own)
-  escort:     { cls: 1, hp: 2, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'hold', count: 2, views: 'COS', with: 'gunship' },
+  'mine-layer': { cls: 1, hp: 1, fires: [{ name: 'decelBurst', params: { volleys: 2, m: 8 } }], formation: 'line', count: 1, views: 'OS' }, // (its mines: shells that stop and burst, until the mine is a foe of its own)
+  escort:     { cls: 1, hp: 2, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'hold', count: 2, views: 'COS', with: 'gunship', show: 10 }, // (shown with its gunship: the shield, the escort down, then both guns and the core: 10 bars)
   carrier:    { cls: 1, hp: 2, fires: [], formation: 'hold', count: 1, views: 'COS' }, // (seen in every other foe's stretch: it brings what has no thrower)
   sweeper:    { cls: 2, hp: 1, fires: [{ name: 'sweepBeam', params: { volleys: 1 } }], formation: 'hold', count: 1, views: 'COS' },
   heavy:      { cls: 2, hp: 1, fires: [{ name: 'rotatingRing', params: { volleys: 4 } }], formation: 'hold', count: 1, views: 'OCS' },
-  gunship:    { cls: 2, hp: 1, fires: [{ name: 'stackFan', params: { volleys: 2 } }, { name: 'splitShell', params: { volleys: 2 } }], formation: 'hold', count: 1, views: 'COS' },
+  gunship:    { cls: 2, hp: 1, fires: [{ name: 'stackFan', params: { volleys: 2 } }, { name: 'splitShell', params: { volleys: 2 } }], formation: 'hold', count: 1, views: 'COS', shown: 'escort' }, // (its stretch is its escort's)
   blocker:    { cls: 2, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS' },
   spawner:    { cls: 1, hp: 3, fires: [], formation: 'hold', count: 1, views: 'OS', spawns: { role: 'school', count: 4, every: 2 } }, // (a hatch: its schools until it is downed)
   grappler:   { cls: 1, hp: 1, fires: [], formation: 'dash', count: 1, views: 'CS', latch: { pace: 0.8 } }, // (latches and drags until the roll, the Grapple mount or a shot shakes it)
 };
 
 /** The test crossing's measures (bars): each foe's stretch, the bar before the first, the forms' leg. */
-export const SHOW = { foeBars: 4, lead: 1, forms: 16 };
+export const SHOW = { foeBars: 4, lead: 5, forms: 16 }; // (lead: each foe leg opens with an outlined volley for E and a block of each form for Q, Calissa's must-see 1 and 2)
 /** The order the pier's SHOWCASE row boards (Petra's plumbing reads it): a leg and the hull it is sailed in. */
 export const SHOWCASE = [
-  { leg: 'show.forms', hull: 'sloop', note: 'Q and E alone: Astral volleys, Umbral volleys, outlined ones only the roll turns; the mast folding both ways' },
-  { leg: 'show.chase', hull: 'galleon', note: 'every chase foe alone, four bars each, on the heaviest hull: the big hurtbox, four locks' },
-  { leg: 'show.above', hull: 'destroyer', note: 'every overhead foe alone, on the quickest hull: twin-stick, no lock-on, the forms drinking rings' },
-  { leg: 'show.side', hull: 'frigate', note: 'every side foe alone, on a hull that dives: the waterline crossed under the broadside' },
-  { leg: 'show.forms', hull: 'tanker', note: 'the forms again on a hull that cannot dive: Q refused' },
+  { leg: 'show.forms', hull: 'sloop', mounts: ['crucibelle', 'lockheart'], note: 'Q and E alone: Astral volleys, Umbral volleys, outlined ones only the roll turns; the mast folding both ways, the periscope stub in Umbral' },
+  { leg: 'show.chase', hull: 'galleon', mounts: ['sondelass'], note: 'every chase foe alone, four bars each, on the heaviest hull: the big hurtbox, four locks' },
+  { leg: 'show.above', hull: 'destroyer', mounts: ['veritome', 'crucibelle'], note: 'every overhead foe alone, on the quickest hull: twin-stick, no lock-on, the forms drinking rings; Flash and Bomb for the blocker; the blade mast hinging on Q and E' },
+  { leg: 'show.side', hull: 'frigate', mounts: ['veritome', 'crucibelle', 'sondelass'], note: 'every side foe alone, on a hull that dives: the waterline crossed under the broadside; Flash and Bomb for the blocker, Grapple for the grappler' },
+  { leg: 'show.forms', hull: 'tanker', mounts: ['crucibelle'], note: 'the forms again on a hull that cannot dive: Q refused, the short mast dropping into its house on E' },
 ];
 const VIEW = { 'show.chase': ['C', 'chase'], 'show.above': ['O', 'above'], 'show.side': ['S', 'side'] };
 const modeOf = (view) => (view === 'chase' ? 'cone' : 'plane');
@@ -64,15 +65,18 @@ export function showLeg(type) {
     ]);
   }
   const V = VIEW[type]; if (!V) return null;
-  const [v, view] = V, events = [];
+  const [v, view] = V, mode = modeOf(view), events = [];
+  const open = (bar, kind, name, params) => events.push({ bar, phase: 'show', pattern: { name, params, from: 'ahead', kind, mode } });
+  open(1, 'astral', 'mixed', { of: 'aimedBurst', share: 1 }); // (an outlined volley: E, the mast folding on every hull)
+  open(2, 'astral', 'oddFan', { volleys: 2 }); open(3, 'umbral', 'oddFan', { volleys: 2 }); // (a block of each form: Q)
   let b = SHOW.lead;
   for (const [foe, R] of Object.entries(ROSTER)) {
-    if (!R.views.includes(v) || foe === 'carrier') continue;
+    if (!R.views.includes(v) || foe === 'carrier' || R.shown) continue;
     if (R.with) events.push({ bar: b, phase: 'show', wave: { role: R.with, formation: 'hold', count: 1, cls: ROSTER[R.with].cls } });
     events.push({ bar: b, phase: 'show', wave: { role: foe, formation: R.formation, count: R.count, cls: R.cls } });
-    if (R.spawns) for (let t = 1; t < SHOW.foeBars; t += R.spawns.every) events.push({ bar: b + t, phase: 'show', wave: { role: R.spawns.role, formation: 'line', count: R.spawns.count, cls: ROSTER[R.spawns.role].cls } });
+    if (R.spawns) for (let t = 1; t < (R.show || SHOW.foeBars); t += R.spawns.every) events.push({ bar: b + t, phase: 'show', wave: { role: R.spawns.role, formation: 'line', count: R.spawns.count, cls: ROSTER[R.spawns.role].cls } });
     R.fires.forEach((f, i) => events.push({ bar: b + 1 + i, phase: 'show', pattern: { name: f.name, params: { ...(f.params || {}) }, from: foe, kind: i % 2 ? 'umbral' : 'astral', mode: modeOf(view) } }));
-    b += SHOW.foeBars;
+    b += R.show || SHOW.foeBars;
   }
   return plan(type, b, view, events);
 }
