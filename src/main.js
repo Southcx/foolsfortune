@@ -334,7 +334,7 @@ async function main() {
   loadTuning();
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
-  installToon(T.visual.toon ?? 1, T.visual.matteSheen !== false); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
+  installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
   const renderer = new THREE.WebGLRenderer({ antialias: T.visual.antialias !== false, powerPreference: 'high-performance' });
   renderer.debug.checkShaderErrors = !import.meta.env.PROD; // (the published build does not wait on each program's link log: a stall per program on a slow driver; the dev server still checks)
