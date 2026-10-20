@@ -8,7 +8,7 @@
 //                     the pool and the surge), of the other it hurts; 'gift' takes the ship's form when fired (the calm's)
 //   OUTLINED          wears the parry mark: only the roll answers it, sending it home to its thrower (Sin & Punishment's return)
 //   THE ROLL          its window turns any other shot aside (Star Fox 64's barrel roll)
-//   MOTIONS           straight, accel, decel (then a ring), split (into a fan), wave, curve, homing (proportional navigation, its turn
+//   MOTIONS           straight, accel, decel (then a ring), split (into a fan), cage (thrown out to a ring round the ship, then closing), wave, curve, homing (proportional navigation, its turn
 //                     capped, a lifetime, then dumb; leading or weaving: the Itano circus), laser (a line that warns, then burns and
 //                     sweeps), snake (a laser following a weaving head: its trail is the beam), a warning glint before a dash
 //
@@ -33,15 +33,19 @@ import { RailShots } from '../../vfx/railshots.js';
 
 export const CAP = 400;
 const LASERS = 16, TRAIL = 18, SHOT_R = 0.3, BEAM_R = 0.45;
+/** The graze (the owner's ruling, 2026-10-20: a close pass pays Lachryma to the pool; its pay and its cap a bar are T.ship.graze, the
+ *  stage's): a shot that could hurt passing within `k` hurtboxes of the ship and never touching it, once a shot. Three hurtboxes is the
+ *  genre's ring (Touhou's graze, Psyvariar's buzz): close enough to mean it, wide enough to aim for. */
+export const GRAZE = { k: 3 };
 /** A shot's tether: for its first `s` real seconds a thin line back to the foe that threw it, fading (at most `n` at once, the newest), so
  *  what fired what is read at a glance (the owner's R17, v133; Ikaruga's and Radiant Silvergun's muzzle lines). */
 const TETHER = { s: 0.35, n: 48, alpha: 0.7 };
 const UP = new THREE.Vector3(0, 1, 0);
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _e = new THREE.Vector3();
 const v3 = (a, out) => (Array.isArray(a) ? out.set(a[0], a[1], a[2]) : out.copy(a));
 
 /** The side axis of a heading (up x dir), for waves and turns: patterns.js's own. */
-function sideOf(dir, out) { out.crossVectors(UP, dir); if (out.lengthSq() < 1e-8) out.set(1, 0, 0); return out.normalize(); }
+function sideOf(dir, out, up = UP) { out.crossVectors(up, dir); if (out.lengthSq() < 1e-8) out.set(1, 0, 0); return out.normalize(); }
 /** Distance from a point to a segment. */
 function segDist(p, a, b) { _c.subVectors(b, a); const l2 = _c.lengthSq(); let t = l2 ? _d.subVectors(p, a).dot(_c) / l2 : 0; t = Math.max(0, Math.min(1, t)); return _d.copy(a).addScaledVector(_c, t).distanceTo(p); }
 
@@ -75,7 +79,8 @@ export class ShotField {
     x.on = true; x.i = i; v3(s.pos, x.p); v3(s.dir, x.dir).normalize(); x.base.copy(x.p); x.speed = s.speed ?? 14; x.s0 = x.speed;
     x.kind = s.kind === 'gift' ? (ship?.form || 'astral') : s.kind || 'astral'; x.outlined = !!s.outlined; x.m = m; x.warn = s.warn || 0;
     x.t = 0; x.from = from; x.back = false; x.turned = false; x.life = m.type === 'homing' ? m.life : 0; x.los.set(0, 0, 0);
-    x.trailN = 0; x.trailK = 0; x.trailT = 0;
+    x.trailN = 0; x.trailK = 0; x.trailT = 0; x.caged = false; x.grazed = false; x.plane = !!s.plane;
+    (x.up ||= new THREE.Vector3()).copy(s.up ? v3(s.up, _e) : UP); // (the view's plane's normal: a split or a burst spreads in it)
     this.live++; this.peak = Math.max(this.peak, this.live);
     return x;
   }
@@ -103,7 +108,8 @@ export class ShotField {
       case 'accel': x.speed = Math.min(m.vmax ?? 99, x.speed + (m.a || 0) * dt); break;
       case 'decel': x.speed = Math.max(0, x.s0 * (1 - t / m.T)); if (t >= m.T) { this.spread(x, m.burst, 360, m.childSpeed, true); return this.kill(x); } break;
       case 'split': if (t >= m.T) { this.spread(x, m.m, m.spread, m.childSpeed, false); return this.kill(x); } break;
-      case 'curve': if (t > m.delay) x.dir.applyAxisAngle(UP, m.omega * dt); break;
+      case 'cage': if (t >= m.T && !x.caged) { x.caged = true; v3(m.at, x.p); v3(m.to, _w); x.dir.subVectors(_w, x.p).normalize(); x.speed = m.speed; } break; // (out to its place on the ring, then closing on where the ship was)
+      case 'curve': if (t > m.delay) x.dir.applyAxisAngle(x.up, m.omega * dt); break; // (it turns in the view's plane)
       case 'homing': this.home(x, dt, ship); break;
       default: break;
     }
@@ -116,8 +122,12 @@ export class ShotField {
     if (x.t > 9 || x.p.z < -25 || x.p.z > 220 || Math.abs(x.p.x) > 90 || Math.abs(x.p.y) > 60) return this.kill(x);
     if (x.back) { const f = waves?.hitAt?.(x.p, SHOT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: x.p, dir: x.dir, returned: true }); this.kill(x); } return; }
     if (!ship || x.turned) return;
-    const R = (ship.hurtR ?? T.ship.hurt) + SHOT_R;
-    let near = x.p.distanceToSquared(ship.local) < R * R;
+    const hr = ship.hurtR ?? T.ship.hurt, R = hr + SHOT_R;
+    // in a plane view the distance is in the plane (RAIL-MODULES 1, rule 9: what the camera shows); in chase, in three dimensions
+    _e.subVectors(x.p, ship.local); if (x.plane) _e.addScaledVector(x.up, -_e.dot(x.up));
+    const d2 = _e.lengthSq();
+    let near = d2 < R * R;
+    if (!near && !x.grazed && d2 < (GRAZE.k * hr + SHOT_R) ** 2 && (x.outlined || x.kind !== (ship.form || 'astral'))) { x.grazed = true; ship.graze?.(x); } // (only a shot that could hurt)
     if (!near && m.type === 'snake') near = this.trailHits(x, ship.local, R);
     if (near) this.meet(x, ship);
   }
@@ -158,11 +168,11 @@ export class ShotField {
 
   /** A shell's children: a ring (decel) or a fan about its heading (split), each a plain shot of its kind. */
   spread(x, n, arc, speed, ring) {
-    sideOf(x.dir, _a);
+    sideOf(x.dir, _a, x.up);
     for (let i = 0; i < n; i++) {
       const deg = ring ? 360 * i / n : (n > 1 ? -arc / 2 + arc * i / (n - 1) : 0), r = deg * Math.PI / 180;
       _w.copy(x.dir).multiplyScalar(Math.cos(r)).addScaledVector(_a, Math.sin(r));
-      this.fire({ pos: x.p, dir: _w, speed, kind: x.kind, outlined: x.outlined, motion: { type: 'straight' } }, { from: x.from });
+      this.fire({ pos: x.p, dir: _w, speed, kind: x.kind, outlined: x.outlined, motion: { type: 'straight' }, up: x.up, plane: x.plane }, { from: x.from });
     }
   }
 

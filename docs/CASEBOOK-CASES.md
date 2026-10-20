@@ -3232,3 +3232,74 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   range), whichever is nearer. The spray's cuts and the gulp's refill read MOUNTS' keys; the cone reads the table's angle with no
   fallback. `pirates.nearestCask` went with the old fallback.
 - **Rule:** 244.
+
+### 2026-10-20 · The ship reached a fifth of the screen in the above view (the owner, in play; Calissa's measure)
+- **Seen:** the owner: "an unusual limitation to the range of motion of the ship". Measured (docs/plans/research/RAIL-BUGS-MEASURED.md
+  1): the share of the screen the ship could reach was 49% x 36% in chase (the top 43% never), 19% x 31% in above (all of it in the
+  lower half), 23% x 17% in side.
+- **Cause:** one box, `T.ship.box` (7 m across, 1.2 to 7 m up), clamped in every view (`Ship.update`), while the cameras stand 7.5 m
+  (chase) to 30 m (above) away and follow a share of the ship.
+- **Fix:** `views.reachOf(view, aspect, fov)`: each view's reach found by projecting the ship through that view's camera rig at rest,
+  stepped out by halving until it leaves the frame less an 8% margin (RAIL-MODULES.md 1.1), its corners checked in a second pass,
+  cached a view and aspect; `Ship.update` clamps the plane's two axes to it, the pinned axis as before, the edges easing when a swing
+  turns the plane. At 16:9: chase x ±11.8 m and up to 12.5 m, above x ±29 m and z -10.5 to 41.6 m, side z -21 to 27.7 m and up to 17.3 m.
+- **Measured after** (a drafted trip, shoal then graveyard then the Wreckers, the ship steered to its corners): the ship reaches ±0.84
+  of the screen in chase, free, above and side, up to 0.84 above; its floor is the sea's (chase -0.57, side -0.14).
+- **Rule:** 245.
+
+### 2026-10-20 · The reticle snapped, flew off the screen and came back locked at a swing (the owner, in play; Calissa's measure)
+- **Seen:** the owner: "the targeting reticle breaks/becomes locked when changing perspectives". Measured: at the chase>above swing's
+  midpoint the reticle jumped to the scroll line; after a scroll view it reappeared pinned at the screen's edge (the hidden cursor at
+  its clamp in 3,128 of 3,147 samples); out of the side view it flew to NDC 3.4; a fallback put it at (0, 1.33); and it ran a frame
+  behind in every swing.
+- **Cause:** `Ship.aimAt` added the mouse to the cursor in every view, shown or not; the aim flipped views at the swing's midpoint while
+  the camera was mid-turn; a ray meeting the reticle's plane behind the eye fell back to a point off the screen; the stage re-aimed
+  before main.js placed the camera.
+- **Fix:** the mouse is counted only while the view shows the cursor; across a swing both views' far reticles are found and eased by the
+  camera's own smoothstep; a ray that meets the plane behind the eye takes the cursor's ray 36 m out; the stage's `reaim` runs from
+  main.js after `player.updateCamera`; in a scroll view the far reticle is drawn in along the scroll to stay inside 0.95 of the
+  screen (with the bigger reach, 36 m ahead of a ship riding high was past the top). (The same game day the owner ruled the above view
+  twin-stick and Dovina's RAIL-MODULES.md 1.5 the side view the same: every view now aims by the cursor on its plane, so the scroll
+  reticle and its hold went; a braked ship's box is sized at its depth, after Calissa's mock found the chase corners at 1.08.)
+- **Measured after** (the same trip, the mouse moving every frame): 12,000 reticle samples, 360 in swings, none off the screen (1,151
+  before the scroll reticle was held in); the hidden cursor moved in no frame of a scroll view; in the free views the reticle sits
+  under the cursor (median error 0).
+- **Rule:** 246.
+
+### 2026-10-20 · The crossing's patterns leaned left, fanned into depth, fired off the beat and from no one (the owner, in play; Calissa's measurements)
+- **Seen:** the owner: emitters "aiming at the left region of the screen where they will never hit the ship"; patterns "desynchronized
+  and often appearing from no clear source". Calissa measured it headless (`docs/plans/research/RAIL-BUGS-MEASURED.md`, her branch):
+  - every aimed and fan shot in the chase and free views tilted 20 degrees left (median 20.1);
+  - in the side view, 1,064 of 1,191 shots never reached the ship;
+  - 40 to 67% of many patterns' emissions were more than a quarter of a sixteenth off the grid;
+  - 77% of plays had no thrower (a bare point 60 m up the rail);
+  - the cage ring closed 30 m short of the ship;
+  - the shoal's peak asked for a role its fish do not carry;
+  - the fairness check passed it all.
+- **Cause:**
+  - `dirOf`'s cone mode always tilted the aim by 0.35 rad toward the frame's -x.
+  - The player laid every pattern out with up +y and turned it by the shortest arc, so a side view's plane pattern lay across the
+    camera's axis.
+  - `every` was in plain seconds and the runs added up frame time.
+  - The runner threw from `AHEAD`, or from the newest foe of a role wherever it was.
+  - The cage closed on `ctx.range || 30` and no one passed the range.
+  - The fairness check judged in the layout frame, not as the player turns a pattern.
+- **Fix:**
+  - **Aim:** a cone pattern's angle is off the aim, as in the plane; only ring rows (`ring: true`) spread in a cone.
+  - **Plane:** `frameOf`/`orient` turn a laid-out pattern onto the aim keeping the view's plane (`up`: side +x). In a plane view the
+    thrower and the aim are put on the ship's plane, and a cage lies in the plane.
+  - **Grid:** `every`, `gap` and every shot's time snap to the cue's sixteenth (`GRID`), and the player reads the leg's bar, never frame time.
+  - **Thrower:** a role's thrower is a live foe in the view's frame, or else a **carrier** (`CARRIER_AT`): a placeholder body that comes
+    in, holds and leaves.
+  - **Windup and swings:** each play has a windup (`leadOf`, the rail's telegraph mark), and nothing is fired into the bar before a swing.
+  - **Other data:** the shoal's peak patterns come from its `glint`s, and Old Nobody's peak is in the side view his flank was written for.
+  - **The check:** the fairness check now holds aimed volleys to 6 degrees, plane views to their plane and every shot to the sixteenth,
+    in all three views as the player turns them (`scripts/patterns.mjs`, `scripts/legs.mjs`). On the old code both passed everything.
+- **Measured after:**
+  - **Probe:** a drafted trip sailed headless (shoal, then graveyard), 1,391 shots.
+  - **Throwers:** every shot from a body; none fired during a swing.
+  - **Grid:** none is off the sixteenth by more than a quarter of one.
+  - **Aim:** aimed shots in the free view sit at 0 degrees to the ship (were 20). The chase view's twins sit at their designed 8 degrees.
+  - **Plane:** none leaves the above plane.
+  - **Not verified:** the side view in play (the trip did not reach it); the check covers it in the math only.
+- **Rule:** 247.

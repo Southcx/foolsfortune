@@ -269,7 +269,8 @@ beside its secret. A sea of about 20 islets gets 3 pairs, 3 line-ups and 2 echoe
   - Every atoll and sandbar, and a third of the rocks, has a cache buried in the sand.
   - Nothing marks it but a signature of kind `chest` (`core/signatures.js`). The Dreamvane's dowse, attuned to chests (the wheel),
     is the metal detector: it ticks faster as you face it and as you near it, and on the spot the sand shivers (the dowse's own mark).
-  - Dig with F, the Dreamvane in hand; the pick's ground strike digs too, once Petra's hook is in (below).
+  - Dig with the pick's ground strike or the Dreamquake (`dreamvane.strike`, Petra's, v235), or with F while the Dreamvane is in hand.
+    F never misses: the pick's strike counts only when its tip reaches the ground within 1.6 m.
   - Each cache pays once, for good: `ECON.openSea.cache` minutes of the aim by its islet's tier (common 2, uncommon 4, rare 8, legend 12).
   - A dug cache leaves its opened box.
 
@@ -285,7 +286,7 @@ heard, dug) is kept in the room's save section `openSea`.
   dug (its signature there first and gone after).
 
 **Asked:**
-- **Petra:** the pick's ground strike and the Dreamquake emit `dreamvane.strike { at: [x, y, z], r, by }`, so anything buried, here or
-  later, can listen instead of being called by name (`puzzlepieces.js` already listens).
+- **Petra:** done in v235 (f18ace5). The pick's ground strike and the Dreamquake emit `dreamvane.strike { at, r, by }`. Crystals and ostraca
+  stay on their own calls for now.
 - **Calissa:** the looks (the carvings, the line-up's stone and arcs, the two echo stones and their sockets, an opened cache).
 - **Wanda:** the singing stone's voice (it borrows the Crucibelle's for now) and a dig's sound.

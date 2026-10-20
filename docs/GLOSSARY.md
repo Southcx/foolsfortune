@@ -441,6 +441,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the flock** (`creatures/ai/flock.js`) — many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a school (a
   wave's role).
 - **the lock-on** (RMB held on the rail) — the reticle marks up to eight targets; release fires a lance at each. *Not:* the lock-on on foot. → detail
+- **a carrier** (plain name; `rail.carrier`, `CARRIER_AT`, `progress/rail/legs.js`, `world/emocean/legrunner.js`; RAIL-MODULES.md 1) — a placeholder body that brings a crossing's pattern where no foe of its role is in frame: it flies in from the view's far edge over the windup, holds while it fires, and leaves; shot down, its volleys go with it. *Not:* a thrower of its own kind (a school, a darter), a ship.
 - **the hurtbox** (`T.ship.hurt`, drawn by `vfx/railshots.js`) — the sphere a foe's shot must touch to hit the ship, drawn in the hull as a pale
   core and a dark ring. *Not:* a hit region (the vessel's six).
 - **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`) — the crossing caught in a psychic storm: the world bent, never the danger;

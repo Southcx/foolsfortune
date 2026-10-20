@@ -54,6 +54,8 @@ export class PiratesPiece {
 
   /** Alongside (the broadside): the side view's gun fires abeam, at her (courier/ship/ship.js). */
   abeam(rel) { return rel >= 8 && rel < 22 && !this.ended; }
+  /** What the leg's patterns fire from ('object': legs.js): the brig's hull while she sails (the leg runner asks it is on the screen). */
+  emitter() { return !this.ended && this.hull?.alive ? this.hull : null; }
 
   begin(leg) {
     const st = this.stage, W = st.waves, L = this.look;
