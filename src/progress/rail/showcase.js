@@ -3,8 +3,9 @@
 // feature-complete set of enemy ship types", then "a bespoke test crossing with every new element in one streamlined run"). ROSTER is
 // section 6's table as data: each foe's class offset on the waypoint's base (econ/emocean.js ROLE_CLASS's way), its HP factor on
 // WAVES.hp, what it fires (patterns.js names), its formation (world/emocean/waves.js PATHS) and the views it appears in. `showcase()`
-// is the test crossing as five legs, one a hull, in the order the pier's SHOWCASE row boards them (Petra's plumbing: the hull swapped in
-// the turn between legs, the pool held full, nothing counted). Each `show.*` leg is one view with no swing inside it, so every swing
+// is the showcase crossing as five legs, one a hull, in the order the pier's SHOWCASE row boards them (Petra's plumbing, v240: the stage
+// sails `showcasePassage()` as a passage with no sea chart, world/emocean/stage.js `sailShowcase`; the hull swapped in the turn between
+// legs, the ship mended, the pool held full, the crossing's rules seeing the ledger held still: tracking/rules.js atSea). Each `show.*` leg is one view with no swing inside it, so every swing
 // falls at a turn; legs.js `schedule` resolves a `show.*` type here:
 //   show.forms   the forms and the roll on their own: a free stretch, a block of Astral volleys then of Umbral (Q: drink one, dodge the
 //                other), then outlined volleys only the roll turns (E); the mast folding both ways (Calissa's look)
@@ -17,9 +18,13 @@
 // move alone; Cave's wave tables.
 //
 //   ROSTER[foe] = { cls, hp, fires: [{ name, params? }], formation, count, views: 'COS', with?, spawns?, latch?, show? (bars), shown? }
-//   SHOWCASE = [{ leg, hull, mounts, note }] (mounts: the kit for that leg: Flash and Bomb where the blocker comes, Grapple for the grappler)
+//   SHOWCASE = [{ leg, hull, feel?, mounts, note }] (feel: the waypoint's feeling, none if left out; mounts: the kit for that leg: Flash and Bomb where the blocker comes, Grapple for the grappler)
 //   showLeg('show.<id>') -> plan (schedule's shape)   SHOW = { foeBars, lead, forms }
+//   showcasePassage(rows?) -> a passage the trip runtime sails (world/emocean/triprun.js; a row whose leg or hull is unknown is left out)
 // ---------------------------------------------------------------------------------------
+import { LEGS } from './legs.js';
+import { SHIPS } from './ships.js';
+
 /** Section 6's roster: class offset, HP factor, what it fires, its formation and count, its views (C chase, O overhead, S side). */
 export const ROSTER = {
   school:     { cls: 0, hp: 1, fires: [{ name: 'aimedBurst', params: { n: 1, volleys: 2 } }], formation: 'line', count: 8, views: 'COS' },
@@ -40,7 +45,7 @@ export const ROSTER = {
   grappler:   { cls: 1, hp: 1, fires: [], formation: 'dash', count: 1, views: 'CS', latch: { pace: 0.8 } }, // (latches and drags until the roll, the Grapple mount or a shot shakes it)
 };
 
-/** The test crossing's measures (bars): each foe's stretch, the bar before the first, the forms' leg. */
+/** The showcase crossing's measures (bars): each foe's stretch, the bar before the first, the forms' leg. */
 export const SHOW = { foeBars: 4, lead: 5, forms: 16 }; // (lead: each foe leg opens with an outlined volley for E and a block of each form for Q, Calissa's must-see 1 and 2)
 /** The order the pier's SHOWCASE row boards (Petra's plumbing reads it): a leg and the hull it is sailed in. */
 export const SHOWCASE = [
@@ -52,13 +57,16 @@ export const SHOWCASE = [
 ];
 const VIEW = { 'show.chase': ['C', 'chase'], 'show.above': ['O', 'above'], 'show.side': ['S', 'side'] };
 const modeOf = (view) => (view === 'chase' ? 'cone' : 'plane');
-const plan = (type, bars, view, events) => ({ type, bars, phases: [{ id: 'show', from: 0, to: bars, view }], events: events.sort((a, b) => a.bar - b.bar), feel: null, storm: false, strength: 1, swings: [] });
+// (the cue's four phases, all in one view so no swing falls inside a leg: the trip runtime and the cue lay a leg's length from them, triprun.js legOf)
+const plan = (type, cuts, view, events) => { const [a, b, c] = cuts; return { type, bars: c, phases: [['open', 0, a], ['build', a, b], ['peak', b, c]].filter(([, f, t]) => t > f).map(([id, from, to]) => ({ id, from, to, view })),
+  events: events.map((e) => ({ ...e, phase: e.bar < a ? 'open' : e.bar < b ? 'build' : 'peak' })).sort((x, y) => x.bar - y.bar), feel: null, storm: false, strength: 1, swings: [] }; };
 
-/** One leg of the test crossing, in schedule()'s shape (one phase, one view, no swing). */
+/** One leg of the showcase crossing, in schedule()'s shape (one view, no swing): the forms' open, build and peak; a foe leg's E and Q
+ *  block its open, the roster its build, the escort and its gunship (the longest stretch) its peak. */
 export function showLeg(type) {
   if (type === 'show.forms') {
-    const e = (bar, kind, name, params) => ({ bar, phase: 'show', pattern: { name, params, from: 'ahead', kind, mode: 'cone' } });
-    return plan(type, SHOW.forms, 'chase', [
+    const e = (bar, kind, name, params) => ({ bar, pattern: { name, params, from: 'ahead', kind, mode: 'cone' } });
+    return plan(type, [4, 12, SHOW.forms], 'chase', [
       e(4, 'astral', 'oddFan', { volleys: 2 }), e(6, 'astral', 'rotatingRing', { volleys: 3 }), // (Astral: in the Astral form, drunk)
       e(8, 'umbral', 'oddFan', { volleys: 2 }), e(10, 'umbral', 'rotatingRing', { volleys: 3 }), // (Umbral: flip, or dodge)
       e(12, 'astral', 'mixed', { of: 'aimedBurst', share: 1 }), e(14, 'umbral', 'mixed', { of: 'aimedBurst', share: 1 }), // (outlined: only the roll)
@@ -66,16 +74,17 @@ export function showLeg(type) {
   }
   const V = VIEW[type]; if (!V) return null;
   const [v, view] = V, mode = modeOf(view), events = [];
-  const open = (bar, kind, name, params) => events.push({ bar, phase: 'show', pattern: { name, params, from: 'ahead', kind, mode } });
+  const open = (bar, kind, name, params) => events.push({ bar, pattern: { name, params, from: 'ahead', kind, mode } });
   open(1, 'astral', 'mixed', { of: 'aimedBurst', share: 1 }); // (an outlined volley: E, the mast folding on every hull)
   open(2, 'astral', 'oddFan', { volleys: 2 }); open(3, 'umbral', 'oddFan', { volleys: 2 }); // (a block of each form: Q)
-  let b = SHOW.lead;
+  let b = SHOW.lead, peak = null;
   for (const [foe, R] of Object.entries(ROSTER)) {
     if (!R.views.includes(v) || foe === 'carrier' || R.shown) continue;
-    if (R.with) events.push({ bar: b, phase: 'show', wave: { role: R.with, formation: 'hold', count: 1, cls: ROSTER[R.with].cls } });
-    events.push({ bar: b, phase: 'show', wave: { role: foe, formation: R.formation, count: R.count, cls: R.cls } });
-    if (R.spawns) for (let t = 1; t < (R.show || SHOW.foeBars); t += R.spawns.every) events.push({ bar: b + t, phase: 'show', wave: { role: R.spawns.role, formation: 'line', count: R.spawns.count, cls: ROSTER[R.spawns.role].cls } });
-    R.fires.forEach((f, i) => events.push({ bar: b + 1 + i, phase: 'show', pattern: { name: f.name, params: { ...(f.params || {}) }, from: foe, kind: i % 2 ? 'umbral' : 'astral', mode: modeOf(view) } }));
+    if (R.with) peak = b;
+    if (R.with) events.push({ bar: b, wave: { role: R.with, formation: 'hold', count: 1, cls: ROSTER[R.with].cls } });
+    events.push({ bar: b, wave: { role: foe, formation: R.formation, count: R.count, cls: R.cls } });
+    if (R.spawns) for (let t = 1; t < (R.show || SHOW.foeBars); t += R.spawns.every) events.push({ bar: b + t, wave: { role: R.spawns.role, formation: 'line', count: R.spawns.count, cls: ROSTER[R.spawns.role].cls } });
+    R.fires.forEach((f, i) => events.push({ bar: b + 1 + i, pattern: { name: f.name, params: { ...(f.params || {}) }, from: foe, kind: i % 2 ? 'umbral' : 'astral', mode: modeOf(view) } }));
     b += R.show || SHOW.foeBars;
   }
   return plan(type, [SHOW.lead - 1, peak ?? b, b], view, events);
