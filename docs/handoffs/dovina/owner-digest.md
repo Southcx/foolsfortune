@@ -7,3 +7,10 @@ is recorded where it binds.
 The owner kept Pneuka Box and Possibilikey, took Agitation and Map (everyone/2026-10-20-from-dovina-five-names.md), and said the Zone of
 Influence "would apply more to Puzzle Duels anyway". Open: does the explored ground become plain "explored area" on screen, and the
 Zone of Influence the name of your side of the Line in a duel (once duels are called final)?
+
+## 2. The crossing's chase camera (Calissa, 2026-10-20)
+Mock v3.1 (https://claude.ai/artifact/FHfYKA9ktYJYtFRjb5bNb1) frames the chase view closer and lower than the game:
+- the mock: cam [0, 3, -5], look [0, 0, 12], follow 0.62, with the ship bigger in frame;
+- the game: courier/ship/views.js VIEW_RIGS.chase, cam [0, 2.2, -7.5], look [0, 1, 20], follow 0.35.
+
+Play both and pick one; Petra takes the pick.
