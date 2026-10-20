@@ -89,7 +89,7 @@ export class Mounts {
   toll({ ship, waves, shots, bar }) {
     const W = TOLL_BEAT.window, onBeat = Math.abs(bar - Math.round(bar)) < W || Math.abs(bar * 4 - Math.round(bar * 4)) < W, r = (MOUNTS.crucibelle.range ?? 10) * (onBeat ? TOLL_BEAT.boost : 1); // (the table's ring; on the beat, boost times it)
     for (const s of shots.plains) if (s.on && !s.back && s.p.distanceTo(ship.local) < r) s.on = false; // (plain shots only: an outlined one is the parry's alone)
-    for (const f of waves.within(ship.local, r)) if (f.role === 'boarder') waves.strike(f, 99, { cause: 'impact' });
+    for (const f of waves.within(ship.local, r)) { if (f.role === 'boarder') waves.strike(f, 99, { cause: 'impact' }); f.onToll?.(f); } // (onToll: a blocker's weak point held open, world/emocean/foemechanics.js)
     this.stage.piece?.scatter?.();
     this.game.vfx?.play?.('hit.blunt.crystal.kill', { pos: this.stage.rail.toWorld(ship.local, new THREE.Vector3()), power: 2.5 });
     sfx.gong?.(); this.stage.trauma = Math.min(1, this.stage.trauma + 0.25);
@@ -124,7 +124,8 @@ export class Mounts {
     const C = CONE.sondelass, piece = this.stage.piece;
     let best = null, bd = C.range, isCask = false;
     const on = (p) => inCone(p, ship.nose, ship.aim, C.half, C.range);
-    for (const f of waves.foes) if (f.alive && f.role === 'boarder' && on(f.local)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; isCask = false; } }
+    // (a boarder, or a grappler holding on: world/emocean/foemechanics.js)
+    for (const f of waves.foes) if (f.alive && (f.role === 'boarder' || f.held) && on(f.local)) { const d = f.local.distanceTo(ship.local); if (d < bd) { bd = d; best = f; isCask = false; } }
     for (const c of piece?.floating || []) if (on(c.local)) { const d = c.local.distanceTo(ship.local); if (d < bd) { bd = d; best = c; isCask = true; } }
     if (!best) return false;
     if (isCask) piece.gather(best); else waves.strike(best, 99, { cause: 'hook' });

@@ -97,7 +97,7 @@ export class Ship {
   begin(aspect = 'mirth', ship = 'sloop') {
     this.home = this.aspect = aspect; this.qSaid = false; this.form = 'astral'; this.surge = 0;
     this.local.set(0, CRUISE, 0); this.vel.set(0, 0, 0); this.cursor.x = 0; this.cursor.y = 0.15; this.boxSet = false;
-    this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
+    this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0; this.drag = 1;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
     this.rehull(ship);
@@ -132,7 +132,7 @@ export class Ship {
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
     const want = _a.set(0, 0, 0);
-    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace, box: (this.hull?.box ?? 1) * F.box };
+    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace * (this.drag ?? 1), box: (this.hull?.box ?? 1) * F.box }; // (drag: a grappler holding on, world/emocean/foemechanics.js)
     want[ax.k] += h * ax.s * S.top * hull.pace; want[ay.k] += v * ay.s * S.top * hull.pace;
     const pl = planeOf(plane);
     // boost and brake: the place along the rail (in the screen plane, where z is otherwise pinned)
