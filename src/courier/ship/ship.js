@@ -9,8 +9,8 @@
 //             bug, RAIL-OVERHAUL.md 1.4), and a ray from the camera through it each frame: the gun aims where it meets the plane 36 m
 //             ahead, or at the first foe it crosses; two marks on the nose's line, at 12 m and there (Star Fox 64: depth read without
 //             stereo, Sin & Punishment's free cursor); above, twin-stick: the gun toward the cursor on the sea plane, no lock-on (the
-//             owner, 2026-10-20); side fires along the scroll, and abeam (into the screen) while a set piece runs alongside (the brig's
-//             broadside, Old Nobody's flank)
+//             owner, 2026-10-20); side the same on the wall plane, the lock-on kept (RAIL-MODULES.md 1.5), and abeam (into the screen)
+//             while a set piece runs alongside (the brig's broadside, Old Nobody's flank)
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
@@ -50,7 +50,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
 const VIEW_FWD = { chase: [0, 0, 1], free: [0, 0, 1], astern: [0, 0, -1], above: [0, 0, 1], side: [0, 0, 1] };
 const VIEW_RIGHT = { chase: 1, free: 1, astern: -1, above: 1, side: 1 };
-const RET = { chase: 1, free: 1, astern: 1, above: 1 }; // (the views with a free cursor: above is twin-stick, the owner's ruling 2026-10-20; side fires along the scroll)
+const RET = { chase: 1, free: 1, astern: 1, above: 1, side: 1 }; // (the cursor aims in every view: above twin-stick, the owner's ruling 2026-10-20; side too, RAIL-MODULES.md 1.5)
 /** The forms (RAIL-OVERHAUL.md 4): pace and box as shares, the gun, the lock-on's most; Umbral rides low (a stand-in until Calissa's
  *  surface from below: the dive's look). */
 const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
@@ -140,7 +140,7 @@ export class Ship {
     this.local.addScaledVector(this.vel, dt);
     // the box: the view's reach on the screen for the two axes its plane moves (views.reachOf: the frame less 8%), the old box for the
     // pinned one; its edges ease to a new view's (a swing turns the plane at its midpoint: the ship is drawn in, never snapped)
-    const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0, cam = this.game.camera, Rv = reachOf(view, cam?.aspect || 16 / 9, T.camera.tpFov);
+    const B = S.box, k = hull.box, zc = pl === 'screen' ? this.boostZ : 0, cam = this.game.camera, dz = pl === 'screen' ? Math.round(this.boostZ * 2) / 2 : 0, Rv = reachOf(view, cam?.aspect || 16 / 9, T.camera.tpFov, 0.84, [dz, dz]); // (at the boost's depth, to half a metre)
     const want2 = this.boxWant ||= { x: [0, 0], y: [0, 0], z: [0, 0] }, box = this.box ||= { x: [0, 0], y: [0, 0], z: [0, 0] };
     want2.x[0] = (Rv.x ? Rv.x[0] : -B.x) * k; want2.x[1] = (Rv.x ? Rv.x[1] : B.x) * k;
     want2.y[0] = B.yLo + F.cruise * 0.5; want2.y[1] = B.yLo + ((Rv.y ? Rv.y[1] : B.yHi) - B.yLo) * k + F.cruise;
@@ -207,30 +207,24 @@ export class Ship {
     this.retNear = _sp.copy(this.nose).addScaledVector(this.aim, Math.min(d1, far.distanceTo(this.nose) * 0.5)).clone(); // (the near mark always nearer than the far)
     this.retFar = far.clone();
   }
-  /** Is a point in the rail's frame on the screen through this camera, inside 0.95 of its edge? */
-  seen(local, cam) { cam.updateMatrixWorld(); this.rail.toWorld(local, _e).project(cam); return _e.z < 1 && Math.abs(_e.x) <= 0.95 && Math.abs(_e.y) <= 0.95; }
   /** The gun's way in a view (abeam: into the screen, at a set piece alongside in the side view). */
   gunWay(view, abeam) { return abeam && view === 'side' ? ABEAM_WAY : VIEW_FWD[view] || VIEW_FWD.chase; }
   /** Does the view aim by the cursor? (the free views; the maelstrom's arena in the side view: charybdis.js) */
   cursorOn(view, arena) { return !!(RET[view] || arena) && VIEW_RIGS[view] != null; }
-  /** The far reticle in one view, into `out`: the plane 36 m out from the nose along the gun's way, square to it, where the cursor's ray
-   *  meets it, or the first foe that ray crosses before it (what is under the cursor is what is shot); along the scroll in a view with
-   *  no cursor. A ray that meets the plane behind the eye (mid-swing, the camera still turned away) takes the cursor's ray 36 m out,
-   *  never a point off the screen. */
+  /** The far reticle in one view, into `out`: where the cursor's ray meets the plane the ship sails in (above, side), or the plane 36 m
+   *  out from the nose along the gun's way, square to it (chase, free, astern, and abeam), or the first foe that ray crosses before it
+   *  (what is under the cursor is what is shot). A ray that meets its plane behind the eye (mid-swing, the camera still turned away)
+   *  takes the cursor's ray 36 m out, never a point off the screen. */
   farOf(view, abeam, waves, arena, out) {
     const d2 = T.ship.reticles[1], f = this.gunWay(view, abeam), cam = this.game.camera, R = this.rail;
     const nose = _nz.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
-    if (!this.cursorOn(view, arena)) { // (along the scroll: 36 m ahead, drawn in to the screen's edge where the ship rides near it)
-      _b.set(f[0], f[1], f[2]); out.copy(nose).addScaledVector(_b, d2);
-      if (cam && R.toWorld && !this.seen(out, cam)) { let lo = 2, hi = d2; for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2; if (this.seen(out.copy(nose).addScaledVector(_b, m), cam)) lo = m; else hi = m; } out.copy(nose).addScaledVector(_b, lo); }
-      return out;
-    }
     out.copy(nose).addScaledVector(_b.set(f[0], f[1], f[2]), d2);
-    if (!cam || !R.toLocal) return out;
+    if (!this.cursorOn(view, arena) || !cam || !R.toLocal) return out;
     cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(this.cursor.x, this.cursor.y), cam);
     R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
-    if (planeOf(view) === 'sea') { // (twin-stick above: the cursor where it meets the sea plane the ship sails in, the gun toward it)
-      const t = Math.abs(_d.y) > 1e-4 ? (this.local.y - _o.y) / _d.y : -1;
+    const pl = planeOf(view), ax = pl === 'sea' ? 'y' : pl === 'wall' && f !== ABEAM_WAY ? 'x' : null;
+    if (ax) { // (the scroll views: the cursor where it meets the plane the ship sails in, the gun toward it; abeam in the side view the gun still goes into the screen, at the set piece alongside)
+      const t = Math.abs(_d[ax]) > 1e-4 ? (this.local[ax] - _o[ax]) / _d[ax] : -1;
       return out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);
     }
     _fv.set(f[0], f[1], f[2]); const dn = _d.dot(_fv), t = Math.abs(dn) > 1e-4 ? _w.copy(out).sub(_o).dot(_fv) / dn : -1;
