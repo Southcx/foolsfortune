@@ -538,6 +538,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the seal picker / the imprint's look** (`SealPicker`, `src/ui/sealpicker.js`; `SealImprints`, `src/vfx/sealimprint.js`) — your seal chosen once at
   the title, as a ceremony, shown on a cradle and in the Seal Book before you confirm / the imprint burned into a cradle at `seal.set`, dim after.
   *Not:* the cradles (`world/cradles.js`).
+- **the cradle's look / a helm cradle** (`CradleLook`, `src/vfx/cradlelook.js`; `helmCradles`, `vfx/sloop.js`, `vfx/shipclasses.js`) — a cradle's body as built (the octagonal clay well, its gold collar and four tines, lit in the window colour while sealed), shared by the Shrine's threshold and every ship / the one (the galleon's two) at a ship's helm, where a crossing is sealed into. *Not:* the cradles (`world/cradles.js`), the imprint's look.
 - **the Sight / the Lachrimeter's tube** (working name, Espada's to rule; the look `game.sightLook`, `src/vfx/sight.js`, the waypoint Dovina's `game.sight`, `progress/sight.js` / `LachrimeterTube`, `src/vfx/lachrimetertube.js`)
   — the instrument top-right (a needle to the waypoint you know of, the weather's liquid, a wadokei hour ring, the Dissonance arc, the place
   plate) / the Lachrimeter as a thermometer bottom-right (the bulb and column the pool, the held stretch, the expansion chamber, the Bottles'

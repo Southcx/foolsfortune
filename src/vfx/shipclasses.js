@@ -16,6 +16,10 @@
 //   5  the Solar Skiff's green spars and red swallowtail pennant (the skiff is the Vessoul's limb)
 //   6  the Mind's labradorite line along the gunwale (vfx/labradorite.js: the line every Mind thing is drawn in), so a hull reads as
 //      the Vessoul's at a glance on a sea of other ships; the sloop keeps the look the owner approved
+// THE HELM, as the sloop's (vfx/sloop.js seatHelms, HANKO.md 4): a plinth of the hull's plain clay on its top skin and a cradle sat in
+// it at the Pneuka Jar's scale (`helm`: each cradle's [x, z]): the frigate's between its mizzen and main, the destroyer's at its fin's
+// foot (a submarine's after-deck), the galleon's twin helms either side of its mizzen before the stern castle (a co-op cradle, HANKO.md
+// 4: two seals), the tanker's behind its kiln, before the mouth.
 // Size from ships.js's hurtbox (the sloop's 7 m times it); role in the silhouette: the frigate's third mount a gun ring each side,
 // the destroyer low and long, the galleon tall, the tanker long and low.
 //
@@ -26,11 +30,11 @@
 // Mind's line, so a class sailed adds no shader program (measured: docs in the report).
 //
 //   shipLook(id, { env }) -> a Sloop or a ShipClassLook (the same API: group, set, polarity, hurt, hoist, keelMat, mouth, gunAt,
-//   length, beam, dispose)   SHIP_FORMS[id] (the numbers)   new ShipClassLook(id, { env })
+//   length, beam, helmCradles, helmCradle, helmCradleSpots, helmWake, dispose)   SHIP_FORMS[id] (the numbers)   new ShipClassLook(id, { env })
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { Sloop, SLOOP, JAR, jarHull, jarDeck, sailMaterial, furlRoll, FURL } from './sloop.js';
+import { Sloop, SLOOP, JAR, jarHull, jarDeck, sailMaterial, furlRoll, FURL, seatHelms } from './sloop.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dressChestGlaze, chestGlazeUniforms } from './chestglaze.js';
 import { vfxTexture } from './vfx.js';
@@ -47,22 +51,22 @@ export const SHIP_FORMS = {
   frigate: {
     pot: 'meiping', length: 7.7, beam: 2.3, draft: 0.9, sheer: [0.62, 0.4, 0.34], body: 0x8f9a86, deck: 0xd9cdb4, net: 0.24,
     profile: [[0, 0], [0.03, 0.3], [0.14, 0.52], [0.32, 0.7], [0.5, 0.87], [0.66, 1], [0.78, 0.97], [0.86, 0.66], [0.91, 0.4], [0.95, 0.38], [1, 0.46]],
-    masts: [{ z: 2.0, h: 6.4, sails: 2 }, { z: -0.2, h: 7.4, sails: 2 }, { z: -2.2, h: 5.6, sails: 1 }], jib: true, guns: 3, kiln: -2.9,
+    masts: [{ z: 2.0, h: 6.4, sails: 2 }, { z: -0.2, h: 7.4, sails: 2 }, { z: -2.2, h: 5.6, sails: 1 }], jib: true, guns: 3, kiln: -2.9, helm: [[0, -1.2]],
   },
   destroyer: {
     pot: 'kinuta', length: 7.6, beam: 1.6, draft: 0.75, sheer: [0.42, 0.22, 0.05], body: 0x8fbfa6, deck: 0xcfe0d2, net: 0.26,
     profile: [[0, 0], [0.02, 0.4], [0.07, 0.72], [0.14, 0.9], [0.3, 0.97], [0.5, 1], [0.6, 0.98], [0.66, 0.6], [0.7, 0.34], [0.86, 0.3], [0.95, 0.33], [1, 0.42]],
-    masts: [], fin: { z: 0.2, h: 1.7, len: 1.9 }, ears: true, kiln: null,
+    masts: [], fin: { z: 0.2, h: 1.7, len: 1.9 }, ears: true, kiln: null, helm: [[0, -1.0]],
   },
   galleon: {
     pot: 'ginger jar', length: 10.2, beam: 3.4, draft: 1.1, sheer: [0.7, 0.45, 0.2], body: 0xf2f0ea, deck: 0xe6dcc6, net: 0.2,
     profile: [[0, 0], [0.03, 0.42], [0.1, 0.7], [0.24, 0.94], [0.44, 1], [0.62, 0.95], [0.76, 0.8], [0.86, 0.58], [0.91, 0.44], [0.96, 0.44], [1, 0.48]],
-    masts: [{ z: 3.0, h: 7.6, sails: 2 }, { z: 0.6, h: 9.0, sails: 3 }, { z: -1.8, h: 6.6, sails: 2 }], jib: true, lid: true, bands: true, kiln: null,
+    masts: [{ z: 3.0, h: 7.6, sails: 2 }, { z: 0.6, h: 9.0, sails: 3 }, { z: -1.8, h: 6.6, sails: 2 }], jib: true, lid: true, bands: true, kiln: null, helm: [[-0.74, -1.55], [0.74, -1.55]],
   },
   tanker: {
     pot: 'onggi', length: 11.2, beam: 3.6, draft: 1.2, sheer: [0.38, 0.22, 0.12], body: 0x4a2c1c, deck: 0x8a6a4c, net: 0.18,
     profile: [[0, 0], [0.03, 0.46], [0.1, 0.76], [0.22, 0.95], [0.4, 1], [0.62, 1], [0.78, 0.95], [0.88, 0.82], [0.94, 0.74], [1, 0.78]],
-    masts: [{ z: -3.6, h: 3.4, sails: 0 }], domes: 5, kiln: -4.0,
+    masts: [{ z: -3.6, h: 3.4, sails: 0 }], domes: 5, kiln: -4.0, helm: [[0, -4.97]],
   },
 };
 
@@ -107,6 +111,8 @@ export class ShipClassLook {
       add(this.body, new THREE.SphereGeometry(0.62, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), plain, 0, deckY, F.kiln);
       add(this.body, new THREE.CircleGeometry(0.2, 12, 0, Math.PI), this.kiln, 0, deckY + 0.02, F.kiln + 0.6, false);
     }
+    // the helm: a plinth of the hull's plain clay, the cradle (the galleon's two) sealed into at the pier (vfx/sloop.js seatHelms)
+    this.helmCradles = seatHelms(add, this.body, F.helm, plain, F.profile, dims); this.helmCradle = this.helmCradles[0];
     // the gun at the bow (Petra's to fit), and the frigate's guns in rings down each side (its third mount)
     add(this.body, new THREE.CylinderGeometry(0.22, 0.28, 0.2, 8), dark, 0, deckY + 0.12, L * 0.3);
     this.gunAt = new THREE.Object3D(); this.gunAt.position.set(0, deckY + 0.32, L * 0.3); this.body.add(this.gunAt);
@@ -198,9 +204,10 @@ export class ShipClassLook {
     // the Lachryma it rides on
     this.keelMat = track(new THREE.MeshBasicMaterial({ color: C.lach, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
     const keel = add(this.group, new THREE.CircleGeometry(1, 24), this.keelMat, 0, -F.draft - 0.05, 0, false); keel.rotation.x = -Math.PI / 2; keel.scale.set(F.beam * 0.6, L * 0.45, 1);
-    mergeStatic(this.body, { keep: new Set([this.pennant, this.gunAt, this.line, ...this.sails.map((s) => s.mesh)]) });
+    mergeStatic(this.body, { keep: new Set([this.pennant, this.gunAt, this.line, ...this.sails.map((s) => s.mesh), ...this.helmCradles.map((c) => c.group)]) });
     causticsOn(this.body);
     for (const m of this.mats) keepTrue(m);
+    for (const c of this.helmCradles) for (const m of c.lit) keepTrue(m);
     this.set({});
   }
 
@@ -233,11 +240,15 @@ export class ShipClassLook {
     this.pennant.rotation.y = Math.PI / 2 + side * 0.6 + Math.sin(t * 6) * 0.08;
     this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
     this.kiln.color.setRGB(1, 0.55 + 0.2 * Math.sin(t * 3), 0.3).multiplyScalar(0.6 + 0.4 * glow);
+    this.helmTick(t);
   }
+  helmTick(t) { Sloop.prototype.helmTick.call(this, t); }
+  helmCradleSpots() { return Sloop.prototype.helmCradleSpots.call(this); }
+  helmWake(on = true, i = 0) { Sloop.prototype.helmWake.call(this, on, i); }
   polarity(hex) { _pc.setHex(hex); this.mouth.color.copy(_pc); this.keelMat.color.copy(_pc); }
   hurt(k) { Sloop.prototype.hurt.call(this, k); }
   hoist(medal) { Sloop.prototype.hoist.call(this, medal); }
-  dispose() { this.group.parent?.remove(this.group); for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.(); }
+  dispose() { Sloop.prototype.dispose.call(this); }
 }
 const _pc = new THREE.Color();
 
