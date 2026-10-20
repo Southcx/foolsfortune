@@ -647,6 +647,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the crackle break** (working name, Espada's to rule; `CrackleBreak`, `src/vfx/crackbreak.js`) — a stunned Figment's glaze shell crazing and
   bursting (about 0.3 real s) just before the data drain takes it (.hack's Protect Break). *Not:* the bubble, a guard break, the vessel's cracks.
 - **the aberrant encounter's wipe** (`AberrantWipe`, `game.aberrantWipe`, `src/vfx/aberrantwipe.js`) — the battle transition into a puzzle duel with an aberrant: the frame caught and drawn toward it, its data bug showing, the held frame crazing, then shattering along the Line. *Not:* the maw wipe, the glitch, the crackle break.
+- **the pull's edge** (`AberrantWipe.edgeK`, `src/vfx/aberrantwipe.js`; `/pull`) — the pull toward an aberrant (`game.duelFoes.pull`) worn as a chromatic aberration creeping in from the view's edges, the middle always clean, before its wipe. *Not:* the wipe, the glitch, the pull itself (Petra's).
+- **the aberrant inversion** (`AberrantInversion`, `src/vfx/aberrantinvert.js`) — an aberrant Figment drawn in its colours inverted while it lives, on copies of its materials, a placeholder for its own look. *Not:* a data bug, the cast.
+- **the blob shadow** (`BlobShadow`, `game.blobShadow`, `src/vfx/blobshadow.js`) — the soft dark disc straight down under the Courier on whatever is below, smaller and fainter with height, beside the sun's shadow. *Not:* the sun's shadow, the aura's stain.
 - **a data bug** (working name; `DataBugs`, `game.dataBugs`, `src/vfx/databug.js`) — an aberrant or stray Figment or a blotling drawn wrong on
   purpose: one still error (a limb off its socket, its skin slid, a magenta cast) and a dark aura; a drain mends it. Always "a data bug" in
   full. *Not:* a bug in the code, the corrupted body.
