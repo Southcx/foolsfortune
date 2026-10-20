@@ -12,7 +12,7 @@ let fails = 0, seed = 7; const rng = () => { seed = (seed * 16807) % 2147483647;
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], plus = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 /** The three views, in the rail's frame: where the thrower stands, where the ship is, the plane's normal (world/emocean views.js). */
 const VIEWS = {
-  chase: { mode: 'cone', up: [0, 1, 0], from: [4, 6, 40], ship: [0, 4, 0], box: 7.5 }, // (the ship braked: ±7.7 m, Petra's depth box of v239)
+  chase: { mode: 'cone', up: [0, 1, 0], from: [4, 6, 40], ship: [0, 4, 0], box: 8.8 }, // (the ship braked: ±8.8 m on the mock's camera, Petra's depth box of v244)
   above: { mode: 'plane', up: [0, 1, 0], from: [6, 4, 26], ship: [0, 4, 0], box: 12 },
   side:  { mode: 'plane', up: [1, 0, 0], from: [0, 7, 24], ship: [0, 4, 0], box: 12 },
 };
