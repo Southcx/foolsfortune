@@ -187,15 +187,16 @@ export class LanternWisps {
   update(dt) {
     const g = this.game, P = g.player;
     for (const c of this.list) {
-      c.mixer.update(dt);
       if (!c.alive) {
+        if (c.dying != null) c.mixer.update(dt); // (the Death clip plays out; a wisp gone or far has no pose to run: the deep clean's tick profile)
         if (c.dying != null && (c.dying -= dt) <= 0) { c.dying = null; if (this.game.figmentScatter?.play(c, { hide: true }) == null) c.root.visible = false; } // (a Figment's scatter, then gone: vfx/figmentscatter.js)
         c.deadT += dt;
         if (c.deadT > WISP.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 12) this.reform(c);
         continue;
       }
-      if (c.taking || c.stashed) continue;
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;
+      if (!far) c.mixer.update(dt); // (a far wisp is not drawn: no pose to run)
+      if (c.taking || c.stashed) continue;
       if (far) { c.brain.update(dt); continue; }
       const k = (c.dueling || st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k;
       c.want.set(0, 0, 0); c.face = null;

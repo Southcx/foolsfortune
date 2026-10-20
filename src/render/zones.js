@@ -55,6 +55,17 @@ export { zoneOf, wholeOf };
 
 const _c = new THREE.Vector3(), _s = new THREE.Sphere(), _b = new THREE.Box3();
 
+/** A root hidden by zone: off, and its subtree's matrices left as they are (the scene's pass composed every hidden object's each draw,
+ *  80 to 84% of 5,300: up to 6 ms of the Dunes' draw, the deep clean's profile); shown again, brought up to date at once. A position
+ *  asked for (getWorldPosition, a box) works its own matrices out, so nothing reads a stale one but the renderer, which draws none. */
+const SKIP_MATRICES = function () {};
+function setZoneOff(o, off) {
+  if (o.zoneOff === off) return;
+  o.zoneOff = off;
+  if (off) o.updateMatrixWorld = SKIP_MATRICES;
+  else { delete o.updateMatrixWorld; o.updateMatrixWorld(true); }
+}
+
 export class Zones {
   constructor(game) {
     this.game = game;
@@ -117,12 +128,12 @@ export class Zones {
     if (!changed && same && this.t > 0) return;
     this.t = 0.25;
     for (const o of g.scene.children) {
-      if (o.userData.zoneFree || o.isLight || o.isPoints || o.isSprite || o.frustumCulled === false && !o.userData.zone) { if (o.zoneOff) o.zoneOff = false; continue; }
+      if (o.userData.zoneFree || o.isLight || o.isPoints || o.isSprite || o.frustumCulled === false && !o.userData.zone) { if (o.zoneOff) setZoneOff(o, false); continue; }
       Zones.install(o);
       const z = this.place(o, changed || !same);
       // (things only worth drawing up close, such as the floor labels: `userData.maxDist`)
       const far = o.userData.maxDist ? o.getWorldPosition(_c).distanceTo(cam) > o.userData.maxDist : false;
-      o.zoneOff = far || (z !== null && !vis.has(z));
+      setZoneOff(o, far || (z !== null && !vis.has(z)));
     }
   }
 

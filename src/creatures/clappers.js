@@ -22,6 +22,7 @@ import { actPose, startAct } from './idleacts.js';
 import { greyTexture, greyTint, cloneTinted } from '../vfx/greytint.js';
 import { starGeometry } from '../vfx/dizzy.js';
 import clapperjarBaseB64 from '../assets/clapperjar_base.png?b64';
+const farFrom = (P, p) => Math.abs(P.x - p.x) > 150 || Math.abs(P.z - p.z) > 150 || Math.abs(P.y - p.y) > 60; // (the creatures' one level of detail: jellies' and wisps' too)
 const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -231,9 +232,10 @@ export class Clappers {
 
   // ---- AI + movement (fixed step) ------------------------------------------------
   fixedUpdate(dt) {
-    const C = T.clappers;
+    const C = T.clappers, P = this.game.player.pos;
     for (const c of this.list) {
       if (!c.alive) continue;
+      if (farFrom(P, c.pos) && !c.held) continue; // (far from the Courier, a clapperjar rests where it is, as the jellies and wisps do: the deep clean's tick profile)
       c.prevPos.copy(c.pos);
       if (c.held || c.pinned) { // in the god hand's grip, or anchored: no walking, no falling
         if (c.held) { c.pos.copy(c.holdPos); c.state = 'knocked'; c.spin = Math.sin(c.t * 9) * 0.4; c.speed = 0; }
@@ -565,6 +567,7 @@ export class Clappers {
     const player = this.game.player.renderPos;
     for (const c of this.list) {
       if (!c.alive) continue;
+      if (farFrom(player, c.pos) && !c.held) continue; // (not drawn from there: no pose to run)
       c.t += dt;
       // fresh from the kiln: white-hot, then a glowing orange, then terracotta (about 7 s)
       if (c.cool > 0) {

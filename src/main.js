@@ -1203,6 +1203,7 @@ async function main() {
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
     const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    const worldAsleep = !!game.realm?.active; // (in the Spirit Garden the island's own bodies hold still: its jellies, wisps, pots, clapperjars, fish and chests, 1.8 of the garden's 4.2 ms a tick, the deep clean's profile; the minds and statuses run on, the garden's spirits are among them)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
     game.god?.arts?.powers?.update(dt); // (what the hand's powers leave lasting: rifts, wards, totems, workers: godhand/powers.js)
@@ -1230,9 +1231,9 @@ async function main() {
       }
       game.realm?.fixed(FIXED); // (the Jar and the spirits on their planetoids)
       game.party.fixed(FIXED); // (the siblings: coop/party.js)
-      clappers.fixedUpdate(FIXED);
+      if (!worldAsleep) clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
-      breakables.preStep();
+      if (!worldAsleep) breakables.preStep();
       diag.begin('physics'); physics.step(FIXED); diag.end('physics');
       movers.post(FIXED);
       acc -= FIXED;
@@ -1253,7 +1254,7 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
-    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.wisps?.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
@@ -1330,8 +1331,8 @@ async function main() {
     god.jar.clips?.update(dt); // (the Pneuka Jar's own clips, chosen by whichever mode draws it: godhand/pneukajarclips.js)
     weapon.updateDebris(dt);
 
-    diag.begin('props'); breakables.update(dt); diag.end('props');
-    clappers.update(dt, acc / FIXED);
+    diag.begin('props'); if (!worldAsleep) breakables.update(dt); diag.end('props');
+    if (!worldAsleep) clappers.update(dt, acc / FIXED);
     shells.update(dt);
     baubles.update(dt);
     baubles.tick(dt);
@@ -1340,8 +1341,7 @@ async function main() {
     course.update(dt);
     game.circuits.update(dt);
     game.cubes.update(dt);
-    game.chests.update(dt);
-    game.weir.update(dt);
+    if (!worldAsleep) { game.chests.update(dt); game.weir.update(dt); }
     game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
