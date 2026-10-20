@@ -179,7 +179,7 @@ export class Emocean {
     this.rail.seat(this.t);
     if (!this.trip.active) this.legs(bar);
     const rel = this.piece ? bar - this.piece.leg.from : 0;
-    this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) || !!this.charybdis?.holding, arena: !!this.charybdis?.holding }); // (the arena: Charybdis abeam, the cursor free in the side view)
+    this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) || !!this.charybdis?.holding, arena: !!this.charybdis?.holding, swing: sw }); // (the arena: Charybdis abeam, the cursor free in the side view; the swing: the reticle eased across it)
     if (!this.stage.active || this.offering) return;
     const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves };
     this.piece?.update(dt, rel, ctx);
@@ -191,12 +191,15 @@ export class Emocean {
     this.settle();
     this.hold();
     this.form = this.ship.form; // (Wanda's ambience reads it: under, the music low-passed)
-    this.camera(raw);
-    this.ship.reaim(); // (the reticle under the cursor through this frame's camera)
+    this.camera(raw); // (the ship is aimed again once main.js has placed the camera: reaim below)
     this.look(raw, bar);
     for (const b of this.plan.beats || []) if (bar >= b.bar && !this.beaten.has(b.bar)) { this.beaten.add(b.bar); g.events?.emit('rail.beat', { beat: b.beat, setPiece: b.setPiece, leg: b.leg, by: 'environment' }); }
     if (this.t >= this.stage.seconds) this.finish(true);
   }
+
+  /** After the camera is placed this frame (main.js, after player.updateCamera): the reticle under the cursor through this frame's
+   *  camera, not the last frame's (RAIL-BUGS-MEASURED.md 2.5: 0.02 to 0.05 of the screen behind in a swing). */
+  reaim() { if (this.stage.active && !this.offering) this.ship.reaim(); }
 
   /** The legs: a set piece's director from its first bar to its last; a breather between two mends the ship. */
   legs(bar) {

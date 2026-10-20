@@ -38,6 +38,8 @@ export class Charybdis {
 
   /** Whether Charybdis is held in the arena now (the ship's aim turns abeam, the cursor free: stage.js). */
   get holding() { return this.active && !!this.foe?.alive; }
+  /** What the maelstrom's patterns fire from ('object': legs.js): Charybdis while it holds. */
+  emitter() { return this.holding ? this.foe : null; }
 
   update(dt, bar) {
     if (!this.active) return;
