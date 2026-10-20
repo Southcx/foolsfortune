@@ -211,8 +211,7 @@ export class PiratesPiece {
     }
   }
 
-  /** The hook's: the nearest floating cask within r of a point (rail frame), and gathering it. */
-  nearestCask(p, r) { let best = null, bd = r; for (const c of this.floating) { const d = c.local.distanceTo(p); if (d < bd) { bd = d; best = c; } } return best; }
+  /** The hook's (courier/ship/mounts.js): a floating cask reeled aboard. */
   gather(c) { const i = this.floating.indexOf(c); if (i < 0) return; this.floating.splice(i, 1); c.m.visible = false; this.stage.run.won++; sfx.pop?.(2); this.game.events?.emit('rail.gather', { casks: 1, by: 'courier' }); }
 
   finish() {

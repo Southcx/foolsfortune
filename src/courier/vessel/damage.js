@@ -129,6 +129,7 @@ export class VesselDamage {
 
   /** A blow on them: resolved to a region, that region cracked by `k` (0..1). */
   hit({ point = null, from = null, dir = null, k = 0.5, why = 'blow', by = 'environment' } = {}) {
+    if ((this.game.duel?.active || this.game.duel?.pending) && by !== 'courier') return -1; // (a puzzle duel is a pocket: nothing outside reaches you, PUZZLE-DUELS.md 16.1)
     if (this.game.cradles?.sealed) return this.game.cradles.struck({ point, from, dir, k, why, by }); // (a sealed Jar is struck only through its cradle: world/cradles.js)
     if (!this.boxes || this.game.death?.active) return -1;
     if (this.game.courierMind) k *= courierMindEffect(this.game.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)

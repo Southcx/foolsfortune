@@ -708,3 +708,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 242. **A shared material is never changed by one of its users.** A module that restyles what it holds
     (transparent for an order, a colour for a mark) skips anything marked `userData.shared`, or gives its part a material of its own.
+
+243. **Whatever holds the Courier in place holds what could reach them.** A mode that takes the
+    Courier's body (a duel, a cutscene) holds the creatures round them, clears what is in flight, and refuses an outside blow at the one
+    door every blow comes through (`vesselDamage.hit`), not at each creature.
+
+244. **What only one action may answer is left out by name in every other's loop.** An outlined
+    shot is the parry's alone, so a bomb's or a vacuum's sweep walks the plain shots only; a sweep over "all shots" breaks the rule
+    without a word.

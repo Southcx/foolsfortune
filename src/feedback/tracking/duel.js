@@ -3,12 +3,14 @@
 // only text feedback) and kept on the ledger: begun, the Figment broken by your junk, and its end, won (drained, or the finisher), lost, or fled.
 // The words are Espada's (docs/LORE.md, "The puzzle duel's words"); the log says "duel", the genre's word.
 //
-//   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, need, ok }   duel.end { kind, won, how, turns, atOnce }   (each with `by`)
+//   duel.pull { foe }   duel.slip   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, need, ok }   duel.end { kind, won, how, turns, atOnce }   (each with `by`)
 //
 //   duelRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 
 export function duelRules({ on, L, log }) {
+  // the pull (world/duel/duelfoes.js): its look and sound say it; the log says only an escape (a plain placeholder line, Espada's to word)
+  on('duel.slip', (e) => { if (e.by !== 'courier') return; L.inc('duel.slip'); log.say('battle', 'You pull away from the aberrant.', { key: 'duel.slip', throttle: 2 }); });
   on('duel.open', () => { L.inc('duel.open'); log.say('battle', 'An aberrant Figment seizes your mind. The duel begins.'); });
   on('duel.break', (e) => { if (e.by !== 'courier') return; L.inc('duel.break'); log.say('battle', 'You break the Figment.', { key: 'duel.break', throttle: 1 }); });
   // duel.flee { roll, need, ok, by }: the saving throw out (progress/duel/flee.js; the plan's lines, section 15)

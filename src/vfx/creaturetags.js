@@ -53,7 +53,7 @@ const MAX = 3, REACH = 18, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25
 const MINIMAL = new Set(['name', 'health']); // (visual.creatureTagsMinimal: the lines kept)
 const W = 228, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168, RISE = 30;
 // the readout's grid, in dots: a label column, values right-aligned at the row's end, rows at least 1.5x the cap height apart
-const LBL = 40, GAP = 5, ROW = 17, NAME_H = 20, HID_H = 20, FN_H = 24;
+const LBL = 41, GAP = 5, ROW = 17, NAME_H = 20, HID_H = 20, FN_H = 24; // (41: AGITATION at the label's 11 px, measured 37.9 px in Jersey 15)
 const PX = { label: 11, word: 12, num: 14, small: 11, name: 14 };
 const HAND_S = 0.8, HAND_FN = 0.95; // (the running hand's scale: a letter about 10 dots tall, 15 px at 720 lines)
 // the sprite: a base of 44 x 36 cells, shown on a grid a step finer a familiarity level, over the same area of the screen
@@ -63,7 +63,7 @@ const FILM_HI = ['#8a5cff', '#3fc4f0', '#f6cd5a', '#ff5aa8'], FILM_LIT = ['#b49c
 const PAL = { lab: '#8fd8b0', dim: '#8fd8b0', val: VFD, glow: VFD_GLOW, word: '#e2fff0', wordGlow: 'rgba(60,255,190,.35)' };
 const TONES = ['#0b3d2a', '#2a9e6e', '#7dffd2', '#e9fff7'], SHADOW = '#020a06';
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
-const LABEL = { habit: 'NOW', health: 'HP', emo: 'EMO', statuses: 'STATUS', weak: 'WEAK', grain: 'NATURE' };
+const LABEL = { habit: 'NOW', health: 'HP', emo: 'AGITATION', statuses: 'STATUS', weak: 'WEAK', grain: 'NATURE' };
 // the statuses' motes: doubt and charm are the mock's; the others are placeholders (a colour and a 7 x 7 glyph each) until the auras' table
 const ST = { doubt: '#5fd0ff', charm: '#ff86b6', stun: '#ffd56b', blind: '#c9b8ff', confusion: '#9dff8a' };
 const GLYPH = {
@@ -252,7 +252,7 @@ function rowPlain(g, r, fam, x, y, w) {
     bar(g, MX, mid, vw ? room(vw) : XR - MX, L.value ?? 0, fam); return;
   }
   if (r.key === 'emo') {
-    label(g, 'EMO', x, y, h); const exact = typeof L.value === 'number', band = exact ? (L.value < EMO.optimal[0] ? 0 : L.value > EMO.optimal[1] ? 2 : 1) : ['low', 'optimal', 'hot'].indexOf(L.value);
+    label(g, LABEL.emo, x, y, h); const exact = typeof L.value === 'number', band = exact ? (L.value < EMO.optimal[0] ? 0 : L.value > EMO.optimal[1] ? 2 : 1) : ['low', 'optimal', 'hot'].indexOf(L.value);
     const vw = exact ? num(g, L.value.toFixed(2).replace(/^0/, ''), XR, y, h) : num(g, String(L.value).toUpperCase(), XR, y, h, PX.small);
     emoTrack(g, MX, mid, Math.max(16, room(vw)), band, exact ? L.value : null); return;
   }
