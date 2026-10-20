@@ -255,7 +255,7 @@ the lock-on, the roll, the forms, the Bomb, a mount, and moving.
 | **sniper** | +1 | x1 | one aimed beam: its warning line a bar (sweepBeam with from = to = 0), then it burns | holds at the frame's far edge, 4 bars | C O S | stepping off the line |
 | **ambusher** | +1 | x1 | an oddFan of 5 as it passes | from behind (side: the left edge; overhead: the bottom edge; chase: a flank), always announced by its edge mark a bar before (rule 7); overtakes and leaves ahead | C O S | reading the edge marks |
 | **turret** | +1 | x2 | rotatingRing or aimedBurst | none of its own: it sits on wreckage or a rock and scrolls with the world | O S | a fixed emitter: where to stand |
-| **mine-layer** | +1 | x1 | none itself. It drops a mine each beat it crosses: a shot that is a foe (HP 1, worth 50), which bursts into a ring of 8 after 2 bars or when you pass within 3 m | crosses the frame once, side to side | O S | clearing a lane before you need it |
+| **mine-layer** | +1 | x1 | none itself. It drops a mine each beat it crosses: a shot that is a foe (HP 1, worth 50), which bursts into a ring of 8 (speed 9) after 2 bars or when you come within 8 m (3 m left 0.16 real s to react; the fairness rule wants 0.5, and 8 m gives 0.63) | crosses the frame once, side to side | O S | clearing a lane before you need it |
 | **escort** (the shield escort) | +1 | x2 | a slow aimed single | flies a tether's length off the gunship or heavy it guards; while it lives its charge takes no harm (armour 0) | C O S | target priority |
 | **carrier** (built) | +1 | x2 | any pattern with no thrower of its role in frame (legs.js `from`) | from the view's far edge over the windup, holds while it fires, leaves (CARRIER_AT) | C O S | that every shot has a body |
 | **sweeper** (the laser sweeper) | +2 | x1 | sweepBeam: a warned line that sweeps slower than the ship can run | holds at an edge for the sweep's length | C O S | reading a beam |
@@ -280,6 +280,9 @@ A 16-bar practice leg splits as: open bars 1 to 4, build 5 to 9, peak 10 to 14, 
 - the open teaches one foe at a time;
 - the build pairs a foe with its answer's opposite (a turret with a sweeper: stand still, then move);
 - the peak is the set piece.
+
+**As data:** each row is `ROSTER` in `progress/rail/showcase.js`, its path column as `moves` (arc, dash, charge, hold, overtake, fixed,
+cross, tether, drift, swing) and the mine as `mine`; Petra's runtime reads them (`world/emocean/foemechanics.js`).
 
 **Every number above is a first guess.** The simulator (`scripts/rail.mjs`) re-measures par once the roster is laid into the legs.
 
