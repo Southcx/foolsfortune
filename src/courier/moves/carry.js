@@ -9,7 +9,7 @@
 // OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
 // swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT_T), which are the
 // game's feel and do not change. IK only closes the palms on the pot's sides, each hand the clip's turned the least way to face
-// it (Final IK's hand effector: full position weight, the clip's rotation kept but for that swing; CASEBOOK NEW:ik-hand-from-clip).
+// it (Final IK's hand effector: full position weight, the clip's rotation kept but for that swing; CASEBOOK 239).
 // The carry's hold rides the hands (CASEBOOK rules 43 and 212): the carrying clip lays its arms and spine over the
 // walk and leaves the hips to it (`hipW` 0), and the pot is set where that clip's palms are, eased in the body's frame (FOLLOW), never
 // at a height fixed to the capsule with the body bobbing under it. A held prop follows the hand that holds it, as an engine attaches
@@ -521,7 +521,7 @@ export class Carry extends Tech {
       const inward = left.clone().multiplyScalar(-sg);
       // the palm against its side: the clip's own hand turned the least way that faces its palm inward (a swing, its fingers kept where
       // the clip points them), never a turn set whole in the world. Set whole (fingers up), the wrists bent 108 to 123 degrees toward the
-      // thumb and back against ranges of 20 and 70 for the whole hold, and no swing of the elbow could take that up (NEW:ik-hand-from-clip)
+      // thumb and back against ranges of 20 and 70 for the whole hold, and no swing of the elbow could take that up (239)
       const hq = ch.arm[s].hand.getWorldQuaternion(_q2);
       const palm = _v3.copy(ch.arm[s].palmLocal).applyQuaternion(hq).normalize();
       const q = new THREE.Quaternion().setFromUnitVectors(palm, inward).multiply(hq);

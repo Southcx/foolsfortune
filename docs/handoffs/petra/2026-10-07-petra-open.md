@@ -32,4 +32,4 @@ still open, one line each, with its source. The owner's calls are marked.)
   normal sets once, or drop the toggle's live rewrite, then free the arrays on upload (bounds computed first).
 - The paint map's walls: ~15 MB in five per-cell arrays (k and hData Float32). Live state (k fades by dt); the owner allowed its heap.
 - The chests (7.3 MB), the Shrines (4.6 MB), the Dunes' chunks and batches (~9 MB), the Spirit Garden's brush and planetoids (~7 MB,
-  held before the garden is entered: a case for NEW:lend-the-big-ground).
+  held before the garden is entered: a case for 234).

@@ -128,7 +128,7 @@ export class Bazaar {
   }
 
   /** While a window holds the world (the table's own page is one: main.js returns before update), the seat's clock still runs, so the
-   *  folk take their turns under it (CASEBOOK, NEW:modal-pauses-the-table). */
+   *  folk take their turns under it (CASEBOOK, 233). */
   tickModal(dt) { if (this.session?.open) this.session.update(dt); }
 
   /** `/howto`: the how-to of the table you sit at (the chat line exists only after boot: asked here, the first frame it does). */
