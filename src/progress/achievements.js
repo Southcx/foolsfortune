@@ -572,6 +572,8 @@ export function buildAchievements(game) {
   C('ms5', 'move', 'Air', 3, 'mechanic', 'Old Faithful', 'Ollie off a geyser.', 'skiff.ollie.geyser', 1);
   C('rl1', 'emocean', 'Sea Stages', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times in a sea stage.', 'rail.rolls', 50);
   C('rl2', 'emocean', 'Sea Stages', 2, 'perfect', 'Mission Accomplished', "Earn a crossing's medal: every leg's count of downs reached, with no continue.", 'rail.medal', 1);
+  C('go1', 'general', 'Achievements', 2, 'count', 'Three for Three', "Finish all three of a game day's goals (/goals).", 'goal.day.all', 1);
+  C('go2', 'general', 'Achievements', 3, 'count', 'Goal Getter', "Finish fifty of the game days' goals.", 'goal.done', 50);
   C('rl14', 'emocean', 'Sea Stages', 3, 'count', 'Medal Run', "Reach a leg's count of downs for its medal ten times.", 'rail.leg.medal', 10);
   C('rl15', 'emocean', 'Sea Stages', 3, 'perfect', 'Clean Leg', 'Sail one leg of a crossing without a hit.', 'rail.leg.clean', 1);
   C('rl3', 'emocean', 'Sea Stages', 4, 'perfect', 'Rank S', 'Score at par on a sea stage.', 'rail.rank.S', 1);
