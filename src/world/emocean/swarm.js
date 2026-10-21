@@ -24,7 +24,7 @@ import { CARRIER_AT } from '../../progress/rail/legs.js';
 import { CRUISE } from '../../courier/ship/views.js';
 import { viewFrame } from './foemoves.js';
 
-const CROSS_S = 5, CONTACT = 1.6, VOXEL = 0.7; // (real s to cross the frame; how near is a touch, m; a voxel's edge, m)
+const CROSS_S = 5, CONTACT = 1.6, VOXEL = 0.7, BODY_R = 1.26; // (real s to cross the frame; how near is a touch, m; the placeholder voxel's edge, m; a member's hurt sphere, m: its fry drawn 1.8 times a voxel, vfx/voxels SWARM_SCALE, and the sphere never smaller than the silhouette, RAIL-FLOW.md 6.3)
 const _t = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _z = new THREE.Vector3(0, 0, 0);
 const ease = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 let GEO = null; const MATS = new Map();
@@ -42,7 +42,7 @@ export class Swarm {
     this.span = { across, along };
     const cols = shape === 'river' ? Math.ceil(n / 3) : n;
     this.slot = (i, t, out) => { // (member i's place on the shape at t real s)
-      const run = 1.25 - (1.5 * t) / CROSS_S;
+      const run = 1.12 - (1.5 * t) / CROSS_S; // (in from just past the far edge: a third of a real s to come in)
       if (shape === 'river') { const c = i % cols, r = Math.floor(i / cols); return this.place(-0.8 + (1.6 * c) / Math.max(1, cols - 1) + 0.08 * Math.sin(t * 1.2 + r), run + (r * 2.2) / along, Math.sin(t * 1.6 + c * 0.7) * 0.8, out); }
       if (shape === 'ribbon') { const u = i / n, g = u * Math.PI * 4 + t * 2.4, S = W.ship?.local; const a0 = S ? (plane ? (side ? (S.y - (B.y[0] + B.y[1]) / 2) / across : S.x / B.x) : S.x / (B.x * 0.8)) : 0;
         return plane ? this.place(a0 + 0.45 * Math.sin(g), run + u * 0.6, 0, out) : this.place(a0 + (Math.cos(g) * 5) / (B.x * 0.8), run + u * 0.6, Math.sin(g) * 3 + (S ? S.y - CRUISE - 0.5 : 0), out); }
@@ -52,7 +52,7 @@ export class Swarm {
       else { out.x += Math.cos(g) * (0.6 + burst); out.y += Math.sin(g) * (0.6 + burst) * 0.6; out.z += Math.sin(g * 1.7) * burst * 0.4; }
       return out;
     };
-    this.gone = (p, t) => (shape === 'bloom' ? t > 4 * BAR_S : 1.25 - (1.5 * t) / CROSS_S < -0.35) || (plane && (p.z < B.z[0] - 8 || p.z > B.z[1] + 30)) || (!plane && p.z < -14);
+    this.gone = (p, t) => (shape === 'bloom' ? t > 4 * BAR_S : 1.12 - (1.5 * t) / CROSS_S < -0.35) || (plane && (p.z < B.z[0] - 8 || p.z > B.z[1] + 30)) || (!plane && p.z < -14);
     this.flock = new Flock({ max: n, sep: [1.3, 1.8], align: [3.5, 0.7], coh: [5, 0.4], speed: 14, turn: 7, stride: n > 32 ? 2 : 1 });
     this.mesh = new THREE.InstancedMesh(GEO ||= new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL), matOf(aspect), n);
     this.mesh.frustumCulled = false; this.mesh.userData.zoneFree = true; W.scene.add(this.mesh);
@@ -62,7 +62,7 @@ export class Swarm {
     for (let i = 0; i < n; i++) {
       this.slot(i, 0, _t); const k = this.flock.add(_t.x, _t.y, _t.z, 0, 0, -10);
       const f = W.add({
-        kind: 'rail.swarm', name: 'a body of the swarm', role: 'swarm', cls, aspect, radius: VOXEL, hp, local: _t.clone(), form: 'swarm',
+        kind: 'rail.swarm', name: 'a body of the swarm', role: 'swarm', cls, aspect, radius: BODY_R, hp, local: _t.clone(), form: 'swarm',
         tick: (dt, m) => this.tick(m), onGone: () => this.flock.remove(k), onDown: () => this.look?.down(i),
       });
       f.k = k; f.slotI = i; this.members.push(f);
