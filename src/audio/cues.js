@@ -100,6 +100,8 @@ const RULES = {
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
+  'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
+  'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
   'opensea.board': (s, e, g) => { s.openSeaBoard?.(); s.openSeaHelmStart?.(() => (g.opensea?.sailing ? { k: Math.abs(g.opensea.helm?.speed || 0) / 15 } : null)); },
   'opensea.moor': (s) => { s.openSeaHelmEnd?.(); s.openSeaMoor?.(); },
