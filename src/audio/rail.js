@@ -115,4 +115,70 @@ export class RailSounds {
     this.tone(t, 0.3, { f0: 330, f1: 120, type: 'sawtooth', gain: 0.05, dest: d });
     this.noise(t, 0.08, { type: 'bandpass', f0: 1800, f1: 4000, q: 1.5, gain: 0.25, dest: d });
   }
+
+  // ---- the crossing to the genre's standards (docs/plans/RAIL-STANDARDS.md 1, 4, 6: Dovina's asks), each on the music's sixteenth but
+  // the boss's fall, which is the freeze's own time
+  /** A lock dropped (its foe left the frame or the plane: RAIL-MODULES.md 1.5): the lock's degree falling back to the one below, quieter
+   *  than the lock, so the ear hears the count go down. */
+  railLockDrop(n = 0, grid = null) {
+    if (!this.ok() || !this.allow('railLockDrop', 12)) return;
+    const t = this.onSixteenth(grid), k = Math.max(0, Math.min(7, n)), m = SCALE[k] + this.railKey(grid), d = this.out(0.16, 0.3);
+    this.tone(t, 0.12, { f0: hz(m), f1: hz(k > 0 ? SCALE[k - 1] + this.railKey(grid) : m - 2), type: 'triangle', gain: 0.5, dest: d });
+    this.noise(t, 0.008, { type: 'highpass', f0: 5000, gain: 0.18, dest: d });
+  }
+  /** A boss's part broken (rail.part): a crack under the down's pop, glaze snapping in a little run, and a thud for its weight. */
+  railPartCrack(grid = null) {
+    if (!this.ok() || !this.allow('railPartCrack', 8)) return;
+    const t = this.onSixteenth(grid), d = this.out(0.34, 0.35);
+    this.noise(t, 0.03, { type: 'highpass', f0: 3500, gain: 0.7, dest: d }); // (the crack)
+    for (let i = 1; i < 5; i++) this.noise(t + i * 0.018 + Math.random() * 0.006, 0.012, { type: 'bandpass', f0: 2600 + i * 500, q: 3, gain: 0.35 / i, dest: d });
+    this.tone(t, 0.22, { f0: 120, f1: 50, gain: 0.45, dest: d });
+  }
+  /** A hazard passed close (rail.hazard: a pillar, an arch, a gate): air torn past on its side (`side` -1 left .. 1 right, 0 overhead for
+   *  an arch flown through), its peak on the next sixteenth, louder the nearer (`near` 0..1). */
+  railHazard(kind = 'pillar', side = 0, near = 0.5, grid = null) {
+    if (!this.ok() || !this.allow('railHazard', 6)) return;
+    const c = this.ctx, now = c.currentTime, peak = Math.max(now + 0.06, this.onSixteenth(grid)), k = Math.max(0.2, Math.min(1, near));
+    const p = c.createStereoPanner(); p.pan.setValueAtTime(side * 0.3, now); p.pan.linearRampToValueAtTime(side * 0.9, peak + 0.2); p.connect(this.out(0.32 * k, 0.25));
+    const up = peak - now, f = kind === 'gate' ? 1400 : kind === 'arch' ? 900 : 700;
+    this.noise(now, up + 0.25, { type: 'bandpass', f0: f * 0.5, f1: f * 2.2, q: 1.4, gain: 0.6, attack: up * 0.9, dest: p }); // (the rush in, the tear past)
+    if (kind === 'arch') this.tone(peak, 0.3, { f0: 330, f1: 300, type: 'triangle', gain: 0.06, dest: p }); // (the stone singing as it goes over)
+    else this.tone(peak, 0.12, { f0: 160, f1: 70, gain: 0.25 * k, dest: p });
+  }
+  /** A ring threaded (rail.ring): a chime up the scale, the `i`th of a turn's five; `all` the fifth, and the five sound again as a chord
+   *  on the sixteenths after it (Star Fox's gold rings: it mends a hit). */
+  railRing(i = 0, all = false, grid = null) {
+    if (!this.ok() || !this.allow('railRing', 10)) return;
+    const t = this.onSixteenth(grid), key = this.railKey(grid), d = this.out(0.24, 0.5), RUN = [0, 2, 4, 6, 7];
+    const bell = (at, m, g) => { this.tone(at, 0.6, { f0: hz(m), gain: g, dest: d }); this.tone(at, 0.3, { f0: hz(m) * 2.76, gain: g * 0.18, dest: d }); };
+    bell(t, SCALE[RUN[Math.max(0, Math.min(4, i))]] + key, 0.3);
+    if (!all) return;
+    const step = grid?.spb ? grid.spb / 4 : 0.094;
+    [76, 79, 83, 86, 88].forEach((m, j) => bell(t + step * (j + 1) * 0.5, m + key, 0.16)); // (the chord rolled in, E minor add 9)
+    this.noise(t + step, 0.8, { type: 'highpass', f0: 7000, gain: 0.08, attack: 0.1, dest: d }); // (the shimmer of the mend)
+  }
+  /** A medal won (rail.leg.end with a medal, and the results window's): a short brass call up the chord, its last note held over a
+   *  shimmer, on the sixteenths. */
+  railMedal(grid = null) {
+    if (!this.ok() || !this.allow('railMedal', 2)) return;
+    const t = this.onSixteenth(grid), key = this.railKey(grid), step = grid?.spb ? grid.spb / 4 : 0.094, d = this.out(0.3, 0.55, true);
+    [[64, 1], [71, 1], [76, 1], [79, 1], [83, 4]].forEach(([m, l], j) => {
+      const at = t + j * step, f = hz(m + key);
+      this.tone(at, step * l + 0.15, { f0: f, type: 'sawtooth', gain: 0.05, dest: d });
+      this.tone(at, step * l + 0.15, { f0: f * 1.003, type: 'square', gain: 0.025, dest: d });
+    });
+    this.noise(t + step * 4, 1.2, { type: 'highpass', f0: 6500, gain: 0.07, attack: 0.05, dest: d });
+  }
+  /** A boss's fall (the stage's 0.25 real s freeze, then 0.8 real s at 0.35 speed: RAIL-STANDARDS.md 1): the blow, a held breath through
+   *  the freeze, a tape-slowed groan down an octave through the slow, and the bell of it over when time comes back. */
+  railBossFall() {
+    if (!this.ok() || !this.allow('railBossFall', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.6), FREEZE = 0.25, SLOW = 0.8;
+    this.noise(t, 0.08, { type: 'lowpass', f0: 6000, f1: 800, gain: 0.8, dest: d }); // (the blow)
+    this.tone(t, FREEZE + SLOW, { f0: 90, f1: 28, gain: 0.7, dest: d }); // (the sub falling away)
+    this.noise(t + 0.02, FREEZE, { type: 'highpass', f0: 9000, gain: 0.06, attack: FREEZE * 0.8, dest: d }); // (the held breath)
+    [64, 67, 71].forEach((m) => this.tone(t + FREEZE, SLOW, { f0: hz(m), f1: hz(m - 12), type: 'sawtooth', gain: 0.035, dest: d })); // (the tape slowing)
+    this.noise(t + FREEZE, SLOW, { type: 'lowpass', f0: 2400, f1: 200, gain: 0.3, dest: d });
+    [76, 83, 88].forEach((m, j) => this.tone(t + FREEZE + SLOW + j * 0.02, 1.6, { f0: hz(m), gain: 0.09 / (j + 1), dest: d })); // (time back: the bell)
+  }
 }
