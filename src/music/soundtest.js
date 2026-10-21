@@ -26,6 +26,7 @@ import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN } from './emocean.js'
 import { CROSSING_TOUR } from './legs.js';
 import { RACEWAY_TOUR } from './raceway.js';
 import { RAIL_PRACTICE } from './railpractice.js';
+import { SEA_TOUR } from './opensea.js';
 import { CASINO_TOUR } from './casino.js';
 import { GREAT_JELLY_TOUR } from './greatjelly.js';
 import { GARDEN_TOUR, AWAKENING } from './garden.js';
@@ -64,6 +65,7 @@ export const TRACKS = [
   { id: 'crudesealeviathan', score: CRUDE_SEA_LEVIATHAN, title: 'Crude Sea: the Leviathan', where: 'a crossing\'s rare set piece: the rogue Leviathan', notes: 'The same crossing until bar 62, then the Leviathan\'s own motif (E, the Tear\'s F, E, C, B, two slow bars at the floor): it breaches and heaves, runs alongside breathing through its gills, sounds while a heartbeat quickens and the sea closes over, and meets you face to face with its motif as the war cry, into B major and home.' },
   { id: 'casino', score: CASINO_TOUR, title: "Raku's Bazaar", where: "Raku's casino under its dome: the floor, a table, a win", notes: 'A circus march in F at 152 bpm (the Gold Saucer\'s welcome): an oom-pah under a calliope\'s tune on celesta and concertina; sat at a table it drops to a lounge in the same key, the tune through a door on the vibes; a win brings the floor back with two bars of brass.' },
   { id: 'raceway', score: RACEWAY_TOUR, title: 'The Raceway', where: 'the Solar Skiff\'s test track: the paddock, the countdown, the race', notes: 'E major with its flat seventh at 140 bpm (E D A B): the paddock waiting in the sun on a phaser guitar, the grid held on a heartbeat and a riser, the race on four to the floor with a supersaw\'s arpeggio, the last lap with the Answer on brass, and the flag.' },
+  { id: 'opensea', score: SEA_TOUR, title: 'Off the Lanes', where: 'the open sea, at the free helm', notes: 'A swell in 6/8 whose mode is the square\'s law: Lydian by Margarite, Dorian in the middle (here at a quay, the deck aboard), Phrygian by Entropolis; then three rows off the lanes and lost (a drone, a whale, the tune frayed and a theremin wandering), then moored at an islet (a music box).' },
   { id: 'railpractice.overhead', score: RAIL_PRACTICE.overhead, title: 'Rail practice: overhead', where: 'a rail view played alone, 16 bars', notes: 'E minor at 160 bpm (a bar 1.5 s): a tick on every beat, a crash every four bars, over the Crude Sea\'s turn: the grid an overhead view\'s patterns are learned on.' },
   { id: 'railpractice.side', score: RAIL_PRACTICE.side, title: 'Rail practice: side', where: 'a rail view played alone, 16 bars', notes: 'E minor at 160 bpm (a bar 1.5 s): a tick on every beat, a crash every four bars, over the Crude Sea\'s turn: the grid a side view\'s patterns are learned on.' },
   { id: 'railpractice.chase', score: RAIL_PRACTICE.chase, title: 'Rail practice: chase', where: 'a rail view played alone, 16 bars', notes: 'E minor at 160 bpm (a bar 1.5 s): a tick on every beat, a crash every four bars, over the Crude Sea\'s turn: the grid a chase view\'s patterns are learned on.' },

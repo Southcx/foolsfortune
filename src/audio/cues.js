@@ -11,6 +11,7 @@
 import { feelingOfKind } from './mycelium.js';
 
 const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
+const REPORT = { n: 0 }; // (reports paid at this dock: a coin a step up)
 const RING = { n: -1, at: 0 }; // (rings threaded in this turn: a chime a degree up each)
 const nearK = (n) => (n === true || n == null ? 0.8 : n > 1 ? Math.max(0.2, 1 - n / 8) : n); // (`near`: a flag, 0..1, or metres)
 const CEREMONY = { heard: false }; // (a score ceremony seen this session: the table view now paces the count)
@@ -99,6 +100,22 @@ const RULES = {
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
+  // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
+  'opensea.board': (s, e, g) => { s.openSeaBoard?.(); s.openSeaHelmStart?.(() => (g.opensea?.sailing ? { k: Math.abs(g.opensea.helm?.speed || 0) / 15 } : null)); },
+  'opensea.moor': (s) => { s.openSeaHelmEnd?.(); s.openSeaMoor?.(); },
+  'sea.chart': (s) => s.openSeaCharted?.(),
+  'sea.find': (s, e) => s.openSeaFind?.(e.tier ?? 1),
+  'sea.fix': (s, e) => s.openSeaFix?.(e.ok !== false),
+  'sea.drift': (s) => s.openSeaDrift?.(),
+  'sea.dock': (s) => { REPORT.n = 0; s.openSeaDock?.(); },
+  'sea.report': (s, e) => s.openSeaReport?.(REPORT.n++, e.tier ?? 1), // (a coin a find, each a step up: the dock's count)
+  'sea.tow': (s) => s.openSeaTow?.(),
+  'sea.fuel.low': (s) => s.openSeaFuelLow?.(),
+  'sea.secret': (s) => s.openSeaSecret?.(),
+  'sea.pair.half': (s) => s.openSeaPairHalf?.(),
+  'sea.pair': (s) => s.openSeaPair?.(),
+  'sea.lineup': (s) => s.openSeaLineup?.(),
+  'sea.stele': (s) => s.openSeaStele?.(),
   'sea.dig': (s, e) => s.seaDig?.(e.tier, e.cubes), // (a cache dug up on an islet: audio/treasure.js)
   'casino.howto': (s) => s.casinoPage?.(),
   'casino.result': (s, e) => s.casinoResult?.(!!e.won),

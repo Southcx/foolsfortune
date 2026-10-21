@@ -30,6 +30,7 @@ import { KILN, setKiln } from './kiln.js';
 import { RACEWAY, hearRace } from './raceway.js';
 import { CASINO, hearCasino } from './casino.js';
 import { phaseAt } from '../progress/weather.js';
+import { OPEN_SEA, setSea } from './opensea.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
 const DEEP_IN = 4.5, DEEP_OUT = 3; // (metres below the surface: into the Deep, back to the Shallows)
@@ -65,6 +66,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   }
   if (game.bazaar?.here) { hearCasino(game); return CASINO; } // (Raku's bazaar: the floor's march, the table's lounge, music/casino.js)
   if (game.raceway?.active) { hearRace(game); return RACEWAY; } // (the Raceway: the place, the countdown, the race and its last lap, music/raceway.js)
+  if (game.opensea?.active) { hearSea(game); return OPEN_SEA; } // (the open sea: its mode the square's law, its strangeness the rows off the lanes, music/opensea.js)
   const riding = !!game.techs?.get('skiff')?.riding;
   if (riding && !S.riding) S.shanty = (S.shanty + 1) % WORK_SONGS.length;
   S.riding = riding;
@@ -103,4 +105,12 @@ function hearRail(game) {
   game.events.on('rail.down', (e) => railHeat(HEAT.down * (1 + (e?.cls || 0) / 2)));
   game.events.on('rail.part', () => railHeat(HEAT.part));
   game.events.on('rail.core', () => railHeat(HEAT.core));
+}
+
+/** What the open sea tells its cue (music/opensea.js): the square you are in (its law and rows off the lane), your doubt, what you are moored at. */
+function hearSea(game) {
+  const O = game.opensea, v = O.voyage;
+  if (S.seaAt !== v?.at) { S.seaAt = v?.at; S.sea = O.grid?.squares?.find((q) => q.id === v?.at) || null; }
+  const sq = S.sea;
+  setSea({ law: sq?.law ?? 0, off: sq?.off ?? 0, doubt: v?.doubt ?? 0, moored: O.moored?.islet != null ? 'islet' : O.moored?.quay ? 'quay' : null });
 }
