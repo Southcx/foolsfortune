@@ -119,7 +119,7 @@ export class TripRun {
     if (leg.par == null) { leg.par = legPar(leg.laid); leg.medalAt = legMedal(leg.laid); }
     const downed = S.run.downed - (this.downedAt ?? S.run.downed), hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), continued = (this.V?.continues || 0) > (this.continuesAt || 0);
     const res = legResult({ plan: leg.laid, score, downed, continued });
-    const out = { type: leg.type, k, bars: leg.laid.bars, score: Math.round(score), par: res.par, medalAt: res.medalAt, rank: res.rank, medal: res.medal, downed, hits, first: !!leg.laid.first, practice: this.practice };
+    const out = { type: leg.type, k, bars: leg.laid.bars, score: Math.round(score), par: res.par, medalAt: res.medalAt, rank: res.rank, medal: res.medal, downed, hits, chain: S.run.legChain || 0, parts: S.run.legParts || 0, first: !!leg.laid.first, practice: this.practice };
     (S.run.legs ||= []).push(out);
     this.game.events?.emit('rail.leg.end', { ...out, by: 'courier' });
   }
@@ -204,7 +204,7 @@ export class TripRun {
     if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }, { first: !!leg.plan.first }); // (the Wreckers drawn by a loot; its lesson as laid)
     else this.runner.done = true;
     if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
-    this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score; this.downedAt = this.st.run.downed; this.continuesAt = this.V?.continues || 0;
+    this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score; this.downedAt = this.st.run.downed; this.continuesAt = this.V?.continues || 0; this.st.run.legChain = 0; this.st.run.legParts = 0;
     this.st.run.leg = leg.laid ? { k, type: leg.type, downed: 0, medalAt: leg.medalAt ?? null, par: leg.par ?? null } : null; // (the readout's: Calissa's)
     if (w.type === 'maelstrom') this.st.charybdis?.begin(k, w); // (its director: the arena and Charybdis, charybdis.js)
     if (leg.plan && this.hidden && this.hidden.k == null) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)

@@ -2,27 +2,27 @@
 // WHERE YOU FLY: a leg's hazards set in the lane and met by the hull, and the ring run paid (docs/plans/RAIL-STANDARDS.md 4; the data is
 // Dovina's: legs.js HAZARDS and RING_RUN, a plan's `hazard` events; the glossary's "a hazard / the ring run").
 //   A HAZARD is set LEAD bars before its bar on the rail where the ship will be then (railpath.js `at`: the world stands still and the
-//   rail carries the ship through it), in its lane of the frame's three (8 m apart, the carriers' lanes), placed again each frame from
-//   its event, so a boss hold that moves its bar or a relaid rail carries it along. Its edge mark shows a bar before it enters the frame,
-//   as a wave's does (game.edgeMark). It is judged once, as it passes the hull's own depth (boost and brake included), against the
-//   hurtbox (T.ship.hurt):
+//   rail carries the ship through it), in its lane of the frame's three (8 m apart, the carriers' lanes), its place in the rail's frame
+//   found again each frame from its event, so a boss hold that moves its bar or a relaid rail carries it along. It is drawn by
+//   Calissa's look (vfx/railhazards.js, game.railHazards: the place kept by reference, its edge mark a bar before it enters the frame)
+//   and judged once, as it passes the hull's own depth (boost and brake included), against the hurtbox (T.ship.hurt) and what is drawn:
 //     pillar  a column HAZARDS.pillar.radius wide: touched, a blow of `hits` the roll does not turn (rock is not a shot)
-//     arch    a span of HAZARDS.arch.span: flown through, it pays `pays`. Every arch of the leg threaded pays `all` more and is a find:
-//             the next fighting leg is sailed below, as the Light Whale's dive is (encounters.js ENCOUNTER.dive), by a hull that can dive
-//     gate    a wall across the frame with one gap HAZARDS.gate.gap wide in its lane: outside the gap, a blow of `hits`
+//     arch    a span of HAZARDS.arch.span: flown through under its opening, it pays `pays`. Every arch of the leg threaded pays `all` more
+//             and is a find: the next fighting leg is sailed below, as the Light Whale's dive is (encounters.js ENCOUNTER.dive), by a
+//             hull that can dive
+//     gate    a wall across the frame (wider than the hull can reach) with one gap HAZARDS.gate.gap wide in its lane: outside the gap,
+//             a blow of `hits`
 //   A hazard is set only where it can be seen coming: chase and free. Astern the camera stands ahead of the ship looking back, so a
 //   pillar or a gate would pass through the camera before it reached the hull, unseen: there only an arch is set (it can only pay).
 // THE RING RUN: the rings hung in each turn of the rail (vfx/crossinglook.js CROSSING_LOOK.rings, Calissa's: `per` a turn, radius `r`,
 //   `up` over the heartline), judged where they hang: the hull inside a ring as it passes pays RING_RUN.pays and `pool` Lachryma; all of
 //   one turn's mend `all.mend` hits and pay `all.pays` (the trip's hull with it: triprun.js mend).
 // Events: rail.hazard { kind, passed: 'clear' | 'hit' | 'through', near, side, all, by }   rail.ring { all, by }
-// The bodies are placeholders in plain stone until Calissa's: game.hazardLooks?.body(kind, spec) -> an Object3D built symmetric across,
-// y up from the heartline and z along the rail, set at the hazard's place and turn each frame and handed back with game.hazardLooks.free(body).
 //
 // Prior art: Star Fox 64's Corneria (its buildings and pillars make where you fly matter, its arches flown under open Sector Y, its gold
 // rings mend the shield), Rez's rings flown through.
 //
-//   const H = new Hazards(stage)   H.build(scene)   H.begin()   H.update()   H.end()   H.parked
+//   const H = new Hazards(stage)   H.begin()   H.update()   H.end()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
@@ -31,43 +31,20 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { ENCOUNTER } from '../../progress/rail/encounters.js';
 import { SHIPS } from '../../progress/rail/ships.js';
 import { CROSSING_LOOK } from '../../vfx/crossinglook.js';
+import { RAIL_HAZARD_LOOK } from '../../vfx/railhazards.js';
 import { CRUISE } from '../../courier/ship/views.js';
 
-const LANE = 8, NEAR = 2.5, TOP = 22, FOOT = -6, WALL = 34; // (the lanes' spacing, m; how close a pass is near, m; a body's top and foot in the rail frame, m; a gate's half width, m)
+const LANE = 8, NEAR = 2.5; // (the lanes' spacing, m: the carriers' lanes and the look's; how close a pass is near, m)
 const SEEN = { chase: ['pillar', 'arch', 'gate'], free: ['pillar', 'arch', 'gate'], astern: ['arch'] }; // (what may be set in a view)
 const LEAD = (CARRIER_AT.chase.box.z[1] / (T.ship.speed * BAR_S)) + 1; // (bars: from beyond the chase frame's far edge, a bar before it enters: its edge mark's time)
-const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _l = new THREE.Vector3(), _o = new THREE.Vector3();
-
-/** A placeholder body (plain stone, a few boxes and a cylinder) in the rail frame's axes: what a hazard is until Calissa's look. */
-function placeholder(kind, mat) {
-  const g = new THREE.Group(), add = (geo, x, y) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, 0); g.add(m); };
-  const H = TOP - FOOT, mid = (TOP + FOOT) / 2;
-  if (kind === 'pillar') add(new THREE.CylinderGeometry(HAZARDS.pillar.radius, HAZARDS.pillar.radius * 1.2, H, 10), 0, mid);
-  else if (kind === 'arch') { const s = HAZARDS.arch.span / 2 + 0.6; add(new THREE.BoxGeometry(1.2, H, 1.6), -s, mid); add(new THREE.BoxGeometry(1.2, H, 1.6), s, mid); add(new THREE.BoxGeometry(2 * s + 1.2, 2, 1.6), 0, TOP - 1); }
-  else { const gap = HAZARDS.gate.gap / 2, w = WALL - gap; add(new THREE.BoxGeometry(w, H, 1), -(gap + w / 2), mid); add(new THREE.BoxGeometry(w, H, 1), gap + w / 2, mid); }
-  g.userData.zoneFree = true; g.visible = false;
-  return g;
-}
+const SPAN = 2 * (CARRIER_AT.chase.box.x + 2); // (a gate's wall, m: wider than anywhere the hull can fly in the frame, so no way round it is open that is not drawn)
+const LOOK = RAIL_HAZARD_LOOK, OPENING = LOOK.arch.spring + LOOK.arch.span / 2; // (the arch's opening, m over the crude: what is drawn is what is threaded)
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _o = new THREE.Vector3();
 
 export class Hazards {
-  constructor(stage) { this.st = stage; this.game = stage.game; this.live = []; this.pool = { pillar: [], arch: [], gate: [] }; this.parked = null; }
-  build(scene) {
-    this.scene = scene;
-    this.mat = new THREE.MeshStandardMaterial({ color: 0x6f6a63, roughness: 0.9, flatShading: true }); // (a placeholder: Calissa's stone)
-    this.parked = placeholder('pillar', this.mat); scene.add(this.parked); this.pool.pillar.push(this.parked); // (parked for the warm-up's compile)
-  }
+  constructor(stage) { this.st = stage; this.game = stage.game; this.live = []; this.n = 0; }
   begin() { this.end(); this.done = new WeakSet(); this.sAt = null; this.turn = new Map(); this.arches = new Map(); }
-  end() { for (const h of this.live) this.free(h); this.live = []; }
-
-  body(kind) {
-    const L = this.game.hazardLooks?.body?.(kind, { span: HAZARDS.arch.span, gap: HAZARDS.gate.gap, radius: HAZARDS.pillar.radius, top: TOP, foot: FOOT, wall: WALL });
-    if (L) { L.userData.look = true; if (!L.parent) this.scene.add(L); return L; }
-    const b = this.pool[kind].pop() || placeholder(kind, this.mat); if (!b.parent) this.scene.add(b); return b;
-  }
-  free(h) {
-    h.body.visible = false; h.mark?.stop?.();
-    if (h.body.userData.look) this.game.hazardLooks?.free?.(h.body); else this.pool[h.kind].push(h.body);
-  }
+  end() { for (const h of this.live) h.look?.remove?.(); this.live = []; }
 
   /** Once a frame, after the trip: this leg's hazards set as they come within LEAD bars, carried, judged as they pass; the rings. */
   update() {
@@ -78,39 +55,38 @@ export class Hazards {
       for (const e of plan.events) {
         if (!e.hazard || this.done.has(e) || e.bar - LEAD > rel) continue;
         this.done.add(e);
-        const view = trip.viewAt(L.at + e.bar), kind = e.hazard.kind;
+        const view = trip.viewAt(L.at + e.bar), kind = e.hazard.kind, lane = e.hazard.lane || 0;
         if (!SEEN[view]?.includes(kind) || e.bar < rel) continue; // (not where it can be seen coming, or already past)
         if (kind === 'arch') { const a = this.arches.get(k) || { of: 0, through: 0 }; a.of++; this.arches.set(k, a); }
-        const h = { e, L, k, kind, x: (e.hazard.lane || 0) * LANE, body: this.body(kind), z: Infinity, judged: false };
-        this.place(h); h.body.visible = true;
-        const far = CARRIER_AT[view]?.box.z[1]; // (astern the frame lies behind the hull: an arch there has no mark to come in by)
-        if (view !== 'astern') h.mark = this.game.edgeMark?.show?.(_o.set(h.x, CRUISE + 1, far), Math.max(0.3, (h.z - far) / S.rail.speed), { kind: 'hazard' });
+        const h = { e, L, k, kind, lane, x: kind === 'gate' ? 0 : lane * LANE, local: new THREE.Vector3(), judged: false };
+        this.place(h);
+        const far = CARRIER_AT[view].box.z[1], warn = view === 'astern' ? 0 : Math.max(0.3, (h.local.z - far) / S.rail.speed); // (astern the frame lies behind the hull: an arch there has no mark to come in by)
+        h.look = this.game.railHazards?.place?.({ kind, id: `hz${++this.n}`, local: h.local, lane, span: kind === 'gate' ? SPAN : HAZARDS.arch.span, gap: HAZARDS.gate.gap, warn }) || null; // (Calissa's look: its local kept by reference)
         this.live.push(h);
       }
     }
     for (let i = this.live.length - 1; i >= 0; i--) {
-      const h = this.live[i], was = h.z; this.place(h);
-      if (!h.judged && was > ship.z && h.z <= ship.z) this.judge(h, ship);
-      if (h.z < -60) { this.free(h); this.live.splice(i, 1); }
+      const h = this.live[i], was = h.local.z; this.place(h);
+      if (!h.judged && was > ship.z && h.local.z <= ship.z) this.judge(h, ship);
+      if (h.local.z < -60) { h.look?.remove?.(); this.live.splice(i, 1); }
     }
     this.rings(ship);
   }
-  /** A hazard set from its event's bar on the rail as it is now laid, and where that is in the rail's frame this frame. */
+  /** A hazard's place in the rail's frame this frame, from its event's bar on the rail as it is now laid (a hold moves the bar, a
+   *  relay the rail: it follows both). Its look reads the same vector. */
   place(h) {
-    const S = this.st, R = S.rail, s = R.speed * BAR_S * (h.L.at + h.e.bar);
-    R.path.at(s, _p, _q);
-    h.body.position.copy(_p).add(_o.set(-h.x, 0, 0).applyQuaternion(_q)); h.body.quaternion.copy(_q); // (the rail frame's x is the world's -X, rail.toWorld; every body is symmetric across, so none is mirrored)
-    h.body.updateMatrixWorld();
-    R.toLocal(h.body.position, _l); h.z = _l.z; h.lx = _l.x;
+    const R = this.st.rail, s = R.speed * BAR_S * (h.L.at + h.e.bar);
+    R.path.at(s, _p, _q); _p.add(_o.set(-h.x, 0, 0).applyQuaternion(_q)); // (the rail frame's x is the world's -X: rail.toWorld)
+    R.toLocal(_p, h.local);
   }
-  /** A hazard passing the hull: a scrape, a gap missed, an arch threaded. */
+  /** A hazard passing the hull: a scrape, a gap missed, an arch threaded (by what its look draws: the arch's opening, the walls' tops). */
   judge(h, ship) {
     h.judged = true;
-    const S = this.st, r = S.run, hurt = T.ship.hurt, dx = ship.x - h.lx, ax = Math.abs(dx), H = HAZARDS[h.kind];
+    const S = this.st, r = S.run, hurt = T.ship.hurt, dx = ship.x - h.local.x, ax = Math.abs(dx), H = HAZARDS[h.kind];
     let passed = 'clear', near = false, all = false;
-    if (h.kind === 'pillar') { if (ax < H.radius + hurt) passed = 'hit'; else near = ax < H.radius + hurt + NEAR; }
-    else if (h.kind === 'gate') { if (ax > H.gap / 2 - hurt) passed = 'hit'; else near = ax > H.gap / 2 - hurt - 1; }
-    else if (ax < H.span / 2 - hurt) passed = 'through'; else near = ax < H.span / 2 + NEAR;
+    if (h.kind === 'pillar') { if (ax < H.radius + hurt && ship.y < LOOK.pillar.top + hurt) passed = 'hit'; else near = ax < H.radius + hurt + NEAR; }
+    else if (h.kind === 'gate') { const gx = Math.abs(ship.x - h.lane * LANE); if (gx > H.gap / 2 - hurt && ship.y < LOOK.gate.top + hurt) passed = 'hit'; else near = gx > H.gap / 2 - hurt - 1; }
+    else if (ax < H.span / 2 - hurt && ship.y < OPENING - hurt) passed = 'through'; else near = ax < H.span / 2 + NEAR;
     if (passed === 'hit') S.blow(H.hits || 1, { by: 'environment', what: h.kind, rollable: false }); // (the roll does not pass through rock)
     if (passed === 'through') {
       r.score += H.pays;
@@ -118,6 +94,7 @@ export class Hazards {
       const left = (S.trip?.runner?.plan?.events || []).some((e) => e.hazard?.kind === 'arch' && !this.done.has(e));
       if (!left && a.through === a.of) { all = true; r.score += H.all; this.find(); }
     }
+    h.look?.pass?.(passed);
     this.game.events?.emit('rail.hazard', { kind: h.kind, passed, near, side: dx >= 0 ? 1 : -1, all, by: 'courier' });
   }
   /** Every arch of a leg threaded: the next fighting leg sailed below (the Light Whale's dive's form and pay), by a hull that dives. */

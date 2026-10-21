@@ -187,6 +187,7 @@ export class Ship {
     if (hit.has('KeyR') && this.surge >= SURGE.full) this.letGo(waves, shots);
     const rmb = keys.has('Mouse2') && view !== 'above' && swing?.to !== 'above'; // (no lock-on above: the locks held fly as lances before a swing into it, RAIL-MODULES.md 1.5)
     if (rmb && !this.painting) { this.painting = true; this.locks.length = 0; }
+    if (this.painting) for (let i = this.locks.length - 1; i >= 0; i--) if (!this.locks[i].alive) { this.locks.splice(i, 1); this.game.events?.emit('rail.lock.drop', { n: i, by: 'courier' }); } // (a lock whose target is gone is dropped: its falling tick, audio/rail.js)
     if (!rmb && this.painting) {
       this.painting = false;
       const live = this.locks.filter((f) => f.alive);
