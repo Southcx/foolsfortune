@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE SHOTS' LOOK ON THE RAIL (docs/plans/RAIL-OVERHAUL.md section 8, "Readability"; the brief's "astral a white-gold core and a dark
+// THE SHOTS' LOOK ON THE RAIL (docs/plans/RAIL-OVERHAUL.md section 8, "Readability"; the brief's (its gold since taken out: RAIL-STANDARDS.md 8) "astral a white-gold core and a dark
 // rim, umbral a black core and a pale rim, elongated along their speed, drawn over everything; outlined shots keep Cuphead's pink",
 // which in this game is the parry mark: vfx/parrymark.js, its ink and its oil film). Every shot a crossing throws, in one instanced
 // draw (vfx/railmark.js): the psygun's own first (under), then the foes', far to near (a near shot over a far one), then the hurtbox
@@ -8,8 +8,8 @@
 //
 //   A FOE'S SHOT   a capsule from its tail to its head; the head is the hit sphere's centre and a little larger than it (a graze is
 //                  honest: Touhou draws a bullet bigger than its hitbox, never smaller), the tail as long as the shot is fast (0.06 s of
-//                  its flight, at most 3 m) and thinner, so it reads which way it flies even as a dot far off. Astral: white-gold core,
-//                  dark rim, a soft glow (reads on the gold storm by its rim, on the black crude by its core). Umbral: black core, pale
+//                  its flight, at most 3 m) and thinner, so it reads which way it flies even as a dot far off. Astral: white core (cool
+//                  at its edge, never gold: RAIL-MODULES.md 7, the storm's and the player's colour), dark rim, a soft cool glow (reads on the gold storm by its rim, on the black crude by its core). Umbral: black core, pale
 //                  rim, no glow (on the gold by its core, on the black by its rim). Outlined: the parry mark round it, either kind.
 //   THE PSYGUN'S   a needle in the ship's colour, white at its heart, light added: a thin streak going away, never a capsule with a rim
 //   THE HURTBOX    the ship's: a pale core and a dark ring whose outer edge is exactly the hurtbox's radius (`T.ship.hurt`), drawn on
@@ -42,8 +42,8 @@ export const RAIL_SHOT = {
 
 const _e = new THREE.Vector3(), _f = new THREE.Vector3();
 const NEAR = 6; // (metres: how near the eye a beam's head is drawn, at most)
-/** A laser's warning thread, by its kind: the astral's gold-white, the umbral's pale violet (linear light; the ribbon style's colour). */
-const BEAM_WARN = { astral: new THREE.Color(1.0, 0.85, 0.55), umbral: new THREE.Color(0.62, 0.55, 0.95) };
+/** A laser's warning thread, by its kind: the astral's cool white (never gold: RAIL-MODULES.md 7), the umbral's pale violet (linear light; the ribbon style's colour). */
+const BEAM_WARN = { astral: new THREE.Color(0.86, 0.93, 1.0), umbral: new THREE.Color(0.62, 0.55, 0.95) };
 
 export class RailShots {
   constructor({ cap = 400, guns = 128, beams = 0 } = {}) {
