@@ -3,7 +3,7 @@
 // crossing: "the storm bends the world, never the danger"). A mark is a SEGMENT seen by the camera: two points (A, B) and a half-width
 // at each, made into a quad in SCREEN SPACE by the vertex shader and shaded by its STYLE in the fragment shader:
 //
-//   astral    a foe's astral shot: a white-gold core, a dark rim, a soft glow (its core is past the glow's threshold, render/glow.js);
+//   astral    a foe's astral shot: a white core (cool at its edge, never gold: RAIL-MODULES.md 7), a dark rim, a soft cool glow (its core is past the glow's threshold, render/glow.js);
 //             a capsule from its tail (A) to its head (B), the head the hit sphere's centre, tapering to the tail so it reads which
 //             way it flies
 //   umbral    a foe's umbral shot: a black core and a pale rim (under the glow's threshold: no glow), the same capsule
@@ -140,7 +140,7 @@ void main() {
     } else {
       bool astral = st == 0;
       float inner = cover(0.58 * r - d);                                   // (the core: inside six tenths of the radius)
-      vec3 core = astral ? mix(vec3(1.0, 0.96, 0.86) * 4.2, vec3(1.0, 0.8, 0.42) * 2.4, smoothstep(0.0, 0.58, q)) * mix(0.4, 1.0, h)
+      vec3 core = astral ? mix(vec3(1.0, 1.0, 1.0) * 4.2, vec3(0.84, 0.91, 1.0) * 2.4, smoothstep(0.0, 0.58, q)) * mix(0.4, 1.0, h) // (white going a cool white at its edge: never gold, the storm's and the player's colour, RAIL-MODULES.md 7)
                          : vec3(0.0022, 0.0018, 0.0035);
       vec3 rim = astral ? vec3(0.016, 0.011, 0.02) : vec3(0.8, 0.78, 0.9) * mix(0.7, 1.0, h);
       col = mix(rim, core, inner) * body * al; a = body * al;
@@ -152,7 +152,7 @@ void main() {
         vec3 oc = mix(INK + f * 0.1, f * 0.95 + 0.05, smoothstep(ow - 2.4, ow - 0.6, e));
         col += oc * outline * (1.0 - a); a += outline * (1.0 - a);
       }
-      if (astral) { float e = max(d - r - vR.z, 0.0) / max(r * 0.5, 1.0); col += vec3(1.0, 0.72, 0.3) * 0.22 * exp(-e * e) * (1.0 - a) * al; } // (a soft glow, gone before the quad's edge)
+      if (astral) { float e = max(d - r - vR.z, 0.0) / max(r * 0.5, 1.0); col += vec3(0.72, 0.84, 1.0) * 0.22 * exp(-e * e) * (1.0 - a) * al; } // (a soft glow, gone before the quad's edge)
     }
   } else if (st == 3) {
     // the lance's colour over what is behind (added light would go white on the gold), a paler heart, a shade of it at its edges
