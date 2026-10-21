@@ -29,11 +29,11 @@
 // next fast (Ikaruga's chain waves, Star Fox 64's stream). A swing carries a FLOURISH (lights to lock flown through the turn), and the
 // check (`deadBeats`) holds every leg, with a good player's kill model, to no beat without a target in frame.
 //
-//   LEGS[type] = { bars, phases: { open, build, peak, release }, views, floors?, cues: [cue] }   schedule(type, { strength, feel, storm }) -> plan
+//   LEGS[type] = { bars, phases: { open, build, peak, release }, views, floors?, cues: [cue] }   schedule(type, { strength, feel, storm, first }) -> plan
 //   cue = { phase, at, every?, until?, wave?: { role, formation, count, cls?, lane? } | cycle?: [wave] | pattern?: { name, params?, from,
-//          kind?, mode? } | targets?: n | director?: setPiece }      plan = { type, bars, phases: [{ id, from, to, view, floor }], events: [{ bar, ... }] }
+//          kind?, mode? } | targets?: n | director?: setPiece | hazard?: 'pillar' | 'arch' | 'gate' }   HAZARDS   RING_RUN   LESSON      plan = { type, bars, phases: [{ id, from, to, view, floor }], events: [{ bar, ... }] }
 //   deadBeats(plan) -> [bar] with .runs (two empty beats or more in a row: the flow wants none) and .perMinute   flow(plan) -> events retimed
-//   aliveBars(event, strength?) -> [from, to]   kindFor(kind, feel, r) -> 'astral' | 'umbral'
+//   aliveBars(event, strength?) -> [from, to]   kindFor(kind, feel, r) -> 'astral' | 'umbral'   lessonOf(leg)   practiceOf(ledger) -> [type]
 // ---------------------------------------------------------------------------------------
 import { STORM } from '../econ/passage.js';
 import { formSkew } from './trip.js';
@@ -54,6 +54,22 @@ export const PULL_GAP = 0.5;
 export const FLOORS = { open: 6, build: 10, peak: 8, release: 12 };
 /** The lights a swing carries through its turn (they cannot fire: the camera's move is shot through). */
 export const FLOURISH = 6;
+/** THE HAZARDS (RAIL-STANDARDS.md 4; Star Fox 64's Corneria: its buildings, arches and pillars make where you fly matter, not only
+ *  where you aim): things in the lane, laid only where the view looks down the scroll (chase, free, astern) and never in a swing's
+ *  clear. `lane` is -1, 0 or 1 (left, middle, right of the frame's three, CARRIER.lanes' spacing); a hazard takes one lane and leaves
+ *  two. A PILLAR (a monolith risen into the lane, the graveyard's mast) scrapes the hull for `hits`; an ARCH is flown through for
+ *  `pays`, and every arch of a leg threaded is a find (`all`: the runtime opens the leg's hidden way, as the Light Whale's follow does,
+ *  Corneria's seven arches to Sector Y); a GATE is a wall across the lane with one gap, `gap` m wide, in the lane named. Patterns are
+ *  never thrown in the bar a hazard passes (the ship is steering). */
+export const HAZARDS = {
+  pillar: { radius: 2.2, hits: 1 },
+  arch: { span: 6, pays: 500, all: 2000 },
+  gate: { gap: 5, hits: 1 },
+};
+/** THE RING RUN (Star Fox 64's gold rings mend the shield; Rez's rings flown through): the rings hung in a turn (crossinglook.js, five
+ *  a turn) each pay `pays` and a little Lachryma; all of one turn's threaded mends one hit the ship has taken and pays `all`. */
+export const RING_RUN = { pays: 100, pool: 4, all: { mend: 1, pays: 1000 } };
+const LANES = [0, -1, 1, 1, 0, -1, -1, 1, 0]; // (a hazard's lane by its order in the leg: never three in one lane running)
 /** The bar in seconds (the cue's: progress/rail/crossing.js BAR_S), to turn a pattern's seconds into bars. */
 const BAR = 1.5;
 
@@ -90,6 +106,7 @@ export const LEGS = {
     { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'glint', kind: 'feel' } },
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 4, every: 4, hazard: 'pillar' }, // (the hazards: RAIL-STANDARDS.md 4)
   ] },
   // THE WRECKERS: darters and an ambusher in chase; the side view's sniper, sweeper and grappler among schools; the brig with boarders,
   // ambushers and swoopers round her.
@@ -107,6 +124,8 @@ export const LEGS = {
     { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral', params: { T: 0.5 } } }, // (splits sooner since the side camera came closer, 2026-10-20: from 15 m a 0.9 s flight split 1.6 m off the ship)
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 4, every: 4, hazard: 'pillar' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'release', at: 0, every: 3, hazard: 'arch' },
   ] },
   // THE ROGUE LEVIATHAN: rammers and rings in chase; overhead the heavy, a turret, a blocker (Flash or Bomb) and a mine-layer with a
   // spawner; Old Nobody in the side view with schools, swoopers and a sniper at its flanks, and a swarm through its breath.
@@ -127,6 +146,8 @@ export const LEGS = {
     { phase: 'peak', at: 4, every: 7, pattern: { name: 'sweepBeam', from: 'object', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 3, every: 4, hazard: 'arch' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'release', at: 1, every: 3, hazard: 'pillar' },
   ] },
   // THE EYEWALL: the rollercoaster itself (dodging walls and beams), and now targets through it: darters and schools, ambushers in the
   // peak and a swarm thrown round the eye.
@@ -143,6 +164,9 @@ export const LEGS = {
     { phase: 'peak', at: 10, wave: W('swarm', 'ribbon', 32) },
     { phase: 'release', at: 0, every: 1, targets: 6 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 3, every: 4, hazard: 'gate' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'build', at: 2, every: 3, hazard: 'pillar' },
+    { phase: 'peak', at: 2, every: 4, hazard: 'gate' },
   ] },
   // THE GRAVEYARD: both worlds at once. Schools, darters and rammers in chase; the side view's sniper, swoopers and a mine-layer; the
   // Drowned Light (a heavy until its director) with escorts, ambushers and a grappler, and a swarm blooming from the wrecks.
@@ -161,6 +185,8 @@ export const LEGS = {
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'mixed', from: 'heavy', kind: 'umbral', params: { of: 'oddFan', share: 0.3 } } },
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 4, every: 4, hazard: 'pillar' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'peak', at: 3, every: 4, hazard: 'pillar' },
   ] },
   // THE MAELSTROM: rings and rammers in chase; the whirl's ambushers round the first heavy; Charybdis (a heavy until its director) with
   // darters, rammers and a grappler, and a swarm the whirlpool throws up.
@@ -179,6 +205,8 @@ export const LEGS = {
     { phase: 'peak', at: 3, every: 6, pattern: { name: 'itano', from: 'heavy', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 4, every: 4, hazard: 'arch' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'build', at: 3, every: 5, hazard: 'pillar' },
   ] },
   // THE BOUNTY: vees and darters in chase; overhead swoopers, a turret, a mine-layer and a blocker with a spawner; the posted stray (a
   // heavy until its director) beside a gunship and its escort, with schools, ambushers, darters and a sniper.
@@ -199,6 +227,7 @@ export const LEGS = {
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'splitShell', from: 'heavy', kind: 'umbral' } },
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 4, every: 4, hazard: 'gate' }, // (the hazards: RAIL-STANDARDS.md 4)
   ] },
   // THE CALM: a breath that still scores: lights to lock, shots of your own form to drink, and a swarm that does not fire drifting by.
   calm: { bars: 48, phases: P(8, 12, 0, 4), views: V('chase', 'above', 'above', 'chase'), floors: { open: 6, build: 6, peak: 0, release: 8 }, cues: [
@@ -210,6 +239,8 @@ export const LEGS = {
     { phase: 'build', at: 2, every: 4, pattern: { name: 'rose', from: 'ahead', kind: 'gift', params: { volleys: 1, n: 18, speed: 7, swell: 7 } } }, // (slowed from 9 when the overhead frame halved, 2026-10-20: from 15 m it gave 0.42 real s to react, the rule's 0.5)
     { phase: 'release', at: 0, every: 1, targets: 6 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
+    { phase: 'open', at: 2, every: 3, hazard: 'arch' }, // (the hazards: RAIL-STANDARDS.md 4)
+    { phase: 'release', at: 0, every: 3, hazard: 'arch' },
   ] },
 };
 
@@ -223,14 +254,17 @@ export function kindFor(kind, feel, r = () => 0.5) { // (the runtime passes its 
 /** A leg's plan for a waypoint: its phases on the leg's bars (with the view each asks), and every event (a wave, a pattern, lights, the
  *  director's entrance) on its bar. A storm repeats patterns a share more often (STORM.density: their volleys, never their gaps, so a
  *  fair pattern stays fair) and a wave's class rises with the waypoint's strength. */
-export function schedule(type, { strength = 1, feel = null, storm = false } = {}) {
+export function schedule(type, { strength = 1, feel = null, storm = false, first = false } = {}) {
   if (String(type).startsWith('show.')) return showLeg(type); // (the showcase crossing's legs: progress/rail/showcase.js)
   const L = LEGS[type]; if (!L) return null;
   const phases = [], at = {}; let b = 0;
   for (const id of ['open', 'build', 'peak', 'release']) { const n = L.phases[id]; if (!n) continue; at[id] = b; phases.push({ id, from: b, to: b + n, view: L.views[id], floor: (L.floors || FLOORS)[id] ?? FLOORS[id] }); b += n; }
-  const events = [], dens = storm ? STORM.density : 1;
-  for (const c of L.cues) {
+  const events = [], dens = storm ? STORM.density : 1; let hz = 0;
+  const lesson = first ? lessonOf(L) : null; // (the first sailing of a leg's type: its open's foes met one kind at a time, alone; LESSON)
+  if (lesson) { const o = phases.find((p) => p.id === 'open'); o.floor = Math.min(o.floor, LESSON.floor); lesson.forEach((wave, i) => events.push({ bar: o.from + i * LESSON.every, phase: 'open', queue: 'open', alone: true, wave: { ...wave, cls: Math.max(0, Math.min(4, (wave.cls ?? 0) + strength - 1)) } })); }
+  for (let c of L.cues) {
     const ph = phases.find((p) => p.id === c.phase); if (!ph) continue;
+    if (lesson && c.cycle && c.phase === 'open') c = { ...c, at: c.at + lesson.length * LESSON.every }; // (the open's own queue waits for the lesson)
     const end = c.until != null ? Math.min(ph.to, ph.from + c.until) : ph.to;
     const every = c.every ? c.every / (c.pattern ? dens : 1) : 0;
     for (let bar = ph.from + c.at, k = 0; bar < end; bar = every ? bar + every : end, k++) {
@@ -238,6 +272,7 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
       if (wave) Object.assign(e, { wave: { ...wave, cls: Math.max(0, Math.min(4, (wave.cls ?? 0) + strength - 1 + (storm ? STORM.strength : 0))) }, ...(c.cycle ? { queue: c.phase } : {}) });
       else if (c.pattern) Object.assign(e, { pattern: { ...c.pattern, params: { ...(c.pattern.params || {}) }, mode: c.pattern.mode || modeOf(ph.view) } });
       else if (c.targets) e.targets = c.targets;
+      else if (c.hazard) e.hazard = { kind: c.hazard, lane: LANES[(hz++) % LANES.length] };
       else if (c.director) e.director = c.director;
       events.push(e);
     }
@@ -245,7 +280,9 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   events.sort((a, b2) => a.bar - b2.bar);
   // CLEAR SWINGS: a change of view at a phase's start bars patterns from SWING_CLEAR bars before it to SWING_BREATH after
   const swings = phases.filter((p, i) => i > 0 && p.view !== phases[i - 1].view).map((p) => p.from);
-  const clear = events.filter((e) => !(e.pattern && e.pattern.kind !== 'gift' && swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH)));
+  const inSwing = (e) => swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH);
+  const hazardBars = events.filter((e) => e.hazard).map((e) => e.bar);
+  const clear = events.filter((e) => !((e.pattern && e.pattern.kind !== 'gift' && (inSwing(e) || hazardBars.some((h) => Math.abs(h - e.bar) < 1))) || (e.hazard && inSwing(e)))); // (no pattern over a swing, nor in the bar a hazard passes; no hazard in a swing's clear)
   // ONE WORLD AT A TIME: 'feel' and the fixed kinds alike take their block's world (the feeling's skew, spread evenly by the golden ratio)
   const block = type === 'graveyard' ? WORLD_BLOCK / 2 : WORLD_BLOCK, skew = formSkew(feel);
   const worldAt = (bar) => (((Math.floor(bar / block) + 1) * 0.6180339887) % 1 < skew ? 'astral' : 'umbral');
@@ -253,7 +290,22 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   // THE FLOURISH: a swing is flown through, never waited out: lights to lock through its bar (RAIL-FLOW.md 1, law 2)
   for (const w of swings) clear.push({ bar: Math.max(0, w - 1), phase: phases.find((p) => w - 1 >= p.from && w - 1 < p.to)?.id || phases[0].id, targets: FLOURISH, flourish: true });
   clear.sort((a, b2) => a.bar - b2.bar);
-  return { type, bars: L.bars, phases, events: clear, feel, storm: !!storm, strength, swings };
+  return { type, bars: L.bars, phases, events: clear, feel, storm: !!storm, strength, swings, first: !!lesson };
+}
+/** PRACTICE (Star Fox 64's Training, Rez's Direct Assault, Ikaruga's Prototype mode): a leg's type sailed once is open at the pier to
+ *  sail again alone, at a strength you choose, nothing counted (RAIL-STANDARDS.md 5). Read from the ledger: `rail.leg.<type>`. */
+export const practiceOf = (L) => Object.keys(LEGS).filter((type) => (L?.get?.(`rail.leg.${type}`) || 0) > 0);
+/** THE LESSON (Star Fox 64's Corneria, Galaga's first stage: a foe met alone before it is met in company; CLAUDE.md, "every system
+ *  teaches without saying so"): the first time a leg's type is sailed (the ledger's `rail.leg.<type>`, read by the runtime), its open
+ *  shows each kind of foe in its queue once, alone (`alone`: nothing pulled while it lives), `every` bars apart, before the queue
+ *  proper; the open's floor is held to `floor` while it lasts. */
+export const LESSON = { every: 1.5, floor: 3 };
+/** The open's kinds of foe in the order its queue first meets them, one wave each (the first wave of each kind). */
+export function lessonOf(L) {
+  const q = L.cues.find((c) => c.phase === 'open' && c.cycle); if (!q) return [];
+  const seen = new Set(), out = [];
+  for (const w of q.cycle) if (!seen.has(w.role)) { seen.add(w.role); out.push(w); }
+  return out;
 }
 /** The nearest a thrower may stand to the ship, in the view's plane (m), when it fires: what legs.mjs judges every pattern from (the
  *  carrier's hold, about 15 m). A set piece's body ('object') nearer than this, or outside its view's CARRIER_AT box, hands its volley to a
@@ -282,28 +334,29 @@ export function aliveBars(e, plan) {
   return null;
 }
 /** What one event asks of the gun: how many, the bars to find and down each, the bars before it leaves. */
-function killOf(e) {
-  if (e.targets) return { n: e.targets, each: KILL.lights / 8, path: KILL.path };
+function killOf(e, K = KILL) {
+  if (e.targets) return { n: e.targets, each: K.lights / 8, path: K.path };
   const w = e.wave, R = ROSTER[w.role], hp = (WAVES.hp[Math.max(0, Math.min(4, w.cls ?? 0))] || 1) * (R?.hp ?? 1);
-  const path = R?.moves?.kind === 'hold' && typeof R.moves.hold === 'number' ? R.moves.hold + 2 : KILL.path;
-  return { n: w.count || 1, each: Math.max(hp / KILL.good, R?.moves?.kind === 'flock' ? KILL.flock : KILL.each), path };
+  const path = R?.moves?.until === 'beaten' ? Infinity : R?.moves?.kind === 'hold' && typeof R.moves.hold === 'number' ? R.moves.hold + 2 : K.path; // (a boss of the roster holds until beaten: the boss hold)
+  return { n: w.count || 1, each: Math.max(hp / K.good, R?.moves?.kind === 'flock' ? K.flock : K.each), path };
 }
 /** The stream as the runtime plays it (RAIL-FLOW.md 1, law 1), beat by beat, against one good player's one gun: in each phase, whenever
  *  fewer foes are alive (or entering) than its floor, its next queued waves (a `cycle`'s), enough to fill the shortfall, enter on that
  *  beat instead of their bars (no sooner than PULL_GAP after that queue's last pull), and the rest of that queue moves up by as much (a
  *  queue keeps its spacing: its bars are the latest a wave may wait); a queue run dry before its phase ends goes round its cycle again.
- *  The gun works the oldest foe in frame first, a beat's time at a time (KILL), so the stream runs at the player's kill rate. Returns the
- *  plan's events retimed, each with `alive` [from, to] bars. */
-export function flow(plan) {
+ *  The gun works the quickest kill in frame first, a beat's time at a time (KILL), so the stream runs at the player's kill rate. Returns the
+ *  plan's events retimed, each with `alive` [from, to] bars, each wave with `k` (`n` came, `left` escaped). `kill` is the player
+ *  (KILL, a good one; par.js PLAYERS). */
+export function flow(plan, kill = KILL) {
   const ev = plan.events.map((e) => ({ ...e })), queues = new Map(), STEP = 0.25;
   for (const e of ev) if (e.queue) { if (!queues.has(e.phase)) queues.set(e.phase, []); queues.get(e.phase).push(e); }
   for (const q of queues.values()) q.sort((a, b) => a.bar - b.bar);
   const shootable = (e) => e.wave || e.targets;
   const live = (t) => { // (as it will stand half a bar on, when a wave pulled now enters: what is entering counts, what the gun will have downed by then does not)
-    let n = 0, gun = KILL.enter;
-    for (const e of ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + KILL.enter <= t + KILL.enter).sort((a, b) => a.bar - b.bar)) {
-      if (e.k && t + KILL.enter >= e.alive[0] + e.k.path) continue;
-      const k = e.k || { ...killOf(e), prog: 0, left: e.wave?.count || e.targets }, entered = e.bar + KILL.enter <= t;
+    let n = 0, gun = kill.enter;
+    for (const e of ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + kill.enter <= t + kill.enter).sort((a, b) => a.bar - b.bar)) {
+      if (e.k && t + kill.enter >= e.alive[0] + e.k.path) continue;
+      const k = e.k || { ...killOf(e, kill), prog: 0, left: e.wave?.count || e.targets }, entered = e.bar + kill.enter <= t;
       const downed = entered ? Math.min(k.left, Math.floor((gun + k.prog) / k.each)) : 0; gun -= downed * k.each;
       n += k.left - downed;
     }
@@ -311,24 +364,27 @@ export function flow(plan) {
   };
   for (let t = 0; t < plan.bars; t += STEP) {
     const ph = plan.phases.find((p) => t >= p.from && t < p.to), q = ph && queues.get(ph.id);
-    if (q?.length && t - (q.last ?? -9) >= PULL_GAP) {
+    const lone = ev.some((e) => e.alone && e.phase === ph?.id && !e.alive?.done && e.bar <= t && (!e.k || e.k.left * e.k.each - e.k.prog > kill.enter)); // (a lesson's foe: met alone, nothing pulled while it will still live when the next would enter)
+    if (q?.length && !lone && t - (q.last ?? -9) >= PULL_GAP) {
       let short = (ph.floor ?? 0) - live(t);
       if (short > 0) q.last = t;
       while (short > 0) { // (one pull fills the shortfall: its waves enter together on this beat)
         const i = q.findIndex((e) => e.bar > t);
-        if (i >= 0) { const d = q[i].bar - t; for (let j = i; j < q.length; j++) q[j].bar = +(q[j].bar - d).toFixed(3); short -= q[i].wave.count || 1; continue; }
+        if (i >= 0) { const d = q[i].bar - t; for (let j = i; j < q.length; j++) q[j].bar = +(q[j].bar - d).toFixed(3); short -= q[i].wave.count || 1; if (q[i].alone) break; continue; } // (a lesson's foe comes alone)
         // the queue has run dry before its phase ends: the cycle goes round again (a cycle is a source, not a list)
         const c = q.cycle || (q.cycle = q.map((e) => e.wave)), n = q.length, e = { ...q[n - 1], bar: t, wave: { ...c[n % c.length], cls: q[n - 1].wave.cls }, k: null, alive: null };
         q.push(e); ev.push(e); short -= e.wave.count || 1;
       }
     }
-    // the gun: the oldest foe in frame first, this beat's time spent finding and downing
+    // the gun: this beat's time spent finding and downing, the quickest kill first
     let budget = STEP;
-    const now = ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + KILL.enter <= t).sort((a, b) => a.bar - b.bar);
+    const now = ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + kill.enter <= t).sort((a, b) => a.bar - b.bar);
+    const work = (e) => (e.k ? e.k.left * e.k.each - e.k.prog : 0);
     for (const e of now) {
-      if (!e.k) { e.k = { ...killOf(e), prog: 0 }; e.k.left = e.k.n; e.alive = [e.bar + KILL.enter, 0]; }
+      if (!e.k) { e.k = { ...killOf(e, kill), prog: 0 }; e.k.left = e.k.n; e.alive = [e.bar + kill.enter, 0]; }
       if (t >= e.alive[0] + e.k.path) { e.alive[1] = e.alive[0] + e.k.path; e.alive.done = true; } // (off its path: escaped)
     }
+    now.sort((a, b) => work(a) - work(b)); // (the quickest kill first: a player clears the fodder and works the big one between, rail.mjs's lowest-hp-first)
     for (const e of now) {
       if (e.alive.done) continue;
       while (budget > 0 && e.k.left > 0) {

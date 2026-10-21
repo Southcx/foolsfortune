@@ -21,7 +21,7 @@ import { SETTINGS, tuned, differs } from './tuned.js';
 const DEVELOPER = ['visual.shadowRes', 'visual.lightSlots', 'visual.smooth'];
 
 // settings that are one of a few words
-const CHOICES = { mode: ['release', 'press'], graphics: ['auto', 'high', 'low', 'minimum', 'custom'], resolution: ['ps2', '440', '400', '360', '320', '270', '540', '720', 'native'], upscale: ['bilinear', 'pixel'], shadowFilter: ['pcf', 'basic'] };
+const CHOICES = { mode: ['release', 'press'], graphics: ['auto', 'high', 'low', 'minimum', 'custom'], resolution: ['ps2', '440', '400', '360', '320', '270', '540', '720', 'native'], upscale: ['bilinear', 'pixel'], shadowFilter: ['pcf', 'basic'], shake: ['full', 'half', 'off'] };
 // slider ranges; anything not listed gets an automatic range around its default
 const RANGES = {
   'movement.maxSlope': [10, 70, 1],
@@ -77,6 +77,7 @@ const SETTING_LABEL = {
   'camera.sensitivity': 'mouse sensitivity', 'camera.adsSensMult': 'aiming sensitivity', 'visual.graphics': 'graphics', 'visual.dynamicResolution': 'dynamic resolution', 'visual.resolution': 'resolution',
   'visual.upscale': 'upscale', 'visual.shadows': 'shadows', 'audio.volume': 'volume', 'charge.mode': 'a charge fires on',
   'visual.warp': 'storm warp', // (a placeholder for Espada's word)
+  'visual.shake': 'screen shake',
 };
 /** Words for the config's camelCase: "maxSlope" -> "max slope", "fpAdsFov" -> "fp ads fov". */
 export const words = (k) => k.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').toLowerCase();

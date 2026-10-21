@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
-import { T, DEG } from '../core/config.js';
+import { T, DEG, shakeOf } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
 import { CRAWL } from './anim/crawl.js';
@@ -1054,7 +1054,7 @@ export class Player {
     this.proneBlend = THREE.MathUtils.damp(this.proneBlend, this.shape === 'prone' ? 1 : 0, 6, dt);
     this.wallBlend = THREE.MathUtils.damp(this.wallBlend, this.wallrun ? this.wallrun.side : 0, 10, dt);
 
-    const sh = this.shake * this.shake;
+    const sh = this.shake * this.shake * shakeOf(); // (the setting visual.shake)
     const cf = this.camFx; // (what a cinematic asks of the camera: see vfx/cinema.js; all zero/one when nothing does)
     const pitch = this.pitch + this.punch.x + cf.pitch + (simRand() - 0.5) * sh * 0.02;
     const yaw = this.yaw + this.punch.y + cf.yaw + (simRand() - 0.5) * sh * 0.02;

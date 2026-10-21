@@ -56,6 +56,9 @@ export const KNACKS = {
   houseWhisper: { name: 'Inside Tip', does: "Raku's whisper: marks the move the house would make at his tables (always shown when you practise)", // (Espada's name, 2026-10-15)
     opens: (L) => G(L, 'casino.practised') >= 3 || G(L, 'casino.won') >= 1, // (three practice games finished, or one game won for chips)
     switch: 'world/bazaar/session.js coach() ({ suggest }: the house bot\'s choice, coach/index.js hint)', number: 'a gold mark on one choice' },
+  wideSights: { name: 'Wide Sights', does: "On a crossing, your sights find a foe further from the reticle, and the lock-on reaches wider", // (plain name until Espada's; the Game Accessibility Guidelines' "assist modes such as auto-aim": RAIL-STANDARDS.md 6)
+    opens: (L) => G(L, 'rail.broken') >= 2 || G(L, 'rail.leg.medal') >= 3, // (two crossings the ship could not bear, Super Guide's offer after failing; or three legs medalled)
+    switch: "courier/ship/ship.js (the aim's foe snap, max(0.8, radius), and lock.reach 0.14: Petra's)", number: 'the snap x1.75, the lock-on reach x1.5' },
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
 };
 

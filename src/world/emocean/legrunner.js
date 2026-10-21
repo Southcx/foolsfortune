@@ -21,13 +21,14 @@
 // queued waves (events with `queue`, from a cue's `cycle`) wait for their bar no longer than they must. On each beat, while fewer foes
 // are alive than the phase's `floor`, as many of the queue's next waves as fill the shortfall are pulled to now (no sooner than PULL_GAP
 // after the last pull, PULL_MAX at most) and the rest of the queue moves up by as much; a queue run dry before its phase ends goes round its cycle again. So clearing fast brings the next
-// wave fast (Ikaruga's chain waves, Star Fox 64's stream). A swing's FLOURISH (lights with `flourish`) is set round the ship, where both
+// wave fast (Ikaruga's chain waves, Star Fox 64's stream). A leg's first sailing begins with its LESSON (legs.js: `alone` waves, each
+// kind of foe met once by itself): nothing is pulled while a lesson's foe lives, and a pull that takes one takes nothing else. A swing's FLOURISH (lights with `flourish`) is set round the ship, where both
 // views see it, so the turn is shot through; other lights are laid across the view's frame (RAIL-FLOW.md 1, laws 2 and 4).
 //
 // Prior art: the shmup stage script on the beat (Rez's layers, Cave's wave tables), and the waves' own let-go rule; Rez's emitters,
 // always bodies; the Gummi ship's fly-in, hold, fire, fly-out.
 //
-//   const L = new LegRunner({ waves, player, object, onDirector, scene })   L.begin(waypoint, { feel, storm, strength })   L.update(bar)
+//   const L = new LegRunner({ waves, player, object, onDirector, scene })   L.begin(waypoint, { first })   L.update(bar)
 //   L.plan   L.done   L.phaseAt(bar) -> { id, view }   (bar: from the leg's first, in the cue's bars)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -54,9 +55,9 @@ export class LegRunner {
   /** A waypoint's leg begins: { type, strength, feel, storm } (the sea chart's waypoint). */
   begin(w, extra = {}) {
     this.plan = schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm, ...extra });
-    this.next = 0; this.idx = 0; this.done = !this.plan; this.feel = w.feel ?? null; this.beat = -1;
+    this.next = 0; this.idx = 0; this.done = !this.plan; this.feel = w.feel ?? null; this.beat = -1; this.lone = null;
     this.queues = new Map(); // (each phase's queued waves, at their latest bars, and its cycle to go round again: THE STREAM)
-    for (const e of this.plan?.events || []) if (e.queue) { if (!this.queues.has(e.queue)) this.queues.set(e.queue, { list: [], cycle: [], last: -9, n: 0 }); const q = this.queues.get(e.queue); q.list.push({ ...e }); q.cycle.push(e.wave); }
+    for (const e of this.plan?.events || []) if (e.queue) { if (!this.queues.has(e.queue)) this.queues.set(e.queue, { list: [], cycle: [], last: -9, n: 0 }); const q = this.queues.get(e.queue); q.list.push({ ...e }); if (!e.alone) q.cycle.push(e.wave); } // (a lesson's wave is met once: never in the cycle)
     return this.plan;
   }
   phaseAt(bar) { return this.plan?.phases.find((p) => bar >= p.from && bar < p.to) || null; }
@@ -77,20 +78,20 @@ export class LegRunner {
     this.stream(bar);
     if (bar >= this.plan.bars) this.done = true;
   }
+  /** A queued wave let in; a lesson's (`alone`: legs.js LESSON) keeps its foes, and nothing is pulled while one of them lives. */
+  letIn(e, bar) { const n0 = this.waves.foes.length; this.wave(e.wave, bar); if (e.alone) this.lone = this.waves.foes.slice(n0); }
   wave(w, bar) { this.waves.spawn({ ...w, lane: w.lane ?? ((this.idx % 3) - 1), bar, boss: this.phaseAt(bar)?.id === 'peak' }, this.idx++); } // (boss: a peak's foe that holds until beaten holds the peak too: triprun.js)
   /** THE STREAM: the phase's queue let in on its bars, and pulled forward on a beat while the live count is under the phase's floor. */
   stream(bar) {
     const ph = this.phaseAt(bar), q = ph && this.queues.get(ph.id); if (!q) return;
-    while (q.list.length && q.list[0].bar <= bar) { const e = q.list.shift(); this.wave(e.wave, e.bar); q.n++; }
+    while (q.list.length && q.list[0].bar <= bar) { const e = q.list.shift(); this.letIn(e, e.bar); q.n++; }
     const beat = Math.floor(bar * 4); if (beat === this.beat) return; this.beat = beat;
     let short = (ph.floor || 0) - this.live();
-    if (short <= 0 || bar - q.last < PULL_GAP || bar >= ph.to - 0.5) return;
+    if (short <= 0 || bar - q.last < PULL_GAP || bar >= ph.to - 0.5 || this.lone?.some((f) => f.alive)) return; // (a lesson's foe is met alone)
     q.last = bar;
     for (let k = 0; short > 0 && k < PULL_MAX; k++) { // (one pull fills the shortfall, its waves in together on this beat: legs.js flow, Dovina's)
-      let w = null;
-      if (q.list.length) { const d = q.list[0].bar - bar; for (const e of q.list) e.bar -= d; w = q.list.shift().wave; }
-      else if (q.cycle.length) w = q.cycle[q.n % q.cycle.length]; // (run dry: the cycle goes round again)
-      if (!w) break;
+      if (q.list.length) { const d = q.list[0].bar - bar; for (const e of q.list) e.bar -= d; const e = q.list.shift(); this.letIn(e, bar); q.n++; short -= e.wave.count || 1; if (e.alone) break; continue; } // (a pull that takes a lesson's wave takes nothing else)
+      const w = q.cycle.length ? q.cycle[q.n % q.cycle.length] : null; if (!w) break; // (run dry: the cycle goes round again)
       this.wave(w, bar); q.n++; short -= w.count || 1;
     }
   }

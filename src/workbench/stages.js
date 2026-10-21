@@ -66,6 +66,8 @@ import { sandfallStage } from './sandfallstage.js';
 import { racewayLooksStage } from './racewaylooksstage.js';
 import { racewayCavernStage } from './racewaycavernstage.js';
 import { railFoeStage } from './railfoestage.js';
+import { railHazardStage } from './railhazardstage.js';
+import { railReadoutStage } from './railreadoutstage.js';
 import { voxelSwarmStage } from './voxelswarmstage.js';
 import { partStage } from './partstage.js';
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
@@ -74,6 +76,8 @@ export function buildStage(id, game) {
   let obj = null;
   if (id === 'crossing:parts') return partStage(game); // (the boss parts' gold line and crazing, intact to broken: workbench/partstage.js)
   if (id === 'crossing:swarm') return voxelSwarmStage(game); // (the voxel boid swarm's three shapes and foes thrown apart in voxels: workbench/voxelswarmstage.js)
+  if (id === 'crossing:readout') return railReadoutStage(game); // (the rail readout and the results window on made-up data: workbench/railreadoutstage.js)
+  if (id === 'crossing:hazards') return railHazardStage(game); // (the pillar, the arches lit and passed, the gate struck: workbench/railhazardstage.js)
   if (id === 'crossing:foes') return railFoeStage(game); // (every rail foe's body in a grid, the tell's slider: workbench/railfoestage.js)
   if (id === 'anim:lab') return animStage(game); // (the Anim Lab: the Courier's animation stack, played, stepped and scrubbed: workbench/animstage.js)
   if (id === 'raceway:looks') return racewayLooksStage(game); // (the sun plates, the arch's countdown, the gates, the carve's sparks and the ghost on a stand-in track: workbench/racewaylooksstage.js)

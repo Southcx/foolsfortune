@@ -5,7 +5,8 @@
 //
 //   areaRules(ctx)   (tracking.js listen() calls it once)
 // The crossing's rules (rail, voyage, passage) see the ledger through `atSea`: held still while the showcase crossing sails (DEBUG only,
-// world/emocean/stage.js `showcase`: nothing counted), the ledger itself otherwise; what they say is said either way.
+// world/emocean/stage.js `showcase`: nothing counted) or a practice crossing (`practice`: only `rail.practice`, counted here), the ledger
+// itself otherwise; what they say is said either way.
 // ---------------------------------------------------------------------------------------
 import { anglingRules } from './angling.js';
 import { wellRules } from './wells.js';
@@ -40,9 +41,9 @@ import { sealRules } from './seals.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 
-/** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase crossing sails. */
+/** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
-  const L = ctx.L, still = () => !!ctx.g?.emocean?.showcase, sea = Object.create(L);
+  const L = ctx.L, still = () => !!(ctx.g?.emocean?.showcase || ctx.g?.emocean?.practice), sea = Object.create(L);
   for (const k of ['inc', 'hi', 'lo', 'first']) sea[k] = (...a) => (still() ? false : L[k](...a));
   return { ...ctx, L: sea };
 }
@@ -52,6 +53,7 @@ export function areaRules(ctx) {
   anglingRules(ctx);
   wellRules(ctx);
   railRules(sea); // (the crossing's tally, before the voyage's "You make port")
+  ctx.on('rail.leg.end', (e) => { if (e.practice && e.by === 'courier') ctx.L.inc('rail.practice'); }); // (practice's own count, the one thing it keeps: RAIL-STANDARDS.md 5)
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)

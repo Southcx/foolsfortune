@@ -746,3 +746,10 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 253. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
     beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.
+
+254. **"Not yet" is never a value the thing can take.** An index, a count or an id that waits to be set
+    waits as `null`: 0 is the first leg, the first slot, the first lap, and a check for "unset" that reads 0 takes it.
+
+255. **A shared frame never decides where its window sits.** A class a frame adds to the element it
+    dresses holds no `position`, or the window's own placement is written with more weight than it: the sheets' order differs from page
+    to page, and a later equal rule wins.

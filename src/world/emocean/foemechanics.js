@@ -47,7 +47,7 @@ export const FOE_MECHANICS = {
         kind: 'rail.gunship.gun', name: 'a gunship\'s gun', role: 'gunship', cls: f.cls, aspect: f.aspect, radius: f.radius * 0.35, hp, local: f.local, part,
         armour: () => (liveOf(f.escorts) ? 0 : 1), // (the escort's shield covers the guns too)
         tick: (dt, p) => { if (!f.alive) return false; parts[part].getWorldPosition(_w); W.rail.toLocal(_w, p.local); return true; },
-        onHurt: (p) => { f.body?.hit(part); f.body?.hurt?.(part, 1 - p.hp / hp); }, onDown: () => f.body?.down(part), count: false,
+        onHurt: (p) => { f.body?.hit(part); f.body?.hurt?.(part, 1 - p.hp / hp); }, onDown: () => { f.body?.down(part); W.game?.events?.emit('rail.part', { part: 'gun', by: 'courier' }); }, count: false, chain: false,
       }));
       f.armour = () => (liveOf(f.escorts) || f.guns.some((g) => g.alive) ? 0 : 1); // (shielded, or its core shut behind its guns)
     },

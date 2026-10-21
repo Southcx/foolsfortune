@@ -5,15 +5,22 @@
 //   - the flow (RAIL-FLOW.md, the owner's dead air of 2026-10-21): never two empty beats in a row, a good player killing as foes come and
 //     the floor pulling the next wave forward (legs.js `deadBeats`); every wave's role flies in the view its phase is in;
 //   - every pattern named is in the library, and fair as the leg fires it (its overrides, in its view's mode);
-//   - the shots in flight at once stay under the budget (400 at a heavy peak, 60 in a calm), stormed included.
+//   - the shots in flight at once stay under the budget (400 at a heavy peak, 60 in a calm), stormed included;
+// And, said as MEASURE lines that fail nothing (the crossing is in flux: CLAUDE.md "Test lean", no new checks until the owner settles it):
+//   - the hazards (RAIL-STANDARDS.md 4) only where the view looks down the scroll, never in a swing's clear, a lane left open;
+//   - the first sailing's lesson (legs.js LESSON) meets each kind of the open's foe alone, its breath never longer than two beats;
+//   - par and the medal (par.js) in the genre's order: the expert at par, a good player at a quarter to a half of it, a novice under
+//     a quarter, and the medal's count above a good player's downs and below an expert's.
 // `node scripts/legs.mjs`
 // ---------------------------------------------------------------------------------------
-import { LEGS, schedule, deadBeats, STRETCH, SWING_CLEAR, SWING_BREATH, CARRIER_AT } from '../src/progress/rail/legs.js';
+import { LEGS, schedule, deadBeats, STRETCH, SWING_CLEAR, SWING_BREATH, CARRIER_AT, HAZARDS, lessonOf } from '../src/progress/rail/legs.js';
+import { legScore, legPar, legMedal } from '../src/progress/rail/par.js';
 import { ROSTER } from '../src/progress/rail/showcase.js';
 import { CHARYBDIS, charybdisHurt, WAVES, BOSS, PIRATES, LEVIATHAN } from '../src/progress/rail/setpieces.js';
 import { PATTERNS, emit, fair, children } from '../src/progress/rail/patterns.js';
 
-let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
+let fails = 0; const measure = (name, ok, info = '') => console.log(`MEASURE ${ok ? 'ok' : 'off'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`);
+const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
 const BAR = 1.5, WANDA0 = { shoal: [8, 18, 18, 4], wreckers: [8, 20, 24, 4], leviathan: [8, 24, 28, 4], eyewall: [8, 12, 16, 4], graveyard: [8, 18, 18, 4], maelstrom: [8, 12, 24, 4], bounty: [8, 20, 24, 4], calm: [8, 12, 0, 4] };
 const WANDA = Object.fromEntries(Object.entries(WANDA0).map(([k, v]) => [k, v.map((n) => n * STRETCH)])); // (doubled: the owner, R17; Wanda's cues to follow)
 const lasting = (name, params) => { const s = emit(name, params, { origin: [0, 0, 0], aim: [0, 0, -1] }); return (s.length ? s[s.length - 1].at : 0) + 1; };
@@ -59,6 +66,15 @@ for (const [type, L] of Object.entries(LEGS)) {
     const mixed = []; for (let b = 0; b < plan.bars; b += 8) { const ks = new Set(plan.events.filter((e) => e.pattern && e.pattern.kind !== 'gift' && e.bar >= b && e.bar < b + 8).map((e) => e.pattern.kind)); if (ks.size > 1 && type !== 'graveyard') mixed.push(b); }
     check(`${type}: one world at a time (Astral or Umbral, a block of bars each)`, !mixed.length, mixed.slice(0, 4)); }
   check(`${type}: every pattern fair as the leg fires it`, !unfair.length, unfair.slice(0, 4));
+  { const plan = schedule(type, { strength: 1, feel: 'grief' }), cone = { chase: 1, free: 1, astern: 1 };
+    const hz = plan.events.filter((e) => e.hazard), bad = hz.filter((e) => !cone[plan.phases.find((p) => e.bar >= p.from && e.bar < p.to)?.view] || plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH) || !HAZARDS[e.hazard.kind] || ![-1, 0, 1].includes(e.hazard.lane));
+    measure(`${type}: every hazard where the view looks down the lane, clear of a swing, one lane of three`, hz.length > 0 && !bad.length, `${hz.length} hazards${bad.length ? `; wrong: ${bad.map((e) => `${e.hazard.kind}@${e.bar}`).slice(0, 4)}` : ''}`); }
+  { const plan = schedule(type, { strength: 1, feel: 'grief', first: true }), d = deadBeats(plan), lesson = lessonOf(L), alone = plan.events.filter((e) => e.alone);
+    const long = d.runs.filter(([, n]) => n > 2);
+    measure(`${type}: the first sailing meets each kind of the open's foe alone, never more than two beats' breath`, alone.length === lesson.length && !long.length, { kinds: lesson.map((w) => w.role), long: long.slice(0, 4) }); }
+  { const plan = schedule(type, { strength: 1, feel: 'grief' }), par = legPar(plan), medal = legMedal(plan), g = legScore(plan, 'good'), n = legScore(plan, 'novice'), x = legScore(plan, 'expert');
+    const ok = x.score === par && g.score >= par * 0.2 && g.score <= par * 0.5 && n.score < par * 0.25 && medal > g.downs && medal < x.downs;
+    measure(`${type}: par and medal in the genre's order (expert at par, good a quarter to a half, novice under a quarter)`, ok, { par, good: +(g.score / par).toFixed(2), novice: +(n.score / par).toFixed(2), medal, downs: [n.downs, g.downs, x.downs] }); }
   const cap = type === 'calm' ? 60 : 400;
   check(`${type}: the shots in flight under ${cap}`, peak <= cap, `${peak} at the worst tenth of a second`);
 }

@@ -7,7 +7,8 @@
 //   ribbon  a helix round the ship's lane (in a plane view a weave across it), stretched along the scroll
 //   bloom   flown in packed to a point in the frame's far half, held a beat, then burst outward and scattered off the frame
 // It fires nothing: its danger is its body. A member within CONTACT m of the ship is a blow the roll dodges (a rammer's), and is
-// spent. Shot, a member is down (it pays and chains as a school's fish). It is drawn by Calissa's swarm look (vfx/voxels/swarmlook.js:
+// spent. Shot, a member is down (it pays as a school's fish and stands outside the chain, as the shoal's fish do: one body,
+// RAIL-STANDARDS.md 2). It is drawn by Calissa's swarm look (vfx/voxels/swarmlook.js:
 // voxel fry, one draw call, a member bursting into its voxels as it falls), one swarm a look (`game.swarmLooks`: two); a third in flight
 // at once (or any, headless) is drawn by the placeholder here, a cube in its feeling's colour. Its edge mark shows where it will come in (RAIL-FLOW.md 4).
 //
@@ -62,7 +63,7 @@ export class Swarm {
     for (let i = 0; i < n; i++) {
       this.slot(i, 0, _t); const k = this.flock.add(_t.x, _t.y, _t.z, 0, 0, -10);
       const f = W.add({
-        kind: 'rail.swarm', name: 'a body of the swarm', role: 'swarm', cls, aspect, radius: BODY_R, hp, local: _t.clone(), form: 'swarm',
+        kind: 'rail.swarm', name: 'a body of the swarm', role: 'swarm', cls, aspect, radius: BODY_R, hp, local: _t.clone(), form: 'swarm', chain: false,
         tick: (dt, m) => this.tick(m), onGone: () => this.flock.remove(k), onDown: () => this.look?.down(i),
       });
       f.k = k; f.slotI = i; this.members.push(f);
