@@ -164,3 +164,26 @@ in chase's axes in every view (cause 5). No pop-in found apart from the `dash` p
 - **Waits on the runtime (Petra)**, and lands with it, never before: the boss numbers above are four times what they were, and today's
   directors still leave on a clock, so merged alone the bosses would limp off unbeaten every time.
 - **Stale:** `scripts/rail.mjs` still models the pre-stretch 34-bar pieces (the audit); par is re-measured once the stream plays.
+
+## 10. Voxels and boids: the tech under the spectacle (the owner, 2026-10-21: "we really do need voxel-based tech and boids in order to support the spectacle I envision")
+
+A proposal for Petra and Calissa to answer before anything is built. What exists: the flock (`creatures/ai/flock.js`, CPU, a spatial
+hash, 800 boids for 0.66 ms a frame with a stride of 3: `node scripts/flock.mjs`), the shoal's instanced glints (one draw call), the
+god hand's voxel grid (`godhand/voxels.js`: density voxels meshed smooth as clay, not cubes). The budgets (ARCHITECTURE.md): 450 draw
+calls, 1,000,000 triangles, 200 shader programs.
+
+1. **One voxel batch for the crossing** (render, Petra; its look, Calissa): every cube of the crossing in one instanced draw: a unit
+   cube (12 triangles) a voxel, its place, size, colour and a birth time and velocity per instance. Debris moves in the vertex shader
+   (ballistic from its birth: no CPU a frame per voxel), so tens of thousands cost one call. 20,000 voxels are 240,000 triangles, inside
+   the million.
+2. **Voxel deaths** (Resogun's and Nex Machina's): a foe downed bursts into its voxels: its body baked once to a voxel set (from its
+   mesh at boot, or authored), thrown out from the hit's point, tumbling, fading into Lachryma motes. A boss's part broken throws its
+   chunk off whole first, then crumbles. The hit itself chips voxels off where it lands.
+3. **Voxel boids** (the swarm): each boid a small cluster of voxels in the batch (2 to 8), its flock on the CPU flock up to 800; past
+   that, the flock on the GPU (three.js's GPGPU birds: position and velocity in float textures, ping-ponged a frame) for thousands.
+4. **Budget to measure**, never assumed (Ambition first, cost after): `npm run perf` on the showcase crossing with a swarm of 48, a
+   boss breaking, and 400 shots in flight.
+
+Questions for Petra and Calissa: (a) the batch in `render/` (Petra) with its material in `vfx/` (Calissa), or one module? (b) bodies
+baked from Calissa's meshes, or the rail foes rebuilt as voxel models (a look change: Calissa's call)? (c) CPU flock to 800 first and the
+GPU flock only if the owner wants more, or GPU from the start?
