@@ -33,10 +33,11 @@ export const WAVES = {
 /** THE BOSS LAW (the owner, 2026-10-21: "rethink having them flee based on a time metric and make the player have to properly fight it
  *  out? Taking a boss down in 10 seconds feels quite lame"; docs/plans/RAIL-FLOW.md 5). A boss leaves only when beaten: its leg's cue
  *  holds its peak (Wanda's hold, looping on the bar) until it falls. It is about `shots` of the gun across its parts and core: an
- *  expert (39.5 shots a bar landed, Petra's charybdistest) takes 35 bars, about 52 real s; a good player (24 a bar) about 86 s; a novice
- *  two minutes and more. Past `enrage` real s it quickens (its patterns' gaps times `quicken`), never flees. Each part owns one attack
- *  and breaking it moves the boss to its next phase (Star Fox 64's bosses). */
-export const BOSS = { shots: [1300, 1500], enrage: 180, quicken: 2 / 3 };
+ *  expert (39.5 shots a bar landed, Petra's charybdistest) takes about 30 bars, 45 real s; a good player (24 a bar) about 75 s; a novice
+ *  two minutes. Cross-referenced (RAIL-FLOW.md 11): Ikaruga's bosses fall to experts in 17 to 25 s inside a 100 s limit and time out;
+ *  the owner wants them fought out, so ours run about twice an Ikaruga expert's time and never leave. Past `enrage` real s it quickens
+ *  (its patterns' gaps times `quicken`), never flees. Each part owns one attack and breaking it moves the boss to its next phase (Star Fox 64's bosses). */
+export const BOSS = { shots: [1100, 1300], enrage: 180, quicken: 2 / 3 };
 
 export const SHOAL = {
   /** How many: 48 at the Guppy class, 24 more a class (Guppy 48, Barracuda 72): enough to read as one body and to fill the bait ball's
@@ -68,7 +69,7 @@ export const PIRATES = {
    *  than six in ten (a full sloop of 8 casks: 0.58; the day's dice decide, so the same day and cargo meet the same sea). */
   chance: (casks = 0, danger = 0) => Math.min(0.6, 0.1 + 0.06 * casks + 0.05 * Math.max(0, danger)),
   /** The brig, as a boss with parts (Skies of Arcadia): its hull, four points of rigging (one lance each cuts one), six gunports. */
-  brig: { hull: 900, rigging: 4, riggingHp: 60, ports: 6, portHp: 40 }, // (BOSS: 240 in ports, 240 in rigging, 900 in the hull; was 420, 32 and 30, sunk or limping off at 30 bars)
+  brig: { hull: 720, rigging: 4, riggingHp: 60, ports: 6, portHp: 40 }, // (BOSS: 240 in ports, 240 in rigging, 720 in the hull; was 420, 32 and 30, sunk or limping off at 30 bars)
   /** Astern (bars 62 to 70): the bow chasers lob a shot every two bars, slow (16 m/s) and outlined: parried back, it holes her bow. */
   chaser: { every: 2, speed: 16, parry: true, returned: 6 },
   /** Alongside (70 to 84): a volley every two bars from the open ports, the ports opening a bar before (the windup's outline on each);
@@ -125,7 +126,7 @@ export const LEVIATHAN = {
  *  more: it is in every maelstrom, so unlike Old Nobody it is no bounty (Letty posts the rogue, not the sea's own). */
 export const CHARYBDIS = {
   bars: 4, rise: 7, depth: -6, swing: 1,
-  hp: 840, surface: 2, band: 1.5, // (the core; with its parts the whole is BOSS.shots: 480 fell to an expert in 12 bars, 18 s, the owner's "10 seconds")
+  hp: 640, surface: 2, band: 1.5, // (the core; with its parts, 1200, the whole is BOSS.shots: 480 fell to an expert in 12 bars, 18 s, the owner's "10 seconds")
   /** Its look's parts made parts (vfx/charybdis.js: Calissa's): six eyes, each aiming one of its aimed attacks (an eye shut, that aim
    *  gone), and two baleen combs, each a wall of its whirl (a comb broken, a gap in the wall). Hurt by the world rule as its core is. */
   eyes: { count: 6, hp: 40 }, combs: { count: 2, hp: 160 },
