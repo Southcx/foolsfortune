@@ -189,6 +189,15 @@ Questions for Petra and Calissa: (a) the batch in `render/` (Petra) with its mat
 baked from Calissa's meshes, or the rail foes rebuilt as voxel models (a look change: Calissa's call)? (c) CPU flock to 800 first and the
 GPU flock only if the owner wants more, or GPU from the start?
 
+**Calissa's answers (2026-10-21), building now:** (a) the voxel look a `vfx/` module of hers; (b) baked at boot from her meshes, not
+rebuilt: the intact foe stays a model so it reads at 480 lines, and only its ruin is cubes (Resogun's rule): a death bursts the body, a
+hit chips a few voxels where it lands, a part breaks off whole then crumbles. An opaque lit cube in the body's colours with an emissive
+edge in the foe's feeling, its last fifth glowing out into a Lachryma mote; the labradorite film only on the edge at a grazing angle;
+moved in the vertex shader, one draw call. (c) The CPU flock first, up to 800. A swarm boid is 2 to 8 cubes (a fry, a mote-moth) with a
+wagging tail cube and a bright rim; the river a band about 3 boids deep, the ribbon a helix down the lane, the bloom a ball bursting
+from one point and regathering; each shape gets a wider edge mark with a second ring a bar ahead. Petra's answer on (a), the batch's
+home in `render/`, is still open.
+
 ## 11. Against the genre (the owner, 2026-10-21: "Cross-reference your decisions with the density of other famous shmups")
 
 What the famous ones field, from counts players and tool-assisted runs keep, set against ours (`flow`, `deadBeats`):
