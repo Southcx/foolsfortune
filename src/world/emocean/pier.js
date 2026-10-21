@@ -23,7 +23,8 @@ import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
 import { showcasePassage } from '../../progress/rail/showcase.js';
-import { practiceOf } from '../../progress/rail/legs.js';
+import { practiceOf, LEGS } from '../../progress/rail/legs.js';
+import { practiceCards } from '../../ui/practicecards.js';
 import { sfx } from '../../audio/sfx.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
@@ -92,14 +93,9 @@ export class Pier {
       const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
       if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen); };
       // practice (RAIL-STANDARDS.md 5; Star Fox 64's Training): a leg's type sailed once, again alone at a strength you pick, back to this
-      // pier in the hull and mounts chosen below, nothing counted (the row's card is Calissa's: plain rows until then; the words placeholders)
-      const PR = g.emocean?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [], prb = PR.length ? el('div', 'rooms') : null;
-      for (const type of PR) {
-        const d = el('div', 'room', `<span class="n">◌</span><span><b>${type.toUpperCase()}</b><s>strength ${[1, 2, 3, 4].map((n) => `<u data-s="${n}" style="cursor:pointer;padding:0 4px">${n}</u>`).join('')} · one leg, back to this pier · nothing counted</s></span>`);
-        const go = (n) => { this.menu?.close(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); };
-        d.onclick = (ev) => go(+(ev.target?.dataset?.s || 1));
-        prb.appendChild(d);
-      }
+      // pier in the hull and mounts chosen below, nothing counted (the cards: ui/practicecards.js, Calissa's; their words placeholders)
+      const PR = g.emocean?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [];
+      const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
       for (const [id, H] of Object.entries(SHIPS)) {
@@ -116,7 +112,7 @@ export class Pier {
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';
       g.mooring?.preview(chosen.at(-1) ?? null);
-      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE: CLICK A STRENGTH'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
     if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
