@@ -44,7 +44,7 @@ import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
 import { SCORE, chain, chainDown, chainHit, volleyBonus, downScore } from '../../progress/rail/score.js';
 import { STAGE } from '../../progress/econ/emocean.js';
 import { blendRig, rig, CRUISE } from '../../courier/ship/views.js';
-import { RailPath, figureFor, FIGURES, arenaLaps } from './railpath.js';
+import { RailPath, figureFor, FIGURES, arenaLaid } from './railpath.js';
 import { Charybdis } from './charybdis.js';
 import { stream } from '../../core/rng.js';
 import { Ship } from '../../courier/ship/ship.js';
@@ -291,7 +291,9 @@ export class Emocean {
     const sp = this.rail.speed, len = 4 * BAR_S * sp, rng = stream('rail/path'), L = this.trip.layout;
     const turns = trip && L ? L.turns.map((bar, i) => { const at = bar * BAR_S * sp, was = keep?.find((t) => Math.abs(t.at - at) < 1e-6); return was || { at, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 }; }) : [];
     // a maelstrom's peak leaves the line for its arena: whole laps round the whirlpool (railpath.js `arena`; charybdis.js holds it)
-    if (trip && L) L.legs.forEach((lg, k) => { if (this.trip.legs[k]?.type !== 'maelstrom' || lg.peak == null) return; const at = lg.peak * BAR_S * sp, was = keep?.find((t) => t.figure === 'arena' && Math.abs(t.at - at) < 1e-6), alen = (lg.release - lg.peak) * BAR_S * sp; turns.push(was || { at, len: alen, figure: 'arena', laps: arenaLaps(alen), sign: 1, k }); }); // (sign 1: the centre on the frame's -x, abeam where the side view looks and the gun turns)
+    if (trip && L) L.legs.forEach((lg, k) => { if (this.trip.legs[k]?.type !== 'maelstrom' || lg.peak == null) return; const at = lg.peak * BAR_S * sp, was = keep?.find((t) => t.figure === 'arena' && Math.abs(t.at - at) < 1e-6), alen = (lg.release - lg.peak) * BAR_S * sp;
+      if (was && was.lapLen && Math.abs(was.len - alen) > 1e-6) { was.len = alen; was.laps = Math.max(1, Math.round((alen - was.E) / was.lapLen)); } // (a held peak's laps added or taken away ahead of the ship: bosshold.js; the line behind it stays as flown)
+      turns.push(was || { at, ...arenaLaid(alen, sp, BAR_S), figure: 'arena', sign: 1, k }); }); // (sign 1: the centre on the frame's -x, abeam where the side view looks and the gun turns; its laps whole bars, so a hold adds a lap)
     this.rail.path.lay({ start: new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), length: (this.plan.seconds || STAGE.seconds) * sp + 400, turns, heart: CRUISE });
     this.turns = turns; this.figures = turns.filter((t) => t.figure !== 'arena').map((t) => t.figure); this.arenas = turns.filter((t) => t.figure === 'arena');
   }

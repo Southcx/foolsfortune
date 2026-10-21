@@ -15,9 +15,10 @@
 // from its fall to the release; her cue loops the peak while it stands and lets go into the release on the bar after the fall. The
 // stage never follows a cue that no longer agrees with its length (stage.js clock). `rail.hold { bars, enraged, by }` for the log.
 //
-// NOT YET: the maelstrom. Its peak is the arena (railpath.js `arena`: whole laps round the whirlpool, laid once), and lengthened mid-
-// flight the arena's laps and ease change the path already flown (the ship would jump); so Charybdis is fought out by its parts within
-// its arena and goes down at its end, until the arena can be laid open-ended (RAIL-FLOW.md 5, said to Dovina, 2026-10-21).
+// THE MAELSTROM: its peak is the arena (railpath.js `arena`, laid by distance in laps of whole bars: arenaLaid), so it is held a lap at a
+// time, decided a bar before the arena's exit begins (the line flown stays as it was: a lap added ahead of the ship before its exit
+// changes nothing behind it); at Charybdis's fall the whole laps still ahead are taken away, and `down` is said two bars before the
+// release (the ship must come round to the exit first). Dovina's ruling, RAIL-FLOW.md 9.
 //
 // Prior art: Star Fox 64's boss rooms (the music loops until the boss falls), iMUSE's horizontal resequencing (a section looped on the
 // bar line until the game moves on), and every shmup boss's "rage" timer (Cave's: a boss quickens, it never leaves).
@@ -27,6 +28,7 @@
 import { BOSS } from '../../progress/rail/setpieces.js';
 import { SWING_CLEAR } from '../../progress/rail/legs.js';
 import { ROSTER } from '../../progress/rail/showcase.js';
+import { BAR_S } from '../../progress/rail/crossing.js';
 
 /** The phrase a held peak is lengthened by (bars), and how far before the peak's end its window closes (the swing's clear bars). */
 export const HOLD = { bars: BOSS.hold?.bars ?? 8, before: BOSS.hold?.before ?? SWING_CLEAR };
@@ -44,7 +46,7 @@ export class BossHold {
   /** Whether leg `k`'s boss still stands. */
   standing(k, leg) {
     const S = this.st, P = S.piece;
-    if (leg.type === 'maelstrom') return false; // (the arena: NOT YET, above)
+    if (leg.type === 'maelstrom') { const C = S.charybdis; return !!(C?.active && C.foe?.alive && !C.beaten); }
     if (P && P.leg?.k === k && P.beaten === false) return true;
     for (const f of S.waves?.foes || []) if (f.alive && f.boss) return true;
     return false;
@@ -55,22 +57,31 @@ export class BossHold {
     const S = this.st, B = S.stage.boss;
     if (bar < L.peak) return;
     if (bar >= L.release) { if (B?.k === k) S.stage.boss = null; return; } // (the release: the music has let go)
+    const mael = leg.type === 'maelstrom', arena = mael ? (S.arenas || []).find((t) => t.k === k && t.lapBars) : null;
+    if (mael && !arena) return; // (an arena laid the old way is not held)
     if (!this.t0.has(k)) this.t0.set(k, S.t);
-    const standing = this.standing(k, leg);
+    const standing = this.standing(k, leg), Ebars = arena ? arena.E / (BAR_S * S.rail.speed) : 0;
     if (standing) { if (!B || B.k !== k || B.enraged !== this.enraged(k)) S.stage.boss = { k, enraged: this.enraged(k), down: false }; }
-    else if (B?.k === k && !B.down && !this.toCome(k, bar - L.at)) { S.stage.boss = { ...B, down: true }; this.cut(k, L, plan, bar - L.at); return; } // (it fell: the release after the next bar line)
-    const edge = L.release - HOLD.before; // (the window's end: the last bar patterns may fall in before the swing)
+    else if (B?.k === k && !B.down && !B.fell && !this.toCome(k, bar - L.at)) {
+      if (!mael) { S.stage.boss = { ...B, down: true }; this.cut(k, L, plan, bar - L.at); return; } // (it fell: the release after the next bar line)
+      S.stage.boss = { ...B, fell: true }; // (the maelstrom: the laps still ahead taken away, a bar's margin kept)
+      const peak = plan.phases.find((p) => p.id === 'peak'), m = Math.floor((peak.to - Ebars - (bar - L.at) - 1) / arena.lapBars);
+      if (m > 0) this.cut(k, L, plan, bar - L.at, peak.to - m * arena.lapBars);
+      return;
+    }
+    if (mael && B?.k === k && B.fell && !B.down && bar >= L.release - 2) S.stage.boss = { ...B, down: true };
+    const n = mael ? arena.lapBars : HOLD.bars, edge = mael ? L.release - Ebars : L.release - HOLD.before; // (the window's end: the arena's exit, else the last bar patterns may fall in before the swing)
     if (!standing || bar < edge - 1 || bar >= edge || this.done.has(`${k}:${edge}`)) return;
     this.done.add(`${k}:${edge}`);
-    this.extend(k, L, plan, edge - L.at, bar - L.at);
+    this.extend(k, L, plan, edge - L.at, bar - L.at, n);
   }
   enraged(k) { return this.st.t - (this.t0.get(k) ?? this.st.t) > BOSS.enrage; }
 
   /** The peak cut at its boss's fall: the release from the bar after the next bar line (the swing takes that bar), the peak's events
    *  past it let go, what follows moved back by as much. Nothing if the peak ends sooner than that anyway. */
-  cut(k, L, plan, now) {
+  cut(k, L, plan, now, to = Math.ceil(now) + 1) {
     const T = this.trip, S = this.st, R = T.runner, live = T.k === k ? R.plan : null, peak = plan.phases.find((p) => p.id === 'peak');
-    const to = Math.ceil(now) + 1, d = (peak?.to ?? to) - to; if (d <= 0) return;
+    const d = (peak?.to ?? to) - to; if (d <= 0) return;
     if (live) {
       live.events = live.events.filter((e) => !(e.bar > now && e.bar >= to && e.bar < to + d && e.phase === 'peak'));
       for (const e of live.events) if (e.bar >= to + d) e.bar -= d;
@@ -87,8 +98,8 @@ export class BossHold {
     S.game.events?.emit('rail.hold', { bars: -d, enraged: false, by: 'courier' });
   }
   /** The peak lengthened by a phrase at `rel0` (leg bars): what follows moves on, the phrase before is laid again in the gap. */
-  extend(k, L, plan, rel0, now) {
-    const T = this.trip, S = this.st, n = HOLD.bars, from = rel0 - n, enraged = this.enraged(k), q = enraged ? BOSS.quicken : 1;
+  extend(k, L, plan, rel0, now, n = HOLD.bars) {
+    const T = this.trip, S = this.st, from = rel0 - n, enraged = this.enraged(k), q = enraged ? BOSS.quicken : 1;
     const R = T.runner, live = T.k === k ? R.plan : null; // (what plays is the runner's own plan; the trip's is laid out from)
     if (live) {
       for (const e of live.events) if (e.bar >= rel0) e.bar += n;

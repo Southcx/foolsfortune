@@ -19,8 +19,8 @@
 //
 // THE STREAM (the owner's "dead air", 2026-10-21: docs/plans/RAIL-FLOW.md 1, law 1; legs.js `flow` is the model this plays): a phase's
 // queued waves (events with `queue`, from a cue's `cycle`) wait for their bar no longer than they must. On each beat, while fewer foes
-// are alive than the phase's `floor`, the next queued wave is pulled to now (no sooner than PULL_GAP after the last pull) and the rest
-// of the queue moves up by as much; a queue run dry before its phase ends goes round its cycle again. So clearing fast brings the next
+// are alive than the phase's `floor`, as many of the queue's next waves as fill the shortfall are pulled to now (no sooner than PULL_GAP
+// after the last pull, PULL_MAX at most) and the rest of the queue moves up by as much; a queue run dry before its phase ends goes round its cycle again. So clearing fast brings the next
 // wave fast (Ikaruga's chain waves, Star Fox 64's stream). A swing's FLOURISH (lights with `flourish`) is set round the ship, where both
 // views see it, so the turn is shot through; other lights are laid across the view's frame (RAIL-FLOW.md 1, laws 2 and 4).
 //
@@ -42,6 +42,7 @@ const CARRIER = { hp: 6, pay: 20, radius: 1.5, scale: 1.8, lanes: [-8, 0, 8], ex
 const upOf = (view) => (view === 'side' ? [1, 0, 0] : [0, 1, 0]);
 const LIGHT = { speed: 9, pay: 40 }; // (a light drifting by: lock it for its pay; it never fires)
 const inBox = (L, B, depth = null) => (depth === 'x' || Math.abs(L.x) <= B.x) && (depth === 'y' || (L.y >= B.y[0] && L.y <= B.y[1])) && L.z >= B.z[0] && L.z <= B.z[1]; // (depth: the axis a plane view lays flat, not asked)
+const PULL_MAX = 8; // (the most waves one pull lets in: a floor of ten in ones would otherwise be ten bodies on one beat)
 const REST = new THREE.Vector3(0, 3, 0), _p = new THREE.Vector3(), _u = new THREE.Vector3(); // (the ship's rest, before the waves have seen it)
 
 export class LegRunner {
@@ -82,10 +83,16 @@ export class LegRunner {
     const ph = this.phaseAt(bar), q = ph && this.queues.get(ph.id); if (!q) return;
     while (q.list.length && q.list[0].bar <= bar) { const e = q.list.shift(); this.wave(e.wave, e.bar); q.n++; }
     const beat = Math.floor(bar * 4); if (beat === this.beat) return; this.beat = beat;
-    if (!ph.floor || this.live() >= ph.floor || bar - q.last < PULL_GAP || bar >= ph.to - 0.5) return;
+    let short = (ph.floor || 0) - this.live();
+    if (short <= 0 || bar - q.last < PULL_GAP || bar >= ph.to - 0.5) return;
     q.last = bar;
-    if (q.list.length) { const d = q.list[0].bar - bar; for (const e of q.list) e.bar -= d; const e = q.list.shift(); this.wave(e.wave, bar); q.n++; return; }
-    if (q.cycle.length) { this.wave(q.cycle[q.n % q.cycle.length], bar); q.n++; } // (run dry: the cycle goes round again)
+    for (let k = 0; short > 0 && k < PULL_MAX; k++) { // (one pull fills the shortfall, its waves in together on this beat: legs.js flow, Dovina's)
+      let w = null;
+      if (q.list.length) { const d = q.list[0].bar - bar; for (const e of q.list) e.bar -= d; w = q.list.shift().wave; }
+      else if (q.cycle.length) w = q.cycle[q.n % q.cycle.length]; // (run dry: the cycle goes round again)
+      if (!w) break;
+      this.wave(w, bar); q.n++; short -= w.count || 1;
+    }
   }
   /** Foes alive the floor counts: a wave's members and lights to lock, entering or in frame (a set piece's parts, a carrier, a mine
    *  stand apart: the floor is what is beside the boss). */
