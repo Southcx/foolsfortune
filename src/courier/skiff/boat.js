@@ -39,6 +39,7 @@ import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
 import { featTint } from '../../vfx/oxidation.js';
 import { LACHRYMA_TINT } from '../../vfx/racewayeffects.js';
 import { glazeHull } from '../../vfx/hullglaze.js';
+import { base64Buffer } from '../../core/base64.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
 // rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
@@ -124,7 +125,7 @@ export class Skiff {
   /** The model, parsed and compiled the first time it is wanted; resolves when the boat can be drawn. */
   load(game) {
     this.loading ||= import('../../assets/solarskiff.glb?b64')
-      .then(({ default: b64 }) => new GLTFLoader().parseAsync(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, ''))
+      .then(({ default: b64 }) => new GLTFLoader().parseAsync(base64Buffer(b64), ''))
       .then(async (gltf) => {
         this.build(gltf);
         this.hullGlaze(game); // (the glaze fired on the hull at the kiln: hullGlaze below)

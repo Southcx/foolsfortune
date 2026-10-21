@@ -298,6 +298,7 @@ import { typeOf } from './progress/combat/types.js';
 import { OverlayScene } from './render/overlayscene.js';
 import { Cradles } from './world/cradles.js';
 import { Sight, sightCommands } from './progress/sight.js';
+import { base64Buffer } from './core/base64.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -505,7 +506,7 @@ async function main() {
 
   mark('spawn');
   const loader = new GLTFLoader();
-  const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+  const bytes = base64Buffer; // (one loop, not a function a byte: core/base64.js)
   const [charG, gunG, clapG, handG, jarG] = await Promise.all([
     loader.parseAsync(bytes(courierB64), ''),
     loader.parseAsync(bytes(gunB64), ''),
