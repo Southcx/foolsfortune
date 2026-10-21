@@ -571,9 +571,11 @@ export function buildAchievements(game) {
   C('ms4', 'move', 'Air', 1, 'count', 'Eat Sand', 'Bail off the Solar Skiff.', 'skiff.bail', 1, { hidden: true });
   C('ms5', 'move', 'Air', 3, 'mechanic', 'Old Faithful', 'Ollie off a geyser.', 'skiff.ollie.geyser', 1);
   C('rl1', 'emocean', 'Sea Stages', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times in a sea stage.', 'rail.rolls', 50);
-  C('rl2', 'emocean', 'Sea Stages', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a sea stage: four in five of what came at you downed.', 'rail.medal', 1);
+  C('rl2', 'emocean', 'Sea Stages', 2, 'perfect', 'Mission Accomplished', "Earn a crossing's medal: every leg's count of downs reached, with no continue.", 'rail.medal', 1);
+  C('rl14', 'emocean', 'Sea Stages', 3, 'count', 'Medal Run', "Reach a leg's count of downs for its medal ten times.", 'rail.leg.medal', 10);
+  C('rl15', 'emocean', 'Sea Stages', 3, 'perfect', 'Clean Leg', 'Sail one leg of a crossing without a hit.', 'rail.leg.clean', 1);
   C('rl3', 'emocean', 'Sea Stages', 4, 'perfect', 'Rank S', 'Score at par on a sea stage.', 'rail.rank.S', 1);
-  C('rl4', 'emocean', 'Sea Stages', 4, 'mechanic', '25,600', 'Chain to the cap: three of one feeling, again and again.', 'rail.chain.capped', 1);
+  C('rl4', 'emocean', 'Sea Stages', 4, 'mechanic', 'Full Chain', 'Chain to the top: eight threes of one feeling, unbroken (x3).', 'rail.chain.capped', 1);
   H('rl5', 'emocean', 'Sea Stages', 3, 'mechanic', 'Full Lock', 'Down every target of an eight-lock volley.', 'rail.volley.best', 8);
   C('rl6', 'emocean', 'Sea Stages', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots in a sea stage.', 'rail.parried', 25);
   C('rl7', 'emocean', 'Sea Stages', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);

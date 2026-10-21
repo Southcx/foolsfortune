@@ -168,9 +168,9 @@ in chase's axes in every view (cause 5). No pop-in found apart from the `dash` p
 - **After v255 (Dovina):** one pull fills the floor's shortfall (the runtime's pull is Petra's to match); the release is lights every
   bar and a queue of fodder (a river swarm, a line, a vee) every two bars; the calm a queue of swarms every four bars and lights every
   bar; the eyewall's open floor 6; `flow` one gun (section 11).
-- **Open:** the maelstrom's hold. Its arena is laid once as whole laps, so Charybdis still goes down at the arena's end, a clock by
-  another name. Dovina's call: the arena made open-ended (`railpath.js`, Petra's round), not a longer peak (it would still end, and
-  Wanda's split is laid on the leg's bars).
+- **The maelstrom's hold (v256, Petra):** Dovina's call was an open-ended arena, not a longer peak (a longer peak still ends, and
+  Wanda's split is laid on the leg's bars). `railpath.js` lays the arena by distance, a 6-bar ease in, whole laps of 6 bars, a 6-bar
+  ease out; `bosshold.js` adds a lap while Charybdis stands and takes the laps still ahead away at its fall. Its hold steps are 6 bars.
 - **Stale:** `scripts/rail.mjs` still models the pre-stretch 34-bar pieces (the audit); par is re-measured once the stream plays.
 
 ## 10. Voxels and boids: the tech under the spectacle (the owner, 2026-10-21: "we really do need voxel-based tech and boids in order to support the spectacle I envision")
