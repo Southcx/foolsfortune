@@ -8,6 +8,7 @@
 // Prior art: the crossing look's other parts (vfx/refitsweep.js, vfx/railfoemarks.js: made in its constructor, built and parked with it).
 //
 //   const X = installVoxels(game, scene?)   (sets game.voxels and game.swarmLook; builds at once when given the scene)
+//   game.swarmLooks [two SwarmLooks: a second swarm in flight at once draws in the second]
 //   X.build(scene)   X.parked() -> [objects]   X.update(rawDt)   X.batch   X.swarm
 // ---------------------------------------------------------------------------------------
 import { VoxelBatch } from './voxelbatch.js';
@@ -22,12 +23,12 @@ function prebake() {
 }
 
 export function installVoxels(game, scene = null) {
-  const batch = new VoxelBatch(game), swarm = new SwarmLook(game, { batch });
-  game.voxels = batch; game.swarmLook = swarm; setVoxels(batch);
+  const batch = new VoxelBatch(game), swarm = new SwarmLook(game, { batch }), swarm2 = new SwarmLook(game, { batch });
+  game.voxels = batch; game.swarmLook = swarm; game.swarmLooks = [swarm, swarm2]; setVoxels(batch); // (two swarms in flight at once: the second its own draw)
   const X = {
     batch, swarm, built: false,
-    build(sc) { if (X.built) return X; batch.build(sc); swarm.build(sc); X.built = true; prebake(); return X; },
-    parked: () => (X.built ? [...batch.parked(), ...swarm.parked()] : []),
+    build(sc) { if (X.built) return X; batch.build(sc); swarm.build(sc); swarm2.build(sc); X.built = true; prebake(); return X; },
+    parked: () => (X.built ? [...batch.parked(), ...swarm.parked(), ...swarm2.parked()] : []),
     update: (raw) => batch.update(raw),
   };
   if (scene) X.build(scene);
