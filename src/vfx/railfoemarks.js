@@ -25,7 +25,7 @@ import { BAR_S } from '../progress/rail/crossing.js';
 
 const EDGE = { size: 1.2, inX: 0.84, inY: [-0.5, 0.8], gold: 0xffd36a, ember: 0xff8a3a, ringAlpha: 0.9, chevAlpha: 1, beat: BAR_S / 4, n: 10, same: 0.09 };
 /** A mark's kind: its size, and its ring's colour (a boss's ember from the start). */
-const KIND = { foe: { size: 1, ring: EDGE.gold, outer: false }, swarm: { size: 1.25, ring: EDGE.gold, outer: true }, boss: { size: 1.6, ring: EDGE.ember, outer: true } };
+const KIND = { foe: { size: 1, ring: EDGE.gold, outer: false }, swarm: { size: 1.25, ring: EDGE.gold, outer: true }, boss: { size: 1.6, ring: EDGE.ember, outer: true }, hazard: { size: 1.15, ring: 0x9fe8de, outer: true } }; // (a hazard's: the crude-glass's pale teal, vfx/railhazards.js)
 /** The off-frame arrow: where it sits (the frame's box, inside the edge marks'), how far ahead of the eye it is drawn (m), how far a foe
  *  or a shot may be and still earn one (m), how many sectors round the edge (one arrow each), a shot's approach (cos of its heading's angle
  *  to the ship). */
