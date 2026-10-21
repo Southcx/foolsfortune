@@ -169,6 +169,14 @@ export class RailSounds {
     });
     this.noise(t + step * 4, 1.2, { type: 'highpass', f0: 6500, gain: 0.07, attack: 0.05, dest: d });
   }
+  /** The results window's beat (ui/railresults.js `onBeat`): a tick on the music's sixteenth up the count's steps, the rank's slam, and the
+   *  trip's medal as the medal's call (no medal: the casino's flourish). */
+  railResultsBeat(kind, info = {}, grid = null) {
+    if (kind === 'tick') return this.casinoTick?.(info.k ?? 0, this.onSixteenth(grid));
+    if (kind === 'mult') return this.casinoMult?.(info.n ?? 2, this.onSixteenth(grid));
+    if (kind === 'flourish') return (info.tier ?? 1) >= 2 ? this.railMedal(grid) : this.casinoFlourish?.(1, this.onSixteenth(grid));
+    if (kind === 'reel') return this.casinoReel?.(info.dur);
+  }
   /** A boss's fall (the stage's 0.25 real s freeze, then 0.8 real s at 0.35 speed: RAIL-STANDARDS.md 1): the blow, a held breath through
    *  the freeze, a tape-slowed groan down an octave through the slow, and the bell of it over when time comes back. */
   railBossFall() {
