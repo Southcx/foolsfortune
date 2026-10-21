@@ -3394,4 +3394,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   under the full-screen canvas. On the workbench page the sheets went in the other order, so the look passed there.
 - **Fix:** `.rr,.rr.bf{position:fixed...}` (ui/railreadout.js): the readout's own placement outweighs the frame's.
 - **Measured after:** headless aboard the showcase crossing, the readout's box at (13, 23), 165 x 104 px, drawn top-left over the sea.
-- **Rule:** NEW:frame-class-never-places.
+- **Rule:** 255.
