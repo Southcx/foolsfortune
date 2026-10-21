@@ -255,13 +255,13 @@ the lock-on, the roll, the forms, the Bomb, a mount, and moving.
 | **sniper** | +1 | x1 | one aimed beam: its warning line a bar (sweepBeam with from = to = 0), then it burns | holds at the frame's far edge, 4 bars | C O S | stepping off the line |
 | **ambusher** | +1 | x1 | an oddFan of 5 as it passes | from behind (side: the left edge; overhead: the bottom edge; chase: a flank), always announced by its edge mark a bar before (rule 7); overtakes and leaves ahead | C O S | reading the edge marks |
 | **turret** | +1 | x2 | rotatingRing or aimedBurst | none of its own: it sits on wreckage or a rock and scrolls with the world | O S | a fixed emitter: where to stand |
-| **mine-layer** | +1 | x1 | none itself. It drops a mine each beat it crosses: a shot that is a foe (HP 1, worth 50), which bursts into a ring of 8 after 2 bars or when you pass within 3 m | crosses the frame once, side to side | O S | clearing a lane before you need it |
+| **mine-layer** | +1 | x1 | none itself. It drops a mine each beat it crosses: a shot that is a foe (HP 1, worth 50), which bursts into a ring of 8 (speed 9) after 2 bars or when you come within 8 m (3 m left 0.16 real s to react; the fairness rule wants 0.5, and 8 m gives 0.63) | crosses the frame once, side to side | O S | clearing a lane before you need it |
 | **escort** (the shield escort) | +1 | x2 | a slow aimed single | flies a tether's length off the gunship or heavy it guards; while it lives its charge takes no harm (armour 0) | C O S | target priority |
 | **carrier** (built) | +1 | x2 | any pattern with no thrower of its role in frame (legs.js `from`) | from the view's far edge over the windup, holds while it fires, leaves (CARRIER_AT) | C O S | that every shot has a body |
 | **sweeper** (the laser sweeper) | +2 | x1 | sweepBeam: a warned line that sweeps slower than the ship can run | holds at an edge for the sweep's length | C O S | reading a beam |
 | **heavy** (built) | +2 | x1 | the rings and spirals (rotatingRing, multiSpiral, rose, doubleHelix) | holds mid-frame 8 to 10 bars | O (C S as a mid-boss) | the forms: drinking a ring of your colour |
 | **gunship** | +2 | x1 core + parts | its parts: two guns (stackFan, splitShell), a core opened by their loss. Parts as `SCORE.part` (port 500 a gun) | holds broadside or ahead 8 bars, the Phantom Storm's model | C O S | parts and the lock-on on them |
-| **blocker** | +2 | x3, armour 0.25 | nothing | drifts into the lane and closes a third of the frame for 4 bars; its weak point shows only to the Flash mount (the Veritome), or to a Bomb | O S | a mount: what the Flash and the Bomb are for |
+| **blocker** | +2 | x2, full blows while open (24 hits: one sharp opening of 3 real s, two at most) | nothing | drifts into the lane and closes a third of the frame for 4 bars; its weak point shows only to the Flash mount (the Veritome), or to a Bomb | O S | a mount: what the Flash and the Bomb are for |
 | **spawner** | +1 | x3 | nothing itself: a hatch that lets out a school of 4 every 2 bars while it holds | holds at an edge 8 bars; its schools fly the school's paths | O S | the source over the swarm: kill the hatch and the popcorn stops |
 | **grappler** (the boarder, anywhere) | +1 | x1 | nothing: it latches onto the hull and drags (the ship's pace x0.8, a modifier you can see on the hull) until the roll (E) throws it off, the Grapple mount yanks it off, or it is shot | swings in on a line from an edge, latches, holds till shaken | C S | the roll and the Grapple mount as cures |
 
@@ -281,6 +281,9 @@ A 16-bar practice leg splits as: open bars 1 to 4, build 5 to 9, peak 10 to 14, 
 - the build pairs a foe with its answer's opposite (a turret with a sweeper: stand still, then move);
 - the peak is the set piece.
 
+**As data:** each row is `ROSTER` in `progress/rail/showcase.js`, its path column as `moves` (arc, dash, charge, hold, overtake, fixed,
+cross, tether, drift, swing) and the mine as `mine`; Petra's runtime reads them (`world/emocean/foemechanics.js`).
+
 **Every number above is a first guess.** The simulator (`scripts/rail.mjs`) re-measures par once the roster is laid into the legs.
 
 **The research** (Calissa's, `docs/plans/research/RAIL-MODULES-SHMUP.md` on her branch, 565d7e8) is the source of rules 2, 3, 4, 7, 9
@@ -296,6 +299,23 @@ shared axes in a swing).
    brake, the ship's floor lifts from 1.2 m to 3.1 m to keep the waterline on screen (Calissa's measure, mock v3.2). Petra's
    (`courier/ship/views.js` VIEW_RIGS.chase); the chase screen box shrinks with it, so `scripts/patterns.mjs` and `scripts/legs.mjs`
    take the new box once Petra measures it.
+6. The overhead camera is the mock's (v4): cam [0, 15, -4.5], look [0, 0, 3.4]; the ship 2.5% of the frame's height, its box x ±14.5,
+   z -5.4 to 20.5 (Petra's measure), half the old room. The overhead carrier holds at z 15 (`CARRIER_AT.above`), and the calm's gift
+   rose was slowed to speed 7 to keep the half second to react from the nearer thrower.
+7. The side camera comes about a quarter closer (Calissa's ask, the owner's yes to Dovina's "closer, but modestly": the side view is
+   where beams and rams are dodged, so it keeps more room than overhead). Built: cam [18, 1.5, 3], the ship 7.5% of the frame's
+   height. `CARRIER_AT.side` takes Petra's measured frame (y -2 to 12.5, z -14 to 19.5), the carrier holding at z 15; from the nearer
+   thrower the brig's split shell splits at 0.5 real s (not 0.9: it split 1.6 m off the ship) and the leviathan's rose is slowed to 7
+   with 30 petals (its gap and its half second).
+8. **A body throws from where it is seen, never from on top of you** (Dovina, 2026-10-20, from Petra's measure: the brig abeam in the
+   side view stood 1.4 to 5 m off the ship once moved onto its plane). A set piece's body fires only from inside its view's box and at
+   least `THROW_MIN` (15 m, what the checks judge from) off the ship in the plane; otherwise a carrier throws that volley. The brig
+   keeps ahead of the ship in the side view (its stern chasers firing aft), not abeam. A body deeper than the plane (Old Nobody's
+   throat at x -24 in side) is moved onto the plane along the camera's ray through it, not straight across, so its shots start where
+   its throat is seen; the box and `THROW_MIN` are then asked of that point, the box's depth axis not at all. Since the ray brings a
+   deep body toward the ship, the deep bodies stand ahead in the side view: the brig at z 21, Old Nobody's spine 22 to 26 m ahead so
+   its throat (z 38 to 41) is laid 15 m or more off and inside the frame: the genre's boss on the frame's far side, its bulk the
+   backdrop, never brought up to the plane where it would fill the screen.
 
 **Agreed between the divisions** (2026-10-20; the owner may overrule):
 - Overhead has no lock-on: the twin-stick gun, the Bomb and the forms.

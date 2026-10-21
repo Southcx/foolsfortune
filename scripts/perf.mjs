@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE PERF CHECK: the other machine half of Petra's gate (docs/ARCHITECTURE.md, "The gate", "Budgets"). It starts its own dev server,
-// opens the game headless in manual mode, and measures four standing places, the workshop, the dunes, a hall of the Dunemaw's bottom floor and the Spirit Garden's gate: what a frame costs to simulate
+// opens the game headless in manual mode, and measures five standing places, the workshop, the Dunes, a hall of the Great Dunemaw's bottom floor, the Spirit Garden's gate and a crossing (the showcase crossing's chase leg): what a frame costs to simulate
 // (tick) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
 // geometries and textures are alive, the heap, and the boot. Then it holds the numbers against the last published build's
 // (scripts/perf-baseline.json) and against the hard budgets, and says which moved.
@@ -108,7 +108,19 @@ try {
     if (Rm) { Rm.enter(Gm.shrines?.get?.(Gm.shrines.last) || null); for (let i = 0; i < 200; i++) G.tick(1 / 60); Rm.setName?.('Siva Lon'); Gm.indexMenu?.close?.(); for (let i = 0; i < 30; i++) G.tick(1 / 60); }
     const garden = Rm?.active ? place() : null;
     if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
-    return { workshop, dunes, well, garden, heapMB, heapGardenMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
+    const heapGardenMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6);
+    // a crossing: the showcase crossing's chase leg on the galleon, six bars in (the heaviest hull and the roster's chase foes, Calissa's
+    // ship refit and rail foe bodies; DEBUG, which manual mode is). Last, so the heaps above stay the places the baseline measured
+    const E = Gm.emocean;
+    if (Rm?.active) { Rm.leave(); for (let i = 0; i < 120; i++) G.tick(1 / 60); }
+    if (E?.sailShowcase?.('anagami', [])) {
+      for (let i = 0; i < 240 && !E.stage.active; i++) G.tick(1 / 60);
+      E.wound = () => {}; // (nothing it meets ends the run while it is measured)
+      const L = E.trip?.layout?.legs?.[1];
+      if (L) { E.t = (L.at + 6) * 1.5; for (let i = 0; i < 120; i++) G.tick(1 / 60); }
+    }
+    const crossing = E?.stage?.active ? place() : null;
+    return { workshop, dunes, well, garden, crossing, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
   });
   out.bootS = +bootS.toFixed(1);
 } finally {
@@ -130,7 +142,7 @@ const cmp = (label, key, now, was, tol, budget) => {
 };
 const WELL_BUDGET = { calls: 88, tris: 400000 }; // (tris 150k -> 400k, 2026-10-12, with the main budget: a hall's calls are the limit, not its triangles) // (raised 120k -> 150k at v137, Petra: the owner's 25 rooms on the bottom floor (was about 10) are all in view from a central hall, the walls drawn twice with their outline; the sand cut 32 -> 24 samples a room and the sets merged a quadrant at a time, 170k -> 140k measured.)
 // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
-for (const p of ['workshop', 'dunes', 'well', 'garden']) {
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing']) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
   for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
@@ -141,11 +153,11 @@ console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against t
 console.log(rows.join('\n'));
 // (not gated, but read at every review: programs compiled in play, and the big things no zone hides)
 console.log(`  programs compiled after the warm-up: ${out.lateProgs}${base?.lateProgs != null ? ` (was ${base.lateProgs})` : ''}${out.lateProgs > (base?.lateProgs ?? out.lateProgs) ? '   <-- each is a hitch the first time it is drawn' : ''}${out.lateNames?.length ? ` (${out.lateNames.join(', ')})` : ''}`);
-for (const p of ['workshop', 'dunes', 'well', 'garden']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined } }, null, 1) + '\n');
+  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');

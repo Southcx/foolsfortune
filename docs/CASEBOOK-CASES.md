@@ -3327,6 +3327,34 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (the owner's ruling says 3.1), x ±8.8 m. In the game, braked, the ship sits at -0.84 on the screen, 0 errors.
 - **Rule:** 249.
 
+### 2026-10-20 · Flash and Bomb opened no blocker in the showcase crossing's overhead leg (Calissa, in her look)
+- **Seen:** Digit1 and Digit2 at the overhead and side blockers; no seam opened. Probed: the ship sailed the overhead leg in the first
+  leg's kit (Bomb and Vacuum), so Digit1 was a Bomb out of its reach and Digit2 the Vacuum; nothing could open it.
+- **Cause:** a leg's hull and mounts were fitted only in the turn before it (`triprun.js` leave). A leg reached any other way (a look's
+  or a probe's jump of the clock) kept the kit of the last leg left.
+- **Fix:** `refit(k)` is asked again as the leg begins (enter), and does nothing, says nothing, when the kit is already its own.
+- **Measured after:** jumped from the launch to the overhead blocker: the destroyer with Flash and Bomb; Flash opened it (2.92 real s
+  held). Sailed through a turn in order: one log line for the new hull, not two. 0 errors.
+- **Rule:** 250.
+
+### 2026-10-20 · In the side view the False Light's volleys began 1.4 to 5.2 m from the ship (Petra, measured for Dovina)
+- **Seen:** measuring the side view's throwers after the side camera came closer: the brig's hull stood 17.1 to 17.8 m from the ship,
+  but its stackFan and split shell began 1.4 to 5.2 m off it, against the 15 m every pattern is judged from (`scripts/legs.mjs`).
+- **Cause:** in a plane view the pattern player moves the thrower onto the ship's plane before it fires (`patternplayer.js`): in the
+  side view the depth (x) is dropped. The brig ran abeam on the ship's far side, 17 m deep and level with the ship along the scroll,
+  so on the plane she stood beside it. The leg runner took any set piece's body as its thrower, wherever it stood.
+- **Fix:** Dovina's rule (RAIL-MODULES.md 1.8): a plane view lays a thrower on the ship's plane along the camera's ray through it,
+  where it is seen (`patternplayer.js` `layOnPlane`; dropped straight across, Old Nobody's throat 24 m deep was laid 6 m off its
+  image); a set piece's body throws only when that point is inside its view's box (its depth not asked) and at least `THROW_MIN`
+  (15 m) from the ship, else a carrier throws (`legrunner.js` `throws`). In the side view the brig keeps ahead, 21 m on and 5.5 m
+  deep, and her stern chasers fire aft only from inside the frame and half a real second off (`pirates.js`).
+- **Measured after** (the Wreckers' and Old Nobody's peaks, sailed headless in the side view, the eye at (18, 4.5, 3)): the brig laid
+  at 16.0 to 17.5 m; 9 of 10 of its volleys thrown by its body, the first by a carrier (laid at z 22.7, past the frame); two stern
+  chasers. Old Nobody's throat laid at 7.7 to 10.4 m: every volley by a carrier; then, on Dovina's ruling, its spine run 22 to 25 m
+  ahead in the side view (`leviathan.js` AHEAD): its throat laid at 17.9 to 19.0 m, all 4 of its abreast volleys by its body, the
+  heave's and the sounding's by carriers. 0 errors.
+- **Rule:** 251.
+
 ### 2026-10-20 · A mine's tell hung the page (Wanda, testing the rail's foe roster)
 - **Seen:** the headless page closed ("Target page, context or browser has been closed") on `sfx.railTell(..., 'mine')`.
 - **Cause:** the mine's beeps (audio/rail.js TELL_VOICE.mine) stepped `x += gap, gap *= 0.6` until `x >= len - 0.02`; the gaps sum to

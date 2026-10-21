@@ -735,5 +735,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 249. **Find an edge by stepping to it, then halve the last step.** Halving a range assumes one edge in it; a
     camera that follows the thing it frames brings the screen round again, and the halving found the far edge.
 
+250. **What a stretch needs is set as the stretch begins, not only on the way out of the one before.** A leg's kit fitted
+    only in the turn before it was missing whenever the leg was reached another way.
+
+251. **Measure a distance where the thing is laid, not where it stands.** A plane view moves a thrower onto the
+    ship's plane before it fires: the brig 17 m off in the world stood 1.4 m off where her shots began.
+
 NEW:sound-loops-counted. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
     beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.

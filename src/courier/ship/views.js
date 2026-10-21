@@ -32,8 +32,8 @@ export const CRUISE = 3;
  *  follows. The side camera stands on the ship's right (+x), so the scroll runs toward the screen's right (Einhander, R-Type). */
 export const VIEW_RIGS = {
   chase:  { cam: [0, 3, -5], look: [0, 0, 12], follow: 0.62, fov: 0 }, // (the mock's v3.1, the owner's ruling 2026-10-20: RAIL-MODULES.md rulings 5)
-  above:  { cam: [0, 30, -9], look: [0, 0, 7], follow: 0.12, fov: -4 },
-  side:   { cam: [24, 1.5, 3], look: [0, 0.5, 3], follow: 0.1, fov: -6 },
+  above:  { cam: [0, 15, -4.5], look: [0, 0, 3.4], follow: 0.12, fov: -4 }, // (the mock's v4, the owner's ruling 6, 2026-10-20)
+  side:   { cam: [18, 1.5, 3], look: [0, 0.5, 3], follow: 0.1, fov: -6 }, // (a quarter closer, the owner's ruling 7, 2026-10-20: was 24 m abeam)
   free:   { cam: [0, 1.6, -10], look: [0, 1.2, 30], follow: 0.25, fov: 8 },
   astern: { cam: [0, 2.6, 9], look: [0, 0.6, -24], follow: 0.35, fov: 4 },
 };

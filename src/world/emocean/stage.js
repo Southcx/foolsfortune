@@ -205,7 +205,7 @@ export class Emocean {
     const rel = this.piece ? bar - this.piece.leg.from : 0;
     this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) || !!this.charybdis?.holding, arena: !!this.charybdis?.holding, swing: sw }); // (the arena: Charybdis abeam, the cursor free in the side view; the swing: the reticle eased across it)
     if (!this.stage.active || this.offering) return;
-    const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves };
+    const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves, view };
     this.piece?.update(dt, rel, ctx);
     this.waves.update(dt, ctx);
     if (this.trip.active) this.trip.update(dt, bar); // (after the waves: Dovina's order)
@@ -319,6 +319,7 @@ export class Emocean {
     const g = this.game, sw = this.swingAt(this.bar), S = this.ship.local;
     if (sw) { blendRig(sw.from, sw.to, sw.k, this.rail, S, _sh); swingLook(g, sw.k, sw.from, sw.to); _sh.fov += 6 * Math.sin(Math.PI * sw.k); this.swinging = true; }
     else { rig(this.viewNow(this.bar), this.rail, S, _sh); if (this.swinging) { swingLook(g, 1); this.swinging = false; } }
+    this.eye = this.rail.toLocal(_sh.pos, this.eye || new THREE.Vector3()); // (the camera in the rail's frame, before its shake: where a plane view lays a thrower, patternplayer.js layOnPlane)
     this.trauma = Math.max(0, this.trauma - T.ship.trauma.decay * raw);
     const k = this.trauma * this.trauma, tt = this.t * 23;
     _sh.pos.x += k * 0.5 * Math.sin(tt * 1.7); _sh.pos.y += k * 0.5 * Math.sin(tt * 2.3 + 1);
@@ -365,7 +366,7 @@ export class Emocean {
    *  medal's count, the volley's count, the weight of it. */
   down(f, returned, volley) {
     const r = this.run; if (!r || this.ending) return;
-    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within, windup = this.windupShowing(f);
+    const pointBlank = f.local.distanceTo(this.ship.local) < SCORE.pointBlank.within, windup = this.windupShowing(f) || !!f.glowing; // (glowing: a rammer's glow, world/emocean/foemoves.js)
     const pay = f.pay != null ? f.pay * (pointBlank ? SCORE.pointBlank.mult : 1) * (returned ? SCORE.returned : 1) * (windup ? SCORE.windup : 1) : downScore({ cls: f.cls, pointBlank, returned, windup });
     const link = f.chain === false ? 0 : chainDown(r.chain, f.aspect);
     r.score += pay + link; if (f.count !== false) r.downed++; if (pointBlank) r.pointBlank++; if (link) r.chainBest = Math.max(r.chainBest, link);

@@ -24,15 +24,17 @@
 //   L.plan   L.done   L.phaseAt(bar) -> { id, view }   (bar: from the leg's first, in the cue's bars)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { schedule, CARRIER_AT } from '../../progress/rail/legs.js';
+import { schedule, CARRIER_AT, THROW_MIN } from '../../progress/rail/legs.js';
 import { leadOf } from '../../progress/rail/patterns.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
-import { PatternPlayer } from './patternplayer.js';
+import { PatternPlayer, layOnPlane } from './patternplayer.js';
 import { railFoeBody } from '../../vfx/railfoes.js';
 
 const CARRIER = { hp: 6, pay: 20, radius: 1.5, scale: 1.8, lanes: [-8, 0, 8], exit: 1.2 }; // (scale and radius as waves.js draws a roster body: SIZE 1.8, its length 1.9 x 0.45 x SIZE)
 const upOf = (view) => (view === 'side' ? [1, 0, 0] : [0, 1, 0]);
 const LIGHT = { speed: 9, pay: 40 }; // (a light drifting by: lock it for its pay; it never fires)
+const inBox = (L, B, depth = null) => (depth === 'x' || Math.abs(L.x) <= B.x) && (depth === 'y' || (L.y >= B.y[0] && L.y <= B.y[1])) && L.z >= B.z[0] && L.z <= B.z[1]; // (depth: the axis a plane view lays flat, not asked)
+const REST = new THREE.Vector3(0, 3, 0), _p = new THREE.Vector3(), _u = new THREE.Vector3(); // (the ship's rest, before the waves have seen it)
 
 export class LegRunner {
   constructor({ waves, player, object = () => null, onDirector = null, scene = null } = {}) {
@@ -68,7 +70,7 @@ export class LegRunner {
   pattern(p, bar) {
     const view = this.phaseAt(bar)?.view || 'chase', H = CARRIER_AT[view] || CARRIER_AT.chase, lead = leadOf(p.name);
     let from = null;
-    if (p.from === 'object') from = this.object?.() || null;
+    if (p.from === 'object') { const o = this.object?.() || null; from = o && this.throws(o, H.box, p.mode, view) ? o : null; } // (else a carrier: THROW_MIN)
     else if (p.from !== 'ahead') from = this.inFrame(p.from, H.box);
     const swing = (this.plan.swings || []).find((w) => w > bar), until = swing != null ? (swing - 1 - bar) * BAR_S : Infinity;
     const carried = !from;
@@ -84,12 +86,22 @@ export class LegRunner {
     }
     return run;
   }
+  /** May a set piece's body throw this volley itself: inside the view's box and at least THROW_MIN from the ship, both asked where the
+   *  pattern player lays it (a plane view lays it on the ship's plane along the camera's ray, and the box's depth is not asked:
+   *  patternplayer.js layOnPlane). Dovina's rule, RAIL-MODULES.md 1.8: the brig abeam in the side view stood 1.4 m off the ship where
+   *  its shots began, 17 m off in truth. */
+  throws(f, B, mode, view) {
+    const S = this.waves.ship?.local || REST;
+    if (mode === 'cone') return inBox(f.local, B) && f.local.distanceTo(S) >= THROW_MIN;
+    const up = _u.fromArray(upOf(view)), at = layOnPlane(f.local, S, up, this.player.eye, _p);
+    return inBox(at, B, view === 'side' ? 'x' : 'y') && at.distanceTo(S) >= THROW_MIN;
+  }
   /** The live foe of a role in the view's frame nearest the frame's middle (the newest of old fired from wherever it was). */
   inFrame(role, B) {
     let best = null, bd = Infinity;
     for (const f of this.waves.foes) {
       if (!f.alive || f.role !== role) continue;
-      const L = f.local; if (Math.abs(L.x) > B.x || L.y < B.y[0] || L.y > B.y[1] || L.z < B.z[0] || L.z > B.z[1]) continue;
+      const L = f.local; if (!inBox(L, B)) continue;
       const d = Math.abs(L.x) + Math.abs(L.z - (B.z[0] + B.z[1]) / 2) * 0.5; if (d < bd) { bd = d; best = f; }
     }
     return best;
