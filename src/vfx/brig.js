@@ -36,6 +36,8 @@
 //   B.parts (the BossParts)   B.reset()   B.lamp (the LighthouseLamp: B.lamp.set({ yaw, warn, hot }) for its beam)
 //   (the crossing's runtime as it stands: world/emocean/pirates.js)
 //   B.set({ heel, pitch, t })   B.port(i 0..5, { side 1|-1, open 0..1, gone })   B.fire(i, side)   B.rigging(i 0..3, cut)
+//   B.portHurt(i, k 0..1)   B.riggingHurt(i, k 0..1)   (k = 1 - hp / hpMax: the part crazes; every part is lined in gold while it can be
+//     hit and comes off when broken: vfx/bossparts.js, vfx/partcraze.js; B.hurt is the hull's, not a part's)
 //   B.strike(k 0..1)   B.hurt(k 0..1)   B.sink(k 0..1)   B.update(rawDt)   B.portWorld(i, side, out)   B.riggingWorld(i, out)
 //   const b = new BoarderLook()   b.group   b.set({ pos, face (yaw), rope (world anchor or null), t })
 //   brigHullGeometry() (her hull, for a wreck or a ghost of one: vfx/drownedlighthouse.js)
@@ -183,7 +185,7 @@ export class BrigLook {
       const Y = { yard, sail, knot, wrap, y0, k: 0, cut: false, geo: G, torn: 0 };
       const part = this.parts.add(new BossPart({ name: `rigging.${i}`, object: yard, radius: span * 0.4, at: new THREE.Vector3(0, -drop * 0.5, 0.4), facing: new THREE.Vector3(0, 0, 1), look }));
       part.wire(G.whole, { threshold: 40, parent: sail }); Y.edges = { whole: part.wires[0].geometry, torn: this._track(new THREE.EdgesGeometry(G.torn, 40)) }; // (on the sail itself: it slackens and shudders with it)
-      part.wire(spar, { threshold: 40, bright: 0.7 });
+      part.wire(spar, { threshold: 40, bright: 0.7 }); part.skin(sail); part.skin(knot); // (the sail and its sling craze with the spar)
       Y.part = part; this.yards.push(Y);
     }
   }
@@ -332,6 +334,9 @@ export class BrigLook {
 
   portWorld(i, side = 1, out = new THREE.Vector3()) { return this.ports[side][i].P.localToWorld(out.set(0, 0, 0.3)); }
   riggingWorld(i, out = new THREE.Vector3()) { return this.yards[i].knot.getWorldPosition(out); }
+  /** A part's hurt, 0..1 (1 - hp / hpMax): it crazes (vfx/bossparts.js hurt). Port i on her flank, rigging point i. */
+  portHurt(i, k) { this.ports[this.flank][i]?.part?.hurt(k); }
+  riggingHurt(i, k) { this.yards[i]?.part.hurt(k); }
 
   update(raw = 1 / 60) {
     this.t += raw; const t = this.t, ease = (a, b, r) => a + (b - a) * (1 - Math.exp(-raw * r));

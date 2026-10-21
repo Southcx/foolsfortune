@@ -15,6 +15,11 @@
 //
 // A forged seal (vertex fx.w 2: wreckers.js cradle) flickers in a stutter of a livid red, apart from the steady ember.
 //
+// A unit that is a part (a gunship's guns, its core once open) is lined in GOLD while it can be hit (a rim in the rail's world marks'
+// gold, 0xffd36a, brighter in a hit's flicker) and CRAZES as it is hurt (`uParts[unit]`: x hurt 0..1, y the line): the cell net of
+// vfx/partcraze.js drawn in this same program (no second skin, no second draw), its cracks lit gold from within near the end (the
+// boss parts' look: docs/plans/RAIL-FLOW.md section 4).
+//
 //   bodyMaterial({ flex, death }) -> MeshStandardMaterial (userData.u: its uniforms)   haloMaterial() -> ShaderMaterial (userData.u)
 //   DEATH { break, sink, burst } (the styles)
 // ---------------------------------------------------------------------------------------
@@ -40,16 +45,21 @@ uniform float uOpen;  // the gunship's shutters, 0 shut .. 1 open
 #ifdef USE_INSTANCING
 attribute vec4 iState;
 #define FOE_STATE iState
+#define FOE_PART vec2(0.0)
 #else
 uniform vec4 uStates[4]; // a unit's tell k, hit, death, reveal
+uniform vec2 uParts[4];  // a unit's hurt (0..1: its crazing) and its gold line (0 none .. 1 lined: it can be hit)
 #define FOE_STATE uStates[int(unit.x + 0.5)]
+#define FOE_PART uParts[int(unit.x + 0.5)]
 #endif
 varying vec4 vFx;
 varying vec4 vState;
 varying float vSeed;
+varying vec2 vPart;
+varying vec3 vObj;
 `;
 const BODY_VERT = /* glsl */`
-vFx = fx; vState = FOE_STATE; vSeed = part.x * 3.1 + part.z * 1.7;
+vFx = fx; vState = FOE_STATE; vSeed = part.x * 3.1 + part.z * 1.7; vPart = FOE_PART; vObj = position;
 transformed += uFlex.xyz * (sin(uTime * uWave.x - position.z * uWave.y) * part.w * uFlex.w);
 transformed.x += sin(uTime * 90.0) * FOE_STATE.y * 0.03 + unit.y * uOpen * 0.5;
 transformed.y += abs(unit.y) * uOpen * 0.06;
@@ -76,6 +86,17 @@ uniform vec3 uDeathB;
 varying vec4 vFx;
 varying vec4 vState;
 varying float vSeed;
+varying vec2 vPart;
+varying vec3 vObj;
+float foeHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float foeCells(vec3 p) { // (F2 - F1 of a cell net, 0 on an edge: vfx/partcraze.js's net, in the body's program)
+  vec3 i = floor(p), f = fract(p); float f1 = 9.0, f2 = 9.0;
+  for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+    vec3 g = vec3(x, y, z), o = vec3(foeHash(i + g), foeHash(i + g + 17.3), foeHash(i + g + 41.9));
+    float d = length(g + o - f); if (d < f1) { f2 = f1; f1 = d; } else if (d < f2) f2 = d;
+  }
+  return f2 - f1;
+}
 `;
 const BODY_FRAG = /* glsl */`
 {
@@ -93,7 +114,21 @@ const BODY_FRAG = /* glsl */`
   em += diffuseColor.rgb * flick * 2.2;
   em += uAspect * uDeathB.z * smoothstep(0.0, 0.06, d) * (1.0 - d) * (1.0 - d) * 2.0;
   em *= 1.0 - 0.7 * d * d;
-  totalEmissiveRadiance += em;
+  // a part's gold line (its rim, while it can be hit) and its crazing (the cracks opening with its hurt, lit gold from within near the end)
+  vec3 foeGold = vec3(1.0, 0.651, 0.141); // (0xffd36a in linear light: the rail's world marks' gold)
+  if (vPart.y > 0.0 && d <= 0.0) {
+    float ndv = abs(dot(normal, normalize(vViewPosition)));
+    totalEmissiveRadiance += foeGold * vPart.y * smoothstep(0.5, 0.85, 1.0 - ndv) * (1.6 + 2.0 * hit);
+  }
+  if (vPart.x > 0.0 && d <= 0.0) {
+    float hk = vPart.x; vec3 cp = vObj * 8.0; // (cells about an eighth of a metre)
+    float cpx = 1.0 / max(length(fwidth(cp)), 1e-5), seen = smoothstep(2.5, 5.0, cpx);
+    float e = foeCells(cp), aa = max(fwidth(e), 1e-5), w = max(mix(0.015, 0.09, hk), aa * 1.2);
+    float crack = (1.0 - smoothstep(w - aa, w + aa, e)) * seen, sh = (1.0 - smoothstep(w * 2.6 - aa, w * 2.6 + aa, e)) * seen - crack;
+    float lit = smoothstep(0.62, 0.95, hk);
+    diffuseColor.rgb *= 1.0 - 0.75 * max(sh, 0.0) - 0.6 * crack * (1.0 - lit);
+    totalEmissiveRadiance += crack * mix(vec3(0.35, 0.32, 0.27), foeGold * 3.0, lit) + foeGold * 0.12 * smoothstep(0.7, 1.0, hk);
+  }
 }
 `;
 
@@ -109,7 +144,7 @@ const bodyCompile = (sh, mat) => {
 export function bodyMaterial({ flex = null, death = 'break', roughness = 0.62, metalness = 0.15 } = {}) {
   const D = DEATH[death] || DEATH.break, f = flex || {};
   const u = {
-    uTime: { value: 0 }, uAspect: { value: new THREE.Color(1, 1, 1) }, uStates: { value: [0, 1, 2, 3].map(() => new THREE.Vector4()) }, uOpen: { value: 0 },
+    uTime: { value: 0 }, uAspect: { value: new THREE.Color(1, 1, 1) }, uStates: { value: [0, 1, 2, 3].map(() => new THREE.Vector4()) }, uParts: { value: [0, 1, 2, 3].map(() => new THREE.Vector2()) }, uOpen: { value: 0 },
     uFlex: { value: new THREE.Vector4(...(f.dir || [0, 1, 0]), f.amp || 0) }, uWave: { value: new THREE.Vector2(f.rate || 6, f.wave || 2) },
     uDeathA: { value: new THREE.Vector4(D[0], D[1], D[2], D[3]) }, uDeathB: { value: new THREE.Vector3(D[4], D[5], D[6]) },
   };

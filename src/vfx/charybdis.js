@@ -14,7 +14,10 @@
 //                plates of five are snapped; broken, stubs
 //   THE EYES     six round its head under the lip ('eye.0'..'eye.5'), each burning in the feeling's colour in a ring of labradorite
 //                TUBERCLES (the humpback's knobs, Lachrymite gone to labradorite), looking out and a little down: seen from the side,
-//                and from below as it dives. Damaged, clouded and scarred; broken, the lid shut over it
+//                and from below as it dives. Clouding as it is hurt, damaged clouded and scarred; broken, the lid shut over it
+//   AS GAMEPLAY  every eye, comb and the throat is a boss part lined in gold while it can be hit, crazing as it is hurt
+//                (`C.part('eye.3').hurt(0.6)`, k = 1 - hp / hpMax: vfx/bossparts.js, vfx/partcraze.js), a hit flashing it, coming off
+//                when broken (in voxels where game.voxels.burst is)
 //   THE THROAT POUCH  one side of its head ballooned and pleated as a lunging humpback's; its THROAT PLEATS (the ventral grooves) wound
 //                down its neck into a spiral as the whirlpool winds; opposite, its ROSTRUM, a ridge up to the lip with the tubercles in rows.
 //                Not round, so it reads as a beast and not a vessel as it turns
@@ -165,7 +168,7 @@ export class CharybdisLook {
       const horn = track(new THREE.MeshStandardMaterial({ color: HORN, roughness: 0.4, metalness: 0.35, flatShading: true, emissive: 0x0b0712 })); // (each its own, for its own windup: one program, Old Nobody's tusks')
       const m = new THREE.Mesh(combs.intact, horn); m.castShadow = true; lean.add(m);
       const part = this.parts.add(new BossPart({ name: `baleen.${k}`, object: lean, radius: 2.2, at: new THREE.Vector3(0, 2.8, 0.7), facing: new THREE.Vector3(0, 0.6, 1), look }));
-      const wire = part.wire(this.combEdges.intact, { lines: true, parent: m, bright: 0.55 }); part.index = k; // (five plates' edges: dimmer than a tusk's, or the comb is a bar of light)
+      const wire = part.wire(this.combEdges.intact, { lines: true, parent: m, bright: 0.55 }); part.skin(m); part.index = k; // (five plates' edges: dimmer than a tusk's, or the comb is a bar of light; the plates craze)
       this.combs.push({ root, lean, m, horn, wire, part, flare: 0, k: 0 });
     }
     // the eyes: six round its head under the lip, in rings of tubercles (boss parts)
@@ -182,7 +185,7 @@ export class CharybdisLook {
       const lid = new THREE.Mesh(lidG, this.oil.mat); lid.position.z = 0.05; lid.visible = false; root.add(lid);
       const scar = new THREE.Mesh(scarG, this.scarMat); scar.position.z = 0.36; scar.rotation.z = 0.6 + k; scar.visible = false; root.add(scar);
       const part = this.parts.add(new BossPart({ name: `eye.${k}`, object: root, radius: 1.0, at: new THREE.Vector3(0, 0, 0.5), facing: new THREE.Vector3(0, 0, 1), look }));
-      part.wire(ringG, { threshold: 10 }); part.index = k;
+      part.wire(ringG, { threshold: 10 }); part.skin(eye); part.index = k; // (the gold ring round it; the eye's glass crazes)
       this.eyes.push({ root, eye, pupil, mat, lid, scar, part, w: 0 });
     }
     // the throat: the gullet's light at its bottom, and its glow up the maw (a boss part, seen from above)
@@ -191,7 +194,7 @@ export class CharybdisLook {
     this.haloMat = track(new THREE.MeshBasicMaterial({ map: haloTexture(), color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, blending: THREE.AdditiveBlending }));
     this.halo = new THREE.Mesh(track(new THREE.PlaneGeometry(9, 9).rotateX(-Math.PI / 2)), this.haloMat); this.halo.position.y = -7.6; this.halo.renderOrder = 3; this.body.add(this.halo);
     const tp = this.parts.add(new BossPart({ name: 'throat', object: this.throatM, radius: 1.6, at: new THREE.Vector3(0, 0.4, 0), facing: new THREE.Vector3(0, 1, 0), look }));
-    tp.wire(track(new THREE.CircleGeometry(1.6, 24).rotateX(-Math.PI / 2).translate(0, 0.05, 0)), { threshold: 10 });
+    tp.wire(track(new THREE.CircleGeometry(1.6, 24).rotateX(-Math.PI / 2).translate(0, 0.05, 0)), { threshold: 10 }); tp.skin(this.throatM);
     // the vantages a rail circling it sees its parts best by (its frame)
     this.vantages = { above: new THREE.Vector3(0, 22, 0), flank: new THREE.Vector3(0, -2, 26), below: new THREE.Vector3(0, -22, 18) };
     this.glow = { throat: 0, eyes: 0, floor: 0.25 }; // (the throat's disc never goes black while it lives; broken, its light is out)
@@ -286,8 +289,10 @@ export class CharybdisLook {
       const p = E.part; E.w = ease(E.w, p.windupK, 6);
       E.eye.scale.set(1 + 0.25 * E.w, 0.82 + 0.25 * E.w, 0.55);
       E.mat.emissive.copy(col).lerp(_c.setRGB(1, 0.94, 0.8), 0.5 * E.w);
-      E.mat.emissiveIntensity = (p.state === 'damaged' ? 0.18 : 0.75) * (0.85 + 0.15 * Math.sin(t * 2.3 + p.index)) + 1.6 * E.w + 0.9 * Math.min(1, p.pulse);
-      if (p.state === 'damaged') E.mat.emissive.lerp(_c.setRGB(0.5, 0.5, 0.52), 0.6);
+      const cloud = p.state === 'damaged' ? 1 : 0.7 * p.hurtK; // (it clouds as it is hurt, milky by the time it is damaged)
+      E.mat.emissiveIntensity = THREE.MathUtils.lerp(0.75, 0.18, cloud) * (0.85 + 0.15 * Math.sin(t * 2.3 + p.index)) + 1.6 * E.w + 1.4 * Math.min(1, p.pulse);
+      if (cloud > 0) E.mat.emissive.lerp(_c.setRGB(0.5, 0.5, 0.52), 0.6 * cloud);
+      if (p.pulse > 0) E.mat.emissive.lerp(_c.setRGB(1, 1, 1), 0.5 * Math.min(1, p.pulse)); // (a hit's flash in the glass)
     }
     // the throat: its light swells before it swallows (its windup), flickers damaged, is out broken
     const tp = this.parts.part('throat'), th = (this.glow.throat = ease(this.glow.throat, tp.alive ? 0.45 + 0.3 * inhale + 0.9 * tp.windupK : 0.04, 4));
@@ -302,7 +307,10 @@ export class CharybdisLook {
   }
 
   /** A comb's horn catching the feeling at its windup. */
-  hornGlow(C) { const k = C.part.windupK + 0.6 * Math.min(1, C.part.pulse); C.horn.emissive.setHex(0x0b0712); if (k > 0.01) C.horn.emissive.lerp(this.color, Math.min(0.5, k * 0.35)); }
+  hornGlow(C) {
+    const f = Math.min(1, C.part.pulse), k = C.part.windupK + 0.6 * f; C.horn.emissive.setHex(0x0b0712); if (k > 0.01) C.horn.emissive.lerp(this.color, Math.min(0.5, k * 0.35));
+    if (f > 0) C.horn.emissive.lerp(_c.setRGB(1, 0.92, 0.7), 0.45 * f); // (a hit's flash on the horn)
+  }
 
   /** The breach and the dive at the crude's level: the crown thrown off its lip, crude sheeting off its head; the sea pouring in. */
   splashes(raw, sea, umbral) {
