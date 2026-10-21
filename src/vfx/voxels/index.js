@@ -22,8 +22,12 @@ function prebake() {
   for (const role of RAIL_FOE_ROLES) { try { const b = railFoeBody(role); b.object.updateWorldMatrix(true, true); voxelize(b.object, { key: `railfoe.${role}` }); b.dispose?.(); } catch (e) { console.warn('voxels: prebake', role, e); } }
 }
 
+/** A boid's size in the crossing: 1.8 times the body's own cells (a fry about 1.3 m nose to tail, a school's koi's size). The v256 look:
+ *  at 1 a river of 48 at the chase's far edge read as a line of specks. */
+export const SWARM_SCALE = 1.8;
+
 export function installVoxels(game, scene = null) {
-  const batch = new VoxelBatch(game), swarm = new SwarmLook(game, { batch }), swarm2 = new SwarmLook(game, { batch });
+  const batch = new VoxelBatch(game), swarm = new SwarmLook(game, { batch, scale: SWARM_SCALE }), swarm2 = new SwarmLook(game, { batch, scale: SWARM_SCALE });
   game.voxels = batch; game.swarmLook = swarm; game.swarmLooks = [swarm, swarm2]; setVoxels(batch); // (two swarms in flight at once: the second its own draw)
   const X = {
     batch, swarm, built: false,
