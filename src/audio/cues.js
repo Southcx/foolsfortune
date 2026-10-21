@@ -11,6 +11,8 @@
 import { feelingOfKind } from './mycelium.js';
 
 const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
+const RING = { n: -1, at: 0 }; // (rings threaded in this turn: a chime a degree up each)
+const nearK = (n) => (n === true || n == null ? 0.8 : n > 1 ? Math.max(0.2, 1 - n / 8) : n); // (`near`: a flag, 0..1, or metres)
 const CEREMONY = { heard: false }; // (a score ceremony seen this session: the table view now paces the count)
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
@@ -88,7 +90,7 @@ const RULES = {
   // (Querent's count: Calissa's score ceremony, ui/scoreceremony.js, drives it beat by beat; until one has begun, the hand plays it whole, a beat
   // late so a ceremony starting on the same move is heard first)
   'table.ceremony.begin': () => { CEREMONY.heard = true; },
-  'table.ceremony.beat': (s, e) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
+  'table.ceremony.beat': (s, e, g) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0, e.rail || g.emocean?.stage?.active ? s.onSixteenth?.(g.music?.grid?.()) : 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
     : e.kind === 'flourish' ? s.casinoFlourish?.(e.tier ?? 1) : null),
   'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
     : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),
@@ -123,6 +125,15 @@ const RULES = {
   'rail.latch': (s) => s.railLatch?.(),
   'rail.unlatch': (s) => s.railUnlatch?.(),
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
+  // the crossing to the genre's standards (RAIL-STANDARDS.md 1, 4, 6; Petra emits): a lock dropped, a part's crack, a hazard's whoosh on its
+  // side, a ring's chime up the scale (the five of a turn a chord), a medal, and the sting under a boss's fall
+  'rail.lock.drop': (s, e, g) => s.railLockDrop?.(e.n ?? 0, g.music?.grid?.()),
+  'rail.part': (s, e, g) => s.railPartCrack?.(g.music?.grid?.()),
+  'rail.hazard': (s, e, g) => e.passed !== 'hit' && e.near !== false && s.railHazard?.(e.kind, e.passed === 'through' ? 0 : Math.sign(e.side ?? e.lane ?? 0), nearK(e.near), g.music?.grid?.()),
+  'rail.ring': (s, e, g) => { const now = performance.now(); RING.n = now - RING.at < 6000 ? RING.n + 1 : 0; RING.at = now; s.railRing?.(e.all ? 4 : Math.min(4, RING.n), !!e.all, g.music?.grid?.()); if (e.all) RING.n = -1; },
+  'rail.leg.end': (s, e, g) => e.medal && s.railMedal?.(g.music?.grid?.()),
+  'rail.boss.fall': (s) => s.railBossFall?.(),
+  'rail.end': (s, e) => e.by === 'courier' && s.railBossFall?.(), // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once)
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
   // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap
   'spirit.feed': (s, e) => { s.spiritVoice?.('eat', e); setTimeout(() => s.spiritVoice?.('happy', e), 420); },
