@@ -43,10 +43,11 @@ import { WAVES } from './setpieces.js';
 /** The kill model the flow is judged by (RAIL-FLOW.md 0, cause 1). A GOOD player lands 24 shots a bar (six tenths of the scripted
  *  expert's 39.5 a bar: Petra's charybdistest); a foe is in frame from half a bar after its bar (its entrance from the edge) until it
  *  is shot down or its path takes it off (`PATH` bars: a formation crosses in six, a roster foe that holds, its hold and two); lights
- *  to lock live two bars (the lock-on takes eight at once); a director holds the whole of its phase (a boss leaves only beaten). */
-export const KILL = { good: 24, enter: 0.5, path: 6, lights: 2 };
-/** The floor pulls a queue's next wave no sooner than half a bar after its last (an entrance needs room to be read: Galaga's dives
- *  come in turn, not at once). */
+ *  to lock live a third of a bar (a good player clears eight in about 0.5 real s: Petra's v255 headless); a director holds the whole of its phase (a boss leaves only beaten). */
+export const KILL = { good: 24, each: 1 / 6, flock: 1 / 12, enter: 0.5, path: 6, lights: 1 / 3 };
+/** The floor pulls no sooner than half a bar after a queue's last pull (an entrance needs room to be read: Galaga's dives come in
+ *  turn, not at once); one pull brings as many of the queue's next waves as fill the shortfall (floor less live), so a queue of ones
+ *  and twos keeps its floor too (Petra's v255 headless: one wave a pull left the build at 5.6 live of 10, the peak 3.5 of 8). */
 export const PULL_GAP = 0.5;
 /** Each phase's floor: the fewest foes in frame it allows before the runtime pulls the next queued wave forward (first guesses: the open
  *  teaches, so few; the build presses; beside a boss, its adds; the release is a shower of lights). */
@@ -87,7 +88,8 @@ export const LEGS = {
     Q('peak', 2, 3, [W('darter', 'dash', 2), W('rammer', 'dash', 1), W('school', 'vee', 6)]),
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'cageRing', from: 'glint', kind: 'feel' } },
     { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'glint', kind: 'feel' } },
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE WRECKERS: darters and an ambusher in chase; the side view's sniper, sweeper and grappler among schools; the brig with boarders,
   // ambushers and swoopers round her.
@@ -103,7 +105,8 @@ export const LEGS = {
     Q('peak', 2, 3, [W('ambusher', 'dash', 2), W('school', 'vee', 6), W('swooper', 'pincer', 2), W('grappler', 'dash', 1)]),
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'stackFan', from: 'object', kind: 'feel' } },
     { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral', params: { T: 0.5 } } }, // (splits sooner since the side camera came closer, 2026-10-20: from 15 m a 0.9 s flight split 1.6 m off the ship)
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE ROGUE LEVIATHAN: rammers and rings in chase; overhead the heavy, a turret, a blocker (Flash or Bomb) and a mine-layer with a
   // spawner; Old Nobody in the side view with schools, swoopers and a sniper at its flanks, and a swarm through its breath.
@@ -122,11 +125,12 @@ export const LEGS = {
     { phase: 'peak', at: 20, wave: W('swarm', 'ribbon', 48) },
     { phase: 'peak', at: 2, every: 5, pattern: { name: 'rose', from: 'object', kind: 'feel', params: { n: 30, speed: 7, swell: 7 } } }, // (for the nearer frames, 2026-10-20: slowed from 9, 0.42 real s to react from 15 m, the rule's 0.5; 30 petals not 36, its gap 3.26 m under three ship widths)
     { phase: 'peak', at: 4, every: 7, pattern: { name: 'sweepBeam', from: 'object', kind: 'umbral' } },
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE EYEWALL: the rollercoaster itself (dodging walls and beams), and now targets through it: darters and schools, ambushers in the
   // peak and a swarm thrown round the eye.
-  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: V('chase', 'free', 'chase', 'chase'), floors: { open: 4, build: 6, peak: 8, release: 10 }, cues: [
+  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: V('chase', 'free', 'chase', 'chase'), floors: { open: 6, build: 6, peak: 8, release: 10 }, cues: [
     { phase: 'open', at: 0, every: 4, pattern: { name: 'sweepBeam', from: 'ahead', kind: 'feel', params: { volleys: 1 } } },
     Q('open', 1, 1.5, [W('darter', 'dash', 2), W('school', 'line', 6)]),
     { phase: 'build', at: 0, every: 3, pattern: { name: 'gapWall', from: 'ahead', kind: 'feel' } },
@@ -137,7 +141,8 @@ export const LEGS = {
     { phase: 'peak', at: 1, every: 5, pattern: { name: 'sweepBeam', from: 'ahead', kind: 'umbral' } },
     Q('peak', 0, 1.5, [W('school', 'ring', 6), W('ambusher', 'dash', 2), W('school', 'line', 8)]),
     { phase: 'peak', at: 10, wave: W('swarm', 'ribbon', 32) },
-    { phase: 'release', at: 0, every: 2, targets: 6 },
+    { phase: 'release', at: 0, every: 1, targets: 6 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE GRAVEYARD: both worlds at once. Schools, darters and rammers in chase; the side view's sniper, swoopers and a mine-layer; the
   // Drowned Light (a heavy until its director) with escorts, ambushers and a grappler, and a swarm blooming from the wrecks.
@@ -154,7 +159,8 @@ export const LEGS = {
     { phase: 'peak', at: 16, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'rose', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'mixed', from: 'heavy', kind: 'umbral', params: { of: 'oddFan', share: 0.3 } } },
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE MAELSTROM: rings and rammers in chase; the whirl's ambushers round the first heavy; Charybdis (a heavy until its director) with
   // darters, rammers and a grappler, and a swarm the whirlpool throws up.
@@ -171,7 +177,8 @@ export const LEGS = {
     { phase: 'peak', at: 24, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'doubleHelix', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 6, pattern: { name: 'itano', from: 'heavy', kind: 'umbral' } },
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE BOUNTY: vees and darters in chase; overhead swoopers, a turret, a mine-layer and a blocker with a spawner; the posted stray (a
   // heavy until its director) beside a gunship and its escort, with schools, ambushers, darters and a sniper.
@@ -190,17 +197,19 @@ export const LEGS = {
     { phase: 'peak', at: 28, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'multiSpiral', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'splitShell', from: 'heavy', kind: 'umbral' } },
-    { phase: 'release', at: 0, every: 2, targets: 8 },
+    { phase: 'release', at: 0, every: 1, targets: 8 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
   // THE CALM: a breath that still scores: lights to lock, shots of your own form to drink, and a swarm that does not fire drifting by.
   calm: { bars: 48, phases: P(8, 12, 0, 4), views: V('chase', 'above', 'above', 'chase'), floors: { open: 6, build: 6, peak: 0, release: 8 }, cues: [
-    { phase: 'open', at: 0, every: 2, targets: 6 },
-    { phase: 'open', at: 8, wave: W('swarm', 'river', 24) },
+    { phase: 'open', at: 0, every: 1, targets: 6 },
+    Q('open', 0.5, 4, [W('swarm', 'river', 24), W('swarm', 'ribbon', 24), W('swarm', 'bloom', 24)]),
     { phase: 'open', at: 1, every: 4, pattern: { name: 'ring', from: 'ahead', kind: 'gift', params: { volleys: 1, speed: 9 } } },
-    { phase: 'build', at: 0, every: 2, targets: 6 },
-    { phase: 'build', at: 12, wave: W('swarm', 'ribbon', 32) },
+    { phase: 'build', at: 0, every: 1, targets: 6 },
+    Q('build', 0.5, 4, [W('swarm', 'ribbon', 32), W('swarm', 'bloom', 24), W('swarm', 'river', 32)]),
     { phase: 'build', at: 2, every: 4, pattern: { name: 'rose', from: 'ahead', kind: 'gift', params: { volleys: 1, n: 18, speed: 7, swell: 7 } } }, // (slowed from 9 when the overhead frame halved, 2026-10-20: from 15 m it gave 0.42 real s to react, the rule's 0.5)
-    { phase: 'release', at: 0, every: 2, targets: 6 },
+    { phase: 'release', at: 0, every: 1, targets: 6 },
+    Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
   ] },
 };
 
@@ -262,38 +271,75 @@ export const CARRIER_AT = {
 /** A view's way of firing: in its plane (above, side, astern: a ring reads as a ring), or in a cone at the ship (chase, free). */
 export const modeOf = (view) => (view === 'chase' || view === 'free' ? 'cone' : 'plane');
 
-/** When an event's targets are in frame (bars), a good player killing them as they come (KILL): a wave from its entrance until shot
- *  down (its hit points over 24 shots a bar) or off its path; lights two bars; a director the rest of its phase. Null for a pattern. */
+/** When an event's targets are in frame (bars): as the stream played them (`flow` sets `alive`), else alone, a good player killing them
+ *  as they come (KILL): a wave from its entrance until found and shot down or off its path; lights a third of a bar; a director the
+ *  rest of its phase. Null for a pattern. */
 export function aliveBars(e, plan) {
-  if (e.wave) {
-    const w = e.wave, R = ROSTER[w.role], hp = (WAVES.hp[Math.max(0, Math.min(4, w.cls ?? 0))] || 1) * (R?.hp ?? 1) * (w.count || 1);
-    const path = R?.moves?.kind === 'hold' && typeof R.moves.hold === 'number' ? R.moves.hold + 2 : KILL.path;
-    return [e.bar + KILL.enter, e.bar + KILL.enter + Math.min(path, hp / KILL.good)];
-  }
+  if (e.alive) return e.alive;
+  if (e.wave) { const k = killOf(e); return [e.bar + KILL.enter, e.bar + KILL.enter + Math.min(k.path, k.each * k.n)]; }
   if (e.targets) return [e.bar + KILL.enter, e.bar + KILL.enter + KILL.lights];
   if (e.director) { const ph = plan.phases.find((p) => p.id === e.phase); return [e.bar, ph.to]; }
   return null;
 }
-/** The stream as the runtime plays it (RAIL-FLOW.md 1, law 1), beat by beat: in each phase, whenever fewer foes are alive than its
- *  floor, the next of its queued waves (a `cycle`'s) enters on that beat instead of its bar (no sooner than PULL_GAP after the last), and the rest of that queue moves up by as
- *  much (a queue keeps its spacing: its bars are the latest a wave may wait); a queue run dry before its phase ends goes round its cycle
- *  again. Returns the plan's events retimed. */
+/** What one event asks of the gun: how many, the bars to find and down each, the bars before it leaves. */
+function killOf(e) {
+  if (e.targets) return { n: e.targets, each: KILL.lights / 8, path: KILL.path };
+  const w = e.wave, R = ROSTER[w.role], hp = (WAVES.hp[Math.max(0, Math.min(4, w.cls ?? 0))] || 1) * (R?.hp ?? 1);
+  const path = R?.moves?.kind === 'hold' && typeof R.moves.hold === 'number' ? R.moves.hold + 2 : KILL.path;
+  return { n: w.count || 1, each: Math.max(hp / KILL.good, R?.moves?.kind === 'flock' ? KILL.flock : KILL.each), path };
+}
+/** The stream as the runtime plays it (RAIL-FLOW.md 1, law 1), beat by beat, against one good player's one gun: in each phase, whenever
+ *  fewer foes are alive (or entering) than its floor, its next queued waves (a `cycle`'s), enough to fill the shortfall, enter on that
+ *  beat instead of their bars (no sooner than PULL_GAP after that queue's last pull), and the rest of that queue moves up by as much (a
+ *  queue keeps its spacing: its bars are the latest a wave may wait); a queue run dry before its phase ends goes round its cycle again.
+ *  The gun works the oldest foe in frame first, a beat's time at a time (KILL), so the stream runs at the player's kill rate. Returns the
+ *  plan's events retimed, each with `alive` [from, to] bars. */
 export function flow(plan) {
-  const ev = plan.events.map((e) => ({ ...e })), queues = new Map();
+  const ev = plan.events.map((e) => ({ ...e })), queues = new Map(), STEP = 0.25;
   for (const e of ev) if (e.queue) { if (!queues.has(e.phase)) queues.set(e.phase, []); queues.get(e.phase).push(e); }
   for (const q of queues.values()) q.sort((a, b) => a.bar - b.bar);
-  const live = (t) => ev.reduce((n, e) => { const A = aliveBars(e, plan); return A && t >= A[0] && t < A[1] ? n + (e.wave?.count || e.targets || 1) : n; }, 0);
-  for (let t = 0; t < plan.bars; t += 0.25) {
-    const ph = plan.phases.find((p) => t >= p.from && t < p.to), q = ph && queues.get(ph.id); if (!q?.length) continue;
-    if (live(t + KILL.enter) >= (ph.floor ?? 0)) continue;
-    if (t - (q.last ?? -9) < PULL_GAP) continue;
-    q.last = t;
-    const i = q.findIndex((e) => e.bar > t);
-    if (i >= 0) { const d = q[i].bar - t; for (let j = i; j < q.length; j++) q[j].bar = +(q[j].bar - d).toFixed(3); continue; }
-    // the queue has run dry before its phase ends: the cycle goes round again (a cycle is a source, not a list)
-    const c = q.cycle || (q.cycle = q.map((e) => e.wave)), n = q.length, e = { ...q[n - 1], bar: t, wave: { ...c[n % c.length], cls: q[n - 1].wave.cls } };
-    q.push(e); ev.push(e);
+  const shootable = (e) => e.wave || e.targets;
+  const live = (t) => { // (as it will stand half a bar on, when a wave pulled now enters: what is entering counts, what the gun will have downed by then does not)
+    let n = 0, gun = KILL.enter;
+    for (const e of ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + KILL.enter <= t + KILL.enter).sort((a, b) => a.bar - b.bar)) {
+      if (e.k && t + KILL.enter >= e.alive[0] + e.k.path) continue;
+      const k = e.k || { ...killOf(e), prog: 0, left: e.wave?.count || e.targets }, entered = e.bar + KILL.enter <= t;
+      const downed = entered ? Math.min(k.left, Math.floor((gun + k.prog) / k.each)) : 0; gun -= downed * k.each;
+      n += k.left - downed;
+    }
+    return n;
+  };
+  for (let t = 0; t < plan.bars; t += STEP) {
+    const ph = plan.phases.find((p) => t >= p.from && t < p.to), q = ph && queues.get(ph.id);
+    if (q?.length && t - (q.last ?? -9) >= PULL_GAP) {
+      let short = (ph.floor ?? 0) - live(t);
+      if (short > 0) q.last = t;
+      while (short > 0) { // (one pull fills the shortfall: its waves enter together on this beat)
+        const i = q.findIndex((e) => e.bar > t);
+        if (i >= 0) { const d = q[i].bar - t; for (let j = i; j < q.length; j++) q[j].bar = +(q[j].bar - d).toFixed(3); short -= q[i].wave.count || 1; continue; }
+        // the queue has run dry before its phase ends: the cycle goes round again (a cycle is a source, not a list)
+        const c = q.cycle || (q.cycle = q.map((e) => e.wave)), n = q.length, e = { ...q[n - 1], bar: t, wave: { ...c[n % c.length], cls: q[n - 1].wave.cls }, k: null, alive: null };
+        q.push(e); ev.push(e); short -= e.wave.count || 1;
+      }
+    }
+    // the gun: the oldest foe in frame first, this beat's time spent finding and downing
+    let budget = STEP;
+    const now = ev.filter((e) => shootable(e) && !e.alive?.done && e.bar + KILL.enter <= t).sort((a, b) => a.bar - b.bar);
+    for (const e of now) {
+      if (!e.k) { e.k = { ...killOf(e), prog: 0 }; e.k.left = e.k.n; e.alive = [e.bar + KILL.enter, 0]; }
+      if (t >= e.alive[0] + e.k.path) { e.alive[1] = e.alive[0] + e.k.path; e.alive.done = true; } // (off its path: escaped)
+    }
+    for (const e of now) {
+      if (e.alive.done) continue;
+      while (budget > 0 && e.k.left > 0) {
+        const need = e.k.each - e.k.prog;
+        if (need <= budget) { budget -= need; e.k.prog = 0; e.k.left--; } else { e.k.prog += budget; budget = 0; }
+      }
+      if (e.k.left <= 0) { e.alive[1] = t + STEP - budget; e.alive.done = true; }
+      if (budget <= 0) break;
+    }
   }
+  for (const e of ev) if (e.alive && !e.alive.done) e.alive[1] = Math.min(plan.bars, e.alive[0] + e.k.path);
   return ev.sort((a, b) => a.bar - b.bar);
 }
 /** The beats (quarter bars) with nothing alive to shoot (aliveBars), the stream played (`flow`), from the first entrance on, and their

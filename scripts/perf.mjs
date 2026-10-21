@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE PERF CHECK: the other machine half of Petra's gate (docs/ARCHITECTURE.md, "The gate", "Budgets"). It starts its own dev server,
-// opens the game headless in manual mode, and measures five standing places, the workshop, the Dunes, a hall of the Great Dunemaw's bottom floor, the Spirit Garden's gate and a crossing (the showcase crossing's chase leg): what a frame costs to simulate
+// opens the game headless in manual mode, and measures five standing places, the workshop, the Dunes, a hall of the Great Dunemaw's bottom floor, the Spirit Garden's gate and a crossing (the showcase crossing's chase leg), and the crossing's spectacle (a swarm of 48 and a leg's foes bursting into voxels): what a frame costs to simulate
 // (tick) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
 // geometries and textures are alive, the heap, and the boot. Then it holds the numbers against the last published build's
 // (scripts/perf-baseline.json) and against the hard budgets, and says which moved.
@@ -120,7 +120,16 @@ try {
       if (L) { E.t = (L.at + 6) * 1.5; for (let i = 0; i < 120; i++) G.tick(1 / 60); }
     }
     const crossing = E?.stage?.active ? place() : null;
-    return { workshop, dunes, well, garden, crossing, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
+    // the spectacle (RAIL-FLOW.md 10.4: measured before any cut): a swarm of 48 in frame and every other foe of the leg downed at once
+    // into its voxels (Calissa's batch), the leg's own shots in flight
+    let spectacle = null;
+    if (crossing) {
+      E.waves.spawn({ role: 'swarm', formation: 'river', count: 48, cls: 0 }, 0);
+      for (let i = 0; i < 90; i++) G.tick(1 / 60);
+      for (const f of [...E.waves.foes]) if (f.alive && f.form && f.form !== 'swarm') E.waves.strike(f, 1e6, { cause: 'shot' });
+      spectacle = place();
+    }
+    return { workshop, dunes, well, garden, crossing, spectacle, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
   });
   out.bootS = +bootS.toFixed(1);
 } finally {
@@ -142,7 +151,7 @@ const cmp = (label, key, now, was, tol, budget) => {
 };
 const WELL_BUDGET = { calls: 88, tris: 400000 }; // (tris 150k -> 400k, 2026-10-12, with the main budget: a hall's calls are the limit, not its triangles) // (raised 120k -> 150k at v137, Petra: the owner's 25 rooms on the bottom floor (was about 10) are all in view from a central hall, the walls drawn twice with their outline; the sand cut 32 -> 24 samples a room and the sets merged a quadrant at a time, 170k -> 140k measured.)
 // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
-for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing']) {
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
   for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
@@ -153,11 +162,11 @@ console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against t
 console.log(rows.join('\n'));
 // (not gated, but read at every review: programs compiled in play, and the big things no zone hides)
 console.log(`  programs compiled after the warm-up: ${out.lateProgs}${base?.lateProgs != null ? ` (was ${base.lateProgs})` : ''}${out.lateProgs > (base?.lateProgs ?? out.lateProgs) ? '   <-- each is a hitch the first time it is drawn' : ''}${out.lateNames?.length ? ` (${out.lateNames.join(', ')})` : ''}`);
-for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined } }, null, 1) + '\n');
+  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined }, spectacle: keep.spectacle && { ...keep.spectacle, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');

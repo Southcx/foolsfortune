@@ -8,8 +8,8 @@
 //   bloom   flown in packed to a point in the frame's far half, held a beat, then burst outward and scattered off the frame
 // It fires nothing: its danger is its body. A member within CONTACT m of the ship is a blow the roll dodges (a rammer's), and is
 // spent. Shot, a member is down (it pays and chains as a school's fish). It is drawn by Calissa's swarm look (vfx/voxels/swarmlook.js:
-// voxel fry, one draw call, a member bursting into its voxels as it falls), one swarm at a time; another in flight at once (or none,
-// headless) is drawn by the placeholder here, a cube in its feeling's colour. Its edge mark shows where it will come in (RAIL-FLOW.md 4).
+// voxel fry, one draw call, a member bursting into its voxels as it falls), one swarm a look (`game.swarmLooks`: two); a third in flight
+// at once (or any, headless) is drawn by the placeholder here, a cube in its feeling's colour. Its edge mark shows where it will come in (RAIL-FLOW.md 4).
 //
 // Prior art: Reynolds' boids (SIGGRAPH 1987), Resogun's and Nex Machina's swarms (a cloud of one-hit bodies to clear), Rez's lock-on
 // feast, Ikaruga's chains.
@@ -56,7 +56,8 @@ export class Swarm {
     this.flock = new Flock({ max: n, sep: [1.3, 1.8], align: [3.5, 0.7], coh: [5, 0.4], speed: 14, turn: 7, stride: n > 32 ? 2 : 1 });
     this.mesh = new THREE.InstancedMesh(GEO ||= new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL), matOf(aspect), n);
     this.mesh.frustumCulled = false; this.mesh.userData.zoneFree = true; W.scene.add(this.mesh);
-    const L = W.game.swarmLook; if (L && !W.swarmLookOf) { W.swarmLookOf = this; this.look = L; L.setAspect?.(aspect); L.setKind?.('fry'); this.mesh.visible = false; this.boids = []; }
+    const looks = W.game.swarmLooks || (W.game.swarmLook ? [W.game.swarmLook] : []), taken = W.swarmLooksTaken ||= new Set(), L = looks.find((x) => !taken.has(x)); // (a free look of Calissa's)
+    if (L) { taken.add(L); this.look = L; L.setAspect?.(aspect); L.setKind?.('fry'); this.mesh.visible = false; this.boids = []; }
     const cls = w.cls ?? 0, hp = w.hp ?? 1; // (its row's share of its class's hit points: waves.js)
     for (let i = 0; i < n; i++) {
       this.slot(i, 0, _t); const k = this.flock.add(_t.x, _t.y, _t.z, 0, 0, -10);
@@ -103,7 +104,7 @@ export class Swarm {
     if (!live) this.done = true;
   }
   dispose() {
-    if (this.look) { for (const b of this.boids) b.alive = false; this.look.set(this.boids, this.W.rail, 0); if (this.W.swarmLookOf === this) this.W.swarmLookOf = null; this.look = null; }
+    if (this.look) { for (const b of this.boids) b.alive = false; this.look.set(this.boids, this.W.rail, 0); this.W.swarmLooksTaken?.delete(this.look); this.look = null; }
     this.mesh.parent?.remove(this.mesh); this.mesh.dispose(); this.flock.clear();
   }
 }
