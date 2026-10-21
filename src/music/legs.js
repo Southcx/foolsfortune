@@ -54,6 +54,9 @@ export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
 export function setTrip({ lowFuel = false, adrift = false, figures = null } = {}) { R.lowFuel = !!lowFuel; R.adrift = !!adrift; R.figures = figures; }
 /** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
 export function setEncounter(waiting) { R.waiting = !!waiting; }
+/** A crossing's boss (RAIL-FLOW.md 5: it leaves only when beaten): 'up' while it fights (its peak holds, looping on the bar), 'enraged'
+ *  past 3 real minutes (the peak quickens), 'down' when it falls (the peak lets go into the release on the next bar line), null after. */
+export function setBoss(state = null) { if (R.boss === 'down' && !state) return; R.boss = state; } // (a fall is kept until the arranger lets go on it)
 /** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
 export function setFoeUnder(under) { R.foeUnder = !!under; }
 export function railHeat(n = 0) { R.heat = Math.max(0, Math.min(3, R.heat + n)); }
@@ -185,9 +188,17 @@ function legBar(L, phase, i, len) {
 // and a loop drop the bottom out at the inverted bar (the third), a weave swells a cymbal on each bank
 function figureBar(fig, out, i) {
   if (fig === 'crest') return i === 1 ? [...out.filter((e) => e.i !== 'riser'), E('riser', 0, 4, null, 0.35)] : i === 2 ? [E('crash', 0, 1, null, 0.45), E('shimmer', 0, 4, [76, 80, 83], 0.08), ...out.filter((e) => e.i !== 'kick')] : i === 3 ? [...out, E('whoosh', 0, 3, null, 0.3)] : out;
-  if (fig === 'corkscrew' || fig === 'verticalLoop') return i === 2 ? [...out.filter((e) => !['kick', 'sub', 'tom', 'supersaw'].includes(e.i)), E('reverse', 0, 4, null, 0.3), E('shimmer', 0, 4, [76, 83, 88], 0.09), E('breath', 0, 4, null, 0.15)] : out; // (weightless: no floor under you)
+  if (fig === 'corkscrew' || fig === 'verticalLoop') return i === 2 ? [...out.filter((e) => !['kick', 'sub', 'tom', 'supersaw'].includes(e.i)), E('reverse', 0, 4, null, 0.3), E('shimmer', 0, 4, [76, 83, 88], 0.09), E('breath', 0, 4, null, 0.15),
+    ...[...Array(16).keys()].map((k) => E('tick', k / 4, 0.25, null, k % 4 === 0 ? 0.2 : 0.1))] : out; // (weightless: no floor under you, but the sixteenths go on: the flourish's locks are flown through the turn and land on them, RAIL-FLOW.md)
   if (fig === 'weave') return i === 1 || i === 3 ? [...out, E('reverse', 2, 2, null, 0.25), E('ride', 0, 1, null, 0.25)] : out;
   return out;
+}
+// a boss past 3 real minutes (RAIL-FLOW.md 5.4): the peak quickens over itself, sixteenths in the hats, a taiko on every beat, the strings
+// sawing the tritone in eighths and a riser every four bars, so the ear knows the fight has turned before the patterns do
+function enrageBar(L, i) {
+  const root = 64 + keyed(0, L) - 12;
+  return [...[...Array(16).keys()].map((k) => E('hat', k / 4, 0.25, null, k % 4 === 0 ? 0.22 : 0.12)), ...[0, 1, 2, 3].map((b) => E('taiko', b, 1, null, 0.45, { size: 1.2 })),
+    ...[...Array(8).keys()].map((k) => E('strings', k / 2, 0.4, [root, root + 6][k % 2], 0.05, { attack: 0.01, bright: 1600, spic: true })), ...(i % 4 === 0 ? [E('riser', 0, 16, null, 0.15)] : [])];
 }
 function turnBar(A, B, i, k) { return figureBar(R.figures?.[k - 1], turnBarOf(A, B, i), i); }
 function turnBarOf(A, B, i) {
@@ -274,14 +285,17 @@ export function tripCue(legs) {
     const p = phasesOf(legs[k]);
     for (const ph of ['open', 'build', 'peak', 'release']) {
       if (!p[ph]) continue; // (a calm has no peak)
-      sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: (ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6) * (L.storm && ph !== 'release' ? 1.15 : 1), pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
+      const bossPeak = ph === 'peak' && L.boss;
+      sections.push({ id: `${L.id}:${ph}`, bossHold: bossPeak, bars: p[ph], gain: (ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6) * (L.storm && ph !== 'release' ? 1.15 : 1), pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
         sweep: ph === 'release' ? [9000, 2200] : null, hold: L.id === 'calm' && ph === 'release', root: 64 + keyed(0, L), scale: L.id === 'maelstrom' ? MODES[L.aspect] : L.feeling && MODES[L.feeling] ? MODES[L.feeling] : L.id === 'calm' ? MODES.mirth : null,
-        bar: (i) => legBar(L, ph, i, p[ph]) });
+        bar: bossPeak ? (i) => [...legBar(L, ph, i, p[ph]), ...(R.boss === 'enraged' ? enrageBar(L, i) : [])] : (i) => legBar(L, ph, i, p[ph]) });
     }
   });
   sections.push({ id: 'arrive', bars: 4, gain: 5.5, bar: ARRIVE });
   const score = { title: 'Crude Sea: the Crossing', family: 'crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections,
-    jump: (sec, bar) => (sections[sec].hold && bar >= sections[sec].bars - 1 && R.waiting ? sec : null) }; // (an encounter's hold waits for the choice)
+    jump: (sec, bar) => { const S = sections[sec];
+      if (S.bossHold) { if (R.boss === 'down') { R.boss = null; return sec + 1; } return (R.boss === 'up' || R.boss === 'enraged') && bar >= S.bars - 1 ? sec : null; } // (a boss's peak holds until it falls, then lets go on the bar line)
+      return S.hold && bar >= S.bars - 1 && R.waiting ? sec : null; } }; // (an encounter's hold waits for the choice)
   CACHE.set(key, score);
   return score;
 }
