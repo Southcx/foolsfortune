@@ -85,11 +85,13 @@ export class PiratesPiece {
       kind: 'rail.port', name: 'a gunport', role: 'port', cls: 1, radius: 0.85, hp: B.portHp, chain: false, count: false, pay: SCORE.part.port,
       get solid() { return this.open > 0.05; }, get lock() { return this.solid; }, open: 0,
       tick: (dt, f) => { this.partAt(this.look.portWorld(i, SIDE, _w), f.local); return !this.ended; },
+      onHurt: (f) => this.look.portHurt?.(i, 1 - f.hp / B.portHp), // (its crazing as it is hurt: vfx/brig.js)
       onDown: () => { this.look.port(i, { side: SIDE, gone: true }); sfx.explosion?.(6); this.game.events?.emit('rail.part', { part: 'port', by: 'courier' }); },
     }));
     this.slings = Array.from({ length: B.rigging }, (_, i) => W.add({
       kind: 'rail.rigging', name: 'a sling', role: 'rigging', cls: 1, radius: 0.9, hp: B.riggingHp, chain: false, count: false, pay: SCORE.part.rigging,
       tick: (dt, f) => { this.partAt(this.look.riggingWorld(i, _w), f.local); return !this.ended; },
+      onHurt: (f) => this.look.riggingHurt?.(i, 1 - f.hp / B.riggingHp),
       onDown: () => { this.look.rigging(i, true); this.game.events?.emit('rail.part', { part: 'rigging', by: 'courier' }); },
     }));
     this.aboard = [];

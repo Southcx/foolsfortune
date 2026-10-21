@@ -268,7 +268,7 @@ export class Emocean {
     const agrees = !this.trip.active || !cue?.sections || cue.sections.reduce((n, x) => n + x.bars, 0) === this.plan?.bars; // (a held peak lengthens the layout: a cue that has not followed it yet is not followed, bosshold.js)
     if (m != null && agrees) {
       const heard = m * this.stage.seconds, d = heard - this.t;
-      if (d > 3) this.t = heard; // (the cue played on under a pause: the stage catches up)
+      if (d > 3 && m < 1) this.t = heard; // (the cue played on under a pause: the stage catches up; never to a cue's end, which a boss's fall can bring early)
       else if (Math.abs(d) <= 3) this.t += d * Math.min(1, raw * 2); // (slewed, so nothing ever jumps)
     }
     this.bar = Math.max(0, this.t / BAR_S);

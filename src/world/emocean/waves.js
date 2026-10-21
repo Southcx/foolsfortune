@@ -195,7 +195,8 @@ export class Waves {
       });
       Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null, boss: !!w.boss && ROSTER[look]?.moves?.until === 'beaten' });
       if (ROSTER[look]?.moves) f.path = foeMove(ROSTER[look].moves, { view: this.view, i, lane: f.lane, W: this, f }) || path; // (its row's move, laid in the view it entered in)
-      f.path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
+      f.maxHp = f.hp; f.path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
+      if (i === 0 && !at && ROSTER[look]?.moves?.kind !== 'overtake') this.markEntry(f, w.boss ? 'boss' : 'foe'); // (the ambusher marks its own: foemoves.js)
       this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
       this.game.creatures?.add(f);
       this.foes.push(f);
@@ -204,6 +205,15 @@ export class Waves {
     this.onSpawn?.(w.count, w);
   }
 
+  /** The edge mark (Calissa's, vfx/railfoemarks.js) where a wave will come into the frame, shown until it does: its first member's path
+   *  sampled ahead to the point it crosses into the view's box (in a plane view its depth not asked). RAIL-FLOW.md 4. */
+  markEntry(f, kind = 'foe', path = null) {
+    const M = this.game.edgeMark; if (!M) return;
+    const B = (CARRIER_AT[this.view] || CARRIER_AT.chase).box, skip = this.view === 'side' ? 'x' : this.view === 'above' ? 'y' : null, p = new THREE.Vector3();
+    const inside = (v) => (skip === 'x' || Math.abs(v.x) <= B.x) && (skip === 'y' || (v.y >= B.y[0] && v.y <= B.y[1])) && v.z >= B.z[0] && v.z <= B.z[1];
+    const at = path || ((t, out) => f.path(t, f.i, f.n, f.lane, out));
+    for (let t = 0; t <= 3; t += 0.1) { if (at(t, p) === false) return; if (inside(p)) { M.show(p, Math.max(0.3, t), { kind }); return; } }
+  }
   /** One foe of a role set down at a point (rail frame), scrolling with the world from there (as a turret does: `onScreen` bars in the
    *  frame): a mine dropped (foemechanics.js). */
   spawnAt(role, local, { aspect = this.aspect, cls = 0, hp = 1, pay, count = true, onScreen = ROSTER.turret?.moves?.onScreen ?? 3 } = {}) {
@@ -226,7 +236,7 @@ export class Waves {
       hurt(point, dir, power) {
         if (!this.alive) return;
         const k = this.armour ? this.armour(this) : 1; if (k <= 0) { waves.glance(this); return; } // (a shut gill, a closed port, a shield: the blow glances off)
-        this.hp -= power * k; this.hitT = 0.08; this.body?.hit(); this.onHurt?.(this, power * k);
+        this.hp -= power * k; this.hitT = 0.08; this.body?.hit(); this.body?.hurt?.(this.isCore ? 'core' : null, 1 - this.hp / (this.maxHp || this.hp + power * k)); this.onHurt?.(this, power * k); // (its crazing as it is hurt: vfx/railfoes.js)
         if (this.hp <= 0) { this.alive = false; waves.down(this); }
       },
       center(out = new THREE.Vector3()) { return out.copy(this.pos); },
@@ -256,6 +266,7 @@ export class Waves {
     f.last = { returned, volley, cause, by };
     if (at) this.rail.toWorld(at, _p); else _p.copy(f.pos);
     if (dir) this.rail.dirWorld(dir, _d).normalize(); else _d.set(0, 0, 1);
+    if (f.armour == null || f.armour(f) > 0) this.game.voxels?.chip(_p, _d, 3); // (a hit chips voxels off where it lands: vfx/voxels, Calissa's)
     return this.game.creatures ? this.game.creatures.strike(f, _p.clone(), _d.clone(), power, cause, by) : (f.hurt(_p, _d, power), true);
   }
   down(f) {

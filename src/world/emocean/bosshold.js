@@ -9,9 +9,11 @@
 // waves, not its queue, which the stream keeps fed, nor its director) is laid again into the gap, so the fight goes on as it was going.
 // Past BOSS.enrage real s from the peak's first bar the copies come BOSS.quicken apart (a third more often): a long fight quickens and
 // still ends, never by leaving. The trip's layout, views and swings are laid again and the rail relaid (triprun.js layOut,
-// stage.js relay), as adrift does; the cue follows the legs' phases (Wanda's, music/legs.js tripCue), and until it does the stage runs
-// on its own clock rather than follow a cue that no longer agrees (stage.js clock). `stage.boss` says it for the music: { k, held,
-// enraged }; `rail.hold { bars, enraged, by }` for the log.
+// stage.js relay), as adrift does. THE FALL: once the boss is down (and no boss is still to come in the peak), the peak is cut so the
+// release follows the next bar line by one bar (the swing's): what was laid past it in the peak is let go, what follows moves back.
+// THE MUSIC (Wanda's, music/legs.js setBoss): `stage.boss = { k, enraged, down }` from the peak's first bar while the boss stands, `down`
+// from its fall to the release; her cue loops the peak while it stands and lets go into the release on the bar after the fall. The
+// stage never follows a cue that no longer agrees with its length (stage.js clock). `rail.hold { bars, enraged, by }` for the log.
 //
 // NOT YET: the maelstrom. Its peak is the arena (railpath.js `arena`: whole laps round the whirlpool, laid once), and lengthened mid-
 // flight the arena's laps and ease change the path already flown (the ship would jump); so Charybdis is fought out by its parts within
@@ -24,6 +26,7 @@
 // ---------------------------------------------------------------------------------------
 import { BOSS } from '../../progress/rail/setpieces.js';
 import { SWING_CLEAR } from '../../progress/rail/legs.js';
+import { ROSTER } from '../../progress/rail/showcase.js';
 
 /** The phrase a held peak is lengthened by (bars), and how far before the peak's end its window closes (the swing's clear bars). */
 export const HOLD = { bars: BOSS.hold?.bars ?? 8, before: BOSS.hold?.before ?? SWING_CLEAR };
@@ -32,6 +35,12 @@ export class BossHold {
   constructor(trip) { this.trip = trip; this.st = trip.st; this.reset(); }
   reset() { this.t0 = new Map(); this.done = new Set(); }
 
+  /** A boss still to come in leg `k`'s peak (a held foe not yet let in: the bounty's gunship after its heavy). */
+  toCome(k, now) {
+    const R = this.trip.runner; if (this.trip.k !== k || !R.plan) return false;
+    for (let i = R.next; i < R.plan.events.length; i++) { const e = R.plan.events[i]; if (e.bar > now && e.phase === 'peak' && e.wave && ROSTER[e.wave.role]?.moves?.until === 'beaten') return true; }
+    return false;
+  }
   /** Whether leg `k`'s boss still stands. */
   standing(k, leg) {
     const S = this.st, P = S.piece;
@@ -43,17 +52,40 @@ export class BossHold {
 
   update(k, L, leg, bar) {
     const plan = leg?.plan; if (!plan || L?.peak == null || L.release == null || L.release <= L.peak) return;
-    if (this.st.stage.boss?.k === k && !this.standing(k, leg)) this.st.stage.boss = null; // (it fell: the music lets go)
-    if (bar >= L.peak && !this.t0.has(k)) this.t0.set(k, this.st.t);
+    const S = this.st, B = S.stage.boss;
+    if (bar < L.peak) return;
+    if (bar >= L.release) { if (B?.k === k) S.stage.boss = null; return; } // (the release: the music has let go)
+    if (!this.t0.has(k)) this.t0.set(k, S.t);
+    const standing = this.standing(k, leg);
+    if (standing) { if (!B || B.k !== k || B.enraged !== this.enraged(k)) S.stage.boss = { k, enraged: this.enraged(k), down: false }; }
+    else if (B?.k === k && !B.down && !this.toCome(k, bar - L.at)) { S.stage.boss = { ...B, down: true }; this.cut(k, L, plan, bar - L.at); return; } // (it fell: the release after the next bar line)
     const edge = L.release - HOLD.before; // (the window's end: the last bar patterns may fall in before the swing)
-    if (bar < edge - 1 || bar >= edge || this.done.has(`${k}:${edge}`)) return;
+    if (!standing || bar < edge - 1 || bar >= edge || this.done.has(`${k}:${edge}`)) return;
     this.done.add(`${k}:${edge}`);
-    const S = this.st, standing = this.standing(k, leg);
-    S.stage.boss = standing ? { k, held: true, enraged: this.enraged(k) } : null;
-    if (standing) this.extend(k, L, plan, edge - L.at, bar - L.at);
+    this.extend(k, L, plan, edge - L.at, bar - L.at);
   }
   enraged(k) { return this.st.t - (this.t0.get(k) ?? this.st.t) > BOSS.enrage; }
 
+  /** The peak cut at its boss's fall: the release from the bar after the next bar line (the swing takes that bar), the peak's events
+   *  past it let go, what follows moved back by as much. Nothing if the peak ends sooner than that anyway. */
+  cut(k, L, plan, now) {
+    const T = this.trip, S = this.st, R = T.runner, live = T.k === k ? R.plan : null, peak = plan.phases.find((p) => p.id === 'peak');
+    const to = Math.ceil(now) + 1, d = (peak?.to ?? to) - to; if (d <= 0) return;
+    if (live) {
+      live.events = live.events.filter((e) => !(e.bar > now && e.bar >= to && e.bar < to + d && e.phase === 'peak'));
+      for (const e of live.events) if (e.bar >= to + d) e.bar -= d;
+      R.next = live.events.findIndex((e) => e.bar > now); if (R.next < 0) R.next = live.events.length;
+      for (const Q of R.queues.values()) { Q.list = Q.list.filter((e) => !(e.bar >= to && e.bar < to + d)); for (const e of Q.list) if (e.bar >= to + d) e.bar -= d; }
+    }
+    for (const p of new Set([plan, live].filter(Boolean))) {
+      for (const ph of p.phases) { if (ph.id === 'peak') ph.to -= d; else if (ph.from >= to + d) { ph.from -= d; ph.to -= d; } }
+      p.bars -= d; p.swings = (p.swings || []).map((w) => (w >= to + d ? w - d : w));
+    }
+    T.legs[k].phases = { ...T.legs[k].phases, peak: (T.legs[k].phases?.peak ?? 0) - d };
+    if (S.piece?.leg?.k === k) S.piece.leg.to -= d;
+    T.layOut(); S.relay?.();
+    S.game.events?.emit('rail.hold', { bars: -d, enraged: false, by: 'courier' });
+  }
   /** The peak lengthened by a phrase at `rel0` (leg bars): what follows moves on, the phrase before is laid again in the gap. */
   extend(k, L, plan, rel0, now) {
     const T = this.trip, S = this.st, n = HOLD.bars, from = rel0 - n, enraged = this.enraged(k), q = enraged ? BOSS.quicken : 1;

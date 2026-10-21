@@ -71,12 +71,14 @@ export class LeviathanPiece {
       returned: N.spit.returned, open: 0,
       get solid() { return this.open > 0.5; }, get lock() { return this.solid; }, armour: (f) => (f.open > 0.5 ? 1 : 0),
       tick: (dt, f) => { this.partAt(this.look.gillWorld(i, FLANK, _w), f.local); return !this.ended; },
+      onHurt: (f) => this.look.gillHurt?.(i, FLANK, 1 - f.hp / N.gills.hp), // (its crazing as it is hurt: vfx/leviathan.js)
       onDown: () => { this.look.gill(i, { side: FLANK, gone: true }); sfx.explosion?.(4); this.game.events?.emit('rail.part', { part: 'gill', by: 'courier' }); },
     }));
     this.teeth = Array.from({ length: N.teeth.count }, (_, i) => W.add({
       kind: 'rail.tooth', name: 'a tooth', role: 'tooth', cls: 2, radius: 0.9, hp: N.teeth.hp, chain: false, count: false, pay: SCORE.part.tooth,
       get solid() { return this.maw; }, get lock() { return this.maw; }, maw: false,
       tick: (dt, f) => { this.partAt(this.look.toothWorld(i, _w), f.local); f.maw = this.phase === 'maw'; return !this.ended; },
+      onHurt: (f) => this.look.toothHurt?.(i, 1 - f.hp / N.teeth.hp),
       onDown: () => { this.look.tooth(i, true); sfx.shatter?.(1, 4, 'porcelain'); this.game.events?.emit('rail.part', { part: 'tooth', by: 'courier' }); },
     }));
     this.throat = W.add({
@@ -84,6 +86,7 @@ export class LeviathanPiece {
       get lock() { return this.maw; }, armour: (f) => (f.last?.returned || (f.maw && this.teeth.every((t) => !t.alive)) ? 1 : 0), // (its own spit sent home always; the gun once the teeth are broken)
       get solid() { return this.maw; }, maw: false,
       tick: (dt, f) => { this.partAt(this.look.throatWorld(_w), f.local); f.maw = this.phase === 'maw'; return !this.ended; },
+      onHurt: (f) => this.look.throatHurt?.(1 - f.hp / (N.throat.hp ?? N.throat.spits)),
       onDown: () => { this.look.throat(0); this.game.events?.emit('rail.part', { part: 'throat', by: 'courier' }); this.fell(); },
     });
     this.body = W.add({ // (the beast itself: what the medal counts; its hide takes nothing, and shots pass to its parts)

@@ -93,7 +93,7 @@ export class Charybdis {
         kind: `rail.charybdis.${role}`, name: role === 'eye' ? 'an eye of Charybdis' : 'a comb of Charybdis', role, cls: 3, aspect: this.w?.feel || null, radius: role === 'eye' ? 1.1 : 1.8, hp, chain: false, count: false,
         local: S.rail.toLocal(P.world(_e), new THREE.Vector3()), armour: () => charybdisHurt(this.st.ship.form, this.y),
         tick: (dt, x) => { S.rail.toLocal(P.world(_e), x.local); return !this.done && this.holding; },
-        onHurt: (x) => { P.hit(0.6); if (x.hp < hp / 2) P.damage(); }, onDown: () => { P.break(); this.game.events?.emit('rail.part', { part: role, by: 'courier' }); },
+        onHurt: (x) => { P.hit(0.6); P.hurt?.(1 - x.hp / hp); if (x.hp < hp / 2) P.damage(); }, // (its crazing as it is hurt: vfx/bossparts.js) onDown: () => { P.break(); this.game.events?.emit('rail.part', { part: role, by: 'courier' }); },
       });
       f.maxHp = hp; f.part = P; this.parts.push(f);
     };

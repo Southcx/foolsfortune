@@ -7,8 +7,9 @@
 //   ribbon  a helix round the ship's lane (in a plane view a weave across it), stretched along the scroll
 //   bloom   flown in packed to a point in the frame's far half, held a beat, then burst outward and scattered off the frame
 // It fires nothing: its danger is its body. A member within CONTACT m of the ship is a blow the roll dodges (a rammer's), and is
-// spent. Shot, a member is down (it pays and chains as a school's fish). One instanced mesh draws them all, one draw call: a
-// placeholder voxel, a cube in its feeling's colour (Calissa's look and voxel deaths to come, RAIL-FLOW.md 10).
+// spent. Shot, a member is down (it pays and chains as a school's fish). It is drawn by Calissa's swarm look (vfx/voxels/swarmlook.js:
+// voxel fry, one draw call, a member bursting into its voxels as it falls), one swarm at a time; another in flight at once (or none,
+// headless) is drawn by the placeholder here, a cube in its feeling's colour. Its edge mark shows where it will come in (RAIL-FLOW.md 4).
 //
 // Prior art: Reynolds' boids (SIGGRAPH 1987), Resogun's and Nex Machina's swarms (a cloud of one-hit bodies to clear), Rez's lock-on
 // feast, Ikaruga's chains.
@@ -55,19 +56,21 @@ export class Swarm {
     this.flock = new Flock({ max: n, sep: [1.3, 1.8], align: [3.5, 0.7], coh: [5, 0.4], speed: 14, turn: 7, stride: n > 32 ? 2 : 1 });
     this.mesh = new THREE.InstancedMesh(GEO ||= new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL), matOf(aspect), n);
     this.mesh.frustumCulled = false; this.mesh.userData.zoneFree = true; W.scene.add(this.mesh);
+    const L = W.game.swarmLook; if (L && !W.swarmLookOf) { W.swarmLookOf = this; this.look = L; L.setAspect?.(aspect); L.setKind?.('fry'); this.mesh.visible = false; this.boids = []; }
     const cls = w.cls ?? 0, hp = w.hp ?? 1; // (its row's share of its class's hit points: waves.js)
     for (let i = 0; i < n; i++) {
       this.slot(i, 0, _t); const k = this.flock.add(_t.x, _t.y, _t.z, 0, 0, -10);
       const f = W.add({
         kind: 'rail.swarm', name: 'a body of the swarm', role: 'swarm', cls, aspect, radius: VOXEL, hp, local: _t.clone(), form: 'swarm',
-        tick: (dt, m) => this.tick(m), onGone: () => this.flock.remove(k),
+        tick: (dt, m) => this.tick(m), onGone: () => this.flock.remove(k), onDown: () => this.look?.down(i),
       });
       f.k = k; f.slotI = i; this.members.push(f);
     }
+    W.markEntry(this.members[0], 'swarm', (t, out) => this.slot(0, t, out));
   }
   /** The flock a frame: each member seeks its slot on the shape, faster the further it is. */
   step(dt) {
-    this.t += dt; const t = this.t, want = new THREE.Vector3(), p = new THREE.Vector3(), M = this.members;
+    this.t += dt; this.dt = dt; const t = this.t, want = new THREE.Vector3(), p = new THREE.Vector3(), M = this.members;
     const byK = this.byK ||= new Map(M.map((f) => [f.k, f]));
     this.flock.step(dt, {
       seek: (k, out) => { const f = byK.get(k); if (!f) return 0; this.slot(f.slotI, t, out); return 2.6; },
@@ -85,6 +88,10 @@ export class Swarm {
   /** One draw call: every live member's voxel where it is, turned the way it flies; the gone at nought. */
   draw() {
     const v = new THREE.Vector3(); let live = 0;
+    if (this.look) { // (Calissa's look: the boids as it reads them, rail-local)
+      for (let i = 0; i < this.members.length; i++) { const f = this.members[i], b = (this.boids[i] ||= { pos: new THREE.Vector3(), vel: new THREE.Vector3(), alive: false }); b.alive = f.alive; if (f.alive) { this.flock.get(f.k, b.pos, b.vel); live++; } }
+      this.look.set(this.boids, this.W.rail, this.dt || 1 / 60); if (!live) this.done = true; return;
+    }
     for (let i = 0; i < this.members.length; i++) {
       const f = this.members[i];
       if (!f.alive) { _m.compose(f.pos, _q.identity(), _z); this.mesh.setMatrixAt(i, _m); continue; }
@@ -95,5 +102,8 @@ export class Swarm {
     this.mesh.instanceMatrix.needsUpdate = true;
     if (!live) this.done = true;
   }
-  dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.dispose(); this.flock.clear(); }
+  dispose() {
+    if (this.look) { for (const b of this.boids) b.alive = false; this.look.set(this.boids, this.W.rail, 0); if (this.W.swarmLookOf === this) this.W.swarmLookOf = null; this.look = null; }
+    this.mesh.parent?.remove(this.mesh); this.mesh.dispose(); this.flock.clear();
+  }
 }
