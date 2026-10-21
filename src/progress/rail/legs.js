@@ -55,7 +55,8 @@ export const FLOORS = { open: 6, build: 10, peak: 8, release: 12 };
 /** The lights a swing carries through its turn (they cannot fire: the camera's move is shot through). */
 export const FLOURISH = 6;
 /** THE HAZARDS (RAIL-STANDARDS.md 4; Star Fox 64's Corneria: its buildings, arches and pillars make where you fly matter, not only
- *  where you aim): things in the lane, laid only where the view looks down the scroll (chase, free, astern) and never in a swing's
+ *  where you aim): things in the lane, laid only where the view looks down the scroll (chase, free; astern only an arch, whose camera
+ *  sits ahead of the hull so a pillar or gate would pass through it unseen: Petra, v257) and never in a swing's
  *  clear. `lane` is -1, 0 or 1 (left, middle, right of the frame's three, CARRIER.lanes' spacing); a hazard takes one lane and leaves
  *  two. A PILLAR (a monolith risen into the lane, the graveyard's mast) scrapes the hull for `hits`; an ARCH is flown through for
  *  `pays`, and every arch of a leg threaded is a find (`all`: the runtime opens the leg's hidden way, as the Light Whale's follow does,
@@ -147,7 +148,7 @@ export const LEGS = {
     { phase: 'release', at: 0, every: 1, targets: 8 },
     Q('release', 0, 2, [W('swarm', 'river', 24), W('school', 'line', 8), W('school', 'vee', 7)]), // (the release is a lap of honour: lights and fodder, never dead: Petra's v255 found it 16 beats of 32 empty)
     { phase: 'open', at: 3, every: 4, hazard: 'arch' }, // (the hazards: RAIL-STANDARDS.md 4)
-    { phase: 'release', at: 1, every: 3, hazard: 'pillar' },
+    { phase: 'release', at: 1, every: 3, hazard: 'arch' }, // (astern: arches only, Petra's v257: the camera sits ahead of the hull, a pillar would pass through it unseen)
   ] },
   // THE EYEWALL: the rollercoaster itself (dodging walls and beams), and now targets through it: darters and schools, ambushers in the
   // peak and a swarm thrown round the eye.

@@ -517,6 +517,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   day.
 - **game hour** — a twenty-fourth of a game day, 150 real seconds. *Not:* an hour of play.
 - **real time** (real second, minute, hour) — the wall clock; a unit of time always says which clock, game or real.
+- **the goals** (plain name until the owner rules; `Goals`, `game.goals`, `pickGoals`, `src/progress/goals.js`; `/goals`; save section `goals`) — three achievements the System lays each game day for the session to work toward: the nearest done, one elsewhere, a stretch (a new save's, Easy first steps); pointers only, the achievement its own reward (Hades' Fated List, Nook Miles+). *Not:* a QAIS test, a bounty, the Sight's waypoint.
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`) — the ledger's three kinds of entry: a number that only goes
   up, a best, and the play time something first happened.
 - **chain** (`chain.<what>`) — the same event n times, each within a set time of the last; it counts once and starts over. See the homonyms.

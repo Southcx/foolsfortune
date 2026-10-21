@@ -40,6 +40,7 @@ import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
+import { goalsRules } from './goals.js';
 
 /** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
@@ -60,6 +61,7 @@ export function areaRules(ctx) {
   sealRules(ctx); // (the Seal Book: the cradles your seal set in)
   stunRules(ctx); // (the stun and its depth: dazed, stunned, out cold)
   sightRules(ctx); // (the Sight's waypoint, set and cleared)
+  goalsRules(ctx); // (the game day's three goals: progress/goals.js)
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
