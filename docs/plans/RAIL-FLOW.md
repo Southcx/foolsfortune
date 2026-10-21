@@ -101,8 +101,9 @@ Which of these are built and which are missing is in section 8 (the audit, 2026-
 2. **Parts change it.** Every boss has 3 to 5 parts. Each part owns one attack; breaking it ends that attack and moves the boss to its
    next **phase** (Star Fox 64's bosses, Skies of Arcadia's ships): a new pattern, a new move, a weak point bared. The core opens only
    when its guard parts are gone. The parts are lined in gold (section 4).
-3. **Length.** An expert 40 to 60 real s, a good player about 75, a novice about 2 minutes. Measured against the gun's rate: an expert
-   deals about 39 shots a bar (26 a second, Petra's charybdistest), so a boss is about 1300 to 1500 shots across its parts and core.
+3. **Length.** An expert about 45 real s, a good player about 75, a novice about 2 minutes (section 11: about twice an Ikaruga expert's
+   boss). Measured against the gun's rate: an expert deals about 39 shots a bar (26 a second, Petra's charybdistest), so a boss is
+   1100 to 1300 shots across its parts and core (`BOSS.shots`).
 4. **Enrage, never flee.** Past 3 real minutes a boss quickens (its patterns' `every` shortened by a third), so a long fight still ends,
    never by leaving.
 5. **What it pays** follows how it was beaten: every part broken first pays its part bonus; the old "driven off" outcomes go.
@@ -157,11 +158,11 @@ in chase's axes in every view (cause 5). No pop-in found apart from the `dash` p
   s; was 95 real s) and 120 to 160 foes a minute.
 - `showcase.js` ROSTER: the `swarm` row; the heavy x8 and the gunship x4 their class's hit points (mid-bosses, not one-burst kills),
   the turret x3; the heavy and the gunship hold until beaten; the escort's tether 6 m, a turn in 2 real s, in the play plane.
-- `setpieces.js`: the boss law (`BOSS`); the brig 900 + 240 + 240; Old Nobody's gills 100 open three bars in four, teeth 30, the
-  throat 500 by the gun once the gills are shut; Charybdis 840 at its core, six eyes of 40, two combs of 160; the Conductor 40, hurt only
+- `setpieces.js`: the boss law (`BOSS`); the brig 720 + 240 + 240 (1200); Old Nobody's gills 100 open three bars in four, teeth 30, the
+  throat 500 by the gun once the gills are shut; Charybdis 640 at its core, six eyes of 40, two combs of 160 (1200); the Conductor 40, hurt only
   while its ball is scattered.
 - `scripts/legs.mjs`: the flow check, the view check, the bosses' size.
-- **Waits on the runtime (Petra)**, and lands with it, never before: the boss numbers above are four times what they were, and today's
+- **Waits on the runtime (Petra)**, and lands with it, never before: the boss numbers above are three to four times what they were, and today's
   directors still leave on a clock, so merged alone the bosses would limp off unbeaten every time.
 - **Stale:** `scripts/rail.mjs` still models the pre-stretch 34-bar pieces (the audit); par is re-measured once the stream plays.
 
@@ -187,3 +188,29 @@ calls, 1,000,000 triangles, 200 shader programs.
 Questions for Petra and Calissa: (a) the batch in `render/` (Petra) with its material in `vfx/` (Calissa), or one module? (b) bodies
 baked from Calissa's meshes, or the rail foes rebuilt as voxel models (a look change: Calissa's call)? (c) CPU flock to 800 first and the
 GPU flock only if the owner wants more, or GPU from the start?
+
+## 11. Against the genre (the owner, 2026-10-21: "Cross-reference your decisions with the density of other famous shmups")
+
+What the famous ones field, from counts players and tool-assisted runs keep, set against ours (`flow`, `deadBeats`):
+
+| game, stage | foes downed | a real minute | source |
+| --- | --- | --- | --- |
+| Star Fox 64, Corneria | 359 (a real run), 403 (tool-assisted) | about 80 to 110 | videogameschronicle.com's medal guide; tasvideos.org/8050S |
+| Ikaruga, chapter 1 | the chain counts | 80 and more | shmups.wiki/library/Ikaruga; shmups.system11.org (p=369467) |
+| Galaga, stage 1 | 40 | about 40 | strategywiki.org, Galaga |
+| **ours, at the bars alone** | | **93 to 119, and 16 to 47 swarm bodies on top** | `flow` with no pull |
+| **ours, the floor's pull, aim perfect** | | 234 to 295 (foes, swarm aside) | `flow` |
+
+- **Density: Star Fox 64's, with the swarms on top.** The bars alone match the genre's busiest rail shooter; the floor's pull only adds
+  as fast as the player kills, so a good player's crossing runs above Star Fox and a novice's never drowns. The perfect-aim ceiling is
+  two to three times the genre's, and a real player never reaches it: the ceiling is their own kill rate.
+- **The pull's gap stays half a bar.** At 0.75 or 1 bar, the queues starve between pulls and about a thousand runs of dead air come back
+  across the legs and classes (`deadBeats`); at 0.5 there are none.
+- **Bosses: fought out, about twice an Ikaruga expert's.** Ikaruga's bosses fall to experts in 17 to 25 real s inside a 100 s limit, and
+  the arcade's (Ikaruga, Cave's, R-Type's) time out and leave. The owner wants them fought to the end, as Star Fox 64's (Andross's
+  parts change what he does) and Gradius V's cores, so ours never leave: `BOSS.shots` 1100 to 1300, an expert about 45 real s, a good
+  player about 75, enraged past 3 real minutes (shmups.wiki, Gradius_V and R-Type_Delta).
+- **Spectacle: Resogun's scale is the ceiling, not the target.** Resogun throws up to 500,000 cubes, rarely over 200,000, on the GPU's
+  compute (gamingbolt.com's interview; gamedeveloper.com's postmortem); we have no compute in WebGL, so section 10 asks for 20,000
+  debris voxels moved in the vertex shader (one draw call, 240,000 triangles). The swarm's flock on the CPU holds 800 in 0.66 ms;
+  three.js's GPGPU birds (examples, webgl_gpgpu_birds) hold 1024 and more, the path past 800.
