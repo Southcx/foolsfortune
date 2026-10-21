@@ -571,7 +571,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **an aptitude / the Assay** ("the Assay" ruled by the owner, 2026-10-19; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
   absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
-- **the goals window** (`GoalsWindow`, `game.goalsWindow`, `src/ui/goalswindow.js`) — the game day's three goals (Dovina's `game.goals`) as a System window at the view's left edge in the Clay dress: a row a goal, its slot, name, words, tier, a bar to `frac`, `cur` of `goal`, a gold check when done; on `/goals` and a beat at `goals.set` and `goal.done`. *Not:* the goals (Dovina's rule, `progress/goals.js`), the goal bar (Raku's tables').
+- **the goals window** (`GoalsWindow`, `game.goalsWindow`, `src/ui/goalswindow.js`) — the game day's three goals (Dovina's `game.goals`) as a System window at the view's left edge in the Clay dress: a row a goal, its slot (Close, Elsewhere, Stretch, First step), name, words, tier, a bar to `frac`, `cur` of `goal`, a gold check when done; on `/goals` and a beat at `goals.set` and `goal.done`. *Not:* the goals (Dovina's rule, `progress/goals.js`), the goal bar (Raku's tables').
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the
