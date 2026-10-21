@@ -36,7 +36,9 @@ const hex = (n) => '#' + (n >>> 0).toString(16).padStart(6, '0');
 export const multText = (level) => (level > 0 ? 'x' + String(+(1 + Math.min(MAX, level) * STEP).toFixed(2)) : '');
 
 const CSS = `
-.rr{position:fixed;left:calc(10*var(--d));top:calc(18*var(--d) + var(--cine,0vh));z-index:3;pointer-events:none;width:calc(132*var(--d));
+/* (.rr.bf: the Brine frame's own .bf{position:relative} is injected after this sheet and won over a bare .rr, so in the game the readout
+   sat in the body's flow under the canvas, 600 px down and off the screen: Petra's v-round shot, its opacity 1 and nothing seen) */
+.rr,.rr.bf{position:fixed;left:calc(10*var(--d));top:calc(18*var(--d) + var(--cine,0vh));z-index:3;pointer-events:none;width:calc(132*var(--d));
   transition:opacity .2s;opacity:1}
 .rr[hidden]{display:block!important;opacity:0;visibility:hidden}
 .rr-score{display:flex;justify-content:flex-end;margin:calc(-1*var(--d)) 0 calc(3*var(--d));min-height:1em}

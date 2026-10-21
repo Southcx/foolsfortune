@@ -3385,3 +3385,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after:** not measured in play (no seeded chart puts the whale first); headless, the shoal's three pillars and its leg's
   close ran with the dive unset, 0 errors.
 - **Rule:** 254.
+
+### 2026-10-21 · The rail readout was drawn 600 px down, off the screen (Calissa, Petra's report on the wired crossing)
+- **Seen:** by Petra headless at the shoal: the readout's `.rr` read opacity 1 with all its text, and nothing showed. Probed: its
+  computed `top` 22.5 px with `bottom` -22.5 px (relative positioning), its box at y 623 in a 600 px view.
+- **Cause:** the Brine frame (`ui/brineframe.js`) adds its class `bf` to the window it frames, and its sheet (`.bf{position:relative}`)
+  is injected after the readout's (`.rr{position:fixed}`): equal weight, the later rule won, and the readout fell into the body's flow
+  under the full-screen canvas. On the workbench page the sheets went in the other order, so the look passed there.
+- **Fix:** `.rr,.rr.bf{position:fixed...}` (ui/railreadout.js): the readout's own placement outweighs the frame's.
+- **Measured after:** headless aboard the showcase crossing, the readout's box at (13, 23), 165 x 104 px, drawn top-left over the sea.
+- **Rule:** 255.
