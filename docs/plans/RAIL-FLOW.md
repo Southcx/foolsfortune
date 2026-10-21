@@ -51,9 +51,10 @@ edges of the view), Galaga (the entrance dive into formation), Ikaruga (chain wa
 director and Geometry Wars' spawner (pressure held to a floor, not to a clock).
 
 1. **The stream.** A phase is no longer a list of waves on bars; it is a **queue** of waves and a **floor**: the fewest foes in frame
-   the phase allows. The runtime keeps the floor: when the live count falls below it, the next wave in the queue enters on the next
-   beat (a quarter bar), whatever its bar. A wave's bar is the latest it may wait, never the earliest. Floors (first guesses): open 6,
-   build 10, peak 8 beside the boss, release 12 of lights. So clearing fast brings the next wave fast: skill pulls the stage forward,
+   the phase allows. The runtime keeps the floor: when the live count falls below it, the queue's next waves, as many as fill the
+   shortfall, enter together on the next beat (a quarter bar), whatever their bars, no sooner than half a bar after that queue's last
+   pull (v255: one wave a pull left the build at 5.6 live of 10). A wave's bar is the latest it may wait, never the earliest. Floors (first guesses): open 6,
+   build 10, peak 8 beside the boss, release 12 (lights every bar and a queue of fodder: v255 found a release of lights alone half dead). So clearing fast brings the next wave fast: skill pulls the stage forward,
    as in Ikaruga.
 2. **No dead beat.** Outside a swing, never a beat (0.375 real s) with nothing to shoot in frame. Within a swing (one bar), the swing
    carries **a flourish**: targets that cannot fire (lights to lock, a passing swarm) flown through the turn, so the camera's move is
@@ -162,8 +163,14 @@ in chase's axes in every view (cause 5). No pop-in found apart from the `dash` p
   throat 500 by the gun once the gills are shut; Charybdis 640 at its core, six eyes of 40, two combs of 160 (1200); the Conductor 40, hurt only
   while its ball is scattered.
 - `scripts/legs.mjs`: the flow check, the view check, the bosses' size.
-- **Waits on the runtime (Petra)**, and lands with it, never before: the boss numbers above are three to four times what they were, and today's
-  directors still leave on a clock, so merged alone the bosses would limp off unbeaten every time.
+- **Landed with Petra's runtime (v255):** the stream, the swarm, formations in the plane, bosses fought out by their parts with the hold
+  (`bosshold.js`), the escort's orbit, the flourish ringing the ship.
+- **After v255 (Dovina):** one pull fills the floor's shortfall (the runtime's pull is Petra's to match); the release is lights every
+  bar and a queue of fodder (a river swarm, a line, a vee) every two bars; the calm a queue of swarms every four bars and lights every
+  bar; the eyewall's open floor 6; `flow` one gun (section 11).
+- **Open:** the maelstrom's hold. Its arena is laid once as whole laps, so Charybdis still goes down at the arena's end, a clock by
+  another name. Dovina's call: the arena made open-ended (`railpath.js`, Petra's round), not a longer peak (it would still end, and
+  Wanda's split is laid on the leg's bars).
 - **Stale:** `scripts/rail.mjs` still models the pre-stretch 34-bar pieces (the audit); par is re-measured once the stream plays.
 
 ## 10. Voxels and boids: the tech under the spectacle (the owner, 2026-10-21: "we really do need voxel-based tech and boids in order to support the spectacle I envision")
@@ -207,14 +214,19 @@ What the famous ones field, from counts players and tool-assisted runs keep, set
 | Star Fox 64, Corneria | 359 (a real run), 403 (tool-assisted) | about 80 to 110 | videogameschronicle.com's medal guide; tasvideos.org/8050S |
 | Ikaruga, chapter 1 | the chain counts | 80 and more | shmups.wiki/library/Ikaruga; shmups.system11.org (p=369467) |
 | Galaga, stage 1 | 40 | about 40 | strategywiki.org, Galaga |
-| **ours, at the bars alone** | | **93 to 119, and 16 to 47 swarm bodies on top** | `flow` with no pull |
-| **ours, the floor's pull, aim perfect** | | 234 to 295 (foes, swarm aside) | `flow` |
+| **ours, a good player** (one gun, 4 foes a real second found and downed) | | **about 250 downed, 30 to 57 of them swarm; 3 to 4% escape** | `flow` |
+| **ours, the bars alone** (before the runtime's pull) | | 93 to 119, and 16 to 47 swarm bodies on top | `flow` with no pull (v254 model) |
 
 - **Density: Star Fox 64's, with the swarms on top.** The bars alone match the genre's busiest rail shooter; the floor's pull only adds
   as fast as the player kills, so a good player's crossing runs above Star Fox and a novice's never drowns. The perfect-aim ceiling is
   two to three times the genre's, and a real player never reaches it: the ceiling is their own kill rate.
 - **The pull's gap stays half a bar.** At 0.75 or 1 bar, the queues starve between pulls and about a thousand runs of dead air come back
-  across the legs and classes (`deadBeats`); at 0.5 there are none.
+  across the legs and classes (`deadBeats`, v254 model); at 0.5 there are none.
+- **The model is one gun since v255** (`flow`): the gun works the oldest foe in frame first, a foe taking a sixth of a bar to find and
+  down however soft (a swarm body a twelfth, the lock-on's), so the stream runs at the player's kill rate; before, each wave was shot
+  as if alone, and one-hit foes at 24 shots a bar read as 900 a minute. Played so, every phase keeps its floor on average (the build 14
+  to 24 live against 10), no leg has two empty beats in a row, and about 250 foes a real minute are downed: two to three times Star Fox
+  64's, at the rate the player's own gun sets.
 - **Bosses: fought out, about twice an Ikaruga expert's.** Ikaruga's bosses fall to experts in 17 to 25 real s inside a 100 s limit, and
   the arcade's (Ikaruga, Cave's, R-Type's) time out and leave. The owner wants them fought to the end, as Star Fox 64's (Andross's
   parts change what he does) and Gradius V's cores, so ours never leave: `BOSS.shots` 1100 to 1300, an expert about 45 real s, a good
