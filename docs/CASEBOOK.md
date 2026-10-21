@@ -743,3 +743,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 252. **A view's aim reaches every target it draws, at its depth.** A body moved deeper than the play plane
     to fit the frame was still a target on the screen, and the gun's reticle stayed on the plane in front of it.
+
+253. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
+    beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.
