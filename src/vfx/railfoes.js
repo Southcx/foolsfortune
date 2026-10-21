@@ -19,7 +19,9 @@
 //   RAIL_FOE_ROLES (the 17 role ids, Dovina's spelling, and the mine)   RAIL_FOE_SIZE[role] (its length, m, before the waves' SIZE)
 //   const b = railFoeBody(role, aspect, opts?)   (+Z forward, Y up)
 //   b.object  b.muzzles { name: Object3D }  b.parts { gun | gunL, gunR, core | hook, line | lid }  b.weak (blocker: weak.reveal(on))
-//   b.tell(k, part?)  b.hit(part?)  b.down(part?)  b.update(dt) -> false once its death is done  b.setAspect(aspect)  b.dispose()
+//   b.tell(k, part?)  b.hit(part?)  b.hurt(part, k 0..1) (1 - hp / hpMax: the part crazes)  b.down(part?) (thrown off in voxels where
+//     game.voxels.burst is)  (a gunship's guns, and its core once open, are lined in gold while they can be hit: railfoes/materials.js)
+//   b.update(dt) -> false once its death is done  b.setAspect(aspect)  b.dispose()
 //   b.openCore(on) (gunship: opens by itself once both guns are down)   b.link { object, target, radius } (escort: its tether and bubble)
 //   b.pose('swing' | 'attached' | 'thrown') and b.latch(worldPoint | null) (grappler)   b.tris
 //   railFoeGeometry(role) -> the shared build   prewarmRailFoes(scene) -> hide()   (both programs compiled at boot: main.js, Petra's)
@@ -32,6 +34,7 @@ import { HALO_CH, haloGeometry } from './railfoes/kit.js';
 import { WRECKERS } from './railfoes/wreckers.js';
 import { EGREGORES } from './railfoes/egregores.js';
 import { STRAYS } from './railfoes/strays.js';
+import { voxelsNow } from './voxels/now.js';
 
 export const RAIL_FOE_ROLES = ['school', 'swooper', 'darter', 'rammer', 'sniper', 'ambusher', 'turret', 'mine-layer', 'mine', 'escort', 'carrier', 'sweeper', 'heavy', 'gunship', 'blocker', 'spawner', 'grappler'];
 const BUILDERS = { ...WRECKERS, ...EGREGORES, ...STRAYS };
@@ -91,9 +94,10 @@ function linkGeometry() {
 export function railFoeBody(role, aspect = 'mirth', opts = {}) {
   const G = railFoeGeometry(role);
   const object = new THREE.Group(), pivot = new THREE.Group(); object.add(pivot);
+  let curAspect = aspect;
   object.name = `railfoe.${role}`;
   const mat = bodyMaterial({ flex: G.flex, death: G.death }), halo = haloMaterial();
-  const U = G.units.map((name) => ({ name, tell: 0, hit: 0, death: -1, reveal: 0, revealTo: 0 }));
+  const U = G.units.map((name) => ({ name, tell: 0, hit: 0, death: -1, reveal: 0, revealTo: 0, hurt: 0, gold: role === 'gunship' && name.startsWith('gun') ? 1 : 0 })); // (a gunship's guns are lined in gold from the start: they can be hit)
   const meshes = {}, muzzles = {}, parts = {};
   for (const m of G.meshes) {
     const M = new THREE.Mesh(m.geo, mat); M.name = m.name; M.position.set(...m.at); pivot.add(M); meshes[m.name] = M;
@@ -123,23 +127,40 @@ export function railFoeBody(role, aspect = 'mirth', opts = {}) {
     tell(k, part) { const v = Math.max(0, Math.min(1, k)); each(part, (u) => { u.tell = v; }); },
     /** A blow landed: a flicker and a shake, never a white flash (Molinari). */
     hit(part) { each(part || 'body', (u) => { if (u.death < 0) u.hit = HIT_S; }); },
-    /** Its death begins (or a unit's: a gunship's gun, its core). */
+    /** A part's hurt, 0..1 (1 - hp / hpMax): it crazes (a unit's alone: 'gunL', 'gunR', 'core'; or the body's). */
+    hurt(part, k) { const v = Math.max(0, Math.min(1, +k || 0)); each(part || 'body', (u) => { u.hurt = v; }); },
+    /** Its death begins (or a unit's: a gunship's gun, its core). A downed part is thrown off in voxels where game.voxels.burst is. */
     down(part) {
-      each(part, (u) => { if (u.death < 0) u.death = 0; });
+      const V = voxelsNow();
+      if (!part && typeof V?.burst === 'function' && U[0].death < 0) { // (the whole body downed: it bursts into its voxels and is gone at once: Resogun's death)
+        object.updateWorldMatrix(true, true);
+        try { V.burst({ object, key: `railfoe.${role}`, at: object.getWorldPosition(new THREE.Vector3()), power: 1.2, aspect: curAspect }); for (const u of U) { u.death = 1; u.gold = 0; } return; } catch (e) { console.warn('railfoes: voxels.burst', e); }
+      }
+      each(part, (u) => {
+        if (u.death >= 0) return;
+        u.death = 0; u.gold = 0;
+        const M = meshes[u.name];
+        if (part && M && typeof V?.burst === 'function') {
+          M.updateWorldMatrix(true, false);
+          try { V.burst({ object: M, at: M.getWorldPosition(new THREE.Vector3()), dir: new THREE.Vector3(0, 1, 0), power: 1 }); u.death = 1; } catch (e) { console.warn('railfoes: voxels.burst', e); } // (gone at once: the voxels are its death)
+        }
+      });
       if (role === 'gunship' && part && U[1].death >= 0 && U[2].death >= 0) api.openCore(true);
     },
-    openCore(on) { coreTo = on ? 1 : 0; if (U[3]) U[3].revealTo = coreTo; },
+    openCore(on) { coreTo = on ? 1 : 0; if (U[3]) { U[3].revealTo = coreTo; if (U[3].death < 0) U[3].gold = coreTo; } }, // (the core is lined in gold once it can be hit)
     pose(name) { if (name !== pose) { pose = name; poseT = 0; } },
     latch(p) { latchAt = p ? latched.copy(p) : null; },
     setAspect(a) {
+      curAspect = a;
       const c = COLOR[a] ?? 0xd0c0a0;
       mat.userData.u.uAspect.value.setHex(c); halo.userData.u.uAspect.value.setHex(c);
       if (link) link.mat.userData.u.uAspect.value.setHex(c);
     },
     update(dt) {
       time += dt; poseT += dt;
-      const S = mat.userData.u.uStates.value;
+      const S = mat.userData.u.uStates.value, PP = mat.userData.u.uParts.value;
       U.forEach((u, i) => {
+        PP[i].set(u.death < 0 ? u.hurt : 0, u.death < 0 ? u.gold : 0);
         u.hit = Math.max(0, u.hit - dt);
         u.reveal += (u.revealTo - u.reveal) * Math.min(1, dt * 8);
         if (u.death >= 0 && u.death < 1) u.death = Math.min(1, u.death + dt / DEATH_S);
