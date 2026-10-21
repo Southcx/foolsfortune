@@ -54,6 +54,7 @@ const RET = { chase: 1, free: 1, astern: 1, above: 1, side: 1 }; // (the cursor 
 /** The forms (RAIL-OVERHAUL.md 4): pace and box as shares, the gun, the lock-on's most; Umbral rides low (a stand-in until Calissa's
  *  surface from below: the dive's look). */
 const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
+const WIDE = { snap: 1.75, reach: 1.5 }; // (the knack Wide Sights, an assist offered plainly: RAIL-STANDARDS.md 7, the Game Accessibility Guidelines' auto-aim)
 const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot fills 4; full at 100; untouchable half a bar of the cue)
 const _fv = new THREE.Vector3();
 const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Vector3(), _nz = new THREE.Vector3(), _sw = new THREE.Vector3();
@@ -226,6 +227,7 @@ export class Ship {
     const nose = _nz.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
     out.copy(nose).addScaledVector(_b.set(f[0], f[1], f[2]), d2);
     if (!this.cursorOn(view, arena) || !cam || !R.toLocal) return out;
+    const snap = this.game.knacks?.on?.('wideSights') ? WIDE.snap : 1; // (the knack Wide Sights: the foe snap wider, knacks.js)
     cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(this.cursor.x, this.cursor.y), cam);
     R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
     const pl = planeOf(view), ax = pl === 'sea' ? 'y' : pl === 'wall' && f !== ABEAM_WAY ? 'x' : null;
@@ -238,7 +240,7 @@ export class Ship {
           if (!foe.alive || foe.solid === false) continue;
           R.toLocal(foe.pos, _w); if (_w.x > this.local.x + 2) continue;
           const tt = _e.copy(_w).sub(_o).dot(_d); if (tt <= 0 || tt >= best) continue;
-          if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0)) { best = tt; out.copy(_a); }
+          if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0) * snap) { best = tt; out.copy(_a); }
         }
       }
       return out;
@@ -249,7 +251,7 @@ export class Ship {
     for (const foe of waves?.foes || []) {
       if (!foe.alive) continue;
       R.toLocal(foe.pos, _w); const tt = _e.copy(_w).sub(_o).dot(_d); if (tt <= past || tt >= best) continue;
-      if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0)) { best = tt; out.copy(_a); } // (the point on the ray, in its reach: the reticle stays under the cursor, a big hull's centre may be far off it)
+      if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0) * snap) { best = tt; out.copy(_a); } // (the point on the ray, in its reach: the reticle stays under the cursor, a big hull's centre may be far off it)
     }
     return out;
   }
@@ -263,7 +265,7 @@ export class Ship {
     const L = T.ship.lock, cam = this.game.camera;
     if (!waves || !cam || this.locks.length >= Math.min(this.hull?.locks ?? L.max, (FORM[this.form] || FORM.astral).locks)) return;
     const rp = this.rail.toWorld(this.retFar, _a).project(cam), asp = cam.aspect || 16 / 9;
-    let best = null, bd = L.reach;
+    let best = null, bd = L.reach * (this.game.knacks?.on?.('wideSights') ? WIDE.reach : 1); // (Wide Sights: the lock-on reaches wider)
     for (const f of waves.foes) {
       if (!f.alive || f.lock === false || this.locks.includes(f)) continue; // (behind the camera is refused below: the screen decides)
       const p = _b.copy(f.pos).project(cam); if (p.z > 1) continue;

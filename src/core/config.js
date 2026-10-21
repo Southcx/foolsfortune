@@ -370,6 +370,7 @@ export const DEFAULTS = {
     compassContrast: 1, // the wire compass's tape and the marks hung on it, fainter below 1 and brighter above; the pendulum's black keyline grows with it (a setting)
     creatureTags: 'scan', // a creature's tag (vfx/creaturetags.js): 'scan' (the Veritome's lens raised, and the lock-on) | 'lockon' (the lock-on only) | 'off' (a setting: Calissa)
     creatureTagsMinimal: false, // a creature's tag with the least on it: its sprite, name and health line only (a setting)
+    shake: 'full', // every camera's shake (the rail's, the Courier's, the god hand's): 'full' | 'half' | 'off' (a setting: the Game Accessibility Guidelines, RAIL-STANDARDS.md 1)
   },
   audio: {
     volume: 0.7,
@@ -389,8 +390,8 @@ export const DEFAULTS = {
     roll: { time: 0.35, turns: 0.25, charges: 2, recharge: 3 }, // the barrel roll: its length, how long it turns plain shots, its charges and their refill (s)
     hurt: 0.35, mercy: 1.0, // the hurtbox's radius (the ship is 1.6 m), and the untouchable time after a hit
     boost: { ahead: 6, behind: 4, rate: 10 }, // boost and brake: how far the ship's place along the rail may move, and how fast
-    hitstop: { heavy: 0.08, mid: 0.04 }, // a heavy's or a part's down; a Marlin's; none on fish
-    trauma: { hit: 0.5, heavy: 0.3, decay: 1.5 }, // screen shake as trauma squared (Eiserloh)
+    hitstop: { heavy: 0.08, mid: 0.04, part: 0.06, hit: 0.05, fall: { freeze: 0.25, slow: 0.8, at: 0.35 } }, // the freeze grown with the blow (Sakurai): a heavy's down; a Marlin's and up; a boss's part broken; the ship hit; a boss's fall, then its slow (RAIL-STANDARDS.md 1, Dovina's numbers); none on fodder
+    trauma: { hit: 0.5, heavy: 0.3, part: 0.25, fall: 0.8, decay: 1.5 }, // screen shake as trauma squared (Eiserloh), scaled by the setting visual.shake
     absorb: 2, // Lachryma a shot of the ship's feeling gives when it is drunk
   },
 };
@@ -415,6 +416,8 @@ function deepMerge(target, src) {
 }
 
 export const T = structuredClone(DEFAULTS);
+/** The setting visual.shake as a factor on a camera's shake: full 1, half 0.5, off 0. */
+export const shakeOf = () => ({ off: 0, half: 0.5 })[T.visual?.shake] ?? 1;
 
 export function loadTuning() {
   try {

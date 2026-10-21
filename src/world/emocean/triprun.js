@@ -15,15 +15,21 @@
 //                  hold, a bounty paid on a leg ahead cleared, a rutter sold or bought, the Purser's counter, a ghost raced, a word found,
 //                  portents told; the whale's hidden leg is sailed as the next fight leg in its form, paid at its rate (a leg of its
 //                  own would relay the cue mid-leg). A squall cleared pays its leg's score at STORM.pays (trip.js legScore).
+//   THE STANDARDS  (RAIL-STANDARDS.md 3, 5) a leg's type sailed the first time is laid as its lesson (schedule `first`: its open's foes
+//                  met one at a time, alone); each fighting leg's par and medal count are played out under the cast-off's cover (par.js,
+//                  about 40 ms a leg, `pars`), never at its end; at its end its result (`legResult`) is kept on the run (`run.legs`, for
+//                  the voyage's rank) and said (`rail.leg.end`). `run.leg` is the leg now sailed for the readout: its type, its downs, its
+//                  medal count and its par. A practice crossing (stage.js sailPractice) sails one leg the same way, nothing counted.
 //
 // Prior art: Slay the Spire's act (the map drafted, then each room in turn, the campfire's choice), FTL's jumps, Star Fox 64's stages on
 // the beat, Rez's areas.
 //
 //   const R = new TripRun(stage)   R.boot(scene)   R.begin(sailing) -> { bars, legs } | null   R.update(dt, bar)   R.viewAt(bar)
-//   R.swings   R.stop()   R.parked()   R.show(on)
+//   R.swings   R.stop()   R.parked()   R.show(on)   R.pars()   R.mend(n)
 // ---------------------------------------------------------------------------------------
 import { tripLayout } from '../../music/legs.js';
-import { schedule } from '../../progress/rail/legs.js';
+import { schedule, LEGS } from '../../progress/rail/legs.js';
+import { legPar, legMedal, legResult } from '../../progress/rail/par.js';
 import { start, arrive, havenChoices, choose, legScore, adrift, drift } from '../../progress/rail/trip.js';
 import { ENCOUNTERS, pickEncounter, offered, apply, strengthOf } from '../../progress/rail/encounters.js';
 import { rutterWorth, next } from '../../progress/econ/passage.js';
@@ -72,10 +78,12 @@ export class TripRun {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
     const P = V.passage;
     this.showcase = !!P.showcase; // (the showcase crossing, progress/rail/showcase.js: no pressures, a hull and its mounts a leg)
+    this.practice = !!P.practice; // (a practice crossing: one leg, no pressures, nothing counted)
     this.bossHold.reset(); this.st.stage.boss = null;
     this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
-    this.legs = this.wps.map((w) => this.legOf(w));
+    this.legs = []; for (const w of this.wps) this.legs.push(this.legOf(w)); // (in order: a type's first sailing is its first leg's)
+    this.ended = new Set();
     this.state = { ...start(V.ship || 'sloop'), plan: this.wps.map((w) => w.id) }; this.k = -1; this.chosen = new Set(); // (plan: "ahead" is the drafted path, encounters.js)
     this.bounty = null; this.hidden = null; this.race = null; this.filmed = null;
     this.game.encounterFilm?.prepare(this.legs.map((l) => l.encounter).filter(Boolean), { hull: V.ship || 'sloop' }); // (the encounters' sets built and compiled under the cast-off's cover: vfx/encounters/film.js, Calissa's)
@@ -88,10 +96,32 @@ export class TripRun {
 
   /** A waypoint's leg: its schedule (Dovina's), its encounter drawn, its phases as the cue lays them, its music. */
   legOf(w) {
-    const plan = w.type === 'encounter' ? null : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm });
+    const first = !!LEGS[w.type] && !this.showcase && !this.practice && !((this.game.ledger?.get?.(`rail.leg.${w.type}`) || 0) > 0) && !this.legs.some((l) => l.type === w.type); // (its lesson: legs.js LESSON)
+    const plan = w.type === 'encounter' ? null : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm, first });
     const enc = w.type === 'encounter' ? pickEncounter(this.seen, this.rng, { ghost: this.ghost }) : null; if (enc) this.seen[enc] = (this.seen[enc] || 0) + 1;
     const phases = plan ? Object.fromEntries(['open', 'build', 'peak', 'release'].map((id) => [id, (plan.phases.find((p) => p.id === id)?.to ?? 0) - (plan.phases.find((p) => p.id === id)?.from ?? 0)])) : null;
-    return { id: MUSIC_ID[w.type] || w.type, type: w.type, aspect: w.feel || null, feeling: w.feel || null, storm: !!w.storm, encounter: enc, phases, plan };
+    const laid = plan && LEGS[w.type] ? { ...plan, phases: plan.phases.map((p) => ({ ...p })) } : null; // (the plan as laid, before a boss hold moves it: what its par is of)
+    return { id: MUSIC_ID[w.type] || w.type, type: w.type, aspect: w.feel || null, feeling: w.feel || null, storm: !!w.storm, encounter: enc, phases, plan, laid };
+  }
+  /** Each fighting leg's par and medal count (par.js: the stream played by three players, about 40 ms a leg, cached by the plan), played
+   *  out under the cast-off's cover (stage.js) and for the legs a current relays: never at a leg's end. */
+  pars() { for (const leg of this.legs || []) if (leg.laid && leg.par == null) { leg.par = legPar(leg.laid); leg.medalAt = legMedal(leg.laid); } }
+  /** Hits mended mid-leg (the ring run: hazards.js): the run's and the trip's hull alike, so the leg's close keeps them. */
+  mend(n) {
+    const S = this.st, r = S.run; if (!r) return; const m = Math.min(r.hits, n); if (m <= 0) return;
+    r.hits -= m; if (this.hitsAt != null) this.hitsAt = Math.max(0, this.hitsAt - m);
+    if (this.active && !this.showcase && !this.practice) this.state = { ...this.state, hull: Math.min(SHIPS[this.state.ship]?.bears ?? r.bears, (this.state.hull ?? 0) + m) };
+    this.game.events?.emit('rail.mend', { mend: m, hits: r.hits, bears: r.bears, by: 'courier' });
+  }
+  /** A fighting leg closed: its result against its own par (par.js legResult), kept on the run for the voyage's rank and said. */
+  legEnd(k, score) {
+    const S = this.st, leg = this.legs[k]; if (!leg?.laid || this.ended.has(k) || !S.run) return; this.ended.add(k);
+    if (leg.par == null) { leg.par = legPar(leg.laid); leg.medalAt = legMedal(leg.laid); }
+    const downed = S.run.downed - (this.downedAt ?? S.run.downed), hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), continued = (this.V?.continues || 0) > (this.continuesAt || 0);
+    const res = legResult({ plan: leg.laid, score, downed, continued });
+    const out = { type: leg.type, k, bars: leg.laid.bars, score: Math.round(score), par: res.par, medalAt: res.medalAt, rank: res.rank, medal: res.medal, downed, hits, first: !!leg.laid.first, practice: this.practice };
+    (S.run.legs ||= []).push(out);
+    this.game.events?.emit('rail.leg.end', { ...out, by: 'courier' });
   }
 
   /** The legs laid as the cue lays them (Wanda's tripLayout), the views by phase, a swing at each phase whose view differs from the
@@ -123,7 +153,7 @@ export class TripRun {
     const planned = this.wps.slice(k + 1).map((x) => x.id), same = ids.length === planned.length && ids.every((id, i) => id === planned[i]);
     if (!same) {
       const ahead = ids.map((id) => ({ ...this.chart.waypoints[id] }));
-      this.wps = [...this.wps.slice(0, k + 1), ...ahead]; this.legs = [...this.legs.slice(0, k + 1), ...ahead.map((x) => this.legOf(x))];
+      this.wps = [...this.wps.slice(0, k + 1), ...ahead]; this.legs = this.legs.slice(0, k + 1); for (const x of ahead) this.legs.push(this.legOf(x)); this.pars(); // (their pars at once: a current's relay is rare, and its hitch lands on a leg's close)
       this.game.encounterFilm?.prepare(this.legs.slice(k + 1).map((l) => l.encounter).filter(Boolean), { hull: this.state.ship }); // (a new encounter's set, as at cast-off)
       this.state = { ...this.state, plan: this.wps.map((x) => x.id) };
       this.layOut(); S.relay?.();
@@ -145,6 +175,7 @@ export class TripRun {
     if (k >= 0) {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
+      if (S.run?.leg?.k === k) S.run.leg.downed = S.run.downed - (this.downedAt ?? S.run.downed); // (the readout's count toward the medal)
       if (leg.type === 'maelstrom') this.st.charybdis?.update(dt, bar);
       this.bossHold.update(k, L, leg, bar); // (the boss law: the peak held until its boss falls, bosshold.js)
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
@@ -170,12 +201,13 @@ export class TripRun {
   enter(k) {
     const leg = this.legs[k], w = this.wps[k];
     if (this.showcase) this.refit(k); // (its own kit, however the leg was reached)
-    if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }); // (the Wreckers drawn by a loot)
+    if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }, { first: !!leg.plan.first }); // (the Wreckers drawn by a loot; its lesson as laid)
     else this.runner.done = true;
     if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
-    this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score;
+    this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score; this.downedAt = this.st.run.downed; this.continuesAt = this.V?.continues || 0;
+    this.st.run.leg = leg.laid ? { k, type: leg.type, downed: 0, medalAt: leg.medalAt ?? null, par: leg.par ?? null } : null; // (the readout's: Calissa's)
     if (w.type === 'maelstrom') this.st.charybdis?.begin(k, w); // (its director: the arena and Charybdis, charybdis.js)
-    if (leg.plan && this.hidden && !this.hidden.k) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)
+    if (leg.plan && this.hidden && this.hidden.k == null) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)
     this.game.events?.emit('passage.waypoint', { type: w.type, k, storm: !!w.storm, feel: w.feel || null, by: 'environment' });
   }
   leave(k) {
@@ -183,11 +215,13 @@ export class TripRun {
     if (S.piece) S.close();
     if (this.showcase) { S.run.hits = 0; if (this.wps[k + 1]) this.refit(k + 1); return; } // (the showcase crossing: mended, and the next row's hull and mounts through the turn)
     const hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), scored = Math.max(0, S.run.score - (this.scoreAt ?? S.run.score));
+    if (this.practice) { this.legEnd(k, scored); return; } // (practice: its result said, no pressures)
     this.state = arrive(this.state, this.chart, w.id, { hits, cleared: true });
     // what the leg's score is worth besides: a squall's pay (trip.js legScore), the whale's dive, a bounty, a ghost raced
     let more = legScore(scored, w) - scored;
     if (this.hidden?.k === k) { more += Math.round(scored * (this.hidden.pays - 1)); this.hidden = null; }
     if (more) S.run.score += more;
+    this.legEnd(k, scored + more);
     if (this.bounty?.waypoint === w.id && this.legs[k].plan) { const cubes = this.bounty.cubes; this.game.cubes?.earn(cubes, 'bounty'); this.bounty = null; this.game.events?.emit('passage.bounty', { waypoint: w.id, type: w.type, cubes, by: 'courier' }); }
     if (this.race && this.legs[k].plan) { const par = this.race.par, beat = scored + more >= par; this.V.passage.race = { beat }; this.race = null; this.game.events?.emit('passage.race', { beat, score: scored + more, par: Math.round(par), by: 'courier' }); }
     // the hull carries: the run's hits are the hull's damage (trip.js); a haven's mend shows there
@@ -215,7 +249,7 @@ export class TripRun {
   /** A calm's campfire or an encounter's choice, offered in the Index's window (the game holds; the cue holds: Wanda's). */
   offer(k) {
     const S = this.st, M = this.game.indexMenu, leg = this.legs[k], w = this.wps[k]; if (!M || S.offering) return;
-    if (this.showcase) { this.chosen.add(k); return; } // (the showcase crossing heaves to for nothing)
+    if (this.showcase || this.practice) { this.chosen.add(k); return; } // (the showcase and practice heave to for nothing)
     this.chosen.add(k); S.offering = true;
     const enc = leg.encounter && ENCOUNTERS[leg.encounter], st = S.stage;
     const opts = enc ? offered(leg.encounter, this.state.ship, { rutter: this.rutterWorth(), fuel: this.state.fuel }).map((c) => ({ id: c.id, word: ENCOUNTER_WORDS[leg.encounter]?.[c.id] || c.does }))
@@ -263,7 +297,7 @@ export class TripRun {
         const i = (box?.slots || []).findIndex((x) => x?.id === 'rutter'); if (i < 0) break;
         box.take(i); g.cubes?.earn(a.cubes, 'sell'); ev('rutter.sell', { cubes: a.cubes, to: 'letty' }); break;
       }
-      case 'hiddenLeg': this.hidden = { form: a.form, pays: a.pays, k: 0 }; ev('passage.dive', { form: a.form, pays: a.pays }); break;
+      case 'hiddenLeg': this.hidden = { form: a.form, pays: a.pays, k: null }; ev('passage.dive', { form: a.form, pays: a.pays }); break;
       case 'crew': ev('passage.crew', { slots: a.slots, legs: a.legs }); break; // (a hand aboard; the mount they man waits on the pier's loadout carrying a spare: next round)
       case 'counter': { // the Purser's counter, the cue held while it is open (its factors: Dovina's, shops.open's)
         const S = this.st; S.offering = true; g.shops?.open('purser', { factor: { sell: a.sell, buy: a.buy } });
@@ -282,6 +316,7 @@ export class TripRun {
     }
   }
 
-  stop() { this.st.charybdis?.end(); if (this.active && this.V?.passage) { this.V.passage.storms = this.state.storms; this.V.passage.sailed = this.wps.map(({ id, type, strength, feel, storm }) => ({ id, type, strength, feel, storm })); } // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
+  stop() { if (this.active && this.k >= 0) this.legEnd(this.k, Math.max(0, (this.st.run?.score ?? 0) - (this.scoreAt ?? 0))); // (the leg the crossing ended in: the ship broken, or its last bar)
+    this.st.charybdis?.end(); if (this.active && this.V?.passage) { this.V.passage.storms = this.state.storms; this.V.passage.sailed = this.wps.map(({ id, type, strength, feel, storm }) => ({ id, type, strength, feel, storm })); } // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
     this.active = false; this.field?.clear(); this.player?.stop(); if (this.runner) this.runner.done = true; const st = this.st.stage; st.legs = null; st.campfire = null; st.encounter = null; st.fuel = null; }
 }

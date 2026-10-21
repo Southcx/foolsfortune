@@ -3374,3 +3374,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   2.5 times the first (len / 3), 0.83 of len, so `x` never got there and the loop never ended. On Wanda's branch only, never on main.
 - **Fix:** the gap floors at 40 ms and the loop stops at 12 beeps; the gunship's spin-up got a count of 64 the same way.
 - **Rule:** 253.
+
+### 2026-10-21 · A hidden leg waiting for its leg read as the first leg (Petra, wiring the arches' find)
+- **Seen:** by reading, not in play: the Light Whale's dive (`trip.hidden`) is set with `k: 0` to mean "no leg yet", and a leg's
+  close pays and clears it when `hidden.k === k`. With the whale met at the first waypoint (k 0), its own close took the dive as
+  sailed: paid on the encounter's score (none) and cleared before any fighting leg was sailed below.
+- **Cause:** one value, 0, stood for "unset" and for the first leg.
+- **Fix:** unset is `null`, and a leg takes the dive when `hidden.k == null` (triprun.js enter, act; hazards.js find, which now sets
+  it too for every arch of a leg threaded).
+- **Measured after:** not measured in play (no seeded chart puts the whale first); headless, the shoal's three pillars and its leg's
+  close ran with the dive unset, 0 errors.
+- **Rule:** 254.

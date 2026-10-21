@@ -18,7 +18,7 @@
 // ~ again (once the jar is whole) puts the Courier back where the jar stood.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { T, PALETTE } from '../core/config.js';
+import { T, PALETTE, shakeOf } from '../core/config.js';
 import { RAPIER } from '../core/physics.js';
 import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
@@ -319,7 +319,7 @@ export class GodMode {
     const p = T.god.pitchDeg * DEG, cp = Math.cos(p), sp = Math.sin(p);
     const pos = _v.set(Math.sin(C.yaw) * cp, sp, Math.cos(C.yaw) * cp).multiplyScalar(C.dist).add(C.focus);
     C.shake = Math.max(0, C.shake - dt * 3);
-    if (C.shake > 0) pos.add(new THREE.Vector3((simRand() - 0.5), (simRand() - 0.5), (simRand() - 0.5)).multiplyScalar(C.shake * C.shake * 0.35));
+    if (C.shake > 0) pos.add(new THREE.Vector3((simRand() - 0.5), (simRand() - 0.5), (simRand() - 0.5)).multiplyScalar(C.shake * C.shake * 0.35 * shakeOf())); // (the setting visual.shake)
     _m.lookAt(pos, C.focus, UP);
     const quat = _q.setFromRotationMatrix(_m);
     const fov = T.god.fov;

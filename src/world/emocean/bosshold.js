@@ -13,7 +13,8 @@
 // release follows the next bar line by one bar (the swing's): what was laid past it in the peak is let go, what follows moves back.
 // THE MUSIC (Wanda's, music/legs.js setBoss): `stage.boss = { k, enraged, down }` from the peak's first bar while the boss stands, `down`
 // from its fall to the release; her cue loops the peak while it stands and lets go into the release on the bar after the fall. The
-// stage never follows a cue that no longer agrees with its length (stage.js clock). `rail.hold { bars, enraged, by }` for the log.
+// stage never follows a cue that no longer agrees with its length (stage.js clock). `rail.hold { bars, enraged, by }` for the log. The
+// fall is felt (stage.js feel('fall'): a freeze, then a slow, and the shake).
 //
 // THE MAELSTROM: its peak is the arena (railpath.js `arena`, laid by distance in laps of whole bars: arenaLaid), so it is held a lap at a
 // time, decided a bar before the arena's exit begins (the line flown stays as it was: a lap added ahead of the ship before its exit
@@ -63,6 +64,7 @@ export class BossHold {
     const standing = this.standing(k, leg), Ebars = arena ? arena.E / (BAR_S * S.rail.speed) : 0;
     if (standing) { if (!B || B.k !== k || B.enraged !== this.enraged(k)) S.stage.boss = { k, enraged: this.enraged(k), down: false }; }
     else if (B?.k === k && !B.down && !B.fell && !this.toCome(k, bar - L.at)) {
+      S.feel?.('fall'); // (its weight: a freeze, then a slow, and the shake: RAIL-STANDARDS.md 1)
       if (!mael) { S.stage.boss = { ...B, down: true }; this.cut(k, L, plan, bar - L.at); return; } // (it fell: the release after the next bar line)
       S.stage.boss = { ...B, fell: true }; // (the maelstrom: the laps still ahead taken away, a bar's margin kept)
       const peak = plan.phases.find((p) => p.id === 'peak'), m = Math.floor((peak.to - Ebars - (bar - L.at) - 1) / arena.lapBars);
