@@ -225,9 +225,11 @@ export const ECON = {
 
   /** THE RUTTER (docs/plans/PASSAGE.md): a passage's map is worth `share` of what its sailed minutes earn at the aim, by its rank, and
    *  `stale` of that each game day after (the sea chart reseeds daily); the Purser buys at worth (by island demand) and sells at `list`
-   *  x worth to the haulers whose charted-only ships need one. A sloop scouting and selling S rutters, read whole, earns about 0.9 x aim
-   *  from rutters alone: with its cargo it is held under the 1.5 x cap in scripts/economy.mjs (the hauler and scout profiles, to come). */
-  passage: { share: 0.6, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
+   *  x worth to the haulers whose charted-only ships need one. Measured whole (scripts/economy.mjs, "a passage sailed": crude + rutter,
+   *  three legs and the selling, 2026-10-21): at 0.6 a middling sailor in the starter sloop made 0.38 x aim, a third of what a middling
+   *  angler or diver makes, the grind that never closed; at 0.8 the sloop pays 0.13 / 0.50 / 0.98 x aim at C / B / S (skill doubling the
+   *  middling pay, the design law), the tanker's Dunemaw run 1.2 x at S. */
+  passage: { share: 0.8, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
