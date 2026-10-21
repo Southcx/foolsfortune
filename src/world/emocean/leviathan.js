@@ -14,8 +14,12 @@
 //             be out of the 8 m ring.
 //   MAW       (26 to 34, the free view) face to face, the jaw down: six teeth, a lance each; the throat's light swells before each spit,
 //             and a spit sent home goes down it (five and the throat is struck).
-// Every gill shut and the throat struck before the last bar: FELLED (three shards); else it sounds and is gone, DRIVEN off (one shard,
-// and Letty Marque posts the bounty).
+// THE BOSS LAW (the owner, 2026-10-21; RAIL-FLOW.md 5, setpieces.js BOSS): it is fought out, never driven off on a clock. After the
+// heave it runs abreast and sounds in turn, its gills open three bars in four whenever it is up; each gill shut makes it sound sooner
+// (its run abreast ten bars less two a gill, four at least) and surface angrier. With every gill shut it turns face to face: the maw,
+// its teeth guarding the throat, which takes the gun once the teeth are broken (a spit sent home always). The throat down, it is FELLED
+// (three shards); the leg's peak is held until then (triprun.js). Only a crossing ended mid-fight leaves it DRIVEN off (one shard, and
+// Letty Marque posts the bounty). Past BOSS.enrage real s it quickens (its fins' gap times BOSS.quicken).
 //
 // Prior art: Panzer Dragoon's sea-beasts (a sequence of faces, each read before it strikes), Shadow of the Colossus's Phalanx (a beast
 // that is a place), Sin & Punishment's leviathan, Star Fox 64's Sector Y and its boss of parts, Moby-Dick (survived, rarely killed).
@@ -23,7 +27,7 @@
 //   const L = new LeviathanPiece(stage)   L.build(scene)   L.begin(leg)   L.update(dt, rel, ctx)   L.finish() -> 'driven' | 'felled'
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { LEVIATHAN as N } from '../../progress/rail/setpieces.js';
+import { LEVIATHAN as N, BOSS } from '../../progress/rail/setpieces.js';
 import { SCORE } from '../../progress/rail/score.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { LeviathanLook } from '../../vfx/leviathan.js';
@@ -46,14 +50,17 @@ export class LeviathanPiece {
   }
   show(on) { if (this.look) { this.look.group.visible = on; if (!on) this.look.shadow(_l.set(0, 0, 0), 0, 0); } }
 
-  /** Alongside: the side view's gun fires abeam, at its flank (courier/ship/ship.js). */
-  abeam(rel) { return rel >= 8 && rel < 18 && !this.ended; }
+  /** Alongside: the gun fires abeam at its flank (courier/ship/ship.js); in the side view, where it runs ahead, the cursor picks it under
+   *  the ray as any foe (ship.js farOf). */
+  abeam() { return this.phase === 'abreast' && !this.ended && this.view !== 'side'; }
   /** What the leg's patterns fire from ('object': legs.js): Old Nobody's throat, else his body (the leg runner asks it is on the screen). */
   emitter() { return this.ended ? null : this.throat?.alive ? this.throat : this.body?.alive ? this.body : null; }
+  /** Beaten (the boss law: the leg's peak is held until then, triprun.js): felled. */
+  get beaten() { return !!this.ended; }
 
   begin(leg) {
     const st = this.stage, W = st.waves, L = this.look;
-    this.leg = leg; this.ended = null; this.lastBar = -1; this.breach = null; this.sounding = null; this.fins = { t: -1, side: FLANK };
+    this.leg = leg; this.ended = null; this.lastBar = -1; this.breach = null; this.sounding = null; this.fins = { t: -1, side: FLANK }; this.ph = { id: 'heave', t0: 0 }; this.t0 = st.t;
     for (let i = 0; i < N.gills.count; i++) L.gill(i, { side: FLANK, open: 0, gone: false });
     for (let i = 0; i < N.teeth.count; i++) L.tooth(i, false);
     L.maw(0); L.throat(0);
@@ -73,11 +80,11 @@ export class LeviathanPiece {
       onDown: () => { this.look.tooth(i, true); sfx.shatter?.(1, 4, 'porcelain'); this.game.events?.emit('rail.part', { part: 'tooth', by: 'courier' }); },
     }));
     this.throat = W.add({
-      kind: 'rail.throat', name: 'its throat', role: 'throat', cls: 4, radius: 1.8, hp: N.throat.spits, chain: false, count: false, pay: 0, returned: 1,
-      lock: false, armour: (f) => (f.last?.returned ? 1 : 0), // (only its own spit, sent home, goes down it)
+      kind: 'rail.throat', name: 'its throat', role: 'throat', cls: 4, radius: 1.8, hp: N.throat.hp ?? N.throat.spits, chain: false, count: false, pay: 0, returned: Math.round((N.throat.hp ?? N.throat.spits) / N.throat.spits),
+      get lock() { return this.maw; }, armour: (f) => (f.last?.returned || (f.maw && this.teeth.every((t) => !t.alive)) ? 1 : 0), // (its own spit sent home always; the gun once the teeth are broken)
       get solid() { return this.maw; }, maw: false,
       tick: (dt, f) => { this.partAt(this.look.throatWorld(_w), f.local); f.maw = this.phase === 'maw'; return !this.ended; },
-      onDown: () => { this.look.throat(0); this.game.events?.emit('rail.part', { part: 'throat', by: 'courier' }); },
+      onDown: () => { this.look.throat(0); this.game.events?.emit('rail.part', { part: 'throat', by: 'courier' }); this.fell(); },
     });
     this.body = W.add({ // (the beast itself: what the medal counts; its hide takes nothing, and shots pass to its parts)
       kind: 'rail.leviathan', name: 'Old Nobody', role: 'leviathan', cls: 4, radius: 3.5, hp: 1e9, chain: false, pay: 0, lock: false, solid: false, armour: () => 0,
@@ -89,16 +96,35 @@ export class LeviathanPiece {
   partAt(w, out) { return this.stage.rail.toLocal(w, out); }
   place() { const st = this.stage, G = this.look.group; st.rail.toWorld(this.at, G.position); G.rotation.copy(this.rot); G.updateMatrixWorld(true); }
 
-  get phase() { const r = this.rel ?? 0; return r < 8 ? 'heave' : r < 18 ? 'abreast' : r < 26 ? 'sound' : 'maw'; }
+  get phase() { return this.ph?.id || 'heave'; }
+  /** Its phase by its parts: the heave, then abreast and sounding in turn (abreast shorter by two bars a gill shut), the maw once
+   *  every gill is shut. */
+  advance(rel) {
+    const P = this.ph, u = rel - P.t0, shut = this.gills.filter((g) => !g.alive).length, all = shut >= this.gills.length;
+    if (P.id === 'heave' && rel >= 8) this.go('abreast', rel);
+    else if (P.id === 'abreast' && all) this.go('maw', rel);
+    else if (P.id === 'abreast' && u >= Math.max(4, 10 - 2 * shut)) this.go('sound', rel);
+    else if (P.id === 'sound' && u >= 8) this.go(all ? 'maw' : 'abreast', rel);
+  }
+  go(id, rel) { this.ph = { id, t0: rel }; if (id === 'sound') this.sounding = null; this.game.events?.emit('rail.phase', { boss: 'nobody', phase: id, by: 'environment' }); }
+  /** Past BOSS.enrage real s it quickens: a gap of `n` bars becomes n times BOSS.quicken (at least one). */
+  quick(n) { return this.stage.t - this.t0 > BOSS.enrage ? Math.max(1, Math.round(n * BOSS.quicken)) : n; }
+  /** The throat down: felled, said and paid at once (the peak's hold lets go: triprun.js). */
+  fell() {
+    if (this.ended) return;
+    this.ended = 'felled';
+    this.game.events?.emit('rail.end', { end: 'felled', by: 'courier' });
+    this.stage.endPay('felled');
+  }
 
   update(dt, rel, ctx) {
     const st = this.stage, S = st.ship, raw = this.game.rawDt ?? dt, L = this.look, bar = Math.floor(rel);
     this.rel = rel; this.view = ctx?.view;
     if (this.ended) this.leave(dt);
-    else if (rel < 8) this.heave(rel, dt);
-    else if (rel < 18) this.abreast(rel, dt);
-    else if (rel < 26) this.sound(rel, dt);
-    else this.maw(rel, dt);
+    else {
+      this.advance(rel); const id = this.phase;
+      if (id === 'heave') this.heave(rel, dt); else if (id === 'abreast') this.abreast(rel, dt); else if (id === 'sound') this.sound(rel, dt); else this.maw(rel, dt);
+    }
     this.place();
     // below the surface or above it: the music dives with it (the owner's ruling: Wanda filters the boss line while `under`); the hook
     // every boss of the rail sets, Charybdis's too when it lands (stage.foe)
@@ -130,7 +156,7 @@ export class LeviathanPiece {
     const L = this.look, S = this.stage.ship, z = this.view === 'side' ? AHEAD.z + Math.sin(rel * 0.4) * AHEAD.sway : 2 + Math.sin(rel * 0.4) * 4;
     this.at.set(ABEAM, lerp(this.at.y, -1.2, Math.min(1, dt * 1.5)), lerp(this.at.z, z, Math.min(1, dt)));
     this.rot.set(0, 0, 0); L.set({ swim: 0.6, bend: Math.sin(rel * 0.3) * 0.08 });
-    const open = ((rel - 8) % N.gills.of) < N.gills.open ? 1 : 0;
+    const open = ((rel - this.ph.t0) % N.gills.of) < N.gills.open ? 1 : 0; // (three bars in four, from each time it is up)
     for (const [i, g] of this.gills.entries()) if (g.alive) { g.flashT = Math.max(0, (g.flashT || 0) - dt); g.open = lerp(g.open, g.flashT > 0 ? 1 : open, Math.min(1, dt * 5)); L.gill(i, { side: FLANK, open: g.open }); } // (the plate's Flash holds a gill open)
     // the fin: raised a bar (its windup), then the sweep
     const F = this.fins;
@@ -144,7 +170,7 @@ export class LeviathanPiece {
 
   /** It sounds: down, its shadow growing under where the ship was, then up from under through the ring. */
   sound(rel, dt) {
-    const st = this.stage, S = st.ship, L = this.look, at = N.sound.at - 62; // (the breach from under, on the set piece's 22nd bar)
+    const st = this.stage, S = st.ship, L = this.look, at = this.ph.t0 + 4; // (the breach from under, four bars into the dive)
     for (const [i, g] of this.gills.entries()) if (g.alive) { g.open = 0; L.gill(i, { side: FLANK, open: 0 }); }
     if (!this.sounding && rel >= at - N.sound.grow) { this.sounding = { c: S.local.clone().setY(0), hit: false }; this.game.events?.emit('rail.warn', { blow: 'sound', bars: N.sound.grow, by: 'creature' }); }
     const s = this.sounding;
@@ -175,7 +201,8 @@ export class LeviathanPiece {
     // the fin through its windup; each goes with its part (casebook: a mark is asked every frame whether it is still true)
     const T = st.shots.telegraphs;
     if (T && rel >= 3 && (this.phase === 'heave' || this.phase === 'abreast' || this.phase === 'maw') && (bar + 1) % N.spit.every === 0 && this.throat.alive) T.mark(this.look.part('throat').object, BAR_S, { radius: 1.2, from: 2.6, alive: () => this.throat.alive && !this.ended });
-    if (T && this.phase === 'abreast' && (bar - 8) % N.fin.every === 1 && this.fins.t < 0) { const pv = this.look.fins?.find((x) => x.side === FLANK)?.pivot; if (pv) T.mark(pv, N.fin.windup * BAR_S, { radius: 2.4, from: 4, alive: () => !this.ended }); }
+    const finOn = this.phase === 'abreast' && (bar - Math.floor(this.ph.t0)) % this.quick(N.fin.every) === 1 && this.fins.t < 0;
+    if (T && finOn) { const pv = this.look.fins?.find((x) => x.side === FLANK)?.pivot; if (pv) T.mark(pv, N.fin.windup * BAR_S, { radius: 2.4, from: 4, alive: () => !this.ended }); }
     if (rel >= 4 && (this.phase === 'heave' || this.phase === 'abreast' || this.phase === 'maw') && bar % N.spit.every === 0) {
       this.look.throat(1); this.throatT = 0.3; // (its light swells, and dies with the spit)
       const mouth = this.throat.alive ? this.throat.local : this.at, aim = _v.copy(S.local).sub(mouth).normalize().multiplyScalar(18);
@@ -183,10 +210,10 @@ export class LeviathanPiece {
       const home = this.phase === 'maw' ? (this.throat.alive ? this.throat : null) : this.gills.filter((g) => g.alive && g.open > 0.5).sort((a, b) => a.local.distanceTo(S.local) - b.local.distanceTo(S.local))[0] || this.gills.find((g) => g.alive) || null;
       st.shots.foe(_l.copy(mouth), aim, { outlined: true, from: home });
     }
-    if (this.phase === 'abreast' && (bar - 8) % N.fin.every === 1 && this.fins.t < 0) { this.fins = { t: 0, side: FLANK, hit: false }; this.game.events?.emit('rail.warn', { blow: 'fin', bars: N.fin.windup, by: 'creature' }); }
+    if (finOn) { this.fins = { t: 0, side: FLANK, hit: false }; this.game.events?.emit('rail.warn', { blow: 'fin', bars: N.fin.windup, by: 'creature' }); }
   }
 
-  /** Driven off, it sounds away ahead; felled, it rolls and sinks. */
+  /** Driven off (the crossing ended mid-fight), it sounds away ahead; felled, it rolls and sinks. */
   leave(dt) {
     if (this.ended === 'felled') { this.at.y -= dt * 2; this.rot.z = lerp(this.rot.z, Math.PI, dt * 0.6); }
     else { this.at.y -= dt * 6; this.at.z += dt * 10; this.rot.x = lerp(this.rot.x, 0.6, dt); }
@@ -194,11 +221,10 @@ export class LeviathanPiece {
 
   finish() {
     const st = this.stage, W = st.waves;
-    if (!this.ended) {
-      const felled = this.gills.every((g) => !g.alive) && !this.throat.alive;
-      this.ended = felled ? 'felled' : 'driven';
-      this.game.events?.emit('rail.end', { end: this.ended, by: felled ? 'courier' : 'creature' });
-      st.endPay(this.ended);
+    if (!this.ended) { // (a crossing ended mid-fight: it was not beaten, so it is driven off; felled is said as the throat falls)
+      this.ended = 'driven';
+      this.game.events?.emit('rail.end', { end: 'driven', by: 'creature' });
+      st.endPay('driven');
     }
     for (const f of [...this.gills, ...this.teeth, this.throat, this.body]) if (f?.alive) W.drop(f);
     this.show(false);

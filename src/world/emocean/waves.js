@@ -41,7 +41,9 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
 import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
 import { FOE_MECHANICS } from './foemechanics.js';
-import { foeMove, scrollOf } from './foemoves.js';
+import { foeMove, scrollOf, viewFrame } from './foemoves.js';
+import { CARRIER_AT } from '../../progress/rail/legs.js';
+import { Swarm } from './swarm.js';
 import { ROSTER } from '../../progress/rail/showcase.js';
 
 /** Shots to down a foe by class (Guppy, Barracuda, Marlin, Whale, Leviathan: about three times a class, as their pay is). */
@@ -65,13 +67,32 @@ const PATHS = {
   dash: (t, i, n, L, out) => { const s = i % 2 ? 1 : -1, leave = Math.max(0, t - 10 * BAR_S); out.set(s * 13 * Math.cos(t * 0.85 + i * 1.7), 2.6 + (i % 3) * 1.4 + Math.sin(t * 1.4 + i) * 0.8, 30 + 7 * Math.sin(t * 0.45 + i) + leave * leave * 6); return out.z < 140; },
   hold: (t, i, n, L, out) => { const arrive = smooth(t / 3), leave = Math.max(0, t - 14 * BAR_S); out.set(L * 4 + Math.sin(t * 0.6) * 3, 4.2 + Math.sin(t * 0.9) * 0.8, 120 - 92 * arrive + leave * leave * 5); return out.z < 160; },
 };
+/** The formations in a plane view (overhead, side): the same shapes laid in its play plane (RAIL-FLOW.md 1, law 4), across it and along
+ *  the scroll, through the view's frame (foemoves.js viewFrame), so every member flies where the gun shoots. `a` is across (-1..1),
+ *  `s` along the scroll (1 the far edge it enters at, 0 the near edge it leaves by); each comes in from beyond the far edge on a curve
+ *  over its first bar (law 3: Galaga's entrance), crosses in `CROSS_S` real s, and is gone past the near edge. Chase, free and astern
+ *  keep PATHS above (their play plane is the screen and the scroll comes at it). */
+const CROSS_S = 4.5;
+function planePath(form, view) {
+  const P = viewFrame(view), B = (CARRIER_AT[view] || CARRIER_AT.chase).box, side = view === 'side';
+  const across = side ? (B.y[1] - B.y[0]) / 2 : B.x, along = B.z[1] - B.z[0]; // (half the frame across, and its length along the scroll, m)
+  const at = (a, sv, out) => out.copy(side ? P(2 * sv - 1, (a + 1) / 2) : P(a, sv));
+  const run = (t) => 1.15 - (1.3 * t) / CROSS_S, bow = (t, k) => k * 0.3 * (1 - smooth(t / BAR_S)); // (the scroll's run, and the entrance's curve)
+  const F = {
+    line: (t, i, n, L, out) => { const sv = run(t), k = i - (n - 1) / 2; at(L * 0.3 + (k * 2.2) / across + Math.sin(t * 1.3 + i * 0.5) * 0.03 + bow(t, L < 0 ? -1 : 1), sv, out); return sv > -0.15; },
+    vee: (t, i, n, L, out) => { const k = i - (n - 1) / 2, sv = run(t) + (Math.abs(k) * 1.8) / along; at(L * 0.3 + (k * 2.4) / across + bow(t, L < 0 ? -1 : 1), sv, out); return sv > -0.15; },
+    pincer: (t, i, n, L, out) => { const sd = i % 2 ? 1 : -1, k = i >> 1, u = t / CROSS_S; at(sd * (1.35 - 2.7 * u), 0.62 + (k * 4) / along - 0.1 * u, out); return u < 1 || t < 2; },
+    ring: (t, i, n, L, out) => { const c = run(t) + 0.1, r = 5 - Math.min(2, t * 0.4), g = (i / n) * Math.PI * 2 + t * 0.9; at(L * 0.25 + (Math.cos(g) * r) / across + bow(t, 1), c + (Math.sin(g) * r) / along, out); return c > -0.3; },
+  };
+  return F[form] || F.line;
+}
 
 export class Waves {
   constructor(game, rail) {
     this.game = game; this.rail = rail;
     this.foes = []; this.plan = null; this.next = 0; this.idx = 0;
     this.onDown = null; this.onSpawn = null; this.onLeave = null; this.tellOf = null;
-    this.dying = [];
+    this.dying = []; this.swarms = []; // (the swarms in flight: swarm.js)
   }
 
   build(scene) {
@@ -90,6 +111,7 @@ export class Waves {
     this.waves = [...(plan?.waves || [])].sort((a, b) => a.bar - b.bar);
   }
   end() {
+    for (const s of this.swarms) s.dispose(); this.swarms.length = 0;
     for (const f of this.foes) this.gone(f);
     for (const f of this.dying) this.bury(f);
     this.foes.length = 0; this.dying.length = 0; this.waves = []; this.plan = null;
@@ -105,6 +127,7 @@ export class Waves {
       this.idx++;
     }
     const sixteenth = Math.floor(bar * 16);
+    for (const s of this.swarms) s.step(dt); // (a swarm's flock flies before its members read where they are)
     for (let i = this.foes.length - 1; i >= 0; i--) {
       const f = this.foes[i];
       f.t += dt; f.hitT = Math.max(0, f.hitT - dt);
@@ -130,6 +153,7 @@ export class Waves {
       const f = this.dying[i]; this.rail.toWorld(f.local, f.pos); f.mesh.position.copy(f.pos);
       if (f.body.update(dt) === false) { this.bury(f); this.dying.splice(i, 1); }
     }
+    for (let i = this.swarms.length - 1; i >= 0; i--) { const s = this.swarms[i]; s.draw(); if (s.done) { s.dispose(); this.swarms.splice(i, 1); } }
     this.lastSixteenth = sixteenth;
   }
 
@@ -153,9 +177,11 @@ export class Waves {
 
   // ---------------------------------------------------------------- the foes
   spawn(w, wi) {
+    if (ROSTER[w.role]?.moves?.kind === 'flock') { const cls = Math.max(0, Math.min(4, w.cls ?? 0)); this.swarms.push(new Swarm(this, { ...w, hp: HP[cls] * (ROSTER[w.role].hp ?? 1) }, wi)); return; } // (a swarm: one flock, one draw call: swarm.js)
     let src = null, at = null; // (a wave laid `from` a role: out of the nearest live one of it, its hatch opening; none alive, it never comes)
     if (w.from) { for (const f of this.foes) if (f.alive && f.role === w.from && (!src || f.local.z < src.local.z)) src = f; if (!src) return; src.hatch = 1; at = src.local; }
-    const look = RAIL_FOE_ROLES.includes(w.role) ? w.role : 'school', moves = ROLES[look] ? look : 'school', R = ROLES[moves], path = PATHS[w.formation] || PATHS.line;
+    const plane = this.view === 'above' || this.view === 'side', look = RAIL_FOE_ROLES.includes(w.role) ? w.role : 'school', moves = ROLES[look] ? look : 'school', R = ROLES[moves];
+    const path = plane ? planePath(w.formation, this.view) : PATHS[w.formation] || PATHS.line; // (in a plane view, laid in its play plane)
     const A = this.aspect, B = OPPOSITE[A] || A, k = look === 'school' ? 1 + 0.25 * w.cls : 1;
     const radius = ROLES[look] ? SIZE * R.radius * k : SIZE * 0.45 * (RAIL_FOE_SIZE[look] || 2); // (a roster body's own length where its role has no row)
     for (let i = 0; i < w.count; i++) {
@@ -167,7 +193,7 @@ export class Waves {
         kind: `rail.${look}`, name: look === 'school' ? 'a fish of the school' : `a ${look.replace('-', ' ')}`,
         role: look, cls: w.cls, aspect, radius, hp: HP[Math.max(0, Math.min(4, w.cls))] * (ROSTER[look]?.hp ?? 1), mesh,
       });
-      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null });
+      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path, R, body, mech: FOE_MECHANICS[look] || null, boss: !!w.boss && ROSTER[look]?.moves?.until === 'beaten' });
       if (ROSTER[look]?.moves) f.path = foeMove(ROSTER[look].moves, { view: this.view, i, lane: f.lane, W: this, f }) || path; // (its row's move, laid in the view it entered in)
       f.path(0, i, w.count, f.lane, f.local); if (at) { f.shift = at.clone().sub(f.local); f.local.copy(at); }
       this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);

@@ -10,10 +10,15 @@
 //              Boarders swing across every four bars, two at a time; one that stands a bar on your deck takes a cask.
 //              In the side view she keeps AHEAD instead (21 m on, 5.5 m behind the ship's plane): a side view cannot show abeam,
 //              where she stood behind the ship on the screen and threw from 1.4 m off it (Dovina's ruling, RAIL-MODULES.md 1.8)
-//   THE RAM    (22 to 30, behind the ship) she comes about ahead and bears down on the ship's line: a bar and a half to see it; two
-//              of what the ship bears unless you are off her line, or her hull is holed (under a third: she founders first)
-//   COLOURS    (from 30) holed, she SINKS and her hold floats astern (two casks to fly through); dismasted or holed past two thirds,
-//              she STRIKES her colours (one cask); else she LIMPS off with whatever she stole
+//   THE RAM    (once three of her ports are shut: PIRATES.comeAbout) she comes about ahead and bears down on the ship's line: a bar
+//              and a half to see it; two of what the ship bears unless you are off her line. Then she sails back up, her chasers
+//              firing four bars, and comes about again, until she is holed
+//   COLOURS    holed, she SINKS and her hold floats astern (two casks to fly through); dismasted first (every sling cut), she STRIKES
+//              her colours as she is holed and pays both (three casks). She never limps off on a clock (the boss law, setpieces.js
+//              BOSS: the leg's peak is held until she falls, triprun.js); only a crossing ended mid-fight leaves her LIMPED
+// THE BOSS LAW (the owner, 2026-10-21; RAIL-FLOW.md 5): each part owns an attack and breaking it moves her on: the ports the broadside
+// (three shut, she comes about), the slings the boarders (their ropes hang from them: every sling cut, no more), the hull the chasers
+// and the ram. Past BOSS.enrage real s she quickens (her volleys' and chasers' gaps times BOSS.quicken).
 //
 // Every part is a foe on the waves' roll (world/emocean/waves.js `add`): the hull, each port, each sling, each boarder; so the gun, the
 // lock-on and the parry's return find them as they find a fish.
@@ -25,7 +30,7 @@
 //   const P = new PiratesPiece(stage)   P.build(scene)   P.begin(leg)   P.update(dt, rel, ctx)   P.finish() -> 'sunk' | 'struck' | 'limped'
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { PIRATES } from '../../progress/rail/setpieces.js';
+import { PIRATES, BOSS } from '../../progress/rail/setpieces.js';
 import { SCORE } from '../../progress/rail/score.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CARRIER_AT } from '../../progress/rail/legs.js';
@@ -49,7 +54,7 @@ export class PiratesPiece {
     this.boarders = Array.from({ length: 4 }, () => { const b = new BoarderLook(); b.group.visible = false; b.group.traverse((o) => { o.userData.zoneFree = true; }); scene.add(b.group); return b; });
     // the casks her hold lets go (placeholders: a barrel of crude)
     this.caskGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.9, 10).rotateZ(Math.PI / 2); this.caskMat = new THREE.MeshStandardMaterial({ color: 0x4a2f1c, roughness: 0.7, emissive: 0x2a1406, emissiveIntensity: 0.4 });
-    this.casks = Array.from({ length: 2 }, () => { const m = new THREE.Mesh(this.caskGeo, this.caskMat); m.visible = false; m.userData.zoneFree = true; scene.add(m); return m; });
+    this.casks = Array.from({ length: 3 }, () => { const m = new THREE.Mesh(this.caskGeo, this.caskMat); m.visible = false; m.userData.zoneFree = true; scene.add(m); return m; });
   }
   show(on) {
     if (!this.look) return;
@@ -59,10 +64,12 @@ export class PiratesPiece {
 
   /** What the leg's patterns fire from ('object': legs.js): the brig's hull while she sails (the leg runner asks it is on the screen). */
   emitter() { return !this.ended && this.hull?.alive ? this.hull : null; }
+  /** Beaten (the boss law: the leg's peak is held until then, triprun.js): holed, sunk or struck. */
+  get beaten() { return !!this.ended; }
 
   begin(leg) {
     const st = this.stage, W = st.waves, L = this.look;
-    this.leg = leg; this.ended = null; this.sinkT = 0; this.lastBar = -1; this.ram = null; this.floating = [];
+    this.leg = leg; this.ended = null; this.sinkT = 0; this.lastBar = -1; this.ram = null; this.floating = []; this.mode = 'sails'; this.cycle = null; this.t0 = this.stage.t; // (her phase by her parts: sails, broadside, about)
     for (let i = 0; i < 6; i++) L.port(i, { side: SIDE, open: 0, gone: false });
     for (let i = 0; i < 4; i++) L.rigging(i, false);
     L.strike(0); L.hurt(0); L.sink(0);
@@ -102,37 +109,57 @@ export class PiratesPiece {
     const st = this.stage, S = st.ship, bar = Math.floor(rel), raw = this.game.rawDt ?? dt, L = this.look;
     const side = (this.view = ctx?.view) === 'side';
     // where she sails (ahead in the side view, else astern then abeam)
-    if (this.ended === 'sunk') { this.sinkT += dt / BAR_S; L.sink(Math.min(1, this.sinkT / 2)); this.at.z = lerp(this.at.z, -60, dt * 0.2); }
+    if (this.ended === 'sunk' || this.ended === 'struck') { this.sinkT += dt / BAR_S; L.sink(Math.min(1, this.sinkT / 2)); this.at.z = lerp(this.at.z, -60, dt * 0.2); }
     else if (this.ended) { this.at.z -= dt * 6; this.at.x = lerp(this.at.x, ABEAM - 12, dt * 0.4); this.heading = lerp(this.heading, -0.3, dt); } // (she limps off, or lies to, astern)
-    else if (rel < 8 && side) { this.at.set(AHEAD.x, 0, lerp(AHEAD.z + AHEAD.from, AHEAD.z, smooth(rel / 3)) + Math.sin(rel * 0.8) * AHEAD.sway); this.heading = 0; }
-    else if (rel < 8) { this.at.set(lerp(-6, ABEAM, smooth((rel - 6) / 2)), 0, lerp(ASTERN - 30, ASTERN, smooth(rel / 3)) + Math.sin(rel * 0.8) * 2); this.heading = 0; }
-    else if (rel < 22) { const k = Math.min(1, dt * 0.8); this.at.set(lerp(this.at.x, side ? AHEAD.x : ABEAM, k), 0, lerp(this.at.z, side ? AHEAD.z + Math.sin(rel * 0.5) * AHEAD.sway : 2 + Math.sin(rel * 0.5) * 3, k)); this.heading = 0; }
-    else this.ramming(rel, dt);
+    else {
+      if (this.mode === 'sails' && rel >= 8) { this.mode = 'broadside'; this.bs0 = Math.floor(rel); }
+      if (this.mode === 'broadside' && this.ports.filter((p) => !p.alive).length >= (PIRATES.comeAbout ?? 3)) { this.mode = 'about'; this.cycle = { t0: rel }; this.game.events?.emit('rail.phase', { boss: 'brig', phase: 'about', by: 'courier' }); }
+      if (this.mode === 'sails' && side) { this.at.set(AHEAD.x, 0, lerp(AHEAD.z + AHEAD.from, AHEAD.z, smooth(rel / 3)) + Math.sin(rel * 0.8) * AHEAD.sway); this.heading = 0; }
+      else if (this.mode === 'sails') { this.at.set(lerp(-6, ABEAM, smooth((rel - 6) / 2)), 0, lerp(ASTERN - 30, ASTERN, smooth(rel / 3)) + Math.sin(rel * 0.8) * 2); this.heading = 0; }
+      else if (this.mode === 'broadside') { const k = Math.min(1, dt * 0.8); this.at.set(lerp(this.at.x, side ? AHEAD.x : ABEAM, k), 0, lerp(this.at.z, side ? AHEAD.z + Math.sin(rel * 0.5) * AHEAD.sway : 2 + Math.sin(rel * 0.5) * 3, k)); this.heading = 0; }
+      else this.about(rel, dt, side);
+    }
     this.place();
-    L.set({ heel: Math.sin(st.t * 0.7) * 0.05 + (rel >= 8 && rel < 22 ? 0.04 : 0), pitch: Math.sin(st.t * 0.9) * 0.03 });
+    L.set({ heel: Math.sin(st.t * 0.7) * 0.05 + (this.mode === 'broadside' ? 0.04 : 0), pitch: Math.sin(st.t * 0.9) * 0.03 });
     // on the bar: her chasers, her ports, her boarders
     if (bar !== this.lastBar && !this.ended) { this.lastBar = bar; this.onBar(bar, rel); }
     // the ports ease open a bar before a volley (the lid, then the gun)
-    for (const [i, p] of this.ports.entries()) if (p.alive) { p.flashT = Math.max(0, (p.flashT || 0) - dt); const want = p.flashT > 0 || (rel >= 8 && rel < 22 && (bar - 8) % PIRATES.broadside.every === PIRATES.broadside.every - 1) ? 1 : 0; // (the plate's Flash holds a port open: courier/ship/mounts.js)
+    for (const [i, p] of this.ports.entries()) if (p.alive) { p.flashT = Math.max(0, (p.flashT || 0) - dt); const want = p.flashT > 0 || (this.mode === 'broadside' && (bar - this.bs0) % this.every() === this.every() - 1) ? 1 : 0; // (the plate's Flash holds a port open: courier/ship/mounts.js)
       p.open = lerp(p.open, want, Math.min(1, dt * 6)); L.port(i, { side: SIDE, open: p.open }); }
     this.boarding(dt, rel);
     this.flotsam(dt);
     L.update(raw);
-    if (!this.ended && rel >= 30) this.close();
+  }
+  /** Past BOSS.enrage real s she quickens: a gap of `n` bars becomes n times BOSS.quicken (at least one). */
+  quick(n) { return this.stage.t - this.t0 > BOSS.enrage ? Math.max(1, Math.round(n * BOSS.quicken)) : n; }
+  every() { return this.quick(PIRATES.broadside.every); }
+  /** Come about (three ports shut): four bars sailing back up with her chasers, then the ram; again, until she is holed. */
+  about(rel, dt, side) {
+    const C = this.cycle, u = rel - C.t0, R = PIRATES.ram;
+    if (u < 4) { // (back up to her place, ahead in the side view, abeam else, turning to the way the ship heads)
+      const k = Math.min(1, dt * 0.8); this.heading = lerp(this.heading, 0, Math.min(1, dt * 1.5));
+      this.at.set(lerp(this.at.x, side ? AHEAD.x : ABEAM, k), 0, lerp(this.at.z, side ? AHEAD.z : 2, k));
+      return;
+    }
+    this.ramming(rel, dt);
+    if (rel - this.ram.t0 > 1 + R.eta + 0.6) { this.ram = null; this.cycle = { t0: rel }; } // (past the ship: round again)
   }
 
   onBar(bar, rel) {
     const st = this.stage, S = st.ship;
-    if (rel < 8 && bar % PIRATES.chaser.every === 0) { // (the bow chasers, or in the side view the stern chasers: an outlined shot, slow, to be sent home)
+    const chasing = this.mode === 'sails' || (this.mode === 'about' && rel - this.cycle.t0 < 4);
+    if (chasing && bar % this.quick(PIRATES.chaser.every) === 0) { // (the bow chasers, or in the side view the stern chasers: an outlined shot, slow, to be sent home)
       const aft = this.view === 'side', gun = _l.copy(this.at).add(_v.set(0, 2.4, aft ? -9 : 9));
       if (!aft || (gun.z <= CARRIER_AT.side.box.z[1] && Math.hypot(gun.y - S.local.y, gun.z - S.local.z) >= PIRATES.chaser.speed * REACT_S)) { // (in frame, and half a real second off in the ship's plane)
         st.shots.foe(gun, _v.copy(S.local).sub(gun).normalize().multiplyScalar(PIRATES.chaser.speed), { outlined: true, from: this.hull });
         sfx.explosion?.(9);
       }
     }
-    if (rel >= 8 && rel < 22 && (bar - 8) % PIRATES.broadside.every === 0) this.broadside();
-    if (rel >= 8 && rel < 21 && (bar - 8) % PIRATES.broadside.every === PIRATES.broadside.every - 1) for (const [i, p] of this.ports.entries()) if (p.alive) st.shots.telegraphs?.mark((o) => this.look.portWorld(i, SIDE, o), BAR_S, { radius: 0.85, from: 2.2, alive: () => p.alive && !this.ended }); // (each port that will fire wears the telegraph mark over the bar before the volley, none for a volley that will not come (rel < 21), and it goes with the port: vfx/telegraph.js)
-    if (rel >= 9 && rel < 22 && (bar - 9) % PIRATES.boarders.every === 0) for (let k = 0; k < PIRATES.boarders.count; k++) this.board(k);
+    const E = this.every();
+    if (this.mode === 'broadside' && (bar - this.bs0) % E === 0) this.broadside();
+    if (this.mode === 'broadside' && (bar - this.bs0) % E === E - 1) for (const [i, p] of this.ports.entries()) if (p.alive) st.shots.telegraphs?.mark((o) => this.look.portWorld(i, SIDE, o), BAR_S, { radius: 0.85, from: 2.2, alive: () => p.alive && !this.ended && this.mode === 'broadside' }); // (each port that will fire wears the telegraph mark over the bar before the volley, and it goes with the port: vfx/telegraph.js)
+    const slings = this.slings.filter((x) => x.alive).length; // (the boarders' ropes hang from her slings: every sling cut, no more boarders)
+    if (this.mode !== 'sails' && slings && (bar - 9) % PIRATES.boarders.every === 0) for (let k = 0; k < Math.min(PIRATES.boarders.count, slings); k++) this.board(k);
   }
 
   /** A volley: three round shot from each open port, across the ship's plane at the port's place: a wall, its gaps where ports are gone. */
@@ -191,20 +218,17 @@ export class PiratesPiece {
     }
   }
 
-  /** Her hull holed through: she sinks. */
-  founder() { if (this.ended) return; this.end('sunk'); }
-  /** The set piece's colours bar: struck or limped (sunk is already said). */
-  close() {
-    const cut = this.slings.every((s) => !s.alive), holed = this.hull.alive && this.hull.hp < B.hull / 3;
-    this.end(cut || holed ? 'struck' : 'limped');
-  }
+  /** Her hull holed through: she sinks, or, dismasted first, strikes her colours as she goes (and pays both). */
+  founder() { if (this.ended) return; this.end(this.slings.every((s) => !s.alive) ? 'struck' : 'sunk'); }
+  /** A crossing ended mid-fight (the ship failed, or the stage closed): she limps off with what she stole. */
+  close() { this.end('limped'); }
   end(how) {
     const st = this.stage;
     this.ended = how;
     if (how === 'struck') this.look.strike(1);
     for (const p of [...this.ports, ...this.slings]) if (p.alive) st.waves.drop(p);
     if (how !== 'sunk' && this.hull.alive) st.waves.drop(this.hull);
-    const n = PIRATES.loot[how] || 0;
+    const n = Math.min(this.casks.length, how === 'struck' ? (PIRATES.loot.sunk || 0) + (PIRATES.loot.struck || 0) : PIRATES.loot[how] || 0); // (struck: both, RAIL-FLOW.md 5)
     for (let i = 0; i < n; i++) { const m = this.casks[i]; m.visible = true; this.floating.push({ m, local: new THREE.Vector3(st.ship.local.x + (i ? 2.5 : -2.5), 0.2, 60 + i * 10) }); }
     this.game.events?.emit('rail.end', { end: how, by: how === 'limped' ? 'creature' : 'courier' });
     st.endPay(how);

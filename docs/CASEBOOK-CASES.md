@@ -3354,3 +3354,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   ahead in the side view (`leviathan.js` AHEAD): its throat laid at 17.9 to 19.0 m, all 4 of its abreast volleys by its body, the
   heave's and the sounding's by carriers. 0 errors.
 - **Rule:** 251.
+
+### 2026-10-21 · In the side view the gun could not reach the False Light (Petra, found reading the aim for the boss law)
+- **Seen:** reading `ship.js farOf` while giving the brig her parts: since v252 she stood ahead in the side view at x -5.5, z 21, and
+  with her abeam rule gone the side gun's reticle lay on the wall plane (x 0). Her hull's sphere is 4.2 m across its centre, so every
+  shot in the plane passed 1.3 m in front of it; her ports and slings stood further in. Only the lock-on's lances could reach her.
+- **Cause:** the side view's cursor met only the plane the ship sails in. A body drawn deeper than the plane (the brig 5.5 m, Old
+  Nobody 24 m) was a target on the screen and out of the gun's reach; the abeam rule that once turned the gun into the screen also
+  made every foe in the plane unpickable while it held.
+- **Fix:** in the side view the cursor takes the first foe under its ray at its depth (behind the ship's plane, never between the
+  camera and it), else the wall as before; the brig and Old Nobody keep no abeam rule in the side view.
+- **Measured after:** not measured in play (the owner's); headless, the brig sank and Old Nobody was felled by the gun's blows through
+  the roll, 0 errors.
+- **Rule:** 252.

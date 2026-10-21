@@ -231,7 +231,17 @@ export class Ship {
     const pl = planeOf(view), ax = pl === 'sea' ? 'y' : pl === 'wall' && f !== ABEAM_WAY ? 'x' : null;
     if (ax) { // (the scroll views: the cursor where it meets the plane the ship sails in, the gun toward it; abeam in the side view the gun still goes into the screen, at the set piece alongside)
       const t = Math.abs(_d[ax]) > 1e-4 ? (this.local[ax] - _o[ax]) / _d[ax] : -1;
-      return out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);
+      out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);
+      if (ax === 'x') { // (the side view: the first foe under the cursor's ray, at its depth, before the wall: a set piece's body stands deep behind the ship's plane, the False Light 5.5 m, Old Nobody 24, and a shot in the plane passes in front of it; one between the camera and the plane is not what the cursor means)
+        let best = Infinity;
+        for (const foe of waves?.foes || []) {
+          if (!foe.alive || foe.solid === false) continue;
+          R.toLocal(foe.pos, _w); if (_w.x > this.local.x + 2) continue;
+          const tt = _e.copy(_w).sub(_o).dot(_d); if (tt <= 0 || tt >= best) continue;
+          if (_w.distanceTo(_a.copy(_o).addScaledVector(_d, tt)) <= Math.max(0.8, foe.radius || 0)) { best = tt; out.copy(_a); }
+        }
+      }
+      return out;
     }
     _fv.set(f[0], f[1], f[2]); const dn = _d.dot(_fv), t = Math.abs(dn) > 1e-4 ? _w.copy(out).sub(_o).dot(_fv) / dn : -1;
     out.copy(_o).addScaledVector(_d, t > 0 ? t : d2);

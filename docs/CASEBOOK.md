@@ -740,3 +740,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 251. **Measure a distance where the thing is laid, not where it stands.** A plane view moves a thrower onto the
     ship's plane before it fires: the brig 17 m off in the world stood 1.4 m off where her shots began.
+
+252. **A view's aim reaches every target it draws, at its depth.** A body moved deeper than the play plane
+    to fit the frame was still a target on the screen, and the gun's reticle stayed on the plane in front of it.

@@ -8,11 +8,12 @@
 //   dash      dashes to a hold on a flank, holds, dashes out (darter)
 //   charge    comes to range (never nearer the ship than `from` m), holds, glows `glow` beats (its windup: `glowing`), then charges
 //             the point the ship was at, at `speed` m/s, and passes through; touching the ship it is a blow the roll can dodge (rammer)
-//   hold      comes to its anchor (farEdge, edge, middle, broadside), holds `hold` bars (a sweep's three), leaves the way it came
+//   hold      comes to its anchor (farEdge, edge, middle, broadside), holds `hold` bars (a sweep's three; `until: 'beaten'`, until downed),
+//             leaves the way it came
 //   overtake  waits `mark` beats unseen at an edge behind (the edge mark shown there), then crosses the frame and leaves ahead (ambusher)
 //   fixed     scrolls with the world from the far edge to the near, `onScreen` bars in the frame (turret; a mine the same)
 //   cross     crosses the frame once, side to side (mine-layer)
-//   tether    flies `length` m off its charge, circling it (escort)
+//   tether    flies `length` m off its charge, circling it a turn in `turn` real s in the view's play plane (escort)
 //   drift     drifts into a third of the frame and holds it (blocker)
 //   swing     swings in on a line from an edge toward the ship, where its mechanic latches it (grappler)
 // What a role does beyond moving is its mechanic (world/emocean/foemechanics.js).
@@ -32,11 +33,12 @@ const BEAT = BAR_S / 4, RAM_R = 2.2; // (how near a charge is a ram, m)
 /** How fast the world scrolls past in a view's frame (m/s): its span along the scroll (z in every frame) over `onScreen` bars, so a
  *  turret or a mine is in frame that long whatever the view (Dovina's `onScreen`, 2026-10-20). */
 export const scrollOf = (view, onScreen = 3) => { const z = (CARRIER_AT[view] || CARRIER_AT.chase).box.z; return (z[1] - z[0]) / (onScreen * BAR_S); };
-const AXES = { above: { h: 'x', v: 'z', d: 'y' }, side: { h: 'z', v: 'y', d: 'x' } }; // (else chase's: across x, up y, along z)
+export const AXES = { above: { h: 'x', v: 'z', d: 'y' }, side: { h: 'z', v: 'y', d: 'x' } }; // (else chase's: across x, up y, along z)
 const ease = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
-/** A view's frame: a point at (h -1..1 across, v 0..1 up, d 0..1 along) in the rail frame, beyond 0..1 off the screen. */
-function frameOf(view) {
+/** A view's frame: a point at (h -1..1 across, v 0..1 up, d 0..1 along) in the rail frame, beyond 0..1 off the screen. Its (h, v) is
+ *  the view's play plane (chase the screen, overhead the sea, side the wall); `AXES` names which rail axis each is. */
+export function viewFrame(view) {
   const B = (CARRIER_AT[view] || CARRIER_AT.chase).box, A = AXES[view] || { h: 'x', v: 'y', d: 'z' };
   const span = (k) => (k === 'x' ? [-B.x, B.x] : B[k]);
   const H = span(A.h), V = span(A.v), D = span(A.d);
@@ -56,12 +58,14 @@ function anchorOf(at, P, side, view) {
 const lerp3 = (a, b, k, out) => out.lerpVectors(a, b, k);
 
 const MOVES = {
-  hold(m, { P, side, view }) {
-    const [A, F] = anchorOf(m.at, P, side, view), H = m.hold === 'sweep' ? 3 : m.hold ?? 4;
+  hold(m, { P, side, view, W }) {
+    const [A, F] = anchorOf(m.at, P, side, view), H = m.until === 'beaten' ? Infinity : m.hold === 'sweep' ? 3 : m.hold ?? 4; // (a mid-boss holds until it is downed: RAIL-FLOW.md 5)
+    let off = null; // (the bar it began to leave: its hold done, or the view it was laid in turned, so nothing stays off its plane)
     return (t, out) => { const b = t / BAR_S;
       if (b < 1) return !!lerp3(F, A, ease(b), out);
-      if (b < 1 + H) { out.copy(A); out.y += Math.sin(t * 1.3) * 0.3; return true; }
-      lerp3(A, F, ease(b - 1 - H), out); return b < 2 + H; };
+      if (off == null && (b >= 1 + H || (W?.view && W.view !== view))) off = b;
+      if (off == null) { out.copy(A); out.y += Math.sin(t * 1.3) * 0.3; return true; }
+      lerp3(A, F, ease(b - off), out); return b < off + 1; };
   },
   arc(m, { P, side }) {
     const S = P(side * 1.25, 0.85, 0.8), Ap = P(side * 0.25, 0.3, 0.3), E = P(-side * 1.25, 0.85, 0.8), C = Ap.clone().multiplyScalar(2).addScaledVector(S, -0.5).addScaledVector(E, -0.5);
@@ -115,13 +119,13 @@ const MOVES = {
     const S = P(-side * 1.25, 0.62, 0.6), E = P(side * 1.25, 0.62, 0.6);
     return (t, out) => { const u = t / (4 * BAR_S); lerp3(S, E, u, out); return u < 1; };
   },
-  tether(m, { P, side, i, f }) {
-    const L = m.length ?? 4, idle = P(side * 0.4, 0.5, 0.55);
+  tether(m, { P, side, i, f, view }) {
+    const L = m.length ?? 6, w = (2 * Math.PI) / (m.turn ?? 2), idle = P(side * 0.4, 0.5, 0.55), A = AXES[view] || { h: 'x', v: 'y' };
     let lost = null;
-    return (t, out) => {
+    return (t, out) => { // (round its charge in the view's play plane, a turn in `turn` real s: RAIL-FLOW.md 6.2)
       const c = f.charge;
       if (!c?.alive) { lost ??= t; out.copy(idle); return t - lost < 1; } // (its charge gone: it is gone too)
-      lost = null; const a = i * Math.PI + t * 0.6; out.copy(c.local); out.x += Math.cos(a) * L; out.y += Math.sin(a) * L * 0.5; return true; };
+      lost = null; const a = i * Math.PI + t * w; out.copy(c.local); out[A.h] += Math.cos(a) * L; out[A.v] += Math.sin(a) * L; return true; };
   },
   drift(m, { P, lane, view }) {
     const third = Math.max(-1, Math.min(1, Math.round(lane))) * 0.66, H = m.hold ?? 4;
@@ -144,6 +148,6 @@ const MOVES = {
 /** A foe's path from its row's `moves` (in the view it entered in), or null for a kind not written yet. */
 export function foeMove(moves, { view = 'chase', i = 0, lane = 0, W, f }) {
   const make = MOVES[moves?.kind]; if (!make) return null;
-  const side = (i % 2 ? 1 : -1) * (lane < 0 ? -1 : 1), path = make(moves, { P: frameOf(view), side, view, i, lane, W, f });
+  const side = (i % 2 ? 1 : -1) * (lane < 0 ? -1 : 1), path = make(moves, { P: viewFrame(view), side, view, i, lane, W, f });
   return (t, _i, _n, _L, out) => path(t, out);
 }

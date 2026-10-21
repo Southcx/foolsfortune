@@ -34,6 +34,7 @@ import { SHIPS } from '../../progress/rail/ships.js';
 import { ShotField } from './shotfield.js';
 import { PatternPlayer } from './patternplayer.js';
 import { LegRunner } from './legrunner.js';
+import { BossHold } from './bosshold.js';
 import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import * as THREE from 'three';
@@ -60,6 +61,7 @@ export class TripRun {
     const S = this.st;
     this.field = new ShotField({ rail: S.rail }); this.field.build(scene);
     this.player = new PatternPlayer(this.field, { rng: stream('rail/patterns') });
+    this.bossHold = new BossHold(this);
     this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || S.charybdis?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
   }
   parked() { return this.field?.meshes || []; }
@@ -70,6 +72,7 @@ export class TripRun {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
     const P = V.passage;
     this.showcase = !!P.showcase; // (the showcase crossing, progress/rail/showcase.js: no pressures, a hull and its mounts a leg)
+    this.bossHold.reset(); this.st.stage.boss = null;
     this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
     this.legs = this.wps.map((w) => this.legOf(w));
@@ -143,6 +146,7 @@ export class TripRun {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
       if (leg.type === 'maelstrom') this.st.charybdis?.update(dt, bar);
+      this.bossHold.update(k, L, leg, bar); // (the boss law: the peak held until its boss falls, bosshold.js)
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }

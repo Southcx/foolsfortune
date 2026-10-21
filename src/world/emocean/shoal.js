@@ -53,6 +53,8 @@ export class ShoalPiece {
 
   /** What the leg's patterns fire from ('object': legs.js): the Conductor while it calls (the leg runner asks it is on the screen). */
   emitter() { return this.caller?.alive ? this.caller : null; }
+  /** Beaten (the boss law: the leg's peak is held until then, triprun.js): the Conductor down. */
+  get beaten() { return this.scattered; }
 
   /** The set piece's first bar: the class read at the leg's danger, the ball's ring, the Conductor. */
   begin(leg) {
@@ -64,6 +66,7 @@ export class ShoalPiece {
     this.caller = st.waves.add({
       kind: 'rail.conductor', name: 'the Conductor', role: 'caller', cls: this.cls, aspect: null, radius: 1.3, hp: SHOAL.caller.hp,
       local: _p.set(0, CRUISE_Y + 0.4, 9), chain: false,
+      armour: () => (SHOAL.caller.guarded && this.scatterT <= 0 ? 0 : 1), // (the fish close round it: hurt only while the ball is scattered, RAIL-FLOW.md 5; a glance else)
       tick: (dt, f) => this.tickCaller(dt, f),
       onDown: () => this.lose(),
     });

@@ -264,8 +264,9 @@ export class Emocean {
   /** The stage's seconds: its own clock in real time, slewed toward the cue as heard; forward to it when they are far apart. */
   clock(raw) {
     this.t += raw;
-    const m = stageAt(this.game.music);
-    if (m != null) {
+    const m = stageAt(this.game.music), cue = this.game.music?.arr?.score;
+    const agrees = !this.trip.active || !cue?.sections || cue.sections.reduce((n, x) => n + x.bars, 0) === this.plan?.bars; // (a held peak lengthens the layout: a cue that has not followed it yet is not followed, bosshold.js)
+    if (m != null && agrees) {
       const heard = m * this.stage.seconds, d = heard - this.t;
       if (d > 3) this.t = heard; // (the cue played on under a pause: the stage catches up)
       else if (Math.abs(d) <= 3) this.t += d * Math.min(1, raw * 2); // (slewed, so nothing ever jumps)
