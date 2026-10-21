@@ -39,6 +39,8 @@
 //   L.parts   L.reset()   L.quicken (0..1: the gills shut, or `set({ quicken })` to hold it)   L.vantage(name, out)
 //   (the crossing's runtime as it stands: world/emocean/leviathan.js)
 //   L.set({ swim 0..1, bend rad, t, quicken })   L.gill(i 0..3, { side 1|-1, open 0..1, gone })   L.breathe(k)   L.maw(k)   L.tooth(i, gone)
+//   L.gillHurt(i, side, k 0..1)   L.toothHurt(i, k)   L.throatHurt(k)   L.eyeHurt(k)   (k = 1 - hp / hpMax: the part crazes; every part
+//     is lined in gold while it can be hit and comes off when broken: vfx/bossparts.js, vfx/partcraze.js)
 //   L.throat(k)   L.fin(side, k -1..1)   L.shadow(pos, yaw, k 0..1, sea)   L.wake(k 0..1)   L.update(rawDt, sea)
 //   L.gillWorld(i, side, out) (the slit's upper end, at the flank)   L.toothWorld(i, out)   L.throatWorld(out)
 // ---------------------------------------------------------------------------------------
@@ -126,7 +128,7 @@ export class LeviathanLook {
     this.socket = new THREE.Mesh(track(new THREE.CircleGeometry(0.85, 14)), track(new THREE.MeshBasicMaterial({ color: 0x050306 }))); this.socket.scale.set(1.3, 0.95, 1); this.socket.position.z = 0.05; this.socket.visible = false; this.eyeRoot.add(this.socket);
     this.tear = new THREE.Mesh(track(new THREE.BoxGeometry(0.16, 1.4, 0.06)), this.socket.material); this.tear.position.set(0.55, -0.9, 0.12); this.tear.rotation.z = 0.2; this.tear.visible = false; this.eyeRoot.add(this.tear);
     const eyePart = this.parts.add(new BossPart({ name: 'eye', object: this.eyeRoot, radius: 1.4, at: new THREE.Vector3(0, 0, 0.4), facing: new THREE.Vector3(0, 0, 1), look }));
-    eyePart.wire(track(new THREE.CircleGeometry(1.08, 20)).scale(1.3, 0.95, 1).translate(0, 0, 0.08), { threshold: 10 });
+    eyePart.wire(track(new THREE.CircleGeometry(1.08, 20)).scale(1.3, 0.95, 1).translate(0, 0, 0.08), { threshold: 10 }); eyePart.skin(this.eye);
     // the lower jaw: a hinged shell under the snout, dark flesh inside, the tusks on its rim
     this.jaw = new THREE.Group(); this.jaw.position.set(0, -G0 * 0.25, -G0 * 1.15); this.head.add(this.jaw);
     const jawG = seeded(track(new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2)), 0.05); jawG.scale(G0 * 0.85, G0 * 0.45, G0 * 1.0); jawG.translate(0, 0, G0 * 1.0);
@@ -136,7 +138,8 @@ export class LeviathanLook {
     const palate = new THREE.Mesh(track(new THREE.CircleGeometry(1, 20)), mouth); palate.rotation.x = Math.PI / 2; palate.scale.set(G0 * 0.78, G0 * 0.9, 1); palate.position.set(0, -G0 * 0.25, -G0 * 0.25); this.head.add(palate);
     this.throatMat = track(new THREE.MeshBasicMaterial({ color: 0x000000 }));
     this.throatM = new THREE.Mesh(track(new THREE.CircleGeometry(G0 * 0.26, 18)), this.throatMat); this.throatM.position.set(0, -G0 * 0.3, -G0 * 0.55); this.head.add(this.throatM);
-    this.parts.add(new BossPart({ name: 'throat', object: this.throatM, radius: 1.2, facing: new THREE.Vector3(0, 0, 1), look }));
+    const throatPart = this.parts.add(new BossPart({ name: 'throat', object: this.throatM, radius: 1.2, facing: new THREE.Vector3(0, 0, 1), look }));
+    throatPart.wire(this.throatM.geometry, { threshold: 10 }); throatPart.skin(this.throatM); // (the gold ring round the light in its throat)
     this.ivory = track(new THREE.MeshStandardMaterial({ color: IVORY, roughness: 0.5, flatShading: true }));
     this.teeth = []; const toothG = track(new THREE.ConeGeometry(0.42, 3.8, 5)).translate(0, 1.9, 0);
     for (let i = 0; i < 6; i++) { // (three a side along the lip of its snout, rising past its brow and leaning out: seen from above, beside the eye)
@@ -157,7 +160,7 @@ export class LeviathanLook {
       const scar = new THREE.Mesh(this.slit(side, R, 0.09, 1.03, 0), scarM); scar.visible = false; root.add(scar);
       const upper = new THREE.Object3D(); const [ux, uy] = section(GILL.th0 - 0.12, R); upper.position.set(side * ux, uy, 0); root.add(upper);
       const [mx, my] = section((GILL.th0 + GILL.th1) * 0.5, R), part = this.parts.add(new BossPart({ name: `gill.${side > 0 ? 'left' : 'right'}.${i}`, object: root, radius: 1.5, at: new THREE.Vector3(side * mx * 1.04, my * 1.04, 0), facing: new THREE.Vector3(side * Math.cos(0.6), -Math.sin(0.6), 0), look }));
-      part.wire(flesh.geometry, { threshold: 25, parent: flesh }); part.side = side; part.index = i;
+      part.wire(flesh.geometry, { threshold: 25, parent: flesh }); part.skin(flesh); for (const l of lips) part.skin(l); part.side = side; part.index = i; // (the gold on the slit; the flesh and its lips craze)
       this.gills[side].push({ root, flesh, fleshM, lips, scar, upper, part, u, open: 0, k: 0, gone: false, hurt: 0 });
     }
     // the vantages a rail may circle it by (in its own frame, on its head's ring)
@@ -219,6 +222,11 @@ export class LeviathanLook {
   maw(k) { this.k.mawTo = THREE.MathUtils.clamp(k, 0, 1); }
   tooth(i, gone = true) { const t = this.teeth[i]; if (t) t.part.set(gone ? 'broken' : 'intact'); }
   throat(k) { this.k.throatTo = THREE.MathUtils.clamp(k, 0, 1); }
+  /** A part's hurt, 0..1 (1 - hp / hpMax): it crazes (vfx/bossparts.js hurt). */
+  gillHurt(i, side = 1, k = 0) { this.gills[side]?.[i]?.part.hurt(k); }
+  toothHurt(i, k) { this.teeth[i]?.part.hurt(k); }
+  throatHurt(k) { this.parts.part('throat').hurt(k); }
+  eyeHurt(k) { this.parts.part('eye').hurt(k); }
   fin(side, k) { const f = this.fins.find((x) => x.side === side); if (f) f.to = THREE.MathUtils.clamp(k, -1, 1); }
   /** How strong its wake is (0 .. 1): the slick over its back where it runs near the surface. */
   wake(k) { this.k.wake = THREE.MathUtils.clamp(k, 0, 1); }

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE PERF CHECK: the other machine half of Petra's gate (docs/ARCHITECTURE.md, "The gate", "Budgets"). It starts its own dev server,
-// opens the game headless in manual mode, and measures four standing places, the workshop, the dunes, a hall of the Dunemaw's bottom floor and the Spirit Garden's gate: what a frame costs to simulate
+// opens the game headless in manual mode, and measures five standing places, the workshop, the Dunes, a hall of the Great Dunemaw's bottom floor, the Spirit Garden's gate and a crossing (the showcase crossing's chase leg), and the crossing's spectacle (a swarm of 48 and a leg's foes bursting into voxels): what a frame costs to simulate
 // (tick) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
-// geometries and textures are alive, the heap, and the boot. Then it holds the numbers against the last published build's
+// geometries and textures are alive, the heap (the dev server's, and the built game's from dist/ over the same three places), and the boot. Then it holds the numbers against the last published build's
 // (scripts/perf-baseline.json) and against the hard budgets, and says which moved.
 //
 // The software renderer (SwiftShader) is slow and its times are only good for comparison against themselves: what matters is the
@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
-import { createServer } from 'vite';
+import { createServer, preview } from 'vite';
 import { chromium } from 'playwright';
 import { execSync } from 'child_process';
 
@@ -25,7 +25,7 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 1_000_000, programs: 200, heapMB: 500 }; // (programs 196 -> 200, 2026-10-19, Petra: board v11's looks, the duel's view and the domains' clash, the aberrant wipe (a screen volume), the Soul Brush's desk; +4 in all four places (178 -> 182, the garden 195 -> 199), all warmed at boot, 17 compiled after as before (the garden's own); timings 5 to 20% under v226's) // (heapMB 485 -> 500, 2026-10-19, the owner's word, with the Spirit Garden built on its first entry instead of at boot: world/garden/realm.js build()) (programs 192 -> 196, heapMB 445 -> 485, 2026-10-18, Petra: the overlay's pieces (Calissa's tube, Sight, placard, tags, the Shrine gate's cradles, OVERLAY.md 15), cut to 3 programs of their own and the gate's 1, all warmed before play, 0 compiled after; the dev heap 480, the built game 312.5 -> 325 MB over the same route (vite preview, gc'd, b059d84 -> c77baa2, two runs each). Calls stay 450: the 12 over in the workshop are to be cut) (programs 191 -> 192, 2026-10-13, Petra: the bracelet batched into one body program (Calissa's), for 14 to 30 draw calls fewer a place) (heapMB 435 -> 445, 2026-10-13, Petra: the dev heap 436 with Dovina's SPINE and god powers (53 files, +2,400 lines of source); the built game measured 270 MB, gc'd) (programs 189 -> 191, 2026-10-13, Petra: the bracelet's glazes, charms, flash and aura (Calissa's vfx/bracelet*.js, the owner's BRACELET.md), warmed at boot) (programs 192 -> 189, 2026-10-13, Calissa's three folds: the rave's cones into the chests' beam, the map's lines into its fills, the Dunemaw's pool and maw one) (programs 184 -> 192, heapMB 415 -> 435, 2026-10-13, Petra: v176-v177's looks for the ten heavy shells and the Lantern Wisp, all warmed at boot (0 compiled after), 192 in all four places; the dev heap 428 with that round's source, the god hand's matter +1; measured at f7dbda4 and 2ed3be2) // (programs 177 -> 184, 2026-10-12, Petra: the caster shells' looks warmed at boot so none compiles in play (Calissa's vfx/shelllooks/warmup.js: late compiles 12 -> 1); measured 179 at the workshop's boot, 184 with five shells' looks alive; headless, not perf) // (programs 164 -> 177, 2026-10-12, Petra on the owner's word through Calissa, "the budget can be expanded": the caster shaders S1 to S10, vfx/caster/, 13 programs, all warmed, 0 compiled late) // (heap 395 -> 415, 2026-10-12, the owner: the paint map's kept copy, docs/plans/PAINT.md) // (programs 164 -> 165 at v138, Petra: the stain's program, every slick's (vfx/slicks.js), warmed at boot again; it was compiled in play at the first spill, a hitch the count did not see. Back to 164 at v139: Calissa's v137 folds, 163 measured, 0 compiled late) // (tris 350k -> 1M, 2026-10-12, Petra on the owner's word: the GPU idled at 88k on an RTX 3060 Ti; calls kept at 450, ~26 µs each on Firefox's CPU)
+const BUDGET = { calls: 450, tris: 1_000_000, programs: 200, heapMB: 600, heapBuiltMB: 320 }; // (heapMB 500 -> 600 and heapBuiltMB 320 new, 2026-10-21, the owner's ruling through Dovina: the dev server's heap holds every module's source and grows with the code; what a player's page holds is the built game's, measured here since over the same route (vite preview of dist/, gc'd), about 270 MB when last read by hand) // (programs 196 -> 200, 2026-10-19, Petra: board v11's looks, the duel's view and the domains' clash, the aberrant wipe (a screen volume), the Soul Brush's desk; +4 in all four places (178 -> 182, the garden 195 -> 199), all warmed at boot, 17 compiled after as before (the garden's own); timings 5 to 20% under v226's) // (heapMB 485 -> 500, 2026-10-19, the owner's word, with the Spirit Garden built on its first entry instead of at boot: world/garden/realm.js build()) (programs 192 -> 196, heapMB 445 -> 485, 2026-10-18, Petra: the overlay's pieces (Calissa's tube, Sight, placard, tags, the Shrine gate's cradles, OVERLAY.md 15), cut to 3 programs of their own and the gate's 1, all warmed before play, 0 compiled after; the dev heap 480, the built game 312.5 -> 325 MB over the same route (vite preview, gc'd, b059d84 -> c77baa2, two runs each). Calls stay 450: the 12 over in the workshop are to be cut) (programs 191 -> 192, 2026-10-13, Petra: the bracelet batched into one body program (Calissa's), for 14 to 30 draw calls fewer a place) (heapMB 435 -> 445, 2026-10-13, Petra: the dev heap 436 with Dovina's SPINE and god powers (53 files, +2,400 lines of source); the built game measured 270 MB, gc'd) (programs 189 -> 191, 2026-10-13, Petra: the bracelet's glazes, charms, flash and aura (Calissa's vfx/bracelet*.js, the owner's BRACELET.md), warmed at boot) (programs 192 -> 189, 2026-10-13, Calissa's three folds: the rave's cones into the chests' beam, the map's lines into its fills, the Dunemaw's pool and maw one) (programs 184 -> 192, heapMB 415 -> 435, 2026-10-13, Petra: v176-v177's looks for the ten heavy shells and the Lantern Wisp, all warmed at boot (0 compiled after), 192 in all four places; the dev heap 428 with that round's source, the god hand's matter +1; measured at f7dbda4 and 2ed3be2) // (programs 177 -> 184, 2026-10-12, Petra: the caster shells' looks warmed at boot so none compiles in play (Calissa's vfx/shelllooks/warmup.js: late compiles 12 -> 1); measured 179 at the workshop's boot, 184 with five shells' looks alive; headless, not perf) // (programs 164 -> 177, 2026-10-12, Petra on the owner's word through Calissa, "the budget can be expanded": the caster shaders S1 to S10, vfx/caster/, 13 programs, all warmed, 0 compiled late) // (heap 395 -> 415, 2026-10-12, the owner: the paint map's kept copy, docs/plans/PAINT.md) // (programs 164 -> 165 at v138, Petra: the stain's program, every slick's (vfx/slicks.js), warmed at boot again; it was compiled in play at the first spill, a hitch the count did not see. Back to 164 at v139: Calissa's v137 folds, 163 measured, 0 compiled late) // (tris 350k -> 1M, 2026-10-12, Petra on the owner's word: the GPU idled at 88k on an RTX 3060 Ti; calls kept at 450, ~26 µs each on Firefox's CPU)
 // // (heapMB 375 -> 395 at v137, Petra: the dev heap 369 -> 386 with the round's source (Calissa's 19 commits, the telegraphs, the lend panel, the save's shelves); the dev server's, not a player's)
 // // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // (heapMB is the DEV server's heap, which holds every module's source text and source map: it grows with the code, not only with what a
@@ -47,18 +47,23 @@ const url = server.resolvedUrls.local[0];
 const CLOCK = process.env.CLOCK === 'now' ? null : process.env.CLOCK || 1791160275000;
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] }); // (gc before the heap is read: without it the reading is whatever garbage is lying about, ±10 MB a run)
-let out = null, errs = [];
+let out = null, errs = [], built = null, stale = false;
+const fails0 = [];
 try {
-  const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
-  page.on('pageerror', (e) => errs.push(e.message));
-  await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
-  const t0 = Date.now();
   const GRAPHICS = process.env.GRAPHICS || 'high'; // (a fixed graphics tier: under 'auto' a software GL reads as Minimum, and the baseline is High's: render/graphics.js)
-  await page.goto(`${url}?graphics=${GRAPHICS}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
-  for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
-  const bootS = (Date.now() - t0) / 1000;
-  await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });
-  out = await page.evaluate(() => {
+  const boot = async (at) => { // (a page opened on `at` in manual mode, booted, the title's overlay away)
+    const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
+    page.on('pageerror', (e) => errs.push(e.message));
+    await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
+    const t0 = Date.now();
+    await page.goto(`${at}?graphics=${GRAPHICS}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
+    for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
+    const bootS = (Date.now() - t0) / 1000;
+    await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });
+    return { page, bootS };
+  };
+  // (the route, run in the page: `full` false stops at the heap after the three places, which is all the built game is asked for)
+  const measure = (full) => {
     const G = __game, R = G.renderer;
     let calls = 0, tris = 0;
     const rr = R.render.bind(R); R.render = (s, c) => { rr(s, c); calls += R.info.render.calls; tris += R.info.render.triangles; };
@@ -103,23 +108,61 @@ try {
     const well = place();
     if (window.gc) { gc(); gc(); }
     const heapMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6); // (before the garden: the same three places the baseline measured)
+    if (!full) return { heapMB };
     // the Spirit Garden, standing at the gate on the Dantian (Calissa's survey item 31: its planetoids, water, rain and plants)
     const Gm = G.game, Rm = Gm.realm;
     if (Rm) { Rm.enter(Gm.shrines?.get?.(Gm.shrines.last) || null); for (let i = 0; i < 200; i++) G.tick(1 / 60); Rm.setName?.('Siva Lon'); Gm.indexMenu?.close?.(); for (let i = 0; i < 30; i++) G.tick(1 / 60); }
     const garden = Rm?.active ? place() : null;
     if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
-    return { workshop, dunes, well, garden, heapMB, heapGardenMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
-  });
-  out.bootS = +bootS.toFixed(1);
+    const heapGardenMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6);
+    // a crossing: the showcase crossing's chase leg on the galleon, six bars in (the heaviest hull and the roster's chase foes, Calissa's
+    // ship refit and rail foe bodies; DEBUG, which manual mode is). Last, so the heaps above stay the places the baseline measured
+    const E = Gm.emocean;
+    if (Rm?.active) { Rm.leave(); for (let i = 0; i < 120; i++) G.tick(1 / 60); }
+    if (E?.sailShowcase?.('anagami', [])) {
+      for (let i = 0; i < 240 && !E.stage.active; i++) G.tick(1 / 60);
+      E.wound = () => {}; // (nothing it meets ends the run while it is measured)
+      const L = E.trip?.layout?.legs?.[1];
+      if (L) { E.t = (L.at + 6) * 1.5; for (let i = 0; i < 120; i++) G.tick(1 / 60); }
+    }
+    const crossing = E?.stage?.active ? place() : null;
+    // the spectacle (RAIL-FLOW.md 10.4: measured before any cut): a swarm of 48 in frame and every other foe of the leg downed at once
+    // into its voxels (Calissa's batch), the leg's own shots in flight
+    let spectacle = null;
+    if (crossing) {
+      E.waves.spawn({ role: 'swarm', formation: 'river', count: 48, cls: 0 }, 0);
+      for (let i = 0; i < 90; i++) G.tick(1 / 60);
+      for (const f of [...E.waves.foes]) if (f.alive && f.form && f.form !== 'swarm') E.waves.strike(f, 1e6, { cause: 'shot' });
+      spectacle = place();
+    }
+    return { workshop, dunes, well, garden, crossing, spectacle, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
+  };
+  const dev = await boot(url);
+  out = await dev.page.evaluate(measure, true);
+  out.bootS = +dev.bootS.toFixed(1);
+  await dev.page.close();
+  // the built game's heap: dist/ (npm run build, which the gate runs first) served by vite preview, over the same three places, gc'd.
+  // What a player's page holds; the dev heap above also holds every module's source text and source map
+  const DIST = path.join(ROOT, 'dist', 'index.html');
+  if (!fs.existsSync(DIST)) fails0.push('the built game: no dist/ (npm run build first)');
+  else {
+    const newest = (d) => fs.readdirSync(d, { withFileTypes: true }).reduce((m, e) => Math.max(m, e.isDirectory() ? newest(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).mtimeMs), 0);
+    if (newest(path.join(ROOT, 'src')) > fs.statSync(DIST).mtimeMs) stale = true;
+    built = await preview({ root: ROOT, logLevel: 'error', preview: { host: '127.0.0.1', port: 4180, strictPort: false } });
+    const B = await boot(built.resolvedUrls.local[0]);
+    out.heapBuiltMB = (await B.page.evaluate(measure, false)).heapMB;
+    await B.page.close();
+  }
 } finally {
   await browser.close();
   await server.close();
+  await built?.close();
 }
 
 // ---- compare
 let base = null;
 try { base = JSON.parse(fs.readFileSync(BASE, 'utf8')); } catch { /* none yet */ }
-const fails = [], rows = [];
+const fails = [...fails0], rows = [];
 const cmp = (label, key, now, was, tol, budget) => {
   const d = was ? (now - was) / was : 0;
   const over = budget != null && now > budget;
@@ -130,22 +173,24 @@ const cmp = (label, key, now, was, tol, budget) => {
 };
 const WELL_BUDGET = { calls: 88, tris: 400000 }; // (tris 150k -> 400k, 2026-10-12, with the main budget: a hall's calls are the limit, not its triangles) // (raised 120k -> 150k at v137, Petra: the owner's 25 rooms on the bottom floor (was about 10) are all in view from a central hall, the walls drawn twice with their outline; the sand cut 32 -> 24 samples a room and the sets merged a quadrant at a time, 170k -> 140k measured.)
 // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
-for (const p of ['workshop', 'dunes', 'well', 'garden']) {
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
   for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
 cmp('all', 'heapMB', out.heapMB, base?.heapMB, TOL.heapMB, BUDGET.heapMB);
 cmp('garden', 'heapMB', out.heapGardenMB, base?.heapGardenMB, TOL.heapMB, null); // (the heap with the garden built too: watched, not budgeted yet)
+if (out.heapBuiltMB != null) cmp('built', 'heapMB', out.heapBuiltMB, base?.heapBuiltMB, TOL.heapMB, BUDGET.heapBuiltMB); // (the built game's, the three places: a player's page)
 cmp('all', 'bootS', out.bootS, base?.bootS, TOL.bootS, null);
 console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against the baseline of ${base.when} (${base.build})` : ', no baseline yet'}:`);
 console.log(rows.join('\n'));
+if (stale) console.log('  the built game measured is older than src/: npm run build, then perf again, for its heap to be today\'s');
 // (not gated, but read at every review: programs compiled in play, and the big things no zone hides)
 console.log(`  programs compiled after the warm-up: ${out.lateProgs}${base?.lateProgs != null ? ` (was ${base.lateProgs})` : ''}${out.lateProgs > (base?.lateProgs ?? out.lateProgs) ? '   <-- each is a hitch the first time it is drawn' : ''}${out.lateNames?.length ? ` (${out.lateNames.join(', ')})` : ''}`);
-for (const p of ['workshop', 'dunes', 'well', 'garden']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
+for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) if (out[p]?.loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined } }, null, 1) + '\n');
+  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined }, spectacle: keep.spectacle && { ...keep.spectacle, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');

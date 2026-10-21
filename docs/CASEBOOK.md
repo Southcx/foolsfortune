@@ -728,3 +728,21 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 247. **A check judges a thing as the runtime turns and throws it, in every view it is thrown in.** A pattern laid out in
     one frame and checked there passed while the player turned it 20 degrees off the ship and out of the side view's plane; the check
     builds the same frame the player builds.
+
+248. **Code is read past its comments in one pass, left to right.** Blanking one kind of comment and then the
+    other let a `/*` written inside a line comment open a block that ran to the next doc comment, and the check lost 32 imports.
+
+249. **Find an edge by stepping to it, then halve the last step.** Halving a range assumes one edge in it; a
+    camera that follows the thing it frames brings the screen round again, and the halving found the far edge.
+
+250. **What a stretch needs is set as the stretch begins, not only on the way out of the one before.** A leg's kit fitted
+    only in the turn before it was missing whenever the leg was reached another way.
+
+251. **Measure a distance where the thing is laid, not where it stands.** A plane view moves a thrower onto the
+    ship's plane before it fires: the brig 17 m off in the world stood 1.4 m off where her shots began.
+
+252. **A view's aim reaches every target it draws, at its depth.** A body moved deeper than the play plane
+    to fit the frame was still a target on the screen, and the gun's reticle stayed on the plane in front of it.
+
+253. **A sound's scheduling loop is counted, never only timed.** A run of ticks whose gaps shrink (an accelerating
+    beep, a spin-up) can converge short of its end and never leave; every such loop carries a hard count beside its time.

@@ -42,6 +42,9 @@ import { MarkBuffer, STYLE } from './railmark.js';
 import { RailGeometry } from './railgeometry.js';
 import { warpMaterial, deepMaterial, keepTrue, warpObject } from './stormwarp.js';
 import { LachrymatoBottle } from './bottle.js';
+import { RefitSweep } from './refitsweep.js';
+import { RailFoeMarks } from './railfoemarks.js';
+import { installVoxels } from './voxels/index.js';
 import { CharybdisLook, CHARYBDIS_LOOK } from './charybdis.js';
 import { whirlHeart, WHIRL } from './whirlpool.js';
 import { COLOR } from '../progress/weather.js';
@@ -81,6 +84,9 @@ export class CrossingLook {
     this.rings = []; this.slabs = []; this.plan = { rings: [], slabs: [] }; this.prevShip = new THREE.Vector3(); this.hasPrev = false;
     this.streaks = Array.from({ length: C.drift.n }, (_, i) => ({ x: (hash(i) - 0.5) * 22, y: 0.3 + hash(i + 7) * 1.8, z: -20 + hash(i + 13) * 100 }));
     this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0, sense: 1 };
+    this.refit = new RefitSweep(this.game); // (the showcase crossing's hull swap covered: vfx/refitsweep.js)
+    this.foeMarks = new RailFoeMarks(this.game, stage); // (the ambush edge mark, the mine burst: vfx/railfoemarks.js)
+    this.voxels = installVoxels(this.game); // (the voxel batch and the swarm's look, game.voxels and game.swarmLook: vfx/voxels/)
     this.game.events?.on?.('rail.surge', () => { this.shellT = C.shell.time; this.shellForm = this.st.ship?.form || 'astral'; });
   }
 
@@ -93,6 +99,7 @@ export class CrossingLook {
     if (st.trip?.field?.look) st.trip.field.look.camera ||= this.game.camera; // (its sort's eye and its beams' near limit before its first draw)
     this.geo = new RailGeometry({ env: this.game.sky?.env || null, seaY: st.sea?.y ?? 0, warp: warpMaterial, keepTrue: (m) => keepTrue(deepMaterial(m)), maxRings: 32, maxMonoliths: 16 });
     this.geo.group.visible = false; scene.add(this.geo.group);
+    this.refit.build(scene); this.foeMarks.build(scene); this.voxels.build(scene);
     // one of each, parked for the warm-up's compile (casebook 17: a program first drawn in play is a hitch); put down at the first cast-off
     this.parkedRing = this.geo.ring(new THREE.Vector3(0, -1e4, 0), new THREE.Quaternion(), 1);
     this.parkedSlab = this.geo.monolith(new THREE.Vector3(0, -1e4, 0), { height: 4, rise: 1 });
@@ -100,7 +107,7 @@ export class CrossingLook {
     const body = st.ship?.look?.body;
     if (body) {
       this.bottle = new LachrymatoBottle({ size: 'large' });
-      this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.38, 0.05); this.bottle.group.rotation.y = 0.5;
+      this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.47, 0.05); this.bottle.group.rotation.y = 0.5;
       this.bottle.group.visible = false; body.add(this.bottle.group);
     }
     // the maelstrom: the whirlpool's disc beside the sea, Charybdis parked hidden (both of programs already made: the sea's, Old Nobody's)
@@ -108,7 +115,7 @@ export class CrossingLook {
     this.beast = new CharybdisLook({ env: this.game.sky?.env || null, fx: this.game.vfx || null });
     this.beast.group.visible = false; this.beast.group.traverse((o) => { o.userData.zoneFree = true; }); warpObject(this.beast.group); scene.add(this.beast.group);
   }
-  parked() { return [this.marks.mesh, this.geo.group, this.beast.group, ...(this.whirl ? [this.whirl.mesh] : [])]; }
+  parked() { return [this.marks.mesh, this.geo.group, this.beast.group, ...this.refit.parked(), ...this.foeMarks.parked(), ...this.voxels.parked(), ...(this.whirl ? [this.whirl.mesh] : [])]; }
   show(on) {
     this.marks.mesh.visible = on; this.geo.group.visible = on;
     if (!on) this.stillMaelstrom();
@@ -139,7 +146,7 @@ export class CrossingLook {
   }
   /** Landed or broken: the geometry put down, the surface back at the sea, the hull and the deck as they were. */
   end() {
-    this.clear(); this.plan = { rings: [], slabs: [] };
+    this.clear(); this.plan = { rings: [], slabs: [] }; this.foeMarks.clear();
     this.lift = 0; if (this.st.sea) this.st.sea.lift = 0; this.shellT = 0; this.stillMaelstrom();
     this.st.ship?.look?.scars?.({ open: 0, gilt: 0 });
     this.marks.count = 0; this.marks.flush();
@@ -150,6 +157,9 @@ export class CrossingLook {
     if (!this.st.stage.active || !this.st.run) return;
     const s = this.st.rail.speed * this.st.t, turning = this.st.rail.path.turning(s);
     this.storm(bar, turning);
+    this.refit.update(raw, this.st.ship?.look);
+    this.voxels.update(raw);
+    this.foeMarks.update(raw);
     this.umbral(raw);
     this.geometry(raw, s);
     this.pressures(raw);

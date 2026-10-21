@@ -93,7 +93,7 @@ export class DrownedLight {
       const shards = new THREE.Group(); shards.visible = false; root.add(shards);
       for (let k = 0; k < 5; k++) mesh(shardG, paneMat, (rnd() - 0.5) * 1.0, -0.95 + rnd() * 0.3, 0.15 + rnd() * 0.3, shards).rotation.set(rnd() * 3, rnd() * 3, 0);
       const part = this.parts.add(new BossPart({ name: `window.${i}`, object: root, radius: 1.3, at: new THREE.Vector3(0, 0.2, 0.3), facing: new THREE.Vector3(0, 0, 1), look }));
-      part.wire(track(new THREE.PlaneGeometry(1.46, 2.7).translate(0, 0.12, 0.26)), { threshold: 10 }); part.index = i; // (in front of the frame's face)
+      part.wire(track(new THREE.PlaneGeometry(1.46, 2.7).translate(0, 0.12, 0.26)), { threshold: 10 }); part.skin(pane); part.index = i; // (in front of the frame's face; the pane crazes as it is hurt)
       this.windows.push({ root, pane, paneMat, craze, hole, shards, part, k: 0 });
     }
     // the lamp: a great lighthouse lamp on the gallery

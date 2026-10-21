@@ -4,6 +4,8 @@
 // rules only. Each takes what it needs from one context: `on` (the bus), `L` (the ledger), `log`, `g` (the game), `where()`.
 //
 //   areaRules(ctx)   (tracking.js listen() calls it once)
+// The crossing's rules (rail, voyage, passage) see the ledger through `atSea`: held still while the showcase crossing sails (DEBUG only,
+// world/emocean/stage.js `showcase`: nothing counted), the ledger itself otherwise; what they say is said either way.
 // ---------------------------------------------------------------------------------------
 import { anglingRules } from './angling.js';
 import { wellRules } from './wells.js';
@@ -38,10 +40,18 @@ import { sealRules } from './seals.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 
+/** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase crossing sails. */
+function atSea(ctx) {
+  const L = ctx.L, still = () => !!ctx.g?.emocean?.showcase, sea = Object.create(L);
+  for (const k of ['inc', 'hi', 'lo', 'first']) sea[k] = (...a) => (still() ? false : L[k](...a));
+  return { ...ctx, L: sea };
+}
+
 export function areaRules(ctx) {
+  const sea = atSea(ctx);
   anglingRules(ctx);
   wellRules(ctx);
-  railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
+  railRules(sea); // (the crossing's tally, before the voyage's "You make port")
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)
@@ -56,7 +66,7 @@ export function areaRules(ctx) {
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
-  voyageRules(ctx);
+  voyageRules(sea);
   gardenRules(ctx);
   weatherRules(ctx);
   dunemawRules(ctx);
@@ -67,7 +77,7 @@ export function areaRules(ctx) {
   partyRules(ctx); // (the siblings: coop/party.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
   ostracaRules(ctx); // (the ostraca and stelae: neuralese words dug up into the Crib Sheet)
-  passageRules(ctx); // (an encounter's choice at sea done: world/emocean/triprun.js)
+  passageRules(sea); // (an encounter's choice at sea done: world/emocean/triprun.js)
   heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
   blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
   figmentTelegraphRules(ctx); // (a windup read, and Divination's ladder said as it is climbed)

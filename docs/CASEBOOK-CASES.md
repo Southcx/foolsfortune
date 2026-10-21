@@ -3303,3 +3303,74 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   - **Plane:** none leaves the above plane.
   - **Not verified:** the side view in play (the trip did not reach it); the check covers it in the math only.
 - **Rule:** 247.
+
+### 2026-10-20 · The check called 32 tracking files dead after a doc comment was added to their hub (Petra, at the gate)
+- **Seen:** `npm run check` failed with `module.orphan` on every `feedback/tracking/*.js` file, after one `/** ... */` comment was
+  added to `feedback/tracking/rules.js`, the file that imports them all. Nothing was wrong with the imports.
+- **Cause:** the check's comment stripper (`code()`, `scripts/check.mjs`) blanked block comments first and line comments second. The
+  hub's header, a line comment, says ``every `feedback/tracking/*.js` ``: its `/*` opened a "block comment" that ran to the next `*/`.
+  Before the new doc comment there was none, so nothing was blanked; with it, every import between the two was blanked.
+- **Fix:** one pass, left to right, over both kinds (`/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g`), so a `/*` inside a line comment opens nothing.
+- **Measured after:** the same 82 findings as before the change on the tree without it (83 with the new data file unimported: its
+  orphan, as it should be); no file's imports lost.
+- **Rule:** 248.
+
+### 2026-10-20 · With the mock's chase camera, the ship's box shut to nothing at a full brake (Petra, before it shipped)
+- **Seen:** `reachOf('chase', 16/9, 70, 0.84, [-4, -4])` gave x 0 to 0, then, once a floor was searched by halving, a floor of 43 m.
+- **Cause:** the camera follows 62% of the ship (the owner's ruling 5). Braked, the cruise height itself sat just past the screen's
+  margin, so the search began outside and stepped nowhere; and halving between 3 m and 43 m assumed one edge in the range, but a
+  camera that follows the ship brings the screen round again far above the plane, so the halving settled on the wrong edge.
+- **Fix:** the floor is found by stepping from the cruise height (0.25 m a step) to the first change, then halving that one step;
+  where the cruise height is off the screen, the search starts from the floor it finds. The ship takes the higher of the floor and
+  the sea's surface (`ship.js`).
+- **Measured after** (16:9, every view, depths -4, -2, 0, 3 and 6): every corner at 0.840 or inside. Chase braked: floor 3.08 m
+  (the owner's ruling says 3.1), x ±8.8 m. In the game, braked, the ship sits at -0.84 on the screen, 0 errors.
+- **Rule:** 249.
+
+### 2026-10-20 · Flash and Bomb opened no blocker in the showcase crossing's overhead leg (Calissa, in her look)
+- **Seen:** Digit1 and Digit2 at the overhead and side blockers; no seam opened. Probed: the ship sailed the overhead leg in the first
+  leg's kit (Bomb and Vacuum), so Digit1 was a Bomb out of its reach and Digit2 the Vacuum; nothing could open it.
+- **Cause:** a leg's hull and mounts were fitted only in the turn before it (`triprun.js` leave). A leg reached any other way (a look's
+  or a probe's jump of the clock) kept the kit of the last leg left.
+- **Fix:** `refit(k)` is asked again as the leg begins (enter), and does nothing, says nothing, when the kit is already its own.
+- **Measured after:** jumped from the launch to the overhead blocker: the destroyer with Flash and Bomb; Flash opened it (2.92 real s
+  held). Sailed through a turn in order: one log line for the new hull, not two. 0 errors.
+- **Rule:** 250.
+
+### 2026-10-20 · In the side view the False Light's volleys began 1.4 to 5.2 m from the ship (Petra, measured for Dovina)
+- **Seen:** measuring the side view's throwers after the side camera came closer: the brig's hull stood 17.1 to 17.8 m from the ship,
+  but its stackFan and split shell began 1.4 to 5.2 m off it, against the 15 m every pattern is judged from (`scripts/legs.mjs`).
+- **Cause:** in a plane view the pattern player moves the thrower onto the ship's plane before it fires (`patternplayer.js`): in the
+  side view the depth (x) is dropped. The brig ran abeam on the ship's far side, 17 m deep and level with the ship along the scroll,
+  so on the plane she stood beside it. The leg runner took any set piece's body as its thrower, wherever it stood.
+- **Fix:** Dovina's rule (RAIL-MODULES.md 1.8): a plane view lays a thrower on the ship's plane along the camera's ray through it,
+  where it is seen (`patternplayer.js` `layOnPlane`; dropped straight across, Old Nobody's throat 24 m deep was laid 6 m off its
+  image); a set piece's body throws only when that point is inside its view's box (its depth not asked) and at least `THROW_MIN`
+  (15 m) from the ship, else a carrier throws (`legrunner.js` `throws`). In the side view the brig keeps ahead, 21 m on and 5.5 m
+  deep, and her stern chasers fire aft only from inside the frame and half a real second off (`pirates.js`).
+- **Measured after** (the Wreckers' and Old Nobody's peaks, sailed headless in the side view, the eye at (18, 4.5, 3)): the brig laid
+  at 16.0 to 17.5 m; 9 of 10 of its volleys thrown by its body, the first by a carrier (laid at z 22.7, past the frame); two stern
+  chasers. Old Nobody's throat laid at 7.7 to 10.4 m: every volley by a carrier; then, on Dovina's ruling, its spine run 22 to 25 m
+  ahead in the side view (`leviathan.js` AHEAD): its throat laid at 17.9 to 19.0 m, all 4 of its abreast volleys by its body, the
+  heave's and the sounding's by carriers. 0 errors.
+- **Rule:** 251.
+
+### 2026-10-21 · In the side view the gun could not reach the False Light (Petra, found reading the aim for the boss law)
+- **Seen:** reading `ship.js farOf` while giving the brig her parts: since v252 she stood ahead in the side view at x -5.5, z 21, and
+  with her abeam rule gone the side gun's reticle lay on the wall plane (x 0). Her hull's sphere is 4.2 m across its centre, so every
+  shot in the plane passed 1.3 m in front of it; her ports and slings stood further in. Only the lock-on's lances could reach her.
+- **Cause:** the side view's cursor met only the plane the ship sails in. A body drawn deeper than the plane (the brig 5.5 m, Old
+  Nobody 24 m) was a target on the screen and out of the gun's reach; the abeam rule that once turned the gun into the screen also
+  made every foe in the plane unpickable while it held.
+- **Fix:** in the side view the cursor takes the first foe under its ray at its depth (behind the ship's plane, never between the
+  camera and it), else the wall as before; the brig and Old Nobody keep no abeam rule in the side view.
+- **Measured after:** not measured in play (the owner's); headless, the brig sank and Old Nobody was felled by the gun's blows through
+  the roll, 0 errors.
+- **Rule:** 252.
+
+### 2026-10-20 · A mine's tell hung the page (Wanda, testing the rail's foe roster)
+- **Seen:** the headless page closed ("Target page, context or browser has been closed") on `sfx.railTell(..., 'mine')`.
+- **Cause:** the mine's beeps (audio/rail.js TELL_VOICE.mine) stepped `x += gap, gap *= 0.6` until `x >= len - 0.02`; the gaps sum to
+  2.5 times the first (len / 3), 0.83 of len, so `x` never got there and the loop never ended. On Wanda's branch only, never on main.
+- **Fix:** the gap floors at 40 ms and the loop stops at 12 beeps; the gunship's spin-up got a count of 64 the same way.
+- **Rule:** 253.

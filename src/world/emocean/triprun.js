@@ -34,10 +34,12 @@ import { SHIPS } from '../../progress/rail/ships.js';
 import { ShotField } from './shotfield.js';
 import { PatternPlayer } from './patternplayer.js';
 import { LegRunner } from './legrunner.js';
+import { BossHold } from './bosshold.js';
 import { stream } from '../../core/rng.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
+import { slotsOf } from '../../progress/rail/mounts.js';
 
 const MUSIC_ID = { leviathan: 'nobody' }; // (the cue's names for a leg where they differ from the waypoint's)
 const CHOICE_WORD = { mend: 'Caulk the hull.', reckon: 'Scout the route.', fuel: 'Take on fuel.' }; // (Espada's words: the campfire is heaving to)
@@ -59,6 +61,7 @@ export class TripRun {
     const S = this.st;
     this.field = new ShotField({ rail: S.rail }); this.field.build(scene);
     this.player = new PatternPlayer(this.field, { rng: stream('rail/patterns') });
+    this.bossHold = new BossHold(this);
     this.runner = new LegRunner({ waves: S.waves, player: this.player, object: () => S.piece?.emitter?.() || S.charybdis?.emitter?.() || null, onDirector: (id) => S.startPiece(id), scene });
   }
   parked() { return this.field?.meshes || []; }
@@ -68,6 +71,8 @@ export class TripRun {
   begin(V) {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
     const P = V.passage;
+    this.showcase = !!P.showcase; // (the showcase crossing, progress/rail/showcase.js: no pressures, a hull and its mounts a leg)
+    this.bossHold.reset(); this.st.stage.boss = null;
     this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
     this.legs = this.wps.map((w) => this.legOf(w));
@@ -141,13 +146,14 @@ export class TripRun {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
       if (leg.type === 'maelstrom') this.st.charybdis?.update(dt, bar);
+      this.bossHold.update(k, L, leg, bar); // (the boss law: the peak held until its boss falls, bosshold.js)
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
       if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
     // a swing of view begins: what is still in the air is cancelled into Lachryma (no shot lives across one: the owner's R17 and his
     // ruling of 2026-10-20; Dovina's pacing law in legs.js keeps new ones out of the bars round it)
     const sw = !!S.swingAt?.(bar); if (sw && !this.swung) this.cancel(); this.swung = sw;
-    this.player.update(dt, S.ship);
+    this.player.eye = S.eye || null; this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
   }
 
@@ -163,6 +169,7 @@ export class TripRun {
 
   enter(k) {
     const leg = this.legs[k], w = this.wps[k];
+    if (this.showcase) this.refit(k); // (its own kit, however the leg was reached)
     if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }); // (the Wreckers drawn by a loot)
     else this.runner.done = true;
     if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
@@ -174,6 +181,7 @@ export class TripRun {
   leave(k) {
     const S = this.st, w = this.wps[k];
     if (S.piece) S.close();
+    if (this.showcase) { S.run.hits = 0; if (this.wps[k + 1]) this.refit(k + 1); return; } // (the showcase crossing: mended, and the next row's hull and mounts through the turn)
     const hits = Math.max(0, S.run.hits - (this.hitsAt ?? S.run.hits)), scored = Math.max(0, S.run.score - (this.scoreAt ?? S.run.score));
     this.state = arrive(this.state, this.chart, w.id, { hits, cleared: true });
     // what the leg's score is worth besides: a squall's pay (trip.js legScore), the whale's dive, a bounty, a ghost raced
@@ -188,9 +196,26 @@ export class TripRun {
     this.driftOn(k);
   }
 
+  /** The showcase crossing's turn: row k's hull sailed from here (ship.rehull), what it bears with it, and its mounts (the first ones,
+   *  as many as the hull has slots; a row naming none keeps those aboard). Asked again as the leg begins, so a leg reached by any way
+   *  (a jump of the clock included) sails in its own kit; nothing is done or said when it already is. */
+  refit(k) {
+    const S = this.st, ship = S.ship, w = this.wps[k], id = w.hull || this.state.ship;
+    const want = (w.mounts || S.mounts.list || []).slice(0, slotsOf(id));
+    if (id === this.state.ship && want.join() === (S.mounts.list || []).join()) return;
+    if (id !== this.state.ship) {
+      this.state = { ...this.state, ship: id };
+      ship.rehull(id); S.aspectWas = null; // (the new hull takes the ship's feeling at the stage's next look: stage.js look)
+      S.run.ship = id; S.run.bears = (SHIPS[id]?.bears ?? S.run.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0);
+    }
+    const mounts = want; S.mounts.begin(mounts);
+    this.game.events?.emit('showcase.hull', { hull: id, k, mounts, note: w.note || '', by: 'environment' });
+  }
+
   /** A calm's campfire or an encounter's choice, offered in the Index's window (the game holds; the cue holds: Wanda's). */
   offer(k) {
     const S = this.st, M = this.game.indexMenu, leg = this.legs[k], w = this.wps[k]; if (!M || S.offering) return;
+    if (this.showcase) { this.chosen.add(k); return; } // (the showcase crossing heaves to for nothing)
     this.chosen.add(k); S.offering = true;
     const enc = leg.encounter && ENCOUNTERS[leg.encounter], st = S.stage;
     const opts = enc ? offered(leg.encounter, this.state.ship, { rutter: this.rutterWorth(), fuel: this.state.fuel }).map((c) => ({ id: c.id, word: ENCOUNTER_WORDS[leg.encounter]?.[c.id] || c.does }))

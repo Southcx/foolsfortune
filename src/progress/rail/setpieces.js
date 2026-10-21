@@ -30,6 +30,15 @@ export const WAVES = {
   hp: [1, 3, 12, 40, 150],
 };
 
+/** THE BOSS LAW (the owner, 2026-10-21: "rethink having them flee based on a time metric and make the player have to properly fight it
+ *  out? Taking a boss down in 10 seconds feels quite lame"; docs/plans/RAIL-FLOW.md 5). A boss leaves only when beaten: its leg's cue
+ *  holds its peak (Wanda's hold, looping on the bar) until it falls. It is about `shots` of the gun across its parts and core: an
+ *  expert (39.5 shots a bar landed, Petra's charybdistest) takes about 30 bars, 45 real s; a good player (24 a bar) about 75 s; a novice
+ *  two minutes. Cross-referenced (RAIL-FLOW.md 11): Ikaruga's bosses fall to experts in 17 to 25 s inside a 100 s limit and time out;
+ *  the owner wants them fought out, so ours run about twice an Ikaruga expert's time and never leave. Past `enrage` real s it quickens
+ *  (its patterns' gaps times `quicken`), never flees. Each part owns one attack and breaking it moves the boss to its next phase (Star Fox 64's bosses). */
+export const BOSS = { shots: [1100, 1300], enrage: 180, quicken: 2 / 3 };
+
 export const SHOAL = {
   /** How many: 48 at the Guppy class, 24 more a class (Guppy 48, Barracuda 72): enough to read as one body and to fill the bait ball's
    *  ring at 10 m with a fish every 1.3 m; instanced (render/propbatch.js), one draw call. */
@@ -47,9 +56,11 @@ export const SHOAL = {
   reinforce: { perBar: 6 },
   /** Five bites are one hit on what the ship bears: one fish is a nuisance, a strike group that lands is a wound. */
   bite: { perHit: 5 }, // (measured: at four, a novice came through the shoal one crossing in three, and it is the common setPiece)
-  /** A fish is one shot; the caller (twice the size, its own glow: Calissa's) four, one lance. Down the caller, or a third of the shoal within a
+  /** A fish is one shot; the caller (twice the size, its own glow: Calissa's) 40, and it is hurt only while the ball is scattered (the
+   *  fish close round it otherwise): break the ball, then two bars to bring it down (a good player's 48 shots). Was 4, one lance: the
+   *  owner's "10 seconds" boss (RAIL-FLOW.md 5). Down the caller, or a third of the shoal within a
    *  bar, or toll the bell in it, and the shoal scatters for two bars before it reforms (what a predator does to a real one). */
-  fish: { hp: 1 }, caller: { hp: 4, size: 2 }, // (the caller falls to one lance: the lock-on is the answer the shoal teaches)
+  fish: { hp: 1 }, caller: { hp: 40, size: 2, guarded: true }, // (the caller falls to one lance: the lock-on is the answer the shoal teaches)
   scatter: { share: 0.3, within: 1, bars: 2 },
 };
 
@@ -58,7 +69,7 @@ export const PIRATES = {
    *  than six in ten (a full sloop of 8 casks: 0.58; the day's dice decide, so the same day and cargo meet the same sea). */
   chance: (casks = 0, danger = 0) => Math.min(0.6, 0.1 + 0.06 * casks + 0.05 * Math.max(0, danger)),
   /** The brig, as a boss with parts (Skies of Arcadia): its hull, four points of rigging (one lance each cuts one), six gunports. */
-  brig: { hull: 420, rigging: 4, riggingHp: 8, ports: 6, portHp: 5 },
+  brig: { hull: 720, rigging: 4, riggingHp: 60, ports: 6, portHp: 40 }, // (BOSS: 240 in ports, 240 in rigging, 720 in the hull; was 420, 32 and 30, sunk or limping off at 30 bars)
   /** Astern (bars 62 to 70): the bow chasers lob a shot every two bars, slow (16 m/s) and outlined: parried back, it holes her bow. */
   chaser: { every: 2, speed: 16, parry: true, returned: 6 },
   /** Alongside (70 to 84): a volley every two bars from the open ports, the ports opening a bar before (the windup's outline on each);
@@ -71,26 +82,30 @@ export const PIRATES = {
   /** At bar 84 she comes about to ram: a bar and a half to see it coming; it costs two of what the ship bears unless her hull is holed
    *  or you boost clear. */
   ram: { eta: 1.5, hits: 2 },
-  /** How it ends: holed (hull to 0) she sinks and her hold floats astern; dismasted (all the rigging cut) she strikes her colours and
-   *  drops half; neither, she limps off with whatever she stole. Casks of crude, gathered by flying through them (or the hook). */
-  loot: { sunk: 2, struck: 1 },
+  /** How it ends (the boss law: she does not limp off on a clock): holed (hull to 0) she sinks and her hold floats astern; dismasted
+   *  first (all the rigging cut) she strikes her colours when holed and pays both. Her phases by parts: the broadside and boarders while
+   *  her ports stand; three ports shut, she comes about (the bow chasers and the ram); her rigging cut, no more boarders (their ropes
+   *  hang from it). Casks of crude, gathered by flying through them (or the hook). */
+  loot: { sunk: 2, struck: 1 }, comeAbout: 3, // (ports shut that turn her about)
 };
 
 export const LEVIATHAN = {
   /** One in `deck` crossings, certain by the last: 12 on a calm route, 3 fewer a step of danger, at least 4, at most 16; under the pall
    *  (dread's weather, the sea's worst mood) half as many. The Margarite run (danger -0.5): 14; Anagami to Entropolis (1.5): 8. */
   deck: { base: 12, perDanger: 3, min: 4, max: 16, pall: 0.5 },
-  /** Its parts: four gills (open two bars in four, as it breathes), six teeth (a lock point each), the throat (five spits parried down
-   *  it). Felled when every gill is shut and the throat struck before bar 96; else it sounds and is gone. */
-  gills: { count: 4, hp: 34, open: 2, of: 4 }, teeth: { count: 6, hp: 4 }, throat: { spits: 5 }, // (felled is an expert's feat: about half their runs)
+  /** Its parts: four gills (open three bars in four, as it breathes, in every phase it is near, not only abreast), six teeth guarding
+   *  its maw, the throat (hurt by its spits parried down it, and by the gun once every gill is shut). It is felled, never driven off on a
+   *  clock (the boss law): each gill shut makes it sound sooner and surface angrier (a phase a gill); with the gills gone it opens its
+   *  maw, the teeth before the throat. 400 + 180 + 500 shots: about 31 bars for an expert at the gills' uptime. */
+  gills: { count: 4, hp: 100, open: 3, of: 4 }, teeth: { count: 6, hp: 30 }, throat: { spits: 5, hp: 500 },
   /** Its blows: the breach across the rail (a bar's warning: the sea bulges), the fin sweep while it runs alongside (a windup bar, too
    *  heavy to parry: roll), the spit (every bar, outlined: parried into an open gill it does 5), and the one breach from under at bar
    *  84 (its shadow grows two bars; leave the 8 m ring). Every big blow has a bar or more of warning: it is a spectacle to read, not a
    *  wall (measured: with fins in the maw too and two breaches from under, 6% of novices came through). */
   breach: { warn: 1, hits: 2 }, fin: { every: 2, windup: 1, hits: 1, parry: false }, spit: { every: 1, parry: true, returned: 5 },
   sound: { grow: 2, radius: 8, hits: 2, at: 84 },
-  /** What it leaves: driven off, a shard of Lachrymite (`mat.shard`) and Letty's bounty on it (livelihoods.js bountyPay(4)); felled,
-   *  three shards. */
+  /** What it leaves, felled: three shards of Lachrymite (`mat.shard`) and Letty's bounty on it (livelihoods.js bountyPay(4)). It is not
+   *  driven off any more (the boss law); `driven` stays for a ship that fails mid-fight and limps home. */
   pay: { driven: 1, felled: 3 },
 };
 
@@ -111,8 +126,11 @@ export const LEVIATHAN = {
  *  more: it is in every maelstrom, so unlike Old Nobody it is no bounty (Letty posts the rogue, not the sea's own). */
 export const CHARYBDIS = {
   bars: 4, rise: 7, depth: -6, swing: 1,
-  hp: 480, surface: 2, band: 1.5,
-  pay: { felled: 2, driven: 0 },
+  hp: 640, surface: 2, band: 1.5, // (the core; with its parts, 1200, the whole is BOSS.shots: 480 fell to an expert in 12 bars, 18 s, the owner's "10 seconds")
+  /** Its look's parts made parts (vfx/charybdis.js: Calissa's): six eyes, each aiming one of its aimed attacks (an eye shut, that aim
+   *  gone), and two baleen combs, each a wall of its whirl (a comb broken, a gap in the wall). Hurt by the world rule as its core is. */
+  eyes: { count: 6, hp: 40 }, combs: { count: 2, hp: 160 },
+  pay: { felled: 2, driven: 0 }, // (driven: only a ship that fails mid-fight; it is not driven off on a clock any more)
 };
 /** How much a shot of the ship's `form` ('astral' | 'umbral') hurts Charybdis at height `y` (metres over the crude): 1 in its own world,
  *  0 in the other (it glances), CHARYBDIS.surface while it crosses the surface. */
