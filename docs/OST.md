@@ -98,7 +98,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 - **Played along** (Rez): the rail's lock tones and downs, the catch's sting wait for the music's next sixteenth or beat, in the key
   of the bar sounding (a crossing's legs each have one: a section's `root`).
 - **The stack** (Rez's layers): a crossing's cue sounds as many of a leg's eight parts as its phase and your play give it; every lock,
-  down and boss part adds heat, which cools a quarter of a part a bar. A boss's peak is the thickest.
+  down and boss part adds heat, which cools a quarter of a part a bar. A boss's peak is the thickest. While a boss stands (`stage.boss`) its peak loops on its last bar, enraged adds 16th hats, a taiko a beat and tritone strings; when it falls the peak plays one bar more, then lets go, so the release lands with the stage's (its camera swing needs that bar).
 - **The trip's pressures:** a waypoint's feeling recolours its leg by mode, never by key (each note to the same degree: wonder Lydian,
   mirth major, desire Dorian, grief as written, dread Locrian), so the themes stay recognisable; a storm leg is a part thicker; low
   fuel lays a heartbeat under it; adrift, the drums go; a calm is a campfire, its release holding for the choice.

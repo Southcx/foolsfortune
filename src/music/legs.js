@@ -56,7 +56,7 @@ export function setTrip({ lowFuel = false, adrift = false, figures = null } = {}
 export function setEncounter(waiting) { R.waiting = !!waiting; }
 /** A crossing's boss (RAIL-FLOW.md 5: it leaves only when beaten): 'up' while it fights (its peak holds, looping on the bar), 'enraged'
  *  past 3 real minutes (the peak quickens), 'down' when it falls (the peak lets go into the release on the next bar line), null after. */
-export function setBoss(state = null) { if (R.boss === 'down' && !state) return; R.boss = state; } // (a fall is kept until the arranger lets go on it)
+export function setBoss(state = null) { if (R.boss === 'down' && !state) return; if (R.boss === 'falling' && (!state || state === 'down')) return; R.boss = state; } // (a fall is kept until the arranger lets go on it)
 /** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
 export function setFoeUnder(under) { R.foeUnder = !!under; }
 export function railHeat(n = 0) { R.heat = Math.max(0, Math.min(3, R.heat + n)); }
@@ -294,7 +294,7 @@ export function tripCue(legs) {
   sections.push({ id: 'arrive', bars: 4, gain: 5.5, bar: ARRIVE });
   const score = { title: 'Crude Sea: the Crossing', family: 'crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections,
     jump: (sec, bar) => { const S = sections[sec];
-      if (S.bossHold) { if (R.boss === 'down') { R.boss = null; return sec + 1; } return (R.boss === 'up' || R.boss === 'enraged') && bar >= S.bars - 1 ? sec : null; } // (a boss's peak holds until it falls, then lets go on the bar line)
+      if (S.bossHold) { if (R.boss === 'falling') { R.boss = null; return sec + 1; } if (R.boss === 'down') { R.boss = 'falling'; return bar >= S.bars - 1 ? sec : null; } return (R.boss === 'up' || R.boss === 'enraged') && bar >= S.bars - 1 ? sec : null; } // (a boss's peak holds until it falls, plays one bar more, then lets go: the stage's release starts a bar after the next bar line, for the camera's swing)
       return S.hold && bar >= S.bars - 1 && R.waiting ? sec : null; } }; // (an encounter's hold waits for the choice)
   CACHE.set(key, score);
   return score;
