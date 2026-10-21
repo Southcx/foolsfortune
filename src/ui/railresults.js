@@ -125,6 +125,7 @@ export class RailResults {
   beat(kind, info = {}) {
     try {
       if (this.onBeat) return this.onBeat(kind, info);
+      if (sfx.railResultsBeat) return sfx.railResultsBeat(kind, info, this.game?.music?.grid?.()); // (Wanda's: the ticks on the music's sixteenth, the medal its own call; flourish tier 2 is the medal)
       if (kind === 'tick') sfx.casinoTick?.(info.k ?? 0); else if (kind === 'mult') sfx.casinoMult?.(info.n ?? 2); else if (kind === 'flourish') sfx.casinoFlourish?.(info.tier ?? 1);
     } catch { /* a sound never stops the count */ }
   }

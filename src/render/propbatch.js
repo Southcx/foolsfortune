@@ -26,7 +26,7 @@ const OUTL = ['position', 'smoothNormal'];
 const sig = (g) => Object.keys(g.attributes).sort().join(',') + (g.index ? '|i' : '');
 
 export class PropBatch {
-  constructor(scene, { maxInstances = 128, maxVertices = 65536 } = {}) {
+  constructor(scene, { maxInstances = 128, maxVertices = 4096 } = {}) { // (vertices: a batch starts small and grows as props are parked (geoId). At 65,536 each of the 28 batches held its whole size from boot: 394k vertices in 1.78M, 78% empty, about 40 MB of the built game's heap, 2026-10-21)
     this.scene = scene;
     this.maxInstances = maxInstances; this.maxVertices = maxVertices;
     this.batches = new Map(); // key -> { mesh, outline }
