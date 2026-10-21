@@ -31,6 +31,7 @@ import { spillChance } from './econ/islands.js';
 import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.js';
 import { LEVIATHAN, leviathanDeck, lootField } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
+import { tripResult } from './rail/par.js';
 import { raceRank } from './rail/encounters.js';
 import { TRIP } from './rail/trip.js';
 import { mountable, slotsOf } from './rail/mounts.js';
@@ -150,8 +151,10 @@ export class Voyage {
   /** The stage is over (Petra's rail calls this with the run): a failed one costs cargo and may spill; either way the ship makes port.
    *  The run: { passed, hits, bears, downed, spawned, score, chainBest, volleyBest, parried, absorbed, rolls, pointBlank, end, won, stolen }
    *  (end: the set piece's: 'scattered' | 'sunk' | 'struck' | 'limped' | 'driven' | 'felled'; won: casks gathered from the pirates' loot;
-   *  stolen: casks the boarders took). The rank and the medal are worked out here (progress/rail/score.js). */
-  stageResult({ passed = true, hits = 0, bears = 6, downed = 0, spawned = 0, score = 0, chainBest = 0, volleyBest = 0, parried = 0, absorbed = 0, rolls = 0, pointBlank = 0, end = null, won = 0, stolen = 0 } = {}) {
+   *  stolen: casks the boarders took). The rank and the medal are worked out here (progress/rail/score.js); a drafted passage's `legs`
+   *  ([{ type, bars, score, downed, par, medalAt, rank, medal }], each from par.js legResult as its leg ended) rank the trip by its legs,
+   *  weighed by their bars, and its medal is every fighting leg's (par.js tripResult; RAIL-STANDARDS.md 3). */
+  stageResult({ passed = true, hits = 0, bears = 6, downed = 0, spawned = 0, score = 0, chainBest = 0, volleyBest = 0, parried = 0, absorbed = 0, rolls = 0, pointBlank = 0, end = null, won = 0, stolen = 0, legs = null, chainLevel = 0 } = {}) {
     const V = this.s.sailing;
     if (!V) return { lost: 0, spilled: false };
     let lost = 0, spilled = false;
@@ -177,10 +180,11 @@ export class Voyage {
     this.s.at = passed ? V.to : home; this.s.sailing = null;
     this.dirty();
     const continues = V.continues || 0, setPieces = V.setPieces || [V.setPiece || 'shoal'], setPiece = setPieces[setPieces.length - 1];
-    const ranked = raceRank(rankOf(score, setPiece), !!V.passage?.race?.beat), rank = (continues || V.passage?.adrift) && 'SAB'.includes(ranked) ? (continues ? CONTINUE.rankCap : TRIP.driftRank) : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed or adrift run still tops out at C)
-    const medal = !continues && medalOf({ passed, downed, spawned });
+    const byLegs = legs?.length ? tripResult(legs) : null; // (a drafted passage: its legs' own pars, RAIL-STANDARDS.md 3)
+    const ranked = raceRank(byLegs ? byLegs.rank : rankOf(score, setPiece), !!V.passage?.race?.beat), rank = (continues || V.passage?.adrift) && 'SAB'.includes(ranked) ? (continues ? CONTINUE.rankCap : TRIP.driftRank) : ranked; // (a ghost beaten at the Glass lifts it a letter: encounters.js; a coin-fed or adrift run still tops out at C)
+    const medal = !continues && passed && (byLegs ? byLegs.medal : medalOf({ passed, downed, spawned }));
     this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
-      chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
+      chainBest, chainLevel, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, legs: legs || null, by: 'courier' });
     if (V.passage?.chart && passed && score != null) this.recordBest(V.passage.chart, score, rank); // (the day's best on this sea chart: PASSAGE.md 14.3)
     // a drafted passage sailed to its end (not broken up, not continued twice) makes a rutter: the passage's map (PASSAGE.md 6)
     if (V.passage && passed && continues < 2) {
