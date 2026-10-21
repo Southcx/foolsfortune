@@ -276,12 +276,13 @@ if (part('crossing')) {
     else S.note('verbs: the volley', 'nothing painted over this wave (the far reticle rested away from it)');
   }
   // every act: its view held (the camera against the rig's offsets), a screenshot
-  const RIG = { chase: [0, 2.2, -7.5], above: [0, 30, -9], side: [24, 1.5, 3], free: [0, 1.6, -10], astern: [0, 2.6, 9] };
+  const { VIEW_RIGS } = await import('../../src/courier/ship/views.js'); // (the rigs as the game has them, never copied here: the owner's rulings 5 to 7 moved three of them)
+  const RIG = Object.fromEntries(Object.entries(VIEW_RIGS).map(([k, v]) => [k, v.cam]));
   for (const a of plan.acts.filter((x) => x.view && x.id !== 'arrive')) {
     s = await sailTo(Math.min(a.to - 1, a.from + 3));
     if (!s.active) break;
     const cl = await em('camLocal()'), want = RIG[a.view], sl = s.ship.local;
-    const f = { chase: 0.35, above: 0.12, side: 0.1, free: 0.25, astern: 0.35 }[a.view];
+    const f = VIEW_RIGS[a.view].follow;
     const exp = [want[0] + sl[0] * f, want[1] + 3 + (sl[1] - 3) * f, want[2] + sl[2] * f], off = Math.hypot(cl[0] - exp[0], cl[1] - exp[1], cl[2] - exp[2]);
     S.check(`crossing: ${a.id} (bar ${a.from}) holds the ${a.view} view`, off < 3, { bar: s.bar, cam: cl, rig: exp.map((x) => +x.toFixed(2)), off: +off.toFixed(2) });
     await S.common(`crossing: ${a.id} in the ${a.view} view`, { courier: false });

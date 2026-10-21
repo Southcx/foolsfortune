@@ -21,18 +21,38 @@
 // phrase, a boss at the peak), Ikaruga's chapters (one idea a chapter, taught alone then mixed), Elemental Gearbolt's pacing (packed and
 // open spaces in turn), and Slay the Spire's burning elite for the storm's weight.
 //
-//   LEGS[type] = { bars, phases: { open, build, peak, release }, views, cues: [cue] }   schedule(type, { strength, feel, storm }) -> plan
-//   cue = { phase, at, every?, until?, wave?: { role, formation, count, cls?, lane? } | pattern?: { name, params?, from, kind?, mode? }
-//          | targets?: n | director?: setPiece }      plan = { type, bars, phases: [{ id, from, to, view }], events: [{ bar, ... }] }
-//   idle(plan) -> [[from, to]] (the windows of two bars or more with nothing in reach: the law wants none)   kindFor(kind, feel, r) -> 'astral' | 'umbral'
+// THE FLOW (the owner, 2026-10-21: "an awful staccato [...] followed by multiple seconds of dead air"; docs/plans/RAIL-FLOW.md). The
+// pacing law above assumed a wave lingers six bars; a school falls to the gun in about one, so a wave every three or four bars left
+// two of nothing. Now: a phase's waves are its QUEUE, each at the latest bar it may enter (a `cycle` lays a list of waves round and
+// round, a bar or so apart), and its FLOOR (`FLOORS`) the fewest foes in frame it allows: the runtime pulls the next queued wave
+// forward to the next beat whenever the live count falls under the floor (world/emocean/legrunner.js), so clearing fast brings the
+// next fast (Ikaruga's chain waves, Star Fox 64's stream). A swing carries a FLOURISH (lights to lock flown through the turn), and the
+// check (`deadBeats`) holds every leg, with a good player's kill model, to no beat without a target in frame.
+//
+//   LEGS[type] = { bars, phases: { open, build, peak, release }, views, floors?, cues: [cue] }   schedule(type, { strength, feel, storm }) -> plan
+//   cue = { phase, at, every?, until?, wave?: { role, formation, count, cls?, lane? } | cycle?: [wave] | pattern?: { name, params?, from,
+//          kind?, mode? } | targets?: n | director?: setPiece }      plan = { type, bars, phases: [{ id, from, to, view, floor }], events: [{ bar, ... }] }
+//   deadBeats(plan) -> [bar] with .runs (two empty beats or more in a row: the flow wants none) and .perMinute   flow(plan) -> events retimed
+//   aliveBars(event, strength?) -> [from, to]   kindFor(kind, feel, r) -> 'astral' | 'umbral'
 // ---------------------------------------------------------------------------------------
 import { STORM } from '../econ/passage.js';
 import { formSkew } from './trip.js';
-import { showLeg } from './showcase.js';
+import { showLeg, ROSTER } from './showcase.js';
+import { WAVES } from './setpieces.js';
 
-/** How long a thing stays in reach once it enters (bars): a wave crosses the frame in about six; a pattern lasts its volleys and a bar
- *  of flight; lights to lock drift by for four; a director's peak is in reach throughout. */
-export const REACH = { wave: 6, heavyWave: 14, pattern: 1, targets: 4 };
+/** The kill model the flow is judged by (RAIL-FLOW.md 0, cause 1). A GOOD player lands 24 shots a bar (six tenths of the scripted
+ *  expert's 39.5 a bar: Petra's charybdistest); a foe is in frame from half a bar after its bar (its entrance from the edge) until it
+ *  is shot down or its path takes it off (`PATH` bars: a formation crosses in six, a roster foe that holds, its hold and two); lights
+ *  to lock live two bars (the lock-on takes eight at once); a director holds the whole of its phase (a boss leaves only beaten). */
+export const KILL = { good: 24, enter: 0.5, path: 6, lights: 2 };
+/** The floor pulls a queue's next wave no sooner than half a bar after its last (an entrance needs room to be read: Galaga's dives
+ *  come in turn, not at once). */
+export const PULL_GAP = 0.5;
+/** Each phase's floor: the fewest foes in frame it allows before the runtime pulls the next queued wave forward (first guesses: the open
+ *  teaches, so few; the build presses; beside a boss, its adds; the release is a shower of lights). */
+export const FLOORS = { open: 6, build: 10, peak: 8, release: 12 };
+/** The lights a swing carries through its turn (they cannot fire: the camera's move is shot through). */
+export const FLOURISH = 6;
 /** The bar in seconds (the cue's: progress/rail/crossing.js BAR_S), to turn a pattern's seconds into bars. */
 const BAR = 1.5;
 
@@ -40,7 +60,10 @@ const BAR = 1.5;
  *  but most are gone in 2) nor the first bar after; shots of one world in blocks of 8 bars (4 in the graveyard). */
 export const STRETCH = 2, SWING_CLEAR = 3, SWING_BREATH = 1, WORLD_BLOCK = 8;
 const P = (open, build, peak, release) => ({ open: open * STRETCH, build: build * STRETCH, peak: peak * STRETCH, release: release * STRETCH });
-const V = (open, build, peak, release) => ({ open, build, peak, release }); // (a phase's view: a name, not stretched: P('chase', ...) made NaN of every view, Petra's catch)
+const V = (open, build, peak, release) => ({ open, build, peak, release });
+/** A queue laid round and round: the waves of `list` in turn, from bar `at` every `every` bars (to `until`). */
+const Q = (phase, at, every, list, until) => ({ phase, at, every, cycle: list, ...(until != null ? { until } : {}) });
+const W = (role, formation, count, cls) => ({ role, formation, count, ...(cls != null ? { cls } : {}) }); // (a phase's view: a name, not stretched: P('chase', ...) made NaN of every view, Petra's catch)
 
 /** The legs. `at` is a bar within the cue's phase; `every` repeats it to the phase's end (or `until`). `from` names who fires a pattern:
  *  'ahead' (a carrier that comes in, holds and leaves: world/emocean/legrunner.js), or a live foe of a role in frame ('school',
@@ -48,98 +71,136 @@ const V = (open, build, peak, release) => ({ open, build, peak, release }); // (
  *  none; `kind` is 'astral', 'umbral', 'feel' (by the waypoint's feeling: trip.formSkew) or 'gift' (the ship's own
  *  form: absorbed, it fills the surge). */
 export const LEGS = {
+  // THE SHOAL: the swarm's own leg. Rammers and darters taught in chase; swoopers, mine-layers and a turret overhead with a spawner's
+  // hatch and the heavy the school was fleeing; the bait ball at the peak with darters at its edge.
   shoal: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'above', 'free', 'chase'), cues: [
-    { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 8 } },
+    Q('open', 0, 1, [W('school', 'line', 8), W('school', 'vee', 7), W('rammer', 'dash', 1), W('school', 'line', 8), W('darter', 'dash', 2)]),
+    { phase: 'open', at: 6, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'offsetTwins', from: 'ahead', kind: 'feel', params: { volleys: 4 } } },
-    { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'vee', count: 7 } },
-    { phase: 'build', at: 2, every: 6, wave: { role: 'school', formation: 'pincer', count: 8 } },
-    { phase: 'build', at: 4, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 2 } },
+    Q('build', 0, 1, [W('school', 'vee', 7), W('swooper', 'pincer', 2), W('school', 'ring', 8), W('mine-layer', 'line', 1), W('school', 'line', 8), W('turret', 'hold', 1)]),
+    { phase: 'build', at: 4, wave: W('heavy', 'hold', 1, 2) },
+    { phase: 'build', at: 18, wave: W('spawner', 'hold', 1) },
+    { phase: 'build', at: 10, every: 16, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 5, every: 4, until: 34, pattern: { name: 'rotatingRing', from: 'heavy', kind: 'feel' } },
     { phase: 'build', at: 1, every: 6, pattern: { name: 'sineCurtain', from: 'ahead', kind: 'feel' } },
     { phase: 'peak', at: 0, director: 'shoal' },
+    Q('peak', 2, 3, [W('darter', 'dash', 2), W('rammer', 'dash', 1), W('school', 'vee', 6)]),
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'cageRing', from: 'glint', kind: 'feel' } },
     { phase: 'peak', at: 1, every: 3, pattern: { name: 'frenzyDash', from: 'glint', kind: 'feel' } },
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
+  // THE WRECKERS: darters and an ambusher in chase; the side view's sniper, sweeper and grappler among schools; the brig with boarders,
+  // ambushers and swoopers round her.
   wreckers: { bars: 112, phases: P(8, 20, 24, 4), views: V('chase', 'side', 'side', 'astern'), cues: [
-    { phase: 'open', at: 0, every: 3, wave: { role: 'darter', formation: 'dash', count: 2 } },
+    Q('open', 0, 1, [W('darter', 'dash', 2), W('school', 'line', 8), W('ambusher', 'dash', 2), W('school', 'vee', 6)]),
+    { phase: 'open', at: 8, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 2, pattern: { name: 'aimedBurst', from: 'darter', kind: 'feel', params: { volleys: 2 } } },
-    { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'vee', count: 6 } },
-    { phase: 'build', at: 2, every: 5, wave: { role: 'darter', formation: 'dash', count: 2 } },
+    Q('build', 0, 1, [W('school', 'vee', 6), W('darter', 'dash', 2), W('sniper', 'hold', 1), W('school', 'line', 8), W('swooper', 'pincer', 2), W('grappler', 'dash', 1), W('school', 'ring', 8), W('sweeper', 'hold', 1)]),
+    { phase: 'build', at: 14, every: 16, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 1, every: 5, pattern: { name: 'gapWall', from: 'ahead', kind: 'feel' } },
     { phase: 'build', at: 3, every: 5, pattern: { name: 'homingSalvo', from: 'darter', kind: 'umbral' } },
     { phase: 'peak', at: 0, director: 'pirates' },
+    Q('peak', 2, 3, [W('ambusher', 'dash', 2), W('school', 'vee', 6), W('swooper', 'pincer', 2), W('grappler', 'dash', 1)]),
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'stackFan', from: 'object', kind: 'feel' } },
     { phase: 'peak', at: 4, every: 6, pattern: { name: 'splitShell', from: 'object', kind: 'umbral', params: { T: 0.5 } } }, // (splits sooner since the side camera came closer, 2026-10-20: from 15 m a 0.9 s flight split 1.6 m off the ship)
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
+  // THE ROGUE LEVIATHAN: rammers and rings in chase; overhead the heavy, a turret, a blocker (Flash or Bomb) and a mine-layer with a
+  // spawner; Old Nobody in the side view with schools, swoopers and a sniper at its flanks, and a swarm through its breath.
   leviathan: { bars: 128, phases: P(8, 24, 28, 4), views: V('chase', 'above', 'side', 'astern'), cues: [
-    { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 8 } },
+    Q('open', 0, 1, [W('school', 'line', 8), W('rammer', 'dash', 1), W('school', 'ring', 8), W('darter', 'dash', 2)]),
+    { phase: 'open', at: 6, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'accelRain', from: 'ahead', kind: 'feel', params: { volleys: 5 } } },
-    { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 8 } },
-    { phase: 'build', at: 2, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 2 } },
+    Q('build', 0, 1, [W('school', 'ring', 8), W('swooper', 'pincer', 2), W('turret', 'hold', 1), W('school', 'vee', 7), W('blocker', 'hold', 1), W('mine-layer', 'line', 1), W('school', 'line', 8)]),
+    { phase: 'build', at: 2, wave: W('heavy', 'hold', 1, 2) },
+    { phase: 'build', at: 20, wave: W('spawner', 'hold', 1) },
+    { phase: 'build', at: 12, every: 24, wave: W('swarm', 'bloom', 32) },
     { phase: 'build', at: 3, every: 4, until: 32, pattern: { name: 'multiSpiral', from: 'heavy', kind: 'feel' } },
     { phase: 'build', at: 32, every: 3, pattern: { name: 'doubleHelix', from: 'ahead', kind: 'feel' } },
     { phase: 'peak', at: 0, director: 'leviathan' },
+    Q('peak', 2, 3, [W('school', 'vee', 6), W('swooper', 'pincer', 2), W('sniper', 'hold', 1), W('darter', 'dash', 2)]),
+    { phase: 'peak', at: 20, wave: W('swarm', 'ribbon', 48) },
     { phase: 'peak', at: 2, every: 5, pattern: { name: 'rose', from: 'object', kind: 'feel', params: { n: 30, speed: 7, swell: 7 } } }, // (for the nearer frames, 2026-10-20: slowed from 9, 0.42 real s to react from 15 m, the rule's 0.5; 30 petals not 36, its gap 3.26 m under three ship widths)
     { phase: 'peak', at: 4, every: 7, pattern: { name: 'sweepBeam', from: 'object', kind: 'umbral' } },
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
-  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: V('chase', 'free', 'chase', 'chase'), cues: [ // (few foes, all dodging: the rollercoaster itself)
+  // THE EYEWALL: the rollercoaster itself (dodging walls and beams), and now targets through it: darters and schools, ambushers in the
+  // peak and a swarm thrown round the eye.
+  eyewall: { bars: 80, phases: P(8, 12, 16, 4), views: V('chase', 'free', 'chase', 'chase'), floors: { open: 4, build: 6, peak: 8, release: 10 }, cues: [
     { phase: 'open', at: 0, every: 4, pattern: { name: 'sweepBeam', from: 'ahead', kind: 'feel', params: { volleys: 1 } } },
-    { phase: 'open', at: 2, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
+    Q('open', 1, 1.5, [W('darter', 'dash', 2), W('school', 'line', 6)]),
     { phase: 'build', at: 0, every: 3, pattern: { name: 'gapWall', from: 'ahead', kind: 'feel' } },
     { phase: 'build', at: 1, every: 4, pattern: { name: 'snakeLaser', from: 'ahead', kind: 'umbral' } },
-    { phase: 'build', at: 2, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
+    Q('build', 0, 1.5, [W('darter', 'dash', 2), W('school', 'vee', 6), W('rammer', 'dash', 1)]),
     { phase: 'peak', at: 0, every: 4, pattern: { name: 'crossGate', from: 'ahead', kind: 'feel' } },
     { phase: 'peak', at: 2, every: 4, pattern: { name: 'itano', from: 'ahead', kind: 'astral' } },
     { phase: 'peak', at: 1, every: 5, pattern: { name: 'sweepBeam', from: 'ahead', kind: 'umbral' } },
-    { phase: 'peak', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 6 } },
-    { phase: 'release', at: 0, every: 4, targets: 6 },
+    Q('peak', 0, 1.5, [W('school', 'ring', 6), W('ambusher', 'dash', 2), W('school', 'line', 8)]),
+    { phase: 'peak', at: 10, wave: W('swarm', 'ribbon', 32) },
+    { phase: 'release', at: 0, every: 2, targets: 6 },
   ] },
-  graveyard: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'side', 'free', 'chase'), cues: [ // (both worlds at once: kinds mixed)
-    { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'line', count: 6 } },
+  // THE GRAVEYARD: both worlds at once. Schools, darters and rammers in chase; the side view's sniper, swoopers and a mine-layer; the
+  // Drowned Light (a heavy until its director) with escorts, ambushers and a grappler, and a swarm blooming from the wrecks.
+  graveyard: { bars: 96, phases: P(8, 18, 18, 4), views: V('chase', 'side', 'free', 'chase'), cues: [
+    Q('open', 0, 1, [W('school', 'line', 6), W('darter', 'dash', 2), W('school', 'vee', 6), W('rammer', 'dash', 1)]),
+    { phase: 'open', at: 8, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'decelBurst', from: 'ahead', kind: 'umbral', params: { volleys: 2 } } },
-    { phase: 'build', at: 0, every: 4, wave: { role: 'school', formation: 'ring', count: 8 } },
-    { phase: 'build', at: 2, every: 6, wave: { role: 'darter', formation: 'dash', count: 2 } },
+    Q('build', 0, 1, [W('school', 'ring', 8), W('sniper', 'hold', 1), W('darter', 'dash', 2), W('swooper', 'pincer', 2), W('mine-layer', 'line', 1), W('school', 'line', 8)]),
+    { phase: 'build', at: 18, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 1, every: 4, pattern: { name: 'fragmentRing', from: 'ahead', kind: 'astral' } },
     { phase: 'build', at: 3, every: 4, pattern: { name: 'curving', from: 'ahead', kind: 'umbral' } },
-    { phase: 'peak', at: 0, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 3 } }, // (the Drowned Light: a placeholder heavy until it has a director)
+    { phase: 'peak', at: 0, wave: W('heavy', 'hold', 1, 3) }, // (the Drowned Light: a placeholder heavy until it has a director)
+    Q('peak', 1, 2, [W('school', 'vee', 6), W('escort', 'hold', 2), W('ambusher', 'dash', 2), W('grappler', 'dash', 1)]),
+    { phase: 'peak', at: 16, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'rose', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'mixed', from: 'heavy', kind: 'umbral', params: { of: 'oddFan', share: 0.3 } } },
-    { phase: 'peak', at: 2, every: 4, wave: { role: 'school', formation: 'vee', count: 6 } },
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
-  maelstrom: { bars: 96, phases: P(8, 12, 24, 4), views: V('chase', 'free', 'free', 'chase'), cues: [ // (Charybdis: a heavy placeholder until its director)
-    { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'ring', count: 8 } },
+  // THE MAELSTROM: rings and rammers in chase; the whirl's ambushers round the first heavy; Charybdis (a heavy until its director) with
+  // darters, rammers and a grappler, and a swarm the whirlpool throws up.
+  maelstrom: { bars: 96, phases: P(8, 12, 24, 4), views: V('chase', 'free', 'free', 'chase'), cues: [
+    Q('open', 0, 1, [W('school', 'ring', 8), W('darter', 'dash', 2), W('school', 'line', 8), W('rammer', 'dash', 1)]),
+    { phase: 'open', at: 6, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 3, pattern: { name: 'curving', from: 'ahead', kind: 'feel' } },
-    { phase: 'build', at: 0, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 3 } },
+    { phase: 'build', at: 0, wave: W('heavy', 'hold', 1, 3) },
+    Q('build', 1, 1.5, [W('school', 'pincer', 8), W('ambusher', 'dash', 2), W('school', 'vee', 7)]),
+    { phase: 'build', at: 12, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 1, every: 3, pattern: { name: 'accelSpiral', from: 'heavy', kind: 'feel' } },
-    { phase: 'build', at: 2, every: 4, wave: { role: 'school', formation: 'pincer', count: 8 } },
-    { phase: 'peak', at: 0, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 4 } },
+    { phase: 'peak', at: 0, wave: W('heavy', 'hold', 1, 4) },
+    Q('peak', 1, 2, [W('darter', 'dash', 2), W('school', 'ring', 8), W('rammer', 'dash', 1), W('grappler', 'dash', 1)]),
+    { phase: 'peak', at: 24, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'doubleHelix', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 6, pattern: { name: 'itano', from: 'heavy', kind: 'umbral' } },
-    { phase: 'peak', at: 2, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
+  // THE BOUNTY: vees and darters in chase; overhead swoopers, a turret, a mine-layer and a blocker with a spawner; the posted stray (a
+  // heavy until its director) beside a gunship and its escort, with schools, ambushers, darters and a sniper.
   bounty: { bars: 112, phases: P(8, 20, 24, 4), views: V('chase', 'above', 'free', 'chase'), cues: [
-    { phase: 'open', at: 0, every: 3, wave: { role: 'school', formation: 'vee', count: 7 } },
+    Q('open', 0, 1, [W('school', 'vee', 7), W('darter', 'dash', 2), W('school', 'line', 8), W('rammer', 'dash', 1)]),
+    { phase: 'open', at: 8, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'oddFan', from: 'ahead', kind: 'feel' } },
-    { phase: 'build', at: 0, every: 4, wave: { role: 'darter', formation: 'dash', count: 2 } },
-    { phase: 'build', at: 2, every: 4, wave: { role: 'school', formation: 'line', count: 8 } },
+    Q('build', 0, 1, [W('swooper', 'pincer', 2), W('school', 'line', 8), W('turret', 'hold', 1), W('school', 'ring', 8), W('mine-layer', 'line', 1), W('blocker', 'hold', 1)]),
+    { phase: 'build', at: 16, wave: W('spawner', 'hold', 1) },
+    { phase: 'build', at: 24, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 1, every: 4, pattern: { name: 'stratRain', from: 'ahead', kind: 'feel' } },
-    { phase: 'peak', at: 0, wave: { role: 'heavy', formation: 'hold', count: 1, cls: 3 } }, // (the posted stray, until its director)
+    { phase: 'peak', at: 0, wave: W('heavy', 'hold', 1, 3) }, // (the posted stray, until its director)
+    { phase: 'peak', at: 8, wave: W('gunship', 'hold', 1) },
+    { phase: 'peak', at: 8, wave: W('escort', 'hold', 2) },
+    Q('peak', 2, 2, [W('school', 'ring', 6), W('ambusher', 'dash', 2), W('darter', 'dash', 2), W('sniper', 'hold', 1)]),
+    { phase: 'peak', at: 28, wave: W('swarm', 'bloom', 48) },
     { phase: 'peak', at: 1, every: 4, pattern: { name: 'multiSpiral', from: 'heavy', kind: 'feel' } },
     { phase: 'peak', at: 3, every: 4, pattern: { name: 'splitShell', from: 'heavy', kind: 'umbral' } },
-    { phase: 'peak', at: 2, every: 4, wave: { role: 'school', formation: 'ring', count: 6 } },
-    { phase: 'release', at: 0, every: 4, targets: 8 },
+    { phase: 'release', at: 0, every: 2, targets: 8 },
   ] },
-  calm: { bars: 48, phases: P(8, 12, 0, 4), views: V('chase', 'above', 'above', 'chase'), cues: [ // (a breath that still scores: lights, and shots of your own form to drink)
-    { phase: 'open', at: 0, every: 3, targets: 6 },
+  // THE CALM: a breath that still scores: lights to lock, shots of your own form to drink, and a swarm that does not fire drifting by.
+  calm: { bars: 48, phases: P(8, 12, 0, 4), views: V('chase', 'above', 'above', 'chase'), floors: { open: 6, build: 6, peak: 0, release: 8 }, cues: [
+    { phase: 'open', at: 0, every: 2, targets: 6 },
+    { phase: 'open', at: 8, wave: W('swarm', 'river', 24) },
     { phase: 'open', at: 1, every: 4, pattern: { name: 'ring', from: 'ahead', kind: 'gift', params: { volleys: 1, speed: 9 } } },
-    { phase: 'build', at: 0, every: 3, targets: 6 },
+    { phase: 'build', at: 0, every: 2, targets: 6 },
+    { phase: 'build', at: 12, wave: W('swarm', 'ribbon', 32) },
     { phase: 'build', at: 2, every: 4, pattern: { name: 'rose', from: 'ahead', kind: 'gift', params: { volleys: 1, n: 18, speed: 7, swell: 7 } } }, // (slowed from 9 when the overhead frame halved, 2026-10-20: from 15 m it gave 0.42 real s to react, the rule's 0.5)
-    { phase: 'release', at: 0, every: 4, targets: 6 },
+    { phase: 'release', at: 0, every: 2, targets: 6 },
   ] },
 };
 
@@ -157,15 +218,15 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   if (String(type).startsWith('show.')) return showLeg(type); // (the showcase crossing's legs: progress/rail/showcase.js)
   const L = LEGS[type]; if (!L) return null;
   const phases = [], at = {}; let b = 0;
-  for (const id of ['open', 'build', 'peak', 'release']) { const n = L.phases[id]; if (!n) continue; at[id] = b; phases.push({ id, from: b, to: b + n, view: L.views[id] }); b += n; }
+  for (const id of ['open', 'build', 'peak', 'release']) { const n = L.phases[id]; if (!n) continue; at[id] = b; phases.push({ id, from: b, to: b + n, view: L.views[id], floor: (L.floors || FLOORS)[id] ?? FLOORS[id] }); b += n; }
   const events = [], dens = storm ? STORM.density : 1;
   for (const c of L.cues) {
     const ph = phases.find((p) => p.id === c.phase); if (!ph) continue;
     const end = c.until != null ? Math.min(ph.to, ph.from + c.until) : ph.to;
     const every = c.every ? c.every / (c.pattern ? dens : 1) : 0;
-    for (let bar = ph.from + c.at; bar < end; bar = every ? bar + every : end) {
-      const e = { bar: +bar.toFixed(3), phase: c.phase };
-      if (c.wave) Object.assign(e, { wave: { ...c.wave, cls: Math.max(0, Math.min(4, (c.wave.cls ?? 0) + strength - 1 + (storm ? STORM.strength : 0))) } });
+    for (let bar = ph.from + c.at, k = 0; bar < end; bar = every ? bar + every : end, k++) {
+      const e = { bar: +bar.toFixed(3), phase: c.phase }, wave = c.wave || (c.cycle && c.cycle[k % c.cycle.length]);
+      if (wave) Object.assign(e, { wave: { ...wave, cls: Math.max(0, Math.min(4, (wave.cls ?? 0) + strength - 1 + (storm ? STORM.strength : 0))) }, ...(c.cycle ? { queue: c.phase } : {}) });
       else if (c.pattern) Object.assign(e, { pattern: { ...c.pattern, params: { ...(c.pattern.params || {}) }, mode: c.pattern.mode || modeOf(ph.view) } });
       else if (c.targets) e.targets = c.targets;
       else if (c.director) e.director = c.director;
@@ -180,6 +241,9 @@ export function schedule(type, { strength = 1, feel = null, storm = false } = {}
   const block = type === 'graveyard' ? WORLD_BLOCK / 2 : WORLD_BLOCK, skew = formSkew(feel);
   const worldAt = (bar) => (((Math.floor(bar / block) + 1) * 0.6180339887) % 1 < skew ? 'astral' : 'umbral');
   for (const e of clear) if (e.pattern && e.pattern.kind !== 'gift') e.pattern.kind = worldAt(e.bar);
+  // THE FLOURISH: a swing is flown through, never waited out: lights to lock through its bar (RAIL-FLOW.md 1, law 2)
+  for (const w of swings) clear.push({ bar: Math.max(0, w - 1), phase: phases.find((p) => w - 1 >= p.from && w - 1 < p.to)?.id || phases[0].id, targets: FLOURISH, flourish: true });
+  clear.sort((a, b2) => a.bar - b2.bar);
   return { type, bars: L.bars, phases, events: clear, feel, storm: !!storm, strength, swings };
 }
 /** The nearest a thrower may stand to the ship, in the view's plane (m), when it fires: what legs.mjs judges every pattern from (the
@@ -198,20 +262,48 @@ export const CARRIER_AT = {
 /** A view's way of firing: in its plane (above, side, astern: a ring reads as a ring), or in a cone at the ship (chase, free). */
 export const modeOf = (view) => (view === 'chase' || view === 'free' ? 'cone' : 'plane');
 
-/** The pacing law's first rule: the windows of two bars or more in which nothing is in reach (no foe crossing the frame, no pattern
- *  in the air, no lights to lock, no director's peak). `lasting(name)` is a pattern's length in seconds (patterns.js; the runtime and
- *  the check pass it). */
-export function idle(plan, lasting = () => 3) {
-  const cover = [];
-  for (const e of plan.events) {
-    if (e.wave) cover.push([e.bar, e.bar + (e.wave.role === 'heavy' ? REACH.heavyWave : REACH.wave)]);
-    else if (e.pattern) cover.push([e.bar, e.bar + lasting(e.pattern.name, e.pattern.params) / BAR + REACH.pattern]);
-    else if (e.targets) cover.push([e.bar, e.bar + REACH.targets]);
-    else if (e.director) { const ph = plan.phases.find((p) => p.id === e.phase); cover.push([e.bar, ph.to]); }
+/** When an event's targets are in frame (bars), a good player killing them as they come (KILL): a wave from its entrance until shot
+ *  down (its hit points over 24 shots a bar) or off its path; lights two bars; a director the rest of its phase. Null for a pattern. */
+export function aliveBars(e, plan) {
+  if (e.wave) {
+    const w = e.wave, R = ROSTER[w.role], hp = (WAVES.hp[Math.max(0, Math.min(4, w.cls ?? 0))] || 1) * (R?.hp ?? 1) * (w.count || 1);
+    const path = R?.moves?.kind === 'hold' && typeof R.moves.hold === 'number' ? R.moves.hold + 2 : KILL.path;
+    return [e.bar + KILL.enter, e.bar + KILL.enter + Math.min(path, hp / KILL.good)];
   }
-  cover.sort((a, b) => a[0] - b[0]);
-  const gaps = []; let reach = 0;
-  for (const [a, b] of cover) { if (a - reach >= 2) gaps.push([+reach.toFixed(2), +a.toFixed(2)]); reach = Math.max(reach, b); }
-  if (plan.bars - reach >= 2) gaps.push([+reach.toFixed(2), plan.bars]);
-  return gaps;
+  if (e.targets) return [e.bar + KILL.enter, e.bar + KILL.enter + KILL.lights];
+  if (e.director) { const ph = plan.phases.find((p) => p.id === e.phase); return [e.bar, ph.to]; }
+  return null;
+}
+/** The stream as the runtime plays it (RAIL-FLOW.md 1, law 1), beat by beat: in each phase, whenever fewer foes are alive than its
+ *  floor, the next of its queued waves (a `cycle`'s) enters on that beat instead of its bar (no sooner than PULL_GAP after the last), and the rest of that queue moves up by as
+ *  much (a queue keeps its spacing: its bars are the latest a wave may wait); a queue run dry before its phase ends goes round its cycle
+ *  again. Returns the plan's events retimed. */
+export function flow(plan) {
+  const ev = plan.events.map((e) => ({ ...e })), queues = new Map();
+  for (const e of ev) if (e.queue) { if (!queues.has(e.phase)) queues.set(e.phase, []); queues.get(e.phase).push(e); }
+  for (const q of queues.values()) q.sort((a, b) => a.bar - b.bar);
+  const live = (t) => ev.reduce((n, e) => { const A = aliveBars(e, plan); return A && t >= A[0] && t < A[1] ? n + (e.wave?.count || e.targets || 1) : n; }, 0);
+  for (let t = 0; t < plan.bars; t += 0.25) {
+    const ph = plan.phases.find((p) => t >= p.from && t < p.to), q = ph && queues.get(ph.id); if (!q?.length) continue;
+    if (live(t + KILL.enter) >= (ph.floor ?? 0)) continue;
+    if (t - (q.last ?? -9) < PULL_GAP) continue;
+    q.last = t;
+    const i = q.findIndex((e) => e.bar > t);
+    if (i >= 0) { const d = q[i].bar - t; for (let j = i; j < q.length; j++) q[j].bar = +(q[j].bar - d).toFixed(3); continue; }
+    // the queue has run dry before its phase ends: the cycle goes round again (a cycle is a source, not a list)
+    const c = q.cycle || (q.cycle = q.map((e) => e.wave)), n = q.length, e = { ...q[n - 1], bar: t, wave: { ...c[n % c.length], cls: q[n - 1].wave.cls } };
+    q.push(e); ev.push(e);
+  }
+  return ev.sort((a, b) => a.bar - b.bar);
+}
+/** The beats (quarter bars) with nothing alive to shoot (aliveBars), the stream played (`flow`), from the first entrance on, and their
+ *  runs (`runs`: [bar, beats] of two beats or more in a row). One empty beat is the breath after a wave cleared fast (Ikaruga's reward);
+ *  two in a row is dead air, and the flow wants no run. Also what it feeds: foes a real minute. */
+export function deadBeats(plan) {
+  const ev = flow(plan), cover = ev.map((e) => aliveBars(e, plan)).filter(Boolean).sort((a, b) => a[0] - b[0]), dead = [];
+  const start = cover.length ? cover[0][0] : 0;
+  for (let q = Math.ceil(start * 4); q < plan.bars * 4; q++) { const t = q / 4; if (!cover.some(([a, b]) => t >= a && t < b)) dead.push(t); }
+  dead.runs = []; for (let i = 0, r = 1; i < dead.length; i++) { if (dead[i + 1] === dead[i] + 0.25) r++; else { if (r > 1) dead.runs.push([dead[i] - (r - 1) * 0.25, r]); r = 1; } } // (two or more empty beats in a row: dead air; one is the breath after a wave cleared)
+  dead.foes = ev.reduce((n, e) => n + (e.wave && e.bar < plan.bars ? e.wave.count : 0), 0); dead.perMinute = Math.round(dead.foes / (plan.bars * BAR / 60));
+  return dead;
 }
