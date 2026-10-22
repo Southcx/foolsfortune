@@ -543,7 +543,7 @@ if (part('careless')) {
     await S.ev(() => __game.game.well.down()); await S.ticks(10);
     await S.ev(() => __game.game.well.leave('walk')); await S.ticks(10);
   }
-  await S.ticks(60);
+  await S.ticks(600); // (ten real seconds: the jellies' rise decals, vfx/spawnlook.js, play out about 2.3 s; counted before they end they read as a leak)
   const after = await dm('counts()');
   const grew = Object.fromEntries(Object.keys(before).filter((k) => typeof before[k] === 'number' && after[k] > before[k]).map((k) => [k, after[k] - before[k]]));
   S.check(`careless: ${REPS} runs in and out leave no objects`, after.objects <= before.objects + 2 && after.top <= before.top, { grew, before, after });

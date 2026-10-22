@@ -194,6 +194,11 @@ its reason is beside it.
 
 The page whitelists these five and ignores the rest. Kept: the newest 500; the page deletes older ones when it writes.
 
+**Trust (Petra, built 2026-10-22):** every division's session writes with the owner's own account, so the store cannot tell one writer
+from another, and the page cannot check `from` against a division's `siblings/<name>` right. `from` is taken as written. That is
+accepted: every writer is the owner's own session. A guest's lines come over the `room` (`guest:<id>`), never the store, so a guest
+still cannot write as a division. If the room is ever opened to people the owner does not know, `from` needs a signature first.
+
 **Who writes, and how fast** (the page drops what comes faster, and says so once in the log):
 
 | writer | cadence | why |
