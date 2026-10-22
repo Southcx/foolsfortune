@@ -3407,4 +3407,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (`render/shadowkinds.js`); a batch and a skinned hull draw a view of their material (`render/materialview.js`).
 - **Measured after:** 0 program checks a frame in the workshop; 731 KB of garbage a frame (was 1,128), the Dunes 641 (was 943); the
   same frame drawn by both trees differs no more than one tree from itself (0.40% of pixels against a floor of 0.50%).
-- **Rule:** NEW:count-the-library.
+- **Rule:** 256.
