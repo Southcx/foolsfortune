@@ -8,6 +8,7 @@
 //
 //   window.__game (the test harness's handle: tick(dt), draw(), game)   window.__boot (ms at each stage of loading)
 // ---------------------------------------------------------------------------------------
+import './render/threefixes.js'; // (first: shims for the pinned three, in place before any module builds a geometry)
 import { CourierMind } from './courier/mind.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -295,7 +296,6 @@ import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { installShadowKinds } from './render/shadowkinds.js';
-import { installThreeFixes } from './render/threefixes.js';
 import { typeOf } from './progress/combat/types.js';
 import { OverlayScene } from './render/overlayscene.js';
 import { Cradles } from './world/cradles.js';
@@ -350,7 +350,6 @@ async function main() {
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = T.visual.shadows;
   renderer.shadowMap.type = shadowTypeOf(T.visual.shadowFilter); // (filtered, not softened: a console's one shadow, see render/present.js; the low tiers' unfiltered, render/graphics.js)
-  installThreeFixes(); // (three 0.170's batch colour check, which re-chose every batch's program every draw: render/threefixes.js)
   installShadowKinds(); // (one depth material a kind of caster, so the shadow pass keeps its programs: render/shadowkinds.js)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = T.visual.exposure;
