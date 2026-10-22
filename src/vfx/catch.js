@@ -44,7 +44,7 @@ export class CatchLook {
       const m = new THREE.Mesh(g, this.strandMat); m.frustumCulled = false; this.group.add(m); return { m, ph };
     });
     this.mu = { uT: { value: 0 }, uK: { value: 0 }, uA: { value: 0 }, uC: { value: this.color.clone().multiplyScalar(0.6) } };
-    this.mouthM = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ name: 'catch-mouth', uniforms: this.mu, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    this.mouthM = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ name: 'catch-mouth', uniforms: this.mu, transparent: true, forceSinglePass: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
       vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: MOUTH_F }));
     this.mouthM.frustumCulled = false; this.group.add(this.mouthM);
     this.group.visible = false; this.busy = false; this.state = 'idle';

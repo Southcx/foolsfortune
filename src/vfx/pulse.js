@@ -46,7 +46,7 @@ export class PsychicPulse {
   emit(pos, radius, color = 0xffb27a, { life = 1.9, depthTest = true, surfaceY = null } = {}) {
     const mat = new THREE.ShaderMaterial({
       uniforms: { uColor: { value: new THREE.Color(color) }, uA: { value: 1 }, uMindT: mindTime },
-      vertexShader: SHELL_V, fragmentShader: SHELL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false, depthTest,
+      vertexShader: SHELL_V, fragmentShader: SHELL_F, transparent: true, forceSinglePass: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false, depthTest,
     });
     const shell = new THREE.Mesh(this.shellGeo, mat);
     shell.renderOrder = 8; shell.frustumCulled = false;

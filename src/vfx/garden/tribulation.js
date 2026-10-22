@@ -41,7 +41,7 @@ export class HeavenlyKiln {
   constructor({ height = 40, radius = 60 } = {}) {
     this.group = new THREE.Group(); this.group.name = 'heavenly-kiln'; this.t = 0; this.k = 0; this.to = 0; this.H = height;
     this.u = { uK: { value: 0 }, uT: { value: 0 } };
-    this.vortex = new THREE.Mesh(new THREE.CircleGeometry(radius, 48).rotateX(Math.PI / 2), new THREE.ShaderMaterial({ name: 'kiln-vortex', uniforms: this.u, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    this.vortex = new THREE.Mesh(new THREE.CircleGeometry(radius, 48).rotateX(Math.PI / 2), new THREE.ShaderMaterial({ name: 'kiln-vortex', uniforms: this.u, transparent: true, forceSinglePass: true, depthWrite: false, side: THREE.DoubleSide,
       vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: VORTEX_F }));
     this.vortex.position.y = height; this.vortex.visible = false; this.vortex.frustumCulled = false; this.group.add(this.vortex);
     this.bolts = [];
