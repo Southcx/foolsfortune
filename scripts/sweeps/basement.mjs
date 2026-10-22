@@ -52,7 +52,7 @@ window.__bs = (() => {
       const disp = (id) => { const e = document.getElementById(id); return e ? getComputedStyle(e).display : 'none'; }; // (no element is no panel: #course and #circuit are gone, the owner's, 2026-10-07)
       const C = g.circuits;
       return { course: disp('course'), courseText: document.getElementById('course')?.textContent || '', circuit: disp('circuit'), circuitText: document.getElementById('circuit')?.textContent || '',
-        god: disp('god'), cross: g.hud?.el?.cross?.style.display ?? null, shells: g.hud?.el?.shells?.style.display ?? null,
+        god: disp('god'), cross: (g.psygunReticle ? (g.psygunReticle.root.userData.overlayHidden ? 'none' : '') : null) /* (the psygun's reticle: Calissa's game.psygunReticle; the HUD's old crosshair is gone) */, shells: g.hud?.el?.shells?.style.display ?? null,
         beacons: C ? [...C.beacons.values()].filter((b) => b.g.visible).length : null, run: C?.run ? { id: C.run.def.id, stage: C.run.stage, started: C.run.started, done: C.run.done, penalty: C.run.penalty, clean: C.run.clean } : null };
     },
     course() { const c = g.course; return { current: c.current, running: c.running, lapT: c.lapT, t: +c.t.toFixed(2), lapRooms: [...c.lapRooms], best: { ...c.best } }; },

@@ -134,6 +134,22 @@ the sea as a place, the islets as rooms, the serpent's mind and every look, soun
   - **the coil:** 2.0 s; it wraps the ship for 5 s and halves the helm's turn; shoot the head to break it;
   - **the dive:** 0.5 s; under for 3 to 6 s, its wake showing where it comes up.
 - **Spoils:** a material (a placeholder) and a bounty if one is posted. A plate of it in its habit (the coil, the spit) pays as a plate does.
+- **What a kill pays** (Dovina, 2026-10-22, on Petra's measured fight; `serpentPay`, wired in `world/opensea/opensea.js`; the log's
+  `seaserpent.paid`):
+  - **Priced by its own time, not as a hunt.** Petra measured about 50 real s of perfect aim, so with ordinary aim and the sail to its
+    lair a kill is about 4 real minutes. ECON.hunt's Marlin is 20 minutes of play (160 cubes). A sea has 32 serpent squares and lairs
+    one in four, so about 8 lairs a game day. At a hunt's worth a kill, a sailor who only hunts would make about 2.7x the aim.
+  - **So a kill pays 6 minutes of play at the aim**, which is its time plus a hostile's premium. That is x0.75 with the hull at its last
+    hit, up to x1.25 with the hull whole: **36 to 60 cubes**. Skill skips grind: the hull kept is the skill.
+  - **Hunting alone,** lair to lair, comes to at most about 0.8x the aim an hour, and less after the fuel. The open sea's best faucet
+    stays under the aim, as section 13 asks.
+  - **Not wired:** Letty's posted bounty (`bountyCls`: the board posts none yet) and the material (the materials table has no serpent
+    scale).
+- **Achievements** (`sea5` to `sea8`):
+  - Something Long: sink one;
+  - Shake It Loose: shoot it loose of the hull;
+  - Not a Scratch: sink one with the hull whole (`seaserpent.down.whole`);
+  - Serpent Season: sink 10.
 
 ## 8. Where it meets the rest of the game
 
@@ -227,8 +243,10 @@ Dovina's room, as the Raceway is (`src/world/opensea/`; reached from the Index, 
 - **The sweep** (`scripts/sweeps/opensea.mjs`) passes 14 of 14: enter, board, a square sailed at cruise (charted, fuel burnt), an islet
   moored at and stood on, re-boarding, a dock.
 
-**Not yet:** the safari (Egregores on the water, plates), the sea serpent, the fronts on the water, the islets' secrets beyond the chest
-and the fuel, a sandbar's tide, the pier's open-sea choice (Petra's), and every look.
+**Not yet:** the safari (Egregores on the water, plates), the fronts on the water, the islets' secrets beyond the chest and the fuel, a
+sandbar's tide, and every look. (The sea serpent and the pier's open-sea choice are built: Petra, 2026-10-22, `creatures/seaserpent/`,
+`world/opensea/seafight.js`, `world/emocean/pier.js`. `OpenSea.arrive(island)` lands at that island's quay, so a pier on Margarite can
+land you at Margarite's.)
 
 ## 12. The islets' puzzles and the Dreamvane's treasure hunt (2026-10-20; the owner: "please write them into the plan and implement them! Oh and of course we need a metal-detecting treasure hunt for the dreamvane")
 

@@ -72,7 +72,7 @@ window.__ds = (() => {
     /** A line that calls the Courier he or she (the game says "you"). */
     gendered(lines) { return lines.filter((t) => /\\b(Courier|Couriers?'s?)\\b[^.]*\\b(she|he|her|him|his|hers|himself|herself)\\b/i.test(t) || /^(She|He) /.test(t)); },
     // ---- the Solar Skiff
-    skiff() { const K = skiff(); return { tech: g.techs.active?.id || null, phase: g.techs.active?.id === 'skiff' ? K.phase : null, parked: !!K.parked, want: !!K.want, shown: !!K.skiff.group.visible, sail: +K.L.toFixed(2), speed: +(K.speed || 0).toFixed(1), air: !!K.air, spin: +K.spin.toFixed(2), cross: g.hud.el.cross?.style.display ?? null, sfxLoop: !!K.sfxLoop, pos: v(g.player.pos) }; },
+    skiff() { const K = skiff(); return { tech: g.techs.active?.id || null, phase: g.techs.active?.id === 'skiff' ? K.phase : null, parked: !!K.parked, want: !!K.want, shown: !!K.skiff.group.visible, sail: +K.L.toFixed(2), speed: +(K.speed || 0).toFixed(1), air: !!K.air, spin: +K.spin.toFixed(2), cross: (g.psygunReticle ? (g.psygunReticle.root.userData.overlayHidden ? 'none' : '') : null), sfxLoop: !!K.sfxLoop, pos: v(g.player.pos) }; },
     // ---- the Solar Skiffing trial
     solar() { const s = g.solar; return { running: s.running, next: s.next, missed: s.missed, t: +(s.t || 0).toFixed(1), lit: s.lit, rings: s.rings.length, shown: s.rings.filter((R) => R.look.group.visible).length, taken: s.rings.filter((R) => R.taken).length }; },
     /** Set down a few metres before ring i on its line, facing along it (where a person would be lining up to pass it). */
@@ -131,7 +131,7 @@ async function run(id, fn, retry = true) {
 
 // ================================================================== 1. every place in the Dunes, entered and seen
 await run('places', async () => {
-  const want = ['dunes', 'weir', 'folk.grog', 'tithe', 'shore', 'jetty', 'well.mouth'];
+  const want = ['dunes', 'weir', 'folk.grog', 'shore', 'jetty', 'well.mouth']; // (the Tithe stands in Raku's Bazaar since 2026-10-15)
   const have = new Set((await S.sw('places()')).map((p) => p.id));
   S.check('places: the Dunes\' places are registered', want.every((p) => have.has(p)), { missing: want.filter((p) => !have.has(p)) });
   const dunesPos = await S.ev(() => __game.game.places.pos('dunes')?.toArray()), weirPos = await S.ev(() => __game.game.places.pos('weir')?.toArray());
@@ -267,6 +267,7 @@ await run('skiff', async () => {
   // a bail (a landing too hard or too crooked, a wall over 14 m/s: skiff.js BAIL) is counted and said: the bail made directly, as the land() rule would
   m = await ds('mark()');
   const l0 = await S.ev(() => __game.game.ledger?.get?.('skiff.bail') || 0);
+  for (let i = 0; i < 12 && !(await S.ev(() => __game.game.techs.active?.id === 'skiff' && __game.game.techs.get('skiff').phase === 'ride')); i++) await S.ticks(20); // (bail() is only from the ride: wait out a tumble first)
   await S.ev(() => { const K = __game.game.techs.get('skiff'); if (__game.game.techs.active?.id === 'skiff' && K.phase === 'ride') K.bail('crooked'); });
   await S.ticks(200);
   ev = await ds(`eventsSince(${JSON.stringify(m)})`);

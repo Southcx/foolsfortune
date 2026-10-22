@@ -13,9 +13,9 @@
 // Prior art: The Legend of Zelda: The Wind Waker (the Great Sea charted square by square, an islet a square, the King of Red Lions
 // moored at its shore); Sunless Sea (fuel and the dark, port reports); Sea of Thieves (the sloop moored, the crew stepping off).
 //
-//   game.opensea = new OpenSea(game)   .active   .sailing   .arrive()   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
+//   game.opensea = new OpenSea(game)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
 //   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
-//   sea.stele { islet, words, line }; the islets' puzzles and caches: puzzlepieces.js (`.pieces`)
+//   sea.stele { islet, words, line }, seaserpent.paid { cubes, hull, of }  (a serpent sunk: progress/opensea/seaserpent.js serpentPay); the islets' puzzles and caches: puzzlepieces.js (`.pieces`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
@@ -24,6 +24,7 @@ import { seaGrid, squareAt } from '../../progress/opensea/seagrid.js';
 import { noticed } from '../../progress/opensea/discoveries.js';
 import { newVoyage, sailTo, takeFix, dock, tow, burnOf, frontAt } from '../../progress/opensea/seatrip.js';
 import { SHIPS } from '../../progress/rail/ships.js';
+import { serpentPay } from '../../progress/opensea/seaserpent.js';
 import { phaseAt } from '../../progress/weather.js';
 import { today, now } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
@@ -50,6 +51,12 @@ export class OpenSea {
     this.grid = seaGrid(this.seed);
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
     game.save?.section('openSea', { scope: 'player', version: 1, dump: () => this.dump(), load: (d) => this.load(d), reset: () => this.load(null) });
+    // a serpent the Courier sank pays by the hull kept (seaserpent.js serpentPay; Petra's fight: world/opensea/seafight.js)
+    game.events?.on?.('seaserpent.down', (e) => {
+      if (e.by !== 'courier') return;
+      const of = SHIPS[this.helm?.ship || 'sloop']?.bears ?? 6, hull = game.seaFight?.hull ?? of, cubes = serpentPay(hull, of);
+      game.cubes?.earn(cubes, 'serpent'); game.events?.emit('seaserpent.paid', { cubes, hull, of, by: 'courier' });
+    });
   }
   get active() { return this.sailing || zoneOf(this.game.player.pos) === 'opensea'; }
 
@@ -76,13 +83,16 @@ export class OpenSea {
     const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2);
   }
 
-  /** From the Index (or the respawn): onto Anagami's quay, the ship moored beside it. */
-  arrive() {
+  /** From the Index, a pier (Petra's: world/emocean/pier.js) or the respawn: onto that island's quay (Anagami's if it has none on this
+   *  sea), the ship moored beside it, the voyage standing in its square. */
+  arrive(island = 'anagami') {
     const g = this.game; this.build();
     if (this.sailing) this.unseal();
-    const q = this.props.quays.anagami;
+    if (!this.props.quays[island]) island = 'anagami';
+    const q = this.props.quays[island];
+    if (q.square) { this.voyage.at = q.square; this.voyage.charted.add(q.square); this.dirty(); }
     this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2); // (moored off the quay's seaward side)
-    this.moored = { quay: 'anagami' };
+    this.moored = { quay: island };
     g.player.killY = SEA.y - 90;
     g.course?.teleport(q.pos.clone().add(_v.set(0, 0.05, 5)), 0); // (at the quay's edge, the ship before you)
     g.events?.emit('opensea.enter', { by: 'courier' });
@@ -132,7 +142,7 @@ export class OpenSea {
       const isl = this.nearIslet(H.pos, ROOM.moor);
       const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay);
       if (quay) this.dockAt(quay[0], quay[1]);
-      else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.pos.copy(isl.pos).addScaledVector(d, isl.r + 5).setY(SEA.y); H.pose(0); this.stepOff({ islet: isl.feature.id }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); }
+      else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.pos.copy(isl.pos).addScaledVector(d, isl.r + 5).setY(SEA.y); H.pose(0); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); }
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });
     }
   }

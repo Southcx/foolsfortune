@@ -201,19 +201,19 @@ governs the mental state: pushed up by what is drunk, settled by quiet. It is **
 The lesson, unsaid (DESIGN.md 22, "every system teaches something real"): feelings carried in and left untended overgrow; tended, they
 make a garden.
 
-### B. Sound (Wanda's proposals, as she wrote them; hers to build)
+### B. Sound (Wanda's proposals, as she wrote them; hers to build. All six built by Wanda, 2026-10-22: a366200b, 03df37fb)
 
-- [ ] **B1. The garden's own ambience, made of what you placed:** a pond adds water, moonflowers add crickets, the tree adds leaves.
+- [x] **B1. The garden's own ambience, made of what you placed:** a pond adds water, moonflowers add crickets, the tree adds leaves.
   The cue may rest now and then and let it play, but never for long.
-- [ ] **B2. Tending as music:** each act on the cue's beat and in its key. A watering is a run down the scale, a planting a knock and a
+- [x] **B2. Tending as music:** each act on the cue's beat and in its key. A watering is a run down the scale, a planting a knock and a
   note, a harvest a step up a crop, and a whole bed harvested plays the Answer.
-- [ ] **B3. Harmony you can hear** (Plomp and Levelt's roughness). A calm planetoid's voices are tuned (fifths, just intonation). A
+- [x] **B3. Harmony you can hear** (Plomp and Levelt's roughness). A calm planetoid's voices are tuned (fifths, just intonation). A
   briar one's are a few cents to a quarter of a critical band apart, so they beat and grate, with thorny plucks and a cicada rasp.
   Pruning pulls them back into tune, and you hear the beating slow and stop. The tune itself never changes, only its tuning.
-- [ ] **B4. Spirits hum the tune when happy, and go out of tune when not.**
-- [ ] **B5. Placeable sound:** a wind chime, a music box, a gramophone that plays a cue you own, heard where it stands. These are decor
+- [x] **B4. Spirits hum the tune when happy, and go out of tune when not.**
+- [x] **B5. Placeable sound:** a wind chime, a music box, a gramophone that plays a cue you own, heard where it stands. These are decor
   (D).
-- [ ] **B6. Seasons as arrangements of one tune** (if E is kept): spring flute and harp, summer steel pan and brushes, autumn fiddle and
+- [x] **B6. Seasons as arrangements of one tune** (if E is kept): spring flute and harp, summer steel pan and brushes, autumn fiddle and
   accordion, winter music box and bells. Rain strips the percussion.
 
 ### C. The spirits as neighbours, visitors and letters (Espada's proposals; the words hers, the rules Dovina's)
