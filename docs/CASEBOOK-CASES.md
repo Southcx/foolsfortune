@@ -3524,3 +3524,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the psygun leaves the digits alone while a talk is open (tools/psygun/weapon.js). Measured: Digit2 on Saggar's five choices,
   0 turns.
 - **Rule:** 270
+
+### 2026-10-22 · A helm cradle's imprint floated off its hull (Calissa; seen by Petra)
+- **Seen:** Petra, wiring the helm cradles at the pier: the imprint burned at the moored hull's helm drifted about 8 cm against the hull's
+  bob, stayed where the hull had been when another was moored, and hung over the water when the hull was hidden.
+- **Cause:** `SealImprints.burn` (vfx/sealimprint.js) set the imprint once at the cradle's world point and added it to the scene: right for a
+  Shrine's cradle, which never moves, wrong for one on something that does.
+- **Fix:** `place()` sets it on its cradle at each burn, and a cradle with an `anchor` (the helm's CradleLook group) carries it as a child,
+  attached at the same world place (`attach` keeps the world transform), so it bobs and hides with the hull. Measured in node on a scaled,
+  turned hull: placed and faced exactly, its world scale kept, the 8 cm bob followed, hidden with the hull.
+- **Rule:** 271

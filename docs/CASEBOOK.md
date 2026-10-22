@@ -802,3 +802,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 270. **A window that reads keys owns them while it is open**: whatever else reads the same keys, and runs before it in
     the frame, asks whether the window is open, since spending a key after it was read is too late.
+
+271. **A mark on a thing that moves is that thing's child.** Placed once at a world point and left in the scene, it
+    drifts, outlives the thing and floats where it was; parent it to the thing (`attach` keeps where it stands) or to what the thing names.
