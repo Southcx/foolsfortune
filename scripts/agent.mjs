@@ -7,8 +7,9 @@
 // Prior art: OpenAI Gym's observe/act/step, the Minecraft agents' bridges (Mineflayer under Voyager: a long-lived game process and
 // short calls into it), and a debugger's attach-and-step.
 //
-//   node scripts/agent.mjs serve [--seed 1] [--port 5199]     (start it in the background; the dev server on 5173, as for the stress test)
-//   node scripts/agent.mjs look [--places]                     the state (with the places' list: where it can go)
+//   node scripts/agent.mjs serve [--seed 1] [--port 5199] [--mode story]  (in the background; the dev server on 5173, as for the stress test;
+//                                                              a webdriver boots DEBUG unless a mode is kept: --mode keeps one first)
+//   node scripts/agent.mjs look [--places] [--firsts]          the state (with the places' list: where it can go; with the ledger's firsts)
 //   node scripts/agent.mjs act '{"do":"travel","place":"well.mouth"}'   an intent (the answer: { ok, why? } and the state after)
 //   node scripts/agent.mjs do '{"do":"goto","place":"kiln"}' [maxTicks]  an intent, then time until it is done (or maxTicks: 1800)
 //   node scripts/agent.mjs step [ticks]                        let time pass (60 ticks: one second)
@@ -22,14 +23,15 @@ const port = +opt('port', process.env.AGENT_PORT || 5199);
 
 if (cmd === 'serve') await serve();
 else if (cmd) await call(cmd);
-else { console.log('node scripts/agent.mjs serve | look [--places] | act <json> | do <json> [maxTicks] | step [ticks] | stop'); process.exit(1); }
+else { console.log('node scripts/agent.mjs serve | look [--places] [--firsts] | act <json> | do <json> [maxTicks] | step [ticks] | stop'); process.exit(1); }
 
 async function serve() {
   const { openGame } = await import('./playtest/game.mjs');
   const seed = +opt('seed', 1) || 1;
-  const g = await openGame({ seed });
+  const mode = opt('mode', null), before = mode ? (p) => p.addInitScript((m) => { try { localStorage.setItem('foolsfortune.mode', m); } catch { /* none */ } }, mode) : null; // (the mode the title would have kept: core/save.js lastMode)
+  const g = await openGame({ seed, before });
   const routes = {
-    look: async (b) => g.look({ places: !!b.places }),
+    look: async (b) => g.look({ places: !!b.places, firsts: !!b.firsts }),
     act: async (b) => { const r = await g.act(b.cmd); await g.step(1); return { ...r, state: await g.look() }; },
     do: async (b) => { const r = await g.act(b.cmd); if (!r.ok) return { ...r, state: await g.look() }; await g.step(1); const s = await g.until((s) => !s.task, b.max ?? 1800); return { ...r, state: s }; },
     step: async (b) => { await g.step(Math.max(1, Math.min(60 * 60, b.ticks ?? 60))); return g.look(); },
@@ -54,7 +56,7 @@ async function serve() {
 }
 
 async function call(name) {
-  const body = name === 'look' ? { places: args.includes('--places') }
+  const body = name === 'look' ? { places: args.includes('--places'), firsts: args.includes('--firsts') }
     : name === 'act' || name === 'do' ? { cmd: JSON.parse(args[1] || '{}'), max: args[2] ? +args[2] : undefined }
     : name === 'step' ? { ticks: args[1] ? +args[1] : 60 } : {};
   const out = await new Promise((resolve, reject) => {

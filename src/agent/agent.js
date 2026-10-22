@@ -55,7 +55,7 @@ export class Agent {
   turn(yaw) { this.run('agent.turn', yaw); }
 
   // ------------------------------------------------------------------ looking
-  observe({ places = false } = {}) {
+  observe({ places = false, firsts = false } = {}) {
     const g = this.game, P = g.player;
     const since = (list, last) => list.slice(last ? list.lastIndexOf(last) + 1 : 0);
     // (the agent sees what the player sees: a creature's health and a blow's number only at the Courier's familiarity with its kind,
@@ -91,6 +91,7 @@ export class Agent {
       near, events: fresh, log: lines,
       task: this.task ? this.task.kind : null, result: this.result,
       ...(places ? { places: g.places?.all() || [] } : {}),
+      ...(firsts ? { firsts: { play: g.ledger?.play ?? 0, firsts: { ...(g.ledger?.firsts || {}) }, done: { ...(g.ledger?.done || {}) }, mode: g.mode ?? null } } : {}), // (the ledger's play time in real seconds, each first and each achievement at its play time: a first hour timed)
     };
   }
 

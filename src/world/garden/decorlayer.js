@@ -169,7 +169,7 @@ export class DecorLayer {
     if (i >= 0) { const p = this.decor.s.placed[i]; this.held = { id: p[0], yaw: p[5], tint: p[6], from: i }; sfx.grab?.(); return; }
     this.catalogue();
   }
-  push(u) { this.undos.push(u); if (this.undos.length > UNDO) this.undos.shift(); }
+  push(u) { u.n = this.R.undoN = (this.R.undoN || 0) + 1; this.undos.push(u); if (this.undos.length > UNDO) this.undos.shift(); } // (stamped in the realm's one count: the hand's Ctrl+Z takes the later of the clay's and decor's, hand.js undoLast)
   /** Ctrl+Z in decor: the last placing, move or putting back taken back, found by what and where (a removal shifts indexes). */
   undo() {
     const U = this.undos.pop(), D = this.decor; if (!U || !D) return false;

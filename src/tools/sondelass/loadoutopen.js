@@ -5,8 +5,8 @@
 // (loadouteditor.js) ask here.
 //
 //   THE SLOTS   4 to start, 8 at most. Slots 5 to 8 open at 300, 1,000, 3,000 and 8,000 cutlass hits (the ledger's `cut.hit`), or sooner
-//               by an unbroken string run of 8, 10, 12 or 14 blows (the record `sond.string.best`; NOTE: nothing writes that record yet,
-//               it is Petra's tracking rule on `cut.combo`, so it is read as 0 where it is missing and only the count way opens a slot)
+//               by an unbroken string run of 8, 10, 12 or 14 blows (the record `sond.string.best`, kept from `move.string.end` by
+//               feedback/tracking/moves.js; a save without it reads 0)
 //   THE MOVES   known from the start: today's four normals and the stinger (the launcher, the air string, the pause string and the dash
 //               are the fixed grammar, never slotted). Any other row is known when Dovina's `unlocked('sondelass', id, L)`
 //               (progress/combat/moves.js) says so, asked only where her table has a row for it with an `unlock` (none yet: her earning
@@ -19,8 +19,7 @@
 // count anyone reaches, or a feat that proves the skill), and Monster Hunter's weapon trees (a branch opens from the one before it).
 //
 //   SLOTS { start, most }   SLOT_OPENS [{ slot, hits, run }]   STARTERS
-//   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits': the count way only, while the feat way's
-//   record has no writer)
+//   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits, or 8 in a row': both ways)
 //   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Locked. Learned from Backhand
 //   (to come).')
 // ---------------------------------------------------------------------------------------
@@ -41,7 +40,7 @@ export const STARTERS = ['c1', 'c2', 'c3', 'c4', 'stinger'];
 const HITS = 'cut.hit', RUN = 'sond.string.best';
 const lentMoves = (game) => !!game?.lend?.has?.('moves');
 const count = (L, key) => { try { return +L?.get?.(key) || 0; } catch { return 0; } };
-const record = (L, key) => { try { return +L?.best?.(key) || 0; } catch { return 0; } }; // (a record not yet kept reads as 0: `sond.string.best` has no writer yet)
+const record = (L, key) => { try { return +L?.best?.(key) || 0; } catch { return 0; } }; // (a record not yet kept reads as 0)
 
 /** How many string slots are open: `earned` by the ledger, `n` with the lend (all 8 in DEBUG with `moves` lent). */
 export function slotsOpen(game) {
@@ -52,11 +51,10 @@ export function slotsOpen(game) {
   return { n: lent ? SLOTS.most : earned, earned, lent };
 }
 
-/** What opens a closed slot, in one line (words placeholders for Espada's). Only the count way: nothing writes `sond.string.best` yet,
- *  so "or 8 in a row" promised a way that could not open it (it comes back, `, or ${o.run} in a row`, with the record's writer). */
+/** What opens a closed slot, in one line (words placeholders for Espada's): the count way and the feat way, both kept by the ledger. */
 export function slotOpening(slot) {
   const o = SLOT_OPENS.find((x) => x.slot === slot);
-  return o ? `${o.hits.toLocaleString('en-GB')} hits` : '';
+  return o ? `${o.hits.toLocaleString('en-GB')} hits, or ${o.run} in a row` : '';
 }
 
 /** Dovina's earning, where the game has it: `unlocked(tool, move, L)` asked for a row her table (progress/combat/moves.js MOVES) holds

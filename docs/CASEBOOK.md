@@ -774,3 +774,11 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 262. **A ratio is clamped before it is raised to a fractional power.** `x ** 1.6` of a hair below 0 is NaN,
     and a NaN vertex blacks out every triangle it touches; clamp the ratio (or `Math.max(0, ...)`) where it is made, not where it is drawn.
+
+263. **What is worn every frame is worn from the rest another writer left, never from a constant.** A look set once (a
+    glaze, a tint, a part chosen) and a look set every frame (wear, a flash, a fade) on one material: the frame's writer keeps the rest
+    the other leaves and starts from it, or the first is gone a frame later.
+
+264. **A state that exists to hold a window open ends when the window closes, however it closes.** Closing
+    from the state's side (unseal, so the page shuts) is half; the window shut by its own key, by Esc or by another page must end the
+    state too, or the player is left in it with nothing to do but press again.

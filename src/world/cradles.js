@@ -19,7 +19,7 @@
 // sockets, Kirby Planet Robobot's armour and Mario Odyssey's capture (a bigger body with its own moves), the Japanese registered seal.
 //
 //   game.cradles = new Cradles(game)
-//   .add({ id, kind, pos (the seat: where the Jar sits), at? (where F reaches it from, on the ground; the seat when not given), yaw?, reach?, hold?, drain?, book? (the Seal Book's page, when a place's cradles share one), onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
+//   .add({ id, kind, pos (the seat: where the Jar sits), at? (where F reaches it from, on the ground; the seat when not given), yaw?, reach?, hold?, drain?, book? (the Seal Book's page, when a place's cradles share one), page?() (true while the page it opened stands: closed, by F or Esc, it unseals, one press), onSeal?(c), onUnseal?(c, why), hurt?(blow), update?(dt, c) }) -> cradle   .remove(c)
 //   .seal(c, by?) -> bool   .unseal(why?, by?, { now }?) -> bool   .sealed (the cradle you are in, or null)   .near() (the one F would seal)
 //   .mine -> { name, outline, carving } | null   .choose({ name, outline, carving }) -> bool (once, ever)
 //   .struck(blow) (vessel/damage.js asks it first while sealed)    events: seal.set { cradle, kind, book?, by, first, seal } / seal.unset { cradle, kind, by, why }, seal.carve
@@ -44,9 +44,9 @@ export class Cradles {
     game.interact?.add('cradle', () => { const c = this.near(); return c ? { pos: c.at.clone().setY(c.at.y + 0.6), d: c.d, ref: `cradle.${c.id}` } : null; });
   }
 
-  add({ id, kind = 'threshold', pos, at = null, yaw = 0, reach = REACH, hold, drain = 0, book = null, onSeal = null, onUnseal = null, hurt = null, update = null }) {
+  add({ id, kind = 'threshold', pos, at = null, yaw = 0, reach = REACH, hold, drain = 0, book = null, page = null, onSeal = null, onUnseal = null, hurt = null, update = null }) {
     if (!CRADLE_KINDS.includes(kind)) throw new Error(`cradle ${id}: no kind ${kind}`);
-    const c = { id, kind, book, pos: pos.clone(), at: (at || pos).clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
+    const c = { id, kind, book, pos: pos.clone(), at: (at || pos).clone(), yaw, reach, hold: hold ?? kind !== 'threshold', drain, page, onSeal, onUnseal, hurt, update, d: 0, imprint: false };
     tag(c, 'cradle'); this.list.push(c);
     return c;
   }
@@ -116,7 +116,7 @@ export class Cradles {
     const g = this.game, I = g.input, c = this.sealed;
     if (!c) {
       const n = g.interact?.cur?.id === 'cradle' ? this.near() : null;
-      if (n && I?.wasPressed('KeyF') && !g.log?.typing && I.enabled) this.seal(n);
+      if (n && g.player?.peekLatch?.('KeyF') && !g.log?.typing && I?.enabled) { g.player.latch('KeyF'); this.seal(n); } // (the Courier's buffered F, consumed, as every interact takes it: a press on a frame the cradle was not yet chosen is kept)
       return;
     }
     this.t += g.rawDt ?? dt;
@@ -130,6 +130,7 @@ export class Cradles {
     }
     if (this.phase === 'out') { if (this.t >= OUT) this.stepOut(); return; }
     if (this.phase !== 'on') return;
+    if (c.page && !c.page()) { this.unseal('page'); return; } // (its page shut, by F or Esc: out with it, one press, not a second F into an empty seal)
     c.update?.(dt, c);
     const pool = g.lachryma;
     if (c.drain > 0 && pool) {

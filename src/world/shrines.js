@@ -60,6 +60,7 @@ export class Shrines {
     const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
     const at = s.model.cradleSpots?.()?.threshold || s.pos.clone().addScaledVector(f, 1.2);
     s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at, at: at.clone().setY(s.pos.y), yaw: s.yaw, reach: 1.2, hold: true,
+      page: () => !!this.menu?.open || s.inward > 0, // (its page, or the arch's walk-in to the garden after it)
       onSeal: () => { this.find(s); this.rest(s.id); s.model.wake?.(); this.open(s); }, // (the gate wakes: Calissa's torii, vfx/shrine.js)
       onUnseal: () => { s.model.wake?.(false); if (this.menu?.open && this.page === s.id) this.menu.close(); } });
   }
