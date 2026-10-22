@@ -18,12 +18,14 @@
 //   ROUTINE, PLACES, WISH, WISH_KINDS   routineOf(sheet, grain, { phase, raining }) -> { place, stay }   wishFor(key, n, sheet, open) -> wish
 //   game.spiritLife = new SpiritLife(game)   .wishOf(entry) -> wish | null   .update(dt)
 //   events: spirit.wish { spirit, kind, wish }   spirit.wish.done { spirit, kind, wish, bond }   garden.digest { season, day, left, wishes, briar, bloom, mail }
+//           spirit.farewell.ask { spirit, kind, feeling }   spirit.farewell { spirit, kind, feeling, statue }
 //           spirit.letter { from, kind, about }   spirit.letters { letters }   spirit.gift { spirit, kind, id }   /letters
 // ---------------------------------------------------------------------------------------
 import { today, now as calNow } from '../core/calendar.js';
 import { phaseAt } from './weather.js';
 import { seasonOf } from './seasons.js';
 import { DECOR } from './decor.js';
+import { formOf } from './spirits.js';
 
 /** The places a spirit's day is spent at (the world finds the nearest of each on the spirit's planetoid, else wanders). */
 export const PLACES = ['pond', 'lantern', 'spiritHouse', 'tree', 'terrace', 'free'];
@@ -74,7 +76,12 @@ const keyOf = (e) => e.name || `${e.kind}@${e.at ?? 0}`;
  *  beginning, not an end); at the first visit of a game day, one gift from a spirit with bond `giftBond` or more, every `giftEvery`
  *  game days, a garden piece of its feeling's set it has not given before (else a plain one). `keep`: letters kept, the oldest go. */
 export const MAIL = { postcards: 3, postcardEvery: 3, giftBond: 60, giftEvery: 3, keep: 30 };
-const fresh = () => ({ wishes: {}, digest: null, mail: [], away: [], giftDay: null, given: {} });
+/** The farewell (GARDEN-COZY.md C6; the owner, 2026-10-22: "yes, but you should get like a cosmetic reward if they do go home"): a
+ *  matured spirit at full bond asks to go home, once, and never again if refused; nothing forces it, and "not yet" is simply not
+ *  releasing it (Spiritfarer's Everdoor). Let go after asking, it leaves a statue of itself in its feeling (a garden piece, `statue`
+ *  + the feeling, progress/decor.js) and its postcards begin, as any release's. */
+export const FAREWELL = { bond: 100 };
+const fresh = () => ({ wishes: {}, digest: null, mail: [], away: [], giftDay: null, given: {}, farewell: [] });
 
 export class SpiritLife {
   constructor(game) {
@@ -91,8 +98,8 @@ export class SpiritLife {
     E.on('decor.place', meet((w, e, ev) => w.kind === 'decor' && DECOR[ev.id]?.set === w.set));
     E.on('spirit.feed', meet((w, e, ev) => w.kind === 'food' && isIt(e, ev) && ev.stat === w.stat)); // (`stat`: the feeling whose stat the meal raised)
     E.on('photo.take', meet((w, e, ev) => w.kind === 'photo' && (ev.kinds || [ev.kind]).includes(w.of)));
-    E.on('garden.enter', (ev) => { if (ev.by !== 'courier') return; meet((w) => w.kind === 'visit' && phaseAt() === w.phase)(ev); this.post(); this.gift(); this.digest(); this.ask(); }); // (the mail and a gift, then the digest of wishes already open; a new wish says itself)
-    E.on('spirit.release', (ev) => { if (ev.by !== 'courier') return; this.s.away.push({ spirit: ev.spirit || null, kind: ev.kind, feeling: ev.feeling || null, day: today(), sent: 0 }); this.game.save?.dirty('spiritLife'); });
+    E.on('garden.enter', (ev) => { if (ev.by !== 'courier') return; meet((w) => w.kind === 'visit' && phaseAt() === w.phase)(ev); this.post(); this.gift(); this.digest(); this.ask(); this.askHome(); }); // (the mail and a gift, then the digest of wishes already open; a new wish says itself)
+    E.on('spirit.release', (ev) => { if (ev.by !== 'courier') return; this.s.away.push({ spirit: ev.spirit || null, kind: ev.kind, feeling: ev.feeling || null, day: today(), sent: 0 }); this.farewell(ev); this.game.save?.dirty('spiritLife'); });
     game.chat?.add?.('letters', { help: 'read the letters in your garden\'s mailbox: /letters', run: () => this.read() });
   }
   /** The bound spirits with a sheet (a sheet is given the first time one hops out in the garden: world/garden/raising.js). */
@@ -143,6 +150,23 @@ export class SpiritLife {
   }
   /** /letters: the mailbox read (each letter said once more, then marked read). */
   read() { const unread = this.s.mail.filter((m) => !m.read); this.game.events?.emit('spirit.letters', { letters: (unread.length ? unread : this.s.mail.slice(-3)).map((m) => ({ ...m })), by: 'courier' }); for (const m of unread) m.read = true; this.game.save?.dirty('spiritLife'); }
+  /** A matured spirit at full bond asks to go home, once (a refusal is never pressed). */
+  askHome() {
+    for (const e of this.entries()) {
+      if ((e.sp.bond || 0) < FAREWELL.bond || !formOf(e.sp)) continue;
+      const k = keyOf(e); if (this.s.farewell.some((a) => a.key === k)) continue;
+      this.s.farewell.push({ key: k, spirit: e.name || null, kind: e.kind, feeling: e.sp.feeling || 'wonder' });
+      this.game.events?.emit('spirit.farewell.ask', { spirit: e.name || null, kind: e.kind, feeling: e.sp.feeling || 'wonder', by: 'courier' });
+      this.game.save?.dirty('spiritLife');
+    }
+  }
+  /** A release: if the spirit had asked to go home, it is its farewell, and it leaves its statue. */
+  farewell(ev) {
+    const i = this.s.farewell.findIndex((a) => (ev.spirit ? a.spirit === ev.spirit : !a.spirit && a.kind === ev.kind)); if (i < 0) return;
+    const [a] = this.s.farewell.splice(i, 1), id = `statue${a.feeling[0].toUpperCase()}${a.feeling.slice(1)}`;
+    if (DECOR[id]) this.game.decor?.give(id, 'farewell');
+    this.game.events?.emit('spirit.farewell', { spirit: a.spirit, kind: a.kind, feeling: a.feeling, statue: DECOR[id] ? id : null, by: 'courier' });
+  }
   /** The first visit of a game day: the season, the open wishes, the garden's state (said by the log, four lines at most). */
   digest() {
     const day = today(); if (this.s.digest === day) return; this.s.digest = day;
@@ -152,5 +176,5 @@ export class SpiritLife {
     this.game.events?.emit('garden.digest', { day, season: S.id, seasonDay: S.day + 1, left: S.left, wishes, mail: this.s.mail.filter((m) => !m.read).length, briar: list.filter((p) => p.band === 'briar').map((p) => p.planetoid), bloom: list.filter((p) => p.band === 'bloom').map((p) => p.planetoid), phase: phaseAt(calNow()), by: 'courier' });
     this.game.save?.dirty('spiritLife');
   }
-  update(dt = 0) { if ((this.lookT -= dt) > 0) return; this.lookT = WISH.look; if (this.game.realm?.active) this.ask(); }
+  update(dt = 0) { if ((this.lookT -= dt) > 0) return; this.lookT = WISH.look; if (this.game.realm?.active) { this.ask(); this.askHome(); } }
 }

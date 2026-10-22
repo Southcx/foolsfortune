@@ -27,12 +27,12 @@ import { ECON } from './econ/table.js';
 
 /** Where a piece comes from (two or more a piece): the shed's catalogue; a spirit's gift on the doorstep at dawn; a spirit's thanks for a
  *  wish; a visitor's gift; a lotus opening (its set's recipe: then bought); a season's (that season only); briar fruit. */
-export const SOURCES = ['shop', 'gift', 'wish', 'visitor', 'lotus', 'season', 'briar'];
+export const SOURCES = ['shop', 'gift', 'wish', 'visitor', 'lotus', 'season', 'briar', 'farewell'];
 /** The sets: five feelings' (their place in the Five Phases, SPIRIT-GARDEN.md 1), the sounding pieces, the seasons, the briar. */
 export const SETS = {
   plain: { name: 'Garden Basics' },
   wonder: { name: 'Moss and Stone' }, mirth: { name: 'Festival' }, desire: { name: 'Tea Garden' }, grief: { name: 'Rain Garden' },
-  dread: { name: 'Koi Pond' }, sound: { name: 'Sound' }, season: { name: 'Seasons' }, briar: { name: 'Briar' },
+  dread: { name: 'Koi Pond' }, sound: { name: 'Sound' }, season: { name: 'Seasons' }, briar: { name: 'Briar' }, keepsake: { name: 'Keepsakes' },
 };
 const P = (name, set, size, tints, from, season) => ({ name, set, size, tints, from, ...(season ? { season } : {}) });
 /** The catalogue (names plain, Espada's to rule; the looks Calissa's). `size`: small 1 cell, medium 2 x 2, large 3 x 3, centre 4 x 4. */
@@ -89,6 +89,13 @@ export const DECOR = {
   reedScreen: { ...P('Reed Screen', 'season', 'medium', 2, ['season', 'gift'], 'summer'), color: 0xc9b77a },
   pumpkinLantern: { ...P('Pumpkin Lantern', 'season', 'small', 2, ['season', 'gift'], 'autumn'), color: 0xd9822b },
   snowLantern: { ...P('Snow Lantern', 'season', 'small', 2, ['season', 'gift'], 'winter'), color: 0xdfe6ee },
+  // keepsakes (C6, the owner's 2026-10-22): a spirit that goes home after asking leaves its statue, in its feeling's colour; the one piece
+  // with one way only, by design: it is that spirit's, and no shop sells a goodbye
+  statueWonder: { ...P('Wonder Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0x8fc4a0 },
+  statueMirth: { ...P('Mirth Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0xe08a5a },
+  statueDesire: { ...P('Desire Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0xd8b25a },
+  statueGrief: { ...P('Grief Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0x8aa0c0 },
+  statueDread: { ...P('Dread Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0x5a7f9a },
   // briar (A6): made from briar fruit, or brought by a briar visitor
   brambleHedge: P('Bramble Hedge', 'briar', 'small', 2, ['briar', 'visitor']),
   thornArch: P('Thorn Arch', 'briar', 'medium', 2, ['briar', 'visitor']),
@@ -158,6 +165,7 @@ export class Decor {
   catalogue(season = null) {
     const met = new Set(Object.keys(this.s.owned).map((id) => DECOR[id]?.set));
     return Object.keys(DECOR).filter((id) => { const D = DECOR[id];
+      if (D.set === 'keepsake') return false; // (a keepsake is never sold, not even again: it is that spirit's)
       if (this.owns(id)) return true;
       if (D.from.includes('season')) return D.season === season;
       return D.from.includes('shop') && (D.set === 'plain' || met.has(D.set)); });

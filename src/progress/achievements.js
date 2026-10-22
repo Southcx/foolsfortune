@@ -29,6 +29,7 @@ import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
 import { DECOR } from './decor.js';
+import { EGREGORES } from './opensea/safari.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
@@ -48,8 +49,8 @@ export const CATS = [
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'Out Cold', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
-  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Shrines', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
+  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
@@ -557,6 +558,7 @@ export function buildAchievements(game) {
   F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
   F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the Dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
   F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the Dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+  C('sr1', 'explore', 'Shrines', 1, 'count', 'Catch Your Breath', 'Rest at a Shrine.', 'shrine.rest', 1); // (the Bisque Shrine is beside where you wake: FIRST-HOUR.md)
 
   // ---------------------------------------------------------------- THE EMOCEAN (docs/plans/SLICE.md, E4: placeholders until the hop is built)
   C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
@@ -638,6 +640,11 @@ export function buildAchievements(game) {
   C('os3', 'explore', 'Digging', 4, 'collect', 'Broken English', 'Find every ostracon.', 'ostracon.found', 16);
   C('os4', 'explore', 'Digging', 3, 'mechanic', 'Set in Stone', 'Read a stele.', 'stele.read', 1);
   F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(16, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 22, { title: 'Epigrapher' });
+  // the open sea (progress/opensea/; OPEN-SEA.md 8 and 13): charting, the whole sea, the migrations; names placeholders for Espada's
+  C('sea1', 'emocean', 'The Open Sea', 1, 'count', 'Off the Lanes', 'Chart a square of the open sea.', 'sea.chart', 1);
+  C('sea2', 'emocean', 'The Open Sea', 4, 'collect', 'Cartographer', 'Chart every square of the open sea.', 'sea.chart', 63, { title: 'Cartographer' });
+  C('sea3', 'emocean', 'The Open Sea', 2, 'count', 'Herd Watcher', 'Photograph ten herds from the dock\'s board.', 'sea.herd', 10);
+  F('sea4', 'emocean', 'The Open Sea', 3, 'collect', 'Migration Season', 'Photograph herds of six kinds of Egregore.', (L) => Object.keys(EGREGORES).filter((id) => L.get(`sea.herd.${id}`) >= 1).length, 6);
   // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
   F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
   C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);
@@ -659,7 +666,7 @@ export function buildAchievements(game) {
   C('gy4', 'garden', "The Garden's Life", 2, 'count', 'Pruner', 'Prune fifty thorns.', 'garden.prune', 50);
   H('gy5', 'garden', "The Garden's Life", 3, 'mechanic', 'Bramble Keeper', 'Keep a planetoid overgrown for a whole season (7 game days).', 'garden.briar.held', 7);
   C('gy6', 'garden', "The Garden's Life", 1, 'collect', 'Home Sweet Home', 'Own ten garden pieces.', 'decor.owned', 10);
-  F('gy7', 'garden', "The Garden's Life", 5, 'collect', 'The Whole Catalogue', 'Own every garden piece.', (L) => L.get('decor.owned'), Object.keys(DECOR).length, { title: 'Collector' });
+  F('gy7', 'garden', "The Garden's Life", 5, 'collect', 'The Whole Catalogue', 'Own every garden piece.', (L) => L.get('decor.owned'), Object.keys(DECOR).filter((id) => DECOR[id].set !== 'keepsake').length, { title: 'Collector' });
   C('gy8', 'garden', "The Garden's Life", 3, 'mechanic', 'A Set Piece', 'Finish a set of garden pieces round its centrepiece.', 'decor.sets', 1);
   H('gy9', 'garden', "The Garden's Life", 4, 'collect', 'Five Lotuses', "Open all five lotuses on the Dantian's lake.", 'garden.lotuses', 5);
   F('gy10', 'garden', "The Garden's Life", 3, 'collect', 'Four Seasons', 'Visit your Inner Realm in all four seasons.', (L) => ['spring', 'summer', 'autumn', 'winter'].filter((s) => L.get(`garden.season.${s}`) >= 1).length, 4);
@@ -668,6 +675,7 @@ export function buildAchievements(game) {
   F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
   C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
   C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you released.', 'spirit.letter.postcard', 1);
+  C('gy16', 'garden', "The Garden's Life", 3, 'mechanic', 'Bon Voyage', 'Let a spirit go home when it asks.', 'spirit.farewell', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)
@@ -678,6 +686,7 @@ export function buildAchievements(game) {
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   // the two feelings past Anagami's five, learned by drinking them where they fall (GALL-AND-FURY.md section 5; Espada's names): the count
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
+  C('sk12', 'sky', 'Weather', 1, 'mechanic', 'Lookout', 'Awaken to Wonder: find a vantage point and look out.', 'feeling.known.wonder', 1); // (the first hour's awakening: the workshop's atrium rail, FIRST-HOUR.md)
   C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
   C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
   F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Awaken to all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)

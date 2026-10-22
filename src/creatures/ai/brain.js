@@ -7,7 +7,8 @@
 //   ctx = { game, c (the creature), brain, mem, drives, eco (ecology.js), now, P (the Courier),
 //           focus (the fact it is most sure of), bb (the running action's own scratch: cleared when it changes) }
 //
-//   const b = new Brain(game, creature, { senses, memory, drives, actions, think: 0.2 })
+//   const b = new Brain(game, creature, { senses, memory, drives, actions, think: 0.2, sees? })
+//                       (sees(out): what it watches in place of the Courier on foot: a hunter of ships watches the hull, seaserpent/mind.js)
 //   b.update(dt)        every frame (it decides how often to think, and how much, by how far it is from the Courier: below)
 //   b.signal()          think again at once (it was hurt, a status landed, a macro was typed into it)
 //   b.force(id, why)    start that action now, whatever it scores (a reprogrammed order; it still ends as actions end)
@@ -28,11 +29,11 @@ import { stream } from '../../core/rng.js';
 const simRand = stream('creatures/ai/brain'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class Brain {
-  constructor(game, c, { senses, memory, drives, actions, think = 0.2, near = 45, far = 130, watch = 26, mods = null } = {}) {
+  constructor(game, c, { senses, memory, drives, actions, think = 0.2, near = 45, far = 130, watch = 26, mods = null, sees = null } = {}) {
     this.game = game; this.c = c;
     this.senses = senses; this.mem = memory; this.drives = drives;
     this.reasoner = new Reasoner(actions);
-    this.think = think; this.near = near; this.far = far; this.watchR = watch; this.mods = mods;
+    this.think = think; this.near = near; this.far = far; this.watchR = watch; this.mods = mods; this.sees = sees;
     this.action = null; this.score = 0; this.cool = new Map();
     this.now = 0; this.thinkT = simRand() * think; this.acc = 0; this.wake = false;
     this.bb = {};
@@ -51,6 +52,7 @@ export class Brain {
   watchList() {
     const g = this.game, P = g.player, c = this.c, out = this._watch || (this._watch = []);
     out.length = 0;
+    if (this.sees) return this.sees(out);
     const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active || (P.veiledT ?? 0) > 0; // (veiled: a song's mirage, tools/crucibelle/crucibelle.js)
     const sp = Math.hypot(P.vel?.x || 0, P.vel?.z || 0);
     const loud = (P.sliding ? 1.2 : P.crouching ? 0.45 : sp > 5 ? 1.35 : sp > 0.5 ? 0.9 : 0.55) * (g.belt?.inHand ? 1.15 : 1);

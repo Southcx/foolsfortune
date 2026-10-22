@@ -32,6 +32,7 @@ const TABLE = {
   spirit: { spirit: REL.KIN, courier: REL.KIN, slipjelly: REL.RIVAL, wisp: REL.RIVAL },
   // a Lantern Wisp (wisp/lanternwisp.js): its kin, the Courier its quarry, the jellies beneath its notice, a spirit its rival
   wisp: { wisp: REL.KIN, courier: REL.PREY, slipjelly: REL.NEUTRAL, spirit: REL.RIVAL, clapperjar: REL.CURIOUS },
+  seaSerpent: { seaSerpent: REL.RIVAL, courier: REL.PREY }, // (the open sea's hunter: the ship is the Courier, sealed in at its helm)
   clapperjar: { clapperjar: REL.KIN, courier: REL.CURIOUS, slipjelly: REL.THREAT },
 };
 

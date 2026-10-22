@@ -73,12 +73,21 @@ export class Techs {
       return !!this.active; // (it may have handed over to another tech)
     }
     for (const t of this.list) {
+      if (!t.passive && t.enabled && !t.usable()) { this.unlearned(t); continue; }
       if (t.passive || !t.usable() || !t.canStart()) continue;
       this.begin(t);
       t.update(dt);
       return true;
     }
     return false;
+  }
+
+  /** A Movement Art switched on but not yet learned, its key pressed (`wants()`: a tech's own test of its input, with no side effect):
+   *  `art.unlearned` once a press, and the log says how it is learned (tracking/goals.js; FIRST-HOUR.md 5). */
+  unlearned(t) {
+    const w = !!t.wants?.();
+    if (w && !t.askedArt) this.game.events?.emit('art.unlearned', { ability: t.art ?? t.id, by: 'courier' }); // (the art's id: the tech's own unless it says, progress/skills.js)
+    t.askedArt = w;
   }
 
   /** Passive techs (`passive = true`: carry, kick, recoil) run beside whatever else is going on. */

@@ -13,6 +13,8 @@
 //   game.pier = new Pier(game)   .add(island, () => ({ end, top, yaw }))   .update()   .open(island)   .landing(island) -> { pos, yaw }
 //   (in the DEBUG save its page also offers THE SHOWCASE CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
 //   (and in either save PRACTICE: a row a leg's type sailed before, legs.js practiceOf, sailed alone at strength 1 to 4 by stage.js sailPractice)
+//   (and THE OPEN SEA: SET SAIL is a crossing on the lanes, to an island; the open sea is the Emocean off them, sailed at the free helm:
+//   world/opensea/, OPEN-SEA.md 8; the row goes there under the seam, to Anagami's quay)
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
@@ -89,6 +91,9 @@ export class Pier {
         if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
+      // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from any pier, to Anagami's quay on it (world/opensea/opensea.js arrive)
+      const sea = g.opensea && !V.sailing ? el('div', 'room', `<span class="n">≈</span><span><b>THE OPEN SEA</b><s>off the lanes, at the helm: W and S the sail, A and D the rudder · chart the squares · what lives out there</s></span>`) : null;
+      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => g.places?.travel?.('opensea'); g.seam?.cross(go, { kind: 'sea' }) || go(); };
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
       const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
       if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen); };
@@ -112,7 +117,7 @@ export class Pier {
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';
       g.mooring?.preview(chosen.at(-1) ?? null);
-      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `SET SAIL FROM ${(NODES[at]?.name || at).toUpperCase()}: A CROSSING`), box, ...(sea ? [el('div', 'grp', 'OR SAIL FREE'), sea] : []), ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
     if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }

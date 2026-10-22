@@ -415,7 +415,7 @@ export class Cartography {
     root.appendChild(this.canvas);
     this.mctx = this.canvas.getContext('2d');
     const bar = el('div', 'bar');
-    bar.appendChild(el('h2', '', 'MIND MAPPING'));
+    bar.appendChild(el('h2', '', 'MAP'));
     this.layerBtns = {};
     for (const l of LAYERS) {
       const b = el('button', '', l.name);

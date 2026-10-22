@@ -14,6 +14,7 @@ import { sightings, platePay, EGREGORES } from '../src/progress/opensea/safari.j
 import { isletOf } from '../src/progress/opensea/islets.js';
 import { newVoyage, sailTo, takeFix, dock, burnOf, frontAt } from '../src/progress/opensea/seatrip.js';
 import { seeded } from '../src/core/rng.js';
+import { herdsOf, herdFee, MIGRATION } from '../src/progress/opensea/migrations.js';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : d; };
 const seed0 = +opt('seed', 1), n = +opt('n', 10), hours = +opt('hours', 6), ship = opt('ship', 'sloop'), skill = +opt('skill', 0.5), sloppy = args.includes('--sloppy');
@@ -75,3 +76,21 @@ console.log(`  pay an hour: ${totals.perHour.map((c, i) => `h${i + 1} ${f(c)} ($
 console.log(`  fuel and tows an hour: ${totals.fuelPerHour.map((c) => f(c)).join(', ')}; tows ${(totals.tows / n).toFixed(1)}; drifts ${(totals.drifts / n).toFixed(1)}`);
 console.log(`  found ${(totals.found / n).toFixed(1)} of ${(totals.of / n).toFixed(1)} features (islets landed ${(totals.islets / n).toFixed(1)}); plates paid ${(totals.plates / n).toFixed(1)}; fights ${(totals.fights / n).toFixed(1)} (${(totals.lost / n).toFixed(1)} broke off)`);
 console.log(`  charted (squares, of): ${totals.charted.slice(0, 5).map((c) => c.slice(0, 2).join('/')).join('  ')}; the whole sea charted at ${Object.values(totals.chartedAt).map((h) => h.toFixed(1)).join(', ')} h`);
+
+// the migrations (OPEN-SEA.md 13): after the sea is charted, a sailor who works the dock's board, a game day (a real hour) at a time:
+// from the nearest port to each herd, nearest first, a square at a time, and the time to photograph it. Herds' fees against the aim.
+{ const S = ECON.openSea, G0 = seaGrid(1), port = G0.squares.find((q) => q.lane) || G0.squares[0], hourAim = ECON.perMinute * 60;
+  let pay = 0, mins = 0, fuel = 0, n = 0, days = 200;
+  for (let d = 0; d < days; d++) {
+    let at = port, left = herdsOf(G0, d, 1).map((h) => ({ ...h, sq: G0.squares.find((q) => q.id === h.square) }));
+    while (left.length) {
+      left.sort((a, b) => Math.hypot(a.sq.col - at.col, a.sq.row - at.row) - Math.hypot(b.sq.col - at.col, b.sq.row - at.row));
+      const h = left.shift(), steps = Math.abs(h.sq.col - at.col) + Math.abs(h.sq.row - at.row);
+      mins += steps * S.squareS / 60 + 2; fuel += steps * S.burn * ECON.perMinute; pay += herdFee(h.cls); n++; at = h.sq; // (2 real minutes to come in slow and take the plate)
+    }
+    const back = Math.abs(port.col - at.col) + Math.abs(port.row - at.row); mins += back * S.squareS / 60; fuel += back * S.burn * ECON.perMinute;
+  }
+  const perHour = (pay - fuel) / (mins / 60);
+  console.log(`\nMIGRATIONS (${MIGRATION.herds} herds a game day, share ${MIGRATION.share} of a hunt): a day's tour takes ${(mins / days).toFixed(1)} real min, pays ${Math.round(pay / days)} cubes, burns ${Math.round(fuel / days)} in fuel`);
+  console.log(`  MEASURE migrations.net: ${Math.round(perHour)} cubes a real hour while touring = ${(perHour / hourAim).toFixed(2)}x the aim; a game day's herds ${Math.round((pay - fuel) / days)} net (${((pay - fuel) / days / hourAim).toFixed(2)}x an hour's aim), the want: about 0.4x an hour's aim a game day, less than fishing`); }
+
