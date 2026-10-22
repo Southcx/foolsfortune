@@ -177,3 +177,17 @@ The design laws apply: arts and their kin only by achievement, a count way and a
    tight, and a tune should feel like a trim, not a different machine. Wider is one number if you want it.
 3. **The wind fix changes how the board feels under desire's weather** (×1.16 speed). Races keep a best per condition already, so it is
    fair, but it is a change you will feel.
+
+## 6. The owner's rulings (2026-10-22)
+
+"I agree with all your skiff plans, and being faster in desire weather is a-okay."
+- **Records:** STOCK and OPEN, both.
+- **The ends:** ±12%.
+- **The wind:** fixed.
+
+**T1 built (2026-10-22):**
+- The Raceway weather's wind strength now reaches the sail, square-rooted: desire's 1.35 is a ×1.16 sail. (`skiff.js:364`, `CD.wind`; in
+  the Dunes there is no condition, so ×1.)
+- Grip by surface: `SURFACE` in `boardrules.js` (sand 1, water 0.85, a vein lane's Lachrymite 1.1), through `rules.surfaceGrip`.
+- The six neutral keys on the seam (2190ec58).
+- Mass made real waits for T3's ruler, since it would change the Heavy and Light hulls already earned.

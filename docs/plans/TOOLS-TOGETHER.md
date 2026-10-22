@@ -208,3 +208,70 @@ Monster Hunter's weapons are the model: the job is in the motion.
    makes the belt a choice again.
 2. **K5, pairs:** yes or no? They are the most fun thing here, and also the most work.
 3. **Kintsugi as the field mend:** the Soul Brush is the mender, and the gold on your vessel is the reward for doing it.
+
+## 7. The owner's rulings (2026-10-22)
+
+- **K1, the domains reach the tools:** built. Sixteen reads across nine files, on Petra's terms (89d4c195). Six keys wait for their
+  feature: the macro's length, the macros kept, the hand's lift weight, the Lockheart's hold, a sunder's cuts, a map's copies.
+- **K2 is replaced.** "Shells are only OP now because we haven't established their methods of procurement yet, like a spellscription
+  crafting system that creates shells." So the psygun keeps its reach, and the balance is in how a shell is had: **shells are crafted by
+  Spellscription**. That is a plan of its own (Dovina's, next): recipes, materials, the domain's level as the ceiling of a shell's tier,
+  and a craft's count where `spellscription.slots` and `spellscription.copy` find their sites. `borrows` is dropped.
+- **K4, the Celestial Brush on creatures, is dropped.** "it already has the ability to deal with enemies through the Doodle Cat style
+  prompts that pop up on enemies that eliminates them when drawn in sequence." That is Magic Cat Academy's way: draw the sign shown over
+  the ghost. The audit missed it because the prompts live outside `techniques.js`.
+  - It needs balancing: Dovina's, from a measure of how long a prompt run takes against how much it does.
+  - The dot (Celestial mode's mark, `celestial.js:102`) is "a little buggy". That goes to Petra as a bug to find in play.
+- **Kintsugi:** yes. The Soul Brush mends the vessel's cracks in gold.
+- **K5 is replaced by one main tool and one sub tool** (the owner: "to make builds much more of a conscious choice ... one main tool
+  and one sub tool. That solves your pair question too"). Section 8.
+- **K3, each string a rhythm:** not ruled yet.
+
+## 8. Main and sub: the plan (Dovina's proposal, for the owner's yes on its open points)
+
+**The rule.**
+- **What is worn.** The belt holds two tools, where today it holds five places:
+  - **the main tool**, in hand with all its verbs;
+  - **the sub tool**, which lends the main one verb and one passive.
+  The other five wait in the Pneuka Box. The places (back, hip, neck) retire.
+- **Prior art:**
+  - Bayonetta's hands and feet: two weapons, one body, and the pair makes the style.
+  - NieR: Automata's light and heavy pair, whose combos change with the pairing.
+  - Monster Hunter Rise's switch skills: one weapon, a chosen kit inside it.
+  - Elden Ring's main hand and off hand.
+
+**What a sub tool lends: one verb and one passive, the same whatever the main.**
+
+| sub tool | the verb it lends (one key) | its passive |
+|---|---|---|
+| psygun | a snap shot, the one round of the main's own aim | the ship's gun on the rail, as now |
+| Sondelass | the hook, to a point or to a creature | none: the hook is the gift |
+| Soul Brush | a flick of paint in the weather's feeling | kintsugi, the field mend |
+| Veritome | the Flash | the tag reads one line further |
+| Dreamvane | the fork, the lure thrown | the vane: the weather and the crystals' signatures |
+| Crucibelle | one toll, the stagger round you | the beat: a blow on it hits harder |
+| Lockheart | the gulp, the parry that drinks | it drinks the pool's overflow, as now |
+
+**The pairs (the owner's 7C2 = 21).**
+- Each pair has one pair special, opened by an achievement done with that pair worn (arts only by achievement).
+- They come in waves of four, so the 21 are earned and built over rounds, not all at once.
+- The first four are TOOLS-TOGETHER.md 4 K5's, now as pairs:
+  - psygun and Veritome, the mark;
+  - Sondelass and Crucibelle, the rung line;
+  - Soul Brush and Dreamvane, the painted lure;
+  - Lockheart and Soul Brush, the coffin's mop.
+
+**What follows elsewhere.**
+- **The rail's mounts:** the main and the sub, the sloop's two slots as now.
+- **A puzzle duel's moves:** the two tools' moves. The Veritome as main gives the duel no move today, so it lends its Flash as Delay's
+  stand-in.
+- **The first hour (FIRST-HOUR.md):** a new save starts with the psygun as main ("the most accessible") and the Sondelass as sub. The
+  first path gains a step that swaps one.
+- **The Movement Arts:** none is a tool's, so none changes.
+
+**Open, for the owner.**
+1. **Where may you swap?** My call: at a Shrine, or at the Pneuka Box anywhere out of a fight, but never mid-fight. That way the choice
+   is made before the fight, not dodged inside it.
+2. **Does the sub's verb go on one key for every sub (R, say)?** My call: yes, one key, the same for all. Every main's own R move
+   (the hammer fan, the Tidecutter, the Dreamquake) moves to its R held.
+3. **The new save's pair:** psygun main, Sondelass sub?

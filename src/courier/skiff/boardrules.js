@@ -32,6 +32,9 @@ import * as THREE from 'three';
  *  (a real second). */
 export const HULL = { bump: 0.9, wall: 1.4, wallFree: 4, land: 0.6, bail: 12, wreck: 3, refill: 40, empty: 0.5 };
 /** The scorch: built a real second of flare, cooled a real second without; the luff's length (real s) and its pace. */
+/** Grip by surface (SKIFF-TUNING.md 2.2; the owner, 2026-10-22: "I agree with all your skiff plans"): the sand as it was, water looser,
+ *  Lachrymite (a vein lane) keener. A modifier with a source you can see: the ground under the board. */
+export const SURFACE = { sand: 1, water: 0.85, vein: 1.1 };
 export const SCORCH = { build: 0.14, cool: 0.35, luff: 2, pace: 0.6 }; // (v204, the owner: "time to scorch way too short": 0.4 scorched in 2.5 real s of flare; now about 7)
 /** The manual: its drift, A / D's answer, points a real second (counted when it ends). */
 export const MANUAL = { drift: 0.45, answer: 1.6, points: 30 };
@@ -55,9 +58,11 @@ export class BoardRules {
    *  grind's answer and drift (grind.js), mass (a bump). 1 for each a source leaves alone: the stock board (SKIFF-TUNING.md 2.2). */
   mult(key) { const g = this.game; return (g.skiffParts?.mult(key) ?? 1) * (g.cityTrial?.mult(key) ?? 1) * (this.here ? g.raceway.buoys?.mult(key) ?? 1 : 1); } // (the parts, the City Trial's patches, the buoys' power)
 
+  /** The ground's grip under the board: water, a vein lane's Lachrymite, or the sand. */
+  surfaceGrip(onWater) { return onWater ? SURFACE.water : this.veinT > 0 ? SURFACE.vein : SURFACE.sand; }
   /** Each ride step: the cooldowns run down. (The pool keeps its own regen, race or not: the owner, 2026-10-14.) */
   step(dt) {
-    this.shoulderT = Math.max(0, this.shoulderT - dt);
+    this.shoulderT = Math.max(0, this.shoulderT - dt); this.veinT = Math.max(0, (this.veinT || 0) - dt);
     for (const [k, t] of this.near) if ((t - dt) <= 0) this.near.delete(k); else this.near.set(k, t - dt);
   }
 
@@ -74,6 +79,7 @@ export class BoardRules {
   }
   /** On a vein lane: the pool refilled (a real second's share). */
   refill(dt, plate, fresh) { // (said every fifth of a real second while on the lane: Wanda's shimmer holds while they come; `fresh` on entering it)
+    this.veinT = 0.3; // (on a vein lane this fifth of a real second: its grip, SURFACE)
     const L = this.game.lachryma; if (!L) return; L.gain(HULL.refill * dt, 'vein');
     this.refillT = fresh ? 0 : (this.refillT || 0) - dt; if (this.refillT > 0) return; this.refillT = 0.2;
     this.game.events?.emit('skiff.refill', { fresh: !!fresh, share: +(L.value / L.max).toFixed(2), by: 'courier' });

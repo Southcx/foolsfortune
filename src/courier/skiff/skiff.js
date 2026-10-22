@@ -361,7 +361,7 @@ export class Skiffing extends Tech {
     const r = _v2.set(-Math.cos(this.heading), 0, Math.sin(this.heading)); // (to the boat's right)
     let vf = this.v.dot(f), vl = this.v.dot(r);
     const wgo = _v3.set(W.dir.x, 0, W.dir.y); // where the wind goes
-    const windF = polar(wgo.dot(f)) * W.gust; // (cos 1: running before it)
+    const windF = polar(wgo.dot(f)) * W.gust * Math.sqrt(CD?.wind ?? 1); // (cos 1: running before it; the Raceway weather's wind strength square-rooted: desire's 1.35 a x1.16 sail, SKIFF-TUNING.md T1)
 
     // ---- speed: the sail sets where the boat settles; it gets there by the sail's pull, coasts down otherwise
     this.boosting = Math.max(0, this.boosting - dt * 2.2);
@@ -377,7 +377,7 @@ export class Skiffing extends Tech {
     vf += pump + (this.kickV || 0); this.kickV = 0;
     if (target === 0 && vf < 0.15 && !this.air) vf = 0;
     if (this.air) vf *= Math.exp(-0.015 * dt);
-    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : (this.carve ? CARVE.grip : 1) * (CD?.grip ?? 1) * this.rules.mult('grip'))); // (a carve lets the board slide out; wet sand holds less)
+    vl *= Math.exp(-c.grip * dt * (this.air ? 0.1 : (this.carve ? CARVE.grip : 1) * (CD?.grip ?? 1) * this.rules.mult('grip') * this.rules.surfaceGrip(this.onWater))); // (a carve lets the board slide out; wet sand holds less)
     if (CD?.shove && !held) vl += CD.shove * (W.gust - 1) * wgo.dot(r) * dt; // (a squall's gust shoves the board across the wind)
     if (Math.abs(vl) < 0.02 && !this.air) vl = 0;
     if (held) { vf = 0; vl = 0; }
