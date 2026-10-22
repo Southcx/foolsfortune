@@ -3480,3 +3480,31 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `crawlReach` (courier/player.js): a ray along the move just over the step height, as long as the body reaches that way, takes
   the move into a wall away. After: stopped at 0.96 m, slide 0, 0.05 of a cycle; a 0.35 m step is still climbed; stress 0 violations.
 - **Rule:** 265
+
+### 2026-10-22 · Space just before the get-up's end did nothing; the psygun handed back after the belly holstered a second later (Calissa's crouch-jump note)
+- **Seen:** read in code by Calissa, measured headless: Space pressed two frames before getting up off the belly ended gave no jump;
+  the psygun drawn again by the prone holster put itself away about a second after, if it had idled before lying down.
+- **Cause:** the get-up zeroed the jump buffer on any press while it played (the belly's "Space gets up" rule caught the rise too), and
+  its timer ended a frame late on a 1e-17 float residue; the belt's draw of the psygun left its idle clock running from before.
+- **Fix:** while getting up the press waits in its 0.12 s buffer and jumps at the end (player.js `rising`), the timer clears below 1e-6;
+  the belt's draw starts the psygun's idle clock over, as X does. Measured after: 1 jump, at the get-up's end; idle 0.6 s a real second
+  after the hand-back, still drawn at 2.5 s.
+- **Rule:** 266
+
+### 2026-10-22 · A ledge hang flung the Courier at 89 m/s (the stress test, seed 1)
+- **Seen:** the stress test's run 11 on the ground floor: tech `hang`, the Courier grounded on the floor, horizontal speed 90 m/s, then
+  52.9 m/s and -72.8 down; three props broke under the ledge in the same tenth of a second.
+- **Cause:** the hang holds its spot by a velocity of 12 times the distance to its grip, with no bound; the body was about 7.4 m from the
+  grip (the ledge's props broken, the body on the floor) and the hang still held.
+- **Fix:** `hold()` (courier/moves/hang.js): farther than 1.5 m from the grip after the catch's first 0.3 real s, the hold is lost and
+  the hang lets go; the pull is capped at 10 m/s. Stress after: 0 violations on seeds 1, 2 and 3.
+- **Rule:** 267
+
+### 2026-10-22 · A zandatsu aborted the page in Rapier (the stress test, seed 3)
+- **Seen:** `RuntimeError: unreachable` in Rapier's `setEnabled`, from `SlipJellies.vanish`, called by blade mode's queued cut.
+- **Cause:** the zandatsu queues the jelly's vanish 0.16 real s after the cut; the raid, the nursery and the cavern dispose live jellies
+  (their bodies and colliders removed) without marking them dead, so the queued vanish touched a freed collider. Read in the code and
+  the stack; which of the three freed it in this run was not traced.
+- **Fix:** `dispose` marks the jelly dead, and vanish, take and burst return on a disposed one (creatures/jelly/slipjelly.js). Seed 3
+  after: 21,600 ticks, 0 violations.
+- **Rule:** 268

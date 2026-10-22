@@ -141,7 +141,7 @@ export const psygunTool = (weapon) => ({
   get drawT() { return weapon.drawT; },
   get wants() { return weapon.drawTarget > 0; },
   stow() { weapon.drawTarget = 0; weapon.manualHolster = true; },
-  out() { weapon.drawTarget = 1; weapon.manualHolster = false; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
+  out() { weapon.drawTarget = 1; weapon.manualHolster = false; weapon.idleT = 0; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw; drawn, its idle clock starts over, as X's does: handed back after the belly, it no longer holsters a second later)
   rules: { mouse: true, digits: true, kick: false, firstPerson: true },
 });
 

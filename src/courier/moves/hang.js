@@ -17,6 +17,10 @@ import { HANG } from '../anim/authored.js';
 const DROP = HANG.drop; // feet this far below the grip (the authored hang clips are built for it)
 const CAPSULE_WALL = 0.34; // the capsule hangs this far from the ledge's face; the body is drawn HANG.wall from it
 const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
+/** The hold on the grip: farther than `lost` (m) from it, after the catch's first `settle` (s), the hold is lost and the hang lets go (the body
+ *  knocked off, the ledge under the grip broken); the pull to it never past `pull` (m/s): the stress test's 89 m/s at 7.4 m (casebook). */
+const HOLD = { lost: 1.5, settle: 0.3, pull: 10 };
+const _hd = new THREE.Vector3();
 /** The suite's ledge hang on this game's ledge: its palms (2.07 m up and 0.26 m ahead of its feet, measured) moved onto the authored
  *  hang's (HANG.drop up, HANG.wall + HANG.over ahead). */
 export const LEDGE = { clip: 'Trav_LedgeHang', dy: HANG.drop - 2.07, dz: HANG.wall + HANG.over - 0.258 };
@@ -149,7 +153,7 @@ export class Hang extends Tech {
       this.phase += Math.abs(this.shim) * dt * 1.6;
       this.target = g.edge.clone().addScaledVector(g.n, 0.34).setY(g.topY - DROP);
       // hold the spot (the controller slides us to it, so walls in the way still count)
-      P.vel.set((this.target.x - P.pos.x) * 12 * this.snap, (this.target.y - P.pos.y) * 12 * this.snap, (this.target.z - P.pos.z) * 12 * this.snap);
+      if (!this.hold()) { this.release(0, -1); return false; }
       P.move(dt);
       P.bodyYaw = Math.atan2(this.face.x, this.face.z);
       if (P.grounded && P.pos.y - (g.topY - DROP) < 0.05 && this.t > 0.3) return false; // feet found the floor
@@ -182,10 +186,18 @@ export class Hang extends Tech {
     }
     const at = bar.a.clone().addScaledVector(g.along, g.s);
     this.target = new THREE.Vector3(at.x, at.y - DROP, at.z);
-    P.vel.set((this.target.x - P.pos.x) * 12 * this.snap, (this.target.y - P.pos.y) * 12 * this.snap, (this.target.z - P.pos.z) * 12 * this.snap);
+    if (!this.hold()) { this.release(0, -1); return false; }
     P.move(dt);
     P.bodyYaw = Math.atan2(this.face.x, this.face.z);
     return true;
+  }
+
+  /** The velocity that holds the spot, toward the grip: false when the hold is lost (HOLD). */
+  hold() {
+    const P = this.P, d = _hd.copy(this.target).sub(P.pos);
+    if (this.t > HOLD.settle && d.length() > HOLD.lost) return false;
+    d.multiplyScalar(12 * this.snap); if (d.lengthSq() > HOLD.pull * HOLD.pull) d.setLength(HOLD.pull);
+    P.vel.copy(d); return true;
   }
 
   /** Is there still a ledge at this point (the same height, with a wall under it)? */

@@ -417,7 +417,7 @@ export class Player {
     this.prevPos.copy(this.pos);
     this.slideBuf -= dt;
     this.postureBuf -= dt;
-    this.postureT = Math.max(0, this.postureT - dt);
+    this.postureT = this.postureT - dt > 1e-6 ? this.postureT - dt : 0; // (no float residue: 0.4 s less 24 frames of 1/60 left 1e-17, a frame more of the get-up that ate a press)
     this.dashBuf -= dt;
     this.slideCd -= dt;
     this.slideBoostCd -= dt;
@@ -498,8 +498,9 @@ export class Player {
     this.jumpBuf = liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
     this.jumpHeldLast = inp.isDown('Space');
     if (this.grounded) { this.airJumps = M.airJumps; this.dashCharges = M.dashCharges; }
-    if (this.jumpBuf > 0 && (this.shape === 'prone' || this.postureT > 0)) { if (this.posture === 'prone' && this.postureT <= 0) this.setPosture(this.fits(this.pos, 'low') ? 'crouch' : 'prone'); this.jumpBuf = 0; } // (from the belly, Space gets up to the crouch: no jump)
-    if (this.jumpBuf > 0) {
+    const rising = this.postureT > 0 && this.posture !== 'prone'; // (getting up off the belly: Space now waits in its buffer for the end, not eaten)
+    if (this.jumpBuf > 0 && !rising && (this.shape === 'prone' || this.postureT > 0)) { if (this.posture === 'prone' && this.postureT <= 0) this.setPosture(this.fits(this.pos, 'low') ? 'crouch' : 'prone'); this.jumpBuf = 0; } // (from the belly, Space gets up to the crouch: no jump)
+    if (this.jumpBuf > 0 && !rising) {
       if (this.wallrun) {
         this.wallJump(hv, wishDir);
         jumped = true;
