@@ -133,15 +133,18 @@ if (part('places')) {
 }
 
 // ---------------------------------------------------------------- the pier at the jetty's end
+/** F at a jetty's end, and wait for its page: since HANKO.md 6.2 (Petra, 55c8796) F seals the Courier into the moored hull's helm and the
+ *  pier's page opens after the stamp (0.55 real s), so a page is waited for, up to 60 ticks, never assumed after a fixed few. */
+const fPage = async (open = true) => { await S.press('KeyF', 4); for (let i = 0; i < 15 && !!(await em('win()')).index !== open; i++) await S.ticks(4); };
 const toJetty = async () => { await S.go('shore'); await em("standPier('anagami')"); await S.ticks(30); };
 if (part('pier') || part('crossing')) { await toJetty(); }
 if (part('pier')) {
   S.phase = 'pier';
   await S.ev(() => { const c = __game.game.cubes; c.spend(c.balance, 'test'); }); // (an empty purse first: the refusal)
   const ch = await em('chevron()'), end = await em("pierEnd('anagami')");
-  S.check('pier: the interact chevron is on the jetty\'s end', ch.cur === 'pier' && ch.ref === 'anagami' && ch.shown && ch.off < 0.6 && Math.hypot(ch.at[0] - end.end[0], ch.at[2] - end.end[2]) < 0.5, ch);
+  S.check('pier: the interact chevron is on the jetty\'s end', ch.cur === 'cradle' && ch.ref === 'cradle.pier.anagami.sloop' && ch.shown && ch.off < 0.6 && Math.hypot(ch.at[0] - end.end[0], ch.at[2] - end.end[2]) < 0.5, ch);
   let m = await em('mark()');
-  await S.press('KeyF', 4);
+  await fPage(true);
   let w = await em('win()'), c = await em('cnt');
   S.check('pier: F opens the pier\'s page, once', w.index && w.page === 'pier' && c.show - m.show === 1 && !w.pause, { win: w, opened: c.show - m.show });
   S.check('pier: the cursor is free while its page is open', !w.locked, { locked: w.locked });
@@ -158,21 +161,21 @@ if (part('pier')) {
   await S.press('KeyF', 4); await S.ticks(6);
   w = await em('win()'); c = await em('cnt');
   S.check('pier: F closes the pier\'s page and it stays closed', !w.index && c.show - m.show === 0, { open: w.index, closed: c.close - m.close, reopened: c.show - m.show });
-  await S.closeAll(); await S.ticks(4);
+  await S.closeAll(); await S.ticks(30);
   // Esc closes it, and the pause menu does not open under it
-  await S.press('KeyF', 4); await S.press('Escape', 4);
+  await fPage(true); await S.press('Escape', 4);
   w = await em('win()');
   S.check('pier: Esc closes the pier\'s page, no pause under it', !w.index && !w.pause, w);
-  await S.closeAll(); await S.ticks(4);
+  await S.closeAll(); await S.ticks(30);
   // F spammed: one window at most, never two, never the pause
   m = await em('mark()');
   let worst = 0, pauses = 0;
   for (let i = 0; i < REPS + 8; i++) { await S.page.keyboard.press('KeyF'); await S.ticks(1); const cc = await em('cnt'), ww = await em('win()'); worst = Math.max(worst, (cc.show - m.show) - (cc.close - m.close)); if (ww.pause) pauses++; }
   S.check('pier: F spammed never stacks two pages', worst <= 1 && pauses === 0, { mostOpenAtOnce: worst, pauses });
-  await S.closeAll(); await S.ticks(4);
+  await S.closeAll(); await S.ticks(30);
   // a resize with the page open: the window stays inside the viewport
   await S.ev(() => __game.game.cubes.earn(400, 'test'));
-  await S.press('KeyF', 4);
+  await fPage(true);
   await S.page.setViewportSize({ width: 480, height: 360 }); await S.ticks(4);
   await S.shot('pier-page-small'); const box = await em('menuBox()');
   S.check('pier: its page fits a small viewport', box && box.l >= 0 && box.t >= 0 && box.r <= box.w && box.b <= box.h, box);
@@ -196,12 +199,12 @@ if (part('pier')) {
     await S.press('KeyF', 4); await S.ticks(4);
     const shut = await prev();
     S.check('pier: a page shut under the pointer leaves the mount aboard drawn', !shut.open && shut.tool === shut.aboard, shut);
-    await S.press('KeyF', 4); await S.ticks(4);
+    await fPage(true);
   } else S.note('pier: mounts', 'no tool worn that can be mounted');
   const txt2 = await em('menuText()');
   S.check('pier: with fuel, Margarite shows its fuel', /fuel: \d+ cubes/.test(txt2), txt2.replace(/\n+/g, ' | ').slice(0, 200));
   await S.shot('pier-page');
-  await S.closeAll(); await S.ticks(4);
+  await S.closeAll(); await S.ticks(30);
   await S.common('pier: closed');
 }
 
@@ -214,7 +217,7 @@ const LEG_OF = { shoal: 'shoal', pirates: 'wreckers', leviathan: 'leviathan' };
 const board = async (island, to, setPieces, { direct = false } = {}) => {
   await S.ev(({ sp, direct }) => { const g = __game.game; g.cubes.earn(600, 'test'); if (direct) g.chat.run(`/crossing ${sp}`); }, { sp: setPieces, direct });
   await em(`standPier('${island}')`); await S.ticks(20);
-  await S.closeAll(); await S.press('KeyF', 4);
+  await S.closeAll(); await S.ticks(30); await fPage(true);
   const w = await em('win()');
   if (!(w.index && w.page === 'pier')) return { ok: false, why: 'no pier page', w };
   if (direct) {
@@ -445,11 +448,11 @@ if (part('dock')) {
   // the dock's pier: its page, from Margarite
   await em("standPier('margarite')"); await S.ticks(20);
   ch = await em('chevron()');
-  await S.press('KeyF', 4); w = await em('win()');
+  await fPage(true); w = await em('win()');
   const txt = await em('menuText()');
-  S.check('dock: F at the dock\'s pier opens its page, from Margarite', ch.cur === 'pier' && ch.ref === 'margarite' && w.page === 'pier' && /FROM MARGARITE/.test(txt) && /Anagami/.test(txt), { chevron: ch.cur, ref: ch.ref, page: w.page, text: txt.replace(/\n+/g, ' | ').slice(0, 160) });
+  S.check('dock: F at the dock\'s pier opens its page, from Margarite', ch.cur === 'cradle' && ch.ref === 'cradle.pier.margarite.sloop' && w.page === 'pier' && /FROM MARGARITE/.test(txt) && /Anagami/.test(txt), { chevron: ch.cur, ref: ch.ref, page: w.page, text: txt.replace(/\n+/g, ' | ').slice(0, 160) });
   await S.shot('dock-pier-page');
-  await S.closeAll(); await S.ticks(4);
+  await S.closeAll(); await S.ticks(30);
   await S.common('dock: after');
 }
 
