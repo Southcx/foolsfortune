@@ -372,7 +372,7 @@ export class Skiffing extends Tech {
     else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting; accel = c.boostAccel * 0.6; }
     if (this.turbo > 0) { target = Math.max(target, c.cruise * 0.6) + this.turboAdd; accel = Math.max(accel, c.boostAccel); this.boosting = Math.max(this.boosting, 0.6); } // (a carve's, a sun plate's, a solar start's push: free of Lachryma)
     if (vf < target) vf = Math.min(target, vf + accel * dt);
-    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * (CD?.coast ?? 1) * dt);
+    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * (CD?.coast ?? 1) * this.rules.mult('coast') * dt); // (the tune's coast: SKIFF-TUNING.md 2.2)
     if (furlKey && vf > 0 && !this.air) vf = Math.max(0, vf - c.brake * dt); // (the brake is the sand's: in the air S lets the sail down and nothing more, the owner's "W and S kill the momentum")
     vf += pump + (this.kickV || 0); this.kickV = 0;
     if (target === 0 && vf < 0.15 && !this.air) vf = 0;
@@ -410,12 +410,12 @@ export class Skiffing extends Tech {
     if (this.carve && (this.air || sp0 < CARVE.min * 0.6)) this.carve = null; // (off a crest, or slowed to a crawl: it is lost)
     let steerEff = this.steer;
     if (this.carve) {
-      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1) * (CD?.carve ?? 1) * (C.rate || 1); // (steered out of it, it loads at half; on wet sand sooner)
+      const C = this.carve; C.t += dt * (steerIn === -C.dir ? 0.5 : 1) * (CD?.carve ?? 1) * (C.rate || 1) * this.rules.mult('carveRate'); // (steered out of it, it loads at half; on wet sand sooner)
       const tier = CARVE.tiers.filter((t) => C.t >= t).length;
       if (tier > C.tier) { C.tier = tier; g.events?.emit('skiff.carve.charge', { tier, by: 'courier' }); }
       steerEff = C.dir * (CARVE.turn + 0.45 * steerIn * C.dir);
     }
-    const rate = c.turn * (0.35 + 0.65 * clamp(sp0 / 7, 0, 1)) * (1 - 0.4 * speedFrac) * (this.air ? 0.3 : 1);
+    const rate = c.turn * this.rules.mult('turn') * (0.35 + 0.65 * clamp(sp0 / 7, 0, 1)) * (1 - 0.4 * speedFrac) * (this.air ? 0.3 : 1);
     if (this.gliding) {
       // the hang glider: Q / E bank it round (the flight turns with it), W dives, S flares, and A / D still spin it (a trick in the glide);
       // along its path gravity by the pitch, less drag; under STALL it sinks (docs/plans/SKIFF-RACING.md section 4)
@@ -472,11 +472,11 @@ export class Skiffing extends Tech {
     this.spaceWas = sp2;
 
     // ---- height: hover over the sand, follow it with a little lag (that is what makes a crest a launch)
-    const want = gy + c.hover + 0.1;
+    const want = gy + c.hover * this.rules.mult('hover') + 0.1;
     const gap = P.pos.y - want;
     const vyT = -(this.n.x * this.v.x + this.n.z * this.v.z) / Math.max(0.2, this.n.y);
     if (!this.air) {
-      P.vel.y = damp(P.vel.y, vyT, c.follow, dt) - gap * 60 * dt;
+      P.vel.y = damp(P.vel.y, vyT, c.follow * this.rules.mult('follow'), dt) - gap * 60 * dt;
       if (gap > 0.85 || (gap > 0.25 && P.vel.y > vyT + 5)) { this.air = true; this.spin = 0; this.airT = 0; this.launchT = 0; } // (off a crest or a kicker: a late pop's window opens)
     } else {
       if (!this.gliding) P.vel.y -= c.gravity * dt;
@@ -607,7 +607,7 @@ export class Skiffing extends Tech {
       this.combo.add('spin', COMBO.points.spin * Math.abs(near)); // (tricks feed the combo, banked into free flares: SSX's boost, Sonic Riders' air)
       sfx.parry?.();
     } else if (off > BAIL.broadside && this.canBail()) { this.bail('sideways'); return; }
-    else if (off > BAIL.wobble) { this.v.multiplyScalar(0.7); this.spinRest = 0; g.events?.emit('skiff.wobble', { spin: +off.toFixed(2), by: 'courier' }); this.combo.bank(); }
+    else if (off > BAIL.wobble * this.rules.mult('wobble')) { this.v.multiplyScalar(0.7); this.spinRest = 0; g.events?.emit('skiff.wobble', { spin: +off.toFixed(2), by: 'courier' }); this.combo.bank(); }
     // down a slope, the fall is kept along it (a landing in the transition: Kirby Air Ride's slope boost, every board game's landing): the
     // share of the fall the slope turns forward, as speed; landed on the flat it is all taken by the hover
     if (off <= BAIL.wobble) {

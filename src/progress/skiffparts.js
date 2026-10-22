@@ -13,6 +13,8 @@
 //
 //   game.skiffParts = new SkiffParts(game)   .mult(key) -> number   .chosen { sail, keel, hull }   .open(id) -> bool   .choose(slot, id)
 //   .glaze() -> id | null   .setGlaze(id | null)   PARTS (the table)
+// The keys a part may multiply (courier/skiff/boardrules.js mult): top, accel, grip, coast, turn, carveRate, hover, follow, wobble, answer,
+// drift, mass. The tune sheet (docs/plans/SKIFF-TUNING.md, a plan) will be one more source of the same keys.
 // ---------------------------------------------------------------------------------------
 
 /** Each part: its slot, its label and one line (CLARITY.md), what it multiplies (top speed, acceleration, the sand's grip, the grind's

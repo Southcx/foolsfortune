@@ -51,7 +51,8 @@ export class BoardRules {
   get game() { return this.S.game; }
   get here() { return !!this.game.raceway?.active; }
   get racing() { return !!this.game.race?.running && this.here; }
-  /** The garage's multiplier for one of the board's numbers. */
+  /** The garage's multiplier for one of the board's numbers: top, accel, grip, coast, turn, carveRate, hover, follow, wobble (skiff.js), the
+   *  grind's answer and drift (grind.js), mass (a bump). 1 for each a source leaves alone: the stock board (SKIFF-TUNING.md 2.2). */
   mult(key) { const g = this.game; return (g.skiffParts?.mult(key) ?? 1) * (g.cityTrial?.mult(key) ?? 1) * (this.here ? g.raceway.buoys?.mult(key) ?? 1 : 1); } // (the parts, the City Trial's patches, the buoys' power)
 
   /** Each ride step: the cooldowns run down. (The pool keeps its own regen, race or not: the owner, 2026-10-14.) */
