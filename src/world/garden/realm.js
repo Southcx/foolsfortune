@@ -25,6 +25,7 @@ import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
 import { DecorLayer } from './decorlayer.js';
 import { ThornPatches } from './thornpatches.js';
+import { walkWish } from './spiritwalk.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
@@ -272,7 +273,7 @@ export class Realm {
       this.game.events?.emit('garden.jar.back', { by: 'courier' });
     }
     for (const s of this.spirits) {
-      if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
+      if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; walkWish(this, s, simRand, s.wish); } // (its routine where it stands, else a wander: world/garden/spiritwalk.js, Dovina's)
       { const k = this.decorLayer?.keepOut(s.body.planet, s.body.pos, s.body.radius); if (k) s.body.pos.add(k); } s.body.step(dt, { move: s.wish });
     }
     this.raising.fixed(dt); this.races.fixed(dt); // (a spar at the Chimney: world/garden/raising.js; a race: races.js)
