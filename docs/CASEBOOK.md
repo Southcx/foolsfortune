@@ -782,3 +782,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 264. **A state that exists to hold a window open ends when the window closes, however it closes.** Closing
     from the state's side (unseal, so the page shuts) is half; the window shut by its own key, by Esc or by another page must end the
     state too, or the player is left in it with nothing to do but press again.
+
+NEW:mark-rides-its-thing. **A mark on a thing that moves is that thing's child.** Placed once at a world point and left in the scene, it
+    drifts, outlives the thing and floats where it was; parent it to the thing (`attach` keeps where it stands) or to what the thing names.
