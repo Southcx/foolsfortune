@@ -392,12 +392,12 @@ make a garden.
 6. **Dovina:** the garden sweep's existing checks rerun, MEASURE lines for harmony and the rating, and the QAIS tests for the owner,
    each with a debug chest of decor, materials and briar cuttings.
 
-## 5. Questions for the owner (Dovina batches them)
+## 5. The owner's rulings (2026-10-22)
 
-- **Q1.** Harmony and briar are a gauge of the garden's own, apart from the god hand's Dissonance Level. Join them, or keep them
-  apart? (Dovina and Espada: keep them apart.)
-- **Q2.** Seasons: the garden's own clock (7 game days a season), or the whole island's?
-- **Q3.** A briar garden kept on purpose, with its own spirits, fruit and visitors: in or out? (Dovina: in. Without it, briar is only
-  a scolding.)
-- **Q4.** May a spirit at bond 100 ask to go home (the farewell, C6), never forced?
-- **Q5.** A piece picked up goes back to storage whole, so rearranging is free. Fine, or should it cost something?
+- **Q1.** Harmony and briar stay apart from the Dissonance Level.
+- **Q2.** Seasons are the garden's own clock.
+- **Q3.** A briar garden kept on purpose is valid: chaotic spirit gardens are in.
+- **Q4.** Yes, a spirit at bond 100 may ask to go home, never forced. Every bound spirit is a Figment from the wild: caught, awakened
+  from a plate, dug as a fossil, settled as a visitor, or merged from two that were. A spirit that goes home leaves a cosmetic reward.
+  (Dovina's proposal: a statue of it as a garden piece, plus its feeling's glaze at the kiln. Espada has the words.)
+- **Q5.** Rearranging is free: "nobody wants to pay to shuffle furniture."
