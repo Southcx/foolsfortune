@@ -250,6 +250,10 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   (feelings drunk and never settled, spirits neglected, the hand forcing it), it grows briar. Briar is a modifier with a source you can
   see (thorns where a feeling went untended), never a punishment, and it has its own life: the fierce feelings' spirits like it. The
   lesson, unsaid: feelings untended overgrow; tended, they make a garden.
+- **The islets** *(Espada's read, proposed 2026-10-22, the open sea not yet final; words `src/npc/isletlines.js`)*: an islet is a self the
+  Emocean left standing that never grew big enough to become an Island of Ego. Each keeps one secret, and its landing line notices one
+  human trace (a step cut, a ring of stones, a lighthouse's stairs kept up after the light went out) and never says whose. Whose is a
+  blank, left blank. The lesson, unsaid: small selves count too.
 - **The Firings**: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
   **Sinter** (grains fuse into one body), **Lustre** (the third firing), **Salt** (thrown in at the hottest: it stings, and it glazes),
   **Reduction** (starved of air, the colours change from inside), **Anagama** (the days-long wood firing; the island's own name). After
@@ -661,6 +665,7 @@ One label per thing; the name stays in the world. The label is what the card say
 | --- | --- |
 | The folk's lines, Raku's haggling | `src/npc/talks.js` (Espada's) |
 | The garden's names | `src/npc/realmnames.js` (Espada's) |
+| The islets' lines; the co-op room's lines | `src/npc/isletlines.js`, `src/npc/roomlines.js` (Espada's) |
 | The folk's names, titles, glazes | `src/npc/people.js` |
 | The log | `src/feedback/tracking.js`, `src/feedback/tracking/*.js` |
 | The System | `src/audio/voice/voice.js` |

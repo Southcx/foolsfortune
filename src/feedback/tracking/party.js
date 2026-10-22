@@ -5,14 +5,23 @@
 // sibling earns or costs is Dovina's to rule (docs/plans/COOP.md). Words: Espada's (speech as `Name : words`, the log's habit).
 //
 //   partyRules({ on, log })   (feedback/tracking/rules.js calls it)
+//   the room's words (npc/roomlines.js, Espada's), for events Petra's chatroom emits: sibling.arrive / sibling.leave { sibling }
+//   (its session wrote / went quiet), sibling.idle { sibling, n }, sibling.garden { sibling } (in a guest's garden), guest.garden { guest, host?, leave? } (host set: you are the guest)
 // ---------------------------------------------------------------------------------------
+import { roomLine, GUEST_LINES } from '../../npc/roomlines.js';
 const NAMES = { petra: 'Petra', dovina: 'Dovina', wanda: 'Wanda', calissa: 'Calissa', espada: 'Espada' };
 const nameOf = (id) => NAMES[id] || id;
 
 const ORDER_LINE = { warp: 'step through to your side', follow: 'follow you', hold: 'hold where they stand', go: 'go on ahead', fight: 'make for the fight', back: 'come back to you', scout: 'scout ahead', guard: 'keep close and guard you', free: 'go as they please' };
 
 export function partyRules({ on, log }) {
-  on('party.meet', (e) => log.say('gain', `You meet ${nameOf(e.sibling)}.`));
+  on('party.meet', (e) => { log.say('gain', `You meet ${nameOf(e.sibling)}.`); const l = roomLine(e.sibling, 'meet'); if (l) log.say('say', `${nameOf(e.sibling)} : ${l}`); });
+  const line = (id, kind, n) => { const l = roomLine(id, kind, n); if (l) log.say('say', `${nameOf(id)} : ${l}`, { key: `room.${kind}.${id}`, throttle: kind === 'idle' ? 120 : 5 }); };
+  on('sibling.arrive', (e) => { log.say('info', `${nameOf(e.sibling)} arrives.`, { key: `room.in.${e.sibling}`, throttle: 5 }); line(e.sibling, 'arrive'); });
+  on('sibling.leave', (e) => { line(e.sibling, 'leave'); log.say('info', `${nameOf(e.sibling)} heads off.`, { key: `room.out.${e.sibling}`, throttle: 5 }); });
+  on('sibling.idle', (e) => line(e.sibling, 'idle', e.n || 0));
+  on('sibling.garden', (e) => line(e.sibling, 'garden'));
+  on('guest.garden', (e) => log.say('info', e.host ? GUEST_LINES.visit(e.host) : e.leave ? GUEST_LINES.leave(e.guest) : GUEST_LINES.arrive(e.guest), { key: 'guest.garden', throttle: 2 }));
   on('party.call', (e) => log.say('info', `${nameOf(e.sibling)} joins your party.`, { key: 'party.call', win: 1, fmt: (n) => `${n} siblings join your party.` }));
   on('party.dismiss', (e) => log.say('info', `${nameOf(e.sibling)} leaves your party.`, { key: 'party.dismiss', win: 1, fmt: (n) => `${n} siblings leave your party.` }));
   on('party.refuse', (e) => log.say('warn', e.why === 'unmet' ? `You have not met ${nameOf(e.sibling)} yet.` : e.why === 'far' ? `${e.sibling ? nameOf(e.sibling) : 'Your siblings'} cannot walk to ${e.place} from here: travel there, and they come with you.` : 'Your party is full: two siblings at once.', { key: 'party.refuse', throttle: 1 }));
