@@ -114,7 +114,7 @@ export class Carry extends Tech {
   }
 
   candidates() {
-    const g = this.game, out = [];
+    const g = this.game, out = (this._cand ||= []); out.length = 0; // (one list, refilled: find runs every step)
     for (const e of g.level?.dynamic || []) out.push(e);
     for (const e of g.breakables?.items || []) out.push(e);
     return out;
@@ -133,9 +133,9 @@ export class Carry extends Tech {
       const dx = t.x - P.pos.x, dz = t.z - P.pos.z, dy = t.y - P.pos.y;
       const half = this.halfW(e);
       const sticky = e === cur;
-      const d = Math.hypot(dx, dz) - half - (sticky ? 0.35 : 0);
+      const r = Math.sqrt(dx * dx + dz * dz), d = r - half - (sticky ? 0.35 : 0); // (sqrt, not hypot: V8's hypot makes an array a call)
       if (d > this.cfg.reach || dy < -0.5 || dy > 1.6) continue;
-      if ((dx * fx + dz * fz) / (Math.hypot(dx, dz) || 1) < (sticky ? 0.3 : 0.55)) continue;
+      if ((dx * fx + dz * fz) / (r || 1) < (sticky ? 0.3 : 0.55)) continue;
       if (d < bd) { bd = d; best = e; }
     }
     return best;

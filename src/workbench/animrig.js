@@ -29,6 +29,7 @@ import courierB64 from '../assets/courier.glb?b64';
 import gunB64 from '../assets/psygun.glb?b64';
 import { Character } from '../courier/character.js';
 import { rigUniforms } from '../render/outline.js';
+import { base64Buffer } from '../core/base64.js';
 import { Techs } from '../courier/moves/techs.js';
 import { Launch } from '../courier/moves/launch.js';
 import { Emote } from '../courier/moves/emote.js';
@@ -56,7 +57,7 @@ export const LAB_TOOLS = [
   { id: 'crucibelle', label: 'the Crucibelle', make: (m) => new Crucibelle(m), belt: (t) => heldTool(t, 'THE CRUCIBELLE', 'hip') },
   { id: 'lockheart', label: 'the Lockheart', make: (m) => new Lockheart(m), belt: (t) => heldTool(t, 'THE LOCKHEART', 'neck', true) },
 ];
-const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+const bytes = base64Buffer; // (one loop, not a callback a byte: core/base64.js)
 /** Where the Anim Lab's body is put down in the world's frame: far from anything of the world's (a blow's sweep asks the tags' registry,
  *  core/tags.js, for what it may strike, and that is the game's own: a plaster patch, a crystal). A take keeps its frames from here. */
 export const FAR = new THREE.Vector3(-9000, 0, -9000);

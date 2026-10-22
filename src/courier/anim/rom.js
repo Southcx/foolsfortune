@@ -23,7 +23,7 @@
 import * as THREE from 'three';
 import { LEARNED } from './romdata.js';
 
-const _d = new THREE.Quaternion(), _t = new THREE.Quaternion(), _s = new THREE.Quaternion(), _v = new THREE.Vector3();
+const _d = new THREE.Quaternion(), _t = new THREE.Quaternion(), _s = new THREE.Quaternion(), _ti = new THREE.Quaternion(), _v = new THREE.Vector3();
 const ID = new THREE.Quaternion();
 
 export class JointLimits {
@@ -59,19 +59,18 @@ export class JointLimits {
     // twist: the part of the rotation about the hinge
     const p = _d.x * h.x + _d.y * h.y + _d.z * h.z;
     _t.set(h.x * p, h.y * p, h.z * p, _d.w);
-    const tl = Math.hypot(_t.x, _t.y, _t.z, _t.w);
+    const tl = Math.sqrt(_t.x * _t.x + _t.y * _t.y + _t.z * _t.z + _t.w * _t.w); // (sqrt, not hypot: V8's hypot makes an array a call)
     if (tl < 1e-9) _t.copy(ID); else _t.set(_t.x / tl, _t.y / tl, _t.z / tl, _t.w / tl);
     let ang = 2 * Math.atan2(_t.x * h.x + _t.y * h.y + _t.z * h.z, _t.w);
     // swing: what is left
-    _s.copy(_d).multiply(_t.clone().invert());
+    _s.copy(_d).multiply(_ti.copy(_t).invert());
     if (_s.w < 0) { _s.x = -_s.x; _s.y = -_s.y; _s.z = -_s.z; _s.w = -_s.w; }
-    const sa = 2 * Math.atan2(Math.hypot(_s.x, _s.y, _s.z), _s.w);
+    const sl = Math.sqrt(_s.x * _s.x + _s.y * _s.y + _s.z * _s.z), sa = 2 * Math.atan2(sl, _s.w);
     let hit = false;
     const a2 = Math.min(j.max, Math.max(j.min, ang));
     if (a2 !== ang) { hit = true; ang = a2; }
     if (sa > j.cone) {
       hit = true;
-      const sl = Math.hypot(_s.x, _s.y, _s.z);
       _v.set(_s.x / sl, _s.y / sl, _s.z / sl);
       _s.setFromAxisAngle(_v, j.cone);
     }

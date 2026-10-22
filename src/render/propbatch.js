@@ -6,7 +6,8 @@
 // So a prop at rest is PARKED: its geometry is copied into one BatchedMesh per material (and one for the outlines), an instance takes
 // its place at its exact transform, and its own mesh is hidden. The moment anything happens to it (its body wakes, it is carried, it is
 // cracked, scaled, re-coloured, broken) it is unparked: the instance goes, the mesh comes back, and nothing else in the game needs to
-// know. Parking is invisible by construction: the batch draws the same geometry with the same material in the same place.
+// know. Parking is invisible by construction: the batch draws the same geometry with the same material in the same place (a view of it,
+// render/materialview.js: the same material, kept apart only by three, so a batch and a prop standing alone do not take turns at its program).
 //
 // Prior art: static batching of "sleeping" physics props as Unity and Source do it (batch until disturbed, then hand the object back to
 // the dynamic path), and three.js's BatchedMesh (WEBGL_multi_draw: many geometries, one draw call, per-instance culling).
@@ -17,6 +18,7 @@
 import * as THREE from 'three';
 import { OUTLINE_MAT } from './outline.js';
 import { Zones } from './zones.js';
+import { viewOf } from './materialview.js';
 
 const gver = (g) => { let v = 0; for (const k in g.attributes) v += g.attributes[k].version; return v; };
 /** A view of a geometry with only some of its attributes (shared, not copied): the batch stores only what its shader reads. */
@@ -44,7 +46,7 @@ export class PropBatch {
         this.scene.add(m);
         return m;
       };
-      b = { mesh: mk(material), outline: outline ? mk(OUTLINE_MAT) : null, geos: new Map(), ogeos: new Map() };
+      b = { mesh: mk(viewOf(material, 'batch')), outline: outline ? mk(viewOf(OUTLINE_MAT, 'batch')) : null, geos: new Map(), ogeos: new Map() }; // (a view: the same material, its own program as a batch, render/materialview.js)
       b.mesh.castShadow = true; b.mesh.receiveShadow = true;
       this.batches.set(key, b);
     }

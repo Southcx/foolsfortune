@@ -19,6 +19,7 @@ import * as THREE from 'three';
 
 /** What a hand and a forearm are kept out of; the margin past the surface (m); the most a hand is moved in a frame (m); rounds. */
 export const STANDOFF = { parts: ['chest', 'spine', 'pelvis', 'thighL', 'thighR'], margin: 0.006, maxPush: 0.16, rounds: 4 };
+const SIDES = ['L', 'R'], HAND = { L: 'handL', R: 'handR' }, FORE = { L: 'forearmL', R: 'forearmR' }, NO_KEEP = { L: 0, R: 0 }; // (named once: no string or array made a frame)
 const _n = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Vector3(), _q = new THREE.Quaternion(), _hint = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class Standoff {
@@ -26,17 +27,20 @@ export class Standoff {
     this.ch = ch; this.body = body; this.pts = { L: [], R: [] }; this.pushed = { L: 0, R: 0 };
   }
 
-  apply(keep = { L: 0, R: 0 }) {
+  apply(keep = NO_KEEP) {
     const ch = this.ch, body = this.body;
-    for (const s of ['L', 'R']) {
+    for (let j = 0; j < 2; j++) {
+      const s = SIDES[j];
       this.pushed[s] = 0;
       if ((keep[s] ?? 0) > 0.5) continue;
       const arm = ch.arm[s];
       for (let k = 0; k < STANDOFF.rounds; k++) {
         ch.root.updateMatrixWorld(true);
         body.place();
-        const hand = body.limb(`hand${s}`, this.handPts ||= []), nh = hand.length;
-        const pts = this.pts[s]; pts.length = 0; pts.push(...hand, ...body.limb(`forearm${s}`, this.forePts ||= []));
+        const hand = body.limb(HAND[s], this.handPts ||= []), nh = hand.length, fp = body.limb(FORE[s], this.forePts ||= []);
+        const pts = this.pts[s]; pts.length = 0;
+        for (let i = 0; i < nh; i++) pts.push(hand[i]);
+        for (let i = 0; i < fp.length; i++) pts.push(fp[i]);
         const hit = body.deepest(pts, STANDOFF.parts);
         if (!hit || hit.d < 0.002) break;
         // the way out: the proxy's own, leaning away from the body's middle when the point is on its axis

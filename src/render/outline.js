@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { PALETTE, T } from '../core/config.js';
 import { weld } from './weld.js';
+import { viewOf } from './materialview.js';
 
 
 const outlineUniform = { value: T.visual.outline };
@@ -65,7 +66,7 @@ export function addOutline(mesh, material = OUTLINE_MAT) {
   ensureSmoothNormals(mesh.geometry);
   let o;
   if (mesh.isSkinnedMesh) {
-    o = new THREE.SkinnedMesh(mesh.geometry, material);
+    o = new THREE.SkinnedMesh(mesh.geometry, viewOf(material, 'skinned')); // (a view: the hull material a tool's plain hulls share, its own program skinned: render/materialview.js)
     o.bind(mesh.skeleton, mesh.bindMatrix);
     o.bindMode = mesh.bindMode;
     // keep it in the same space as the source skinned mesh
