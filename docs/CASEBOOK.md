@@ -759,3 +759,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 257. **A transparent DoubleSide material is drawn in one pass unless its order matters.** three draws it twice
     (back, then front) and compiles two programs; `forceSinglePass: true` wherever the two-pass sort buys nothing (additive, flat, sprites).
+
+NEW:clamp-before-fractional-power. **A ratio is clamped before it is raised to a fractional power.** `x ** 1.6` of a hair below 0 is NaN,
+    and a NaN vertex blacks out every triangle it touches; clamp the ratio (or `Math.max(0, ...)`) where it is made, not where it is drawn.
