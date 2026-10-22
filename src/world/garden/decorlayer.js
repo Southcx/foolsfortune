@@ -11,7 +11,7 @@
 // Prior art: Animal Crossing: New Horizons' decorating (half-tile steps, a piece picked up kept whole, the catalogue), Unpacking's
 // placement (a ghost and a sound on each snap), Townscaper's grid on a curved world, Black & White's hand as the only cursor.
 //
-//   const L = new DecorLayer(realm)   L.on   L.toggle()   L.handle(dt, hand)   L.update(dt)   L.reseat(planetoid?)   L.report()
+//   const L = new DecorLayer(realm)   L.on   L.toggle()   L.handle(dt, hand)   L.update(dt)   L.reseat(planetoid?)   L.report()   L.undo() (Ctrl+Z in decor)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -25,6 +25,7 @@ export const FOOT = { small: 0.45, medium: 0.95, large: 1.45, centre: 1.95, fixe
 /** Each set's placeholder colour (the looks are Calissa's): the five feelings' sets in their feelings' warmth, the plain in stone. */
 const SET_COLOR = { plain: 0xa89a86, wonder: 0x7fa86a, mirth: 0xd8794e, desire: 0xc9a356, grief: 0x7f93ad, dread: 0x5b8f8c, sound: 0xc8a050, season: 0xe0a2b4, briar: 0x5d5a32 };
 const TINT = [1, 0.8, 1.2, 0.62]; // (a piece's four tints: as it is, darker, paler, deep)
+const UNDO = 50; // (decor's undo stack, Petra's depth: GARDEN-COZY.md D2)
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1), _p = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
 /** The placeholder shapes, one a size: a stone, a block, a tall tree-like cone on a stem, a pavilion. */
@@ -40,7 +41,7 @@ function shapes() {
 
 export class DecorLayer {
   constructor(realm) {
-    this.R = realm; this.game = realm.game; this.on = false; this.held = null; this.blocked = false; this.at = null; this.last = null;
+    this.R = realm; this.game = realm.game; this.on = false; this.held = null; this.blocked = false; this.at = null; this.last = null; this.undos = [];
     this.mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0, name: 'garden-decor' });
     this.geo = shapes(); this.meshes = {}; this.group = new THREE.Group(); this.group.name = 'garden-decor'; realm.site.group.add(this.group);
     for (const size of Object.keys(this.geo)) this.mesh(size, FOOT.cap); // (all four built at once: warmed with the garden, no program met first in play)
@@ -132,13 +133,13 @@ export class DecorLayer {
       this.ghost.setColorAt(0, _c.set(this.blocked ? 0xd04040 : 0xffd36a)); this.ghost.instanceColor.needsUpdate = true; this.ghost.visible = true;
       const key = `${this.at.face}.${this.at.iu}.${this.at.iv}`; if (key !== this.snapKey) { this.snapKey = key; sfx.click?.(); } // (a sound on each snap: Unpacking's)
     } else this.ghost.visible = false;
-    if (I.wasPressed('Mouse2')) { if (this.held) { this.held = null; return; } if (hit) { const i = this.near(hit.point); if (i >= 0) { this.decor.remove(i); this.redraw(); this.report(); sfx.toss?.(); } } return; }
+    if (I.wasPressed('Mouse2')) { if (this.held) { this.held = null; return; } if (hit) { const i = this.near(hit.point); if (i >= 0) { this.push({ op: 'remove', p: this.decor.s.placed[i].slice() }); this.decor.remove(i); this.redraw(); this.report(); sfx.toss?.(); } } return; }
     if (!I.wasPressed('Mouse0')) return;
     if (this.held) {
       if (!this.at || this.blocked) { this.game.log?.say('warn', 'Something is in the way.', { key: 'decor.blocked', throttle: 1 }); return; }
       const at = { planetoid: this.at.planetoid, face: this.at.face, iu: this.at.iu, iv: this.at.iv };
-      if (this.held.from != null) { this.decor.move(this.held.from, at, this.held.yaw); this.held = null; }
-      else { this.decor.place(this.held.id, at, { yaw: this.held.yaw, tint: this.held.tint }); if (!this.decor.stored(this.held.id)) this.held = null; } // (more of it in storage: keep placing, Animal Crossing's)
+      if (this.held.from != null) { const p = this.decor.s.placed[this.held.from]; this.push({ op: 'move', id: p[0], now: { ...at }, was: { planetoid: p[1], face: p[2], iu: p[3], iv: p[4] }, yaw: p[5] }); this.decor.move(this.held.from, at, this.held.yaw); this.held = null; }
+      else { const i = this.decor.place(this.held.id, at, { yaw: this.held.yaw, tint: this.held.tint }); if (i >= 0) this.push({ op: 'place', id: this.held.id, now: { ...at } }); if (!this.decor.stored(this.held.id)) this.held = null; } // (more of it in storage: keep placing, Animal Crossing's)
       sfx.grab?.(); this.redraw(); this.report(); return;
     }
     const i = hit ? this.near(hit.point) : -1;
@@ -171,6 +172,16 @@ export class DecorLayer {
       }
       im.appendChild(b);
     }, { title: 'DECORATE', sub: 'click a piece to hold it · the wheel turns it · right button puts it back · F closes' });
+  }
+  push(u) { this.undos.push(u); if (this.undos.length > UNDO) this.undos.shift(); }
+  /** Ctrl+Z in decor: the last placing, move or putting back taken back (the hand's own undo is the clay's). */
+  undo() {
+    const U = this.undos.pop(), D = this.decor; if (!U || !D) return false;
+    const find = (id, a) => D.s.placed.findIndex((q) => q[0] === id && q[1] === a.planetoid && q[2] === a.face && q[3] === a.iu && q[4] === a.iv); // (by what and where, never by index: a removal shifts them)
+    if (U.op === 'place') { const i = find(U.id, U.now); if (i >= 0) D.remove(i); }
+    else if (U.op === 'move') { const i = find(U.id, U.now); if (i >= 0) D.move(i, U.was, U.yaw); }
+    else if (U.op === 'remove') { const [id, planetoid, face, iu, iv, yaw, tint] = U.p; D.place(id, { planetoid, face, iu, iv }, { yaw, tint }); }
+    this.held = null; this.redraw(); this.report(); return true;
   }
   update() { if (this.held && this.R.hand?.art !== 'place') { this.held = null; this.ghost.visible = false; } }
 }

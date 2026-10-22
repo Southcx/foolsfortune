@@ -122,7 +122,7 @@ export class GardenHand {
       this.brush.hide(); return this.pose(dt); }
     if (ctrl && I.wasPressed('Backspace') && !typing) this.askReset();
     if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1] * (this.game.alchemy?.widen?.('visualization.canvas') ?? 1)); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
-    if (ctrl && I.wasPressed('KeyZ') && !typing) this.undo();
+    if (ctrl && I.wasPressed('KeyZ') && !typing) { if (!(this.art === 'place' && this.R.decorLayer?.on && this.R.decorLayer.undo())) this.undo(); } // (in decor, decor's own undo first: world/garden/decorlayer.js)
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
