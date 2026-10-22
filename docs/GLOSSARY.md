@@ -456,7 +456,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   fights kept in the rail's frame. *Not:* a rail you grind. → detail
 - **plain shot / outlined shot** (`courier/ship/shots.js`) — a foe's shot at sea: a plain one is absorbed or hurts; an outlined one wears the
   parry mark and only the parry answers it.
-- **the pier** (`world/emocean/pier.js`) — F at a jetty's end: the node map as a list and the two mounts to take; choosing an island casts off. →
+- **the pier** (`world/emocean/pier.js`) — F at a jetty's end seals you into the moored hull's helm (`pier.helm`, a body cradle), and its page opens: the node map as a list and the two mounts to take; choosing an island casts off. →
   detail
 - **Margarite's dock** (`world/emocean/margarite.js`) — the King's island's quay: the lamp tower, the Pearl Shrine, the Purser, Letty Marque.
   *Not:* Margarite (the island).

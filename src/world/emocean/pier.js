@@ -5,18 +5,27 @@
 // (progress/rail/mounts.js; courier/ship/mounts.js). Choosing an island boards (the fuel paid, the set pieces drawn) and the stage
 // begins (world/emocean/stage.js). Each island's pier is registered here with the island it stands on: Anagami's jetty on the shore
 // (world/dunes/beach.js), Margarite's at its dock (world/emocean/margarite.js); a crossing makes port at the pier of the island it sails to.
+// THE HELM'S CRADLE (docs/plans/HANKO.md 6.2, the owner: every crossing begins by sealing into the helm at the pier, the sloop too; the
+// helm's cradle opens the pier's page): the moored hull's helm (vfx/mooring.js, its cradle Calissa's: shipkit/shiplook.js helmCradles)
+// is a body cradle (world/cradles.js), reached from the jetty's end where the pier's F was. F folds you into the Pneuka Jar, it drops into
+// the helm, and the page opens while you stay sealed; F unseals, and casting off (a crossing, the open sea, practice, the showcase) takes
+// the Jar out at once, under the crossing's own cover. One cradle a pier and hull (each hull keeps its own imprint), one Seal Book page a
+// pier (`book: 'pier.<island>'`). The seat rides the hull's bob, and the Jar with it, the page's pause too (main.js's modal branch).
+// The galleon's second helm (a guest's or a sibling's seal beside yours, HANKO.md 4) is not registered yet.
 //
 // Prior art: FTL's jump map (a list of where the fuel reaches, the rest named and greyed), Wind Waker's sea chart as the place you
 // choose from, Sid Meier's Pirates! (the harbour's menu: where, and what it costs), Kingdom Hearts' Gummi garage (what you fly with,
 // chosen before you go).
 //
 //   game.pier = new Pier(game)   .add(island, () => ({ end, top, yaw }))   .update()   .open(island)   .landing(island) -> { pos, yaw }
+//   .helm (the moored helm's cradle, or null)   .helmTick() (each frame, and under the page's pause)
 //   (in the DEBUG save its page also offers THE SHOWCASE CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
 //   (and in either save PRACTICE: a row a leg's type sailed before, legs.js practiceOf, sailed alone at strength 1 to 4 by stage.js sailPractice)
 //   (and THE OPEN SEA: SET SAIL is a crossing on the lanes, to an island; the open sea is the Emocean off them, sailed at the free helm:
 //   world/opensea/, OPEN-SEA.md 8; the row goes there under the seam, to this island's quay, or Anagami's where its sea has none)
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { NODES } from '../../progress/econ/emocean.js';
 import { slotsOf, mountable } from '../../progress/rail/mounts.js';
 import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
@@ -29,18 +38,21 @@ import { practiceOf, LEGS } from '../../progress/rail/legs.js';
 import { practiceCards } from '../../ui/practicecards.js';
 import { sfx } from '../../audio/sfx.js';
 
-const REACH = 2.6; // (metres from a jetty's end)
+const REACH = 2.6; // (metres from a jetty's end: the pier's F, and the helm's cradle reached from there)
+const _end = new THREE.Vector3();
+const MOORED = 160; // (metres: the hull is moored at the nearest pier inside this, as vfx/mooring.js shows it)
 
 /** The refusal for a heavy hull with no rutter of the route (placeholder words for Espada's; `uncharted`, ships.js). */
 const UNCHARTED = (ship) => `Your ${ship} sails only a route from a route map.`;
 
 export class Pier {
   constructor(game) {
-    this.game = game; this.ship = 'sloop'; this.chart = new SeaChart(game, this); this.piers = new Map(); this.chosen = null;
+    this.game = game; this.ship = 'sloop'; this.chart = new SeaChart(game, this); this.piers = new Map(); this.chosen = null; this.helm = null; this.helmLook = null;
     game.interact?.add('pier', () => {
       const P = game.player;
       if (game.emocean?.stage.active || game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
       for (const [island, at] of this.piers) {
+        if (this.helm?.island === island) continue; // (a hull moored there: its helm's cradle is the way to the page)
         const j = at(); if (!j) continue;
         const d = Math.hypot(j.end.x - P.pos.x, j.end.z - P.pos.z);
         if (d <= REACH && Math.abs(j.top - P.pos.y) < 2) return { pos: j.end.clone().setY(j.top + 1.4), d, ref: island };
@@ -58,9 +70,41 @@ export class Pier {
     return { pos: at.end.clone().setY(at.top + 0.05), yaw: at.yaw ?? 0 };
   }
 
-  /** Once a frame: F at a pier's end opens its page. */
+  /** The pier the hull is moored at: the nearest end inside MOORED (vfx/mooring.js's choice), or null. */
+  nearest() {
+    const me = this.game.player?.pos; if (!me) return null;
+    let best = null, bd = MOORED;
+    for (const [island, at] of this.piers) { const j = at(); if (!j) continue; const d = Math.hypot(j.end.x - me.x, j.end.z - me.z); if (d < bd) { bd = d; best = { island, j }; } }
+    return best;
+  }
+
+  /** The moored helm as a cradle: added where a hull lies alongside, moved with its bob, taken away when it is not (unless sealed). */
+  helmTick() {
+    const g = this.game, C = g.cradles, M = g.mooring; if (!C) return;
+    const look = M?.cur?.group.visible && !g.emocean?.stage.active ? M.cur : null, at = look ? this.nearest() : null;
+    const spot = at ? look.helmCradleSpots?.()?.[0] : null, key = spot ? `${at.island}.${this.ship}` : null, c = this.helm, sealed = !!c && C.sealed === c;
+    if (c && c.key !== key && !sealed) { C.remove(c); this.helm = null; }
+    if (look !== this.helmLook) { if (sealed) { this.helmLook?.helmWake?.(false); look?.helmWake?.(true); } this.helmLook = look; } // (the hull changed on the page while sealed: the new one's helm wakes)
+    if (!key) return;
+    const end = _end.copy(at.j.end).setY(at.j.top); // (a scratch: add() copies, and the frame's copy below)
+    if (!this.helm) {
+      const island = at.island;
+      this.helm = C.add({ id: `pier.${key}`, kind: 'body', book: `pier.${island}`, pos: spot, at: end, yaw: at.j.yaw ?? 0, reach: REACH, hold: true,
+        page: () => !!this.menu?.open, // (the pier's page, or the sea chart it opens)
+        onSeal: () => { this.helmLook?.helmWake?.(true); this.open(island); },
+        onUnseal: () => { this.helmLook?.helmWake?.(false); const n = this.menu?.open ? this.menu.page?.name : null; if (n === 'pier' || n === 'seachart') this.menu.close(); } });
+      Object.assign(this.helm, { key, island });
+    }
+    const H = this.helm; H.pos.copy(spot); H.at.copy(end); H.anchor = look.helmCradles?.[0]?.group ?? null; // (`anchor`: what an imprint rides, vfx/sealimprint.js)
+    const J = g.god?.jar; if (sealed && J) { J.pos.copy(spot); J.group.position.copy(spot); } // (the Jar seated as the hull bobs)
+  }
+  /** Out of the helm at once for a cast-off: the crossing's own cover (its seam, the stage taking you aboard) sets you down. */
+  castOff_() { const C = this.game.cradles; if (this.helm && C?.sealed === this.helm) C.unseal('sail', 'courier', { now: true }); }
+
+  /** Once a frame: F at a pier's end opens its page (where no hull is moored: else the helm's cradle does). */
   update() {
     const g = this.game, P = g.player, it = g.interact?.cur;
+    this.helmTick();
     if (this.chart.sounding && !(this.menu?.open && this.menu.page?.name === 'seachart')) { this.chart.sounding = false; sfx.seaChart?.(false); } // (the chart shut)
     if (it?.id !== 'pier' || !P.peekLatch?.('KeyF') || g.god?.controlling) return;
     P.latch('KeyF');
@@ -93,14 +137,14 @@ export class Pier {
       }
       // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from a pier to its own island's quay there (world/opensea/opensea.js arrive)
       const sea = g.opensea && !V.sailing ? el('div', 'room', `<span class="n">≈</span><span><b>THE OPEN SEA</b><s>off the lanes, at the helm: W and S the sail, A and D the rudder · chart the squares · what lives out there</s></span>`) : null;
-      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => g.opensea.arrive(at); g.seam?.cross(go, { kind: 'sea' }) || go(); }; // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
+      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea' }) || go(); }; // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
       const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
-      if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen); };
+      if (show) show.onclick = () => { this.menu?.close(); this.castOff_(); g.emocean.sailShowcase(at, this.mounts().chosen); };
       // practice (RAIL-STANDARDS.md 5; Star Fox 64's Training): a leg's type sailed once, again alone at a strength you pick, back to this
       // pier in the hull and mounts chosen below, nothing counted (the cards: ui/practicecards.js, Calissa's; their words placeholders)
       const PR = g.emocean?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [];
-      const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
+      const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); this.castOff_(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');
       for (const [id, H] of Object.entries(SHIPS)) {
@@ -144,7 +188,7 @@ export class Pier {
     if (!s.ok) { g.log?.say('warn', UNCHARTED(this.ship), { key: 'pier', throttle: 1 }); return false; }
     const r = V.board(from, to, this.ship, this.mounts().chosen, passage);
     if (!r.ok) { g.log?.say('warn', r.why, { key: 'pier', throttle: 1 }); return false; }
-    this.menu?.close();
+    this.menu?.close(); this.castOff_();
     g.emocean?.begin();
     return true;
   }

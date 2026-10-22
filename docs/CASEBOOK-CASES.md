@@ -3460,3 +3460,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the hull at rest is kept as `glazeHull` leaves it (`hullRest`, again at every `skiff.glaze`), and the stakes wear it from
   there.
 - **Rule:** 263
+
+### 2026-10-22 · Closing a Shrine's page left you sealed in its gate, a second F to get out (Petra, from Dovina's sweep notes)
+- **Seen:** F on a Shrine's page (its own "F closes") shut the page, and the Courier sat on as the Pneuka Jar in the gate with nothing
+  open; a second F unsealed. The emocean sweep had written around it (`C.unseal('test')`, "F closed the page but you sit sealed"),
+  while the dunes and workshop sweeps' comments said "F unseals: the page closes with it".
+- **Cause:** the page pauses the game, so the index menu took that F and the cradle never saw it; a cradle closed its page on unseal,
+  but nothing unsealed it when its page closed.
+- **Fix:** a cradle may name its page (`page()`, world/cradles.js): shut, by F or Esc, it unseals the next frame. The Shrine's gate
+  names its page or the arch's walk-in; the helm's cradle at the pier names the pier's page or the sea chart.
+- **Rule:** 264
