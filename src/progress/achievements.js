@@ -49,7 +49,7 @@ export const CATS = [
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'Out Cold', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Shrines', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
@@ -558,6 +558,7 @@ export function buildAchievements(game) {
   F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
   F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the Dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
   F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the Dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+  C('sr1', 'explore', 'Shrines', 1, 'count', 'Catch Your Breath', 'Rest at a Shrine.', 'shrine.rest', 1); // (the Bisque Shrine is beside where you wake: FIRST-HOUR.md)
 
   // ---------------------------------------------------------------- THE EMOCEAN (docs/plans/SLICE.md, E4: placeholders until the hop is built)
   C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
@@ -685,6 +686,7 @@ export function buildAchievements(game) {
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   // the two feelings past Anagami's five, learned by drinking them where they fall (GALL-AND-FURY.md section 5; Espada's names): the count
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
+  C('sk12', 'sky', 'Weather', 1, 'mechanic', 'A View', 'Awaken to Wonder: find a vantage point and look out.', 'feeling.known.wonder', 1); // (the first hour's awakening: the workshop's atrium rail, FIRST-HOUR.md)
   C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
   C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
   F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Awaken to all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)

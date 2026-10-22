@@ -1,14 +1,19 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE GOALS: the log's lines for the game day's three goals (progress/goals.js): laid, asked for (/goals), one done, all
-// three done; and their counts. The words are Espada's (2026-10-21: the System's register, the fact first, a number as a number).
+// three done, the first path's next step; and their counts. And the first hour's one refusal (docs/plans/FIRST-HOUR.md 3): a Movement
+// Art's key pressed before it is learned. The words are Espada's (2026-10-21: the System's register, the fact first, a number as a number).
 //
-//   goalsRules({ on, L, log })   (tracking/rules.js calls it)
+//   goalsRules({ on, L, log, g })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
+import { BY_ID } from '../../progress/skills.js';
+
 const SLOT = { near: 'Close', elsewhere: 'Elsewhere', stretch: 'Stretch' };
 const n = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString('en-US') : '-');
 
-export function goalsRules({ on, L, log }) {
-  on('goals.set', () => log.say('system', '3 new goals for this game day. Type /goals to see them.', { key: 'goals', throttle: 5 }));
+export function goalsRules({ on, L, log, g }) {
+  on('goals.set', (e) => log.say('system', e.first ? 'Your first 3 goals are set. Type /goals to see them.' : '3 new goals for this game day. Type /goals to see them.', { key: 'goals', throttle: 5 }));
+  // the first path's refill (FIRST-HOUR.md 4): a step done gives way to the next (placeholder words, Espada's to rule)
+  on('goal.next', (e) => log.say('system', e.ach ? `Next goal: ${e.ach}. Type /goals to see it.` : 'A new goal is set.', { key: 'goal.next', throttle: 1 }));
   on('goals.ask', (e) => {
     if (!e.goals?.length) { log.say('system', 'No goals are set for this game day.', { key: 'goals.ask', throttle: 1 }); return; }
     for (const g of e.goals) { const label = g.first ? 'First step' : SLOT[g.slot] || 'Goal';
@@ -17,7 +22,14 @@ export function goalsRules({ on, L, log }) {
   on('goal.done', (e) => {
     if (e.by !== 'courier') return;
     L.inc('goal.done'); L.inc(`goal.done.${e.slot}`);
-    if (e.all) { L.inc('goal.day.all'); log.say('gain', 'All 3 goals done for this game day.', { key: 'goals.all', throttle: 5 }); }
+    if (e.all && !e.first) { L.inc('goal.day.all'); log.say('gain', 'All 3 goals done for this game day.', { key: 'goals.all', throttle: 5 }); }
     else log.say('gain', e.ach ? `Goal done: ${e.ach}.` : 'Goal done.', { key: 'goal.done', throttle: 2 });
+  });
+  // V and E did nothing, silently: the refusal at the point of use says what earns the art and how near you are (the hook: Petra's,
+  // courier/moves/techs.js and kick.js; event art.unlearned { ability }; words a placeholder, Espada's)
+  on('art.unlearned', (e) => {
+    const a = BY_ID[e.ability]; if (!a || g?.system?.has?.(a.id)) return;
+    const gl = a.goals?.[0], cur = gl ? Math.min(gl.n, Math.floor(L.get(gl.key) || 0)) : 0;
+    log.say('warn', `You have not learned ${a.name} yet. ${a.hint || ''}${gl ? ` (${cur} of ${gl.n} ${gl.label})` : ''}`.trim(), { key: `art.unlearned.${a.id}`, throttle: 20 });
   });
 }
