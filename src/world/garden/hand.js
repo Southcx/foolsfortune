@@ -144,7 +144,7 @@ export class GardenHand {
   // ---- grab, throw, pet
   grab(dt, o, d) {
     const I = this.game.input;
-    if (I.wasPressed('Mouse0') && !this.held && !this.pick(o, d) && this.R.thorns?.prune(this.hit)) return; // (a thorn clump under the hand: pruned, world/garden/thorns.js)
+    if (I.wasPressed('Mouse0') && !this.held && !this.pick(o, d) && this.R.thornPatches?.prune(this.hit)) return; // (a thorn clump under the hand: pruned, world/garden/thornpatches.js)
     if (I.wasPressed('Mouse0') && !this.held) {
       const b = this.pick(o, d);
       if (b) { this.held = b; this.dist = o.distanceTo(b.body.pos); this.downT = 0; this.moved = 0; b.body.held = true; b.body.flight = null; this.at.copy(b.body.pos); this.prev.copy(this.at); sfx.grab?.(); }

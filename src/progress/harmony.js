@@ -14,7 +14,7 @@
 //   HARMONY, TEND, CARRY, NEGLECT, THORNS, BRIAR   bandOf(h) -> 'briar' | 'between' | 'bloom'   briarOf(h) -> 0 comfort .. 1 briar
 //   carriedIn({ v, brimming }) -> negative   dayStep(p, { held }) -> { h, thorns, grew }   (pure: scripts/garden.mjs measures them)
 //   game.harmony = new Harmony(game)   .update(dt)   .of(planetoid) -> 0..1   .band(planetoid)   .briarK(planetoid?) -> 0..1 (the looks')   .thorns(planetoid) -> [{ at, n }]
-//   .prune(planetoid) -> { ok, cutting }   (the world's pruning stroke calls it; Petra's)   /harmony
+//   .prune(planetoid) -> { ok, cutting }   (world/garden/thornpatches.js calls it)   .settleK(pos) -> 1 | INCENSE.k   /harmony
 //   events: garden.tend { planetoid, kind, h }   garden.harmony { planetoid, band, was, h, blooming }   garden.thorn { planetoid, at, n }
 //           garden.prune { planetoid, n, h }   garden.briar.held { planetoid, days }   garden.harmony.ask { planets }
 // ---------------------------------------------------------------------------------------
@@ -41,6 +41,10 @@ export const THORNS = { max: 6, prune: 0.03 };
 /** The briar garden as a choice (GARDEN-COZY.md A6): Fury, Gall and Dread spirits gain `bond` a game day while their planetoid is in
  *  briar; briar fruit grows only on thorns. (The bond is applied by the spirits' keeper when built; the number is here.) */
 export const BRIAR = { likes: ['fury', 'gall', 'dread'], bond: 1 };
+/** Incense's job (GARDEN-COZY.md A2; FEATURES.incense: "Calms you faster while you rest near it"): within `reach` metres of a placed
+ *  Incense in the garden the mental state settles `k` times as fast (a modifier on the settle: courier/mind.js reads settleK, Petra's
+ *  line), and a settle in the garden counts as a quiet rest for its planetoid's harmony. */
+export const INCENSE = { reach: 4, k: 2 };
 
 const clamp = (x) => Math.max(0, Math.min(1, x));
 /** A harmony as the look's scalar: 0 comfort (bloom and over) .. 1 briar (harmony 0). */
@@ -93,6 +97,7 @@ export class Harmony {
       E.on('spirit.race.start', (e) => { if (e.by === 'courier') for (const r of e.runners || []) this.visit({ spirit: r }); });
       E.on('spirit.spar.start', (e) => { if (e.by === 'courier') { this.visit({ spirit: e.a }); this.visit({ spirit: e.b }); } });
       E.on('garden.enter', (e) => { if (e.by === 'courier') this.enter(); });
+      E.on('mind.settle', (e) => { if (e.by === 'courier' && game.realm?.active) this.tend(where(e), 'rest'); }); // (settled in the garden: a quiet rest)
     }
     game.chat?.add?.('harmony', { help: 'how calm or overgrown each planetoid of your garden is: /harmony', run: () => this.game.events?.emit('garden.harmony.ask', { planets: this.list(), by: 'courier' }) });
   }
@@ -104,6 +109,12 @@ export class Harmony {
    *  no planetoid, the one the Pneuka Jar stands on. */
   briarK(id = this.game.realm?.jarBody?.planet?.id) { return briarOf(this.of(id)); }
   thorns(id) { return this.s.by[id]?.thorns || []; }
+  /** The settle's multiplier at a place (courier/mind.js): INCENSE.k beside a placed Incense in the garden, else exactly 1. */
+  settleK(pos) {
+    const R = this.game.realm; if (!R?.active || !pos) return 1;
+    for (const p of R.plots?.plots || []) if (p.placed?.feature === 'incense' && p.pos && p.pos.distanceTo(pos) < INCENSE.reach) return INCENSE.k;
+    return 1;
+  }
   list() { return Object.entries(this.s.by).map(([planetoid, p]) => ({ planetoid, band: bandOf(p.h), thorns: p.thorns.reduce((n, t) => n + t.n, 0) })); }
   /** A gauge moved: the band said once it changes (the log's line, the look's cue). */
   set(id, h, cause) {

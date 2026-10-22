@@ -424,10 +424,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
   where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows / the one thing a spirit that trusts you
   (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
-- **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`, `DecorLayer`, `realm.decorLayer`, `ThornPatches`, `realm.thorns`,
-  `src/world/garden/`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps, 15-degree turns) /
-  the pieces drawn and placed by the hand in PLACE turned to decor (R) / a planetoid's thorns drawn round their cause, pruned by GRAB.
-  *Not:* the clay's grid (latitude by longitude), a plot, a feature.
+- **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`; `DecorLayer`, `game.decorLayer`; `ThornPatches`, `game.thornPatches`,
+  `src/world/garden/thornpatches.js`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps,
+  15-degree turns) / the pieces drawn and placed by the hand in PLACE turned to decor (R), keeping the Jar and the spirits out of the
+  bigger ones / a planetoid's thorns drawn round their cause, slowing the Jar's hop through them, pruned by GRAB. Plain names: the
+  garden is in flux. *Not:* the clay's grid (latitude by longitude), a plot, a feature.
 - **a season** (`seasonOf`, `src/progress/seasons.js`) — spring, summer, autumn or winter in the Spirit Garden, 7 game days each.
   *Not:* the weather, the day's phases.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'
