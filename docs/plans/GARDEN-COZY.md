@@ -378,7 +378,9 @@ make a garden.
      lotuses), Espada's words, and Petra's two lines (Incense's settle, no green into thorns).
    - **built fourth:** the spirits walk their routines (C1, `world/garden/spiritwalk.js`): toward the nearest of their place on the
      planetoid they stand on, as faithfully as their grain allows, else the old wander.
-   - **next:** the farewell (C6, waiting on the owner's Q4), seasons in the cue (Wanda's B6).
+   - **built fifth:** the farewell (C6, the owner's Q4): `FAREWELL` in `progress/spiritlife.js`; a statue of the spirit in its feeling,
+     a keepsake never sold (`statue<Feeling>`, `progress/decor.js`), and Bon Voyage. The matching glaze is asked of Calissa.
+   - **next:** seasons in the cue (Wanda's B6).
    No world code; MEASURE lines in a script.
 2. **Petra:**
    - the decor layer (D1, D2, D7);

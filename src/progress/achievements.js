@@ -659,7 +659,7 @@ export function buildAchievements(game) {
   C('gy4', 'garden', "The Garden's Life", 2, 'count', 'Pruner', 'Prune fifty thorns.', 'garden.prune', 50);
   H('gy5', 'garden', "The Garden's Life", 3, 'mechanic', 'Bramble Keeper', 'Keep a planetoid overgrown for a whole season (7 game days).', 'garden.briar.held', 7);
   C('gy6', 'garden', "The Garden's Life", 1, 'collect', 'Home Sweet Home', 'Own ten garden pieces.', 'decor.owned', 10);
-  F('gy7', 'garden', "The Garden's Life", 5, 'collect', 'The Whole Catalogue', 'Own every garden piece.', (L) => L.get('decor.owned'), Object.keys(DECOR).length, { title: 'Collector' });
+  F('gy7', 'garden', "The Garden's Life", 5, 'collect', 'The Whole Catalogue', 'Own every garden piece.', (L) => L.get('decor.owned'), Object.keys(DECOR).filter((id) => DECOR[id].set !== 'keepsake').length, { title: 'Collector' });
   C('gy8', 'garden', "The Garden's Life", 3, 'mechanic', 'A Set Piece', 'Finish a set of garden pieces round its centrepiece.', 'decor.sets', 1);
   H('gy9', 'garden', "The Garden's Life", 4, 'collect', 'Five Lotuses', "Open all five lotuses on the Dantian's lake.", 'garden.lotuses', 5);
   F('gy10', 'garden', "The Garden's Life", 3, 'collect', 'Four Seasons', 'Visit your Inner Realm in all four seasons.', (L) => ['spring', 'summer', 'autumn', 'winter'].filter((s) => L.get(`garden.season.${s}`) >= 1).length, 4);
@@ -668,6 +668,7 @@ export function buildAchievements(game) {
   F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
   C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
   C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you released.', 'spirit.letter.postcard', 1);
+  C('gy16', 'garden', "The Garden's Life", 3, 'mechanic', 'Bon Voyage', 'Let a spirit go home when it asks.', 'spirit.farewell', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

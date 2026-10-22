@@ -426,7 +426,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
 - **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
   where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows (walked to: `walkWish`, `world/garden/spiritwalk.js`) / the one thing a spirit that trusts you
-  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
+  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. **The farewell** (`FAREWELL`): a matured spirit at full bond asking once to go home; let go, it leaves its statue (a keepsake piece, never sold). *Not:* a goal, a bounty, a desire (the feeling).
 - **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`; `DecorLayer`, `game.decorLayer`; `ThornPatches`, `game.thornPatches`,
   `src/world/garden/thornpatches.js`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps,
   15-degree turns) / the pieces drawn and placed by the hand in PLACE turned to decor (R), keeping the Jar and the spirits out of the
