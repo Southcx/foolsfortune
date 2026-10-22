@@ -84,7 +84,7 @@ export class DecorLayer {
       const D = DECOR[p[0]], P = this.planet(p[1]); if (!D || !P) return;
       if (this.ids[i] == null) this.ids[i] = B.addInstance(this.geoId[p[0]]); else B.setGeometryIdAt(this.ids[i], this.geoId[p[0]]);
       const m = this.frame(P, p[2], p[3], p[4], p[5]);
-      B.setMatrixAt(this.ids[i], m); B.setColorAt(this.ids[i], _c.set(SET_COLOR[D.set] || 0xffffff).multiplyScalar(TINT[p[6] || 0] || 1)); B.setVisibleAt(this.ids[i], true);
+      B.setMatrixAt(this.ids[i], m); B.setColorAt(this.ids[i], _c.set(D.color ?? SET_COLOR[D.set] ?? 0xffffff).multiplyScalar(TINT[p[6] || 0] || 1)); B.setVisibleAt(this.ids[i], true);
       const N = this.N(P);
       this.spots.push({ i, id: p[0], planet: P, size: D.size, pos: new THREE.Vector3().setFromMatrixPosition(m), dir: new THREE.Vector3().fromArray(dirAt(p[2], p[3], p[4], N)), region: `${p[1]}|${regionOf(p[2], p[3], p[4], N)}`, N });
     });
@@ -190,7 +190,7 @@ export class DecorLayer {
       if (!stored.length) a.appendChild(el('div', 'room', '<span class="n">·</span><span><s>Nothing waits in the shed. Buy a piece below.</s></span>'));
       for (const id of stored) {
         const D = DECOR[id], d = el('div', 'room', `<span class="n">◇</span><span><b>${D.name}</b><s>${SETS[D.set]?.name} · ${D.size} · ${this.decor.stored(id)} in the shed</s></span>`), tints = el('span', 'feel');
-        for (let t = 0; t < (D.tints || 1); t++) { const b = el('span', '', '◆'); b.style.cssText = `color:#${_c.set(SET_COLOR[D.set]).multiplyScalar(TINT[t]).getHexString()};margin-right:.8em;cursor:pointer`; b.title = `tint ${t + 1}`; b.onclick = (e) => { e.stopPropagation(); this.held = { id, yaw: 0, tint: t, from: null }; menu.close(); }; tints.appendChild(b); }
+        for (let t = 0; t < (D.tints || 1); t++) { const b = el('span', '', '◆'); b.style.cssText = `color:#${_c.set(D.color ?? SET_COLOR[D.set]).multiplyScalar(TINT[t]).getHexString()};margin-right:.8em;cursor:pointer`; b.title = `tint ${t + 1}`; b.onclick = (e) => { e.stopPropagation(); this.held = { id, yaw: 0, tint: t, from: null }; menu.close(); }; tints.appendChild(b); }
         d.onclick = () => { this.held = { id, yaw: 0, tint: 0, from: null }; menu.close(); };
         d.lastChild.appendChild(tints); a.appendChild(d);
       }

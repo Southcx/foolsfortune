@@ -17,7 +17,7 @@
 // a variant free once owned), the Happy Home Academy (a matched set scores double), Viva Pinata's garden that draws visitors by what it
 // shows, and Stardew Valley's bundles (a set finished restores something you can see).
 //
-//   DECOR[id] = { name, set, size, tints, from: [sources] }   SETS, SOURCES, LOTUSES, CLUTTER, SET   priceOf(id) -> cubes
+//   DECOR[id] = { name, set, size, tints, from: [sources], season?, color? (its own, over its set's) }   SETS, SOURCES, LOTUSES, CLUTTER, SET   priceOf(id) -> cubes
 //   regionPoints(pieces) -> n   rating(pieces, { cellsOf }) -> { points, lotuses, regions, sets }   (pieces: [{ id, region, pos }])
 //   game.decor = new Decor(game)   .owns(id)   .stored(id)   .give(id, from)   .buy(id) -> { ok, why? }   .take(id) -> bool   .put(id)
 //   .place(id, at, { yaw, tint }) -> i   .move(i, at?, yaw?)   .remove(i)   .s.placed: [[id, planetoid, face, iu, iv, yaw, tint]]
@@ -84,11 +84,11 @@ export const DECOR = {
   windChime: P('Wind Chime', 'sound', 'small', 4, ['shop', 'gift']),
   musicBox: P('Music Box', 'sound', 'small', 4, ['wish', 'visitor']),
   gramophone: P('Gramophone', 'sound', 'medium', 4, ['wish', 'lotus']),
-  // a season's (E): bought in its season, given in any
-  blossomTree: P('Blossom Tree', 'season', 'large', 2, ['season', 'gift'], 'spring'),
-  reedScreen: P('Reed Screen', 'season', 'medium', 2, ['season', 'gift'], 'summer'),
-  pumpkinLantern: P('Pumpkin Lantern', 'season', 'small', 2, ['season', 'gift'], 'autumn'),
-  snowLantern: P('Snow Lantern', 'season', 'small', 2, ['season', 'gift'], 'winter'),
+  // a season's (E): bought in its season, given in any; each its own colour (`color`, over its set's: the Seasons set is no one colour, Calissa's ask)
+  blossomTree: { ...P('Blossom Tree', 'season', 'large', 2, ['season', 'gift'], 'spring'), color: 0xe0a2b4 },
+  reedScreen: { ...P('Reed Screen', 'season', 'medium', 2, ['season', 'gift'], 'summer'), color: 0xc9b77a },
+  pumpkinLantern: { ...P('Pumpkin Lantern', 'season', 'small', 2, ['season', 'gift'], 'autumn'), color: 0xd9822b },
+  snowLantern: { ...P('Snow Lantern', 'season', 'small', 2, ['season', 'gift'], 'winter'), color: 0xdfe6ee },
   // briar (A6): made from briar fruit, or brought by a briar visitor
   brambleHedge: P('Bramble Hedge', 'briar', 'small', 2, ['briar', 'visitor']),
   thornArch: P('Thorn Arch', 'briar', 'medium', 2, ['briar', 'visitor']),

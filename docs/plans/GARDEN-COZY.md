@@ -347,7 +347,7 @@ make a garden.
   - First Bloom, In Full Bloom (every planetoid at once), Pruner (50 thorns), Bramble Keeper (a planetoid held in briar for a season,
     the briar way counted equal);
   - Collector (a set), Catalogue (every piece), Five Lotuses;
-  - Wishmaker (25 wishes), Pen Pal (10 letters), Bon Voyage (a farewell), A Year in the Jar (four seasons).
+  - Wishmaker (25 wishes), Pen Pal (10 letters), Bon Voyage (a farewell), Four Seasons (four seasons).
   Each kept as a predicate over the ledger, a count way and a feat way for each worth having (the design laws).
 - [ ] **G3. The gardener in `scripts/economy.mjs`** (item 27): an hour in the garden priced. It counts the beds' materials, the
   dividend, and the decor sink's draw, and checks that the dividend still pays a cozy player's catalogue within the first real week.
