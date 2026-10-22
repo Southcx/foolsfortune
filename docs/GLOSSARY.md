@@ -314,7 +314,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
 - **stun depth: dazed / stunned / out cold** (working names, Espada's; `stun.depth(t)` 1..3, `T.stun`, `src/creatures/stun.js`; `docs/plans/STUN-DEPTH.md`) — how far down a stunned thing is, deepened by stunning it again while down, one star a depth. *Not:* a status of its own.
-- **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
+- **EmO**, Emotional Output (`src/progress/combat/emo.js`; on screen **Agitation**, the owner 2026-10-20; EmO stays in the Codex) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
 - **grain** (`src/progress/combat/temperament.js`) — who a creature's mind is: five traits, each between two poles; it weights the mind and shows
   in movement. *Not:* temper, "personality" or "stats". → detail
 - **the crown** (`FOE.crown`, `src/progress/combat/dunemaw.js`) — the broken urn on the Great Slip Jelly's head, cracked in stages then burst off;
@@ -557,7 +557,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
 - **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; with the Veritome out, the bank (the Book) opens beside it.
   *Not:* the Veritome.
-- **the map** (M) — called Mind Mapping in the game (`src/feedback/cartography.js`).
+- **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.

@@ -244,6 +244,16 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   chimney-crown). Bought later: the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed (a layer of old bones: the fossils).
 - **The Inner Realm**: your garden by its name, offered in neuralese words the Veritome teaches, drawn as runes: HEMA-LUNO (home,
   rest), KITH-HEMA, LUNO-DEO, STIL-DEO, EZA-LON, ROMI-LON, SIVA-LUNO (an oasis), HUSA-HEMA, AMI-HEMA, MOR-LUNO (grief at rest).
+- **What the Inner Realm is** *(Espada's read, proposed 2026-10-22, for the garden round)*: the garden is inside the Pneuka Jar, the
+  Vessoul's true form, so it is the Courier's own psyche made ground, the one island that is you. It grows by the same law as the
+  Courier's mental state (pushed up by what is drunk, settled by quiet): tended, it grows into harmony; left to what you carry in
+  (feelings drunk and never settled, spirits neglected, the hand forcing it), it grows briar. Briar is a modifier with a source you can
+  see (thorns where a feeling went untended), never a punishment, and it has its own life: the fierce feelings' spirits like it. The
+  lesson, unsaid: feelings untended overgrow; tended, they make a garden.
+- **The islets** *(Espada's read, proposed 2026-10-22, the open sea not yet final; words `src/npc/isletlines.js`)*: an islet is a self the
+  Emocean left standing that never grew big enough to become an Island of Ego. Each keeps one secret, and its landing line notices one
+  human trace (a step cut, a ring of stones, a lighthouse's stairs kept up after the light went out) and never says whose. Whose is a
+  blank, left blank. The lesson, unsaid: small selves count too.
 - **The Firings**: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
   **Sinter** (grains fuse into one body), **Lustre** (the third firing), **Salt** (thrown in at the hottest: it stings, and it glazes),
   **Reduction** (starved of air, the colours change from inside), **Anagama** (the days-long wood firing; the island's own name). After
@@ -318,7 +328,7 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   is what you strike.
 - **The crossing's cast** *(parked by the owner, 2026-10-11)*: **glints** (Guppies that flash as they turn) and **the Conductor** (it drives the shoal on the
   beat: down it and the music stops); **the Wreckers** (the coast's thieves who hung false lights: the lighthouse inside out;
-  Contractors under no letter) and their brig the ***False Light*** (their origin *open*); **Old Nobody**, a rogue Leviathan
+  Contractors under no letter) and their brig the ***False Light***. **Their mark** (the owner, 2026-10-20): every Wrecker hull runs on a **forged seal** in its cradle; a ship that should answer to no one answers to a counterfeit name. Who first forged them is *open*; **Old Nobody**, a rogue Leviathan
   (authored by no one, and what Odysseus told the Cyclops): it comes back, and Letty posts WANTED: NOBODY.
 - **The fish**: five aspects; the Emocean is the ultimate fishing hole.
 
@@ -495,7 +505,7 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
 On the sea chart an encounter not yet met is **a sighting** ("encounter" is the Spirit Garden's word); each has its page's title in
 capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOURSE, THE GLASS, A DRIFT BOTTLE; `world/emocean/triprun.js`).
 - **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
-  own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
+  own word), so following them shows the way ahead. **Why they sail on** (the owner, 2026-10-20): the crews are dead and do not know it, still working the run they died on, an echo of obsession; the reckoning is the last thing they hold. "Ghost ships in the fog: the Dead Reckoners." ·
   *Follow them.* "You follow the Dead Reckoners. The next 2 waypoints are clear." · *Board the last ship.* "You take 2 casks from the
   last ship. The Wreckers will hear of it."
 - **lettysCutter: the Last Word.** A cutter (the revenue cutters chased smugglers; it also cuts), named for what Letty always has and
@@ -655,6 +665,7 @@ One label per thing; the name stays in the world. The label is what the card say
 | --- | --- |
 | The folk's lines, Raku's haggling | `src/npc/talks.js` (Espada's) |
 | The garden's names | `src/npc/realmnames.js` (Espada's) |
+| The islets' lines; the co-op room's lines | `src/npc/isletlines.js`, `src/npc/roomlines.js` (Espada's) |
 | The folk's names, titles, glazes | `src/npc/people.js` |
 | The log | `src/feedback/tracking.js`, `src/feedback/tracking/*.js` |
 | The System | `src/audio/voice/voice.js` |

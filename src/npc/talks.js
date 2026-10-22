@@ -11,7 +11,7 @@
 //
 // The folk (npc/people.js says where they stand):
 //   MISTRESS SAGGAR   stoneware. Head maid of a workshop facility, keeper of its kiln; knows the Prince by hearsay. Warm, proud, loud. Hexachord.
-//   RAKU              porcelain. Treasurer of the Weir, a greedy little miser who haggles. Vain of his crackle. The soft hexachord.
+//   RAKU              porcelain. Host of the bazaar (once the Weir's treasurer), a greedy little miser who haggles. Vain of his crackle. The soft hexachord.
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
 //   LETTY MARQUE      nacre, of Margarite (the King's island). A Contractor under the King's marque: the bounty board at Margarite's
@@ -28,6 +28,32 @@ const L = (g, k) => g.ledger?.get(k) || 0;
 // the soul glow (Soul Alchemy: game.alchemy.colour.s, as strong as the soul colour is saturated): the folk notice it past 0.3 (Dovina's)
 const glows = (g) => (g.alchemy?.colour?.s ?? 0) >= 0.3;
 
+// the folk notice (Espada's, 2026-10-21): an `again` line for a milestone, shown while its count sits in a band, as Saggar's pots are
+const known = (g) => (g.ledger?.under?.('feeling.known.') || []).filter(([, v]) => v > 0).length; // (the seven feelings, awakened to)
+const band = (k, lo, hi = Infinity) => (g) => L(g, k) >= lo && L(g, k) < hi;
+
+// the next step (Espada's, for FIRST-HOUR.md 5): the first goal still undone on the list (game.goals), named by whoever stands nearer
+// it: Saggar the workshop's steps, Pip the basement's and the Dunes'; each sends you to the other for the rest
+const nextGoal = (g) => (g.goals?.list?.() || []).find((x) => !x.done)?.id;
+const UPSTAIRS = { sr1: 1, fk1: 1, sk12: 1, br1: 1 }, DOWNSTAIRS = { tc1: 1, pl6: 1, jl1: 1, sf1: 1, an1: 1, cx3: 1 };
+const step = (lines) => ({ mood: 'calm', when: (g) => { const id = nextGoal(g); return !!(lines[id] || (UPSTAIRS[id] || DOWNSTAIRS[id])); }, text: (g) => lines[nextGoal(g)] || lines.other });
+const SAGGAR_STEP = step({
+  sr1: 'First things first: rest at the Shrine, just there. {p:0.3}{small}A pot cools before it\'s handled.{/}',
+  fk1: 'Go and say hello to the rest of the folk. {p:0.3}{small}They like being asked.{/}',
+  sk12: 'Climb up to the atrium rail and look out over the island. {p:0.3}{slow}Just look.{/} {p:0.3}{small}You\'ll know why when you do.{/}',
+  br1: 'The workshop\'s full of old pots nobody wants. {p:0.3}Break ten of them. {p:0.3}{small}The slip runs home and I fire it again. Nothing\'s wasted.{/}',
+  other: 'Pip\'s down in the basement, by the Index. {p:0.3}{small}Nervous little thing, but knows every room.{/}',
+});
+const PIP_STEP = step({
+  tc1: 'There\'s a chest in the hub! {p:0.3}{small}I didn\'t open it. I wanted to. I didn\'t.{/}',
+  pl6: 'Pick the Dunes at the Index. {p:0.3}{shake}So much sand!{/} {p:0.3}{small}Bring me back a little?{/}',
+  jl1: 'There are slip jellies out on the Dunes. {p:0.3}{shake}Wobbly ones.{/} {p:0.3}Pop one? {small}For me?{/}',
+  sf1: 'There\'s a sand boat on the Dunes, a skiff! {p:0.3}{bounce}You stand on it and the sun pushes!{/}',
+  an1: 'Have you tried the rod? {p:0.3}Cast the lure into the water. {p:0.3}{small}Fish are braver than me.{/}',
+  cx3: 'The course is right here in the basement! {p:0.3}Run a lap. {p:0.3}{small}I\'ll count. I\'m good at counting.{/}',
+  other: 'Saggar\'s up at the kiln. {p:0.3}{small}Saggar always knows what\'s next.{/}',
+});
+
 export const TALKS = {
   saggar: {
     start: 'hello', again: 'again',
@@ -37,7 +63,7 @@ export const TALKS = {
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
         { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }, { mood: 'calm', when: band('courier.shatter', 1, 4), text: "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}" }, { mood: 'awe', when: (g) => known(g) >= 1 && known(g) < 7, text: (g) => `{slow}You feel more than you did.{/} {p:0.3}${known(g)} of the seven, if I'm any judge. {p:0.3}{small}The kiln can tell.{/}` }, { mood: 'joy', when: band('duel.won', 1, 3), text: 'They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}' }, SAGGAR_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'What are the clapperjars?', go: 'jars' },
         { text: 'About the pots I broke…', go: 'pots' },
@@ -83,7 +109,7 @@ export const TALKS = {
         { mood: 'fear', text: "I'm Pip. I'm Mistress Saggar's apprentice. {p:0.4}{small}I'm hiding.{/}" },
         { mood: 'sad', text: 'She sent me down for glaze and the clapperjars {tremble}clapped at me{/}. All of them. {slow}At once.{/}' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }, { mood: 'surprise', when: band('duel.won', 1, 5), text: 'You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I\'m good at puzzles! {p:0.3}{small}Not the fighting part.{/}' }, { mood: 'joy', when: band('shrine.found', 1, 3), text: 'You found a Shrine! {p:0.3}{small}Is it quiet there? I\'d like somewhere quiet.{/}' }, PIP_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'Why are you scared of them?', go: 'scared' },
         { text: 'Want me to deal with them?', go: 'deal' },
@@ -118,7 +144,7 @@ export const TALKS = {
         { mood: 'sad', text: "I've fished this pool since it was a {small}puddle{/}. Since before the sand came. {p:0.5}{slow}Since before the Weir was a weir.{/}" },
         { mood: 'awe', text: 'Do you see how the water holds the sky? {p:0.3}{slow}That\'s the Lachryma in it.{/} The tide brings it up from somewhere deep.' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'calm', text: '{slow}Mm.{/} {p:0.4}The Courier again. {bob}Sit a while.{/}' }, { mood: 'sad', when: glows, text: 'Hm. {p:0.5}You\'ve a light in you. {p:0.4}{slow}The town had that, once.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: '{slow}Mm.{/} {p:0.4}The Courier again. {bob}Sit a while.{/}' }, { mood: 'sad', when: glows, text: 'Hm. {p:0.5}You\'ve a light in you. {p:0.4}{slow}The town had that, once.{/}' }, { mood: 'calm', when: band('emocean.hop', 1, 6), text: '{slow}Salt on you.{/} {p:0.4}You\'ve been out past the Weir, on the big water. {p:0.4}{small}I used to watch the ships go.{/}' }, { mood: 'sad', when: band('emocean.hop', 2), text: "{slow}Did you see them? The ghost ships, in the fog.{/} {p:0.5}Crews that don't know they're gone, still working the run. {p:0.4}{small}Some of the town's folk sailed like that. Couldn't stop.{/}" }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "What's in the water?", go: 'fish' },
         { text: 'Why so sad?', go: 'sad' },
@@ -164,7 +190,7 @@ export const TALKS = {
         { mood: 'sly', text: 'Welcome, welcome, {gold}welcome{/}! Raku, treasurer of the Weir, at your service. {p:0.4}{small}For a small fee.{/}' },
         { mood: 'joy', text: "You've come about the {lach}Tithe{/}, of course. {bounce}Everyone does, eventually.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'sly', text: 'Ah, my {gold}favourite{/} customer! {p:0.3}{small}Is that a purse I hear?{/}' }, { mood: 'sly', when: glows, text: 'That glow. {p:0.3}Is it real? {p:0.3}{small}What would you take for it?{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'sly', text: 'Ah, my {gold}favourite{/} customer! {p:0.3}{small}Is that a purse I hear?{/}' }, { mood: 'sly', when: glows, text: 'That glow. {p:0.3}Is it real? {p:0.3}{small}What would you take for it?{/}' }, { mood: 'surprise', when: band('chest.open.sealed', 1, 4), text: 'A {gold}sealed{/} chest? {p:0.3}And you opened it without me? {p:0.3}{mood:sly}{small}Next time, bring it here. I know a fellow.{/}' }, { mood: 'sly', when: band('chest.open', 25), text: (g) => `${L(g, 'chest.open')} chests opened! {p:0.3}You're my kind of fool. {p:0.3}{small}That's a compliment. Mostly.{/}` }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "Let's trade.", do: (g) => g.shops?.open('raku'), go: null },
         { text: "What's the Tithe?", go: 'tithe' },
@@ -224,7 +250,7 @@ export const TALKS = {
         { poll: true, mood: 'joy', text: '{big}{shake}HEAD COUNT! HEAD COUNT!{/}{/}' },
         { mood: 'anger', text: "This is my board, and every notice on it is a wrong thing loose in the sea that ought to have been dealt with yesterday, {p:0.3}and if I had my way we'd be dealing with all of them {hot}today{/}." },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: "There you are! {p:0.3}I was starting to think you'd gone soft on me, and the board has only grown since you left." }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: "There you are! {p:0.3}I was starting to think you'd gone soft on me, and the board has only grown since you left." }, { mood: 'anger', when: band('emocean.stage.passed', 1), text: "You've crossed, so you've seen them: the Wreckers. {p:0.3}Every hull of theirs runs on a {hot}forged seal{/}. {p:0.3}A counterfeit name in the heart of a ship. {p:0.4}{small}I can smell one a league off.{/}" }, { poll: true, mood: 'joy', when: band('duel.won', 1), text: '{big}{shake}MENDED! MENDED!{/}{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "What's on the board?", go: 'board' },
         { text: 'Who pays?', go: 'pays' },
@@ -284,7 +310,7 @@ export const TALKS = {
         { mood: 'calm', text: 'Margarite dock. {p:0.3}State your cargo.' },
         { mood: 'calm', text: "I am the Purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }, { mood: 'calm', when: band('emocean.hop', 3), text: (g) => `${L(g, 'emocean.hop')} crossings on your account. {p:0.3}Steady trade. {p:0.3}The lamp thanks you, in its way.` }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'I have cargo.', do: (g) => g.shops?.open('purser'), go: null },
         { text: 'What do you buy?', go: 'buy' },
