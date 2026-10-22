@@ -374,8 +374,11 @@ make a garden.
      - letters, postcards and dawn gifts (C5).
      Measured (`npm run perf` against the last published build): the garden's draw calls 196, unchanged; its programs 194, was 192; its
      tick 3.1 ms, was 4.6. The stress test is clean, the garden sweep 145 of 145.
-   - **next:** the spirits walking their routines (C1's world side, Petra's walk), the farewell (C6), seasons in the look and the cue
-     (Calissa's, Wanda's).
+   - **landed on main (b631128):** the world side through Calissa's branch, with her dress (H1 to H6, the 47 pieces, the thorns, the lake
+     lotuses), Espada's words, and Petra's two lines (Incense's settle, no green into thorns).
+   - **built fourth:** the spirits walk their routines (C1, `world/garden/spiritwalk.js`): toward the nearest of their place on the
+     planetoid they stand on, as faithfully as their grain allows, else the old wander.
+   - **next:** the farewell (C6, waiting on the owner's Q4), seasons in the cue (Wanda's B6).
    No world code; MEASURE lines in a script.
 2. **Petra:**
    - the decor layer (D1, D2, D7);

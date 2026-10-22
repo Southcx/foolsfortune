@@ -425,7 +425,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   when picked up / the garden's decor scored by variety region by region, never shown as a number / one of the five on the Dantian's
   lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
 - **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
-  where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows / the one thing a spirit that trusts you
+  where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows (walked to: `walkWish`, `world/garden/spiritwalk.js`) / the one thing a spirit that trusts you
   (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
 - **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`; `DecorLayer`, `game.decorLayer`; `ThornPatches`, `game.thornPatches`,
   `src/world/garden/thornpatches.js`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps,
