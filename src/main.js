@@ -256,6 +256,7 @@ import { Keepsakes } from './progress/keepsakes.js';
 import { GardenMycelium } from './world/garden/mycelium.js';
 import { renderGrimoire } from './feedback/codex/grimoire.js';
 import { GardenMood } from './vfx/garden/gardenmood.js';
+import { GuestJars } from './vfx/garden/guestjars.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -269,6 +270,7 @@ import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
 import { OpenSea } from './world/opensea/opensea.js';
 import { SeaFight } from './world/opensea/seafight.js';
+import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -638,6 +640,7 @@ async function main() {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
@@ -670,6 +673,7 @@ async function main() {
     game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
+    game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
@@ -1304,6 +1308,7 @@ async function main() {
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
+    game.guestJars?.update(game.rawDt);
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);

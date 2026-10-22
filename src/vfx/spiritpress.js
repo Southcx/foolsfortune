@@ -165,7 +165,7 @@ export class SpiritPress {
   float swirl = 0.5 + 0.5 * sin(a * 3.0 + r * 7.0 - uT * 0.7) * (1.0 - 0.5 * r); // (stirred: three slow arms turning, a liquid's own movement)
   totalEmissiveRadiance += mix(uSoul, vec3(1.0, 0.55, 0.12) * 1.6, uRegia) * (0.3 + 0.6 * max(uHeat, uRegia)) * (0.55 + 0.45 * swirl) * (0.6 + 0.4 * (1.0 - r)); } // (aqua regia: the pool gold-orange while gold dissolves in it)`);
     };
-    pool.customProgramCacheKey = () => 'spirit-bath';
+    pool.customProgramCacheKey = () => 'spirit-bath'; pool.name = 'spirit-bath'; // (named, so perf reads it)
     P.pool = part(group, new THREE.CircleGeometry(0.9, 32), pool, 0, 0.56, 0, false); P.pool.rotation.x = -Math.PI / 2;
 
     // THE CRUCIBLE: the hourglass of glass in the pool, the soul's bead in its waist; the lantern by it, and its thread of smoke
@@ -224,7 +224,7 @@ export class SpiritPress {
     part(hop, blob(0.3, 6.1, { rough: 0.3, ...barkTone }), bark, 0, 2.0, 0.0);
     P.mouth = part(hop, new THREE.CircleGeometry(0.26, 28), spiralM, 0.02, 2.5, 0.68, false);
     for (const [x, y, z, l] of [[-0.62, 2.1, 0.25, 0.32], [-0.7, 2.25, 0.05, 0.22], [0.66, 2.15, 0.2, 0.18]]) part(hop, new THREE.ConeGeometry(0.04, l, 6), std(C.leaf, { roughness: 0.85 }), x, y - l / 2, z).rotation.x = Math.PI; // (drips hanging from the crown)
-    const leafM = std(0xffffff, { map: leafTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 });
+    const leafM = std(0xffffff, { map: leafTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6, name: 'press-leaves' });
     const crest = new THREE.Group(); crest.position.set(0.1, 3.02, -0.05); crest.rotation.set(0.1, -0.3, -0.35); hop.add(crest);
     part(crest, leafGeo(0.9, 0.34), leafM, 0.4, 0, 0, false); part(crest, leafGeo(0.75, 0.28), leafM, 0.3, -0.05, 0.12, false).rotation.z = -0.25;
     part(hop, new THREE.CylinderGeometry(0.02, 0.03, 0.22, 5), std(C.bark), 0.02, 2.98, -0.05).rotation.z = -0.3;
