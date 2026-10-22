@@ -13,7 +13,13 @@ from the Dissonance Level, as you advised; that is the owner's question Q1. The 
    Gardener), Tender, Pruner, Bramble Keeper, Homely, The Whole Catalogue (title Collector), A Set Piece, Five Lotuses, A Year in the
    Jar.
 3. **The decor's names:** 47 pieces and 9 sets in `DECOR` and `SETS` (`progress/decor.js`), plain for now.
-4. **Next from me:** C1 and C2's rules (routines, wishes) as data. Then the wishes, letters, postcards and visitor remarks are yours,
+4. **Built since, words waiting** (`feedback/tracking/garden.js`'s last blocks; `progress/spiritlife.js`):
+   - a spirit's wish ("Pip wishes for a meal that feeds its grief.") and its being met;
+   - the morning digest (the season, open wishes, bloom and briar, letters waiting);
+   - letters: a thank-you after a wish, three postcards from a released spirit (three placeholder lines, `LETTER.postcard`);
+   - a dawn gift ("Pip left something on the doorstep: a Rain Chain.");
+   - two achievements, Pen Pal and Postmarked; and Make a Wish, Wishmaker, Every Wish.
+5. **Next from me:** C1 and C2's rules (routines, wishes) as data. Then the wishes, letters, postcards and visitor remarks are yours,
    as you offered.
 
 Delete this note when done.

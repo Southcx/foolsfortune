@@ -364,7 +364,18 @@ make a garden.
      `world/garden/decorgrid.js` (D1: the cube-sphere, measured within 1.09 : 1), `world/garden/decorlayer.js` (D2: placing, moving,
      turning, storage, the catalogue page, the ghost, the rating reported), `world/garden/thorns.js` (A4: patches at their cause, GRAB
      prunes for a briar cutting), with four one-line hooks in `realm.js` and `hand.js`. Placeholder shapes; Calissa dresses them.
-   - **next:** the spirits walking their routines (C1's world side), Incense's job (A2), collision (D7), undo for decor (D2).
+   - **built third, to Petra's conditions:**
+     - one BatchedMesh for decor and one for thorns, on one material;
+     - the clay held under each piece;
+     - collision (D7) for the Jar and the spirits;
+     - thorns slow the Jar's hop (×0.6, the owner's to feel);
+     - decor's own undo;
+     - `harmony.settleK` for Incense (A2: Petra adds the line in `courier/mind.js`);
+     - letters, postcards and dawn gifts (C5).
+     Measured (`npm run perf` against the last published build): the garden's draw calls 196, unchanged; its programs 194, was 192; its
+     tick 3.1 ms, was 4.6. The stress test is clean, the garden sweep 145 of 145.
+   - **next:** the spirits walking their routines (C1's world side, Petra's walk), the farewell (C6), seasons in the look and the cue
+     (Calissa's, Wanda's).
    No world code; MEASURE lines in a script.
 2. **Petra:**
    - the decor layer (D1, D2, D7);
