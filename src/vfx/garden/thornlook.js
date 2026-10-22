@@ -12,7 +12,7 @@
 // Prior art: Sleeping Beauty's briar wall (the cane that arches and curls), Hollow Knight's Queen's Gardens thorns (thorns hooked
 // back, a dark mass with a few bright points), Ori's thornfen vines, Animal Crossing's weeds (readable at a glance from a hop away).
 //
-//   thornClumps() -> [young, grown, old]   three BufferGeometry (non-indexed: position, normal, color), about 0.5 to 1.6 m tall, foot at 0,0,0
+//   thornClumps() -> [young, grown, old]   three BufferGeometry (non-indexed: position, normal, color, tintk 1, glowk 0), about 0.5 to 1.6 m tall, foot at 0,0,0
 //   THORN_LOOK   the numbers: canes, height, length of a cane a size
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -95,7 +95,9 @@ function clump(size, seed) {
     }
     if (c % 2 === 0) { const i = 3 + Math.floor(rnd() * (S - 6)); _t.subVectors(pts[i + 1].p, pts[i - 1].p).normalize(); _n.crossVectors(_t, _u).normalize(); const out = _n.clone().applyAxisAngle(_t, rnd() * 6.28); leaf(pts[i].p, out, THORN_LOOK.leafSize * (0.8 + rnd() * 0.5), pos, nor, col, c); }
   }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeBoundingSphere(); return g;
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const n = pos.length / 3; g.setAttribute('tintk', new THREE.Float32BufferAttribute(new Float32Array(n).fill(1), 1)); g.setAttribute('glowk', new THREE.Float32BufferAttribute(new Float32Array(n), 1)); // (the decor material's: the patch's grade tints it all, no lamp)
+  g.computeBoundingSphere(); return g;
 }
 
 /** The three clump geometries: young, grown, old (non-indexed: position, normal and the vertex colour the decor material reads). */

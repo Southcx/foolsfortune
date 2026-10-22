@@ -35,22 +35,23 @@ export const decorTriangles = () => Object.fromEntries(DECOR_PIECE_IDS.map((id) 
 /** The decor material taught the pieces' attributes: vertex colour (mixed with the instance colour by `tintk`) and lamp glow by the hour.
  *  The same material, patched before its first compile; every geometry on it must carry color, tintk and glowk (mergeParts does). */
 export function decorMaterial(mat, game) {
-  const lamps = { value: 0 };
+  const lamps = { value: 0 }, ghost = { value: -1 };
   mat.vertexColors = true; mat.userData.lamps = lamps;
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uLamps = lamps;
+    sh.uniforms.uLamps = lamps; sh.uniforms.uGhost = ghost;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float tintk; attribute float glowk; varying float vGlow;')
+      .replace('#include <common>', '#include <common>\nattribute float tintk; attribute float glowk; varying float vGlow; uniform float uGhost;')
       .replace('#include <color_vertex>', `vColor = color;
 #ifdef USE_BATCHING_COLOR
-  vColor *= mix( vec3( 1.0 ), getBatchingColor( getIndirectIndex( gl_DrawID ) ).xyz, tintk );
+  float isGhost = 1.0 - step( 0.5, abs( float( getIndirectIndex( gl_DrawID ) ) - uGhost ) ); // (the ghost takes its gold or red on every part, stone too)
+  vColor *= mix( vec3( 1.0 ), getBatchingColor( getIndirectIndex( gl_DrawID ) ).xyz, max( tintk, isGhost ) );
 #endif
   vGlow = glowk;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying float vGlow; uniform float uLamps;')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3( 1.0, 0.72, 0.34 ) * vGlow * uLamps;');
   };
-  mat.onBeforeRender = () => { lamps.value = game?.gardenMood?.now?.lamps ?? 0; }; // (the lamps by the hour; a BatchedMesh keeps its own onBeforeRender, so the material's)
+  mat.onBeforeRender = (r, sc, cam, geo, obj) => { lamps.value = game?.gardenMood?.now?.lamps ?? 0; ghost.value = obj === game?.decorLayer?.batch ? (game.decorLayer.ghostId ?? -1) : -1; }; // (the lamps by the hour; a BatchedMesh keeps its own onBeforeRender, so the material's)
   mat.customProgramCacheKey = () => 'garden-decor-pieces';
   return { lamps };
 }

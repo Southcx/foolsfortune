@@ -27,6 +27,11 @@ const simRand = stream('world/garden/thornpatches'); // (a cutting's seed: core/
 export const PATCH = { at: { lotus: 'gate', spirit: 'cocoon' }, ring: 3.2, reach: 1.6, slowReach: 1.2, slow: 0.6 };
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _n = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), UP = new THREE.Vector3(0, 1, 0);
 
+/** A patch's tint by its planetoid's briar (0..1): at the briar's edge the canes still half green, at the bottom dry and dark; every
+ *  other clump a shade lighter, so a patch never reads as one flat colour. (The canes' own olive and rust are their vertex colours.) */
+const GRADE = { edge: new THREE.Color(0xe4ecd0), deep: new THREE.Color(0x9a7c6c) };
+function thornGrade(briarK, i) { const b = Math.min(1, Math.max(0, (briarK - 0.45) / 0.55)); return _c.copy(GRADE.edge).lerp(GRADE.deep, b).multiplyScalar(i % 2 ? 0.92 : 1); }
+
 export class ThornPatches {
   constructor(realm) {
     this.R = realm; this.game = realm.game; this.spots = [];
@@ -44,7 +49,7 @@ export class ThornPatches {
     const kind = PATCH.at[at], F = kind && this.R.site.features.find((f) => f.kind === kind && f.planet === P);
     return (F ? F.pos.clone().sub(P.c) : UP.clone()).normalize();
   }
-  /** The patches drawn again from the harmony's thorns. */
+  /** The patches drawn again from the harmony's thorns (each tinted by its planetoid's briar: Calissa's grade below). */
   redraw() {
     const H = this.game.harmony, B = this.batch; this.spots = []; let k = 0;
     if (H) for (const P of this.R.site.planets) for (const t of H.thorns(P.id)) {
@@ -53,7 +58,7 @@ export class ThornPatches {
         const ang = (i / THORNS.max) * Math.PI * 2 + 0.4, off = side.clone().applyAxisAngle(a, ang).multiplyScalar(PATCH.ring / Math.max(4, P.r));
         _n.copy(a).add(off).normalize(); const r = P.radiusAt ? P.radiusAt(_n) : P.r;
         _p.copy(P.c).addScaledVector(_n, r - 0.05); _q.setFromUnitVectors(UP, _n); const sc = (0.85 + 0.07 * t.n) * (0.9 + 0.2 * Math.sin(i * 2.3 + k));
-        B.setMatrixAt(this.ids[k], _m.compose(_p, _q, _s.set(sc, sc, sc))); B.setColorAt(this.ids[k], _c.set(i % 2 ? 0xe6d2bc : 0xffffff)); B.setVisibleAt(this.ids[k], true);
+        B.setMatrixAt(this.ids[k], _m.compose(_p, _q, _s.set(sc, sc, sc))); B.setColorAt(this.ids[k], thornGrade(H.briarK?.(P.id) ?? 0.5, i)); B.setVisibleAt(this.ids[k], true);
         this.spots.push({ planet: P, pos: _p.clone() });
       }
     }
