@@ -1,27 +1,38 @@
-# From Dovina: the cozy garden, what the world side needs (docs/plans/GARDEN-COZY.md)
+# From Dovina: the cozy garden's world side, built for you (docs/plans/GARDEN-COZY.md)
 
-The plan is the owner's to prune. Your placement research
-is in it as items D1, D2, D7 and D8, nearly word for word. The rules are built on my branch, so the world side has a small interface to
-call.
+The owner asked me to take mechanical work off you, so I did, after offering by message: your placement research is built as new files.
+Everything is yours to reject or rework at the gate.
 
-1. **Thorns (A4).** `game.harmony.thorns(planetoid)` gives `[{ at, n }]`: `at` is the cause's place, `'lotus'` for the Dantian's arrival
-   lotus or `'spirit'` for the Mulberry Grove's spirit houses. `garden.thorn { planetoid, at, n }` says when one grows.
-   - **What a patch does:** plants don't spread onto it. Slowing the Jar's hop there is your call, since it is the garden's own
-     controller.
-   - **The pruning stroke:** GRAB held and drawn across a patch calls `game.harmony.prune(planetoid)`, which returns
-     `{ ok, cutting }`. On `cutting`, put a briar cutting in the Pneuka Box: a material of Gall's kind (`finery`), its look Calissa's.
-2. **Decor (D1, D2, D7).**
-   - **Placing:** call `game.decor.take(id)` (false: none in storage). Picking up calls `game.decor.put(id)`.
-   - **The catalogue window:** `game.decor.catalogue(seasonOf().id)` lists what may be bought, `buy(id)` buys, `stored(id)` counts.
-     The pieces and their sizes are `DECOR` and `CELLS` (`progress/decor.js`).
-   - **The rating:** when a layout changes, call `rating(pieces, { cellsOf })` (pieces
-     `[{ id, region: 'planet.face.quarter', planet, pos: [x, y, z] }]`, `cellsOf(region)` its cells) and emit
-     `garden.rating { points, lotuses, sets, by: 'courier' }`. The ledger, the lake lotuses' log line and the achievements read it.
-3. **Optional:** a `planetoid` on `Raising.say`'s spirit events and on the waterworks' `garden.water`. Harmony falls back to the
-   planetoid the Pneuka Jar stands on, so this only sharpens where a tend counts.
-4. **Incense's job (A2), still unwired:** doubling the rest's settle within 4 m is a modifier on the mental state's settle
-   (`courier/mind.js`). Yours to place, or tell me where it belongs.
-5. **The sweep:** the garden sweep's "HUD cross back" check went with the retired DOM crosshair (deleted in `scripts/sweeps/garden.mjs`).
-   After that, 145 of 145 passed.
+1. **New files:**
+   - `world/garden/decorgrid.js`: your equal-angle cube-sphere. Pure maths, measured within 1.09 : 1 along a face; at R 14 the worst
+     snap is 0.37 m.
+   - `world/garden/decorlayer.js`: four InstancedMeshes, one a size, on one MeshStandardMaterial with instance colours, built when the
+     realm is built, before its warm-up compile, so there is no first-seen hitch. It has a ghost (gold free, red blocked), a click on
+     each snap, the wheel to turn, the catalogue page, and `garden.rating` after each change.
+   - `world/garden/thorns.js`: the harmony's thorns drawn round their cause (the gate, the cocoon tree), one InstancedMesh. GRAB's
+     click prunes one for a briar cutting.
+2. **The hooks in your files (one line each):**
+   - `realm.js`: construct both after the hand; `decorLayer.update` beside `plots.update`; the two imports.
+   - `hand.js`:
+     - `turn()`: PLACE's R toggles decor;
+     - the place case hands the frame to the layer when decor is on;
+     - `grab()` tries a prune first, only when no body is under the hand;
+     - `setArt` hides the plots while decor is on.
+3. **The layout's save:** it lives with storage in my `decor` section (one section, so the two always agree), not in the realm's.
+   A piece is `[id, planetoid, face, iu, iv, yaw, tint]`.
+4. **Verified headless in the real garden:**
+   - 5 pieces placed and drawn;
+   - one picked up, back to storage;
+   - the rating reported;
+   - 3 thorns drawn, one pruned, a cutting in the Pneuka Box;
+   - R toggles;
+   - no errors.
+   Not verified: playing it by hand, and how it looks (the probe's screenshot was the realm's naming page).
+5. **Left for you, or for me if you'd rather:**
+   - collision (D7): the Pneuka Jar and the spirits walk through pieces;
+   - decor in the hand's undo stack;
+   - the spirits walking their routines (`routineOf`, `progress/spiritlife.js`);
+   - Incense's job (A2: doubling the settle within 4 m, in `courier/mind.js`);
+   - plants not spreading onto thorns (`plants.js`).
 
 Delete this note when done.

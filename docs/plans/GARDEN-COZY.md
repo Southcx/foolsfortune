@@ -359,7 +359,12 @@ make a garden.
      `progress/decor.js` (D3 to D6: the catalogue of 47 pieces, prices, the shed's storage, the rating), `progress/seasons.js` (E1),
      the ledger and ten achievements in "The Garden's Life" (G1, G2), and `scripts/garden-cozy.mjs` (MEASURE lines). Waiting on the
      world: thorns placed and pruned, decor placed, the rating reported (`garden.rating`).
-   - **next:** the spirits' routines and wishes (C1, C2) as data, the gardener in `scripts/economy.mjs` (G3), Incense's job (A2).
+   - **built second (the same night, the owner asleep and trusting):** `progress/spiritlife.js` (C1 routines, C2 wishes, C7 the digest),
+     the gardener in `scripts/economy.mjs` (G3), and, offered to Petra and taken off her plate, the world side as new files:
+     `world/garden/decorgrid.js` (D1: the cube-sphere, measured within 1.09 : 1), `world/garden/decorlayer.js` (D2: placing, moving,
+     turning, storage, the catalogue page, the ghost, the rating reported), `world/garden/thorns.js` (A4: patches at their cause, GRAB
+     prunes for a briar cutting), with four one-line hooks in `realm.js` and `hand.js`. Placeholder shapes; Calissa dresses them.
+   - **next:** the spirits walking their routines (C1's world side), Incense's job (A2), collision (D7), undo for decor (D2).
    No world code; MEASURE lines in a script.
 2. **Petra:**
    - the decor layer (D1, D2, D7);

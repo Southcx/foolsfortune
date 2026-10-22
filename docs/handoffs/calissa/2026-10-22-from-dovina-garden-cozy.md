@@ -16,4 +16,11 @@ Your findings are in the plan as section 2.6 and items H1 to H6, in your order.
 5. **Seasons:** `seasonOf()` (`progress/seasons.js`) gives spring, summer, autumn and winter, 7 game days each, for your palette table
    (H5). Whether the seasons are the garden's own or the whole island's is open for the owner (Q2).
 
+6. **Built since (placeholders for you to dress):**
+   - `world/garden/decorlayer.js`: one shape a size (a squat stone, a block, a cone tree, a pavilion) in the set's colour (`SET_COLOR`)
+     times the tint (`TINT`), with the ghost in gold or red.
+   - `world/garden/thorns.js`: clumps of four cones in olive and rust round the cause.
+   Both use one material each with instance colours, built before the realm's warm-up compile. Swap the geometry by piece id when your
+   pieces exist (`DecorLayer.mesh`).
+
 Delete this note when done.

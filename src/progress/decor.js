@@ -20,7 +20,8 @@
 //   DECOR[id] = { name, set, size, tints, from: [sources] }   SETS, SOURCES, LOTUSES, CLUTTER, SET   priceOf(id) -> cubes
 //   regionPoints(pieces) -> n   rating(pieces, { cellsOf }) -> { points, lotuses, regions, sets }   (pieces: [{ id, region, pos }])
 //   game.decor = new Decor(game)   .owns(id)   .stored(id)   .give(id, from)   .buy(id) -> { ok, why? }   .take(id) -> bool   .put(id)
-//   events: decor.get { id, from, n }   decor.buy { id, cubes }   decor.refuse { id, why }
+//   .place(id, at, { yaw, tint }) -> i   .move(i, at?, yaw?)   .remove(i)   .s.placed: [[id, planetoid, face, iu, iv, yaw, tint]]
+//   events: decor.get { id, from, n }   decor.buy { id, cubes }   decor.refuse { id, why }   decor.place / decor.move / decor.remove { id, planetoid }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 
@@ -140,7 +141,7 @@ export function rating(pieces = [], { cellsOf = () => 64 } = {}) {
   return { points: +points.toFixed(2), lotuses, regions: byRegion, sets };
 }
 
-const fresh = () => ({ owned: {}, stored: {} });
+const fresh = () => ({ owned: {}, stored: {}, placed: [] }); // (placed: [id, planetoid, face, iu, iv, yaw, tint] a piece: half-cells on the decor grid, world/garden/decorgrid.js; with storage in one section, so the two always agree)
 
 export class Decor {
   constructor(game) {
@@ -181,7 +182,29 @@ export class Decor {
     this.give(id, 'shop');
     return { ok: true };
   }
-  /** Placing takes a copy out of storage (the decor layer calls it); picking up puts it back. */
+  /** Placing takes a copy out of storage; picking up puts it back. */
   take(id) { if (!this.stored(id)) return false; this.s.stored[id]--; this.game.save?.dirty('decor'); return true; }
+  /** The layout: a piece from storage set at a cell `at` = { planetoid, face, iu, iv } (half-cells), turned `yaw` steps, in `tint`.
+   *  Returns its index, or -1 when none is in storage. */
+  place(id, at, { yaw = 0, tint = 0 } = {}) {
+    if (!this.take(id)) { this.game.events?.emit('decor.refuse', { id, why: 'stored', by: 'courier' }); return -1; }
+    this.s.placed.push([id, at.planetoid, at.face, at.iu, at.iv, yaw, tint]);
+    this.game.events?.emit('decor.place', { id, planetoid: at.planetoid, by: 'courier' });
+    return this.s.placed.length - 1;
+  }
+  /** A placed piece moved or turned where it stands (no storage touched). */
+  move(i, at, yaw) {
+    const P = this.s.placed[i]; if (!P) return false;
+    if (at) { P[1] = at.planetoid; P[2] = at.face; P[3] = at.iu; P[4] = at.iv; } if (yaw != null) P[5] = yaw;
+    this.game.save?.dirty('decor'); this.game.events?.emit('decor.move', { id: P[0], planetoid: P[1], by: 'courier' }); return true;
+  }
+  /** A placed piece picked up: back to storage whole. */
+  remove(i) {
+    const P = this.s.placed[i]; if (!P) return false;
+    this.s.placed.splice(i, 1); this.put(P[0]);
+    this.game.events?.emit('decor.remove', { id: P[0], planetoid: P[1], by: 'courier' }); return true;
+  }
+  /** Every piece on a planetoid that was taken away (a reset never loses a piece: they go back to storage). */
+  clearPlanetoid(planetoid) { for (let i = this.s.placed.length - 1; i >= 0; i--) if (this.s.placed[i][1] === planetoid) this.remove(i); }
   put(id) { if (!DECOR[id]) return false; this.s.stored[id] = this.stored(id) + 1; this.game.save?.dirty('decor'); return true; }
 }

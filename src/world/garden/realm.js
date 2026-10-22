@@ -23,6 +23,8 @@ import { Clay } from './clay.js';
 import { Plots, FEELING_COLOR } from './plots.js';
 import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
+import { DecorLayer } from './decorlayer.js';
+import { ThornPatches } from './thorns.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
@@ -95,6 +97,7 @@ export class Realm {
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
+    this.decorLayer = new DecorLayer(this); this.thorns = new ThornPatches(this); // (garden pieces placed by the hand, and the briar's thorns: Dovina's, world/garden/decorlayer.js, thorns.js)
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.rainLook = new GardenRain({ sky: this.site.sky }); this.site.group.add(this.rainLook.group); // (Calissa's rain: each drop falls to its own planetoid's heart, vfx/garden/gardenrain.js)
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
@@ -280,7 +283,7 @@ export class Realm {
     this.placeJar(dt);
     this.hand.update(dt);
     const raw = g.rawDt ?? dt;
-    this.site.update(raw, g.camera); this.plots.update(raw);
+    this.site.update(raw, g.camera); this.plots.update(raw); this.decorLayer?.update(raw);
     for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }

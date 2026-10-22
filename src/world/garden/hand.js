@@ -65,7 +65,7 @@ export class GardenHand {
 
   setArt(a) {
     if (!ARTS.includes(a) || a === this.art) return;
-    this.art = a; this.R.plots?.show(a === 'place');
+    this.art = a; this.R.plots?.show(a === 'place' && !this.R.decorLayer?.on);
     this.game.events?.emit('garden.art', { art: a, ground: a === 'paint' ? this.ground : undefined, feeling: a === 'water' ? this.feeling || undefined : undefined, by: 'courier' });
   }
   /** A bought planetoid's seed in the hand (world/garden/orbit.js), until it is let go in the open sky. */
@@ -77,6 +77,7 @@ export class GardenHand {
   turn() {
     if (this.art === 'paint') this.ground = GROUNDS[(GROUNDS.indexOf(this.ground) + 1) % GROUNDS.length];
     else if (this.art === 'water') { const i = this.feeling ? FEELINGS.indexOf(this.feeling) + 1 : 0; this.feeling = i < FEELINGS.length ? FEELINGS[i] : null; }
+    else if (this.art === 'place' && this.R.decorLayer) { this.R.decorLayer.toggle(); return; } // (PLACE's R: plots or decor, world/garden/decorlayer.js)
     else return;
     this.game.events?.emit('garden.art', { art: this.art, ground: this.art === 'paint' ? this.ground : undefined, feeling: this.art === 'water' ? this.feeling || 'draught' : undefined, by: 'courier' });
   }
@@ -130,7 +131,7 @@ export class GardenHand {
       case 'grab': this.grab(dt, o, d); break;
       case 'paint': this.paint(dt); break;
       case 'water': R.waterworks?.handle(dt, this.hit, { feeling: this.feeling, pour: I.isDown('Mouse0') && !shift && !ctrl, drink: I.isDown('Mouse2') && !shift, spring: shift && I.wasPressed('Mouse0'), drain: ctrl && I.wasPressed('Mouse0'), unset: shift && I.wasPressed('Mouse2') }); break;
-      case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
+      case 'place': if (R.decorLayer?.on) { R.decorLayer.handle(dt, this); break; } if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
       default: this.sculpt(dt);
     }
     // the brush's ring on the clay under the hand, for the four strokes
@@ -143,6 +144,7 @@ export class GardenHand {
   // ---- grab, throw, pet
   grab(dt, o, d) {
     const I = this.game.input;
+    if (I.wasPressed('Mouse0') && !this.held && !this.pick(o, d) && this.R.thorns?.prune(this.hit)) return; // (a thorn clump under the hand: pruned, world/garden/thorns.js)
     if (I.wasPressed('Mouse0') && !this.held) {
       const b = this.pick(o, d);
       if (b) { this.held = b; this.dist = o.distanceTo(b.body.pos); this.downT = 0; this.moved = 0; b.body.held = true; b.body.flight = null; this.at.copy(b.body.pos); this.prev.copy(this.at); sfx.grab?.(); }

@@ -18,7 +18,7 @@ export function placeRules({ on, log }) {
   });
   on('garden.refuse', (e) => log.say('warn', { god: 'Not while you are the god hand.', death: 'Not while your Pneuka Jar is broken.', stage: 'Not during a sea stage.', busy: 'Wait a moment.' }[e.why] || 'Not now.', { key: 'garden.refuse', throttle: 1 })); // (world/garden/realm.js)
   on('garden.jar.back', () => log.say('info', 'Your Pneuka Jar lands back at the gate.', { key: 'garden.jar.back', throttle: 2 })); // (thrown off into the sky: world/garden/realm.js)
-  on('garden.art', (e) => log.say('system', `Your hand: ${ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your last drink' : e.feeling}.` : ''}`, { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
+  on('garden.art', (e) => log.say('system', `Your hand: ${e.mode === 'decor' ? 'Decorate: set a garden piece. Click the ground for the catalogue.' : ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your last drink' : e.feeling}.` : ''}`, { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
   on('garden.reset.ask', () => log.say('warn', 'Again to put this planetoid back as it was: its clay, its ground and its water.', { key: 'garden.reset', throttle: 1 }));
   on('garden.reset', () => log.say('info', 'The planetoid is back as it was. Ctrl+Z undoes it.', { key: 'garden.reset', throttle: 1 }));
   on('mind.brim', () => log.say('warn', 'Your pool overflows.', { key: 'mind.brim', throttle: 2 })); // (Espada's words, the glossary)
