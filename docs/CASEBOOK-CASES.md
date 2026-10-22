@@ -3471,6 +3471,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   names its page or the arch's walk-in; the helm's cradle at the pier names the pier's page or the sea chart.
 - **Rule:** 264
 
+### 2026-10-22 · The crawl's clip turned in place against a wall, the body slid back (Calissa's prone note)
+- **Seen:** crawling head-on into a wall, the arms and legs kept crawling a moment while the body did not move, and the body was pushed
+  back from the capsule.
+- **Cause:** the prone capsule is upright and 0.27 m round, while the body on the belly reaches 0.95 m ahead of its axis; the capsule
+  crawled on after the head met the wall and the crawl's clearance slid the body back as it went. Measured at a flat wall: the capsule
+  stopped 0.75 m off it, the body slid 0.197 m, the clip turned 0.23 of a cycle in place.
+- **Fix:** `crawlReach` (courier/player.js): a ray along the move just over the step height, as long as the body reaches that way, takes
+  the move into a wall away. After: stopped at 0.96 m, slide 0, 0.05 of a cycle; a 0.35 m step is still climbed; stress 0 violations.
+- **Rule:** 265
+
 ### 2026-10-22 · A helm cradle's imprint floated off its hull (Calissa; seen by Petra)
 - **Seen:** Petra, wiring the helm cradles at the pier: the imprint burned at the moored hull's helm drifted about 8 cm against the hull's
   bob, stayed where the hull had been when another was moored, and hung over the water when the hull was hidden.
