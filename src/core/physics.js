@@ -110,8 +110,10 @@ export class Physics {
 
   sync() {
     for (const s of this.synced) {
-      const t = s.body.translation();
-      const r = s.body.rotation();
+      const b = s.body; // (a dynamic body asleep has not moved since its last frame awake: read once as it falls asleep, then left; Rapier's
+      if (b.isSleeping() && b.isDynamic()) { if (s.slept) continue; s.slept = true; } else s.slept = false; // translation() and rotation() make two objects a call, 93 KB a frame in the workshop's pots)
+      const t = b.translation();
+      const r = b.rotation();
       s.mesh.position.set(t.x, t.y, t.z);
       s.mesh.quaternion.set(r.x, r.y, r.z, r.w);
     }

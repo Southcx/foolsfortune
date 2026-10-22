@@ -38,7 +38,7 @@ export class Clips {
       let x1 = q[b1 + i], y1 = q[b1 + i + 1], z1 = q[b1 + i + 2], w1 = q[b1 + i + 3];
       if (x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1 < 0) { x1 = -x1; y1 = -y1; z1 = -z1; w1 = -w1; }
       const x = x0 + (x1 - x0) * a, y = y0 + (y1 - y0) * a, z = z0 + (z1 - z0) * a, w = w0 + (w1 - w0) * a;
-      const l = 1 / (Math.hypot(x, y, z, w) || 1);
+      const l = 1 / (Math.sqrt(x * x + y * y + z * z + w * w) || 1); // (sqrt, not hypot: V8's hypot makes an array a call, and this runs a bone a clip)
       o[i] = x * l; o[i + 1] = y * l; o[i + 2] = z * l; o[i + 3] = w * l;
     }
     for (let k = 0; k < 3; k++) out.p[k] = c.p[i0 * 3 + k] + (c.p[i1 * 3 + k] - c.p[i0 * 3 + k]) * a;
@@ -56,7 +56,7 @@ export class Clips {
       if (o[i] * x + o[i + 1] * y + o[i + 2] * z + o[i + 3] * ww < 0) { x = -x; y = -y; z = -z; ww = -ww; }
       if (k >= 1) { o[i] = x; o[i + 1] = y; o[i + 2] = z; o[i + 3] = ww; continue; }
       const nx = o[i] + (x - o[i]) * k, ny = o[i + 1] + (y - o[i + 1]) * k, nz = o[i + 2] + (z - o[i + 2]) * k, nw = o[i + 3] + (ww - o[i + 3]) * k;
-      const l = 1 / (Math.hypot(nx, ny, nz, nw) || 1);
+      const l = 1 / (Math.sqrt(nx * nx + ny * ny + nz * nz + nw * nw) || 1);
       o[i] = nx * l; o[i + 1] = ny * l; o[i + 2] = nz * l; o[i + 3] = nw * l;
     }
     const kp = Math.min(1, w * hipW);

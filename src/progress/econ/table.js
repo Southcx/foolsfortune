@@ -208,6 +208,11 @@ export const ECON = {
    *  seen from every other (height in metres). */
   myggdrasil: { firing: 2, radius: 26, treeHeight: 48 },
   place: { planetoids: [60, 120, 240, 480], planetoidFiring: [3, 4, 5, 6], features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
+  /** DECOR (docs/plans/GARDEN-COZY.md D4): a piece's price in minutes of play by its size, a sink that never fills and pays nothing back,
+   *  so it is kind (the first set about three real hours of play). A piece bought is a copy kept in the shed's storage; picked up, it
+   *  goes back there whole (Animal Crossing's storage: no tax on rearranging, the cozy rule against transactional pressure). A tint is
+   *  free once the piece is owned (its remake). */
+  decor: { small: 1, medium: 3, large: 8, centre: 20 },
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
@@ -225,9 +230,11 @@ export const ECON = {
 
   /** THE RUTTER (docs/plans/PASSAGE.md): a passage's map is worth `share` of what its sailed minutes earn at the aim, by its rank, and
    *  `stale` of that each game day after (the sea chart reseeds daily); the Purser buys at worth (by island demand) and sells at `list`
-   *  x worth to the haulers whose charted-only ships need one. A sloop scouting and selling S rutters, read whole, earns about 0.9 x aim
-   *  from rutters alone: with its cargo it is held under the 1.5 x cap in scripts/economy.mjs (the hauler and scout profiles, to come). */
-  passage: { share: 0.6, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
+   *  x worth to the haulers whose charted-only ships need one. Measured whole (scripts/economy.mjs, "a passage sailed": crude + rutter,
+   *  three legs and the selling, 2026-10-21): at 0.6 a middling sailor in the starter sloop made 0.38 x aim, a third of what a middling
+   *  angler or diver makes, the grind that never closed; at 0.8 the sloop pays 0.13 / 0.50 / 0.98 x aim at C / B / S (skill doubling the
+   *  middling pay, the design law), the tanker's Dunemaw run 1.2 x at S. */
+  passage: { share: 0.8, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read

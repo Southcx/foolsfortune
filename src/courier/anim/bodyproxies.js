@@ -27,6 +27,8 @@ import { BODY_PROXIES, LIMB_POINTS } from './bodyproxydata.js';
 
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const _l = new THREE.Vector3(), _s = new THREE.Vector3();
+const _sec = { cx: 0, cz: 0, ax: 0, az: 0 }; // (a proxy's section at a height: section())
+const NONE = Object.freeze([]); // (a part with no proxy: one empty list, never a new one a call)
 const _p = new THREE.Vector3(), _n = new THREE.Vector3(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _ax = new THREE.Vector3(), _q = new THREE.Quaternion(), _R = new THREE.Matrix4(), _T = new THREE.Matrix4();
 /** The parts a held thing is kept out of: the whole body but the hands (which hold it) and the feet. */
 export const HELD_PARTS = ['head', 'neck', 'chest', 'spine', 'pelvis', 'upperArmL', 'upperArmR', 'forearmL', 'forearmR', 'thighL', 'thighR', 'shinL', 'shinR'];
@@ -47,7 +49,7 @@ export class BodyProxies {
     for (const [limb, rows] of Object.entries(LIMB_POINTS)) this.limbs[limb] = rows.filter((r) => bones[r[0]]).map((r) => ({ bone: bones[r[0]], p: new THREE.Vector3(r[1], r[2], r[3]) }));
   }
 
-  of(part) { return this.byPart[part] || []; }
+  of(part) { return this.byPart[part] || NONE; }
 
   /** Each proxy's frame this frame, from the bones' world matrices as they stand (the caller has them current: after the pose, and again
    *  after anything moves the spine or the legs). */
@@ -61,9 +63,10 @@ export class BodyProxies {
   }
 
   /** The section at height y of its own axis: centre and half-widths. */
-  section(p, y) {
+  section(p, y, out = _sec) { // (into one scratch: depth() runs it a proxy and a point every frame, and made an object a call)
     const u = p.yb > p.ya ? clamp((y - p.ya) / (p.yb - p.ya), 0, 1) : 0.5;
-    return { cx: p.c0x + (p.c1x - p.c0x) * u, cz: p.c0z + (p.c1z - p.c0z) * u, ax: p.a0x + (p.a1x - p.a0x) * u, az: p.a0z + (p.a1z - p.a0z) * u };
+    out.cx = p.c0x + (p.c1x - p.c0x) * u; out.cz = p.c0z + (p.c1z - p.c0z) * u; out.ax = p.a0x + (p.a1x - p.a0x) * u; out.az = p.a0z + (p.a1z - p.a0z) * u;
+    return out;
   }
 
   /** How far the world point p is inside proxy `p` (metres; below 0 outside; -1 when it is nowhere near). */
@@ -71,9 +74,9 @@ export class BodyProxies {
     if (p.distanceToSquared(px.c) > px.R * px.R) return -1;
     _l.copy(p).applyMatrix4(px.inv);
     const yc = clamp(_l.y, px.y0, px.y1), e = _l.y - yc, s = this.section(px, yc);
-    const dx = _l.x - s.cx, dz = _l.z - s.cz, d = Math.hypot(dx, dz);
-    const re = d < 1e-6 ? Math.min(s.ax, s.az) : (s.ax * s.az) / Math.hypot((s.az * dx) / d, (s.ax * dz) / d);
-    return (re - Math.hypot(d, e)) * px.scale;
+    const dx = _l.x - s.cx, dz = _l.z - s.cz, d = Math.sqrt(dx * dx + dz * dz); // (sqrt, not hypot: V8's hypot makes garbage a call)
+    const re = d < 1e-6 ? Math.min(s.ax, s.az) : (s.ax * s.az) / Math.sqrt(((s.az * dx) / d) ** 2 + ((s.ax * dz) / d) ** 2);
+    return (re - Math.sqrt(d * d + e * e)) * px.scale;
   }
 
   /** The way out of proxy `px` at the world point p (world, unit): away from its axis across it (the ellipse's own normal), and along it
@@ -98,12 +101,12 @@ export class BodyProxies {
 
   /** The deepest of `points` inside any proxy of `parts` ({ d, i, proxy }), or null when none is inside. */
   deepest(points, parts) {
-    let best = null;
+    const B = (this.best ||= { d: 0, i: 0, proxy: null }); let found = false; // (one answer object, reused: the caller reads it at once)
     for (const part of parts) for (const px of this.of(part)) for (let i = 0; i < points.length; i++) {
       const d = this.depth(px, points[i]);
-      if (d > 0 && (!best || d > best.d)) best = { d, i, proxy: px };
+      if (d > 0 && (!found || d > B.d)) { found = true; B.d = d; B.i = i; B.proxy = px; }
     }
-    return best;
+    return found ? B : null;
   }
 
   /** The deepest of a held thing's points (its frame, carried by M: { x, y, z, r }) in the body, its radius in: { d, p, proxy } or null. */

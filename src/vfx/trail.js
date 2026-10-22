@@ -38,7 +38,7 @@ export class Trail {
     this.geo.setIndex(new THREE.BufferAttribute(this.idx, 1).setUsage(THREE.DynamicDrawUsage));
     this.uni = { uBase: { value: new THREE.Color(color) }, uTip: { value: new THREE.Color(tip) }, uCore: { value: core }, uFade: { value: fade }, uK: { value: k } };
     this.mat = new THREE.ShaderMaterial({
-      uniforms: this.uni, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false,
+      uniforms: this.uni, transparent: true, forceSinglePass: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: 'attribute float age; varying vec2 vUv; varying float vAge; void main() { vUv = uv; vAge = age; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
       fragmentShader: `uniform vec3 uBase, uTip; uniform float uCore, uFade, uK; varying vec2 vUv; varying float vAge;
         void main() {

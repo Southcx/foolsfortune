@@ -20,8 +20,9 @@ import { Bracelet, SOCKETS } from '../vfx/bracelet.js';
 import { CHARM_IDS } from '../vfx/braceletcharms.js';
 import { wearBracelet } from '../vfx/braceletwear.js';
 import { godHandPainting, pneukaJarPainting } from '../vfx/vessoulpaint.js';
+import { base64Buffer } from '../core/base64.js';
 
-const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+const bytes = base64Buffer; // (one loop, not a callback a byte: core/base64.js)
 
 export function braceletStage(game) {
   const obj = new THREE.Group(), B = {}, loader = new GLTFLoader();

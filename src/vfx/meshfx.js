@@ -13,6 +13,7 @@
 //   const fx = meshFx.make('chest_circle', { tint, labradorite, opacity })   -> { group, u (uniforms), set(k), update(dt), dispose() }
 //   fx.group.position / scale / rotation          where it is (the mesh as authored: metres, Y up)
 // ---------------------------------------------------------------------------------------
+import { base64Bytes } from '../core/base64.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
@@ -49,7 +50,7 @@ class MeshFx {
     if (this.loaded) return;
     const loader = new GLTFLoader();
     for (const [name, b64] of Object.entries(SOURCES)) {
-      const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const bin = base64Bytes(b64); // (core/base64.js: a loop, not a callback a byte)
       const gltf = await loader.parseAsync(bin.buffer, '');
       let mesh = null;
       gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });

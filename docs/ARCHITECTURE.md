@@ -58,6 +58,9 @@ docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, ART, VFX, AI,
 - Across domains, prefer the service on `game` to an import. An import of another domain's module is fine for its **exported
   interface** (a class to construct in `main.js`, a pure helper, a table); never to reach its private state.
 - No import cycles between domains. (`npm run check` will report them once it learns cycles; until then, the review does.)
+- three.js is pinned (0.170.0) and never edited in `node_modules`. A bug or a slow path in it is shimmed in one place,
+  `render/threefixes.js` (imported first in `main.js`), each shim with what it stands in for and the code it names, deleted when three
+  is upgraded past it. A material drawn by two kinds of mesh at once gets a view of it for the second kind (`render/materialview.js`).
 
 ## The module contract
 

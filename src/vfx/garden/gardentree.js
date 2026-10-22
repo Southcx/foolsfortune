@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // A GARDEN TREE: a trunk of the garden's plum-dark bark, a few branches, and a leaf canopy at their ends (vfx/garden/leafcanopy.js, the
-// owner's billboarded leaves in labradorite and gold). Grown, not built: the trunk leans and bends a little, flares at its foot, and its
+// owner's billboarded leaves; in the garden's warm greens by the mood and its season, GARDEN-COZY.md H4, H5, H6: Lachryma's own trees
+// (Myggdrasil, the cocoon tree) keep labradorite and gold, so `leafy` is this module's choice, made for every tree it plants). Grown, not built: the trunk leans and bends a little, flares at its foot, and its
 // branches run into the crown's spheres, so the canopy hides where they end.
 //
 //   THE SHAPES   by its leaf: 'round' and 'mulberry' a round crown (a big sphere and two to four round it), 'willow' a crown spread wide
@@ -8,13 +9,15 @@
 //                own module will lay them out; here they take the round crown)
 //   ONE TREE     new GardenTree(opts): its own two meshes (the bark, the canopy)
 //   A GROVE      plantGrove([{ matrix, ...opts }]): every tree's bark one mesh and every canopy one mesh, two draws for the lot
+//   THE LEAVES   `leafy` (the default here): the canopy's light and deeper green, blossom, fall, snow and briar come from the mood
+//                (gardengrounds.js groundTick writes it); `leafy: false` keeps the stone's flash
 //   THE BARK     one material for every tree, a plain standard one in the plum-dark (a program the garden already has)
 //
-// Prior art: the stylised trees of Breath of the Wild and Ghibli's backgrounds (a soft crown on a few strong limbs), the space
+// Prior art: the stylised trees of Breath of the Wild and Ghibli's backgrounds (a soft crown on a few strong limbs; Harvest Moon: A Wonderful Life's and Stardew Valley's one tree repainted four times a year), the space
 // colonisation idea of branches reaching toward the crown's masses (Runions et al., 2007: here a branch per sphere, as low-poly
 // trees do), and the white mulberry, the ginkgo and the weeping willow for the three silhouettes.
 //
-//   const T = new GardenTree({ height: 3.2, crown: 1.6, leaf: 'round', seed: 1, tint: { color, amount } })   T.group   T.canopy   T.dispose()
+//   const T = new GardenTree({ height: 3.2, crown: 1.6, leaf: 'round', seed: 1, leafy: true, tint: { color, amount } })   T.group   T.canopy   T.dispose()
 //   const G = plantGrove([{ matrix, height, crown, leaf, seed }])   G.bark   G.canopy   G.leaves   G.dispose()
 //   treeParts(opts) -> { bark: BufferGeometry, spheres }   barkMaterial()
 // ---------------------------------------------------------------------------------------
@@ -79,7 +82,7 @@ export class GardenTree {
     const { bark, spheres } = treeParts(opts);
     this.group = new THREE.Group(); this.group.name = 'garden-tree';
     this.bark = new THREE.Mesh(bark, barkMaterial()); this.bark.castShadow = this.bark.receiveShadow = true; this.group.add(this.bark);
-    this.canopy = new LeafCanopy({ spheres, leaf: opts.leaf || 'round', density: opts.density ?? 1, seed: opts.seed ?? 1, tint: opts.tint || null });
+    this.canopy = new LeafCanopy({ spheres, leaf: opts.leaf || 'round', density: opts.density ?? 1, seed: opts.seed ?? 1, tint: opts.tint || null, leafy: opts.leafy ?? true });
     this.group.add(this.canopy.mesh);
   }
   tint(color, amount = 1) { this.canopy.tint(color, amount); }
@@ -92,7 +95,7 @@ export function plantGrove(entries) {
   const barks = [], crowns = [];
   for (const E of entries) {
     const { bark, spheres } = treeParts(E); bark.applyMatrix4(E.matrix); barks.push(bark);
-    crowns.push({ spheres, matrix: E.matrix, leaf: E.leaf || 'round', density: E.density ?? 1, seed: E.seed ?? 1, slot: E.slot ?? 0 });
+    crowns.push({ spheres, matrix: E.matrix, leaf: E.leaf || 'round', density: E.density ?? 1, seed: E.seed ?? 1, slot: E.slot ?? 0, leafy: E.leafy ?? true });
   }
   const bark = new THREE.Mesh(mergeGeometries(barks, false), barkMaterial()); barks.forEach((g) => g.dispose());
   bark.name = 'garden-bark'; bark.castShadow = bark.receiveShadow = true;
