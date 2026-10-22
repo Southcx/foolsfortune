@@ -267,7 +267,9 @@ await run('skiff', async () => {
   // a bail (a landing too hard or too crooked, a wall over 14 m/s: skiff.js BAIL) is counted and said: the bail made directly, as the land() rule would
   m = await ds('mark()');
   const l0 = await S.ev(() => __game.game.ledger?.get?.('skiff.bail') || 0);
-  for (let i = 0; i < 12 && !(await S.ev(() => __game.game.techs.active?.id === 'skiff' && __game.game.techs.get('skiff').phase === 'ride')); i++) await S.ticks(20); // (bail() is only from the ride: wait out a tumble first)
+  const riding = () => S.ev(() => __game.game.techs.active?.id === 'skiff' && __game.game.techs.get('skiff').phase === 'ride');
+  for (let i = 0; i < 12 && !(await riding()); i++) await S.ticks(20); // (bail() is only from the ride: wait out a tumble first)
+  if (!(await riding())) { await S.press('KeyY', 170); await S.hold('KeyW', 30); } // (a tumble ends the ride: summon the board again, as below)
   await S.ev(() => { const K = __game.game.techs.get('skiff'); if (__game.game.techs.active?.id === 'skiff' && K.phase === 'ride') K.bail('crooked'); });
   await S.ticks(200);
   ev = await ds(`eventsSince(${JSON.stringify(m)})`);
@@ -283,7 +285,7 @@ await run('skiff', async () => {
   // Y dismounts; the world is given back
   await S.press('KeyY', 80); // (the recall: 0.96 real seconds)
   k = await ds('skiff()');
-  S.check('skiff: Y recalls it (the skiff hidden, the reticle back, its sound stopped)', !k.tech && !k.shown && k.cross === '' && !k.sfxLoop, k);
+  S.check('skiff: Y recalls it (the skiff hidden, its sound stopped)', !k.tech && !k.shown && !k.sfxLoop, k); // (the psygun's reticle follows the psygun drawn, not the skiff: Calissa's game.psygunReticle)
   S.check('skiff: on foot again, the Courier walks', (await moveTest()) > 1, 'W held 40 ticks');
   // Y spammed: an even number of presses ends where it began
   for (let i = 0; i < 20; i++) await S.press('KeyY', 1);
@@ -298,7 +300,7 @@ await run('skiff', async () => {
   await S.go('workshop');
   k = await ds('skiff()');
   const fw = await S.shot('skiff-travelled-workshop');
-  S.check('skiff: travel to the workshop mid-ride ends the ride', !k.tech && !k.shown && k.cross === '', { ...k, file: name(fw) });
+  S.check('skiff: travel to the workshop mid-ride ends the ride', !k.tech && !k.shown, { ...k, file: name(fw) });
   await S.go('dunes');
   k = await ds('skiff()');
   S.check('skiff: back in the Dunes, the Courier arrives on foot (no ride asked for)', !k.tech, { ...k, cause: k.tech ? 'courier/skiff/skiff.js: the tech ended by the travel before its update saw the Dunes inactive, so want stayed true and canStart() mounts it again on arrival' : null });
