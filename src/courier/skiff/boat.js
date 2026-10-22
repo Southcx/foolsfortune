@@ -203,7 +203,10 @@ export class Skiff {
   /** The hull in the glaze fired on it (Dovina's `game.skiffParts.glaze()`; none until it is there), and again whenever one is fired. */
   hullGlaze(game) {
     this.model?.traverse((o) => { if (!this.hullMat && o.isMesh && !o.userData.isOutline && o.material?.name === 'Skiff_Hull') this.hullMat = o.material; });
-    const apply = (id) => glazeHull(this.hullMat, id ? (game?.vessel?.glaze?.(id) ?? id) : null);
+    const apply = (id) => { // (and the hull at rest in it kept: applyStakes wears it from there each frame, never over it)
+      glazeHull(this.hullMat, id ? (game?.vessel?.glaze?.(id) ?? id) : null);
+      const H = this.hullMat; if (H) this.hullRest = { color: H.color.clone(), rough: H.roughness };
+    };
     apply(game?.skiffParts?.glaze?.() ?? null);
     if (!this.hullGlazeOn) { this.hullGlazeOn = true; game?.events?.on?.('skiff.glaze', (e) => apply(e?.glaze ?? null)); }
   }
@@ -281,8 +284,9 @@ export class Skiff {
     }
     this.clothMat.color.setRGB(1, 1, 1).lerp(SCORCHED, K.browned * h * h);
     const H = this.hullMat; if (!H) return;
-    H.color.setRGB(1, 1, 1).lerp(DULL, K.dulled * w);
-    H.roughness = 0.7 + K.rough * w;
+    const R = this.hullRest; // (the glaze fired on it, or the painting: worn from there)
+    H.color.copy(R?.color ?? WHITE).lerp(DULL, K.dulled * w);
+    H.roughness = (R?.rough ?? 0.7) + K.rough * w;
     const f = Math.min(1, this.flashK);
     H.emissive.copy(WHITE).lerp(_hc.copy(this.flashC), f);
     H.emissiveIntensity = PAINT_LIGHT * (1 - K.dim * w) + K.flash * f * f;

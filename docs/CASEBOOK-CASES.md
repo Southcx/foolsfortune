@@ -3451,3 +3451,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   changed nothing.
 - **Fix:** t clamped to 0..1 before the power (vfx/opensea/isletlooks.js `shallowsGeometry`).
 - **Rule:** 262
+
+### 2026-10-22 · A hull glaze fired at the kiln never showed on the Solar Skiff (Dovina found it)
+- **Seen:** reading the code for SKIFF-TUNING.md: a glaze fired on the hull at the kiln's HULL tab is laid on the hull's material once,
+  and the board rides in its painting all the same.
+- **Cause:** the board's stakes (`applyStakes`, courier/skiff/boat.js) set the hull's colour and roughness every frame from a constant
+  (white, 0.7) and wore it from there; `glazeHull` had set them once, and the next frame took them off.
+- **Fix:** the hull at rest is kept as `glazeHull` leaves it (`hullRest`, again at every `skiff.glaze`), and the stakes wear it from
+  there.
+- **Rule:** 263

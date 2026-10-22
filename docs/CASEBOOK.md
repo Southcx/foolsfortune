@@ -774,3 +774,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 262. **A ratio is clamped before it is raised to a fractional power.** `x ** 1.6` of a hair below 0 is NaN,
     and a NaN vertex blacks out every triangle it touches; clamp the ratio (or `Math.max(0, ...)`) where it is made, not where it is drawn.
+
+263. **What is worn every frame is worn from the rest another writer left, never from a constant.** A look set once (a
+    glaze, a tint, a part chosen) and a look set every frame (wear, a flash, a fade) on one material: the frame's writer keeps the rest
+    the other leaves and starts from it, or the first is gone a frame later.
