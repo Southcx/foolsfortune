@@ -34,7 +34,7 @@ export class ThornPatches {
     this.R = realm; this.game = realm.game; this.spots = [];
     const geo = clump(), cap = THORNS.max * 12; // (six a planetoid, room for twelve planetoids)
     this.mat = realm.decorLayer?.mat || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0, name: 'garden-decor' });
-    this.batch = new THREE.BatchedMesh(cap, geo.attributes.position.count, 0, this.mat); this.batch.name = 'garden-thorns'; this.batch.frustumCulled = false; this.batch.castShadow = false;
+    this.batch = new THREE.BatchedMesh(cap, geo.attributes.position.count, 0, this.mat); this.batch.name = 'garden-thorns'; this.batch.frustumCulled = false; this.batch.castShadow = false; this.batch.receiveShadow = true; // (as the decor's: one material, one program; a shadow flag that differs is a second program, compiled at first draw: perf, 2026-10-22)
     this.geoId = this.batch.addGeometry(geo); this.ids = [];
     for (let i = 0; i < cap; i++) { const k = this.batch.addInstance(this.geoId); this.batch.setVisibleAt(k, false); this.batch.setColorAt(k, _c.set(0x5d5a32)); this.ids.push(k); }
     realm.site.group.add(this.batch);
