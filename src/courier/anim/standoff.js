@@ -19,7 +19,7 @@ import * as THREE from 'three';
 
 /** What a hand and a forearm are kept out of; the margin past the surface (m); the most a hand is moved in a frame (m); rounds. */
 export const STANDOFF = { parts: ['chest', 'spine', 'pelvis', 'thighL', 'thighR'], margin: 0.006, maxPush: 0.16, rounds: 4 };
-const _n = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Vector3(), _q = new THREE.Quaternion(), _hint = new THREE.Vector3(), _c = new THREE.Vector3();
+const _n = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Vector3(), _q = new THREE.Quaternion(), _hint = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class Standoff {
   constructor(ch, body) {
@@ -49,8 +49,9 @@ export class Standoff {
         // (a hand point: the wrist moved, the elbow half as far; a forearm point: both by the push, the forearm carried out whole)
         const fore = hit.i >= nh;
         _w.addScaledVector(_n, push);
-        _e.addScaledVector(_n, fore ? push : push * 0.5).addScaledVector(_e.clone().sub(arm.upper.getWorldPosition(_c)).normalize(), 0.05);
-        ch.reachHand(s, _w.clone(), _q.clone(), 1, 0, _e.clone());
+        _e.addScaledVector(_n, fore ? push : push * 0.5);
+        _e.addScaledVector(_d.copy(_e).sub(arm.upper.getWorldPosition(_c)).normalize(), 0.05); // (the elbow a little out along its upper arm, as moved)
+        ch.reachHand(s, _w, _q, 1, 0, _e); // (reachHand reads them at once: character.js keeps its own copies)
         this.pushed[s] += push;
       }
     }

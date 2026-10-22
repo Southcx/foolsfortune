@@ -4,7 +4,7 @@
 // lit in the feeling's colour, and on every hull its cradle in sight with a FORGED SEAL in it: a counterfeit name, cracked, livid red,
 // flickering, never the window colour or gold; the owner's ruling, through Espada). Each builder returns a body's spec:
 // its pieces (kit.js builds), where they sit, its muzzles, its death and its length. Plain names (Dovina's role ids).
-//   darter      a cutter: a small fast hull under a lateen sail, a bow gun (the muzzle `bow`)
+//   darter      a cutter: a small fast hull under a lateen sail sheeted out, a bow gun (the muzzle `bow`)
 //   rammer      a fireship: a broad hulk with an iron ram, embers on deck; its tell a beat's glow aft (`aft`), then it is the shot (`ram`)
 //   sniper      a false-light spar: a tall lantern mast on a float, the lens heating (`lens`): the warning line and the beam come from it
 //   turret      a gun on a wreck's rock (`gun` a part that turns; `barrel`)
@@ -13,8 +13,8 @@
 //   escort      a shield tender: a small boat under a great lantern (`lantern`) whose tether and bubble go to its charge (railfoes.js link)
 //   gunship     a gun-brig: two masts, two gun turrets (parts gunL, gunR) and the forged cradle midships (part core), its shutters
 //               sliding open once both guns are down (`gunL`, `gunR`, `core`); one draw for all of it (the units: railfoes/materials.js)
-//   blocker     a capsized ironclad drifting keel up, armour plates; its weak point a seam along the keel, lit only when revealed
-//   grappler    a hook-boat: a winch at the bow, a grapnel on a line (parts hook, line; poses swing, attached, thrown)
+//   blocker     a capsized ironclad drifting keel up, armour plates, torpedo nets out both sides; its weak point a seam along the keel, lit only when revealed
+//   grappler    a hook-boat with an outrigger: a winch at the bow, a grapnel on a line (parts hook, line; poses swing, attached, thrown)
 //
 // Prior art: the Gummi ship's foes (KH2: one shape a behaviour, Hex Ring, Bomb Bell), Star Fox 64's Venom fighters read at 48 px, a
 // fireship (the Armada's at Gravelines), the brig and the lateen cutter as the age of sail built them, the ironclad (Monitor's raft hull),
@@ -79,8 +79,9 @@ export const WRECKERS = {
     const k = new FoeKit(), D = 0.26;
     k.add(hull({ L: 1.8, B: 0.48, D, bow: 0.5, stern: 0.45, sheer: 0.1 }), { c: tarHull(D), g: 'hull' });
     k.add(cyl(0.025, 0.035, 1.2, 5), { c: PAL.wood, p: [0, 0.6, 0.25], r: [0.12, 0, 0], g: 'mast' });
-    k.add(tube([[0, 0.12, -0.75], [0, 0.7, 0.2], [0, 1.35, 0.95]], 0.018, 4, 4), { c: PAL.wood, g: 'sail' }); // (the lateen yard)
-    k.add(slab([[-0.72, 0.14], [0.92, 1.3], [0.38, 0.14]], 0.02), { c: (x, y) => (y < 0.35 ? PAL.sailD : PAL.sail), r: [0, -PI / 2, 0], p: [0.02, 0, 0], g: 'sail' });
+    // the lateen sheeted out over the quarter (0.55 rad): from above a blade across the hull, never one more slim hull (the grappler's twin)
+    k.add(tube([[0, 0.12, -0.75], [0, 0.7, 0.2], [0, 1.35, 0.95]], 0.018, 4, 4).rotateY(0.55), { c: PAL.wood, g: 'sail' }); // (the lateen yard)
+    k.add(slab([[-0.72, 0.14], [0.92, 1.3], [0.38, 0.14]], 0.02), { c: (x, y) => (y < 0.35 ? PAL.sailD : PAL.sail), r: [0, -PI / 2 + 0.55, 0], p: [0.02, 0, 0], g: 'sail' });
     k.add(cyl(0.035, 0.045, 0.32, 6), { c: PAL.iron, p: [0, 0.1, 0.78], r: [PI / 2, 0, 0], g: 'gun' });
     k.add(cyl(0.055, 0.055, 0.05, 6), { c: PAL.rust, fx: [0, 1, 0, 0], p: [0, 0.1, 0.95], r: [PI / 2, 0, 0], g: 'gun' });
     k.muzzle('bow', [0, 0.1, 1.0]).halo([0, 0.1, 1.0], 0.25, HALO_CH.tell);
@@ -229,6 +230,12 @@ export const WRECKERS = {
     k.add(box(0.06, 0.04, 3.4), { c: 0xbca070, fx: [0, 0, 1.6, 0], p: [0, D + 0.215, 0], g: 'seam' }); // (the weak point: a seam along the keel)
     k.add(box(0.06, 0.6, 0.45), { c: PAL.rust, p: [0, D - 0.05, -2.65], g: 'rudder' });
     for (const [z, l, a] of [[1.0, 1.2, 0.3], [-0.9, 0.9, -0.4]]) k.add(cyl(0.05, 0.07, l, 5), { c: PAL.wood, p: [0, -0.4 - l / 2 + 0.2, z], r: [a, 0, 0.2], g: `stub${z}` }); // (masts snapped, hanging under)
+    // its torpedo-net booms (the ironclads' Bullivant nets) swung out both sides, the nets hanging: from astern a wall across the lane
+    for (const s of [-1, 1]) {
+      for (const z of [1.7, 0, -1.7]) k.add(cyl(0.035, 0.045, 0.85, 5), { c: PAL.wood, p: [s * 1.35, -0.05, z], r: [0, 0, PI / 2 - s * 0.12], g: `boom${s}` });
+      k.add(box(0.03, 0.75, 3.7), { c: 0x2a2622, p: [s * 1.76, -0.42, 0], r: [0, 0, s * 0.06], g: `net${s}` });
+      k.add(box(0.05, 0.05, 3.8), { c: PAL.iron, p: [s * 1.76, -0.03, 0], g: `net${s}` });
+    }
     for (let i = 0; i < 3; i++) k.halo([0, D + 0.25, -1.2 + i * 1.2], 0.6, HALO_CH.weak);
     cradle(k, [0, D + 0.2, -1.95], 0.6, 'keel');
     k.weak([0, D + 0.22, 0]);
@@ -242,6 +249,10 @@ export const WRECKERS = {
     k.add(cyl(0.11, 0.11, 0.06, 8), { c: PAL.rust, p: [0, 0.12, 0.25], r: [0, 0, PI / 2], g: 'winch' });
     k.add(cyl(0.025, 0.03, 0.55, 4), { c: PAL.iron, p: [0, 0.32, 0.42], r: [0.9, 0, 0], g: 'arm' });
     k.add(box(0.3, 0.16, 0.3), { c: PAL.wood, p: [0, 0.1, -0.3], g: 'cabin' });
+    // an outrigger to port on two crossbeams (a proa's): from above an H off to one side, never the darter's slim hull
+    for (const z of [0.2, -0.32]) k.add(box(0.72, 0.04, 0.05), { c: PAL.wood, p: [0.42, 0.13, z], g: 'outrigger' });
+    k.add(cyl(0.065, 0.065, 0.95, 6), { c: PAL.tar, p: [0.78, 0.05, -0.05], r: [PI / 2, 0, 0], g: 'outrigger' });
+    k.add(cone(0.065, 0.16, 6), { c: PAL.tar, p: [0.78, 0.05, 0.5], r: [PI / 2, 0, 0], g: 'outrigger' });
     lantern(k, [0, 0.3, -0.45], 0.55, 'lantern', false); // (no halo: the grappler's draws are four)
     cradle(k, [0, 0.03, -0.02], 0.4, 'cradle', 0, false);
     k.muzzle('winch', [0, 0.5, 0.62]);

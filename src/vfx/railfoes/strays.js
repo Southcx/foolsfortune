@@ -3,7 +3,7 @@
 //   school   a stray Figment fish (Espada's canon: made-up creatures wandered off their islands; the koi-like glints of the shoal):
 //            a small koi in a bright porcelain glaze, its patches lit in the feeling's colour; shown many at once, so its geometry is
 //            the one the instanced swap would draw (`mouth`)
-//   carrier  a Lachrymite lantern: a cluster of crystal in a clay-and-brass cage under a carrying ring. An object, never a ship or a
+//   carrier  a Lachrymite lantern: a cluster of crystal in a clay-and-brass cage under a square roof and a four-armed yoke. An object, never a ship or a
 //            beast (Dovina: it must share no foe's silhouette): it brings a pattern where nothing else throws it (`heart`)
 //
 // Prior art: the koi of the shoal (vfx/shoal.js's glints, after Abzû's schools), Nishikigoi's patterning (kohaku, sanke: white with
@@ -39,8 +39,14 @@ export const STRAYS = {
     // the cage: two clay rings, four brass bars, a clay roof and its carrying ring, a foot
     for (const y of [-0.55, 0.55]) k.add(new THREE.TorusGeometry(0.42, 0.045, 5, 12), { c: PAL.clay, p: [0, y, 0], r: [PI / 2, 0, 0], g: 'cage' });
     for (let i = 0; i < 4; i++) { const a = (i / 4) * PI * 2 + PI / 4; k.add(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 5), { c: PAL.brass, p: [Math.cos(a) * 0.42, 0, Math.sin(a) * 0.42], g: 'cage' }); }
-    k.add(new THREE.ConeGeometry(0.5, 0.32, 12), { c: PAL.clay, p: [0, 0.74, 0], g: 'roof' });
+    // a square roof under a four-armed yoke (a sedan lantern's): from above a cross in a square, never a plain disc
+    k.add(new THREE.ConeGeometry(0.62, 0.34, 4), { c: PAL.clay, p: [0, 0.74, 0], g: 'roof' });
     k.add(new THREE.TorusGeometry(0.14, 0.035, 5, 10), { c: PAL.brass, p: [0, 1.0, 0], g: 'roof' });
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * PI * 2;
+      k.add(new THREE.CylinderGeometry(0.03, 0.03, 0.62, 5), { c: PAL.brass, p: [Math.cos(a) * 0.38, 0.98, Math.sin(a) * 0.38], r: [0, -a, PI / 2], g: 'yoke' });
+      k.add(new THREE.SphereGeometry(0.06, 6, 4), { c: PAL.brass, p: [Math.cos(a) * 0.7, 0.98, Math.sin(a) * 0.7], g: 'yoke' });
+    }
     k.add(new THREE.CylinderGeometry(0.22, 0.3, 0.14, 12), { c: PAL.clayD, p: [0, -0.64, 0], g: 'foot' });
     k.add(new THREE.ConeGeometry(0.14, 0.24, 8), { c: PAL.clayD, p: [0, -0.83, 0], r: [PI, 0, 0], g: 'foot' });
     k.muzzle('heart', [0, 0.05, 0]).halo([0, 0.05, 0], 0.85, HALO_CH.accent).halo([0, 0.05, 0], 0.6, HALO_CH.tell);

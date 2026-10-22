@@ -4,7 +4,7 @@
 // set piece's first beat, how it ended, and the tally (Star Fox 64's: the score, the rank, the downs, the medal). The words are
 // Espada's (2026-10-07: the glints and their Conductor, the Wreckers and the False Light, Old Nobody). Registered before the voyage's rules, so the tally is said before "You make port". tracking.js calls it.
 //
-//   railRules({ on, L, log })   rail.leg.end { type, k, score, par, rank, downed, medalAt, medal, hits, first, practice }   showcase.start { legs, hulls }   showcase.hull { hull, k, mounts, note }   showcase.mend   showcase.end { legs, score }
+//   railRules({ on, L, log })   rail.hazard { kind, passed, near, side, all }   rail.ring { all }   rail.leg.end { type, k, score, par, rank, downed, medalAt, medal, hits, first, practice }   showcase.start { legs, hulls }   showcase.hull { hull, k, mounts, note }   showcase.mend   showcase.end { legs, score }
 // ---------------------------------------------------------------------------------------
 import { SCORE } from '../../progress/rail/score.js';
 import { MOUNTS } from '../../progress/rail/mounts.js';
@@ -44,6 +44,13 @@ export function railRules({ on, L, log }) {
     if (e.medal) L.inc('rail.leg.medal'); if (e.rank) L.inc(`rail.leg.rank.${e.rank}`);
     if (e.hits === 0) L.inc('rail.leg.clean');
   });
+  // the hazards and the ring run (world/emocean/hazards.js, Petra's): a find and a mend said once; a scrape is the hit's own line
+  on('rail.hazard', (e) => {
+    if (e.by !== 'courier') return;
+    if (e.passed === 'through') L.inc('rail.arch'); if (e.passed === 'hit') L.inc('rail.hazard.hit');
+    if (e.all) { L.inc('rail.arch.all'); log.say('gain', 'Every arch of the leg threaded. A way opens below.', { key: 'railarch', throttle: 2 }); } // (placeholder words, Espada's)
+  });
+  on('rail.ring', (e) => { if (e.by !== 'courier') return; L.inc('rail.ring'); if (e.all) { L.inc('rail.ring.all'); log.say('gain', 'Every ring of the turn threaded. The hull is mended.', { key: 'railring', throttle: 2 }); } });
   on('rail.end', (e) => { if (ENDS[e.end]) log.say(e.end === 'limped' ? 'info' : 'gain', ENDS[e.end], { key: 'railend', throttle: 2 }); });
   on('emocean.continue', (e) => { if (e.by !== 'courier') return; L.inc('rail.continue'); L.inc('rail.continue.cubes', e.cost || 0); log.say('info', `Continue: ${e.cost} cubes. The ship is mended.`); });
   on('emocean.stage', (e) => {

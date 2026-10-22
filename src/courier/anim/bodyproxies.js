@@ -27,6 +27,7 @@ import { BODY_PROXIES, LIMB_POINTS } from './bodyproxydata.js';
 
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const _l = new THREE.Vector3(), _s = new THREE.Vector3();
+const _sec = { cx: 0, cz: 0, ax: 0, az: 0 }; // (a proxy's section at a height: section())
 const _p = new THREE.Vector3(), _n = new THREE.Vector3(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _ax = new THREE.Vector3(), _q = new THREE.Quaternion(), _R = new THREE.Matrix4(), _T = new THREE.Matrix4();
 /** The parts a held thing is kept out of: the whole body but the hands (which hold it) and the feet. */
 export const HELD_PARTS = ['head', 'neck', 'chest', 'spine', 'pelvis', 'upperArmL', 'upperArmR', 'forearmL', 'forearmR', 'thighL', 'thighR', 'shinL', 'shinR'];
@@ -61,9 +62,10 @@ export class BodyProxies {
   }
 
   /** The section at height y of its own axis: centre and half-widths. */
-  section(p, y) {
+  section(p, y, out = _sec) { // (into one scratch: depth() runs it a proxy and a point every frame, and made an object a call)
     const u = p.yb > p.ya ? clamp((y - p.ya) / (p.yb - p.ya), 0, 1) : 0.5;
-    return { cx: p.c0x + (p.c1x - p.c0x) * u, cz: p.c0z + (p.c1z - p.c0z) * u, ax: p.a0x + (p.a1x - p.a0x) * u, az: p.a0z + (p.a1z - p.a0z) * u };
+    out.cx = p.c0x + (p.c1x - p.c0x) * u; out.cz = p.c0z + (p.c1z - p.c0z) * u; out.ax = p.a0x + (p.a1x - p.a0x) * u; out.az = p.a0z + (p.a1z - p.a0z) * u;
+    return out;
   }
 
   /** How far the world point p is inside proxy `p` (metres; below 0 outside; -1 when it is nowhere near). */
@@ -98,12 +100,12 @@ export class BodyProxies {
 
   /** The deepest of `points` inside any proxy of `parts` ({ d, i, proxy }), or null when none is inside. */
   deepest(points, parts) {
-    let best = null;
+    const B = (this.best ||= { d: 0, i: 0, proxy: null }); let found = false; // (one answer object, reused: the caller reads it at once)
     for (const part of parts) for (const px of this.of(part)) for (let i = 0; i < points.length; i++) {
       const d = this.depth(px, points[i]);
-      if (d > 0 && (!best || d > best.d)) best = { d, i, proxy: px };
+      if (d > 0 && (!found || d > B.d)) { found = true; B.d = d; B.i = i; B.proxy = px; }
     }
-    return best;
+    return found ? B : null;
   }
 
   /** The deepest of a held thing's points (its frame, carried by M: { x, y, z, r }) in the body, its radius in: { d, p, proxy } or null. */

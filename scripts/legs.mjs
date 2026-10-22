@@ -67,7 +67,7 @@ for (const [type, L] of Object.entries(LEGS)) {
     check(`${type}: one world at a time (Astral or Umbral, a block of bars each)`, !mixed.length, mixed.slice(0, 4)); }
   check(`${type}: every pattern fair as the leg fires it`, !unfair.length, unfair.slice(0, 4));
   { const plan = schedule(type, { strength: 1, feel: 'grief' }), cone = { chase: 1, free: 1, astern: 1 };
-    const hz = plan.events.filter((e) => e.hazard), bad = hz.filter((e) => !cone[plan.phases.find((p) => e.bar >= p.from && e.bar < p.to)?.view] || plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH) || !HAZARDS[e.hazard.kind] || ![-1, 0, 1].includes(e.hazard.lane));
+    const hz = plan.events.filter((e) => e.hazard), viewOf = (e) => plan.phases.find((p) => e.bar >= p.from && e.bar < p.to)?.view, bad = hz.filter((e) => !cone[viewOf(e)] || (viewOf(e) === 'astern' && e.hazard.kind !== 'arch') || plan.swings.some((w) => e.bar >= w - SWING_CLEAR && e.bar < w + SWING_BREATH) || !HAZARDS[e.hazard.kind] || ![-1, 0, 1].includes(e.hazard.lane));
     measure(`${type}: every hazard where the view looks down the lane, clear of a swing, one lane of three`, hz.length > 0 && !bad.length, `${hz.length} hazards${bad.length ? `; wrong: ${bad.map((e) => `${e.hazard.kind}@${e.bar}`).slice(0, 4)}` : ''}`); }
   { const plan = schedule(type, { strength: 1, feel: 'grief', first: true }), d = deadBeats(plan), lesson = lessonOf(L), alone = plan.events.filter((e) => e.alone);
     const long = d.runs.filter(([, n]) => n > 2);

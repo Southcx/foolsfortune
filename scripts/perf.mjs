@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE PERF CHECK: the other machine half of Petra's gate (docs/ARCHITECTURE.md, "The gate", "Budgets"). It starts its own dev server,
 // opens the game headless in manual mode, and measures five standing places, the workshop, the Dunes, a hall of the Great Dunemaw's bottom floor, the Spirit Garden's gate and a crossing (the showcase crossing's chase leg), and the crossing's spectacle (a swarm of 48 and a leg's foes bursting into voxels): what a frame costs to simulate
-// (tick) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
+// (tick: its middle, its 95th and its longest of 60 frames, the hitches) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
 // geometries and textures are alive, the heap (the dev server's, and the built game's from dist/ over the same three places), and the boot. Then it holds the numbers against the last published build's
 // (scripts/perf-baseline.json) and against the hard budgets, and says which moved.
 //
@@ -37,7 +37,7 @@ const BUDGET = { calls: 450, tris: 1_000_000, programs: 200, heapMB: 600, heapBu
 // Calissa asked which two fold back. She folded five (161/163 at v123): programs back to 164. The built figure is the one to watch: see the casebook, 2026-10-08. programs 160 -> 164, v117: the
 // ostracon's body and its sparkle (Calissa's black-figure sherd, vfx/ostracon.js), warmed at boot so neither is a hitch in play.)
 // how far a number may move from the baseline before the gate asks why (counts are exact; times are a software renderer's, so looser)
-const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, draw: 0.25, bootS: 0.3 };
+const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, tickP95: 0.35, draw: 0.25, bootS: 0.3 }; // (tickP95: the 95th of 60 frames, a hitch's measure, looser than the median; tickMax is shown, never gated: one frame is one GC)
 
 const server = await createServer({ root: ROOT, logLevel: 'error', server: { host: '127.0.0.1', port: 5180, strictPort: false } });
 await server.listen();
@@ -95,7 +95,8 @@ try {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
         calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
-      return { tick: +med(tk).toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
+      const st = tk.slice().sort((x, y) => x - y); // (the frame's worst as well as its middle: a hitch is a frame, Unreal's stat unitgraph, the benchmarks' 1% low)
+      return { tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
     const workshop = place();
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
@@ -175,7 +176,7 @@ const WELL_BUDGET = { calls: 88, tris: 400000 }; // (tris 150k -> 400k, 2026-10-
 // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
 for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
-  for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
+  for (const k of ['tick', 'tickP95', 'tickMax', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) if (n[k] != null) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
 cmp('all', 'heapMB', out.heapMB, base?.heapMB, TOL.heapMB, BUDGET.heapMB);
 cmp('garden', 'heapMB', out.heapGardenMB, base?.heapGardenMB, TOL.heapMB, null); // (the heap with the garden built too: watched, not budgeted yet)
