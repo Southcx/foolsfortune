@@ -16,9 +16,11 @@
 //   log.say('move', 'You slam into the ground.')                         one line
 //   log.say('battle', 'You shatter a jar.', { key: 'break', fmt: (n) => `You shatter ${n} jars.` })   folds repeats within a moment
 //   log.say('warn', 'You cannot do that.', { key: 'x', throttle: 3 })     at most once in 3 s
+//   log.say('say', 'Calissa : words', { who: 'calissa' })                  a sibling's line, its head in its division's colour (ui/siblingline.js)
 //   log.lines (the last `max` lines)   log.said (every line ever said: a line's `seq` is its place, so a mark survives the cap)
 //   PageUp / PageDown scroll, End jumps to the newest, [ and ] change tab.
 // ---------------------------------------------------------------------------------------
+import { speakerLine } from '../ui/siblingline.js';
 export const CLASSES = {
   system: { color: '#ead9c6', tab: 'SYSTEM' },
   info: { color: '#fff1e0', tab: 'SYSTEM' },
@@ -221,7 +223,8 @@ export class GameLog {
     d.className = `ln ${l.cls}`;
     d.style.color = l.tone || CLASSES[l.cls]?.color || '#fff';
     d.innerHTML = `<span class="ts">${l.ts}</span>`;
-    d.append(document.createTextNode(l.text));
+    if (l.who) speakerLine(d, l); // (a sibling's line: its head in its division's colour, ui/siblingline.js)
+    else d.append(document.createTextNode(l.text));
     l.el = d;
     return d;
   }
@@ -230,7 +233,7 @@ export class GameLog {
    * One line. `key` + `fmt` fold repeats: a second line with the same key inside `win` seconds updates the first,
    * with fmt(count) as its text.
    */
-  say(cls, text, { key = null, win = 1.6, fmt = null, tone = null, throttle = 0 } = {}) {
+  say(cls, text, { key = null, win = 1.6, fmt = null, tone = null, throttle = 0, who = null } = {}) {
     const now = performance.now() / 1000;
     if (throttle && key) { // (a refusal repeated by a held key says itself once)
       if (now - (this.quiet.get(key) ?? -99) < throttle) return null;
@@ -245,7 +248,7 @@ export class GameLog {
       this.afterSay(p);
       return p;
     }
-    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone, seq: this.said = (this.said || 0) + 1 }; // (seq: a line's place among all ever said; `lines` keeps only the last `max`, so mark a place by seq, never by index)
+    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone, who, seq: this.said = (this.said || 0) + 1 }; // (seq: a line's place among all ever said; `lines` keeps only the last `max`, so mark a place by seq, never by index)
     this.lines.push(l);
     if (this.lines.length > this.max) this.lines.shift();
     this.last = l;

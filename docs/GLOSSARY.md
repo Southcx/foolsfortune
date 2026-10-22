@@ -38,6 +38,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the party** (`game.party`, `src/coop/party.js`) — the siblings called into your world (two at once; four players at most, guests included),
   and what you tell them with `/sib`.
 - **guest** — a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
+- **a guest's Pneuka Jar / a sibling's line** (plain names; `GuestJars`, `game.guestJars`, `src/vfx/garden/guestjars.js` / `speakerLine`, `src/ui/siblingline.js`) — a guest visiting your Spirit Garden drawn as the owner's Jar fired in their body glaze, its light in their trim / a line a sibling says in the log, its head in its division's colour after its suit's mark. *Not:* your Pneuka Jar, the guest's Courier (in the world), a sibling's voice card.
 - **voice card / drift** (`PERSONAS`, `drift()`, `src/coop/personas.js`) — a sibling's voice written as form and lexicon / the house voice's
   tells a line slides back to, banned for all five.
 - **asking a sibling / letter** (`@name words`, `/letter name words`; `src/coop/answer.js`) — a question a sibling answers in seconds, in its

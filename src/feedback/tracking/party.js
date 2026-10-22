@@ -25,7 +25,7 @@ export function partyRules({ on, log }) {
   on('sibling.parry', (e) => log.say('battle', `${nameOf(e.sibling)} parries ${FOE(e.kind)}'s blow.`, { key: 'sib.parry', throttle: 3 }));
   on('sibling.flash', (e) => log.say('battle', `${nameOf(e.sibling)} flashes ${FOE(e.kind)}.`, { key: 'sib.flash', throttle: 4 }));
   on('creature.credit', (e) => log.say('battle', `${nameOf(e.who)} finishes what you struck.`, { key: 'sib.credit', throttle: 2 }));
-  on('party.say', (e) => log.say('say', `${nameOf(e.sibling)}${e.re === 'letter' ? ' (by letter)' : e.near ? '' : ' (from afar)'} : ${e.line}`)); // (an answer: coop/answer.js, seconds; a division's own words: coop/channel.js, a letter's answer among them)
+  on('party.say', (e) => log.say('say', `${nameOf(e.sibling)}${e.re === 'letter' ? ' (by letter)' : e.near ? '' : ' (from afar)'} : ${e.line}`, { who: e.sibling })); // (an answer: coop/answer.js, seconds; a division's own words: coop/channel.js, a letter's answer among them)
   const UNHEARD = { away: () => 'No one can answer you here: asking your siblings needs the published game.', alone: () => 'No one is with you to hear that.', busy: () => 'Let them answer first.', declined: () => 'Your siblings cannot answer: Claude is not allowed on this page.', failed: (n) => `${n} did not catch that. Ask again.`, unmet: (n) => `You have not met ${n} yet.`, cap: () => 'You have asked your siblings all this real hour allows (/usage).', timeout: (n) => `${n} took too long to answer, and let it go. Ask again.`, limited: () => 'Claude is busy: ask again in a moment.' };
   on('party.unheard', (e) => log.say('warn', (UNHEARD[e.why] || UNHEARD.failed)(nameOf(e.sibling)), { key: 'party.unheard', throttle: 1 })); // (asking a sibling: coop/answer.js)
   on('party.letter', (e) => log.say('info', `Your letter to ${nameOf(e.sibling)} is on its way. An answer takes a few real minutes.`)); // (coop/letters.js)
@@ -34,7 +34,7 @@ export function partyRules({ on, log }) {
   on('party.letter.late', (e) => log.say('info', `${nameOf(e.sibling)} has not answered your letter in a real quarter hour. You may write again.`));
   on('usage.report', (e) => log.say('system', `This real hour: ${e.asks} of ${e.asksCap || 'no'} asks, ${e.letters} of ${e.lettersCap || 'no'} letters.${e.waiting.length ? ` Waiting on ${e.waiting.map(nameOf).join(', ')}.` : ''}`));
   on('usage.cap', (e) => log.say('system', e.cap ? `You may now ${e.kind === 'asks' ? 'ask your siblings' : 'send letters'} ${e.cap} times a real hour.` : e.kind === 'asks' ? 'Asking your siblings is off.' : 'Letters are off.'));
-  on('guest.say', (e) => log.say('say', e.sibling ? `${nameOf(e.sibling)} (to ${e.guest}) : ${e.line}` : `${e.guest} : ${e.line}`)); // (over the room: coop/guests.js)
+  on('guest.say', (e) => log.say('say', e.sibling ? `${nameOf(e.sibling)} (to ${e.guest}) : ${e.line}` : `${e.guest} : ${e.line}`, { who: e.sibling || null })); // (over the room: coop/guests.js)
   on('guest.join', (e) => log.say('info', `${e.guest} is here with you.`)); // (a guest over the room: coop/guests.js)
   on('guest.leave', (e) => log.say('info', `${e.guest} has gone.`));
   on('party.list', (e) => log.say('system', e.siblings.length ? `With you: ${e.siblings.map(nameOf).join(', ')}.` : e.met?.length ? `No one is with you. Call ${e.met.map(nameOf).join(', ')} at a Shrine (or /sib <name> call).` : 'No one is with you yet: your siblings wait where their crafts live.'));
