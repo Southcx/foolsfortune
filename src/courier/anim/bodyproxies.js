@@ -28,6 +28,7 @@ import { BODY_PROXIES, LIMB_POINTS } from './bodyproxydata.js';
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const _l = new THREE.Vector3(), _s = new THREE.Vector3();
 const _sec = { cx: 0, cz: 0, ax: 0, az: 0 }; // (a proxy's section at a height: section())
+const NONE = Object.freeze([]); // (a part with no proxy: one empty list, never a new one a call)
 const _p = new THREE.Vector3(), _n = new THREE.Vector3(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _ax = new THREE.Vector3(), _q = new THREE.Quaternion(), _R = new THREE.Matrix4(), _T = new THREE.Matrix4();
 /** The parts a held thing is kept out of: the whole body but the hands (which hold it) and the feet. */
 export const HELD_PARTS = ['head', 'neck', 'chest', 'spine', 'pelvis', 'upperArmL', 'upperArmR', 'forearmL', 'forearmR', 'thighL', 'thighR', 'shinL', 'shinR'];
@@ -48,7 +49,7 @@ export class BodyProxies {
     for (const [limb, rows] of Object.entries(LIMB_POINTS)) this.limbs[limb] = rows.filter((r) => bones[r[0]]).map((r) => ({ bone: bones[r[0]], p: new THREE.Vector3(r[1], r[2], r[3]) }));
   }
 
-  of(part) { return this.byPart[part] || []; }
+  of(part) { return this.byPart[part] || NONE; }
 
   /** Each proxy's frame this frame, from the bones' world matrices as they stand (the caller has them current: after the pose, and again
    *  after anything moves the spine or the legs). */
@@ -73,9 +74,9 @@ export class BodyProxies {
     if (p.distanceToSquared(px.c) > px.R * px.R) return -1;
     _l.copy(p).applyMatrix4(px.inv);
     const yc = clamp(_l.y, px.y0, px.y1), e = _l.y - yc, s = this.section(px, yc);
-    const dx = _l.x - s.cx, dz = _l.z - s.cz, d = Math.hypot(dx, dz);
-    const re = d < 1e-6 ? Math.min(s.ax, s.az) : (s.ax * s.az) / Math.hypot((s.az * dx) / d, (s.ax * dz) / d);
-    return (re - Math.hypot(d, e)) * px.scale;
+    const dx = _l.x - s.cx, dz = _l.z - s.cz, d = Math.sqrt(dx * dx + dz * dz); // (sqrt, not hypot: V8's hypot makes garbage a call)
+    const re = d < 1e-6 ? Math.min(s.ax, s.az) : (s.ax * s.az) / Math.sqrt(((s.az * dx) / d) ** 2 + ((s.ax * dz) / d) ** 2);
+    return (re - Math.sqrt(d * d + e * e)) * px.scale;
   }
 
   /** The way out of proxy `px` at the world point p (world, unit): away from its axis across it (the ellipse's own normal), and along it

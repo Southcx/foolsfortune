@@ -753,3 +753,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 255. **A shared frame never decides where its window sits.** A class a frame adds to the element it
     dresses holds no `position`, or the window's own placement is written with more weight than it: the sheets' order differs from page
     to page, and a later equal rule wins.
+
+NEW:count-the-library. **A library's hot path is counted, not trusted.** What three (or any engine) does a frame (program checks,
+    uploads, garbage) is measured by counting the calls, and a count that does not fall when the cause is removed means another cause.

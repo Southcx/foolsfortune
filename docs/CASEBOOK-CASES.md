@@ -3395,3 +3395,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `.rr,.rr.bf{position:fixed...}` (ui/railreadout.js): the readout's own placement outweighs the frame's.
 - **Measured after:** headless aboard the showcase crossing, the readout's box at (13, 23), 165 x 104 px, drawn top-left over the sea.
 - **Rule:** 255.
+
+### 2026-10-22 · Every batch re-chose its program at every draw (Petra, the stutter)
+- **Seen:** by measure, headless: the workshop made 1,128 KB of garbage a frame; three's `getParameters` was the largest share (161 KB).
+  Counted, 50 program checks a frame in the workshop, every one on a BatchedMesh's draw (the props', their outlines', the shards') once
+  kinds were kept apart, in both the main pass and the shadow's.
+- **Cause:** three 0.170.0's `setProgram` asks a batch for `object.colorTexture !== null`; a BatchedMesh keeps its colours as
+  `_colorsTexture`, so the answer was undefined and the test always true. Beside it, two real changes of kind: one depth material for
+  every caster (8 a frame) and one outline material for plain, skinned and batched hulls (20 a frame).
+- **Fix:** a getter for `colorTexture` on BatchedMesh's prototype (`render/threefixes.js`); a depth material a kind of caster
+  (`render/shadowkinds.js`); a batch and a skinned hull draw a view of their material (`render/materialview.js`).
+- **Measured after:** 0 program checks a frame in the workshop; 731 KB of garbage a frame (was 1,128), the Dunes 641 (was 943); the
+  same frame drawn by both trees differs no more than one tree from itself (0.40% of pixels against a floor of 0.50%).
+- **Rule:** NEW:count-the-library.
