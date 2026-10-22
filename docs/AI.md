@@ -120,7 +120,8 @@ thinks every `think` seconds; within `far` at 2.5x that; beyond, it does not loo
 creature costs a few additions). `signal()` thinks again at once; `force(id)` starts an action; `describe()` is its line on F3.
 `direct(id, secs)` gives it a DIRECTIVE: for that long (its own time, so a halted mind's directive waits), that action is what it
 does, without asking its `when`, unless an urgent action of weight 5 or more (stunned, asleep, melted) takes it; false if its mind
-has no such action. A relation written into `c.rel` with an expiry in `c.relUntil` (a Map, by the same key) is taken back by the Brain
+has no such action. `sees(out)` (an option) is what it watches in place of the Courier on foot: the sea serpent watches the hull, as loud as
+its sail (`src/creatures/seaserpent/mind.js`, the third creature on these parts: a chain of segments with no rig, fought from the helm). A relation written into `c.rel` with an expiry in `c.relUntil` (a Map, by the same key) is taken back by the Brain
 in its time.
 
 ### Around the minds

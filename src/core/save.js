@@ -59,8 +59,9 @@ export class Save {
   read(key) { try { return JSON.parse(this.store?.getItem(key) || 'null'); } catch { return null; } }
   write(key, value) { try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch { return false; } }
 
-  /** The mode the progress now stored belongs to (DEBUG until STORY is chosen once). */
-  lastMode() { let m = null; try { m = this.store?.getItem(MODE_KEY); } catch { /* none */ } return MODES.includes(m) ? m : 'debug'; }
+  /** The mode the progress now stored belongs to: none stored yet, STORY for a person (FIRST-HOUR.md 5: the first pick does not reload),
+   *  DEBUG for a browser a tool drives (`navigator.webdriver`: the sweeps, the stress test, the agent). */
+  lastMode() { let m = null; try { m = this.store?.getItem(MODE_KEY); } catch { /* none */ } return MODES.includes(m) ? m : (globalThis.navigator?.webdriver ? 'debug' : 'story'); }
 
   /** At boot, before anything registers: a new build wipes the progress scopes (and the adopted keys in them, and both shelves); then
    *  the progress of `mode` is put in place (the other mode's shelved). True if the build was new here. */

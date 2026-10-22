@@ -139,7 +139,11 @@ export class Kick extends Tech {
 
   tick(dt) {
     const M = this.moves;
-    if (!this.usable() || this.game.god?.controlling) { if (M.busy) this.stop(); return; }
+    if (!this.usable() || this.game.god?.controlling) {
+      if (M.busy) this.stop();
+      if (this.enabled && !this.usable() && !this.game.god?.controlling && this.P.input.wasPressed('KeyV') && !this.game.belt?.inHand) this.game.events?.emit('art.unlearned', { ability: 'kick', by: 'courier' }); // (V with nothing in the hands before the kick is learned: techs.js `unlearned`)
+      return;
+    }
     const allow = this.allowed();
     M.update(dt, this.P.input, { allow });
     if (!allow && !M.busy) M.buffer = 0; // (a press made while it could not start is not kept for later)

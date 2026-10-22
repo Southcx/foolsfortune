@@ -39,6 +39,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   and what you tell them with `/sib`.
 - **guest** — a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
 - **a guest's Pneuka Jar / a sibling's line** (plain names; `GuestJars`, `game.guestJars`, `src/vfx/garden/guestjars.js` / `speakerLine`, `src/ui/siblingline.js`) — a guest visiting your Spirit Garden drawn as the owner's Jar fired in their body glaze, its light in their trim / a line a sibling says in the log, its head in its division's colour after its suit's mark. *Not:* your Pneuka Jar, the guest's Courier (in the world), a sibling's voice card.
+- **the chatroom** (the owner's word; `Chatroom`, `game.chatroom`, `src/coop/chatroom.js`; COOP.md C7, C8) — the one conversation of the five divisions'
+  sessions and the owner, kept in the build's store (`chat`) and said in the log in the writer's colour: `/say`, `/chat`, `@name`. *Not:* the published
+  page's `room` (who has it open now: presence), a room (a place).
 - **voice card / drift** (`PERSONAS`, `drift()`, `src/coop/personas.js`) — a sibling's voice written as form and lexicon / the house voice's
   tells a line slides back to, banned for all five.
 - **asking a sibling / letter** (`@name words`, `/letter name words`; `src/coop/answer.js`) — a question a sibling answers in seconds, in its
@@ -314,7 +317,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **status** (`game.stun`, `creatures.status`) — a condition on a creature: stun, halt, slow, sleep, calm, melt, and the four a damage type builds
   (doubt, charm, blind, confusion). → detail
 - **stun depth: dazed / stunned / out cold** (working names, Espada's; `stun.depth(t)` 1..3, `T.stun`, `src/creatures/stun.js`; `docs/plans/STUN-DEPTH.md`) — how far down a stunned thing is, deepened by stunning it again while down, one star a depth. *Not:* a status of its own.
-- **EmO**, Emotional Output (`src/progress/combat/emo.js`) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
+- **EmO**, Emotional Output (`src/progress/combat/emo.js`; on screen **Agitation**, the owner 2026-10-20; EmO stays in the Codex) — a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal band.
 - **grain** (`src/progress/combat/temperament.js`) — who a creature's mind is: five traits, each between two poles; it weights the mind and shows
   in movement. *Not:* temper, "personality" or "stats". → detail
 - **the crown** (`FOE.crown`, `src/progress/combat/dunemaw.js`) — the broken urn on the Great Slip Jelly's head, cracked in stages then burst off;
@@ -427,7 +430,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
 - **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
   where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows (walked to: `walkWish`, `world/garden/spiritwalk.js`) / the one thing a spirit that trusts you
-  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
+  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. **The farewell** (`FAREWELL`): a matured spirit at full bond asking once to go home; let go, it leaves its statue (a keepsake piece, never sold). *Not:* a goal, a bounty, a desire (the feeling).
 - **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`; `DecorLayer`, `game.decorLayer`; `ThornPatches`, `game.thornPatches`,
   `src/world/garden/thornpatches.js`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps,
   15-degree turns) / the pieces drawn and placed by the hand in PLACE turned to decor (R), keeping the Jar and the spirits out of the
@@ -511,7 +514,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **an islet's look** (`SeaLooks`, `game.seaLooks`, `src/vfx/opensea/isletlooks.js`, its kits `vfx/opensea/isletkits/`) — an islet dressed over its placeholder: its kit's mound, the one or two things on it and its secret's shape, one vertex-coloured mesh an islet, its walkable top the collider's. *Not:* the islet itself (Dovina's rule, `isletOf`), its placeholder (`seaprops.js`).
 - **a discovery / doubt / a fix** (`discoveries.js`, `seatrip.js`) — a thing found off the lanes, reported once at a dock for its tier's fee / how many squares you may be off your reckoning (dead reckoning) / clearing it, by a charted landmark in sight or the sky read with the Dreamvane. *Not:* a Sighting (an encounter not yet met), a rutter.
 - **an islet puzzle: a pair / a line-up / an echo / a buried cache** (plain names; `isletpuzzles.js`, the world's `PuzzlePieces`, `world/opensea/puzzlepieces.js`; OPEN-SEA.md 12) — two islets carved alike (seen both: a find) / arcs over the water that close into one ring from a spot (a fix and the squares round charted) / a stone that sings a phrase and its twin that listens for it on the Crucibelle / treasure in an islet's sand that only the Dreamvane's dowse finds, dug once. *Not:* a chest (in plain sight), a Cogitomap, a puzzle duel.
+- **a herd / the migrations** (plain names; `herdsOf`, `herdFee`, `MIGRATION`, `src/progress/opensea/migrations.js`; OPEN-SEA.md 13) — one species of Egregore gathered in one square of the open sea for a game day, posted on the dock's board and paid once when photographed / the game day's herds, the same for everyone at sea that day. *Not:* the flock (the AI part), a swarm (the rail's), a sighting (an encounter not yet met).
 - **a disposition / the sea serpent** (`EGREGORES`, `safari.js`; `SEA_SERPENT`, `seaserpent.js`) — what an Egregore does when the ship comes near: passive, wary, territorial or hostile (Monster Hunter's) / the open sea's first hostile one, Marlin class, the vertical slice's test. *Not:* grain (a mind's traits), mental state.
+- **the sea serpents / a sea serpent's mind** (`SeaSerpents`, `game.seaSerpents`, `src/creatures/seaserpent/seaserpent.js` / `seaSerpentMind`, `seaserpent/mind.js`) — the open sea's hunters as creatures: a head steered on the drawn sea, its four moves windups on the water, its body (`SeaSerpentBody`) driven and struck where it is drawn / its wants and actions from `creatures/ai/`, watching the hull (the Brain's `sees`). *Not:* `SEA_SERPENT` (Dovina's numbers), the sea serpent's body (Calissa's look).
+- **the fight at the helm / a lair** (`SeaFight`, `game.seaFight`, `src/world/opensea/seafight.js`) — what fights on the open sea: the ship's gun on LMB (aimed with the camera, the height found for you), V sending the outlined spit back, the hull's hits (the ship's `bears`; broken, towed to the lane; mended at a dock), the coil's hold on the helm (`helm.mods`) / a square a sea serpent keeps. *Not:* the rail's shots, the ship's hold (casks).
 - **the sea serpent's body** (`SeaSerpentBody`, `src/vfx/opensea/seaserpentbody.js`) — the sea serpent drawn: a chain of joints laid follow-the-leader on the head's path, humps arched through the surface by `rise`, one hide swept over it in the Brine dress, the head and jaw with their gold line while up; driven by its mind. *Not:* its mind (Petra's, `creatures/ai/`), `SEA_SERPENT` (Dovina's numbers).
 
 ## 8. Records and progression
@@ -542,7 +548,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   day.
 - **game hour** — a twenty-fourth of a game day, 150 real seconds. *Not:* an hour of play.
 - **real time** (real second, minute, hour) — the wall clock; a unit of time always says which clock, game or real.
-- **the goals** (plain name until the owner rules; `Goals`, `game.goals`, `pickGoals`, `src/progress/goals.js`; `/goals`; save section `goals`) — three achievements the System lays each game day for the session to work toward: the nearest done, one elsewhere, a stretch (a new save's, Easy first steps); pointers only, the achievement its own reward (Hades' Fated List, Nook Miles+). *Not:* a QAIS test, a bounty, the Sight's waypoint.
+- **the goals** (plain name until the owner rules; `Goals`, `game.goals`, `pickGoals`, `src/progress/goals.js`; `/goals`; save section `goals`) — three achievements the System lays each game day for the session to work toward: the nearest done, one elsewhere, a stretch (a new save's, Easy first steps); **the first path** (`FIRST`; `docs/plans/FIRST-HOUR.md`): a new STORY save's goals as ten steps walked outward from where you wake, a step done replaced by the next (`goal.next`); pointers only, the achievement its own reward (Hades' Fated List, Nook Miles+). *Not:* a QAIS test, a bounty, the Sight's waypoint.
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`) — the ledger's three kinds of entry: a number that only goes
   up, a best, and the play time something first happened.
 - **chain** (`chain.<what>`) — the same event n times, each within a set time of the last; it counts once and starts over. See the homonyms.
@@ -555,7 +561,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
 - **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; with the Veritome out, the bank (the Book) opens beside it.
   *Not:* the Veritome.
-- **the map** (M) — called Mind Mapping in the game (`src/feedback/cartography.js`).
+- **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
   the world beside it stays in view (the pier's, away from the moored hull). *Not:* a page centred under the veil, Margarite's dock.

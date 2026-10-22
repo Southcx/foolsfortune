@@ -73,10 +73,10 @@ export class TitleUI {
     const g = this.game, music = g.music;
     const pages = {
       main: [ // (no lines under the choices: the owner, v135, "super unnecessary")
+        { id: 'story', label: 'STORY' }, // (its own save, nothing lent, no commands: docs/plans/DEBUG-MODE.md section 2; first: FIRST-HOUR.md 5; words Espada's)
         { id: 'debug', label: 'DEBUG' },
         { id: 'settings', label: 'SETTINGS' },
         { id: 'sound', label: 'SOUND TEST' },
-        { id: 'story', label: 'STORY (coming later)' }, // (its own save, nothing lent, no commands: docs/plans/DEBUG-MODE.md section 2; words Espada's)
       ],
       settings: [
         { id: 'music', label: `MUSIC ${music?.on === false ? 'OFF' : 'ON'}` },

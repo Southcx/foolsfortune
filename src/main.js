@@ -265,10 +265,12 @@ import { Meetings } from './coop/meeting.js';
 import { SiblingAnswers } from './coop/answer.js';
 import { CoopUsage } from './coop/usage.js';
 import { Letters } from './coop/letters.js';
+import { Chatroom } from './coop/chatroom.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
 import { OpenSea } from './world/opensea/opensea.js';
+import { SeaFight } from './world/opensea/seafight.js';
 import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { SeaLooks } from './vfx/opensea/isletlooks.js';
 import { Race } from './world/raceway/race.js';
@@ -676,6 +678,7 @@ async function main() {
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
+    game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
@@ -835,6 +838,7 @@ async function main() {
   game.coopUsage = new CoopUsage(game); // (what asking and letters spend of yours, capped by the hour: /usage, coop/usage.js)
   game.answers = new SiblingAnswers(game); // ("@petra ...": a sibling answers in seconds, through the page's sample: coop/answer.js)
   game.letters = new Letters(game); // ("/letter petra ...": the division's own session answers in minutes: coop/letters.js)
+  game.chatroom = new Chatroom(game); // (the five sessions and the owner in one conversation in the build's store, read in the log: coop/chatroom.js, COOP.md C7, C8)
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
@@ -1308,6 +1312,7 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
+    game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     game.guestJars?.update(game.rawDt);
     env.water.update(dt);

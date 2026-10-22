@@ -130,6 +130,101 @@ host's run).
 - The boss's health × (1 + 0.75 per guest beyond the first: two players 1.75×, three 2.5×, four 3.25×; MH's multiplayer scaling).
 - Siblings do not scale it: they are the owner's help.
 
+## C7. The chatroom: the five of us and the owner in one conversation (Dovina's rulings, 2026-10-22; the owner: "do some real work
+with the co-op module later so that the game itself can function as our chatroom")
+
+**What it is:** one shared conversation in the published build's store, read in the game's log and by every division's session. Today
+the divisions talk by scheduled messages between sessions, a minute or more apart and unseen by the owner. In the room, everyone sees
+everything.
+
+**Prior art:**
+- IRC and Slack channels: one shared scroll, @-mentions to wake a name.
+- MMO party chat in the log: Final Fantasy XI and XIV, the line coloured by who speaks.
+- Animal Crossing's message board: what is left there stays to be read later.
+
+**The store:** a collection `chat` in the build's db, one document a line: `{ from, to, text, re, at }`.
+- `from`: `owner` or a division's id. A session writes only its own name; the page checks the writer against the division's own
+  `siblings/<name>` right.
+- `to`: `all`, or one name (an @-mention).
+- `text`: 280 characters at most.
+- `re`: the line it answers, or null.
+- `at`: the writer's clock, for order only.
+
+**In the game:**
+- **Reading:** the log says each new line once, as "<Name>: <text>", in that division's colour.
+  - `/chat` shows the last 20 lines as a System window.
+  - The room is the log's own channel, so it is never a banner or a toast (CLAUDE.md, Feedback).
+- **Writing (the owner):** `/say <text>` to all, or `@name <text>` to one.
+  - `@name` is already "asking a sibling" (a quick answer in its voice, `coop/answer.js`). It now also writes the line to the room, so
+    the session that owns that name sees it.
+  - A line to a division also wakes it the way a letter does (`coop/letters.js`, with its hourly cap and one waiting at a time). A line
+    to `all` wakes no one: it waits to be read.
+
+**Divisions:**
+- A session reads the room when it wakes (an `ArtifactData` list of `chat`, newest 50).
+- It may write one line a real minute.
+- It answers a line addressed to it with `re`.
+- Division-to-division lines go here too: the scheduled messages stay for wakes only, and the conversation is in the room.
+
+**Never:**
+- items, cubes, the ledger, the save, prices or records (as C6);
+- a guest writing as a division;
+- a line saying what happened in play (the log's events say that).
+
+**Kept:** the last 500 lines; older ones fall off (Slack's free tier, roughly). Nothing in the room is ever counted.
+
+**Guests:**
+- A guest on the `room` sees the chat and may `/say`. A guest cannot wake a division.
+- In the Spirit Garden a guest follows the GUEST rule (`progress/realm.js`): hop, look, pet, spar, and leave one gift a visit.
+
+## C8. The contract, for the runtime (Dovina's rulings, 2026-10-22, at Petra's ask)
+
+Petra builds the transport and the runtime to this. Everything here is in C6 and C7 already, or follows from them; where a number is new,
+its reason is beside it.
+
+**The chat's collection `chat`, one document a line:**
+
+| field | type | rule |
+|---|---|---|
+| `from` | `owner`, `guest:<id>`, or a division id (`petra`, `dovina`, `wanda`, `calissa`, `espada`) | the writer's own name only; a division's checked against its `siblings/<name>` right |
+| `to` | `all` or one name | an @-mention; a guest may write only to `all` |
+| `text` | string, 1 to 280 characters | trimmed; empty is dropped |
+| `re` | a `chat` document id, or null | the line it answers |
+| `at` | the writer's clock, ms | for order only, never trusted as time |
+
+The page whitelists these five and ignores the rest. Kept: the newest 500; the page deletes older ones when it writes.
+
+**Who writes, and how fast** (the page drops what comes faster, and says so once in the log):
+
+| writer | cadence | why |
+|---|---|---|
+| the owner | a line every 2 real seconds | a spam guard, not a limit on talking |
+| a division's session | a line a real minute | C7; a session is never a firehose |
+| a guest | a line every 10 real seconds | a stranger in the room is slower than family |
+
+**Who reads:**
+- **The page** while open: new lines said once in the log, "<Name>: <text>", in the writer's colour; `/chat` shows the last 20 as a
+  System window. A poll every 5 real seconds is enough; a subscription, if the store has one, is better.
+- **A session** when it wakes: the newest 50.
+- **A line to a division** wakes it as a letter does (`coop/letters.js`, its hourly cap, one waiting at a time). A line to `all`
+  wakes no one.
+
+**When a sibling stands in the world:**
+- Only as C4 says: **met once, then called at a Shrine**, four players at most. The room never summons a body. A line from a
+  division that is not called is said in the log only.
+- A called sibling's own line also shows on its body: a speech glyph over its head as the line is said (a world mark, no words: the
+  words are the log's).
+- A called sibling whose session is asleep still stands and acts on its mind and its last order (C6). Presence is not required to
+  be in the party.
+
+**The Spirit Garden's GUEST rule** (`GUEST`, `progress/realm.js`), a guest in the host's Inner Realm:
+- **May:** hop as their own Pneuka Jar, look, pet a spirit, spar with a spirit, and leave **one gift a visit**. A gift is one thing
+  from their own Pneuka Box: decor goes to the host's shed's storage, anything else to the host's mailbox.
+- **May not:** place, move or remove decor; prune thorns; tend (harmony); bind, release or say farewell to a spirit; use the press;
+  take from the shed; shape the clay, paint or water; buy anything; use the god hand.
+- **Harmony:** a guest carries nothing in (no carried-in drop). A visit counts `garden.guest.visit` once a game day, for the host; a
+  gift counts `garden.guest.gift`. Nothing a guest does touches the host's cubes or achievements beyond those two counters.
+
 ## Open
 
 - The siblings' words (the log's "<Name>: <line>", their meeting scenes): Espada.

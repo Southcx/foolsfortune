@@ -125,7 +125,7 @@ export function gardenRules({ on, L, log }) {
   on('decor.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('decor.get', e.n || 1); if (e.first) L.inc('decor.owned');
-    if (e.from !== 'shop' && e.from !== 'gift') log.say('loot', `You get ${an(DECOR[e.id]?.name || 'garden piece')} for the shed.`, { key: 'decor.get', throttle: 1 });
+    if (e.from !== 'shop' && e.from !== 'gift' && e.from !== 'farewell') log.say('loot', `You get ${an(DECOR[e.id]?.name || 'garden piece')} for the shed.`, { key: 'decor.get', throttle: 1 });
   });
   on('decor.buy', (e) => { if (e.by === 'courier') { L.inc('decor.buy'); L.inc('decor.spent', e.cubes || 0); log.say('info', `You buy ${an(DECOR[e.id]?.name || 'garden piece')} for the shed: ${e.cubes} cubes.`, { key: 'decor.buy', throttle: 0.5 }); } });
   on('decor.refuse', (e) => { if (e.by === 'courier') log.say('warn', e.why === 'cubes' ? 'Not enough cubes.' : e.why === 'locked' ? 'That piece is not in the catalogue yet.' : 'No such piece.', { key: 'decor.refuse', throttle: 1 }); });
@@ -183,4 +183,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.letter', (e) => { if (e.by !== 'courier') return; L.inc('spirit.letter'); L.inc(`spirit.letter.${e.about}`); });
   on('spirit.letters', (e) => { if (!e.letters?.length) { log.say('system', 'The mailbox is empty.', { key: 'letters', throttle: 1 }); return; } e.letters.forEach((m, i) => log.say('info', (LETTER[m.about] || (() => 'A letter.'))(m), { key: `letter.${i}`, throttle: 0.2 })); });
   on('spirit.gift', (e) => { if (e.by !== 'courier') return; L.inc('spirit.gift'); log.say('loot', `${Who(e)} left a gift on the doorstep: ${an(DECOR[e.id]?.name || 'garden piece')}.`, { key: 'gift', throttle: 2 }); });
+  // the farewell (progress/spiritlife.js FAREWELL; GARDEN-COZY.md C6): placeholders for Espada's words
+  on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home. When you are ready, let it go from its page; until then it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });
+  on('spirit.farewell', (e) => { if (e.by !== 'courier') return; L.inc('spirit.farewell'); L.inc(`spirit.farewell.${e.feeling}`); log.say('gain', `${Who(e)} goes home. It leaves you a statue of itself.`, { key: 'farewell', throttle: 2 }); });
 }

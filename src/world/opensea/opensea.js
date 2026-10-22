@@ -178,7 +178,7 @@ export class OpenSea {
   claim(isl) {
     const g = this.game, id = isl.feature.id;
     if (isl.secret.kind === 'stele') return this.readStele(isl);
-    if (this.claimed.has(id)) return g.log?.say?.('info', 'Already taken.', { key: 'sea.secret', throttle: 2 });
+    if (this.claimed.has(id)) return g.log?.say?.('info', 'You already took what was here.', { key: 'sea.secret', throttle: 2 });
     this.claimed.add(id); isl.secret.mesh.visible = false;
     if (isl.secret.kind === 'chest') g.cubes?.earn(3 * ECON.perMinute, 'chest');
     if (isl.secret.kind === 'fuel') this.voyage.fuel = Math.min(SHIPS[this.helm.ship].tank, this.voyage.fuel + 3);
