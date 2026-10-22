@@ -8,6 +8,7 @@
 //
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
+import { gardenState } from './garden.js';
 import { feelingOfKind } from './mycelium.js';
 
 const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
@@ -164,6 +165,23 @@ const RULES = {
   'spirit.pet': (s, e) => s.spiritVoice?.('happy', e),
   'spirit.flick': (s, e) => s.spiritVoice?.('hurt', e),
   'garden.sculpt': (s, e) => s.sculpt?.(e.how || 'press'),
+  // the Spirit Garden's own sound (GARDEN-COZY.md B; audio/garden.js): its bed from coming in to going out, and tending on the cue's beat
+  'garden.enter': (s, e, g) => { s.gardenEnter?.(); s.gardenStart?.(() => gardenState(g)); },
+  'garden.leave': (s) => { s.gardenEnd?.(); s.gardenLeave?.(); },
+  'garden.water': (s, e, g) => s.gardenWater?.(gardenState(g)),
+  'garden.plant': (s, e, g) => s.gardenPlant?.(gardenState(g)),
+  'garden.harvest': (s, e, g) => s.gardenHarvest?.(gardenState(g), e.count ?? 1),
+  'garden.collect': (s, e, g) => s.gardenCollect?.(gardenState(g)),
+  'garden.place': (s, e, g) => s.gardenPlace?.(gardenState(g)),
+  'garden.paint': (s, e, g) => s.gardenPaint?.(gardenState(g)),
+  'garden.planetoid.buy': (s, e, g) => s.gardenBuy?.(gardenState(g)),
+  'garden.upgrade': (s, e, g) => s.gardenUpgrade?.(gardenState(g)),
+  'spirit.race.start': (s) => s.gardenRaceStart?.(),
+  'spirit.race': (s, e, g) => s.gardenRace?.(gardenState(g)),
+  'spirit.spar.bump': (s) => s.gardenBump?.(),
+  'spirit.name': (s, e) => s.spiritVoice?.('cheer', e),
+  'alchemy.press': (s) => s.gardenPress?.(),
+  'alchemy.fire': (s, e, g) => s.gardenFire?.(gardenState(g), !!e.true),
   // the Mycelium (docs/plans/MYCELIUM.md: audio/mycelium.js)
   'spore.harvest': (s, e) => s.sporeHarvest?.(e.strain, e.up),
   'myggdrasil.feed': (s) => s.myggFeed?.(),
