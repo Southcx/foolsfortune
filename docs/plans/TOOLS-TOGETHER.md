@@ -275,3 +275,53 @@ Monster Hunter's weapons are the model: the job is in the motion.
 2. **Does the sub's verb go on one key for every sub (R, say)?** My call: yes, one key, the same for all. Every main's own R move
    (the hammer fan, the Tidecutter, the Dreamquake) moves to its R held.
 3. **The new save's pair:** psygun main, Sondelass sub?
+
+## 9. Celestial mode's targets drawn over the paper (the owner, 2026-10-22)
+
+> "why don't we have it so that selectable figment targets are rendered on top of the paper shader canvas? That way when you mark them it
+> can have a much more distinct effect and the player can immediately see which figments they can effect"
+
+**Why the dot reads as buggy (read from the code, not seen in play).**
+- **The paper covers everything.** It is a CSS `backdrop-filter: sepia(.8) ...` over the whole screen at z-index 40
+  (`tools/soulbrush/canvas.js:27`). Everything under it is washed alike, so a target cannot be told from the ground.
+- **The mark goes sepia.** It is a vermilion `celestialMark` glyph popped in the world (`techniques.js:131`), so it sits under the paper
+  and its red is washed out too.
+- **The dot's reach is small.** It picks within 14 px plus the thing's radius on screen (`techniques.js:127`). A far clapperjar is a
+  few pixels across.
+- **Prior art:** Okami's Celestial Brush, where the canvas turns to paper but the brush's targets stay readable on it; Magic Cat Academy,
+  where the ghosts and their symbols are the only things drawn bright.
+
+**The rule: what is selectable (Dovina's).**
+- **A thing is selectable when the brush can act on it in this hold.**
+  - Today that is `things()` (`techniques.js:73`): pots, pushable or liftable pieces and clapperjars, within 30 m and on screen.
+  - Add **every hurtable creature** (`hasTag(c, 'hurtable')`) within the sigils' 16 m.
+  - Leave out an ally and an aberrant (an aberrant takes no blow in the world).
+- **The prompts go to every hurtable Figment** (`sigils.js`, today clapperjars only). Each gets a queue whose length is set by its
+  class:
+
+  | creature | queue length |
+  |---|---|
+  | a clapperjar | 1 to 2 (as now) |
+  | a slip jelly | 2 |
+  | a Lantern Wisp | 3 |
+  | a raider | 3 (as now) |
+  | the FOE | a queue a phase, refilled as its crown cracks |
+
+  The lengths are Dovina's to balance from a measure: the real seconds a prompt run takes, against the hits the same time with the club
+  would land.
+
+**The look (Calissa's).**
+- **Selectable:** drawn clear of the paper in its own colours, outlined by a thin sumi line, as if the paper parted round it.
+- **Not selectable:** stays under the wash.
+- **Marked:** your seal (`drawSealFace`, your `cradles.mine`) stamped over it in vermilion on the paper's top layer, and its outline
+  turns vermilion. Dotted again, the stamp lifts. This is the hanko as the mark, so the gesture means "this one is mine".
+- **Its prompts** (the queued sigils) ride above the paper with it.
+
+**The dot's reach (the code, Petra's).** A dot lands on the selectable thing whose drawn outline it falls in, or else the nearest within
+28 px. It never lands on a thing that is not drawn.
+
+**The route (Petra's call, measured at the gate).**
+- **The whole route:** the paper's sepia leaves CSS for a screen pass in the post stack (the time grade's way, a screen volume).
+  Selectable things are drawn after it on their own layer, at their own colour.
+- **A cheaper first step:** keep the CSS paper, and draw each selectable thing's outline, its prompts and the seal on the ink canvas
+  above `.paper`. The body itself stays sepia, but the outline and the seal read.
