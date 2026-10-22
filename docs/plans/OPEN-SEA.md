@@ -290,3 +290,31 @@ heard, dug) is kept in the room's save section `openSea`.
   stay on their own calls for now.
 - **Calissa:** the looks (the carvings, the line-up's stone and arcs, the two echo stones and their sockets, an opened cache).
 - **Wanda:** the singing stone's voice (it borrows the Crucibelle's for now) and a dig's sound.
+
+## 13. The migrations: the open sea after it is charted (2026-10-22; the owner's "get ambitious" round)
+
+Section 9's open call is taken: the safari keeps paying through herds.
+
+- **What it is (`progress/opensea/migrations.js`):**
+  - Each game day, `MIGRATION.herds` (4) herds gather: one species in one square for that game day, drawn from the day and the sea's
+    seed, so everyone at sea that day sees the same herds.
+  - A herd is 3 to 7 bodies, in a square its species' `lives` allow, at any hour.
+  - Hostile species never herd: a herd is to be watched, not fought.
+- **How it is found:** Margarite's dock posts the game day's herds on its board (`sea.herds`; the bounties' board, Letty Marque's). The
+  Sight can be calibrated to one.
+- **What it pays:** a herd photographed pays its fee once, `herdFee(cls)`: half a hunt of its class (`ECON.hunt`), paid at the next
+  dock. This is on top of the plate's own pay, and the fee goes with the game day, met or not. Nothing is lost by missing a herd.
+- **Measured** (`node scripts/opensea.mjs`, 200 game days, a sloop from the nearest port, nearest herd first):
+  - a game day's tour takes 24 real minutes;
+  - it pays 229 cubes and burns 49 in fuel, so 180 net: 0.38x an hour's aim a game day (the want was about 0.4x, under fishing);
+  - while touring it pays 0.93x the aim.
+- **Prior art:** Monster Hunter's investigations, Pokemon GO's nests (one spawn for everyone, migrating on a clock), Pokemon Snap's
+  professor, Red Dead Redemption 2's legendary animals told by rumour.
+- **The ledger:** `sea.herd`, `sea.herd.<species>`. The achievements, under THE EMOCEAN's "The Open Sea" (names Espada's to rule): Off
+  the Lanes, Cartographer (title), Herd Watcher, Migration Season.
+- **The world side (Petra's):**
+  - post the board at the dock (`herdsOf(grid, today(), seed)`, `sea.herds { day, n }`);
+  - lay each herd's bodies in its square (the Egregores' placeholders, Calissa's looks);
+  - on a plate of one inside its square, `sea.herd { id, square, cubes: herdFee(cls) }`, paid with the reports at the next dock;
+  - one herd paid once a game day.
+
