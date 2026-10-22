@@ -421,6 +421,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   — a piece placed in the Spirit Garden for its looks, of a set / where a piece bought or given waits until placed, and goes back to
   when picked up / the garden's decor scored by variety region by region, never shown as a number / one of the five on the Dantian's
   lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
+- **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
+  where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows / the one thing a spirit that trusts you
+  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
 - **a season** (`seasonOf`, `src/progress/seasons.js`) — spring, summer, autumn or winter in the Spirit Garden, 7 game days each.
   *Not:* the weather, the day's phases.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'

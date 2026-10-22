@@ -663,6 +663,9 @@ export function buildAchievements(game) {
   C('gy8', 'garden', "The Garden's Life", 3, 'mechanic', 'A Set Piece', 'Finish a set of garden pieces round its centrepiece.', 'decor.sets', 1);
   H('gy9', 'garden', "The Garden's Life", 4, 'collect', 'Five Lotuses', 'Open all five lotuses on the lake.', 'garden.lotuses', 5);
   F('gy10', 'garden', "The Garden's Life", 3, 'collect', 'A Year in the Jar', 'Visit your Inner Realm in all four seasons.', (L) => ['spring', 'summer', 'autumn', 'winter'].filter((s) => L.get(`garden.season.${s}`) >= 1).length, 4);
+  C('gy11', 'garden', "The Garden's Life", 1, 'count', 'Make a Wish', "Meet a spirit's wish.", 'spirit.wish.done', 1);
+  C('gy12', 'garden', "The Garden's Life", 3, 'endure', 'Wishmaker', "Meet twenty-five of your spirits' wishes.", 'spirit.wish.done', 25);
+  F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

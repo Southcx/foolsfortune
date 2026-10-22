@@ -21,6 +21,7 @@ import { readFileSync } from 'node:fs';
 import { buskPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
 import { rutterWorth } from '../src/progress/econ/passage.js';
+import { DECOR, priceOf } from '../src/progress/decor.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
@@ -270,4 +271,15 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
 { const P = ECON.place, total = P.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
   console.log(`\nthe Spirit Garden's planetoids: ${P.planetoids.map((m) => m * ECON.perMinute).join(' + ')} = ${total} cubes; at the aim (${ECON.perMinute * 60} an hour) ${(total / (ECON.perMinute * 60)).toFixed(1)} hours of play spent on nothing else; at half the aim (a player who also buys looks and keys) ${(2 * total / (ECON.perMinute * 60)).toFixed(1)} hours: the long sink, as meant (weeks at an hour or two a day)`);
   console.log(`  features: ${Object.entries(P.features).map(([k, m]) => `${k} ${m * ECON.perMinute}`).join(', ')} cubes; a spirit at work adds up to ${P.work * 100}% to its slot; formation +/-${P.formation * 100}%, a vein x${P.vein}`); }
+
+// the gardener (SPIRIT-GARDEN.md item 27, GARDEN-COZY.md G3): an hour spent in the garden, what it gives and what it asks. The garden is
+// a sink a player chooses: it pays in materials and a dividend that comes while you are away, never in cubes for tending (cozy: no
+// transactional pressure), so its sinks are paid by the rest of play.
+{ const G = ECON.garden, D = ECON.dividend, hr = ECON.perMinute * 60, perHarvest = 60 / (G.growHours * 2.5); // (a game hour is 2.5 real minutes)
+  const mats = (beds) => Math.floor(perHarvest) * beds * G.yield, div = (slots) => Math.round(D.share * G.farmRate * slots);
+  const cat = Object.keys(DECOR).reduce((n, id) => n + priceOf(id), 0), plan = ECON.place.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
+  console.log(`\nthe gardener: an hour in the Spirit Garden pays no cubes for tending; its beds give ${mats(G.beds)} materials an hour at ${G.beds} beds (${mats(G.beds + 4)} at ${G.beds + 4}), ${perHarvest.toFixed(1)} harvests a bed an hour`);
+  console.log(`  the dividend while away: ${div(1)} / ${div(D.slots)} cubes a real hour with 1 / ${D.slots} slots working, ${D.capDays} game days to its cap (${div(D.slots) * D.capDays} cubes)`);
+  console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the planetoids ${plan} (${(plan / hr).toFixed(1)} hours), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
+  console.log(`  a cozy week (an hour or two a real day, a seventh of it in the garden): the dividend at ${D.slots} slots pays the catalogue in ${(cat / div(D.slots)).toFixed(0)} real hours away, the planetoids in ${(plan / div(D.slots)).toFixed(0)}; play pays the rest`); }
 
