@@ -30,13 +30,13 @@ export function setGarden({ phase = 'day', draught = null, season = 'summer', ra
   G.phase = phase; G.draught = MODES[draught] ? draught : 'wonder'; G.season = DRESS[season] ? season : 'summer'; G.rain = rain; G.briar = Math.max(0, Math.min(1, briar));
 }
 // B6, THE SEASONS (progress/seasons.js seasonOf; GARDEN-COZY.md E): one tune, re-dressed. Each season's lead a phase, its comping, how much
-// of the kit plays and its tempo: spring flute and harp, light; summer the steel pan and the brushes (the garden as it was); autumn the
+// of the kit plays, its tempo and its lift (the sparser seasons brought up to the others' level, measured): spring flute and harp, light; summer the steel pan and the brushes (the garden as it was); autumn the
 // fiddle and the concertina, slower; winter a music box and bells, no drums, slowest. Rain strips the percussion (New Horizons' layer).
 const DRESS = {
-  spring: { dawn: 'flute', day: ['flute', 'harp'], dusk: 'flute', comp: 'harp', drums: 0.6, bpm: 92, bells: false },
-  summer: { dawn: 'celesta', day: ['steelpan', 'flute'], dusk: 'sax', comp: 'rhodes', drums: 1, bpm: 92, bells: false },
-  autumn: { dawn: 'fiddle', day: ['fiddle', 'concertina'], dusk: 'fiddle', comp: 'concertina', drums: 0.8, bpm: 84, bells: false },
-  winter: { dawn: 'celesta', day: ['celesta', 'vibes'], dusk: 'celesta', comp: 'harp', drums: 0, bpm: 76, bells: true },
+  spring: { dawn: 'flute', day: ['flute', 'harp'], dusk: 'flute', comp: 'harp', drums: 0.6, bpm: 92, bells: false, lift: 1 },
+  summer: { dawn: 'celesta', day: ['steelpan', 'flute'], dusk: 'sax', comp: 'rhodes', drums: 1, bpm: 92, bells: false, lift: 1 },
+  autumn: { dawn: 'fiddle', day: ['fiddle', 'concertina'], dusk: 'fiddle', comp: 'concertina', drums: 0.8, bpm: 84, bells: false, lift: 1.55 },
+  winter: { dawn: 'celesta', day: ['celesta', 'vibes'], dusk: 'celesta', comp: 'harp', drums: 0, bpm: 76, bells: true, lift: 1.5 },
 };
 const dress = () => DRESS[G.season] || DRESS.summer;
 const kit = () => (G.rain > 0.15 ? 0 : dress().drums); // (how much of the percussion plays)
@@ -74,15 +74,15 @@ const birds = (i) => (i % 2 ? [] : [3.1, 3.25, 3.4].map((b, k) => E('celesta', b
 
 const bells = (i) => (dress().bells && i % 2 === 0 ? [E('bell', 0, 1, deg(4, 12), 0.12)] : []);
 const SECTIONS = [
-  { id: 'dawn', bars: 8, gain: 7, get bpm() { return dress().bpm; }, bar: (i) => { const T = i % 4 < 2 ? tune(i, dress().dawn, 0.2) : []; return [...arp(i, 'harp', 0.22), ...pad(i, 0.05), ...T, ...shadow(T), ...shadow(pad(i, 0.05), 1.2), ...birds(i), ...bells(i), ...(i % 4 === 3 && kit() ? [E('brush', 2, 1, null, 0.15 * kit())] : [])]; } },
-  { id: 'day', bars: 16, gain: 2.4, get bpm() { return dress().bpm; }, bar: (i) => {
+  { id: 'dawn', bars: 8, get gain() { return 7 * dress().lift; }, get bpm() { return dress().bpm; }, bar: (i) => { const T = i % 4 < 2 ? tune(i, dress().dawn, 0.2) : []; return [...arp(i, 'harp', 0.22), ...pad(i, 0.05), ...T, ...shadow(T), ...shadow(pad(i, 0.05), 1.2), ...birds(i), ...bells(i), ...(i % 4 === 3 && kit() ? [E('brush', 2, 1, null, 0.15 * kit())] : [])]; } },
+  { id: 'day', bars: 16, get gain() { return 2.4 * dress().lift; }, get bpm() { return dress().bpm; }, bar: (i) => {
     const [a, b] = dress().day, T = i < 8 ? tune(i, a, 0.3, a === 'steelpan' ? 0 : 12, { pan: 0.15 }) : tune(i, b, 0.28, 12);
     return [...brushes(0.24), ...bass(i), ...comp(i), ...pad(i, 0.04), E('shimmer', 0, 4, notes(i, 0), 0.08), ...T, ...shadow(T), ...shadow(pad(i, 0.04), 1.2),
       ...(i >= 8 && G.season === 'summer' ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((x, k) => E('twinkle', x, 0.5, notes(i, 12)[k % 3], 0.1)) : []),
       ...(i % 8 === 7 ? [E('vibes', 3, 1, deg(4, 12), 0.18)] : []), ...bells(i)];
   } },
-  { id: 'dusk', bars: 8, gain: 2.6, get bpm() { return dress().bpm; }, bar: (i) => { const T = tune(i, dress().dusk, 0.26, dress().dusk === 'sax' ? 0 : 12); return [...brushes(0.2, true), ...bass(i, 0.09), ...comp(i, 0.12), E('strings', 0, 4, notes(i, 0), 0.06, { attack: 0.8, bright: 1800 }), ...T, ...shadow(T), ...bells(i)]; } },
-  { id: 'night', bars: 8, gain: 7.5, get bpm() { return dress().bpm; }, bar: (i) => { const T = tune(i, 'celesta', 0.2, 12); return [...arp(i, 'harp', 0.14), ...T, ...shadow(T), E('shimmer', 0, 4, notes(i, 0), 0.06), ...pad(i, 0.04), ...shadow(pad(i, 0.04), 1.2),
+  { id: 'dusk', bars: 8, get gain() { return 2.6 * dress().lift; }, get bpm() { return dress().bpm; }, bar: (i) => { const T = tune(i, dress().dusk, 0.26, dress().dusk === 'sax' ? 0 : 12); return [...brushes(0.2, true), ...bass(i, 0.09), ...comp(i, 0.12), E('strings', 0, 4, notes(i, 0), 0.06, { attack: 0.8, bright: 1800 }), ...T, ...shadow(T), ...bells(i)]; } },
+  { id: 'night', bars: 8, get gain() { return 7.5 * dress().lift; }, get bpm() { return dress().bpm; }, bar: (i) => { const T = tune(i, 'celesta', 0.2, 12); return [...arp(i, 'harp', 0.14), ...T, ...shadow(T), E('shimmer', 0, 4, notes(i, 0), 0.06), ...pad(i, 0.04), ...shadow(pad(i, 0.04), 1.2),
     ...(i % 4 === 0 ? [E('vibes', 0, 2, deg(0, 12), 0.12)] : []), ...(G.season === 'autumn' ? [E('concertina', 0, 3.8, notes(i, 0), 0.08)] : []), ...bells(i)]; } },
   // B1, THE REST: every second time round, the cue breathes out for four bars (a pad's whisper) and lets the garden's own bed be heard;
   // never longer (Stardew's silences are what its players complain of)
@@ -122,7 +122,7 @@ const SEASON_TOUR = [
 ];
 const tourSet = (T) => { G.phase = T.phase; G.season = T.season; G.briar = T.briar || 0; G.rain = T.rain || 0; G.draught = 'wonder'; };
 export const GARDEN_SEASONS = { title: 'A Garden in the Jar (its seasons)', root: 64, bpm: 92, arrange: true, loopFrom: null, moodless: true, tail: 4,
-  scale: MODES.wonder, sections: SEASON_TOUR.map((T, k) => ({ id: `${T.season}:${T.phase}${T.briar ? ':briar' : ''}${T.rain ? ':rain' : ''}`, bars: 8, gain: SECTIONS[AT[T.phase]].gain,
+  scale: MODES.wonder, sections: SEASON_TOUR.map((T, k) => ({ id: `${T.season}:${T.phase}${T.briar ? ':briar' : ''}${T.rain ? ':rain' : ''}`, bars: 8, get gain() { tourSet(T); return SECTIONS[AT[T.phase]].gain; },
     get bpm() { tourSet(T); return DRESS[T.season].bpm; }, bar: (i) => { tourSet(T); return SECTIONS[AT[T.phase]].bar(i + (T.phase === 'day' ? 8 * (k % 2) : 0)); } })) };
 
 // ---- the awakening song (SPIRIT-GARDEN.md: a Lachrymite fossil dug in the Dunes, awakened in the Grove by the Crucibelle's song):
