@@ -53,7 +53,8 @@ export class Temper {
     const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= ENRAGE ? 1 : 0;
     const pulse = 0.5 + 0.5 * Math.sin(t * (3 + 9 * heat)); // (a breath that quickens)
     T.glow.copy(_ember).multiplyScalar(0.25 * heat * (0.6 + 0.4 * pulse)).lerp(_gold, rage * 0.4 * pulse);
-    return { gloss: (T.state + 2) / 4, glow: T.glow, tremble: Math.max(heat * 0.4, rage) };
+    const L = T.look ||= { gloss: 0.5, glow: T.glow, tremble: 0 }; // (one answer kept on the creature: nothing made a call)
+    L.gloss = (T.state + 2) / 4; L.tremble = Math.max(heat * 0.4, rage); return L;
   }
 
   update() {
