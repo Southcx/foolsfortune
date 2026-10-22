@@ -268,6 +268,7 @@ import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
 import { OpenSea } from './world/opensea/opensea.js';
+import { SeaFight } from './world/opensea/seafight.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -670,6 +671,7 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
+    game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
@@ -1300,6 +1302,7 @@ async function main() {
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
+    game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);

@@ -11,7 +11,7 @@
 // trims and the wheel, momentum), Sid Meier's Pirates! (a few speeds, not a pedal); the rail's chase rig (courier/ship/views.js).
 //
 //   new Helm(room, ship = 'sloop')   .pos .yaw .speed .throttle (0..3) .look   .update(dt, input, current?) -> { full }   .placeAt(pos, yaw)
-//   .camera(dt, input)   .hold(player)   .show(on)   THROTTLE (the four speeds, x the cruise)   HELM (the numbers)
+//   .camera(dt, input)   .hold(player)   .show(on)   .mods (Map: source -> { turn, speed }, what holds the helm)   THROTTLE (the four speeds, x the cruise)   HELM (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { shipLook } from '../../vfx/shipclasses.js';
@@ -20,9 +20,11 @@ import { SHIPS } from '../../progress/rail/ships.js';
 
 /** The throttle's four steps, as a share of cruise. */
 export const THROTTLE = [0, 0.5, 1, 1.5];
-/** cruise: m a real s (a square of 400 m in 40 s); accel: m/s each real s; turn: rad a real s at cruise; cam: the chase's offset astern
- *  and up and how far ahead it looks; orbit: rad a real s the arrows swing it. */
-export const HELM = { cruise: 10, accel: 2.2, turn: 0.42, cam: { back: 15, up: 5.5, ahead: 12 }, orbit: 1.6, pitchMax: 0.5 };
+/** cruise: m a real s (a square of 400 m in 40 s); accel: m/s each real s; turn: rad a real s at cruise (0.6: a hard turn at a ram's
+ *  first sight clears its ring, world/opensea/seafight.js); cam: the chase's offset astern and up, how far ahead it looks and how far
+ *  it leans into a turn (m); orbit: rad a real s the arrows swing it; recentre: after so long untouched (real s) it swings back astern
+ *  at this rate (Wind Waker's camera), but not while something hunts the ship (the gun is aimed with the camera). */
+export const HELM = { cruise: 10, accel: 2.2, turn: 0.6, cam: { back: 15, up: 5.5, ahead: 12, lean: 5 }, orbit: 1.6, pitchMax: 0.5, recentre: { after: 3, rate: 0.7 } };
 
 const _f = new THREE.Vector3(), _c = new THREE.Vector3(), _l = new THREE.Vector3();
 
@@ -34,6 +36,7 @@ export class Helm {
     this.wake = new ShipWake(this.game);
     this.pos = new THREE.Vector3(); this.yaw = 0; this.speed = 0; this.throttle = 0; this.rudder = 0; this.t = 0;
     this.orbit = 0; this.tilt = 0.25; this.seaT = 0;
+    this.mods = new Map(); // (what holds the helm, by its source: { turn, speed } shares; the sea serpent's coil, world/opensea/seafight.js)
   }
   get cruise() { return HELM.cruise * (SHIPS[this.ship]?.speed ?? 1.2) / 1.2; }
   get full() { return this.throttle === 3; }
@@ -46,9 +49,10 @@ export class Helm {
     if (input.wasPressed('KeyS')) this.throttle = Math.max(0, this.throttle - 1);
     const steer = (input.isDown('KeyA') ? 1 : 0) - (input.isDown('KeyD') ? 1 : 0);
     this.rudder += (steer - this.rudder) * Math.min(1, dt * 4);
-    const target = THROTTLE[this.throttle] * this.cruise;
+    let turnK = 1, wayK = 1; for (const m of this.mods.values()) { turnK *= m.turn ?? 1; wayK *= m.speed ?? 1; }
+    const target = THROTTLE[this.throttle] * this.cruise * wayK;
     this.speed += Math.sign(target - this.speed) * Math.min(Math.abs(target - this.speed), HELM.accel * dt);
-    this.yaw += this.rudder * HELM.turn * dt * Math.min(1.4, 0.25 + this.speed / this.cruise);
+    this.yaw += this.rudder * HELM.turn * turnK * dt * Math.min(1.4, 0.25 + this.speed / this.cruise);
     _f.set(Math.sin(this.yaw), 0, Math.cos(this.yaw));
     this.pos.addScaledVector(_f, this.speed * dt);
     if (current) this.pos.addScaledVector(current, dt);
@@ -78,9 +82,14 @@ export class Helm {
     const swing = (input.isDown('ArrowLeft') ? 1 : 0) - (input.isDown('ArrowRight') ? 1 : 0), rise = (input.isDown('ArrowUp') ? 1 : 0) - (input.isDown('ArrowDown') ? 1 : 0);
     this.orbit += swing * HELM.orbit * dt - (input.dx || 0) * 0.004;
     this.tilt = Math.max(-0.1, Math.min(1.1, this.tilt + rise * 0.8 * dt + (input.dy || 0) * 0.003));
+    this.idle = swing || rise || input.dx || input.dy ? 0 : (this.idle || 0) + dt;
+    if (this.idle > HELM.recentre.after && !g.seaFight?.serpent) { // (untouched, it swings back astern: the shortest way round)
+      const o = Math.atan2(Math.sin(this.orbit), Math.cos(this.orbit)); this.orbit = o - Math.sign(o) * Math.min(Math.abs(o), HELM.recentre.rate * dt);
+    }
     const a = this.yaw + Math.PI + this.orbit, C = HELM.cam;
     _c.set(this.pos.x + Math.sin(a) * C.back * Math.cos(this.tilt), this.pos.y + C.up + Math.sin(this.tilt) * C.back, this.pos.z + Math.cos(a) * C.back * Math.cos(this.tilt));
-    _l.set(this.pos.x + Math.sin(this.yaw) * C.ahead, this.pos.y + 1.5, this.pos.z + Math.cos(this.yaw) * C.ahead);
+    const lean = this.rudder * C.lean * Math.min(1, this.speed / this.cruise); // (it looks a little into the turn)
+    _l.set(this.pos.x + Math.sin(this.yaw) * C.ahead + Math.cos(this.yaw) * lean, this.pos.y + 1.5, this.pos.z + Math.cos(this.yaw) * C.ahead - Math.sin(this.yaw) * lean);
     g.cinema?.shot('opensea', { pos: _c, look: _l, bars: 0, ease: 30 });
   }
 

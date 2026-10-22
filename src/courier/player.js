@@ -52,6 +52,9 @@ const hlen = (v) => Math.hypot(v.x, v.z);
  * wall jump, mantle, and a Lachryma air dash. Momentum above run speed is never
  * thrown away by steering, only by friction and walls.
  */
+/** The arrow keys' camera (PHOTO-MODE.md step 1): rad a real s turned and tilted, and the ease in (real s). */
+const ARROWS = { yaw: 90 * DEG, pitch: 60 * DEG, ease: 0.15 };
+
 export class Player {
   constructor(physics, camera, input) {
     this.isPlayer = true; this.kind = 'courier'; // (what they are to the creatures: creatures/ai/ecology.js)
@@ -199,6 +202,15 @@ export class Player {
     const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.lens ?? 1) * (this.lookScale.shot ?? 1) * (this.lookScale.wheel ?? 1); // (wheel: the party's orders, held: coop/party.js)
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
+    // the arrow keys turn and tilt the camera as well as the mouse (docs/plans/PHOTO-MODE.md step 1; the setting visual.arrowCamera): left
+    // and right 90 degrees a real second, up and down 60, each eased in over 0.15 s so a tap is a small pan
+    const ar = T.visual.arrowCamera !== false && !this.game?.log?.typing ? ARROWS : null, ek = Math.min(1, dt / ARROWS.ease);
+    const ax = ar ? (inp.isDown('ArrowLeft') ? 1 : 0) - (inp.isDown('ArrowRight') ? 1 : 0) : 0, ay = ar ? (inp.isDown('ArrowUp') ? 1 : 0) - (inp.isDown('ArrowDown') ? 1 : 0) : 0;
+    this.arrowYaw = (this.arrowYaw ?? 0) + (ax - (this.arrowYaw ?? 0)) * ek; this.arrowPitch = (this.arrowPitch ?? 0) + (ay - (this.arrowPitch ?? 0)) * ek;
+    if (Math.abs(this.arrowYaw) > 1e-4 || Math.abs(this.arrowPitch) > 1e-4) {
+      this.yaw += this.arrowYaw * ARROWS.yaw * dt;
+      this.pitch = THREE.MathUtils.clamp(this.pitch + this.arrowPitch * ARROWS.pitch * dt, -85 * DEG, 85 * DEG);
+    }
     this.lookDX = inp.dx; this.lookDY = inp.dy;
 
     if (inp.wasPressed('KeyZ') && (this.game?.belt?.allows('firstPerson') ?? true)) this.view = this.fp ? 'tp' : 'fp'; // (every tool has its first person; lock-on is the middle button)

@@ -1,0 +1,234 @@
+// ---------------------------------------------------------------------------------------
+// THE FIGHT AT THE FREE HELM (docs/plans/OPEN-SEA.md section 0's third ruling, "combat only with what is hostile by nature", and section 7):
+// what fights on the open sea, kept beside the room (Dovina's opensea.js) and run from main.js after it. The Courier is sealed in at the
+// helm, so the ship fights: the psygun is always the ship's gun (the rail's rule, progress/rail/mounts.js), and V is the parry.
+//
+//   THE GUN      LMB held fires a shot each sixteenth (the rail's cadence) from over the deck along the camera's aim, the mouse and the
+//                arrow keys swinging it (helm.js). The aim finds the height: a part of a serpent above the water within a few degrees of
+//                the aim is what the shot flies at (the head first), so the camera's bearing is the aim and the sea is not a wall.
+//                A shot under the water, or past its life, is gone. Each burst is heard (a `noise` stimulus): shooting draws a hunter.
+//   THE SPIT     an outlined shot (courier/ship/shots.js's word): a glob of crude thrown in an arc at where the ship will be, wearing the
+//                parry mark (vfx/parrymark.js); V while it is within reach of the hull sends it back at the head, three blows' worth.
+//   THE HULL     the ship bears its class's hits (SHIPS.bears: the sloop six), as on the rail. The ram, the spit and the coil each take
+//                one; the last breaks the hull and a tug tows the ship to the lane for the tow's fee, mended (seatrip.js `tow`). A dock
+//                mends it. Kept by the save (`seaFight`).
+//   THE COIL     while the serpent is wrapped round the hull, the helm turns at half and makes half its way (a modifier on the helm:
+//                `helm.mods`, its source the coil); shooting the head breaks it.
+//   WHERE THEY LIVE   a lair is a square the sea serpent lives in (safari.js `sightings`: two rows off the lanes and wilder), one in four
+//                of them; within 380 m of one a serpent rises there, out of the water's notice beyond 900 m it is gone again. One at a
+//                time. Down, a lair is empty until the next game day.
+//
+// Prior art: The Legend of Zelda: The Wind Waker's boat cannon (aimed with the camera, the height found for you), Sea of Thieves'
+//   Megalodon fight (a hull that takes hits, a hunter circling), Sin & Punishment's returned shot (the parry), Star Fox 64's hits borne.
+//
+//   game.seaFight = new SeaFight(game)   .update(dt)   .hull   .serpent   .spawnSerpent(pos?)   SEA_FIGHT (its numbers)
+//   (called by the serpent's body: .serpentMove(c, move, hit), .serpentFree(c, how))
+//   events: sea.hull { hull, of, move, by }, sea.hull.broken { fee, by }, seaserpent.* (creatures/seaserpent/seaserpent.js)
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { SHIPS } from '../../progress/rail/ships.js';
+import { sightings } from '../../progress/opensea/safari.js';
+import { tow } from '../../progress/opensea/seatrip.js';
+import { today } from '../../core/calendar.js';
+import { squareCentre } from './seaprops.js';
+import { SeaSerpents } from '../../creatures/seaserpent/seaserpent.js';
+import { LANCE_COLOR } from '../../courier/ship/shots.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/opensea/seafight'); // (the simulation's chance: core/rng.js, the same twice)
+
+/** gun: a shot each `every` real s, its speed (m/s), life (s), radius (m), power, the aim's cone (rad) and reach (m), how high over the deck
+ *  it leaves (m); glob: the spit's speed (m/s), its fall (m/s each s), life (s), radius (m), the parry's reach from the hull (m), its speed
+ *  sent back and its power; hurt: how near the hull's middle a glob hits (m); knock: the ram's (a share of the way kept, the yaw thrown, rad);
+ *  coil: the helm's turn and way while wrapped; lair: one in `every` of the serpent's squares, risen within `near` m, gone past `far` m. */
+export const SEA_FIGHT = {
+  gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.25, cone: 0.16, reach: 150, from: 2.4 }, // (power: at the rail's cadence a perfect aim on the head sank it in 10 s at 1; at 0.25 about 40 s)
+  glob: { speed: 24, fall: 7, life: 5, r: 0.7, reach: 7, back: 46, power: 3 },
+  hurt: 3.6, knock: { keep: 0.25, yaw: 0.35 }, coil: { turn: 0.5, speed: 0.5 },
+  lair: { every: 4, near: 380, far: 900 }, noise: { radius: 90, every: 1 },
+};
+const GN = SEA_FIGHT.gun, GL = SEA_FIGHT.glob, CAP = { shots: 48, globs: 6 };
+const _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1);
+const _z = new THREE.Vector3(0, 0, 1), _hide = new THREE.Matrix4().makeScale(0, 0, 0);
+
+export class SeaFight {
+  constructor(game) {
+    this.game = game; this.serpents = game.seaSerpents = new SeaSerpents(game);
+    this.hull = SHIPS.sloop.bears; this.down = new Map(); // (lair id -> the game day its serpent went down)
+    this.shots = []; this.globs = []; this.fireT = 0; this.noiseT = 0; this.lairs = null; this.spawnT = 0; this.grounded = false;
+    // [look] placeholders, Calissa's: the gun's needles in one instanced draw, the globs as dark spheres wearing the parry mark
+    this.needles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.09, 0.09, 1.8), new THREE.MeshBasicMaterial({ color: LANCE_COLOR }), CAP.shots);
+    this.needles.frustumCulled = false; this.needles.userData.zone = 'opensea'; this.needles.count = 0; game.scene.add(this.needles);
+    const gm = new THREE.MeshStandardMaterial({ color: 0x16110c, roughness: 0.15, metalness: 0.3, emissive: 0x2a1406 }), gg = new THREE.SphereGeometry(GL.r, 14, 10);
+    this.pool = Array.from({ length: CAP.globs }, () => { const m = new THREE.Mesh(gg, gm); m.visible = false; m.userData.zone = 'opensea'; game.scene.add(m); return m; });
+    game.save?.section('seaFight', { scope: 'player', version: 1, dump: () => ({ hull: this.hull, down: [...this.down] }), load: (d) => { this.hull = d?.hull ?? SHIPS.sloop.bears; this.down = new Map(d?.down || []); }, reset: () => { this.hull = SHIPS.sloop.bears; this.down.clear(); } });
+    game.events?.on?.('sea.dock', () => this.mend());
+    game.events?.on?.('seaserpent.down', (e) => { if (e.lair) { this.down.set(e.lair, today()); this.dirty(); } });
+  }
+  get room() { return this.game.opensea; }
+  get serpent() { return this.serpents.list.find((c) => c.alive) || null; }
+  get bears() { return SHIPS[this.room?.helm?.ship || 'sloop']?.bears ?? 6; }
+  dirty() { this.game.save?.dirty?.('seaFight'); }
+  mend() { if (this.hull !== this.bears) { this.hull = this.bears; this.dirty(); } }
+
+  // ---------------------------------------------------------------- each frame
+  update(dt) {
+    const g = this.game, R = this.room;
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('serpent', { debug: true, help: 'a sea serpent risen 120 m off the bow (DEBUG; on the open sea, at the helm)', run: () => this.spawnSerpent() }); }
+    if (!R?.built || !R.active) { if (this.serpents.list.length || this.shots.length || this.globs.length) this.clear(); return; }
+    const H = R.helm;
+    this.lairsOf(R);
+    if ((this.spawnT -= dt) <= 0) { this.spawnT = 1; this.tend(R); }
+    this.serpents.update(dt);
+    if (R.sailing) { this.gun(dt, g.input, H); this.parry(g.input, H); }
+    if (this.serpent?.coiled && R.sailing) H.mods?.set('coil', SEA_FIGHT.coil); else H.mods?.delete('coil');
+    this.fly(dt, H);
+    this.draw();
+    const fighting = this.serpents.list.length > 0; // (a Figment attack telegraph lies on the water while a serpent lives)
+    if (fighting !== this.grounded && g.figmentTelegraphs) { this.grounded = fighting; g.figmentTelegraphs.ground = fighting ? (x, z) => this.serpents.surf(x, z) : null; }
+  }
+  clear() {
+    for (const c of [...this.serpents.list]) this.serpents.remove(c);
+    for (const s of this.shots) s.gone = true; this.shots.length = 0;
+    for (const b of this.globs) this.dropGlob(b); this.globs.length = 0;
+    this.room?.helm?.mods?.delete('coil'); this.draw();
+    if (this.grounded && this.game.figmentTelegraphs) { this.grounded = false; this.game.figmentTelegraphs.ground = null; }
+  }
+
+  // ---------------------------------------------------------------- where serpents live
+  lairsOf(R) {
+    if (this.lairs && this.lairsSeed === R.seed) return this.lairs;
+    this.lairsSeed = R.seed;
+    const hash = (sq) => ((sq.col * 73856093) ^ (sq.row * 19349663) ^ R.seed) >>> 0;
+    const fit = R.grid.squares.filter((sq) => sightings(sq, { phase: 'day', weather: null }).some((s) => s.id === 'seaSerpent'));
+    let picked = fit.filter((sq) => hash(sq) % SEA_FIGHT.lair.every === 0);
+    if (!picked.length && fit.length) picked = [fit.reduce((a, b) => (hash(a) < hash(b) ? a : b))];
+    this.lairs = picked.map((sq) => {
+      const at = squareCentre(sq.col, sq.row).setY(R.helm?.pos.y ?? 0);
+      for (const isl of R.props?.islets || []) if (Math.hypot(isl.pos.x - at.x, isl.pos.z - at.z) < isl.r + 80) at.x += isl.r + 120; // (open water, off its islet)
+      return { id: sq.id, pos: at };
+    });
+    return this.lairs;
+  }
+  /** A serpent risen at a lair the ship comes near (one at a time, none at a lair downed today), and gone when the ship is far off. */
+  tend(R) {
+    const P = R.sailing ? R.helm.pos : this.game.player.pos, live = this.serpents.list;
+    for (const c of live) if (c.alive && !c.brain.action?.hunt && Math.hypot(c.pos.x - P.x, c.pos.z - P.z) > SEA_FIGHT.lair.far) this.serpents.remove(c);
+    if (live.length) return;
+    const day = today();
+    const lair = this.lairs.find((l) => this.down.get(l.id) !== day && Math.hypot(l.pos.x - P.x, l.pos.z - P.z) < SEA_FIGHT.lair.near);
+    if (lair) this.serpents.spawn(lair.pos.clone(), { lair: lair.id });
+  }
+  /** DEBUG's `/serpent`: one risen 120 m off the bow, sure of you. */
+  spawnSerpent() {
+    const R = this.room, g = this.game;
+    if (!R?.sailing) { g.log?.say?.('warn', 'At the helm on the open sea only.', { key: 'serpent.cmd', throttle: 2 }); return; }
+    for (const c of [...this.serpents.list]) this.serpents.remove(c);
+    const H = R.helm, at = H.pos.clone().add(_a.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)).multiplyScalar(120));
+    const c = this.serpents.spawn(at, { yaw: H.yaw + Math.PI });
+    c.mem.see(g.player, 'courier', H.pos, 1); c.under = 0.4; c.goUnder = 0.1;
+  }
+
+  // ---------------------------------------------------------------- the ship's gun
+  gun(dt, I, H) {
+    const g = this.game; this.fireT -= dt; this.noiseT -= dt;
+    if (!I.isDown('Mouse0') || this.fireT > 0) return;
+    this.fireT = GN.every;
+    const from = _a.copy(H.pos).setY(H.pos.y + GN.from).addScaledVector(_b.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)), 2);
+    g.camera.getWorldDirection(_d); const yaw = Math.atan2(_d.x, _d.z);
+    let aim = null, best = GN.cone; // (the aim finds the height: an exposed part near the camera's bearing, the head favoured)
+    for (const c of this.serpents.list) {
+      if (!c.alive) continue;
+      for (let i = 0; i < c.spine.length; i++) {
+        if (!this.serpents.exposed(c, i)) continue;
+        const p = c.spine[i].p, dist = Math.hypot(p.x - from.x, p.z - from.z); if (dist > GN.reach) continue;
+        let da = Math.atan2(p.x - from.x, p.z - from.z) - yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+        const s = Math.abs(da) - Math.atan2(c.spine[i].r, dist) - (i === 0 ? 0.05 : 0); // (its own breadth widens the cone)
+        if (s < best) { best = s; aim = p; }
+      }
+    }
+    if (aim) _d.subVectors(aim, from).normalize(); else _d.set(Math.sin(yaw), 0.015, Math.cos(yaw)).normalize();
+    if (this.shots.length >= CAP.shots) this.shots.shift();
+    this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life });
+    if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
+  }
+
+  // ---------------------------------------------------------------- the parry at the helm
+  parry(I, H) {
+    if (!I.wasPressed('KeyV')) return;
+    const g = this.game; let hit = null, bd = Infinity;
+    for (const b of this.globs) {
+      if (b.back) continue;
+      const d = b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)); if (d > GL.reach || d >= bd) continue;
+      if (b.vel.dot(_b.subVectors(_a, b.pos)) <= 0) continue; // (only one still coming)
+      bd = d; hit = b;
+    }
+    if (!hit) return;
+    hit.back = true; hit.t = GL.life; hit.mark?.clear(); hit.mark = null;
+    g.events?.emit('move.parry', { tool: H.ship, how: 'return', what: 'shot', d: +bd.toFixed(2), reach: GL.reach, by: 'courier' });
+  }
+
+  // ---------------------------------------------------------------- what the serpent's moves do
+  serpentMove(c, move, hit) {
+    const R = this.room, H = R?.helm; if (!H || !R.sailing) return;
+    if (move === 'ram' && hit) { H.speed *= SEA_FIGHT.knock.keep; H.yaw += (simRand() < 0.5 ? -1 : 1) * SEA_FIGHT.knock.yaw; this.hullHit('ram'); }
+    else if (move === 'coil' && hit) this.hullHit('coil');
+    else if (move === 'spit') this.spit(c, H);
+  }
+  serpentFree() { this.room?.helm?.mods?.delete('coil'); }
+  /** A glob thrown in an arc at where the ship will be when it lands. */
+  spit(c, H) {
+    const head = c.spine[0].p, g = this.game;
+    const from = _a.copy(head).setY(head.y + 0.6), d0 = Math.hypot(H.pos.x - from.x, H.pos.z - from.z), T = Math.max(0.6, d0 / GL.speed);
+    const to = _b.set(H.pos.x + Math.sin(H.yaw) * H.speed * T, H.pos.y + 1, H.pos.z + Math.cos(H.yaw) * H.speed * T);
+    const vel = new THREE.Vector3().subVectors(to, from).divideScalar(T); vel.y += 0.5 * GL.fall * T;
+    if (this.globs.length >= CAP.globs) this.dropGlob(this.globs.shift());
+    const m = this.pool.find((x) => !x.visible) || this.pool[0];
+    m.visible = true; m.position.copy(from);
+    this.globs.push({ pos: from.clone(), vel, t: GL.life, back: false, from: c, m, mark: g.parryMark?.mark(m, { eta: null }) || null });
+  }
+  dropGlob(b) { if (!b) return; b.mark?.clear(); b.mark = null; b.m.visible = false; }
+  hullHit(move) {
+    const g = this.game, R = this.room;
+    this.hull = Math.max(0, this.hull - 1); this.dirty();
+    g.player.shake = Math.max(g.player.shake || 0, 0.5);
+    g.events?.emit('sea.hull', { hull: this.hull, of: this.bears, move, by: 'creature' });
+    if (this.hull > 0) return;
+    // the hull broken: a tug tows the ship to the lane for the tow's fee, mended there; the serpent loses it
+    const ev = tow(R.voyage), fee = ev[0]?.fee ?? 0;
+    g.cubes?.spend(Math.min(fee, g.cubes.balance ?? 0), 'tow');
+    for (const c of [...this.serpents.list]) this.serpents.remove(c);
+    this.hull = this.bears; this.dirty(); R.dirty?.();
+    g.events?.emit('sea.hull.broken', { fee, by: 'creature' });
+    R.towed();
+  }
+
+  // ---------------------------------------------------------------- what flies
+  fly(dt, H) {
+    const S = this.serpents, g = this.game;
+    for (let i = this.shots.length - 1; i >= 0; i--) {
+      const s = this.shots[i]; s.prev.copy(s.pos); s.pos.addScaledVector(s.vel, dt); s.t -= dt;
+      const hit = S.partsHit(s.prev, s.pos, GN.r);
+      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), GN.power, 'shot', 'courier'); this.shots.splice(i, 1); continue; }
+      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) this.shots.splice(i, 1);
+    }
+    for (let i = this.globs.length - 1; i >= 0; i--) {
+      const b = this.globs[i]; b.t -= dt;
+      if (b.back) { // (sent back: it flies home to the head)
+        const c = b.from, head = c?.alive ? c.spine[0].p : null;
+        if (head) { _a.subVectors(head, b.pos); const d = _a.length(); b.vel.copy(_a).multiplyScalar(GL.back / Math.max(d, 1e-3)); if (d < c.spine[0].r + GL.r + 0.5) { g.creatures.strike(c, head, _d.copy(b.vel).normalize(), GL.power, 'parry', 'courier'); this.dropGlob(b); this.globs.splice(i, 1); continue; } }
+        b.pos.addScaledVector(b.vel, dt);
+      } else {
+        b.vel.y -= GL.fall * dt; b.pos.addScaledVector(b.vel, dt);
+        if (H && b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)) < SEA_FIGHT.hurt && this.room.sailing) { this.dropGlob(b); this.globs.splice(i, 1); this.hullHit('spit'); continue; }
+      }
+      b.m.position.copy(b.pos);
+      if (b.t <= 0 || b.pos.y < S.surf(b.pos.x, b.pos.z) - 0.5) { this.dropGlob(b); this.globs.splice(i, 1); }
+    }
+  }
+  draw() {
+    const N = this.needles; N.count = this.shots.length;
+    for (let i = 0; i < this.shots.length; i++) { const s = this.shots[i]; _q.setFromUnitVectors(_z, _d.copy(s.vel).normalize()); _m.compose(s.pos, _q, _s); N.setMatrixAt(i, _m); }
+    if (!this.shots.length) N.setMatrixAt(0, _hide);
+    N.instanceMatrix.needsUpdate = true;
+  }
+}

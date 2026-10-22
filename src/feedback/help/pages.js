@@ -27,6 +27,7 @@ export const PAGES = [
       ['Space', 'jump; again in the air, the double jump'],
       ['C', 'crouch, prone, stand (each press); at a run, the slide'],
       ['Z · O', 'first or third person · the other shoulder'],
+      ['the arrow keys', 'turn and tilt the camera, as the mouse does (a setting: Tab, Settings)'],
       ['F · V', 'interact (pick up, push, talk, use) · kick'],
       ['E', 'blink'],
       ['X', 'the Psygun'],
