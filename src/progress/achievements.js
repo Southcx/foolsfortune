@@ -666,6 +666,8 @@ export function buildAchievements(game) {
   C('gy11', 'garden', "The Garden's Life", 1, 'count', 'Make a Wish', "Meet a spirit's wish.", 'spirit.wish.done', 1);
   C('gy12', 'garden', "The Garden's Life", 3, 'endure', 'Wishmaker', "Meet twenty-five of your spirits' wishes.", 'spirit.wish.done', 25);
   F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
+  C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
+  C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you let go.', 'spirit.letter.postcard', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

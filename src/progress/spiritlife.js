@@ -17,7 +17,8 @@
 //
 //   ROUTINE, PLACES, WISH, WISH_KINDS   routineOf(sheet, grain, { phase, raining }) -> { place, stay }   wishFor(key, n, sheet, open) -> wish
 //   game.spiritLife = new SpiritLife(game)   .wishOf(entry) -> wish | null   .update(dt)
-//   events: spirit.wish { spirit, kind, wish }   spirit.wish.done { spirit, kind, wish, bond }   garden.digest { season, day, left, wishes, briar, bloom }
+//   events: spirit.wish { spirit, kind, wish }   spirit.wish.done { spirit, kind, wish, bond }   garden.digest { season, day, left, wishes, briar, bloom, mail }
+//           spirit.letter { from, kind, about }   spirit.letters { letters }   spirit.gift { spirit, kind, id }   /letters
 // ---------------------------------------------------------------------------------------
 import { today, now as calNow } from '../core/calendar.js';
 import { phaseAt } from './weather.js';
@@ -68,7 +69,12 @@ export function wishFor(key, n = 0, sheet = {}, { features = WISH_KINDS.feature.
 }
 
 const keyOf = (e) => e.name || `${e.kind}@${e.at ?? 0}`;
-const fresh = () => ({ wishes: {}, digest: null });
+/** Letters and gifts (Animal Crossing's mailbox and its "for you!", Stardew Valley's mail, Spiritfarer's notes; Espada's proposal):
+ *  a thank-you after a wish; from a spirit released, a postcard every `postcardEvery` game days, `postcards` in all (a release a
+ *  beginning, not an end); at the first visit of a game day, one gift from a spirit with bond `giftBond` or more, every `giftEvery`
+ *  game days, a garden piece of its feeling's set it has not given before (else a plain one). `keep`: letters kept, the oldest go. */
+export const MAIL = { postcards: 3, postcardEvery: 3, giftBond: 60, giftEvery: 3, keep: 30 };
+const fresh = () => ({ wishes: {}, digest: null, mail: [], away: [], giftDay: null, given: {} });
 
 export class SpiritLife {
   constructor(game) {
@@ -85,7 +91,9 @@ export class SpiritLife {
     E.on('decor.place', meet((w, e, ev) => w.kind === 'decor' && DECOR[ev.id]?.set === w.set));
     E.on('spirit.feed', meet((w, e, ev) => w.kind === 'food' && isIt(e, ev) && ev.stat === w.stat)); // (`stat`: the feeling whose stat the meal raised)
     E.on('photo.take', meet((w, e, ev) => w.kind === 'photo' && (ev.kinds || [ev.kind]).includes(w.of)));
-    E.on('garden.enter', (ev) => { if (ev.by !== 'courier') return; meet((w) => w.kind === 'visit' && phaseAt() === w.phase)(ev); this.digest(); this.ask(); }); // (the digest first, of wishes already open; a new wish says itself)
+    E.on('garden.enter', (ev) => { if (ev.by !== 'courier') return; meet((w) => w.kind === 'visit' && phaseAt() === w.phase)(ev); this.post(); this.gift(); this.digest(); this.ask(); }); // (the mail and a gift, then the digest of wishes already open; a new wish says itself)
+    E.on('spirit.release', (ev) => { if (ev.by !== 'courier') return; this.s.away.push({ spirit: ev.spirit || null, kind: ev.kind, feeling: ev.feeling || null, day: today(), sent: 0 }); this.game.save?.dirty('spiritLife'); });
+    game.chat?.add?.('letters', { help: 'read the letters in your garden\'s mailbox: /letters', run: () => this.read() });
   }
   /** The bound spirits with a sheet (a sheet is given the first time one hops out in the garden: world/garden/raising.js). */
   entries() { return (this.game.bound?.list || []).filter((e) => e.sp); }
@@ -109,15 +117,39 @@ export class SpiritLife {
     e.sp.bond = Math.min(100, (e.sp.bond || 0) + WISH.gift); this.game.save?.dirty('bound');
     this.game.harmony?.tend('mulberryGrove', 'wish');
     this.game.events?.emit('spirit.wish.done', { spirit: e.name || null, kind: e.kind, wish: w, bond: e.sp.bond, by: 'courier' });
+    this.letter({ from: e.name || null, kind: e.kind, about: 'thanks', wish: w });
     this.game.save?.dirty('spiritLife');
   }
+  /** A letter into the mailbox (its words are Espada's, by `about`: thanks, postcard). */
+  letter(L) {
+    this.s.mail.push({ ...L, day: today(), read: false }); if (this.s.mail.length > MAIL.keep) this.s.mail.shift();
+    this.game.events?.emit('spirit.letter', { from: L.from, kind: L.kind, about: L.about, by: 'courier' }); this.game.save?.dirty('spiritLife');
+  }
+  /** The released spirits' postcards that are due. */
+  post() {
+    const day = today();
+    for (const a of this.s.away) if (a.sent < MAIL.postcards && day - a.day >= MAIL.postcardEvery * (a.sent + 1)) { a.sent++; this.letter({ from: a.spirit, kind: a.kind, about: 'postcard', n: a.sent, feeling: a.feeling }); }
+    this.s.away = this.s.away.filter((a) => a.sent < MAIL.postcards);
+  }
+  /** A gift on the doorstep: one a visit at most, from the most bonded spirit whose turn it is. */
+  gift() {
+    const day = today(); if (this.s.giftDay != null && day - this.s.giftDay < MAIL.giftEvery) return;
+    const e = this.entries().filter((x) => (x.sp.bond || 0) >= MAIL.giftBond).sort((a, b) => b.sp.bond - a.sp.bond)[0]; if (!e || !this.game.decor) return;
+    const k = keyOf(e), had = (this.s.given[k] ||= []), set = e.sp.feeling;
+    const pool = Object.keys(DECOR).filter((id) => DECOR[id].from.includes('gift') && (DECOR[id].set === set || DECOR[id].set === 'plain') && !had.includes(id));
+    const id = pool.find((x) => DECOR[x].set === set) || pool[0]; if (!id) return;
+    had.push(id); this.s.giftDay = day; this.game.decor.give(id, 'gift');
+    this.game.events?.emit('spirit.gift', { spirit: e.name || null, kind: e.kind, id, by: 'courier' }); this.game.save?.dirty('spiritLife');
+  }
+  /** /letters: the mailbox read (each letter said once more, then marked read). */
+  read() { const unread = this.s.mail.filter((m) => !m.read); this.game.events?.emit('spirit.letters', { letters: (unread.length ? unread : this.s.mail.slice(-3)).map((m) => ({ ...m })), by: 'courier' }); for (const m of unread) m.read = true; this.game.save?.dirty('spiritLife'); }
   /** The first visit of a game day: the season, the open wishes, the garden's state (said by the log, four lines at most). */
   digest() {
     const day = today(); if (this.s.digest === day) return; this.s.digest = day;
     const S = seasonOf(day), H = this.game.harmony;
     const wishes = this.entries().map((e) => ({ spirit: e.name || null, kind: e.kind, wish: this.wishOf(e) })).filter((x) => x.wish);
     const list = H?.list?.() || [];
-    this.game.events?.emit('garden.digest', { day, season: S.id, seasonDay: S.day + 1, left: S.left, wishes, briar: list.filter((p) => p.band === 'briar').map((p) => p.planetoid), bloom: list.filter((p) => p.band === 'bloom').map((p) => p.planetoid), phase: phaseAt(calNow()), by: 'courier' });
+    this.game.events?.emit('garden.digest', { day, season: S.id, seasonDay: S.day + 1, left: S.left, wishes, mail: this.s.mail.filter((m) => !m.read).length, briar: list.filter((p) => p.band === 'briar').map((p) => p.planetoid), bloom: list.filter((p) => p.band === 'bloom').map((p) => p.planetoid), phase: phaseAt(calNow()), by: 'courier' });
     this.game.save?.dirty('spiritLife');
   }
   update(dt = 0) { if ((this.lookT -= dt) > 0) return; this.lookT = WISH.look; if (this.game.realm?.active) this.ask(); }

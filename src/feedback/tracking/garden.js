@@ -124,7 +124,7 @@ export function gardenRules({ on, L, log }) {
   on('decor.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('decor.get', e.n || 1); if (e.first) L.inc('decor.owned');
-    if (e.from !== 'shop') log.say('loot', `You get a ${DECOR[e.id]?.name || 'garden piece'}. It waits in the shed.`, { key: 'decor.get', throttle: 1 });
+    if (e.from !== 'shop' && e.from !== 'gift') log.say('loot', `You get a ${DECOR[e.id]?.name || 'garden piece'}. It waits in the shed.`, { key: 'decor.get', throttle: 1 });
   });
   on('decor.buy', (e) => { if (e.by === 'courier') { L.inc('decor.buy'); L.inc('decor.spent', e.cubes || 0); log.say('info', `${DECOR[e.id]?.name || 'A garden piece'} bought for ${e.cubes} cubes. It waits in the shed.`, { key: 'decor.buy', throttle: 0.5 }); } });
   on('decor.refuse', (e) => { if (e.by === 'courier') log.say('warn', e.why === 'cubes' ? 'Not enough cubes.' : e.why === 'locked' ? 'Not in the catalogue yet.' : 'No such piece.', { key: 'decor.refuse', throttle: 1 }); });
@@ -157,5 +157,14 @@ export function gardenRules({ on, L, log }) {
     if (w.length) log.say('system', w.map((x) => `${Who(x)} wishes for ${wishWords(x.wish)}`).join('. ') + `.${e.wishes.length > 2 ? ` ${e.wishes.length - 2} more wishes.` : ''}`, { key: 'digest.1', throttle: 5 });
     if (e.bloom?.length) log.say('system', `In bloom: ${e.bloom.map(planet).join(', ')}.`, { key: 'digest.2', throttle: 5 });
     if (e.briar?.length) log.say('system', `Overgrown: ${e.briar.map(planet).join(', ')}.`, { key: 'digest.3', throttle: 5 });
+    if (e.mail) log.say('system', `${e.mail} letter${e.mail > 1 ? 's' : ''} in the mailbox. Type /letters to read.`, { key: 'digest.4', throttle: 5 });
   });
+  // letters and gifts (progress/spiritlife.js MAIL; GARDEN-COZY.md C5): placeholders for Espada's words, one a kind of letter
+  const LETTER = {
+    thanks: (m) => `${m.from || `Your ${m.kind || 'spirit'}`} writes: "Thank you. I didn't think you'd remember."`,
+    postcard: (m) => `A postcard from ${m.from || `your old ${m.kind || 'spirit'}`}: "${['I made it home. It is louder than I remembered.', 'The weather here is all one feeling. I think of your garden.', 'I keep a little of your Lachryma. It still glows.'][(m.n || 1) - 1] || 'Thinking of you.'}"`,
+  };
+  on('spirit.letter', (e) => { if (e.by !== 'courier') return; L.inc('spirit.letter'); L.inc(`spirit.letter.${e.about}`); });
+  on('spirit.letters', (e) => { if (!e.letters?.length) { log.say('system', 'The mailbox is empty.', { key: 'letters', throttle: 1 }); return; } e.letters.forEach((m, i) => log.say('info', (LETTER[m.about] || (() => 'A letter.'))(m), { key: `letter.${i}`, throttle: 0.2 })); });
+  on('spirit.gift', (e) => { if (e.by !== 'courier') return; L.inc('spirit.gift'); log.say('loot', `${Who(e)} left something on the doorstep: a ${DECOR[e.id]?.name || 'garden piece'}.`, { key: 'gift', throttle: 2 }); });
 }
