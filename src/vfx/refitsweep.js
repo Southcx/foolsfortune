@@ -22,7 +22,7 @@ export class RefitSweep {
   }
   build(scene) {
     const add = (geo, color, opacity) => {
-      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, forceSinglePass: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
       keepTrue(m.material); m.visible = false; m.renderOrder = 55; m.frustumCulled = false; m.userData.zoneFree = true; scene.add(m); return m;
     };
     this.ring = add(new THREE.TorusGeometry(1, 0.035, 6, 40), SWEEP.ring, SWEEP.ringAlpha); // (in its XY plane: faces along the hull)

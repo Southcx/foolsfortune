@@ -4,7 +4,9 @@
 // growing cell on ground that `spreads` (Dovina's GROUND: moss, loam, silt) and is wet (water standing on it, or within a cell of it)
 // grows a stage, and a full one seeds its bare neighbours that are wet and fertile too. Dry ground holds what it has; ground that does not
 // spread (ash, slate) or none at all wilts a stage a game hour. Seeds: each herb terrace seeds the cells round its plot, and painting moss
-// seeds where it is painted. Drawn by Calissa's look (vfx/garden/gardenplants.js: moss, herbs and reeds by the ground).
+// seeds where it is painted. A thorn patch (world/garden/thornpatches.js) is a modifier on the ground under it: no green seeds into a
+// cell within its clump's reach (GARDEN-COZY.md A4); what grows there already stays. Drawn by Calissa's look (vfx/garden/gardenplants.js:
+// moss, herbs and reeds by the ground).
 // Kept in the realm's save as runs.
 //
 // Prior art: Conway's Life and every cellular grass (From Dust's vegetation spreading over wet ground, Viva Pinata's grass that the
@@ -16,10 +18,11 @@ import * as THREE from 'three';
 import { NX, NY, CELL_DIRS, GROUNDS } from './clay.js';
 import { GROUND } from '../../progress/realm.js';
 import { GardenPlants } from '../../vfx/garden/gardenplants.js';
+import { PATCH } from './thornpatches.js';
 
 const PLANT = { most: 3, wet: 0.02, every: 1 }; // (stages; metres of water that wets; game hours a step)
-const SPREADS = new Uint8Array(GROUNDS.length + 1); GROUNDS.forEach((g, i) => { SPREADS[i + 1] = GROUND[g].spreads ? 1 : 0; });
 const _d = new THREE.Vector3();
+const SPREADS = new Uint8Array(GROUNDS.length + 1); GROUNDS.forEach((g, i) => { SPREADS[i + 1] = GROUND[g].spreads ? 1 : 0; });
 
 export class Plants {
   constructor(realm) {
@@ -45,7 +48,7 @@ export class Plants {
     for (const P of this.R.site.planets) {
       const G = this.grids[P.id]; if (!G) continue;
       const clay = this.R.clays[P.id], Wt = this.R.waterworks.waters[P.id]?.w, next = G.slice();
-      const wetAt = (k) => !!Wt && Wt[k] > PLANT.wet;
+      const wetAt = (k) => !!Wt && Wt[k] > PLANT.wet, thorny = this.thorny(P);
       let changed = false;
       for (let k = 0; k < NX * NY; k++) {
         const j = (k / NX) | 0, i = k % NX, nb = [j * NX + (i + 1) % NX, j * NX + (i + NX - 1) % NX, Math.min(NY - 1, j + 1) * NX + i, Math.max(0, j - 1) * NX + i];
@@ -53,11 +56,23 @@ export class Plants {
         if (G[k]) {
           if (!fertile) { next[k] = G[k] - 1; changed = true; continue; } // (ash, slate or bare clay: it wilts)
           if (wet && G[k] < PLANT.most) { next[k] = G[k] + 1; changed = true; }
-          if (G[k] === PLANT.most && wet) for (const n of nb) if (!G[n] && SPREADS[clay.ground[n]] && (wetAt(n) || wet)) { next[n] = 1; changed = true; }
+          if (G[k] === PLANT.most && wet) for (const n of nb) if (!G[n] && SPREADS[clay.ground[n]] && !(thorny && thorny[n]) && (wetAt(n) || wet)) { next[n] = 1; changed = true; }
         }
       }
       if (changed) { G.set(next); this.dirty.add(P.id); }
     }
+  }
+
+  /** The cells under a thorn patch's clumps on P (within PATCH.reach of one), or null when it has none: no green seeds into them. */
+  thorny(P) {
+    let out = null;
+    for (const s of this.R.thornPatches?.spots || []) {
+      if (s.planet !== P) continue;
+      out ||= (this._thorny ||= new Uint8Array(NX * NY)).fill(0);
+      const r = _d.copy(s.pos).sub(P.c).length(), c = Math.cos(PATCH.reach / Math.max(r, 1e-3)); _d.divideScalar(r || 1);
+      for (let k = 0; k < NX * NY; k++) if (CELL_DIRS[k * 3] * _d.x + CELL_DIRS[k * 3 + 1] * _d.y + CELL_DIRS[k * 3 + 2] * _d.z > c) out[k] = 1;
+    }
+    return out;
   }
 
   /** The green drawn where it changed, or where the clay under it moved (Calissa's look: vfx/garden/gardenplants.js). */

@@ -33,6 +33,7 @@ import * as THREE from 'three';
 import { mergeStatic } from '../../render/merge.js';
 import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
 import { groundMaterial, groundTick } from './gardengrounds.js';
+import { gardenMoodNow } from './gardenmood.js';
 import { BOUGHT_LOOKS } from './boughtplanetoids.js';
 import { plantGrove } from './gardentree.js';
 import { WorldMushroom } from './myggdrasil.js';
@@ -167,7 +168,7 @@ export class Planetoid {
     if (this.groveToPlant) { const G = plantGrove(this.groveToPlant); this.props.add(G.bark, G.canopy); this.grove = G; this.groveToPlant = null; } // (the Mulberry Grove's trees: two meshes)
     this.growMushroom()?.update(raw, this.game?.myggdrasil);
     if (!clockOwner || clockOwner.disposed) clockOwner = this;
-    if (clockOwner === this) groundTick(raw);
+    if (clockOwner === this) groundTick(raw, gardenMoodNow()); // (the grounds read the garden's mood: season, snow, briar: gardenmood.js)
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 

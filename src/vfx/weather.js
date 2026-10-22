@@ -466,7 +466,7 @@ void main() {
 function ringMesh(mode, r0, r1, u0 = r0, u1 = r1) {
   const u = { uA: { value: 0 }, uR0: { value: u0 }, uR1: { value: u1 }, uMode: { value: mode }, uC: { value: new THREE.Color(0.45, 0.4, 0.6) } };
   const m = new THREE.ShaderMaterial({ name: `weather-${['halo', 'bow', 'dogs', 'glow'][mode]}`,
-    uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    uniforms: u, transparent: true, forceSinglePass: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position.z = gl_Position.w * 0.9998; }', // (at the back of the depth, as the dome: past the far plane, behind everything near)
     fragmentShader: RING_FRAG,
   });

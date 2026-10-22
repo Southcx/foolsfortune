@@ -42,12 +42,14 @@ const seesDoor = (c, cam, range) => {
 };
 
 // what each zone can see from where the camera stands (the tests themselves are pure: render/zonemap.js)
+// (each answer one of these lists, made once: the test runs every frame)
+const SEEN = { none: [], basement: ['basement'], testroom: ['testroom'], both: ['basement', 'testroom'], workshop: ['workshop'], dunes: ['dunes'], beach: ['beach'] };
 const SEES = {
-  workshop: (c, cam) => [...(seesHole(c, cam, 30) ? ['basement'] : []), ...(seesDoor(c, cam, 40) ? ['testroom'] : [])],
-  testroom: (c, cam) => (seesDoor(c, cam, 40) ? ['workshop'] : []),
-  basement: (c, cam) => (seesHole(c, cam, 12) ? ['workshop'] : []), // (a hole in the ceiling: only from near under it)
-  beach: () => ['dunes'],
-  dunes: (c) => (nearShore(c) ? ['beach'] : []),
+  workshop: (c, cam) => { const h = seesHole(c, cam, 30), d = seesDoor(c, cam, 40); return h ? (d ? SEEN.both : SEEN.basement) : d ? SEEN.testroom : SEEN.none; },
+  testroom: (c, cam) => (seesDoor(c, cam, 40) ? SEEN.workshop : SEEN.none),
+  basement: (c, cam) => (seesHole(c, cam, 12) ? SEEN.workshop : SEEN.none), // (a hole in the ceiling: only from near under it)
+  beach: () => SEEN.dunes,
+  dunes: (c) => (nearShore(c) ? SEEN.beach : SEEN.none),
 };
 export const ZONES = ZONE_TESTS.map((z) => ({ ...z, sees: SEES[z.id] }));
 const BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z]));
@@ -88,7 +90,8 @@ export class Zones {
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
       _s.copy(o.geometry.boundingSphere).applyMatrix4(o.matrixWorld);
       const zone = _s.radius > 600 ? null : zoneOf(_s.center); // (something that spans the world is in no one place)
-      o.userData.zoneAt = { x: e[12], y: e[13], z: e[14], g: o.geometry, zone };
+      const at = (o.userData.zoneAt ||= { x: 0, y: 0, z: 0, g: null, zone: null }); // (kept and rewritten: a moving mesh is placed every pass)
+      at.x = e[12]; at.y = e[13]; at.z = e[14]; at.g = o.geometry; at.zone = zone;
       return zone;
     }
     // (a group standing at the origin is usually a holder for things placed in the world: judge it by what it holds)
@@ -98,7 +101,7 @@ export class Zones {
       const c = o.userData.zoneHeld; if (c && !fresh && --c.left > 0) return c.z; // (fresh: the picture changed, worked out now)
       _b.setFromObject(o);
       const z = _b.isEmpty() ? null : (_b.getBoundingSphere(_s), _s.radius > 600 ? null : zoneOf(_s.center));
-      o.userData.zoneHeld = { z, left: HOLDER };
+      const held = (o.userData.zoneHeld ||= { z: null, left: 0 }); held.z = z; held.left = HOLDER;
       return z;
     }
     return zoneOf(o.getWorldPosition(_c));
@@ -118,11 +121,12 @@ export class Zones {
     const cur = zoneOf(cam);
     const changed = cur !== this.current;
     this.current = cur; this.whole = cur === null ? null : BY_ID[cur]?.partOf ?? cur;
-    const vis = new Set();
+    const vis = (this.nextVisible ||= new Set()); vis.clear(); // (two sets turned over, never a new one a frame)
     if (cur === null || !this.enabled) for (const z of ZONES) vis.add(z.id);
-    else { vis.add(cur); for (const s of BY_ID[cur].sees?.(cam, g.camera) ?? []) vis.add(s); }
-    const same = vis.size === this.visible.size && [...vis].every((z) => this.visible.has(z));
-    this.visible = vis;
+    else { vis.add(cur); const sees = BY_ID[cur].sees?.(cam, g.camera); if (sees) for (const s of sees) vis.add(s); }
+    let same = vis.size === this.visible.size;
+    if (same) for (const z of vis) if (!this.visible.has(z)) { same = false; break; }
+    this.nextVisible = this.visible; this.visible = vis;
     // a pass over the scene: at once when the picture changes, a few times a second otherwise (things move between zones)
     this.t -= dt;
     if (!changed && same && this.t > 0) return;

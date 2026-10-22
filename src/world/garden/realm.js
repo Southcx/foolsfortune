@@ -23,6 +23,9 @@ import { Clay } from './clay.js';
 import { Plots, FEELING_COLOR } from './plots.js';
 import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
+import { DecorLayer } from './decorlayer.js';
+import { ThornPatches } from './thornpatches.js';
+import { walkWish } from './spiritwalk.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
@@ -40,6 +43,8 @@ import { dressForm } from '../../vfx/garden/forms.js';
 import { waterParked } from '../../vfx/garden/gardenwater.js';
 import { GardenRain, rainParked } from '../../vfx/garden/gardenrain.js';
 import { plantsParked } from '../../vfx/garden/gardenplants.js';
+import { GardenLife, lifeParked } from '../../vfx/garden/gardenlife.js';
+import { LakeLotuses, lotusesParked } from '../../vfx/garden/lotuses.js';
 import { cascadeParked } from '../../vfx/garden/gardencascade.js';
 import { phaseAt } from '../../progress/weather.js';
 import { DAY_MS } from '../../core/calendar.js';
@@ -95,8 +100,12 @@ export class Realm {
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
+    this.decorLayer = game.decorLayer = new DecorLayer(this); this.thornPatches = game.thornPatches = new ThornPatches(this); // (garden pieces placed by the hand, and the briar's thorns: Dovina's, world/garden/decorlayer.js, thornpatches.js)
+    this.lakeLotuses = game.lakeLotuses = new LakeLotuses(this); this.lakeLotuses.set(this.decorLayer.report(true)?.lotuses || 0); // (the rating as lotuses on the Dantian's lake, a world mark: Calissa's, vfx/garden/lotuses.js)
+    game.events?.on('garden.rating', (e) => this.lakeLotuses.set(e.lotuses || 0));
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.rainLook = new GardenRain({ sky: this.site.sky }); this.site.group.add(this.rainLook.group); // (Calissa's rain: each drop falls to its own planetoid's heart, vfx/garden/gardenrain.js)
+    this.life = new GardenLife(this); // (Calissa's small life: bees, butterflies, dragonflies, fireflies, moths by the garden's mood: vfx/garden/gardenlife.js)
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
     this.restT = 0; this.workT = 0;
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
@@ -135,6 +144,8 @@ export class Realm {
     { const L = cascadeParked(); this.site.group.add(L); this.parkedLooks.push(L); } // (a cascade's ribbon and spray: Calissa's, vfx/garden/gardencascade.js)
     { const W = waterParked(); W.position.copy(this.site.by.dantian.c); this.site.group.add(W); this.parkedLooks.push(W); } // (Calissa's water, one material for every planetoid's: vfx/garden/gardenwater.js)
     { const W = rainParked(); this.site.group.add(W); this.parkedLooks.push(W); } // (and her rain's streaks and rings)
+    { const Lf = lifeParked(); this.site.group.add(Lf); this.parkedLooks.push(Lf); } // (the small life's one program: vfx/garden/gardenlife.js)
+    { const L = lotusesParked(); this.site.group.add(L); this.parkedLooks.push(L); } // (the lake lotuses' program: vfx/garden/lotuses.js)
     ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.site.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.site.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.chimney.c, this.site.by.dantian.c]), this.plots.threadMat.gen); this.site.group.add(this.parkedThread);
@@ -256,14 +267,14 @@ export class Realm {
   fixed(dt) {
     if (!this.active) return;
     const I = this.game.input, J = this.jarBody, typing = this.game.log?.typing;
-    if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && this.camera.view !== 'overhead' && I.isDown('Space') && J.grounded });
+    if (!J.held) { const k = this.decorLayer?.keepOut(J.planet, J.pos, J.radius); if (k) J.pos.add(k); J.step(dt, { move: typing ? null : this.wish(_v).multiplyScalar(this.thornPatches?.slowAt(J.planet, J.pos) ?? 1), jump: !typing && this.camera.view !== 'overhead' && I.isDown('Space') && J.grounded }); } // (out of the garden's pieces, slowed in thorns: Dovina's, decorlayer.js, thornpatches.js)
     if (!J.held && !J.flight && J.airT > JAR_LOST) { // (thrown off into the sky: set down by the gate, casebook rule 32, GARDEN-SWEEP #5)
       const D = this.site.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
       this.game.events?.emit('garden.jar.back', { by: 'courier' });
     }
     for (const s of this.spirits) {
-      if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
-      s.body.step(dt, { move: s.wish });
+      if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; walkWish(this, s, simRand, s.wish); } // (its routine where it stands, else a wander: world/garden/spiritwalk.js, Dovina's)
+      { const k = this.decorLayer?.keepOut(s.body.planet, s.body.pos, s.body.radius); if (k) s.body.pos.add(k); } s.body.step(dt, { move: s.wish });
     }
     this.raising.fixed(dt); this.races.fixed(dt); // (a spar at the Chimney: world/garden/raising.js; a race: races.js)
     this.waterworks.fixed(dt); // (the water runs while you are in the garden: world/garden/waterworks.js)
@@ -280,13 +291,14 @@ export class Realm {
     this.placeJar(dt);
     this.hand.update(dt);
     const raw = g.rawDt ?? dt;
-    this.site.update(raw, g.camera); this.plots.update(raw);
+    this.site.update(raw, g.camera); this.plots.update(raw); this.decorLayer?.update(raw); this.lakeLotuses?.update(raw);
     for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw); this.press.update(raw);
     this.rainLook.set({ amount: this.waterworks.rain(), feeling: this.waterworks.feeling() }); this.rainLook.update(raw, g.camera, this.site.planets, J.planet); // (the rain as it falls: your mental state, your draught)
+    this.life.update(raw, g.camera); // (the small life: vfx/garden/gardenlife.js)
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
@@ -492,7 +504,8 @@ export class Realm {
     if (!this.active) return;
     const sc = this.game.scene;
     const storm = this.tribulation?.active ? 1 : 0, ph = phaseAt(), S = this.site.sky; // (Calissa's sky: your draught's haze, the night's stars; the Heavenly Kiln darkens it)
-    S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0 });
+    if (!storm && this.game.gardenMood) { this.game.gardenMood.apply(this); return; } // (the garden's mood: the hour, the season and the briar on the lights, the fog and the dome: vfx/garden/gardenmood.js)
+    S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0, mood: null });
     sc.fog.color.copy(S.fog); sc.fog.density = storm ? 0.012 : 0.003;
     if (sc.background?.isColor) sc.background.copy(S.fog);
     // the ground under it darkens with the hour as the sky does (the garden's own lamps, its water's and foxfire's glow, then read):

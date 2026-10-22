@@ -40,6 +40,7 @@ import { buildThing } from '../pneuka/thingmodels.js';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { CURIOS } from '../world/treasure/treasure.js';
 import { ANIM_OVERLAYS } from './animoverlay.js';
+import { base64Bytes } from '../core/base64.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -357,7 +358,7 @@ export class Workbench {
     try {
       if (id.startsWith('glb:')) {
         const b64 = await GLBS[id.slice(4)]();
-        const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const bin = base64Bytes(b64); // (one loop, not a callback a byte: core/base64.js)
         const gl = await this.loader.parseAsync(bin.buffer, '');
         obj = gl.scene; clips = gl.animations || [];
       } else if (!id.startsWith('thing:') && !id.startsWith('curio:')) obj = (await import('./stages.js')).buildStage(id, this.game); // (the stages load on first use: workbench/stages.js)

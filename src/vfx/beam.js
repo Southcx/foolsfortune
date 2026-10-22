@@ -38,7 +38,7 @@ export function beamMaterial({ color = 0xffffff, opacity = 0, foot = 1.5, edge =
   const uniforms = { uColor: { value: new THREE.Color(color) }, uOpacity: { value: opacity }, uFoot: { value: foot }, uEdge: { value: edge }, uWhite: { value: white }, uFlip: { value: flip ? 1 : 0 } };
   return new THREE.ShaderMaterial({
     uniforms, vertexShader: VERT, fragmentShader: FRAG,
-    transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending, side: THREE.DoubleSide, toneMapped: false,
+    transparent: true, forceSinglePass: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending, side: THREE.DoubleSide, toneMapped: false,
   });
 }
 

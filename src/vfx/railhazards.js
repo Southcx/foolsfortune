@@ -62,7 +62,7 @@ const smooth = (k) => k * k * (3 - 2 * k);
 
 /** Additive plain light, kept true (the edge marks' program: vfx/railfoemarks.js). */
 function additive() {
-  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }); // (fogged as the edge marks' are: the one program)
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, forceSinglePass: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }); // (fogged as the edge marks' are: the one program)
   return keepTrue(m);
 }
 /** A free list of an InstancedMesh's slots; `count` is the highest taken (a slot given back is hidden, never drawn). */

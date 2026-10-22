@@ -401,6 +401,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   upgrades. The **Pneuka Box** is its shed (P). *Not:* "Shrine Garden". → detail
 - **Inner Realm** (`game.realm`, `src/world/garden/`) — a player's own Spirit Garden: you are the Pneuka Jar hopping round its planetoids, and the
   god hand over them; spirits are bound until released. → detail
+- **the garden's mood** (`GardenMood`, `game.gardenMood`, `moodAt`, `src/vfx/garden/gardenmood.js`) — the one table every Inner Realm look reads: the game hour's light (a golden key on a cool fill, a golden hour, lamps at dusk), the season's palette (`seasonOf`) and the briar's grade (`game.harmony.briarK`), eased together. *Not:* harmony (Dovina's gauge), the weather, mental state.
+- **the garden's small life** (`GardenLife`, `realm.life`, `src/vfx/garden/gardenlife.js`) — bees and butterflies over the beds by day, dragonflies over water, fireflies at dusk, moths at night and in the briar, numbered by the garden's mood; they ignore the Pneuka Jar. *Not:* spirits, visitors, a creature.
+- **a decor piece's look / a bramble / the lake lotuses** (`decorGeometry`, `src/vfx/garden/decorpieces.js` and `decorpieces/`; `thornClumps`, `vfx/garden/thornlook.js`; `LakeLotuses`, `game.lakeLotuses`, `vfx/garden/lotuses.js`) — the model drawn for one of Dovina's 47 decor pieces, its body tinted by the set and the tint, its lamps lit at dusk / a thorn patch's arching hooked canes in olive and rust / the garden's rating as up to five lotuses opening on the Dantian's lake, a world mark. *Not:* the decor (Dovina's catalogue, `progress/decor.js`), thorns (her rule), the rating.
 - **the ring** (`ORBIT`, `src/world/garden/orbit.js`) — the ten slots round the Dantian where a bought planetoid is set. *Not:* the hue ring, nor
   the upper ring.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`) — pressing materials walks the Courier's soul colour on the colour wheel; firing it
@@ -413,6 +416,24 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   colour wheel), ware ring, seven tiles, soul bead. *Not:* the plate shrine. → detail
 - **wheelColour** (`src/vfx/wheelcolour.js`) — the one colour function of the colour wheel, in Oklab; a bead and its tile are the same colour when
   they are the same place.
+- **harmony / thorns / bloom** (plain names until the owner rules; `game.harmony`, `src/progress/harmony.js`; `docs/plans/GARDEN-COZY.md` A)
+  — how calm (1) or overgrown (0) a planetoid of the Spirit Garden is, resting at 0.5, raised by tending and lowered by what you carry
+  in and spirits left waiting / what grows at a cause's place below 0.35, pruned by the hand for a briar cutting / a planetoid over
+  0.75 flowering. Always "a planetoid's harmony" or "the garden's harmony". *Not:* music's harmony, the Dissonance Level, the weather.
+- **decor / the shed's storage / the garden's rating / a lake lotus** (plain names; `DECOR`, `game.decor`, `src/progress/decor.js`; GARDEN-COZY.md D)
+  — a piece placed in the Spirit Garden for its looks, of a set / where a piece bought or given waits until placed, and goes back to
+  when picked up / the garden's decor scored by variety region by region, never shown as a number / one of the five on the Dantian's
+  lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
+- **a spirit's routine / a wish / the digest** (plain names; `routineOf`, `game.spiritLife`, `src/progress/spiritlife.js`; GARDEN-COZY.md C) —
+  where a bound spirit likes to be by the day's phase and the rain, kept as its grain allows (walked to: `walkWish`, `world/garden/spiritwalk.js`) / the one thing a spirit that trusts you
+  (bond 30) asks for at a time, never expiring / the morning's lines on the first visit of a game day. *Not:* a goal, a bounty, a desire (the feeling).
+- **the decor grid / the decor layer / a thorn patch** (`decorgrid.js`; `DecorLayer`, `game.decorLayer`; `ThornPatches`, `game.thornPatches`,
+  `src/world/garden/thornpatches.js`) — a planetoid's cube-sphere of about-a-metre cells a garden piece stands on (half-cell steps,
+  15-degree turns) / the pieces drawn and placed by the hand in PLACE turned to decor (R), keeping the Jar and the spirits out of the
+  bigger ones / a planetoid's thorns drawn round their cause, slowing the Jar's hop through them, pruned by GRAB. Plain names: the
+  garden is in flux. *Not:* the clay's grid (latitude by longitude), a plot, a feature.
+- **a season** (`seasonOf`, `src/progress/seasons.js`) — spring, summer, autumn or winter in the Spirit Garden, 7 game days each.
+  *Not:* the weather, the day's phases.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'
   butter) each work one verb; the tree is Myggdrasil. *Not:* a material's `path`. → detail
 - **the tincture / the caps** (`TREE`, `CAPS`) — Myggdrasil's sap (the colour of all it ate) / its ten fruiting bodies. **moonflower**: a bed
@@ -572,7 +593,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
 - **an aptitude / the Assay** ("the Assay" ruled by the owner, 2026-10-19; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
   absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
-- **the goals window** (`GoalsWindow`, `game.goalsWindow`, `src/ui/goalswindow.js`) — the game day's three goals (Dovina's `game.goals`) as a System window at the view's left edge in the Clay dress: a row a goal, its slot, name, words, tier, a bar to `frac`, `cur` of `goal`, a gold check when done; on `/goals` and a beat at `goals.set` and `goal.done`. *Not:* the goals (Dovina's rule, `progress/goals.js`), the goal bar (Raku's tables').
+- **the goals window** (`GoalsWindow`, `game.goalsWindow`, `src/ui/goalswindow.js`) — the game day's three goals (Dovina's `game.goals`) as a System window at the view's left edge in the Clay dress: a row a goal, its slot (Close, Elsewhere, Stretch, First step), name, words, tier, a bar to `frac`, `cur` of `goal`, a gold check when done; on `/goals` and a beat at `goals.set` and `goal.done`. *Not:* the goals (Dovina's rule, `progress/goals.js`), the goal bar (Raku's tables').
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`) — the tape of ticks at the top of the view while the Dreamvane is worn or the

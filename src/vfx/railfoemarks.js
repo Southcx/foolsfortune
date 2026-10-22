@@ -34,7 +34,7 @@ const BURST = { time: 0.45, reach: 7, flash: 2.6, hot: 0xfff0c0, ring: 0xffb070,
 const _a = new THREE.Vector3(), _m = new THREE.Matrix4(), _c = new THREE.Color(), _w = new THREE.Vector3(), _s = new THREE.Vector3(), _t = new THREE.Vector3(), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _z = new THREE.Vector3(0, 0, 1);
 
 function additive(color, opacity) {
-  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide });
+  const m = new THREE.MeshBasicMaterial({ color, transparent: true, forceSinglePass: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide });
   keepTrue(m); return m;
 }
 function put(scene, mesh, order) { mesh.visible = false; mesh.renderOrder = order; mesh.frustumCulled = false; mesh.userData.zoneFree = true; scene.add(mesh); return mesh; }

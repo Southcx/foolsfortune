@@ -93,7 +93,7 @@ export function mindLineMaterial({ opacity = 1, depthTest = false, bright = 1 } 
   return new THREE.ShaderMaterial({
     uniforms: { uOpacity: { value: opacity }, uBright: { value: bright }, uInk: { value: 0 }, uLine: { value: 1 }, uMindT: mindTime },
     vertexShader: MIND_V, fragmentShader: MIND_F,
-    transparent: true, depthWrite: false, depthTest, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
+    transparent: true, forceSinglePass: true, depthWrite: false, depthTest, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
   });
 }
 
