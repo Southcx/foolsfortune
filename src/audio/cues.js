@@ -103,10 +103,11 @@ const RULES = {
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
   // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)
   'party.say': (s, e) => s.chatMotif?.(e.sibling || 'guest'),
-  'chat.line': (s, e) => s.chatMotif?.(String(e.from || e.sibling || 'guest').toLowerCase()), // (the chat's contract is Dovina's: a line from a session or the owner)
+  'chat.line': (s, e) => e.mine || s.chatMotif?.(String(e.from || 'guest').toLowerCase()), // (coop/chatroom.js: a session's line, or a guest's (`guest:<id>`); your own echoed back is silent)
   'guest.say': (s) => s.chatMotif?.('guest'),
-  'guest.join': (s, e, g) => s.guestArrive?.(!!g.realm?.active),
-  'guest.leave': (s, e, g) => s.guestArrive?.(!!g.realm?.active, true),
+  'guest.join': (s) => s.guestArrive?.(false),
+  'guest.leave': (s) => s.guestArrive?.(false, true),
+  'guest.garden': (s, e) => s.guestArrive?.(true, !!e.leave), // (a guest's Pneuka Jar come into your Spirit Garden, or gone: coop/guests.js)
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
