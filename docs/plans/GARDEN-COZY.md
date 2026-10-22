@@ -402,4 +402,7 @@ make a garden.
 - **Q4.** Yes, a spirit at bond 100 may ask to go home, never forced. Every bound spirit is a Figment from the wild: caught, awakened
   from a plate, dug as a fossil, settled as a visitor, or merged from two that were. A spirit that goes home leaves a cosmetic reward.
   (Dovina's proposal: a statue of it as a garden piece, plus its feeling's glaze at the kiln. Espada has the words.)
+- **Q4, the keepsake** (2026-10-22): "a statue plus the glaze". A farewell leaves the spirit's statue (the decor piece) and opens
+  its feeling's farewell glaze. Each glaze hangs on a hidden achievement over `spirit.farewell.<feeling>` (gy17 Wonder to gy21 Dread),
+  so it is retroactive like every glaze; the five glazes themselves are Calissa's.
 - **Q5.** Rearranging is free: "nobody wants to pay to shuffle furniture."

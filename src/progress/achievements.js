@@ -681,6 +681,13 @@ export function buildAchievements(game) {
   C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
   C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you released.', 'spirit.letter.postcard', 1);
   C('gy16', 'garden', "The Garden's Life", 3, 'mechanic', 'Bon Voyage', 'Let a spirit go home when it asks.', 'spirit.farewell', 1);
+  // a farewell's keepsake glaze (the owner, 2026-10-22: "a statue plus the glaze"): one hidden achievement a feeling, each opening that
+  // feeling's farewell glaze (Calissa's GLAZES, `ach: 'gy17'` ..); the statue is the decor piece (spiritlife.js farewell)
+  C('gy17', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Wonder', 'Let a spirit of Wonder go home when it asks.', 'spirit.farewell.wonder', 1, { hidden: true });
+  C('gy18', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Mirth', 'Let a spirit of Mirth go home when it asks.', 'spirit.farewell.mirth', 1, { hidden: true });
+  C('gy19', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Desire', 'Let a spirit of Desire go home when it asks.', 'spirit.farewell.desire', 1, { hidden: true });
+  C('gy20', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Grief', 'Let a spirit of Grief go home when it asks.', 'spirit.farewell.grief', 1, { hidden: true });
+  C('gy21', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Dread', 'Let a spirit of Dread go home when it asks.', 'spirit.farewell.dread', 1, { hidden: true });
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)
