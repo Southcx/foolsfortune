@@ -195,7 +195,7 @@ export class Crucibelle extends HeldTool {
       const secs = 7 * power;
       g.mirage?.raise(P.pos.clone(), secs, power);
       P.veiledT = Math.max(P.veiledT || 0, 2 * power);
-      for (const c of g.creatures.near(P.pos, 22)) if (!c.ally && c.brain?.action?.hunt) { g.creatures.apply(c, 'forget', 1.5, 1, 'courier'); n++; }
+      for (const c of g.creatures.near(P.pos, 22)) if (!c.ally && c.brain?.action?.hunt) { g.creatures.apply(c, 'forget', 1.5 * (g.psyche?.widen?.('possession.song') ?? 1), 1, 'courier'); n++; }
     } else if (id === 'rally') {
       const secs = 12 * power;
       g.spirits?.rally(secs, Math.min(2, power));
@@ -204,7 +204,7 @@ export class Crucibelle extends HeldTool {
       g.lachryma.addModifier('rally', { regenMult: 2.5, regenDelayMult: 0.3, costMult: { '*': 0.75 } });
       clearTimeout(this.rallyTimer); this.rallyTimer = setTimeout(() => g.lachryma.removeModifier('rally'), secs * 1000);
     } else if (id === 'lull') {
-      for (const c of g.creatures.near(P.pos, 11 * power)) if (!c.ally && g.ai.eco.relation(c, P) !== REL.KIN) { g.creatures.apply(c, 'sleep', 7 * power, 1, 'courier'); n++; }
+      for (const c of g.creatures.near(P.pos, 11 * power)) if (!c.ally && g.ai.eco.relation(c, P) !== REL.KIN) { g.creatures.apply(c, 'sleep', 7 * power * (g.psyche?.widen?.('possession.song') ?? 1), 1, 'courier'); n++; }
       for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceTo(P.pos) < 9 * power) { g.clappers.stun(c, 3 * power, g.shells.glowOutline, g.shells.xray); n++; }
     } else if (id === 'summon') {
       const at = P.pos.clone().add(this.aimFlat(_b).clone().multiplyScalar(2));

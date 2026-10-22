@@ -49,7 +49,7 @@ export class Blink extends Tech {
     this.dir = dir;
     this.hs0 = Math.hypot(P.vel.x, P.vel.z);
     this.vy0 = P.vel.y;
-    this.left = c.distance;
+    this.left = this.dist = c.distance * (this.game.psyche?.widen?.('ouranurgy.reach') ?? 1);
     this.from = P.pos.clone();
     this.wasGrounded = P.grounded;
     P.endCore();
@@ -62,7 +62,7 @@ export class Blink extends Tech {
 
   update(dt) {
     const P = this.P, c = this.cfg;
-    const step = Math.min(this.left, (c.distance / c.time) * dt);
+    const step = Math.min(this.left, (this.dist / c.time) * dt);
     P.vel.copy(this.dir).multiplyScalar(step / dt);
     const before = P.pos.clone();
     P.move(dt);

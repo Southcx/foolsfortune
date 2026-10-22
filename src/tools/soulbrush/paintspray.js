@@ -85,7 +85,7 @@ export class PaintSpray {
 
   /** A drop's splat where it lands: its radius by the throw, and how far it stretches along a shallow hit (1: round). */
   splat(d, normal) {
-    const S = SPRAY.splat, k = Math.min(1, (d.travel || 0) / S.at), r = S.near + (S.far - S.near) * k;
+    const S = SPRAY.splat, k = Math.min(1, (d.travel || 0) / S.at), r = (S.near + (S.far - S.near) * k) * (this.game.psyche?.widen?.('alteration.paint') ?? 1);
     const graze = 1 - Math.abs(_a.copy(d.v).normalize().dot(normal)); // (0 straight down onto it, near 1 skimming it)
     return { r, stretch: 1 + 1.6 * Math.max(0, graze - 0.3) };
   }
@@ -106,7 +106,7 @@ export class PaintSpray {
   reticle(on, from, dir, color, raw = 1 / 60) {
     const at = on ? this.predict(from, dir) : null;
     if (!at) { this.look.set(false, null, null, {}, raw); return; }
-    const ringR = Math.max(0.25, Math.tan(this.spreadNow * DEG) * at.dist) + SPRAY.splat.far * 0.5;
+    const ringR = Math.max(0.25, Math.tan(this.spreadNow * DEG) * at.dist) + SPRAY.splat.far * 0.5 * (this.game.psyche?.widen?.('alteration.paint') ?? 1);
     this.look.set(true, at.point, at.normal, { ring: ringR, along: dir, color }, raw);
   }
 

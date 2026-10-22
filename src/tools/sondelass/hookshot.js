@@ -75,7 +75,7 @@ export class Hookshot {
     const g = this.game, P = this.tool.P;
     g.camera.getWorldPosition(_o);
     P.lookDir(_d);
-    const hit = g.physics.raycast(_o, _d, RANGE, P.collider, HOOKABLE, (c) => !c.isSensor());
+    const hit = g.physics.raycast(_o, _d, RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1), P.collider, HOOKABLE, (c) => !c.isSensor());
     if (!hit) return null;
     const ent = hit.entity, body = hit.collider.parent();
     const dyn = !!body?.isDynamic?.();
@@ -110,7 +110,7 @@ export class Hookshot {
     const r = this.probe();
     this.result = r;
     if (r) this.target.copy(r.point);
-    else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, RANGE); }
+    else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1)); }
     this.flying = true; this.phase = 'out'; this.t = 0;
     this.grap.visible = true; this.grap.scale.setScalar(GRAP);
     this.line.rope.reset(this.pos, this.pos);
@@ -273,7 +273,7 @@ export class Hookshot {
     // the tool put away, water, a tech that takes the body: the line goes
     const act = P.techs.active;
     if (act && act.id !== 'grapple' && act.id !== 'sondelass') return this.release('taken');
-    if (this.chest(_c).distanceTo(this.attachPoint(_e)) > RANGE * 1.6) return this.release('far');
+    if (this.chest(_c).distanceTo(this.attachPoint(_e)) > RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1) * 1.6) return this.release('far');
     // a line that has caught on a corner comes away
     this.losT -= dt;
     if (this.losT <= 0) {
