@@ -686,7 +686,7 @@ export function buildAchievements(game) {
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   // the two feelings past Anagami's five, learned by drinking them where they fall (GALL-AND-FURY.md section 5; Espada's names): the count
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
-  C('sk12', 'sky', 'Weather', 1, 'mechanic', 'A View', 'Awaken to Wonder: find a vantage point and look out.', 'feeling.known.wonder', 1); // (the first hour's awakening: the workshop's atrium rail, FIRST-HOUR.md)
+  C('sk12', 'sky', 'Weather', 1, 'mechanic', 'Lookout', 'Awaken to Wonder: find a vantage point and look out.', 'feeling.known.wonder', 1); // (the first hour's awakening: the workshop's atrium rail, FIRST-HOUR.md)
   C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
   C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
   F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Awaken to all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)

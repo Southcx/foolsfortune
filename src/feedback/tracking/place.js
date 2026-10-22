@@ -19,8 +19,8 @@ export function placeRules({ on, log }) {
     if (said) return; said = true;
     log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
     if (fresh) log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
-    // the mode's line points at the first step (FIRST-HOUR.md 3; placeholder words, Espada's to rule)
-    log.say('system', e.mode === 'story' ? 'You wake in the workshop. The Shrine beside you is the first of your goals: type /goals to see all three.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.');
+    // the mode's line points at the first step (FIRST-HOUR.md 3; Espada's words, 2026-10-22)
+    log.say('system', e.mode === 'story' ? 'You wake in the workshop, beside a Shrine. Rest there first. Type /goals to see your first three goals.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.');
   });
   on('garden.refuse', (e) => log.say('warn', { god: 'Not while you are the god hand.', death: 'Not while your Pneuka Jar is broken.', stage: 'Not during a sea stage.', busy: 'Wait a moment.' }[e.why] || 'Not now.', { key: 'garden.refuse', throttle: 1 })); // (world/garden/realm.js)
   on('garden.jar.back', () => log.say('info', 'Your Pneuka Jar lands back at the gate.', { key: 'garden.jar.back', throttle: 2 })); // (thrown off into the sky: world/garden/realm.js)

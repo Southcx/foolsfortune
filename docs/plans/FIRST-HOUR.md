@@ -71,7 +71,7 @@ ledger and pays nothing of its own (the design laws).
 |---|---|---|---|
 | 1 | sr1 Catch Your Breath *(new)*: rest at a Shrine | the Bisque Shrine, beside where you wake | the Shrine refills the pool and is where you come back |
 | 2 | fk1 Small Talk | Saggar, in the workshop | the folk and F |
-| 3 | sk12 A View *(new)*: awaken to Wonder | the atrium rail's vantage point | feelings are learned by doing what they are |
+| 3 | sk12 Lookout *(new)*: awaken to Wonder | the atrium rail's vantage point | feelings are learned by doing what they are |
 | 4 | br1 First Casualties: break 10 pots | the workshop | the pots feed the pool; 15 opens the kick, 25 Stomp |
 | 5 | tc1 First Hinge: open a chest | the hub, through the hole | cubes, the currency |
 | 6 | pl6 Reached the Dunes | the Index | the Index sends you to rooms |
