@@ -32,6 +32,28 @@ const glows = (g) => (g.alchemy?.colour?.s ?? 0) >= 0.3;
 const known = (g) => (g.ledger?.under?.('feeling.known.') || []).filter(([, v]) => v > 0).length; // (the seven feelings, awakened to)
 const band = (k, lo, hi = Infinity) => (g) => L(g, k) >= lo && L(g, k) < hi;
 
+// the next step (Espada's, for FIRST-HOUR.md 5): the first goal still undone on the list (game.goals), named by whoever stands nearer
+// it: Saggar the workshop's steps, Pip the basement's and the Dunes'; each sends you to the other for the rest
+const nextGoal = (g) => (g.goals?.list?.() || []).find((x) => !x.done)?.id;
+const UPSTAIRS = { sr1: 1, fk1: 1, sk12: 1, br1: 1 }, DOWNSTAIRS = { tc1: 1, pl6: 1, jl1: 1, sf1: 1, an1: 1, cx3: 1 };
+const step = (lines) => ({ mood: 'calm', when: (g) => { const id = nextGoal(g); return !!(lines[id] || (UPSTAIRS[id] || DOWNSTAIRS[id])); }, text: (g) => lines[nextGoal(g)] || lines.other });
+const SAGGAR_STEP = step({
+  sr1: 'First things first: rest at the Shrine, just there. {p:0.3}{small}A pot cools before it\'s handled.{/}',
+  fk1: 'Go and say hello to the rest of the folk. {p:0.3}{small}They like being asked.{/}',
+  sk12: 'Climb up to the atrium rail and look out over the island. {p:0.3}{slow}Just look.{/} {p:0.3}{small}You\'ll know why when you do.{/}',
+  br1: 'Clapperjars rattle all over the workshop. {p:0.3}Break ten and send them home to my kiln. {p:0.3}{small}They don\'t mind. Much.{/}',
+  other: 'Pip\'s down in the basement, by the Index. {p:0.3}{small}Nervous little thing, but knows every room.{/}',
+});
+const PIP_STEP = step({
+  tc1: 'There\'s a chest in the hub! {p:0.3}{small}I didn\'t open it. I wanted to. I didn\'t.{/}',
+  pl6: 'Pick the Dunes at the Index. {p:0.3}{shake}So much sand!{/} {p:0.3}{small}Bring me back a little?{/}',
+  jl1: 'There are slip jellies out on the Dunes. {p:0.3}{shake}Wobbly ones.{/} {p:0.3}Pop one? {small}For me?{/}',
+  sf1: 'There\'s a sand boat on the Dunes, a skiff! {p:0.3}{bounce}You stand on it and the sun pushes!{/}',
+  an1: 'Have you tried the rod? {p:0.3}Cast the lure into the water. {p:0.3}{small}Fish are braver than me.{/}',
+  cx3: 'The course is right here in the basement! {p:0.3}Run a lap. {p:0.3}{small}I\'ll count. I\'m good at counting.{/}',
+  other: 'Saggar\'s up at the kiln. {p:0.3}{small}Saggar always knows what\'s next.{/}',
+});
+
 export const TALKS = {
   saggar: {
     start: 'hello', again: 'again',
@@ -41,7 +63,7 @@ export const TALKS = {
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
         { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }, { mood: 'calm', when: band('courier.shatter', 1, 4), text: "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}" }, { mood: 'awe', when: (g) => known(g) >= 1 && known(g) < 7, text: (g) => `{slow}You feel more than you did.{/} {p:0.3}${known(g)} of the seven, if I'm any judge. {p:0.3}{small}The kiln can tell.{/}` }, { mood: 'joy', when: band('duel.won', 1, 3), text: 'They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }, { mood: 'calm', when: band('courier.shatter', 1, 4), text: "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}" }, { mood: 'awe', when: (g) => known(g) >= 1 && known(g) < 7, text: (g) => `{slow}You feel more than you did.{/} {p:0.3}${known(g)} of the seven, if I'm any judge. {p:0.3}{small}The kiln can tell.{/}` }, { mood: 'joy', when: band('duel.won', 1, 3), text: 'They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}' }, SAGGAR_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'What are the clapperjars?', go: 'jars' },
         { text: 'About the pots I broke…', go: 'pots' },
@@ -87,7 +109,7 @@ export const TALKS = {
         { mood: 'fear', text: "I'm Pip. I'm Mistress Saggar's apprentice. {p:0.4}{small}I'm hiding.{/}" },
         { mood: 'sad', text: 'She sent me down for glaze and the clapperjars {tremble}clapped at me{/}. All of them. {slow}At once.{/}' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }, { mood: 'surprise', when: band('duel.won', 1, 5), text: 'You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I\'m good at puzzles! {p:0.3}{small}Not the fighting part.{/}' }, { mood: 'joy', when: band('shrine.found', 1, 3), text: 'You found a Shrine! {p:0.3}{small}Is it quiet there? I\'d like somewhere quiet.{/}' }], next: 'menu' },
+      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }, { mood: 'surprise', when: band('duel.won', 1, 5), text: 'You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I\'m good at puzzles! {p:0.3}{small}Not the fighting part.{/}' }, { mood: 'joy', when: band('shrine.found', 1, 3), text: 'You found a Shrine! {p:0.3}{small}Is it quiet there? I\'d like somewhere quiet.{/}' }, PIP_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'Why are you scared of them?', go: 'scared' },
         { text: 'Want me to deal with them?', go: 'deal' },
