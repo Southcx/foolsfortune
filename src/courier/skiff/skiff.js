@@ -249,6 +249,14 @@ export class Skiffing extends Tech {
   /** Set the capsule down at (x, y, z) if it is clear there (else it stays); and remember the clear place. */
   setPos(x, y, z) { if (this.clearAt(x, y, z)) { this.P.pos.set(x, y, z); this.safe?.copy(this.P.pos); } }
 
+  /** The speed for the record (tracking.js `speed.skiff.max`), four times a real second with the most since: every step's one filled
+   *  the bus's 300 in five seconds and an agent lost every other event (QA-A, 2026-10-22). */
+  tickOut(dt) {
+    this.tickTop = Math.max(this.tickTop || 0, this.speed); this.tickT = (this.tickT || 0) + dt;
+    if (this.tickT < 0.25) return;
+    this.game.events?.emit('skiff.tick', { speed: this.tickTop }); this.tickT = 0; this.tickTop = 0;
+  }
+
   /** A crash: thrown off. */
   bail(why) {
     if (this.phase !== 'ride') return;
@@ -512,7 +520,7 @@ export class Skiffing extends Tech {
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0, this.gliding);
     this.combo.step(dt, this.air || !!this.carve || this.grind.on || this.rules.manualOn); this.rules.nearMiss(dt); // (the chain lives in the air, on a rail, in a carve; on the sand its link runs down)
-    g.events?.emit('skiff.tick', { speed: this.speed });
+    this.tickOut(dt);
     return true;
   }
 
@@ -558,7 +566,7 @@ export class Skiffing extends Tech {
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
     if (this.mouseIdle > 0.5) P.yaw += wrap(this.heading - P.yaw) * Math.min(1, dt * 3);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, 0, false);
-    g.events?.emit('skiff.tick', { speed: this.speed });
+    this.tickOut(dt);
     return true;
   }
 

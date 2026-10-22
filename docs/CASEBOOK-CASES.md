@@ -3417,3 +3417,27 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `forceSinglePass: true` on the small life's material (vfx/garden/gardenlife.js), and on every transparent DoubleSide material of
   ours whose draw order cannot matter: additive ones, and the Heavenly Kiln's flat vortex (11 in vfx/).
 - **Rule:** 257
+
+### 2026-10-22 · The Weir's, the Dunes' and the skiff's help were never said (Petra; found by QA-A's first hour)
+- **Seen:** by QA-A, headless: about 12 game minutes in the Dunes with neither line in the log. The rod's keys were found from the Esc
+  page after 45 s.
+- **Cause:** `Basement.update()` returned at its first line whenever the Courier was outside the basement, and the place's help
+  (`room.help`) was chosen at its end. The Weir, the Dunes and the skiff are never in the basement, so they could never be reached.
+- **Fix:** the choice is its own method (`placeHelp`), asked on both paths (world/basement/basement.js). The Siege's sign no longer says
+  its help a second time.
+- **Rule:** 258
+
+### 2026-10-22 · The agent's keys never reached a window, and the skiff's speed filled the bus (Petra; found by QA-A)
+- **Seen:** by QA-A: the Index's window, once open, could not be closed through the bridge, and the world stayed paused behind it for
+  the rest of the run. On the skiff, the bridge lost every event older than about 5 real seconds.
+- **Cause:** `press` put the key in the input's set only, and the windows (the Index, the kiln, the Box) listen for the page's own
+  `keydown`. `skiff.tick` was emitted every fixed step (60 a real second), and the bus keeps the newest 300.
+- **Fix:** `press` also dispatches the key as the page's keydown and keyup (src/agent/agent.js `domKey`). The skiff sends its top speed
+  four times a real second (`tickOut`).
+- **Rule:** 259; 260
+
+### 2026-10-22 · "You slash 2 slip jellys." (Petra; found by QA-A)
+- **Seen:** in the log, at QA-A's first fight.
+- **Cause:** tracking.js's `plural` added an "s" to every word.
+- **Fix:** a consonant's y becomes "ies" (jellies); the Shrine's line says "made whole", the glossary's words, never "reforged".
+- **Rule:** 261

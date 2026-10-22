@@ -24,6 +24,15 @@ const r2 = (v) => +v.toFixed(2);
 const vec = (v) => [r2(v.x), r2(v.y), r2(v.z)];
 const NEAR = 30;
 
+/** A key as the page's own keydown and keyup, for the windows that listen there (the Index, the kiln, the Box): a person's key reaches both. */
+function domKey(code) {
+  if (typeof document === 'undefined') return;
+  const key = code.startsWith('Key') ? code.slice(3).toLowerCase() : code.startsWith('Digit') ? code.slice(5) : code;
+  const t = document.activeElement || document.body;
+  t.dispatchEvent(new KeyboardEvent('keydown', { code, key, bubbles: true, cancelable: true }));
+  setTimeout(() => t.dispatchEvent(new KeyboardEvent('keyup', { code, key, bubbles: true })), 0);
+}
+
 export class Agent {
   constructor(game) {
     this.game = game;
@@ -106,7 +115,7 @@ export class Agent {
         this.turn(Math.atan2(to.x - P.pos.x, to.z - P.pos.z)); return { ok: true };
       }
       case 'hold': this.task = { kind: 'hold', keys: cmd.keys || [], ticks: cmd.ticks ?? 30 }; return { ok: true };
-      case 'press': g.input.pressed.add(cmd.key); g.input.down.add(cmd.key); this.task = { kind: 'press', keys: [cmd.key], ticks: 2 }; return { ok: true };
+      case 'press': g.input.pressed.add(cmd.key); g.input.down.add(cmd.key); this.task = { kind: 'press', keys: [cmd.key], ticks: 2 }; domKey(cmd.key); return { ok: true }; // (and the page's own keydown: a window listens there, QA-A's Index that would not close)
       case 'interact': { // (with: a ref or id from `reach`, or a place's id, folk.<id>; without, whatever has the chevron)
         if (!cmd.with) { if (!g.interact?.cur) return { ok: false, why: 'nothing in reach' }; return this.act({ do: 'press', key: 'KeyF' }); }
         const want = String(cmd.with).replace(/^folk\./, ''), o = (g.interact?.offers || []).find((o) => refId(o) === want || o.id === want);

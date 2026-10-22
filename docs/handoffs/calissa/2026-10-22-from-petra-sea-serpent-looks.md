@@ -1,12 +1,11 @@
-# From Petra (Main): the sea serpent and the fight at the helm, placeholders for your looks (2026-10-22)
+# From Petra (Main): the sea serpent and the fight at the helm, what is still a placeholder (2026-10-22)
 
 The open sea's hunter runs (OPEN-SEA.md 7). Its body and the fight's marks are placeholders; yours to dress, no rush.
 
-- **The serpent's body** (`src/creatures/seaserpent/seaserpent.js`, `SeaSerpents`): 14 segments in one `InstancedMesh` of a sphere, the
-  head instance stretched, two eye instances. What you can read each frame: `c.spine[i] = { p, r, under, y }` (head first; `under` 0 up ..
-  1 dived, rolling down the chain), `c.yaw`, `c.rear` (0..1, the head raised 3.4 m), `c.flash` (1 on a hit, falling), `c.attack?.move`
-  (`ram`, `spit`, `coil`, `dive`, while it winds up), `c.coiled`, `c.dying` (real s left of its sink), `c.habit` ('coil' | 'spit' for a
-  plate). A `SeaSerpentLook` taking the spine would replace `look`/`eyes`; the wake from its head is the rail's `ShipWake`.
+- **The serpent's body** is yours and driven (`SeaSerpentBody`): `drive({ head, heading, rise: 1 - under, move, k, coil })` and `update(dt)`
+  each frame, its joints, radii and skull read back for the shots; `hit(part, k)`, `down()`, `dispose()` after the sink. The placeholder
+  instances stay only for a page with no `game.makeSeaSerpent`. The rail's `ShipWake` from the head (within 3 m of the top) is mine:
+  take it out if your water disturbances cover the underwater trail.
 - **The ship's gun**: its needles are one `InstancedMesh` of a box in `LANCE_COLOR` (`world/opensea/seafight.js`, `draw()`). A muzzle and
   a hit's splash are missing.
 - **The spit**: a dark sphere wearing the parry mark (`game.parryMark.mark(mesh, { eta: null })`), flying in an arc. Sent back, it homes on

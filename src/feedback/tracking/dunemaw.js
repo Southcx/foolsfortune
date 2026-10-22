@@ -7,13 +7,14 @@
 //   dunemawRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { medalOf } from '../../progress/combat/dunemaw.js';
+import { zoneOf } from '../../render/zones.js';
 import { dropsFor, DROPS, NAMES } from '../../progress/combat/greatjelly.js';
 import { STRAWMAN_MOVES, STRAWMAN_STRINGS } from '../../vfx/strawmanmoves.js';
 
 const DONE = { stun: 'stunned', halt: 'halted', slow: 'slowed', sleep: 'put to sleep', charm: 'charmed', blind: 'blinded', confusion: 'confused', doubt: 'made to doubt' };
 const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: 'Illusion', delirium: 'Delirium' };
 
-export function dunemawRules({ on, L, log }) {
+export function dunemawRules({ on, L, log, g }) {
   // the crowned FOE
   on('foe.crack', (e) => { if (e.by !== 'courier') return; L.inc('foe.crack'); if (e.cause === 'ram') L.inc('foe.crack.ram'); });
   on('foe.break', (e) => { if (e.by !== 'courier') return; L.inc('foe.break'); log.say('combat', "The Great Slip Jelly's crown breaks. Its core lies bare."); });
@@ -52,6 +53,7 @@ export function dunemawRules({ on, L, log }) {
   });
   // Strawman: one line a bout, never a count
   on('strawman.bout', (e) => {
+    if (g?.player && zoneOf(g.player.pos) !== 'testroom') return; // (its gap ran out after you left: said nowhere else, QA-A)
     const types = Object.entries(e.byType || {}).filter(([t]) => t !== 'blocked').sort((a, b) => b[1] - a[1]).map(([t, d]) => `${TYPE[t] || t} ${Math.round(d)}`).join(', ');
     const st = Object.entries(e.statuses || {}).map(([s, n]) => `${DONE[s] || s} ${n === 1 ? 'once' : `${n} times`}`).join(', ');
     log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);

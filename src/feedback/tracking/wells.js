@@ -20,6 +20,7 @@ export function wellRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
     if (e.floor > 1) log.say('explore', `You go down to the ${ORD[e.floor - 1] || `${e.floor}th`} floor.`);
+    if (e.floor === 3) log.say('warn', 'The way down from here goes to the Great Slip Jelly. Once there, the only ways out are the Wake Whistle or the fight.', { key: 'well.last', throttle: 60 }); // (QA-A: the cavern taken unwarned; words a placeholder, Espada's)
   });
   on('well.leave', (e) => {
     if (e.by !== 'courier') return;

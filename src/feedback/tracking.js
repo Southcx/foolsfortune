@@ -45,7 +45,7 @@ import { EMOTES } from '../courier/emotes.js';
 import { SLOTS } from '../pneuka/box.js';
 import { areaRules } from './tracking/rules.js';
 import { RATINGS, overall } from '../ui/rating.js';
-const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const plural = (n, w) => `${n} ${n === 1 ? w : `${w.replace(/([^aeiou])y$/, '$1ie')}s`}`; // (slip jellies, not jellys: QA-A)
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
 
@@ -686,7 +686,7 @@ export class Tracking {
     on('vessel.shield', () => L.inc('vessel.shield'));
     on('vessel.shieldbreak', () => { L.inc('vessel.shieldbreak'); log.say('battle', 'Your Lachryma is spent: the next blow reaches the clay.', { key: 'shieldbreak', throttle: 4 }); });
     on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'A creature shatters your Pneuka Jar.' : 'Your Pneuka Jar shatters.', {}); });
-    on('courier.reform', (e) => { L.inc('courier.reform'); if (e.where === 'lip') return; /* (foe.wipe says it: tracking/dunemaw.js) */ log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is reforged at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is reforged in the workshop.', {}); });
+    on('courier.reform', (e) => { L.inc('courier.reform'); if (e.where === 'lip') return; /* (foe.wipe says it: tracking/dunemaw.js) */ log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is made whole at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is made whole in the workshop.', {}); });
     // the Shrines (docs/plans/SHRINES.md; world/shrines.js): found, rested at, travelled between; the Spirit Garden's door. Never "saved".
     on('cavern.force', () => log.say('info', 'You drop through the Great Dunemaw into the great cavern.', { key: 'cavernforce', throttle: 0.5 })); // (/cavern: world/well/dunemaw.js)
     on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next sea stage sails into ${e.setPieces.join(', then ')}.` : 'The next sea stage is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)

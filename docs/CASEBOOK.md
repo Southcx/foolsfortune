@@ -759,3 +759,16 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 257. **A transparent DoubleSide material is drawn in one pass unless its order matters.** three draws it twice
     (back, then front) and compiles two programs; `forceSinglePass: true` wherever the two-pass sort buys nothing (additive, flat, sprites).
+
+258. **What an early return skips is listed with it.** A method that returns early for "not here" is read
+    to its end before anything new goes below the return; a job that belongs everywhere gets its own method, called on every path.
+
+259. **A driven key reaches everything a person's does.** A tool that presses keys sends them the way the
+    page gets them (the input's set and the page's keydown), or a window that listens to the page is a wall it cannot pass.
+
+260. **No event every step.** The bus keeps its newest 300; a feature that would emit every fixed step sends a few a
+    real second with what it carries (the most, the last), so nothing else is pushed out.
+
+261. **Player text uses the glossary's words, and a helper that builds words is checked on
+    irregular ones** (a plural, an article) before it is trusted with any noun.
+

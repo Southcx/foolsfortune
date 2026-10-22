@@ -667,7 +667,7 @@ export class Course {
   update(dt) {
     const g = this.game, p = g.player, inp = g.input;
     const here = this.inBasement();
-    if (!here) { this.running = false; this.prev.copy(p.pos); return; }
+    if (!here) { this.running = false; this.prev.copy(p.pos); this.placeHelp(); return; } // (the Weir's, the Dunes' and the skiff's help are said out there too)
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
 
@@ -702,9 +702,15 @@ export class Course {
     }
     this.prev.copy(feet);
 
-    // what the keys do in each place is said once by the log on arriving there (room.help -> tracking.js), not kept on the screen
+    this.placeHelp();
+    signHelp(g, p.pos);
+  }
+
+  /** What the keys do in each place, said once by the log on arriving there (room.help -> tracking.js), not kept on the screen. Asked
+   *  every frame wherever the Courier is: the Weir and the Dunes are not the basement (QA-A, 2026-10-22: their lines were never said). */
+  placeHelp() {
+    const g = this.game, p = g.player;
     const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'skiff' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
     if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
-    signHelp(g, p.pos);
   }
 }
