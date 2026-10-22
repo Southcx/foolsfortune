@@ -14,7 +14,7 @@
 //   (in the DEBUG save its page also offers THE SHOWCASE CROSSING: progress/rail/showcase.js, sailed by world/emocean/stage.js)
 //   (and in either save PRACTICE: a row a leg's type sailed before, legs.js practiceOf, sailed alone at strength 1 to 4 by stage.js sailPractice)
 //   (and THE OPEN SEA: SET SAIL is a crossing on the lanes, to an island; the open sea is the Emocean off them, sailed at the free helm:
-//   world/opensea/, OPEN-SEA.md 8; the row goes there under the seam, to Anagami's quay)
+//   world/opensea/, OPEN-SEA.md 8; the row goes there under the seam, to this island's quay, or Anagami's where its sea has none)
 //   (the interact chevron's id: 'pier')
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
@@ -91,9 +91,9 @@ export class Pier {
         if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
-      // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from any pier, to Anagami's quay on it (world/opensea/opensea.js arrive)
+      // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from a pier to its own island's quay there (world/opensea/opensea.js arrive)
       const sea = g.opensea && !V.sailing ? el('div', 'room', `<span class="n">≈</span><span><b>THE OPEN SEA</b><s>off the lanes, at the helm: W and S the sail, A and D the rudder · chart the squares · what lives out there</s></span>`) : null;
-      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => g.places?.travel?.('opensea'); g.seam?.cross(go, { kind: 'sea' }) || go(); };
+      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => g.opensea.arrive(at); g.seam?.cross(go, { kind: 'sea' }) || go(); }; // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
       const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
       if (show) show.onclick = () => { this.menu?.close(); g.emocean.sailShowcase(at, this.mounts().chosen); };

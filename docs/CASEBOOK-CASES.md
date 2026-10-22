@@ -3450,4 +3450,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   swapping materials on the ring: a uniform opacity drew clean, the vertex alpha drew the wedges; the draw order and the frame's alpha
   changed nothing.
 - **Fix:** t clamped to 0..1 before the power (vfx/opensea/isletlooks.js `shallowsGeometry`).
-- **Rule:** NEW:clamp-before-fractional-power
+- **Rule:** 262
