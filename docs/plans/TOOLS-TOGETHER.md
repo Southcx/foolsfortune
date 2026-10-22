@@ -279,7 +279,7 @@ Monster Hunter's weapons are the model: the job is in the motion.
 ## 9. Celestial mode's targets drawn over the paper (the owner, 2026-10-22)
 
 > "why don't we have it so that selectable figment targets are rendered on top of the paper shader canvas? That way when you mark them it
-> can have a much more distinct effect and the player can immediately see which figments they can effect"
+> can have a much more distinct effect and the player can immediately see which figments they can affect"
 
 **Why the dot reads as buggy (read from the code, not seen in play).**
 - **The paper covers everything.** It is a CSS `backdrop-filter: sepia(.8) ...` over the whole screen at z-index 40
