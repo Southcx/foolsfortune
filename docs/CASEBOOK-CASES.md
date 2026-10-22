@@ -3470,3 +3470,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a cradle may name its page (`page()`, world/cradles.js): shut, by F or Esc, it unseals the next frame. The Shrine's gate
   names its page or the arch's walk-in; the helm's cradle at the pier names the pier's page or the sea chart.
 - **Rule:** 264
+
+### 2026-10-22 · The crawl's clip turned in place against a wall, the body slid back (Calissa's prone note)
+- **Seen:** crawling head-on into a wall, the arms and legs kept crawling a moment while the body did not move, and the body was pushed
+  back from the capsule.
+- **Cause:** the prone capsule is upright and 0.27 m round, while the body on the belly reaches 0.95 m ahead of its axis; the capsule
+  crawled on after the head met the wall and the crawl's clearance slid the body back as it went. Measured at a flat wall: the capsule
+  stopped 0.75 m off it, the body slid 0.197 m, the clip turned 0.23 of a cycle in place.
+- **Fix:** `crawlReach` (courier/player.js): a ray along the move just over the step height, as long as the body reaches that way, takes
+  the move into a wall away. After: stopped at 0.96 m, slide 0, 0.05 of a cycle; a 0.35 m step is still climbed; stress 0 violations.
+- **Rule:** 265

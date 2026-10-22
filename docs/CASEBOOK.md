@@ -782,3 +782,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 264. **A state that exists to hold a window open ends when the window closes, however it closes.** Closing
     from the state's side (unseal, so the page shuts) is half; the window shut by its own key, by Esc or by another page must end the
     state too, or the player is left in it with nothing to do but press again.
+
+265. **Where the drawn body reaches past its collider, the move stops where the body meets a wall, not where the
+    collider does.** A look that slides the body back off a wall the collider walks on into is the clip turning in place; probe the
+    body's reach along the move and take the move into the wall away.
