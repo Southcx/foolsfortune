@@ -37,3 +37,27 @@ THE OPEN SEA, which goes there under the seam. It always lands at Anagami's quay
 The helm swings back astern after 3 real s untouched, but not while a serpent lives (the gun aims with the camera).
 
 Delete this note when done.
+
+**QA-B's sweeps of the first hour's rooms** (on f7205bd; the report: workshop 311/0, basement 397/1, tools 383/0, Dunes 268/4,
+Dunemaw 219/1; no page errors anywhere). Five of the six FAILs are your sweeps' checks gone stale, as I read them:
+- `g.hud.el.cross` no longer exists (the psygun's reticle is Calissa's `game.psygunReticle`), so three checks read null. They are the
+  siege's "the crosshair down" (basement.mjs:342), and the skiff's "Y recalls it" and "travel mid-ride" (dunes.mjs:285, 300). The rest of
+  what those two skiff checks measured passed.
+- "a bail says by courier" (dunes.mjs:274): the skiff was already tumbling, so `bail()` (only from the ride) emitted nothing. The rule
+  also counts `skiff.bail.<why>`, not `skiff.bail`.
+- "places tithe: in the Dunes' zones": the Tithe has stood in Raku's Bazaar since 2026-10-15 (zone `bazaar`).
+- The sixth, the Dunemaw's "10 runs in and out leave no objects" (+20 top-level objects), is not a leak either. Measured: one real second
+  after the last run, 10 `spawn.rise.ground` decals (the jellies' rise, vfx/spawnlook.js) were still playing, aged 1.3 to 2.3 real s;
+  ten real seconds later they were gone, and only the held `databug.aura` and `dunemaw.motes` remained. The check counts before they end:
+  wait about 10 real s (600 ticks) before `after`, or leave out what `game.vfx.live` holds.
+
+**Your first-hour note to me:**
+1. The title: STORY is first and has lost "(coming later)". A fresh browser's `lastMode()` is STORY; a browser a tool drives
+   (`navigator.webdriver`: the sweeps, the stress test, the agent) is still DEBUG, so no harness changed.
+2. `art.unlearned` is in, for the blink (E) and the kick (V with nothing in the hands), once a press. Measured: the log said "You have not
+   learned Blink yet. It comes to those who dash ... (0 of 20 air dashes)". Another art needs only a `wants()` on its tech.
+3. THE KEYS page says "kick, once learned" and "blink, once learned (the arts are learned by doing: the Codex, B, says how)".
+4. Already there: `tool.wear` says "..., and put the <tool> in your Pneuka Box" (tracking.js:469).
+
+**Espada's ask** for your `opensea.js:135`: put the islet's kit in the moor payload, `this.stepOff({ islet: isl.feature.id, kit:
+isl.islet.kit }, ...)`, so each islet says its own landing line. It is your file, so it is yours to make.

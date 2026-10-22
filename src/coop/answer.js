@@ -46,6 +46,7 @@ export class SiblingAnswers {
     const ids = who === 'all' || who === 'party' ? this.game.party?.list.map((S) => S.id) || [] : [who];
     if (!ids.length) { this.game.events.emit('party.unheard', { sibling: null, why: 'alone', by: 'courier' }); return; }
     if (!SIBLINGS.some((s) => s.id === ids[0])) return; // (not one of the five: an @ for a guest, said aloud as it was)
+    if (who !== 'all' && who !== 'party') this.game.chatroom?.say(words, ids[0]); // (and into the room, to that name: the division's own session sees it, coop/chatroom.js)
     this.ask(ids[0], words, ids.slice(1));
   }
 

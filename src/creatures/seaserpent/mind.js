@@ -51,7 +51,7 @@ export function seaSerpentMind(S) {
     if (!f || x.now - Math.max(f.seenAt, f.heardAt) > 10) return null;
     return f.aware >= 0.55 || f.grudge >= 0.3 ? f : null;
   };
-  const glyph = (x, kind, color = 0xffd27a) => g.glyphs?.pop(kind, x.c.spine[0].p, { color, size: 1.6, life: 1.4, follow: () => x.c.spine[0].p });
+  const glyph = (x, kind, color = 0xffd27a) => g.glyphs?.pop(kind, x.c.head(), { color, size: 1.6, life: 1.4, follow: () => x.c.head() });
   /** Which move now, if any: each its gate, its cooldown, and a weight (seaserpent.js `windUp` lays it on the water). */
   const pickMove = (x, d) => {
     const c = x.c, H = ship(); if (!H) return null;

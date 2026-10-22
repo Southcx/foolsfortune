@@ -23,6 +23,9 @@ export class Blink extends Tech {
 
   reset() { this.charges = this.cfg.charges; this.recharge = 0; }
 
+  /** Its key pressed (techs.js `unlearned`: no latch spent). */
+  wants() { return this.P.peekLatch('KeyE') && !this.P.mantle; }
+
   canStart() {
     const P = this.P;
     if (!P.peekLatch('KeyE') || P.mantle) return false;

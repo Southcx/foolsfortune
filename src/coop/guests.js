@@ -11,8 +11,12 @@
 // Safeguards: your lines go at most one every `SAY_GAP` seconds; a guest who sends more than `FLOOD` lines in ten seconds is not shown
 // for the rest of them; a guest whose Courier has not been heard of for `STALE` seconds is hidden (a tab put away, a dropped line) and
 // let go after `GONE`.
+// IN THE SPIRIT GARDEN (SPIRIT-GARDEN.md item 21; COOP.md C8's GUEST rule): a guest in their own Inner Realm while you are in yours is
+// drawn as their Pneuka Jar where it hops (`r` in the presence: its foot, up, forward, hops, ground; vfx/garden/guestjars.js, Calissa's),
+// on your planetoids, in their glazes, its Courier hidden. Nothing a guest does reaches your garden: only where they are is shared, so
+// the GUEST rule (hop, look; never place, prune, tend, bind or take) holds of itself. The one gift a visit waits on Dovina's transfer.
 // Events: guest.join { guest }, guest.leave { guest }, guest.say { guest, line, sibling } (`guest` a display name from the `user`
-// capability, or "Someone"; `sibling` set when it is a sibling answering that guest).
+// capability, or "Someone"; `sibling` set when it is a sibling answering that guest), guest.garden { guest } and { guest, leave: true }.
 //
 // Prior art: Journey (strangers in your world, nothing to say but a chirp), Dark Souls' phantoms (another player's Courier drawn in
 // your world), and the networked games' interpolation of remote players (Valve's Source: draw a little in the past, between samples).
@@ -66,7 +70,7 @@ export class Guests {
       this.making.add(p.peer);
       this.makeRig().then(async (rig) => {
         this.making.delete(p.peer);
-        const G2 = new Guest(p.peer, rig); rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Guest-${p.peer}`;
+        const G2 = new Guest(p.peer, rig); G2.by = p.by; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Guest-${p.peer}`;
         this.game.vessel?.dress(rig, { ...DEFAULT_LOOK, ...(p.presence.c.look || {}) }, { own: true }); // (their own glazes, as they fired them)
         this.take(G2, p.presence.c); G2.pos.copy(G2.to);
         this.list.push(G2);
@@ -94,7 +98,20 @@ export class Guests {
     return 'Someone';
   }
 
+  /** A guest in their garden while you are in yours: their Pneuka Jar drawn where it hops (Calissa's guestJars); true while it is. */
+  jar(G, c, quiet) {
+    const J = this.game.guestJars, on = !!(c.r && this.game.realm?.active && quiet < STALE && J);
+    if (on) {
+      const r = c.r; (G.jarAt ||= { foot: new THREE.Vector3(), up: new THREE.Vector3(), fwd: new THREE.Vector3(), vel: new THREE.Vector3() });
+      const A = G.jarAt; A.foot.fromArray(r.p); A.up.fromArray(r.u); A.fwd.fromArray(r.f); if (Array.isArray(r.v)) A.vel.fromArray(r.v);
+      J.show(G.peer, { foot: A.foot, up: A.up, fwd: A.fwd, vel: A.vel, hops: r.h | 0, grounded: !!r.g, look: c.look || null });
+      if (!G.inGarden) { G.inGarden = true; this.nameOf({ by: G.by }).then((guest) => this.game.events.emit('guest.garden', { guest })); }
+    } else if (G.inGarden) { G.inGarden = false; J?.drop(G.peer); this.game.events.emit('guest.garden', { guest: 'Someone', leave: true }); }
+    return on;
+  }
+
   drop(G) {
+    if (G.inGarden) this.game.guestJars?.drop(G.peer);
     this.list.splice(this.list.indexOf(G), 1);
     G.rig.dispose();
     this.game.events.emit('guest.leave', { guest: 'Someone' });
@@ -104,7 +121,9 @@ export class Guests {
   presence() {
     const P = this.game.player, place = this.game.zones?.current ?? this.game.course?.room ?? null;
     const s = (P.sliding ? FLAGS.slide : 0) | (P.crouching ? FLAGS.crouch : 0) | (P.dashBlend > 0.5 ? FLAGS.dash : 0) | (P.mantle ? FLAGS.mantle : 0) | (Math.abs(P.wallBlend) > 0.5 ? FLAGS.wall : 0);
-    return { c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null } };
+    const R = this.game.realm, J = R?.active ? R.jarBody : null; // (in the Spirit Garden: the Pneuka Jar where it hops)
+    const r = J ? { p: J.pos.clone().addScaledVector(J.up, -J.radius).toArray().map(r2), u: J.up.toArray().map(r2), f: J.forward.toArray().map(r2), v: J.vel.toArray().map(r2), h: J.hops, g: J.grounded ? 1 : 0 } : null;
+    return { c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null, ...(r ? { r } : {}) } };
   }
 
   update(dt) {
@@ -113,7 +132,9 @@ export class Guests {
     for (const G of [...this.list]) {
       const quiet = nowS() - G.heardAt;
       if (quiet > GONE) { this.drop(G); continue; } // (not heard of in a minute: gone)
-      const c = G.c || {}, R = G.rig, seen = quiet < STALE && (c.z == null || here == null || c.z === here);
+      const c = G.c || {}, R = G.rig;
+      if (this.jar(G, c, quiet)) { R.root.visible = false; continue; } // (both in the garden: their Pneuka Jar on your planetoids)
+      const seen = quiet < STALE && (c.z == null || here == null || c.z === here);
       R.root.visible = seen; if (!seen) continue;
       // move on by its speed, then close on where it was said to be
       G.to.addScaledVector(G.vel, dt);

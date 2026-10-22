@@ -140,9 +140,9 @@ export class SeaFight {
       if (!c.alive) continue;
       for (let i = 0; i < c.spine.length; i++) {
         if (!this.serpents.exposed(c, i)) continue;
-        const p = c.spine[i].p, dist = Math.hypot(p.x - from.x, p.z - from.z); if (dist > GN.reach) continue;
+        const p = this.serpents.at(c, i), dist = Math.hypot(p.x - from.x, p.z - from.z); if (dist > GN.reach) continue;
         let da = Math.atan2(p.x - from.x, p.z - from.z) - yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
-        const s = Math.abs(da) - Math.atan2(c.spine[i].r, dist) - (i === 0 ? 0.05 : 0); // (its own breadth widens the cone)
+        const s = Math.abs(da) - Math.atan2(this.serpents.rOf(c, i), dist) - (i === 0 ? 0.05 : 0); // (its own breadth widens the cone)
         if (s < best) { best = s; aim = p; }
       }
     }
@@ -177,7 +177,7 @@ export class SeaFight {
   serpentFree() { this.room?.helm?.mods?.delete('coil'); }
   /** A glob thrown in an arc at where the ship will be when it lands. */
   spit(c, H) {
-    const head = c.spine[0].p, g = this.game;
+    const head = c.head(), g = this.game;
     const from = _a.copy(head).setY(head.y + 0.6), d0 = Math.hypot(H.pos.x - from.x, H.pos.z - from.z), T = Math.max(0.6, d0 / GL.speed);
     const to = _b.set(H.pos.x + Math.sin(H.yaw) * H.speed * T, H.pos.y + 1, H.pos.z + Math.cos(H.yaw) * H.speed * T);
     const vel = new THREE.Vector3().subVectors(to, from).divideScalar(T); vel.y += 0.5 * GL.fall * T;
@@ -214,8 +214,8 @@ export class SeaFight {
     for (let i = this.globs.length - 1; i >= 0; i--) {
       const b = this.globs[i]; b.t -= dt;
       if (b.back) { // (sent back: it flies home to the head)
-        const c = b.from, head = c?.alive ? c.spine[0].p : null;
-        if (head) { _a.subVectors(head, b.pos); const d = _a.length(); b.vel.copy(_a).multiplyScalar(GL.back / Math.max(d, 1e-3)); if (d < c.spine[0].r + GL.r + 0.5) { g.creatures.strike(c, head, _d.copy(b.vel).normalize(), GL.power, 'parry', 'courier'); this.dropGlob(b); this.globs.splice(i, 1); continue; } }
+        const c = b.from, head = c?.alive ? c.head() : null;
+        if (head) { _a.subVectors(head, b.pos); const d = _a.length(); b.vel.copy(_a).multiplyScalar(GL.back / Math.max(d, 1e-3)); if (d < this.serpents.rOf(c, 0) + GL.r + 0.5) { g.creatures.strike(c, head, _d.copy(b.vel).normalize(), GL.power, 'parry', 'courier'); this.dropGlob(b); this.globs.splice(i, 1); continue; } }
         b.pos.addScaledVector(b.vel, dt);
       } else {
         b.vel.y -= GL.fall * dt; b.pos.addScaledVector(b.vel, dt);

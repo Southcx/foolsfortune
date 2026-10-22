@@ -16,7 +16,9 @@
 // Prior art: play-by-mail games (a turn a letter), Animal Crossing's letters to the villagers (answered the next day), and Death
 // Stranding's async messages.
 //
-//   game.letters = new Letters(game)   .send(id, words) -> Promise<bool>   .use({ db, mcp, user }) (tests hand them in)
+//   game.letters = new Letters(game)   .send(id, words, { chat? }) -> Promise<bool>   .use({ db, mcp, user }) (tests hand them in)
+//   (`chat`: a line of the chatroom (coop/chatroom.js) to that division: the wake asks for its answer there, `re` that line, and
+//   says nothing in the log; the line is in the chatroom either way, read when the session next wakes)
 // ---------------------------------------------------------------------------------------
 import { SIBLINGS } from './party.js';
 import { PERSONAS } from './personas.js';
@@ -30,6 +32,7 @@ export class Letters {
   constructor(game) {
     this.game = game; this.db = this.mcp = this.user = null; this.sent = {}; this.last = {}; this.now = () => Date.now();
     game.events.on('party.say', (e) => { const W = this.waiting; if (e.re === 'letter' && W[e.sibling] && (!e.letter || e.letter === W[e.sibling].letter)) { delete W[e.sibling]; game.coopUsage?.dirty(); } }); // (answered)
+    game.events.on('chat.line', (e) => { const W = this.waiting; if (W[e.from]?.chat && e.re === W[e.from].chat) { delete W[e.from]; game.coopUsage?.dirty(); } }); // (answered in the chatroom)
     const use = window.claude?.use;
     if (use) setInterval(() => this.check(), 30e3); // (wall-clock: a letter late is a real quarter hour, not the game's)
     if (use) Promise.all(['db', 'mcp', 'user'].map((n) => Promise.resolve(use(n)).catch(() => null))).then(([db, mcp, user]) => this.use({ db, mcp, user }));
@@ -53,8 +56,8 @@ export class Letters {
   }
 
   /** Send one letter: kept in the store, then the division's session woken a minute ahead. */
-  async send(id, words) {
-    const g = this.game, emit = (why) => { g.events.emit('party.unsent', { sibling: id || null, why, by: 'courier' }); return false; };
+  async send(id, words, { chat = null } = {}) {
+    const g = this.game, emit = (why) => { if (!chat) g.events.emit('party.unsent', { sibling: id || null, why, by: 'courier' }); return false; };
     if (!SIBLINGS.some((s) => s.id === id) || !clean(words)) return emit('unknown');
     if (!this.db || !this.mcp) return emit('away');
     if (!(await this.user?.isOwner?.().catch(() => false))) return emit('owner');
@@ -72,15 +75,24 @@ export class Letters {
       await within(this.db.collection('letters').doc(letter).set({ to: id, text, at: now, build: BUILD }));
       const at = new Date(now + 70e3).toISOString().replace(/\.\d+Z$/, 'Z');
       woke = true; // (from here a timeout cannot say the wake did not happen)
-      await within(this.mcp.callTool(SERVER, TOOL, { name: `Letter to ${SIBLINGS.find((s) => s.id === id).name}`, prompt: this.prompt(id, letter, text), persistent_session_id: PERSONAS[id].session, run_once_at: at, initiation: 'human_request' }));
+      await within(this.mcp.callTool(SERVER, TOOL, { name: `${chat ? 'The chatroom' : 'Letter'} to ${SIBLINGS.find((s) => s.id === id).name}`, prompt: chat ? this.roomPrompt(id, chat, text) : this.prompt(id, letter, text), persistent_session_id: PERSONAS[id].session, run_once_at: at, initiation: 'human_request' }));
     } catch (e) {
       console.warn('letters: not sent', e);
-      if (woke && e?.code === 'timeout') { W[id] = { letter, at: now, late: false }; g.coopUsage?.dirty(); return emit('unsure'); } // (it may have gone: wait for an answer)
+      if (woke && e?.code === 'timeout') { W[id] = { letter, chat, at: now, late: false }; g.coopUsage?.dirty(); return emit('unsure'); } // (it may have gone: wait for an answer)
       this.sent[id] = -Infinity; this.last[id] = null; g.coopUsage?.give('letters'); return emit('failed');
     }
-    W[id] = { letter, at: now, late: false }; g.coopUsage?.dirty();
-    g.events.emit('party.letter', { sibling: id, by: 'courier' });
+    W[id] = { letter, chat, at: now, late: false }; g.coopUsage?.dirty();
+    if (!chat) g.events.emit('party.letter', { sibling: id, by: 'courier' });
     return true;
+  }
+
+  /** A line of the chatroom to a division: read it, answer there (COOP.md C7 and C8). */
+  roomPrompt(id, chat, text) {
+    return `From the owner, a line to you in the game's chatroom (Fool's Fortune, the build ${BUILD} at ${BUILD_URL}; the chat line, "@${id}"; kept as chat/${chat} in its store):
+
+"${text}"
+
+Read the chatroom first (ArtifactData on ${BUILD_URL}: "list" or "query" collection "chat", the newest 50 by "at"), then answer in your own voice (${PERSONAS[id].voice}) with ArtifactData "set" of a new document in collection "chat" (any new id): { "from": "${id}", "to": "owner", "text": "<at most 280 characters>", "re": "${chat}", "at": <now in ms> }. The game says it in its log in your division's colour. One line a real minute at most; never items, cubes, the ledger or the save. If the line asks for work on the game, say in your answer what you will do. The contract: docs/plans/COOP.md C8.`;
   }
 
   prompt(id, letter, text) {

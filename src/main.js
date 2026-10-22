@@ -265,6 +265,7 @@ import { Meetings } from './coop/meeting.js';
 import { SiblingAnswers } from './coop/answer.js';
 import { CoopUsage } from './coop/usage.js';
 import { Letters } from './coop/letters.js';
+import { Chatroom } from './coop/chatroom.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { Raceway } from './world/raceway/raceway.js';
@@ -835,6 +836,7 @@ async function main() {
   game.coopUsage = new CoopUsage(game); // (what asking and letters spend of yours, capped by the hour: /usage, coop/usage.js)
   game.answers = new SiblingAnswers(game); // ("@petra ...": a sibling answers in seconds, through the page's sample: coop/answer.js)
   game.letters = new Letters(game); // ("/letter petra ...": the division's own session answers in minutes: coop/letters.js)
+  game.chatroom = new Chatroom(game); // (the five sessions and the owner in one conversation in the build's store, read in the log: coop/chatroom.js, COOP.md C7, C8)
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
