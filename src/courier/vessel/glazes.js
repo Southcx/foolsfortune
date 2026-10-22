@@ -60,6 +60,14 @@ export const GLAZES = Object.fromEntries([
   // eye, 6: vfx/eyecup.js). Blurbs are placeholders for Espada's.
   G('jellycrown', 'JELLY-CROWN', 0x8ab894, 0.1, 0.02, 'A slip-green celadon that pools thick and wet, as the crown sat in the jelly.', { ach: 'gj1' }),
   G('eyecup', 'EYE CUP', 0xc8643a, 0.42, 0.02, 'Black-figure: a staring eye on every part, the evil looked back at.', { ach: 'gj5' }),
+  // THE FAREWELL GLAZES (the owner, 2026-10-22: a spirit's farewell leaves "a statue plus the glaze"; GARDEN-COZY.md, Dovina's gy17 to gy21):
+  // one a feeling a bound spirit can have, kept after it has gone home, each a real glaze that reads as that feeling. Names and blurbs are
+  // placeholders for Espada's.
+  G('aventurine', 'AVENTURINE', 0x5a3418, 0.16, 0.2, 'Iron crystals grown in the cooling glaze, gold flecks deep in brown glass: the night a Wonder spirit went home by.', { ach: 'gy17' }),
+  G('crystalline', 'CRYSTALLINE', 0x4aa8a4, 0.14, 0.04, 'Zinc crystals that bloomed in the kiln as it cooled, white flowers on blue: a Mirth spirit\'s laugh, set.', { ach: 'gy18' }),
+  G('peachbloom', 'PEACHBLOOM', 0xd8846e, 0.22, 0.02, 'Copper red blushing pink, with moss-green where it ran thin: the court\'s rarest red, kept for a Desire spirit.', { ach: 'gy19' }),
+  G('bidoro', 'BIDORO', 0x56705c, 0.12, 0.04, 'Wood ash melted to green glass in the fire and run down the pot in beads: what a Grief spirit left on you.', { ach: 'gy20' }),
+  G('kuroraku', 'KURO RAKU', 0x15100e, 0.38, 0.06, 'Black raku, pulled from the kiln glowing, crazed with old red where it cooled: a Dread spirit, kept quiet.', { ach: 'gy21' }),
   // SHOP GLAZES (plan A11): honest everyday glazes, bought at Saggar's kiln (price: ECON.goods.glaze). Blurbs are placeholders for Espada's.
   G('ash', 'NATURAL ASH', 0x7d7a4a, 0.45, 0.02, 'No glaze at all: wood ash fell on the pot in the kiln and melted, running green down one side.', { shop: true }),
   G('kaki', 'KAKI', 0xa0522d, 0.4, 0.05, 'Persimmon: a rust-red iron glaze, matte as the fruit. A farmhouse colour.', { shop: true }),
@@ -98,7 +106,8 @@ export const GLAZES = Object.fromEntries([
 ].map((g) => [g.id, g]));
 // the rare glazes' kiln patterns (vfx/finish.js PATTERN: 1 stars, 2 spots, 3 streaks, 4 crackle, 5 leaf, 6 the eye, 7 the dip) and the colour
 // each is drawn in (the eye's: the black; the dip's: the jelly's wet slip under the lip, vfx/foelook.js)
-const PATTERNS = { yohen: [1, 0x46b4ff], oilspot: [2, 0xc4c8d0], haresfur: [3, 0xc08a48], guan: [4, 0x2c2622], raku: [4, 0x3a3634], ru: [4, 0x7890a0], kinrande: [5, 0xe8b850], eyecup: [6, 0x1c1410], jellycrown: [7, 0x7a5434] };
+const PATTERNS = { yohen: [1, 0x46b4ff], oilspot: [2, 0xc4c8d0], haresfur: [3, 0xc08a48], guan: [4, 0x2c2622], raku: [4, 0x3a3634], ru: [4, 0x7890a0], kinrande: [5, 0xe8b850], eyecup: [6, 0x1c1410], jellycrown: [7, 0x7a5434],
+  aventurine: [1, 0xe8b850], crystalline: [2, 0xf2f0e0], peachbloom: [2, 0x6a9a6a], bidoro: [3, 0x9ad4b4], kuroraku: [4, 0x6a1e22] }; // (the farewell glazes': the stars gold, the spots their flowers and moss, the streaks the tears, the crackle old red)
 for (const [id, [pattern, color2]] of Object.entries(PATTERNS)) Object.assign(GLAZES[id], { pattern, color2 });
 
 /** How they are dressed until they fire anything else: as they were made. */
