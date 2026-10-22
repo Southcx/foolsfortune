@@ -390,14 +390,14 @@ export class GodArts {
       L.tip = L.ok ? `${L.a.distanceTo(L.b).toFixed(1)} m · release to cut` : 'the blade must stay in known ground';
       this.showBlade(L.a, L.b, C.height, L.ok);
     } else if (L.id === 'swell') {
-      const f = clamp(L.f0 * Math.exp((L.my - input.my) * 0.006), C.min, C.max);
+      const f = clamp(L.f0 * Math.exp((L.my - input.my) * 0.006), C.min, C.max * (g.psyche?.widen?.('alteration.swell') ?? 1));
       L.tip = `×${f.toFixed(2)}`;
       if (Math.abs(f - L.f) > 0.004 && this.drainOk(C.drain * 0.5 + C.drain * Math.abs(Math.log(f / L.f)) * 6, dt) && (L.applied -= dt) <= 0) {
         L.f = f; L.applied = 0.05;
         this.applyShape(L);
       }
     } else if (L.id === 'wring') {
-      const tw = clamp(L.tw0 + (input.mx - L.mx) * 0.012, -C.twist, C.twist);
+      const tw = clamp(L.tw0 + (input.mx - L.mx) * 0.012, -C.twist * (g.psyche?.widen?.('alteration.swell') ?? 1), C.twist * (g.psyche?.widen?.('alteration.swell') ?? 1));
       const lo = clamp(L.lo0 + (L.my - input.my) * 0.0016, 0, C.lobe);
       L.tip = `twist ${(tw * 57.3).toFixed(0)}° · scallop ${(lo * 100).toFixed(0)}%`;
       if ((Math.abs(tw - L.tw) > 0.01 || Math.abs(lo - L.lo) > 0.004) && this.drainOk(C.drain, dt) && (L.applied -= dt) <= 0) {
@@ -531,7 +531,7 @@ export class GodArts {
 
   doManifest(L, C, len) {
     const g = this.game;
-    while (this.manifests.length >= C.max) this.crumble(this.manifests[0]);
+    while (this.manifests.length >= C.max + Math.floor(g.psyche?.widen?.('manifestation.count') ?? 0)) this.crumble(this.manifests[0]);
     const dir = _v.copy(L.b).sub(L.a).setY(0);
     if (dir.lengthSq() < 1e-4) dir.set(1, 0, 0); else dir.normalize();
     const mid = L.a.clone().addScaledVector(dir, len / 2);
@@ -552,7 +552,7 @@ export class GodArts {
     mesh.position.set(mid.x, gy - h / 2 - 0.05, mid.z);
     mesh.quaternion.copy(q);
     g.scene.add(mesh);
-    const m = { body, col, mesh, t: 0, rise: 0.55 / (g.alchemy?.widen?.('visualization.make') ?? 1), life: C.life, h, gy, mid, len, w, yaw };
+    const m = { body, col, mesh, t: 0, rise: 0.55 / (g.alchemy?.widen?.('visualization.make') ?? 1), life: C.life * (g.psyche?.widen?.('manifestation.span') ?? 1), h, gy, mid, len, w, yaw };
     this.manifests.push(m);
     g.fx.impact?.(new THREE.Vector3(mid.x, gy, mid.z), UP, { sparks: 6, dust: 18 });
     sfx.thump();
