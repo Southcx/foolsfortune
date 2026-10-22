@@ -26,6 +26,7 @@
 import coreUrl from '../../assets/clips/core.bin?url';
 import socialUrl from '../../assets/clips/social.bin?url';
 import { HINGED, repairHinges } from './hinges.js';
+import { base64Buffer } from '../../core/base64.js';
 
 // the old name -> the suite clip that is the same capture (front-and-side sheets of both: docs/ref/suite_same.png)
 export const SAME = {
@@ -82,7 +83,7 @@ const fetchPack = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(`
 export async function loadClips({ packs = [] } = {}) {
   const core = await fetchPack(coreUrl);
   const pack = { fps: core.fps, bones: core.bones, rest: core.rest, clips: {} };
-  for (const b64 of packs) Object.assign(pack.clips, readPack(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, pack).clips); // (the old packs, decoded onto the suite's bones as each clip is first read)
+  for (const b64 of packs) Object.assign(pack.clips, readPack(base64Buffer(b64), pack).clips); // (the old packs, decoded onto the suite's bones as each clip is first read)
   Object.assign(pack.clips, core.clips);
   for (const [old, now] of Object.entries(SAME)) if (core.clips[now]) pack.clips[old] = { ...core.clips[now], name: old };
   let social = null; // (fetched the first time anything asks for it: the first emote, not the boot)

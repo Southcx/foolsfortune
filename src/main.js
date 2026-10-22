@@ -107,7 +107,8 @@ import { RacewayCavern } from './vfx/racewaycavern.js';
 import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
 import { RacewayFog } from './vfx/racewayfog.js';
-import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
+import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js';
+import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
 import { Cartography } from './feedback/cartography.js';
@@ -297,6 +298,7 @@ import { typeOf } from './progress/combat/types.js';
 import { OverlayScene } from './render/overlayscene.js';
 import { Cradles } from './world/cradles.js';
 import { Sight, sightCommands } from './progress/sight.js';
+import { base64Buffer } from './core/base64.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
 const FIXED = 1 / 60;
@@ -504,7 +506,7 @@ async function main() {
 
   mark('spawn');
   const loader = new GLTFLoader();
-  const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+  const bytes = base64Buffer; // (one loop, not a function a byte: core/base64.js)
   const [charG, gunG, clapG, handG, jarG] = await Promise.all([
     loader.parseAsync(bytes(courierB64), ''),
     loader.parseAsync(bytes(gunB64), ''),
@@ -1068,6 +1070,7 @@ async function main() {
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
+  game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)

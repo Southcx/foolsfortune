@@ -121,13 +121,13 @@ const BODY_FRAG = /* glsl */`
     totalEmissiveRadiance += foeGold * vPart.y * smoothstep(0.5, 0.85, 1.0 - ndv) * (1.6 + 2.0 * hit);
   }
   if (vPart.x > 0.0 && d <= 0.0) {
-    float hk = vPart.x; vec3 cp = vObj * 8.0; // (cells about an eighth of a metre)
+    float hk = vPart.x; vec3 cp = vObj * 4.0; // (cells about a quarter metre: hairlines over a plate, never lacework, as vfx/partcraze.js)
     float cpx = 1.0 / max(length(fwidth(cp)), 1e-5), seen = smoothstep(2.5, 5.0, cpx);
-    float e = foeCells(cp), aa = max(fwidth(e), 1e-5), w = max(mix(0.015, 0.09, hk), aa * 1.2);
+    float e = foeCells(cp), aa = max(fwidth(e), 1e-5), w = max(mix(0.006, 0.04, hk), aa * 1.2);
     float crack = (1.0 - smoothstep(w - aa, w + aa, e)) * seen, sh = (1.0 - smoothstep(w * 2.6 - aa, w * 2.6 + aa, e)) * seen - crack;
     float lit = smoothstep(0.62, 0.95, hk);
-    diffuseColor.rgb *= 1.0 - 0.75 * max(sh, 0.0) - 0.6 * crack * (1.0 - lit);
-    totalEmissiveRadiance += crack * mix(vec3(0.35, 0.32, 0.27), foeGold * 3.0, lit) + foeGold * 0.12 * smoothstep(0.7, 1.0, hk);
+    diffuseColor.rgb *= 1.0 - 0.45 * max(sh, 0.0) - 0.5 * crack * (1.0 - lit);
+    totalEmissiveRadiance += crack * mix(vec3(0.62, 0.46, 0.26) * 0.18, foeGold * 3.0, lit) + foeGold * 0.12 * smoothstep(0.7, 1.0, hk);
   }
 }
 `;
