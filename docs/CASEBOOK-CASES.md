@@ -3408,3 +3408,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Measured after:** 0 program checks a frame in the workshop; 731 KB of garbage a frame (was 1,128), the Dunes 641 (was 943); the
   same frame drawn by both trees differs no more than one tree from itself (0.40% of pixels against a floor of 0.50%).
 - **Rule:** 256.
+
+### 2026-10-22 · The garden's small life compiled two programs and checked them every draw (Calissa; measured by Petra)
+- **Seen:** by measure, `npm run perf`: late compiles in the garden 21, was 17, `garden-life` among them twice. Petra's probe: the two
+  programs' cache keys differ in one bit, flipSided.
+- **Cause:** three 0.170's renderObject draws a material that is transparent and DoubleSide, without `forceSinglePass`, twice (its back,
+  then its front), setting `needsUpdate` at each switch: two programs, and two program checks every draw, every frame.
+- **Fix:** `forceSinglePass: true` on the small life's material (vfx/garden/gardenlife.js), and on every transparent DoubleSide material of
+  ours whose draw order cannot matter: additive ones, and the Heavenly Kiln's flat vortex (11 in vfx/).
+- **Rule:** 257
