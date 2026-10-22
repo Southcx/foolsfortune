@@ -14,8 +14,11 @@ section 7 says so. Section numbers are cited by code: keep them stable.
   true), and the log writes the sentence.
 - **The session (ten minutes to an hour of play): breadth, no direction.** A sandbox of rooms, each with a small loop: the Weir
   (fish, the treasury, the Tithe), the dunes (mining by ear, jellies, the skiff), the workshop (pots, the gong trial, the kiln), the
-  basement (the movement lab, three lap circuits, THE COURSE, THE SIEGE). Nothing yet answers "what am I working toward tonight?":
-  an art's progress, a missing curio, an unearned glaze, a medal not yet gold all exist, and none is put in front of the player.
+  basement (the movement lab, three lap circuits, THE COURSE, THE SIEGE). "What am I working toward tonight?" is answered since
+  2026-10-21 by **the goals** (`progress/goals.js`, `/goals`): three of the achievements a game day, laid from the ledger (the nearest
+  to done, one in a category not met yesterday, a Hard-or-harder stretch; a new save's are Easy first steps), each its achievement's own
+  progress and reward, never a new task or a payment (Hades' Fated List, Animal Crossing's Nook Miles+, Steam's "nearly there"). A
+  window for them is Calissa's; until then the log reads them on asking.
 - **The long run (game days and real weeks):** the achievements (366 entries, six tiers, about 950 points, a standing from Sweeper to
   Fool's Fortune), the collections (twenty curios, 54 cards in the Book, the bestiary, the glazes), medals and records, the arts'
   variants. **Progress resets on every build** (`src/core/progress.js`), so the long run can be measured (the ledger timestamps every

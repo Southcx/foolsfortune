@@ -37,6 +37,9 @@ const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vect
 const _v5 = new THREE.Vector3(), _v6 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4();
+const _s2S = new THREE.Vector3(), _s2T = new THREE.Vector3(), _s2P = new THREE.Vector3(), _s2E = new THREE.Vector3(); // (solve2's)
+const _abP = new THREE.Vector3(), _abC = new THREE.Vector3(), _abT = new THREE.Vector3(), _abQ1 = new THREE.Quaternion(), _abQ2 = new THREE.Quaternion(), _abQ3 = new THREE.Quaternion(); // (aimBone's)
+const _rhQ = new THREE.Quaternion(), _rhP = new THREE.Vector3(), _rhT = new THREE.Vector3(), _rhPole = new THREE.Vector3(), _rhS = new THREE.Vector3(), _rhSh = new THREE.Vector3(); // (reachHand's own: it runs a hand or two every frame, and made six objects a call)
 
 // The maker's paintings of the armour and the mask (source_assets/courier_armor.png, courier_mask.png). In Blender they were drawn
 // unlit (an emission shader), the light painted in; here they take the game's light, and the same painting glows back a share of
@@ -864,14 +867,15 @@ export class Character {
    */
   footIK(dt, s, planted, stretch, speed, gaitW) {
     const root = this.root, st = this.st;
-    const mdir = new THREE.Vector3(s.velocity.x, 0, s.velocity.z);
+    const K = (this.fk ||= { mdir: new THREE.Vector3(), F: { L: new THREE.Vector3(), R: new THREE.Vector3() }, off: { L: new THREE.Vector3(), R: new THREE.Vector3() }, off0: { L: new THREE.Vector3(), R: new THREE.Vector3() }, t: { L: new THREE.Vector3(), R: new THREE.Vector3() }, v: new THREE.Vector3(), pole: new THREE.Vector3(), fq: new THREE.Quaternion(), offs: {}, offs0: {}, d: { L: 0, R: 0 }, anim: {}, tgt: {} }); // (the foot IK's own objects, kept: it runs every frame, and made a dozen a frame)
+    const mdir = K.mdir.set(s.velocity.x, 0, s.velocity.z);
     const doStride = Math.abs(stretch) > 0.01 && speed > 0.3;
     if (doStride) mdir.normalize();
-    const offs = {}, offs0 = {}, d = { L: 0, R: 0 }, anim = {};
+    const offs = K.offs, offs0 = K.offs0, d = K.d, anim = K.anim; d.L = 0; d.R = 0;
     for (const k of ['L', 'R']) {
       const leg = this.leg[k];
-      const F = leg.foot.getWorldPosition(new THREE.Vector3());
-      const off = new THREE.Vector3();
+      const F = leg.foot.getWorldPosition(K.F[k]);
+      const off = K.off[k].set(0, 0, 0);
       if (doStride) off.addScaledVector(mdir, _v1.subVectors(F, s.pos).dot(mdir) * stretch);
       if (planted > 0.05 && s.ground) {
         const gy = s.ground(F.x + off.x, F.z + off.z, s.pos.y + 0.6);
@@ -882,7 +886,7 @@ export class Character {
       const fd = (st.footD ||= { L: 0, R: 0 });
       fd[k] = THREE.MathUtils.damp(fd[k], d[k], FOOT_FOLLOW, dt); d[k] = fd[k];
       offs[k] = off;
-      offs0[k] = off.clone();
+      offs0[k] = K.off0[k].copy(off);
       anim[k] = F.add(off);
     }
     // foot locks (world space); a teleport drops them
@@ -903,8 +907,8 @@ export class Character {
     }
     // absolute targets, then drop the hips for the lower foot and for reach (a long
     // stride with the hips at clip height would straighten the legs and drag the feet)
-    const tgt = {};
-    for (const k of ['L', 'R']) { tgt[k] = anim[k].clone().sub(new THREE.Vector3(offs0[k].x, 0, offs0[k].z)).add(new THREE.Vector3(offs[k].x, d[k], offs[k].z)); }
+    const tgt = K.tgt;
+    for (const k of ['L', 'R']) { const t = (tgt[k] = K.t[k].copy(anim[k])); t.x += offs[k].x - offs0[k].x; t.y += d[k]; t.z += offs[k].z - offs0[k].z; } // (the clip's foot, less its stride offset, plus the offset as locked and the ground)
     // the sole kept on the floor: the skin's lowest point of each foot (its posed turn kept through the leg's IK, so its place against the
     // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
     // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
@@ -934,7 +938,7 @@ export class Character {
     let reach = 0;
     for (const k of ['L', 'R']) {
       const leg = this.leg[k];
-      const v = leg.thigh.getWorldPosition(new THREE.Vector3()).sub(tgt[k]);
+      const v = leg.thigh.getWorldPosition(K.v).sub(tgt[k]);
       v.y -= drop;
       const R = (leg.a + leg.b) * 0.985, l2 = v.lengthSq();
       if (l2 > R * R) {
@@ -953,8 +957,8 @@ export class Character {
       if (target.distanceToSquared(leg.foot.getWorldPosition(_v1)) < 1e-6) continue;
       // the knee bends toward the state's own pole (poles.js): forward, and never flared out
       const PF = st.pole || { fwd: 0.1, out: 0, up: 0 };
-      const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(fwd, PF.fwd).addScaledVector(left, PF.out * (k === 'L' ? 1 : -1)).addScaledVector(rootUp, PF.up);
-      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+      const pole = leg.shin.getWorldPosition(K.pole).addScaledVector(fwd, PF.fwd).addScaledVector(left, PF.out * (k === 'L' ? 1 : -1)).addScaledVector(rootUp, PF.up);
+      const fq = leg.foot.getWorldQuaternion(K.fq);
       this.solveLeg(leg, target, pole);
       this.setWorldQuat(leg.foot, fq);
       leg.foot.updateMatrixWorld(true);
@@ -993,21 +997,21 @@ export class Character {
 
   // analytic two-bone IK: the mid joint bends toward `pole`
   solve2(upper, mid, end, a, b, target, pole) {
-    const S = upper.getWorldPosition(new THREE.Vector3());
-    const toT = new THREE.Vector3().subVectors(target, S);
+    const S = upper.getWorldPosition(_s2S);
+    const toT = _s2T.subVectors(target, S);
     let d = toT.length();
     const dir = toT.divideScalar(d || 1);
     // (never fully straight: a limb at its full length has no bend direction, and hyperextends or flips on the next frame)
     d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, (a + b) * 0.99);
     const x = (a * a - b * b + d * d) / (2 * d);
     const h = Math.sqrt(Math.max(0, a * a - x * x));
-    const pv = new THREE.Vector3().subVectors(pole, S);
+    const pv = _s2P.subVectors(pole, S);
     pv.addScaledVector(dir, -pv.dot(dir));
     if (pv.lengthSq() < 1e-8) pv.set(0, -1, 0).addScaledVector(dir, dir.y);
     pv.normalize();
-    const elbow = S.clone().addScaledVector(dir, x).addScaledVector(pv, h);
+    const elbow = _s2E.copy(S).addScaledVector(dir, x).addScaledVector(pv, h);
     this.aimBone(upper, mid, elbow);
-    this.aimBone(mid, end, S.clone().addScaledVector(dir, d));
+    this.aimBone(mid, end, _s2E.copy(S).addScaledVector(dir, d)); // (the elbow is set by now: its scratch reused for the end)
   }
 
   chestPoint(target) { return this.bones.spine004.getWorldPosition(target); }
@@ -1023,17 +1027,17 @@ export class Character {
     if (w <= 0.001) return;
     if (this.reachMark) this.reached[side] = Math.max(this.reached[side], w); // (a hand set on something this frame: the wrist's ease leaves its turn alone)
     const arm = this.arm[side];
-    const hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
-    const hp = arm.hand.getWorldPosition(new THREE.Vector3());
-    const target = hp.clone().lerp(pos, w);
-    const pole = poleOverride ? poleOverride.clone() : arm.fore.getWorldPosition(new THREE.Vector3()).add(_v1.set(0, -0.12, 0));
+    const hq = arm.hand.getWorldQuaternion(_rhQ);
+    const hp = arm.hand.getWorldPosition(_rhP);
+    const target = _rhT.copy(hp).lerp(pos, w);
+    const pole = poleOverride ? _rhPole.copy(poleOverride) : arm.fore.getWorldPosition(_rhPole).add(_v1.set(0, -0.12, 0));
     if (shift > 0 && this.fpCam) {
       // first person: view-model arms. The shoulders hang off the camera, not the animated
       // body, so the hands never inherit the run cycle; only the hands are drawn anyway.
       const cq = this.fpCam.quaternion;
       const S = _v1.set(-arm.side * 0.2, -0.3, 0.06).applyQuaternion(cq).add(this.fpCam.position);
-      const cur = arm.upper.getWorldPosition(new THREE.Vector3());
-      const sh = S.clone().sub(cur).multiplyScalar(shift);
+      const cur = arm.upper.getWorldPosition(_rhS);
+      const sh = _rhSh.copy(S).sub(cur).multiplyScalar(shift);
       arm.upper.parent.getWorldQuaternion(_q1).invert();
       arm.upper.position.add(sh.applyQuaternion(_q1));
       arm.upper.updateMatrixWorld(true);
@@ -1042,11 +1046,11 @@ export class Character {
     // the shoulder's ball joint: what the arm can't reach, the shoulder gives (up to STRETCH), the way
     // a posed figure's shoulder is pushed toward the reach
     if (!(shift > 0 && this.fpCam)) {
-      const S = arm.upper.getWorldPosition(new THREE.Vector3());
+      const S = arm.upper.getWorldPosition(_rhS);
       const d = S.distanceTo(target), L = (arm.a + arm.b) * 0.96;
       if (d > L) {
         const give = Math.min(d - L, STRETCH);
-        const sh = target.clone().sub(S).normalize().multiplyScalar(give);
+        const sh = _rhSh.copy(target).sub(S).normalize().multiplyScalar(give);
         arm.upper.parent.getWorldQuaternion(_q1).invert();
         arm.upper.position.add(sh.applyQuaternion(_q1));
         arm.upper.updateMatrixWorld(true);
@@ -1274,13 +1278,13 @@ export class Character {
   // rotate `bone` (in world space) so that `child` lands on `point`
   aimBone(bone, child, point) {
     bone.updateMatrixWorld(true);
-    const p = bone.getWorldPosition(new THREE.Vector3());
-    const c = child.getWorldPosition(new THREE.Vector3());
+    const p = bone.getWorldPosition(_abP);
+    const c = child.getWorldPosition(_abC);
     const from = c.sub(p).normalize();
-    const to = point.clone().sub(p).normalize();
-    const swing = new THREE.Quaternion().setFromUnitVectors(from, to);
-    const wq = bone.getWorldQuaternion(new THREE.Quaternion());
-    const parentQ = bone.parent.getWorldQuaternion(new THREE.Quaternion());
+    const to = _abT.copy(point).sub(p).normalize();
+    const swing = _abQ1.setFromUnitVectors(from, to);
+    const wq = bone.getWorldQuaternion(_abQ2);
+    const parentQ = bone.parent.getWorldQuaternion(_abQ3);
     bone.quaternion.copy(parentQ.invert().multiply(swing.multiply(wq)));
     bone.updateMatrixWorld(true);
   }
