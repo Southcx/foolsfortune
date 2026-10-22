@@ -101,6 +101,12 @@ const RULES = {
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
+  // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)
+  'party.say': (s, e) => s.chatMotif?.(e.sibling || 'guest'),
+  'chat.line': (s, e) => s.chatMotif?.(String(e.from || e.sibling || 'guest').toLowerCase()), // (the chat's contract is Dovina's: a line from a session or the owner)
+  'guest.say': (s) => s.chatMotif?.('guest'),
+  'guest.join': (s, e, g) => s.guestArrive?.(!!g.realm?.active),
+  'guest.leave': (s, e, g) => s.guestArrive?.(!!g.realm?.active, true),
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
