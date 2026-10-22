@@ -208,6 +208,11 @@ export const ECON = {
    *  seen from every other (height in metres). */
   myggdrasil: { firing: 2, radius: 26, treeHeight: 48 },
   place: { planetoids: [60, 120, 240, 480], planetoidFiring: [3, 4, 5, 6], features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
+  /** DECOR (docs/plans/GARDEN-COZY.md D4): a piece's price in minutes of play by its size, a sink that never fills and pays nothing back,
+   *  so it is kind (the first set about three real hours of play). A piece bought is a copy kept in the shed's storage; picked up, it
+   *  goes back there whole (Animal Crossing's storage: no tax on rearranging, the cozy rule against transactional pressure). A tint is
+   *  free once the piece is owned (its remake). */
+  decor: { small: 1, medium: 3, large: 8, centre: 20 },
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */

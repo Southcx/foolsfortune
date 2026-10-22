@@ -413,6 +413,16 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   colour wheel), ware ring, seven tiles, soul bead. *Not:* the plate shrine. → detail
 - **wheelColour** (`src/vfx/wheelcolour.js`) — the one colour function of the colour wheel, in Oklab; a bead and its tile are the same colour when
   they are the same place.
+- **harmony / thorns / bloom** (plain names until the owner rules; `game.harmony`, `src/progress/harmony.js`; `docs/plans/GARDEN-COZY.md` A)
+  — how calm (1) or overgrown (0) a planetoid of the Spirit Garden is, resting at 0.5, raised by tending and lowered by what you carry
+  in and spirits left waiting / what grows at a cause's place below 0.35, pruned by the hand for a briar cutting / a planetoid over
+  0.75 flowering. Always "a planetoid's harmony" or "the garden's harmony". *Not:* music's harmony, the Dissonance Level, the weather.
+- **decor / the shed's storage / the garden's rating / a lake lotus** (plain names; `DECOR`, `game.decor`, `src/progress/decor.js`; GARDEN-COZY.md D)
+  — a piece placed in the Spirit Garden for its looks, of a set / where a piece bought or given waits until placed, and goes back to
+  when picked up / the garden's decor scored by variety region by region, never shown as a number / one of the five on the Dantian's
+  lake that open with the rating, always "lake lotus". *Not:* a feature (a plot's working thing), a launch lotus (flings the Jar).
+- **a season** (`seasonOf`, `src/progress/seasons.js`) — spring, summer, autumn or winter in the Spirit Garden, 7 game days each.
+  *Not:* the weather, the day's phases.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'
   butter) each work one verb; the tree is Myggdrasil. *Not:* a material's `path`. → detail
 - **the tincture / the caps** (`TREE`, `CAPS`) — Myggdrasil's sap (the colour of all it ate) / its ten fruiting bodies. **moonflower**: a bed
